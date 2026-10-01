@@ -12,6 +12,8 @@ package economy
 import (
 	"context"
 	"testing"
+
+	"formatet/megaron/server/internal/hexgrid"
 )
 
 // TestRecomputeProduction_BuildingSlotCapIsPopulationInvariant is the actual
@@ -26,22 +28,19 @@ func TestRecomputeProduction_BuildingSlotCapIsPopulationInvariant(t *testing.T) 
 	const tick = 100
 
 	rateAt := func(pop int) float64 {
-		settlementID := seedFullRingFixture(t, tick, pop, "plains")
-		// stonequarry is hex-bound (migration 154) but its stone production_rule
-		// is terrain-free (NULL terrain_type) — it routes through
-		// LoadBuildingProductionOptions, not HexOption, so which ring hex it
-		// sits on doesn't affect this test; (1,0) just satisfies the schema's
-		// buildings_hex_bound_check.
+		settlementID := seedFullRingFixture(t, tick, pop, "hills")
+		// byggnadsregeln: the quarry works its own hex (2 + 4 places), so the
+		// crew is placed on the hex.
+		quarryHex := hexgrid.Ring(hexgrid.Coord{Q: 0, R: 0}, hexgrid.CatchmentRadius)[0]
 		if _, err := pool.Exec(ctx,
-			`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'stonequarry', 1, 1, 0)`,
-			settlementID,
+			`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'stonequarry', 1, $2, $3)`,
+			settlementID, quarryHex.Q, quarryHex.R,
 		); err != nil {
 			t.Fatalf("seed stonequarry: %v", err)
 		}
-		// Full staffing under P4 = one gubbe per building slot, not a weight —
-		// stonequarry level 1's cap is WorkplaceSlots("stonequarry",1) = 2.
-		placeBuildingGubbe(t, pool, settlementID, 1, "stonequarry", "stone")
-		placeBuildingGubbe(t, pool, settlementID, 2, "stonequarry", "stone")
+		for i := 1; i <= 2+BuildingExtraPlaces; i++ {
+			placeHexGubbe(t, pool, settlementID, i, quarryHex, "stone")
+		}
 		tx, err := pool.Begin(ctx)
 		if err != nil {
 			t.Fatalf("begin tx: %v", err)

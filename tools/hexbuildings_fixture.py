@@ -3,7 +3,7 @@
 silver-deposit hex — megaron_plan_byggnad_pa_hex.md §A2's acceptance fixture.
 --effects (default on, §B) also upgrades one farm to L2 through the real
 upgrade verb and, if the catchment has a forest_olive_grove hex, builds a
-lumbermill there — the worked example where timber FALLS as the level
+lumbermill there — the case where timber FELL before the building rule (mig 155) as the level
 rises.
 
     tools/acceptance.sh up && tools/acceptance.sh reset
@@ -101,8 +101,10 @@ def register(name):
 
 
 def grain_terrains():
+    # Byggnadsregeln (mig 155): the farm+grain rows are gone — a grain
+    # terrain is one with a base (building-free) grain row.
     out = psql("SELECT DISTINCT terrain_type FROM production_rules "
-               "WHERE building_type = 'farm' AND terrain_type IS NOT NULL")
+               "WHERE good_key = 'grain' AND building_type IS NULL AND terrain_type IS NOT NULL")
     terrains = [l.strip() for l in out.splitlines() if l.strip()]
     if not terrains:
         sys.exit("no grain terrain found in production_rules — fixture cannot proceed")
@@ -314,8 +316,12 @@ def main():
     if not mine_candidates:
         sys.exit("no server-confirmed buildable silver hex — re-run (spawn is randomised)")
 
-    farm_hex_2 = valid_farm[0]
     mine_hex = mine_candidates[0]
+    # Prefer a farm hex apart from the mine: hexes[].building in
+    # placement-options carries ONE building per hex, so a farm sharing the
+    # mine's hex would hide its own upgrade row (whether two types may share
+    # a hex is an open question for Timothy, 2026-09-30).
+    farm_hex_2 = next((h for h in valid_farm if h != mine_hex), valid_farm[0])
     print(f"  building farm #2 @ {farm_hex_2}, mine @ {mine_hex} (silver)")
 
     # Topped up high enough to also cover the L2 farm upgrade and a
@@ -338,8 +344,8 @@ def main():
         wait_for_level(settlement_id, "farm", farm_hex_2[0], farm_hex_2[1], 2)
 
         # Lumbermill on a forest_olive_grove hex, if this catchment has one
-        # — the worked BILD example where timber FALLS as the level rises
-        # (megaron_plan_byggnad_pa_hex.md §B acceptance 3). Only reachable
+        # — before the building rule (mig 155) timber FELL there; now it is
+        # 1.0 × 1 → 1.7 × 5 like every other hex building. Only reachable
         # states: no raw INSERT, and skip cleanly if this spawn has none.
         opts2 = placement_options(w, tok, province_id)
         hex_terrain = {(h["hex_q"], h["hex_r"]): h.get("terrain") for h in opts2.get("hexes", [])}

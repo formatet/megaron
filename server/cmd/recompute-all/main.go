@@ -123,6 +123,16 @@ func main() {
 			failed++
 			continue
 		}
+		// byggnadsregeln (mig 155): drop placements the rule no longer allows and
+		// re-place the freed gubbar, before the rates are written.
+		if removed, replaced, err := economy.ReconcilePlacements(ctx, tx, t.id); err != nil {
+			fmt.Fprintf(os.Stderr, "%s: reconcile placements: %v\n", t.name, err)
+			_ = tx.Rollback(ctx)
+			failed++
+			continue
+		} else if removed > 0 {
+			fmt.Printf("  %s: %d placements removed, %d re-placed\n", t.name, removed, replaced)
+		}
 		if err := economy.RecomputeProduction(ctx, tx, t.id); err != nil {
 			fmt.Fprintf(os.Stderr, "%s: recompute: %v\n", t.name, err)
 			_ = tx.Rollback(ctx)

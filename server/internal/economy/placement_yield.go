@@ -4,61 +4,43 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
+
 	"formatet/megaron/server/internal/hexgrid"
 	"github.com/google/uuid"
 )
 
 // HexOption is one catchment ring hex's production menu — every good it can
-// support, its OWN rate_per_tick (not the catchment aggregate) and its OWN
-// worker cap (P3, hexCapacityRule). P4 (megaron_plan_fysisk_gubbemodell.md):
+// support, its OWN base rate per worker and its OWN worker places
+// (byggnadsregeln, hex_rules.go). P4 (megaron_plan_fysisk_gubbemodell.md):
 // a gubbe stands on ONE hex doing ONE good — "en skogshuggare gör bara
 // virke/ceder (beroende på hex)" (Timothy 2026-08-08) — so production must be
 // derivable per hex, not just as a catchment-wide sum.
 type HexOption struct {
-	Coord       hexgrid.Coord
-	Terrain     string
-	RatePerGood map[string]float64 // production_rules rate_per_tick, gated by settlement's actual buildings
-	CapPerGood  map[string]int     // P3 worker cap (hexCapacityRule) AT THE ACTUAL building level, gated the same way
+	Coord   hexgrid.Coord
+	Terrain string
 
-	// CapL1PerGood is CapPerGood's Form A sibling (megaron_byggnadsniva_produktion.md,
-	// Timothy 2026-08-22): the SAME cap frozen at building level 1
-	// (capWithBuilding + WorkplaceSlots(b, 1), or capNoBuilding when no
-	// relevant building exists at all). Form B (megaron_plan_byggnadsniva_takt.md,
-	// Timothy 2026-08-24) keeps this as placementYield's RATE denominator —
-	// unchanged role from Form A. What moved is the CLIP ceiling: see
-	// PlaceCapPerGood below.
-	CapL1PerGood map[string]int
+	// RatePerGood is r0, the BASE rate per worker (production_rules
+	// terrain/deposit rows; silver's mine rows only when a mine stands here).
+	RatePerGood map[string]float64
 
-	// MultPerGood is Form B's per-good multiplier: cap(actualLevel)/capL1,
-	// i.e. the SAME ratio Form A used to apply to headcount, now applied to
-	// the per-gubbe rate instead. At building level 1 (or no gating building
-	// at all) cap==capL1 so this is 1.0 — unchanged from Form A/pre-Form-A.
-	// A higher level raises this above 1.0, so the SAME capL1 gubbar produce
-	// more. grain's entry is pinned to 1.0 unconditionally (see hexGoodCaps)
-	// — the grain-cap plan's numbers must not move because of this slice.
+	// MultPerGood is the building multiplier 1 + BuildingRatePerLevel*level when
+	// the rule's relevant building stands here, else 1.0. A worker's output is
+	// RatePerGood * MultPerGood (hexYield).
 	MultPerGood map[string]float64
 
-	// PlaceCapPerGood is the number of gubbar that may actually be PLACED for
-	// this good here — what placementYield clips against, and what Place()
-	// enforces at write time. For every good EXCEPT grain this is CapL1PerGood
-	// (Form B's whole point: headcount frozen at level 1, the level's effect
-	// moved to MultPerGood instead). Grain is the one deliberate exception
-	// (hexGoodCaps): its capL1 is a purely mathematical trick (pinned to 1 so
-	// rate/capL1 reproduces rate×placed) that was NEVER a real headcount
-	// limit, so grain's PlaceCapPerGood stays CapPerGood — the REAL,
-	// level-actual cap from megaron_plan_grain_cap.md (4/8/10/12 per plains
-	// hex by farm level), completely untouched by this slice. Blindly using
-	// CapL1PerGood as the clip for grain too would silently cut every grain
-	// hex down to ONE placeable gubbe — caught by
-	// TestPlaceGubbe_GrainHexRejectsOverCapacity during this slice's build.
+	// PlaceCapPerGood is the number of worker places: P0, or P0 + BuildingExtraPlaces
+	// with the relevant building. What hexYield clips against and what Place()
+	// enforces at write time.
 	PlaceCapPerGood map[string]int
+
+	// CapPerGood is PlaceCapPerGood again — the field the API reads to show a cap.
+	CapPerGood map[string]int
 
 	// BoostRatePerGood holds the SAME extraction gubbe's terrain+building
 	// combined rows for weakestLinkRefiningBuilding's goods (oil, wine — P6,
-	// megaron_plan_fysisk_gubbemodell.md §P6) — e.g. forest_olive_grove +
-	// olive_press → 72.0 oil/tick. Before P6 this flowed straight into
-	// RatePerGood the moment the building merely EXISTED, no second worker
-	// required. Now it is "potential" only: RecomputeProduction realizes it as
+	// megaron_plan_fysisk_gubbemodell.md §P6), per worker — e.g. forest_olive_grove +
+	// olive_press. It is "potential" only: RecomputeProduction realizes it as
 	// min(boostPotential, refiningCapacity), where refiningCapacity comes from
 	// a SEPARATE gubbe placed IN the building (LoadBuildingProductionOptions).
 	BoostRatePerGood map[string]float64
@@ -208,6 +190,14 @@ func LoadHexProductionOptionsAt(ctx context.Context, tx Tx, worldID uuid.UUID, c
 		}
 		ring = filtered
 	}
+	return loadHexOptionsForHexes(ctx, tx, worldID, ring, bs)
+}
+
+// loadHexOptionsForHexes is LoadHexProductionOptionsAt's core over an EXPLICIT
+// hex list (already FOW/siege filtered by the caller) — also what the colonize
+// preview's CatchmentBasePotentialAt runs on, so the preview and a real
+// settlement share one rule.
+func loadHexOptionsForHexes(ctx context.Context, tx Tx, worldID uuid.UUID, ring []hexgrid.Coord, bs BuildingSet) ([]HexOption, error) {
 	catchQ, catchR := hexgrid.QRArrays(ring)
 
 	builtTypes := bs.AllTypes()
@@ -248,6 +238,8 @@ func LoadHexProductionOptionsAt(ctx context.Context, tx Tx, worldID uuid.UUID, c
 	}
 	defer rows.Close()
 
+	type hexFlags struct{ copper, tin, silver bool }
+	flags := make(map[hexgrid.Coord]hexFlags)
 	byCoord := make(map[hexgrid.Coord]*HexOption)
 	var order []hexgrid.Coord
 	for rows.Next() {
@@ -262,27 +254,23 @@ func LoadHexProductionOptionsAt(ctx context.Context, tx Tx, worldID uuid.UUID, c
 		c := hexgrid.Coord{Q: qq, R: rr}
 		opt, ok := byCoord[c]
 		if !ok {
-			caps, capsL1, mult, placeCap := hexGoodCaps(terrain, copperDep, tinDep, silverDep, bs.levelsAt(c))
 			opt = &HexOption{
 				Coord:            c,
 				Terrain:          terrain,
 				RatePerGood:      make(map[string]float64),
 				BoostRatePerGood: make(map[string]float64),
-				CapPerGood:       caps,
-				CapL1PerGood:     capsL1,
-				MultPerGood:      mult,
-				PlaceCapPerGood:  placeCap,
+				CapPerGood:       make(map[string]int),
+				MultPerGood:      make(map[string]float64),
+				PlaceCapPerGood:  make(map[string]int),
 			}
 			byCoord[c] = opt
+			flags[c] = hexFlags{copperDep, tinDep, silverDep}
 			order = append(order, c)
 		}
 		// A row naming a building only counts on THIS hex if that building is
 		// actually built here (builtAt — hex-scoped for farm/mine/lumbermill/
-		// stonequarry, settlement-wide for everything else, e.g. harbour's
-		// coastal_sea+fish row). Without this, builtTypes above (a coarse
-		// ANYWHERE-in-settlement prefilter, kept just to limit which rows SQL
-		// even returns) would let a farm on hex X keep lifting grain's rate on
-		// every OTHER plains hex too — the exact bug this slice closes.
+		// stonequarry, settlement-wide for everything else). After mig 155 that
+		// is silver's mine rows and the olive press / winery boost rows.
 		if buildingType != nil && !bs.builtAt(c, *buildingType) {
 			continue
 		}
@@ -299,95 +287,33 @@ func LoadHexProductionOptionsAt(ctx context.Context, tx Tx, worldID uuid.UUID, c
 	out := make([]HexOption, 0, len(order))
 	for _, c := range order {
 		opt := byCoord[c]
-		// Fallback cap (GoodLaborTerrainBase's placement-era sibling): a good
-		// can have a real production_rules rate on this hex (RatePerGood) with
-		// no matching P3 hexCapacityRule entry — oil/wine/stone are the three
-		// currently uncovered goods (Temenos_varutaxonomi_sol.md §8.3 lists ten
-		// rows, none of them). P3 hit exactly this gap live
-		// (TestRecomputeProduction_WineOn{RiverValley,Plains}OnlyCatchment went
-		// to 0) and kept GoodLaborTerrainBase as an explicit share-based
-		// fallback rather than silently dropping them; HexFallbackCap is the
-		// same fallback translated to an absolute per-hex placement cap. A
-		// good that's here ONLY because a required building doesn't exist
-		// never reaches this point — the SQL's building EXISTS-gate already
-		// excludes it from RatePerGood entirely, so every key seen here is
-		// legitimately placeable.
+		fl := flags[c]
+		levels := bs.levelsAt(c)
+		fill := func(good string) {
+			if _, done := opt.PlaceCapPerGood[good]; done {
+				return
+			}
+			places, mult := hexGoodPlaces(opt.Terrain, fl.copper, fl.tin, fl.silver, levels, good)
+			opt.PlaceCapPerGood[good] = places
+			opt.CapPerGood[good] = places
+			opt.MultPerGood[good] = mult
+		}
 		for good := range opt.RatePerGood {
-			if _, covered := opt.CapPerGood[good]; !covered {
-				opt.CapPerGood[good] = HexFallbackCap
-			}
-			if _, covered := opt.CapL1PerGood[good]; !covered {
-				// The fallback cap has no level term at all (no hexCapacityRule
-				// entry exists for these goods), so its L1 sibling is the same
-				// flat constant — no scaling to freeze, nothing changes here.
-				opt.CapL1PerGood[good] = HexFallbackCap
-			}
-			if _, covered := opt.MultPerGood[good]; !covered {
-				// cap == capL1 above, so the multiplier is trivially 1.0.
-				opt.MultPerGood[good] = 1.0
-			}
-			if _, covered := opt.PlaceCapPerGood[good]; !covered {
-				// None of oil/wine/stone is grain, so the clip ceiling is the
-				// same flat constant too — no grain exception applies here.
-				opt.PlaceCapPerGood[good] = HexFallbackCap
-			}
+			fill(good)
 		}
 		for good := range opt.BoostRatePerGood {
-			if _, covered := opt.CapPerGood[good]; !covered {
-				opt.CapPerGood[good] = HexFallbackCap
-			}
-			if _, covered := opt.CapL1PerGood[good]; !covered {
-				opt.CapL1PerGood[good] = HexFallbackCap
-			}
-			if _, covered := opt.MultPerGood[good]; !covered {
-				opt.MultPerGood[good] = 1.0
-			}
-			if _, covered := opt.PlaceCapPerGood[good]; !covered {
-				opt.PlaceCapPerGood[good] = HexFallbackCap
-			}
+			fill(good)
 		}
 		out = append(out, *opt)
 	}
 	return out, nil
 }
 
-// HexFallbackCap is the per-hex worker cap for a good with a real
-// production_rules rate but no P3 hexCapacityRule entry (oil, wine, stone —
-// see the fallback comment above). A placeholder calibration ratt, not a
-// lock — matches the low end of P3's own capNoBuilding tiers (most are 1-2).
-const HexFallbackCap = 2
-
-// placementYield is the rate a target contributes for one good, given how
-// many gubbar are placed there. Every good is capacity-clamped (placed is
-// never allowed above placeCap — a physically full hex/building produces no
-// more no matter how many more gubbar queue up).
-//
-// Form B (megaron_plan_byggnadsniva_takt.md, Timothy 2026-08-24) moved the
-// building level's effect from the CEILING to the RATE for every good except
-// grain. Form A (2026-08-22) divided by capL1 but still let placed climb to
-// the actual (level-grown) cap — so a level raised how many gubbar fit, at
-// the same per-gubbe rate. Form B instead freezes headcount at capL1 on
-// EVERY level and multiplies the per-gubbe rate by mult = cap(actualLevel)/
-// capL1 (hexGoodCaps) — placeCap==capL1 for these goods. Both forms share
-// the same max output (rate/capL1 × cap), proven by:
-//
-//	Form A max  = (rate/capL1) × cap
-//	Form B max  = (rate/capL1) × mult × capL1 = (rate/capL1) × (cap/capL1) × capL1 = (rate/capL1) × cap
-//
-// — identical. What changes is how many gubbar reach that max: Form A needed
-// `cap` (grows with level); Form B needs only `capL1` (fixed) at every
-// level, because the SAME gubbar now carry more each. This is the whole
-// point: an upgrade lowers the population cost of the same ceiling instead
-// of raising it.
-//
-// Grain is the deliberate exception to the paragraph above: hexGoodCaps pins
-// mult=1 for grain unconditionally, AND passes placeCap=cap (the REAL,
-// level-actual physical cap from megaron_plan_grain_cap.md), not capL1 (a
-// pure division trick, pinned to 1, that was never a real headcount limit).
-// So grain's formula reduces to exactly its pre-Form-B shape: rate × placed,
-// clamped at the real per-hex cap that still grows 4/8/10/12 with farm
-// level — untouched by this slice, on purpose (§4 of the plan: a naive mult
-// applied to grain would multiply the whole world's food supply 4-12×).
+// placementYield is the rate a BUILDING workplace (olive press, winery,
+// foundry, …) contributes for one good, given how many gubbar are placed
+// there: rate per capL1 slot, times the building-level multiplier (Form B,
+// megaron_plan_byggnadsniva_takt.md), clamped at placeCap. Hex production does
+// not use it — see hexYield (hex_rules.go).
 func placementYield(good string, rate float64, capL1 int, placeCap int, mult float64, placed int) float64 {
 	if capL1 <= 0 || placeCap <= 0 {
 		return 0
@@ -396,111 +322,6 @@ func placementYield(good string, rate float64, capL1 int, placeCap int, mult flo
 		placed = placeCap // defensive — Place() enforces the cap at write time, never trust a stale read
 	}
 	return (rate / float64(capL1)) * mult * float64(placed)
-}
-
-// hexGoodCaps returns every good_key a single hex (given its terrain and
-// deposit flags) can cap, and that good's worker cap — the per-hex sibling of
-// LoadHexCapacity's aggregate sum (P3) — TWICE: once at the building's ACTUAL
-// level (caps, unchanged since P3) and once frozen at level 1 (capL1). A hex
-// can independently cap MULTIPLE goods (a plains hex is both "slätt" (grain)
-// and "betesmark" (livestock)).
-//
-// capOf adds the gating building's OWN P2 workplace slots (WorkplaceSlots) on
-// top of P3's capWithBuilding tier when that building is present. Restores a
-// real regression caught building this: the pre-P4 aggregate model summed
-// hexSlots (P3) AND buildingSlots (P2) as two INDEPENDENT capacity pools for
-// the same farm-gated grain hex (LoadWorkplaceSlots' JOIN matches ANY
-// production_rules row for building_type='farm', including plains+farm,
-// regardless of that row also naming a terrain) — so a farm didn't just raise
-// a hex's tier, it separately added its own 2 workers on top. Dropping that
-// second pool at P4 broke TestApplyDecay_Growth_MinimalCitySelfSufficient
-// (a previously-green hard invariant: a neglected 5000-pop start city with
-// exactly one farmable hex must never starve — min grain observed on master
-// was already a thin 16.6, so losing farm's +2 workers pushed it to 0).
-//
-// Grain is the one goodKey whose capL1 is forced to 1 regardless of the rule
-// above (see placementYield's doc comment) — its rate was never calibrated
-// per-cap, so it must keep the old rate×placed shape.
-//
-// mult is Form B's third map (megaron_plan_byggnadsniva_takt.md §5 step 1):
-// good → cap/capL1, i.e. how much bigger the ACTUAL cap is than the frozen
-// level-1 one. Deliberately computed AFTER the apply loop, from the SUMMED
-// caps/capsL1 per good — NOT inside apply from each individual rule's own
-// (cap, capL1) pair. A hex can carry more than one rule for the SAME good
-// (mager åker + a copper deposit both feed "grain" is not a real case today,
-// but plains' two rules already prove a hex can accumulate one good's caps
-// across multiple apply() calls in principle); taking the ratio of the
-// PER-RULE pair and overwriting mult[good] on a second apply would silently
-// drop the first rule's contribution. Ratio-of-sums is exact for the actual
-// game data (today, no good is fed by two building-gated rules on the same
-// hex) and never needs a weighted average to stay correct if that changes.
-//
-// placeCap is the fourth map: the number of gubbar that may actually be
-// PLACED (placementYield's clip ceiling, and Place()'s write-time ceiling).
-// For every good except grain this equals capL1 — Form B's whole point,
-// headcount frozen at level 1. Grain keeps placeCap=cap (the real,
-// level-actual cap) because its capL1 is a pure division trick (pinned to 1
-// two lines above), never a real headcount limit — see PlaceCapPerGood's and
-// placementYield's doc comments for why conflating the two would silently
-// cut every grain hex down to one placeable gubbe.
-func hexGoodCaps(terrain string, copperDep, tinDep, silverDep bool, buildingLevels map[string]int) (caps map[string]int, capsL1 map[string]int, mult map[string]float64, placeCap map[string]int) {
-	capOf := func(rule hexCapacityRule) (cap, capL1 int) {
-		if rule.relevantBuilding == "" {
-			return rule.capNoBuilding, rule.capNoBuilding
-		}
-		level := buildingLevels[rule.relevantBuilding]
-		if level <= 0 {
-			return rule.capNoBuilding, rule.capNoBuilding
-		}
-		cap = rule.capWithBuilding + WorkplaceSlots(rule.relevantBuilding, level)
-		capL1 = rule.capWithBuilding + WorkplaceSlots(rule.relevantBuilding, 1)
-		return cap, capL1
-	}
-	apply := func(rule hexCapacityRule) {
-		cap, capL1 := capOf(rule)
-		if rule.goodKey == GoodGrain {
-			capL1 = 1
-		}
-		caps[rule.goodKey] += cap
-		capsL1[rule.goodKey] += capL1
-	}
-	caps = make(map[string]int)
-	capsL1 = make(map[string]int)
-	if terrain == "plains" {
-		for _, rule := range plainsCapacityRules {
-			apply(rule)
-		}
-	} else if rule, ok := terrainCapacityTable[terrain]; ok {
-		apply(rule)
-	}
-	if copperDep {
-		apply(depositCapacityTable["copper"])
-	}
-	if tinDep {
-		apply(depositCapacityTable["tin"])
-	}
-	if silverDep {
-		apply(depositCapacityTable["silver"])
-	}
-
-	mult = make(map[string]float64)
-	placeCap = make(map[string]int)
-	for good, cap := range caps {
-		if capL1 := capsL1[good]; capL1 > 0 {
-			mult[good] = float64(cap) / float64(capL1)
-			placeCap[good] = capL1
-		} else {
-			mult[good] = 1.0
-			placeCap[good] = cap
-		}
-	}
-	// Pinned last, unconditionally, in the SAME function that already forces
-	// grain's capL1 to 1 — so the three can never drift apart (§4 of the
-	// plan: a naive mult would multiply the whole world's food supply 4-12×,
-	// and a naive placeCap=capL1 would cut every grain hex to ONE gubbe).
-	mult[GoodGrain] = 1.0
-	placeCap[GoodGrain] = caps[GoodGrain] // the real, level-actual grain cap — untouched by Form B
-	return caps, capsL1, mult, placeCap
 }
 
 // BuildingOption is one settlement-wide workplace building's production menu
@@ -668,40 +489,24 @@ func loadBuildingSet(ctx context.Context, tx Tx, settlementID uuid.UUID) (Buildi
 	return bs, nil
 }
 
-// farmCapForTerrain returns the resulting grain cap (capWithBuilding +
-// WorkplaceSlots("farm", 1)) a farm would give if built on a hex of this
-// terrain, and whether the terrain is grain-capable at all — ChooseFarmHex's
-// per-terrain building block.
-func farmCapForTerrain(terrain string) (cap int, ok bool) {
-	if terrain == "plains" {
-		for _, rule := range plainsCapacityRules {
-			if rule.goodKey == GoodGrain {
-				return rule.capWithBuilding + WorkplaceSlots("farm", 1), true
-			}
-		}
-		return 0, false
-	}
-	if rule, found := terrainCapacityTable[terrain]; found && rule.goodKey == GoodGrain {
-		return rule.capWithBuilding + WorkplaceSlots("farm", 1), true
-	}
-	return 0, false
-}
-
 // ChooseFarmHex picks the ring hex a founding's free starter farm goes on —
-// the grain-terrain hex giving the largest resulting cap, ties broken by
-// lowest Q then lowest R (Timothy 2026-09-28,
-// megaron_plan_byggnad_pa_hex.md §A). Both the real founding
-// (create_metropolis.go) and its forecast (FoundingGrainNetPerTick) call this
-// SAME function so they pick the SAME hex. reachable is the same FOW/siege
-// gate LoadHexProductionOptionsAt takes (nil = unfiltered). ok=false means no
-// catchment ring hex can grow grain at all.
+// the grain hex whose level-1 farm gives the largest grain OUTPUT per full crew,
+// (P0 + BuildingExtraPlaces) * r0 * (1 + BuildingRatePerLevel), ties broken by
+// lowest Q then lowest R (byggnadsregeln fynd 2: ranking on places alone would
+// prefer plains (8 places) over delta (7 places at 2.7x the rate)). Both the real
+// founding (create_metropolis.go) and its forecast (FoundingGrainNetPerTick)
+// call this SAME function so they pick the SAME hex. reachable is the same
+// FOW/siege gate LoadHexProductionOptionsAt takes (nil = unfiltered). ok=false
+// means no catchment ring hex can grow grain at all.
 func ChooseFarmHex(ctx context.Context, tx Tx, worldID uuid.UUID, center hexgrid.Coord, reachable map[hexgrid.Coord]bool) (best hexgrid.Coord, ok bool, err error) {
 	ring := hexgrid.Ring(center, hexgrid.CatchmentRadius)
 	catchQ, catchR := hexgrid.QRArrays(ring)
 	rows, err := tx.Query(ctx,
-		`SELECT mt.q, mt.r, mt.terrain
+		`SELECT mt.q, mt.r, mt.terrain, pr.rate_per_tick
 		 FROM unnest($2::int[], $3::int[]) AS catchment(q, r)
-		 JOIN map_tiles mt ON mt.world_id = $1 AND mt.q = catchment.q AND mt.r = catchment.r`,
+		 JOIN map_tiles mt ON mt.world_id = $1 AND mt.q = catchment.q AND mt.r = catchment.r
+		 JOIN production_rules pr ON pr.good_key = 'grain' AND pr.building_type IS NULL
+		      AND pr.terrain_type = mt.terrain`,
 		worldID, catchQ, catchR,
 	)
 	if err != nil {
@@ -709,94 +514,141 @@ func ChooseFarmHex(ctx context.Context, tx Tx, worldID uuid.UUID, center hexgrid
 	}
 	defer rows.Close()
 
-	bestCap := -1
+	type cand struct {
+		c       hexgrid.Coord
+		terrain string
+		r0      float64
+	}
+	var cands []cand
 	for rows.Next() {
 		var qq, rr int
 		var terrain string
-		if err := rows.Scan(&qq, &rr, &terrain); err != nil {
+		var r0 float64
+		if err := rows.Scan(&qq, &rr, &terrain, &r0); err != nil {
 			return hexgrid.Coord{}, false, fmt.Errorf("choose farm hex: scan: %w", err)
 		}
 		c := hexgrid.Coord{Q: qq, R: rr}
 		if reachable != nil && !reachable[c] {
 			continue
 		}
-		cap, capOK := farmCapForTerrain(terrain)
-		if !capOK {
-			continue
-		}
-		if !ok || cap > bestCap || (cap == bestCap && (c.Q < best.Q || (c.Q == best.Q && c.R < best.R))) {
-			ok, bestCap, best = true, cap, c
-		}
+		cands = append(cands, cand{c, terrain, r0})
 	}
 	if err := rows.Err(); err != nil {
 		return hexgrid.Coord{}, false, fmt.Errorf("choose farm hex: rows: %w", err)
 	}
+	rows.Close()
+
+	// One building per hex: a neighbour's building on a shared catchment hex rules it out.
+	occupied, err := HexOccupants(ctx, tx, worldID, ring)
+	if err != nil {
+		return hexgrid.Coord{}, false, fmt.Errorf("choose farm hex: %w", err)
+	}
+	bestYield := -1.0
+	for _, cd := range cands {
+		c, terrain, r0 := cd.c, cd.terrain, cd.r0
+		if _, taken := occupied[c]; taken {
+			continue
+		}
+		var places int
+		var mult float64
+		found := false
+		for _, rule := range hexRules(terrain, false, false, false) {
+			if rule.good == GoodGrain && rule.building == "farm" {
+				places, mult = rule.placesAndMult(1)
+				found = true
+			}
+		}
+		if !found {
+			continue
+		}
+		y := float64(places) * r0 * mult
+		if !ok || y > bestYield || (y == bestYield && (c.Q < best.Q || (c.Q == best.Q && c.R < best.R))) {
+			ok, bestYield, best = true, y, c
+		}
+	}
 	return best, ok, nil
 }
 
-// HexSupportsBuilding reports whether hex could host a production building
-// of buildingType — the same terrain/deposit/coastal predicate
-// LoadHexProductionOptionsAt's SQL applies to gate a HexOption row, extracted
-// so build-time validation (POST .../build) and any read surface listing
-// valid hexes for a hex-bound type share exactly one gate.
+// HexSupportsBuilding reports whether hex could host a production building of
+// buildingType: the rule table (hex_rules.go) names buildingType as the relevant
+// building for some good on this hex's terrain/deposits. Build-time validation
+// (POST .../build) and every read surface listing valid hexes share this gate.
 func HexSupportsBuilding(ctx context.Context, tx Tx, worldID uuid.UUID, hex hexgrid.Coord, buildingType string) (bool, error) {
-	var ok bool
+	var terrain string
+	var copperDep, tinDep, silverDep bool
 	err := tx.QueryRow(ctx,
-		`SELECT EXISTS(
-		   SELECT 1 FROM map_tiles mt
-		   JOIN production_rules pr ON pr.building_type = $4
-		       AND (pr.terrain_type IS NULL OR pr.terrain_type = mt.terrain)
-		       AND (NOT pr.requires_coastal OR mt.coastal)
-		       AND (pr.requires_deposit IS NULL
-		            OR (pr.requires_deposit = 'copper' AND mt.copper_deposit)
-		            OR (pr.requires_deposit = 'tin'    AND mt.tin_deposit)
-		            OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
-		            OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit, false)))
-		   WHERE mt.world_id = $1 AND mt.q = $2 AND mt.r = $3
-		     AND (mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford') OR pr.terrain_type = mt.terrain)
-		 )`,
-		worldID, hex.Q, hex.R, buildingType,
-	).Scan(&ok)
+		`SELECT mt.terrain, COALESCE(mt.copper_deposit, false), COALESCE(mt.tin_deposit, false), COALESCE(mt.silver_deposit, false)
+		 FROM map_tiles mt WHERE mt.world_id = $1 AND mt.q = $2 AND mt.r = $3`,
+		worldID, hex.Q, hex.R,
+	).Scan(&terrain, &copperDep, &tinDep, &silverDep)
+	if err == pgx.ErrNoRows {
+		return false, nil
+	}
 	if err != nil {
 		return false, fmt.Errorf("hex supports building: %w", err)
 	}
-	return ok, nil
+	return RuleBuildingSupportsHex(buildingType, terrain, copperDep, tinDep, silverDep), nil
+}
+
+// HexOccupant is the hex-bound building standing on a hex, or queued for it.
+type HexOccupant struct {
+	BuildingType string
+	SettlementID uuid.UUID
+}
+
+// HexOccupants returns the hex-bound building (standing or queued) on each of
+// coords that has one, across every settlement in the world: one building per
+// hex (Timothy 2026-09-30), and two settlements' catchments may share a hex.
+func HexOccupants(ctx context.Context, tx Tx, worldID uuid.UUID, coords []hexgrid.Coord) (map[hexgrid.Coord]HexOccupant, error) {
+	qs, rs := hexgrid.QRArrays(coords)
+	types := make([]string, 0, len(HexBoundBuildingTypes))
+	for t := range HexBoundBuildingTypes {
+		types = append(types, t)
+	}
+	rows, err := tx.Query(ctx,
+		`SELECT x.hex_q, x.hex_r, x.building_type, x.settlement_id
+		 FROM (SELECT settlement_id, building_type, hex_q, hex_r FROM buildings
+		       UNION ALL
+		       SELECT settlement_id, building_type, hex_q, hex_r FROM build_queue) x
+		 JOIN settlements s ON s.id = x.settlement_id AND s.world_id = $1
+		 JOIN unnest($2::int[], $3::int[]) AS c(q, r) ON c.q = x.hex_q AND c.r = x.hex_r
+		 WHERE x.building_type = ANY($4)`,
+		worldID, qs, rs, types,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("hex occupants: %w", err)
+	}
+	defer rows.Close()
+	out := make(map[hexgrid.Coord]HexOccupant)
+	for rows.Next() {
+		var q, r int
+		var o HexOccupant
+		if err := rows.Scan(&q, &r, &o.BuildingType, &o.SettlementID); err != nil {
+			return nil, fmt.Errorf("hex occupants: scan: %w", err)
+		}
+		out[hexgrid.Coord{Q: q, R: r}] = o
+	}
+	return out, rows.Err()
 }
 
 // ValidHexesForBuilding returns every catchment ring hex where buildingType
-// could be built RIGHT NOW — HexSupportsBuilding's per-hex gate, plus not
-// already carrying a building or queued build of that same type. This is
-// the list the web build picker needs to offer the player valid hexes
+// could be built RIGHT NOW — HexSupportsBuilding's per-hex gate, plus no
+// hex-bound building standing or queued there (any type, any settlement: one
+// building per hex). A hex already carrying this settlement's building of the
+// same type is the upgrade path, offered via placement-options' hexes[].building.
+// This is the list the web build picker needs to offer the player valid hexes
 // (megaron_plan_byggnad_pa_hex.md §A2) without duplicating the gate
 // client-side.
 func ValidHexesForBuilding(ctx context.Context, tx Tx, worldID uuid.UUID, settlementID uuid.UUID, center hexgrid.Coord, buildingType string) ([]hexgrid.Coord, error) {
 	ring := hexgrid.Ring(center, hexgrid.CatchmentRadius)
-	occupied := make(map[hexgrid.Coord]bool)
-	rows, err := tx.Query(ctx,
-		`SELECT hex_q, hex_r FROM buildings WHERE settlement_id = $1 AND building_type = $2 AND hex_q IS NOT NULL
-		 UNION
-		 SELECT hex_q, hex_r FROM build_queue WHERE settlement_id = $1 AND building_type = $2 AND hex_q IS NOT NULL`,
-		settlementID, buildingType,
-	)
+	occupied, err := HexOccupants(ctx, tx, worldID, ring)
 	if err != nil {
-		return nil, fmt.Errorf("valid hexes for building: occupied: %w", err)
-	}
-	for rows.Next() {
-		var q, r int
-		if err := rows.Scan(&q, &r); err != nil {
-			rows.Close()
-			return nil, fmt.Errorf("valid hexes for building: scan occupied: %w", err)
-		}
-		occupied[hexgrid.Coord{Q: q, R: r}] = true
-	}
-	rows.Close()
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("valid hexes for building: occupied rows: %w", err)
+		return nil, fmt.Errorf("valid hexes for building: %w", err)
 	}
 
 	var out []hexgrid.Coord
 	for _, c := range ring {
-		if occupied[c] {
+		if _, taken := occupied[c]; taken {
 			continue
 		}
 		ok, err := HexSupportsBuilding(ctx, tx, worldID, c, buildingType)
@@ -1028,20 +880,13 @@ func MarkHeldHexesFullyOccupied(hexOptions []HexOption, heldByOther map[hexgrid.
 	return out
 }
 
-// MarginalYieldForSlot is the ONE per-slot marginal-yield formula — grain
-// keeps placementYield's rate × placed shape (no capacity division, see
-// placementYield's doc comment); every other good divides by capL1 and
-// multiplies by the building-level mult (megaron_plan_byggnadsniva_takt.md).
+// MarginalYieldForSlot is the per-slot marginal yield of a BUILDING workplace
+// (rate per capL1 slot times the building-level mult). A hex slot's marginal
+// yield is HexYieldPerWorker(rate, mult) — one worker's output, hex_rules.go.
 // Shared by PlacementOptions' buildGoods (api/handlers/settlement_placement.go,
-// itemised per hex/building — a client needs a DIFFERENT number per hex to
-// choose where to place) and MarginalYieldPerGood below (aggregated per
-// good, whole-catchment) — one formula, two shapes, never a second formula
-// (megaron_plan_p4_arvet_i_province.md §3 step C: the same class of bug as
-// the /goods-lögnen and the grundningsprognosen's "en formel, två anrop").
+// itemised per hex/building) and MarginalYieldPerGood below — one formula,
+// two shapes, never a second formula.
 func MarginalYieldForSlot(good string, rate float64, capL1 int, mult float64) float64 {
-	if good == GoodGrain {
-		return rate
-	}
 	return (rate / float64(capL1)) * mult
 }
 
@@ -1060,11 +905,10 @@ func MarginalYieldForSlot(good string, rate float64, capL1 int, mult float64) fl
 // the itemised grid (see buildGoods) — both ultimately the same formula.
 func MarginalYieldPerGood(hexOptions []HexOption, buildingOptions []BuildingOption, placed PlacementCounts) map[string]float64 {
 	best := make(map[string]float64)
-	consider := func(good string, rate float64, capL1, placeCap int, mult float64, occupied int) {
-		if capL1 <= 0 || placeCap <= 0 || occupied >= placeCap {
+	consider := func(good string, yield float64, placeCap, occupied int) {
+		if placeCap <= 0 || occupied >= placeCap {
 			return
 		}
-		yield := MarginalYieldForSlot(good, rate, capL1, mult)
 		if cur, ok := best[good]; !ok || yield > cur {
 			best[good] = yield
 		}
@@ -1072,14 +916,34 @@ func MarginalYieldPerGood(hexOptions []HexOption, buildingOptions []BuildingOpti
 	for _, opt := range hexOptions {
 		occ := placed.Hex[opt.Coord]
 		for good, rate := range opt.RatePerGood {
-			consider(good, rate, opt.CapL1PerGood[good], opt.PlaceCapPerGood[good], opt.MultPerGood[good], occ[good])
+			consider(good, HexYieldPerWorker(rate, opt.MultPerGood[good]), opt.PlaceCapPerGood[good], occ[good])
 		}
 	}
 	for _, opt := range buildingOptions {
 		occ := placed.Building[opt.BuildingType]
 		for good, rate := range opt.RatePerGood {
-			consider(good, rate, opt.CapL1PerGood[good], opt.PlaceCapPerGood[good], opt.MultPerGood[good], occ[good])
+			if capL1 := opt.CapL1PerGood[good]; capL1 > 0 {
+				consider(good, MarginalYieldForSlot(good, rate, capL1, opt.MultPerGood[good]), opt.PlaceCapPerGood[good], occ[good])
+			}
 		}
 	}
 	return best
+}
+
+// FullCrewPotential is the per-good output a catchment gives with EVERY worker
+// place filled (places * rate per worker * building multiplier), the same rule
+// RecomputeProduction applies to placed workers. It is the "potential" the
+// colonize preview and the goods tables show; boost rows (olive press / winery
+// terrain rows) count as potential too.
+func FullCrewPotential(hexOptions []HexOption) map[string]float64 {
+	out := make(map[string]float64)
+	for _, opt := range hexOptions {
+		for good, rate := range opt.RatePerGood {
+			out[good] += float64(opt.PlaceCapPerGood[good]) * rate * opt.MultPerGood[good]
+		}
+		for good, rate := range opt.BoostRatePerGood {
+			out[good] += float64(opt.PlaceCapPerGood[good]) * rate * opt.MultPerGood[good]
+		}
+	}
+	return out
 }

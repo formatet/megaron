@@ -142,11 +142,13 @@ func TestP1_ProductionMultiplierVsPreP1Catchment(t *testing.T) {
 		t.Fatalf("read plains grain rate_per_tick: %v", err)
 	}
 
-	pre := 6 * singlePlainsRate  // old radius-1 ring (6 neighbours)
-	post := 18 * singlePlainsRate // new radius-2 ring (P1)
+	// Full-crew potential: the 4 base places of a plains grain hex (byggnadsregeln).
+	const plainsGrainPlaces = 4
+	pre := 6 * plainsGrainPlaces * singlePlainsRate   // old radius-1 ring (6 neighbours)
+	post := 18 * plainsGrainPlaces * singlePlainsRate // new radius-2 ring (P1)
 	got := potentials["grain"]
 	if diff := got - post; diff > 1e-6*post || diff < -1e-6*post {
-		t.Fatalf("grain base potential = %v, want %v (18 × %v)", got, post, singlePlainsRate)
+		t.Fatalf("grain base potential = %v, want %v (18 × %d places × %v)", got, post, plainsGrainPlaces, singlePlainsRate)
 	}
 	multiplier := post / pre
 	t.Logf("P1 all-plains catchment: pre-P1 (6 ring hexes) = %.1f grain/tick raw potential, "+

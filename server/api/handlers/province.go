@@ -1234,6 +1234,19 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 					req.BuildingType, chosen.Q, chosen.R))
 			return
 		}
+		// One building per hex (Timothy 2026-09-30): any OTHER hex-bound
+		// building, standing or queued, by this or a neighbouring settlement.
+		occ, err := economy.HexOccupants(r.Context(), h.pool, worldID, []hexgrid.Coord{chosen})
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "could not check hex")
+			return
+		}
+		if o, taken := occ[chosen]; taken && (o.BuildingType != req.BuildingType || o.SettlementID != settlementID) {
+			writeError(w, http.StatusUnprocessableEntity,
+				fmt.Sprintf("hex (%d,%d) already has a %s — one building per hex",
+					chosen.Q, chosen.R, o.BuildingType))
+			return
+		}
 		// A completed building of the SAME type already standing on this
 		// exact hex is not rejected here — that is the upgrade path
 		// ("Uppgradering adresserar byggnaden via (typ, hex)"), handled below
@@ -1584,11 +1597,8 @@ func (h *ProvinceHandler) Buildings(w http.ResponseWriter, r *http.Request) {
 		// — null for a city building (megaron_plan_byggnad_pa_hex.md §A).
 		HexQ *int `json:"hex_q,omitempty"`
 		HexR *int `json:"hex_r,omitempty"`
-		// CurrentLevel mirrors Level — named separately so the effects list
-		// below (which shows levels 1-3 regardless of what's actually built)
-		// is unambiguous about which of those levels this building is AT.
-		CurrentLevel int                 `json:"current_level"`
-		Effects      []economy.EffectRow `json:"effects"`
+		// CurrentLevel mirrors Level.
+		CurrentLevel int `json:"current_level"`
 	}
 	var result []buildingRow
 	for rows.Next() {
@@ -1599,71 +1609,6 @@ func (h *ProvinceHandler) Buildings(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	rows.Close()
-
-	// Batch the map_tiles read for every hex-bound building's own hex — one
-	// query, not one per row (megaron_plan_byggnad_pa_hex.md §B).
-	tiles := make(map[hexgrid.Coord]struct {
-		terrain                              string
-		copperDep, tinDep, silverDep, coastal bool
-	})
-	var hq, hr []int
-	for _, b := range result {
-		if b.HexQ != nil && b.HexR != nil {
-			hq = append(hq, *b.HexQ)
-			hr = append(hr, *b.HexR)
-		}
-	}
-	if len(hq) > 0 {
-		trows, err := h.pool.Query(r.Context(),
-			`SELECT mt.q, mt.r, mt.terrain,
-			        COALESCE(mt.copper_deposit, false), COALESCE(mt.tin_deposit, false),
-			        COALESCE(mt.silver_deposit, false), mt.coastal
-			 FROM unnest($2::int[], $3::int[]) AS want(q, r)
-			 JOIN map_tiles mt ON mt.world_id = $1 AND mt.q = want.q AND mt.r = want.r`,
-			worldID, hq, hr,
-		)
-		if err != nil {
-			writeError(w, http.StatusInternalServerError, "could not load hex tiles")
-			return
-		}
-		for trows.Next() {
-			var qq, rr int
-			var t struct {
-				terrain                              string
-				copperDep, tinDep, silverDep, coastal bool
-			}
-			if err := trows.Scan(&qq, &rr, &t.terrain, &t.copperDep, &t.tinDep, &t.silverDep, &t.coastal); err == nil {
-				tiles[hexgrid.Coord{Q: qq, R: rr}] = t
-			}
-		}
-		trows.Close()
-	}
-
-	for i := range result {
-		b := &result[i]
-		var effects []economy.EffectRow
-		switch {
-		case b.HexQ != nil && b.HexR != nil:
-			if t, ok := tiles[hexgrid.Coord{Q: *b.HexQ, R: *b.HexR}]; ok {
-				effects, err = economy.BuildingEffectsForHex(r.Context(), h.pool, b.Type, t.terrain, t.copperDep, t.tinDep, t.silverDep, t.coastal)
-			}
-		case b.Type == "harbour":
-			// City-scope, but its ONE production_rules row names coastal_sea
-			// explicitly — show that site (CatchmentWide flags it as "every
-			// matching hex", not one placed instance).
-			effects, err = economy.BuildingEffectsForHex(r.Context(), h.pool, b.Type, "coastal_sea", false, false, false, true)
-		default:
-			effects, err = economy.BuildingEffectsForHex(r.Context(), h.pool, b.Type, "", false, false, false, false)
-		}
-		if err != nil {
-			writeError(w, http.StatusInternalServerError, "could not load building effects")
-			return
-		}
-		if effects == nil {
-			effects = []economy.EffectRow{}
-		}
-		b.Effects = effects
-	}
 
 	if result == nil {
 		result = []buildingRow{}
@@ -1752,6 +1697,17 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 		}
 	}
 
+	// The rule-table buildings (byggnadsregeln) have no production_rules rows any
+	// more: their gate comes from where the rule table lets them stand.
+	for _, bt := range economy.RuleBuildingTypes {
+		terrains, deposits := economy.RuleBuildingGate(bt)
+		g := &gateInfo{terrains: map[string]bool{}, requiresDeposits: deposits}
+		for _, t := range terrains {
+			g.terrains[t] = true
+		}
+		gates[bt] = g
+	}
+
 	type buildingEntry struct {
 		Type       string             `json:"type"`
 		Costs      map[string]float64 `json:"costs"`
@@ -1782,12 +1738,6 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 		// hex_r, and a settlement may build several of this type, one per hex
 		// (megaron_plan_byggnad_pa_hex.md §A).
 		HexBound bool `json:"hex_bound,omitempty"`
-		// Effects is the numeric truth BuildingPurposes' role line deliberately
-		// no longer states: per good, what a placed gubbe yields without the
-		// building and at levels 1-3, computed by
-		// economy.BuildingEffectsForCatalogue from the SAME functions
-		// production uses (megaron_plan_byggnad_pa_hex.md §B).
-		Effects []economy.EffectRow `json:"effects"`
 	}
 
 	// Stable ordering: sort building types alphabetically.
@@ -1833,12 +1783,6 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 				entry.RequiresTerrain = terrains
 			}
 		}
-		effects, err := economy.BuildingEffectsForCatalogue(r.Context(), h.pool, bt)
-		if err != nil {
-			writeError(w, http.StatusInternalServerError, "could not load building effects")
-			return
-		}
-		entry.Effects = effects
 		result = append(result, entry)
 	}
 	writeJSON(w, http.StatusOK, result)

@@ -18,23 +18,26 @@ package economy
 import (
 	"context"
 	"testing"
+
+	"formatet/megaron/server/internal/hexgrid"
 )
 
 func TestFullyStaffedStonequarry_DoesNotReachCapIn40Ticks(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 
-	settlementID := seedFullRingFixture(t, 0, 100, "plains")
-	// stonequarry's stone production_rule is terrain-free (BuildingOption
-	// path) — which hex it stands on doesn't affect this test.
+	settlementID := seedFullRingFixture(t, 0, 100, "hills")
+	// byggnadsregeln: the quarry works its own hex (2 + 4 places).
+	quarryHex := hexgrid.Ring(hexgrid.Coord{Q: 0, R: 0}, hexgrid.CatchmentRadius)[0]
 	if _, err := pool.Exec(ctx,
-		`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'stonequarry', 1, 1, 0)`,
-		settlementID,
+		`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'stonequarry', 1, $2, $3)`,
+		settlementID, quarryHex.Q, quarryHex.R,
 	); err != nil {
 		t.Fatalf("seed stonequarry: %v", err)
 	}
-	placeBuildingGubbe(t, pool, settlementID, 1, "stonequarry", "stone")
-	placeBuildingGubbe(t, pool, settlementID, 2, "stonequarry", "stone")
+	for i := 1; i <= 2+BuildingExtraPlaces; i++ {
+		placeHexGubbe(t, pool, settlementID, i, quarryHex, "stone")
+	}
 
 	var worldID string
 	if err := pool.QueryRow(ctx,

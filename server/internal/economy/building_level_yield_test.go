@@ -9,6 +9,7 @@ package economy
 
 import (
 	"context"
+	"math"
 	"testing"
 
 	"formatet/megaron/server/internal/hexgrid"
@@ -46,7 +47,7 @@ func TestRecomputeProduction_BuildingLevelIncreasesYield_HexGated(t *testing.T) 
 		// this level's own WorkplaceSlots on top (capOf in placement_yield.go).
 		// The lumbermill stands on THIS hex (megaron_plan_byggnad_pa_hex.md §A) —
 		// staffing must target the same one it raised the cap on.
-		cap = 2 + WorkplaceSlots("lumbermill", level)
+		cap = 1 + BuildingExtraPlaces
 		for i := 0; i < cap; i++ {
 			placeHexGubbe(t, pool, settlementID, i+1, hex, "cedar")
 		}
@@ -87,33 +88,27 @@ func TestRecomputeProduction_BuildingLevelIncreasesYield_HexGated(t *testing.T) 
 	}
 }
 
-// TestRecomputeProduction_BuildingLevelIncreasesYield_BuildingGated is the
-// BuildingOption sibling of the test above — a good with NO hex/terrain term
-// at all, gated purely by a building's own WorkplaceSlots (P2): stone via
-// stonequarry (production_rules: NULL terrain, building=stonequarry, rate=576,
-// unchanged by level; WorkplaceSlots["stonequarry"] = {0,2,4,6}). Before Form
-// A this surface had the SAME bug in its purest form: BuildingOption.CapPerGood
-// WAS WorkplaceSlots(buildingType, level) with no capNoBuilding floor at all,
-// so rate/cap × placed reduced to exactly rate at every level, trivially.
-func TestRecomputeProduction_BuildingLevelIncreasesYield_BuildingGated(t *testing.T) {
+// TestRecomputeProduction_BuildingLevelIncreasesYield_Stonequarry: stone on a
+// hills hex with a stonequarry standing on it (byggnadsregeln — the quarry works
+// its hex, it has no workplace inside the building any more): full crew of
+// 2+4 places, and the level raises the rate per worker.
+func TestRecomputeProduction_BuildingLevelIncreasesYield_Stonequarry(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	const tick = 100
 
 	rateAtLevel := func(level int) (rate float64, cap int) {
-		settlementID := seedFullRingFixture(t, tick, 500, "plains")
-		// stonequarry's stone production_rule is terrain-free (BuildingOption
-		// path, see the test's own doc comment) — which hex it stands on
-		// doesn't affect this test; (1,0) just satisfies the schema.
+		settlementID := seedFullRingFixture(t, tick, 500, "hills")
+		hex := hexgrid.Ring(hexgrid.Coord{Q: 0, R: 0}, hexgrid.CatchmentRadius)[0]
 		if _, err := pool.Exec(ctx,
-			`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'stonequarry', $2, 1, 0)`,
-			settlementID, level,
+			`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'stonequarry', $2, $3, $4)`,
+			settlementID, level, hex.Q, hex.R,
 		); err != nil {
 			t.Fatalf("seed stonequarry level %d: %v", level, err)
 		}
-		cap = WorkplaceSlots("stonequarry", level)
+		cap = 2 + BuildingExtraPlaces
 		for i := 0; i < cap; i++ {
-			placeBuildingGubbe(t, pool, settlementID, i+1, "stonequarry", "stone")
+			placeHexGubbe(t, pool, settlementID, i+1, hex, "stone")
 		}
 
 		tx, err := pool.Begin(ctx)
@@ -136,17 +131,12 @@ func TestRecomputeProduction_BuildingLevelIncreasesYield_BuildingGated(t *testin
 		return rate, cap
 	}
 
-	l1Rate, l1Cap := rateAtLevel(1)
-	l3Rate, l3Cap := rateAtLevel(3)
-
-	t.Logf("stonequarry L1: cap=%d fully-staffed stone rate=%v", l1Cap, l1Rate)
-	t.Logf("stonequarry L3: cap=%d fully-staffed stone rate=%v", l3Cap, l3Rate)
-
-	if l1Rate <= 0 {
-		t.Fatalf("a fully-staffed level-1 stonequarry must produce SOME stone, got %v", l1Rate)
+	l1Rate, _ := rateAtLevel(1)
+	l3Rate, _ := rateAtLevel(3)
+	if want := 6 * 1.0 * 1.7; math.Abs(l1Rate-want) > 1e-6 {
+		t.Errorf("stonequarry L1 on hills, full crew: stone rate %.4f, want %.4f (6 x 1.0 x 1.7)", l1Rate, want)
 	}
-	if l3Rate <= l1Rate {
-		t.Errorf("byggnadsnivå-bugg (BuildingOption path): L3 stonequarry ska ge MER vid full bemanning än L1. "+
-			"L1(cap=%d)=%v, L3(cap=%d)=%v", l1Cap, l1Rate, l3Cap, l3Rate)
+	if want := 6 * 1.0 * 3.1; math.Abs(l3Rate-want) > 1e-6 {
+		t.Errorf("stonequarry L3 on hills, full crew: stone rate %.4f, want %.4f (6 x 1.0 x 3.1)", l3Rate, want)
 	}
 }

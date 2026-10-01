@@ -3,8 +3,7 @@ package economy
 // Slice A regression guard (megaron_plan_skeppsreparation.md, §Beslut B1):
 // splitting shipbuilding into a new `shipyard` building must NOT move fishing
 // off the harbour. This must stay GREEN before and after the slice — the
-// harbour's fish boost (terrainCapacityTable["coastal_sea"], capWithBuilding
-// when "harbour" is built) is untouched by the split.
+// harbour's fish boost (the coastal_sea fish rule, +places when "harbour" is built) is untouched by the split.
 
 import (
 	"context"
@@ -31,15 +30,14 @@ func TestHarbourStillBoostsFish_ShipyardSplitRegression(t *testing.T) {
 		t.Fatalf("create harbour building: %v", err)
 	}
 
-	// terrainCapacityTable["coastal_sea"] = {"fish", capNoBuilding:1,
-	// capWithBuilding:2, "harbour"} — with a harbour built, one fish hex must
-	// still carry a cap of 2, not 1.
+	// Rule table: coastal_sea fish P0 1, harbour +BuildingExtraPlaces — with a
+	// harbour built, one fish hex carries 5 places, not 1.
 	capBefore, err := LoadHexCapacity(ctx, pool, settlementID)
 	if err != nil {
 		t.Fatalf("LoadHexCapacity: %v", err)
 	}
-	if capBefore["fish"] != 2 {
-		t.Fatalf("fish hex cap with harbour built = %d, want 2 (harbour must still boost fish capacity)", capBefore["fish"])
+	if capBefore["fish"] != 1+BuildingExtraPlaces {
+		t.Fatalf("fish hex cap with harbour built = %d, want %d (harbour must still boost fish capacity)", capBefore["fish"], 1+BuildingExtraPlaces)
 	}
 
 	// Staff the fish hex to its harbour-boosted cap (2) and confirm production

@@ -27,11 +27,10 @@ import (
 )
 
 // newBuildNotifyFixture creates a minimal world/player/province/settlement
-// plus one catchment-ring map tile (plains, no deposit, non-coastal) so a
-// completed 'mine' building unlocks 'stone' — production_rules has NULL
-// terrain_type and NULL requires_deposit for mine/stone (mig 018, rates
-// tuned since by 079/129 but the NULL/NULL shape is untouched) — without
-// depending on mapgen or deposit RNG.
+// plus one catchment-ring map tile (hills, no deposit, non-coastal) so a
+// completed 'stonequarry' building unlocks 'stone' — the rule table
+// (economy/hex_rules.go, byggnadsregeln) ties stonequarry to stone on hills —
+// without depending on mapgen or deposit RNG.
 func newBuildNotifyFixture(t *testing.T, pool *pgxpool.Pool) (worldID, ownerID, settlementID uuid.UUID) {
 	t.Helper()
 	ctx := context.Background()
@@ -73,9 +72,9 @@ func newBuildNotifyFixture(t *testing.T, pool *pgxpool.Pool) (worldID, ownerID, 
 	}
 
 	// (1,0) is distance 1 from the settlement's own hex (0,0) — inside the
-	// radius-2 catchment ring (hexgrid.Ring), plain, no deposits, no coast.
+	// radius-2 catchment ring (hexgrid.Ring), hills, no deposits, no coast.
 	if _, err := pool.Exec(ctx,
-		`INSERT INTO map_tiles (world_id, q, r, terrain, coastal) VALUES ($1, 1, 0, 'plains', false)`,
+		`INSERT INTO map_tiles (world_id, q, r, terrain, coastal) VALUES ($1, 1, 0, 'hills', false)`,
 		worldID,
 	); err != nil {
 		t.Fatalf("seed catchment tile: %v", err)
@@ -141,20 +140,20 @@ func runBuildComplete(t *testing.T, pool *pgxpool.Pool, worldID, settlementID uu
 }
 
 // TestBuildComplete_HintPointsToPlacement_NotDeadLabor is the red/green
-// proof for the fix: a completed 'mine' unlocks 'stone' (no prior
+// proof for the fix: a completed 'stonequarry' unlocks 'stone' (no prior
 // placement exists), and the hint must name the real surface — placement —
 // not a labor percentage that has been inert since P4.
 func TestBuildComplete_HintPointsToPlacement_NotDeadLabor(t *testing.T) {
 	pool := testPool(t)
 	worldID, _, settlementID := newBuildNotifyFixture(t, pool)
 
-	body := runBuildComplete(t, pool, worldID, settlementID, "mine")
+	body := runBuildComplete(t, pool, worldID, settlementID, "stonequarry")
 	if body == nil {
 		t.Fatalf("no BuildComplete notification was sent")
 	}
 
 	hint, _ := body["hint"].(string)
-	const want = "mine is built but produces nothing until staffed — place a citizen to work stone (`keryx place`/`staff`, or the city's placement grid) to start production."
+	const want = "stonequarry is built but produces nothing until staffed — place a citizen to work stone (`keryx place`/`staff`, or the city's placement grid) to start production."
 	if hint != want {
 		t.Errorf("hint mismatch:\n got:  %q\n want: %q", hint, want)
 	}

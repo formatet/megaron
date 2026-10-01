@@ -62,8 +62,8 @@ func wineRulesFor(t *testing.T, terrain string) map[string]float64 {
 // three building rows are exactly what "unchanged" still asserts.
 func TestProductionRules_HillsWineRatesUnchanged(t *testing.T) {
 	got := wineRulesFor(t, "hills")
-	// 28.8/57.6/72.0 → 2.0/4.0/5.0 (mig 136, wine ÷14.4)
-	want := map[string]float64{"": 2.0, "farm": 4.0, "winery": 5.0}
+	// mig 155: per gubbe (÷ the fallback cap 2), farm row gone (farm no longer touches wine).
+	want := map[string]float64{"": 1.0, "winery": 2.5}
 	if len(got) != len(want) {
 		t.Fatalf("hills wine rules = %v, want %v", got, want)
 	}
@@ -83,8 +83,8 @@ func TestProductionRules_HillsWineRatesUnchanged(t *testing.T) {
 // failing run's captured output.
 func TestProductionRules_WineBeyondHills(t *testing.T) {
 	plains := wineRulesFor(t, "plains")
-	// 14.4/28.8/43.2 → 1.0/2.0/3.0 (mig 136, wine ÷14.4)
-	wantPlains := map[string]float64{"": 1.0, "farm": 2.0, "winery": 3.0}
+	// mig 155: per gubbe, farm row gone.
+	wantPlains := map[string]float64{"": 0.5, "winery": 1.5}
 	if len(plains) != len(wantPlains) {
 		t.Fatalf("plains wine rules = %v, want %v", plains, wantPlains)
 	}
@@ -95,8 +95,8 @@ func TestProductionRules_WineBeyondHills(t *testing.T) {
 	}
 
 	scrub := wineRulesFor(t, "scrub_maquis")
-	// 9.6/24.0 → 0.6666666666666666/1.6666666666666667 (mig 136, wine ÷14.4)
-	wantScrub := map[string]float64{"": 9.6 / 14.4, "winery": 24.0 / 14.4}
+	// mig 155: 9.6/24.0 ÷ 14.4 (mig 136) ÷ 2 (per gubbe)
+	wantScrub := map[string]float64{"": 9.6 / 14.4 / 2, "winery": 24.0 / 14.4 / 2}
 	if len(scrub) != len(wantScrub) {
 		t.Fatalf("scrub_maquis wine rules = %v, want %v", scrub, wantScrub)
 	}
@@ -130,8 +130,8 @@ func TestProductionRules_WineBeyondHills(t *testing.T) {
 // TestProductionRules_WineBeyondHills's plains assertion.
 func TestProductionRules_WineInRiverValley(t *testing.T) {
 	got := wineRulesFor(t, "river_valley")
-	// 14.4/28.8/43.2 → 1.0/2.0/3.0 (mig 136, wine ÷14.4)
-	want := map[string]float64{"": 1.0, "farm": 2.0, "winery": 3.0}
+	// mig 155: per gubbe, farm row gone.
+	want := map[string]float64{"": 0.5, "winery": 1.5}
 	if len(got) != len(want) {
 		t.Fatalf("river_valley wine rules = %v, want %v", got, want)
 	}

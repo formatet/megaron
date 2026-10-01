@@ -106,7 +106,12 @@ func goodAmount(t *testing.T, pool *pgxpool.Pool, settlementID uuid.UUID, good s
 // constant rather than by the city's own growth budget in the "happy path"
 // tests — the resource/garrison-exit tests below deliberately test the OTHER
 // caps instead.
-var richTerrain = [6]string{"plains", "plains", "plains", "mountain_limestone", "mountain_limestone", "mountain_limestone"}
+//
+// Byggnadsregeln (mig 155): the starter farm's hex (offset 0) is a river_delta —
+// a farm on plains gives 8 x 1.7 = 13.6, which with two bare plains hexes no
+// longer feeds a 5000-pop city (was 21.6 under the old grain undantag), and
+// growth is gated on the food balance.
+var richTerrain = [6]string{"river_delta", "plains", "plains", "mountain_limestone", "mountain_limestone", "mountain_limestone"}
 
 // TestApplyReinforcement_TrickleCappedAndPopulationNeverShrinks is the core
 // invariant gate: a 62/100 cohort refills exactly

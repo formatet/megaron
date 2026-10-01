@@ -30,49 +30,6 @@ func openScaleTestPool(t *testing.T) *pgxpool.Pool {
 	return pool
 }
 
-// capL1For returns the level-1 worker capacity a (terrain, building) pair gives
-// for one good — the divisor placementYield uses. Mirrors hexGoodCaps' capOf
-// for the hex path and workplaceSlotTable for the building path.
-//
-// Grain is excluded by the callers: hexGoodCaps pins its capL1 to 1
-// unconditionally, so its rate_per_tick IS its per-gubbe figure and the
-// building-vs-terrain comparison below works on the raw rates instead.
-func capL1For(t *testing.T, good, terrain, building string) int {
-	t.Helper()
-	if terrain == "" {
-		// Building-only rule (bronze, pottery, horses, the terrainless
-		// lumbermill/winery/olive_press rows): capacity is the workplace's own
-		// level-1 slots.
-		return WorkplaceSlots(building, 1)
-	}
-	var rule hexCapacityRule
-	var found bool
-	if terrain == "plains" {
-		for _, r := range plainsCapacityRules {
-			if r.goodKey == good {
-				rule, found = r, true
-			}
-		}
-	} else if r, ok := terrainCapacityTable[terrain]; ok && r.goodKey == good {
-		rule, found = r, true
-	}
-	if !found {
-		for _, r := range depositCapacityTable {
-			if r.goodKey == good {
-				rule, found = r, true
-			}
-		}
-	}
-	if !found {
-		// oil, wine and stone have no P3 rule and fall back to a flat cap.
-		return HexFallbackCap
-	}
-	if building == "" || rule.relevantBuilding != building {
-		return rule.capNoBuilding
-	}
-	return rule.capWithBuilding + WorkplaceSlots(building, 1)
-}
-
 type ruleRow struct {
 	good, terrain, building string
 	rate                    float64
@@ -98,63 +55,44 @@ func loadProductionRules(t *testing.T, pool *pgxpool.Pool) []ruleRow {
 	return out
 }
 
-// TestProductionRules_NoBuildingLowersPerGubbe is the §3.2 rule: a building must
-// never make an individual gubbe produce LESS than he would on the bare terrain.
-//
-// Before mig 136 this was violated across half the catalogue — fish 86,4 → 21,6
-// with a harbour, cedar 72 → 36 with a lumbermill, copper 28,8 → 11,52 with a
-// mine, tin 14,4 → 7,2. The cause is structural, not a typo: a building raises
-// the hex's capL1 (capWithBuilding + WorkplaceSlots) while rate_per_tick stays
-// put, so total output rises only if you can fill the new slots — and the city
-// that cannot pays for the building by making every existing worker worth less.
-// That is involution, not intensification, and it makes the build a bad move for
-// exactly the cities that need help most.
-//
-// This test caught a fifth violation the migration's own author missed: the
-// terrainless timber/lumbermill row, whose capL1 comes from workplaceSlotTable
-// rather than a hex rule and so escaped the first sweep.
-func TestProductionRules_NoBuildingLowersPerGubbe(t *testing.T) {
-	pool := openScaleTestPool(t)
-	defer pool.Close()
-
-	all := loadProductionRules(t, pool)
-
-	// Bare-terrain baseline per (good, terrain).
-	base := map[[2]string]float64{}
-	for _, r := range all {
-		if r.building == "" && r.terrain != "" {
-			base[[2]string{r.good, r.terrain}] = r.rate / float64(capL1For(t, r.good, r.terrain, ""))
-		}
-	}
-
-	for _, r := range all {
-		if r.building == "" || r.terrain == "" {
-			continue // bare terrain, or a terrainless building rule with no baseline to beat
-		}
-		baseline, ok := base[[2]string{r.good, r.terrain}]
-		if !ok {
-			continue // building unlocks a good this terrain cannot produce alone
-		}
-		perGubbe := r.rate / float64(capL1For(t, r.good, r.terrain, r.building))
-		if r.good == GoodGrain {
-			// capL1 is pinned to 1 for grain, so rate IS the per-gubbe figure.
-			perGubbe, baseline = r.rate, base[[2]string{r.good, r.terrain}]*float64(capL1For(t, r.good, r.terrain, ""))
-		}
-		if perGubbe < baseline-1e-9 {
-			t.Errorf("%s on %s with %s: %.4f per gubbe, LOWER than %.4f without the building — "+
-				"a building must never make a worker less productive (mig 136, plan §3.2)",
-				r.good, r.terrain, r.building, perGubbe, baseline)
+// TestRuleTable_NoBuildingLowersPerGubbe is the §3.2 rule (mig 136) restated for
+// byggnadsregeln: a building must never make an individual gubbe produce LESS
+// than he would on the bare terrain, nor shrink the hex. Over the whole rule
+// table at every level, multiplier >= 1 and places grow by exactly
+// BuildingExtraPlaces — the rule cannot lower anything by construction, and this
+// pins that.
+func TestRuleTable_NoBuildingLowersPerGubbe(t *testing.T) {
+	for _, terrain := range append(append([]string{}, ruleTerrains...), "hills_with_deposits") {
+		for _, rule := range hexRules(terrain, true, true, true) {
+			p0, m0 := rule.placesAndMult(0)
+			if m0 != 1.0 || p0 != rule.basePlaces {
+				t.Errorf("%s/%s: unbuilt must be P0 x r0, got %d x %.2f", terrain, rule.good, p0, m0)
+			}
+			prevMult := m0
+			for level := 1; level <= 3; level++ {
+				p, m := rule.placesAndMult(level)
+				if rule.building == "" {
+					if p != p0 || m != 1.0 {
+						t.Errorf("%s/%s has no building but level %d changed it", terrain, rule.good, level)
+					}
+					continue
+				}
+				if p != p0+BuildingExtraPlaces {
+					t.Errorf("%s/%s level %d: places %d, want %d", terrain, rule.good, level, p, p0+BuildingExtraPlaces)
+				}
+				if m < prevMult || m < 1.0 {
+					t.Errorf("%s/%s level %d: multiplier %.2f lowers the per-gubbe rate", terrain, rule.good, level, m)
+				}
+				prevMult = m
+			}
 		}
 	}
 }
 
-// TestProductionRules_StandardTerrainYieldsOne is the dagsverkesskalan itself:
+// TestProductionRules_StandardTerrainYieldsOne is the dagsverkesskala itself:
 // one gubbe on a good's standard terrain, with no building, produces 1,00 per
-// tick. That is what makes every cost figure elsewhere in the codebase readable
-// as a count of man-days (Timothy 2026-08-27).
-//
-// The standard terrain is the good's BEST bare-terrain hex — the one the
-// divisor in mig 136 was derived from.
+// tick (Timothy 2026-08-27). Since mig 155 every terrain row IS the rate per
+// gubbe, so this reads the rate directly.
 func TestProductionRules_StandardTerrainYieldsOne(t *testing.T) {
 	pool := openScaleTestPool(t)
 	defer pool.Close()
@@ -179,13 +117,27 @@ func TestProductionRules_StandardTerrainYieldsOne(t *testing.T) {
 			t.Errorf("%s: no bare-terrain rule for its standard terrain %s", good, terrain)
 			continue
 		}
-		perGubbe := rate / float64(capL1For(t, good, terrain, ""))
-		if good == GoodGrain {
-			perGubbe = rate // capL1 pinned to 1
-		}
-		if math.Abs(perGubbe-1.0) > 0.01 {
+		if math.Abs(rate-1.0) > 0.01 {
 			t.Errorf("%s on %s: %.4f per gubbe, expected 1,00 — the dagsverkesskala is the "+
-				"reference every cost figure is read against (mig 136)", good, terrain, perGubbe)
+				"reference every cost figure is read against (mig 136)", good, terrain, rate)
+		}
+	}
+}
+
+// TestProductionRules_NoBuildingRowsForRuleBuildings: mig 155 replaced the
+// farm/harbour/lumbermill/stonequarry rows and mine's copper/tin/stone rows
+// with the rule; only silver's mine rows may remain.
+func TestProductionRules_NoBuildingRowsForRuleBuildings(t *testing.T) {
+	pool := openScaleTestPool(t)
+	defer pool.Close()
+	for _, r := range loadProductionRules(t, pool) {
+		switch r.building {
+		case "farm", "harbour", "lumbermill", "stonequarry":
+			t.Errorf("leftover %s row for %s on %q", r.building, r.good, r.terrain)
+		case "mine":
+			if r.good != "silver" {
+				t.Errorf("leftover mine row for %s", r.good)
+			}
 		}
 	}
 }

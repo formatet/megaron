@@ -70,8 +70,8 @@ func TestRecomputeProduction_HexSlotCapIsPopulationInvariant(t *testing.T) {
 }
 
 // TestLoadHexCapacity_BuildingRaisesCap — the "med byggnad" half of §8.3: a
-// lumbermill built on ONE hex raises cedar's cap on THAT hex from 1 to 2 —
-// and ONLY that hex (18 → 19 for an 18-hex forest_cedar catchment), not
+// lumbermill built on ONE hex raises cedar's places on THAT hex from 1 to 5 —
+// and ONLY that hex (18 → 22 for an 18-hex forest_cedar catchment), not
 // every forest_cedar hex in the catchment.
 //
 // Before megaron_plan_byggnad_pa_hex.md §A this test asserted 18 → 36 (every
@@ -105,7 +105,7 @@ func TestLoadHexCapacity_BuildingRaisesCap(t *testing.T) {
 	if err != nil {
 		t.Fatalf("LoadHexCapacity (with lumbermill): %v", err)
 	}
-	if after["cedar"] != 19 {
-		t.Fatalf("18 forest_cedar hexes with a lumbermill on ONE of them should give 19 cedar slots (17×1 + 1×2), got %d", after["cedar"])
+	if want := 17*1 + (1 + BuildingExtraPlaces); after["cedar"] != want {
+		t.Fatalf("18 forest_cedar hexes with a lumbermill on ONE of them should give %d cedar slots (17×1 + 1×%d), got %d", want, 1+BuildingExtraPlaces, after["cedar"])
 	}
 }
