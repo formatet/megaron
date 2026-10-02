@@ -38,9 +38,9 @@ func TestCatchmentConflictMessage_ReportsMinimumMoveDistance(t *testing.T) {
 		conflict   province.CatchmentConflict
 		wantNeeded string
 	}{
-		// minSettlementCentreDistance = 4 (§3, own design number post-§2/§2b).
-		{"adjacent (distance 1) needs 3 more hexes", 6, 5, province.CatchmentConflict{Q: 5, R: 5}, "3 hex"},
-		{"distance 2 needs 2 more hexes", 7, 4, province.CatchmentConflict{Q: 5, R: 5}, "2 hex"},
+		// minSettlementCentreDistance = 3 (megaron_plan_delad_catchment.md).
+		{"adjacent (distance 1) needs 2 more hexes", 6, 5, province.CatchmentConflict{Q: 5, R: 5}, "2 hex"},
+		{"distance 2 needs 1 more hex", 7, 4, province.CatchmentConflict{Q: 5, R: 5}, "1 hex"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

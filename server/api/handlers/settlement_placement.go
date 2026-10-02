@@ -187,13 +187,16 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 	// §2b (Timothy 2026-09-05): a hex held by ANOTHER settlement offers no
 	// good at all, not just "whatever room that good's own cap has left" —
 	// mirror PlaceGubbe's ownership gate here so this menu never shows a
-	// slot the write path would reject.
-	heldByOther, err := economy.HexesHeldByOtherSettlement(r.Context(), h.pool, worldID, settlementID, hexCoords)
+	// slot the write path would reject. Delad catchment: a hex this Wanax
+	// may TAKE (a unit of theirs in fortify/sentry on it, the holder's Wanax
+	// has none) is not full — the holder's gubbar are subtracted — and carries
+	// held_by + takeable. economy.LoadHexHolds is the same rule PlaceGubbe runs.
+	holds, err := economy.LoadHexHolds(r.Context(), h.pool, worldID, settlementID, playerID, hexCoords)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not check hex ownership")
 		return
 	}
-	globalHexOccupancy = economy.MarkHeldHexesFullyOccupied(hexOptions, heldByOther, globalHexOccupancy)
+	globalHexOccupancy = economy.ApplyHexHolds(hexOptions, holds, globalHexOccupancy)
 	eyes := loadLiveEyes(r.Context(), h.pool, worldID, playerID, h.clk.Now())
 	remembered := loadRememberedTiles(r.Context(), h.pool, worldID, playerID)
 
@@ -300,7 +303,12 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 		HexOrdinal int             `json:"hex_ordinal"`
 		Terrain    string          `json:"terrain"`
 		Building   *hexBuildingOut `json:"building,omitempty"`
-		Goods      []goodOut       `json:"goods"`
+		// HeldBy names the OTHER settlement that holds this hex; Takeable says
+		// whether this Wanax may take it by placing a gubbe there (unit in
+		// fortify/sentry on it, holder has none). Both absent on an unheld hex.
+		HeldBy   string    `json:"held_by,omitempty"`
+		Takeable *bool     `json:"takeable,omitempty"`
+		Goods    []goodOut `json:"goods"`
 	}
 	hexes := make([]hexOut, 0, len(hexOptions))
 	for _, opt := range hexOptions {
@@ -319,6 +327,11 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 			Goods: buildGoods(opt.RatePerGood, func(good string, rate float64) float64 {
 				return economy.HexYieldPerWorker(rate, opt.MultPerGood[good])
 			}, opt.PlaceCapPerGood, globalHexOccupancy[opt.Coord], placedOrdinals.Hex[opt.Coord]),
+		}
+		if hold, held := holds[opt.Coord]; held {
+			t := hold.Takeable()
+			ho.HeldBy = hold.HolderName
+			ho.Takeable = &t
 		}
 		if b, built := hexBuiltAt[opt.Coord]; built {
 			ho.Building = &hexBuildingOut{Type: b.Type, Level: b.Level}
@@ -434,35 +447,6 @@ func loadPlacedOrdinals(ctx context.Context, tx economy.Tx, settlementID uuid.UU
 	return out, rows.Err()
 }
 
-// neighborHoldingHex names an OTHER settlement (any owner) that already
-// holds ANY placement on (worldID, hex) — regardless of good_key — if one
-// exists. Hexägarskap (megaron_plan_hexagarskap_och_stadsavstand.md §2b,
-// Timothy 2026-09-05): "den som först sätter arbetsgubbar på hexen får den,
-// och den andra har inte tillgång till den alls" — a hex has exactly ONE
-// owning settlement, so this is checked before any per-good capacity math,
-// not as a fallback once a good's own cap is full. Returns ("", nil) when
-// every occupant IS the calling settlement (or the hex is empty) — a
-// settlement's own further placements on its own hex are unaffected.
-func neighborHoldingHex(ctx context.Context, tx economy.Tx, worldID, settlementID uuid.UUID, hex hexgrid.Coord) (string, error) {
-	var name string
-	err := tx.QueryRow(ctx,
-		`SELECT s.name
-		 FROM settlement_placement sp
-		 JOIN settlements s ON s.id = sp.settlement_id
-		 WHERE s.world_id = $1 AND sp.target_kind = 'hex' AND sp.hex_q = $2 AND sp.hex_r = $3
-		   AND sp.settlement_id != $4
-		 LIMIT 1`,
-		worldID, hex.Q, hex.R, settlementID,
-	).Scan(&name)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return "", nil
-		}
-		return "", err
-	}
-	return name, nil
-}
-
 // PlaceGubbe handles POST /worlds/:worldID/provinces/:provinceID/placements —
 // place the next free gubbe (server-assigned ordinal, lowest available; P0-UI
 // answer 2: the Wanax picks WHERE, not which numbered gubbe) on a hex or
@@ -552,6 +536,11 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusConflict, "no citizens left in the pool — every citizen is already placed")
 		return
 	}
+
+	// Set when the hex branch TAKES a held hex (delad catchment) — dispatched
+	// to the loser after commit.
+	var taken *economy.HexTakenPayload
+	var takenLoserOwner uuid.UUID
 
 	switch req.TargetKind {
 	case "hex":
@@ -646,12 +635,109 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusInternalServerError, "could not lock hex")
 			return
 		}
-		if holder, herr := neighborHoldingHex(r.Context(), tx, worldID, settlementID, hex); herr != nil {
+		// Delad catchment (megaron_plan_delad_catchment.md): a held hex can be
+		// TAKEN when the placer's Wanax has a unit in fortify/sentry on it and
+		// the holder's Wanax does not. economy.LoadHexHolds is the one place
+		// that rule stands (the read surfaces call it too).
+		holds, herr := economy.LoadHexHolds(r.Context(), tx, worldID, settlementID, playerID, []hexgrid.Coord{hex})
+		if herr != nil {
 			writeError(w, http.StatusInternalServerError, "could not check hex ownership")
 			return
-		} else if holder != "" {
-			writeError(w, http.StatusConflict, fmt.Sprintf("%s holds this hex", holder))
-			return
+		}
+		if hold, held := holds[hex]; held {
+			switch hold.Verdict {
+			case economy.TakeNoOwnUnit:
+				writeError(w, http.StatusConflict, fmt.Sprintf("%s holds this hex — stand a unit there in fortify or sentry to take it", hold.HolderName))
+				return
+			case economy.TakeHolderDefends:
+				writeError(w, http.StatusConflict, fmt.Sprintf("%s holds this hex and has a unit standing guard there — that unit must be defeated before the hex can be taken", hold.HolderName))
+				return
+			case economy.TakeSameOwner:
+				writeError(w, http.StatusConflict, fmt.Sprintf("%s holds this hex", hold.HolderName))
+				return
+			}
+			// TakeYes — the take, in the order the contract fixes (§8):
+			// holder's hex placements gone → building changes owner → its
+			// queued build cancelled and refunded → holder recomputed.
+			var takerName string
+			if err := tx.QueryRow(r.Context(), `SELECT name FROM settlements WHERE id = $1`, settlementID).Scan(&takerName); err != nil {
+				writeError(w, http.StatusInternalServerError, "could not load settlement")
+				return
+			}
+			ct, err := tx.Exec(r.Context(),
+				`DELETE FROM settlement_placement
+				 WHERE settlement_id = $1 AND target_kind = 'hex' AND hex_q = $2 AND hex_r = $3`,
+				hold.HolderID, hex.Q, hex.R,
+			)
+			if err != nil {
+				writeError(w, http.StatusInternalServerError, "could not take hex")
+				return
+			}
+			var movedBuilding string
+			if err := tx.QueryRow(r.Context(),
+				`UPDATE buildings SET settlement_id = $1
+				 WHERE settlement_id = $2 AND hex_q = $3 AND hex_r = $4
+				 RETURNING building_type`,
+				settlementID, hold.HolderID, hex.Q, hex.R,
+			).Scan(&movedBuilding); err != nil && !errors.Is(err, pgx.ErrNoRows) {
+				writeError(w, http.StatusInternalServerError, "could not take hex")
+				return
+			}
+			qrows, err := tx.Query(r.Context(),
+				`SELECT id FROM build_queue WHERE settlement_id = $1 AND hex_q = $2 AND hex_r = $3`,
+				hold.HolderID, hex.Q, hex.R,
+			)
+			if err != nil {
+				writeError(w, http.StatusInternalServerError, "could not take hex")
+				return
+			}
+			var queued []uuid.UUID
+			for qrows.Next() {
+				var id uuid.UUID
+				if qrows.Scan(&id) == nil {
+					queued = append(queued, id)
+				}
+			}
+			qrows.Close()
+			for _, id := range queued {
+				if _, err := cancelQueuedBuild(r.Context(), tx, id); err != nil {
+					writeError(w, http.StatusInternalServerError, "could not cancel the queued build on the taken hex")
+					return
+				}
+			}
+			if err := economy.RecomputeProduction(r.Context(), tx, hold.HolderID); err != nil {
+				writeError(w, http.StatusInternalServerError, "recompute production failed")
+				return
+			}
+			taken = &economy.HexTakenPayload{
+				SettlementID: hold.HolderID, WorldID: worldID, Name: hold.HolderName, Taker: takerName,
+				Q: hex.Q, R: hex.R, Workers: int(ct.RowsAffected()), Building: movedBuilding,
+			}
+			takenLoserOwner = hold.HolderOwnerID
+
+			// The building (and its level) is now the placer's: the validation
+			// menu and the capacity ceiling must be read AGAIN.
+			hexOptions, err = economy.LoadHexProductionOptions(r.Context(), tx, settlementID, nil)
+			if err != nil {
+				writeError(w, http.StatusInternalServerError, "could not load catchment")
+				return
+			}
+			opt = nil
+			for i := range hexOptions {
+				if hexOptions[i].Coord == hex {
+					opt = &hexOptions[i]
+					break
+				}
+			}
+			if opt == nil || opt.RatePerGood[req.GoodKey] <= 0 {
+				writeError(w, http.StatusUnprocessableEntity, "this hex has no production option for that good")
+				return
+			}
+			cap = opt.PlaceCapPerGood[req.GoodKey]
+			if cap <= 0 {
+				writeError(w, http.StatusConflict, "this hex is fully staffed for that good")
+				return
+			}
 		}
 		globalOccupancy, err := economy.GlobalHexOccupancy(r.Context(), tx, worldID, []hexgrid.Coord{hex})
 		if err != nil {
@@ -719,6 +805,14 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 	if err := tx.Commit(r.Context()); err != nil {
 		writeError(w, http.StatusInternalServerError, "commit failed")
 		return
+	}
+
+	if taken != nil {
+		var hub economy.BlockadeNotifier // a nil *notify.Hub must not become a non-nil interface
+		if h.hub != nil {
+			hub = h.hub
+		}
+		economy.DispatchHexTaken(r.Context(), h.eventStore, hub, takenLoserOwner, *taken)
 	}
 
 	writeJSON(w, http.StatusCreated, map[string]any{"gubbe_ordinal": gubbeOrdinal})
