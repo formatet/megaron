@@ -10,6 +10,10 @@ You can give a marching unit a stance too — from **War → Army**, or by picki
 
 If the unit is too far ahead for any Runner to overtake, the Runner follows it to its destination and the stance applies where it stopped.
 
+## Taking a shared hex
+
+A unit in **fortify** or **sentry** on a hex that a neighbouring city holds lets you take it by placing a citizen there — see [[catchment]]. A unit that is only passing through does not.
+
 ## Sentry is a siege
 
 Units in sentry on the hexes an enemy city works stop those hexes feeding it. Hold that long enough and the city gives up without a battle — see [[sieges]].
