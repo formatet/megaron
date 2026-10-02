@@ -19,7 +19,7 @@ globalThis.document ??= {
 globalThis.window ??= { addEventListener() {}, matchMedia: () => ({ matches: false, addEventListener() {} }) };
 globalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };
 
-const { placementOutcome, refusalText, selectionKey, takeLabel } = await import('./citygrid.js');
+const { placementOutcome, refusalText, selectionKey, takeLabel, goodRowHTML } = await import('./citygrid.js');
 
 // The refusal sentences below are copied verbatim from the server
 // (api/handlers/settlement_placement.go) — they are the actual bodies this
@@ -181,4 +181,15 @@ test('takeLabel says what taking does, building part only when one stands there'
   );
   assert.equal(takeLabel({ held_by: 'Petras', takeable: false, held_workers: 3 }), null);
   assert.equal(takeLabel({}), null);
+});
+
+// Delad catchment: on a hex another city holds, `placed` is that city's
+// occupancy (it reads full), but none of those gubbar are yours — −1 must be
+// disabled, or it promises an unplace the server has nothing to do for.
+test('CG16: −1 is disabled on a held hex where none of the gubbar are yours', () => {
+  const hex = { target_kind: 'hex', hex_ordinal: 12 };
+  const held = goodRowHTML(hex, { good_key: 'fish', rate_per_tick: 1, cap: 2, placed: 2, marginal_yield: 0 }, null);
+  assert.match(held, /data-verb="unplace1" disabled/);
+  const own = goodRowHTML(hex, { good_key: 'fish', rate_per_tick: 1, cap: 2, placed: 2, placed_ordinals: [3], marginal_yield: 0 }, null);
+  assert.doesNotMatch(own, /data-verb="unplace1" disabled/);
 });

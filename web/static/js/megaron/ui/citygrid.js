@@ -64,7 +64,11 @@ export function takeLabel(hex) {
 // — resolved once by the caller (which already knows which hex/building this
 // row belongs to) and carried on the row as JSON, so the click handler never
 // has to re-derive it from the DOM.
-function goodRowHTML(target, good, take) {
+export function goodRowHTML(target, good, take) {
+  // −1 keys off THIS city's own gubbar (placed_ordinals), never `placed` —
+  // `placed` is the hex's global occupancy, and on a hex another city holds it
+  // reads full while none of those gubbar are yours (delad catchment).
+  const mine = (good.placed_ordinals || []).length;
   const capped = good.cap != null;
   const full = capped && good.placed >= good.cap;
   const pipsHTML = capped
@@ -85,7 +89,7 @@ function goodRowHTML(target, good, take) {
           ? `<button class="btn-small gubbe-act gubbe-take" data-verb="place1">${esc(take)}</button>`
           : `<button class="btn-small gubbe-act" data-verb="place1" ${full ? 'disabled' : ''}>+1</button>
         ${full ? '' : `<button class="btn-small gubbe-act" data-verb="fill">Fill</button>`}
-        <button class="btn-small gubbe-act" data-verb="unplace1" ${good.placed > 0 ? '' : 'disabled'}>−1</button>`}
+        <button class="btn-small gubbe-act" data-verb="unplace1" ${mine > 0 ? '' : 'disabled'}>−1</button>`}
       </div>
     </div>`;
 }

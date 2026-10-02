@@ -69,27 +69,29 @@ def main():
     ca = tuple(map(int, psql(
         f"SELECT p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id "
         f"WHERE s.id = '{sa_id}'").split("|")))
-    farm = psql(f"SELECT hex_q, hex_r FROM buildings WHERE settlement_id = '{sa_id}' "
-                f"AND building_type = 'farm' LIMIT 1")
-    if not farm:
-        sys.exit("A got no starter farm — this spawn has no grain hex; re-run after reset")
-    x = tuple(map(int, farm.split("|")))
-    held = int(psql(f"SELECT count(*) FROM settlement_placement WHERE settlement_id = '{sa_id}' "
-                    f"AND target_kind = 'hex' AND hex_q = {x[0]} AND hex_r = {x[1]}") or "0")
-    if held == 0:
-        sys.exit(f"A has no gubbar on its farm hex {x} — fixture premise broken")
+    # Every hex A holds, its farm hex first (so the take also hands over a building).
+    rows = psql(f"SELECT sp.hex_q, sp.hex_r, count(*), bool_or(b.id IS NOT NULL) FROM settlement_placement sp "
+                f"LEFT JOIN buildings b ON b.settlement_id = sp.settlement_id AND b.hex_q = sp.hex_q AND b.hex_r = sp.hex_r "
+                f"WHERE sp.settlement_id = '{sa_id}' AND sp.target_kind = 'hex' "
+                f"GROUP BY sp.hex_q, sp.hex_r ORDER BY 4 DESC, 3 DESC")
+    held_hexes = [l.split("|") for l in rows.splitlines() if l.strip()]
+    if not held_hexes:
+        sys.exit("A has no gubbar on any hex — fixture premise broken")
 
-    # B's centre: distance exactly 3 from A, with A's farm hex inside B's catchment.
+    # B's centre: distance exactly 3 from A, with a hex A holds inside B's catchment.
     rows = psql(f"SELECT q, r FROM map_tiles WHERE world_id = '{w}' "
                 f"AND terrain NOT IN ({','.join(repr(t) for t in LAND_EXCLUDED)}) "
                 f"AND q BETWEEN {ca[0] - 3} AND {ca[0] + 3} AND r BETWEEN {ca[1] - 3} AND {ca[1] + 3}")
-    cands = [tuple(map(int, l.split("|"))) for l in rows.splitlines() if l.strip()]
-    cands = [c for c in cands if dist(c, ca) == 3 and dist(c, x) <= 2]
+    land = [tuple(map(int, l.split("|"))) for l in rows.splitlines() if l.strip()]
+    cands = []
+    for hq, hr, n, _ in held_hexes:
+        x = (int(hq), int(hr))
+        cands += [(c, x, int(n)) for c in land if dist(c, ca) == 3 and dist(c, x) <= 2]
     if not cands:
-        sys.exit(f"no land hex at distance 3 from A {ca} reaches A's farm hex {x}; re-run after reset")
+        sys.exit(f"no land hex at distance 3 from A {ca} reaches any hex A holds; reset and re-run")
     host = psql(f"SELECT fp.host_unit_id FROM founder_phase fp JOIN players pl ON pl.id = fp.owner_id "
                 f"WHERE fp.world_id = '{w}' AND pl.username = '{name_b}' AND fp.active")
-    for cb in cands:
+    for cb, x, held in cands:
         psql(f"UPDATE units SET q = {cb[0]}, r = {cb[1]} WHERE id = '{host}'")
         st, d = http("POST", f"{API}/worlds/{w}/founding/settle", {"name": f"Lykos{stamp % 1000}"}, bearer=tok_b)
         if st in (200, 201):
