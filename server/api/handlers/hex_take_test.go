@@ -509,3 +509,35 @@ func TestCancelBuild_RefundsAndDeletesQueueRow(t *testing.T) {
 		t.Fatalf("second cancel = %d, want 404", code)
 	}
 }
+
+// A mine hex: the mine changes owner with the hex and B can then work its copper.
+func TestPlaceGubbe_TakeOfMineHexMovesTheMine(t *testing.T) {
+	f := setupTwoSettlementHexFixture(t, "hills", [2]int{takeHexQ, takeHexR})
+	pool := p10TestPool(t)
+	ctx := context.Background()
+	if _, err := pool.Exec(ctx,
+		`UPDATE map_tiles SET copper_deposit = true WHERE world_id = $1 AND q = $2 AND r = $3`,
+		f.worldID, takeHexQ, takeHexR); err != nil {
+		t.Fatalf("seed copper: %v", err)
+	}
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'mine', 1, $2, $3)`,
+		f.settlementA, takeHexQ, takeHexR); err != nil {
+		t.Fatalf("seed mine: %v", err)
+	}
+	if code, resp := f.place(t, f.tokenA, f.provinceA, "copper"); code != http.StatusCreated {
+		t.Fatalf("A's copper placement = %d: %v", code, resp)
+	}
+	if code, resp := f.place(t, f.tokenB, f.provinceB, "copper"); code != http.StatusConflict {
+		t.Fatalf("B without a unit = %d: %v, want 409", code, resp)
+	}
+	f.unit(t, f.owner(t, f.settlementB), "positioned", str("sentry"))
+	if code, resp := f.place(t, f.tokenB, f.provinceB, "copper"); code != http.StatusCreated {
+		t.Fatalf("B's take of the mine hex = %d: %v, want 201", code, resp)
+	}
+	var owner uuid.UUID
+	if err := pool.QueryRow(ctx, `SELECT settlement_id FROM buildings WHERE building_type = 'mine' AND hex_q = $1 AND hex_r = $2`,
+		takeHexQ, takeHexR).Scan(&owner); err != nil || owner != f.settlementB {
+		t.Errorf("mine owner = %v (err %v), want B", owner, err)
+	}
+}

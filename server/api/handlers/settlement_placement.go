@@ -581,34 +581,6 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		hexOptions, err := economy.LoadHexProductionOptions(r.Context(), tx, settlementID, nil) // validation menu — siege denial gates YIELD, not the placement UI
-		if err != nil {
-			writeError(w, http.StatusInternalServerError, "could not load catchment")
-			return
-		}
-		var opt *economy.HexOption
-		for i := range hexOptions {
-			if hexOptions[i].Coord == hex {
-				opt = &hexOptions[i]
-				break
-			}
-		}
-		if opt == nil || opt.RatePerGood[req.GoodKey] <= 0 {
-			writeError(w, http.StatusUnprocessableEntity, "this hex has no production option for that good")
-			return
-		}
-		// Form B (megaron_plan_byggnadsniva_takt.md, 2026-08-24): the write-time
-		// ceiling is PlaceCapPerGood, not the level-grown CapPerGood — a
-		// levelled-up building now raises the RATE (MultPerGood), not the
-		// headcount, so a gubbe placed past PlaceCapPerGood would sit there
-		// producing nothing. Grain's PlaceCapPerGood stays the real
-		// level-actual cap (megaron_plan_grain_cap.md), unaffected.
-		cap := opt.PlaceCapPerGood[req.GoodKey]
-		if cap <= 0 {
-			writeError(w, http.StatusConflict, "this hex is fully staffed for that good")
-			return
-		}
-
 		// Hexägarskap (megaron_plan_hexagarskap_och_stadsavstand.md §2, §2b —
 		// Timothy 2026-09-05): a hex has exactly ONE owning settlement. The
 		// first settlement to place any gubbe on it — any good — owns it
@@ -714,31 +686,41 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 				Q: hex.Q, R: hex.R, Workers: int(ct.RowsAffected()), Building: movedBuilding,
 			}
 			takenLoserOwner = hold.HolderOwnerID
+		}
 
-			// The building (and its level) is now the placer's: the validation
-			// menu and the capacity ceiling must be read AGAIN.
-			hexOptions, err = economy.LoadHexProductionOptions(r.Context(), tx, settlementID, nil)
-			if err != nil {
-				writeError(w, http.StatusInternalServerError, "could not load catchment")
-				return
-			}
-			opt = nil
-			for i := range hexOptions {
-				if hexOptions[i].Coord == hex {
-					opt = &hexOptions[i]
-					break
-				}
-			}
-			if opt == nil || opt.RatePerGood[req.GoodKey] <= 0 {
-				writeError(w, http.StatusUnprocessableEntity, "this hex has no production option for that good")
-				return
-			}
-			cap = opt.PlaceCapPerGood[req.GoodKey]
-			if cap <= 0 {
-				writeError(w, http.StatusConflict, "this hex is fully staffed for that good")
-				return
+		// Validation runs AFTER the take, on purpose: the building (and its
+		// level) a take hands over decides which goods the hex offers and how
+		// many gubbar it holds (a mine hex offers copper only once the mine is
+		// the placer's), so the menu and the ceiling are read once, here, in the
+		// post-take state — never against the holder's building.
+		hexOptions, err := economy.LoadHexProductionOptions(r.Context(), tx, settlementID, nil) // validation menu — siege denial gates YIELD, not the placement UI
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "could not load catchment")
+			return
+		}
+		var opt *economy.HexOption
+		for i := range hexOptions {
+			if hexOptions[i].Coord == hex {
+				opt = &hexOptions[i]
+				break
 			}
 		}
+		if opt == nil || opt.RatePerGood[req.GoodKey] <= 0 {
+			writeError(w, http.StatusUnprocessableEntity, "this hex has no production option for that good")
+			return
+		}
+		// Form B (megaron_plan_byggnadsniva_takt.md, 2026-08-24): the write-time
+		// ceiling is PlaceCapPerGood, not the level-grown CapPerGood — a
+		// levelled-up building now raises the RATE (MultPerGood), not the
+		// headcount, so a gubbe placed past PlaceCapPerGood would sit there
+		// producing nothing. Grain's PlaceCapPerGood stays the real
+		// level-actual cap (megaron_plan_grain_cap.md), unaffected.
+		cap := opt.PlaceCapPerGood[req.GoodKey]
+		if cap <= 0 {
+			writeError(w, http.StatusConflict, "this hex is fully staffed for that good")
+			return
+		}
+
 		globalOccupancy, err := economy.GlobalHexOccupancy(r.Context(), tx, worldID, []hexgrid.Coord{hex})
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "could not check hex capacity")
