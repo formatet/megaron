@@ -152,6 +152,9 @@ func printNotificationDetail(c *Client, n notificationItem) {
 	if n.Kind == "SiegeStarted" || n.Kind == "SiegeLifted" {
 		printSiegeLine(n)
 	}
+	if n.Kind == "HexTaken" {
+		printHexTakenLine(n)
+	}
 	if n.Kind == "MessengerArrival" || n.Kind == "MessengerReturned" {
 		printMessengerLine(n)
 	}
@@ -1037,4 +1040,34 @@ func printSiegeLine(n notificationItem) {
 	case "SiegeLifted":
 		fmt.Printf("      The siege of %s has lifted\n", place)
 	}
+}
+
+// printHexTakenLine renders HexTaken (shared catchment,
+// megaron_plan_delad_catchment.md) — same wording as web's notifText (format.js).
+func printHexTakenLine(n notificationItem) {
+	var body struct {
+		Name     string `json:"name"`
+		Taker    string `json:"taker"`
+		Q        int    `json:"q"`
+		R        int    `json:"r"`
+		Workers  int    `json:"workers"`
+		Building string `json:"building"`
+	}
+	if err := json.Unmarshal(n.Body, &body); err != nil {
+		return
+	}
+	place := body.Name
+	if place == "" {
+		place = "A settlement"
+	}
+	taker := body.Taker
+	if taker == "" {
+		taker = "Another city"
+	}
+	line := fmt.Sprintf("%s took the hex at (%d,%d) from %s — %d workers are idle in %s",
+		taker, body.Q, body.R, place, body.Workers, place)
+	if body.Building != "" {
+		line += fmt.Sprintf(", its %s is now %s's", body.Building, taker)
+	}
+	fmt.Printf("      %s\n", line)
 }
