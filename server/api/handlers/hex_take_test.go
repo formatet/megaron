@@ -8,13 +8,20 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
+	"net/http/httptest"
 	"sync"
 	"testing"
+	"time"
 
+	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/province"
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
 
@@ -438,5 +445,67 @@ func TestPlacementOptions_TakeableMatchesWriteGate(t *testing.T) {
 				t.Errorf("write gate gave %d (%v) but takeable = %v", code, resp, tc.takeable)
 			}
 		})
+	}
+}
+
+// CancelBuild's behaviour must be unchanged by the cancelQueuedBuild
+// extraction (the take shares it): 200 {"cancelled": type}, row gone, costs
+// refunded; a second cancel finds nothing (404); another Wanax gets 404.
+func TestCancelBuild_RefundsAndDeletesQueueRow(t *testing.T) {
+	f := setupTwoSettlementHexFixture(t, "plains", [2]int{takeHexQ, takeHexR})
+	pool := p10TestPool(t)
+	ctx := context.Background()
+
+	clk := clock.NewTestClock(time.Now())
+	ph := NewProvinceHandler(pool, events.NewScheduler(pool, clk), clk, economy.SitosConfig{}, events.NewStore(pool), nil)
+	r := chi.NewRouter()
+	r.Use(auth.Middleware(auth.NewService(pool, "test-secret")))
+	r.Delete("/worlds/{worldID}/provinces/{provinceID}/build-queue/{queueID}", ph.CancelBuild)
+
+	spec, _ := province.LevelledSpec(province.BuildingFarm, 1)
+	for good := range spec.Costs {
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+			 VALUES ($1, $2, 0, 0, 1000, current_world_tick())
+			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET amount = 0, rate = 0, cap = 1000, calc_tick = current_world_tick()`,
+			f.settlementA, good); err != nil {
+			t.Fatalf("seed %s: %v", good, err)
+		}
+	}
+	queueID := uuid.New()
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO build_queue (id, settlement_id, world_id, building_type, complete_at, hex_q, hex_r)
+		 VALUES ($1, $2, $3, 'farm', now() + interval '1 hour', $4, $5)`,
+		queueID, f.settlementA, f.worldID, takeHexQ, takeHexR); err != nil {
+		t.Fatalf("seed queue: %v", err)
+	}
+	path := "/worlds/" + f.worldID.String() + "/provinces/" + f.provinceA.String() + "/build-queue/" + queueID.String()
+
+	do := func(token string) (int, map[string]any) {
+		req := httptest.NewRequest(http.MethodDelete, path, nil)
+		req.Header.Set("Authorization", "Bearer "+token)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+		var resp map[string]any
+		_ = json.Unmarshal(rec.Body.Bytes(), &resp)
+		return rec.Code, resp
+	}
+	if code, _ := do(f.tokenB); code != http.StatusNotFound {
+		t.Fatalf("another Wanax cancelling = %d, want 404", code)
+	}
+	code, resp := do(f.tokenA)
+	if code != http.StatusOK || resp["cancelled"] != "farm" {
+		t.Fatalf("cancel = %d %v, want 200 {cancelled: farm}", code, resp)
+	}
+	for good, qty := range spec.Costs {
+		var amount float64
+		if err := pool.QueryRow(ctx,
+			`SELECT settled(amount, rate, calc_tick) FROM settlement_goods WHERE settlement_id = $1 AND good_key = $2`,
+			f.settlementA, good).Scan(&amount); err != nil || amount != qty {
+			t.Errorf("refund of %s = %v (err %v), want %v", good, amount, err, qty)
+		}
+	}
+	if code, _ := do(f.tokenA); code != http.StatusNotFound {
+		t.Fatalf("second cancel = %d, want 404", code)
 	}
 }
