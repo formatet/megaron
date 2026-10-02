@@ -306,9 +306,12 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 		// HeldBy names the OTHER settlement that holds this hex; Takeable says
 		// whether this Wanax may take it by placing a gubbe there (unit in
 		// fortify/sentry on it, holder has none). Both absent on an unheld hex.
-		HeldBy   string    `json:"held_by,omitempty"`
-		Takeable *bool     `json:"takeable,omitempty"`
-		Goods    []goodOut `json:"goods"`
+		HeldBy   string `json:"held_by,omitempty"`
+		Takeable *bool  `json:"takeable,omitempty"`
+		// HeldBuilding is the holder's building on a held hex — it changes
+		// owner at a take, so the take button can say so. Absent otherwise.
+		HeldBuilding *hexBuildingOut `json:"held_building,omitempty"`
+		Goods        []goodOut       `json:"goods"`
 	}
 	hexes := make([]hexOut, 0, len(hexOptions))
 	for _, opt := range hexOptions {
@@ -332,6 +335,13 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 			t := hold.Takeable()
 			ho.HeldBy = hold.HolderName
 			ho.Takeable = &t
+			var hb hexBuildingOut
+			if err := h.pool.QueryRow(r.Context(),
+				`SELECT building_type, level FROM buildings WHERE settlement_id = $1 AND hex_q = $2 AND hex_r = $3`,
+				hold.HolderID, opt.Coord.Q, opt.Coord.R,
+			).Scan(&hb.Type, &hb.Level); err == nil {
+				ho.HeldBuilding = &hb
+			}
 		}
 		if b, built := hexBuiltAt[opt.Coord]; built {
 			ho.Building = &hexBuildingOut{Type: b.Type, Level: b.Level}

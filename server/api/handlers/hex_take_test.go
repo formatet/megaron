@@ -541,3 +541,41 @@ func TestPlaceGubbe_TakeOfMineHexMovesTheMine(t *testing.T) {
 		t.Errorf("mine owner = %v (err %v), want B", owner, err)
 	}
 }
+
+// Read surface: a held hex names the holder's building, which changes owner at
+// a take, so the web can say "its farm becomes yours".
+func TestPlacementOptions_HeldHexNamesHoldersBuilding(t *testing.T) {
+	f := setupTwoSettlementHexFixture(t, "plains", [2]int{takeHexQ, takeHexR})
+	pool := p10TestPool(t)
+	f.aHoldsHex(t, 2)
+	if _, err := pool.Exec(context.Background(),
+		`INSERT INTO buildings (settlement_id, building_type, level, hex_q, hex_r) VALUES ($1, 'farm', 2, $2, $3)`,
+		f.settlementA, takeHexQ, takeHexR); err != nil {
+		t.Fatalf("seed farm: %v", err)
+	}
+	f.unit(t, f.owner(t, f.settlementB), "positioned", str("sentry"))
+
+	code, resp := f.doAs(t, f.tokenB, http.MethodGet,
+		"/worlds/"+f.worldID.String()+"/provinces/"+f.provinceB.String()+"/placement-options", nil)
+	if code != http.StatusOK {
+		t.Fatalf("placement-options: %d %v", code, resp)
+	}
+	hexes, _ := resp["hexes"].([]any)
+	for _, raw := range hexes {
+		hex, _ := raw.(map[string]any)
+		q, _ := hex["hex_q"].(float64)
+		r, _ := hex["hex_r"].(float64)
+		if int(q) != takeHexQ || int(r) != takeHexR {
+			if _, has := hex["held_building"]; has {
+				t.Errorf("unheld hex (%v,%v) carries held_building", q, r)
+			}
+			continue
+		}
+		hb, _ := hex["held_building"].(map[string]any)
+		if hb["type"] != "farm" || hb["level"] != float64(2) {
+			t.Fatalf("held_building = %v, want farm level 2", hex["held_building"])
+		}
+		return
+	}
+	t.Fatal("the held hex is missing from placement-options")
+}
