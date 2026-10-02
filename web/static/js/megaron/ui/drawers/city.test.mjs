@@ -27,18 +27,18 @@ test('silver_mine is gone from the Construct label map — an unlabelled fallbac
 });
 
 test('BK2: costs are read from the catalogue, not hardcoded — mutating the fixture mutates the rendered string', () => {
-  const low = buildingOptionsHTML([{ type: 'farm', costs: { timber: 0.769, stone: 9.231 }, purpose: 'x' }]);
+  const low = buildingOptionsHTML([{ type: 'farm', costs: { timber: 6, stone: 4 }, purpose: 'x' }]);
   const high = buildingOptionsHTML([{ type: 'farm', costs: { timber: 5, stone: 40 }, purpose: 'x' }]);
-  assert.match(low, /1 timber 9 stone/);
+  assert.match(low, /6 timber 4 stone/);
   assert.match(high, /5 timber 40 stone/);
   assert.notEqual(low, high);
 });
 
 test('BK3: cost rounding matches the CLI (%.0f per good, cmd_build.go), not the pre-mig-136 hardcoded values', () => {
-  // Post-mig-136 farm cost (province/building.go BuildingSpecs) — the OLD
-  // hardcoded string said "50 timber 20 stone", off by ~65×/~2×.
-  const html = buildingOptionsHTML([{ type: 'farm', costs: { timber: 0.769, stone: 9.231 }, purpose: 'x' }]);
-  assert.match(html, /1 timber 9 stone/);
+  // Farm cost under the recipe catalogue (byggkostnader, 6 timber 4 stone) (province/building.go BuildingSpecs) — the OLD
+  // hardcoded string said "50 timber 20 stone".
+  const html = buildingOptionsHTML([{ type: 'farm', costs: { timber: 6, stone: 4 }, purpose: 'x' }]);
+  assert.match(html, /6 timber 4 stone/);
   assert.doesNotMatch(html, /50 timber/);
 });
 

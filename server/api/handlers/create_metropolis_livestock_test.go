@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"formatet/megaron/server/internal/economy"
+	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -34,4 +35,47 @@ func foundingLivestockAmount(t *testing.T, pool *pgxpool.Pool, settlementID uuid
 		t.Fatalf("load livestock amount: %v", err)
 	}
 	return amount
+}
+
+// TestFounding_Metropolis_StartsWithoutTimberOrStone — megaron_plan_byggkostnader
+// steg 3 / invariant 4: a new city's stock cannot pay for any recipe in the
+// catalogue (all need timber or stone), so the catchment has to be worked first.
+// The colony path (combat.foundColony) carries a second copy of the same CASE
+// and shares economy.ColonyGrainSeed.
+func TestFounding_Metropolis_StartsWithoutTimberOrStone(t *testing.T) {
+	terrains := [7]string{"plains", "plains", "plains", "plains", "plains", "plains", "plains"}
+	pool, sid := foundMetropolisFixture(t, terrains)
+
+	stock := map[string]float64{}
+	rows, err := pool.Query(context.Background(),
+		`SELECT good_key, amount FROM settlement_goods WHERE settlement_id=$1`, sid)
+	if err != nil {
+		t.Fatalf("load stock: %v", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var k string
+		var a float64
+		if err := rows.Scan(&k, &a); err != nil {
+			t.Fatal(err)
+		}
+		stock[k] = a
+	}
+	if stock["timber"] != 0 || stock["stone"] != 0 {
+		t.Errorf("founding stock timber=%v stone=%v, want 0 and 0", stock["timber"], stock["stone"])
+	}
+	if stock["grain"] != 8 {
+		t.Errorf("founding grain = %v, want 8", stock["grain"])
+	}
+	for bt, spec := range province.BuildingSpecs {
+		afford := true
+		for g, c := range spec.Costs {
+			if stock[g] < c {
+				afford = false
+			}
+		}
+		if afford {
+			t.Errorf("%s is affordable from the founding stock — the bootstrap rule is broken", bt)
+		}
+	}
 }

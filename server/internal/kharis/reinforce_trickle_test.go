@@ -205,7 +205,9 @@ func TestApplyReinforcement_ResourceShortfallThrottlesRefill(t *testing.T) {
 	// hade bronsen räckt till floor(0,5/0,12) = 4 män, alltså precis
 	// ReinforceMenPerTick-taket — och testet hade slutat mäta det det påstår sig
 	// mäta (att BRONSEN binder, inte taket). 0,25 ger floor(0,25/0,12) = 2 män.
-	setGood(t, pool, settlementID, "bronze", 0.25) // affords floor(0.25/0.12) = 2 men, not the full 4
+	// 0,25 → 0,35 (§10, 2026-10-02): elitinfanteriets bronskostnad är 0,16 per man
+	// igen; 0,35 ger floor(0,35/0,16) = 2 män och lämnar 0,03, som inte köper en tredje.
+	setGood(t, pool, settlementID, "bronze", 0.35) // affords floor(0.35/0.16) = 2 men, not the full 4
 
 	h := newTestTickHandler(pool)
 	unitID := seedReinforcingUnit(t, pool, worldID, settlementID, "elite_infantry", 50)
@@ -216,17 +218,17 @@ func TestApplyReinforcement_ResourceShortfallThrottlesRefill(t *testing.T) {
 
 	size, reinforcing := loadUnitState(t, pool, unitID)
 	if size != 52 {
-		t.Errorf("size = %d, want 52 (50 + 2 — bronze at 0.25 only affords 2 men at 0.12/man, below the 4/tick cap)", size)
+		t.Errorf("size = %d, want 52 (50 + 2 — bronze at 0.35 only affords 2 men at 0.16/man, below the 4/tick cap)", size)
 	}
 	if !reinforcing {
 		t.Error("reinforcing = false, want true (still under 100, just resource-throttled this tick)")
 	}
-	wantBronzeDrawn := 2 * 0.12
+	wantBronzeDrawn := 2 * 0.16
 	if diff := (bronzeBefore - bronzeAfter) - wantBronzeDrawn; diff > 1e-9 || diff < -1e-9 {
-		t.Errorf("bronze drawn = %.4f, want %.4f (2 men x 0.12/man)", bronzeBefore-bronzeAfter, wantBronzeDrawn)
+		t.Errorf("bronze drawn = %.4f, want %.4f (2 men x 0.16/man)", bronzeBefore-bronzeAfter, wantBronzeDrawn)
 	}
 
-	// Bronze now effectively exhausted (0.01 left, buys 0 more men at 0.12/man)
+	// Bronze now effectively exhausted (0.03 left, buys 0 more men at 0.16/man)
 	// — a further day must not throttle-fill a fractional man or go negative.
 	// Re-seed grain/silver only (NOT bronze) so bronze stays the sole binding
 	// constraint on this second day too.
@@ -235,7 +237,7 @@ func TestApplyReinforcement_ResourceShortfallThrottlesRefill(t *testing.T) {
 	advanceOneDay(t, h, pool, worldID)
 	size2, _ := loadUnitState(t, pool, unitID)
 	if size2 != 52 {
-		t.Errorf("size after bronze exhausted = %d, want still 52 (0.01 bronze buys 0 whole men)", size2)
+		t.Errorf("size after bronze exhausted = %d, want still 52 (0.03 bronze buys 0 whole men)", size2)
 	}
 	if b := goodAmount(t, pool, settlementID, "bronze"); b < 0 {
 		t.Errorf("bronze went negative: %.4f", b)

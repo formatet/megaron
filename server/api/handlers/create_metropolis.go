@@ -117,14 +117,15 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 	if _, err = tx.Exec(ctx,
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
 		 SELECT $1, g.key,
-		        -- Startlagret omskalat med varje varas divisor (mig 136,
-		        -- dagsverkesskalan): grain ÷43,2 · timmer ÷216 · sten ÷7,2.
+		        -- Startlagret (megaron_plan_byggkostnader steg 3): 8 spannmål, inget
+		        -- timmer och ingen sten — catchmenten ska behöva skog och kulle.
+		        -- En kopia finns i combat/unit_arrival.go foundColony.
 		        -- Livestock kommer från economy.FoundingHerdLivestock, som är
 		        -- ett ANTAL DJUR och inte en matmängd — den skalas därför inte.
 		        CASE g.key
-		            WHEN 'grain'     THEN 6.94
-		            WHEN 'timber'    THEN 0.926
-		            WHEN 'stone'     THEN 41.67
+		            WHEN 'grain'     THEN 8
+		            WHEN 'timber'    THEN 0
+		            WHEN 'stone'     THEN 0
 		            WHEN 'livestock' THEN $2::numeric
 		            ELSE 0
 		        END,

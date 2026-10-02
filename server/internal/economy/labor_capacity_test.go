@@ -133,10 +133,10 @@ func TestWorkplaceSlots_ShipyardMatchesTaxonomy(t *testing.T) {
 }
 
 // TestHexCapacity_UnknownTerrainGrantsNothing — arbetssätt §7: a terrain with
-// no matching rule (e.g. mountain_red, semi_desert — in the enum but not in
-// §8.3's coverage) must contribute nothing, not a guessed default.
+// no matching rule (a name the table does not know) must contribute nothing,
+// not a guessed default. (mountain_red/semi_desert got fieldstone in mig 156.)
 func TestHexCapacity_UnknownTerrainGrantsNothing(t *testing.T) {
-	for _, terrain := range []string{"mountain_red", "semi_desert"} {
+	for _, terrain := range []string{"nowhere", "tundra"} {
 		if rules := hexRules(terrain, false, false, false); len(rules) != 0 {
 			t.Errorf("%s has no rule — it must stay absent from the table, got %v", terrain, rules)
 		}

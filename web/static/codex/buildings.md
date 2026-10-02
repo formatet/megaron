@@ -6,7 +6,7 @@ Open **City → Buildings**. The tab shows what is **built** (and its level), th
 | **Harbour** | Works the settlement's coastal waters and enables sea trade ([[sea]]). Stands in the city — see below. |
 | **Shipyard** | Builds and repairs ships (needs a coastal city — an adjacent sea hex). |
 | **Lumbermill** | Stands on a forest hex and works its stands. |
-| **Stone Quarry** | Stands on a hex you choose and works the stone there. |
+| **Stone Quarry** | Stands on a land hex you choose and works the stone there — far more on hills and limestone. |
 | **Mine** | Stands on an ore deposit hex and extracts whatever it holds — copper, tin or silver. |
 | **Foundry** | Smelts copper and tin into bronze ([[bronze]]). The gate to elite soldiers and war galleys. |
 | **Barracks** | Enables recruiting infantry and war chariots ([[units]]). |
@@ -34,6 +34,8 @@ A farm, mine, lumbermill, stonequarry or harbour makes **space for four more wor
 Buildings level up to three. **A higher level makes every worker on the hex produce more** — see the rule above.
 
 Levelling a Harbour, Shipyard or Temple further also needs **cedar**, which is scarce and often only available by [[trade]].
+
+A building costs what it is made of: **timber** for the Farm, Market, Stable, Harbour, Shipyard and Palisade; **stone** for the Stone Quarry, Mine, Barracks, Temple and Stone Wall. The prices are shown live in Construct.
 
 A building produces nothing without people in it. Staff it from the centre **City** hex of the placement grid ([[citizens]]).
 

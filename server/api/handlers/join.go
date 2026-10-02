@@ -209,6 +209,20 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		 ),
 		 silver_tiles AS MATERIALIZED (
 		     SELECT q, r FROM map_tiles WHERE world_id = $1 AND COALESCE(silver_deposit, false)
+		 ),
+		 -- Landmasses with at least one timber hex (megaron_plan_byggkostnader
+		 -- steg 4): every building costs timber and a new city starts with none, so
+		 -- a landmass without forest is a dead end. Stone needs no rule — fieldstone
+		 -- (mig 156) is on every land hex. The timber terrains are read from
+		 -- production_rules, not listed here. MATERIALIZED for the same reason as
+		 -- the ore CTEs above: an inlined CTE is re-evaluated per candidate.
+		 viable_landmasses AS MATERIALIZED (
+		     SELECT DISTINCT vt.landmass_id
+		     FROM map_tiles vt
+		     WHERE vt.world_id = $1 AND vt.landmass_id IS NOT NULL
+		       AND vt.terrain IN (SELECT terrain_type FROM production_rules
+		                          WHERE good_key = 'timber' AND building_type IS NULL
+		                            AND terrain_type IS NOT NULL)
 		 )
 		 SELECT mt.q, mt.r, mt.terrain,
 		        mt.copper_deposit, mt.tin_deposit,
@@ -220,6 +234,9 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		 WHERE mt.world_id = $1
 		   AND p.id IS NULL
 		   AND mt.terrain NOT IN ('coastal_sea','deep_sea','river','river_ford','mountain_limestone','mountain_red','semi_desert')
+		   -- A world generated before mig 124 has landmass_id NULL everywhere; let
+		   -- those candidates through rather than declare the whole world full.
+		   AND (mt.landmass_id IS NULL OR mt.landmass_id IN (SELECT landmass_id FROM viable_landmasses))
 		   -- Keep clear of settled ground …
 		   AND NOT EXISTS (
 		       SELECT 1 FROM provinces p2

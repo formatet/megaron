@@ -20,9 +20,9 @@ const (
 	// the colonising unit's own size is added (see foundColony).
 	ColonyBaseFoundingPopulation = 1500
 	// ColonyGrainSeed is the starting grain stockpile a colony is seeded with.
-	// 300 → 6,94 (megaron_plan_dagsverkesskalan, mig 136): grain-enhet, ÷43,2.
-	// Motsvarar knappt 14 gubbdagsransoner, exakt som före omskalningen.
-	ColonyGrainSeed = 6.94
+	// 8 (megaron_plan_byggkostnader steg 3, Timothy 2026-10-01) — samma som
+	// huvudstadens startlager i create_metropolis.go.
+	ColonyGrainSeed = 8
 )
 
 // MaxUnitSize is the hard ceiling on a single unit's headcount. Recruitment has

@@ -77,12 +77,12 @@ func seedTwoLandmassWorld(t *testing.T, pool *pgxpool.Pool) uuid.UUID {
 	}
 	one, two := 1, 2
 	tiles := []tile{
-		{0, 0, "plains", &one, false},       // landmass B, west (halfQ=5, q<=5)
-		{7, 100, "plains", &one, false},     // landmass B, east, near the tin deposit
-		{8, 100, "plains", &one, false},     // landmass B, east, near the tin deposit
-		{9, 100, "mountain_red", nil, true}, // deposit-only tile, excluded from candidacy by terrain
-		{8, 200, "plains", &two, false},     // landmass A, east, untouched, unbiased
-		{9, 200, "plains", &two, false},     // landmass A, east, untouched, unbiased
+		{0, 0, "forest_olive_grove", &one, false},   // landmass B, west (halfQ=5, q<=5); forest so B is viable (spawn needs timber)
+		{7, 100, "plains", &one, false},             // landmass B, east, near the tin deposit
+		{8, 100, "plains", &one, false},             // landmass B, east, near the tin deposit
+		{9, 100, "mountain_red", nil, true},         // deposit-only tile, excluded from candidacy by terrain
+		{8, 200, "plains", &two, false},             // landmass A, east, untouched, unbiased
+		{9, 200, "forest_olive_grove", &two, false}, // landmass A, east, untouched, unbiased; forest so A is viable
 	}
 	for _, tl := range tiles {
 		if _, err := pool.Exec(ctx,
