@@ -14,7 +14,7 @@ func TestPlaceNextGubbeOnBestFoodHex_PicksHighestYieldThenFallsToPool(t *testing
 	pool := testPool(t)
 	ctx := context.Background()
 
-	// A settlement with ONE coastal_sea hex (fish, cap 1 without harbour) and
+	// A settlement with ONE coastal_sea hex (fish, cap 2 without harbour) and
 	// the rest mountain_limestone (no food at all) — a tightly bounded
 	// scenario so "falls to pool once full" is reachable in one test.
 	settlementID := recomputeWaterFixture(t, 100, 500, /*grainTiles*/ 0, /*fishTiles*/ 1)
@@ -34,21 +34,26 @@ func TestPlaceNextGubbeOnBestFoodHex_PicksHighestYieldThenFallsToPool(t *testing
 		t.Fatalf("placements after gubbe 1 = %d, want 1", count)
 	}
 
-	// The fish hex's cap (1, no harbour) is now full — gubbe 2 must fall to
+	// Gubbe 2 takes the fish hex's second place.
+	if placed2, err := PlaceNextGubbeOnBestFoodHex(ctx, pool, settlementID, 2); err != nil || !placed2 {
+		t.Fatalf("expected the second gubbe on the fish hex (cap 2): placed=%v err=%v", placed2, err)
+	}
+
+	// The fish hex's cap (2, no harbour) is now full — gubbe 3 must fall to
 	// the pool (grain never applies here: recomputeWaterFixture's
 	// grainTiles=0 means no grain-capable hex exists at all).
-	placed2, err := PlaceNextGubbeOnBestFoodHex(ctx, pool, settlementID, 2)
+	placed3, err := PlaceNextGubbeOnBestFoodHex(ctx, pool, settlementID, 3)
 	if err != nil {
-		t.Fatalf("PlaceNextGubbeOnBestFoodHex (2nd): %v", err)
+		t.Fatalf("PlaceNextGubbeOnBestFoodHex (3rd): %v", err)
 	}
-	if placed2 {
-		t.Error("expected the second gubbe to fall to the pool (fish hex already full, no grain hex exists), got placed=true")
+	if placed3 {
+		t.Error("expected the third gubbe to fall to the pool (fish hex already full, no grain hex exists), got placed=true")
 	}
 	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM settlement_placement WHERE settlement_id = $1`, settlementID).Scan(&count); err != nil {
 		t.Fatalf("count placements: %v", err)
 	}
-	if count != 1 {
-		t.Errorf("placements after gubbe 2 (should have fallen to pool) = %d, want still 1", count)
+	if count != 2 {
+		t.Errorf("placements after gubbe 3 (should have fallen to pool) = %d, want still 2", count)
 	}
 }
 

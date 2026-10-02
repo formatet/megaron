@@ -254,12 +254,13 @@ func TestPlaceGubbe_SharedHexRejectionNamesHolderOnlyWhenForeign(t *testing.T) {
 
 // TestPlaceGubbe_ConcurrentRaceForSharedHexLastSlot is the plan's §5 race
 // proof: A and B fire their placement for the shared hex's LAST slot (cap=1,
-// coastal_sea with no harbour — hexCapacityRule{"fish",1,2,"harbour"})
+// forest_olive_grove with no lumbermill — hexRule{"timber",1,"lumbermill"}; was coastal_sea until
+// coastal fish went to 2 places, 2026-10-01)
 // concurrently. Exactly one may succeed — the map_tiles row lock in
 // PlaceGubbe's hex branch serializes the two transactions so the second one
 // re-reads a post-commit occupancy count instead of racing on a stale read.
 func TestPlaceGubbe_ConcurrentRaceForSharedHexLastSlot(t *testing.T) {
-	f := setupTwoSettlementHexFixture(t, "coastal_sea", [2]int{2, 0})
+	f := setupTwoSettlementHexFixture(t, "forest_olive_grove", [2]int{2, 0})
 
 	var wg sync.WaitGroup
 	codes := make([]int, 2)
@@ -268,12 +269,12 @@ func TestPlaceGubbe_ConcurrentRaceForSharedHexLastSlot(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		codes[0], resps[0] = f.doAs(t, f.tokenA, http.MethodPost, f.placementsPath(f.provinceA),
-			map[string]any{"target_kind": "hex", "hex_q": 2, "hex_r": 0, "good_key": "fish"})
+			map[string]any{"target_kind": "hex", "hex_q": 2, "hex_r": 0, "good_key": "timber"})
 	}()
 	go func() {
 		defer wg.Done()
 		codes[1], resps[1] = f.doAs(t, f.tokenB, http.MethodPost, f.placementsPath(f.provinceB),
-			map[string]any{"target_kind": "hex", "hex_q": 2, "hex_r": 0, "good_key": "fish"})
+			map[string]any{"target_kind": "hex", "hex_q": 2, "hex_r": 0, "good_key": "timber"})
 	}()
 	wg.Wait()
 
@@ -288,7 +289,7 @@ func TestPlaceGubbe_ConcurrentRaceForSharedHexLastSlot(t *testing.T) {
 	}
 
 	// Confirm the DB agrees with the HTTP result: the hex's global occupancy
-	// for fish must be exactly 1, never 2 — the invariant itself, not just
+	// for timber must be exactly 1, never 2 — the invariant itself, not just
 	// the two status codes, in case a bug let both rows insert but only one
 	// HTTP response reported success.
 	sharedHex := hexgrid.Coord{Q: 2, R: 0}
@@ -296,8 +297,8 @@ func TestPlaceGubbe_ConcurrentRaceForSharedHexLastSlot(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GlobalHexOccupancy: %v", err)
 	}
-	if n := occ[sharedHex]["fish"]; n != 1 {
-		t.Fatalf("global occupancy for fish on the shared hex after the race = %d, want exactly 1", n)
+	if n := occ[sharedHex]["timber"]; n != 1 {
+		t.Fatalf("global occupancy for timber on the shared hex after the race = %d, want exactly 1", n)
 	}
 }
 
