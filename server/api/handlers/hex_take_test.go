@@ -575,6 +575,9 @@ func TestPlacementOptions_HeldHexNamesHoldersBuilding(t *testing.T) {
 		if hb["type"] != "farm" || hb["level"] != float64(2) {
 			t.Fatalf("held_building = %v, want farm level 2", hex["held_building"])
 		}
+		if hex["held_workers"] != float64(2) {
+			t.Fatalf("held_workers = %v, want 2", hex["held_workers"])
+		}
 		return
 	}
 	t.Fatal("the held hex is missing from placement-options")

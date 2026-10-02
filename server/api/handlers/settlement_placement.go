@@ -311,7 +311,10 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 		// HeldBuilding is the holder's building on a held hex — it changes
 		// owner at a take, so the take button can say so. Absent otherwise.
 		HeldBuilding *hexBuildingOut `json:"held_building,omitempty"`
-		Goods        []goodOut       `json:"goods"`
+		// HeldWorkers is how many of the holder's gubbar work the held hex —
+		// they go home to its pool at a take. Absent on an unheld hex.
+		HeldWorkers int       `json:"held_workers,omitempty"`
+		Goods       []goodOut `json:"goods"`
 	}
 	hexes := make([]hexOut, 0, len(hexOptions))
 	for _, opt := range hexOptions {
@@ -335,6 +338,7 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 			t := hold.Takeable()
 			ho.HeldBy = hold.HolderName
 			ho.Takeable = &t
+			ho.HeldWorkers = hold.TotalWorkers()
 			var hb hexBuildingOut
 			if err := h.pool.QueryRow(r.Context(),
 				`SELECT building_type, level FROM buildings WHERE settlement_id = $1 AND hex_q = $2 AND hex_r = $3`,
