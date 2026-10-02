@@ -30,14 +30,14 @@ func TestHarbourStillBoostsFish_ShipyardSplitRegression(t *testing.T) {
 		t.Fatalf("create harbour building: %v", err)
 	}
 
-	// Rule table: coastal_sea fish P0 1, harbour +BuildingExtraPlaces — with a
-	// harbour built, one fish hex carries 5 places, not 1.
+	// Rule table: coastal_sea fish P0 2 (1 until 2026-10-01), harbour
+	// +BuildingExtraPlaces — with a harbour built, one fish hex carries 6 places, not 2.
 	capBefore, err := LoadHexCapacity(ctx, pool, settlementID)
 	if err != nil {
 		t.Fatalf("LoadHexCapacity: %v", err)
 	}
-	if capBefore["fish"] != 1+BuildingExtraPlaces {
-		t.Fatalf("fish hex cap with harbour built = %d, want %d (harbour must still boost fish capacity)", capBefore["fish"], 1+BuildingExtraPlaces)
+	if capBefore["fish"] != 2+BuildingExtraPlaces {
+		t.Fatalf("fish hex cap with harbour built = %d, want %d (harbour must still boost fish capacity)", capBefore["fish"], 2+BuildingExtraPlaces)
 	}
 
 	// Staff the fish hex to its harbour-boosted cap (2) and confirm production

@@ -62,7 +62,7 @@ func hexRules(terrain string, copperDep, tinDep, silverDep bool) []hexRule {
 	case "forest_cedar":
 		out = append(out, hexRule{"cedar", 1, "lumbermill"})
 	case "coastal_sea":
-		out = append(out, hexRule{"fish", 1, "harbour"})
+		out = append(out, hexRule{"fish", 2, "harbour"}) // 2 places: fisket ska kunna ge mycket mat (Timothy 2026-10-01); rate stays 1,0 — the dagsverkesskala
 	case "river", "river_ford", "deep_sea":
 		out = append(out, hexRule{"fish", 1, ""})
 	}

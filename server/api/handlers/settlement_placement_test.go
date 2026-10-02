@@ -216,8 +216,8 @@ func TestPlaceGubbe_GrainHexRejectsOverCapacity(t *testing.T) {
 	}
 }
 
-// TestPlaceGubbe_FishHexRejectsOverCapacity: coastal_sea's P3 cap (1, no
-// harbour) means a SECOND gubbe on the same fish hex must be rejected —
+// TestPlaceGubbe_FishHexRejectsOverCapacity: coastal_sea's cap (2, no
+// harbour; 1 until 2026-10-01) means a THIRD gubbe on the same fish hex must be rejected —
 // fish (unlike grain) is a real, physically capped placement.
 func TestPlaceGubbe_FishHexRejectsOverCapacity(t *testing.T) {
 	f := setupPlacementFixture(t, map[[2]int]string{{1, 0}: "coastal_sea"})
@@ -229,8 +229,13 @@ func TestPlaceGubbe_FishHexRejectsOverCapacity(t *testing.T) {
 	}
 	code2, resp2 := f.do(t, http.MethodPost, f.placementsPath(),
 		map[string]any{"target_kind": "hex", "hex_q": 1, "hex_r": 0, "good_key": "fish"})
-	if code2 != http.StatusConflict {
-		t.Fatalf("second fish placement (over cap=1) = %d: %v, want 409", code2, resp2)
+	if code2 != http.StatusCreated {
+		t.Fatalf("second fish placement (cap=2) = %d: %v", code2, resp2)
+	}
+	code3, resp3 := f.do(t, http.MethodPost, f.placementsPath(),
+		map[string]any{"target_kind": "hex", "hex_q": 1, "hex_r": 0, "good_key": "fish"})
+	if code3 != http.StatusConflict {
+		t.Fatalf("third fish placement (over cap=2) = %d: %v, want 409", code3, resp3)
 	}
 }
 
@@ -351,12 +356,13 @@ func TestPlacementOptions_GrainCappedFishCapped(t *testing.T) {
 		t.Fatalf("coastal_sea hex has no fish option: %v", fishHex)
 	}
 	cap, hasCap := fish["cap"]
-	if !hasCap || cap.(float64) != 1 {
-		t.Errorf("fish cap = %v (hasCap=%v), want 1 (coastal_sea, no harbour, P3)", cap, hasCap)
+	if !hasCap || cap.(float64) != 2 {
+		t.Errorf("fish cap = %v (hasCap=%v), want 2 (coastal_sea, no harbour)", cap, hasCap)
 	}
-	wantMarginal := fish["rate_per_tick"].(float64) / cap.(float64)
-	if fish["marginal_yield"].(float64) != wantMarginal {
-		t.Errorf("fish marginal_yield = %v, want rate/cap = %v", fish["marginal_yield"], wantMarginal)
+	// Per gubbe, like grain above (byggnadsregeln). rate/cap only matched while
+	// the cap was 1 (until 2026-10-01).
+	if fish["marginal_yield"] != fish["rate_per_tick"] {
+		t.Errorf("fish marginal_yield (%v) must equal rate_per_tick (%v)", fish["marginal_yield"], fish["rate_per_tick"])
 	}
 
 	// Place one gubbe on the fish hex, then re-fetch: occupancy must show up.
