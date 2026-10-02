@@ -124,7 +124,7 @@ export function notifDomain(kind) {
     MetropolisFounded: 'city', OutpostEstablished: 'city',
     FoodShortfall: 'city', SubsistenceWarning: 'city',
     SitosGranaryRelease: 'city', SitosIntervention: 'city', SitosFundLow: 'city',
-    HexBlockaded: 'city', HexUnblockaded: 'city',
+    HexBlockaded: 'city', HexUnblockaded: 'city', HexTaken: 'city',
     // Trade — goods on the move, and the offers that set them moving.
     TradeDelivery: 'trade', TradeReturn: 'trade', TradeLost: 'trade',
     TradeCaravanArrival: 'trade', TransferDelivered: 'trade',
@@ -177,6 +177,7 @@ export function notifIcon(kind) {
     FoodShortfall:      '🍽',
     HexBlockaded:       '🚧',
     HexUnblockaded:     '↩',
+    HexTaken:           '🚩',
     SiegeStarted:       '⚔️',
     SiegeLifted:        '🕊️',
     PickupWaiting:      '⚓',
@@ -706,6 +707,17 @@ export function notifText(kind, body) {
       const place = body.name || 'A settlement';
       return `${n} worker${n === 1 ? '' : 's'} in ${place} ${n === 1 ? 'has' : 'have'} resumed work ` +
              `— the foreign unit at (${body.q}, ${body.r}) is gone`;
+    }
+    case 'HexTaken': {
+      // Payload per the shared-catchment take (megaron_plan_delad_catchment.md),
+      // sent to the LOSER: the taker's unit held the hex, their worker was
+      // placed there, the loser's workers went home to the idle pool.
+      const n = body.workers || 0;
+      const place = body.name || 'A settlement';
+      const taker = body.taker || 'Another city';
+      const bld = body.building ? `, its ${body.building} is now ${taker}'s` : '';
+      return `${taker} took the hex at (${body.q}, ${body.r}) from ${place} — ` +
+             `${n} worker${n === 1 ? ' is' : 's are'} idle in ${place}${bld}`;
     }
     case 'SiegeStarted': {
       // Payload per economy.SyncSiegeState (megaron_plan_belagringsdispatch.md,

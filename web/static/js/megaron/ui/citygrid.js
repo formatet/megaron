@@ -1,6 +1,6 @@
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
-import { formatApiError } from './format.js';
+import { formatApiError, esc } from './format.js';
 
 // Gubbe placement grid (P5: megaron_plan_fysisk_gubbemodell.md). Replaces the
 // old percent-per-good allocation table (DE2=B, 2026-08-07) with the P0-UI-
@@ -50,11 +50,21 @@ export function terrainLabel(t) {
   return (t || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
+// takeLabel is the button text for taking a hex another city holds
+// (megaron_plan_delad_catchment.md): says what the placement will do. Null when
+// the hex is not takeable. held_building is absent when nothing stands there.
+export function takeLabel(hex) {
+  if (!hex || !hex.held_by || !hex.takeable) return null;
+  const n = hex.held_workers || 0;
+  const bld = hex.held_building ? `, its ${hex.held_building.type} becomes yours` : '';
+  return `Take: ${hex.held_by}'s ${n} worker${n === 1 ? ' goes' : 's go'} home${bld}`;
+}
+
 // target is {target_kind:'hex', hex_ordinal} or {target_kind:'building', building_type}
 // — resolved once by the caller (which already knows which hex/building this
 // row belongs to) and carried on the row as JSON, so the click handler never
 // has to re-derive it from the DOM.
-function goodRowHTML(target, good) {
+function goodRowHTML(target, good, take) {
   const capped = good.cap != null;
   const full = capped && good.placed >= good.cap;
   const pipsHTML = capped
@@ -71,9 +81,11 @@ function goodRowHTML(target, good) {
         <div>${pipsHTML}</div>
       </div>
       <div style="display:flex;gap:.3rem">
-        <button class="btn-small gubbe-act" data-verb="place1" ${full ? 'disabled' : ''}>+1</button>
+        ${take
+          ? `<button class="btn-small gubbe-act gubbe-take" data-verb="place1">${esc(take)}</button>`
+          : `<button class="btn-small gubbe-act" data-verb="place1" ${full ? 'disabled' : ''}>+1</button>
         ${full ? '' : `<button class="btn-small gubbe-act" data-verb="fill">Fill</button>`}
-        <button class="btn-small gubbe-act" data-verb="unplace1" ${good.placed > 0 ? '' : 'disabled'}>−1</button>
+        <button class="btn-small gubbe-act" data-verb="unplace1" ${good.placed > 0 ? '' : 'disabled'}>−1</button>`}
       </div>
     </div>`;
 }
@@ -245,7 +257,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
     const water = WATER_TERRAINS.has(h.terrain);
     const anyGood = (h.goods || [])[0];
     const full = anyGood && anyGood.cap != null && (h.goods || []).every(g => g.cap == null || g.placed >= g.cap);
-    const cls = ['gubbe-hex', water ? 'water' : '', full ? 'full' : ''].filter(Boolean).join(' ');
+    const cls = ['gubbe-hex', water ? 'water' : '', full ? 'full' : '', h.held_by ? (h.takeable ? 'takeable' : 'held') : ''].filter(Boolean).join(' ');
     return `<g class="gubbe-hex-g" data-target="hex" data-ordinal="${h.hex_ordinal}">
       <polygon class="${cls}" points="${hexCorners(p.x, p.y, HEX_SIZE)}"></polygon>
       <text x="${p.x}" y="${p.y - 4}" class="gubbe-hex-label">#${h.hex_ordinal}</text>
@@ -343,8 +355,9 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
       if (!hex) return;
       detail.innerHTML = `
         <div class="dsec-title">#${hex.hex_ordinal} — ${terrainLabel(hex.terrain)}</div>
+        ${hex.held_by ? `<p class="gubbe-held-note">Held by ${esc(hex.held_by)}${hex.takeable ? '' : ' — stand a unit there in fortify or sentry to take it'}</p>` : ''}
         ${(hex.goods || []).length
-          ? hex.goods.map(good => goodRowHTML({ target_kind: 'hex', hex_ordinal: hex.hex_ordinal }, good)).join('')
+          ? hex.goods.map(good => goodRowHTML({ target_kind: 'hex', hex_ordinal: hex.hex_ordinal }, good, takeLabel(hex))).join('')
           : '<p class="empty-state">No producible good on this hex.</p>'}`;
     }
 

@@ -584,3 +584,18 @@ test('MessengerReturned says whether an answer came back', () => {
     'Your messenger returned from Knossos with no reply',
   );
 });
+
+// HexTaken (shared catchment): sent to the loser, names taker, hex, idle workers.
+test('HexTaken names taker, hex, loser, idle workers and the building', () => {
+  assert.equal(
+    notifText('HexTaken', { name: 'Petras', taker: 'Knossos', workers: 3, q: 14, r: 33, building: 'farm' }),
+    "Knossos took the hex at (14, 33) from Petras — 3 workers are idle in Petras, its farm is now Knossos's",
+  );
+});
+
+test('HexTaken omits the building clause when none stood there and singularises', () => {
+  assert.equal(
+    notifText('HexTaken', { name: 'Petras', taker: 'Knossos', workers: 1, q: 14, r: 33, building: '' }),
+    'Knossos took the hex at (14, 33) from Petras — 1 worker is idle in Petras',
+  );
+});

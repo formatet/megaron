@@ -19,7 +19,7 @@ globalThis.document ??= {
 globalThis.window ??= { addEventListener() {}, matchMedia: () => ({ matches: false, addEventListener() {} }) };
 globalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };
 
-const { placementOutcome, refusalText, selectionKey } = await import('./citygrid.js');
+const { placementOutcome, refusalText, selectionKey, takeLabel } = await import('./citygrid.js');
 
 // The refusal sentences below are copied verbatim from the server
 // (api/handlers/settlement_placement.go) — they are the actual bodies this
@@ -168,4 +168,17 @@ test('CG11: insufficient_goods is delegated to formatApiError, the same helper e
     json: async () => ({ error: 'insufficient_goods', missing: [{ good: 'timber', need: 12.4, have: 3.02 }] }),
   });
   assert.match(text, /timber 12 needed, 3 in store/);
+});
+
+test('takeLabel says what taking does, building part only when one stands there', () => {
+  assert.equal(
+    takeLabel({ held_by: 'Petras', takeable: true, held_workers: 3, held_building: { type: 'farm', level: 2 } }),
+    "Take: Petras's 3 workers go home, its farm becomes yours",
+  );
+  assert.equal(
+    takeLabel({ held_by: 'Petras', takeable: true, held_workers: 1 }),
+    "Take: Petras's 1 worker goes home",
+  );
+  assert.equal(takeLabel({ held_by: 'Petras', takeable: false, held_workers: 3 }), null);
+  assert.equal(takeLabel({}), null);
 });
