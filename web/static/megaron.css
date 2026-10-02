@@ -1412,6 +1412,10 @@ body:has(.auth-page) main {
 .gubbe-hex { fill: var(--bg-raised); stroke: var(--border); stroke-width: 1.5; }
 .gubbe-hex.water { fill: var(--sea); }
 .gubbe-hex.full { stroke: var(--safe); stroke-width: 2; }
+.gubbe-hex.held { stroke: var(--danger); stroke-width: 2; stroke-dasharray: 3 2; }
+.gubbe-hex.takeable { stroke: var(--accent-war); stroke-width: 3; stroke-dasharray: 3 2; }
+.gubbe-held-note { font-size: var(--fs-xs); color: var(--danger); margin: 0 0 0.3rem; }
+.gubbe-take { color: var(--accent-war); text-align: left; white-space: normal; }
 .gubbe-hex.selected { stroke: var(--accent); stroke-width: 3; }
 .gubbe-city-hex { fill: var(--sandstone); stroke: var(--gold); stroke-width: 2; }
 .gubbe-hex-label { font-family: var(--mono); font-size: 9px; fill: var(--text); text-anchor: middle; pointer-events: none; }

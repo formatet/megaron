@@ -129,36 +129,30 @@ func TestSettlementCatchmentOverlap_Distance2Blocked(t *testing.T) {
 		t.Fatalf("SettlementCatchmentOverlap: %v", err)
 	}
 	if conflict == nil {
-		t.Fatal("expected a conflict at hex distance 2 — below minSettlementCentreDistance (4)")
+		t.Fatal("expected a conflict at hex distance 2 — below minSettlementCentreDistance (3)")
 	}
 }
 
-// TestSettlementCatchmentOverlap_Distance3Blocked: one hex short of §3's
-// minimum (4) must still be rejected — the tightest still-blocked case.
-func TestSettlementCatchmentOverlap_Distance3Blocked(t *testing.T) {
+// TestSettlementCatchmentOverlap_Distance3Allowed: exactly the minimum (3,
+// megaron_plan_delad_catchment.md) is allowed; distance 2 (above) is not.
+func TestSettlementCatchmentOverlap_Distance3Allowed(t *testing.T) {
 	pool := testPool(t)
 	worldID := testWorld(t, pool)
 	owner := testOwner(t, pool, "owner")
-	existing := seedSettlement(t, pool, worldID, owner, 0, 0, "Mykene", "active")
+	seedSettlement(t, pool, worldID, owner, 0, 0, "Mykene", "active")
 
 	conflict, err := SettlementCatchmentOverlap(context.Background(), pool, worldID, 3, 0)
 	if err != nil {
 		t.Fatalf("SettlementCatchmentOverlap: %v", err)
 	}
-	if conflict == nil {
-		t.Fatal("expected a conflict at hex distance 3 — one hex short of the minimum (4)")
-	}
-	if conflict.SettlementID != existing {
-		t.Errorf("expected conflict to name Mykene (%s), got %s", existing, conflict.SettlementID)
+	if conflict != nil {
+		t.Fatalf("expected no conflict at hex distance 3 (the minimum), got conflict with settlement %s", conflict.SettlementID)
 	}
 }
 
-// TestSettlementCatchmentOverlap_Distance4Allowed is §3's headline change
-// (megaron_plan_hexagarskap_och_stadsavstand.md, Timothy 2026-09-04): once
-// hex ownership (§2/§2b) makes catchment overlap safe, founding exactly 4
-// hexes from an existing settlement — the concrete silver-city case that
-// prompted this plan — must be allowed. Before §3 this distance was blocked
-// (radius-2 catchment disks still touch at distance 4).
+// TestSettlementCatchmentOverlap_Distance4Allowed: §3's earlier minimum
+// (megaron_plan_hexagarskap_och_stadsavstand.md, Timothy 2026-09-04) is
+// still allowed now that the minimum is 3.
 func TestSettlementCatchmentOverlap_Distance4Allowed(t *testing.T) {
 	pool := testPool(t)
 	worldID := testWorld(t, pool)
@@ -174,7 +168,7 @@ func TestSettlementCatchmentOverlap_Distance4Allowed(t *testing.T) {
 	}
 }
 
-// TestSettlementCatchmentOverlap_Distance5Allowed: one hex past §3's minimum
+// TestSettlementCatchmentOverlap_Distance5Allowed: one hex past §3's earlier minimum
 // (4) must stay clear — a margin check alongside Distance4Allowed's exact
 // boundary.
 func TestSettlementCatchmentOverlap_Distance5Allowed(t *testing.T) {
@@ -285,10 +279,10 @@ func TestSettlementCatchmentOverlap_ExistingOverlapNeverRetroactivelyFlagged(t *
 // TestCatchmentClearanceHexes is the pure "how far to move" arithmetic the
 // founding error/preview messages use.
 func TestCatchmentClearanceHexes(t *testing.T) {
-	// minSettlementCentreDistance = 4 (§3, megaron_plan_hexagarskap_och_stadsavstand.md
-	// — own design number since §2/§2b made overlap safe, no longer 2*CatchmentRadius+1).
+	// minSettlementCentreDistance = 3 (megaron_plan_delad_catchment.md, 2026-10-02;
+	// was 4 under §3 of megaron_plan_hexagarskap_och_stadsavstand.md).
 	cases := []struct{ dist, want int }{
-		{0, 4}, {1, 3}, {2, 2}, {3, 1}, {4, 0}, {5, 0}, {7, 0},
+		{0, 3}, {1, 2}, {2, 1}, {3, 0}, {4, 0}, {5, 0}, {7, 0},
 	}
 	for _, tc := range cases {
 		if got := CatchmentClearanceHexes(tc.dist); got != tc.want {

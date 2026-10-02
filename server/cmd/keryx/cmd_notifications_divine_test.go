@@ -251,3 +251,38 @@ func TestRecruitExamplesUseCanonicalUnitNames(t *testing.T) {
 		}
 	}
 }
+
+// TestPrintHexTakenLine covers HexTaken (shared catchment, to the loser).
+func TestPrintHexTakenLine(t *testing.T) {
+	mk := func(building string) notificationItem {
+		raw, _ := json.Marshal(map[string]any{"name": "Petras", "taker": "Knossos", "q": 14, "r": 33, "workers": 3, "building": building})
+		return notificationItem{Kind: "HexTaken", Level: 2, Body: raw}
+	}
+	out := strings.TrimSpace(capturePrint(t, func() { printHexTakenLine(mk("farm")) }))
+	want := "Knossos took the hex at (14,33) from Petras — 3 workers are idle in Petras, its farm is now Knossos's"
+	if out != want {
+		t.Errorf("got %q, want %q", out, want)
+	}
+	out = strings.TrimSpace(capturePrint(t, func() { printHexTakenLine(mk("")) }))
+	if strings.Contains(out, "its ") || !strings.Contains(out, "idle in Petras") {
+		t.Errorf("no-building line %q", out)
+	}
+}
+
+func TestHeldHexNote(t *testing.T) {
+	if got := heldHexNote(placementHex{}); got != "" {
+		t.Errorf("unheld hex got %q", got)
+	}
+	if got := heldHexNote(placementHex{HeldBy: "Petras"}); got != "  held by Petras" {
+		t.Errorf("held got %q", got)
+	}
+	got := heldHexNote(placementHex{HeldBy: "Petras", Takeable: true, HeldWorkers: 3, HeldBuilding: &placementHexBuilding{Type: "farm", Level: 2}})
+	want := "  held by Petras  TAKEABLE — place a worker to take it (3 workers go home, its farm becomes yours)"
+	if got != want {
+		t.Errorf("got %q, want %q", got, want)
+	}
+	got = heldHexNote(placementHex{HeldBy: "Petras", Takeable: true, HeldWorkers: 2})
+	if strings.Contains(got, "becomes yours") {
+		t.Errorf("no-building note mentions a building: %q", got)
+	}
+}

@@ -44,6 +44,32 @@ type placementHex struct {
 	Terrain    string                `json:"terrain"`
 	Building   *placementHexBuilding `json:"building,omitempty"`
 	Goods      []placementGood       `json:"goods"`
+
+	// Shared catchment (megaron_plan_delad_catchment.md): set only on a hex
+	// another city holds (has gubbar on). Takeable = the caller has a unit in
+	// fortify/sentry there and the holder has none.
+	HeldBy       string                `json:"held_by,omitempty"`
+	Takeable     bool                  `json:"takeable,omitempty"`
+	HeldWorkers  int                   `json:"held_workers,omitempty"`
+	HeldBuilding *placementHexBuilding `json:"held_building,omitempty"`
+}
+
+// heldHexNote is the line `city` appends to a hex another city holds: who
+// holds it and, when the caller can take it, what taking does. "" when the
+// hex is not held.
+func heldHexNote(h placementHex) string {
+	if h.HeldBy == "" {
+		return ""
+	}
+	note := "  held by " + h.HeldBy
+	if h.Takeable {
+		note += fmt.Sprintf("  TAKEABLE — place a worker to take it (%d workers go home", h.HeldWorkers)
+		if h.HeldBuilding != nil {
+			note += fmt.Sprintf(", its %s becomes yours", h.HeldBuilding.Type)
+		}
+		note += ")"
+	}
+	return note
 }
 
 type placementBuilding struct {

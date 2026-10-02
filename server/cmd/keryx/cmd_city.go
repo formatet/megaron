@@ -95,6 +95,7 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 						bldSuffix = fmt.Sprintf("  [%s L%d @ (%d,%d)]", h.Building.Type, h.Building.Level, h.HexQ, h.HexR)
 					}
 				}
+				bldSuffix += heldHexNote(h)
 				if len(h.Goods) == 0 {
 					fmt.Printf("  #%-3d %-14s (no producible good)%s\n", h.HexOrdinal, h.Terrain, bldSuffix)
 					continue

@@ -21,13 +21,19 @@ import (
 // (first settlement to place a gubbe there takes it, no exceptions) —
 // overlapping catchments are ordinary now, not an exploit, so forbidding
 // overlap stopped being the job of this gate. §3 replaces the set-overlap
-// test with a plain minimum centre distance, set to 4: the same minimum Civ
-// VI uses between city centres, and the number that makes founding next to a
-// resource 4 hexes from an existing city legal (Timothy 2026-09-04). Tune
-// this directly; it no longer moves in lockstep with hexgrid.CatchmentRadius,
-// and two settlements' catchments CAN now genuinely overlap (hex ownership,
-// not distance, is what keeps that safe).
-const minSettlementCentreDistance = 4
+// test with a plain minimum centre distance, first set to 4 (Civ VI's
+// minimum; Timothy 2026-09-04). Delad catchment
+// (megaron_plan_delad_catchment.md, Timothy 2026-10-02) lowered it to 3: at
+// 3 every settlement centre lies OUTSIDE every other settlement's radius-2
+// catchment, so a gubbe can never be placed on a neighbour's own hex (the
+// siege rule, a unit on a settlement's own hex, then needs no new code).
+// Distance 2 would put a neighbour's centre inside my catchment and need a
+// guard in PlaceGubbe and in the hex take. Catchments share 4-6 hexes at
+// distance 3; who works a shared hex is decided by hex ownership (§2/§2b)
+// and, for a held hex, by taking it with a unit in fortify/sentry
+// (PlaceGubbe, economy.TakeableHexes). Tune this directly; it no longer
+// moves in lockstep with hexgrid.CatchmentRadius.
+const minSettlementCentreDistance = 3
 
 // CatchmentConflict identifies an existing settlement within
 // minSettlementCentreDistance of a candidate founding site.

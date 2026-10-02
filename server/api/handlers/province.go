@@ -1428,6 +1428,105 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+var (
+	errQueuedBuildGone        = errors.New("build already completed or not found")
+	errUnknownQueuedBuildType = errors.New("unknown building type in queue")
+)
+
+// cancelQueuedBuild cancels one queued build inside tx: it works out what the
+// queued build was charged, deletes the build_queue row (the atomic "still
+// pending" check), deletes the BuildComplete scheduled event so the worker
+// never fires, and refunds the costs to the queueing settlement. Shared by
+// CancelBuild (the player's own cancel) and PlaceGubbe's hex take
+// (megaron_plan_delad_catchment.md — the loser's queued build on a taken hex
+// is cancelled and refunded the same way). Returns the building type that
+// was cancelled; the caller owns commit/rollback and any ownership check.
+func cancelQueuedBuild(ctx context.Context, tx economy.Tx, queueID uuid.UUID) (string, error) {
+	var settlementID uuid.UUID
+	var buildingType string
+	var hexQ, hexR *int
+	if err := tx.QueryRow(ctx,
+		`SELECT settlement_id, building_type, hex_q, hex_r FROM build_queue WHERE id = $1`,
+		queueID,
+	).Scan(&settlementID, &buildingType, &hexQ, &hexR); err != nil {
+		return "", errQueuedBuildGone
+	}
+
+	spec, ok := province.BuildingSpecs[province.BuildingType(buildingType)]
+	if !ok {
+		return "", errUnknownQueuedBuildType
+	}
+
+	// For wall, refund the cost of the queued level (wall_level+1 at time of cancel,
+	// since wall_level is only incremented on completion).
+	if buildingType == "wall" {
+		var wl int
+		_ = tx.QueryRow(ctx, `SELECT wall_level FROM settlements WHERE id = $1`, settlementID).Scan(&wl)
+		next := wl + 1
+		if next < 1 {
+			next = 1
+		}
+		if next > 3 {
+			next = 3
+		}
+		spec = province.WallLevelSpecs[next]
+	} else if bt := province.BuildingType(buildingType); province.LevelledBuildings[bt] {
+		// Same reasoning as the wall above: buildings.level is only incremented on
+		// completion, so the queued level is current+1. Refund what was actually
+		// charged — otherwise cancelling a level-2 workplace silently ate its cedar.
+		// Hex-bound types (hexQ/hexR non-nil) key this off (type, hex) — MAX(level)
+		// across the whole settlement would read a DIFFERENT hex's farm level.
+		var lvl int
+		if hexQ != nil && hexR != nil {
+			_ = tx.QueryRow(ctx,
+				`SELECT COALESCE(level, 0) FROM buildings WHERE settlement_id = $1 AND building_type = $2 AND hex_q = $3 AND hex_r = $4`,
+				settlementID, buildingType, *hexQ, *hexR,
+			).Scan(&lvl)
+		} else {
+			_ = tx.QueryRow(ctx,
+				`SELECT COALESCE(MAX(level), 0) FROM buildings WHERE settlement_id = $1 AND building_type = $2`,
+				settlementID, buildingType,
+			).Scan(&lvl)
+		}
+		next := lvl + 1
+		if next > province.MaxBuildingLevel {
+			next = province.MaxBuildingLevel
+		}
+		if levelled, lok := province.LevelledSpec(bt, next); lok {
+			spec = levelled
+		}
+	}
+
+	// Delete the queue entry (atomic check: still pending).
+	ct, err := tx.Exec(ctx, `DELETE FROM build_queue WHERE id = $1`, queueID)
+	if err != nil || ct.RowsAffected() == 0 {
+		return "", errQueuedBuildGone
+	}
+
+	// Cancel the scheduled event so the worker never fires.
+	_, _ = tx.Exec(ctx,
+		`DELETE FROM scheduled_events
+		 WHERE event_type = 'BuildComplete'
+		   AND (payload->>'build_queue_id')::uuid = $1
+		   AND processed_at IS NULL`,
+		queueID,
+	)
+
+	// Refund costs.
+	for goodKey, qty := range spec.Costs {
+		if _, err = tx.Exec(ctx,
+			`UPDATE settlement_goods SET
+			     amount  = LEAST(settled(amount, rate, calc_tick) + $1, cap),
+			     calc_tick = current_world_tick()
+			 WHERE settlement_id = $2 AND good_key = $3`,
+			qty, settlementID, goodKey,
+		); err != nil {
+			return "", err
+		}
+	}
+	return buildingType, nil
+}
+
 // CancelBuild handles DELETE /worlds/:worldID/provinces/:provinceID/build-queue/:queueID.
 // Cancels a pending build, deletes the scheduled event, and refunds the costs.
 func (h *ProvinceHandler) CancelBuild(w http.ResponseWriter, r *http.Request) {
@@ -1452,67 +1551,20 @@ func (h *ProvinceHandler) CancelBuild(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Verify ownership and fetch the build entry.
+	// Verify ownership (the queue entry itself is read inside cancelQueuedBuild).
 	var settlementID uuid.UUID
 	var buildingType string
-	var hexQ, hexR *int
 	err = h.pool.QueryRow(r.Context(),
-		`SELECT bq.settlement_id, bq.building_type, bq.hex_q, bq.hex_r
+		`SELECT bq.settlement_id, bq.building_type
 		 FROM build_queue bq
 		 JOIN settlements s ON s.id = bq.settlement_id
 		 WHERE bq.id = $1 AND bq.world_id = $2
 		   AND s.province_id = $3 AND s.owner_id = $4`,
 		queueID, worldID, provinceID, playerID,
-	).Scan(&settlementID, &buildingType, &hexQ, &hexR)
+	).Scan(&settlementID, &buildingType)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "build queue entry not found or not yours")
 		return
-	}
-
-	spec, ok := province.BuildingSpecs[province.BuildingType(buildingType)]
-	if !ok {
-		writeError(w, http.StatusInternalServerError, "unknown building type in queue")
-		return
-	}
-
-	// For wall, refund the cost of the queued level (wall_level+1 at time of cancel,
-	// since wall_level is only incremented on completion).
-	if buildingType == "wall" {
-		var wl int
-		_ = h.pool.QueryRow(r.Context(), `SELECT wall_level FROM settlements WHERE id = $1`, settlementID).Scan(&wl)
-		next := wl + 1
-		if next < 1 {
-			next = 1
-		}
-		if next > 3 {
-			next = 3
-		}
-		spec = province.WallLevelSpecs[next]
-	} else if bt := province.BuildingType(buildingType); province.LevelledBuildings[bt] {
-		// Same reasoning as the wall above: buildings.level is only incremented on
-		// completion, so the queued level is current+1. Refund what was actually
-		// charged — otherwise cancelling a level-2 workplace silently ate its cedar.
-		// Hex-bound types (hexQ/hexR non-nil) key this off (type, hex) — MAX(level)
-		// across the whole settlement would read a DIFFERENT hex's farm level.
-		var lvl int
-		if hexQ != nil && hexR != nil {
-			_ = h.pool.QueryRow(r.Context(),
-				`SELECT COALESCE(level, 0) FROM buildings WHERE settlement_id = $1 AND building_type = $2 AND hex_q = $3 AND hex_r = $4`,
-				settlementID, buildingType, *hexQ, *hexR,
-			).Scan(&lvl)
-		} else {
-			_ = h.pool.QueryRow(r.Context(),
-				`SELECT COALESCE(MAX(level), 0) FROM buildings WHERE settlement_id = $1 AND building_type = $2`,
-				settlementID, buildingType,
-			).Scan(&lvl)
-		}
-		next := lvl + 1
-		if next > province.MaxBuildingLevel {
-			next = province.MaxBuildingLevel
-		}
-		if levelled, lok := province.LevelledSpec(bt, next); lok {
-			spec = levelled
-		}
 	}
 
 	tx, err := h.pool.Begin(r.Context())
@@ -1522,34 +1574,16 @@ func (h *ProvinceHandler) CancelBuild(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
-	// Delete the queue entry (atomic check: still pending).
-	ct, err := tx.Exec(r.Context(), `DELETE FROM build_queue WHERE id = $1`, queueID)
-	if err != nil || ct.RowsAffected() == 0 {
-		writeError(w, http.StatusConflict, "build already completed or not found")
-		return
-	}
-
-	// Cancel the scheduled event so the worker never fires.
-	_, _ = tx.Exec(r.Context(),
-		`DELETE FROM scheduled_events
-		 WHERE event_type = 'BuildComplete'
-		   AND (payload->>'build_queue_id')::uuid = $1
-		   AND processed_at IS NULL`,
-		queueID,
-	)
-
-	// Refund costs.
-	for goodKey, qty := range spec.Costs {
-		if _, err = tx.Exec(r.Context(),
-			`UPDATE settlement_goods SET
-			     amount  = LEAST(settled(amount, rate, calc_tick) + $1, cap),
-			     calc_tick = current_world_tick()
-			 WHERE settlement_id = $2 AND good_key = $3`,
-			qty, settlementID, goodKey,
-		); err != nil {
+	if _, err := cancelQueuedBuild(r.Context(), tx, queueID); err != nil {
+		switch {
+		case errors.Is(err, errUnknownQueuedBuildType):
+			writeError(w, http.StatusInternalServerError, "unknown building type in queue")
+		case errors.Is(err, errQueuedBuildGone):
+			writeError(w, http.StatusConflict, "build already completed or not found")
+		default:
 			writeError(w, http.StatusInternalServerError, "could not refund goods")
-			return
 		}
+		return
 	}
 
 	if err := tx.Commit(r.Context()); err != nil {
@@ -2801,9 +2835,13 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	// §2b (Timothy 2026-09-05): a hex held by ANOTHER settlement offers no
 	// good at all — mirrors the identical adjustment in PlacementOptions
 	// (settlement_placement.go) so /goods never reports a "next gubbe" yield
-	// for a hex the write path would reject outright.
-	heldByOtherForYield, _ := economy.HexesHeldByOtherSettlement(r.Context(), h.pool, worldID, settlementID, hexCoordsForYield)
-	globalHexOccupancyForYield = economy.MarkHeldHexesFullyOccupied(hexOptionsForYield, heldByOtherForYield, globalHexOccupancyForYield)
+	// for a hex the write path would reject outright. Delad catchment: a hex
+	// the placer may TAKE is not full (economy.ApplyHexHolds, the same helper
+	// PlacementOptions uses — one rule, not two).
+	var yieldOwner uuid.UUID
+	_ = h.pool.QueryRow(r.Context(), `SELECT COALESCE(owner_id, '00000000-0000-0000-0000-000000000000'::uuid) FROM settlements WHERE id = $1`, settlementID).Scan(&yieldOwner)
+	holdsForYield, _ := economy.LoadHexHolds(r.Context(), h.pool, worldID, settlementID, yieldOwner, hexCoordsForYield)
+	globalHexOccupancyForYield = economy.ApplyHexHolds(hexOptionsForYield, holdsForYield, globalHexOccupancyForYield)
 	marginalPlaced := economy.PlacementCounts{Hex: globalHexOccupancyForYield, Building: placed.Building}
 	marginalYields := economy.MarginalYieldPerGood(hexOptionsForYield, buildingOptionsForYield, marginalPlaced)
 

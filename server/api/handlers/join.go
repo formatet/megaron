@@ -237,6 +237,9 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		   -- A world generated before mig 124 has landmass_id NULL everywhere; let
 		   -- those candidates through rather than declare the whole world full.
 		   AND (mt.landmass_id IS NULL OR mt.landmass_id IN (SELECT landmass_id FROM viable_landmasses))
+		   -- The "<= 4" below is the HOST spawn spacing, not the founding minimum:
+		   -- it deliberately does NOT follow province.minSettlementCentreDistance
+		   -- (lowered to 3 by megaron_plan_delad_catchment.md). Do not "fix" it.
 		   -- Keep clear of settled ground …
 		   AND NOT EXISTS (
 		       SELECT 1 FROM provinces p2
