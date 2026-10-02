@@ -43,24 +43,31 @@ type hexRule struct {
 	building   string // "" = no building raises this (good, hex)
 }
 
+// fieldStone is the stone every land hex without a quarry-grade deposit gives
+// (mig 156, Timothy 2026-10-02): one place, raised by the stonequarry. Its base
+// rate (0,5) is the production_rules row; hills and limestone keep their own.
+var fieldStone = hexRule{"stone", 1, "stonequarry"}
+
 // hexRules returns the rule rows for a hex of this terrain and deposits.
 func hexRules(terrain string, copperDep, tinDep, silverDep bool) []hexRule {
 	var out []hexRule
 	switch terrain {
 	case "plains":
-		out = append(out, hexRule{GoodGrain, 4, "farm"}, hexRule{"livestock", 1, ""})
+		out = append(out, hexRule{GoodGrain, 4, "farm"}, hexRule{"livestock", 1, ""}, fieldStone)
 	case "hills":
 		out = append(out, hexRule{GoodGrain, 1, "farm"}, hexRule{"stone", 2, "stonequarry"})
 	case "mountain_limestone":
 		out = append(out, hexRule{"stone", 2, "stonequarry"})
 	case "river_valley":
-		out = append(out, hexRule{GoodGrain, 2, "farm"})
+		out = append(out, hexRule{GoodGrain, 2, "farm"}, fieldStone)
 	case "river_delta":
-		out = append(out, hexRule{GoodGrain, 3, "farm"})
+		out = append(out, hexRule{GoodGrain, 3, "farm"}, fieldStone)
 	case "forest_olive_grove":
-		out = append(out, hexRule{"timber", 1, "lumbermill"})
+		out = append(out, hexRule{"timber", 1, "lumbermill"}, fieldStone)
 	case "forest_cedar":
-		out = append(out, hexRule{"cedar", 1, "lumbermill"})
+		out = append(out, hexRule{"cedar", 1, "lumbermill"}, fieldStone)
+	case "scrub_maquis", "semi_desert", "mountain_red":
+		out = append(out, fieldStone)
 	case "coastal_sea":
 		out = append(out, hexRule{"fish", 2, "harbour"}) // 2 places: fisket ska kunna ge mycket mat (Timothy 2026-10-01); rate stays 1,0 — the dagsverkesskala
 	case "river", "river_ford", "deep_sea":
@@ -129,7 +136,7 @@ func HexYieldPerWorker(rate, mult float64) float64 { return rate * mult }
 
 // ruleTerrains lists every terrain hexRules has a row for.
 var ruleTerrains = []string{"plains", "hills", "mountain_limestone", "river_valley", "river_delta",
-	"forest_olive_grove", "forest_cedar", "coastal_sea", "river", "river_ford", "deep_sea"}
+	"forest_olive_grove", "forest_cedar", "scrub_maquis", "semi_desert", "mountain_red", "coastal_sea", "river", "river_ford", "deep_sea"}
 
 // RuleBuildingTypes are the buildings the rule table ties to hexes.
 var RuleBuildingTypes = []string{"farm", "mine", "lumbermill", "stonequarry", "harbour"}

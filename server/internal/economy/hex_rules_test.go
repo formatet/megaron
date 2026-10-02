@@ -34,6 +34,7 @@ func TestRuleTable_LevelOneNumbersAndLevelMultipliers(t *testing.T) {
 		{"tin", "mountain_limestone", false, true, false, "tin", 1.0, 1, 5, 1.70, "1.0"},
 		{"timber olive grove", "forest_olive_grove", false, false, false, "timber", 1.0, 1, 5, 1.70, "1.0"},
 		{"stone hills", "hills", false, false, false, "stone", 1.0, 2, 6, 1.70, "1.0"},
+		{"stone plains (fieldstone)", "plains", false, false, false, "stone", 0.5, 1, 5, 0.85, "0.5"},
 		{"stone limestone", "mountain_limestone", false, false, false, "stone", 2.0, 2, 6, 3.40, "2.0"},
 	}
 	for _, c := range cases {

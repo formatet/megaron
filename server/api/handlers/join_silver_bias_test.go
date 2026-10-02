@@ -66,7 +66,7 @@ func seedMetalBiasWorld(t *testing.T, pool *pgxpool.Pool) uuid.UUID {
 		{1, 0, "mountain_red", true, false},
 		{0, 100, "plains", false, false},
 		{1, 100, "mountain_red", false, true},
-		{0, 200, "plains", false, false},
+		{0, 200, "forest_olive_grove", false, false}, // forest keeps landmass 1 viable (spawn needs timber)
 	} {
 		if _, err := pool.Exec(ctx,
 			`INSERT INTO map_tiles (world_id, q, r, terrain, copper_deposit, silver_deposit, landmass_id)
