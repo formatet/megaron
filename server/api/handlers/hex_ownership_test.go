@@ -193,7 +193,7 @@ func TestPlaceGubbe_HexOwnershipBlocksNeighborEvenWithRoomLeft(t *testing.T) {
 		t.Fatalf("B's placement on a hex A already holds (only 1 of 4 grain slots taken) = %d: %v, want 409", code2, resp2)
 	}
 	msg, _ := resp2["error"].(string)
-	if want := f.nameA + " holds this hex"; msg != want {
+	if want := f.nameA + " holds this hex — stand a unit there in fortify or sentry to take it"; msg != want {
 		t.Errorf("rejection text = %q, want exactly %q", msg, want)
 	}
 }
@@ -220,7 +220,7 @@ func TestPlaceGubbe_HexOwnershipBlocksNeighborAcrossDifferentGoods(t *testing.T)
 		t.Fatalf("B's livestock placement on A's grain hex = %d: %v, want 409", code2, resp2)
 	}
 	msg, _ := resp2["error"].(string)
-	if want := f.nameA + " holds this hex"; msg != want {
+	if want := f.nameA + " holds this hex — stand a unit there in fortify or sentry to take it"; msg != want {
 		t.Errorf("rejection text = %q, want exactly %q", msg, want)
 	}
 }
