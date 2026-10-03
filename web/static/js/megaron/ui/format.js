@@ -21,6 +21,27 @@ export function passageNote(data) {
   return '';
 }
 
+// purseLine (mig 107): the colonist purse a founding order carried out of the
+// sending city, from the march response's carried_silver/purse_shortfall —
+// set for a colonize march and for a landing with a grounding order. Shown at
+// dispatch because it is the last moment the Wanax can recall the column and
+// fund it properly; keryx prints the same three cases. Plain text; '' when
+// the response carries no purse (an ordinary march, or a field unit whose
+// order rides a runner and pays on delivery).
+export function purseLine(data) {
+  const carried = Number(data && data.carried_silver) || 0;
+  const short = Number(data && data.purse_shortfall) || 0;
+  if (short > 0 && carried > 0) {
+    return 'Carries ' + fmtSilver(carried) + ' from home — ' + fmtSilver(short) +
+      ' less than the colony needs. It will be founded poor.';
+  }
+  if (short > 0) {
+    return '⚠ Carries no silver — the city had nothing to send. The colony is founded at 0 and cannot pay its troops.';
+  }
+  if (carried > 0) return 'Carries ' + fmtSilver(carried) + ' from home, drawn from the city\'s coffers now.';
+  return '';
+}
+
 // True when `el` is a live text-entry target — an <input>/<textarea>/<select>
 // or any contenteditable region — and single-letter keyboard shortcuts (map
 // pan, search's f//) must not fire. Takes the element instead of reading

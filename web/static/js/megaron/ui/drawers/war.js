@@ -2,7 +2,7 @@ import { State, ownCapital } from '../../state.js';
 import { serverNow } from '../../clock.js';
 import { fetchAuth } from '../../api.js';
 import { track } from '../../telemetry.js';
-import { esc, formatApiError, passageNote } from '../format.js';
+import { esc, formatApiError, passageNote, purseLine } from '../format.js';
 import { fmtEta, fmtArrival, arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
 import { unitTypeLabel, actorName } from '../actornames.js';
@@ -842,7 +842,12 @@ export async function unitMarchSend() {
     // UnitRedirected instead (ws.js), when it actually reaches them.
     if (data.status !== 'order_dispatched') playWarHorn();
     closeMarchPanel();
-    loadWarDrawer();
+    await loadWarDrawer();
+    // A landing with a grounding order took the colonist purse out of this
+    // port as it sailed — say so where the drawer reports results.
+    const purse = purseLine(data);
+    const resEl = document.getElementById('war-unit-res');
+    if (purse && resEl) resEl.textContent = purse;
   } else {
     errEl.textContent = formatApiError(data, 'March failed');
   }

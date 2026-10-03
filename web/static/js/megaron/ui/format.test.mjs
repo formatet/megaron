@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { notifText, fmtSilver, formatApiError } from './format.js';
+import { notifText, fmtSilver, formatApiError, purseLine } from './format.js';
 
 // Decimal-silver formatter (Timothy 2026-08-13: sexagesimal shekel/mina/talang
 // retired). One decimal, trailing ".0" dropped, always suffixed " silver".
@@ -598,4 +598,15 @@ test('HexTaken omits the building clause when none stood there and singularises'
     notifText('HexTaken', { name: 'Petras', taker: 'Knossos', workers: 1, q: 14, r: 33, building: '' }),
     'Knossos took the hex at (14, 33) from Petras — 1 worker is idle in Petras',
   );
+});
+
+// The colonist purse at dispatch — same three cases keryx prints.
+test('purseLine: full purse, short purse, empty purse, no purse', () => {
+  assert.equal(purseLine({ carried_silver: 120, purse_shortfall: 0 }),
+    "Carries 120 silver from home, drawn from the city's coffers now.");
+  assert.equal(purseLine({ carried_silver: 90, purse_shortfall: 30 }),
+    'Carries 90 silver from home — 30 silver less than the colony needs. It will be founded poor.');
+  assert.match(purseLine({ carried_silver: 0, purse_shortfall: 120 }), /^⚠ Carries no silver/);
+  assert.equal(purseLine({ status: 'order_dispatched' }), '');
+  assert.equal(purseLine(undefined), '');
 });

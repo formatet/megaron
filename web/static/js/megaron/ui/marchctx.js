@@ -1,7 +1,7 @@
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
 import { track } from '../telemetry.js';
-import { esc, formatApiError, passageNote } from './format.js';
+import { esc, formatApiError, passageNote, purseLine } from './format.js';
 import { unitTypeLabel } from './actornames.js';
 import { arrivalHTML, fmtArrival } from './time.js';
 import { stanceSentLine } from './stance.js';
@@ -525,6 +525,8 @@ export async function sendMarch() {
       : '✓ Marching — arrives ' +
         arrivalHTML(first.data.arrives_at_utc || first.data.arrives_at, first.data.arrival_tick);
     // The stance for a marching unit rides a second Runner that must catch up.
+    const purse = purseLine(first.data);
+    if (purse) etaEl.innerHTML += '<br>' + esc(purse);
     const sd = first.stanceData;
     if (sd) {
       etaEl.innerHTML += '<br>' + esc(stanceSentLine(sd, fmtArrival(sd.courier_arrives_at, sd.courier_due_tick)));

@@ -6,6 +6,8 @@ Right-click the site, tick **Found a new settlement on arrival**, name it, choos
 
 **The unit is consumed.** Those men become the colony's population. You cannot recall them and you cannot change your mind.
 
+**They carry the colony's silver.** The city they leave pays the colonists' purse the moment they set out — the colony does not get silver from nowhere. Sent from a city with too little, they take what there is, and the order tells you how much short they are. A colony founded with nothing cannot pay its troops' [[upkeep]]. A purse that never reaches a new colony comes back to whichever of your cities the men walk into. <!-- src: server/internal/combat/march_start.go colonistPurse -->
+
 You are notified when the colony is founded, with how its food looks.
 
 ## Colonies are not metropolises
