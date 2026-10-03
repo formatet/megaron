@@ -4,6 +4,7 @@ import { track } from '../../telemetry.js';
 import { esc, fmtAgo, formatApiError, passageNote } from '../format.js';
 import { fmtEta, fmtArrival, arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
+import { sentStatusHTML } from '../runner_status.js';
 
 // "expires <eta>" while a trade offer's window is still open, collapsing to a
 // bare "expired" once it's closed — a closed offer isn't an arrival, and
@@ -268,9 +269,7 @@ async function loadDipThreads() {
           const statusBit = offerStatus === 'accepted' ? '<span style="color:var(--safe)">✓ accepted' + shipBit + '</span>'
                           : offerStatus === 'declined' ? '<span style="color:var(--text-dim)">✗ declined</span>'
                           : offerStatus === 'expired'  ? '<span style="color:var(--text-dim)">⏳ expired</span>'
-                          : m.status === 'returned'   ? '<span style="color:var(--safe)">↩ returned</span>'
-                          : m.status === 'delivering' ? '<span style="color:var(--text-dim)">en route · arrives ' + arrivalHTML(m.arrives_at) + passageNote(m) + '</span>'
-                          : '<span style="color:var(--text-dim)">' + esc(m.status || '') + '</span>';
+                          : sentStatusHTML(m);
           const replyText = m.reply_text
             ? '<div class="dip-msg-text" style="color:var(--safe);text-align:right">' + esc(m.reply_text) + '</div>'
             : '';

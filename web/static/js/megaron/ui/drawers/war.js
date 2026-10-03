@@ -12,6 +12,7 @@ import { loadCityDrawer } from './city.js';
 import { retreatBody, retreatDefaultSectionHTML, unitRetreatControlHTML } from '../retreat.js';
 import { canTakeStance, stanceSentLine } from '../stance.js';
 import { warMovements } from '../movements.js';
+import { orderRunnerHTML } from '../runner_status.js';
 
 // "ready <eta>" while still building/training, collapsing to a bare "ready"
 // once complete (fmtArrival's doneWord already reads "ready" — this just
@@ -500,15 +501,7 @@ function renderUnitCard(u) {
   // Pending order (Fas 5): a Runner is en route to this unit — the order
   // executes only on delivery; surface the courier ETA on the card.
   const runner = (State.messengerData || []).find(m => m.own && m.kind === 'order' && m.order_unit_id === u.id);
-  let pendingOrder = '';
-  if (runner) {
-    // Once the runner has arrived, the order is being applied server-side (a
-    // worker poll away) — say "delivering", not the stale "en route" ETA.
-    const arrived = serverNow() >= new Date(runner.arrives_at).getTime();
-    pendingOrder = arrived
-      ? '<div style="font-size:.65rem;color:var(--text-dim)">🏃 Runner carrying the order…</div>'
-      : '<div style="font-size:.65rem;color:var(--text-dim)">🏃 Runner en route — order arrives ' + arrivalHTML(runner.arrives_at) + '</div>';
-  }
+  const pendingOrder = runner ? orderRunnerHTML(runner, serverNow()) : '';
 
   // Stance badge
   const stanceBadge = u.stance
