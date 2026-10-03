@@ -418,9 +418,16 @@ func (h *InterceptScanHandler) dispatchLimpedReturn(ctx context.Context, tx pgx.
 		return StrandShip(ctx, tx, *t.shipUnitID, pos.Q, pos.R)
 	}
 
+	// Steer for the port the ship is credited to — on leg 2 that is NOT the
+	// city this leg sailed from (t.originQ/R is the counterparty's).
+	destQ, destR := t.originQ, t.originR
+	_ = tx.QueryRow(ctx,
+		`SELECT p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id WHERE s.id = $1`, *destID,
+	).Scan(&destQ, &destR)
+
 	travelMins := 30.0
 	if path, _, ok, err := province.FindPath(ctx, tx, worldID,
-		pos, province.MapPosition{Q: t.originQ, R: t.originR}, "naval"); err == nil && ok {
+		pos, province.MapPosition{Q: destQ, R: destR}, "naval"); err == nil && ok {
 		travelMins = 30.0 + float64(len(path)-1)*2.0
 	}
 	travelTicks := int(math.Round(travelMins / 60))
@@ -435,7 +442,7 @@ func (h *InterceptScanHandler) dispatchLimpedReturn(ctx context.Context, tx pgx.
 	_, err := Dispatch(ctx, tx, h.scheduler, DispatchParams{
 		WorldID: worldID, OwnerID: t.owner, Kind: "damaged_return",
 		OriginID: *destID, DestID: *destID, Category: "naval",
-		OriginQ: pos.Q, OriginR: pos.R, DestQ: t.originQ, DestR: t.originR,
+		OriginQ: pos.Q, OriginR: pos.R, DestQ: destQ, DestR: destR,
 		DepartsAt: departsAt, ArrivesAt: arrivesAt, DueTick: currentTick + travelTicks,
 		Manifest: half, Interceptable: true, ShipUnitID: t.shipUnitID,
 	})

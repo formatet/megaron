@@ -330,3 +330,48 @@ func TestInterceptScan_NavalSunk_CargoAndShipBothLost(t *testing.T) {
 		t.Errorf("ship size/crew = %d/%d, want 0/0", size, crew)
 	}
 }
+
+// The limped ship sails to the port it is credited to, not to wherever this
+// leg happened to start. On a negotiated trade's leg 2 the transport starts
+// at the counterparty's city (3,0); the ship's home is the initiator's (0,0).
+// Until 2026-10-03 dest_id was the home port but dest_q/r and the travel time
+// were the counterparty's — the ship was steered to one city and landed in
+// another.
+func TestInterceptScan_NavalLimped_Leg2SailsToHomePortHex(t *testing.T) {
+	pool := testPool(t)
+	nf := newNavalSeizureFixture(t, pool)
+	ctx := context.Background()
+
+	if _, err := pool.Exec(ctx,
+		`UPDATE transports SET origin_id = $1, dest_id = $2, origin_q = 3, origin_r = 0, dest_q = 0, dest_r = 0 WHERE id = $3`,
+		nf.destID, nf.sourceID, nf.transportID,
+	); err != nil {
+		t.Fatalf("simulate leg 2: %v", err)
+	}
+	var homeQ, homeR int
+	if err := pool.QueryRow(ctx,
+		`SELECT p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id WHERE s.id = $1`, nf.sourceID,
+	).Scan(&homeQ, &homeR); err != nil {
+		t.Fatalf("load home hex: %v", err)
+	}
+
+	h := NewInterceptScanHandler(pool, events.NewScheduler(pool, nf.clk), events.NewStore(pool), nil, nf.clk)
+	h.Dice = fixedDice{0.5} // limped
+	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: nf.worldID, DueTick: 1}); err != nil {
+		t.Fatalf("intercept scan: %v", err)
+	}
+
+	var destID uuid.UUID
+	var destQ, destR int
+	if err := pool.QueryRow(ctx,
+		`SELECT dest_id, dest_q, dest_r FROM transports
+		 WHERE world_id = $1 AND kind = 'damaged_return' ORDER BY created_at DESC LIMIT 1`,
+		nf.worldID,
+	).Scan(&destID, &destQ, &destR); err != nil {
+		t.Fatalf("no damaged_return leg found: %v", err)
+	}
+	if destID != nf.sourceID || destQ != homeQ || destR != homeR {
+		t.Errorf("damaged_return dest = %s at (%d,%d), want %s at its own hex (%d,%d)",
+			destID, destQ, destR, nf.sourceID, homeQ, homeR)
+	}
+}
