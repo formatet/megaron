@@ -786,8 +786,9 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 			// The colonist purse (mig 107): a founding no longer mints the colony's
 			// silver, the column carries it from home. Printed at dispatch because
 			// this is the last moment the Wanax can recall the expedition and fund
-			// it properly — after it lands, the colony is simply poor.
-			if intent == "colonize" {
+			// it properly — after it lands, the colony is simply poor. A landing
+			// with a grounding order carries one too: the port pays as the ship sails.
+			if intent == "colonize" || (intent == "land" && landColonize) {
 				carried, _ := resp["carried_silver"].(float64)
 				short, _ := resp["purse_shortfall"].(float64)
 				switch {

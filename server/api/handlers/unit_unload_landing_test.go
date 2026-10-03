@@ -122,3 +122,104 @@ func TestUnitUnload_FieldPositionedShipRejected(t *testing.T) {
 		t.Errorf("ship.cargo_unit_id = %v, want still %v — the rejected order must not have cleared it", shipCargo, cargoID)
 	}
 }
+
+// A land mission with cargo_intent=colonize loads the colonist purse onto the
+// cargo at dispatch (combat/march_start.go). If the ship is recalled and the
+// cargo is unloaded in port instead, the purse goes back into that city's
+// treasury — otherwise the silver would sit on a garrisoned unit forever.
+func TestUnitUnload_InPort_ReturnsCarriedPurse(t *testing.T) {
+	pool := unitLoadTestPool(t)
+	ctx := context.Background()
+
+	if _, err := pool.Exec(ctx, `UPDATE worlds SET status = 'archived' WHERE status = 'active'`); err != nil {
+		t.Fatalf("archive leftover active test worlds: %v", err)
+	}
+	var worldID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO worlds (name, status) VALUES ($1, 'active') RETURNING id`,
+		"test-world-"+uuid.New().String(),
+	).Scan(&worldID); err != nil {
+		t.Fatalf("create test world: %v", err)
+	}
+	t.Cleanup(func() { _, _ = pool.Exec(ctx, `UPDATE worlds SET status = 'archived' WHERE id = $1`, worldID) })
+
+	authSvc := auth.NewService(pool, "test-secret")
+	accessToken, _, err := authSvc.Register(ctx, "purse-home-"+uuid.New().String(), "x")
+	if err != nil {
+		t.Fatalf("register test player: %v", err)
+	}
+	claims, err := authSvc.ValidateAccessToken(accessToken)
+	if err != nil {
+		t.Fatalf("validate minted token: %v", err)
+	}
+	playerID := claims.PlayerID
+
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, 0, 0, 'plains'), ($1, 1, 0, 'coastal_sea')`,
+		worldID,
+	); err != nil {
+		t.Fatalf("create map tiles: %v", err)
+	}
+	var provinceID, homeID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type, coastal) VALUES ($1, 0, 0, 'plains', true) RETURNING id`,
+		worldID,
+	).Scan(&provinceID); err != nil {
+		t.Fatalf("create province: %v", err)
+	}
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital)
+		 VALUES ($1, $2, 'Port', 'achaean', $3, 'capital', true) RETURNING id`,
+		worldID, provinceID, playerID,
+	).Scan(&homeID); err != nil {
+		t.Fatalf("create settlement: %v", err)
+	}
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+		 VALUES ($1, 'silver', 100, 0, 1000000, current_world_tick())
+		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET amount = 100, rate = 0, cap = 1000000`,
+		homeID,
+	); err != nil {
+		t.Fatalf("seed silver: %v", err)
+	}
+
+	var shipID, cargoID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, settlement_id)
+		 VALUES ($1, $2, 'galley', 'naval', 1, 20, 'garrison', $3) RETURNING id`,
+		worldID, playerID, homeID,
+	).Scan(&shipID); err != nil {
+		t.Fatalf("create ship: %v", err)
+	}
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO units (world_id, owner_id, type, category, size, status, carried_silver)
+		 VALUES ($1, $2, 'spearman', 'land', 100, 'embarked', 500) RETURNING id`,
+		worldID, playerID,
+	).Scan(&cargoID); err != nil {
+		t.Fatalf("create cargo: %v", err)
+	}
+	if _, err := pool.Exec(ctx, `UPDATE units SET cargo_unit_id = $2 WHERE id = $1`, shipID, cargoID); err != nil {
+		t.Fatalf("load cargo: %v", err)
+	}
+
+	clk := clock.NewTestClock(time.Now())
+	uh := NewUnitHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), clk)
+	r := chi.NewRouter()
+	r.Use(auth.Middleware(authSvc))
+	r.Post("/worlds/{worldID}/units/{unitID}/unload", uh.Unload)
+	req := httptest.NewRequest(http.MethodPost,
+		"/worlds/"+worldID.String()+"/units/"+shipID.String()+"/unload", nil)
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+	rec := httptest.NewRecorder()
+	r.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("Unload(in port) = %d %q, want 200", rec.Code, rec.Body.String())
+	}
+
+	var silver, purse float64
+	_ = pool.QueryRow(ctx, `SELECT amount FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'`, homeID).Scan(&silver)
+	_ = pool.QueryRow(ctx, `SELECT carried_silver FROM units WHERE id = $1`, cargoID).Scan(&purse)
+	if silver < 599.99 || silver > 600.01 || purse != 0 {
+		t.Errorf("after unload: city silver = %v (want 600), cargo purse = %v (want 0)", silver, purse)
+	}
+}

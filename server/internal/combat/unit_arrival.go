@@ -634,9 +634,12 @@ func (h *UnitArrivalHandler) landArrived(
 			h.notifyLandColonizeFailed(ctx, tx, u, cargoID, landQ, landR, worldID,
 				"this ground is already farmed by a neighbouring settlement's catchment — the landing party garrisons the beach instead of founding a colony")
 		default:
+			// carried_silver is the colonist purse the port paid at dispatch
+			// (march_start.go) — without it the colony would start at 0.
 			var cargoSize int
-			_ = tx.QueryRow(ctx, `SELECT size FROM units WHERE id = $1`, cargoID).Scan(&cargoSize)
-			cargoRow := unitRow{id: cargoID, ownerID: u.ownerID, colonyName: u.colonyName, size: cargoSize}
+			var cargoPurse float64
+			_ = tx.QueryRow(ctx, `SELECT size, carried_silver FROM units WHERE id = $1`, cargoID).Scan(&cargoSize, &cargoPurse)
+			cargoRow := unitRow{id: cargoID, ownerID: u.ownerID, colonyName: u.colonyName, size: cargoSize, carriedSilver: cargoPurse}
 			if err := h.foundColony(ctx, tx, cargoRow, uuid.Nil, landQ, landR, worldID); err != nil {
 				return fmt.Errorf("land arrival: found colony: %w", err)
 			}

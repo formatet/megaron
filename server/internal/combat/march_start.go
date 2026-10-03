@@ -726,15 +726,28 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	// choice — a colony with no silver cannot pay upkeep — and the response
 	// carries the figure so the Wanax learns it BEFORE the column leaves, not
 	// when the city starves.
+	//
+	// A land mission with cargo_intent=colonize is the same founding by sea:
+	// the port the ship sails from pays, sized by the cargo's men, and the
+	// CARGO carries the purse — it is the cargo that founds the colony (or,
+	// if founding is refused on the beach, keeps the purse and hands it over
+	// when it walks into one of its own cities, like any expedition).
 	var purse, purseShortfall float64
-	if o.Intent == "colonize" && u.SupportSettlementID != nil {
-		want := colonistPurse(ctx, tx, u.Size)
+	purseFrom, purseCarrier, purseSize := u.SupportSettlementID, o.UnitID, u.Size
+	if landMission && o.CargoIntent == "colonize" {
+		purseFrom, purseCarrier = u.SettlementID, *u.CargoUnitID
+		if err := tx.QueryRow(ctx, `SELECT size FROM units WHERE id = $1`, purseCarrier).Scan(&purseSize); err != nil {
+			return nil, reject(http.StatusInternalServerError, "could not load the cargo")
+		}
+	}
+	if (o.Intent == "colonize" || (landMission && o.CargoIntent == "colonize")) && purseFrom != nil {
+		want := colonistPurse(ctx, tx, purseSize)
 		if want > 0 {
 			var have float64
 			if err := tx.QueryRow(ctx,
 				`SELECT GREATEST(0, settled(amount, rate, calc_tick))
 				 FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver' FOR UPDATE`,
-				*u.SupportSettlementID,
+				*purseFrom,
 			).Scan(&have); err == nil {
 				purse = math.Min(want, have)
 				purseShortfall = want - purse
@@ -746,13 +759,13 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 				    SET amount = GREATEST(0, settled(amount, rate, calc_tick) - $1),
 				        calc_tick = current_world_tick()
 				  WHERE settlement_id = $2 AND good_key = 'silver'`,
-				purse, *u.SupportSettlementID,
+				purse, *purseFrom,
 			); err != nil {
 				return nil, reject(http.StatusInternalServerError, "could not withdraw the colonist purse")
 			}
 			if _, err := tx.Exec(ctx,
 				`UPDATE units SET carried_silver = carried_silver + $2 WHERE id = $1`,
-				o.UnitID, purse,
+				purseCarrier, purse,
 			); err != nil {
 				return nil, reject(http.StatusInternalServerError, "could not load the colonist purse")
 			}

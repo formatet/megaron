@@ -9,6 +9,7 @@ package combat
 
 import (
 	"context"
+	"math"
 	"testing"
 	"time"
 
@@ -251,5 +252,69 @@ func TestLandMission_WithColonizeCargoIntent_ColonyFoundsWithoutFurtherOrder(t *
 	}
 	if shipStatus != "marching" {
 		t.Errorf("ship status = %q, want \"marching\" (turning for home)", shipStatus)
+	}
+}
+
+// A colony founded from a landing carries its purse exactly like one that
+// walked there (B3, mig 107): the port it sails from pays the colonist purse
+// at dispatch, the cargo carries it across the sea, and the colony starts
+// with it. Until 2026-10-03 the land path never withdrew a purse and the
+// cargo row passed to foundColony had no carriedSilver — every colony
+// founded from the sea started at 0 silver.
+func TestLandMission_WithColonizeCargoIntent_ColonyGetsThePurse(t *testing.T) {
+	pool, worldID, ownerID, shipID, cargoID := setupLandMission(t)
+	ctx := context.Background()
+
+	var homeID uuid.UUID
+	if err := pool.QueryRow(ctx, `SELECT settlement_id FROM units WHERE id = $1`, shipID).Scan(&homeID); err != nil {
+		t.Fatalf("load home port: %v", err)
+	}
+	const homeSilver = 1_000_000.0
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+		 VALUES ($1, 'silver', $2, 0, $2, current_world_tick())
+		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET amount = $2, rate = 0, cap = $2`,
+		homeID, homeSilver,
+	); err != nil {
+		t.Fatalf("seed home silver: %v", err)
+	}
+
+	clk := clock.NewTestClock(time.Now())
+	scheduler := events.NewScheduler(pool, clk)
+	eventStore := events.NewStore(pool)
+
+	res, err := StartMarch(ctx, pool, scheduler, eventStore, clk, MarchOrder{
+		WorldID: worldID, PlayerID: ownerID, UnitID: shipID,
+		TargetQ: 10, TargetR: 0, Intent: "land", CargoIntent: "colonize", Name: "Pursebeach",
+	}, nil)
+	if err != nil {
+		t.Fatalf("StartMarch(land, cargo_intent=colonize) failed: %v", err)
+	}
+	if res.CarriedSilver <= 0 {
+		t.Fatalf("CarriedSilver = %v at dispatch, want > 0 — the port must pay the colonist purse when the ship sails", res.CarriedSilver)
+	}
+	var homeAfter, cargoPurse float64
+	_ = pool.QueryRow(ctx, `SELECT amount FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'`, homeID).Scan(&homeAfter)
+	_ = pool.QueryRow(ctx, `SELECT carried_silver FROM units WHERE id = $1`, cargoID).Scan(&cargoPurse)
+	if math.Abs(homeSilver-homeAfter-res.CarriedSilver) > 0.01 || math.Abs(cargoPurse-res.CarriedSilver) > 0.01 {
+		t.Fatalf("port debited %v, cargo carries %v, response says %v — all three must agree", homeSilver-homeAfter, cargoPurse, res.CarriedSilver)
+	}
+
+	markUnitArrivalProcessed(t, pool, worldID, shipID)
+	h := newArrivalHandler(pool, nil)
+	runFieldArrival(t, pool, h, worldID, shipID)
+
+	var colonySilver float64
+	if err := pool.QueryRow(ctx,
+		`SELECT g.amount FROM settlements s JOIN settlement_goods g ON g.settlement_id = s.id AND g.good_key = 'silver'
+		 WHERE s.world_id = $1 AND s.name = 'Pursebeach'`, worldID,
+	).Scan(&colonySilver); err != nil {
+		t.Fatalf("load colony silver: %v", err)
+	}
+	if math.Abs(colonySilver-res.CarriedSilver) > 0.01 {
+		t.Errorf("colony silver = %v, want the carried purse %v", colonySilver, res.CarriedSilver)
+	}
+	if err := pool.QueryRow(ctx, `SELECT carried_silver FROM units WHERE id = $1`, cargoID).Scan(&cargoPurse); err == nil && cargoPurse != 0 {
+		t.Errorf("cargo still carries %v after founding — the purse would exist twice", cargoPurse)
 	}
 }
