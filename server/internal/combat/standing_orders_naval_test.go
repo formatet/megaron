@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/transport"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -413,5 +414,68 @@ func TestStandingOrder_PausesWithNoShipAndNoLandRoute(t *testing.T) {
 	}
 	if reason == nil || !strings.Contains(*reason, "no free galley or merchantman") || !strings.Contains(*reason, "Byblos") {
 		t.Errorf("pause reason = %v, want it to name Byblos and explain no free ship", reason)
+	}
+}
+
+// The return leg of a sea route is carried by the same hull as the outbound
+// leg, so it obeys the same capacity: the destination's surplus above each
+// return good's floor is loaded only up to the ship's weight capacity, and the
+// rest stays where it is. Until 2026-10-03 the return leg loaded the whole
+// surplus — a merchantman could bring home any tonnage the outbound leg could
+// never have carried.
+func TestStandingOrder_ReturnLegCappedAtShipCapacity(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	f := newCoastalStandingOrderFixture(t, pool, "so-naval-return-cap")
+	seedGoods(t, pool, f.capitalID, f.tick, 1000, 0)
+	shipAt(t, pool, f.worldID, f.owner, f.capitalID, "merchantman")
+
+	orderID := newStandingOrder(t, pool, f.worldID, f.owner, f.capitalID, f.townID, f.capitalID)
+	addOutbound(t, pool, orderID, "grain", 200)
+	addReturnGood(t, pool, orderID, "stone", 0)
+	addReturnGood(t, pool, orderID, "timber", 0)
+
+	runStandingOrderTick(t, pool, f)
+	outboundID, _, _ := latestTransportForOrder(t, pool, orderID)
+	if _, err := pool.Exec(ctx, `UPDATE transports SET status = 'delivered' WHERE id = $1`, outboundID); err != nil {
+		t.Fatalf("mark outbound delivered: %v", err)
+	}
+	const huge = 1_000_000.0
+	for _, g := range []string{"stone", "timber"} {
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+			 VALUES ($1, $2, $3, 0, $3, $4)
+			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET amount = $3, rate = 0, cap = $3`,
+			f.townID, g, huge, f.tick,
+		); err != nil {
+			t.Fatalf("seed destination %s: %v", g, err)
+		}
+	}
+
+	runStandingOrderTick(t, pool, f)
+	returnID, kind, _ := latestTransportForOrder(t, pool, orderID)
+	if kind != "standing_order_return" {
+		t.Fatalf("latest transport kind = %q, want standing_order_return", kind)
+	}
+
+	var loadedWeight, loadedQty float64
+	if err := pool.QueryRow(ctx,
+		`SELECT COALESCE(SUM(tg.quantity * g.weight), 0), COALESCE(SUM(tg.quantity), 0)
+		 FROM transport_goods tg JOIN goods g ON g.key = tg.good_key WHERE tg.transport_id = $1`,
+		returnID,
+	).Scan(&loadedWeight, &loadedQty); err != nil {
+		t.Fatalf("read return manifest: %v", err)
+	}
+	if loadedQty <= 0 {
+		t.Fatalf("return leg carries nothing — the cap must load up to capacity, not refuse")
+	}
+	if loadedWeight > transport.ShipCapacityMerchantman+0.01 {
+		t.Errorf("return leg loads weight %v, over the merchantman's capacity %v", loadedWeight, transport.ShipCapacityMerchantman)
+	}
+	var townStone, townTimber float64
+	_ = pool.QueryRow(ctx, `SELECT amount FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'stone'`, f.townID).Scan(&townStone)
+	_ = pool.QueryRow(ctx, `SELECT amount FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'timber'`, f.townID).Scan(&townTimber)
+	if math.Abs((2*huge-townStone-townTimber)-loadedQty) > 0.01 {
+		t.Errorf("destination lost %v, return leg carries %v — only what is loaded may leave", 2*huge-townStone-townTimber, loadedQty)
 	}
 }

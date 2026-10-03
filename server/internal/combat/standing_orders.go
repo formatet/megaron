@@ -581,7 +581,7 @@ func (h *StandingOrderTickHandler) dispatchReturn(ctx context.Context, tx pgx.Tx
 	// the destination's stock levels any more once the Wanax has stopped it.
 	if o.status == "active" {
 		floorRows, err := tx.Query(ctx,
-			`SELECT good_key, floor FROM standing_order_return_goods WHERE standing_order_id = $1`, o.id)
+			`SELECT good_key, floor FROM standing_order_return_goods WHERE standing_order_id = $1 ORDER BY good_key`, o.id)
 		if err != nil {
 			return fmt.Errorf("load return goods: %w", err)
 		}
@@ -601,12 +601,30 @@ func (h *StandingOrderTickHandler) dispatchReturn(ctx context.Context, tx pgx.Tx
 			return err
 		}
 
+		// A sea route's return leg rides the same hull as the outbound leg,
+		// so it obeys the same weight cap (outbound: dispatch above). Goods
+		// are filled in good_key order so the cap is deterministic.
+		capped, shipCapacity, usedWeight := false, 0.0, 0.0
+		if o.shipUnitID != nil {
+			var shipType string
+			if err := tx.QueryRow(ctx, `SELECT type FROM units WHERE id = $1`, *o.shipUnitID).Scan(&shipType); err == nil {
+				shipCapacity, capped = transport.ShipCapacityFor(shipType)
+			}
+		}
 		for _, f := range floors {
 			stock, err := settledStock(ctx, tx, o.toID, f.good)
 			if err != nil {
 				return err
 			}
-			if send := stock - f.min; send > 0 {
+			send := stock - f.min
+			if capped && send > 0 {
+				weight, _, werr := economy.IsShippableGood(ctx, tx, f.good)
+				if werr == nil && weight > 0 {
+					send = math.Min(send, math.Max(0, shipCapacity-usedWeight)/weight)
+					usedWeight += send * weight
+				}
+			}
+			if send > 0 {
 				returnManifest[f.good] = send
 			}
 		}

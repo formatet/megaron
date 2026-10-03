@@ -17,6 +17,6 @@ Route caravans are [[transfers|cargo]] like any other, and can be raided on the 
 
 ## Sea routes
 
-A route between two coastal or harboured settlements with a sea lane between them sails instead of walking — if you have a free Galley or Emporos in the sending port ([[sea]]). That ship is then **locked to the route for as long as it runs**, including the time it spends docked between trips: it cannot be sent anywhere else, loaded, or repaired until the route is paused or deleted. No free hull, and no land road either, pauses the route with the same reason a shortfall would.
+A route between two coastal or harboured settlements with a sea lane between them sails instead of walking — if you have a free Galley or Emporos in the sending port ([[sea]]). That ship is then **locked to the route for as long as it runs**, including the time it spends docked between trips: it cannot be sent anywhere else, loaded, or repaired until the route is paused or deleted. No free hull, and no land road either, pauses the route with the same reason a shortfall would. The ship's hold limits both legs: out, it carries what fits; home, it brings back what fits above your floors, and the rest waits at the destination for the next trip.
 
 Pause or delete a sea route and its ship comes free again: at once if it is sitting in port, empty-handed at the next sweep if it was sitting in the destination, or as soon as it finishes the leg it is already on.
