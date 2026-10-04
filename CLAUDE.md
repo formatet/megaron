@@ -31,6 +31,9 @@ read from code or vault on demand. A `≥3` beside the word "invariant" makes an
 - **Timestamps:** pull the actual wall clock from plain `date`, never a guessed or remembered time.
   **Never a `TZ=` prefix** — git-for-Windows ships no zoneinfo DB, so it silently falls back to UTC.
   Format `(YYYY-MM-DD HH:MM)`.
+- **Codex may be working in this repo at the same time** — rules in `AGENTS.md`. If `.agents/codex-thread`
+  exists, arm a Monitor at session start: `tail -n0 -F .agents/chat.log | grep --line-buffered "codex→claude"`
+  (re-arm on expiry), read the log's tail, and message Codex with `tools/agent-say.sh codex "…"`.
 - Vault rights: read/write `~/Dokument/myltavault` freely without asking.
 - **Loose design dumps** are an inbox, not a home: triage every point into a todo line, a vault update or a
   reasoned rejection — then delete the dump.
