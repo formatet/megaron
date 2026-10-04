@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"formatet/megaron/server/api/handlers"
+	"formatet/megaron/server/internal/agora"
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/chronicle"
 	"formatet/megaron/server/internal/clock"
@@ -317,6 +318,21 @@ func main() {
 	jh := handlers.NewJoinHandler(pool, eventStore, sitosCfg, gameClock, hub)
 	jh.SetWorldStartWanaxes(worldStartWanaxes)
 	nh := handlers.NewNotificationsHandler(pool)
+	var agoraAPI handlers.AgoraService
+	if agoraCfg, enabled, cfgErr := agora.ConfigFromEnv(os.Getenv); cfgErr != nil {
+		slog.Error("Agora configuration is invalid")
+		os.Exit(1)
+	} else if enabled {
+		client, clientErr := agora.NewClient(agoraCfg, nil)
+		if clientErr != nil {
+			slog.Error("Agora client configuration is invalid")
+			os.Exit(1)
+		}
+		service := &agoraService{pool: pool, remote: client, room: agoraCfg.AdminRoom, hub: hub}
+		agoraAPI = service
+		go service.run(ctx)
+	}
+	agoraHandler := handlers.NewAgoraHandler(agoraAPI)
 	dph := handlers.NewDispatchPreferencesHandler(pool)
 	uh := handlers.NewUnitHandler(pool, scheduler, eventStore, gameClock)
 	godH := handlers.NewGodHandler(pool)
@@ -326,6 +342,8 @@ func main() {
 	rh.SetLogDir(getEnv("REPORTS_DIR", "/var/lib/poleia/reports"))
 
 	r.Route("/api/v1", func(r chi.Router) {
+		r.With(handlers.RequireAgoraBearer, auth.Middleware(authSvc)).Get("/agora", agoraHandler.Get)
+		r.With(handlers.RequireAgoraBearer, auth.Middleware(authSvc)).Post("/agora/password", agoraHandler.Password)
 		// Admin routes — no JWT, keyed by X-Admin-Key header.
 		r.Get("/admin/worlds/{worldID}/god-view", godH.View)
 		r.Get("/admin/worlds/{worldID}/reports", rh.List)

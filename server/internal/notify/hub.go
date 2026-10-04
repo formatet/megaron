@@ -135,6 +135,16 @@ func (h *Hub) NotifyPlayer(ctx context.Context, worldID, playerID uuid.UUID, kin
 	return nil
 }
 
+// DeliverPersisted pushes a notification whose archive row was committed by its
+// caller's transaction. It never inserts another row. Personal records remain
+// personal, and muting suppresses only this transient delivery.
+func (h *Hub) DeliverPersisted(ctx context.Context, worldID, playerID uuid.UUID, msg Msg) {
+	if playerID == uuid.Nil || msg.ID == "" || h.isDispatchMuted(ctx, playerID, msg.Kind) {
+		return
+	}
+	h.sendTo(worldID, playerID, msg)
+}
+
 // isDispatchMuted reports whether playerID has muted kind as a dispatch
 // (dispatch_mutes, mig 140). Fails open on any DB error — a lookup failure
 // must never silently swallow a real notification.
