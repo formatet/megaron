@@ -38,3 +38,6 @@ tools/__pycache__/
 web/static/fixtures/world-acc88.json
 web/static/fixtures/world-ogonkoll.json
 web/static/fixtures/world-stor230b.json
+
+# Agent coordination (Codex + Claude) — local board and inbox
+.agents/
