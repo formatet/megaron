@@ -671,7 +671,10 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 
 	now := clk.Now()
 	var currentTick int
-	_ = pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+	if err := pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick); err != nil {
+		slog.Error("march route: could not read current tick", "unit", o.UnitID, "err", err)
+		return nil, reject(http.StatusInternalServerError, "pathfinding error")
+	}
 	travelTicks := max(1, int(math.Round(moveTicks)))
 	// arrives_at must mirror the real tick-scheduled arrival (travelTicks
 	// ticks × real seconds/tick), NOT moveTicks-as-hours: the map interpolates
@@ -680,21 +683,26 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	// real tick arrival (6 s at TICK_SECONDS=6) teleports it home.
 	arrivesAt := now.Add(time.Duration(travelTicks*tick.TickSeconds) * time.Second)
 
-	// movement 2a, R1/R5: save the path FindPath already found (never a second
-	// search) so a later read (recall/redirect, courier interception, the
-	// owner's own map and keryx) never has to re-walk it. NULL for colonize-
-	// in-place (no real path) and for a FindPath result too short to build a
-	// route from (defensive — should not happen given pathOK was already
-	// checked above).
+	// movement 2a, R1: a real journey must save the path FindPath already
+	// found (never a second search). Route preparation must succeed before
+	// any purse/provisions, unit state or arrival job can be changed. Only
+	// colonize-in-place has no journey and intentionally stores NULL.
 	var marchRoute []byte
-	if len(path) >= 2 {
-		stepHours, shErr := province.StepHoursDB(ctx, pool, o.WorldID, path, category)
-		if shErr == nil {
-			if route, ok := BuildRoute(path, stepHours, currentTick, currentTick+travelTicks); ok {
-				if raw, mErr := json.Marshal(route); mErr == nil {
-					marchRoute = raw
-				}
-			}
+	if !colonizeInPlace {
+		stepHours, err := province.StepHoursDB(ctx, pool, o.WorldID, path, category)
+		if err != nil {
+			slog.Error("march route: could not read step costs", "unit", o.UnitID, "err", err)
+			return nil, reject(http.StatusInternalServerError, "pathfinding error")
+		}
+		route, ok := BuildRoute(path, stepHours, currentTick, currentTick+travelTicks)
+		if !ok {
+			slog.Error("march route: invalid stored route", "unit", o.UnitID)
+			return nil, reject(http.StatusInternalServerError, "pathfinding error")
+		}
+		marchRoute, err = json.Marshal(route)
+		if err != nil {
+			slog.Error("march route: could not encode stored route", "unit", o.UnitID, "err", err)
+			return nil, reject(http.StatusInternalServerError, "pathfinding error")
 		}
 	}
 
