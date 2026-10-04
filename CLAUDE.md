@@ -65,13 +65,13 @@ Runs coordinated with Timothy; see `megaron_namn_hygien.md` §D.
 
 ## Stack
 
-Go 1.22+ · chi · PostgreSQL 16 (pgx/v5) · Redis 7 (go-redis) · gorilla/websocket · golang-migrate · log/slog · HTMX + vanilla JS.
+Go (minimum version in `server/go.mod`) · chi · PostgreSQL 16 (pgx/v5) · Redis 7 (go-redis) · gorilla/websocket · golang-migrate · log/slog · HTMX + vanilla JS.
 
 - **Event sourcing is hybrid.** `events` is an append-only audit/notify log. **Only loyalty is replay-derived**
   (`settlement/loyalty.go`). Resources, army, silver, kharis and population are mutated with direct `UPDATE`
   on projection tables — **`events` is not the source of truth for them**, so don't plan on rebuilding
   settlement state from the log. Write the events anyway (notifications + audit). Mutate atomically in a TX.
-- **Lazy resource eval:** store `(amount, rate_per_minute, calc_at)`, compute on read.
+- **Lazy resource eval:** store `(amount, rate_per_tick, calc_tick)`, compute on read with the shared SQL `settled()` function.
 - **Timed event queue** in PostgreSQL (SKIP LOCKED, worker polls every `min(10s, TickSeconds)`).
   WebSocket hub per world for push.
 
@@ -167,12 +167,14 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
   (good_key weight) is **repealed for every good except `cult`** (temple devotion — its own path,
   `megaron_cult_ar_ingen_vara_plan.md`, untouched). Production is derived from `settlement_placement`:
   one row = one gubbe (`Temenos_varutaxonomi_sol.md` §1.1, 1 gubbe = 100 invånare) bound to ONE hex or
-  building slot doing ONE good. `economy.RecomputeProduction` sums `placementYield` per placed gubbe —
-  `rate_per_tick / cap` for every good **except grain**, which stays capacity-exempt (`placementYield`'s
-  doc comment: production_rules' grain rates were never calibrated for a real physical cap — removing
-  the exemption starves every city, caught against a hard pre-P4 invariant test). P2/P3's slot numbers
-  (`WorkplaceSlots`, `hexCapacityRule`) are **gubbe-scale**, not citizen-scale (Timothy 2026-08-08) —
-  "Farm level 3 → 6 slots" means 6 *gubbar* (600 citizens), not 6 citizens.
+  building slot doing ONE good. **Hex production** uses `economy.hexYield` and `hex_rules.go`:
+  terrain/deposits set base places and per-worker rate; the relevant building adds
+  `BuildingExtraPlaces` and scales the rate by `1 + BuildingRatePerLevel * level`.
+  **Grain has no exemption** from this hex rule. Silver requires its mine; harbour applies to
+  the city's coastal-sea hexes. **City refining workplaces** (olive press/winery/foundry) keep
+  their own `placementYield` and P6 weakest-link recipe model. These are different production
+  contexts, not two competing hex formulas. Current contract: `megaron_plan_byggnadsregeln.md`.
+  Slot numbers are **gubbe-scale**, not citizen-scale: a slot is one gubbe, not one citizen.
   **Do not build new weight/share-based labour logic** — use `settlement_placement` +
   `economy.LoadHexProductionOptions`/`LoadBuildingProductionOptions`. Founding
   (`create_metropolis.go`, `unit_arrival.go foundColony`) auto-places starting gubbar on best food
@@ -189,12 +191,9 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
   side is one `.labor-input` with `data-good="cult"`. *(This line called the endpoint and its drawer
   "inert no-ops" whose removal was "the open work" until 2026-09-04 — measured false against the code
   and a live acceptance world. An agent trusting it would have ripped out a working temple control.)*
-  *(Both former "known shape problems" are now CLOSED — verified against master 2026-08-30.
-  **"building LEVEL does not raise production"** was fixed by Form B, `megaron_plan_byggnadsniva_takt.md`
-  (`aec63ad`, 2026-08-24): `economy.placement_yield.go`'s `MultPerGood = cap(actualLevel)/capL1`
-  multiplies the per-gubbe `rate`, so the same level-1 headcount produces more at a higher level —
-  grain excepted by design. **"grain is the one uncapped good"** was closed 2026-08-22, grain caps at
-  4/8/10/12 gubbar per plains hex by farm level, `megaron_plan_grain_cap.md`.)*
+  *(August's hex-cap/Form-A/Form-B formulas are historical; do not recreate their grain
+  exception or level-cap staircase. September's building rule is the current hex contract.
+  The city's refining workplace formula was deliberately left outside that change.)*
 - **Cost ↔ upkeep** — upkeep = grain+silver ∝ build cost. Strategic metals belong in build gates, recruit
   and attrition, **never flat upkeep** (bronze upkeep = desertion spiral).
 - **Trade & messenger layer — three distinct things, keep them apart:** (1) **message** = free text
