@@ -1,0 +1,27 @@
+# Standalone infrastructure: never merge with the main or old acceptance compose.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: agora_acceptance
+      POSTGRES_PASSWORD: agora_acceptance_local_fixture
+      POSTGRES_DB: agora_acceptance
+    ports: ["127.0.0.1:18432:5432"]
+    volumes: ["postgres_data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agora_acceptance"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+  redis:
+    image: redis:7-alpine
+    ports: ["127.0.0.1:18379:6379"]
+    volumes: ["redis_data:/data"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+volumes:
+  postgres_data:
+  redis_data:

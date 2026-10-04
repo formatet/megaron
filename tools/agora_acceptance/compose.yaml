@@ -1,0 +1,13 @@
+services:
+  matrix:
+    build: .
+    image: megaron-agora-acceptance:26.9.1
+    command: ["-c", "/config.toml"]
+    ports: ["127.0.0.1:${AGORA_RIG_PORT:-18099}:8008"]
+    volumes:
+      - ${AGORA_RIG_DIR:?Set a private temporary fixture directory}/config.toml:/config.toml:ro
+      - data:/data
+    logging:
+      driver: none
+volumes:
+  data:
