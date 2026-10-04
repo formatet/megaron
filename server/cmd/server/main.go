@@ -464,7 +464,7 @@ func main() {
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/occupation-order", uh.OccupationOrder)
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/gift", sh.Gift)
 			r.Get("/worlds/{worldID}/settlements/{settlementID}/loyalty-log", sh.LoyaltyLog)
-			r.Post("/worlds/{worldID}/settlements/{settlementID}/return-army", sh.ReturnArmy)
+			registerReturnArmyRoute(r, sh.ReturnArmy)
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/rite", sh.Rite)
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/abandon", sh.Abandon)
 			r.Get("/worlds/{worldID}/gossip", sh.Gossip)
@@ -714,7 +714,14 @@ func envWorldStartWanaxes() (int, error) {
 	return n, nil
 }
 
-// requireKingdomsEnabled gates the /kingdoms subtree behind KINGDOMS_ENABLED
+// registerReturnArmyRoute shares the kingdoms gate with BorrowArmy even though
+// the return endpoint lives under settlements. Keep registration here so tests
+// exercise the production route and its middleware rather than a copied route.
+func registerReturnArmyRoute(r chi.Router, returnArmy http.HandlerFunc) {
+	r.With(requireKingdomsEnabled).Post("/worlds/{worldID}/settlements/{settlementID}/return-army", returnArmy)
+}
+
+// requireKingdomsEnabled gates kingdom routes behind KINGDOMS_ENABLED
 // (default off — kingdoms are post-MVP, Timothy 2026-07-08). Handlers stay
 // registered per temenos_arkitektur Fas 6 (endpoints always exist, they just
 // answer disabled) — this middleware is the only thing that changes.

@@ -715,8 +715,10 @@ func (h *SettlementHandler) LoyaltyLog(w http.ResponseWriter, r *http.Request) {
 //
 // NOTE (SB7): the restore SQL below still writes the retired settlements.* army
 // columns; like its counterpart KingdomHandler.BorrowArmy it must be rebuilt on the
-// units model when kingdoms are re-enabled. The route is gated off (kingdoms are
-// POST-MVP), so this never runs live. See megaron_todo → "SB7 follow-up: borrow-army på units".
+// units model BEFORE kingdoms are re-enabled. The server registers this endpoint
+// behind requireKingdomsEnabled (default off; kingdoms are POST-MVP). A nonempty
+// KINGDOMS_ENABLED exposes this legacy handler, so enabling the switch is not a
+// substitute for rebuilding it. See megaron_arkitekturprogram, step 0.
 func (h *SettlementHandler) ReturnArmy(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
