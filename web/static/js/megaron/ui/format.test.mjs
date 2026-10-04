@@ -610,3 +610,10 @@ test('purseLine: full purse, short purse, empty purse, no purse', () => {
   assert.equal(purseLine({ status: 'order_dispatched' }), '');
   assert.equal(purseLine(undefined), '');
 });
+
+test('agora_ready directs to Account and ignores unexpected secret fields', () => {
+  const line = notifText('agora_ready', { user_id: '@agamemnon:agora.test', password: 'never-render-this' });
+  assert.match(line, /@agamemnon:agora.test/);
+  assert.match(line, /open Account/);
+  assert.doesNotMatch(line, /never-render-this/);
+});

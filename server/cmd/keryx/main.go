@@ -46,7 +46,7 @@ func main() {
 				fmt.Fprintln(os.Stderr, "Not logged in — run: keryx login --server <url>")
 				os.Exit(2)
 			}
-			if cfg.WorldID == "" && cmd.Name() != "worlds" {
+			if cfg.WorldID == "" && commandNeedsWorld(cmd) {
 				fmt.Fprintln(os.Stderr, "No active world — run: keryx worlds")
 				os.Exit(2)
 			}
@@ -59,6 +59,7 @@ func main() {
 	root.AddCommand(
 		loginCmd(),
 		passwordCmd(),
+		agoraCmd(),
 		joinCmd(),
 		statusCmd(),
 		mapCmd(),
@@ -139,4 +140,12 @@ func main() {
 	if err := root.Execute(); err != nil {
 		os.Exit(1)
 	}
+}
+
+// Agora belongs to the account, surviving world reseeds.
+func commandNeedsWorld(cmd *cobra.Command) bool {
+	if cmd.Name() == "worlds" || cmd.Name() == "agora" {
+		return false
+	}
+	return !(cmd.Name() == "password" && cmd.Parent() != nil && cmd.Parent().Name() == "agora")
 }

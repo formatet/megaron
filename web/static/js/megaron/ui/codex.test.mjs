@@ -24,9 +24,9 @@ function clientKinds() {
   const src = readFileSync(join(here, 'format.js'), 'utf8');
   const kinds = new Set();
   const iconBlock = src.slice(src.indexOf('export function notifIcon'), src.indexOf("return icons[kind]"));
-  for (const m of iconBlock.matchAll(/^\s+([A-Z][A-Za-z]+):/gm)) kinds.add(m[1]);
-  const textFn = src.slice(src.indexOf('export function notifText'));
-  for (const m of textFn.matchAll(/case '([A-Z][A-Za-z]+)'/g)) kinds.add(m[1]);
+  for (const m of iconBlock.matchAll(/^\s+([A-Za-z][A-Za-z0-9_]*):/gm)) kinds.add(m[1]);
+  const textFn = src.slice(src.indexOf('export function notifText'), src.indexOf('// Mirrors keryx'));
+  for (const m of textFn.matchAll(/^    case '([A-Za-z][A-Za-z0-9_]*)'/gm)) kinds.add(m[1]);
   return [...kinds];
 }
 
@@ -109,4 +109,16 @@ test('backlinksTo and searchArticles', () => {
   const idx = { articles: [{ id: 'a', title: 'Grain' }, { id: 'b', title: 'Wine' }] };
   assert.deepEqual(searchArticles('grain', idx, { a: '', b: 'made from grain' }).map(x => x.id), ['a', 'b']);
   assert.deepEqual(searchArticles('  ', idx, {}), []);
+});
+
+test('codex: lowercase agora_ready is mapped and community rules match alpha policy', () => {
+  assert.ok(clientKinds().includes('agora_ready'));
+  assert.equal(articleForKind('agora_ready', index), 'community-chat');
+  const alpha = readFileSync(join(here, '../../../../templates/alfatestinfo.html'), 'utf8');
+  const policy = alpha.slice(alpha.indexOf('<h2>Chat rules and privacy</h2>'));
+  const lines = [...policy.matchAll(/<li>(.*?)<\/li>/g)].map(m => m[1]);
+  const privacy = /<p class="alpha-note">(.*?)<\/p>/.exec(policy)[1];
+  assert.equal(lines.length, 4);
+  for (const line of [...lines, privacy]) assert.ok(bodies['community-chat'].includes(line), `Community chat policy drift: ${line}`);
+  assert.ok(!alpha.includes('register with the code'));
 });

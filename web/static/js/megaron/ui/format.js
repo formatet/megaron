@@ -162,6 +162,7 @@ export function notifDomain(kind) {
 
 export function notifIcon(kind) {
   const icons = {
+    agora_ready: '✉',
     BuildComplete:      '🏛',
     GoodsCrafted:       '🔨',
     TrainComplete:      '⚔',
@@ -265,6 +266,7 @@ function payloadSummary(body) {
 
 export function notifText(kind, body) {
   switch (kind) {
+    case 'agora_ready': return `Community chat account ready: ${body.user_id || 'your Wanax account'} — open Account to get your chat password.`;
     case 'BuildComplete':      return `Build complete: ${body.building_type || ''}`;
     case 'GoodsCrafted': {
       // Payload per ProvinceHandler.Craft: output_key, produced, consumed{good:qty}.

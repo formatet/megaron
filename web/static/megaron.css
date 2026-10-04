@@ -2043,3 +2043,15 @@ h4.cx-h { font-size: var(--fs-base); }
 .alpha-info figcaption { margin-top: .4rem; font-size: var(--fs-sm); color: var(--text-dim); }
 .alpha-footer { padding-top: 1rem; border-top: 1px solid var(--text-dim); }
 @media (max-width: 480px) { .alpha-main { padding: 2.5rem 1rem 2rem; } }
+
+/* Community account access, inside the existing account window. */
+.account-chat { margin: 1.25rem 0; padding-top: 1rem; border-top: 1px solid var(--border); }
+.account-chat h3 { color: var(--accent); font-size: var(--fs-md); margin-bottom: .6rem; }
+.account-chat p { margin: .6rem 0; }
+.account-chat dt { font-size: var(--fs-sm); color: var(--text-dim); }
+.account-chat dd { margin: 0 0 .5rem; overflow-wrap: anywhere; font-family: var(--mono); }
+.account-chat a { color: var(--accent); }
+.account-chat-secret { white-space: pre-wrap; overflow-wrap: anywhere; padding: .6rem; margin: .6rem 0; background: var(--warm-white); border: 1px solid var(--border); color: var(--text); user-select: all; }
+#acc-chat-status { font-size: var(--fs-sm); margin-top: .6rem; }
+
+#account-window-overlay .dispatch-window { max-height: calc(100dvh - 2rem); overflow-y: auto; }

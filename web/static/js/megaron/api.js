@@ -26,7 +26,8 @@ function setNetStatus(active) {
 export async function fetchAuth(url, opts = {}) {
   const token = localStorage.getItem('poleia_token');
   const headers = Object.assign(token ? {'Authorization': 'Bearer ' + token} : {}, opts.headers || {});
-  const finalOpts = Object.assign({}, opts, {headers});
+  const { sensitive = false, ...requestOpts } = opts;
+  const finalOpts = Object.assign({}, requestOpts, {headers});
   // Retry only idempotent GETs — never a mutation — on a network error or 5xx.
   // Two retries with 1 s / 3 s backoff smooth over the pool-starvation blips and
   // reconnect windows; a 4xx or success returns immediately.
@@ -48,7 +49,7 @@ export async function fetchAuth(url, opts = {}) {
       // nothing happened" carries the actual reason. Cloned BEFORE returning so
       // the caller's own res.json() still has an unread body, and deliberately
       // not awaited — a diagnostic must never sit in the path of the UI.
-      if (!res.ok) {
+      if (!res.ok && !sensitive) {
         try {
           res.clone().text().then(body => {
             recordApiFailure({ path: telemetryPath(url), status: res.status, body });
@@ -68,3 +69,9 @@ export async function fetchAuth(url, opts = {}) {
     }
   }
 }
+
+// Account-level chat endpoints; secrets bypass error-body diagnostics and caches.
+export const getAgoraAccount = () => fetchAuth('/api/v1/agora', { cache: 'no-store' });
+export const requestAgoraPassword = () => fetchAuth('/api/v1/agora/password', {
+  method: 'POST', cache: 'no-store', sensitive: true,
+});

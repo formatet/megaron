@@ -49,9 +49,10 @@
     {"id": "loyalty",      "title": "Loyalty",                      "category": "Growing", "related": ["colonies", "battle", "transfers"]},
     {"id": "bronze",       "title": "The bronze problem",           "category": "Growing", "related": ["goods", "sea", "rites"]},
 
-    {"id": "report",       "title": "Reporting a problem",          "category": "Reference", "drawer": "report", "related": ["rough-edges"]},
+    {"id": "report",       "title": "Reporting a problem",          "category": "Reference", "drawer": "report", "related": ["rough-edges", "community-chat"]},
     {"id": "rough-edges",  "title": "Rough edges",                  "category": "Reference", "related": ["report", "keryx"]},
     {"id": "keryx",        "title": "Keryx, the command line",      "category": "Reference", "related": ["rough-edges"]},
+    {"id": "community-chat", "title": "Community chat", "category": "Reference", "kinds": ["agora_ready"], "related": ["report", "keryx", "messengers"]},
     {"id": "glossary",     "title": "Glossary",                     "category": "Reference", "related": ["welcome"]}
   ]
 }

@@ -1,4 +1,5 @@
 import { State } from '../state.js';
+import { openAccountWindow } from './account_window.js';
 import { fetchAuth } from '../api.js';
 import { notifText, notifIcon, colonyFoundedGrainLine, formatApiError, passageNote, esc } from './format.js';
 import { codexArticleForKind, openCodex } from './codex.js';
@@ -269,6 +270,7 @@ export function openDispatchWindow(kind, payload, timeLabel) {
   const occChoices = occupationChoicesFor(kind, payload);
   const settlementID = payload.settlement_id;
   const showOcc = occChoices.length > 0 && !!settlementID;
+  const showChat = kind === 'agora_ready';
   const showPassageStalled = kind === 'PassageStalled' && !!payload.messenger_id;
 
   body.innerHTML = `
@@ -281,6 +283,7 @@ export function openDispatchWindow(kind, payload, timeLabel) {
     ${showOcc ? occupationBlockHTML(occChoices) : ''}
     ${showPassageStalled ? passageStalledBlockHTML(payload) : ''}
     <button class="dw-goto-btn" id="dw-goto-btn" ${dest ? '' : 'disabled title="No known location for this dispatch"'}>⌖ Take me there</button>
+    ${showChat ? '<button class="dw-goto-btn" id="dw-account-btn">Open account — Community chat</button>' : ''}
     ${article ? '<button class="dw-goto-btn dw-codex-btn" id="dw-codex-btn">? Read about this</button>' : ''}
     <label class="dw-mute-row">
       <input type="checkbox" id="dw-mute-chk">
@@ -292,6 +295,11 @@ export function openDispatchWindow(kind, payload, timeLabel) {
   document.getElementById('dw-goto-btn').addEventListener('click', () => {
     if (dest) window.centreOn(dest.q, dest.r);
     closeDispatchWindow();
+  });
+
+  if (showChat) document.getElementById('dw-account-btn').addEventListener('click', () => {
+    closeDispatchWindow();
+    openAccountWindow();
   });
 
   if (article) {

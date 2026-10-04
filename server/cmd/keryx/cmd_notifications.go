@@ -110,6 +110,9 @@ func printNotificationRow(c *Client, n notificationItem) {
 // Takes c only to hand to printExploreReturnedLine's game-day ETA (rad K) —
 // every other line below is pure formatting of the notification body.
 func printNotificationDetail(c *Client, n notificationItem) {
+	if n.Kind == "agora_ready" {
+		fmt.Println("    Community chat account ready — run keryx agora to view it, then keryx agora password to explicitly set and show a new chat password.")
+	}
 	if n.Kind == "ColonyFounded" {
 		printColonyFoundedGrainLine(n)
 	}
