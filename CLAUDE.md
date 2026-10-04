@@ -103,21 +103,28 @@ Go (minimum version in `server/go.mod`) · chi · PostgreSQL 16 (pgx/v5) · Redi
 
 ### Package dependency order (G1 — strict, no exceptions)
 ```
-ai, auth, clock, gossip, hexgrid, movement, notify, province, religion, unit, world  ← zero internal deps
+ai, auth, clock, gossip, hexgrid, movement, notify, religion, unit, unit/shipnames, world  ← zero internal deps
+  ↑
+province(→hexgrid)
   ↑
 events(→clock) · tick(→clock,events) · chronicle(→events) · settlement(→province)
   ↑
-economy(→clock,events,gossip,hexgrid) · transport(→clock,events,province) · capabilities(→clock,province,religion,unit)
+economy(→clock,events,gossip,hexgrid,province) · transport(→clock,events,province) · capabilities(→clock,province,religion,unit)
   ↑
 kharis(→ai,clock,economy,events,hexgrid,religion,unit) · loyalty(→clock,economy,events,settlement,tick)
   ↑
 combat(→…,hexgrid,movement)  ← may use capabilities, economy, gossip, loyalty, province, tick, transport, unit (+clock, events, movement)
   ↑
-messenger  ← may use combat + everything below
+messenger  ← explicitly listed lower domain packages (not auth or notify)
   ↑
 api/handlers, cmd/server  ← may use all (the only ones that may import notify — the hub is consumed
                             via consumer interfaces, e.g. transport.Broadcaster)
 ```
+The executable G1 rule owner is `server/cmd/server/architecture_test.go` (`g1Allowed`).
+The guard reads production imports through `go list`; unknown internal packages fail until classified.
+`province → hexgrid` owns shared geometry; `economy → province` consumes catalogues and routing.
+Both are intentional downward dependencies. Subpackages are classified individually.
+
 A package may import **downward only**. Upward communication goes via event emission.
 Consumer interfaces are defined in the **consuming** package, never in the implementing one.
 (`kingdom` is not a package — kingdoms live in `api/handlers/kingdom.go` + `capabilities/kingdom_verbs.go`,
