@@ -2023,40 +2023,23 @@ h4.cx-h { font-size: var(--fs-base); }
 .notif-archive-note + .drawer-help { margin-left: 0; }
 .codex-back.hidden { display: none; }
 
-/* Public alpha invitation. Scoped to avoid changing the game's existing pages. */
-.alpha-info { color: var(--text-light); }
-.alpha-header { position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; gap: 1rem; max-width: 1040px; margin: auto; padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-in); }
-.alpha-header .logo { color: var(--gold); }
-.alpha-login { color: var(--sandstone); font-size: var(--fs-sm); }
-.alpha-main { max-width: 960px; margin: auto; padding: 0 2rem 2rem; }
+/* Public alpha-test page (/alfatestinfo). Scoped; light and plain like formatet.se. */
+.alpha-info { background: var(--bg-panel); color: var(--text); font-family: var(--font); font-size: var(--fs-base); line-height: 1.65; }
+.alpha-main { max-width: 680px; margin: 0 auto; padding: 4rem 1.5rem 3rem; }
+.alpha-info h1, .alpha-info h2, .alpha-label, .alpha-note, .alpha-info figcaption, .alpha-footer { font-family: "Helvetica Neue", Arial, sans-serif; }
+.alpha-header { margin-bottom: 2.5rem; }
+.alpha-label { margin: 0 0 .25rem; font-size: var(--fs-sm); color: var(--text-dim); letter-spacing: .04em; }
+.alpha-info h1 { margin: 0; font-size: var(--fs-xl); font-weight: 500; color: var(--text); }
+.alpha-info section { margin: 0 0 2.5rem; }
+.alpha-info h2 { margin: 0 0 .75rem; font-size: var(--fs-md); font-weight: 500; color: var(--text); padding-top: 1rem; border-top: 1px solid var(--text-dim); }
 .alpha-info p { margin: 0 0 1rem; }
-.alpha-intro { padding: 4rem 0 2rem; }
-.alpha-eyebrow { color: var(--sandstone); font-family: var(--mono); font-size: var(--fs-xs); letter-spacing: .08em; text-transform: uppercase; }
-.alpha-intro h1 { font-size: clamp(2.2rem, 5.5vw, 3.8rem); line-height: 1.16; letter-spacing: .015em; margin: .75rem 0 1.5rem; }
-.alpha-lead { max-width: 38rem; font-size: var(--fs-lg); line-height: 1.5; color: var(--gold); }
-.alpha-section { padding: 2rem 0; border-top: 1px solid var(--border-in); }
-.alpha-section h2 { font-size: var(--fs-xl); letter-spacing: .02em; line-height: 1.3; margin: .5rem 0 1.25rem; }
-.alpha-section > p, .alpha-intro > p { max-width: 43rem; }
-.alpha-note { border-left: 3px solid var(--border); padding-left: 1.5rem; }
-.alpha-gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; margin: 1.5rem 0 0; }
-.alpha-image-placeholder { min-height: 165px; background: var(--deep-sea); border: 1px dashed var(--sandstone); display: flex; flex-direction: column; justify-content: center; align-items: center; gap: .4rem; padding: 1rem; text-align: center; }
-.alpha-image-placeholder span { font-family: var(--mono); font-size: var(--fs-xs); color: var(--text-light); }
-.alpha-image-placeholder strong { color: var(--gold); font-weight: normal; font-size: var(--fs-lg); }
-.alpha-gallery figcaption { font-size: var(--fs-sm); color: var(--sandstone); margin-top: .6rem; }
-.alpha-questions { padding-left: 1.25rem; margin-bottom: 1.25rem; max-width: 43rem; }
-.alpha-questions li { margin: .45rem 0; padding-left: .25rem; }
-.alpha-info code { font-family: var(--mono); color: var(--gold); font-size: var(--fs-sm); }
-.alpha-cta { display: inline-block; padding: .85rem 1.2rem; margin: .5rem 0; background: var(--sandstone); color: var(--text); border: 1px solid var(--border-in); font-size: var(--fs-md); }
-.alpha-cta:hover { background: var(--bg-raised); text-decoration: none; }
-.alpha-info a:focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; }
-.alpha-info .alpha-footer { max-width: 1040px; margin: auto; color: var(--sandstone); padding: 1.5rem 2rem; border-top: 1px solid var(--border-in); font-size: var(--fs-sm); }
-@media (max-width: 600px) {
- .alpha-header { padding: 1rem 1.25rem; flex-wrap: wrap; }
- .alpha-header .logo { font-size: var(--fs-md); }
- .alpha-main { padding: 0 1.25rem 1rem; }
- .alpha-intro { padding: 2.5rem 0 1.5rem; }
- .alpha-gallery { grid-template-columns: 1fr; }
- .alpha-note { padding-left: 1rem; }
- .alpha-cta { display: block; text-align: center; }
- .alpha-info .alpha-footer { padding: 1.5rem 1.25rem; }
-}
+.alpha-info ul { margin: 0 0 1rem; padding-left: 1.2rem; }
+.alpha-info li { margin: .3rem 0; }
+.alpha-info a { color: var(--deep-sea); }
+.alpha-info code { font-family: var(--mono); font-size: var(--fs-sm); }
+.alpha-note { font-size: var(--fs-sm); color: var(--text-dim); }
+.alpha-info figure { margin: 0 0 1.5rem; }
+.alpha-info img { display: block; width: 100%; height: auto; border: 1px solid var(--text-dim); }
+.alpha-info figcaption { margin-top: .4rem; font-size: var(--fs-sm); color: var(--text-dim); }
+.alpha-footer { padding-top: 1rem; border-top: 1px solid var(--text-dim); }
+@media (max-width: 480px) { .alpha-main { padding: 2.5rem 1rem 2rem; } }

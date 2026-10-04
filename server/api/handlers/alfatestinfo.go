@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-// AlfatestInfo renders the public Swedish invitation without querying game state.
+// AlfatestInfo renders the public alpha-test page without querying game state.
 // A standalone page preserves the language and behaviour of existing templates.
 func (h *WebHandler) AlfatestInfo(w http.ResponseWriter, r *http.Request) {
 	page, err := template.ParseFiles(filepath.Join(h.templateDir, "alfatestinfo.html"))
