@@ -34,6 +34,11 @@ read from code or vault on demand. A `≥3` beside the word "invariant" makes an
 - **Codex may be working in this repo at the same time** — rules in `AGENTS.md`. If `.agents/codex-thread`
   exists, arm a Monitor at session start: `tail -n0 -F .agents/chat.log | grep --line-buffered "codex→claude"`
   (re-arm on expiry), read the log's tail, and message Codex with `tools/agent-say.sh codex "…"`.
+  **Roles (Timothy 2026-10-04):** Claude leads — gives Codex work orders (one branch per slice), reviews the
+  core diff itself, runs its own mutation check, merges, pushes, deploys, keeps todo/vault, and takes BILD/TEXT
+  gates to Timothy. Codex builds, tests and proposes architecture. Use Codex fully for implementation instead of
+  doing it inline, but Codex's quota runs out: if Codex is paused, Claude builds itself or waits. Timothy has
+  delegated approval of the owner map (`megaron_arkitekturprogram` steps 3/5) to Claude; canon still goes to him.
 - Vault rights: read/write `~/Dokument/myltavault` freely without asking.
 - **Loose design dumps** are an inbox, not a home: triage every point into a todo line, a vault update or a
   reasoned rejection — then delete the dump.

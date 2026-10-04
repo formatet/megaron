@@ -8,6 +8,11 @@ deploy steps all apply to you. Where it says "Claude", read "the agent". Its mem
 
 ## Two agents share this repo (Codex + Claude Code)
 
+**Roles (Timothy 2026-10-04):** Claude leads and integrates — it sends you work orders, reviews and merges your
+branches, pushes and deploys. You build, test, analyse and propose architecture. Don't merge, push or deploy
+yourself; hand over branch + commits + test results + a mutation check via `tools/agent-say.sh claude`.
+Never check out a branch in the main tree `~/Projects/megaron` — it stays on `master`; work in your own worktree.
+
 Timothy runs Codex and Claude Code on the same machine, often at the same time. Rules:
 
 1. **One working tree per agent.** Never both in `~/Projects/megaron` at once. Whoever starts second
