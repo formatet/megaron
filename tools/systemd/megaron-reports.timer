@@ -1,0 +1,9 @@
+[Unit]
+Description=Megaron: daily player-report copy into the vault
+
+[Timer]
+OnCalendar=*-*-* 06:30
+Persistent=true
+
+[Install]
+WantedBy=timers.target

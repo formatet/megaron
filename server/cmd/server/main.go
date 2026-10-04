@@ -320,6 +320,9 @@ func main() {
 	uh := handlers.NewUnitHandler(pool, scheduler, eventStore, gameClock)
 	godH := handlers.NewGodHandler(pool)
 	rh := handlers.NewReportsHandler(pool)
+	// Every report is also appended to REPORTS_DIR/reports.jsonl — outside the DB, so it
+	// survives a reseed; tools/reports_to_vault.py copies it to the vault daily. Empty = off.
+	rh.SetLogDir(getEnv("REPORTS_DIR", "/var/lib/poleia/reports"))
 
 	r.Route("/api/v1", func(r chi.Router) {
 		// Admin routes — no JWT, keyed by X-Admin-Key header.

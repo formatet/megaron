@@ -2,8 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"formatet/megaron/server/internal/auth"
@@ -19,11 +23,69 @@ import (
 // stamped by the server instead of typed by hand.
 type ReportsHandler struct {
 	pool *pgxpool.Pool
+
+	// logDir is where every report is also appended as one JSON line
+	// (reports.jsonl), outside the database — the copy that survives a
+	// reseed (TRUNCATE worlds CASCADE) and a DB reset. tools/reports_to_vault.py
+	// renders it into the vault once a day. Empty = disabled (tests).
+	logDir string
+	logMu  sync.Mutex
 }
 
 // NewReportsHandler creates a ReportsHandler.
 func NewReportsHandler(pool *pgxpool.Pool) *ReportsHandler {
 	return &ReportsHandler{pool: pool}
+}
+
+// SetLogDir enables the append-only report log in dir (REPORTS_DIR).
+func (h *ReportsHandler) SetLogDir(dir string) { h.logDir = dir }
+
+// reportLogLine is one line of reports.jsonl. Names are resolved at write
+// time because the world row is gone after the next reseed.
+type reportLogLine struct {
+	ID        uuid.UUID       `json:"id"`
+	CreatedAt time.Time       `json:"created_at"`
+	WorldID   uuid.UUID       `json:"world_id"`
+	WorldName string          `json:"world_name"`
+	PlayerID  uuid.UUID       `json:"player_id"`
+	Wanax     string          `json:"wanax"`
+	Username  string          `json:"username"`
+	Kind      string          `json:"kind"`
+	Body      string          `json:"body"`
+	Q         *int            `json:"q,omitempty"`
+	R         *int            `json:"r,omitempty"`
+	View      string          `json:"view,omitempty"`
+	Tick      int             `json:"tick"`
+	Context   json.RawMessage `json:"context,omitempty"`
+}
+
+// appendLog writes one report to reports.jsonl. A failure is logged, never
+// returned: the report is already saved in the database, and the player
+// must not see an error for a disk problem on our side.
+func (h *ReportsHandler) appendLog(line reportLogLine) {
+	if h.logDir == "" {
+		return
+	}
+	raw, err := json.Marshal(line)
+	if err != nil {
+		slog.Error("report log: marshal", "id", line.ID, "err", err)
+		return
+	}
+	h.logMu.Lock()
+	defer h.logMu.Unlock()
+	if err := os.MkdirAll(h.logDir, 0o755); err != nil {
+		slog.Error("report log: mkdir", "dir", h.logDir, "err", err)
+		return
+	}
+	f, err := os.OpenFile(filepath.Join(h.logDir, "reports.jsonl"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	if err != nil {
+		slog.Error("report log: open", "dir", h.logDir, "err", err)
+		return
+	}
+	defer f.Close()
+	if _, err := f.Write(append(raw, '\n')); err != nil {
+		slog.Error("report log: write", "id", line.ID, "err", err)
+	}
 }
 
 var validReportKinds = map[string]bool{"bug": true, "design": true, "confused": true}
@@ -73,15 +135,32 @@ func (h *ReportsHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	var id uuid.UUID
 	var tick int
+	var createdAt time.Time
 	err = h.pool.QueryRow(r.Context(),
 		`INSERT INTO player_reports (world_id, player_id, kind, body, q, r, view, context, tick)
 		 VALUES ($1, $2, $3, $4, $5, $6, NULLIF($7, ''), $8, current_world_tick())
-		 RETURNING id, tick`,
+		 RETURNING id, tick, created_at`,
 		worldID, playerID, req.Kind, req.Body, req.Q, req.R, req.View, reportContext,
-	).Scan(&id, &tick)
+	).Scan(&id, &tick, &createdAt)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "insert failed")
 		return
+	}
+
+	if h.logDir != "" {
+		line := reportLogLine{
+			ID: id, CreatedAt: createdAt.UTC(), WorldID: worldID, PlayerID: playerID,
+			Kind: req.Kind, Body: req.Body, Q: req.Q, R: req.R, View: req.View,
+			Tick: tick, Context: reportContext,
+		}
+		// Names are best effort: a missing row leaves the field empty, the ids stay.
+		_ = h.pool.QueryRow(r.Context(),
+			`SELECT COALESCE((SELECT name FROM worlds WHERE id = $1), ''),
+			        COALESCE((SELECT COALESCE(wanax_name, '') FROM players WHERE id = $2), ''),
+			        COALESCE((SELECT username FROM players WHERE id = $2), '')`,
+			worldID, playerID,
+		).Scan(&line.WorldName, &line.Wanax, &line.Username)
+		h.appendLog(line)
 	}
 
 	writeJSON(w, http.StatusCreated, map[string]any{"id": id, "tick": tick})

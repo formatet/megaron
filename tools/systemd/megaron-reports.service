@@ -1,0 +1,9 @@
+# Daily copy of player reports (CT 126 reports.jsonl) into the vault.
+# Install: cp tools/systemd/megaron-reports.* ~/.config/systemd/user/ &&
+#          systemctl --user daemon-reload && systemctl --user enable --now megaron-reports.timer
+[Unit]
+Description=Megaron: copy player reports into the vault
+
+[Service]
+Type=oneshot
+ExecStart=%h/Projects/megaron/tools/reports_to_vault.py

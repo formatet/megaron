@@ -1,0 +1,14 @@
+-- Migration 157: player reports survive a reseed (Timothy 2026-10-04,
+-- megaron_drift.md §Beslut: "en värld per server och per databas — konton,
+-- loggar och buggrapporter överlever").
+--
+-- A reseed runs `TRUNCATE worlds CASCADE` (cmd/create-world). TRUNCATE ...
+-- CASCADE empties every table with a foreign key to worlds, regardless of the
+-- key's ON DELETE action — so ON DELETE SET NULL would not have saved them;
+-- only dropping the key does. The reseed of 2026-09-09 lost every report this
+-- way. world_id stays as a plain column (which world the report was written
+-- in); the world row it names is simply gone after a reseed.
+--
+-- The append-only file REPORTS_DIR/reports.jsonl is the primary copy from now
+-- on; this keeps the DB copy (keryx reports, admin GET) alive across reseeds too.
+ALTER TABLE player_reports DROP CONSTRAINT IF EXISTS player_reports_world_id_fkey;
