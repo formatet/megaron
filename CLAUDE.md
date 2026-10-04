@@ -6,6 +6,8 @@ If code and this file conflict, trust the code, then fix this file.
 read from code or vault on demand. A `≥3` beside the word "invariant" makes an agent refuse to tune it.
 
 - **Before a task:** read the relevant vault doc(s) — index at `~/Dokument/myltavault/megaron_moc.md` (**start here**).
+  **Decisions live in the topic doc for their mechanic** (registry: `megaron_styrande_beslut.md`, one line + link);
+  architecture work (ownership, duplicates, guards) lives in `megaron_arkitekturprogram.md`.
   **And run `git status` + `git worktree list` first** — a session that died mid-slice leaves its work
   uncommitted and unrecorded (two slices sat 13 days in the tree before 2026-09-23). Rescue it before new work.
 - **The gate** — mark every piece of work *blocks* / *proves* / *waits for* it:
@@ -134,8 +136,9 @@ navigation through `auth.WebMiddleware`; all API calls use Bearer.) Wired in
   2026-08-22. That column was DROPPED by mig 106 line 59 when the Sitos fund became a granary —
   verified absent from the live DB. Silver never passes through the granary; it holds grain+fish.)*
   Prefer **silver** over "gold" for the currency everywhere; "gold" is reserved for a future luxury good.
-- **Army:** bare names — `infantry`, `chariot`, `ship`, `elite_infantry` (legacy dual-write columns until
-  SB7/C8). **`priest` is not a unit** — cult is temple labor.
+- **Army:** bare names — `infantry`, `chariot`, `ship`, `elite_infantry`. The army lives in `units`; the old
+  integer columns on `settlements` were dropped by mig 078 (any SQL still naming them is a bug — see
+  `megaron_arkitekturprogram` step 0). **`priest` is not a unit** — cult is temple labor.
 - **Terminology (use → not):** Wanax not Player · Kharis not Mana · Era not Season · Province not Hex ·
   Settlement not Base · Kingdom not Alliance · Rite not Spell · March not Attack (verb) ·
   Sea Peoples not Boss · Collapse not Season-end · **The Thalassa** not The Sea.
@@ -146,7 +149,7 @@ navigation through `auth.WebMiddleware`; all API calls use Bearer.) Wired in
 
 Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
 
-- **Province ≠ settlement** — separate tables; outpost = province row, no settlement row.
+- **Province ≠ settlement** — separate tables. (The outpost model is gone — mig 138 dropped it, 2026-09-02.)
 - **Loyalty** — bounded low-integer projection, never 0–100; event-sourced.
 - **Kharis** is a relationship, not mana; always a floor (never 0); realm pool per Wanax, cap driven by
   temple level. Cult is produced by population allocated to temples.
