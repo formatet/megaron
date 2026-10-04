@@ -97,3 +97,27 @@ and saves no password-bearing screenshots, traces or browser sessions.
 ```sh
 python3 tools/agora_acceptance/element_browser.py --fixture /tmp/agora-element-private/browser-fixture.json --old-password
 ```
+
+
+Actual player scenarios use the running isolated game, Matrix and Element above.
+Build a Keryx binary from this checkout into the private game directory. The game
+helper records its own PID with mode 0600 and defaults its Go cache to the fixture
+directory. Store game stdout/stderr only in a private mode-0600 game.log.
+
+```sh
+# Run each scenario sequentially; all credentials stay in mode-0600 fixtures.
+python3 tools/agora_acceptance/player.py --dir /tmp/agora-player-proof-final --matrix-fixture /tmp/agora-rig-clean/secret.json --scenario basic --keryx /tmp/agora-game-private/keryx --game-log /tmp/agora-game-private/game.log
+python3 tools/agora_acceptance/player.py --dir /tmp/agora-player-proof-final --matrix-fixture /tmp/agora-rig-clean/secret.json --scenario collision --game-log /tmp/agora-game-private/game.log
+python3 tools/agora_acceptance/player.py --dir /tmp/agora-player-proof-final --matrix-fixture /tmp/agora-rig-clean/secret.json --scenario outage --game-log /tmp/agora-game-private/game.log
+python3 tools/agora_acceptance/player.py --dir /tmp/agora-player-proof-final --matrix-fixture /tmp/agora-rig-clean/secret.json --scenario crash --second-pass --game-log /tmp/agora-game-private/game.log
+```
+
+The crash scenario creates a temporary trigger in its own verified Compose DB,
+limited to the newly registered player UUID. It blocks the final ready update
+after real remote provisioning, verifies the private game PID's executable path,
+terminates only that process, removes the trigger and restarts the same game.
+Cleanup also removes the trigger and restores the process after a failure.
+It requires one original Matrix CREATE event and correlated success, one ready
+notification after another pass, and nonempty real provisioning secret canaries
+absent from the whole game DB and log. Browser and rotations are proved by basic;
+crash reports those checks as skipped. No production hooks are added.
