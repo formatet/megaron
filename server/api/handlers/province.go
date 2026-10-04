@@ -31,6 +31,7 @@ import (
 	"formatet/megaron/server/internal/unit/shipnames"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -2001,8 +2002,7 @@ func recruitBatchTicks(unitType string) int {
 // skip the 100-forming gate: they are deployable as soon as their crew is
 // drafted (one vessel = one unit, size always 1).
 //
-// DUAL-WRITE: the old integer army column is also incremented so existing
-// combat/display code continues to work until C4/C8.
+// Payment, unit creation and training jobs share one transaction.
 func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -2128,15 +2128,9 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		settlementID,
 	).Scan(&population)
 
-	// Coarse precondition — the same checker `keryx actions` uses
-	// (temenos_capabilities.md Fas 3): population > 0, and at least one unit
-	// type affordable at the 10-man minimum batch. Sound as a full gate here
-	// (not just population): if NO type is affordable even at the smallest
-	// valid batch (10 men — the floor enforced above), no larger request for
-	// ANY type can succeed either, so this cannot false-reject a request that
-	// would otherwise go through. The finer per-type building/goods checks
-	// below stay handler-specific — they depend on exactly which type and
-	// how many men this specific request asks for.
+	// Fast aggregate affordance shared with keryx actions: a full land
+	// cohort or a naval crew. Concrete type/count and mutable state are
+	// revalidated below, inside the transaction that creates the unit.
 	cc := capabilities.NewContext(r.Context(), h.pool, h.clk, worldID, provinceID, playerID, settlementID)
 	if v := capabilities.CanRecruit(cc); !v.Available {
 		writeError(w, http.StatusUnprocessableEntity, capabilities.FirstUnsatisfied(v))
@@ -2237,14 +2231,72 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	}
 	totalKharis := spec.CostKharis * float64(totalMen)
 
-	// Deduct payment (goods + kharis + population) atomically in one transaction so
-	// a kharis/population shortfall can't leave goods already committed (partial-drain).
+	// The whole recruit is one transaction: payment, population, ordinal,
+	// unit, durable events and training jobs either all commit or all roll back.
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not deduct resources")
 		return
 	}
 	defer tx.Rollback(r.Context())
+
+	// Serialize recruits for this settlement before locking goods. Re-read
+	// ownership and population; the fast prechecks are not mutation authority.
+	if err := tx.QueryRow(r.Context(),
+		`SELECT population FROM settlements
+		 WHERE id = $1 AND world_id = $2 AND owner_id = $3 AND state != 'collapsed'
+		 FOR UPDATE`, settlementID, worldID, playerID,
+	).Scan(&population); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			writeError(w, http.StatusConflict, "settlement is no longer available for recruitment")
+		} else {
+			writeError(w, http.StatusInternalServerError, "could not lock recruitment settlement")
+		}
+		return
+	}
+	if totalMen >= population {
+		writeError(w, http.StatusUnprocessableEntity,
+			fmt.Sprintf("insufficient population: cannot draft %d men from a settlement of %d", totalMen, population))
+		return
+	}
+	for _, building := range []struct {
+		name     string
+		required bool
+	}{
+		{"barracks", spec.RequiresBarracks}, {"stable", spec.RequiresStable},
+		{"harbour", spec.RequiresHarbour}, {"shipyard", spec.RequiresShipyard},
+		{"foundry", spec.RequiresFoundry},
+	} {
+		if !building.required {
+			continue
+		}
+		var exists bool
+		if err := tx.QueryRow(r.Context(),
+			`SELECT EXISTS(SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = $2)`,
+			settlementID, building.name).Scan(&exists); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not check recruitment buildings")
+			return
+		}
+		if !exists {
+			writeError(w, http.StatusUnprocessableEntity, building.name+" required")
+			return
+		}
+	}
+	if cat == unit.CategoryNaval {
+		var pendingBuilds int
+		if err := tx.QueryRow(r.Context(),
+			`SELECT COUNT(*) FROM scheduled_events WHERE world_id = $1 AND event_type = 'TrainComplete'
+			 AND processed_at IS NULL AND failed_at IS NULL AND (payload->>'settlement_id')::uuid = $2`,
+			worldID, settlementID).Scan(&pendingBuilds); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not check ship build queue")
+			return
+		}
+		if pendingBuilds+effectiveCount > 10 {
+			writeError(w, http.StatusUnprocessableEntity,
+				fmt.Sprintf("build queue would overflow: %d pending + %d new > 10", pendingBuilds, effectiveCount))
+			return
+		}
+	}
 
 	if err := deductGoods(r.Context(), tx, settlementID, totalCosts); err != nil {
 		var insErr *insufficientGoodsError
@@ -2266,7 +2318,11 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 			   AND settled(kharis_amount, kharis_rate, kharis_calc_tick) >= $1`,
 			totalKharis, playerID, worldID,
 		)
-		if err2 != nil || tag.RowsAffected() == 0 {
+		if err2 != nil {
+			writeError(w, http.StatusInternalServerError, "could not deduct recruitment kharis")
+			return
+		}
+		if tag.RowsAffected() == 0 {
 			// Name the shortfall (need/have) — kharis lives on the per-Wanax pool.
 			var have float64
 			_ = tx.QueryRow(r.Context(),
@@ -2290,39 +2346,28 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := tx.Commit(r.Context()); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not draft men")
-		return
-	}
-
-	// C-collapse: overmobilisation — city drained to ≤ 100 → schedule collapse.
+	// Collapse is part of the same durable action as the draft.
 	if popAfter <= 100 {
 		var collapseCurrentTick int
-		_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&collapseCurrentTick)
-		if err := h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledCollapseSettlement,
-			combat.CollapseSettlementPayload{
-				SettlementID: settlementID,
-				WorldID:      worldID,
-				Cause:        "overmobilisation",
-			},
-			collapseCurrentTick,
-		); err != nil {
-			// Non-fatal: log and continue — the collapse will be picked up by the daily tick.
-			slog.Warn("recruit: could not schedule collapse event",
-				"settlement", settlementID, "pop_after", popAfter, "err", err)
-		} else {
-			slog.Info("recruit: overmobilisation collapse scheduled",
-				"settlement", settlementID, "pop_after", popAfter)
+		if err := tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&collapseCurrentTick); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not read recruitment tick")
+			return
+		}
+		if err := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledCollapseSettlement,
+			combat.CollapseSettlementPayload{SettlementID: settlementID, WorldID: worldID, Cause: "overmobilisation"},
+			collapseCurrentTick); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not schedule settlement collapse")
+			return
 		}
 	}
 
-	// batchTicks: for land this is the per-10-men batch duration (looped);
-	// for naval it is reused, unlooped, as the single vessel's build time —
-	// same UnitSpecs[type].DurationTicks tunable, just a different multiplier
-	// below (ship-build overhaul 2026-07-09).
+	// One training duration per full land cohort or vessel.
 	batchTicks := recruitBatchTicks(req.UnitType)
 	var trainCurrentTick int
-	_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&trainCurrentTick)
+	if err := tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&trainCurrentTick); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not read recruitment tick")
+		return
+	}
 
 	// Naval-only: resolve the Wanax's culture (from their capital settlement,
 	// same pattern as the music player's capital.culture on the web client)
@@ -2331,24 +2376,39 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	var culture string
 	takenNames := make(map[string]bool)
 	if cat == unit.CategoryNaval {
-		_ = h.pool.QueryRow(r.Context(),
+		if err := tx.QueryRow(r.Context(),
 			`SELECT culture_id FROM settlements WHERE owner_id = $1 AND world_id = $2 AND is_capital = true`,
 			playerID, worldID,
-		).Scan(&culture)
-		if nameRows, nameErr := h.pool.Query(r.Context(),
+		).Scan(&culture); err != nil && !errors.Is(err, pgx.ErrNoRows) {
+			writeError(w, http.StatusInternalServerError, "could not read ship naming culture")
+			return
+		}
+		nameRows, nameErr := tx.Query(r.Context(),
 			`SELECT name FROM units WHERE owner_id = $1 AND world_id = $2 AND name IS NOT NULL`,
 			playerID, worldID,
-		); nameErr == nil {
-			for nameRows.Next() {
-				var n string
-				if nameRows.Scan(&n) == nil {
-					takenNames[n] = true
-				}
+		)
+		if nameErr != nil {
+			writeError(w, http.StatusInternalServerError, "could not read existing ship names")
+			return
+		}
+		for nameRows.Next() {
+			var n string
+			if err := nameRows.Scan(&n); err != nil {
+				nameRows.Close()
+				writeError(w, http.StatusInternalServerError, "could not read existing ship names")
+				return
 			}
-			nameRows.Close()
+			takenNames[n] = true
+		}
+		nameErr = nameRows.Err()
+		nameRows.Close()
+		if nameErr != nil {
+			writeError(w, http.StatusInternalServerError, "could not read existing ship names")
+			return
 		}
 	}
 
+	var committedEvents []*events.Event
 	var unitIDs []uuid.UUID
 	var unitNames []string
 	var lastCompleteAt time.Time
@@ -2379,13 +2439,13 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 			// Ordinalen delas ut ur den monotona räknaren. Skepp bär den inte i
 			// sitt namn (de har egennamn) men den finns för fullständighetens
 			// skull och för att räknaren aldrig ska hoppa.
-			shipOrdinal, err := unit.AllocateOrdinal(r.Context(), h.pool, settlementID, string(uType))
+			shipOrdinal, err := unit.AllocateOrdinal(r.Context(), tx, settlementID, string(uType))
 			if err != nil {
 				writeError(w, http.StatusInternalServerError, "could not allocate ship ordinal")
 				return
 			}
 			var unitID uuid.UUID
-			if err := h.pool.QueryRow(r.Context(),
+			if err := tx.QueryRow(r.Context(),
 				`INSERT INTO units
 				   (world_id, owner_id, type, category, size, crew, status, settlement_id,
 				    support_settlement_id, ordinal, name, build_complete_at)
@@ -2401,7 +2461,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 			unitNames = append(unitNames, chosenName)
 			finalSize = 1
 
-			if err := h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledTrainComplete,
+			if err := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledTrainComplete,
 				combat.TrainCompletePayload{
 					SettlementID: settlementID,
 					UnitType:     req.UnitType,
@@ -2418,7 +2478,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 			// its first use from Recruit, adding the optional Name field it was
 			// defined with).
 			if h.eventStore != nil {
-				_, _ = h.eventStore.Append(r.Context(), unitID, events.StreamType(unit.StreamUnit), unit.EventUnitFormed,
+				formedEvent, err := h.eventStore.AppendTx(r.Context(), tx, unitID, events.StreamType(unit.StreamUnit), unit.EventUnitFormed,
 					unit.UnitFormedPayload{
 						UnitID:       unitID,
 						OwnerID:      playerID,
@@ -2432,6 +2492,11 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 						Name:         chosenName,
 					}, worldID, nil,
 				)
+				if err != nil {
+					writeError(w, http.StatusInternalServerError, "could not record ship formation")
+					return
+				}
+				committedEvents = append(committedEvents, formedEvent)
 			}
 			continue
 		}
@@ -2444,7 +2509,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		// at 100 they become training, so an existing forming row is safe to top up.)
 		var existingUnitID *uuid.UUID
 		var existingSize int
-		row := h.pool.QueryRow(r.Context(),
+		row := tx.QueryRow(r.Context(),
 			`SELECT id, size FROM units
 			 WHERE settlement_id = $1 AND type = $2 AND status = 'forming'
 			 ORDER BY created_at LIMIT 1`,
@@ -2453,6 +2518,9 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		var eid uuid.UUID
 		if scanErr := row.Scan(&eid, &existingSize); scanErr == nil {
 			existingUnitID = &eid
+		} else if !errors.Is(scanErr, pgx.ErrNoRows) {
+			writeError(w, http.StatusInternalServerError, "could not load forming unit")
+			return
 		}
 
 		newSize := existingSize + req.Men
@@ -2463,7 +2531,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 
 		var unitID uuid.UUID
 		if existingUnitID != nil {
-			if err := h.pool.QueryRow(r.Context(),
+			if err := tx.QueryRow(r.Context(),
 				`UPDATE units SET size = $1, updated_at = now() WHERE id = $2 RETURNING id`,
 				unitSize, *existingUnitID,
 			).Scan(&unitID); err != nil {
@@ -2471,12 +2539,12 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		} else {
-			ordinal, err := unit.AllocateOrdinal(r.Context(), h.pool, settlementID, string(uType))
+			ordinal, err := unit.AllocateOrdinal(r.Context(), tx, settlementID, string(uType))
 			if err != nil {
 				writeError(w, http.StatusInternalServerError, "could not allocate unit ordinal")
 				return
 			}
-			if err := h.pool.QueryRow(r.Context(),
+			if err := tx.QueryRow(r.Context(),
 				`INSERT INTO units
 				   (world_id, owner_id, type, category, size, crew, status,
 				    settlement_id, support_settlement_id, ordinal, origin_settlement_id)
@@ -2503,14 +2571,14 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 			dueTick := trainCurrentTick + batchTicks
 			completeAt := tick.EtaAt(h.clk, dueTick, trainCurrentTick)
 			lastCompleteAt = completeAt
-			if _, err := h.pool.Exec(r.Context(),
+			if _, err := tx.Exec(r.Context(),
 				`UPDATE units SET status = 'training', build_complete_at = $1, updated_at = now() WHERE id = $2`,
 				completeAt, unitID,
 			); err != nil {
 				writeError(w, http.StatusInternalServerError, "could not start unit training")
 				return
 			}
-			if err := h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledTrainComplete,
+			if err := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledTrainComplete,
 				combat.TrainCompletePayload{
 					SettlementID: settlementID,
 					UnitType:     req.UnitType,
@@ -2523,12 +2591,12 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 			}
 			// Spill the overflow into a new forming unit of the same type.
 			if newSize > 100 {
-				spillOrdinal, err := unit.AllocateOrdinal(r.Context(), h.pool, settlementID, string(uType))
+				spillOrdinal, err := unit.AllocateOrdinal(r.Context(), tx, settlementID, string(uType))
 				if err != nil {
 					writeError(w, http.StatusInternalServerError, "could not allocate spill ordinal")
 					return
 				}
-				if _, err := h.pool.Exec(r.Context(),
+				if _, err := tx.Exec(r.Context(),
 					`INSERT INTO units (world_id, owner_id, type, category, size, crew, status,
 					                    settlement_id, support_settlement_id, ordinal, origin_settlement_id)
 					 VALUES ($1, $2, $3, $4, $5, $6, 'forming', $7, $7, $8, $7)`,
@@ -2539,6 +2607,14 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
+	}
+
+	if err := tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not complete recruitment")
+		return
+	}
+	for _, e := range committedEvents {
+		h.eventStore.RecordCommitted(r.Context(), e)
 	}
 
 	menForResponse := req.Men

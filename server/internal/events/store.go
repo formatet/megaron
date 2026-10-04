@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -70,13 +71,33 @@ func NewStore(pool *pgxpool.Pool, sinks ...Sink) *Store {
 
 // Append writes a single event to the log and returns it with its assigned ID.
 func (s *Store) Append(ctx context.Context, streamID uuid.UUID, streamType StreamType, eventType string, payload any, worldID uuid.UUID, causation *int64) (*Event, error) {
+	e, err := s.append(ctx, s.pool, streamID, streamType, eventType, payload, worldID, causation)
+	if err != nil {
+		return nil, err
+	}
+	s.RecordCommitted(ctx, e)
+	return e, nil
+}
+
+// AppendTx persists an event atomically with the caller's state changes. It
+// never invokes sinks: after a successful commit, call RecordCommitted with
+// the returned event. Rolled-back events must not be sent to sinks.
+func (s *Store) AppendTx(ctx context.Context, tx pgx.Tx, streamID uuid.UUID, streamType StreamType, eventType string, payload any, worldID uuid.UUID, causation *int64) (*Event, error) {
+	return s.append(ctx, tx, streamID, streamType, eventType, payload, worldID, causation)
+}
+
+type eventWriter interface {
+	QueryRow(context.Context, string, ...any) pgx.Row
+}
+
+func (s *Store) append(ctx context.Context, q eventWriter, streamID uuid.UUID, streamType StreamType, eventType string, payload any, worldID uuid.UUID, causation *int64) (*Event, error) {
 	raw, err := json.Marshal(payload)
 	if err != nil {
 		return nil, fmt.Errorf("marshal payload: %w", err)
 	}
 
 	var e Event
-	err = s.pool.QueryRow(ctx,
+	err = q.QueryRow(ctx,
 		`INSERT INTO events (stream_id, stream_type, event_type, payload, causation, world_id)
 		 VALUES ($1, $2, $3, $4, $5, $6)
 		 RETURNING id, stream_id, stream_type, event_type, payload, causation, world_id, created_at`,
@@ -87,7 +108,12 @@ func (s *Store) Append(ctx context.Context, streamID uuid.UUID, streamType Strea
 	}
 
 	slog.Debug("event appended", "type", eventType, "stream", streamID, "world", worldID)
+	return &e, nil
+}
 
+// RecordCommitted forwards a durable event to best-effort side-channel sinks.
+// The caller must have committed the transaction that wrote this event.
+func (s *Store) RecordCommitted(ctx context.Context, e *Event) {
 	if len(s.sinks) > 0 {
 		se := SinkEvent{
 			ID:         e.ID,
@@ -102,15 +128,13 @@ func (s *Store) Append(ctx context.Context, streamID uuid.UUID, streamType Strea
 			func() {
 				defer func() {
 					if r := recover(); r != nil {
-						slog.Error("event sink panic", "err", r, "type", eventType, "event_id", e.ID)
+						slog.Error("event sink panic", "err", r, "type", e.EventType, "event_id", e.ID)
 					}
 				}()
 				sink.Record(ctx, se)
 			}()
 		}
 	}
-
-	return &e, nil
 }
 
 // LoadStream returns all events for a stream in order.
