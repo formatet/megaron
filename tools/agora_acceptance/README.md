@@ -121,3 +121,22 @@ It requires one original Matrix CREATE event and correlated success, one ready
 notification after another pass, and nonempty real provisioning secret canaries
 absent from the whole game DB and log. Browser and rotations are proved by basic;
 crash reports those checks as skipped. No production hooks are added.
+
+When an agent tool starts a fresh PID namespace for each call, its PID file cannot
+safely control the process from another call. Run the narrowly scoped host helper
+through the tool's host-execution approval instead. It verifies the private
+configuration, executable, argv, working directory, owner and isolated endpoints;
+it controls only this game process. It never prints process environments.
+
+```sh
+python3 tools/agora_acceptance/host.py status
+python3 tools/agora_acceptance/host.py serve
+# In another host tool call, while the foreground game session remains alive:
+python3 tools/agora_acceptance/host.py scenario --scenario basic
+python3 tools/agora_acceptance/host.py scenario --scenario collision
+python3 tools/agora_acceptance/host.py scenario --scenario outage
+python3 tools/agora_acceptance/host.py scenario --scenario crash
+```
+
+The host helper retains the existing game bind on `:18097`; requests and all
+upstream services use the explicitly isolated localhost endpoints above.
