@@ -9,11 +9,11 @@ The **War (⚔)** drawer has three tabs: **Army**, **Recruit** and **Movements**
 | **Spearman** | Barracks | The levy. Cheap, fast. |
 | **Elite Infantry** | Barracks + Foundry | Costs [[bronze]]. Far harder per man. |
 | **War Chariot** | Stable | Costs bronze. The hardest hitter on the field. |
-| **Galley** | Harbour + Shipyard | Transport and sight at sea ([[sea]]). |
+| **Galley** | Shipyard | Transport and sight at sea ([[sea]]). |
 | **War Galley** | Shipyard + Foundry | Costs cedar. The warship. |
 | **Emporos** | Shipyard | Trade hull. Does not fight. |
 
-Land units train as a whole hundred-man cohort (**Train 100**). Ships are built one at a time and can be named. You are notified when training finishes.
+Land units train as a whole hundred-man cohort (**Train 100**). Ships are built one at a time and can be named. Their cost and population draft cover the ship's crew, rather than a hundred-man cohort. You are notified when training finishes.
 
 Every cohort is numbered by the city that pays it: **2nd Spearmen of Knossos**. A lost regiment's number is never given out again. Before you found your first city, your [[horde]]'s two escort cohorts carry your own name instead — **1st** and **2nd Spearmen of** *you* — and become the new city's 1st and 2nd when you settle.
 

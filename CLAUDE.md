@@ -107,7 +107,7 @@ ai, auth, clock, gossip, hexgrid, movement, notify, province, religion, unit, wo
   ↑
 events(→clock) · tick(→clock,events) · chronicle(→events) · settlement(→province)
   ↑
-economy(→clock,events,gossip,hexgrid) · transport(→clock,events,province) · capabilities(→clock,province,religion)
+economy(→clock,events,gossip,hexgrid) · transport(→clock,events,province) · capabilities(→clock,province,religion,unit)
   ↑
 kharis(→ai,clock,economy,events,hexgrid,religion,unit) · loyalty(→clock,economy,events,settlement,tick)
   ↑

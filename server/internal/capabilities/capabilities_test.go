@@ -9,6 +9,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -174,6 +175,73 @@ func TestCanRecruit_UnlockedWithBarracksAndGoods(t *testing.T) {
 	v := canRecruit(f.cc(fakeClock(time.Now())))
 	if !v.Available {
 		t.Fatalf("recruit must be unlocked with population + barracks + goods: %+v", v.Requirements)
+	}
+}
+
+// Independent whole-vessel costs catch accidentally pricing ships as 100-man cohorts.
+func TestCanRecruit_NavalCrewAffordability(t *testing.T) {
+	pool := testPool(t)
+	for _, ship := range []struct {
+		typ, material  string
+		amount, silver float64
+		foundry        bool
+	}{
+		{"galley", "timber", 30, 6, false},
+		{"merchantman", "timber", 16, 2, false},
+		{"war_galley", "cedar", 100, 30, true},
+	} {
+		t.Run(ship.typ, func(t *testing.T) {
+			f := newFixture(t, pool)
+			f.exec(t, `INSERT INTO buildings (settlement_id, building_type) VALUES ($1, 'shipyard')`, f.settlementID)
+			if ship.foundry {
+				f.exec(t, `INSERT INTO buildings (settlement_id, building_type) VALUES ($1, 'foundry')`, f.settlementID)
+			}
+			f.exec(t, `INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick) VALUES ($1, $2, $3, 0, 5000, 0), ($1, 'silver', $4, 0, 5000, 0)`, f.settlementID, ship.material, ship.amount, ship.silver)
+			cc := f.cc(fakeClock(time.Date(2026, 10, 4, 0, 0, 0, 0, time.UTC)))
+			check := func(want bool) {
+				t.Helper()
+				v := CanRecruit(cc)
+				_, names, _ := strings.Cut(v.Requirements[1].Detail, "affordable now: ")
+				listed := false
+				for _, name := range strings.Split(names, ", ") {
+					listed = listed || name == ship.typ
+				}
+				if listed != want || (want && !v.Available) {
+					t.Fatalf("%s listed=%v available=%v, want listed=%v: %+v", ship.typ, listed, v.Available, want, v.Requirements)
+				}
+			}
+			check(true)
+			f.exec(t, `UPDATE settlement_goods SET amount = $3 WHERE settlement_id = $1 AND good_key = $2`, f.settlementID, ship.material, ship.amount-0.01)
+			check(false)
+			f.exec(t, `UPDATE settlement_goods SET amount = $3 WHERE settlement_id = $1 AND good_key = $2`, f.settlementID, ship.material, ship.amount)
+			f.exec(t, `UPDATE settlement_goods SET amount = $2 WHERE settlement_id = $1 AND good_key = 'silver'`, f.settlementID, ship.silver-0.01)
+			check(false)
+			f.exec(t, `UPDATE settlement_goods SET amount = $2 WHERE settlement_id = $1 AND good_key = 'silver'`, f.settlementID, ship.silver)
+			f.exec(t, `DELETE FROM buildings WHERE settlement_id = $1 AND building_type = 'shipyard'`, f.settlementID)
+			check(false)
+			if ship.foundry {
+				f.exec(t, `INSERT INTO buildings (settlement_id, building_type) VALUES ($1, 'shipyard')`, f.settlementID)
+				f.exec(t, `DELETE FROM buildings WHERE settlement_id = $1 AND building_type = 'foundry'`, f.settlementID)
+				check(false)
+			}
+		})
+	}
+}
+
+func TestCanRecruit_LandRequiresFullCohortGoods(t *testing.T) {
+	pool := testPool(t)
+	f := newFixture(t, pool)
+	f.exec(t, `INSERT INTO buildings (settlement_id, building_type) VALUES ($1, 'barracks')`, f.settlementID)
+	f.exec(t, `INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick) VALUES ($1, 'grain', 12, 0, 5000, 0), ($1, 'silver', 20, 0, 5000, 0)`, f.settlementID)
+	cc := f.cc(fakeClock(time.Date(2026, 10, 4, 0, 0, 0, 0, time.UTC)))
+	for _, stock := range []struct {
+		grain, silver float64
+		available     bool
+	}{{12, 20, true}, {11.99, 20, false}, {12, 19.99, false}} {
+		f.exec(t, `UPDATE settlement_goods SET amount = CASE good_key WHEN 'grain' THEN $2::double precision ELSE $3::double precision END WHERE settlement_id = $1`, f.settlementID, stock.grain, stock.silver)
+		if v := CanRecruit(cc); v.Available != stock.available {
+			t.Fatalf("grain=%v silver=%v: available=%v, want %v: %+v", stock.grain, stock.silver, v.Available, stock.available, v.Requirements)
+		}
 	}
 }
 

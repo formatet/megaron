@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/unit"
 )
 
 // canBuild: constructing SOME building is (almost) always possible — most
@@ -70,17 +71,13 @@ func (cc checkContext) populationRequirement() Requirement {
 // by hand if it ever changes.
 const recruitCohortMen = 100
 
-// canRecruit checks population and, for the full 100-man cohort every land
-// recruit call now drafts, building requirements + affordability per unit
-// type — mirroring api/handlers/province.go Recruit's own gates. Fas 3:
-// Recruit calls CanRecruit directly as its full precondition (sound because
-// a settlement that cannot afford even the cheapest type at the one valid
-// batch size — the whole cohort — cannot afford ANY recruit request, since
-// there is no smaller one anymore).
+// canRecruit lists types whose building and goods gates permit one unit:
+// a full 100-man land cohort or one vessel's canonical crew. Recruit uses
+// this aggregate gate before checking the concrete requested type/count.
 func canRecruit(cc checkContext) Verb {
 	reqs := []Requirement{cc.populationRequirement()}
 
-	// Affordability per type for a full 100-man cohort — enumerate deterministically.
+	// Enumerate deterministically; naval costs are per crew member, not per cohort.
 	types := make([]string, 0, len(province.UnitSpecs))
 	for t := range province.UnitSpecs {
 		types = append(types, t)
@@ -104,9 +101,13 @@ func canRecruit(cc checkContext) Verb {
 		if spec.RequiresFoundry && !cc.hasBuilding("foundry") {
 			continue
 		}
+		men := recruitCohortMen
+		if crew := unit.CrewFor(unit.Type(t)); crew > 0 {
+			men = crew
+		}
 		afford := true
 		for good, perMan := range spec.Costs {
-			if cc.goodAmount(good) < perMan*recruitCohortMen {
+			if cc.goodAmount(good) < perMan*float64(men) {
 				afford = false
 				break
 			}
@@ -116,11 +117,11 @@ func canRecruit(cc checkContext) Verb {
 		}
 	}
 	afforded := len(affordable) > 0
-	detail := "none affordable for a full cohort right now"
+	detail := "none affordable for a land cohort or ship crew right now"
 	if afforded {
 		detail = "affordable now: " + joinComma(affordable)
 	}
-	reqs = append(reqs, req("at least one unit type affordable (building + goods) for a full 100-man cohort",
+	reqs = append(reqs, req("at least one unit type affordable (building + goods) for a land cohort or ship crew",
 		afforded, detail, "build the required building (barracks/stable/harbour/shipyard/foundry) and stock the per-man goods cost"))
 
 	return verb("recruit", CategoryProvince,
