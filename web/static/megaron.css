@@ -2022,3 +2022,24 @@ h4.cx-h { font-size: var(--fs-base); }
 .dw-codex-btn { margin-top: 0.4rem; }
 .notif-archive-note + .drawer-help { margin-left: 0; }
 .codex-back.hidden { display: none; }
+
+/* Public alpha-test page (/alfatestinfo). Scoped; light and plain like formatet.se. */
+.alpha-info { background: var(--bg-panel); color: var(--text); font-family: var(--font); font-size: var(--fs-base); line-height: 1.65; }
+.alpha-main { max-width: 680px; margin: 0 auto; padding: 4rem 1.5rem 3rem; }
+.alpha-info h1, .alpha-info h2, .alpha-label, .alpha-note, .alpha-info figcaption, .alpha-footer { font-family: "Helvetica Neue", Arial, sans-serif; }
+.alpha-header { margin-bottom: 2.5rem; }
+.alpha-label { margin: 0 0 .25rem; font-size: var(--fs-sm); color: var(--text-dim); letter-spacing: .04em; }
+.alpha-info h1 { margin: 0; font-size: var(--fs-xl); font-weight: 500; color: var(--text); }
+.alpha-info section { margin: 0 0 2.5rem; }
+.alpha-info h2 { margin: 0 0 .75rem; font-size: var(--fs-md); font-weight: 500; color: var(--text); padding-top: 1rem; border-top: 1px solid var(--text-dim); }
+.alpha-info p { margin: 0 0 1rem; }
+.alpha-info ul { margin: 0 0 1rem; padding-left: 1.2rem; }
+.alpha-info li { margin: .3rem 0; }
+.alpha-info a { color: var(--deep-sea); }
+.alpha-info code { font-family: var(--mono); font-size: var(--fs-sm); }
+.alpha-note { font-size: var(--fs-sm); color: var(--text-dim); }
+.alpha-info figure { margin: 0 0 1.5rem; }
+.alpha-info img { display: block; width: 100%; height: auto; border: 1px solid var(--text-dim); }
+.alpha-info figcaption { margin-top: .4rem; font-size: var(--fs-sm); color: var(--text-dim); }
+.alpha-footer { padding-top: 1rem; border-top: 1px solid var(--text-dim); }
+@media (max-width: 480px) { .alpha-main { padding: 2.5rem 1rem 2rem; } }

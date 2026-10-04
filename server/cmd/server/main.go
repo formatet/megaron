@@ -270,6 +270,7 @@ func main() {
 
 	// Web (HTML) routes.
 	r.Get("/", webH.Index)
+	registerAlfatestInfoRoute(r, webH.AlfatestInfo)
 	r.Get("/logout", webH.Logout)
 	r.With(auth.WebMiddleware(authSvc)).Get("/play", webH.Play)
 	r.With(auth.WebMiddleware(authSvc)).Route("/world/{worldID}", func(r chi.Router) {
