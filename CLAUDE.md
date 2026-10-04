@@ -108,7 +108,7 @@ Go (minimum version in `server/go.mod`) · chi · PostgreSQL 16 (pgx/v5) · Redi
 
 ### Package dependency order (G1 — strict, no exceptions)
 ```
-ai, auth, clock, gossip, hexgrid, movement, notify, religion, unit, unit/shipnames, world  ← zero internal deps
+agora, ai, auth, clock, gossip, hexgrid, movement, notify, religion, unit, unit/shipnames, world  ← zero internal deps
   ↑
 province(→hexgrid)
   ↑
