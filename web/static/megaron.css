@@ -2054,4 +2054,7 @@ h4.cx-h { font-size: var(--fs-base); }
 .account-chat-secret { white-space: pre-wrap; overflow-wrap: anywhere; padding: .6rem; margin: .6rem 0; background: var(--warm-white); border: 1px solid var(--border); color: var(--text); user-select: all; }
 #acc-chat-status { font-size: var(--fs-sm); margin-top: .6rem; }
 
-#account-window-overlay .dispatch-window { max-height: calc(100dvh - 2rem); overflow-y: auto; }
+#account-window-overlay { padding-top: 12dvh; padding-inline: .5rem; }
+#account-window-overlay .dispatch-window { display: flex; flex-direction: column; max-height: calc(88dvh - 1rem); }
+#account-window-overlay .dw-header { flex-shrink: 0; }
+#account-window-overlay .dw-body { min-height: 0; overflow-y: auto; }
