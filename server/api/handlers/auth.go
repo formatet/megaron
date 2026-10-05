@@ -11,12 +11,19 @@ import (
 
 // AuthHandler handles HTTP requests for auth endpoints.
 type AuthHandler struct {
-	svc *auth.Service
+	svc                *auth.Service
+	registrationClosed bool
 }
 
 // NewAuthHandler creates an AuthHandler.
 func NewAuthHandler(svc *auth.Service) *AuthHandler {
 	return &AuthHandler{svc: svc}
+}
+
+// SetRegistrationClosed makes Register refuse every new account. Existing
+// accounts can still log in.
+func (h *AuthHandler) SetRegistrationClosed(closed bool) {
+	h.registrationClosed = closed
 }
 
 type registerRequest struct {
@@ -42,6 +49,10 @@ func setTokenCookie(w http.ResponseWriter, token string) {
 
 // Register handles POST /auth/register.
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
+	if h.registrationClosed {
+		writeError(w, http.StatusForbidden, "registration is closed for now")
+		return
+	}
 	var req registerRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
