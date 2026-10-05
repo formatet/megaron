@@ -189,7 +189,9 @@ func (s *agoraService) reconcile(ctx context.Context, playerID uuid.UUID) error 
 	if localpart != "" {
 		return nil
 	}
-	if claim == "" && !eligible {
+	// A claim without an owned city waits: replaying CREATE and resetting the
+	// password every pass would post a new admin-room command each minute.
+	if !eligible {
 		return nil
 	}
 	base, err := agora.Localpart(name)

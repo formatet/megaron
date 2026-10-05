@@ -335,3 +335,40 @@ func TestAgoraMigrationRejectsPartialStates(t *testing.T) {
 		}
 	}
 }
+
+func TestAgoraClaimWithoutCityWaitsWithoutRemoteCommands(t *testing.T) {
+	f := newAgoraFixture(t, "Waiting-"+uuid.NewString(), 4)
+	r := newFakeAgoraRemote()
+	s := &agoraService{pool: f.pool, remote: r, room: "!test"}
+	ctx := context.Background()
+	r.crashAfterCreate = true
+	if err := s.reconcile(ctx, f.player); err == nil {
+		t.Fatal("crash after CREATE reported readiness")
+	}
+	if _, err := f.pool.Exec(ctx, `UPDATE settlements SET owner_id=NULL WHERE id=$1`, f.city); err != nil {
+		t.Fatal(err)
+	}
+	calls, secrets := r.createCalls, len(r.secrets)
+	for i := 0; i < 2; i++ {
+		if err := s.reconcile(ctx, f.player); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if r.createCalls != calls || len(r.secrets) != secrets {
+		t.Fatalf("claim without a city sent remote commands: create %d→%d, secrets %d→%d", calls, r.createCalls, secrets, len(r.secrets))
+	}
+	if _, err := f.pool.Exec(ctx, `UPDATE settlements SET owner_id=$1 WHERE id=$2`, f.player, f.city); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.reconcile(ctx, f.player); err != nil {
+		t.Fatal(err)
+	}
+	if r.created != 1 {
+		t.Fatalf("created %d accounts; want 1", r.created)
+	}
+	var localpart string
+	if err := f.pool.QueryRow(ctx, `SELECT agora_localpart FROM players WHERE id=$1`, f.player).Scan(&localpart); err != nil {
+		t.Fatal(err)
+	}
+	f.assertState(t, "ready", localpart, 1)
+}
