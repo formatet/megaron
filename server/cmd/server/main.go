@@ -286,6 +286,7 @@ func main() {
 
 	// Auth routes (public).
 	ah := handlers.NewAuthHandler(authSvc)
+	ah.SetRegistrationClosed(os.Getenv("POLEIA_REGISTRATION_CLOSED") == "1")
 	r.Route("/api/v1/auth", func(r chi.Router) {
 		r.Post("/register", ah.Register)
 		r.Post("/login", ah.Login)
