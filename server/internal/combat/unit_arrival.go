@@ -1611,7 +1611,8 @@ func (h *UnitArrivalHandler) damagedShipReturned(
 		})
 	}
 
-	slog.Info("damaged ship returned home", "unit", u.id, "settlement", *u.homeSettlementID)
+	// Shared by damaged_return and captured_return; name which one in the log.
+	slog.Info("ship returned home", "intent", *u.marchIntent, "unit", u.id, "settlement", *u.homeSettlementID)
 	return nil
 }
 
