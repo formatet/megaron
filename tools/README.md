@@ -133,3 +133,10 @@ Runbook och det verifierade scenariot: `megaron_drift.md` §Acceptansvärlden.
 `city_graphics_capture.py OUT [HOST]` records the existing world showcase and actual City drawer using explicit offline payloads (including geography checks). `city_scene_cases.py OUT [HOST] [BEFORE_CITY_JS]` captures five frozen native-size city scenes; the optional old renderer permits same-fixture comparisons. Both default to localhost:18199.
 
 `city_graphics_acceptance.py OUT EXPECTED_BUILD_COMMIT` verifies the real server, player-founded city, desktop/mobile drawer, and served asset hashes in dedicated local infrastructure. Setup and evidence: `docs/reviews/grafik-stader-20261006/IMPLEMENTATION.md`.
+
+## Sökning av brev och rykten
+
+`python3 tools/search_messages_acceptance.py [output-dir]` kör Chromium mot en egen
+lokal HTTP-server med riktiga sök-/drawer-moduler och explicita API-fixturer. Kräver
+Python Playwright + Chromium; provar tangentbord, klick, fel, sena svar och mobilbredd.
+Ingen spelvärld eller produktionsdata muteras.

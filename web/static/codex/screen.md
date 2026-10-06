@@ -4,7 +4,7 @@
 - **Dispatch chips** slide in when something happens. Click one to open it. **✕ all** clears the chips — they stay in the archive.
 - **Date and the sun or moon** — the world's calendar ([[time]]).
 - **☍** opens the Notifications archive, with a badge for unread events ([[coming-back]]).
-- **⌕** opens search (also `f` or `/`): your cities, cities you can see, your armies. Arrow keys move, Enter jumps the map there.
+- **⌕** opens search (also `f` or `/`): your cities, cities you can see, your armies, received letters and rumours. Search letters by their text or city names, and rumours by text, region or category. Arrow keys move; Enter jumps to a map result or opens Correspondence/Gossip. Letters come from your current inbox (up to 30), not a full correspondence archive; rumours come from the latest 30 items in the Gossip feed. Reopen search to refresh.
 - **?** opens this Codex.
 
 ## Bottom bar: the drawers

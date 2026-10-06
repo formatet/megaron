@@ -1,0 +1,6 @@
+{
+  "result": "PASS",
+  "browser_errors": [],
+  "authenticated_requests": 15,
+  "scope": "Actual DOM/search/drawer modules; explicit API fixtures, not live gameplay"
+}

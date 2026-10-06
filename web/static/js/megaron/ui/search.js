@@ -1,8 +1,14 @@
+import { fetchAuth } from '../api.js';
+import { loadSearchMessages, searchMessagesHTML } from './search_messages.js';
 import { State } from '../state.js';
 import { hexPx, SCALE, canvas, clampCamera } from '../render/map.js';
 import { arrivalHTML } from './time.js';
 import { isTypingTarget, esc } from './format.js';
 import { warMovements } from './movements.js';
+
+let searchSession = 0;
+let correspondence = {};
+let correspondenceLoading = false;
 
 // ── Search overlay (Sprint 4) ─────────────────────────────────────────────
 export function toggleSearch() {
@@ -10,11 +16,28 @@ export function toggleSearch() {
   o.classList.toggle('open');
   if (o.classList.contains('open')) {
     State.searchFocusIdx = -1;
-    document.getElementById('search-input').focus();
+    const input = document.getElementById('search-input');
+    input.value = '';
+    input.focus();
+    const session = ++searchSession;
+    const worldID = State.WORLD_ID;
+    correspondence = {};
+    correspondenceLoading = true;
     renderSearch('');
+    loadSearchMessages(worldID, fetchAuth).then(data => {
+      if (session !== searchSession || worldID !== State.WORLD_ID || !o.classList.contains('open')) return;
+      correspondence = data;
+      correspondenceLoading = false;
+      State.searchFocusIdx = -1;
+      renderSearch(input.value);
+    });
+  } else {
+    closeSearch();
   }
 }
 export function closeSearch(e) {
+  ++searchSession;
+  correspondence = {};
   document.getElementById('search-overlay').classList.remove('open');
 }
 
@@ -63,6 +86,7 @@ document.getElementById('search-input').addEventListener('keydown', function(e) 
 });
 
 function renderSearch(q) {
+  q = q.trim().toLowerCase();
   const results = document.getElementById('search-results');
 
   // Own settlements and FOW-visible others (State.provinceData is already server-side FOW-filtered)
@@ -114,8 +138,17 @@ function renderSearch(q) {
         <span class="sr-type">Army</span>
       </div>`).join('');
   }
+  html += searchMessagesHTML(q, correspondence);
+  if (q && correspondenceLoading) html += '<div class="sr-category">Loading letters and rumours…</div>';
+  if (q && correspondence.failed?.length) html += `<div class="sr-category">Could not load: ${esc(correspondence.failed.join(', '))}. Close and reopen search to retry.</div>`;
   if (!html) html = '<div style="padding:.6rem .8rem;font-size:.8rem;color:var(--text-dim)">No results.</div>';
   results.innerHTML = html;
+  results.querySelectorAll('[data-search-drawer]').forEach(item => {
+    item.addEventListener('click', () => {
+      closeSearch();
+      window.openDrawer(item.dataset.searchDrawer);
+    });
+  });
 }
 
 document.addEventListener('keydown', e => {
