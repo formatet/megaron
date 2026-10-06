@@ -23,6 +23,14 @@ Everything you have seen and are no longer looking at is drawn **dimmed, frozen 
 
 ## Exploring
 
-You cannot **march** an army into land none of your people has ever seen — but you can **explore** it. Sending a unit to an unseen hex, land or sea, is an **explore** order: it sweeps the fog there and returns home by itself, and you are told what it found. Right-click an unexplored hex and the order menu offers only this — terrain there is unknown, so any unit that can reach it may go. On ground you already know, "Explore" is also offered alongside plain March, if you just want a look without garrisoning.
+You cannot **march** an army into land none of your people has ever seen — but you can **explore** it. Right-click a hex, seen or unseen, land or sea, and choose **Explore**: the unit sets out as an **expedition** to the land within 5 hexes of that place, for as many days as you give it (4 to 30; 10 if you do not say).
+
+- **It finds its own way.** Each time it stops, it heads for the nearest ground there that none of your people has seen. You watch it go, live, but you cannot steer it — that is the point of sending it.
+- **It always gets home in time.** It turns back no later than halfway through its days, so it is home by the end of them. It turns sooner if nothing in the area is left unseen, or if what is left cannot be reached. You are told when it turns, and why.
+- **It reports when it is home**: how long it was out, how far it went, how much it saw, and what it found — copper, tin, silver and cedar, and the foreign cities on the way.
+- An expedition into ground you already know all of is refused, and so is one too short to reach the nearest unseen ground and come back.
+- A Runner that recalls or redirects it ends the expedition; it then behaves like any other march.
+- Out in the field it eats double, from home, like any unit away from its city ([[upkeep]]). A ship takes on food for every day of the expedition before it sails ([[sea]]).
+<!-- src: server/internal/combat/expedition.go, march_start.go (explore) -->
 
 The oracle rite reveals ore deposits you cannot see — see [[rites]]. Seeing a city does not open trade with it — that takes [[contact]].

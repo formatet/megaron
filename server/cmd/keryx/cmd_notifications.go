@@ -122,6 +122,9 @@ func printNotificationDetail(c *Client, n notificationItem) {
 	if n.Kind == "UnitExploreReturned" {
 		printExploreReturnedLine(c, n)
 	}
+	if n.Kind == "ExpeditionTurnedHome" || n.Kind == "ExpeditionReport" {
+		printExpeditionLine(n)
+	}
 	if n.Kind == "UnitReturnedStarving" {
 		printStarvingReturnLine(c, n)
 	}

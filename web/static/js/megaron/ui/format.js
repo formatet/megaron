@@ -130,6 +130,7 @@ export function notifDomain(kind) {
     ArmyArrival: 'war', BattleWon: 'war', BattleLost: 'war', TrainComplete: 'war',
     ForeignMarchSighted: 'war', ForeignMarchSightedV2: 'war', SentryAlerted: 'war', ScoutReport: 'war',
     UnitArrived: 'war', UnitExploreReturned: 'war', UnitReturnedStarving: 'war', ShipSweptFromSea: 'war',
+    ExpeditionTurnedHome: 'war', ExpeditionReport: 'war',
     PickupWaiting: 'war', UnitFetched: 'war', PickupTimedOut: 'war',
     UnitAttrition: 'war', UnitDeserted: 'war', UnitLostAtSea: 'war',
     UnitRecalled: 'war', UnitRedirected: 'war', MarchStalled: 'war', OrderFailed: 'war',
@@ -187,6 +188,8 @@ export function notifIcon(kind) {
     OfferDeclined:      '🚫',
     OfferExpired:       '⏳',
     ScoutReport:        '🔭',
+    ExpeditionTurnedHome: '🔭',
+    ExpeditionReport:   '🔭',
     BattleWon:          '⚔',
     BattleLost:         '⚔',
     ShipDamaged:        '⛵',
@@ -214,6 +217,29 @@ export function notifIcon(kind) {
 // (few keys with huge values, or many keys with tiny ones).
 // "200 grain, 50 fish" from a [{good_key, quantity}] payload list
 // (StandingOrderDispatched, CaravanSeized/CaravanRaided). '' when empty/absent.
+// expeditionReportText is the homecoming report (ExpeditionReportPayload):
+// how long and how far, how much it saw, and what of value — deposits grouped
+// by kind, then foreign cities by name. "Nothing of value" is a real report,
+// never an empty one (same rule as ScoutReport).
+export function expeditionReportText(body) {
+  const subject = body.name || 'The expedition';
+  const finds = body.finds || [];
+  const byKind = {};
+  const cities = [];
+  for (const f of finds) {
+    if (f.kind === 'city') {
+      cities.push(`${f.name}${f.owner ? ` (${f.owner})` : ''} at (${f.q}, ${f.r})`);
+    } else {
+      (byKind[f.kind] = byKind[f.kind] || []).push(`(${f.q}, ${f.r})`);
+    }
+  }
+  const parts = Object.entries(byKind).map(([k, at]) => `${k} at ${at.join(', ')}`);
+  if (cities.length) parts.push(`cities: ${cities.join(', ')}`);
+  const found = parts.length ? parts.join('; ') : 'nothing of value';
+  return `${subject} is home after ${body.ticks_out ?? '?'} days, ${body.furthest ?? '?'} hexes out at the furthest — ` +
+         `saw ${body.hexes_seen ?? 0} hexes around (${body.area_q}, ${body.area_r}): ${found}`;
+}
+
 function fmtGoods(goods) {
   return (goods || [])
     .map(g => `${Math.floor(g.quantity || 0)} ${g.good_key || ''}`.trim())
@@ -618,6 +644,20 @@ export function notifText(kind, body) {
       const subject = body.name || 'Scout';
       return `${subject} returning home${eta ? ` — arrives ${eta}` : ''}`;
     }
+    case 'ExpeditionTurnedHome': {
+      // Payload per expedition.go expeditionArrived (megaron_plan_
+      // upptackarexpeditionen.md): the expedition turned on its own, and the
+      // text must say why — a turn the Wanax did not order needs its reason.
+      const why = {
+        half_time: 'half its time is spent',
+        area_known: 'nothing there is left unseen',
+        no_path: 'the rest of it cannot be reached',
+      }[body.reason] || 'its search is over';
+      const subject = body.name || 'The expedition';
+      const home = body.arrive_tick != null ? ` — home by tick ${body.arrive_tick}` : '';
+      return `${subject} turns home from the land around (${body.area_q}, ${body.area_r}): ${why}${home}`;
+    }
+    case 'ExpeditionReport': return expeditionReportText(body);
     case 'UnitReturnedStarving': {
       // Payload per dispatchReturnHome's returnReasonStarvation branch
       // (megaron_plan_svaltretur_till_sjoss.md) — a ship at sea receives no

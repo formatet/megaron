@@ -617,3 +617,28 @@ test('agora_ready directs to Account and ignores unexpected secret fields', () =
   assert.match(line, /open Account/);
   assert.doesNotMatch(line, /never-render-this/);
 });
+
+// Upptäckarexpeditionen: the turn names its reason; the homecoming report
+// groups deposits by kind, names foreign cities, and says "nothing of value"
+// rather than going blank.
+test('notifText: ExpeditionTurnedHome says why it turned', () => {
+  const t = notifText('ExpeditionTurnedHome', { name: 'Spearmen I', area_q: 9, area_r: 0, reason: 'half_time', arrive_tick: 11 });
+  assert.equal(t, 'Spearmen I turns home from the land around (9, 0): half its time is spent — home by tick 11');
+});
+
+test('notifText: ExpeditionReport groups finds and names cities', () => {
+  const t = notifText('ExpeditionReport', {
+    name: 'Spearmen I', area_q: 5, area_r: 0, ticks_out: 9, furthest: 7, hexes_seen: 40,
+    finds: [
+      { kind: 'copper', q: 6, r: -1 }, { kind: 'copper', q: 7, r: 2 },
+      { kind: 'city', q: 8, r: 0, name: 'Mycenae', owner: 'Atreus' },
+    ],
+  });
+  assert.equal(t, 'Spearmen I is home after 9 days, 7 hexes out at the furthest — saw 40 hexes around (5, 0): ' +
+    'copper at (6, -1), (7, 2); cities: Mycenae (Atreus) at (8, 0)');
+});
+
+test('notifText: ExpeditionReport with no finds is a report, not a blank', () => {
+  const t = notifText('ExpeditionReport', { area_q: 1, area_r: 1, ticks_out: 4, furthest: 3, hexes_seen: 12, finds: [] });
+  assert.match(t, /: nothing of value$/);
+});

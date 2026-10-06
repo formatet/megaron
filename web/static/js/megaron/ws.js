@@ -65,7 +65,7 @@ function coalesce(key, fn, ms = 2000) {
 const DATA_KINDS = new Set([
   'ArmyArrival','BuildComplete','GoodsCrafted','TrainComplete','MessengerArrival',
   'TradeCaravanArrival','UnitAttrition','UnitDeserted','UnitArrived','UnitExploreReturned',
-  'UnitReturnedStarving',
+  'UnitReturnedStarving','ExpeditionTurnedHome','ExpeditionReport',
 ]);
 
 // fullResync refetches exactly what a fresh page load would — provinces, units,
@@ -175,7 +175,7 @@ export function initWS() {
         coalesce('foreignUnits', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/foreign-units`)
           .then(r => r.ok && r.json().then(d => { State.foreignUnitData = d; State.dirty = true; })));
       }
-      if (['UnitArrived','UnitExploreReturned','UnitReturnedStarving','ArmyArrival'].includes(msg.kind)) {
+      if (['UnitArrived','UnitExploreReturned','UnitReturnedStarving','ArmyArrival','ExpeditionTurnedHome','ExpeditionReport'].includes(msg.kind)) {
         // A unit reached or left a hex: its route may have revealed fog and its
         // position changed. Refresh the fog map and the unit layer immediately
         // rather than waiting for the 30 s poll.
