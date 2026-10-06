@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
-	"math"
 	"time"
 
 	"formatet/megaron/server/internal/clock"
@@ -1165,6 +1164,15 @@ func (h *UnitArrivalHandler) exploreArrived(
 		return h.arriveGarrison(ctx, tx, u, destQ, destR, nil, worldID)
 	}
 
+	// An area expedition (expedition.go) walks on to its next unseen hex
+	// instead; a point explore — or one whose expedition was ended by a
+	// recall/redirect — turns here as it always has.
+	if e, ok, err := loadExpedition(ctx, tx, u.id); err != nil {
+		return err
+	} else if ok && !e.Homeward {
+		return h.expeditionArrived(ctx, tx, u, destQ, destR, worldID, e)
+	}
+
 	h.reportScoutFindings(ctx, tx, u, destQ, destR, worldID)
 
 	// The generic FOW sweep at the top of resolve() only recorded the literal
@@ -1275,6 +1283,9 @@ const (
 	// u.cargoUnitID at call time (set by the caller right after a successful
 	// boardPickupUnit), not carried as a separate flag.
 	returnReasonPickup
+	// returnReasonExpedition: an area expedition turns for home
+	// (expedition.go); the caller emits ExpeditionTurnedHome itself.
+	returnReasonExpedition
 )
 
 // dispatchReturnHome turns a field unit around and marches it back to its home
@@ -1335,38 +1346,6 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 		}
 		moveTicks = province.TerrainMoveTicks(fromTerrain) * float64(dist)
 	}
-	// Mirror the outbound leg's speed multipliers (march_start.go's
-	// TravelFactor) — without these a war galley/merchantman's return trip
-	// silently used the unmultiplied path cost, making the return leg a
-	// different (and for a merchantman, much shorter) duration than the
-	// outbound one for the exact same distance: it looked like the ship
-	// sailed out at its true speed but teleported home.
-	moveTicks *= TravelFactor(unit.Type(u.utype), u.crew, u.cargoUnitID != nil)
-	var currentTick int
-	_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
-	travelTicks := int(math.Round(moveTicks))
-	if travelTicks < 1 {
-		travelTicks = 1
-	}
-	// arrives_at mirrors the real tick-scheduled return (travelTicks × real
-	// seconds/tick), not moveTicks-as-hours — same reason as the outbound leg in
-	// unit.go March: the map animates the ship against this window.
-	arrivesAt := h.clk.Now().Add(time.Duration(travelTicks*tick.TickSeconds) * time.Second)
-
-	// movement 2a, R1/R5: save the path already found above — never re-search
-	// it at read time. NULL when FindPath fell back to a straight line (path
-	// was cleared to nil above).
-	var marchRoute []byte
-	if len(path) >= 2 {
-		if stepHours, shErr := province.StepHoursDB(ctx, tx, worldID, path, u.category); shErr == nil {
-			if route, ok := BuildRoute(path, stepHours, currentTick, currentTick+travelTicks); ok {
-				if raw, mErr := json.Marshal(route); mErr == nil {
-					marchRoute = raw
-				}
-			}
-		}
-	}
-
 	returnIntent := "explore_return"
 	// R6 (megaron_plan_hamta_hem.md): a pickup ship sailing home WITH its
 	// fetched unit aboard gets its own resolve-branch (pickupReturned) so the
@@ -1376,54 +1355,14 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 	if reason == returnReasonPickup && u.cargoUnitID != nil {
 		returnIntent = "pickup_return"
 	}
-	// land_target_q/r, land_cargo_intent and passage_messenger_id (mig 147/149)
-	// are cleared here, not just at re-garrison: a "land" or "passage" ship's
-	// mission data would otherwise ride along, stale, onto this very return
-	// leg — and for a passage ship specifically, boardShipMissions reads
-	// land_target_q/r generically for ANY marching ship, so a leftover value
-	// (the OUTBOUND disembark hex) would make the release phase's return leg
-	// try to disembark a runner at the port it is leaving, not the one it is
-	// sailing home to (megaron_plan_ordna_passage.md 3b-3 R4). Safe for every
-	// other caller too: land_target_q/r is otherwise only ever non-NULL for a
-	// mission that has just ended, one way or another, right here.
-	if _, err := tx.Exec(ctx,
-		`UPDATE units SET
-		   status        = 'marching',
-		   q             = $2,
-		   r             = $3,
-		   target_q      = $4,
-		   target_r      = $5,
-		   departs_at    = now(),
-		   arrives_at    = $6,
-		   depart_tick   = $8,
-		   arrive_tick   = $9,
-		   settlement_id = NULL,
-		   stance        = NULL,
-		   sentry_q      = NULL,
-		   sentry_r      = NULL,
-		   march_intent  = $7,
-		   home_settlement_id = $10,
-		   land_target_q = NULL,
-		   land_target_r = NULL,
-		   land_cargo_intent = NULL,
-		   passage_messenger_id = NULL,
-		   pickup_unit_id = NULL,
-		   pickup_wait_ticks = NULL,
-		   march_route   = $11,
-		   updated_at    = now()
-		 WHERE id = $1`,
-		u.id, fromQ, fromR, homeQ, homeR, arrivesAt, returnIntent, currentTick, currentTick+travelTicks, u.homeSettlementID, marchRoute,
-	); err != nil {
-		return fmt.Errorf("dispatchReturnHome: dispatch return march: %w", err)
+	arrivesAt, _, err := h.dispatchLeg(ctx, tx, u, fromQ, fromR, homeQ, homeR, path, moveTicks, returnIntent, false, worldID)
+	if err != nil {
+		return fmt.Errorf("dispatchReturnHome: %w", err)
 	}
-
-	if h.scheduler == nil {
-		return fmt.Errorf("dispatchReturnHome: no scheduler configured, cannot dispatch return leg")
-	}
-	arriveTick := currentTick + travelTicks
-	arrPayload := unit.ScheduledUnitArrivalPayload{UnitID: u.id, WorldID: worldID, ArriveTick: &arriveTick}
-	if err := h.scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledUnitArrival, arrPayload, currentTick+travelTicks); err != nil {
-		return fmt.Errorf("dispatchReturnHome: schedule return arrival: %w", err)
+	if reason == returnReasonExpedition {
+		// expedition.go names the turn itself (ExpeditionTurnedHome, with
+		// why it turned) — this tail would only say "reached its target".
+		return nil
 	}
 
 	// Tail: reason picks the event type + notification kind. The route/dispatch
@@ -1502,6 +1441,100 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 	return nil
 }
 
+// dispatchLeg puts a field unit on the march from (fromQ,fromR) to (toQ,toR)
+// along an already-found path whose raw cost is moveTicks: the unit's own
+// speed (TravelFactor), the saved route, the unit row and its scheduled
+// arrival. Shared by dispatchReturnHome and the expedition's legs
+// (expedition.go) — one home for "send this unit on its next leg". It clears
+// every one-shot mission column, same as the return leg always did.
+// home_settlement_id is kept. path may be nil (straight-line fallback).
+// keepStance: an expedition's stance (what it does on a meeting) holds for the
+// whole journey; a return leg drops it, as it always has.
+func (h *UnitArrivalHandler) dispatchLeg(
+	ctx context.Context, tx pgx.Tx, u unitRow,
+	fromQ, fromR, toQ, toR int, path []province.MapPosition, moveTicks float64,
+	intent string, keepStance bool, worldID uuid.UUID,
+) (time.Time, int, error) {
+	// Mirror the outbound leg's speed multipliers (march_start.go's
+	// TravelFactor) — without these a war galley/merchantman's return trip
+	// silently used the unmultiplied path cost, making the return leg a
+	// different (and for a merchantman, much shorter) duration than the
+	// outbound one for the exact same distance: it looked like the ship
+	// sailed out at its true speed but teleported home.
+	travelTicks := legTravelTicks(unit.Type(u.utype), u.crew, u.cargoUnitID != nil, moveTicks)
+	var currentTick int
+	_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+	// arrives_at mirrors the real tick-scheduled return (travelTicks × real
+	// seconds/tick), not moveTicks-as-hours — same reason as the outbound leg in
+	// unit.go March: the map animates the ship against this window.
+	arrivesAt := h.clk.Now().Add(time.Duration(travelTicks*tick.TickSeconds) * time.Second)
+
+	// movement 2a, R1/R5: save the path already found above — never re-search
+	// it at read time. NULL when FindPath fell back to a straight line (path
+	// was cleared to nil above).
+	var marchRoute []byte
+	if len(path) >= 2 {
+		if stepHours, shErr := province.StepHoursDB(ctx, tx, worldID, path, u.category); shErr == nil {
+			if route, ok := BuildRoute(path, stepHours, currentTick, currentTick+travelTicks); ok {
+				if raw, mErr := json.Marshal(route); mErr == nil {
+					marchRoute = raw
+				}
+			}
+		}
+	}
+
+	// land_target_q/r, land_cargo_intent and passage_messenger_id (mig 147/149)
+	// are cleared here, not just at re-garrison: a "land" or "passage" ship's
+	// mission data would otherwise ride along, stale, onto this very return
+	// leg — and for a passage ship specifically, boardShipMissions reads
+	// land_target_q/r generically for ANY marching ship, so a leftover value
+	// (the OUTBOUND disembark hex) would make the release phase's return leg
+	// try to disembark a runner at the port it is leaving, not the one it is
+	// sailing home to (megaron_plan_ordna_passage.md 3b-3 R4). Safe for every
+	// other caller too: land_target_q/r is otherwise only ever non-NULL for a
+	// mission that has just ended, one way or another, right here.
+	if _, err := tx.Exec(ctx,
+		`UPDATE units SET
+		   status        = 'marching',
+		   q             = $2,
+		   r             = $3,
+		   target_q      = $4,
+		   target_r      = $5,
+		   departs_at    = now(),
+		   arrives_at    = $6,
+		   depart_tick   = $8,
+		   arrive_tick   = $9,
+		   settlement_id = NULL,
+		   stance        = CASE WHEN $12 THEN stance ELSE NULL END,
+		   sentry_q      = NULL,
+		   sentry_r      = NULL,
+		   march_intent  = $7,
+		   home_settlement_id = $10,
+		   land_target_q = NULL,
+		   land_target_r = NULL,
+		   land_cargo_intent = NULL,
+		   passage_messenger_id = NULL,
+		   pickup_unit_id = NULL,
+		   pickup_wait_ticks = NULL,
+		   march_route   = $11,
+		   updated_at    = now()
+		 WHERE id = $1`,
+		u.id, fromQ, fromR, toQ, toR, arrivesAt, intent, currentTick, currentTick+travelTicks, u.homeSettlementID, marchRoute, keepStance,
+	); err != nil {
+		return time.Time{}, 0, fmt.Errorf("dispatch march leg: %w", err)
+	}
+
+	if h.scheduler == nil {
+		return time.Time{}, 0, fmt.Errorf("no scheduler configured, cannot dispatch march leg")
+	}
+	arriveTick := currentTick + travelTicks
+	arrPayload := unit.ScheduledUnitArrivalPayload{UnitID: u.id, WorldID: worldID, ArriveTick: &arriveTick}
+	if err := h.scheduler.EnqueueTickTx(ctx, tx, worldID, events.ScheduledUnitArrival, arrPayload, currentTick+travelTicks); err != nil {
+		return time.Time{}, 0, fmt.Errorf("schedule leg arrival: %w", err)
+	}
+	return arrivesAt, arriveTick, nil
+}
+
 // exploreReturned re-garrisons a unit that finished the explore-order's
 // return leg. It forces settlement_id = home_settlement_id directly instead
 // of looking up a settlement by (destQ, destR): a naval unit's return target
@@ -1516,6 +1549,12 @@ func (h *UnitArrivalHandler) exploreReturned(
 		// Defensive: should not happen — dispatch always sets it for explore.
 		slog.Warn("explore return arrival: unit has no home_settlement_id, garrisoning in place instead", "unit", u.id)
 		return h.arriveGarrison(ctx, tx, u, destQ, destR, nil, worldID)
+	}
+	// Read before the re-garrison below clears arrive_tick, which is what
+	// tells a live expedition from a stale one.
+	exp, expOK, err := loadExpedition(ctx, tx, u.id)
+	if err != nil {
+		return err
 	}
 
 	if _, err := tx.Exec(ctx,
@@ -1550,6 +1589,12 @@ func (h *UnitArrivalHandler) exploreReturned(
 			"r":       destR,
 			"status":  "garrison",
 		})
+	}
+
+	if expOK && exp.Homeward {
+		if err := h.expeditionHome(ctx, tx, u, *u.homeSettlementID, worldID, exp); err != nil {
+			return err
+		}
 	}
 
 	slog.Info("unit returned home from explore", "unit", u.id, "settlement", *u.homeSettlementID)

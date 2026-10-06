@@ -66,6 +66,10 @@ type MarchOrder struct {
 	// resolveOutboundDisembark finds one for passage.
 	PickupUnitID    *uuid.UUID
 	PickupWaitTicks int
+	// ExpeditionTicks is how long an explore order may last
+	// (megaron_plan_upptackarexpeditionen.md): TargetQ/TargetR names the
+	// AREA, and the unit turns for home by half this length. 0 = the default.
+	ExpeditionTicks int
 }
 
 // OrderReject is a game-rule validation failure with the HTTP status the API
@@ -100,6 +104,18 @@ type MarchStarted struct {
 	// arrives, not when the new city cannot pay its garrison.
 	CarriedSilver  float64
 	PurseShortfall float64
+	// Expedition is set for an explore order: the area, its length and when
+	// the unit turns and is home at the latest. TargetQ/TargetR above is the
+	// first leg's hex, not the area.
+	Expedition *ExpeditionPlan
+}
+
+// ExpeditionPlan is the readable mission line of an area expedition.
+type ExpeditionPlan struct {
+	AreaQ, AreaR int
+	LengthTicks  int
+	TurnTick     int // no leg ends later than this
+	HomeByTick   int // the unit is home no later than this
 }
 
 // TargetKnownFunc reports whether the ordering player has seen the target hex
@@ -476,6 +492,48 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		targetQ, targetR = seaQ, seaR
 	}
 
+	// Upptäckarexpeditionen (megaron_plan_upptackarexpeditionen.md): explore
+	// names an AREA around the chosen hex. The first leg goes to the nearest
+	// hex there the Wanax has never seen — the same rule every later leg uses
+	// (expedition.go) — so the order is refused up front when the area holds
+	// nothing unseen this unit can reach.
+	var expeditionPlan *ExpeditionPlan
+	if o.Intent == "explore" {
+		length := o.ExpeditionTicks
+		if length == 0 {
+			length = ExpeditionDefaultTicks
+		}
+		if length < ExpeditionMinTicks || length > ExpeditionMaxTicks {
+			return nil, reject(http.StatusBadRequest,
+				"an expedition lasts %d to %d ticks (asked for %d)", ExpeditionMinTicks, ExpeditionMaxTicks, length)
+		}
+		g, gErr := province.LoadTileGraph(ctx, pool, o.WorldID)
+		if gErr != nil {
+			return nil, reject(http.StatusInternalServerError, "could not load the map")
+		}
+		if _, onMap := g[[2]int{targetQ, targetR}]; !onMap {
+			return nil, reject(http.StatusNotFound, "target hex not found")
+		}
+		leg, lErr := nextExpeditionLeg(ctx, pool, g, o.WorldID, o.PlayerID,
+			province.MapPosition{Q: targetQ, R: targetR}, province.MapPosition{Q: originQ, R: originR},
+			string(unit.CategoryOf(u.Type)))
+		if lErr != nil {
+			return nil, reject(http.StatusInternalServerError, "could not plan the expedition")
+		}
+		if !leg.AnyUnknown {
+			return nil, reject(http.StatusUnprocessableEntity,
+				"everything within %d hexes of (%d,%d) is already known to you — explore an area with unseen ground in it",
+				ExpeditionAreaRadius, targetQ, targetR)
+		}
+		if !leg.Found {
+			return nil, reject(http.StatusUnprocessableEntity,
+				"none of the unseen ground within %d hexes of (%d,%d) can be reached by this unit",
+				ExpeditionAreaRadius, targetQ, targetR)
+		}
+		expeditionPlan = &ExpeditionPlan{AreaQ: targetQ, AreaR: targetR, LengthTicks: length}
+		targetQ, targetR = leg.Target.Q, leg.Target.R
+	}
+
 	// Target hex must exist on this world's map.
 	var destTerrain string
 	if err := pool.QueryRow(ctx,
@@ -687,6 +745,15 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		return nil, reject(http.StatusInternalServerError, "pathfinding error")
 	}
 	travelTicks := max(1, int(math.Round(moveTicks)))
+	if expeditionPlan != nil {
+		expeditionPlan.TurnTick = ExpeditionTurnTick(currentTick, expeditionPlan.LengthTicks)
+		expeditionPlan.HomeByTick = currentTick + expeditionPlan.LengthTicks
+		if currentTick+travelTicks > expeditionPlan.TurnTick {
+			return nil, reject(http.StatusUnprocessableEntity,
+				"the nearest unseen ground around (%d,%d) is %d ticks away — more than half of the %d ticks you gave, so it could not get back in time; give it at least %d ticks",
+				expeditionPlan.AreaQ, expeditionPlan.AreaR, travelTicks, expeditionPlan.LengthTicks, 2*travelTicks)
+		}
+	}
 	// arrives_at must mirror the real tick-scheduled arrival (travelTicks
 	// ticks × real seconds/tick), NOT moveTicks-as-hours: the map interpolates
 	// the marching unit's position against this window, so a wall-clock value
@@ -837,6 +904,10 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		stationTicks := 0
 		if o.Intent == "patrol" {
 			stationTicks = SentryPatrolTicks
+		}
+		if expeditionPlan != nil {
+			// Provisioned for the whole length: out, on and home again.
+			stationTicks = expeditionPlan.LengthTicks - 2*travelTicks
 		}
 		ration := VoyageRation(string(u.Type), u.Size, cargoType, cargoSize)
 		provisions = VoyageProvisions(ration, travelTicks, stationTicks)
@@ -1011,6 +1082,23 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		return nil, reject(http.StatusInternalServerError, "could not update unit")
 	}
 
+	if expeditionPlan != nil {
+		// A fresh row per order: whatever an earlier, ended expedition of this
+		// unit left behind (and what it saw) goes with it.
+		if _, err := tx.Exec(ctx, `DELETE FROM unit_expeditions WHERE unit_id = $1`, o.UnitID); err != nil {
+			return nil, reject(http.StatusInternalServerError, "could not plan the expedition")
+		}
+		if _, err := tx.Exec(ctx,
+			`INSERT INTO unit_expeditions
+			   (unit_id, world_id, area_q, area_r, length_ticks, start_tick, turn_tick, leg_arrive_tick)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+			o.UnitID, o.WorldID, expeditionPlan.AreaQ, expeditionPlan.AreaR, expeditionPlan.LengthTicks,
+			currentTick, expeditionPlan.TurnTick, currentTick+travelTicks,
+		); err != nil {
+			return nil, reject(http.StatusInternalServerError, "could not plan the expedition")
+		}
+	}
+
 	// Schedule the UnitArrival event.
 	arriveTick := currentTick + travelTicks
 	arrPayload := unit.ScheduledUnitArrivalPayload{
@@ -1054,6 +1142,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 
 		CarriedSilver:  purse,
 		PurseShortfall: purseShortfall,
+		Expedition:     expeditionPlan,
 	}, nil
 }
 

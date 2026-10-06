@@ -179,6 +179,11 @@ func isPassable(terrain, category string) bool {
 	return true
 }
 
+// IsPassable reports whether a unit of category may stand on terrain — the
+// same rule A* walks by. Exported for callers that pick a destination among
+// many hexes before paying for a search (combat/expedition.go).
+func IsPassable(terrain, category string) bool { return isPassable(terrain, category) }
+
 // moveHoursFor returns the cost to enter a hex of terrain for the category.
 // Couriers run land at half a land unit's terrain hours (2× spearman speed —
 // temenos_synlighet.md §Nivå 1) and cross a plain RIVER (a runner commandeers a

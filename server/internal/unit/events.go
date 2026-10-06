@@ -44,6 +44,15 @@ const (
 	// EventUnitExploreReturned — same dispatchReturnHome mechanics, different
 	// cause, and eventsemantik is frozen forever (CLAUDE.md §Events).
 	EventUnitSweptFromSea = "UnitSweptFromSea"
+	// EventExpeditionTurnedHome: an area expedition (megaron_plan_
+	// upptackarexpeditionen.md) turned for home — at half its length, because
+	// the area held nothing more to see, or because nothing left there could
+	// be reached. A DELIBERATELY NEW type, never a reinterpretation of
+	// EventUnitExploreReturned (point explore: "reached its target").
+	EventExpeditionTurnedHome = "ExpeditionTurnedHome"
+	// EventExpeditionReport: an area expedition is back in garrison; the
+	// payload is what it saw on the whole journey (the periplus).
+	EventExpeditionReport = "ExpeditionReport"
 )
 
 // StreamUnit is the events.StreamType value for unit streams.
@@ -250,6 +259,47 @@ type UnitSweptFromSeaPayload struct {
 	R                int       `json:"r"`
 	HomeSettlementID uuid.UUID `json:"home_settlement_id"`
 	ArrivesAt        string    `json:"arrives_at"` // RFC3339
+}
+
+// ExpeditionTurnedHomePayload is emitted when an area expedition turns for
+// home (EventExpeditionTurnedHome). Reason is the outcome that turned it:
+// "half_time", "area_known" or "no_path". ArriveTick is the return leg's
+// arrival tick; the unit is home no later than the expedition's length.
+type ExpeditionTurnedHomePayload struct {
+	UnitID           uuid.UUID `json:"unit_id"`
+	Q                int       `json:"q"`
+	R                int       `json:"r"`
+	AreaQ            int       `json:"area_q"`
+	AreaR            int       `json:"area_r"`
+	Reason           string    `json:"reason"`
+	HomeSettlementID uuid.UUID `json:"home_settlement_id"`
+	ArriveTick       int       `json:"arrive_tick"`
+}
+
+// ExpeditionFind is one thing of value an expedition saw: a deposit
+// (Kind = copper|tin|silver|cedar) or a foreign city (Kind = "city", Name and
+// Owner set).
+type ExpeditionFind struct {
+	Kind  string `json:"kind"`
+	Q     int    `json:"q"`
+	R     int    `json:"r"`
+	Name  string `json:"name,omitempty"`
+	Owner string `json:"owner,omitempty"`
+}
+
+// ExpeditionReportPayload is emitted when an area expedition is back home
+// (EventExpeditionReport). HexesSeen counts every hex it saw on the way —
+// seen, not necessarily new to the Wanax. TicksOut is departure to homecoming.
+type ExpeditionReportPayload struct {
+	UnitID       uuid.UUID        `json:"unit_id"`
+	SettlementID uuid.UUID        `json:"settlement_id"`
+	AreaQ        int              `json:"area_q"`
+	AreaR        int              `json:"area_r"`
+	TicksOut     int              `json:"ticks_out"`
+	Furthest     int              `json:"furthest"`
+	HexesSeen    int              `json:"hexes_seen"`
+	TurnReason   string           `json:"turn_reason"`
+	Finds        []ExpeditionFind `json:"finds"`
 }
 
 // UnitScoutReportPayload is emitted when an explore-ordered unit reaches its

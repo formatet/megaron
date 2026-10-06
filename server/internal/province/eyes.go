@@ -321,7 +321,33 @@ func SweepLiveRadius(ctx context.Context, db interface {
 	Queryer
 	Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error)
 }, worldID, playerID uuid.UUID, pos MapPosition, eyeKind string) error {
-	disk := hexgrid.Disk(hexgrid.Coord{Q: pos.Q, R: pos.R}, SeaHorizonRadius)
+	_, err := SweepLiveRadiusAlong(ctx, db, worldID, playerID, []MapPosition{pos}, eyeKind)
+	return err
+}
+
+// SweepLiveRadiusAlong is SweepLiveRadius for an eye that stood, in turn, on
+// every hex of path — an expedition leg (combat/expedition.go) records what it
+// saw along the whole way, not only where it stopped, so its next target never
+// depends on whether the player happened to read the map mid-march
+// (megaron_plan_upptackarexpeditionen.md, invariant 2). Returns every tile
+// seen, whether or not it was already in player_scouted_tiles.
+func SweepLiveRadiusAlong(ctx context.Context, db interface {
+	Queryer
+	Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error)
+}, worldID, playerID uuid.UUID, path []MapPosition, eyeKind string) ([]MapPosition, error) {
+	if len(path) == 0 {
+		return nil, nil
+	}
+	diskSet := make(map[hexgrid.Coord]bool)
+	for _, pos := range path {
+		for _, c := range hexgrid.Disk(hexgrid.Coord{Q: pos.Q, R: pos.R}, SeaHorizonRadius) {
+			diskSet[c] = true
+		}
+	}
+	disk := make([]hexgrid.Coord, 0, len(diskSet))
+	for c := range diskSet {
+		disk = append(disk, c)
+	}
 	qs, rs := hexgrid.QRArrays(disk)
 
 	rows, err := db.Query(ctx,
@@ -332,7 +358,7 @@ func SweepLiveRadius(ctx context.Context, db interface {
 		worldID, qs, rs,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	terrain := make(map[MapPosition]string, len(disk))
 	for rows.Next() {
@@ -344,23 +370,34 @@ func SweepLiveRadius(ctx context.Context, db interface {
 	}
 	rows.Close()
 
-	eyes := []Eye{{Pos: pos, Kind: eyeKind}}
+	eyes := make([]Eye, len(path))
+	for i, pos := range path {
+		eyes[i] = Eye{Pos: pos, Kind: eyeKind}
+	}
 	SetSeaHorizons(eyes, func(p MapPosition) string { return terrain[p] })
-	eye := eyes[0]
 
+	var seen []MapPosition
+	var seenQ, seenR []int
 	for target, t := range terrain {
-		if !eye.Sees(target, t) {
+		if !AnyEyeSees(eyes, target, t) {
 			continue
 		}
-		if _, err := db.Exec(ctx,
-			`INSERT INTO player_scouted_tiles (world_id, player_id, q, r)
-			 VALUES ($1, $2, $3, $4) ON CONFLICT (world_id, player_id, q, r) DO NOTHING`,
-			worldID, playerID, target.Q, target.R,
-		); err != nil {
-			return err
-		}
+		seen = append(seen, target)
+		seenQ = append(seenQ, target.Q)
+		seenR = append(seenR, target.R)
 	}
-	return nil
+	if len(seen) == 0 {
+		return nil, nil
+	}
+	if _, err := db.Exec(ctx,
+		`INSERT INTO player_scouted_tiles (world_id, player_id, q, r)
+		 SELECT $1, $2, p.q, p.r FROM unnest($3::int[], $4::int[]) AS p(q, r)
+		 ON CONFLICT (world_id, player_id, q, r) DO NOTHING`,
+		worldID, playerID, seenQ, seenR,
+	); err != nil {
+		return nil, err
+	}
+	return seen, nil
 }
 
 // InterpolateAlongPath returns a marching unit's live-vision position: its location

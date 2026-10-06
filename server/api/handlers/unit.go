@@ -84,6 +84,9 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		// meaningful with intent=land: "" (just land) or "colonize" (found a
 		// colony on arrival, no further order needed).
 		CargoIntent string `json:"cargo_intent"`
+		// Ticks is an explore order's length (megaron_plan_upptackarexpeditionen.md);
+		// 0 = the default. target_q/target_r then names the area.
+		Ticks int `json:"ticks"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
@@ -128,7 +131,7 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 			WorldID: worldID, PlayerID: playerID, UnitID: unitID,
 			TargetQ: req.TargetQ, TargetR: req.TargetR,
 			Stance: req.Stance, Intent: req.Intent, Name: req.Name, Mode: req.Mode,
-			CargoIntent: req.CargoIntent,
+			CargoIntent: req.CargoIntent, ExpeditionTicks: req.Ticks,
 		}
 		h.dispatchMarchCourier(w, ctx, order, province.MapPosition{Q: *u.Q, R: *u.R}, targetKnown)
 		return
@@ -137,16 +140,17 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 	// Validate+execute core shared with the order-courier delivery path
 	// (temenos_orderlopare_plan.md Fas 1) — internal/combat.StartMarch.
 	res, err := combat.StartMarch(ctx, h.pool, h.scheduler, h.eventStore, h.clk, combat.MarchOrder{
-		WorldID:     worldID,
-		PlayerID:    playerID,
-		UnitID:      unitID,
-		TargetQ:     req.TargetQ,
-		TargetR:     req.TargetR,
-		Stance:      req.Stance,
-		Intent:      req.Intent,
-		Name:        req.Name,
-		Mode:        req.Mode,
-		CargoIntent: req.CargoIntent,
+		WorldID:         worldID,
+		PlayerID:        playerID,
+		UnitID:          unitID,
+		TargetQ:         req.TargetQ,
+		TargetR:         req.TargetR,
+		Stance:          req.Stance,
+		Intent:          req.Intent,
+		Name:            req.Name,
+		Mode:            req.Mode,
+		CargoIntent:     req.CargoIntent,
+		ExpeditionTicks: req.Ticks,
 	}, targetKnown)
 	if err != nil {
 		var rej *combat.OrderReject
@@ -180,7 +184,21 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		// moment the Wanax can call the expedition back and fund it properly.
 		"carried_silver":  res.CarriedSilver,
 		"purse_shortfall": res.PurseShortfall,
+		"expedition":      expeditionJSON(res.Expedition),
 	})
+}
+
+// expeditionJSON is an explore order's mission line in a march response:
+// the area, its length, the tick it turns by and the tick it is home by.
+// nil for every other march.
+func expeditionJSON(p *combat.ExpeditionPlan) map[string]any {
+	if p == nil {
+		return nil
+	}
+	return map[string]any{
+		"area_q": p.AreaQ, "area_r": p.AreaR, "length_ticks": p.LengthTicks,
+		"turn_tick": p.TurnTick, "home_by_tick": p.HomeByTick,
+	}
 }
 
 // dispatchMarchCourier sends a march order to a field unit by physical Runner
@@ -237,6 +255,7 @@ func (h *UnitHandler) dispatchMarchCourier(w http.ResponseWriter, ctx context.Co
 			"arrives_at_utc": res.ArrivesAt.UTC(),
 			"origin_q":       res.OriginQ, "origin_r": res.OriginR,
 			"target_q": res.TargetQ, "target_r": res.TargetR,
+			"expedition": expeditionJSON(res.Expedition),
 		})
 		return
 	}
