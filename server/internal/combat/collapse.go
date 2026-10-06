@@ -139,13 +139,41 @@ func collapseSettlement(
 	// has no bare-infantry type — a phantom type is invisible in the army
 	// aggregate (db.go), undisbandable (the disband handler's type list), and
 	// unknown to strength/upkeep tables. Found live 2026-07-13.
+	//
+	// Regementsnumret: utan försörjande stad heter warbanden "Nth Spearmen of
+	// <Wanax>" (unit.LandUnitName), så numret delas ut bland ägarens stadslösa
+	// spjutmän — det är de som delar namnrymden. Två kollapser gav annars två
+	// lika "Spearmen of <Wanax>". Ingen unit_ordinals-räknare finns (den nycklas
+	// på stad), men unit-rader raderas aldrig, så MAX över alla statusar är
+	// monotont: ett upplöst förbands nummer återanvänds inte (Timothy 2026-07-26).
+	// Låset serialiserar samtidiga kollapser för samma ägare.
+	var ordinal *int
+	if ownerID != nil {
+		if _, err := tx.Exec(ctx,
+			`SELECT pg_advisory_xact_lock(hashtext('warband-ordinal:' || $1::text))`,
+			*ownerID,
+		); err != nil {
+			return fmt.Errorf("lock warband ordinal: %w", err)
+		}
+		var n int
+		if err := tx.QueryRow(ctx,
+			`SELECT COALESCE(MAX(ordinal), 0) + 1 FROM units
+			 WHERE world_id = $1 AND owner_id = $2 AND type = 'spearman'
+			   AND support_settlement_id IS NULL`,
+			worldID, *ownerID,
+		).Scan(&n); err != nil {
+			return fmt.Errorf("warband ordinal: %w", err)
+		}
+		ordinal = &n
+	}
+
 	var warbandID uuid.UUID
 	if err := tx.QueryRow(ctx,
 		`INSERT INTO units
-		   (world_id, owner_id, type, category, size, crew, status, q, r)
-		 VALUES ($1, $2, 'spearman', 'land', 100, 0, 'positioned', $3, $4)
+		   (world_id, owner_id, type, category, size, crew, status, q, r, ordinal)
+		 VALUES ($1, $2, 'spearman', 'land', 100, 0, 'positioned', $3, $4, $5)
 		 RETURNING id`,
-		worldID, ownerID, q, r,
+		worldID, ownerID, q, r, ordinal,
 	).Scan(&warbandID); err != nil {
 		return fmt.Errorf("spawn warband unit: %w", err)
 	}

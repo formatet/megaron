@@ -15,6 +15,7 @@ import (
 	"testing"
 
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 )
 
@@ -113,5 +114,92 @@ func TestCollapseSettlement_NotifiesOwner(t *testing.T) {
 	}
 	if garrisonStatus != "disbanded" {
 		t.Errorf("expected garrison status=disbanded, got %q", garrisonStatus)
+	}
+}
+
+// Two collapses for the same Wanax used to leave two indistinguishable
+// "Spearmen of <Wanax>" warbands (todo SENARE, collapse.go). Each warband now
+// draws the next regiment number among the owner's settlement-less spearmen —
+// the namespace that renders "of <Wanax>" — and a disbanded number is not reused.
+func TestCollapseSettlement_NumbersWarbands(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+
+	if _, err := pool.Exec(ctx,
+		`UPDATE worlds SET status = 'archived' WHERE status = 'active'`,
+	); err != nil {
+		t.Fatalf("archive leftover active test worlds: %v", err)
+	}
+	var worldID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO worlds (name, status, current_tick) VALUES ($1, 'active', 100) RETURNING id`,
+		"test-world-"+uuid.New().String(),
+	).Scan(&worldID); err != nil {
+		t.Fatalf("create test world: %v", err)
+	}
+	t.Cleanup(func() {
+		_, _ = pool.Exec(ctx, `UPDATE worlds SET status = 'archived' WHERE id = $1`, worldID)
+	})
+	wanax := "Ariadne-" + uuid.New().String()[:8]
+	var ownerID uuid.UUID
+	if err := pool.QueryRow(ctx,
+		`INSERT INTO players (username, password_hash, wanax_name) VALUES ($1, 'x', $2) RETURNING id`,
+		"collapser-"+uuid.New().String(), wanax,
+	).Scan(&ownerID); err != nil {
+		t.Fatalf("create test player: %v", err)
+	}
+
+	collapse := func(q, r int, name string) string {
+		t.Helper()
+		var provinceID, settlementID uuid.UUID
+		if err := pool.QueryRow(ctx,
+			`INSERT INTO provinces (world_id, map_q, map_r, terrain_type) VALUES ($1, $2, $3, 'plains') RETURNING id`,
+			worldID, q, r,
+		).Scan(&provinceID); err != nil {
+			t.Fatalf("create province: %v", err)
+		}
+		if err := pool.QueryRow(ctx,
+			`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, population)
+			 VALUES ($1, $2, $3, 'achaean', $4, 'capital', false, 90) RETURNING id`,
+			worldID, provinceID, name, ownerID,
+		).Scan(&settlementID); err != nil {
+			t.Fatalf("create settlement: %v", err)
+		}
+		tx, err := pool.Begin(ctx)
+		if err != nil {
+			t.Fatalf("begin tx: %v", err)
+		}
+		defer tx.Rollback(ctx)
+		if err := collapseSettlement(ctx, tx, events.NewStore(pool), nil, &fakeBroadcaster{},
+			settlementID, worldID, "starvation"); err != nil {
+			t.Fatalf("collapseSettlement %s: %v", name, err)
+		}
+		if err := tx.Commit(ctx); err != nil {
+			t.Fatalf("commit: %v", err)
+		}
+		var warbandID uuid.UUID
+		if err := pool.QueryRow(ctx,
+			`SELECT id FROM units WHERE owner_id = $1 AND q = $2 AND r = $3 AND status = 'positioned'`,
+			ownerID, q, r,
+		).Scan(&warbandID); err != nil {
+			t.Fatalf("load warband of %s: %v", name, err)
+		}
+		return unit.LoadDisplayName(ctx, pool, warbandID)
+	}
+
+	if got, want := collapse(30, 30, "First Doomed"), "1st Spearmen of "+wanax; got != want {
+		t.Errorf("first warband = %q, want %q", got, want)
+	}
+	if got, want := collapse(34, 30, "Second Doomed"), "2nd Spearmen of "+wanax; got != want {
+		t.Errorf("second warband = %q, want %q", got, want)
+	}
+	// The 2nd disbands; the next warband is 3rd, never a second 2nd.
+	if _, err := pool.Exec(ctx,
+		`UPDATE units SET status = 'disbanded' WHERE owner_id = $1 AND ordinal = 2`, ownerID,
+	); err != nil {
+		t.Fatalf("disband 2nd: %v", err)
+	}
+	if got, want := collapse(38, 30, "Third Doomed"), "3rd Spearmen of "+wanax; got != want {
+		t.Errorf("third warband = %q, want %q", got, want)
 	}
 }
