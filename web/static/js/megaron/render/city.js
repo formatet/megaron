@@ -1,24 +1,3 @@
-// ── Stadsvyn: staden inifrån ─────────────────────────────────────────────
-//
-// Kartmarkören svarar på "hur stor är den?". Den här scenen svarar på "vad ÄR
-// den?" — vilka byggnader staden faktiskt har, på vilken nivå, och vad som
-// håller på att resa sig just nu.
-//
-// Den gamla scenen hade FYRA fasta sidoslottar sorterade efter en
-// prioritetslista, plus en generisk klassisk tempelfasad i mitten. En stad med
-// sju byggnader visade fyra av dem, och att bygga något nytt syntes ofta inte
-// alls. Den hade dessutom en helt egen palett: kartan och stadsvyn såg ut att
-// komma från två olika spel.
-//
-// Nu: **varje** byggnad ritas, i sin egen akhaiska form, ur samma palett som
-// kartsiluetterna. Citadellet i fonden bär megaron och den kyklopiska muren och
-// skalas av befolkning och murnivå — en rikare lokal befolkningsskala än
-// kartans två `size_tier`-led.
-//
-// Blickpunkten är INIFRÅN staden: muren löper i fonden, bakom citadellet, och
-// gatan med verkstäderna ligger framför. En mur ritad framför hade varit
-// vackrare och hade skymt precis det scenen finns till för att visa.
-
 import { serverNow } from '../clock.js';
 import {
   CITY_PALETTE, newGrid, set, row, col, rect, cube, outline, toRuns,
@@ -27,15 +6,14 @@ import { stampBuilding, stampUnderConstruction, buildingWidth } from './citybuil
 
 // Scenen ritas i LOGISKA pixlar och skalas upp med heltal — samma pixeldisciplin
 // som kartan (princip 10: aldrig arc(), aldrig halva pixlar).
-const SCENE_W = 160, SCENE_H = 76, S = 2;
+const SCENE_W = 224, SCENE_H = 170, S = 2;
 export const SCENE_CANVAS = { w: SCENE_W * S, h: SCENE_H * S };
 
 // Citadellet och två gatuled ritas bakifrån och fram. Den sammanhängande
 // gården binder ihop dem utan att lägga markband framför byggnadernas fötter.
-const CITADEL = 34;         // citadellets fot: megaron och den lägre staden
-const RAMPART = 36;         // murens krön, vid terrassens kant
-const ROW_BACK = 54;        // bortre gatuledet
-const ROW_FRONT = 70;       // främre gatuledet
+const CITADEL = 45;         // citadellets fot: megaron och den lägre staden
+const RAMPART = 48;         // murens krön, vid terrassens kant
+const ROW_BACK = 86;        // bortre gatuledet
 
 // Ordningen byggnaderna radas upp i. Den är INTE en prioritering (allt ritas)
 // utan en gruppering: försörjning, hantverk, makt. En stad ska läsa likadant
@@ -60,12 +38,15 @@ export function startCityAnim(canvas, tile, buildings, buildQueue, sett) {
   stopCityAnim();
   if (!canvas) return;
   canvas.width = SCENE_CANVAS.w;
-  canvas.height = SCENE_CANVAS.h;
+  // A long queue may require more terraces; never silently clip its buildings.
+  const n = (buildings || []).filter(b => STREET_ORDER.includes(b.type)).length + (buildQueue || []).filter(b => STREET_ORDER.includes(b.type)).length;
+  canvas.height = (SCENE_H + Math.max(0, Math.ceil(n / 4) - 3) * 36) * S;
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
 
   const walker = { x: 20, dir: 1, t: 0, frame: 0 };
   const smoke = [];
+  smokeClock.t = 0;
   let last = 0;
 
   function tick(ts) {
@@ -103,14 +84,18 @@ const smokeClock = { t: 0 };
 function drawScene(ctx, tile, buildings, buildQueue, sett, walker, smoke, dt) {
   const terrain = tile?.terrain || 'plains';
   ctx.fillStyle = '#C6BC9E';                       // dis: himlen bakom citadellet
-  ctx.fillRect(0, 0, SCENE_CANVAS.w, SCENE_CANVAS.h);
+  ctx.fillRect(0, 0, SCENE_CANVAS.w, ctx.canvas.height);
 
-  const g = newGrid(SCENE_W, SCENE_H);
+  const height = ctx.canvas.height / S;
+  const g = newGrid(SCENE_W, height);
   const pop = sett?.population || 0;
   const walls = Math.max(0, Math.min(3, sett?.walls || 0));
 
+  homes(g, pop, (buildings || []).length + (buildQueue || []).length);
   citadel(g, pop, walls);
   const smokeVents = street(g, buildings, buildQueue);
+  if (pop >= 1000) smokeVents.push([SCENE_W / 2 + 2, CITADEL - 30]);
+  garden(g);
   outline(g);
   const sprite = toRuns(g);
 
@@ -118,17 +103,17 @@ function drawScene(ctx, tile, buildings, buildQueue, sett, walker, smoke, dt) {
   // at its edges; bare earth is ground, so it never receives a sprite outline.
   const base = GROUND_BY_TERRAIN[terrain] || GROUND_BY_TERRAIN.plains;
   ctx.fillStyle = base;
-  ctx.fillRect(0, (CITADEL + 1) * S, SCENE_CANVAS.w, SCENE_CANVAS.h);
-  for (let y = RAMPART + 4; y < SCENE_H; y += 2) {
-    const inset = Math.max(0, 18 - Math.floor((y - RAMPART) / 2));
-    const edge = inset + (Math.floor(y / 4) % 2);
-    ctx.fillStyle = CITY_PALETTE.e;
-    ctx.fillRect(edge * S, y * S, (SCENE_W - edge * 2) * S, 2 * S);
-    // The gate lies left of the hall. Its approach widens into the open
-    // courtyard rather than becoming another full-width horizontal band.
-    const approach = Math.floor((y - RAMPART) / 3);
+  ctx.fillRect(0, (CITADEL + 1) * S, SCENE_CANVAS.w, ctx.canvas.height);
+  // A sunlit sloping court, bounded by terrain rather than a striped backdrop.
+  for (let y = CITADEL; y < height; y++) {
+    const edge = Math.max(6, 24 - Math.floor((y - CITADEL) / 6));
     ctx.fillStyle = CITY_PALETTE.E;
-    ctx.fillRect((51 + approach) * S, y * S, (11 + approach * 2) * S, 2 * S);
+    ctx.fillRect(edge * S, y * S, (SCENE_W - edge * 2) * S, S);
+    if (y % 11 === 0) {
+      ctx.fillStyle = CITY_PALETTE.e;
+      for (let x = edge + 6 + (y % 7); x < SCENE_W - edge; x += 23)
+        ctx.fillRect(x * S, y * S, 3 * S, S);
+    }
   }
 
   for (const r of sprite.runs) {
@@ -136,7 +121,12 @@ function drawScene(ctx, tile, buildings, buildQueue, sett, walker, smoke, dt) {
     ctx.fillRect(r.x * S, r.y * S, r.n * S, S);
   }
 
-  drawWalker(ctx, Math.round(walker.x), ROW_FRONT, walker.frame);
+  // Activity stays on the lanes, below the buildings rather than across roofs.
+  drawWalker(ctx, 32 + Math.round(walker.x % 53), 166, walker.frame);
+  if ((buildings || []).length) {
+    drawWalker(ctx, 132 + Math.round(walker.x % 35), 130, walker.frame ^ 1);
+    drawWalker(ctx, 56 + Math.round(walker.x % 37), 94, walker.frame);
+  }
 
   // Röken hör till härden i megaron och till gjuteriets ugn — alltså till
   // eldar servern faktiskt har. Ingen dekorativ skorsten någonstans.
@@ -173,7 +163,7 @@ function citadel(g, pop, walls) {
     const hw = 14 - step, hh = 13 - step * 2;
     const hx = SCENE_W / 2 + side * (tier ? 16 + step * 12 : step * 13) - (hw >> 1);
     if (hh < 5) continue;
-    cube(g, Math.round(hx), CITADEL - hh, hw, hh, { door: step < 3 });
+    cube(g, Math.round(hx), CITADEL - hh, hw, hh, { door: step < 3, depth: side * 3, parapet: true });
   }
 
   // **Megaron föds ur STORLEK i stadsvyn.** Kartan visar ingen palatssal. En bosättning på 101
@@ -186,6 +176,11 @@ function citadel(g, pop, walls) {
   // Här gör den i stället scenens arbete: den skiljer de två planen åt, och
   // det är precis vad en citadellmur gör sett från den lägre staden.
   if (walls > 0) rampart(g, walls);
+  // Stone steps link the upper court to the street.
+  for (let i = 0; i < 7; i++) {
+    row(g, 81 - i, 54 + i * 2, 13 + i, 'T');
+    row(g, 81 - i, 55 + i * 2, 13 + i, 't');
+  }
 }
 
 // Terrassen och muren kring citadellet.
@@ -233,7 +228,7 @@ function rampart(g, level) {
 function megaronHall(g, tier) {
   const mw = [0, 24, 30, 36][tier], mh = [0, 20, 24, 28][tier];
   const mx = (SCENE_W - mw) >> 1, my = CITADEL - mh;
-  cube(g, mx, my, mw, mh, { roof: 4 });
+  cube(g, mx, my, mw, mh, { roof: 3, depth: 5, parapet: true });
   row(g, mx - 3, CITADEL, mw + 6, 'T');               // terrassen salen står på
   row(g, mx - 2, CITADEL + 1, mw + 4, 't');
   const lw = mw >> 1, lx = mx + ((mw - lw) >> 1);
@@ -281,53 +276,80 @@ function street(g, buildings, buildQueue) {
   ];
   if (items.length === 0) return vents;
 
-  // **Två gatuled.** Från tre verksamheter får gården byggnader i båda planen.
-  // Ett enda led med tretton byggnader gav elva logiska pixlar
-  // per byggnad — då är en hamn och ett gjuteri samma suddiga klump, och
-  // "enskilda byggnader ska synas" är inte uppfyllt. Bygget som PÅGÅR hamnar
-  // alltid i det främre ledet: det är det spelaren tittar efter.
-  const twoRows = items.length >= 3;
-  const back = [], front = [];
-  items.forEach((it, i) => {
-    if (it.phase < 1) front.push(it);
-    else if (!twoRows) front.push(it);
-    else (i % 2 ? front : back).push(it);
-  });
-
-  // Bortre ledet ritas FÖRST så det främre skymmer det — samma djupsortering
-  // som kartans provinser, av samma skäl.
-  layoutRow(g, back, ROW_BACK, vents);
-  layoutRow(g, front, ROW_FRONT, vents);
-  vents.push([SCENE_W / 2 + 2, CITADEL - 30]);        // härden i megaron
+  // Pack complete footprints before drawing: no clipping at high levels.
+  const rows = [[]];
+  let used = 0;
+  for (const it of items) {
+    const width = buildingWidth(it.type, it.level);
+    if (!width) continue;
+    if (used && used + width + 6 > SCENE_W - 20) { rows.push([]); used = 0; }
+    rows.at(-1).push(it);
+    used += width + 6;
+  }
+  // Balance short last terraces instead of leaving one isolated building.
+  for (let i = rows.length - 1; i > 0; i--) {
+    while (rows[i - 1].length > rows[i].length + 1) {
+      const candidate = rows[i - 1].at(-1);
+      const width = [...rows[i], candidate].reduce((n, it) => n + buildingWidth(it.type, it.level) + 6, -6);
+      if (width > SCENE_W - 20) break;
+      rows[i].unshift(rows[i - 1].pop());
+    }
+  }
+  rows.forEach((items, i) => layoutRow(g, items, ROW_BACK + i * 36, vents, i));
   return vents;
 }
 
-/** Radar upp ett gatuled centrerat, med gluggarna klämda när staden växer.
- *  Layouten MÄTS före den ritas: en stad med tolv byggnader ska få trängre
- *  gluggar, inte byggnader som ramlar ut ur bilden. */
-function layoutRow(g, items, base, vents) {
-  if (!items.length) return;
+function layoutRow(g, items, base, vents, rowIndex) {
   const widths = items.map(it => buildingWidth(it.type, it.level));
   const total = widths.reduce((a, b) => a + b, 0);
-  const gap = items.length < 2 ? 0
-    : Math.max(1, Math.min(6, Math.floor((SCENE_W - 6 - total) / (items.length - 1))));
-  const split = Math.ceil(items.length / 2);
-  const leftW = widths.slice(0, split).reduce((a, b) => a + b, 0) + gap * (split - 1);
-  const rightW = widths.slice(split).reduce((a, b) => a + b, 0)
-    + gap * Math.max(0, items.length - split - 1);
-  // Keep a visible central courtyard where both wings fit. Crowded cities
-  // retain the compact layout instead of clipping buildings for a fixed gap.
-  const courtyard = items.length > 1 && Math.max(leftW, rightW) <= 69;
-  let x = courtyard ? SCENE_W / 2 - 8 - leftW
-    : Math.max(2, Math.round((SCENE_W - (total + gap * (items.length - 1))) / 2));
+  const gap = Math.min(18, Math.floor((SCENE_W - 22 - total) / Math.max(1, items.length - 1)));
+  let x = Math.round((SCENE_W - total - gap * (items.length - 1)) / 2);
+  // Low retaining walls and offset steps make places out of the rows.
+  const left = Math.max(12, x - 5), right = Math.min(SCENE_W - 12, SCENE_W - x + 5);
+  // Broken retaining edges leave the work yards open onto the street.
+  const wallWidth = Math.max(12, Math.floor((right - left) * .35));
+  for (const wx of [left, right - wallWidth]) {
+    rect(g, wx, base + 5, wallWidth, 3, 'q');
+    row(g, wx, base + 5, wallWidth, 'T');
+    for (let xx = wx + 5; xx < wx + wallWidth; xx += 9) set(g, xx, base + 7, 't');
+  }
+  const stair = rowIndex % 2 ? left + 12 : right - 22;
+  for (let i = 0; i < 3; i++) row(g, stair - i, base + 6 + i * 2, 12 + i, i % 2 ? 'T' : 'q');
   items.forEach((it, i) => {
-    if (courtyard && i === split) x = SCENE_W / 2 + 8;
-    const foot = base - (i % 2 ? 2 : 0);
+    const foot = base - (i % 2 ? 3 : 0);
     if (it.phase >= 1) stampBuilding(g, it.type, x, foot, it.level);
     else stampUnderConstruction(g, it.type, x, foot, it.level, it.phase);
-    if (it.type === 'foundry' && it.phase >= 1) vents.push([x + 10, foot - 13]);
+    if (it.type === 'foundry' && it.phase >= 1) vents.push([x + 28, foot - 22]);
     x += widths[i] + gap;
   });
+}
+
+// Residences express population, as in the citadel, not an invented workplace.
+// Leave busy cities' lower terraces to the actual building payload.
+function homes(g, pop, count) {
+  if (count > 5) return;
+  const houses = pop >= 1000 ? [[27, 125, 18, 17], [49, 137, 23, 18], [160, 132, 22, 19], [186, 120, 15, 15]]
+    : [[61, 95, 20, 16], [88, 104, 16, 14], [133, 100, 22, 18]];
+  for (const [x, b, w, h] of houses) {
+    cube(g, x, b - h, w, h, {depth: 4, parapet: true, door: true});
+    rect(g, x + 3, b - 10, 3, 3, 'V'); row(g, x + 2, b - 7, 5, 'P');
+    row(g, x - 2, b + 1, w + 10, 'T');
+    rect(g, x + w + 3, b - 4, 4, 5, 'R');
+  }
+  // Shade cloth, a bench, and a small planted domestic court.
+  row(g, 77, 130, 20, 'W'); col(g, 77, 129, 8, 'W'); col(g, 96, 129, 8, 'W');
+  row(g, 80, 131, 9, 'P'); row(g, 81, 132, 8, 'P');
+  rect(g, 121, 137, 14, 2, 'w'); col(g, 122, 139, 2, 'W'); col(g, 133, 139, 2, 'W');
+}
+
+// Domestic greenery at the court's edge; these are not production buildings.
+function garden(g) {
+  for (const [x, y] of [[6, 77], [218, 107], [7, 139], [216, 153]]) {
+    col(g, x, y - 8, 9, 'W');
+    rect(g, x - 4, y - 12, 9, 5, 'N');
+    row(g, x - 3, y - 13, 6, 'n'); row(g, x - 5, y - 10, 3, 'n');
+    row(g, x - 4, y + 1, 9, 't');
+  }
 }
 
 /** Byggets förlopp 0–1 ur `created_at`/`complete_at`. */

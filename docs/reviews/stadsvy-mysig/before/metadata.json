@@ -1,0 +1,35 @@
+{
+  "cases": [
+    "new",
+    "small",
+    "equipped",
+    "upgraded",
+    "construction"
+  ],
+  "dimensions": {
+    "new": [
+      320,
+      152
+    ],
+    "small": [
+      320,
+      152
+    ],
+    "equipped": [
+      320,
+      152
+    ],
+    "upgraded": [
+      320,
+      152
+    ],
+    "construction": [
+      320,
+      152
+    ]
+  },
+  "dpr": 1,
+  "fixed_time": "2026-01-01T00:05:00Z",
+  "errors": [],
+  "server_acceptance": false
+}

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Capture frozen production city scenes at native canvas size (320x152).
+"""Capture frozen production city scenes at native canvas size (intrinsic canvas dimensions).
 
 Usage: python3 tools/city_scene_cases.py OUT [HOST] [BEFORE_CITY_JS]
 The optional old source is served through a browser route for same-fixture
@@ -25,6 +25,7 @@ cases = [
      [{'type': 'foundry', 'created_at': '2026-01-01T00:00:00Z', 'complete_at': '2026-01-01T00:10:00Z'}]),
 ]
 errors = []
+dimensions = {}
 with sync_playwright() as p:
     browser = p.chromium.launch()
     for label, pop, walls, buildings, queue in cases:
@@ -36,7 +37,7 @@ with sync_playwright() as p:
                        lambda r: r.fulfill(content_type='application/javascript', body=old.read_text()))
         page.goto(host+'/static/showcase-world.html?zoom=1', wait_until='networkidle')
         page.evaluate('''()=>{
-          document.body.innerHTML='<canvas id="case" style="width:320px;height:152px;image-rendering:pixelated"></canvas>';
+          document.body.innerHTML='<canvas id="case" style="image-rendering:pixelated"></canvas>';
           window.requestAnimationFrame=fn=>{window.sceneFrame=fn;return 0;};
           window.cancelAnimationFrame=()=>{};
         }''')
@@ -46,11 +47,12 @@ with sync_playwright() as p:
             {population:data.pop,walls:data.walls});
           window.sceneFrame(0); C.stopCityAnim();
         }''', {'pop': pop, 'walls': walls, 'buildings': buildings, 'queue': queue})
+        dimensions[label] = page.locator('#case').evaluate('(c)=>[c.width,c.height]')
         page.locator('#case').screenshot(path=str(out/(label+'.png')))
         page.close()
     browser.close()
 (out/'metadata.json').write_text(json.dumps({'cases': [c[0] for c in cases],
-    'canvas': [320,152], 'css': [320,152], 'dpr': 1, 'fixed_time': '2026-01-01T00:05:00Z',
+    'dimensions': dimensions, 'dpr': 1, 'fixed_time': '2026-01-01T00:05:00Z',
     'errors': errors, 'server_acceptance': False}, indent=2)+'\n')
 print(json.dumps({'output': str(out), 'errors': errors}))
 if errors:

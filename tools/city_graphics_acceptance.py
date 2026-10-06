@@ -46,11 +46,12 @@ with (out/'acceptance-server.log').open('w') as log:
    page.set_viewport_size({'width':390,'height':844})
    page.locator('#drawer-city').screenshot(path=str(out/'acceptance-city-mobile.png'))
    canvas=page.locator('#city-scene').evaluate('(c)=>({width:c.width,height:c.height,cssWidth:c.getBoundingClientRect().width})')
-   assert canvas['width']==320 and canvas['height']==152
+   assert canvas['width']==448 and canvas['height']==340
+   assert canvas['cssWidth'] <= 390, canvas
    b.close()
   assert not errors,errors
   assets={}
-  for f in ['city.js','citysprites.js']:
+  for f in ['city.js','citybuildings.js','citysprites.js']:
    content=urllib.request.urlopen(base+'/static/js/megaron/render/'+f).read()
    expected=(root/'web/static/js/megaron/render'/f).read_bytes();assert content==expected
    assets[f]=hashlib.sha256(content).hexdigest()

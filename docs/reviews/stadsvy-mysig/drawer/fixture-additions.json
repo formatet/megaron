@@ -1,0 +1,440 @@
+{
+  "city": {
+    "allied": false,
+    "culture": "akhaier",
+    "id": "39de776a-b10e-4b10-a1c0-59524b704b53",
+    "is_capital": true,
+    "name": "Amyklai",
+    "own": true,
+    "q": 9,
+    "r": 32,
+    "settlement_id": "34e67ce3-eb9d-4a1e-83f9-a25446b3657e",
+    "size_tier": 1,
+    "state": "active",
+    "visible": true,
+    "walls": 1
+  },
+  "settlement": {
+    "id": "34e67ce3-eb9d-4a1e-83f9-a25446b3657e",
+    "population": 1000,
+    "labor_pool": 10,
+    "walls": 1,
+    "buildings": [
+      {
+        "type": "farm",
+        "level": 1,
+        "hex_q": 10,
+        "hex_r": 32
+      },
+      {
+        "type": "farm",
+        "level": 2,
+        "hex_q": 10,
+        "hex_r": 31
+      },
+      {
+        "type": "market",
+        "level": 1
+      },
+      {
+        "type": "barracks",
+        "level": 1
+      },
+      {
+        "type": "harbour",
+        "level": 1
+      }
+    ],
+    "build_queue": [],
+    "training_units": [],
+    "army": {},
+    "loyalty": 4
+  },
+  "placement_options": {
+    "hexes": [
+      {
+        "hex_ordinal": 1,
+        "hex_q": 8,
+        "hex_r": 32,
+        "terrain": "plains",
+        "goods": [
+          {
+            "good_key": "grain",
+            "cap": 6,
+            "placed": 0,
+            "placed_ordinals": [],
+            "rate_per_tick": 0.0,
+            "marginal_yield": 2.0
+          }
+        ]
+      },
+      {
+        "hex_ordinal": 2,
+        "hex_q": 8,
+        "hex_r": 33,
+        "terrain": "coastal_sea",
+        "goods": [
+          {
+            "good_key": "fish",
+            "cap": 6,
+            "placed": 0,
+            "placed_ordinals": [],
+            "rate_per_tick": 0.0,
+            "marginal_yield": 2.0
+          }
+        ]
+      },
+      {
+        "hex_ordinal": 3,
+        "hex_q": 9,
+        "hex_r": 31,
+        "terrain": "forest_olive_grove",
+        "goods": [
+          {
+            "good_key": "olives",
+            "cap": 6,
+            "placed": 0,
+            "placed_ordinals": [],
+            "rate_per_tick": 0.0,
+            "marginal_yield": 2.0
+          }
+        ]
+      },
+      {
+        "hex_ordinal": 4,
+        "hex_q": 9,
+        "hex_r": 33,
+        "terrain": "coastal_sea",
+        "goods": [
+          {
+            "good_key": "fish",
+            "cap": 6,
+            "placed": 0,
+            "placed_ordinals": [],
+            "rate_per_tick": 0.0,
+            "marginal_yield": 2.0
+          }
+        ]
+      },
+      {
+        "hex_ordinal": 5,
+        "hex_q": 10,
+        "hex_r": 31,
+        "terrain": "plains",
+        "goods": [
+          {
+            "good_key": "grain",
+            "cap": 6,
+            "placed": 0,
+            "placed_ordinals": [],
+            "rate_per_tick": 0.0,
+            "marginal_yield": 2.0
+          }
+        ]
+      },
+      {
+        "hex_ordinal": 6,
+        "hex_q": 10,
+        "hex_r": 32,
+        "terrain": "plains",
+        "goods": [
+          {
+            "good_key": "grain",
+            "cap": 6,
+            "placed": 3,
+            "placed_ordinals": [
+              0,
+              1,
+              2
+            ],
+            "rate_per_tick": 6.0,
+            "marginal_yield": 2.0
+          }
+        ]
+      },
+      {
+        "hex_ordinal": 7,
+        "hex_q": 7,
+        "hex_r": 32,
+        "terrain": "mountain_limestone",
+        "goods": [
+          {
+            "good_key": "stone",
+            "cap": 6,
+            "placed": 0,
+            "placed_ordinals": [],
+            "rate_per_tick": 0.0,
+            "marginal_yield": 2.0
+          }
+        ]
+      },
+      {
+        "hex_ordinal": 8,
+        "hex_q": 7,
+        "hex_r": 33,
+        "terrain": "forest_olive_grove",
+        "goods": [
+          {
+            "good_key": "olives",
+            "cap": 6,
+            "placed": 0,
+            "placed_ordinals": [],
+            "rate_per_tick": 0.0,
+            "marginal_yield": 2.0
+          }
+        ]
+      },
+      {
+        "hex_ordinal": 9,
+        "hex_q": 7,
+        "hex_r": 34,
+        "terrain": "plains",
+        "goods": [
+          {
+            "good_key": "grain",
+            "cap": 6,
+            "placed": 0,
+            "placed_ordinals": [],
+            "rate_per_tick": 0.0,
+            "marginal_yield": 2.0
+          }
+        ]
+      },
+      {
+        "hex_ordinal": 10,
+        "hex_q": 8,
+        "hex_r": 31,
+        "terrain": "forest_olive_grove",
+        "goods": [
+          {
+            "good_key": "olives",
+            "cap": 6,
+            "placed": 0,
+            "placed_ordinals": [],
+            "rate_per_tick": 0.0,
+            "marginal_yield": 2.0
+          }
+        ]
+      },
+      {
+        "hex_ordinal": 11,
+        "hex_q": 8,
+        "hex_r": 34,
+        "terrain": "coastal_sea",
+        "goods": [
+          {
+            "good_key": "fish",
+            "cap": 6,
+            "placed": 0,
+            "placed_ordinals": [],
+            "rate_per_tick": 0.0,
+            "marginal_yield": 2.0
+          }
+        ]
+      },
+      {
+        "hex_ordinal": 12,
+        "hex_q": 9,
+        "hex_r": 30,
+        "terrain": "mountain_limestone",
+        "goods": [
+          {
+            "good_key": "stone",
+            "cap": 6,
+            "placed": 0,
+            "placed_ordinals": [],
+            "rate_per_tick": 0.0,
+            "marginal_yield": 2.0
+          }
+        ]
+      },
+      {
+        "hex_ordinal": 13,
+        "hex_q": 9,
+        "hex_r": 34,
+        "terrain": "coastal_sea",
+        "goods": [
+          {
+            "good_key": "fish",
+            "cap": 6,
+            "placed": 0,
+            "placed_ordinals": [],
+            "rate_per_tick": 0.0,
+            "marginal_yield": 2.0
+          }
+        ]
+      },
+      {
+        "hex_ordinal": 14,
+        "hex_q": 10,
+        "hex_r": 30,
+        "terrain": "forest_olive_grove",
+        "goods": [
+          {
+            "good_key": "olives",
+            "cap": 6,
+            "placed": 0,
+            "placed_ordinals": [],
+            "rate_per_tick": 0.0,
+            "marginal_yield": 2.0
+          }
+        ]
+      },
+      {
+        "hex_ordinal": 15,
+        "hex_q": 10,
+        "hex_r": 33,
+        "terrain": "coastal_sea",
+        "goods": [
+          {
+            "good_key": "fish",
+            "cap": 6,
+            "placed": 0,
+            "placed_ordinals": [],
+            "rate_per_tick": 0.0,
+            "marginal_yield": 2.0
+          }
+        ]
+      },
+      {
+        "hex_ordinal": 16,
+        "hex_q": 11,
+        "hex_r": 30,
+        "terrain": "forest_olive_grove",
+        "goods": [
+          {
+            "good_key": "olives",
+            "cap": 6,
+            "placed": 0,
+            "placed_ordinals": [],
+            "rate_per_tick": 0.0,
+            "marginal_yield": 2.0
+          }
+        ]
+      },
+      {
+        "hex_ordinal": 17,
+        "hex_q": 11,
+        "hex_r": 31,
+        "terrain": "plains",
+        "goods": [
+          {
+            "good_key": "grain",
+            "cap": 6,
+            "placed": 0,
+            "placed_ordinals": [],
+            "rate_per_tick": 0.0,
+            "marginal_yield": 2.0
+          }
+        ]
+      },
+      {
+        "hex_ordinal": 18,
+        "hex_q": 11,
+        "hex_r": 32,
+        "terrain": "plains",
+        "goods": [
+          {
+            "good_key": "grain",
+            "cap": 6,
+            "placed": 0,
+            "placed_ordinals": [],
+            "rate_per_tick": 0.0,
+            "marginal_yield": 2.0
+          }
+        ]
+      }
+    ],
+    "buildings": [],
+    "total_gubbar": 10,
+    "pool_size": 7
+  },
+  "units": [
+    {
+      "id": "fixture-nomadic_host",
+      "type": "nomadic_host",
+      "category": "land",
+      "q": 12,
+      "r": 31,
+      "status": "positioned",
+      "size": 100
+    },
+    {
+      "id": "fixture-spearman",
+      "type": "spearman",
+      "category": "land",
+      "q": 11,
+      "r": 32,
+      "status": "positioned",
+      "size": 100
+    },
+    {
+      "id": "fixture-elite_infantry",
+      "type": "elite_infantry",
+      "category": "land",
+      "q": 12,
+      "r": 30,
+      "status": "positioned",
+      "size": 100
+    },
+    {
+      "id": "fixture-war_chariot",
+      "type": "war_chariot",
+      "category": "land",
+      "q": 13,
+      "r": 30,
+      "status": "positioned",
+      "size": 100
+    },
+    {
+      "id": "fixture-runner",
+      "type": "runner",
+      "category": "land",
+      "q": 13,
+      "r": 32,
+      "status": "positioned",
+      "size": 100
+    },
+    {
+      "id": "fixture-galley",
+      "type": "galley",
+      "category": "naval",
+      "q": 10,
+      "r": 33,
+      "status": "positioned",
+      "size": 100
+    },
+    {
+      "id": "fixture-war_galley",
+      "type": "war_galley",
+      "category": "naval",
+      "q": 9,
+      "r": 33,
+      "status": "positioned",
+      "size": 100
+    },
+    {
+      "id": "fixture-merchantman",
+      "type": "merchantman",
+      "category": "naval",
+      "q": 8,
+      "r": 33,
+      "status": "positioned",
+      "size": 100
+    }
+  ],
+  "rural": [
+    {
+      "building_type": "farm",
+      "q": 10,
+      "r": 32,
+      "level": 1
+    },
+    {
+      "building_type": "farm",
+      "q": 10,
+      "r": 31,
+      "level": 2
+    }
+  ]
+}
