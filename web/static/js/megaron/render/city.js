@@ -2,7 +2,7 @@ import { serverNow } from '../clock.js';
 import {
   CITY_PALETTE, newGrid, set, row, col, rect, cube, outline, toRuns,
 } from './pixelgrid.js';
-import { stampBuilding, stampUnderConstruction, buildingWidth } from './citybuildings.js';
+import { stampBuilding, stampUnderConstruction, buildingWidth, houseDetails } from './citybuildings.js';
 
 // Scenen ritas i LOGISKA pixlar och skalas upp med heltal — samma pixeldisciplin
 // som kartan (princip 10: aldrig arc(), aldrig halva pixlar).
@@ -334,12 +334,27 @@ function homes(g, pop, count) {
     cube(g, x, b - h, w, h, {depth: 4, parapet: true, door: true});
     rect(g, x + 3, b - 10, 3, 3, 'V'); row(g, x + 2, b - 7, 5, 'P');
     row(g, x - 2, b + 1, w + 10, 'T');
-    rect(g, x + w + 3, b - 4, 4, 5, 'R');
+    houseDetails(g, x, b, w, h);
+    // Small stack of firewood against the wall.
+    for (let j = 0; j < 2; j++) { row(g, x + 2, b - 2 - j * 2, 6, 'w'); set(g, x + 2, b - 2 - j * 2, 'M'); }
   }
   // Shade cloth, a bench, and a small planted domestic court.
   row(g, 77, 130, 20, 'W'); col(g, 77, 129, 8, 'W'); col(g, 96, 129, 8, 'W');
-  row(g, 80, 131, 9, 'P'); row(g, 81, 132, 8, 'P');
+  rect(g, 80, 131, 5, 5, 'P'); row(g, 80, 135, 5, 'O');
+  rect(g, 88, 131, 5, 4, 'n'); row(g, 88, 134, 5, 'N');
+  // A shaded meeting place, with a reed pergola and vessels beside the bench.
+  for (const xx of [114, 143]) { col(g, xx, 120, 22, 'W'); set(g, xx + 1, 141, 'T'); }
+  for (let yy = 0; yy < 5; yy++) row(g, 114 + yy, 120 - yy, 30, yy % 2 ? 'w' : 'N');
+  for (const [xx, yy] of [[116,117],[122,115],[131,116],[139,119],[142,122]]) {
+    row(g, xx, yy, 5, 'n'); row(g, xx + 1, yy + 1, 4, 'g');
+  }
   rect(g, 121, 137, 14, 2, 'w'); col(g, 122, 139, 2, 'W'); col(g, 133, 139, 2, 'W');
+  for (const [xx, yy] of [[140,142],[109,144]]) {
+    row(g, xx + 1, yy - 6, 3, 'r'); rect(g, xx, yy - 4, 5, 4, 'R'); col(g, xx, yy - 3, 2, 'M');
+  }
+  // A patterned mat spread on the earth in front of the shaded bench.
+  for (let yy = 0; yy < 4; yy++) row(g, 119 - yy, 145 + yy, 19, yy % 2 ? 'O' : 'B');
+  row(g, 116, 149, 19, 'o');
 }
 
 // Domestic greenery at the court's edge; these are not production buildings.
@@ -347,7 +362,9 @@ function garden(g) {
   for (const [x, y] of [[6, 77], [218, 107], [7, 139], [216, 153]]) {
     col(g, x, y - 8, 9, 'W');
     rect(g, x - 4, y - 12, 9, 5, 'N');
-    row(g, x - 3, y - 13, 6, 'n'); row(g, x - 5, y - 10, 3, 'n');
+    row(g, x - 3, y - 14, 6, 'n'); row(g, x - 5, y - 11, 10, 'n');
+    row(g, x - 4, y - 13, 7, 'n'); row(g, x - 2, y - 10, 4, 'g');
+    row(g, x - 3, y - 6, 5, 'N');
     row(g, x - 4, y + 1, 9, 't');
   }
 }

@@ -26,3 +26,9 @@ Nu: större scen, tredimensionella hus, verksamheternas redskap, bostadsgårdar,
 - BILD: Timothy bedömer mysighet och igenkänning. Förslaget ligger kvar på grenen för jämförelse; ännu ingen merge/deploy av denna iteration.
 
 Avgränsning: procedurritad pixelgrafik i faktisk UI-skala, inte förlagans illustrationsdetalj. Aktivitetsfigurer är atmosfär, inte en avbildning av bemanningsantal.
+
+## Detaljrunda på Timothys önskemål
+
+Kontrakt: mer vardagsliv genom textilier, kärl, ved och växter nära husen; samma byggnadssanning, mått och layout. Endast de två stadsrenderarna. Kontroll: befintliga bildfall, stämpelinneslutning och JS-tester. Tidigare serveracceptans gäller föregående commit; nya detaljbilder är rendererprov.
+
+Detaljresultat: [liten stad](details/small.png), [utbyggd stad](details/equipped.png). Krukor och grönt vid husen, vävda textilier, ved, fylligare trädkronor och skuggad sittplats på bostadsgården. 360 JS-tester gröna, 39 byggnadsavtryck inneslutna, fem bildfall identiska vid upprepning; inga browserfel. Detaljrundan ej deployad.

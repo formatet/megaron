@@ -12,7 +12,23 @@ function house(g, x, base, w, h = 15, depth = 4) {
   col(g, x + 3, base - 6, 6, 'w');
   if (w > 12) { rect(g, x + w - 6, base - 10, 3, 3, 'V'); row(g, x + w - 7, base - 7, 5, 'P'); }
   socle(g, x, base, w + depth * 2);
+  houseDetails(g, x, base, w, h);
 }
+// Domestic details stay inside the house footprint; no new productive buildings.
+export function houseDetails(g, x, base, w, h) {
+  // Exposed beam ends below the flat roof, and a woven mat on its surface.
+  for (let dx = 2; dx < w - 2; dx += 5) set(g, x + dx, base - h + 2, 'W');
+  row(g, x + 5, base - h - 2, 7, 'n');
+  row(g, x + 6, base - h - 3, 7, 'N');
+  // Ochre textile beside the doorway, with a contrasting woven border.
+  rect(g, x + 9, base - 6, 4, 5, 'O');
+  row(g, x + 9, base - 5, 4, 'B'); row(g, x + 9, base - 2, 4, 'B');
+  // Potted herb and climbing leaves against the sunny side of the house.
+  rect(g, x + w + 2, base - 3, 4, 3, 'O'); row(g, x + w + 1, base - 4, 5, 'R');
+  col(g, x + w + 3, base - 9, 5, 'W');
+  for (const [dx, dy] of [[1,-8],[2,-10],[3,-7]]) row(g, x + w + dx, base + dy, 3, 'n');
+}
+
 function jar(g, x, base, colour = 'R') {
   row(g, x + 1, base - 7, 3, 'r');
   rect(g, x, base - 5, 5, 4, colour);
