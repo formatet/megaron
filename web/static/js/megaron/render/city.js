@@ -12,8 +12,8 @@
 //
 // Nu: **varje** byggnad ritas, i sin egen akhaiska form, ur samma palett som
 // kartsiluetterna. Citadellet i fonden bär megaron och den kyklopiska muren och
-// skalas av befolkning och murnivå — samma `size_tier` som kartan använder, så
-// de två bilderna aldrig kan säga olika saker om samma stad.
+// skalas av befolkning och murnivå — en rikare lokal befolkningsskala än
+// kartans två `size_tier`-led.
 //
 // Blickpunkten är INIFRÅN staden: muren löper i fonden, bakom citadellet, och
 // gatan med verkstäderna ligger framför. En mur ritad framför hade varit
@@ -30,12 +30,12 @@ import { stampBuilding, stampUnderConstruction, buildingWidth } from './citybuil
 const SCENE_W = 160, SCENE_H = 76, S = 2;
 export const SCENE_CANVAS = { w: SCENE_W * S, h: SCENE_H * S };
 
-// Tre plan, bakifrån och fram. Djupet ligger i att de tre banden ALDRIG korsar
-// varandra — scenen har ingen enda diagonal, precis som resten av grafiken.
+// Citadellet och två gatuled ritas bakifrån och fram. Den sammanhängande
+// gården binder ihop dem utan att lägga markband framför byggnadernas fötter.
 const CITADEL = 34;         // citadellets fot: megaron och den lägre staden
 const RAMPART = 36;         // murens krön, vid terrassens kant
-const ROW_BACK = 56;        // bortre gatuledet
-const ROW_FRONT = 72;       // främre gatuledet
+const ROW_BACK = 54;        // bortre gatuledet
+const ROW_FRONT = 70;       // främre gatuledet
 
 // Ordningen byggnaderna radas upp i. Den är INTE en prioritering (allt ritas)
 // utan en gruppering: försörjning, hantverk, makt. En stad ska läsa likadant
@@ -114,18 +114,22 @@ function drawScene(ctx, tile, buildings, buildQueue, sett, walker, smoke, dt) {
   outline(g);
   const sprite = toRuns(g);
 
-  // Marken i tre band, bakifrån och fram: citadellklippan, den bortre gatan,
-  // den främre. Varje band är en nyans mörkare — luftperspektiv utan gradient,
-  // och utan en enda diagonal.
+  // One continuous courtyard joins the gate and the workshops. Terrain stays
+  // at its edges; bare earth is ground, so it never receives a sprite outline.
   const base = GROUND_BY_TERRAIN[terrain] || GROUND_BY_TERRAIN.plains;
   ctx.fillStyle = base;
   ctx.fillRect(0, (CITADEL + 1) * S, SCENE_CANVAS.w, SCENE_CANVAS.h);
-  ctx.fillStyle = '#9E8E5E';                       // bortre gatans trampade jord
-  ctx.fillRect(0, (ROW_BACK + 1) * S, SCENE_CANVAS.w, SCENE_CANVAS.h);
-  ctx.fillStyle = '#8C7C4E';                       // främre gatan
-  ctx.fillRect(0, (ROW_FRONT + 1) * S, SCENE_CANVAS.w, SCENE_CANVAS.h);
-  ctx.fillStyle = '#7C6C42';
-  for (let sx = 4; sx < SCENE_W; sx += 9) ctx.fillRect(sx * S, (ROW_BACK + 2) * S, S, S);
+  for (let y = RAMPART + 4; y < SCENE_H; y += 2) {
+    const inset = Math.max(0, 18 - Math.floor((y - RAMPART) / 2));
+    const edge = inset + (Math.floor(y / 4) % 2);
+    ctx.fillStyle = CITY_PALETTE.e;
+    ctx.fillRect(edge * S, y * S, (SCENE_W - edge * 2) * S, 2 * S);
+    // The gate lies left of the hall. Its approach widens into the open
+    // courtyard rather than becoming another full-width horizontal band.
+    const approach = Math.floor((y - RAMPART) / 3);
+    ctx.fillStyle = CITY_PALETTE.E;
+    ctx.fillRect((51 + approach) * S, y * S, (11 + approach * 2) * S, 2 * S);
+  }
 
   for (const r of sprite.runs) {
     ctx.fillStyle = CITY_PALETTE[r.ch];
@@ -156,8 +160,8 @@ function drawScene(ctx, tile, buildings, buildQueue, sett, walker, smoke, dt) {
 
 // ── Citadellet i fonden ──────────────────────────────────────────────────
 // Megaron, den lägre staden och den kyklopiska muren, skalade av samma
-// befolkning och murnivå som kartsiluetten. Öppnar man kartan och stadsvyn
-// bredvid varandra ska de säga samma sak.
+// befolkning och murnivå. Stadsvyn har fyra lokala bildnivåer; kartan
+// visar serverns två grövre storleksled utan exakt befolkning.
 function citadel(g, pop, walls) {
   const tier = pop >= 15000 ? 3 : pop >= 5000 ? 2 : pop >= 1000 ? 1 : 0;
 
@@ -172,7 +176,7 @@ function citadel(g, pop, walls) {
     cube(g, Math.round(hx), CITADEL - hh, hw, hh, { door: step < 3 });
   }
 
-  // **Megaron föds ur STORLEK, precis som på kartan.** En bosättning på 101
+  // **Megaron föds ur STORLEK i stadsvyn.** Kartan visar ingen palatssal. En bosättning på 101
   // invånare har ingen sal, och att rita en åt den vore att ljuga om
   // palatskulten — den är något en plats VÄXER in i.
   if (tier >= 1) megaronHall(g, tier);
@@ -239,7 +243,7 @@ function megaronHall(g, tier) {
   row(g, mx + 1, my + 4, mw - 2, 'O');                // målat ockraband
   row(g, mx + 1, my + 5, mw - 2, 'o');
   const py = my + 9;
-  rect(g, mx + 4, py, mw - 8, CITADEL - py, 'd');     // förhallen
+  rect(g, mx + 4, py, mw - 8, CITADEL - py, 'p');     // förhallen
   row(g, mx + 3, py - 1, mw - 6, 'V');                // lintelen
   const cols = tier >= 3 ? 4 : tier >= 2 ? 3 : 2;
   const span = mw - 12;
@@ -250,7 +254,7 @@ function megaronHall(g, tier) {
       set(g, cxp, yy, 'O'); set(g, cxp + 1, yy, 'O'); set(g, cxp + 2, yy, 'o');
     }
   }
-  rect(g, mx + (mw >> 1) - 2, CITADEL - 8, 5, 8, 'V');  // porten
+  rect(g, mx + (mw >> 1) - 1, CITADEL - 6, 3, 6, 'V');  // porten
 }
 
 // ── Gatan ────────────────────────────────────────────────────────────────
@@ -277,11 +281,12 @@ function street(g, buildings, buildQueue) {
   ];
   if (items.length === 0) return vents;
 
-  // **Två gatuled.** Ett enda led med tretton byggnader gav elva logiska pixlar
+  // **Två gatuled.** Från tre verksamheter får gården byggnader i båda planen.
+  // Ett enda led med tretton byggnader gav elva logiska pixlar
   // per byggnad — då är en hamn och ett gjuteri samma suddiga klump, och
   // "enskilda byggnader ska synas" är inte uppfyllt. Bygget som PÅGÅR hamnar
   // alltid i det främre ledet: det är det spelaren tittar efter.
-  const twoRows = items.length > 5;
+  const twoRows = items.length >= 3;
   const back = [], front = [];
   items.forEach((it, i) => {
     if (it.phase < 1) front.push(it);
@@ -306,11 +311,21 @@ function layoutRow(g, items, base, vents) {
   const total = widths.reduce((a, b) => a + b, 0);
   const gap = items.length < 2 ? 0
     : Math.max(1, Math.min(6, Math.floor((SCENE_W - 6 - total) / (items.length - 1))));
-  let x = Math.max(2, Math.round((SCENE_W - (total + gap * (items.length - 1))) / 2));
+  const split = Math.ceil(items.length / 2);
+  const leftW = widths.slice(0, split).reduce((a, b) => a + b, 0) + gap * (split - 1);
+  const rightW = widths.slice(split).reduce((a, b) => a + b, 0)
+    + gap * Math.max(0, items.length - split - 1);
+  // Keep a visible central courtyard where both wings fit. Crowded cities
+  // retain the compact layout instead of clipping buildings for a fixed gap.
+  const courtyard = items.length > 1 && Math.max(leftW, rightW) <= 69;
+  let x = courtyard ? SCENE_W / 2 - 8 - leftW
+    : Math.max(2, Math.round((SCENE_W - (total + gap * (items.length - 1))) / 2));
   items.forEach((it, i) => {
-    if (it.phase >= 1) stampBuilding(g, it.type, x, base, it.level);
-    else stampUnderConstruction(g, it.type, x, base, it.level, it.phase);
-    if (it.type === 'foundry' && it.phase >= 1) vents.push([x + 10, base - 13]);
+    if (courtyard && i === split) x = SCENE_W / 2 + 8;
+    const foot = base - (i % 2 ? 2 : 0);
+    if (it.phase >= 1) stampBuilding(g, it.type, x, foot, it.level);
+    else stampUnderConstruction(g, it.type, x, foot, it.level, it.phase);
+    if (it.type === 'foundry' && it.phase >= 1) vents.push([x + 10, foot - 13]);
     x += widths[i] + gap;
   });
 }
