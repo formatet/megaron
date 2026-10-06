@@ -592,11 +592,15 @@ func unitMarchCmd() *cobra.Command {
 	var mode string
 	var yes bool
 	var landColonize bool
+	var previewOnly bool
 
 	cmd := &cobra.Command{
 		Use:   "march",
 		Short: "Order a unit to march to a hex",
 		Long: `Order a unit to march to a target hex (q,r coordinates).
+
+Use --preview to estimate arrival without sending an order. The estimate uses
+the current state; courier orders and unknown routes cannot promise an arrival.
 
 Terrain passability:
   Impassable (all units):  mountain_limestone, mountain_red
@@ -688,6 +692,29 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 				return fmt.Errorf("--q/--r or --target q,r are required (or use --intent colonize alone to found a colony on the hex your unit already occupies)")
 			}
 
+			body := map[string]any{
+				"target_q": targetQ,
+				"target_r": targetR,
+			}
+			if stance != "" {
+				body["stance"] = stance
+			}
+			if intent != "" {
+				body["intent"] = intent
+			}
+			if name != "" {
+				body["name"] = name
+			}
+			if mode != "" {
+				body["mode"] = mode
+			}
+			if intent == "land" && landColonize {
+				body["cargo_intent"] = "colonize"
+			}
+			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/march", cfg.WorldID, unitID)
+			if previewOnly {
+				return showMarchPreview(c, path+"-preview", body)
+			}
 			// Colonize catchment forecast (DEL A, megaron_koloni_legibilitet_plan.md):
 			// show the grain balance the new colony would start with BEFORE the march
 			// is dispatched, then confirm. Skipped in --json mode (machine caller).
@@ -713,26 +740,6 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 				}
 			}
 
-			body := map[string]any{
-				"target_q": targetQ,
-				"target_r": targetR,
-			}
-			if stance != "" {
-				body["stance"] = stance
-			}
-			if intent != "" {
-				body["intent"] = intent
-			}
-			if name != "" {
-				body["name"] = name
-			}
-			if mode != "" {
-				body["mode"] = mode
-			}
-			if intent == "land" && landColonize {
-				body["cargo_intent"] = "colonize"
-			}
-			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/march", cfg.WorldID, unitID)
 			data, err := c.post(path, body)
 			if err != nil {
 				return err
@@ -804,6 +811,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 		},
 	}
 
+	cmd.Flags().BoolVar(&previewOnly, "preview", false, "estimate arrival without sending an order")
 	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
 	cmd.Flags().IntVar(&targetQ, "q", 0, "target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)")
 	cmd.Flags().IntVar(&targetR, "r", 0, "target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)")
