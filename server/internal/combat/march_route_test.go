@@ -254,6 +254,17 @@ func TestAcceptance1_DispatchReturnHome_SavesRoute(t *testing.T) {
 		t.Fatalf("create garrisoned land unit: %v", err)
 	}
 
+	// Explore covers an area now (megaron_plan_upptackarexpeditionen.md):
+	// its first leg goes to the nearest unseen hex there. Make (2,0) the only
+	// unseen one, so the unit stands at (2,0) when the area is used up and
+	// turns home from there — the detour this test is about.
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO player_scouted_tiles (world_id, player_id, q, r)
+		 SELECT $1, $2, q, r FROM map_tiles WHERE world_id = $1 AND NOT (q = 2 AND r = 0)`,
+		worldID, ownerID,
+	); err != nil {
+		t.Fatalf("scout all but (2,0): %v", err)
+	}
 	if _, err := StartMarch(ctx, pool, scheduler, eventStore, clk, MarchOrder{
 		WorldID: worldID, PlayerID: ownerID, UnitID: unitID,
 		TargetQ: 2, TargetR: 0, Intent: "explore",
