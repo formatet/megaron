@@ -167,6 +167,17 @@ func TravelFactor(t unit.Type, crew int, laden bool) float64 {
 // unit is marching and its UnitArrival is scheduled. Any *OrderReject return
 // carries the HTTP status + reason exactly as the March handler answered.
 func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Scheduler, eventStore *events.Store, clk clock.Clock, o MarchOrder, targetKnown TargetKnownFunc) (*MarchStarted, error) {
+	return startMarch(ctx, pool, scheduler, eventStore, clk, o, targetKnown, false)
+}
+
+// PreviewMarch uses the same validation, route and tick calculation as dispatch,
+// returning before any transaction, resource withdrawal, unit update or event.
+// This estimates travel; dispatch still checks provisions and concurrent changes.
+func PreviewMarch(ctx context.Context, pool *pgxpool.Pool, clk clock.Clock, o MarchOrder, targetKnown TargetKnownFunc) (*MarchStarted, error) {
+	return startMarch(ctx, pool, nil, nil, clk, o, targetKnown, true)
+}
+
+func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Scheduler, eventStore *events.Store, clk clock.Clock, o MarchOrder, targetKnown TargetKnownFunc, preview bool) (*MarchStarted, error) {
 	store := unit.NewStore(pool)
 
 	// Load unit.
@@ -704,6 +715,14 @@ func StartMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			slog.Error("march route: could not encode stored route", "unit", o.UnitID, "err", err)
 			return nil, reject(http.StatusInternalServerError, "pathfinding error")
 		}
+	}
+
+	if preview {
+		return &MarchStarted{
+			UnitID: o.UnitID, DepartsAt: now, ArrivesAt: arrivesAt,
+			ArrivalTick: currentTick + travelTicks, DurationTicks: travelTicks,
+			OriginQ: originQ, OriginR: originR, TargetQ: targetQ, TargetR: targetR,
+		}, nil
 	}
 
 	// Atomic DB update: set unit to marching and schedule arrival event.

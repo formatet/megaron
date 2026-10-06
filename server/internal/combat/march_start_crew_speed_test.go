@@ -95,12 +95,22 @@ func TestStartMarch_ShorthandedGalleyIsSlower(t *testing.T) {
 		).Scan(&shipID); err != nil {
 			t.Fatalf("create positioned galley (crew=%d): %v", crew, err)
 		}
+		preview, err := PreviewMarch(ctx, pool, clk, MarchOrder{
+			WorldID: worldID, PlayerID: ownerID, UnitID: shipID,
+			TargetQ: 10, TargetR: 0,
+		}, nil)
+		if err != nil {
+			t.Fatalf("PreviewMarch (crew=%d): %v", crew, err)
+		}
 		res, err := StartMarch(ctx, pool, scheduler, eventStore, clk, MarchOrder{
 			WorldID: worldID, PlayerID: ownerID, UnitID: shipID,
 			TargetQ: 10, TargetR: 0,
 		}, nil)
 		if err != nil {
 			t.Fatalf("StartMarch (crew=%d): %v", crew, err)
+		}
+		if preview.DurationTicks != res.DurationTicks || preview.ArrivalTick != res.ArrivalTick || !preview.ArrivesAt.Equal(res.ArrivesAt) {
+			t.Fatalf("crew=%d preview %+v differs from march %+v", crew, preview, res)
 		}
 		return res.DurationTicks
 	}

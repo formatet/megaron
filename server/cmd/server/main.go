@@ -457,6 +457,7 @@ func main() {
 			// Unit endpoints (C3/C4/C5/C6).
 			r.Get("/worlds/{worldID}/units", uh.ListUnits)
 			r.Post("/worlds/{worldID}/units/{unitID}/march", uh.March)
+			r.Get("/worlds/{worldID}/units/{unitID}/march-preview", uh.MarchPreview)
 			r.Post("/worlds/{worldID}/units/{unitID}/recall", uh.Recall)
 			r.Post("/worlds/{worldID}/units/{unitID}/stance", uh.SetStance)
 			r.Post("/worlds/{worldID}/units/{unitID}/standing-orders", uh.SetStandingOrders)
