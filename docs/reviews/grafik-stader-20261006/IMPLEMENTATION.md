@@ -1,6 +1,6 @@
 # Stadsändringarna — genomförande 2026-10-06
 
-Timothy har instruerat Codex att arbeta själv efter rekommendationerna, committa och deploya. Detta ersätter den tidigare begränsningen till inventering samt rollen där Claude ensam integrerar. Produktionsändringarna är committade som `7213acde` (stadsvyn) och `19ce2f59` (kartstäder). Båda är lokalt verifierade och prövade mot en riktig isolerad spelserver. Integrering och deploy följer efter detta bevispaket. Worktree: `/tmp/megaron-codex-grafik-20261005`, gren `codex/grafik-inventering`. Det tidigare sandboxhindret för Git är hävt av Timothy.
+Timothy har instruerat Codex att arbeta själv efter rekommendationerna, committa och deploya. Detta ersätter den tidigare begränsningen till inventering samt rollen där Claude ensam integrerar. Produktionsändringarna är committade som `7213acde` (stadsvyn) och `19ce2f59` (kartstäder). Båda är lokalt verifierade och prövade mot en riktig isolerad spelserver. Grafiken är integrerad och deployad med `001a4e41`. Publik adress och origin levererar exakt de verifierade JS-filerna. Worktree: `/tmp/megaron-codex-grafik-20261005`, gren `codex/grafik-inventering`. Det tidigare sandboxhindret för Git är hävt av Timothy.
 
 ## Två avgränsade bildändringar
 
@@ -42,3 +42,7 @@ Kör: `python3 tools/city_graphics_acceptance.py /tmp/megaron-stader-implementat
 På Timothys påminnelse har även `img/stadsvy.jpeg` och `img/f0382384-32ad-45b1-8195-b7f2903524ac.jpeg` granskats direkt. Deras användbara struktur är sammanhängande gårdar, portens förbindelse med bebyggelsen och överlappande volymer. Nuvarande implementation är ett mindre steg inom den befintliga renderaren, inte referensens fulla terrasserade stad. Kartreferensens sadeltak och senare tempelformer förs inte över till akhaisk bronsålder.
 
 Nästa möjliga bildslice är starkare djup/terrassering i stadsvyn, efter Timothys bedömning av detta steg. Befintligt kapacitetsproblem i fullt uppgraderad scen och fraktionell CSS-skalning redovisas ovan; de är inte lösta här.
+
+## Deploy utförd
+
+2026-10-06 07:50 — `001a4e41` pushad till master och hämtad på CT 126. `city.js` och `citysprites.js` hämtade via både originens localhost och https://megaron.formatet.se är byte-identiska med den verifierade grenen. Se `implementation/deploy-proof.json`. Ingen Go-kod eller migration ändrades; serverprocessen kör därför kvar backend `43d94a6`, `/healthz` är OK och migration 158 är ren. Ingen omstart behövdes för de statiska modulerna. Publik cache kan kräva Ctrl+Shift+R i en redan öppen spelvy.

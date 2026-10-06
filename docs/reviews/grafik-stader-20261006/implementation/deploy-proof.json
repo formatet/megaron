@@ -1,0 +1,20 @@
+{
+  "deployed_git_commit": "001a4e414949cbdb5b2021be96a56a67d80e73ed",
+  "backend_unchanged_no_restart": true,
+  "assets": {
+    "city.js": {
+      "sha256": "fece97aae0caeccc962470652d8ed02cadb27cfac875a022a59965f1961221c6",
+      "public_and_origin_match": true
+    },
+    "citysprites.js": {
+      "sha256": "925f8c0fa0a8b82f1c1e9c533c979474c8bc214464bb73e1c37e0af056698dfa",
+      "public_and_origin_match": true
+    }
+  },
+  "health": {
+    "commit": "43d94a6",
+    "migration": 158,
+    "status": "ok"
+  },
+  "verification_client": "curl; urllib client returned 403 before content verification"
+}
