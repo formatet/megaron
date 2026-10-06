@@ -127,3 +127,9 @@ Runbook och det verifierade scenariot: `megaron_drift.md` §Acceptansvärlden.
 3. Determinism är krav: två körningar utan kodändring → 0 ändrade pixlar.
 4. Enhetsriggen är acceptansgrind.
 5. Mät innan du påstår.
+
+### City graphics proof
+
+`city_graphics_capture.py OUT [HOST]` records the existing world showcase and actual City drawer using explicit offline payloads (including geography checks). `city_scene_cases.py OUT [HOST] [BEFORE_CITY_JS]` captures five frozen native-size city scenes; the optional old renderer permits same-fixture comparisons. Both default to localhost:18199.
+
+`city_graphics_acceptance.py OUT EXPECTED_BUILD_COMMIT` verifies the real server, player-founded city, desktop/mobile drawer, and served asset hashes in dedicated local infrastructure. Setup and evidence: `docs/reviews/grafik-stader-20261006/IMPLEMENTATION.md`.

@@ -1,0 +1,19 @@
+{
+  "health": {
+    "commit": "19ce2f59",
+    "migration": 158,
+    "status": "ok"
+  },
+  "actual_player_found_city": true,
+  "actual_drawer_and_grid": true,
+  "screenshots": [
+    "acceptance-city-desktop.png",
+    "acceptance-city-mobile.png"
+  ],
+  "browser_errors": [],
+  "assets_sha256": {
+    "city.js": "fece97aae0caeccc962470652d8ed02cadb27cfac875a022a59965f1961221c6",
+    "citysprites.js": "925f8c0fa0a8b82f1c1e9c533c979474c8bc214464bb73e1c37e0af056698dfa"
+  },
+  "agora_configured": false
+}

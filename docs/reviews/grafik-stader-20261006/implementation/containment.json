@@ -1,0 +1,95 @@
+{
+  "deterministic": true,
+  "outside_city_bounds": 0,
+  "captures": {
+    "01d-citygrid-farm-selected.png": {
+      "changed_pixels": 0,
+      "bbox": null
+    },
+    "01c-citygrid.png": {
+      "changed_pixels": 0,
+      "bbox": null
+    },
+    "01b-city-scene.png": {
+      "changed_pixels": 34015,
+      "bbox": [
+        0,
+        60,
+        418,
+        198
+      ]
+    },
+    "01a-city-drawer.png": {
+      "changed_pixels": 34015,
+      "bbox": [
+        2,
+        101,
+        420,
+        239
+      ]
+    },
+    "02-farmer-kuststad-repeat.png": {
+      "changed_pixels": 1847,
+      "bbox": [
+        256,
+        67,
+        507,
+        388
+      ]
+    },
+    "05b-kartstader-inland.png": {
+      "changed_pixels": 2505,
+      "bbox": [
+        186,
+        0,
+        409,
+        389
+      ]
+    },
+    "05a-kartstader-kust.png": {
+      "changed_pixels": 2784,
+      "bbox": [
+        4,
+        232,
+        591,
+        495
+      ]
+    },
+    "04b-terrang-ost.png": {
+      "changed_pixels": 3231,
+      "bbox": [
+        21,
+        149,
+        608,
+        546
+      ]
+    },
+    "04a-terrang-vast.png": {
+      "changed_pixels": 2312,
+      "bbox": [
+        356,
+        206,
+        641,
+        508
+      ]
+    },
+    "03-enheter-host.png": {
+      "changed_pixels": 2506,
+      "bbox": [
+        240,
+        0,
+        800,
+        413
+      ]
+    },
+    "02-farmer-kuststad.png": {
+      "changed_pixels": 1847,
+      "bbox": [
+        256,
+        67,
+        507,
+        388
+      ]
+    }
+  }
+}

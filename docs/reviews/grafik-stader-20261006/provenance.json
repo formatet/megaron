@@ -1,0 +1,24 @@
+{
+  "source_commit": "43d94a60",
+  "method": "Existing offline screenshots, inspected 2026-10-06; no new runtime",
+  "source_sha256": {
+    "web/static/js/megaron/render/city.js": "8b6dbac9bb83452459b149f1462c195eee6bde0bfba51214531d78f8de061816",
+    "web/static/js/megaron/render/citysprites.js": "9a56e5d342e4fa4bde01b0d4dec01cbc6e6a6b38de5d8cdbe35c24bdad50bbec",
+    "web/static/js/megaron/render/citybuildings.js": "49233eb4302bceeb694fcb42c9ce322ef0a3e755edaa9dba36194b701e61d291",
+    "web/static/js/megaron/render/pixelgrid.js": "3b6ab905c45ea5ffd9cb66ccb16abd302395acc2b06b3550f4cff422409a0790",
+    "web/static/js/megaron/render/map.js": "47e1f86abc714a0f8ed378d762d9be1dddb22c15535b4b9afe11615ff70bdf88",
+    "web/static/js/megaron/ui/drawers/city.js": "f572666ba8db9a07b43d11ddb60de49dca9cdd7a8f12d0b3b96334f5fa3b4690",
+    "web/static/megaron.css": "43d18bbd70baf1ca91d6900c8ee1d0c36d233273abf4b4d301627ad2ac5a4569",
+    "web/static/fixtures/world-full.json": "89e15bb3b27073a09efd61136d5e579ad36f72fe0e892abb672db7ea672a78db"
+  },
+  "artifact_sha256": {
+    "RAPPORT.md": "5638cc3fc3cbc055c0d65a50bb21782844de3c6b0f5820e301f0588b28544a89",
+    "bilder/01a-city-drawer.png": "5b7dcf175fbc768cb5ce50c969ffd39a1bd63ee644a2bd56159264ee245cf384",
+    "bilder/01b-city-scene.png": "acc80ac500fdfe38d1c4b31b532f169e2b651da6a5c45004670736e4f4535f44",
+    "bilder/01c-citygrid.png": "98a18e7d52ada9f9b41527ddfb96e1b512a4db682a0315a2210269517cd6db3c",
+    "bilder/05a-kartstader-kust.png": "8c3c46df2b42dd17b7d9cd4508bf499af0d750bca7351e31e16eb10d2db27c89",
+    "bilder/05b-kartstader-inland.png": "1aa3d64ce47ade5d10445a752f03121d7b40089fc55635aad2da56d0dbec5859",
+    "capture-metadata.json": "e0d85c0e0cbcdc0b487699fcef96d2d2da61f582ae0efdf8d19662bdcc8e5166"
+  },
+  "git_commit": "Implementation: 7213acde and 19ce2f59; read-only restriction lifted before commit"
+}

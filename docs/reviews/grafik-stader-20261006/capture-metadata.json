@@ -1,0 +1,84 @@
+{
+  "metrics": {
+    "02-farmer-kuststad": {
+      "zoom": 1,
+      "dpr": 1,
+      "center": [
+        10,
+        32
+      ],
+      "width": 700,
+      "height": 450
+    },
+    "03-enheter-host": {
+      "zoom": 1,
+      "dpr": 1,
+      "center": [
+        12,
+        31
+      ],
+      "width": 800,
+      "height": 500
+    },
+    "04a-terrang-vast": {
+      "zoom": 1,
+      "dpr": 1,
+      "center": [
+        8,
+        28
+      ],
+      "width": 900,
+      "height": 650
+    },
+    "04b-terrang-ost": {
+      "zoom": 1,
+      "dpr": 1,
+      "center": [
+        43,
+        38
+      ],
+      "width": 900,
+      "height": 650
+    },
+    "05a-kartstader-kust": {
+      "zoom": 1,
+      "dpr": 1,
+      "center": [
+        42,
+        35
+      ],
+      "width": 800,
+      "height": 550
+    },
+    "05b-kartstader-inland": {
+      "zoom": 1,
+      "dpr": 1,
+      "center": [
+        46,
+        38
+      ],
+      "width": 700,
+      "height": 450
+    },
+    "02-farmer-kuststad-repeat": {
+      "zoom": 1,
+      "dpr": 1,
+      "center": [
+        10,
+        32
+      ],
+      "width": 700,
+      "height": 450
+    },
+    "city_scene": {
+      "cssWidth": 418,
+      "cssHeight": 198.546875,
+      "canvasWidth": 320,
+      "canvasHeight": 152,
+      "dpr": 1
+    }
+  },
+  "errors": [],
+  "source": "world-full historical exported geography; current assets; synthesized visual scenarios",
+  "geography_checks": "PASS farms on plains and within radius 2, coastal city adjacent to coastal sea, land/naval units on appropriate terrain"
+}
