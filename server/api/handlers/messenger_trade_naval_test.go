@@ -293,6 +293,105 @@ func TestMessengerTrade_SellNavalRoundTrip(t *testing.T) {
 	}
 }
 
+// TestMessengerTrade_BuyNavalRoundTrip is acceptance criterion 1 (buy kind):
+// the initiator is the BUYER and owns the ship — TradeAccept must bind it,
+// dispatch leg 1 (the escrowed silver, buyer→seller) as naval on that ship,
+// deduct the goods from the acceptor, and name the ship in the response.
+func TestMessengerTrade_BuyNavalRoundTrip(t *testing.T) {
+	f := setupNavalPlayerFixture(t)
+
+	buyerID := f.settlement(t, "Byblos", 0, f.initiatorID, true)
+	sellerID := f.settlement(t, "Ugarit", 5, f.counterpartyID, true)
+	for q := 1; q <= 4; q++ {
+		f.mapTile(t, q, 0, "coastal_sea")
+	}
+	shipID := f.ship(t, buyerID, f.initiatorID, "merchantman")
+	f.good(t, buyerID, "silver", 500)
+	f.good(t, sellerID, "copper", 100)
+
+	code, resp := f.post(t, f.initiatorToken,
+		"/worlds/"+f.worldID.String()+"/settlements/"+buyerID.String()+"/messengers",
+		map[string]any{
+			"destination_id": sellerID.String(),
+			"message":        "copper wanted",
+			"trade_offer": map[string]any{
+				"kind": "buy", "want_good": "copper", "want_qty": 20.0, "offer_silver": 80.0,
+			},
+		})
+	if code != http.StatusCreated {
+		t.Fatalf("Send = %d: %v", code, resp)
+	}
+	messengerIDStr, _ := resp["id"].(string)
+	messengerID, err := uuid.Parse(messengerIDStr)
+	if err != nil {
+		t.Fatalf("parse messenger id %q: %v", messengerIDStr, err)
+	}
+
+	var shipStatus string
+	if err := f.pool.QueryRow(context.Background(), `SELECT status FROM units WHERE id = $1`, shipID).Scan(&shipStatus); err != nil {
+		t.Fatalf("read ship status after Send: %v", err)
+	}
+	if shipStatus != "garrison" {
+		t.Errorf("ship status after Send = %q, want garrison (R2: never bound at send)", shipStatus)
+	}
+
+	f.deliverMessenger(t, messengerID)
+
+	code, resp = f.post(t, f.counterpartyToken,
+		"/worlds/"+f.worldID.String()+"/messengers/"+messengerID.String()+"/trade-accept", nil)
+	if code != http.StatusOK {
+		t.Fatalf("TradeAccept = %d: %v", code, resp)
+	}
+	if respShipID, _ := resp["ship_id"].(string); respShipID != shipID.String() {
+		t.Errorf("TradeAccept response ship_id = %v, want %s", resp["ship_id"], shipID)
+	}
+	if shipName, _ := resp["ship_name"].(string); shipName == "" {
+		t.Error("TradeAccept response ship_name is empty, want the ship's display name")
+	}
+
+	if err := f.pool.QueryRow(context.Background(), `SELECT status FROM units WHERE id = $1`, shipID).Scan(&shipStatus); err != nil {
+		t.Fatalf("read ship status after accept: %v", err)
+	}
+	if shipStatus != "freighting" {
+		t.Errorf("ship status after accept = %q, want freighting", shipStatus)
+	}
+
+	var sellerCopper float64
+	if err := f.pool.QueryRow(context.Background(),
+		`SELECT amount FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'copper'`, sellerID,
+	).Scan(&sellerCopper); err != nil {
+		t.Fatalf("read seller copper: %v", err)
+	}
+	if sellerCopper != 80 {
+		t.Errorf("seller copper after accept = %v, want 80 (want_qty deducted from the acceptor)", sellerCopper)
+	}
+
+	var leg1ID uuid.UUID
+	var leg1Category string
+	var leg1ShipUnitID *uuid.UUID
+	if err := f.pool.QueryRow(context.Background(),
+		`SELECT id, category, ship_unit_id FROM transports WHERE world_id = $1 AND kind = 'trade' ORDER BY created_at DESC LIMIT 1`,
+		f.worldID,
+	).Scan(&leg1ID, &leg1Category, &leg1ShipUnitID); err != nil {
+		t.Fatalf("no leg1 trade transport found: %v", err)
+	}
+	if leg1Category != "naval" {
+		t.Errorf("leg1 category = %q, want naval", leg1Category)
+	}
+	if leg1ShipUnitID == nil || *leg1ShipUnitID != shipID {
+		t.Errorf("leg1 ship_unit_id = %v, want %s", leg1ShipUnitID, shipID)
+	}
+	var leg1Silver float64
+	if err := f.pool.QueryRow(context.Background(),
+		`SELECT quantity FROM transport_goods WHERE transport_id = $1 AND good_key = 'silver'`, leg1ID,
+	).Scan(&leg1Silver); err != nil {
+		t.Fatalf("leg1 carries no silver: %v", err)
+	}
+	if leg1Silver != 80 {
+		t.Errorf("leg1 silver = %v, want 80 (the escrowed offer_silver)", leg1Silver)
+	}
+}
+
 // TestMessengerTrade_SendNoShipNoLandRejects and
 // TestMessengerTrade_SendNoShipButLandFallsBack cover R2's two branches.
 func TestMessengerTrade_SendNoShipNoLandRejects(t *testing.T) {
