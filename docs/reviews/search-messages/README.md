@@ -22,3 +22,8 @@ Gate: proves access to information supporting geography → shortage → bronze 
 - No Go or DB change, so no Go suite or DB rig required. Browser API responses are fixtures, not proof of real-world message delivery. Clicking opens the existing drawer, not a selected conversation. Sent/replied-to letter history is outside this slice.
 
 Run: `node --test $(rg --files web/static/js -g '*.test.mjs')` and `python3 tools/search_messages_acceptance.py`.
+
+## Deployment
+Production implementation: `42844152`, fast-forwarded and pushed to master with Timothy's explicit authorization. CT 126 pulled the same commit. All five changed production files (two JS modules, map HTML and two Codex articles) are byte-identical locally, at origin and at the public HTTPS address; hashes in `deploy-proof.json`. Backend stays `43d94a6` because this is a static deployment, with health OK, migration 158 and dirty=false. No service error entries since deployment. No restart or game-world mutation.
+
+Python urllib received an HTTP 403 from the public edge; ordinary curl succeeded and supplied the verified assets. Browser fixture tests do not constitute a human playtest; text comprehension remains in the vault's §B queue.

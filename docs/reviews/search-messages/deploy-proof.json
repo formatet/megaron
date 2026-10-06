@@ -1,0 +1,18 @@
+{
+  "static/js/megaron/ui/search.js": "1382c188b905e92996ac41660a4bc04318ad0191b53956a8c9ece5bfad773eb7",
+  "static/js/megaron/ui/search_messages.js": "ae956548a7c7ab01f67af8de172dc4f2cf4cd2ce084dfb7fafd4f525b4c62dfb",
+  "static/map.html": "42c3835b162c24204d75b9c49ed693b4e69bed403e3c0412d2e8d5c973dfd696",
+  "static/codex/screen.md": "7bf0bd9e38df7f7f392d459b169081f025cbabe813cd7ed199fecc6aaf9c648d",
+  "static/codex/rough-edges.md": "b46e63eb603c54b045d407d668f05a3a0dd0d80df8a16e3eb55e8218fe9e4e94",
+  "health": {
+    "commit": "43d94a6",
+    "migration": 158,
+    "status": "ok"
+  },
+  "deployed_commit": "42844152283fa44d2305617715c774766880329b",
+  "schema_migrations": {
+    "version": 158,
+    "dirty": false
+  },
+  "service_errors_since_deploy": 0
+}
