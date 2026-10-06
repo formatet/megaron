@@ -257,9 +257,12 @@ const TOWN_HOUSES = [
   [24, 20,  8, 13,  4],
   [38, 23, 11, 10, -3],
   [49, 21,  7,  9,  3],
-  [11, 29,  9,  9, -3],
-  [26, 31, 12,  8,  3],
-  [44, 28,  8, 10,  2],
+  [10, 28,  9,  9, -3],
+  // The gate opens into a visible court, not the wall of the centre house.
+  // Keep seven volumes and the same yard footprint; place the front wings
+  // either side of the approach so the ring remains a readable enclosure.
+  [21, 28, 10,  8, -3],
+  [43, 27,  8, 10,  2],
 ];
 
 const HAMLET_HOUSES = [
