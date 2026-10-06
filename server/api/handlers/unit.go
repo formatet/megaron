@@ -2031,6 +2031,7 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 	attachBattleFlags(r.Context(), h.pool, worldID, playerID, summaries)
 	attachFreightingNotes(r.Context(), h.pool, worldID, playerID, summaries)
 	attachPassageNotes(r.Context(), h.pool, worldID, units, summaries)
+	attachExpeditionNotes(r.Context(), h.pool, worldID, summaries)
 	attachPickupNotes(r.Context(), h.pool, worldID, playerID, units, summaries)
 
 	w.Header().Set("Content-Type", "application/json")
@@ -2223,6 +2224,11 @@ type unitSummary struct {
 	// FreightingNote is — the client never re-derives march_intent's meaning.
 	PassageFor       *string `json:"passage_for,omitempty"`
 	WaitingForReturn bool    `json:"waiting_for_return,omitempty"`
+	// Expedition is an explore order's mission line (megaron_plan_
+	// upptackarexpeditionen.md): the area, when it turns at the latest, when
+	// it is home at the latest, and — once turned — why. Nil for every other
+	// unit, and for an expedition a recall/redirect has ended.
+	Expedition *expeditionView `json:"expedition,omitempty"`
 	// PickupFor/ShoreQ,ShoreR/WaitingUntilTick (megaron_plan_hamta_hem.md,
 	// slice 2b): a ship on a "pickup"/"pickup_wait" mission names the fetched
 	// unit and the shore it is sailing to (or waiting off); WaitingUntilTick
@@ -2337,6 +2343,50 @@ func attachFreightingNotes(ctx context.Context, db province.Queryer, worldID, ow
 		if i, ok := freighting[shipID]; ok {
 			n := note
 			summaries[i].FreightingNote = &n
+		}
+	}
+}
+
+type expeditionView struct {
+	AreaQ       int     `json:"area_q"`
+	AreaR       int     `json:"area_r"`
+	LengthTicks int     `json:"length_ticks"`
+	TurnTick    int     `json:"turn_tick"`
+	HomeByTick  int     `json:"home_by_tick"`
+	Homeward    bool    `json:"homeward"`
+	TurnReason  *string `json:"turn_reason,omitempty"`
+}
+
+// attachExpeditionNotes fills Expedition for every unit with a live
+// unit_expeditions row — live meaning its leg_arrive_tick still equals the
+// unit's arrive_tick, the same test the arrival handler uses
+// (combat.loadExpedition), so the list never shows an expedition a recall
+// or redirect has already ended.
+func attachExpeditionNotes(ctx context.Context, db province.Queryer, worldID uuid.UUID, summaries []unitSummary) {
+	index := make(map[uuid.UUID]int, len(summaries))
+	for i, s := range summaries {
+		index[s.ID] = i
+	}
+	rows, err := db.Query(ctx,
+		`SELECT e.unit_id, e.area_q, e.area_r, e.length_ticks, e.turn_tick,
+		        e.start_tick + e.length_ticks, e.homeward, e.turn_reason
+		   FROM unit_expeditions e JOIN units u ON u.id = e.unit_id
+		  WHERE e.world_id = $1 AND u.arrive_tick = e.leg_arrive_tick`,
+		worldID,
+	)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id uuid.UUID
+		var v expeditionView
+		if rows.Scan(&id, &v.AreaQ, &v.AreaR, &v.LengthTicks, &v.TurnTick, &v.HomeByTick, &v.Homeward, &v.TurnReason) != nil {
+			continue
+		}
+		if i, ok := index[id]; ok {
+			view := v
+			summaries[i].Expedition = &view
 		}
 	}
 }
