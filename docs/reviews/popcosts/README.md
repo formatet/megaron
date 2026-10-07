@@ -34,7 +34,19 @@ rankedFoodSlotsAt (grundande), Worker.RegisterWithTimeout (worker-API),
 templeTierMultiplier (kult). Orelaterade, egna premisskontroller krävs.
 
 ## Resultat
-PENDING. Ingen BILD/TEXT/ny spelarresa för oanvänd katalog; riktiga
+37 rader bort, inga kvarvarande kodreferenser (rg server web = noll).
+Alla andra produktionsfiler byte-identiska mot master 1e1fcad4.
+Deadcode -test före/efter byte-identiska loggar, samma sju behållna fynd.
+Full tools/gotest.sh på NY PG16/mig160 efter merge av master 1e1fcad4,
+alla paket gröna; /tmp/megaron-popcosts-full-final.log. Full env-i vet exit0,
+/tmp/megaron-popcosts-vet-final.log. Ingen meningsfull beteendemutation för en
+oanvänd variabel: beviset är inga konsumenter plus oförändrade faktiska ägare.
+
+Två initiala DB-startförsök misslyckades före migration när rootdisk var full.
+Claude frigjorde 33,7GB och lagade gotest.sh:s containerstädning; masterändringen
+mergad före den slutliga körningen. En separat tmpfs-PG/GOCACHE-arm som startades
+före Claudes besked är också grön (/tmp/megaron-popcosts-full-tmpfs.log), men
+slutbeviset är den ordinarie korrigerade gotest-körningen ovan. Ingen BILD/TEXT/ny spelarresa för oanvänd katalog; riktiga
 kostnadsytors befintliga tester körs i fullsviten. Ingen merge/push/deploy.
 
 ## Resume checkpoint
