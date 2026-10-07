@@ -48,8 +48,16 @@ Your own [[messengers|letter]] or [[runners|Runner]] is drawn exactly where it r
 Wait long enough with no ship of yours sailing the right way, and you get a **PassageStalled** dispatch: the runner, the port it's standing in, where it's trying to reach, and the ships (if any) of yours already there. Nothing forces your hand — it keeps waiting exactly where it is until you act, and the dispatch only ever fires once per spell of waiting (a lost-and-resealed carrier can trigger it again later). Three choices:
 
 - **Arrange passage** — the same button as above, right there in the dispatch.
-- **Call it back** — give up on this errand. The runner turns around and walks home over land, delivering nothing: a letter comes home undelivered, an order comes home withdrawn. Only works for an outbound runner still standing in **your own** port — a runner already aboard a ship, or waiting in a foreign port for its OWN return trip, cannot be called back this way.
+- **Call it back** — give up on this errand and bring the runner home undelivered. See the instructions below.
 - **Let it wait** — close the dispatch and do nothing. It keeps waiting, exactly as it was.
+
+## Call it back — bring the runner home undelivered
+
+In **Diplomacy → Correspondence**, use **Call it back** on the waiting runner's row, or use the same choice in its **PassageStalled** dispatch. In Keryx, find the runner with `outbox`, then use `call-back --id <messenger-id>`.
+
+This works only for an outbound runner waiting for a ship in **your own port**. A runner already aboard a ship, or waiting in a foreign port on its return journey, cannot be called back this way — arrange passage instead.
+
+The runner turns around and walks home over land, delivering nothing. The confirmation tells you when it will return; it is still travelling until then. A letter comes home undelivered, and an order comes home withdrawn.
 
 ## Ordna passage — send a ship for your own runner
 

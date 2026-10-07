@@ -122,3 +122,8 @@ test('codex: lowercase agora_ready is mapped and community rules match alpha pol
   for (const line of [...lines, privacy]) assert.ok(bodies['community-chat'].includes(line), `Community chat policy drift: ${line}`);
   assert.ok(!alpha.includes('register with the code'));
 });
+
+test('codex search finds abandon in Colonies and call-back in Sea', () => {
+  assert.ok(searchArticles('abandon', index, bodies).some(a => a.id === 'colonies'), 'abandon must lead to the colony instructions');
+  assert.ok(searchArticles('call-back', index, bodies).some(a => a.id === 'sea'), 'CLI call-back must lead to the passage instructions');
+});

@@ -14,3 +14,23 @@ var knappen finns/returkvittot. Claude underrättad. Abandon saknar instruktion.
 Kod läst: settlement.go Abandon, messenger/call_back.go, PassageHandler.CallBack,
 CLI cmd_abandon/cmd_messenger, warAbandon och dipCallBack. R5 i vault
 megaron_plan_ordna_passage bekräftar outbound/egen hamn; ingen kanonkonflikt.
+
+## Resultat och Resume checkpoint
+
+Colonies beskriver ägd aktiv koloni, oåterkalleligt abandon, huvudstadsförbud,
+upplöst garnison/embarkerade trupper och att folket inte flyttas till huvudstaden.
+Sea beskriver befintlig Call it back i Correspondence/PassageStalled, CLI
+call-back --id efter outbox, egen hamn/utresa samt fortsatt hemresa utan leverans.
+Inga regler ändras. TEXT väntar playtest av någon som inte vet svaret.
+
+Verklig Codex-sökning: nytt test gav korrekt assertionrött före artiklarna
+(/tmp/megaron-codex-verbs-red.log), därefter grönt. Alla 380 JS-tester gröna
+(/tmp/megaron-codex-verbs-all-js.log). Full tools/gotest.sh på NY PG16/migration160
+alla paket gröna inklusive world 91.470s (/tmp/megaron-codex-verbs-full-go.log).
+Full env-i go vet ./... grönt (/tmp/megaron-codex-verbs-vet.log), diff-check rent.
+Ingen produktionskod ändras; sökprovets red→green bevisar textens nåbarhet.
+
+Resume: gren codex/codex-abandon-callback i
+/tmp/megaron-codex-codex-verbs-20261007 från cccae5a3; kontrakt b899532a.
+Nästa ansvar Claude: granska/integrera; Timothy/playtest läser TEXT senare.
+Ingen merge/push/deploy av Codex.
