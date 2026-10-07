@@ -9,13 +9,13 @@ not ok 1 - only remembered hexes are desaturated; live, fog and absent tier stay
   error: |-
     remembered only
     + actual - expected
-    
+
       [
         1,
     +   2,
     +   4
       ]
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected:

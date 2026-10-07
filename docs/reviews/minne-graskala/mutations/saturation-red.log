@@ -9,14 +9,14 @@ not ok 1 - only remembered hexes are desaturated; live, fog and absent tier stay
   error: |-
     full desaturation preserves destination lightness
     + actual - expected
-    
+
       [
     +   'source-over',
     -   'saturation',
         1,
         '#808080'
       ]
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected:
