@@ -140,3 +140,7 @@ Runbook och det verifierade scenariot: `megaron_drift.md` §Acceptansvärlden.
 lokal HTTP-server med riktiga sök-/drawer-moduler och explicita API-fixturer. Kräver
 Python Playwright + Chromium; provar tangentbord, klick, fel, sena svar och mobilbredd.
 Ingen spelvärld eller produktionsdata muteras.
+
+### March arrival preview
+
+`python3 tools/march_preview_acceptance.py` runs the actual web menu/Army modules with explicit authenticated API fixtures (per-unit timing, intent changes, cancellation and mobile width). `python3 tools/march_preview_live.py OUT COMMIT` uses freshly built `OUT/temenos` and `OUT/keryx` for register/join/found/preview/march on disposable local PostgreSQL16/Redis7 containers. Requires Docker and Python Playwright/Chromium; allocates dynamic ports and cleans up its own containers/process/config. See `docs/reviews/march-preview/README.md`.

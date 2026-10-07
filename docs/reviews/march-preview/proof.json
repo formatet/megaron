@@ -1,0 +1,24 @@
+{
+  "health": {
+    "commit": "e3b0da776eeba945779b09a80b0e0835394bd197",
+    "migration": 158,
+    "status": "ok"
+  },
+  "registered_joined_founded": true,
+  "actual_cli_preview": {
+    "arrival_tick": 4,
+    "arrives_at_utc": "2026-10-07T09:19:26.808340143Z",
+    "available": true,
+    "duration_ticks": 4
+  },
+  "actual_api_preview": {
+    "arrival_tick": 4,
+    "arrives_at_utc": "2026-10-07T09:19:26.801022121Z",
+    "available": true,
+    "duration_ticks": 4
+  },
+  "browser_sent_march": true,
+  "actual_arrival_tick": 4,
+  "browser_errors": [],
+  "scope": "real isolated server, PostgreSQL16, Redis7, player APIs, CLI and web; no SQL fixture edits"
+}
