@@ -31,3 +31,9 @@ test('empty memory makes no canvas change; failures restore canvas state', () =>
   assert.throws(()=>drawRemembered(ctx,[{tier:'remembered'}],()=>{throw Error('fixture')}),/fixture/);
   assert.equal(ctx.globalCompositeOperation,'source-over');
 });
+
+test('camera transform determines device pixel mask, including zoom and pan', () => {
+  const ctx=context();ctx.getTransform=()=>({a:0.5,b:0,c:0,d:0.5,e:3,f:2});
+  drawRemembered(ctx,[{tier:'remembered',terrain:'plains'}],()=>[[2,2],[6,2],[6,6],[2,6]]);
+  assert.deepEqual(ctx.calls,[[4,3,2,1],[4,4,2,1]]);
+});

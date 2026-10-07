@@ -1,0 +1,34 @@
+TAP version 13
+# Subtest: only remembered hexes are desaturated; live, fog and absent tier stay untouched
+ok 1 - only remembered hexes are desaturated; live, fog and absent tier stay untouched
+  ---
+  duration_ms: 1.115492
+  type: 'test'
+  ...
+# Subtest: frontier spans are integer device pixels and clipped to viewport at fractional zoom
+ok 2 - frontier spans are integer device pixels and clipped to viewport at fractional zoom
+  ---
+  duration_ms: 0.126836
+  type: 'test'
+  ...
+# Subtest: empty memory makes no canvas change; failures restore canvas state
+ok 3 - empty memory makes no canvas change; failures restore canvas state
+  ---
+  duration_ms: 0.290426
+  type: 'test'
+  ...
+# Subtest: camera transform determines device pixel mask, including zoom and pan
+ok 4 - camera transform determines device pixel mask, including zoom and pan
+  ---
+  duration_ms: 0.545242
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 41.13331

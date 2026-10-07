@@ -82,16 +82,6 @@ try:
     token = api('/api/v1/auth/register', 'POST', {'username': 'simple-recall-all'+secrets.token_hex(4), 'password': secrets.token_urlsafe(32)})['access_token']
     worldpath = '/api/v1/worlds/' + world
     joined = api(worldpath+'/join', 'POST', {}, token)
-    if MODE == 'naval':
-        for attempt in range(20):
-            spawn = joined['tile']
-            seen = api(worldpath+'/map', token=token)
-            seen = seen if isinstance(seen, list) else seen['tiles']
-            if any(t['q'] == spawn['Q'] and t['r'] == spawn['R'] and t.get('coastal') for t in seen):
-                break
-            token = api('/api/v1/auth/register', 'POST', {'username': 'warship'+secrets.token_hex(4), 'password': secrets.token_urlsafe(32)})['access_token']
-            joined = api(worldpath+'/join', 'POST', {}, token)
-        else:raise AssertionError('no coastal spawn via player joins')
     founded = api(worldpath+'/founding/settle', 'POST', {'name': 'Nostos'}, token)
     assert founded.get('settlement_id'), founded
     data=api(worldpath+'/units',token=token)
@@ -103,7 +93,6 @@ try:
     homeq,homer=city.get('q',city.get('map_q')),city.get('r',city.get('map_r'))
     tiles=api(worldpath+'/map',token=token)
     tiles=tiles if isinstance(tiles,list) else tiles['tiles']
-    nearby=[t for t in tiles if t['terrain'] not in ('fog','coastal_sea','deep_sea','river','river_ford','mountain_limestone','mountain_red') and not any(p.get('q')==t['q'] and p.get('r')==t['r'] for p in provinces) and max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer))>=1 and max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer))<=2]
     from playwright.sync_api import sync_playwright, expect
     import urllib.parse
     uid=chosen[0]['id']
@@ -133,20 +122,56 @@ try:
     page.goto(base+'/',wait_until='domcontentloaded');page.evaluate('t=>localStorage.setItem("poleia_token",t)',token)
     page.context.add_cookies([{'name':'poleia_token','value':token,'url':base}]);page.goto(base+'/play',wait_until='networkidle')
     page.wait_for_function('window.openDrawer !== undefined')
+    page.wait_for_function("async()=> (await import('/static/js/megaron/state.js')).State.tileData.some(t=>t.tier==='remembered')")
     for brief in page.locator('.lb-dismiss').all():
         if brief.is_visible():brief.click()
-    center=next(t for t in mapped if t.get('tier')=='remembered' and max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer))>=3)
-    for label,width,height in [('desktop',1280,900),('mobile',390,844)]:
-        page.set_viewport_size({'width':width,'height':height})
+    original={(t['q'],t['r']):t.get('tier') for t in tiles}
+    memories=[t for t in mapped if t.get('tier')=='remembered' and original.get((t['q'],t['r']))=='fog']
+    assert memories,'scout revealed new remembered ground'
+    center=min(memories,key=lambda t:max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer)))
+    measurements={}
+    for label,width,height in [('desktop',1280,900),('mobile',390,844),('minimum',1280,900)]:
+        page.set_viewport_size({'width':width,'height':height});page.wait_for_timeout(200)
         page.evaluate("""async t=>{
           const {State}=await import('/static/js/megaron/state.js');
-          const {hexPx,SCALE}=await import('/static/js/megaron/render/map.js');
+          const {hexPx,SCALE,render}=await import('/static/js/megaron/render/map.js');
           const rect=document.getElementById('hex-canvas').getBoundingClientRect(),p=hexPx(t.q,t.r);
-          State.camera.zoom=0.75;State.camera.x=rect.width/2-p.x*SCALE*State.camera.zoom;State.camera.y=rect.height/2-p.y*SCALE*State.camera.zoom;State.selectedHex=null;State.dirty=true;
-        }""",center)
-        page.mouse.move(1,1);page.wait_for_timeout(250);page.screenshot(path=str(OUT/(label+'.png')))
+          State.camera.zoom=t.zoom;State.camera.x=rect.width/2-p.x*SCALE*State.camera.zoom;State.camera.y=rect.height/2-p.y*SCALE*State.camera.zoom;State.selectedHex=null;State.dirty=true;render();
+        }""",{**center,"zoom":0.3 if label=="minimum" else 0.75})
+        page.mouse.move(1,1);page.wait_for_timeout(250)
+        measurements[label]=page.evaluate("""async ()=>{
+          const {State}=await import('/static/js/megaron/state.js');
+          const {hexPx,SCALE,render,renderTimings}=await import('/static/js/megaron/render/map.js');
+          const c=document.getElementById('hex-canvas'),ctx=c.getContext('2d');
+          State.animFrame=64;State.dirty=true;render();const first=ctx.getImageData(0,0,c.width,c.height).data;
+          State.animFrame=64;State.dirty=true;render();const second=ctx.getImageData(0,0,c.width,c.height).data;
+          const samples={live:[],remembered:[],fog:[]};
+          for(const t of State.tileData){
+            if(State.provinceData.some(p=>p.q===t.q && p.r===t.r))continue;
+            const p=hexPx(t.q,t.r),x=Math.round(State.camera.x+p.x*SCALE*State.camera.zoom),y=Math.round(State.camera.y+p.y*SCALE*State.camera.zoom);
+            if(x<10||y<10||x>=c.width-10||y>=c.height-10)continue;
+            const rgb=[...second.slice((y*c.width+x)*4,(y*c.width+x)*4+3)];samples[t.tier]?.push({q:t.q,r:t.r,rgb});
+          }
+          return {samples,deterministic:first.every((v,i)=>v===second[i]),timings:{...renderTimings},canvas:[c.width,c.height]};
+        }""")
+        sample=measurements[label]['samples'];assert all(sample[t] for t in ('live','remembered','fog')), {'missing_visible_tier':label}
+        if MODE=='after':assert all(max(t['rgb'])-min(t['rgb'])<=1 for t in sample['remembered']), {'colored_memory':sample['remembered']}
+        assert any(max(t['rgb'])-min(t['rgb'])>10 for t in sample['live']), 'live terrain retains color'
+        assert measurements[label]['deterministic'],'frozen rendering changed between identical frames'
+        page.screenshot(path=str(OUT/(label+'.png')))
+        if label=='mobile':
+            point=page.evaluate("""async t=>{
+              const {State}=await import('/static/js/megaron/state.js');const {hexPx,SCALE}=await import('/static/js/megaron/render/map.js');
+              const p=hexPx(t.q,t.r),rect=document.getElementById('hex-canvas').getBoundingClientRect();
+              return {x:rect.left+State.camera.x+p.x*SCALE*State.camera.zoom,y:rect.top+State.camera.y+p.y*SCALE*State.camera.zoom};
+            }""",center)
+            page.mouse.move(point['x'],point['y']);page.wait_for_timeout(100)
+            assert page.locator('#tile-tooltip').is_visible(),'remembered hover'
+            page.mouse.click(point['x'],point['y']);page.wait_for_timeout(150)
+            assert page.locator('#inspect-panel').is_visible(),'remembered inspect'
+            page.screenshot(path=str(OUT/'mobile-inspect.png'));page.evaluate('window.closeInspect()')
     assert not errors,errors
-    proof={'health':health,'mode':MODE,'home':[homeq,homer],'target':target,'forecast':forecast,'receipt':receipt,'final_unit':current,'tiles':mapped,'center':center,'browser_errors':errors,'sql_mutations':False}
+    proof={'health':health,'mode':MODE,'home':[homeq,homer],'target':target,'forecast':forecast,'receipt':receipt,'final_unit':current,'tiles':mapped,'center':center,'measurements':measurements,'browser_errors':errors,'sql_mutations':False}
     (OUT/'proof.json').write_text(json.dumps(proof,indent=2)+'\n');print(json.dumps({'health':health,'mode':MODE,'three_tiers':True,'scout_return_home':True}))
 except Exception:
     if browser is not None:
