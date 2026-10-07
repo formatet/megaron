@@ -1,0 +1,12 @@
+» färsk DB på migration 160 · commit bafd0b7a+ändringar
+2026/10/07 17:47:04 INFO player registered id=d139a59a-29be-43a4-b1f1-dc0733fdcf64 username=intercept-563a2f10-9e14-4083-9685-741132d04671
+2026/10/07 17:47:04 INFO scheduled event worker started poll=5ms
+2026/10/07 17:47:04 INFO recall/redirect order reached unit, new course set unit=34e691d1-5a7a-460e-88a0-ad486f7d3e9c mode=recall from_q=2 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-07T17:00:00.000+02:00
+2026/10/07 17:47:04 INFO unit arrived (garrison) unit=34e691d1-5a7a-460e-88a0-ad486f7d3e9c q=0 r=0 status=garrison
+2026/10/07 17:47:04 INFO scheduled event worker stopped
+--- FAIL: TestRecallBatch_AllMembersReachGarrisonAndReplayIsIdempotent (0.12s)
+    unit_recall_batch_test.go:171: response: {"groups":[{"messenger_id":"edb2fe4e-3464-4138-9338-72a0fbe65e6e","unit_ids":["34e691d1-5a7a-460e-88a0-ad486f7d3e9c","4ef1a563-2136-4924-8cac-ea8fc776eb28","d8047da7-580c-4027-a657-ad4061240f8a"],"q":2,"r":0,"courier_due_tick":1,"courier_arrives_at":"2026-10-07T15:00:00+02:00"}],"results":[{"unit_id":"34e691d1-5a7a-460e-88a0-ad486f7d3e9c","name":"infantry of Capital","status":"order_dispatched","messenger_id":"edb2fe4e-3464-4138-9338-72a0fbe65e6e"},{"unit_id":"4ef1a563-2136-4924-8cac-ea8fc776eb28","name":"infantry of Capital","status":"order_dispatched","messenger_id":"edb2fe4e-3464-4138-9338-72a0fbe65e6e"},{"unit_id":"d8047da7-580c-4027-a657-ad4061240f8a","name":"infantry of Capital","status":"order_dispatched","messenger_id":"edb2fe4e-3464-4138-9338-72a0fbe65e6e"}]}
+    unit_recall_batch_test.go:214: garrison=1 want ALL3
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.127s
+FAIL

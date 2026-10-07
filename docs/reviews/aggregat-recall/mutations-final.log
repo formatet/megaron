@@ -1,0 +1,6 @@
+baseline: GREEN
+worker-walltime: RED TestRecallBatch_LateWorkerUsesDeliveryTickForPositionRouteAndETA,TestRecallBatch_LateWorkerUsesDeliveryTickForPositionRouteAndETA/3
+first-member-only: RED TestRecallBatch_AllMembersReachGarrisonAndReplayIsIdempotent
+pending-guard: RED TestRecallBatch_GroupHasEveryMemberAndPartialFailures
+non-atomic-receipt: RED TestRecallBatch_ReceiptRollsBackWithProjection
+restored: GREEN

@@ -275,8 +275,20 @@ func executeRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 
 	newArriveTick := currentTick + travelTicks
 	arrPayload := unit.ScheduledUnitArrivalPayload{UnitID: o.UnitID, WorldID: o.WorldID, ArriveTick: &newArriveTick}
-	if err := scheduler.EnqueueTickTx(ctx, tx, o.WorldID, events.ScheduledUnitArrival, arrPayload, currentTick+travelTicks); err != nil {
-		return nil, fmt.Errorf("schedule new arrival: %w", err)
+	// A return can have exactly the same arrival tick as an already queued
+	// course. That identical pending arrival already reads the current course;
+	// reuse it for the new group protocol instead of violating queue dedup.
+	arrivalQueued := false
+	if delivery != nil {
+		raw, _ := json.Marshal(arrPayload)
+		if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM scheduled_events WHERE world_id=$1 AND event_type=$2 AND due_tick=$3 AND payload=$4::jsonb AND processed_at IS NULL AND failed_at IS NULL)`, o.WorldID, string(events.ScheduledUnitArrival), currentTick+travelTicks, raw).Scan(&arrivalQueued); err != nil {
+			return nil, err
+		}
+	}
+	if !arrivalQueued {
+		if err := scheduler.EnqueueTickTx(ctx, tx, o.WorldID, events.ScheduledUnitArrival, arrPayload, currentTick+travelTicks); err != nil {
+			return nil, fmt.Errorf("schedule new arrival: %w", err)
+		}
 	}
 
 	var groupAudit *events.Event

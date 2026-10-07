@@ -70,7 +70,13 @@ func setupBatchRecall(t *testing.T, n int) batchRecallFixture {
 		}
 		ids = append(ids, id)
 	}
-	uh := NewUnitHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), clk)
+	sched := events.NewScheduler(pool, clk)
+	for _, id := range ids {
+		if err := sched.EnqueueTick(ctx, f.worldID, events.ScheduledUnitArrival, map[string]any{"unit_id": id, "world_id": f.worldID, "arrive_tick": 6}, 6); err != nil {
+			t.Fatal(err)
+		}
+	}
+	uh := NewUnitHandler(pool, sched, events.NewStore(pool), clk)
 	router.Post("/worlds/{worldID}/units/recall", uh.RecallBatch)
 	return batchRecallFixture{interceptFixture: f, pool: pool, router: router, clk: clk, now: now, ids: ids}
 }
@@ -431,7 +437,7 @@ func TestRecallBatch_ConcurrentDispatchAndReplay(t *testing.T) {
 	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND event_type='UnitArrival' AND payload->>'unit_id'=$2`, f.worldID, payload.UnitID.String()).Scan(&arrivals); err != nil {
 		t.Fatal(err)
 	}
-	if audits != 1 || arrivals != 1 {
+	if audits != 1 || arrivals != 2 {
 		t.Fatalf("duplicate projections audit%d arrivals%d", audits, arrivals)
 	}
 }
@@ -572,5 +578,37 @@ func TestRecallBatch_ChangedStatusRejectsByNameOnce(t *testing.T) {
 	}
 	if len(notices.failures) != 1 || notices.failures[0]["name"] == "" || notices.failures[0]["reason"] == "" || notices.failures[0]["unit_id"] != f.ids[0] {
 		t.Fatalf("missing named idempotent refusal%+v", notices.failures)
+	}
+}
+
+func TestRecallBatch_ReusesIdenticalPendingArrival(t *testing.T) {
+	f := setupBatchRecall(t, 2)
+	ctx := context.Background()
+	sched := events.NewScheduler(f.pool, f.clk)
+	// An earlier course left the exact same arrival envelope queued.
+	for _, id := range f.ids {
+		arrive := 3
+		if err := sched.EnqueueTick(ctx, f.worldID, events.ScheduledUnitArrival, map[string]any{"unit_id": id, "world_id": f.worldID, "arrive_tick": arrive}, arrive); err != nil {
+			t.Fatal(err)
+		}
+	}
+	f.dispatch(t, map[string]any{"unit_ids": f.ids})
+	es := f.deliveries(t)
+	f.clk.Set(f.now.Add(time.Duration(es[0].DueTick*tick.TickSeconds) * time.Second))
+	if _, err := f.pool.Exec(ctx, `UPDATE worlds SET current_tick=$2,last_tick_at=$3 WHERE id=$1`, f.worldID, es[0].DueTick, f.clk.Now()); err != nil {
+		t.Fatal(err)
+	}
+	h := messenger.NewOrderDeliveryHandler(f.pool, sched, events.NewStore(f.pool), nil, f.clk)
+	for _, e := range es {
+		if err := h.Handle(ctx, e); err != nil {
+			t.Fatalf("same arrival tick rejected: %v", err)
+		}
+	}
+	var count int
+	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND event_type='UnitArrival' AND due_tick=3`, f.worldID).Scan(&count); err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Fatalf("duplicate arrival rows=%d", count)
 	}
 }

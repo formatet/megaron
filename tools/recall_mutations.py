@@ -17,6 +17,7 @@ def run(name,pattern,red=False):
     print(name+(': RED '+','.join(failures) if red else ': GREEN'),flush=True)
 run('baseline','TestRecallBatch')
 mutations=[
+ ('arrival-dedup','server/internal/combat/recall_redirect.go','if !arrivalQueued {','if true {','TestRecallBatch_ReusesIdenticalPendingArrival'),
  ('worker-walltime','server/internal/combat/recall_redirect.go','return int64(delivery.DueTick) * 1000','return anchor.MilliAt(now)','TestRecallBatch_LateWorkerUsesDeliveryTickForPositionRouteAndETA'),
  ('first-member-only','server/internal/messenger/recall_group.go','for _, m := range p.RecallGroup.Members {','for _, m := range p.RecallGroup.Members[:1] {','TestRecallBatch_AllMembersReachGarrisonAndReplayIsIdempotent'),
  ('pending-guard','server/api/handlers/unit_recall_batch.go','return pending, err','return false, err','TestRecallBatch_GroupHasEveryMemberAndPartialFailures'),

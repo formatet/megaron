@@ -158,3 +158,6 @@ dispatched units to reach garrison, saves the report and read-only DB evidence,
 and removes only its own containers/process/private token config. Build
 `temenos` and `keryx` in OUT first; stamp temenos with `-X main.buildCommit=HASH`.
 Screenshots are BILD evidence awaiting Timothy, not visual approval.
+`python3 tools/recall_mutations.py OUT` mutates meeting-time evaluation, member
+fanout, pending guard, atomic receipt and arrival dedup, requiring named assertion
+failures on separate fresh databases and restoring source after each arm.

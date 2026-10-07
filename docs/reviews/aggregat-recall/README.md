@@ -84,3 +84,13 @@ Jitterprovet godkänt: samma möte och returstart/rutt/ETA vid tickleverans och 
 ticks sen handler. Statusändrad mottagare ger ett namngivet avslag, replay ingen
 extra notis. Terminala gruppavslag/dead-letter claims receipt före best-effort
 notis och avslutar delad kurir; internt gruppverb visas som spelarverbet recall.
+Andra riktiga webbkörningen hittade dessutom en legitim retur vars arrival_tick
+var lika med redan köad ankomst: den identiska payloaden kolliderade med mig127:s
+unique index. Gruppverbet återanvänder en identisk ännu aktiv ankomst (samma tick,
+payload, world och typ), som redan läser aktuell kurs; gamla verb ändras inte.
+Fixturen måste prova riktig redan köad ankomst, inte bara manuellt marchingtillstånd.
+Riggens slutvillkor skärpt: garnison ensam räcker INTE när explore kan återvända
+själv. Varje dispatched mottagare måste också ha faktisk MarchRecalled-audit.
+Andra körningens första rigg sade felaktigt all_garrison efter expeditionens egen
+retur, medan [live-web-dedup-before.log](live-web-dedup-before.log) bevisar deadletter.
+Det resultatet räknas inte som godkänd acceptans. Omlopp sker på ny tom rigg.

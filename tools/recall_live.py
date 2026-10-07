@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Real batch recall via register/join/found, web or CLI, to garrison.
-Usage: python3 tools/recall_live.py OUT BUILD_COMMIT web|cli
+Usage: python3 tools/recall_live.py OUT BUILD_COMMIT web|cli|single
 OUT contains freshly built temenos and keryx. No SQL fixtures or inherited game
 configuration; only own temporary containers/process/private config are removed.
 """
@@ -19,7 +19,7 @@ from playwright.sync_api import sync_playwright, expect
 ROOT = Path(__file__).resolve().parents[1]
 OUT = Path(sys.argv[1]).resolve()
 EXPECTED, MODE = sys.argv[2:4]
-assert MODE in ('web', 'cli')
+assert MODE in ('web', 'cli', 'single')
 OUT.mkdir(parents=True, exist_ok=True)
 PREFIX = 'megaron-recall-' + secrets.token_hex(4)
 containers, errors = [], []
@@ -106,6 +106,7 @@ try:
     for u in chosen:
         receipt=json.loads(cli('march','--unit',u['id'],'--target',f'{q},{r}','--intent','explore','--ticks',str(data['expedition_rules']['max_ticks']),'--json'))
         assert receipt.get('unit_id')==u['id'] and receipt.get('expedition'),receipt
+    single_receipts=[]
     with sync_playwright() as pw:
         browser=pw.chromium.launch();page=browser.new_page(viewport={'width':1280,'height':900})
         page.on('pageerror',lambda e:errors.append(str(e)))
@@ -121,10 +122,15 @@ try:
                 page.locator('#recall-batch-send').click()
             report=response.value.json();assert response.value.status==200,report
             expect(page.locator('#recall-batch-result')).to_contain_text('recall sent by Runner')
+        elif MODE=='single':
+            # Frozen legacy verbs, on the same actual starting cohorts.
+            single_receipts.append(json.loads(cli('recall','--unit',chosen[0]['id'],'--json')))
+            single_receipts.append(json.loads(cli('redirect','--unit',chosen[1]['id'],'--target',f'{homeq},{homer}','--json')))
+            report={'groups':[], 'results':[{'unit_id':u['id'],'name':u.get('display_name',u['id']),'status':'order_dispatched'} for u in chosen]}
         else:
             report=json.loads(cli('recall','--all','--json'))
             text=cli('recall','--all')
-            assert 'rejected' in text and 'Runner on its way' in text,text
+            assert 'rejected' in text and 'Runner is already on its way' in text,text
             (OUT/'repeat-cli.txt').write_text(text)
         dispatched={x['unit_id'] for x in report['results'] if x['status']=='order_dispatched'}
         assert {u['id'] for u in chosen}<=dispatched,report
@@ -133,10 +139,14 @@ try:
         page.set_viewport_size({'width':390,'height':844})
         page.locator('#drawer-war').screenshot(path=str(OUT/'recall-mobile.png'))
         assert page.locator('#drawer-war').evaluate('(e)=>e.scrollWidth<=e.clientWidth'), 'drawer overflows on mobile'
-        history=[];deadline=time.monotonic()+120
+        history=[];legacy_readings=[];deadline=time.monotonic()+120
         while time.monotonic()<deadline:
             units=api(worldpath+'/units',token=token)['units']
             current=[u for u in units if u['id'] in dispatched]
+            if MODE=='single':
+                reading=command('docker','exec',containers[0],'psql','-U','postgres','-d','recall','-Atc',
+                    "SELECT id,depart_tick,arrive_tick,q,r,target_q,target_r FROM units WHERE world_id='"+world+"' ORDER BY id;")
+                if not legacy_readings or legacy_readings[-1]!=reading: legacy_readings.append(reading)
             history.append([{k:u.get(k) for k in ('id','status','current_q','current_r','target_q','target_r','arrival_tick')} for u in current])
             if len(current)==len(dispatched) and all(u['status']=='garrison' for u in current):break
             time.sleep(.5)
@@ -146,7 +156,13 @@ try:
     # Read-only DB evidence; setup and commands were all authenticated player paths.
     sql="SELECT event_type,count(*) FROM scheduled_events WHERE world_id='"+world+"' GROUP BY event_type ORDER BY event_type;"
     evidence=command('docker','exec',containers[0],'psql','-U','postgres','-d','recall','-Atc',sql)
-    proof={'health':health,'mode':MODE,'report':report,'history':history,'db_counts':evidence,'browser_errors':errors}
+    recalled=command('docker','exec',containers[0],'psql','-U','postgres','-d','recall','-Atc',
+        "SELECT count(*) FROM events WHERE world_id='"+world+"' AND event_type='MarchRecalled';")
+    redirected=command('docker','exec',containers[0],'psql','-U','postgres','-d','recall','-Atc',
+        "SELECT count(*) FROM events WHERE world_id='"+world+"' AND event_type='MarchRedirected';")
+    if MODE=='single': assert int(recalled)==1 and int(redirected)==1,(recalled,redirected)
+    else: assert int(recalled)==len(dispatched), 'garrison alone is insufficient: every recipient must actually receive recall'
+    proof={'health':health,'mode':MODE,'report':report,'history':history,'db_counts':evidence,'browser_errors':errors,'legacy_receipts':single_receipts,'legacy_unit_readings':legacy_readings,'recall_audits':int(recalled),'redirect_audits':int(redirected)}
     (OUT/'proof.json').write_text(json.dumps(proof,indent=2)+'\n')
     print(json.dumps({'health':health,'mode':MODE,'dispatched':len(dispatched),'all_garrison':True,'groups':len(report['groups'])}))
 finally:

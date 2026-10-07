@@ -1,0 +1,14 @@
+» färsk DB på migration 160 · commit bafd0b7a+ändringar
+2026/10/07 17:46:59 INFO player registered id=169918d1-860b-4024-95e8-27eef766f6c3 username=intercept-899a9312-66b6-4374-baef-befc09b6c2fc
+2026/10/07 17:46:59 INFO recall/redirect order reached unit, new course set unit=9a2e5bb0-a89e-4da1-bc5f-12be2730edee mode=recall from_q=2 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-07T17:00:00.000+02:00
+2026/10/07 17:46:59 INFO recall/redirect order reached unit, new course set unit=fef09f50-b2d5-4031-b1c2-1f6d90e66783 mode=recall from_q=2 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-07T17:00:00.000+02:00
+2026/10/07 17:46:59 INFO player registered id=53e1c1f3-5e22-474f-b689-d11af43fb973 username=intercept-ebd33e60-9fda-4e70-80c3-eaccb9fe2a08
+2026/10/07 17:46:59 INFO order delivered but no longer executable unit=d61a9552-d391-44f1-80c1-be2258bb799f verb=recall_group_member reason="the unit is no longer at the group Runner's meeting hex (2,0)"
+2026/10/07 17:46:59 INFO order delivered but no longer executable unit=e8a0f7b4-ce38-4418-a269-c74bdfb99120 verb=recall_group_member reason="the unit is no longer at the group Runner's meeting hex (2,0)"
+--- FAIL: TestRecallBatch_LateWorkerUsesDeliveryTickForPositionRouteAndETA (0.19s)
+    --- FAIL: TestRecallBatch_LateWorkerUsesDeliveryTickForPositionRouteAndETA/3 (0.09s)
+        unit_recall_batch_test.go:514: response: {"groups":[{"messenger_id":"4679a2f2-1ea2-4738-94fe-c47bf454e82e","unit_ids":["d61a9552-d391-44f1-80c1-be2258bb799f","e8a0f7b4-ce38-4418-a269-c74bdfb99120"],"q":2,"r":0,"courier_due_tick":1,"courier_arrives_at":"2026-10-07T15:00:00+02:00"}],"results":[{"unit_id":"d61a9552-d391-44f1-80c1-be2258bb799f","name":"infantry of Capital","status":"order_dispatched","messenger_id":"4679a2f2-1ea2-4738-94fe-c47bf454e82e"},{"unit_id":"e8a0f7b4-ce38-4418-a269-c74bdfb99120","name":"infantry of Capital","status":"order_dispatched","messenger_id":"4679a2f2-1ea2-4738-94fe-c47bf454e82e"}]}
+        unit_recall_batch_test.go:535: jitter3 changed meeting/return: q0 r0 target8 depart0 arrive6 at2026-10-07 20:00:00 +0200 CEST
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.195s
+FAIL
