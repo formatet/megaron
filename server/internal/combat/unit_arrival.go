@@ -45,12 +45,13 @@ import (
 // SetStance (stance can be set to 'sentry', sentry_q/r is persisted), but no
 // scan goroutine is started yet.
 type UnitArrivalHandler struct {
-	pool       *pgxpool.Pool
-	eventStore *events.Store
-	hub        Broadcaster
-	scheduler  *events.Scheduler
-	clk        clock.Clock
-	sitosCfg   economy.SitosConfig
+	expeditionOutcomes *[]expeditionOutcome
+	pool               *pgxpool.Pool
+	eventStore         *events.Store
+	hub                Broadcaster
+	scheduler          *events.Scheduler
+	clk                clock.Clock
+	sitosCfg           economy.SitosConfig
 	// Dice is the KR3 battle-seed source (megaron_plan_kr3_stridssystem.md §3):
 	// initiateOrJoinBattle draws battles.seed from it exactly once, at battle
 	// creation. Exported so tests can override for a deterministic seed —
@@ -95,10 +96,23 @@ func (h *UnitArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent
 		}
 	}
 
-	if err := h.resolve(ctx, tx, payload.UnitID, payload.WorldID); err != nil {
+	// Per-invocation buffer: workers may call the shared handler concurrently.
+	var outcomes []expeditionOutcome
+	local := *h
+	local.expeditionOutcomes = &outcomes
+	if err := local.resolve(ctx, tx, payload.UnitID, payload.WorldID); err != nil {
 		return err
 	}
-	return tx.Commit(ctx)
+	if err := tx.Commit(ctx); err != nil {
+		return err
+	}
+	for _, outcome := range outcomes {
+		h.eventStore.RecordCommitted(ctx, outcome.event)
+		if delivery, ok := h.hub.(CommittedNotificationDelivery); ok {
+			delivery.DeliverCommittedNotification(ctx, payload.WorldID, outcome.owner, outcome.id, outcome.kind, outcome.level, outcome.body)
+		}
+	}
+	return nil
 }
 
 // NotifyDeadLetter is the events.Worker dead-letter hook for ScheduledUnitArrival
@@ -1157,12 +1171,6 @@ func (h *UnitArrivalHandler) exploreArrived(
 	ctx context.Context, tx pgx.Tx,
 	u unitRow, destQ, destR int, worldID uuid.UUID,
 ) error {
-	if u.homeSettlementID == nil {
-		// Defensive: dispatch validated the unit had a home settlement, but
-		// never strand a unit with nothing to return to.
-		slog.Warn("explore arrival: unit has no home_settlement_id, garrisoning in place instead of returning", "unit", u.id)
-		return h.arriveGarrison(ctx, tx, u, destQ, destR, nil, worldID)
-	}
 
 	// An area expedition (expedition.go) walks on to its next unseen hex
 	// instead; a point explore — or one whose expedition was ended by a
@@ -1171,6 +1179,13 @@ func (h *UnitArrivalHandler) exploreArrived(
 		return err
 	} else if ok && !e.Homeward {
 		return h.expeditionArrived(ctx, tx, u, destQ, destR, worldID, e)
+	}
+
+	if u.homeSettlementID == nil {
+		// Defensive: dispatch validated the unit had a home settlement, but
+		// never strand a unit with nothing to return to.
+		slog.Warn("explore arrival: unit has no home_settlement_id, garrisoning in place instead of returning", "unit", u.id)
+		return h.arriveGarrison(ctx, tx, u, destQ, destR, nil, worldID)
 	}
 
 	h.reportScoutFindings(ctx, tx, u, destQ, destR, worldID)
@@ -1283,9 +1298,6 @@ const (
 	// u.cargoUnitID at call time (set by the caller right after a successful
 	// boardPickupUnit), not carried as a separate flag.
 	returnReasonPickup
-	// returnReasonExpedition: an area expedition turns for home
-	// (expedition.go); the caller emits ExpeditionTurnedHome itself.
-	returnReasonExpedition
 )
 
 // dispatchReturnHome turns a field unit around and marches it back to its home
@@ -1358,11 +1370,6 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 	arrivesAt, _, err := h.dispatchLeg(ctx, tx, u, fromQ, fromR, homeQ, homeR, path, moveTicks, returnIntent, false, worldID)
 	if err != nil {
 		return fmt.Errorf("dispatchReturnHome: %w", err)
-	}
-	if reason == returnReasonExpedition {
-		// expedition.go names the turn itself (ExpeditionTurnedHome, with
-		// why it turned) — this tail would only say "reached its target".
-		return nil
 	}
 
 	// Tail: reason picks the event type + notification kind. The route/dispatch
@@ -1545,16 +1552,35 @@ func (h *UnitArrivalHandler) exploreReturned(
 	ctx context.Context, tx pgx.Tx,
 	u unitRow, destQ, destR int, worldID uuid.UUID,
 ) error {
-	if u.homeSettlementID == nil {
-		// Defensive: should not happen — dispatch always sets it for explore.
-		slog.Warn("explore return arrival: unit has no home_settlement_id, garrisoning in place instead", "unit", u.id)
-		return h.arriveGarrison(ctx, tx, u, destQ, destR, nil, worldID)
-	}
-	// Read before the re-garrison below clears arrive_tick, which is what
-	// tells a live expedition from a stale one.
 	exp, expOK, err := loadExpedition(ctx, tx, u.id)
 	if err != nil {
 		return err
+	}
+	if expOK {
+		home, err := expeditionReturnDestination(ctx, tx, u, destQ, destR, worldID)
+		if err != nil {
+			return err
+		}
+		if home == nil {
+			return h.stopExpedition(ctx, tx, u, destQ, destR, worldID)
+		}
+		changed := u.homeSettlementID == nil || *u.homeSettlementID != home.id
+		u.homeSettlementID = &home.id
+		if changed || home.q != destQ || home.r != destR {
+			_, arriveTick, err := h.dispatchLeg(ctx, tx, u, destQ, destR, home.q, home.r, home.path, home.cost, "explore_return", false, worldID)
+			if err != nil {
+				return err
+			}
+			_, err = tx.Exec(ctx, `UPDATE units SET home_settlement_id = $2 WHERE id = $1`, u.id, home.id)
+			if err != nil {
+				return err
+			}
+			_, err = tx.Exec(ctx, `UPDATE unit_expeditions SET leg_arrive_tick = $2 WHERE unit_id = $1`, u.id, arriveTick)
+			return err
+		}
+	}
+	if u.homeSettlementID == nil {
+		return h.arriveGarrison(ctx, tx, u, destQ, destR, nil, worldID)
 	}
 
 	if _, err := tx.Exec(ctx,
@@ -1578,17 +1604,21 @@ func (h *UnitArrivalHandler) exploreReturned(
 		return fmt.Errorf("exploreReturned: re-garrison: %w", err)
 	}
 
-	_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventUnitArrived,
-		unit.UnitArrivedPayload{UnitID: u.id, Q: destQ, R: destR, NewStatus: "garrison"}, worldID, nil)
-
-	if h.hub != nil {
-		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitArrived", 4, map[string]any{
-			"unit_id": u.id,
-			"name":    unit.LoadDisplayName(ctx, tx, u.id),
-			"q":       destQ,
-			"r":       destR,
-			"status":  "garrison",
-		})
+	arrivedPayload := unit.UnitArrivedPayload{UnitID: u.id, Q: destQ, R: destR, NewStatus: "garrison"}
+	arrivedBody := map[string]any{"unit_id": u.id, "name": unit.LoadDisplayName(ctx, tx, u.id), "q": destQ, "r": destR, "status": "garrison"}
+	if expOK {
+		event, err := h.eventStore.AppendTx(ctx, tx, u.id, events.StreamType(unit.StreamUnit), unit.EventUnitArrived, arrivedPayload, worldID, nil)
+		if err != nil {
+			return err
+		}
+		if err := h.expeditionOutcome(ctx, tx, event, worldID, u.ownerID, "UnitArrived", 4, arrivedBody); err != nil {
+			return err
+		}
+	} else {
+		_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventUnitArrived, arrivedPayload, worldID, nil)
+		if h.hub != nil {
+			_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "UnitArrived", 4, arrivedBody)
+		}
 	}
 
 	if expOK && exp.Homeward {

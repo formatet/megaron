@@ -67,22 +67,18 @@ func TestStartMarch_ExploreFromFieldPositionResolvesNearestOwnedHome(t *testing.
 		t.Fatalf("create capital settlement: %v", err)
 	}
 
-	// Ship's current field position (5,0) and the explore target (6,0) — both
-	// open sea, one hop apart, nowhere near the capital (proves this fix
-	// doesn't require any path back to base at dispatch time — only that a
-	// settlement exists to resolve as home).
-	for _, tl := range []struct {
-		q, r    int
-		terrain string
-	}{
-		{5, 0, "coastal_sea"},
-		{6, 0, "coastal_sea"},
-	} {
+	// The ship is already at sea, with a connected coast home. Ground up to
+	// its current hex is known, so the expedition's first unseen target is (6,0).
+	for q := 1; q <= 6; q++ {
 		if _, err := pool.Exec(ctx,
-			`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, $3, $4)`,
-			worldID, tl.q, tl.r, tl.terrain,
+			`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, 0, 'coastal_sea')`, worldID, q,
 		); err != nil {
-			t.Fatalf("insert map tile (%d,%d): %v", tl.q, tl.r, err)
+			t.Fatal(err)
+		}
+		if q <= 5 {
+			if _, err := pool.Exec(ctx, `INSERT INTO player_scouted_tiles(world_id,player_id,q,r) VALUES($1,$2,$3,0)`, worldID, ownerID, q); err != nil {
+				t.Fatal(err)
+			}
 		}
 	}
 

@@ -13,6 +13,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/combat"
 	"formatet/megaron/server/internal/events"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -92,6 +93,7 @@ func TestMarchPreview_ReadOnlyAndTiming(t *testing.T) {
 	r.Use(auth.Middleware(authSvc))
 	r.Post("/worlds/{worldID}/units/{unitID}/march", uh.March)
 	r.Get("/worlds/{worldID}/units/{unitID}/march-preview", uh.MarchPreview)
+	r.Get("/worlds/{worldID}/units", uh.ListUnits)
 
 	base := "/worlds/" + worldID.String() + "/units/" + unitID.String()
 	request := func(path string) *httptest.ResponseRecorder {
@@ -114,6 +116,19 @@ func TestMarchPreview_ReadOnlyAndTiming(t *testing.T) {
 			t.Fatal(err)
 		}
 		return state
+	}
+	rulesResponse := request("/worlds/" + worldID.String() + "/units")
+	if rulesResponse.Code != 200 {
+		t.Fatalf("unit list: %d %s", rulesResponse.Code, rulesResponse.Body.String())
+	}
+	var list struct {
+		Rules map[string]int `json:"expedition_rules"`
+	}
+	if err := json.Unmarshal(rulesResponse.Body.Bytes(), &list); err != nil {
+		t.Fatal(err)
+	}
+	if list.Rules["min_ticks"] != combat.ExpeditionMinTicks || list.Rules["max_ticks"] != combat.ExpeditionMaxTicks || list.Rules["default_ticks"] != combat.ExpeditionDefaultTicks || list.Rules["area_radius"] != combat.ExpeditionAreaRadius {
+		t.Fatalf("order controls have no canonical expedition rules: %v", list.Rules)
 	}
 	before := snapshot()
 	rec := request(base + "/march-preview?target_q=1&target_r=0")
@@ -161,6 +176,10 @@ func TestMarchPreview_ReadOnlyAndTiming(t *testing.T) {
 		{"?target_q=40&target_r=0", 422, ""},
 		{"?target_q=40&target_r=0&intent=explore", 200, "unknown_terrain"},
 		{"?target_q=bad&target_r=0", 400, ""},
+		{"?target_q=1&target_r=0&intent=explore&ticks=12", 200, "unknown_terrain"},
+		{"?target_q=1&target_r=0&intent=explore&ticks=3", 400, ""},
+		{"?target_q=40&target_r=0&intent=explore&ticks=31", 400, ""},
+		{"?target_q=1&target_r=0&intent=explore&ticks=no", 400, ""},
 	} {
 		rec := request(base + "/march-preview" + tc.query)
 		if rec.Code != tc.status {
@@ -175,6 +194,13 @@ func TestMarchPreview_ReadOnlyAndTiming(t *testing.T) {
 		t.Fatal(err)
 	}
 	before = snapshot()
+	invalidOrder := httptest.NewRequest(http.MethodPost, base+"/march", strings.NewReader(`{"target_q":1,"target_r":0,"intent":"explore","ticks":3}`))
+	invalidOrder.Header.Set("Authorization", "Bearer "+accessToken)
+	invalidReceipt := httptest.NewRecorder()
+	r.ServeHTTP(invalidReceipt, invalidOrder)
+	if invalidReceipt.Code != 400 || snapshot() != before {
+		t.Fatalf("invalid duration dispatched a Runner or changed state: %d %s", invalidReceipt.Code, invalidReceipt.Body.String())
+	}
 	rec = request(base + "/march-preview?target_q=0&target_r=0")
 	if snapshot() != before {
 		t.Fatal("courier preview mutated game state")

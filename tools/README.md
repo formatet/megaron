@@ -144,3 +144,7 @@ Ingen spelvärld eller produktionsdata muteras.
 ### March arrival preview
 
 `python3 tools/march_preview_acceptance.py` runs the actual web menu/Army modules with explicit authenticated API fixtures (per-unit timing, intent changes, cancellation and mobile width). `python3 tools/march_preview_live.py OUT COMMIT` uses freshly built `OUT/temenos` and `OUT/keryx` for register/join/found/preview/march on disposable local PostgreSQL16/Redis7 containers. Requires Docker and Python Playwright/Chromium; allocates dynamic ports and cleans up its own containers/process/config. See `docs/reviews/march-preview/README.md`.
+
+`python3 tools/expedition_acceptance.py [OUT]` verifies the actual map and War expedition controls against explicit authenticated API fixtures: server-supplied duration rules, order summaries, preview GET and order POST ticks, mission row, and desktop/390px screenshots. It does not prove live expedition gameplay.
+
+`python3 tools/expedition_live.py OUT COMMIT web|cli` runs register/join/found → expedition order → legs/turn → home/report with real player APIs, the compiled CLI and browser on disposable PostgreSQL16/Redis7 containers. Put freshly built `temenos` and `keryx` in OUT; the server must embed COMMIT. Uses a clean process environment, two-second game ticks and read-only SQL ground checks. Allocates its own ports and removes its own processes, containers and private CLI config. Run both modes in separate worlds.

@@ -58,6 +58,23 @@ func (h *UnitHandler) MarchPreview(w http.ResponseWriter, r *http.Request) {
 	order := combat.MarchOrder{WorldID: worldID, PlayerID: playerID, UnitID: unitID,
 		TargetQ: q, TargetR: rr, Intent: query.Get("intent"), Stance: query.Get("stance"),
 		Name: query.Get("name"), Mode: query.Get("mode"), CargoIntent: query.Get("cargo_intent")}
+	if raw := query.Get("ticks"); raw != "" {
+		length, parseErr := strconv.Atoi(raw)
+		if parseErr != nil {
+			writeError(w, http.StatusBadRequest, "invalid ticks")
+			return
+		}
+		order.ExpeditionTicks = length
+	}
+	// Validate the same domain rule before returning an unavailable forecast.
+	if order.Intent == "explore" {
+		length, rej := combat.NormalizeExpeditionLength(order.ExpeditionTicks)
+		if rej != nil {
+			writeError(w, rej.Status, rej.Reason)
+			return
+		}
+		order.ExpeditionTicks = length
+	}
 	targetKnown := func(fctx context.Context, target province.MapPosition, terrain string) bool {
 		eyes := loadLiveEyes(fctx, h.pool, worldID, playerID, h.clk.Now())
 		return province.AnyEyeSees(eyes, target, terrain) || loadRememberedTiles(fctx, h.pool, worldID, playerID)[[2]int{target.Q, target.R}]
@@ -68,7 +85,9 @@ func (h *UnitHandler) MarchPreview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	known := targetKnown(ctx, province.MapPosition{Q: q, R: rr}, terrain)
-	if !known && order.Intent == "explore" {
+	// An area expedition selects an unseen first leg, even if the chosen
+	// centre is known. Its travel time could disclose hidden geography.
+	if order.Intent == "explore" {
 		writeMarchPreviewUnavailable(w, "unknown_terrain")
 		return
 	}
@@ -103,7 +122,7 @@ func (h *UnitHandler) MarchPreview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(map[string]any{"available": true, "arrival_tick": result.ArrivalTick, "duration_ticks": result.DurationTicks, "arrives_at_utc": result.ArrivesAt.UTC()})
+	_ = json.NewEncoder(w).Encode(map[string]any{"available": true, "arrival_tick": result.ArrivalTick, "duration_ticks": result.DurationTicks, "arrives_at_utc": result.ArrivesAt.UTC(), "expedition": expeditionJSON(result.Expedition)})
 }
 
 func writeMarchPreviewUnavailable(w http.ResponseWriter, reason string) {

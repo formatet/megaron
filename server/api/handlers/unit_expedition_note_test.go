@@ -62,3 +62,26 @@ func TestAttachExpeditionNotes_LiveOnly(t *testing.T) {
 		t.Errorf("ended expedition still shown: %+v", *summaries[1].Expedition)
 	}
 }
+
+func TestAttachExpeditionNotes_ReturnUsesActualArrival(t *testing.T) {
+	pool := recruitShipTestPool(t)
+	ctx := context.Background()
+	var worldID, owner, id uuid.UUID
+	if err := pool.QueryRow(ctx, `INSERT INTO worlds(name,status) VALUES($1,'archived') RETURNING id`, "test-return-"+uuid.New().String()).Scan(&worldID); err != nil {
+		t.Fatal(err)
+	}
+	if err := pool.QueryRow(ctx, `INSERT INTO players(username,password_hash) VALUES($1,'x') RETURNING id`, "return-"+uuid.New().String()).Scan(&owner); err != nil {
+		t.Fatal(err)
+	}
+	if err := pool.QueryRow(ctx, `INSERT INTO units(world_id,owner_id,type,category,size,status,q,r,target_q,target_r,arrive_tick,march_intent) VALUES($1,$2,'infantry','land',100,'marching',1,0,0,0,20,'explore_return') RETURNING id`, worldID, owner).Scan(&id); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `INSERT INTO unit_expeditions(unit_id,world_id,area_q,area_r,length_ticks,start_tick,turn_tick,leg_arrive_tick,homeward,turn_reason) VALUES($1,$2,4,0,10,2,7,20,true,'half_time')`, id, worldID); err != nil {
+		t.Fatal(err)
+	}
+	summaries := []unitSummary{{ID: id}}
+	attachExpeditionNotes(ctx, pool, worldID, summaries)
+	if e := summaries[0].Expedition; e == nil || !e.Homeward || e.HomeByTick != 20 {
+		t.Fatalf("return mission promises stale duration instead of actual home arrival: %+v", e)
+	}
+}

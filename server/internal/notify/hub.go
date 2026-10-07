@@ -145,6 +145,12 @@ func (h *Hub) DeliverPersisted(ctx context.Context, worldID, playerID uuid.UUID,
 	h.sendTo(worldID, playerID, msg)
 }
 
+// DeliverCommittedNotification implements the combat consumer without requiring
+// combat to import the notification package.
+func (h *Hub) DeliverCommittedNotification(ctx context.Context, worldID, playerID uuid.UUID, id, kind string, level int, payload any) {
+	h.DeliverPersisted(ctx, worldID, playerID, Msg{Kind: kind, Payload: payload, ID: id, Level: level})
+}
+
 // isDispatchMuted reports whether playerID has muted kind as a dispatch
 // (dispatch_mutes, mig 140). Fails open on any DB error — a lookup failure
 // must never silently swallow a real notification.

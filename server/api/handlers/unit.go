@@ -93,6 +93,15 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.Intent == "explore" {
+		length, rej := combat.NormalizeExpeditionLength(req.Ticks)
+		if rej != nil {
+			writeError(w, rej.Status, rej.Reason)
+			return
+		}
+		req.Ticks = length
+	}
+
 	ctx := r.Context()
 
 	// FOW march rule (Fas 0): knowledge is checked at dispatch, in the API
@@ -186,6 +195,14 @@ func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
 		"purse_shortfall": res.PurseShortfall,
 		"expedition":      expeditionJSON(res.Expedition),
 	})
+}
+
+// expeditionRulesJSON exposes the domain-owned tunables to order controls.
+func expeditionRulesJSON() map[string]int {
+	return map[string]int{
+		"min_ticks": combat.ExpeditionMinTicks, "max_ticks": combat.ExpeditionMaxTicks,
+		"default_ticks": combat.ExpeditionDefaultTicks, "area_radius": combat.ExpeditionAreaRadius,
+	}
 }
 
 // expeditionJSON is an explore order's mission line in a march response:
@@ -2035,7 +2052,7 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 	attachPickupNotes(r.Context(), h.pool, worldID, playerID, units, summaries)
 
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(map[string]any{"units": summaries})
+	_ = json.NewEncoder(w).Encode(map[string]any{"units": summaries, "expedition_rules": expeditionRulesJSON()})
 }
 
 // settlementNames ger id → namn för spelarens städer, så namnstandarden kan
@@ -2369,7 +2386,7 @@ func attachExpeditionNotes(ctx context.Context, db province.Queryer, worldID uui
 	}
 	rows, err := db.Query(ctx,
 		`SELECT e.unit_id, e.area_q, e.area_r, e.length_ticks, e.turn_tick,
-		        e.start_tick + e.length_ticks, e.homeward, e.turn_reason
+		        CASE WHEN e.homeward THEN e.leg_arrive_tick ELSE e.start_tick + e.length_ticks END, e.homeward, e.turn_reason
 		   FROM unit_expeditions e JOIN units u ON u.id = e.unit_id
 		  WHERE e.world_id = $1 AND u.arrive_tick = e.leg_arrive_tick`,
 		worldID,

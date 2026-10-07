@@ -499,13 +499,9 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	// nothing unseen this unit can reach.
 	var expeditionPlan *ExpeditionPlan
 	if o.Intent == "explore" {
-		length := o.ExpeditionTicks
-		if length == 0 {
-			length = ExpeditionDefaultTicks
-		}
-		if length < ExpeditionMinTicks || length > ExpeditionMaxTicks {
-			return nil, reject(http.StatusBadRequest,
-				"an expedition lasts %d to %d ticks (asked for %d)", ExpeditionMinTicks, ExpeditionMaxTicks, length)
+		length, lengthErr := NormalizeExpeditionLength(o.ExpeditionTicks)
+		if lengthErr != nil {
+			return nil, lengthErr
 		}
 		g, gErr := province.LoadTileGraph(ctx, pool, o.WorldID)
 		if gErr != nil {
@@ -753,6 +749,20 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 				"the nearest unseen ground around (%d,%d) is %d ticks away — more than half of the %d ticks you gave, so it could not get back in time; give it at least %d ticks",
 				expeditionPlan.AreaQ, expeditionPlan.AreaR, travelTicks, expeditionPlan.LengthTicks, 2*travelTicks)
 		}
+		// Entered-terrain costs and tick rounding are asymmetric: reserve the
+		// actual route home, rather than assuming it costs the outbound leg.
+		home, homeErr := expeditionReturnDestination(ctx, pool, unitRow{ownerID: o.PlayerID, category: string(unit.CategoryOf(u.Type)), homeSettlementID: exploreHomeID}, targetQ, targetR, o.WorldID)
+		if homeErr != nil {
+			return nil, reject(http.StatusInternalServerError, "could not resolve the expedition's return route")
+		}
+		if home == nil {
+			return nil, reject(http.StatusUnprocessableEntity, "the expedition has no reachable home settlement")
+		}
+		returnTicks := legTravelTicks(u.Type, u.Crew, u.CargoUnitID != nil, home.cost)
+		if travelTicks+returnTicks > expeditionPlan.LengthTicks {
+			return nil, reject(http.StatusUnprocessableEntity, "the expedition needs at least %d ticks for its outward and return routes", travelTicks+returnTicks)
+		}
+		exploreHomeID = &home.id
 	}
 	// arrives_at must mirror the real tick-scheduled arrival (travelTicks
 	// ticks × real seconds/tick), NOT moveTicks-as-hours: the map interpolates
@@ -1082,12 +1092,11 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		return nil, reject(http.StatusInternalServerError, "could not update unit")
 	}
 
+	// Every new order ends any previous expedition, even if arrival ticks match.
+	if _, err := tx.Exec(ctx, `DELETE FROM unit_expeditions WHERE unit_id = $1`, o.UnitID); err != nil {
+		return nil, reject(http.StatusInternalServerError, "could not close the previous expedition")
+	}
 	if expeditionPlan != nil {
-		// A fresh row per order: whatever an earlier, ended expedition of this
-		// unit left behind (and what it saw) goes with it.
-		if _, err := tx.Exec(ctx, `DELETE FROM unit_expeditions WHERE unit_id = $1`, o.UnitID); err != nil {
-			return nil, reject(http.StatusInternalServerError, "could not plan the expedition")
-		}
 		if _, err := tx.Exec(ctx,
 			`INSERT INTO unit_expeditions
 			   (unit_id, world_id, area_q, area_r, length_ticks, start_tick, turn_tick, leg_arrive_tick)

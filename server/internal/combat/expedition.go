@@ -4,20 +4,20 @@ package combat
 // 2026-09-30 + 2026-10-06): an explore order covers an AREA — a chosen hex and
 // the ground around it — for a chosen number of ticks. The unit walks leg by
 // leg to the nearest hex in the area its Wanax has never seen, and turns for
-// home no later than half its length, so the way home always fits. Once home
-// it reports what it saw.
+// home no later than half its length, reserving the actual rounded route home
+// before each leg. Once home it reports what it saw.
 //
 // The legs are ordinary marches (dispatchLeg) carrying march_intent
 // "explore"; unit_expeditions holds the rest. A row only governs the unit
-// while its leg_arrive_tick equals units.arrive_tick — recall, redirect and
-// any new order change arrive_tick, so they end the expedition without
-// knowing this file exists.
+// while its leg_arrive_tick equals units.arrive_tick. New orders and recall
+// explicitly delete the row; the tick match also rejects stale legacy state.
 
 import (
 	"context"
 	"fmt"
 	"log/slog"
 	"math"
+	"net/http"
 	"sort"
 
 	"formatet/megaron/server/internal/events"
@@ -41,6 +41,17 @@ const (
 	expeditionPathTries = 8
 )
 
+// NormalizeExpeditionLength applies the server-owned default and bounds.
+func NormalizeExpeditionLength(length int) (int, *OrderReject) {
+	if length == 0 {
+		length = ExpeditionDefaultTicks
+	}
+	if length < ExpeditionMinTicks || length > ExpeditionMaxTicks {
+		return 0, reject(http.StatusBadRequest, "an expedition lasts %d to %d ticks (asked for %d)", ExpeditionMinTicks, ExpeditionMaxTicks, length)
+	}
+	return length, nil
+}
+
 // Turn reasons, as stored in unit_expeditions.turn_reason and the
 // ExpeditionTurnedHome payload.
 const (
@@ -50,7 +61,7 @@ const (
 )
 
 // ExpeditionTurnTick is the last tick a leg may end on: half the length after
-// departure, rounded down — the walk home is never longer than the walk out.
+// departure, rounded down. Each leg separately reserves its actual return cost.
 func ExpeditionTurnTick(startTick, lengthTicks int) int {
 	return startTick + lengthTicks/2
 }
@@ -94,9 +105,11 @@ func nextExpeditionLeg(
 	}
 	for rows.Next() {
 		var q, r int
-		if rows.Scan(&q, &r) == nil {
-			known[[2]int{q, r}] = true
+		if err := rows.Scan(&q, &r); err != nil {
+			rows.Close()
+			return expeditionLeg{}, fmt.Errorf("scan known tile: %w", err)
 		}
+		known[[2]int{q, r}] = true
 	}
 	rows.Close()
 	if err := rows.Err(); err != nil {
@@ -145,7 +158,7 @@ type expeditionRow struct {
 	StartTick     int
 	TurnTick      int
 	LegArriveTick int
-	Homeward     bool
+	Homeward      bool
 	TurnReason    *string
 	Furthest      int
 }
@@ -153,7 +166,8 @@ type expeditionRow struct {
 // loadExpedition returns the unit's expedition if it still governs the unit
 // (leg_arrive_tick == units.arrive_tick). A stale row — the unit was recalled,
 // redirected or given a new order — is deleted and reported as absent, so the
-// unit falls back to what its march intent alone says.
+// unit falls back to what its march intent alone says. Order writers also
+// delete explicitly, since different courses can have the same arrival tick.
 func loadExpedition(ctx context.Context, tx pgx.Tx, unitID uuid.UUID) (expeditionRow, bool, error) {
 	var e expeditionRow
 	var unitArriveTick *int
@@ -224,14 +238,18 @@ func (h *UnitArrivalHandler) expeditionArrived(
 		}
 	}
 
-	var homeQ, homeR int
-	if err := tx.QueryRow(ctx,
-		`SELECT p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id WHERE s.id = $1`,
-		*u.homeSettlementID,
-	).Scan(&homeQ, &homeR); err != nil {
-		return fmt.Errorf("expedition: load home: %w", err)
+	home, err := expeditionReturnDestination(ctx, tx, u, destQ, destR, worldID)
+	if err != nil {
+		return fmt.Errorf("expedition: resolve home: %w", err)
 	}
-	furthest := max(e.Furthest, province.HexDistance(province.MapPosition{Q: homeQ, R: homeR}, here))
+	if home == nil {
+		return h.stopExpedition(ctx, tx, u, destQ, destR, worldID)
+	}
+	u.homeSettlementID = &home.id
+	if _, err := tx.Exec(ctx, `UPDATE units SET home_settlement_id = $2 WHERE id = $1`, u.id, home.id); err != nil {
+		return err
+	}
+	furthest := max(e.Furthest, province.HexDistance(province.MapPosition{Q: home.q, R: home.r}, here))
 
 	var currentTick int
 	if err := tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick); err != nil {
@@ -255,6 +273,15 @@ func (h *UnitArrivalHandler) expeditionArrived(
 	}
 
 	if reason == "" {
+		_, returnCost, reachable := g.FindPath(leg.Target, province.MapPosition{Q: home.q, R: home.r}, u.category)
+		if !reachable {
+			reason = ExpeditionTurnNoPath
+		} else if currentTick+legTravelTicks(unit.Type(u.utype), u.crew, u.cargoUnitID != nil, leg.Cost)+legTravelTicks(unit.Type(u.utype), u.crew, u.cargoUnitID != nil, returnCost) > e.StartTick+e.LengthTicks {
+			reason = ExpeditionTurnHalfTime
+		}
+	}
+
+	if reason == "" {
 		_, arriveTick, err := h.dispatchLeg(ctx, tx, u, destQ, destR, leg.Target.Q, leg.Target.R,
 			leg.Path, leg.Cost, "explore", true, worldID)
 		if err != nil {
@@ -269,13 +296,11 @@ func (h *UnitArrivalHandler) expeditionArrived(
 		return nil
 	}
 
-	if err := h.dispatchReturnHome(ctx, tx, u, destQ, destR, worldID, returnReasonExpedition); err != nil {
+	_, arriveTick, err := h.dispatchLeg(ctx, tx, u, destQ, destR, home.q, home.r, home.path, home.cost, "explore_return", false, worldID)
+	if err != nil {
 		return err
 	}
-	var arriveTick int
-	if err := tx.QueryRow(ctx, `SELECT arrive_tick FROM units WHERE id = $1`, u.id).Scan(&arriveTick); err != nil {
-		return fmt.Errorf("expedition: read return tick: %w", err)
-	}
+
 	if _, err := tx.Exec(ctx,
 		`UPDATE unit_expeditions
 		    SET homeward = true, turn_reason = $2, leg_arrive_tick = $3, furthest = $4
@@ -285,22 +310,25 @@ func (h *UnitArrivalHandler) expeditionArrived(
 		return fmt.Errorf("expedition: save turn: %w", err)
 	}
 
-	_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventExpeditionTurnedHome,
+	event, err := h.eventStore.AppendTx(ctx, tx, u.id, events.StreamType(unit.StreamUnit), unit.EventExpeditionTurnedHome,
 		unit.ExpeditionTurnedHomePayload{
 			UnitID: u.id, Q: destQ, R: destR, AreaQ: e.AreaQ, AreaR: e.AreaR,
 			Reason: reason, HomeSettlementID: *u.homeSettlementID, ArriveTick: arriveTick,
 		}, worldID, nil)
-	if h.hub != nil {
-		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "ExpeditionTurnedHome", 5, map[string]any{
-			"unit_id":     u.id,
-			"name":        unit.LoadDisplayName(ctx, tx, u.id),
-			"q":           destQ,
-			"r":           destR,
-			"area_q":      e.AreaQ,
-			"area_r":      e.AreaR,
-			"reason":      reason,
-			"arrive_tick": arriveTick,
-		})
+	if err != nil {
+		return err
+	}
+	if err := h.expeditionOutcome(ctx, tx, event, worldID, u.ownerID, "ExpeditionTurnedHome", 5, map[string]any{
+		"unit_id":     u.id,
+		"name":        unit.LoadDisplayName(ctx, tx, u.id),
+		"q":           destQ,
+		"r":           destR,
+		"area_q":      e.AreaQ,
+		"area_r":      e.AreaR,
+		"reason":      reason,
+		"arrive_tick": arriveTick,
+	}); err != nil {
+		return err
 	}
 	slog.Info("expedition turning for home", "unit", u.id, "reason", reason, "q", destQ, "r", destR, "arrive_tick", arriveTick)
 	return nil
@@ -342,11 +370,16 @@ func (h *UnitArrivalHandler) expeditionHome(
 	}
 	for rows.Next() {
 		var f unit.ExpeditionFind
-		if rows.Scan(&f.Kind, &f.Q, &f.R) == nil {
-			finds = append(finds, f)
+		if err := rows.Scan(&f.Kind, &f.Q, &f.R); err != nil {
+			rows.Close()
+			return err
 		}
+		finds = append(finds, f)
 	}
 	rows.Close()
+	if err := rows.Err(); err != nil {
+		return err
+	}
 
 	rows, err = tx.Query(ctx,
 		`SELECT p.map_q, p.map_r, st.name, COALESCE(pl.wanax_name, pl.username, '')
@@ -363,11 +396,16 @@ func (h *UnitArrivalHandler) expeditionHome(
 	}
 	for rows.Next() {
 		f := unit.ExpeditionFind{Kind: "city"}
-		if rows.Scan(&f.Q, &f.R, &f.Name, &f.Owner) == nil {
-			finds = append(finds, f)
+		if err := rows.Scan(&f.Q, &f.R, &f.Name, &f.Owner); err != nil {
+			rows.Close()
+			return err
 		}
+		finds = append(finds, f)
 	}
 	rows.Close()
+	if err := rows.Err(); err != nil {
+		return err
+	}
 
 	turnReason := ""
 	if e.TurnReason != nil {
@@ -378,20 +416,23 @@ func (h *UnitArrivalHandler) expeditionHome(
 		TicksOut: currentTick - e.StartTick, Furthest: e.Furthest, HexesSeen: hexesSeen,
 		TurnReason: turnReason, Finds: finds,
 	}
-	_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventExpeditionReport,
+	event, err := h.eventStore.AppendTx(ctx, tx, u.id, events.StreamType(unit.StreamUnit), unit.EventExpeditionReport,
 		payload, worldID, nil)
-	if h.hub != nil {
-		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "ExpeditionReport", 4, map[string]any{
-			"unit_id":     u.id,
-			"name":        unit.LoadDisplayName(ctx, tx, u.id),
-			"area_q":      e.AreaQ,
-			"area_r":      e.AreaR,
-			"ticks_out":   payload.TicksOut,
-			"furthest":    payload.Furthest,
-			"hexes_seen":  hexesSeen,
-			"turn_reason": turnReason,
-			"finds":       finds,
-		})
+	if err != nil {
+		return err
+	}
+	if err := h.expeditionOutcome(ctx, tx, event, worldID, u.ownerID, "ExpeditionReport", 4, map[string]any{
+		"unit_id":     u.id,
+		"name":        unit.LoadDisplayName(ctx, tx, u.id),
+		"area_q":      e.AreaQ,
+		"area_r":      e.AreaR,
+		"ticks_out":   payload.TicksOut,
+		"furthest":    payload.Furthest,
+		"hexes_seen":  hexesSeen,
+		"turn_reason": turnReason,
+		"finds":       finds,
+	}); err != nil {
+		return err
 	}
 	if _, err := tx.Exec(ctx, `DELETE FROM unit_expeditions WHERE unit_id = $1`, u.id); err != nil {
 		return fmt.Errorf("expedition report: close: %w", err)

@@ -7,6 +7,7 @@ import { arrivalHTML, fmtArrival } from './time.js';
 import { stanceSentLine } from './stance.js';
 import { MusicPlayer } from './misc.js';
 import { playWarHorn } from './sfx.js';
+import { configureExpedition, expeditionTicks, expeditionOrderText, expeditionMissionText } from './expedition.js';
 import { createMarchPreview } from './march_preview.js';
 import { canvas } from '../render/map.js';
 
@@ -21,6 +22,7 @@ import { canvas } from '../render/map.js';
 // Client-chosen intent: optional colonize, optional explore (forced on an
 // unseen hex — the server's FOW rule accepts nothing else there), + stance.
 
+let expeditionRules;
 const marchCtx = document.getElementById('march-ctx');
 
 const marchPreview = createMarchPreview(html => {
@@ -40,9 +42,20 @@ function updateMarchPreview() {
     && document.getElementById('mctx-colonize-row').style.display !== 'none';
   const explore = document.getElementById('mctx-explore-chk')?.checked
     && document.getElementById('mctx-explore-row').style.display !== 'none';
+  const intent = colonize ? 'colonize' : resolveMarchIntent(State.marchCtxDest, explore);
+  const duration = document.getElementById('mctx-expedition');
+  const exploring = intent === 'explore' && (!picks.length || picks.some(p => p.mode !== 'redirect'));
+  duration.style.display = exploring ? 'block' : 'none';
+  let ticks;
+  try { if (exploring) ticks = expeditionTicks(document.getElementById('mctx-ticks')); }
+  catch (error) { document.getElementById('mctx-mission').textContent = error.message; marchPreview.update(State.WORLD_ID, [], {}); return; }
+  document.getElementById('mctx-mission').textContent = exploring
+    ? expeditionOrderText(State.marchCtxDest.q, State.marchCtxDest.r, ticks, expeditionRules)
+      + (picks.some(p => p.mode === 'redirect') ? ' Only units starting a new march take this expedition; marching units receive a redirect and end their expedition.' : '')
+    : '';
   marchPreview.update(State.WORLD_ID, picks, {
     target_q: State.marchCtxDest.q, target_r: State.marchCtxDest.r,
-    intent: colonize ? 'colonize' : resolveMarchIntent(State.marchCtxDest, explore),
+    intent, ticks,
     stance: State.marchCtxDest.isSea ? '' : document.getElementById('mctx-stance').value,
     name: colonize ? document.getElementById('mctx-colony-name')?.value.trim() : '',
   });
@@ -277,10 +290,12 @@ export async function openMarchCtx(dest, screenX, screenY) {
   document.getElementById('mctx-err').textContent = '';
   document.getElementById('mctx-name').textContent = dest.name;
 
+  expeditionRules = undefined;
+  configureExpedition(document.getElementById('mctx-ticks'), undefined);
   const unknown = dest.known === false;
   let hint;
-  if (unknown)                hint = 'Unexplored — only an explore order can reach it: the unit scouts the hex, then returns home on its own.';
-  else if (dest.isSea)        hint = 'Order galleys here — they reveal fog-of-war and sail home on their own.';
+  if (unknown)                hint = 'Unexplored — only an explore order can reach it: choose how long it explores the surrounding area, then returns home with a report.';
+  else if (dest.isSea)        hint = 'Order galleys here — choose an expedition duration; they explore the area and sail home with a report.';
   else if (dest.isSettlement) hint = dest.allied ? 'March land units here to reinforce the garrison on arrival.' : 'March land units here to attack on arrival.';
   else                        hint = 'March land units to this hex, found a new settlement here, or explore and return home.';
   document.getElementById('mctx-hint').textContent = hint;
@@ -311,8 +326,12 @@ export async function openMarchCtx(dest, screenX, screenY) {
   document.getElementById('mctx-units').innerHTML = '<span style="color:var(--text-dim);font-size:.75rem">Loading units…</span>';
   const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`);
   if (!res.ok) { document.getElementById('mctx-units').innerHTML = '<span style="color:var(--accent);font-size:.75rem">Could not load units.</span>'; return; }
-  const all = ((await res.json()).units) || [];
+  const unitResponse = await res.json();
   if (State.marchCtxDest !== dest) return;
+  expeditionRules = unitResponse.expedition_rules;
+  configureExpedition(document.getElementById('mctx-ticks'), expeditionRules);
+  const all = unitResponse.units || [];
+  updateMarchPreview();
 
   // Eligible: garrisoned/positioned units start a march; a unit already
   // MARCHING is eligible too — right-clicking a new destination sends it a
@@ -468,6 +487,9 @@ export async function sendMarch() {
   const exploreWanted = !!(exploreChk && exploreChk.checked
     && exploreRow && exploreRow.style.display !== 'none');
   const intent = colonize ? 'colonize' : resolveMarchIntent(State.marchCtxDest, exploreWanted);
+  let ticks;
+  try { if (intent === 'explore' && picks.some(p => p.mode !== 'redirect')) ticks = expeditionTicks(document.getElementById('mctx-ticks')); }
+  catch (error) { document.getElementById('mctx-err').textContent = error.message; return; }
 
   marchPreview.cancel();
   document.getElementById('mctx-send').disabled = true;
@@ -503,6 +525,7 @@ export async function sendMarch() {
     // resolve here (resolveMarchIntent) — the unit sweeps fog at the target
     // then returns home on its own, no separate recall needed.
     else if (intent) body.intent = intent;
+    if (intent === 'explore' && ticks !== undefined) body.ticks = ticks;
     return fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units/${p.id}/march`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
     }).then(async res => {
@@ -562,6 +585,7 @@ export async function sendMarch() {
       : '✓ Marching — arrives ' +
         arrivalHTML(first.data.arrives_at_utc || first.data.arrives_at, first.data.arrival_tick);
     // The stance for a marching unit rides a second Runner that must catch up.
+    if (first.data.expedition) etaEl.innerHTML += '<br>' + esc(expeditionMissionText(first.data.expedition));
     const purse = purseLine(first.data);
     if (purse) etaEl.innerHTML += '<br>' + esc(purse);
     const sd = first.stanceData;

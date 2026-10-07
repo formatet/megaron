@@ -22,10 +22,18 @@ A unit standing in its city hears you at once. A unit out in the field does not 
 
 ## Where you can march
 
-- **A plain march only reaches ground your people have already seen.** Right-click an unseen hex and the order menu offers **Explore** instead — the unit scouts it and returns home on its own ([[sight]]).
+- **A plain march only reaches ground your people have already seen.** Right-click an unseen hex and the order menu offers **Explore** instead — the unit explores the surrounding area and returns home with a report ([[sight]]).
 - Crossing the sea needs ships ([[sea]]).
 - A march that cannot go on — its path blocked, or impossible — stalls, and you are told why.
 
 ## On the road
 
 A marching army eats more than one in garrison and cannot forage ([[upkeep]]). It is seen by anyone whose [[sight]] it passes through, and an enemy on watch may stop it — and a [[battle]] begins by itself. **There is no declaration of war.**
+
+## Exploring an area
+
+Choose **Explore** in the map menu and set the expedition duration in **game days**. The chosen hex is the centre of an area, even in fog. The order summary shows its extent and duration before sending; **War → Army → March** offers the same controls.
+
+The unit chooses nearby unexplored ground on its own, and turns home by half the duration. It can turn earlier if the area is already explored or nothing further is reachable. **War → Army** and `keryx unit list` show the area, duration, latest turn and home day, and why it has turned. A Runner-delivered order begins when received, so those days become known when it starts. On return, Dispatches carries the report ([[sight]]).
+
+In Keryx: `unit march --unit <id> --target q,r --intent explore --ticks N`. Omit `--ticks` for the server's default duration; the current allowed range comes from the game. Add `--preview` to check the order without dispatching. Exploration routes cross unknown ground, so their arrival forecast stays unavailable.

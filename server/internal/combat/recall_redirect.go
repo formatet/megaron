@@ -209,6 +209,11 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 		return nil, fmt.Errorf("turn unit toward new course: %w", err)
 	}
 
+	// Arrival ticks can coincide; cancellation is explicit, not inferred from time.
+	if _, err := tx.Exec(ctx, `DELETE FROM unit_expeditions WHERE unit_id = $1`, o.UnitID); err != nil {
+		return nil, fmt.Errorf("close recalled expedition: %w", err)
+	}
+
 	newArriveTick := currentTick + travelTicks
 	arrPayload := unit.ScheduledUnitArrivalPayload{UnitID: o.UnitID, WorldID: o.WorldID, ArriveTick: &newArriveTick}
 	if err := scheduler.EnqueueTickTx(ctx, tx, o.WorldID, events.ScheduledUnitArrival, arrPayload, currentTick+travelTicks); err != nil {

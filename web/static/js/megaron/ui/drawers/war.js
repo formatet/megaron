@@ -12,6 +12,7 @@ import { loadCityDrawer } from './city.js';
 import { retreatBody, retreatDefaultSectionHTML, unitRetreatControlHTML } from '../retreat.js';
 import { canTakeStance, stanceSentLine } from '../stance.js';
 import { warMovements } from '../movements.js';
+import { configureExpedition, expeditionTicks, expeditionOrderText, expeditionMissionText } from '../expedition.js';
 import { createMarchPreview } from '../march_preview.js';
 import { orderRunnerHTML } from '../runner_status.js';
 
@@ -139,7 +140,9 @@ export async function loadWarDrawer() {
         fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`),
         loadRetreatDefaultSection(),
       ]);
-      const allUnits = unitsRes && unitsRes.ok ? ((await unitsRes.json()).units || []) : [];
+      const unitResponse = unitsRes && unitsRes.ok ? await unitsRes.json() : {};
+      expeditionRules = unitResponse.expedition_rules;
+      const allUnits = unitResponse.units || [];
       let armyHtml = retreatSec + '<div class="dsec"><div class="dsec-title">Units</div>';
       armyHtml += allUnits.length
         ? allUnits.map(u => renderUnitCard(u)).join('')
@@ -167,7 +170,9 @@ export async function loadWarDrawer() {
     const buildings = new Set((recPd.buildings || []).map(b => b.type));
     const canRec = {};
     (recPd.can_recruit || []).forEach(r => { canRec[r.unit] = r.can_recruit; });
-    const allUnits = unitsRes && unitsRes.ok ? ((await unitsRes.json()).units || []) : [];
+    const unitResponse = unitsRes && unitsRes.ok ? await unitsRes.json() : {};
+    expeditionRules = unitResponse.expedition_rules;
+    const allUnits = unitResponse.units || [];
     // catalogue is null on fetch failure (getUnitCatalogue already logged it) —
     // catByType then stays empty and every row degrades to "cost data
     // unavailable" below instead of falling back to a guessed number.
@@ -198,6 +203,11 @@ export async function loadWarDrawer() {
         </select>
         <button onclick="unitMarchSend()" style="padding:.2rem .45rem;border:1px solid var(--border);background:var(--accent-war);color:#fff;font-size:.7rem;cursor:pointer">March →</button>
         <button onclick="closeMarchPanel()" style="padding:.2rem .45rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.7rem;cursor:pointer">Cancel</button>
+      </div>
+      <div id="wmp-explore-row" style="margin-top:.3rem"><label><input id="wmp-explore-chk" type="checkbox"> Explore the surrounding area</label></div>
+      <div id="wmp-expedition" style="display:none;margin-top:.2rem">
+        <label>Expedition duration <input id="wmp-ticks" type="number" step="1" style="width:52px;font:inherit;background:var(--warm-white);color:var(--text);border:1px solid var(--border)"> game days</label>
+        <div id="wmp-mission" style="font-size:.72rem;color:var(--text-dim);margin-top:.2rem"></div>
       </div>
       <div id="wmp-land-row" style="display:none;margin-top:.3rem;padding-top:.3rem;border-top:1px solid var(--border);gap:.3rem;align-items:center;flex-wrap:wrap">
         <label style="color:var(--text-dim)"><input id="wmp-land-chk" type="checkbox" onchange="wmpLandToggle()"> Land troops here (Q,R above is the LAND hex — the ship sails to the sea hex next to it, lands its cargo, then sails home on its own)</label>
@@ -674,6 +684,7 @@ function renderUnitCard(u) {
     + '</div>'
     + progress
     + (loc ? '<div style="font-size:.65rem;color:var(--text-dim)">' + loc + '</div>' : '')
+    + (u.expedition ? '<div style="font-size:.72rem;color:var(--text-dim)">' + esc(expeditionMissionText(u.expedition)) + '</div>' : '')
     + pendingOrder
     + (actions ? '<div style="margin-top:.2rem;display:flex;gap:.2rem;flex-wrap:wrap;align-items:center">' + actions + '</div>' : '')
     + redirectRow + pickupRow + (isMarching ? orderStatus : '')
@@ -762,6 +773,7 @@ function wmpLandEligible(unitID) {
   return !!(u && u.category === 'naval' && u.status === 'garrison' && u.cargo_unit_id);
 }
 
+let expeditionRules;
 const warMarchPreview = createMarchPreview(html => {
   const el = document.getElementById('wmp-eta');
   if (el) el.innerHTML = html;
@@ -773,13 +785,20 @@ function updateWarMarchPreview() {
   const r = document.getElementById('wmp-r').value;
   if (q === '' || r === '' || !Number.isInteger(Number(q)) || !Number.isInteger(Number(r))) {
     warMarchPreview.update(State.WORLD_ID, [], {});
+    document.getElementById('wmp-mission').textContent = '';
     return;
   }
   const land = document.getElementById('wmp-land-chk')?.checked && wmpLandEligible(_marchUnitID);
   const colonize = land && document.getElementById('wmp-land-colonize-chk')?.checked;
   const u = (State.unitsData || []).find(x => x.id === _marchUnitID);
+  const explore = !land && document.getElementById('wmp-explore-chk').checked;
+  document.getElementById('wmp-expedition').style.display = explore ? 'block' : 'none';
+  let ticks;
+  try { if (explore) ticks = expeditionTicks(document.getElementById('wmp-ticks')); }
+  catch (error) { document.getElementById('wmp-mission').textContent = error.message; warMarchPreview.update(State.WORLD_ID, [], {}); return; }
+  document.getElementById('wmp-mission').textContent = explore ? expeditionOrderText(q, r, ticks, expeditionRules) : '';
   warMarchPreview.update(State.WORLD_ID, [{ id: _marchUnitID, name: u?.display_name || 'Unit' }], {
-    target_q: Number(q), target_r: Number(r), intent: land ? 'land' : '',
+    target_q: Number(q), target_r: Number(r), intent: land ? 'land' : (explore ? 'explore' : ''), ticks,
     stance: land ? '' : document.getElementById('wmp-stance').value,
     cargo_intent: colonize ? 'colonize' : '',
     name: colonize ? document.getElementById('wmp-land-name').value.trim() : '',
@@ -796,6 +815,11 @@ export function unitMarch(unitID) {
     const card = document.getElementById('ucard-' + unitID);
     if (card) card.after(panel);
     panel.style.display = '';
+    configureExpedition(document.getElementById('wmp-ticks'), expeditionRules);
+    const u = (State.unitsData || []).find(x => x.id === unitID);
+    const explore = document.getElementById('wmp-explore-chk');
+    explore.checked = u?.category === 'naval';
+    explore.disabled = u?.category === 'naval';
     panel.oninput = updateWarMarchPreview;
     panel.onchange = updateWarMarchPreview;
     document.getElementById('wmp-err').textContent = '';
@@ -817,6 +841,11 @@ export function unitMarch(unitID) {
 export function wmpLandToggle() {
   const landChk = document.getElementById('wmp-land-chk');
   const on = !!(landChk && landChk.checked);
+  const explore = document.getElementById('wmp-explore-chk');
+  const u = (State.unitsData || []).find(x => x.id === _marchUnitID);
+  if (on) explore.checked = false;
+  else if (u?.category === 'naval') explore.checked = true;
+  document.getElementById('wmp-explore-row').style.display = on ? 'none' : '';
   const colonizeRow = document.getElementById('wmp-land-colonize-row');
   if (colonizeRow) colonizeRow.style.display = on ? 'flex' : 'none';
   const stanceSelect = document.getElementById('wmp-stance');
@@ -849,7 +878,12 @@ export async function unitMarchSend() {
   const land = !!(landChk && landChk.checked
     && document.getElementById('wmp-land-row').style.display !== 'none');
   const body = { target_q: q, target_r: r };
-  let intentLabel = 'march';
+  if (!land && document.getElementById('wmp-explore-chk').checked) {
+    body.intent = 'explore';
+    try { const ticks = expeditionTicks(document.getElementById('wmp-ticks')); if (ticks !== undefined) body.ticks = ticks; }
+    catch (error) { errEl.textContent = error.message; return; }
+  }
+  let intentLabel = body.intent || 'march';
   if (land) {
     body.intent = 'land';
     intentLabel = 'land';

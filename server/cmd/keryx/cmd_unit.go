@@ -141,7 +141,7 @@ arrives, and STAYS — there is no patrol timer and no auto-return, unlike a shi
 A posted watch extends your fog-of-war from where it stands, spots foreign
 marches passing nearby, and intercepts enemy caravans within reach. This is how
 scouting accumulates into a front instead of a round trip: 'march --intent
-explore' reveals a target and then brings the unit straight home again.
+explore' explores an area for a chosen duration, then brings the unit home.
 
 Cost: a unit in the field eats DOUBLE the grain it would in garrison, for as
 long as it stands out there. A watch is a standing expense, not a free eye.`,
@@ -244,6 +244,9 @@ func unitListCmd() *cobra.Command {
 				}
 				fmt.Printf("%-36s  %-46s  %-8s  %-10s  %-9s  %s\n",
 					u.ID, name, formatSize(c, u), u.Status, stanceStr(u.Stance), locationStr(c, u, homes))
+				if u.Expedition != nil {
+					fmt.Println("  " + expeditionMissionText(u.Expedition))
+				}
 			}
 			return nil
 		},
@@ -309,6 +312,7 @@ type unitRow struct {
 	// be embarked carries the caller's own idle ships eligible to fetch it.
 	CanFetchByShip bool               `json:"can_fetch_by_ship"`
 	PickupShips    []pickupShipChoice `json:"pickup_ships"`
+	Expedition     *expeditionMission `json:"expedition,omitempty"`
 }
 
 // pickupShipChoice is one ship offered as a pickup choice for a fetchable
@@ -593,6 +597,7 @@ func unitMarchCmd() *cobra.Command {
 	var yes bool
 	var landColonize bool
 	var previewOnly bool
+	var expeditionTicks int
 
 	cmd := &cobra.Command{
 		Use:   "march",
@@ -617,17 +622,15 @@ Terrain passability:
 A land unit must reach 100 men (garrison status) before it can march.
 A unit in fortify stance must be cleared (stance none) before marching.
 
-Exploring: any march into fog or unknown territory reveals the route it
-sweeps (dimmed on 'keryx map' thereafter) once the unit arrives — the
-server does not FOW-gate the destination, only the route (A* over known
-terrain). Run 'keryx map' first to see the frontier coordinates (fog
-tiles bordering what you already know).
+Exploring: an explore order may target an area in fog. The server chooses
+unseen reachable ground there and records what the unit sees along its route.
+Run 'keryx map' to see the frontier coordinates.
 
---intent explore sends the unit there AND automatically marches it back
-home afterwards — no recall needed. The unit must currently be garrisoned
-at a settlement (it needs a home to return to). Works for land or naval
-units; its main use is sending a ship out to sweep fog and sail home on
-its own.
+--intent explore explores an area around the chosen hex for --ticks game days.
+It turns home by half the duration and reports what it saw on return. It needs
+a reachable city of yours to return to. A land unit in the field receives the
+order by Runner; a ship must be commanded in port. Works for land or naval
+units. Omit --ticks for the server default; the server validates the range.
 
 --intent land puts a laden ship's cargo ashore (megaron_plan_
 skeppsuppdrag_landsatt.md R1): the ship must be a naval unit, in its own
@@ -657,8 +660,8 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
   keryx unit march --unit <id> --intent colonize --name Thapsos
   # Any march reveals fog along its route toward a frontier coordinate:
   keryx unit march --unit <id> --q 12 --r -8
-  # Explore: sails/marches to the target then automatically returns home
-  keryx unit march --unit <id> --q 12 --r -8 --intent explore
+  # Explore an area for 12 game days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
   # Land troops from a laden ship in port, then sail home on its own:
   keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
   # ...and found a colony there with no further order:
@@ -667,6 +670,9 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
   keryx unit march --unit <id> --q 5 --r -3 --mode annex`,
 		Args: rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			if cmd.Flags().Changed("ticks") && (intent != "explore" || expeditionTicks <= 0) {
+				return fmt.Errorf("--ticks requires --intent explore and a positive duration")
+			}
 			c := newClient(cfg)
 			resolvedUnitID, uerr := resolveUnitID(c, cfg.WorldID, unitID)
 			if uerr != nil {
@@ -695,6 +701,9 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 			body := map[string]any{
 				"target_q": targetQ,
 				"target_r": targetR,
+			}
+			if cmd.Flags().Changed("ticks") {
+				body["ticks"] = expeditionTicks
 			}
 			if stance != "" {
 				body["stance"] = stance
@@ -780,7 +789,13 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 				}
 			}
 			if intent == "explore" {
-				fmt.Print(" — it will sail/march home automatically once it arrives")
+				var receipt struct {
+					Expedition *expeditionMission `json:"expedition"`
+				}
+				_ = json.Unmarshal(data, &receipt)
+				if receipt.Expedition != nil {
+					fmt.Print(" — " + expeditionMissionText(receipt.Expedition))
+				}
 			}
 			if intent == "land" {
 				if landColonize {
@@ -811,13 +826,14 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 		},
 	}
 
+	cmd.Flags().IntVar(&expeditionTicks, "ticks", 0, "explore duration in game days (omit for server default)")
 	cmd.Flags().BoolVar(&previewOnly, "preview", false, "estimate arrival without sending an order")
 	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
 	cmd.Flags().IntVar(&targetQ, "q", 0, "target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)")
 	cmd.Flags().IntVar(&targetR, "r", 0, "target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)")
 	cmd.Flags().StringVar(&target, "target", "", "target hex as q,r — alternative to --q/--r (e.g. 5,-3)")
 	cmd.Flags().StringVar(&stance, "stance", "", "stance on arrival: fortify|storm|sentry")
-	cmd.Flags().StringVar(&intent, "intent", "", "arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (auto-returns home after reaching the target; unit must be garrisoned at a settlement) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)")
+	cmd.Flags().StringVar(&intent, "intent", "", "arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (explores the surrounding area, turns home by half the chosen duration; unit must be garrisoned at a settlement) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)")
 	cmd.Flags().StringVar(&name, "name", "", "colony name (with --intent colonize, or --intent land --colonize)")
 	cmd.Flags().StringVar(&mode, "mode", "", "conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)")
 	cmd.Flags().BoolVar(&yes, "yes", false, "skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)")
