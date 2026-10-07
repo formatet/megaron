@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Real shared march menu via map click, per-unit audit and garrison.
-Usage: python3 tools/simple_march_live.py OUT BUILD_COMMIT baseline|map|war|land
-OUT contains freshly built temenos and keryx. No SQL fixtures or inherited game
-configuration; only own temporary containers/process/private config are removed.
+"""Real War cards, More/stance and march/recall to per-unit audit and home.
+Usage: python3 tools/war_cards_live.py OUT BUILD_COMMIT baseline|after|naval [WEB_DIR]
+OUT contains a freshly built temenos. baseline uses archived unchanged WEB_DIR.
+Every arm creates fresh PG16/Redis and uses ordinary player APIs and web clicks;
+SQL is read-only audit, no fixtures. Only own processes/containers are removed.
 """
 import json
 import os
@@ -19,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = Path(sys.argv[1]).resolve()
 EXPECTED = sys.argv[2]
 MODE = sys.argv[3] if len(sys.argv) > 3 else "after"
-assert MODE in ("baseline", "after")
+assert MODE in ("baseline", "after", "naval")
 OUT.mkdir(parents=True, exist_ok=True)
 PREFIX = 'megaron-war-cards-' + secrets.token_hex(4)
 containers, errors = [], []
@@ -86,20 +87,16 @@ try:
     token = api('/api/v1/auth/register', 'POST', {'username': 'simple-recall-all'+secrets.token_hex(4), 'password': secrets.token_urlsafe(32)})['access_token']
     worldpath = '/api/v1/worlds/' + world
     joined = api(worldpath+'/join', 'POST', {}, token)
-    # Landing needs a real coastal founding and its Poseidon galley. Select
-    # a coastal player's normal spawn before founding; never create a hull
-    # through SQL or mistake an inland start for a broken march menu.
-    if MODE == 'land':
+    if MODE == 'naval':
         for attempt in range(20):
             spawn = joined['tile']
             seen = api(worldpath+'/map', token=token)
             seen = seen if isinstance(seen, list) else seen['tiles']
             if any(t['q'] == spawn['Q'] and t['r'] == spawn['R'] and t.get('coastal') for t in seen):
                 break
-            token = api('/api/v1/auth/register', 'POST', {'username': 'landing'+secrets.token_hex(4), 'password': secrets.token_urlsafe(32)})['access_token']
+            token = api('/api/v1/auth/register', 'POST', {'username': 'warship'+secrets.token_hex(4), 'password': secrets.token_urlsafe(32)})['access_token']
             joined = api(worldpath+'/join', 'POST', {}, token)
-        else:
-            raise AssertionError('no coastal spawn found via normal player joins')
+        else:raise AssertionError('no coastal spawn via player joins')
     founded = api(worldpath+'/founding/settle', 'POST', {'name': 'Nostos'}, token)
     assert founded.get('settlement_id'), founded
     data=api(worldpath+'/units',token=token)
@@ -133,7 +130,7 @@ try:
             card.scroll_into_view_if_needed()
             page.locator('#drawer-war').screenshot(path=str(OUT/(prefix+'-'+label+'.png')))
             assert card.evaluate('(e)=>e.scrollWidth<=e.clientWidth'),'card overflow'
-            if MODE=='after':
+            if MODE!='baseline':
                 details=card.locator('details')
                 assert details.count()==1 and not details.evaluate('(e)=>e.open')
                 details.locator('summary').click()
@@ -141,13 +138,43 @@ try:
                 assert card.evaluate('(e)=>e.scrollWidth<=e.clientWidth'),'More overflow'
                 details.locator('summary').click()
         page.set_viewport_size({'width':1280,'height':900})
-    war();shots('city')
-    if MODE=='after':
+    war()
+    naval_receipts=[]
+    if MODE=='naval':
+        ship=next(u for u in data['units'] if u['category']=='naval' and u['status']=='garrison')
+        shipcard=page.locator('#ucard-'+ship['id'])
+        for action in ['Load','Unload']:
+            shipcard.locator('details summary').click()
+            expect(shipcard.get_by_role('button',name=action,exact=True)).to_be_visible()
+            for label,width,height in [('desktop',1280,900),('mobile',390,844)]:
+                page.set_viewport_size({'width':width,'height':height})
+                shipcard.scroll_into_view_if_needed()
+                page.locator('#drawer-war').screenshot(path=str(OUT/('ship-'+action.lower()+'-more-'+label+'.png')))
+                assert shipcard.evaluate('(e)=>e.scrollWidth<=e.clientWidth'),'ship More overflow'
+            page.set_viewport_size({'width':1280,'height':900})
+            with page.expect_response(lambda r:r.url.endswith('/units/'+ship['id']+'/'+action.lower()) and r.request.method=='POST') as pending:
+                shipcard.get_by_role('button',name=action,exact=True).click()
+            response=pending.value;assert response.status==200,response.status
+            naval_receipts.append({'verb':action,'http_status':response.status,'request':response.request.post_data_json,'receipt':response.json()})
+            page.wait_for_timeout(300);war()
+        finalship=next(u for u in api(worldpath+'/units',token=token)['units'] if u['id']==ship['id'])
+        assert not finalship.get('cargo_unit_id'),finalship
+    shots('city')
+    if MODE=='naval':
+        final_units=api(worldpath+'/units',token=token)['units']
+        cargo_id=naval_receipts[0]['request']['unit_id']
+        assert next(u for u in final_units if u['id']==cargo_id)['status']=='garrison',final_units
+        assert not errors,errors
+        proof={'health':health,'mode':MODE,'naval_receipts':naval_receipts,'final_units':final_units,'browser_errors':errors,'sql_mutations':False}
+        (OUT/'proof.json').write_text(json.dumps(proof,indent=2)+'\n')
+        print(json.dumps({'health':health,'mode':MODE,'load_unload':True}))
+        raise SystemExit(0)
+    if MODE!='baseline':
         expect(card).to_contain_text('in the city')
         assert not card.locator('#ustance-'+uid).is_visible()
     stance_receipts=[]
     for stance in ['sentry','fortify','none']:
-        if MODE=='after':card.locator('details summary').click()
+        if MODE!='baseline':card.locator('details summary').click()
         card.locator('#ustance-'+uid).select_option(stance)
         with page.expect_response(lambda r:r.url.endswith('/units/'+uid+'/stance') and r.request.method=='POST') as pending:
             card.locator('button[onclick="unitStance(\''+uid+'\')"]').click()
@@ -155,7 +182,7 @@ try:
         stance_receipts.append({'stance':stance,'http_status':response.status,'receipt':response.json()})
         page.wait_for_timeout(300)
         war()
-        if MODE=='after' and stance=='fortify':assert card.get_by_role('button',name='March',exact=True).count()==0
+        if MODE!='baseline' and stance=='fortify':assert card.get_by_role('button',name='March',exact=True).count()==0
     card.get_by_role('button',name='March',exact=True).click()
     centre=min(nearby,key=lambda t:(abs(t['r']-homer),abs(t['q']-homeq-4),t['q'],t['r']))
     q,r=centre['q'],centre['r']
@@ -174,15 +201,15 @@ try:
     page.locator('#mctx-more summary').click();page.locator('#mctx-ticks').fill('14')
     with page.expect_response(lambda r:r.url.endswith('/units/'+uid+'/march') and r.request.method=='POST') as pending:
         page.locator('#mctx-send').click()
-    march=pending.value;assert march.status==202,march.status
+    march=pending.value;assert march.status==202,(march.status,march.json())
     page.locator('.mctx-close').click();war()
     expect(card.get_by_role('button',name='Recall',exact=True)).to_be_visible()
-    if MODE=='after':
+    if MODE!='baseline':
         expect(card).to_contain_text('on the march')
         assert not card.locator('#ustance-'+uid).is_visible()
         assert not card.get_by_role('button',name='Redirect',exact=True).is_visible()
     shots('marching')
-    if MODE=='after':
+    if MODE!='baseline':
         card.locator('details summary').click()
         card.get_by_role('button',name='Redirect',exact=True).click()
         card.get_by_text('or type coordinates',exact=True).click()
@@ -193,7 +220,7 @@ try:
         card.get_by_role('button',name='Recall',exact=True).click()
     recall=pending.value;assert recall.status==202,recall.status
     expect(card.locator('#uorder-'+uid)).to_contain_text('order sent by')
-    if MODE=='after':expect(card.locator('#uorder-'+uid)).to_contain_text('messenger')
+    if MODE!='baseline':expect(card.locator('#uorder-'+uid)).to_contain_text('messenger')
     deadline=time.monotonic()+200
     while time.monotonic()<deadline:
         final=next(u for u in api(worldpath+'/units',token=token)['units'] if u['id']==uid)
@@ -205,7 +232,7 @@ try:
     assert 'UnitMarchOrdered|1' in audits and 'MarchRecalled|1' in audits,audits
     assert 'OrderDeliveryFailed' not in audits,audits
     assert not errors,errors
-    proof={'health':health,'mode':MODE,'browser_errors':errors,'stance_receipts':stance_receipts,
+    proof={'health':health,'mode':MODE,'browser_errors':errors,'stance_receipts':stance_receipts,'naval_receipts':naval_receipts,
         'march':{'http_status':march.status,'request':march.request.post_data_json,'receipt':march.json()},
         'recall':{'http_status':recall.status,'request':recall.request.post_data_json,'receipt':recall.json()},
         'final_unit':final,'audit_rows':audits,'sql_mutations':False}

@@ -207,3 +207,19 @@ skeppet återvända. `baseline` tar samma menybilder och resa med gamla assets:
 valfri fjärde parameter anger en arkiverad web-katalog.
 `python3 tools/simple_march_mutations.py OUT` bryter fysiskt mängd/enhetslås/
 kolonilast-body, kräver namngiven assertion och återställer/grönt efter varje arm.
+
+## War-kort (I)
+
+Bygg `server/cmd/server` med rensad miljö till `OUT/temenos` och
+`-ldflags '-X main.buildCommit=<hash>'`, från eget worktree.
+`python3 tools/war_cards_live.py OUT <hash> after` skapar färsk PG16/Redis,
+registrerar/grundar en verklig Wanax, öppnar More, ger sentry/fortify/clear genom
+webben och skickar March/Recall. Förvald menuenhet och port-/landregler bevaras.
+Desktop/390px-bilder av stängt/öppet More, anrop/kvitton, healthz, audit och
+slutenhet sparas i OUT. Typad redirect öppnas men dispatchas inte av scenariot. Läget `naval` väljer
+en kustgrundning genom vanliga joins och provar More→Load/Unload samt kontroll
+av samma cargo tillbaka i garnison; det är en separat färsk arm.
+Baslinje: samma kommando med `baseline` och fjärde argumentet en oförändrad
+arkiverad web-katalog. Varje arm får egen tom DB och eget OUT.
+`python3 tools/war_cards_mutations.py OUT` bryter ankomstvakten, More-placeringen
+och navalrecall-vakten fysiskt; kräver namngivet assertionrött och restoredgrönt.

@@ -1,0 +1,105 @@
+{
+  "health": {
+    "commit": "93759a46",
+    "migration": 160,
+    "status": "ok"
+  },
+  "mode": "baseline",
+  "browser_errors": [],
+  "stance_receipts": [
+    {
+      "stance": "sentry",
+      "http_status": 200,
+      "receipt": {
+        "reaction_foreign": "intercept",
+        "sentry_q": 2,
+        "sentry_r": 35,
+        "stance": "sentry",
+        "unit_id": "57377e65-e070-4be2-bba3-1e25abc486c1"
+      }
+    },
+    {
+      "stance": "fortify",
+      "http_status": 200,
+      "receipt": {
+        "reaction_foreign": "",
+        "sentry_q": null,
+        "sentry_r": null,
+        "stance": "fortify",
+        "unit_id": "57377e65-e070-4be2-bba3-1e25abc486c1"
+      }
+    },
+    {
+      "stance": "none",
+      "http_status": 200,
+      "receipt": {
+        "reaction_foreign": "",
+        "sentry_q": null,
+        "sentry_r": null,
+        "stance": "",
+        "unit_id": "57377e65-e070-4be2-bba3-1e25abc486c1"
+      }
+    }
+  ],
+  "march": {
+    "http_status": 202,
+    "request": {
+      "target_q": 1,
+      "target_r": 35,
+      "intent": "explore",
+      "ticks": 14
+    },
+    "receipt": {
+      "arrival_tick": 5,
+      "arrives_at": "2026-10-07T22:33:00.945688533+02:00",
+      "arrives_at_utc": "2026-10-07T20:33:00.945688533Z",
+      "carried_silver": 0,
+      "departs_at": "2026-10-07T22:32:30.945688533+02:00",
+      "duration_ticks": 5,
+      "expedition": {
+        "area_q": 1,
+        "area_r": 35,
+        "home_by_tick": 14,
+        "length_ticks": 14,
+        "turn_tick": 7
+      },
+      "origin_q": 2,
+      "origin_r": 35,
+      "purse_shortfall": 0,
+      "target_q": 0,
+      "target_r": 33,
+      "unit_id": "57377e65-e070-4be2-bba3-1e25abc486c1"
+    }
+  },
+  "recall": {
+    "http_status": 202,
+    "request": {},
+    "receipt": {
+      "courier_arrives_at": "2026-10-07T22:32:49.603722817+02:00",
+      "courier_due_tick": 3,
+      "messenger_id": "0bb81984-f1b5-46d1-af99-b512573f0f5e",
+      "mode": "recall",
+      "status": "order_dispatched",
+      "unit_id": "57377e65-e070-4be2-bba3-1e25abc486c1",
+      "verb": "recall"
+    }
+  },
+  "final_unit": {
+    "id": "57377e65-e070-4be2-bba3-1e25abc486c1",
+    "type": "spearman",
+    "category": "land",
+    "size": 100,
+    "status": "garrison",
+    "deployable": true,
+    "display_name": "1st Spearmen of Nostos",
+    "ordinal": 1,
+    "support_settlement_id": "da0d334e-b043-4593-8866-46a89c5f52bd",
+    "support_settlement_name": "Nostos",
+    "settlement_id": "da0d334e-b043-4593-8866-46a89c5f52bd",
+    "q": 2,
+    "r": 35,
+    "in_battle": false
+  },
+  "audit_rows": "MarchRecalled|1\nUnitMarchOrdered|1\nUnitStanceChanged|3",
+  "sql_mutations": false
+}
