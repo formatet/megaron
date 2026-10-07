@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Real batch recall via register/join/found, web or CLI, to garrison.
-Usage: python3 tools/recall_live.py OUT BUILD_COMMIT web|cli|single [single-delay-seconds]
+Usage: python3 tools/recall_live.py OUT BUILD_COMMIT web|cli|single [group|singles (web) / single-delay-seconds]
 OUT contains freshly built temenos and keryx. No SQL fixtures or inherited game
 configuration; only own temporary containers/process/private config are removed.
 """
@@ -20,6 +20,8 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = Path(sys.argv[1]).resolve()
 EXPECTED, MODE = sys.argv[2:4]
 assert MODE in ('web', 'cli', 'single')
+SCENE = sys.argv[4] if MODE == 'web' and len(sys.argv) > 4 else 'group'
+assert MODE != 'web' or SCENE in ('group','singles')
 OUT.mkdir(parents=True, exist_ok=True)
 PREFIX = 'megaron-recall-' + secrets.token_hex(4)
 containers, errors = [], []
@@ -87,11 +89,10 @@ try:
     api(worldpath+'/join', 'POST', {}, token)
     founded = api(worldpath+'/founding/settle', 'POST', {'name': 'Nostos'}, token)
     assert founded.get('settlement_id'), founded
-    api(worldpath+'/provinces/'+founded['province_id']+'/recruit','POST',{'unit_type':'spearman','count':1},token)
     data = api(worldpath+'/units', token=token)
     candidates = [u for u in data['units'] if u.get('deployable') and u['status']=='garrison' and u['category']=='land']
-    assert len(candidates)>=3, data
-    chosen = candidates[:3]
+    assert len(candidates)>=2, data
+    chosen = candidates[:2]
     provinces = api(worldpath+'/provinces',token=token)
     provinces = provinces if isinstance(provinces,list) else provinces['provinces']
     city = next(p for p in provinces if p.get('settlement_id')==founded['settlement_id'] or p.get('id')==founded.get('province_id'))
@@ -104,10 +105,6 @@ try:
     cfg=OUT/'private-config.json';cfg.write_text(json.dumps({'server':base,'token':token,'world_id':world}));cfg.chmod(0o600)
     cli_env={'HOME':os.environ['HOME'],'PATH':os.environ['PATH'],'POLEIA_CONFIG':str(cfg)}
     def cli(*args): return subprocess.check_output([str(OUT/'keryx'),*args],env=cli_env,text=True)
-    for idx,u in enumerate(chosen):
-        uq,ur=(q,r) if idx<2 else (homeq,homer+3)
-        receipt=json.loads(cli('march','--unit',u['id'],'--target',f'{uq},{ur}','--intent','explore','--ticks',str(data['expedition_rules']['max_ticks']),'--json'))
-        assert receipt.get('unit_id')==u['id'] and receipt.get('expedition'),receipt
     single_receipts=[]
     with sync_playwright() as pw:
         browser=pw.chromium.launch();page=browser.new_page(viewport={'width':1280,'height':900})
@@ -119,13 +116,19 @@ try:
         page.wait_for_function('window.unitRecallAll !== undefined')
         page.evaluate("window.openDrawer('war')")
         page.wait_for_selector('#recall-batch-send')
+        brief=page.locator('#lb-war .lb-dismiss')
+        if brief.count():brief.click()
+        for idx,u in enumerate(chosen):
+            uq,ur=(q,r) if SCENE != 'singles' or idx == 0 else (homeq,homer+3)
+            receipt=json.loads(cli('march','--unit',u['id'],'--target',f'{uq},{ur}','--intent','explore','--ticks',str(data['expedition_rules']['max_ticks']),'--json'))
+            assert receipt.get('unit_id')==u['id'] and receipt.get('expedition'),receipt
+        page.evaluate("async()=>{const war=await import('/static/js/megaron/ui/drawers/war.js');await war.loadWarDrawer();}")
         if MODE=='web':
             with page.expect_response(lambda r:r.url.endswith('/units/recall') and r.request.method=='POST') as response:
                 page.locator('#recall-batch-send').click()
             report=response.value.json();assert response.value.status==200,report
             expect(page.locator('#recall-batch-result')).to_contain_text('recall sent by Runner')
-            expect(page.locator('#recall-batch-result')).to_contain_text('Group of two units')
-            expect(page.locator('#recall-batch-result')).to_contain_text('Single unit')
+            expect(page.locator('#recall-batch-result')).to_contain_text('Group of two units' if SCENE == 'group' else 'Single unit')
             expect(page.locator('#recall-batch-result')).to_contain_text('rejected')
         elif MODE=='single':
             time.sleep(float(sys.argv[4]) if len(sys.argv)>4 else 0)
@@ -141,8 +144,10 @@ try:
         dispatched={x['unit_id'] for x in report['results'] if x['status']=='order_dispatched'}
         assert {u['id'] for u in chosen}<=dispatched,report
         assert all(x.get('reason') and x.get('name') for x in report['results'] if x['status']=='rejected'),report
+        page.locator('#recall-batch-send').evaluate("e=>{const section=e.closest('.dsec'),body=e.closest('.drawer-body');body.scrollTop += section.getBoundingClientRect().top-body.getBoundingClientRect().top;}")
         page.locator('#drawer-war').screenshot(path=str(OUT/'recall-desktop.png'))
         page.set_viewport_size({'width':390,'height':844})
+        page.locator('#recall-batch-send').evaluate("e=>{const section=e.closest('.dsec'),body=e.closest('.drawer-body');body.scrollTop += section.getBoundingClientRect().top-body.getBoundingClientRect().top;}")
         page.locator('#drawer-war').screenshot(path=str(OUT/'recall-mobile.png'))
         assert page.locator('#drawer-war').evaluate('(e)=>e.scrollWidth<=e.clientWidth'), 'drawer overflows on mobile'
         history=[];legacy_readings=[];deadline=time.monotonic()+120
@@ -167,7 +172,7 @@ try:
     redirected=command('docker','exec',containers[0],'psql','-U','postgres','-d','recall','-Atc',
         "SELECT count(*) FROM events WHERE world_id='"+world+"' AND event_type='MarchRedirected';")
     if MODE!='single': assert int(recalled)==len(dispatched), 'garrison alone is insufficient: every recipient must actually receive recall'
-    proof={'health':health,'mode':MODE,'report':report,'history':history,'db_counts':evidence,'browser_errors':errors,'legacy_receipts':single_receipts,'legacy_unit_readings':legacy_readings,'recall_audits':int(recalled),'redirect_audits':int(redirected)}
+    proof={'health':health,'mode':MODE,'scene':SCENE,'report':report,'history':history,'db_counts':evidence,'browser_errors':errors,'legacy_receipts':single_receipts,'legacy_unit_readings':legacy_readings,'recall_audits':int(recalled),'redirect_audits':int(redirected)}
     (OUT/'proof.json').write_text(json.dumps(proof,indent=2)+'\n')
     print(json.dumps({'health':health,'mode':MODE,'dispatched':len(dispatched),'all_garrison':True,'recall_audits':int(recalled),'redirect_audits':int(redirected),'groups':len(report['groups']),'legacy_measurement_only':MODE=='single'}))
 finally:

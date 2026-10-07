@@ -16,7 +16,7 @@ export function recallBatchBody(target = '', intent = '') {
 
 export function recallBatchControlsHTML() {
   return `<div class="dsec"><div class="dsec-title">Recall all matching units</div>
-    <p class="empty-state">Send every matching marching unit home. Leave both filters blank to recall them all, or narrow the order by destination or task. A Runner carries the order: units turn home when it reaches them. Units meeting in the same place on the same game day can share a Runner.</p>
+    <p class="empty-state">Recall every marching unit that matches these filters. Leave both blank to recall them all. Units turn home when their Runner arrives; those meeting in the same place on the same game day can share one.</p>
     <div class="field"><label for="recall-batch-target">Current destination (optional)</label><input id="recall-batch-target" placeholder="q,r"></div>
     <div class="field"><label for="recall-batch-intent">Current task (optional)</label><input id="recall-batch-intent" placeholder="e.g. explore"></div>
     <button class="btn-small btn-primary" id="recall-batch-send" onclick="unitRecallAll()">Recall all matching units</button>
