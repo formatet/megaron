@@ -1,0 +1,7 @@
+=== RUN   TestAggregateRecallPremise
+    aggregat_recall_premise_test.go:13: unit 1: target=(4,0), depart_tick=0, arrive_tick=10; tick 5 position=(3,0)
+    aggregat_recall_premise_test.go:13: unit 2: target=(4,0), depart_tick=0, arrive_tick=10; tick 5 position=(4,-1)
+--- PASS: TestAggregateRecallPremise (0.00s)
+PASS
+ok  	formatet/megaron/server/internal/combat	0.002s
+
