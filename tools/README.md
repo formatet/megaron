@@ -151,11 +151,14 @@ Ingen spelvärld eller produktionsdata muteras.
 
 `python3 tools/expedition_mutations.py --output-dir OUT` runs fresh-DB baseline, physically removes each of four protections (half-time turn, path sight, transactional report, actual return reservation), requires the named invariant test to fail, restores source after every mutation, then proves restored tests green. Run in an isolated worktree without concurrent edits to expedition.go.
 
-`python3 tools/single_recall_live.py OUT HASH` runs actual single recall and
+`python3 tools/single_recall_live.py OUT HASH [cli|web]` runs actual single recall and
 redirect through Keryx after register/join/found/march on private PG16/Redis and
 clean server environment (tick6s). Requires per-unit MarchRecalled/Redirected
 audits plus both units in garrison; SQL evidence is read-only. Build temenos and
 keryx in OUT, stamping temenos with `-X main.buildCommit=HASH`. Cleans own resources.
+The optional web mode clicks the real War Recall/Redirect buttons in Chromium
+on a separate fresh world, requires the displayed Runner receipt and records
+browser errors; it captures no images and performs no visual judgement.
 `python3 tools/single_recall_mutations.py OUT` requires fresh-DB assertion failures
 when arrival reuse, failure notice/audit or old messenger claim is removed, and
 restores source after every arm.

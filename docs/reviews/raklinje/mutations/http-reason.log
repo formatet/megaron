@@ -1,0 +1,9 @@
+» färsk DB på migration 160 · commit a1298108+ändringar
+2026/10/07 19:57:28 INFO player registered id=df9966b3-12e2-40aa-89ed-3b65c8c6017c username=nomadhost-recall-4cc7037b-b36d-4849-98ba-b2bb5fed749e
+2026/10/07 19:57:28 INFO player registered id=67bd5268-b58c-4d53-bd21-c3c496058f78 username=nomadhost-recall-84669b99-2f92-4a6e-820c-133598628cc9
+--- FAIL: TestRecallNoRoute_HTTPRejectsNamed (0.13s)
+    --- FAIL: TestRecallNoRoute_HTTPRejectsNamed/course (0.07s)
+        unit_recall_no_route_test.go:48: unnamed route rejection: 500 {"error":"order failed"}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.130s
+FAIL

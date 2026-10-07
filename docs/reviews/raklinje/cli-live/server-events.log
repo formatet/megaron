@@ -1,0 +1,32 @@
+{"time":"2026-10-07T19:59:08.755641401+02:00","level":"INFO","msg":"migrations applied"}
+{"time":"2026-10-07T19:59:08.766767943+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"e698f6de-84b0-4bdc-ad08-22441c7a938d","seed":1791395948757734755,"width":56,"height":40,"err":"invalid map: productive tin = 1 (want >= 2); landmass 6 (197 tiles) has 0 rivers (want 1-2); landmass 9 (73 tiles) has 0 rivers (want 1-2)"}
+{"time":"2026-10-07T19:59:09.53277628+02:00","level":"INFO","msg":"world created","name":"Expedition proof","id":"e698f6de-84b0-4bdc-ad08-22441c7a938d","seed":1791395948757734756}
+{"time":"2026-10-07T19:59:09.532813714+02:00","level":"INFO","msg":"world ready","id":"e698f6de-84b0-4bdc-ad08-22441c7a938d"}
+{"time":"2026-10-07T19:59:09.533053925+02:00","level":"INFO","msg":"chronicle opened","world":"Expedition proof","dir":"/tmp/megaron-raklinje-live-20261007/chronicles"}
+{"time":"2026-10-07T19:59:09.535071816+02:00","level":"INFO","msg":"build","commit":"3911cbe30cbab3116c698f8363b368d49d0691fe"}
+{"time":"2026-10-07T19:59:09.535077609+02:00","level":"INFO","msg":"tick worker started","tick_seconds":6}
+{"time":"2026-10-07T19:59:09.535076654+02:00","level":"INFO","msg":"scheduled event worker started","poll":6000000000}
+{"time":"2026-10-07T19:59:09.535230072+02:00","level":"INFO","msg":"keryx server starting","addr":":50071"}
+{"time":"2026-10-07T19:59:09.542935806+02:00","level":"INFO","msg":"daily ticks seeded","worlds":1}
+{"time":"2026-10-07T19:59:09.933489881+02:00","level":"INFO","msg":"player registered","id":"0e695ac8-0736-46d3-b617-67e59a664f96","username":"single-recallf06345db"}
+{"time":"2026-10-07T19:59:09.950002868+02:00","level":"INFO","msg":"world started","world":"e698f6de-84b0-4bdc-ad08-22441c7a938d","wanaxes":1}
+{"time":"2026-10-07T19:59:21.537269368+02:00","level":"INFO","msg":"world tick advanced","world":"e698f6de-84b0-4bdc-ad08-22441c7a938d","tick":1}
+{"time":"2026-10-07T19:59:27.537892937+02:00","level":"INFO","msg":"world tick advanced","world":"e698f6de-84b0-4bdc-ad08-22441c7a938d","tick":2}
+{"time":"2026-10-07T19:59:27.542128005+02:00","level":"INFO","msg":"recall/redirect order reached unit, new course set","unit":"e0932ceb-9e12-43f9-8b5e-cc7c9c3c0dc0","mode":"recall","from_q":12,"from_r":32,"to_q":11,"to_r":29,"arrives_at":"2026-10-07T19:59:51.538585151+02:00"}
+{"time":"2026-10-07T19:59:27.542842657+02:00","level":"INFO","msg":"order delivered — unit turned onto new course","unit":"e0932ceb-9e12-43f9-8b5e-cc7c9c3c0dc0","verb":"recall","arrives_at":"2026-10-07T19:59:51.538585151+02:00"}
+{"time":"2026-10-07T19:59:27.546962357+02:00","level":"INFO","msg":"recall/redirect order reached unit, new course set","unit":"6a5eab5b-7167-4100-903c-d49d50c6679b","mode":"redirect","from_q":12,"from_r":32,"to_q":11,"to_r":29,"arrives_at":"2026-10-07T19:59:51.544008007+02:00"}
+{"time":"2026-10-07T19:59:27.547707193+02:00","level":"INFO","msg":"order delivered — unit turned onto new course","unit":"6a5eab5b-7167-4100-903c-d49d50c6679b","verb":"redirect","arrives_at":"2026-10-07T19:59:51.544008007+02:00"}
+{"time":"2026-10-07T19:59:33.537732994+02:00","level":"INFO","msg":"world tick advanced","world":"e698f6de-84b0-4bdc-ad08-22441c7a938d","tick":3}
+{"time":"2026-10-07T19:59:39.538331533+02:00","level":"INFO","msg":"world tick advanced","world":"e698f6de-84b0-4bdc-ad08-22441c7a938d","tick":4}
+{"time":"2026-10-07T19:59:45.537602728+02:00","level":"INFO","msg":"world tick advanced","world":"e698f6de-84b0-4bdc-ad08-22441c7a938d","tick":5}
+{"time":"2026-10-07T19:59:51.537561361+02:00","level":"INFO","msg":"world tick advanced","world":"e698f6de-84b0-4bdc-ad08-22441c7a938d","tick":6}
+{"time":"2026-10-07T19:59:57.537708648+02:00","level":"INFO","msg":"world tick advanced","world":"e698f6de-84b0-4bdc-ad08-22441c7a938d","tick":7}
+{"time":"2026-10-07T19:59:57.54187226+02:00","level":"INFO","msg":"unit arrived (garrison)","unit":"e0932ceb-9e12-43f9-8b5e-cc7c9c3c0dc0","q":11,"r":29,"status":"garrison"}
+{"time":"2026-10-07T19:59:57.545226824+02:00","level":"INFO","msg":"scout report filed","unit":"6a5eab5b-7167-4100-903c-d49d50c6679b","q":11,"r":29,"terrain":"hills","copper":true,"tin":false,"silver":false,"cedar":false}
+{"time":"2026-10-07T19:59:57.549130313+02:00","level":"INFO","msg":"field unit turning for home","unit":"6a5eab5b-7167-4100-903c-d49d50c6679b","from_q":11,"from_r":29,"home_q":11,"home_r":29}
+{"time":"2026-10-07T20:00:03.536871162+02:00","level":"INFO","msg":"world tick advanced","world":"e698f6de-84b0-4bdc-ad08-22441c7a938d","tick":8}
+{"time":"2026-10-07T20:00:09.538496811+02:00","level":"INFO","msg":"world tick advanced","world":"e698f6de-84b0-4bdc-ad08-22441c7a938d","tick":9}
+{"time":"2026-10-07T20:00:09.541176146+02:00","level":"INFO","msg":"unit returned home from explore","unit":"6a5eab5b-7167-4100-903c-d49d50c6679b","settlement":"dba0294e-166a-4499-8801-4b5e30849330"}
+{"time":"2026-10-07T20:00:09.952904399+02:00","level":"INFO","msg":"scheduled event worker stopped"}
+{"time":"2026-10-07T20:00:09.9529195+02:00","level":"INFO","msg":"tick worker stopped"}
+{"time":"2026-10-07T20:00:09.95292812+02:00","level":"INFO","msg":"shutting down"}

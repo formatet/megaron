@@ -1,0 +1,11 @@
+» färsk DB på migration 160 · commit a1298108+ändringar
+2026/10/07 19:57:22 INFO order messenger already processed or superseded by a later passage — idempotent replay skipped messenger=93cf65ff-5bb0-42e7-9bf5-4c92cdb10a2a
+2026/10/07 19:57:22 INFO order messenger already processed or superseded by a later passage — idempotent replay skipped messenger=8f47534f-e84d-4be9-b41c-6a062beb3de2
+--- FAIL: TestRecallNoRoute_DeliveryNamesReasonOnce (0.06s)
+    --- FAIL: TestRecallNoRoute_DeliveryNamesReasonOnce/recall (0.03s)
+        recall_no_route_test.go:81: route reason hidden: map[messenger_id:93cf65ff-5bb0-42e7-9bf5-4c92cdb10a2a name:infantry of Home player_id:f7bf4924-8f6e-4222-89a5-8bf84f6ffff9 reason:order failed unit_id:9dd20e22-4033-4882-931f-cac07b5ca331 verb:recall world_id:498b90f4-b1db-484f-b58f-c6f627bf7c35]
+    --- FAIL: TestRecallNoRoute_DeliveryNamesReasonOnce/redirect (0.03s)
+        recall_no_route_test.go:81: route reason hidden: map[messenger_id:8f47534f-e84d-4be9-b41c-6a062beb3de2 name:infantry of Home player_id:3fd84003-5622-4c1c-9514-e22625e15213 reason:order failed unit_id:39e4dcb1-0227-49cd-8186-82ac282d7e3b verb:redirect world_id:9e42078f-4e63-409c-838d-aa101d05e7c8]
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.058s
+FAIL

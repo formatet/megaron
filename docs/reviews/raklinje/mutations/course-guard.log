@@ -1,0 +1,11 @@
+» färsk DB på migration 160 · commit a1298108+ändringar
+2026/10/07 19:57:11 INFO recall/redirect order reached unit, new course set unit=883ae14a-8cee-4fea-883c-d26429558215 mode=recall from_q=2 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-07T17:00:00.000Z
+2026/10/07 19:57:11 INFO recall/redirect order reached unit, new course set unit=394c225c-75bc-46db-a482-b522c5abfa21 mode=redirect from_q=2 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-07T17:00:00.000Z
+--- FAIL: TestRecallNoRoute_CoreRejectsWithoutMutation (0.11s)
+    --- FAIL: TestRecallNoRoute_CoreRejectsWithoutMutation/recall/course (0.03s)
+        recall_no_route_test.go:58: missing course accepted or unnamed: result=&{UnitID:883ae14a-8cee-4fea-883c-d26429558215 OwnerID:77f6ebaa-14b5-4034-989b-5a7df576b13c Mode:recall FromQ:2 FromR:0 NewTargetQ:0 NewTargetR:0 ArrivesAt:2026-10-07 17:00:00 +0000 UTC} err=<nil>
+    --- FAIL: TestRecallNoRoute_CoreRejectsWithoutMutation/redirect/course (0.03s)
+        recall_no_route_test.go:58: missing course accepted or unnamed: result=&{UnitID:394c225c-75bc-46db-a482-b522c5abfa21 OwnerID:a982f44f-d947-4a41-a364-3462cb03fd8a Mode:redirect FromQ:2 FromR:0 NewTargetQ:0 NewTargetR:0 ArrivesAt:2026-10-07 17:00:00 +0000 UTC} err=<nil>
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.109s
+FAIL

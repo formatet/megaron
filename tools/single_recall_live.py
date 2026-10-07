@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Real single recall AND redirect from player entry to actual audits and garrison.
-Usage: python3 tools/single_recall_live.py OUT BUILD_COMMIT
+Usage: python3 tools/single_recall_live.py OUT BUILD_COMMIT [cli|web]
 OUT contains freshly built temenos and keryx. No SQL fixtures or inherited game
 configuration; only own temporary containers/process/private config are removed.
 """
@@ -18,10 +18,13 @@ import urllib.request
 ROOT = Path(__file__).resolve().parents[1]
 OUT = Path(sys.argv[1]).resolve()
 EXPECTED = sys.argv[2]
+MODE = sys.argv[3] if len(sys.argv) > 3 else "cli"
+assert MODE in ("cli", "web")
 OUT.mkdir(parents=True, exist_ok=True)
 PREFIX = 'megaron-single-recall-' + secrets.token_hex(4)
 containers, errors = [], []
 proc = None
+browser = playwright = None
 
 
 def command(*args):
@@ -100,10 +103,46 @@ try:
     cfg=OUT/'private-config.json';cfg.write_text(json.dumps({'server':base,'token':token,'world_id':world}));cfg.chmod(0o600)
     cli_env={'HOME':os.environ['HOME'],'PATH':os.environ['PATH'],'POLEIA_CONFIG':str(cfg)}
     def cli(*args):return json.loads(subprocess.check_output([str(OUT/'keryx'),*args,'--json'],env=cli_env,text=True))
+    if MODE == 'web':
+        from playwright.sync_api import sync_playwright, expect
+        playwright = sync_playwright().start()
+        browser = playwright.chromium.launch()
+        page = browser.new_page(viewport={'width': 1280, 'height': 900})
+        page.on('pageerror', lambda error: errors.append(str(error)))
+        page.goto(base+'/', wait_until='domcontentloaded')
+        page.evaluate('t=>localStorage.setItem("poleia_token",t)', token)
+        page.context.add_cookies([{'name': 'poleia_token', 'value': token, 'url': base}])
+        page.goto(base+'/play', wait_until='networkidle')
+        page.wait_for_function('window.openDrawer !== undefined')
     march_receipts=[]
     for u in chosen:
         march_receipts.append(cli('march','--unit',u['id'],'--target',f'{q},{r}','--intent','explore','--ticks',str(data['expedition_rules']['max_ticks'])))
-    receipts=[cli('recall','--unit',chosen[0]['id']),cli('redirect','--unit',chosen[1]['id'],'--target',f'{homeq},{homer}')]
+    if MODE == 'cli':
+        receipts=[cli('recall','--unit',chosen[0]['id']),cli('redirect','--unit',chosen[1]['id'],'--target',f'{homeq},{homer}')]
+    else:
+        page.evaluate("""async ()=>{
+          const war=await import('/static/js/megaron/ui/drawers/war.js');
+          document.getElementById('drawer-war').classList.add('open');
+          await war.loadWarDrawer();
+        }""")
+        receipts=[]
+        first, second = chosen[0]['id'], chosen[1]['id']
+        with page.expect_response(lambda x: '/units/'+first+'/recall' in x.url and x.request.method=='POST') as response:
+            page.locator(f'button[onclick="unitRecall(\'{first}\')"]').click()
+        assert response.value.status==202, response.value.text()
+        receipts.append(response.value.json())
+        expect(page.locator('#uorder-'+first)).to_contain_text('sent by Runner')
+        page.locator(f'button[onclick="unitRedirectToggle(\'{second}\')"]').click()
+        page.locator('#uredir-'+second+' a').click()
+        page.locator('#uredir-q-'+second).fill(str(homeq))
+        page.locator('#uredir-r-'+second).fill(str(homer))
+        with page.expect_response(lambda x: '/units/'+second+'/recall' in x.url and x.request.method=='POST') as response:
+            page.locator(f'button[onclick="unitRedirect(\'{second}\')"]').click()
+        assert response.value.status==202, response.value.text()
+        receipts.append(response.value.json())
+        expect(page.locator('#uorder-'+second)).to_contain_text('sent by Runner')
+        assert not errors, errors
+
     assert all(x['status']=='order_dispatched' for x in receipts),receipts
     history=[];deadline=time.monotonic()+120
     while time.monotonic()<deadline:
@@ -119,10 +158,13 @@ try:
     assert 'MarchRecalled|'+chosen[0]['id']+'|1' in audits and 'MarchRedirected|'+chosen[1]['id']+'|1' in audits,audits
     assert 'OrderDeliveryFailed' not in audits,audits
     queue=command('docker','exec',containers[0],'psql','-U','postgres','-d','single-recall','-Atc',"SELECT event_type,due_tick,processed_at,failed_at,payload FROM scheduled_events WHERE world_id='"+world+"' AND event_type IN ('OrderDelivery','UnitArrival') ORDER BY id;")
-    proof={'health':health,'march_receipts':march_receipts,'receipts':receipts,'history':history,'audit_rows':audits,'queue_rows':queue,'all_garrison':True}
+    assert not errors, errors
+    proof={'mode':MODE,'browser_errors':errors,'health':health,'march_receipts':march_receipts,'receipts':receipts,'history':history,'audit_rows':audits,'queue_rows':queue,'all_garrison':True}
     (OUT/'proof.json').write_text(json.dumps(proof,indent=2)+'\n')
     print(json.dumps({'health':health,'actual_recall_and_redirect_audits':True,'all_garrison':True}))
 finally:
+    if browser is not None: browser.close()
+    if playwright is not None: playwright.stop()
     if proc is not None:proc.terminate();proc.wait(timeout=20)
     for name in containers:subprocess.run(['docker','rm','-f',name],capture_output=True)
     if (OUT/'private-config.json').exists():(OUT/'private-config.json').unlink()
