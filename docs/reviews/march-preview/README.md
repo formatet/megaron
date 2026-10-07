@@ -21,8 +21,8 @@ API: GET `/worlds/{worldID}/units/{unitID}/march-preview`, query fields mirror m
 
 ## Completed client and integration proof
 
-Implementation commits: `f135b768` (CLI), `31b9d90c` (server), `e3b0da77` (web/Codex).
-Branch: `codex/march-preview`; review/merge/deploy belong to Claude per AGENTS.md.
+Original implementation commits before rebase: `f135b768` (CLI), `31b9d90c` (server), `e3b0da77` (web/Codex).
+Branch: `codex/march-preview`; integrated and deployed by Codex on Timothy’s explicit instruction to take over while Claude lacked compute (2026-10-07).
 
 - Full Go suite passed on a fresh PostgreSQL 16 database, migration 158 (`tools/gotest.sh`); full `go vet ./...` passed.
 - All 371 JS tests passed. Tests cover per-unit differences, escaped labels/errors, exact order fields, courier/redirect/unknown forecasts, stale responses and cancellation during debounce.
@@ -38,3 +38,11 @@ Reproduce real proof: build `temenos` with `-ldflags '-X main.buildCommit=<commi
 Logs: `/tmp/megaron-march-preview-{full-go,vet,all-js,browser,web-mutation}.log`; live logs/proofs in `/tmp/megaron-march-preview-live/` and `run2/`.
 
 Limits: snapshot estimate, no resource reservation; dispatch revalidates. Positive-distance Runner orders, redirects and unexplored destinations explicitly have no arrival forecast. This slice does not introduce expedition-duration rules. Claude's subsequent expedition branch requires integration review of the shared preparation and client fields.
+
+## Integration and deployment (2026-10-07)
+
+Rebased without conflicts onto live master `4d6adc74`. Integrated commits: `61d96476` CLI, `0eabd150` server, `889e92b5` web, `25a24d2e` proof. Full fresh-DB Go suite (including world/mapgen), vet and all 371 JS tests passed after rebase. The actual register/join/found/API/CLI/web/send scenario passed again on build `25a24d2e`, migration158, arrival game day5 matching the forecast: [integrated proof](integrated-proof.json).
+
+Fast-forwarded/pushed master and pulled CT126. Air rebuilt automatically; new process logged world-ready for the existing world and build `25a24d2` at 07:25:36. Runtime health: commit `25a24d2`, migration158, status OK; database migration158 dirty=false. Existing world identity/status/tick/city count were unchanged across deployment (active, tick150, 0 cities). No game-state smoke mutation was performed in production; its new public route returns the expected unauthenticated 401. Six served assets match local bytes at both origin and public HTTPS; [deployment proof](deploy-proof.json). No service error entries after the new build.
+
+Installed the tested compiled CLI as `~/go/bin/poleia`; SHA matches the isolated proof binary and `march --help` exposes `--preview`. Claude’s expedition and hexpanel branches remain unmerged. Their subsequent integration must use this shared preparation.

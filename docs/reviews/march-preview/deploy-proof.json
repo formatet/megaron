@@ -1,0 +1,53 @@
+{
+  "implementation": "25a24d2ee5426bf44742c000c4edcbf33ef67351",
+  "assets": {
+    "map.html": {
+      "sha256": "385fe1d3da713c71c1cca3bf2aaf404635c2dac600db16a749c042084fded784",
+      "origin": true,
+      "public": true
+    },
+    "js/megaron/ui/marchctx.js": {
+      "sha256": "c24bd83fce92468a9b4d89b9fce2130b81b5cc999f2f5d3eb30733bc58187cae",
+      "origin": true,
+      "public": true
+    },
+    "js/megaron/ui/drawers/war.js": {
+      "sha256": "0d3d0065d10707bbb835fb91c12af648ec87a7bbf1f8e281599878c48ecebe7c",
+      "origin": true,
+      "public": true
+    },
+    "js/megaron/ui/march_preview.js": {
+      "sha256": "0b9857370fea66337feea8e5b71f03819c6770caa877b8d37e465260e5386506",
+      "origin": true,
+      "public": true
+    },
+    "codex/marching.md": {
+      "sha256": "baee304431711d2af9e1bb76ac176f5fb0bd3c9df1279edb8c940fd3bf849a89",
+      "origin": true,
+      "public": true
+    },
+    "codex/rough-edges.md": {
+      "sha256": "5401425514317bf81117030964f7ef15d332ceba447951087ce016fda23e240b",
+      "origin": true,
+      "public": true
+    }
+  },
+  "runtime_health": {
+    "commit": "25a24d2",
+    "migration": 158,
+    "status": "ok"
+  },
+  "schema_migrations": {
+    "version": 158,
+    "dirty": false
+  },
+  "world": {
+    "id": "f7c90afa-4653-46a6-b14c-473a268efa3e",
+    "status": "active",
+    "current_tick": 150,
+    "cities": 0
+  },
+  "preview_route_without_auth": 401,
+  "service_error_entries_after_new_build": 0,
+  "local_keryx_sha256": "24ce35b12920124f6efe41e75afb72747b1e822ac4ace7e25be66cc7bd028740"
+}
