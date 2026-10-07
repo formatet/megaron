@@ -1,0 +1,776 @@
+{
+  "mode": "land",
+  "browser_errors": [],
+  "health": {
+    "commit": "b1425e0f",
+    "migration": 160,
+    "status": "ok"
+  },
+  "receipts": [
+    {
+      "http_status": 202,
+      "unit_id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+      "request": {
+        "target_q": 47,
+        "target_r": 38,
+        "intent": "land"
+      },
+      "receipt": {
+        "arrival_tick": 3,
+        "arrives_at": "2026-10-07T22:26:45.959500536+02:00",
+        "arrives_at_utc": "2026-10-07T20:26:45.959500536Z",
+        "carried_silver": 0,
+        "departs_at": "2026-10-07T22:26:27.959500536+02:00",
+        "duration_ticks": 3,
+        "expedition": null,
+        "origin_q": 45,
+        "origin_r": 37,
+        "purse_shortfall": 0,
+        "target_q": 48,
+        "target_r": 38,
+        "unit_id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c"
+      }
+    }
+  ],
+  "history": [
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "1f40e90e-bcda-42f4-8605-13b012ccfe9c",
+        "status": "garrison",
+        "arrival_tick": null,
+        "expedition": null
+      }
+    ]
+  ],
+  "audit_rows": "UnitMarchOrdered|1f40e90e-bcda-42f4-8605-13b012ccfe9c|1",
+  "all_garrison": true,
+  "sql_mutations": false
+}

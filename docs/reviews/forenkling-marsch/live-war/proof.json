@@ -2,52 +2,52 @@
   "mode": "war",
   "browser_errors": [],
   "health": {
-    "commit": "8eef7147",
+    "commit": "b1425e0f",
     "migration": 160,
     "status": "ok"
   },
   "receipts": [
     {
       "http_status": 202,
-      "unit_id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+      "unit_id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
       "request": {
-        "target_q": 48,
-        "target_r": 38,
+        "target_q": 44,
+        "target_r": 8,
         "intent": "explore",
         "ticks": 14
       },
       "receipt": {
         "arrival_tick": 5,
-        "arrives_at": "2026-10-07T22:15:22.819210657+02:00",
-        "arrives_at_utc": "2026-10-07T20:15:22.819210657Z",
+        "arrives_at": "2026-10-07T22:26:58.074511507+02:00",
+        "arrives_at_utc": "2026-10-07T20:26:58.074511507Z",
         "carried_silver": 0,
-        "departs_at": "2026-10-07T22:14:52.819210657+02:00",
+        "departs_at": "2026-10-07T22:26:28.074511507+02:00",
         "duration_ticks": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "home_by_tick": 14,
           "length_ticks": 14,
           "turn_tick": 7
         },
-        "origin_q": 46,
-        "origin_r": 38,
+        "origin_q": 43,
+        "origin_r": 8,
         "purse_shortfall": 0,
-        "target_q": 43,
-        "target_r": 42,
-        "unit_id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc"
+        "target_q": 42,
+        "target_r": 12,
+        "unit_id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f"
       }
     }
   ],
   "history": [
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -57,12 +57,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -72,12 +72,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -87,12 +87,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -102,12 +102,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -117,12 +117,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -132,12 +132,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -147,12 +147,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -162,12 +162,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -177,12 +177,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -192,12 +192,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -207,12 +207,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -222,12 +222,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -237,12 +237,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -252,12 +252,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -267,12 +267,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -282,12 +282,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -297,12 +297,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -312,12 +312,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -327,12 +327,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -342,12 +342,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -357,12 +357,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -372,12 +372,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -387,12 +387,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -402,12 +402,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -417,12 +417,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -432,12 +432,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -447,12 +447,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -462,12 +462,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -477,12 +477,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -492,12 +492,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -507,12 +507,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -522,12 +522,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -537,12 +537,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -552,12 +552,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -567,12 +567,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -582,12 +582,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -597,12 +597,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -612,12 +612,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -627,12 +627,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -642,12 +642,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -657,12 +657,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -672,12 +672,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -687,12 +687,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -702,12 +702,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -717,12 +717,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -732,12 +732,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -747,12 +747,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -762,12 +762,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -777,12 +777,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -792,12 +792,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -807,12 +807,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -822,12 +822,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -837,12 +837,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -852,12 +852,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -867,12 +867,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -882,12 +882,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -897,12 +897,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -912,12 +912,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -927,12 +927,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -942,12 +942,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -957,12 +957,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -972,12 +972,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -987,12 +987,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -1002,12 +1002,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -1017,12 +1017,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -1032,12 +1032,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 5,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 14,
@@ -1047,193 +1047,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
-        "arrival_tick": 5,
-        "expedition": {
-          "area_q": 48,
-          "area_r": 38,
-          "length_ticks": 14,
-          "turn_tick": 7,
-          "home_by_tick": 14,
-          "homeward": false
-        }
-      }
-    ],
-    [
-      {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
-        "status": "marching",
-        "arrival_tick": 5,
-        "expedition": {
-          "area_q": 48,
-          "area_r": 38,
-          "length_ticks": 14,
-          "turn_tick": 7,
-          "home_by_tick": 14,
-          "homeward": false
-        }
-      }
-    ],
-    [
-      {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
-        "status": "marching",
-        "arrival_tick": 5,
-        "expedition": {
-          "area_q": 48,
-          "area_r": 38,
-          "length_ticks": 14,
-          "turn_tick": 7,
-          "home_by_tick": 14,
-          "homeward": false
-        }
-      }
-    ],
-    [
-      {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
-        "status": "marching",
-        "arrival_tick": 5,
-        "expedition": {
-          "area_q": 48,
-          "area_r": 38,
-          "length_ticks": 14,
-          "turn_tick": 7,
-          "home_by_tick": 14,
-          "homeward": false
-        }
-      }
-    ],
-    [
-      {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
-        "status": "marching",
-        "arrival_tick": 5,
-        "expedition": {
-          "area_q": 48,
-          "area_r": 38,
-          "length_ticks": 14,
-          "turn_tick": 7,
-          "home_by_tick": 14,
-          "homeward": false
-        }
-      }
-    ],
-    [
-      {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
-        "status": "marching",
-        "arrival_tick": 5,
-        "expedition": {
-          "area_q": 48,
-          "area_r": 38,
-          "length_ticks": 14,
-          "turn_tick": 7,
-          "home_by_tick": 14,
-          "homeward": false
-        }
-      }
-    ],
-    [
-      {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
-        "status": "marching",
-        "arrival_tick": 5,
-        "expedition": {
-          "area_q": 48,
-          "area_r": 38,
-          "length_ticks": 14,
-          "turn_tick": 7,
-          "home_by_tick": 14,
-          "homeward": false
-        }
-      }
-    ],
-    [
-      {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
-        "status": "marching",
-        "arrival_tick": 5,
-        "expedition": {
-          "area_q": 48,
-          "area_r": 38,
-          "length_ticks": 14,
-          "turn_tick": 7,
-          "home_by_tick": 14,
-          "homeward": false
-        }
-      }
-    ],
-    [
-      {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
-        "status": "marching",
-        "arrival_tick": 5,
-        "expedition": {
-          "area_q": 48,
-          "area_r": 38,
-          "length_ticks": 14,
-          "turn_tick": 7,
-          "home_by_tick": 14,
-          "homeward": false
-        }
-      }
-    ],
-    [
-      {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
-        "status": "marching",
-        "arrival_tick": 5,
-        "expedition": {
-          "area_q": 48,
-          "area_r": 38,
-          "length_ticks": 14,
-          "turn_tick": 7,
-          "home_by_tick": 14,
-          "homeward": false
-        }
-      }
-    ],
-    [
-      {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
-        "status": "marching",
-        "arrival_tick": 5,
-        "expedition": {
-          "area_q": 48,
-          "area_r": 38,
-          "length_ticks": 14,
-          "turn_tick": 7,
-          "home_by_tick": 14,
-          "homeward": false
-        }
-      }
-    ],
-    [
-      {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
-        "status": "marching",
-        "arrival_tick": 11,
-        "expedition": {
-          "area_q": 48,
-          "area_r": 38,
-          "length_ticks": 14,
-          "turn_tick": 7,
-          "home_by_tick": 11,
-          "homeward": true,
-          "turn_reason": "half_time"
-        }
-      }
-    ],
-    [
-      {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
-        "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1244,12 +1063,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1260,12 +1079,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1276,12 +1095,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1292,12 +1111,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1308,12 +1127,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1324,12 +1143,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1340,12 +1159,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1356,12 +1175,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1372,12 +1191,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1388,12 +1207,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1404,12 +1223,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1420,12 +1239,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1436,12 +1255,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1452,12 +1271,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1468,12 +1287,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1484,12 +1303,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1500,12 +1319,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1516,12 +1335,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1532,12 +1351,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1548,12 +1367,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1564,12 +1383,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1580,12 +1399,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1596,12 +1415,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1612,12 +1431,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1628,12 +1447,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1644,12 +1463,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1660,12 +1479,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1676,12 +1495,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1692,12 +1511,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1708,12 +1527,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1724,12 +1543,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1740,12 +1559,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1756,12 +1575,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1772,12 +1591,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1788,12 +1607,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1804,12 +1623,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1820,12 +1639,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1836,12 +1655,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1852,12 +1671,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1868,12 +1687,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1884,12 +1703,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1900,12 +1719,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1916,12 +1735,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1932,12 +1751,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1948,12 +1767,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1964,12 +1783,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1980,12 +1799,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -1996,12 +1815,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -2012,12 +1831,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -2028,12 +1847,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -2044,12 +1863,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -2060,12 +1879,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -2076,12 +1895,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -2092,12 +1911,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -2108,12 +1927,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -2124,12 +1943,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -2140,12 +1959,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -2156,12 +1975,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -2172,12 +1991,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -2188,12 +2007,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -2204,12 +2023,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -2220,12 +2039,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -2236,12 +2055,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -2252,12 +2071,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -2268,12 +2087,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -2284,12 +2103,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -2300,12 +2119,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -2316,12 +2135,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -2332,12 +2151,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -2348,12 +2167,12 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "marching",
         "arrival_tick": 11,
         "expedition": {
-          "area_q": 48,
-          "area_r": 38,
+          "area_q": 44,
+          "area_r": 8,
           "length_ticks": 14,
           "turn_tick": 7,
           "home_by_tick": 11,
@@ -2364,14 +2183,14 @@
     ],
     [
       {
-        "id": "3e5c09b3-524c-46fc-ab2c-0fede13f3dcc",
+        "id": "1f929fdf-8b09-46b4-86ba-eee420a8da3f",
         "status": "garrison",
         "arrival_tick": null,
         "expedition": null
       }
     ]
   ],
-  "audit_rows": "UnitMarchOrdered|3e5c09b3-524c-46fc-ab2c-0fede13f3dcc|1",
+  "audit_rows": "UnitMarchOrdered|1f929fdf-8b09-46b4-86ba-eee420a8da3f|1",
   "all_garrison": true,
   "sql_mutations": false
 }
