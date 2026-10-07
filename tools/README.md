@@ -174,3 +174,13 @@ på aktuell OrderDelivery för recall och redirect. Varje arm ny PG16/mig160;
 väggklockstimmar kräver namngivet assertion-rött, sedan återställning/grönt.
 Rivningsrapport: `docs/reviews/riv-marchrecall/README.md`; livekontrollens
 SQL körs via `psql -X -v ON_ERROR_STOP=1` i explicit READ ONLY-transaktion.
+
+`python3 tools/verb_parity.py` inventerar registrerade spelar-API-rutter mot
+Keryx-anrop, webbens megaron-moduler, Codex-omnämnanden och vaultens verblista.
+Ingen DB eller produktionsändring; endast läsning. `--json` ger all källevidens,
+`--verblista PATH` väljer annan registerfil, `--root PATH` väljer annan checkout.
+Dokumenterade admin/post-MVP/transport-/templateundantag och bounded Codex-alias
+bor i `tools/verb_parity_allowlist.json`. Olösta anrop visas separat; frånvaro
+av statisk evidens är inte automatiskt frånvaro av förmåga. Fixturer:
+`python3 -m unittest discover -s tools -p 'test_verb_parity.py'`.
+Rapport och parsermutation: `docs/reviews/verb-parity/`.

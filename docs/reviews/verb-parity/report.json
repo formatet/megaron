@@ -1,0 +1,1913 @@
+{
+  "source_sha256": "758cb7d5a5abdddabbdd7bda34431cb2e8ebfe93e9ea450af6c4bddf08b547b4",
+  "routes": [
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "line": 287,
+      "keryx": [],
+      "webb": [],
+      "codex": [
+        "web/static/codex/getting-in.md:3"
+      ],
+      "excluded": [
+        "Web via templates/index.html:186, outside requested megaron JS module scan; CLI has no account registration"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "line": 288,
+      "keryx": [
+        "server/cmd/keryx/cmd_login.go:36"
+      ],
+      "webb": [],
+      "codex": [
+        "web/static/codex/getting-in.md:1"
+      ],
+      "excluded": [
+        "Web via templates/index.html:172, outside module scan; CLI login present"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/refresh",
+      "line": 289,
+      "keryx": [],
+      "webb": [],
+      "codex": [],
+      "excluded": [
+        "Auth transport token refresh, internal not a player verb"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "line": 290,
+      "keryx": [
+        "server/cmd/keryx/cmd_status.go:1123"
+      ],
+      "webb": [
+        "web/static/js/megaron/main.js:283"
+      ],
+      "codex": [
+        "web/static/codex/getting-in.md:3"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/password",
+      "line": 291,
+      "keryx": [
+        "server/cmd/keryx/cmd_password.go:37"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/account_window.js:102"
+      ],
+      "codex": [
+        "web/static/codex/community-chat.md:7",
+        "web/static/codex/getting-in.md:3"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/agora",
+      "line": 342,
+      "keryx": [
+        "server/cmd/keryx/cmd_agora.go:22"
+      ],
+      "webb": [
+        "web/static/js/megaron/api.js:74"
+      ],
+      "codex": [
+        "web/static/codex/community-chat.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/agora/password",
+      "line": 343,
+      "keryx": [
+        "server/cmd/keryx/cmd_agora.go:51"
+      ],
+      "webb": [
+        "web/static/js/megaron/api.js:75"
+      ],
+      "codex": [
+        "web/static/codex/community-chat.md:7",
+        "web/static/codex/getting-in.md:3"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/worlds/{id}/god-view",
+      "line": 345,
+      "keryx": [
+        "server/cmd/keryx/cmd_god.go:33"
+      ],
+      "webb": [],
+      "codex": [],
+      "excluded": [
+        "Admin, intentional outside player parity"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/admin/worlds/{id}/reports",
+      "line": 346,
+      "keryx": [
+        "server/cmd/keryx/cmd_reports.go:185"
+      ],
+      "webb": [],
+      "codex": [],
+      "excluded": [
+        "Admin, intentional outside player parity"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/admin/worlds/{id}/backfill-placements",
+      "line": 347,
+      "keryx": [],
+      "webb": [],
+      "codex": [],
+      "excluded": [
+        "Admin, intentional outside player parity"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/buildings",
+      "line": 349,
+      "keryx": [
+        "server/cmd/keryx/cmd_build.go:70"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/city.js:610"
+      ],
+      "codex": [
+        "web/static/codex/buildings.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/units",
+      "line": 350,
+      "keryx": [
+        "server/cmd/keryx/cmd_recruit.go:189"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/war.js:38"
+      ],
+      "codex": [
+        "web/static/codex/units.md:16"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/recipes",
+      "line": 351,
+      "keryx": [
+        "server/cmd/keryx/cmd_status.go:273"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/city.js:586"
+      ],
+      "codex": [
+        "web/static/codex/bronze.md:3"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/goods",
+      "line": 356,
+      "keryx": [],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/diplomacy.js:29"
+      ],
+      "codex": [
+        "web/static/codex/goods.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/notification-preferences",
+      "line": 361,
+      "keryx": [
+        "server/cmd/keryx/cmd_dispatches.go:58"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/dispatch_window.js:319"
+      ],
+      "codex": [
+        "web/static/codex/coming-back.md:12"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/notification-preferences/{id}",
+      "line": 362,
+      "keryx": [
+        "server/cmd/keryx/cmd_dispatches.go:46"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/dispatch_window.js:325"
+      ],
+      "codex": [
+        "web/static/codex/coming-back.md:12"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/notification-preferences/{id}",
+      "line": 363,
+      "keryx": [
+        "server/cmd/keryx/cmd_dispatches.go:52"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/dispatch_window.js:325"
+      ],
+      "codex": [
+        "web/static/codex/coming-back.md:12"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds",
+      "line": 366,
+      "keryx": [
+        "server/cmd/keryx/cmd_login.go:126",
+        "server/cmd/keryx/cmd_worlds.go:17"
+      ],
+      "webb": [],
+      "codex": [
+        "web/static/codex/getting-in.md:6"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds",
+      "line": 367,
+      "keryx": [],
+      "webb": [],
+      "codex": [
+        "web/static/codex/getting-in.md:6"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}",
+      "line": 368,
+      "keryx": [
+        "server/cmd/keryx/client.go:148"
+      ],
+      "webb": [
+        "web/static/js/megaron/main.js:298",
+        "web/static/js/megaron/ws.js:100"
+      ],
+      "codex": [
+        "web/static/codex/getting-in.md:6"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/map",
+      "line": 376,
+      "keryx": [
+        "server/cmd/keryx/cmd_map.go:101"
+      ],
+      "webb": [
+        "web/static/js/megaron/render/map.js:3908",
+        "web/static/js/megaron/render/map.js:3993"
+      ],
+      "codex": [
+        "web/static/codex/screen.md:7"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/colonize-preview",
+      "line": 377,
+      "keryx": [
+        "server/cmd/keryx/cmd_unit.go:904",
+        "server/cmd/keryx/cmd_unit.go:904"
+      ],
+      "webb": [
+        "web/static/js/megaron/render/map.js:4262",
+        "web/static/js/megaron/render/map.js:4386",
+        "web/static/js/megaron/ui/marchctx.js:135"
+      ],
+      "codex": [
+        "web/static/codex/colonies.md:5",
+        "web/static/codex/founding.md:5"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/provinces",
+      "line": 378,
+      "keryx": [
+        "server/cmd/keryx/cmd_brief.go:23",
+        "server/cmd/keryx/cmd_gossip.go:91",
+        "server/cmd/keryx/cmd_login.go:148",
+        "server/cmd/keryx/cmd_map.go:121",
+        "server/cmd/keryx/cmd_messenger.go:261",
+        "server/cmd/keryx/cmd_messenger_split.go:28",
+        "server/cmd/keryx/cmd_messenger_split.go:133",
+        "server/cmd/keryx/cmd_resolve.go:14",
+        "server/cmd/keryx/cmd_resolve.go:42",
+        "server/cmd/keryx/cmd_rite.go:160",
+        "server/cmd/keryx/cmd_rite.go:294",
+        "server/cmd/keryx/cmd_route.go:55",
+        "server/cmd/keryx/cmd_settlements.go:17",
+        "server/cmd/keryx/cmd_sightings.go:121",
+        "server/cmd/keryx/cmd_sightings.go:234",
+        "server/cmd/keryx/cmd_unit.go:431"
+      ],
+      "webb": [
+        "web/static/js/megaron/main.js:299",
+        "web/static/js/megaron/render/map.js:3909",
+        "web/static/js/megaron/render/map.js:4688",
+        "web/static/js/megaron/ws.js:76",
+        "web/static/js/megaron/ws.js:151",
+        "web/static/js/megaron/ws.js:161",
+        "web/static/js/megaron/ws.js:195"
+      ],
+      "codex": [
+        "web/static/codex/city.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/marches",
+      "line": 379,
+      "keryx": [],
+      "webb": [
+        "web/static/js/megaron/render/map.js:3910",
+        "web/static/js/megaron/render/map.js:4689",
+        "web/static/js/megaron/ui/marchctx.js:620",
+        "web/static/js/megaron/ws.js:78",
+        "web/static/js/megaron/ws.js:152"
+      ],
+      "codex": [
+        "web/static/codex/marching.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/messengers",
+      "line": 380,
+      "keryx": [],
+      "webb": [
+        "web/static/js/megaron/render/map.js:3911",
+        "web/static/js/megaron/render/map.js:4497",
+        "web/static/js/megaron/render/map.js:4690",
+        "web/static/js/megaron/render/map.js:4718",
+        "web/static/js/megaron/ui/drawers/diplomacy.js:419",
+        "web/static/js/megaron/ui/drawers/diplomacy.js:604",
+        "web/static/js/megaron/ui/drawers/war.js:942",
+        "web/static/js/megaron/ui/drawers/war.js:975",
+        "web/static/js/megaron/ui/marchctx.js:559",
+        "web/static/js/megaron/ui/marchctx.js:622",
+        "web/static/js/megaron/ws.js:79",
+        "web/static/js/megaron/ws.js:157"
+      ],
+      "codex": [
+        "web/static/codex/messengers.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/trades",
+      "line": 381,
+      "keryx": [
+        "server/cmd/keryx/cmd_goods.go:259"
+      ],
+      "webb": [
+        "web/static/js/megaron/render/map.js:3912",
+        "web/static/js/megaron/render/map.js:4691",
+        "web/static/js/megaron/ui/drawers/economy.js:348",
+        "web/static/js/megaron/ws.js:80",
+        "web/static/js/megaron/ws.js:164"
+      ],
+      "codex": [
+        "web/static/codex/trade.md:20"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/foreign-units",
+      "line": 382,
+      "keryx": [
+        "server/cmd/keryx/cmd_sightings.go:108"
+      ],
+      "webb": [
+        "web/static/js/megaron/render/map.js:3915",
+        "web/static/js/megaron/render/map.js:4694",
+        "web/static/js/megaron/render/map.js:4713",
+        "web/static/js/megaron/ws.js:175"
+      ],
+      "codex": [
+        "web/static/codex/sight.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/rural-projections",
+      "line": 383,
+      "keryx": [],
+      "webb": [
+        "web/static/js/megaron/render/map.js:3914",
+        "web/static/js/megaron/render/map.js:4693"
+      ],
+      "codex": [
+        "web/static/codex/catchment.md:3",
+        "web/static/codex/citizens.md:1",
+        "web/static/codex/city.md:11"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/wanaxes",
+      "line": 384,
+      "keryx": [
+        "server/cmd/keryx/cmd_gossip.go:102",
+        "server/cmd/keryx/cmd_messenger_split.go:37",
+        "server/cmd/keryx/cmd_messenger_split.go:142"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/gossip.js:86"
+      ],
+      "codex": [
+        "web/static/codex/messengers.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/cities",
+      "line": 385,
+      "keryx": [
+        "server/cmd/keryx/cmd_cities.go:26"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/diplomacy.js:99"
+      ],
+      "codex": [
+        "web/static/codex/city.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/diplomacy",
+      "line": 386,
+      "keryx": [
+        "server/cmd/keryx/cmd_diplomacy.go:17"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/diplomacy.js:122"
+      ],
+      "codex": [
+        "web/static/codex/messengers.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/provinces/{id}",
+      "line": 400,
+      "keryx": [
+        "server/cmd/keryx/cmd_allocate.go:207",
+        "server/cmd/keryx/cmd_build.go:225",
+        "server/cmd/keryx/cmd_gubbe.go:139",
+        "server/cmd/keryx/cmd_map.go:88",
+        "server/cmd/keryx/cmd_recruit.go:239",
+        "server/cmd/keryx/cmd_rite.go:97",
+        "server/cmd/keryx/cmd_rite.go:314",
+        "server/cmd/keryx/cmd_sightings.go:267",
+        "server/cmd/keryx/cmd_status.go:533"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/city.js:139",
+        "web/static/js/megaron/ui/drawers/city.js:233",
+        "web/static/js/megaron/ui/drawers/city.js:754",
+        "web/static/js/megaron/ui/drawers/kult.js:28",
+        "web/static/js/megaron/ui/drawers/war.js:160",
+        "web/static/js/megaron/ui/drawers/war.js:161"
+      ],
+      "codex": [
+        "web/static/codex/city.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/provinces/{id}/actions",
+      "line": 401,
+      "keryx": [
+        "server/cmd/keryx/cmd_actions.go:76",
+        "server/cmd/keryx/cmd_status.go:1146"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/misc.js:559"
+      ],
+      "codex": [
+        "web/static/codex/buildings.md:1",
+        "web/static/codex/units.md:16"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/provinces/{id}/army",
+      "line": 402,
+      "keryx": [],
+      "webb": [
+        "web/static/js/megaron/render/map.js:4183"
+      ],
+      "codex": [
+        "web/static/codex/units.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/provinces/{id}/buildings",
+      "line": 403,
+      "keryx": [
+        "server/cmd/keryx/cmd_staff.go:197"
+      ],
+      "webb": [],
+      "codex": [
+        "web/static/codex/buildings.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/provinces/{id}/goods",
+      "line": 404,
+      "keryx": [
+        "server/cmd/keryx/cmd_allocate.go:91",
+        "server/cmd/keryx/cmd_goods.go:33"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/city.js:234",
+        "web/static/js/megaron/ui/drawers/diplomacy.js:141",
+        "web/static/js/megaron/ui/drawers/economy.js:209",
+        "web/static/js/megaron/ui/drawers/economy.js:364",
+        "web/static/js/megaron/ui/drawers/kult.js:31"
+      ],
+      "codex": [
+        "web/static/codex/goods.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/provinces/{id}/ticklog",
+      "line": 405,
+      "keryx": [
+        "server/cmd/keryx/cmd_ticklog.go:44"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/city.js:720"
+      ],
+      "codex": [
+        "web/static/codex/time.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/provinces/{id}/build",
+      "line": 406,
+      "keryx": [
+        "server/cmd/keryx/cmd_build.go:189"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/city.js:530"
+      ],
+      "codex": [
+        "web/static/codex/buildings.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/worlds/{id}/provinces/{id}/build-queue/{id}",
+      "line": 407,
+      "keryx": [
+        "server/cmd/keryx/cmd_build.go:277"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/city.js:740"
+      ],
+      "codex": [
+        "web/static/codex/buildings.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/provinces/{id}/recruit",
+      "line": 408,
+      "keryx": [
+        "server/cmd/keryx/cmd_recruit.go:103"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/war.js:353",
+        "web/static/js/megaron/ui/drawers/war.js:378"
+      ],
+      "codex": [
+        "web/static/codex/units.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/provinces/{id}/trade",
+      "line": 409,
+      "keryx": [],
+      "webb": [],
+      "codex": [
+        "web/static/codex/transfers.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/provinces/{id}/trade",
+      "line": 410,
+      "keryx": [
+        "server/cmd/keryx/cmd_goods.go:200"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/economy.js:382"
+      ],
+      "codex": [
+        "web/static/codex/transfers.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/provinces/{id}/disband",
+      "line": 411,
+      "keryx": [
+        "server/cmd/keryx/cmd_disband.go:82"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/war.js:401"
+      ],
+      "codex": [
+        "web/static/codex/units.md:24"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/worlds/{id}/provinces/{id}/labor",
+      "line": 412,
+      "keryx": [
+        "server/cmd/keryx/cmd_allocate.go:59"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/city.js:125"
+      ],
+      "codex": [
+        "web/static/codex/temples.md:3"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/provinces/{id}/placement-options",
+      "line": 413,
+      "keryx": [
+        "server/cmd/keryx/cmd_gubbe.go:109"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/citygrid.js:225",
+        "web/static/js/megaron/ui/drawers/city.js:567"
+      ],
+      "codex": [
+        "web/static/codex/catchment.md:3",
+        "web/static/codex/citizens.md:1",
+        "web/static/codex/city.md:11"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/provinces/{id}/placements",
+      "line": 414,
+      "keryx": [
+        "server/cmd/keryx/cmd_status.go:1236"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/citygrid.js:151"
+      ],
+      "codex": [
+        "web/static/codex/catchment.md:3",
+        "web/static/codex/citizens.md:1",
+        "web/static/codex/city.md:11"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/provinces/{id}/placements",
+      "line": 415,
+      "keryx": [
+        "server/cmd/keryx/cmd_place.go:86",
+        "server/cmd/keryx/cmd_place.go:118",
+        "server/cmd/keryx/cmd_staff.go:97"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/citygrid.js:137"
+      ],
+      "codex": [
+        "web/static/codex/catchment.md:3",
+        "web/static/codex/citizens.md:1",
+        "web/static/codex/city.md:11"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/worlds/{id}/provinces/{id}/placements/{id}",
+      "line": 416,
+      "keryx": [
+        "server/cmd/keryx/cmd_place.go:192",
+        "server/cmd/keryx/cmd_staff.go:119"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/citygrid.js:163"
+      ],
+      "codex": [
+        "web/static/codex/catchment.md:3",
+        "web/static/codex/citizens.md:1",
+        "web/static/codex/city.md:11"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/provinces/{id}/slaughter-livestock",
+      "line": 417,
+      "keryx": [
+        "server/cmd/keryx/cmd_slaughter.go:39"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/city.js:489"
+      ],
+      "codex": [
+        "web/static/codex/city.md:9"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/standing-orders",
+      "line": 419,
+      "keryx": [
+        "server/cmd/keryx/cmd_route.go:120"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/economy.js:516"
+      ],
+      "codex": [
+        "web/static/codex/battle.md:10",
+        "web/static/codex/routes.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/standing-orders",
+      "line": 420,
+      "keryx": [
+        "server/cmd/keryx/cmd_route.go:161"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/economy.js:493"
+      ],
+      "codex": [
+        "web/static/codex/battle.md:10",
+        "web/static/codex/routes.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/standing-orders/{id}/pause",
+      "line": 421,
+      "keryx": [
+        "server/cmd/keryx/cmd_route.go:207"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/economy.js:532"
+      ],
+      "codex": [
+        "web/static/codex/routes.md:8"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/standing-orders/{id}/resume",
+      "line": 422,
+      "keryx": [
+        "server/cmd/keryx/cmd_route.go:207"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/economy.js:537"
+      ],
+      "codex": [
+        "web/static/codex/routes.md:8"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/worlds/{id}/standing-orders/{id}",
+      "line": 423,
+      "keryx": [
+        "server/cmd/keryx/cmd_route.go:242"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/economy.js:542"
+      ],
+      "codex": [
+        "web/static/codex/battle.md:10",
+        "web/static/codex/routes.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/market/wants",
+      "line": 425,
+      "keryx": [
+        "server/cmd/keryx/cmd_wants.go:28"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/economy.js:550"
+      ],
+      "codex": [
+        "web/static/codex/trade.md:7"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/join",
+      "line": 427,
+      "keryx": [
+        "server/cmd/keryx/cmd_join.go:57"
+      ],
+      "webb": [],
+      "codex": [],
+      "excluded": [
+        "Web via templates/join.html:31, outside module scan; CLI join present"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/founding/settle",
+      "line": 429,
+      "keryx": [
+        "server/cmd/keryx/cmd_founding.go:240"
+      ],
+      "webb": [
+        "web/static/js/megaron/render/map.js:4398"
+      ],
+      "codex": [
+        "web/static/codex/founding.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/founding/messengers",
+      "line": 431,
+      "keryx": [
+        "server/cmd/keryx/cmd_messenger_split.go:52"
+      ],
+      "webb": [
+        "web/static/js/megaron/render/map.js:4488"
+      ],
+      "codex": [
+        "web/static/codex/messengers.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/founding/messengers",
+      "line": 432,
+      "keryx": [
+        "server/cmd/keryx/cmd_messenger.go:280"
+      ],
+      "webb": [],
+      "codex": [
+        "web/static/codex/messengers.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/founding/status",
+      "line": 433,
+      "keryx": [
+        "server/cmd/keryx/cmd_founding.go:48",
+        "server/cmd/keryx/cmd_founding.go:133",
+        "server/cmd/keryx/cmd_status.go:516"
+      ],
+      "webb": [
+        "web/static/js/megaron/main.js:329",
+        "web/static/js/megaron/render/map.js:4340"
+      ],
+      "codex": [
+        "web/static/codex/founding.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/kingdoms",
+      "line": 437,
+      "keryx": [],
+      "webb": [],
+      "codex": [],
+      "excluded": [
+        "KINGDOMS_ENABLED gated, post-MVP"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/kingdoms",
+      "line": 438,
+      "keryx": [],
+      "webb": [],
+      "codex": [],
+      "excluded": [
+        "KINGDOMS_ENABLED gated, post-MVP"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/kingdoms/invitations",
+      "line": 439,
+      "keryx": [],
+      "webb": [],
+      "codex": [],
+      "excluded": [
+        "KINGDOMS_ENABLED gated, post-MVP"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/kingdoms/{id}/invite",
+      "line": 440,
+      "keryx": [],
+      "webb": [],
+      "codex": [],
+      "excluded": [
+        "KINGDOMS_ENABLED gated, post-MVP"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/kingdoms/{id}/join",
+      "line": 441,
+      "keryx": [],
+      "webb": [],
+      "codex": [],
+      "excluded": [
+        "KINGDOMS_ENABLED gated, post-MVP"
+      ]
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/worlds/{id}/kingdoms/{id}/leave",
+      "line": 442,
+      "keryx": [],
+      "webb": [],
+      "codex": [],
+      "excluded": [
+        "KINGDOMS_ENABLED gated, post-MVP"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/kingdoms/{id}/council",
+      "line": 443,
+      "keryx": [],
+      "webb": [],
+      "codex": [],
+      "excluded": [
+        "KINGDOMS_ENABLED gated, post-MVP"
+      ]
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/worlds/{id}/kingdoms/{id}/council/{id}",
+      "line": 444,
+      "keryx": [],
+      "webb": [],
+      "codex": [],
+      "excluded": [
+        "KINGDOMS_ENABLED gated, post-MVP"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/kingdoms/{id}/borrow-army",
+      "line": 445,
+      "keryx": [],
+      "webb": [],
+      "codex": [],
+      "excluded": [
+        "KINGDOMS_ENABLED gated, post-MVP"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/kingdoms/{id}/election",
+      "line": 446,
+      "keryx": [],
+      "webb": [],
+      "codex": [],
+      "excluded": [
+        "KINGDOMS_ENABLED gated, post-MVP"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/kingdoms/{id}/vote",
+      "line": 447,
+      "keryx": [],
+      "webb": [],
+      "codex": [],
+      "excluded": [
+        "KINGDOMS_ENABLED gated, post-MVP"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/kingdoms/{id}/election",
+      "line": 448,
+      "keryx": [],
+      "webb": [],
+      "codex": [],
+      "excluded": [
+        "KINGDOMS_ENABLED gated, post-MVP"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/kingdoms/{id}/borrowed-armies",
+      "line": 449,
+      "keryx": [],
+      "webb": [],
+      "codex": [],
+      "excluded": [
+        "KINGDOMS_ENABLED gated, post-MVP"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/kingdoms/{id}/treasury/deposit",
+      "line": 450,
+      "keryx": [],
+      "webb": [],
+      "codex": [],
+      "excluded": [
+        "KINGDOMS_ENABLED gated, post-MVP"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/units",
+      "line": 454,
+      "keryx": [
+        "server/cmd/keryx/cmd_actions.go:205",
+        "server/cmd/keryx/cmd_resolve.go:111",
+        "server/cmd/keryx/cmd_sightings.go:219",
+        "server/cmd/keryx/cmd_status.go:1202",
+        "server/cmd/keryx/cmd_unit.go:202",
+        "server/cmd/keryx/cmd_unit.go:1051"
+      ],
+      "webb": [
+        "web/static/js/megaron/render/map.js:3913",
+        "web/static/js/megaron/render/map.js:4692",
+        "web/static/js/megaron/render/map.js:4712",
+        "web/static/js/megaron/ui/drawers/war.js:140",
+        "web/static/js/megaron/ui/drawers/war.js:162",
+        "web/static/js/megaron/ui/drawers/war.js:1045",
+        "web/static/js/megaron/ui/marchctx.js:327",
+        "web/static/js/megaron/ui/marchctx.js:554",
+        "web/static/js/megaron/ui/marchctx.js:619",
+        "web/static/js/megaron/ws.js:77",
+        "web/static/js/megaron/ws.js:168",
+        "web/static/js/megaron/ws.js:183",
+        "web/static/js/megaron/ws.js:194",
+        "web/static/js/megaron/ws.js:204"
+      ],
+      "codex": [
+        "web/static/codex/units.md:16"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/units/{id}/march",
+      "line": 455,
+      "keryx": [
+        "server/cmd/keryx/cmd_unit.go:80",
+        "server/cmd/keryx/cmd_unit.go:169",
+        "server/cmd/keryx/cmd_unit.go:752"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/war.js:900",
+        "web/static/js/megaron/ui/marchctx.js:529"
+      ],
+      "codex": [
+        "web/static/codex/marching.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/units/{id}/march-preview",
+      "line": 456,
+      "keryx": [
+        "server/cmd/keryx/cmd_march_preview.go:15"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/march_preview.js:12"
+      ],
+      "codex": [
+        "web/static/codex/marching.md:11"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/units/{id}/recall",
+      "line": 457,
+      "keryx": [
+        "server/cmd/keryx/cmd_unit.go:1099",
+        "server/cmd/keryx/cmd_unit.go:1155"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/war.js:723",
+        "web/static/js/megaron/ui/drawers/war.js:753",
+        "web/static/js/megaron/ui/marchctx.js:507"
+      ],
+      "codex": [
+        "web/static/codex/marching.md:21"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/units/{id}/stance",
+      "line": 458,
+      "keryx": [
+        "server/cmd/keryx/cmd_unit.go:1362"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/war.js:929",
+        "web/static/js/megaron/ui/marchctx.js:513"
+      ],
+      "codex": [
+        "web/static/codex/stances.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/units/{id}/standing-orders",
+      "line": 459,
+      "keryx": [
+        "server/cmd/keryx/cmd_unit.go:1473"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/war.js:965"
+      ],
+      "codex": [
+        "web/static/codex/battle.md:10",
+        "web/static/codex/routes.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/retreat-default",
+      "line": 462,
+      "keryx": [
+        "server/cmd/keryx/cmd_retreat_default.go:51"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/war.js:988"
+      ],
+      "codex": [
+        "web/static/codex/battle.md:10"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "PUT",
+      "path": "/api/v1/worlds/{id}/retreat-default",
+      "line": 463,
+      "keryx": [
+        "server/cmd/keryx/cmd_retreat_default.go:62"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/war.js:1007"
+      ],
+      "codex": [
+        "web/static/codex/battle.md:10"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/units/{id}/load",
+      "line": 464,
+      "keryx": [
+        "server/cmd/keryx/cmd_unit.go:1533"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/war.js:1072"
+      ],
+      "codex": [
+        "web/static/codex/sea.md:15"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/units/{id}/unload",
+      "line": 465,
+      "keryx": [
+        "server/cmd/keryx/cmd_unit.go:1571"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/war.js:1087"
+      ],
+      "codex": [
+        "web/static/codex/sea.md:15"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/units/{id}/pickup",
+      "line": 468,
+      "keryx": [
+        "server/cmd/keryx/cmd_unit.go:1626"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/war.js:1119"
+      ],
+      "codex": [
+        "web/static/codex/sea.md:63"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/units/{id}/reinforce",
+      "line": 469,
+      "keryx": [
+        "server/cmd/keryx/cmd_unit.go:1311"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/war.js:1029"
+      ],
+      "codex": [
+        "web/static/codex/units.md:28"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/units/{id}/repair",
+      "line": 470,
+      "keryx": [
+        "server/cmd/keryx/cmd_unit.go:1202"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/war.js:1144"
+      ],
+      "codex": [
+        "web/static/codex/sea.md:22",
+        "web/static/codex/units.md:28"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/settlements",
+      "line": 472,
+      "keryx": [],
+      "webb": [],
+      "codex": [
+        "web/static/codex/city.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/settlements/overview",
+      "line": 476,
+      "keryx": [],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/economy.js:214"
+      ],
+      "codex": [
+        "web/static/codex/city.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/settlements/placement-roster",
+      "line": 479,
+      "keryx": [
+        "server/cmd/keryx/cmd_roster.go:53"
+      ],
+      "webb": [
+        "web/static/js/megaron/render/map.js:3916",
+        "web/static/js/megaron/render/map.js:4695"
+      ],
+      "codex": [
+        "web/static/codex/catchment.md:3",
+        "web/static/codex/citizens.md:1",
+        "web/static/codex/city.md:11"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/settlements/{id}",
+      "line": 480,
+      "keryx": [],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/kult.js:27"
+      ],
+      "codex": [
+        "web/static/codex/city.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/settlements/{id}/occupation-order",
+      "line": 481,
+      "keryx": [
+        "server/cmd/keryx/cmd_occupation.go:58"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/dispatch_window.js:131"
+      ],
+      "codex": [
+        "web/static/codex/occupation.md:5"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/settlements/{id}/gift",
+      "line": 482,
+      "keryx": [
+        "server/cmd/keryx/cmd_goods.go:339"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/city.js:81"
+      ],
+      "codex": [
+        "web/static/codex/loyalty.md:9",
+        "web/static/codex/transfers.md:25"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/settlements/{id}/loyalty-log",
+      "line": 483,
+      "keryx": [
+        "server/cmd/keryx/cmd_status.go:1170"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/city.js:99",
+        "web/static/js/megaron/ui/drawers/city.js:366"
+      ],
+      "codex": [
+        "web/static/codex/loyalty.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/settlements/{id}/rite",
+      "line": 485,
+      "keryx": [
+        "server/cmd/keryx/cmd_rite.go:226"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/kult.js:182"
+      ],
+      "codex": [
+        "web/static/codex/rites.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/settlements/{id}/abandon",
+      "line": 486,
+      "keryx": [
+        "server/cmd/keryx/cmd_abandon.go:29"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/war.js:696"
+      ],
+      "codex": [],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/gossip",
+      "line": 487,
+      "keryx": [
+        "server/cmd/keryx/cmd_gossip.go:21"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/gossip.js:85"
+      ],
+      "codex": [
+        "web/static/codex/gossip.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/settlements/{id}/messengers",
+      "line": 489,
+      "keryx": [
+        "server/cmd/keryx/cmd_gossip.go:124",
+        "server/cmd/keryx/cmd_messenger_split.go:77",
+        "server/cmd/keryx/cmd_messenger_split.go:175"
+      ],
+      "webb": [
+        "web/static/js/megaron/render/map.js:4488",
+        "web/static/js/megaron/ui/drawers/diplomacy.js:410",
+        "web/static/js/megaron/ui/drawers/diplomacy.js:596"
+      ],
+      "codex": [
+        "web/static/codex/messengers.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/settlements/{id}/messengers",
+      "line": 490,
+      "keryx": [
+        "server/cmd/keryx/cmd_messenger.go:291"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/diplomacy.js:148"
+      ],
+      "codex": [
+        "web/static/codex/messengers.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/messengers/inbox",
+      "line": 491,
+      "keryx": [
+        "server/cmd/keryx/cmd_marches.go:19"
+      ],
+      "webb": [
+        "web/static/js/megaron/main.js:337",
+        "web/static/js/megaron/ui/drawers/diplomacy.js:147"
+      ],
+      "codex": [
+        "web/static/codex/messengers.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/messengers/{id}/reply",
+      "line": 492,
+      "keryx": [
+        "server/cmd/keryx/cmd_messenger.go:26"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/diplomacy.js:483"
+      ],
+      "codex": [
+        "web/static/codex/messengers.md:1"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/messengers/{id}/trade-accept",
+      "line": 493,
+      "keryx": [
+        "server/cmd/keryx/cmd_messenger.go:61"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/diplomacy.js:443"
+      ],
+      "codex": [
+        "web/static/codex/trade.md:14"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/messengers/{id}/trade-decline",
+      "line": 494,
+      "keryx": [
+        "server/cmd/keryx/cmd_messenger.go:105"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/diplomacy.js:471"
+      ],
+      "codex": [
+        "web/static/codex/trade.md:14"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/messengers/{id}/trade-cancel",
+      "line": 495,
+      "keryx": [
+        "server/cmd/keryx/cmd_messenger.go:134"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/diplomacy.js:429"
+      ],
+      "codex": [
+        "web/static/codex/trade.md:14"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/messengers/{id}/passage",
+      "line": 496,
+      "keryx": [
+        "server/cmd/keryx/cmd_messenger.go:181"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/dispatch_window.js:186",
+        "web/static/js/megaron/ui/drawers/diplomacy.js:501"
+      ],
+      "codex": [
+        "web/static/codex/sea.md:5"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/messengers/{id}/call-back",
+      "line": 497,
+      "keryx": [
+        "server/cmd/keryx/cmd_messenger.go:225"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/dispatch_window.js:202",
+        "web/static/js/megaron/ui/drawers/diplomacy.js:520"
+      ],
+      "codex": [],
+      "excluded": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/worlds/{id}/notifications",
+      "line": 499,
+      "keryx": [
+        "server/cmd/keryx/cmd_notifications.go:811",
+        "server/cmd/keryx/cmd_notifications.go:838",
+        "server/cmd/keryx/cmd_watch.go:104"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/chips.js:42",
+        "web/static/js/megaron/ui/drawers/notif.js:68",
+        "web/static/js/megaron/ui/drawers/notif.js:68",
+        "web/static/js/megaron/ui/drawers/notif.js:120",
+        "web/static/js/megaron/ws.js:82",
+        "web/static/js/megaron/ws.js:147"
+      ],
+      "codex": [
+        "web/static/codex/coming-back.md:7"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/notifications/read-all",
+      "line": 500,
+      "keryx": [
+        "server/cmd/keryx/cmd_notifications.go:780"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/notif.js:76"
+      ],
+      "codex": [
+        "web/static/codex/coming-back.md:11"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/notifications/{id}/read",
+      "line": 501,
+      "keryx": [],
+      "webb": [
+        "web/static/js/megaron/ui/chips.js:102"
+      ],
+      "codex": [
+        "web/static/codex/coming-back.md:11"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/worlds/{id}/notifications",
+      "line": 502,
+      "keryx": [],
+      "webb": [],
+      "codex": [
+        "web/static/codex/coming-back.md:7"
+      ],
+      "excluded": [
+        "Archive deletion intentionally removed from web; notif.js documents server legacy endpoint"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/reports",
+      "line": 504,
+      "keryx": [
+        "server/cmd/keryx/cmd_reports.go:140"
+      ],
+      "webb": [
+        "web/static/js/megaron/ui/drawers/report.js:73"
+      ],
+      "codex": [
+        "web/static/codex/report.md:3"
+      ],
+      "excluded": []
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/worlds/{id}/settlements/{id}/return-army",
+      "line": 738,
+      "keryx": [],
+      "webb": [],
+      "codex": [],
+      "excluded": [
+        "requireKingdomsEnabled, post-MVP"
+      ]
+    }
+  ],
+  "unresolved": [],
+  "transport_or_assets": [
+    {
+      "file": "server/cmd/keryx/client.go",
+      "line": 163,
+      "call": "do",
+      "paths": [
+        "<id>"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "reasons": [
+        "Generic HTTP transport; actual get/post/put/delete callers inventoried"
+      ]
+    },
+    {
+      "file": "server/cmd/keryx/client.go",
+      "line": 174,
+      "call": "do",
+      "paths": [
+        "<id>"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "reasons": [
+        "Generic HTTP transport; actual get/post/put/delete callers inventoried"
+      ]
+    },
+    {
+      "file": "server/cmd/keryx/client.go",
+      "line": 185,
+      "call": "do",
+      "paths": [
+        "<id>"
+      ],
+      "methods": [
+        "PUT"
+      ],
+      "reasons": [
+        "Generic HTTP transport; actual get/post/put/delete callers inventoried"
+      ]
+    },
+    {
+      "file": "server/cmd/keryx/client.go",
+      "line": 196,
+      "call": "do",
+      "paths": [
+        "<id>"
+      ],
+      "methods": [
+        "PATCH"
+      ],
+      "reasons": [
+        "Generic HTTP transport; actual get/post/put/delete callers inventoried"
+      ]
+    },
+    {
+      "file": "server/cmd/keryx/client.go",
+      "line": 207,
+      "call": "do",
+      "paths": [
+        "<id>"
+      ],
+      "methods": [
+        "DELETE"
+      ],
+      "reasons": [
+        "Generic HTTP transport; actual get/post/put/delete callers inventoried"
+      ]
+    },
+    {
+      "file": "web/static/js/megaron/api.js",
+      "line": 38,
+      "call": "fetch",
+      "paths": [
+        "<id><id>"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "reasons": [
+        "fetchAuth transport; concrete callers inventoried"
+      ]
+    },
+    {
+      "file": "web/static/js/megaron/main.js",
+      "line": 272,
+      "call": "fetch",
+      "paths": [
+        "<id><id>"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "reasons": [
+        "bootstrap get transport; concrete get callers inventoried"
+      ]
+    },
+    {
+      "file": "web/static/js/megaron/ui/codex.js",
+      "line": 175,
+      "call": "fetch",
+      "paths": [
+        "/static/codex/index.json"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "reasons": [
+        "Static article/index asset loading, not player API"
+      ]
+    },
+    {
+      "file": "web/static/js/megaron/ui/codex.js",
+      "line": 188,
+      "call": "fetch",
+      "paths": [
+        "/static/codex/index.json"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "reasons": [
+        "Static article/index asset loading, not player API"
+      ]
+    },
+    {
+      "file": "web/static/js/megaron/ui/codex.js",
+      "line": 193,
+      "call": "fetch",
+      "paths": [
+        "/static/codex/<id>.md"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "reasons": [
+        "Static article/index asset loading, not player API"
+      ]
+    }
+  ],
+  "listed_not_registered": [
+    "POST /api/v1/worlds/{id}/units/recall"
+  ],
+  "registered_not_listed": [
+    "GET /api/v1/agora",
+    "GET /api/v1/auth/me",
+    "GET /api/v1/buildings",
+    "GET /api/v1/goods",
+    "GET /api/v1/recipes",
+    "GET /api/v1/units",
+    "GET /api/v1/worlds",
+    "GET /api/v1/worlds/{id}",
+    "GET /api/v1/worlds/{id}/cities",
+    "GET /api/v1/worlds/{id}/colonize-preview",
+    "GET /api/v1/worlds/{id}/diplomacy",
+    "GET /api/v1/worlds/{id}/foreign-units",
+    "GET /api/v1/worlds/{id}/founding/messengers",
+    "GET /api/v1/worlds/{id}/founding/status",
+    "GET /api/v1/worlds/{id}/gossip",
+    "GET /api/v1/worlds/{id}/map",
+    "GET /api/v1/worlds/{id}/marches",
+    "GET /api/v1/worlds/{id}/market/wants",
+    "GET /api/v1/worlds/{id}/messengers",
+    "GET /api/v1/worlds/{id}/messengers/inbox",
+    "GET /api/v1/worlds/{id}/notifications",
+    "GET /api/v1/worlds/{id}/provinces",
+    "GET /api/v1/worlds/{id}/provinces/{id}",
+    "GET /api/v1/worlds/{id}/provinces/{id}/actions",
+    "GET /api/v1/worlds/{id}/provinces/{id}/army",
+    "GET /api/v1/worlds/{id}/provinces/{id}/buildings",
+    "GET /api/v1/worlds/{id}/provinces/{id}/goods",
+    "GET /api/v1/worlds/{id}/provinces/{id}/placement-options",
+    "GET /api/v1/worlds/{id}/provinces/{id}/placements",
+    "GET /api/v1/worlds/{id}/provinces/{id}/ticklog",
+    "GET /api/v1/worlds/{id}/provinces/{id}/trade",
+    "GET /api/v1/worlds/{id}/rural-projections",
+    "GET /api/v1/worlds/{id}/settlements",
+    "GET /api/v1/worlds/{id}/settlements/overview",
+    "GET /api/v1/worlds/{id}/settlements/placement-roster",
+    "GET /api/v1/worlds/{id}/settlements/{id}",
+    "GET /api/v1/worlds/{id}/settlements/{id}/loyalty-log",
+    "GET /api/v1/worlds/{id}/settlements/{id}/messengers",
+    "GET /api/v1/worlds/{id}/standing-orders",
+    "GET /api/v1/worlds/{id}/trades",
+    "GET /api/v1/worlds/{id}/units",
+    "GET /api/v1/worlds/{id}/units/{id}/march-preview",
+    "GET /api/v1/worlds/{id}/wanaxes",
+    "POST /api/v1/agora/password",
+    "POST /api/v1/worlds",
+    "POST /api/v1/worlds/{id}/founding/messengers",
+    "POST /api/v1/worlds/{id}/notifications/read-all",
+    "POST /api/v1/worlds/{id}/notifications/{id}/read"
+  ],
+  "client_not_registered": {
+    "keryx": [],
+    "webb": [
+      "GET /api/v1/worlds/{id}/{id}"
+    ]
+  }
+}

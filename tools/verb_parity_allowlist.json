@@ -1,0 +1,800 @@
+{
+  "helper_prefixes": {
+    "registerReturnArmyRoute": "/api/v1"
+  },
+  "allowlist": [
+    {
+      "route": "* /api/v1/admin/*",
+      "reason": "Admin, intentional outside player parity"
+    },
+    {
+      "route": "* /api/v1/worlds/{id}/kingdoms*",
+      "reason": "KINGDOMS_ENABLED gated, post-MVP"
+    },
+    {
+      "route": "POST /api/v1/worlds/{id}/settlements/{id}/return-army",
+      "reason": "requireKingdomsEnabled, post-MVP"
+    },
+    {
+      "route": "DELETE /api/v1/worlds/{id}/notifications",
+      "reason": "Archive deletion intentionally removed from web; notif.js documents server legacy endpoint"
+    },
+    {
+      "route": "POST /api/v1/auth/refresh",
+      "reason": "Auth transport token refresh, internal not a player verb"
+    },
+    {
+      "route": "POST /api/v1/auth/register",
+      "reason": "Web via templates/index.html:186, outside requested megaron JS module scan; CLI has no account registration"
+    },
+    {
+      "route": "POST /api/v1/auth/login",
+      "reason": "Web via templates/index.html:172, outside module scan; CLI login present"
+    },
+    {
+      "route": "POST /api/v1/worlds/{id}/join",
+      "reason": "Web via templates/join.html:31, outside module scan; CLI join present"
+    }
+  ],
+  "codex_aliases": {
+    "/api/v1/auth/register": {
+      "terms": [
+        "account"
+      ],
+      "articles": [
+        "getting-in.md"
+      ]
+    },
+    "/api/v1/auth/login": {
+      "terms": [
+        "log in",
+        "sign in"
+      ],
+      "articles": [
+        "getting-in.md"
+      ]
+    },
+    "/api/v1/auth/me": {
+      "terms": [
+        "account"
+      ],
+      "articles": [
+        "getting-in.md"
+      ]
+    },
+    "/api/v1/auth/password": {
+      "terms": [
+        "password"
+      ],
+      "articles": [
+        "getting-in.md",
+        "community-chat.md"
+      ]
+    },
+    "/api/v1/agora": {
+      "terms": [
+        "chat"
+      ],
+      "articles": [
+        "community-chat.md"
+      ]
+    },
+    "/api/v1/agora/password": {
+      "terms": [
+        "password"
+      ],
+      "articles": [
+        "getting-in.md",
+        "community-chat.md"
+      ]
+    },
+    "/api/v1/buildings": {
+      "terms": [
+        "building",
+        "buildings"
+      ],
+      "articles": [
+        "buildings.md"
+      ]
+    },
+    "/api/v1/units": {
+      "terms": [
+        "units"
+      ],
+      "articles": [
+        "units.md"
+      ]
+    },
+    "/api/v1/recipes": {
+      "terms": [
+        "refin",
+        "bronze"
+      ],
+      "articles": [
+        "bronze.md"
+      ]
+    },
+    "/api/v1/goods": {
+      "terms": [
+        "goods"
+      ],
+      "articles": [
+        "goods.md"
+      ]
+    },
+    "/api/v1/notification-preferences": {
+      "terms": [
+        "Muting",
+        "--mute"
+      ],
+      "articles": [
+        "coming-back.md"
+      ]
+    },
+    "/api/v1/notification-preferences/{id}": {
+      "terms": [
+        "Muting",
+        "--mute"
+      ],
+      "articles": [
+        "coming-back.md"
+      ]
+    },
+    "/api/v1/worlds": {
+      "terms": [
+        "world"
+      ],
+      "articles": [
+        "getting-in.md"
+      ]
+    },
+    "/api/v1/worlds/{id}": {
+      "terms": [
+        "world"
+      ],
+      "articles": [
+        "getting-in.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/map": {
+      "terms": [
+        "map"
+      ],
+      "articles": [
+        "screen.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/colonize-preview": {
+      "terms": [
+        "forecast",
+        "preview"
+      ],
+      "articles": [
+        "colonies.md",
+        "founding.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/provinces": {
+      "terms": [
+        "province",
+        "city"
+      ],
+      "articles": [
+        "city.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/marches": {
+      "terms": [
+        "march"
+      ],
+      "articles": [
+        "marching.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/messengers": {
+      "terms": [
+        "messenger",
+        "letter"
+      ],
+      "articles": [
+        "messengers.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/trades": {
+      "terms": [
+        "caravan"
+      ],
+      "articles": [
+        "trade.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/foreign-units": {
+      "terms": [
+        "sight",
+        "see"
+      ],
+      "articles": [
+        "sight.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/rural-projections": {
+      "terms": [
+        "citizen",
+        "citizens",
+        "placement",
+        "workers"
+      ],
+      "articles": [
+        "citizens.md",
+        "catchment.md",
+        "city.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/wanaxes": {
+      "terms": [
+        "Rulers"
+      ],
+      "articles": [
+        "messengers.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/cities": {
+      "terms": [
+        "city",
+        "cities"
+      ],
+      "articles": [
+        "city.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/diplomacy": {
+      "terms": [
+        "Diplomacy"
+      ],
+      "articles": [
+        "messengers.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/provinces/{id}": {
+      "terms": [
+        "province",
+        "city"
+      ],
+      "articles": [
+        "city.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/provinces/{id}/actions": {
+      "terms": [
+        "build",
+        "train"
+      ],
+      "articles": [
+        "buildings.md",
+        "units.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/provinces/{id}/army": {
+      "terms": [
+        "army"
+      ],
+      "articles": [
+        "units.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/provinces/{id}/buildings": {
+      "terms": [
+        "building",
+        "buildings"
+      ],
+      "articles": [
+        "buildings.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/provinces/{id}/goods": {
+      "terms": [
+        "goods"
+      ],
+      "articles": [
+        "goods.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/provinces/{id}/ticklog": {
+      "terms": [
+        "tick"
+      ],
+      "articles": [
+        "time.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/provinces/{id}/build": {
+      "terms": [
+        "build",
+        "building"
+      ],
+      "articles": [
+        "buildings.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/provinces/{id}/build-queue/{id}": {
+      "terms": [
+        "cancel"
+      ],
+      "articles": [
+        "buildings.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/provinces/{id}/recruit": {
+      "terms": [
+        "Train 100",
+        "train",
+        "recruit"
+      ],
+      "articles": [
+        "units.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/provinces/{id}/trade": {
+      "terms": [
+        "transfer"
+      ],
+      "articles": [
+        "transfers.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/provinces/{id}/disband": {
+      "terms": [
+        "disband"
+      ],
+      "articles": [
+        "units.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/provinces/{id}/labor": {
+      "terms": [
+        "devotion",
+        "cult"
+      ],
+      "articles": [
+        "temples.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/provinces/{id}/placement-options": {
+      "terms": [
+        "citizen",
+        "citizens",
+        "placement",
+        "workers"
+      ],
+      "articles": [
+        "citizens.md",
+        "catchment.md",
+        "city.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/provinces/{id}/placements": {
+      "terms": [
+        "citizen",
+        "citizens",
+        "placement",
+        "workers"
+      ],
+      "articles": [
+        "citizens.md",
+        "catchment.md",
+        "city.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/provinces/{id}/placements/{id}": {
+      "terms": [
+        "citizen",
+        "citizens",
+        "placement",
+        "workers"
+      ],
+      "articles": [
+        "citizens.md",
+        "catchment.md",
+        "city.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/provinces/{id}/slaughter-livestock": {
+      "terms": [
+        "slaughter"
+      ],
+      "articles": [
+        "city.md",
+        "food.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/standing-orders": {
+      "terms": [
+        "standing order",
+        "standing orders",
+        "retreat"
+      ],
+      "articles": [
+        "routes.md",
+        "battle.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/standing-orders/{id}/pause": {
+      "terms": [
+        "pause"
+      ],
+      "articles": [
+        "routes.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/standing-orders/{id}/resume": {
+      "terms": [
+        "resume"
+      ],
+      "articles": [
+        "routes.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/standing-orders/{id}": {
+      "terms": [
+        "standing order",
+        "standing orders",
+        "retreat"
+      ],
+      "articles": [
+        "routes.md",
+        "battle.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/market/wants": {
+      "terms": [
+        "want",
+        "wants"
+      ],
+      "articles": [
+        "trade.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/founding/settle": {
+      "terms": [
+        "found",
+        "founding"
+      ],
+      "articles": [
+        "founding.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/founding/messengers": {
+      "terms": [
+        "messenger",
+        "letter"
+      ],
+      "articles": [
+        "messengers.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/founding/status": {
+      "terms": [
+        "host",
+        "founding"
+      ],
+      "articles": [
+        "founding.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/units": {
+      "terms": [
+        "units"
+      ],
+      "articles": [
+        "units.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/units/{id}/march": {
+      "terms": [
+        "march"
+      ],
+      "articles": [
+        "marching.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/units/{id}/march-preview": {
+      "terms": [
+        "preview",
+        "--preview"
+      ],
+      "articles": [
+        "marching.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/units/{id}/recall": {
+      "terms": [
+        "recall",
+        "call back"
+      ],
+      "articles": [
+        "marching.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/units/{id}/stance": {
+      "terms": [
+        "stance"
+      ],
+      "articles": [
+        "stances.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/units/{id}/standing-orders": {
+      "terms": [
+        "standing order",
+        "standing orders",
+        "retreat"
+      ],
+      "articles": [
+        "routes.md",
+        "battle.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/retreat-default": {
+      "terms": [
+        "retreat"
+      ],
+      "articles": [
+        "battle.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/units/{id}/load": {
+      "terms": [
+        "load"
+      ],
+      "articles": [
+        "sea.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/units/{id}/unload": {
+      "terms": [
+        "unload"
+      ],
+      "articles": [
+        "sea.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/units/{id}/pickup": {
+      "terms": [
+        "Fetch by ship",
+        "fetch"
+      ],
+      "articles": [
+        "sea.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/units/{id}/reinforce": {
+      "terms": [
+        "reinforce"
+      ],
+      "articles": [
+        "units.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/units/{id}/repair": {
+      "terms": [
+        "repair"
+      ],
+      "articles": [
+        "units.md",
+        "sea.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/settlements": {
+      "terms": [
+        "city",
+        "cities"
+      ],
+      "articles": [
+        "city.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/settlements/overview": {
+      "terms": [
+        "city",
+        "cities"
+      ],
+      "articles": [
+        "city.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/settlements/placement-roster": {
+      "terms": [
+        "citizen",
+        "citizens",
+        "placement",
+        "workers"
+      ],
+      "articles": [
+        "citizens.md",
+        "catchment.md",
+        "city.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/settlements/{id}": {
+      "terms": [
+        "city",
+        "cities"
+      ],
+      "articles": [
+        "city.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/settlements/{id}/occupation-order": {
+      "terms": [
+        "annex",
+        "occupation"
+      ],
+      "articles": [
+        "occupation.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/settlements/{id}/gift": {
+      "terms": [
+        "gift"
+      ],
+      "articles": [
+        "transfers.md",
+        "loyalty.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/settlements/{id}/loyalty-log": {
+      "terms": [
+        "loyalty"
+      ],
+      "articles": [
+        "loyalty.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/settlements/{id}/rite": {
+      "terms": [
+        "rite"
+      ],
+      "articles": [
+        "rites.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/settlements/{id}/abandon": {
+      "terms": [
+        "abandon"
+      ],
+      "articles": [
+        "colonies.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/gossip": {
+      "terms": [
+        "gossip",
+        "rumour"
+      ],
+      "articles": [
+        "gossip.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/settlements/{id}/messengers": {
+      "terms": [
+        "messenger",
+        "letter"
+      ],
+      "articles": [
+        "messengers.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/messengers/inbox": {
+      "terms": [
+        "Correspondence"
+      ],
+      "articles": [
+        "messengers.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/messengers/{id}/reply": {
+      "terms": [
+        "Reply"
+      ],
+      "articles": [
+        "messengers.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/messengers/{id}/trade-accept": {
+      "terms": [
+        "accept"
+      ],
+      "articles": [
+        "trade.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/messengers/{id}/trade-decline": {
+      "terms": [
+        "decline"
+      ],
+      "articles": [
+        "trade.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/messengers/{id}/trade-cancel": {
+      "terms": [
+        "cancel"
+      ],
+      "articles": [
+        "trade.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/messengers/{id}/passage": {
+      "terms": [
+        "ship",
+        "port"
+      ],
+      "articles": [
+        "sea.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/messengers/{id}/call-back": {
+      "terms": [
+        "call back"
+      ],
+      "articles": [
+        "sea.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/notifications": {
+      "terms": [
+        "dispatch",
+        "dispatches"
+      ],
+      "articles": [
+        "coming-back.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/notifications/read-all": {
+      "terms": [
+        "read"
+      ],
+      "articles": [
+        "coming-back.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/notifications/{id}/read": {
+      "terms": [
+        "read"
+      ],
+      "articles": [
+        "coming-back.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/reports": {
+      "terms": [
+        "report"
+      ],
+      "articles": [
+        "report.md"
+      ]
+    }
+  },
+  "unresolved_allowlist": [
+    {
+      "file": "server/cmd/keryx/client.go",
+      "call": "do",
+      "reason": "Generic HTTP transport; actual get/post/put/delete callers inventoried"
+    },
+    {
+      "file": "web/static/js/megaron/api.js",
+      "call": "fetch",
+      "reason": "fetchAuth transport; concrete callers inventoried"
+    },
+    {
+      "file": "web/static/js/megaron/main.js",
+      "call": "fetch",
+      "reason": "bootstrap get transport; concrete get callers inventoried"
+    },
+    {
+      "file": "web/static/js/megaron/ui/codex.js",
+      "call": "fetch",
+      "reason": "Static article/index asset loading, not player API"
+    }
+  ]
+}
