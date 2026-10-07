@@ -46,10 +46,13 @@ aktiv rutt/ticks/dispatchorigin? Rekommendation är första formen. Inget antal
 tick i ett fönster får gissas. Gamla recall/redirect måste förbli oförändrade;
 ny gruppform behöver nytt namngivet verb/protokoll och medlemsidempotens.
 
+## BASLINJE
+`tools/gotest.sh ./api/handlers ./internal/messenger ./internal/combat -run 'Test.*(Recall|OrderDelivery|InterceptCourier)'` på färsk PG16/migration160, commit6313d541: alla tre paket gröna. Rålogg [baseline.log](baseline.log).
+
 ## Resume checkpoint
 Lagertak överlämnat rent @3fc417fd; Claude har integrerat det i bas77f584be.
 Aggregat-recall: kontrakt/premiss före kod, positionsmätning klar; väntar på
-Claudes definition av samma plats. Fresh recallbaslinje kan köras oberoende.
+Claudes definition av samma plats. Fresh recallbaslinje är grön. Ingen produktionskod ändrad.
 Worktree /tmp/megaron-codex-aggregat-recall-20261007, gren codex/aggregat-recall.
 Nästa: svar på canonfråga → implementation enligt fyra ytor, fortlöpande commits.
 BILD före merge senare; ingen merge/push/deploy av Codex.

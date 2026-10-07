@@ -1,0 +1,4 @@
+» färsk DB på migration 160 · commit 6313d541
+ok  	formatet/megaron/server/api/handlers	0.571s
+ok  	formatet/megaron/server/internal/messenger	0.237s
+ok  	formatet/megaron/server/internal/combat	0.034s
