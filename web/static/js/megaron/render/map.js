@@ -11,6 +11,7 @@ import { isTypingTarget } from '../ui/format.js';
 import { canonicalUnitType, actorName } from '../ui/actornames.js';
 import { drawActor, spriteRuns, FOREIGN_ACCENT, FOREIGN_OUTLINE } from './actorsprites.js';
 import { eyeSees } from './sight.js';
+import { drawRemembered } from './memory.js';
 import { drawCityMass, citySprite, cityTop, cityFoot } from './citysprites.js';
 import { zoomStep, clampPan } from './camera.js';
 import { unitHoverLines } from '../ui/hover.js';
@@ -3648,6 +3649,25 @@ export function render() {
   }
   pass('tint+rural');
 
+  // Remembered buildings must join their terrain in the grayscale pass.
+  // Live cities retain their existing position above player overlays.
+  // 4. Province buildings + flags
+  // Ritas norr→söder. Stadsmassorna är upp till 44×32 px och svämmar över
+  // hexkanten med flit, så två grannstäder kan överlappa; den sydligare ska då
+  // ligga överst, precis som träden och aktörerna sorteras.
+  const byDepth = State.provinceData.slice()
+    .sort((a, b) => hexPx(a.q, a.r).y - hexPx(b.q, b.r).y);
+  for (const p of byDepth) {
+    const {x,y} = hexPx(p.q, p.r);
+    if (tileTier(p.q, p.r) === 'remembered') drawProvince(ctx, x, y, p);
+  }
+  pass('remembered-cities');
+
+  // Knowledge tint includes the whole painted hex (ground, canopy, peaks,
+  // deposits and remembered buildings), before player UI and live actors.
+  drawRemembered(ctx, vis, t => { const p = hexPx(t.q, t.r); return hexPts(p.x, p.y); });
+  pass('memory');
+
   // 3. Highlight selected hex
   if (State.selectedHex) {
     const {x,y} = hexPx(State.selectedHex.q, State.selectedHex.r);
@@ -3738,15 +3758,9 @@ export function render() {
   }
   pass('overlays');
 
-  // 4. Province buildings + flags
-  // Ritas norr→söder. Stadsmassorna är upp till 44×32 px och svämmar över
-  // hexkanten med flit, så två grannstäder kan överlappa; den sydligare ska då
-  // ligga överst, precis som träden och aktörerna sorteras.
-  const byDepth = State.provinceData.slice()
-    .sort((a, b) => hexPx(a.q, a.r).y - hexPx(b.q, b.r).y);
   for (const p of byDepth) {
-    const {x,y} = hexPx(p.q, p.r);
-    drawProvince(ctx, x, y, p);
+    const { x, y } = hexPx(p.q, p.r);
+    if (tileTier(p.q, p.r) !== 'remembered') drawProvince(ctx, x, y, p);
     if (State.camera.zoom >= LOCAL_ZOOM) drawLabel(ctx, x, y, p.name, p.own);
   }
   pass('cities');
