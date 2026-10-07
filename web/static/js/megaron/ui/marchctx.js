@@ -165,18 +165,18 @@ export function renderColonizePreviewHTML(p) {
   const netTick  = g.est_net_per_tick || 0;
   const consTick = prodTick - netTick;
 
-  let html = `<div style="color:var(--text-dim)">Catchment forecast — ${known}/${total} hexes known</div>`;
-  html += `<div>Grain: prod ~${prodTick.toFixed(0)} − cons ~${consTick.toFixed(0)} = ` +
-    `<b style="color:${netTick < 0 ? 'var(--accent)' : 'var(--safe)'}">net ${netTick >= 0 ? '+' : ''}${netTick.toFixed(0)}/tick</b></div>`;
+  let html = `<div style="color:var(--text-dim)">Catchment forecast — ${numberWords(known)} of ${numberWords(total)} hexes known</div>`;
+  html += `<div>Grain: produces about ${numberWords(Math.round(prodTick))} and eats about ${numberWords(Math.round(consTick))} each game day = ` +
+    `<b style="color:${netTick < 0 ? 'var(--accent)' : 'var(--safe)'}">net ${numberWords(Math.round(netTick))} per game day</b></div>`;
   if (netTick < 0) {
-    const reach = g.ticks_until_empty != null ? ` → lasts ~${g.ticks_until_empty.toFixed(0)} ticks` : '';
+    const reach = g.ticks_until_empty != null ? ` → lasts about ${numberWords(Math.round(g.ticks_until_empty))} game days` : '';
     const farmNetTick = (g.with_farm_per_tick || 0) - consTick;
     const farmNote = (g.with_farm_per_tick || 0) <= (g.base_per_tick || 0)
       ? ' (no farmland in known catchment — a farm will not help here)' : '';
-    html += `<div>Seed ${(g.seed || 0).toFixed(0)} grain${reach}. With farm: ${farmNetTick >= 0 ? '+' : ''}${farmNetTick.toFixed(0)}/tick${farmNote}</div>`;
+    html += `<div>Seed ${numberWords(Math.round(g.seed || 0))} grain${reach}. With farm: ${numberWords(Math.round(farmNetTick))} net per game day${farmNote}</div>`;
     html += `<div style="color:var(--text-dim)">A colony does not feed itself — build a farm if the land bears it, or send grain by internal transfer.</div>`;
   } else {
-    html += `<div>Seed ${(g.seed || 0).toFixed(0)} grain — the colony feeds itself.</div>`;
+    html += `<div>Seed ${numberWords(Math.round(g.seed || 0))} grain — the colony feeds itself.</div>`;
   }
 
   const dep = {};
@@ -191,7 +191,7 @@ export function renderColonizePreviewHTML(p) {
   Object.keys(p.goods || {}).sort().forEach(gk => {
     if (gk === 'grain') return;
     const rate = p.goods[gk] || 0;
-    if (rate > 0) extras.push(`${gk} ~${rate.toFixed(0)}/tick`);
+    if (rate > 0) extras.push(`${esc(gk)} about ${numberWords(Math.round(rate))} per game day`);
   });
   if (extras.length) html += `<div style="color:var(--text-dim)">Also: ${extras.join(', ')}</div>`;
 

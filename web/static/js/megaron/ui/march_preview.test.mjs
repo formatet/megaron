@@ -23,7 +23,7 @@ test('forecast reads the exact order with GET, including landing and stance', as
 test('redirect and courier never masquerade as immediate arrival', async () => {
   const value = await loadMarchPreview('w', { id: 'u', mode: 'redirect' }, {}, () => { throw Error('must not request march'); });
   for (const reason of [value.reason, 'courier_required']) {
-    assert.match(marchPreviewHTML({ available: false, reason }), /Runner must deliver/);
+    assert.match(marchPreviewHTML({ available: false, reason }), /messenger must deliver/);
     assert.doesNotMatch(marchPreviewHTML({ available: false, reason }), /Estimated arrival/);
   }
   assert.match(marchPreviewHTML({ available: false, reason: 'unknown_terrain' }), /unexplored terrain/);
@@ -41,7 +41,7 @@ test('each selected unit keeps its own arrival; names and API errors are escaped
   controller.update('w', [{id:'fast',name:'<fast>'},{id:'slow',name:'Slow'},{id:'bad',name:'Bad'}], { target_q: 1 });
   await pause();
   const html = output.at(-1);
-  assert.match(html, /2 game days/); assert.match(html, /8 game days/);
+  assert.match(html, /two game days/); assert.match(html, /eight game days/);
   assert.match(html, /&lt;fast&gt;/); assert.doesNotMatch(html, /<img|<fast>/);
   assert.match(html, /Forecast unavailable/);
 });
