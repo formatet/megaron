@@ -87,10 +87,11 @@ try:
     api(worldpath+'/join', 'POST', {}, token)
     founded = api(worldpath+'/founding/settle', 'POST', {'name': 'Nostos'}, token)
     assert founded.get('settlement_id'), founded
+    api(worldpath+'/provinces/'+founded['province_id']+'/recruit','POST',{'unit_type':'spearman','count':1},token)
     data = api(worldpath+'/units', token=token)
     candidates = [u for u in data['units'] if u.get('deployable') and u['status']=='garrison' and u['category']=='land']
-    assert len(candidates)>=2, data
-    chosen = candidates[:2]
+    assert len(candidates)>=3, data
+    chosen = candidates[:3]
     provinces = api(worldpath+'/provinces',token=token)
     provinces = provinces if isinstance(provinces,list) else provinces['provinces']
     city = next(p for p in provinces if p.get('settlement_id')==founded['settlement_id'] or p.get('id')==founded.get('province_id'))
@@ -103,8 +104,9 @@ try:
     cfg=OUT/'private-config.json';cfg.write_text(json.dumps({'server':base,'token':token,'world_id':world}));cfg.chmod(0o600)
     cli_env={'HOME':os.environ['HOME'],'PATH':os.environ['PATH'],'POLEIA_CONFIG':str(cfg)}
     def cli(*args): return subprocess.check_output([str(OUT/'keryx'),*args],env=cli_env,text=True)
-    for u in chosen:
-        receipt=json.loads(cli('march','--unit',u['id'],'--target',f'{q},{r}','--intent','explore','--ticks',str(data['expedition_rules']['max_ticks']),'--json'))
+    for idx,u in enumerate(chosen):
+        uq,ur=(q,r) if idx<2 else (homeq,homer+3)
+        receipt=json.loads(cli('march','--unit',u['id'],'--target',f'{uq},{ur}','--intent','explore','--ticks',str(data['expedition_rules']['max_ticks']),'--json'))
         assert receipt.get('unit_id')==u['id'] and receipt.get('expedition'),receipt
     single_receipts=[]
     with sync_playwright() as pw:
@@ -122,6 +124,9 @@ try:
                 page.locator('#recall-batch-send').click()
             report=response.value.json();assert response.value.status==200,report
             expect(page.locator('#recall-batch-result')).to_contain_text('recall sent by Runner')
+            expect(page.locator('#recall-batch-result')).to_contain_text('Group of two units')
+            expect(page.locator('#recall-batch-result')).to_contain_text('Single unit')
+            expect(page.locator('#recall-batch-result')).to_contain_text('rejected')
         elif MODE=='single':
             time.sleep(float(sys.argv[4]) if len(sys.argv)>4 else 0)
             # Frozen legacy verbs, on the same actual starting cohorts.
@@ -168,5 +173,5 @@ try:
 finally:
     if proc is not None:
         proc.terminate();proc.wait(timeout=20)
-    for name in containers:subprocess.run(['docker','rm','-f',name],capture_output=True)
+    for name in containers:subprocess.run(['docker','rm','-fv',name],capture_output=True)
     if (OUT/'private-config.json').exists():(OUT/'private-config.json').unlink()

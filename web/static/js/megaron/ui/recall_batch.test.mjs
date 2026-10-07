@@ -9,7 +9,7 @@ test('selection and filters match CLI and reject malformed coordinates', () => {
 });
 test('groups, singles and every named refusal are visible and escaped',()=>{
  const html=recallBatchReportHTML({groups:[{unit_ids:['a','b'],q:2,r:0,courier_due_tick:9},{unit_ids:['c'],q:4,r:1,passage_status:'awaiting_passage'}],results:[{name:'Alpha',status:'order_dispatched'},{name:'Host',status:'order_applied'},{name:'<Delta>',status:'rejected',reason:'not marching <x>'}]});
- for(const text of ['Group:','Single:','game day 9','awaiting_passage','Alpha: recall sent','Host: recall given in person','&lt;Delta&gt;: rejected','not marching &lt;x&gt;']) assert.ok(html.includes(text),text);
+ for(const text of ['Group of two units','Single unit','game day 9','waiting for a ship','Alpha</strong>: recall sent','Host</strong>: recall given in person','&lt;Delta&gt;</strong>: rejected','not marching &lt;x&gt;']) assert.ok(html.includes(text),text);
  assert.ok(!html.includes('<Delta>'));assert.match(recallBatchReportHTML({results:[]}),/No units match/);
 });
 test('batch action uses authenticated fetch bridge and returns server report',async()=>{
