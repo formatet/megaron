@@ -195,3 +195,11 @@ bor i `tools/verb_parity_allowlist.json`. Olösta anrop visas separat; frånvaro
 av statisk evidens är inte automatiskt frånvaro av förmåga. Fixturer:
 `python3 -m unittest discover -s tools -p 'test_verb_parity.py'`.
 Rapport och parsermutation: `docs/reviews/verb-parity/`.
+
+`python3 tools/recall_live.py OUT BUILD_COMMIT web singles` runs a separate
+fresh single-Runner scene: explore task filter followed by recall-all, including
+the named pending-order refusal. Ordinary march targets come from actual
+scouted land. Browser opens before marching; real Dismiss hides the advisory,
+then the drawer scrolls to the controls for desktop/390px screenshots. Both
+recall scenes require per-recipient audits and garrison, not just the response.
+Current UI/BILD proof: `docs/reviews/aggregat-recall/ui-proof.md`.

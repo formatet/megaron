@@ -1,3 +1,10 @@
+> Aktuellt UI-underlag G (2026-10-07): [ui-proof.md](ui-proof.md) och
+> [ui-contract.md](ui-contract.md). Nya grupp-/singelbilder i live-web, BILD väntar
+> Timothy. Master inklusive route/dedup/rivning och hostutkorg sammanfogad på
+> 5605b179, full NY PG16/mig160 Go/vet/385 JS + fysisk merge-mutation gröna.
+> Rapporten nedan är ursprungsslicens historiska resultat; dess gamla singelfynd
+> har därefter rättats av Claude och ska inte läsas som aktuellt öppet fel.
+
 # Aggregat-recall — överlämning
 
 ## SAMMANFATTNING

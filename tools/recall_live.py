@@ -102,6 +102,9 @@ try:
     nearby=[t for t in tiles if max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer))==4]
     centre=min(nearby,key=lambda t:(abs(t['r']-homer),abs(t['q']-homeq-4),t['q'],t['r']))
     q,r=centre['q'],centre['r']
+    known_land=[t for t in tiles if t.get('visible') and t['terrain'] not in ('fog','coastal_sea','deep_sea','river','mountain_limestone','mountain_red') and 2<=max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer))<=4]
+    assert known_land,'no scouted land for ordinary march'
+    other_centre=max(known_land,key=lambda t:max(abs(t['q']-q),abs(t['r']-r),abs(t['q']+t['r']-q-r)))
     cfg=OUT/'private-config.json';cfg.write_text(json.dumps({'server':base,'token':token,'world_id':world}));cfg.chmod(0o600)
     cli_env={'HOME':os.environ['HOME'],'PATH':os.environ['PATH'],'POLEIA_CONFIG':str(cfg)}
     def cli(*args): return subprocess.check_output([str(OUT/'keryx'),*args],env=cli_env,text=True)
@@ -119,11 +122,25 @@ try:
         brief=page.locator('#lb-war .lb-dismiss')
         if brief.count():brief.click()
         for idx,u in enumerate(chosen):
-            uq,ur=(q,r) if SCENE != 'singles' or idx == 0 else (homeq,homer+3)
-            receipt=json.loads(cli('march','--unit',u['id'],'--target',f'{uq},{ur}','--intent','explore','--ticks',str(data['expedition_rules']['max_ticks']),'--json'))
-            assert receipt.get('unit_id')==u['id'] and receipt.get('expedition'),receipt
+            uq,ur=(q,r) if SCENE != 'singles' or idx == 0 else (other_centre['q'],other_centre['r'])
+            args=['march','--unit',u['id'],'--target',f'{uq},{ur}']
+            if SCENE != 'singles' or idx == 0:
+                args += ['--intent','explore','--ticks',str(data['expedition_rules']['max_ticks'])]
+            receipt=json.loads(cli(*args,'--json'))
+            assert receipt.get('unit_id')==u['id'],receipt
         page.evaluate("async()=>{const war=await import('/static/js/megaron/ui/drawers/war.js');await war.loadWarDrawer();}")
+        initial_filtered_report=None
         if MODE=='web':
+            if SCENE=='singles':
+                # One real filtered order, followed by all: the first unit's
+                # pending order is refused and the other gets its own Runner.
+                page.locator('#recall-batch-intent').fill('explore')
+                with page.expect_response(lambda r:r.url.endswith('/units/recall') and r.request.method=='POST') as filtered_response:
+                    page.locator('#recall-batch-send').click()
+                initial_filtered_report=filtered_response.value.json()
+                assert filtered_response.value.status==200,initial_filtered_report
+                assert sum(r['status']=='order_dispatched' for r in initial_filtered_report['results'])==1,initial_filtered_report
+                page.locator('#recall-batch-intent').fill('')
             with page.expect_response(lambda r:r.url.endswith('/units/recall') and r.request.method=='POST') as response:
                 page.locator('#recall-batch-send').click()
             report=response.value.json();assert response.value.status==200,report
@@ -142,6 +159,8 @@ try:
             assert 'rejected' in text and 'Runner is already on its way' in text,text
             (OUT/'repeat-cli.txt').write_text(text)
         dispatched={x['unit_id'] for x in report['results'] if x['status']=='order_dispatched'}
+        if initial_filtered_report:
+            dispatched.update(x['unit_id'] for x in initial_filtered_report['results'] if x['status']=='order_dispatched')
         assert {u['id'] for u in chosen}<=dispatched,report
         assert all(x.get('reason') and x.get('name') for x in report['results'] if x['status']=='rejected'),report
         page.locator('#recall-batch-send').evaluate("e=>{const section=e.closest('.dsec'),body=e.closest('.drawer-body');body.scrollTop += section.getBoundingClientRect().top-body.getBoundingClientRect().top;}")
@@ -172,7 +191,7 @@ try:
     redirected=command('docker','exec',containers[0],'psql','-U','postgres','-d','recall','-Atc',
         "SELECT count(*) FROM events WHERE world_id='"+world+"' AND event_type='MarchRedirected';")
     if MODE!='single': assert int(recalled)==len(dispatched), 'garrison alone is insufficient: every recipient must actually receive recall'
-    proof={'health':health,'mode':MODE,'scene':SCENE,'report':report,'history':history,'db_counts':evidence,'browser_errors':errors,'legacy_receipts':single_receipts,'legacy_unit_readings':legacy_readings,'recall_audits':int(recalled),'redirect_audits':int(redirected)}
+    proof={'health':health,'mode':MODE,'scene':SCENE,'initial_filtered_report':initial_filtered_report,'report':report,'history':history,'db_counts':evidence,'browser_errors':errors,'legacy_receipts':single_receipts,'legacy_unit_readings':legacy_readings,'recall_audits':int(recalled),'redirect_audits':int(redirected)}
     (OUT/'proof.json').write_text(json.dumps(proof,indent=2)+'\n')
     print(json.dumps({'health':health,'mode':MODE,'dispatched':len(dispatched),'all_garrison':True,'recall_audits':int(recalled),'redirect_audits':int(redirected),'groups':len(report['groups']),'legacy_measurement_only':MODE=='single'}))
 finally:
