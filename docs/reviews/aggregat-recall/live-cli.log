@@ -1,8 +1,1 @@
-Traceback (most recent call last):
-  File "/tmp/megaron-codex-aggregat-recall-20261007/tools/recall_live.py", line 133, in <module>
-    assert 'rejected' in text and 'Runner on its way' in text,text
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-AssertionError: Nomadic Host of Erita: rejected — unit is not marching (status: disbanded) — nothing to recall
-2nd Spearmen of Nostos: rejected — a recall/redirect Runner is already on its way to this unit
-1st Spearmen of Nostos: rejected — a recall/redirect Runner is already on its way to this unit
-
+{"health": {"commit": "a6884dc32edef35e7649df484f1e70437ef10998", "migration": 160, "status": "ok"}, "mode": "cli", "dispatched": 2, "all_garrison": true, "groups": 1}

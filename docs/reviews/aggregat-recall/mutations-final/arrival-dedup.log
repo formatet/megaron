@@ -1,0 +1,8 @@
+» färsk DB på migration 160 · commit a6884dc3+ändringar
+2026/10/07 17:52:03 INFO player registered id=a872b371-f85a-45c1-9744-5e650c1fc879 username=intercept-07e722b0-af40-40c7-87be-62ed197929d1
+--- FAIL: TestRecallBatch_ReusesIdenticalPendingArrival (0.09s)
+    unit_recall_batch_test.go:595: response: {"groups":[{"messenger_id":"bbef7f24-99c3-4329-878a-a699812b7230","unit_ids":["7fbfa06e-6683-411c-8f4d-ef119f4a01e4","842814ca-e308-462e-bbcb-ca0959dc0722"],"q":2,"r":0,"courier_due_tick":1,"courier_arrives_at":"2026-10-07T15:00:00+02:00"}],"results":[{"unit_id":"7fbfa06e-6683-411c-8f4d-ef119f4a01e4","name":"infantry of Capital","status":"order_dispatched","messenger_id":"bbef7f24-99c3-4329-878a-a699812b7230"},{"unit_id":"842814ca-e308-462e-bbcb-ca0959dc0722","name":"infantry of Capital","status":"order_dispatched","messenger_id":"bbef7f24-99c3-4329-878a-a699812b7230"}]}
+    unit_recall_batch_test.go:604: same arrival tick rejected: schedule new arrival: ERROR: duplicate key value violates unique constraint "idx_scheduled_recurring_dedup" (SQLSTATE 23505)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.094s
+FAIL

@@ -1,0 +1,1651 @@
+{
+  "health": {
+    "commit": "a6884dc32edef35e7649df484f1e70437ef10998",
+    "migration": 160,
+    "status": "ok"
+  },
+  "mode": "web",
+  "report": {
+    "groups": [
+      {
+        "messenger_id": "5d80c98a-e377-456c-84e4-3dae8e9db607",
+        "unit_ids": [
+          "13b33007-f663-4681-9caa-6637f5cacaf1",
+          "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542"
+        ],
+        "q": 13,
+        "r": 24,
+        "courier_due_tick": 2,
+        "courier_arrives_at": "2026-10-07T17:52:58.549569+02:00"
+      }
+    ],
+    "results": [
+      {
+        "unit_id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "name": "1st Spearmen of Nostos",
+        "status": "order_dispatched",
+        "messenger_id": "5d80c98a-e377-456c-84e4-3dae8e9db607"
+      },
+      {
+        "unit_id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "name": "2nd Spearmen of Nostos",
+        "status": "order_dispatched",
+        "messenger_id": "5d80c98a-e377-456c-84e4-3dae8e9db607"
+      },
+      {
+        "unit_id": "8b2f0f87-9728-4f28-a5d4-109b695031a6",
+        "name": "Nomadic Host of Aigiwalos",
+        "status": "rejected",
+        "reason": "unit is not marching (status: disbanded) \u2014 nothing to recall"
+      }
+    ]
+  },
+  "history": [
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 12,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 13,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 14,
+        "current_r": 24,
+        "target_q": 10,
+        "target_r": 29,
+        "arrival_tick": 15
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      }
+    ],
+    [
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "marching",
+        "current_q": 11,
+        "current_r": 25,
+        "target_q": 11,
+        "target_r": 25,
+        "arrival_tick": 5
+      },
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "garrison",
+        "current_q": null,
+        "current_r": null,
+        "target_q": null,
+        "target_r": null,
+        "arrival_tick": null
+      }
+    ],
+    [
+      {
+        "id": "13b33007-f663-4681-9caa-6637f5cacaf1",
+        "status": "garrison",
+        "current_q": null,
+        "current_r": null,
+        "target_q": null,
+        "target_r": null,
+        "arrival_tick": null
+      },
+      {
+        "id": "6a1c73aa-3a7f-44a3-9f6e-e4f8119d1542",
+        "status": "garrison",
+        "current_q": null,
+        "current_r": null,
+        "target_q": null,
+        "target_r": null,
+        "arrival_tick": null
+      }
+    ]
+  ],
+  "db_counts": "BorrowedArmyTick|4\nColonyPenaltyTick|4\nFoodTick|4\nInterceptScan|4\nKharisTick|4\nLoyaltyDecayTick|4\nLoyaltyWelfareTick|4\nMarchEncounterScan|4\nMarchSightingScan|4\nOrderDelivery|2\nPassageScan|4\nSitosTick|4\nStandingOrderTick|4\nUnitArrival|4\nUnitInterceptScan|4\nUpkeepTick|4",
+  "browser_errors": [],
+  "legacy_receipts": [],
+  "legacy_unit_readings": [],
+  "recall_audits": 2,
+  "redirect_audits": 0
+}

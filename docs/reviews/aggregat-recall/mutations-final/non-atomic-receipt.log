@@ -1,8 +1,8 @@
-» färsk DB på migration 160 · commit bafd0b7a+ändringar
-2026/10/07 17:47:12 INFO player registered id=b3cc7aba-0203-4e6a-ba75-ee21af24520d username=intercept-9453ba57-11e2-41b8-adc6-6faa148cbc7b
+» färsk DB på migration 160 · commit a6884dc3+ändringar
+2026/10/07 17:52:20 INFO player registered id=dc1bfc0a-6300-4d20-b6cb-c6ba35f27727 username=intercept-88778cbe-6e9b-44d2-8edd-836e52c5b69f
 --- FAIL: TestRecallBatch_ReceiptRollsBackWithProjection (0.09s)
-    unit_recall_batch_test.go:463: response: {"groups":[{"messenger_id":"895f2a80-fe5b-4d58-adda-cbc085d19bb1","unit_ids":["00d3a63b-bab4-44f1-9c71-2c3d2efaa6b9"],"q":2,"r":0,"courier_due_tick":1,"courier_arrives_at":"2026-10-07T15:00:00+02:00"}],"results":[{"unit_id":"00d3a63b-bab4-44f1-9c71-2c3d2efaa6b9","name":"infantry of Capital","status":"order_dispatched","messenger_id":"895f2a80-fe5b-4d58-adda-cbc085d19bb1"}]}
-    unit_recall_batch_test.go:502: partial commit receipt1 target8
+    unit_recall_batch_test.go:469: response: {"groups":[{"messenger_id":"bf46bffa-6d59-453c-8706-dcb719878e13","unit_ids":["af172f41-80cc-413f-ab3a-c3c40c87083d"],"q":2,"r":0,"courier_due_tick":1,"courier_arrives_at":"2026-10-07T15:00:00+02:00"}],"results":[{"unit_id":"af172f41-80cc-413f-ab3a-c3c40c87083d","name":"infantry of Capital","status":"order_dispatched","messenger_id":"bf46bffa-6d59-453c-8706-dcb719878e13"}]}
+    unit_recall_batch_test.go:508: partial commit receipt1 target8
 FAIL
-FAIL	formatet/megaron/server/api/handlers	0.098s
+FAIL	formatet/megaron/server/api/handlers	0.097s
 FAIL

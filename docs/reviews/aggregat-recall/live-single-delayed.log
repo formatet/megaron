@@ -1,0 +1,35 @@
+Error: no Runner can catch this unit before it completes its march (arrives 2026-10-07T17:56:51+02:00) — wait for it to arrive, then issue a fresh order (HTTP 422)
+Usage:
+  keryx recall [flags]
+
+Examples:
+  keryx recall --unit <id>
+  keryx recall --all
+  keryx recall --all --target 5,-3 --intent explore
+
+Flags:
+      --all             recall all owned units; report every rejection
+  -h, --help            help for recall
+      --intent string   filter by march intent (requires --all)
+      --target string   filter by current destination q,r (requires --all)
+      --unit string     unit UUID or name
+
+Global Flags:
+  -j, --json   output as JSON (for scripts and MCP)
+
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-aggregat-recall-20261007/tools/recall_live.py", line 128, in <module>
+    single_receipts.append(json.loads(cli('recall','--unit',chosen[0]['id'],'--json')))
+                                      ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/megaron-codex-aggregat-recall-20261007/tools/recall_live.py", line 105, in cli
+    def cli(*args): return subprocess.check_output([str(OUT/'keryx'),*args],env=cli_env,text=True)
+                           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 473, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+               **kwargs).stdout
+               ^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['/tmp/megaron-recall-proof-single-delayed/keryx', 'recall', '--unit', 'eabf3861-5b49-48d0-8007-317c80f16c95', '--json']' returned non-zero exit status 1.

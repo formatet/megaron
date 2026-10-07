@@ -1,0 +1,16 @@
+{"time":"2026-10-07T17:54:02.450643645+02:00","level":"INFO","msg":"world tick advanced","world":"c16e5f05-d4c6-46f8-8215-4d0e42af30f7","tick":1}
+{"time":"2026-10-07T17:54:08.450580484+02:00","level":"INFO","msg":"world tick advanced","world":"c16e5f05-d4c6-46f8-8215-4d0e42af30f7","tick":2}
+{"time":"2026-10-07T17:54:08.453833799+02:00","level":"ERROR","msg":"order delivery: recall/redirect execution failed after claim — order dropped","messenger":"b080d129-53dc-43b8-b95d-6c06465943b0","unit":"13170955-7c28-431a-a143-f7255c41dcc3","verb":"recall","err":"schedule new arrival: ERROR: duplicate key value violates unique constraint \"idx_scheduled_recurring_dedup\" (SQLSTATE 23505)"}
+{"time":"2026-10-07T17:54:08.45750257+02:00","level":"ERROR","msg":"order delivery: recall/redirect execution failed after claim — order dropped","messenger":"b55168c7-ba53-4d95-a9e3-231bbb01e01e","unit":"cb4abfc0-22a4-4546-ad3b-a9d1dac572c2","verb":"redirect","err":"schedule new arrival: ERROR: duplicate key value violates unique constraint \"idx_scheduled_recurring_dedup\" (SQLSTATE 23505)"}
+{"time":"2026-10-07T17:54:14.449517727+02:00","level":"INFO","msg":"world tick advanced","world":"c16e5f05-d4c6-46f8-8215-4d0e42af30f7","tick":3}
+{"time":"2026-10-07T17:54:20.450560233+02:00","level":"INFO","msg":"world tick advanced","world":"c16e5f05-d4c6-46f8-8215-4d0e42af30f7","tick":4}
+{"time":"2026-10-07T17:54:26.452069031+02:00","level":"INFO","msg":"world tick advanced","world":"c16e5f05-d4c6-46f8-8215-4d0e42af30f7","tick":5}
+{"time":"2026-10-07T17:54:32.44987311+02:00","level":"INFO","msg":"world tick advanced","world":"c16e5f05-d4c6-46f8-8215-4d0e42af30f7","tick":6}
+{"time":"2026-10-07T17:54:38.449117333+02:00","level":"INFO","msg":"world tick advanced","world":"c16e5f05-d4c6-46f8-8215-4d0e42af30f7","tick":7}
+{"time":"2026-10-07T17:54:44.449673263+02:00","level":"INFO","msg":"world tick advanced","world":"c16e5f05-d4c6-46f8-8215-4d0e42af30f7","tick":8}
+{"time":"2026-10-07T17:54:50.450666282+02:00","level":"INFO","msg":"world tick advanced","world":"c16e5f05-d4c6-46f8-8215-4d0e42af30f7","tick":9}
+{"time":"2026-10-07T17:54:56.450460287+02:00","level":"INFO","msg":"world tick advanced","world":"c16e5f05-d4c6-46f8-8215-4d0e42af30f7","tick":10}
+{"time":"2026-10-07T17:55:02.449153472+02:00","level":"INFO","msg":"world tick advanced","world":"c16e5f05-d4c6-46f8-8215-4d0e42af30f7","tick":11}
+{"time":"2026-10-07T17:55:08.450284493+02:00","level":"INFO","msg":"world tick advanced","world":"c16e5f05-d4c6-46f8-8215-4d0e42af30f7","tick":12}
+{"time":"2026-10-07T17:55:14.450710766+02:00","level":"INFO","msg":"world tick advanced","world":"c16e5f05-d4c6-46f8-8215-4d0e42af30f7","tick":13}
+{"time":"2026-10-07T17:55:20.452407705+02:00","level":"INFO","msg":"world tick advanced","world":"c16e5f05-d4c6-46f8-8215-4d0e42af30f7","tick":14}

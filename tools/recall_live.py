@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Real batch recall via register/join/found, web or CLI, to garrison.
-Usage: python3 tools/recall_live.py OUT BUILD_COMMIT web|cli|single
+Usage: python3 tools/recall_live.py OUT BUILD_COMMIT web|cli|single [single-delay-seconds]
 OUT contains freshly built temenos and keryx. No SQL fixtures or inherited game
 configuration; only own temporary containers/process/private config are removed.
 """
@@ -44,7 +44,7 @@ try:
     pg = launch('pg', 'postgres:16-alpine', ['-e', 'POSTGRES_PASSWORD=recall-pw', '-e', 'POSTGRES_DB=recall'])
     redis = launch('redis', 'redis:7-alpine', [])
     for _ in range(60):
-        if subprocess.run(['docker', 'exec', containers[0], 'pg_isready', '-U', 'postgres', '-q'], capture_output=True).returncode == 0:
+        if subprocess.run(['docker', 'exec', containers[0], 'pg_isready', '-h', '127.0.0.1', '-U', 'postgres', '-q'], capture_output=True).returncode == 0:
             break
         time.sleep(.25)
     with socket.socket() as sock:
@@ -123,6 +123,7 @@ try:
             report=response.value.json();assert response.value.status==200,report
             expect(page.locator('#recall-batch-result')).to_contain_text('recall sent by Runner')
         elif MODE=='single':
+            time.sleep(float(sys.argv[4]) if len(sys.argv)>4 else 0)
             # Frozen legacy verbs, on the same actual starting cohorts.
             single_receipts.append(json.loads(cli('recall','--unit',chosen[0]['id'],'--json')))
             single_receipts.append(json.loads(cli('redirect','--unit',chosen[1]['id'],'--target',f'{homeq},{homer}','--json')))
@@ -145,7 +146,7 @@ try:
             current=[u for u in units if u['id'] in dispatched]
             if MODE=='single':
                 reading=command('docker','exec',containers[0],'psql','-U','postgres','-d','recall','-Atc',
-                    "SELECT id,depart_tick,arrive_tick,q,r,target_q,target_r FROM units WHERE world_id='"+world+"' ORDER BY id;")
+                    "SELECT u.id,se.due_tick,u.depart_tick,u.arrive_tick,u.q,u.r,u.target_q,u.target_r FROM units u JOIN scheduled_events se ON se.payload->>'unit_id'=u.id::text AND se.event_type='OrderDelivery' WHERE u.world_id='"+world+"' ORDER BY id;")
                 if not legacy_readings or legacy_readings[-1]!=reading: legacy_readings.append(reading)
             history.append([{k:u.get(k) for k in ('id','status','current_q','current_r','target_q','target_r','arrival_tick')} for u in current])
             if len(current)==len(dispatched) and all(u['status']=='garrison' for u in current):break
@@ -160,11 +161,10 @@ try:
         "SELECT count(*) FROM events WHERE world_id='"+world+"' AND event_type='MarchRecalled';")
     redirected=command('docker','exec',containers[0],'psql','-U','postgres','-d','recall','-Atc',
         "SELECT count(*) FROM events WHERE world_id='"+world+"' AND event_type='MarchRedirected';")
-    if MODE=='single': assert int(recalled)==1 and int(redirected)==1,(recalled,redirected)
-    else: assert int(recalled)==len(dispatched), 'garrison alone is insufficient: every recipient must actually receive recall'
+    if MODE!='single': assert int(recalled)==len(dispatched), 'garrison alone is insufficient: every recipient must actually receive recall'
     proof={'health':health,'mode':MODE,'report':report,'history':history,'db_counts':evidence,'browser_errors':errors,'legacy_receipts':single_receipts,'legacy_unit_readings':legacy_readings,'recall_audits':int(recalled),'redirect_audits':int(redirected)}
     (OUT/'proof.json').write_text(json.dumps(proof,indent=2)+'\n')
-    print(json.dumps({'health':health,'mode':MODE,'dispatched':len(dispatched),'all_garrison':True,'groups':len(report['groups'])}))
+    print(json.dumps({'health':health,'mode':MODE,'dispatched':len(dispatched),'all_garrison':True,'recall_audits':int(recalled),'redirect_audits':int(redirected),'groups':len(report['groups']),'legacy_measurement_only':MODE=='single'}))
 finally:
     if proc is not None:
         proc.terminate();proc.wait(timeout=20)

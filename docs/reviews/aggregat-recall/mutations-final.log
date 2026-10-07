@@ -1,4 +1,5 @@
 baseline: GREEN
+arrival-dedup: RED TestRecallBatch_ReusesIdenticalPendingArrival
 worker-walltime: RED TestRecallBatch_LateWorkerUsesDeliveryTickForPositionRouteAndETA,TestRecallBatch_LateWorkerUsesDeliveryTickForPositionRouteAndETA/3
 first-member-only: RED TestRecallBatch_AllMembersReachGarrisonAndReplayIsIdempotent
 pending-guard: RED TestRecallBatch_GroupHasEveryMemberAndPartialFailures
