@@ -10,7 +10,7 @@ package messenger
 // longer valid (unit moved, died, started marching…) fails FINALLY with an
 // OrderFailed notice to the owner — never silently.
 //
-// Idempotency: the messenger row's one-way outbound→arrived flip is the claim
+// Idempotency: the messenger row's one-way outbound→arrived flip is the claim.
 // StartMarch runs its own transaction,
 // so claim and execution are two commits; a crash between them drops the order
 // after an ERROR log (visible), never doubles it — the unit's own status gate
