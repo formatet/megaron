@@ -113,10 +113,12 @@ try:
         if brief.is_visible():brief.click()
     for label,width,height in [('desktop',1280,900),('mobile',390,844)]:
         page.set_viewport_size({'width':width,'height':height});page.wait_for_timeout(150)
+        page.locator('#city-body').evaluate('(e)=>e.scrollTop=0')
         page.locator('#drawer-city').screenshot(path=str(OUT/('production-'+label+'.png')))
+        assert page.locator('#city-body').evaluate('(e)=>e.scrollWidth<=e.clientWidth'),'city overflow'
         if MODE!='baseline':
             details=page.locator('#city-more');assert not details.evaluate('(e)=>e.open')
-            details.locator('summary').click();page.locator('#drawer-city').screenshot(path=str(OUT/('production-more-'+label+'.png')));details.locator('summary').click()
+            details.locator('summary').click();details.scroll_into_view_if_needed();page.locator('#drawer-city').screenshot(path=str(OUT/('production-more-'+label+'.png')));details.locator('summary').click()
     page.set_viewport_size({'width':1280,'height':900})
     options=api(worldpath+'/provinces/'+city['id']+'/placement-options',token=token)
     # Free one placed worker, then place the same good on the same hex again.
@@ -132,16 +134,25 @@ try:
         row().locator('[data-verb="place1"]').click()
     placement=pending.value;assert placement.status==201,placement.status
     if MODE!='baseline':page.locator('#city-more summary').click()
-    page.get_by_role('button',name='Show recent ticks',exact=True).click()
+    page.get_by_role('button',name='Show recent ticks' if MODE=='baseline' else 'Show recent days',exact=True).click()
     page.wait_for_timeout(300)
     assert page.locator('#city-ticklog-sec').inner_text(), 'history remains reachable'
     page.locator('#drawer-city').screenshot(path=str(OUT/'history-desktop.png'))
+    before_slaughter=api(worldpath+'/provinces/'+city['id'],token=token)['settlement']
+    with page.expect_response(lambda r:r.url.endswith('/slaughter-livestock') and r.request.method=='POST') as pending:
+        page.locator('button[onclick="slaughterLivestock(\''+city['id']+'\')"]').click()
+    slaughter=pending.value;assert slaughter.status==200,slaughter.status
+    assert slaughter.json()['population']==before_slaughter['population']+10,slaughter.json()
+    page.wait_for_selector('#city-gubbe-grid svg')
     page.evaluate("window.openDrawer('economy')");page.wait_for_timeout(500)
     page.locator('#drawer-economy').screenshot(path=str(OUT/'economy-desktop.png'))
+    page.set_viewport_size({'width':390,'height':844});page.wait_for_timeout(150)
+    page.locator('#drawer-economy').screenshot(path=str(OUT/'economy-mobile.png'))
+    assert page.locator('#economy-body').evaluate('(e)=>e.scrollWidth<=e.clientWidth'),'economy overflow'
     if MODE!='baseline':
         assert '/tick' not in page.locator('#drawer-economy').inner_text()
     assert not errors,errors
-    proof={'health':health,'mode':MODE,'placement_delete_status':deletion.status,'placement_post_status':placement.status,'placement_post_body':placement.request.post_data_json,'options':options,'final_placements':api(worldpath+'/provinces/'+city['id']+'/placements',token=token),'browser_errors':errors,'sql_mutations':False}
+    proof={'health':health,'mode':MODE,'placement_delete_status':deletion.status,'placement_post_status':placement.status,'placement_post_body':placement.request.post_data_json,'slaughter_receipt':slaughter.json(),'options':options,'final_placements':api(worldpath+'/provinces/'+city['id']+'/placements',token=token),'browser_errors':errors,'sql_mutations':False}
     (OUT/'proof.json').write_text(json.dumps(proof,indent=2)+'\n');print(json.dumps({'health':health,'mode':MODE,'placement_round_trip':True}))
 except Exception:
     if browser is not None:

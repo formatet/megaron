@@ -2,7 +2,7 @@ import { numberWords } from '../number_words.js';
 import { State } from '../../state.js';
 import { fetchAuth } from '../../api.js';
 import { serverNow } from '../../clock.js';
-import { esc, fmtSilver } from '../format.js';
+import { esc } from '../format.js';
 import { renderLockedActions } from '../misc.js';
 import { sitosGranaryState } from './sitos_view.js';
 

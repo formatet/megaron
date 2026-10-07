@@ -14,13 +14,13 @@ export function productionSectionsHTML(city) {
       <div class="dsec-title">Last game day</div><div id="city-lasttick-sec"></div>
       <div class="dsec-title">Loyalty log</div><div id="city-loyalty-sec"></div>
       ${!city.is_capital ? '<div class="dsec-title">Gift from capital</div><div id="city-gift-sec"></div>' : ''}
-      <div class="dsec-title">Daily history <button class="btn-small" onclick="loadTicklog()">Show recent ticks</button></div><div id="city-ticklog-sec"></div>
+      <div class="dsec-title">Daily history <button class="btn-small" onclick="loadTicklog()">Show recent days</button></div><div id="city-ticklog-sec"></div>
     </details>`;
 }
 
 export function populationHTML(pd, idle, livestock, provinceID) {
   return row('People', n(pd.population)) + row('Free to work', n(idle)) +
-    row('Livestock', `${n(Math.floor(livestock))} <button class="btn-small" onclick="slaughterLivestock('${provinceID}')" ${livestock < 1 ? 'disabled' : ''} title="Trade one animal for ten people, right now">Slaughter → ten people</button>`) +
+    row('Livestock', n(Math.floor(livestock))) + `<button class="btn-small" onclick="slaughterLivestock('${provinceID}')" ${livestock < 1 ? 'disabled' : ''} title="Trade one animal for ten people, right now">Slaughter → ten people</button>` +
     '<div id="city-slaughter-result" class="action-result"></div>';
 }
 
