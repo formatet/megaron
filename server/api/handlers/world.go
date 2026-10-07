@@ -152,8 +152,14 @@ func (h *WorldHandler) List(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, worlds)
 }
 
-// Create handles POST /worlds (admin only — validated at router level).
+// Create handles POST /worlds. It ARCHIVES the active world and starts a new
+// one, so it takes the admin key (X-Admin-Key = POLEIA_ADMIN_KEY, fail-closed
+// when unset) on top of a logged-in player — the router's auth.Middleware alone
+// would let any Wanax replace the live world.
 func (h *WorldHandler) Create(w http.ResponseWriter, r *http.Request) {
+	if !requireAdminKey(w, r) {
+		return
+	}
 	var req struct {
 		Name      string `json:"name"`
 		MapSeed   *int64 `json:"map_seed"`

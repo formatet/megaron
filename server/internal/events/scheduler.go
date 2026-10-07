@@ -108,10 +108,6 @@ const (
 	// Sitos-fonden: self-rescheduling stabilization pass, cadence +1 tick (every
 	// tick, not daily) — see internal/economy/sitos_tick.go.
 	ScheduledSitosTick ScheduledEventType = "SitosTick"
-	// March recall/redirect: a recall or redirect messenger reaching a marching
-	// discrete unit (temenos_march_recall.md). The earlier
-	// RecallArrival/ArmyArrival chain for marching_armies was removed 2026-10-07.
-	ScheduledMarchRecall ScheduledEventType = "MarchRecall"
 	// ScheduledOrderDelivery: an order courier reaching its unit — the carried
 	// order (march etc.) executes on delivery (temenos_orderlopare_plan.md Fas 2).
 	ScheduledOrderDelivery ScheduledEventType = "OrderDelivery"

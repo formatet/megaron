@@ -1,0 +1,5 @@
+» färsk DB på migration 160 · commit 2011eeec+ändringar
+ok  	formatet/megaron/server/internal/messenger	0.573s
+ok  	formatet/megaron/server/internal/combat	0.144s
+ok  	formatet/megaron/server/api/handlers	0.980s
+ok  	formatet/megaron/server/internal/events	0.002s

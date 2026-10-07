@@ -1163,7 +1163,9 @@ func unitRedirectCmd() *cobra.Command {
 		Short: "Redirect a marching unit to a new hex",
 		Long: `Send a redirect order to a marching unit, giving it a new destination.
 Command is never instant — the unit keeps marching on its original course until
-the order's Runner physically catches up with it, then turns onto the new course.`,
+the order's Runner physically catches up with it, then turns onto the new course.
+A passable route is required; a refusal at delivery appears in notifications
+with its reason.`,
 		Example: `  keryx unit redirect --unit <id> --target 5,-3
   keryx unit redirect --unit <id> --q 5 --r -3`,
 		Args: rejectPositionalArgs("unit"),

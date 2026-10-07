@@ -1,0 +1,12 @@
+baseline-messenger: GREEN
+baseline-http: GREEN
+course-guard: RED TestRecallNoRoute_CoreRejectsWithoutMutation,TestRecallNoRoute_CoreRejectsWithoutMutation/recall/course,TestRecallNoRoute_CoreRejectsWithoutMutation/redirect/course
+course-guard-restored: GREEN
+position-guard: RED TestRecallNoRoute_CoreRejectsWithoutMutation,TestRecallNoRoute_CoreRejectsWithoutMutation/recall/position,TestRecallNoRoute_CoreRejectsWithoutMutation/redirect/position
+position-guard-restored: GREEN
+delivery-reason: RED TestRecallNoRoute_DeliveryNamesReasonOnce,TestRecallNoRoute_DeliveryNamesReasonOnce/recall,TestRecallNoRoute_DeliveryNamesReasonOnce/redirect
+delivery-reason-restored: GREEN
+http-reason: RED TestRecallNoRoute_HTTPRejectsNamed,TestRecallNoRoute_HTTPRejectsNamed/course
+http-reason-restored: GREEN
+http-position: RED TestRecallNoRoute_HTTPDoesNotDispatchFromGuessedOrigin
+http-position-restored: GREEN

@@ -272,23 +272,6 @@ func TestSingleRecall_PassageRebuiltEnvelopeUsesSameFix(t *testing.T) {
 		})
 	}
 }
-func TestSingleRecall_FrozenMarchRecallIsSeparatePath(t *testing.T) {
-	f := setupSingleRecall(t, "recall")
-	ctx := context.Background()
-	h := NewMarchRecallHandler(f.pool, f.sched, f.store, f.hub, f.clk)
-	raw, _ := json.Marshal(MarchRecallPayload{WorldID: f.world, UnitID: f.unitID, MessengerID: f.messengerID, Mode: "recall"})
-	err := h.Handle(ctx, events.ScheduledEvent{WorldID: f.world, Payload: raw, DueTick: 1})
-	if err == nil || !strings.Contains(err.Error(), "idx_scheduled_recurring_dedup") {
-		t.Fatalf("legacy collision premise changed: %v", err)
-	}
-	var status string
-	if err := f.pool.QueryRow(ctx, `SELECT status FROM messengers WHERE id=$1`, f.messengerID).Scan(&status); err != nil {
-		t.Fatal(err)
-	}
-	if status != "outbound" {
-		t.Fatalf("legacy failed claim must rollback: %s", status)
-	}
-}
 func TestSingleRecall_DifferentEnvelopeIsPreserved(t *testing.T) {
 	f := setupSingleRecall(t, "recall")
 	ctx := context.Background()
@@ -327,5 +310,31 @@ func TestSingleRecall_IncompleteOrderIsNamedAndAudited(t *testing.T) {
 	}
 	if count != 1 {
 		t.Fatal("missing audit")
+	}
+}
+
+// Preserve the old tick-vs-wall-hours regression on the active order envelope.
+// At six seconds per tick the saved-route fixture turns at q2 and travels two
+// ticks home. A wall-hour ETA would make the map crawl and then snap on arrival.
+func TestSingleRecall_ArrivesAtMatchesTickSchedule(t *testing.T) {
+	orig := tick.TickSeconds
+	tick.TickSeconds = 6
+	t.Cleanup(func() { tick.TickSeconds = orig })
+	for _, verb := range []string{"recall", "redirect"} {
+		t.Run(verb, func(t *testing.T) {
+			f := setupSingleRecall(t, verb)
+			if err := f.handler.Handle(context.Background(), f.event()); err != nil {
+				t.Fatal(err)
+			}
+			f.assertApplied(t)
+			var arrivesAt time.Time
+			if err := f.pool.QueryRow(context.Background(), `SELECT arrives_at FROM units WHERE id=$1`, f.unitID).Scan(&arrivesAt); err != nil {
+				t.Fatal(err)
+			}
+			want := f.clk.Now().Add(12 * time.Second)
+			if !arrivesAt.Equal(want) {
+				t.Fatalf("wall-hour ETA: got %v want %v (two real game ticks)", arrivesAt, want)
+			}
+		})
 	}
 }

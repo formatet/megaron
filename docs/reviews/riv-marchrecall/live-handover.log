@@ -1,0 +1,12 @@
+BEGIN
+ current_database |       current_timestamp       
+------------------+-------------------------------
+ poleia           | 2026-10-07 18:41:03.189022+00
+(1 row)
+
+ total | pending | processed | failed 
+-------+---------+-----------+--------
+     0 |       0 |         0 |      0
+(1 row)
+
+COMMIT

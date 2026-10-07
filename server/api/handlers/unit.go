@@ -624,10 +624,8 @@ func (h *UnitHandler) prepareRecall(w http.ResponseWriter, ctx context.Context, 
 	}
 
 	// Guard: an earlier recall/redirect is already in flight for this unit.
-	// Checks the order-envelope's ScheduledOrderDelivery queue (verb recall|redirect)
-	// now that dispatch goes through sendOrderCourier instead of the frozen
-	// ScheduledMarchRecall path — that old event type is no longer written by
-	// fresh dispatches, so checking it here would silently stop firing.
+	// Checks pending OrderDelivery and group membership for recall/redirect,
+	// including a Runner waiting for passage.
 	pending, pErr := pendingRecall(ctx, h.pool, unitID)
 	if pErr != nil {
 		writeError(w, 500, "could not check pending recall orders")
@@ -707,7 +705,9 @@ func (h *UnitHandler) prepareRecall(w http.ResponseWriter, ctx context.Context, 
 			return nil, false
 		}
 		if !posOK {
-			currentPos = origin
+			writeError(w, http.StatusUnprocessableEntity,
+				"cannot resolve the unit's current position: no passable outbound route; check this unit and reissue the order")
+			return
 		}
 	}
 

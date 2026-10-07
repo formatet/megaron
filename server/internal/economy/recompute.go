@@ -440,21 +440,6 @@ func FoodConsumptionSplit(demand, grainProd, fishProd, livestockStock float64) (
 	return grainNet, fishNet, livestockConsumed
 }
 
-// PopCosts mirrors province/training.go:UnitSpecs.PopCost.
-// Defined here so economy stays Go-import-free upward (G1).
-// galley = standardgalär (mig 084 renamed the canonical units.type key from
-// "ship"; the DB army column is still `ship`, legacy). war_galley +
-// merchantman = nya skepp-typer (mig 039). war_chariot ersatte cavalry/chariot
-// (mig 042); catapult borttagen.
-var PopCosts = map[string]int{
-	"spearman":       5,
-	"war_chariot":    8,
-	"galley":         10,
-	"elite_infantry": 10,
-	"war_galley":     12,
-	"merchantman":    8,
-}
-
 // Tx is the minimal interface accepted by RecomputeProduction so it can work
 // with both pgx.Tx and pgxpool.Pool (the latter satisfies this interface too).
 type Tx interface {

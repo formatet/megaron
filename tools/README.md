@@ -162,11 +162,36 @@ Screenshots are BILD evidence awaiting Timothy, not visual approval.
 fanout, pending guard, atomic receipt and arrival dedup, requiring named assertion
 failures on separate fresh databases and restoring source after each arm.
 
-`python3 tools/single_recall_live.py OUT HASH` runs actual single recall and
+`python3 tools/single_recall_live.py OUT HASH [cli|web]` runs actual single recall and
 redirect through Keryx after register/join/found/march on private PG16/Redis and
 clean server environment (tick6s). Requires per-unit MarchRecalled/Redirected
 audits plus both units in garrison; SQL evidence is read-only. Build temenos and
 keryx in OUT, stamping temenos with `-X main.buildCommit=HASH`. Cleans own resources.
+The optional web mode clicks the real War Recall/Redirect buttons in Chromium
+on a separate fresh world, requires the displayed Runner receipt and records
+browser errors; it captures no images and performs no visual judgement.
 `python3 tools/single_recall_mutations.py OUT` requires fresh-DB assertion failures
 when arrival reuse, failure notice/audit or old messenger claim is removed, and
 restores source after every arm.
+
+`python3 tools/recall_route_mutations.py OUT` provar recall/redirects riktiga
+väg, auktoritativ position och namngivna HTTP-/kuriravslag. Varje arm använder
+ny PG16/mig160 med en ledig port, kräver assertion-rött och återställer källan
+även vid fel; varje återställd arm måste bli grön. Kör i egen worktree.
+Den riktiga spelarresan använder `single_recall_live.py` enligt receptet ovan.
+
+`python3 tools/recall_eta_mutation.py OUT` provar det bevarade K4-ETA-skyddet
+på aktuell OrderDelivery för recall och redirect. Varje arm ny PG16/mig160;
+väggklockstimmar kräver namngivet assertion-rött, sedan återställning/grönt.
+Rivningsrapport: `docs/reviews/riv-marchrecall/README.md`; livekontrollens
+SQL körs via `psql -X -v ON_ERROR_STOP=1` i explicit READ ONLY-transaktion.
+
+`python3 tools/verb_parity.py` inventerar registrerade spelar-API-rutter mot
+Keryx-anrop, webbens megaron-moduler, Codex-omnämnanden och vaultens verblista.
+Ingen DB eller produktionsändring; endast läsning. `--json` ger all källevidens,
+`--verblista PATH` väljer annan registerfil, `--root PATH` väljer annan checkout.
+Dokumenterade admin/post-MVP/transport-/templateundantag och bounded Codex-alias
+bor i `tools/verb_parity_allowlist.json`. Olösta anrop visas separat; frånvaro
+av statisk evidens är inte automatiskt frånvaro av förmåga. Fixturer:
+`python3 -m unittest discover -s tools -p 'test_verb_parity.py'`.
+Rapport och parsermutation: `docs/reviews/verb-parity/`.

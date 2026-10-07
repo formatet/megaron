@@ -70,28 +70,6 @@ func TestLaborRates_Formula_ExactMatch(t *testing.T) {
 	}
 }
 
-// TestPopCosts_MirrorTrainingGo verifies that PopCosts constants are internally consistent.
-// cavalry and catapult were removed in migration 042 (replaced by chariot).
-func TestPopCosts_MirrorTrainingGo(t *testing.T) {
-	// These values must match province/training.go:UnitSpecs (G1: no import allowed).
-	// galley = standardgalär (units.type key renamed from "ship" by mig 084).
-	// war_galley + merchantman = nya skepp-typer (mig 039). chariot replaced
-	// cavalry (mig 042); catapult removed.
-	expected := map[string]int{
-		"spearman":       5,
-		"war_chariot":    8,
-		"galley":         10,
-		"elite_infantry": 10,
-		"war_galley":     12,
-		"merchantman":    8,
-	}
-	for unit, want := range expected {
-		if got := PopCosts[unit]; got != want {
-			t.Errorf("PopCosts[%s] = %d, want %d", unit, got, want)
-		}
-	}
-}
-
 // TestNewGoodSeeding_FishAfterHarbour verifies att fisk är producerbar med 0 citizens som
 // default (fisk-buggen var att 1 citizen auto-seedades → producerade utan Wanax val).
 // Fisk ska visas som producerbar (basePotential > 0) men ha rate=0 tills Wanax allokerar.

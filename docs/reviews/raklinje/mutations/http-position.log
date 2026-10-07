@@ -1,0 +1,7 @@
+» färsk DB på migration 160 · commit a1298108+ändringar
+2026/10/07 19:57:35 INFO player registered id=4f5e43fc-096f-418e-be7d-02f0ebf44620 username=nomadhost-recall-c4898f69-87a6-437f-83f3-27d84992c39d
+--- FAIL: TestRecallNoRoute_HTTPDoesNotDispatchFromGuessedOrigin (0.06s)
+    unit_recall_no_route_test.go:77: guessed origin dispatched: 422 {"error":"order failed"}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.065s
+FAIL

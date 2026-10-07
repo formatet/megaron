@@ -132,3 +132,8 @@ test('recall truth explains selection, physical grouping and partial refusals', 
   assert.match(bodies.runners, /same meeting hex on the exact same game day/);
   assert.match(bodies.runners, /Each unit receives its own order delivery/);
 });
+
+test('codex search finds abandon in Colonies and call-back in Sea', () => {
+  assert.ok(searchArticles('abandon', index, bodies).some(a => a.id === 'colonies'), 'abandon must lead to the colony instructions');
+  assert.ok(searchArticles('call-back', index, bodies).some(a => a.id === 'sea'), 'CLI call-back must lead to the passage instructions');
+});

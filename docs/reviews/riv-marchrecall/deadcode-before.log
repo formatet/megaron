@@ -1,0 +1,7 @@
+api/handlers/db.go:135:6: unreachable func: loadLaborCapacities
+api/handlers/province.go:3477:27: unreachable func: ProvinceHandler.Marches
+cmd/keryx/client.go:195:18: unreachable func: Client.patch
+cmd/keryx/output.go:29:6: unreachable func: die
+internal/economy/founding_placement.go:80:6: unreachable func: rankedFoodSlotsAt
+internal/events/scheduler.go:358:18: unreachable func: Worker.RegisterWithTimeout
+internal/kharis/tick.go:173:6: unreachable func: templeTierMultiplier

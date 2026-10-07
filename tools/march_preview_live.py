@@ -113,5 +113,5 @@ try:
 finally:
  if proc is not None:
   proc.terminate();proc.wait(timeout=20)
- for name in containers:subprocess.run(['docker','rm','-f',name],capture_output=True)
+ for name in containers:subprocess.run(['docker','rm','-fv',name],capture_output=True)
  if (out/'private-config.json').exists():(out/'private-config.json').unlink()

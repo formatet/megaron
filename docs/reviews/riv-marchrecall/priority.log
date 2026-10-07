@@ -1,0 +1,4 @@
+=== RUN   TestEveryScheduledTypeHasAPriority
+--- PASS: TestEveryScheduledTypeHasAPriority (0.00s)
+PASS
+ok  	formatet/megaron/server/internal/events	0.002s
