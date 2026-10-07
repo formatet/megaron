@@ -1,0 +1,9 @@
+» färsk DB på migration 160 · commit fe52e5e9+ändringar
+--- FAIL: TestSingleRecall_IdenticalActiveArrival (0.05s)
+    --- FAIL: TestSingleRecall_IdenticalActiveArrival/recall (0.03s)
+        order_delivery_dedup_test.go:135: identical arrival failed with NO jitter: schedule new arrival: ERROR: duplicate key value violates unique constraint "idx_scheduled_recurring_dedup" (SQLSTATE 23505)
+    --- FAIL: TestSingleRecall_IdenticalActiveArrival/redirect (0.03s)
+        order_delivery_dedup_test.go:135: identical arrival failed with NO jitter: schedule new arrival: ERROR: duplicate key value violates unique constraint "idx_scheduled_recurring_dedup" (SQLSTATE 23505)
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.057s
+FAIL
