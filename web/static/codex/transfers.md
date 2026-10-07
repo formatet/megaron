@@ -24,7 +24,7 @@ A laden ship caught at sea does not always lose the same way a caravan does. One
 
 ## Gift — a loyalty gesture, not logistics
 
-A **gift** also sends silver and/or grain to one of your own settlements, but the point is different: it always sends from your *capital*, and 50 or more silver-equivalent (silver + grain × ½) earns the destination +1 [[loyalty]] the moment you send it. Open **City** on the colony you want to gift, and use **Gift from capital** on its Production tab, right above the Loyalty log the gift feeds.
+A **gift** also sends silver and/or grain to one of your own settlements, but the point is different: it always sends from your *capital*, and 50 or more silver-equivalent (silver + grain × ½) earns the destination +1 [[loyalty]] the moment you send it. Open **City** on the colony you want to gift, and use **Gift from capital** under **Production → More**.
 
 The silver and grain themselves are ordinary physical cargo — they still travel and arrive later, same as any transfer.
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Real War cards, More/stance and march/recall to per-unit audit and home.
-Usage: python3 tools/war_cards_live.py OUT BUILD_COMMIT baseline|after|naval [WEB_DIR]
+"""Real Production cards, placement, daily history and livestock slaughter.
+Usage: python3 tools/production_live.py OUT BUILD_COMMIT baseline|after [WEB_DIR]
 OUT contains a freshly built temenos. baseline uses archived unchanged WEB_DIR.
 Every arm creates fresh PG16/Redis and uses ordinary player APIs and web clicks;
-SQL is read-only audit, no fixtures. Only own processes/containers are removed.
+no SQL fixtures. Only own processes/containers are removed.
 """
 import json
 import os

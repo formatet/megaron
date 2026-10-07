@@ -145,7 +145,7 @@ export async function saveLaborAlloc(provinceID) {
           const devCapPct2 = Math.round((pd2.devotion_capacity || 0) * 100);
           cultInp.value = devPct2;
           const cit = document.querySelector('.labor-cit[data-good="cult"]');
-          if (cit) cit.textContent = numberWords(Math.round((pd2.devotion || 0) * (pd2.labor_pool || 0))); 
+          if (cit) cit.textContent = numberWords(Math.round((pd2.devotion || 0) * (pd2.labor_pool || 0)));
           const rateCell = document.getElementById('labor-rate-cult');
           if (rateCell) {
             const atCap = devPct2 >= devCapPct2;
