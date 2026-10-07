@@ -115,7 +115,7 @@ func TestTradeDelivery_StaleCapTruncatesSecondDelivery(t *testing.T) {
 	// (goodCap("cedar")), matching every other credit path (arrival.go
 	// TransferDelivered, province.go Craft output). trade.go's INSERT hard-codes
 	// 100 instead.
-	if cap != goodCap("cedar") {
+	if cap != goodCap("cedar") || cap != 1_000_000 {
 		t.Errorf("after 1st delivery: cedar cap = %v, want %v (goodCap) — stale hard-coded cap in DeliveryHandler.Handle (trade.go)", cap, goodCap("cedar"))
 	}
 
@@ -223,7 +223,7 @@ func TestTradeReturn_StaleCapTruncatesSecondDelivery(t *testing.T) {
 	if amount != 60 {
 		t.Errorf("after 1st return: cedar amount = %v, want 60", amount)
 	}
-	if cap != goodCap("cedar") {
+	if cap != goodCap("cedar") || cap != 1_000_000 {
 		t.Errorf("after 1st return: cedar cap = %v, want %v (goodCap) — stale hard-coded cap in TradeReturnHandler.Handle (trade_return.go)", cap, goodCap("cedar"))
 	}
 

@@ -365,7 +365,7 @@ func creditLootToCapital(ctx context.Context, tx pgx.Tx, worldID, interceptor, t
 	}
 	if _, err := tx.Exec(ctx,
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
-		 SELECT $1, tg.good_key, tg.quantity, 0, 1000000, current_world_tick()
+		 SELECT $1, tg.good_key, tg.quantity, 0, $3, current_world_tick()
 		 FROM transport_goods tg WHERE tg.transport_id = $2
 		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
 		     amount = LEAST(
@@ -373,7 +373,7 @@ func creditLootToCapital(ctx context.Context, tx pgx.Tx, worldID, interceptor, t
 		             + EXCLUDED.amount,
 		         settlement_goods.cap),
 		     calc_tick = current_world_tick()`,
-		*capital, transportID,
+		*capital, transportID, province.DefaultGoodStorageCap,
 	); err != nil {
 		return fmt.Errorf("credit loot: %w", err)
 	}
