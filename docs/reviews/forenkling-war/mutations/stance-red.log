@@ -1,0 +1,84 @@
+TAP version 13
+# Subtest: I: garrison shows March and eligible Reinforce; stance and battle retreat stay in closed More
+not ok 1 - I: garrison shows March and eligible Reinforce; stance and battle retreat stay in closed More
+  ---
+  duration_ms: 1.272566
+  type: 'test'
+  location: '/tmp/megaron-codex-war-simple-20261007/web/static/js/megaron/ui/war_cards.test.mjs:12:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input was expected to not match the regular expression /ustance-|uretreat-|>Recall</. Input:
+    
+    `<div id="ucard-u" style="padding:.3rem .2rem;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap"><span style="font-size:.8rem;font-weight:bold">First Spearmen</span><span style="font-size:.68rem;color:var(--text-dim);margin-left:auto">in the city</span></div><div style="font-size:.65rem;color:var(--text-dim)">city</div><div style="margin-top:.2rem;display:flex;gap:.2rem;flex-wrap:wrap;align-items:center"><button onclick="unitMarch('u')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">March</button> <select id="ustance-u" style="font-size:.65rem;padding:.1rem;border:1px solid var(--border);background:var(--warm-white)"><option value="none">stance…</option><option value="fortify">fortify</option><option value="storm">storm</option><option value="sentry">sentry</option></select> <button onclick="unitStance('u')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Set</button> <button onclick="unitReinforce('u')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Reinforce</button> </div>`
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: `<div id="ucard-u" style="padding:.3rem .2rem;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap"><span style="font-size:.8rem;font-weight:bold">First Spearmen</span><span style="font-size:.68rem;color:var(--text-dim);margin-left:auto">in the city</span></div><div style="font-size:.65rem;color:var(--text-dim)">city</div><div style="margin-top:.2rem;display:flex;gap:.2rem;flex-wrap:wrap;align-items:center"><button onclick="unitMarch('u')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">March</button> <select id="ustance-u" style="font-size:.65rem;padding:.1rem;border:1px solid var(--border);background:var(--warm-white)"><option value="none">stance…</option><option value="fortify">fortify</option><option value="storm">storm</option><option value="sentry">sentry</option></select> <button onclick="unitStance('u')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Set</button> <button onclick="unitReinforce('u')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Reinforce</button> </div>`
+  operator: 'doesNotMatch'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-war-simple-20261007/web/static/js/megaron/ui/war_cards.test.mjs:15:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: I: marching land has Recall as primary, retaining stance and typed redirect under More
+not ok 2 - I: marching land has Recall as primary, retaining stance and typed redirect under More
+  ---
+  duration_ms: 0.211834
+  type: 'test'
+  location: '/tmp/megaron-codex-war-simple-20261007/web/static/js/megaron/ui/war_cards.test.mjs:24:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input was expected to not match the regular expression />March<|>Redirect<|ustance-/. Input:
+    
+    `<div id="ucard-u" style="padding:.3rem .2rem;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap"><span style="font-size:.8rem;font-weight:bold">First Spearmen</span><span style="font-size:.68rem;color:var(--text-dim);margin-left:auto">on the march</span></div><div style="font-size:.65rem;color:var(--text-dim)">→ (4,2)</div><div style="margin-top:.2rem;display:flex;gap:.2rem;flex-wrap:wrap;align-items:center"><select id="ustance-u" style="font-size:.65rem;padding:.1rem;border:1px solid var(--border);background:var(--warm-white)"><option value="none">stance…</option><option value="fortify">fortify</option><option value="storm">storm</option><option value="sentry">sentry</option></select> <button onclick="unitStance('u')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Set</button> <button onclick="unitRecall('u')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Recall</button> </div>`
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: `<div id="ucard-u" style="padding:.3rem .2rem;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap"><span style="font-size:.8rem;font-weight:bold">First Spearmen</span><span style="font-size:.68rem;color:var(--text-dim);margin-left:auto">on the march</span></div><div style="font-size:.65rem;color:var(--text-dim)">→ (4,2)</div><div style="margin-top:.2rem;display:flex;gap:.2rem;flex-wrap:wrap;align-items:center"><select id="ustance-u" style="font-size:.65rem;padding:.1rem;border:1px solid var(--border);background:var(--warm-white)"><option value="none">stance…</option><option value="fortify">fortify</option><option value="storm">storm</option><option value="sentry">sentry</option></select> <button onclick="unitStance('u')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Set</button> <button onclick="unitRecall('u')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Recall</button> </div>`
+  operator: 'doesNotMatch'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-war-simple-20261007/web/static/js/megaron/ui/war_cards.test.mjs:27:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: I: positioned units remain orderable and fetch uses server-provided ships
+ok 3 - I: positioned units remain orderable and fetch uses server-provided ships
+  ---
+  duration_ms: 0.248501
+  type: 'test'
+  ...
+# Subtest: I: naval loading unloading and repair remain in More; at sea has no recall or redirect
+ok 4 - I: naval loading unloading and repair remain in More; at sea has no recall or redirect
+  ---
+  duration_ms: 0.267754
+  type: 'test'
+  ...
+# Subtest: I: forming training embarked repairing and freight do not offer inapplicable orders
+ok 5 - I: forming training embarked repairing and freight do not offer inapplicable orders
+  ---
+  duration_ms: 0.344594
+  type: 'test'
+  ...
+# Subtest: I: every server lifecycle status has a player label; unknown status never leaks raw jargon
+ok 6 - I: every server lifecycle status has a player label; unknown status never leaks raw jargon
+  ---
+  duration_ms: 0.133694
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 4
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 66.472913

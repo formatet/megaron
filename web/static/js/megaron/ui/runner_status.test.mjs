@@ -56,6 +56,6 @@ test('order card: a runner waiting for a ship never claims to be carrying the or
 });
 
 test('order card: the ordinary land runner keeps its two states', () => {
-  assert.match(orderRunnerHTML({ arrives_at: future }, Date.now()), /Runner en route — order arrives/);
-  assert.match(orderRunnerHTML({ arrives_at: past }, Date.now()), /Runner carrying the order…/);
+  assert.match(orderRunnerHTML({ arrives_at: future }, Date.now()), /Messenger en route — order arrives/);
+  assert.match(orderRunnerHTML({ arrives_at: past }, Date.now()), /Messenger carrying the order…/);
 });

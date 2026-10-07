@@ -24,6 +24,7 @@ export function msUntil(iso, arrivalTick) {
       + (serverNow() - State.TICK_ANCHOR_MS) / (State.TICK_SECONDS * 1000);
     return (arrivalTick - nowTick) * State.TICK_SECONDS * 1000;
   }
+  if (iso == null || iso === '') return NaN;
   return new Date(iso).getTime() - serverNow();
 }
 
@@ -34,6 +35,7 @@ export function msUntil(iso, arrivalTick) {
 // not; it is "ready". Pass it, don't reinterpret the string downstream.
 export function fmtEta(iso, arrivalTick, doneWord = 'arrived') {
   const ms = msUntil(iso, arrivalTick);
+  if (!Number.isFinite(ms)) return '';
   if (ms <= 0) return doneWord;
   const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000);
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
@@ -64,6 +66,7 @@ export function fmtClock(epochMs) {
 // skewed player clock still reads its own local time correctly.
 export function fmtArrival(iso, arrivalTick, doneWord = 'arrived') {
   const ms = msUntil(iso, arrivalTick);
+  if (!Number.isFinite(ms)) return '';
   if (ms <= 0) return doneWord;
   return `${fmtClock(Date.now() + ms)} · in ${fmtEta(iso, arrivalTick, doneWord)}`;
 }
@@ -73,6 +76,7 @@ export function fmtArrival(iso, arrivalTick, doneWord = 'arrived') {
 // innerHTML call sites.
 export function arrivalHTML(iso, arrivalTick, doneWord = 'arrived') {
   const ms = msUntil(iso, arrivalTick);
+  if (!Number.isFinite(ms)) return '';
   if (ms <= 0) return doneWord;
   const full = new Date(Date.now() + ms).toLocaleString([], {
     weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',

@@ -14,7 +14,7 @@ A notification tells you when a unit arrives.
 
 ## A marching unit is still reachable
 
-Right-click a new destination and a unit already marching shows up in the menu too, marked **on the march → redirect by messenger**. Pick it like any other unit — the order is a **Redirect**, not a fresh march: the unit keeps going on its old course until the Runner reaches it, then turns onto the new one. You can also redirect from **War → Army** (see below).
+Right-click a new destination and a unit already marching shows up in the menu too, marked **on the march → redirect by messenger**. Pick it like any other unit — the order is a **Redirect**, not a fresh march: the unit keeps going on its old course until the Runner reaches it, then turns onto the new one. You can also redirect from the unit’s **War → Army → More** row, including by typed coordinates.
 
 ## Orders to units already in the field travel by Runner
 
