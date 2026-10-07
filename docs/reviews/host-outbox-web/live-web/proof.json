@@ -1,0 +1,67 @@
+{
+  "mode": "fixed",
+  "health": {
+    "commit": "40276287",
+    "migration": 160,
+    "status": "ok"
+  },
+  "players_joined": 6,
+  "sender_host": {
+    "active": true,
+    "current_tick": 0,
+    "grain": {
+      "amount": 1200,
+      "rate_per_tick": 0
+    },
+    "host_unit_id": "a38a4ce0-9a0b-4754-ba49-9cfaa8792672",
+    "population": 1000,
+    "q": 8,
+    "r": 29,
+    "silver": {
+      "amount": 480,
+      "rate_per_tick": -2,
+      "ticks_left": 240
+    },
+    "spearmen_in_field": 2,
+    "tick_seconds": 2
+  },
+  "recipient_host": {
+    "active": true,
+    "current_tick": 0,
+    "grain": {
+      "amount": 1200,
+      "rate_per_tick": 0
+    },
+    "host_unit_id": "a929aaf1-3889-4b9f-b84a-2d0f1ffcdaea",
+    "population": 1000,
+    "q": 3,
+    "r": 34,
+    "silver": {
+      "amount": 480,
+      "rate_per_tick": -2,
+      "ticks_left": 240
+    },
+    "spearmen_in_field": 2,
+    "tick_seconds": 2
+  },
+  "receipt": {
+    "arrives_at": "2026-10-07T21:33:20.071719764+02:00",
+    "distance": 1,
+    "id": "39d404ce-afba-40d0-8cce-9bb414b31e23"
+  },
+  "outbox": [
+    {
+      "id": "39d404ce-afba-40d0-8cce-9bb414b31e23",
+      "destination_id": "4312ec92-fee0-44c0-a5cb-9a0cb89be72a",
+      "destination_name": "First contact",
+      "message_text": "Hello from my wandering host",
+      "status": "outbound",
+      "reply_text": null,
+      "sent_at": "2026-10-07T21:33:18.073279+02:00",
+      "arrives_at": "2026-10-07T21:33:20.071719+02:00"
+    }
+  ],
+  "threads_text": "First contact\njust now \u25b2\nYou \u2192 First contact \u00b7 just now\nHello from my wandering host\nen route \u00b7 arrives today 09:33 PM \u00b7 in 0m",
+  "browser_errors": [],
+  "sql_mutations": 0
+}
