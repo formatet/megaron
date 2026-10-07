@@ -1,0 +1,124 @@
+{
+  "health": {
+    "commit": "15396e642ec7927d2d1fdc155fd53b5df00a4719",
+    "migration": 159,
+    "status": "ok"
+  },
+  "mode": "web",
+  "registered_joined_founded": true,
+  "rules": {
+    "area_radius": 5,
+    "default_ticks": 10,
+    "max_ticks": 30,
+    "min_ticks": 4
+  },
+  "order": {
+    "area_q": 12,
+    "area_r": 24,
+    "length_ticks": 30
+  },
+  "initial_mission": {
+    "area_q": 12,
+    "area_r": 24,
+    "length_ticks": 30,
+    "turn_tick": 17,
+    "home_by_tick": 32,
+    "homeward": false
+  },
+  "history": [
+    {
+      "status": "marching",
+      "q": 8,
+      "r": 24,
+      "target_q": 12,
+      "target_r": 21,
+      "arrival_tick": 6,
+      "expedition": {
+        "area_q": 12,
+        "area_r": 24,
+        "length_ticks": 30,
+        "turn_tick": 17,
+        "home_by_tick": 32,
+        "homeward": false
+      }
+    },
+    {
+      "status": "marching",
+      "q": 12,
+      "r": 21,
+      "target_q": 8,
+      "target_r": 24,
+      "arrival_tick": 10,
+      "expedition": {
+        "area_q": 12,
+        "area_r": 24,
+        "length_ticks": 30,
+        "turn_tick": 17,
+        "home_by_tick": 10,
+        "homeward": true,
+        "turn_reason": "area_known"
+      }
+    },
+    {
+      "status": "garrison",
+      "q": 8,
+      "r": 24,
+      "target_q": null,
+      "target_r": null,
+      "arrival_tick": null,
+      "expedition": null
+    }
+  ],
+  "turn": {
+    "q": 12,
+    "r": 21,
+    "name": "1st Spearmen of Periplus",
+    "area_q": 12,
+    "area_r": 24,
+    "reason": "area_known",
+    "unit_id": "aee61516-f531-4952-b818-cc764aef5cac",
+    "arrive_tick": 10
+  },
+  "report": {
+    "name": "1st Spearmen of Periplus",
+    "finds": [
+      {
+        "q": 6,
+        "r": 24,
+        "kind": "copper"
+      },
+      {
+        "q": 7,
+        "r": 24,
+        "kind": "copper"
+      },
+      {
+        "q": 8,
+        "r": 23,
+        "kind": "silver"
+      }
+    ],
+    "area_q": 12,
+    "area_r": 24,
+    "unit_id": "aee61516-f531-4952-b818-cc764aef5cac",
+    "furthest": 4,
+    "ticks_out": 8,
+    "hexes_seen": 46,
+    "turn_reason": "area_known"
+  },
+  "ground": {
+    "expedition_rows": 0,
+    "seen_rows": 0,
+    "failed_arrivals": 0,
+    "dirty": false
+  },
+  "preview": {
+    "available": false,
+    "reason": "unknown_terrain"
+  },
+  "cli_mission": "ID                                    Name                                            Size      Status      Stance     Location / ETA\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n27ab2bb0-f848-42ec-9739-4b331bd78a29  2nd Spearmen of Periplus                        100 men   garrison    \u2014          settlement b2c0b4dc\u2026\naee61516-f531-4952-b818-cc764aef5cac  1st Spearmen of Periplus                        100 men   marching    \u2014          exploring (auto-returns home) \u2014 (8,24)\u2192(12,21), now at (10,23) ETA in 4 game-days (07:45 Oct 7)\n  Expedition around (12,24), 30 game days; turns home by game day 17; home by game day 32\n512fbb55-d262-43db-8da9-368697313587  Tidal Currents, Galley of Periplus              1 vessel (crew 20)  garrison    \u2014          settlement b2c0b4dc\u2026\n",
+  "cli_report": "1 notification(s), 1 unread\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n*[0m ago]  ExpeditionReport      {\"name\":\"1st Spearmen of Periplus\",\"finds\":[{\"q\":6,\"r\":24,\"kind\":\"copper\"},{\"q\":7,\"r\":24,\"kind\":\"copper\"},{\"q\":8,\"r\":23,\"kind\":\"silver\"}],\"area_q\":12,\"area_r\":24,\"unit_id\":\"aee61516-f531-4952-b818-cc764aef5cac\",\"furthest\":4,\"ticks_out\":8,\"hexes_seen\":46,\"turn_reason\":\"area_known\"}\n      1st Spearmen of Periplus is home after 8 days, 4 hexes out at the furthest \u2014 saw 46 hexes around (12, 24): copper at (6, 24), (7, 24); silver at (8, 23)\n",
+  "web_report": "1st Spearmen of Periplus is home after 8 days, 4 hexes out at the furthest \u2014 saw 46 hexes around (12, 24): copper at (6, 24), (7, 24); silver at (8, 23)",
+  "browser_errors": [],
+  "scope": "Real clean PostgreSQL16/Redis7/server, CLI, web and player APIs; no SQL fixture writes"
+}

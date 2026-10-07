@@ -54,7 +54,7 @@ try:
     env = {'HOME': os.environ['HOME'], 'PATH': os.environ['PATH'],
            'DATABASE_URL': f'postgres://postgres:expedition-pw@127.0.0.1:{pg}/expedition?sslmode=disable',
            'REDIS_URL': f'127.0.0.1:{redis}', 'JWT_SECRET': secrets.token_urlsafe(40),
-           'PORT': str(gameport), 'TICK_SECONDS': '2', 'MAP_WIDTH': '30', 'MAP_HEIGHT': '20',
+           'PORT': str(gameport), 'TICK_SECONDS': '2', 'MAP_WIDTH': '56', 'MAP_HEIGHT': '40',
            'WORLD_NAME': 'Expedition proof', 'POLEIA_WORLD_START_WANAXES': '1',
            'STATIC_DIR': str(ROOT/'web/static'), 'TEMPLATE_DIR': str(ROOT/'web/templates'),
            'CHRONICLE_DIR': str(OUT/'chronicles'), 'REPORTS_DIR': str(OUT/'reports')}
@@ -90,13 +90,20 @@ try:
     data = api(worldpath+'/units', token=token)
     rules = data['expedition_rules']
     units = data['units']
+    (OUT/'starting-units.json').write_text(json.dumps(units, indent=2)+'\n')
     unit = next(u for u in units if u.get('deployable') and u['status'] == 'garrison' and u['category'] == 'land')
     # Use the actual owned city's public location; the centre is a nearby area.
     provinces = api(worldpath+'/provinces', token=token)
     provinces = provinces if isinstance(provinces, list) else provinces['provinces']
     city = next(p for p in provinces if p.get('settlement_id') == founded['settlement_id'] or p.get('id') == founded.get('province_id'))
     homeq, homer = city.get('q', city.get('map_q')), city.get('r', city.get('map_r'))
-    q, r = max(0, min(29, homeq+4 if homeq < 15 else homeq-4)), homer
+    tilemap = api(worldpath+'/map', token=token)
+    tiles = tilemap if isinstance(tilemap, list) else tilemap['tiles']
+    # Map coordinates are axial, not a guessed rectangular q/r range.
+    candidates = [t for t in tiles if max(abs(t['q']-homeq), abs(t['r']-homer), abs(t['q']+t['r']-homeq-homer)) == 4]
+    assert candidates, 'no nearby area centres in actual map response'
+    centre = min(candidates, key=lambda t: (abs(t['r']-homer), abs(t['q']-homeq-4), t['q'], t['r']))
+    q, r = centre['q'], centre['r']
     length = rules['max_ticks']
     cfg = OUT/'private-config.json'
     cfg.write_text(json.dumps({'server': base, 'token': token, 'world_id': world}))
@@ -128,12 +135,16 @@ try:
         page.locator('#mg-'+str(index)).fill('1')
         page.locator('#mctx-ticks').fill(str(length))
         expect(page.locator('#mctx-mission')).to_contain_text(str(length))
+        expect(page.locator('#mctx-eta')).to_contain_text('unexplored terrain')
         page.locator('#march-ctx').screenshot(path=str(OUT/'order-desktop.png'))
         page.set_viewport_size({'width': 390, 'height': 844})
         page.locator('#march-ctx').screenshot(path=str(OUT/'order-mobile.png'))
         assert page.locator('#march-ctx').evaluate('(e)=>e.scrollWidth<=e.clientWidth')
         if MODE == 'web':
-            page.locator('#mctx-send').click()
+            with page.expect_response(lambda response: '/units/'+unit['id']+'/march' in response.url and response.request.method == 'POST') as receipt:
+                page.locator('#mctx-send').click()
+            actual_receipt = receipt.value.json()
+            assert receipt.value.status == 202, actual_receipt
             expect(page.locator('#mctx-eta')).to_contain_text('Marching', timeout=10000)
             ordered = next(u for u in api(worldpath+'/units', token=token)['units'] if u['id'] == unit['id'])
         else:
@@ -143,13 +154,16 @@ try:
             ordered = next(u for u in api(worldpath+'/units', token=token)['units'] if u['id'] == unit['id'])
         assert ordered['expedition']['length_ticks'] == length, ordered
         mission_cli = cli('unit', 'list')
-        assert str(length) in mission_cli and 'Explor' in mission_cli, mission_cli
+        assert str(length) in mission_cli and 'Expedition' in mission_cli, mission_cli
+        page.evaluate('expeditionMenu.closeMarchCtx()')
         page.evaluate('''async ()=>{
           window.expeditionWar=await import('/static/js/megaron/ui/drawers/war.js');
           document.getElementById('drawer-war').classList.add('open');
           await expeditionWar.loadWarDrawer();
         }''')
         page.locator('#drawer-war').screenshot(path=str(OUT/'mission-mobile.png'))
+        page.set_viewport_size({'width': 1280, 'height': 900})
+        page.locator('#drawer-war').screenshot(path=str(OUT/'mission-desktop.png'))
         history = []
         deadline = time.monotonic() + 110
         while time.monotonic() < deadline:

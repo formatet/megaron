@@ -1,0 +1,12 @@
+--- FAIL: TestExploreTicksOrderAndPreview (0.00s)
+    --- FAIL: TestExploreTicksOrderAndPreview/dispatchunit (0.00s)
+        cmd_expedition_client_test.go:27: wrong dispatch POST map[intent:explore target_q:5 target_r:-3]
+    --- FAIL: TestExploreTicksOrderAndPreview/dispatchalias (0.00s)
+        cmd_expedition_client_test.go:27: wrong dispatch POST map[intent:explore target_q:5 target_r:-3]
+    --- FAIL: TestExploreTicksOrderAndPreview/previewunit (0.00s)
+        cmd_expedition_client_test.go:20: wrong preview GET /api/v1/worlds/world/units/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/march-preview?intent=explore&target_q=5&target_r=-3
+    --- FAIL: TestExploreTicksOrderAndPreview/previewalias (0.00s)
+        cmd_expedition_client_test.go:20: wrong preview GET /api/v1/worlds/world/units/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/march-preview?intent=explore&target_q=5&target_r=-3
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL

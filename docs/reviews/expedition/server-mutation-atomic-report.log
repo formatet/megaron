@@ -1,0 +1,7 @@
+» färsk DB på migration 159 · commit 2ee158de+ändringar
+2026/10/07 07:39:06 INFO expedition turning for home unit=fe975399-5f8c-4802-a657-9b2e7ad0c723 reason=half_time q=4 r=3 arrive_tick=10
+--- FAIL: TestExpeditionLifecycle_AtomicReportRetry (0.14s)
+    expedition_lifecycle_test.go:61: rolled-back report events=1
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.139s
+FAIL

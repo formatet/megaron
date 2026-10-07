@@ -1,0 +1,9 @@
+» färsk DB på migration 159 · commit 2ee158de+ändringar
+2026/10/07 07:39:09 INFO expedition turning for home unit=ae6615aa-3a09-48e9-b331-b2957cbe0c91 reason=half_time q=8 r=0 arrive_tick=13
+2026/10/07 07:39:09 INFO expedition home unit=ae6615aa-3a09-48e9-b331-b2957cbe0c91 ticks_out=13 hexes_seen=11 finds=0
+2026/10/07 07:39:09 INFO unit returned home from explore unit=ae6615aa-3a09-48e9-b331-b2957cbe0c91 settlement=30e3de3a-df9d-45bf-a7bf-982568580702
+--- FAIL: TestExpeditionLifecycle_ReservesAsymmetricHomeRoute (0.09s)
+    expedition_lifecycle_test.go:193: asymmetric route arrived at 13, after budget 12
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.092s
+FAIL

@@ -1,0 +1,9 @@
+» färsk DB på migration 159 · commit 2ee158de+ändringar
+2026/10/07 07:38:59 INFO expedition turning for home unit=b76a938d-7c76-43b8-b9fb-e5e8c4c9440e reason=half_time q=0 r=3 arrive_tick=11
+2026/10/07 07:38:59 INFO expedition home unit=b76a938d-7c76-43b8-b9fb-e5e8c4c9440e ticks_out=11 hexes_seen=62 finds=0
+2026/10/07 07:38:59 INFO unit returned home from explore unit=b76a938d-7c76-43b8-b9fb-e5e8c4c9440e settlement=71351e47-2c69-43e1-beab-f2e28176dc1d
+--- FAIL: TestExpeditionLifecycle_HalfTimeWhileRoamingNearHome (0.10s)
+    expedition_lifecycle_test.go:312: roaming outbound leg ended at 7, after turn tick 6
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.098s
+FAIL

@@ -1,0 +1,8 @@
+» färsk DB på migration 159 · commit 2ee158de+ändringar
+2026/10/07 07:39:55 INFO player registered id=3996da5e-349e-49d2-bd40-40d47770008a username=ticker-831e7cac-6973-4930-af30-55559eaa4eb8
+2026/10/07 07:39:55 INFO player registered id=78cab7a2-c65a-4f91-8ebd-7d9d4db90c73 username=other-e83a4d3d-55e8-4078-abe7-1805920762a6
+--- FAIL: TestMarchPreview_ReadOnlyAndTiming (0.12s)
+    unit_march_preview_test.go:189: hidden preview: {"arrival_tick":6,"arrives_at_utc":"2026-10-07T06:39:55.511549444Z","available":true,"duration_ticks":1,"expedition":null}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.124s
+FAIL

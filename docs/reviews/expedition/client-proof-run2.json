@@ -1,0 +1,20 @@
+{
+  "result": "PASS",
+  "requests": 31,
+  "orders": [
+    {
+      "target_q": 4,
+      "target_r": 2,
+      "intent": "explore",
+      "ticks": 12
+    },
+    {
+      "target_q": 3,
+      "target_r": 0,
+      "intent": "explore",
+      "ticks": 12
+    }
+  ],
+  "errors": [],
+  "scope": "Actual web modules; explicit API fixtures, not live gameplay"
+}
