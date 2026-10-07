@@ -1,3 +1,4 @@
+import { numberWords } from '../number_words.js';
 import { State } from '../../state.js';
 import { fetchAuth } from '../../api.js';
 import { serverNow } from '../../clock.js';
@@ -22,12 +23,12 @@ export function atStorageCeiling(amount, cap) {
 export function goodsRateCell(g) {
   const rate = g.rate_per_tick || 0;
   if (atStorageCeiling(g.amount || 0, g.cap || 0)) {
-    const lost = rate > 0 ? ` · +${rate.toFixed(1)} lost` : '';
-    const title = `Storage full (${Math.floor(g.amount || 0)}/${Math.floor(g.cap || 0)}). `
+    const lost = rate > 0 ? ` · +${numberWords(Number(rate.toFixed(1)))} lost each game day` : '';
+    const title = `Storage full (${numberWords(Math.floor(g.amount || 0))} of ${numberWords(Math.floor(g.cap || 0))}). `
       + 'Everything produced past the cap is discarded — move this labour or trade it away.';
     return `<td class="goods-atcap" title="${esc(title)}">full${lost}</td>`;
   }
-  return rate > 0 ? `<td style="color:var(--safe)">+${rate.toFixed(1)}/tick</td>` : '<td></td>';
+  return rate > 0 ? `<td style="color:var(--safe)">+${numberWords(Number(rate.toFixed(1)))} each game day</td>` : '<td></td>';
 }
 
 // ── Settlements overview (S1, megaron_plan_stad_vs_ekonomi.md §3) ──────────
@@ -123,7 +124,7 @@ export function renderSettlementsOverviewHTML(rows, sortKey, sortDir) {
       ${th('name', 'Settlement')}
       ${th('population', 'Pop', 'right')}
       ${th('grainRate', 'Grain', 'right')}
-      ${th('coverage', 'Coverage', 'right')}
+      ${th('coverage', 'Food lasts', 'right')}
       ${th('brist', 'Status')}
     </tr>
     ${rows.map(r => {
@@ -131,9 +132,9 @@ export function renderSettlementsOverviewHTML(rows, sortKey, sortDir) {
       const rateSign = r.grainRate > 0 ? '+' : '';
       return `<tr onclick="openCitySettlement('${r.id}')" style="cursor:pointer">
         <td>${esc(r.name)}${r.isCapital ? ' ★' : ''}</td>
-        <td style="text-align:right">${Math.floor(r.population)}</td>
-        <td style="text-align:right;color:${rateColor}">${rateSign}${r.grainRate.toFixed(1)}/tick</td>
-        <td style="text-align:right">${r.coverage.toFixed(1)} ticks</td>
+        <td style="text-align:right">${numberWords(Math.floor(r.population))}</td>
+        <td style="text-align:right;color:${rateColor}">${rateSign}${numberWords(Number(r.grainRate.toFixed(1)))} each game day</td>
+        <td style="text-align:right">${numberWords(Number(r.coverage.toFixed(1)))} game days</td>
         <td><span class="sitos-state-${r.severity}">${esc(r.label)}</span></td>
       </tr>`;
     }).join('')}
@@ -238,14 +239,14 @@ async function loadEconomyGoods(mySettlements) {
         html += `<div class="silver-balance">
           <div>
             <div class="sb-label">Silver</div>
-            <div class="sb-val">${fmtSilver(silver.amount)}</div>
+            <div class="sb-val">${numberWords(Math.floor(silver.amount))}</div>
           </div>
-          ${silver.rate_per_tick ? `<div class="sb-rate">+${silver.rate_per_tick.toFixed(1)}/tick</div>` : ''}
+          ${silver.rate_per_tick ? `<div class="sb-rate">+${numberWords(Number(silver.rate_per_tick.toFixed(1)))} each game day</div>` : ''}
         </div>`;
       }
       if (others.length) {
         html += `<table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td>Amount</td><td>Rate</td></tr>${others.map(g =>
-          `<tr><td>${g.name||g.key}</td><td>${Math.floor(g.amount||0)}</td>${goodsRateCell(g)}</tr>`
+          `<tr><td>${g.name||g.key}</td><td>${numberWords(Math.floor(g.amount||0))}</td>${goodsRateCell(g)}</tr>`
         ).join('')}</table>`;
       }
     }
@@ -393,7 +394,7 @@ export async function startTransfer() {
       ? `${qty} ${good} sent aboard ${d.ship_name} — carried, can be intercepted en route, and sails home empty afterward.`
       : `${qty} ${good} sent — physical cargo, can be intercepted en route.`;
     if (Number.isInteger(d.arrival_tick)) {
-      resultEl.textContent += ` Arrives tick ${d.arrival_tick} (journey: ${d.travel_ticks} ticks).`;
+      resultEl.textContent += ` Arrives on game day ${numberWords(d.arrival_tick)} (journey: ${numberWords(d.travel_ticks)} game days).`;
     }
     refreshCargoInTransit();
   } else {
@@ -553,15 +554,15 @@ async function loadEconomyWants() {
     const wants = data.wants || [], surplus = data.surplus || [];
     if (!wants.length && !surplus.length) { el.innerHTML = '<p class="empty-state" style="padding:1rem">No known market intel yet — visit settlements to learn their market.</p>'; return; }
     const rateCell = g => g.rate < 0
-      ? `<span style="color:var(--danger)">▼ ${g.rate.toFixed(1)}/tick</span>`
-      : `<span style="color:var(--safe)">▲ +${g.rate.toFixed(1)}/tick</span>`;
+      ? `<span style="color:var(--danger)">▼ ${numberWords(Number(g.rate.toFixed(1)))} each game day</span>`
+      : `<span style="color:var(--safe)">▲ +${numberWords(Number(g.rate.toFixed(1)))} each game day</span>`;
     let html = '';
     if (wants.length) {
       html += '<div class="dsec-title">Wants — buy here at a premium</div>' + wants.map(sw => `
         <div class="dsec">
           <div class="dsec-title" style="font-size:.75rem">${esc(sw.name)}${sw.secondhand ? ' <span style="color:var(--text-dim);font-size:.68rem">(rumour)</span>' : ''}</div>
           <table class="goods-mini">${sw.goods.map(g =>
-            `<tr><td>${g.good}</td><td>${Math.floor(g.stock)}</td><td style="text-align:right">${rateCell(g)}</td></tr>`
+            `<tr><td>${g.good}</td><td>${numberWords(Math.floor(g.stock))}</td><td style="text-align:right">${rateCell(g)}</td></tr>`
           ).join('')}</table>
         </div>`).join('');
     }
@@ -570,7 +571,7 @@ async function loadEconomyWants() {
         <div class="dsec">
           <div class="dsec-title" style="font-size:.75rem">${esc(sw.name)}${sw.secondhand ? ' <span style="color:var(--text-dim);font-size:.68rem">(rumour)</span>' : ''}</div>
           <table class="goods-mini">${sw.goods.map(g =>
-            `<tr><td>${g.good}</td><td>${Math.floor(g.stock)}</td><td style="text-align:right">${rateCell(g)}</td></tr>`
+            `<tr><td>${g.good}</td><td>${numberWords(Math.floor(g.stock))}</td><td style="text-align:right">${rateCell(g)}</td></tr>`
           ).join('')}</table>
         </div>`).join('');
     }

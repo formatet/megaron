@@ -134,7 +134,7 @@ test('a positive delta is signed with a leading + and the --safe tone', () => {
   const html = loyaltyLogRowsHTML([
     { id: 1, event_type: 'gift', loyalty_delta: 1, reason: 'Received a significant gift', created_at: '2026-08-16T10:00:00Z' },
   ]);
-  assert.match(html, /\+1/);
+  assert.match(html, /\+one/);
   assert.match(html, /var\(--safe\)/);
   assert.match(html, /Received a significant gift/);
 });
@@ -143,7 +143,7 @@ test('a negative delta keeps its own minus sign (no double sign) and the --accen
   const html = loyaltyLogRowsHTML([
     { id: 2, event_type: 'revolt_risk', loyalty_delta: -2, reason: 'Garrison dominated by foreign troops', created_at: '2026-08-15T09:00:00Z' },
   ]);
-  assert.match(html, />-2</);
+  assert.match(html, />minus two</);
   assert.doesNotMatch(html, /\+-2/);
   assert.match(html, /var\(--accent\)/);
 });
@@ -168,6 +168,6 @@ test('a zero delta (if it ever occurs) gets no sign and the neutral --text-dim t
   const html = loyaltyLogRowsHTML([
     { id: 5, event_type: 'noop', loyalty_delta: 0, reason: 'no change', created_at: '2026-08-16T10:00:00Z' },
   ]);
-  assert.match(html, />0</);
+  assert.match(html, />zero</);
   assert.match(html, /var\(--text-dim\)/);
 });

@@ -173,11 +173,11 @@ test('CG11: insufficient_goods is delegated to formatApiError, the same helper e
 test('takeLabel says what taking does, building part only when one stands there', () => {
   assert.equal(
     takeLabel({ held_by: 'Petras', takeable: true, held_workers: 3, held_building: { type: 'farm', level: 2 } }),
-    "Take: Petras's 3 workers go home, its farm becomes yours",
+    "Take: Petras's three workers go home, its farm becomes yours",
   );
   assert.equal(
     takeLabel({ held_by: 'Petras', takeable: true, held_workers: 1 }),
-    "Take: Petras's 1 worker goes home",
+    "Take: Petras's one worker goes home",
   );
   assert.equal(takeLabel({ held_by: 'Petras', takeable: false, held_workers: 3 }), null);
   assert.equal(takeLabel({}), null);
