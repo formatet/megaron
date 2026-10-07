@@ -209,6 +209,6 @@ finally:
         proc.terminate()
         proc.wait(timeout=20)
     for name in containers:
-        subprocess.run(['docker', 'rm', '-f', name], capture_output=True)
+        subprocess.run(['docker', 'rm', '-fv', name], capture_output=True)
     if (OUT/'private-config.json').exists():
         (OUT/'private-config.json').unlink()

@@ -51,4 +51,4 @@ try:
  out.write_text(json.dumps({'migration_cycle':[159,160,159,160],'legacy_projection_preserved':json.loads(before),'paired_constraint_rejects_partial_route':True,'final_schema':sql('SELECT version||\'|\'||dirty FROM schema_migrations')},indent=2)+'\n')
  print('migration159 ->160 ->159 ->160, legacy projection unchanged, paired constraint enforced')
 finally:
- subprocess.run(['docker','rm','-f',name],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+ subprocess.run(['docker','rm','-fv',name],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)

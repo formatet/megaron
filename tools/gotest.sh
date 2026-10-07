@@ -25,7 +25,7 @@ cleanup() {
   if [ "${GOTEST_KEEP:-0}" = 1 ]; then
     echo "» containern står kvar: $NAME  ($DSN)" >&2
   else
-    docker rm -f "$NAME" >/dev/null 2>&1 || true
+    docker rm -fv "$NAME" >/dev/null 2>&1 || true
   fi
 }
 trap cleanup EXIT

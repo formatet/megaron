@@ -142,5 +142,5 @@ try:
     (OUT/'proof.json').write_text(json.dumps(proof,indent=2)+'\n'); print('PASS caravan player lifecycle',flush=True)
 finally:
     if proc is not None:proc.terminate(); proc.wait(timeout=20)
-    for name in containers:subprocess.run(['docker','rm','-f',name],capture_output=True)
+    for name in containers:subprocess.run(['docker','rm','-fv',name],capture_output=True)
     for cfg in configs:cfg.unlink(missing_ok=True)
