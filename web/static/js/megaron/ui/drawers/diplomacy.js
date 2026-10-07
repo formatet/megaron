@@ -145,7 +145,9 @@ async function loadDipThreads() {
   try {
     const [inR, outR] = await Promise.all([
       fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/messengers/inbox'),
-      State.MY_SETTLEMENT_ID ? fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/settlements/' + State.MY_SETTLEMENT_ID + '/messengers') : Promise.resolve(null),
+      fetchAuth('/api/v1/worlds/' + State.WORLD_ID + (State.MY_SETTLEMENT_ID
+        ? '/settlements/' + State.MY_SETTLEMENT_ID + '/messengers'
+        : '/founding/messengers')),
     ]);
     const inbox  = (inR && inR.ok)  ? await inR.json().catch(() => [])  : [];
     const sent   = (outR && outR.ok) ? await outR.json().catch(() => []) : [];
