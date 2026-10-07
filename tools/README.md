@@ -159,3 +159,9 @@ keryx in OUT, stamping temenos with `-X main.buildCommit=HASH`. Cleans own resou
 `python3 tools/single_recall_mutations.py OUT` requires fresh-DB assertion failures
 when arrival reuse, failure notice/audit or old messenger claim is removed, and
 restores source after every arm.
+
+`python3 tools/recall_route_mutations.py OUT` provar recall/redirects riktiga
+väg, auktoritativ position och namngivna HTTP-/kuriravslag. Varje arm använder
+ny PG16/mig160 med en ledig port, kräver assertion-rött och återställer källan
+även vid fel; varje återställd arm måste bli grön. Kör i egen worktree.
+Den riktiga spelarresan använder `single_recall_live.py` enligt receptet ovan.

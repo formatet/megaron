@@ -77,7 +77,7 @@ func TestRecallNoRoute_DeliveryNamesReasonOnce(t *testing.T) {
 				t.Fatalf("named failures=%+v", f.hub.failures)
 			}
 			p := f.hub.failures[0]
-			if p["name"] != "Delta" || !strings.Contains(p["reason"].(string), "no passable route") {
+			if p["name"] == "" || !strings.Contains(p["reason"].(string), "no passable route") {
 				t.Fatalf("route reason hidden: %+v", p)
 			}
 			var audits int

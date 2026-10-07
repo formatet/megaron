@@ -60,3 +60,27 @@ func TestRecallNoRoute_HTTPRejectsNamed(t *testing.T) {
 		})
 	}
 }
+
+// Ordinary units must also stop before an origin-guess can aim a real Runner.
+func TestRecallNoRoute_HTTPDoesNotDispatchFromGuessedOrigin(t *testing.T) {
+	f, router := setupNomadicHostRecallWorld(t)
+	pool := unitLoadTestPool(t)
+	ctx := context.Background()
+	if _, err := pool.Exec(ctx, `DELETE FROM map_tiles WHERE world_id=$1 AND q=1`, f.worldID); err != nil {
+		t.Fatal(err)
+	}
+	req := httptest.NewRequest(http.MethodPost, "/worlds/"+f.worldID.String()+"/units/"+f.spearmanID.String()+"/recall", nil)
+	req.Header.Set("Authorization", "Bearer "+f.accessToken)
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+	if rec.Code != 422 || !strings.Contains(rec.Body.String(), "no passable outbound route") {
+		t.Fatalf("guessed origin dispatched: %d %s", rec.Code, rec.Body.String())
+	}
+	var count int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM messengers WHERE world_id=$1`, f.worldID).Scan(&count); err != nil {
+		t.Fatal(err)
+	}
+	if count != 0 {
+		t.Fatalf("guessed origin created %d messengers", count)
+	}
+}

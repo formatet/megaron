@@ -187,6 +187,10 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 		}
 		res, err := combat.ExecuteRecall(ctx, h.pool, h.scheduler, h.eventStore, h.clk, *p.Recall)
 		if err != nil {
+			var rej *combat.OrderReject
+			if errors.As(err, &rej) {
+				return h.failSingleRecall(ctx, p, rej.Reason)
+			}
 			slog.Error("order delivery: recall/redirect execution failed after claim — order dropped",
 				"messenger", p.MessengerID, "unit", p.UnitID, "verb", p.Verb, "err", err)
 			return h.failSingleRecall(ctx, p, "the Runner reached the unit, but the order could not be carried out; check this unit's status and reissue the order")

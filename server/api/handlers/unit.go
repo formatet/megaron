@@ -659,7 +659,9 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if !posOK {
-			currentPos = origin
+			writeError(w, http.StatusUnprocessableEntity,
+				"cannot resolve the unit's current position: no passable outbound route; check this unit and reissue the order")
+			return
 		}
 	}
 
@@ -691,6 +693,11 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 	if unit.CommandedInPerson(u.Type) {
 		res, err := combat.ExecuteRecall(ctx, h.pool, h.scheduler, h.eventStore, h.clk, *recallOrder)
 		if err != nil {
+			var rej *combat.OrderReject
+			if errors.As(err, &rej) {
+				writeError(w, rej.Status, rej.Reason)
+				return
+			}
 			writeError(w, http.StatusInternalServerError, "could not apply order")
 			return
 		}

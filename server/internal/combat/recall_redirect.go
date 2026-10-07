@@ -12,8 +12,7 @@ package combat
 // separate from that claim — same relaxed two-commit pattern OrderDeliveryHandler
 // already uses for march/stance). A nil, nil return means the unit is no longer
 // marching by the time this runs (already arrived, or an earlier order already
-// turned it) — a stale miss, not a rejection: the caller must treat it as a
-// silent no-op, never an OrderFailed notice.
+// turned it). The caller reports this miss to the player.
 
 import (
 	"context"
@@ -114,8 +113,7 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 			return nil, fmt.Errorf("interpolate unit position: %w", ipErr)
 		}
 		if !posOK {
-			slog.Warn("recall/redirect: could not re-walk outbound path, using origin as current position", "unit", o.UnitID)
-			currentPos = origin
+			return nil, reject(422, "cannot resolve the unit's current position: no passable outbound route; check this unit and reissue the order")
 		}
 	}
 
@@ -124,28 +122,16 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 		newTarget = province.MapPosition{Q: *o.NewTargetQ, R: *o.NewTargetR}
 	}
 
-	// Route over the same passability graph the outbound march used — never a
-	// straight-line teleport across impassable terrain. The straight-line
-	// fallback should not trigger in practice: for recall, currentPos lies on
-	// the very path that proved origin↔target traversable; for redirect, the
-	// new target was validated at dispatch time.
+	// Delivery rechecks the real route; a dispatch precheck is not authority
+	// to move across a route that no longer exists when the order arrives.
 	path, pathTicks, pathOK, pathErr := province.FindPath(ctx, tx, o.WorldID, currentPos, newTarget, category)
-	var moveTicks float64
-	if pathErr == nil && pathOK {
-		moveTicks = pathTicks
-	} else {
-		path = nil // fell back to straight line below — no real path to save (R5)
-		if pathErr != nil {
-			slog.Warn("recall/redirect: FindPath error, falling back to straight line", "unit", o.UnitID, "err", pathErr)
-		} else {
-			slog.Warn("recall/redirect: no route found, falling back to straight line", "unit", o.UnitID)
-		}
-		dist := province.HexDistance(currentPos, newTarget)
-		if dist < 1 {
-			dist = 1
-		}
-		moveTicks = province.TerrainMoveTicks("plains") * float64(dist)
+	if pathErr != nil {
+		return nil, fmt.Errorf("resolve recall/redirect route: %w", pathErr)
 	}
+	if !pathOK {
+		return nil, reject(422, "no passable route from the unit's current position (%d,%d) to (%d,%d); check this unit and choose a reachable destination", currentPos.Q, currentPos.R, newTarget.Q, newTarget.R)
+	}
+	moveTicks := pathTicks
 	// Mirror the outbound leg's speed multipliers (march_start.go's
 	// TravelFactor) — a war galley/merchantman/nomadic host recalled or
 	// redirected mid-march must keep its own speed, not the unmultiplied
@@ -169,7 +155,7 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 	arrivesAtNew := now.Add(time.Duration(travelTicks*tick.TickSeconds) * time.Second)
 
 	// movement 2a, R1/R5: save the NEW leg's own path — never re-search it at
-	// read time. NULL when FindPath fell back to a straight line.
+	// read time. A trivial path needs no stored movement route.
 	var newMarchRoute []byte
 	if len(path) >= 2 {
 		if stepHours, shErr := province.StepHoursDB(ctx, tx, o.WorldID, path, category); shErr == nil {
