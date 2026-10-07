@@ -73,6 +73,7 @@ export const State = {
                         // player was looking at when something confused them.
 
   // March context menu (ui/marchctx.js).
+  marchCtxUnitID: null, // War → March pins one unit while choosing a map target
   marchCtxDest: null,   // { q, r, terrain, isSea, name, isSettlement, allied }
   marchCtxUnits: [],    // eligible units currently listed
   marchCtxGroups: [],   // eligible units grouped by type+origin (quantity picker)
