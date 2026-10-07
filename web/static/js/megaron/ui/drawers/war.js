@@ -12,6 +12,7 @@ import { loadCityDrawer } from './city.js';
 import { retreatBody, retreatDefaultSectionHTML, unitRetreatControlHTML } from '../retreat.js';
 import { canTakeStance, stanceSentLine } from '../stance.js';
 import { warMovements } from '../movements.js';
+import { createMarchPreview } from '../march_preview.js';
 import { orderRunnerHTML } from '../runner_status.js';
 
 // "ready <eta>" while still building/training, collapsing to a bare "ready"
@@ -90,6 +91,8 @@ function fmtUnitCost(entry, isNaval) {
 
 // ── War drawer ────────────────────────────────────────────────────────────
 export async function loadWarDrawer() {
+  warMarchPreview.cancel();
+  _marchUnitID = null;
   const body = document.getElementById('war-body');
   const capital = ownCapital();
   // Preserve recruit-city selection across reloads. Founder phase (no capital
@@ -203,6 +206,7 @@ export async function loadWarDrawer() {
         <label style="color:var(--text-dim)"><input id="wmp-land-colonize-chk" type="checkbox"> …and found a colony there</label>
         <input id="wmp-land-name" type="text" placeholder="colony name (optional)" style="padding:.1rem .25rem;border:1px solid var(--border);background:var(--warm-white);font-size:.72rem">
       </div>
+      <div id="wmp-eta" aria-live="polite"></div>
       <div id="wmp-err" style="color:var(--accent);font-size:.7rem;margin-top:.2rem;min-height:.8rem"></div>
     </div>`;
     document.getElementById('wtab-army').innerHTML = armyHtml;
@@ -758,6 +762,30 @@ function wmpLandEligible(unitID) {
   return !!(u && u.category === 'naval' && u.status === 'garrison' && u.cargo_unit_id);
 }
 
+const warMarchPreview = createMarchPreview(html => {
+  const el = document.getElementById('wmp-eta');
+  if (el) el.innerHTML = html;
+}, fetchAuth);
+
+function updateWarMarchPreview() {
+  if (!_marchUnitID) return;
+  const q = document.getElementById('wmp-q').value;
+  const r = document.getElementById('wmp-r').value;
+  if (q === '' || r === '' || !Number.isInteger(Number(q)) || !Number.isInteger(Number(r))) {
+    warMarchPreview.update(State.WORLD_ID, [], {});
+    return;
+  }
+  const land = document.getElementById('wmp-land-chk')?.checked && wmpLandEligible(_marchUnitID);
+  const colonize = land && document.getElementById('wmp-land-colonize-chk')?.checked;
+  const u = (State.unitsData || []).find(x => x.id === _marchUnitID);
+  warMarchPreview.update(State.WORLD_ID, [{ id: _marchUnitID, name: u?.display_name || 'Unit' }], {
+    target_q: Number(q), target_r: Number(r), intent: land ? 'land' : '',
+    stance: land ? '' : document.getElementById('wmp-stance').value,
+    cargo_intent: colonize ? 'colonize' : '',
+    name: colonize ? document.getElementById('wmp-land-name').value.trim() : '',
+  });
+}
+
 export function unitMarch(unitID) {
   _marchUnitID = unitID;
   const panel = document.getElementById('war-march-panel');
@@ -768,12 +796,15 @@ export function unitMarch(unitID) {
     const card = document.getElementById('ucard-' + unitID);
     if (card) card.after(panel);
     panel.style.display = '';
+    panel.oninput = updateWarMarchPreview;
+    panel.onchange = updateWarMarchPreview;
     document.getElementById('wmp-err').textContent = '';
     const landRow = document.getElementById('wmp-land-row');
     const landChk = document.getElementById('wmp-land-chk');
     if (landRow) landRow.style.display = wmpLandEligible(unitID) ? 'flex' : 'none';
     if (landChk) landChk.checked = false;
     wmpLandToggle();
+    updateWarMarchPreview();
     panel.scrollIntoView({ block: 'nearest' });
     document.getElementById('wmp-q')?.focus();
   }
@@ -793,6 +824,7 @@ export function wmpLandToggle() {
 }
 
 export function closeMarchPanel() {
+  warMarchPreview.cancel();
   _marchUnitID = null;
   const panel = document.getElementById('war-march-panel');
   if (panel) panel.style.display = 'none';
@@ -807,6 +839,7 @@ export function closeMarchPanel() {
 }
 
 export async function unitMarchSend() {
+  warMarchPreview.cancel();
   if (!_marchUnitID) return;
   const q = parseInt(document.getElementById('wmp-q').value, 10);
   const r = parseInt(document.getElementById('wmp-r').value, 10);

@@ -315,9 +315,9 @@
     <button class="mctx-send" id="mctx-send" onclick="sendMarch()">March →</button>
     <span class="mctx-error" id="mctx-err"></span>
   </div>
-  <!-- Arrival ETA after dispatch (Tid & kalender Fas B) — owned by ui/time.js
+  <!-- Arrival forecast before dispatch and receipt after dispatch — owned by ui/time.js
        via marchctx.js; hexval owns the rest of the panel. -->
-  <div class="mctx-eta" id="mctx-eta" style="display:none"></div>
+  <div class="mctx-eta" id="mctx-eta" aria-live="polite" style="display:none"></div>
 </div>
 
 <style>

@@ -7,6 +7,7 @@ import { arrivalHTML, fmtArrival } from './time.js';
 import { stanceSentLine } from './stance.js';
 import { MusicPlayer } from './misc.js';
 import { playWarHorn } from './sfx.js';
+import { createMarchPreview } from './march_preview.js';
 import { canvas } from '../render/map.js';
 
 // ── March context menu (per-unit model) ───────────────────────────────────
@@ -22,7 +23,35 @@ import { canvas } from '../render/map.js';
 
 const marchCtx = document.getElementById('march-ctx');
 
+const marchPreview = createMarchPreview(html => {
+  const el = document.getElementById('mctx-eta');
+  if (el) { el.innerHTML = html; el.style.display = html ? 'block' : 'none'; }
+  repositionMarchCtx();
+}, fetchAuth);
+
+function updateMarchPreview() {
+  if (!State.marchCtxDest) return;
+  const picks = [];
+  State.marchCtxGroups.forEach((g, i) => {
+    const n = Math.max(0, Math.min(parseInt(document.getElementById('mg-' + i)?.value, 10) || 0, g.ids.length));
+    for (let k = 0; k < n; k++) picks.push({ id: g.ids[k], mode: g.mode, name: g.names[k] });
+  });
+  const colonize = document.getElementById('mctx-colonize-chk')?.checked
+    && document.getElementById('mctx-colonize-row').style.display !== 'none';
+  const explore = document.getElementById('mctx-explore-chk')?.checked
+    && document.getElementById('mctx-explore-row').style.display !== 'none';
+  marchPreview.update(State.WORLD_ID, picks, {
+    target_q: State.marchCtxDest.q, target_r: State.marchCtxDest.r,
+    intent: colonize ? 'colonize' : resolveMarchIntent(State.marchCtxDest, explore),
+    stance: State.marchCtxDest.isSea ? '' : document.getElementById('mctx-stance').value,
+    name: colonize ? document.getElementById('mctx-colony-name')?.value.trim() : '',
+  });
+}
+marchCtx.addEventListener('input', updateMarchPreview);
+marchCtx.addEventListener('change', updateMarchPreview);
+
 export function closeMarchCtx() {
+  marchPreview.cancel();
   marchCtx.style.display = 'none';
   State.marchCtxDest   = null;
   State.marchCtxUnits  = [];
@@ -55,6 +84,7 @@ export function onExploreToggle() {
     cChk.checked = false;
     onColonizeToggle();
   }
+  updateMarchPreview();
 }
 
 export async function onColonizeToggle() {
@@ -71,6 +101,7 @@ export async function onColonizeToggle() {
   State.catchmentPreview = (chk && chk.checked && State.marchCtxDest)
     ? { q: State.marchCtxDest.q, r: State.marchCtxDest.r } : null;
   State.dirty = true;
+  updateMarchPreview();
 
   // Colonize catchment forecast (DEL A parity with keryx): show the founding
   // grain balance before the march is committed. Best-effort — a failed fetch
@@ -237,6 +268,10 @@ export function resolveMarchIntent(dest, exploreWanted) {
 // FOW rule then accepts only intent=explore (exploreRowVisible below and the
 // resolveMarchIntent forcing it here mirror that server rule).
 export async function openMarchCtx(dest, screenX, screenY) {
+  marchPreview.cancel();
+  State.marchCtxGroups = [];
+  document.getElementById('mctx-eta').style.display = 'none';
+  document.getElementById('mctx-send').style.display = '';
   State.marchCtxDest  = dest;
   State.marchCtxUnits = [];
   document.getElementById('mctx-err').textContent = '';
@@ -277,6 +312,7 @@ export async function openMarchCtx(dest, screenX, screenY) {
   const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`);
   if (!res.ok) { document.getElementById('mctx-units').innerHTML = '<span style="color:var(--accent);font-size:.75rem">Could not load units.</span>'; return; }
   const all = ((await res.json()).units) || [];
+  if (State.marchCtxDest !== dest) return;
 
   // Eligible: garrisoned/positioned units start a march; a unit already
   // MARCHING is eligible too — right-clicking a new destination sends it a
@@ -433,6 +469,7 @@ export async function sendMarch() {
     && exploreRow && exploreRow.style.display !== 'none');
   const intent = colonize ? 'colonize' : resolveMarchIntent(State.marchCtxDest, exploreWanted);
 
+  marchPreview.cancel();
   document.getElementById('mctx-send').disabled = true;
   document.getElementById('mctx-err').textContent = '';
 
