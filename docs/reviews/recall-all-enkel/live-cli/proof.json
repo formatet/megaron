@@ -1,0 +1,2418 @@
+{
+  "mode": "cli",
+  "browser_errors": [],
+  "health": {
+    "commit": "7f30b7e5",
+    "migration": 160,
+    "status": "ok"
+  },
+  "march_receipts": [
+    {
+      "arrival_tick": 5,
+      "arrives_at": "2026-10-07T21:56:25.558559251+02:00",
+      "arrives_at_utc": "2026-10-07T19:56:25.558559251Z",
+      "carried_silver": 0,
+      "departs_at": "2026-10-07T21:55:55.558559251+02:00",
+      "duration_ticks": 5,
+      "expedition": {
+        "area_q": 6,
+        "area_r": 37,
+        "home_by_tick": 30,
+        "length_ticks": 30,
+        "turn_tick": 15
+      },
+      "origin_q": 2,
+      "origin_r": 37,
+      "purse_shortfall": 0,
+      "target_q": 5,
+      "target_r": 33,
+      "unit_id": "76568620-e426-45c2-ab3f-21a8e186a13d"
+    },
+    {
+      "arrival_tick": 5,
+      "arrives_at": "2026-10-07T21:56:25.568627366+02:00",
+      "arrives_at_utc": "2026-10-07T19:56:25.568627366Z",
+      "carried_silver": 0,
+      "departs_at": "2026-10-07T21:55:55.568627366+02:00",
+      "duration_ticks": 5,
+      "expedition": {
+        "area_q": 6,
+        "area_r": 37,
+        "home_by_tick": 30,
+        "length_ticks": 30,
+        "turn_tick": 15
+      },
+      "origin_q": 2,
+      "origin_r": 37,
+      "purse_shortfall": 0,
+      "target_q": 5,
+      "target_r": 33,
+      "unit_id": "ba95f908-7937-41a8-8552-9f202c8cada0"
+    }
+  ],
+  "receipts": [
+    {
+      "courier_arrives_at": "2026-10-07T21:56:01.579084492+02:00",
+      "courier_due_tick": 1,
+      "messenger_id": "7cf5609e-1648-49da-b3f3-1681dfcbcbe2",
+      "mode": "recall",
+      "status": "order_dispatched",
+      "unit_id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+      "verb": "recall"
+    },
+    {
+      "courier_arrives_at": "2026-10-07T21:56:01.583809734+02:00",
+      "courier_due_tick": 1,
+      "messenger_id": "14776ed6-7a8a-4c70-84fe-65a8d5d9fcbd",
+      "mode": "recall",
+      "status": "order_dispatched",
+      "unit_id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+      "verb": "recall"
+    }
+  ],
+  "history": [
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 5,
+        "current_r": 36,
+        "target_q": 5,
+        "target_r": 33,
+        "arrival_tick": 5,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 37,
+          "length_ticks": 30,
+          "turn_tick": 15,
+          "home_by_tick": 30,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 4,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 3,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "marching",
+        "current_q": 2,
+        "current_r": 37,
+        "target_q": 2,
+        "target_r": 37,
+        "arrival_tick": 5,
+        "expedition": null
+      }
+    ],
+    [
+      {
+        "id": "76568620-e426-45c2-ab3f-21a8e186a13d",
+        "status": "garrison",
+        "current_q": null,
+        "current_r": null,
+        "target_q": null,
+        "target_r": null,
+        "arrival_tick": null,
+        "expedition": null
+      },
+      {
+        "id": "ba95f908-7937-41a8-8552-9f202c8cada0",
+        "status": "garrison",
+        "current_q": null,
+        "current_r": null,
+        "target_q": null,
+        "target_r": null,
+        "arrival_tick": null,
+        "expedition": null
+      }
+    ]
+  ],
+  "audit_rows": "MarchRecalled|76568620-e426-45c2-ab3f-21a8e186a13d|1\nMarchRecalled|ba95f908-7937-41a8-8552-9f202c8cada0|1",
+  "queue_rows": "UnitArrival|5|2026-10-07 19:56:36.896304+00||{\"unit_id\": \"76568620-e426-45c2-ab3f-21a8e186a13d\", \"world_id\": \"9785c1ad-14e2-4513-9376-8fb7e3de6abf\", \"arrive_tick\": 5}\nUnitArrival|5|2026-10-07 19:56:36.900298+00||{\"unit_id\": \"ba95f908-7937-41a8-8552-9f202c8cada0\", \"world_id\": \"9785c1ad-14e2-4513-9376-8fb7e3de6abf\", \"arrive_tick\": 5}\nOrderDelivery|1|2026-10-07 19:56:12.898964+00||{\"verb\": \"recall\", \"recall\": {\"Mode\": \"recall\", \"UnitID\": \"76568620-e426-45c2-ab3f-21a8e186a13d\", \"WorldID\": \"9785c1ad-14e2-4513-9376-8fb7e3de6abf\", \"NewTargetQ\": null, \"NewTargetR\": null}, \"unit_id\": \"76568620-e426-45c2-ab3f-21a8e186a13d\", \"world_id\": \"9785c1ad-14e2-4513-9376-8fb7e3de6abf\", \"player_id\": \"c5ca8852-a4df-40b1-8519-8ddd11d19158\", \"messenger_id\": \"7cf5609e-1648-49da-b3f3-1681dfcbcbe2\"}\nOrderDelivery|1|2026-10-07 19:56:12.904496+00||{\"verb\": \"recall\", \"recall\": {\"Mode\": \"recall\", \"UnitID\": \"ba95f908-7937-41a8-8552-9f202c8cada0\", \"WorldID\": \"9785c1ad-14e2-4513-9376-8fb7e3de6abf\", \"NewTargetQ\": null, \"NewTargetR\": null}, \"unit_id\": \"ba95f908-7937-41a8-8552-9f202c8cada0\", \"world_id\": \"9785c1ad-14e2-4513-9376-8fb7e3de6abf\", \"player_id\": \"c5ca8852-a4df-40b1-8519-8ddd11d19158\", \"messenger_id\": \"14776ed6-7a8a-4c70-84fe-65a8d5d9fcbd\"}",
+  "all_garrison": true,
+  "distinct_per_unit_couriers": 2,
+  "sql_mutations": 0
+}

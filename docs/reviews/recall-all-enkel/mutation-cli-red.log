@@ -1,0 +1,64 @@
+--- FAIL: TestRecallAllLoopsEveryMarchingUnit (0.00s)
+    --- FAIL: TestRecallAllLoopsEveryMarchingUnit/textunit (0.00s)
+        cmd_recall_all_test.go:58: must recall every marching unit despite rejection: [a]
+    --- FAIL: TestRecallAllLoopsEveryMarchingUnit/textalias (0.00s)
+        cmd_recall_all_test.go:58: must recall every marching unit despite rejection: [a]
+    --- FAIL: TestRecallAllLoopsEveryMarchingUnit/jsonunit (0.00s)
+        cmd_recall_all_test.go:58: must recall every marching unit despite rejection: [a]
+    --- FAIL: TestRecallAllLoopsEveryMarchingUnit/jsonalias (0.00s)
+        cmd_recall_all_test.go:58: must recall every marching unit despite rejection: [a]
+Error: choose --unit or --all
+Usage:
+  recall [flags]
+
+Examples:
+  keryx recall --unit <id>
+  keryx recall --all
+
+Flags:
+      --all           recall every own marching unit
+  -h, --help          help for recall
+      --unit string   unit UUID (or use --all)
+
+Error: choose --unit or --all
+Usage:
+  recall [flags]
+
+Examples:
+  keryx recall --unit <id>
+  keryx recall --all
+
+Flags:
+      --all           recall every own marching unit
+  -h, --help          help for recall
+      --unit string   unit UUID (or use --all)
+
+Error: unknown flag: --target
+Usage:
+  recall [flags]
+
+Examples:
+  keryx recall --unit <id>
+  keryx recall --all
+
+Flags:
+      --all           recall every own marching unit
+  -h, --help          help for recall
+      --unit string   unit UUID (or use --all)
+
+Error: unknown flag: --intent
+Usage:
+  recall [flags]
+
+Examples:
+  keryx recall --unit <id>
+  keryx recall --all
+
+Flags:
+      --all           recall every own marching unit
+  -h, --help          help for recall
+      --unit string   unit UUID (or use --all)
+
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.004s
+FAIL

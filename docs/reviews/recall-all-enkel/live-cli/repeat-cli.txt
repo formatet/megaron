@@ -1,0 +1,3 @@
+1st Spearmen of Nostos: a recall/redirect order is already on its way to this unit (ETA 2026-10-07T21:56:01+02:00) (HTTP 409)
+2nd Spearmen of Nostos: a recall/redirect order is already on its way to this unit (ETA 2026-10-07T21:56:01+02:00) (HTTP 409)
+No units are being called home.

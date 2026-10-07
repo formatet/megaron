@@ -1,0 +1,76 @@
+TAP version 13
+# Subtest: Recall all attempts every marching unit despite a refusal
+not ok 1 - Recall all attempts every marching unit despite a refusal
+  ---
+  duration_ms: 1.449734
+  type: 'test'
+  location: '/tmp/megaron-codex-recall-all-enkel-20261007/web/static/js/megaron/ui/recall_all.test.mjs:5:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    every marching unit must receive its own recall attempt
+    + actual - expected
+    
+      [
+        'a',
+    -   'b',
+    -   'c'
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'a'
+    1: 'b'
+    2: 'c'
+  actual:
+    0: 'a'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-recall-all-enkel-20261007/web/static/js/megaron/ui/recall_all.test.mjs:9:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: no marching units means disabled button and no recall requests
+ok 2 - no marching units means disabled button and no recall requests
+  ---
+  duration_ms: 0.269863
+  type: 'test'
+  ...
+# Subtest: a transport failure names that unit and continues to later units
+not ok 3 - a transport failure names that unit and continues to later units
+  ---
+  duration_ms: 0.308946
+  type: 'test'
+  location: '/tmp/megaron-codex-recall-all-enkel-20261007/web/static/js/megaron/ui/recall_all.test.mjs:26:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      [
+        'a',
+    -   'b'
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'a'
+    1: 'b'
+  actual:
+    0: 'a'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-recall-all-enkel-20261007/web/static/js/megaron/ui/recall_all.test.mjs:29:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 1
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 45.77595

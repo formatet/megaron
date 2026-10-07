@@ -184,3 +184,12 @@ bor i `tools/verb_parity_allowlist.json`. Olösta anrop visas separat; frånvaro
 av statisk evidens är inte automatiskt frånvaro av förmåga. Fixturer:
 `python3 -m unittest discover -s tools -p 'test_verb_parity.py'`.
 Rapport och parsermutation: `docs/reviews/verb-parity/`.
+
+`python3 tools/recall_all_live.py OUT COMMIT baseline|web|cli` uses private
+fresh PG16/Redis, real register/join/found/march and existing per-unit recall.
+Build temenos (stamp COMMIT) and keryx in OUT. Requires per-unit recall audits
+and both units in garrison; SQL checks are read-only. Desktop/390px screenshots
+in web mode; only own resources/config removed.
+`python3 tools/recall_all_mutations.py OUT` physically limits each client loop
+to the first unit, requires named JS/HTTP-test assertions red and restores
+sources before green checks. No DB required for these client tests.
