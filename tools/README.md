@@ -223,3 +223,24 @@ Baslinje: samma kommando med `baseline` och fjärde argumentet en oförändrad
 arkiverad web-katalog. Varje arm får egen tom DB och eget OUT.
 `python3 tools/war_cards_mutations.py OUT` bryter ankomstvakten, More-placeringen
 och navalrecall-vakten fysiskt; kräver namngivet assertionrött och restoredgrönt.
+
+
+### Minnesgråskala (BILD)
+
+`python3 tools/memory_gray_live.py OUT EXPECTED_COMMIT after` använder ny PG16/Redis,
+rena servervariabler, vanliga register/join/founding/Explore-API:er och riktig webbsida.
+OUT ska innehålla färskt byggd `temenos` med `-ldflags '-X main.buildCommit=<hash>'`.
+Varje körning skapar egna containrar och städar dem; ingen SQL-fixtur.
+Desktop/390px/minzoom, faktisk hover/inspect, grå/live/fog-centra, determinism,
+health/kvitto/hemkommen enhet sparas. Baslinje: `baseline` som tredje argument,
+fjärde argument en oförändrad arkiverad web-katalog; separat OUT/färsk DB för varje arm.
+
+`python3 tools/memory_gray_replay.py PROOF_DIR BASELINE_WEB OUT` spelar upp samma
+verkliga kartpayload med gammal/ny produktion-renderare och mäter containment,
+full avmättnad och ljushet på opaka pixlar. Valfritt sista argument `collision`
+är en uttryckligen syntetisk renderer-matris med terräng, städer och egen enhet.
+UI-namn utelämnas där för att mäta enbart målade byggnader, inte överlagrade texter.
+`python3 tools/memory_gray_pixels.py OUT` mäter Chromium-canvasens faktiska färgpixlar.
+`python3 tools/memory_gray_mutations.py OUT [PROOF_DIR BASELINE_WEB]` bryter tier,
+saturation och (med valfria argument) det faktiska kartpasset, kräver namngivet rött
+följt av återställt grönt. Produktion återställs även vid fel.

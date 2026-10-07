@@ -1,0 +1,14 @@
+{
+  "grayPixels": 885,
+  "untouchedPixels": 1163,
+  "maxLightError": 0.3299999999999983,
+  "grayLevels": [
+    69,
+    74,
+    109,
+    134,
+    154,
+    165
+  ],
+  "compositeRestored": true
+}

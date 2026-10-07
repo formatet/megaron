@@ -1,0 +1,64 @@
+TAP version 13
+# Subtest: only remembered hexes are desaturated; live, fog and absent tier stay untouched
+not ok 1 - only remembered hexes are desaturated; live, fog and absent tier stay untouched
+  ---
+  duration_ms: 1.74121
+  type: 'test'
+  location: '/tmp/megaron-codex-memory-gray-20261007/web/static/js/megaron/render/memory.test.mjs:13:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    full desaturation preserves destination lightness
+    + actual - expected
+
+      [
+    +   'source-over',
+    -   'saturation',
+        1,
+        '#808080'
+      ]
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'saturation'
+    1: 1
+    2: '#808080'
+  actual:
+    0: 'source-over'
+    1: 1
+    2: '#808080'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-memory-gray-20261007/web/static/js/megaron/render/memory.test.mjs:20:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: frontier spans are integer device pixels and clipped to viewport at fractional zoom
+ok 2 - frontier spans are integer device pixels and clipped to viewport at fractional zoom
+  ---
+  duration_ms: 0.158949
+  type: 'test'
+  ...
+# Subtest: empty memory makes no canvas change; failures restore canvas state
+ok 3 - empty memory makes no canvas change; failures restore canvas state
+  ---
+  duration_ms: 0.675392
+  type: 'test'
+  ...
+# Subtest: camera transform determines device pixel mask, including zoom and pan
+ok 4 - camera transform determines device pixel mask, including zoom and pan
+  ---
+  duration_ms: 0.19143
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 3
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 41.720228
