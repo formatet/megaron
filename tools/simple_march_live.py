@@ -94,7 +94,7 @@ try:
             spawn = joined['tile']
             seen = api(worldpath+'/map', token=token)
             seen = seen if isinstance(seen, list) else seen['tiles']
-            if any(t['q'] == spawn['q'] and t['r'] == spawn['r'] and t.get('coastal') for t in seen):
+            if any(t['q'] == spawn['Q'] and t['r'] == spawn['R'] and t.get('coastal') for t in seen):
                 break
             token = api('/api/v1/auth/register', 'POST', {'username': 'landing'+secrets.token_hex(4), 'password': secrets.token_urlsafe(32)})['access_token']
             joined = api(worldpath+'/join', 'POST', {}, token)
@@ -192,6 +192,8 @@ try:
             assert page.locator('.mctx-input').count()==1
             assert chosen[0]['display_name'] in page.locator('#mctx-units').inner_text()
             assert chosen[1]['display_name'] not in page.locator('#mctx-units').inner_text()
+        page.mouse.move(0, 0)  # dismiss the map hover tooltip, preserve normal UI
+        expect(page.locator('#mctx-eta')).not_to_contain_text('Estimating arrival')
         page.locator('#march-ctx').screenshot(path=str(OUT/('menu-'+label+'.png')))
         assert page.locator('#march-ctx').evaluate('(e)=>e.scrollWidth<=e.clientWidth'),'overflow'
     if MODE!='land':
