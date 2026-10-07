@@ -3,11 +3,12 @@ import { fetchAuth } from '../api.js';
 import { track } from '../telemetry.js';
 import { esc, formatApiError, passageNote, purseLine } from './format.js';
 import { unitTypeLabel } from './actornames.js';
+import { numberWords } from './number_words.js';
 import { arrivalHTML, fmtArrival } from './time.js';
 import { stanceSentLine } from './stance.js';
 import { MusicPlayer } from './misc.js';
 import { playWarHorn } from './sfx.js';
-import { configureExpedition, expeditionTicks, expeditionOrderText, expeditionMissionText } from './expedition.js';
+import { configureExpedition, expeditionTicks, expeditionMissionText } from './expedition.js';
 import { createMarchPreview } from './march_preview.js';
 import { canvas } from '../render/map.js';
 
@@ -42,7 +43,10 @@ function updateMarchPreview() {
     && document.getElementById('mctx-colonize-row').style.display !== 'none';
   const explore = document.getElementById('mctx-explore-chk')?.checked
     && document.getElementById('mctx-explore-row').style.display !== 'none';
-  const intent = colonize ? 'colonize' : resolveMarchIntent(State.marchCtxDest, explore);
+  const options = marchIntentOptions(State.marchCtxDest, { landing: landingSelected(), colonize, explore,
+    name: colonize ? document.getElementById('mctx-colony-name')?.value.trim() : '',
+    stance: document.getElementById('mctx-stance').value });
+  const intent = options.intent || '';
   const duration = document.getElementById('mctx-expedition');
   const exploring = intent === 'explore' && (!picks.length || picks.some(p => p.mode !== 'redirect'));
   duration.style.display = exploring ? 'block' : 'none';
@@ -50,14 +54,12 @@ function updateMarchPreview() {
   try { if (exploring) ticks = expeditionTicks(document.getElementById('mctx-ticks')); }
   catch (error) { document.getElementById('mctx-mission').textContent = error.message; marchPreview.update(State.WORLD_ID, [], {}); return; }
   document.getElementById('mctx-mission').textContent = exploring
-    ? expeditionOrderText(State.marchCtxDest.q, State.marchCtxDest.r, ticks, expeditionRules)
+    ? 'Explore for ' + numberWords(ticks) + ' game days, then return home.'
       + (picks.some(p => p.mode === 'redirect') ? ' Only units starting a new march take this expedition; marching units receive a redirect and end their expedition.' : '')
     : '';
   marchPreview.update(State.WORLD_ID, picks, {
     target_q: State.marchCtxDest.q, target_r: State.marchCtxDest.r,
-    intent, ticks,
-    stance: State.marchCtxDest.isSea ? '' : document.getElementById('mctx-stance').value,
-    name: colonize ? document.getElementById('mctx-colony-name')?.value.trim() : '',
+    ...options, ticks,
   });
 }
 marchCtx.addEventListener('input', updateMarchPreview);
@@ -66,6 +68,7 @@ marchCtx.addEventListener('change', updateMarchPreview);
 export function closeMarchCtx() {
   marchPreview.cancel();
   marchCtx.style.display = 'none';
+  State.marchCtxUnitID = null;
   State.marchCtxDest   = null;
   State.marchCtxUnits  = [];
   State.marchCtxGroups = [];
@@ -121,7 +124,7 @@ export async function onColonizeToggle() {
   // never blocks the March button.
   const prevEl = document.getElementById('mctx-colonize-preview');
   if (!prevEl) return;
-  if (!(chk && chk.checked) || !State.marchCtxDest) {
+  if (!(chk && chk.checked) || !State.marchCtxDest || landingSelected()) {
     prevEl.style.display = 'none';
     prevEl.innerHTML = '';
     repositionMarchCtx();
@@ -162,18 +165,18 @@ export function renderColonizePreviewHTML(p) {
   const netTick  = g.est_net_per_tick || 0;
   const consTick = prodTick - netTick;
 
-  let html = `<div style="color:var(--text-dim)">Catchment forecast — ${known}/${total} hexes known</div>`;
-  html += `<div>Grain: prod ~${prodTick.toFixed(0)} − cons ~${consTick.toFixed(0)} = ` +
-    `<b style="color:${netTick < 0 ? 'var(--accent)' : 'var(--safe)'}">net ${netTick >= 0 ? '+' : ''}${netTick.toFixed(0)}/tick</b></div>`;
+  let html = `<div style="color:var(--text-dim)">Catchment forecast — ${numberWords(known)} of ${numberWords(total)} hexes known</div>`;
+  html += `<div>Grain: produces about ${numberWords(Math.round(prodTick))} and eats about ${numberWords(Math.round(consTick))} each game day = ` +
+    `<b style="color:${netTick < 0 ? 'var(--accent)' : 'var(--safe)'}">net ${numberWords(Math.round(netTick))} per game day</b></div>`;
   if (netTick < 0) {
-    const reach = g.ticks_until_empty != null ? ` → lasts ~${g.ticks_until_empty.toFixed(0)} ticks` : '';
+    const reach = g.ticks_until_empty != null ? ` → lasts about ${numberWords(Math.round(g.ticks_until_empty))} game days` : '';
     const farmNetTick = (g.with_farm_per_tick || 0) - consTick;
     const farmNote = (g.with_farm_per_tick || 0) <= (g.base_per_tick || 0)
       ? ' (no farmland in known catchment — a farm will not help here)' : '';
-    html += `<div>Seed ${(g.seed || 0).toFixed(0)} grain${reach}. With farm: ${farmNetTick >= 0 ? '+' : ''}${farmNetTick.toFixed(0)}/tick${farmNote}</div>`;
+    html += `<div>Seed ${numberWords(Math.round(g.seed || 0))} grain${reach}. With farm: ${numberWords(Math.round(farmNetTick))} net per game day${farmNote}</div>`;
     html += `<div style="color:var(--text-dim)">A colony does not feed itself — build a farm if the land bears it, or send grain by internal transfer.</div>`;
   } else {
-    html += `<div>Seed ${(g.seed || 0).toFixed(0)} grain — the colony feeds itself.</div>`;
+    html += `<div>Seed ${numberWords(Math.round(g.seed || 0))} grain — the colony feeds itself.</div>`;
   }
 
   const dep = {};
@@ -188,7 +191,7 @@ export function renderColonizePreviewHTML(p) {
   Object.keys(p.goods || {}).sort().forEach(gk => {
     if (gk === 'grain') return;
     const rate = p.goods[gk] || 0;
-    if (rate > 0) extras.push(`${gk} ~${rate.toFixed(0)}/tick`);
+    if (rate > 0) extras.push(`${esc(gk)} about ${numberWords(Math.round(rate))} per game day`);
   });
   if (extras.length) html += `<div style="color:var(--text-dim)">Also: ${extras.join(', ')}</div>`;
 
@@ -280,9 +283,52 @@ export function resolveMarchIntent(dest, exploreWanted) {
 // has ever seen it, so terrain (land or sea) is unknown too. march_start.go's
 // FOW rule then accepts only intent=explore (exploreRowVisible below and the
 // resolveMarchIntent forcing it here mirror that server rule).
+// War chooses WHO; a normal click/tap or right-click on the map chooses WHERE.
+export function chooseMarchTarget(unitID) {
+  closeMarchCtx();
+  State.marchCtxUnitID = unitID;
+  document.getElementById('mctx-name').textContent = 'March';
+  document.getElementById('mctx-hint').textContent = 'Choose a destination on the map.';
+  document.getElementById('mctx-units').innerHTML = '';
+  document.getElementById('mctx-colonize-row').style.display = 'none';
+  document.getElementById('mctx-more').style.display = 'none';
+  document.getElementById('mctx-send').style.display = 'none';
+  marchCtx.style.display = 'block';
+  positionMarchCtx(8, 80);
+}
+
+export function marchDefaultQuantity(group, index) {
+  return index === 0 ? group.ids.length : 0;
+}
+
+export function marchEligibleUnits(units, dest, unitID = null) {
+  return units.filter(u => (!unitID || u.id === unitID) && marchCtxOrderMode(u) !== null
+    && (dest.known === false || (u.category === 'naval') === dest.isSea
+      || (unitID && !dest.isSea && u.category === 'naval' && u.status === 'garrison' && u.cargo_unit_id)));
+}
+
+export function marchIntentOptions(dest, { landing = false, colonize = false, explore = false, name = '', stance = '' } = {}) {
+  const options = {};
+  const intent = landing ? 'land' : colonize ? 'colonize' : resolveMarchIntent(dest, explore);
+  if (intent) options.intent = intent;
+  if (landing && colonize) options.cargo_intent = 'colonize';
+  if (colonize && name) options.name = name;
+  if (!landing && !dest.isSea && stance) options.stance = stance;
+  return options;
+}
+
+function landingSelected() {
+  const dest = State.marchCtxDest;
+  return !!(dest && dest.known !== false && !dest.isSea && State.marchCtxUnitID
+    && State.marchCtxUnits.some(u => u.id === State.marchCtxUnitID && u.category === 'naval' && u.cargo_unit_id));
+}
+
 export async function openMarchCtx(dest, screenX, screenY) {
   marchPreview.cancel();
   State.marchCtxGroups = [];
+  const more = document.getElementById('mctx-more');
+  more.open = false;
+  more.style.display = '';
   document.getElementById('mctx-eta').style.display = 'none';
   document.getElementById('mctx-send').style.display = '';
   State.marchCtxDest  = dest;
@@ -294,8 +340,8 @@ export async function openMarchCtx(dest, screenX, screenY) {
   configureExpedition(document.getElementById('mctx-ticks'), undefined);
   const unknown = dest.known === false;
   let hint;
-  if (unknown)                hint = 'Unexplored — only an explore order can reach it: choose how long it explores the surrounding area, then returns home with a report.';
-  else if (dest.isSea)        hint = 'Order galleys here — choose an expedition duration; they explore the area and sail home with a report.';
+  if (unknown)                hint = 'Explore here, then return home.';
+  else if (dest.isSea)        hint = 'Explore here, then sail home.';
   else if (dest.isSettlement) hint = dest.allied ? 'March land units here to reinforce the garrison on arrival.' : 'March land units here to attack on arrival.';
   else                        hint = 'March land units to this hex, found a new settlement here, or explore and return home.';
   document.getElementById('mctx-hint').textContent = hint;
@@ -331,7 +377,6 @@ export async function openMarchCtx(dest, screenX, screenY) {
   expeditionRules = unitResponse.expedition_rules;
   configureExpedition(document.getElementById('mctx-ticks'), expeditionRules);
   const all = unitResponse.units || [];
-  updateMarchPreview();
 
   // Eligible: garrisoned/positioned units start a march; a unit already
   // MARCHING is eligible too — right-clicking a new destination sends it a
@@ -340,11 +385,14 @@ export async function openMarchCtx(dest, screenX, screenY) {
   // Naval hex → ships; land hex → land units. Unknown hex → either could fit
   // (terrain is unseen by definition), so the category filter is skipped and
   // the server sorts out a wrong-category pick (formatApiError shows why).
-  const wantNaval = dest.isSea;
-  State.marchCtxUnits = all.filter(u =>
-    (unknown || (u.category === 'naval') === wantNaval) && marchCtxOrderMode(u) !== null);
-
+  State.marchCtxUnits = marchEligibleUnits(all, dest, State.marchCtxUnitID);
+  const landing = landingSelected();
+  if (landing) {
+    document.getElementById('mctx-hint').textContent = 'Land the troops here. The ship then sails home.';
+    if (exploreRow) exploreRow.style.display = 'none';
+  }
   renderMarchUnitList();
+  updateMarchPreview();
   positionMarchCtx(screenX, screenY);
 }
 
@@ -417,7 +465,7 @@ export function marchGroupLabelHTML(g) {
   // Marked distinctly — this send is a redirect order carried by Runner, not
   // an immediate march (Timothy 2026-09-25).
   const redirectTag = g.mode === 'redirect'
-    ? ' <span class="mctx-redirect">· marching → redirect by Runner</span>'
+    ? ' <span class="mctx-redirect">· on the march → redirect by messenger</span>'
     : '';
   return esc(head) + locTag + redirectTag;
 }
@@ -431,7 +479,7 @@ export function marchGroupNamesHTML(g) {
     + '</div>';
 }
 
-function renderMarchUnitList() {
+export function renderMarchUnitList() {
   const el = document.getElementById('mctx-units');
   const stanceRow = document.getElementById('mctx-stance-row');
   State.marchCtxGroups = [];
@@ -449,13 +497,13 @@ function renderMarchUnitList() {
     const max = g.ids.length;
     return '<div class="mctx-row">'
       + '<span class="mctx-label">' + marchGroupLabelHTML(g) + '</span>'
-      + '<input class="mctx-input" type="number" id="mg-' + i + '" min="0" max="' + max + '" value="0">'
-      + '<span class="mctx-max">/' + max + '</span>'
+      + '<input class="mctx-input" type="number" id="mg-' + i + '" min="0" max="' + max + '" value="' + marchDefaultQuantity(g, i) + '">'
+      + '<span class="mctx-max">of ' + numberWords(max) + '</span>'
       + '</div>'
       + marchGroupNamesHTML(g);
   }).join('');
   // Fleets have no stance — only land units take a stance.
-  stanceRow.style.display = (State.marchCtxDest && State.marchCtxDest.isSea) ? 'none' : 'block';
+  stanceRow.style.display = (landingSelected() || State.marchCtxDest?.isSea || State.marchCtxUnits.every(u => u.category === 'naval')) ? 'none' : 'block';
 }
 
 export async function sendMarch() {
@@ -486,7 +534,8 @@ export async function sendMarch() {
   const exploreRow = document.getElementById('mctx-explore-row');
   const exploreWanted = !!(exploreChk && exploreChk.checked
     && exploreRow && exploreRow.style.display !== 'none');
-  const intent = colonize ? 'colonize' : resolveMarchIntent(State.marchCtxDest, exploreWanted);
+  const options = marchIntentOptions(State.marchCtxDest, { landing: landingSelected(), colonize, explore: exploreWanted, name: colonyName, stance });
+  const intent = options.intent || '';
   let ticks;
   try { if (intent === 'explore' && picks.some(p => p.mode !== 'redirect')) ticks = expeditionTicks(document.getElementById('mctx-ticks')); }
   catch (error) { document.getElementById('mctx-err').textContent = error.message; return; }
@@ -519,12 +568,7 @@ export async function sendMarch() {
       });
     }
     const body = { target_q: State.marchCtxDest.q, target_r: State.marchCtxDest.r };
-    if (stance)   body.stance = stance;
-    if (colonize) { body.intent = 'colonize'; if (colonyName) body.name = colonyName; }
-    // Sea destinations, unseen destinations and an explicit "explore" tick all
-    // resolve here (resolveMarchIntent) — the unit sweeps fog at the target
-    // then returns home on its own, no separate recall needed.
-    else if (intent) body.intent = intent;
+    Object.assign(body, options);
     if (intent === 'explore' && ticks !== undefined) body.ticks = ticks;
     return fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units/${p.id}/march`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
@@ -578,7 +622,7 @@ export async function sendMarch() {
     // comment: "command is never instant").
     const redirecting = dispatched && first.data.verb === 'redirect';
     etaEl.innerHTML = dispatched
-      ? '🏃 Runner carries the order — reaches the unit ' +
+      ? 'A messenger carries the order — reaches the unit ' +
         arrivalHTML(first.data.courier_arrives_at, first.data.courier_due_tick) +
         (redirecting ? '; the unit holds its current course until then' : '; the march begins on delivery') +
         passageNote(first.data)
@@ -599,13 +643,15 @@ export async function sendMarch() {
   const stanceRefused = results.filter(r => r.ok && r.err);
   if (failed.length) {
     const okCount = results.length - failed.length;
-    document.getElementById('mctx-err').textContent = (okCount ? okCount + ' sent · ' : '') + failed[0].err;
+    document.getElementById('mctx-err').textContent = (okCount ? numberWords(okCount) + ' sent · ' : '') + failed[0].err;
   } else if (stanceRefused.length) {
     document.getElementById('mctx-err').textContent = stanceRefused[0].err;
   } else if (showEta) {
     // All sent — collapse the order form into a confirmation so a second
     // "March →" can't re-send the same (now marching) units. Escape/click-away
     // closes; openMarchCtx rebuilds the form from scratch next time.
+    State.marchCtxUnitID = null;
+    document.getElementById('mctx-more').style.display = 'none';
     document.getElementById('mctx-units').innerHTML = '';
     document.getElementById('mctx-stance-row').style.display = 'none';
     document.getElementById('mctx-colonize-row').style.display = 'none';

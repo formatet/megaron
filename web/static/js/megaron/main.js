@@ -37,8 +37,8 @@ import {
 } from './ui/drawers/city.js';
 import {
   loadWarDrawer, warRecruitFromUI, warRecruitShip, warDisband, warAbandon,
-  unitRecall, unitRecallAll, unitRedirect, unitRedirectToggle, unitRedirectTypedToggle, unitMarch, unitMarchSend,
-  closeMarchPanel, wmpLandToggle, unitStance, unitReinforce, unitLoadPrompt, unitUnload, unitRepair,
+  unitRecall, unitRecallAll, unitRedirect, unitRedirectToggle, unitRedirectTypedToggle, unitMarch,
+  unitStance, unitReinforce, unitLoadPrompt, unitUnload, unitRepair,
   unitRetreatOrder, saveRetreatDefault, warFocusUnit, unitPickup, unitPickupToggle,
 } from './ui/drawers/war.js';
 import {
@@ -175,7 +175,6 @@ Object.assign(window, {
   closeDrawer,
   closeInspect,
   closeMarchCtx,
-  closeMarchPanel,
   closeSearch,
   codexBack,
   createStandingOrder,
@@ -228,7 +227,6 @@ Object.assign(window, {
   toggleSearch,
   unitLoadPrompt,
   unitMarch,
-  unitMarchSend,
   unitPickup,
   unitPickupToggle,
   unitReinforce,
@@ -245,7 +243,6 @@ Object.assign(window, {
   warDisband,
   warRecruitFromUI,
   warRecruitShip,
-  wmpLandToggle,
   zoom,
   // (b) window-bridge (not inline-handler targets)
   MusicPlayer,

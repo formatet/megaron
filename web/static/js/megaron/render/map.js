@@ -4545,7 +4545,11 @@ export function initMap() {
     if (Math.abs(dx) < 4 && Math.abs(dy) < 4) {
       const rect = canvas.getBoundingClientRect();
       const h = hexAtScreen(e.clientX - rect.left, e.clientY - rect.top);
-      openHexPanel(h);
+      if (State.marchCtxUnitID) {
+        const tile = State.tileData.find(t => t.q === h.q && t.r === h.r);
+        const target = State.provinceData.find(p => p.q === h.q && p.r === h.r);
+        if (tile) window.openMarchCtx(destFromHex(h, tile, target), e.clientX, e.clientY);
+      } else openHexPanel(h);
     }
   });
   canvas.addEventListener('mouseleave', () => { State.dragging = false; tooltip.style.display = 'none'; });
@@ -4645,6 +4649,10 @@ export function initMap() {
     const target = State.provinceData.find(p => p.q === h.q && p.r === h.r);
     const tile = State.tileData.find(t => t.q === h.q && t.r === h.r);
     if (!tile) { window.closeMarchCtx(); return; }
+    if (State.marchCtxUnitID) {
+      window.openMarchCtx(destFromHex(h, tile, target), e.clientX, e.clientY);
+      return;
+    }
     if (tile.terrain === 'fog') {
       // Never seen by this Wanax: terrain, ownership and occupants are all
       // unknown by definition, so none of the checks below (settlement,

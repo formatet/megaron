@@ -186,5 +186,42 @@ test('AK14: marching and garrisoned units of the same type+hex stay in SEPARATE 
 test('AK15: a redirect group is marked in its label — the player must see this send goes to a Runner', () => {
   const u = { id: 'u1', type: 'spearman', status: 'marching', deployable: true, q: 5, r: 5, display_name: 'First Spearmen' };
   const groups = groupMarchUnits([u], []);
-  assert.match(marchGroupLabelHTML(groups[0]), /redirect by Runner/);
+  assert.match(marchGroupLabelHTML(groups[0]), /redirect by messenger/);
+});
+
+const menu = await import('./marchctx.js');
+const ready = (id, extra = {}) => ({ id, type: 'spearman', category: 'land', status: 'garrison', deployable: true, ...extra });
+test('H: defaults send all available units in the chosen first group, other groups stay unselected', () => {
+  const groups = [{ ids: ['a', 'b', 'c'] }, { ids: ['d', 'e'] }];
+  assert.deepEqual(groups.map((g, i) => menu.marchDefaultQuantity(g, i)), [3, 0], 'all units of the first group must be ready for a single click');
+});
+test('H: War target selection lists only the selected unit; normal map menu keeps all eligible units', () => {
+  const units = [ready('a'), ready('b'), ready('no', { deployable: false })];
+  const dest = { known: true, isSea: false };
+  assert.deepEqual(menu.marchEligibleUnits(units, dest, 'b').map(u => u.id), ['b'], 'War must never march another unit');
+  assert.deepEqual(menu.marchEligibleUnits(units, dest).map(u => u.id), ['a', 'b']);
+});
+test('H: a loaded ship can land on known land, while empty and marching ships cannot', () => {
+  const units = [ready('land'), ready('loaded', { category: 'naval', cargo_unit_id: 'cargo' }), ready('empty', { category: 'naval' }), ready('sailing', { category: 'naval', cargo_unit_id: 'cargo', status: 'marching' })];
+  assert.deepEqual(menu.marchEligibleUnits(units, { known: true, isSea: false }, 'loaded').map(u => u.id), ['loaded']);
+  assert.deepEqual(menu.marchEligibleUnits(units, { known: true, isSea: false }, 'empty'), []);
+  assert.deepEqual(menu.marchEligibleUnits(units, { known: true, isSea: false }, 'sailing'), []);
+  assert.deepEqual(menu.marchEligibleUnits(units, { known: false, isSea: false }, 'loaded').map(u => u.id), ['loaded']);
+  assert.deepEqual(menu.marchEligibleUnits(units, { known: true, isSea: false }).map(u => u.id), ['land']);
+});
+
+test('H: landing preserves cargo-colonize/name and omits naval stance; explore and plain land retain options', () => {
+  assert.deepEqual(menu.marchIntentOptions({known:true,isSea:false}, {landing:true,colonize:true,name:'Nostos',stance:'storm'}), {intent:'land',cargo_intent:'colonize',name:'Nostos'});
+  assert.deepEqual(menu.marchIntentOptions({known:true,isSea:false}, {colonize:true,name:'Nostos',stance:'sentry'}), {intent:'colonize',name:'Nostos',stance:'sentry'});
+  assert.deepEqual(menu.marchIntentOptions({known:false,isSea:false}), {intent:'explore'});
+  assert.deepEqual(menu.marchIntentOptions({known:true,isSea:true}, {stance:'storm'}), {intent:'explore'});
+  assert.deepEqual(menu.marchIntentOptions({known:true,isSea:false}, {stance:'sentry'}), {stance:'sentry'});
+});
+
+ test('H: colony forecast keeps production and food duration in game-day words', () => {
+  const html = menu.renderColonizePreviewHTML({catchment:[{known:true,terrain:'plains'}],grain:{base_per_tick:3,est_net_per_tick:-2,ticks_until_empty:4,seed:8,with_farm_per_tick:7},goods:{fish:2}});
+  assert.match(html, /lasts about four game days/);
+  assert.match(html, /produces about three and eats about five each game day/);
+  assert.match(html, /fish about two per game day/);
+  assert.doesNotMatch(html, /\/tick|\d+ ticks/);
 });

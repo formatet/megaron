@@ -1,0 +1,42 @@
+<div id="march-ctx" class="march-ctx" style="display: block; left: 172px; top: 435px;">
+  <div class="mctx-header">
+    <span id="mctx-name" class="mctx-title">River (6,37)</span>
+    <button class="mctx-close" onclick="closeMarchCtx()">✕</button>
+  </div>
+  <div id="mctx-hint" style="padding:.35rem .55rem .15rem;font-size:.72rem;color:var(--text-dim)">Land the troops here. The ship then sails home.</div>
+  <div id="mctx-colonize-row" style="display: block; padding: 0.1rem 0.55rem; font-size: 0.75rem; color: var(--text-dim);">
+    <label style="display:flex;align-items:center;gap:.35rem;cursor:pointer">
+      <input type="checkbox" id="mctx-colonize-chk" onchange="onColonizeToggle()" style=""> Found a new settlement on arrival
+    </label>
+    <div id="mctx-colonize-preview" style="display:none;margin-top:.3rem;font-size:.72rem;line-height:1.35"></div>
+  </div>
+  <div id="mctx-explore-row" style="display: none; padding: 0.1rem 0.55rem; font-size: 0.75rem; color: var(--text-dim);">
+    <label style="display:flex;align-items:center;gap:.35rem;cursor:pointer">
+      <input type="checkbox" id="mctx-explore-chk" onchange="onExploreToggle()" style=""> Explore the surrounding area, then return home
+    </label>
+  </div>
+  <div class="mctx-units" id="mctx-units"><div class="mctx-row"><span class="mctx-label">Akrotiri Ash, Galley of Nostos</span><input class="mctx-input" type="number" id="mg-0" min="0" max="1" value="1" style=""><span class="mctx-max">of one</span></div></div>
+  <details id="mctx-more" class="mctx-units" style="">
+    <summary>More</summary>
+  <div id="mctx-expedition" style="display:none;padding:.25rem .55rem;font-size:.75rem">
+    <label>Expedition duration <input id="mctx-ticks" type="number" step="1" style="width: 52px; font: inherit; background: var(--warm-white); color: var(--text); border: 1px solid var(--border);" min="4" max="30"> game days</label>
+    <div id="mctx-mission" style="font-size:.72rem;margin-top:.2rem;color:var(--text-dim)"></div>
+  </div>
+    <input id="mctx-colony-name" type="text" maxlength="32" placeholder="Settlement name (optional)" style="display: none; margin-top: 0.3rem; width: 100%; box-sizing: border-box; font-size: 0.75rem; padding: 0.2rem 0.4rem; background: var(--warm-white); color: var(--text); border: 1px solid var(--border);">
+  <div id="mctx-stance-row" style="display:none;padding:.15rem .55rem .3rem;font-size:.75rem;color:var(--text-dim)">
+    Stance:
+    <select id="mctx-stance" style="margin-left:.3rem;font-size:.75rem;padding:.15rem .3rem;background:var(--warm-white);color:var(--text);border:1px solid var(--border);">
+      <option value="">none</option>
+      <option value="storm">storm</option>
+      <option value="sentry">sentry</option>
+    </select>
+  </div>
+  </details>
+  <div class="mctx-foot">
+    <button class="mctx-send" id="mctx-send" onclick="sendMarch()" style="">March →</button>
+    <span class="mctx-error" id="mctx-err">(6,37) is not open, unclaimed land — a land mission needs bare ground to put troops ashore on</span>
+  </div>
+  <!-- Arrival forecast before dispatch and receipt after dispatch — owned by ui/time.js
+       via marchctx.js; hexval owns the rest of the panel. -->
+  <div class="mctx-eta" id="mctx-eta" aria-live="polite" style="display: block;">Estimating arrival…</div>
+</div>

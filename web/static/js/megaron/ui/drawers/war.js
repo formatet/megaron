@@ -12,8 +12,8 @@ import { loadCityDrawer } from './city.js';
 import { retreatBody, retreatDefaultSectionHTML, unitRetreatControlHTML } from '../retreat.js';
 import { canTakeStance, stanceSentLine } from '../stance.js';
 import { warMovements } from '../movements.js';
-import { configureExpedition, expeditionTicks, expeditionOrderText, expeditionMissionText } from '../expedition.js';
-import { createMarchPreview } from '../march_preview.js';
+import { expeditionMissionText } from '../expedition.js';
+import { chooseMarchTarget } from '../marchctx.js';
 import { orderRunnerHTML } from '../runner_status.js';
 import { recallAll, recallAllControlsHTML, recallAllResultHTML } from '../recall_all.js';
 let recallAllResult = '';
@@ -96,8 +96,6 @@ function fmtUnitCost(entry, isNaval) {
 
 // ── War drawer ────────────────────────────────────────────────────────────
 export async function loadWarDrawer() {
-  warMarchPreview.cancel();
-  _marchUnitID = null;
   const body = document.getElementById('war-body');
   const capital = ownCapital();
   // Preserve recruit-city selection across reloads. Founder phase (no capital
@@ -145,7 +143,6 @@ export async function loadWarDrawer() {
         loadRetreatDefaultSection(),
       ]);
       const unitResponse = unitsRes && unitsRes.ok ? await unitsRes.json() : {};
-      expeditionRules = unitResponse.expedition_rules;
       const allUnits = unitResponse.units || [];
       let armyHtml = retreatSec + '<div class="dsec">' + recallAllControlsHTML(allUnits, recallAllResult, recallAllBusy) + '</div>' + '<div class="dsec"><div class="dsec-title">Units</div>';
       armyHtml += allUnits.length
@@ -175,7 +172,6 @@ export async function loadWarDrawer() {
     const canRec = {};
     (recPd.can_recruit || []).forEach(r => { canRec[r.unit] = r.can_recruit; });
     const unitResponse = unitsRes && unitsRes.ok ? await unitsRes.json() : {};
-    expeditionRules = unitResponse.expedition_rules;
     const allUnits = unitResponse.units || [];
     // catalogue is null on fetch failure (getUnitCatalogue already logged it) —
     // catByType then stays empty and every row degrades to "cost data
@@ -192,37 +188,6 @@ export async function loadWarDrawer() {
     }
     armyHtml += '</div>';
     armyHtml += '<div id="war-unit-res" style="font-size:.75rem;margin:.3rem .6rem;min-height:1rem"></div>';
-    armyHtml += `<div id="war-march-panel" style="display:none;background:var(--bg-raised);border:1px solid var(--border);border-radius:2px;margin:.4rem .6rem;padding:.5rem;font-size:.78rem">
-      <div style="font-weight:bold;margin-bottom:.3rem">March unit</div>
-      <div style="display:flex;gap:.3rem;align-items:center;flex-wrap:wrap">
-        <label style="color:var(--text-dim)">Q</label>
-        <input id="wmp-q" type="number" value="0" style="width:44px;padding:.1rem .25rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.75rem">
-        <label style="color:var(--text-dim)">R</label>
-        <input id="wmp-r" type="number" value="0" style="width:44px;padding:.1rem .25rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.75rem">
-        <label style="color:var(--text-dim)">Stance</label>
-        <select id="wmp-stance" style="font-size:.72rem;padding:.1rem .2rem;border:1px solid var(--border);background:var(--warm-white)">
-          <option value="">none</option>
-          <option value="storm">storm</option>
-          <option value="sentry">sentry</option>
-        </select>
-        <button onclick="unitMarchSend()" style="padding:.2rem .45rem;border:1px solid var(--border);background:var(--accent-war);color:#fff;font-size:.7rem;cursor:pointer">March →</button>
-        <button onclick="closeMarchPanel()" style="padding:.2rem .45rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.7rem;cursor:pointer">Cancel</button>
-      </div>
-      <div id="wmp-explore-row" style="margin-top:.3rem"><label><input id="wmp-explore-chk" type="checkbox"> Explore the surrounding area</label></div>
-      <div id="wmp-expedition" style="display:none;margin-top:.2rem">
-        <label>Expedition duration <input id="wmp-ticks" type="number" step="1" style="width:52px;font:inherit;background:var(--warm-white);color:var(--text);border:1px solid var(--border)"> game days</label>
-        <div id="wmp-mission" style="font-size:.72rem;color:var(--text-dim);margin-top:.2rem"></div>
-      </div>
-      <div id="wmp-land-row" style="display:none;margin-top:.3rem;padding-top:.3rem;border-top:1px solid var(--border);gap:.3rem;align-items:center;flex-wrap:wrap">
-        <label style="color:var(--text-dim)"><input id="wmp-land-chk" type="checkbox" onchange="wmpLandToggle()"> Land troops here (Q,R above is the LAND hex — the ship sails to the sea hex next to it, lands its cargo, then sails home on its own)</label>
-      </div>
-      <div id="wmp-land-colonize-row" style="display:none;margin-top:.2rem;gap:.3rem;align-items:center;flex-wrap:wrap">
-        <label style="color:var(--text-dim)"><input id="wmp-land-colonize-chk" type="checkbox"> …and found a colony there</label>
-        <input id="wmp-land-name" type="text" placeholder="colony name (optional)" style="padding:.1rem .25rem;border:1px solid var(--border);background:var(--warm-white);font-size:.72rem">
-      </div>
-      <div id="wmp-eta" aria-live="polite"></div>
-      <div id="wmp-err" style="color:var(--accent);font-size:.7rem;margin-top:.2rem;min-height:.8rem"></div>
-    </div>`;
     document.getElementById('wtab-army').innerHTML = armyHtml;
     applyUnitFocus();
 
@@ -440,10 +405,6 @@ function applyUnitFocus() {
   card.classList.add('ucard-focus');
   card.scrollIntoView({ block: 'center' });
 }
-
-// State for the march panel — module-local, only ever read/written from the
-// functions in this file.
-let _marchUnitID = null;
 
 function renderUnitCard(u) {
   const lbl = esc(actorName(u));
@@ -791,162 +752,10 @@ export async function unitRedirect(unitID) {
   }
 }
 
-// wmpLandEligible: a laden ship garrisoned in port can be given a "land"
-// mission (R1, megaron_plan_skeppsuppdrag_landsatt.md) — the ONE way to put
-// troops ashore away from a friendly harbour now that Unload's field-landing
-// fall (b) is retired (R2). Looked up from State.unitsData (kept fresh by
-// the map's own poller) rather than re-fetching — this panel opens from a
-// card already rendered from that same list.
-function wmpLandEligible(unitID) {
-  const u = (State.unitsData || []).find(x => x.id === unitID);
-  return !!(u && u.category === 'naval' && u.status === 'garrison' && u.cargo_unit_id);
-}
-
-let expeditionRules;
-const warMarchPreview = createMarchPreview(html => {
-  const el = document.getElementById('wmp-eta');
-  if (el) el.innerHTML = html;
-}, fetchAuth);
-
-function updateWarMarchPreview() {
-  if (!_marchUnitID) return;
-  const q = document.getElementById('wmp-q').value;
-  const r = document.getElementById('wmp-r').value;
-  if (q === '' || r === '' || !Number.isInteger(Number(q)) || !Number.isInteger(Number(r))) {
-    warMarchPreview.update(State.WORLD_ID, [], {});
-    document.getElementById('wmp-mission').textContent = '';
-    return;
-  }
-  const land = document.getElementById('wmp-land-chk')?.checked && wmpLandEligible(_marchUnitID);
-  const colonize = land && document.getElementById('wmp-land-colonize-chk')?.checked;
-  const u = (State.unitsData || []).find(x => x.id === _marchUnitID);
-  const explore = !land && document.getElementById('wmp-explore-chk').checked;
-  document.getElementById('wmp-expedition').style.display = explore ? 'block' : 'none';
-  let ticks;
-  try { if (explore) ticks = expeditionTicks(document.getElementById('wmp-ticks')); }
-  catch (error) { document.getElementById('wmp-mission').textContent = error.message; warMarchPreview.update(State.WORLD_ID, [], {}); return; }
-  document.getElementById('wmp-mission').textContent = explore ? expeditionOrderText(q, r, ticks, expeditionRules) : '';
-  warMarchPreview.update(State.WORLD_ID, [{ id: _marchUnitID, name: u?.display_name || 'Unit' }], {
-    target_q: Number(q), target_r: Number(r), intent: land ? 'land' : (explore ? 'explore' : ''), ticks,
-    stance: land ? '' : document.getElementById('wmp-stance').value,
-    cargo_intent: colonize ? 'colonize' : '',
-    name: colonize ? document.getElementById('wmp-land-name').value.trim() : '',
-  });
-}
-
 export function unitMarch(unitID) {
-  _marchUnitID = unitID;
-  const panel = document.getElementById('war-march-panel');
-  if (panel) {
-    // The panel renders once at the bottom of the army tab — below the fold as
-    // soon as the unit list fills the drawer, so opening it looked like a dead
-    // button. Move it directly under the clicked unit's card instead.
-    const card = document.getElementById('ucard-' + unitID);
-    if (card) card.after(panel);
-    panel.style.display = '';
-    configureExpedition(document.getElementById('wmp-ticks'), expeditionRules);
-    const u = (State.unitsData || []).find(x => x.id === unitID);
-    const explore = document.getElementById('wmp-explore-chk');
-    explore.checked = u?.category === 'naval';
-    explore.disabled = u?.category === 'naval';
-    panel.oninput = updateWarMarchPreview;
-    panel.onchange = updateWarMarchPreview;
-    document.getElementById('wmp-err').textContent = '';
-    const landRow = document.getElementById('wmp-land-row');
-    const landChk = document.getElementById('wmp-land-chk');
-    if (landRow) landRow.style.display = wmpLandEligible(unitID) ? 'flex' : 'none';
-    if (landChk) landChk.checked = false;
-    wmpLandToggle();
-    updateWarMarchPreview();
-    panel.scrollIntoView({ block: 'nearest' });
-    document.getElementById('wmp-q')?.focus();
-  }
-}
-
-// The land checkbox and the stance select both apply to where the unit ENDS
-// UP — a ship on a land mission carries no stance (naval units never do,
-// same as everywhere else), so hide Stance while Land is armed rather than
-// send a value the server would silently ignore.
-export function wmpLandToggle() {
-  const landChk = document.getElementById('wmp-land-chk');
-  const on = !!(landChk && landChk.checked);
-  const explore = document.getElementById('wmp-explore-chk');
-  const u = (State.unitsData || []).find(x => x.id === _marchUnitID);
-  if (on) explore.checked = false;
-  else if (u?.category === 'naval') explore.checked = true;
-  document.getElementById('wmp-explore-row').style.display = on ? 'none' : '';
-  const colonizeRow = document.getElementById('wmp-land-colonize-row');
-  if (colonizeRow) colonizeRow.style.display = on ? 'flex' : 'none';
-  const stanceSelect = document.getElementById('wmp-stance');
-  if (stanceSelect) stanceSelect.style.display = on ? 'none' : '';
-}
-
-export function closeMarchPanel() {
-  warMarchPreview.cancel();
-  _marchUnitID = null;
-  const panel = document.getElementById('war-march-panel');
-  if (panel) panel.style.display = 'none';
-  const landRow = document.getElementById('wmp-land-row');
-  const landChk = document.getElementById('wmp-land-chk');
-  const colonizeChk = document.getElementById('wmp-land-colonize-chk');
-  const nameEl = document.getElementById('wmp-land-name');
-  if (landRow) landRow.style.display = 'none';
-  if (landChk) landChk.checked = false;
-  if (colonizeChk) colonizeChk.checked = false;
-  if (nameEl) nameEl.value = '';
-}
-
-export async function unitMarchSend() {
-  warMarchPreview.cancel();
-  if (!_marchUnitID) return;
-  const q = parseInt(document.getElementById('wmp-q').value, 10);
-  const r = parseInt(document.getElementById('wmp-r').value, 10);
-  const errEl = document.getElementById('wmp-err');
-  errEl.textContent = '';
-  const landChk = document.getElementById('wmp-land-chk');
-  const land = !!(landChk && landChk.checked
-    && document.getElementById('wmp-land-row').style.display !== 'none');
-  const body = { target_q: q, target_r: r };
-  if (!land && document.getElementById('wmp-explore-chk').checked) {
-    body.intent = 'explore';
-    try { const ticks = expeditionTicks(document.getElementById('wmp-ticks')); if (ticks !== undefined) body.ticks = ticks; }
-    catch (error) { errEl.textContent = error.message; return; }
-  }
-  let intentLabel = body.intent || 'march';
-  if (land) {
-    body.intent = 'land';
-    intentLabel = 'land';
-    const colonizeChk = document.getElementById('wmp-land-colonize-chk');
-    if (colonizeChk && colonizeChk.checked) {
-      body.cargo_intent = 'colonize';
-      const name = (document.getElementById('wmp-land-name')?.value || '').trim();
-      if (name) body.name = name;
-    }
-  } else {
-    const stance = document.getElementById('wmp-stance').value || undefined;
-    if (stance) { body.stance = stance; intentLabel = stance; }
-  }
-  const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units/${_marchUnitID}/march`, {
-    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (res.ok) {
-    track('march_sent', { intent: intentLabel });
-    // The horn sounds when the troops HEAR the order. A garrisoned unit is
-    // stood in front of the Wanax, so that is now; an order that leaves as
-    // 'order_dispatched' rides a Runner and sounds on UnitRecalled/
-    // UnitRedirected instead (ws.js), when it actually reaches them.
-    if (data.status !== 'order_dispatched') playWarHorn();
-    closeMarchPanel();
-    await loadWarDrawer();
-    // A landing with a grounding order took the colonist purse out of this
-    // port as it sailed — say so where the drawer reports results.
-    const purse = purseLine(data);
-    const resEl = document.getElementById('war-unit-res');
-    if (purse && resEl) resEl.textContent = purse;
-  } else {
-    errEl.textContent = formatApiError(data, 'March failed');
-  }
+  // Use the same destination menu as the map, pinned to the chosen card.
+  if (State.activeDrawer) window.closeDrawer(State.activeDrawer);
+  chooseMarchTarget(unitID);
 }
 
 export async function unitStance(unitID) {
