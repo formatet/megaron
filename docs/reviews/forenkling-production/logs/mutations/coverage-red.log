@@ -1,0 +1,56 @@
+TAP version 13
+# Subtest: J: only three primary sections, all secondary abilities remain under closed More
+ok 1 - J: only three primary sections, all secondary abilities remain under closed More
+  ---
+  duration_ms: 0.664997
+  type: 'test'
+  ...
+# Subtest: J: food days come from authoritative mixed-food coverage, not grain net or reserve
+not ok 2 - J: food days come from authoritative mixed-food coverage, not grain net or reserve
+  ---
+  duration_ms: 0.877892
+  type: 'test'
+  location: '/tmp/megaron-codex-production-simple-20261007/web/static/js/megaron/ui/drawers/city_production.test.mjs:13:1'
+  failureType: 'testCodeFailure'
+  error: 'authoritative food days'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: '<p title="Current city food at today’s consumption; reserve details are under More.">Food lasts one hundred game days.</p>'
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-production-simple-20261007/web/static/js/megaron/ui/drawers/city_production.test.mjs:14:42)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: J: growing low stocks never say starving; food-worker warning survives
+ok 3 - J: growing low stocks never say starving; food-worker warning survives
+  ---
+  duration_ms: 0.351995
+  type: 'test'
+  ...
+# Subtest: J: missing/invalid coverage is honestly unavailable, never zero or NaN days
+ok 4 - J: missing/invalid coverage is honestly unavailable, never zero or NaN days
+  ---
+  duration_ms: 0.137223
+  type: 'test'
+  ...
+# Subtest: J: population and slaughter capability keep input-free player words and eligibility
+ok 5 - J: population and slaughter capability keep input-free player words and eligibility
+  ---
+  duration_ms: 0.123933
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 4
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 40.66258

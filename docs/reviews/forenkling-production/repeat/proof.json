@@ -1,0 +1,947 @@
+{
+  "health": {
+    "commit": "63293de3315f16f6534a7843b0e7f51d2d88cd98",
+    "migration": 160,
+    "status": "ok"
+  },
+  "mode": "after",
+  "placement_delete_status": 200,
+  "placement_post_status": 201,
+  "placement_post_body": {
+    "target_kind": "hex",
+    "hex_ordinal": 17,
+    "good_key": "grain"
+  },
+  "slaughter_receipt": {
+    "gubbar_placed": 0,
+    "population": 1010
+  },
+  "options": {
+    "buildings": [],
+    "hexes": [
+      {
+        "hex_q": 6,
+        "hex_r": 31,
+        "hex_ordinal": 17,
+        "terrain": "plains",
+        "building": {
+          "type": "farm",
+          "level": 1,
+          "upgrade_effect": "grain production \u00d71.7 \u2192 \u00d72.4"
+        },
+        "goods": [
+          {
+            "good_key": "grain",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 8,
+            "placed": 3,
+            "placed_ordinals": [
+              1,
+              2,
+              3
+            ],
+            "marginal_yield": 1.6999999999999997
+          },
+          {
+            "good_key": "livestock",
+            "rate_per_tick": 1,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 1
+          },
+          {
+            "good_key": "oil",
+            "rate_per_tick": 0.6666666666666665,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.6666666666666665
+          },
+          {
+            "good_key": "wine",
+            "rate_per_tick": 0.49999999999999994,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.49999999999999994
+          },
+          {
+            "good_key": "stone",
+            "rate_per_tick": 0.5,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 0.5
+          }
+        ]
+      },
+      {
+        "hex_q": 6,
+        "hex_r": 32,
+        "hex_ordinal": 18,
+        "terrain": "plains",
+        "goods": [
+          {
+            "good_key": "oil",
+            "rate_per_tick": 0.6666666666666665,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.6666666666666665
+          },
+          {
+            "good_key": "wine",
+            "rate_per_tick": 0.49999999999999994,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.49999999999999994
+          },
+          {
+            "good_key": "stone",
+            "rate_per_tick": 0.5,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 0.5
+          },
+          {
+            "good_key": "grain",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 4,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "livestock",
+            "rate_per_tick": 1,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 1
+          }
+        ]
+      },
+      {
+        "hex_q": 2,
+        "hex_r": 33,
+        "hex_ordinal": 2,
+        "terrain": "hills",
+        "goods": [
+          {
+            "good_key": "oil",
+            "rate_per_tick": 0.49999999999999994,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.49999999999999994
+          },
+          {
+            "good_key": "wine",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "stone",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "grain",
+            "rate_per_tick": 0.33333333333333326,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 0.33333333333333326
+          }
+        ]
+      },
+      {
+        "hex_q": 2,
+        "hex_r": 34,
+        "hex_ordinal": 3,
+        "terrain": "hills",
+        "goods": [
+          {
+            "good_key": "oil",
+            "rate_per_tick": 0.49999999999999994,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.49999999999999994
+          },
+          {
+            "good_key": "wine",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "stone",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "grain",
+            "rate_per_tick": 0.33333333333333326,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 0.33333333333333326
+          }
+        ]
+      },
+      {
+        "hex_q": 3,
+        "hex_r": 31,
+        "hex_ordinal": 4,
+        "terrain": "hills",
+        "goods": [
+          {
+            "good_key": "grain",
+            "rate_per_tick": 0.33333333333333326,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 0.33333333333333326
+          },
+          {
+            "good_key": "copper",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "oil",
+            "rate_per_tick": 0.49999999999999994,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.49999999999999994
+          },
+          {
+            "good_key": "wine",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "stone",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          }
+        ]
+      },
+      {
+        "hex_q": 3,
+        "hex_r": 32,
+        "hex_ordinal": 5,
+        "terrain": "hills",
+        "goods": [
+          {
+            "good_key": "oil",
+            "rate_per_tick": 0.49999999999999994,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.49999999999999994
+          },
+          {
+            "good_key": "wine",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "stone",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "grain",
+            "rate_per_tick": 0.33333333333333326,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 0.33333333333333326
+          },
+          {
+            "good_key": "copper",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          }
+        ]
+      },
+      {
+        "hex_q": 3,
+        "hex_r": 33,
+        "hex_ordinal": 6,
+        "terrain": "hills",
+        "goods": [
+          {
+            "good_key": "grain",
+            "rate_per_tick": 0.33333333333333326,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 0.33333333333333326
+          },
+          {
+            "good_key": "oil",
+            "rate_per_tick": 0.49999999999999994,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.49999999999999994
+          },
+          {
+            "good_key": "wine",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "stone",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          }
+        ]
+      },
+      {
+        "hex_q": 3,
+        "hex_r": 34,
+        "hex_ordinal": 7,
+        "terrain": "hills",
+        "goods": [
+          {
+            "good_key": "oil",
+            "rate_per_tick": 0.49999999999999994,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.49999999999999994
+          },
+          {
+            "good_key": "wine",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "stone",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "grain",
+            "rate_per_tick": 0.33333333333333326,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 0.33333333333333326
+          },
+          {
+            "good_key": "copper",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          }
+        ]
+      },
+      {
+        "hex_q": 4,
+        "hex_r": 30,
+        "hex_ordinal": 8,
+        "terrain": "hills",
+        "goods": [
+          {
+            "good_key": "grain",
+            "rate_per_tick": 0.33333333333333326,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 0.33333333333333326
+          },
+          {
+            "good_key": "oil",
+            "rate_per_tick": 0.49999999999999994,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.49999999999999994
+          },
+          {
+            "good_key": "wine",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "stone",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          }
+        ]
+      },
+      {
+        "hex_q": 4,
+        "hex_r": 31,
+        "hex_ordinal": 9,
+        "terrain": "hills",
+        "goods": [
+          {
+            "good_key": "oil",
+            "rate_per_tick": 0.49999999999999994,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.49999999999999994
+          },
+          {
+            "good_key": "wine",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "stone",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "grain",
+            "rate_per_tick": 0.33333333333333326,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 0.33333333333333326
+          },
+          {
+            "good_key": "copper",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          }
+        ]
+      },
+      {
+        "hex_q": 4,
+        "hex_r": 33,
+        "hex_ordinal": 10,
+        "terrain": "hills",
+        "goods": [
+          {
+            "good_key": "oil",
+            "rate_per_tick": 0.49999999999999994,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.49999999999999994
+          },
+          {
+            "good_key": "wine",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "stone",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "grain",
+            "rate_per_tick": 0.33333333333333326,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 0.33333333333333326
+          }
+        ]
+      },
+      {
+        "hex_q": 4,
+        "hex_r": 34,
+        "hex_ordinal": 11,
+        "terrain": "hills",
+        "goods": [
+          {
+            "good_key": "oil",
+            "rate_per_tick": 0.49999999999999994,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.49999999999999994
+          },
+          {
+            "good_key": "wine",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "stone",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "grain",
+            "rate_per_tick": 0.33333333333333326,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 0.33333333333333326
+          },
+          {
+            "good_key": "copper",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          }
+        ]
+      },
+      {
+        "hex_q": 5,
+        "hex_r": 31,
+        "hex_ordinal": 13,
+        "terrain": "hills",
+        "goods": [
+          {
+            "good_key": "wine",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "stone",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "grain",
+            "rate_per_tick": 0.33333333333333326,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 0.33333333333333326
+          },
+          {
+            "good_key": "oil",
+            "rate_per_tick": 0.49999999999999994,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.49999999999999994
+          }
+        ]
+      },
+      {
+        "hex_q": 5,
+        "hex_r": 32,
+        "hex_ordinal": 14,
+        "terrain": "hills",
+        "goods": [
+          {
+            "good_key": "oil",
+            "rate_per_tick": 0.49999999999999994,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.49999999999999994
+          },
+          {
+            "good_key": "wine",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "stone",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "grain",
+            "rate_per_tick": 0.33333333333333326,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 0.33333333333333326
+          },
+          {
+            "good_key": "copper",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          }
+        ]
+      },
+      {
+        "hex_q": 5,
+        "hex_r": 33,
+        "hex_ordinal": 15,
+        "terrain": "hills",
+        "goods": [
+          {
+            "good_key": "oil",
+            "rate_per_tick": 0.49999999999999994,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.49999999999999994
+          },
+          {
+            "good_key": "wine",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "stone",
+            "rate_per_tick": 0.9999999999999999,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 0.9999999999999999
+          },
+          {
+            "good_key": "grain",
+            "rate_per_tick": 0.33333333333333326,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 0.33333333333333326
+          }
+        ]
+      },
+      {
+        "hex_q": 5,
+        "hex_r": 30,
+        "hex_ordinal": 12,
+        "terrain": "forest_olive_grove",
+        "goods": [
+          {
+            "good_key": "oil",
+            "rate_per_tick": 1,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 1
+          },
+          {
+            "good_key": "timber",
+            "rate_per_tick": 1,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 1
+          },
+          {
+            "good_key": "stone",
+            "rate_per_tick": 0.5,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 0.5
+          }
+        ]
+      },
+      {
+        "hex_q": 6,
+        "hex_r": 30,
+        "hex_ordinal": 16,
+        "terrain": "forest_olive_grove",
+        "goods": [
+          {
+            "good_key": "oil",
+            "rate_per_tick": 1,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 1
+          },
+          {
+            "good_key": "timber",
+            "rate_per_tick": 1,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 1
+          },
+          {
+            "good_key": "stone",
+            "rate_per_tick": 0.5,
+            "cap": 1,
+            "placed": 0,
+            "marginal_yield": 0.5
+          }
+        ]
+      },
+      {
+        "hex_q": 2,
+        "hex_r": 32,
+        "hex_ordinal": 1,
+        "terrain": "mountain_limestone",
+        "goods": [
+          {
+            "good_key": "stone",
+            "rate_per_tick": 1.9999999999999998,
+            "cap": 2,
+            "placed": 0,
+            "marginal_yield": 1.9999999999999998
+          }
+        ]
+      }
+    ],
+    "pool_size": 7,
+    "total_gubbar": 10,
+    "valid_hexes_for_building": {
+      "farm": [
+        {
+          "effect": "grain production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 2,
+          "r": 33
+        },
+        {
+          "effect": "grain production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 2,
+          "r": 34
+        },
+        {
+          "effect": "grain production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 3,
+          "r": 31
+        },
+        {
+          "effect": "grain production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 3,
+          "r": 32
+        },
+        {
+          "effect": "grain production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 3,
+          "r": 33
+        },
+        {
+          "effect": "grain production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 3,
+          "r": 34
+        },
+        {
+          "effect": "grain production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 4,
+          "r": 30
+        },
+        {
+          "effect": "grain production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 4,
+          "r": 31
+        },
+        {
+          "effect": "grain production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 4,
+          "r": 33
+        },
+        {
+          "effect": "grain production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 4,
+          "r": 34
+        },
+        {
+          "effect": "grain production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 5,
+          "r": 31
+        },
+        {
+          "effect": "grain production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 5,
+          "r": 32
+        },
+        {
+          "effect": "grain production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 5,
+          "r": 33
+        },
+        {
+          "effect": "grain production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 6,
+          "r": 32
+        }
+      ],
+      "lumbermill": [
+        {
+          "effect": "timber production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 5,
+          "r": 30
+        },
+        {
+          "effect": "timber production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 6,
+          "r": 30
+        }
+      ],
+      "mine": [
+        {
+          "effect": "copper production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 3,
+          "r": 31
+        },
+        {
+          "effect": "copper production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 3,
+          "r": 32
+        },
+        {
+          "effect": "copper production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 3,
+          "r": 34
+        },
+        {
+          "effect": "copper production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 4,
+          "r": 31
+        },
+        {
+          "effect": "copper production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 4,
+          "r": 34
+        },
+        {
+          "effect": "copper production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 5,
+          "r": 32
+        },
+        {
+          "effect": "silver can be mined \u00b7 space for 5 workers",
+          "q": 5,
+          "r": 33
+        }
+      ],
+      "stonequarry": [
+        {
+          "effect": "stone production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 2,
+          "r": 32
+        },
+        {
+          "effect": "stone production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 2,
+          "r": 33
+        },
+        {
+          "effect": "stone production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 2,
+          "r": 34
+        },
+        {
+          "effect": "stone production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 3,
+          "r": 31
+        },
+        {
+          "effect": "stone production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 3,
+          "r": 32
+        },
+        {
+          "effect": "stone production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 3,
+          "r": 33
+        },
+        {
+          "effect": "stone production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 3,
+          "r": 34
+        },
+        {
+          "effect": "stone production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 4,
+          "r": 30
+        },
+        {
+          "effect": "stone production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 4,
+          "r": 31
+        },
+        {
+          "effect": "stone production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 4,
+          "r": 33
+        },
+        {
+          "effect": "stone production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 4,
+          "r": 34
+        },
+        {
+          "effect": "stone production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 5,
+          "r": 30
+        },
+        {
+          "effect": "stone production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 5,
+          "r": 31
+        },
+        {
+          "effect": "stone production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 5,
+          "r": 32
+        },
+        {
+          "effect": "stone production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 5,
+          "r": 33
+        },
+        {
+          "effect": "stone production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 6,
+          "r": 30
+        },
+        {
+          "effect": "stone production \u00d71.7 \u00b7 space for 4 more workers",
+          "q": 6,
+          "r": 32
+        }
+      ]
+    }
+  },
+  "final_placements": {
+    "placements": [
+      {
+        "gubbe_ordinal": 1,
+        "target_kind": "hex",
+        "hex_q": 6,
+        "hex_r": 31,
+        "hex_ordinal": 17,
+        "good_key": "grain"
+      },
+      {
+        "gubbe_ordinal": 2,
+        "target_kind": "hex",
+        "hex_q": 6,
+        "hex_r": 31,
+        "hex_ordinal": 17,
+        "good_key": "grain"
+      },
+      {
+        "gubbe_ordinal": 3,
+        "target_kind": "hex",
+        "hex_q": 6,
+        "hex_r": 31,
+        "hex_ordinal": 17,
+        "good_key": "grain"
+      }
+    ],
+    "pool_size": 7,
+    "total_gubbar": 10
+  },
+  "browser_errors": [],
+  "sql_mutations": false
+}

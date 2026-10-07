@@ -1,0 +1,63 @@
+TAP version 13
+# Subtest: J: only three primary sections, all secondary abilities remain under closed More
+not ok 1 - J: only three primary sections, all secondary abilities remain under closed More
+  ---
+  duration_ms: 1.109009
+  type: 'test'
+  location: '/tmp/megaron-codex-production-simple-20261007/web/static/js/megaron/ui/drawers/city_production.test.mjs:5:1'
+  failureType: 'testCodeFailure'
+  error: 'More starts closed'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: |-
+     open id="city-more" class="dsec"><summary class="dsec-title">More</summary>
+          <div class="dsec-title">People at work</div><div id="city-people-details"></div>
+          <div class="dsec-title">Devotion</div><div id="city-devotion-sec"></div>
+          <div class="dsec-title">Food reserve</div><div id="city-reserve-sec"></div>
+          <div class="dsec-title">Last game day</div><div id="city-lasttick-sec"></div>
+          <div class="dsec-title">Loyalty log</div><div id="city-loyalty-sec"></div>
+          <div class="dsec-title">Gift from capital</div><div id="city-gift-sec"></div>
+          <div class="dsec-title">Daily history <button class="btn-small" onclick="loadTicklog()">Show recent days</button></div><div id="city-ticklog-sec"></div>
+        </details>
+  operator: 'doesNotMatch'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-production-simple-20261007/web/static/js/megaron/ui/drawers/city_production.test.mjs:10:56)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: J: food days come from authoritative mixed-food coverage, not grain net or reserve
+ok 2 - J: food days come from authoritative mixed-food coverage, not grain net or reserve
+  ---
+  duration_ms: 0.975904
+  type: 'test'
+  ...
+# Subtest: J: growing low stocks never say starving; food-worker warning survives
+ok 3 - J: growing low stocks never say starving; food-worker warning survives
+  ---
+  duration_ms: 0.199538
+  type: 'test'
+  ...
+# Subtest: J: missing/invalid coverage is honestly unavailable, never zero or NaN days
+ok 4 - J: missing/invalid coverage is honestly unavailable, never zero or NaN days
+  ---
+  duration_ms: 0.11293
+  type: 'test'
+  ...
+# Subtest: J: population and slaughter capability keep input-free player words and eligibility
+ok 5 - J: population and slaughter capability keep input-free player words and eligibility
+  ---
+  duration_ms: 0.131708
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 4
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 41.785219
