@@ -20,6 +20,8 @@ Right-click a new destination and a unit already marching shows up in the menu t
 
 A unit standing in its city hears you at once. A unit out in the field does not — **Recall** and **Redirect** are carried by a [[runners|Runner]], and the game tells you when he will reach the unit. The horn sounds when the soldiers *receive* the order, not when you give it.
 
+**War → Army → Recall all**, or `keryx recall --all`, sends a separate recall order to each of your marching units.
+
 Recall and redirect need a passable route from the unit’s current position. If its position or the new route cannot be resolved, the order is refused with a reason. A Runner-delivered refusal appears in Dispatches; the unit keeps its existing course. Check the unit and choose a reachable destination.
 
 ## Where you can march

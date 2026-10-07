@@ -50,7 +50,7 @@ func reinforceAliasCmd() *cobra.Command {
 // `keryx recall` next. Same guessability gap the other aliases exist for.
 func recallAliasCmd() *cobra.Command {
 	c := unitRecallCmd()
-	c.Short = "Recall a marching unit — turn it home (alias for `unit recall`)"
+	c.Short = "Recall a marching unit, or all marching units (alias for `unit recall`)"
 	return c
 }
 

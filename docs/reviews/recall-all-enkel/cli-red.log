@@ -1,0 +1,70 @@
+» färsk DB på migration 160 · commit d48a093f
+Error: unknown flag: --all
+Usage:
+  recall [flags]
+
+Examples:
+  keryx unit recall --unit <id>
+
+Flags:
+  -h, --help          help for recall
+      --unit string   unit UUID (required)
+
+Error: unknown flag: --all
+Usage:
+  recall [flags]
+
+Examples:
+  keryx unit recall --unit <id>
+
+Flags:
+  -h, --help          help for recall
+      --unit string   unit UUID (required)
+
+Error: unknown flag: --all
+Usage:
+  recall [flags]
+
+Examples:
+  keryx unit recall --unit <id>
+
+Flags:
+  -h, --help          help for recall
+      --unit string   unit UUID (required)
+
+Error: unknown flag: --all
+Usage:
+  recall [flags]
+
+Examples:
+  keryx unit recall --unit <id>
+
+Flags:
+  -h, --help          help for recall
+      --unit string   unit UUID (required)
+
+--- FAIL: TestRecallAllLoopsEveryMarchingUnit (0.00s)
+    --- FAIL: TestRecallAllLoopsEveryMarchingUnit/textunit (0.00s)
+        cmd_recall_all_test.go:55: unknown flag: --all
+    --- FAIL: TestRecallAllLoopsEveryMarchingUnit/textalias (0.00s)
+        cmd_recall_all_test.go:55: unknown flag: --all
+    --- FAIL: TestRecallAllLoopsEveryMarchingUnit/jsonunit (0.00s)
+        cmd_recall_all_test.go:55: unknown flag: --all
+    --- FAIL: TestRecallAllLoopsEveryMarchingUnit/jsonalias (0.00s)
+        cmd_recall_all_test.go:55: unknown flag: --all
+Error: unknown flag: --all
+Usage:
+  recall [flags]
+
+Examples:
+  keryx unit recall --unit <id>
+
+Flags:
+  -h, --help          help for recall
+      --unit string   unit UUID (required)
+
+--- FAIL: TestRecallAllNoneAndInvalidFlags (0.00s)
+    cmd_recall_all_test.go:101:  unknown flag: --all
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

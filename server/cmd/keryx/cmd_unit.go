@@ -1077,26 +1077,33 @@ func currentHex(c *Client, worldID, unitID string) (int, int, error) {
 
 func unitRecallCmd() *cobra.Command {
 	var unitID string
+	var all bool
 
 	cmd := &cobra.Command{
 		Use:   "recall",
-		Short: "Recall a marching unit — turn it home",
+		Short: "Recall a marching unit, or all marching units",
 		Long: `Send a recall order to a marching unit. The order travels as a visible
 Runner; command is never instant — the unit keeps marching on its original
 course until the runner physically catches up with it, then turns for home
 (the hex it originally departed from). A passable route is required; a refusal
 at delivery appears in notifications with its reason.`,
-		Example: `  keryx unit recall --unit <id>`,
-		Args:    rejectPositionalArgs("unit"),
+		Example: `  keryx recall --unit <id>
+  keryx recall --all`,
+		Args: rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			if all == (unitID != "") {
+				return fmt.Errorf("choose --unit or --all")
+			}
 			c := newClient(cfg)
+			if all {
+				return recallAllUnits(c, cfg.WorldID)
+			}
 			resolvedID, rerr := resolveUnitID(c, cfg.WorldID, unitID)
 			if rerr != nil {
 				return rerr
 			}
 			unitID = resolvedID
-			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/recall", cfg.WorldID, unitID)
-			data, err := c.post(path, map[string]any{})
+			data, err := requestRecall(c, cfg.WorldID, unitID)
 			if err != nil {
 				return err
 			}
@@ -1117,8 +1124,8 @@ at delivery appears in notifications with its reason.`,
 		},
 	}
 
-	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
-	_ = cmd.MarkFlagRequired("unit")
+	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (or use --all)")
+	cmd.Flags().BoolVar(&all, "all", false, "recall every own marching unit")
 	return cmd
 }
 

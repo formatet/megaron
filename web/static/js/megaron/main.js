@@ -37,7 +37,7 @@ import {
 } from './ui/drawers/city.js';
 import {
   loadWarDrawer, warRecruitFromUI, warRecruitShip, warDisband, warAbandon,
-  unitRecall, unitRedirect, unitRedirectToggle, unitRedirectTypedToggle, unitMarch, unitMarchSend,
+  unitRecall, unitRecallAll, unitRedirect, unitRedirectToggle, unitRedirectTypedToggle, unitMarch, unitMarchSend,
   closeMarchPanel, wmpLandToggle, unitStance, unitReinforce, unitLoadPrompt, unitUnload, unitRepair,
   unitRetreatOrder, saveRetreatDefault, warFocusUnit, unitPickup, unitPickupToggle,
 } from './ui/drawers/war.js';
@@ -233,6 +233,7 @@ Object.assign(window, {
   unitPickupToggle,
   unitReinforce,
   unitRecall,
+  unitRecallAll,
   unitRedirect,
   unitRedirectToggle,
   unitRedirectTypedToggle,

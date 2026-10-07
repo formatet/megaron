@@ -15,6 +15,10 @@ import { warMovements } from '../movements.js';
 import { configureExpedition, expeditionTicks, expeditionOrderText, expeditionMissionText } from '../expedition.js';
 import { createMarchPreview } from '../march_preview.js';
 import { orderRunnerHTML } from '../runner_status.js';
+import { recallAll, recallAllControlsHTML, recallAllResultHTML } from '../recall_all.js';
+let recallAllResult = '';
+let recallAllBusy = false;
+
 
 // "ready <eta>" while still building/training, collapsing to a bare "ready"
 // once complete (fmtArrival's doneWord already reads "ready" — this just
@@ -143,7 +147,7 @@ export async function loadWarDrawer() {
       const unitResponse = unitsRes && unitsRes.ok ? await unitsRes.json() : {};
       expeditionRules = unitResponse.expedition_rules;
       const allUnits = unitResponse.units || [];
-      let armyHtml = retreatSec + '<div class="dsec"><div class="dsec-title">Units</div>';
+      let armyHtml = retreatSec + '<div class="dsec">' + recallAllControlsHTML(allUnits, recallAllResult, recallAllBusy) + '</div>' + '<div class="dsec"><div class="dsec-title">Units</div>';
       armyHtml += allUnits.length
         ? allUnits.map(u => renderUnitCard(u)).join('')
         : '<p class="empty-state">No units.</p>';
@@ -180,7 +184,7 @@ export async function loadWarDrawer() {
     (catalogue || []).forEach(u => { catByType[u.type] = u; });
 
     // Army tab — the realm-wide retreat setting, then the discrete units list
-    let armyHtml = retreatSec + '<div class="dsec"><div class="dsec-title">Units</div>';
+    let armyHtml = retreatSec + '<div class="dsec">' + recallAllControlsHTML(allUnits, recallAllResult, recallAllBusy) + '</div>' + '<div class="dsec"><div class="dsec-title">Units</div>';
     if (allUnits.length) {
       armyHtml += allUnits.map(u => renderUnitCard(u)).join('');
     } else {
@@ -729,6 +733,31 @@ export async function unitRecall(unitID) {
   } else if (statusEl) {
     statusEl.style.color = 'var(--accent)';
     statusEl.textContent = d.error || 'Recall failed';
+  }
+  return {ok: res.ok, error: d.error || 'Recall failed'};
+}
+
+export async function unitRecallAll() {
+  const button = document.getElementById('recall-all-send');
+  if (!button || button.disabled || recallAllBusy) return;
+  recallAllBusy = true;
+  let hasMarching = true;
+  button.disabled = true;
+  try {
+    const response = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Could not load units.');
+    if (!Array.isArray(data.units)) throw new Error('Could not read units.');
+    hasMarching = data.units.some(u => u.status === 'marching');
+    recallAllResult = recallAllResultHTML(await recallAll(data.units, unitRecall));
+  } catch (error) {
+    recallAllResult = '<p>' + esc(error.message || 'Recall failed.') + '</p>';
+  } finally {
+    const result = document.getElementById('recall-all-result');
+    if (result) result.innerHTML = recallAllResult;
+    recallAllBusy = false;
+    const currentButton = document.getElementById('recall-all-send');
+    if (currentButton) currentButton.disabled = !hasMarching;
   }
 }
 
