@@ -1,0 +1,13 @@
+» färsk DB på migration 160 · commit fe52e5e9+ändringar
+2026/10/07 18:14:55 ERROR order delivery: recall/redirect execution failed after claim — order dropped messenger=b892dc87-9f3a-4775-b52c-3d89aaa61c45 unit=b54209c8-5a20-41b8-8d52-e0924a137ae4 verb=recall err="turn unit toward new course: ERROR: injected unit fault (SQLSTATE P0001)"
+2026/10/07 18:14:55 INFO order messenger already processed or superseded by a later passage — idempotent replay skipped messenger=b892dc87-9f3a-4775-b52c-3d89aaa61c45
+2026/10/07 18:14:56 ERROR order delivery: recall/redirect execution failed after claim — order dropped messenger=a60e4f68-8ada-4eb9-b500-8f7f60db6f4c unit=b61694eb-306c-44a5-bd3b-5de3ce7281e5 verb=redirect err="turn unit toward new course: ERROR: injected unit fault (SQLSTATE P0001)"
+2026/10/07 18:14:56 INFO order messenger already processed or superseded by a later passage — idempotent replay skipped messenger=a60e4f68-8ada-4eb9-b500-8f7f60db6f4c
+--- FAIL: TestSingleRecall_FailureAfterClaimIsNamedAndAuditedOnce (0.06s)
+    --- FAIL: TestSingleRecall_FailureAfterClaimIsNamedAndAuditedOnce/recall (0.03s)
+        order_delivery_dedup_test.go:186: failure audit0 want1
+    --- FAIL: TestSingleRecall_FailureAfterClaimIsNamedAndAuditedOnce/redirect (0.03s)
+        order_delivery_dedup_test.go:186: failure audit0 want1
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.063s
+FAIL

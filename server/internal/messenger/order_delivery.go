@@ -113,6 +113,9 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 		if rej := combat.RequireShipInPort(ctx, h.pool, p.WorldID, u.OwnerID,
 			unit.CategoryOf(u.Type), u.Status, unit.LoadDisplayName(ctx, h.pool, u.ID),
 			u.TargetQ, u.TargetR, u.ArrivesAt); rej != nil {
+			if p.Verb == "recall" || p.Verb == "redirect" {
+				return h.failSingleRecall(ctx, p, rej.Reason)
+			}
 			h.notifyOrderFailed(ctx, p, rej.Reason)
 			return nil
 		}
@@ -180,13 +183,13 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 		return nil
 	case "recall", "redirect":
 		if p.Recall == nil {
-			return fmt.Errorf("order delivery %s: %s verb without recall payload", p.MessengerID, p.Verb)
+			return h.failSingleRecall(ctx, p, "the Runner could not deliver a complete order; check this unit and reissue the order")
 		}
 		res, err := combat.ExecuteRecall(ctx, h.pool, h.scheduler, h.eventStore, h.clk, *p.Recall)
 		if err != nil {
 			slog.Error("order delivery: recall/redirect execution failed after claim — order dropped",
 				"messenger", p.MessengerID, "unit", p.UnitID, "verb", p.Verb, "err", err)
-			return nil
+			return h.failSingleRecall(ctx, p, "the Runner reached the unit, but the order could not be carried out; check this unit's status and reissue the order")
 		}
 		if res == nil {
 			// Unit no longer marching by the time the runner arrived (already
@@ -199,10 +202,9 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 			// a rare residual race rather than the everyday silent tap it
 			// used to be — but "should be rare" is not "never", so the owner
 			// still needs to hear about it.
-			h.notifyOrderFailed(ctx, p, fmt.Sprintf(
+			return h.failSingleRecall(ctx, p, fmt.Sprintf(
 				"your %s Runner reached the unit, but it was no longer marching there — it likely completed its march or was turned by an earlier order before this one caught up; check the unit's current status and reissue the order if it still needs one",
 				p.Verb))
-			return nil
 		}
 		notifKind := "UnitRecalled"
 		if p.Verb == "redirect" {

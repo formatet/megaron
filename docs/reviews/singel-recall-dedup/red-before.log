@@ -1,0 +1,25 @@
+» färsk DB på migration 160 · commit 91a138a5
+--- FAIL: TestSingleRecall_IdenticalActiveArrival (0.05s)
+    --- FAIL: TestSingleRecall_IdenticalActiveArrival/recall (0.03s)
+        order_delivery_dedup_test.go:135: identical arrival failed with NO jitter: schedule new arrival: ERROR: duplicate key value violates unique constraint "idx_scheduled_recurring_dedup" (SQLSTATE 23505)
+    --- FAIL: TestSingleRecall_IdenticalActiveArrival/redirect (0.02s)
+        order_delivery_dedup_test.go:135: identical arrival failed with NO jitter: schedule new arrival: ERROR: duplicate key value violates unique constraint "idx_scheduled_recurring_dedup" (SQLSTATE 23505)
+2026/10/07 18:07:17 ERROR order delivery: recall/redirect execution failed after claim — order dropped messenger=9f36b40b-f315-4809-9d6d-733f07fbbbff unit=2c62db7f-dfcf-4df3-93b4-fa5bd3f15ea9 verb=recall err="schedule new arrival: ERROR: duplicate key value violates unique constraint \"idx_scheduled_recurring_dedup\" (SQLSTATE 23505)"
+2026/10/07 18:07:17 ERROR order delivery: recall/redirect execution failed after claim — order dropped messenger=91188f62-bccd-4348-b3a2-acb2287b3fa2 unit=b470e4de-aaad-47b6-8748-abd7f40df96f verb=redirect err="schedule new arrival: ERROR: duplicate key value violates unique constraint \"idx_scheduled_recurring_dedup\" (SQLSTATE 23505)"
+--- FAIL: TestSingleRecall_DeliveryReusesArrival (0.05s)
+    --- FAIL: TestSingleRecall_DeliveryReusesArrival/recall (0.03s)
+        order_delivery_dedup_test.go:151: order dropped without jitter: target4 arrive3 want0/3
+    --- FAIL: TestSingleRecall_DeliveryReusesArrival/redirect (0.03s)
+        order_delivery_dedup_test.go:151: order dropped without jitter: target4 arrive3 want0/3
+2026/10/07 18:07:17 ERROR order delivery: recall/redirect execution failed after claim — order dropped messenger=5177b9c4-d388-4d17-a396-96ff043da4f5 unit=3450b3f8-8dde-4e34-a2a4-41dfc98c85e6 verb=recall err="turn unit toward new course: ERROR: injected unit fault (SQLSTATE P0001)"
+2026/10/07 18:07:17 INFO order messenger already processed or superseded by a later passage — idempotent replay skipped messenger=5177b9c4-d388-4d17-a396-96ff043da4f5
+2026/10/07 18:07:17 ERROR order delivery: recall/redirect execution failed after claim — order dropped messenger=33361e53-b5ba-47ee-ad2c-32468bb68027 unit=e5c15fb4-00d7-4481-9c21-680a81ca63a1 verb=redirect err="turn unit toward new course: ERROR: injected unit fault (SQLSTATE P0001)"
+2026/10/07 18:07:17 INFO order messenger already processed or superseded by a later passage — idempotent replay skipped messenger=33361e53-b5ba-47ee-ad2c-32468bb68027
+--- FAIL: TestSingleRecall_FailureAfterClaimIsNamedAndAuditedOnce (0.06s)
+    --- FAIL: TestSingleRecall_FailureAfterClaimIsNamedAndAuditedOnce/recall (0.03s)
+        order_delivery_dedup_test.go:179: silent failed order after claim: []
+    --- FAIL: TestSingleRecall_FailureAfterClaimIsNamedAndAuditedOnce/redirect (0.03s)
+        order_delivery_dedup_test.go:179: silent failed order after claim: []
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.162s
+FAIL

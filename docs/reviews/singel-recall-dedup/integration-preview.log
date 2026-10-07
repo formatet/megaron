@@ -1,0 +1,540 @@
+added in remote
+  their  100644 f54817720aa945cd926477917ffb4a190508ba62 docs/reviews/singel-recall-dedup/README.md
+@@ -0,0 +1,39 @@
++# Singel recall/redirect — kontrakt före kod
++
++Bas master77f584be; gren codex/singel-recall-dedup, egen worktree.
++Aggregat-recall @a92c99b3 är orörd och väntar på BILD hos Claude.
++
++| Fält | Kontrakt |
++|---|---|
++| Problem | Identisk redan köad UnitArrival gör recall/redirect-transaktionen röd efter committed kurirclaim; order tappas utan audit/notis. |
++| Spelarsanning | Kurirens order vänder enheten eller ger namngivet OrderFailed och failure-audit. |
++| Invariant | Gamla eventtolkningar och N events/delad messenger⇒bara första vänder är oförändrade. Ingen migration, jitterändring eller balans. |
++| Scope | ExecuteRecall:s arrival-enqueue, OrderDelivery recall/redirect-felrapport, DB-regressioner/mutationer och egen klientrigg. |
++| Non-scope | Aggregatgrenen, andra verb och fryst separat MarchRecall-handler om den inte använder samma ExecuteRecall-väg. |
++| Acceptans | Deterministiskt dedup-rött utan jitter; båda verb återanvänder identisk aktiv arrival i TX; annat exekveringsfel ger name/reason/notis+audit; passage/legacy inventerade; full fresh Go/vet och fysisk spelaringång. |
++| Stopvillkor | Ändrad fryst eventtolkning eller canon-/integrationskonflikt tas med Claude före ändring. |
++| Bevisplan | Baslinje före produktionskod, klockinjicerade verkliga DB-prov, källmutation, full gotest/vet och färsk snabbtick-rigg med faktisk MarchRecalled-audit +hemkomst. |
++
++## Resume checkpoint
++Kontrakt skrivet, master77f584be. Ingen produktionskod ändrad.
++Nästa: baseline +deterministiska regressionsprov först, sedan fix/verifiering.
++Ingen merge/push/deploy; ingen BILD i denna serverslice.
++
++Baslinje: fresh PG16/mig160 recall/redirect/passage/stale-arrival-proven gröna
++på oförändrad produktion91a138a5, baseline.log.
++Deterministiska regressionsprov (clock exakt tick1, outbound0→3, q2,
++retur1→3 och identisk typed UnitArrival redan köad): båda ExecuteRecall-verb
++SQL23505; båda delivery-verb returnerar nil efter committed claim men target
++förblir4, ingen audit. Separat injicerat UPDATE-fel ger ingen OrderFailed.
++Rålogg red-before.log: sex namngivna assertions röda, inga kompileringsfel.
++
++Fixcheckpoint: core återanvänder exakt samma aktiva UnitArrival under unitlock
++(failed/processed/different payload återanvänds inte); gamla tids-/claimtolkningen
++orörd. OrderDelivery recall/redirect-error/miss/incomplete payload ger audittypen
++OrderDeliveryFailed +befintlig named OrderFailed. Inget nytt notiskind.
++Green-after.log: båda paket gröna; passage reconstruerar samma envelope och når
++fixen, gammal delad messenger vänder bara första. Frysta MarchRecallHandler har
++egen duplicerad core och TX: samma SQL23505 men claim rollback, inte tyst drop.
++Lämnas orörd enligt orderns endast samma kodväg-villkor.
++Tidigare RecallMissed-fixtur behövde en aktiv värld för events.world_tick-audit;
++justerad testfixtur, ingen produktionstid eller trigger ändrad.
+added in remote
+  their  100644 5d98df6913288399008d30a12a52a3757649347a docs/reviews/singel-recall-dedup/baseline.log
+@@ -0,0 +1,3 @@
++» färsk DB på migration 160 · commit 91a138a5
++ok  	formatet/megaron/server/internal/combat	0.300s
++ok  	formatet/megaron/server/internal/messenger	0.457s
+added in remote
+  their  100644 315276a9e743408e280fe3c5c02b50b7da94634f docs/reviews/singel-recall-dedup/green-after.log
+@@ -0,0 +1,3 @@
++» färsk DB på migration 160 · commit 29902079+ändringar
++ok  	formatet/megaron/server/internal/messenger	0.590s
++ok  	formatet/megaron/server/internal/combat	0.182s
+added in remote
+  their  100644 75a46f5e68c7563ef989308f82d6d40611dc8c24 docs/reviews/singel-recall-dedup/red-before.log
+@@ -0,0 +1,25 @@
++» färsk DB på migration 160 · commit 91a138a5
++--- FAIL: TestSingleRecall_IdenticalActiveArrival (0.05s)
++    --- FAIL: TestSingleRecall_IdenticalActiveArrival/recall (0.03s)
++        order_delivery_dedup_test.go:135: identical arrival failed with NO jitter: schedule new arrival: ERROR: duplicate key value violates unique constraint "idx_scheduled_recurring_dedup" (SQLSTATE 23505)
++    --- FAIL: TestSingleRecall_IdenticalActiveArrival/redirect (0.02s)
++        order_delivery_dedup_test.go:135: identical arrival failed with NO jitter: schedule new arrival: ERROR: duplicate key value violates unique constraint "idx_scheduled_recurring_dedup" (SQLSTATE 23505)
++2026/10/07 18:07:17 ERROR order delivery: recall/redirect execution failed after claim — order dropped messenger=9f36b40b-f315-4809-9d6d-733f07fbbbff unit=2c62db7f-dfcf-4df3-93b4-fa5bd3f15ea9 verb=recall err="schedule new arrival: ERROR: duplicate key value violates unique constraint \"idx_scheduled_recurring_dedup\" (SQLSTATE 23505)"
++2026/10/07 18:07:17 ERROR order delivery: recall/redirect execution failed after claim — order dropped messenger=91188f62-bccd-4348-b3a2-acb2287b3fa2 unit=b470e4de-aaad-47b6-8748-abd7f40df96f verb=redirect err="schedule new arrival: ERROR: duplicate key value violates unique constraint \"idx_scheduled_recurring_dedup\" (SQLSTATE 23505)"
++--- FAIL: TestSingleRecall_DeliveryReusesArrival (0.05s)
++    --- FAIL: TestSingleRecall_DeliveryReusesArrival/recall (0.03s)
++        order_delivery_dedup_test.go:151: order dropped without jitter: target4 arrive3 want0/3
++    --- FAIL: TestSingleRecall_DeliveryReusesArrival/redirect (0.03s)
++        order_delivery_dedup_test.go:151: order dropped without jitter: target4 arrive3 want0/3
++2026/10/07 18:07:17 ERROR order delivery: recall/redirect execution failed after claim — order dropped messenger=5177b9c4-d388-4d17-a396-96ff043da4f5 unit=3450b3f8-8dde-4e34-a2a4-41dfc98c85e6 verb=recall err="turn unit toward new course: ERROR: injected unit fault (SQLSTATE P0001)"
++2026/10/07 18:07:17 INFO order messenger already processed or superseded by a later passage — idempotent replay skipped messenger=5177b9c4-d388-4d17-a396-96ff043da4f5
++2026/10/07 18:07:17 ERROR order delivery: recall/redirect execution failed after claim — order dropped messenger=33361e53-b5ba-47ee-ad2c-32468bb68027 unit=e5c15fb4-00d7-4481-9c21-680a81ca63a1 verb=redirect err="turn unit toward new course: ERROR: injected unit fault (SQLSTATE P0001)"
++2026/10/07 18:07:17 INFO order messenger already processed or superseded by a later passage — idempotent replay skipped messenger=33361e53-b5ba-47ee-ad2c-32468bb68027
++--- FAIL: TestSingleRecall_FailureAfterClaimIsNamedAndAuditedOnce (0.06s)
++    --- FAIL: TestSingleRecall_FailureAfterClaimIsNamedAndAuditedOnce/recall (0.03s)
++        order_delivery_dedup_test.go:179: silent failed order after claim: []
++    --- FAIL: TestSingleRecall_FailureAfterClaimIsNamedAndAuditedOnce/redirect (0.03s)
++        order_delivery_dedup_test.go:179: silent failed order after claim: []
++FAIL
++FAIL	formatet/megaron/server/internal/messenger	0.162s
++FAIL
+changed in both
+  base   100644 cf1dd31709db271466baef0f9a17752e4d62fc8e server/internal/combat/recall_redirect.go
+  our    100644 143db7c8845df0781f883e7a4943b12c7d83feab server/internal/combat/recall_redirect.go
+  their  100644 dc7a8994525160604b0d280cd8537c3d9a65e3a1 server/internal/combat/recall_redirect.go
+@@ -275,6 +275,7 @@
+ 
+ 	newArriveTick := currentTick + travelTicks
+ 	arrPayload := unit.ScheduledUnitArrivalPayload{UnitID: o.UnitID, WorldID: o.WorldID, ArriveTick: &newArriveTick}
++<<<<<<< .our
+ 	// A return can have exactly the same arrival tick as an already queued
+ 	// course. That identical pending arrival already reads the current course;
+ 	// reuse it for the new group protocol instead of violating queue dedup.
+@@ -287,6 +288,18 @@
+ 	}
+ 	if !arrivalQueued {
+ 		if err := scheduler.EnqueueTickTx(ctx, tx, o.WorldID, events.ScheduledUnitArrival, arrPayload, currentTick+travelTicks); err != nil {
++=======
++	// The identical pending arrival already resolves the current course at
++	// this tick. Reuse it under the unit lock rather than failing queue dedup.
++	rawArrival, _ := json.Marshal(arrPayload)
++	var arrivalQueued bool
++	if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM scheduled_events WHERE world_id=$1 AND event_type=$2 AND due_tick=$3 AND payload=$4::jsonb AND processed_at IS NULL AND failed_at IS NULL)`,
++		o.WorldID, string(events.ScheduledUnitArrival), newArriveTick, rawArrival).Scan(&arrivalQueued); err != nil {
++		return nil, fmt.Errorf("check existing arrival: %w", err)
++	}
++	if !arrivalQueued {
++		if err := scheduler.EnqueueTickTx(ctx, tx, o.WorldID, events.ScheduledUnitArrival, arrPayload, newArriveTick); err != nil {
++>>>>>>> .their
+ 			return nil, fmt.Errorf("schedule new arrival: %w", err)
+ 		}
+ 	}
+changed in both
+  base   100644 38f3f9337ca1f10a66be91fc201944c380abe892 server/internal/messenger/order_delivery.go
+  our    100644 89e6a1f63e5a56f598d524020cdb40381989ecbe server/internal/messenger/order_delivery.go
+  their  100644 7f672559431c1c00046ff559a65fa061e9539bdd server/internal/messenger/order_delivery.go
+@@ -118,6 +118,9 @@
+ 		if rej := combat.RequireShipInPort(ctx, h.pool, p.WorldID, u.OwnerID,
+ 			unit.CategoryOf(u.Type), u.Status, unit.LoadDisplayName(ctx, h.pool, u.ID),
+ 			u.TargetQ, u.TargetR, u.ArrivesAt); rej != nil {
++			if p.Verb == "recall" || p.Verb == "redirect" {
++				return h.failSingleRecall(ctx, p, rej.Reason)
++			}
+ 			h.notifyOrderFailed(ctx, p, rej.Reason)
+ 			return nil
+ 		}
+@@ -185,13 +188,13 @@
+ 		return nil
+ 	case "recall", "redirect":
+ 		if p.Recall == nil {
+-			return fmt.Errorf("order delivery %s: %s verb without recall payload", p.MessengerID, p.Verb)
++			return h.failSingleRecall(ctx, p, "the Runner could not deliver a complete order; check this unit and reissue the order")
+ 		}
+ 		res, err := combat.ExecuteRecall(ctx, h.pool, h.scheduler, h.eventStore, h.clk, *p.Recall)
+ 		if err != nil {
+ 			slog.Error("order delivery: recall/redirect execution failed after claim — order dropped",
+ 				"messenger", p.MessengerID, "unit", p.UnitID, "verb", p.Verb, "err", err)
+-			return nil
++			return h.failSingleRecall(ctx, p, "the Runner reached the unit, but the order could not be carried out; check this unit's status and reissue the order")
+ 		}
+ 		if res == nil {
+ 			// Unit no longer marching by the time the runner arrived (already
+@@ -204,10 +207,9 @@
+ 			// a rare residual race rather than the everyday silent tap it
+ 			// used to be — but "should be rare" is not "never", so the owner
+ 			// still needs to hear about it.
+-			h.notifyOrderFailed(ctx, p, fmt.Sprintf(
++			return h.failSingleRecall(ctx, p, fmt.Sprintf(
+ 				"your %s Runner reached the unit, but it was no longer marching there — it likely completed its march or was turned by an earlier order before this one caught up; check the unit's current status and reissue the order if it still needs one",
+ 				p.Verb))
+-			return nil
+ 		}
+ 		notifKind := "UnitRecalled"
+ 		if p.Verb == "redirect" {
+added in remote
+  their  100644 0ce66e5425149b8e10779544dfb5c876d5ab9d45 server/internal/messenger/order_delivery_dedup_test.go
+@@ -0,0 +1,331 @@
++package messenger
++
++import (
++	"context"
++	"encoding/json"
++	"fmt"
++	"formatet/megaron/server/internal/clock"
++	"formatet/megaron/server/internal/combat"
++	"formatet/megaron/server/internal/events"
++	"formatet/megaron/server/internal/province"
++	"formatet/megaron/server/internal/tick"
++	"formatet/megaron/server/internal/unit"
++	"github.com/google/uuid"
++	"github.com/jackc/pgx/v5/pgxpool"
++	"strings"
++	"testing"
++	"time"
++)
++
++type singleRecallFixture struct {
++	pool                              *pgxpool.Pool
++	clk                               *clock.TestClock
++	sched                             *events.Scheduler
++	store                             *events.Store
++	world, owner, unitID, messengerID uuid.UUID
++	payload                           OrderDeliveryPayload
++	hub                               *singleRecallNotices
++	handler                           *OrderDeliveryHandler
++}
++type singleRecallNotices struct{ failures []map[string]any }
++
++func (*singleRecallNotices) BroadcastEvent(uuid.UUID, string, any) {}
++func (n *singleRecallNotices) NotifyPlayer(_ context.Context, _, _ uuid.UUID, kind string, _ int, p any) error {
++	if kind == "OrderFailed" {
++		n.failures = append(n.failures, p.(map[string]any))
++	}
++	return nil
++}
++func setupSingleRecall(t *testing.T, verb string) singleRecallFixture {
++	t.Helper()
++	ctx := context.Background()
++	pool := testPool(t)
++	now := time.Date(2026, 10, 7, 16, 0, 0, 0, time.UTC)
++	f := singleRecallFixture{pool: pool, clk: clock.NewTestClock(now), hub: &singleRecallNotices{}}
++	if _, err := pool.Exec(ctx, `UPDATE worlds SET status='archived' WHERE status='active'`); err != nil {
++		t.Fatal(err)
++	}
++	if err := pool.QueryRow(ctx, `INSERT INTO worlds(name,status,current_tick,last_tick_at) VALUES($1,'active',1,$2) RETURNING id`, "single-recall-"+uuid.NewString(), now).Scan(&f.world); err != nil {
++		t.Fatal(err)
++	}
++	t.Cleanup(func() { pool.Exec(ctx, `DELETE FROM worlds WHERE id=$1`, f.world) })
++	if err := pool.QueryRow(ctx, `INSERT INTO players(username,password_hash) VALUES($1,'x') RETURNING id`, "single-recall-"+uuid.NewString()).Scan(&f.owner); err != nil {
++		t.Fatal(err)
++	}
++	var prov, home uuid.UUID
++	if err := pool.QueryRow(ctx, `INSERT INTO provinces(world_id,map_q,map_r,terrain_type) VALUES($1,0,0,'plains') RETURNING id`, f.world).Scan(&prov); err != nil {
++		t.Fatal(err)
++	}
++	if err := pool.QueryRow(ctx, `INSERT INTO settlements(world_id,province_id,name,culture_id,owner_id,control_type,is_capital) VALUES($1,$2,'Home','achaean',$3,'capital',true) RETURNING id`, f.world, prov, f.owner).Scan(&home); err != nil {
++		t.Fatal(err)
++	}
++	path := []province.MapPosition{}
++	costs := []float64{}
++	for q := 0; q <= 4; q++ {
++		if _, err := pool.Exec(ctx, `INSERT INTO map_tiles(world_id,q,r,terrain) VALUES($1,$2,0,'plains')`, f.world, q); err != nil {
++			t.Fatal(err)
++		}
++		path = append(path, province.MapPosition{Q: q, R: 0})
++		if q > 0 {
++			costs = append(costs, .75)
++		}
++	}
++	route, ok := combat.BuildRoute(path, costs, 0, 3)
++	if !ok {
++		t.Fatal("route fixture")
++	}
++	raw, _ := json.Marshal(route)
++	if err := pool.QueryRow(ctx, `INSERT INTO units(world_id,owner_id,type,category,size,status,q,r,target_q,target_r,depart_tick,arrive_tick,departs_at,arrives_at,march_route,home_settlement_id,support_settlement_id,name)
++ VALUES($1,$2,'infantry','land',10,'marching',0,0,4,0,0,3,$3,$4,$5,$6,$6,'Delta') RETURNING id`, f.world, f.owner, now.Add(-time.Duration(tick.TickSeconds)*time.Second), now.Add(time.Duration(2*tick.TickSeconds)*time.Second), raw, home).Scan(&f.unitID); err != nil {
++		t.Fatal(err)
++	}
++	if err := pool.QueryRow(ctx, `INSERT INTO messengers(world_id,sender_id,origin_id,message_text,status,kind,hex_q,hex_r,dest_q,dest_r,arrives_at) VALUES($1,$2,$3,'Runner','outbound','order',0,0,2,0,$4) RETURNING id`, f.world, f.owner, home, now).Scan(&f.messengerID); err != nil {
++		t.Fatal(err)
++	}
++	order := &combat.RecallOrder{WorldID: f.world, UnitID: f.unitID, Mode: verb}
++	if verb == "redirect" {
++		q, r := 0, 0
++		order.NewTargetQ = &q
++		order.NewTargetR = &r
++	}
++	f.payload = OrderDeliveryPayload{WorldID: f.world, PlayerID: f.owner, UnitID: f.unitID, MessengerID: f.messengerID, Verb: verb, Recall: order}
++	f.sched = events.NewScheduler(pool, f.clk)
++	f.store = events.NewStore(pool)
++	f.handler = NewOrderDeliveryHandler(pool, f.sched, f.store, f.hub, f.clk)
++	at := 3
++	if err := f.sched.EnqueueTick(ctx, f.world, events.ScheduledUnitArrival, unit.ScheduledUnitArrivalPayload{UnitID: f.unitID, WorldID: f.world, ArriveTick: &at}, 3); err != nil {
++		t.Fatal(err)
++	}
++	return f
++}
++func (f singleRecallFixture) event() events.ScheduledEvent {
++	raw, _ := json.Marshal(f.payload)
++	return events.ScheduledEvent{WorldID: f.world, Payload: raw, DueTick: 1}
++}
++func (f singleRecallFixture) assertApplied(t *testing.T) {
++	t.Helper()
++	ctx := context.Background()
++	var target, arrive, count, audits int
++	if err := f.pool.QueryRow(ctx, `SELECT target_q,arrive_tick FROM units WHERE id=$1`, f.unitID).Scan(&target, &arrive); err != nil {
++		t.Fatal(err)
++	}
++	if target != 0 || arrive != 3 {
++		t.Fatalf("order dropped without jitter: target%d arrive%d want0/3", target, arrive)
++	}
++	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND event_type='UnitArrival' AND due_tick=3`, f.world).Scan(&count); err != nil {
++		t.Fatal(err)
++	}
++	kind := unit.EventUnitMarchRecalled
++	if f.payload.Verb == "redirect" {
++		kind = unit.EventUnitMarchRedirected
++	}
++	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM events WHERE stream_id=$1 AND event_type=$2`, f.unitID, kind).Scan(&audits); err != nil {
++		t.Fatal(err)
++	}
++	if count != 1 || audits != 1 {
++		t.Fatalf("arrivals%d audits%d want1/1", count, audits)
++	}
++}
++func TestSingleRecall_IdenticalActiveArrival(t *testing.T) {
++	for _, verb := range []string{"recall", "redirect"} {
++		t.Run(verb, func(t *testing.T) {
++			f := setupSingleRecall(t, verb)
++			res, err := combat.ExecuteRecall(context.Background(), f.pool, f.sched, f.store, f.clk, *f.payload.Recall)
++			if err != nil {
++				t.Fatalf("identical arrival failed with NO jitter: %v", err)
++			}
++			if res == nil {
++				t.Fatal("missing applied result")
++			}
++			f.assertApplied(t)
++		})
++	}
++}
++func TestSingleRecall_DeliveryReusesArrival(t *testing.T) {
++	for _, verb := range []string{"recall", "redirect"} {
++		t.Run(verb, func(t *testing.T) {
++			f := setupSingleRecall(t, verb)
++			if err := f.handler.Handle(context.Background(), f.event()); err != nil {
++				t.Fatal(err)
++			}
++			f.assertApplied(t)
++		})
++	}
++}
++func TestSingleRecall_FailureAfterClaimIsNamedAndAuditedOnce(t *testing.T) {
++	for _, verb := range []string{"recall", "redirect"} {
++		t.Run(verb, func(t *testing.T) {
++			f := setupSingleRecall(t, verb)
++			ctx := context.Background()
++			// Force a different DB failure in the course mutation; arrival dedup is irrelevant.
++			fn := "single_fault_" + strings.ReplaceAll(f.unitID.String(), "-", "")
++			sql := fmt.Sprintf(`CREATE FUNCTION %s() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.id='%s' THEN RAISE EXCEPTION 'injected unit fault'; END IF; RETURN NEW; END $$`, fn, f.unitID)
++			if _, err := f.pool.Exec(ctx, sql); err != nil {
++				t.Fatal(err)
++			}
++			if _, err := f.pool.Exec(ctx, fmt.Sprintf(`CREATE TRIGGER %s BEFORE UPDATE ON units FOR EACH ROW EXECUTE FUNCTION %s()`, fn, fn)); err != nil {
++				t.Fatal(err)
++			}
++			t.Cleanup(func() {
++				f.pool.Exec(ctx, fmt.Sprintf(`DROP TRIGGER IF EXISTS %s ON units`, fn))
++				f.pool.Exec(ctx, fmt.Sprintf(`DROP FUNCTION IF EXISTS %s()`, fn))
++			})
++			for i := 0; i < 2; i++ {
++				if err := f.handler.Handle(ctx, f.event()); err != nil {
++					t.Fatal(err)
++				}
++			}
++			if len(f.hub.failures) != 1 || f.hub.failures[0]["name"] == "" || f.hub.failures[0]["reason"] == "" {
++				t.Fatalf("silent failed order after claim: %+v", f.hub.failures)
++			}
++			var audits int
++			if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM events WHERE event_type='OrderDeliveryFailed' AND payload->>'messenger_id'=$1`, f.messengerID.String()).Scan(&audits); err != nil {
++				t.Fatal(err)
++			}
++			if audits != 1 {
++				t.Fatalf("failure audit%d want1", audits)
++			}
++			var rawAudit []byte
++			if err := f.pool.QueryRow(ctx, `SELECT payload FROM events WHERE event_type='OrderDeliveryFailed' AND payload->>'messenger_id'=$1`, f.messengerID.String()).Scan(&rawAudit); err != nil {
++				t.Fatal(err)
++			}
++			var audit map[string]any
++			json.Unmarshal(rawAudit, &audit)
++			if audit["name"] != f.hub.failures[0]["name"] || audit["reason"] != f.hub.failures[0]["reason"] || audit["verb"] != verb || !strings.Contains(audit["reason"].(string), "reissue") {
++				t.Fatalf("audit/notice mismatch %+v", audit)
++			}
++			var target int
++			if err := f.pool.QueryRow(ctx, `SELECT target_q FROM units WHERE id=$1`, f.unitID).Scan(&target); err != nil {
++				t.Fatal(err)
++			}
++			if target != 4 {
++				t.Fatal("failed course partially committed")
++			}
++
++		})
++	}
++}
++
++func TestSingleRecall_OldSharedMessengerOnlyTurnsFirst(t *testing.T) {
++	f := setupSingleRecall(t, "recall")
++	ctx := context.Background()
++	var second uuid.UUID
++	if err := f.pool.QueryRow(ctx, `INSERT INTO units(world_id,owner_id,type,category,size,status,q,r,target_q,target_r,depart_tick,arrive_tick,departs_at,arrives_at,march_route,home_settlement_id,support_settlement_id,name)
++ SELECT world_id,owner_id,type,category,size,status,q,r,target_q,target_r,depart_tick,arrive_tick,departs_at,arrives_at,march_route,home_settlement_id,support_settlement_id,'Gamma' FROM units WHERE id=$1 RETURNING id`, f.unitID).Scan(&second); err != nil {
++		t.Fatal(err)
++	}
++	if err := f.handler.Handle(ctx, f.event()); err != nil {
++		t.Fatal(err)
++	}
++	f.assertApplied(t)
++	p := f.payload
++	p.UnitID = second
++	order := *p.Recall
++	order.UnitID = second
++	p.Recall = &order
++	raw, _ := json.Marshal(p)
++	if err := f.handler.Handle(ctx, events.ScheduledEvent{WorldID: f.world, Payload: raw, DueTick: 1}); err != nil {
++		t.Fatal(err)
++	}
++	var target int
++	if err := f.pool.QueryRow(ctx, `SELECT target_q FROM units WHERE id=$1`, second).Scan(&target); err != nil {
++		t.Fatal(err)
++	}
++	if target != 4 {
++		t.Fatal("changed frozen shared-messenger semantics")
++	}
++}
++func TestSingleRecall_PassageRebuiltEnvelopeUsesSameFix(t *testing.T) {
++	for _, verb := range []string{"recall", "redirect"} {
++		t.Run(verb, func(t *testing.T) {
++			f := setupSingleRecall(t, verb)
++			ctx := context.Background()
++			raw, _ := json.Marshal(f.payload)
++			if _, err := f.pool.Exec(ctx, `UPDATE messengers SET passage_status='aboard',order_payload=$2 WHERE id=$1`, f.messengerID, raw); err != nil {
++				t.Fatal(err)
++			}
++			tx, err := f.pool.Begin(ctx)
++			if err != nil {
++				t.Fatal(err)
++			}
++			defer tx.Rollback(ctx)
++			if err := scheduleCompletion(ctx, tx, f.sched, f.messengerID, 1, f.clk.Now()); err != nil {
++				t.Fatal(err)
++			}
++			if err := tx.Commit(ctx); err != nil {
++				t.Fatal(err)
++			}
++			var e events.ScheduledEvent
++			if err := f.pool.QueryRow(ctx, `SELECT id,payload,due_tick FROM scheduled_events WHERE world_id=$1 AND event_type='OrderDelivery'`, f.world).Scan(&e.ID, &e.Payload, &e.DueTick); err != nil {
++				t.Fatal(err)
++			}
++			e.WorldID = f.world
++			var p OrderDeliveryPayload
++			json.Unmarshal(e.Payload, &p)
++			if p.PassageGeneration != 1 {
++				t.Fatalf("generation%d", p.PassageGeneration)
++			}
++			if err := f.handler.Handle(ctx, e); err != nil {
++				t.Fatal(err)
++			}
++			f.assertApplied(t)
++		})
++	}
++}
++func TestSingleRecall_FrozenMarchRecallIsSeparatePath(t *testing.T) {
++	f := setupSingleRecall(t, "recall")
++	ctx := context.Background()
++	h := NewMarchRecallHandler(f.pool, f.sched, f.store, f.hub, f.clk)
++	raw, _ := json.Marshal(MarchRecallPayload{WorldID: f.world, UnitID: f.unitID, MessengerID: f.messengerID, Mode: "recall"})
++	err := h.Handle(ctx, events.ScheduledEvent{WorldID: f.world, Payload: raw, DueTick: 1})
++	if err == nil || !strings.Contains(err.Error(), "idx_scheduled_recurring_dedup") {
++		t.Fatalf("legacy collision premise changed: %v", err)
++	}
++	var status string
++	if err := f.pool.QueryRow(ctx, `SELECT status FROM messengers WHERE id=$1`, f.messengerID).Scan(&status); err != nil {
++		t.Fatal(err)
++	}
++	if status != "outbound" {
++		t.Fatalf("legacy failed claim must rollback: %s", status)
++	}
++}
++func TestSingleRecall_DifferentEnvelopeIsPreserved(t *testing.T) {
++	f := setupSingleRecall(t, "recall")
++	ctx := context.Background()
++	if _, err := f.pool.Exec(ctx, `DELETE FROM scheduled_events WHERE world_id=$1`, f.world); err != nil {
++		t.Fatal(err)
++	}
++	other := 7
++	if err := f.sched.EnqueueTick(ctx, f.world, events.ScheduledUnitArrival, unit.ScheduledUnitArrivalPayload{UnitID: f.unitID, WorldID: f.world, ArriveTick: &other}, 7); err != nil {
++		t.Fatal(err)
++	}
++	if err := f.handler.Handle(ctx, f.event()); err != nil {
++		t.Fatal(err)
++	}
++	f.assertApplied(t)
++	var count int
++	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND due_tick=7 AND processed_at IS NULL`, f.world).Scan(&count); err != nil {
++		t.Fatal(err)
++	}
++	if count != 1 {
++		t.Fatal("different arrival was cancelled")
++	}
++}
++
++func TestSingleRecall_IncompleteOrderIsNamedAndAudited(t *testing.T) {
++	f := setupSingleRecall(t, "recall")
++	f.payload.Recall = nil
++	if err := f.handler.Handle(context.Background(), f.event()); err != nil {
++		t.Fatal(err)
++	}
++	if len(f.hub.failures) != 1 || f.hub.failures[0]["name"] == "" {
++		t.Fatalf("missing incomplete-order outcome %+v", f.hub.failures)
++	}
++	var count int
++	if err := f.pool.QueryRow(context.Background(), `SELECT count(*) FROM events WHERE event_type='OrderDeliveryFailed' AND payload->>'messenger_id'=$1`, f.messengerID.String()).Scan(&count); err != nil {
++		t.Fatal(err)
++	}
++	if count != 1 {
++		t.Fatal("missing audit")
++	}
++}
+added in remote
+  their  100644 c371ec95eae334f1d71a3a05c53299eb335be2b8 server/internal/messenger/order_delivery_failure.go
+@@ -0,0 +1,31 @@
++package messenger
++
++import (
++	"context"
++	"fmt"
++	"formatet/megaron/server/internal/events"
++	"formatet/megaron/server/internal/unit"
++)
++
++// OrderDeliveryFailed is an audit outcome, not a new notification kind or a
++// reinterpretation of ScheduledOrderDelivery. The old messenger claim still
++// permits only its first delivery to execute or report a terminal failure.
++const OrderDeliveryFailed = "OrderDeliveryFailed"
++
++func (h *OrderDeliveryHandler) failSingleRecall(ctx context.Context, p OrderDeliveryPayload, reason string) error {
++	name := unit.LoadDisplayName(ctx, h.pool, p.UnitID)
++	if name == "" {
++		name = p.UnitID.String()
++	}
++	payload := map[string]any{"world_id": p.WorldID, "player_id": p.PlayerID, "unit_id": p.UnitID, "messenger_id": p.MessengerID, "name": name, "verb": p.Verb, "reason": reason}
++	_, auditErr := h.eventStore.Append(ctx, p.UnitID, events.StreamType(unit.StreamUnit), OrderDeliveryFailed, payload, p.WorldID, nil)
++	// Notify even if audit storage fails: the player must hear the terminal
++	// outcome. Keep execution's existing one-way messenger claim unchanged.
++	if h.hub != nil {
++		_ = h.hub.NotifyPlayer(ctx, p.WorldID, p.PlayerID, "OrderFailed", 2, payload)
++	}
++	if auditErr != nil {
++		return fmt.Errorf("record failed %s delivery: %w", p.Verb, auditErr)
++	}
++	return nil
++}
+merged
+  result 100644 d36146b7593b6bcd57e7c86fe73d496204023873 server/internal/messenger/order_delivery_recall_miss_test.go
+  our    100644 3c78eca61899f4e3f6032524283b9d0427f26719 server/internal/messenger/order_delivery_recall_miss_test.go
+@@ -46,9 +46,12 @@
+ 	pool := testPool(t)
+ 	ctx := context.Background()
+ 
++	if _, err := pool.Exec(ctx, `UPDATE worlds SET status='archived' WHERE status='active'`); err != nil {
++		t.Fatal(err)
++	}
+ 	var worldID uuid.UUID
+ 	if err := pool.QueryRow(ctx,
+-		`INSERT INTO worlds (name, status) VALUES ($1, 'archived') RETURNING id`,
++		`INSERT INTO worlds (name, status) VALUES ($1, 'active') RETURNING id`,
+ 		"test-world-"+uuid.New().String(),
+ 	).Scan(&worldID); err != nil {
+ 		t.Fatalf("create test world: %v", err)

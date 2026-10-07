@@ -1,0 +1,10 @@
+» färsk DB på migration 160 · commit fe52e5e9+ändringar
+2026/10/07 18:14:58 INFO recall/redirect order reached unit, new course set unit=539715a2-eae2-4d7d-8dff-33d1b967ca1e mode=recall from_q=2 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-07T18:00:00.000Z
+2026/10/07 18:14:58 INFO order delivered — unit turned onto new course unit=539715a2-eae2-4d7d-8dff-33d1b967ca1e verb=recall arrives_at=2026-10-07T18:00:00.000Z
+2026/10/07 18:14:58 INFO recall/redirect order reached unit, new course set unit=d405af07-780c-40ee-a794-eac2d453156a mode=recall from_q=2 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-07T18:00:00.000Z
+2026/10/07 18:14:58 INFO order delivered — unit turned onto new course unit=d405af07-780c-40ee-a794-eac2d453156a verb=recall arrives_at=2026-10-07T18:00:00.000Z
+--- FAIL: TestSingleRecall_OldSharedMessengerOnlyTurnsFirst (0.03s)
+    order_delivery_dedup_test.go:235: changed frozen shared-messenger semantics
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.035s
+FAIL
