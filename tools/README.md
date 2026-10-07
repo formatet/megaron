@@ -193,3 +193,17 @@ in web mode; only own resources/config removed.
 `python3 tools/recall_all_mutations.py OUT` physically limits each client loop
 to the first unit, requires named JS/HTTP-test assertions red and restores
 sources before green checks. No DB required for these client tests.
+
+## Gemensam marschmeny (H)
+
+Från eget worktree: bygg `server/cmd/server` med `-ldflags '-X main.buildCommit=<hash>'`
+och `server/cmd/keryx` till `OUT/temenos` respektive `OUT/keryx` med rensad miljö
+(`env -i HOME=/home/tk PATH="$PATH" go build …`). Kör sedan
+`python3 tools/simple_march_live.py OUT <hash> map|war|land`. Varje körning skapar
+egen färsk PG16/Redis, registrerar en spelare, grundar och skickar riktiga order
+via webben. Desktop/390px, kvitton, healthz och read-only audit sparas i OUT.
+Land väljer känt bart kustland (inte flod/ford); last skall stå på målet och
+skeppet återvända. `baseline` tar samma menybilder och resa med gamla assets:
+valfri fjärde parameter anger en arkiverad web-katalog.
+`python3 tools/simple_march_mutations.py OUT` bryter fysiskt mängd/enhetslås/
+kolonilast-body, kräver namngiven assertion och återställer/grönt efter varje arm.

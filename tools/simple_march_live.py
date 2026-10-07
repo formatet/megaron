@@ -85,7 +85,21 @@ try:
     world = (worlds if isinstance(worlds, list) else worlds['worlds'])[0]['id']
     token = api('/api/v1/auth/register', 'POST', {'username': 'simple-recall-all'+secrets.token_hex(4), 'password': secrets.token_urlsafe(32)})['access_token']
     worldpath = '/api/v1/worlds/' + world
-    api(worldpath+'/join', 'POST', {}, token)
+    joined = api(worldpath+'/join', 'POST', {}, token)
+    # Landing needs a real coastal founding and its Poseidon galley. Select
+    # a coastal player's normal spawn before founding; never create a hull
+    # through SQL or mistake an inland start for a broken march menu.
+    if MODE == 'land':
+        for attempt in range(20):
+            spawn = joined['tile']
+            seen = api(worldpath+'/map', token=token)
+            seen = seen if isinstance(seen, list) else seen['tiles']
+            if any(t['q'] == spawn['q'] and t['r'] == spawn['r'] and t.get('coastal') for t in seen):
+                break
+            token = api('/api/v1/auth/register', 'POST', {'username': 'landing'+secrets.token_hex(4), 'password': secrets.token_urlsafe(32)})['access_token']
+            joined = api(worldpath+'/join', 'POST', {}, token)
+        else:
+            raise AssertionError('no coastal spawn found via normal player joins')
     founded = api(worldpath+'/founding/settle', 'POST', {'name': 'Nostos'}, token)
     assert founded.get('settlement_id'), founded
     data=api(worldpath+'/units',token=token)
@@ -97,7 +111,7 @@ try:
     homeq,homer=city.get('q',city.get('map_q')),city.get('r',city.get('map_r'))
     tiles=api(worldpath+'/map',token=token)
     tiles=tiles if isinstance(tiles,list) else tiles['tiles']
-    nearby=[t for t in tiles if t['terrain'] not in ('fog','coastal_sea','deep_sea','mountain_limestone','mountain_red') and not any(p.get('q')==t['q'] and p.get('r')==t['r'] for p in provinces) and max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer))>=1 and max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer))<=2]
+    nearby=[t for t in tiles if t['terrain'] not in ('fog','coastal_sea','deep_sea','river','river_ford','mountain_limestone','mountain_red') and not any(p.get('q')==t['q'] and p.get('r')==t['r'] for p in provinces) and max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer))>=1 and max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer))<=2]
     cargo_id=None
     if MODE=='land':
         deadline=time.monotonic()+120
