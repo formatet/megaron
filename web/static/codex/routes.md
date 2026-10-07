@@ -20,3 +20,16 @@ Route caravans are [[transfers|cargo]] like any other, and can be raided on the 
 A route between two coastal or harboured settlements with a sea lane between them sails instead of walking — if you have a free Galley or Emporos in the sending port ([[sea]]). That ship is then **locked to the route for as long as it runs**, including the time it spends docked between trips: it cannot be sent anywhere else, loaded, or repaired until the route is paused or deleted. No free hull, and no land road either, pauses the route with the same reason a shortfall would. The ship's hold limits both legs: out, it carries what fits; home, it brings back what fits above your floors, and the rest waits at the destination for the next trip.
 
 Pause or delete a sea route and its ship comes free again: at once if it is sitting in port, empty-handed at the next sweep if it was sitting in the destination, or as soon as it finishes the leg it is already on.
+
+## Route and journey time
+
+Cargo follows a real route around impassable ground. Its path and the terrain costs
+are fixed when each leg departs. Caravan time is **1.5 times the march time on that
+same path**, rounded once to the nearest whole tick, with at least one tick per leg.
+The return leg is priced separately because it enters different terrain. Cargo
+weight limits a ship's hold; it does not change journey speed.
+
+Without a traversable road or an eligible ship on a sea lane, a shipment is refused
+before goods are taken. A standing route pauses and explains the obstacle. The
+arrival tick shown in your cargo list is the scheduled delivery; delays or
+interception can prevent that delivery.

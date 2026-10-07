@@ -32,3 +32,16 @@ The ship is not free for anything else until it is home — outbound and return 
 **Economy → Wants** lists shortages and surpluses in every city you have contacted. An empty list means either that everyone you have reached is balanced, or that you have reached nobody. Both point to the same move: make contact somewhere new.
 
 What is most worth trading? [[silver]], and the half of [[bronze]] you do not have.
+
+## Route and journey time
+
+Cargo follows a real route around impassable ground. Its path and the terrain costs
+are fixed when each leg departs. Caravan time is **1.5 times the march time on that
+same path**, rounded once to the nearest whole tick, with at least one tick per leg.
+The return leg is priced separately because it enters different terrain. Cargo
+weight limits a ship's hold; it does not change journey speed.
+
+Without a traversable road or an eligible ship on a sea lane, a shipment is refused
+before goods are taken. A standing route pauses and explains the obstacle. The
+arrival tick shown in your cargo list is the scheduled delivery; delays or
+interception can prevent that delivery.

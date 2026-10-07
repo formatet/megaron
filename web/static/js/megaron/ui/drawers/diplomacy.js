@@ -244,7 +244,7 @@ async function loadDipThreads() {
                 + '</div></div>';
             }
           } else if (offer) {
-            tradeHtml = '<div style="font-size:.72rem;color:var(--text-dim);font-style:italic;margin:.2rem 0">Trade: ' + esc(offer.status) + '</div>';
+            tradeHtml = '<div style="font-size:.72rem;color:var(--text-dim);font-style:italic;margin:.2rem 0">Trade: ' + esc(offer.status) + esc(tradeScheduleText(offer)) + '</div>';
           }
           const replyRow = !offer
             ? '<div id="dip-reply-row-' + m.id + '" style="display:flex;gap:.3rem;margin-top:.3rem">'
@@ -266,7 +266,7 @@ async function loadDipThreads() {
           const shipBit = m.trade_offer && m.trade_offer.ship_name
             ? ' · ⛵ by sea on ' + esc(m.trade_offer.ship_name)
             : '';
-          const statusBit = offerStatus === 'accepted' ? '<span style="color:var(--safe)">✓ accepted' + shipBit + '</span>'
+          const statusBit = offerStatus === 'accepted' ? '<span style="color:var(--safe)">✓ accepted' + esc(tradeScheduleText(m.trade_offer)) + shipBit + '</span>'
                           : offerStatus === 'declined' ? '<span style="color:var(--text-dim)">✗ declined</span>'
                           : offerStatus === 'expired'  ? '<span style="color:var(--text-dim)">⏳ expired</span>'
                           : sentStatusHTML(m);
@@ -449,7 +449,11 @@ export async function dipAccept(id, btn) {
     // sjöhandel mellan spelare (R3): the response names the initiator's own
     // ship when the trade sails — empty when it walks.
     const shipBit = data.ship_name ? ' · ⛵ by sea on ' + esc(data.ship_name) : '';
-    block.innerHTML = '<span style="color:var(--safe)">✓ Accepted — ' + data.quantity + ' ' + esc(data.good_key || '') + ' arriving ' + arrivalHTML(data.goods_arrives_at) + ' · ' + data.silver_paid + ' silver paid' + shipBit + '</span>';
+    const goodsETA = Number.isInteger(data.goods_arrival_tick) ? 'tick ' + data.goods_arrival_tick : arrivalHTML(data.goods_arrives_at);
+    const silverETA = Number.isInteger(data.silver_arrival_tick) ? 'tick ' + data.silver_arrival_tick : arrivalHTML(data.silver_arrives_at);
+    const direction = data.kind === 'sell' ? 'incoming' : 'outgoing';
+    const payment = data.kind === 'sell' ? 'silver sent' : 'silver incoming';
+    block.innerHTML = '<span style="color:var(--safe)">✓ Accepted — ' + data.quantity + ' ' + esc(data.good_key || '') + ' ' + direction + ' · goods arrive ' + goodsETA + ' · ' + data.silver_paid + ' ' + payment + ' · arrives ' + silverETA + shipBit + '</span>';
   } else {
     btn.disabled = false;
     if (block) {
@@ -601,4 +605,14 @@ export async function dipSend() {
   } else {
     showDipRes(data.error || 'send failed', false);
   }
+}
+
+// A timestamp passing is not proof of delivery: jobs may be delayed or cargo
+// intercepted. These are scheduled ticks, as persisted by the server.
+export function tradeScheduleText(offer) {
+  if (offer?.status !== 'accepted') return '';
+  const legs = [];
+  if (Number.isInteger(offer.goods_arrival_tick)) legs.push(`goods scheduled tick ${offer.goods_arrival_tick}`);
+  if (Number.isInteger(offer.silver_arrival_tick)) legs.push(`silver scheduled tick ${offer.silver_arrival_tick}`);
+  return legs.length ? ' · ' + legs.join(' · ') : '';
 }

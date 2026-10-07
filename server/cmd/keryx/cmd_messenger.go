@@ -70,9 +70,13 @@ func tradeAcceptCmd() *cobra.Command {
 			if err := json.Unmarshal(data, &resp); err != nil {
 				return err
 			}
-			goodsAt, _ := resp["goods_arrives_at"].(string)
-			fmt.Printf("Trade accepted · %.0f %s incoming · silver paid: %.0f · goods arrive %s\n",
-				resp["quantity"], resp["good_key"], resp["silver_paid"], arrivalETA(c, goodsAt))
+			if kind, _ := resp["kind"].(string); kind == "sell" {
+				fmt.Printf("Trade accepted · %.0f %s incoming · silver sent: %.0f · goods arrive %s · silver arrives %s\n",
+					resp["quantity"], resp["good_key"], resp["silver_paid"], tradeArrival(c, resp, true), tradeArrival(c, resp, false))
+			} else {
+				fmt.Printf("Trade accepted · %.0f %s outgoing · silver incoming: %.0f · goods arrive %s · silver arrives %s\n",
+					resp["quantity"], resp["good_key"], resp["silver_paid"], tradeArrival(c, resp, true), tradeArrival(c, resp, false))
+			}
 			// sjöhandel mellan spelare (megaron_plan_sjohandel_mellan_spelare.md
 			// R3): a sea-going trade names the initiator's own ship — it sails
 			// both legs and isn't free again until leg 2 lands home.
@@ -495,10 +499,14 @@ func deliveryETALine(c *Client, offer map[string]any) string {
 	goodsAt, _ := offer["goods_arrives_at"].(string)
 	silverAt, _ := offer["silver_arrives_at"].(string)
 	var parts []string
-	if s := fmtLeg("goods", goodsAt); s != "" {
+	if at, ok := offer["goods_arrival_tick"].(float64); ok {
+		parts = append(parts, fmt.Sprintf("goods scheduled tick %.0f", at))
+	} else if s := fmtLeg("goods", goodsAt); s != "" {
 		parts = append(parts, s)
 	}
-	if s := fmtLeg("silver", silverAt); s != "" {
+	if at, ok := offer["silver_arrival_tick"].(float64); ok {
+		parts = append(parts, fmt.Sprintf("silver scheduled tick %.0f", at))
+	} else if s := fmtLeg("silver", silverAt); s != "" {
 		parts = append(parts, s)
 	}
 	// sjöhandel mellan spelare (megaron_plan_sjohandel_mellan_spelare.md R3):

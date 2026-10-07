@@ -143,3 +143,31 @@ func printPassageNote(resp map[string]any) {
 		}
 	}
 }
+
+// transferArrival displays the authoritative rounded journey, never a second
+// estimate from distance, weight or local wall time. Old responses retain their
+// timestamp display.
+func transferArrival(resp map[string]any) string {
+	if arrival, ok := resp["arrival_tick"].(float64); ok {
+		if duration, ok := resp["travel_ticks"].(float64); ok {
+			return fmt.Sprintf("arrives tick %.0f (journey: %.0f ticks)", arrival, duration)
+		}
+		return fmt.Sprintf("arrives tick %.0f", arrival)
+	}
+	if at, ok := resp["arrives_at"].(string); ok {
+		return "arrives " + at
+	}
+	return "arrival pending"
+}
+
+func tradeArrival(c *Client, resp map[string]any, good bool) string {
+	key, timestamp := "silver_arrival_tick", "silver_arrives_at"
+	if good {
+		key, timestamp = "goods_arrival_tick", "goods_arrives_at"
+	}
+	if at, ok := resp[key].(float64); ok {
+		return fmt.Sprintf("tick %.0f", at)
+	}
+	at, _ := resp[timestamp].(string)
+	return arrivalETA(c, at)
+}

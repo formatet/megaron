@@ -299,7 +299,8 @@ export function formatCargoRows(trades, nowMs) {
   return trades.map(t => {
     const etaMs = new Date(t.arrives_at).getTime() - nowMs;
     let eta;
-    if (etaMs <= 0) eta = 'arrived';
+    if (Number.isInteger(t.arrival_tick)) eta = `tick ${t.arrival_tick}`;
+    else if (etaMs <= 0) eta = 'arrived';
     else if (etaMs < 3600000) eta = `${Math.floor(etaMs / 60000)}m`;
     else eta = `${Math.floor(etaMs / 3600000)}h ${Math.floor((etaMs % 3600000) / 60000)}m`;
     return {
@@ -391,6 +392,9 @@ export async function startTransfer() {
     resultEl.textContent = d.ship_name
       ? `${qty} ${good} sent aboard ${d.ship_name} — carried, can be intercepted en route, and sails home empty afterward.`
       : `${qty} ${good} sent — physical cargo, can be intercepted en route.`;
+    if (Number.isInteger(d.arrival_tick)) {
+      resultEl.textContent += ` Arrives tick ${d.arrival_tick} (journey: ${d.travel_ticks} ticks).`;
+    }
     refreshCargoInTransit();
   } else {
     resultEl.style.color = 'var(--accent)';

@@ -16,6 +16,7 @@ import (
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/settlement"
 	"formatet/megaron/server/internal/tick"
+	"formatet/megaron/server/internal/transport"
 	"formatet/megaron/server/internal/world"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -1234,6 +1235,7 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID, now)
 	}
 	g, gerr := province.LoadTileGraph(r.Context(), h.pool, worldID)
+	anchor, anchorErr := tick.LoadAnchor(r.Context(), h.pool, worldID)
 
 	// Physical caravans in motion (movement-motor transport layer). Every in-transit
 	// row is a real mover — trade legs (delivery + return) AND internal transfers —
@@ -1254,7 +1256,7 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		        COALESCE(top.good_key, ''), COALESCE(top.quantity, 0),
 		        t.origin_q, t.origin_r, COALESCE(op.terrain_type, ''),
 		        t.dest_q, t.dest_r, COALESCE(dp.terrain_type, ''),
-		        t.departs_at, t.arrives_at, t.category, COALESCE(pl.wanax_name, pl.username, '')
+		        t.departs_at, t.arrives_at, t.category, COALESCE(pl.wanax_name, pl.username, ''), t.journey, t.departed_tick, t.due_tick
 		 FROM transports t
 		 LEFT JOIN players pl ON pl.id = t.owner_id
 		 LEFT JOIN settlements os ON os.id = t.origin_id
@@ -1275,16 +1277,21 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type tradeMarker struct {
-		ID        uuid.UUID `json:"id"`
-		GoodKey   string    `json:"good_key"`
-		Quantity  float64   `json:"quantity"`
-		OriginQ   int       `json:"origin_q"`
-		OriginR   int       `json:"origin_r"`
-		DestQ     int       `json:"dest_q"`
-		DestR     int       `json:"dest_r"`
-		DepartsAt time.Time `json:"departs_at"`
-		ArrivesAt time.Time `json:"arrives_at"`
-		Mine      bool      `json:"mine"`
+		ID            uuid.UUID `json:"id"`
+		GoodKey       string    `json:"good_key"`
+		Quantity      float64   `json:"quantity"`
+		OriginQ       int       `json:"origin_q"`
+		OriginR       int       `json:"origin_r"`
+		DestQ         int       `json:"dest_q"`
+		DestR         int       `json:"dest_r"`
+		DepartsAt     time.Time `json:"departs_at"`
+		ArrivesAt     time.Time `json:"arrives_at"`
+		Mine          bool      `json:"mine"`
+		ArrivalTick   *int      `json:"arrival_tick,omitempty"`
+		DepartureTick *int      `json:"departure_tick,omitempty"`
+		TravelTicks   *int      `json:"travel_ticks,omitempty"`
+		CurrentQ      *int      `json:"current_q,omitempty"`
+		CurrentR      *int      `json:"current_r,omitempty"`
 		// Owner is the dispatching Wanax's name — whose caravan it is, which the
 		// map tooltip says for every caravan in sight. Never what it carries.
 		Owner string `json:"owner"`
@@ -1310,9 +1317,27 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		var ownerID uuid.UUID
 		var destOwnerID *uuid.UUID
 		var originTerrain, destTerrain, category string
+		var savedJourney []byte
+		var departedTick *int
+		var dueTick int
 		if err := rows.Scan(&m.ID, &ownerID, &destOwnerID, &m.GoodKey, &m.Quantity, &m.OriginQ, &m.OriginR, &originTerrain,
-			&m.DestQ, &m.DestR, &destTerrain, &m.DepartsAt, &m.ArrivesAt, &category, &m.Owner); err != nil {
+			&m.DestQ, &m.DestR, &destTerrain, &m.DepartsAt, &m.ArrivesAt, &category, &m.Owner, &savedJourney, &departedTick, &dueTick); err != nil {
 			continue
+		}
+		var savedPos *province.MapPosition
+		if len(savedJourney) > 0 {
+			// A malformed new route must never silently become a legacy journey.
+			if departedTick == nil || anchorErr != nil {
+				continue
+			}
+			pos, err := transport.SavedPosition(savedJourney, *departedTick, dueTick, anchor.MilliAt(now))
+			if err != nil {
+				continue
+			}
+			savedPos = &pos
+			m.CurrentQ, m.CurrentR = &pos.Q, &pos.R
+			duration := dueTick - *departedTick
+			m.ArrivalTick, m.DepartureTick, m.TravelTicks = &dueTick, departedTick, &duration
 		}
 		// Unauthenticated callers get no ownership info at all — never let an
 		// anonymous request see mine:true on any row.
@@ -1335,9 +1360,17 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 			to := province.MapPosition{Q: m.DestQ, R: m.DestR}
 			var seen bool
 			if gerr == nil {
-				seen = seesInterpolatedActor(g, eyes, from, to, category, m.DepartsAt, m.ArrivesAt, now)
+				if savedPos != nil {
+					terrain, exists := g[[2]int{savedPos.Q, savedPos.R}]
+					seen = exists && province.AnyEyeSees(eyes, *savedPos, terrain)
+				} else {
+					seen = seesInterpolatedActor(g, eyes, from, to, category, m.DepartsAt, m.ArrivesAt, now)
+				}
 			} else {
-				seen = province.AnyEyeSees(eyes, from, originTerrain) || province.AnyEyeSees(eyes, to, destTerrain)
+				// The saved-route gate requires current terrain; DB failure closes it.
+				if savedPos == nil {
+					seen = province.AnyEyeSees(eyes, from, originTerrain) || province.AnyEyeSees(eyes, to, destTerrain)
+				}
 			}
 			if !seen {
 				continue
@@ -1348,6 +1381,7 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		// road, never what it carries. Only sender and recipient learn it.
 		if m.Role == "" {
 			m.GoodKey, m.Quantity = "", 0
+			m.ArrivalTick, m.DepartureTick, m.TravelTicks = nil, nil, nil
 		}
 		markers = append(markers, m)
 	}

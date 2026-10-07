@@ -213,8 +213,7 @@ func transferCmd() *cobra.Command {
 			if err := json.Unmarshal(data, &resp); err != nil {
 				return err
 			}
-			mins, _ := resp["travel_min"].(float64)
-			line := fmt.Sprintf("Transfer dispatched: %.1f %s → %s · arrives in %.0f min", qty, good, destName, mins)
+			line := fmt.Sprintf("Transfer dispatched: %.1f %s → %s · %s", qty, good, destName, transferArrival(resp))
 			// Sjöhandel kräver skepp (megaron_plan_sjohandel_kraver_skepp.md
 			// R3): a naval transfer names the ship carrying it and warns it
 			// won't be free again until it's sailed home too.
@@ -290,7 +289,9 @@ func cargoCmd() *cobra.Command {
 				dq, _ := m["dest_q"].(float64)
 				dr, _ := m["dest_r"].(float64)
 				etaStr := "—"
-				if arrivesStr, ok := m["arrives_at"].(string); ok {
+				if arrivalTick, ok := m["arrival_tick"].(float64); ok {
+					etaStr = fmt.Sprintf("tick %.0f", arrivalTick)
+				} else if arrivesStr, ok := m["arrives_at"].(string); ok {
 					if t, err := time.Parse(time.RFC3339, arrivesStr); err == nil {
 						etaStr = gameETA(c, t)
 					}
