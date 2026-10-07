@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: J: only three primary sections, all secondary abilities remain under closed More
+ok 1 - J: only three primary sections, all secondary abilities remain under closed More
+  ---
+  duration_ms: 0.64492
+  type: 'test'
+  ...
+# Subtest: J: food days come from authoritative mixed-food coverage, not grain net or reserve
+ok 2 - J: food days come from authoritative mixed-food coverage, not grain net or reserve
+  ---
+  duration_ms: 0.877597
+  type: 'test'
+  ...
+# Subtest: J: growing low stocks never say starving; food-worker warning survives
+ok 3 - J: growing low stocks never say starving; food-worker warning survives
+  ---
+  duration_ms: 0.184844
+  type: 'test'
+  ...
+# Subtest: J: missing/invalid coverage is honestly unavailable, never zero or NaN days
+ok 4 - J: missing/invalid coverage is honestly unavailable, never zero or NaN days
+  ---
+  duration_ms: 0.102668
+  type: 'test'
+  ...
+# Subtest: J: population and slaughter capability keep input-free player words and eligibility
+ok 5 - J: population and slaughter capability keep input-free player words and eligibility
+  ---
+  duration_ms: 0.19798
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 41.742296

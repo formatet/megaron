@@ -244,3 +244,14 @@ UI-namn utelämnas där för att mäta enbart målade byggnader, inte överlagra
 `python3 tools/memory_gray_mutations.py OUT [PROOF_DIR BASELINE_WEB]` bryter tier,
 saturation och (med valfria argument) det faktiska kartpasset, kräver namngivet rött
 följt av återställt grönt. Produktion återställs även vid fel.
+
+## Production (J, BILD)
+
+Bygg `server/cmd/server` med ren miljö och `-ldflags '-X main.buildCommit=<hash>'`
+till `OUT/temenos`. `python3 tools/production_live.py OUT <hash> after` skapar
+färsk PG16/Redis, registrerar/grundar och provar arbetsrutnätets −1/+1, More,
+dagshistorik och slakt genom webben. Desktop/390px inklusive matrad, More och
+Economy, health/kvitton och ingen SQL-mutation sparas. `baseline` och fjärde
+argumentet arkiverad oförändrad web-katalog gör samma handlingar före ändringen.
+`python3 tools/production_mutations.py OUT` bryter stängd More, coverage-källa
+och reservtröskel; kräver namngiven röd assertion och återställt grönt per arm.

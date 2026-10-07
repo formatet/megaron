@@ -1,3 +1,4 @@
+import { numberWords } from './number_words.js';
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
 import { formatApiError, esc } from './format.js';
@@ -57,7 +58,7 @@ export function takeLabel(hex) {
   if (!hex || !hex.held_by || !hex.takeable) return null;
   const n = hex.held_workers || 0;
   const bld = hex.held_building ? `, its ${hex.held_building.type} becomes yours` : '';
-  return `Take: ${hex.held_by}'s ${n} worker${n === 1 ? ' goes' : 's go'} home${bld}`;
+  return `Take: ${hex.held_by}'s ${numberWords(n)} worker${n === 1 ? ' goes' : 's go'} home${bld}`;
 }
 
 // target is {target_kind:'hex', hex_ordinal} or {target_kind:'building', building_type}
@@ -74,14 +75,14 @@ export function goodRowHTML(target, good, take) {
   const pipsHTML = capped
     ? Array.from({ length: good.cap }, (_, i) =>
         `<span class="gubbe-pip${i < good.placed ? '' : ' empty'}"></span>`).join('')
-    : `<span style="color:var(--text-dim)">${good.placed} placed, uncapped</span>`;
-  const nextLabel = full ? 'full' : `+${good.marginal_yield.toFixed(1)}/tick next`;
+    : `<span style="color:var(--text-dim)">${numberWords(good.placed)} placed, uncapped</span>`;
+  const nextLabel = full ? 'full' : `+${numberWords(Number(good.marginal_yield.toFixed(1)))} each game day next`;
   const targetAttr = JSON.stringify(target).replace(/"/g, '&quot;');
   return `
     <div class="gubbe-good-row" data-good="${good.good_key}" data-cap="${good.cap ?? ''}" data-target="${targetAttr}">
       <div>
         <b>${good.good_key}</b>
-        <span style="color:var(--text-dim)"> ${good.rate_per_tick.toFixed(1)}/tick total · ${nextLabel}</span>
+        <span style="color:var(--text-dim)"> ${numberWords(Number(good.rate_per_tick.toFixed(1)))} each game day total · ${nextLabel}</span>
         <div>${pipsHTML}</div>
       </div>
       <div style="display:flex;gap:.3rem">
@@ -265,7 +266,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
     return `<g class="gubbe-hex-g" data-target="hex" data-ordinal="${h.hex_ordinal}">
       <polygon class="${cls}" points="${hexCorners(p.x, p.y, HEX_SIZE)}"></polygon>
       <text x="${p.x}" y="${p.y - 4}" class="gubbe-hex-label">#${h.hex_ordinal}</text>
-      <text x="${p.x}" y="${p.y + 9}" class="gubbe-hex-sub">${(h.goods || []).length} good${(h.goods || []).length === 1 ? '' : 's'}</text>
+      <text x="${p.x}" y="${p.y + 9}" class="gubbe-hex-sub">${numberWords((h.goods || []).length)} good${(h.goods || []).length === 1 ? '' : 's'}</text>
     </g>`;
   }).join('');
 
@@ -285,8 +286,8 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
 
   containerEl.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.3rem">
-      <span>Citizens: <b>${opts.total_gubbar - opts.pool_size}/${opts.total_gubbar}</b> placed</span>
-      <span style="color:var(--text-dim)">${opts.pool_size} idle</span>
+      <span>Citizens: <b>${numberWords(opts.total_gubbar - opts.pool_size)} of ${numberWords(opts.total_gubbar)}</b> placed</span>
+      <span style="color:var(--text-dim)">${numberWords(opts.pool_size)} free</span>
     </div>
     <svg class="gubbe-svg" viewBox="${minX} ${minY} ${maxX - minX} ${maxY - minY}" preserveAspectRatio="xMidYMid meet">${cells}</svg>
     ${fowCells ? `<div class="gubbe-fow-list">${fowCells}</div>` : ''}

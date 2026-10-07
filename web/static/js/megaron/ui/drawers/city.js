@@ -7,7 +7,8 @@ import { esc, formatApiError } from '../format.js';
 import { unitTypeLabel } from '../actornames.js';
 import { startCityAnim } from '../../render/city.js';
 import { renderGubbeGrid, terrainLabel } from '../citygrid.js';
-import { sitosStateHtml } from './sitos_view.js';
+import { productionSectionsHTML, populationHTML, foodSummaryHTML, foodDetailsHTML } from './city_production.js';
+import { numberWords } from '../number_words.js';
 
 // The settlement the City drawer currently shows: cycle via the drawer's
 // prev/next arrows. Defaults to the capital (activeCitySettlement, state.js).
@@ -34,7 +35,7 @@ export function loyaltyLogRowsHTML(entries) {
       const sign  = delta > 0 ? '+' : '';
       const color = delta > 0 ? 'var(--safe)' : (delta < 0 ? 'var(--accent)' : 'var(--text-dim)');
       return `<tr>
-        <td style="color:${color};font-weight:bold">${sign}${delta}</td>
+        <td style="color:${color};font-weight:bold">${sign}${numberWords(delta)}</td>
         <td>${esc(e.reason || '')}</td>
         <td style="color:var(--text-dim);font-size:.7rem;white-space:nowrap">${esc(fmtClock(new Date(e.created_at).getTime()))}</td>
       </tr>`;
@@ -63,7 +64,7 @@ export function giftFormHTML(settlementID) {
       <label>Grain <input type="number" id="city-gift-grain" min="0" style="${inputStyle}"></label>
       <button class="btn-primary btn-small" onclick="sendGift('${settlementID}')">Send gift →</button>
       <div id="city-gift-result" class="action-result"></div>
-      <p style="color:var(--text-dim);font-size:.68rem;margin:0">50+ silver-equivalent (silver + grain × 0.5) grants +1 loyalty. Physical caravan — can be intercepted en route.</p>
+      <p style="color:var(--text-dim);font-size:.68rem;margin:0">Fifty or more in silver value (grain counts as half) grants one loyalty. Physical caravan — can be intercepted en route.</p>
     </div>`;
 }
 
@@ -85,7 +86,7 @@ export async function sendGift(settlementID) {
   const d = await r.json().catch(() => ({}));
   if (r.ok) {
     resultEl.style.color = 'var(--safe)';
-    resultEl.textContent = d.loyalty_delta > 0 ? `Gift sent — loyalty +${d.loyalty_delta}.` : 'Gift sent.';
+    resultEl.textContent = d.loyalty_delta > 0 ? `Gift sent — loyalty +${numberWords(d.loyalty_delta)}.` : 'Gift sent.';
     const silverInp = document.getElementById('city-gift-silver');
     const grainInp = document.getElementById('city-gift-grain');
     if (silverInp) silverInp.value = '';
@@ -144,11 +145,11 @@ export async function saveLaborAlloc(provinceID) {
           const devCapPct2 = Math.round((pd2.devotion_capacity || 0) * 100);
           cultInp.value = devPct2;
           const cit = document.querySelector('.labor-cit[data-good="cult"]');
-          if (cit) cit.textContent = Math.round((pd2.devotion || 0) * (pd2.labor_pool || 0));
+          if (cit) cit.textContent = numberWords(Math.round((pd2.devotion || 0) * (pd2.labor_pool || 0)));
           const rateCell = document.getElementById('labor-rate-cult');
           if (rateCell) {
             const atCap = devPct2 >= devCapPct2;
-            rateCell.textContent = `${devPct2}% of ${devCapPct2}% cap${atCap ? ' · at cap — build a higher-level temple to devote more' : ''}`;
+            rateCell.textContent = `${numberWords(devPct2)} percent of ${numberWords(devCapPct2)} percent capacity${atCap ? ' · at cap — build a higher-level temple to devote more' : ''}`;
           }
         }
       }
@@ -202,16 +203,7 @@ export async function loadCityDrawer() {
       <button class="dtab" data-tab="garnison">Garrison</button>
     </div>
     <div id="ctab-produktion" class="city-tab">
-      <div class="dsec"><div class="dsec-title">Population</div><div id="city-pop-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
-      <div class="dsec"><div class="dsec-title">Production</div><div id="city-prod-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
-      <div class="dsec"><div class="dsec-title">Sitos</div><div id="city-sitos-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
-      <div class="dsec"><div class="dsec-title">Last tick</div><div id="city-lasttick-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
-      <div class="dsec"><div class="dsec-title">Loyalty log</div><div id="city-loyalty-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
-      ${!capital.is_capital ? '<div class="dsec"><div class="dsec-title">Gift from capital</div><div id="city-gift-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>' : ''}
-      <div class="dsec">
-        <div class="dsec-title">Ticklog <button class="btn-small" onclick="loadTicklog()" style="margin-left:.4rem;padding:.05rem .3rem;font-size:.65rem;cursor:pointer">Show recent ticks</button></div>
-        <div id="city-ticklog-sec"></div>
-      </div>
+      ${productionSectionsHTML(capital)}
     </div>
     <div id="ctab-byggnader" class="city-tab" style="display:none"><div id="city-bld-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>
     <div id="ctab-garnison"  class="city-tab" style="display:none"><div id="city-gar-sec"><div class="loading" style="font-size:.8rem">Loading…</div></div></div>`;
@@ -271,82 +263,21 @@ export async function loadCityDrawer() {
       // herd's role as a growth lever stays visible even when empty.
       const livestockGood = goods.find(g => g.key === 'livestock');
       const livestock = livestockGood ? livestockGood.amount : 0;
-      document.getElementById('city-pop-sec').innerHTML = `
-        <div class="stat-row"><span class="sr-label">Population</span><span class="sr-val">${pd.population}</span></div>
-        <div class="stat-row"><span class="sr-label">In service</span><span class="sr-val">${armyPop}</span></div>
-        <div class="stat-row stat-row-strong"><span class="sr-label">Labor pool</span><span class="sr-val">${lp}</span></div>
-        <div class="stat-row"><span class="sr-label">Idle</span><span class="sr-val">${idle}</span></div>
-        <div class="stat-row">
-          <span class="sr-label">Livestock</span>
-          <span class="sr-val">${Math.floor(livestock)}
-            <button class="btn-small" onclick="slaughterLivestock('${capital.id}')" ${livestock < 1 ? 'disabled' : ''}
-              style="margin-left:.4rem;padding:.05rem .3rem;font-size:.65rem;cursor:pointer"
-              title="Trade one animal for +10 population, right now">Slaughter → +10 pop</button>
-          </span>
-        </div>
-        <div id="city-slaughter-result" class="action-result"></div>`;
+      document.getElementById('city-pop-sec').innerHTML = populationHTML(pd, idle, livestock, capital.id);
+      document.getElementById('city-people-details').innerHTML = `<div class="stat-row"><span class="sr-label">In service</span><span class="sr-val">${numberWords(armyPop)}</span></div><div class="stat-row"><span class="sr-label">Workers</span><span class="sr-val">${numberWords(lp)}</span></div>`;
     } else {
       document.getElementById('city-pop-sec').innerHTML = '<p class="empty-state">—</p>';
     }
 
-    // ── Sitos + senaste tick ──────────────────────────────────────────────
-    // Grain itemized as prod − cons = net per tick (keryx `status` parity,
-    // DEL C): a lone negative number reads as an alarm when it is often just
-    // normal balance. Since Utfodringsordningen D1 (megaron_plan_utfodringsordningen.md,
-    // 2026-08-26) the stored rate itself is raw production — the population's
-    // food is debited once a day from STOCK by FoodTick, not folded into this
-    // rate — so grain_prod_rate/grain_consum_rate below are the server's own
-    // economy.GrainBalance (D6) split, not the raw rate re-labelled.
-    let grainRow = '';
-    if (pd && pd.grain_prod_rate != null) {
-      // grain_prod_rate/grain_consum_rate are already per-tick (economy.
-      // GrainConsumptionPerCitizenPerTick) — no ×24 here now that tick == day
-      // (mig 109); that used to convert an hourly tick rate to a daily one and
-      // is the same class of stale scaling as cmd_goods.go's Rate/d bug.
-      const prodTick = pd.grain_prod_rate || 0;
-      const consTick = pd.grain_consum_rate || 0;
-      const netTick  = prodTick - consTick;
-      // food_gubbar_required/placed/self_sufficient (P4-arvet i province.go,
-      // megaron_plan_p4_arvet_i_province.md §2) replace the old weight-based
-      // figure: how many gubbar the catchment's food slots need, out of the
-      // SAME greedy loop founding/growth placement use.
-      let foodNote = '';
-      if (pd.food_gubbar_required != null) {
-        foodNote = pd.food_self_sufficient === false
-          ? ` <span class="stat-warn">(⚠ the catchment cannot feed the population even with all ${pd.food_gubbar_required} citizens on food)</span>`
-          : ` <span style="color:var(--text-dim);font-size:.7rem">(${pd.food_gubbar_required} citizens needed for food · ${pd.food_gubbar_placed} placed)</span>`;
-      }
-      grainRow = `<div class="stat-row"><span class="sr-label">Grain</span><span class="sr-val">prod ${prodTick.toFixed(1)} − cons ${consTick.toFixed(1)} = <b style="color:${netTick >= 0 ? 'var(--safe)' : 'var(--accent)'}">${netTick >= 0 ? '+' : ''}${netTick.toFixed(1)}/tick</b>${foodNote}</span></div>`;
-    }
-    if (pd && pd.sitos) {
-      // Coverage is the trigger (mig 106), so it leads. Colour it against the
-      // low threshold — that is the line where the granary starts feeding the
-      // city, and where an empty granary means nobody will.
-      const s = pd.sitos;
-      const cov = s.coverage_ticks || 0;
-      // Low coverage is only an alarm when the stock is also shrinking — a new
-      // city sits near zero coverage while filling up fast, and at 60 min/tick
-      // that lasts real days.
-      const falling = (s.food_net_per_tick || 0) <= 0;
-      const covColour = (cov < (s.low_ticks || 0) && falling) ? 'var(--accent)' : 'var(--safe)';
-      const perGood = Object.entries(s.granary_per_good || {})
-        .filter(([, v]) => v > 0)
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([k, v]) => `${v.toFixed(0)} ${k}`).join(', ');
-      document.getElementById('city-sitos-sec').innerHTML = grainRow + `
-        <div class="stat-row"><span class="sr-label">Coverage</span><span class="sr-val" style="color:${covColour}"><b>${cov.toFixed(1)} ticks</b> <span style="color:var(--text-dim);font-size:.7rem">(stores above ${s.high_ticks} · releases below ${s.low_ticks})</span></span></div>
-        <div class="stat-row"><span class="sr-label">Granary</span><span class="sr-val">${(s.granary_total||0).toFixed(0)} / ${(s.granary_cap||0).toFixed(0)} food${perGood ? ` <span style="color:var(--text-dim);font-size:.7rem">(${perGood})</span>` : ''}</span></div>
-        ${sitosStateHtml(s)}`;
-    } else {
-      document.getElementById('city-sitos-sec').innerHTML = grainRow || '<p class="empty-state">—</p>';
-    }
+    document.getElementById('city-sitos-sec').innerHTML = foodSummaryHTML(pd);
+    document.getElementById('city-reserve-sec').innerHTML = foodDetailsHTML(pd);
     if (pd && pd.last_tick) {
       const lt = pd.last_tick;
-      const prodRows = Object.entries(lt.production || {}).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--safe)">+${v.toFixed(2)}</td></tr>`).join('');
-      const consRows = Object.entries(lt.consumption || {}).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--accent)">−${v.toFixed(2)}</td></tr>`).join('');
+      const prodRows = Object.entries(lt.production || {}).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--safe)">+${numberWords(Number(v.toFixed(2)))}</td></tr>`).join('');
+      const consRows = Object.entries(lt.consumption || {}).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--accent)">−${numberWords(Number(v.toFixed(2)))}</td></tr>`).join('');
       document.getElementById('city-lasttick-sec').innerHTML = `
-        <div class="stat-row"><span class="sr-label">Tick</span><span class="sr-val">#${lt.tick}</span></div>
-        ${(lt.sitos_food_in > 0 || lt.sitos_food_out > 0) ? `<div class="stat-row"><span class="sr-label">Sitos</span><span class="sr-val">${lt.sitos_food_in > 0 ? `<span style="color:var(--safe)">+${lt.sitos_food_in.toFixed(0)} food from granary</span>` : ''}${(lt.sitos_food_in > 0 && lt.sitos_food_out > 0) ? ' · ' : ''}${lt.sitos_food_out > 0 ? `<span style="color:var(--text-dim)">${lt.sitos_food_out.toFixed(0)} food stored</span>` : ''}</span></div>` : ''}
+        <div class="stat-row"><span class="sr-label">Game day</span><span class="sr-val">#${numberWords(lt.tick)}</span></div>
+        ${(lt.sitos_food_in > 0 || lt.sitos_food_out > 0) ? `<div class="stat-row"><span class="sr-label">Food reserve</span><span class="sr-val">${lt.sitos_food_in > 0 ? `<span style="color:var(--safe)">+${numberWords(Math.round(lt.sitos_food_in))} food from granary</span>` : ''}${(lt.sitos_food_in > 0 && lt.sitos_food_out > 0) ? ' · ' : ''}${lt.sitos_food_out > 0 ? `<span style="color:var(--text-dim)">${numberWords(Math.round(lt.sitos_food_out))} food stored</span>` : ''}</span></div>` : ''}
         ${(prodRows||consRows) ? `<table class="goods-mini" style="margin-top:.3rem">${prodRows}${consRows}</table>` : ''}`;
     } else {
       document.getElementById('city-lasttick-sec').innerHTML = '<p class="empty-state">—</p>';
@@ -412,7 +343,7 @@ export async function loadCityDrawer() {
               style="width:3.5rem;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);padding:.15rem .3rem;font-size:.8rem;text-align:right">%
           </span>
         </div>
-        <div style="font-size:.72rem;color:var(--text-dim)"><span class="labor-cit" data-good="cult">${Math.round(devWeight*lp)}</span> cit · <span id="labor-rate-cult">${devPct}% of ${devCapPct}% cap${atCap ? ' · at cap — build a higher-level temple to devote more' : ''}</span></div>
+        <div style="font-size:.72rem;color:var(--text-dim)"><span class="labor-cit" data-good="cult">${numberWords(Math.round(devWeight*lp))}</span> workers · <span id="labor-rate-cult">${numberWords(devPct)} percent of ${numberWords(devCapPct)} percent capacity${atCap ? ' · at cap — build a higher-level temple to devote more' : ''}</span></div>
         <div style="margin-top:.4rem;display:flex;gap:.4rem;align-items:center">
           <button id="labor-save-btn" onclick="saveLaborAlloc('${capital.id}')"
             style="padding:.3rem .7rem;background:var(--accent);border:none;color:#000;font-size:.8rem;cursor:pointer">
@@ -427,15 +358,12 @@ export async function loadCityDrawer() {
       devotionHTML = `<p class="empty-state">Devotion (cult): needs a temple here — build one first.</p>`;
     }
 
-    document.getElementById('city-prod-sec').innerHTML = `
-      <div class="dsec-title">Devotion</div>
-      ${devotionHTML}
-      <div class="dsec-title" style="margin-top:.6rem">Catchment &amp; workplaces</div>
-      <div id="city-gubbe-grid"><div class="loading" style="font-size:.8rem">Loading…</div></div>`;
+    document.getElementById('city-devotion-sec').innerHTML = devotionHTML;
+    document.getElementById('city-prod-sec').innerHTML = '<div id="city-gubbe-grid"><div class="loading">Loading…</div></div>';
     const cultInp = document.getElementById('labor-input-cult');
     if (cultInp) cultInp.addEventListener('input', () => {
       const cit = document.querySelector('.labor-cit[data-good="cult"]');
-      if (cit) cit.textContent = Math.round((parseFloat(cultInp.value||0)||0)/100*lp);
+      if (cit) cit.textContent = numberWords(Math.round((parseFloat(cultInp.value||0)||0)/100*lp));
     });
 
     // ── Gubbe placement (P5) ────────────────────────────────────────────────
@@ -721,14 +649,14 @@ export async function loadTicklog() {
     if (!r.ok) { el.innerHTML = '<p class="empty-state">Could not load.</p>'; return; }
     const data = await r.json();
     const ticks = data.ticks || [];
-    if (!ticks.length) { el.innerHTML = '<p class="empty-state">No tick history yet.</p>'; return; }
+    if (!ticks.length) { el.innerHTML = '<p class="empty-state">No daily history yet.</p>'; return; }
     el.innerHTML = `<table class="goods-mini">
-      <tr style="color:var(--text-dim);font-size:.7rem"><td>Tick</td><td>Production</td><td>Consumption</td><td>Events</td></tr>
+      <tr style="color:var(--text-dim);font-size:.7rem"><td>Game day</td><td>Production</td><td>Consumption</td><td>Events</td></tr>
       ${ticks.map(t => {
-        const prod = Object.entries(t.production||{}).map(([k,v]) => `${k} +${v.toFixed(1)}`).join(', ');
-        const cons = Object.entries(t.consumption||{}).map(([k,v]) => `${k} -${v.toFixed(1)}`).join(', ');
+        const prod = Object.entries(t.production||{}).map(([k,v]) => `${k} +${numberWords(Number(v.toFixed(1)))}`).join(', ');
+        const cons = Object.entries(t.consumption||{}).map(([k,v]) => `${k} -${numberWords(Number(v.toFixed(1)))}`).join(', ');
         const evs  = (t.events||[]).map(e => e.type).join(', ');
-        return `<tr><td>#${t.tick}</td><td style="color:var(--safe)">${prod}</td><td style="color:var(--accent)">${cons}</td><td style="color:var(--text-dim)">${evs}</td></tr>`;
+        return `<tr><td>#${numberWords(t.tick)}</td><td style="color:var(--safe)">${prod}</td><td style="color:var(--accent)">${cons}</td><td style="color:var(--text-dim)">${evs}</td></tr>`;
       }).join('')}
     </table>`;
   } catch (_) {
