@@ -552,7 +552,10 @@ export function renderUnitCard(u) {
   // allows marching a positioned unit; this just surfaces the button. (The
   // map right-click used to read the unit's own hex as the target — fixed by
   // routing that click to warFocusUnit, landing here, render/map.js contextmenu.)
-  const canMarch = (isGarrison || isPositioned) && u.deployable && u.stance !== 'fortify';
+  // R3: ships off the coast take no new orders; R6 preserves the stranded
+  // exception when the Wanax has no city left (RequireShipInPort).
+  const canMarch = (isGarrison || (isPositioned && (!isNaval || !ownCapital())))
+    && u.deployable && u.stance !== 'fortify';
   if (canMarch) {
     actions += '<button onclick="unitMarch(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">March</button> ';
   }
@@ -978,7 +981,7 @@ export async function unitPickup(unitID) {
     if (resEl) {
       resEl.style.color = 'var(--safe)';
       resEl.textContent = 'Ship sails to (' + data.shore_q + ',' + data.shore_r + ') — arrives game day ' + numberWords(data.arrival_tick) +
-        (data.messenger_id ? ', a runner rides along' : '') + '.';
+        (data.messenger_id ? ', a messenger rides along' : '') + '.';
     }
     loadWarDrawer();
   } else if (resEl) {

@@ -4,6 +4,7 @@ const noopEl=new Proxy({}, { get:(_t,k)=>k==='style'?{}:k==='value'?'':()=>noopE
 globalThis.document ??= {addEventListener(){},getElementById:()=>noopEl,createElement:()=>noopEl,querySelector:()=>noopEl,querySelectorAll:()=>[],body:noopEl};
 globalThis.window ??= {addEventListener(){},matchMedia:()=>({matches:false,addEventListener(){}})};
 globalThis.localStorage ??= {getItem:()=>null,setItem(){},removeItem(){}};
+const { State }=await import('../state.js');
 const {renderUnitCard,unitStatusLabel}=await import('./drawers/war.js');
 const unit=(extra={})=>({id:'u',type:'spearman',display_name:'First Spearmen',category:'land',status:'garrison',deployable:true,size:100,...extra});
 const primary=html=>html.split('<details')[0];
@@ -12,7 +13,7 @@ const more=html=>html.match(/<details[^>]*>([\s\S]*?)<\/details>/)?.[1] || '';
 test('I: garrison shows March and eligible Reinforce; stance and battle retreat stay in closed More',()=>{
  const html=renderUnitCard(unit({can_reinforce:true,size:75,in_battle:true}));
  assert.match(primary(html),/>March</);assert.match(primary(html),/>Reinforce</);
- assert.doesNotMatch(primary(html),/ustance-|uretreat-|>Recall</);
+ assert.doesNotMatch(primary(html),/ustance-|uretreat-|>Recall</,'stance must stay under More');
  assert.match(more(html),/ustance-u/,'stance must stay under More');
  assert.match(more(html),/uretreat-u/,'all battle retreat choices must survive');
  for(const value of ['0.75','0.5','0.25','hold']) assert.match(more(html),new RegExp('value="'+value+'"'));
@@ -64,4 +65,14 @@ test('I: every server lifecycle status has a player label; unknown status never 
  for(const [status,label] of Object.entries(labels)) assert.equal(unitStatusLabel(unit({status})),label);
  assert.equal(unitStatusLabel(unit({category:'naval'})),'in harbour');
  assert.equal(unitStatusLabel(unit({status:'<new_kind>'})),'awaiting news');
+});
+
+test('I: ships off the coast take no March while a city remains, but keep the R6 stranded exception',()=>{
+ const saved=State.provinceData;
+ try {
+  State.provinceData=[{own:true,is_capital:true}];
+  assert.doesNotMatch(renderUnitCard(unit({category:'naval',status:'positioned'})),/>March</,'a ship at sea cannot receive a port order');
+  State.provinceData=[];
+  assert.match(renderUnitCard(unit({category:'naval',status:'positioned'})),/>March</,'R6 stranded ships must remain orderable');
+ } finally {State.provinceData=saved;}
 });
