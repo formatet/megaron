@@ -133,7 +133,7 @@ try:
                 ts=transports()
                 return ts if len(ts)>len(before) and all(t['status']!='in_transit' for t in ts) else None
             done=wait('trade caravan lifecycle',completed,240)
-            proof['trades'].append({'kind':kind,'offered':offered,'accepted':accepted,'dispatch':new,'completed':done,'cli_cargo':cli(a,'cargo'),'cli_sent':cli(a,'sent')})
+            proof['trades'].append({'kind':kind,'offered':offered,'accepted':accepted,'dispatch':new,'completed':done,'cli_cargo':cli(a,'cargo'),'cli_outbox':cli(a,'outbox')})
             print(kind+' trade completed',flush=True)
         browser.close()
     assert not proof['browser_errors'],proof['browser_errors']
