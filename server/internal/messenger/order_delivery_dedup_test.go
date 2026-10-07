@@ -185,6 +185,147 @@ func TestSingleRecall_FailureAfterClaimIsNamedAndAuditedOnce(t *testing.T) {
 			if audits != 1 {
 				t.Fatalf("failure audit%d want1", audits)
 			}
+			var rawAudit []byte
+			if err := f.pool.QueryRow(ctx, `SELECT payload FROM events WHERE event_type='OrderDeliveryFailed' AND payload->>'messenger_id'=$1`, f.messengerID.String()).Scan(&rawAudit); err != nil {
+				t.Fatal(err)
+			}
+			var audit map[string]any
+			json.Unmarshal(rawAudit, &audit)
+			if audit["name"] != f.hub.failures[0]["name"] || audit["reason"] != f.hub.failures[0]["reason"] || audit["verb"] != verb || !strings.Contains(audit["reason"].(string), "reissue") {
+				t.Fatalf("audit/notice mismatch %+v", audit)
+			}
+			var target int
+			if err := f.pool.QueryRow(ctx, `SELECT target_q FROM units WHERE id=$1`, f.unitID).Scan(&target); err != nil {
+				t.Fatal(err)
+			}
+			if target != 4 {
+				t.Fatal("failed course partially committed")
+			}
+
 		})
+	}
+}
+
+func TestSingleRecall_OldSharedMessengerOnlyTurnsFirst(t *testing.T) {
+	f := setupSingleRecall(t, "recall")
+	ctx := context.Background()
+	var second uuid.UUID
+	if err := f.pool.QueryRow(ctx, `INSERT INTO units(world_id,owner_id,type,category,size,status,q,r,target_q,target_r,depart_tick,arrive_tick,departs_at,arrives_at,march_route,home_settlement_id,support_settlement_id,name)
+ SELECT world_id,owner_id,type,category,size,status,q,r,target_q,target_r,depart_tick,arrive_tick,departs_at,arrives_at,march_route,home_settlement_id,support_settlement_id,'Gamma' FROM units WHERE id=$1 RETURNING id`, f.unitID).Scan(&second); err != nil {
+		t.Fatal(err)
+	}
+	if err := f.handler.Handle(ctx, f.event()); err != nil {
+		t.Fatal(err)
+	}
+	f.assertApplied(t)
+	p := f.payload
+	p.UnitID = second
+	order := *p.Recall
+	order.UnitID = second
+	p.Recall = &order
+	raw, _ := json.Marshal(p)
+	if err := f.handler.Handle(ctx, events.ScheduledEvent{WorldID: f.world, Payload: raw, DueTick: 1}); err != nil {
+		t.Fatal(err)
+	}
+	var target int
+	if err := f.pool.QueryRow(ctx, `SELECT target_q FROM units WHERE id=$1`, second).Scan(&target); err != nil {
+		t.Fatal(err)
+	}
+	if target != 4 {
+		t.Fatal("changed frozen shared-messenger semantics")
+	}
+}
+func TestSingleRecall_PassageRebuiltEnvelopeUsesSameFix(t *testing.T) {
+	for _, verb := range []string{"recall", "redirect"} {
+		t.Run(verb, func(t *testing.T) {
+			f := setupSingleRecall(t, verb)
+			ctx := context.Background()
+			raw, _ := json.Marshal(f.payload)
+			if _, err := f.pool.Exec(ctx, `UPDATE messengers SET passage_status='aboard',order_payload=$2 WHERE id=$1`, f.messengerID, raw); err != nil {
+				t.Fatal(err)
+			}
+			tx, err := f.pool.Begin(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer tx.Rollback(ctx)
+			if err := scheduleCompletion(ctx, tx, f.sched, f.messengerID, 1, f.clk.Now()); err != nil {
+				t.Fatal(err)
+			}
+			if err := tx.Commit(ctx); err != nil {
+				t.Fatal(err)
+			}
+			var e events.ScheduledEvent
+			if err := f.pool.QueryRow(ctx, `SELECT id,payload,due_tick FROM scheduled_events WHERE world_id=$1 AND event_type='OrderDelivery'`, f.world).Scan(&e.ID, &e.Payload, &e.DueTick); err != nil {
+				t.Fatal(err)
+			}
+			e.WorldID = f.world
+			var p OrderDeliveryPayload
+			json.Unmarshal(e.Payload, &p)
+			if p.PassageGeneration != 1 {
+				t.Fatalf("generation%d", p.PassageGeneration)
+			}
+			if err := f.handler.Handle(ctx, e); err != nil {
+				t.Fatal(err)
+			}
+			f.assertApplied(t)
+		})
+	}
+}
+func TestSingleRecall_FrozenMarchRecallIsSeparatePath(t *testing.T) {
+	f := setupSingleRecall(t, "recall")
+	ctx := context.Background()
+	h := NewMarchRecallHandler(f.pool, f.sched, f.store, f.hub, f.clk)
+	raw, _ := json.Marshal(MarchRecallPayload{WorldID: f.world, UnitID: f.unitID, MessengerID: f.messengerID, Mode: "recall"})
+	err := h.Handle(ctx, events.ScheduledEvent{WorldID: f.world, Payload: raw, DueTick: 1})
+	if err == nil || !strings.Contains(err.Error(), "idx_scheduled_recurring_dedup") {
+		t.Fatalf("legacy collision premise changed: %v", err)
+	}
+	var status string
+	if err := f.pool.QueryRow(ctx, `SELECT status FROM messengers WHERE id=$1`, f.messengerID).Scan(&status); err != nil {
+		t.Fatal(err)
+	}
+	if status != "outbound" {
+		t.Fatalf("legacy failed claim must rollback: %s", status)
+	}
+}
+func TestSingleRecall_DifferentEnvelopeIsPreserved(t *testing.T) {
+	f := setupSingleRecall(t, "recall")
+	ctx := context.Background()
+	if _, err := f.pool.Exec(ctx, `DELETE FROM scheduled_events WHERE world_id=$1`, f.world); err != nil {
+		t.Fatal(err)
+	}
+	other := 7
+	if err := f.sched.EnqueueTick(ctx, f.world, events.ScheduledUnitArrival, unit.ScheduledUnitArrivalPayload{UnitID: f.unitID, WorldID: f.world, ArriveTick: &other}, 7); err != nil {
+		t.Fatal(err)
+	}
+	if err := f.handler.Handle(ctx, f.event()); err != nil {
+		t.Fatal(err)
+	}
+	f.assertApplied(t)
+	var count int
+	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND due_tick=7 AND processed_at IS NULL`, f.world).Scan(&count); err != nil {
+		t.Fatal(err)
+	}
+	if count != 1 {
+		t.Fatal("different arrival was cancelled")
+	}
+}
+
+func TestSingleRecall_IncompleteOrderIsNamedAndAudited(t *testing.T) {
+	f := setupSingleRecall(t, "recall")
+	f.payload.Recall = nil
+	if err := f.handler.Handle(context.Background(), f.event()); err != nil {
+		t.Fatal(err)
+	}
+	if len(f.hub.failures) != 1 || f.hub.failures[0]["name"] == "" {
+		t.Fatalf("missing incomplete-order outcome %+v", f.hub.failures)
+	}
+	var count int
+	if err := f.pool.QueryRow(context.Background(), `SELECT count(*) FROM events WHERE event_type='OrderDeliveryFailed' AND payload->>'messenger_id'=$1`, f.messengerID.String()).Scan(&count); err != nil {
+		t.Fatal(err)
+	}
+	if count != 1 {
+		t.Fatal("missing audit")
 	}
 }

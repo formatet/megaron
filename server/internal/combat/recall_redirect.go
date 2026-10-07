@@ -216,8 +216,18 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 
 	newArriveTick := currentTick + travelTicks
 	arrPayload := unit.ScheduledUnitArrivalPayload{UnitID: o.UnitID, WorldID: o.WorldID, ArriveTick: &newArriveTick}
-	if err := scheduler.EnqueueTickTx(ctx, tx, o.WorldID, events.ScheduledUnitArrival, arrPayload, currentTick+travelTicks); err != nil {
-		return nil, fmt.Errorf("schedule new arrival: %w", err)
+	// The identical pending arrival already resolves the current course at
+	// this tick. Reuse it under the unit lock rather than failing queue dedup.
+	rawArrival, _ := json.Marshal(arrPayload)
+	var arrivalQueued bool
+	if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM scheduled_events WHERE world_id=$1 AND event_type=$2 AND due_tick=$3 AND payload=$4::jsonb AND processed_at IS NULL AND failed_at IS NULL)`,
+		o.WorldID, string(events.ScheduledUnitArrival), newArriveTick, rawArrival).Scan(&arrivalQueued); err != nil {
+		return nil, fmt.Errorf("check existing arrival: %w", err)
+	}
+	if !arrivalQueued {
+		if err := scheduler.EnqueueTickTx(ctx, tx, o.WorldID, events.ScheduledUnitArrival, arrPayload, newArriveTick); err != nil {
+			return nil, fmt.Errorf("schedule new arrival: %w", err)
+		}
 	}
 
 	if err := tx.Commit(ctx); err != nil {

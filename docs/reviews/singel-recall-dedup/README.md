@@ -26,3 +26,14 @@ retur1→3 och identisk typed UnitArrival redan köad): båda ExecuteRecall-verb
 SQL23505; båda delivery-verb returnerar nil efter committed claim men target
 förblir4, ingen audit. Separat injicerat UPDATE-fel ger ingen OrderFailed.
 Rålogg red-before.log: sex namngivna assertions röda, inga kompileringsfel.
+
+Fixcheckpoint: core återanvänder exakt samma aktiva UnitArrival under unitlock
+(failed/processed/different payload återanvänds inte); gamla tids-/claimtolkningen
+orörd. OrderDelivery recall/redirect-error/miss/incomplete payload ger audittypen
+OrderDeliveryFailed +befintlig named OrderFailed. Inget nytt notiskind.
+Green-after.log: båda paket gröna; passage reconstruerar samma envelope och når
+fixen, gammal delad messenger vänder bara första. Frysta MarchRecallHandler har
+egen duplicerad core och TX: samma SQL23505 men claim rollback, inte tyst drop.
+Lämnas orörd enligt orderns endast samma kodväg-villkor.
+Tidigare RecallMissed-fixtur behövde en aktiv värld för events.world_tick-audit;
+justerad testfixtur, ingen produktionstid eller trigger ändrad.
