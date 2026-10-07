@@ -47,7 +47,6 @@ const MacroTickInterval = 1
 type ScheduledEventType string
 
 const (
-	ScheduledArmyArrival      ScheduledEventType = "ArmyArrival"
 	ScheduledBuildComplete    ScheduledEventType = "BuildComplete"
 	ScheduledTrainComplete    ScheduledEventType = "TrainComplete"
 	ScheduledCollapseCheck    ScheduledEventType = "CollapseCheck"
@@ -76,7 +75,6 @@ const (
 	ScheduledKharisTick       ScheduledEventType = "KharisTick"
 	ScheduledTradeDelivery    ScheduledEventType = "TradeDelivery"
 	ScheduledTradeReturn      ScheduledEventType = "TradeReturn"
-	ScheduledRecallArrival    ScheduledEventType = "RecallArrival"
 	ScheduledLogisticsArrival ScheduledEventType = "LogisticsArrival"
 	// Physical goods transport (movement-motor transport layer) — a caravan/ship
 	// carrying a goods manifest arrives at its destination. Supersedes the abstract
@@ -111,8 +109,8 @@ const (
 	// tick, not daily) — see internal/economy/sitos_tick.go.
 	ScheduledSitosTick ScheduledEventType = "SitosTick"
 	// March recall/redirect: a recall or redirect messenger reaching a marching
-	// discrete unit (temenos_march_recall.md). Distinct from ScheduledRecallArrival,
-	// which turns around legacy marching_armies/outposts.
+	// discrete unit (temenos_march_recall.md). The earlier
+	// RecallArrival/ArmyArrival chain for marching_armies was removed 2026-10-07.
 	ScheduledMarchRecall ScheduledEventType = "MarchRecall"
 	// ScheduledOrderDelivery: an order courier reaching its unit — the carried
 	// order (march etc.) executes on delivery (temenos_orderlopare_plan.md Fas 2).

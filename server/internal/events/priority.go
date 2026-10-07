@@ -65,11 +65,9 @@ const DefaultTickPriority = 50
 
 var tickPriorities = map[ScheduledEventType]int{
 	// 10 — det som landar.
-	ScheduledArmyArrival:      tickPriorityArrival,
 	ScheduledUnitArrival:      tickPriorityArrival,
 	ScheduledTransportArrival: tickPriorityArrival,
 	ScheduledLogisticsArrival: tickPriorityArrival,
-	ScheduledRecallArrival:    tickPriorityArrival,
 	ScheduledSentryReturn:     tickPriorityArrival,
 	// Same tier as the sentry patrol timer above — a self-terminating sea
 	// order's own timer firing and dispatching a home march.

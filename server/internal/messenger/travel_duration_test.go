@@ -3,7 +3,7 @@ package messenger
 // Regression test for Fas 1d: negative ETAs/"ago" in the CLI (e.g. a trade
 // offer's ETA before its own send time, "-145m ago" on a delivered message).
 //
-// Root cause: MessengerTravelDuration/returnDuration
+// Root cause: MessengerTravelDuration
 // (this file, recall.go) computed the WALL-CLOCK arrives_at DISPLAY column by
 // assuming "1 game hour (tick) = 1 real hour" — hardcoded time.Hour math that
 // ignores the real tick cadence. That assumption only holds at the default 60
@@ -53,17 +53,6 @@ func TestMessengerTravelDuration_MatchesTicksAtFastCadence(t *testing.T) {
 	}
 }
 
-func TestReturnDuration_MatchesTicksAtFastCadence(t *testing.T) {
-	withTickSeconds(t, 60)
-	dist := 5
-	terrain := "plains"
-	wantTicks := returnTicks(dist, terrain)
-	want := time.Duration(wantTicks) * time.Minute
-	if got := returnDuration(dist, terrain); got != want {
-		t.Errorf("returnDuration(%d, %q) = %v, want %v (%d ticks × 1 min/tick)", dist, terrain, got, want, wantTicks)
-	}
-}
-
 // TestMessengerTravelDuration_MatchesDefaultCadence pins the historical
 // (correct-by-coincidence) case: at the default 60 min/tick, 1 tick really is
 // 1 real hour, so the fix must not change behaviour for the common case.
@@ -91,13 +80,3 @@ func TestMessengerTravelDuration_ExactAtSubMinuteCadence(t *testing.T) {
 	}
 }
 
-func TestReturnDuration_ExactAtSubMinuteCadence(t *testing.T) {
-	withTickSeconds(t, 6)
-	dist := 5
-	terrain := "plains"
-	wantTicks := returnTicks(dist, terrain)
-	want := time.Duration(wantTicks) * 6 * time.Second
-	if got := returnDuration(dist, terrain); got != want {
-		t.Errorf("returnDuration(%d, %q) at TICK_SECONDS=6 = %v, want %v exact (%d ticks × 6s)", dist, terrain, got, want, wantTicks)
-	}
-}

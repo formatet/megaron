@@ -7,7 +7,7 @@ import (
 
 // These pin the default cadence (3600 real seconds/tick = 60 min/tick)
 // explicitly rather than relying on ambient TICK_SECONDS/TICK_MINUTES, since
-// MessengerTravelDuration/returnDuration now convert
+// MessengerTravelDuration now converts
 // through tick.RealUntil (Fas A Run 2, travel_duration_test.go) instead of a
 // hardcoded real-hour.
 
@@ -25,21 +25,5 @@ func TestMessengerTravelDuration(t *testing.T) {
 		if got := MessengerTravelDuration(c.dist); got != c.want {
 			t.Errorf("MessengerTravelDuration(%d) = %v, want %v", c.dist, got, c.want)
 		}
-	}
-}
-
-func TestReturnDurationFloor(t *testing.T) {
-	withTickSeconds(t, 3600)
-	// Zero distance still floors to 1 tick (returnTicks' own floor) — 1h at
-	// default cadence, not an arbitrary sub-tick "6 minutes": actual delivery
-	// can never complete faster than 1 tick, so displaying less would just be
-	// the same tick/wall-clock mismatch this fix removes, in the other direction.
-	got := returnDuration(0, "plains")
-	if got != time.Hour {
-		t.Errorf("returnDuration(0) = %v, want 1h (1-tick floor at default cadence)", got)
-	}
-	// Any real distance clears the floor.
-	if d := returnDuration(5, "plains"); d <= time.Hour {
-		t.Errorf("returnDuration(5) = %v, want > 1h floor", d)
 	}
 }

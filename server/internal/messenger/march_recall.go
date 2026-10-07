@@ -1,7 +1,7 @@
 package messenger
 
 // MarchRecall: a recall or redirect messenger reaching a marching discrete unit
-// (units table, C1-C8 model). Distinct from RecallArrivalHandler above, which
+// (units table, C1-C8 model). Distinct from the removed RecallArrivalHandler, which
 // turns around legacy marching_armies/outposts — see temenos_march_recall.md.
 //
 // Idempotent via an atomic conditional claim: the unit is locked FOR UPDATE and

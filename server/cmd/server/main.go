@@ -148,7 +148,6 @@ func main() {
 	foodTickH := economy.NewFoodTickHandler(pool, scheduler, eventStore, hub)
 	tradeH := economy.NewDeliveryHandler(pool, eventStore, hub, scheduler)
 	tradeReturnH := economy.NewTradeReturnHandler(pool, eventStore, hub)
-	recallH := messenger.NewRecallArrivalHandler(pool, scheduler, hub, gameClock)
 	marchRecallH := messenger.NewMarchRecallHandler(pool, scheduler, eventStore, hub, gameClock)
 	orderDeliveryH := messenger.NewOrderDeliveryHandler(pool, scheduler, eventStore, hub, gameClock)
 	// Constructed here (moved up from its later, natural position among the
@@ -177,7 +176,6 @@ func main() {
 	worker.Register(events.ScheduledSitosTick, sitosH.Handle)
 	worker.Register(events.ScheduledTradeDelivery, tradeH.Handle)
 	worker.Register(events.ScheduledTradeReturn, tradeReturnH.Handle)
-	worker.Register(events.ScheduledRecallArrival, recallH.Handle)
 	worker.Register(events.ScheduledMarchRecall, marchRecallH.Handle)
 	logisticsH := handlers.NewLogisticsArrivalHandler(pool)
 	worker.Register(events.ScheduledLogisticsArrival, logisticsH.Handle)
