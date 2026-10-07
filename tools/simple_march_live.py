@@ -97,7 +97,7 @@ try:
     homeq,homer=city.get('q',city.get('map_q')),city.get('r',city.get('map_r'))
     tiles=api(worldpath+'/map',token=token)
     tiles=tiles if isinstance(tiles,list) else tiles['tiles']
-    nearby=[t for t in tiles if t['terrain'] not in ('fog','coastal_sea','deep_sea','mountains','high_mountains') and not any(p.get('q')==t['q'] and p.get('r')==t['r'] for p in provinces) and max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer))>=1 and max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer))<=2]
+    nearby=[t for t in tiles if t['terrain'] not in ('fog','coastal_sea','deep_sea','mountain_limestone','mountain_red') and not any(p.get('q')==t['q'] and p.get('r')==t['r'] for p in provinces) and max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer))>=1 and max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer))<=2]
     centre=min(nearby,key=lambda t:(abs(t['r']-homer),abs(t['q']-homeq-4),t['q'],t['r']))
     q,r=centre['q'],centre['r']
     cfg=OUT/'private-config.json';cfg.write_text(json.dumps({'server':base,'token':token,'world_id':world}));cfg.chmod(0o600)
@@ -152,6 +152,7 @@ try:
                 page.wait_for_selector('#ucard-'+chosen[0]['id']);march_button.click()
         page.evaluate('window.closeInspect()')
         point=page.evaluate(async_points,[q,r,True])
+        page.wait_for_function('p=>document.elementFromPoint(p.x,p.y)?.id==="hex-canvas"',arg=point)
         page.mouse.click(point['x'],point['y'],button='left' if MODE=='war' else 'right')
         page.wait_for_selector('#mg-0')
         if not page.locator('#mctx-explore-chk').is_checked():page.locator('#mctx-explore-chk').check()
@@ -188,14 +189,21 @@ try:
         if len(current)==count and all(u['status']=='garrison' for u in current):break
         time.sleep(.5)
     else:raise AssertionError({'not_home':history[-5:]})
-    sql="SELECT event_type,stream_id,count(*) FROM events WHERE world_id='"+world+"' AND event_type IN ('MarchStarted','OrderDeliveryFailed') GROUP BY event_type,stream_id ORDER BY event_type;"
+    sql="SELECT event_type,stream_id,count(*) FROM events WHERE world_id='"+world+"' AND event_type IN ('UnitMarchOrdered','OrderDeliveryFailed') GROUP BY event_type,stream_id ORDER BY event_type;"
     audits=command('docker','exec',containers[0],'psql','-U','postgres','-d','simple-recall-all','-Atc',sql)
-    assert all('MarchStarted|'+x['unit_id']+'|1' in audits for x in receipts),audits
+    assert all('UnitMarchOrdered|'+x['unit_id']+'|1' in audits for x in receipts),audits
     assert 'OrderDeliveryFailed' not in audits,audits
     assert not errors,errors
     proof={'mode':MODE,'browser_errors':errors,'health':health,'receipts':receipts,'history':history,'audit_rows':audits,'all_garrison':True,'sql_mutations':False}
     (OUT/'proof.json').write_text(json.dumps(proof,indent=2)+'\n')
     print(json.dumps({'health':health,'mode':MODE,'actual_marches':len(receipts),'all_garrison':True}))
+except Exception:
+    if browser is not None:
+        try:
+            page.screenshot(path=str(OUT/'failure.png'))
+            (OUT/'failure-ui.txt').write_text(page.locator('#march-ctx').evaluate('(e)=>e.outerHTML'))
+        except Exception:pass
+    raise
 finally:
     if browser is not None: browser.close()
     if playwright is not None: playwright.stop()

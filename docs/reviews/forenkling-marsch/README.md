@@ -7,7 +7,7 @@ Bas: `codex/recall-all-enkel` @ba96c79b (Claudes styrning 21:59). Bevisar geogra
 | Problem | Kartmenyn börjar med inga enheter; War kräver separat Q/R-inmatning. |
 | Spelarsanning | Första valda gruppens lediga enheter är förvalda; War → March väljer en enhet och ett kartmål i samma meny. |
 | Invariant | Befintliga per-enhetsrutter, FOW, redirect, explore, kolonisering och lastat skepps landstigning bevaras. |
-| Scope | marchctx.js, war.js, main.js, state.js, kartans målklick, map.html; funktionstester och egen isolerad webbrigg. |
+| Scope | marchctx.js, war.js, main.js, state.js, number_words.js (gemensamt spelarprosaformat), kartans målklick, map.html; funktionstester och egen isolerad webbrigg. |
 | Non-scope | Server, CLI, kanon, War-kortens övriga handlingar (I), nya färger/CSS-klasser. |
 | Acceptans | Alla lediga i första gruppen förvalda; övriga grupper noll. More gömmer längd/namn/stance. War filtrerar exakt vald enhet. Landstigning/kolonilast har samma body. Mobil har normalt målklick. |
 | Stopvillkor | Om förmågan kräver regeländring, fråga Claude/Timothy; bygg övrig UI oberoende. |

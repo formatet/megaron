@@ -3,11 +3,12 @@ import { fetchAuth } from '../api.js';
 import { track } from '../telemetry.js';
 import { esc, formatApiError, passageNote, purseLine } from './format.js';
 import { unitTypeLabel } from './actornames.js';
+import { numberWords } from './number_words.js';
 import { arrivalHTML, fmtArrival } from './time.js';
 import { stanceSentLine } from './stance.js';
 import { MusicPlayer } from './misc.js';
 import { playWarHorn } from './sfx.js';
-import { configureExpedition, expeditionTicks, expeditionOrderText, expeditionMissionText } from './expedition.js';
+import { configureExpedition, expeditionTicks, expeditionMissionText } from './expedition.js';
 import { createMarchPreview } from './march_preview.js';
 import { canvas } from '../render/map.js';
 
@@ -53,7 +54,7 @@ function updateMarchPreview() {
   try { if (exploring) ticks = expeditionTicks(document.getElementById('mctx-ticks')); }
   catch (error) { document.getElementById('mctx-mission').textContent = error.message; marchPreview.update(State.WORLD_ID, [], {}); return; }
   document.getElementById('mctx-mission').textContent = exploring
-    ? expeditionOrderText(State.marchCtxDest.q, State.marchCtxDest.r, ticks, expeditionRules)
+    ? 'Explore for ' + numberWords(ticks) + ' game days, then return home.'
       + (picks.some(p => p.mode === 'redirect') ? ' Only units starting a new march take this expedition; marching units receive a redirect and end their expedition.' : '')
     : '';
   marchPreview.update(State.WORLD_ID, picks, {
@@ -497,7 +498,7 @@ export function renderMarchUnitList() {
     return '<div class="mctx-row">'
       + '<span class="mctx-label">' + marchGroupLabelHTML(g) + '</span>'
       + '<input class="mctx-input" type="number" id="mg-' + i + '" min="0" max="' + max + '" value="' + marchDefaultQuantity(g, i) + '">'
-      + '<span class="mctx-max">/' + max + '</span>'
+      + '<span class="mctx-max">of ' + numberWords(max) + '</span>'
       + '</div>'
       + marchGroupNamesHTML(g);
   }).join('');
@@ -642,7 +643,7 @@ export async function sendMarch() {
   const stanceRefused = results.filter(r => r.ok && r.err);
   if (failed.length) {
     const okCount = results.length - failed.length;
-    document.getElementById('mctx-err').textContent = (okCount ? okCount + ' sent · ' : '') + failed[0].err;
+    document.getElementById('mctx-err').textContent = (okCount ? numberWords(okCount) + ' sent · ' : '') + failed[0].err;
   } else if (stanceRefused.length) {
     document.getElementById('mctx-err').textContent = stanceRefused[0].err;
   } else if (showEta) {
