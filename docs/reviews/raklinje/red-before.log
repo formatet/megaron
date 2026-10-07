@@ -1,0 +1,48 @@
+» färsk DB på migration 160 · commit d13d91a8
+2026/10/07 19:50:00 WARN recall/redirect: no route found, falling back to straight line unit=2de7162b-f41f-40ed-8428-cf5e8ea19874
+2026/10/07 19:50:00 INFO recall/redirect order reached unit, new course set unit=2de7162b-f41f-40ed-8428-cf5e8ea19874 mode=recall from_q=2 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-07T18:00:00.000Z
+2026/10/07 19:50:00 WARN recall/redirect: could not re-walk outbound path, using origin as current position unit=9da3771f-c86e-49a4-ba32-41ceee9c4aed
+2026/10/07 19:50:00 INFO recall/redirect order reached unit, new course set unit=9da3771f-c86e-49a4-ba32-41ceee9c4aed mode=recall from_q=0 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-07T17:00:00.000Z
+2026/10/07 19:50:00 WARN recall/redirect: no route found, falling back to straight line unit=16b80dd1-3b44-4060-b2e9-df1d7706b62a
+2026/10/07 19:50:00 INFO recall/redirect order reached unit, new course set unit=16b80dd1-3b44-4060-b2e9-df1d7706b62a mode=redirect from_q=2 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-07T18:00:00.000Z
+2026/10/07 19:50:01 WARN recall/redirect: could not re-walk outbound path, using origin as current position unit=a39dda7d-96e6-42d3-beb7-d88c1d79b93f
+2026/10/07 19:50:01 INFO recall/redirect order reached unit, new course set unit=a39dda7d-96e6-42d3-beb7-d88c1d79b93f mode=redirect from_q=0 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-07T17:00:00.000Z
+--- FAIL: TestRecallNoRoute_CoreRejectsWithoutMutation (0.11s)
+    --- FAIL: TestRecallNoRoute_CoreRejectsWithoutMutation/recall/course (0.03s)
+        recall_no_route_test.go:58: missing course accepted or unnamed: result=&{UnitID:2de7162b-f41f-40ed-8428-cf5e8ea19874 OwnerID:449cd980-c7d5-4710-b7ee-c4a559c65c59 Mode:recall FromQ:2 FromR:0 NewTargetQ:0 NewTargetR:0 ArrivesAt:2026-10-07 18:00:00 +0000 UTC} err=<nil>
+    --- FAIL: TestRecallNoRoute_CoreRejectsWithoutMutation/recall/position (0.03s)
+        recall_no_route_test.go:58: missing position accepted or unnamed: result=&{UnitID:9da3771f-c86e-49a4-ba32-41ceee9c4aed OwnerID:1a251880-e30f-49f0-a9c7-354e3fadb3ef Mode:recall FromQ:0 FromR:0 NewTargetQ:0 NewTargetR:0 ArrivesAt:2026-10-07 17:00:00 +0000 UTC} err=<nil>
+    --- FAIL: TestRecallNoRoute_CoreRejectsWithoutMutation/redirect/course (0.03s)
+        recall_no_route_test.go:58: missing course accepted or unnamed: result=&{UnitID:16b80dd1-3b44-4060-b2e9-df1d7706b62a OwnerID:9d60052c-884f-441e-8d83-6eccb545db49 Mode:redirect FromQ:2 FromR:0 NewTargetQ:0 NewTargetR:0 ArrivesAt:2026-10-07 18:00:00 +0000 UTC} err=<nil>
+    --- FAIL: TestRecallNoRoute_CoreRejectsWithoutMutation/redirect/position (0.03s)
+        recall_no_route_test.go:58: missing position accepted or unnamed: result=&{UnitID:a39dda7d-96e6-42d3-beb7-d88c1d79b93f OwnerID:a1039611-ff81-4676-be1f-a759bf7846b6 Mode:redirect FromQ:0 FromR:0 NewTargetQ:0 NewTargetR:0 ArrivesAt:2026-10-07 17:00:00 +0000 UTC} err=<nil>
+2026/10/07 19:50:01 WARN recall/redirect: no route found, falling back to straight line unit=72900578-3a0f-4d43-84a9-ca56f56e7d20
+2026/10/07 19:50:01 INFO recall/redirect order reached unit, new course set unit=72900578-3a0f-4d43-84a9-ca56f56e7d20 mode=recall from_q=2 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-07T18:00:00.000Z
+2026/10/07 19:50:01 INFO order delivered — unit turned onto new course unit=72900578-3a0f-4d43-84a9-ca56f56e7d20 verb=recall arrives_at=2026-10-07T18:00:00.000Z
+2026/10/07 19:50:01 INFO order messenger already processed or superseded by a later passage — idempotent replay skipped messenger=b147e959-fe62-4ad8-ae77-d4bee29b67d7
+2026/10/07 19:50:01 WARN recall/redirect: no route found, falling back to straight line unit=6f4bee5c-8088-4717-a825-baa70b000e36
+2026/10/07 19:50:01 INFO recall/redirect order reached unit, new course set unit=6f4bee5c-8088-4717-a825-baa70b000e36 mode=redirect from_q=2 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-07T18:00:00.000Z
+2026/10/07 19:50:01 INFO order delivered — unit turned onto new course unit=6f4bee5c-8088-4717-a825-baa70b000e36 verb=redirect arrives_at=2026-10-07T18:00:00.000Z
+2026/10/07 19:50:01 INFO order messenger already processed or superseded by a later passage — idempotent replay skipped messenger=8a91775e-5cb2-4241-872e-6099e42e17f4
+--- FAIL: TestRecallNoRoute_DeliveryNamesReasonOnce (0.06s)
+    --- FAIL: TestRecallNoRoute_DeliveryNamesReasonOnce/recall (0.03s)
+        recall_no_route_test.go:77: named failures=[]
+    --- FAIL: TestRecallNoRoute_DeliveryNamesReasonOnce/redirect (0.03s)
+        recall_no_route_test.go:77: named failures=[]
+2026/10/07 19:50:01 INFO recall/redirect order reached unit, new course set unit=a6d036aa-e86b-4830-8802-ede1bd4f6ed5 mode=redirect from_q=2 from_r=0 to_q=2 to_r=0 arrives_at=2026-10-07T17:00:00.000Z
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.189s
+2026/10/07 19:50:02 INFO player registered id=84765a9b-ac6d-4602-9757-6dc02f281764 username=nomadhost-recall-3124c8d2-3246-4d27-b10d-23b7ff2b57aa
+2026/10/07 19:50:02 WARN recall/redirect: no route found, falling back to straight line unit=cd7151ce-a2f6-4412-9a6f-0183af9f907a
+2026/10/07 19:50:02 INFO recall/redirect order reached unit, new course set unit=cd7151ce-a2f6-4412-9a6f-0183af9f907a mode=recall from_q=3 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-08T00:50:02.689+02:00
+2026/10/07 19:50:02 INFO player registered id=00195551-c07e-4b84-972c-b91a3bab72d5 username=nomadhost-recall-0db7a0a4-3cc1-4dc0-837f-36864a6d8254
+2026/10/07 19:50:02 WARN recall/redirect: could not re-walk outbound path, using origin as current position unit=df7e581a-38fb-478f-95da-5daaa8b501d4
+2026/10/07 19:50:02 INFO recall/redirect order reached unit, new course set unit=df7e581a-38fb-478f-95da-5daaa8b501d4 mode=recall from_q=0 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-07T20:50:02.756+02:00
+--- FAIL: TestRecallNoRoute_HTTPRejectsNamed (0.13s)
+    --- FAIL: TestRecallNoRoute_HTTPRejectsNamed/course (0.07s)
+        unit_recall_no_route_test.go:48: unnamed route rejection: 200 {"arrives_at":"2026-10-08T00:50:02.689308869+02:00","q":3,"r":0,"status":"order_applied","target_q":0,"target_r":0,"unit_id":"cd7151ce-a2f6-4412-9a6f-0183af9f907a","verb":"recall"}
+    --- FAIL: TestRecallNoRoute_HTTPRejectsNamed/position (0.06s)
+        unit_recall_no_route_test.go:48: unnamed route rejection: 200 {"arrives_at":"2026-10-07T20:50:02.756115025+02:00","q":0,"r":0,"status":"order_applied","target_q":0,"target_r":0,"unit_id":"df7e581a-38fb-478f-95da-5daaa8b501d4","verb":"recall"}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.134s
+FAIL
