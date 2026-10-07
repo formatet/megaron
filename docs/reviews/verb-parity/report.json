@@ -1,5 +1,5 @@
 {
-  "source_sha256": "758cb7d5a5abdddabbdd7bda34431cb2e8ebfe93e9ea450af6c4bddf08b547b4",
+  "source_sha256": "f02422e7ca3e02799dc8df7d2e840cfe07bda79d4a96a83e7271c1109fe9a83d",
   "routes": [
     {
       "method": "POST",
@@ -265,7 +265,9 @@
       "codex": [
         "web/static/codex/getting-in.md:6"
       ],
-      "excluded": []
+      "excluded": [
+        "WorldHandler.Create now requires X-Admin-Key fail-closed (bc15f01d); administration, not a player verb"
+      ]
     },
     {
       "method": "GET",
@@ -1899,7 +1901,6 @@
     "GET /api/v1/worlds/{id}/units/{id}/march-preview",
     "GET /api/v1/worlds/{id}/wanaxes",
     "POST /api/v1/agora/password",
-    "POST /api/v1/worlds",
     "POST /api/v1/worlds/{id}/founding/messengers",
     "POST /api/v1/worlds/{id}/notifications/read-all",
     "POST /api/v1/worlds/{id}/notifications/{id}/read"

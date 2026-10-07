@@ -1,6 +1,6 @@
 # Statisk verbparitet
 
-Input SHA256: `758cb7d5a5abdddabbdd7bda34431cb2e8ebfe93e9ea450af6c4bddf08b547b4`
+Input SHA256: `f02422e7ca3e02799dc8df7d2e840cfe07bda79d4a96a83e7271c1109fe9a83d`
 
 ✓ = källanrop; Codex ✓ = uttryckligt rutt-/aliasomnämnande, inte fullständigt beteendebevis.
 — = ingen statisk evidens hittad; kontrollera olösta anrop före en verklig lucka hävdas.
@@ -19,7 +19,6 @@ Input SHA256: `758cb7d5a5abdddabbdd7bda34431cb2e8ebfe93e9ea450af6c4bddf08b547b4`
 | PUT /api/v1/notification-preferences/{id} | ✓ server/cmd/keryx/cmd_dispatches.go:46 | ✓ web/static/js/megaron/ui/dispatch_window.js:325 | ✓ web/static/codex/coming-back.md:12 |
 | DELETE /api/v1/notification-preferences/{id} | ✓ server/cmd/keryx/cmd_dispatches.go:52 | ✓ web/static/js/megaron/ui/dispatch_window.js:325 | ✓ web/static/codex/coming-back.md:12 |
 | GET /api/v1/worlds | ✓ server/cmd/keryx/cmd_login.go:126 | — | ✓ web/static/codex/getting-in.md:6 |
-| POST /api/v1/worlds | — | — | ✓ web/static/codex/getting-in.md:6 |
 | GET /api/v1/worlds/{id} | ✓ server/cmd/keryx/client.go:148 | ✓ web/static/js/megaron/main.js:298 | ✓ web/static/codex/getting-in.md:6 |
 | GET /api/v1/worlds/{id}/map | ✓ server/cmd/keryx/cmd_map.go:101 | ✓ web/static/js/megaron/render/map.js:3908 | ✓ web/static/codex/screen.md:7 |
 | GET /api/v1/worlds/{id}/colonize-preview | ✓ server/cmd/keryx/cmd_unit.go:904 | ✓ web/static/js/megaron/render/map.js:4262 | ✓ web/static/codex/colonies.md:5 |
@@ -100,7 +99,6 @@ Input SHA256: `758cb7d5a5abdddabbdd7bda34431cb2e8ebfe93e9ea450af6c4bddf08b547b4`
 ## Saknar statisk evidens: keryx
 
 - GET /api/v1/goods
-- POST /api/v1/worlds
 - GET /api/v1/worlds/{id}/marches
 - GET /api/v1/worlds/{id}/messengers
 - GET /api/v1/worlds/{id}/rural-projections
@@ -114,7 +112,6 @@ Input SHA256: `758cb7d5a5abdddabbdd7bda34431cb2e8ebfe93e9ea450af6c4bddf08b547b4`
 ## Saknar statisk evidens: webb
 
 - GET /api/v1/worlds
-- POST /api/v1/worlds
 - GET /api/v1/worlds/{id}/provinces/{id}/buildings
 - GET /api/v1/worlds/{id}/provinces/{id}/trade
 - GET /api/v1/worlds/{id}/founding/messengers
@@ -133,6 +130,7 @@ Input SHA256: `758cb7d5a5abdddabbdd7bda34431cb2e8ebfe93e9ea450af6c4bddf08b547b4`
 - GET /api/v1/admin/worlds/{id}/god-view: Admin, intentional outside player parity
 - GET /api/v1/admin/worlds/{id}/reports: Admin, intentional outside player parity
 - POST /api/v1/admin/worlds/{id}/backfill-placements: Admin, intentional outside player parity
+- POST /api/v1/worlds: WorldHandler.Create now requires X-Admin-Key fail-closed (bc15f01d); administration, not a player verb
 - POST /api/v1/worlds/{id}/join: Web via templates/join.html:31, outside module scan; CLI join present
 - GET /api/v1/worlds/{id}/kingdoms: KINGDOMS_ENABLED gated, post-MVP
 - POST /api/v1/worlds/{id}/kingdoms: KINGDOMS_ENABLED gated, post-MVP
@@ -201,7 +199,6 @@ Input SHA256: `758cb7d5a5abdddabbdd7bda34431cb2e8ebfe93e9ea450af6c4bddf08b547b4`
 - GET /api/v1/worlds/{id}/units/{id}/march-preview
 - GET /api/v1/worlds/{id}/wanaxes
 - POST /api/v1/agora/password
-- POST /api/v1/worlds
 - POST /api/v1/worlds/{id}/founding/messengers
 - POST /api/v1/worlds/{id}/notifications/read-all
 - POST /api/v1/worlds/{id}/notifications/{id}/read

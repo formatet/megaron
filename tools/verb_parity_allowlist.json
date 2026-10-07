@@ -34,6 +34,10 @@
     {
       "route": "POST /api/v1/worlds/{id}/join",
       "reason": "Web via templates/join.html:31, outside module scan; CLI join present"
+    },
+    {
+      "route": "POST /api/v1/worlds",
+      "reason": "WorldHandler.Create now requires X-Admin-Key fail-closed (bc15f01d); administration, not a player verb"
     }
   ],
   "codex_aliases": {
