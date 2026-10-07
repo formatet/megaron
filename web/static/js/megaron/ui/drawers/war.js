@@ -14,6 +14,7 @@ import { canTakeStance, stanceSentLine } from '../stance.js';
 import { warMovements } from '../movements.js';
 import { expeditionMissionText } from '../expedition.js';
 import { chooseMarchTarget } from '../marchctx.js';
+import { numberWords } from '../number_words.js';
 import { orderRunnerHTML } from '../runner_status.js';
 import { recallAll, recallAllControlsHTML, recallAllResultHTML } from '../recall_all.js';
 let recallAllResult = '';
@@ -25,7 +26,7 @@ let recallAllBusy = false;
 // avoids gluing the hardcoded "ready " prefix onto it a second time).
 function readyWord(iso) {
   const eta = fmtArrival(iso, undefined, 'ready');
-  return eta === 'ready' ? eta : 'ready ' + eta;
+  return !eta || eta === 'ready' ? eta : 'ready ' + eta;
 }
 
 // Unit catalogue (GET /api/v1/units) — static for a world's lifetime, so fetch
@@ -406,7 +407,19 @@ function applyUnitFocus() {
   card.scrollIntoView({ block: 'center' });
 }
 
-function renderUnitCard(u) {
+export function unitStatusLabel(u) {
+  const naval = u.category === 'naval';
+  return ({
+    garrison: naval ? 'in harbour' : 'in the city',
+    positioned: naval ? 'off the coast' : 'in the field',
+    marching: naval ? 'at sea' : 'on the march',
+    forming: naval ? 'being built' : 'gathering men',
+    training: 'training', embarked: 'aboard a ship', repairing: 'being repaired',
+    freighting: 'carrying goods', disbanded: 'dismissed',
+  })[u.status] || 'awaiting news';
+}
+
+export function renderUnitCard(u) {
   const lbl = esc(actorName(u));
   const isNaval = u.category === 'naval';
   const isForming = u.status === 'forming';
@@ -424,7 +437,7 @@ function renderUnitCard(u) {
   // Location string
   let loc = '';
   if (isFreighting) {
-    loc = 'Freighting — ' + (u.freighting_note ? esc(u.freighting_note) : 'bound to a sea route');
+    loc = 'Carrying goods — ' + (u.freighting_note ? esc(u.freighting_note) : 'bound to a sea route');
   } else if (isGarrison || isForming || isTraining || isEmbarked) {
     const prov = State.provinceData.find(p => p.settlement_id === u.settlement_id || p.id === u.settlement_id);
     const place = prov ? esc(prov.name) : 'city';
@@ -437,7 +450,7 @@ function renderUnitCard(u) {
     // the shore for the fetched unit — ScheduledPickupTimeout is what sends
     // it home if the unit never makes it.
     const who = u.pickup_for ? esc(u.pickup_for) : 'the unit';
-    const until = u.waiting_until_tick != null ? ' until tick ' + u.waiting_until_tick : '';
+    const until = u.waiting_until_tick != null ? ' until game day ' + numberWords(u.waiting_until_tick) : '';
     loc = 'waiting off (' + u.q + ',' + u.r + ') for ' + who + until;
   } else if (isMarching && u.target_q != null) {
     // Pickup (megaron_plan_hamta_hem.md): sailing to fetch a unit — target_q/r
@@ -447,7 +460,8 @@ function renderUnitCard(u) {
       : '';
     // arrival_tick is the authoritative arrival (K4) — the stored arrives_at
     // stamp lies across server downtime; the tick self-corrects.
-    loc = pickupPrefix + '→ (' + u.target_q + ',' + u.target_r + ') arrives ' + arrivalHTML(u.arrives_at, u.arrival_tick);
+    const arrival = arrivalHTML(u.arrives_at, u.arrival_tick);
+    loc = pickupPrefix + '→ (' + u.target_q + ',' + u.target_r + ')' + (arrival ? ' arrives ' + arrival : '');
   } else if (u.q != null) {
     loc = '(' + u.q + ',' + u.r + ')';
   }
@@ -465,16 +479,16 @@ function renderUnitCard(u) {
     // same type into this settlement is what fills it — say so, so a
     // half-formed unit doesn't read as a stuck pipeline.
     const needed = u.men_to_deploy != null ? u.men_to_deploy : (100 - u.size);
-    progress = bar(u.size) + dim(u.size + '/100 · forming — ' + needed + ' more men needed before training starts');
+    progress = bar(u.size) + dim(numberWords(u.size) + ' of one hundred · ' + numberWords(needed) + ' more men needed before training starts');
   } else if (isTraining) {
-    progress = bar(100) + dim('100/100 · training — ' + readyWord(u.build_complete_at));
+    progress = bar(100) + dim('one hundred men · training — ' + readyWord(u.build_complete_at));
   } else if (isGarrison && u.reinforcing) {
     // Manskaps-underhåll (megaron_plan_rekryteringsmodell.md): a decimated
     // cohort trickles back to 100 out of its home city's population growth,
     // a few men per game-day — not a stuck pipeline, just slow by design.
     // (No separate origin-city name field on the wire — the server exposes
     // origin_settlement_id, not a name, so this stays generic.)
-    progress = bar(u.size) + dim(u.size + '/100 · reinforcing — refilling from home-city growth');
+    progress = bar(u.size) + dim(numberWords(u.size) + ' of one hundred · reinforcing from home-city growth');
   }
 
   // Pending order (Fas 5): a Runner is en route to this unit — the order
@@ -484,19 +498,19 @@ function renderUnitCard(u) {
 
   // Stance badge
   const stanceBadge = u.stance
-    ? '<span style="font-size:.6rem;padding:.1rem .25rem;border:1px solid var(--border);color:var(--text-dim);margin-left:.2rem">' + u.stance + '</span>'
+    ? '<span style="font-size:.6rem;padding:.1rem .25rem;border:1px solid var(--border);color:var(--text-dim);margin-left:.2rem">' + esc(u.stance) + '</span>'
     : '';
 
   // Crew badge for naval
   const crewBadge = isNaval && u.crew
-    ? '<span style="font-size:.6rem;color:var(--text-dim);margin-left:.3rem">crew ' + u.crew + '</span>'
+    ? '<span style="font-size:.6rem;color:var(--text-dim);margin-left:.3rem">crew ' + numberWords(u.crew) + '</span>'
     : '';
 
   // Hull badge (megaron_plan_skeppsreparation.md §B2) — only shown while
   // damaged (hull < 5); a pristine ship (hull omitted or 5) shows nothing,
   // same "don't clutter the common case" posture as crewBadge above.
   const hullBadge = isNaval && u.hull != null && u.hull < 5
-    ? '<span style="font-size:.6rem;color:var(--accent-war);margin-left:.3rem">hull ' + u.hull + '/5</span>'
+    ? '<span style="font-size:.6rem;color:var(--accent-war);margin-left:.3rem">hull ' + numberWords(u.hull) + ' of five</span>'
     : '';
 
   // Matmätaren (megaron_plan_skeppsproviant.md §7, Timothy 2026-08-26). Dygn,
@@ -510,12 +524,12 @@ function renderUnitCard(u) {
   // 'freighting' excluded too (megaron_plan_sjohandel_kraver_skepp.md — this
   // slice doesn't model per-ship provisions for a bound trade hull; showing
   // a food badge the server never resolves would be a promise it can't keep).
-  const atSea = isNaval && u.status !== 'garrison' && u.status !== 'repairing' && u.status !== 'freighting';
+  const atSea = isNaval && (isMarching || isPositioned);
   const days = u.provision_days || 0;
   const foodBadge = atSea
     ? '<span style="font-size:.6rem;margin-left:.3rem;color:' +
       (days <= 0 ? 'var(--accent-war)' : days < 3 ? 'var(--accent-war)' : 'var(--text-dim)') + '">' +
-      (days <= 0 ? 'out of food' : 'food ' + days + 'd') + '</span>'
+      (days <= 0 ? 'out of food' : 'food for ' + numberWords(days) + ' game days') + '</span>'
     : '';
 
   // Cargo badge
@@ -525,6 +539,7 @@ function renderUnitCard(u) {
 
   // Action buttons
   let actions = '';
+  let moreActions = '';
 
   // March button: garrison or positioned, deployable per the
   // server's own march grind (march_start.go:120-136 — status must be garrison
@@ -537,7 +552,10 @@ function renderUnitCard(u) {
   // allows marching a positioned unit; this just surfaces the button. (The
   // map right-click used to read the unit's own hex as the target — fixed by
   // routing that click to warFocusUnit, landing here, render/map.js contextmenu.)
-  const canMarch = (isGarrison || isPositioned) && u.deployable && u.stance !== 'fortify';
+  // R3: ships off the coast take no new orders; R6 preserves the stranded
+  // exception when the Wanax has no city left (RequireShipInPort).
+  const canMarch = (isGarrison || (isPositioned && (!isNaval || !ownCapital())))
+    && u.deployable && u.stance !== 'fortify';
   if (canMarch) {
     actions += '<button onclick="unitMarch(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">March</button> ';
   }
@@ -546,7 +564,7 @@ function renderUnitCard(u) {
   // overhaul 2026-07-09). A marching unit takes one too: the Runner must catch
   // up with it (megaron_styrande_beslut §11, canTakeStance mirrors the server).
   if (canTakeStance(u)) {
-    actions += '<select id="ustance-' + u.id + '" style="font-size:.65rem;padding:.1rem;border:1px solid var(--border);background:var(--warm-white)">'
+    moreActions += '<select id="ustance-' + u.id + '" style="font-size:.65rem;padding:.1rem;border:1px solid var(--border);background:var(--warm-white)">'
       + '<option value="none">stance…</option>'
       + '<option value="fortify">fortify</option>'
       + '<option value="storm">storm</option>'
@@ -561,7 +579,7 @@ function renderUnitCard(u) {
     // SetStandingOrders checks); outside battle it could only ever answer
     // "unit is not in an active battle", and the realm-wide setting at the
     // top of this tab is what applies.
-    if (isGarrison || isPositioned) actions += unitRetreatControlHTML(u);
+    if (isGarrison || isPositioned) moreActions += unitRetreatControlHTML(u);
   }
 
   // Reinforce button (megaron_plan_rekryteringsmodell.md): only when the
@@ -576,12 +594,12 @@ function renderUnitCard(u) {
 
   // Load button: naval garrison without cargo — pick from co-located garrison land units
   if (isNaval && isGarrison && !u.cargo_unit_id && u.settlement_id) {
-    actions += '<button onclick="unitLoadPrompt(\'' + u.id + '\',\'' + (u.settlement_id||'') + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Load</button> ';
+    moreActions += '<button onclick="unitLoadPrompt(\'' + u.id + '\',\'' + (u.settlement_id||'') + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Load</button> ';
   }
 
   // Unload button: naval garrison with cargo
   if (isNaval && isGarrison && u.cargo_unit_id) {
-    actions += '<button onclick="unitUnload(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Unload</button> ';
+    moreActions += '<button onclick="unitUnload(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Unload</button> ';
   }
 
   // Fetch by ship (R1, megaron_plan_hamta_hem.md, slice 2b): a field-
@@ -591,7 +609,7 @@ function renderUnitCard(u) {
   // an action the server cannot perform).
   let pickupRow = '';
   if (isPositioned && !isNaval && u.can_fetch_by_ship && (u.pickup_ships || []).length) {
-    actions += '<button onclick="unitPickupToggle(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Fetch by ship</button> ';
+    moreActions += '<button onclick="unitPickupToggle(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Fetch by ship</button> ';
     const shipOptions = u.pickup_ships.map(s =>
       '<option value="' + s.id + '">' + esc(s.name) + ' (' + esc(s.settlement_name) + ')' +
       (s.can_carry_runner ? '' : ' — war galley, must already be on the shore') + '</option>'
@@ -609,7 +627,7 @@ function renderUnitCard(u) {
   // or the yard is full — this button only knows the ship is damaged and
   // docked, same "let the server be the judge" posture as Load/Unload.
   if (isNaval && isGarrison && u.hull != null && u.hull < 5) {
-    actions += '<button onclick="unitRepair(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Repair</button> ';
+    moreActions += '<button onclick="unitRepair(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Repair</button> ';
   }
 
   // Recall/redirect: marching LAND units only. A marching ship is on a
@@ -626,9 +644,9 @@ function renderUnitCard(u) {
   let redirectRow = '';
   if (isMarching && !isNaval) {
     actions += '<button onclick="unitRecall(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Recall</button> ';
-    actions += '<button onclick="unitRedirectToggle(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Redirect</button> ';
+    moreActions += '<button onclick="unitRedirectToggle(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Redirect</button> ';
     redirectRow = '<div id="uredir-' + u.id + '" style="display:none;margin-top:.2rem;font-size:.65rem;color:var(--text-dim)">'
-      + '<div>Right-click the new destination on the map — the Runner carries the order to this unit.</div>'
+      + '<div>Right-click the new destination on the map — a messenger carries the order to this unit.</div>'
       + '<div style="margin-top:.2rem"><a href="#" onclick="unitRedirectTypedToggle(\'' + u.id + '\');return false" style="color:var(--text-dim)">or type coordinates</a></div>'
       + '<div id="uredir-typed-' + u.id + '" style="display:none;margin-top:.2rem;gap:.25rem;align-items:center">'
         + '<label>Q <input id="uredir-q-' + u.id + '" type="number" value="0" style="width:40px;padding:.1rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.65rem"></label>'
@@ -645,14 +663,15 @@ function renderUnitCard(u) {
     + '<div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap">'
     + '<span style="font-size:.8rem;font-weight:bold">' + lbl + '</span>'
     + stanceBadge + crewBadge + hullBadge + foodBadge + cargoBadge
-    + '<span style="font-size:.68rem;color:var(--text-dim);margin-left:auto">' + u.status + '</span>'
+    + '<span style="font-size:.68rem;color:var(--text-dim);margin-left:auto">' + esc(unitStatusLabel(u)) + '</span>'
     + '</div>'
     + progress
     + (loc ? '<div style="font-size:.65rem;color:var(--text-dim)">' + loc + '</div>' : '')
     + (u.expedition ? '<div style="font-size:.72rem;color:var(--text-dim)">' + esc(expeditionMissionText(u.expedition)) + '</div>' : '')
     + pendingOrder
     + (actions ? '<div style="margin-top:.2rem;display:flex;gap:.2rem;flex-wrap:wrap;align-items:center">' + actions + '</div>' : '')
-    + redirectRow + pickupRow + (isMarching ? orderStatus : '')
+    + (moreActions ? '<details id="umore-' + u.id + '" class="dsec"><summary class="dsec-title">More</summary>' + moreActions + (isMarching && !isNaval ? redirectRow : '') + pickupRow + '</details>' : '')
+    + (isMarching && isNaval ? redirectRow : '') + orderStatus
     + '</div>';
 }
 
@@ -680,7 +699,7 @@ function orderSentLine(d, verb) {
   if (d && d.status === 'order_applied') {
     return verb + ' order given in person — you ride with the host, so it takes effect at once.';
   }
-  return verb + ' order sent by Runner — reaches the unit ' + fmtArrival(d.courier_arrives_at) + '.';
+  return verb + ' order sent by messenger — reaches the unit ' + fmtArrival(d.courier_arrives_at, d.courier_due_tick) + '.';
 }
 
 export async function unitRecall(unitID) {
@@ -808,7 +827,7 @@ export async function unitRetreatOrder(unitID) {
     if (data.status === 'order_dispatched') {
       if (resEl) {
         resEl.style.color = 'var(--text-dim)';
-        resEl.textContent = '🏃 Runner carries the retreat order — applies on delivery' + passageNote(data);
+        resEl.textContent = '🏃 Messenger carries the retreat order — applies on delivery' + passageNote(data);
       }
       fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
     }
@@ -961,8 +980,8 @@ export async function unitPickup(unitID) {
   if (res.ok) {
     if (resEl) {
       resEl.style.color = 'var(--safe)';
-      resEl.textContent = 'Ship sails to (' + data.shore_q + ',' + data.shore_r + ') — arrives tick ' + data.arrival_tick +
-        (data.messenger_id ? ', a runner rides along' : '') + '.';
+      resEl.textContent = 'Ship sails to (' + data.shore_q + ',' + data.shore_r + ') — arrives game day ' + numberWords(data.arrival_tick) +
+        (data.messenger_id ? ', a messenger rides along' : '') + '.';
     }
     loadWarDrawer();
   } else if (resEl) {

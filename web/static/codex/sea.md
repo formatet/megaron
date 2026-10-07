@@ -12,14 +12,14 @@ A [[transfers|transfer]] or [[routes|standing order]] that goes by sea needs a f
 
 ## At sea
 
-- **A ship is given its whole mission in port, then sails alone.** From **War → Army**, **Load** a land unit onto a ship standing with it, then send it on a **mission**: **Land** puts the cargo ashore on open ground and sails home again on its own — tick "…and found a colony" to settle right there, no further order needed. The port pays the colonists' silver the moment the ship sails, as it would for a column on foot ([[colonies]]); if the colony cannot be founded, or you unload them at home, the silver comes back with them. **Patrol** and **Explore** return home by themselves. For **Explore**, choose an area and duration in game days: the port loads provisions for the whole expedition, and the ship turns home by half the duration ([[sight]]). **Passage** is a fourth mission, empty of cargo, given to carry a [[messengers|letter]] or [[runners|order]] — see "Ordna passage" below.
+- **A ship is given its whole mission in port, then sails alone.** From **War → Army → More**, **Load** a land unit onto a ship standing with it, then send it on a **mission**: **Land** puts the cargo ashore on open ground and sails home again on its own — tick "…and found a colony" to settle right there, no further order needed. The port pays the colonists' silver the moment the ship sails, as it would for a column on foot ([[colonies]]); if the colony cannot be founded, or you unload them at home, the silver comes back with them. **Patrol** and **Explore** return home by themselves. For **Explore**, choose an area and duration in game days: the port loads provisions for the whole expedition, and the ship turns home by half the duration ([[sight]]). **Passage** is a fourth mission, empty of cargo, given to carry a [[messengers|letter]] or [[runners|order]] — see "Ordna passage" below.
 - **Once it sails, a ship takes no more orders.** March, Recall, Redirect, Stance, Load, Unload — none of them reach a ship that isn't standing in its own port. This is the messenger pillar taken to its edge: nothing reaches a ship at sea, not even you. Give the whole mission before it leaves; it always sails home on its own afterwards, and the drawer tells you when.
 - **Sight.** A ship reads the open sea out to four hexes but sees only one hex inland.
 - **Supplies.** A crew eats. A ship whose crew runs short of food turns for home on its own — you are told why, and a thinned crew sails slower ([[upkeep]]).
 
 ## Damage and loss
 
-Ships are damaged in [[battle]] and by storms. A damaged ship can be **Repaired** at a Shipyard (**War → Army → Repair**); you are notified when the work is done. Ships can also be lost at sea outright — and the gods, when angry, sometimes take one from the harbour ([[kharis]]).
+Ships are damaged in [[battle]] and by storms. A damaged ship can be **Repaired** at a Shipyard (**War → Army → More → Repair**); you are notified when the work is done. Ships can also be lost at sea outright — and the gods, when angry, sometimes take one from the harbour ([[kharis]]).
 
 A ship caught carrying cargo (see [[transfers]]) can also be **captured outright** — it changes hands on the spot and sails to the raider's nearest port under its new flag. If your own trade route's home port is gone by the time a ship comes back — burned, occupied, abandoned — it docks at your next-nearest settlement instead; with none left anywhere, it sits **stranded** wherever it made landfall until you give it a fresh order.
 
@@ -70,7 +70,7 @@ Waiting for a ship to happen to sail the right way is not your only choice. From
 
 ## Hämta hem — send a ship to fetch a unit
 
-A land [[units|unit]] stranded on another shore — landed there, or marched off on its own — cannot swim home. From that unit's own card (a **Fetch by ship** button, whenever one of your own ships qualifies), or `keryx unit pickup`, you send a ship to bring it back.
+A land [[units|unit]] stranded on another shore — landed there, or marched off on its own — cannot swim home. From that unit's own card (**More → Fetch by ship**, whenever one of your own ships qualifies), or `keryx unit pickup`, you send a ship to bring it back.
 
 - **The shore is chosen for you.** If the unit already stands on ground a ship can reach by sea, that is the shore. Otherwise the nearest open, unclaimed coastline near it is picked automatically — never a foreign city.
 - **A runner rides along if one is needed.** When the unit does not already stand on the chosen shore, a Runner boards the very same ship, steps ashore with it, and marches inland to order the unit to the shore — exactly like [[messengers|ordna passage]]'s own crossing, just carrying a march order instead of a letter. Only a Galley or Emporos can carry that runner; a War Galley may only fetch a unit that is already standing on the shore.

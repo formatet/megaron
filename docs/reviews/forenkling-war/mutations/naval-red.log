@@ -1,0 +1,68 @@
+TAP version 13
+# Subtest: I: garrison shows March and eligible Reinforce; stance and battle retreat stay in closed More
+ok 1 - I: garrison shows March and eligible Reinforce; stance and battle retreat stay in closed More
+  ---
+  duration_ms: 1.226416
+  type: 'test'
+  ...
+# Subtest: I: marching land has Recall as primary, retaining stance and typed redirect under More
+ok 2 - I: marching land has Recall as primary, retaining stance and typed redirect under More
+  ---
+  duration_ms: 0.217607
+  type: 'test'
+  ...
+# Subtest: I: positioned units remain orderable and fetch uses server-provided ships
+ok 3 - I: positioned units remain orderable and fetch uses server-provided ships
+  ---
+  duration_ms: 0.180109
+  type: 'test'
+  ...
+# Subtest: I: naval loading unloading and repair remain in More; at sea has no recall or redirect
+not ok 4 - I: naval loading unloading and repair remain in More; at sea has no recall or redirect
+  ---
+  duration_ms: 0.568387
+  type: 'test'
+  location: '/tmp/megaron-codex-war-simple-20261007/web/static/js/megaron/ui/war_cards.test.mjs:43:1'
+  failureType: 'testCodeFailure'
+  error: 'ships must never promise recall or redirect'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: `<div id="ucard-u" style="padding:.3rem .2rem;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap"><span style="font-size:.8rem;font-weight:bold">First Spearmen</span><span style="font-size:.6rem;margin-left:.3rem;color:var(--accent-war)">out of food</span><span style="font-size:.68rem;color:var(--text-dim);margin-left:auto">at sea</span></div><div style="margin-top:.2rem;display:flex;gap:.2rem;flex-wrap:wrap;align-items:center"><button onclick="unitRecall('u')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Recall</button> </div><details id="umore-u" class="dsec"><summary class="dsec-title">More</summary><button onclick="unitRedirectToggle('u')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Redirect</button> </details><div id="uredir-u" style="display:none;margin-top:.2rem;font-size:.65rem;color:var(--text-dim)"><div>Right-click the new destination on the map — a messenger carries the order to this unit.</div><div style="margin-top:.2rem"><a href="#" onclick="unitRedirectTypedToggle('u');return false" style="color:var(--text-dim)">or type coordinates</a></div><div id="uredir-typed-u" style="display:none;margin-top:.2rem;gap:.25rem;align-items:center"><label>Q <input id="uredir-q-u" type="number" value="0" style="width:40px;padding:.1rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.65rem"></label><label>R <input id="uredir-r-u" type="number" value="0" style="width:40px;padding:.1rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.65rem"></label><button onclick="unitRedirect('u')" style="padding:.1rem .3rem;border:1px solid var(--border);background:var(--accent-war);color:#fff;font-size:.65rem;cursor:pointer">Send order →</button></div></div><div id="uorder-u" style="font-size:.65rem;color:var(--text-dim);margin-top:.15rem"></div></div>`
+  operator: 'doesNotMatch'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-war-simple-20261007/web/static/js/megaron/ui/war_cards.test.mjs:50:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: I: forming training embarked repairing and freight do not offer inapplicable orders
+ok 5 - I: forming training embarked repairing and freight do not offer inapplicable orders
+  ---
+  duration_ms: 0.24856
+  type: 'test'
+  ...
+# Subtest: I: every server lifecycle status has a player label; unknown status never leaks raw jargon
+ok 6 - I: every server lifecycle status has a player label; unknown status never leaks raw jargon
+  ---
+  duration_ms: 0.130293
+  type: 'test'
+  ...
+# Subtest: I: ships off the coast take no March while a city remains, but keep the R6 stranded exception
+ok 7 - I: ships off the coast take no March while a city remains, but keep the R6 stranded exception
+  ---
+  duration_ms: 0.15256
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 6
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 67.724808

@@ -1,3 +1,4 @@
+import { numberWords } from './number_words.js';
 // Rules come from Temenos; client controls never maintain their own tunables.
 export function configureExpedition(input, rules) {
   if (!input) return;
@@ -19,6 +20,6 @@ export function expeditionOrderText(q, r, ticks, rules) {
 export function expeditionMissionText(e) {
   if (!e) return '';
   const reasons = {half_time:'half the time reached',area_known:'area explored',no_path:'no reachable unexplored ground'};
-  const state = e.homeward ? 'returning home' + (e.turn_reason ? ' — ' + (reasons[e.turn_reason] || e.turn_reason) : '') : `turns home by game day ${e.turn_tick}`;
-  return `Expedition around (${e.area_q},${e.area_r}), ${e.length_ticks} game days; ${state}; home by game day ${e.home_by_tick}.`;
+  const state = e.homeward ? 'returning home' + (e.turn_reason ? ' — ' + (reasons[e.turn_reason] || e.turn_reason) : '') : `turns home by game day ${numberWords(e.turn_tick)}`;
+  return `Expedition around (${e.area_q},${e.area_r}), ${numberWords(e.length_ticks)} game days; ${state}; home by game day ${numberWords(e.home_by_tick)}.`;
 }

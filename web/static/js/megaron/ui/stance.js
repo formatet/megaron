@@ -20,12 +20,12 @@ export function stanceSentLine(d, when) {
   const s = (d && d.stance) || 'stance';
   const at = d && d.intercept_q != null ? ' at (' + d.intercept_q + ',' + d.intercept_r + ')' : '';
   if (d && d.catch_up === 'on_the_march') {
-    return '🏃 ' + s + ': the unit is marching, so the Runner must catch up — reaches it' + at + ' ~' + when
+    return '🏃 ' + s + ': the unit is marching, so the messenger must catch up — reaches it' + at + ' ~' + when
       + '. The stance bites where the unit stops.';
   }
   if (d && d.catch_up === 'at_destination') {
-    return '🏃 ' + s + ': no Runner can overtake the marching unit — it follows it to its destination' + at
+    return '🏃 ' + s + ': no messenger can overtake the marching unit — it follows it to its destination' + at
       + ', reaching it ~' + when + '. The stance applies where it stopped.';
   }
-  return '🏃 Runner carries the stance order — reaches the unit ~' + when + ' and applies on delivery.';
+  return '🏃 Messenger carries the stance order — reaches the unit ~' + when + ' and applies on delivery.';
 }

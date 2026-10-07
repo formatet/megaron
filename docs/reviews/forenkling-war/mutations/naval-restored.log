@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: I: garrison shows March and eligible Reinforce; stance and battle retreat stay in closed More
+ok 1 - I: garrison shows March and eligible Reinforce; stance and battle retreat stay in closed More
+  ---
+  duration_ms: 1.178447
+  type: 'test'
+  ...
+# Subtest: I: marching land has Recall as primary, retaining stance and typed redirect under More
+ok 2 - I: marching land has Recall as primary, retaining stance and typed redirect under More
+  ---
+  duration_ms: 0.244212
+  type: 'test'
+  ...
+# Subtest: I: positioned units remain orderable and fetch uses server-provided ships
+ok 3 - I: positioned units remain orderable and fetch uses server-provided ships
+  ---
+  duration_ms: 0.181397
+  type: 'test'
+  ...
+# Subtest: I: naval loading unloading and repair remain in More; at sea has no recall or redirect
+ok 4 - I: naval loading unloading and repair remain in More; at sea has no recall or redirect
+  ---
+  duration_ms: 0.311425
+  type: 'test'
+  ...
+# Subtest: I: forming training embarked repairing and freight do not offer inapplicable orders
+ok 5 - I: forming training embarked repairing and freight do not offer inapplicable orders
+  ---
+  duration_ms: 0.277764
+  type: 'test'
+  ...
+# Subtest: I: every server lifecycle status has a player label; unknown status never leaks raw jargon
+ok 6 - I: every server lifecycle status has a player label; unknown status never leaks raw jargon
+  ---
+  duration_ms: 0.129658
+  type: 'test'
+  ...
+# Subtest: I: ships off the coast take no March while a city remains, but keep the R6 stranded exception
+ok 7 - I: ships off the coast take no March while a city remains, but keep the R6 stranded exception
+  ---
+  duration_ms: 0.166748
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 68.503356

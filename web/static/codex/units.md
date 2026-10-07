@@ -25,6 +25,6 @@ A cohort is drafted out of your city's population and stays out of it until disb
 
 ## The Army tab
 
-Every unit you own, with its state, and its orders: **March**, **Recall**, **Redirect**, **Reinforce**, **Load** / **Unload**, **Repair**, and a stance selector with **Set**. See [[marching]] and [[stances]].
+Every unit you own, with its state in plain words. **March** is shown while it can move; a damaged unit in its own city can also **Reinforce**. A land unit on the march shows **Recall**. Open the card’s **More** row for stance and **Set**, battle retreat, **Redirect**, **Fetch by ship**, **Load** / **Unload** or **Repair**, whenever that unit can use them. See [[marching]], [[stances]] and [[sea]].
 
 **Movements** lists your units on the march (**Outgoing**) and every foreign unit you can see marching on one of your settlements (**Incoming**), soonest arrival first. You only see an incoming column once one of your eyes has it in sight — the *foreign march sighted* notification fires at the same moment ([[defence]]).

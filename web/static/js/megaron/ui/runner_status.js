@@ -55,9 +55,9 @@ export function sentStatusHTML(m) {
 export function orderRunnerHTML(runner, nowMs) {
   const line = s => '<div style="font-size:.65rem;color:var(--text-dim)">🏃 ' + s + '</div>';
   const stuck = passagePhrase(runner);
-  if (stuck) return line('Runner ' + stuck + ' — the order has not reached the unit');
+  if (stuck) return line('Messenger ' + stuck + ' — the order has not reached the unit');
   // Once the runner has arrived, the order is being applied server-side (a
   // worker poll away) — say so, not the stale "en route" ETA.
-  if (nowMs >= new Date(runner.arrives_at).getTime()) return line('Runner carrying the order…');
-  return line('Runner en route — order arrives ' + arrivalHTML(runner.arrives_at) + aboardBit(runner));
+  if (nowMs >= new Date(runner.arrives_at).getTime()) return line('Messenger carrying the order…');
+  return line('Messenger en route — order arrives ' + arrivalHTML(runner.arrives_at) + aboardBit(runner));
 }

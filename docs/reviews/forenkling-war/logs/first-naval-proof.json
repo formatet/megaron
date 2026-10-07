@@ -1,0 +1,84 @@
+{
+  "health": {
+    "commit": "ed48a74a",
+    "migration": 160,
+    "status": "ok"
+  },
+  "mode": "naval",
+  "naval_receipts": [
+    {
+      "verb": "Load",
+      "http_status": 200,
+      "request": {
+        "unit_id": "3bcbcca1-07bf-4937-8193-d22b1cacbb59"
+      },
+      "receipt": {
+        "cargo_unit_id": "3bcbcca1-07bf-4937-8193-d22b1cacbb59",
+        "ship_id": "3987554c-b342-4693-bbd6-adc76d77a4ba"
+      }
+    },
+    {
+      "verb": "Unload",
+      "http_status": 200,
+      "request": {},
+      "receipt": {
+        "cargo_unit_id": "3bcbcca1-07bf-4937-8193-d22b1cacbb59",
+        "q": 0,
+        "r": 0,
+        "ship_id": "3987554c-b342-4693-bbd6-adc76d77a4ba",
+        "status": "garrison"
+      }
+    }
+  ],
+  "final_units": [
+    {
+      "id": "4bdb0bf5-b234-4493-8160-1a03ce3da6fc",
+      "type": "spearman",
+      "category": "land",
+      "size": 100,
+      "status": "garrison",
+      "deployable": true,
+      "display_name": "2nd Spearmen of Nostos",
+      "ordinal": 2,
+      "support_settlement_id": "e35e7736-2568-4f14-b9ba-e37c54ab3e43",
+      "support_settlement_name": "Nostos",
+      "settlement_id": "e35e7736-2568-4f14-b9ba-e37c54ab3e43",
+      "in_battle": false
+    },
+    {
+      "id": "3bcbcca1-07bf-4937-8193-d22b1cacbb59",
+      "type": "spearman",
+      "category": "land",
+      "size": 100,
+      "status": "garrison",
+      "deployable": true,
+      "display_name": "1st Spearmen of Nostos",
+      "ordinal": 1,
+      "support_settlement_id": "e35e7736-2568-4f14-b9ba-e37c54ab3e43",
+      "support_settlement_name": "Nostos",
+      "settlement_id": "e35e7736-2568-4f14-b9ba-e37c54ab3e43",
+      "q": 0,
+      "r": 0,
+      "in_battle": false
+    },
+    {
+      "id": "3987554c-b342-4693-bbd6-adc76d77a4ba",
+      "type": "galley",
+      "category": "naval",
+      "size": 1,
+      "crew": 20,
+      "hull": 5,
+      "status": "garrison",
+      "deployable": true,
+      "name": "Sea Hymn",
+      "display_name": "Sea Hymn, Galley of Nostos",
+      "ordinal": 1,
+      "support_settlement_id": "e35e7736-2568-4f14-b9ba-e37c54ab3e43",
+      "support_settlement_name": "Nostos",
+      "settlement_id": "e35e7736-2568-4f14-b9ba-e37c54ab3e43",
+      "in_battle": false
+    }
+  ],
+  "browser_errors": [],
+  "sql_mutations": false
+}
