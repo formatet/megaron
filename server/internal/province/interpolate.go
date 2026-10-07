@@ -12,7 +12,7 @@ import (
 // the outbound path it is following and how much of the journey has elapsed.
 // It re-walks the same A* path the unit took at departure — terrain is static,
 // so FindPath is deterministic — and steps along it in proportion to elapsed
-// time over total travel time. Used by march recall/redirect (temenos_march_recall.md)
+// time over total travel time. Used by march recall/redirect (temenos_orderlopare_plan.md)
 // to catch a unit wherever it actually is, not wherever a straight line would place it.
 //
 // ok is false when the path can no longer be found (origin/target off the map,

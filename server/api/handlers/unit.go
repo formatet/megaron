@@ -570,10 +570,8 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Guard: an earlier recall/redirect is already in flight for this unit.
-	// Checks the order-envelope's ScheduledOrderDelivery queue (verb recall|redirect)
-	// now that dispatch goes through sendOrderCourier instead of the frozen
-	// ScheduledMarchRecall path — that old event type is no longer written by
-	// fresh dispatches, so checking it here would silently stop firing.
+	// Checks the order-envelope's ScheduledOrderDelivery queue (verb recall|redirect),
+	// matching dispatch through sendOrderCourier.
 	var pendingMessengerID uuid.UUID
 	if err := h.pool.QueryRow(ctx,
 		`SELECT (payload->>'messenger_id')::uuid

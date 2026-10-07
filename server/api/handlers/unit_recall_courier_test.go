@@ -1,14 +1,9 @@
 package handlers
 
-// Recall/redirect→kuvert-unifiering (temenos_orderlopare_plan.md): recall and
-// redirect now dispatch through the same order envelope march/stance already
-// use — resolveOrderOrigin + sendOrderCourier, verb-based delivery in
-// messenger.OrderDeliveryHandler — instead of the old bespoke path that wrote
-// a kind='recall' messenger and a ScheduledMarchRecall event directly. Full
-// E2E through the HTTP handler: dispatch (202 order_dispatched, messenger
-// kind='order', a ScheduledOrderDelivery — NOT ScheduledMarchRecall — with
-// verb recall|redirect) → deliver → unit turned exactly as the frozen
-// ScheduledMarchRecall path used to turn it.
+// Recall/redirect dispatch through resolveOrderOrigin + sendOrderCourier,
+// verb-based delivery in messenger.OrderDeliveryHandler. E2E through HTTP:
+// dispatch (202 order_dispatched, messenger kind='order', ScheduledOrderDelivery
+// with verb recall|redirect) -> deliver -> unit turns onto its new course.
 //
 // DB integration tests (real Postgres, gated by DATABASE_URL).
 
@@ -30,9 +25,8 @@ import (
 )
 
 // recallCourierFixture builds a world with a capital at (0,0), a straight
-// 5-hex plains line (0,0)..(4,0), and a unit marching that line — mirrors
-// internal/messenger's marchRecallFixture, but through the real HTTP router
-// so the dispatch-time envelope wiring (resolveOrderOrigin, sendOrderCourier)
+// 5-hex plains line (0,0)..(4,0), and a unit marching that line. The HTTP
+// router ensures the dispatch-time envelope wiring (resolveOrderOrigin, sendOrderCourier)
 // is exercised too, not just the delivery handler.
 type recallCourierFixture struct {
 	worldID     uuid.UUID
@@ -172,9 +166,7 @@ func TestRecall_FieldUnitOrderTravelsByCourier(t *testing.T) {
 		t.Errorf("messenger kind = %q, want order (not the old 'recall' kind)", kind)
 	}
 
-	// The scheduled event must be the NEW ScheduledOrderDelivery type, not the
-	// frozen ScheduledMarchRecall one — a fresh dispatch must never write the
-	// old event type.
+	// The scheduled event must be the order envelope with its explicit verb.
 	var eventType, verb string
 	if err := pool.QueryRow(ctx,
 		`SELECT event_type, payload->>'verb' FROM scheduled_events
@@ -201,8 +193,7 @@ func TestRecall_FieldUnitOrderTravelsByCourier(t *testing.T) {
 	}
 
 	// A second recall while one is already in flight must 409 — the pending
-	// guard now checks ScheduledOrderDelivery (verb recall|redirect), not the
-	// no-longer-written ScheduledMarchRecall.
+	// guard checks ScheduledOrderDelivery (verb recall|redirect).
 	req2 := httptest.NewRequest(http.MethodPost,
 		"/worlds/"+f.worldID.String()+"/units/"+f.unitID.String()+"/recall", bytes.NewReader([]byte("{}")))
 	req2.Header.Set("Authorization", "Bearer "+f.accessToken)
@@ -212,8 +203,7 @@ func TestRecall_FieldUnitOrderTravelsByCourier(t *testing.T) {
 		t.Fatalf("second recall while one in flight = %d %q, want 409", rec2.Code, rec2.Body.String())
 	}
 
-	// Deliver the courier: the unit turns for home, exactly like the frozen
-	// MarchRecallHandler used to turn it.
+	// Deliver the courier: the unit turns for home through the shared core.
 	var rawPayload []byte
 	if err := pool.QueryRow(ctx,
 		`SELECT payload FROM scheduled_events

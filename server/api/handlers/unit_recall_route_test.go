@@ -3,8 +3,7 @@ package handlers
 // Acceptance 2 (megaron_plan_rorelse_sparad_vag.md §6), read site (c): the
 // Recall handler's precheck (unit.go ~586) must resolve the marching unit's
 // CURRENT position through the saved route, exactly like combat.ExecuteRecall
-// and messenger.MarchRecallHandler do (both proven in their own packages'
-// TestAcceptance2_*_CatchesWhereTimeSays). The precheck's currentPos itself
+// does (proven by combat's TestAcceptance2_*_CatchesWhereTimeSays). The precheck's currentPos itself
 // isn't returned in the HTTP response, so this test makes it OBSERVABLE a
 // different way: two settlements are placed so that "nearest to the OLD
 // (origin) position" and "nearest to the CORE's (ford) position" pick

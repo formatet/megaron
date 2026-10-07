@@ -168,3 +168,9 @@ väg, auktoritativ position och namngivna HTTP-/kuriravslag. Varje arm använder
 ny PG16/mig160 med en ledig port, kräver assertion-rött och återställer källan
 även vid fel; varje återställd arm måste bli grön. Kör i egen worktree.
 Den riktiga spelarresan använder `single_recall_live.py` enligt receptet ovan.
+
+`python3 tools/recall_eta_mutation.py OUT` provar det bevarade K4-ETA-skyddet
+på aktuell OrderDelivery för recall och redirect. Varje arm ny PG16/mig160;
+väggklockstimmar kräver namngivet assertion-rött, sedan återställning/grönt.
+Rivningsrapport: `docs/reviews/riv-marchrecall/README.md`; livekontrollens
+SQL körs via `psql -X -v ON_ERROR_STOP=1` i explicit READ ONLY-transaktion.

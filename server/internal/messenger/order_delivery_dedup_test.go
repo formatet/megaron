@@ -272,23 +272,6 @@ func TestSingleRecall_PassageRebuiltEnvelopeUsesSameFix(t *testing.T) {
 		})
 	}
 }
-func TestSingleRecall_FrozenMarchRecallIsSeparatePath(t *testing.T) {
-	f := setupSingleRecall(t, "recall")
-	ctx := context.Background()
-	h := NewMarchRecallHandler(f.pool, f.sched, f.store, f.hub, f.clk)
-	raw, _ := json.Marshal(MarchRecallPayload{WorldID: f.world, UnitID: f.unitID, MessengerID: f.messengerID, Mode: "recall"})
-	err := h.Handle(ctx, events.ScheduledEvent{WorldID: f.world, Payload: raw, DueTick: 1})
-	if err == nil || !strings.Contains(err.Error(), "idx_scheduled_recurring_dedup") {
-		t.Fatalf("legacy collision premise changed: %v", err)
-	}
-	var status string
-	if err := f.pool.QueryRow(ctx, `SELECT status FROM messengers WHERE id=$1`, f.messengerID).Scan(&status); err != nil {
-		t.Fatal(err)
-	}
-	if status != "outbound" {
-		t.Fatalf("legacy failed claim must rollback: %s", status)
-	}
-}
 func TestSingleRecall_DifferentEnvelopeIsPreserved(t *testing.T) {
 	f := setupSingleRecall(t, "recall")
 	ctx := context.Background()

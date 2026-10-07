@@ -1,11 +1,7 @@
 package combat
 
-// ExecuteRecall: the recall/redirect order's execute core, extracted from
-// messenger.MarchRecallHandler.Handle (temenos_orderlopare_plan.md "recall/redirect→kuvert-unifiering")
-// so the new order-envelope "recall"/"redirect" verbs (delivered by
-// messenger.OrderDeliveryHandler) and the frozen ScheduledMarchRecall path can
-// eventually share one execution path. Verbatim logic move from
-// march_recall.go's post-claim body — no behaviour change.
+// ExecuteRecall is the shared recall/redirect execution core for personal
+// orders and messenger.OrderDeliveryHandler's recall/redirect envelopes.
 //
 // The caller owns the messenger row's outbound→arrived idempotency claim
 // (mirrors StartMarch/SetStance: this function opens its own transaction,

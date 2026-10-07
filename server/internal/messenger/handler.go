@@ -59,7 +59,7 @@ type ArrivalHandler struct {
 	scheduler *events.Scheduler
 	store     *events.Store
 	// hub is combat.Broadcaster, reused rather than a new interface — the same
-	// consumer interface march_recall.go and order_delivery.go already take
+	// consumer interface order_delivery.go already takes
 	// (G1: messenger sits above combat, and neither imports notify).
 	hub combat.Broadcaster
 }
@@ -80,8 +80,7 @@ func NewArrivalHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *event
 // ScheduledMessengerStayEnd ever enqueued — a permanently stranded messenger
 // that a retry silently no-ops on (status != "outbound" trips the replay
 // guard and returns nil). The row is locked FOR UPDATE before the status
-// check, closing the same race the package's other five claim-sites already
-// guard against (order_delivery.go, march_recall.go, recall.go ×2).
+// check, closing the race between an in-flight delivery and its replay.
 func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
 	var payload ArrivalPayload
 	if err := json.Unmarshal(e.Payload, &payload); err != nil {
