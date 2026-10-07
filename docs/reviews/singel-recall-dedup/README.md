@@ -18,3 +18,11 @@ Aggregat-recall @a92c99b3 är orörd och väntar på BILD hos Claude.
 Kontrakt skrivet, master77f584be. Ingen produktionskod ändrad.
 Nästa: baseline +deterministiska regressionsprov först, sedan fix/verifiering.
 Ingen merge/push/deploy; ingen BILD i denna serverslice.
+
+Baslinje: fresh PG16/mig160 recall/redirect/passage/stale-arrival-proven gröna
+på oförändrad produktion91a138a5, baseline.log.
+Deterministiska regressionsprov (clock exakt tick1, outbound0→3, q2,
+retur1→3 och identisk typed UnitArrival redan köad): båda ExecuteRecall-verb
+SQL23505; båda delivery-verb returnerar nil efter committed claim men target
+förblir4, ingen audit. Separat injicerat UPDATE-fel ger ingen OrderFailed.
+Rålogg red-before.log: sex namngivna assertions röda, inga kompileringsfel.
