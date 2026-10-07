@@ -117,6 +117,8 @@ try:
         page.locator('#drawer-city').screenshot(path=str(OUT/('production-'+label+'.png')))
         assert page.locator('#city-body').evaluate('(e)=>e.scrollWidth<=e.clientWidth'),'city overflow'
         if MODE!='baseline':
+            page.locator('#city-sitos-sec').scroll_into_view_if_needed()
+            page.locator('#drawer-city').screenshot(path=str(OUT/('production-food-'+label+'.png')))
             details=page.locator('#city-more');assert not details.evaluate('(e)=>e.open')
             details.locator('summary').click();details.scroll_into_view_if_needed();page.locator('#drawer-city').screenshot(path=str(OUT/('production-more-'+label+'.png')));details.locator('summary').click()
     page.set_viewport_size({'width':1280,'height':900})
