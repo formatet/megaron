@@ -24,7 +24,7 @@ The first exploratory proof attempts exposed two assumptions in the new proof sc
 
 A second clean web world repeated the complete flow after screenshot cleanup: home after 8 ticks, 46 hexes seen, one report and clean ground state; [repeat proof](live-web-repeat-proof.json), [clean mission mobile](web-repeat-mission-mobile.png).
 
-BILD of the new controls is pending Timothy; merge/deploy has not happened. TEXT of report/turn reason remains for playtest.
+Timothy approved BILD and shipping on 2026-10-07. He explicitly asked to record that **"game days"** is used in player text and that he is uncertain about the term; its wording is not settled. It remains unchanged for this release, with a language follow-up in `temenos_tid_kalender_plan.md`, todo and TEXT/playtest. Merge and deployment verification follow below.
 
 Reproduce real gameplay: build `server/cmd/server` with `-ldflags '-X main.buildCommit=<commit>'` and `server/cmd/keryx` into a private OUT directory, then run `python3 tools/expedition_live.py OUT <commit> web` and separately `... cli`. Each uses its own fresh PostgreSQL16/Redis7/server and registers, joins and founds via player APIs, sends the order through the real web or CLI, observes legs/turn/return, verifies both client report text and reads ground state without SQL fixture writes.
 
@@ -32,4 +32,4 @@ Client fixture proof: `python3 tools/expedition_acceptance.py OUT`; real modules
 
 ## Limits
 
-The home-time reservation assumes the original home remains owned and reachable and the event worker processes scheduled arrivals. Home loss can require a longer journey; after turning, the mission shows the scheduled actual arrival at the replacement home. Combat, attrition and server downtime can interrupt an expedition. Human comprehension of the report remains TEXT for playtest; the new controls require Timothy's BILD review before merge.
+The home-time reservation assumes the original home remains owned and reachable and the event worker processes scheduled arrivals. Home loss can require a longer journey; after turning, the mission shows the scheduled actual arrival at the replacement home. Combat, attrition and server downtime can interrupt an expedition. Human comprehension of the report remains TEXT for playtest; Timothy approved the new controls before merge.
