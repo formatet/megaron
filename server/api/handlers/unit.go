@@ -410,6 +410,23 @@ func (h *UnitHandler) sendOrderCourier(w http.ResponseWriter, ctx context.Contex
 	}
 	defer tx.Rollback(ctx)
 
+	if payload.Verb == "recall" || payload.Verb == "redirect" {
+		var locked uuid.UUID
+		if err := tx.QueryRow(ctx, `SELECT id FROM units WHERE id=$1 FOR UPDATE`, payload.UnitID).Scan(&locked); err != nil {
+			writeError(w, 500, "could not lock recalled unit")
+			return
+		}
+		pending, err := pendingRecall(ctx, tx, payload.UnitID)
+		if err != nil {
+			writeError(w, 500, "could not check pending recall")
+			return
+		}
+		if pending {
+			writeError(w, 409, "a recall/redirect Runner is already on its way to this unit")
+			return
+		}
+	}
+
 	messengerID, err := insertOrderMessenger(ctx, tx, payload, msgText, origin,
 		unitPos.Q, unitPos.R, courierArrivesAt, passage, passageSinceTickArg)
 	if err != nil {
@@ -539,23 +556,60 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 		mode = "redirect"
 	}
 
-	ctx := r.Context()
+	prepared, ok := h.prepareRecall(w, r.Context(), worldID, playerID, unitID, mode, req.TargetQ, req.TargetR)
+	if !ok {
+		return
+	}
+	if prepared.inPerson {
+		res, err := combat.ExecuteRecall(r.Context(), h.pool, h.scheduler, h.eventStore, h.clk, *prepared.payload.Recall)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "could not apply order")
+			return
+		}
+		if res == nil {
+			// The unit stopped marching between the status check above and
+			// here (e.g. it arrived in the instant this request was being
+			// handled) — a genuine miss, not a game-rule rejection.
+			writeError(w, http.StatusConflict,
+				"the unit was no longer marching by the time the order was applied — check its current status")
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"status":     "order_applied",
+			"verb":       mode,
+			"unit_id":    res.UnitID,
+			"q":          res.FromQ,
+			"r":          res.FromR,
+			"target_q":   res.NewTargetQ,
+			"target_r":   res.NewTargetR,
+			"arrives_at": res.ArrivesAt,
+		})
+		return
+	}
+	h.sendOrderCourier(w, r.Context(), prepared.payload, prepared.text, prepared.origin, prepared.position, prepared.extra)
+}
+
+// prepareRecall performs the same single-unit validation and physical planning
+// for both the existing endpoint and batch recall. It never dispatches an order.
+func (h *UnitHandler) prepareRecall(w http.ResponseWriter, ctx context.Context, worldID, playerID, unitID uuid.UUID, mode string, newQ, newR *int) (*preparedRecall, bool) {
 
 	// Ownership + existence collapsed into one 404: don't reveal a unit's
 	// existence/status to a non-owner.
 	u, err := h.store.Get(ctx, unitID)
 	if err != nil || u.OwnerID != playerID || u.WorldID != worldID {
 		writeError(w, http.StatusNotFound, "unit not found")
-		return
+		return nil, false
 	}
 	if u.Status != unit.StatusMarching {
 		writeError(w, http.StatusUnprocessableEntity,
 			fmt.Sprintf("unit is not marching (status: %s) — nothing to recall", string(u.Status)))
-		return
+		return nil, false
 	}
 	if u.Q == nil || u.R == nil || u.TargetQ == nil || u.TargetR == nil || u.DepartsAt == nil || u.ArrivesAt == nil {
 		writeError(w, http.StatusInternalServerError, "marching unit missing position data")
-		return
+		return nil, false
 	}
 
 	// R3 (megaron_plan_skeppsuppdrag_landsatt.md): a marching ship is always at
@@ -566,7 +620,7 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 		unit.CategoryOf(u.Type), u.Status, unit.LoadDisplayName(ctx, h.pool, u.ID),
 		u.TargetQ, u.TargetR, u.ArrivesAt); rej != nil {
 		writeError(w, rej.Status, rej.Reason)
-		return
+		return nil, false
 	}
 
 	// Guard: an earlier recall/redirect is already in flight for this unit.
@@ -574,20 +628,14 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 	// now that dispatch goes through sendOrderCourier instead of the frozen
 	// ScheduledMarchRecall path — that old event type is no longer written by
 	// fresh dispatches, so checking it here would silently stop firing.
-	var pendingMessengerID uuid.UUID
-	if err := h.pool.QueryRow(ctx,
-		`SELECT (payload->>'messenger_id')::uuid
-		 FROM scheduled_events
-		 WHERE event_type = $1 AND (payload->>'unit_id')::uuid = $2
-		   AND payload->>'verb' = ANY(ARRAY['recall','redirect'])
-		   AND processed_at IS NULL AND failed_at IS NULL`,
-		string(events.ScheduledOrderDelivery), unitID,
-	).Scan(&pendingMessengerID); err == nil {
-		var eta time.Time
-		_ = h.pool.QueryRow(ctx, `SELECT arrives_at FROM messengers WHERE id=$1`, pendingMessengerID).Scan(&eta)
-		writeError(w, http.StatusConflict,
-			fmt.Sprintf("a recall/redirect order is already on its way to this unit (ETA %s)", eta.Local().Format(time.RFC3339)))
-		return
+	pending, pErr := pendingRecall(ctx, h.pool, unitID)
+	if pErr != nil {
+		writeError(w, 500, "could not check pending recall orders")
+		return nil, false
+	}
+	if pending {
+		writeError(w, 409, "a recall/redirect Runner is already on its way to this unit")
+		return nil, false
 	}
 
 	origin := province.MapPosition{Q: *u.Q, R: *u.R}
@@ -596,7 +644,7 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 
 	var newTargetQ, newTargetR int
 	if mode == "redirect" {
-		newTargetQ, newTargetR = *req.TargetQ, *req.TargetR
+		newTargetQ, newTargetR = *newQ, *newR
 
 		var destTerrain string
 		if err := h.pool.QueryRow(ctx,
@@ -604,7 +652,7 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 			worldID, newTargetQ, newTargetR,
 		).Scan(&destTerrain); err != nil {
 			writeError(w, http.StatusNotFound, "target hex not found")
-			return
+			return nil, false
 		}
 		// FOW march rule — a redirect is a march order like any other; the new
 		// destination must be seen or remembered (temenos_orderlopare_plan.md
@@ -617,17 +665,17 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusUnprocessableEntity,
 				fmt.Sprintf("none of your men have ever seen (%d,%d) — a march cannot be redirected into unknown land",
 					newTargetQ, newTargetR))
-			return
+			return nil, false
 		}
 		if destTerrain == "mountain_limestone" || destTerrain == "mountain_red" {
 			writeError(w, http.StatusUnprocessableEntity, "mountain terrain is impassable")
-			return
+			return nil, false
 		}
 		// River is water too, a wall for land units (megaron_floden_plan.md, Timothy 2026-07-29).
 		isSea := destTerrain == "coastal_sea" || destTerrain == "deep_sea" || destTerrain == "river"
 		if unit.CategoryOf(u.Type) == unit.CategoryLand && isSea {
 			writeError(w, http.StatusUnprocessableEntity, "land units cannot enter sea terrain")
-			return
+			return nil, false
 		}
 	}
 
@@ -656,7 +704,7 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 			*u.DepartsAt, *u.ArrivesAt, h.clk.Now())
 		if ipErr != nil {
 			writeError(w, http.StatusInternalServerError, "could not resolve unit's current position")
-			return
+			return nil, false
 		}
 		if !posOK {
 			currentPos = origin
@@ -667,11 +715,11 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 		newTarget := province.MapPosition{Q: newTargetQ, R: newTargetR}
 		if _, _, pathOK, pathErr := province.FindPath(ctx, h.pool, worldID, currentPos, newTarget, category); pathErr != nil {
 			writeError(w, http.StatusInternalServerError, "pathfinding error")
-			return
+			return nil, false
 		} else if !pathOK {
 			writeError(w, http.StatusUnprocessableEntity,
 				fmt.Sprintf("no passable route from the unit's current position to (%d,%d)", newTargetQ, newTargetR))
-			return
+			return nil, false
 		}
 	}
 
@@ -689,32 +737,7 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 	// courier's delivery runs (messenger.OrderDeliveryHandler.Handle's
 	// recall/redirect case) — no duplicated logic, just no runner to wait for.
 	if unit.CommandedInPerson(u.Type) {
-		res, err := combat.ExecuteRecall(ctx, h.pool, h.scheduler, h.eventStore, h.clk, *recallOrder)
-		if err != nil {
-			writeError(w, http.StatusInternalServerError, "could not apply order")
-			return
-		}
-		if res == nil {
-			// The unit stopped marching between the status check above and
-			// here (e.g. it arrived in the instant this request was being
-			// handled) — a genuine miss, not a game-rule rejection.
-			writeError(w, http.StatusConflict,
-				"the unit was no longer marching by the time the order was applied — check its current status")
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		_ = json.NewEncoder(w).Encode(map[string]any{
-			"status":     "order_applied",
-			"verb":       mode,
-			"unit_id":    res.UnitID,
-			"q":          res.FromQ,
-			"r":          res.FromR,
-			"target_q":   res.NewTargetQ,
-			"target_r":   res.NewTargetR,
-			"arrives_at": res.ArrivesAt,
-		})
-		return
+		return &preparedRecall{payload: messenger.OrderDeliveryPayload{WorldID: worldID, PlayerID: playerID, UnitID: unitID, Verb: mode, Recall: recallOrder}, inPerson: true}, true
 	}
 
 	// Resolve who dispatches the order: the nearest own active settlement to
@@ -726,7 +749,7 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 	// sendOrderCourier always dispatches a real runner here.
 	courierOrigin, ok := h.resolveOrderOrigin(w, ctx, worldID, playerID, currentPos)
 	if !ok {
-		return
+		return nil, false
 	}
 
 	// Aim the Runner at an honest interception point along the unit's still-
@@ -753,13 +776,13 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not resolve runner interception")
-		return
+		return nil, false
 	}
 	if !interceptOK {
 		writeError(w, http.StatusUnprocessableEntity,
 			fmt.Sprintf("no Runner can catch this unit before it completes its march (arrives %s) — wait for it to arrive, then issue a fresh order",
 				u.ArrivesAt.Local().Format(time.RFC3339)))
-		return
+		return nil, false
 	}
 
 	msgText := "Runner — recall order, return home."
@@ -773,10 +796,11 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 		extra["target_r"] = newTargetR
 	}
 
-	h.sendOrderCourier(w, ctx, messenger.OrderDeliveryPayload{
-		WorldID: worldID, PlayerID: playerID, UnitID: unitID,
-		Verb: mode, Recall: recallOrder,
-	}, msgText, courierOrigin, interceptPos, extra)
+	return &preparedRecall{
+		payload: messenger.OrderDeliveryPayload{WorldID: worldID, PlayerID: playerID, UnitID: unitID, Verb: mode, Recall: recallOrder},
+		text:    msgText, origin: courierOrigin, position: interceptPos, extra: extra,
+		route: recallRoute, routeOK: routeOK, unit: u,
+	}, true
 }
 
 // Pickup handles POST /worlds/{worldID}/units/{unitID}/pickup — R1/R2,

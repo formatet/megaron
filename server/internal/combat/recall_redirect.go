@@ -16,11 +16,14 @@ package combat
 // silent no-op, never an OrderFailed notice.
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"math"
+	"net/http"
 	"time"
 
 	"formatet/megaron/server/internal/clock"
@@ -61,11 +64,42 @@ type RecallApplied struct {
 // a straight-line teleport. Returns (nil, nil) when the unit is no longer
 // marching (too late — see doc comment above).
 func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Scheduler, eventStore *events.Store, clk clock.Clock, o RecallOrder) (*RecallApplied, error) {
+	return executeRecall(ctx, pool, scheduler, eventStore, clk, o, nil)
+}
+
+// RecallDelivery gives a new group-member verb an atomic receipt and physical
+// delivery guard. Existing recall/redirect callers never pass it.
+var ErrRecallDeliveryReplay = errors.New("recall member already delivered")
+
+type RecallDelivery struct {
+	EventID                int64
+	OwnerID                uuid.UUID
+	Meeting                province.MapPosition
+	DepartTick, ArriveTick *int
+	Route                  []byte
+}
+
+func ExecuteRecallDelivery(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Scheduler, eventStore *events.Store, clk clock.Clock, o RecallOrder, delivery RecallDelivery) (*RecallApplied, error) {
+	return executeRecall(ctx, pool, scheduler, eventStore, clk, o, &delivery)
+}
+
+func executeRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Scheduler, eventStore *events.Store, clk clock.Clock, o RecallOrder, delivery *RecallDelivery) (*RecallApplied, error) {
+
 	tx, err := pool.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("begin tx: %w", err)
 	}
 	defer tx.Rollback(ctx)
+
+	if delivery != nil {
+		claim, err := tx.Exec(ctx, `INSERT INTO processed_deliveries(event_id) VALUES($1) ON CONFLICT DO NOTHING`, delivery.EventID)
+		if err != nil {
+			return nil, err
+		}
+		if claim.RowsAffected() == 0 {
+			return nil, ErrRecallDeliveryReplay
+		}
+	}
 
 	var ownerID uuid.UUID
 	var utype, category, status string
@@ -82,6 +116,13 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 		o.UnitID,
 	).Scan(&ownerID, &utype, &category, &status, &q, &r, &crew, &targetQ, &targetR, &departsAt, &arrivesAt, &marchIntent, &colonyName, &cargoUnitID, &departTick, &arriveTick, &storedRouteRaw); err != nil {
 		return nil, fmt.Errorf("load recalled unit: %w", err)
+	}
+
+	if delivery != nil {
+		equalTick := func(a, b *int) bool { return (a == nil && b == nil) || (a != nil && b != nil && *a == *b) }
+		if ownerID != delivery.OwnerID || !equalTick(departTick, delivery.DepartTick) || !equalTick(arriveTick, delivery.ArriveTick) || !bytes.Equal(storedRouteRaw, delivery.Route) {
+			return nil, reject(http.StatusConflict, "the unit changed owner or course before the group Runner reached it")
+		}
 	}
 
 	// Too late / already handled: the unit finished its march (or an earlier
@@ -117,6 +158,10 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 			slog.Warn("recall/redirect: could not re-walk outbound path, using origin as current position", "unit", o.UnitID)
 			currentPos = origin
 		}
+	}
+
+	if delivery != nil && currentPos != delivery.Meeting {
+		return nil, reject(http.StatusConflict, "the unit is no longer at the group Runner's meeting hex (%d,%d)", delivery.Meeting.Q, delivery.Meeting.R)
 	}
 
 	newTarget := origin // recall: head home to where the unit departed from

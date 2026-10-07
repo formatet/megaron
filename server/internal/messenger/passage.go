@@ -1179,6 +1179,9 @@ func scheduleCompletion(ctx context.Context, tx pgx.Tx, sched *events.Scheduler,
 		}
 		p.MessengerID = messengerID
 		p.PassageGeneration = generation
+		if p.Verb == RecallGroupMemberVerb {
+			return EnqueueRecallGroup(ctx, tx, sched, p, dueTick)
+		}
 		return sched.EnqueueTickTx(ctx, tx, worldID, events.ScheduledOrderDelivery, p, dueTick)
 	}
 	if status == "returning" {

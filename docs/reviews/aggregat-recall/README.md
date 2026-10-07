@@ -2,8 +2,8 @@
 
 ## SAMMANFATTNING
 Gren codex/aggregat-recall från master 77f584be (lagertak redan integrerat).
-Claudes rivning 2e209682 är förfader till basen. Ingen produktionskod ändrad.
-Premiss kräver svar från Claude om definitionen av samma plats; ingen merge/push/deploy.
+Claudes rivning 2e209682 är förfader till basen. Serverimplementation finns i detta checkpoint; klientytorna återstår.
+Claude godkände 2026-10-07 17:15 faktisk gemensam interception och exakt leveranstick; ingen merge/push/deploy.
 Bevisar kedjegrindens fysiska order-/återkomstflöde, inte gamla asynkronitetsgrinden.
 
 ## SLICE-KONTRAKT
@@ -50,9 +50,15 @@ ny gruppform behöver nytt namngivet verb/protokoll och medlemsidempotens.
 `tools/gotest.sh ./api/handlers ./internal/messenger ./internal/combat -run 'Test.*(Recall|OrderDelivery|InterceptCourier)'` på färsk PG16/migration160, commit6313d541: alla tre paket gröna. Rålogg [baseline.log](baseline.log).
 
 ## Resume checkpoint
-Lagertak överlämnat rent @3fc417fd; Claude har integrerat det i bas77f584be.
-Aggregat-recall: kontrakt/premiss före kod, positionsmätning klar; väntar på
-Claudes definition av samma plats. Fresh recallbaslinje är grön. Ingen produktionskod ändrad.
-Worktree /tmp/megaron-codex-aggregat-recall-20261007, gren codex/aggregat-recall.
-Nästa: svar på canonfråga → implementation enligt fyra ytor, fortlöpande commits.
-BILD före merge senare; ingen merge/push/deploy av Codex.
+Worktree /tmp/megaron-codex-aggregat-recall-20261007, gren codex/aggregat-recall, bas77f584be.
+Servercheckpoint: batchval/namngivna avslag, fysisk kurir per faktisk möteshex/exakt tick,
+nytt recall_group_member-protokoll med atomic medlemsreceipt och egen orderleverans.
+Claude godkände 17:28 att kuriren väntar på enheterna vid möteshexen; annan väg får egen kurir.
+Fresh-PG16/mig160: gammal recallbaslinje efter extraktion grön ([prepare-baseline.log](prepare-baseline.log));
+tre gruppprov gröna ([group-tests.log](group-tests.log)): alla tre enheter till garnison via worker/ticks,
+replay utan extra ankomst och oförändrad gammal messengerclaim.
+Nästa: kantfall/passage/race, CLI/webb/Codex, mutationer, full Go/vet/JS, riktig klientrigg och verblista.
+Detta är ett mellancheckpoint, inte färdig överlämning. BILD före merge senare; ingen merge/push/deploy.
+
+## Godkänd form och protokoll
+Claude 17:15: gamla recall/redirect behåller sin messengerclaim; gruppverb får medlemsidempotens och varje medlem eget ScheduledOrderDelivery. Gruppens manifest måste överleva passage/reboarding. Batchrapport listar grupper, singlar och namngivna avslag.

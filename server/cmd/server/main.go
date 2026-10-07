@@ -457,6 +457,7 @@ func main() {
 			r.Post("/worlds/{worldID}/units/{unitID}/march", uh.March)
 			r.Get("/worlds/{worldID}/units/{unitID}/march-preview", uh.MarchPreview)
 			r.Post("/worlds/{worldID}/units/{unitID}/recall", uh.Recall)
+			r.Post("/worlds/{worldID}/units/recall", uh.RecallBatch)
 			r.Post("/worlds/{worldID}/units/{unitID}/stance", uh.SetStance)
 			r.Post("/worlds/{worldID}/units/{unitID}/standing-orders", uh.SetStandingOrders)
 			// Realm-wide retreat default (War → "When to retreat"): seeds every

@@ -33,6 +33,7 @@ import (
 
 // OrderDeliveryPayload is the ScheduledOrderDelivery payload.
 type OrderDeliveryPayload struct {
+	RecallGroup *RecallGroup        `json:"recall_group,omitempty"`
 	WorldID     uuid.UUID           `json:"world_id"`
 	PlayerID    uuid.UUID           `json:"player_id"`
 	UnitID      uuid.UUID           `json:"unit_id"`
@@ -79,6 +80,10 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 	var p OrderDeliveryPayload
 	if err := json.Unmarshal(e.Payload, &p); err != nil {
 		return fmt.Errorf("unmarshal order delivery payload: %w", err)
+	}
+
+	if p.Verb == RecallGroupMemberVerb {
+		return h.recallGroupMember(ctx, e, p)
 	}
 
 	// Atomic claim: outbound→arrived is one-way; a replay no-ops here.
