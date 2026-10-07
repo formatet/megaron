@@ -2,7 +2,7 @@
 
 ## SAMMANFATTNING
 Premisskoll från master f1217c9d. Föreslagen ägare province.DefaultGoodStorageCap
-godkänd av Claude 2026-10-07 17:04; implementation pågår. Ingen merge/push/deploy/BILD.
+godkänd av Claude 2026-10-07 17:04. Implementation cf57d5bd klar, full Go/vet gröna. Ingen merge/push/deploy/BILD.
 Märkning: bevisar kedjegrindens oförändrade lagersemantik; arkitekturprogram steg 7.
 
 ## SLICE-KONTRAKT
@@ -49,8 +49,46 @@ redan province; api/handlers är protokolladapter och använder redan province.
 G1-tabellen/CLAUDE.md behöver därför ingen ändring. Inget verb/spelartext ändras:
 ingen fyraytors- eller BILD-slice.
 
+## EXPERIMENT
+| Hypotes / ändring | Resultat |
+|---|---|
+| Privat literal i sex SQL-INSERT plus goodCap | Källvakt röd före implementation, grön efter. |
+| Grundning av metropolis och koloni | DB cedar-cap är exakt historiskt 1_000_000. |
+| Logistics / transport delivery / loot | Ny DB-rad cap=1_000_000, amount=5; vid befintlig cap=7 klipps nästa last till amount=7 och cap förblir 7. |
+| Trade delivery och return | Befintliga DB-regressionsprov läser exakt 1_000_000 och goodCap efter första last, 120 efter två laster. |
+| goodCap | Grain/fish/livestock/cedar/silver/okänd nyckel returnerar exakt samma historiska tak. |
+| Ägarkonstant 1_000_000→500_000 på ETT ställe | Alla åtta namngivna prov gav assertions rött, inga compile-fel; original återställt. |
+
+Reproduktion: `python3 docs/reviews/lagertak/mutation.py`; scriptet återställer
+produktionsfilen även vid fel, men avslutar utan slutlig grön svit. Kör därefter
+`tools/gotest.sh` mot ny DB. Varje körning skapar egen PG16 och migration 160.
+Loggar: [baseline.log](baseline.log), [red.log](red.log), [green.log](green.log),
+[mutation.log](mutation.log), [full-suite.log](full-suite.log), [vet.log](vet.log).
+
+## GRINDAR
+Kod: fokuserade fresh-DB-prov, full `tools/gotest.sh` (PG16/migration160, inklusive G1), och full `go vet ./...` gröna.
+Semantisk: numeriskt tak och befintligt cap/spill oförändrade; samtliga sex
+SQL-vägar, goodCap och trade-return har namngivna DB-/funktionsprov.
+Visuell/användare: inget nytt gränssnitt eller verb; interna kredit- och
+grundningsvägar provas mot riktig PostgreSQL. Inget fullständigt register/join-
+browserflöde görs för denna mekaniska refaktor. Drift: ingen deploy.
+Provenance är gotest.sh:s faktiska commit+schema-rad i varje logg; ingen server-
+healthz finns för denna testslice. Fullsviten kör implementation cf57d5bd.
+
+## METODISK LÄRDOM
+En delad domänkonstant måste placeras under samtliga konsumenter i G1, inte
+exporteras ur den nuvarande ägaren om den gör beroendet uppåtgående.
+
+## KÄNDA AVGRÄNSNINGAR
+Ingen migration/backfill eller ny lagerpoolmodell. Test-/historiska migrations-
+literaler rörs inte. Standardtakets befintliga numeriska värde flyttas, inte tunas.
+Grenen utgår från f1217c9d; Claudes efterföljande recall-rivning är inte rebased
+in här. Claude äger integration mot nyare master.
+
 ## Resume checkpoint
-Implementation och konsumentprov skrivna; premiss/ägare godkänd av Claude.
-Nästa: giltig mutation av ägarkonstanten, återställning, full tools/gotest.sh och vet,
-rapport/vault-handover. Worktree /tmp/megaron-codex-lagertak-20261007, gren
-codex/lagertak från f1217c9d. Ingen merge/push/deploy. Recall-arbetsytan orörd.
+Implementation cf57d5bd och kontrakt94c2fda3. Alla fokuserade konsumentprov och
+mutation bevisade, original återställt; full Go/vet gröna.
+Nästa: Claude granskar/integrerar mot nyare master. Codex tar därefter
+köad order .agents/order-aggregat-recall.md från aktuell master, egen gren.
+Worktree /tmp/megaron-codex-lagertak-20261007, gren codex/lagertak.
+Ingen merge/push/deploy. Recall-arbetsytan orörd.

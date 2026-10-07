@@ -1,0 +1,47 @@
+=== RUN   TestDefaultGoodStorageCapMetropolis
+    storage_cap_test.go:20: metropolis cedar cap=500000 want unchanged 1000000
+--- FAIL: TestDefaultGoodStorageCapMetropolis (0.03s)
+=== RUN   TestDefaultGoodStorageCapLogistics
+    storage_cap_test.go:45: new logistics row cap=500000 amount=5
+--- FAIL: TestDefaultGoodStorageCapLogistics (0.03s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.058s
+=== RUN   TestDefaultGoodStorageCapColony
+2026/10/07 17:08:52 INFO colony founded (discrete unit) settlement=edcdcc58-c5ff-444c-9093-c66e6f39fcd9 name=Newhaven-52db1847 province=6ecfb08c-bc47-4095-a7c0-2b6b1503c4fe owner=c0e56a54-b9e9-48f3-a79c-9a09d7da4a1d founding_unit=ad443309-60c8-484c-8ae0-bf0e025c7ef9 population=1550 q=10 r=10
+    storage_cap_test.go:18: colony cedar cap=500000 want unchanged 1000000
+--- FAIL: TestDefaultGoodStorageCapColony (0.03s)
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.033s
+=== RUN   TestDefaultGoodStorageCapArrival
+    storage_cap_test.go:19: new arrival row cap=500000 amount=5
+--- FAIL: TestDefaultGoodStorageCapArrival (0.02s)
+=== RUN   TestDefaultGoodStorageCapLoot
+    storage_cap_test.go:58: new loot row cap=500000 amount=5
+--- FAIL: TestDefaultGoodStorageCapLoot (0.01s)
+FAIL
+FAIL	formatet/megaron/server/internal/transport	0.034s
+=== RUN   TestDefaultGoodStorageCapEconomy
+    storage_cap_test.go:8: goodCap("grain")=500000 want unchanged 1000000
+    storage_cap_test.go:8: goodCap("fish")=500000 want unchanged 1000000
+    storage_cap_test.go:8: goodCap("livestock")=500000 want unchanged 1000000
+    storage_cap_test.go:8: goodCap("cedar")=500000 want unchanged 1000000
+    storage_cap_test.go:8: goodCap("silver")=500000 want unchanged 1000000
+    storage_cap_test.go:8: goodCap("unknown")=500000 want unchanged 1000000
+--- FAIL: TestDefaultGoodStorageCapEconomy (0.00s)
+=== RUN   TestTradeDelivery_StaleCapTruncatesSecondDelivery
+2026/10/07 17:08:53 INFO trade delivery destination=61f53cf7-f858-471e-b855-a4f18df53830 good=cedar qty=60
+    trade_delivery_stale_cap_test.go:119: after 1st delivery: cedar cap = 500000, want 500000 (goodCap) — stale hard-coded cap in DeliveryHandler.Handle (trade.go)
+2026/10/07 17:08:53 INFO trade delivery destination=61f53cf7-f858-471e-b855-a4f18df53830 good=cedar qty=60
+--- FAIL: TestTradeDelivery_StaleCapTruncatesSecondDelivery (0.01s)
+=== RUN   TestTradeReturn_StaleCapTruncatesSecondDelivery
+2026/10/07 17:08:53 INFO trade return delivered buyer=d2842c35-21cc-4c68-88e0-07156b0678a2 good=cedar qty=60
+    trade_delivery_stale_cap_test.go:227: after 1st return: cedar cap = 500000, want 500000 (goodCap) — stale hard-coded cap in TradeReturnHandler.Handle (trade_return.go)
+2026/10/07 17:08:53 INFO trade return delivered buyer=d2842c35-21cc-4c68-88e0-07156b0678a2 good=cedar qty=60
+--- FAIL: TestTradeReturn_StaleCapTruncatesSecondDelivery (0.02s)
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.032s
+FAIL
+» färsk DB på migration 160 · commit cf57d5bd+ändringar
+
+VALID MUTATION: one owner changed; all consumers failed assertions
+Original production source restored; run full fresh suite next.
