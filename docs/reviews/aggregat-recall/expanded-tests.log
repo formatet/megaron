@@ -1,0 +1,4 @@
+» färsk DB på migration 160 · commit f7157aaf+ändringar
+ok  	formatet/megaron/server/api/handlers	1.369s
+ok  	formatet/megaron/server/internal/messenger	0.254s
+ok  	formatet/megaron/server/cmd/keryx	0.003s

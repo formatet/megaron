@@ -1076,19 +1076,50 @@ func currentHex(c *Client, worldID, unitID string) (int, int, error) {
 // ---- unit recall / redirect ---------------------------------------------------
 
 func unitRecallCmd() *cobra.Command {
-	var unitID string
+	var unitID, target, intent string
+	var all bool
 
 	cmd := &cobra.Command{
 		Use:   "recall",
-		Short: "Recall a marching unit — turn it home",
+		Short: "Recall a unit or all selected units — turn them home",
 		Long: `Send a recall order to a marching unit. The order travels as a visible
 Runner; command is never instant — the unit keeps marching on its original
 course until the runner physically catches up with it, then turns for home
 (the hex it originally departed from).`,
-		Example: `  keryx unit recall --unit <id>`,
-		Args:    rejectPositionalArgs("unit"),
+		Example: `  keryx recall --unit <id>
+  keryx recall --all
+  keryx recall --all --target 5,-3 --intent explore`,
+		Args: rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			if all == (unitID != "") {
+				return fmt.Errorf("choose --unit or --all")
+			}
+			if !all && (target != "" || intent != "") {
+				return fmt.Errorf("--target and --intent require --all")
+			}
 			c := newClient(cfg)
+			if all {
+				body := map[string]any{"all": true}
+				if target != "" {
+					q, r, err := parseQR(target)
+					if err != nil {
+						return err
+					}
+					body["target_q"], body["target_r"] = q, r
+				}
+				if intent != "" {
+					body["intent"] = intent
+				}
+				data, err := c.post(fmt.Sprintf("/api/v1/worlds/%s/units/recall", cfg.WorldID), body)
+				if err != nil {
+					return err
+				}
+				if jsonMode {
+					printRawJSON(data)
+					return nil
+				}
+				return printRecallBatch(c, data)
+			}
 			resolvedID, rerr := resolveUnitID(c, cfg.WorldID, unitID)
 			if rerr != nil {
 				return rerr
@@ -1116,8 +1147,10 @@ course until the runner physically catches up with it, then turns for home
 		},
 	}
 
-	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
-	_ = cmd.MarkFlagRequired("unit")
+	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID or name")
+	cmd.Flags().BoolVar(&all, "all", false, "recall all owned units; report every rejection")
+	cmd.Flags().StringVar(&target, "target", "", "filter by current destination q,r (requires --all)")
+	cmd.Flags().StringVar(&intent, "intent", "", "filter by march intent (requires --all)")
 	return cmd
 }
 

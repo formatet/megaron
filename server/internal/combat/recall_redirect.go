@@ -265,11 +265,22 @@ func executeRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 		return nil, fmt.Errorf("schedule new arrival: %w", err)
 	}
 
+	var groupAudit *events.Event
+	if delivery != nil {
+		groupAudit, err = eventStore.AppendTx(ctx, tx, o.UnitID, events.StreamType(unit.StreamUnit), unit.EventUnitMarchRecalled,
+			unit.MarchRecalledPayload{UnitID: o.UnitID, FromQ: currentPos.Q, FromR: currentPos.R,
+				OriginQ: newTarget.Q, OriginR: newTarget.R, ArrivesAt: arrivesAtNew.Format(time.RFC3339)}, o.WorldID, nil)
+		if err != nil {
+			return nil, fmt.Errorf("record group recall: %w", err)
+		}
+	}
 	if err := tx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("commit: %w", err)
 	}
 
-	if o.Mode == "redirect" {
+	if delivery != nil {
+		eventStore.RecordCommitted(ctx, groupAudit)
+	} else if o.Mode == "redirect" {
 		_, _ = eventStore.Append(ctx, o.UnitID, events.StreamType(unit.StreamUnit), unit.EventUnitMarchRedirected,
 			unit.MarchRedirectedPayload{
 				UnitID: o.UnitID, FromQ: currentPos.Q, FromR: currentPos.R,

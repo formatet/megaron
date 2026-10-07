@@ -62,3 +62,12 @@ Detta är ett mellancheckpoint, inte färdig överlämning. BILD före merge sen
 
 ## Godkänd form och protokoll
 Claude 17:15: gamla recall/redirect behåller sin messengerclaim; gruppverb får medlemsidempotens och varje medlem eget ScheduledOrderDelivery. Gruppens manifest måste överleva passage/reboarding. Batchrapport listar grupper, singlar och namngivna avslag.
+
+## Klient- och livscykelcheckpoint
+CLI `recall --all --target q,r --intent` och webbens War→Army-kontroll använder
+samma batchrapport, grupper/singlar och alla namngivna avslag. Codex förklarar
+fysisk mötesplats/exakt dag och individuella leveranser.
+Utökade fresh-PG-prov: filters/distinkta möten, samtidiga dispatch/replay,
+terminalt medlemsavslag/dead-letter och manifest/generation efter passage gröna.
+Atomic rollback-provet tillagt efter denna körning; fullsviten återstår.
+JS: 383/383 gröna. Riktig klientrigg finns i tools/recall_live.py; ännu inte körd.

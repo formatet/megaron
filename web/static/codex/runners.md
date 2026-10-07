@@ -23,3 +23,19 @@ Letters to other Wanaxes travel the same way, but they are sacred and cannot be 
 ## Crossing the sea
 
 A Runner whose road to your unit crosses open water cannot swim it — it waits in your own port for one of your ships to sail that way, the same as a letter does. See [[sea]] for how the crossing works, and what happens if the ship carrying it is lost.
+
+## Recalling several units
+
+In **War → Army → Recall units**, send all matching units home. Optionally filter
+by their current destination (`q,r`) or march intent. Keryx offers the same selection:
+`keryx recall --all`, `keryx recall --all --target 5,-3`, or
+`keryx recall --all --intent explore`. Use `--unit <id>` for one unit.
+
+A group shares one Runner only when its saved roads put every recipient at the
+same meeting hex on the exact same game day. The Runner can arrive early and wait
+there. Other recipients get their own Runners; sharing a destination alone does
+not make a group. Each unit receives its own order delivery and turns home only
+when reached. The reply lists groups, singles and every unit's result, including
+named refusals. A unit with a recall or redirect already on its way is refused;
+wait for delivery before giving it another such order. An order that later misses
+its recipient produces an *Order failed* notice.

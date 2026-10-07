@@ -37,3 +37,9 @@ Choose **Explore** in the map menu and set the expedition duration in **game day
 The unit chooses nearby unexplored ground on its own, and turns home by half the duration. It can turn earlier if the area is already explored or nothing further is reachable. **War → Army** and `keryx unit list` show the area, duration, latest turn and home day, and why it has turned. A Runner-delivered order begins when received, so those days become known when it starts. On return, Dispatches carries the report ([[sight]]).
 
 In Keryx: `unit march --unit <id> --target q,r --intent explore --ticks N`. Omit `--ticks` for the server's default duration; the current allowed range comes from the game. Add `--preview` to check the order without dispatching. Exploration routes cross unknown ground, so their arrival forecast stays unavailable.
+
+To turn several units home, use **War → Army → Recall units** or
+`keryx recall --all`, optionally with `--target q,r` and `--intent` filters.
+The report names every refusal and lists the physical Runner groups and singles.
+Units sharing an exact meeting hex and game day can share one Runner; each still
+receives its own order. See [[runners]] for delivery and waiting.

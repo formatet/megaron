@@ -150,3 +150,11 @@ Ingen spelvärld eller produktionsdata muteras.
 `python3 tools/expedition_live.py OUT COMMIT web|cli` runs register/join/found → expedition order → legs/turn → home/report with real player APIs, the compiled CLI and browser on disposable PostgreSQL16/Redis7 containers. Put freshly built `temenos` and `keryx` in OUT; the server must embed COMMIT. Uses a clean process environment, two-second game ticks and read-only SQL ground checks. Allocates its own ports and removes its own processes, containers and private CLI config. Run both modes in separate worlds.
 
 `python3 tools/expedition_mutations.py --output-dir OUT` runs fresh-DB baseline, physically removes each of four protections (half-time turn, path sight, transactional report, actual return reservation), requires the named invariant test to fail, restores source after every mutation, then proves restored tests green. Run in an isolated worktree without concurrent edits to expedition.go.
+
+`python3 tools/recall_live.py OUT BUILD_COMMIT web|cli` starts private PG16/Redis
+containers and a clean-environment server, then registers, joins, founds, marches
+two units, and recalls through the real web control or Keryx. It requires all
+dispatched units to reach garrison, saves the report and read-only DB evidence,
+and removes only its own containers/process/private token config. Build
+`temenos` and `keryx` in OUT first; stamp temenos with `-X main.buildCommit=HASH`.
+Screenshots are BILD evidence awaiting Timothy, not visual approval.

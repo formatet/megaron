@@ -1,3 +1,4 @@
+import { recallBatchBody, recallBatchControlsHTML, recallBatchReportHTML, sendRecallBatch } from '../recall_batch.js';
 import { State, ownCapital } from '../../state.js';
 import { serverNow } from '../../clock.js';
 import { fetchAuth } from '../../api.js';
@@ -143,7 +144,7 @@ export async function loadWarDrawer() {
       const unitResponse = unitsRes && unitsRes.ok ? await unitsRes.json() : {};
       expeditionRules = unitResponse.expedition_rules;
       const allUnits = unitResponse.units || [];
-      let armyHtml = retreatSec + '<div class="dsec"><div class="dsec-title">Units</div>';
+      let armyHtml = retreatSec + recallBatchControlsHTML() + '<div class="dsec"><div class="dsec-title">Units</div>';
       armyHtml += allUnits.length
         ? allUnits.map(u => renderUnitCard(u)).join('')
         : '<p class="empty-state">No units.</p>';
@@ -180,7 +181,7 @@ export async function loadWarDrawer() {
     (catalogue || []).forEach(u => { catByType[u.type] = u; });
 
     // Army tab — the realm-wide retreat setting, then the discrete units list
-    let armyHtml = retreatSec + '<div class="dsec"><div class="dsec-title">Units</div>';
+    let armyHtml = retreatSec + recallBatchControlsHTML() + '<div class="dsec"><div class="dsec-title">Units</div>';
     if (allUnits.length) {
       armyHtml += allUnits.map(u => renderUnitCard(u)).join('');
     } else {
@@ -730,6 +731,20 @@ export async function unitRecall(unitID) {
     statusEl.style.color = 'var(--accent)';
     statusEl.textContent = d.error || 'Recall failed';
   }
+}
+
+export async function unitRecallAll() {
+  const button = document.getElementById('recall-batch-send');
+  const result = document.getElementById('recall-batch-result');
+  button.disabled = true;
+  try {
+    const body = recallBatchBody(document.getElementById('recall-batch-target').value,
+      document.getElementById('recall-batch-intent').value);
+    const report = await sendRecallBatch(fetchAuth, State.WORLD_ID, body);
+    result.innerHTML = recallBatchReportHTML(report);
+  } catch (err) {
+    result.textContent = err.message;
+  } finally { button.disabled = false; }
 }
 
 export function unitRedirectToggle(unitID) {

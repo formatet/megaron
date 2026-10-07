@@ -30,3 +30,8 @@ keryx occupation order ...   # sack, burn or annex an occupied city
 ```
 
 Orders given through Keryx obey the same rules as in the browser: they travel by [[runners|Runner]] and take game-days ([[time]]).
+
+Recall several units with `keryx recall --all`. Filter by their current destination
+with `--target 5,-3` and by march intent with `--intent explore`; both filters may
+be combined. The output lists Runner groups, singles and named refusals. Use
+`--json` for the same structured report the web receives. See [[runners]].

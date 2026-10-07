@@ -122,3 +122,13 @@ test('codex: lowercase agora_ready is mapped and community rules match alpha pol
   for (const line of [...lines, privacy]) assert.ok(bodies['community-chat'].includes(line), `Community chat policy drift: ${line}`);
   assert.ok(!alpha.includes('register with the code'));
 });
+
+test('recall truth explains selection, physical grouping and partial refusals', () => {
+  for (const id of ['runners', 'marching', 'keryx']) {
+    assert.match(bodies[id], /recall --all/, id);
+    assert.match(bodies[id], /--target/, id);
+    assert.match(bodies[id], /refusal/, id);
+  }
+  assert.match(bodies.runners, /same meeting hex on the exact same game day/);
+  assert.match(bodies.runners, /Each unit receives its own order delivery/);
+});

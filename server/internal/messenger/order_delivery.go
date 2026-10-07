@@ -283,6 +283,9 @@ func (h *OrderDeliveryHandler) NotifyDeadLetter(ctx context.Context, e events.Sc
 		return fmt.Errorf("dead-letter: unmarshal order delivery payload: %w", err)
 	}
 	if h.hub == nil {
+		if p.Verb == RecallGroupMemberVerb {
+			return h.finishRecallMember(ctx, e, p)
+		}
 		return nil
 	}
 	deadLetterPayload := map[string]any{
@@ -296,6 +299,9 @@ func (h *OrderDeliveryHandler) NotifyDeadLetter(ctx context.Context, e events.Sc
 	}
 	_ = h.hub.NotifyPlayer(ctx, p.WorldID, p.PlayerID, "OrderFailed", 1, deadLetterPayload)
 	slog.Warn("dead-letter: notified owner of stalled order delivery", "messenger", p.MessengerID, "unit", p.UnitID, "verb", p.Verb)
+	if p.Verb == RecallGroupMemberVerb {
+		return h.finishRecallMember(ctx, e, p)
+	}
 	return nil
 }
 

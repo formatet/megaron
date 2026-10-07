@@ -285,3 +285,223 @@ func TestRecallBatch_OldSharedMessengerStillOnlyDeliversFirst(t *testing.T) {
 		t.Fatalf("old shared claim changed: targets=%d/%d want0/8", first, second)
 	}
 }
+
+func TestRecallBatch_FiltersAndDifferentPlaces(t *testing.T) {
+	f := setupBatchRecall(t, 3)
+	ctx := context.Background()
+	// Equal destination/time but a different actual road must get a different Runner.
+	path := []province.MapPosition{}
+	costs := []float64{}
+	for q := 0; q <= 8; q++ {
+		path = append(path, province.MapPosition{Q: q, R: 0})
+		if q > 0 {
+			costs = append(costs, .75)
+		}
+	}
+	costs[0] = 3
+	for i := 1; i < len(costs); i++ {
+		costs[i] = 3.0 / 7
+	}
+	route, ok := combat.BuildRoute(path, costs, 0, 6)
+	if !ok {
+		t.Fatal("route")
+	}
+	raw, _ := json.Marshal(route)
+	if _, err := f.pool.Exec(ctx, `UPDATE units SET march_route=$2,march_intent='explore' WHERE id=$1`, f.ids[2], raw); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.pool.Exec(ctx, `UPDATE units SET march_intent='explore' WHERE id=ANY($1::uuid[])`, f.ids[:2]); err != nil {
+		t.Fatal(err)
+	}
+	results, groups := f.dispatch(t, map[string]any{"all": true, "target_q": 8, "target_r": 0, "intent": "explore"})
+	if len(results) != 3 || len(groups) != 2 {
+		t.Fatalf("results=%+v groups=%+v", results, groups)
+	}
+	for _, r := range results {
+		if r.Status != "order_dispatched" {
+			t.Fatalf("silent loss: %+v", r)
+		}
+	}
+	if groups[0].Q == groups[1].Q && groups[0].R == groups[1].R && groups[0].DueTick == groups[1].DueTick {
+		t.Fatal("split same physical meeting")
+	}
+}
+
+func TestRecallBatch_PartialDeliveryFailureAndDeadLetterCompleteGroup(t *testing.T) {
+	f := setupBatchRecall(t, 3)
+	ctx := context.Background()
+	_, groups := f.dispatch(t, map[string]any{"unit_ids": f.ids})
+	deliveries := f.deliveries(t)
+	f.clk.Set(f.now.Add(time.Duration(groups[0].DueTick*tick.TickSeconds) * time.Second))
+	if _, err := f.pool.Exec(ctx, `UPDATE worlds SET current_tick=$2,last_tick_at=$3 WHERE id=$1`, f.worldID, groups[0].DueTick, f.clk.Now()); err != nil {
+		t.Fatal(err)
+	}
+	var p messenger.OrderDeliveryPayload
+	json.Unmarshal(deliveries[0].Payload, &p)
+	if _, err := f.pool.Exec(ctx, `UPDATE units SET arrive_tick=99 WHERE id=$1`, p.UnitID); err != nil {
+		t.Fatal(err)
+	}
+	h := messenger.NewOrderDeliveryHandler(f.pool, events.NewScheduler(f.pool, f.clk), events.NewStore(f.pool), nil, f.clk)
+	if err := h.Handle(ctx, deliveries[0]); err != nil {
+		t.Fatal(err)
+	} // named terminal refusal
+	if err := h.NotifyDeadLetter(ctx, deliveries[1]); err != nil {
+		t.Fatal(err)
+	} // terminal system failure, no hub required
+	if err := h.Handle(ctx, deliveries[2]); err != nil {
+		t.Fatal(err)
+	}
+	var status string
+	var receipts int
+	if err := f.pool.QueryRow(ctx, `SELECT status FROM messengers WHERE id=$1`, groups[0].MessengerID).Scan(&status); err != nil {
+		t.Fatal(err)
+	}
+	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM processed_deliveries WHERE event_id=ANY($1::bigint[])`, []int64{deliveries[0].ID, deliveries[1].ID, deliveries[2].ID}).Scan(&receipts); err != nil {
+		t.Fatal(err)
+	}
+	if status != "arrived" || receipts != 3 {
+		t.Fatalf("terminal group stuck: %s receipts%d", status, receipts)
+	}
+	var target int
+	if err := f.pool.QueryRow(ctx, `SELECT target_q FROM units WHERE id=$1`, p.UnitID).Scan(&target); err != nil {
+		t.Fatal(err)
+	}
+	if target != 8 {
+		t.Fatal("changed course incorrectly recalled")
+	}
+}
+
+func TestRecallBatch_ConcurrentDispatchAndReplay(t *testing.T) {
+	f := setupBatchRecall(t, 2)
+	ctx := context.Background()
+	body, _ := json.Marshal(map[string]any{"unit_ids": f.ids})
+	responses := make(chan *httptest.ResponseRecorder, 2)
+	for i := 0; i < 2; i++ {
+		go func() {
+			req := httptest.NewRequest("POST", "/worlds/"+f.worldID.String()+"/units/recall", bytes.NewReader(body))
+			req.Header.Set("Authorization", "Bearer "+f.accessToken)
+			w := httptest.NewRecorder()
+			f.router.ServeHTTP(w, req)
+			responses <- w
+		}()
+	}
+	accepted := 0
+	for i := 0; i < 2; i++ {
+		w := <-responses
+		if w.Code != 200 {
+			t.Fatalf("%d %s", w.Code, w.Body)
+		}
+		var d struct {
+			Results []recallBatchResult `json:"results"`
+		}
+		json.Unmarshal(w.Body.Bytes(), &d)
+		for _, r := range d.Results {
+			if r.Status == "order_dispatched" {
+				accepted++
+			}
+		}
+	}
+	if accepted != 2 {
+		t.Fatalf("concurrent dispatch accepted%d want2", accepted)
+	}
+	es := f.deliveries(t)
+	if len(es) != 2 {
+		t.Fatalf("deliveries%d", len(es))
+	}
+	var payload messenger.OrderDeliveryPayload
+	json.Unmarshal(es[0].Payload, &payload)
+	f.clk.Set(f.now.Add(time.Duration(es[0].DueTick*tick.TickSeconds) * time.Second))
+	if _, err := f.pool.Exec(ctx, `UPDATE worlds SET current_tick=$2,last_tick_at=$3 WHERE id=$1`, f.worldID, es[0].DueTick, f.clk.Now()); err != nil {
+		t.Fatal(err)
+	}
+	h := messenger.NewOrderDeliveryHandler(f.pool, events.NewScheduler(f.pool, f.clk), events.NewStore(f.pool), nil, f.clk)
+	errs := make(chan error, 2)
+	for i := 0; i < 2; i++ {
+		go func() { errs <- h.Handle(ctx, es[0]) }()
+	}
+	for i := 0; i < 2; i++ {
+		if err := <-errs; err != nil {
+			t.Fatal(err)
+		}
+	}
+	var audits, arrivals int
+	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM events WHERE stream_id=$1 AND event_type=$2`, payload.UnitID, "MarchRecalled").Scan(&audits); err != nil {
+		t.Fatal(err)
+	}
+	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND event_type='UnitArrival' AND payload->>'unit_id'=$2`, f.worldID, payload.UnitID.String()).Scan(&arrivals); err != nil {
+		t.Fatal(err)
+	}
+	if audits != 1 || arrivals != 1 {
+		t.Fatalf("duplicate projections audit%d arrivals%d", audits, arrivals)
+	}
+}
+
+func TestRecallBatch_AwaitingPassageStillBlocksDuplicates(t *testing.T) {
+	f := setupBatchRecall(t, 2)
+	ctx := context.Background()
+	_, groups := f.dispatch(t, map[string]any{"unit_ids": f.ids})
+	if _, err := f.pool.Exec(ctx, `DELETE FROM scheduled_events WHERE world_id=$1`, f.worldID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.pool.Exec(ctx, `UPDATE messengers SET passage_status='awaiting_passage' WHERE id=$1`, groups[0].MessengerID); err != nil {
+		t.Fatal(err)
+	}
+	results, again := f.dispatch(t, map[string]any{"unit_ids": f.ids})
+	if len(again) != 0 || len(results) != 2 {
+		t.Fatalf("duplicate sea dispatch%+v %+v", results, again)
+	}
+	for _, r := range results {
+		if r.Status != "rejected" || r.Reason == "" {
+			t.Fatalf("missing named rejection%+v", r)
+		}
+	}
+}
+
+func TestRecallBatch_ReceiptRollsBackWithProjection(t *testing.T) {
+	f := setupBatchRecall(t, 1)
+	ctx := context.Background()
+	_, groups := f.dispatch(t, map[string]any{"unit_ids": f.ids})
+	e := f.deliveries(t)[0]
+	var p messenger.OrderDeliveryPayload
+	json.Unmarshal(e.Payload, &p)
+	f.clk.Set(f.now.Add(time.Duration(groups[0].DueTick*tick.TickSeconds) * time.Second))
+	if _, err := f.pool.Exec(ctx, `UPDATE worlds SET current_tick=$2,last_tick_at=$3 WHERE id=$1`, f.worldID, groups[0].DueTick, f.clk.Now()); err != nil {
+		t.Fatal(err)
+	}
+	scheduler := events.NewScheduler(f.pool, f.clk)
+	store := events.NewStore(f.pool)
+	member := p.RecallGroup.Members[0]
+	d := combat.RecallDelivery{EventID: e.ID, OwnerID: p.PlayerID, Meeting: province.MapPosition{Q: p.RecallGroup.Q, R: p.RecallGroup.R}, DepartTick: member.DepartTick, ArriveTick: member.ArriveTick, Route: member.Route}
+	// Force the arrival write to fail after changing the unit, then retry.
+	fn := "recall_fault_" + fmt.Sprintf("%x", p.UnitID[:])
+	if _, err := f.pool.Exec(ctx, fmt.Sprintf(`CREATE FUNCTION %s() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.event_type='UnitArrival' AND NEW.payload->>'unit_id'='%s' THEN RAISE EXCEPTION 'injected arrival fault'; END IF; RETURN NEW; END $$`, fn, p.UnitID)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.pool.Exec(ctx, fmt.Sprintf(`CREATE TRIGGER %s BEFORE INSERT ON scheduled_events FOR EACH ROW EXECUTE FUNCTION %s()`, fn, fn)); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		f.pool.Exec(ctx, fmt.Sprintf(`DROP TRIGGER IF EXISTS %s ON scheduled_events`, fn))
+		f.pool.Exec(ctx, fmt.Sprintf(`DROP FUNCTION IF EXISTS %s()`, fn))
+	})
+	if _, err := combat.ExecuteRecallDelivery(ctx, f.pool, scheduler, store, f.clk, *p.Recall, d); err == nil {
+		t.Fatal("missing injected arrival failure")
+	}
+	if _, err := f.pool.Exec(ctx, fmt.Sprintf(`DROP TRIGGER %s ON scheduled_events`, fn)); err != nil {
+		t.Fatal(err)
+	}
+
+	var receipts, target int
+	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM processed_deliveries WHERE event_id=$1`, e.ID).Scan(&receipts); err != nil {
+		t.Fatal(err)
+	}
+	if err := f.pool.QueryRow(ctx, `SELECT target_q FROM units WHERE id=$1`, p.UnitID).Scan(&target); err != nil {
+		t.Fatal(err)
+	}
+	if receipts != 0 || target != 8 {
+		t.Fatalf("partial commit receipt%d target%d", receipts, target)
+	}
+	if _, err := combat.ExecuteRecallDelivery(ctx, f.pool, scheduler, store, f.clk, *p.Recall, d); err != nil {
+		t.Fatalf("retry failed%v", err)
+	}
+}
