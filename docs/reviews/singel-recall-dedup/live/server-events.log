@@ -1,0 +1,12 @@
+{"time":"2026-10-07T18:15:00.106670934+02:00","level":"INFO","msg":"world tick advanced","world":"1a9a1821-f356-40ef-b61e-afe8b4d600a2","tick":1}
+{"time":"2026-10-07T18:15:06.107556405+02:00","level":"INFO","msg":"world tick advanced","world":"1a9a1821-f356-40ef-b61e-afe8b4d600a2","tick":2}
+{"time":"2026-10-07T18:15:06.11027259+02:00","level":"INFO","msg":"recall/redirect order reached unit, new course set","unit":"11f9c8de-bec2-4df5-a788-97f16a56f2d4","mode":"recall","from_q":7,"from_r":43,"to_q":7,"to_r":40,"arrives_at":"2026-10-07T18:15:24.107144465+02:00"}
+{"time":"2026-10-07T18:15:06.111242039+02:00","level":"INFO","msg":"order delivered — unit turned onto new course","unit":"11f9c8de-bec2-4df5-a788-97f16a56f2d4","verb":"recall","arrives_at":"2026-10-07T18:15:24.107144465+02:00"}
+{"time":"2026-10-07T18:15:06.114830051+02:00","level":"INFO","msg":"recall/redirect order reached unit, new course set","unit":"84bed615-14a9-4480-a40a-6d58d57a62b9","mode":"redirect","from_q":7,"from_r":43,"to_q":7,"to_r":40,"arrives_at":"2026-10-07T18:15:24.112460196+02:00"}
+{"time":"2026-10-07T18:15:06.115510133+02:00","level":"INFO","msg":"order delivered — unit turned onto new course","unit":"84bed615-14a9-4480-a40a-6d58d57a62b9","verb":"redirect","arrives_at":"2026-10-07T18:15:24.112460196+02:00"}
+{"time":"2026-10-07T18:15:12.108478702+02:00","level":"INFO","msg":"world tick advanced","world":"1a9a1821-f356-40ef-b61e-afe8b4d600a2","tick":3}
+{"time":"2026-10-07T18:15:18.106751904+02:00","level":"INFO","msg":"world tick advanced","world":"1a9a1821-f356-40ef-b61e-afe8b4d600a2","tick":4}
+{"time":"2026-10-07T18:15:24.10774989+02:00","level":"INFO","msg":"world tick advanced","world":"1a9a1821-f356-40ef-b61e-afe8b4d600a2","tick":5}
+{"time":"2026-10-07T18:15:30.106672335+02:00","level":"INFO","msg":"world tick advanced","world":"1a9a1821-f356-40ef-b61e-afe8b4d600a2","tick":6}
+{"time":"2026-10-07T18:15:36.107239846+02:00","level":"INFO","msg":"world tick advanced","world":"1a9a1821-f356-40ef-b61e-afe8b4d600a2","tick":7}
+{"time":"2026-10-07T18:15:42.10561744+02:00","level":"INFO","msg":"world tick advanced","world":"1a9a1821-f356-40ef-b61e-afe8b4d600a2","tick":8}

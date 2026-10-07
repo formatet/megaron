@@ -161,3 +161,12 @@ Screenshots are BILD evidence awaiting Timothy, not visual approval.
 `python3 tools/recall_mutations.py OUT` mutates meeting-time evaluation, member
 fanout, pending guard, atomic receipt and arrival dedup, requiring named assertion
 failures on separate fresh databases and restoring source after each arm.
+
+`python3 tools/single_recall_live.py OUT HASH` runs actual single recall and
+redirect through Keryx after register/join/found/march on private PG16/Redis and
+clean server environment (tick6s). Requires per-unit MarchRecalled/Redirected
+audits plus both units in garrison; SQL evidence is read-only. Build temenos and
+keryx in OUT, stamping temenos with `-X main.buildCommit=HASH`. Cleans own resources.
+`python3 tools/single_recall_mutations.py OUT` requires fresh-DB assertion failures
+when arrival reuse, failure notice/audit or old messenger claim is removed, and
+restores source after every arm.

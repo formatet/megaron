@@ -46,9 +46,12 @@ func TestOrderDelivery_RecallMissedIsNeverSilent(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 
+	if _, err := pool.Exec(ctx, `UPDATE worlds SET status='archived' WHERE status='active'`); err != nil {
+		t.Fatal(err)
+	}
 	var worldID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO worlds (name, status) VALUES ($1, 'archived') RETURNING id`,
+		`INSERT INTO worlds (name, status) VALUES ($1, 'active') RETURNING id`,
 		"test-world-"+uuid.New().String(),
 	).Scan(&worldID); err != nil {
 		t.Fatalf("create test world: %v", err)
