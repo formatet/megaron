@@ -1,0 +1,8 @@
+» färsk DB på migration 160 · commit b6f90185+ändringar
+2026/10/07 17:43:24 INFO player registered id=70a29960-960c-47e1-acd7-2a1262c03ab9 username=intercept-f708b9d4-6dc2-4010-9f57-e2a7ffa8c65e
+--- FAIL: TestRecallBatch_ReceiptRollsBackWithProjection (0.10s)
+    unit_recall_batch_test.go:463: response: {"groups":[{"messenger_id":"0dda42a7-3c87-4771-bfb5-e12a1f642be1","unit_ids":["5e9eb752-7272-4d9d-aea3-d0063d320af7"],"q":2,"r":0,"courier_due_tick":1,"courier_arrives_at":"2026-10-07T15:00:00+02:00"}],"results":[{"unit_id":"5e9eb752-7272-4d9d-aea3-d0063d320af7","name":"infantry of Capital","status":"order_dispatched","messenger_id":"0dda42a7-3c87-4771-bfb5-e12a1f642be1"}]}
+    unit_recall_batch_test.go:502: partial commit receipt1 target8
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.099s
+FAIL

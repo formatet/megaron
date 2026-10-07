@@ -282,26 +282,29 @@ func (h *OrderDeliveryHandler) NotifyDeadLetter(ctx context.Context, e events.Sc
 	if err := json.Unmarshal(e.Payload, &p); err != nil {
 		return fmt.Errorf("dead-letter: unmarshal order delivery payload: %w", err)
 	}
-	if h.hub == nil {
-		if p.Verb == RecallGroupMemberVerb {
-			return h.finishRecallMember(ctx, e, p)
+	if p.Verb == RecallGroupMemberVerb {
+		fresh, err := h.completeRecallMember(ctx, e, p)
+		if err != nil {
+			return err
 		}
+		if !fresh {
+			return nil
+		}
+	}
+	if h.hub == nil {
 		return nil
 	}
 	deadLetterPayload := map[string]any{
 		"unit_id": p.UnitID,
 		"name":    unit.LoadDisplayName(ctx, h.pool, p.UnitID),
-		"verb":    p.Verb,
-		"reason":  fmt.Sprintf("your %s order's Runner could not deliver it after repeated attempts (system fault) — the unit never received it; check its status and reissue the order", p.Verb),
+		"verb":    playerOrderVerb(p.Verb),
+		"reason":  fmt.Sprintf("your %s order's Runner could not deliver it after repeated attempts (system fault) — the unit never received it; check its status and reissue the order", playerOrderVerb(p.Verb)),
 	}
 	if p.Verb == "occupy_action" && p.Occupy != nil {
 		deadLetterPayload["settlement_id"] = p.Occupy.SettlementID
 	}
 	_ = h.hub.NotifyPlayer(ctx, p.WorldID, p.PlayerID, "OrderFailed", 1, deadLetterPayload)
 	slog.Warn("dead-letter: notified owner of stalled order delivery", "messenger", p.MessengerID, "unit", p.UnitID, "verb", p.Verb)
-	if p.Verb == RecallGroupMemberVerb {
-		return h.finishRecallMember(ctx, e, p)
-	}
 	return nil
 }
 
@@ -315,7 +318,7 @@ func (h *OrderDeliveryHandler) notifyOrderFailed(ctx context.Context, p OrderDel
 	payload := map[string]any{
 		"unit_id": p.UnitID,
 		"name":    unit.LoadDisplayName(ctx, h.pool, p.UnitID),
-		"verb":    p.Verb,
+		"verb":    playerOrderVerb(p.Verb),
 		"reason":  reason,
 	}
 	// occupy_action targets a SETTLEMENT, not a unit — UnitID is left
@@ -325,4 +328,11 @@ func (h *OrderDeliveryHandler) notifyOrderFailed(ctx context.Context, p OrderDel
 		payload["settlement_id"] = p.Occupy.SettlementID
 	}
 	_ = h.hub.NotifyPlayer(ctx, p.WorldID, p.PlayerID, "OrderFailed", 2, payload)
+}
+
+func playerOrderVerb(verb string) string {
+	if verb == RecallGroupMemberVerb {
+		return "recall"
+	}
+	return verb
 }

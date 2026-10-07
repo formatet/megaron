@@ -73,6 +73,7 @@ var ErrRecallDeliveryReplay = errors.New("recall member already delivered")
 
 type RecallDelivery struct {
 	EventID                int64
+	DueTick                int
 	OwnerID                uuid.UUID
 	Meeting                province.MapPosition
 	DepartTick, ArriveTick *int
@@ -119,6 +120,9 @@ func executeRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 	}
 
 	if delivery != nil {
+		if status != string(unit.StatusMarching) {
+			return nil, reject(http.StatusConflict, "the unit is no longer marching when the group Runner reaches it")
+		}
 		equalTick := func(a, b *int) bool { return (a == nil && b == nil) || (a != nil && b != nil && *a == *b) }
 		if ownerID != delivery.OwnerID || !equalTick(departTick, delivery.DepartTick) || !equalTick(arriveTick, delivery.ArriveTick) || !bytes.Equal(storedRouteRaw, delivery.Route) {
 			return nil, reject(http.StatusConflict, "the unit changed owner or course before the group Runner reached it")
@@ -136,6 +140,13 @@ func executeRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 	origin := province.MapPosition{Q: q, R: r}
 	target := province.MapPosition{Q: *targetQ, R: *targetR}
 	now := clk.Now()
+	if delivery != nil {
+		anchor, err := tick.LoadAnchor(ctx, tx, o.WorldID)
+		if err != nil {
+			return nil, fmt.Errorf("load group delivery anchor: %w", err)
+		}
+		now = anchor.WallAt(int64(delivery.DueTick) * 1000)
+	}
 
 	// movement 2a, R6.a: read via the saved route when it applies to this
 	// march (invariant 2); otherwise fall back to the old re-walk, unchanged.
@@ -143,7 +154,7 @@ func executeRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 	posOK := false
 	if activeRoute, ok := LoadActiveRoute(storedRouteRaw, status, departTick, arriveTick); ok {
 		if anchor, aErr := tick.LoadAnchor(ctx, tx, o.WorldID); aErr == nil {
-			if p, rErr := RoutePositionAt(activeRoute, anchor.MilliAt(now)); rErr == nil {
+			if p, rErr := RoutePositionAt(activeRoute, recallPositionMilli(anchor, now, delivery)); rErr == nil {
 				currentPos, posOK = p, true
 			}
 		}
@@ -199,6 +210,9 @@ func executeRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 
 	var currentTick int
 	_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+	if delivery != nil {
+		currentTick = delivery.DueTick
+	}
 	travelTicks := int(math.Round(moveTicks))
 	if travelTicks < 1 {
 		travelTicks = 1
@@ -305,4 +319,13 @@ func executeRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 		NewTargetQ: newTarget.Q, NewTargetR: newTarget.R,
 		ArrivesAt: arrivesAtNew,
 	}, nil
+}
+
+// New group deliveries occur at their scheduled game tick even when the worker
+// polls late. Existing single orders retain their wall-clock interpretation.
+func recallPositionMilli(anchor tick.Anchor, now time.Time, delivery *RecallDelivery) int64 {
+	if delivery != nil {
+		return int64(delivery.DueTick) * 1000
+	}
+	return anchor.MilliAt(now)
 }

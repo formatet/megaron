@@ -471,7 +471,7 @@ func TestRecallBatch_ReceiptRollsBackWithProjection(t *testing.T) {
 	scheduler := events.NewScheduler(f.pool, f.clk)
 	store := events.NewStore(f.pool)
 	member := p.RecallGroup.Members[0]
-	d := combat.RecallDelivery{EventID: e.ID, OwnerID: p.PlayerID, Meeting: province.MapPosition{Q: p.RecallGroup.Q, R: p.RecallGroup.R}, DepartTick: member.DepartTick, ArriveTick: member.ArriveTick, Route: member.Route}
+	d := combat.RecallDelivery{EventID: e.ID, DueTick: e.DueTick, OwnerID: p.PlayerID, Meeting: province.MapPosition{Q: p.RecallGroup.Q, R: p.RecallGroup.R}, DepartTick: member.DepartTick, ArriveTick: member.ArriveTick, Route: member.Route}
 	// Force the arrival write to fail after changing the unit, then retry.
 	fn := "recall_fault_" + fmt.Sprintf("%x", p.UnitID[:])
 	if _, err := f.pool.Exec(ctx, fmt.Sprintf(`CREATE FUNCTION %s() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.event_type='UnitArrival' AND NEW.payload->>'unit_id'='%s' THEN RAISE EXCEPTION 'injected arrival fault'; END IF; RETURN NEW; END $$`, fn, p.UnitID)); err != nil {
@@ -503,5 +503,74 @@ func TestRecallBatch_ReceiptRollsBackWithProjection(t *testing.T) {
 	}
 	if _, err := combat.ExecuteRecallDelivery(ctx, f.pool, scheduler, store, f.clk, *p.Recall, d); err != nil {
 		t.Fatalf("retry failed%v", err)
+	}
+}
+
+func TestRecallBatch_LateWorkerUsesDeliveryTickForPositionRouteAndETA(t *testing.T) {
+	for _, jitter := range []int{0, 3} {
+		t.Run(fmt.Sprint(jitter), func(t *testing.T) {
+			f := setupBatchRecall(t, 2)
+			ctx := context.Background()
+			_, groups := f.dispatch(t, map[string]any{"unit_ids": f.ids})
+			es := f.deliveries(t)
+			due := groups[0].DueTick
+			f.clk.Set(f.now.Add(time.Duration((due+jitter)*tick.TickSeconds) * time.Second))
+			if _, err := f.pool.Exec(ctx, `UPDATE worlds SET current_tick=$2,last_tick_at=$3 WHERE id=$1`, f.worldID, due+jitter, f.clk.Now()); err != nil {
+				t.Fatal(err)
+			}
+			h := messenger.NewOrderDeliveryHandler(f.pool, events.NewScheduler(f.pool, f.clk), events.NewStore(f.pool), nil, f.clk)
+			for _, e := range es {
+				if err := h.Handle(ctx, e); err != nil {
+					t.Fatal(err)
+				}
+			}
+			for _, id := range f.ids {
+				var q, r, target, depart, arrive int
+				var at time.Time
+				var raw []byte
+				if err := f.pool.QueryRow(ctx, `SELECT q,r,target_q,depart_tick,arrive_tick,arrives_at,march_route FROM units WHERE id=$1`, id).Scan(&q, &r, &target, &depart, &arrive, &at, &raw); err != nil {
+					t.Fatal(err)
+				}
+				if q != groups[0].Q || r != groups[0].R || target != 0 || depart != due || arrive != due+2 || !at.Equal(f.now.Add(time.Duration((due+2)*tick.TickSeconds)*time.Second)) {
+					t.Fatalf("jitter%d changed meeting/return: q%d r%d target%d depart%d arrive%d at%s", jitter, q, r, target, depart, arrive, at)
+				}
+				route, ok := combat.LoadActiveRoute(raw, "marching", &depart, &arrive)
+				if !ok {
+					t.Fatal("missing return route")
+				}
+				if route.StartTick != due || route.EndTick != due+2 || route.Hexes[0] != ([2]int{groups[0].Q, groups[0].R}) || route.Hexes[len(route.Hexes)-1] != ([2]int{0, 0}) {
+					t.Fatalf("return route not anchored to delivery: %+v", route)
+				}
+			}
+		})
+	}
+}
+
+type batchRecallNotices struct{ failures []map[string]any }
+
+func (*batchRecallNotices) BroadcastEvent(uuid.UUID, string, any) {}
+func (n *batchRecallNotices) NotifyPlayer(_ context.Context, _, _ uuid.UUID, kind string, _ int, payload any) error {
+	if kind == "OrderFailed" {
+		n.failures = append(n.failures, payload.(map[string]any))
+	}
+	return nil
+}
+func TestRecallBatch_ChangedStatusRejectsByNameOnce(t *testing.T) {
+	f := setupBatchRecall(t, 1)
+	ctx := context.Background()
+	f.dispatch(t, map[string]any{"unit_ids": f.ids})
+	e := f.deliveries(t)[0]
+	if _, err := f.pool.Exec(ctx, `UPDATE units SET status='garrison',target_q=NULL,target_r=NULL WHERE id=$1`, f.ids[0]); err != nil {
+		t.Fatal(err)
+	}
+	notices := &batchRecallNotices{}
+	h := messenger.NewOrderDeliveryHandler(f.pool, events.NewScheduler(f.pool, f.clk), events.NewStore(f.pool), notices, f.clk)
+	for i := 0; i < 2; i++ {
+		if err := h.Handle(ctx, e); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if len(notices.failures) != 1 || notices.failures[0]["name"] == "" || notices.failures[0]["reason"] == "" || notices.failures[0]["unit_id"] != f.ids[0] {
+		t.Fatalf("missing named idempotent refusal%+v", notices.failures)
 	}
 }

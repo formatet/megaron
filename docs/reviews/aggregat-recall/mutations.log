@@ -1,0 +1,5 @@
+baseline: GREEN
+first-member-only: RED TestRecallBatch_AllMembersReachGarrisonAndReplayIsIdempotent
+pending-guard: RED TestRecallBatch_GroupHasEveryMemberAndPartialFailures
+non-atomic-receipt: RED TestRecallBatch_ReceiptRollsBackWithProjection
+restored: GREEN

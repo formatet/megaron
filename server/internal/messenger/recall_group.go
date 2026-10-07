@@ -74,7 +74,7 @@ func (h *OrderDeliveryHandler) recallGroupMember(ctx context.Context, e events.S
 		return h.finishRecallMember(ctx, e, p)
 	}
 	result, err := combat.ExecuteRecallDelivery(ctx, h.pool, h.scheduler, h.eventStore, h.clk, *p.Recall, combat.RecallDelivery{
-		EventID: e.ID, OwnerID: p.PlayerID, Meeting: province.MapPosition{Q: p.RecallGroup.Q, R: p.RecallGroup.R}, DepartTick: member.DepartTick, ArriveTick: member.ArriveTick, Route: member.Route,
+		EventID: e.ID, DueTick: e.DueTick, OwnerID: p.PlayerID, Meeting: province.MapPosition{Q: p.RecallGroup.Q, R: p.RecallGroup.R}, DepartTick: member.DepartTick, ArriveTick: member.ArriveTick, Route: member.Route,
 	})
 	if errors.Is(err, combat.ErrRecallDeliveryReplay) {
 		return h.finishRecallMember(ctx, e, p)
@@ -84,35 +84,54 @@ func (h *OrderDeliveryHandler) recallGroupMember(ctx context.Context, e events.S
 		if !errors.As(err, &rejection) {
 			return err
 		}
-		h.notifyOrderFailed(ctx, p, rejection.Reason)
+		return h.rejectRecallMember(ctx, e, p, rejection.Reason)
 	} else if result == nil {
-		h.notifyOrderFailed(ctx, p, "the unit was no longer marching when the group Runner reached it")
+		return h.rejectRecallMember(ctx, e, p, "the unit was no longer marching when the group Runner reached it")
 	} else if h.hub != nil {
 		_ = h.hub.NotifyPlayer(ctx, p.WorldID, p.PlayerID, "UnitRecalled", 3, map[string]any{"unit_id": p.UnitID, "name": unit.LoadDisplayName(ctx, h.pool, p.UnitID), "q": result.FromQ, "r": result.FromR, "target_q": result.NewTargetQ, "target_r": result.NewTargetR, "arrives_at": result.ArrivesAt})
 	}
 	return h.finishRecallMember(ctx, e, p)
 }
 
-func (h *OrderDeliveryHandler) finishRecallMember(ctx context.Context, e events.ScheduledEvent, p OrderDeliveryPayload) error {
-	tx, err := h.pool.Begin(ctx)
+func (h *OrderDeliveryHandler) rejectRecallMember(ctx context.Context, e events.ScheduledEvent, p OrderDeliveryPayload, reason string) error {
+	fresh, err := h.completeRecallMember(ctx, e, p)
 	if err != nil {
 		return err
 	}
+	if fresh {
+		h.notifyOrderFailed(ctx, p, reason)
+	}
+	return nil
+}
+func (h *OrderDeliveryHandler) finishRecallMember(ctx context.Context, e events.ScheduledEvent, p OrderDeliveryPayload) error {
+	_, err := h.completeRecallMember(ctx, e, p)
+	return err
+}
+
+func (h *OrderDeliveryHandler) completeRecallMember(ctx context.Context, e events.ScheduledEvent, p OrderDeliveryPayload) (bool, error) {
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		return false, err
+	}
 	defer tx.Rollback(ctx)
-	if _, err := tx.Exec(ctx, `INSERT INTO processed_deliveries(event_id) VALUES($1) ON CONFLICT DO NOTHING`, e.ID); err != nil {
-		return err
+	claim, err := tx.Exec(ctx, `INSERT INTO processed_deliveries(event_id) VALUES($1) ON CONFLICT DO NOTHING`, e.ID)
+	if err != nil {
+		return false, err
 	}
 	// Serialise group completion, including concurrent members. Every delivery
 	// stays separately receipted; the shared messenger completes after the last.
 	var locked uuid.UUID
 	if err := tx.QueryRow(ctx, `SELECT id FROM messengers WHERE id=$1 FOR UPDATE`, p.MessengerID).Scan(&locked); err != nil {
-		return err
+		return false, err
 	}
 	if _, err := tx.Exec(ctx, `UPDATE messengers SET status='arrived',passage_status=NULL,carrier_transport_id=NULL,carrier_unit_id=NULL,carrier_name=NULL
   WHERE id=$1 AND passage_generation=$2 AND NOT EXISTS(
    SELECT 1 FROM scheduled_events se WHERE se.event_type=$3 AND se.payload->>'messenger_id'=$1::text AND se.payload->>'verb'=$4 AND COALESCE((se.payload->>'passage_generation')::int,0)=$2
    AND NOT EXISTS(SELECT 1 FROM processed_deliveries pd WHERE pd.event_id=se.id))`, p.MessengerID, p.PassageGeneration, string(events.ScheduledOrderDelivery), RecallGroupMemberVerb); err != nil {
-		return err
+		return false, err
 	}
-	return tx.Commit(ctx)
+	if err := tx.Commit(ctx); err != nil {
+		return false, err
+	}
+	return claim.RowsAffected() > 0, nil
 }

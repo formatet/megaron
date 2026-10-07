@@ -71,3 +71,16 @@ Utökade fresh-PG-prov: filters/distinkta möten, samtidiga dispatch/replay,
 terminalt medlemsavslag/dead-letter och manifest/generation efter passage gröna.
 Atomic rollback-provet tillagt efter denna körning; fullsviten återstår.
 JS: 383/383 gröna. Riktig klientrigg finns i tools/recall_live.py; ännu inte körd.
+
+## FYND: workerjitter vid riktig klient
+Första webbkörningen på b6f90185, PG16/mig160, två riktiga startkohorter:
+batch200/grupp med två mottagare, men båda avvisades när Handle jämförde deras
+senare walltime-position med möteshexen. Det deterministiska provet dolde polljitter.
+Råfel sparat [live-web-before-jitter.log](live-web-before-jitter.log). Claude 17:43 godkände att ENDAST nya
+verbets möte, returens start/rutt och ETA ankras på eventets due_tick.
+Kurs/status-snapshot måste fortfarande stämma; ändrad mottagare avvisas med namn.
+Gamla enskilda recall/redirect ska mätas på riktig rigg och rapporteras, inte ändras.
+Jitterprovet godkänt: samma möte och returstart/rutt/ETA vid tickleverans och tre
+ticks sen handler. Statusändrad mottagare ger ett namngivet avslag, replay ingen
+extra notis. Terminala gruppavslag/dead-letter claims receipt före best-effort
+notis och avslutar delad kurir; internt gruppverb visas som spelarverbet recall.
