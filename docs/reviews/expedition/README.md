@@ -33,3 +33,9 @@ Client fixture proof: `python3 tools/expedition_acceptance.py OUT`; real modules
 ## Limits
 
 The home-time reservation assumes the original home remains owned and reachable and the event worker processes scheduled arrivals. Home loss can require a longer journey; after turning, the mission shows the scheduled actual arrival at the replacement home. Combat, attrition and server downtime can interrupt an expedition. Human comprehension of the report remains TEXT for playtest; Timothy approved the new controls before merge.
+
+## Integration and deployment
+
+LIVE 2026-10-07 on Timothy’s approval and explicit mandate for Codex to integrate and ship. Master fast-forwarded to `6b7f200f6109680e962766457dc374f10884b43c`; origin pushed and `/opt/poleia` fast-forwarded. Air rebuilt automatically; the new process logged migration completion and `world ready` for the existing world. Both origin and public readiness report runtime `6b7f200`, migration159. Direct schema read confirms `dirty=false`; original world remains active at tick150 with zero cities and one player. No production player actions, expedition rows, sight rows or failed arrivals.
+
+[Deployment proof](deploy-proof.json): all ten changed production assets match local bytes at origin and public URLs, unauthenticated preview returns401, and the new process has zero error entries. The isolated-player-tested Keryx binary was installed at `~/go/bin/poleia`, with matching SHA256 and the duration flag verified. Fresh premerge combat/API/CLI tests passed on migration159; full Go/vet, JS376 and mutation proofs are above. Subsequent proof-only commits do not change server bytes or require a restart.

@@ -1,0 +1,102 @@
+{
+  "verified_at": "2026-10-07T07:56:07.932090+02:00",
+  "implementation": "15396e642ec7927d2d1fdc155fd53b5df00a4719",
+  "deployment_commit": "6b7f200f6109680e962766457dc374f10884b43c",
+  "runtime_health": {
+    "origin": {
+      "commit": "6b7f200",
+      "migration": 159,
+      "status": "ok"
+    },
+    "public": {
+      "commit": "6b7f200",
+      "migration": 159,
+      "status": "ok"
+    }
+  },
+  "schema_migrations": {
+    "version": 159,
+    "dirty": false
+  },
+  "ground_before": {
+    "worlds": [
+      {
+        "id": "f7c90afa-4653-46a6-b14c-473a268efa3e",
+        "status": "active",
+        "current_tick": 150
+      }
+    ],
+    "cities": 0,
+    "players": 1
+  },
+  "ground_after": {
+    "worlds": [
+      {
+        "id": "f7c90afa-4653-46a6-b14c-473a268efa3e",
+        "status": "active",
+        "current_tick": 150
+      }
+    ],
+    "cities": 0,
+    "players": 1,
+    "expedition_rows": 0,
+    "seen_rows": 0,
+    "failed_arrivals": 0
+  },
+  "assets": {
+    "codex/index.json": {
+      "sha256": "a1581c47b539b2b915c46bd8827d720478617362e8df3b50ccd1986ffcbc2936",
+      "origin": true,
+      "public": true
+    },
+    "codex/marching.md": {
+      "sha256": "108e570cfd2ed82015598c3303c8c4a78487615a635f93b49a267e30bca8f49c",
+      "origin": true,
+      "public": true
+    },
+    "codex/sea.md": {
+      "sha256": "0b4c8ef9d6b9e798feb984a0a4103cabbe2601622c5c981d5ad53328185f42aa",
+      "origin": true,
+      "public": true
+    },
+    "codex/sight.md": {
+      "sha256": "573bef5641a13d28bfc96f7560e5821a28f8b93f20b87f4d1e20eba4f3f46f1b",
+      "origin": true,
+      "public": true
+    },
+    "js/megaron/ui/drawers/war.js": {
+      "sha256": "2018cfdaf2e7414efffa21e166a0be3596f4c970d66e4b92fd87d1f682facddd",
+      "origin": true,
+      "public": true
+    },
+    "js/megaron/ui/expedition.js": {
+      "sha256": "011e54972a6f881b1f26d70739f9f0fb88e5368713a8440745e39a3deedba7b1",
+      "origin": true,
+      "public": true
+    },
+    "js/megaron/ui/format.js": {
+      "sha256": "fc387a34503b7207c561dcfb4baa4b40627313bbe8e55bac7514641f892dc6e9",
+      "origin": true,
+      "public": true
+    },
+    "js/megaron/ui/marchctx.js": {
+      "sha256": "c51e2806380f47bc25f1959fd3958327e87cd0518893f9896869f0ed5623fc91",
+      "origin": true,
+      "public": true
+    },
+    "js/megaron/ws.js": {
+      "sha256": "08bac2320626161a68a155a543a158dd7d8f37ceaae8e324ffc3e768dcf2d37f",
+      "origin": true,
+      "public": true
+    },
+    "map.html": {
+      "sha256": "eea19b59a524431b5a30a16c6ac5e3d5dbb7f797ddfe18d8c8bfce50cdac9167",
+      "origin": true,
+      "public": true
+    }
+  },
+  "preview_route_without_auth": 401,
+  "new_process_world_ready": true,
+  "service_error_entries_after_new_build": 0,
+  "local_keryx_sha256": "230cf6a21cc26a5195bfb26175bc4d329712b7b65f6c2bd184f88e84335c1e50"
+}
