@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Real shared march menu via map click, per-unit audit and garrison.
-Usage: python3 tools/simple_march_live.py OUT BUILD_COMMIT baseline|map|war
+Usage: python3 tools/simple_march_live.py OUT BUILD_COMMIT baseline|map|war|land
 OUT contains freshly built temenos and keryx. No SQL fixtures or inherited game
 configuration; only own temporary containers/process/private config are removed.
 """
@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = Path(sys.argv[1]).resolve()
 EXPECTED = sys.argv[2]
 MODE = sys.argv[3] if len(sys.argv) > 3 else "cli"
-assert MODE in ("baseline", "map", "war")
+assert MODE in ("baseline", "map", "war", "land")
 OUT.mkdir(parents=True, exist_ok=True)
 PREFIX = 'megaron-simple-march-' + secrets.token_hex(4)
 containers, errors = [], []
@@ -98,6 +98,18 @@ try:
     tiles=api(worldpath+'/map',token=token)
     tiles=tiles if isinstance(tiles,list) else tiles['tiles']
     nearby=[t for t in tiles if t['terrain'] not in ('fog','coastal_sea','deep_sea','mountain_limestone','mountain_red') and not any(p.get('q')==t['q'] and p.get('r')==t['r'] for p in provinces) and max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer))>=1 and max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer))<=2]
+    cargo_id=None
+    if MODE=='land':
+        deadline=time.monotonic()+120
+        while True:
+            ready=api(worldpath+'/units',token=token)['units']
+            ship=next((u for u in ready if u['category']=='naval' and u['status']=='garrison' and u.get('deployable')),None)
+            if ship:break
+            if time.monotonic()>deadline:raise AssertionError({'no_ready_ship':ready})
+            time.sleep(.5)
+        cargo_id=chosen[0]['id'];api(worldpath+'/units/'+ship['id']+'/load','POST',{'unit_id':cargo_id},token)
+        chosen=[ship,chosen[1]]
+        nearby=[t for t in nearby if any(s['terrain'] in ('coastal_sea','deep_sea') and max(abs(t['q']-s['q']),abs(t['r']-s['r']),abs(t['q']+t['r']-s['q']-s['r']))==1 for s in tiles)]
     centre=min(nearby,key=lambda t:(abs(t['r']-homer),abs(t['q']-homeq-4),t['q'],t['r']))
     q,r=centre['q'],centre['r']
     cfg=OUT/'private-config.json';cfg.write_text(json.dumps({'server':base,'token':token,'world_id':world}));cfg.chmod(0o600)
@@ -128,7 +140,7 @@ try:
         page.locator('#drawer-war').screenshot(path=str(OUT/'war-mobile.png'))
         page.set_viewport_size({'width':1280,'height':900})
         page.evaluate("window.closeDrawer('war')")
-    elif MODE=='war':
+    elif MODE in ('war','land'):
         march_button.click();assert page.locator('#wmp-q').count()==0
         expect(page.locator('#mctx-hint')).to_contain_text('Choose a destination')
     else:page.evaluate("window.closeDrawer('war')")
@@ -141,37 +153,38 @@ try:
       return {x:rect.left+State.camera.x+p.x*State.camera.zoom*SCALE,
               y:rect.top+State.camera.y+p.y*State.camera.zoom*SCALE};
     }"""
-    count=1 if MODE=='war' else 2
+    count=1 if MODE in ('war','land') else 2
     for label,width,height in [('desktop',1280,900),('mobile',390,844)]:
         if label=='mobile':
             page.locator('.mctx-close').click()
         page.set_viewport_size({'width':width,'height':height})
         if label=='mobile':
-            if MODE=='war':
+            if MODE in ('war','land'):
                 page.evaluate("window.openDrawer('war')")
                 page.wait_for_selector('#ucard-'+chosen[0]['id']);march_button.click()
         page.evaluate('window.closeInspect()')
         point=page.evaluate(async_points,[q,r,True])
         page.wait_for_function('p=>document.elementFromPoint(p.x,p.y)?.id==="hex-canvas"',arg=point)
-        page.mouse.click(point['x'],point['y'],button='left' if MODE=='war' else 'right')
+        page.mouse.click(point['x'],point['y'],button='left' if MODE in ('war','land') else 'right')
         page.wait_for_selector('#mg-0')
-        if not page.locator('#mctx-explore-chk').is_checked():page.locator('#mctx-explore-chk').check()
+        if MODE!='land' and not page.locator('#mctx-explore-chk').is_checked():page.locator('#mctx-explore-chk').check()
         expect(page.locator('#mctx-name')).to_contain_text(f'({q},{r})')
         assert page.locator('#mg-0').input_value()==('0' if MODE=='baseline' else str(count))
         if MODE=='baseline':assert page.locator('#mctx-more').count()==0
         else:
             assert not page.locator('#mctx-more').evaluate('(e)=>e.open')
             assert not page.locator('#mctx-ticks').is_visible()
-        if MODE=='war':
+        if MODE in ('war','land'):
             assert page.locator('.mctx-input').count()==1
             assert chosen[0]['display_name'] in page.locator('#mctx-units').inner_text()
             assert chosen[1]['display_name'] not in page.locator('#mctx-units').inner_text()
         page.locator('#march-ctx').screenshot(path=str(OUT/('menu-'+label+'.png')))
         assert page.locator('#march-ctx').evaluate('(e)=>e.scrollWidth<=e.clientWidth'),'overflow'
-    if MODE=='baseline':page.locator('#mg-0').fill('2')
-    else:page.locator('#mctx-more summary').click()
-    page.locator('#mctx-ticks').fill(str(min(14,data['expedition_rules']['max_ticks'])))
-    if MODE!='baseline':page.locator('#mctx-more summary').click()
+    if MODE!='land':
+        if MODE=='baseline':page.locator('#mg-0').fill('2')
+        else:page.locator('#mctx-more summary').click()
+        page.locator('#mctx-ticks').fill(str(min(14,data['expedition_rules']['max_ticks'])))
+        if MODE!='baseline':page.locator('#mctx-more summary').click()
     receipts=[]
     def record(response):
         if '/units/' in response.url and response.url.endswith('/march') and response.request.method=='POST':
@@ -180,8 +193,8 @@ try:
     page.wait_for_function("document.getElementById('mctx-send').style.display==='none'")
     page.wait_for_timeout(200)
     assert len(receipts)==count and all(x['http_status'] in (200,202) for x in receipts),receipts
-    if MODE=='war':assert receipts[0]['unit_id']==chosen[0]['id'],receipts
-    assert all(x['request']['intent']=='explore' for x in receipts)
+    if MODE in ('war','land'):assert receipts[0]['unit_id']==chosen[0]['id'],receipts
+    assert all(x['request']['intent']==('land' if MODE=='land' else 'explore') for x in receipts)
     history=[];deadline=time.monotonic()+200
     while time.monotonic()<deadline:
         current=[u for u in api(worldpath+'/units',token=token)['units'] if u['id'] in {x['unit_id'] for x in receipts}]
@@ -189,6 +202,9 @@ try:
         if len(current)==count and all(u['status']=='garrison' for u in current):break
         time.sleep(.5)
     else:raise AssertionError({'not_home':history[-5:]})
+    if MODE=='land':
+        cargo=next(u for u in api(worldpath+'/units',token=token)['units'] if u['id']==cargo_id)
+        assert cargo['status']=='positioned' and cargo['q']==q and cargo['r']==r,cargo
     sql="SELECT event_type,stream_id,count(*) FROM events WHERE world_id='"+world+"' AND event_type IN ('UnitMarchOrdered','OrderDeliveryFailed') GROUP BY event_type,stream_id ORDER BY event_type;"
     audits=command('docker','exec',containers[0],'psql','-U','postgres','-d','simple-recall-all','-Atc',sql)
     assert all('UnitMarchOrdered|'+x['unit_id']+'|1' in audits for x in receipts),audits

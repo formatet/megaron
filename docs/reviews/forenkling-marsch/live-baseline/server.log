@@ -1,0 +1,315 @@
+{"time":"2026-10-07T22:12:47.117564032+02:00","level":"INFO","msg":"migrations applied"}
+{"time":"2026-10-07T22:12:47.128349779+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"22a18be3-cc60-4923-a10e-34e0413cd628","seed":1791403967119593487,"width":56,"height":40,"err":"invalid map: productive copper = 1 (want >= 2); forest fraction = 0.197 (want 0.22..0.30)"}
+{"time":"2026-10-07T22:12:47.815446831+02:00","level":"INFO","msg":"world created","name":"Expedition proof","id":"22a18be3-cc60-4923-a10e-34e0413cd628","seed":1791403967119593488}
+{"time":"2026-10-07T22:12:47.815483397+02:00","level":"INFO","msg":"world ready","id":"22a18be3-cc60-4923-a10e-34e0413cd628"}
+{"time":"2026-10-07T22:12:47.815744168+02:00","level":"INFO","msg":"chronicle opened","world":"Expedition proof","dir":"/tmp/megaron-march-simple-baseline/chronicles"}
+{"time":"2026-10-07T22:12:47.817792104+02:00","level":"INFO","msg":"scheduled event worker started","poll":6000000000}
+{"time":"2026-10-07T22:12:47.817790619+02:00","level":"INFO","msg":"tick worker started","tick_seconds":6}
+{"time":"2026-10-07T22:12:47.817841012+02:00","level":"INFO","msg":"build","commit":"11246fb1"}
+{"time":"2026-10-07T22:12:47.818028643+02:00","level":"INFO","msg":"keryx server starting","addr":":43183"}
+{"time":"2026-10-07T22:12:47.825968662+02:00","level":"INFO","msg":"daily ticks seeded","worlds":1}
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000001] "GET http://127.0.0.1:43183/healthz HTTP/1.1" from 127.0.0.1:49520 - 200 52B in 2.508869ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000002] "GET http://127.0.0.1:43183/api/v1/worlds HTTP/1.1" from 127.0.0.1:49534 - 200 168B in 841.576µs
+{"time":"2026-10-07T22:12:48.329103819+02:00","level":"INFO","msg":"player registered","id":"752e4718-31c5-43ce-8798-082b73812d0a","username":"simple-recall-all57bfd1b1"}
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000003] "POST http://127.0.0.1:43183/api/v1/auth/register HTTP/1.1" from 127.0.0.1:49546 - 201 403B in 46.306238ms
+{"time":"2026-10-07T22:12:48.344865096+02:00","level":"INFO","msg":"world started","world":"22a18be3-cc60-4923-a10e-34e0413cd628","wanaxes":1}
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000004] "POST http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/join HTTP/1.1" from 127.0.0.1:49556 - 201 304B in 14.701817ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000005] "POST http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/founding/settle HTTP/1.1" from 127.0.0.1:49572 - 201 400B in 57.76326ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000006] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49588 - 200 805B in 2.338893ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000007] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/provinces HTTP/1.1" from 127.0.0.1:49604 - 200 287B in 4.01338ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000008] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49620 - 200 139267B in 10.732372ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000009] "GET http://127.0.0.1:43183/ HTTP/1.1" from 127.0.0.1:49628 - 200 2383B in 732.928µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000011] "GET http://127.0.0.1:43183/static/hero.png HTTP/1.1" from 127.0.0.1:49640 - 200 1193707B in 1.446237ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000010] "GET http://127.0.0.1:43183/static/megaron.css HTTP/1.1" from 127.0.0.1:49628 - 200 19307B in 2.359407ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000012] "GET http://127.0.0.1:43183/static/music/minoan_intro.ogg HTTP/1.1" from 127.0.0.1:49640 - 206 704198B in 321.139µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000013] "GET http://127.0.0.1:43183/static/music/minoan_intro.ogg HTTP/1.1" from 127.0.0.1:49628 - 206 81606B in 152.55µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000014] "GET http://127.0.0.1:43183/play HTTP/1.1" from 127.0.0.1:49628 - 303 99B in 786.903µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000015] "GET http://127.0.0.1:43183/world/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49628 - 200 6893B in 997.237µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000016] "GET http://127.0.0.1:43183/static/megaron.css HTTP/1.1" from 127.0.0.1:49628 - 304 0B in 58.155µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000017] "GET http://127.0.0.1:43183/static/js/megaron/main.js HTTP/1.1" from 127.0.0.1:49628 - 200 5476B in 430.905µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000018] "GET http://127.0.0.1:43183/static/js/megaron/config.js HTTP/1.1" from 127.0.0.1:49628 - 200 2094B in 191.493µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000019] "GET http://127.0.0.1:43183/static/js/megaron/state.js HTTP/1.1" from 127.0.0.1:49646 - 200 2694B in 193.164µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000022] "GET http://127.0.0.1:43183/static/js/megaron/telemetry.js HTTP/1.1" from 127.0.0.1:49660 - 200 337B in 1.163503ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000020] "GET http://127.0.0.1:43183/static/js/megaron/clock.js HTTP/1.1" from 127.0.0.1:49650 - 200 948B in 1.386436ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000021] "GET http://127.0.0.1:43183/static/js/megaron/ws.js HTTP/1.1" from 127.0.0.1:49662 - 200 4866B in 1.686545ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000023] "GET http://127.0.0.1:43183/static/js/megaron/render/city.js HTTP/1.1" from 127.0.0.1:49628 - 200 7012B in 628.152µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000025] "GET http://127.0.0.1:43183/static/js/megaron/ui/misc.js HTTP/1.1" from 127.0.0.1:49646 - 200 10345B in 1.042531ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000024] "GET http://127.0.0.1:43183/static/js/megaron/render/map.js HTTP/1.1" from 127.0.0.1:49664 - 200 86331B in 3.333121ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000026] "GET http://127.0.0.1:43183/static/js/megaron/ui/chips.js HTTP/1.1" from 127.0.0.1:49660 - 200 3815B in 249.781µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000027] "GET http://127.0.0.1:43183/static/js/megaron/ui/search.js HTTP/1.1" from 127.0.0.1:49650 - 200 2303B in 283.625µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000028] "GET http://127.0.0.1:43183/static/js/megaron/ui/marchctx.js HTTP/1.1" from 127.0.0.1:49662 - 200 11586B in 443.326µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000029] "GET http://127.0.0.1:43183/static/js/megaron/ui/drawers/city.js HTTP/1.1" from 127.0.0.1:49628 - 200 15444B in 668.625µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000030] "GET http://127.0.0.1:43183/static/js/megaron/ui/drawers/war.js HTTP/1.1" from 127.0.0.1:49646 - 200 18409B in 851.865µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000032] "GET http://127.0.0.1:43183/static/js/megaron/ui/drawers/kult.js HTTP/1.1" from 127.0.0.1:49660 - 200 4962B in 679.166µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000036] "GET http://127.0.0.1:43183/static/js/megaron/ui/diagnostics.js HTTP/1.1" from 127.0.0.1:49646 - 200 2127B in 550.822µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000031] "GET http://127.0.0.1:43183/static/js/megaron/ui/drawers/economy.js HTTP/1.1" from 127.0.0.1:49650 - 200 9234B in 939.606µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000035] "GET http://127.0.0.1:43183/static/js/megaron/ui/drawers/report.js HTTP/1.1" from 127.0.0.1:49628 - 200 1919B in 702.105µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000034] "GET http://127.0.0.1:43183/static/js/megaron/ui/drawers/notif.js HTTP/1.1" from 127.0.0.1:49664 - 200 3395B in 755.268µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000033] "GET http://127.0.0.1:43183/static/js/megaron/ui/drawers/diplomacy.js HTTP/1.1" from 127.0.0.1:49662 - 200 9335B in 1.314807ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000037] "GET http://127.0.0.1:43183/static/js/megaron/ui/drawers/gossip.js HTTP/1.1" from 127.0.0.1:49628 - 200 2071B in 318.167µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000040] "GET http://127.0.0.1:43183/static/js/megaron/ui/codex.js HTTP/1.1" from 127.0.0.1:49650 - 200 4586B in 259.152µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000038] "GET http://127.0.0.1:43183/static/js/megaron/ui/sfx.js HTTP/1.1" from 127.0.0.1:49646 - 200 3919B in 392.541µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000042] "GET http://127.0.0.1:43183/static/js/megaron/api.js HTTP/1.1" from 127.0.0.1:49662 - 200 1742B in 225.618µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000039] "GET http://127.0.0.1:43183/static/js/megaron/ui/dispatch_window.js HTTP/1.1" from 127.0.0.1:49664 - 200 5479B in 370.186µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000041] "GET http://127.0.0.1:43183/static/js/megaron/ui/account_window.js HTTP/1.1" from 127.0.0.1:49660 - 200 2856B in 334.871µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000044] "GET http://127.0.0.1:43183/static/js/megaron/render/citybuildings.js HTTP/1.1" from 127.0.0.1:49662 - 200 5334B in 301.989µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000043] "GET http://127.0.0.1:43183/static/js/megaron/render/pixelgrid.js HTTP/1.1" from 127.0.0.1:49628 - 200 7885B in 400.526µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000045] "GET http://127.0.0.1:43183/static/js/megaron/ui/format.js HTTP/1.1" from 127.0.0.1:49660 - 200 15845B in 749.249µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000047] "GET http://127.0.0.1:43183/static/js/megaron/ui/time.js HTTP/1.1" from 127.0.0.1:49664 - 200 1849B in 160.681µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000046] "GET http://127.0.0.1:43183/static/js/megaron/ui/search_messages.js HTTP/1.1" from 127.0.0.1:49646 - 200 1096B in 213.089µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000048] "GET http://127.0.0.1:43183/static/js/megaron/ui/movements.js HTTP/1.1" from 127.0.0.1:49650 - 200 1543B in 154.128µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000049] "GET http://127.0.0.1:43183/static/js/megaron/ui/stance.js HTTP/1.1" from 127.0.0.1:49628 - 200 825B in 307.696µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000051] "GET http://127.0.0.1:43183/static/js/megaron/ui/expedition.js HTTP/1.1" from 127.0.0.1:49660 - 200 662B in 232.567µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000050] "GET http://127.0.0.1:43183/static/js/megaron/ui/actornames.js HTTP/1.1" from 127.0.0.1:49662 - 200 1402B in 388.102µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000052] "GET http://127.0.0.1:43183/static/js/megaron/ui/march_preview.js HTTP/1.1" from 127.0.0.1:49664 - 200 1107B in 220.047µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000054] "GET http://127.0.0.1:43183/static/js/megaron/ui/drawers/sitos_view.js HTTP/1.1" from 127.0.0.1:49650 - 200 1430B in 211.211µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000053] "GET http://127.0.0.1:43183/static/js/megaron/ui/citygrid.js HTTP/1.1" from 127.0.0.1:49646 - 200 7955B in 487.423µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000056] "GET http://127.0.0.1:43183/static/js/megaron/render/sight.js HTTP/1.1" from 127.0.0.1:49660 - 200 1334B in 196.912µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000057] "GET http://127.0.0.1:43183/static/js/megaron/render/camera.js HTTP/1.1" from 127.0.0.1:49664 - 200 1542B in 136.962µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000059] "GET http://127.0.0.1:43183/static/js/megaron/ui/hover.js HTTP/1.1" from 127.0.0.1:49650 - 200 1549B in 256.446µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000055] "GET http://127.0.0.1:43183/static/js/megaron/render/actorsprites.js HTTP/1.1" from 127.0.0.1:49628 - 200 5852B in 450.821µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000060] "GET http://127.0.0.1:43183/static/js/megaron/ui/retreat.js HTTP/1.1" from 127.0.0.1:49646 - 200 1700B in 404.471µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000058] "GET http://127.0.0.1:43183/static/js/megaron/render/citysprites.js HTTP/1.1" from 127.0.0.1:49662 - 200 8747B in 682.975µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000061] "GET http://127.0.0.1:43183/static/js/megaron/ui/runner_status.js HTTP/1.1" from 127.0.0.1:49660 - 200 1512B in 142.202µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000062] "GET http://127.0.0.1:43183/static/js/megaron/ui/recall_all.js HTTP/1.1" from 127.0.0.1:49664 - 200 751B in 80.036µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000063] "GET http://127.0.0.1:43183/static/js/megaron/ui/drawers/kult_kharis.js HTTP/1.1" from 127.0.0.1:49650 - 200 1018B in 142.772µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000064] "GET http://127.0.0.1:43183/api/v1/auth/me HTTP/1.1" from 127.0.0.1:49650 - 200 195B in 781.227µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000065] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628 HTTP/1.1" from 127.0.0.1:49650 - 200 209B in 447.885µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000066] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/provinces HTTP/1.1" from 127.0.0.1:49664 - 200 229B in 4.539483ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000067] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/founding/status HTTP/1.1" from 127.0.0.1:49664 - 200 42B in 1.175265ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000068] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/messengers/inbox HTTP/1.1" from 127.0.0.1:49664 - 200 28B in 1.551627ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000070] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/marches HTTP/1.1" from 127.0.0.1:49660 - 200 28B in 6.721519ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000075] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/rural-projections HTTP/1.1" from 127.0.0.1:49664 - 200 190B in 6.62235ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000073] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49646 - 200 332B in 11.093673ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000076] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/provinces HTTP/1.1" from 127.0.0.1:49660 - 200 229B in 4.0604ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000079] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/notifications?unread=true&dispatchable=true HTTP/1.1" from 127.0.0.1:49660 - 200 343B in 871.354µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000078] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/settlements/placement-roster HTTP/1.1" from 127.0.0.1:49646 - 200 230B in 1.993759ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000080] "GET http://127.0.0.1:43183/static/codex/index.json HTTP/1.1" from 127.0.0.1:49660 - 200 1970B in 303.447µs
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000069] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49650 - 200 7765B in 17.60966ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000071] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/messengers HTTP/1.1" from 127.0.0.1:49662 - 200 28B in 16.534091ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000072] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/trades HTTP/1.1" from 127.0.0.1:49628 - 200 28B in 16.919441ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000077] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/foreign-units HTTP/1.1" from 127.0.0.1:49664 - 200 28B in 8.367565ms
+2026/10/07 22:12:48 [tki9/FIZPKt7cgj-000081] "GET http://127.0.0.1:43183/static/music/minoan_templet_synth.ogg HTTP/1.1" from 127.0.0.1:49664 - 206 660154B in 343.084µs
+2026/10/07 22:12:49 [tki9/FIZPKt7cgj-000083] "GET http://127.0.0.1:43183/api/v1/units HTTP/1.1" from 127.0.0.1:49628 - 200 303B in 130.506µs
+2026/10/07 22:12:49 [tki9/FIZPKt7cgj-000084] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/retreat-default HTTP/1.1" from 127.0.0.1:49662 - 200 93B in 734.958µs
+2026/10/07 22:12:49 [tki9/FIZPKt7cgj-000085] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49650 - 200 332B in 3.498876ms
+2026/10/07 22:12:49 [tki9/FIZPKt7cgj-000082] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/provinces/5e8a017c-15e7-4422-bc78-47e2de2b01c2 HTTP/1.1" from 127.0.0.1:49664 - 200 1738B in 26.282725ms
+2026/10/07 22:12:49 [tki9/FIZPKt7cgj-000086] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/provinces/5e8a017c-15e7-4422-bc78-47e2de2b01c2/actions HTTP/1.1" from 127.0.0.1:49664 - 200 2926B in 14.118123ms
+2026/10/07 22:12:50 [tki9/FIZPKt7cgj-000087] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units/e9eb470a-2403-4452-99bc-cb21633b2755/march-preview?target_q=0&target_r=0 HTTP/1.1" from 127.0.0.1:49664 - 404 58B in 718.454µs
+2026/10/07 22:12:50 [tki9/FIZPKt7cgj-000088] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49664 - 200 332B in 3.219769ms
+2026/10/07 22:12:50 [tki9/FIZPKt7cgj-000089] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49664 - 200 332B in 1.499202ms
+2026/10/07 22:12:50 [tki9/FIZPKt7cgj-000090] "POST http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units/e9eb470a-2403-4452-99bc-cb21633b2755/march HTTP/1.1" from 127.0.0.1:49664 - 202 259B in 9.290682ms
+2026/10/07 22:12:50 [tki9/FIZPKt7cgj-000091] "POST http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units/aebebd61-95aa-4e8a-bc38-56927c64765d/march HTTP/1.1" from 127.0.0.1:49650 - 202 260B in 10.142115ms
+2026/10/07 22:12:50 [tki9/FIZPKt7cgj-000092] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49650 - 200 556B in 1.270913ms
+2026/10/07 22:12:50 [tki9/FIZPKt7cgj-000093] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49650 - 200 557B in 1.440197ms
+2026/10/07 22:12:50 [tki9/FIZPKt7cgj-000094] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/marches HTTP/1.1" from 127.0.0.1:49664 - 200 28B in 2.105933ms
+2026/10/07 22:12:50 [tki9/FIZPKt7cgj-000095] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/messengers HTTP/1.1" from 127.0.0.1:49662 - 200 28B in 7.887681ms
+2026/10/07 22:12:50 [tki9/FIZPKt7cgj-000096] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:47966 - 200 1557B in 3.350711ms
+2026/10/07 22:12:51 [tki9/FIZPKt7cgj-000097] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:47968 - 200 1557B in 1.726392ms
+2026/10/07 22:12:51 [tki9/FIZPKt7cgj-000098] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:47974 - 200 1557B in 2.043321ms
+2026/10/07 22:12:51 [tki9/FIZPKt7cgj-000101] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49664 - 200 560B in 3.980539ms
+2026/10/07 22:12:51 [tki9/FIZPKt7cgj-000100] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/foreign-units HTTP/1.1" from 127.0.0.1:49650 - 200 28B in 8.57561ms
+2026/10/07 22:12:51 [tki9/FIZPKt7cgj-000099] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49662 - 200 7765B in 9.869505ms
+2026/10/07 22:12:52 [tki9/FIZPKt7cgj-000102] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:47986 - 200 1556B in 2.005335ms
+2026/10/07 22:12:52 [tki9/FIZPKt7cgj-000103] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:47990 - 200 1557B in 2.349482ms
+2026/10/07 22:12:53 [tki9/FIZPKt7cgj-000104] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:48002 - 200 1556B in 2.044846ms
+2026/10/07 22:12:53 [tki9/FIZPKt7cgj-000105] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:48004 - 200 1557B in 1.278008ms
+2026/10/07 22:12:54 [tki9/FIZPKt7cgj-000106] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:48012 - 200 1557B in 1.182993ms
+2026/10/07 22:12:54 [tki9/FIZPKt7cgj-000107] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:48020 - 200 1557B in 1.11805ms
+2026/10/07 22:12:54 [tki9/FIZPKt7cgj-000109] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49650 - 200 557B in 4.951805ms
+2026/10/07 22:12:54 [tki9/FIZPKt7cgj-000110] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/foreign-units HTTP/1.1" from 127.0.0.1:49664 - 200 28B in 7.389883ms
+2026/10/07 22:12:54 [tki9/FIZPKt7cgj-000108] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49662 - 200 7765B in 11.262311ms
+2026/10/07 22:12:55 [tki9/FIZPKt7cgj-000111] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:48022 - 200 1557B in 1.168321ms
+2026/10/07 22:12:55 [tki9/FIZPKt7cgj-000112] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:48034 - 200 1557B in 902.107µs
+2026/10/07 22:12:56 [tki9/FIZPKt7cgj-000113] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:48048 - 200 1557B in 1.882971ms
+2026/10/07 22:12:56 [tki9/FIZPKt7cgj-000114] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:48052 - 200 1557B in 1.139826ms
+2026/10/07 22:12:57 [tki9/FIZPKt7cgj-000115] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:48054 - 200 1557B in 1.579874ms
+2026/10/07 22:12:57 [tki9/FIZPKt7cgj-000116] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:48058 - 200 1557B in 1.873971ms
+2026/10/07 22:12:57 [tki9/FIZPKt7cgj-000118] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49664 - 200 560B in 2.540853ms
+2026/10/07 22:12:57 [tki9/FIZPKt7cgj-000119] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/foreign-units HTTP/1.1" from 127.0.0.1:49650 - 200 28B in 9.28197ms
+2026/10/07 22:12:57 [tki9/FIZPKt7cgj-000117] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49662 - 200 7765B in 12.10034ms
+2026/10/07 22:12:58 [tki9/FIZPKt7cgj-000120] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:48074 - 200 1557B in 1.757745ms
+2026/10/07 22:12:58 [tki9/FIZPKt7cgj-000121] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:48076 - 200 1557B in 1.498594ms
+2026/10/07 22:12:59 [tki9/FIZPKt7cgj-000122] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:48078 - 200 1557B in 2.017727ms
+2026/10/07 22:12:59 [tki9/FIZPKt7cgj-000123] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:48084 - 200 1557B in 2.643896ms
+{"time":"2026-10-07T22:12:59.821211769+02:00","level":"INFO","msg":"world tick advanced","world":"22a18be3-cc60-4923-a10e-34e0413cd628","tick":1}
+2026/10/07 22:13:00 [tki9/FIZPKt7cgj-000124] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:39952 - 200 1557B in 2.354439ms
+2026/10/07 22:13:00 [tki9/FIZPKt7cgj-000125] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:39960 - 200 1557B in 1.618627ms
+2026/10/07 22:13:00 [tki9/FIZPKt7cgj-000127] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49650 - 200 557B in 1.790685ms
+2026/10/07 22:13:00 [tki9/FIZPKt7cgj-000128] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/foreign-units HTTP/1.1" from 127.0.0.1:49664 - 200 28B in 6.857728ms
+2026/10/07 22:13:00 [tki9/FIZPKt7cgj-000126] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49662 - 200 7898B in 10.85514ms
+2026/10/07 22:13:01 [tki9/FIZPKt7cgj-000129] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:39966 - 200 1556B in 1.723917ms
+2026/10/07 22:13:01 [tki9/FIZPKt7cgj-000130] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:39978 - 200 1557B in 2.755413ms
+2026/10/07 22:13:02 [tki9/FIZPKt7cgj-000131] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:39992 - 200 1557B in 1.911428ms
+2026/10/07 22:13:02 [tki9/FIZPKt7cgj-000132] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40004 - 200 1557B in 1.77091ms
+2026/10/07 22:13:03 [tki9/FIZPKt7cgj-000133] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40006 - 200 1557B in 1.221399ms
+2026/10/07 22:13:03 [tki9/FIZPKt7cgj-000134] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40022 - 200 1557B in 1.222017ms
+2026/10/07 22:13:03 [tki9/FIZPKt7cgj-000136] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49664 - 200 561B in 1.222014ms
+2026/10/07 22:13:03 [tki9/FIZPKt7cgj-000137] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/foreign-units HTTP/1.1" from 127.0.0.1:49650 - 200 28B in 7.672826ms
+2026/10/07 22:13:03 [tki9/FIZPKt7cgj-000135] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49662 - 200 7898B in 10.44958ms
+2026/10/07 22:13:04 [tki9/FIZPKt7cgj-000138] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40024 - 200 1557B in 1.050054ms
+2026/10/07 22:13:04 [tki9/FIZPKt7cgj-000139] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40030 - 200 1556B in 857.373µs
+2026/10/07 22:13:05 [tki9/FIZPKt7cgj-000140] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40036 - 200 1557B in 1.225718ms
+{"time":"2026-10-07T22:13:05.820911632+02:00","level":"INFO","msg":"world tick advanced","world":"22a18be3-cc60-4923-a10e-34e0413cd628","tick":2}
+2026/10/07 22:13:05 [tki9/FIZPKt7cgj-000141] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40038 - 200 1556B in 688.289µs
+2026/10/07 22:13:06 [tki9/FIZPKt7cgj-000142] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40050 - 200 1557B in 1.547552ms
+2026/10/07 22:13:06 [tki9/FIZPKt7cgj-000143] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40060 - 200 1556B in 2.067721ms
+2026/10/07 22:13:06 [tki9/FIZPKt7cgj-000145] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49650 - 200 559B in 2.293638ms
+2026/10/07 22:13:06 [tki9/FIZPKt7cgj-000146] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/foreign-units HTTP/1.1" from 127.0.0.1:49664 - 200 28B in 7.991997ms
+2026/10/07 22:13:06 [tki9/FIZPKt7cgj-000144] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49662 - 200 8244B in 12.898691ms
+2026/10/07 22:13:07 [tki9/FIZPKt7cgj-000147] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40068 - 200 1557B in 2.149431ms
+2026/10/07 22:13:07 [tki9/FIZPKt7cgj-000148] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40072 - 200 1557B in 1.588574ms
+2026/10/07 22:13:08 [tki9/FIZPKt7cgj-000149] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40080 - 200 1557B in 1.163876ms
+2026/10/07 22:13:08 [tki9/FIZPKt7cgj-000150] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40092 - 200 1556B in 981.973µs
+2026/10/07 22:13:09 [tki9/FIZPKt7cgj-000151] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40102 - 200 1557B in 1.217139ms
+2026/10/07 22:13:09 [tki9/FIZPKt7cgj-000152] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40116 - 200 1557B in 1.409581ms
+2026/10/07 22:13:09 [tki9/FIZPKt7cgj-000154] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49664 - 200 558B in 2.355714ms
+2026/10/07 22:13:09 [tki9/FIZPKt7cgj-000155] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/foreign-units HTTP/1.1" from 127.0.0.1:49650 - 200 28B in 7.070854ms
+2026/10/07 22:13:09 [tki9/FIZPKt7cgj-000153] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49662 - 200 8244B in 9.632958ms
+2026/10/07 22:13:10 [tki9/FIZPKt7cgj-000156] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:38602 - 200 1556B in 1.795355ms
+2026/10/07 22:13:10 [tki9/FIZPKt7cgj-000157] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:38606 - 200 1557B in 1.582773ms
+2026/10/07 22:13:11 [tki9/FIZPKt7cgj-000158] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:38616 - 200 1557B in 1.637359ms
+{"time":"2026-10-07T22:13:11.820742566+02:00","level":"INFO","msg":"world tick advanced","world":"22a18be3-cc60-4923-a10e-34e0413cd628","tick":3}
+2026/10/07 22:13:11 [tki9/FIZPKt7cgj-000159] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:38622 - 200 1555B in 1.249194ms
+2026/10/07 22:13:12 [tki9/FIZPKt7cgj-000160] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:38634 - 200 1555B in 1.099118ms
+2026/10/07 22:13:12 [tki9/FIZPKt7cgj-000161] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:38644 - 200 1555B in 946.208µs
+2026/10/07 22:13:12 [tki9/FIZPKt7cgj-000163] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49650 - 200 559B in 1.568852ms
+2026/10/07 22:13:12 [tki9/FIZPKt7cgj-000164] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/foreign-units HTTP/1.1" from 127.0.0.1:49664 - 200 28B in 8.035812ms
+2026/10/07 22:13:12 [tki9/FIZPKt7cgj-000162] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49662 - 200 8792B in 19.219332ms
+2026/10/07 22:13:13 [tki9/FIZPKt7cgj-000165] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:38646 - 200 1555B in 1.232554ms
+2026/10/07 22:13:13 [tki9/FIZPKt7cgj-000166] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:38652 - 200 1555B in 1.30791ms
+2026/10/07 22:13:14 [tki9/FIZPKt7cgj-000167] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:38658 - 200 1555B in 1.990639ms
+2026/10/07 22:13:14 [tki9/FIZPKt7cgj-000168] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:38668 - 200 1554B in 1.03169ms
+2026/10/07 22:13:15 [tki9/FIZPKt7cgj-000169] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:38678 - 200 1554B in 1.793867ms
+2026/10/07 22:13:15 [tki9/FIZPKt7cgj-000170] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:38686 - 200 1555B in 1.264868ms
+2026/10/07 22:13:15 [tki9/FIZPKt7cgj-000173] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49664 - 200 557B in 3.283206ms
+2026/10/07 22:13:15 [tki9/FIZPKt7cgj-000171] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49662 - 200 8792B in 11.903972ms
+2026/10/07 22:13:15 [tki9/FIZPKt7cgj-000172] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/foreign-units HTTP/1.1" from 127.0.0.1:49650 - 200 28B in 12.464753ms
+2026/10/07 22:13:16 [tki9/FIZPKt7cgj-000174] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:38692 - 200 1555B in 1.043619ms
+2026/10/07 22:13:16 [tki9/FIZPKt7cgj-000175] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:38702 - 200 1554B in 870.201µs
+2026/10/07 22:13:17 [tki9/FIZPKt7cgj-000176] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:38706 - 200 1555B in 909.016µs
+{"time":"2026-10-07T22:13:17.821041814+02:00","level":"INFO","msg":"world tick advanced","world":"22a18be3-cc60-4923-a10e-34e0413cd628","tick":4}
+2026/10/07 22:13:17 [tki9/FIZPKt7cgj-000177] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:38708 - 200 1554B in 800.811µs
+2026/10/07 22:13:18 [tki9/FIZPKt7cgj-000178] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:38718 - 200 1555B in 1.321483ms
+2026/10/07 22:13:18 [tki9/FIZPKt7cgj-000179] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:38730 - 200 1555B in 1.179499ms
+2026/10/07 22:13:18 [tki9/FIZPKt7cgj-000185] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49646 - 200 556B in 1.994261ms
+2026/10/07 22:13:18 [tki9/FIZPKt7cgj-000182] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/marches HTTP/1.1" from 127.0.0.1:49664 - 200 28B in 3.83628ms
+2026/10/07 22:13:18 [tki9/FIZPKt7cgj-000181] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/provinces HTTP/1.1" from 127.0.0.1:49662 - 200 221B in 11.005693ms
+2026/10/07 22:13:18 [tki9/FIZPKt7cgj-000187] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/foreign-units HTTP/1.1" from 127.0.0.1:49664 - 200 28B in 8.238393ms
+2026/10/07 22:13:18 [tki9/FIZPKt7cgj-000186] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/rural-projections HTTP/1.1" from 127.0.0.1:49646 - 200 190B in 12.140402ms
+2026/10/07 22:13:18 [tki9/FIZPKt7cgj-000188] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/settlements/placement-roster HTTP/1.1" from 127.0.0.1:49662 - 200 230B in 4.909768ms
+2026/10/07 22:13:18 [tki9/FIZPKt7cgj-000180] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49650 - 200 8792B in 19.597814ms
+2026/10/07 22:13:18 [tki9/FIZPKt7cgj-000183] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/messengers HTTP/1.1" from 127.0.0.1:49628 - 200 28B in 19.087254ms
+2026/10/07 22:13:18 [tki9/FIZPKt7cgj-000184] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/trades HTTP/1.1" from 127.0.0.1:49660 - 200 28B in 20.418861ms
+2026/10/07 22:13:18 [tki9/FIZPKt7cgj-000189] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49664 - 200 556B in 6.899764ms
+2026/10/07 22:13:18 [tki9/FIZPKt7cgj-000190] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/foreign-units HTTP/1.1" from 127.0.0.1:49646 - 200 28B in 6.991759ms
+2026/10/07 22:13:18 [tki9/FIZPKt7cgj-000191] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49662 - 200 8792B in 9.591405ms
+2026/10/07 22:13:19 [tki9/FIZPKt7cgj-000192] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:38744 - 200 1555B in 1.433696ms
+2026/10/07 22:13:19 [tki9/FIZPKt7cgj-000193] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40582 - 200 1555B in 1.536086ms
+2026/10/07 22:13:20 [tki9/FIZPKt7cgj-000194] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40584 - 200 1555B in 1.304402ms
+2026/10/07 22:13:20 [tki9/FIZPKt7cgj-000195] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40586 - 200 1554B in 1.496288ms
+2026/10/07 22:13:21 [tki9/FIZPKt7cgj-000196] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40596 - 200 1554B in 1.214866ms
+2026/10/07 22:13:21 [tki9/FIZPKt7cgj-000197] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40604 - 200 1555B in 1.474179ms
+2026/10/07 22:13:21 [tki9/FIZPKt7cgj-000200] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49646 - 200 557B in 1.617653ms
+2026/10/07 22:13:21 [tki9/FIZPKt7cgj-000199] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/foreign-units HTTP/1.1" from 127.0.0.1:49664 - 200 28B in 3.955921ms
+2026/10/07 22:13:21 [tki9/FIZPKt7cgj-000198] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49662 - 200 8792B in 9.440924ms
+2026/10/07 22:13:22 [tki9/FIZPKt7cgj-000201] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40606 - 200 1555B in 1.250574ms
+2026/10/07 22:13:22 [tki9/FIZPKt7cgj-000202] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40612 - 200 1555B in 1.443402ms
+2026/10/07 22:13:23 [tki9/FIZPKt7cgj-000203] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40618 - 200 1555B in 1.656345ms
+{"time":"2026-10-07T22:13:23.821931299+02:00","level":"INFO","msg":"world tick advanced","world":"22a18be3-cc60-4923-a10e-34e0413cd628","tick":5}
+{"time":"2026-10-07T22:13:23.829316414+02:00","level":"INFO","msg":"expedition turning for home","unit":"e9eb470a-2403-4452-99bc-cb21633b2755","reason":"area_known","q":9,"r":31,"arrive_tick":9}
+{"time":"2026-10-07T22:13:23.837743834+02:00","level":"INFO","msg":"expedition turning for home","unit":"aebebd61-95aa-4e8a-bc38-56927c64765d","reason":"area_known","q":9,"r":31,"arrive_tick":9}
+2026/10/07 22:13:23 [tki9/FIZPKt7cgj-000204] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49662 - 200 8792B in 8.159566ms
+2026/10/07 22:13:23 [tki9/FIZPKt7cgj-000205] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49664 - 200 8792B in 6.770883ms
+2026/10/07 22:13:23 [tki9/FIZPKt7cgj-000206] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40626 - 200 1619B in 1.741909ms
+2026/10/07 22:13:24 [tki9/FIZPKt7cgj-000207] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40642 - 200 1621B in 1.863363ms
+2026/10/07 22:13:24 [tki9/FIZPKt7cgj-000209] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49662 - 200 581B in 1.270336ms
+2026/10/07 22:13:24 [tki9/FIZPKt7cgj-000210] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/foreign-units HTTP/1.1" from 127.0.0.1:49646 - 200 28B in 4.989332ms
+2026/10/07 22:13:24 [tki9/FIZPKt7cgj-000211] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40654 - 200 1621B in 1.173358ms
+2026/10/07 22:13:24 [tki9/FIZPKt7cgj-000208] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49664 - 200 8792B in 12.642929ms
+2026/10/07 22:13:25 [tki9/FIZPKt7cgj-000212] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40660 - 200 1619B in 2.377271ms
+2026/10/07 22:13:25 [tki9/FIZPKt7cgj-000213] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/notifications?unread=true HTTP/1.1" from 127.0.0.1:49664 - 200 554B in 1.095909ms
+2026/10/07 22:13:25 [tki9/FIZPKt7cgj-000214] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49646 - 200 581B in 1.89938ms
+2026/10/07 22:13:25 [tki9/FIZPKt7cgj-000215] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40672 - 200 1621B in 2.627903ms
+2026/10/07 22:13:26 [tki9/FIZPKt7cgj-000216] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40676 - 200 1620B in 1.260315ms
+2026/10/07 22:13:26 [tki9/FIZPKt7cgj-000217] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40686 - 200 1620B in 1.040175ms
+2026/10/07 22:13:27 [tki9/FIZPKt7cgj-000218] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40696 - 200 1621B in 1.370776ms
+2026/10/07 22:13:27 [tki9/FIZPKt7cgj-000220] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49664 - 200 580B in 1.844612ms
+2026/10/07 22:13:27 [tki9/FIZPKt7cgj-000221] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/foreign-units HTTP/1.1" from 127.0.0.1:49662 - 200 28B in 8.049804ms
+2026/10/07 22:13:27 [tki9/FIZPKt7cgj-000219] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49646 - 200 8860B in 9.666547ms
+2026/10/07 22:13:27 [tki9/FIZPKt7cgj-000222] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40698 - 200 1621B in 1.153219ms
+2026/10/07 22:13:28 [tki9/FIZPKt7cgj-000223] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40714 - 200 1620B in 1.264511ms
+2026/10/07 22:13:28 [tki9/FIZPKt7cgj-000224] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40724 - 200 1621B in 1.33585ms
+2026/10/07 22:13:29 [tki9/FIZPKt7cgj-000225] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:40732 - 200 1621B in 1.077454ms
+{"time":"2026-10-07T22:13:29.821886225+02:00","level":"INFO","msg":"world tick advanced","world":"22a18be3-cc60-4923-a10e-34e0413cd628","tick":6}
+2026/10/07 22:13:29 [tki9/FIZPKt7cgj-000226] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:33838 - 200 1621B in 1.320833ms
+2026/10/07 22:13:30 [tki9/FIZPKt7cgj-000227] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:33842 - 200 1620B in 1.022279ms
+2026/10/07 22:13:30 [tki9/FIZPKt7cgj-000229] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49662 - 200 582B in 3.780926ms
+2026/10/07 22:13:30 [tki9/FIZPKt7cgj-000230] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/foreign-units HTTP/1.1" from 127.0.0.1:49664 - 200 28B in 4.52194ms
+2026/10/07 22:13:30 [tki9/FIZPKt7cgj-000228] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49646 - 200 8860B in 11.942052ms
+2026/10/07 22:13:30 [tki9/FIZPKt7cgj-000231] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:33852 - 200 1620B in 1.063406ms
+2026/10/07 22:13:31 [tki9/FIZPKt7cgj-000232] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:33862 - 200 1620B in 1.466991ms
+2026/10/07 22:13:31 [tki9/FIZPKt7cgj-000233] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:33872 - 200 1621B in 1.257358ms
+2026/10/07 22:13:32 [tki9/FIZPKt7cgj-000234] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:33882 - 200 1621B in 1.187648ms
+2026/10/07 22:13:32 [tki9/FIZPKt7cgj-000235] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:33896 - 200 1621B in 1.160032ms
+2026/10/07 22:13:33 [tki9/FIZPKt7cgj-000236] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:33910 - 200 1621B in 1.552865ms
+2026/10/07 22:13:33 [tki9/FIZPKt7cgj-000238] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49664 - 200 580B in 2.074246ms
+2026/10/07 22:13:33 [tki9/FIZPKt7cgj-000239] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/foreign-units HTTP/1.1" from 127.0.0.1:49662 - 200 28B in 5.8348ms
+2026/10/07 22:13:33 [tki9/FIZPKt7cgj-000237] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49646 - 200 8849B in 8.974454ms
+2026/10/07 22:13:33 [tki9/FIZPKt7cgj-000240] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:33914 - 200 1621B in 1.02261ms
+2026/10/07 22:13:34 [tki9/FIZPKt7cgj-000241] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:33930 - 200 1620B in 1.201437ms
+2026/10/07 22:13:34 [tki9/FIZPKt7cgj-000242] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:33940 - 200 1620B in 2.842318ms
+2026/10/07 22:13:35 [tki9/FIZPKt7cgj-000243] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:33956 - 200 1620B in 1.014959ms
+{"time":"2026-10-07T22:13:35.820091476+02:00","level":"INFO","msg":"world tick advanced","world":"22a18be3-cc60-4923-a10e-34e0413cd628","tick":7}
+2026/10/07 22:13:35 [tki9/FIZPKt7cgj-000244] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:33972 - 200 1620B in 1.676203ms
+2026/10/07 22:13:36 [tki9/FIZPKt7cgj-000245] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:33978 - 200 1621B in 1.162369ms
+2026/10/07 22:13:36 [tki9/FIZPKt7cgj-000247] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49662 - 200 578B in 1.394148ms
+2026/10/07 22:13:36 [tki9/FIZPKt7cgj-000248] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/foreign-units HTTP/1.1" from 127.0.0.1:49664 - 200 28B in 5.636675ms
+2026/10/07 22:13:36 [tki9/FIZPKt7cgj-000246] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49646 - 200 8849B in 8.136804ms
+2026/10/07 22:13:36 [tki9/FIZPKt7cgj-000249] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:33982 - 200 1620B in 983.57µs
+2026/10/07 22:13:37 [tki9/FIZPKt7cgj-000250] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:33988 - 200 1621B in 1.352192ms
+2026/10/07 22:13:37 [tki9/FIZPKt7cgj-000251] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:33998 - 200 1621B in 1.112791ms
+2026/10/07 22:13:38 [tki9/FIZPKt7cgj-000252] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:34002 - 200 1621B in 1.185845ms
+2026/10/07 22:13:38 [tki9/FIZPKt7cgj-000253] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:34004 - 200 1620B in 1.305535ms
+2026/10/07 22:13:39 [tki9/FIZPKt7cgj-000254] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:34012 - 200 1620B in 1.190568ms
+2026/10/07 22:13:39 [tki9/FIZPKt7cgj-000256] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49664 - 200 577B in 2.563222ms
+2026/10/07 22:13:39 [tki9/FIZPKt7cgj-000257] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/foreign-units HTTP/1.1" from 127.0.0.1:49662 - 200 28B in 4.630696ms
+2026/10/07 22:13:39 [tki9/FIZPKt7cgj-000255] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49646 - 200 8882B in 8.693401ms
+2026/10/07 22:13:39 [tki9/FIZPKt7cgj-000258] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:56898 - 200 1621B in 1.488908ms
+2026/10/07 22:13:40 [tki9/FIZPKt7cgj-000259] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:56910 - 200 1621B in 1.021422ms
+2026/10/07 22:13:40 [tki9/FIZPKt7cgj-000260] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:56920 - 200 1621B in 1.146119ms
+2026/10/07 22:13:41 [tki9/FIZPKt7cgj-000261] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:56922 - 200 1621B in 1.306734ms
+{"time":"2026-10-07T22:13:41.820167447+02:00","level":"INFO","msg":"world tick advanced","world":"22a18be3-cc60-4923-a10e-34e0413cd628","tick":8}
+2026/10/07 22:13:41 [tki9/FIZPKt7cgj-000262] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:56936 - 200 1621B in 1.388113ms
+2026/10/07 22:13:42 [tki9/FIZPKt7cgj-000263] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:56940 - 200 1621B in 1.354336ms
+2026/10/07 22:13:42 [tki9/FIZPKt7cgj-000266] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49662 - 200 577B in 1.698216ms
+2026/10/07 22:13:42 [tki9/FIZPKt7cgj-000265] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/foreign-units HTTP/1.1" from 127.0.0.1:49664 - 200 28B in 5.490407ms
+2026/10/07 22:13:42 [tki9/FIZPKt7cgj-000264] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49646 - 200 8882B in 9.599058ms
+2026/10/07 22:13:43 [tki9/FIZPKt7cgj-000267] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:56948 - 200 1621B in 1.271581ms
+2026/10/07 22:13:43 [tki9/FIZPKt7cgj-000268] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:56958 - 200 1621B in 1.277057ms
+2026/10/07 22:13:44 [tki9/FIZPKt7cgj-000269] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:56964 - 200 1621B in 1.331515ms
+2026/10/07 22:13:44 [tki9/FIZPKt7cgj-000270] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:56972 - 200 1621B in 1.108329ms
+2026/10/07 22:13:45 [tki9/FIZPKt7cgj-000271] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:56974 - 200 1621B in 1.173268ms
+2026/10/07 22:13:45 [tki9/FIZPKt7cgj-000272] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:56980 - 200 1621B in 1.053873ms
+2026/10/07 22:13:45 [tki9/FIZPKt7cgj-000274] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:49664 - 200 576B in 2.257056ms
+2026/10/07 22:13:45 [tki9/FIZPKt7cgj-000275] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/foreign-units HTTP/1.1" from 127.0.0.1:49662 - 200 28B in 5.01532ms
+2026/10/07 22:13:45 [tki9/FIZPKt7cgj-000273] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49646 - 200 8882B in 8.032893ms
+2026/10/07 22:13:46 [tki9/FIZPKt7cgj-000276] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:56984 - 200 1621B in 2.056218ms
+2026/10/07 22:13:46 [tki9/FIZPKt7cgj-000277] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:56996 - 200 1621B in 6.12403ms
+2026/10/07 22:13:47 [tki9/FIZPKt7cgj-000278] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:57006 - 200 1621B in 1.560059ms
+2026/10/07 22:13:47 [tki9/FIZPKt7cgj-000279] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:57016 - 200 1621B in 1.559445ms
+{"time":"2026-10-07T22:13:47.820101985+02:00","level":"INFO","msg":"world tick advanced","world":"22a18be3-cc60-4923-a10e-34e0413cd628","tick":9}
+{"time":"2026-10-07T22:13:47.827414624+02:00","level":"INFO","msg":"expedition home","unit":"e9eb470a-2403-4452-99bc-cb21633b2755","ticks_out":9,"hexes_seen":64,"finds":4}
+{"time":"2026-10-07T22:13:47.8274301+02:00","level":"INFO","msg":"unit returned home from explore","unit":"e9eb470a-2403-4452-99bc-cb21633b2755","settlement":"82b04ac9-f233-4a63-8f29-b47a2fe6bc3a"}
+{"time":"2026-10-07T22:13:47.835208731+02:00","level":"INFO","msg":"expedition home","unit":"aebebd61-95aa-4e8a-bc38-56927c64765d","ticks_out":9,"hexes_seen":64,"finds":4}
+{"time":"2026-10-07T22:13:47.835243727+02:00","level":"INFO","msg":"unit returned home from explore","unit":"aebebd61-95aa-4e8a-bc38-56927c64765d","settlement":"82b04ac9-f233-4a63-8f29-b47a2fe6bc3a"}
+2026/10/07 22:13:47 [tki9/FIZPKt7cgj-000280] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49646 - 200 8882B in 7.258647ms
+2026/10/07 22:13:47 [tki9/FIZPKt7cgj-000281] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49662 - 200 8882B in 5.754345ms
+2026/10/07 22:13:47 [tki9/FIZPKt7cgj-000282] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49646 - 200 8882B in 6.705785ms
+2026/10/07 22:13:47 [tki9/FIZPKt7cgj-000283] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/map HTTP/1.1" from 127.0.0.1:49662 - 200 8882B in 6.615673ms
+2026/10/07 22:13:48 [tki9/FIZPKt7cgj-000284] "GET http://127.0.0.1:43183/api/v1/worlds/22a18be3-cc60-4923-a10e-34e0413cd628/units HTTP/1.1" from 127.0.0.1:57018 - 200 833B in 1.524063ms
+{"time":"2026-10-07T22:13:48.066129979+02:00","level":"INFO","msg":"http: response.WriteHeader on hijacked connection from github.com/go-chi/chi/v5/middleware.(*basicWriter).WriteHeader (wrap_writer.go:88)"}
+2026/10/07 22:13:48 [tki9/FIZPKt7cgj-000074] "GET http://127.0.0.1:43183/ws/22a18be3-cc60-4923-a10e-34e0413cd628 HTTP/1.1" from 127.0.0.1:49674 - 504 0B in 59.147547163s
+{"time":"2026-10-07T22:13:48.084115405+02:00","level":"INFO","msg":"scheduled event worker stopped"}
+{"time":"2026-10-07T22:13:48.084119055+02:00","level":"INFO","msg":"shutting down"}
+{"time":"2026-10-07T22:13:48.084112953+02:00","level":"INFO","msg":"tick worker stopped"}

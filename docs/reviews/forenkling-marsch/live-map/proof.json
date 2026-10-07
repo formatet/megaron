@@ -1,0 +1,3072 @@
+{
+  "mode": "map",
+  "browser_errors": [],
+  "health": {
+    "commit": "8eef7147",
+    "migration": 160,
+    "status": "ok"
+  },
+  "receipts": [
+    {
+      "http_status": 202,
+      "unit_id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+      "request": {
+        "target_q": 47,
+        "target_r": 41,
+        "intent": "explore",
+        "ticks": 14
+      },
+      "receipt": {
+        "arrival_tick": 3,
+        "arrives_at": "2026-10-07T22:14:27.737771362+02:00",
+        "arrives_at_utc": "2026-10-07T20:14:27.737771362Z",
+        "carried_silver": 0,
+        "departs_at": "2026-10-07T22:14:09.737771362+02:00",
+        "duration_ticks": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "home_by_tick": 14,
+          "length_ticks": 14,
+          "turn_tick": 7
+        },
+        "origin_q": 48,
+        "origin_r": 41,
+        "purse_shortfall": 0,
+        "target_q": 44,
+        "target_r": 41,
+        "unit_id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e"
+      }
+    },
+    {
+      "http_status": 202,
+      "unit_id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+      "request": {
+        "target_q": 47,
+        "target_r": 41,
+        "intent": "explore",
+        "ticks": 14
+      },
+      "receipt": {
+        "arrival_tick": 3,
+        "arrives_at": "2026-10-07T22:14:27.738227223+02:00",
+        "arrives_at_utc": "2026-10-07T20:14:27.738227223Z",
+        "carried_silver": 0,
+        "departs_at": "2026-10-07T22:14:09.738227223+02:00",
+        "duration_ticks": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "home_by_tick": 14,
+          "length_ticks": 14,
+          "turn_tick": 7
+        },
+        "origin_q": 48,
+        "origin_r": 41,
+        "purse_shortfall": 0,
+        "target_q": 44,
+        "target_r": 41,
+        "unit_id": "647662f5-85f2-4444-ae4c-1fa522c3f289"
+      }
+    }
+  ],
+  "history": [
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 3,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 14,
+          "homeward": false
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "marching",
+        "arrival_tick": 7,
+        "expedition": {
+          "area_q": 47,
+          "area_r": 41,
+          "length_ticks": 14,
+          "turn_tick": 7,
+          "home_by_tick": 7,
+          "homeward": true,
+          "turn_reason": "half_time"
+        }
+      }
+    ],
+    [
+      {
+        "id": "eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e",
+        "status": "garrison",
+        "arrival_tick": null,
+        "expedition": null
+      },
+      {
+        "id": "647662f5-85f2-4444-ae4c-1fa522c3f289",
+        "status": "garrison",
+        "arrival_tick": null,
+        "expedition": null
+      }
+    ]
+  ],
+  "audit_rows": "UnitMarchOrdered|647662f5-85f2-4444-ae4c-1fa522c3f289|1\nUnitMarchOrdered|eb0365a8-a3ae-4b2d-8d22-1eec1de9b92e|1",
+  "all_garrison": true,
+  "sql_mutations": false
+}
