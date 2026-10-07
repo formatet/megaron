@@ -107,6 +107,15 @@ class ParserTests(unittest.TestCase):
         self.assertIn('POST /api/v1/worlds/{id}/units/{id}/march',specs)
         self.assertIn('PUT /api/v1/notification-preferences/{id}',specs)
 
+    def test_verblista_account_roots_are_not_world_routes(self):
+        specs = p.verblist_routes('`GET /agora` `POST /agora/password` `GET /api/v1/agora` `POST /api/v1/auth/password` `GET /agorafoo`')
+        self.assertIn('GET /api/v1/agora', specs)
+        self.assertIn('POST /api/v1/agora/password', specs)
+        self.assertIn('POST /api/v1/auth/password', specs)
+        self.assertNotIn('GET /api/v1/worlds/{id}/agora', specs)
+        self.assertNotIn('POST /api/v1/worlds/{id}/agora/password', specs)
+        self.assertIn('GET /api/v1/worlds/{id}/agorafoo', specs)  # prefix match must not swallow other names
+
     def test_verblista_leaf_paths_inherit_context(self):
         text = "| load / unload | `POST /units/:id/load`, `/unload` | CLI | web |\n| route | `POST/DELETE /standing-orders[/:id]`, `/pause`, `/resume` | CLI | web |"
         specs = p.verblist_routes(text)

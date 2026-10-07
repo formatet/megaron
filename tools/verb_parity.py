@@ -246,6 +246,15 @@ def exclusions(route, allowlist):
     key = route['method'] + ' ' + route['path']
     return [row['reason'] for row in allowlist if fnmatch.fnmatchcase(key, row['route'])]
 
+def verblist_full(path):
+    """Full API path for a verblist route. Account-level roots and explicit
+    /api/v1 paths are not world routes."""
+    if path.startswith('/api/v1/'): return path
+    if path.startswith('/worlds/'): return '/api/v1' + path
+    if re.match(r'/(auth|agora)(/|$)', path) or path.startswith('/notification-preferences'): return '/api/v1' + path
+    return '/api/v1/worlds/{id}' + path
+
+
 def verblist_routes(text):
     found = set()
     for match in re.finditer(r'(GET|POST|PUT|DELETE|PATCH)(?:/(GET|POST|PUT|DELETE|PATCH))*\s+(/[^`\s,|]+)', text):
@@ -255,9 +264,7 @@ def verblist_routes(text):
         optional = re.search(r'\[(/:[A-Za-z_]\w*)\]', path)
         variants = [path[:optional.start()]+path[optional.end():], path[:optional.start()]+optional.group(1)+path[optional.end():]] if optional else [path]
         for variant in variants:
-            if variant.startswith('/worlds/'): full = '/api/v1' + variant
-            elif variant.startswith(('/auth/', '/notification-preferences')): full = '/api/v1' + variant
-            else: full = '/api/v1/worlds/{id}' + variant
+            full = verblist_full(variant)
             for method in methods:
                 if optional and ((method in ('GET','POST')) == (variant == variants[1])): continue
                 found.add(method + ' ' + canonical(full))
@@ -281,9 +288,7 @@ def verblist_routes(text):
                     else:
                         parent = previous.rsplit('/', 1)[0]
                     path = parent + fragment
-                if path.startswith('/worlds/'): full = '/api/v1'+path
-                elif path.startswith(('/auth/', '/notification-preferences')): full = '/api/v1'+path
-                else: full = '/api/v1/worlds/{id}'+path
+                full = verblist_full(path)
                 found.add(method+' '+canonical(full))
     return found
 
