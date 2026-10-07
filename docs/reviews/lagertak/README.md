@@ -2,7 +2,7 @@
 
 ## SAMMANFATTNING
 Premisskoll från master f1217c9d. Föreslagen ägare province.DefaultGoodStorageCap
-väntar på Claude; ingen produktionskod ändrad. Ingen merge/push/deploy/BILD.
+godkänd av Claude 2026-10-07 17:04; implementation pågår. Ingen merge/push/deploy/BILD.
 Märkning: bevisar kedjegrindens oförändrade lagersemantik; arkitekturprogram steg 7.
 
 ## SLICE-KONTRAKT
@@ -30,11 +30,27 @@ Märkning: bevisar kedjegrindens oförändrade lagersemantik; arkitekturprogram 
    Förslag: province.DefaultGoodStorageCap (redan tillåtet nedre katalogpaket för
    economy/transport/combat); goodCap delegerar dit. Inga nya G1-kanter.
    Alternativ: nytt goodspaket kräver flera G1-beslut; consumer-interface är onödigt
-   stort för dagens platta konstant. Claude tillfrågad före kod.
+   stort för dagens platta konstant. Claude tillfrågad före kod och godkände province 17:04: endast INSERT-cap, inga nya G1-kanter.
 4. Vault megaron_plan_lagerpooler beskriver framtida pooler, men dessa byggs INTE här.
    Befintliga SQL cap/spill-on-conflict och senare silverseed lämnas semantiskt intakta.
 
+## BASLINJE
+`tools/gotest.sh` på ny PG16/migration 160, kontraktscommit 94c2fda3:
+berörda fem paket, namngivet urval Cap/Storage/Found/Coloni/Delivery/Arrival/Intercept/G1,
+gröna (baseline.log). Källvakten `TestDefaultGoodStorageCapConsumers` gav assertions
+rött för alla sju kopior före implementation (red.log). Inget runtimefel ändras:
+rött→grönt är arkitekturinvarianten, tidigare numeriskt beteende var redan rätt.
+
+## IMPLEMENTATION
+Claude godkände province som ägare. `province.DefaultGoodStorageCap` är enda
+produktionsliteralen. SQL använder bundna cap-parametrar; economy.goodCap
+returnerar samma konstant. Inga nya paketkanter: economy/transport/combat hade
+redan province; api/handlers är protokolladapter och använder redan province.
+G1-tabellen/CLAUDE.md behöver därför ingen ändring. Inget verb/spelartext ändras:
+ingen fyraytors- eller BILD-slice.
+
 ## Resume checkpoint
-Kontrakt/premisskoll sparad före kod. Väntar på Claudes ägarbeslut; oförändrad
-färsk-DB-baslinje kan köras oberoende. Worktree /tmp/megaron-codex-lagertak-20261007,
-gren codex/lagertak från f1217c9d. Recall- och karavanarbetsytorna orörda.
+Implementation och konsumentprov skrivna; premiss/ägare godkänd av Claude.
+Nästa: giltig mutation av ägarkonstanten, återställning, full tools/gotest.sh och vet,
+rapport/vault-handover. Worktree /tmp/megaron-codex-lagertak-20261007, gren
+codex/lagertak från f1217c9d. Ingen merge/push/deploy. Recall-arbetsytan orörd.

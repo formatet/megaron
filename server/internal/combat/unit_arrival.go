@@ -1919,7 +1919,7 @@ func (h *UnitArrivalHandler) foundColony(
 		            ELSE 0
 		        END,
 		        0,
-		        1000000, -- non-binding storage ceiling (mirrors economy.goodCap and
+		        $4, -- shared non-binding storage ceiling (also used by
 		                 -- create_metropolis.go). The per-good CASE that stood here
 		                 -- predated the 2026-07-05 cap loosening (fc8d424) and was the
 		                 -- one seed site that sweep missed: every colony was founded
@@ -1931,7 +1931,7 @@ func (h *UnitArrivalHandler) foundColony(
 		        current_world_tick()
 		 FROM goods g
 		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
-		colonyID, economy.ColonyGrainSeed, economy.FoundingHerdLivestock,
+		colonyID, economy.ColonyGrainSeed, economy.FoundingHerdLivestock, province.DefaultGoodStorageCap,
 	); err != nil {
 		return fmt.Errorf("foundColony: seed goods: %w", err)
 	}

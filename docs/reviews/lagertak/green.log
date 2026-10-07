@@ -1,0 +1,6 @@
+» färsk DB på migration 160 · commit 94c2fda3+ändringar
+ok  	formatet/megaron/server/api/handlers	0.060s
+ok  	formatet/megaron/server/internal/combat	0.034s
+ok  	formatet/megaron/server/internal/transport	0.038s
+ok  	formatet/megaron/server/internal/economy	0.036s
+ok  	formatet/megaron/server/cmd/server	0.006s

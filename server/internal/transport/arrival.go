@@ -144,13 +144,13 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 	for _, it := range manifest {
 		if _, err := tx.Exec(ctx,
 			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
-			 VALUES ($1, $2, $3, 0, 1000000, current_world_tick())
+			 VALUES ($1, $2, $3, 0, $4, current_world_tick())
 			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
 			     amount = LEAST(
 			         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick) + $3,
 			         settlement_goods.cap),
 			     calc_tick = current_world_tick()`,
-			*destID, it.good, it.qty,
+			*destID, it.good, it.qty, province.DefaultGoodStorageCap,
 		); err != nil {
 			return fmt.Errorf("credit good %q: %w", it.good, err)
 		}

@@ -6,6 +6,7 @@ import (
 	"math"
 
 	"formatet/megaron/server/internal/hexgrid"
+	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -914,5 +915,5 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 // a gameplay lever — kept finite for SQL/float safety, not calibrated as a
 // balance number.
 func goodCap(key string) float64 {
-	return 1_000_000
+	return province.DefaultGoodStorageCap
 }

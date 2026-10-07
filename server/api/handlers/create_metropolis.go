@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"formatet/megaron/server/internal/province"
 	"log/slog"
 
 	"formatet/megaron/server/internal/economy"
@@ -130,7 +131,7 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 		            ELSE 0
 		        END,
 		        0,
-		        1000000, -- non-binding storage ceiling (mirrors economy.goodCap);
+		        $3, -- shared non-binding storage ceiling;
 		                 -- the old per-good caps predated the 2026-07-05 cap
 		                 -- loosening and pinned never-produced/never-crafted goods
 		                 -- at a low binding value (silver's real cap is set by the
@@ -138,7 +139,7 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 		        current_world_tick()
 		 FROM goods g
 		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
-		out.SettlementID, economy.FoundingHerdLivestock,
+		out.SettlementID, economy.FoundingHerdLivestock, province.DefaultGoodStorageCap,
 	); err != nil {
 		return out, &metropolisError{"could not seed goods", err}
 	}
