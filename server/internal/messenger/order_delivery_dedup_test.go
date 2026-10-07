@@ -329,3 +329,29 @@ func TestSingleRecall_IncompleteOrderIsNamedAndAudited(t *testing.T) {
 		t.Fatal("missing audit")
 	}
 }
+
+// Preserve the old tick-vs-wall-hours regression on the active order envelope.
+// At six seconds per tick the saved-route fixture turns at q2 and travels two
+// ticks home. A wall-hour ETA would make the map crawl and then snap on arrival.
+func TestSingleRecall_ArrivesAtMatchesTickSchedule(t *testing.T) {
+	orig := tick.TickSeconds
+	tick.TickSeconds = 6
+	t.Cleanup(func() { tick.TickSeconds = orig })
+	for _, verb := range []string{"recall", "redirect"} {
+		t.Run(verb, func(t *testing.T) {
+			f := setupSingleRecall(t, verb)
+			if err := f.handler.Handle(context.Background(), f.event()); err != nil {
+				t.Fatal(err)
+			}
+			f.assertApplied(t)
+			var arrivesAt time.Time
+			if err := f.pool.QueryRow(context.Background(), `SELECT arrives_at FROM units WHERE id=$1`, f.unitID).Scan(&arrivesAt); err != nil {
+				t.Fatal(err)
+			}
+			want := f.clk.Now().Add(12 * time.Second)
+			if !arrivesAt.Equal(want) {
+				t.Fatalf("wall-hour ETA: got %v want %v (two real game ticks)", arrivesAt, want)
+			}
+		})
+	}
+}
