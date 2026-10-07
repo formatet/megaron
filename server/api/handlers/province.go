@@ -1757,11 +1757,11 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 		// a bare int so the unit stays explicit and consistent with the
 		// cooldown sibling; the round trip is exact here since DurationTicks
 		// is already a whole tick count (no fractional remainder to round).
-		DurationGameDays int  `json:"duration_game_days"`
-		RequiresCoastal  bool `json:"requires_coastal,omitempty"`
-		RequiresDeposits []string           `json:"requires_deposits,omitempty"`
-		RequiresTerrain  []string           `json:"requires_terrain,omitempty"`
-		Purpose          string             `json:"purpose"`
+		DurationGameDays int      `json:"duration_game_days"`
+		RequiresCoastal  bool     `json:"requires_coastal,omitempty"`
+		RequiresDeposits []string `json:"requires_deposits,omitempty"`
+		RequiresTerrain  []string `json:"requires_terrain,omitempty"`
+		Purpose          string   `json:"purpose"`
 		// MaxLevel is 1 for one-instance buildings and MaxBuildingLevel for producing
 		// ones, whose level is how many citizens the workplace can employ.
 		MaxLevel int `json:"max_level"`
@@ -1791,7 +1791,7 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 			CostSilver:       spec.CostSilver,
 			DurationGameDays: tick.GameDaysLeft(tick.RealUntil(spec.DurationTicks, 0)),
 			Purpose:          province.BuildingPurposes[province.BuildingType(bt)],
-			MaxLevel:        1,
+			MaxLevel:         1,
 			HexBound:         province.HexBoundBuildings[province.BuildingType(bt)],
 		}
 		if province.LevelledBuildings[province.BuildingType(bt)] {
@@ -1831,18 +1831,18 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 // static reference data, mirrors BuildingCatalogue.
 func (h *ProvinceHandler) UnitCatalogue(w http.ResponseWriter, r *http.Request) {
 	type unitEntry struct {
-		Type             string             `json:"type"`
-		Costs            map[string]float64 `json:"costs"`
-		BatchMen         int                `json:"batch_men"` // men (land) or crew (naval) the Costs above pay for in one recruit call
-		PopCost          int                `json:"pop_cost"`
+		Type     string             `json:"type"`
+		Costs    map[string]float64 `json:"costs"`
+		BatchMen int                `json:"batch_men"` // men (land) or crew (naval) the Costs above pay for in one recruit call
+		PopCost  int                `json:"pop_cost"`
 		// Game-days, not wall-clock minutes — see buildingEntry.DurationGameDays
 		// above for the full rationale (same fix, same class of bug).
 		DurationGameDays int  `json:"duration_game_days"`
 		RequiresBarracks bool `json:"requires_barracks,omitempty"`
-		RequiresStable   bool               `json:"requires_stable,omitempty"`
-		RequiresHarbour  bool               `json:"requires_harbour,omitempty"`
-		RequiresShipyard bool               `json:"requires_shipyard,omitempty"`
-		RequiresFoundry  bool               `json:"requires_foundry,omitempty"`
+		RequiresStable   bool `json:"requires_stable,omitempty"`
+		RequiresHarbour  bool `json:"requires_harbour,omitempty"`
+		RequiresShipyard bool `json:"requires_shipyard,omitempty"`
+		RequiresFoundry  bool `json:"requires_foundry,omitempty"`
 	}
 
 	// Stable ordering: sort unit types alphabetically (mirrors BuildingCatalogue).
@@ -3181,7 +3181,9 @@ func (h *ProvinceHandler) Ticklog(w http.ResponseWriter, r *http.Request) {
 // read inline by callers since it's already in their settlement/province
 // JOIN). A settlement's own coastal flag is checked by the caller; this only
 // covers the building fallback for an inland settlement that dug a harbour.
-func settlementHasHarbour(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID) (bool, error) {
+func settlementHasHarbour(ctx context.Context, pool interface {
+	QueryRow(context.Context, string, ...any) pgx.Row
+}, settlementID uuid.UUID) (bool, error) {
 	var hasHarbour bool
 	err := pool.QueryRow(ctx,
 		`SELECT EXISTS(SELECT 1 FROM buildings WHERE settlement_id = $1 AND building_type = 'harbour')`,
@@ -3277,13 +3279,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Coastal advantage (megaron_plan_tva_slices_20260905.md §2): a transfer
-	// between two settlements that are BOTH coastal-or-harboured (same gate
-	// unit.go's embark/disembark checks use) and connected by a navigable sea
-	// lane goes as naval, not as a land caravan blind to the coastline. Falls
-	// back to "land" with the unchanged straight-line hex distance whenever
-	// either end can't reach the sea or no route connects them — an existing
-	// land route must cost exactly what it did before this existed.
+	// A navigable coastal route still needs a real ship; otherwise use a real land path.
 	originHarboured, err := settlementHasHarbour(r.Context(), h.pool, originID)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not check origin harbour")
@@ -3294,13 +3290,13 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "could not check destination harbour")
 		return
 	}
-	category, dist, err := province.ResolveTradeRoute(r.Context(), h.pool, worldID,
+	category, _, err := province.ResolveTradeRoute(r.Context(), h.pool, worldID,
 		originCoastal || originHarboured, destCoastal || destHarboured,
 		province.MapPosition{Q: originQ, R: originR},
 		province.MapPosition{Q: destQ, R: destR},
 	)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not resolve trade route")
+		writeTradeJourneyError(w, err)
 		return
 	}
 
@@ -3311,6 +3307,11 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
+	// Revalidate both endpoints under row locks before any debit or ship binding.
+	if !lockOwnedTradeSettlements(r.Context(), tx, worldID, playerID, originID, req.DestinationID) {
+		writeError(w, http.StatusForbidden, "settlement ownership changed")
+		return
+	}
 	// Sjöhandel kräver skepp (megaron_plan_sjohandel_kraver_skepp.md R3): a
 	// resolved "naval" route only means a sea lane connects the two shores —
 	// it says nothing about whether the Wanax actually owns a free hull to
@@ -3348,30 +3349,32 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 			// one actually exists (a resolved-naval pair may have NO land
 			// connection at all, e.g. two islands); otherwise there is
 			// genuinely nothing to send this on.
-			_, _, landOK, ferr := province.FindPath(r.Context(), tx, worldID,
-				province.MapPosition{Q: originQ, R: originR}, province.MapPosition{Q: destQ, R: destR}, "land")
-			if ferr != nil {
-				writeError(w, http.StatusInternalServerError, "could not resolve a land fallback route")
-				return
-			}
-			if !landOK {
-				writeError(w, http.StatusUnprocessableEntity, fmt.Sprintf(
-					"no free galley or merchantman in %s to carry goods by sea — build one at a shipyard or wait for one to return",
-					originName))
-				return
-			}
 			category = "land"
-			dist = province.HexDistance(
-				province.MapPosition{Q: originQ, R: originR}, province.MapPosition{Q: destQ, R: destR})
+			if _, ferr := province.PlanTradeJourney(r.Context(), tx, worldID,
+				province.MapPosition{Q: originQ, R: originR}, province.MapPosition{Q: destQ, R: destR}, category); ferr != nil {
+				if errors.Is(ferr, province.ErrNoTradePath) {
+					writeError(w, http.StatusUnprocessableEntity, fmt.Sprintf("no free galley or merchantman in %s to carry goods by sea and no land route — build one at a shipyard or wait for one to return", originName))
+				} else {
+					writeTradeJourneyError(w, ferr)
+				}
+				return
+			}
 		}
 	}
 
-	base := 30.0 + float64(dist)*2.0
-	weightPenalty := 0.0
-	if weight > 1.0 {
-		weightPenalty = (weight - 1.0) * 0.1
+	journey, err := province.PlanTradeJourney(r.Context(), tx, worldID,
+		province.MapPosition{Q: originQ, R: originR}, province.MapPosition{Q: destQ, R: destR}, category)
+	if err != nil {
+		writeTradeJourneyError(w, err)
+		return
 	}
-	travelMins := base * (1.0 + weightPenalty)
+	var tradeCurrentTick int
+	if err := tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&tradeCurrentTick); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not read current tick")
+		return
+	}
+	tradeTravelTicks := journey.TravelTicks
+	arrivesAt := h.clk.Now().Add(tick.RealUntil(tradeTravelTicks, 0))
 
 	// Deduct from origin — silver is now a normal good in settlement_goods.
 	deductTag, err := tx.Exec(r.Context(),
@@ -3391,13 +3394,6 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	arrivesAt := h.clk.Now().Add(time.Duration(travelMins * float64(time.Minute)))
-	var tradeCurrentTick int
-	_ = tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&tradeCurrentTick)
-	tradeTravelTicks := int(math.Round(travelMins / 60))
-	if tradeTravelTicks < 1 {
-		tradeTravelTicks = 1
-	}
 	var routeID uuid.UUID
 	err = tx.QueryRow(r.Context(),
 		`INSERT INTO trade_routes (world_id, origin_id, destination_id, good_key, quantity, arrives_at)
@@ -3415,19 +3411,20 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	// below; Dispatch would additionally schedule ScheduledTransportArrival and
 	// double-credit the destination.
 	transportID, err := transport.CreateShadow(r.Context(), tx, transport.DispatchParams{
-		WorldID:       worldID,
-		OwnerID:       playerID,
-		Kind:          "transfer",
-		OriginID:      originID,
-		DestID:        req.DestinationID,
-		Category:      category,
-		OriginQ:       originQ,
-		OriginR:       originR,
-		DestQ:         destQ,
-		DestR:         destR,
-		DepartsAt:     h.clk.Now(),
-		ArrivesAt:     arrivesAt,
-		DueTick:       tradeCurrentTick + tradeTravelTicks,
+		WorldID:      worldID,
+		OwnerID:      playerID,
+		Kind:         "transfer",
+		OriginID:     originID,
+		DestID:       req.DestinationID,
+		Category:     category,
+		OriginQ:      originQ,
+		OriginR:      originR,
+		DestQ:        destQ,
+		DestR:        destR,
+		DepartsAt:    h.clk.Now(),
+		ArrivesAt:    arrivesAt,
+		DueTick:      tradeCurrentTick + tradeTravelTicks,
+		DepartedTick: tradeCurrentTick, Journey: &journey,
 		Manifest:      transport.Manifest{req.GoodKey: req.Quantity},
 		Interceptable: true,
 		ShipUnitID:    shipID,
@@ -3458,12 +3455,16 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := map[string]any{
-		"route_id":      routeID,
-		"arrives_at":    arrivesAt,
-		"distance":      dist,
-		"travel_min":    travelMins,
-		"delivered_qty": req.Quantity,
-		"category":      category,
+		"route_id":       routeID,
+		"arrives_at":     arrivesAt,
+		"distance":       journey.Distance,
+		"travel_min":     float64(tradeTravelTicks) * 60,
+		"travel_ticks":   tradeTravelTicks,
+		"departure_tick": tradeCurrentTick,
+		"arrival_tick":   tradeCurrentTick + tradeTravelTicks,
+		"transport_id":   transportID,
+		"delivered_qty":  req.Quantity,
+		"category":       category,
 	}
 	if shipID != nil {
 		resp["ship_id"] = *shipID

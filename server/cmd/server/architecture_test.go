@@ -3,8 +3,13 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"io"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"sort"
 	"strings"
 	"testing"
@@ -22,8 +27,8 @@ var g1Allowed = map[string][]string{
 	"province": {"hexgrid"},
 	"events":   {"clock"}, "tick": {"clock", "events"},
 	"chronicle": {"events"}, "settlement": {"province"},
-	"economy":      {"clock", "events", "gossip", "hexgrid", "province"},
-	"transport":    {"clock", "events", "province"},
+	"economy":      {"clock", "events", "gossip", "hexgrid", "province", "tick"},
+	"transport":    {"clock", "events", "province", "movement", "tick"},
 	"capabilities": {"clock", "province", "religion", "unit"},
 	"kharis":       {"ai", "clock", "economy", "events", "hexgrid", "religion", "unit"},
 	"loyalty":      {"clock", "economy", "events", "settlement", "tick"},
@@ -142,5 +147,50 @@ func TestG1Validator(t *testing.T) {
 				t.Fatalf("valid=%v; violations=%v", tc.valid, failures)
 			}
 		})
+	}
+}
+
+// Trade time belongs to the journey planner; consumers may only use its committed ticks.
+func TestCaravanTimeHasOneOwner(t *testing.T) {
+	retired := map[string]bool{"TradeTicksPerHex": true, "TradeTravelTicks": true, "TradeTravelDuration": true}
+	roots := []string{"../../api/handlers", "../../internal/combat", "../../internal/economy", "../../internal/messenger", "../../internal/transport"}
+	for _, root := range roots {
+		err := filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if entry.IsDir() || !strings.HasSuffix(path, ".go") || strings.HasSuffix(path, "_test.go") {
+				return nil
+			}
+			fs := token.NewFileSet()
+			file, err := parser.ParseFile(fs, path, nil, 0)
+			if err != nil {
+				return err
+			}
+			ast.Inspect(file, func(n ast.Node) bool {
+				if id, ok := n.(*ast.Ident); ok && retired[id.Name] {
+					t.Errorf("%s uses retired caravan time %s", fs.Position(id.Pos()), id.Name)
+				}
+				if bin, ok := n.(*ast.BinaryExpr); ok && bin.Op == token.ADD {
+					// Reject the removed base-minute plus distance surcharge, independent of operand order.
+					for _, operand := range []ast.Expr{bin.X, bin.Y} {
+						if lit, ok := operand.(*ast.BasicLit); ok && (lit.Value == "30" || lit.Value == "30.0") {
+							other := bin.Y
+							if operand == bin.Y {
+								other = bin.X
+							}
+							if mul, ok := other.(*ast.BinaryExpr); ok && mul.Op == token.MUL {
+								t.Errorf("%s duplicates retired caravan minute estimate", fs.Position(bin.Pos()))
+							}
+						}
+					}
+				}
+				return true
+			})
+			return nil
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 }

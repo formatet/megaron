@@ -3,7 +3,7 @@ package messenger
 // Regression test for Fas 1d: negative ETAs/"ago" in the CLI (e.g. a trade
 // offer's ETA before its own send time, "-145m ago" on a delivered message).
 //
-// Root cause: MessengerTravelDuration/TradeTravelDuration/returnDuration
+// Root cause: MessengerTravelDuration/returnDuration
 // (this file, recall.go) computed the WALL-CLOCK arrives_at DISPLAY column by
 // assuming "1 game hour (tick) = 1 real hour" — hardcoded time.Hour math that
 // ignores the real tick cadence. That assumption only holds at the default 60
@@ -53,16 +53,6 @@ func TestMessengerTravelDuration_MatchesTicksAtFastCadence(t *testing.T) {
 	}
 }
 
-func TestTradeTravelDuration_MatchesTicksAtFastCadence(t *testing.T) {
-	withTickSeconds(t, 60)
-	dist := 5
-	wantTicks := TradeTravelTicks(dist)
-	want := time.Duration(wantTicks) * time.Minute
-	if got := TradeTravelDuration(dist); got != want {
-		t.Errorf("TradeTravelDuration(%d) = %v, want %v (%d ticks × 1 min/tick)", dist, got, want, wantTicks)
-	}
-}
-
 func TestReturnDuration_MatchesTicksAtFastCadence(t *testing.T) {
 	withTickSeconds(t, 60)
 	dist := 5
@@ -98,16 +88,6 @@ func TestMessengerTravelDuration_ExactAtSubMinuteCadence(t *testing.T) {
 	want := time.Duration(wantTicks) * 6 * time.Second
 	if got := MessengerTravelDuration(dist); got != want {
 		t.Errorf("MessengerTravelDuration(%d) at TICK_SECONDS=6 = %v, want %v exact (%d ticks × 6s)", dist, got, want, wantTicks)
-	}
-}
-
-func TestTradeTravelDuration_ExactAtSubMinuteCadence(t *testing.T) {
-	withTickSeconds(t, 6)
-	dist := 5
-	wantTicks := TradeTravelTicks(dist)
-	want := time.Duration(wantTicks) * 6 * time.Second
-	if got := TradeTravelDuration(dist); got != want {
-		t.Errorf("TradeTravelDuration(%d) at TICK_SECONDS=6 = %v, want %v exact (%d ticks × 6s)", dist, got, want, wantTicks)
 	}
 }
 

@@ -1,16 +1,8 @@
 package combat
 
-// Proof for megaron_plan_staende_leverans.md's two named traps, plus the happy
-// path and the return leg. Fixture: newSupportFixture (upkeep_support_settlement_test.go)
-// gives a capital (q=0) and a town (q=4), both population 1000 — hex distance 4,
-// travelMins = 30+4*2 = 38, travelTicks = round(38/60) = 1. Every test below
-// reuses those numbers rather than re-deriving them.
-//
-// Reserve math used throughout (dispatchOutboundIfNeeded): a settlement of
-// population 1000 eats 1000*GrainConsumptionPerCitizenPerTick = 5 grain/tick;
-// the round-trip reserve is 5*(2*travelTicks) = 10. When the source also
-// crews the route, VoyageProvisions(standingOrderRation(), 1, 0) = 1.0*2 = 2
-// is folded in on top, so the full reserve at the source is 12.
+// Standing order dispatch and return proofs use a real four-step plains route.
+// Four × .75 × 1.5 = 4.5 rounds once to five ticks per leg: own grain reserve
+// covers ten ticks, and caravan provisions cover the priced outbound leg.
 
 import (
 	"context"
@@ -141,7 +133,7 @@ func placeGubbar(t *testing.T, pool *pgxpool.Pool, settlementID uuid.UUID, n int
 // (the source itself) has a gubbe to spare — the route dispatches.
 func TestStandingOrder_DispatchesWhenDestinationBelowThreshold(t *testing.T) {
 	pool := testPool(t)
-	f := newSupportFixture(t, pool, "so-happy")
+	f := newStandingMovementFixture(t, pool, "so-happy")
 	seedGoods(t, pool, f.capitalID, f.tick, 1000, 0)
 	// townID starts with no grain row at all — settledStock reads that as 0.
 
@@ -163,8 +155,8 @@ func TestStandingOrder_DispatchesWhenDestinationBelowThreshold(t *testing.T) {
 	}
 
 	// 1000 seeded − 200 shipped − 2 provisions (crew == source) = 798.
-	if got := settledAmount(t, pool, f.capitalID, "grain"); got != 798 {
-		t.Errorf("capital grain after dispatch = %v, want 798 (1000 − 200 shipped − 2 provisions)", got)
+	if got := settledAmount(t, pool, f.capitalID, "grain"); got != 790 {
+		t.Errorf("capital grain after dispatch = %v, want 790 (1000 − 200 shipped − 10 provisions)", got)
 	}
 }
 
@@ -172,7 +164,7 @@ func TestStandingOrder_DispatchesWhenDestinationBelowThreshold(t *testing.T) {
 // full shipment goes out every tick until the first one lands.
 func TestStandingOrder_DoesNotRedispatchWhileOutboundInFlight(t *testing.T) {
 	pool := testPool(t)
-	f := newSupportFixture(t, pool, "so-trap1")
+	f := newStandingMovementFixture(t, pool, "so-trap1")
 	seedGoods(t, pool, f.capitalID, f.tick, 1000, 0)
 
 	orderID := newStandingOrder(t, pool, f.worldID, f.owner, f.capitalID, f.townID, f.capitalID)
@@ -205,10 +197,10 @@ func TestStandingOrder_DoesNotRedispatchWhileOutboundInFlight(t *testing.T) {
 // the order pauses instead of draining it.
 func TestStandingOrder_PausesInsteadOfStarvingSource(t *testing.T) {
 	pool := testPool(t)
-	f := newSupportFixture(t, pool, "so-trap2")
+	f := newStandingMovementFixture(t, pool, "so-trap2")
 	// Exactly the reserve (10 own consumption + 2 provisions, crew == source):
 	// zero is spendable.
-	seedGoods(t, pool, f.capitalID, f.tick, 12, 0)
+	seedGoods(t, pool, f.capitalID, f.tick, 60, 0)
 
 	orderID := newStandingOrder(t, pool, f.worldID, f.owner, f.capitalID, f.townID, f.capitalID)
 	addOutbound(t, pool, orderID, "grain", 200)
@@ -225,8 +217,8 @@ func TestStandingOrder_PausesInsteadOfStarvingSource(t *testing.T) {
 	if n := transportCountForOrder(t, pool, orderID); n != 0 {
 		t.Errorf("transports for order = %d, want 0 — nothing should have shipped", n)
 	}
-	if got := settledAmount(t, pool, f.capitalID, "grain"); got != 12 {
-		t.Errorf("capital grain after pause = %v, want unchanged 12 — the worst bug named in the plan is an "+
+	if got := settledAmount(t, pool, f.capitalID, "grain"); got != 60 {
+		t.Errorf("capital grain after pause = %v, want unchanged 60 — the worst bug named in the plan is an "+
 			"automation that quietly starves the capital", got)
 	}
 }
@@ -235,7 +227,7 @@ func TestStandingOrder_PausesInsteadOfStarvingSource(t *testing.T) {
 // rather than dispatch — a route cannot conjure a worker that doesn't exist.
 func TestStandingOrder_PausesWhenCrewHasNoIdleGubbe(t *testing.T) {
 	pool := testPool(t)
-	f := newSupportFixture(t, pool, "so-crew")
+	f := newStandingMovementFixture(t, pool, "so-crew")
 	seedGoods(t, pool, f.capitalID, f.tick, 1000, 0)
 	// Population 1000 = 10 gubbar; place all 10 so none is idle.
 	placeGubbar(t, pool, f.capitalID, 10)
@@ -268,7 +260,7 @@ func TestStandingOrder_PausesWhenCrewHasNoIdleGubbe(t *testing.T) {
 // route must not dispatch a second one.
 func TestStandingOrder_ReturnLegAfterOutboundArrives(t *testing.T) {
 	pool := testPool(t)
-	f := newSupportFixture(t, pool, "so-return")
+	f := newStandingMovementFixture(t, pool, "so-return")
 	seedGoods(t, pool, f.capitalID, f.tick, 1000, 0)
 
 	orderID := newStandingOrder(t, pool, f.worldID, f.owner, f.capitalID, f.townID, f.capitalID)
@@ -331,7 +323,7 @@ func TestStandingOrder_ReturnLegAfterOutboundArrives(t *testing.T) {
 // or the mutex would never clear and the route would wedge forever.
 func TestStandingOrder_EmptyReturnLegStillDispatches(t *testing.T) {
 	pool := testPool(t)
-	f := newSupportFixture(t, pool, "so-return-empty")
+	f := newStandingMovementFixture(t, pool, "so-return-empty")
 	seedGoods(t, pool, f.capitalID, f.tick, 1000, 0)
 
 	orderID := newStandingOrder(t, pool, f.worldID, f.owner, f.capitalID, f.townID, f.capitalID)
@@ -356,5 +348,33 @@ func TestStandingOrder_EmptyReturnLegStillDispatches(t *testing.T) {
 	}
 	if n := transportGoodsCount(t, pool, returnID); n != 0 {
 		t.Errorf("return leg manifest rows = %d, want 0 (nothing to bring home)", n)
+	}
+}
+
+func newStandingMovementFixture(t *testing.T, pool *pgxpool.Pool, tag string) supportFixture {
+	t.Helper()
+	f := newSupportFixture(t, pool, tag)
+	if _, err := pool.Exec(context.Background(), `INSERT INTO map_tiles(world_id,q,r,terrain) SELECT $1,q,0,'plains' FROM generate_series(0,4) q`, f.worldID); err != nil {
+		t.Fatal(err)
+	}
+	return f
+}
+
+func TestCaravanStanding_NoRoutePausesWithoutDebiting(t *testing.T) {
+	pool := testPool(t)
+	f := newStandingMovementFixture(t, pool, "so-no-route")
+	seedGoods(t, pool, f.capitalID, f.tick, 1000, 0)
+	order := newStandingOrder(t, pool, f.worldID, f.owner, f.capitalID, f.townID, f.capitalID)
+	addOutbound(t, pool, order, "grain", 200)
+	if _, err := pool.Exec(context.Background(), `DELETE FROM map_tiles WHERE world_id=$1 AND q=2`, f.worldID); err != nil {
+		t.Fatal(err)
+	}
+	runStandingOrderTick(t, pool, f)
+	status, reason := orderStatus(t, pool, order)
+	if status != "paused" || reason == nil {
+		t.Fatalf("status=%s reason=%v", status, reason)
+	}
+	if settledAmount(t, pool, f.capitalID, "grain") != 1000 || transportCountForOrder(t, pool, order) != 0 {
+		t.Fatal("no route debited goods or created transport")
 	}
 }

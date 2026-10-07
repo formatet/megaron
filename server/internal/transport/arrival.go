@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -65,10 +66,11 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 	var standingOrderID *uuid.UUID
 	var ownerID uuid.UUID
 	var destQ, destR int
+	var journey json.RawMessage
 	if err := tx.QueryRow(ctx,
-		`SELECT status, dest_id, kind, ship_unit_id, owner_id, dest_q, dest_r, standing_order_id
+		`SELECT status, dest_id, kind, ship_unit_id, owner_id, dest_q, dest_r, standing_order_id, journey
 		 FROM transports WHERE id = $1 FOR UPDATE`, p.TransportID,
-	).Scan(&status, &destID, &kind, &shipUnitID, &ownerID, &destQ, &destR, &standingOrderID); err != nil {
+	).Scan(&status, &destID, &kind, &shipUnitID, &ownerID, &destQ, &destR, &standingOrderID, &journey); err != nil {
 		return fmt.Errorf("load transport: %w", err)
 	}
 	if status != "in_transit" {
@@ -91,6 +93,17 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 	releaseShip := shipUnitID != nil && (kind == "ship_return" || kind == "damaged_return" ||
 		((kind == "standing_order_out" || kind == "standing_order_return") && standingOrderID == nil))
 	if releaseShip {
+		if len(journey) > 0 {
+			var saved province.TradeJourney
+			if err := json.Unmarshal(journey, &saved); err != nil {
+				return err
+			}
+			if err := saved.Validate(); err != nil {
+				return err
+			}
+			last := saved.Path[len(saved.Path)-1]
+			destQ, destR = last.Q, last.R
+		}
 		if err := h.releaseArrivedShip(ctx, tx, e.WorldID, *shipUnitID, ownerID, destID, destQ, destR); err != nil {
 			return fmt.Errorf("release arrived ship: %w", err)
 		}

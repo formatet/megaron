@@ -114,7 +114,7 @@ province(→hexgrid)
   ↑
 events(→clock) · tick(→clock,events) · chronicle(→events) · settlement(→province)
   ↑
-economy(→clock,events,gossip,hexgrid,province) · transport(→clock,events,province) · capabilities(→clock,province,religion,unit)
+economy(→clock,events,gossip,hexgrid,province,tick) · transport(→clock,events,movement,province,tick) · capabilities(→clock,province,religion,unit)
   ↑
 kharis(→ai,clock,economy,events,hexgrid,religion,unit) · loyalty(→clock,economy,events,settlement,tick)
   ↑

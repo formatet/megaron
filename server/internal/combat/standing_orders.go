@@ -44,7 +44,7 @@ package combat
 // coastal-or-harboured AND connected by a navigable sea lane
 // (province.ResolveTradeRoute — same substrate api/handlers/province.go's
 // Trade handler now uses for the single-shot internal transfer) dispatches
-// "naval" and prices its crew as the abstracted transport ship's own flat
+// "naval" and prices its crew as the bound transport ship's own flat
 // hull ration (UpkeepSpecs["merchantman"]) instead of a gubbe — see
 // standingOrderRation's naval sibling, standingOrderNavalRation, and the
 // category branch in dispatchOutboundIfNeeded. A naval leg draws no gubbe at
@@ -63,6 +63,7 @@ import (
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/transport"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
@@ -83,7 +84,7 @@ func standingOrderRation() float64 {
 	return economy.GrainConsumptionPerCitizenPerTick * 100 * upkeepFieldGrainFactor
 }
 
-// standingOrderNavalRation is what the abstracted transport ship eats per
+// standingOrderNavalRation is what the bound transport ship eats per
 // tick on a naval leg — the merchantman's own flat hull ration from
 // UpkeepSpecs (megaron_plan_tva_slices_20260905.md §2: "Sjövägen ska kosta
 // fartygets egen besättning ... och skrovets platta ranson ur UpkeepSpecs.
@@ -314,7 +315,7 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 	// actually connects them (province.ResolveTradeRoute — the same
 	// substrate api/handlers/province.go's Trade handler uses for the
 	// single-shot internal transfer). Falls back to "land" with the
-	// unchanged straight-line hex distance otherwise.
+	// a validated A* land path otherwise.
 	fromCoastal, err := settlementCoastalOrHarboured(ctx, tx, o.fromID)
 	if err != nil {
 		return fmt.Errorf("check source coastal: %w", err)
@@ -323,9 +324,12 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 	if err != nil {
 		return fmt.Errorf("check destination coastal: %w", err)
 	}
-	category, dist, err := province.ResolveTradeRoute(ctx, tx, o.worldID, fromCoastal, toCoastal,
+	category, _, err := province.ResolveTradeRoute(ctx, tx, o.worldID, fromCoastal, toCoastal,
 		province.MapPosition{Q: fromQ, R: fromR}, province.MapPosition{Q: toQ, R: toR})
 	if err != nil {
+		if errors.Is(err, province.ErrNoTradePath) {
+			return h.pauseOrder(ctx, tx, o, "no passable caravan route between these settlements")
+		}
 		return fmt.Errorf("resolve trade route: %w", err)
 	}
 
@@ -347,39 +351,40 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 			// No usable ship — fall back to a real land route if one exists,
 			// exactly like the single-shot Trade handler (R3); pause with an
 			// actionable reason if there is genuinely no way to send this.
-			_, _, landOK, ferr := province.FindPath(ctx, tx, o.worldID,
-				province.MapPosition{Q: fromQ, R: fromR}, province.MapPosition{Q: toQ, R: toR}, "land")
-			if ferr != nil {
-				return fmt.Errorf("resolve land fallback route: %w", ferr)
-			}
-			if !landOK {
-				var fromName string
-				_ = tx.QueryRow(ctx, `SELECT name FROM settlements WHERE id = $1`, o.fromID).Scan(&fromName)
-				return h.pauseOrder(ctx, tx, o, fmt.Sprintf(
-					"no free galley or merchantman in %s to carry goods by sea — build one at a shipyard or wait for one to return",
-					fromName))
-			}
 			category = "land"
-			dist = province.HexDistance(
-				province.MapPosition{Q: fromQ, R: fromR}, province.MapPosition{Q: toQ, R: toR})
+			if _, ferr := province.PlanTradeJourney(ctx, tx, o.worldID,
+				province.MapPosition{Q: fromQ, R: fromR}, province.MapPosition{Q: toQ, R: toR}, category); ferr != nil {
+				if errors.Is(ferr, province.ErrNoTradePath) {
+					var fromName string
+					if err := tx.QueryRow(ctx, `SELECT name FROM settlements WHERE id=$1`, o.fromID).Scan(&fromName); err != nil {
+						return err
+					}
+					return h.pauseOrder(ctx, tx, o, fmt.Sprintf("no free galley or merchantman in %s and no passable land route — build a ship or wait for one to return", fromName))
+				}
+				return fmt.Errorf("no ship or passable land route: %w", ferr)
+			}
 		}
 	}
 
-	travelMins := 30.0 + float64(dist)*2.0 // same estimate api/handlers/province.go's Trade handler uses
-	travelTicks := int(math.Round(travelMins / 60))
-	if travelTicks < 1 {
-		travelTicks = 1
+	journey, err := province.PlanTradeJourney(ctx, tx, o.worldID, province.MapPosition{Q: fromQ, R: fromR}, province.MapPosition{Q: toQ, R: toR}, category)
+	if err != nil {
+		return fmt.Errorf("plan outbound: %w", err)
 	}
+	returnJourney, err := province.PlanTradeJourney(ctx, tx, o.worldID, province.MapPosition{Q: toQ, R: toR}, province.MapPosition{Q: fromQ, R: fromR}, category)
+	if err != nil {
+		return fmt.Errorf("plan return: %w", err)
+	}
+	travelTicks := journey.TravelTicks
 
 	// TRAP 2: the source's own need, read BEFORE anything is clamped to "what's
 	// spendable". Grain gets a reserve covering the source's own population for
-	// the whole round trip (2×travelTicks — the gubbe, and the goods, are gone
-	// that long); every other good only ever ships what's actually there.
+	// the separately priced outbound and return legs — the gubbe and goods are gone
+	// that long; every other good only ever ships what's actually there.
 	fromPop, err := settlementPopulation(ctx, tx, o.fromID)
 	if err != nil {
 		return fmt.Errorf("load source population: %w", err)
 	}
-	// Naval pays the abstracted ship's own flat hull ration instead of a
+	// Naval pays the bound ship's own flat hull ration instead of a
 	// gubbe's (plan §2: "Sjövägen ska kosta fartygets egen besättning ...
 	// och skrovets platta ranson ur UpkeepSpecs").
 	ration := standingOrderRation()
@@ -387,7 +392,7 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 		ration = standingOrderNavalRation()
 	}
 	provisions := VoyageProvisions(ration, travelTicks, 0)
-	grainReserve := economy.GrainConsumptionPerCitizenPerTick * float64(fromPop) * float64(2*travelTicks)
+	grainReserve := economy.GrainConsumptionPerCitizenPerTick * float64(fromPop) * float64(travelTicks+returnJourney.TravelTicks)
 	if o.crewID == o.fromID {
 		// Provisions are drawn from the SAME settlement's SAME grain stock as
 		// the manifest below — fold them into one reserve so the two draws can
@@ -450,10 +455,8 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 	// building only) — this order's own gubbe is tracked purely via its
 	// transport leg state, not a placement row.
 	//
-	// Naval skips this entirely: the plan is explicit this slice requires no
-	// owned ship (an abstracted hull, like the land route needs no owned
-	// donkeys), so there is no gubbe-scale (100-citizen) workforce to reserve
-	// — only the flat grain ration above, paid regardless of category below.
+	// Naval uses its bound ship and actual crew rather than reserving a land
+	// caravan gubbe; the ship ration above is still provisioned at dispatch.
 	if category == "land" {
 		idle, err := idleGubbar(ctx, tx, o.crewID)
 		if err != nil {
@@ -489,9 +492,11 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 	}
 
 	var currentTick int
-	_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+	if err := tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick); err != nil {
+		return fmt.Errorf("read current tick: %w", err)
+	}
 	departsAt := h.clk.Now()
-	arrivesAt := departsAt.Add(time.Duration(travelMins * float64(time.Minute)))
+	arrivesAt := departsAt.Add(tick.RealUntil(travelTicks, 0))
 
 	orderID := o.id
 	if _, err := transport.Dispatch(ctx, tx, h.scheduler, transport.DispatchParams{
@@ -499,6 +504,7 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 		OriginID: o.fromID, DestID: o.toID, Category: category,
 		OriginQ: fromQ, OriginR: fromR, DestQ: toQ, DestR: toR,
 		DepartsAt: departsAt, ArrivesAt: arrivesAt, DueTick: currentTick + travelTicks,
+		Journey: &journey, DepartedTick: currentTick,
 		Manifest: manifest, Interceptable: true, StandingOrderID: &orderID, ShipUnitID: shipID,
 	}); err != nil {
 		return fmt.Errorf("dispatch outbound leg: %w", err)
@@ -573,6 +579,41 @@ func (h *StandingOrderTickHandler) resolveRouteShip(ctx context.Context, tx pgx.
 // (possibly nothing — an empty caravan going home is quiet and normal,
 // plan §4c) and sends the SAME gubbe back the way it came.
 func (h *StandingOrderTickHandler) dispatchReturn(ctx context.Context, tx pgx.Tx, o standingOrderRow) error {
+	toQ, toR, err := settlementHex(ctx, tx, o.toID)
+	if err != nil {
+		return fmt.Errorf("load destination hex: %w", err)
+	}
+	fromQ, fromR, err := settlementHex(ctx, tx, o.fromID)
+	if err != nil {
+		return fmt.Errorf("load source hex: %w", err)
+	}
+
+	// Same lane home as the outbound leg sailed/marched — resolve it the same
+	// way (megaron_plan_tva_slices_20260905.md §2) rather than assuming land:
+	// a route that went naval out returns naval, priced off the real sea
+	// path's own length, not the straight-line hex count.
+	toCoastal, err := settlementCoastalOrHarboured(ctx, tx, o.toID)
+	if err != nil {
+		return fmt.Errorf("check destination coastal: %w", err)
+	}
+	fromCoastal, err := settlementCoastalOrHarboured(ctx, tx, o.fromID)
+	if err != nil {
+		return fmt.Errorf("check source coastal: %w", err)
+	}
+	category, _, err := province.ResolveTradeRoute(ctx, tx, o.worldID, toCoastal, fromCoastal,
+		province.MapPosition{Q: toQ, R: toR}, province.MapPosition{Q: fromQ, R: fromR})
+	if err != nil {
+		return fmt.Errorf("resolve return trade route: %w", err)
+	}
+	if o.shipUnitID == nil {
+		category = "land"
+	}
+	journey, err := province.PlanTradeJourney(ctx, tx, o.worldID, province.MapPosition{Q: toQ, R: toR}, province.MapPosition{Q: fromQ, R: fromR}, category)
+	if err != nil {
+		return fmt.Errorf("plan return: %w", err)
+	}
+	travelTicks := journey.TravelTicks
+
 	returnManifest := transport.Manifest{}
 
 	// R4 (megaron_plan_sjohandel_kraver_skepp.md): a paused/shut-down route's
@@ -635,42 +676,12 @@ func (h *StandingOrderTickHandler) dispatchReturn(ctx context.Context, tx pgx.Tx
 		}
 	}
 
-	toQ, toR, err := settlementHex(ctx, tx, o.toID)
-	if err != nil {
-		return fmt.Errorf("load destination hex: %w", err)
-	}
-	fromQ, fromR, err := settlementHex(ctx, tx, o.fromID)
-	if err != nil {
-		return fmt.Errorf("load source hex: %w", err)
-	}
-
-	// Same lane home as the outbound leg sailed/marched — resolve it the same
-	// way (megaron_plan_tva_slices_20260905.md §2) rather than assuming land:
-	// a route that went naval out returns naval, priced off the real sea
-	// path's own length, not the straight-line hex count.
-	toCoastal, err := settlementCoastalOrHarboured(ctx, tx, o.toID)
-	if err != nil {
-		return fmt.Errorf("check destination coastal: %w", err)
-	}
-	fromCoastal, err := settlementCoastalOrHarboured(ctx, tx, o.fromID)
-	if err != nil {
-		return fmt.Errorf("check source coastal: %w", err)
-	}
-	category, dist, err := province.ResolveTradeRoute(ctx, tx, o.worldID, toCoastal, fromCoastal,
-		province.MapPosition{Q: toQ, R: toR}, province.MapPosition{Q: fromQ, R: fromR})
-	if err != nil {
-		return fmt.Errorf("resolve return trade route: %w", err)
-	}
-	travelMins := 30.0 + float64(dist)*2.0
-	travelTicks := int(math.Round(travelMins / 60))
-	if travelTicks < 1 {
-		travelTicks = 1
-	}
-
 	var currentTick int
-	_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+	if err := tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick); err != nil {
+		return fmt.Errorf("read current tick: %w", err)
+	}
 	departsAt := h.clk.Now()
-	arrivesAt := departsAt.Add(time.Duration(travelMins * float64(time.Minute)))
+	arrivesAt := departsAt.Add(tick.RealUntil(travelTicks, 0))
 
 	orderID := o.id
 	if _, err := transport.Dispatch(ctx, tx, h.scheduler, transport.DispatchParams{
@@ -678,6 +689,7 @@ func (h *StandingOrderTickHandler) dispatchReturn(ctx context.Context, tx pgx.Tx
 		OriginID: o.toID, DestID: o.fromID, Category: category,
 		OriginQ: toQ, OriginR: toR, DestQ: fromQ, DestR: fromR,
 		DepartsAt: departsAt, ArrivesAt: arrivesAt, DueTick: currentTick + travelTicks,
+		Journey: &journey, DepartedTick: currentTick,
 		Manifest: returnManifest, Interceptable: true, StandingOrderID: &orderID, ShipUnitID: o.shipUnitID,
 	}); err != nil {
 		return fmt.Errorf("dispatch return leg: %w", err)
@@ -696,6 +708,13 @@ func (h *StandingOrderTickHandler) pauseOrder(ctx context.Context, tx pgx.Tx, o 
 		o.id, reason,
 	); err != nil {
 		return fmt.Errorf("pause order: %w", err)
+	}
+	// A ship acquired during this attempted dispatch must become free immediately
+	// if the route pauses while it is still in its home port.
+	if _, err := tx.Exec(ctx, `UPDATE units SET status='garrison' WHERE id=(SELECT ship_unit_id FROM standing_orders WHERE id=$1)
+ AND owner_id=$2 AND status='freighting' AND settlement_id=$3
+ AND NOT EXISTS(SELECT 1 FROM transports WHERE ship_unit_id=units.id AND status='in_transit')`, o.id, o.ownerID, o.fromID); err != nil {
+		return err
 	}
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("commit pause: %w", err)

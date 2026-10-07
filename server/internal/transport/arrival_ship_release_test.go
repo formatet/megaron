@@ -43,7 +43,7 @@ func dispatchShipLeg(t *testing.T, pool *pgxpool.Pool, f fixture, kind string, s
 
 func TestArrival_ShipReturnReleasesShipAtHome(t *testing.T) {
 	pool := testPool(t)
-	f := newFixture(t, pool)
+	f := newNavalFixture(t, pool)
 	shipID := mkShip(t, pool, f, f.destID, "merchantman")
 	if _, err := pool.Exec(context.Background(), `UPDATE units SET status = 'freighting' WHERE id = $1`, shipID); err != nil {
 		t.Fatalf("bind ship: %v", err)
@@ -64,7 +64,7 @@ func TestArrival_ShipReturnReleasesShipAtHome(t *testing.T) {
 
 func TestArrival_ShipReturnFallsBackToNearestOwnPortWhenHomeGone(t *testing.T) {
 	pool := testPool(t)
-	f := newFixture(t, pool)
+	f := newNavalFixture(t, pool)
 	shipID := mkShip(t, pool, f, f.destID, "galley")
 	if _, err := pool.Exec(context.Background(), `UPDATE units SET status = 'freighting' WHERE id = $1`, shipID); err != nil {
 		t.Fatalf("bind ship: %v", err)
@@ -89,7 +89,7 @@ func TestArrival_ShipReturnFallsBackToNearestOwnPortWhenHomeGone(t *testing.T) {
 
 func TestArrival_ShipReturnStrandsWhenNoOwnPortLeft(t *testing.T) {
 	pool := testPool(t)
-	f := newFixture(t, pool)
+	f := newNavalFixture(t, pool)
 	shipID := mkShip(t, pool, f, f.destID, "galley")
 	if _, err := pool.Exec(context.Background(), `UPDATE units SET status = 'freighting' WHERE id = $1`, shipID); err != nil {
 		t.Fatalf("bind ship: %v", err)
@@ -110,6 +110,15 @@ func TestArrival_ShipReturnStrandsWhenNoOwnPortLeft(t *testing.T) {
 	if settlementID != nil {
 		t.Errorf("settlement_id = %v, want nil (stranded on the map)", settlementID)
 	}
+	var q, r int
+	if err := pool.QueryRow(context.Background(), `SELECT q,r FROM units WHERE id=$1`, shipID).Scan(&q, &r); err != nil {
+		t.Fatal(err)
+	}
+	var terrain string
+	if err := pool.QueryRow(context.Background(), `SELECT terrain FROM map_tiles WHERE world_id=$1 AND q=$2 AND r=$3`, f.worldID, q, r).Scan(&terrain); err != nil || terrain != "coastal_sea" {
+		t.Fatalf("stranded ship is not on last water hex (%d,%d) %s %v", q, r, terrain, err)
+	}
+
 	found := false
 	for _, k := range fb.notified {
 		if k == "ShipStranded" {
@@ -123,7 +132,7 @@ func TestArrival_ShipReturnStrandsWhenNoOwnPortLeft(t *testing.T) {
 
 func TestArrival_DamagedReturnCreditsHalfCargoAndReleasesShip(t *testing.T) {
 	pool := testPool(t)
-	f := newFixture(t, pool)
+	f := newNavalFixture(t, pool)
 	shipID := mkShip(t, pool, f, f.destID, "merchantman")
 	if _, err := pool.Exec(context.Background(), `UPDATE units SET status = 'freighting' WHERE id = $1`, shipID); err != nil {
 		t.Fatalf("bind ship: %v", err)
@@ -151,7 +160,7 @@ func TestArrival_DamagedReturnCreditsHalfCargoAndReleasesShip(t *testing.T) {
 // releases it, and only once the order goes inactive and idle.
 func TestArrival_StandingOrderLegDoesNotReleaseShipWhileOrderLives(t *testing.T) {
 	pool := testPool(t)
-	f := newFixture(t, pool)
+	f := newNavalFixture(t, pool)
 	shipID := mkShip(t, pool, f, f.sourceID, "merchantman")
 	if _, err := pool.Exec(context.Background(), `UPDATE units SET status = 'freighting' WHERE id = $1`, shipID); err != nil {
 		t.Fatalf("bind ship: %v", err)
@@ -202,7 +211,7 @@ func TestArrival_StandingOrderLegDoesNotReleaseShipWhileOrderLives(t *testing.T)
 // leg lands — there is no order left to do it later.
 func TestArrival_OrphanedStandingOrderLegReleasesShip(t *testing.T) {
 	pool := testPool(t)
-	f := newFixture(t, pool)
+	f := newNavalFixture(t, pool)
 	shipID := mkShip(t, pool, f, f.sourceID, "merchantman")
 	if _, err := pool.Exec(context.Background(), `UPDATE units SET status = 'freighting' WHERE id = $1`, shipID); err != nil {
 		t.Fatalf("bind ship: %v", err)
@@ -220,4 +229,16 @@ func TestArrival_OrphanedStandingOrderLegReleasesShip(t *testing.T) {
 	if settlementID == nil || *settlementID != f.sourceID {
 		t.Errorf("settlement_id after orphaned leg arrival = %v, want %s", settlementID, f.sourceID)
 	}
+}
+
+// A real sea lane beside both ports replaces the old naval-on-plains fixture.
+func newNavalFixture(t *testing.T, pool *pgxpool.Pool) fixture {
+	t.Helper()
+	f := newFixture(t, pool)
+	for q := 0; q <= 3; q++ {
+		if _, err := pool.Exec(context.Background(), `INSERT INTO map_tiles (world_id,q,r,terrain) VALUES ($1,$2,1,'coastal_sea')`, f.worldID, q); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return f
 }

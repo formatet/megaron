@@ -52,7 +52,6 @@ import (
 	"log/slog"
 	"math"
 	"net/http"
-	"time"
 
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/economy"
@@ -762,35 +761,26 @@ func dispatchPlunderCaravan(
 		return nil
 	}
 
-	_, pathTicks, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
+	journey, err := province.PlanTradeJourney(ctx, tx, worldID,
 		province.MapPosition{Q: destQ, R: destR}, province.MapPosition{Q: capQ, R: capR}, "land")
-	var moveTicks float64
-	if pathErr == nil && pathOK {
-		moveTicks = pathTicks
-	} else {
-		// Island-raid degradation, same accepted MVP behaviour as the old
-		// sackSettlement: no land route home → uninterceptable but still
-		// arrives.
-		dist := province.HexDistance(province.MapPosition{Q: destQ, R: destR}, province.MapPosition{Q: capQ, R: capR})
-		if dist < 1 {
-			dist = 1
-		}
-		moveTicks = province.TerrainMoveTicks(originTerrain) * float64(dist)
+	if err != nil {
+		return fmt.Errorf("loot: no caravan journey home: %w", err)
 	}
-	travelTicks := int(math.Round(moveTicks))
-	if travelTicks < 1 {
-		travelTicks = 1
-	}
+	travelTicks := journey.TravelTicks
 	var currentTick int
-	_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+	if err := tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick); err != nil {
+		return err
+	}
+
 	now := clk.Now()
-	arrivesAt := now.Add(time.Duration(travelTicks*tick.TickSeconds) * time.Second)
+	arrivesAt := now.Add(tick.RealUntil(travelTicks, 0))
 
 	if _, err := transport.Dispatch(ctx, tx, scheduler, transport.DispatchParams{
 		WorldID: worldID, OwnerID: raiderID, Kind: "plunder",
 		OriginID: settlementID, DestID: capitalID, Category: "land",
 		OriginQ: destQ, OriginR: destR, DestQ: capQ, DestR: capR,
 		DepartsAt: now, ArrivesAt: arrivesAt, DueTick: currentTick + travelTicks,
+		Journey: &journey, DepartedTick: currentTick,
 		Manifest: manifest, Interceptable: true,
 	}); err != nil {
 		return fmt.Errorf("loot: dispatch plunder caravan: %w", err)

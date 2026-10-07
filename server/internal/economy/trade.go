@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"log/slog"
 	"math"
+	"time"
 
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/gossip"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/tick"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -254,9 +256,14 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 		var tstatus string
 		if err := tx.QueryRow(ctx,
 			`SELECT status FROM transports WHERE id = $1 FOR UPDATE`, p.TransportID,
-		).Scan(&tstatus); err == nil && tstatus != "in_transit" {
+		).Scan(&tstatus); err != nil {
+			return fmt.Errorf("load delivery transport: %w", err)
+		}
+		if tstatus != "in_transit" {
 			if hasRoute {
-				_, _ = tx.Exec(ctx, `UPDATE trade_routes SET resolved = true WHERE id = $1`, p.TradeRouteID)
+				if _, err := tx.Exec(ctx, `UPDATE trade_routes SET resolved=true WHERE id=$1`, p.TradeRouteID); err != nil {
+					return err
+				}
 			}
 			return tx.Commit(ctx)
 		}
@@ -272,25 +279,30 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 			return fmt.Errorf("mark lost route resolved: %w", err)
 		}
 		if p.TransportID != (uuid.UUID{}) {
-			_, _ = tx.Exec(ctx, `UPDATE transports SET status = 'lost', updated_at = now() WHERE id = $1`, p.TransportID)
+			if _, err := tx.Exec(ctx, `UPDATE transports SET status='lost',updated_at=now() WHERE id=$1`, p.TransportID); err != nil {
+				return err
+			}
+		}
+		var lostEvent *events.Event
+		if h.eventStore != nil {
+			lostEvent, err = h.eventStore.AppendTx(ctx, tx, p.DestinationID, events.StreamProvince, "TradeLost", map[string]any{"good_key": p.GoodKey, "quantity": p.Quantity, "reason": reason, "route_id": p.TradeRouteID}, e.WorldID, nil)
+			if err != nil {
+				return fmt.Errorf("record trade loss: %w", err)
+			}
+		}
+		notice := map[string]any{"destination_id": p.DestinationID, "good_key": p.GoodKey, "quantity": p.Quantity, "reason": reason}
+		recipient, noticeID, err := persistTradeNotice(ctx, tx, e.WorldID, p.DestinationID, "TradeLost", notice)
+		if err != nil {
+			return err
 		}
 		if err := tx.Commit(ctx); err != nil {
 			return fmt.Errorf("commit loss: %w", err)
 		}
-		_, _ = h.eventStore.Append(ctx, p.DestinationID, events.StreamProvince, "TradeLost",
-			map[string]any{"good_key": p.GoodKey, "quantity": p.Quantity, "reason": reason, "route_id": p.TradeRouteID},
-			e.WorldID, nil, // e.ID is a scheduled_events id, not an events(id) — would break events_causation_fkey.
-		)
-		if h.hub != nil {
-			var ownerID uuid.UUID
-			_ = h.pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, p.DestinationID).Scan(&ownerID)
-			_ = h.hub.NotifyPlayer(ctx, e.WorldID, ownerID, "TradeLost", 3, map[string]any{
-				"destination_id": p.DestinationID,
-				"good_key":       p.GoodKey,
-				"quantity":       p.Quantity,
-				"reason":         reason,
-			})
+		if lostEvent != nil {
+			h.eventStore.RecordCommitted(ctx, lostEvent)
 		}
+		deliverTradeNotice(ctx, h.hub, e.WorldID, recipient, noticeID, "TradeLost", notice)
+
 		slog.Info("trade lost", "route", p.TradeRouteID, "good", p.GoodKey, "reason", reason)
 		return nil
 	}
@@ -300,6 +312,7 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 	// seller sees it. Only where a temple stands — no temple, no collection.
 	// The counterpart good rides in ThenReturn (this is the silver leg; the goods
 	// travel back separately), so the pair is known here without another lookup.
+	var titheEvent *events.Event
 	credited := delivered
 	if p.GoodKey == "silver" && len(p.ThenReturn) > 0 {
 		var counterpart struct {
@@ -307,25 +320,30 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 		}
 		if json.Unmarshal(p.ThenReturn, &counterpart) == nil && counterpart.GoodKey != "" {
 			var religious, hasTemple bool
-			_ = tx.QueryRow(ctx,
+			if err := tx.QueryRow(ctx,
 				`SELECT COALESCE((SELECT g.religious FROM goods g WHERE g.key = $1), false),
 				        EXISTS (SELECT 1 FROM buildings b
 				                WHERE b.settlement_id = $2 AND b.building_type = 'temple')`,
 				counterpart.GoodKey, p.DestinationID,
-			).Scan(&religious, &hasTemple)
+			).Scan(&religious, &hasTemple); err != nil {
+				return fmt.Errorf("read tithe: %w", err)
+			}
 
 			if toTemple, toSeller := Tithe(delivered, religious, hasTemple); toTemple > 0 {
 				credited = toSeller
 				slog.Info("temple tithe", "settlement", p.DestinationID, "good", counterpart.GoodKey,
 					"silver", delivered, "tithe", toTemple)
 				if h.eventStore != nil {
-					_, _ = h.eventStore.Append(ctx, p.DestinationID, events.StreamProvince, "TempleTithe",
+					titheEvent, err = h.eventStore.AppendTx(ctx, tx, p.DestinationID, events.StreamProvince, "TempleTithe",
 						map[string]any{
 							"good_key":     counterpart.GoodKey,
 							"trade_silver": delivered,
 							"tithe":        toTemple,
 							"to_seller":    toSeller,
 						}, e.WorldID, nil)
+					if err != nil {
+						return fmt.Errorf("record tithe: %w", err)
+					}
 				}
 			}
 		}
@@ -361,7 +379,9 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 
 	// Leg 1's physical caravan has arrived.
 	if p.TransportID != (uuid.UUID{}) {
-		_, _ = tx.Exec(ctx, `UPDATE transports SET status = 'delivered', updated_at = now() WHERE id = $1`, p.TransportID)
+		if _, err := tx.Exec(ctx, `UPDATE transports SET status='delivered',updated_at=now() WHERE id=$1`, p.TransportID); err != nil {
+			return err
+		}
 	}
 
 	// R4 (megaron_plan_sjohandel_mellan_spelare.md): does leg 1's ship (if any)
@@ -369,7 +389,9 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 	// its way home instead? Read once, before either branch below decides.
 	var leg1ShipUnitID *uuid.UUID
 	if p.TransportID != (uuid.UUID{}) {
-		_ = tx.QueryRow(ctx, `SELECT ship_unit_id FROM transports WHERE id = $1`, p.TransportID).Scan(&leg1ShipUnitID)
+		if err := tx.QueryRow(ctx, `SELECT ship_unit_id FROM transports WHERE id=$1`, p.TransportID).Scan(&leg1ShipUnitID); err != nil {
+			return fmt.Errorf("read delivery ship: %w", err)
+		}
 	}
 
 	// Sjöhandel kräver skepp (megaron_plan_sjohandel_kraver_skepp.md R3): a
@@ -385,39 +407,78 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 	// an empty hold); dispatching BOTH would sail the same hull twice.
 	if p.TransportID != (uuid.UUID{}) && len(p.ThenReturn) == 0 {
 		if err := dispatchShipReturnLeg(ctx, tx, h.scheduler, e.WorldID, p.TransportID, p.DestinationID); err != nil {
-			slog.Error("dispatch ship return leg failed", "transport", p.TransportID, "err", err)
+			return fmt.Errorf("dispatch ship return leg: %w", err)
 		}
 	}
 
 	// Chain: if this was a silver leg, dispatch the goods return now — as its own
 	// physical caravan (leg 2), so the return trip is visible and interceptable too.
-	if len(p.ThenReturn) > 0 && h.scheduler != nil {
-		var ret struct {
-			DestinationID string  `json:"destination_id"`
-			GoodKey       string  `json:"good_key"`
-			Quantity      float64 `json:"quantity"`
-			MessengerID   string  `json:"messenger_id"`
-			TravelMins    float64 `json:"travel_mins"`
-			OwnerID       string  `json:"owner_id"`
-			OriginQ       int     `json:"origin_q"`
-			OriginR       int     `json:"origin_r"`
-			DestQ         int     `json:"dest_q"`
-			DestR         int     `json:"dest_r"`
+	if len(p.ThenReturn) > 0 {
+		if h.scheduler == nil {
+			return fmt.Errorf("trade return requires scheduler")
 		}
-		if jsonErr := json.Unmarshal(p.ThenReturn, &ret); jsonErr == nil && ret.DestinationID != "" {
+		var ret struct {
+			DestinationID string                 `json:"destination_id"`
+			GoodKey       string                 `json:"good_key"`
+			Quantity      float64                `json:"quantity"`
+			MessengerID   string                 `json:"messenger_id"`
+			TravelMins    float64                `json:"travel_mins"`
+			Journey       *province.TradeJourney `json:"journey,omitempty"`
+			TravelTicks   int                    `json:"travel_ticks,omitempty"`
+			OwnerID       string                 `json:"owner_id"`
+			OriginQ       int                    `json:"origin_q"`
+			OriginR       int                    `json:"origin_r"`
+			DestQ         int                    `json:"dest_q"`
+			DestR         int                    `json:"dest_r"`
+		}
+		if jsonErr := json.Unmarshal(p.ThenReturn, &ret); jsonErr != nil {
+			return fmt.Errorf("decode trade return: %w", jsonErr)
+		}
+		if ret.DestinationID == "" {
+			return fmt.Errorf("trade return destination missing")
+		}
+		{
 			var currentTick int
-			_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+			if err := tx.QueryRow(ctx, `SELECT current_tick FROM worlds WHERE id=$1`, e.WorldID).Scan(&currentTick); err != nil {
+				return err
+			}
 			travelTicks := int(math.Round(ret.TravelMins / 60))
 			if travelTicks < 1 {
 				travelTicks = 1
 			}
+			var saved []byte
+			var departure *int
+			departsAt := h.scheduler.Clock().Now()
+			arrivesAt := departsAt.Add(time.Duration(ret.TravelMins * float64(time.Minute)))
+			if ret.Journey != nil {
+				if err := ret.Journey.Validate(); err != nil {
+					return err
+				}
+				if ret.TravelTicks != 0 && ret.TravelTicks != ret.Journey.TravelTicks {
+					return fmt.Errorf("return journey duration mismatch")
+				}
+				travelTicks = ret.Journey.TravelTicks
+				var err error
+				saved, err = json.Marshal(ret.Journey)
+				if err != nil {
+					return err
+				}
+				departure = &currentTick
+				arrivesAt = departsAt.Add(tick.RealUntil(travelTicks, 0))
+			}
 
 			// Build the return caravan (leg 2: this settlement → the buyer/seller origin).
-			// Raw SQL: economy may not import the transport package (G1). Best-effort —
-			// a missing physical row must never block the goods return itself.
+			// Raw SQL: economy may not import the transport package (G1).
+			// Arrival, mover, manifest and timer commit atomically.
 			var leg2ID uuid.UUID
-			retOwner, _ := uuid.Parse(ret.OwnerID)
-			retDest, _ := uuid.Parse(ret.DestinationID)
+			retOwner, err := uuid.Parse(ret.OwnerID)
+			if err != nil {
+				return fmt.Errorf("return owner: %w", err)
+			}
+			retDest, err := uuid.Parse(ret.DestinationID)
+			if err != nil {
+				return fmt.Errorf("return destination: %w", err)
+			}
 			leg2Category := "land"
 			var leg2ShipUnitID *uuid.UUID
 			if leg1ShipUnitID != nil {
@@ -429,57 +490,76 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 				leg2Category = "naval"
 				leg2ShipUnitID = leg1ShipUnitID
 				if serr := tx.QueryRow(ctx, `SELECT owner_id FROM units WHERE id = $1`, *leg1ShipUnitID).Scan(&retOwner); serr != nil {
-					slog.Error("read ship owner for leg 2", "ship", *leg1ShipUnitID, "err", serr)
+					return fmt.Errorf("read ship owner for return: %w", serr)
 				}
+			}
+			if ret.Journey != nil && ret.Journey.Category != leg2Category {
+				return fmt.Errorf("return journey category mismatch")
 			}
 			if scanErr := tx.QueryRow(ctx,
 				`INSERT INTO transports
 				   (world_id, owner_id, kind, origin_id, dest_id, category,
-				    origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick, interceptable, ship_unit_id)
-				 VALUES ($1,$2,'trade_return',$3,$4,$5,$6,$7,$8,$9,
-				         now(), now() + make_interval(mins => $10), $11, true, $12)
+				    origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick, interceptable, ship_unit_id, journey, departed_tick)
+                VALUES ($1,$2,'trade_return',$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,true,$13,$14,$15)
 				 RETURNING id`,
 				e.WorldID, retOwner, p.DestinationID, retDest, leg2Category,
-				ret.OriginQ, ret.OriginR, ret.DestQ, ret.DestR, ret.TravelMins, currentTick+travelTicks, leg2ShipUnitID,
-			).Scan(&leg2ID); scanErr == nil {
-				_, _ = tx.Exec(ctx,
-					`INSERT INTO transport_goods (transport_id, good_key, quantity) VALUES ($1,$2,$3)`,
-					leg2ID, ret.GoodKey, ret.Quantity)
+				ret.OriginQ, ret.OriginR, ret.DestQ, ret.DestR, departsAt, arrivesAt, currentTick+travelTicks, leg2ShipUnitID, saved, departure,
+			).Scan(&leg2ID); scanErr != nil {
+				return fmt.Errorf("insert return transport: %w", scanErr)
+			}
+			if _, err := tx.Exec(ctx,
+				`INSERT INTO transport_goods (transport_id, good_key, quantity) VALUES ($1,$2,$3)`,
+				leg2ID, ret.GoodKey, ret.Quantity); err != nil {
+				return fmt.Errorf("insert return goods: %w", err)
 			}
 
-			_ = h.scheduler.EnqueueTickTx(ctx, tx, e.WorldID, events.ScheduledTradeReturn,
+			if ret.Journey != nil && ret.MessengerID != "" {
+				messengerID, err := uuid.Parse(ret.MessengerID)
+				if err != nil {
+					return fmt.Errorf("return messenger: %w", err)
+				}
+				keyTick, keyAt := "goods_arrival_tick", "goods_arrives_at"
+				if ret.GoodKey == "silver" {
+					keyTick, keyAt = "silver_arrival_tick", "silver_arrives_at"
+				}
+				if _, err := tx.Exec(ctx, `UPDATE messengers SET trade_offer=trade_offer || jsonb_build_object($2::text,$3::int,$4::text,$5::timestamptz) WHERE id=$1`, messengerID, keyTick, currentTick+travelTicks, keyAt, arrivesAt); err != nil {
+					return fmt.Errorf("update chained ETA: %w", err)
+				}
+			}
+			if err := h.scheduler.EnqueueTickTx(ctx, tx, e.WorldID, events.ScheduledTradeReturn,
 				map[string]any{
 					"destination_id": ret.DestinationID,
 					"good_key":       ret.GoodKey,
 					"quantity":       ret.Quantity,
 					"messenger_id":   ret.MessengerID,
 					"transport_id":   leg2ID.String(),
-				}, currentTick+travelTicks)
+				}, currentTick+travelTicks); err != nil {
+				return fmt.Errorf("schedule return: %w", err)
+			}
 		}
 	}
 
+	var deliveredEvent *events.Event
+	if h.eventStore != nil {
+		deliveredEvent, err = h.eventStore.AppendTx(ctx, tx, p.DestinationID, events.StreamProvince, "TradeDelivery", map[string]any{"good_key": p.GoodKey, "quantity": delivered, "route_id": p.TradeRouteID}, e.WorldID, nil)
+		if err != nil {
+			return fmt.Errorf("record delivery: %w", err)
+		}
+	}
+	notice := map[string]any{"destination_id": p.DestinationID, "good_key": p.GoodKey, "quantity": delivered}
+	recipient, noticeID, err := persistTradeNotice(ctx, tx, e.WorldID, p.DestinationID, "TradeDelivery", notice)
+	if err != nil {
+		return err
+	}
 	if err := tx.Commit(ctx); err != nil {
-		return fmt.Errorf("commit: %w", err)
+		return fmt.Errorf("commit delivery: %w", err)
 	}
-
-	// causation is nil: e.ID is a scheduled_events row id, not an events(id), so passing
-	// it would violate events_causation_fkey. A timer-driven delivery has no causing event.
-	if _, err := h.eventStore.Append(ctx, p.DestinationID, events.StreamProvince, "TradeDelivery",
-		map[string]any{"good_key": p.GoodKey, "quantity": delivered, "route_id": p.TradeRouteID},
-		e.WorldID, nil,
-	); err != nil {
-		slog.Error("record TradeDelivery event", "err", err)
+	for _, record := range []*events.Event{titheEvent, deliveredEvent} {
+		if record != nil {
+			h.eventStore.RecordCommitted(ctx, record)
+		}
 	}
-
-	if h.hub != nil {
-		var ownerID uuid.UUID
-		_ = h.pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, p.DestinationID).Scan(&ownerID)
-		_ = h.hub.NotifyPlayer(ctx, e.WorldID, ownerID, "TradeDelivery", 3, map[string]any{
-			"destination_id": p.DestinationID,
-			"good_key":       p.GoodKey,
-			"quantity":       delivered,
-		})
-	}
+	deliverTradeNotice(ctx, h.hub, e.WorldID, recipient, noticeID, "TradeDelivery", notice)
 
 	// Record market snapshot: the caravan owner now knows the destination's prices.
 	// (Fix: origin_id is the settlement UUID, not owner_id — owner_id doesn't exist in trade_routes)
@@ -523,8 +603,8 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 // bound a real ship (ship_unit_id set — sjöhandel kräver skepp), that ship
 // still owes an empty voyage home before it's free again. No-ops silently
 // when the leg wasn't naval or bound no ship (every land caravan and every
-// pre-slice naval transport, R6). Best-effort: a failure here must never
-// block the delivery itself — the caller only logs it.
+// pre-slice naval transport, R6). A failure rolls the delivery back so a
+// ship can never be left bound without a return mover and timer.
 func dispatchShipReturnLeg(ctx context.Context, tx pgx.Tx, sched *events.Scheduler, worldID uuid.UUID, transportID, arrivedID uuid.UUID) error {
 	var shipUnitID *uuid.UUID
 	var homeID uuid.UUID
@@ -540,35 +620,73 @@ func dispatchShipReturnLeg(ctx context.Context, tx pgx.Tx, sched *events.Schedul
 		return nil // land caravan, or a naval transport that never bound a ship (R6)
 	}
 
-	// Both origin_q/r and dest_q/r on the outbound leg are already the two
-	// shores' nearest-sea hexes (province.ResolveTradeRoute's own naval
-	// branch) — real sea hexes, valid FindPath endpoints as-is.
-	travelMins := 30.0
-	if path, _, ok, err := province.FindPath(ctx, tx, worldID,
-		province.MapPosition{Q: arriveQ, R: arriveR}, province.MapPosition{Q: homeQ, R: homeR}, "naval"); err == nil && ok {
-		travelMins = 30.0 + float64(len(path)-1)*2.0
+	if sched == nil {
+		return fmt.Errorf("ship return requires scheduler")
 	}
-	travelTicks := int(math.Round(travelMins / 60))
-	if travelTicks < 1 {
-		travelTicks = 1
+	journey, err := province.PlanTradeJourney(ctx, tx, worldID, province.MapPosition{Q: arriveQ, R: arriveR}, province.MapPosition{Q: homeQ, R: homeR}, "naval")
+	if err != nil {
+		return err
+	}
+	raw, err := json.Marshal(journey)
+	if err != nil {
+		return err
 	}
 	var currentTick int
-	_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+	if err := tx.QueryRow(ctx, `SELECT current_tick FROM worlds WHERE id=$1`, worldID).Scan(&currentTick); err != nil {
+		return err
+	}
+	departsAt := sched.Clock().Now()
+	arrivesAt := departsAt.Add(tick.RealUntil(journey.TravelTicks, 0))
 
 	var returnID uuid.UUID
 	if err := tx.QueryRow(ctx,
 		`INSERT INTO transports
 		   (world_id, owner_id, kind, origin_id, dest_id, category,
 		    origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick,
-		    interceptable, ship_unit_id)
-		 VALUES ($1,$2,'ship_return',$3,$4,'naval',$5,$6,$7,$8,
-		         now(), now() + make_interval(mins => $9), $10, true, $11)
+		    interceptable, ship_unit_id, journey, departed_tick)
+         VALUES ($1,$2,'ship_return',$3,$4,'naval',$5,$6,$7,$8,$9,$10,$11,true,$12,$13,$14)
 		 RETURNING id`,
 		worldID, ownerID, arrivedID, homeID,
-		arriveQ, arriveR, homeQ, homeR, travelMins, currentTick+travelTicks, *shipUnitID,
+		arriveQ, arriveR, homeQ, homeR, departsAt, arrivesAt, currentTick+journey.TravelTicks, *shipUnitID, raw, currentTick,
 	).Scan(&returnID); err != nil {
 		return fmt.Errorf("insert ship return leg: %w", err)
 	}
 	return sched.EnqueueTickTx(ctx, tx, worldID, events.ScheduledTransportArrival,
-		map[string]any{"transport_id": returnID}, currentTick+travelTicks)
+		map[string]any{"transport_id": returnID}, currentTick+journey.TravelTicks)
+}
+
+// committedTradeNotifier is defined by this consumer; notify.Hub satisfies it
+// without introducing an upward import. Test broadcasters can use NotifyPlayer.
+type committedTradeNotifier interface {
+	DeliverCommittedNotification(context.Context, uuid.UUID, uuid.UUID, string, string, int, any)
+}
+
+func persistTradeNotice(ctx context.Context, tx pgx.Tx, worldID, destID uuid.UUID, kind string, payload any) (uuid.UUID, string, error) {
+	var owner *uuid.UUID
+	if err := tx.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id=$1`, destID).Scan(&owner); err != nil {
+		return uuid.Nil, "", err
+	}
+	if owner == nil || *owner == uuid.Nil {
+		return uuid.Nil, "", nil
+	}
+	raw, err := json.Marshal(payload)
+	if err != nil {
+		return uuid.Nil, "", err
+	}
+	var id string
+	if err := tx.QueryRow(ctx, `INSERT INTO notifications (world_id,player_id,kind,level,body_json) VALUES ($1,$2,$3,3,$4) RETURNING id`, worldID, *owner, kind, raw).Scan(&id); err != nil {
+		return uuid.Nil, "", fmt.Errorf("persist trade notice: %w", err)
+	}
+	return *owner, id, nil
+}
+
+func deliverTradeNotice(ctx context.Context, hub Broadcaster, worldID, owner uuid.UUID, id, kind string, payload any) {
+	if hub == nil || owner == uuid.Nil {
+		return
+	}
+	if committed, ok := hub.(committedTradeNotifier); ok {
+		committed.DeliverCommittedNotification(ctx, worldID, owner, id, kind, 3, payload)
+		return
+	}
+	_ = hub.NotifyPlayer(ctx, worldID, owner, kind, 3, payload)
 }

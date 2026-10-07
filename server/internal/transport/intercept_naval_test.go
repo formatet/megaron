@@ -40,7 +40,7 @@ type navalSeizureFixture struct {
 func newNavalSeizureFixture(t *testing.T, pool *pgxpool.Pool) navalSeizureFixture {
 	t.Helper()
 	ctx := context.Background()
-	f := newFixture(t, pool)
+	f := newNavalFixture(t, pool)
 
 	var raider, raiderProv, raiderCapital uuid.UUID
 	if err := pool.QueryRow(ctx,

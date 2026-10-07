@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 	"time"
@@ -12,10 +13,11 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/gossip"
-	"formatet/megaron/server/internal/messenger"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/tick"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -1073,22 +1075,31 @@ func (h *KingdomHandler) TreasuryDeposit(w http.ResponseWriter, r *http.Request)
 		 JOIN provinces p ON p.id = s.province_id
 		 WHERE km.kingdom_id = $1 AND km.role = 'basileus'`,
 		kingdomID, worldID).Scan(&bQ, &bR)
-	dist := 0
+	travelTicks := 1
 	if seatErr == nil {
-		dist = province.HexDistance(province.MapPosition{Q: cQ, R: cR}, province.MapPosition{Q: bQ, R: bR})
+		journey, jerr := province.PlanTradeJourney(r.Context(), h.pool, worldID, province.MapPosition{Q: cQ, R: cR}, province.MapPosition{Q: bQ, R: bR}, "land")
+		if jerr != nil {
+			writeTradeJourneyError(w, jerr)
+			return
+		}
+		travelTicks = journey.TravelTicks
+	} else if !errors.Is(seatErr, pgx.ErrNoRows) {
+		writeError(w, http.StatusInternalServerError, "could not find treasury seat")
+		return
 	}
-	arrivesAt := h.clk.Now().Add(messenger.TradeTravelDuration(dist))
-
+	arrivesAt := h.clk.Now().Add(tick.RealUntil(travelTicks, 0))
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "transaction error")
 		return
 	}
 	defer tx.Rollback(r.Context())
-
 	var kingdomTribCurrentTick int
-	_ = tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&kingdomTribCurrentTick)
-	kingdomTribDueTick := kingdomTribCurrentTick + messenger.TradeTravelTicks(dist)
+	if err := tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&kingdomTribCurrentTick); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not read current tick")
+		return
+	}
+	kingdomTribDueTick := kingdomTribCurrentTick + travelTicks
 
 	// Deduct from settlement silver good row, fail if insufficient.
 	tag, err := tx.Exec(r.Context(),

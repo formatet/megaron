@@ -269,7 +269,7 @@ func MessengerTravelTicks(dist int) int {
 // GONE). Every caller must handle !ok visibly (a 422 or a genuine error),
 // never by guessing a travel time. One speed model for ALL messengers:
 // diplomatic, recall/redirect and order runners alike (trade CARAVANS keep
-// their own TradeTicksPerHex seam below).
+// their own terrain-based journey planner).
 func CourierTravel(ctx context.Context, db province.Queryer, worldID uuid.UUID, from, to province.MapPosition) (ticks int, dur time.Duration, ok bool, err error) {
 	g, err := province.LoadTileGraph(ctx, db, worldID)
 	if err != nil {
@@ -476,25 +476,4 @@ func InterceptCourierTargetRoute(
 	}
 	t, ok := InterceptAlongPathRoute(g, courierOrigin, path, enterAt, now)
 	return t, ok, nil
-}
-
-// TradeTicksPerHex is the travel speed of a trade caravan (the silver/goods legs of a messenger trade).
-// Kept as a separate seam from messengers so caravans can later be tuned slower than runners
-// without affecting messenger/recall speed.
-const TradeTicksPerHex = 0.5
-
-// TradeTravelDuration returns the wall-clock travel time for a trade caravan over dist hexes,
-// for display columns only (scheduling uses TradeTravelTicks) — same tick.RealUntil conversion
-// as MessengerTravelDuration/returnDuration above.
-func TradeTravelDuration(dist int) time.Duration {
-	return tick.RealUntil(TradeTravelTicks(dist), 0)
-}
-
-// TradeTravelTicks returns the world-tick travel time for a trade caravan over dist hexes.
-func TradeTravelTicks(dist int) int {
-	t := int(math.Round(float64(dist) * TradeTicksPerHex))
-	if t < 1 {
-		return 1
-	}
-	return t
 }

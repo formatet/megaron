@@ -106,6 +106,9 @@ func setupTradeInternalFixture(t *testing.T) *tradeInternalFixture {
 		t.Fatalf("seed origin silver: %v", err)
 	}
 
+	if _, err := pool.Exec(ctx, `INSERT INTO map_tiles(world_id,q,r,terrain) SELECT $1,q,0,'plains' FROM generate_series(0,3) q`, worldID); err != nil {
+		t.Fatal(err)
+	}
 	clk := clock.NewTestClock(time.Now())
 	scheduler := events.NewScheduler(pool, clk)
 	eventStore := events.NewStore(pool)

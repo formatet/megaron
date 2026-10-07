@@ -2,6 +2,7 @@ package transport
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"math"
@@ -11,6 +12,7 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/tick"
 	"github.com/google/uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -107,23 +109,30 @@ func (h *InterceptScanHandler) dice() Dice {
 }
 
 type inFlightTransport struct {
-	id         uuid.UUID
-	owner      uuid.UUID
-	originID   *uuid.UUID
-	originQ    int
-	originR    int
-	destQ      int
-	destR      int
-	category   string
-	departs    time.Time
-	arrives    time.Time
-	shipUnitID *uuid.UUID
+	id           uuid.UUID
+	owner        uuid.UUID
+	originID     *uuid.UUID
+	originQ      int
+	originR      int
+	destQ        int
+	destR        int
+	category     string
+	departs      time.Time
+	arrives      time.Time
+	shipUnitID   *uuid.UUID
+	journey      json.RawMessage
+	departedTick *int
+	dueTick      int
 }
 
 // Handle scans every in-transit interceptable caravan once, seizing any caught by
 // an enemy sentry, then re-enqueues itself.
 func (h *InterceptScanHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
 	now := h.clk.Now()
+	anchor, err := tick.LoadAnchor(ctx, h.pool, e.WorldID)
+	if err != nil {
+		return fmt.Errorf("intercept scan: load anchor: %w", err)
+	}
 
 	// Terrain for the FOW gate below (§4): AnyEyeSees needs the target hex's
 	// terrain to size the interceptor's vision per eye-kind. Loaded once for the
@@ -136,7 +145,7 @@ func (h *InterceptScanHandler) Handle(ctx context.Context, e events.ScheduledEve
 	eyesByOwner := map[uuid.UUID][]province.Eye{}
 
 	rows, err := h.pool.Query(ctx,
-		`SELECT id, owner_id, origin_id, origin_q, origin_r, dest_q, dest_r, category, departs_at, arrives_at, ship_unit_id
+		`SELECT id, owner_id, origin_id, origin_q, origin_r, dest_q, dest_r, category, departs_at, arrives_at, ship_unit_id, journey, departed_tick, due_tick
 		 FROM transports
 		 WHERE world_id = $1 AND status = 'in_transit' AND interceptable = true`,
 		e.WorldID,
@@ -148,7 +157,7 @@ func (h *InterceptScanHandler) Handle(ctx context.Context, e events.ScheduledEve
 	for rows.Next() {
 		var t inFlightTransport
 		if scanErr := rows.Scan(&t.id, &t.owner, &t.originID, &t.originQ, &t.originR, &t.destQ, &t.destR,
-			&t.category, &t.departs, &t.arrives, &t.shipUnitID); scanErr != nil {
+			&t.category, &t.departs, &t.arrives, &t.shipUnitID, &t.journey, &t.departedTick, &t.dueTick); scanErr != nil {
 			rows.Close()
 			return fmt.Errorf("intercept scan: scan transport: %w", scanErr)
 		}
@@ -159,28 +168,26 @@ func (h *InterceptScanHandler) Handle(ctx context.Context, e events.ScheduledEve
 	for _, t := range fleet {
 		origin := province.MapPosition{Q: t.originQ, R: t.originR}
 		dest := province.MapPosition{Q: t.destQ, R: t.destR}
-		pos, ok, posErr := province.InterpolatePosition(ctx, h.pool, e.WorldID,
-			origin, dest, t.category, t.departs, t.arrives, now)
-		if posErr != nil {
-			// A DB error is not the same as an unpathable route — never guess a
-			// position off the back of one.
-			continue
-		}
-		if !ok {
-			// No traversable route exists for this category (e.g. a land caravan
-			// whose origin/dest are split by sea or, post-flod, a river — the
-			// A* category graph has no path). The caravan's own travel time is
-			// already an abstracted straight hex line, never A* (TradeTicksPerHex,
-			// messenger/recall.go) — so falling back to that same straight line for
-			// its live position keeps it a real, interceptable object instead of
-			// silently making it permanently uninterceptable. Only messengers may
-			// be uninterceptable (Timothy 2026-07-30).
-			pos = straightLineHexPosition(origin, dest, t.departs, t.arrives, now)
-			slog.Warn("intercept scan: no traversable route for category, using straight-line fallback position",
-				"transport", t.id, "category", t.category,
-				"origin_q", t.originQ, "origin_r", t.originR,
-				"dest_q", t.destQ, "dest_r", t.destR,
-				"fallback_q", pos.Q, "fallback_r", pos.R)
+		var pos province.MapPosition
+		if len(t.journey) > 0 {
+			if t.departedTick == nil {
+				return fmt.Errorf("saved transport %s missing departure tick", t.id)
+			}
+			pos, err = SavedPosition(t.journey, *t.departedTick, t.dueTick, anchor.MilliAt(now))
+			if err != nil {
+				return fmt.Errorf("saved transport %s: %w", t.id, err)
+			}
+		} else {
+			// Explicit compatibility for rows dispatched before migration160:
+			// retain the old route/interpolation and committed timestamp ETA.
+			var ok bool
+			pos, ok, err = province.InterpolatePosition(ctx, h.pool, e.WorldID, origin, dest, t.category, t.departs, t.arrives, now)
+			if err != nil {
+				continue
+			}
+			if !ok {
+				pos = straightLineHexPosition(origin, dest, t.departs, t.arrives, now)
+			}
 		}
 
 		// An enemy sentry watching within reach of the caravan's current hex,
@@ -425,25 +432,22 @@ func (h *InterceptScanHandler) dispatchLimpedReturn(ctx context.Context, tx pgx.
 		`SELECT p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id WHERE s.id = $1`, *destID,
 	).Scan(&destQ, &destR)
 
-	travelMins := 30.0
-	if path, _, ok, err := province.FindPath(ctx, tx, worldID,
-		pos, province.MapPosition{Q: destQ, R: destR}, "naval"); err == nil && ok {
-		travelMins = 30.0 + float64(len(path)-1)*2.0
-	}
-	travelTicks := int(math.Round(travelMins / 60))
-	if travelTicks < 1 {
-		travelTicks = 1
+	journey, err := province.PlanTradeJourney(ctx, tx, worldID, pos, province.MapPosition{Q: destQ, R: destR}, "naval")
+	if err != nil {
+		return err
 	}
 	var currentTick int
-	_ = tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
+	if err := tx.QueryRow(ctx, `SELECT current_tick FROM worlds WHERE id=$1`, worldID).Scan(&currentTick); err != nil {
+		return err
+	}
 	departsAt := h.clk.Now()
-	arrivesAt := departsAt.Add(time.Duration(travelMins * float64(time.Minute)))
+	arrivesAt := departsAt.Add(tick.RealUntil(currentTick+journey.TravelTicks, currentTick))
 
-	_, err := Dispatch(ctx, tx, h.scheduler, DispatchParams{
+	_, err = Dispatch(ctx, tx, h.scheduler, DispatchParams{
 		WorldID: worldID, OwnerID: t.owner, Kind: "damaged_return",
 		OriginID: *destID, DestID: *destID, Category: "naval",
 		OriginQ: pos.Q, OriginR: pos.R, DestQ: destQ, DestR: destR,
-		DepartsAt: departsAt, ArrivesAt: arrivesAt, DueTick: currentTick + travelTicks,
+		DepartsAt: departsAt, ArrivesAt: arrivesAt, DueTick: currentTick + journey.TravelTicks, DepartedTick: currentTick, Journey: &journey,
 		Manifest: half, Interceptable: true, ShipUnitID: t.shipUnitID,
 	})
 	return err

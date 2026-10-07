@@ -175,16 +175,13 @@ func TestStandingOrder_OutboundGoesNavalWhenBothEndsCoastal(t *testing.T) {
 	// gubbe's. Derive the expected provisions from the same production
 	// functions the handler itself calls, rather than a hardcoded float, so
 	// this test can't silently drift from the real formula.
-	_, dist, err := province.ResolveTradeRoute(context.Background(), pool, f.worldID, true, true,
-		province.MapPosition{Q: 0, R: 0}, province.MapPosition{Q: 5, R: 0})
+	journey, err := province.PlanTradeJourney(context.Background(), pool, f.worldID,
+		province.MapPosition{Q: 0, R: 0}, province.MapPosition{Q: 5, R: 0}, "naval")
 	if err != nil {
-		t.Fatalf("resolve trade route for expected-value math: %v", err)
+		t.Fatal(err)
 	}
-	travelMins := 30.0 + float64(dist)*2.0
-	travelTicks := int(math.Round(travelMins / 60))
-	if travelTicks < 1 {
-		travelTicks = 1
-	}
+	travelTicks := journey.TravelTicks
+
 	provisions := VoyageProvisions(standingOrderNavalRation(), travelTicks, 0)
 
 	// R1/R4: a merchantman's capacity (200 weight units) caps the manifest —

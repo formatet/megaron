@@ -335,7 +335,7 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 			originCoastal || originHarboured, destCoastal || destHarboured,
 			province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR})
 		if rerr != nil {
-			writeError(w, http.StatusInternalServerError, "could not resolve trade route")
+			writeTradeJourneyError(w, rerr)
 			return
 		}
 		if category == "naval" {
@@ -1055,12 +1055,19 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "transaction error")
+		return
+	}
+	defer tx.Rollback(r.Context())
+
 	// Load messenger + trade_offer; verify it's delivered to this player's settlement.
 	// We fetch all fields for both buy and sell kinds; unused fields will be zero/empty.
 	var destID, originID uuid.UUID
 	var kind, wantGood, offerGood, offerStatus string
 	var wantQty, offerSilver, offerQty, wantSilver float64
-	err = h.pool.QueryRow(r.Context(),
+	err = tx.QueryRow(r.Context(),
 		`SELECT m.destination_id, m.origin_id,
 		        COALESCE(m.trade_offer->>'kind', 'buy'),
 		        COALESCE(m.trade_offer->>'want_good', ''),
@@ -1073,7 +1080,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		 FROM messengers m
 		 JOIN settlements ds ON ds.id = m.destination_id
 		 WHERE m.id = $1 AND m.world_id = $2 AND ds.owner_id = $3
-		   AND m.status = 'delivered' AND m.trade_offer IS NOT NULL`,
+		   AND m.status = 'delivered' AND m.trade_offer IS NOT NULL FOR UPDATE OF m, ds`,
 		messengerID, worldID, playerID,
 	).Scan(&destID, &originID, &kind, &wantGood, &wantQty, &offerSilver, &offerGood, &offerQty, &wantSilver, &offerStatus)
 	if err != nil {
@@ -1089,53 +1096,51 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 	var oQ, oR, dQ, dR int
 	var originCoastal, destCoastal bool
 	var originName string
-	_ = h.pool.QueryRow(r.Context(),
+	if err := tx.QueryRow(r.Context(),
 		`SELECT p.map_q, p.map_r, COALESCE(p.coastal, false), s.name
-		 FROM provinces p JOIN settlements s ON s.province_id=p.id WHERE s.id=$1`,
-		originID).Scan(&oQ, &oR, &originCoastal, &originName)
-	_ = h.pool.QueryRow(r.Context(),
-		`SELECT p.map_q, p.map_r, COALESCE(p.coastal, false) FROM provinces p JOIN settlements s ON s.province_id=p.id WHERE s.id=$1`,
-		destID).Scan(&dQ, &dR, &destCoastal)
-	dist := province.HexDistance(province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR})
+		 FROM provinces p JOIN settlements s ON s.province_id=p.id WHERE s.id=$1 FOR UPDATE OF s`,
+		originID).Scan(&oQ, &oR, &originCoastal, &originName); err != nil {
+		writeError(w, http.StatusConflict, "trade origin no longer available")
+		return
+	}
+	if err := tx.QueryRow(r.Context(),
+		`SELECT p.map_q, p.map_r, COALESCE(p.coastal, false) FROM provinces p JOIN settlements s ON s.province_id=p.id WHERE s.id=$1 FOR UPDATE OF s`,
+		destID).Scan(&dQ, &dR, &destCoastal); err != nil {
+		writeError(w, http.StatusConflict, "trade destination no longer available")
+		return
+	}
 
 	// Owner of the goods dispatched on leg 1 (the origin's Wanax) — the physical
 	// caravan belongs to whoever sends that leg, so a third party can raid it.
 	// Also the INITIATOR of the whole trade (Timothy 2026-09-26): whoever sent
 	// the offer is who a sea leg's ship belongs to (R3).
 	var originOwner uuid.UUID
-	_ = h.pool.QueryRow(r.Context(), `SELECT owner_id FROM settlements WHERE id=$1`, originID).Scan(&originOwner)
-
-	tx, err := h.pool.Begin(r.Context())
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "transaction error")
+	if err := tx.QueryRow(r.Context(), `SELECT owner_id FROM settlements WHERE id=$1`, originID).Scan(&originOwner); err != nil {
+		writeError(w, http.StatusConflict, "trade origin no longer owned")
 		return
 	}
-	defer tx.Rollback(r.Context())
 
 	// R1 (megaron_plan_sjohandel_mellan_spelare.md): resolve whether this
 	// trade sails or walks — same coastal/harbour gate as internal transfers
 	// (province.go's Trade handler) — and, when it sails, price BOTH legs on
 	// the real sea route's length, not the straight-line hex count a land
 	// caravan would use.
-	originHarboured, herr := settlementHasHarbour(r.Context(), h.pool, originID)
+	originHarboured, herr := settlementHasHarbour(r.Context(), tx, originID)
 	if herr != nil {
 		writeError(w, http.StatusInternalServerError, "could not check origin harbour")
 		return
 	}
-	destHarboured, herr := settlementHasHarbour(r.Context(), h.pool, destID)
+	destHarboured, herr := settlementHasHarbour(r.Context(), tx, destID)
 	if herr != nil {
 		writeError(w, http.StatusInternalServerError, "could not check destination harbour")
 		return
 	}
-	category, navalDist, rerr := province.ResolveTradeRoute(r.Context(), h.pool, worldID,
+	category, _, rerr := province.ResolveTradeRoute(r.Context(), tx, worldID,
 		originCoastal || originHarboured, destCoastal || destHarboured,
 		province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR})
 	if rerr != nil {
-		writeError(w, http.StatusInternalServerError, "could not resolve trade route")
+		writeTradeJourneyError(w, rerr)
 		return
-	}
-	if category == "naval" {
-		dist = navalDist
 	}
 
 	// R3: sea route ⇒ bind the INITIATOR's own free ship in origin, in this
@@ -1157,20 +1162,16 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if !found {
-			_, _, landOK, lerr := province.FindPath(r.Context(), tx, worldID,
-				province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR}, "land")
-			if lerr != nil {
-				writeError(w, http.StatusInternalServerError, "could not resolve a land fallback route")
-				return
-			}
-			if !landOK {
-				writeError(w, http.StatusUnprocessableEntity, fmt.Sprintf(
-					"%s has no free ship to carry this trade by sea right now — the offer stays open until it expires",
-					originName))
-				return
-			}
 			category = "land"
-			dist = province.HexDistance(province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR})
+			if _, lerr := province.PlanTradeJourney(r.Context(), tx, worldID,
+				province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR}, category); lerr != nil {
+				if errors.Is(lerr, province.ErrNoTradePath) {
+					writeError(w, http.StatusUnprocessableEntity, fmt.Sprintf("%s has no free ship and no passable land route — the offer stays open until it expires", originName))
+				} else {
+					writeTradeJourneyError(w, lerr)
+				}
+				return
+			}
 		} else if heaviest > ship.Capacity {
 			writeError(w, http.StatusUnprocessableEntity, fmt.Sprintf(
 				"%s's cargo capacity is %.0f, this trade's heaviest leg weighs %.0f — the offer cannot be carried as-is",
@@ -1191,10 +1192,25 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	journey, jerr := province.PlanTradeJourney(r.Context(), tx, worldID, province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR}, category)
+	if jerr != nil {
+		writeTradeJourneyError(w, jerr)
+		return
+	}
+	returnJourney, jerr := province.PlanTradeJourney(r.Context(), tx, worldID, province.MapPosition{Q: dQ, R: dR}, province.MapPosition{Q: oQ, R: oR}, category)
+	if jerr != nil {
+		writeTradeJourneyError(w, jerr)
+		return
+	}
+	dist := journey.Distance
 	var tradeAcceptCurrentTick int
-	_ = tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&tradeAcceptCurrentTick)
-	tradeAcceptDueTick := tradeAcceptCurrentTick + messenger.TradeTravelTicks(dist)
-	leg1ArrivesAt := h.clk.Now().Add(messenger.TradeTravelDuration(dist))
+	if err := tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&tradeAcceptCurrentTick); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not read current tick")
+		return
+	}
+	tradeAcceptDueTick := tradeAcceptCurrentTick + journey.TravelTicks
+	returnDueTick := tradeAcceptDueTick + returnJourney.TravelTicks
+	leg1ArrivesAt := h.clk.Now().Add(tick.RealUntil(journey.TravelTicks, 0))
 
 	if kind == "sell" {
 		// Sell offer: origin=seller (escrowed goods at send), destination=buyer (acceptor).
@@ -1222,7 +1238,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		// later `keryx outbox` read (long after this request's response has been
 		// forgotten) can still show "delivery expected <time>" instead of nothing.
 		goodsArrivesAt := leg1ArrivesAt
-		silverArrivesAt := leg1ArrivesAt.Add(messenger.TradeTravelDuration(dist))
+		silverArrivesAt := leg1ArrivesAt.Add(tick.RealUntil(returnJourney.TravelTicks, 0))
 
 		// Step 2: guarded flip to accepted, ETAs stamped in the same merge.
 		// ship_name is stamped too (empty when this trade walks) — the ship
@@ -1233,9 +1249,9 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			     'status', 'accepted',
 			     'goods_arrives_at', $2::timestamptz,
 			     'silver_arrives_at', $3::timestamptz,
-			     'ship_name', $4::text)
+			     'ship_name', $4::text, 'goods_arrival_tick', $5::int, 'silver_arrival_tick', $6::int)
 			  WHERE id=$1 AND trade_offer->>'status'='pending'`,
-			messengerID, goodsArrivesAt, silverArrivesAt, shipName,
+			messengerID, goodsArrivesAt, silverArrivesAt, shipName, tradeAcceptDueTick, returnDueTick,
 		)
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "could not update offer status")
@@ -1254,6 +1270,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			OriginID: originID, DestID: destID, Category: category,
 			OriginQ: oQ, OriginR: oR, DestQ: dQ, DestR: dR,
 			DepartsAt: h.clk.Now(), ArrivesAt: leg1ArrivesAt, DueTick: tradeAcceptDueTick,
+			DepartedTick: tradeAcceptCurrentTick, Journey: &journey,
 			Manifest: transport.Manifest{offerGood: offerQty}, Interceptable: true,
 			ShipUnitID: shipID,
 		})
@@ -1275,9 +1292,10 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 					"good_key":       "silver",
 					"quantity":       wantSilver,
 					"messenger_id":   messengerID.String(),
-					"travel_mins":    float64(dist) * 30.0,
-					"owner_id":       playerID.String(), // leg-2 caravan belongs to the acceptor (dest owner)
-					"origin_q":       dQ, "origin_r": dR,
+					"travel_mins":    float64(returnJourney.TravelTicks) * 60,
+					"travel_ticks":   returnJourney.TravelTicks, "journey": returnJourney,
+					"owner_id": playerID.String(), // leg-2 caravan belongs to the acceptor (dest owner)
+					"origin_q": dQ, "origin_r": dR,
 					"dest_q": oQ, "dest_r": oR,
 				},
 			}, tradeAcceptDueTick); err != nil {
@@ -1316,6 +1334,15 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			"silver_arrives_at": silverArrivesAt,
 			"distance":          dist,
 		}
+		sellResp["kind"] = "sell"
+		sellResp["transport_id"] = leg1ID
+		sellResp["category"] = category
+		sellResp["departure_tick"] = tradeAcceptCurrentTick
+		sellResp["arrival_tick"] = tradeAcceptDueTick
+		sellResp["travel_ticks"] = journey.TravelTicks
+		sellResp["return_travel_ticks"] = returnJourney.TravelTicks
+		sellResp["goods_arrival_tick"] = tradeAcceptDueTick
+		sellResp["silver_arrival_tick"] = returnDueTick
 		if shipID != nil {
 			sellResp["ship_id"] = *shipID
 			sellResp["ship_name"] = shipName
@@ -1346,7 +1373,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		// above for why these are persisted onto trade_offer, not just returned
 		// in this response.
 		silverArrivesAt := leg1ArrivesAt
-		goodsArrivesAt := leg1ArrivesAt.Add(messenger.TradeTravelDuration(dist))
+		goodsArrivesAt := leg1ArrivesAt.Add(tick.RealUntil(returnJourney.TravelTicks, 0))
 
 		// Step 2: guarded flip to accepted, ETAs stamped in the same merge. Guard on
 		// status='pending' so that if the offer expired (and its silver was refunded)
@@ -1358,9 +1385,9 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			     'status', 'accepted',
 			     'goods_arrives_at', $2::timestamptz,
 			     'silver_arrives_at', $3::timestamptz,
-			     'ship_name', $4::text)
+			     'ship_name', $4::text, 'goods_arrival_tick', $5::int, 'silver_arrival_tick', $6::int)
 			  WHERE id=$1 AND trade_offer->>'status'='pending'`,
-			messengerID, goodsArrivesAt, silverArrivesAt, shipName,
+			messengerID, goodsArrivesAt, silverArrivesAt, shipName, returnDueTick, tradeAcceptDueTick,
 		)
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "could not update offer status")
@@ -1378,6 +1405,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			OriginID: originID, DestID: destID, Category: category,
 			OriginQ: oQ, OriginR: oR, DestQ: dQ, DestR: dR,
 			DepartsAt: h.clk.Now(), ArrivesAt: leg1ArrivesAt, DueTick: tradeAcceptDueTick,
+			DepartedTick: tradeAcceptCurrentTick, Journey: &journey,
 			Manifest: transport.Manifest{"silver": offerSilver}, Interceptable: true,
 			ShipUnitID: shipID,
 		})
@@ -1399,9 +1427,10 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 					"good_key":       wantGood,
 					"quantity":       wantQty,
 					"messenger_id":   messengerID.String(),
-					"travel_mins":    float64(dist) * 30.0,
-					"owner_id":       playerID.String(), // leg-2 caravan belongs to the acceptor (dest owner)
-					"origin_q":       dQ, "origin_r": dR,
+					"travel_mins":    float64(returnJourney.TravelTicks) * 60,
+					"travel_ticks":   returnJourney.TravelTicks, "journey": returnJourney,
+					"owner_id": playerID.String(), // leg-2 caravan belongs to the acceptor (dest owner)
+					"origin_q": dQ, "origin_r": dR,
 					"dest_q": oQ, "dest_r": oR,
 				},
 			}, tradeAcceptDueTick); err != nil {
@@ -1439,6 +1468,15 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			"goods_arrives_at":  goodsArrivesAt,
 			"distance":          dist,
 		}
+		buyResp["kind"] = "buy"
+		buyResp["transport_id"] = leg1ID
+		buyResp["category"] = category
+		buyResp["departure_tick"] = tradeAcceptCurrentTick
+		buyResp["arrival_tick"] = tradeAcceptDueTick
+		buyResp["travel_ticks"] = journey.TravelTicks
+		buyResp["return_travel_ticks"] = returnJourney.TravelTicks
+		buyResp["goods_arrival_tick"] = returnDueTick
+		buyResp["silver_arrival_tick"] = tradeAcceptDueTick
 		if shipID != nil {
 			buyResp["ship_id"] = *shipID
 			buyResp["ship_name"] = shipName

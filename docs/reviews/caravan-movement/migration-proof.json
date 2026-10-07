@@ -1,0 +1,23 @@
+{
+  "migration_cycle": [
+    159,
+    160,
+    159,
+    160
+  ],
+  "legacy_projection_preserved": {
+    "status": "in_transit",
+    "due_tick": 99,
+    "manifest": [
+      {
+        "good_key": "grain",
+        "quantity": 17,
+        "transport_id": "00000000-0000-0000-0000-000000000003"
+      }
+    ],
+    "arrives_at": "2026-10-07T05:00:00+00:00",
+    "departs_at": "2026-10-07T00:00:00+00:00"
+  },
+  "paired_constraint_rejects_partial_route": true,
+  "final_schema": "160|false"
+}

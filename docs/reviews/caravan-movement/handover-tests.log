@@ -1,0 +1,9 @@
+» färsk DB på migration 160 · commit fcdad2e0+ändringar
+ok  	formatet/megaron/server/internal/province	0.231s
+ok  	formatet/megaron/server/internal/transport	0.608s
+ok  	formatet/megaron/server/internal/economy	4.977s
+ok  	formatet/megaron/server/internal/combat	5.974s
+ok  	formatet/megaron/server/internal/messenger	0.965s
+ok  	formatet/megaron/server/api/handlers	24.885s
+ok  	formatet/megaron/server/cmd/keryx	0.022s
+ok  	formatet/megaron/server/cmd/server	0.900s

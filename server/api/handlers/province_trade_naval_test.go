@@ -344,26 +344,11 @@ func TestTrade_TwoInlandSettlementsGoLand(t *testing.T) {
 		t.Fatalf("category = %q, want land (neither settlement is coastal)", got)
 	}
 
-	// Proof that an unchanged land route costs EXACTLY what it did before
-	// naval selection existed: hex distance 0->3 is 3, so base = 30 + 3*2 =
-	// 36 minutes — the pre-existing weight penalty for whatever "grain"
-	// weighs in the goods table (untouched by this slice) is derived from
-	// live data here, not guessed, so this doesn't hardcode a value this
-	// slice never changed in the first place.
-	var grainWeight float64
-	if err := f.pool.QueryRow(context.Background(),
-		`SELECT weight FROM goods WHERE key = 'grain'`,
-	).Scan(&grainWeight); err != nil {
-		t.Fatalf("look up grain weight: %v", err)
+	// Three entered plains hexes: 3 × .75 × 1.5 = 3.375, rounded once to three ticks.
+	if resp["travel_ticks"] != float64(3) || resp["travel_min"] != float64(180) {
+		t.Fatalf("terrain ETA: %v", resp)
 	}
-	wantWeightPenalty := 0.0
-	if grainWeight > 1.0 {
-		wantWeightPenalty = (grainWeight - 1.0) * 0.1
-	}
-	want := 36.0 * (1.0 + wantWeightPenalty)
-	if travelMin, _ := resp["travel_min"].(float64); travelMin != want {
-		t.Fatalf("travel_min = %v, want exactly %v (30 + 3*2, the pre-existing land formula, unchanged)", travelMin, want)
-	}
+
 }
 
 // TestTrade_OneCoastalOneInlandGoesLand: only one end can reach the sea, so
@@ -376,6 +361,10 @@ func TestTrade_OneCoastalOneInlandGoesLand(t *testing.T) {
 	destID, _ := f.settlement(t, "Sparta", 5, false, false)
 	for q := 1; q <= 4; q++ {
 		f.mapTile(t, q, 0, "coastal_sea")
+	}
+
+	for q := 0; q <= 5; q++ {
+		f.mapTile(t, q, 1, "plains")
 	}
 
 	code, resp := f.post(t, "/worlds/"+f.worldID.String()+"/provinces/"+originProvince.String()+"/trade",

@@ -333,6 +333,9 @@ func TestExecuteOccupyAction_Sack(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	f := newSiegeFixture(t, pool, 0)
+	if _, err := pool.Exec(ctx, `INSERT INTO map_tiles(world_id,q,r,terrain) VALUES ($1,0,0,'plains'),($1,1,0,'plains')`, f.worldID); err != nil {
+		t.Fatal(err)
+	}
 
 	const startPop = 900
 	if _, err := pool.Exec(ctx,
@@ -429,6 +432,9 @@ func TestExecuteOccupyAction_Burn(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	f := newSiegeFixture(t, pool, 0)
+	if _, err := pool.Exec(ctx, `INSERT INTO map_tiles(world_id,q,r,terrain) VALUES ($1,0,0,'plains'),($1,1,0,'plains')`, f.worldID); err != nil {
+		t.Fatal(err)
+	}
 
 	if _, err := pool.Exec(ctx,
 		`UPDATE settlements SET state = 'occupied', occupant_id = $2, occupied_since_tick = 0 WHERE id = $1`,
@@ -510,5 +516,38 @@ func TestExecuteOccupyAction_Burn(t *testing.T) {
 	}
 	if blockedAfter != 0 {
 		t.Errorf("colonize existing-settlement count (after karens) = %d, want 0 (recolonization now allowed)", blockedAfter)
+	}
+}
+
+func TestCaravanPlunder_NoRouteRollsBackLootAndOccupation(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	f := newSiegeFixture(t, pool, 0)
+	if _, err := pool.Exec(ctx, `UPDATE settlements SET state='occupied',occupant_id=$2,occupied_since_tick=0 WHERE id=$1`, f.defSettlement, f.attacker); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,'silver',1000,0,1000000,0)`, f.defSettlement); err != nil {
+		t.Fatal(err)
+	}
+	snapshot := func() string {
+		var raw string
+		if err := pool.QueryRow(ctx, `SELECT jsonb_build_object(
+ 'settlement',(SELECT to_jsonb(s) FROM settlements s WHERE id=$1),
+ 'goods',(SELECT jsonb_agg(to_jsonb(g) ORDER BY good_key) FROM settlement_goods g WHERE settlement_id=$1),
+ 'transports',(SELECT count(*) FROM transports WHERE world_id=$2),
+ 'jobs',(SELECT count(*) FROM scheduled_events WHERE world_id=$2),
+ 'events',(SELECT count(*) FROM events WHERE world_id=$2))::text`, f.defSettlement, f.worldID).Scan(&raw); err != nil {
+			t.Fatal(err)
+		}
+		return raw
+	}
+	before := snapshot()
+	clk := clock.NewTestClock(time.Now())
+	_, err := ExecuteOccupyAction(ctx, pool, events.NewScheduler(pool, clk), events.NewStore(pool), clk, &fakeBroadcaster{}, OccupyActionOrder{WorldID: f.worldID, PlayerID: f.attacker, SettlementID: f.defSettlement, Action: "sack"})
+	if err == nil {
+		t.Fatal("plunder had no route but sack committed")
+	}
+	if after := snapshot(); after != before {
+		t.Fatal("route rejection changed loot, occupation or events")
 	}
 }
