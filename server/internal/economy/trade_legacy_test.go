@@ -18,7 +18,6 @@ import (
 
 func legacyDeliveryHandler(f navalPlayerTradeFixture) *DeliveryHandler {
 	h := NewDeliveryHandler(f.pool, events.NewStore(f.pool), nil, events.NewScheduler(f.pool, clock.NewTestClock(time.Date(2026, 10, 7, 0, 0, 0, 0, time.UTC))))
-	h.Dice = neverLosesDice()
 	return h
 }
 

@@ -13,7 +13,6 @@ package economy
 import (
 	"context"
 	"encoding/json"
-	"math/rand"
 	"testing"
 	"time"
 
@@ -108,69 +107,6 @@ func mkTradeTransport(t *testing.T, pool *pgxpool.Pool, ctx context.Context, wor
 	return id
 }
 
-// TestIsInternalTransfer_FourCases is bevisplan (a): the ownership resolution
-// isolated from the dice roll, in the four combinations the plan calls for —
-// route-based vs transport-based origin lookup, crossed with same vs different
-// owner. An unresolvable fifth case (no route, no transport) is included too,
-// since AK4 requires "can't tell → treat as external", not "assume internal".
-func TestIsInternalTransfer_FourCases(t *testing.T) {
-	pool := testPool(t)
-	ctx := context.Background()
-	worldID := mkTradeWorld(t, pool, ctx)
-
-	ownerA := mkTradeOwner(t, pool, ctx)
-	ownerB := mkTradeOwner(t, pool, ctx)
-
-	tx, err := pool.Begin(ctx)
-	if err != nil {
-		t.Fatalf("begin tx: %v", err)
-	}
-	defer tx.Rollback(ctx)
-
-	t.Run("route-based same owner", func(t *testing.T) {
-		origin := mkTradeSettlement(t, pool, ctx, worldID, ownerA, "R-Origin-Same", 0)
-		dest := mkTradeSettlement(t, pool, ctx, worldID, ownerA, "R-Dest-Same", 1)
-		routeID := mkTradeRoute(t, pool, ctx, worldID, origin, dest)
-		if !isInternalTransfer(ctx, tx, routeID, uuid.UUID{}, dest) {
-			t.Errorf("route-based, same owner: got external, want internal")
-		}
-	})
-
-	t.Run("route-based different owner", func(t *testing.T) {
-		origin := mkTradeSettlement(t, pool, ctx, worldID, ownerA, "R-Origin-Diff", 2)
-		dest := mkTradeSettlement(t, pool, ctx, worldID, ownerB, "R-Dest-Diff", 3)
-		routeID := mkTradeRoute(t, pool, ctx, worldID, origin, dest)
-		if isInternalTransfer(ctx, tx, routeID, uuid.UUID{}, dest) {
-			t.Errorf("route-based, different owner: got internal, want external")
-		}
-	})
-
-	t.Run("transport-based same owner (no route — messenger-style payload)", func(t *testing.T) {
-		origin := mkTradeSettlement(t, pool, ctx, worldID, ownerA, "T-Origin-Same", 4)
-		dest := mkTradeSettlement(t, pool, ctx, worldID, ownerA, "T-Dest-Same", 5)
-		transportID := mkTradeTransport(t, pool, ctx, worldID, ownerA, origin, dest)
-		if !isInternalTransfer(ctx, tx, uuid.UUID{}, transportID, dest) {
-			t.Errorf("transport-based, same owner: got external, want internal")
-		}
-	})
-
-	t.Run("transport-based different owner", func(t *testing.T) {
-		origin := mkTradeSettlement(t, pool, ctx, worldID, ownerA, "T-Origin-Diff", 6)
-		dest := mkTradeSettlement(t, pool, ctx, worldID, ownerB, "T-Dest-Diff", 7)
-		transportID := mkTradeTransport(t, pool, ctx, worldID, ownerA, origin, dest)
-		if isInternalTransfer(ctx, tx, uuid.UUID{}, transportID, dest) {
-			t.Errorf("transport-based, different owner: got internal, want external")
-		}
-	})
-
-	t.Run("unresolvable origin defaults to external", func(t *testing.T) {
-		dest := mkTradeSettlement(t, pool, ctx, worldID, ownerA, "U-Dest", 8)
-		if isInternalTransfer(ctx, tx, uuid.UUID{}, uuid.UUID{}, dest) {
-			t.Errorf("no route, no transport: got internal, want external (AK4 — never guess internal)")
-		}
-	})
-}
-
 // deliveryPayload builds the exact JSON shape DeliveryHandler.Handle consumes,
 // mirroring province.go's internal-transfer emitter (trade_route_id + transport_id
 // both set — the real internal-transfer shape).
@@ -229,48 +165,6 @@ func TestDeliveryHandler_InternalTransferNeverLost(t *testing.T) {
 		 WHERE settlement_id = $1 AND good_key = 'silver'`, dest).Scan(&destSilver)
 	if destSilver != float64(n)*10 {
 		t.Fatalf("dest silver = %v, want %v (every one of %d deliveries credited)", destSilver, float64(n)*10, n)
-	}
-}
-
-// TestDeliveryHandler_ExternalTradeStillRollsDice is bevisplan (c): the mirror
-// of the above — N=120 external deliveries (different owners) through the same
-// handler must still see the storm/pirate roll fire at least once, proving the
-// fix gates the roll on ownership rather than silencing it globally.
-// P(zero losses in 120 | correctly gated) ≈ 0.2%, same bound as above.
-func TestDeliveryHandler_ExternalTradeStillRollsDice(t *testing.T) {
-	pool := testPool(t)
-	ctx := context.Background()
-	worldID := mkTradeWorld(t, pool, ctx)
-	ownerA := mkTradeOwner(t, pool, ctx)
-	ownerB := mkTradeOwner(t, pool, ctx)
-	origin := mkTradeSettlement(t, pool, ctx, worldID, ownerA, "E-Origin", 0)
-	dest := mkTradeSettlement(t, pool, ctx, worldID, ownerB, "E-Dest", 1)
-
-	h := NewDeliveryHandler(pool, events.NewStore(pool), nil, events.NewScheduler(pool, clock.NewTestClock(time.Now())))
-	// Seeded via the injected Dice rather than left on the global source: the
-	// test still proves the roll fires for external trade, but deterministically.
-	// Unpinned it carried P(zero losses) = 0.95^120 ~= 0.2% — the same lottery
-	// this seam exists to remove (fix/forlusttarning-injicerbar, 2026-07-31).
-	h.Dice = rand.New(rand.NewSource(1337))
-
-	const n = 120
-	lost := 0
-	for i := 0; i < n; i++ {
-		routeID := mkTradeRoute(t, pool, ctx, worldID, origin, dest)
-		transportID := mkTradeTransport(t, pool, ctx, worldID, ownerA, origin, dest)
-		payload := deliveryPayload(routeID, dest, transportID, 10)
-		ev := events.ScheduledEvent{ID: time.Now().UnixNano() + int64(i) + 1_000_000, WorldID: worldID, Payload: payload}
-		if err := h.Handle(ctx, ev); err != nil {
-			t.Fatalf("delivery handle #%d: %v", i, err)
-		}
-		var status string
-		_ = pool.QueryRow(ctx, `SELECT status FROM transports WHERE id = $1`, transportID).Scan(&status)
-		if status != "delivered" {
-			lost++
-		}
-	}
-	if lost == 0 {
-		t.Fatalf("external trades lost = 0/%d, want >=1 (the dice must still roll for real trade; P(this by chance) ~= 0.2%%)", n)
 	}
 }
 

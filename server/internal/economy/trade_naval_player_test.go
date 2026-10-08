@@ -144,7 +144,6 @@ func TestDeliveryHandler_NavalThenReturn_Leg2SailsSameShipHomeToInitiator(t *tes
 	leg1ID := f.leg1Transport(t)
 
 	h := NewDeliveryHandler(pool, events.NewStore(pool), nil, events.NewScheduler(pool, clock.NewTestClock(time.Now())))
-	h.Dice = neverLosesDice() // deterministic delivery — see dice_test.go
 	payload, _ := json.Marshal(map[string]any{
 		"destination_id":     f.counterCity,
 		"good_key":           "silver",
@@ -255,7 +254,6 @@ func TestTradeReturnHandler_NavalLeg2Arrival_ReleasesShipAtInitiatorsCity(t *tes
 	_ = pool.QueryRow(ctx, `SELECT id FROM messengers WHERE world_id=$1 ORDER BY sent_at DESC LIMIT 1`, f.worldID).Scan(&messengerID)
 
 	h := NewTradeReturnHandler(pool, events.NewStore(pool), nil)
-	h.Dice = neverLosesDice() // deterministic delivery — see dice_test.go
 	payload, _ := json.Marshal(map[string]any{
 		"destination_id": f.initiatorCity,
 		"good_key":       "copper",
@@ -316,7 +314,6 @@ func TestDeliveryHandler_LandThenReturn_UnaffectedByShipLogic(t *testing.T) {
 	}
 
 	h := NewDeliveryHandler(pool, events.NewStore(pool), nil, events.NewScheduler(pool, clock.NewTestClock(time.Now())))
-	h.Dice = neverLosesDice() // deterministic delivery — see dice_test.go
 	payload, _ := json.Marshal(map[string]any{
 		"destination_id":     f.counterCity,
 		"good_key":           "silver",

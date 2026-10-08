@@ -18,12 +18,11 @@ type TradeReturnHandler struct {
 	pool       *pgxpool.Pool
 	eventStore *events.Store
 	hub        Broadcaster
-	Dice       Dice // exported so tests can override; defaults to wallDice (production behaviour).
 }
 
 // NewTradeReturnHandler creates a TradeReturnHandler.
 func NewTradeReturnHandler(pool *pgxpool.Pool, eventStore *events.Store, hub Broadcaster) *TradeReturnHandler {
-	return &TradeReturnHandler{pool: pool, eventStore: eventStore, hub: hub, Dice: wallDice{}}
+	return &TradeReturnHandler{pool: pool, eventStore: eventStore, hub: hub}
 }
 
 // Handle credits goods to the buyer settlement when a negotiated trade return arrives.
@@ -69,57 +68,6 @@ func (h *TradeReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent
 		if tstatus != "in_transit" {
 			return tx.Commit(ctx)
 		}
-	}
-
-	// Trade risk: exactly the same rule as the outbound leg (isInternalTransfer +
-	// tradeRiskPct, trade.go) — a negotiated trade between two wanaxes is external
-	// on BOTH legs (CLAUDE.md trade-lagret punkt 2/3), so the return leg must not
-	// silently skip the die just because it's the second half of the round trip.
-	// tradeRouteID is always zero here (this leg has no trade_routes row); origin
-	// is resolved from the return caravan's own transports.origin_id — the
-	// settlement that is sending this leg back — via isInternalTransfer's existing
-	// transport-based lookup. No transport (legacy event) ⇒ unresolvable ⇒ external
-	// (fail-external, never guess internal).
-	if !isInternalTransfer(ctx, tx, uuid.UUID{}, p.TransportID, p.DestinationID) && h.Dice.Float64() < tradeRiskPct {
-		reason := tradeLostReasons[h.Dice.Intn(len(tradeLostReasons))]
-		if p.TransportID != (uuid.UUID{}) {
-			if _, err = tx.Exec(ctx,
-				`UPDATE transports SET status = 'lost', updated_at = now() WHERE id = $1`, p.TransportID,
-			); err != nil {
-				return fmt.Errorf("mark lost return transport: %w", err)
-			}
-		}
-		// Mark the offer's round trip concluded so a retry of this event (or the
-		// auto-return path) doesn't re-roll — same terminal flip as the success
-		// path below, just without ever crediting the buyer.
-		if _, err = tx.Exec(ctx,
-			`UPDATE messengers SET trade_offer = trade_offer || '{"status":"returned"}' WHERE id=$1`,
-			p.MessengerID,
-		); err != nil {
-			return fmt.Errorf("mark returned (lost): %w", err)
-		}
-		var lostEvent *events.Event
-		if h.eventStore != nil {
-			lostEvent, err = h.eventStore.AppendTx(ctx, tx, p.DestinationID, events.StreamProvince, "TradeLost", map[string]any{"good_key": p.GoodKey, "quantity": p.Quantity, "reason": reason, "messenger_id": p.MessengerID}, e.WorldID, nil)
-			if err != nil {
-				return fmt.Errorf("record return loss: %w", err)
-			}
-		}
-		notice := map[string]any{"destination_id": p.DestinationID, "good_key": p.GoodKey, "quantity": p.Quantity, "reason": reason}
-		recipient, noticeID, err := persistTradeNotice(ctx, tx, e.WorldID, p.DestinationID, "TradeLost", notice)
-		if err != nil {
-			return err
-		}
-		if err := tx.Commit(ctx); err != nil {
-			return fmt.Errorf("commit return loss: %w", err)
-		}
-		if lostEvent != nil {
-			h.eventStore.RecordCommitted(ctx, lostEvent)
-		}
-		deliverTradeNotice(ctx, h.hub, e.WorldID, recipient, noticeID, "TradeLost", notice)
-
-		slog.Info("trade return lost", "messenger", p.MessengerID, "good", p.GoodKey, "reason", reason)
-		return nil
 	}
 
 	// Credit goods to buyer — silver is now a normal good in settlement_goods.

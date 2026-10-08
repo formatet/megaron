@@ -113,20 +113,6 @@ func TestGiftDestinationListMatchesLetterFOW(t *testing.T) {
 	}
 }
 
-type giftDice struct {
-	lost  bool
-	calls int
-}
-
-func (d *giftDice) Float64() float64 {
-	d.calls++
-	if d.lost {
-		return 0
-	}
-	return 1
-}
-func (d *giftDice) Intn(n int) int { return 0 }
-
 func TestGiftDeliveryLifecycle(t *testing.T) {
 	for _, scenario := range []string{"silver", "timber", "capacity", "new_owner", "collapsed", "deleted", "raided"} {
 		t.Run(scenario, func(t *testing.T) {
@@ -191,9 +177,7 @@ func TestGiftDeliveryLifecycle(t *testing.T) {
 			if scenario == "collapsed" || scenario == "deleted" || scenario == "raided" {
 				wantCredit, wantLost, wantKind = 0, 50, "GiftLost"
 			}
-			dice := &giftDice{}
 			handler := economy.NewDeliveryHandler(f.pool, events.NewStore(f.pool), nil, f.scheduler)
-			handler.Dice = dice
 			for i := 0; i < 2; i++ {
 				if err := handler.HandleGift(ctx, event); err != nil {
 					t.Fatal(err)
@@ -273,7 +257,6 @@ func TestGiftNavalCarrierCompletesEmptyReturn(t *testing.T) {
 				}
 			}
 			h := economy.NewDeliveryHandler(f.pool, events.NewStore(f.pool), nil, f.scheduler)
-			h.Dice = &giftDice{}
 			if err := h.HandleGift(ctx, e); err != nil {
 				t.Fatal(err)
 			}
@@ -365,7 +348,6 @@ func TestGiftHistoryPrivateUntilArrival(t *testing.T) {
 		t.Fatal(err)
 	}
 	h := economy.NewDeliveryHandler(f.pool, events.NewStore(f.pool), nil, f.scheduler)
-	h.Dice = &giftDice{}
 	if err := h.HandleGift(ctx, e); err != nil {
 		t.Fatal(err)
 	}

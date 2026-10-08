@@ -67,7 +67,6 @@ func TestDeliveryHandler_ReplayIsIdempotent(t *testing.T) {
 	}
 
 	h := NewDeliveryHandler(pool, events.NewStore(pool), nil, events.NewScheduler(pool, clock.NewTestClock(time.Now())))
-	h.Dice = neverLosesDice() // subject is the delivery claim, not the loss die
 
 	payload, err := json.Marshal(map[string]any{
 		"destination_id":     buyer,

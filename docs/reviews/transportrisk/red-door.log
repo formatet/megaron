@@ -1,0 +1,7 @@
+--- FAIL: TestDeliveryHandler_ExternalTradeNeverLostAtDoor (0.03s)
+    trade_no_flat_die_test.go:41: delivery 1: transport status = "lost", want delivered — a delivery die still rolls
+--- FAIL: TestTradeReturnHandler_ExternalTradeNeverLostAtDoor (0.09s)
+    trade_no_flat_die_test.go:71: return 36: transport status = "lost", want delivered — a return die still rolls
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.115s
+FAIL

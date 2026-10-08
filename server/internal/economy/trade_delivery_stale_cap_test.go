@@ -84,7 +84,6 @@ func TestTradeDelivery_StaleCapTruncatesSecondDelivery(t *testing.T) {
 	// This test's subject is the stale hard-coded cap, not the loss die — pin
 	// the dice to "never loses" so an unlucky roll can't turn this into an
 	// intermittent failure (fix/forlusttarning-injicerbar, 2026-07-31).
-	h.Dice = neverLosesDice()
 
 	deliver := func(qty float64, n int) {
 		payload, _ := json.Marshal(map[string]any{
@@ -198,7 +197,6 @@ func TestTradeReturn_StaleCapTruncatesSecondDelivery(t *testing.T) {
 	h := NewTradeReturnHandler(pool, events.NewStore(pool), nil)
 	// Same as the DeliveryHandler test above: this test's subject is the
 	// stale hard-coded cap, not the loss die.
-	h.Dice = neverLosesDice()
 
 	deliver := func(qty float64, n int) {
 		payload, _ := json.Marshal(map[string]any{

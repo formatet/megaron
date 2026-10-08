@@ -91,10 +91,6 @@ func (h *DeliveryHandler) HandleGift(ctx context.Context, e events.ScheduledEven
 	if err != nil && err != pgx.ErrNoRows {
 		return err
 	}
-	lossReason := ""
-	if status == "in_transit" && err != pgx.ErrNoRows && state == "active" && out.ActualRecipientID != nil {
-		lossReason = h.deliveryLoss(ctx, tx, p.RouteID, p.TransportID, p.DestinationID)
-	}
 	out.OwnerChanged = out.ActualRecipientID != nil && *out.ActualRecipientID != p.RecipientID
 	switch {
 	case status != "in_transit":
@@ -110,8 +106,6 @@ func (h *DeliveryHandler) HandleGift(ctx context.Context, e events.ScheduledEven
 		out.LostQuantity = p.Quantity - out.ReturnedQuantity
 	case err == pgx.ErrNoRows || state != "active" || out.ActualRecipientID == nil:
 		out.Reason = "destination_fallen"
-	case lossReason != "":
-		out.Reason = lossReason
 	default:
 		// Materialise lazy stock under the goods row lock. Record actual delta,
 		// including a newly introduced row's cap; never report truncated cargo as delivered.

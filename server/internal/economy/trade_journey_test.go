@@ -44,7 +44,6 @@ func TestDeliverySavedReturnAtomicAndFrozen(t *testing.T) {
 			}
 			clk := clock.NewTestClock(time.Date(2026, 10, 7, 0, 0, 0, 0, time.UTC))
 			h := NewDeliveryHandler(pool, events.NewStore(pool), nil, events.NewScheduler(pool, clk))
-			h.Dice = neverLosesDice()
 			raw, err := json.Marshal(map[string]any{"transport_id": leg, "destination_id": f.counterCity, "good_key": "silver", "quantity": 100, "then_return": map[string]any{"messenger_id": uuid.New().String(), "destination_id": f.initiatorCity, "owner_id": f.counterparty, "good_key": "copper", "quantity": 20, "travel_mins": 1, "travel_ticks": journey.TravelTicks, "journey": journey, "origin_q": 5, "origin_r": 0, "dest_q": 0, "dest_r": 0}})
 			if err != nil {
 				t.Fatal(err)
@@ -135,7 +134,6 @@ func TestTradeReturnSavedNavalStrandsAtWaterAndRollsBackReleaseFailure(t *testin
 		t.Fatal(err)
 	}
 	h := NewTradeReturnHandler(pool, events.NewStore(pool), nil)
-	h.Dice = neverLosesDice()
 	payload, _ := json.Marshal(map[string]any{"destination_id": f.initiatorCity, "good_key": "copper", "quantity": 20, "messenger_id": messenger, "transport_id": leg})
 	evt := events.ScheduledEvent{ID: time.Now().UnixNano(), WorldID: f.worldID, Payload: payload}
 	triggerName := "fail_ship_release_" + fmt.Sprint(time.Now().UnixNano())

@@ -144,52 +144,17 @@ func (h *OfferExpiryHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	return nil
 }
 
-const tradeRiskPct = 0.05 // 5% chance a caravan is lost to storm or pirates
-
-var tradeLostReasons = []string{"storm", "pirates", "pirates", "storm", "bandits"}
-
-// isInternalTransfer reports whether a delivery's origin and destination
-// settlements share the same owner — moving goods within your own network,
-// not trading with someone else. Origin is read from trade_routes.origin_id
-// when the route exists (internal /trade transfers), else from
-// transports.origin_id (messenger-negotiated trade legs carry no trade_route_id).
-// If the origin can't be resolved either way, this returns false (external):
-// guessing "internal" when unsure would silently switch off an intended
-// mechanic, which is the wrong direction to fail in.
-func isInternalTransfer(ctx context.Context, tx pgx.Tx, tradeRouteID, transportID, destinationID uuid.UUID) bool {
-	var originID uuid.UUID
-	if tradeRouteID != (uuid.UUID{}) {
-		_ = tx.QueryRow(ctx, `SELECT origin_id FROM trade_routes WHERE id = $1`, tradeRouteID).Scan(&originID)
-	}
-	if originID == (uuid.UUID{}) && transportID != (uuid.UUID{}) {
-		_ = tx.QueryRow(ctx, `SELECT origin_id FROM transports WHERE id = $1`, transportID).Scan(&originID)
-	}
-	if originID == (uuid.UUID{}) {
-		return false
-	}
-
-	var originOwner, destOwner uuid.UUID
-	if err := tx.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, originID).Scan(&originOwner); err != nil {
-		return false
-	}
-	if err := tx.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id = $1`, destinationID).Scan(&destOwner); err != nil {
-		return false
-	}
-	return originOwner == destOwner
-}
-
 // DeliveryHandler processes ScheduledTradeDelivery events.
 type DeliveryHandler struct {
 	pool       *pgxpool.Pool
 	eventStore *events.Store
 	hub        Broadcaster
 	scheduler  *events.Scheduler
-	Dice       Dice // exported so tests can override; defaults to wallDice (production behaviour).
 }
 
 // NewDeliveryHandler creates a DeliveryHandler.
 func NewDeliveryHandler(pool *pgxpool.Pool, eventStore *events.Store, hub Broadcaster, sched *events.Scheduler) *DeliveryHandler {
-	return &DeliveryHandler{pool: pool, eventStore: eventStore, hub: hub, scheduler: sched, Dice: wallDice{}}
+	return &DeliveryHandler{pool: pool, eventStore: eventStore, hub: hub, scheduler: sched}
 }
 
 // Handle delivers goods to the destination settlement.
@@ -267,43 +232,6 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 			}
 			return tx.Commit(ctx)
 		}
-	}
-
-	// Trade risk: 5% chance caravan is lost to storm or pirates — but only when
-	// the goods change owner. Moving grain between two of your own cities is
-	// logistics, not trade (CLAUDE.md trade-lagret punkt 3: "intern överföring
-	// ... fysisk karavan utan förlust"); it must never roll this die.
-	if reason := h.deliveryLoss(ctx, tx, p.TradeRouteID, p.TransportID, p.DestinationID); reason != "" {
-		if _, err = tx.Exec(ctx, `UPDATE trade_routes SET resolved = true WHERE id = $1`, p.TradeRouteID); err != nil {
-			return fmt.Errorf("mark lost route resolved: %w", err)
-		}
-		if p.TransportID != (uuid.UUID{}) {
-			if _, err := tx.Exec(ctx, `UPDATE transports SET status='lost',updated_at=now() WHERE id=$1`, p.TransportID); err != nil {
-				return err
-			}
-		}
-		var lostEvent *events.Event
-		if h.eventStore != nil {
-			lostEvent, err = h.eventStore.AppendTx(ctx, tx, p.DestinationID, events.StreamProvince, "TradeLost", map[string]any{"good_key": p.GoodKey, "quantity": p.Quantity, "reason": reason, "route_id": p.TradeRouteID}, e.WorldID, nil)
-			if err != nil {
-				return fmt.Errorf("record trade loss: %w", err)
-			}
-		}
-		notice := map[string]any{"destination_id": p.DestinationID, "good_key": p.GoodKey, "quantity": p.Quantity, "reason": reason}
-		recipient, noticeID, err := persistTradeNotice(ctx, tx, e.WorldID, p.DestinationID, "TradeLost", notice)
-		if err != nil {
-			return err
-		}
-		if err := tx.Commit(ctx); err != nil {
-			return fmt.Errorf("commit loss: %w", err)
-		}
-		if lostEvent != nil {
-			h.eventStore.RecordCommitted(ctx, lostEvent)
-		}
-		deliverTradeNotice(ctx, h.hub, e.WorldID, recipient, noticeID, "TradeLost", notice)
-
-		slog.Info("trade lost", "route", p.TradeRouteID, "good", p.GoodKey, "reason", reason)
-		return nil
 	}
 
 	// Temple tithe (Timothy 2026-07-22, vägval c): when the silver leg of a sale
@@ -690,11 +618,3 @@ func deliverTradeNotice(ctx context.Context, hub Broadcaster, worldID, owner uui
 	_ = hub.NotifyPlayer(ctx, worldID, owner, kind, 3, payload)
 }
 
-// deliveryLoss is the existing delivery risk shared by legacy trade and gifts.
-// Slice T will replace this flat die for every caller together.
-func (h *DeliveryHandler) deliveryLoss(ctx context.Context, tx pgx.Tx, route, transport, destination uuid.UUID) string {
-	if isInternalTransfer(ctx, tx, route, transport, destination) || h.Dice.Float64() >= tradeRiskPct {
-		return ""
-	}
-	return tradeLostReasons[h.Dice.Intn(len(tradeLostReasons))]
-}
