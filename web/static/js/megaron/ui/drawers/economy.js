@@ -269,7 +269,7 @@ async function loadEconomyTransfer(mySettlements) {
   // id — sending a province id here was the "destination settlement not found" bug).
   const fromOpts = mySettlements.map(s => `<option value="${s.id}">${esc(s.name)}${s.is_capital?' ★':''}</option>`).join('');
   const toOpts = '<option value="">Loading…</option>';
-  const inputStyle = 'width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem';
+  const inputStyle = 'width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem;font:inherit;border-radius:0';
   el.innerHTML = `
     <div class="dsec">
       <div class="dsec-title">Transfer or gift</div>
