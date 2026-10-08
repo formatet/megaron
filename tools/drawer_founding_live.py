@@ -90,11 +90,15 @@ try:
     units=api(worldpath+'/units',token=token)['units']
     host=next(u for u in units if u['type']=='nomadic_host')
     from playwright.sync_api import sync_playwright, expect
-    playwright=sync_playwright().start();browser=playwright.chromium.launch()
+    playwright=sync_playwright().start();browser=playwright.chromium.launch(ignore_default_args=['--disable-dev-shm-usage'])
     page=browser.new_page(viewport={'width':1280,'height':900})
-    # Pass through every request; routing disables HTTP cache for reload proof.
-    page.route('**/*',lambda route:route.continue_())
+    # Browser-only cache setting; every request reaches the real server.
+    cdp=page.context.new_cdp_session(page)
+    cdp.send('Network.enable')
+    cdp.send('Network.setCacheDisabled',{'cacheDisabled':True})
     page.on('pageerror',lambda error:errors.append(str(error)))
+    page.on('console',lambda msg:errors.append('console: '+msg.text) if msg.type=='error' else None)
+    page.on('requestfailed',lambda r:errors.append('request: '+r.url+' '+str(r.failure)) if r.failure!='net::ERR_ABORTED' else None)
     page.goto(base+'/',wait_until='domcontentloaded')
     page.evaluate('t=>localStorage.setItem("poleia_token",t)',token)
     page.context.add_cookies([{'name':'poleia_token','value':token,'url':base}])
@@ -108,6 +112,12 @@ try:
     page.on('dialog',dialog)
     page.on('request',lambda r: orders.append({'method':r.method,'body':r.post_data}) if r.url.endswith('/founding/settle') else None)
     page.on('response',lambda r: order_responses.append(r.status) if r.url.endswith('/founding/settle') else None)
+    page.wait_for_function("""async host=>{
+      const {State}=await import('/static/js/megaron/state.js');
+      return State.founderPhase && State.unitsData.some(u=>u.type==='nomadic_host'&&u.q===host.q&&u.r===host.r)
+        && State.tileData.some(t=>t.q===host.q&&t.r===host.r&&t.terrain!=='fog');
+    }""",arg=host)
+    page.evaluate('()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))')
     xy=page.evaluate("""async host=>{
       const {State}=await import('/static/js/megaron/state.js');
       const {hexPx,SCALE}=await import('/static/js/megaron/render/map.js');
@@ -126,6 +136,7 @@ try:
         for label,width,height in [('desktop',1280,900),('mobile',390,844)]:
             page.set_viewport_size({'width':width,'height':height});page.wait_for_timeout(100)
             panel=page.locator('#inspect-panel');panel.screenshot(path=str(OUT/('host-confirm-'+label+'.png')))
+            page.screenshot(path=str(OUT/('host-context-'+label+'.png')))
             yes=page.locator('#ip-settle-err button').first
             assert yes.is_visible() and yes.bounding_box()['y']+yes.bounding_box()['height']<=height,'confirmation reachable'
         page.get_by_role('button',name='Keep travelling',exact=True).click();assert not orders
@@ -166,6 +177,7 @@ try:
     for label,width,height in [('mobile',390,844),('desktop',1280,900)]:
         page.set_viewport_size({'width':width,'height':height});page.wait_for_timeout(100)
         page.locator('#drawer-city').screenshot(path=str(OUT/('city-link-'+label+'.png')))
+        page.screenshot(path=str(OUT/('city-context-'+label+'.png')))
     assert not errors,errors
     proof={'health':health,'mode':MODE,'province':city,'detail':details,'overview':overview,'stocks':stock,'rendered':rendered,'city_link':city['name'],'native_dialogs':dialogs,'founding_orders':orders,'founding_responses':order_responses,'economy_open_after_city':economy_open,'browser_errors':errors,'sql_mutations':False}
     (OUT/'proof.json').write_text(json.dumps(proof,indent=2)+'\n');print(json.dumps({'health':health,'mode':MODE,'city_link':city['name'],'native_dialogs':dialogs,'founding_orders':orders,'founding_responses':order_responses,'economy_open_after_city':economy_open}))

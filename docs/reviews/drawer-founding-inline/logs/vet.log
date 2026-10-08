@@ -1,0 +1,1 @@
+env -i HOME/PATH go vet ./...: exit 0

@@ -1,0 +1,1 @@
+{"health": {"commit": "41d107e3", "migration": 160, "status": "ok"}, "mode": "baseline", "city_link": "Amnissos", "native_dialogs": ["Found the metropolis here? The host dissolves \u2014 forever.", "Found the metropolis here? The host dissolves \u2014 forever."], "founding_orders": [{"method": "POST", "body": "{}"}], "founding_responses": [201], "economy_open_after_city": true}

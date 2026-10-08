@@ -12,7 +12,7 @@ Everything your cities make, eat and trade is a **good**. The **Economy (⚖)** 
 
 ## The four tabs
 
-- **Goods** — stock, production and use of each good, city by city. The settlements table compares people, grain made minus grain eaten, food days and shortage status; select a city to open its City drawer. Goods piling up with nothing using them are marked — see [[surplus]].
+- **Goods** — stock, production and use of each good, city by city. The settlements table compares people, grain made minus grain eaten, food days and shortage status; select a city to close Economy and open its City drawer. Goods piling up with nothing using them are marked — see [[surplus]].
 - **Transfer** — move goods between your own cities ([[transfers]]).
 - **Automation** — [[routes|standing orders]] that move goods for you while you are away.
 - **Wants** — shortages and surpluses in every city you have [[contact|contacted]]: where to [[trade]].
