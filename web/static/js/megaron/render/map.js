@@ -14,6 +14,7 @@ import { eyeSees } from './sight.js';
 import { drawRemembered } from './memory.js';
 import { drawCityMass, citySprite, cityTop, cityFoot } from './citysprites.js';
 import { zoomStep, clampPan } from './camera.js';
+import { confirmInline, showInlineResult } from '../ui/inline_result.js';
 import { unitHoverLines } from '../ui/hover.js';
 import { incomingTargetKeys } from '../ui/movements.js';
 
@@ -4384,7 +4385,7 @@ async function openHostPanel(h, tile) {
   const foot = document.getElementById('ip-foot');
   foot.innerHTML =
     `<button id="ip-settle-btn" style="${MARCH_BTN_STYLE}">⚒ Found the metropolis here</button>
-     <span class="msg-err" id="ip-settle-err"></span>`;
+     <div id="ip-settle-err"></div>`;
   document.getElementById('inspect-panel').style.display = 'flex';
 
   // Glow the 7 catchment hexes the host would found on, for as long as the Host
@@ -4406,24 +4407,38 @@ async function openHostPanel(h, tile) {
     })
     .catch(() => {});
 
-  document.getElementById('ip-settle-btn').addEventListener('click', async () => {
-    if (!confirm('Found the metropolis here? The host dissolves — forever.')) return;
-    const errEl = document.getElementById('ip-settle-err');
-    const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/founding/settle`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({}),
-    });
-    if (res.ok) {
-      track('settle');
-      // The world changed shape: new province, new eyes, host gone. Reload
-      // outright — founding happens once per world, a full refresh is honest.
-      location.reload();
-    } else {
-      const err = await res.json().catch(() => ({ error: 'Unknown error' }));
-      errEl.style.color = 'var(--accent)';
-      errEl.textContent = err.error || 'Error';
-    }
+  const settleButton = document.getElementById('ip-settle-btn');
+  const result = document.getElementById('ip-settle-err');
+  let pending = false;
+  settleButton.addEventListener('click', () => {
+    if (pending) return;
+    confirmInline(result, 'Found the metropolis here? The host dissolves — forever.', async () => {
+      pending = true;
+      settleButton.disabled = true;
+      try {
+        const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/founding/settle`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        });
+        if (res.ok) {
+          track('settle');
+          // New province, new eyes, host gone: refresh the changed world.
+          location.reload();
+        } else {
+          const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+          result.replaceChildren();
+          showInlineResult(result, err.error || 'Error', true);
+          pending = false;
+          settleButton.disabled = false;
+        }
+      } catch (_) {
+        result.replaceChildren();
+        showInlineResult(result, 'Could not found the metropolis. Try again.', true);
+        pending = false;
+        settleButton.disabled = false;
+      }
+    }, { confirmLabel: 'Found the metropolis', cancelLabel: 'Keep travelling' });
   });
 }
 

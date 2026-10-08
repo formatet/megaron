@@ -1,0 +1,1 @@
+{"health": {"commit": "34d26d15d18eb6e498dba7f5b67766851c4648dc", "migration": 160, "status": "ok"}, "mode": "after", "city_link": "Archanes", "native_dialogs": [], "founding_orders": [{"method": "POST", "body": "{}"}], "founding_responses": [201], "economy_open_after_city": false}

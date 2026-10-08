@@ -1,0 +1,60 @@
+TAP version 13
+# Subtest: Founding actual map click: opening/cancel never sends; confirmed request is single and retains body/reload
+not ok 1 - Founding actual map click: opening/cancel never sends; confirmed request is single and retains body/reload
+  ---
+  duration_ms: 23.152082
+  type: 'test'
+  location: '/tmp/megaron-codex-drawer-founding-20261008/web/static/js/megaron/render/founding_inline.test.mjs:39:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    pending founding cannot reopen confirmation
+    + actual - expected
+    ... Skipped lines
+    
+      Element {
+        children: [],
+        classList: {
+          toggle: [Function: toggle]
+        },
+    ...
+        dataset: {},
+    -   disabled: true,
+        events: {
+          click: [AsyncFunction (anonymous)]
+        },
+        style: {},
+        textContent: 'Found the metropolis'
+    
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: Founding actual handler: server and network errors stay inline and allow retry
+not ok 2 - Founding actual handler: server and network errors stay inline and allow retry
+  ---
+  duration_ms: 2.670984
+  type: 'test'
+  location: '/tmp/megaron-codex-drawer-founding-20261008/web/static/js/megaron/render/founding_inline.test.mjs:51:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-drawer-founding-20261008/web/static/js/megaron/render/founding_inline.test.mjs:54:9)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 78.528487

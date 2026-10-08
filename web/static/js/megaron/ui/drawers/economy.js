@@ -164,6 +164,7 @@ export function sortEconomySettlements(key) {
 // render/map.js already uses when a settlement marker is clicked on the map.
 export function openCitySettlement(provinceId) {
   State.cityViewID = provinceId;
+  window.closeDrawer('economy');
   window.openDrawer('city');
 }
 

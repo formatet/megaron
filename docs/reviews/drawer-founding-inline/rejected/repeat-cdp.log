@@ -1,0 +1,32 @@
+browser errors: ['request: http://127.0.0.1:43793/static/music/minoan_intro.ogg net::ERR_ABORTED', 'request: https://umami.formatet.se/api/send net::ERR_ABORTED', 'request: https://umami.formatet.se/api/send net::ERR_ABORTED', 'request: http://127.0.0.1:43793/api/v1/worlds/616ba9cb-7dd8-454f-ac02-630afb16b3ed/founding/settle net::ERR_ABORTED', 'request: http://127.0.0.1:43793/static/js/megaron/ui/format.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: http://127.0.0.1:43793/static/js/megaron/render/actorsprites.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: http://127.0.0.1:43793/static/js/megaron/render/sight.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: http://127.0.0.1:43793/static/js/megaron/render/memory.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: http://127.0.0.1:43793/static/js/megaron/render/citysprites.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: http://127.0.0.1:43793/static/js/megaron/ui/inline_result.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: http://127.0.0.1:43793/static/js/megaron/render/camera.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: http://127.0.0.1:43793/static/js/megaron/ui/hover.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: http://127.0.0.1:43793/static/js/megaron/ui/movements.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: http://127.0.0.1:43793/static/js/megaron/render/pixelgrid.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: http://127.0.0.1:43793/static/js/megaron/render/citybuildings.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: http://127.0.0.1:43793/static/js/megaron/ui/time.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: http://127.0.0.1:43793/static/js/megaron/ui/search_messages.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: http://127.0.0.1:43793/static/js/megaron/ui/number_words.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: http://127.0.0.1:43793/static/js/megaron/ui/stance.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: http://127.0.0.1:43793/static/js/megaron/ui/expedition.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: http://127.0.0.1:43793/static/js/megaron/ui/march_preview.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: http://127.0.0.1:43793/static/js/megaron/ui/drawers/city_production.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: http://127.0.0.1:43793/static/js/megaron/ui/citygrid.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: http://127.0.0.1:43793/static/js/megaron/ui/retreat.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: http://127.0.0.1:43793/static/js/megaron/ui/runner_status.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: http://127.0.0.1:43793/static/js/megaron/ui/recall_all.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: http://127.0.0.1:43793/static/js/megaron/ui/drawers/sitos_view.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: http://127.0.0.1:43793/static/js/megaron/ui/drawers/kult_kharis.js net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES', 'request: https://umami.formatet.se/api/send net::ERR_INSUFFICIENT_RESOURCES', 'console: Failed to load resource: net::ERR_INSUFFICIENT_RESOURCES']
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-drawer-founding-20261008/tools/drawer_founding_live.py", line 144, in <module>
+    page.wait_for_function('window.openDrawer !== undefined && !document.getElementById("ip-settle-btn")')
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/sync_api/_generated.py", line 11599, in wait_for_function
+    self._sync(
+    ~~~~~~~~~~^
+        self._impl_obj.wait_for_function(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+        )
+        ^
+    )
+    ^
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_sync_base.py", line 115, in _sync
+    return task.result()
+           ~~~~~~~~~~~^^
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_page.py", line 1110, in wait_for_function
+    return await self._main_frame.wait_for_function(**locals_to_params(locals()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_frame.py", line 878, in wait_for_function
+    await self._channel.send("waitForFunction", self._timeout, params)
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_connection.py", line 69, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_connection.py", line 559, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TimeoutError: Page.wait_for_function: Timeout 30000ms exceeded.

@@ -280,3 +280,18 @@ med serverns settlement-data och kontrollerar province-id i City-länken.
 Desktop390, health/API/DOM och inga SQL-mutationer sparas.
 `python3 tools/economy_id_mutation.py OUT` återinför det gamla uppslaget fysiskt
 och kräver namngivet rött i faktiska drawer-kedjan, sedan återställt grönt.
+
+## Economy→City och grundning inline (BILD)
+
+`python3 tools/drawer_founding_live.py OUT EXPECTED_COMMIT baseline|after [WEB_DIR]`
+kör ny PG16/Redis med ren miljö, register/join och verkligt kartklick på Host.
+OUT ska ha renbyggd `temenos` med `-ldflags '-X main.buildCommit=<hash>'`;
+baslinjen får arkiverade oförändrade web-assets. Avbryt skickar ingen order;
+bekräftelsen skickar en POST med oförändrad body, grundar och reloadar.
+Economy→City kontrolleras utan manuell stängning efter fix. Desktop390,
+health/API/DOM/bilder sparas. Alla requests når riktiga servern; browserns
+HTTP-cache är avstängd för omladdningsprovet. Chromium använder `/dev/shm`
+(Playwrights disable-dev-shm-usage tas bort), Host/mapdata och två frames
+väntas in före koordinatklick. Inga SQL-fixturer.
+`python3 tools/drawer_founding_mutation.py OUT` muterar close, browserdialog,
+pending-vakt och gemensam dubbelskicksvakt fysiskt: named röd→återställd grön.

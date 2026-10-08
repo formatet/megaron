@@ -1,0 +1,54 @@
+TAP version 13
+# Subtest: Founding actual map click: opening/cancel never sends; confirmed request is single and retains body/reload
+not ok 1 - Founding actual map click: opening/cancel never sends; confirmed request is single and retains body/reload
+  ---
+  duration_ms: 22.809811
+  type: 'test'
+  location: '/tmp/megaron-codex-drawer-founding-20261008/web/static/js/megaron/render/founding_inline.test.mjs:39:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    one founding request while pending
+    
+    2 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 2
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-drawer-founding-20261008/web/static/js/megaron/render/founding_inline.test.mjs:47:9)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: Founding actual handler: server and network errors stay inline and allow retry
+not ok 2 - Founding actual handler: server and network errors stay inline and allow retry
+  ---
+  duration_ms: 2.490054
+  type: 'test'
+  location: '/tmp/megaron-codex-drawer-founding-20261008/web/static/js/megaron/render/founding_inline.test.mjs:51:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-drawer-founding-20261008/web/static/js/megaron/render/founding_inline.test.mjs:54:9)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 77.691015

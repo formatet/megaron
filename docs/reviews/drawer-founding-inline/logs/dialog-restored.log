@@ -1,0 +1,22 @@
+TAP version 13
+# Subtest: Founding actual map click: opening/cancel never sends; confirmed request is single and retains body/reload
+ok 1 - Founding actual map click: opening/cancel never sends; confirmed request is single and retains body/reload
+  ---
+  duration_ms: 22.836673
+  type: 'test'
+  ...
+# Subtest: Founding actual handler: server and network errors stay inline and allow retry
+ok 2 - Founding actual handler: server and network errors stay inline and allow retry
+  ---
+  duration_ms: 2.07339
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 77.583714

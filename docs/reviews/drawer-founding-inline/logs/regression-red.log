@@ -1,0 +1,93 @@
+TAP version 13
+# Subtest: Founding actual map click: opening/cancel never sends; confirmed request is single and retains body/reload
+not ok 1 - Founding actual map click: opening/cancel never sends; confirmed request is single and retains body/reload
+  ---
+  duration_ms: 23.387549
+  type: 'test'
+  location: '/tmp/megaron-codex-drawer-founding-20261008/web/static/js/megaron/render/founding_inline.test.mjs:39:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    founding must confirm inline without browser dialog
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-drawer-founding-20261008/web/static/js/megaron/render/founding_inline.test.mjs:41:9)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: Founding actual handler: server and network errors stay inline and allow retry
+not ok 2 - Founding actual handler: server and network errors stay inline and allow retry
+  ---
+  duration_ms: 1.365024
+  type: 'test'
+  location: '/tmp/megaron-codex-drawer-founding-20261008/web/static/js/megaron/render/founding_inline.test.mjs:50:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of undefined (reading 'events')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-drawer-founding-20261008/web/static/js/megaron/render/founding_inline.test.mjs:52:75)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Economy City link closes Economy before opening the requested province
+not ok 3 - Economy City link closes Economy before opening the requested province
+  ---
+  duration_ms: 1.429376
+  type: 'test'
+  location: '/tmp/megaron-codex-drawer-founding-20261008/web/static/js/megaron/ui/drawers/economy_city.test.mjs:5:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Economy must close before City opens
+    + actual - expected
+    
+      [
+        [
+    -     'close',
+    -     'economy'
+    -   ],
+    -   [
+          'open',
+          'city',
+          'province-target'
+        ]
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0:
+      0: 'close'
+      1: 'economy'
+    1:
+      0: 'open'
+      1: 'city'
+      2: 'province-target'
+  actual:
+    0:
+      0: 'open'
+      1: 'city'
+      2: 'province-target'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-drawer-founding-20261008/web/static/js/megaron/ui/drawers/economy_city.test.mjs:7:47)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 0
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 81.970132
