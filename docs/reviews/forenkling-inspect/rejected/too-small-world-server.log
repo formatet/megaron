@@ -1,0 +1,2 @@
+{"time":"2026-10-08T03:05:06.864187361+02:00","level":"INFO","msg":"migrations applied"}
+{"time":"2026-10-08T03:05:06.866226139+02:00","level":"ERROR","msg":"ensure world","err":"MAP_WIDTH=16 is below the minimum map dimension (30) — refusing to seed an unusably small world"}

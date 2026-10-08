@@ -28,3 +28,4 @@ ok  	formatet/megaron/server/internal/tick	0.002s
 ok  	formatet/megaron/server/internal/transport	0.673s
 ok  	formatet/megaron/server/internal/unit	0.023s
 ?   	formatet/megaron/server/internal/unit/shipnames	[no test files]
+ok  	formatet/megaron/server/internal/world	90.068s

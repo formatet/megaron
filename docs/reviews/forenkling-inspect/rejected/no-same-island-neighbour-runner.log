@@ -1,0 +1,6 @@
+browser errors: []
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-inspect-simple-20261008/tools/inspect_live.py", line 147, in <module>
+    else:raise AssertionError('no ordinary neighbour spawn on same landmass')
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: no ordinary neighbour spawn on same landmass

@@ -295,3 +295,19 @@ HTTP-cache är avstängd för omladdningsprovet. Chromium använder `/dev/shm`
 väntas in före koordinatklick. Inga SQL-fixturer.
 `python3 tools/drawer_founding_mutation.py OUT` muterar close, browserdialog,
 pending-vakt och gemensam dubbelskicksvakt fysiskt: named röd→återställd grön.
+
+## Inspect i spelarord (L, BILD)
+
+`python3 tools/inspect_live.py OUT EXPECTED_COMMIT baseline|after [WEB_DIR]`
+kör fresh PG16/Redis/ren miljö och vanliga register/join. OUT ska ha
+renbyggd `temenos` med `-ldflags '-X main.buildCommit=<hash>'`; baseline
+får arkiverade oförändrade web-assets. Väljer två vanliga spawns på samma
+landmassa via **skrivskyddad SELECT** i egna DB:n; ingen fixtur eller ändring
+av speldata/positioner. Host vandrar sedan genom kända hexer med verkliga
+march-preview/march-API:er tills staden syns enligt normal FOW. Webb: Host,
+främmande stad, Send Messenger201, March here→samma dest och riktig fog
+utan ägare/försvar. Desktop390/bilder/health/API/DB-läsmetadata sparas.
+Chromium använder `/dev/shm`, CDP stänger cache; kamera centreras för klick
+men inget kart-/unit-/markerdata injiceras.
+`python3 tools/inspect_mutation.py OUT` ger fyra namngivna röda→återställda
+gröna: återinförd /24, dold försvararfrånvaro, sent svar i fog och Culture-block.

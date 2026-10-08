@@ -56,7 +56,7 @@ try:
     env = {'HOME': os.environ['HOME'], 'PATH': os.environ['PATH'],
            'DATABASE_URL': f'postgres://postgres:simple-recall-all-pw@127.0.0.1:{pg}/simple-recall-all?sslmode=disable',
            'REDIS_URL': f'127.0.0.1:{redis}', 'JWT_SECRET': secrets.token_urlsafe(40),
-           'PORT': str(gameport), 'TICK_SECONDS': '6', 'MAP_WIDTH': '30', 'MAP_HEIGHT': '30',
+           'PORT': str(gameport), 'TICK_SECONDS': '6', 'MAP_WIDTH': '56', 'MAP_HEIGHT': '40',
            'WORLD_NAME': 'Expedition proof', 'POLEIA_WORLD_START_WANAXES': '1',
            'STATIC_DIR': str(Path(sys.argv[4]).resolve()/'static') if len(sys.argv)>4 else str(ROOT/'web/static'), 'TEMPLATE_DIR': str(Path(sys.argv[4]).resolve()/'templates') if len(sys.argv)>4 else str(ROOT/'web/templates'),
            'CHRONICLE_DIR': str(OUT/'chronicles'), 'REPORTS_DIR': str(OUT/'reports')}
@@ -88,6 +88,25 @@ try:
     worldpath = '/api/v1/worlds/' + world
     joined = api(worldpath+'/join', 'POST', {}, token)
     host=next(u for u in api(worldpath+'/units',token=token)['units'] if u['type']=='nomadic_host')
+    # Choose two ordinary spawns on connected land, using read-only metadata.
+    # No client payload, position, world state or DB row is changed by selection.
+    def landmass(q,r):
+        return command('docker','exec','-e','PGOPTIONS=-c default_transaction_read_only=on',containers[0],
+            'psql','-U','postgres','-d','simple-recall-all','-tAc',
+            "SELECT landmass_id FROM map_tiles WHERE world_id='"+world+"' AND q="+str(q)+" AND r="+str(r))
+    actors=[];groups={};viewer={'token':token,'host':host,'joined':joined,'landmass':landmass(host['q'],host['r'])}
+    actors.append({'host':host,'landmass':viewer['landmass']});groups[viewer['landmass']]=viewer
+    for actor in range(40):
+        candidate_token=api('/api/v1/auth/register','POST',{'username':'inspect-neighbour-'+secrets.token_hex(4),'password':secrets.token_urlsafe(32)})['access_token']
+        candidate_join=api(worldpath+'/join','POST',{},candidate_token)
+        candidate_host=next(u for u in api(worldpath+'/units',token=candidate_token)['units'] if u['type']=='nomadic_host')
+        candidate_landmass=landmass(candidate_host['q'],candidate_host['r'])
+        actors.append({'host':candidate_host,'landmass':candidate_landmass})
+        if candidate_landmass in groups:
+            viewer=groups[candidate_landmass];token=viewer['token'];host=viewer['host'];joined=viewer['joined'];own_landmass=viewer['landmass'];buddy_token=candidate_token
+            break
+        groups[candidate_landmass]={'token':candidate_token,'host':candidate_host,'joined':candidate_join,'landmass':candidate_landmass}
+    else:raise AssertionError('no pair of ordinary spawns on same landmass')
     initial_map=api(worldpath+'/map',token=token)
     initial_provinces=api(worldpath+'/provinces',token=token)
     from playwright.sync_api import sync_playwright,expect
@@ -128,11 +147,10 @@ try:
         assert 'tick left' not in host_text and 'real time' not in host_text
     shots('host')
     page.locator('.inspect-close').click()
-    # Ordinary second player gives this player a destination; no State/DB fixture.
-    buddy_token=api('/api/v1/auth/register','POST',{'username':'inspect-neighbour-'+secrets.token_hex(4),'password':secrets.token_urlsafe(32)})['access_token']
-    api(worldpath+'/join','POST',{},buddy_token)
+    # The ordinary neighbour founds; the viewer discovers it by walking.
     neighbour=api(worldpath+'/founding/settle','POST',{'name':'Kyme'},buddy_token)
     buddy_city=next(p for p in api(worldpath+'/provinces',token=buddy_token) if p.get('settlement_id')==neighbour['settlement_id'])
+    print('actors',json.dumps({'own_host':host,'own_landmass':own_landmass,'neighbour':buddy_city,'spawn_count':len(actors)}),flush=True)
     def distance(a,b):return max(abs(a['q']-b['q']),abs(a['r']-b['r']),abs(a['q']+a['r']-b['q']-b['r']))
     steps=[];visited=set();marker=None
     # Walk only into known land with a real read-only route forecast. Reveal the
@@ -155,6 +173,7 @@ try:
         assert target,'no reachable known land towards neighbour'
         receipt=api(worldpath+'/units/'+host['id']+'/march','POST',{'target_q':target['q'],'target_r':target['r']},token)
         steps.append({'target':target,'preview':preview,'receipt':receipt})
+        print('walking',json.dumps(steps[-1]),flush=True)
         deadline=time.monotonic()+240
         while time.monotonic()<deadline:
             current=next(u for u in api(worldpath+'/units',token=token)['units'] if u['id']==host['id'])
@@ -194,7 +213,7 @@ try:
     assert not page.get_by_role('button',name='Send Messenger',exact=True).count()
     shots('fog')
     assert not errors,errors
-    proof={'health':health,'mode':MODE,'host_phase':phase,'host_text':host_text,'initial_provinces':initial_provinces,'neighbour':buddy_city,'revealed_marker':marker,'army':army,'walk':steps,'message_status':response.value.status,'march_dest':dest,'fog':fog,'browser_errors':errors,'sql_mutations':False}
+    proof={'health':health,'mode':MODE,'host_phase':phase,'host_text':host_text,'initial_provinces':initial_provinces,'neighbour':buddy_city,'revealed_marker':marker,'army':army,'walk':steps,'message_status':response.value.status,'march_dest':dest,'fog':fog,'browser_errors':errors,'sql_mutations':False,'readonly_actor_landmass':{'own':own_landmass,'actors':actors}}
     (OUT/'proof.json').write_text(json.dumps(proof,indent=2)+'\n');print(json.dumps({'health':health,'mode':MODE,'walk_steps':len(steps),'message_status':response.value.status,'browser_errors':errors}))
 except Exception:
     print('browser errors:',errors,flush=True)

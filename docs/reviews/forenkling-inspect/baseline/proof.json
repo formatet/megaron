@@ -1,0 +1,279 @@
+{
+  "health": {
+    "commit": "887b70b2",
+    "migration": 160,
+    "status": "ok"
+  },
+  "mode": "baseline",
+  "host_phase": {
+    "active": true,
+    "current_tick": 0,
+    "grain": {
+      "amount": 1200,
+      "rate_per_tick": 0
+    },
+    "host_unit_id": "b4ed1a49-b2f4-4b02-912d-79b41af06364",
+    "population": 1000,
+    "q": 1,
+    "r": 17,
+    "silver": {
+      "amount": 480,
+      "rate_per_tick": -2,
+      "ticks_left": 240
+    },
+    "spearmen_in_field": 2,
+    "tick_seconds": 6
+  },
+  "host_text": "1,000 people \u00b7 cannot fight \u00b7 sight 2 hexes (4 by water or on mountains)\nGrain (escort's ration): lasts indefinitely\nSilver (escort's pay): 240 tick left (\u2248 0 h real time)\n2 Spearmen cohorts in the field\nMessengers free to send\nFetching founding forecast\u2026",
+  "initial_provinces": [],
+  "neighbour": {
+    "id": "2226bf99-09e5-4c06-b133-a1bae4fdf62c",
+    "settlement_id": "729242ee-5362-4ef2-9e30-577f6fb400df",
+    "name": "Kyme",
+    "culture": "minoan",
+    "q": 5,
+    "r": 19,
+    "state": "active",
+    "walls": 0,
+    "size_tier": 1,
+    "owner": "Sakereus",
+    "own": true,
+    "is_capital": true,
+    "allied": false,
+    "visible": true,
+    "army_total": 201
+  },
+  "revealed_marker": {
+    "id": "2226bf99-09e5-4c06-b133-a1bae4fdf62c",
+    "settlement_id": "729242ee-5362-4ef2-9e30-577f6fb400df",
+    "name": "Kyme",
+    "culture": "minoan",
+    "q": 5,
+    "r": 19,
+    "state": "active",
+    "walls": 0,
+    "size_tier": 1,
+    "owner": "Sakereus",
+    "own": false,
+    "is_capital": false,
+    "allied": false,
+    "visible": true,
+    "army_total": 201
+  },
+  "army": {
+    "Spearman": 200,
+    "WarChariot": 0,
+    "Ship": 1,
+    "EliteInfantry": 0,
+    "WarGalley": 0,
+    "Merchantman": 0,
+    "upkeep_per_period": {
+      "grain": 1.04,
+      "silver": 3.5
+    },
+    "upkeep_per_type": {
+      "galley": {
+        "grain": 0.04,
+        "silver": 1.5
+      },
+      "spearman": {
+        "grain": 1,
+        "silver": 2
+      }
+    }
+  },
+  "walk": [
+    {
+      "target": {
+        "q": 1,
+        "r": 19,
+        "terrain": "scrub_maquis",
+        "visible": true,
+        "tier": "live",
+        "fertility": 0.7374330354200718,
+        "mineral": 0.7950438634174533
+      },
+      "preview": {
+        "arrival_tick": 5,
+        "arrives_at_utc": "2026-10-08T01:11:37.454347411Z",
+        "available": true,
+        "duration_ticks": 5,
+        "expedition": null
+      },
+      "receipt": {
+        "arrival_tick": 5,
+        "arrives_at": "2026-10-08T03:11:37.461612165+02:00",
+        "arrives_at_utc": "2026-10-08T01:11:37.461612165Z",
+        "departs_at": "2026-10-08T03:11:07.461612165+02:00",
+        "duration_ticks": 5,
+        "expedition": null,
+        "origin_q": 1,
+        "origin_r": 17,
+        "target_q": 1,
+        "target_r": 19,
+        "unit_id": "b4ed1a49-b2f4-4b02-912d-79b41af06364"
+      }
+    },
+    {
+      "target": {
+        "q": 3,
+        "r": 19,
+        "terrain": "plains",
+        "visible": true,
+        "tier": "live",
+        "fertility": 0.28486806937851644,
+        "mineral": 0.3837221459621587
+      },
+      "preview": {
+        "arrival_tick": 10,
+        "arrives_at_utc": "2026-10-08T01:12:10.856429492Z",
+        "available": true,
+        "duration_ticks": 4,
+        "expedition": null
+      },
+      "receipt": {
+        "arrival_tick": 10,
+        "arrives_at": "2026-10-08T03:12:10.861077688+02:00",
+        "arrives_at_utc": "2026-10-08T01:12:10.861077688Z",
+        "departs_at": "2026-10-08T03:11:46.861077688+02:00",
+        "duration_ticks": 4,
+        "expedition": null,
+        "origin_q": 1,
+        "origin_r": 19,
+        "target_q": 3,
+        "target_r": 19,
+        "unit_id": "b4ed1a49-b2f4-4b02-912d-79b41af06364"
+      }
+    }
+  ],
+  "message_status": 201,
+  "march_dest": {
+    "q": 5,
+    "r": 19,
+    "terrain": "plains",
+    "isSea": false,
+    "known": true,
+    "name": "Kyme",
+    "isSettlement": true,
+    "allied": false
+  },
+  "fog": {
+    "q": 0,
+    "r": 14,
+    "terrain": "fog",
+    "visible": false,
+    "tier": "fog"
+  },
+  "browser_errors": [],
+  "sql_mutations": false,
+  "readonly_actor_landmass": {
+    "own": "0",
+    "actors": [
+      {
+        "host": {
+          "id": "fb5b5c19-2dee-41bc-9b59-d587b01cb80a",
+          "type": "nomadic_host",
+          "category": "land",
+          "size": 1,
+          "status": "positioned",
+          "deployable": true,
+          "display_name": "Nomadic Host of Nedawatas",
+          "q": 28,
+          "r": 16,
+          "in_battle": false
+        },
+        "landmass": "8"
+      },
+      {
+        "host": {
+          "id": "78901070-420b-4fb9-abbd-4eb1e91f79bd",
+          "type": "nomadic_host",
+          "category": "land",
+          "size": 1,
+          "status": "positioned",
+          "deployable": true,
+          "display_name": "Nomadic Host of Aukewas",
+          "q": 0,
+          "r": 37,
+          "in_battle": false
+        },
+        "landmass": "1"
+      },
+      {
+        "host": {
+          "id": "5e20dafd-6d8d-4a78-8a49-116a79019cda",
+          "type": "nomadic_host",
+          "category": "land",
+          "size": 1,
+          "status": "positioned",
+          "deployable": true,
+          "display_name": "Nomadic Host of Amnisia",
+          "q": 14,
+          "r": 23,
+          "in_battle": false
+        },
+        "landmass": "4"
+      },
+      {
+        "host": {
+          "id": "c6e25be8-1967-46b4-b16e-b3e2c699a9f8",
+          "type": "nomadic_host",
+          "category": "land",
+          "size": 1,
+          "status": "positioned",
+          "deployable": true,
+          "display_name": "Nomadic Host of Mikharios",
+          "q": 27,
+          "r": 27,
+          "in_battle": false
+        },
+        "landmass": "9"
+      },
+      {
+        "host": {
+          "id": "6b56caf0-1113-47dc-b20e-138444521b86",
+          "type": "nomadic_host",
+          "category": "land",
+          "size": 1,
+          "status": "positioned",
+          "deployable": true,
+          "display_name": "Nomadic Host of Erita",
+          "q": 15,
+          "r": 36,
+          "in_battle": false
+        },
+        "landmass": "5"
+      },
+      {
+        "host": {
+          "id": "3126e844-8721-4e0b-8990-39150ff14d7f",
+          "type": "nomadic_host",
+          "category": "land",
+          "size": 1,
+          "status": "positioned",
+          "deployable": true,
+          "display_name": "Nomadic Host of Aigiwalos",
+          "q": 26,
+          "r": 6,
+          "in_battle": false
+        },
+        "landmass": "8"
+      },
+      {
+        "host": {
+          "id": "5b3a6631-87d0-4664-b7c9-68c8d3934205",
+          "type": "nomadic_host",
+          "category": "land",
+          "size": 1,
+          "status": "positioned",
+          "deployable": true,
+          "display_name": "Nomadic Host of Sakereus",
+          "q": 5,
+          "r": 19,
+          "in_battle": false
+        },
+        "landmass": "0"
+      }
+    ]
+  }
+}
