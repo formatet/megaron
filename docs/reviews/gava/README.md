@@ -49,3 +49,10 @@ Timothys tillägg via Claude: nya gåvohändelser ska bära både sändande och
 mottagande Wanax-id och stad-id så bedrifter kan följas. Ingen relationsliggare
 eller summering byggs. Kanonfrågorna om ägarbyte/kollaps och överskott är ställda
 till Timothy och Claude. Leveransimplementation väntar på de två svaren.
+
+Claude har bekräftat riskregeln: intern egen→egen behåller undantaget från
+storm/pirat-tärningen; gåva till främmande stad slår samma tärning som
+handelskaravaner. Fysisk interception gäller alla. Intern-riskmutationen ska
+alltså aktivera tärningen felaktigt, inte ändra interception. Claude har rättat
+CLAUDE.md och rekommenderar leveransalternativ B; Timothy har ännu inte valt
+leveransutfall. Rekommendationen behandlas inte som beslut.
