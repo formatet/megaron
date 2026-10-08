@@ -1,0 +1,126 @@
+TAP version 13
+# Subtest: N: actual POST preserves multiple outbound goods, return floor zero, decimals and destination crew
+not ok 1 - N: actual POST preserves multiple outbound goods, return floor zero, decimals and destination crew
+  ---
+  duration_ms: 1.091128
+  type: 'test'
+  location: '/tmp/megaron-codex-economy-goods-20261008/web/static/js/megaron/ui/drawers/economy_rows.test.mjs:22:1'
+  failureType: 'testCodeFailure'
+  error: 'row inputs must dispatch'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    file:///tmp/megaron-codex-economy-goods-20261008/web/static/js/megaron/ui/drawers/economy_rows.test.mjs:25:59
+    async rig (file:///tmp/megaron-codex-economy-goods-20261008/web/static/js/megaron/ui/drawers/economy_rows.test.mjs:19:7)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: N: blank optional rows leave an empty return array and source crew intact
+not ok 2 - N: blank optional rows leave an empty return array and source crew intact
+  ---
+  duration_ms: 0.188141
+  type: 'test'
+  location: '/tmp/megaron-codex-economy-goods-20261008/web/static/js/megaron/ui/drawers/economy_rows.test.mjs:30:1'
+  failureType: 'testCodeFailure'
+  error: 'zero is an entered amount'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    file:///tmp/megaron-codex-economy-goods-20261008/web/static/js/megaron/ui/drawers/economy_rows.test.mjs:32:95
+    async rig (file:///tmp/megaron-codex-economy-goods-20261008/web/static/js/megaron/ui/drawers/economy_rows.test.mjs:19:7)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: N: drawer keeps four tabs and crew choices, replaces both CSV inputs with addable goods rows
+not ok 3 - N: drawer keeps four tabs and crew choices, replaces both CSV inputs with addable goods rows
+  ---
+  duration_ms: 18.267754
+  type: 'test'
+  location: '/tmp/megaron-codex-economy-goods-20261008/web/static/js/megaron/ui/drawers/economy_rows.test.mjs:36:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input was expected to not match the regular expression /comma-separated|grain:200|silver:0/. Input:
+    
+    '\n' +
+      '    <div class="dsec">\n' +
+      '      <div class="dsec-title">New standing order</div>\n' +
+      '      <div style="display:flex;flex-direction:column;gap:.35rem;font-size:.78rem">\n' +
+      '        <label>From <select id="ec-so-from" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem"><option value="city-a">Nostos</option><option value="city-b">Kyme</option></select></label>\n' +
+      '        <label>To <select id="ec-so-to" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem"><option value="city-a">Nostos</option><option value="city-b">Kyme</option></select></label>\n' +
+      '        <label>Crewed by (which end supplies the gubbe)\n' +
+      '          <select id="ec-so-crew" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem">\n' +
+      '            <option value="from">From (source)</option>\n' +
+      '            <option value="to">To (destination)</option>\n' +
+      '          </select>\n' +
+      '        </label>\n' +
+      '        <label>Keep at destination — good:threshold, comma-separated\n' +
+      '          <input id="ec-so-out" placeholder="grain:200,fish:50" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem">\n' +
+      '        </label>\n' +
+      '        <label>Bring home — good:floor, comma-separated (optional)\n' +
+      '          <input id="ec-so-home" placeholder="silver:0,stone:20" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem">\n' +
+      '        </label>\n' +
+      '        <button class="btn-primary btn-small" onclick="createStandingOrder()">Create route</button>\n' +
+      '        <div id="ec-so-result" class="action-result"></div>\n' +
+      '      </div>\n' +
+      '    </div>\n' +
+      '    <div class="dsec">\n' +
+      '      <div class="dsec-title">Standing orders</div>\n' +
+      '      <div id="ec-so-list" class="loading" style="padding:.4rem 0">Loading…</div>\n' +
+      '    </div>'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: |-
+    
+        <div class="dsec">
+          <div class="dsec-title">New standing order</div>
+          <div style="display:flex;flex-direction:column;gap:.35rem;font-size:.78rem">
+            <label>From <select id="ec-so-from" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem"><option value="city-a">Nostos</option><option value="city-b">Kyme</option></select></label>
+            <label>To <select id="ec-so-to" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem"><option value="city-a">Nostos</option><option value="city-b">Kyme</option></select></label>
+            <label>Crewed by (which end supplies the gubbe)
+              <select id="ec-so-crew" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem">
+                <option value="from">From (source)</option>
+                <option value="to">To (destination)</option>
+              </select>
+            </label>
+            <label>Keep at destination — good:threshold, comma-separated
+              <input id="ec-so-out" placeholder="grain:200,fish:50" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem">
+            </label>
+            <label>Bring home — good:floor, comma-separated (optional)
+              <input id="ec-so-home" placeholder="silver:0,stone:20" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem">
+            </label>
+            <button class="btn-primary btn-small" onclick="createStandingOrder()">Create route</button>
+            <div id="ec-so-result" class="action-result"></div>
+          </div>
+        </div>
+        <div class="dsec">
+          <div class="dsec-title">Standing orders</div>
+          <div id="ec-so-list" class="loading" style="padding:.4rem 0">Loading…</div>
+        </div>
+  operator: 'doesNotMatch'
+  stack: |-
+    file:///tmp/megaron-codex-economy-goods-20261008/web/static/js/megaron/ui/drawers/economy_rows.test.mjs:43:10
+    async rig (file:///tmp/megaron-codex-economy-goods-20261008/web/static/js/megaron/ui/drawers/economy_rows.test.mjs:19:7)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: N: same-city and missing-outbound rows still cannot dispatch
+ok 4 - N: same-city and missing-outbound rows still cannot dispatch
+  ---
+  duration_ms: 0.41781
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 1
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 62.806327
