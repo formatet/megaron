@@ -1,0 +1,42 @@
+leg 0 {'target_q': 54, 'target_r': 4} {'arrival_tick': 1, 'arrives_at': '2026-10-08T03:53:38.89194488+02:00', 'arrives_at_utc': '2026-10-08T01:53:38.89194488Z', 'carried_silver': 0, 'departs_at': '2026-10-08T03:53:32.89194488+02:00', 'duration_ticks': 1, 'expedition': None, 'origin_q': 55, 'origin_r': 4, 'purse_shortfall': 0, 'target_q': 54, 'target_r': 4, 'unit_id': 'c2785bd9-244c-4e1d-a269-06c2061b8d9a'}
+leg 1 {'target_q': 53, 'target_r': 4} {'courier_arrives_at': '2026-10-08T03:53:57.185694776+02:00', 'courier_due_tick': 3, 'messenger_id': '625c1f81-f2af-4c50-95f8-23360fd1d428', 'status': 'order_dispatched', 'target_q': 53, 'target_r': 4, 'unit_id': 'c2785bd9-244c-4e1d-a269-06c2061b8d9a', 'verb': 'march'}
+leg 2 {'target_q': 52, 'target_r': 5} {'courier_arrives_at': '2026-10-08T03:54:21.462019808+02:00', 'courier_due_tick': 7, 'messenger_id': '24a8b22b-7094-4bde-964c-b06158a0b5bc', 'status': 'order_dispatched', 'target_q': 52, 'target_r': 5, 'unit_id': 'c2785bd9-244c-4e1d-a269-06c2061b8d9a', 'verb': 'march'}
+leg 3 {'target_q': 50, 'target_r': 5, 'intent': 'colonize', 'name': 'Kyme'} {'courier_arrives_at': '2026-10-08T03:54:45.587260535+02:00', 'courier_due_tick': 11, 'messenger_id': '01abf2af-2edd-48a1-b2f1-bea93a308719', 'status': 'order_dispatched', 'target_q': 50, 'target_r': 5, 'unit_id': 'c2785bd9-244c-4e1d-a269-06c2061b8d9a', 'verb': 'march'}
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-economy-goods-20261008/tools/economy_goods_live.py", line 156, in <module>
+    page.locator('#economy-body [data-tab=transfer]').click();page.wait_for_selector('#ec-tr-good option[value=grain]')
+                                                              ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/sync_api/_generated.py", line 8217, in wait_for_selector
+    self._sync(
+    ~~~~~~~~~~^
+        self._impl_obj.wait_for_selector(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            selector=selector, timeout=timeout, state=state, strict=strict
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        )
+        ^
+    )
+    ^
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_sync_base.py", line 115, in _sync
+    return task.result()
+           ~~~~~~~~~~~^^
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_page.py", line 419, in wait_for_selector
+    return await self._main_frame.wait_for_selector(**locals_to_params(locals()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_frame.py", line 369, in wait_for_selector
+    await self._channel.send(
+        "waitForSelector", self._timeout, locals_to_params(locals())
+    )
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_connection.py", line 69, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_connection.py", line 559, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.TimeoutError: Page.wait_for_selector: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("#ec-tr-good option[value=grain]") to be visible
+    63 × locator resolved to hidden <option value="grain">Grain — 845 in stock</option>
+

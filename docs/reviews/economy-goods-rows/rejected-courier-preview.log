@@ -1,0 +1,6 @@
+leg 0 {'target_q': 12, 'target_r': 25} {'arrival_tick': 1, 'arrives_at': '2026-10-08T03:52:49.853520975+02:00', 'arrives_at_utc': '2026-10-08T01:52:49.853520975Z', 'carried_silver': 0, 'departs_at': '2026-10-08T03:52:43.853520975+02:00', 'duration_ticks': 1, 'expedition': None, 'origin_q': 13, 'origin_r': 25, 'purse_shortfall': 0, 'target_q': 12, 'target_r': 25, 'unit_id': '1d326a2e-1c0e-4a66-a7e0-8bd1165facc2'}
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-economy-goods-20261008/tools/economy_goods_live.py", line 126, in <module>
+    assert dispatched,'no reachable ordinary land site'
+           ^^^^^^^^^^
+AssertionError: no reachable ordinary land site

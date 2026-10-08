@@ -1,0 +1,186 @@
+{
+  "health": {
+    "commit": "8b2b8315512146a7558e507719a868bbeb014292",
+    "migration": 160,
+    "status": "ok"
+  },
+  "mode": "after",
+  "city": {
+    "id": "5b77229e-288d-4ecb-a083-470b4039bed4",
+    "settlement_id": "553c2143-0fc8-435d-84d4-79bb9d9d3899",
+    "name": "Nostos",
+    "culture": "minoan",
+    "q": 15,
+    "r": 41,
+    "state": "active",
+    "walls": 0,
+    "size_tier": 1,
+    "owner": "Koturos",
+    "own": true,
+    "is_capital": true,
+    "allied": false,
+    "visible": true,
+    "army_total": 201
+  },
+  "colony": {
+    "id": "d1e1e3c9-f303-4c1b-9556-df99002b017e",
+    "settlement_id": "e37b9e39-1a3c-4d18-9aa0-256cd937ea84",
+    "name": "Kyme",
+    "culture": "minoan",
+    "q": 11,
+    "r": 40,
+    "state": "active",
+    "walls": 0,
+    "size_tier": 1,
+    "owner": "Koturos",
+    "own": true,
+    "is_capital": false,
+    "allied": false,
+    "visible": true
+  },
+  "journeys": [
+    {
+      "body": {
+        "target_q": 15,
+        "target_r": 40
+      },
+      "receipt": {
+        "arrival_tick": 1,
+        "arrives_at": "2026-10-08T03:59:05.632727545+02:00",
+        "arrives_at_utc": "2026-10-08T01:59:05.632727545Z",
+        "carried_silver": 0,
+        "departs_at": "2026-10-08T03:58:59.632727545+02:00",
+        "duration_ticks": 1,
+        "expedition": null,
+        "origin_q": 15,
+        "origin_r": 41,
+        "purse_shortfall": 0,
+        "target_q": 15,
+        "target_r": 40,
+        "unit_id": "f9442a95-4b14-460d-9523-3245240bfa82"
+      }
+    },
+    {
+      "body": {
+        "target_q": 14,
+        "target_r": 40
+      },
+      "receipt": {
+        "courier_arrives_at": "2026-10-08T03:59:23.946357405+02:00",
+        "courier_due_tick": 3,
+        "messenger_id": "a47a933a-b1c2-47c7-a694-da2b0d9ef1a6",
+        "status": "order_dispatched",
+        "target_q": 14,
+        "target_r": 40,
+        "unit_id": "f9442a95-4b14-460d-9523-3245240bfa82",
+        "verb": "march"
+      }
+    },
+    {
+      "body": {
+        "target_q": 13,
+        "target_r": 40
+      },
+      "receipt": {
+        "courier_arrives_at": "2026-10-08T03:59:48.262304052+02:00",
+        "courier_due_tick": 7,
+        "messenger_id": "ef6f920e-79e5-46e3-9635-3f4402101668",
+        "status": "order_dispatched",
+        "target_q": 13,
+        "target_r": 40,
+        "unit_id": "f9442a95-4b14-460d-9523-3245240bfa82",
+        "verb": "march"
+      }
+    },
+    {
+      "body": {
+        "target_q": 12,
+        "target_r": 40
+      },
+      "receipt": {
+        "courier_arrives_at": "2026-10-08T04:00:17.49402038+02:00",
+        "courier_due_tick": 12,
+        "messenger_id": "f508e81d-6019-48a1-bc93-93cae0bcee92",
+        "status": "order_dispatched",
+        "target_q": 12,
+        "target_r": 40,
+        "unit_id": "f9442a95-4b14-460d-9523-3245240bfa82",
+        "verb": "march"
+      }
+    },
+    {
+      "body": {
+        "target_q": 11,
+        "target_r": 40,
+        "intent": "colonize",
+        "name": "Kyme"
+      },
+      "receipt": {
+        "courier_arrives_at": "2026-10-08T04:00:59.852122976+02:00",
+        "courier_due_tick": 19,
+        "messenger_id": "481ed418-b661-40a0-bfd5-5558f00f303e",
+        "status": "order_dispatched",
+        "target_q": 11,
+        "target_r": 40,
+        "unit_id": "f9442a95-4b14-460d-9523-3245240bfa82",
+        "verb": "march"
+      }
+    }
+  ],
+  "posts": [
+    {
+      "url": "/standing-orders",
+      "body": {
+        "from_settlement_id": "553c2143-0fc8-435d-84d4-79bb9d9d3899",
+        "to_settlement_id": "e37b9e39-1a3c-4d18-9aa0-256cd937ea84",
+        "crewed_by_settlement_id": "e37b9e39-1a3c-4d18-9aa0-256cd937ea84",
+        "outbound": [
+          {
+            "good_key": "grain",
+            "threshold": 200
+          },
+          {
+            "good_key": "fish",
+            "threshold": 50
+          }
+        ],
+        "return": [
+          {
+            "good_key": "silver",
+            "floor": 0
+          },
+          {
+            "good_key": "stone",
+            "floor": 20
+          }
+        ]
+      }
+    },
+    {
+      "url": "/provinces/5b77229e-288d-4ecb-a083-470b4039bed4/trade",
+      "body": {
+        "destination_id": "e37b9e39-1a3c-4d18-9aa0-256cd937ea84",
+        "good_key": "grain",
+        "quantity": 1
+      }
+    }
+  ],
+  "standing_receipt": {
+    "id": "5699ef9e-fca9-467c-99ad-a60b1ca4b8f8",
+    "status": "active"
+  },
+  "transfer_receipt": {
+    "arrival_tick": 32,
+    "arrives_at": "2026-10-08T04:02:20.647022992+02:00",
+    "category": "land",
+    "delivered_qty": 1,
+    "departure_tick": 22,
+    "distance": 5,
+    "route_id": "dec52d3c-d637-435d-a3c8-1cc8bef48713",
+    "transport_id": "c0e5bf5b-6aff-4697-bdc6-64f4e0c33000",
+    "travel_min": 600,
+    "travel_ticks": 10
+  },
+  "browser_errors": [],
+  "sql_mutations": false
+}

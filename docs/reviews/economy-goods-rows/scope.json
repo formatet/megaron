@@ -1,0 +1,16 @@
+{
+  "base": "ba9e6faf",
+  "head": "d09b2cfbc8afebcc971e2cdd27f5e999188e9172",
+  "protected": {
+    "server": "identical",
+    "web/static/js/megaron/api.js": "identical",
+    "web/static/megaron.css": "identical",
+    "web/static/js/megaron/ui/drawers/diplomacy.js": "identical",
+    "web/static/js/megaron/ui/drawers/gossip.js": "identical"
+  },
+  "crewed_by_markup": "byte-identical",
+  "standing_request_block": "byte-identical",
+  "transfer_request_block": "byte-identical",
+  "route_actions": "byte-identical",
+  "route_render": "byte-identical"
+}

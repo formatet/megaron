@@ -1,0 +1,61 @@
+{
+  "active_rigs": [],
+  "own_containers": [],
+  "removed": [
+    {
+      "path": "/tmp/megaron-goods-baseline",
+      "regular_bytes": 65429456,
+      "binaries": [
+        {
+          "path": "/tmp/megaron-goods-baseline/temenos",
+          "bytes": 30724446,
+          "sha256": "dd30f2cdc57ee7c3397e3f085a6f91189429e94757cafa76dd48442e94bfbfe1"
+        }
+      ]
+    },
+    {
+      "path": "/tmp/megaron-goods-baseline-clean",
+      "regular_bytes": 29101,
+      "binaries": []
+    },
+    {
+      "path": "/tmp/megaron-goods-baseline-final",
+      "regular_bytes": 240916,
+      "binaries": []
+    },
+    {
+      "path": "/tmp/megaron-goods-baseline-accepted",
+      "regular_bytes": 0,
+      "binaries": []
+    },
+    {
+      "path": "/home/tk/.cache/megaron-goods-rigs",
+      "regular_bytes": 94667735,
+      "binaries": [
+        {
+          "path": "/home/tk/.cache/megaron-goods-rigs/readable/temenos",
+          "bytes": 30724446,
+          "sha256": "a830ce8743166f31fc93ff208f5f31121149061407b0875cb73fd87500f55e84"
+        },
+        {
+          "path": "/home/tk/.cache/megaron-goods-rigs/final/temenos",
+          "bytes": 30724446,
+          "sha256": "eceeed2be120093ba3b86d45c88b57ea0d243f96b32a53223501fff57b7814ba"
+        },
+        {
+          "path": "/home/tk/.cache/megaron-goods-rigs/after/temenos",
+          "bytes": 30724446,
+          "sha256": "6c3301dea06a2bb3237dfecc91ec3cf1bb8bda3036894e3b9fa85b1ddf548b46"
+        }
+      ]
+    },
+    {
+      "path": "/home/tk/.cache/megaron-goods-go-wrapper",
+      "regular_bytes": 85
+    },
+    {
+      "path": "/home/tk/.cache/megaron-goods-go-tmp",
+      "regular_bytes": 0
+    }
+  ]
+}

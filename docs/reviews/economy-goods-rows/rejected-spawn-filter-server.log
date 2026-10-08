@@ -1,0 +1,98 @@
+{"time":"2026-10-08T04:01:29.864029844+02:00","level":"INFO","msg":"migrations applied"}
+{"time":"2026-10-08T04:01:29.874788312+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"fb2f6e01-8672-4f28-a4b7-30b8513cbd92","seed":1791424889866159349,"width":56,"height":40,"err":"invalid map: productive tin = 1 (want >= 2)"}
+{"time":"2026-10-08T04:01:29.882471788+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"fb2f6e01-8672-4f28-a4b7-30b8513cbd92","seed":1791424889866159350,"width":56,"height":40,"err":"invalid map: forest fraction = 0.306 (want 0.22..0.30)"}
+{"time":"2026-10-08T04:01:29.891775856+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"fb2f6e01-8672-4f28-a4b7-30b8513cbd92","seed":1791424889866159351,"width":56,"height":40,"err":"invalid map: productive copper = 1 (want >= 2); largest landmass = 16.4% of map area (want <= 15%)"}
+{"time":"2026-10-08T04:01:30.582658476+02:00","level":"INFO","msg":"world created","name":"Expedition proof","id":"fb2f6e01-8672-4f28-a4b7-30b8513cbd92","seed":1791424889866159352}
+{"time":"2026-10-08T04:01:30.582708826+02:00","level":"INFO","msg":"world ready","id":"fb2f6e01-8672-4f28-a4b7-30b8513cbd92"}
+{"time":"2026-10-08T04:01:30.583187333+02:00","level":"INFO","msg":"chronicle opened","world":"Expedition proof","dir":"/home/tk/.cache/megaron-goods-rigs/baseline-v3/chronicles"}
+{"time":"2026-10-08T04:01:30.585368666+02:00","level":"INFO","msg":"scheduled event worker started","poll":6000000000}
+{"time":"2026-10-08T04:01:30.585421678+02:00","level":"INFO","msg":"tick worker started","tick_seconds":6}
+{"time":"2026-10-08T04:01:30.585859921+02:00","level":"INFO","msg":"build","commit":"ba9e6faf027803c46aac8891900e79e39e3f76ab"}
+{"time":"2026-10-08T04:01:30.586026949+02:00","level":"INFO","msg":"keryx server starting","addr":":57109"}
+{"time":"2026-10-08T04:01:30.592191709+02:00","level":"INFO","msg":"daily ticks seeded","worlds":1}
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000001] "GET http://127.0.0.1:57109/healthz HTTP/1.1" from 127.0.0.1:36780 - 200 84B in 895.999µs
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000002] "GET http://127.0.0.1:57109/api/v1/worlds HTTP/1.1" from 127.0.0.1:36794 - 200 168B in 596.344µs
+{"time":"2026-10-08T04:01:31.080244296+02:00","level":"INFO","msg":"player registered","id":"62f0325b-0d62-4cc1-ad8b-e6a14403fcad","username":"goods-proof5a5edbe1"}
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000003] "POST http://127.0.0.1:57109/api/v1/auth/register HTTP/1.1" from 127.0.0.1:36806 - 201 395B in 45.720707ms
+{"time":"2026-10-08T04:01:31.095522632+02:00","level":"INFO","msg":"world started","world":"fb2f6e01-8672-4f28-a4b7-30b8513cbd92","wanaxes":1}
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000004] "POST http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/join HTTP/1.1" from 127.0.0.1:36810 - 201 303B in 14.237797ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000005] "GET http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/map HTTP/1.1" from 127.0.0.1:36814 - 200 137389B in 11.531489ms
+{"time":"2026-10-08T04:01:31.15450388+02:00","level":"INFO","msg":"player registered","id":"4b6ff08e-e94a-4f55-aaf2-6ced5be9f824","username":"goods-proof6f4f218c"}
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000006] "POST http://127.0.0.1:57109/api/v1/auth/register HTTP/1.1" from 127.0.0.1:36822 - 201 395B in 45.424131ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000007] "POST http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/join HTTP/1.1" from 127.0.0.1:36832 - 201 304B in 8.840814ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000008] "GET http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/map HTTP/1.1" from 127.0.0.1:36846 - 200 138532B in 7.268612ms
+{"time":"2026-10-08T04:01:31.219780611+02:00","level":"INFO","msg":"player registered","id":"adeb44ca-95a5-4219-8011-38d3633c47c7","username":"goods-proof3288660f"}
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000009] "POST http://127.0.0.1:57109/api/v1/auth/register HTTP/1.1" from 127.0.0.1:36862 - 201 395B in 44.494112ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000010] "POST http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/join HTTP/1.1" from 127.0.0.1:36870 - 201 304B in 8.084274ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000011] "GET http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/map HTTP/1.1" from 127.0.0.1:36882 - 200 137565B in 6.116254ms
+{"time":"2026-10-08T04:01:31.283534386+02:00","level":"INFO","msg":"player registered","id":"e10e6ad9-bd7a-416a-8a57-12ec0f11a8d4","username":"goods-proof4b43c208"}
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000012] "POST http://127.0.0.1:57109/api/v1/auth/register HTTP/1.1" from 127.0.0.1:36890 - 201 395B in 47.110867ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000013] "POST http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/join HTTP/1.1" from 127.0.0.1:36898 - 201 304B in 8.226005ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000014] "GET http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/map HTTP/1.1" from 127.0.0.1:36902 - 200 138579B in 6.31567ms
+{"time":"2026-10-08T04:01:31.34581641+02:00","level":"INFO","msg":"player registered","id":"038e1ec2-2f0f-4b92-910c-c6b6d946e252","username":"goods-prooffd3dec73"}
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000015] "POST http://127.0.0.1:57109/api/v1/auth/register HTTP/1.1" from 127.0.0.1:36912 - 201 395B in 45.179451ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000016] "POST http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/join HTTP/1.1" from 127.0.0.1:36924 - 201 304B in 7.596645ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000017] "GET http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/map HTTP/1.1" from 127.0.0.1:36936 - 200 138468B in 6.792134ms
+{"time":"2026-10-08T04:01:31.408196696+02:00","level":"INFO","msg":"player registered","id":"f19cd7f9-6f01-410b-8e90-a6a5aee7eb6d","username":"goods-proofbd2ac7b2"}
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000018] "POST http://127.0.0.1:57109/api/v1/auth/register HTTP/1.1" from 127.0.0.1:36952 - 201 395B in 45.116998ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000019] "POST http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/join HTTP/1.1" from 127.0.0.1:36954 - 201 303B in 7.73807ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000020] "GET http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/map HTTP/1.1" from 127.0.0.1:36960 - 200 138775B in 10.90033ms
+{"time":"2026-10-08T04:01:31.47411935+02:00","level":"INFO","msg":"player registered","id":"d33f5ee2-9c17-40b5-99e0-ee026f66d71d","username":"goods-proof3ebf0e9e"}
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000021] "POST http://127.0.0.1:57109/api/v1/auth/register HTTP/1.1" from 127.0.0.1:36972 - 201 395B in 44.720899ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000022] "POST http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/join HTTP/1.1" from 127.0.0.1:36984 - 201 304B in 6.707538ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000023] "GET http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/map HTTP/1.1" from 127.0.0.1:36996 - 200 138410B in 9.000659ms
+{"time":"2026-10-08T04:01:31.537344239+02:00","level":"INFO","msg":"player registered","id":"0d0f218f-720d-4653-b03c-6f967e04c264","username":"goods-proof60ee8063"}
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000024] "POST http://127.0.0.1:57109/api/v1/auth/register HTTP/1.1" from 127.0.0.1:37010 - 201 395B in 44.661305ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000025] "POST http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/join HTTP/1.1" from 127.0.0.1:37022 - 201 304B in 6.433099ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000026] "GET http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/map HTTP/1.1" from 127.0.0.1:37026 - 200 139064B in 9.230324ms
+{"time":"2026-10-08T04:01:31.601942609+02:00","level":"INFO","msg":"player registered","id":"e526d808-e91f-4ebd-be10-cdd66e512099","username":"goods-proof0c1a6328"}
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000027] "POST http://127.0.0.1:57109/api/v1/auth/register HTTP/1.1" from 127.0.0.1:37040 - 201 395B in 44.863295ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000028] "POST http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/join HTTP/1.1" from 127.0.0.1:37042 - 201 303B in 7.210664ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000029] "GET http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/map HTTP/1.1" from 127.0.0.1:37056 - 200 138159B in 9.347696ms
+{"time":"2026-10-08T04:01:31.66618277+02:00","level":"INFO","msg":"player registered","id":"0b742745-5f04-4769-b02f-acf06e8d34d6","username":"goods-proof2630b5bf"}
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000030] "POST http://127.0.0.1:57109/api/v1/auth/register HTTP/1.1" from 127.0.0.1:37066 - 201 395B in 44.761904ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000031] "POST http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/join HTTP/1.1" from 127.0.0.1:37080 - 201 304B in 6.257442ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000032] "GET http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/map HTTP/1.1" from 127.0.0.1:37092 - 200 137817B in 8.271359ms
+{"time":"2026-10-08T04:01:31.727849809+02:00","level":"INFO","msg":"player registered","id":"8c4e0edb-62a1-4c21-a120-5d0ed56de806","username":"goods-proof5d638199"}
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000033] "POST http://127.0.0.1:57109/api/v1/auth/register HTTP/1.1" from 127.0.0.1:37102 - 201 395B in 44.659297ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000034] "POST http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/join HTTP/1.1" from 127.0.0.1:37114 - 201 304B in 6.046956ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000035] "GET http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/map HTTP/1.1" from 127.0.0.1:37118 - 200 137621B in 8.460545ms
+{"time":"2026-10-08T04:01:31.789816713+02:00","level":"INFO","msg":"player registered","id":"61e09700-a769-4c65-b9ec-4606c6912cb2","username":"goods-proof181a3e0c"}
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000036] "POST http://127.0.0.1:57109/api/v1/auth/register HTTP/1.1" from 127.0.0.1:37120 - 201 395B in 45.496343ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000037] "POST http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/join HTTP/1.1" from 127.0.0.1:37128 - 201 303B in 5.868004ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000038] "GET http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/map HTTP/1.1" from 127.0.0.1:37140 - 200 138400B in 9.38642ms
+{"time":"2026-10-08T04:01:31.852594723+02:00","level":"INFO","msg":"player registered","id":"527fa655-7bcc-4665-a8a0-f499a16c5044","username":"goods-proof176ed749"}
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000039] "POST http://127.0.0.1:57109/api/v1/auth/register HTTP/1.1" from 127.0.0.1:37144 - 201 395B in 44.985963ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000040] "POST http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/join HTTP/1.1" from 127.0.0.1:37154 - 201 304B in 6.639478ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000041] "GET http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/map HTTP/1.1" from 127.0.0.1:37162 - 200 139127B in 10.266161ms
+{"time":"2026-10-08T04:01:31.916900668+02:00","level":"INFO","msg":"player registered","id":"034fbb39-5823-4675-aa5a-414320f3efa0","username":"goods-proof63bd8313"}
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000042] "POST http://127.0.0.1:57109/api/v1/auth/register HTTP/1.1" from 127.0.0.1:37168 - 201 395B in 44.457996ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000043] "POST http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/join HTTP/1.1" from 127.0.0.1:37182 - 201 304B in 6.114008ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000044] "GET http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/map HTTP/1.1" from 127.0.0.1:37184 - 200 138172B in 9.484ms
+{"time":"2026-10-08T04:01:31.980777945+02:00","level":"INFO","msg":"player registered","id":"842f740f-3c91-452e-aa9e-818f50588f5b","username":"goods-proofb857e892"}
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000045] "POST http://127.0.0.1:57109/api/v1/auth/register HTTP/1.1" from 127.0.0.1:37192 - 201 395B in 45.733189ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000046] "POST http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/join HTTP/1.1" from 127.0.0.1:37196 - 201 304B in 6.568483ms
+2026/10/08 04:01:31 [tki9/9BlosOCd3Y-000047] "GET http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/map HTTP/1.1" from 127.0.0.1:37200 - 200 138888B in 9.198627ms
+{"time":"2026-10-08T04:01:32.04363801+02:00","level":"INFO","msg":"player registered","id":"0e9873bb-653f-452d-84de-8ccce11181f8","username":"goods-proof4dca78cf"}
+2026/10/08 04:01:32 [tki9/9BlosOCd3Y-000048] "POST http://127.0.0.1:57109/api/v1/auth/register HTTP/1.1" from 127.0.0.1:37206 - 201 395B in 44.535453ms
+2026/10/08 04:01:32 [tki9/9BlosOCd3Y-000049] "POST http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/join HTTP/1.1" from 127.0.0.1:37210 - 201 304B in 6.220724ms
+2026/10/08 04:01:32 [tki9/9BlosOCd3Y-000050] "GET http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/map HTTP/1.1" from 127.0.0.1:37226 - 200 139255B in 9.743437ms
+{"time":"2026-10-08T04:01:32.1089618+02:00","level":"INFO","msg":"player registered","id":"fa9b627e-ccc1-484b-b1b5-4caf842b1268","username":"goods-proof2303b950"}
+2026/10/08 04:01:32 [tki9/9BlosOCd3Y-000051] "POST http://127.0.0.1:57109/api/v1/auth/register HTTP/1.1" from 127.0.0.1:37230 - 201 395B in 45.342832ms
+2026/10/08 04:01:32 [tki9/9BlosOCd3Y-000052] "POST http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/join HTTP/1.1" from 127.0.0.1:37238 - 201 304B in 6.707641ms
+2026/10/08 04:01:32 [tki9/9BlosOCd3Y-000053] "GET http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/map HTTP/1.1" from 127.0.0.1:37244 - 200 138319B in 9.727739ms
+{"time":"2026-10-08T04:01:32.175227038+02:00","level":"INFO","msg":"player registered","id":"6fe4f221-91ed-4912-b1d6-125a70c1fd39","username":"goods-proofdebd48cd"}
+2026/10/08 04:01:32 [tki9/9BlosOCd3Y-000054] "POST http://127.0.0.1:57109/api/v1/auth/register HTTP/1.1" from 127.0.0.1:37256 - 201 395B in 45.75327ms
+2026/10/08 04:01:32 [tki9/9BlosOCd3Y-000055] "POST http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/join HTTP/1.1" from 127.0.0.1:37260 - 201 304B in 6.368327ms
+2026/10/08 04:01:32 [tki9/9BlosOCd3Y-000056] "GET http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/map HTTP/1.1" from 127.0.0.1:37268 - 200 138751B in 9.519135ms
+{"time":"2026-10-08T04:01:32.238678336+02:00","level":"INFO","msg":"player registered","id":"0e34d885-b980-40a2-8545-ab19ab39605e","username":"goods-proofd8a44f91"}
+2026/10/08 04:01:32 [tki9/9BlosOCd3Y-000057] "POST http://127.0.0.1:57109/api/v1/auth/register HTTP/1.1" from 127.0.0.1:37278 - 201 395B in 44.943391ms
+2026/10/08 04:01:32 [tki9/9BlosOCd3Y-000058] "POST http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/join HTTP/1.1" from 127.0.0.1:37290 - 201 304B in 6.275853ms
+2026/10/08 04:01:32 [tki9/9BlosOCd3Y-000059] "GET http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/map HTTP/1.1" from 127.0.0.1:37292 - 200 139012B in 9.541692ms
+{"time":"2026-10-08T04:01:32.302153804+02:00","level":"INFO","msg":"player registered","id":"74e77944-dda7-409d-b4cc-7065e2976df6","username":"goods-proof18385009"}
+2026/10/08 04:01:32 [tki9/9BlosOCd3Y-000060] "POST http://127.0.0.1:57109/api/v1/auth/register HTTP/1.1" from 127.0.0.1:37306 - 201 395B in 45.039225ms
+2026/10/08 04:01:32 [tki9/9BlosOCd3Y-000061] "POST http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/join HTTP/1.1" from 127.0.0.1:37316 - 201 304B in 6.150608ms
+2026/10/08 04:01:32 [tki9/9BlosOCd3Y-000062] "GET http://127.0.0.1:57109/api/v1/worlds/fb2f6e01-8672-4f28-a4b7-30b8513cbd92/map HTTP/1.1" from 127.0.0.1:37328 - 200 138935B in 9.146476ms
+{"time":"2026-10-08T04:01:32.320375605+02:00","level":"INFO","msg":"tick worker stopped"}
+{"time":"2026-10-08T04:01:32.320380916+02:00","level":"INFO","msg":"scheduled event worker stopped"}
+{"time":"2026-10-08T04:01:32.320379824+02:00","level":"INFO","msg":"shutting down"}

@@ -1,0 +1,13 @@
+leg 0 {'target_q': 51, 'target_r': 14} {'arrival_tick': 2, 'arrives_at': '2026-10-08T04:04:26.518466504+02:00', 'arrives_at_utc': '2026-10-08T02:04:26.518466504Z', 'carried_silver': 0, 'departs_at': '2026-10-08T04:04:14.518466504+02:00', 'duration_ticks': 2, 'expedition': None, 'origin_q': 51, 'origin_r': 13, 'purse_shortfall': 0, 'target_q': 51, 'target_r': 14, 'unit_id': 'd8fe7b13-e215-4690-a411-249e75522d4c'}
+leg 1 {'target_q': 51, 'target_r': 15} {'courier_arrives_at': '2026-10-08T04:04:44.866825936+02:00', 'courier_due_tick': 4, 'messenger_id': '1574e63c-6537-43c7-9089-cecfb51132ab', 'status': 'order_dispatched', 'target_q': 51, 'target_r': 15, 'unit_id': 'd8fe7b13-e215-4690-a411-249e75522d4c', 'verb': 'march'}
+leg 2 {'target_q': 50, 'target_r': 16} {'courier_arrives_at': '2026-10-08T04:05:08.103748183+02:00', 'courier_due_tick': 8, 'messenger_id': 'bc95e245-17a4-4414-bf37-b99bfcd53027', 'status': 'order_dispatched', 'target_q': 50, 'target_r': 16, 'unit_id': 'd8fe7b13-e215-4690-a411-249e75522d4c', 'verb': 'march'}
+leg 3 {'target_q': 50, 'target_r': 17} {'courier_arrives_at': '2026-10-08T04:05:38.308651603+02:00', 'courier_due_tick': 13, 'messenger_id': '4dde1e39-7918-4172-a1bc-964f61317ebc', 'status': 'order_dispatched', 'target_q': 50, 'target_r': 17, 'unit_id': 'd8fe7b13-e215-4690-a411-249e75522d4c', 'verb': 'march'}
+leg 4 {'target_q': 50, 'target_r': 18, 'intent': 'colonize', 'name': 'Kyme'} {'courier_arrives_at': '2026-10-08T04:06:08.568232167+02:00', 'courier_due_tick': 18, 'messenger_id': '0a41c5b3-10e7-4680-970d-de67e5471827', 'status': 'order_dispatched', 'target_q': 50, 'target_r': 18, 'unit_id': 'd8fe7b13-e215-4690-a411-249e75522d4c', 'verb': 'march'}
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-economy-goods-20261008/tools/economy_goods_live.py", line 186, in <module>
+    pictures('automation')
+    ~~~~~~~~^^^^^^^^^^^^^^
+  File "/tmp/megaron-codex-economy-goods-20261008/tools/economy_goods_live.py", line 185, in pictures
+    assert page.locator('#economy-body').evaluate('(e)=>e.scrollWidth<=e.clientWidth'),'horizontal overflow'
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: horizontal overflow

@@ -325,3 +325,30 @@ Desktop1280/390 BILD; inga SQL-skrivningar eller injicerad klientkunskap.
 återställer alltid. `tools/diplomacy_scope.py` verifierar oförändrade befintliga
 handels-/svarskonsumenter och server/Inspect/Gossip/CSS. Bevis/avgränsningar:
 `docs/reviews/forenkling-diplomacy/README.md`.
+
+## N — Economy varurader
+
+`python3 tools/economy_goods_live.py OUT BUILD_COMMIT baseline|after [WEB_DIR]`
+kräver OUT/temenos byggd i ren miljö med angiven `main.buildCommit`. Varje arm
+startar egen ny PG16/Redis, migrerar och verifierar `/healthz` (commit/160/ok).
+Registrering, grundning och kolonisering använder vanliga spelar-API:er och
+FOW-känd terräng; inga SQL-skrivningar eller injicerad klientkunskap. Riktig
+webb skapar flervaruorder och vanlig Transfer, sparar POST-body/kvittot och
+BILD desktop/mobil. Efterarmen prövar Add/Remove och fältens läsbara palett.
+Använd arkiverad bas-web för baseline. Egna processer/containrar rivs i finally.
+
+`python3 tools/economy_goods_mutation.py` gör fyra fysiska källmutationer,
+kräver namngivet actual-handler-prov rött och restaurerad svit grön, och
+återställer i finally. Kör före livearmen så dess källor är stabila.
+`python3 tools/economy_goods_scope.py` verifierar oförändrad server/API/CSS,
+Crewed-by, POST-block och befintliga route actions. JS-prov:
+`node --test web/static/js/megaron/ui/drawers/economy_rows.test.mjs`.
+
+Riggbinärer och Go-byggtemporärer kan ligga under egen `/home/tk/.cache/`
+vid /tmp-kvot; bevis ska kopieras till review-katalogen innan egna riggar städas.
+
+`python3 tools/economy_goods_layout.py` är ett separat browser/CSS-konsumentprov,
+inte gameplaybevis: kör den verkliga row-renderern från historiska commits och
+aktuell kod med riktiga `megaron.css`. Det reproducerar blek fälttext (8b2) och
+nowrap-overflow (dcba) och kräver läsbar/innesluten aktuell rad vid båda drawerbredder.
+Ingen källmutation eller injicerad spelkunskap; körs även när en livearm pågår.

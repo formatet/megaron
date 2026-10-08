@@ -1,0 +1,3 @@
+#!/bin/sh
+export GOTMPDIR=/home/tk/.cache/megaron-goods-go-tmp
+exec /usr/bin/go "$@"

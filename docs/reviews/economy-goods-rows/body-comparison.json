@@ -1,0 +1,90 @@
+{
+  "identity_normalization_only": [
+    "source settlement",
+    "destination settlement",
+    "source province path"
+  ],
+  "canonical_posts": [
+    {
+      "url": "/standing-orders",
+      "body": {
+        "from_settlement_id": "SOURCE_SETTLEMENT",
+        "to_settlement_id": "DESTINATION_SETTLEMENT",
+        "crewed_by_settlement_id": "DESTINATION_SETTLEMENT",
+        "outbound": [
+          {
+            "good_key": "grain",
+            "threshold": 200
+          },
+          {
+            "good_key": "fish",
+            "threshold": 50
+          }
+        ],
+        "return": [
+          {
+            "good_key": "silver",
+            "floor": 0
+          },
+          {
+            "good_key": "stone",
+            "floor": 20
+          }
+        ]
+      }
+    },
+    {
+      "url": "/provinces/SOURCE_PROVINCE/trade",
+      "body": {
+        "destination_id": "DESTINATION_SETTLEMENT",
+        "good_key": "grain",
+        "quantity": 1
+      }
+    }
+  ],
+  "all_three_equal": true,
+  "actual_http_statuses": {
+    "baseline": {
+      "standing_order": [
+        "201"
+      ],
+      "transfer": [
+        "201"
+      ],
+      "health": {
+        "commit": "ba9e6faf027803c46aac8891900e79e39e3f76ab",
+        "migration": 160,
+        "status": "ok"
+      },
+      "marches": 5
+    },
+    "after": {
+      "standing_order": [
+        "201"
+      ],
+      "transfer": [
+        "201"
+      ],
+      "health": {
+        "commit": "d09b2cfbc8afebcc971e2cdd27f5e999188e9172",
+        "migration": 160,
+        "status": "ok"
+      },
+      "marches": 5
+    },
+    "repeat": {
+      "standing_order": [
+        "201"
+      ],
+      "transfer": [
+        "201"
+      ],
+      "health": {
+        "commit": "d09b2cfbc8afebcc971e2cdd27f5e999188e9172",
+        "migration": 160,
+        "status": "ok"
+      },
+      "marches": 5
+    }
+  }
+}

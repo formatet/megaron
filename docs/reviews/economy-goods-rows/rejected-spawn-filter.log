@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-economy-goods-20261008/tools/economy_goods_live.py", line 98, in <module>
+    else:raise RuntimeError('no ordinary spawn with enough known land')
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: no ordinary spawn with enough known land

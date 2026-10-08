@@ -1,0 +1,20 @@
+{
+  "production_commit": "d09b2cfbc8afebcc971e2cdd27f5e999188e9172",
+  "binary_sha256": "a830ce8743166f31fc93ff208f5f31121149061407b0875cb73fd87500f55e84",
+  "baseline_binary_sha256": "dd30f2cdc57ee7c3397e3f085a6f91189429e94757cafa76dd48442e94bfbfe1",
+  "economy_js_sha256": "de75348f83bd4e1e317ead4e67229c0882d7d932c7340d6165116bf33c8a132a",
+  "JS": {
+    "baseline_pass": 433,
+    "after_pass": 438,
+    "after_fail": 0
+  },
+  "Go": {
+    "exit": 0,
+    "fresh_PG": 16,
+    "migration": 160,
+    "world_seconds": 93.236,
+    "header": "\u00bb f\u00e4rsk DB p\u00e5 migration 160 \u00b7 commit 68dff89d+\u00e4ndringar",
+    "server_tree_unchanged": true
+  },
+  "vet_exit": 0
+}

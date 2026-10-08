@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-economy-goods-20261008/tools/economy_goods_live.py", line 126, in <module>
+    assert dispatched,'no reachable ordinary land site'
+           ^^^^^^^^^^
+AssertionError: no reachable ordinary land site

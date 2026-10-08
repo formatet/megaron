@@ -1,0 +1,414 @@
+{"time":"2026-10-08T04:04:13.177181941+02:00","level":"INFO","msg":"migrations applied"}
+{"time":"2026-10-08T04:04:13.188073264+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","seed":1791425053179293937,"width":56,"height":40,"err":"invalid map: productive copper = 1 (want >= 2); largest landmass = 16.2% of map area (want <= 15%); river_ford hex (49,35) has 3 river-family neighbours (want exactly 2)"}
+{"time":"2026-10-08T04:04:14.013923072+02:00","level":"INFO","msg":"world created","name":"Expedition proof","id":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","seed":1791425053179293938}
+{"time":"2026-10-08T04:04:14.013957188+02:00","level":"INFO","msg":"world ready","id":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb"}
+{"time":"2026-10-08T04:04:14.014321239+02:00","level":"INFO","msg":"chronicle opened","world":"Expedition proof","dir":"/home/tk/.cache/megaron-goods-rigs/final/chronicles"}
+{"time":"2026-10-08T04:04:14.016498324+02:00","level":"INFO","msg":"scheduled event worker started","poll":6000000000}
+{"time":"2026-10-08T04:04:14.016536511+02:00","level":"INFO","msg":"tick worker started","tick_seconds":6}
+{"time":"2026-10-08T04:04:14.0168234+02:00","level":"INFO","msg":"build","commit":"dcba84cbbe2d0c322da3d2dc5023fd402fa6b76c"}
+{"time":"2026-10-08T04:04:14.016983283+02:00","level":"INFO","msg":"keryx server starting","addr":":54739"}
+{"time":"2026-10-08T04:04:14.023063043+02:00","level":"INFO","msg":"daily ticks seeded","worlds":1}
+2026/10/08 04:04:14 [tki9/aMVfSqAP35-000001] "GET http://127.0.0.1:54739/healthz HTTP/1.1" from 127.0.0.1:47810 - 200 84B in 3.000407ms
+2026/10/08 04:04:14 [tki9/aMVfSqAP35-000002] "GET http://127.0.0.1:54739/api/v1/worlds HTTP/1.1" from 127.0.0.1:47822 - 200 168B in 384.88µs
+{"time":"2026-10-08T04:04:14.385998663+02:00","level":"INFO","msg":"player registered","id":"1802f3c8-eed7-42eb-b727-91a5ead118e0","username":"goods-proof433f5477"}
+2026/10/08 04:04:14 [tki9/aMVfSqAP35-000003] "POST http://127.0.0.1:54739/api/v1/auth/register HTTP/1.1" from 127.0.0.1:47830 - 201 395B in 45.197094ms
+{"time":"2026-10-08T04:04:14.4008642+02:00","level":"INFO","msg":"world started","world":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","wanaxes":1}
+2026/10/08 04:04:14 [tki9/aMVfSqAP35-000004] "POST http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/join HTTP/1.1" from 127.0.0.1:47832 - 201 304B in 13.90544ms
+2026/10/08 04:04:14 [tki9/aMVfSqAP35-000005] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/map HTTP/1.1" from 127.0.0.1:47846 - 200 138798B in 11.655851ms
+2026/10/08 04:04:14 [tki9/aMVfSqAP35-000006] "POST http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/founding/settle HTTP/1.1" from 127.0.0.1:47854 - 201 433B in 74.651043ms
+2026/10/08 04:04:14 [tki9/aMVfSqAP35-000007] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:47868 - 200 1201B in 2.688063ms
+2026/10/08 04:04:14 [tki9/aMVfSqAP35-000008] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:47872 - 200 287B in 4.050706ms
+2026/10/08 04:04:14 [tki9/aMVfSqAP35-000009] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/map HTTP/1.1" from 127.0.0.1:47878 - 200 139876B in 6.969102ms
+2026/10/08 04:04:14 [tki9/aMVfSqAP35-000010] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units/d8fe7b13-e215-4690-a411-249e75522d4c/march-preview?target_q=51&target_r=14 HTTP/1.1" from 127.0.0.1:47888 - 200 123B in 6.785592ms
+2026/10/08 04:04:14 [tki9/aMVfSqAP35-000011] "POST http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units/d8fe7b13-e215-4690-a411-249e75522d4c/march HTTP/1.1" from 127.0.0.1:47896 - 202 352B in 6.091103ms
+2026/10/08 04:04:15 [tki9/aMVfSqAP35-000012] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:47902 - 200 287B in 8.763559ms
+2026/10/08 04:04:15 [tki9/aMVfSqAP35-000013] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:47916 - 200 1425B in 958.063µs
+2026/10/08 04:04:16 [tki9/aMVfSqAP35-000014] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:47924 - 200 287B in 7.296276ms
+2026/10/08 04:04:16 [tki9/aMVfSqAP35-000015] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:47940 - 200 1425B in 1.021793ms
+2026/10/08 04:04:17 [tki9/aMVfSqAP35-000016] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:47952 - 200 287B in 10.032964ms
+2026/10/08 04:04:17 [tki9/aMVfSqAP35-000017] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:47960 - 200 1425B in 1.059265ms
+2026/10/08 04:04:18 [tki9/aMVfSqAP35-000018] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:47970 - 200 287B in 13.704621ms
+2026/10/08 04:04:18 [tki9/aMVfSqAP35-000019] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:47978 - 200 1425B in 968.401µs
+2026/10/08 04:04:19 [tki9/aMVfSqAP35-000020] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:47982 - 200 287B in 13.045951ms
+2026/10/08 04:04:19 [tki9/aMVfSqAP35-000021] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:47998 - 200 1425B in 1.107693ms
+2026/10/08 04:04:20 [tki9/aMVfSqAP35-000022] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:43262 - 200 287B in 13.8553ms
+2026/10/08 04:04:20 [tki9/aMVfSqAP35-000023] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:43278 - 200 1425B in 680.8µs
+2026/10/08 04:04:21 [tki9/aMVfSqAP35-000024] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:43286 - 200 287B in 11.600897ms
+2026/10/08 04:04:21 [tki9/aMVfSqAP35-000025] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:43290 - 200 1425B in 612.946µs
+2026/10/08 04:04:22 [tki9/aMVfSqAP35-000026] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:43296 - 200 287B in 10.601689ms
+2026/10/08 04:04:22 [tki9/aMVfSqAP35-000027] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:43300 - 200 1424B in 605.728µs
+2026/10/08 04:04:23 [tki9/aMVfSqAP35-000028] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:43312 - 200 287B in 11.699308ms
+2026/10/08 04:04:23 [tki9/aMVfSqAP35-000029] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:43326 - 200 1425B in 654.095µs
+2026/10/08 04:04:24 [tki9/aMVfSqAP35-000030] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:43336 - 200 287B in 10.967941ms
+2026/10/08 04:04:24 [tki9/aMVfSqAP35-000031] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:43338 - 200 1425B in 710.859µs
+2026/10/08 04:04:25 [tki9/aMVfSqAP35-000032] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:43344 - 200 287B in 11.358116ms
+2026/10/08 04:04:25 [tki9/aMVfSqAP35-000033] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:43348 - 200 1425B in 778.18µs
+{"time":"2026-10-08T04:04:26.027424266+02:00","level":"INFO","msg":"world tick advanced","world":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","tick":1}
+2026/10/08 04:04:26 [tki9/aMVfSqAP35-000034] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:43350 - 200 287B in 9.01835ms
+2026/10/08 04:04:26 [tki9/aMVfSqAP35-000035] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:43352 - 200 1425B in 2.202199ms
+2026/10/08 04:04:27 [tki9/aMVfSqAP35-000036] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:43358 - 200 287B in 10.721221ms
+2026/10/08 04:04:27 [tki9/aMVfSqAP35-000037] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:43360 - 200 1425B in 1.014214ms
+2026/10/08 04:04:28 [tki9/aMVfSqAP35-000038] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:43362 - 200 287B in 7.737846ms
+2026/10/08 04:04:28 [tki9/aMVfSqAP35-000039] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:43376 - 200 1425B in 1.062488ms
+2026/10/08 04:04:29 [tki9/aMVfSqAP35-000040] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:43380 - 200 287B in 14.030262ms
+2026/10/08 04:04:29 [tki9/aMVfSqAP35-000041] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:43384 - 200 1425B in 957.541µs
+2026/10/08 04:04:30 [tki9/aMVfSqAP35-000042] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:33382 - 200 287B in 10.433339ms
+2026/10/08 04:04:30 [tki9/aMVfSqAP35-000043] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:33390 - 200 1425B in 1.072268ms
+2026/10/08 04:04:31 [tki9/aMVfSqAP35-000044] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:33400 - 200 287B in 11.04174ms
+2026/10/08 04:04:31 [tki9/aMVfSqAP35-000045] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:33410 - 200 1425B in 1.04377ms
+{"time":"2026-10-08T04:04:32.023917105+02:00","level":"INFO","msg":"world tick advanced","world":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","tick":2}
+2026/10/08 04:04:32 [tki9/aMVfSqAP35-000046] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:33412 - 200 287B in 10.073833ms
+2026/10/08 04:04:32 [tki9/aMVfSqAP35-000047] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:33418 - 200 1425B in 711.405µs
+2026/10/08 04:04:33 [tki9/aMVfSqAP35-000048] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:33426 - 200 287B in 10.680396ms
+2026/10/08 04:04:33 [tki9/aMVfSqAP35-000049] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:33430 - 200 1425B in 660.466µs
+2026/10/08 04:04:34 [tki9/aMVfSqAP35-000050] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:33440 - 200 287B in 11.976925ms
+2026/10/08 04:04:34 [tki9/aMVfSqAP35-000051] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:33442 - 200 1425B in 673.18µs
+2026/10/08 04:04:35 [tki9/aMVfSqAP35-000052] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:33444 - 200 287B in 11.279719ms
+2026/10/08 04:04:35 [tki9/aMVfSqAP35-000053] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:33452 - 200 1425B in 789.398µs
+2026/10/08 04:04:36 [tki9/aMVfSqAP35-000054] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:33460 - 200 287B in 11.838785ms
+2026/10/08 04:04:36 [tki9/aMVfSqAP35-000055] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:33464 - 200 1425B in 776.052µs
+2026/10/08 04:04:37 [tki9/aMVfSqAP35-000056] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:33468 - 200 287B in 11.288626ms
+2026/10/08 04:04:37 [tki9/aMVfSqAP35-000057] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:33474 - 200 1425B in 592.46µs
+{"time":"2026-10-08T04:04:38.019850502+02:00","level":"INFO","msg":"world tick advanced","world":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","tick":3}
+{"time":"2026-10-08T04:04:38.021843317+02:00","level":"INFO","msg":"unit arrived (garrison)","unit":"d8fe7b13-e215-4690-a411-249e75522d4c","q":51,"r":14,"status":"positioned"}
+2026/10/08 04:04:38 [tki9/aMVfSqAP35-000058] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:33476 - 200 287B in 8.620437ms
+2026/10/08 04:04:38 [tki9/aMVfSqAP35-000059] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:33480 - 200 1392B in 1.187431ms
+2026/10/08 04:04:38 [tki9/aMVfSqAP35-000060] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/map HTTP/1.1" from 127.0.0.1:33482 - 200 140334B in 10.470697ms
+2026/10/08 04:04:38 [tki9/aMVfSqAP35-000061] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units/d8fe7b13-e215-4690-a411-249e75522d4c/march-preview?target_q=51&target_r=15 HTTP/1.1" from 127.0.0.1:33494 - 200 48B in 6.327264ms
+2026/10/08 04:04:38 [tki9/aMVfSqAP35-000062] "POST http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units/d8fe7b13-e215-4690-a411-249e75522d4c/march HTTP/1.1" from 127.0.0.1:33510 - 202 256B in 9.521094ms
+2026/10/08 04:04:39 [tki9/aMVfSqAP35-000063] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:33512 - 200 287B in 12.050283ms
+2026/10/08 04:04:39 [tki9/aMVfSqAP35-000064] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:33518 - 200 1392B in 1.109684ms
+2026/10/08 04:04:40 [tki9/aMVfSqAP35-000065] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:48842 - 200 287B in 10.205117ms
+2026/10/08 04:04:40 [tki9/aMVfSqAP35-000066] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:48848 - 200 1392B in 881.753µs
+2026/10/08 04:04:41 [tki9/aMVfSqAP35-000067] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:48862 - 200 287B in 11.67454ms
+2026/10/08 04:04:41 [tki9/aMVfSqAP35-000068] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:48876 - 200 1392B in 1.221614ms
+2026/10/08 04:04:42 [tki9/aMVfSqAP35-000069] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:48884 - 200 287B in 10.404359ms
+2026/10/08 04:04:42 [tki9/aMVfSqAP35-000070] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:48894 - 200 1392B in 912.216µs
+2026/10/08 04:04:43 [tki9/aMVfSqAP35-000071] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:48910 - 200 287B in 7.030104ms
+2026/10/08 04:04:43 [tki9/aMVfSqAP35-000072] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:48920 - 200 1392B in 971.458µs
+{"time":"2026-10-08T04:04:44.023386192+02:00","level":"INFO","msg":"world tick advanced","world":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","tick":4}
+2026/10/08 04:04:44 [tki9/aMVfSqAP35-000073] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:48930 - 200 287B in 7.826026ms
+2026/10/08 04:04:44 [tki9/aMVfSqAP35-000074] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:48932 - 200 1392B in 664.051µs
+2026/10/08 04:04:45 [tki9/aMVfSqAP35-000075] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:48934 - 200 287B in 9.35386ms
+2026/10/08 04:04:45 [tki9/aMVfSqAP35-000076] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:48940 - 200 1392B in 746.205µs
+2026/10/08 04:04:46 [tki9/aMVfSqAP35-000077] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:48946 - 200 287B in 7.345932ms
+2026/10/08 04:04:46 [tki9/aMVfSqAP35-000078] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:48948 - 200 1392B in 729.086µs
+2026/10/08 04:04:47 [tki9/aMVfSqAP35-000079] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:48956 - 200 287B in 6.418ms
+2026/10/08 04:04:47 [tki9/aMVfSqAP35-000080] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:48962 - 200 1392B in 719.269µs
+2026/10/08 04:04:48 [tki9/aMVfSqAP35-000081] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:48972 - 200 287B in 4.923586ms
+2026/10/08 04:04:48 [tki9/aMVfSqAP35-000082] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:48978 - 200 1392B in 895.112µs
+2026/10/08 04:04:49 [tki9/aMVfSqAP35-000083] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:45200 - 200 287B in 7.84464ms
+2026/10/08 04:04:49 [tki9/aMVfSqAP35-000084] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:45212 - 200 1392B in 718.174µs
+{"time":"2026-10-08T04:04:50.020522533+02:00","level":"INFO","msg":"world tick advanced","world":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","tick":5}
+{"time":"2026-10-08T04:04:50.023305938+02:00","level":"INFO","msg":"order delivered — march started","unit":"d8fe7b13-e215-4690-a411-249e75522d4c","target_q":51,"target_r":15,"arrival_tick":6}
+2026/10/08 04:04:51 [tki9/aMVfSqAP35-000085] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:45216 - 200 287B in 7.39012ms
+2026/10/08 04:04:51 [tki9/aMVfSqAP35-000086] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:45224 - 200 1422B in 848.352µs
+2026/10/08 04:04:52 [tki9/aMVfSqAP35-000087] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:45236 - 200 287B in 5.815637ms
+2026/10/08 04:04:52 [tki9/aMVfSqAP35-000088] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:45246 - 200 1423B in 711.891µs
+2026/10/08 04:04:53 [tki9/aMVfSqAP35-000089] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:45258 - 200 287B in 6.345073ms
+2026/10/08 04:04:53 [tki9/aMVfSqAP35-000090] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:45264 - 200 1423B in 720.988µs
+2026/10/08 04:04:54 [tki9/aMVfSqAP35-000091] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:45274 - 200 287B in 6.601186ms
+2026/10/08 04:04:54 [tki9/aMVfSqAP35-000092] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:45284 - 200 1423B in 756.611µs
+2026/10/08 04:04:55 [tki9/aMVfSqAP35-000093] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:45286 - 200 287B in 6.656934ms
+2026/10/08 04:04:55 [tki9/aMVfSqAP35-000094] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:45302 - 200 1422B in 720.483µs
+{"time":"2026-10-08T04:04:56.022664566+02:00","level":"INFO","msg":"world tick advanced","world":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","tick":6}
+2026/10/08 04:04:56 [tki9/aMVfSqAP35-000095] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:45310 - 200 287B in 9.781492ms
+2026/10/08 04:04:56 [tki9/aMVfSqAP35-000096] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:45312 - 200 1422B in 675.481µs
+2026/10/08 04:04:57 [tki9/aMVfSqAP35-000097] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:45316 - 200 287B in 4.663878ms
+2026/10/08 04:04:57 [tki9/aMVfSqAP35-000098] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:45330 - 200 1423B in 690.421µs
+2026/10/08 04:04:58 [tki9/aMVfSqAP35-000099] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:45338 - 200 287B in 6.852533ms
+2026/10/08 04:04:58 [tki9/aMVfSqAP35-000100] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:45348 - 200 1423B in 694.456µs
+2026/10/08 04:04:59 [tki9/aMVfSqAP35-000101] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:45358 - 200 287B in 5.603793ms
+2026/10/08 04:04:59 [tki9/aMVfSqAP35-000102] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:45368 - 200 1423B in 665.542µs
+2026/10/08 04:05:00 [tki9/aMVfSqAP35-000103] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:34900 - 200 287B in 2.614395ms
+2026/10/08 04:05:00 [tki9/aMVfSqAP35-000104] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:34914 - 200 1423B in 618.522µs
+2026/10/08 04:05:01 [tki9/aMVfSqAP35-000105] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:34924 - 200 287B in 5.341295ms
+2026/10/08 04:05:01 [tki9/aMVfSqAP35-000106] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:34938 - 200 1423B in 815.858µs
+{"time":"2026-10-08T04:05:02.022226429+02:00","level":"INFO","msg":"world tick advanced","world":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","tick":7}
+{"time":"2026-10-08T04:05:02.024523314+02:00","level":"INFO","msg":"unit arrived (garrison)","unit":"d8fe7b13-e215-4690-a411-249e75522d4c","q":51,"r":15,"status":"positioned"}
+2026/10/08 04:05:02 [tki9/aMVfSqAP35-000107] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:34948 - 200 287B in 4.76497ms
+2026/10/08 04:05:02 [tki9/aMVfSqAP35-000108] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:34958 - 200 1392B in 731.987µs
+2026/10/08 04:05:02 [tki9/aMVfSqAP35-000109] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/map HTTP/1.1" from 127.0.0.1:34970 - 200 141180B in 5.224064ms
+2026/10/08 04:05:02 [tki9/aMVfSqAP35-000110] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units/d8fe7b13-e215-4690-a411-249e75522d4c/march-preview?target_q=50&target_r=16 HTTP/1.1" from 127.0.0.1:34980 - 200 48B in 1.208836ms
+2026/10/08 04:05:02 [tki9/aMVfSqAP35-000111] "POST http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units/d8fe7b13-e215-4690-a411-249e75522d4c/march HTTP/1.1" from 127.0.0.1:34984 - 202 256B in 3.083765ms
+2026/10/08 04:05:03 [tki9/aMVfSqAP35-000112] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:34996 - 200 287B in 2.0754ms
+2026/10/08 04:05:03 [tki9/aMVfSqAP35-000113] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:35004 - 200 1392B in 738.796µs
+2026/10/08 04:05:04 [tki9/aMVfSqAP35-000114] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:35012 - 200 287B in 2.524641ms
+2026/10/08 04:05:04 [tki9/aMVfSqAP35-000115] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:35014 - 200 1392B in 672.746µs
+2026/10/08 04:05:05 [tki9/aMVfSqAP35-000116] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:35024 - 200 287B in 3.320729ms
+2026/10/08 04:05:05 [tki9/aMVfSqAP35-000117] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:35028 - 200 1392B in 702.114µs
+2026/10/08 04:05:06 [tki9/aMVfSqAP35-000118] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:35044 - 200 287B in 10.645138ms
+2026/10/08 04:05:06 [tki9/aMVfSqAP35-000119] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:35052 - 200 1392B in 744.297µs
+2026/10/08 04:05:07 [tki9/aMVfSqAP35-000120] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:35062 - 200 287B in 5.671994ms
+2026/10/08 04:05:07 [tki9/aMVfSqAP35-000121] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:35076 - 200 1392B in 1.029727ms
+{"time":"2026-10-08T04:05:08.023116444+02:00","level":"INFO","msg":"world tick advanced","world":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","tick":8}
+2026/10/08 04:05:08 [tki9/aMVfSqAP35-000122] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:35088 - 200 287B in 2.785043ms
+2026/10/08 04:05:08 [tki9/aMVfSqAP35-000123] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:35098 - 200 1392B in 825.255µs
+2026/10/08 04:05:09 [tki9/aMVfSqAP35-000124] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:35108 - 200 287B in 8.547913ms
+2026/10/08 04:05:09 [tki9/aMVfSqAP35-000125] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:35110 - 200 1392B in 717.573µs
+2026/10/08 04:05:10 [tki9/aMVfSqAP35-000126] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:55136 - 200 287B in 5.716419ms
+2026/10/08 04:05:10 [tki9/aMVfSqAP35-000127] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:55152 - 200 1392B in 747.968µs
+2026/10/08 04:05:11 [tki9/aMVfSqAP35-000128] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:55156 - 200 287B in 5.524193ms
+2026/10/08 04:05:11 [tki9/aMVfSqAP35-000129] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:55168 - 200 1392B in 665.017µs
+2026/10/08 04:05:12 [tki9/aMVfSqAP35-000130] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:55174 - 200 287B in 6.377292ms
+2026/10/08 04:05:12 [tki9/aMVfSqAP35-000131] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:55188 - 200 1392B in 846.19µs
+2026/10/08 04:05:13 [tki9/aMVfSqAP35-000132] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:55204 - 200 287B in 10.591634ms
+2026/10/08 04:05:13 [tki9/aMVfSqAP35-000133] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:55216 - 200 1392B in 3.094646ms
+{"time":"2026-10-08T04:05:14.021893296+02:00","level":"INFO","msg":"world tick advanced","world":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","tick":9}
+{"time":"2026-10-08T04:05:14.027666915+02:00","level":"INFO","msg":"order delivered — march started","unit":"d8fe7b13-e215-4690-a411-249e75522d4c","target_q":50,"target_r":16,"arrival_tick":10}
+2026/10/08 04:05:14 [tki9/aMVfSqAP35-000134] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:55230 - 200 287B in 4.011436ms
+2026/10/08 04:05:14 [tki9/aMVfSqAP35-000135] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:55232 - 200 1426B in 1.008387ms
+2026/10/08 04:05:15 [tki9/aMVfSqAP35-000136] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:55238 - 200 287B in 4.769434ms
+2026/10/08 04:05:15 [tki9/aMVfSqAP35-000137] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:55242 - 200 1426B in 920.338µs
+2026/10/08 04:05:16 [tki9/aMVfSqAP35-000138] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:55256 - 200 287B in 7.148526ms
+2026/10/08 04:05:16 [tki9/aMVfSqAP35-000139] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:55262 - 200 1426B in 1.193881ms
+2026/10/08 04:05:17 [tki9/aMVfSqAP35-000140] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:55276 - 200 287B in 5.426618ms
+2026/10/08 04:05:17 [tki9/aMVfSqAP35-000141] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:55292 - 200 1426B in 945.095µs
+2026/10/08 04:05:18 [tki9/aMVfSqAP35-000142] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:55298 - 200 287B in 3.629499ms
+2026/10/08 04:05:18 [tki9/aMVfSqAP35-000143] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:55308 - 200 1426B in 939.281µs
+2026/10/08 04:05:19 [tki9/aMVfSqAP35-000144] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:55316 - 200 287B in 5.463421ms
+2026/10/08 04:05:19 [tki9/aMVfSqAP35-000145] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:55332 - 200 1426B in 687.379µs
+{"time":"2026-10-08T04:05:20.020042601+02:00","level":"INFO","msg":"world tick advanced","world":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","tick":10}
+2026/10/08 04:05:20 [tki9/aMVfSqAP35-000146] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:40406 - 200 287B in 6.305273ms
+2026/10/08 04:05:20 [tki9/aMVfSqAP35-000147] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:40416 - 200 1426B in 652.798µs
+2026/10/08 04:05:21 [tki9/aMVfSqAP35-000148] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:40424 - 200 287B in 4.079456ms
+2026/10/08 04:05:21 [tki9/aMVfSqAP35-000149] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:40438 - 200 1426B in 644.365µs
+2026/10/08 04:05:22 [tki9/aMVfSqAP35-000150] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:40444 - 200 287B in 5.768372ms
+2026/10/08 04:05:22 [tki9/aMVfSqAP35-000151] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:40454 - 200 1426B in 595.821µs
+2026/10/08 04:05:23 [tki9/aMVfSqAP35-000152] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:40462 - 200 287B in 6.167033ms
+2026/10/08 04:05:23 [tki9/aMVfSqAP35-000153] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:40464 - 200 1426B in 696.87µs
+2026/10/08 04:05:24 [tki9/aMVfSqAP35-000154] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:40466 - 200 287B in 6.900096ms
+2026/10/08 04:05:24 [tki9/aMVfSqAP35-000155] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:40472 - 200 1426B in 671.737µs
+2026/10/08 04:05:25 [tki9/aMVfSqAP35-000156] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:40478 - 200 287B in 5.493495ms
+2026/10/08 04:05:25 [tki9/aMVfSqAP35-000157] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:40484 - 200 1426B in 685.463µs
+{"time":"2026-10-08T04:05:26.023344855+02:00","level":"INFO","msg":"world tick advanced","world":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","tick":11}
+{"time":"2026-10-08T04:05:26.028380236+02:00","level":"INFO","msg":"unit arrived (garrison)","unit":"d8fe7b13-e215-4690-a411-249e75522d4c","q":50,"r":16,"status":"positioned"}
+2026/10/08 04:05:26 [tki9/aMVfSqAP35-000158] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:40488 - 200 287B in 6.109921ms
+2026/10/08 04:05:26 [tki9/aMVfSqAP35-000159] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:40492 - 200 1392B in 1.043557ms
+2026/10/08 04:05:26 [tki9/aMVfSqAP35-000160] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/map HTTP/1.1" from 127.0.0.1:40496 - 200 141515B in 5.327418ms
+2026/10/08 04:05:26 [tki9/aMVfSqAP35-000161] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units/d8fe7b13-e215-4690-a411-249e75522d4c/march-preview?target_q=50&target_r=17 HTTP/1.1" from 127.0.0.1:40504 - 200 48B in 1.397892ms
+2026/10/08 04:05:26 [tki9/aMVfSqAP35-000162] "POST http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units/d8fe7b13-e215-4690-a411-249e75522d4c/march HTTP/1.1" from 127.0.0.1:40514 - 202 257B in 3.911623ms
+2026/10/08 04:05:27 [tki9/aMVfSqAP35-000163] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:40528 - 200 287B in 1.934315ms
+2026/10/08 04:05:27 [tki9/aMVfSqAP35-000164] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:40536 - 200 1392B in 768.057µs
+2026/10/08 04:05:28 [tki9/aMVfSqAP35-000165] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:40538 - 200 287B in 2.443588ms
+2026/10/08 04:05:28 [tki9/aMVfSqAP35-000166] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:40544 - 200 1392B in 815.341µs
+2026/10/08 04:05:29 [tki9/aMVfSqAP35-000167] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:40558 - 200 287B in 2.376971ms
+2026/10/08 04:05:29 [tki9/aMVfSqAP35-000168] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:40566 - 200 1392B in 875.157µs
+2026/10/08 04:05:30 [tki9/aMVfSqAP35-000169] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:48020 - 200 287B in 6.955041ms
+2026/10/08 04:05:30 [tki9/aMVfSqAP35-000170] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:48036 - 200 1392B in 780.099µs
+2026/10/08 04:05:31 [tki9/aMVfSqAP35-000171] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:48046 - 200 287B in 6.115567ms
+2026/10/08 04:05:31 [tki9/aMVfSqAP35-000172] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:48050 - 200 1392B in 797.574µs
+{"time":"2026-10-08T04:05:32.023224107+02:00","level":"INFO","msg":"world tick advanced","world":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","tick":12}
+2026/10/08 04:05:32 [tki9/aMVfSqAP35-000173] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:48054 - 200 287B in 8.044009ms
+2026/10/08 04:05:32 [tki9/aMVfSqAP35-000174] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:48066 - 200 1392B in 997.072µs
+2026/10/08 04:05:33 [tki9/aMVfSqAP35-000175] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:48076 - 200 287B in 5.885974ms
+2026/10/08 04:05:33 [tki9/aMVfSqAP35-000176] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:48082 - 200 1392B in 852.99µs
+2026/10/08 04:05:34 [tki9/aMVfSqAP35-000177] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:48088 - 200 287B in 8.256321ms
+2026/10/08 04:05:34 [tki9/aMVfSqAP35-000178] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:48096 - 200 1392B in 843.948µs
+2026/10/08 04:05:35 [tki9/aMVfSqAP35-000179] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:48106 - 200 287B in 5.92633ms
+2026/10/08 04:05:35 [tki9/aMVfSqAP35-000180] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:48112 - 200 1392B in 877.473µs
+2026/10/08 04:05:36 [tki9/aMVfSqAP35-000181] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:48116 - 200 287B in 6.92859ms
+2026/10/08 04:05:36 [tki9/aMVfSqAP35-000182] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:48124 - 200 1392B in 805.182µs
+2026/10/08 04:05:37 [tki9/aMVfSqAP35-000183] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:48126 - 200 287B in 2.376464ms
+2026/10/08 04:05:37 [tki9/aMVfSqAP35-000184] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:48138 - 200 1392B in 812.14µs
+{"time":"2026-10-08T04:05:38.025288619+02:00","level":"INFO","msg":"world tick advanced","world":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","tick":13}
+2026/10/08 04:05:38 [tki9/aMVfSqAP35-000185] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:48150 - 200 287B in 6.55361ms
+2026/10/08 04:05:38 [tki9/aMVfSqAP35-000186] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:48158 - 200 1392B in 709.096µs
+2026/10/08 04:05:39 [tki9/aMVfSqAP35-000187] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:48164 - 200 287B in 7.955907ms
+2026/10/08 04:05:39 [tki9/aMVfSqAP35-000188] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:48174 - 200 1392B in 709.983µs
+2026/10/08 04:05:40 [tki9/aMVfSqAP35-000189] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:42562 - 200 287B in 6.641735ms
+2026/10/08 04:05:40 [tki9/aMVfSqAP35-000190] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:42576 - 200 1392B in 685.52µs
+2026/10/08 04:05:41 [tki9/aMVfSqAP35-000191] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:42584 - 200 287B in 4.565566ms
+2026/10/08 04:05:41 [tki9/aMVfSqAP35-000192] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:42600 - 200 1392B in 753.347µs
+2026/10/08 04:05:42 [tki9/aMVfSqAP35-000193] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:42606 - 200 287B in 4.359028ms
+2026/10/08 04:05:42 [tki9/aMVfSqAP35-000194] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:42620 - 200 1392B in 708.478µs
+2026/10/08 04:05:43 [tki9/aMVfSqAP35-000195] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:42622 - 200 287B in 4.689542ms
+2026/10/08 04:05:43 [tki9/aMVfSqAP35-000196] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:42626 - 200 1392B in 775.662µs
+{"time":"2026-10-08T04:05:44.023349296+02:00","level":"INFO","msg":"world tick advanced","world":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","tick":14}
+{"time":"2026-10-08T04:05:44.026855103+02:00","level":"INFO","msg":"order delivered — march started","unit":"d8fe7b13-e215-4690-a411-249e75522d4c","target_q":50,"target_r":17,"arrival_tick":15}
+2026/10/08 04:05:44 [tki9/aMVfSqAP35-000197] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:42640 - 200 287B in 7.115757ms
+2026/10/08 04:05:44 [tki9/aMVfSqAP35-000198] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:42642 - 200 1426B in 779.984µs
+2026/10/08 04:05:45 [tki9/aMVfSqAP35-000199] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:42658 - 200 287B in 7.44044ms
+2026/10/08 04:05:45 [tki9/aMVfSqAP35-000200] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:42672 - 200 1425B in 658.861µs
+2026/10/08 04:05:46 [tki9/aMVfSqAP35-000201] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:42688 - 200 287B in 7.974777ms
+2026/10/08 04:05:46 [tki9/aMVfSqAP35-000202] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:42696 - 200 1426B in 705.597µs
+2026/10/08 04:05:47 [tki9/aMVfSqAP35-000203] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:42708 - 200 287B in 6.341054ms
+2026/10/08 04:05:47 [tki9/aMVfSqAP35-000204] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:42714 - 200 1426B in 689.091µs
+2026/10/08 04:05:48 [tki9/aMVfSqAP35-000205] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:42724 - 200 287B in 2.536883ms
+2026/10/08 04:05:48 [tki9/aMVfSqAP35-000206] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:42734 - 200 1426B in 813.3µs
+2026/10/08 04:05:49 [tki9/aMVfSqAP35-000207] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:42744 - 200 287B in 6.066301ms
+2026/10/08 04:05:49 [tki9/aMVfSqAP35-000208] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:42754 - 200 1426B in 770.99µs
+{"time":"2026-10-08T04:05:50.023592532+02:00","level":"INFO","msg":"world tick advanced","world":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","tick":15}
+2026/10/08 04:05:50 [tki9/aMVfSqAP35-000209] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:46074 - 200 287B in 6.893004ms
+2026/10/08 04:05:50 [tki9/aMVfSqAP35-000210] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:46082 - 200 1426B in 910.083µs
+2026/10/08 04:05:51 [tki9/aMVfSqAP35-000211] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:46090 - 200 287B in 7.232193ms
+2026/10/08 04:05:51 [tki9/aMVfSqAP35-000212] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:46104 - 200 1426B in 724.889µs
+2026/10/08 04:05:52 [tki9/aMVfSqAP35-000213] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:46108 - 200 287B in 6.967114ms
+2026/10/08 04:05:52 [tki9/aMVfSqAP35-000214] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:46122 - 200 1426B in 687.585µs
+2026/10/08 04:05:53 [tki9/aMVfSqAP35-000215] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:46124 - 200 287B in 6.57187ms
+2026/10/08 04:05:53 [tki9/aMVfSqAP35-000216] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:46126 - 200 1426B in 704.748µs
+2026/10/08 04:05:54 [tki9/aMVfSqAP35-000217] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:46140 - 200 287B in 6.249094ms
+2026/10/08 04:05:54 [tki9/aMVfSqAP35-000218] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:46148 - 200 1426B in 692.145µs
+2026/10/08 04:05:55 [tki9/aMVfSqAP35-000219] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:46150 - 200 287B in 7.658702ms
+2026/10/08 04:05:55 [tki9/aMVfSqAP35-000220] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:46154 - 200 1426B in 880.347µs
+{"time":"2026-10-08T04:05:56.019441245+02:00","level":"INFO","msg":"world tick advanced","world":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","tick":16}
+{"time":"2026-10-08T04:05:56.021754804+02:00","level":"INFO","msg":"unit arrived (garrison)","unit":"d8fe7b13-e215-4690-a411-249e75522d4c","q":50,"r":17,"status":"positioned"}
+2026/10/08 04:05:56 [tki9/aMVfSqAP35-000221] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:46156 - 200 287B in 7.014453ms
+2026/10/08 04:05:56 [tki9/aMVfSqAP35-000222] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:46172 - 200 1392B in 836.64µs
+2026/10/08 04:05:56 [tki9/aMVfSqAP35-000223] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/map HTTP/1.1" from 127.0.0.1:46174 - 200 141930B in 5.082149ms
+2026/10/08 04:05:56 [tki9/aMVfSqAP35-000224] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units/d8fe7b13-e215-4690-a411-249e75522d4c/march-preview?target_q=50&target_r=18 HTTP/1.1" from 127.0.0.1:46188 - 200 48B in 1.393663ms
+2026/10/08 04:05:56 [tki9/aMVfSqAP35-000225] "POST http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units/d8fe7b13-e215-4690-a411-249e75522d4c/march HTTP/1.1" from 127.0.0.1:46204 - 202 257B in 3.203462ms
+2026/10/08 04:05:57 [tki9/aMVfSqAP35-000226] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:46212 - 200 287B in 2.410436ms
+2026/10/08 04:05:57 [tki9/aMVfSqAP35-000227] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:46224 - 200 1392B in 665.871µs
+2026/10/08 04:05:58 [tki9/aMVfSqAP35-000228] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:46240 - 200 287B in 2.633918ms
+2026/10/08 04:05:58 [tki9/aMVfSqAP35-000229] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:46242 - 200 1392B in 699.234µs
+2026/10/08 04:05:59 [tki9/aMVfSqAP35-000230] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:46250 - 200 287B in 6.949239ms
+2026/10/08 04:05:59 [tki9/aMVfSqAP35-000231] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:46256 - 200 1392B in 783.369µs
+2026/10/08 04:06:00 [tki9/aMVfSqAP35-000232] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:42988 - 200 287B in 4.424685ms
+2026/10/08 04:06:00 [tki9/aMVfSqAP35-000233] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:42992 - 200 1392B in 787.833µs
+2026/10/08 04:06:01 [tki9/aMVfSqAP35-000234] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:42994 - 200 287B in 5.485976ms
+2026/10/08 04:06:01 [tki9/aMVfSqAP35-000235] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:43004 - 200 1392B in 747.22µs
+{"time":"2026-10-08T04:06:02.024278648+02:00","level":"INFO","msg":"world tick advanced","world":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","tick":17}
+2026/10/08 04:06:02 [tki9/aMVfSqAP35-000236] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:43014 - 200 287B in 5.645565ms
+2026/10/08 04:06:02 [tki9/aMVfSqAP35-000237] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:43016 - 200 1392B in 686.606µs
+2026/10/08 04:06:03 [tki9/aMVfSqAP35-000238] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:43028 - 200 287B in 6.385291ms
+2026/10/08 04:06:03 [tki9/aMVfSqAP35-000239] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:43038 - 200 1392B in 773.193µs
+2026/10/08 04:06:04 [tki9/aMVfSqAP35-000240] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:43042 - 200 287B in 6.174859ms
+2026/10/08 04:06:04 [tki9/aMVfSqAP35-000241] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:43058 - 200 1392B in 747.325µs
+2026/10/08 04:06:05 [tki9/aMVfSqAP35-000242] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:43066 - 200 287B in 5.558866ms
+2026/10/08 04:06:05 [tki9/aMVfSqAP35-000243] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:43070 - 200 1392B in 757.643µs
+2026/10/08 04:06:06 [tki9/aMVfSqAP35-000244] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:43084 - 200 287B in 6.450446ms
+2026/10/08 04:06:06 [tki9/aMVfSqAP35-000245] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:43088 - 200 1392B in 800.864µs
+2026/10/08 04:06:07 [tki9/aMVfSqAP35-000246] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:43100 - 200 287B in 2.377826ms
+2026/10/08 04:06:07 [tki9/aMVfSqAP35-000247] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:43114 - 200 1392B in 833.822µs
+{"time":"2026-10-08T04:06:08.022370135+02:00","level":"INFO","msg":"world tick advanced","world":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","tick":18}
+2026/10/08 04:06:08 [tki9/aMVfSqAP35-000248] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:43130 - 200 287B in 5.676386ms
+2026/10/08 04:06:08 [tki9/aMVfSqAP35-000249] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:43142 - 200 1392B in 702.939µs
+2026/10/08 04:06:09 [tki9/aMVfSqAP35-000250] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:43154 - 200 287B in 5.022524ms
+2026/10/08 04:06:09 [tki9/aMVfSqAP35-000251] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:43162 - 200 1392B in 788.208µs
+2026/10/08 04:06:10 [tki9/aMVfSqAP35-000252] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:37072 - 200 287B in 4.128188ms
+2026/10/08 04:06:10 [tki9/aMVfSqAP35-000253] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:37080 - 200 1392B in 919.115µs
+2026/10/08 04:06:11 [tki9/aMVfSqAP35-000254] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:37082 - 200 287B in 6.427961ms
+2026/10/08 04:06:11 [tki9/aMVfSqAP35-000255] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:37088 - 200 1392B in 798.351µs
+2026/10/08 04:06:12 [tki9/aMVfSqAP35-000256] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:37100 - 200 287B in 3.601361ms
+2026/10/08 04:06:12 [tki9/aMVfSqAP35-000257] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:37116 - 200 1392B in 685.733µs
+2026/10/08 04:06:13 [tki9/aMVfSqAP35-000258] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:37128 - 200 287B in 5.80996ms
+2026/10/08 04:06:13 [tki9/aMVfSqAP35-000259] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:37136 - 200 1392B in 800.154µs
+{"time":"2026-10-08T04:06:14.02417835+02:00","level":"INFO","msg":"world tick advanced","world":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","tick":19}
+{"time":"2026-10-08T04:06:14.030779254+02:00","level":"INFO","msg":"order delivered — march started","unit":"d8fe7b13-e215-4690-a411-249e75522d4c","target_q":50,"target_r":18,"arrival_tick":20}
+2026/10/08 04:06:14 [tki9/aMVfSqAP35-000260] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:37138 - 200 287B in 2.290816ms
+2026/10/08 04:06:14 [tki9/aMVfSqAP35-000261] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:37140 - 200 1473B in 761.238µs
+2026/10/08 04:06:15 [tki9/aMVfSqAP35-000262] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:37156 - 200 287B in 10.11214ms
+2026/10/08 04:06:15 [tki9/aMVfSqAP35-000263] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:37168 - 200 1473B in 711.306µs
+2026/10/08 04:06:16 [tki9/aMVfSqAP35-000264] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:37174 - 200 287B in 2.741199ms
+2026/10/08 04:06:16 [tki9/aMVfSqAP35-000265] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:37186 - 200 1473B in 764.625µs
+2026/10/08 04:06:17 [tki9/aMVfSqAP35-000266] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:37196 - 200 287B in 7.122272ms
+2026/10/08 04:06:17 [tki9/aMVfSqAP35-000267] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:37212 - 200 1473B in 660.005µs
+2026/10/08 04:06:18 [tki9/aMVfSqAP35-000268] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:37218 - 200 287B in 2.405545ms
+2026/10/08 04:06:18 [tki9/aMVfSqAP35-000269] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:37226 - 200 1473B in 804.965µs
+2026/10/08 04:06:19 [tki9/aMVfSqAP35-000270] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:37240 - 200 287B in 4.991386ms
+2026/10/08 04:06:19 [tki9/aMVfSqAP35-000271] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:37250 - 200 1473B in 686.438µs
+{"time":"2026-10-08T04:06:20.020246397+02:00","level":"INFO","msg":"world tick advanced","world":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","tick":20}
+2026/10/08 04:06:20 [tki9/aMVfSqAP35-000272] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:36980 - 200 287B in 5.896169ms
+2026/10/08 04:06:20 [tki9/aMVfSqAP35-000273] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:36984 - 200 1472B in 732.696µs
+2026/10/08 04:06:21 [tki9/aMVfSqAP35-000274] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:36996 - 200 287B in 7.025865ms
+2026/10/08 04:06:21 [tki9/aMVfSqAP35-000275] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:37012 - 200 1472B in 1.113628ms
+2026/10/08 04:06:22 [tki9/aMVfSqAP35-000276] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:37028 - 200 287B in 8.313525ms
+2026/10/08 04:06:22 [tki9/aMVfSqAP35-000277] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:37040 - 200 1473B in 704.395µs
+2026/10/08 04:06:23 [tki9/aMVfSqAP35-000278] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:37044 - 200 287B in 6.140054ms
+2026/10/08 04:06:23 [tki9/aMVfSqAP35-000279] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:37060 - 200 1473B in 659.631µs
+2026/10/08 04:06:24 [tki9/aMVfSqAP35-000280] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:37064 - 200 287B in 9.969492ms
+2026/10/08 04:06:24 [tki9/aMVfSqAP35-000281] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:37066 - 200 1473B in 846.417µs
+2026/10/08 04:06:25 [tki9/aMVfSqAP35-000282] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:37074 - 200 287B in 5.848709ms
+2026/10/08 04:06:25 [tki9/aMVfSqAP35-000283] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:37082 - 200 1472B in 668.014µs
+{"time":"2026-10-08T04:06:26.023668864+02:00","level":"INFO","msg":"world tick advanced","world":"5e16ac24-b7c0-437d-8e7d-83eb14d170bb","tick":21}
+{"time":"2026-10-08T04:06:26.040662187+02:00","level":"INFO","msg":"colony founded (discrete unit)","settlement":"054e466b-2a6a-4075-ad26-62555c176e52","name":"Kyme","province":"fbf576a0-95b2-49a4-b28c-e29c5a0c0ff1","owner":"1802f3c8-eed7-42eb-b727-91a5ead118e0","founding_unit":"d8fe7b13-e215-4690-a411-249e75522d4c","population":1600,"q":50,"r":18}
+2026/10/08 04:06:26 [tki9/aMVfSqAP35-000284] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:37096 - 200 554B in 5.011579ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000285] "GET http://127.0.0.1:54739/ HTTP/1.1" from 127.0.0.1:37102 - 200 2383B in 474.409µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000287] "GET http://127.0.0.1:54739/static/hero.png HTTP/1.1" from 127.0.0.1:37112 - 200 1193707B in 2.037043ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000286] "GET http://127.0.0.1:54739/static/megaron.css HTTP/1.1" from 127.0.0.1:37102 - 200 19307B in 3.17848ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000288] "GET http://127.0.0.1:54739/static/music/minoan_intro.ogg HTTP/1.1" from 127.0.0.1:37112 - 206 704198B in 482.618µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000289] "GET http://127.0.0.1:54739/static/music/minoan_intro.ogg HTTP/1.1" from 127.0.0.1:37102 - 206 81606B in 147.174µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000290] "GET http://127.0.0.1:54739/static/music/minoan_intro.ogg HTTP/1.1" from 127.0.0.1:37102 - 304 0B in 36.071µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000291] "GET http://127.0.0.1:54739/static/music/minoan_intro.ogg HTTP/1.1" from 127.0.0.1:37102 - 206 360448B in 178.035µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000292] "GET http://127.0.0.1:54739/play HTTP/1.1" from 127.0.0.1:37102 - 303 99B in 734.116µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000293] "GET http://127.0.0.1:54739/world/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/map HTTP/1.1" from 127.0.0.1:37102 - 200 6892B in 1.056263ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000294] "GET http://127.0.0.1:54739/static/megaron.css HTTP/1.1" from 127.0.0.1:37102 - 304 0B in 43.2µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000295] "GET http://127.0.0.1:54739/static/js/megaron/main.js HTTP/1.1" from 127.0.0.1:37116 - 200 5434B in 716.005µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000296] "GET http://127.0.0.1:54739/static/js/megaron/config.js HTTP/1.1" from 127.0.0.1:37116 - 200 2094B in 248.805µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000297] "GET http://127.0.0.1:54739/static/js/megaron/state.js HTTP/1.1" from 127.0.0.1:37102 - 200 2729B in 217.706µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000298] "GET http://127.0.0.1:54739/static/js/megaron/clock.js HTTP/1.1" from 127.0.0.1:37118 - 200 948B in 159.78µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000299] "GET http://127.0.0.1:54739/static/js/megaron/ws.js HTTP/1.1" from 127.0.0.1:37132 - 200 4866B in 810.946µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000300] "GET http://127.0.0.1:54739/static/js/megaron/telemetry.js HTTP/1.1" from 127.0.0.1:37124 - 200 337B in 1.022655ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000301] "GET http://127.0.0.1:54739/static/js/megaron/render/city.js HTTP/1.1" from 127.0.0.1:37116 - 200 7012B in 1.162583ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000302] "GET http://127.0.0.1:54739/static/js/megaron/ui/misc.js HTTP/1.1" from 127.0.0.1:37102 - 200 9947B in 1.235504ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000304] "GET http://127.0.0.1:54739/static/js/megaron/ui/chips.js HTTP/1.1" from 127.0.0.1:37118 - 200 3815B in 273.084µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000303] "GET http://127.0.0.1:54739/static/js/megaron/render/map.js HTTP/1.1" from 127.0.0.1:37148 - 200 86590B in 3.4986ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000305] "GET http://127.0.0.1:54739/static/js/megaron/ui/search.js HTTP/1.1" from 127.0.0.1:37124 - 200 2303B in 175.989µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000306] "GET http://127.0.0.1:54739/static/js/megaron/ui/marchctx.js HTTP/1.1" from 127.0.0.1:37132 - 200 12073B in 488.956µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000307] "GET http://127.0.0.1:54739/static/js/megaron/ui/drawers/city.js HTTP/1.1" from 127.0.0.1:37116 - 200 13984B in 488.63µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000308] "GET http://127.0.0.1:54739/static/js/megaron/ui/drawers/war.js HTTP/1.1" from 127.0.0.1:37102 - 200 16313B in 596.717µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000312] "GET http://127.0.0.1:54739/static/js/megaron/ui/drawers/notif.js HTTP/1.1" from 127.0.0.1:37148 - 200 3089B in 652.701µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000310] "GET http://127.0.0.1:54739/static/js/megaron/ui/drawers/kult.js HTTP/1.1" from 127.0.0.1:37118 - 200 4989B in 861.791µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000314] "GET http://127.0.0.1:54739/static/js/megaron/ui/diagnostics.js HTTP/1.1" from 127.0.0.1:37102 - 200 2127B in 943.531µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000309] "GET http://127.0.0.1:54739/static/js/megaron/ui/drawers/economy.js HTTP/1.1" from 127.0.0.1:37124 - 200 9891B in 1.393526ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000311] "GET http://127.0.0.1:54739/static/js/megaron/ui/drawers/diplomacy.js HTTP/1.1" from 127.0.0.1:37132 - 200 9318B in 1.262945ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000313] "GET http://127.0.0.1:54739/static/js/megaron/ui/drawers/report.js HTTP/1.1" from 127.0.0.1:37116 - 200 1919B in 1.253561ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000316] "GET http://127.0.0.1:54739/static/js/megaron/ui/drawers/gossip.js HTTP/1.1" from 127.0.0.1:37102 - 200 2071B in 222.967µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000315] "GET http://127.0.0.1:54739/static/js/megaron/ui/sfx.js HTTP/1.1" from 127.0.0.1:37148 - 200 3919B in 441.233µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000318] "GET http://127.0.0.1:54739/static/js/megaron/ui/account_window.js HTTP/1.1" from 127.0.0.1:37118 - 200 2856B in 341.857µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000317] "GET http://127.0.0.1:54739/static/js/megaron/ui/dispatch_window.js HTTP/1.1" from 127.0.0.1:37116 - 200 5479B in 386.717µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000320] "GET http://127.0.0.1:54739/static/js/megaron/api.js HTTP/1.1" from 127.0.0.1:37132 - 200 1742B in 276.587µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000319] "GET http://127.0.0.1:54739/static/js/megaron/ui/codex.js HTTP/1.1" from 127.0.0.1:37124 - 200 4586B in 495.026µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000322] "GET http://127.0.0.1:54739/static/js/megaron/render/citybuildings.js HTTP/1.1" from 127.0.0.1:37118 - 200 5334B in 257.627µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000321] "GET http://127.0.0.1:54739/static/js/megaron/render/pixelgrid.js HTTP/1.1" from 127.0.0.1:37102 - 200 7885B in 332.344µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000323] "GET http://127.0.0.1:54739/static/js/megaron/ui/search_messages.js HTTP/1.1" from 127.0.0.1:37102 - 200 1096B in 179.892µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000324] "GET http://127.0.0.1:54739/static/js/megaron/ui/time.js HTTP/1.1" from 127.0.0.1:37118 - 200 1893B in 190.46µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000326] "GET http://127.0.0.1:54739/static/js/megaron/ui/movements.js HTTP/1.1" from 127.0.0.1:37148 - 200 1543B in 154.059µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000325] "GET http://127.0.0.1:54739/static/js/megaron/ui/format.js HTTP/1.1" from 127.0.0.1:37124 - 200 15931B in 729.158µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000327] "GET http://127.0.0.1:54739/static/js/megaron/ui/actornames.js HTTP/1.1" from 127.0.0.1:37124 - 200 1402B in 244.955µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000328] "GET http://127.0.0.1:54739/static/js/megaron/ui/number_words.js HTTP/1.1" from 127.0.0.1:37148 - 200 584B in 118.741µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000329] "GET http://127.0.0.1:54739/static/js/megaron/ui/stance.js HTTP/1.1" from 127.0.0.1:37118 - 200 831B in 209.883µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000330] "GET http://127.0.0.1:54739/static/js/megaron/ui/expedition.js HTTP/1.1" from 127.0.0.1:37102 - 200 697B in 220.425µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000331] "GET http://127.0.0.1:54739/static/js/megaron/ui/march_preview.js HTTP/1.1" from 127.0.0.1:37116 - 200 1125B in 235.442µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000332] "GET http://127.0.0.1:54739/static/js/megaron/ui/inline_result.js HTTP/1.1" from 127.0.0.1:37132 - 200 691B in 171.622µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000334] "GET http://127.0.0.1:54739/static/js/megaron/ui/drawers/city_production.js HTTP/1.1" from 127.0.0.1:37148 - 200 1463B in 244.876µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000336] "GET http://127.0.0.1:54739/static/js/megaron/ui/recall_all.js HTTP/1.1" from 127.0.0.1:37116 - 200 751B in 153.36µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000335] "GET http://127.0.0.1:54739/static/js/megaron/ui/retreat.js HTTP/1.1" from 127.0.0.1:37118 - 200 1700B in 260.948µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000337] "GET http://127.0.0.1:54739/static/js/megaron/ui/runner_status.js HTTP/1.1" from 127.0.0.1:37102 - 200 1514B in 203.891µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000338] "GET http://127.0.0.1:54739/static/js/megaron/render/actorsprites.js HTTP/1.1" from 127.0.0.1:37132 - 200 5852B in 493.805µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000333] "GET http://127.0.0.1:54739/static/js/megaron/ui/citygrid.js HTTP/1.1" from 127.0.0.1:37124 - 200 8005B in 819.745µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000339] "GET http://127.0.0.1:54739/static/js/megaron/render/sight.js HTTP/1.1" from 127.0.0.1:37148 - 200 1334B in 205.896µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000340] "GET http://127.0.0.1:54739/static/js/megaron/render/memory.js HTTP/1.1" from 127.0.0.1:37116 - 200 1000B in 162.061µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000341] "GET http://127.0.0.1:54739/static/js/megaron/render/citysprites.js HTTP/1.1" from 127.0.0.1:37118 - 200 8747B in 319.294µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000342] "GET http://127.0.0.1:54739/static/js/megaron/render/camera.js HTTP/1.1" from 127.0.0.1:37102 - 200 1542B in 128.079µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000343] "GET http://127.0.0.1:54739/static/js/megaron/ui/hover.js HTTP/1.1" from 127.0.0.1:37132 - 200 1549B in 111.666µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000344] "GET http://127.0.0.1:54739/static/js/megaron/ui/drawers/kult_kharis.js HTTP/1.1" from 127.0.0.1:37124 - 200 1018B in 121.987µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000345] "GET http://127.0.0.1:54739/static/js/megaron/ui/drawers/sitos_view.js HTTP/1.1" from 127.0.0.1:37148 - 200 1430B in 113.016µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000346] "GET http://127.0.0.1:54739/api/v1/auth/me HTTP/1.1" from 127.0.0.1:37148 - 200 189B in 626.408µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000347] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb HTTP/1.1" from 127.0.0.1:37148 - 200 214B in 573.479µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000348] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:37124 - 200 308B in 1.569714ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000349] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/founding/status HTTP/1.1" from 127.0.0.1:37124 - 200 42B in 460.414µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000350] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/messengers/inbox HTTP/1.1" from 127.0.0.1:37124 - 200 28B in 820.512µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000354] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces HTTP/1.1" from 127.0.0.1:37102 - 200 308B in 2.136876ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000358] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/rural-projections HTTP/1.1" from 127.0.0.1:37102 - 200 28B in 1.246872ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000351] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/map HTTP/1.1" from 127.0.0.1:37148 - 200 9036B in 9.110747ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000352] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/marches HTTP/1.1" from 127.0.0.1:37132 - 200 28B in 9.737149ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000359] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/foreign-units HTTP/1.1" from 127.0.0.1:37102 - 200 28B in 4.220705ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000360] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/settlements/placement-roster HTTP/1.1" from 127.0.0.1:37148 - 200 358B in 1.584411ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000362] "GET http://127.0.0.1:54739/static/codex/index.json HTTP/1.1" from 127.0.0.1:37102 - 200 1989B in 233.718µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000361] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/notifications?unread=true&dispatchable=true HTTP/1.1" from 127.0.0.1:37132 - 200 1075B in 678.095µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000357] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/units HTTP/1.1" from 127.0.0.1:37124 - 200 383B in 14.692836ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000353] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/messengers HTTP/1.1" from 127.0.0.1:37118 - 200 28B in 18.459252ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000355] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/trades HTTP/1.1" from 127.0.0.1:37116 - 200 28B in 18.722253ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000363] "GET http://127.0.0.1:54739/static/music/minoan_templet_sf.ogg HTTP/1.1" from 127.0.0.1:37116 - 206 675596B in 306.158µs
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000365] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces/fbf576a0-95b2-49a4-b28c-e29c5a0c0ff1/goods HTTP/1.1" from 127.0.0.1:37118 - 200 782B in 17.398521ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000366] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/settlements/overview HTTP/1.1" from 127.0.0.1:37124 - 200 320B in 20.481491ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000364] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces/24451c94-947a-4a35-b484-f0d7125bf6af/goods HTTP/1.1" from 127.0.0.1:37116 - 200 803B in 23.1696ms
+2026/10/08 04:06:27 [tki9/aMVfSqAP35-000367] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces/24451c94-947a-4a35-b484-f0d7125bf6af/actions HTTP/1.1" from 127.0.0.1:37116 - 200 2923B in 14.729445ms
+2026/10/08 04:06:28 [tki9/aMVfSqAP35-000368] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/provinces/24451c94-947a-4a35-b484-f0d7125bf6af/goods HTTP/1.1" from 127.0.0.1:37116 - 200 803B in 20.237901ms
+2026/10/08 04:06:28 [tki9/aMVfSqAP35-000369] "GET http://127.0.0.1:54739/api/v1/worlds/5e16ac24-b7c0-437d-8e7d-83eb14d170bb/standing-orders HTTP/1.1" from 127.0.0.1:37116 - 200 28B in 1.474636ms
+2026/10/08 04:06:28 [tki9/aMVfSqAP35-000356] "GET http://127.0.0.1:54739/ws/5e16ac24-b7c0-437d-8e7d-83eb14d170bb HTTP/1.1" from 127.0.0.1:37162 - 000 0B in 1.422607314s
+{"time":"2026-10-08T04:06:28.721822926+02:00","level":"INFO","msg":"tick worker stopped"}
+{"time":"2026-10-08T04:06:28.721829564+02:00","level":"INFO","msg":"shutting down"}
+{"time":"2026-10-08T04:06:28.721825764+02:00","level":"INFO","msg":"scheduled event worker stopped"}
