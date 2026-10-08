@@ -15,7 +15,7 @@ async function rig(run) {
   globalThis.document={getElementById:id=>id==='net-status'?null:node(id),querySelector:()=>({value:'buy'})};
   globalThis.localStorage={getItem:()=>null};globalThis.setTimeout=()=>0;
   State.WORLD_ID='world';State.MY_SETTLEMENT_ID='origin';State.provinceData=[{id:'province',name:'Kyme',settlement_id:'contact',own:false,owner:'Alector'},{settlement_id:'origin',name:'Nostos',own:true},{settlement_id:'outpost',name:'Outpost',is_outpost:true},{settlement_id:'unnamed'}];
-  const cities=[{name:'Kyme',owner:'Alector',owner_id:'ruler',settlement_id:'contact',knowledge:'known',q:3,r:4,copper_deposit:true},{name:'Rumour city',owner:'Alector',owner_id:'ruler',settlement_id:'rumour',knowledge:'rumour',bearing:'east',industry_hint:'tin'}, {name:'Nostos',owner:'Me',own:true,settlement_id:'origin',knowledge:'known'}];
+  const cities=[{name:'Kyme',owner:'Alector',owner_id:'ruler',settlement_id:'contact',knowledge:'known',q:3,r:4,copper_deposit:true},{name:'Rumour city',owner:'Alector',owner_id:'ruler',settlement_id:'rumour',knowledge:'rumour',bearing:'~15 hexes east of Nostos',industry_hint:'tin'}, {name:'Nostos',owner:'Me',own:true,settlement_id:'origin',knowledge:'known'}];
   const rulers=[{owner:'Alector',owner_id:'ruler',known_cities:1,rumour_cities:1}];
   globalThis.fetch=async(url,opts={})=>{calls.push({url,opts});let data=[];if(url.endsWith('/cities'))data=cities;else if(url.endsWith('/diplomacy'))data=rulers;else if(url.endsWith('/goods'))data=[{key:'grain',name:'Grain'}];else if(opts.method==='POST')data={id:'letter',arrives_at:new Date(Date.now()+60000).toISOString()};return new Response(JSON.stringify(data),{status:opts.method==='POST'?201:200});};
   try{await run({body,node,calls,cities,rulers});}finally{Object.assign(globalThis,saved);State.provinceData=[];State.MY_SETTLEMENT_ID=null;State.WORLD_ID=null;}
@@ -78,4 +78,15 @@ test('M: failed Known fetch offers retry without inventing an empty directory',(
   assert.match(node('dtab-known').innerHTML,/Could not load/);assert.equal(node('dtab-known').dataset.loaded,undefined);
   globalThis.fetch=real;await node('tab-known').listener.call(node('tab-known'));
   assert.match(node('dtab-known').innerHTML,/Kyme/);
+}));
+
+test('M: Write clears a stale composer while the chosen conversation loads',()=>rig(async({node})=>{
+  await dip.loadDiplomacyDrawer();await dip.dipWrite('contact');
+  assert.match(node('dtab-threads').innerHTML,/dip-inline-compose/);
+  const real=globalThis.fetch;let release;
+  globalThis.fetch=async(url,opts)=>url.endsWith('/inbox')?await new Promise(resolve=>{release=()=>resolve(new Response('[]',{status:200}));}):real(url,opts);
+  const pending=dip.dipWrite('contact');
+  try {assert.doesNotMatch(node('dtab-threads').innerHTML,/dip-inline-compose/);assert.match(node('dtab-threads').innerHTML,/Loading/);}
+  finally {await new Promise(resolve=>setImmediate(resolve));release();await pending;}
+  assert.match(node('dtab-threads').innerHTML,/dip-inline-compose/);
 }));

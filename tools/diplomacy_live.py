@@ -97,18 +97,19 @@ try:
             'psql','-U','postgres','-d','simple-recall-all','-tAc',
             "SELECT landmass_id FROM map_tiles WHERE world_id='"+world+"' AND q="+str(q)+" AND r="+str(r))
     actors=[];groups={};viewer={'token':token,'host':host,'joined':joined,'landmass':landmass(host['q'],host['r'])}
-    actors.append({'host':host,'landmass':viewer['landmass']});groups[viewer['landmass']]=viewer
+    actors.append({'host':host,'landmass':viewer['landmass']});groups[viewer['landmass']]=[viewer]
     for actor in range(40):
         candidate_token=api('/api/v1/auth/register','POST',{'username':'inspect-neighbour-'+secrets.token_hex(4),'password':secrets.token_urlsafe(32)})['access_token']
         candidate_join=api(worldpath+'/join','POST',{},candidate_token)
         candidate_host=next(u for u in api(worldpath+'/units',token=candidate_token)['units'] if u['type']=='nomadic_host')
         candidate_landmass=landmass(candidate_host['q'],candidate_host['r'])
         actors.append({'host':candidate_host,'landmass':candidate_landmass})
-        if candidate_landmass in groups:
-            viewer=groups[candidate_landmass];token=viewer['token'];host=viewer['host'];joined=viewer['joined'];own_landmass=viewer['landmass'];buddy_token=candidate_token
+        neighbours=[v for v in groups.get(candidate_landmass,[]) if max(abs(v['host']['q']-candidate_host['q']),abs(v['host']['r']-candidate_host['r']),abs(v['host']['q']+v['host']['r']-candidate_host['q']-candidate_host['r']))<=6]
+        if neighbours:
+            viewer=neighbours[0];token=viewer['token'];host=viewer['host'];joined=viewer['joined'];own_landmass=viewer['landmass'];buddy_token=candidate_token
             break
-        groups[candidate_landmass]={'token':candidate_token,'host':candidate_host,'joined':candidate_join,'landmass':candidate_landmass}
-    else:raise AssertionError('no pair of ordinary spawns on same landmass')
+        groups.setdefault(candidate_landmass,[]).append({'token':candidate_token,'host':candidate_host,'joined':candidate_join,'landmass':candidate_landmass})
+    else:raise AssertionError('no nearby pair of ordinary spawns on same landmass')
     initial_map=api(worldpath+'/map',token=token)
     initial_provinces=api(worldpath+'/provinces',token=token)
     from playwright.sync_api import sync_playwright,expect
@@ -132,13 +133,6 @@ try:
           const rect=canvas.getBoundingClientRect();return {x:rect.left+at.x*SCALE*State.camera.zoom+State.camera.x,y:rect.top+at.y*SCALE*State.camera.zoom+State.camera.y};
         }""",{'q':q,'r':r})
         page.mouse.click(xy['x'],xy['y'])
-    def shots(kind):
-        for label,width,height in [('desktop',1280,900),('mobile',390,844)]:
-            page.set_viewport_size({'width':width,'height':height});page.wait_for_timeout(100)
-            page.locator('#inspect-panel').screenshot(path=str(OUT/(kind+'-'+label+'.png')))
-            page.screenshot(path=str(OUT/(kind+'-context-'+label+'.png')))
-            assert page.locator('#inspect-panel').evaluate('e=>e.scrollWidth<=e.clientWidth'),'inspect overflow'
-        page.set_viewport_size({'width':1280,'height':900})
     page.goto(base+'/play',wait_until='networkidle');ready()
     # The ordinary neighbour founds; the viewer discovers it by walking.
     neighbour=api(worldpath+'/founding/settle','POST',{'name':'Kyme'},buddy_token)
@@ -223,8 +217,15 @@ try:
         page.get_by_role('button',name='Known',exact=True).click()
         expect(page.locator('#dtab-known')).to_contain_text('Kyme')
         expect(page.locator('#dtab-known')).to_contain_text(buddy_city['owner']);dip_shots('known')
+        # Both ruler and city entries navigate to the same eligible city.
+        page.locator('[data-write="'+neighbour['settlement_id']+'"]').first.click()
+        expect(page.locator('.dip-thread-header')).to_contain_text('Kyme')
+        page.get_by_role('button',name='Known',exact=True).click()
         page.locator('[data-write="'+neighbour['settlement_id']+'"]').last.click()
-        page.locator('.dip-inline-compose textarea').fill('First letter from Nostos.');dip_shots('first-letter')
+        page.locator('.dip-inline-compose textarea').fill('First letter from Nostos.')
+        assert 'NaN' not in page.locator('#dtab-threads').inner_text()
+        expect(page.locator('#dtab-threads')).to_contain_text('New conversation')
+        dip_shots('first-letter')
         with page.expect_response(lambda r:r.request.method=='POST' and r.url.endswith('/messengers')) as sent_response:
             page.get_by_role('button',name='Dispatch →',exact=True).click()
     assert sent_response.value.status==201,(sent_response.value.status,sent_response.value.text())
@@ -249,6 +250,7 @@ try:
     with recipient.expect_response(lambda r:r.request.method=='POST' and r.url.endswith('/reply')) as replied:
         recipient.locator('#dip-reply-row-'+letter['id']).get_by_role('button',name='Reply',exact=True).click()
     assert replied.value.status==200
+    reply_receipt=replied.value.json()
     returned=wait_for(lambda:api(worldpath+'/settlements/'+own_id+'/messengers',token=token),lambda data:any(m['id']==letter['id'] and m['status']=='arrived' and m.get('reply_text')=='Kyme welcomes your letter.' for m in data),'reply not returned')
     page.reload(wait_until='networkidle');open_diplomacy(page);page.locator('.dip-thread-header').filter(has_text='Kyme').click()
     expect(page.locator('#dtab-threads')).to_contain_text('Kyme welcomes your letter.');dip_shots('returned-reply')
@@ -280,7 +282,7 @@ try:
     assert recipient.get_by_role('button',name='Accept ✓',exact=True).count()==2
     assert recipient.get_by_role('button',name='Decline ✗',exact=True).count()==2
     assert not errors,errors
-    proof={'health':health,'mode':MODE,'tabs':tabs,'own_city':own_city,'neighbour':buddy_city,'walk':steps,'letter_request':sent_response.value.request.post_data_json,'letter':letter,'reply_receipt':replied.value.json(),'returned_letters':returned,'trade_offers':offers,'recipient_inbox':inbox,'inspect_status':inspected.value.status,'browser_errors':errors,'sql_mutations':False,'readonly_actor_landmass':{'own':own_landmass,'actors':actors}}
+    proof={'health':health,'mode':MODE,'tabs':tabs,'own_city':own_city,'neighbour':buddy_city,'walk':steps,'letter_request':sent_response.value.request.post_data_json,'letter':letter,'reply_receipt':reply_receipt,'returned_letters':returned,'trade_offers':offers,'recipient_inbox':inbox,'inspect_status':inspected.value.status,'browser_errors':errors,'sql_mutations':False,'readonly_actor_landmass':{'own':own_landmass,'actors':actors}}
     (OUT/'proof.json').write_text(json.dumps(proof,indent=2)+'\n');print(json.dumps({'health':health,'mode':MODE,'letter':201,'reply':200,'offers':[201,201],'inspect':201,'browser_errors':errors}),flush=True)
 except Exception:
     print('browser errors:',errors,flush=True)

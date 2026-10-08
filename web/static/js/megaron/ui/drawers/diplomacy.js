@@ -115,7 +115,7 @@ async function loadDipKnown() {
       const status = c.own ? 'Your city' : contact ? 'Can write' : c.knowledge === 'rumour' ? 'Rumour only' : 'Known';
       const deposits = [c.copper_deposit ? 'Copper' : '', c.tin_deposit ? 'Tin' : '', c.silver_deposit ? 'Silver' : '', c.cedar_deposit ? 'Cedar' : ''].filter(Boolean).join(', ');
       const location = c.knowledge === 'known' && c.q != null && c.r != null
-        ? `${numberWords(c.q)}, ${numberWords(c.r)}` : c.bearing || 'Location unknown';
+        ? `${numberWords(c.q)}, ${numberWords(c.r)}` : c.bearing ? c.bearing.replace(/^~(\d+) hexes /, (_, n) => `~${numberWords(Number(n))} hexes `) : 'Location unknown';
       return `<div class="dsec"><div class="stat-row"><span class="sr-label">${esc(c.name)}</span><span class="sr-val">${contact ? writeButton(c.settlement_id) : ''}</span></div>
         <div>${esc(c.owner || 'Owner unknown')} · ${status}</div>
         <details><summary>Details</summary><div>${esc(location)}</div><div>${esc(deposits || c.industry_hint || '')}</div></details></div>`;
@@ -152,6 +152,7 @@ export async function dipWrite(settlementID) {
     tab.hidden = !show;
     tab.style.display = show ? '' : 'none';
   });
+  document.getElementById('dtab-threads').innerHTML = '<div class="loading">Loading…</div>';
   await loadDipThreads();
 }
 
