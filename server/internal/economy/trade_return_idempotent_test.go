@@ -33,7 +33,6 @@ func TestTradeReturnHandler_ReplayIsIdempotent(t *testing.T) {
 	messengerID := mkReturnMessenger(t, pool, ctx, worldID, ownerSeller, seller, buyer)
 
 	h := NewTradeReturnHandler(pool, events.NewStore(pool), nil)
-	h.Dice = neverLosesDice() // subject is the messenger-status guard, not the loss die
 
 	const qty = 25.0
 	payload := returnPayload(buyer, messengerID, uuid.UUID{}, "tin", qty)

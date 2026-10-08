@@ -17,6 +17,14 @@ A [[transfers|transfer]] or [[routes|standing order]] that goes by sea needs a f
 - **Sight.** A ship reads the open sea out to four hexes but sees only one hex inland.
 - **Supplies.** A crew eats. A ship whose crew runs short of food turns for home on its own — you are told why, and a thinned crew sails slower ([[upkeep]]).
 
+## Storms
+
+The open sea is never quite safe. **Every sea hex a ship enters brings a 5% chance of a storm**, whatever the ship is doing — a fleet, a ship carrying an army, an expedition, a galley carrying a trade, a transfer or a gift. Whose ship it is and why it sails never change the chance. A longer voyage simply meets more sea. Rivers and land have no storms. <!-- src: server/internal/combat/sea_storm.go StormChancePerSeaHex -->
+
+- **A storm costs the ship one point of hull** (of five). You are told where it struck and how much hull is left.
+- **At hull 0 the ship founders.** It goes down with everything aboard: its crew, any troops it carries, and any cargo. You are told where, and what was lost with her.
+- A battered ship keeps sailing. Bring it home and **Repair** it at a Shipyard before its next long voyage.
+
 ## Damage and loss
 
 Ships are damaged in [[battle]] and by storms. A damaged ship can be **Repaired** at a Shipyard (**War → Army → Repair**); you are notified when the work is done. Ships can also be lost at sea outright — and the gods, when angry, sometimes take one from the harbour ([[kharis]]).

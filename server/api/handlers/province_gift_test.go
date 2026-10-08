@@ -113,22 +113,8 @@ func TestGiftDestinationListMatchesLetterFOW(t *testing.T) {
 	}
 }
 
-type giftDice struct {
-	lost  bool
-	calls int
-}
-
-func (d *giftDice) Float64() float64 {
-	d.calls++
-	if d.lost {
-		return 0
-	}
-	return 1
-}
-func (d *giftDice) Intn(n int) int { return 0 }
-
 func TestGiftDeliveryLifecycle(t *testing.T) {
-	for _, scenario := range []string{"silver", "timber", "capacity", "new_owner", "collapsed", "deleted", "raided"} {
+	for _, scenario := range []string{"silver", "timber", "capacity", "new_owner", "collapsed", "deleted", "raided", "foundered"} {
 		t.Run(scenario, func(t *testing.T) {
 			f := giftFixture(t, false)
 			ctx := context.Background()
@@ -188,12 +174,15 @@ func TestGiftDeliveryLifecycle(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
-			if scenario == "collapsed" || scenario == "deleted" || scenario == "raided" {
+			if scenario == "foundered" {
+				if _, err := f.pool.Exec(ctx, `UPDATE transports SET status='foundered' WHERE id=$1`, body["transport_id"]); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if scenario == "collapsed" || scenario == "deleted" || scenario == "raided" || scenario == "foundered" {
 				wantCredit, wantLost, wantKind = 0, 50, "GiftLost"
 			}
-			dice := &giftDice{}
 			handler := economy.NewDeliveryHandler(f.pool, events.NewStore(f.pool), nil, f.scheduler)
-			handler.Dice = dice
 			for i := 0; i < 2; i++ {
 				if err := handler.HandleGift(ctx, event); err != nil {
 					t.Fatal(err)
@@ -214,6 +203,9 @@ func TestGiftDeliveryLifecycle(t *testing.T) {
 			}
 			if out.CreditedQuantity != wantCredit || out.LostQuantity != wantLost || out.SenderID != f.playerID || out.RecipientID != shipment.RecipientID || out.OriginID != f.originID || out.DestinationID != f.destID || out.CreditedQuantity+out.LostQuantity != 50 {
 				t.Fatalf("outcome=%+v, want credit=%v lost=%v", out, wantCredit, wantLost)
+			}
+			if wantReason := map[string]string{"raided": "intercepted", "foundered": "foundered"}[scenario]; wantReason != "" && out.Reason != wantReason {
+				t.Fatalf("reason=%q, want %q", out.Reason, wantReason)
 			}
 			if actual != nil && (out.ActualRecipientID == nil || *out.ActualRecipientID != *actual || !out.OwnerChanged) {
 				t.Fatalf("changed owner omitted: %+v", out)
@@ -273,7 +265,6 @@ func TestGiftNavalCarrierCompletesEmptyReturn(t *testing.T) {
 				}
 			}
 			h := economy.NewDeliveryHandler(f.pool, events.NewStore(f.pool), nil, f.scheduler)
-			h.Dice = &giftDice{}
 			if err := h.HandleGift(ctx, e); err != nil {
 				t.Fatal(err)
 			}
@@ -365,7 +356,6 @@ func TestGiftHistoryPrivateUntilArrival(t *testing.T) {
 		t.Fatal(err)
 	}
 	h := economy.NewDeliveryHandler(f.pool, events.NewStore(f.pool), nil, f.scheduler)
-	h.Dice = &giftDice{}
 	if err := h.HandleGift(ctx, e); err != nil {
 		t.Fatal(err)
 	}

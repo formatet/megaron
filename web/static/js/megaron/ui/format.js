@@ -3,6 +3,7 @@
 // directly regardless of layer (config/state ← api/ws ← render ← ui ← main).
 // (clock.js sits on the same low layer, so importing it keeps that promise.)
 import { giftText } from './gifts.js';
+import { fmtNum } from './fmt_num.js';
 import { serverNow } from '../clock.js';
 export function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
@@ -136,6 +137,7 @@ export function notifDomain(kind) {
     UnitAttrition: 'war', UnitDeserted: 'war', UnitLostAtSea: 'war',
     UnitRecalled: 'war', UnitRedirected: 'war', MarchStalled: 'war', OrderFailed: 'war',
     UpkeepUnpaid: 'war', ShipDamaged: 'war', ShipRepaired: 'war',
+    ShipStormDamaged: 'war', ShipFoundered: 'war',
     ShipCaptured: 'war', ShipLost: 'war', ShipStranded: 'war',
     SiegeStarted: 'war', SiegeLifted: 'war',
     CityOccupied: 'war', OccupationDefended: 'war', CityAnnexReady: 'war',
@@ -196,6 +198,8 @@ export function notifIcon(kind) {
     BattleWon:          '⚔',
     BattleLost:         '⚔',
     ShipDamaged:        '⛵',
+    ShipStormDamaged:   '🌊',
+    ShipFoundered:      '🌊',
     ShipRepaired:       '🔨',
     ShipCaptured:       '⛵',
     ShipLost:           '⚔',
@@ -521,6 +525,18 @@ export function notifText(kind, body) {
       return body.returning_home
         ? `${subject} took damage (${hull}) and is limping home for repair`
         : `${subject} took damage (${hull}) but holds its orders`;
+    }
+    case 'ShipStormDamaged':
+    case 'ShipFoundered': {
+      // Payload per combat.SeaStormPayload (slice T): one storm, rolled once
+      // when the ship entered sea hex (q,r); hull is the value after it.
+      const subject = `Your ${body.name || body.ship_type || 'ship'}`;
+      const at = `at (${body.q},${body.r})`;
+      if (kind === 'ShipStormDamaged') return `${subject} was battered by a storm ${at} — hull ${body.hull ?? '?'}/${body.hull_max ?? 5}`;
+      const lost = [];
+      for (const c of body.cargo || []) lost.push(`${fmtNum(c.quantity)} ${c.good_key}`);
+      if (body.troops) lost.push(`${body.troops.size} ${body.troops.unit_type}`);
+      return `${subject} foundered in a storm ${at}` + (lost.length ? ` — lost with her: ${lost.join(', ')}` : '');
     }
     case 'ShipRepaired': {
       // Payload per ShipRepairCompleteHandler (megaron_plan_skeppsreparation.md

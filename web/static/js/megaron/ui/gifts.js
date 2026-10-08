@@ -4,7 +4,8 @@ export function giftText(kind, body) {
   if (kind === 'GiftDispatched') return `Gift sent: ${body.quantity} ${body.good_key} · ${route}. Nothing requested in return.`;
   let text = `${kind === 'GiftLost' ? 'Gift lost' : 'Gift delivered'}: ${route} · ${body.credited_quantity ?? 0} ${body.good_key} received; ${body.lost_quantity ?? 0} lost.`;
   if (body.returned_quantity > 0) text += ` ${body.returned_quantity} sent home aboard the damaged ship; the return voyage can still be intercepted.`;
-  if (body.reason) text += ` ${body.reason.replaceAll('_', ' ')}.`;
+  if (body.reason === 'foundered') text += ' The ship foundered in a storm.';
+  else if (body.reason) text += ` ${body.reason.replaceAll('_', ' ')}.`;
   if (body.owner_changed) text += ` The city is now held by ${body.actual_recipient_name || 'another Wanax'}; intended for ${body.recipient_name || 'the former owner'}.`;
   return text;
 }

@@ -143,6 +143,9 @@ func printNotificationDetail(c *Client, n notificationItem) {
 	if n.Kind == "ShipRepaired" {
 		printShipRepairedLine(n)
 	}
+	if n.Kind == "ShipStormDamaged" || n.Kind == "ShipFoundered" {
+		printSeaStormLine(n)
+	}
 	if n.Kind == "ForeignMarchSighted" {
 		printForeignMarchSightedLine(n)
 	}
@@ -546,6 +549,49 @@ func printShipDamagedLine(n notificationItem) {
 		fmt.Printf("      Your %s took damage (hull %d/%d) but keeps its orders.\n",
 			body.UnitType, body.Hull, body.HullMax)
 	}
+}
+
+// printSeaStormLine renders a storm at sea (slice T) — combat.SeaStormPayload.
+func printSeaStormLine(n notificationItem) {
+	var body struct {
+		Name     string `json:"name"`
+		ShipType string `json:"ship_type"`
+		Q        int    `json:"q"`
+		R        int    `json:"r"`
+		Hull     int    `json:"hull"`
+		HullMax  int    `json:"hull_max"`
+		Cargo    []struct {
+			GoodKey  string  `json:"good_key"`
+			Quantity float64 `json:"quantity"`
+		} `json:"cargo"`
+		Troops *struct {
+			UnitType string `json:"unit_type"`
+			Size     int    `json:"size"`
+		} `json:"troops"`
+	}
+	if err := json.Unmarshal(n.Body, &body); err != nil {
+		return
+	}
+	name := body.Name
+	if name == "" {
+		name = body.ShipType
+	}
+	if n.Kind == "ShipStormDamaged" {
+		fmt.Printf("      Storm at (%d,%d): your %s keeps sailing, hull %d/%d. Repair at a shipyard.\n", body.Q, body.R, name, body.Hull, body.HullMax)
+		return
+	}
+	var lost []string
+	for _, c := range body.Cargo {
+		lost = append(lost, fmt.Sprintf("%.0f %s", c.Quantity, c.GoodKey))
+	}
+	if body.Troops != nil {
+		lost = append(lost, fmt.Sprintf("%d %s", body.Troops.Size, body.Troops.UnitType))
+	}
+	fmt.Printf("      Your %s foundered in a storm at (%d,%d).", name, body.Q, body.R)
+	if len(lost) > 0 {
+		fmt.Printf(" Lost with her: %s.", strings.Join(lost, ", "))
+	}
+	fmt.Println()
 }
 
 // printShipRepairedLine renders the human-readable follow-up to a

@@ -17,7 +17,7 @@ You are notified when an offer is accepted, declined or expires.
 
 ## Delivery
 
-An accepted trade is carried by caravan. It arrives as a *Trade delivered* notification. A negotiated delivery can be lost to storms or pirates on the way, and like any [[transfers|cargo]] it can be raided.
+An accepted trade is carried by caravan. It arrives as a *Trade delivered* notification. On land nothing is lost by chance; like any [[transfers|cargo]] it can be raided. At sea every ship risks [[sea|storms]].
 
 ### When it goes by sea
 
