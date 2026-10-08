@@ -3,6 +3,8 @@ package combat
 import (
 	"context"
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"formatet/megaron/server/internal/events"
@@ -241,7 +243,36 @@ func TestSeaStorm_SameRiskForEveryErrandAndOwner(t *testing.T) {
 	}
 	var p SeaStormPayload
 	_ = json.Unmarshal(raw, &p)
+	assertSameKeysAsWebFixture(t, raw, "ship_foundered.json")
 	if p.TransportID == nil || *p.TransportID != transportID || len(p.Cargo) != 1 || p.Cargo[0].Quantity != 40 || p.Errand != "gift" {
 		t.Fatalf("freighter founder payload = %+v, want gift transport with 40 silver lost", p)
+	}
+}
+
+// assertSameKeysAsWebFixture keeps the web formatter's test fixture honest:
+// its JSON keys must be exactly those of a payload this handler really
+// persisted (a stub that drifts from the server would test nothing).
+func assertSameKeysAsWebFixture(t *testing.T, raw []byte, name string) {
+	t.Helper()
+	fixture, err := os.ReadFile(filepath.Join("..", "..", "..", "web", "static", "js", "megaron", "ui", "testdata", name))
+	if err != nil {
+		t.Fatalf("read web fixture: %v", err)
+	}
+	var got, want map[string]any
+	if err := json.Unmarshal(raw, &got); err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(fixture, &want); err != nil {
+		t.Fatal(err)
+	}
+	for k := range got {
+		if _, ok := want[k]; !ok {
+			t.Errorf("persisted key %q missing from web fixture %s", k, name)
+		}
+	}
+	for k := range want {
+		if _, ok := got[k]; !ok {
+			t.Errorf("web fixture %s key %q is not in the persisted payload", name, k)
+		}
 	}
 }

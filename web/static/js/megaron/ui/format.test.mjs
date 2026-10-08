@@ -642,3 +642,23 @@ test('notifText: ExpeditionReport with no finds is a report, not a blank', () =>
   const t = notifText('ExpeditionReport', { area_q: 1, area_r: 1, ticks_out: 4, furthest: 3, hexes_seen: 12, finds: [] });
   assert.match(t, /: nothing of value$/);
 });
+
+// Slice T: storm notices. ship_foundered.json is a payload the server really
+// persisted (sea_storm_test.go checks its keys against the DB row).
+import { readFileSync } from 'node:fs';
+const foundered = JSON.parse(readFileSync(new URL('./testdata/ship_foundered.json', import.meta.url)));
+
+test('ShipFoundered: names the ship, the hex and the cargo lost with her', () => {
+  assert.equal(notifText('ShipFoundered', foundered),
+    'Your Galley foundered in a storm at (6,0) — lost with her: 40 silver');
+});
+
+test('ShipFoundered: drowned troops are named', () => {
+  const line = notifText('ShipFoundered', { ...foundered, cargo: undefined, troops: { size: 100, unit_type: 'infantry' } });
+  assert.equal(line, 'Your Galley foundered in a storm at (6,0) — lost with her: 100 infantry');
+});
+
+test('ShipStormDamaged: reads as hull left, not as a loss', () => {
+  const line = notifText('ShipStormDamaged', { ...foundered, foundered: false, hull: 3, hull_before: 4, cargo: undefined });
+  assert.equal(line, 'Your Galley was battered by a storm at (6,0) — hull 3/5');
+});
