@@ -20,7 +20,7 @@ globalThis.localStorage={getItem:()=>null};
 globalThis.setInterval=()=>0;
 globalThis.requestAnimationFrame=()=>0;
 let army={Spearman:2},refused=false,delay=null,calls=[];
-let forecast={grain:{est_net_per_tick:-0.1},goods:{lumber:0.01,stone:0}},forecastDelay;
+let forecast={grain:{est_net_per_tick:-0.1},goods:{timber:0.01,stone:0}},forecastDelay;
 let fp={active:true,population:1000,spearmen_in_field:2,grain:{ticks_left:2.5},silver:{ticks_left:240},tick_seconds:6};
 globalThis.fetch=async(url)=>{
  calls.push(url);
@@ -47,7 +47,7 @@ test('Q actual Host: only site assessment is primary and all existing detail sta
  assert.equal((html.match(/<details/g)||[]).length,1);assert.doesNotMatch(html,/<details[^>]*\bopen\b/,'Details must begin closed');
  const [primary,details]=html.split('<details');
  assert.match(element('ip-found-summary').innerHTML,/Feeds itself:<\/span><span> no</,'negative net must not promise self-sufficiency');
- assert.match(element('ip-found-summary').innerHTML,/Timber:<\/span><span> yes</,'positive lumber potential gives Timber yes');
+ assert.match(element('ip-found-summary').innerHTML,/Timber:<\/span><span> yes</,'positive timber potential gives Timber yes');
  assert.match(element('ip-found-summary').innerHTML,/Stone:<\/span><span> no</,'zero stone gives Stone no');
  assert.doesNotMatch(primary,/Food lasts|Escort pay|people|Spearmen|Produces|Deposits|Full forecast/,'only summary belongs before Details');
  for(const text of ['people','Food lasts','Escort pay lasts','Spearmen','Messengers free','Produces','Deposits'])assert.ok(details.includes(text),text+' detail must remain');
@@ -57,7 +57,7 @@ test('Q actual Host: only site assessment is primary and all existing detail sta
  assert.match(calls.find(u=>u.includes('/colonize-preview')),/q=0&r=0&pop=1000&seed=0&starter_farm=1/,'same forecast request');
 });
 test('Q actual Host: unrounded net and raw goods, not carried stocks or a new food formula, decide yes/no',async()=>{
- forecast={grain:{est_net_per_tick:0},goods:{lumber:0,stone:0.001}};
+ forecast={grain:{est_net_per_tick:0},goods:{timber:0,stone:0.001}};
  fp={...fp,grain:{amount:999,ticks_left:2.5},silver:{amount:999,ticks_left:240}};
  await click({city:null,host:true});let html=element('ip-found-summary').innerHTML;
  assert.match(html,/Feeds itself:<\/span><span> yes</,'zero net matches existing self-sufficiency boundary');assert.match(html,/Timber:<\/span><span> no</);assert.match(html,/Stone:<\/span><span> yes</,'small positive stone must not round to no');
@@ -71,7 +71,16 @@ test('Q actual Host: produces restores on another hex and late forecast cannot o
  await click({terrain:'fog',city:null});assert.equal(element('ip-produces-row').style.display,'','ordinary terrain keeps Produces');
  element('ip-found-preview').innerHTML='Other panel forecast';
  const before=element('ip-found-preview').innerHTML;
- pending.resolve(new Response(JSON.stringify({grain:{est_net_per_tick:55},goods:{lumber:100}})));
+ pending.resolve(new Response(JSON.stringify({grain:{est_net_per_tick:55},goods:{timber:100}})));
  await new Promise(resolve=>setImmediate(resolve));
  assert.equal(element('ip-found-preview').innerHTML,before,'late Host forecast must not update another panel');
+});
+
+test('Q actual Host: archived real colonize-preview with timber 8 must show Timber yes',async()=>{
+ const {readFileSync}=await import('node:fs');
+ const real=JSON.parse(readFileSync(new URL('../../../../../docs/reviews/host-enkel/fixtures/real-colonize-preview.json',import.meta.url),'utf8'));
+ assert.equal(real.forecast.goods.timber,8,'fixture preserves the real API commodity key');
+ assert.equal(Object.hasOwn(real.forecast.goods,'lumber'),false,'real endpoint never renamed timber to lumber');
+ forecast=real.forecast;await click({city:null,host:true});
+ assert.match(element('ip-found-summary').innerHTML,/Timber:<\/span><span> yes</,'real forecast timber must show Timber yes');
 });

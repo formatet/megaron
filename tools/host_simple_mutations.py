@@ -7,7 +7,8 @@ mapfile='web/static/js/megaron/render/map.js';test=ROOT/'web/static/js/megaron/r
 cases=[
  ('net',mapfile,"net >= 0 ? 'yes' : 'no'","net >= 0 ? 'no' : 'yes'",'negative net must not promise self-sufficiency'),
  ('details',mapfile,'<details id="ip-host-details" class="dsec">','<details id="ip-host-details" class="dsec" open>','Details must begin closed'),
- ('stone',mapfile,"potential('stone')","potential('lumber')",'zero stone gives Stone no'),
+ ('stone',mapfile,"potential('stone')","potential('timber')",'zero stone gives Stone no'),
+ ('timber',mapfile,"potential('timber')","potential('lumber')",'real forecast timber must show Timber yes'),
  ('stale',mapfile,'if (!stillThisHost()) return;','if (false) return;','late Host forecast must not update another panel'),
 ]
 for name,file,needle,replacement,message in cases:

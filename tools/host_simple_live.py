@@ -89,6 +89,19 @@ try:
     joined = api(worldpath+'/join', 'POST', {}, token)
     units=api(worldpath+'/units',token=token)['units']
     host=next(u for u in units if u['type']=='nomadic_host')
+    timber_probe=None
+    if MODE=='after':
+        # Choose a normal joined Host whose actual known forecast has timber.
+        # This is read-only selection; no game state or payload is fabricated.
+        for attempt in range(20):
+            phase=api(worldpath+'/founding/status',token=token)
+            timber_probe=api(worldpath+'/colonize-preview?q='+str(host['q'])+'&r='+str(host['r'])
+                +'&pop='+str(phase['population'])+'&seed='+str(round(phase['grain']['amount']))+'&starter_farm=1',token=token)
+            if timber_probe['goods'].get('timber',0)>0:break
+            token=api('/api/v1/auth/register','POST',{'username':'host-timber-'+secrets.token_hex(4),'password':secrets.token_urlsafe(32)})['access_token']
+            joined=api(worldpath+'/join','POST',{},token)
+            host=next(u for u in api(worldpath+'/units',token=token)['units'] if u['type']=='nomadic_host')
+        else:raise AssertionError('no natural joined Host with positive timber forecast')
     from playwright.sync_api import sync_playwright, expect
     playwright=sync_playwright().start();browser=playwright.chromium.launch(ignore_default_args=['--disable-dev-shm-usage'])
     page=browser.new_page(viewport={'width':1280,'height':900})
@@ -144,8 +157,10 @@ try:
         details=page.locator('#ip-host-details')
         assert details.count()==1 and not details.evaluate('e=>e.open')
         expect(page.locator('#ip-found-summary')).to_contain_text('Feeds itself: '+('yes' if forecast['grain']['est_net_per_tick']>=0 else 'no'))
-        for good,label in [('lumber','Timber'),('stone','Stone')]:
+        for good,label in [('timber','Timber'),('stone','Stone')]:
             expect(page.locator('#ip-found-summary')).to_contain_text(label+': '+('yes' if forecast['goods'].get(good,0)>0 else 'no'))
+        assert forecast['goods'].get('timber',0)>0,'live scenario must exercise actual positive timber'
+        expect(page.locator('#ip-found-summary')).to_contain_text('Timber: yes')
         visible=page.locator('#inspect-panel').inner_text()
         assert 'Catchment forecast' not in visible and 'Escort pay' not in visible and 'Produces' not in visible,visible
         assert not page.locator('#ip-deposits-row').is_visible() and not page.locator('#ip-produces-row').is_visible()
@@ -177,7 +192,7 @@ try:
     provinces=api(worldpath+'/provinces',token=token)
     city=next(p for p in provinces if p.get('own') and p.get('is_capital'))
     assert not errors,errors
-    proof={'health':health,'mode':MODE,'host':host,'phase':phase,'forecast':forecast,'city':city,'native_dialogs':dialogs,'founding_orders':orders,'founding_responses':order_responses,'browser_errors':errors,'sql_mutations':False}
+    proof={'health':health,'mode':MODE,'host':host,'phase':phase,'forecast':forecast,'timber_positive_probe':timber_probe,'city':city,'native_dialogs':dialogs,'founding_orders':orders,'founding_responses':order_responses,'browser_errors':errors,'sql_mutations':False}
     (OUT/'proof.json').write_text(json.dumps(proof,indent=2)+'\n')
     print(json.dumps({'health':health,'mode':MODE,'native_dialogs':dialogs,'founding_orders':orders,'founding_responses':order_responses,'browser_errors':errors}))
 except Exception:
