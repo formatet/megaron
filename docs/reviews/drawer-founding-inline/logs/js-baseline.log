@@ -1,0 +1,2524 @@
+TAP version 13
+# Subtest: AK1: main.js importeras (bakgrunds-bootstrap misslyckas tyst mot en stubbad 401) utan att krascha
+ok 1 - AK1: main.js importeras (bakgrunds-bootstrap misslyckas tyst mot en stubbad 401) utan att krascha
+  ---
+  duration_ms: 0.852532
+  type: 'test'
+  ...
+# Subtest: AK2: att öppna EN GODTYCKLIG drawer stänger inspect-panelen och nollställer State.selectedHex
+ok 2 - AK2: att öppna EN GODTYCKLIG drawer stänger inspect-panelen och nollställer State.selectedHex
+  ---
+  duration_ms: 0.477885
+  type: 'test'
+  ...
+# Subtest: AK3: drawer-chrome öppnas som vanligt — closeInspect stör inte den normala vägen
+ok 3 - AK3: drawer-chrome öppnas som vanligt — closeInspect stör inte den normala vägen
+  ---
+  duration_ms: 0.212552
+  type: 'test'
+  ...
+# Subtest: AK4: stänger man drawern igen kommer panelen INTE tillbaka (den var riktigt stängd, inte bara dold bakom z-index)
+ok 4 - AK4: stänger man drawern igen kommer panelen INTE tillbaka (den var riktigt stängd, inte bara dold bakom z-index)
+  ---
+  duration_ms: 0.200911
+  type: 'test'
+  ...
+# Subtest: AK1: at ZOOM_MIN, a further zoom-out step leaves camera bit-identical
+ok 5 - AK1: at ZOOM_MIN, a further zoom-out step leaves camera bit-identical
+  ---
+  duration_ms: 2.322526
+  type: 'test'
+  ...
+# Subtest: AK2: at ZOOM_MAX, a further zoom-in step leaves camera bit-identical
+ok 6 - AK2: at ZOOM_MAX, a further zoom-in step leaves camera bit-identical
+  ---
+  duration_ms: 0.24717
+  type: 'test'
+  ...
+# Subtest: AK3 (regression): an unclamped step matches the pre-fix arithmetic exactly
+ok 7 - AK3 (regression): an unclamped step matches the pre-fix arithmetic exactly
+  ---
+  duration_ms: 0.160586
+  type: 'test'
+  ...
+# Subtest: AK4: a partially-clamped step translates by the EFFECTIVE factor, not the requested one
+ok 8 - AK4: a partially-clamped step translates by the EFFECTIVE factor, not the requested one
+  ---
+  duration_ms: 0.183784
+  type: 'test'
+  ...
+# Subtest: clampZoom bounds
+ok 9 - clampZoom bounds
+  ---
+  duration_ms: 0.203068
+  type: 'test'
+  ...
+# Subtest: PAN1: a camera already inside the world is left exactly where it was
+ok 10 - PAN1: a camera already inside the world is left exactly where it was
+  ---
+  duration_ms: 0.203912
+  type: 'test'
+  ...
+# Subtest: PAN2: panning past the near edge stops at the margin, not at infinity
+ok 11 - PAN2: panning past the near edge stops at the margin, not at infinity
+  ---
+  duration_ms: 0.239392
+  type: 'test'
+  ...
+# Subtest: PAN3: panning past the far edge stops there too
+ok 12 - PAN3: panning past the far edge stops there too
+  ---
+  duration_ms: 0.134457
+  type: 'test'
+  ...
+# Subtest: PAN4: the margin is in WORLD units — it scales with zoom, it is not a pixel frame
+ok 13 - PAN4: the margin is in WORLD units — it scales with zoom, it is not a pixel frame
+  ---
+  duration_ms: 0.412886
+  type: 'test'
+  ...
+# Subtest: PAN5: a world smaller than the viewport is centred, not shoved into a corner
+ok 14 - PAN5: a world smaller than the viewport is centred, not shoved into a corner
+  ---
+  duration_ms: 0.417777
+  type: 'test'
+  ...
+# Subtest: PAN6: an unloaded world (null bounds) leaves the camera untouched
+ok 15 - PAN6: an unloaded world (null bounds) leaves the camera untouched
+  ---
+  duration_ms: 0.194024
+  type: 'test'
+  ...
+# Subtest: PAN7: both axes are clamped — a bound on x only is not a bound
+ok 16 - PAN7: both axes are clamped — a bound on x only is not a bound
+  ---
+  duration_ms: 0.114705
+  type: 'test'
+  ...
+# Subtest: workedHexesFromRoster: one marker per hex, dedup across gubbar/goods
+ok 17 - workedHexesFromRoster: one marker per hex, dedup across gubbar/goods
+  ---
+  duration_ms: 1.890546
+  type: 'test'
+  ...
+# Subtest: workedHexesFromRoster: spans settlements and tolerates empty/missing
+ok 18 - workedHexesFromRoster: spans settlements and tolerates empty/missing
+  ---
+  duration_ms: 0.294543
+  type: 'test'
+  ...
+# Subtest: catchment offsets cover the full radius-2 disc (19 hexes), not 7
+ok 19 - catchment offsets cover the full radius-2 disc (19 hexes), not 7
+  ---
+  duration_ms: 0.453579
+  type: 'test'
+  ...
+# Subtest: AK1: import does not touch DOM/window before this point (proven by reaching here)
+ok 20 - AK1: import does not touch DOM/window before this point (proven by reaching here)
+  ---
+  duration_ms: 0.12589
+  type: 'test'
+  ...
+# Subtest: AK2: panDelta normalizes a diagonal so W+D is not sqrt(2)x faster than one direction
+ok 21 - AK2: panDelta normalizes a diagonal so W+D is not sqrt(2)x faster than one direction
+  ---
+  duration_ms: 0.223854
+  type: 'test'
+  ...
+# Subtest: AK3: no keys held means no movement
+ok 22 - AK3: no keys held means no movement
+  ---
+  duration_ms: 0.142274
+  type: 'test'
+  ...
+# Subtest: messengerLegPosition: no leg set → null (today's flat interpolation applies)
+ok 23 - messengerLegPosition: no leg set → null (today's flat interpolation applies)
+  ---
+  duration_ms: 0.300365
+  type: 'test'
+  ...
+# Subtest: messengerLegPosition: to_port walks from origin to the port over the leg window
+ok 24 - messengerLegPosition: to_port walks from origin to the port over the leg window
+  ---
+  duration_ms: 0.494966
+  type: 'test'
+  ...
+# Subtest: messengerLegPosition: waiting stands still at the port
+ok 25 - messengerLegPosition: waiting stands still at the port
+  ---
+  duration_ms: 0.359331
+  type: 'test'
+  ...
+# Subtest: messengerLegPosition: sealed stands still at the port
+ok 26 - messengerLegPosition: sealed stands still at the port
+  ---
+  duration_ms: 0.396091
+  type: 'test'
+  ...
+# Subtest: messengerLegPosition: ashore walks from the disembark point to the true target
+ok 27 - messengerLegPosition: ashore walks from the disembark point to the true target
+  ---
+  duration_ms: 0.245542
+  type: 'test'
+  ...
+# Subtest: messengerLegPosition: aboard draws on a located carrier unit, ignoring the reserve leg
+ok 28 - messengerLegPosition: aboard draws on a located carrier unit, ignoring the reserve leg
+  ---
+  duration_ms: 0.223748
+  type: 'test'
+  ...
+# Subtest: messengerLegPosition: aboard draws on a located /trades transport when no unit matches
+ok 29 - messengerLegPosition: aboard draws on a located /trades transport when no unit matches
+  ---
+  duration_ms: 0.178549
+  type: 'test'
+  ...
+# Subtest: messengerLegPosition: aboard falls back to the server's reserve leg when no carrier is found client-side
+ok 30 - messengerLegPosition: aboard falls back to the server's reserve leg when no carrier is found client-side
+  ---
+  duration_ms: 0.116588
+  type: 'test'
+  ...
+# Subtest: only remembered hexes are desaturated; live, fog and absent tier stay untouched
+ok 31 - only remembered hexes are desaturated; live, fog and absent tier stay untouched
+  ---
+  duration_ms: 2.039954
+  type: 'test'
+  ...
+# Subtest: frontier spans are integer device pixels and clipped to viewport at fractional zoom
+ok 32 - frontier spans are integer device pixels and clipped to viewport at fractional zoom
+  ---
+  duration_ms: 0.259364
+  type: 'test'
+  ...
+# Subtest: empty memory makes no canvas change; failures restore canvas state
+ok 33 - empty memory makes no canvas change; failures restore canvas state
+  ---
+  duration_ms: 0.524178
+  type: 'test'
+  ...
+# Subtest: camera transform determines device pixel mask, including zoom and pan
+ok 34 - camera transform determines device pixel mask, including zoom and pan
+  ---
+  duration_ms: 1.293417
+  type: 'test'
+  ...
+# Subtest: enclosed lake behind the shore is not previewed (acceptance world (28,18))
+ok 35 - enclosed lake behind the shore is not previewed (acceptance world (28,18))
+  ---
+  duration_ms: 0.829327
+  type: 'test'
+  ...
+# Subtest: one land hex on the line blocks; open water reaches 4
+ok 36 - one land hex on the line blocks; open water reaches 4
+  ---
+  duration_ms: 0.793649
+  type: 'test'
+  ...
+# Subtest: fog between eye and sea blocks (never over-draw)
+ok 37 - fog between eye and sea blocks (never over-draw)
+  ---
+  duration_ms: 0.170952
+  type: 'test'
+  ...
+# Subtest: edge tie holds if either side is sea
+ok 38 - edge tie holds if either side is sea
+  ---
+  duration_ms: 0.833379
+  type: 'test'
+  ...
+# Subtest: chat disabled: no password action and no password POST
+ok 39 - chat disabled: no password action and no password POST
+  ---
+  duration_ms: 30.121545
+  type: 'test'
+  ...
+# Subtest: chat pending: no password action and no password POST
+ok 40 - chat pending: no password action and no password POST
+  ---
+  duration_ms: 1.744682
+  type: 'test'
+  ...
+# Subtest: chat provisioning: no password action and no password POST
+ok 41 - chat provisioning: no password action and no password POST
+  ---
+  duration_ms: 2.518204
+  type: 'test'
+  ...
+# Subtest: ready: only an explicit click requests a password; close erases it
+ok 42 - ready: only an explicit click requests a password; close erases it
+  ---
+  duration_ms: 1.970721
+  type: 'test'
+  ...
+# Subtest: close/reopen during password request discards the late secret
+ok 43 - close/reopen during password request discards the late secret
+  ---
+  duration_ms: 2.253751
+  type: 'test'
+  ...
+# Subtest: another request clears the first secret immediately; errors bypass diagnostics
+ok 44 - another request clears the first secret immediately; errors bypass diagnostics
+  ---
+  duration_ms: 2.546134
+  type: 'test'
+  ...
+# Subtest: sign out clears the displayed secret before navigation
+ok 45 - sign out clears the displayed secret before navigation
+  ---
+  duration_ms: 1.334324
+  type: 'test'
+  ...
+# Subtest: agora_ready dispatch opens Account rather than toggling an already open window
+ok 46 - agora_ready dispatch opens Account rather than toggling an already open window
+  ---
+  duration_ms: 2.183215
+  type: 'test'
+  ...
+# Subtest: ReadyRenderedLinkUsesConfiguredHomeserver
+ok 47 - ReadyRenderedLinkUsesConfiguredHomeserver
+  ---
+  duration_ms: 1.111623
+  type: 'test'
+  ...
+# Subtest: AK1: import does not touch DOM/window before this point (proven by reaching here)
+ok 48 - AK1: import does not touch DOM/window before this point (proven by reaching here)
+  ---
+  duration_ms: 0.844536
+  type: 'test'
+  ...
+# Subtest: AK2: a positive count shows the number and reveals the badge
+ok 49 - AK2: a positive count shows the number and reveals the badge
+  ---
+  duration_ms: 0.200513
+  type: 'test'
+  ...
+# Subtest: AK3: a count over 99 caps the label at "99+"
+ok 50 - AK3: a count over 99 caps the label at "99+"
+  ---
+  duration_ms: 0.109086
+  type: 'test'
+  ...
+# Subtest: AK4: zero hides the badge
+ok 51 - AK4: zero hides the badge
+  ---
+  duration_ms: 0.10815
+  type: 'test'
+  ...
+# Subtest: urgencyTier: colour follows the server level, not the domain (Timothy 2026-09-25)
+ok 52 - urgencyTier: colour follows the server level, not the domain (Timothy 2026-09-25)
+  ---
+  duration_ms: 0.198715
+  type: 'test'
+  ...
+# Subtest: AK1: chips.js importeras utan att röra DOM/window före denna punkt
+ok 53 - AK1: chips.js importeras utan att röra DOM/window före denna punkt
+  ---
+  duration_ms: 0.953768
+  type: 'test'
+  ...
+# Subtest: AK2: "✕ all" är dold under 3 chips
+ok 54 - AK2: "✕ all" är dold under 3 chips
+  ---
+  duration_ms: 1.709801
+  type: 'test'
+  ...
+# Subtest: AK3: "✕ all" dyker upp vid exakt 3 chips (DISMISS_ALL_FROM)
+ok 55 - AK3: "✕ all" dyker upp vid exakt 3 chips (DISMISS_ALL_FROM)
+  ---
+  duration_ms: 0.191
+  type: 'test'
+  ...
+# Subtest: AK4: dismissAllChips märker varje aktivt chip som "dismissing" utan nätverksanrop för chip utan id
+ok 56 - AK4: dismissAllChips märker varje aktivt chip som "dismissing" utan nätverksanrop för chip utan id
+  ---
+  duration_ms: 0.238243
+  type: 'test'
+  ...
+# Subtest: AK5: när animationen är klar försvinner chippen och "✕ all" göms igen under tröskeln
+ok 57 - AK5: när animationen är klar försvinner chippen och "✕ all" göms igen under tröskeln
+  ---
+  duration_ms: 0.219074
+  type: 'test'
+  ...
+# Subtest: AK6: ett chip som bär notis-id markerar SIN egen arkivrad läst vid avfärdande — POST .../read, aldrig DELETE
+ok 58 - AK6: ett chip som bär notis-id markerar SIN egen arkivrad läst vid avfärdande — POST .../read, aldrig DELETE
+  ---
+  duration_ms: 6.637187
+  type: 'test'
+  ...
+# Subtest: HY1: stapeln byggs ur arkivet — n olästa ger n brickor
+ok 59 - HY1: stapeln byggs ur arkivet — n olästa ger n brickor
+  ---
+  duration_ms: 2.965081
+  type: 'test'
+  ...
+# Subtest: HY2: frågan ställs med dispatchable=true — en tystad sort ska inte återuppstå vid omladdning
+ok 60 - HY2: frågan ställs med dispatchable=true — en tystad sort ska inte återuppstå vid omladdning
+  ---
+  duration_ms: 0.321453
+  type: 'test'
+  ...
+# Subtest: HY3: äldst till vänster — spelaren arbetar sig igenom i den ordning buden kom
+ok 61 - HY3: äldst till vänster — spelaren arbetar sig igenom i den ordning buden kom
+  ---
+  duration_ms: 0.974718
+  type: 'test'
+  ...
+# Subtest: HY4: vid backlog behålls de NYASTE tolv, inte de tolv äldsta
+ok 62 - HY4: vid backlog behålls de NYASTE tolv, inte de tolv äldsta
+  ---
+  duration_ms: 1.151468
+  type: 'test'
+  ...
+# Subtest: HY5: varje bricka bär sitt notis-id, så avfärdande kan markera rätt arkivrad läst
+ok 63 - HY5: varje bricka bär sitt notis-id, så avfärdande kan markera rätt arkivrad läst
+  ---
+  duration_ms: 0.349744
+  type: 'test'
+  ...
+# Subtest: HY6: en sort utan egen gren får ändå en bricka — i neutral systemfärg
+ok 64 - HY6: en sort utan egen gren får ändå en bricka — i neutral systemfärg
+  ---
+  duration_ms: 0.216699
+  type: 'test'
+  ...
+# Subtest: HY7: ett tomt arkiv ger en tom stapel och ingen badge
+ok 65 - HY7: ett tomt arkiv ger en tom stapel och ingen badge
+  ---
+  duration_ms: 0.171773
+  type: 'test'
+  ...
+# Subtest: CG1: a refused +1 carries the server's own reason, and does NOT count as a change
+ok 66 - CG1: a refused +1 carries the server's own reason, and does NOT count as a change
+  ---
+  duration_ms: 1.442082
+  type: 'test'
+  ...
+# Subtest: CG2: each distinct server refusal surfaces as itself — not one generic line
+ok 67 - CG2: each distinct server refusal surfaces as itself — not one generic line
+  ---
+  duration_ms: 0.997894
+  type: 'test'
+  ...
+# Subtest: CG3: a successful +1 reports a change and says nothing
+ok 68 - CG3: a successful +1 reports a change and says nothing
+  ---
+  duration_ms: 0.201961
+  type: 'test'
+  ...
+# Subtest: CG4: Fill that places nothing at all explains why (the old code broke out silently)
+ok 69 - CG4: Fill that places nothing at all explains why (the old code broke out silently)
+  ---
+  duration_ms: 0.174671
+  type: 'test'
+  ...
+# Subtest: CG5: Fill that places some then hits the cap stays quiet — the pips moved, that IS the feedback
+ok 70 - CG5: Fill that places some then hits the cap stays quiet — the pips moved, that IS the feedback
+  ---
+  duration_ms: 0.335971
+  type: 'test'
+  ...
+# Subtest: CG6: Fill respects cap as its loop guard
+ok 71 - CG6: Fill respects cap as its loop guard
+  ---
+  duration_ms: 0.186255
+  type: 'test'
+  ...
+# Subtest: CG7: −1 deletes the matching ordinal and reports a change
+ok 72 - CG7: −1 deletes the matching ordinal and reports a change
+  ---
+  duration_ms: 0.325053
+  type: 'test'
+  ...
+# Subtest: CG8: −1 with no matching citizen says so and refreshes instead of doing nothing
+ok 73 - CG8: −1 with no matching citizen says so and refreshes instead of doing nothing
+  ---
+  duration_ms: 0.269962
+  type: 'test'
+  ...
+# Subtest: CG9: a failed DELETE is reported, not swallowed
+ok 74 - CG9: a failed DELETE is reported, not swallowed
+  ---
+  duration_ms: 0.416303
+  type: 'test'
+  ...
+# Subtest: CG10: an empty or non-JSON error body still produces a line, never blank silence
+ok 75 - CG10: an empty or non-JSON error body still produces a line, never blank silence
+  ---
+  duration_ms: 0.546292
+  type: 'test'
+  ...
+# Subtest: CG11: an expired session reads as the server's own sentence, not "error 401"
+ok 76 - CG11: an expired session reads as the server's own sentence, not "error 401"
+  ---
+  duration_ms: 0.213414
+  type: 'test'
+  ...
+# Subtest: CG12: the city centre and a hex are never confused for one another
+ok 77 - CG12: the city centre and a hex are never confused for one another
+  ---
+  duration_ms: 0.145432
+  type: 'test'
+  ...
+# Subtest: CG13: two different hexes get different keys — a restore must not land on the wrong one
+ok 78 - CG13: two different hexes get different keys — a restore must not land on the wrong one
+  ---
+  duration_ms: 0.122913
+  type: 'test'
+  ...
+# Subtest: CG14: the key survives a round trip through a re-rendered element with the same identity
+ok 79 - CG14: the key survives a round trip through a re-rendered element with the same identity
+  ---
+  duration_ms: 0.091504
+  type: 'test'
+  ...
+# Subtest: CG15: a missing or dataset-less element yields null, so nothing is restored rather than throwing
+ok 80 - CG15: a missing or dataset-less element yields null, so nothing is restored rather than throwing
+  ---
+  duration_ms: 0.07873
+  type: 'test'
+  ...
+# Subtest: CG11: insufficient_goods is delegated to formatApiError, the same helper every other surface uses
+ok 81 - CG11: insufficient_goods is delegated to formatApiError, the same helper every other surface uses
+  ---
+  duration_ms: 0.186864
+  type: 'test'
+  ...
+# Subtest: takeLabel says what taking does, building part only when one stands there
+ok 82 - takeLabel says what taking does, building part only when one stands there
+  ---
+  duration_ms: 0.227544
+  type: 'test'
+  ...
+# Subtest: CG16: −1 is disabled on a held hex where none of the gubbar are yours
+ok 83 - CG16: −1 is disabled on a held hex where none of the gubbar are yours
+  ---
+  duration_ms: 1.647868
+  type: 'test'
+  ...
+# Subtest: codex: index ids are unique and every category is declared
+ok 84 - codex: index ids are unique and every category is declared
+  ---
+  duration_ms: 0.823395
+  type: 'test'
+  ...
+# Subtest: codex: every index entry has a file and every file has an index entry
+ok 85 - codex: every index entry has a file and every file has an index entry
+  ---
+  duration_ms: 0.671578
+  type: 'test'
+  ...
+# Subtest: codex: every [[link]] and related entry resolves to an article
+ok 86 - codex: every [[link]] and related entry resolves to an article
+  ---
+  duration_ms: 0.774863
+  type: 'test'
+  ...
+# Subtest: codex: every notification kind the client shows maps to exactly one article
+ok 87 - codex: every notification kind the client shows maps to exactly one article
+  ---
+  duration_ms: 0.949311
+  type: 'test'
+  ...
+# Subtest: codex: every drawer with a ? button has an article
+ok 88 - codex: every drawer with a ? button has an article
+  ---
+  duration_ms: 0.367278
+  type: 'test'
+  ...
+# Subtest: codex: every article is reachable — linked from another article or listed as related
+ok 89 - codex: every article is reachable — linked from another article or listed as related
+  ---
+  duration_ms: 0.524792
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: escapes HTML and renders links, known and missing
+ok 90 - renderMarkdown: escapes HTML and renders links, known and missing
+  ---
+  duration_ms: 0.815687
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: headings, lists, tables, code and comments
+ok 91 - renderMarkdown: headings, lists, tables, code and comments
+  ---
+  duration_ms: 0.686667
+  type: 'test'
+  ...
+# Subtest: backlinksTo and searchArticles
+ok 92 - backlinksTo and searchArticles
+  ---
+  duration_ms: 0.548232
+  type: 'test'
+  ...
+# Subtest: codex: lowercase agora_ready is mapped and community rules match alpha policy
+ok 93 - codex: lowercase agora_ready is mapped and community rules match alpha policy
+  ---
+  duration_ms: 1.521735
+  type: 'test'
+  ...
+# Subtest: codex search finds abandon in Colonies and call-back in Sea
+ok 94 - codex search finds abandon in Colonies and call-back in Sea
+  ---
+  duration_ms: 13.034629
+  type: 'test'
+  ...
+# Subtest: DG1: the environment answers the question two Chromium reports could not
+ok 95 - DG1: the environment answers the question two Chromium reports could not
+  ---
+  duration_ms: 1.276333
+  type: 'test'
+  ...
+# Subtest: DG2: a refused call is remembered with the server's own words
+ok 96 - DG2: a refused call is remembered with the server's own words
+  ---
+  duration_ms: 1.811673
+  type: 'test'
+  ...
+# Subtest: DG3: the buffer keeps the NEWEST entries — the failure that prompted the report is the last one
+ok 97 - DG3: the buffer keeps the NEWEST entries — the failure that prompted the report is the last one
+  ---
+  duration_ms: 0.224338
+  type: 'test'
+  ...
+# Subtest: DG4: long strings are truncated so a report stays a lead, not a log
+ok 98 - DG4: long strings are truncated so a report stays a lead, not a log
+  ---
+  duration_ms: 0.188468
+  type: 'test'
+  ...
+# Subtest: DG5: with nothing wrong, the snapshot carries the environment and no empty scaffolding
+ok 99 - DG5: with nothing wrong, the snapshot carries the environment and no empty scaffolding
+  ---
+  duration_ms: 0.206844
+  type: 'test'
+  ...
+# Subtest: DG6: a thrown script error is captured with its source location
+ok 100 - DG6: a thrown script error is captured with its source location
+  ---
+  duration_ms: 0.290109
+  type: 'test'
+  ...
+# Subtest: DG7: an unhandled promise rejection is captured too — the half that never reaches window.onerror
+ok 101 - DG7: an unhandled promise rejection is captured too — the half that never reaches window.onerror
+  ---
+  duration_ms: 0.280349
+  type: 'test'
+  ...
+# Subtest: DG8: a listener that throws never breaks the page it is diagnosing
+ok 102 - DG8: a listener that throws never breaks the page it is diagnosing
+  ---
+  duration_ms: 0.246529
+  type: 'test'
+  ...
+# Subtest: DG9: installErrorCapture on a host without addEventListener is a no-op, not a crash
+ok 103 - DG9: installErrorCapture on a host without addEventListener is a no-op, not a crash
+  ---
+  duration_ms: 0.401586
+  type: 'test'
+  ...
+# Subtest: DG10: truncate leaves short strings untouched and handles null
+ok 104 - DG10: truncate leaves short strings untouched and handles null
+  ---
+  duration_ms: 0.393286
+  type: 'test'
+  ...
+# Subtest: AK1: a direct q/r on the payload wins outright, no lookup needed
+ok 105 - AK1: a direct q/r on the payload wins outright, no lookup needed
+  ---
+  duration_ms: 1.779216
+  type: 'test'
+  ...
+# Subtest: AK2: settlement_id resolves via State.provinceData
+ok 106 - AK2: settlement_id resolves via State.provinceData
+  ---
+  duration_ms: 0.298066
+  type: 'test'
+  ...
+# Subtest: AK3: dest_id/destination_id (transport/trade kinds) resolve the same way settlement_id does
+ok 107 - AK3: dest_id/destination_id (transport/trade kinds) resolve the same way settlement_id does
+  ---
+  duration_ms: 0.164333
+  type: 'test'
+  ...
+# Subtest: AK4: OfferAccepted/Declined/Expired go to the COUNTERPARTY city, not the recipient's own (Timothy 2026-09-04, megaron_plan_dispatches.md §3)
+ok 108 - AK4: OfferAccepted/Declined/Expired go to the COUNTERPARTY city, not the recipient's own (Timothy 2026-09-04, megaron_plan_dispatches.md §3)
+  ---
+  duration_ms: 0.226773
+  type: 'test'
+  ...
+# Subtest: AK5: OfferAccepted falls back to settlement_id if counterparty_id is somehow absent
+ok 109 - AK5: OfferAccepted falls back to settlement_id if counterparty_id is somehow absent
+  ---
+  duration_ms: 0.139466
+  type: 'test'
+  ...
+# Subtest: AK6: a non-offer kind never picks up counterparty_id even if present
+ok 110 - AK6: a non-offer kind never picks up counterparty_id even if present
+  ---
+  duration_ms: 0.179189
+  type: 'test'
+  ...
+# Subtest: AK7: an unresolvable settlement_id falls through to a unit_id lookup
+ok 111 - AK7: an unresolvable settlement_id falls through to a unit_id lookup
+  ---
+  duration_ms: 0.147814
+  type: 'test'
+  ...
+# Subtest: AK8: a foreign unit (not own) is still found via State.foreignUnitData
+ok 112 - AK8: a foreign unit (not own) is still found via State.foreignUnitData
+  ---
+  duration_ms: 0.154283
+  type: 'test'
+  ...
+# Subtest: AK9: no destination anywhere returns null (the disabled-button case)
+ok 113 - AK9: no destination anywhere returns null (the disabled-button case)
+  ---
+  duration_ms: 0.344537
+  type: 'test'
+  ...
+# Subtest: OC1: CityOccupied as attacker offers sack/burn from the payload's own choices, never annex (too early)
+ok 114 - OC1: CityOccupied as attacker offers sack/burn from the payload's own choices, never annex (too early)
+  ---
+  duration_ms: 0.448587
+  type: 'test'
+  ...
+# Subtest: OC2: CityOccupied as defender offers nothing — it is not this Wanax's choice to make
+ok 115 - OC2: CityOccupied as defender offers nothing — it is not this Wanax's choice to make
+  ---
+  duration_ms: 0.226994
+  type: 'test'
+  ...
+# Subtest: OC3: CityAnnexReady offers all three — sack/burn remain available once annex unlocks
+ok 116 - OC3: CityAnnexReady offers all three — sack/burn remain available once annex unlocks
+  ---
+  duration_ms: 0.103841
+  type: 'test'
+  ...
+# Subtest: OC4: an unrelated dispatch kind offers nothing
+ok 117 - OC4: an unrelated dispatch kind offers nothing
+  ---
+  duration_ms: 0.087001
+  type: 'test'
+  ...
+# Subtest: OC5: a missing/malformed choices list on CityOccupied degrades to no buttons rather than throwing
+ok 118 - OC5: a missing/malformed choices list on CityOccupied degrades to no buttons rather than throwing
+  ---
+  duration_ms: 0.09506
+  type: 'test'
+  ...
+# Subtest: OC6: buildOccupationOrderBody sends exactly {action} — sack loots everything by default, no goods picker
+ok 119 - OC6: buildOccupationOrderBody sends exactly {action} — sack loots everything by default, no goods picker
+  ---
+  duration_ms: 0.123709
+  type: 'test'
+  ...
+# Subtest: PS1: PassageStalled resolves "take me there" via the port q/r the server sends
+ok 120 - PS1: PassageStalled resolves "take me there" via the port q/r the server sends
+  ---
+  duration_ms: 0.109615
+  type: 'test'
+  ...
+# Subtest: AK1: formatCargoRows carries good/quantity/from/to straight through
+ok 121 - AK1: formatCargoRows carries good/quantity/from/to straight through
+  ---
+  duration_ms: 1.112146
+  type: 'test'
+  ...
+# Subtest: AK2: ETA is computed from arrives_at - nowMs, not from the wall clock
+ok 122 - AK2: ETA is computed from arrives_at - nowMs, not from the wall clock
+  ---
+  duration_ms: 0.233872
+  type: 'test'
+  ...
+# Subtest: AK3: an already-arrived trade (arrives_at in the past) reads "arrived"
+ok 123 - AK3: an already-arrived trade (arrives_at in the past) reads "arrived"
+  ---
+  duration_ms: 0.131656
+  type: 'test'
+  ...
+# Subtest: AK4: quantity floors fractional amounts (matches the rest of the drawer)
+ok 124 - AK4: quantity floors fractional amounts (matches the rest of the drawer)
+  ---
+  duration_ms: 0.094833
+  type: 'test'
+  ...
+# Subtest: AK5 (regression): renderCargoHTML on an empty list says nothing is in transit, not a blank table
+ok 125 - AK5 (regression): renderCargoHTML on an empty list says nothing is in transit, not a blank table
+  ---
+  duration_ms: 0.204516
+  type: 'test'
+  ...
+# Subtest: AK6: renderCargoHTML never claims a fixed loss percentage — only that cargo is physical and can be seized
+ok 126 - AK6: renderCargoHTML never claims a fixed loss percentage — only that cargo is physical and can be seized
+  ---
+  duration_ms: 0.13618
+  type: 'test'
+  ...
+# Subtest: AK7: renderCargoHTML escapes good_key so a hostile good name cannot inject markup
+ok 127 - AK7: renderCargoHTML escapes good_key so a hostile good name cannot inject markup
+  ---
+  duration_ms: 0.137968
+  type: 'test'
+  ...
+# Subtest: AK7: a shipment the caller is receiving is labelled incoming
+ok 128 - AK7: a shipment the caller is receiving is labelled incoming
+  ---
+  duration_ms: 0.124242
+  type: 'test'
+  ...
+# Subtest: AK8: a shipment the caller dispatched is labelled outgoing
+ok 129 - AK8: a shipment the caller dispatched is labelled outgoing
+  ---
+  duration_ms: 0.293923
+  type: 'test'
+  ...
+# Subtest: AK9: the direction reaches the markup, not just the row object
+ok 130 - AK9: the direction reaches the markup, not just the row object
+  ---
+  duration_ms: 0.487274
+  type: 'test'
+  ...
+# Subtest: cargo uses the authoritative rounded arrival tick even when wall projection is overdue
+ok 131 - cargo uses the authoritative rounded arrival tick even when wall projection is overdue
+  ---
+  duration_ms: 1.136575
+  type: 'test'
+  ...
+# Subtest: BK1: mine is buildable from the catalogue (was missing entirely from the old hardcoded list)
+ok 132 - BK1: mine is buildable from the catalogue (was missing entirely from the old hardcoded list)
+  ---
+  duration_ms: 1.419271
+  type: 'test'
+  ...
+# Subtest: silver_mine is gone from the Construct label map — an unlabelled fallback would betray a stale catalogue entry
+ok 133 - silver_mine is gone from the Construct label map — an unlabelled fallback would betray a stale catalogue entry
+  ---
+  duration_ms: 0.325488
+  type: 'test'
+  ...
+# Subtest: BK2: costs are read from the catalogue, not hardcoded — mutating the fixture mutates the rendered string
+ok 134 - BK2: costs are read from the catalogue, not hardcoded — mutating the fixture mutates the rendered string
+  ---
+  duration_ms: 0.213854
+  type: 'test'
+  ...
+# Subtest: BK3: cost rounding matches the CLI (%.0f per good, cmd_build.go), not the pre-mig-136 hardcoded values
+ok 135 - BK3: cost rounding matches the CLI (%.0f per good, cmd_build.go), not the pre-mig-136 hardcoded values
+  ---
+  duration_ms: 0.226825
+  type: 'test'
+  ...
+# Subtest: BK4: an option is name and price only — no purpose, no requires tail (Timothy 2026-09-30: too long)
+ok 136 - BK4: an option is name and price only — no purpose, no requires tail (Timothy 2026-09-30: too long)
+  ---
+  duration_ms: 0.234078
+  type: 'test'
+  ...
+# Subtest: BK6: wall keeps its old hardcoded upgrade-ladder copy — the catalogue entry has no upgrade_costs for it (stop condition, megaron_plan_byggkatalogen_i_webben.md §7)
+ok 137 - BK6: wall keeps its old hardcoded upgrade-ladder copy — the catalogue entry has no upgrade_costs for it (stop condition, megaron_plan_byggkatalogen_i_webben.md §7)
+  ---
+  duration_ms: 0.14603
+  type: 'test'
+  ...
+# Subtest: HX1: a valid, empty hex renders as a build option with its coords and terrain
+ok 138 - HX1: a valid, empty hex renders as a build option with its coords and terrain
+  ---
+  duration_ms: 0.412284
+  type: 'test'
+  ...
+# Subtest: HX2: a hex missing from valid_hexes_for_building but already carrying a SAME-type building is offered as an upgrade
+ok 139 - HX2: a hex missing from valid_hexes_for_building but already carrying a SAME-type building is offered as an upgrade
+  ---
+  duration_ms: 0.164824
+  type: 'test'
+  ...
+# Subtest: HX3: a hex carrying a DIFFERENT-type building is not offered at all
+ok 140 - HX3: a hex carrying a DIFFERENT-type building is not offered at all
+  ---
+  duration_ms: 0.350909
+  type: 'test'
+  ...
+# Subtest: HX4: a hex present in both lists is rendered once, as a build option (valid_hexes_for_building wins)
+ok 141 - HX4: a hex present in both lists is rendered once, as a build option (valid_hexes_for_building wins)
+  ---
+  duration_ms: 0.572611
+  type: 'test'
+  ...
+# Subtest: HX4b: server effect strings are escaped, and a missing effect leaves no dangling dash
+ok 142 - HX4b: server effect strings are escaped, and a missing effect leaves no dangling dash
+  ---
+  duration_ms: 0.276492
+  type: 'test'
+  ...
+# Subtest: HX5: no placement-options data yet renders no options, not an error
+ok 143 - HX5: no placement-options data yet renders no options, not an error
+  ---
+  duration_ms: 0.113214
+  type: 'test'
+  ...
+# Subtest: AK1: city.js imports under node --test without a DOM
+ok 144 - AK1: city.js imports under node --test without a DOM
+  ---
+  duration_ms: 0.091333
+  type: 'test'
+  ...
+# Subtest: empty loyalty-log renders a friendly empty-state, not a bare table
+ok 145 - empty loyalty-log renders a friendly empty-state, not a bare table
+  ---
+  duration_ms: 0.146795
+  type: 'test'
+  ...
+# Subtest: a positive delta is signed with a leading + and the --safe tone
+ok 146 - a positive delta is signed with a leading + and the --safe tone
+  ---
+  duration_ms: 17.494651
+  type: 'test'
+  ...
+# Subtest: a negative delta keeps its own minus sign (no double sign) and the --accent tone
+ok 147 - a negative delta keeps its own minus sign (no double sign) and the --accent tone
+  ---
+  duration_ms: 0.423439
+  type: 'test'
+  ...
+# Subtest: rows are rendered in the order given (server already sorts newest-first) — not re-sorted client-side
+ok 148 - rows are rendered in the order given (server already sorts newest-first) — not re-sorted client-side
+  ---
+  duration_ms: 0.548893
+  type: 'test'
+  ...
+# Subtest: a hostile reason string is escaped, not injected as markup
+ok 149 - a hostile reason string is escaped, not injected as markup
+  ---
+  duration_ms: 0.242815
+  type: 'test'
+  ...
+# Subtest: a zero delta (if it ever occurs) gets no sign and the neutral --text-dim tone
+ok 150 - a zero delta (if it ever occurs) gets no sign and the neutral --text-dim tone
+  ---
+  duration_ms: 0.227639
+  type: 'test'
+  ...
+# Subtest: J: only three primary sections, all secondary abilities remain under closed More
+ok 151 - J: only three primary sections, all secondary abilities remain under closed More
+  ---
+  duration_ms: 1.197023
+  type: 'test'
+  ...
+# Subtest: J: food days come from authoritative mixed-food coverage, not grain net or reserve
+ok 152 - J: food days come from authoritative mixed-food coverage, not grain net or reserve
+  ---
+  duration_ms: 2.435527
+  type: 'test'
+  ...
+# Subtest: J: growing low stocks never say starving; food-worker warning survives
+ok 153 - J: growing low stocks never say starving; food-worker warning survives
+  ---
+  duration_ms: 0.316535
+  type: 'test'
+  ...
+# Subtest: J: missing/invalid coverage is honestly unavailable, never zero or NaN days
+ok 154 - J: missing/invalid coverage is honestly unavailable, never zero or NaN days
+  ---
+  duration_ms: 0.179777
+  type: 'test'
+  ...
+# Subtest: J: population and slaughter capability keep input-free player words and eligibility
+ok 155 - J: population and slaughter capability keep input-free player words and eligibility
+  ---
+  duration_ms: 0.347051
+  type: 'test'
+  ...
+# Subtest: AK1: goodsOptionsHTML renders one <option> per good, value = key
+ok 156 - AK1: goodsOptionsHTML renders one <option> per good, value = key
+  ---
+  duration_ms: 1.017997
+  type: 'test'
+  ...
+# Subtest: AK1b: goodsOptionsHTML leads with an empty "choose" option — no good is silently pre-selected
+ok 157 - AK1b: goodsOptionsHTML leads with an empty "choose" option — no good is silently pre-selected
+  ---
+  duration_ms: 0.260745
+  type: 'test'
+  ...
+# Subtest: AK2 (falsifiable): an empty catalogue ([]) reads "no tradeable goods", not a blank list
+ok 158 - AK2 (falsifiable): an empty catalogue ([]) reads "no tradeable goods", not a blank list
+  ---
+  duration_ms: 0.177992
+  type: 'test'
+  ...
+# Subtest: AK3 (honest empty state): a failed fetch (null) reads "Could not load goods" — never silently falls back to free text
+ok 159 - AK3 (honest empty state): a failed fetch (null) reads "Could not load goods" — never silently falls back to free text
+  ---
+  duration_ms: 0.143131
+  type: 'test'
+  ...
+# Subtest: AK3b: goodsSelectDisabledAttr disables the control exactly when the catalogue failed to load (null), never otherwise
+ok 160 - AK3b: goodsSelectDisabledAttr disables the control exactly when the catalogue failed to load (null), never otherwise
+  ---
+  duration_ms: 0.194742
+  type: 'test'
+  ...
+# Subtest: AK4: goodsOptionsHTML escapes a hostile good name so it cannot inject markup
+ok 161 - AK4: goodsOptionsHTML escapes a hostile good name so it cannot inject markup
+  ---
+  duration_ms: 0.148969
+  type: 'test'
+  ...
+# Subtest: AK5: goodsOptionsHTML falls back to the raw key as the label when name is missing
+ok 162 - AK5: goodsOptionsHTML falls back to the raw key as the label when name is missing
+  ---
+  duration_ms: 0.180253
+  type: 'test'
+  ...
+# Subtest: Correspondence reads host and city outboxes and renders their letters
+ok 163 - Correspondence reads host and city outboxes and renders their letters
+  ---
+  duration_ms: 44.210122
+  type: 'test'
+  ...
+# Subtest: atStorageCeiling: mirrors keryx — >=99% of a positive cap, nothing without a cap
+ok 164 - atStorageCeiling: mirrors keryx — >=99% of a positive cap, nothing without a cap
+  ---
+  duration_ms: 0.877203
+  type: 'test'
+  ...
+# Subtest: goodsRateCell: a good at cap reads "full" (dimmed) not green growth, and names the wasted rate
+ok 165 - goodsRateCell: a good at cap reads "full" (dimmed) not green growth, and names the wasted rate
+  ---
+  duration_ms: 0.356305
+  type: 'test'
+  ...
+# Subtest: goodsRateCell: at cap but idle (rate 0) reads plain "full", no wasted-rate tail
+ok 166 - goodsRateCell: at cap but idle (rate 0) reads plain "full", no wasted-rate tail
+  ---
+  duration_ms: 0.153721
+  type: 'test'
+  ...
+# Subtest: goodsRateCell: below cap and producing keeps the green growth cell
+ok 167 - goodsRateCell: below cap and producing keeps the green growth cell
+  ---
+  duration_ms: 0.115962
+  type: 'test'
+  ...
+# Subtest: goodsRateCell: below cap and idle renders an empty cell
+ok 168 - goodsRateCell: below cap and idle renders an empty cell
+  ---
+  duration_ms: 0.124046
+  type: 'test'
+  ...
+# Subtest: AK1: economy.js imports under node --test without a DOM (proves the misc.js pointerdown listener no longer runs at module scope)
+ok 169 - AK1: economy.js imports under node --test without a DOM (proves the misc.js pointerdown listener no longer runs at module scope)
+  ---
+  duration_ms: 0.079599
+  type: 'test'
+  ...
+# Subtest: parseGoodAmountPairs: matches keryx cmd_route.go's good:amount,good:amount shape
+ok 170 - parseGoodAmountPairs: matches keryx cmd_route.go's good:amount,good:amount shape
+  ---
+  duration_ms: 1.36105
+  type: 'test'
+  ...
+# Subtest: parseGoodAmountPairs: empty/blank input is an empty list, not an error
+ok 171 - parseGoodAmountPairs: empty/blank input is an empty list, not an error
+  ---
+  duration_ms: 0.205147
+  type: 'test'
+  ...
+# Subtest: parseGoodAmountPairs: a malformed pair is dropped, not thrown — a typo must not crash the form
+ok 172 - parseGoodAmountPairs: a malformed pair is dropped, not thrown — a typo must not crash the form
+  ---
+  duration_ms: 0.427862
+  type: 'test'
+  ...
+# Subtest: renderStandingOrdersHTML: empty list renders the empty-state message
+ok 173 - renderStandingOrdersHTML: empty list renders the empty-state message
+  ---
+  duration_ms: 0.409048
+  type: 'test'
+  ...
+# Subtest: renderStandingOrdersHTML: an active order offers Pause, a paused one offers Resume and shows its reason
+ok 174 - renderStandingOrdersHTML: an active order offers Pause, a paused one offers Resume and shows its reason
+  ---
+  duration_ms: 0.221012
+  type: 'test'
+  ...
+# Subtest: renderStandingOrdersHTML: a naval route names its bound ship
+ok 175 - renderStandingOrdersHTML: a naval route names its bound ship
+  ---
+  duration_ms: 0.09294
+  type: 'test'
+  ...
+# Subtest: settlementFoodRow: a self-sufficient, well-stocked settlement reads "stable"
+ok 176 - settlementFoodRow: a self-sufficient, well-stocked settlement reads "stable"
+  ---
+  duration_ms: 0.149453
+  type: 'test'
+  ...
+# Subtest: settlementFoodRow: empty granary and shrinking reads "starving" and ranks worst (except cannot-feed)
+ok 177 - settlementFoodRow: empty granary and shrinking reads "starving" and ranks worst (except cannot-feed)
+  ---
+  duration_ms: 0.072034
+  type: 'test'
+  ...
+# Subtest: settlementFoodRow: food_self_sufficient===false overrides the granary state — always the worst, even mid-store
+ok 178 - settlementFoodRow: food_self_sufficient===false overrides the granary state — always the worst, even mid-store
+  ---
+  duration_ms: 0.061205
+  type: 'test'
+  ...
+# Subtest: settlementFoodRow: no province data (failed fetch) renders "no data" instead of throwing or guessing
+ok 179 - settlementFoodRow: no province data (failed fetch) renders "no data" instead of throwing or guessing
+  ---
+  duration_ms: 0.051885
+  type: 'test'
+  ...
+# Subtest: sortSettlementRows: default brist sort puts cannot-feed first, then starving, then stable
+ok 180 - sortSettlementRows: default brist sort puts cannot-feed first, then starving, then stable
+  ---
+  duration_ms: 0.162305
+  type: 'test'
+  ...
+# Subtest: sortSettlementRows: sorting by population desc does not mutate the input array
+ok 181 - sortSettlementRows: sorting by population desc does not mutate the input array
+  ---
+  duration_ms: 0.140975
+  type: 'test'
+  ...
+# Subtest: renderSettlementsOverviewHTML: empty rows render nothing
+ok 182 - renderSettlementsOverviewHTML: empty rows render nothing
+  ---
+  duration_ms: 0.140625
+  type: 'test'
+  ...
+# Subtest: renderSettlementsOverviewHTML: each row links to openCitySettlement and shows name/pop/rate/status
+ok 183 - renderSettlementsOverviewHTML: each row links to openCitySettlement and shows name/pop/rate/status
+  ---
+  duration_ms: 0.243928
+  type: 'test'
+  ...
+# Subtest: renderSettlementsOverviewHTML: the active sort column shows its arrow, others do not
+ok 184 - renderSettlementsOverviewHTML: the active sort column shows its arrow, others do not
+  ---
+  duration_ms: 0.124593
+  type: 'test'
+  ...
+# Subtest: loadEconomyDrawer: with no owned settlements, renders the empty-state message and returns before touching anything else
+ok 185 - loadEconomyDrawer: with no owned settlements, renders the empty-state message and returns before touching anything else
+  ---
+  duration_ms: 0.227495
+  type: 'test'
+  ...
+# Subtest: Economy id: actual drawer joins settlement ids while links and goods keep province ids
+ok 186 - Economy id: actual drawer joins settlement ids while links and goods keep province ids
+  ---
+  duration_ms: 28.598407
+  type: 'test'
+  ...
+# Subtest: Economy id: missing or refused overview remains no data; never match province id or name
+ok 187 - Economy id: missing or refused overview remains no data; never match province id or name
+  ---
+  duration_ms: 5.997388
+  type: 'test'
+  ...
+# Subtest: hopsLabel: 0 or missing hops → no qualifier (matches keryx cmd_gossip.go hopLabel)
+ok 188 - hopsLabel: 0 or missing hops → no qualifier (matches keryx cmd_gossip.go hopLabel)
+  ---
+  duration_ms: 1.209188
+  type: 'test'
+  ...
+# Subtest: hopsLabel: 1 hop is singular, N hops is plural
+ok 189 - hopsLabel: 1 hop is singular, N hops is plural
+  ---
+  duration_ms: 0.167532
+  type: 'test'
+  ...
+# Subtest: renderGossipRowsHTML: empty list renders the empty-state, not a blank list
+ok 190 - renderGossipRowsHTML: empty list renders the empty-state, not a blank list
+  ---
+  duration_ms: 0.174932
+  type: 'test'
+  ...
+# Subtest: renderGossipRowsHTML: null/undefined also renders the empty-state, crashes nothing
+ok 191 - renderGossipRowsHTML: null/undefined also renders the empty-state, crashes nothing
+  ---
+  duration_ms: 0.079905
+  type: 'test'
+  ...
+# Subtest: renderGossipRowsHTML: a row renders region, category, hops and text
+ok 192 - renderGossipRowsHTML: a row renders region, category, hops and text
+  ---
+  duration_ms: 0.245531
+  type: 'test'
+  ...
+# Subtest: renderGossipRowsHTML: importance=major gets the highlight class
+ok 193 - renderGossipRowsHTML: importance=major gets the highlight class
+  ---
+  duration_ms: 0.098452
+  type: 'test'
+  ...
+# Subtest: renderGossipRowsHTML: escapes rumour text so a hostile string cannot inject markup
+ok 194 - renderGossipRowsHTML: escapes rumour text so a hostile string cannot inject markup
+  ---
+  duration_ms: 0.130078
+  type: 'test'
+  ...
+# Subtest: groupWanaxes: aggregates the per-settlement /wanaxes rows by owner
+ok 195 - groupWanaxes: aggregates the per-settlement /wanaxes rows by owner
+  ---
+  duration_ms: 10.799329
+  type: 'test'
+  ...
+# Subtest: groupWanaxes: no kingdom stays empty, not "undefined"
+ok 196 - groupWanaxes: no kingdom stays empty, not "undefined"
+  ---
+  duration_ms: 0.282893
+  type: 'test'
+  ...
+# Subtest: groupWanaxes: empty/null input yields no groups
+ok 197 - groupWanaxes: empty/null input yields no groups
+  ---
+  duration_ms: 0.273881
+  type: 'test'
+  ...
+# Subtest: renderWanaxesHTML: empty list renders the empty-state, not a blank table
+ok 198 - renderWanaxesHTML: empty list renders the empty-state, not a blank table
+  ---
+  duration_ms: 0.175004
+  type: 'test'
+  ...
+# Subtest: renderWanaxesHTML: a known wanax renders name, own-star, kingdom and cities
+ok 199 - renderWanaxesHTML: a known wanax renders name, own-star, kingdom and cities
+  ---
+  duration_ms: 0.157196
+  type: 'test'
+  ...
+# Subtest: renderWanaxesHTML: escapes a hostile owner/name so markup cannot be injected
+ok 200 - renderWanaxesHTML: escapes a hostile owner/name so markup cannot be injected
+  ---
+  duration_ms: 0.1242
+  type: 'test'
+  ...
+# Subtest: AK: gossip.js imports under node --test without a DOM (proves the module graph is side-effect-free)
+ok 201 - AK: gossip.js imports under node --test without a DOM (proves the module graph is side-effect-free)
+  ---
+  duration_ms: 0.080523
+  type: 'test'
+  ...
+# Subtest: loadGossipDrawer: missing \#gossip-body returns early without touching anything else
+ok 202 - loadGossipDrawer: missing \#gossip-body returns early without touching anything else
+  ---
+  duration_ms: 0.217128
+  type: 'test'
+  ...
+# Subtest: K: cancellation and passage refusals keep buttons enabled and show server text beside the action
+ok 203 - K: cancellation and passage refusals keep buttons enabled and show server text beside the action
+  ---
+  duration_ms: 25.327364
+  type: 'test'
+  ...
+# Subtest: K: rite refusal stays in Kult; success survives drawer refresh
+ok 204 - K: rite refusal stays in Kult; success survives drawer refresh
+  ---
+  duration_ms: 3.179273
+  type: 'test'
+  ...
+# Subtest: K: real abandon handler cannot POST before inline confirmation; refusal remains visible
+ok 205 - K: real abandon handler cannot POST before inline confirmation; refusal remains visible
+  ---
+  duration_ms: 1.193943
+  type: 'test'
+  ...
+# Subtest: AK1: vredgad (Wrathful mood) renders an English label, not the raw Swedish string
+ok 206 - AK1: vredgad (Wrathful mood) renders an English label, not the raw Swedish string
+  ---
+  duration_ms: 0.921052
+  type: 'test'
+  ...
+# Subtest: AK1b: tveksam (Suspicious mood) renders an English label, not the raw Swedish string
+ok 207 - AK1b: tveksam (Suspicious mood) renders an English label, not the raw Swedish string
+  ---
+  duration_ms: 0.144209
+  type: 'test'
+  ...
+# Subtest: AK2: vardig and overdadig — already-correct-looking values — still translate correctly
+ok 208 - AK2: vardig and overdadig — already-correct-looking values — still translate correctly
+  ---
+  duration_ms: 0.122608
+  type: 'test'
+  ...
+# Subtest: AK3: enkel (pre-first-tick fallback) gets an honest label, not a fake tier name
+ok 209 - AK3: enkel (pre-first-tick fallback) gets an honest label, not a fake tier name
+  ---
+  duration_ms: 0.122674
+  type: 'test'
+  ...
+# Subtest: AK4: a value the server never sends still falls back to itself, not a fabricated label
+ok 210 - AK4: a value the server never sends still falls back to itself, not a fabricated label
+  ---
+  duration_ms: 0.124098
+  type: 'test'
+  ...
+# Subtest: AK1: kharis_net_known true draws a Net row, distinct from Passive, signed with one decimal
+ok 211 - AK1: kharis_net_known true draws a Net row, distinct from Passive, signed with one decimal
+  ---
+  duration_ms: 0.952925
+  type: 'test'
+  ...
+# Subtest: AK1b: a negative net is signed with a minus, not a double sign
+ok 212 - AK1b: a negative net is signed with a minus, not a double sign
+  ---
+  duration_ms: 0.169302
+  type: 'test'
+  ...
+# Subtest: AK2: kharis_net_known false draws no net row at all — not even "0.0"
+ok 213 - AK2: kharis_net_known false draws no net row at all — not even "0.0"
+  ---
+  duration_ms: 0.088009
+  type: 'test'
+  ...
+# Subtest: AK2b: kharis_net_known missing entirely (not strictly true) also draws nothing
+ok 214 - AK2b: kharis_net_known missing entirely (not strictly true) also draws nothing
+  ---
+  duration_ms: 0.856921
+  type: 'test'
+  ...
+# Subtest: AK3: kharis_devotion_idle true draws the idle-capacity warning
+ok 215 - AK3: kharis_devotion_idle true draws the idle-capacity warning
+  ---
+  duration_ms: 0.145212
+  type: 'test'
+  ...
+# Subtest: AK3b: kharis_devotion_idle false (or absent) draws no warning
+ok 216 - AK3b: kharis_devotion_idle false (or absent) draws no warning
+  ---
+  duration_ms: 0.099726
+  type: 'test'
+  ...
+# Subtest: a null/undefined payload draws nothing, crashes nothing
+ok 217 - a null/undefined payload draws nothing, crashes nothing
+  ---
+  duration_ms: 0.496329
+  type: 'test'
+  ...
+# Subtest: AK1: notif.js exporterar inte längre clearAllNotifs — funktionen är borttagen, inte bara oanvänd
+ok 218 - AK1: notif.js exporterar inte längre clearAllNotifs — funktionen är borttagen, inte bara oanvänd
+  ---
+  duration_ms: 0.922494
+  type: 'test'
+  ...
+# Subtest: AK2: notis-drawerns header i map.html saknar "Clear all"-knappen och visar arkiv-etiketten i stället
+ok 219 - AK2: notis-drawerns header i map.html saknar "Clear all"-knappen och visar arkiv-etiketten i stället
+  ---
+  duration_ms: 0.355228
+  type: 'test'
+  ...
+# Subtest: AK3: clearAllNotifs finns inte kvar i main.js window-bryggan (den skulle annars vara nåbar även utan knapp i markupen)
+ok 220 - AK3: clearAllNotifs finns inte kvar i main.js window-bryggan (den skulle annars vara nåbar även utan knapp i markupen)
+  ---
+  duration_ms: 0.143557
+  type: 'test'
+  ...
+# Subtest: K: calendar and forming state survive without world speed
+ok 221 - K: calendar and forming state survive without world speed
+  ---
+  duration_ms: 1.153759
+  type: 'test'
+  ...
+# Subtest: K: quiet kinds remain readable both in group and historic archive
+ok 222 - K: quiet kinds remain readable both in group and historic archive
+  ---
+  duration_ms: 1.296857
+  type: 'test'
+  ...
+# Subtest: K: every short advisory has a drawer help link; locked reasons stay authoritative in tooltip
+ok 223 - K: every short advisory has a drawer help link; locked reasons stay authoritative in tooltip
+  ---
+  duration_ms: 0.382915
+  type: 'test'
+  ...
+# Subtest: buildContext: nothing open → undefined, not an empty object
+ok 224 - buildContext: nothing open → undefined, not an empty object
+  ---
+  duration_ms: 0.909627
+  type: 'test'
+  ...
+# Subtest: buildContext: march-order menu open → dest + unit ids, regardless of view
+ok 225 - buildContext: march-order menu open → dest + unit ids, regardless of view
+  ---
+  duration_ms: 0.834632
+  type: 'test'
+  ...
+# Subtest: buildContext: city drawer open → settlement_id from the active (cycled) settlement
+ok 226 - buildContext: city drawer open → settlement_id from the active (cycled) settlement
+  ---
+  duration_ms: 0.220248
+  type: 'test'
+  ...
+# Subtest: buildContext: settlement_id is withheld when a different drawer was open — no misleading city context
+ok 227 - buildContext: settlement_id is withheld when a different drawer was open — no misleading city context
+  ---
+  duration_ms: 0.144887
+  type: 'test'
+  ...
+# Subtest: under LowDays: empty + shrinking reads as a hard warning
+ok 228 - under LowDays: empty + shrinking reads as a hard warning
+  ---
+  duration_ms: 1.020419
+  type: 'test'
+  ...
+# Subtest: under LowDays but empty + growing reads as reassuring, not alarming
+ok 229 - under LowDays but empty + growing reads as reassuring, not alarming
+  ---
+  duration_ms: 0.194802
+  type: 'test'
+  ...
+# Subtest: under LowDays with stock still in the granary: releasing
+ok 230 - under LowDays with stock still in the granary: releasing
+  ---
+  duration_ms: 0.955428
+  type: 'test'
+  ...
+# Subtest: between LowDays and HighDays: resting
+ok 231 - between LowDays and HighDays: resting
+  ---
+  duration_ms: 0.163687
+  type: 'test'
+  ...
+# Subtest: over HighDays: storing a tenth of the surplus
+ok 232 - over HighDays: storing a tenth of the surplus
+  ---
+  duration_ms: 0.21562
+  type: 'test'
+  ...
+# Subtest: branch order matches cmd_status.go: cov==low is NOT "under low" (Go uses cov < low)
+ok 233 - branch order matches cmd_status.go: cov==low is NOT "under low" (Go uses cov < low)
+  ---
+  duration_ms: 0.128241
+  type: 'test'
+  ...
+# Subtest: branch order matches cmd_status.go: cov==high is still "vilar", not "store" (Go uses cov <= high)
+ok 234 - branch order matches cmd_status.go: cov==high is still "vilar", not "store" (Go uses cov <= high)
+  ---
+  duration_ms: 0.172865
+  type: 'test'
+  ...
+# Subtest: sitosStateHtml renders a stat-row with the derived state text and severity class
+ok 235 - sitosStateHtml renders a stat-row with the derived state text and severity class
+  ---
+  duration_ms: 0.267432
+  type: 'test'
+  ...
+# Subtest: sitosStateHtml on a settlement with no sitos object at all renders nothing and does not throw
+ok 236 - sitosStateHtml on a settlement with no sitos object at all renders nothing and does not throw
+  ---
+  duration_ms: 0.356376
+  type: 'test'
+  ...
+# Subtest: accepted trade uses separately priced server ticks without claiming delivery from wall time
+ok 237 - accepted trade uses separately priced server ticks without claiming delivery from wall time
+  ---
+  duration_ms: 1.038867
+  type: 'test'
+  ...
+# Subtest: actual accept action sends one authorized request and renders both authoritative legs with recipient direction
+ok 238 - actual accept action sends one authorized request and renders both authoritative legs with recipient direction
+  ---
+  duration_ms: 24.968915
+  type: 'test'
+  ...
+# Subtest: duration follows changed server rules and refuses malformed or unavailable choices
+ok 239 - duration follows changed server rules and refuses malformed or unavailable choices
+  ---
+  duration_ms: 1.391366
+  type: 'test'
+  ...
+# Subtest: mission shows authoritative ticks until turn, then its actual return reason
+ok 240 - mission shows authoritative ticks until turn, then its actual return reason
+  ---
+  duration_ms: 0.511683
+  type: 'test'
+  ...
+# Subtest: fmtSilver: whole amounts render as plain integers
+ok 241 - fmtSilver: whole amounts render as plain integers
+  ---
+  duration_ms: 1.429755
+  type: 'test'
+  ...
+# Subtest: fmtSilver: fractional amounts keep one decimal
+ok 242 - fmtSilver: fractional amounts keep one decimal
+  ---
+  duration_ms: 0.226999
+  type: 'test'
+  ...
+# Subtest: fmtSilver: a value that rounds to a whole number drops the decimal
+ok 243 - fmtSilver: a value that rounds to a whole number drops the decimal
+  ---
+  duration_ms: 0.131742
+  type: 'test'
+  ...
+# Subtest: fmtSilver: missing/invalid input is treated as zero, never NaN
+ok 244 - fmtSilver: missing/invalid input is treated as zero, never NaN
+  ---
+  duration_ms: 0.118041
+  type: 'test'
+  ...
+# Subtest: unknown kind with payload: line contains the kind and every payload value
+ok 245 - unknown kind with payload: line contains the kind and every payload value
+  ---
+  duration_ms: 1.135433
+  type: 'test'
+  ...
+# Subtest: unknown kind with empty payload: exactly the kind, nothing more
+ok 246 - unknown kind with empty payload: exactly the kind, nothing more
+  ---
+  duration_ms: 0.101809
+  type: 'test'
+  ...
+# Subtest: unknown kind with undefined payload: does not throw, gives the kind
+ok 247 - unknown kind with undefined payload: does not throw, gives the kind
+  ---
+  duration_ms: 0.161614
+  type: 'test'
+  ...
+# Subtest: unknown kind: stable key order regardless of insertion order
+ok 248 - unknown kind: stable key order regardless of insertion order
+  ---
+  duration_ms: 0.133656
+  type: 'test'
+  ...
+# Subtest: unknown kind: payload with more keys than the cap is truncated with an ellipsis
+ok 249 - unknown kind: payload with more keys than the cap is truncated with an ellipsis
+  ---
+  duration_ms: 0.316758
+  type: 'test'
+  ...
+# Subtest: known kinds are unaffected by the default-arm change
+ok 250 - known kinds are unaffected by the default-arm change
+  ---
+  duration_ms: 0.275349
+  type: 'test'
+  ...
+# Subtest: FieldBattleWon with the real acceptance-world payload
+ok 251 - FieldBattleWon with the real acceptance-world payload
+  ---
+  duration_ms: 0.12239
+  type: 'test'
+  ...
+# Subtest: BattleLost renders opponent name and both sides losses, no place
+ok 252 - BattleLost renders opponent name and both sides losses, no place
+  ---
+  duration_ms: 0.27059
+  type: 'test'
+  ...
+# Subtest: BattleWon uses place name when the server resolved a settlement
+ok 253 - BattleWon uses place name when the server resolved a settlement
+  ---
+  duration_ms: 0.079008
+  type: 'test'
+  ...
+# Subtest: mutual_wipe trailer reads as neither side holding
+ok 254 - mutual_wipe trailer reads as neither side holding
+  ---
+  duration_ms: 0.095748
+  type: 'test'
+  ...
+# Subtest: ShipDamaged: sunk reads as a loss, not a hull number
+ok 255 - ShipDamaged: sunk reads as a loss, not a hull number
+  ---
+  duration_ms: 0.066276
+  type: 'test'
+  ...
+# Subtest: ShipDamaged: routed survivor is limping home for repair
+ok 256 - ShipDamaged: routed survivor is limping home for repair
+  ---
+  duration_ms: 0.058642
+  type: 'test'
+  ...
+# Subtest: ShipDamaged: winning side keeps its orders
+ok 257 - ShipDamaged: winning side keeps its orders
+  ---
+  duration_ms: 0.050409
+  type: 'test'
+  ...
+# Subtest: A7: the sixteen previously-uncased kinds get real text, not the default arm
+ok 258 - A7: the sixteen previously-uncased kinds get real text, not the default arm
+  ---
+  duration_ms: 6.493912
+  type: 'test'
+  ...
+# Subtest: DivinePunishment names the settlement and the right unit per type
+ok 259 - DivinePunishment names the settlement and the right unit per type
+  ---
+  duration_ms: 0.161348
+  type: 'test'
+  ...
+# Subtest: DivinePunishment without a name (older persisted notification) omits the place clause, not an empty one
+ok 260 - DivinePunishment without a name (older persisted notification) omits the place clause, not an empty one
+  ---
+  duration_ms: 0.158576
+  type: 'test'
+  ...
+# Subtest: DivinePunishment unknown type falls to the raw-payload default, invents nothing
+ok 261 - DivinePunishment unknown type falls to the raw-payload default, invents nothing
+  ---
+  duration_ms: 0.119326
+  type: 'test'
+  ...
+# Subtest: DivineBlessing names the settlement and the right unit per type
+ok 262 - DivineBlessing names the settlement and the right unit per type
+  ---
+  duration_ms: 0.09493
+  type: 'test'
+  ...
+# Subtest: DivineBlessing unknown type falls to the raw-payload default, invents nothing
+ok 263 - DivineBlessing unknown type falls to the raw-payload default, invents nothing
+  ---
+  duration_ms: 0.115899
+  type: 'test'
+  ...
+# Subtest: FoodShortfall names the settlement and the unmet ration
+ok 264 - FoodShortfall names the settlement and the unmet ration
+  ---
+  duration_ms: 0.965888
+  type: 'test'
+  ...
+# Subtest: FoodShortfall without a name falls back to a generic settlement label
+ok 265 - FoodShortfall without a name falls back to a generic settlement label
+  ---
+  duration_ms: 0.113591
+  type: 'test'
+  ...
+# Subtest: HexBlockaded names the settlement, the worker count, and the hex
+ok 266 - HexBlockaded names the settlement, the worker count, and the hex
+  ---
+  duration_ms: 0.109758
+  type: 'test'
+  ...
+# Subtest: HexBlockaded uses singular phrasing for exactly one worker
+ok 267 - HexBlockaded uses singular phrasing for exactly one worker
+  ---
+  duration_ms: 0.097473
+  type: 'test'
+  ...
+# Subtest: HexUnblockaded names the settlement, the worker count, and the hex
+ok 268 - HexUnblockaded names the settlement, the worker count, and the hex
+  ---
+  duration_ms: 0.078983
+  type: 'test'
+  ...
+# Subtest: SiegeStarted names the settlement and the besieger
+ok 269 - SiegeStarted names the settlement and the besieger
+  ---
+  duration_ms: 0.080325
+  type: 'test'
+  ...
+# Subtest: SiegeStarted falls back to "an enemy" when besieger_name is missing
+ok 270 - SiegeStarted falls back to "an enemy" when besieger_name is missing
+  ---
+  duration_ms: 0.074029
+  type: 'test'
+  ...
+# Subtest: SiegeLifted names the settlement
+ok 271 - SiegeLifted names the settlement
+  ---
+  duration_ms: 0.069069
+  type: 'test'
+  ...
+# Subtest: UnitExploreReturned names the returning unit instead of a bare category
+ok 272 - UnitExploreReturned names the returning unit instead of a bare category
+  ---
+  duration_ms: 0.078404
+  type: 'test'
+  ...
+# Subtest: UnitArrived names the unit over the type
+ok 273 - UnitArrived names the unit over the type
+  ---
+  duration_ms: 0.080125
+  type: 'test'
+  ...
+# Subtest: UnitReturnedStarving names the ship possessively
+ok 274 - UnitReturnedStarving names the ship possessively
+  ---
+  duration_ms: 0.081596
+  type: 'test'
+  ...
+# Subtest: UnitAttrition and UnitDeserted name the unit
+ok 275 - UnitAttrition and UnitDeserted name the unit
+  ---
+  duration_ms: 0.151321
+  type: 'test'
+  ...
+# Subtest: UpkeepUnpaid names the unit
+ok 276 - UpkeepUnpaid names the unit
+  ---
+  duration_ms: 0.094476
+  type: 'test'
+  ...
+# Subtest: UnitLostAtSea names the unit
+ok 277 - UnitLostAtSea names the unit
+  ---
+  duration_ms: 0.079425
+  type: 'test'
+  ...
+# Subtest: UnitRecalled and UnitRedirected name the unit
+ok 278 - UnitRecalled and UnitRedirected name the unit
+  ---
+  duration_ms: 0.089573
+  type: 'test'
+  ...
+# Subtest: OrderFailed prefixes the named unit when present
+ok 279 - OrderFailed prefixes the named unit when present
+  ---
+  duration_ms: 0.088113
+  type: 'test'
+  ...
+# Subtest: caravan seizure notices name the cargo when the payload carries it
+ok 280 - caravan seizure notices name the cargo when the payload carries it
+  ---
+  duration_ms: 0.153725
+  type: 'test'
+  ...
+# Subtest: naval seizure notices tell the truth about each ship outcome, never claiming cargo nobody got
+ok 281 - naval seizure notices tell the truth about each ship outcome, never claiming cargo nobody got
+  ---
+  duration_ms: 0.139931
+  type: 'test'
+  ...
+# Subtest: ShipCaptured/ShipLost/ShipStranded read correctly
+ok 282 - ShipCaptured/ShipLost/ShipStranded read correctly
+  ---
+  duration_ms: 0.08444
+  type: 'test'
+  ...
+# Subtest: ForeignMarchSightedV2 says which way — never where — and an arrival only if bound for you
+ok 283 - ForeignMarchSightedV2 says which way — never where — and an arrival only if bound for you
+  ---
+  duration_ms: 0.108691
+  type: 'test'
+  ...
+# Subtest: OrderFailed never shows the raw server verb key
+ok 284 - OrderFailed never shows the raw server verb key
+  ---
+  duration_ms: 0.13929
+  type: 'test'
+  ...
+# Subtest: ShipDamaged and ShipRepaired name the ship over the bare type
+ok 285 - ShipDamaged and ShipRepaired name the ship over the bare type
+  ---
+  duration_ms: 0.102653
+  type: 'test'
+  ...
+# Subtest: insufficient_goods with one missing good names it with need and have
+ok 286 - insufficient_goods with one missing good names it with need and have
+  ---
+  duration_ms: 0.153317
+  type: 'test'
+  ...
+# Subtest: insufficient_goods with several missing goods lists every one
+ok 287 - insufficient_goods with several missing goods lists every one
+  ---
+  duration_ms: 0.083957
+  type: 'test'
+  ...
+# Subtest: insufficient_goods rounds fractional need/have so a lazy-eval float never reaches the eye
+ok 288 - insufficient_goods rounds fractional need/have so a lazy-eval float never reaches the eye
+  ---
+  duration_ms: 0.089668
+  type: 'test'
+  ...
+# Subtest: insufficient_goods with an empty missing array falls back to data.error
+ok 289 - insufficient_goods with an empty missing array falls back to data.error
+  ---
+  duration_ms: 0.073832
+  type: 'test'
+  ...
+# Subtest: a different error code is passed through untouched
+ok 290 - a different error code is passed through untouched
+  ---
+  duration_ms: 0.074704
+  type: 'test'
+  ...
+# Subtest: an empty response body (fetchAuth catch-guard) falls back to the fallback string
+ok 291 - an empty response body (fetchAuth catch-guard) falls back to the fallback string
+  ---
+  duration_ms: 0.073685
+  type: 'test'
+  ...
+# Subtest: MessengerArrival names the sender and the city it reached
+ok 292 - MessengerArrival names the sender and the city it reached
+  ---
+  duration_ms: 0.094797
+  type: 'test'
+  ...
+# Subtest: MessengerArrival with an offer states the bargain, both directions
+ok 293 - MessengerArrival with an offer states the bargain, both directions
+  ---
+  duration_ms: 0.138387
+  type: 'test'
+  ...
+# Subtest: MessengerReturned says whether an answer came back
+ok 294 - MessengerReturned says whether an answer came back
+  ---
+  duration_ms: 0.08921
+  type: 'test'
+  ...
+# Subtest: HexTaken names taker, hex, loser, idle workers and the building
+ok 295 - HexTaken names taker, hex, loser, idle workers and the building
+  ---
+  duration_ms: 0.091177
+  type: 'test'
+  ...
+# Subtest: HexTaken omits the building clause when none stood there and singularises
+ok 296 - HexTaken omits the building clause when none stood there and singularises
+  ---
+  duration_ms: 0.063759
+  type: 'test'
+  ...
+# Subtest: purseLine: full purse, short purse, empty purse, no purse
+ok 297 - purseLine: full purse, short purse, empty purse, no purse
+  ---
+  duration_ms: 0.159859
+  type: 'test'
+  ...
+# Subtest: agora_ready directs to Account and ignores unexpected secret fields
+ok 298 - agora_ready directs to Account and ignores unexpected secret fields
+  ---
+  duration_ms: 0.12928
+  type: 'test'
+  ...
+# Subtest: notifText: ExpeditionTurnedHome says why it turned
+ok 299 - notifText: ExpeditionTurnedHome says why it turned
+  ---
+  duration_ms: 0.097551
+  type: 'test'
+  ...
+# Subtest: notifText: ExpeditionReport groups finds and names cities
+ok 300 - notifText: ExpeditionReport groups finds and names cities
+  ---
+  duration_ms: 0.244237
+  type: 'test'
+  ...
+# Subtest: notifText: ExpeditionReport with no finds is a report, not a blank
+ok 301 - notifText: ExpeditionReport with no finds is a report, not a blank
+  ---
+  duration_ms: 0.119009
+  type: 'test'
+  ...
+# Subtest: an own unit on the march says where it left from and where it is going
+ok 302 - an own unit on the march says where it left from and where it is going
+  ---
+  duration_ms: 1.71061
+  type: 'test'
+  ...
+# Subtest: an own unit standing still is just its name
+ok 303 - an own unit standing still is just its name
+  ---
+  duration_ms: 1.058393
+  type: 'test'
+  ...
+# Subtest: a foreign march shows its heading, never its destination
+ok 304 - a foreign march shows its heading, never its destination
+  ---
+  duration_ms: 1.903579
+  type: 'test'
+  ...
+# Subtest: a foreign unit says what it is called and whose it is
+ok 305 - a foreign unit says what it is called and whose it is
+  ---
+  duration_ms: 0.420661
+  type: 'test'
+  ...
+# Subtest: a caravan's cargo is shown only to its sender and recipient
+ok 306 - a caravan's cargo is shown only to its sender and recipient
+  ---
+  duration_ms: 0.255018
+  type: 'test'
+  ...
+# Subtest: runners: your own shows its route, a stranger's only whose it is
+ok 307 - runners: your own shows its route, a stranger's only whose it is
+  ---
+  duration_ms: 0.210157
+  type: 'test'
+  ...
+# Subtest: K: inline result is plain text, persistent, accessible and replaces the previous result
+ok 308 - K: inline result is plain text, persistent, accessible and replaces the previous result
+  ---
+  duration_ms: 1.038809
+  type: 'test'
+  ...
+# Subtest: K: abandon opening and cancelling never dispatch, confirmation dispatches once
+ok 309 - K: abandon opening and cancelling never dispatch, confirmation dispatches once
+  ---
+  duration_ms: 0.421547
+  type: 'test'
+  ...
+# Subtest: forecast reads the exact order with GET, including landing and stance
+ok 310 - forecast reads the exact order with GET, including landing and stance
+  ---
+  duration_ms: 1.316695
+  type: 'test'
+  ...
+# Subtest: redirect and courier never masquerade as immediate arrival
+ok 311 - redirect and courier never masquerade as immediate arrival
+  ---
+  duration_ms: 0.408496
+  type: 'test'
+  ...
+# Subtest: each selected unit keeps its own arrival; names and API errors are escaped
+ok 312 - each selected unit keeps its own arrival; names and API errors are escaped
+  ---
+  duration_ms: 24.228191
+  type: 'test'
+  ...
+# Subtest: changing destination discards old response even during debounce; close cancels
+ok 313 - changing destination discards old response even during debounce; close cancels
+  ---
+  duration_ms: 46.456048
+  type: 'test'
+  ...
+# Subtest: AK1: a group of one wears its own name, not the bare type
+ok 314 - AK1: a group of one wears its own name, not the bare type
+  ---
+  duration_ms: 1.819358
+  type: 'test'
+  ...
+# Subtest: AK2: the field unit keeps its (q,r) tag — the name says who supports it, the tag says where it stands
+ok 315 - AK2: the field unit keeps its (q,r) tag — the name says who supports it, the tag says where it stands
+  ---
+  duration_ms: 0.280726
+  type: 'test'
+  ...
+# Subtest: AK3: a garrisoned unit does not say its town twice
+ok 316 - AK3: a garrisoned unit does not say its town twice
+  ---
+  duration_ms: 0.409625
+  type: 'test'
+  ...
+# Subtest: AK4: a group of several keeps the type label and lists its members in send order
+ok 317 - AK4: a group of several keeps the type label and lists its members in send order
+  ---
+  duration_ms: 0.969912
+  type: 'test'
+  ...
+# Subtest: AK5: a lone unit gets no member list — the label already names it
+ok 318 - AK5: a lone unit gets no member list — the label already names it
+  ---
+  duration_ms: 0.200942
+  type: 'test'
+  ...
+# Subtest: AK6: units at different places stay different groups
+ok 319 - AK6: units at different places stay different groups
+  ---
+  duration_ms: 0.156255
+  type: 'test'
+  ...
+# Subtest: AK7: a missing display_name falls back to the type label, never a blank row
+ok 320 - AK7: a missing display_name falls back to the type label, never a blank row
+  ---
+  duration_ms: 0.374362
+  type: 'test'
+  ...
+# Subtest: AK8: a hostile unit name is escaped, not injected
+ok 321 - AK8: a hostile unit name is escaped, not injected
+  ---
+  duration_ms: 0.181842
+  type: 'test'
+  ...
+# Subtest: MI1: sea target is always explore, regardless of the checkbox
+ok 322 - MI1: sea target is always explore, regardless of the checkbox
+  ---
+  duration_ms: 0.377886
+  type: 'test'
+  ...
+# Subtest: MI2: an unseen (fog) land target is always explore — the only intent the server FOW rule allows there
+ok 323 - MI2: an unseen (fog) land target is always explore — the only intent the server FOW rule allows there
+  ---
+  duration_ms: 0.378577
+  type: 'test'
+  ...
+# Subtest: MI3: a known land target is a plain march by default
+ok 324 - MI3: a known land target is a plain march by default
+  ---
+  duration_ms: 0.177382
+  type: 'test'
+  ...
+# Subtest: MI4: a known land target explores when the player opts in
+ok 325 - MI4: a known land target explores when the player opts in
+  ---
+  duration_ms: 0.10541
+  type: 'test'
+  ...
+# Subtest: MI5: exploreRowVisible offers the checkbox on land, never on sea or a settlement
+ok 326 - MI5: exploreRowVisible offers the checkbox on land, never on sea or a settlement
+  ---
+  duration_ms: 0.114649
+  type: 'test'
+  ...
+# Subtest: AK9: a garrisoned/positioned unit is eligible to march
+ok 327 - AK9: a garrisoned/positioned unit is eligible to march
+  ---
+  duration_ms: 0.097011
+  type: 'test'
+  ...
+# Subtest: AK10: a marching unit is eligible too — but for redirect, not a fresh march
+ok 328 - AK10: a marching unit is eligible too — but for redirect, not a fresh march
+  ---
+  duration_ms: 0.082903
+  type: 'test'
+  ...
+# Subtest: R3 (megaron_plan_skeppsuppdrag_landsatt.md): a marching SHIP is not eligible for redirect — it takes no orders at sea
+ok 329 - R3 (megaron_plan_skeppsuppdrag_landsatt.md): a marching SHIP is not eligible for redirect — it takes no orders at sea
+  ---
+  duration_ms: 0.086096
+  type: 'test'
+  ...
+# Subtest: AK11: a fortified unit stays ineligible (server blocks fresh march on it)
+ok 330 - AK11: a fortified unit stays ineligible (server blocks fresh march on it)
+  ---
+  duration_ms: 0.086613
+  type: 'test'
+  ...
+# Subtest: AK12: a still-forming/training unit stays ineligible even while nominally marching-shaped
+ok 331 - AK12: a still-forming/training unit stays ineligible even while nominally marching-shaped
+  ---
+  duration_ms: 0.089999
+  type: 'test'
+  ...
+# Subtest: AK13: a unit embarked/disbanded/other status is ineligible
+ok 332 - AK13: a unit embarked/disbanded/other status is ineligible
+  ---
+  duration_ms: 0.095386
+  type: 'test'
+  ...
+# Subtest: AK14: marching and garrisoned units of the same type+hex stay in SEPARATE groups — a redirect send must never merge with a fresh-march send
+ok 333 - AK14: marching and garrisoned units of the same type+hex stay in SEPARATE groups — a redirect send must never merge with a fresh-march send
+  ---
+  duration_ms: 0.20246
+  type: 'test'
+  ...
+# Subtest: AK15: a redirect group is marked in its label — the player must see this send goes to a Runner
+ok 334 - AK15: a redirect group is marked in its label — the player must see this send goes to a Runner
+  ---
+  duration_ms: 0.132737
+  type: 'test'
+  ...
+# Subtest: H: defaults send all available units in the chosen first group, other groups stay unselected
+ok 335 - H: defaults send all available units in the chosen first group, other groups stay unselected
+  ---
+  duration_ms: 0.140286
+  type: 'test'
+  ...
+# Subtest: H: War target selection lists only the selected unit; normal map menu keeps all eligible units
+ok 336 - H: War target selection lists only the selected unit; normal map menu keeps all eligible units
+  ---
+  duration_ms: 0.283126
+  type: 'test'
+  ...
+# Subtest: H: a loaded ship can land on known land, while empty and marching ships cannot
+ok 337 - H: a loaded ship can land on known land, while empty and marching ships cannot
+  ---
+  duration_ms: 0.25124
+  type: 'test'
+  ...
+# Subtest: H: landing preserves cargo-colonize/name and omits naval stance; explore and plain land retain options
+ok 338 - H: landing preserves cargo-colonize/name and omits naval stance; explore and plain land retain options
+  ---
+  duration_ms: 0.213303
+  type: 'test'
+  ...
+# Subtest: H: colony forecast keeps production and food duration in game-day words
+ok 339 - H: colony forecast keeps production and food duration in game-day words
+  ---
+  duration_ms: 0.595162
+  type: 'test'
+  ...
+# Subtest: AK1: monthLabel appends the 1..12 ordinal for an ordinary month
+ok 340 - AK1: monthLabel appends the 1..12 ordinal for an ordinary month
+  ---
+  duration_ms: 1.241831
+  type: 'test'
+  ...
+# Subtest: AK2: monthLabel gives the intercalary Shadow Days no ordinal
+ok 341 - AK2: monthLabel gives the intercalary Shadow Days no ordinal
+  ---
+  duration_ms: 0.315383
+  type: 'test'
+  ...
+# Subtest: AK3 (regression): the notification drawer date header carries the ordinal for a normal month
+ok 342 - AK3 (regression): the notification drawer date header carries the ordinal for a normal month
+  ---
+  duration_ms: 0.13479
+  type: 'test'
+  ...
+# Subtest: MC1: nothing playing — a cue is allowed
+ok 343 - MC1: nothing playing — a cue is allowed
+  ---
+  duration_ms: 0.151806
+  type: 'test'
+  ...
+# Subtest: MC2: a higher-priority cue replaces a lower one (doom > war > victory)
+ok 344 - MC2: a higher-priority cue replaces a lower one (doom > war > victory)
+  ---
+  duration_ms: 0.230096
+  type: 'test'
+  ...
+# Subtest: MC3: a lower-or-equal-priority cue is dropped while one is already playing
+ok 345 - MC3: a lower-or-equal-priority cue is dropped while one is already playing
+  ---
+  duration_ms: 0.145916
+  type: 'test'
+  ...
+# Subtest: MC4: the same cue name within 10 minutes is dropped, and allowed again after
+ok 346 - MC4: the same cue name within 10 minutes is dropped, and allowed again after
+  ---
+  duration_ms: 0.194727
+  type: 'test'
+  ...
+# Subtest: MC5: muted, or not yet started (no user gesture), drops the cue
+ok 347 - MC5: muted, or not yet started (no user gesture), drops the cue
+  ---
+  duration_ms: 0.138042
+  type: 'test'
+  ...
+# Subtest: IH1: a valid, fresh handoff returns its pos
+ok 348 - IH1: a valid, fresh handoff returns its pos
+  ---
+  duration_ms: 0.977357
+  type: 'test'
+  ...
+# Subtest: IH2: missing or unparseable JSON returns null
+ok 349 - IH2: missing or unparseable JSON returns null
+  ---
+  duration_ms: 0.390137
+  type: 'test'
+  ...
+# Subtest: IH3: a negative or non-finite pos returns null
+ok 350 - IH3: a negative or non-finite pos returns null
+  ---
+  duration_ms: 0.196695
+  type: 'test'
+  ...
+# Subtest: IH4: an `at` older than 120s returns null, exactly-fresh does not
+ok 351 - IH4: an `at` older than 120s returns null, exactly-fresh does not
+  ---
+  duration_ms: 0.113456
+  type: 'test'
+  ...
+# Subtest: BR1: nextBedTrack never repeats the track that just ended
+ok 352 - BR1: nextBedTrack never repeats the track that just ended
+  ---
+  duration_ms: 0.287189
+  type: 'test'
+  ...
+# Subtest: BR2: nextBedTrack with one track returns it, and with no last picks from all
+ok 353 - BR2: nextBedTrack with one track returns it, and with no last picks from all
+  ---
+  duration_ms: 0.112741
+  type: 'test'
+  ...
+# Subtest: BR4: nextBedTrack never lets a piece follow itself in its other timbre
+ok 354 - BR4: nextBedTrack never lets a piece follow itself in its other timbre
+  ---
+  duration_ms: 0.19075
+  type: 'test'
+  ...
+# Subtest: BR3: bedGapMs stays within 30–90 s at both ends
+ok 355 - BR3: bedGapMs stays within 30–90 s at both ends
+  ---
+  duration_ms: 0.110009
+  type: 'test'
+  ...
+# Subtest: an ordinary own march is outgoing — read from the unit layer, not marching_armies
+ok 356 - an ordinary own march is outgoing — read from the unit layer, not marching_armies
+  ---
+  duration_ms: 1.453047
+  type: 'test'
+  ...
+# Subtest: a sighted foreign march that seems bound for an own city is incoming, as an estimate
+ok 357 - a sighted foreign march that seems bound for an own city is incoming, as an estimate
+  ---
+  duration_ms: 1.512781
+  type: 'test'
+  ...
+# Subtest: legacy marching_armies rows (recall) still show, sorted by arrival with unit marches
+ok 358 - legacy marching_armies rows (recall) still show, sorted by arrival with unit marches
+  ---
+  duration_ms: 10.02859
+  type: 'test'
+  ...
+# Subtest: the map glow lights own cities a foreign march seems bound for — never a march elsewhere
+ok 359 - the map glow lights own cities a foreign march seems bound for — never a march elsewhere
+  ---
+  duration_ms: 0.394188
+  type: 'test'
+  ...
+# Subtest: a legacy recall column onto an own province is no threat
+ok 360 - a legacy recall column onto an own province is no threat
+  ---
+  duration_ms: 0.18361
+  type: 'test'
+  ...
+# Subtest: player quantities keep zero, decimal/sign and large counts readable
+ok 361 - player quantities keep zero, decimal/sign and large counts readable
+  ---
+  duration_ms: 1.015155
+  type: 'test'
+  ...
+# Subtest: Recall all attempts every marching unit despite a refusal
+ok 362 - Recall all attempts every marching unit despite a refusal
+  ---
+  duration_ms: 1.324145
+  type: 'test'
+  ...
+# Subtest: no marching units means disabled button and no recall requests
+ok 363 - no marching units means disabled button and no recall requests
+  ---
+  duration_ms: 0.170415
+  type: 'test'
+  ...
+# Subtest: a transport failure names that unit and continues to later units
+ok 364 - a transport failure names that unit and continues to later units
+  ---
+  duration_ms: 0.224113
+  type: 'test'
+  ...
+# Subtest: presets: the label names the losses, the value is the strength left
+ok 365 - presets: the label names the losses, the value is the strength left
+  ---
+  duration_ms: 2.884012
+  type: 'test'
+  ...
+# Subtest: retreatBody: each mode maps to exactly one API field
+ok 366 - retreatBody: each mode maps to exactly one API field
+  ---
+  duration_ms: 0.260765
+  type: 'test'
+  ...
+# Subtest: retreatDefaultValue/Label: the GET body reads back as the chosen option
+ok 367 - retreatDefaultValue/Label: the GET body reads back as the chosen option
+  ---
+  duration_ms: 0.234904
+  type: 'test'
+  ...
+# Subtest: section: current value selected, says it only reaches battles entered from now on
+ok 368 - section: current value selected, says it only reaches battles entered from now on
+  ---
+  duration_ms: 3.358127
+  type: 'test'
+  ...
+# Subtest: section: a custom keryx threshold gets its own selected option
+ok 369 - section: a custom keryx threshold gets its own selected option
+  ---
+  duration_ms: 0.356631
+  type: 'test'
+  ...
+# Subtest: section: a failed read says so rather than showing the default as if it were set
+ok 370 - section: a failed read says so rather than showing the default as if it were set
+  ---
+  duration_ms: 0.145401
+  type: 'test'
+  ...
+# Subtest: per-unit control: only while the unit is fighting, and it says "this battle"
+ok 371 - per-unit control: only while the unit is fighting, and it says "this battle"
+  ---
+  duration_ms: 1.552168
+  type: 'test'
+  ...
+# Subtest: outbox: an outbound runner on the road shows its arrival, never the raw status
+ok 372 - outbox: an outbound runner on the road shows its arrival, never the raw status
+  ---
+  duration_ms: 17.784745
+  type: 'test'
+  ...
+# Subtest: outbox: a runner waiting in port names the port, not a past arrival
+ok 373 - outbox: a runner waiting in port names the port, not a past arrival
+  ---
+  duration_ms: 0.325254
+  type: 'test'
+  ...
+# Subtest: outbox: a runner aboard names its ship
+ok 374 - outbox: a runner aboard names its ship
+  ---
+  duration_ms: 0.52685
+  type: 'test'
+  ...
+# Subtest: outbox: delivered, returning, arrived each read as what they are
+ok 375 - outbox: delivered, returning, arrived each read as what they are
+  ---
+  duration_ms: 2.3408
+  type: 'test'
+  ...
+# Subtest: outbox: a returning runner waiting for a ship home says so
+ok 376 - outbox: a returning runner waiting for a ship home says so
+  ---
+  duration_ms: 0.175175
+  type: 'test'
+  ...
+# Subtest: outbox: a sealed runner (ship lost) is not shown as arriving
+ok 377 - outbox: a sealed runner (ship lost) is not shown as arriving
+  ---
+  duration_ms: 0.102113
+  type: 'test'
+  ...
+# Subtest: outbox: a port name is escaped
+ok 378 - outbox: a port name is escaped
+  ---
+  duration_ms: 0.08269
+  type: 'test'
+  ...
+# Subtest: order card: a runner waiting for a ship never claims to be carrying the order
+ok 379 - order card: a runner waiting for a ship never claims to be carrying the order
+  ---
+  duration_ms: 0.12385
+  type: 'test'
+  ...
+# Subtest: order card: the ordinary land runner keeps its two states
+ok 380 - order card: the ordinary land runner keeps its two states
+  ---
+  duration_ms: 0.562126
+  type: 'test'
+  ...
+# Subtest: Enter with nothing selected (idx -1) acts on the first hit
+ok 381 - Enter with nothing selected (idx -1) acts on the first hit
+  ---
+  duration_ms: 0.595186
+  type: 'test'
+  ...
+# Subtest: Enter with an arrow-selected row acts on that row
+ok 382 - Enter with an arrow-selected row acts on that row
+  ---
+  duration_ms: 0.097785
+  type: 'test'
+  ...
+# Subtest: Enter with no results acts on nothing
+ok 383 - Enter with no results acts on nothing
+  ---
+  duration_ms: 0.084746
+  type: 'test'
+  ...
+# Subtest: a stale selection past the end falls back to the first hit
+ok 384 - a stale selection past the end falls back to the first hit
+  ---
+  duration_ms: 0.087187
+  type: 'test'
+  ...
+# Subtest: AK1: import does not touch DOM/window before this point (proven by reaching here)
+ok 385 - AK1: import does not touch DOM/window before this point (proven by reaching here)
+  ---
+  duration_ms: 0.556774
+  type: 'test'
+  ...
+# Subtest: AK2: centreOn moves State.camera without throwing against a headless canvas
+ok 386 - AK2: centreOn moves State.camera without throwing against a headless canvas
+  ---
+  duration_ms: 0.226544
+  type: 'test'
+  ...
+# Subtest: searches received letters by text and either city, case-insensitively
+ok 387 - searches received letters by text and either city, case-insensitively
+  ---
+  duration_ms: 1.605217
+  type: 'test'
+  ...
+# Subtest: searches rumours by text, region and category without exposing coordinates
+ok 388 - searches rumours by text, region and category without exposing coordinates
+  ---
+  duration_ms: 0.342663
+  type: 'test'
+  ...
+# Subtest: blank query and nonmatches add no rows; untrusted sender and region are escaped
+ok 389 - blank query and nonmatches add no rows; untrusted sender and region are escaped
+  ---
+  duration_ms: 0.306673
+  type: 'test'
+  ...
+# Subtest: loads only current-world inbox and gossip using supplied authenticated reader
+ok 390 - loads only current-world inbox and gossip using supplied authenticated reader
+  ---
+  duration_ms: 1.059667
+  type: 'test'
+  ...
+# Subtest: partial API failure preserves the other source and reports missing results
+ok 391 - partial API failure preserves the other source and reports missing results
+  ---
+  duration_ms: 0.319494
+  type: 'test'
+  ...
+# Subtest: HTTP failure or invalid response is not reported as a successful empty inbox
+ok 392 - HTTP failure or invalid response is not reported as a successful empty inbox
+  ---
+  duration_ms: 1.149394
+  type: 'test'
+  ...
+# Subtest: null SQL aggregate responses are valid empty results
+ok 393 - null SQL aggregate responses are valid empty results
+  ---
+  duration_ms: 0.380951
+  type: 'test'
+  ...
+# Subtest: SX1: muting the music mutes the war sounds — one control for all audio
+ok 394 - SX1: muting the music mutes the war sounds — one control for all audio
+  ---
+  duration_ms: 1.399545
+  type: 'test'
+  ...
+# Subtest: SX2: the same sound will not stack on itself within the throttle window
+ok 395 - SX2: the same sound will not stack on itself within the throttle window
+  ---
+  duration_ms: 0.241728
+  type: 'test'
+  ...
+# Subtest: SX3: the horn and the clash throttle independently — an order during a battle is still heard
+ok 396 - SX3: the horn and the clash throttle independently — an order during a battle is still heard
+  ---
+  duration_ms: 0.143661
+  type: 'test'
+  ...
+# Subtest: SX4: a refused play does NOT arm the window — it stays refused, not re-armed by asking
+ok 397 - SX4: a refused play does NOT arm the window — it stays refused, not re-armed by asking
+  ---
+  duration_ms: 0.109927
+  type: 'test'
+  ...
+# Subtest: SX5: with no WebAudio (the Node case, and an old browser) the sounds are silent no-ops, never throws
+ok 398 - SX5: with no WebAudio (the Node case, and an old browser) the sounds are silent no-ops, never throws
+  ---
+  duration_ms: 0.273227
+  type: 'test'
+  ...
+# Subtest: SX6: mute survives across sound kinds and is readable
+ok 399 - SX6: mute survives across sound kinds and is readable
+  ---
+  duration_ms: 0.087447
+  type: 'test'
+  ...
+# Subtest: SX-A1: arrivals get the arrival call, other dispatches a chime, own-sound kinds nothing extra
+ok 400 - SX-A1: arrivals get the arrival call, other dispatches a chime, own-sound kinds nothing extra
+  ---
+  duration_ms: 0.223901
+  type: 'test'
+  ...
+# Subtest: SX-A2: the chime and the arrival call are throttled independently and obey mute
+ok 401 - SX-A2: the chime and the arrival call are throttled independently and obey mute
+  ---
+  duration_ms: 0.082607
+  type: 'test'
+  ...
+# Subtest: SX-M1: musicCueFor routes ForeignMarchSighted to war only when it threatens a settlement
+ok 402 - SX-M1: musicCueFor routes ForeignMarchSighted to war only when it threatens a settlement
+  ---
+  duration_ms: 0.367295
+  type: 'test'
+  ...
+# Subtest: SX-M2: musicCueFor routes capture/occupation by role
+ok 403 - SX-M2: musicCueFor routes capture/occupation by role
+  ---
+  duration_ms: 0.371969
+  type: 'test'
+  ...
+# Subtest: SX-M3: everything else — including BattleWon/BattleLost, which keep only their clash SFX — routes to no cue
+ok 404 - SX-M3: everything else — including BattleWon/BattleLost, which keep only their clash SFX — routes to no cue
+  ---
+  duration_ms: 0.249468
+  type: 'test'
+  ...
+# Subtest: SX-M1b: the V2 sighting routes to war only when it seems bound for your lands
+ok 405 - SX-M1b: the V2 sighting routes to war only when it seems bound for your lands
+  ---
+  duration_ms: 0.194922
+  type: 'test'
+  ...
+# Subtest: canTakeStance: a marching land unit can take a stance, a ship never
+ok 406 - canTakeStance: a marching land unit can take a stance, a ship never
+  ---
+  duration_ms: 0.862215
+  type: 'test'
+  ...
+# Subtest: stanceSentLine: a marching unit — the messenger must catch up, where and when
+ok 407 - stanceSentLine: a marching unit — the messenger must catch up, where and when
+  ---
+  duration_ms: 0.299234
+  type: 'test'
+  ...
+# Subtest: stanceSentLine: no messenger can overtake — it follows the unit to its destination
+ok 408 - stanceSentLine: no messenger can overtake — it follows the unit to its destination
+  ---
+  duration_ms: 0.167427
+  type: 'test'
+  ...
+# Subtest: stanceSentLine: a standing field unit keeps the plain receipt
+ok 409 - stanceSentLine: a standing field unit keeps the plain receipt
+  ---
+  duration_ms: 0.101691
+  type: 'test'
+  ...
+# Subtest: I: missing or invalid arrival never prints Invalid Date or NaNm
+ok 410 - I: missing or invalid arrival never prints Invalid Date or NaNm
+  ---
+  duration_ms: 0.859996
+  type: 'test'
+  ...
+# Subtest: I: authoritative tick still works without ISO and overrides invalid ISO
+ok 411 - I: authoritative tick still works without ISO and overrides invalid ISO
+  ---
+  duration_ms: 10.415048
+  type: 'test'
+  ...
+# Subtest: I: valid ISO fallback still has arrival and completed wording
+ok 412 - I: valid ISO fallback still has arrival and completed wording
+  ---
+  duration_ms: 0.280846
+  type: 'test'
+  ...
+# Subtest: I: garrison shows March and eligible Reinforce; stance and battle retreat stay in closed More
+ok 413 - I: garrison shows March and eligible Reinforce; stance and battle retreat stay in closed More
+  ---
+  duration_ms: 1.230541
+  type: 'test'
+  ...
+# Subtest: I: marching land has Recall as primary, retaining stance and typed redirect under More
+ok 414 - I: marching land has Recall as primary, retaining stance and typed redirect under More
+  ---
+  duration_ms: 0.228229
+  type: 'test'
+  ...
+# Subtest: I: positioned units remain orderable and fetch uses server-provided ships
+ok 415 - I: positioned units remain orderable and fetch uses server-provided ships
+  ---
+  duration_ms: 0.182313
+  type: 'test'
+  ...
+# Subtest: I: naval loading unloading and repair remain in More; at sea has no recall or redirect
+ok 416 - I: naval loading unloading and repair remain in More; at sea has no recall or redirect
+  ---
+  duration_ms: 0.313393
+  type: 'test'
+  ...
+# Subtest: I: forming training embarked repairing and freight do not offer inapplicable orders
+ok 417 - I: forming training embarked repairing and freight do not offer inapplicable orders
+  ---
+  duration_ms: 0.255378
+  type: 'test'
+  ...
+# Subtest: I: every server lifecycle status has a player label; unknown status never leaks raw jargon
+ok 418 - I: every server lifecycle status has a player label; unknown status never leaks raw jargon
+  ---
+  duration_ms: 0.136978
+  type: 'test'
+  ...
+# Subtest: I: ships off the coast take no March while a city remains, but keep the R6 stranded exception
+ok 419 - I: ships off the coast take no March while a city remains, but keep the R6 stranded exception
+  ---
+  duration_ms: 0.157972
+  type: 'test'
+  ...
+1..419
+# tests 419
+# suites 0
+# pass 419
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 331.223229
