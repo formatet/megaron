@@ -1,0 +1,11 @@
+» färsk DB på migration 160 · commit eb523aa2+ändringar
+=== RUN   TestGiftDestinationListMatchesLetterFOW
+=== RUN   TestGiftDestinationListMatchesLetterFOW/contacted
+2026/10/08 19:22:36 INFO player registered id=5b35616d-8e95-4017-8e47-91004f9e5975 username=trader-5f9207c8-4afe-444c-b5ae-55ace9b36d61
+=== RUN   TestGiftDestinationListMatchesLetterFOW/hidden
+2026/10/08 19:22:36 INFO player registered id=6d099f57-d480-4b79-8a56-03da9d127623 username=trader-4ec425f2-32b3-4849-9a36-69263deb3044
+--- PASS: TestGiftDestinationListMatchesLetterFOW (0.12s)
+    --- PASS: TestGiftDestinationListMatchesLetterFOW/contacted (0.06s)
+    --- PASS: TestGiftDestinationListMatchesLetterFOW/hidden (0.06s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.126s

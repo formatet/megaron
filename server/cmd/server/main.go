@@ -408,6 +408,7 @@ func main() {
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/recruit", ph.Recruit)
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/trade", ph.TradeRoutes)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/trade", ph.Trade)
+			r.Get("/worlds/{worldID}/provinces/{provinceID}/trade/destinations", ph.TransferDestinations)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/disband", ph.Disband)
 			r.Put("/worlds/{worldID}/provinces/{provinceID}/labor", ph.LaborAlloc)
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/placement-options", ph.PlacementOptions)

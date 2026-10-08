@@ -1,0 +1,11 @@
+» färsk DB på migration 160 · commit eb523aa2
+=== RUN   TestGiftContactedForeignCityDispatch
+2026/10/08 19:17:17 INFO player registered id=d2eb6df8-934a-4dae-b39e-9db5445d325e username=trader-c155dbea-9b19-4e32-9757-b86d8d08adda
+    province_gift_test.go:36: gift to contacted foreign city returned 403: map[error:use messenger trade offers to trade with other players — /trade is for internal transfers only], want 201
+--- FAIL: TestGiftContactedForeignCityDispatch (0.06s)
+=== RUN   TestGiftHiddenForeignCityDeniedWithoutDebit
+2026/10/08 19:17:17 INFO player registered id=11060a24-711c-4c43-b951-8f7dcaf2c467 username=trader-c178718b-339f-4a9b-9773-3e1952951099
+--- PASS: TestGiftHiddenForeignCityDeniedWithoutDebit (0.06s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.122s
+FAIL
