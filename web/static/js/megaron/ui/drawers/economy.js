@@ -219,7 +219,8 @@ async function loadEconomyGoods(mySettlements) {
     if (overviewResult.ok) {
       for (const pd of await overviewResult.json()) overviewByID.set(pd.id, pd);
     }
-    _settlementRows = mySettlements.map(s => settlementFoodRow(s, overviewByID.get(s.id) || null));
+    // Province rows carry both ids: overview is settlement-scoped; links and goods stay province-scoped.
+    _settlementRows = mySettlements.map(s => settlementFoodRow(s, overviewByID.get(s.settlement_id) || null));
     const overviewHtml =
       `<div class="dsec-title">Settlements</div>` +
       `<div id="ec-settlements-overview">${renderSettlementsOverviewHTML(

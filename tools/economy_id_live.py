@@ -133,7 +133,9 @@ try:
         assert page.locator('#economy-body').evaluate('(e)=>e.scrollWidth<=e.clientWidth'),'economy overflow'
     page.locator('#ec-settlements-overview tr[onclick]').first.click()
     page.wait_for_selector('#city-gubbe-grid svg')
-    assert 'Nostos' in page.locator('#drawer-city .drawer-header').inner_text()
+    assert 'Nostos' in page.locator('#drawer-city .drawer-header').text_content()
+    # City uses the province id as before; close the still-open Economy overlay to inspect it.
+    page.evaluate("window.closeDrawer('economy')")
     page.locator('#drawer-city').screenshot(path=str(OUT/'city-link-mobile.png'))
     assert not errors,errors
     proof={'health':health,'mode':MODE,'province':city,'detail':details,'overview':overview,'stocks':stock,'rendered':rendered,'city_link':'Nostos','browser_errors':errors,'sql_mutations':False}
