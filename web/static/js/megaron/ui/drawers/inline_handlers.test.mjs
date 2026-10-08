@@ -35,7 +35,7 @@ test('K: rite refusal stays in Kult; success survives drawer refresh',async()=>{
   if(url.endsWith('/goods')||url.endsWith('/actions'))return new Response('[]',{status:200});
   return new Response(JSON.stringify({settlement:{},divine_mood:'Indifferent'}),{status:200});
  };
- await okRite('prayer');assert.equal(els.get('kult-body').children.at(-1).textContent,'The gods answered.','success must survive refresh');
+ await okRite('prayer');assert.equal(els.get('kult-body').children.at(-1)?.textContent,'The gods answered.','success must survive refresh');
 });
 test('K: real abandon handler cannot POST before inline confirmation; refusal remains visible',async()=>{
  calls.length=0;globalThis.fetch=async(url,opts={})=>{calls.push([url,opts]);return new Response(JSON.stringify({error:'Cannot abandon capital'}),{status:422});};
