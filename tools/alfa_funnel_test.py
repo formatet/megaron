@@ -21,6 +21,12 @@ DSN = os.environ.get("ALFA_TEST_DSN")
 PSQL = os.environ.get("ALFA_TEST_PSQL_CMD")
 
 
+class RouteVerbTest(unittest.TestCase):
+    def test_sista_segmentet_utan_id(self):
+        self.assertEqual(F.route_verb("/api/v1/worlds/{worldID}/provinces/{provinceID}/build"), "build")
+        self.assertEqual(F.route_verb("/api/v1/worlds/{worldID}/units/{unitID}"), "units")
+
+
 class CalendarTest(unittest.TestCase):
     def test_tick_lookup(self):
         t0 = datetime(2026, 1, 1, tzinfo=timezone.utc)

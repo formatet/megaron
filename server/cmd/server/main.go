@@ -391,6 +391,9 @@ func main() {
 		// Province and kingdom endpoints require authentication.
 		r.Group(func(r chi.Router) {
 			r.Use(auth.Middleware(authSvc))
+			// TILLFÄLLIG avslagslogg för alfatestet (megaron_plan_avslagslogg.md):
+			// before the world guards so their refusals are recorded too.
+			r.Use(handlers.RecordRefusals(pool))
 			// Single-world enforcement: reject writes aimed at an archived world
 			// (a stale client otherwise gets writes accepted but never ticked).
 			r.Use(handlers.RequireActiveWorld(pool))
