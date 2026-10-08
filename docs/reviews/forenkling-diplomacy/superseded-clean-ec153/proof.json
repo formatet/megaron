@@ -1,0 +1,411 @@
+{
+  "health": {
+    "commit": "ec153d3e36b5febb4b07e6b84b489dc7ffa285dd",
+    "migration": 160,
+    "status": "ok"
+  },
+  "mode": "after",
+  "tabs": [
+    "Correspondence",
+    "Known"
+  ],
+  "own_city": {
+    "coastal": true,
+    "grain_carried": 1200,
+    "poseidon_gift": "bca9593b-1500-446e-ba59-bfd6a638509a",
+    "province_id": "9e9f5b40-2db1-426a-a668-aba28d435a1f",
+    "settlement_id": "cc4c3566-3ce3-4dfa-bf25-1f2795477afa",
+    "silver_carried": 432,
+    "tile": {
+      "WorldID": "00000000-0000-0000-0000-000000000000",
+      "Q": 47,
+      "R": 11,
+      "Terrain": "",
+      "Coastal": false,
+      "Fertility": 0,
+      "Mineral": 0,
+      "CopperDeposit": false,
+      "TinDeposit": false,
+      "SilverDeposit": false,
+      "CedarDeposit": false
+    }
+  },
+  "neighbour": {
+    "id": "33bbeaec-5d5d-47ee-a932-e3b05ebabadc",
+    "settlement_id": "fbd0d690-426d-4b89-ac2c-da879bcd67b5",
+    "name": "Kyme",
+    "culture": "minoan",
+    "q": 48,
+    "r": 8,
+    "state": "active",
+    "walls": 0,
+    "size_tier": 1,
+    "owner": "Deukalas",
+    "own": true,
+    "is_capital": true,
+    "allied": false,
+    "visible": true,
+    "army_total": 201
+  },
+  "walk": [
+    {
+      "target": {
+        "q": 50,
+        "r": 11,
+        "terrain": "forest_olive_grove",
+        "visible": true,
+        "tier": "live",
+        "fertility": 0.502331087506986,
+        "mineral": 0.3908182920739144
+      },
+      "preview": {
+        "arrival_tick": 3,
+        "arrives_at_utc": "2026-10-08T01:34:59.156453472Z",
+        "available": true,
+        "duration_ticks": 3,
+        "expedition": null
+      },
+      "receipt": {
+        "arrival_tick": 3,
+        "arrives_at": "2026-10-08T03:34:59.169065097+02:00",
+        "arrives_at_utc": "2026-10-08T01:34:59.169065097Z",
+        "departs_at": "2026-10-08T03:34:41.169065097+02:00",
+        "duration_ticks": 3,
+        "expedition": null,
+        "origin_q": 51,
+        "origin_r": 11,
+        "target_q": 50,
+        "target_r": 11,
+        "unit_id": "d4732344-06de-4cf6-b0a7-ef7e906d49a4"
+      }
+    },
+    {
+      "target": {
+        "q": 48,
+        "r": 11,
+        "terrain": "forest_olive_grove",
+        "visible": true,
+        "tier": "live",
+        "fertility": 0.5284683624551277,
+        "mineral": 0.7709211715575335
+      },
+      "preview": {
+        "arrival_tick": 13,
+        "arrives_at_utc": "2026-10-08T01:36:03.001163607Z",
+        "available": true,
+        "duration_ticks": 9,
+        "expedition": null
+      },
+      "receipt": {
+        "arrival_tick": 13,
+        "arrives_at": "2026-10-08T03:36:03.00530119+02:00",
+        "arrives_at_utc": "2026-10-08T01:36:03.00530119Z",
+        "departs_at": "2026-10-08T03:35:09.00530119+02:00",
+        "duration_ticks": 9,
+        "expedition": null,
+        "origin_q": 50,
+        "origin_r": 11,
+        "target_q": 48,
+        "target_r": 11,
+        "unit_id": "d4732344-06de-4cf6-b0a7-ef7e906d49a4"
+      }
+    },
+    {
+      "target": {
+        "q": 48,
+        "r": 9,
+        "terrain": "river_valley",
+        "coastal": true,
+        "visible": true,
+        "tier": "live",
+        "fertility": 0.7385952288184607,
+        "mineral": 0.7598840148827343
+      },
+      "preview": {
+        "arrival_tick": 19,
+        "arrives_at_utc": "2026-10-08T01:36:38.788939814Z",
+        "available": true,
+        "duration_ticks": 5,
+        "expedition": null
+      },
+      "receipt": {
+        "arrival_tick": 19,
+        "arrives_at": "2026-10-08T03:36:38.794167271+02:00",
+        "arrives_at_utc": "2026-10-08T01:36:38.794167271Z",
+        "departs_at": "2026-10-08T03:36:08.794167271+02:00",
+        "duration_ticks": 5,
+        "expedition": null,
+        "origin_q": 48,
+        "origin_r": 11,
+        "target_q": 48,
+        "target_r": 9,
+        "unit_id": "d4732344-06de-4cf6-b0a7-ef7e906d49a4"
+      }
+    },
+    {
+      "target": {
+        "q": 47,
+        "r": 11,
+        "terrain": "river_valley",
+        "coastal": true,
+        "visible": true,
+        "tier": "live",
+        "fertility": 0.4675564243702132,
+        "mineral": 0.5638533138741186
+      },
+      "preview": {
+        "arrival_tick": 23,
+        "arrives_at_utc": "2026-10-08T01:37:02.967973034Z",
+        "available": true,
+        "duration_ticks": 3,
+        "expedition": null
+      },
+      "receipt": {
+        "arrival_tick": 23,
+        "arrives_at": "2026-10-08T03:37:02.975003447+02:00",
+        "arrives_at_utc": "2026-10-08T01:37:02.975003447Z",
+        "departs_at": "2026-10-08T03:36:44.975003447+02:00",
+        "duration_ticks": 3,
+        "expedition": null,
+        "origin_q": 48,
+        "origin_r": 9,
+        "target_q": 47,
+        "target_r": 11,
+        "unit_id": "d4732344-06de-4cf6-b0a7-ef7e906d49a4"
+      }
+    }
+  ],
+  "letter_request": {
+    "destination_id": "fbd0d690-426d-4b89-ac2c-da879bcd67b5",
+    "message": "First letter from Nostos."
+  },
+  "letter": {
+    "arrives_at": "2026-10-08T03:37:17.766956831+02:00",
+    "distance": 3,
+    "id": "b61cbb8f-da70-446b-a49b-1d2b98b7d75e"
+  },
+  "reply_receipt": {
+    "distance": 3,
+    "returns_at": "2026-10-08T03:37:27.385437361+02:00"
+  },
+  "returned_letters": [
+    {
+      "id": "b61cbb8f-da70-446b-a49b-1d2b98b7d75e",
+      "destination_id": "fbd0d690-426d-4b89-ac2c-da879bcd67b5",
+      "destination_name": "Kyme",
+      "message_text": "First letter from Nostos.",
+      "status": "arrived",
+      "reply_text": "Kyme welcomes your letter.",
+      "sent_at": "2026-10-08T03:37:11.769093+02:00",
+      "arrives_at": "2026-10-08T03:37:27.385437+02:00",
+      "can_arrange_passage": false,
+      "can_call_back": false
+    }
+  ],
+  "trade_offers": [
+    {
+      "response": {
+        "arrives_at": "2026-10-08T03:37:40.969478896+02:00",
+        "distance": 3,
+        "id": "e0646961-8337-469f-bf84-fdcbc6e6eb3e"
+      },
+      "request": {
+        "destination_id": "fbd0d690-426d-4b89-ac2c-da879bcd67b5",
+        "message": "A buy offer from Nostos.",
+        "trade_offer": {
+          "kind": "buy",
+          "want_good": "grain",
+          "want_qty": 1,
+          "offer_silver": 1
+        }
+      }
+    },
+    {
+      "response": {
+        "arrives_at": "2026-10-08T03:37:43.715999264+02:00",
+        "distance": 3,
+        "id": "1278981b-6e35-4091-b14b-a3897846b411"
+      },
+      "request": {
+        "destination_id": "fbd0d690-426d-4b89-ac2c-da879bcd67b5",
+        "message": "A sell offer from Nostos.",
+        "trade_offer": {
+          "kind": "sell",
+          "offer_good": "grain",
+          "offer_qty": 1,
+          "want_silver": 1
+        }
+      }
+    }
+  ],
+  "recipient_inbox": [
+    {
+      "id": "1278981b-6e35-4091-b14b-a3897846b411",
+      "from_id": "cc4c3566-3ce3-4dfa-bf25-1f2795477afa",
+      "from_name": "Nostos",
+      "to_id": "fbd0d690-426d-4b89-ac2c-da879bcd67b5",
+      "to_name": "Kyme",
+      "message": "A sell offer from Nostos.",
+      "trade_offer": {
+        "kind": "sell",
+        "status": "pending",
+        "offer_qty": 1,
+        "offer_good": "grain",
+        "want_silver": 1
+      },
+      "status": "delivered",
+      "sent_at": "2026-10-08T03:37:37.717861+02:00",
+      "arrived_at": "2026-10-08T03:37:43.715999+02:00",
+      "expires_at": "2026-10-08T03:54:31.715999+02:00",
+      "affordable": true
+    },
+    {
+      "id": "e0646961-8337-469f-bf84-fdcbc6e6eb3e",
+      "from_id": "cc4c3566-3ce3-4dfa-bf25-1f2795477afa",
+      "from_name": "Nostos",
+      "to_id": "fbd0d690-426d-4b89-ac2c-da879bcd67b5",
+      "to_name": "Kyme",
+      "message": "A buy offer from Nostos.",
+      "trade_offer": {
+        "kind": "buy",
+        "status": "pending",
+        "want_qty": 1,
+        "want_good": "grain",
+        "offer_silver": 1
+      },
+      "status": "delivered",
+      "sent_at": "2026-10-08T03:37:34.971624+02:00",
+      "arrived_at": "2026-10-08T03:37:40.969478+02:00",
+      "expires_at": "2026-10-08T03:54:28.969478+02:00",
+      "affordable": true
+    }
+  ],
+  "inspect_status": 201,
+  "browser_errors": [],
+  "sql_mutations": false,
+  "readonly_actor_landmass": {
+    "own": "5",
+    "actors": [
+      {
+        "host": {
+          "id": "ffe8908c-9ceb-469a-8754-2a681d4216d7",
+          "type": "nomadic_host",
+          "category": "land",
+          "size": 1,
+          "status": "positioned",
+          "deployable": true,
+          "display_name": "Nomadic Host of Erita",
+          "q": 10,
+          "r": 61,
+          "in_battle": false
+        },
+        "landmass": "1"
+      },
+      {
+        "host": {
+          "id": "cf026280-e3d4-48af-90ca-c40d1eb99ff7",
+          "type": "nomadic_host",
+          "category": "land",
+          "size": 1,
+          "status": "positioned",
+          "deployable": true,
+          "display_name": "Nomadic Host of Dikonaros",
+          "q": 0,
+          "r": 36,
+          "in_battle": false
+        },
+        "landmass": "0"
+      },
+      {
+        "host": {
+          "id": "0cfeadf1-c7ed-4970-ba88-65a8e5638241",
+          "type": "nomadic_host",
+          "category": "land",
+          "size": 1,
+          "status": "positioned",
+          "deployable": true,
+          "display_name": "Nomadic Host of Mikharios",
+          "q": 43,
+          "r": 30,
+          "in_battle": false
+        },
+        "landmass": "6"
+      },
+      {
+        "host": {
+          "id": "d4732344-06de-4cf6-b0a7-ef7e906d49a4",
+          "type": "nomadic_host",
+          "category": "land",
+          "size": 1,
+          "status": "positioned",
+          "deployable": true,
+          "display_name": "Nomadic Host of Perimos",
+          "q": 51,
+          "r": 11,
+          "in_battle": false
+        },
+        "landmass": "5"
+      },
+      {
+        "host": {
+          "id": "0ac924c1-3f5c-4ba1-9f09-6636a9dde3d7",
+          "type": "nomadic_host",
+          "category": "land",
+          "size": 1,
+          "status": "positioned",
+          "deployable": true,
+          "display_name": "Nomadic Host of Kwerekwotas",
+          "q": 33,
+          "r": 25,
+          "in_battle": false
+        },
+        "landmass": "3"
+      },
+      {
+        "host": {
+          "id": "6f6b840c-6496-4ff7-a67d-9a0f4744ffa5",
+          "type": "nomadic_host",
+          "category": "land",
+          "size": 1,
+          "status": "positioned",
+          "deployable": true,
+          "display_name": "Nomadic Host of Wedaneus",
+          "q": 12,
+          "r": 50,
+          "in_battle": false
+        },
+        "landmass": "2"
+      },
+      {
+        "host": {
+          "id": "92843be1-20b6-4ecf-ad4d-033e80da600d",
+          "type": "nomadic_host",
+          "category": "land",
+          "size": 1,
+          "status": "positioned",
+          "deployable": true,
+          "display_name": "Nomadic Host of Plouteus",
+          "q": 54,
+          "r": 28,
+          "in_battle": false
+        },
+        "landmass": "7"
+      },
+      {
+        "host": {
+          "id": "0635b5a7-501a-45b7-97c7-bc007d58e75d",
+          "type": "nomadic_host",
+          "category": "land",
+          "size": 1,
+          "status": "positioned",
+          "deployable": true,
+          "display_name": "Nomadic Host of Deukalas",
+          "q": 48,
+          "r": 8,
+          "in_battle": false
+        },
+        "landmass": "5"
+      }
+    ]
+  }
+}

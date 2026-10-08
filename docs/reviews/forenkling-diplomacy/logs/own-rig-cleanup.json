@@ -1,0 +1,16 @@
+{
+  "only_own_ended_rigs": [
+    "/tmp/megaron-diplomacy-baseline",
+    "/tmp/megaron-diplomacy-baseline-clean",
+    "/tmp/megaron-diplomacy-baseline-final",
+    "/tmp/megaron-diplomacy-after",
+    "/tmp/megaron-diplomacy-after-clean",
+    "/tmp/megaron-diplomacy-repeat",
+    "/tmp/megaron-diplomacy-final",
+    "/tmp/megaron-diplomacy-final-repeat",
+    "/tmp/megaron-diplomacy-draft-safe",
+    "/tmp/megaron-diplomacy-draft-safe-repeat"
+  ],
+  "evidence_preserved_in": "docs/reviews/forenkling-diplomacy",
+  "binary_bytes_removed_in_this_slice": 215068666
+}

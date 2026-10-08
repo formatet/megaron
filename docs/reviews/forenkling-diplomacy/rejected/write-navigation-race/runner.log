@@ -1,0 +1,13 @@
+actors {"own_host": {"id": "acc2133f-996d-45f7-ad99-729e9d8c7dca", "type": "nomadic_host", "category": "land", "size": 1, "status": "positioned", "deployable": true, "display_name": "Nomadic Host of Okunawos", "q": 4, "r": 45, "in_battle": false}, "own_landmass": "1", "neighbour": {"id": "c84f2310-6066-4274-b659-42435f4b0132", "settlement_id": "e044f139-b8c7-4faa-8883-f039eaad6ba5", "name": "Kyme", "culture": "minoan", "q": 0, "r": 50, "state": "active", "walls": 0, "size_tier": 1, "owner": "Gwasileus", "own": true, "is_capital": true, "allied": false, "visible": true, "army_total": 201}, "spawn_count": 11}
+walking {"target": {"q": 2, "r": 47, "terrain": "hills", "visible": true, "tier": "live", "fertility": 0.26169314684776734, "mineral": 0.5681505776638252, "copper_deposit": true}, "preview": {"arrival_tick": 4, "arrives_at_utc": "2026-10-08T01:31:16.903409127Z", "available": true, "duration_ticks": 4, "expedition": null}, "receipt": {"arrival_tick": 4, "arrives_at": "2026-10-08T03:31:16.917186985+02:00", "arrives_at_utc": "2026-10-08T01:31:16.917186985Z", "departs_at": "2026-10-08T03:30:52.917186985+02:00", "duration_ticks": 4, "expedition": null, "origin_q": 4, "origin_r": 45, "target_q": 2, "target_r": 47, "unit_id": "acc2133f-996d-45f7-ad99-729e9d8c7dca"}}
+walking {"target": {"q": 0, "r": 49, "terrain": "plains", "visible": true, "tier": "live", "fertility": 0.5818058463538052, "mineral": 0.6636971838467434}, "preview": {"arrival_tick": 8, "arrives_at_utc": "2026-10-08T01:31:44.556096424Z", "available": true, "duration_ticks": 4, "expedition": null}, "receipt": {"arrival_tick": 8, "arrives_at": "2026-10-08T03:31:44.561006069+02:00", "arrives_at_utc": "2026-10-08T01:31:44.561006069Z", "departs_at": "2026-10-08T03:31:20.561006069+02:00", "duration_ticks": 4, "expedition": null, "origin_q": 2, "origin_r": 47, "target_q": 0, "target_r": 49, "unit_id": "acc2133f-996d-45f7-ad99-729e9d8c7dca"}}
+browser errors: []
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-diplomacy-simple-20261008/tools/diplomacy_live.py", line 236, in <module>
+    recipient.goto(base+'/play',wait_until='networkidle');recipient.wait_for_function('window.openDrawer && window.dipReply')
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_sync_base.py", line 85, in __exit__
+    self._event.value
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_sync_base.py", line 59, in value
+    raise exception
+playwright._impl._errors.TimeoutError: Timeout 30000ms exceeded while waiting for event "response"
