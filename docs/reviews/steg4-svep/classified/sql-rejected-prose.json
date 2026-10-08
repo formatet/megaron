@@ -1,0 +1,65 @@
+[
+  {
+    "file": "server/api/handlers/dispatch_preferences.go",
+    "line": 74,
+    "end": 74,
+    "function": "*DispatchPreferencesHandler.Mute",
+    "kind": "sql",
+    "value": "update failed",
+    "package": "handlers"
+  },
+  {
+    "file": "server/api/handlers/dispatch_preferences.go",
+    "line": 97,
+    "end": 97,
+    "function": "*DispatchPreferencesHandler.Unmute",
+    "kind": "sql",
+    "value": "delete failed",
+    "package": "handlers"
+  },
+  {
+    "file": "server/api/handlers/notifications.go",
+    "line": 157,
+    "end": 157,
+    "function": "*NotificationsHandler.ReadAll",
+    "kind": "sql",
+    "value": "update failed",
+    "package": "handlers"
+  },
+  {
+    "file": "server/api/handlers/notifications.go",
+    "line": 192,
+    "end": 192,
+    "function": "*NotificationsHandler.MarkRead",
+    "kind": "sql",
+    "value": "update failed",
+    "package": "handlers"
+  },
+  {
+    "file": "server/api/handlers/notifications.go",
+    "line": 218,
+    "end": 218,
+    "function": "*NotificationsHandler.DeleteAll",
+    "kind": "sql",
+    "value": "delete failed",
+    "package": "handlers"
+  },
+  {
+    "file": "server/internal/unit/model.go",
+    "line": 459,
+    "end": 459,
+    "function": "*Store.Get",
+    "kind": "sql",
+    "value": "SELECT ",
+    "package": "unit"
+  },
+  {
+    "file": "server/internal/unit/model.go",
+    "line": 471,
+    "end": 471,
+    "function": "*Store.ListByOwner",
+    "kind": "sql",
+    "value": "SELECT ",
+    "package": "unit"
+  }
+]

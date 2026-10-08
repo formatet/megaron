@@ -1,0 +1,20 @@
+{
+  "go_pairs": 110,
+  "go_production_pairs": 83,
+  "go_test_additions": 27,
+  "mixed_production_test_pairs": 0,
+  "js_pairs": 18,
+  "js_production_pairs": 3,
+  "sql_production_test_groups": 43,
+  "sql_statement_groups": 105,
+  "hex_sql_literals": 11,
+  "sql_fragment_groups": 69,
+  "sql_false_positive_literals": 7,
+  "deadcode_production": 40,
+  "deadcode_with_tests": 9,
+  "unused_parameters": 100,
+  "unused_production_parameters": 34,
+  "literal_groups": 3150,
+  "handler_files": 35,
+  "db_calls": 457
+}

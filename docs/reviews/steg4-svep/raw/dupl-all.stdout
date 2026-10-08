@@ -17,8 +17,8 @@ server/internal/messenger/order_delivery.go:145-161: duplicate of server/interna
 server/internal/messenger/order_delivery.go:162-183: duplicate of server/internal/messenger/order_delivery.go:145-161
 server/internal/economy/refining_weakest_link_test.go:139-160: duplicate of server/internal/economy/refining_weakest_link_test.go:235-258
 server/internal/economy/refining_weakest_link_test.go:235-258: duplicate of server/internal/economy/refining_weakest_link_test.go:139-160
-server/api/handlers/settlement_overview_test.go:50-68: duplicate of server/internal/economy/trade_internal_no_loss_test.go:61-77
-server/internal/economy/trade_internal_no_loss_test.go:61-77: duplicate of server/api/handlers/settlement_overview_test.go:50-68
+server/api/handlers/settlement_overview_test.go:50-68: duplicate of server/internal/economy/trade_internal_no_loss_test.go:60-76
+server/internal/economy/trade_internal_no_loss_test.go:60-76: duplicate of server/api/handlers/settlement_overview_test.go:50-68
 server/internal/world/mapgen.go:2060-2098: duplicate of server/internal/world/mapgen.go:2133-2171
 server/internal/world/mapgen.go:2133-2171: duplicate of server/internal/world/mapgen.go:2060-2098
 server/cmd/keryx/cmd_city_test.go:60-92: duplicate of server/cmd/keryx/cmd_idle_test.go:16-48
@@ -35,8 +35,8 @@ server/internal/world/mapgen.go:2340-2371: duplicate of server/internal/world/ma
 server/internal/world/mapgen.go:2387-2418: duplicate of server/internal/world/mapgen.go:2340-2371
 server/internal/economy/siege_dispatch_test.go:175-198: duplicate of server/internal/economy/siege_dispatch_test.go:202-223
 server/internal/economy/siege_dispatch_test.go:202-223: duplicate of server/internal/economy/siege_dispatch_test.go:175-198
-server/api/handlers/province.go:4107-4133: duplicate of server/api/handlers/province.go:4176-4202
-server/api/handlers/province.go:4176-4202: duplicate of server/api/handlers/province.go:4107-4133
+server/api/handlers/province.go:4149-4175: duplicate of server/api/handlers/province.go:4218-4244
+server/api/handlers/province.go:4218-4244: duplicate of server/api/handlers/province.go:4149-4175
 server/internal/combat/upkeep_support_settlement_test.go:65-85: duplicate of server/internal/loyalty/colony_idempotent_test.go:82-102
 server/internal/loyalty/colony_idempotent_test.go:82-102: duplicate of server/internal/combat/upkeep_support_settlement_test.go:65-85
 server/internal/kharis/divine_notification_name_test.go:18-52: duplicate of server/internal/kharis/divine_notification_name_test.go:54-88

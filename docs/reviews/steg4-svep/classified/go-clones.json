@@ -1,0 +1,2453 @@
+[
+  {
+    "id": "GO001",
+    "sites": [
+      {
+        "file": "server/api/handlers/dispatch_preferences.go",
+        "line": 58,
+        "end": 78,
+        "function": "*DispatchPreferencesHandler.Mute"
+      },
+      {
+        "file": "server/api/handlers/dispatch_preferences.go",
+        "line": 82,
+        "end": 101,
+        "function": "*DispatchPreferencesHandler.Unmute"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Mute/unmute motsatta mutationer",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO002",
+    "sites": [
+      {
+        "file": "server/api/handlers/god.go",
+        "line": 75,
+        "end": 82,
+        "function": "*GodHandler.View"
+      },
+      {
+        "file": "server/api/handlers/reports.go",
+        "line": 210,
+        "end": 216,
+        "function": "*ReportsHandler.List"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Scan-loop över skilda tile/report-vyer",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO003",
+    "sites": [
+      {
+        "file": "server/api/handlers/god.go",
+        "line": 77,
+        "end": 80,
+        "function": "*GodHandler.View"
+      },
+      {
+        "file": "server/api/handlers/reports.go",
+        "line": 212,
+        "end": 214,
+        "function": "*ReportsHandler.List"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Skilda tile/report Scan",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO004",
+    "sites": [
+      {
+        "file": "server/api/handlers/god.go",
+        "line": 77,
+        "end": 80,
+        "function": "*GodHandler.View"
+      },
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 360,
+        "end": 363,
+        "function": "*WorldHandler.Map"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Skilda map/god Scan",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO005",
+    "sites": [
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 1004,
+        "end": 1010,
+        "function": "*KingdomHandler.BorrowedArmiesList"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 189,
+        "end": 194,
+        "function": "*StandingOrderTickHandler.Handle"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Skilda borrowed-army/order Scan-typer",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO006",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 1164,
+        "end": 1175,
+        "function": "*MessengerHandler.TradeAccept"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3356,
+        "end": 3371,
+        "function": "*ProvinceHandler.Trade"
+      }
+    ],
+    "owner_rows": [
+      10,
+      18,
+      4
+    ],
+    "classification": "kandidat",
+    "reason": "Val mellan naval carrier och verklig landrutt i TradeAccept/Trade",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO007",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 1314,
+        "end": 1327,
+        "function": "*MessengerHandler.TradeAccept"
+      },
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 1448,
+        "end": 1461,
+        "function": "*MessengerHandler.TradeAccept"
+      }
+    ],
+    "owner_rows": [
+      3
+    ],
+    "classification": "kandidat",
+    "reason": "OfferAccepted payload återkommer i buy/sell gren",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO008",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 165,
+        "end": 181,
+        "function": "*MessengerHandler.Send"
+      },
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 182,
+        "end": 198,
+        "function": "*MessengerHandler.Send"
+      }
+    ],
+    "owner_rows": [
+      19
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Buy/sell validator spegel; offer/want goods och silver är skilda fält",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO009",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 745,
+        "end": 746,
+        "function": "*MessengerHandler.ListFromHost"
+      },
+      {
+        "file": "server/internal/combat/march_encounter.go",
+        "line": 206,
+        "end": 208,
+        "function": "*MarchEncounterHandler.loadCandidates"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Scan av helt olika messenger/march-vyer",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO010",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger_passage.go",
+        "line": 437,
+        "end": 446,
+        "function": "hexIsSettled"
+      },
+      {
+        "file": "server/api/handlers/messenger_passage.go",
+        "line": 453,
+        "end": 464,
+        "function": "settlementAtHexIsPort"
+      }
+    ],
+    "owner_rows": [
+      18
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Settlement-existens respektive portexistens är olika predikat",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO011",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger_passage.go",
+        "line": 501,
+        "end": 512,
+        "function": "eligiblePassageShips"
+      },
+      {
+        "file": "server/internal/messenger/passage.go",
+        "line": 517,
+        "end": 528,
+        "function": "stalledEligibleShips"
+      }
+    ],
+    "owner_rows": [
+      18,
+      4
+    ],
+    "classification": "kandidat",
+    "reason": "Eligible passage ship query och Scan i HTTP och domän",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO012",
+    "sites": [
+      {
+        "file": "server/api/handlers/notifications.go",
+        "line": 140,
+        "end": 161,
+        "function": "*NotificationsHandler.ReadAll"
+      },
+      {
+        "file": "server/api/handlers/notifications.go",
+        "line": 202,
+        "end": 222,
+        "function": "*NotificationsHandler.DeleteAll"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "ReadAll/DeleteAll notiser är olika handlingar",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO013",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2463,
+        "end": 2473,
+        "function": "*ProvinceHandler.Recruit"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2580,
+        "end": 2590,
+        "function": "*ProvinceHandler.Recruit"
+      }
+    ],
+    "owner_rows": [
+      4,
+      15,
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "TrainComplete enqueue i naval och land Recruit, hela TX måste bevaras",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO014",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3650,
+        "end": 3659,
+        "function": "*ProvinceHandler.TradeRoutes"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3684,
+        "end": 3693,
+        "function": "*ProvinceHandler.TradeRoutes"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Inbound/outbound route-vyer är olika riktningar",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO015",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 4149,
+        "end": 4175,
+        "function": "*ProvinceHandler.MarketWants"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 4218,
+        "end": 4244,
+        "function": "*ProvinceHandler.MarketWants"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Trade shortage/surplus observationer, skilda riktningar",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO016",
+    "sites": [
+      {
+        "file": "server/api/handlers/reports.go",
+        "line": 212,
+        "end": 214,
+        "function": "*ReportsHandler.List"
+      },
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 360,
+        "end": 363,
+        "function": "*WorldHandler.Map"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Skilda report/map Scan",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO017",
+    "sites": [
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 1567,
+        "end": 1576,
+        "function": "*SettlementHandler.Abandon"
+      },
+      {
+        "file": "server/internal/combat/collapse.go",
+        "line": 196,
+        "end": 205,
+        "function": "collapseSettlement"
+      }
+    ],
+    "owner_rows": [
+      16,
+      4
+    ],
+    "classification": "kandidat",
+    "reason": "Abandon och collapse avvecklar garrison/cargo i skilda mutationsägare",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO018",
+    "sites": [
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 1660,
+        "end": 1665,
+        "function": "*SettlementHandler.Gossip"
+      },
+      {
+        "file": "server/internal/gossip/gossip.go",
+        "line": 187,
+        "end": 192,
+        "function": "PropagateOnContact"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Scan-loop över skilda rumor/item-vyer, ingen delad regel",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO019",
+    "sites": [
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 40,
+        "end": 42,
+        "function": "NewSettlementHandler"
+      },
+      {
+        "file": "server/internal/messenger/order_delivery.go",
+        "line": 73,
+        "end": 75,
+        "function": "NewOrderDeliveryHandler"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Konstruktorer för skilda handlers",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO020",
+    "sites": [
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 88,
+        "end": 90,
+        "function": "*SettlementHandler.List"
+      },
+      {
+        "file": "server/internal/combat/unit_intercept_scan.go",
+        "line": 132,
+        "end": 133,
+        "function": "*UnitInterceptScanHandler.Handle"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Skilda settlement/march Scan-typer",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO021",
+    "sites": [
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 88,
+        "end": 90,
+        "function": "*SettlementHandler.List"
+      },
+      {
+        "file": "server/internal/messenger/passage.go",
+        "line": 757,
+        "end": 758,
+        "function": "*PassageScanHandler.boardShipMissions"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Skilda ship/settlement Scan-typer",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO022",
+    "sites": [
+      {
+        "file": "server/api/handlers/standing_order.go",
+        "line": 243,
+        "end": 258,
+        "function": "*StandingOrderHandler.loadOutbound"
+      },
+      {
+        "file": "server/api/handlers/standing_order.go",
+        "line": 260,
+        "end": 275,
+        "function": "*StandingOrderHandler.loadReturn"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Standing-order outbound threshold respektive return floor",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO023",
+    "sites": [
+      {
+        "file": "server/api/handlers/standing_order.go",
+        "line": 278,
+        "end": 285,
+        "function": "*StandingOrderHandler.ownOrder"
+      },
+      {
+        "file": "server/api/handlers/standing_order.go",
+        "line": 45,
+        "end": 52,
+        "function": "*StandingOrderHandler.ownSettlement"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Ägarkontroll settlement/order har skilda id-tabeller",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO024",
+    "sites": [
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 133,
+        "end": 138,
+        "function": "*UnitHandler.March"
+      },
+      {
+        "file": "server/api/handlers/unit_march_preview.go",
+        "line": 99,
+        "end": 102,
+        "function": "*UnitHandler.MarchPreview"
+      }
+    ],
+    "owner_rows": [
+      15,
+      18
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "March/preview konsumerar redan samma RequireShipInPort",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO025",
+    "sites": [
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 139,
+        "end": 144,
+        "function": "*UnitHandler.March"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 151,
+        "end": 163,
+        "function": "*UnitHandler.March"
+      }
+    ],
+    "owner_rows": [
+      4,
+      10
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Direkt March och fysisk order till March delar typat beslut, ingen ny regelägare",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO026",
+    "sites": [
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 1889,
+        "end": 1894,
+        "function": "*UnitHandler.SetStandingOrders"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 565,
+        "end": 570,
+        "function": "*UnitHandler.Recall"
+      }
+    ],
+    "owner_rows": [
+      15,
+      18
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Båda konsumerar redan samma RequireShipInPort-ägare",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO027",
+    "sites": [
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 106,
+        "end": 110,
+        "function": "roman"
+      },
+      {
+        "file": "server/internal/province/names.go",
+        "line": 157,
+        "end": 163,
+        "function": "roman"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "kandidat",
+    "reason": "Roman numeral namnsuffix i handler och province",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO028",
+    "sites": [
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 1632,
+        "end": 1643,
+        "function": "*WorldHandler.storeTiles"
+      },
+      {
+        "file": "server/cmd/create-world/main.go",
+        "line": 90,
+        "end": 100,
+        "function": "main"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Ingen kartrad: world seed INSERT/landmass-projektion i HTTP och create-world",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO029",
+    "sites": [
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 1721,
+        "end": 1726,
+        "function": "*WorldHandler.Wanaxes"
+      },
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 1824,
+        "end": 1829,
+        "function": "*WorldHandler.loadCities"
+      }
+    ],
+    "owner_rows": [
+      5,
+      6
+    ],
+    "classification": "kandidat",
+    "reason": "Samma contacted-city query/Scan i Wanaxes och loadCities; filtren bevaras",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO030",
+    "sites": [
+      {
+        "file": "server/cmd/keryx/client.go",
+        "line": 162,
+        "end": 171,
+        "function": "*Client.get"
+      },
+      {
+        "file": "server/cmd/keryx/client.go",
+        "line": 206,
+        "end": 215,
+        "function": "*Client.delete"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "CLI HTTP-verb wrappers har olika method/status",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO031",
+    "sites": [
+      {
+        "file": "server/cmd/keryx/client.go",
+        "line": 173,
+        "end": 182,
+        "function": "*Client.post"
+      },
+      {
+        "file": "server/cmd/keryx/client.go",
+        "line": 184,
+        "end": 193,
+        "function": "*Client.put"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "HTTP POST/PUT wrappers",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO032",
+    "sites": [
+      {
+        "file": "server/cmd/keryx/client.go",
+        "line": 173,
+        "end": 182,
+        "function": "*Client.post"
+      },
+      {
+        "file": "server/cmd/keryx/client.go",
+        "line": 195,
+        "end": 204,
+        "function": "*Client.patch"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "HTTP PATCH/POST wrappers",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO033",
+    "sites": [
+      {
+        "file": "server/cmd/keryx/client.go",
+        "line": 173,
+        "end": 193,
+        "function": "*Client.post"
+      },
+      {
+        "file": "server/cmd/keryx/client.go",
+        "line": 184,
+        "end": 204,
+        "function": "*Client.put"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Överlappande fynd över redan klassade HTTP wrappers",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO034",
+    "sites": [
+      {
+        "file": "server/cmd/keryx/client.go",
+        "line": 184,
+        "end": 193,
+        "function": "*Client.put"
+      },
+      {
+        "file": "server/cmd/keryx/client.go",
+        "line": 195,
+        "end": 204,
+        "function": "*Client.patch"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "HTTP PUT/PATCH wrappers",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO035",
+    "sites": [
+      {
+        "file": "server/cmd/keryx/cmd_gossip.go",
+        "line": 44,
+        "end": 54,
+        "function": "gossipCmd"
+      },
+      {
+        "file": "server/cmd/keryx/cmd_messenger.go",
+        "line": 315,
+        "end": 325,
+        "function": "outboxCmd"
+      }
+    ],
+    "owner_rows": [
+      1
+    ],
+    "classification": "kandidat",
+    "reason": "CLI wall-clock age presentation kopierad; sanktionerat undantag",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO036",
+    "sites": [
+      {
+        "file": "server/cmd/keryx/cmd_status.go",
+        "line": 1273,
+        "end": 1278,
+        "function": "cohortLines"
+      },
+      {
+        "file": "server/internal/economy/founding_placement.go",
+        "line": 110,
+        "end": 115,
+        "function": "rankSlotsFromOptions"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Sortering av skilda cohort/food-slot objekt",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO037",
+    "sites": [
+      {
+        "file": "server/cmd/keryx/cmd_status.go",
+        "line": 1273,
+        "end": 1278,
+        "function": "cohortLines"
+      },
+      {
+        "file": "server/internal/world/debugpng.go",
+        "line": 252,
+        "end": 257,
+        "function": "EstimatePlayerCapacity"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Sortering map capacity kontra cohort",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO038",
+    "sites": [
+      {
+        "file": "server/cmd/keryx/cmd_wants.go",
+        "line": 101,
+        "end": 109,
+        "function": "wantsCmd"
+      },
+      {
+        "file": "server/cmd/keryx/cmd_wants.go",
+        "line": 92,
+        "end": 100,
+        "function": "wantsCmd"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Shortage/surplus CLI presentation är två riktningar",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO039",
+    "sites": [
+      {
+        "file": "server/cmd/server/main.go",
+        "line": 1071,
+        "end": 1077,
+        "function": "pruneHeartbeats"
+      },
+      {
+        "file": "server/cmd/server/main.go",
+        "line": 1096,
+        "end": 1102,
+        "function": "pruneSitosTicks"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Retention på skilda eventfamiljer",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO040",
+    "sites": [
+      {
+        "file": "server/internal/agora/client.go",
+        "line": 224,
+        "end": 232,
+        "function": "*Client.Create"
+      },
+      {
+        "file": "server/internal/agora/client.go",
+        "line": 246,
+        "end": 254,
+        "function": "*Client.ResetPassword"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Agora Create/ResetPassword delar säkerhetskontroll, olika operation",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO041",
+    "sites": [
+      {
+        "file": "server/internal/auth/middleware.go",
+        "line": 59,
+        "end": 66,
+        "function": "WebMiddleware"
+      },
+      {
+        "file": "server/internal/auth/middleware.go",
+        "line": 78,
+        "end": 85,
+        "function": "OptionalMiddleware"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Web/optional auth har avsiktligt olika behörighetsflöde",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO042",
+    "sites": [
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 102,
+        "end": 114,
+        "function": "checkContext.deployableLandUnits"
+      },
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 118,
+        "end": 129,
+        "function": "checkContext.anyUnitsHere"
+      }
+    ],
+    "owner_rows": [
+      15,
+      16
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Deployable/all units har olika krav",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO043",
+    "sites": [
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 102,
+        "end": 114,
+        "function": "checkContext.deployableLandUnits"
+      },
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 149,
+        "end": 161,
+        "function": "checkContext.ladenNavalUnits"
+      }
+    ],
+    "owner_rows": [
+      15,
+      16
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Laden naval/deployable land är olika mängder",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO044",
+    "sites": [
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 118,
+        "end": 129,
+        "function": "checkContext.anyUnitsHere"
+      },
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 133,
+        "end": 145,
+        "function": "checkContext.idleNavalUnits"
+      }
+    ],
+    "owner_rows": [
+      15,
+      16
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "All/idle naval units har olika krav",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO045",
+    "sites": [
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 133,
+        "end": 145,
+        "function": "checkContext.idleNavalUnits"
+      },
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 149,
+        "end": 161,
+        "function": "checkContext.ladenNavalUnits"
+      }
+    ],
+    "owner_rows": [
+      15,
+      16
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Idle/laden naval har olika lastfilter",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO046",
+    "sites": [
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 283,
+        "end": 295,
+        "function": "checkContext.pendingInboundTradeOffer"
+      },
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 299,
+        "end": 311,
+        "function": "checkContext.pendingOutboundTradeOffer"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Inbound/outbound offer predicates är olika riktningar",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO047",
+    "sites": [
+      {
+        "file": "server/internal/capabilities/kingdom_verbs.go",
+        "line": 153,
+        "end": 174,
+        "function": "canKingdomBorrowArmy"
+      },
+      {
+        "file": "server/internal/capabilities/kingdom_verbs.go",
+        "line": 180,
+        "end": 201,
+        "function": "canKingdomCouncil"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "POST-MVP kingdom-verben har olika handling",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO048",
+    "sites": [
+      {
+        "file": "server/internal/capabilities/trade_verbs.go",
+        "line": 226,
+        "end": 242,
+        "function": "checkContext.anySellableGood"
+      },
+      {
+        "file": "server/internal/capabilities/trade_verbs.go",
+        "line": 246,
+        "end": 255,
+        "function": "checkContext.anyShippableGood"
+      }
+    ],
+    "owner_rows": [
+      19
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Sellable är inte shippable; silver-filter får inte harmoniseras",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO049",
+    "sites": [
+      {
+        "file": "server/internal/chronicle/chronicle.go",
+        "line": 208,
+        "end": 222,
+        "function": "*Chronicler.settlementName"
+      },
+      {
+        "file": "server/internal/chronicle/chronicle.go",
+        "line": 224,
+        "end": 238,
+        "function": "*Chronicler.playerName"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Namn-cache för olika identiteter/tabeller",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO050",
+    "sites": [
+      {
+        "file": "server/internal/combat/march_encounter.go",
+        "line": 89,
+        "end": 91,
+        "function": "NewMarchEncounterHandler"
+      },
+      {
+        "file": "server/internal/combat/unit_intercept_scan.go",
+        "line": 82,
+        "end": 84,
+        "function": "NewUnitInterceptScanHandler"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Konstruktorer med samma dependency injection-form",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO051",
+    "sites": [
+      {
+        "file": "server/internal/combat/march_sighting.go",
+        "line": 161,
+        "end": 163,
+        "function": "*MarchSightingHandler.loadMarches"
+      },
+      {
+        "file": "server/internal/combat/upkeep.go",
+        "line": 340,
+        "end": 342,
+        "function": "*UpkeepHandler.Handle"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Scan av olika units-vyer, tokenlikhet utan samma fråga",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO052",
+    "sites": [
+      {
+        "file": "server/internal/combat/occupation.go",
+        "line": 680,
+        "end": 689,
+        "function": "lootSettlementGoods"
+      },
+      {
+        "file": "server/internal/combat/occupation.go",
+        "line": 718,
+        "end": 727,
+        "function": "lootSettlementGoods"
+      }
+    ],
+    "owner_rows": [
+      7
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Lager respektive granary plundras; olika datakällor",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO053",
+    "sites": [
+      {
+        "file": "server/internal/combat/recall_redirect.go",
+        "line": 239,
+        "end": 246,
+        "function": "ExecuteRecall"
+      },
+      {
+        "file": "server/internal/combat/recall_redirect.go",
+        "line": 246,
+        "end": 253,
+        "function": "ExecuteRecall"
+      }
+    ],
+    "owner_rows": [
+      3
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Frysta recall och redirect events, payloadens likhet är avsiktlig",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO054",
+    "sites": [
+      {
+        "file": "server/internal/combat/ship_hull.go",
+        "line": 417,
+        "end": 467,
+        "function": "nearestOwnShipyardSettlement"
+      },
+      {
+        "file": "server/internal/transport/carrier.go",
+        "line": 155,
+        "end": 205,
+        "function": "NearestOwnPort"
+      }
+    ],
+    "owner_rows": [
+      10,
+      18
+    ],
+    "classification": "kandidat",
+    "reason": "Nearest shipyard/port har samma query/path/min-loop; policy måste vara explicit",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO055",
+    "sites": [
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1123,
+        "end": 1131,
+        "function": "*UnitArrivalHandler.pickupReturned"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1679,
+        "end": 1687,
+        "function": "*UnitArrivalHandler.damagedShipReturned"
+      }
+    ],
+    "owner_rows": [
+      3
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Ankomstnotiser för olika returorsaker",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO056",
+    "sites": [
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1405,
+        "end": 1412,
+        "function": "*UnitArrivalHandler.dispatchReturnHome"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1428,
+        "end": 1435,
+        "function": "*UnitArrivalHandler.dispatchReturnHome"
+      }
+    ],
+    "owner_rows": [
+      3
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Skilda frysta eventtyper swept/explore return",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO057",
+    "sites": [
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1752,
+        "end": 1761,
+        "function": "*UnitArrivalHandler.sentryArrived"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 758,
+        "end": 767,
+        "function": "*UnitArrivalHandler.passageArrived"
+      }
+    ],
+    "owner_rows": [
+      3
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "UnitArrived för olika ankomster/nivåer, inte samma utfall",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO058",
+    "sites": [
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 2118,
+        "end": 2126,
+        "function": "*UnitArrivalHandler.resolveCombat"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 2245,
+        "end": 2253,
+        "function": "*UnitArrivalHandler.resolveAmphibiousAssault"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Garrison-deltagare i land och amphibious combat; stridsregler skiljer",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO059",
+    "sites": [
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 448,
+        "end": 463,
+        "function": "*UnitArrivalHandler.arriveGarrison"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 474,
+        "end": 489,
+        "function": "*UnitArrivalHandler.arriveGarrison"
+      }
+    ],
+    "owner_rows": [
+      8,
+      9
+    ],
+    "classification": "kandidat",
+    "reason": "Återkredit silver/provisions med samma settled/cap-policy",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO060",
+    "sites": [
+      {
+        "file": "server/internal/combat/unit_intercept_scan.go",
+        "line": 132,
+        "end": 133,
+        "function": "*UnitInterceptScanHandler.Handle"
+      },
+      {
+        "file": "server/internal/messenger/passage.go",
+        "line": 757,
+        "end": 758,
+        "function": "*PassageScanHandler.boardShipMissions"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Skilda march/ship Scan-typer",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO061",
+    "sites": [
+      {
+        "file": "server/internal/economy/founding_placement.go",
+        "line": 110,
+        "end": 115,
+        "function": "rankSlotsFromOptions"
+      },
+      {
+        "file": "server/internal/world/debugpng.go",
+        "line": 252,
+        "end": 257,
+        "function": "EstimatePlayerCapacity"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Sortering food-slot kontra map capacity",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO062",
+    "sites": [
+      {
+        "file": "server/internal/economy/goods.go",
+        "line": 63,
+        "end": 67,
+        "function": "GoodState.Current"
+      },
+      {
+        "file": "server/internal/province/model.go",
+        "line": 51,
+        "end": 55,
+        "function": "ResourceState.Current"
+      }
+    ],
+    "owner_rows": [
+      1,
+      7,
+      8
+    ],
+    "classification": "kandidat",
+    "reason": "Två legacy wall-minute resource Current-vyer; GoodState.Current är RTA-test-only",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO063",
+    "sites": [
+      {
+        "file": "server/internal/economy/recompute.go",
+        "line": 445,
+        "end": 449,
+        "function": ""
+      },
+      {
+        "file": "server/internal/gossip/gossip.go",
+        "line": 28,
+        "end": 32,
+        "function": ""
+      }
+    ],
+    "owner_rows": [
+      4
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Consumer-owned Tx-interface enligt G1; ska inte centraliseras bara för likhet",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO064",
+    "sites": [
+      {
+        "file": "server/internal/economy/recompute.go",
+        "line": 687,
+        "end": 697,
+        "function": "RecomputeProduction"
+      },
+      {
+        "file": "server/internal/economy/recompute.go",
+        "line": 786,
+        "end": 796,
+        "function": "RecomputeProduction"
+      }
+    ],
+    "owner_rows": [
+      13,
+      19
+    ],
+    "classification": "kandidat",
+    "reason": "Bemanning/rate-läsning i refining-loop och bronze-loop; receptkontexter bevaras",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO065",
+    "sites": [
+      {
+        "file": "server/internal/economy/sitos_tick.go",
+        "line": 239,
+        "end": 259,
+        "function": "loadGranary"
+      },
+      {
+        "file": "server/internal/economy/sitos_tick.go",
+        "line": 350,
+        "end": 370,
+        "function": "GranaryTotals"
+      }
+    ],
+    "owner_rows": [
+      14
+    ],
+    "classification": "kandidat",
+    "reason": "Granary read med TX respektive pool; ransonregeln är inte duplicerad här",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO066",
+    "sites": [
+      {
+        "file": "server/internal/economy/trade_return.go",
+        "line": 130,
+        "end": 140,
+        "function": "*TradeReturnHandler.Handle"
+      },
+      {
+        "file": "server/internal/transport/arrival.go",
+        "line": 96,
+        "end": 106,
+        "function": "*ArrivalHandler.Handle"
+      }
+    ],
+    "owner_rows": [
+      10,
+      11
+    ],
+    "classification": "kandidat",
+    "reason": "Saved journey parsing/port validation i return/arrival",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO067",
+    "sites": [
+      {
+        "file": "server/internal/events/store.go",
+        "line": 153,
+        "end": 159,
+        "function": "*Store.LoadStream"
+      },
+      {
+        "file": "server/internal/events/store.go",
+        "line": 176,
+        "end": 182,
+        "function": "*Store.LoadWorldEvents"
+      }
+    ],
+    "owner_rows": [
+      3
+    ],
+    "classification": "kandidat",
+    "reason": "Samma Event Scan i stream/world-läsning, ingen fryst semantik ändras",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO068",
+    "sites": [
+      {
+        "file": "server/internal/messenger/order_delivery.go",
+        "line": 131,
+        "end": 141,
+        "function": "*OrderDeliveryHandler.Handle"
+      },
+      {
+        "file": "server/internal/messenger/order_delivery.go",
+        "line": 150,
+        "end": 159,
+        "function": "*OrderDeliveryHandler.Handle"
+      }
+    ],
+    "owner_rows": [
+      3,
+      4
+    ],
+    "classification": "kandidat",
+    "reason": "OrderReject översätts identiskt; domänhandlingen ska behålla sitt eget verb",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO069",
+    "sites": [
+      {
+        "file": "server/internal/messenger/order_delivery.go",
+        "line": 131,
+        "end": 141,
+        "function": "*OrderDeliveryHandler.Handle"
+      },
+      {
+        "file": "server/internal/messenger/order_delivery.go",
+        "line": 235,
+        "end": 247,
+        "function": "*OrderDeliveryHandler.Handle"
+      }
+    ],
+    "owner_rows": [
+      3,
+      4
+    ],
+    "classification": "kandidat",
+    "reason": "OrderReject battle/march översätts identiskt",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO070",
+    "sites": [
+      {
+        "file": "server/internal/messenger/order_delivery.go",
+        "line": 145,
+        "end": 161,
+        "function": "*OrderDeliveryHandler.Handle"
+      },
+      {
+        "file": "server/internal/messenger/order_delivery.go",
+        "line": 162,
+        "end": 183,
+        "function": "*OrderDeliveryHandler.Handle"
+      }
+    ],
+    "owner_rows": [
+      3,
+      4
+    ],
+    "classification": "kandidat",
+    "reason": "Orderleverans stance/stance pursuit delar avvisningsprotokoll, handlingar skiljer",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO071",
+    "sites": [
+      {
+        "file": "server/internal/messenger/order_delivery.go",
+        "line": 150,
+        "end": 159,
+        "function": "*OrderDeliveryHandler.Handle"
+      },
+      {
+        "file": "server/internal/messenger/order_delivery.go",
+        "line": 172,
+        "end": 181,
+        "function": "*OrderDeliveryHandler.Handle"
+      }
+    ],
+    "owner_rows": [
+      3,
+      4
+    ],
+    "classification": "kandidat",
+    "reason": "OrderReject stance/pursuit översätts identiskt",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO072",
+    "sites": [
+      {
+        "file": "server/internal/messenger/order_delivery.go",
+        "line": 172,
+        "end": 181,
+        "function": "*OrderDeliveryHandler.Handle"
+      },
+      {
+        "file": "server/internal/messenger/order_delivery.go",
+        "line": 235,
+        "end": 247,
+        "function": "*OrderDeliveryHandler.Handle"
+      }
+    ],
+    "owner_rows": [
+      3,
+      4
+    ],
+    "classification": "kandidat",
+    "reason": "OrderReject pursuit/battle order översätts identiskt",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO073",
+    "sites": [
+      {
+        "file": "server/internal/messenger/passage.go",
+        "line": 1004,
+        "end": 1013,
+        "function": "*PassageScanHandler.detectLostCarriers"
+      },
+      {
+        "file": "server/internal/messenger/passage.go",
+        "line": 1030,
+        "end": 1039,
+        "function": "*PassageScanHandler.detectLostCarriers"
+      }
+    ],
+    "owner_rows": [
+      10,
+      16
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Lost transport/ship carrier har olika FK och fortsatt passagepolicy",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO074",
+    "sites": [
+      {
+        "file": "server/internal/messenger/passage.go",
+        "line": 131,
+        "end": 148,
+        "function": "PlanOutboundRoute"
+      },
+      {
+        "file": "server/internal/messenger/passage.go",
+        "line": 188,
+        "end": 200,
+        "function": "PlanReturnRoute"
+      }
+    ],
+    "owner_rows": [
+      10
+    ],
+    "classification": "kandidat",
+    "reason": "Ut/retur använder samma courier resemodell med olika endpoint",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO075",
+    "sites": [
+      {
+        "file": "server/internal/province/eyes.go",
+        "line": 167,
+        "end": 175,
+        "function": "LoadLiveEyes"
+      },
+      {
+        "file": "server/internal/province/eyes.go",
+        "line": 237,
+        "end": 243,
+        "function": "LoadLiveEyes"
+      }
+    ],
+    "owner_rows": [
+      6,
+      10,
+      11
+    ],
+    "classification": "kandidat",
+    "reason": "LiveEyes gör legacy A* vid mål respektive hem; bevara skilda mål",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO076",
+    "sites": [
+      {
+        "file": "server/internal/province/model.go",
+        "line": 109,
+        "end": 124,
+        "function": ""
+      },
+      {
+        "file": "server/internal/world/model.go",
+        "line": 43,
+        "end": 69,
+        "function": ""
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Const-block för byggnader och terräng; dupl ignorerar värdens semantik",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO077",
+    "sites": [
+      {
+        "file": "server/internal/world/mapgen.go",
+        "line": 2060,
+        "end": 2098,
+        "function": "landComponents"
+      },
+      {
+        "file": "server/internal/world/mapgen.go",
+        "line": 2133,
+        "end": 2171,
+        "function": "walkableComponents"
+      }
+    ],
+    "owner_rows": [
+      18
+    ],
+    "classification": "kandidat",
+    "reason": "Connected components med olika passability; dela traversal, inte predikat",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO078",
+    "sites": [
+      {
+        "file": "server/internal/world/mapgen.go",
+        "line": 2287,
+        "end": 2299,
+        "function": "moistureField"
+      },
+      {
+        "file": "server/internal/world/mapgen.go",
+        "line": 2310,
+        "end": 2322,
+        "function": "riverMeanderField"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Olika Perlin-fält/frekvens",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO079",
+    "sites": [
+      {
+        "file": "server/internal/world/mapgen.go",
+        "line": 2340,
+        "end": 2371,
+        "function": "moisturePercentile"
+      },
+      {
+        "file": "server/internal/world/mapgen.go",
+        "line": 2387,
+        "end": 2418,
+        "function": "heightPercentile"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Ingen kartrad: percentile-sortering för moisture/height",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO080",
+    "sites": [
+      {
+        "file": "server/internal/world/mapgen.go",
+        "line": 2352,
+        "end": 2360,
+        "function": "moisturePercentile"
+      },
+      {
+        "file": "server/internal/world/mapgen.go",
+        "line": 2399,
+        "end": 2407,
+        "function": "heightPercentile"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Moisture/height percentile olika fält",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO081",
+    "sites": [
+      {
+        "file": "server/internal/world/mapgen.go",
+        "line": 2352,
+        "end": 2360,
+        "function": "moisturePercentile"
+      },
+      {
+        "file": "server/internal/world/mapgen.go",
+        "line": 3023,
+        "end": 3031,
+        "function": "placeSourceLake"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Sorteringsform lake/moisture frågor",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO082",
+    "sites": [
+      {
+        "file": "server/internal/world/mapgen.go",
+        "line": 2399,
+        "end": 2407,
+        "function": "heightPercentile"
+      },
+      {
+        "file": "server/internal/world/mapgen.go",
+        "line": 2547,
+        "end": 2555,
+        "function": "riverSources"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Sorteringsform för skilda height/river frågor",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO083",
+    "sites": [
+      {
+        "file": "server/internal/world/mapgen.go",
+        "line": 2547,
+        "end": 2555,
+        "function": "riverSources"
+      },
+      {
+        "file": "server/internal/world/mapgen.go",
+        "line": 3023,
+        "end": 3031,
+        "function": "placeSourceLake"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Sorteringsform river/lake frågor",
+    "instrument": "dupl-production-50"
+  },
+  {
+    "id": "GO084",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger_reply_test.go",
+        "line": 139,
+        "end": 153,
+        "function": "*replyFixture.post"
+      },
+      {
+        "file": "server/api/handlers/messenger_trade_naval_test.go",
+        "line": 188,
+        "end": 202,
+        "function": "*navalPlayerFixture.post"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO085",
+    "sites": [
+      {
+        "file": "server/api/handlers/province_mine_catchment_test.go",
+        "line": 150,
+        "end": 165,
+        "function": "*mineGateFixture.do"
+      },
+      {
+        "file": "server/api/handlers/settlement_placement_test.go",
+        "line": 124,
+        "end": 139,
+        "function": "*placementFixture.do"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO086",
+    "sites": [
+      {
+        "file": "server/api/handlers/settlement_placement_test.go",
+        "line": 124,
+        "end": 139,
+        "function": "*placementFixture.do"
+      },
+      {
+        "file": "server/api/handlers/standing_order_test.go",
+        "line": 106,
+        "end": 121,
+        "function": "*standingOrderFixture.do"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO087",
+    "sites": [
+      {
+        "file": "server/api/handlers/province_mine_catchment_test.go",
+        "line": 150,
+        "end": 165,
+        "function": "*mineGateFixture.do"
+      },
+      {
+        "file": "server/api/handlers/standing_order_test.go",
+        "line": 106,
+        "end": 121,
+        "function": "*standingOrderFixture.do"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO088",
+    "sites": [
+      {
+        "file": "server/api/handlers/hex_ownership_test.go",
+        "line": 181,
+        "end": 199,
+        "function": "TestPlaceGubbe_HexOwnershipBlocksNeighborEvenWithRoomLeft"
+      },
+      {
+        "file": "server/api/handlers/hex_ownership_test.go",
+        "line": 208,
+        "end": 226,
+        "function": "TestPlaceGubbe_HexOwnershipBlocksNeighborAcrossDifferentGoods"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO089",
+    "sites": [
+      {
+        "file": "server/internal/transport/arrival_ship_release_test.go",
+        "line": 212,
+        "end": 232,
+        "function": "TestArrival_OrphanedStandingOrderLegReleasesShip"
+      },
+      {
+        "file": "server/internal/transport/arrival_ship_release_test.go",
+        "line": 44,
+        "end": 63,
+        "function": "TestArrival_ShipReturnReleasesShipAtHome"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO090",
+    "sites": [
+      {
+        "file": "server/api/handlers/map_trades_mine_test.go",
+        "line": 170,
+        "end": 186,
+        "function": "*mapTradesMineFixture.get"
+      },
+      {
+        "file": "server/api/handlers/rural_test.go",
+        "line": 113,
+        "end": 129,
+        "function": "*ruralFixture.get"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO091",
+    "sites": [
+      {
+        "file": "server/internal/economy/building_level_yield_test.go",
+        "line": 100,
+        "end": 132,
+        "function": "TestRecomputeProduction_BuildingLevelIncreasesYield_Stonequarry"
+      },
+      {
+        "file": "server/internal/economy/building_level_yield_test.go",
+        "line": 37,
+        "end": 73,
+        "function": "TestRecomputeProduction_BuildingLevelIncreasesYield_HexGated"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO092",
+    "sites": [
+      {
+        "file": "server/internal/combat/march_encounter_test.go",
+        "line": 44,
+        "end": 108,
+        "function": "newMarchEncounterFixture"
+      },
+      {
+        "file": "server/internal/combat/unit_intercept_scan_test.go",
+        "line": 35,
+        "end": 101,
+        "function": "newUnitInterceptFixture"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO093",
+    "sites": [
+      {
+        "file": "server/internal/economy/refining_weakest_link_test.go",
+        "line": 139,
+        "end": 160,
+        "function": "TestRecomputeProduction_OilBoostRequiresPlacedPressWorker"
+      },
+      {
+        "file": "server/internal/economy/refining_weakest_link_test.go",
+        "line": 235,
+        "end": 258,
+        "function": "TestRecomputeProduction_WineWineryBoostRequiresPlacedWorker"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO094",
+    "sites": [
+      {
+        "file": "server/api/handlers/settlement_overview_test.go",
+        "line": 50,
+        "end": 68,
+        "function": "settlementsOverviewTestWorld"
+      },
+      {
+        "file": "server/internal/economy/trade_internal_no_loss_test.go",
+        "line": 60,
+        "end": 76,
+        "function": "mkTradeWorld"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO095",
+    "sites": [
+      {
+        "file": "server/cmd/keryx/cmd_city_test.go",
+        "line": 60,
+        "end": 92,
+        "function": "runCityCmd"
+      },
+      {
+        "file": "server/cmd/keryx/cmd_idle_test.go",
+        "line": 16,
+        "end": 48,
+        "function": "runIdleCmd"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO096",
+    "sites": [
+      {
+        "file": "server/api/handlers/culture_mvp_test.go",
+        "line": 108,
+        "end": 135,
+        "function": "TestJoin_DeactivatedCultureSpecified_NormalisesToMinoan"
+      },
+      {
+        "file": "server/api/handlers/culture_mvp_test.go",
+        "line": 75,
+        "end": 101,
+        "function": "TestJoin_NoCultureSpecified_DefaultsToMinoan"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO097",
+    "sites": [
+      {
+        "file": "server/internal/kharis/siege_starvation_clock_test.go",
+        "line": 124,
+        "end": 144,
+        "function": "TestApplySiegeStarvationClock_ResetsWhenFoodCovered"
+      },
+      {
+        "file": "server/internal/kharis/siege_starvation_clock_test.go",
+        "line": 150,
+        "end": 170,
+        "function": "TestApplySiegeStarvationClock_ResetsWhenBlockadeLifted"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO098",
+    "sites": [
+      {
+        "file": "server/cmd/keryx/cmd_status_surplus_test.go",
+        "line": 302,
+        "end": 319,
+        "function": "TestFetchGubbeCountsByGood"
+      },
+      {
+        "file": "server/cmd/keryx/cmd_status_test.go",
+        "line": 430,
+        "end": 447,
+        "function": "TestFetchGarrisonCohorts"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO099",
+    "sites": [
+      {
+        "file": "server/internal/economy/siege_dispatch_test.go",
+        "line": 175,
+        "end": 198,
+        "function": "TestSyncSiegeState_Backfill_NoSpuriousStartOnAlreadyBesiegedSettlement"
+      },
+      {
+        "file": "server/internal/economy/siege_dispatch_test.go",
+        "line": 202,
+        "end": 223,
+        "function": "TestSyncSiegeState_NoOwner_DispatchesNothing"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO100",
+    "sites": [
+      {
+        "file": "server/internal/combat/upkeep_support_settlement_test.go",
+        "line": 65,
+        "end": 85,
+        "function": "newSupportFixture"
+      },
+      {
+        "file": "server/internal/loyalty/colony_idempotent_test.go",
+        "line": 82,
+        "end": 102,
+        "function": "newColonyFixture"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO101",
+    "sites": [
+      {
+        "file": "server/internal/kharis/divine_notification_name_test.go",
+        "line": 18,
+        "end": 52,
+        "function": "TestApplyDivinePunishment_EventAndNotificationCarrySettlementName"
+      },
+      {
+        "file": "server/internal/kharis/divine_notification_name_test.go",
+        "line": 54,
+        "end": 88,
+        "function": "TestApplyDivineBlessing_EventAndNotificationCarrySettlementName"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO102",
+    "sites": [
+      {
+        "file": "server/internal/economy/wine_beyond_hills_test.go",
+        "line": 149,
+        "end": 210,
+        "function": "plainsCatchmentFixture"
+      },
+      {
+        "file": "server/internal/economy/wine_beyond_hills_test.go",
+        "line": 215,
+        "end": 276,
+        "function": "riverValleyCatchmentFixture"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO103",
+    "sites": [
+      {
+        "file": "server/api/handlers/fow_test.go",
+        "line": 172,
+        "end": 182,
+        "function": "TestFOWTier_SettlementSeesLandAtThreeNotFour"
+      },
+      {
+        "file": "server/api/handlers/fow_test.go",
+        "line": 185,
+        "end": 195,
+        "function": "TestFOWTier_LandUnitRadiusTwo"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO104",
+    "sites": [
+      {
+        "file": "server/api/handlers/fow_test.go",
+        "line": 185,
+        "end": 195,
+        "function": "TestFOWTier_LandUnitRadiusTwo"
+      },
+      {
+        "file": "server/api/handlers/fow_test.go",
+        "line": 222,
+        "end": 232,
+        "function": "TestFOWTier_MountainSeenAtBasePlusTwo"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO105",
+    "sites": [
+      {
+        "file": "server/api/handlers/fow_test.go",
+        "line": 172,
+        "end": 182,
+        "function": "TestFOWTier_SettlementSeesLandAtThreeNotFour"
+      },
+      {
+        "file": "server/api/handlers/fow_test.go",
+        "line": 222,
+        "end": 232,
+        "function": "TestFOWTier_MountainSeenAtBasePlusTwo"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO106",
+    "sites": [
+      {
+        "file": "server/api/handlers/join_landmass_balance_test.go",
+        "line": 106,
+        "end": 125,
+        "function": "TestJoin_BalancesPerLandmassNotHemisphere"
+      },
+      {
+        "file": "server/api/handlers/join_silver_bias_test.go",
+        "line": 90,
+        "end": 109,
+        "function": "TestJoin_SilverOutranksBareGroundButNotOre"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO107",
+    "sites": [
+      {
+        "file": "server/api/handlers/marches_messengers_fow_test.go",
+        "line": 248,
+        "end": 266,
+        "function": "callMarches"
+      },
+      {
+        "file": "server/api/handlers/marches_messengers_fow_test.go",
+        "line": 268,
+        "end": 286,
+        "function": "callMessengers"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO108",
+    "sites": [
+      {
+        "file": "server/api/handlers/marches_messengers_fow_test.go",
+        "line": 268,
+        "end": 286,
+        "function": "callMessengers"
+      },
+      {
+        "file": "server/api/handlers/messenger_passage_leg_test.go",
+        "line": 45,
+        "end": 63,
+        "function": "callMessengersLeg"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO109",
+    "sites": [
+      {
+        "file": "server/api/handlers/marches_messengers_fow_test.go",
+        "line": 248,
+        "end": 266,
+        "function": "callMarches"
+      },
+      {
+        "file": "server/api/handlers/messenger_passage_leg_test.go",
+        "line": 45,
+        "end": 63,
+        "function": "callMessengersLeg"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  },
+  {
+    "id": "GO110",
+    "sites": [
+      {
+        "file": "server/internal/economy/sitos_conservation_test.go",
+        "line": 199,
+        "end": 227,
+        "function": "TestGranary_ReleasesIntoFamine"
+      },
+      {
+        "file": "server/internal/economy/sitos_conservation_test.go",
+        "line": 261,
+        "end": 289,
+        "function": "TestGranary_ReleaseRespectsCityCap"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Testfixture/helper-kopia; ingen andra produktionsregel. Test↔produktion kräver kontraktsprov, inte automatisk rivning.",
+    "instrument": "dupl-all-100",
+    "production_test_mixed": false
+  }
+]

@@ -17,7 +17,7 @@
 				"Name": "ProvinceHandler.Marches",
 				"Position": {
 					"File": "api/handlers/province.go",
-					"Line": 3477,
+					"Line": 3519,
 					"Col": 27
 				},
 				"Generated": false,
@@ -64,6 +64,26 @@
 				},
 				"Generated": false,
 				"Marker": false
+			},
+			{
+				"Name": "fakeReturnBroadcaster.BroadcastEvent",
+				"Position": {
+					"File": "internal/economy/trade_return_helpers_test.go",
+					"Line": 23,
+					"Col": 33
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "fakeReturnBroadcaster.NotifyPlayer",
+				"Position": {
+					"File": "internal/economy/trade_return_helpers_test.go",
+					"Line": 25,
+					"Col": 33
+				},
+				"Generated": false,
+				"Marker": false
 			}
 		]
 	},
@@ -75,7 +95,7 @@
 				"Name": "Worker.RegisterWithTimeout",
 				"Position": {
 					"File": "internal/events/scheduler.go",
-					"Line": 354,
+					"Line": 360,
 					"Col": 18
 				},
 				"Generated": false,

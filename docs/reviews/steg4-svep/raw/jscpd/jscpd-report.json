@@ -28,6 +28,44 @@
           "line": 8,
           "position": 393
         },
+        "name": "megaron/render/host_simple.test.mjs",
+        "start": 1,
+        "startLoc": {
+          "column": 0,
+          "line": 1,
+          "position": 0
+        }
+      },
+      "tokens": 129
+    },
+    {
+      "firstFile": {
+        "end": 8,
+        "endLoc": {
+          "column": 37,
+          "line": 8,
+          "position": 393
+        },
+        "name": "megaron/render/founding_inline.test.mjs",
+        "start": 1,
+        "startLoc": {
+          "column": 0,
+          "line": 1,
+          "position": 0
+        }
+      },
+      "format": "javascript",
+      "fragment": "import test from 'node:test';\nimport assert from 'node:assert/strict';\nclass Element {\n constructor(){this.style={};this.classList={toggle(){}};this.events={};this.children=[];this.dataset={};this.clientWidth=1280;this.clientHeight=900;}\n addEventListener(k,fn){this.events[k]=fn;}\n append(...e){this.children.push(...e);}\n appendChild(e){this.append(e);}\n replaceChildren(){this.children=[];}",
+      "isNew": false,
+      "kind": "exact",
+      "lines": 8,
+      "secondFile": {
+        "end": 8,
+        "endLoc": {
+          "column": 37,
+          "line": 8,
+          "position": 393
+        },
         "name": "megaron/render/inspect_simple.test.mjs",
         "start": 1,
         "startLoc": {
@@ -40,11 +78,11 @@
     },
     {
       "firstFile": {
-        "end": 20,
+        "end": 15,
         "endLoc": {
-          "column": 3,
-          "line": 20,
-          "position": 1014
+          "column": 122,
+          "line": 15,
+          "position": 806
         },
         "name": "megaron/render/founding_inline.test.mjs",
         "start": 8,
@@ -55,10 +93,48 @@
         }
       },
       "format": "javascript",
-      "fragment": " replaceChildren(){this.children=[];}\n querySelector(){return this.children.find(e=>e.dataset.inlineResult);}\n setAttribute(){}\n getBoundingClientRect(){return {left:0,top:0};}\n getContext(){return {};}\n}\nconst elements=new Map();const element=id=>{if(!elements.has(id))elements.set(id,new Element());return elements.get(id);};\nglobalThis.document={getElementById:element,createElement:()=>new Element(),addEventListener(){},querySelectorAll:()=>[]};\nglobalThis.window={addEventListener(){},renderColonizePreviewHTML:()=>'<p>Forecast</p>'};\nglobalThis.localStorage={getItem:()=>null};\nglobalThis.setInterval=()=>0;\nglobalThis.requestAnimationFrame=()=>0;\nlet dialogs=0,reloads=0,calls=[],reply,resolveRequest;",
+      "fragment": " replaceChildren(){this.children=[];}\n querySelector(){return this.children.find(e=>e.dataset.inlineResult);}\n setAttribute(){}\n getBoundingClientRect(){return {left:0,top:0};}\n getContext(){return {};}\n}\nconst elements=new Map();const element=id=>{if(!elements.has(id))elements.set(id,new Element());return elements.get(id);};\nglobalThis.document={getElementById:element,createElement:()=>new Element(),addEventListener(){},querySelectorAll:()=>[]};",
       "isNew": false,
       "kind": "exact",
-      "lines": 13,
+      "lines": 8,
+      "secondFile": {
+        "end": 16,
+        "endLoc": {
+          "column": 122,
+          "line": 16,
+          "position": 838
+        },
+        "name": "megaron/render/host_simple.test.mjs",
+        "start": 9,
+        "startLoc": {
+          "column": 27,
+          "line": 9,
+          "position": 421
+        }
+      },
+      "tokens": 136
+    },
+    {
+      "firstFile": {
+        "end": 20,
+        "endLoc": {
+          "column": 3,
+          "line": 20,
+          "position": 1014
+        },
+        "name": "megaron/render/founding_inline.test.mjs",
+        "start": 11,
+        "startLoc": {
+          "column": 37,
+          "line": 11,
+          "position": 521
+        }
+      },
+      "format": "javascript",
+      "fragment": " getBoundingClientRect(){return {left:0,top:0};}\n getContext(){return {};}\n}\nconst elements=new Map();const element=id=>{if(!elements.has(id))elements.set(id,new Element());return elements.get(id);};\nglobalThis.document={getElementById:element,createElement:()=>new Element(),addEventListener(){},querySelectorAll:()=>[]};\nglobalThis.window={addEventListener(){},renderColonizePreviewHTML:()=>'<p>Forecast</p>'};\nglobalThis.localStorage={getItem:()=>null};\nglobalThis.setInterval=()=>0;\nglobalThis.requestAnimationFrame=()=>0;\nlet dialogs=0,reloads=0,calls=[],reply,resolveRequest;",
+      "isNew": false,
+      "kind": "exact",
+      "lines": 10,
       "secondFile": {
         "end": 21,
         "endLoc": {
@@ -67,14 +143,90 @@
           "position": 1046
         },
         "name": "megaron/render/inspect_simple.test.mjs",
-        "start": 9,
+        "start": 12,
         "startLoc": {
-          "column": 27,
-          "line": 9,
-          "position": 421
+          "column": 37,
+          "line": 12,
+          "position": 553
         }
       },
-      "tokens": 187
+      "tokens": 150
+    },
+    {
+      "firstFile": {
+        "end": 16,
+        "endLoc": {
+          "column": 122,
+          "line": 16,
+          "position": 838
+        },
+        "name": "megaron/render/host_simple.test.mjs",
+        "start": 4,
+        "startLoc": {
+          "column": 51,
+          "line": 4,
+          "position": 138
+        }
+      },
+      "format": "javascript",
+      "fragment": " constructor(){this.style={};this.classList={toggle(){}};this.events={};this.children=[];this.dataset={};this.clientWidth=1280;this.clientHeight=900;}\n addEventListener(k,fn){this.events[k]=fn;}\n append(...e){this.children.push(...e);}\n appendChild(e){this.append(e);}\n replaceChildren(){this.children=[];}\n querySelectorAll(){return [];}\n querySelector(){return this.children.find(e=>e.dataset.inlineResult);}\n setAttribute(){}\n getBoundingClientRect(){return {left:0,top:0};}\n getContext(){return {};}\n}\nconst elements=new Map();const element=id=>{if(!elements.has(id))elements.set(id,new Element());return elements.get(id);};\nglobalThis.document={getElementById:element,createElement:()=>new Element(),addEventListener(){},querySelectorAll:()=>[]};",
+      "isNew": false,
+      "kind": "exact",
+      "lines": 13,
+      "secondFile": {
+        "end": 16,
+        "endLoc": {
+          "column": 122,
+          "line": 16,
+          "position": 838
+        },
+        "name": "megaron/render/inspect_simple.test.mjs",
+        "start": 4,
+        "startLoc": {
+          "column": 51,
+          "line": 4,
+          "position": 138
+        }
+      },
+      "tokens": 240
+    },
+    {
+      "firstFile": {
+        "end": 44,
+        "endLoc": {
+          "column": 5,
+          "line": 44,
+          "position": 2654
+        },
+        "name": "megaron/render/host_simple.test.mjs",
+        "start": 29,
+        "startLoc": {
+          "column": 1,
+          "line": 29,
+          "position": 1670
+        }
+      },
+      "format": "javascript",
+      "fragment": " if(url.endsWith('/army')){\n  if(delay)return new Promise(resolve=>{delay.resolve=resolve;});\n  return new Response(JSON.stringify(army),{status:refused?403:200});\n }\n return new Promise(()=>{});\n};\nconst {State}=await import('../state.js');\nconst {initMap}=await import('./map.js');initMap();\nconst marker={id:'foreign-province',settlement_id:'foreign-settlement',name:'Kyme',owner:'Other Wanax',culture:'ionian',walls:0,q:0,r:0};\nasync function click({terrain='plains',city=marker,host=false}={}){\n State.WORLD_ID='world';State.MY_SETTLEMENT_ID='own-settlement';State.tileData=[{q:0,r:0,terrain}];State.provinceData=city?[city]:[];State.unitsData=host?[{type:'nomadic_host',q:0,r:0}]:[];State.foreignUnitData=[];State.ruralData=[];State.founderPhase=host?fp:null;State.camera={x:0,y:0,zoom:1};\n const canvas=element('hex-canvas');canvas.events.mousedown({clientX:0,clientY:0});canvas.events.mouseup({clientX:0,clientY:0});\n await new Promise(resolve=>setImmediate(resolve));\n}\n\ntest('Q actual Host: only site assessment is primary and all existing detail stays in one closed Details',async()=>{",
+      "isNew": false,
+      "kind": "exact",
+      "lines": 16,
+      "secondFile": {
+        "end": 41,
+        "endLoc": {
+          "column": 5,
+          "line": 41,
+          "position": 2396
+        },
+        "name": "megaron/render/inspect_simple.test.mjs",
+        "start": 27,
+        "startLoc": {
+          "column": 1,
+          "line": 27,
+          "position": 1413
+        }
+      },
+      "tokens": 318
     },
     {
       "firstFile": {
@@ -82,14 +234,14 @@
         "endLoc": {
           "column": 30,
           "line": 733,
-          "position": 37722
+          "position": 37727
         },
         "name": "megaron/render/map.js",
         "start": 714,
         "startLoc": {
           "column": 42,
           "line": 714,
-          "position": 36771
+          "position": 36776
         }
       },
       "format": "javascript",
@@ -102,14 +254,14 @@
         "endLoc": {
           "column": 30,
           "line": 1308,
-          "position": 67234
+          "position": 67239
         },
         "name": "megaron/render/map.js",
         "start": 1299,
         "startLoc": {
           "column": 35,
           "line": 1299,
-          "position": 66899
+          "position": 66904
         }
       },
       "tokens": 122
@@ -120,14 +272,14 @@
         "endLoc": {
           "column": 21,
           "line": 987,
-          "position": 50104
+          "position": 50109
         },
         "name": "megaron/render/map.js",
         "start": 974,
         "startLoc": {
           "column": 49,
           "line": 974,
-          "position": 49617
+          "position": 49622
         }
       },
       "format": "javascript",
@@ -140,14 +292,14 @@
         "endLoc": {
           "column": 21,
           "line": 1381,
-          "position": 70384
+          "position": 70389
         },
         "name": "megaron/render/map.js",
         "start": 1372,
         "startLoc": {
           "column": 49,
           "line": 1372,
-          "position": 70115
+          "position": 70120
         }
       },
       "tokens": 102
@@ -158,14 +310,14 @@
         "endLoc": {
           "column": 45,
           "line": 1159,
-          "position": 60711
+          "position": 60716
         },
         "name": "megaron/render/map.js",
         "start": 1141,
         "startLoc": {
           "column": 23,
           "line": 1141,
-          "position": 59709
+          "position": 59714
         }
       },
       "format": "javascript",
@@ -178,14 +330,14 @@
         "endLoc": {
           "column": 45,
           "line": 1203,
-          "position": 62668
+          "position": 62673
         },
         "name": "megaron/render/map.js",
         "start": 1194,
         "startLoc": {
           "column": 24,
           "line": 1194,
-          "position": 62344
+          "position": 62349
         }
       },
       "tokens": 120
@@ -534,32 +686,32 @@
     }
   ],
   "statistics": {
-    "detectionDate": "2026-10-08T14:50:32.028Z",
+    "detectionDate": "2026-10-08T20:10:56.788Z",
     "formats": {
       "javascript": {
-        "clones": 14,
-        "duplicatedLines": 279,
-        "duplicatedTokens": 1847,
-        "lines": 20542,
+        "clones": 18,
+        "duplicatedLines": 321,
+        "duplicatedTokens": 2633,
+        "lines": 20802,
         "newClones": 0,
         "newDuplicatedLines": 0,
-        "percentage": 1.3581929704994646,
-        "percentageTokens": 1.236667492450771,
-        "sources": 99,
-        "tokens": 149353
+        "percentage": 1.543120853764061,
+        "percentageTokens": 1.7187245014523973,
+        "sources": 102,
+        "tokens": 153195
       }
     },
     "total": {
-      "clones": 14,
-      "duplicatedLines": 279,
-      "duplicatedTokens": 1847,
-      "lines": 20542,
+      "clones": 18,
+      "duplicatedLines": 321,
+      "duplicatedTokens": 2633,
+      "lines": 20802,
       "newClones": 0,
       "newDuplicatedLines": 0,
-      "percentage": 1.3581929704994646,
-      "percentageTokens": 1.236667492450771,
-      "sources": 99,
-      "tokens": 149353
+      "percentage": 1.543120853764061,
+      "percentageTokens": 1.7187245014523973,
+      "sources": 102,
+      "tokens": 153195
     }
   }
 }

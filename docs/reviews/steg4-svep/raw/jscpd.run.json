@@ -10,6 +10,12 @@
     "5",
     "--mode",
     "weak",
+    "--max-size",
+    "250kb",
+    "--ignore",
+    "**/node_modules/**,**/vendor/**,**/*.min.js,**/generated/**",
+    "--workers",
+    "1",
     "--reporters",
     "json",
     "--output",
@@ -20,5 +26,5 @@
   ],
   "cwd": ".",
   "exit": 0,
-  "elapsed_seconds": 0.139
+  "elapsed_seconds": 0.066
 }

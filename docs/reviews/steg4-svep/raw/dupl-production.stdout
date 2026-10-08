@@ -6,8 +6,8 @@ server/internal/combat/ship_hull.go:417-467: duplicate of server/internal/transp
 server/internal/transport/carrier.go:155-205: duplicate of server/internal/combat/ship_hull.go:417-467
 server/internal/world/mapgen.go:2340-2371: duplicate of server/internal/world/mapgen.go:2387-2418
 server/internal/world/mapgen.go:2387-2418: duplicate of server/internal/world/mapgen.go:2340-2371
-server/api/handlers/province.go:4107-4133: duplicate of server/api/handlers/province.go:4176-4202
-server/api/handlers/province.go:4176-4202: duplicate of server/api/handlers/province.go:4107-4133
+server/api/handlers/province.go:4149-4175: duplicate of server/api/handlers/province.go:4218-4244
+server/api/handlers/province.go:4218-4244: duplicate of server/api/handlers/province.go:4149-4175
 server/api/handlers/messenger.go:165-181: duplicate of server/api/handlers/messenger.go:182-198
 server/api/handlers/messenger.go:182-198: duplicate of server/api/handlers/messenger.go:165-181
 server/api/handlers/dispatch_preferences.go:58-78: duplicate of server/api/handlers/dispatch_preferences.go:82-101

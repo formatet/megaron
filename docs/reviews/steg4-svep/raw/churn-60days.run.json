@@ -1,18 +1,20 @@
 {
   "command": [
     "git",
+    "-C",
+    "/home/tk/wt/codex-steg4-svep",
     "log",
-    "--no-merges",
+    "daf740ddd0efa051adc78c945b92d3c0c5d94d48",
+    "--since-as-filter=2026-08-09T20:47:53+02:00",
+    "--until=2026-10-08T20:47:53+02:00",
     "--no-renames",
+    "--format=commit %H %aI",
     "--numstat",
-    "--format=@@%H\t%cI\t%s",
-    "--since-as-filter=2026-08-09T16:48:00+02:00",
-    "--until=2026-10-08T16:48:00+02:00",
-    "f586270d40840fc8afb550bca80a2ee73d4e7a97",
     "--",
     "server",
     "web"
   ],
   "cwd": ".",
-  "exit": 0
+  "exit": 0,
+  "elapsed_seconds": 0.185
 }

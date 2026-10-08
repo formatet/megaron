@@ -1,8 +1,146 @@
-@@98e324733acab7f0ddd93209512f17f02c8f3511	2026-10-08T16:40:05+02:00	ui: drop the dead Gossip drawer (loadGossipDrawer, Known Wanaxes table)
+commit 59902de445c1d7417f2a64b0f2b8c31ab39833f4 2026-10-08T20:42:35+02:00
+
+2	2	server/cmd/keryx/cmd_goods.go
+46	0	server/cmd/keryx/cmd_notifications.go
+25	0	server/cmd/keryx/cmd_notifications_storm_test.go
+31	0	server/internal/combat/sea_storm_test.go
+1	1	web/static/codex/gifts.md
+1	1	web/static/codex/index.json
+8	0	web/static/codex/sea.md
+1	1	web/static/codex/trade.md
+1	1	web/static/codex/transfers.md
+16	0	web/static/js/megaron/ui/format.js
+20	0	web/static/js/megaron/ui/format.test.mjs
+2	1	web/static/js/megaron/ui/gifts.js
+1	0	web/static/js/megaron/ui/testdata/ship_foundered.json
+commit be143c00fdd277794b82003b4c65a091f4a9ce50 2026-10-08T20:40:30+02:00
+
+10	2	server/api/handlers/province_gift_test.go
+3	0	server/cmd/server/main.go
+1	0	server/db/migrations/161_sea_storm_progress.down.sql
+14	0	server/db/migrations/161_sea_storm_progress.up.sql
+400	0	server/internal/combat/sea_storm.go
+247	0	server/internal/combat/sea_storm_test.go
+3	0	server/internal/economy/gift.go
+6	0	server/internal/events/priority.go
+5	0	server/internal/events/scheduler.go
+commit d14b7c77f3d6cb230b5f150fa6a9043f9dce499c 2026-10-08T20:35:23+02:00
+
+0	18	server/api/handlers/province_gift_test.go
+0	151	server/internal/economy/dice_seam_test.go
+0	21	server/internal/economy/dice_test.go
+0	6	server/internal/economy/gift.go
+1	81	server/internal/economy/trade.go
+0	1	server/internal/economy/trade_delivery_idempotent_test.go
+0	2	server/internal/economy/trade_delivery_stale_cap_test.go
+0	106	server/internal/economy/trade_internal_no_loss_test.go
+0	2	server/internal/economy/trade_journey_test.go
+0	1	server/internal/economy/trade_legacy_test.go
+0	3	server/internal/economy/trade_naval_player_test.go
+74	0	server/internal/economy/trade_no_flat_die_test.go
+1	53	server/internal/economy/trade_return.go
+72	0	server/internal/economy/trade_return_helpers_test.go
+0	1	server/internal/economy/trade_return_idempotent_test.go
+0	257	server/internal/economy/trade_return_risk_test.go
+commit e135244b70bcc91bfe23ad6463ea32ebc1de84d1 2026-10-08T20:10:43+02:00
+
+8	0	server/api/handlers/province_gift_test.go
+7	0	web/static/js/megaron/ui/gifts.test.mjs
+commit e8c5200f3b3d2969987619ec9d557b6a2ca87375 2026-10-08T20:00:29+02:00
+
+1	1	web/static/js/megaron/ui/drawers/economy.js
+1	1	web/static/js/megaron/ui/misc.js
+commit 016ac7056257619c3d711089ff92e6a86e72f12d 2026-10-08T19:56:39+02:00
+
+2	2	web/static/js/megaron/ws.js
+commit 31224eb7ab73242a73312a07eb645a03f2f52d9f 2026-10-08T19:52:36+02:00
+
+96	0	server/api/handlers/province_gift_test.go
+4	0	server/cmd/keryx/cmd_gift.go
+2	2	server/cmd/keryx/cmd_gift_test.go
+14	1	server/internal/capabilities/trade_verbs.go
+11	0	server/internal/economy/gift.go
+21	7	server/internal/transport/intercept.go
+2	0	web/static/codex/gifts.md
+1	1	web/static/js/megaron/ui/drawers/economy.js
+1	0	web/static/js/megaron/ui/gifts.js
+1	0	web/static/js/megaron/ui/gifts.test.mjs
+commit c71a819a566ba02266244a3f75edb85d09c9c223 2026-10-08T19:47:04+02:00
+
+42	0	server/api/handlers/gift_destinations.go
+70	28	server/api/handlers/province.go
+288	0	server/api/handlers/province_gift_test.go
+28	0	server/api/handlers/trade_journey.go
+1	63	server/api/handlers/world.go
+63	0	server/cmd/keryx/cmd_gift.go
+61	0	server/cmd/keryx/cmd_gift_test.go
+11	11	server/cmd/keryx/cmd_goods.go
+3	0	server/cmd/keryx/cmd_notifications.go
+2	0	server/cmd/server/main.go
+24	9	server/internal/capabilities/trade_verbs.go
+176	0	server/internal/economy/gift.go
+14	6	server/internal/economy/trade.go
+1	0	server/internal/events/priority.go
+1	0	server/internal/events/scheduler.go
+73	0	server/internal/province/contacts.go
+17	0	web/static/codex/gifts.md
+1	0	web/static/codex/index.json
+4	2	web/static/codex/transfers.md
+2	1	web/static/js/megaron/main.js
+18	1	web/static/js/megaron/ui/drawers/diplomacy.js
+27	9	web/static/js/megaron/ui/drawers/economy.js
+6	1	web/static/js/megaron/ui/format.js
+9	0	web/static/js/megaron/ui/gifts.js
+27	0	web/static/js/megaron/ui/gifts.test.mjs
+commit 972baa48922a39243e357a60bd35f673f681e0b3 2026-10-08T19:23:16+02:00
+
+71	0	server/api/handlers/gift_destinations.go
+110	0	server/api/handlers/province_gift_test.go
+1	0	server/cmd/server/main.go
+commit 90ace08068e17004c3a0aafcd3ef19ebd43cb38f 2026-10-08T19:11:47+02:00
+commit d805ec4e78844e092a572d62575abe74229dcb2a 2026-10-08T18:26:13+02:00
+
+77	0	server/internal/combat/recall_home_test.go
+commit c7e8496c6a12951314432eee89e5be91bab7d44a 2026-10-08T18:17:41+02:00
+
+1	1	server/api/handlers/unit.go
+2	1	server/cmd/keryx/cmd_unit.go
+223	0	server/internal/combat/recall_home_test.go
+26	6	server/internal/combat/recall_redirect.go
+2	0	web/static/codex/marching.md
+commit 097114588bed9aef7f71ffe4fd55686642fa6eb6 2026-10-08T18:05:49+02:00
+
+13	4	web/static/js/megaron/render/host_simple.test.mjs
+1	1	web/static/js/megaron/render/map.js
+commit 538ce8cbcaa0b9710030cfdf285aa832cfdef1ca 2026-10-08T17:58:56+02:00
+
+5	5	web/static/js/megaron/render/host_simple.test.mjs
+3	3	web/static/js/megaron/render/map.js
+commit 00b550f3a564c39835c7b65164ae307a863f3f69 2026-10-08T17:57:40+02:00
+
+3	3	web/static/codex/founding.md
+77	0	web/static/js/megaron/render/host_simple.test.mjs
+40	6	web/static/js/megaron/render/map.js
+1	1	web/static/map.html
+commit 35232e3d543da9f09b415b1143098ce378e4e5d0 2026-10-08T17:16:31+02:00
+commit 8650991adb9347a4fe27dfe4b7f0d7c01ef4f1f6 2026-10-08T17:07:33+02:00
+
+1	1	web/static/codex/marching.md
+3	3	web/static/codex/sea.md
+2	2	web/static/codex/stances.md
+1	1	web/static/codex/units.md
+8	10	web/static/js/megaron/ui/drawers/war.js
+32	25	web/static/js/megaron/ui/war_cards.test.mjs
+commit 9c0583a2ee703e30e117dcf0a71c3dd91fd785b6 2026-10-08T17:02:18+02:00
+
+0	3	web/static/js/megaron/ui/chips.js
+11	3	web/static/js/megaron/ui/drawers/notif_simple.test.mjs
+15	8	web/static/js/megaron/ui/misc.js
+commit 98e324733acab7f0ddd93209512f17f02c8f3511 2026-10-08T16:40:05+02:00
 
 5	95	web/static/js/megaron/ui/drawers/gossip.js
 14	85	web/static/js/megaron/ui/drawers/gossip.test.mjs
-@@f461bbec1e6e91df8fcd4b43502ed1907d4a2baf	2026-10-08T16:36:04+02:00	ui: Notifications and Gossip become one list (rumours as marked rows)
+commit f461bbec1e6e91df8fcd4b43502ed1907d4a2baf 2026-10-08T16:36:04+02:00
 
 1	1	web/static/codex/coming-back.md
 1	1	web/static/codex/gossip.md
@@ -14,7 +152,7 @@
 27	1	web/static/js/megaron/ui/drawers/notif.js
 13	0	web/static/js/megaron/ui/drawers/notif.test.mjs
 0	15	web/static/map.html
-@@3770d95b4515e8bee18c3d204c76d91c1fe00836	2026-10-08T07:23:13+02:00	ui: plain digits instead of spelled-out numbers in player prose
+commit 3770d95b4515e8bee18c3d204c76d91c1fe00836 2026-10-08T07:23:13+02:00
 
 2	2	web/static/js/megaron/render/inspect_simple.test.mjs
 4	4	web/static/js/megaron/render/map.js
@@ -42,7 +180,7 @@
 3	3	web/static/js/megaron/ui/marchctx.test.mjs
 0	19	web/static/js/megaron/ui/number_words.js
 0	6	web/static/js/megaron/ui/number_words.test.mjs
-@@85584bbc0ff2b6bdbd88b48f95658be831a3edee	2026-10-08T06:39:11+02:00	fix(web): late replies no longer erase player input (13 probes green)
+commit 85584bbc0ff2b6bdbd88b48f95658be831a3edee 2026-10-08T06:39:11+02:00
 
 7	2	web/static/js/megaron/ui/citygrid.js
 21	3	web/static/js/megaron/ui/drawers/city.js
@@ -51,35 +189,35 @@
 5	0	web/static/js/megaron/ui/drawers/kult.js
 9	1	web/static/js/megaron/ui/drawers/war.js
 12	0	web/static/js/megaron/ui/search.js
-@@d09b2cfbc8afebcc971e2cdd27f5e999188e9172	2026-10-08T04:07:07+02:00	ui: keep each goods label above its control in narrow drawers
+commit d09b2cfbc8afebcc971e2cdd27f5e999188e9172 2026-10-08T04:07:07+02:00
 
 2	2	web/static/js/megaron/ui/drawers/economy.js
-@@dcba84cbbe2d0c322da3d2dc5023fd402fa6b76c	2026-10-08T04:03:34+02:00	ui: keep goods amounts readable in compact existing form fields
+commit dcba84cbbe2d0c322da3d2dc5023fd402fa6b76c 2026-10-08T04:03:34+02:00
 
 7	8	web/static/js/megaron/ui/drawers/economy.js
-@@8b2b8315512146a7558e507719a868bbeb014292	2026-10-08T03:57:54+02:00	ui: replace standing-order CSV with goods and amount rows
+commit 8b2b8315512146a7558e507719a868bbeb014292 2026-10-08T03:57:54+02:00
 
 1	1	web/static/codex/rough-edges.md
 2	2	web/static/codex/routes.md
 57	14	web/static/js/megaron/ui/drawers/economy.js
 15	2	web/static/js/megaron/ui/drawers/economy_rows.test.mjs
-@@68dff89d55a64c883f7c15f783e6af2b0ace2ee2	2026-10-08T03:51:29+02:00	test: reproduce Economy row input gap before UI change
+commit 68dff89d55a64c883f7c15f783e6af2b0ace2ee2 2026-10-08T03:51:29+02:00
 
 53	0	web/static/js/megaron/ui/drawers/economy_rows.test.mjs
-@@2527a23bfb62de0187fdcd74a719b013852dd116	2026-10-08T03:39:15+02:00	ui: preserve diplomatic draft when capability hints arrive
+commit 2527a23bfb62de0187fdcd74a719b013852dd116 2026-10-08T03:39:15+02:00
 
 2	1	web/static/js/megaron/ui/drawers/diplomacy.js
 1	1	web/static/js/megaron/ui/drawers/diplomacy_outbox.test.mjs
 16	2	web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs
-@@ec153d3e36b5febb4b07e6b84b489dc7ffa285dd	2026-10-08T03:34:02+02:00	ui: wait for selected diplomatic composer and spell fuzzy distance
+commit ec153d3e36b5febb4b07e6b84b489dc7ffa285dd 2026-10-08T03:34:02+02:00
 
 2	1	web/static/js/megaron/ui/drawers/diplomacy.js
 12	1	web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs
-@@17299c06254720fce487296563033a04fb108ffe	2026-10-08T03:29:20+02:00	ui: label a new diplomatic conversation before its first letter
+commit 17299c06254720fce487296563033a04fb108ffe 2026-10-08T03:29:20+02:00
 
 1	1	web/static/js/megaron/ui/drawers/diplomacy.js
 1	1	web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs
-@@0f18d8152767345bc3c767162a049d2bcdbf1200	2026-10-08T03:26:25+02:00	ui: combine Diplomacy directory and preserve first-letter thread composition
+commit 0f18d8152767345bc3c767162a049d2bcdbf1200 2026-10-08T03:26:25+02:00
 
 1	1	web/static/codex/contact.md
 2	2	web/static/codex/messengers.md
@@ -87,71 +225,71 @@
 2	3	web/static/js/megaron/main.js
 81	126	web/static/js/megaron/ui/drawers/diplomacy.js
 20	2	web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs
-@@70ecaebf4cc881d9efa29e856c37d13fd7598057	2026-10-08T03:23:56+02:00	test: reproduce missing two-tab known-first-letter path before UI change
+commit 70ecaebf4cc881d9efa29e856c37d13fd7598057 2026-10-08T03:23:56+02:00
 
 63	0	web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs
-@@d7d696a40fa0d012e29ccdf5056b457a5add33c8	2026-10-08T03:17:17+02:00	docs: package inspect baseline and fresh player proofs
+commit d7d696a40fa0d012e29ccdf5056b457a5add33c8 2026-10-08T03:17:17+02:00
 
 1	1	web/static/codex/screen.md
-@@c3482a9b9489f7e65dc30850fd36550a7868052d	2026-10-08T03:09:54+02:00	fix: describe seen defenders without rating their strength
+commit c3482a9b9489f7e65dc30850fd36550a7868052d 2026-10-08T03:09:54+02:00
 
 1	1	web/static/codex/screen.md
 3	3	web/static/js/megaron/render/inspect_simple.test.mjs
 1	1	web/static/js/megaron/render/map.js
-@@faa121d20dd2461a0ef9c14cd15f795c940187fe	2026-10-08T03:07:09+02:00	fix: simplify inspect defence and Host store durations
+commit faa121d20dd2461a0ef9c14cd15f795c940187fe 2026-10-08T03:07:09+02:00
 
 1	1	web/static/codex/horde.md
 1	1	web/static/codex/screen.md
 1	1	web/static/js/megaron/render/inspect_simple.test.mjs
 28	28	web/static/js/megaron/render/map.js
 1	3	web/static/map.html
-@@e9be528f8862d8df565db4b41e2640824514ecb0	2026-10-08T03:04:18+02:00	test: correct inspect harness before UI changes
+commit e9be528f8862d8df565db4b41e2640824514ecb0 2026-10-08T03:04:18+02:00
 
 3	2	web/static/js/megaron/render/inspect_simple.test.mjs
-@@3cf4681d5da06fc03b8d5b199e8c64157616a207	2026-10-08T03:02:21+02:00	test: reproduce inspect jargon and Host wall-time text
+commit 3cf4681d5da06fc03b8d5b199e8c64157616a207 2026-10-08T03:02:21+02:00
 
 61	0	web/static/js/megaron/render/inspect_simple.test.mjs
-@@4d7e54adafcad65f5da75fe34236efbf30135820	2026-10-08T02:58:08+02:00	docs: package fresh founding and drawer proofs for review
+commit 4d7e54adafcad65f5da75fe34236efbf30135820 2026-10-08T02:58:08+02:00
 
 1	1	web/static/codex/goods.md
-@@34d26d15d18eb6e498dba7f5b67766851c4648dc	2026-10-08T02:52:50+02:00	fix: close Economy for City and confirm founding inline
+commit 34d26d15d18eb6e498dba7f5b67766851c4648dc 2026-10-08T02:52:50+02:00
 
 1	1	web/static/codex/founding.md
 2	1	web/static/js/megaron/render/founding_inline.test.mjs
 34	19	web/static/js/megaron/render/map.js
 1	0	web/static/js/megaron/ui/drawers/economy.js
 4	4	web/static/js/megaron/ui/inline_result.js
-@@317de00efc81bbe3e846c10b8c4cd17a778555ba	2026-10-08T02:51:02+02:00	test: reproduce Economy overlay and founding browser dialog
+commit 317de00efc81bbe3e846c10b8c4cd17a778555ba 2026-10-08T02:51:02+02:00
 
 56	0	web/static/js/megaron/render/founding_inline.test.mjs
 8	0	web/static/js/megaron/ui/drawers/economy_city.test.mjs
-@@e03a692d3fa3da32e8344786bc0ca07f673ec88a	2026-10-08T02:42:45+02:00	Guard the actual Economy id join with physical mutation and document overview
+commit e03a692d3fa3da32e8344786bc0ca07f673ec88a 2026-10-08T02:42:45+02:00
 
 1	1	web/static/codex/goods.md
-@@153cbb03542c3c7a0bb2b6ee80899e406065656b	2026-10-08T02:41:53+02:00	Join Economy overview by settlement id while retaining province routes
+commit 153cbb03542c3c7a0bb2b6ee80899e406065656b 2026-10-08T02:41:53+02:00
 
 2	1	web/static/js/megaron/ui/drawers/economy.js
-@@1ee9a4791f7a31c13ba2e39b6894bebd14338997	2026-10-08T02:41:02+02:00	Reproduce Economy overview id mismatch before client fix
+commit 1ee9a4791f7a31c13ba2e39b6894bebd14338997 2026-10-08T02:41:02+02:00
 
 31	0	web/static/js/megaron/ui/drawers/economy_id.test.mjs
-@@952c70a1e6729a8470568839ab67cfadf7fe09d6	2026-10-08T02:34:27+02:00	Check shared locked-action reasons and live Codex help destination
+commit 952c70a1e6729a8470568839ab67cfadf7fe09d6 2026-10-08T02:34:27+02:00
 
 2	2	web/static/js/megaron/ui/drawers/notif_simple.test.mjs
-@@0c0baf39e933e101fbc6d60fd4237c52cd943f38	2026-10-08T02:33:56+02:00	Deduplicate readable unavailable actions and scope archive replay controls
+commit 0c0baf39e933e101fbc6d60fd4237c52cd943f38 2026-10-08T02:33:56+02:00
 
 1	1	web/static/js/megaron/ui/drawers/notif_simple.test.mjs
 8	3	web/static/js/megaron/ui/misc.js
-@@9a1cd2226c88533d2fb26284fd814ced7365c2cc	2026-10-08T02:32:59+02:00	Add fresh drawer web proof and four physical text and feedback mutations
+commit 9a1cd2226c88533d2fb26284fd814ced7365c2cc 2026-10-08T02:32:59+02:00
 
 1	1	web/static/js/megaron/ui/drawers/inline_handlers.test.mjs
-@@7d8ba4cd17fdb9ff5cfa133d06dd4f9dea7d7396	2026-10-08T02:31:09+02:00	Verify all inline handler paths and unchanged request methods
+commit 7d8ba4cd17fdb9ff5cfa133d06dd4f9dea7d7396 2026-10-08T02:31:09+02:00
 
 44	0	web/static/js/megaron/ui/drawers/inline_handlers.test.mjs
-@@5689765791eba2354ccf8ac47c9ffb0718f4edcf	2026-10-08T02:30:12+02:00	Map historic food reports to Codex and fix notification test bootstrap
+commit 5689765791eba2354ccf8ac47c9ffb0718f4edcf 2026-10-08T02:30:12+02:00
 
 1	1	web/static/codex/index.json
 5	1	web/static/js/megaron/ui/drawers/notif_simple.test.mjs
-@@c554f4371bcb8a01a2b65d0815ac59c98e1228f4	2026-10-08T02:29:18+02:00	Cover inline confirmation and player notification labels, align Codex
+commit c554f4371bcb8a01a2b65d0815ac59c98e1228f4 2026-10-08T02:29:18+02:00
 
 2	0	web/static/codex/buildings.md
 1	1	web/static/codex/colonies.md
@@ -161,7 +299,7 @@
 22	0	web/static/js/megaron/ui/drawers/notif_simple.test.mjs
 3	0	web/static/js/megaron/ui/format.js
 30	0	web/static/js/megaron/ui/inline_result.test.mjs
-@@7d22ebfd6e53fc9e69dd2296e86471cdca352078	2026-10-08T02:28:33+02:00	Replace browser dialogs with inline feedback and shorten advisory text
+commit 7d22ebfd6e53fc9e69dd2296e86471cdca352078 2026-10-08T02:28:33+02:00
 
 2	1	web/static/js/megaron/ui/drawers/city.js
 4	3	web/static/js/megaron/ui/drawers/diplomacy.js
@@ -170,7 +308,7 @@
 11	9	web/static/js/megaron/ui/drawers/war.js
 40	0	web/static/js/megaron/ui/inline_result.js
 24	14	web/static/js/megaron/ui/misc.js
-@@63293de3315f16f6534a7843b0e7f51d2d88cd98	2026-10-07T23:11:43+02:00	Describe three Production sections and secondary controls
+commit 63293de3315f16f6534a7843b0e7f51d2d88cd98 2026-10-07T23:11:43+02:00
 
 5	7	web/static/codex/city.md
 1	1	web/static/codex/loyalty.md
@@ -178,12 +316,12 @@
 1	1	web/static/codex/temples.md
 1	1	web/static/codex/transfers.md
 1	1	web/static/js/megaron/ui/drawers/city.js
-@@914264bff29077aa2c474069de3ffedcc63839ab	2026-10-07T23:11:25+02:00	Polish Production controls and document More paths
+commit 914264bff29077aa2c474069de3ffedcc63839ab 2026-10-07T23:11:25+02:00
 
 2	2	web/static/js/megaron/ui/drawers/city.js
 2	2	web/static/js/megaron/ui/drawers/city_production.js
 1	1	web/static/js/megaron/ui/drawers/economy.js
-@@7798096e2b5a39765f615b42a3251340f9ed0ca8	2026-10-07T23:07:26+02:00	fix: simplify City production with three sections and More
+commit 7798096e2b5a39765f615b42a3251340f9ed0ca8 2026-10-07T23:07:26+02:00
 
 8	7	web/static/js/megaron/ui/citygrid.js
 2	2	web/static/js/megaron/ui/citygrid.test.mjs
@@ -193,22 +331,22 @@
 32	0	web/static/js/megaron/ui/drawers/city_production.test.mjs
 16	15	web/static/js/megaron/ui/drawers/economy.js
 4	4	web/static/js/megaron/ui/drawers/economy.test.mjs
-@@b3fb0445a7f57d337bccaaee0054ad4b9825ac88	2026-10-07T23:01:27+02:00	test: prove remembered grayscale in real scout journeys and pixel diffs
+commit b3fb0445a7f57d337bccaaee0054ad4b9825ac88 2026-10-07T23:01:27+02:00
 
 1	1	web/static/codex/sight.md
 6	0	web/static/js/megaron/render/memory.test.mjs
-@@4545fc811b6bd99457c477b9d82d1aa3dcd41769	2026-10-07T22:50:42+02:00	fix: desaturate remembered map hexes with hard pixel edges
+commit 4545fc811b6bd99457c477b9d82d1aa3dcd41769 2026-10-07T22:50:42+02:00
 
 22	8	web/static/js/megaron/render/map.js
 50	0	web/static/js/megaron/render/memory.js
 33	0	web/static/js/megaron/render/memory.test.mjs
-@@ed48a74a2c9c8cf498ff8296d7dfeac8fd8ca93c	2026-10-07T22:37:12+02:00	ui: keep mission days in words and mirror ship port exception
+commit ed48a74a2c9c8cf498ff8296d7dfeac8fd8ca93c 2026-10-07T22:37:12+02:00
 
 5	2	web/static/js/megaron/ui/drawers/war.js
 3	2	web/static/js/megaron/ui/expedition.js
 2	2	web/static/js/megaron/ui/expedition.test.mjs
 12	1	web/static/js/megaron/ui/war_cards.test.mjs
-@@d2b66ca1838ad052e81c497668def9f5c77ac8fa	2026-10-07T22:34:55+02:00	ui: show War primary orders and keep secondary controls under More
+commit d2b66ca1838ad052e81c497668def9f5c77ac8fa 2026-10-07T22:34:55+02:00
 
 1	1	web/static/codex/marching.md
 3	3	web/static/codex/sea.md
@@ -221,24 +359,24 @@
 3	3	web/static/js/megaron/ui/stance.test.mjs
 4	0	web/static/js/megaron/ui/time.js
 67	0	web/static/js/megaron/ui/war_cards.test.mjs
-@@7badfc960531010fe954c69e5f0b4cdadcc40a1e	2026-10-07T22:32:25+02:00	test: contract War simplification and reproduce missing arrival bug
+commit 7badfc960531010fe954c69e5f0b4cdadcc40a1e 2026-10-07T22:32:25+02:00
 
 35	0	web/static/js/megaron/ui/time.test.mjs
-@@b1425e0f03ce5e9756dee89f16dc70bab3d82140	2026-10-07T22:24:10+02:00	ui: express march forecasts in game-day words
+commit b1425e0f03ce5e9756dee89f16dc70bab3d82140 2026-10-07T22:24:10+02:00
 
 3	2	web/static/js/megaron/ui/march_preview.js
 2	2	web/static/js/megaron/ui/march_preview.test.mjs
 7	7	web/static/js/megaron/ui/marchctx.js
 8	0	web/static/js/megaron/ui/marchctx.test.mjs
-@@81a2b1c491c17dbbb08c2387841d49085fc59a06	2026-10-07T22:23:30+02:00	docs: explain shared march menu and repair landing proof prerequisites
+commit 81a2b1c491c17dbbb08c2387841d49085fc59a06 2026-10-07T22:23:30+02:00
 
 5	5	web/static/codex/marching.md
-@@8eef71475ba25ab90f3a6c9830a68c8c8b319a9d	2026-10-07T22:13:35+02:00	ui: spell march prose quantities and harden the actual map proof
+commit 8eef71475ba25ab90f3a6c9830a68c8c8b319a9d 2026-10-07T22:13:35+02:00
 
 5	4	web/static/js/megaron/ui/marchctx.js
 19	0	web/static/js/megaron/ui/number_words.js
 6	0	web/static/js/megaron/ui/number_words.test.mjs
-@@981d24114a864aab34a33a5ff3406cf089a7a815	2026-10-07T22:09:51+02:00	ui: share the map march menu and preselect ready units
+commit 981d24114a864aab34a33a5ff3406cf089a7a815 2026-10-07T22:09:51+02:00
 
 2	5	web/static/js/megaron/main.js
 9	1	web/static/js/megaron/render/map.js
@@ -247,7 +385,7 @@
 69	24	web/static/js/megaron/ui/marchctx.js
 30	1	web/static/js/megaron/ui/marchctx.test.mjs
 6	3	web/static/map.html
-@@7f30b7e54a053b91aee1f5b63d802671abd55ed0	2026-10-07T21:54:34+02:00	feat(clients): Recall all loops existing single-unit recall
+commit 7f30b7e54a053b91aee1f5b63d802671abd55ed0 2026-10-07T21:54:34+02:00
 
 1	1	server/cmd/keryx/cmd_aliases.go
 84	0	server/cmd/keryx/cmd_recall_all.go
@@ -258,30 +396,31 @@
 31	2	web/static/js/megaron/ui/drawers/war.js
 32	0	web/static/js/megaron/ui/recall_all.js
 31	0	web/static/js/megaron/ui/recall_all.test.mjs
-@@40276287199f4db6b78e96256907058501fd3024	2026-10-07T21:32:14+02:00	fix(web): read wandering host outbox in Correspondence
+commit 40276287199f4db6b78e96256907058501fd3024 2026-10-07T21:32:14+02:00
 
 3	1	web/static/js/megaron/ui/drawers/diplomacy.js
 36	0	web/static/js/megaron/ui/drawers/diplomacy_outbox.test.mjs
-@@0d160fc4089b92b39e815d073acbe5d23a164bb1	2026-10-07T21:25:26+02:00	docs(codex): explain abandon and searchable call-back instructions
+commit 0d160fc4089b92b39e815d073acbe5d23a164bb1 2026-10-07T21:25:26+02:00
 
 8	0	web/static/codex/colonies.md
 9	1	web/static/codex/sea.md
 5	0	web/static/js/megaron/ui/codex.test.mjs
-@@bc15f01d4207a0f2b6bd8c98e62bd307e5dabc28	2026-10-07T21:14:32+02:00	fix(security): POST /worlds requires the admin key
+commit bc15f01d4207a0f2b6bd8c98e62bd307e5dabc28 2026-10-07T21:14:32+02:00
 
 7	1	server/api/handlers/world.go
 43	0	server/api/handlers/world_create_admin_test.go
-@@6ecb29960bc463c9f4e83007927518a710ba4a30	2026-10-07T21:01:42+02:00	refactor: remove unused population cost mirror
+commit 200b182d7e9e2ba9c2d6d0cd0ad3bedeed5471f5 2026-10-07T21:01:42+02:00
+commit 6ecb29960bc463c9f4e83007927518a710ba4a30 2026-10-07T21:01:42+02:00
 
 0	22	server/internal/economy/labor_test.go
 0	15	server/internal/economy/recompute.go
-@@b061a81074b9c35f5c7d7745ab810103d0edb387	2026-10-07T20:55:21+02:00	WIP(test): pin population growth to canonical grain and fish net
+commit b061a81074b9c35f5c7d7745ab810103d0edb387 2026-10-04T23:17:00+02:00
 
 106	0	server/internal/kharis/growth_gate_foodnet_test.go
-@@d9d6d58c4e4ea16f026d3f8ca4df5f993d93b35e	2026-10-07T20:42:35+02:00	docs: prove frozen event removal and retained live recall regressions
+commit d9d6d58c4e4ea16f026d3f8ca4df5f993d93b35e 2026-10-07T20:42:35+02:00
 
 1	1	server/internal/messenger/order_delivery.go
-@@b51d6dd96241c51e8864ab3de944d32dda7d297f	2026-10-07T20:37:41+02:00	refactor: remove unproduced frozen recall event chain
+commit b51d6dd96241c51e8864ab3de944d32dda7d297f 2026-10-07T20:37:41+02:00
 
 2	4	server/api/handlers/unit.go
 9	19	server/api/handlers/unit_recall_courier_test.go
@@ -298,10 +437,10 @@
 1	1	server/internal/messenger/order_delivery.go
 0	17	server/internal/messenger/order_delivery_dedup_test.go
 1	1	server/internal/province/interpolate.go
-@@2011eeec939433f9bb686f68450a63753cb9aff4	2026-10-07T20:35:32+02:00	test: preserve recall tick ETA regression on live order delivery
+commit 2011eeec939433f9bb686f68450a63753cb9aff4 2026-10-07T20:35:32+02:00
 
 26	0	server/internal/messenger/order_delivery_dedup_test.go
-@@3911cbe30cbab3116c698f8363b368d49d0691fe	2026-10-07T19:58:22+02:00	fix: reject recall without a real route and explain the refusal
+commit 3911cbe30cbab3116c698f8363b368d49d0691fe 2026-10-07T19:58:22+02:00
 
 8	1	server/api/handlers/unit.go
 24	0	server/api/handlers/unit_recall_no_route_test.go
@@ -310,21 +449,22 @@
 4	0	server/internal/messenger/order_delivery.go
 1	1	server/internal/messenger/recall_no_route_test.go
 2	0	web/static/codex/marching.md
-@@a129810874f32325087887c651b44679c8033371	2026-10-07T19:51:19+02:00	test: reproduce recall orders without routes and guessed positions
+commit a129810874f32325087887c651b44679c8033371 2026-10-07T19:51:19+02:00
 
 62	0	server/api/handlers/unit_recall_no_route_test.go
 104	0	server/internal/messenger/recall_no_route_test.go
-@@fe52e5e9d26a63c106bb858f53be3271a764c771	2026-10-07T18:13:24+02:00	fix: reuse single recall arrivals and report terminal delivery failures
+commit fe52e5e9d26a63c106bb858f53be3271a764c771 2026-10-07T18:13:24+02:00
 
 12	2	server/internal/combat/recall_redirect.go
 6	4	server/internal/messenger/order_delivery.go
 141	0	server/internal/messenger/order_delivery_dedup_test.go
 31	0	server/internal/messenger/order_delivery_failure.go
 4	1	server/internal/messenger/order_delivery_recall_miss_test.go
-@@299020797ee78a531a554c9c5f7444de64e85275	2026-10-07T18:08:59+02:00	test: reproduce single recall dedup and silent failures without jitter
+commit 299020797ee78a531a554c9c5f7444de64e85275 2026-10-07T18:08:59+02:00
 
 190	0	server/internal/messenger/order_delivery_dedup_test.go
-@@cf57d5bd3b5f4416236bff0e9e031d00b93f8f7c	2026-10-07T17:08:46+02:00	refactor: share default goods storage cap from province
+commit 77f584bee91456d2bbc967ca5784515ec75cf218 2026-10-07T17:12:22+02:00
+commit cf57d5bd3b5f4416236bff0e9e031d00b93f8f7c 2026-10-07T17:08:46+02:00
 
 3	2	server/api/handlers/create_metropolis.go
 3	2	server/api/handlers/logistics.go
@@ -340,7 +480,7 @@
 2	2	server/internal/transport/arrival.go
 2	2	server/internal/transport/intercept.go
 70	0	server/internal/transport/storage_cap_test.go
-@@2e20968222f8d4949052f429d062715cc8d7f957	2026-10-07T17:06:01+02:00	refactor: remove dead army-recall chain (RecallMarch, RecallArrivalHandler, ArmyArrival/RecallArrival)
+commit 2e20968222f8d4949052f429d062715cc8d7f957 2026-10-07T17:06:01+02:00
 
 0	248	server/api/handlers/province.go
 0	267	server/api/handlers/province_recall_march_test.go
@@ -352,10 +492,10 @@
 0	140	server/internal/messenger/recall_march_miss_test.go
 1	17	server/internal/messenger/recall_test.go
 1	22	server/internal/messenger/travel_duration_test.go
-@@b52a694a2d1609d231b02a8a2905e5a867299ac1	2026-10-07T16:51:44+02:00	test(economy): lock legacy in-flight delivery behaviour (no-journey return, no sea route, corrupt ThenReturn)
+commit b52a694a2d1609d231b02a8a2905e5a867299ac1 2026-10-07T16:51:44+02:00
 
 159	0	server/internal/economy/trade_legacy_test.go
-@@553edda10cf5890c2ebe3f0dca5dbda8616b1dc4	2026-10-07T16:19:47+02:00	wip: checkpoint caravan movement integration for Claude review
+commit 553edda10cf5890c2ebe3f0dca5dbda8616b1dc4 2026-10-07T16:19:47+02:00
 
 282	0	server/api/handlers/caravan_journey_test.go
 19	8	server/api/handlers/kingdom.go
@@ -388,7 +528,7 @@
 1	1	server/internal/transport/intercept_naval_test.go
 113	0	server/internal/transport/journey_test.go
 104	8	server/internal/transport/transport.go
-@@fcdad2e09bdb5f18aaed0279dd90e1e2012f5896	2026-10-07T08:08:20+02:00	feat: read saved caravan position and show authoritative trade arrival ticks
+commit fcdad2e09bdb5f18aaed0279dd90e1e2012f5896 2026-10-07T08:08:20+02:00
 
 43	0	server/api/handlers/map_trade_journey_test.go
 48	14	server/api/handlers/world.go
@@ -403,7 +543,7 @@
 17	3	web/static/js/megaron/ui/drawers/diplomacy.js
 5	1	web/static/js/megaron/ui/drawers/economy.js
 41	0	web/static/js/megaron/ui/drawers/trade_schedule.test.mjs
-@@15396e642ec7927d2d1fdc155fd53b5df00a4719	2026-10-07T07:40:12+02:00	feat: complete area expedition controls and reliable lifecycle
+commit 15396e642ec7927d2d1fdc155fd53b5df00a4719 2026-10-07T07:40:12+02:00
 
 19	2	server/api/handlers/unit.go
 23	0	server/api/handlers/unit_expedition_note_test.go
@@ -428,14 +568,14 @@
 21	0	web/static/js/megaron/ui/expedition.test.mjs
 28	4	web/static/js/megaron/ui/marchctx.js
 5	1	web/static/map.html
-@@2ee158de0b29b4dfea2fde6302f1afd84f1daf20	2026-10-07T07:28:52+02:00	feat(api): unit list carries an expedition's mission line
+commit 2ee158de0b29b4dfea2fde6302f1afd84f1daf20 2026-10-06T23:54:56+02:00
 
 50	0	server/api/handlers/unit.go
 64	0	server/api/handlers/unit_expedition_note_test.go
-@@dd4116a263ecce45ffd66b0137779a4e539fb6c3	2026-10-07T07:28:52+02:00	test(combat): route test explores an area with one unseen hex
+commit dd4116a263ecce45ffd66b0137779a4e539fb6c3 2026-10-06T23:54:05+02:00
 
 11	0	server/internal/combat/march_route_test.go
-@@2e94b6008b47945daed145e540aedf42d9b109c8	2026-10-07T07:28:52+02:00	feat(web,keryx,codex): read an expedition's turn and report
+commit 2e94b6008b47945daed145e540aedf42d9b109c8 2026-10-06T23:52:54+02:00
 
 101	0	server/cmd/keryx/cmd_expedition.go
 28	0	server/cmd/keryx/cmd_expedition_test.go
@@ -445,7 +585,7 @@
 40	0	web/static/js/megaron/ui/format.js
 25	0	web/static/js/megaron/ui/format.test.mjs
 2	2	web/static/js/megaron/ws.js
-@@a924b7951682b3133d80cb0bb53094ee2e9f2f57	2026-10-07T07:28:52+02:00	feat(combat): explore covers an area for a chosen length
+commit a924b7951682b3133d80cb0bb53094ee2e9f2f57 2026-10-06T23:51:04+02:00
 
 30	11	server/api/handlers/unit.go
 2	0	server/db/migrations/159_unit_expeditions.down.sql
@@ -457,7 +597,7 @@
 50	13	server/internal/province/eyes.go
 5	0	server/internal/province/pathfind.go
 50	0	server/internal/unit/events.go
-@@889e92b5ff9a348ebe248f2c1a6aa64ec8670b11	2026-10-07T07:22:22+02:00	feat(web): show per-unit arrival estimates before marching
+commit 889e92b5ff9a348ebe248f2c1a6aa64ec8670b11 2026-10-07T07:18:25+02:00
 
 6	0	web/static/codex/marching.md
 0	1	web/static/codex/rough-edges.md
@@ -466,29 +606,29 @@
 66	0	web/static/js/megaron/ui/march_preview.test.mjs
 37	0	web/static/js/megaron/ui/marchctx.js
 2	2	web/static/map.html
-@@0eabd150741bec2c9a77cd3d12999217c5eba901	2026-10-07T07:22:22+02:00	Add read-only march arrival preview using dispatch preparation
+commit 0eabd150741bec2c9a77cd3d12999217c5eba901 2026-10-06T16:53:01+02:00
 
 112	0	server/api/handlers/unit_march_preview.go
 207	0	server/api/handlers/unit_march_preview_test.go
 1	0	server/cmd/server/main.go
 19	0	server/internal/combat/march_start.go
 10	0	server/internal/combat/march_start_crew_speed_test.go
-@@61d964761aadabe008b8a56671dfc16de9f3c750	2026-10-07T07:22:22+02:00	feat(keryx): preview march arrival without dispatching
+commit 61d964761aadabe008b8a56671dfc16de9f3c750 2026-10-06T16:50:24+02:00
 
 46	0	server/cmd/keryx/cmd_march_preview.go
 97	0	server/cmd/keryx/cmd_march_preview_test.go
 28	20	server/cmd/keryx/cmd_unit.go
-@@4d6adc74c1b0aa8f89dd8c305212483cf1a8d653	2026-10-06T20:03:03+02:00	test(trade): buy-kind naval round trip over HTTP
+commit 4d6adc74c1b0aa8f89dd8c305212483cf1a8d653 2026-10-06T20:03:03+02:00
 
 99	0	server/api/handlers/messenger_trade_naval_test.go
-@@cc3353594ef9088cb013fa1c40b45c978babd5ed	2026-10-06T20:01:46+02:00	fix(combat): name the intent in the ship-return log line
+commit cc3353594ef9088cb013fa1c40b45c978babd5ed 2026-10-06T20:01:46+02:00
 
 2	1	server/internal/combat/unit_arrival.go
-@@50df673990e90ed35e123924c6320d28a490f380	2026-10-06T19:35:48+02:00	fix(combat): number warbands after collapse
+commit 50df673990e90ed35e123924c6320d28a490f380 2026-10-06T19:35:48+02:00
 
 31	3	server/internal/combat/collapse.go
 88	0	server/internal/combat/collapse_test.go
-@@42844152283fa44d2305617715c774766880329b	2026-10-06T16:25:35+02:00	fix(web): search received letters and rumours
+commit 42844152283fa44d2305617715c774766880329b 2026-10-06T16:25:35+02:00
 
 0	1	web/static/codex/rough-edges.md
 1	1	web/static/codex/screen.md
@@ -496,33 +636,33 @@
 46	0	web/static/js/megaron/ui/search_messages.js
 60	0	web/static/js/megaron/ui/search_messages.test.mjs
 2	2	web/static/map.html
-@@19ce2f590b86d39dde1bf3282b3cd887bc43c9dd	2026-10-06T07:44:37+02:00	ui: open the town courtyard behind its gate
+commit 19ce2f590b86d39dde1bf3282b3cd887bc43c9dd 2026-10-06T07:44:37+02:00
 
 6	3	web/static/js/megaron/render/citysprites.js
-@@7213acde1b25e8a792f74c3d9a73c6dbc1057e0f	2026-10-06T07:44:37+02:00	ui: compose the city scene around a continuous courtyard
+commit 7213acde1b25e8a792f74c3d9a73c6dbc1057e0f 2026-10-06T07:44:37+02:00
 
 41	26	web/static/js/megaron/render/city.js
-@@12bdaa214d48f2875c2cae9ac37393f20dcc4a80	2026-10-05T17:52:41+02:00	auth: POLEIA_REGISTRATION_CLOSED=1 refuses new accounts
+commit 12bdaa214d48f2875c2cae9ac37393f20dcc4a80 2026-10-05T17:52:41+02:00
 
 12	1	server/api/handlers/auth.go
 25	0	server/api/handlers/auth_registration_closed_test.go
 1	0	server/cmd/server/main.go
-@@83bf37fdce852c1c95f7a548e10e485484a61e49	2026-10-05T17:39:33+02:00	alfatestinfo: call him Tim
+commit 83bf37fdce852c1c95f7a548e10e485484a61e49 2026-10-05T17:39:32+02:00
 
 1	1	web/templates/alfatestinfo.html
-@@1ebc1257eebf815a1593c8354ba2f0c923f21b36	2026-10-05T17:39:33+02:00	fix: a claim without an owned city waits instead of replaying Agora commands each minute
+commit 1ebc1257eebf815a1593c8354ba2f0c923f21b36 2026-10-05T17:33:45+02:00
 
 3	1	server/cmd/server/agora.go
 37	0	server/cmd/server/agora_test.go
-@@80d39ebd52cb70d450a3d0633893516384bb5a98	2026-10-05T17:39:33+02:00	test: prove Agora atomic recovery, isolation and idempotency
+commit 80d39ebd52cb70d450a3d0633893516384bb5a98 2026-10-05T00:09:15+02:00
 
 116	0	server/api/handlers/agora_test.go
 337	0	server/cmd/server/agora_test.go
 91	0	server/internal/notify/persisted_test.go
-@@b1e9623e5e785b3a0efbaac7630127c995f16f54	2026-10-05T17:39:33+02:00	fix: keep the Account header reachable on small screens
+commit b1e9623e5e785b3a0efbaac7630127c995f16f54 2026-10-05T00:00:26+02:00
 
 4	1	web/static/megaron.css
-@@fcb47fa8e6962eda285a80159686a6620b97ea05	2026-10-05T17:39:33+02:00	feat: reconcile durable Agora accounts outside game transactions
+commit fcb47fa8e6962eda285a80159686a6620b97ea05 2026-10-04T23:58:52+02:00
 
 92	0	server/api/handlers/agora.go
 299	0	server/cmd/server/agora.go
@@ -538,7 +678,7 @@
 41	0	server/internal/agora/identity_test.go
 95	0	server/internal/agora/integration_test.go
 10	0	server/internal/notify/hub.go
-@@fd7389500fade4d9347489e667f5732ca99d7ebe	2026-10-05T17:39:33+02:00	feat: expose Agora account and one-time password on CLI and web
+commit fd7389500fade4d9347489e667f5732ca99d7ebe 2026-10-04T23:47:36+02:00
 
 78	0	server/cmd/keryx/cmd_agora.go
 126	0	server/cmd/keryx/cmd_agora_test.go
@@ -555,35 +695,36 @@
 7	0	web/static/js/megaron/ui/format.test.mjs
 12	0	web/static/megaron.css
 3	3	web/templates/alfatestinfo.html
-@@59c1fcfdef567c5c114b2fc6babe397ce183ae5d	2026-10-05T17:35:54+02:00	alfatestinfo: who makes it — one person, with AI
+commit 59c1fcfdef567c5c114b2fc6babe397ce183ae5d 2026-10-05T17:35:54+02:00
 
 5	0	web/templates/alfatestinfo.html
-@@67c298adf1f0563dd0c037971e561679b8f6a10a	2026-10-05T17:33:46+02:00	alfatestinfo: name the oikos among future expansions
+commit 67c298adf1f0563dd0c037971e561679b8f6a10a 2026-10-05T17:33:46+02:00
 
 1	1	web/templates/alfatestinfo.html
-@@af31b656fad0e518e16aaf41150ac42a58918d98	2026-10-05T17:33:31+02:00	alfatestinfo: where we are, and what comes next
+commit af31b656fad0e518e16aaf41150ac42a58918d98 2026-10-05T17:33:31+02:00
 
 9	0	web/templates/alfatestinfo.html
-@@a71b55661defa3c629e619db76152abe5723b75a	2026-10-05T17:32:50+02:00	alfatestinfo: work towards it with friends
+commit a71b55661defa3c629e619db76152abe5723b75a 2026-10-05T17:32:50+02:00
 
 1	1	web/templates/alfatestinfo.html
-@@33dd6376cd3f70a0f8c211ceaf1c6eabc0c5b1ea	2026-10-05T17:30:30+02:00	alfatestinfo: a slow grind with a glorious purpose
+commit 33dd6376cd3f70a0f8c211ceaf1c6eabc0c5b1ea 2026-10-05T17:30:30+02:00
 
 1	1	web/templates/alfatestinfo.html
-@@585722ed9f25595eda65c17cd900b1087df2ce1a	2026-10-05T17:27:39+02:00	alfatestinfo: what kind of game we want (social, slow, an alternative to ad-driven feeds, at most 100 rulers per world); English message in the trade screenshot
+commit 585722ed9f25595eda65c17cd900b1087df2ce1a 2026-10-05T17:27:39+02:00
 
 -	-	web/static/alfatest/handel.png
 9	5	web/templates/alfatestinfo.html
-@@392d871c2dd83f562541869191b4cac2486d4bf8	2026-10-04T21:31:28+02:00	alfatestinfo: chat link goes to our own Element at agora.formatet.se
+commit 392d871c2dd83f562541869191b4cac2486d4bf8 2026-10-04T21:31:28+02:00
 
 1	1	web/templates/alfatestinfo.html
-@@3ff6e2444bd4c91196075dd0b1b8e0451a79fb45	2026-10-04T20:42:44+02:00	alfatestinfo: community chat on Matrix (agora.formatet.se), rules and privacy
+commit 3ff6e2444bd4c91196075dd0b1b8e0451a79fb45 2026-10-04T20:42:44+02:00
 
 15	0	web/templates/alfatestinfo.html
-@@656b55b6a19e68308534101d74b7862473c10b0f	2026-10-04T20:31:01+02:00	alfatestinfo: messengers and no tech tree
+commit 39bb744addfc86d34a80bf84c949d44b5c634abd 2026-10-04T20:32:29+02:00
+commit 656b55b6a19e68308534101d74b7862473c10b0f 2026-10-04T20:31:01+02:00
 
 10	0	web/templates/alfatestinfo.html
-@@f56662d1d17bbf4803ccb61cb836af53bef5f85b	2026-10-04T20:28:20+02:00	alfatestinfo: English, short and plain, light layout after formatet.se, four real cropped screenshots
+commit f56662d1d17bbf4803ccb61cb836af53bef5f85b 2026-10-04T20:28:20+02:00
 
 1	1	server/api/handlers/alfatestinfo.go
 1	1	server/cmd/server/alfatestinfo_test.go
@@ -593,16 +734,17 @@
 -	-	web/static/alfatest/stad.png
 19	36	web/static/megaron.css
 35	52	web/templates/alfatestinfo.html
-@@a029758dc8dabdeca39b0540baa745e4863a5b09	2026-10-04T19:57:05+02:00	test(architecture): enforce the classified G1 production graph
+commit 95baa43ca730ddcaf4df785b2d52847c50ed4a64 2026-10-04T19:58:51+02:00
+commit a029758dc8dabdeca39b0540baa745e4863a5b09 2026-10-04T19:57:05+02:00
 
 146	0	server/cmd/server/architecture_test.go
-@@6e90d076e905f2841bfbf051bf362237adc3a1d3	2026-10-04T19:54:22+02:00	fix(march): reject failed route preparation before changing state
+commit 6e90d076e905f2841bfbf051bf362237adc3a1d3 2026-10-04T19:54:22+02:00
 
 130	0	server/internal/combat/march_route_integrity_test.go
 23	15	server/internal/combat/march_start.go
 12	2	server/internal/messenger/march_recall_route_test.go
 6	1	server/internal/messenger/order_delivery_test.go
-@@01510bd8b9059c7ca52159e23e7885aaf5e8e921	2026-10-04T19:51:27+02:00	feat(web): add a public Swedish invitation for alpha testers
+commit 01510bd8b9059c7ca52159e23e7885aaf5e8e921 2026-10-04T19:51:27+02:00
 
 23	0	server/api/handlers/alfatestinfo.go
 11	0	server/cmd/server/alfatestinfo.go
@@ -610,30 +752,30 @@
 1	0	server/cmd/server/main.go
 38	0	web/static/megaron.css
 74	0	web/templates/alfatestinfo.html
-@@cb93972ccfd1c6f2b9ce4598de00031861c1fffd	2026-10-04T19:35:44+02:00	fix(kingdoms): gate the production ReturnArmy route
+commit cb93972ccfd1c6f2b9ce4598de00031861c1fffd 2026-10-04T19:35:44+02:00
 
 4	2	server/api/handlers/settlement.go
 9	2	server/cmd/server/main.go
 93	0	server/cmd/server/return_army_test.go
-@@d6436593291416cb543641fc21e486bfb4a451cc	2026-10-04T19:35:44+02:00	fix(recruit): commit payment, units and training jobs atomically
+commit d6436593291416cb543641fc21e486bfb4a451cc 2026-10-04T19:35:44+02:00
 
 138	62	server/api/handlers/province.go
 262	0	server/api/handlers/recruit_atomic_test.go
 28	4	server/internal/events/store.go
 1	1	web/static/codex/units.md
-@@28b930ab090c9f9645f5dd435444145c7c0441f5	2026-10-04T19:35:43+02:00	fix(recruit): price naval affordability using the canonical crew
+commit 28b930ab090c9f9645f5dd435444145c7c0441f5 2026-10-04T19:35:43+02:00
 
 68	0	server/internal/capabilities/capabilities_test.go
 12	11	server/internal/capabilities/province_verbs.go
 2	2	web/static/codex/units.md
-@@523bc5c4b38bb2fd7ea58cb8e0823db47c8c586e	2026-10-04T13:02:48+02:00	player reports survive a reseed and reach the vault: append-only reports.jsonl outside the DB, drop the FK that TRUNCATE worlds CASCADE followed (mig 157), daily copy into the vault
+commit 523bc5c4b38bb2fd7ea58cb8e0823db47c8c586e 2026-10-04T13:02:48+02:00
 
 81	2	server/api/handlers/reports.go
 127	0	server/api/handlers/reports_log_test.go
 3	0	server/cmd/server/main.go
 4	0	server/db/migrations/157_player_reports_survive_reseed.down.sql
 14	0	server/db/migrations/157_player_reports_survive_reseed.up.sql
-@@97461b7f71d198c7effd7df00fb0b4fdb49555da	2026-10-03T20:06:51+02:00	web + codex: show the colonist purse at dispatch (map colonize and ship landing); Codex colonies explains it
+commit 97461b7f71d198c7effd7df00fb0b4fdb49555da 2026-10-03T20:06:51+02:00
 
 2	0	web/static/codex/colonies.md
 1	1	web/static/codex/sea.md
@@ -641,16 +783,16 @@
 21	0	web/static/js/megaron/ui/format.js
 12	1	web/static/js/megaron/ui/format.test.mjs
 3	1	web/static/js/megaron/ui/marchctx.js
-@@f867e5968d6cf71336da023ff2d9a4177909e9dc	2026-10-03T20:04:01+02:00	limped ship steers for the port it is credited to, not the city its leg sailed from
+commit f867e5968d6cf71336da023ff2d9a4177909e9dc 2026-10-03T20:04:01+02:00
 
 9	2	server/internal/transport/intercept.go
 45	0	server/internal/transport/intercept_naval_test.go
-@@50eabbd8d5af4ce18a296f0df36b112ceb518bf5	2026-10-03T19:59:22+02:00	standing sea route: the return leg obeys the ship's hold, like the outbound leg
+commit 50eabbd8d5af4ce18a296f0df36b112ceb518bf5 2026-10-03T19:59:22+02:00
 
 20	2	server/internal/combat/standing_orders.go
 64	0	server/internal/combat/standing_orders_naval_test.go
 1	1	web/static/codex/routes.md
-@@edbf114ae224bbfe64c287ea60fc032ef8a1f870	2026-10-03T19:53:49+02:00	colonize by sea carries the colonist purse: port pays at dispatch, cargo carries it, colony starts with it; unload in port returns it
+commit edbf114ae224bbfe64c287ea60fc032ef8a1f870 2026-10-03T19:53:49+02:00
 
 21	0	server/api/handlers/unit.go
 101	0	server/api/handlers/unit_unload_landing_test.go
@@ -659,55 +801,55 @@
 65	0	server/internal/combat/march_start_land_test.go
 5	2	server/internal/combat/unit_arrival.go
 1	1	web/static/codex/sea.md
-@@397bcc3bcc627fdf87bd6fe89756512434013044	2026-10-03T19:46:03+02:00	web: runner status reads the passage, not arrives_at alone (outbox + order card)
+commit 397bcc3bcc627fdf87bd6fe89756512434013044 2026-10-03T19:46:03+02:00
 
 2	3	web/static/js/megaron/ui/drawers/diplomacy.js
 2	9	web/static/js/megaron/ui/drawers/war.js
 63	0	web/static/js/megaron/ui/runner_status.js
 61	0	web/static/js/megaron/ui/runner_status.test.mjs
-@@515eba29cdecd1117e5c42adcccb1f24d3d0d90e	2026-10-02T16:54:42+02:00	web: −1 keys off this city's own gubbar, not the hex's occupancy (held hex) · tools: citygridshot, fixture tries every held hex
+commit 515eba29cdecd1117e5c42adcccb1f24d3d0d90e 2026-10-02T16:54:42+02:00
 
 6	2	web/static/js/megaron/ui/citygrid.js
 12	1	web/static/js/megaron/ui/citygrid.test.mjs
-@@fa79a5d9f620440391cc9b95367fb4b6de463089	2026-10-02T16:51:08+02:00	codex: shared catchment, taking a hex, HexTaken
+commit fa79a5d9f620440391cc9b95367fb4b6de463089 2026-10-02T16:51:08+02:00
 
 3	1	web/static/codex/catchment.md
 1	1	web/static/codex/index.json
 4	0	web/static/codex/sieges.md
 4	0	web/static/codex/stances.md
-@@82cc6e6b647ed4f28031bf66b8b611320b95fac7	2026-10-02T16:50:57+02:00	web: held/takeable catchment hexes in citygrid, HexTaken in format.js
+commit 82cc6e6b647ed4f28031bf66b8b611320b95fac7 2026-10-02T16:50:57+02:00
 
 19	6	web/static/js/megaron/ui/citygrid.js
 14	1	web/static/js/megaron/ui/citygrid.test.mjs
 13	1	web/static/js/megaron/ui/format.js
 15	0	web/static/js/megaron/ui/format.test.mjs
 4	0	web/static/megaron.css
-@@c41e2b3031586e8011d09629a474029cd46dc15d	2026-10-02T16:50:18+02:00	keryx: mark held/takeable catchment hexes, render HexTaken
+commit c41e2b3031586e8011d09629a474029cd46dc15d 2026-10-02T16:50:18+02:00
 
 1	0	server/cmd/keryx/cmd_city.go
 26	0	server/cmd/keryx/cmd_gubbe.go
 33	0	server/cmd/keryx/cmd_notifications.go
 35	0	server/cmd/keryx/cmd_notifications_divine_test.go
-@@d4ed8c361e4397a5ac35a80385840fadf7091097	2026-10-02T16:49:08+02:00	delad catchment: placement-options counts the holder's gubbar on a held hex (held_workers)
+commit d4ed8c361e4397a5ac35a80385840fadf7091097 2026-10-02T16:49:08+02:00
 
 3	0	server/api/handlers/hex_take_test.go
 5	1	server/api/handlers/settlement_placement.go
-@@7e988c7f7ae0fc599cd44fe9ff4b880f8395e6db	2026-10-02T16:48:44+02:00	delad catchment: placement-options names the holder's building on a held hex (held_building)
+commit 7e988c7f7ae0fc599cd44fe9ff4b880f8395e6db 2026-10-02T16:48:44+02:00
 
 38	0	server/api/handlers/hex_take_test.go
 13	3	server/api/handlers/settlement_placement.go
-@@88e29fbf4b32530ea11254c0a126f4c9547b7641	2026-10-02T16:42:08+02:00	delad catchment: validate the good after the take, mine-hex test
+commit 88e29fbf4b32530ea11254c0a126f4c9547b7641 2026-10-02T16:42:08+02:00
 
 32	0	server/api/handlers/hex_take_test.go
 32	50	server/api/handlers/settlement_placement.go
-@@9ef8d5d037c13ab3505005fd04bcaf0908b220ad	2026-10-02T16:40:22+02:00	delad catchment: CancelBuild regression test (green on old code too)
+commit 9ef8d5d037c13ab3505005fd04bcaf0908b220ad 2026-10-02T16:40:22+02:00
 
 69	0	server/api/handlers/hex_take_test.go
-@@e15ff580e6551ea61c7419b5898f416698e42f21	2026-10-02T16:39:02+02:00	delad catchment: handler tests for the hex take and the read surface
+commit e15ff580e6551ea61c7419b5898f416698e42f21 2026-10-02T16:39:02+02:00
 
 2	2	server/api/handlers/hex_ownership_test.go
 442	0	server/api/handlers/hex_take_test.go
-@@5387b94637c2de3f3743132e30351d369051ec60	2026-10-02T16:37:15+02:00	delad catchment (temenos): centre distance 3, cancelQueuedBuild extracted, LoadHexHolds/take rule, HexTaken, PlaceGubbe take + read surfaces
+commit 5387b94637c2de3f3743132e30351d369051ec60 2026-10-02T16:37:15+02:00
 
 3	3	server/api/handlers/catchment_conflict_message_test.go
 3	0	server/api/handlers/join.go
@@ -717,7 +859,7 @@
 0	39	server/internal/economy/placement_yield.go
 13	7	server/internal/province/catchment_overlap.go
 14	20	server/internal/province/catchment_overlap_test.go
-@@1f8478fab9180603a6f78e4e31524b194397ccf1	2026-10-02T16:12:18+02:00	building costs as recipes (§10) + fieldstone (mig 156) + empty starting stock + timber-landmass spawn rule
+commit 1f8478fab9180603a6f78e4e31524b194397ccf1 2026-10-02T16:12:18+02:00
 
 6	5	server/api/handlers/create_metropolis.go
 44	0	server/api/handlers/create_metropolis_livestock_test.go
@@ -742,7 +884,7 @@
 3	1	web/static/codex/buildings.md
 1	1	web/static/codex/founding.md
 6	6	web/static/js/megaron/ui/drawers/city.test.mjs
-@@34fb396e293364fd4164ab3f0cd6206efc1ac76e	2026-10-02T07:30:43+02:00	hex rules: coastal sea gets 2 fishing places, rate stays 1,0 (BESLUT 2, Timothy 2026-10-01)
+commit 34fb396e293364fd4164ab3f0cd6206efc1ac76e 2026-10-02T07:30:43+02:00
 
 8	7	server/api/handlers/hex_ownership_test.go
 15	9	server/api/handlers/settlement_placement_test.go
@@ -750,14 +892,14 @@
 1	1	server/internal/economy/hex_rules.go
 1	1	server/internal/economy/hex_rules_test.go
 13	8	server/internal/economy/place_next_gubbe_test.go
-@@27fd6d9771900b97337927543761de8ae117fb85	2026-10-01T21:32:03+02:00	keryx status: the build sink sums every hex a farm/mine/lumbermill/stonequarry stands on or could stand on (Timothy 2026-09-30)
+commit 27fd6d9771900b97337927543761de8ae117fb85 2026-10-01T21:32:03+02:00
 
 55	10	server/cmd/keryx/cmd_status.go
 37	3	server/cmd/keryx/cmd_status_surplus_test.go
-@@8e8243300023c77a3e6f70813549ecbfdb6b031e	2026-10-01T21:32:03+02:00	keryx tests: TestMain points POLEIA_CONFIG at a temp file — the suite no longer overwrites ~/.config/poleia/config.json
+commit 8e8243300023c77a3e6f70813549ecbfdb6b031e 2026-10-01T21:32:03+02:00
 
 24	0	server/cmd/keryx/main_test.go
-@@8aa187531dd2663619ac7b9639d6473283b93cc8	2026-10-01T21:29:53+02:00	arrival: a superseded UnitArrival is a no-op — recall/redirect no longer land a unit early
+commit 8aa187531dd2663619ac7b9639d6473283b93cc8 2026-10-01T21:29:53+02:00
 
 4	2	server/internal/combat/march_start.go
 2	1	server/internal/combat/recall_redirect.go
@@ -766,7 +908,7 @@
 88	0	server/internal/combat/unit_arrival_stale_test.go
 2	1	server/internal/messenger/march_recall.go
 6	0	server/internal/unit/events.go
-@@2b6320de358faec593ccb02948b89afbbd398272	2026-10-01T21:24:29+02:00	founding: EITHER Demeter's farm OR Poseidon's galley — a coastal metropolis gets no farm (slice C, Timothy 2026-09-28)
+commit 2b6320de358faec593ccb02948b89afbbd398272 2026-10-01T21:24:29+02:00
 
 6	2	server/api/handlers/create_metropolis.go
 25	0	server/api/handlers/create_metropolis_founding_test.go
@@ -775,45 +917,45 @@
 3	2	server/cmd/keryx/cmd_founding.go
 1	1	server/internal/economy/founding_forecast.go
 2	2	web/static/codex/founding.md
-@@988fb902ddcfccf4ec3a9112595b52677c6c8d3d	2026-10-01T21:04:27+02:00	effects: text in words — 'grain production ×1.7 · space for 4 more workers', upgrade '×1.7 → ×2.4' (Timothy 2026-09-30); Codex: one building per hex
+commit 988fb902ddcfccf4ec3a9112595b52677c6c8d3d 2026-10-01T21:04:27+02:00
 
 6	6	server/cmd/keryx/cmd_build_effect_test.go
 16	10	server/internal/economy/building_effect.go
 5	5	server/internal/economy/hex_rules_test.go
 4	2	web/static/codex/buildings.md
 4	4	web/static/js/megaron/ui/drawers/city.test.mjs
-@@f88673f91b238404d59751872de9b37c2524a29d	2026-10-01T21:04:27+02:00	build: one building per hex — refuse another hex-bound type (standing, queued or a neighbour's), picker and ChooseFarmHex skip occupied hexes (Timothy 2026-09-30)
+commit f88673f91b238404d59751872de9b37c2524a29d 2026-10-01T21:04:27+02:00
 
 19	3	server/api/handlers/building_effect_handler_test.go
 13	0	server/api/handlers/province.go
 73	0	server/api/handlers/province_build_hex_test.go
 71	26	server/internal/economy/placement_yield.go
-@@3fc27d8a30fdbc71d54649732ccd85f5c412f604	2026-09-30T20:39:12+02:00	codex: the building rule; quarry/lumbermill/mine no longer have in-building workers
+commit 3fc27d8a30fdbc71d54649732ccd85f5c412f604 2026-09-30T20:39:12+02:00
 
 8	4	web/static/codex/buildings.md
-@@7a7ad945ef9ae8890460aa9b4c2c900ad81b8bbc	2026-09-30T20:38:56+02:00	web: hex picker prints the server's effect / upgrade_effect per hex
+commit 7a7ad945ef9ae8890460aa9b4c2c900ad81b8bbc 2026-09-30T20:38:56+02:00
 
 6	5	web/static/js/megaron/ui/drawers/city.js
 13	4	web/static/js/megaron/ui/drawers/city.test.mjs
-@@388c3b4e1debf3187c52f1304c545348faaeeaef	2026-09-30T20:38:39+02:00	keryx: build --hex prints the server's effect/upgrade_effect for that hex
+commit 388c3b4e1debf3187c52f1304c545348faaeeaef 2026-09-30T20:38:39+02:00
 
 10	0	server/cmd/keryx/cmd_build.go
 28	0	server/cmd/keryx/cmd_build_effect_test.go
 30	2	server/cmd/keryx/cmd_gubbe.go
-@@e6349dadca2156f404bf2be6273c9ca917b3aed3	2026-09-30T20:36:34+02:00	kharis test: reinforce fixture starter farm on river_delta (plains farm 8x1.7 no longer feeds 5000 pop with two bare plains hexes)
+commit e6349dadca2156f404bf2be6273c9ca917b3aed3 2026-09-30T20:36:34+02:00
 
 6	1	server/internal/kharis/reinforce_trickle_test.go
-@@9cc429aba389e054809bc875a30fc23d8f3182f6	2026-09-30T20:31:47+02:00	tests: rule table, effect parity, ChooseFarmHex, reconcile, farm-L2 cap; comment fix
+commit 9cc429aba389e054809bc875a30fc23d8f3182f6 2026-09-30T20:31:47+02:00
 
 30	0	server/api/handlers/settlement_placement_test.go
 226	0	server/internal/economy/hex_rules_test.go
 2	3	server/internal/province/building.go
-@@a71c0aeb8ca309b91ddfd685e45b7af0901a014a	2026-09-30T20:30:23+02:00	tests: handler/combat tests for byggnadsregeln API and build hint
+commit a71c0aeb8ca309b91ddfd685e45b7af0901a014a 2026-09-30T20:30:23+02:00
 
 90	120	server/api/handlers/building_effect_handler_test.go
 8	7	server/api/handlers/p10_gate_visibility_test.go
 9	10	server/internal/combat/build_notify_test.go
-@@40ef80eacfa57150c9057b1b0c6655ca44c141d3	2026-09-30T20:28:23+02:00	economy: placement reconcile (recompute-all), rule-building unlock hint, test updates for byggnadsregeln
+commit 40ef80eacfa57150c9057b1b0c6655ca44c141d3 2026-09-30T20:28:23+02:00
 
 10	0	server/cmd/recompute-all/main.go
 22	0	server/internal/combat/build.go
@@ -832,7 +974,7 @@
 8	8	server/internal/economy/wine_beyond_hills_test.go
 11	12	server/internal/economy/workplace_slots_p2_test.go
 4	4	server/internal/economy/workplace_slots_p3_test.go
-@@cfc60f1a73395363d6c41cd27f546ae163f9fb6c	2026-09-30T20:24:50+02:00	handlers: placement-options effect/upgrade_effect, drop effects from buildings API, rule-table gates, farm gift via ChooseFarmHex
+commit cfc60f1a73395363d6c41cd27f546ae163f9fb6c 2026-09-30T20:24:50+02:00
 
 6	18	server/api/handlers/create_metropolis.go
 11	20	server/api/handlers/founding_gifts_test.go
@@ -840,7 +982,7 @@
 50	11	server/api/handlers/settlement_placement.go
 13	13	server/api/handlers/world.go
 26	0	server/internal/economy/hex_rules.go
-@@c850233e285f48e9c21db0d02b75b751f8626c7d	2026-09-30T20:22:59+02:00	economy: byggnadsregeln core - mig 155, rule table, hexYield, HexOption per-worker units
+commit c850233e285f48e9c21db0d02b75b751f8626c7d 2026-09-30T20:22:59+02:00
 
 34	0	server/db/migrations/155_byggnadsregeln.down.sql
 31	0	server/db/migrations/155_byggnadsregeln.up.sql
@@ -853,62 +995,62 @@
 122	0	server/internal/economy/hex_rules.go
 125	306	server/internal/economy/placement_yield.go
 14	152	server/internal/economy/recompute.go
-@@0c9bcffbce1af46f0b29591fff17ee832c783793	2026-09-30T19:57:59+02:00	keryx: drop the effect lines from build --list and city (Timothy 2026-09-30, same as web)
+commit 0c9bcffbce1af46f0b29591fff17ee832c783793 2026-09-30T19:57:59+02:00
 
 0	9	server/cmd/keryx/cmd_build.go
 0	59	server/cmd/keryx/cmd_city.go
-@@415e5fec805918e607b0c0f7efdb83fcea4b70d6	2026-09-30T19:55:59+02:00	web+codex: Construct list shows name and price only; effect lines removed from the Construct panel and Built list (Timothy 2026-09-30: too long, not understandable)
+commit 415e5fec805918e607b0c0f7efdb83fcea4b70d6 2026-09-30T19:55:59+02:00
 
 1	14	web/static/codex/buildings.md
 7	75	web/static/js/megaron/ui/drawers/city.js
 5	38	web/static/js/megaron/ui/drawers/city.test.mjs
 0	7	web/static/megaron.css
-@@192b65b109cbdb9bb973d3e8365b781933902fd7	2026-09-30T19:22:17+02:00	effects: a deposit is named only on its own metal's row
+commit 192b65b109cbdb9bb973d3e8365b781933902fd7 2026-09-30T19:22:17+02:00
 
 10	12	server/internal/economy/building_effect.go
 14	0	server/internal/economy/building_effect_test.go
-@@42b2925b94c0876d8efd44cce52e9af3e0676738	2026-09-30T19:20:57+02:00	effects: none where the hex has a cap but no rule, harbour says every coastal hex, readable terrain names; fixture joins until the world starts
+commit 42b2925b94c0876d8efd44cce52e9af3e0676738 2026-09-30T19:20:57+02:00
 
 20	4	server/internal/economy/building_effect.go
 30	0	server/internal/economy/building_effect_test.go
-@@7ebad59c0ecdb50c3676bc5ff3cee5f8a4c3190f	2026-09-30T19:17:51+02:00	effects: 'none' instead of 0 × 0.00, player words instead of workplace/gubbe; web marks the current level
+commit 7ebad59c0ecdb50c3676bc5ff3cee5f8a4c3190f 2026-09-30T19:17:51+02:00
 
 19	10	server/internal/economy/building_effect.go
 1	1	web/static/codex/buildings.md
 1	1	web/static/js/megaron/ui/drawers/city.js
-@@ea9a1a298667f4ea8e43cc47e4706cc622345a55	2026-09-30T19:09:47+02:00	codex: buildings/silver articles match the new role lines, Marketplace -> Market
+commit ea9a1a298667f4ea8e43cc47e4706cc622345a55 2026-09-30T19:09:47+02:00
 
 26	10	web/static/codex/buildings.md
 0	1	web/static/codex/silver.md
-@@c7d85bc7c054a1833dfb53c301df39c97744aea8	2026-09-30T19:07:25+02:00	web: Construct list and built-buildings list show server-rendered effect text
+commit c7d85bc7c054a1833dfb53c301df39c97744aea8 2026-09-30T19:07:25+02:00
 
 64	5	web/static/js/megaron/ui/drawers/city.js
 23	1	web/static/js/megaron/ui/drawers/city.test.mjs
 7	0	web/static/megaron.css
-@@947aed5167a0a5c7fd8c7a7b3e7a1b19ac7284f8	2026-09-30T19:02:18+02:00	keryx: build --list and city print server-rendered effect text lines
+commit 947aed5167a0a5c7fd8c7a7b3e7a1b19ac7284f8 2026-09-30T19:02:18+02:00
 
 9	0	server/cmd/keryx/cmd_build.go
 59	0	server/cmd/keryx/cmd_city.go
-@@6715d61200bba520304dddd4ab4ecc5b7412ee28	2026-09-30T18:58:54+02:00	province: stonequarry/foundry role lines say what is true
+commit 6715d61200bba520304dddd4ab4ecc5b7412ee28 2026-09-30T18:58:54+02:00
 
 2	2	server/internal/province/building.go
-@@6f47527d3772bbf9a4758fcaa20720fcd2483e10	2026-09-30T18:55:12+02:00	province: test that no BuildingPurposes line claims a good's rate
+commit 6f47527d3772bbf9a4758fcaa20720fcd2483e10 2026-09-30T18:55:12+02:00
 
 45	0	server/internal/province/building_purpose_test.go
-@@6b64cda38c3599780f736f53629d0ba45b7a2116	2026-09-30T18:54:24+02:00	api+province: buildings expose real production effects instead of hand-written claims (B1)
+commit 6b64cda38c3599780f736f53629d0ba45b7a2116 2026-09-30T18:54:24+02:00
 
 169	0	server/api/handlers/building_effect_handler_test.go
 85	0	server/api/handlers/province.go
 17	11	server/internal/province/building.go
-@@ea53d693f4a9b83ab992ca9e0613130d427dfef5	2026-09-30T18:49:10+02:00	economy: building effect rows computed from the real production formula (B1)
+commit ea53d693f4a9b83ab992ca9e0613130d427dfef5 2026-09-30T18:49:10+02:00
 
 499	0	server/internal/economy/building_effect.go
 250	0	server/internal/economy/building_effect_test.go
-@@b4b1dcb79cd42e3eed0e39e789ec7fb2daa27dfd	2026-09-30T16:28:51+02:00	codex: buildings stand on a hex now, silver mine folded into Mine
+commit b4b1dcb79cd42e3eed0e39e789ec7fb2daa27dfd 2026-09-30T16:28:51+02:00
 
 9	4	web/static/codex/buildings.md
 1	1	web/static/codex/silver.md
-@@f9dbe3a2954bef017f1e8b94e8dae9fb1fdb4c91	2026-09-30T16:27:51+02:00	web + rural projections: hex-bound Construct flow, real-hex map sprites
+commit f9dbe3a2954bef017f1e8b94e8dae9fb1fdb4c91 2026-09-30T16:27:51+02:00
 
 35	142	server/api/handlers/rural.go
 202	70	server/api/handlers/rural_test.go
@@ -916,17 +1058,17 @@
 4	1	web/static/js/megaron/ui/citygrid.js
 101	7	web/static/js/megaron/ui/drawers/city.js
 61	6	web/static/js/megaron/ui/drawers/city.test.mjs
-@@2a513ddd7e45165d4f7320bcb661e9992ce75fa6	2026-09-30T16:20:35+02:00	keryx: build --hex flag, city shows hex-bound building coords
+commit 2a513ddd7e45165d4f7320bcb661e9992ce75fa6 2026-09-30T16:20:35+02:00
 
 16	2	server/cmd/keryx/cmd_build.go
 15	2	server/cmd/keryx/cmd_city.go
 15	5	server/cmd/keryx/cmd_gubbe.go
-@@cc2449d5f484629128ddf5ade3805f3d1f6b294e	2026-09-30T16:19:22+02:00	WIP keryx: hex-bound build (interrupted by usage limit)
+commit cc2449d5f484629128ddf5ade3805f3d1f6b294e 2026-09-30T16:19:22+02:00
 
 30	2	server/cmd/keryx/cmd_build.go
 17	35	server/cmd/keryx/cmd_status.go
 7	7	server/cmd/keryx/cmd_status_test.go
-@@81cb6fb576f566fd3746dee41dc9e2f0baef6d16	2026-09-28T21:27:57+02:00	server: fix multi-row aggregation bugs the hex-bound slice exposed, wire up tests
+commit 81cb6fb576f566fd3746dee41dc9e2f0baef6d16 2026-09-28T21:27:57+02:00
 
 26	0	server/api/handlers/hex_bound_mirror_test.go
 13	3	server/api/handlers/province.go
@@ -941,7 +1083,7 @@
 6	1	server/internal/economy/workplace_slots_p2_test.go
 15	6	server/internal/economy/workplace_slots_p3_test.go
 16	3	server/internal/kharis/grain_growth_test.go
-@@77d368807951910bd59da64d8f060e66f4609d4e	2026-09-28T21:05:51+02:00	server: production buildings become hex-bound (farm/mine/lumbermill/stonequarry)
+commit 77d368807951910bd59da64d8f060e66f4609d4e 2026-09-28T21:05:51+02:00
 
 2	2	server/api/handlers/colonize_preview_fish_test.go
 16	6	server/api/handlers/create_metropolis.go
@@ -967,81 +1109,82 @@
 72	22	server/internal/economy/recompute.go
 1	4	server/internal/province/building.go
 18	1	server/internal/province/model.go
-@@3e04a0445c438bc0e733e33090756278a801f4fa	2026-09-28T19:38:13+02:00	web: drawer draws its own always-on scrollbar in the palette (Timothy's call)
+commit 3e04a0445c438bc0e733e33090756278a801f4fa 2026-09-28T19:38:13+02:00
 
 13	4	web/static/megaron.css
-@@dc92729180b284bca469eca2fae55e029b939f26	2026-09-28T19:09:43+02:00	web: drawer body reserves its scrollbar gutter — city scene no longer jumps width between tabs in Chromium
+commit dc92729180b284bca469eca2fae55e029b939f26 2026-09-28T19:09:43+02:00
 
 4	1	web/static/megaron.css
-@@6bf629eb04706dd04f3ba9f617191d7cb73d5d82	2026-09-28T09:11:19+02:00	2a review: Recall aims its runner from the saved route too, same model as its position
+commit 6bf629eb04706dd04f3ba9f617191d7cb73d5d82 2026-09-28T09:11:19+02:00
 
 16	3	server/api/handlers/unit.go
-@@f49843fdb1309c7ea0f00e6e7950f02b27392e53	2026-09-28T09:02:35+02:00	movement 2a acceptance 3: path is never re-searched after dispatch
+commit f49843fdb1309c7ea0f00e6e7950f02b27392e53 2026-09-28T09:02:35+02:00
 
 148	0	server/api/handlers/unit_route_no_research_test.go
-@@6a090a439f481046d789d20a0b287b167ee1a7a6	2026-09-28T09:01:13+02:00	movement 2a R8: keryx unit list shows the saved-route position
+commit 6a090a439f481046d789d20a0b287b167ee1a7a6 2026-09-28T09:01:13+02:00
 
 11	0	server/cmd/keryx/cmd_unit.go
 47	0	server/cmd/keryx/cmd_unit_current_pos_test.go
-@@45fd9a6560e01556043dd542a850c2322f52d1e0	2026-09-28T08:57:54+02:00	movement 2a acceptance 2: four surfaces, one answer
+commit 45fd9a6560e01556043dd542a850c2322f52d1e0 2026-09-28T08:57:54+02:00
 
 283	0	server/api/handlers/unit_recall_route_test.go
 113	0	server/internal/combat/march_route_test.go
 128	0	server/internal/messenger/march_recall_route_test.go
-@@7c93e9c3c37da49d2b96eb483aa8460ec1921398	2026-09-28T08:48:04+02:00	movement 2a R6.c/d/e + R7: API reads go through the core when a route applies
+commit 7c93e9c3c37da49d2b96eb483aa8460ec1921398 2026-09-28T08:48:04+02:00
 
 138	30	server/api/handlers/unit.go
-@@0628191a520336b73308bdcec3a7d380fa82c504	2026-09-28T08:47:51+02:00	movement 2a R6.d (core): InterceptAlongPathRoute + InterceptCourierTargetRoute
+commit 0628191a520336b73308bdcec3a7d380fa82c504 2026-09-28T08:47:51+02:00
 
 70	5	server/internal/messenger/recall.go
-@@5e8e568f7fcaba2961d48f46d5e4b77a1a4bd220	2026-09-28T08:41:08+02:00	movement 2a R5+R6.b (write site 5/5): MarchRecallHandler reads/saves via the core
+commit 5e8e568f7fcaba2961d48f46d5e4b77a1a4bd220 2026-09-28T08:41:08+02:00
 
 40	9	server/internal/messenger/march_recall.go
 220	0	server/internal/messenger/march_recall_route_test.go
-@@a9dea7bd221f6e99b873744cb3e11f614477c9aa	2026-09-28T08:39:31+02:00	movement 2a R5+R6.a (write site 4/5): ExecuteRecall reads and saves via the core
+commit a9dea7bd221f6e99b873744cb3e11f614477c9aa 2026-09-28T08:39:31+02:00
 
 70	0	server/internal/combat/march_route_test.go
 41	9	server/internal/combat/recall_redirect.go
-@@9e655ecb3d7323e1250ed6ca2c1b9626189d6a0c	2026-09-28T08:35:43+02:00	movement 2a R5 (write site 3/5): marchShipToNearestOwnPort saves march_route
+commit 9e655ecb3d7323e1250ed6ca2c1b9626189d6a0c 2026-09-28T08:35:43+02:00
 
 98	0	server/internal/combat/march_route_test.go
 18	2	server/internal/combat/ship_hull.go
-@@5753231062a72878d6069440df3e09555cca6185	2026-09-28T08:34:18+02:00	movement 2a R5 (write site 2/5): dispatchReturnHome saves march_route
+commit 5753231062a72878d6069440df3e09555cca6185 2026-09-28T08:34:18+02:00
 
 77	0	server/internal/combat/march_route_test.go
 18	2	server/internal/combat/unit_arrival.go
-@@9bac43d0e0ecd3b277b9b793971eed8dade078ed	2026-09-28T08:32:02+02:00	movement 2a R5 (write site 1/5): StartMarch saves march_route
+commit 9bac43d0e0ecd3b277b9b793971eed8dade078ed 2026-09-28T08:32:02+02:00
 
 209	0	server/internal/combat/march_route_test.go
 26	3	server/internal/combat/march_start.go
 9	2	server/internal/unit/model.go
-@@0ebd747559ff286b49f0e75b9c83904618c0c6d2	2026-09-28T08:22:59+02:00	movement 2a R4: combat/route.go — StoredRoute over internal/movement
+commit 0ebd747559ff286b49f0e75b9c83904618c0c6d2 2026-09-28T08:22:59+02:00
 
 124	0	server/internal/combat/route.go
 184	0	server/internal/combat/route_test.go
-@@4a267894cb7f7b37c16f59383fc7edf93196fc32	2026-09-28T08:19:21+02:00	movement 2a R1: migration 153 — units.march_route
+commit 4a267894cb7f7b37c16f59383fc7edf93196fc32 2026-09-28T08:19:21+02:00
 
 1	0	server/db/migrations/153_march_route.down.sql
 17	0	server/db/migrations/153_march_route.up.sql
-@@714d0dbfa14dc64388f0005a8821994d544f916a	2026-09-28T08:18:55+02:00	movement 2a R3: tick.Anchor — convert between world tick and wall clock
+commit 714d0dbfa14dc64388f0005a8821994d544f916a 2026-09-28T08:18:55+02:00
 
 69	0	server/internal/tick/anchor.go
 62	0	server/internal/tick/anchor_test.go
-@@71af00e7f2cf7733cb8c954fe793074a87e3e483	2026-09-28T08:17:39+02:00	movement 2a R2: province.StepHours/StepHoursDB — price an already-found path
+commit 71af00e7f2cf7733cb8c954fe793074a87e3e483 2026-09-28T08:17:39+02:00
 
 30	0	server/internal/province/pathfind.go
 70	0	server/internal/province/pathfind_test.go
-@@526c5a202d961da5bb01187b4ab140a2dc5af4f2	2026-09-28T00:21:43+02:00	2b review: create the pickup runner only after the ship's march is accepted
+commit 097593cc988ccd5ef1e74e7f0a4a5f2e1fa9169a 2026-09-28T00:21:43+02:00
+commit 526c5a202d961da5bb01187b4ab140a2dc5af4f2 2026-09-28T00:21:43+02:00
 
 19	14	server/api/handlers/unit.go
-@@b5e1ff193f4f75420deee3d05843c09e2f15bb33	2026-09-28T00:16:16+02:00	2b web + codex: Fetch by ship, pickup/pickup_wait location text, new notif kinds
+commit b5e1ff193f4f75420deee3d05843c09e2f15bb33 2026-09-28T00:16:16+02:00
 
 1	1	web/static/codex/index.json
 11	0	web/static/codex/sea.md
 3	1	web/static/js/megaron/main.js
 71	2	web/static/js/megaron/ui/drawers/war.js
 11	0	web/static/js/megaron/ui/format.js
-@@48ffa1414b2c787c632527de6cd1e5c232d30a44	2026-09-28T00:09:07+02:00	2b R3-R8 + keryx: pickup lifecycle acceptance, R7 sweep, temenos/keryx surfaces
+commit 48ffa1414b2c787c632527de6cd1e5c232d30a44 2026-09-28T00:09:07+02:00
 
 6	0	server/api/handlers/messenger_trade_naval_test.go
 171	0	server/api/handlers/unit.go
@@ -1050,78 +1193,78 @@
 15	0	server/internal/combat/ship_hull.go
 9	1	server/internal/combat/ship_sea_sweep.go
 19	5	server/internal/combat/unit_arrival.go
-@@422451a3ccdae2de41eecb13459229270b65863a	2026-09-27T23:46:04+02:00	2b R1/R2: pickup HTTP handler — POST .../units/{unitID}/pickup
+commit 422451a3ccdae2de41eecb13459229270b65863a 2026-09-27T23:46:04+02:00
 
 32	0	server/api/handlers/messenger_passage.go
 316	16	server/api/handlers/unit.go
 3	0	server/cmd/server/main.go
 10	0	server/internal/combat/unit_arrival.go
-@@81c96717ccd560c9cc816a178f0d941a740ad8f9	2026-09-27T23:36:39+02:00	WIP 2b: pickup mission R1-R6 server-side (march_start, unit_arrival, event wiring)
+commit 81c96717ccd560c9cc816a178f0d941a740ad8f9 2026-09-27T23:36:39+02:00
 
 3	0	server/cmd/server/main.go
 86	5	server/internal/combat/march_start.go
 407	2	server/internal/combat/unit_arrival.go
 3	0	server/internal/events/priority.go
 8	0	server/internal/events/scheduler.go
-@@e4c6be4a293b1848135c24dc533d98a7a497f538	2026-09-27T23:35:58+02:00	movement: strengthen FuzzBoundaries with an independent rounding reference
+commit e4c6be4a293b1848135c24dc533d98a7a497f538 2026-09-27T23:35:58+02:00
 
 28	1	server/internal/movement/fuzz_test.go
-@@e76e6e9615f1331155e9044a1e811f446f8ed43f	2026-09-27T23:32:02+02:00	movement: apply val A interval-ownership fix + T1-T8, fuzz
+commit e76e6e9615f1331155e9044a1e811f446f8ed43f 2026-09-27T23:32:02+02:00
 
 168	0	server/internal/movement/fuzz_test.go
 37	24	server/internal/movement/movement.go
 352	0	server/internal/movement/movement_test.go
-@@4b4fdae92169a3759c6458e221e5192069481e0f	2026-09-27T21:03:27+02:00	mig 152: pickup mission columns on units
+commit 4b4fdae92169a3759c6458e221e5192069481e0f 2026-09-27T21:03:27+02:00
 
 3	0	server/db/migrations/152_pickup_mission.down.sql
 18	0	server/db/migrations/152_pickup_mission.up.sql
-@@7667adc73e0064afe761dd1ed54230d16f7b7f67	2026-09-27T21:03:18+02:00	3b-3 fix: board a passage ship's runners at dispatch, not only in the next scan
+commit 7667adc73e0064afe761dd1ed54230d16f7b7f67 2026-09-27T21:03:18+02:00
 
 12	0	server/api/handlers/messenger_passage.go
 74	0	server/api/handlers/messenger_passage_arrange_test.go
 91	41	server/internal/messenger/passage.go
-@@50228e7c95fa83da4cd25108e72f14f2114a91f5	2026-09-27T20:58:05+02:00	movement: R1-R3 core types + Boundaries/PositionAt/Presence/FirstContact
+commit 50228e7c95fa83da4cd25108e72f14f2114a91f5 2026-09-27T20:58:05+02:00
 
 243	0	server/internal/movement/movement.go
-@@bf327e4be4a9c1ad450ab535705c69f8e7ef8fda	2026-09-27T18:56:19+02:00	3c-5 codex: what the map shows while a runner crosses the sea
+commit bf327e4be4a9c1ad450ab535705c69f8e7ef8fda 2026-09-27T18:56:19+02:00
 
 9	0	web/static/codex/sea.md
-@@ad88fadca465be20adf863a84418577ea226c1f4	2026-09-27T18:55:37+02:00	3c-4 hover: name the leg an own runner is actually on
+commit ad88fadca465be20adf863a84418577ea226c1f4 2026-09-27T18:55:37+02:00
 
 15	1	web/static/js/megaron/ui/hover.js
-@@78ffa7e5cae7624b89290f5e041265763dafcdb5	2026-09-27T18:55:32+02:00	3c-3 client: draw own passage-lifted runners on their real physical leg
+commit 78ffa7e5cae7624b89290f5e041265763dafcdb5 2026-09-27T18:55:32+02:00
 
 206	15	web/static/js/megaron/render/map.js
 73	1	web/static/js/megaron/render/map.test.mjs
-@@bcdc9a23ecbb076e2ee780cf771c6844f9e83fa2	2026-09-27T18:50:42+02:00	3c-2 MapMessengers: which physical leg an own runner is actually on
+commit bcdc9a23ecbb076e2ee780cf771c6844f9e83fa2 2026-09-27T18:50:42+02:00
 
 337	0	server/api/handlers/messenger_passage_leg_test.go
 115	2	server/api/handlers/world.go
-@@cb8acfb6e77f34478504963336b81cca58f828cb	2026-09-27T18:47:47+02:00	3c-1 mig 151: boardOne records where/when a messenger disembarks
+commit cb8acfb6e77f34478504963336b81cca58f828cb 2026-09-27T18:47:47+02:00
 
 5	0	server/db/migrations/151_messenger_disembark.down.sql
 23	0	server/db/migrations/151_messenger_disembark.up.sql
 182	0	server/internal/messenger/disembark_test.go
 20	2	server/internal/messenger/passage.go
-@@47d148a31ef3fee7fb6d40671d08d8b43202a5e2	2026-09-27T15:09:56+02:00	3b-4 fix (planner review): called-back bud no longer leaks sight from the far shore
+commit 47d148a31ef3fee7fb6d40671d08d8b43202a5e2 2026-09-27T15:09:56+02:00
 
 85	0	server/api/handlers/messenger_callback_eye_test.go
 12	2	server/api/handlers/world.go
 14	1	server/internal/messenger/call_back.go
 15	3	server/internal/province/eyes.go
-@@9e677e37ab3489e0eb20968fc70bbe21cf8539de	2026-09-27T15:00:42+02:00	3b-4 fix (planner review): red test first — called-back bud leaks sight from the far shore
+commit 9e677e37ab3489e0eb20968fc70bbe21cf8539de 2026-09-27T15:00:42+02:00
 
 99	0	server/api/handlers/messenger_callback_eye_test.go
 1	0	server/api/handlers/messenger_trade_naval_test.go
-@@f646a5ee7742076ad7529ce9bbaea6424d4c4da3	2026-09-27T14:55:33+02:00	3b-4 granskningsfix: bordning nollställer stall-markeringen — returbenets väntan får egen dispatch
+commit f646a5ee7742076ad7529ce9bbaea6424d4c4da3 2026-09-27T14:55:33+02:00
 
 4	1	server/internal/messenger/passage.go
 71	0	server/internal/messenger/passage_test.go
-@@6c30260c021f854c01367847d374aadeb1834c0f	2026-09-27T14:51:33+02:00	3b-4 cleanup: two stale comments still described the removed reserve
+commit 6c30260c021f854c01367847d374aadeb1834c0f 2026-09-27T14:51:33+02:00
 
 3	3	server/internal/messenger/passage.go
 3	2	web/static/js/megaron/ui/format.js
-@@1830dab25d6fda865d780e0c40f2df68c48e0dc2	2026-09-27T14:47:44+02:00	3b-4: keryx, web and Codex surfaces + R6 note
+commit 1830dab25d6fda865d780e0c40f2df68c48e0dc2 2026-09-27T14:47:44+02:00
 
 50	0	server/cmd/keryx/cmd_messenger.go
 75	0	server/cmd/keryx/cmd_notifications.go
@@ -1135,7 +1278,7 @@
 9	0	web/static/js/megaron/ui/dispatch_window.test.mjs
 31	1	web/static/js/megaron/ui/drawers/diplomacy.js
 18	1	web/static/js/megaron/ui/format.js
-@@b18cbc8b476eb1d474e29eaae9ae3df32925ee4d	2026-09-27T14:36:06+02:00	3b-4 R5: call-back verb (temenos surface)
+commit b18cbc8b476eb1d474e29eaae9ae3df32925ee4d 2026-09-27T14:36:06+02:00
 
 9	0	server/api/handlers/messenger.go
 50	0	server/api/handlers/messenger_passage.go
@@ -1143,7 +1286,7 @@
 138	0	server/internal/messenger/call_back.go
 204	0	server/internal/messenger/call_back_test.go
 16	5	server/internal/messenger/handler.go
-@@1fcf2cf7dda5030b5db0a6b951c218404514f183	2026-09-27T14:30:33+02:00	3b-4 R3/R4: land-only courier, no raklinjefallback, intercept over land only
+commit 1fcf2cf7dda5030b5db0a6b951c218404514f183 2026-09-27T14:30:33+02:00
 
 16	2	server/api/handlers/province.go
 113	0	server/api/handlers/unit_recall_interception_test.go
@@ -1153,7 +1296,7 @@
 35	21	server/internal/messenger/recall.go
 33	8	server/internal/province/courier_pathfind_test.go
 33	11	server/internal/province/pathfind.go
-@@3017f6d279db341dc2ab02420ffb39c74d3d4a4f	2026-09-27T14:14:21+02:00	3b-4 R2: no port, no crossing
+commit 3017f6d279db341dc2ab02420ffb39c74d3d4a4f 2026-09-27T14:14:21+02:00
 
 9	0	server/api/handlers/messenger.go
 7	0	server/api/handlers/messenger_origin_eye_test.go
@@ -1164,45 +1307,45 @@
 15	0	server/api/handlers/unit_standing_orders_courier_test.go
 16	7	server/internal/messenger/passage.go
 83	5	server/internal/messenger/passage_test.go
-@@119254b50d5777a6c9fab16b1e1e0551caba3ef8	2026-09-27T13:56:52+02:00	3b-4 R1: the reserve goes away
+commit 119254b50d5777a6c9fab16b1e1e0551caba3ef8 2026-09-27T13:56:52+02:00
 
 3	0	server/db/migrations/150_passage_stalled_callback.down.sql
 24	0	server/db/migrations/150_passage_stalled_callback.up.sql
 8	6	server/internal/events/scheduler.go
 160	46	server/internal/messenger/passage.go
 36	18	server/internal/messenger/passage_test.go
-@@d8025b05b9b944708b1ac70f1d5fb86bb849b0c9	2026-09-27T09:53:32+02:00	3b-3 fix (planner review): disembark search leaked cities, stranded no-city orders
+commit d8025b05b9b944708b1ac70f1d5fb86bb849b0c9 2026-09-27T09:53:32+02:00
 
 114	60	server/api/handlers/messenger_passage.go
 94	6	server/api/handlers/messenger_passage_arrange_test.go
-@@9a8ae46de599160fb51cc6ddda1362d0d0424f3d	2026-09-27T09:29:43+02:00	3b-3 web + Codex surface: Arrange passage button, sea chapter update
+commit 9a8ae46de599160fb51cc6ddda1362d0d0424f3d 2026-09-27T09:29:43+02:00
 
 10	1	web/static/codex/sea.md
 2	0	web/static/js/megaron/main.js
 41	1	web/static/js/megaron/ui/drawers/diplomacy.js
-@@ccd235c520b5e35dc143f7a3f0f10dc5fd39e3f1	2026-09-27T09:25:28+02:00	3b-3 keryx surface: passage command, outbox hint, unit display
+commit ccd235c520b5e35dc143f7a3f0f10dc5fd39e3f1 2026-09-27T09:25:28+02:00
 
 74	0	server/cmd/keryx/cmd_messenger.go
 29	0	server/cmd/keryx/cmd_unit.go
 1	0	server/cmd/keryx/main.go
-@@380b045cc620b83f17a2149fb1aabc2073181124	2026-09-27T09:23:18+02:00	3b-3 temenos surface: unit JSON gains passage_for/waiting_for_return
+commit 380b045cc620b83f17a2149fb1aabc2073181124 2026-09-27T09:23:18+02:00
 
 63	0	server/api/handlers/unit.go
 104	0	server/api/handlers/unit_passage_note_test.go
-@@cafd3d5aa6b1a3549aba60392eebc7a3a0fe1dd3	2026-09-27T09:18:50+02:00	3b-3 acceptance tests: end-to-end passage flow through the real handlers
+commit cafd3d5aa6b1a3549aba60392eebc7a3a0fe1dd3 2026-09-27T09:18:50+02:00
 
 691	0	server/api/handlers/messenger_passage_arrange_test.go
-@@36f52f78eb76d1b7f441279b8099da6744fb5328	2026-09-27T09:10:14+02:00	3b-3 tests: passage intent dispatch/arrival, release, sweep exemption
+commit 36f52f78eb76d1b7f441279b8099da6744fb5328 2026-09-27T09:10:14+02:00
 
 8	0	server/api/handlers/messenger_trade_naval_test.go
 396	0	server/internal/combat/march_start_passage_test.go
 62	0	server/internal/combat/ship_sea_sweep_test.go
-@@a76bff474f78487c5fd25d42cce4a5f673f8ec94	2026-09-27T08:58:12+02:00	3b-3 R1: POST .../messengers/{id}/passage — the "Arrange passage" verb
+commit a76bff474f78487c5fd25d42cce4a5f673f8ec94 2026-09-27T08:58:12+02:00
 
 15	2	server/api/handlers/messenger.go
 369	0	server/api/handlers/messenger_passage.go
 2	0	server/cmd/server/main.go
-@@180df642d3ab587abbc9a57df1c542cd6b913114	2026-09-27T08:53:32+02:00	3b-3 R2-R5: passage march intent, wait/release, sweep exemption
+commit 180df642d3ab587abbc9a57df1c542cd6b913114 2026-09-27T08:53:32+02:00
 
 9	2	server/cmd/server/main.go
 83	8	server/internal/combat/march_start.go
@@ -1210,20 +1353,21 @@
 144	2	server/internal/combat/unit_arrival.go
 141	11	server/internal/messenger/passage.go
 5	1	server/internal/messenger/passage_test.go
-@@23fb674d3ea1ee807931cb9a924ea8817b440b29	2026-09-27T08:48:00+02:00	3b-3 migration: units.passage_messenger_id
+commit 23fb674d3ea1ee807931cb9a924ea8817b440b29 2026-09-27T08:48:00+02:00
 
 1	0	server/db/migrations/149_passage_arranged.down.sql
 13	0	server/db/migrations/149_passage_arranged.up.sql
-@@e4fca8411564f4b5f77f5dfc2ee9180eb20014c2	2026-09-27T08:26:04+02:00	Bifynd: LoadLiveEyes utgående fråga läser verklig origin, inte hex_q/hex_r
+commit 6b1698dcd90206c50042e4e611a1c3d7ac8adda9 2026-09-27T08:31:14+02:00
+commit e4fca8411564f4b5f77f5dfc2ee9180eb20014c2 2026-09-27T08:26:04+02:00
 
 15	1	server/internal/province/eyes.go
-@@e3669e4fc1fab5b50843f67f8ade5a6fc950c93a	2026-09-27T08:25:20+02:00	3b-2 Codex: budet går hem själv när vistelsen är slut
+commit e3669e4fc1fab5b50843f67f8ade5a6fc950c93a 2026-09-27T08:25:20+02:00
 
 2	0	web/static/codex/messengers.md
-@@7dd8ace7cd0850f48ba43201b06a1e994e7fba0d	2026-09-27T08:25:06+02:00	Bifynd från 3b-1: rött test — budets öga läser hex_q/hex_r som origin
+commit 7dd8ace7cd0850f48ba43201b06a1e994e7fba0d 2026-09-27T08:25:06+02:00
 
 260	0	server/api/handlers/messenger_origin_eye_test.go
-@@36bc9e2232eb4968d5055011616ae14af8fb79aa	2026-09-27T08:23:38+02:00	3b-2 R1+R2: auto-returen blir en verklig hemresa
+commit 36bc9e2232eb4968d5055011616ae14af8fb79aa 2026-09-27T08:23:38+02:00
 
 12	63	server/api/handlers/messenger.go
 253	0	server/api/handlers/messenger_reply_test.go
@@ -1236,20 +1380,20 @@
 137	0	server/internal/messenger/return_leg.go
 58	0	server/internal/messenger/stay_end.go
 290	45	server/internal/messenger/stay_end_test.go
-@@30648bd1b93ae519bc44f6acb6b25d8cd6a0e58b	2026-09-27T08:17:39+02:00	3b-2 rött test: auto-returen teleporterar hem ett obesvarat bud
+commit 30648bd1b93ae519bc44f6acb6b25d8cd6a0e58b 2026-09-27T08:17:39+02:00
 
 82	0	server/internal/messenger/stay_end_test.go
-@@79391880c55c31ba89ef4b2a3712b10e096db07d	2026-09-27T08:15:49+02:00	3b-1 R3: MapMessengers döljer aboard/returning_sealed bud för andra
+commit 79391880c55c31ba89ef4b2a3712b10e096db07d 2026-09-27T08:15:49+02:00
 
 102	0	server/api/handlers/messenger_passage_map_test.go
 9	0	server/api/handlers/world.go
-@@4ca26fc669f45c09313819c81b2f2f1d70cdd4eb	2026-09-27T08:13:41+02:00	3b-1 R2: budets öga följer passage_status, inte flat interpolation
+commit 4ca26fc669f45c09313819c81b2f2f1d70cdd4eb 2026-09-27T08:13:41+02:00
 
 55	4	server/internal/province/eyes.go
-@@83eeb1a0544da644e915c43ed36334276ad22c7b	2026-09-27T08:12:34+02:00	3b-1 R1: red test — awaiting_passage eye leaks the far shore
+commit 83eeb1a0544da644e915c43ed36334276ad22c7b 2026-09-27T08:12:34+02:00
 
 105	0	server/api/handlers/messenger_passage_eye_test.go
-@@ff65f8535bd63729880d8e2727dbfdfa47b16723	2026-09-27T03:38:09+02:00	budet liftar R4: fixa död kod — 'aboard' måste stå kvar hela resan
+commit ff65f8535bd63729880d8e2727dbfdfa47b16723 2026-09-27T03:38:09+02:00
 
 2	0	server/db/migrations/148_messenger_passage.down.sql
 14	1	server/db/migrations/148_messenger_passage.up.sql
@@ -1257,7 +1401,7 @@
 21	2	server/internal/messenger/order_delivery.go
 105	50	server/internal/messenger/passage.go
 191	33	server/internal/messenger/passage_test.go
-@@4f3f8f32a3c00970b382745ec28e4494e9d8b92a	2026-09-26T23:39:05+02:00	budet liftar: webb + Codex — passage-status i utskicksytorna, ny sjökapitel
+commit 4f3f8f32a3c00970b382745ec28e4494e9d8b92a 2026-09-26T23:39:05+02:00
 
 4	0	web/static/codex/messengers.md
 4	0	web/static/codex/runners.md
@@ -1267,7 +1411,7 @@
 3	3	web/static/js/megaron/ui/drawers/war.js
 15	0	web/static/js/megaron/ui/format.js
 3	2	web/static/js/megaron/ui/marchctx.js
-@@01ed56c6caa8ce8d0d57af542e4abb9db400f147	2026-09-26T23:33:48+02:00	budet liftar: keryx — passage-status i message/reply/order-dispatch och outbox
+commit 01ed56c6caa8ce8d0d57af542e4abb9db400f147 2026-09-26T23:33:48+02:00
 
 28	12	server/api/handlers/messenger.go
 13	0	server/cmd/keryx/cmd_messenger.go
@@ -1275,25 +1419,25 @@
 10	10	server/cmd/keryx/cmd_recruit.go
 3	0	server/cmd/keryx/cmd_unit.go
 17	0	server/cmd/keryx/output.go
-@@9411c271ebadff4d1e0fb037c71943fee51b90c3	2026-09-26T23:29:57+02:00	budet liftar: karta — bud som väntar på passage ritas stillastående i hamnen
+commit 9411c271ebadff4d1e0fb037c71943fee51b90c3 2026-09-26T23:29:57+02:00
 
 25	2	server/api/handlers/world.go
-@@054ecf56d0f9da7b5791cdee6dbca0f94a6b1e25	2026-09-26T23:27:23+02:00	budet liftar: fler tester — skeppsuppdrag som bärare, returben från främmande stad
+commit 054ecf56d0f9da7b5791cdee6dbca0f94a6b1e25 2026-09-26T23:27:23+02:00
 
 113	2	server/internal/messenger/passage_test.go
-@@293bd311597a74967eda4775001b59d59ae9e28c	2026-09-26T23:24:50+02:00	budet liftar R2/R3/R4/R5: tester + fix av omkastad hamn/mål-bugg
+commit 293bd311597a74967eda4775001b59d59ae9e28c 2026-09-26T23:24:50+02:00
 
 123	0	server/api/handlers/messenger_passage_test.go
 6	3	server/internal/messenger/passage.go
 331	0	server/internal/messenger/passage_test.go
-@@02528ed41367ffc62e26fb6feca89efe831d8d43	2026-09-26T23:16:30+02:00	budet liftar R1/R6: koppla in ruttvalet i alla fyra avsändare
+commit 02528ed41367ffc62e26fb6feca89efe831d8d43 2026-09-26T23:16:30+02:00
 
 120	46	server/api/handlers/messenger.go
 32	9	server/api/handlers/unit.go
 3	0	server/cmd/server/main.go
 12	2	server/internal/messenger/handler.go
 40	2	server/internal/messenger/passage.go
-@@643163e37680c9f60a262aa574a132f3018385e5	2026-09-26T23:11:09+02:00	budet liftar: substrat — migration, land-only kurirkategori, passage-mekanik
+commit 643163e37680c9f60a262aa574a132f3018385e5 2026-09-26T23:11:09+02:00
 
 11	0	server/db/migrations/148_messenger_passage.down.sql
 30	0	server/db/migrations/148_messenger_passage.up.sql
@@ -1301,21 +1445,22 @@
 10	0	server/internal/events/scheduler.go
 756	0	server/internal/messenger/passage.go
 63	5	server/internal/province/pathfind.go
-@@da73a334e24747b3e3713de1f99026688f6f5854	2026-09-26T22:42:27+02:00	skeppsuppdrag: Codex — landsätt-uppdrag, skepp till havs tar inga order
+commit 96c6c199a47fa815e322d75065d15b700322d5ab 2026-09-26T22:46:15+02:00
+commit da73a334e24747b3e3713de1f99026688f6f5854 2026-09-26T22:42:27+02:00
 
 1	1	web/static/codex/index.json
 2	2	web/static/codex/sea.md
-@@6a5f219eae434704897504b591cb0c20e81ea238	2026-09-26T22:42:20+02:00	skeppsuppdrag: webb — landsätt-panel, marschmenyn känner till R3
+commit 6a5f219eae434704897504b591cb0c20e81ea238 2026-09-26T22:42:20+02:00
 
 2	1	web/static/js/megaron/main.js
 76	10	web/static/js/megaron/ui/drawers/war.js
 12	1	web/static/js/megaron/ui/format.js
 6	1	web/static/js/megaron/ui/marchctx.js
 4	0	web/static/js/megaron/ui/marchctx.test.mjs
-@@a28a217ddcf7c6a5da0105032bc0b3bfada3f2ea	2026-09-26T22:37:35+02:00	skeppsuppdrag: keryx — unit march --intent land, --colonize
+commit a28a217ddcf7c6a5da0105032bc0b3bfada3f2ea 2026-09-26T22:37:35+02:00
 
 35	2	server/cmd/keryx/cmd_unit.go
-@@e9d737452777a80ceb9802509e5e001d362f13b2	2026-09-26T22:35:48+02:00	skeppsuppdrag: R6 — engångssvep skickar hem skepp som blev stående till havs
+commit e9d737452777a80ceb9802509e5e001d362f13b2 2026-09-26T22:35:48+02:00
 
 9	0	server/cmd/server/main.go
 1	1	server/internal/combat/march_start.go
@@ -1323,7 +1468,7 @@
 251	0	server/internal/combat/ship_sea_sweep_test.go
 30	1	server/internal/combat/unit_arrival.go
 20	0	server/internal/unit/events.go
-@@3498cd5abaabb4906f1d91557b1a52e83ba28cfb	2026-09-26T22:27:36+02:00	skeppsuppdrag: R1+R5 — mission "land", assault får hemresa
+commit 3498cd5abaabb4906f1d91557b1a52e83ba28cfb 2026-09-26T22:27:36+02:00
 
 17	11	server/api/handlers/unit.go
 3	0	server/db/migrations/147_ship_land_mission.down.sql
@@ -1334,21 +1479,21 @@
 255	0	server/internal/combat/march_start_land_test.go
 180	17	server/internal/combat/unit_arrival.go
 23	13	server/internal/combat/unit_arrival_assault_test.go
-@@43981f10e3e14f1e1b1f6ae682ec29c9c8cc5cbd	2026-09-26T22:17:40+02:00	sjöhandel mellan spelare: Codex — trade.md beskriver sjövägen och initiativtagarens skepp
+commit 43981f10e3e14f1e1b1f6ae682ec29c9c8cc5cbd 2026-09-26T22:17:40+02:00
 
 8	0	web/static/codex/trade.md
-@@b07f5eac5ada29df756ffa173b33669a75fc363a	2026-09-26T22:16:03+02:00	sjöhandel mellan spelare: webb — diplomacy-fliken visar skeppet på en accepterad sjöhandel
+commit b07f5eac5ada29df756ffa173b33669a75fc363a 2026-09-26T22:16:03+02:00
 
 10	2	web/static/js/megaron/ui/drawers/diplomacy.js
-@@c87ea7e394ee1321a83ae5b607d8c212d792b093	2026-09-26T22:14:41+02:00	sjöhandel mellan spelare: keryx — trade-accept, outbox och deliveryETALine visar skeppet
+commit c87ea7e394ee1321a83ae5b607d8c212d792b093 2026-09-26T22:14:41+02:00
 
 9	4	server/api/handlers/messenger.go
 11	0	server/cmd/keryx/cmd_messenger.go
 26	0	server/cmd/keryx/cmd_messenger_test.go
-@@ad0b91342c18e6f7f75d6467bda27cb6168ddf21	2026-09-26T22:11:19+02:00	sjöhandel mellan spelare: handler-tester för R1-R3 (Send/TradeAccept e2e)
+commit ad0b91342c18e6f7f75d6467bda27cb6168ddf21 2026-09-26T22:11:19+02:00
 
 450	0	server/api/handlers/messenger_trade_naval_test.go
-@@6ade1906d7f1600228c0770cb02077fbc4fbf1d7	2026-09-26T22:09:30+02:00	skeppsuppdrag: R2+R3+R4 — order når inte skepp till havs, hamnkrav på vanlig marsch
+commit 6ade1906d7f1600228c0770cb02077fbc4fbf1d7 2026-09-26T22:09:30+02:00
 
 87	74	server/api/handlers/unit.go
 176	0	server/api/handlers/unit_ship_order_gate_test.go
@@ -1359,22 +1504,22 @@
 112	0	server/internal/combat/ship_port_call.go
 15	0	server/internal/combat/unit_arrival.go
 16	0	server/internal/messenger/order_delivery.go
-@@66f32c6b42b8f027d0cb477af7f1a496fa6ca311	2026-09-26T22:06:53+02:00	sjöhandel mellan spelare: tester för R4 (ben 2 samma skepp) och R5 (ben 2-kapning)
+commit 66f32c6b42b8f027d0cb477af7f1a496fa6ca311 2026-09-26T22:06:53+02:00
 
 360	0	server/internal/economy/trade_naval_player_test.go
 42	0	server/internal/transport/intercept_naval_test.go
-@@6e4660a1e233eef0cd9498198032e12322652cb2	2026-09-26T22:01:02+02:00	sjöhandel mellan spelare: R4-R5 — ben 2 bärs av samma skepp, kapning lämnar rätt hamn
+commit 6e4660a1e233eef0cd9498198032e12322652cb2 2026-09-26T22:01:02+02:00
 
 32	6	server/internal/economy/trade.go
 103	0	server/internal/economy/trade_return.go
 18	1	server/internal/transport/intercept.go
-@@ce3a2b03b0f88b94998f74755b703f23e10fa911	2026-09-26T21:58:32+02:00	sjöhandel mellan spelare: R1-R3 — Send checkar rutt+skepp, Accept binder initiativtagarens skepp
+commit ce3a2b03b0f88b94998f74755b703f23e10fa911 2026-09-26T21:58:32+02:00
 
 106	10	server/api/handlers/messenger.go
-@@7b054ebeaed983d44926ea90bcfc2eb0b00f2fb1	2026-09-26T21:53:37+02:00	WIP: R1+R2 (untested, baseline pending)
+commit 7b054ebeaed983d44926ea90bcfc2eb0b00f2fb1 2026-09-26T21:53:37+02:00
 
 106	6	server/api/handlers/messenger.go
-@@c4612736c0672e1b566256a6900bf527b8f3d670	2026-09-26T18:01:36+02:00	sjöhandel: Codex — sjöhandel kräver skepp, tre kapningsutfall, tre notiser
+commit c4612736c0672e1b566256a6900bf527b8f3d670 2026-09-26T18:01:36+02:00
 
 1	1	web/static/codex/index.json
 6	0	web/static/codex/routes.md
@@ -1382,17 +1527,17 @@
 13	1	web/static/codex/transfers.md
 39	2	web/static/js/megaron/ui/format.js
 51	0	web/static/js/megaron/ui/format.test.mjs
-@@fba72a88c56733b88c1c1d6feed24171ed6d8cb1	2026-09-26T17:57:10+02:00	sjöhandel: webb — automationsfliken och enhetskortet visar skeppet
+commit fba72a88c56733b88c1c1d6feed24171ed6d8cb1 2026-09-26T17:57:10+02:00
 
 10	2	web/static/js/megaron/ui/drawers/economy.js
 13	0	web/static/js/megaron/ui/drawers/economy.test.mjs
 12	2	web/static/js/megaron/ui/drawers/war.js
-@@fe05712b2830905aef5acb217d1627f30267f314	2026-09-26T17:53:47+02:00	sjöhandel: keryx — transfer, routes och unit list visar skeppet
+commit fe05712b2830905aef5acb217d1627f30267f314 2026-09-26T17:53:47+02:00
 
 8	1	server/cmd/keryx/cmd_goods.go
 6	0	server/cmd/keryx/cmd_route.go
 13	0	server/cmd/keryx/cmd_unit.go
-@@5f4914aeedba32f17b4ad3adb2724c7f82d37c2a	2026-09-26T17:51:43+02:00	sjöhandel: API-svar bär skeppsnamn — Trade, standing orders, enhetslistan
+commit 5f4914aeedba32f17b4ad3adb2724c7f82d37c2a 2026-09-26T17:51:43+02:00
 
 14	2	server/api/handlers/province.go
 9	0	server/api/handlers/province_trade_naval_test.go
@@ -1400,11 +1545,11 @@
 42	0	server/api/handlers/standing_order_test.go
 68	0	server/api/handlers/unit.go
 92	0	server/api/handlers/unit_freighting_note_test.go
-@@0b5385515caaf5ed5588a17c8d207f21c9038450	2026-09-26T17:43:21+02:00	sjöhandel: R6 — förbefintlig naval-transport utan skepp fungerar oförändrat
+commit 0b5385515caaf5ed5588a17c8d207f21c9038450 2026-09-26T17:43:21+02:00
 
 122	0	server/internal/economy/trade_naval_preexisting_test.go
 51	0	server/internal/transport/intercept_naval_test.go
-@@b7424f5b5dabd32b527d206ff25b230beaf7dd42	2026-09-26T17:41:32+02:00	sjöhandel: R5 — kapad sjötransport slår ett utfall (captured/limped/sunk)
+commit b7424f5b5dabd32b527d206ff25b230beaf7dd42 2026-09-26T17:41:32+02:00
 
 2	0	server/cmd/server/main.go
 113	0	server/internal/combat/naval_seizure.go
@@ -1415,7 +1560,7 @@
 10	0	server/internal/events/scheduler.go
 227	42	server/internal/transport/intercept.go
 239	0	server/internal/transport/intercept_naval_test.go
-@@36181d08a0a61ce13a416d2ca936442868787f85	2026-09-26T17:27:00+02:00	sjöhandel: R4 — stående sjörutt låser ett skepp över hela sin livstid
+commit 36181d08a0a61ce13a416d2ca936442868787f85 2026-09-26T17:27:00+02:00
 
 45	1	server/api/handlers/standing_order.go
 138	0	server/api/handlers/standing_order_test.go
@@ -1423,39 +1568,40 @@
 215	2	server/internal/combat/standing_orders_naval_test.go
 15	7	server/internal/transport/arrival.go
 78	0	server/internal/transport/arrival_ship_release_test.go
-@@7f3135d3931ac1a23a7770c21940a75d804343ef	2026-09-26T17:13:04+02:00	sjöhandel: R3 — sjöhandel kräver skepp för engångsöverföringen
+commit 7f3135d3931ac1a23a7770c21940a75d804343ef 2026-09-26T17:13:04+02:00
 
 60	8	server/api/handlers/province.go
 290	0	server/api/handlers/province_trade_naval_test.go
 68	0	server/internal/economy/trade.go
-@@1dc733a5d212705c9574724b95cc693579b80545	2026-09-26T17:05:32+02:00	sjöhandel: R3-substrat — transports.ship_unit_id och skeppsfrigörelse vid ankomst
+commit 1dc733a5d212705c9574724b95cc693579b80545 2026-09-26T17:05:32+02:00
 
 64	3	server/internal/transport/arrival.go
 145	0	server/internal/transport/arrival_ship_release_test.go
 10	3	server/internal/transport/transport.go
-@@5f97b4fcd9c0a9a0e4c0104a15cc44935f4daf2c	2026-09-26T17:00:16+02:00	sjöhandel: R1+R2 — hitta/binda/frige skepp, freighting-status
+commit 5f97b4fcd9c0a9a0e4c0104a15cc44935f4daf2c 2026-09-26T17:00:16+02:00
 
 4	1	server/api/handlers/unit.go
 4	1	server/internal/combat/upkeep.go
 205	0	server/internal/transport/carrier.go
 198	0	server/internal/transport/carrier_test.go
 9	0	server/internal/unit/model.go
-@@6c4071386d994c826f7acbfdbc66e345f9b887e1	2026-09-26T16:52:08+02:00	sjöhandel: migration 146 — ship_unit_id på transports och standing_orders
+commit 6c4071386d994c826f7acbfdbc66e345f9b887e1 2026-09-26T16:52:08+02:00
 
 4	0	server/db/migrations/146_naval_ship_binding.down.sql
 17	0	server/db/migrations/146_naval_ship_binding.up.sql
-@@c02caeebf477378f3e63a2f0dc93aaecd4334bc4	2026-09-26T16:31:40+02:00	väderstreck: rykten och keryx räknar i den ritade kartans geometri
+commit c02caeebf477378f3e63a2f0dc93aaecd4334bc4 2026-09-26T16:31:40+02:00
 
 5	2	server/cmd/keryx/cmd_map.go
 1	1	server/internal/province/heading_test.go
 5	2	server/internal/province/hex.go
 7	6	server/internal/province/hex_test.go
-@@15653acec7648a61e679682ce457061066e0b7d3	2026-09-26T12:41:18+02:00	musik: havet in i rotationen — vardagsrepertoaren komplett
+commit fce28c055fefc3c9ddf3f8f17421fcf6de83cd0d 2026-09-26T16:31:17+02:00
+commit 15653acec7648a61e679682ce457061066e0b7d3 2026-09-26T12:41:18+02:00
 
 5	1	web/static/js/megaron/ui/misc.js
 -	-	web/static/music/minoan_havet_sf.ogg
 -	-	web/static/music/minoan_havet_synth.ogg
-@@6794b7af1bce2075f6f0ba9c519ad6af59edab33	2026-09-26T12:25:51+02:00	likriktning: webben — främmande gångare på serverns hex, Movements och glöd på 'toward', V2-notisen, Codex
+commit 6794b7af1bce2075f6f0ba9c519ad6af59edab33 2026-09-26T12:25:51+02:00
 
 3	1	web/static/codex/defence.md
 1	1	web/static/codex/index.json
@@ -1470,10 +1616,12 @@
 1	1	web/static/js/megaron/ui/sfx.js
 6	0	web/static/js/megaron/ui/sfx.test.mjs
 1	1	web/static/js/megaron/ws.js
-@@f2462a1eb3be46aebb0726aae50cb16006d51821	2026-09-26T12:24:58+02:00	musik: ett nytt stycke i rotationen tonar in på 4 s
+commit f2462a1eb3be46aebb0726aae50cb16006d51821 2026-09-26T12:24:58+02:00
 
 7	2	web/static/js/megaron/ui/misc.js
-@@49f79152a2c1a83cc191412072426000a92ca423	2026-09-26T12:21:54+02:00	likriktning: en främmande marsch visar riktning, aldrig mål — server + keryx
+commit b321579b251927b1a539372da5bc706e7323044e 2026-09-26T12:22:03+02:00
+commit 3ab66f2921e05d8a6bd5029d9afa8ede9ca6f844 2026-09-26T12:21:54+02:00
+commit 49f79152a2c1a83cc191412072426000a92ca423 2026-09-26T12:21:54+02:00
 
 87	29	server/api/handlers/foreign_units.go
 23	9	server/api/handlers/foreign_units_fow_test.go
@@ -1486,23 +1634,23 @@
 64	10	server/internal/combat/march_sighting_test.go
 117	0	server/internal/province/heading.go
 92	0	server/internal/province/heading_test.go
-@@89a22e51e817b15d9bac5be3a5265d96706ca7e8	2026-09-26T12:18:12+02:00	musik: vördnad in i rotationen, båda dräkterna — aldrig samma stycke två gånger i rad
+commit 89a22e51e817b15d9bac5be3a5265d96706ca7e8 2026-09-26T12:18:12+02:00
 
 9	4	web/static/js/megaron/ui/misc.js
 10	0	web/static/js/megaron/ui/misc.test.mjs
 -	-	web/static/music/minoan_templet_sf.ogg
 -	-	web/static/music/minoan_templet_synth.ogg
-@@ae74a52489843f41fd6a3e636e140a9560567c3e	2026-09-26T12:02:49+02:00	webb: främmande marsch i hovern visar riktning, aldrig mål
+commit ae74a52489843f41fd6a3e636e140a9560567c3e 2026-09-26T12:02:49+02:00
 
 21	2	web/static/js/megaron/render/map.js
 19	2	web/static/js/megaron/ui/hover.js
 19	1	web/static/js/megaron/ui/hover.test.mjs
-@@3177c1659d1b7f6723289fc49e162d7140e1f865	2026-09-26T12:02:29+02:00	webb: kartans tooltip namnger varje synlig enhet — vems, vad den heter, egen i rörelse: varifrån och vart
+commit 3177c1659d1b7f6723289fc49e162d7140e1f865 2026-09-26T11:38:47+02:00
 
 27	2	web/static/js/megaron/render/map.js
 60	0	web/static/js/megaron/ui/hover.js
 59	0	web/static/js/megaron/ui/hover.test.mjs
-@@3a4c9cbd8058846d436a3168c79d8f60245a3536	2026-09-26T11:39:42+02:00	karta: namn och ägare på allt man ser — foreign-units name, trades owner, messengers sender
+commit 3a4c9cbd8058846d436a3168c79d8f60245a3536 2026-09-26T11:36:32+02:00
 
 11	1	server/api/handlers/foreign_units.go
 5	0	server/api/handlers/foreign_units_fow_test.go
@@ -1510,31 +1658,31 @@
 57	0	server/api/handlers/marches_messengers_fow_test.go
 13	4	server/api/handlers/world.go
 4	0	server/cmd/keryx/cmd_sightings.go
-@@2ca1c22c5baa251c9a5c6903b3137df2a037d819	2026-09-26T11:39:42+02:00	trades: en främlings karavan syns bara där den är, inte längs hela vägen
+commit 2ca1c22c5baa251c9a5c6903b3137df2a037d819 2026-09-26T11:33:08+02:00
 
 58	24	server/api/handlers/map_trades_mine_test.go
 24	9	server/api/handlers/world.go
-@@473669150fe83faf01e6deba96dc0806eaed9832	2026-09-26T11:38:04+02:00	musik: kartans bädd blir en rotation — bygget i två klangdräkter, tystnad emellan
+commit 473669150fe83faf01e6deba96dc0806eaed9832 2026-09-26T11:38:03+02:00
 
 84	8	web/static/js/megaron/ui/misc.js
 23	1	web/static/js/megaron/ui/misc.test.mjs
 -	-	web/static/music/minoan_bygget_sf.ogg
 -	-	web/static/music/minoan_bygget_synth.ogg
-@@26ec3c87324cc61f6b90546065c05cc5685ec28c	2026-09-26T10:38:42+02:00	trades: karavanens last är hemlig för den som inte är part
+commit 26ec3c87324cc61f6b90546065c05cc5685ec28c 2026-09-26T10:38:42+02:00
 
 59	0	server/api/handlers/map_trades_mine_test.go
 7	1	server/api/handlers/world.go
 1	1	web/static/codex/transfers.md
-@@9883218f95817ccddabd86385233816e49e4a4fa	2026-09-26T08:57:41+02:00	render: anfallsglöden läser enhetslagret — lyser på egen provins en främmande marsch är på väg mot
+commit 9883218f95817ccddabd86385233816e49e4a4fa 2026-09-26T08:57:41+02:00
 
 10	5	web/static/js/megaron/render/map.js
 11	0	web/static/js/megaron/ui/movements.js
 25	1	web/static/js/megaron/ui/movements.test.mjs
-@@95bee2acc00be16f2f523495f94782cbe2863404	2026-09-26T08:54:47+02:00	notify: en notis utan mottagare släpps, sänds aldrig till hela världen
+commit 95bee2acc00be16f2f523495f94782cbe2863404 2026-09-26T08:54:47+02:00
 
 18	15	server/internal/notify/hub.go
 8	8	server/internal/notify/hub_test.go
-@@e5c8e1768248f814e21645e4ee96dbb45f3299c2	2026-09-26T08:53:19+02:00	karavan: beslagsnotiserna namnger lasten — temenos, keryx, webb, codex
+commit e5c8e1768248f814e21645e4ee96dbb45f3299c2 2026-09-26T08:53:19+02:00
 
 32	0	server/cmd/keryx/cmd_notifications.go
 25	0	server/cmd/keryx/cmd_notifications_caravan_test.go
@@ -1543,23 +1691,23 @@
 1	1	web/static/codex/transfers.md
 17	5	web/static/js/megaron/ui/format.js
 8	0	web/static/js/megaron/ui/format.test.mjs
-@@5857ed3d344d303195da7d4ab4f2abff1e088ec6	2026-09-26T06:47:14+02:00	webb: sista svenska resterna → engelska (Show →, in harbour, Runner carrying the order)
+commit 5857ed3d344d303195da7d4ab4f2abff1e088ec6 2026-09-26T06:47:14+02:00
 
 0	1	web/static/codex/rough-edges.md
 3	3	web/static/js/megaron/render/map.js
 3	3	web/static/js/megaron/ui/drawers/war.js
-@@f88bfc1502691fbf8d1f8a71cd4476b60874ff46	2026-09-26T06:47:14+02:00	webb: OrderFailed namnger ordern i klartext, aldrig serverns verbnyckel
+commit f88bfc1502691fbf8d1f8a71cd4476b60874ff46 2026-09-26T06:47:14+02:00
 
 18	3	web/static/js/megaron/ui/format.js
 9	0	web/static/js/megaron/ui/format.test.mjs
-@@cd5a3d6a34bff6d83bf4358144a02619ecef6d9a	2026-09-26T00:21:17+02:00	keryx: dispatches — visa/tysta vilka notissorter som pushas, sista paritetsluckan
+commit cd5a3d6a34bff6d83bf4358144a02619ecef6d9a 2026-09-26T00:21:17+02:00
 
 86	0	server/cmd/keryx/cmd_dispatches.go
 13	0	server/cmd/keryx/cmd_dispatches_test.go
 1	0	server/cmd/keryx/main.go
 1	1	web/static/codex/coming-back.md
 1	0	web/static/codex/keryx.md
-@@b90bb554b518c37cba0309a93288e4618b7c1107	2026-09-26T00:20:00+02:00	tillväxten: kostar ingen mat, grindas på matnettot, alltid maxprocenten
+commit b90bb554b518c37cba0309a93288e4618b7c1107 2026-09-26T00:20:00+02:00
 
 17	6	server/api/handlers/province.go
 7	0	server/api/handlers/settlement_overview_test.go
@@ -1575,7 +1723,7 @@
 52	206	server/internal/kharis/tick.go
 5	4	web/static/codex/growth.md
 1	1	web/static/codex/sitos.md
-@@02b9d9c90e5ea17eaa6d07f8feec438ff5c4262f	2026-09-26T00:09:57+02:00	webb: War→Movements och sökrutans arméer läser enhetslagret, inte marching_armies
+commit 02b9d9c90e5ea17eaa6d07f8feec438ff5c4262f 2026-09-26T00:09:57+02:00
 
 0	1	web/static/codex/rough-edges.md
 1	1	web/static/codex/units.md
@@ -1583,10 +1731,10 @@
 55	0	web/static/js/megaron/ui/movements.js
 48	0	web/static/js/megaron/ui/movements.test.mjs
 7	5	web/static/js/megaron/ui/search.js
-@@8d8a2536565926557e9ed513c83c7abac6999757	2026-09-25T22:39:00+02:00	music: minoan_intro.ogg — the sign-in loop (D Phrygian, synth in the order horn's voice)
+commit 8d8a2536565926557e9ed513c83c7abac6999757 2026-09-25T22:39:00+02:00
 
 -	-	web/static/music/minoan_intro.ogg
-@@ac8b630cb46b90cbc331f7d688152c3cad0b845f	2026-09-25T22:38:23+02:00	webb: sign-in screen gets its own looping opening theme, handed off to the map page on login
+commit ac8b630cb46b90cbc331f7d688152c3cad0b845f 2026-09-25T22:38:12+02:00
 
 1	1	web/static/codex/screen.md
 4	2	web/static/js/megaron/main.js
@@ -1594,13 +1742,13 @@
 31	1	web/static/js/megaron/ui/misc.test.mjs
 20	0	web/static/megaron.css
 84	0	web/templates/index.html
-@@c1f1c9fe96576c4d044e1f3f40006716cda6104e	2026-09-25T22:24:57+02:00	webb: arrival sound becomes the Phrygian motif A–B♭–A–D (Timothy's pick by ear)
+commit c1f1c9fe96576c4d044e1f3f40006716cda6104e 2026-09-25T22:24:57+02:00
 
 9	6	web/static/js/megaron/ui/sfx.js
-@@f3593aba94c384492194d61ef307d8862603cee7	2026-09-25T22:12:45+02:00	webb: a music cue on a hidden tab stays silent and never restarts the bed there
+commit f3593aba94c384492194d61ef307d8862603cee7 2026-09-25T22:12:45+02:00
 
 8	1	web/static/js/megaron/ui/misc.js
-@@5f624dd95b433a2c373968a8e27467fdbcf2b457	2026-09-25T22:11:58+02:00	webb: music becomes a bed + war/victory/doom cues, mute persists, tab-hide pauses
+commit 5f624dd95b433a2c373968a8e27467fdbcf2b457 2026-09-25T22:11:58+02:00
 
 3	1	web/static/js/megaron/main.js
 123	9	web/static/js/megaron/ui/misc.js
@@ -1608,14 +1756,16 @@
 23	0	web/static/js/megaron/ui/sfx.js
 25	0	web/static/js/megaron/ui/sfx.test.mjs
 5	1	web/static/js/megaron/ws.js
-@@89bdf7cb35f740ffd5c9aba2b5afc792011fb692	2026-09-25T19:13:19+02:00	webb+codex: FOV preview follows the open-water sightline; Codex sight says the sea horizon reaches only across open water
+commit 34f490c66e6fe9f14e0104025801a6ea902df620 2026-09-25T19:16:22+02:00
+commit 89bdf7cb35f740ffd5c9aba2b5afc792011fb692 2026-09-25T19:13:19+02:00
 
 3	3	web/static/codex/sight.md
 5	3	web/static/js/megaron/config.js
 19	14	web/static/js/megaron/render/map.js
 68	0	web/static/js/megaron/render/sight.js
 35	0	web/static/js/megaron/render/sight.test.mjs
-@@976e7d1e7169c89403a364d0d31ba8fb93fde93e	2026-09-25T19:09:28+02:00	feat(webb+codex): stance on a marching unit — War → Army and the march menu show the Runner that must catch up
+commit 4483f133e8a927aff284975411ee7939cbce9b69 2026-09-25T19:12:30+02:00
+commit 976e7d1e7169c89403a364d0d31ba8fb93fde93e 2026-09-25T19:09:28+02:00
 
 4	0	web/static/codex/runners.md
 6	0	web/static/codex/stances.md
@@ -1623,20 +1773,20 @@
 24	4	web/static/js/megaron/ui/marchctx.js
 31	0	web/static/js/megaron/ui/stance.js
 29	0	web/static/js/megaron/ui/stance.test.mjs
-@@e287b7b2472ff5061cc186b48b7af3fb2b8a6fe0	2026-09-25T19:07:38+02:00	feat(keryx): unit stance on a marching unit says the Runner must catch up, where and when
+commit e287b7b2472ff5061cc186b48b7af3fb2b8a6fe0 2026-09-25T19:07:38+02:00
 
 40	3	server/cmd/keryx/cmd_unit.go
 35	0	server/cmd/keryx/cmd_unit_stance_marching_test.go
 3	1	server/internal/capabilities/military_verbs.go
-@@64ccd6865f515a0ae1458a9aac02a9c70621afca	2026-09-25T19:07:31+02:00	fow: /map DB tests for the sea sightline and disbanded eyes; tie-rule doc
+commit 64ccd6865f515a0ae1458a9aac02a9c70621afca 2026-09-25T19:07:31+02:00
 
 150	0	server/api/handlers/sea_sightline_map_test.go
 5	2	server/internal/province/hex.go
 2	2	server/internal/province/sea_horizon_test.go
-@@c2385c7643fa043bcbceefe1a7608430b1e737fa	2026-09-25T19:06:37+02:00	test(temenos): stance to a marching unit — catch-up ETA, delivery marching/after arrival, coexistence, idempotency
+commit c2385c7643fa043bcbceefe1a7608430b1e737fa 2026-09-25T19:06:37+02:00
 
 290	0	server/api/handlers/unit_stance_marching_test.go
-@@a56af5f72f5b1d9f948d415f65b13736f4717ac8	2026-09-25T19:05:57+02:00	fow: the open sea horizon is a sightline rule; disbanded units are not eyes
+commit a56af5f72f5b1d9f948d415f65b13736f4717ac8 2026-09-25T19:05:57+02:00
 
 8	1	server/api/handlers/fow_test.go
 47	75	server/internal/province/eyes.go
@@ -1644,38 +1794,39 @@
 11	3	server/internal/province/hex_test.go
 24	19	server/internal/province/nomadic_host_vision_test.go
 201	97	server/internal/province/sea_horizon_test.go
-@@a5310dde45988ddc1e8a3aef256e46cd27504504	2026-09-25T19:04:09+02:00	feat(temenos): stance to a marching unit rides a Runner that catches up (stance_pursuit)
+commit a5310dde45988ddc1e8a3aef256e46cd27504504 2026-09-25T19:04:09+02:00
 
 115	1	server/api/handlers/unit.go
 48	6	server/internal/combat/stance_set.go
 7	0	server/internal/combat/unit_arrival.go
 23	1	server/internal/messenger/order_delivery.go
-@@05c2b819837559b6fea5675a5c458859008e86a1	2026-09-25T19:04:08+02:00	codex: rough-edges — webben kan nu allt som keryx kan (paritetssvepet)
+commit 05c2b819837559b6fea5675a5c458859008e86a1 2026-09-25T19:04:08+02:00
 
 1	11	web/static/codex/rough-edges.md
-@@2cefcafd999ae32f681fc34d70a97318324a4cdc	2026-09-25T18:58:51+02:00	feat(webb): dispatch-brickornas färg anger hur brådskande de är, ikonen vad de gäller
+commit 2cefcafd999ae32f681fc34d70a97318324a4cdc 2026-09-25T18:58:51+02:00
 
 14	1	web/static/js/megaron/ui/chips.js
 11	0	web/static/js/megaron/ui/chips.test.mjs
 17	0	web/static/megaron.css
-@@28c6a0b666ef99dc23bcf40e2d98264e1c632ac0	2026-09-25T18:48:48+02:00	codex: realm-wide retreat setting and the per-battle override
+commit 3a1a8f6ca94ed78aeca2337be591a3a6fbf82d9c 2026-09-25T18:52:01+02:00
+commit 28c6a0b666ef99dc23bcf40e2d98264e1c632ac0 2026-09-25T18:48:48+02:00
 
 1	1	web/static/codex/battle.md
 6	1	web/static/codex/stances.md
-@@4adaf668837575ac8df79051b5a0037efbca0381	2026-09-25T18:48:26+02:00	megaron: War → Army 'When to retreat' realm setting; per-unit override only in battle, presets fixed (25%/75% were inverted)
+commit 4adaf668837575ac8df79051b5a0037efbca0381 2026-09-25T18:48:26+02:00
 
 2	1	web/static/js/megaron/main.js
 58	25	web/static/js/megaron/ui/drawers/war.js
 80	0	web/static/js/megaron/ui/retreat.js
 60	0	web/static/js/megaron/ui/retreat.test.mjs
 24	0	web/static/megaron.css
-@@ab8335b7586354e5b4bf53fcc6ee5e045bccf407	2026-09-25T18:46:26+02:00	keryx: retreat-default shows/sets the realm-wide retreat default; retreat-order says it overrides it
+commit ab8335b7586354e5b4bf53fcc6ee5e045bccf407 2026-09-25T18:46:26+02:00
 
 104	0	server/cmd/keryx/cmd_retreat_default.go
 24	0	server/cmd/keryx/cmd_retreat_default_test.go
 5	3	server/cmd/keryx/cmd_unit.go
 1	0	server/cmd/keryx/main.go
-@@26aebe48c82c88c067e395473ad1e4c2329d1f1a	2026-09-25T18:45:49+02:00	temenos: GET/PUT retreat-default (exempt from forming gate) + in_battle on units list
+commit 26aebe48c82c88c067e395473ad1e4c2329d1f1a 2026-09-25T18:45:49+02:00
 
 102	0	server/api/handlers/retreat_default.go
 30	0	server/api/handlers/unit.go
@@ -1683,52 +1834,55 @@
 6	0	server/api/handlers/world_guard.go
 23	0	server/api/handlers/world_start_gate_test.go
 5	0	server/cmd/server/main.go
-@@5674e632992e167af94a6705f2df8de9ecb98a7b	2026-09-25T18:44:08+02:00	fix spacing after mutation revert
+commit 5674e632992e167af94a6705f2df8de9ecb98a7b 2026-09-25T18:44:08+02:00
 
 1	1	server/internal/combat/retreat_default.go
-@@0bf2a18217ebea78baa073326ec60b2081b1ce5e	2026-09-25T18:44:00+02:00	test(combat): retreat default — fresh, set/validate, seeds start+join, override edits the copy
+commit 0bf2a18217ebea78baa073326ec60b2081b1ce5e 2026-09-25T18:44:00+02:00
 
 1	1	server/internal/combat/retreat_default.go
 204	0	server/internal/combat/retreat_default_test.go
-@@82097c08245786472df9dabcfbbd7bc39be0f028	2026-09-25T18:42:16+02:00	fix(temenos): kartläsningar kräver inloggning — FOW läckte till anonyma anrop
+commit 75e2564c4f3219ced13a25b4efb43b99004014f4 2026-09-25T18:43:07+02:00
+commit 82097c08245786472df9dabcfbbd7bc39be0f028 2026-09-25T18:42:16+02:00
 
 34	0	server/cmd/server/fow_auth_test.go
 18	12	server/cmd/server/main.go
-@@1e33db5ea3a20117b3b38a5be35cb50a16184533	2026-09-25T16:50:06+02:00	temenos: realm-wide retreat default seeds every battle participant (mig 145)
+commit 1e33db5ea3a20117b3b38a5be35cb50a16184533 2026-09-25T16:50:06+02:00
 
 1	0	server/db/migrations/145_retreat_default.down.sql
 17	0	server/db/migrations/145_retreat_default.up.sql
 10	9	server/internal/combat/battle.go
 117	0	server/internal/combat/retreat_default.go
 4	3	server/internal/combat/standing_orders_set.go
-@@8cb6051a9eba155fb69b3ebd32e59d5d6f9632a9	2026-09-25T16:46:54+02:00	migration 144: befintliga eskortkohorter får regementsnummer före grundning
+commit 8cb6051a9eba155fb69b3ebd32e59d5d6f9632a9 2026-09-25T16:46:54+02:00
 
 4	0	server/db/migrations/144_escort_ordinals.down.sql
 28	0	server/db/migrations/144_escort_ordinals.up.sql
-@@8177d96ff672c7bb285117b315a3c6421dea39ca	2026-09-25T16:13:12+02:00	codex: a marching unit is reachable by right-clicking a new destination
+commit 48efbd73c9b3eecf9cff18f5db103a58146d343d 2026-09-25T16:14:20+02:00
+commit 7fd3a1e0d2dbb8a5f10a7a2c6773cf2d61c6b676 2026-09-25T16:14:20+02:00
+commit 8177d96ff672c7bb285117b315a3c6421dea39ca 2026-09-25T16:13:12+02:00
 
 4	0	web/static/codex/marching.md
 1	1	web/static/codex/runners.md
-@@03bc102c30e61f4332a58d76c2175d0447e2c972	2026-09-25T16:12:38+02:00	fix(temenos): march-while-marching refusal drops CLI-only syntax
+commit 03bc102c30e61f4332a58d76c2175d0447e2c972 2026-09-25T16:12:38+02:00
 
 5	1	server/internal/combat/march_start.go
-@@37749d74150646c15e1e671cb02314c3d439ebf0	2026-09-25T16:11:26+02:00	test(unit): LoadDisplayName utan stad bär Wanax-namnet
+commit 37749d74150646c15e1e671cb02314c3d439ebf0 2026-09-25T16:11:26+02:00
 
 4	2	server/internal/unit/lookup_test.go
-@@dffe8b95b3cb0e53e52c01a1a6355c47b2198310	2026-09-25T16:11:23+02:00	feat(webb): War → Army Redirect points to the map, not typed Q/R
+commit dffe8b95b3cb0e53e52c01a1a6355c47b2198310 2026-09-25T16:11:23+02:00
 
 2	1	web/static/js/megaron/main.js
 21	4	web/static/js/megaron/ui/drawers/war.js
-@@048a9a89c874792353abcdf336ed5c3e39c15a96	2026-09-25T16:10:31+02:00	codex: så heter förbanden — numrerade per stad, eskorten bär Wanax-namnet före grundandet
+commit 048a9a89c874792353abcdf336ed5c3e39c15a96 2026-09-25T16:10:31+02:00
 
 2	0	web/static/codex/units.md
 1	1	web/static/js/megaron/ui/marchctx.js
-@@2d6b06ec047c5ea488cb4ee29d3270730aa6eb1b	2026-09-25T16:09:59+02:00	feat(webb): marching units reachable from the right-click march menu
+commit 2d6b06ec047c5ea488cb4ee29d3270730aa6eb1b 2026-09-25T16:09:59+02:00
 
 65	17	web/static/js/megaron/ui/marchctx.js
 47	0	web/static/js/megaron/ui/marchctx.test.mjs
 4	0	web/static/map.html
-@@b991e9ad90aa8da930cf8f69f3f1376c4095ef70	2026-09-25T16:09:12+02:00	feat(temenos): eskorten heter "1st Spearmen of <Wanax>" före grundandet
+commit b991e9ad90aa8da930cf8f69f3f1376c4095ef70 2026-09-25T16:09:12+02:00
 
 126	0	server/api/handlers/escort_names_test.go
 18	5	server/api/handlers/found_metropolis.go
@@ -1737,14 +1891,21 @@
 13	3	server/internal/unit/lookup.go
 17	5	server/internal/unit/naming.go
 16	9	server/internal/unit/naming_test.go
-@@599b9b71d26263e889df6b0bada1d317b6711fd3	2026-09-25T16:08:29+02:00	feat(webb): ljud när enheter anländer och en klang för varje ny dispatch
+commit 683cb165c48c043d3890eeb18713d82a041a89df 2026-09-25T16:08:29+02:00
+commit 599b9b71d26263e889df6b0bada1d317b6711fd3 2026-09-25T16:08:29+02:00
 
 1	1	web/static/codex/screen.md
 2	2	web/static/js/megaron/main.js
 50	0	web/static/js/megaron/ui/sfx.js
 22	0	web/static/js/megaron/ui/sfx.test.mjs
 4	1	web/static/js/megaron/ws.js
-@@f0706b86f9c7db1105115fac2c936349497a4f6b	2026-09-25T16:06:36+02:00	feat(webb): explore land units through the march menu, not just ships
+commit 0e1de494073055f853474165367e53420bc517a8 2026-09-25T16:07:10+02:00
+commit 5360993de704bb1a4f5fa26ee7b896e3c865216c 2026-09-25T16:07:10+02:00
+commit 077d30e78c4064dd5cce1a8788c5bb5df1b9da87 2026-09-25T16:07:10+02:00
+commit ac32f4ab4892e3d7d145f0ce938b16d381a3fc37 2026-09-25T16:07:10+02:00
+commit 1a59dd7849c8df2933eca16c14962d55c22765f0 2026-09-25T16:07:09+02:00
+commit 438ee8f2cc48dccb4598eaecfca1b5e2d24ebdbf 2026-09-25T16:07:09+02:00
+commit f0706b86f9c7db1105115fac2c936349497a4f6b 2026-09-25T16:06:36+02:00
 
 1	1	web/static/codex/marching.md
 1	1	web/static/codex/sight.md
@@ -1753,43 +1914,43 @@
 96	26	web/static/js/megaron/ui/marchctx.js
 32	1	web/static/js/megaron/ui/marchctx.test.mjs
 5	0	web/static/map.html
-@@2974bdc103f480bafb0b614c3ba6da380442bbec	2026-09-25T16:04:35+02:00	feat(webb): sack/burn/annex buttons in the dispatch window
+commit 2974bdc103f480bafb0b614c3ba6da380442bbec 2026-09-25T16:04:35+02:00
 
 3	1	web/static/codex/occupation.md
 115	1	web/static/js/megaron/ui/dispatch_window.js
 33	1	web/static/js/megaron/ui/dispatch_window.test.mjs
 25	0	web/static/megaron.css
-@@4855120c6b980c34f0b014426b573612209665c5	2026-09-25T16:02:59+02:00	feat(webb): Account window — change password in the browser
+commit 4855120c6b980c34f0b014426b573612209665c5 2026-09-25T16:02:59+02:00
 
 1	1	web/static/codex/getting-in.md
 4	0	web/static/js/megaron/main.js
 112	0	web/static/js/megaron/ui/account_window.js
 14	1	web/static/map.html
 5	1	web/static/megaron.css
-@@8583049cb921a7292d1dc8cb0b593543c6c839b7	2026-09-25T16:02:49+02:00	webb+codex: världen som inte börjat tar inga order — notisrubrik, time.md, getting-in.md
+commit 8583049cb921a7292d1dc8cb0b593543c6c839b7 2026-09-25T16:02:49+02:00
 
 1	1	web/static/codex/getting-in.md
 1	1	web/static/codex/time.md
 3	2	web/static/js/megaron/state.js
 1	1	web/static/js/megaron/ui/drawers/notif.js
-@@2d807fe6d36c5c0686a0f531643caf6664087836	2026-09-25T16:02:36+02:00	feat(webb): gift — silver/grain from capital to a colony, boosts loyalty
+commit 2d807fe6d36c5c0686a0f531643caf6664087836 2026-09-25T16:02:36+02:00
 
 1	1	web/static/codex/index.json
 2	0	web/static/codex/loyalty.md
 6	0	web/static/codex/transfers.md
 2	1	web/static/js/megaron/main.js
 75	0	web/static/js/megaron/ui/drawers/city.js
-@@0516ce7874b5d1ded849cdc190ba3b2f5edc8f26	2026-09-25T16:02:26+02:00	feat(web): mid-battle retreat order in War → Army
+commit 0516ce7874b5d1ded849cdc190ba3b2f5edc8f26 2026-09-25T16:02:26+02:00
 
 1	1	web/static/codex/battle.md
 1	1	web/static/codex/stances.md
 2	1	web/static/js/megaron/main.js
 49	0	web/static/js/megaron/ui/drawers/war.js
-@@20d77c8642e0bd5a8b51ab62e601f643a6522bcf	2026-09-25T16:02:05+02:00	test(temenos): startgrinden — vägran, exempt, tröskel från env
+commit 20d77c8642e0bd5a8b51ab62e601f643a6522bcf 2026-09-25T16:02:05+02:00
 
 165	0	server/api/handlers/world_start_gate_test.go
 30	0	server/cmd/server/main_test.go
-@@23e11d1b9e6d81fdd1cd7eaed5509a157b5f29d0	2026-09-25T16:00:35+02:00	feat(temenos): inga order innan världen börjat — RequireStartedWorld + POLEIA_WORLD_START_WANAXES
+commit 23e11d1b9e6d81fdd1cd7eaed5509a157b5f29d0 2026-09-25T16:00:35+02:00
 
 19	11	server/api/handlers/join.go
 9	5	server/api/handlers/nomadic_host.go
@@ -1797,16 +1958,17 @@
 72	0	server/api/handlers/world_guard.go
 39	0	server/cmd/server/main.go
 1	1	server/internal/tick/worker.go
-@@8c346b8d55d8a4f3566e8922b8cd339b663dd010	2026-09-25T15:57:22+02:00	codex: oraklet visar en slumpad fyndighet var som helst — rättat mot applyOracleRevealDeposits
+commit 8c346b8d55d8a4f3566e8922b8cd339b663dd010 2026-09-25T15:57:22+02:00
 
 1	1	web/static/codex/bronze.md
 1	1	web/static/codex/rites.md
-@@47dcc0833e92a63c7b575172e882422eea3aedda	2026-09-25T15:55:10+02:00	codex: artiklar för Dispatches-grenens nya notistyper (MessengerReturned, StandingOrder*)
+commit 47dcc0833e92a63c7b575172e882422eea3aedda 2026-09-25T15:55:10+02:00
 
 2	2	web/static/codex/index.json
 1	1	web/static/codex/messengers.md
 1	1	web/static/codex/routes.md
-@@4c49edaf2d42b369d1bc768abf82e273c67fa02e	2026-09-24T23:08:39+02:00	feat(webb): Kodexen — spelarens wiki i spelet
+commit 0ebfad8450bcea224551b8495b88ebfc032189a4 2026-09-25T15:54:48+02:00
+commit 4c49edaf2d42b369d1bc768abf82e273c67fa02e 2026-09-24T23:08:39+02:00
 
 16	0	web/static/codex/battle.md
 17	0	web/static/codex/bronze.md
@@ -1859,11 +2021,11 @@
 12	0	web/static/js/megaron/ui/dispatch_window.js
 20	0	web/static/map.html
 155	0	web/static/megaron.css
-@@fdf53e6ae2071242c5576c7a49d04a391df73479	2026-09-23T19:46:03+02:00	chore(analytics): Umami flyttad till umami.formatet.se
+commit fdf53e6ae2071242c5576c7a49d04a391df73479 2026-09-23T19:46:03+02:00
 
 1	1	web/static/map.html
 1	1	web/templates/base.html
-@@e7999c0371a51e1d6287ed232629fafbdde4cb19	2026-09-23T16:32:58+02:00	feat(auth): byt lösenord — POST /auth/password + keryx password
+commit e7999c0371a51e1d6287ed232629fafbdde4cb19 2026-09-23T16:32:58+02:00
 
 30	0	server/api/handlers/auth.go
 85	0	server/cmd/keryx/cmd_password.go
@@ -1872,26 +2034,26 @@
 1	0	server/cmd/server/main.go
 41	0	server/internal/auth/change_password_test.go
 43	0	server/internal/auth/service.go
-@@51762057768d0e5f607db7c6c80b228385f0741b	2026-09-23T16:30:47+02:00	test(ekonomi): jämför blockadprognosen per vara, inte som flyttalssumma
+commit 51762057768d0e5f607db7c6c80b228385f0741b 2026-09-23T16:30:47+02:00
 
 4	1	server/internal/economy/hex_blockade_test.go
-@@ca9ddd2c103953aa0d5618f3b5dd0d705824e35c	2026-09-23T16:26:01+02:00	fix(ekonomi): break-even-prognosen ser hex-blockaden
+commit ca9ddd2c103953aa0d5618f3b5dd0d705824e35c 2026-09-23T16:26:01+02:00
 
 14	0	server/internal/economy/catchment.go
 44	0	server/internal/economy/hex_blockade_test.go
-@@b0f64159b570525100318f25f0687b57f92158e0	2026-09-23T16:16:56+02:00	rigg(härkomst): /healthz säger vilken commit och migration som kör; riggen vägrar mäta annars
+commit b0f64159b570525100318f25f0687b57f92158e0 2026-09-23T16:16:56+02:00
 
 6	16	server/cmd/server/main.go
 85	0	server/cmd/server/provenance.go
 76	0	server/cmd/server/provenance_test.go
-@@c249e925dd5c04b7c04e5f103c3063fb7b32f03a	2026-09-23T16:12:26+02:00	fix(auth): utgången session säger det — JSON-401 med en mening, keryx pekar på login
+commit c249e925dd5c04b7c04e5f103c3063fb7b32f03a 2026-09-23T16:12:26+02:00
 
 6	0	server/cmd/keryx/client.go
 23	0	server/cmd/keryx/client_401_test.go
 16	2	server/internal/auth/middleware.go
 43	0	server/internal/auth/middleware_401_test.go
 7	0	web/static/js/megaron/ui/citygrid.test.mjs
-@@9989c0ae911e77de9877f5703ec5325ffe170030	2026-09-23T15:33:04+02:00	feat(notiser): budbärarkanalen notifierar — ankomst och hemkomst
+commit 9989c0ae911e77de9877f5703ec5325ffe170030 2026-09-23T15:33:04+02:00
 
 69	0	server/cmd/keryx/cmd_notifications.go
 2	2	server/cmd/server/main.go
@@ -1902,7 +2064,7 @@
 34	2	web/static/js/megaron/ui/format.js
 35	0	web/static/js/megaron/ui/format.test.mjs
 5	3	web/static/js/megaron/ws.js
-@@6557d55056a739808e9c06773abc005d53a706b5	2026-09-10T13:14:25+02:00	feat(notiser): arkivet matar Dispatches — varje notistyp blir en bricka
+commit 6557d55056a739808e9c06773abc005d53a706b5 2026-09-10T13:14:25+02:00
 
 48	0	server/api/handlers/notifications.go
 223	0	server/api/handlers/notifications_dispatch_test.go
@@ -1915,7 +2077,7 @@
 134	0	web/static/js/megaron/ui/chips_hydrate.test.mjs
 53	0	web/static/js/megaron/ui/format.js
 33	61	web/static/js/megaron/ws.js
-@@04d62dd75d0b54c29899d2a7f0a1c6fd73b5c1ff	2026-09-10T12:26:16+02:00	feat(värld): klockan startar först när fyra wanaxer joinat
+commit 04d62dd75d0b54c29899d2a7f0a1c6fd73b5c1ff 2026-09-10T12:26:16+02:00
 
 37	4	server/api/handlers/join.go
 11	0	server/api/handlers/nomadic_host.go
@@ -1927,7 +2089,7 @@
 18	3	web/static/js/megaron/ui/drawers/notif.js
 5	0	web/static/js/megaron/ws.js
 14	0	web/static/megaron.css
-@@21757e4fa9ee18ebf0dc77ec75254a29da111dcb	2026-09-10T08:06:29+02:00	feat(ljud): krigshorn när ordern mottas, vapenskrammel när de strider
+commit 21757e4fa9ee18ebf0dc77ec75254a29da111dcb 2026-09-10T08:06:29+02:00
 
 5	0	web/static/js/megaron/main.js
 6	0	web/static/js/megaron/ui/drawers/war.js
@@ -1936,7 +2098,7 @@
 146	0	web/static/js/megaron/ui/sfx.js
 53	0	web/static/js/megaron/ui/sfx.test.mjs
 29	0	web/static/js/megaron/ws.js
-@@aba4479d7a0960eb0a3dc8f3ccf8fc7b75df747d	2026-09-10T07:57:53+02:00	feat(rapporter): buggrapporten bär nu browser, avslag och JS-fel
+commit aba4479d7a0960eb0a3dc8f3ccf8fc7b75df747d 2026-09-10T07:57:53+02:00
 
 100	5	server/cmd/keryx/cmd_reports.go
 91	0	server/cmd/keryx/cmd_reports_context_test.go
@@ -1945,70 +2107,72 @@
 117	0	web/static/js/megaron/ui/diagnostics.js
 102	0	web/static/js/megaron/ui/diagnostics.test.mjs
 8	2	web/static/js/megaron/ui/drawers/report.js
-@@d6b707d6409852625ddb7fafcd6d6f9885f4ca78	2026-09-10T07:51:21+02:00	fix(webb): placeringsrutan står kvar när man klickar +1/−1
+commit d6b707d6409852625ddb7fafcd6d6f9885f4ca78 2026-09-10T07:51:21+02:00
 
 89	40	web/static/js/megaron/ui/citygrid.js
 31	1	web/static/js/megaron/ui/citygrid.test.mjs
-@@d2e35c402d4c73bb1409e83f70b4ce0b5e7c0d70	2026-09-10T07:40:49+02:00	fix(webb): en nekad placering säger varför — den tystaste knappen i spelet
+commit d2e35c402d4c73bb1409e83f70b4ce0b5e7c0d70 2026-09-10T07:40:49+02:00
 
 124	31	web/static/js/megaron/ui/citygrid.js
 134	0	web/static/js/megaron/ui/citygrid.test.mjs
 4	0	web/static/megaron.css
-@@200688bd7a02f821bfc58f152f6b85a2b3d339c1	2026-09-10T07:26:23+02:00	fix(webb): byggmenyn läser katalogen — silver_mine byggbar, priser rätta
+commit 200688bd7a02f821bfc58f152f6b85a2b3d339c1 2026-09-10T07:26:23+02:00
 
 93	18	web/static/js/megaron/ui/drawers/city.js
 60	1	web/static/js/megaron/ui/drawers/city.test.mjs
-@@77271bce315609c361281e3cbd87e69881847c8d	2026-09-10T07:25:10+02:00	fix(webb): joinsidan lovade fyra tusen själar — horden är tusen sedan 2026-08-23
+commit 77271bce315609c361281e3cbd87e69881847c8d 2026-09-10T07:25:10+02:00
 
 1	1	web/templates/join.html
-@@aeb3fe04fa091ced6a5a65b87525b70f2fd529e7	2026-09-09T23:21:49+02:00	fix(keryx): timmervarningens place-kommando hade argumenten i fel ordning
+commit aeb3fe04fa091ced6a5a65b87525b70f2fd529e7 2026-09-09T23:21:49+02:00
 
 1	1	server/cmd/keryx/cmd_status.go
-@@a0a959330164403a5fca28e2ee747851bf1562a8	2026-09-09T21:29:10+02:00	fix(ekonomi): silvermining-affordansen — "mine" pekar mot silver_mine när det är rätt
+commit a0a959330164403a5fca28e2ee747851bf1562a8 2026-09-09T21:29:10+02:00
 
 23	3	server/api/handlers/province.go
 40	0	server/api/handlers/province_mine_catchment_test.go
 21	3	server/cmd/keryx/cmd_status.go
-@@b9b771a2c75a7beda6d5eb3f796619a1628ecfdc	2026-09-09T21:23:34+02:00	Revert "merge(webb): gubbrulla i ekonomidrawern — webb-syskon till keryx roster"
+commit b9b771a2c75a7beda6d5eb3f796619a1628ecfdc 2026-09-09T21:23:34+02:00
 
 2	57	web/static/js/megaron/ui/drawers/economy.js
 0	62	web/static/js/megaron/ui/drawers/economy.test.mjs
 0	4	web/static/megaron.css
-@@b80ef03198243f707b08a8bc21a40af3f3b7ff1f	2026-09-08T00:01:02+02:00	fix(webb): ta bort 'Test world — time runs N× faster' ur topbaren
+commit dc6f156c30afddbac78e07757684ad4f81e2807d 2026-09-09T21:21:17+02:00
+commit b80ef03198243f707b08a8bc21a40af3f3b7ff1f 2026-09-08T00:01:02+02:00
 
 3	9	web/static/js/megaron/main.js
 0	1	web/static/map.html
 1	15	web/static/megaron.css
-@@570235e03f4c2f7cd85c687d48c07adbed145e53	2026-09-07T23:54:00+02:00	feat(webb): världstempo i notisarkivet, under datumraden
+commit 570235e03f4c2f7cd85c687d48c07adbed145e53 2026-09-07T23:54:00+02:00
 
 10	1	web/static/js/megaron/ui/drawers/notif.js
 10	0	web/static/megaron.css
-@@a0ff5ef27bb079454f67d45909f04fce40e2f493	2026-09-07T23:19:38+02:00	fix(webb): wanax-tilltalet läsligt — --gold→--text på pergamentbaren
+commit 31d535da9eb839dd8408728c3ceaa5d54ac52d65 2026-09-07T23:19:52+02:00
+commit a0ff5ef27bb079454f67d45909f04fce40e2f493 2026-09-07T23:19:38+02:00
 
 1	1	web/static/megaron.css
-@@bc342dbc78bb3c8f53bb83c7bac6263b6f0f0f4e	2026-09-07T20:39:03+02:00	feat(render): gubbe-arbetsmarkör — arbetade hexar syns på kartan
+commit bc342dbc78bb3c8f53bb83c7bac6263b6f0f0f4e 2026-09-07T20:39:03+02:00
 
 60	1	web/static/js/megaron/render/map.js
 30	1	web/static/js/megaron/render/map.test.mjs
 1	0	web/static/js/megaron/state.js
-@@062f869fe013a90edc7329b0fc279821c493b8c3	2026-09-07T18:46:42+02:00	webb(BILD): topbaren tilltalar spelaren vid wanaxnamn
+commit 062f869fe013a90edc7329b0fc279821c493b8c3 2026-09-07T18:46:42+02:00
 
 6	0	web/static/js/megaron/main.js
 1	0	web/static/map.html
 15	0	web/static/megaron.css
-@@ad0b22f3b16c9377e21de5426941f20f402d6b9c	2026-09-07T18:37:25+02:00	feat(auth,keryx): wanaxnamnet — spelaren tilltalas vid namn
+commit ad0b22f3b16c9377e21de5426941f20f402d6b9c 2026-09-07T18:37:25+02:00
 
 1	0	server/api/handlers/auth.go
 127	0	server/api/handlers/auth_test.go
 40	0	server/cmd/keryx/cmd_status.go
 70	0	server/cmd/keryx/cmd_status_test.go
 3	2	server/internal/auth/service.go
-@@5ea55c031105647026421575f04109dd0202a20e	2026-09-07T18:33:22+02:00	feat(webb): gubbrulla i ekonomidrawern — webb-syskon till keryx roster
+commit 5ea55c031105647026421575f04109dd0202a20e 2026-09-07T18:33:22+02:00
 
 57	2	web/static/js/megaron/ui/drawers/economy.js
 62	0	web/static/js/megaron/ui/drawers/economy.test.mjs
 4	0	web/static/megaron.css
-@@be833704fcded8f026d57da4519ff40fbcb47dd6	2026-09-07T17:46:48+02:00	feat(keryx): rike-bred gubbrulla — se alla gubbar och lediga per stad
+commit be833704fcded8f026d57da4519ff40fbcb47dd6 2026-09-07T17:46:48+02:00
 
 219	0	server/api/handlers/settlement.go
 244	0	server/api/handlers/settlement_roster_test.go
@@ -2016,7 +2180,7 @@
 100	0	server/cmd/keryx/cmd_roster_test.go
 1	0	server/cmd/keryx/main.go
 3	0	server/cmd/server/main.go
-@@6051d715e5eee74fa56e5f964597880c46fc69dc	2026-09-06T11:22:16+02:00	feat(webb): aggregerad översiktsendpoint ersätter N+1 i ekonomilistan
+commit 6051d715e5eee74fa56e5f964597880c46fc69dc 2026-09-06T11:22:16+02:00
 
 125	63	server/api/handlers/province.go
 2	1	server/api/handlers/rite_harvest_outcome_test.go
@@ -2025,12 +2189,13 @@
 2	1	server/api/handlers/settlement_rite_offering_test.go
 5	1	server/cmd/server/main.go
 20	16	web/static/js/megaron/ui/drawers/economy.js
-@@28a6e8726992e2987ad5bc53c694d7bcf984fd49	2026-09-06T10:57:11+02:00	fix(webb): världs-id:t slås upp per request, fryses inte vid boot
+commit f2a4fd634a4ee0aed0d0786fa4c18dcc1549550b 2026-09-06T11:04:20+02:00
+commit 28a6e8726992e2987ad5bc53c694d7bcf984fd49 2026-09-06T10:57:11+02:00
 
 39	13	server/api/handlers/web.go
 127	0	server/api/handlers/web_worldid_test.go
 2	2	server/cmd/server/main.go
-@@5bd7dbd59fcd57da4a67d33bf6a0bc8f98986419	2026-09-06T10:54:34+02:00	feat(belägring): dispatch när en belägring börjar eller lyfts
+commit 5bd7dbd59fcd57da4a67d33bf6a0bc8f98986419 2026-09-06T10:54:34+02:00
 
 31	0	server/cmd/keryx/cmd_notifications.go
 38	0	server/cmd/keryx/cmd_notifications_divine_test.go
@@ -2041,23 +2206,26 @@
 8	0	server/internal/kharis/tick.go
 14	0	web/static/js/megaron/ui/format.js
 24	0	web/static/js/megaron/ui/format.test.mjs
-@@27c621299456958b09769939a321d8242b33f7f9	2026-09-05T20:00:55+02:00	fix(ekonomi): stående leveranser väljer faktiskt naval, inte bara transfer
+commit 7d9c747d8dd3f21b0805159aeaf80c8e97679acd 2026-09-06T10:11:35+02:00
+commit f53dad33aea35f49665ea8e16b1750339127d137 2026-09-05T20:03:57+02:00
+commit 27c621299456958b09769939a321d8242b33f7f9 2026-09-05T20:00:55+02:00
 
 21	0	server/api/handlers/province_trade_naval_test.go
 20	3	server/internal/combat/standing_orders.go
 204	0	server/internal/combat/standing_orders_naval_test.go
-@@07e5c4e5bd11be97315420718bb4840b0740aee8	2026-09-05T19:54:25+02:00	fix(ekonomi): rätta kommentar om sorteringens livslängd (S1)
+commit 07e5c4e5bd11be97315420718bb4840b0740aee8 2026-09-05T19:54:25+02:00
 
 4	3	web/static/js/megaron/ui/drawers/economy.js
-@@adf8a64b4a571f54b5f9124e6fa7e417c69efdba	2026-09-05T17:02:17+02:00	wip: räddat efter att agenten dog av sessionsgränsen 2026-09-05
+commit a1e0541639e0be581f9a6f612bda207fd14a2762 2026-09-05T17:04:54+02:00
+commit adf8a64b4a571f54b5f9124e6fa7e417c69efdba 2026-09-05T17:02:17+02:00
 
 95	20	server/internal/combat/standing_orders.go
-@@b9815a0a01e2eff792598eb5e8bc809f6836b6f0	2026-09-05T17:02:17+02:00	wip: ekonomilistan, räddad efter sessionsgränsen 2026-09-05
+commit b9815a0a01e2eff792598eb5e8bc809f6836b6f0 2026-09-05T17:02:17+02:00
 
 3	0	web/static/js/megaron/main.js
 155	6	web/static/js/megaron/ui/drawers/economy.js
 85	0	web/static/js/megaron/ui/drawers/economy.test.mjs
-@@b0bc318950c05fd1b63474ade44e2c42cd65dc2c	2026-09-05T17:02:17+02:00	wip: räddat efter att agenten dog av sessionsgränsen 2026-09-05
+commit b0bc318950c05fd1b63474ade44e2c42cd65dc2c 2026-09-05T17:02:17+02:00
 
 3	3	server/api/handlers/catchment_conflict_message_test.go
 12	10	server/api/handlers/settlement_placement.go
@@ -2065,21 +2233,22 @@
 6	5	server/internal/economy/placement_yield.go
 41	52	server/internal/province/catchment_overlap.go
 36	16	server/internal/province/catchment_overlap_test.go
-@@090cf815e85b9eb9156075d49d7702932a8bb92e	2026-09-05T13:17:06+02:00	test(ekonomi): naval-val i keryx transfer — kustnära+sjöväg, inland, blandat, ETA
+commit 090cf815e85b9eb9156075d49d7702932a8bb92e 2026-09-05T13:17:06+02:00
 
 313	0	server/api/handlers/province_trade_naval_test.go
-@@88910de8dcdc73e0731812bb9d174bca37b5dcc8	2026-09-05T13:13:19+02:00	feat(ekonomi): keryx transfer väljer naval när kustnära och sjöväg finns
+commit 88910de8dcdc73e0731812bb9d174bca37b5dcc8 2026-09-05T13:13:19+02:00
 
 45	6	server/api/handlers/province.go
 62	0	server/internal/province/trade_route.go
-@@a67022dc7fb9c5d5c0e051530a6c017c0699a083	2026-09-05T13:10:50+02:00	fix(webb): rensa svenska renderade strängar i fyra härdar (§1 språksvep)
+commit a67022dc7fb9c5d5c0e051530a6c017c0699a083 2026-09-05T13:10:50+02:00
 
 22	22	web/static/js/megaron/render/map.js
 4	4	web/static/js/megaron/ui/drawers/city.js
 6	6	web/static/js/megaron/ui/drawers/sitos_view.js
 6	6	web/static/js/megaron/ui/drawers/sitos_view.test.mjs
 5	5	web/static/js/megaron/ui/marchctx.js
-@@b43f9f2cd370d24d9c7d669caa25318032f6b13e	2026-09-05T12:44:51+02:00	feat(krig): en fientlig enhet i fortify/sentry blockerar en arbetad hex
+commit b80f64e23071be8e83422ca299a9051847c44188 2026-09-05T12:47:15+02:00
+commit b43f9f2cd370d24d9c7d669caa25318032f6b13e 2026-09-05T12:44:51+02:00
 
 1	0	server/db/migrations/142_hex_blockade.down.sql
 13	0	server/db/migrations/142_hex_blockade.up.sql
@@ -2089,19 +2258,20 @@
 10	0	server/internal/kharis/tick.go
 18	0	web/static/js/megaron/ui/format.js
 25	0	web/static/js/megaron/ui/format.test.mjs
-@@de6aad3366864a0bfea0b45cec0c671272aa5bf6	2026-09-05T12:33:13+02:00	fix(economy): hexen har en ägare, inte ett delat tak (§2b)
+commit de6aad3366864a0bfea0b45cec0c671272aa5bf6 2026-09-05T12:33:13+02:00
 
 102	33	server/api/handlers/hex_ownership_test.go
 6	0	server/api/handlers/province.go
 45	28	server/api/handlers/settlement_placement.go
 69	0	server/internal/economy/placement_yield.go
-@@1e0f66d313d74d1d62520cc26a459955344c3326	2026-09-05T07:54:47+02:00	fix(db): numrera om dispatch_mutes till 141
+commit 6157cb56d275e641117b99c3e55015630c496028 2026-09-05T07:54:54+02:00
+commit 1e0f66d313d74d1d62520cc26a459955344c3326 2026-09-05T07:54:47+02:00
 
 0	1	server/db/migrations/140_dispatch_mutes.down.sql
 0	12	server/db/migrations/140_dispatch_mutes.up.sql
 1	0	server/db/migrations/141_dispatch_mutes.down.sql
 12	0	server/db/migrations/141_dispatch_mutes.up.sql
-@@92a34784f7b43576443e61e97cc0f1df281e92ba	2026-09-05T07:53:40+02:00	feat(dispatches): the window with two doors
+commit 92a34784f7b43576443e61e97cc0f1df281e92ba 2026-09-05T07:53:40+02:00
 
 3	0	web/static/js/megaron/main.js
 8	12	web/static/js/megaron/ui/chips.js
@@ -2112,53 +2282,54 @@
 14	14	web/static/js/megaron/ws.js
 13	0	web/static/map.html
 65	0	web/static/megaron.css
-@@735b16029953e62a560494079f021c46811032a2	2026-09-05T07:42:39+02:00	feat(web): Automation tab in the economy drawer for standing orders
+commit dd8cc2331af74c525a9be29e5520bbd8d34e7ff0 2026-09-05T07:49:44+02:00
+commit 735b16029953e62a560494079f021c46811032a2 2026-09-05T07:42:39+02:00
 
 5	0	web/static/js/megaron/main.js
 141	0	web/static/js/megaron/ui/drawers/economy.js
 46	1	web/static/js/megaron/ui/drawers/economy.test.mjs
-@@ae8e41a2ba3c0ef56b3af62e3f77ab16939e82d5	2026-09-05T07:39:41+02:00	feat(keryx): route/routes/route-pause/route-resume/route-delete
+commit ae8e41a2ba3c0ef56b3af62e3f77ab16939e82d5 2026-09-05T07:39:41+02:00
 
 246	0	server/cmd/keryx/cmd_route.go
 5	0	server/cmd/keryx/main.go
-@@3917a7c12ed7e8fb4ccd40f2fccdb205650541a4	2026-09-05T07:38:00+02:00	test(economy): data-layer proof that ordinary production is unchanged
+commit 3917a7c12ed7e8fb4ccd40f2fccdb205650541a4 2026-09-05T07:38:00+02:00
 
 174	0	server/internal/economy/hex_ownership_test.go
-@@40f304ebf39d6d8d45dc880614e053a0f6d03434	2026-09-05T07:37:07+02:00	feat(economy): standing-order CRUD surface
+commit 40f304ebf39d6d8d45dc880614e053a0f6d03434 2026-09-05T07:37:07+02:00
 
 341	0	server/api/handlers/standing_order.go
 246	0	server/api/handlers/standing_order_test.go
 7	0	server/cmd/server/main.go
-@@c9c0b357d84dfd0ff69cb6c04f9534e9024dbbcd	2026-09-05T07:34:12+02:00	test(economy): prove the shared-hex cap and its race guarantee
+commit c9c0b357d84dfd0ff69cb6c04f9534e9024dbbcd 2026-09-05T07:34:12+02:00
 
 283	0	server/api/handlers/hex_ownership_test.go
-@@7981e94e3ec750ea3e648143103bf7e708218897	2026-09-05T07:31:21+02:00	feat(dispatches): server-side per-player dispatch mute preference
+commit 7981e94e3ec750ea3e648143103bf7e708218897 2026-09-05T07:31:21+02:00
 
 101	0	server/api/handlers/dispatch_preferences.go
 8	0	server/cmd/server/main.go
 1	0	server/db/migrations/140_dispatch_mutes.down.sql
 12	0	server/db/migrations/140_dispatch_mutes.up.sql
 24	0	server/internal/notify/hub.go
-@@d3d92457d7223a984151c8a1245da812840720bb	2026-09-05T07:30:36+02:00	test(economy): prove standing-order traps 1 and 2, plus the return leg
+commit d3d92457d7223a984151c8a1245da812840720bb 2026-09-05T07:30:36+02:00
 
 360	0	server/internal/combat/standing_orders_test.go
-@@54e41dfb31e9997f8009c35314276f1a3bd73607	2026-09-05T07:24:52+02:00	feat(economy): standing-order sweep — self-running caravan routes
+commit 54e41dfb31e9997f8009c35314276f1a3bd73607 2026-09-05T07:24:52+02:00
 
 3	0	server/cmd/server/main.go
 609	0	server/internal/combat/standing_orders.go
 5	0	server/internal/events/priority.go
 7	0	server/internal/events/scheduler.go
 10	2	server/internal/transport/transport.go
-@@19dafcf576793ce28646519be6f38564a6bc1b36	2026-09-05T07:22:43+02:00	feat(economy): hex capacity check becomes global across settlements
+commit 19dafcf576793ce28646519be6f38564a6bc1b36 2026-09-05T07:22:43+02:00
 
 14	1	server/api/handlers/province.go
 86	2	server/api/handlers/settlement_placement.go
 59	0	server/internal/economy/placement_yield.go
-@@af1363c35aa5160653fb75ed47717bdd9a7a0ee1	2026-09-05T07:20:27+02:00	feat(economy): standing_orders schema for self-running caravan routes
+commit af1363c35aa5160653fb75ed47717bdd9a7a0ee1 2026-09-05T07:20:27+02:00
 
 4	0	server/db/migrations/140_standing_orders.down.sql
 65	0	server/db/migrations/140_standing_orders.up.sql
-@@d3b6d590c2accf72c9a55f7b1cf25e1f46a26764	2026-09-05T07:20:15+02:00	fix(dispatches): give every NotifyPlayer payload a destination
+commit d3b6d590c2accf72c9a55f7b1cf25e1f46a26764 2026-09-05T07:20:15+02:00
 
 1	1	server/internal/combat/battle.go
 7	5	server/internal/combat/ship_hull.go
@@ -2166,7 +2337,8 @@
 20	5	server/internal/combat/upkeep.go
 15	4	server/internal/messenger/order_delivery.go
 2	0	server/internal/messenger/recall.go
-@@10a0ac9b2473f209755eb2ad1a159f43ecfcdc29	2026-09-04T19:50:34+02:00	fix(dispatches): notif-chip becomes dispatch, notifications name their subject
+commit a6dc0a7cea8f1daafb02a9b4448e5bf2c68b903e 2026-09-04T19:54:09+02:00
+commit 10a0ac9b2473f209755eb2ad1a159f43ecfcdc29 2026-09-04T19:50:34+02:00
 
 1	0	server/internal/combat/ship_hull.go
 1	0	server/internal/combat/ship_repair.go
@@ -2184,67 +2356,71 @@
 13	13	web/static/js/megaron/ws.js
 3	3	web/static/map.html
 33	33	web/static/megaron.css
-@@c2eb3212681f0d6e092c238a0c8ade4680f4c6b0	2026-09-04T19:46:49+02:00	feat(keryx): add join verb, stop founding status lying about it
+commit c2eb3212681f0d6e092c238a0c8ade4680f4c6b0 2026-09-04T19:46:49+02:00
 
 22	0	server/cmd/keryx/cmd_founding.go
 95	0	server/cmd/keryx/cmd_join.go
 215	0	server/cmd/keryx/cmd_join_test.go
 2	0	server/cmd/keryx/main.go
-@@3c6bd2fae3adae7941e6b4716628a45db168aff2	2026-09-04T18:04:00+02:00	fix(web): Marketplace, inte Trading House
+commit 3c6bd2fae3adae7941e6b4716628a45db168aff2 2026-09-04T18:04:00+02:00
 
 2	2	web/static/js/megaron/ui/drawers/city.js
-@@f50e6672bd99e41b6e39885eed86ff3e26f0b252	2026-09-04T18:03:25+02:00	fix(web): Agora blir Trading House
+commit f50e6672bd99e41b6e39885eed86ff3e26f0b252 2026-09-04T18:03:25+02:00
 
 2	2	web/static/js/megaron/ui/drawers/city.js
-@@5662404b5f9032777b3fce28dbcc07aa6e0e5739	2026-09-04T17:05:22+02:00	fix(combat): a superseded arrival is a no-op, not a dead letter
+commit 5662404b5f9032777b3fce28dbcc07aa6e0e5739 2026-09-04T17:05:22+02:00
 
 21	2	server/internal/combat/unit_arrival.go
 104	0	server/internal/combat/unit_arrival_disbanded_host_test.go
-@@04e8da7f7670d225f04012d7c798a1a21d98cedb	2026-09-04T16:57:02+02:00	fix(web): riv Craft-ytan — gjuteriet smälter av sig självt sedan P6
+commit 04e8da7f7670d225f04012d7c798a1a21d98cedb 2026-09-04T16:57:02+02:00
 
 1	2	web/static/js/megaron/main.js
 4	31	web/static/js/megaron/ui/drawers/city.js
-@@c353d15f62bb44b2d4041ef99db8a847c1329434	2026-09-04T15:52:03+02:00	fix(web): read the order response shape instead of assuming a courier
+commit 10e117dc4280c3edf5aebb85cedc77b9e3276105 2026-09-04T15:52:10+02:00
+commit c353d15f62bb44b2d4041ef99db8a847c1329434 2026-09-04T15:52:03+02:00
 
 16	2	web/static/js/megaron/ui/drawers/war.js
-@@9a64707c9f7eb39a41f55efb11ed5c1879e90180	2026-09-04T15:51:13+02:00	test(auth): seed the legacy player instead of assuming one exists
+commit 9a64707c9f7eb39a41f55efb11ed5c1879e90180 2026-09-04T15:51:13+02:00
 
 40	2	server/internal/auth/legacy_compat_test.go
-@@efbb45591f7344afee059640ba0e16a74911c4c2	2026-09-04T15:49:01+02:00	fix(unit): nomadic host applies recall/redirect without a Runner
+commit efbb45591f7344afee059640ba0e16a74911c4c2 2026-09-04T15:49:01+02:00
 
 42	3	server/api/handlers/unit.go
 220	0	server/api/handlers/unit_recall_nomadic_host_test.go
 14	0	server/internal/unit/model.go
-@@1bf7b419e18ddf2c5b41bb29d97e7af2377d9d18	2026-09-04T15:43:03+02:00	test(combat): pin the wording of the redirect and load rejection hints
+commit 65b2ed261acb74494cff212d7f9ab114a13029bd 2026-09-04T15:44:58+02:00
+commit c35a1c96e3c84ee3e67ed1a1f5e8e3eebb3e167f 2026-09-04T15:44:31+02:00
+commit 1bf7b419e18ddf2c5b41bb29d97e7af2377d9d18 2026-09-04T15:43:03+02:00
 
 182	0	server/internal/combat/march_start_rejection_hints_test.go
-@@0717ca6565fd3b23fa971674f8b4e19e8b8cb89e	2026-09-04T15:40:44+02:00	fix(web): name the missing goods on a 422 instead of the raw error code
+commit 0717ca6565fd3b23fa971674f8b4e19e8b8cb89e 2026-09-04T15:40:44+02:00
 
 2	2	web/static/js/megaron/ui/drawers/city.js
 4	4	web/static/js/megaron/ui/drawers/diplomacy.js
 10	10	web/static/js/megaron/ui/drawers/war.js
 23	0	web/static/js/megaron/ui/format.js
 46	1	web/static/js/megaron/ui/format.test.mjs
-@@30c39cbfc5042eb63976b393af537faf4d6deb88	2026-09-04T15:39:08+02:00	fix(cli,combat): name the verb in three dead-end rejections (P4a-c)
+commit 30c39cbfc5042eb63976b393af537faf4d6deb88 2026-09-04T15:39:08+02:00
 
 11	0	server/cmd/keryx/cmd_aliases.go
 1	0	server/cmd/keryx/main.go
 9	1	server/internal/combat/march_start.go
-@@3aad8cad46629730611b83c8d3fccfc783bf8c66	2026-09-04T15:38:16+02:00	fix(keryx): send the actual password on login
+commit 3aad8cad46629730611b83c8d3fccfc783bf8c66 2026-09-04T15:38:16+02:00
 
 36	1	server/cmd/keryx/cmd_login.go
 71	0	server/cmd/keryx/cmd_login_test.go
 2	1	server/go.mod
 4	2	server/go.sum
-@@94701f7708eb98287a5f6fba6c9eea2224335175	2026-09-04T14:16:05+02:00	fix(web): lösenordsfält i inloggning och registrering
+commit 94701f7708eb98287a5f6fba6c9eea2224335175 2026-09-04T14:16:05+02:00
 
 21	3	web/templates/index.html
-@@3aa10e04d3594fb002a2139647921e03a7d60b2c	2026-09-04T12:45:12+02:00	fix(auth): actually check the password at login
+commit 3aa10e04d3594fb002a2139647921e03a7d60b2c 2026-09-04T12:45:12+02:00
 
 23	0	server/internal/auth/legacy_compat_test.go
 12	6	server/internal/auth/service.go
 68	0	server/internal/auth/service_test.go
-@@fda701496a3cc9eeff8202dc9874508db53ce399	2026-09-03T07:53:25+02:00	fix(keryx): namnge matöverskottet som ett tal, peka på verbet
+commit a08357fcbbe948b6a4bdfdd727945de709a0ba00 2026-09-03T07:54:36+02:00
+commit fda701496a3cc9eeff8202dc9874508db53ce399 2026-09-03T07:53:25+02:00
 
 33	4	server/cmd/keryx/cmd_city.go
 177	0	server/cmd/keryx/cmd_city_test.go
@@ -2253,21 +2429,22 @@
 114	0	server/cmd/keryx/cmd_idle_test.go
 27	6	server/cmd/keryx/cmd_status.go
 48	0	server/cmd/keryx/cmd_status_test.go
-@@8a572df658aac0dd7841cbe3ea0c231c403fadc6	2026-09-03T07:52:21+02:00	fix(keryx): namnge den framskjutna posten i unit list och actions (P7)
+commit 8a572df658aac0dd7841cbe3ea0c231c403fadc6 2026-09-03T07:52:21+02:00
 
 41	0	server/cmd/keryx/cmd_actions.go
 88	0	server/cmd/keryx/cmd_actions_forwardpost_test.go
 78	2	server/cmd/keryx/cmd_unit.go
 149	0	server/cmd/keryx/cmd_unit_forwardpost_test.go
-@@450e161bd79b372c9111da4cb162ed82e7d8f4ca	2026-09-03T03:20:36+02:00	fix(ekonomi): tennet är värt dubbelt mot koppar, bronset mer än sina ingredienser
+commit 450e161bd79b372c9111da4cb162ed82e7d8f4ca 2026-09-03T03:20:36+02:00
 
 17	0	server/db/migrations/139_metallpriser.down.sql
 72	0	server/db/migrations/139_metallpriser.up.sql
 119	0	server/internal/economy/metal_prices_test.go
-@@ef71c143475a1879d60e9b38ea67ea5c7e79eb64	2026-09-03T03:15:45+02:00	test(religion): defer pool.Close() körde före t.Cleanup — världen städades aldrig
+commit ef71c143475a1879d60e9b38ea67ea5c7e79eb64 2026-09-03T03:15:45+02:00
 
 14	1	server/internal/religion/index_threshold_sql_test.go
-@@64e80c6816f6dd6858f6d0821f85b59db117bb17	2026-09-02T23:23:06+02:00	radera(outpost): tar bort den döda outpost-datamodellen (mig 138)
+commit 4ad75dc684f3006184bdac9ac5d40bd4583d4b44 2026-09-02T23:24:29+02:00
+commit 64e80c6816f6dd6858f6d0821f85b59db117bb17 2026-09-02T23:23:06+02:00
 
 4	22	server/api/handlers/settlement.go
 0	33	server/api/handlers/world.go
@@ -2279,10 +2456,10 @@
 3	2	server/internal/combat/unit_arrival.go
 4	3	server/internal/combat/unit_arrival_field.go
 7	143	server/internal/messenger/recall.go
-@@46451df40c530f16033419e39ff7b6bebd7d2b69	2026-09-02T23:13:17+02:00	fix(webb): stadsvyns matnotis helt på engelska, inte halvöversatt
+commit 46451df40c530f16033419e39ff7b6bebd7d2b69 2026-09-02T23:13:17+02:00
 
 2	2	web/static/js/megaron/ui/drawers/city.js
-@@77c99ca2e050fe1dcb353570a8d4276c719a6d92	2026-09-02T23:11:48+02:00	fix(keryx+web): gubbe/gubbar → citizen/citizens i spelartext
+commit 77c99ca2e050fe1dcb353570a8d4276c719a6d92 2026-09-02T23:11:48+02:00
 
 8	8	server/api/handlers/settlement_placement.go
 2	2	server/cmd/keryx/cmd_allocate.go
@@ -2298,7 +2475,8 @@
 1	1	server/internal/combat/build_notify_test.go
 1	1	web/static/js/megaron/ui/citygrid.js
 2	2	web/static/js/megaron/ui/drawers/city.js
-@@13ca1ac252a33ba6d9463070e93a0f769b9e139c	2026-09-02T22:45:33+02:00	feat(orakel): riten avslöjar sju hexar karta kring en malmfyndighet
+commit 95a8dc83eb645d749cbe56a554fb184bd6725eb9 2026-09-02T22:45:51+02:00
+commit 13ca1ac252a33ba6d9463070e93a0f769b9e139c 2026-09-02T22:45:33+02:00
 
 0	189	server/api/handlers/oracle_catchment_radius_test.go
 0	182	server/api/handlers/oracle_radius_test.go
@@ -2306,11 +2484,11 @@
 0	185	server/api/handlers/oracle_reveal_ore_hex_test.go
 131	257	server/api/handlers/settlement.go
 0	51	server/api/handlers/settlement_test.go
-@@2c554b9e7651608ce60a3d9472a5a12c68aed025	2026-09-02T22:42:39+02:00	fix(krönika): svep krönikans spelartext till engelska
+commit 2c554b9e7651608ce60a3d9472a5a12c68aed025 2026-09-02T22:42:39+02:00
 
 16	16	server/api/handlers/web.go
 39	39	server/internal/chronicle/chronicle.go
-@@110e98e1c89db3ec1f9edaa974a1e0eec49087a7	2026-09-02T22:35:15+02:00	fix(keryx): all spelarvänd text på engelska, ingen svenska kvar i CLI-utskrifter
+commit 110e98e1c89db3ec1f9edaa974a1e0eec49087a7 2026-09-02T22:35:15+02:00
 
 7	7	server/cmd/keryx/cmd_actions.go
 28	28	server/cmd/keryx/cmd_founding.go
@@ -2330,18 +2508,22 @@
 18	18	server/cmd/keryx/cmd_unit.go
 3	3	server/cmd/keryx/cmd_unit_forecast_test.go
 4	4	server/cmd/keryx/cmd_watch.go
-@@78271afa5c1b0a485cd037c675e1ec77f4ef530c	2026-09-02T07:57:41+02:00	fix(orakel): oraklet läser P1:s catchment (radie 2), inte den gamla 7-hexen
+commit 78271afa5c1b0a485cd037c675e1ec77f4ef530c 2026-09-02T07:57:41+02:00
 
 189	0	server/api/handlers/oracle_catchment_radius_test.go
 41	17	server/api/handlers/settlement.go
-@@306e102e7d5b95b50fcc7ef336d67894e9322d6c	2026-09-01T23:54:52+02:00	test(transport): intercept-fixturen arkiverar alla aktiva världar, inte bara sina egna
+commit b9f74355b926210b03ec83c4a060efb8e3184e0d 2026-09-01T23:55:11+02:00
+commit 67193ce75d1700d3beb102572c44991c765a8ae6 2026-09-01T23:55:11+02:00
+commit 4e4773ab6ee2e90f55532a8848e0409583a32a55 2026-09-01T23:55:11+02:00
+commit 306e102e7d5b95b50fcc7ef336d67894e9322d6c 2026-09-01T23:54:52+02:00
 
 15	2	server/internal/transport/intercept_sea_leg_test.go
-@@5190888c0d88cf0e1e6063d371f2a699a8c32026	2026-09-01T23:45:41+02:00	fix(krig): stridsdöden slutar dra befolkning en andra gång
+commit 5190888c0d88cf0e1e6063d371f2a699a8c32026 2026-09-01T23:45:41+02:00
 
 26	10	server/internal/combat/battle.go
 94	0	server/internal/combat/battle_population_test.go
-@@77757ddf236ce6d8082a0ecc4480586590e18d3b	2026-09-01T21:56:55+02:00	fix(notify): de tre tysta notiserna får meningar och stadsnamn
+commit 5e7917e059c1f82343f1cd85e1c3cc108dfc29dd 2026-09-01T23:19:29+02:00
+commit 77757ddf236ce6d8082a0ecc4480586590e18d3b 2026-09-01T21:56:55+02:00
 
 77	4	server/cmd/keryx/cmd_notifications.go
 103	0	server/cmd/keryx/cmd_notifications_divine_test.go
@@ -2351,60 +2533,67 @@
 24	2	server/internal/kharis/tick.go
 34	0	web/static/js/megaron/ui/format.js
 70	0	web/static/js/megaron/ui/format.test.mjs
-@@b3ae42b6dea937aa1f02edac2c3fe7160658ec69	2026-09-01T21:43:10+02:00	fix(messenger): budbärarens ankomst-flipp och hemresa i en transaktion
+commit b3ae42b6dea937aa1f02edac2c3fe7160658ec69 2026-09-01T21:43:10+02:00
 
 185	0	server/internal/messenger/arrival_tx_test.go
 74	38	server/internal/messenger/handler.go
-@@9c99cbfc452cb873cc1159c9326d9622d72aaa59	2026-09-01T21:29:10+02:00	fix(religion): skördevälsignelsen rapporterar utfall, inte avsikt
+commit 9c99cbfc452cb873cc1159c9326d9622d72aaa59 2026-09-01T21:29:10+02:00
 
 193	0	server/api/handlers/rite_harvest_outcome_test.go
 30	9	server/api/handlers/settlement.go
-@@6e65b0a22907c2353abedf607434ada9a8281f8b	2026-09-01T17:48:36+02:00	fix(disband): restore population — recruitment's mirror
+commit 30d056c528f0b08a1cd3fd68c3da02bd9aaefa01 2026-09-01T21:10:34+02:00
+commit c4c4e0f397458dd2fe6a1bc9e126dcb8d9e0fc06 2026-09-01T18:01:30+02:00
+commit 94e260dac4786c144a1f513417d5028c7cbb1a9a 2026-09-01T17:49:43+02:00
+commit 6e65b0a22907c2353abedf607434ada9a8281f8b 2026-09-01T17:48:36+02:00
 
 200	0	server/api/handlers/disband_population_test.go
 50	12	server/api/handlers/province.go
 56	3	server/cmd/keryx/cmd_disband.go
 51	1	server/cmd/keryx/cmd_disband_test.go
 7	0	web/static/js/megaron/ui/drawers/war.js
-@@d18e000c36bac3568e28921459488d7e62c0623d	2026-08-30T10:25:42+02:00	fix(web/map): catchment-highlight visar 19 hex (radie 2), inte 7
+commit d18e000c36bac3568e28921459488d7e62c0623d 2026-08-30T10:25:42+02:00
 
 28	9	web/static/js/megaron/render/map.js
 15	1	web/static/js/megaron/render/map.test.mjs
-@@0c724d0a0275a840a0cf6408ad59edc2f5d2e6f0	2026-08-30T10:22:22+02:00	fix(combat): TrainComplete audit-event + notis idempotenta på retry (G2)
+commit 0c724d0a0275a840a0cf6408ad59edc2f5d2e6f0 2026-08-30T10:19:49+02:00
 
 45	21	server/internal/combat/train.go
 32	6	server/internal/combat/train_idempotent_test.go
-@@73896ddf5ba6939dc8663fd09008f27ad582277f	2026-08-30T03:59:51+02:00	fix(religion): innehavsgolvet per vara efter mig 136:s omskalning
+commit 73896ddf5ba6939dc8663fd09008f27ad582277f 2026-08-30T03:59:51+02:00
 
 22	2	server/internal/religion/index.go
 65	0	server/internal/religion/index_threshold_sql_test.go
 55	4	server/internal/religion/valuation.go
 26	2	server/internal/religion/valuation_test.go
-@@81162204aafdc98e1f10cea3390a506d21fd8f0b	2026-08-30T03:55:42+02:00	fix(keryx,api): bygg-/rekryttider i speldygn, inte väggklockeminuter
+commit 81162204aafdc98e1f10cea3390a506d21fd8f0b 2026-08-30T03:55:42+02:00
 
 82	0	server/api/handlers/building_catalogue_duration_test.go
 25	13	server/api/handlers/province.go
 4	4	server/cmd/keryx/cmd_build.go
 8	4	server/cmd/keryx/cmd_recruit.go
-@@30f8d551006495a2257ec67a2bea1b43b2a1ec09	2026-08-29T23:20:23+02:00	test(belägring): S3-kapitulationen observerad end-to-end för första gången
+commit dd8fceb147faa4469efe3ff928d1f0f92631533d 2026-08-29T23:26:33+02:00
+commit 53eb3afce2133a1db4802b6cc85b4eb7b3b135c5 2026-08-29T23:26:33+02:00
+commit 4024fdc964664cb86f32cacaeebb6b2ca60a4fbf 2026-08-29T23:23:44+02:00
+commit 30f8d551006495a2257ec67a2bea1b43b2a1ec09 2026-08-29T23:20:23+02:00
 
 400	0	server/api/handlers/siege_acceptance_test.go
-@@9daa34c1c99209c2638578338f1d3a60f6e283ab	2026-08-29T23:18:51+02:00	test(webb): tre DOM-tester för notisarkiv+panelfokus (d87d06d)
+commit 9daa34c1c99209c2638578338f1d3a60f6e283ab 2026-08-29T23:18:51+02:00
 
 119	0	web/static/js/megaron/main.test.mjs
 110	0	web/static/js/megaron/ui/chips.test.mjs
 46	0	web/static/js/megaron/ui/drawers/notif.test.mjs
-@@c0ac25615273bc7be7e190854bd2b2bf159a6f1c	2026-08-29T23:17:51+02:00	test(ekonomi): utfodringsordningens sista scenario — garnisonen överlever svälten
+commit c0ac25615273bc7be7e190854bd2b2bf159a6f1c 2026-08-29T23:17:51+02:00
 
 225	0	server/api/handlers/food_famine_garrison_test.go
-@@6992b95cedfbe008f2ea9e629de0fdf3d8ecc2a7	2026-08-29T08:16:05+02:00	fix(keryx): ritens cooldown räknas i speldygn, inte väggklocksminuter
+commit 10b2240b716fbba9b00813887a24a780ed57511a 2026-08-29T22:56:49+02:00
+commit 6992b95cedfbe008f2ea9e629de0fdf3d8ecc2a7 2026-08-29T08:16:05+02:00
 
 19	13	server/api/handlers/province.go
 7	2	server/api/handlers/settlement.go
 18	8	server/cmd/keryx/cmd_rite.go
 38	0	server/internal/tick/eta.go
 64	0	server/internal/tick/gamedays_test.go
-@@c2e78e13d5eaa5d7831ac42de3947360b86123e3	2026-08-29T02:55:08+02:00	fix(keryx): need/have-paret slutar dölja sin egen differens
+commit c2e78e13d5eaa5d7831ac42de3947360b86123e3 2026-08-29T02:55:08+02:00
 
 44	2	server/api/handlers/helpers.go
 4	4	server/api/handlers/helpers_test.go
@@ -2413,10 +2602,10 @@
 81	0	server/api/handlers/shortfall_test.go
 31	1	server/cmd/keryx/client.go
 29	0	server/cmd/keryx/client_shortfall_test.go
-@@37129cdd792473bf54ddf5427f0a1237a881dd56	2026-08-29T02:46:06+02:00	fix(auth): webben slutar be om e-post — uppgiftsminimeringen blir sann
+commit 37129cdd792473bf54ddf5427f0a1237a881dd56 2026-08-29T02:46:06+02:00
 
 0	5	web/templates/index.html
-@@15d82c7523b9224be509f188346bbf3f2eba42ea	2026-08-28T23:49:53+02:00	fix(auth): riv email ur testfixturer + keryx-kommentar — kompilerar och vet:ar rent
+commit 15d82c7523b9224be509f188346bbf3f2eba42ea 2026-08-28T23:49:53+02:00
 
 1	1	server/api/handlers/army_display_units_test.go
 1	1	server/api/handlers/army_upkeep_test.go
@@ -2540,29 +2729,30 @@
 4	4	server/internal/transport/intercept_test.go
 2	2	server/internal/transport/transport_test.go
 2	2	server/internal/unit/model_colonize_fields_test.go
-@@2de0740a2f6fe66e3bdcdab948b2d753a897a67b	2026-08-28T23:49:14+02:00	fix(keryx): kharis-tröskelns felsträng ljuger inte längre om avståndet
+commit 2de0740a2f6fe66e3bdcdab948b2d753a897a67b 2026-08-28T23:49:14+02:00
 
 13	3	server/api/handlers/settlement.go
 20	0	server/api/handlers/settlement_test.go
-@@21e8a365be48089aa8bcf8d30e1add3c09f43135	2026-08-28T23:42:41+02:00	wip(auth): e-post ur auth — räddat ur övergiven worktree
+commit 21e8a365be48089aa8bcf8d30e1add3c09f43135 2026-08-28T23:42:41+02:00
 
 4	6	server/api/handlers/auth.go
 3	0	server/db/migrations/137_drop_player_email.down.sql
 1	0	server/db/migrations/137_drop_player_email.up.sql
 10	11	server/internal/auth/service.go
-@@27c1b6a0a203632f05bd2bd4029a27b914a1c5cf	2026-08-28T19:40:58+02:00	ekonomi(labor): riv procentallokeringen — /labor smalnas till en cult-devotion-ratt
+commit 27c1b6a0a203632f05bd2bd4029a27b914a1c5cf 2026-08-28T19:40:58+02:00
 
 79	239	server/api/handlers/province.go
 93	0	server/api/handlers/province_labor_narrow_test.go
 31	134	server/cmd/keryx/cmd_allocate.go
 6	12	web/static/js/megaron/ui/drawers/city.js
-@@4c5a8da0f386aa92e5d0af9015e36f342c420a3d	2026-08-28T19:01:06+02:00	verktyg(ekonomi): städa "breakeven"-ordet ur nya testkommentarer
+commit 7cd061a7de570d63333c4df14a93734af1033554 2026-08-28T19:09:22+02:00
+commit 4c5a8da0f386aa92e5d0af9015e36f342c420a3d 2026-08-28T19:01:06+02:00
 
 5	5	server/internal/economy/food_gubbar_required_test.go
-@@c95d98f8536ace06d0d87eb97d2de9cf104f9774	2026-08-28T18:55:14+02:00	test(krig/svaltretur): täck kriterium 4+5 — landenhet orörd, redan marscherande dispatchas inte om
+commit c95d98f8536ace06d0d87eb97d2de9cf104f9774 2026-08-28T18:55:14+02:00
 
 154	0	server/internal/combat/upkeep_naval_starvation_return_test.go
-@@f35cbd51b7a9e0dae505e45d56719e513e1c2dac	2026-08-28T18:49:23+02:00	wip(ekonomi): P4-arvet i province.go — räddat ur övergiven worktree
+commit f35cbd51b7a9e0dae505e45d56719e513e1c2dac 2026-08-28T18:49:23+02:00
 
 90	0	server/api/handlers/marginal_yield_parity_test.go
 109	111	server/api/handlers/province.go
@@ -2576,7 +2766,7 @@
 56	0	server/internal/economy/placement_yield.go
 11	3	web/static/js/megaron/ui/drawers/city.js
 4	2	web/static/megaron.css
-@@fb566cba76ebbee44c9f9a6c2e16195b15465cd6	2026-08-28T08:43:59+02:00	krig(svaltretur): svältande skepp till sjöss vänder hem av sig själv
+commit fb566cba76ebbee44c9f9a6c2e16195b15465cd6 2026-08-28T08:43:59+02:00
 
 1	1	server/api/handlers/upkeep_fish_test.go
 30	0	server/cmd/keryx/cmd_notifications.go
@@ -2599,33 +2789,34 @@
 10	0	web/static/js/megaron/ui/format.js
 4	0	web/static/js/megaron/ui/format.test.mjs
 2	1	web/static/js/megaron/ws.js
-@@2b0395dc52749de8a6b3f3e80263f5918b47b79d	2026-08-28T08:09:36+02:00	verktyg(ekonomi): recompute-all — production_rules når inte en tyst stad utan den
+commit 2b0395dc52749de8a6b3f3e80263f5918b47b79d 2026-08-28T08:09:36+02:00
 
 154	0	server/cmd/recompute-all/main.go
-@@d0eceb263be3c9406fc95f30001c32e460a3f627	2026-08-28T07:45:17+02:00	fix(ekonomi): stenfönstret omkalibrerat till den nya skalan — S4 klar, sviten grön
+commit 07e3cd4cecde399e6059cd072fcc0e2ba7f97b75 2026-08-28T07:58:42+02:00
+commit d0eceb263be3c9406fc95f30001c32e460a3f627 2026-08-28T07:45:17+02:00
 
 28	9	server/internal/economy/stone_sink_test.go
 1	0	server/internal/province/training.go
-@@ca599a0f18458f6ad4486e454bcb41d86e1f9700	2026-08-28T07:44:07+02:00	fix(keryx): hostets synradie är 2, inte 1 — och det är exakt catchmenten
+commit ca599a0f18458f6ad4486e454bcb41d86e1f9700 2026-08-28T07:44:07+02:00
 
 10	1	server/cmd/keryx/cmd_founding.go
-@@998b76f64998696cc407a2fe92fef6ee251b00d6	2026-08-27T22:49:10+02:00	fix(karta): silvret hamnar där städer faktiskt grundas
+commit 998b76f64998696cc407a2fe92fef6ee251b00d6 2026-08-27T22:49:10+02:00
 
 28	6	server/api/handlers/join.go
 123	0	server/api/handlers/join_silver_bias_test.go
 61	10	server/internal/world/mapgen.go
 280	0	server/internal/world/mapgen_catchment_coverage_test.go
-@@41e7ce2b637c8c12de41c2dedcde0a989915997d	2026-08-27T22:34:22+02:00	wip(province): S4 — kostnadskatalogen kalibrerad i dagsverken, en kanonfråga öppen
+commit 41e7ce2b637c8c12de41c2dedcde0a989915997d 2026-08-27T22:34:22+02:00
 
 9	11	server/internal/combat/ship_repair_test.go
 11	6	server/internal/kharis/reinforce_trickle_test.go
 50	19	server/internal/province/building.go
 32	12	server/internal/province/training.go
-@@9d21bc302d9da48e07bc57f1c0bd69f7acac4d3d	2026-08-27T22:24:33+02:00	fix(province): ceder ur den generella progressionen — trappan var låst för alla
+commit 9d21bc302d9da48e07bc57f1c0bd69f7acac4d3d 2026-08-27T22:24:33+02:00
 
 39	12	server/internal/province/building.go
 60	11	server/internal/province/levelled_building_test.go
-@@8d818aa5bf718b1be0b584dc1b70dbdf9887656b	2026-08-27T21:19:45+02:00	test(ekonomi): räkna om testernas tal till dagsverkesskalan
+commit 8d818aa5bf718b1be0b584dc1b70dbdf9887656b 2026-08-27T21:19:45+02:00
 
 10	8	server/api/handlers/army_upkeep_test.go
 9	7	server/api/handlers/province_ticklog_grain_consumption_test.go
@@ -2647,7 +2838,7 @@
 13	5	server/internal/economy/stone_sink_test.go
 8	4	server/internal/economy/wine_beyond_hills_test.go
 4	1	server/internal/kharis/grain_reserve_test.go
-@@829441a585d4fa6d5109eb39bac4999185a44fdd	2026-08-27T20:53:35+02:00	wip(ekonomi): dagsverkesskalan — motorn omskalad, testernas tal kvar
+commit 829441a585d4fa6d5109eb39bac4999185a44fdd 2026-08-27T20:53:35+02:00
 
 8	4	server/api/handlers/create_metropolis.go
 5	2	server/cmd/keryx/cmd_status.go
@@ -2661,7 +2852,12 @@
 27	2	server/internal/kharis/tick.go
 38	20	server/internal/province/building.go
 17	6	server/internal/province/training.go
-@@bc9046cafc138b9c78cc0704f3ae98fea402274b	2026-08-26T23:32:09+02:00	fix(keryx): sjöordern heter patrol, inte sentry — och placements finns nu
+commit 9763d217bc3ac2df46def6070c39232a8e09390c 2026-08-26T23:48:05+02:00
+commit e546650088974f56d371dd184b9cbb288e3def0c 2026-08-26T23:48:05+02:00
+commit 3bbcf5d9b04804616857cb6c863c65bc05fd401c 2026-08-26T23:48:05+02:00
+commit 1f89af1838a64b8e0514e619b3f9d0af8251e1d9 2026-08-26T23:48:05+02:00
+commit 2d641f8c81bebc9eb2f713f62f65b0fc0a90397c 2026-08-26T23:47:57+02:00
+commit bc9046cafc138b9c78cc0704f3ae98fea402274b 2026-08-26T23:32:09+02:00
 
 13	0	server/cmd/keryx/cmd_aliases.go
 27	1	server/cmd/keryx/cmd_aliases_test.go
@@ -2673,10 +2869,10 @@
 32	18	server/internal/combat/march_start.go
 190	0	server/internal/combat/march_start_patrol_alias_test.go
 6	3	server/internal/combat/unit_arrival.go
-@@699b5a26d207af6a901b662e9b5b2d431bbf6d53	2026-08-26T23:29:08+02:00	test(ekonomi): pinna Plikt→Föda→Tillväxt-ordningen explicit i priority_test.go
+commit 699b5a26d207af6a901b662e9b5b2d431bbf6d53 2026-08-26T23:29:08+02:00
 
 9	0	server/internal/events/priority_test.go
-@@6d9b24f199855eeb2600565491663af0f19d3764	2026-08-26T23:21:18+02:00	verifiera(ekonomi): utfodringsordningen — rött-före-svit + D6-sveptets sista hål
+commit 6d9b24f199855eeb2600565491663af0f19d3764 2026-08-26T23:21:18+02:00
 
 15	7	server/api/handlers/found_metropolis.go
 50	41	server/api/handlers/province.go
@@ -2692,18 +2888,19 @@
 5	4	server/internal/economy/recompute_stale_rate_test.go
 8	8	server/internal/economy/siege_test.go
 6	2	web/static/js/megaron/ui/drawers/city.js
-@@5d5289db9ddc653af753679e0d662fef50ed3387	2026-08-26T23:14:50+02:00	web(city): lägg lojalitetslogg i stadsdragaren
+commit 3cccfbf799e22504b15a184ba306dfe5eb40c658 2026-08-26T23:18:26+02:00
+commit 5d5289db9ddc653af753679e0d662fef50ed3387 2026-08-16T10:59:41+02:00
 
 47	1	web/static/js/megaron/ui/drawers/city.js
 61	0	web/static/js/megaron/ui/drawers/city.test.mjs
-@@fc7e74596c261c1bfb3537cce433fb096b881a34	2026-08-26T23:14:30+02:00	web(gossip): ny drawer för rykten + kända wanaxer (keryx-paritet)
+commit fc7e74596c261c1bfb3537cce433fb096b881a34 2026-08-16T10:59:43+02:00
 
 3	0	web/static/js/megaron/main.js
 105	0	web/static/js/megaron/ui/drawers/gossip.js
 125	0	web/static/js/megaron/ui/drawers/gossip.test.mjs
 14	0	web/static/map.html
 7	0	web/static/megaron.css
-@@25924ff6564bb5da74a4a2c360b8790143e7b4c3	2026-08-26T23:05:11+02:00	ekonomi(grundningsprognos): en formel, två anrop — prognosen kör riktig placering
+commit 25924ff6564bb5da74a4a2c360b8790143e7b4c3 2026-08-26T23:05:11+02:00
 
 15	4	server/api/handlers/colonize_preview_fish_test.go
 101	0	server/api/handlers/founding_forecast_parity_test.go
@@ -2712,17 +2909,17 @@
 174	77	server/internal/economy/founding_forecast_test.go
 63	15	server/internal/economy/founding_placement.go
 33	6	server/internal/economy/placement_yield.go
-@@641c68b2d3d8efe2eee82b7cf4ec42de8f095033	2026-08-26T22:55:10+02:00	db(temples): drop the dead temples table (mig 135)
+commit 641c68b2d3d8efe2eee82b7cf4ec42de8f095033 2026-08-26T22:55:10+02:00
 
 12	0	server/db/migrations/135_drop_temples_table.down.sql
 18	0	server/db/migrations/135_drop_temples_table.up.sql
-@@d1488eca9da0ed1663c892f6ee58d5cba53428c0	2026-08-26T22:55:00+02:00	fix(build): BuildComplete-notisen pekar mot placering, inte döda labor-vikter
+commit d1488eca9da0ed1663c892f6ee58d5cba53428c0 2026-08-26T22:55:00+02:00
 
 16	19	server/internal/combat/build.go
 202	0	server/internal/combat/build_notify_test.go
 0	136	server/internal/economy/auto_alloc.go
 0	203	server/internal/economy/auto_alloc_test.go
-@@4348d0546c8ebd01465a5631b0e1c78af458a66f	2026-08-26T22:49:06+02:00	wip(ekonomi): utfodringsordningen — motorn byggd, slicens egna tester saknas
+commit 4348d0546c8ebd01465a5631b0e1c78af458a66f 2026-08-26T22:43:51+02:00
 
 3	0	server/cmd/server/main.go
 1	0	server/db/migrations/134_food_tick_unmet.down.sql
@@ -2737,19 +2934,20 @@
 31	15	server/internal/kharis/tick.go
 15	5	server/internal/loyalty/welfare.go
 10	4	server/internal/loyalty/welfare_idempotent_test.go
-@@d61208d1c2381de16f52f9ae009da60f06ec5da7	2026-08-26T18:43:21+02:00	fix: rätta attribution + varna för den speglade konstanten
+commit 871e683ff014d9899e1ccb8c1c582a89d722f7eb 2026-08-26T18:43:34+02:00
+commit d61208d1c2381de16f52f9ae009da60f06ec5da7 2026-08-26T18:43:21+02:00
 
 5	2	server/cmd/keryx/cmd_status.go
 7	0	server/internal/economy/recompute.go
-@@59436f4f35115e928e4a065e0748147c1e1a2f98	2026-08-26T18:41:05+02:00	fix(keryx): sänka som storlek, inte ja/nej — mätningen visade två läckor
+commit 59436f4f35115e928e4a065e0748147c1e1a2f98 2026-08-26T18:41:05+02:00
 
 215	103	server/cmd/keryx/cmd_status.go
 158	86	server/cmd/keryx/cmd_status_surplus_test.go
-@@c1d3e24f76db436b71e36e42332c5e1732ac1c73	2026-08-26T18:38:19+02:00	fix(keryx): 'in 1 game-days' → singular, och ett test som höll pluralfelet på plats
+commit c1d3e24f76db436b71e36e42332c5e1732ac1c73 2026-08-26T18:38:19+02:00
 
 5	1	server/cmd/keryx/output.go
 14	2	server/cmd/keryx/output_test.go
-@@27dfa4c6bf70d183162c32ab6a332a2181d128df	2026-08-26T18:37:16+02:00	fix(keryx): rad K review — engelsk renderare, game-days, any moment, watch trådad
+commit 27dfa4c6bf70d183162c32ab6a332a2181d128df 2026-08-26T18:37:16+02:00
 
 10	8	server/cmd/keryx/cmd_notifications.go
 5	4	server/cmd/keryx/cmd_sightings.go
@@ -2758,7 +2956,7 @@
 7	3	server/cmd/keryx/cmd_watch_test.go
 14	6	server/cmd/keryx/output.go
 34	12	server/cmd/keryx/output_test.go
-@@1b67f0b09127da3d7673c97a989b1fb29884cd4f	2026-08-26T18:28:39+02:00	fix(keryx): rad K — ankomsttider i speldygn, inte väggklocka/realtid
+commit 1b67f0b09127da3d7673c97a989b1fb29884cd4f 2026-08-26T18:28:39+02:00
 
 43	0	server/cmd/keryx/client.go
 1	1	server/cmd/keryx/cmd_build.go
@@ -2775,37 +2973,37 @@
 13	13	server/cmd/keryx/cmd_unit.go
 47	10	server/cmd/keryx/output.go
 46	7	server/cmd/keryx/output_test.go
-@@b3a0e5bfb8a23ec74ff2264353d4f01e23861536	2026-08-26T18:24:11+02:00	fix(keryx): ersätt inert takvarning med sänklöshet+räckvidd
+commit b3a0e5bfb8a23ec74ff2264353d4f01e23861536 2026-08-26T18:24:11+02:00
 
 138	39	server/cmd/keryx/cmd_status.go
 0	152	server/cmd/keryx/cmd_status_ceiling_test.go
 227	0	server/cmd/keryx/cmd_status_surplus_test.go
-@@25f1215f475381324a015150b25588e50b5aa3c2	2026-08-26T09:42:42+02:00	fix(web/sitos): magasinets TILLSTÅND, inte bara dess tal — parad mot keryx
+commit 25f1215f475381324a015150b25588e50b5aa3c2 2026-08-26T09:38:39+02:00
 
 3	1	web/static/js/megaron/ui/drawers/city.js
 56	0	web/static/js/megaron/ui/drawers/sitos_view.js
 62	0	web/static/js/megaron/ui/drawers/sitos_view.test.mjs
 9	0	web/static/megaron.css
-@@003ea04d252786a2f099ee66bced541ebbe48e66	2026-08-26T09:42:42+02:00	fix(webb): kult_level ljög rå svenska — översätt till samma humörord som Mood
+commit 003ea04d252786a2f099ee66bced541ebbe48e66 2026-08-26T09:29:21+02:00
 
 20	3	web/static/js/megaron/ui/drawers/kult.js
 37	0	web/static/js/megaron/ui/drawers/kult.test.mjs
-@@9bb556b4a5a471c2c76cf31cc140bbfbba17a4e1	2026-08-26T09:42:42+02:00	test(loyalty): rädda unik täckning ur ocommittad borrowed_army_test.go (2026-08-16)
+commit 9bb556b4a5a471c2c76cf31cc140bbfbba17a4e1 2026-08-26T09:34:40+02:00
 
 168	0	server/internal/loyalty/borrowed_army_underthreshold_test.go
-@@4c37c6e42cc36dcc831ab197cde88c4d6bc5da11	2026-08-26T09:42:42+02:00	test(krig): KR2-detektionen visar sig redan obetingad — inget att bygga
+commit 4c37c6e42cc36dcc831ab197cde88c4d6bc5da11 2026-08-26T09:30:55+02:00
 
 99	0	server/internal/combat/march_sighting_test.go
-@@ed22f86eeec8011c9fc6b11582cf695c76fae302	2026-08-26T09:42:42+02:00	fix(keryx): magasinets tigande blir en testad, ren funktion
+commit ed22f86eeec8011c9fc6b11582cf695c76fae302 2026-08-26T09:29:20+02:00
 
 26	11	server/cmd/keryx/cmd_status.go
 42	0	server/cmd/keryx/cmd_status_test.go
-@@9b7ea5049c98e40695b343a8f17065b06b6d9672	2026-08-26T09:38:56+02:00	fix(ekonomi): gruvgrinden mäter samma catchment som produktionen — radie 1 → hexgrid.CatchmentRadius
+commit 9b7ea5049c98e40695b343a8f17065b06b6d9672 2026-08-26T09:38:56+02:00
 
 19	14	server/api/handlers/province.go
 264	0	server/api/handlers/province_mine_catchment_test.go
 75	20	server/internal/world/mapgen.go
-@@0763d6d7944d2995ff8d4bbecbb8ae8d7ca0f91c	2026-08-26T09:11:42+02:00	feat(krig): skeppet bär sin egen mat — proviant vid avfärd, matmätare ombord
+commit 0763d6d7944d2995ff8d4bbecbb8ae8d7ca0f91c 2026-08-26T09:11:42+02:00
 
 25	2	server/api/handlers/unit.go
 23	1	server/cmd/keryx/cmd_unit.go
@@ -2817,7 +3015,7 @@
 178	0	server/internal/combat/voyage_provisions_test.go
 7	2	server/internal/unit/model.go
 17	1	web/static/js/megaron/ui/drawers/war.js
-@@ccd141bad7be5313c406d34073438e9eba8a23d5	2026-08-26T08:13:54+02:00	fix(keryx): unit watch -> unit post — 'watch' betydde två saker
+commit ccd141bad7be5313c406d34073438e9eba8a23d5 2026-08-26T08:13:54+02:00
 
 9	9	server/cmd/keryx/cmd_unit.go
 61	0	server/cmd/keryx/cmd_unit_post_test.go
@@ -2826,14 +3024,15 @@
 110	0	server/internal/capabilities/post_verb_test.go
 1	1	server/internal/capabilities/registry.go
 0	110	server/internal/capabilities/watch_verb_test.go
-@@96672abf1085945cde6c1b931bb4f7141108fef6	2026-08-26T08:10:59+02:00	feat(keryx): den framskjutna posten får ett namn — unit watch
+commit 96672abf1085945cde6c1b931bb4f7141108fef6 2026-08-26T08:10:59+02:00
 
 90	0	server/cmd/keryx/cmd_unit.go
 61	0	server/cmd/keryx/cmd_unit_watch_test.go
 40	2	server/internal/capabilities/military_verbs.go
 1	0	server/internal/capabilities/registry.go
 110	0	server/internal/capabilities/watch_verb_test.go
-@@7ec0e06e92e5d23b94e87fccfabe4afe3117be0c	2026-08-25T23:57:49+02:00	feat(krig): besättningen påverkar farten (Slice B)
+commit 9396e8b789ac8aead89837318fb2005e4b82e473 2026-08-26T00:00:21+02:00
+commit 7ec0e06e92e5d23b94e87fccfabe4afe3117be0c 2026-08-25T23:57:49+02:00
 
 57	0	server/internal/combat/crew_speed_factor_test.go
 40	10	server/internal/combat/march_start.go
@@ -2843,7 +3042,10 @@
 11	4	server/internal/combat/travel_factor_test.go
 1	1	server/internal/combat/unit_arrival.go
 4	4	server/internal/messenger/march_recall.go
-@@57010b141ffdfc7cdacc2b78a8c38a3720083baf	2026-08-25T23:55:40+02:00	feat(keryx): keryx watch — WebSocket client mot befintlig notify-hub
+commit b9bfeba60954125b581f378f5b7fa009be761fc8 2026-08-25T23:57:17+02:00
+commit 8dc7b9bdf7947332d25b11e95e1473e8c589f34e 2026-08-25T23:57:17+02:00
+commit 2eda664ae942355303b724c41deeb8320ca00491 2026-08-25T23:57:10+02:00
+commit 57010b141ffdfc7cdacc2b78a8c38a3720083baf 2026-08-25T23:55:40+02:00
 
 11	0	server/cmd/keryx/cmd_notifications.go
 280	0	server/cmd/keryx/cmd_watch.go
@@ -2851,12 +3053,12 @@
 1	0	server/cmd/keryx/main.go
 3	4	server/go.mod
 0	4	server/go.sum
-@@ac4db219acd5ce08247ff8262bbd85aec3142430	2026-08-25T23:54:52+02:00	fix(keryx): grundningsprognosens NETTO ljuger inte längre som "+0"
+commit ac4db219acd5ce08247ff8262bbd85aec3142430 2026-08-25T23:54:52+02:00
 
 32	11	server/cmd/keryx/cmd_unit.go
 91	0	server/cmd/keryx/cmd_unit_forecast_test.go
 25	0	server/cmd/keryx/cmd_unit_formatnet_test.go
-@@dc0ba75a020c0b71175ba8983f14d5e8b0a6e482	2026-08-25T23:52:27+02:00	kult(religion): en tröskeltabell, inte tre (Slice 2, kultbrunnen §6)
+commit dc0ba75a020c0b71175ba8983f14d5e8b0a6e482 2026-08-25T23:52:27+02:00
 
 9	7	server/api/handlers/web.go
 27	5	server/internal/kharis/mood_test.go
@@ -2864,7 +3066,7 @@
 13	0	server/internal/religion/mood.go
 25	21	server/internal/religion/prayers.go
 6	4	server/internal/religion/prayers_test.go
-@@37e1e844293f38efd26a6839405a55eb6ce1f6af	2026-08-25T23:52:08+02:00	refactor(krig): samla restidsmultiplikatorerna i TravelFactor (Slice A)
+commit 37e1e844293f38efd26a6839405a55eb6ce1f6af 2026-08-25T23:52:08+02:00
 
 18	10	server/internal/combat/march_start.go
 5	8	server/internal/combat/recall_redirect.go
@@ -2872,7 +3074,7 @@
 48	0	server/internal/combat/travel_factor_test.go
 7	11	server/internal/combat/unit_arrival.go
 4	8	server/internal/messenger/march_recall.go
-@@8e3c471c9daac5f298f11a7e4451596410139c3a	2026-08-25T23:17:48+02:00	fix(kult): nådefrist 24 tick — en Wanax föds inte längre i brunnen
+commit 8e3c471c9daac5f298f11a7e4451596410139c3a 2026-08-25T23:17:48+02:00
 
 9	3	server/api/handlers/create_metropolis.go
 102	0	server/api/handlers/create_metropolis_founded_tick_test.go
@@ -2880,31 +3082,34 @@
 13	0	server/db/migrations/132_wanax_founded_tick.up.sql
 62	0	server/internal/kharis/founding_grace_test.go
 55	3	server/internal/kharis/tick.go
-@@fa9b8369c86e57c697d6640a91e2e62cd18d40db	2026-08-25T20:43:51+02:00	chore(migrations): renumrera hull-migrationen 125 -> 130
+commit b65ae91b0da24e51c5ebb719c6a6376c8281fd9f 2026-08-25T20:45:58+02:00
+commit e2484c51a45a58aa0255ead896ee74328bb2bb20 2026-08-25T20:45:05+02:00
+commit fa9b8369c86e57c697d6640a91e2e62cd18d40db 2026-08-25T20:43:51+02:00
 
 0	1	server/db/migrations/125_units_hull.down.sql
 0	11	server/db/migrations/125_units_hull.up.sql
 1	0	server/db/migrations/130_units_hull.down.sql
 11	0	server/db/migrations/130_units_hull.up.sql
-@@e392ba56898d0f59c94b240755ac0f1bba62aafa	2026-08-25T19:34:09+02:00	fix(cli): founding settle --help slutar ljuga om --json-läget
+commit 321dc0d605ca7a80a5f54a726ee9432ae4e23c9f 2026-08-25T20:43:33+02:00
+commit e392ba56898d0f59c94b240755ac0f1bba62aafa 2026-08-25T19:34:09+02:00
 
 6	3	server/cmd/keryx/cmd_founding.go
 32	0	server/cmd/keryx/cmd_founding_test.go
-@@2620e10da0e5561e33562f755f8c2a5f7d5ae0f0	2026-08-25T19:25:27+02:00	fix(krig): besättning tunnas, inte utplånas — naval attrition träffar crew
+commit 2620e10da0e5561e33562f755f8c2a5f7d5ae0f0 2026-08-25T19:25:27+02:00
 
 66	21	server/internal/combat/upkeep.go
 176	0	server/internal/combat/upkeep_attrition_test.go
-@@48e2368facb9ab1537d5561bd0f243947a1f7725	2026-08-25T18:54:03+02:00	fix(ekonomi): placeringar beskärs mot floor(pop/100), S1b:s låsta ordning
+commit 48e2368facb9ab1537d5561bd0f243947a1f7725 2026-08-25T18:54:03+02:00
 
 62	9	server/internal/economy/founding_placement.go
 196	0	server/internal/economy/placement_prune_test.go
 9	0	server/internal/kharis/tick.go
-@@2a0e4baf8fdb4bcd9fe66d65ced1c330fadf45f5	2026-08-25T07:23:09+02:00	fix(goods): arbetarantal ur placeringar, inte döda pre-P4-vikter
+commit 2a0e4baf8fdb4bcd9fe66d65ced1c330fadf45f5 2026-08-25T07:23:09+02:00
 
 109	0	server/api/handlers/goods_placement_labor_test.go
 62	26	server/api/handlers/province.go
 5	0	server/api/handlers/settlement_placement_test.go
-@@0925f571f10ca5cbfc9cef6488f926be388da350	2026-08-24T23:25:42+02:00	fix(cli): handelns/budbärarens dispatch-ETA:er läsbara — nedräkning, inte rå UTC
+commit 0925f571f10ca5cbfc9cef6488f926be388da350 2026-08-24T23:25:42+02:00
 
 1	1	server/cmd/keryx/cmd_goods.go
 2	2	server/cmd/keryx/cmd_gossip.go
@@ -2912,7 +3117,8 @@
 4	4	server/cmd/keryx/cmd_messenger_split.go
 13	0	server/cmd/keryx/output.go
 34	0	server/cmd/keryx/output_test.go
-@@78dfe8bbd1058ee5f69c7b7ddb29c600fd953dcf	2026-08-24T23:17:32+02:00	feat(ekonomi): byggnadsnivån höjer TAKTEN, inte taket — form B
+commit aec63adb0db33d32147063fde582bb1fdc1e8c8e 2026-08-24T23:17:38+02:00
+commit 78dfe8bbd1058ee5f69c7b7ddb29c600fd953dcf 2026-08-24T23:17:32+02:00
 
 26	8	server/api/handlers/settlement_placement.go
 20	12	server/internal/economy/founding_placement.go
@@ -2921,7 +3127,7 @@
 152	47	server/internal/economy/placement_yield.go
 63	42	server/internal/economy/placement_yield_test.go
 5	5	server/internal/economy/recompute.go
-@@8563d6b046f5ccf06632b3e883284519a7397399	2026-08-24T20:01:36+02:00	fix(economy): match stone rate to its own sink, warn on any good at cap
+commit 8563d6b046f5ccf06632b3e883284519a7397399 2026-08-24T20:01:36+02:00
 
 110	0	server/cmd/keryx/cmd_status.go
 152	0	server/cmd/keryx/cmd_status_ceiling_test.go
@@ -2929,7 +3135,7 @@
 54	0	server/db/migrations/129_stone_matched_to_its_own_sink.up.sql
 111	0	server/internal/economy/stone_sink_test.go
 74	0	server/internal/economy/stone_soak_test.go
-@@3b796779b296ab6d6cecceedca818ab1216892b1	2026-08-24T17:32:58+02:00	fix(svep): fyra ytor som acceptanssvepet fann
+commit 3b796779b296ab6d6cecceedca818ab1216892b1 2026-08-24T17:32:58+02:00
 
 19	0	server/api/handlers/province.go
 44	0	server/cmd/keryx/cmd_notifications.go
@@ -2937,20 +3143,20 @@
 10	4	server/cmd/keryx/cmd_recruit.go
 1	1	server/cmd/keryx/main.go
 19	0	server/internal/kharis/tick.go
-@@101a8e76d664ba1634225cba2b9a14180e15b072	2026-08-24T17:17:31+02:00	fix(handel): mottagaren ser lasten hon betalat för — additivt role-fält
+commit 101a8e76d664ba1634225cba2b9a14180e15b072 2026-08-24T17:17:31+02:00
 
 44	0	server/api/handlers/map_trades_mine_test.go
 35	12	server/api/handlers/world.go
 20	10	server/cmd/keryx/cmd_goods.go
 21	0	web/static/js/megaron/ui/drawers/cargo.test.mjs
 12	9	web/static/js/megaron/ui/drawers/economy.js
-@@e449bf1221c1bb69f581563837715a9bd4f26f24	2026-08-24T17:17:31+02:00	fix(kharis): tillväxten får inte äta utsädet — spannmålsreserv
+commit e449bf1221c1bb69f581563837715a9bd4f26f24 2026-08-24T17:17:31+02:00
 
 21	0	server/internal/kharis/applydecay_idempotent_test.go
 9	2	server/internal/kharis/grain_growth_test.go
 80	0	server/internal/kharis/grain_reserve_test.go
 38	3	server/internal/kharis/tick.go
-@@ce4bf30ffddf4493edc7af5f9a3211e69d7ca123	2026-08-24T17:09:06+02:00	fix(events): dygnet får en körordning — plikt före tillväxt
+commit ce4bf30ffddf4493edc7af5f9a3211e69d7ca123 2026-08-24T17:09:06+02:00
 
 2	0	server/db/migrations/128_scheduled_events_priority.down.sql
 28	0	server/db/migrations/128_scheduled_events_priority.up.sql
@@ -2958,73 +3164,76 @@
 146	0	server/internal/events/priority_dispatch_test.go
 103	0	server/internal/events/priority_test.go
 40	12	server/internal/events/scheduler.go
-@@6983c99269363fe9931350c12ecc04699a330015	2026-08-24T05:42:13+02:00	fix(keryx): wants slutar påstå att spelaren inte kontaktat någon stad
+commit 54a262067a6c4756ec53b49783242296aac5bada 2026-08-24T05:44:44+02:00
+commit 574bc134e438557f48d8e02d0eb91df5d427fb88 2026-08-24T05:42:50+02:00
+commit 6983c99269363fe9931350c12ecc04699a330015 2026-08-24T05:42:13+02:00
 
 31	1	server/cmd/keryx/cmd_wants.go
 97	0	server/cmd/keryx/cmd_wants_test.go
-@@697246172d7c13c219e2b27b35bcc63863069a49	2026-08-24T05:35:30+02:00	fix(keryx): unit-kommandon löser --unit/--ship som prefix mot ägda enheter
+commit 697246172d7c13c219e2b27b35bcc63863069a49 2026-08-24T05:35:30+02:00
 
 54	0	server/cmd/keryx/cmd_resolve.go
 86	0	server/cmd/keryx/cmd_resolve_test.go
 50	0	server/cmd/keryx/cmd_unit.go
-@@30a46c557dd1706a113ea2c271dd457b24b87c6e	2026-08-24T05:26:11+02:00	fix(keryx): march och redirect tar nu båda --q/--r OCH --target q,r
+commit 30a46c557dd1706a113ea2c271dd457b24b87c6e 2026-08-24T05:26:11+02:00
 
 59	16	server/cmd/keryx/cmd_unit.go
 106	0	server/cmd/keryx/cmd_unit_target_test.go
-@@97762895af2361803d5ad1cce592515a1a2dff2b	2026-08-24T05:25:03+02:00	fix(recruit): visa befolkningskostnaden i rekryteringssvaret
+commit 97762895af2361803d5ad1cce592515a1a2dff2b 2026-08-24T05:25:03+02:00
 
 9	0	server/api/handlers/province.go
 73	0	server/api/handlers/recruit_pop_drawn_test.go
 20	5	server/cmd/keryx/cmd_recruit.go
-@@a8d8f867ac3d9cc9915b223cdbae87102b784770	2026-08-24T05:24:09+02:00	fix(keryx): recall får ett topnivå-alias (matchar march/army/reinforce)
+commit a8d8f867ac3d9cc9915b223cdbae87102b784770 2026-08-24T05:24:09+02:00
 
 14	0	server/cmd/keryx/cmd_aliases.go
 13	0	server/cmd/keryx/cmd_aliases_test.go
 1	0	server/cmd/keryx/main.go
-@@993e1a2ff3ae364f7c680256278e000a2151d3f3	2026-08-24T01:10:08+02:00	fix(ticklog): visa grain-konsumtion även vid positiv nettotakt
+commit 993e1a2ff3ae364f7c680256278e000a2151d3f3 2026-08-24T01:10:08+02:00
 
 28	0	server/api/handlers/province.go
 168	0	server/api/handlers/province_ticklog_grain_consumption_test.go
-@@8feeef5ace17647fb599ab6f299f3bc272864db9	2026-08-24T01:06:44+02:00	fix(keryx): UnitExploreReturned-notisen läses inte längre som "spanaren är hemma"
+commit 8feeef5ace17647fb599ab6f299f3bc272864db9 2026-08-24T01:06:44+02:00
 
 29	0	server/cmd/keryx/cmd_notifications.go
-@@ab926a69f95ec8eaf6556def06e19cee7d796f4a	2026-08-24T01:06:41+02:00	fix(keryx): disband bär kanoniska enhetsnamn, pensionerade blir dolda alias
+commit ab926a69f95ec8eaf6556def06e19cee7d796f4a 2026-08-24T01:06:41+02:00
 
 32	13	server/cmd/keryx/cmd_disband.go
 133	0	server/cmd/keryx/cmd_disband_test.go
 9	0	server/internal/unit/model.go
 29	0	server/internal/unit/naming_test.go
-@@944d10a50ba7130ff0ae226e8161bb36bcc5f4bc	2026-08-24T01:04:50+02:00	fix(kharis): gudastraff/välsignelse bokför utfall och notifierar ägaren
+commit 944d10a50ba7130ff0ae226e8161bb36bcc5f4bc 2026-08-24T01:04:50+02:00
 
 188	0	server/internal/kharis/divine_effects_test.go
 147	42	server/internal/kharis/tick.go
-@@13ae667809f35bb1d658b3f7bb976eb13f5045e0	2026-08-24T01:03:24+02:00	docs(keryx): status --json namnger var grain/silver faktiskt bor
+commit 13ae667809f35bb1d658b3f7bb976eb13f5045e0 2026-08-24T01:03:24+02:00
 
 22	1	server/cmd/keryx/cmd_status.go
-@@6ecfed03744c3ed712154ea16285f7b69da0db02	2026-08-24T01:02:33+02:00	fix(keryx): silvervarningen skriker varg — grinda ⚠ på lagerräckvidd, inte nettoteckent
+commit 6ecfed03744c3ed712154ea16285f7b69da0db02 2026-08-24T01:02:33+02:00
 
 56	28	server/cmd/keryx/cmd_status.go
 86	0	server/cmd/keryx/cmd_status_test.go
-@@f6e649bb604e6416239096e46f5c3417a5005378	2026-08-24T01:02:19+02:00	fix(keryx): staff temple ljuger inte längre om att templet saknas
+commit f6e649bb604e6416239096e46f5c3417a5005378 2026-08-24T01:02:19+02:00
 
 39	0	server/cmd/keryx/cmd_staff.go
-@@85a4e9a47c6513f3afd404ea68045f50c0c70e85	2026-08-24T00:44:54+02:00	test(keryx): lås place-parsningen — argräkning, delta-avvisning, bar -1
+commit 0b0c4a99f983d7a71fe8a9055dbb02f1ff956c29 2026-08-24T00:46:30+02:00
+commit 85a4e9a47c6513f3afd404ea68045f50c0c70e85 2026-08-24T00:44:54+02:00
 
 111	0	server/cmd/keryx/cmd_place_test.go
-@@c2d7fcf3765f89f834fc6068350159c9ab460ed6	2026-08-24T00:44:17+02:00	fix(namn): wanax_name till march-siktning, sista bara-username-läsningen
+commit c2d7fcf3765f89f834fc6068350159c9ab460ed6 2026-08-24T00:44:17+02:00
 
 6	1	server/api/handlers/kingdom.go
 100	0	server/api/handlers/wanax_name_join_test.go
 1	1	server/internal/chronicle/chronicle.go
 1	1	server/internal/combat/march_sighting.go
 46	0	server/internal/combat/march_sighting_test.go
-@@a7b17bad76f6975c6af234ad726ac11a6f26cb8d	2026-08-24T00:40:24+02:00	fix(keryx): rätta --province-exemplet i place efter SetInterspersed(false)
+commit a7b17bad76f6975c6af234ad726ac11a6f26cb8d 2026-08-24T00:40:24+02:00
 
 1	1	server/cmd/keryx/cmd_place.go
-@@1797d9427ec3b9f8d048db0702762d5d1ec22eff	2026-08-24T00:39:21+02:00	feat(keryx): flytta en placerad gubbe på hex — place <roll> <ord> [+n|-n]
+commit 1797d9427ec3b9f8d048db0702762d5d1ec22eff 2026-08-24T00:39:21+02:00
 
 211	42	server/cmd/keryx/cmd_place.go
-@@eafa218c47701ff05ab1ac75d0b7208192870dd9	2026-08-23T14:41:22+02:00	fix(ekonomi): sänk Nomadic Hostens seedbefolkning 4000 → 1000
+commit eafa218c47701ff05ab1ac75d0b7208192870dd9 2026-08-23T14:13:42+02:00
 
 1	1	server/api/handlers/create_metropolis.go
 22	7	server/api/handlers/nomadic_host.go
@@ -3032,26 +3241,29 @@
 1	1	server/api/handlers/world.go
 1	1	server/internal/unit/model.go
 2	2	server/internal/unit/nomadic_host_test.go
-@@ea2b96fd0e0abcb911d94f7800f1a5ab380cfc80	2026-08-23T00:41:14+02:00	feat(ekonomi): byggnadsnivån höjer produktionen — form A
+commit 65a11d4a9c41b23f89574cb30e562b28a5050861 2026-08-23T00:42:07+02:00
+commit ea2b96fd0e0abcb911d94f7800f1a5ab380cfc80 2026-08-23T00:41:14+02:00
 
 147	0	server/internal/economy/building_level_yield_test.go
 99	0	server/internal/economy/hex_good_caps_form_a_test.go
 88	37	server/internal/economy/placement_yield.go
 47	20	server/internal/economy/placement_yield_test.go
 5	5	server/internal/economy/recompute.go
-@@15175bb1f3fb783b6f963fd3e93790d4a40afd5b	2026-08-23T00:30:35+02:00	feat(keryx): reinforce-verbet — CLI-ytan för manskaps-underhåll
+commit 15175bb1f3fb783b6f963fd3e93790d4a40afd5b 2026-08-23T00:30:35+02:00
 
 8	0	server/cmd/keryx/cmd_aliases.go
 59	0	server/cmd/keryx/cmd_unit.go
 1	0	server/cmd/keryx/main.go
-@@f653cc1851d2cf358ae5960d5dfd549f29288ec3	2026-08-22T20:19:44+02:00	feat(combat): KR2 — fientliga härar i samma hex möts
+commit 57dff36690ba5f9369f9af7ec1ac5e66b18c4d2e 2026-08-22T20:21:55+02:00
+commit 705e531b3e0b61b1d838b5a99636e80904e692b8 2026-08-22T20:19:48+02:00
+commit f653cc1851d2cf358ae5960d5dfd549f29288ec3 2026-08-22T20:19:44+02:00
 
 3	0	server/cmd/server/main.go
 391	0	server/internal/combat/march_encounter.go
 128	0	server/internal/combat/march_encounter_perf_test.go
 334	0	server/internal/combat/march_encounter_test.go
 10	0	server/internal/events/scheduler.go
-@@866e82c5dfdd98cbd45a417727bb0952f67362c1	2026-08-22T20:16:41+02:00	fix(foda): hard per-hex cap on grain placement (megaron_plan_grain_cap.md)
+commit 866e82c5dfdd98cbd45a417727bb0952f67362c1 2026-08-22T20:16:41+02:00
 
 18	13	server/api/handlers/settlement_placement.go
 48	13	server/api/handlers/settlement_placement_test.go
@@ -3064,42 +3276,46 @@
 5	4	server/internal/economy/siege_test.go
 64	7	server/internal/kharis/grain_growth_test.go
 5	3	server/internal/kharis/growth_placement_hook_test.go
-@@3133a3600f5518af76e7dd5cf838b27a2f66a8c2	2026-08-22T20:03:39+02:00	fix(events): dedup self-rescheduling tick events (G2 tail, mig 127)
+commit 61ea7d66516f1b8b1c49c88cce2592d398f26e34 2026-08-22T20:08:48+02:00
+commit 9cb0882b52375090582c6bab6f4a8e6e98b5bee9 2026-08-22T20:08:11+02:00
+commit 3133a3600f5518af76e7dd5cf838b27a2f66a8c2 2026-08-22T20:03:39+02:00
 
 1	0	server/db/migrations/127_scheduled_events_recurring_dedup.down.sql
 37	0	server/db/migrations/127_scheduled_events_recurring_dedup.up.sql
 13	1	server/internal/events/scheduler.go
 162	0	server/internal/events/scheduler_recurring_dedup_test.go
-@@d87d06de9f00c7d72561a85d7f0747452cf8cb8a	2026-08-22T15:35:29+02:00	webb: notislistan är ett arkiv · "ta bort allt" flyttar till chip-strömmen · drawer stänger inspect-panelen
+commit d87d06de9f00c7d72561a85d7f0747452cf8cb8a 2026-08-22T15:35:29+02:00
 
 10	3	web/static/js/megaron/main.js
 19	0	web/static/js/megaron/ui/chips.js
 7	12	web/static/js/megaron/ui/drawers/notif.js
 3	1	web/static/map.html
 20	6	web/static/megaron.css
-@@a05e0914043fdf2578ddcd93db12a775d2cd72cb	2026-08-22T15:32:14+02:00	fow: nomadhostens synradie 1 → 2 (uniform landradie, Timothy 2026-08-22)
+commit a05e0914043fdf2578ddcd93db12a775d2cd72cb 2026-08-22T15:32:14+02:00
 
 10	6	server/internal/province/hex.go
 27	21	server/internal/province/nomadic_host_vision_test.go
 1	1	server/internal/province/sea_horizon_test.go
-@@7607d98d1ebc371974195f9a2b25a88283ef1b1d	2026-08-20T19:00:52+02:00	fix: P4-ärlighet — Sitos grain-breakdown + keryx allocate-hjälp
+commit 4663aaaf2411dc5124ed521369a86c12a2697f82 2026-08-22T15:00:38+02:00
+commit 1676b9123357f04772e1789f26e145717401c7f6 2026-08-22T14:39:28+02:00
+commit 7607d98d1ebc371974195f9a2b25a88283ef1b1d 2026-08-20T19:00:52+02:00
 
 16	25	server/api/handlers/province.go
 5	3	server/cmd/keryx/cmd_allocate.go
-@@23bad20de1bda9ea4dfa90c50f5aa0dc617a1dd2	2026-08-20T18:56:18+02:00	fix(web): komplettera byggnads-label-mappar (silver_mine, rural-hexbyggnader)
+commit 23bad20de1bda9ea4dfa90c50f5aa0dc617a1dd2 2026-08-20T18:56:18+02:00
 
 4	1	web/static/js/megaron/render/map.js
 1	1	web/static/js/megaron/ui/drawers/city.js
-@@24313ba2bcc1f9ae711a9453c35715b35f3a3a10	2026-08-20T07:40:47+02:00	fix(web/city): fyra city-vy-fixar (tre ur Timothys spelrapporter)
+commit 24313ba2bcc1f9ae711a9453c35715b35f3a3a10 2026-08-20T07:40:47+02:00
 
 10	9	web/static/js/megaron/ui/drawers/city.js
-@@22f3b24c8bf1cb931dff7cfd3effd9685256d658	2026-08-20T07:35:39+02:00	test(krig): reinforce-modellen bevisad — trickle, pop-krymper-aldrig, pro-rata, idempotens
+commit 22f3b24c8bf1cb931dff7cfd3effd9685256d658 2026-08-20T07:35:39+02:00
 
 120	73	server/api/handlers/recruit_ship_test.go
 134	0	server/api/handlers/reinforce_endpoint_test.go
 123	0	server/internal/combat/origin_settlement_survives_march_test.go
 300	0	server/internal/kharis/reinforce_trickle_test.go
-@@f8d1f8e41d31ff7fc2a88d82426ece04e31bd9bd	2026-08-20T00:51:14+02:00	WIP(krig): rekryteringsmodell — kohort-rekrytering + manskaps-underhåll (OVERIFIERAD)
+commit f8d1f8e41d31ff7fc2a88d82426ece04e31bd9bd 2026-08-20T00:51:14+02:00
 
 43	33	server/api/handlers/province.go
 97	0	server/api/handlers/unit.go
@@ -3115,13 +3331,13 @@
 20	0	server/internal/unit/model.go
 2	1	web/static/js/megaron/main.js
 45	8	web/static/js/megaron/ui/drawers/war.js
-@@2d31daed00e0934e8b72157780aaaec447a47a4a	2026-08-19T20:58:22+02:00	chore(mig): renumber market_snapshot_rate 126→125 (sequential from master 124; Slice B renumbers to ≥126 at its merge)
+commit 2d31daed00e0934e8b72157780aaaec447a47a4a 2026-08-19T20:58:22+02:00
 
 2	0	server/db/migrations/125_market_snapshot_rate.down.sql
 2	0	server/db/migrations/125_market_snapshot_rate.up.sql
 0	2	server/db/migrations/126_market_snapshot_rate.down.sql
 0	2	server/db/migrations/126_market_snapshot_rate.up.sql
-@@f0654f5b59f8678289570eb1936a133d0ae89460	2026-08-19T20:36:40+02:00	handel: riv prismekanismen (PR1 upphävt) — wants/exports omrotade till lager+takt
+commit f0654f5b59f8678289570eb1936a133d0ae89460 2026-08-19T20:36:40+02:00
 
 229	0	server/api/handlers/market_wants_stock_rate_test.go
 43	55	server/api/handlers/province.go
@@ -3138,34 +3354,38 @@
 3	3	server/internal/religion/valuation.go
 7	5	web/static/js/megaron/ui/drawers/economy.js
 2	2	web/static/js/megaron/ui/drawers/kult.js
-@@6eae1419f5798fc906fb89ab06e96b3cb2837cf6	2026-08-17T22:59:40+02:00	fix(kharis): preserve cult devotion on labor re-alloc when cult is unnamed (KH1)
+commit 6eae1419f5798fc906fb89ab06e96b3cb2837cf6 2026-08-17T22:59:40+02:00
 
 32	5	server/api/handlers/province.go
 103	0	server/api/handlers/province_labor_cult_preserve_test.go
 1	0	server/api/handlers/settlement_placement_test.go
-@@408b7bfa5ecc5b80a315b2ceae173e7caf8667a0	2026-08-17T08:57:54+02:00	fix(loyalty): make penaliseKingKharis actually fire (role + moved column)
+commit 7bd8b23a5921fbddbd9d1fe7f43b98da4a1c7ff3 2026-08-17T08:58:18+02:00
+commit 408b7bfa5ecc5b80a315b2ceae173e7caf8667a0 2026-08-17T08:57:54+02:00
 
 18	10	server/internal/loyalty/borrowed_army.go
 55	19	server/internal/loyalty/borrowed_army_idempotent_test.go
-@@86aaa257e45f590da53938bea144eacf69e1e45e	2026-08-17T08:54:52+02:00	fix(g2): claim the ×0.99 grain/timber decay in applyDecay (exactly-once)
+commit 86aaa257e45f590da53938bea144eacf69e1e45e 2026-08-17T08:54:52+02:00
 
 78	14	server/internal/kharis/applydecay_idempotent_test.go
 40	17	server/internal/kharis/tick.go
-@@7a0529b38da9a4728c2c815fdc58c0cb87086351	2026-08-17T02:32:37+02:00	kharis: gör applyDecay idempotent (G2)
+commit cf69040db4cbf526389ad96ba648ce8438321c8b 2026-08-17T02:33:15+02:00
+commit feb325aa45a7aa60081544fee06f76e87d013fbe 2026-08-17T02:33:10+02:00
+commit 7a0529b38da9a4728c2c815fdc58c0cb87086351 2026-08-17T02:32:37+02:00
 
 157	0	server/internal/kharis/applydecay_idempotent_test.go
 12	1	server/internal/kharis/grain_growth_test.go
 33	5	server/internal/kharis/tick.go
-@@4636518755ad61f9c08ae8baef3151b4a0f12394	2026-08-17T02:30:36+02:00	fix(g2): UpkeepHandler idempotent — exactly-once grain/silver/unpaid_periods
+commit 4636518755ad61f9c08ae8baef3151b4a0f12394 2026-08-17T02:30:36+02:00
 
 46	1	server/internal/combat/upkeep.go
 154	0	server/internal/combat/upkeep_idempotent_test.go
 9	1	server/internal/combat/upkeep_unpaid_warning_test.go
-@@75ee3127e22971554e69653d402c6fc56e2854cd	2026-08-17T02:26:03+02:00	loyalty: exactly-once claim for decay tick (G2)
+commit 75ee3127e22971554e69653d402c6fc56e2854cd 2026-08-17T02:26:03+02:00
 
 19	2	server/internal/loyalty/decay.go
 158	0	server/internal/loyalty/decay_idempotent_test.go
-@@f04c3a8d7cc25a9d906168f8c0c25ca3e42dec83	2026-08-17T02:15:21+02:00	test(g2): idempotency regression för åtta återstående scheduled-event-handlers
+commit 29b2661b0170fd43c9f02f3dfb7bc6694d9b3f2e 2026-08-17T02:17:17+02:00
+commit f04c3a8d7cc25a9d906168f8c0c25ca3e42dec83 2026-08-17T02:15:21+02:00
 
 147	0	server/internal/combat/unit_arrival_idempotent_test.go
 169	0	server/internal/economy/offer_expiry_idempotent_test.go
@@ -3174,17 +3394,19 @@
 132	0	server/internal/loyalty/welfare_idempotent_test.go
 233	0	server/internal/messenger/handler_idempotent_test.go
 134	0	server/internal/transport/intercept_seize_idempotent_test.go
-@@4b9d21528753592a845897dc3338e6921a1b773e	2026-08-17T02:03:34+02:00	loyalty: gör BorrowedArmyPenaltyHandler idempotent (G2)
+commit 4b9d21528753592a845897dc3338e6921a1b773e 2026-08-17T02:03:34+02:00
 
 43	6	server/internal/loyalty/borrowed_army.go
 253	0	server/internal/loyalty/borrowed_army_idempotent_test.go
-@@4774639836dcce8071b04a97fe90aec66eafc4cd	2026-08-16T21:25:03+02:00	test(g2): idempotency regression för fyra scheduled-event-handlers
+commit e00563d15a416024211acd97fe58c4609db9c5d8 2026-08-16T22:04:04+02:00
+commit 9b036628c271c3be95c15184fd8d50fc03592124 2026-08-16T22:03:25+02:00
+commit 4774639836dcce8071b04a97fe90aec66eafc4cd 2026-08-16T21:25:03+02:00
 
 161	0	server/api/handlers/logistics_idempotent_test.go
 89	0	server/internal/combat/build_idempotent_test.go
 141	0	server/internal/combat/train_idempotent_test.go
 187	0	server/internal/loyalty/colony_idempotent_test.go
-@@095dd84ed4b4c8e49f6eb5706fb836e7da471ac5	2026-08-16T21:24:15+02:00	krig(skeppsrep): Slice C — varv + gubbar + virke återställer hull
+commit 095dd84ed4b4c8e49f6eb5706fb836e7da471ac5 2026-08-16T21:24:15+02:00
 
 3	1	server/api/handlers/unit.go
 175	0	server/api/handlers/unit_repair.go
@@ -3201,12 +3423,12 @@
 2	1	web/static/js/megaron/main.js
 28	0	web/static/js/megaron/ui/drawers/war.js
 6	0	web/static/js/megaron/ui/format.js
-@@e88af9c089441baa4f67c3b81207087d8bc35ecd	2026-08-16T21:12:10+02:00	handel: främmande enhets last syns (marknadssignal)
+commit e88af9c089441baa4f67c3b81207087d8bc35ecd 2026-08-16T21:12:10+02:00
 
 29	2	server/api/handlers/foreign_units.go
 250	0	server/api/handlers/foreign_units_cargo_test.go
 15	0	server/cmd/keryx/cmd_sightings.go
-@@f11b7b4a3ce0682a689f754c143f3920d9408f7f	2026-08-16T11:26:01+02:00	krig(skeppsrep): Slice B — hull dras på båda sidor, förloraren linkar hem
+commit f11b7b4a3ce0682a689f754c143f3920d9408f7f 2026-08-16T11:26:01+02:00
 
 10	1	server/api/handlers/unit.go
 29	0	server/cmd/keryx/cmd_notifications.go
@@ -3233,7 +3455,7 @@
 8	1	web/static/js/megaron/ui/drawers/war.js
 13	0	web/static/js/megaron/ui/format.js
 18	0	web/static/js/megaron/ui/format.test.mjs
-@@7e5b5b63586a1c240fb41a3d527c14c679e83ef1	2026-08-16T11:07:36+02:00	mapgen(spawn): persistera landmass + balansera join per landmassa
+commit 7e5b5b63586a1c240fb41a3d527c14c679e83ef1 2026-08-16T11:07:36+02:00
 
 30	15	server/api/handlers/join.go
 151	0	server/api/handlers/join_landmass_balance_test.go
@@ -3244,10 +3466,10 @@
 1	0	server/db/migrations/124_map_tiles_landmass.down.sql
 10	0	server/db/migrations/124_map_tiles_landmass.up.sql
 9	0	server/internal/world/mapgen.go
-@@6f3505a7e1ac9e2b7e46db410395be9fef2819cf	2026-08-14T00:12:45+02:00	städ(mig 007): rätta stale heartbeat-retentionkommentar 48h→168h
+commit 6f3505a7e1ac9e2b7e46db410395be9fef2819cf 2026-08-14T00:12:45+02:00
 
 2	1	server/db/migrations/007_kingdoms_cleanup_and_heartbeat.up.sql
-@@9d388740ebde97c019c96593f7524e6e59a53635	2026-08-14T00:12:32+02:00	städ: riv nio oåtkomliga funktioner (deadcode-svep) + kommentarhygien
+commit 9d388740ebde97c019c96593f7524e6e59a53635 2026-08-14T00:12:32+02:00
 
 1	1	server/api/handlers/create_metropolis.go
 0	16	server/api/handlers/db.go
@@ -3258,7 +3480,7 @@
 0	5	server/internal/capabilities/trade_verbs.go
 1	1	server/internal/combat/march_start.go
 0	111	server/internal/unit/model.go
-@@3e50745e9246d89c7fa8b44914b7b0700bf360de	2026-08-13T21:26:32+02:00	städ(combat): riv hela den KR3-ersatta engångsstridsresolvern
+commit 3e50745e9246d89c7fa8b44914b7b0700bf360de 2026-08-13T21:26:32+02:00
 
 0	38	server/internal/combat/fortune.go
 0	163	server/internal/combat/loyalty_l2_db_test.go
@@ -3269,7 +3491,7 @@
 5	545	server/internal/combat/unit_arrival.go
 0	155	server/internal/combat/unit_arrival_defender_wins_test.go
 0	501	server/internal/combat/unit_arrival_sack_test.go
-@@d5dee7508f5a7d598c2b2541894b575b2650624c	2026-08-13T19:12:20+02:00	webb+städ: decimal silver + två stale-kommentarsfix
+commit d5dee7508f5a7d598c2b2541894b575b2650624c 2026-08-13T19:12:20+02:00
 
 2	1	server/api/handlers/unit.go
 9	21	server/api/handlers/web.go
@@ -3277,33 +3499,36 @@
 12	14	web/static/js/megaron/ui/format.js
 23	1	web/static/js/megaron/ui/format.test.mjs
 0	13	web/templates/base.html
-@@2b6ec5fdf84422051de6c7767d44f36169b40dd0	2026-08-13T16:32:31+02:00	ekonomi(webb): synliggör lagringstakets spill i ekonomidragaren
+commit 2b6ec5fdf84422051de6c7767d44f36169b40dd0 2026-08-13T16:32:31+02:00
 
 26	1	web/static/js/megaron/ui/drawers/economy.js
 35	1	web/static/js/megaron/ui/drawers/economy.test.mjs
-@@cd5dfa82e5bd3c4fc6d7a0fea0913600be51e70d	2026-08-13T09:13:09+02:00	städ(war.js): ta bort död UNIT_DP-tabell (bara city.js använder DP)
+commit cd5dfa82e5bd3c4fc6d7a0fea0913600be51e70d 2026-08-13T09:13:09+02:00
 
 0	7	web/static/js/megaron/ui/drawers/war.js
-@@5d58192c3161dacf3fd7b50e7c6695be600c2266	2026-08-12T23:22:03+02:00	klient+rigg: sökrutans Enter navigerar + två riggfällor
+commit 5d58192c3161dacf3fd7b50e7c6695be600c2266 2026-08-12T23:22:03+02:00
 
 1	1	server/cmd/keryx/cmd_goods.go
 14	3	web/static/js/megaron/ui/search.js
 42	0	web/static/js/megaron/ui/search.test.mjs
-@@e5ff28e36962073ac60313c4b6d0851e09668b7c	2026-08-12T22:00:50+02:00	fow: gate /marches + /messengers on interpolated position, not endpoints
+commit d529499bea08243a440d33c2412152c51e44c2d4 2026-08-12T22:12:14+02:00
+commit e5ff28e36962073ac60313c4b6d0851e09668b7c 2026-08-12T22:00:50+02:00
 
 285	0	server/api/handlers/marches_messengers_fow_test.go
 91	26	server/api/handlers/world.go
-@@c90a29c5bdb37a1190fc08f9fdd1c6c2de9920f8	2026-08-12T21:49:33+02:00	föda: S1d — hjorden vid grundning (Nomadic Host bär boskap)
+commit c90a29c5bdb37a1190fc08f9fdd1c6c2de9920f8 2026-08-12T21:49:33+02:00
 
 5	4	server/api/handlers/create_metropolis.go
 37	0	server/api/handlers/create_metropolis_livestock_test.go
 8	2	server/internal/combat/unit_arrival.go
 132	0	server/internal/combat/unit_arrival_livestock_test.go
 9	0	server/internal/economy/recompute.go
-@@589b818b34c086c6a47600fe1998f8fd4311699e	2026-08-12T21:49:07+02:00	test(economy): direct unit tests for IsShippableGood (cult regel-hem)
+commit 589b818b34c086c6a47600fe1998f8fd4311699e 2026-08-12T21:49:07+02:00
 
 64	0	server/internal/economy/is_shippable_good_test.go
-@@da5bef08df27725d84b7915de617a25b2599b938	2026-08-12T17:06:36+02:00	krig: shipyard building splits shipbuilding off the harbour (Slice A)
+commit 367f557056dfbe9bd5306eeaaa0b398eafedc53a 2026-08-12T20:33:38+02:00
+commit db0c9a798a67bc8b21b48db1cad128b25c53f07e 2026-08-12T20:33:38+02:00
+commit da5bef08df27725d84b7915de617a25b2599b938 2026-08-12T17:06:36+02:00
 
 23	3	server/api/handlers/province.go
 8	8	server/api/handlers/recruit_afford_test.go
@@ -3321,7 +3546,7 @@
 11	6	server/internal/province/training.go
 3	2	web/static/js/megaron/ui/drawers/city.js
 3	3	web/static/js/megaron/ui/drawers/war.js
-@@11950ba369c3b9b2bac59bfd467bb75c63a23fca	2026-08-12T17:05:58+02:00	föda: S1c — slakt av boskap för befolkningstillväxt
+commit 11950ba369c3b9b2bac59bfd467bb75c63a23fca 2026-08-12T17:05:45+02:00
 
 128	0	server/api/handlers/settlement_placement.go
 5	0	server/api/handlers/settlement_placement_test.go
@@ -3332,7 +3557,7 @@
 8	0	server/internal/economy/recompute.go
 2	1	web/static/js/megaron/main.js
 35	1	web/static/js/megaron/ui/drawers/city.js
-@@35f2d4379a2dd3d88062ce3725d3d50ab8260b8b	2026-08-12T16:51:26+02:00	web: notification date header shows month name + ordinal
+commit 35f2d4379a2dd3d88062ce3725d3d50ab8260b8b 2026-08-12T16:51:26+02:00
 
 5	3	web/static/js/megaron/ui/drawers/notif.js
 9	0	web/static/js/megaron/ui/misc.js

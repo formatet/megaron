@@ -1,0 +1,1874 @@
+[
+  {
+    "id": "A",
+    "title": "Rekrytering: konkret beslut och atomisk domänhandling",
+    "rows": [
+      4,
+      15,
+      16
+    ],
+    "copies": [
+      "server/api/handlers/province.go:364",
+      "server/api/handlers/province.go:2005",
+      "server/internal/capabilities/province_verbs.go:77",
+      "server/internal/province/training.go:107"
+    ],
+    "copy_scope": "3 beslutsställen + katalog (inte fyra identiska kloner)",
+    "symbols": [
+      "canRecruit",
+      "CanRecruit",
+      "populationRequirement",
+      "PopulationRequirement"
+    ],
+    "consumers": "Konkret Recruit, status, capabilities; web + Keryx läser status och skickar samma request; Codex beskriver gates (4 ytor).",
+    "risk": "Hög: falsk affordability, fel crew/count, delbetalning/job. Verkliga rättelser 28b930ab och d6436593; ingen slutsats att varje kvarvarande kopia redan gett en bugg.",
+    "bugs": [
+      "28b930ab",
+      "d6436593"
+    ],
+    "guard": "G1 domänhem + AST-gräns för handler-DB; gemensamt Requirement/Decision-kontrakt med rollback/samtidighet. Referensslice steg 6.",
+    "anchor_count": 4,
+    "anchor_source": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 364,
+        "source_line": "\t\t\tafford := laborPool >= spec.PopCost"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2005,
+        "source_line": "func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {"
+      },
+      {
+        "file": "server/internal/capabilities/province_verbs.go",
+        "line": 77,
+        "source_line": "func canRecruit(cc checkContext) Verb {"
+      },
+      {
+        "file": "server/internal/province/training.go",
+        "line": 107,
+        "source_line": "var UnitSpecs = map[string]UnitSpec{"
+      }
+    ],
+    "source_files": [
+      "server/api/handlers/province.go",
+      "server/internal/capabilities/province_verbs.go",
+      "server/internal/province/training.go"
+    ],
+    "churn_60days": {
+      "file_totals": {
+        "server/api/handlers/province.go": {
+          "added": 1564,
+          "deleted": 1309,
+          "binary_changes": 0,
+          "commit_count": 36
+        },
+        "server/internal/capabilities/province_verbs.go": {
+          "added": 41,
+          "deleted": 26,
+          "binary_changes": 0,
+          "commit_count": 4
+        },
+        "server/internal/province/training.go": {
+          "added": 75,
+          "deleted": 33,
+          "binary_changes": 0,
+          "commit_count": 6
+        }
+      },
+      "distinct_commits": 41,
+      "added": 1680,
+      "deleted": 1368
+    },
+    "call_sites": 4,
+    "consumer_files": 2,
+    "calls": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2134,
+        "function": "*ProvinceHandler.Recruit",
+        "value": "CanRecruit",
+        "receiver": "capabilities",
+        "package": "formatet/megaron/server/internal/capabilities"
+      },
+      {
+        "file": "server/internal/capabilities/province_verbs.go",
+        "line": 47,
+        "function": "CanRecruit",
+        "value": "canRecruit",
+        "package": "capabilities"
+      },
+      {
+        "file": "server/internal/capabilities/province_verbs.go",
+        "line": 54,
+        "function": "PopulationRequirement",
+        "value": "populationRequirement",
+        "receiver": "cc",
+        "package": "capabilities"
+      },
+      {
+        "file": "server/internal/capabilities/province_verbs.go",
+        "line": 78,
+        "function": "canRecruit",
+        "value": "populationRequirement",
+        "receiver": "cc",
+        "package": "capabilities"
+      }
+    ]
+  },
+  {
+    "id": "B",
+    "title": "Debitering på anroparens TX",
+    "rows": [
+      7
+    ],
+    "copies": [
+      "server/api/handlers/helpers.go:156",
+      "server/internal/combat/standing_orders.go:784",
+      "server/api/handlers/province.go:3390",
+      "server/api/handlers/settlement.go:599",
+      "server/api/handlers/messenger.go:471"
+    ],
+    "copy_scope": "2 generella helpers + 3 utvalda inline debitställen; hela SQL-inventeringen är större",
+    "symbols": [
+      "deductGoods",
+      "deductGood"
+    ],
+    "consumers": "6 direkta helper-call-sites; dessutom inline barter/upkeep/offer debits. Build/Recruit/Repair/StandingOrder m.fl.; server + webb/Keryx + Codex ekonomiska villkor (4 ytor).",
+    "risk": "Hög: partial debit, calc_tick och revalidering. d6436593 visar verklig rekryteringsatomikbugg i en konsument, inte bevis att två helperkroppar i sig orsakat den.",
+    "bugs": [
+      "d6436593"
+    ],
+    "guard": "SQL/AST-vakt mot privata settled/debit-fragment i namngivna migrerade konsumenter; kontrakt på TX med multi-good avslag och samtidighet. G1 province-hem.",
+    "anchor_count": 5,
+    "anchor_source": [
+      {
+        "file": "server/api/handlers/helpers.go",
+        "line": 156,
+        "source_line": "func deductGoods(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, costs map[string]float64) error {"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 784,
+        "source_line": "func deductGood(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, good string, qty float64) error {"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3390,
+        "source_line": "\t\t`UPDATE settlement_goods SET"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 599,
+        "source_line": "\t\t\t`UPDATE settlement_goods SET"
+      },
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 471,
+        "source_line": "\t\t\t\t`UPDATE settlement_goods"
+      }
+    ],
+    "source_files": [
+      "server/api/handlers/helpers.go",
+      "server/api/handlers/messenger.go",
+      "server/api/handlers/province.go",
+      "server/api/handlers/settlement.go",
+      "server/internal/combat/standing_orders.go"
+    ],
+    "churn_60days": {
+      "file_totals": {
+        "server/api/handlers/helpers.go": {
+          "added": 44,
+          "deleted": 2,
+          "binary_changes": 0,
+          "commit_count": 1
+        },
+        "server/api/handlers/messenger.go": {
+          "added": 502,
+          "deleted": 193,
+          "binary_changes": 0,
+          "commit_count": 10
+        },
+        "server/api/handlers/province.go": {
+          "added": 1564,
+          "deleted": 1309,
+          "binary_changes": 0,
+          "commit_count": 36
+        },
+        "server/api/handlers/settlement.go": {
+          "added": 603,
+          "deleted": 349,
+          "binary_changes": 0,
+          "commit_count": 11
+        },
+        "server/internal/combat/standing_orders.go": {
+          "added": 1004,
+          "deleted": 135,
+          "binary_changes": 0,
+          "commit_count": 6
+        }
+      },
+      "distinct_commits": 57,
+      "added": 3717,
+      "deleted": 1988
+    },
+    "call_sites": 6,
+    "consumer_files": 3,
+    "calls": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 1358,
+        "function": "*ProvinceHandler.Build",
+        "value": "deductGoods",
+        "package": "handlers"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2300,
+        "function": "*ProvinceHandler.Recruit",
+        "value": "deductGoods",
+        "package": "handlers"
+      },
+      {
+        "file": "server/api/handlers/unit_repair.go",
+        "line": 136,
+        "function": "*UnitHandler.Repair",
+        "value": "deductGoods",
+        "package": "handlers"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 486,
+        "function": "*StandingOrderTickHandler.dispatchOutboundIfNeeded",
+        "value": "deductGood",
+        "package": "combat"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 490,
+        "function": "*StandingOrderTickHandler.dispatchOutboundIfNeeded",
+        "value": "deductGood",
+        "package": "combat"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 673,
+        "function": "*StandingOrderTickHandler.dispatchReturn",
+        "value": "deductGood",
+        "package": "combat"
+      }
+    ]
+  },
+  {
+    "id": "C",
+    "title": "Kredit/refund med explicit cap- och spillpolicy",
+    "rows": [
+      8,
+      9
+    ],
+    "copies": [
+      "server/api/handlers/logistics.go:79",
+      "server/internal/economy/trade.go:285",
+      "server/internal/economy/trade_return.go:81",
+      "server/internal/transport/arrival.go:146",
+      "server/internal/economy/gift.go:115",
+      "server/api/handlers/province.go:1515",
+      "server/internal/combat/unit_arrival.go:448"
+    ],
+    "copy_scope": "4 exakt normaliserade UPSERT-kopior + 3 olika credit/refund-policyer; de sista är INTE samma kontrakt",
+    "symbols": [
+      "HandleGift",
+      "cancelQueuedBuild"
+    ],
+    "consumers": "7 utvalda mutationsvägar för delivery/return/transfer/gift/build/arrival; egna replay-/notiskontrakt. Alla 4 ytor observerar stock och spill.",
+    "risk": "Hög konservationsrisk. Gåvans cap/spill/returned-prov finns i docs/reviews/gava, men ingen kvarvarande credit-dubblett har här belagts orsaka en historisk bugg. Spill och refund får inte tyst harmoniseras.",
+    "bugs": [],
+    "guard": "Återanvänd storage-cap-vakten; ny SQL-kopievakt över migrerade UPSERT samt konservations-/replaykontrakt. province-adapter undviker transport→economy.",
+    "anchor_count": 7,
+    "anchor_source": [
+      {
+        "file": "server/api/handlers/logistics.go",
+        "line": 79,
+        "source_line": "\t\t\t`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)"
+      },
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 285,
+        "source_line": "\t\t`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)"
+      },
+      {
+        "file": "server/internal/economy/trade_return.go",
+        "line": 81,
+        "source_line": "\t\t`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)"
+      },
+      {
+        "file": "server/internal/transport/arrival.go",
+        "line": 146,
+        "source_line": "\t\t\t`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)"
+      },
+      {
+        "file": "server/internal/economy/gift.go",
+        "line": 115,
+        "source_line": "\t\tif _, err := tx.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,$2,0,0,$3,current_world_tick()) ON CONFLICT DO NOTHING`, p.DestinationID, p.GoodKey, province.DefaultGoodStorageCap); err != nil {"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 1515,
+        "source_line": "\t// Refund costs."
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 448,
+        "source_line": "\tif settlementID != nil && u.carriedSilver > 0 {"
+      }
+    ],
+    "source_files": [
+      "server/api/handlers/logistics.go",
+      "server/api/handlers/province.go",
+      "server/internal/combat/unit_arrival.go",
+      "server/internal/economy/gift.go",
+      "server/internal/economy/trade.go",
+      "server/internal/economy/trade_return.go",
+      "server/internal/transport/arrival.go"
+    ],
+    "churn_60days": {
+      "file_totals": {
+        "server/api/handlers/logistics.go": {
+          "added": 3,
+          "deleted": 2,
+          "binary_changes": 0,
+          "commit_count": 1
+        },
+        "server/api/handlers/province.go": {
+          "added": 1564,
+          "deleted": 1309,
+          "binary_changes": 0,
+          "commit_count": 36
+        },
+        "server/internal/combat/unit_arrival.go": {
+          "added": 1317,
+          "deleted": 754,
+          "binary_changes": 0,
+          "commit_count": 31
+        },
+        "server/internal/economy/gift.go": {
+          "added": 190,
+          "deleted": 6,
+          "binary_changes": 0,
+          "commit_count": 4
+        },
+        "server/internal/economy/trade.go": {
+          "added": 322,
+          "deleted": 182,
+          "binary_changes": 0,
+          "commit_count": 6
+        },
+        "server/internal/economy/trade_return.go": {
+          "added": 162,
+          "deleted": 89,
+          "binary_changes": 0,
+          "commit_count": 3
+        },
+        "server/internal/transport/arrival.go": {
+          "added": 96,
+          "deleted": 14,
+          "binary_changes": 0,
+          "commit_count": 4
+        }
+      },
+      "distinct_commits": 72,
+      "added": 3654,
+      "deleted": 2356
+    },
+    "call_sites": 2,
+    "consumer_files": 2,
+    "calls": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 1577,
+        "function": "*ProvinceHandler.CancelBuild",
+        "value": "cancelQueuedBuild",
+        "package": "handlers"
+      },
+      {
+        "file": "server/api/handlers/settlement_placement.go",
+        "line": 689,
+        "function": "*ProvinceHandler.PlaceGubbe",
+        "value": "cancelQueuedBuild",
+        "package": "handlers"
+      }
+    ]
+  },
+  {
+    "id": "D",
+    "title": "ProductionEvaluation: gemensam inhämtning, skilda vyer",
+    "rows": [
+      12,
+      13,
+      19
+    ],
+    "copies": [
+      "server/internal/economy/placement_yield.go:182",
+      "server/internal/economy/placement_yield.go:899",
+      "server/internal/economy/recompute.go:687",
+      "server/internal/economy/recompute.go:786",
+      "server/internal/economy/founding_forecast.go:58",
+      "server/internal/economy/catchment.go:35"
+    ],
+    "copy_scope": "3 vyfamiljer actual/fullcrew/founding; optionsägarna delas redan. 2 refining/bemanning-loopar dupl t50. CatchmentBasePotential är RTA-test-only.",
+    "symbols": [
+      "LoadHexProductionOptionsAt",
+      "LoadHexProductionOptions",
+      "LoadBuildingProductionOptions",
+      "FullCrewPotential",
+      "RecomputeProduction",
+      "FoundingGrainNetPerTick"
+    ],
+    "consumers": "Placeringsval, faktisk recompute, catchment-preview, founding och byggnadseffekt; samtliga 4 ytor. Antal direkta statiska call-sites nedan avser nuvarande shared helpers, inte antal kopierade formler.",
+    "risk": "Hög för brist→brons. d4ed8c36 rättade held_workers i options och 6b64cda3/ea53d693 ersatte handskrivna effektpåståenden; dessa visar vyparitetsrisk, inte att en total regelrewrite behövs.",
+    "bugs": [
+      "d4ed8c36",
+      "6b64cda3",
+      "ea53d693"
+    ],
+    "guard": "AST-vakt mot pensionerade helpers först efter konsumtionsprov; actual/fullcrew/founding kontrakt på samma data med blockad/FOW/tagning. Hex/refining förblir skilda.",
+    "anchor_count": 6,
+    "anchor_source": [
+      {
+        "file": "server/internal/economy/placement_yield.go",
+        "line": 182,
+        "source_line": "func LoadHexProductionOptionsAt(ctx context.Context, tx Tx, worldID uuid.UUID, center hexgrid.Coord, bs BuildingSet, reachable map[hexgrid.Coord]bool) ([]HexOption, error) {"
+      },
+      {
+        "file": "server/internal/economy/placement_yield.go",
+        "line": 899,
+        "source_line": "func FullCrewPotential(hexOptions []HexOption) map[string]float64 {"
+      },
+      {
+        "file": "server/internal/economy/recompute.go",
+        "line": 687,
+        "source_line": "\t\tfor _, opt := range buildingOptions {"
+      },
+      {
+        "file": "server/internal/economy/recompute.go",
+        "line": 786,
+        "source_line": "\tfor _, opt := range buildingOptions {"
+      },
+      {
+        "file": "server/internal/economy/founding_forecast.go",
+        "line": 58,
+        "source_line": "func FoundingGrainNetPerTick(ctx context.Context, tx Tx, worldID uuid.UUID, center hexgrid.Coord, hasFarm bool, reachable map[hexgrid.Coord]bool, pop int) (prodPerTick, netPerTick float64, err error) {"
+      },
+      {
+        "file": "server/internal/economy/catchment.go",
+        "line": 35,
+        "source_line": "func CatchmentBasePotential(ctx context.Context, tx Tx, settlementID uuid.UUID) (map[string]float64, error) {"
+      }
+    ],
+    "source_files": [
+      "server/internal/economy/catchment.go",
+      "server/internal/economy/founding_forecast.go",
+      "server/internal/economy/placement_yield.go",
+      "server/internal/economy/recompute.go"
+    ],
+    "churn_60days": {
+      "file_totals": {
+        "server/internal/economy/catchment.go": {
+          "added": 20,
+          "deleted": 37,
+          "binary_changes": 0,
+          "commit_count": 2
+        },
+        "server/internal/economy/founding_forecast.go": {
+          "added": 97,
+          "deleted": 59,
+          "binary_changes": 0,
+          "commit_count": 5
+        },
+        "server/internal/economy/placement_yield.go": {
+          "added": 981,
+          "deleted": 540,
+          "binary_changes": 0,
+          "commit_count": 14
+        },
+        "server/internal/economy/recompute.go": {
+          "added": 298,
+          "deleted": 309,
+          "binary_changes": 0,
+          "commit_count": 17
+        }
+      },
+      "distinct_commits": 27,
+      "added": 1396,
+      "deleted": 945
+    },
+    "call_sites": 36,
+    "consumer_files": 20,
+    "calls": [
+      {
+        "file": "server/api/handlers/create_metropolis.go",
+        "line": 254,
+        "function": "createMetropolis",
+        "value": "RecomputeProduction",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/api/handlers/found_metropolis.go",
+        "line": 360,
+        "function": "foundMetropolisFromNomadicHost",
+        "value": "RecomputeProduction",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2896,
+        "function": "*ProvinceHandler.Goods",
+        "value": "LoadHexProductionOptions",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2897,
+        "function": "*ProvinceHandler.Goods",
+        "value": "LoadBuildingProductionOptions",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3890,
+        "function": "*ProvinceHandler.Disband",
+        "value": "RecomputeProduction",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 4065,
+        "function": "*ProvinceHandler.LaborAlloc",
+        "value": "RecomputeProduction",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/api/handlers/settlement_placement.go",
+        "line": 164,
+        "function": "*ProvinceHandler.PlacementOptions",
+        "value": "LoadHexProductionOptions",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/api/handlers/settlement_placement.go",
+        "line": 361,
+        "function": "*ProvinceHandler.PlacementOptions",
+        "value": "LoadBuildingProductionOptions",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/api/handlers/settlement_placement.go",
+        "line": 694,
+        "function": "*ProvinceHandler.PlaceGubbe",
+        "value": "RecomputeProduction",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/api/handlers/settlement_placement.go",
+        "line": 710,
+        "function": "*ProvinceHandler.PlaceGubbe",
+        "value": "LoadHexProductionOptions",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/api/handlers/settlement_placement.go",
+        "line": 761,
+        "function": "*ProvinceHandler.PlaceGubbe",
+        "value": "LoadBuildingProductionOptions",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/api/handlers/settlement_placement.go",
+        "line": 797,
+        "function": "*ProvinceHandler.PlaceGubbe",
+        "value": "RecomputeProduction",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/api/handlers/settlement_placement.go",
+        "line": 869,
+        "function": "*ProvinceHandler.UnplaceGubbe",
+        "value": "RecomputeProduction",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/api/handlers/settlement_placement.go",
+        "line": 993,
+        "function": "*ProvinceHandler.SlaughterLivestock",
+        "value": "RecomputeProduction",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 606,
+        "function": "*WorldHandler.ColonizePreview",
+        "value": "FoundingGrainNetPerTick",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 616,
+        "function": "*WorldHandler.ColonizePreview",
+        "value": "FoundingGrainNetPerTick",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/cmd/recompute-all/main.go",
+        "line": 136,
+        "function": "main",
+        "value": "RecomputeProduction",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/internal/combat/build.go",
+        "line": 172,
+        "function": "*BuildCompleteHandler.Handle",
+        "value": "RecomputeProduction",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/internal/combat/collapse.go",
+        "line": 277,
+        "function": "collapseSettlement",
+        "value": "RecomputeProduction",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/internal/combat/occupation.go",
+        "line": 452,
+        "function": "executeAnnex",
+        "value": "RecomputeProduction",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/internal/combat/occupation.go",
+        "line": 584,
+        "function": "executeSack",
+        "value": "RecomputeProduction",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/internal/combat/ship_repair.go",
+        "line": 162,
+        "function": "*ShipRepairCompleteHandler.Handle",
+        "value": "RecomputeProduction",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/internal/combat/train.go",
+        "line": 119,
+        "function": "*TrainCompleteHandler.Handle",
+        "value": "RecomputeProduction",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1994,
+        "function": "*UnitArrivalHandler.foundColony",
+        "value": "RecomputeProduction",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      },
+      {
+        "file": "server/internal/economy/catchment.go",
+        "line": 88,
+        "function": "CatchmentBasePotential",
+        "value": "FullCrewPotential",
+        "package": "economy"
+      },
+      {
+        "file": "server/internal/economy/catchment_preview.go",
+        "line": 121,
+        "function": "CatchmentBasePotentialAt",
+        "value": "FullCrewPotential",
+        "package": "economy"
+      },
+      {
+        "file": "server/internal/economy/founding_forecast.go",
+        "line": 69,
+        "function": "FoundingGrainNetPerTick",
+        "value": "LoadHexProductionOptionsAt",
+        "package": "economy"
+      },
+      {
+        "file": "server/internal/economy/founding_placement.go",
+        "line": 67,
+        "function": "rankedFoodSlotsWithOptions",
+        "value": "LoadHexProductionOptions",
+        "package": "economy"
+      },
+      {
+        "file": "server/internal/economy/founding_placement.go",
+        "line": 81,
+        "function": "rankedFoodSlotsAt",
+        "value": "LoadHexProductionOptionsAt",
+        "package": "economy"
+      },
+      {
+        "file": "server/internal/economy/founding_placement.go",
+        "line": 163,
+        "function": "PlaceStartingWorkforce",
+        "value": "LoadHexProductionOptions",
+        "package": "economy"
+      },
+      {
+        "file": "server/internal/economy/founding_placement.go",
+        "line": 430,
+        "function": "BackfillPlacements",
+        "value": "RecomputeProduction",
+        "package": "economy"
+      },
+      {
+        "file": "server/internal/economy/placement_reconcile.go",
+        "line": 52,
+        "function": "ReconcilePlacements",
+        "value": "LoadHexProductionOptions",
+        "package": "economy"
+      },
+      {
+        "file": "server/internal/economy/placement_yield.go",
+        "line": 162,
+        "function": "LoadHexProductionOptions",
+        "value": "LoadHexProductionOptionsAt",
+        "package": "economy"
+      },
+      {
+        "file": "server/internal/economy/recompute.go",
+        "line": 577,
+        "function": "RecomputeProduction",
+        "value": "LoadHexProductionOptions",
+        "package": "economy"
+      },
+      {
+        "file": "server/internal/economy/recompute.go",
+        "line": 581,
+        "function": "RecomputeProduction",
+        "value": "LoadBuildingProductionOptions",
+        "package": "economy"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 937,
+        "function": "*TickHandler.applyDecay",
+        "value": "RecomputeProduction",
+        "receiver": "economy",
+        "package": "formatet/megaron/server/internal/economy"
+      }
+    ]
+  },
+  {
+    "id": "E",
+    "title": "Hexavstånd: Go-kanon och SQL-adapter",
+    "rows": [
+      17
+    ],
+    "copies": [
+      "server/internal/hexgrid/hexgrid.go:56",
+      "server/internal/province/hex.go:11",
+      "server/internal/religion/model.go:83",
+      "server/internal/world/mapgen.go:3765",
+      "server/cmd/keryx/cmd_map.go:13",
+      "server/internal/economy/siege.go:77",
+      "server/internal/combat/unit_intercept_scan.go:168",
+      "server/internal/transport/intercept.go:202",
+      "server/api/handlers/settlement.go:1450",
+      "server/internal/gossip/gossip.go:79"
+    ],
+    "copy_scope": "5 Go-formelägare + inline SQL (10 ankare här; fler hex-SQL statements redovisas separat)",
+    "symbols": [
+      "Distance",
+      "HexDistance",
+      "hexDist"
+    ],
+    "consumers": "Go geometry consumers enligt separata call-site/file-tal; SQL i siege/interception/reveal/gossip/arrival/join. Server + Keryx samt kart-/Codex-kontrakt, räckvidd på 4 ytor men ingen ny spelarmekanik.",
+    "risk": "Medel per konsument, bred spridning. Ingen verifierad historisk hexavståndsbugg hittades i denna slice; negativa koordinater/range och dubbla representationsägare är risken.",
+    "bugs": [],
+    "guard": "G1-klassificera religion/world→hexgrid innan flytt; SQL hex_distance kontraktsprov mot Go och text-SQL-vakt mot namngivna inline-formler.",
+    "anchor_count": 10,
+    "anchor_source": [
+      {
+        "file": "server/internal/hexgrid/hexgrid.go",
+        "line": 56,
+        "source_line": "func Distance(a, b Coord) int {"
+      },
+      {
+        "file": "server/internal/province/hex.go",
+        "line": 11,
+        "source_line": "func HexDistance(a, b MapPosition) int {"
+      },
+      {
+        "file": "server/internal/religion/model.go",
+        "line": 83,
+        "source_line": "func hexDist(aq, ar, bq, br int) int {"
+      },
+      {
+        "file": "server/internal/world/mapgen.go",
+        "line": 3765,
+        "source_line": "func hexDist(a, b cell) int {"
+      },
+      {
+        "file": "server/cmd/keryx/cmd_map.go",
+        "line": 13,
+        "source_line": "func hexDist(q1, r1, q2, r2 int) int {"
+      },
+      {
+        "file": "server/internal/economy/siege.go",
+        "line": 77,
+        "source_line": "\t\t     AND (ABS(sentry_q - $3) + ABS(sentry_r - $4) + ABS((sentry_q + sentry_r) - ($3 + $4))) / 2 <= $5"
+      },
+      {
+        "file": "server/internal/combat/unit_intercept_scan.go",
+        "line": 168,
+        "source_line": "\t\t\t   AND (ABS(sentry_q - $3) + ABS(sentry_r - $4) + ABS((sentry_q + sentry_r) - ($3 + $4))) / 2 <= $5"
+      },
+      {
+        "file": "server/internal/transport/intercept.go",
+        "line": 202,
+        "source_line": "\t\t\t   AND (ABS(sentry_q - $3) + ABS(sentry_r - $4) + ABS((sentry_q + sentry_r) - ($3 + $4))) / 2 <= $5"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 1450,
+        "source_line": "\t\t    AND (ABS(mt.q - $3::int) + ABS((mt.q - $3::int) + (mt.r - $4::int)) + ABS(mt.r - $4::int)) / 2 <= $5::int"
+      },
+      {
+        "file": "server/internal/gossip/gossip.go",
+        "line": 79,
+        "source_line": "\t\t   AND (ABS(p2.map_q - p1.map_q) + ABS(p2.map_r - p1.map_r) +"
+      }
+    ],
+    "source_files": [
+      "server/api/handlers/settlement.go",
+      "server/cmd/keryx/cmd_map.go",
+      "server/internal/combat/unit_intercept_scan.go",
+      "server/internal/economy/siege.go",
+      "server/internal/gossip/gossip.go",
+      "server/internal/hexgrid/hexgrid.go",
+      "server/internal/province/hex.go",
+      "server/internal/religion/model.go",
+      "server/internal/transport/intercept.go",
+      "server/internal/world/mapgen.go"
+    ],
+    "churn_60days": {
+      "file_totals": {
+        "server/api/handlers/settlement.go": {
+          "added": 603,
+          "deleted": 349,
+          "binary_changes": 0,
+          "commit_count": 11
+        },
+        "server/cmd/keryx/cmd_map.go": {
+          "added": 5,
+          "deleted": 2,
+          "binary_changes": 0,
+          "commit_count": 1
+        },
+        "server/internal/combat/unit_intercept_scan.go": {
+          "commit_count": 0,
+          "added": 0,
+          "deleted": 0,
+          "binary_changes": 0
+        },
+        "server/internal/economy/siege.go": {
+          "commit_count": 0,
+          "added": 0,
+          "deleted": 0,
+          "binary_changes": 0
+        },
+        "server/internal/gossip/gossip.go": {
+          "commit_count": 0,
+          "added": 0,
+          "deleted": 0,
+          "binary_changes": 0
+        },
+        "server/internal/hexgrid/hexgrid.go": {
+          "added": 1,
+          "deleted": 1,
+          "binary_changes": 0,
+          "commit_count": 1
+        },
+        "server/internal/province/hex.go": {
+          "added": 167,
+          "deleted": 43,
+          "binary_changes": 0,
+          "commit_count": 4
+        },
+        "server/internal/religion/model.go": {
+          "commit_count": 0,
+          "added": 0,
+          "deleted": 0,
+          "binary_changes": 0
+        },
+        "server/internal/transport/intercept.go": {
+          "added": 366,
+          "deleted": 103,
+          "binary_changes": 0,
+          "commit_count": 7
+        },
+        "server/internal/world/mapgen.go": {
+          "added": 145,
+          "deleted": 30,
+          "binary_changes": 0,
+          "commit_count": 3
+        }
+      },
+      "distinct_commits": 25,
+      "added": 1287,
+      "deleted": 528
+    },
+    "call_sites": 41,
+    "consumer_files": 22,
+    "calls": [
+      {
+        "file": "server/api/handlers/found_metropolis.go",
+        "line": 602,
+        "function": "catchmentConflictMessage",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 310,
+        "function": "*MessengerHandler.Send",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 645,
+        "function": "*MessengerHandler.SendFromHost",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 359,
+        "function": "*UnitHandler.resolveOrderOrigin",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 376,
+        "function": "*UnitHandler.resolveOrderOrigin",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 679,
+        "function": "*WorldHandler.ColonizePreview",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 797,
+        "function": "anySettlementWithin",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 1929,
+        "function": "nearestLandmark",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/cmd/keryx/cmd_map.go",
+        "line": 156,
+        "function": "mapCmd",
+        "value": "hexDist",
+        "package": "main"
+      },
+      {
+        "file": "server/cmd/keryx/cmd_sightings.go",
+        "line": 101,
+        "function": "sightingsCmd",
+        "value": "hexDist",
+        "package": "main"
+      },
+      {
+        "file": "server/cmd/keryx/cmd_unit.go",
+        "line": 491,
+        "function": "locationStr",
+        "value": "Distance",
+        "receiver": "hexgrid",
+        "package": "formatet/megaron/server/internal/hexgrid"
+      },
+      {
+        "file": "server/internal/combat/expedition.go",
+        "line": 131,
+        "function": "nextExpeditionLeg",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/combat/expedition.go",
+        "line": 131,
+        "function": "nextExpeditionLeg",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/combat/expedition.go",
+        "line": 252,
+        "function": "*UnitArrivalHandler.expeditionArrived",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 721,
+        "function": "startMarch",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 1196,
+        "function": "colonizeDispatchPreflight",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 1275,
+        "function": "nearestOwnedSettlement",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/combat/ship_hull.go",
+        "line": 329,
+        "function": "marchShipToNearestOwnPort",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/combat/ship_hull.go",
+        "line": 459,
+        "function": "nearestOwnShipyardSettlement",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/combat/ship_hull.go",
+        "line": 461,
+        "function": "nearestOwnShipyardSettlement",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1347,
+        "function": "*UnitArrivalHandler.dispatchReturnHome",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/economy/trade_return.go",
+        "line": 236,
+        "function": "releaseShipAfterTradeReturn",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/economy/trade_return.go",
+        "line": 238,
+        "function": "releaseShipAfterTradeReturn",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/messenger/return_leg.go",
+        "line": 133,
+        "function": "StartReturnLeg",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/province/catchment_overlap.go",
+        "line": 100,
+        "function": "SettlementCatchmentOverlap",
+        "value": "HexDistance",
+        "package": "province"
+      },
+      {
+        "file": "server/internal/province/heading.go",
+        "line": 96,
+        "function": "ApparentMarch.SeemsBoundFor",
+        "value": "HexDistance",
+        "package": "province"
+      },
+      {
+        "file": "server/internal/province/hex.go",
+        "line": 32,
+        "function": "VisibleFrom",
+        "value": "HexDistance",
+        "package": "province"
+      },
+      {
+        "file": "server/internal/province/hex.go",
+        "line": 130,
+        "function": "Eye.Sees",
+        "value": "HexDistance",
+        "package": "province"
+      },
+      {
+        "file": "server/internal/province/hex.go",
+        "line": 221,
+        "function": "hexLine",
+        "value": "HexDistance",
+        "package": "province"
+      },
+      {
+        "file": "server/internal/province/hex.go",
+        "line": 272,
+        "function": "FuzzyBearing",
+        "value": "HexDistance",
+        "package": "province"
+      },
+      {
+        "file": "server/internal/province/pathfind.go",
+        "line": 394,
+        "function": "findPath",
+        "value": "HexDistance",
+        "package": "province"
+      },
+      {
+        "file": "server/internal/province/pathfind.go",
+        "line": 433,
+        "function": "findPath",
+        "value": "HexDistance",
+        "package": "province"
+      },
+      {
+        "file": "server/internal/province/trade_journey.go",
+        "line": 99,
+        "function": "TradeJourney.Validate",
+        "value": "HexDistance",
+        "package": "province"
+      },
+      {
+        "file": "server/internal/religion/model.go",
+        "line": 78,
+        "function": "LocalPower",
+        "value": "hexDist",
+        "package": "religion"
+      },
+      {
+        "file": "server/internal/transport/carrier.go",
+        "line": 197,
+        "function": "NearestOwnPort",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/transport/carrier.go",
+        "line": 199,
+        "function": "NearestOwnPort",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/transport/transport.go",
+        "line": 193,
+        "function": "prepareJourney",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/transport/transport.go",
+        "line": 193,
+        "function": "prepareJourney",
+        "value": "HexDistance",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/world/mapgen.go",
+        "line": 1951,
+        "function": "farEnough",
+        "value": "hexDist",
+        "package": "world"
+      },
+      {
+        "file": "server/internal/world/mapgen.go",
+        "line": 2567,
+        "function": "riverSources",
+        "value": "hexDist",
+        "package": "world"
+      },
+      {
+        "file": "server/internal/world/mapgen.go",
+        "line": 3781,
+        "function": "nearRiverDelta",
+        "value": "hexDist",
+        "package": "world"
+      }
+    ]
+  },
+  {
+    "id": "F",
+    "title": "Kontaktmängd: pensionera privat visibleOrigins",
+    "rows": [
+      6
+    ],
+    "copies": [
+      "server/internal/capabilities/context.go:191",
+      "server/internal/province/contacts.go:9"
+    ],
+    "copy_scope": "2 regler med exakt samma SQL efter kommentar-normalisering; kontrollfixture för mätningen",
+    "symbols": [
+      "VisibleOrigins",
+      "visibleOrigins"
+    ],
+    "consumers": "3 direkta call-sites: handler world.loadVisibleOrigins, transfer capability och privat contacted-check. Brev/handel/gåva når web+Keryx; Codex beskriver kontakten (4 ytor).",
+    "risk": "Hög informationsrisk vid drift, liten teknisk slice. Ingen belagd historisk FOW-bugg från just denna kvarvarande kopia. 31224eb7 visar angränsande verklig silverfilterbugg; SELLABLE≠SHIPPABLE ska bevaras, inte användas som argument att slå ihop katalogfilter.",
+    "bugs": [],
+    "guard": "AST-förbud mot privata visibleOrigins efter migration till province; kontakt/live/minne fortsätter vara skilda begrepp, samma FOW-repro och mutation av privat återkopia.",
+    "anchor_count": 2,
+    "anchor_source": [
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 191,
+        "source_line": "func (cc checkContext) visibleOrigins() []province.MapPosition {"
+      },
+      {
+        "file": "server/internal/province/contacts.go",
+        "line": 9,
+        "source_line": "func VisibleOrigins(ctx context.Context, db Queryer, worldID, playerID uuid.UUID) []MapPosition {"
+      }
+    ],
+    "source_files": [
+      "server/internal/capabilities/context.go",
+      "server/internal/province/contacts.go"
+    ],
+    "churn_60days": {
+      "file_totals": {
+        "server/internal/capabilities/context.go": {
+          "commit_count": 0,
+          "added": 0,
+          "deleted": 0,
+          "binary_changes": 0
+        },
+        "server/internal/province/contacts.go": {
+          "added": 73,
+          "deleted": 0,
+          "binary_changes": 0,
+          "commit_count": 1
+        }
+      },
+      "distinct_commits": 1,
+      "added": 73,
+      "deleted": 0
+    },
+    "call_sites": 3,
+    "consumer_files": 3,
+    "calls": [
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 958,
+        "function": "loadVisibleOrigins",
+        "value": "VisibleOrigins",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 253,
+        "function": "checkContext.visibleForeignSettlements",
+        "value": "visibleOrigins",
+        "receiver": "cc",
+        "package": "capabilities"
+      },
+      {
+        "file": "server/internal/capabilities/trade_verbs.go",
+        "line": 172,
+        "function": "canTransfer",
+        "value": "VisibleOrigins",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      }
+    ]
+  },
+  {
+    "id": "G",
+    "title": "Passage-/hamnpredikat och portval",
+    "rows": [
+      10,
+      18
+    ],
+    "copies": [
+      "server/api/handlers/messenger_passage.go:399",
+      "server/api/handlers/messenger_passage.go:412",
+      "server/internal/province/pathfind.go:157",
+      "server/api/handlers/messenger_passage.go:485",
+      "server/internal/messenger/passage.go:501",
+      "server/internal/combat/ship_hull.go:417",
+      "server/internal/transport/carrier.go:155",
+      "server/internal/economy/trade_return.go:195"
+    ],
+    "copy_scope": "3 olika terrängpredikat (naval match har samma lista); 2 passage eligibility SQL-kopior; 3 nearest-port SQL-läsningar, 2 t100 loopkloner. Små separata ägarslicar, inte ett gemensamt IsPassable för allt.",
+    "symbols": [
+      "isDryLandTerrain",
+      "isSeaOrRiverTerrain",
+      "isPassable",
+      "IsPassable",
+      "NearestOwnPort",
+      "nearestOwnShipyardSettlement"
+    ],
+    "consumers": "Passageval/server-preview, A*, reroute/shipyard/return/interception; påverkade utfall via 4 ytor. Direkta helper-call-sites nedan exkluderar inline SQL.",
+    "risk": "Hög lifecycle-/destinationrisk. f867e596 rättade en verklig limped destination i samma port/returflöde, inte bevis att loopklonen gav felet. river_ford är navigerbart/gångbart men inte dry-land landing.",
+    "bugs": [
+      "f867e596"
+    ],
+    "guard": "G1 province-policyprimitiver; predikatmatris plus SQL/AST-vakt över migrerade kopior. Bevara shipyard preferens, portens tillstånd, egen ägare och verklig rutt.",
+    "anchor_count": 8,
+    "anchor_source": [
+      {
+        "file": "server/api/handlers/messenger_passage.go",
+        "line": 399,
+        "source_line": "func isDryLandTerrain(terrain string) bool {"
+      },
+      {
+        "file": "server/api/handlers/messenger_passage.go",
+        "line": 412,
+        "source_line": "func isSeaOrRiverTerrain(terrain string) bool {"
+      },
+      {
+        "file": "server/internal/province/pathfind.go",
+        "line": 157,
+        "source_line": "func isPassable(terrain, category string) bool {"
+      },
+      {
+        "file": "server/api/handlers/messenger_passage.go",
+        "line": 485,
+        "source_line": "\tquery := `SELECT u.id, u.name, u.type, u.settlement_id, s.name"
+      },
+      {
+        "file": "server/internal/messenger/passage.go",
+        "line": 501,
+        "source_line": "\tquery := `SELECT u.id, u.name, u.type, u.settlement_id, s.name"
+      },
+      {
+        "file": "server/internal/combat/ship_hull.go",
+        "line": 417,
+        "source_line": "func nearestOwnShipyardSettlement(ctx context.Context, tx pgx.Tx, worldID, ownerID uuid.UUID, fromQ, fromR int) (settlementID uuid.UUID, homeQ, homeR int, found bool, err error) {"
+      },
+      {
+        "file": "server/internal/transport/carrier.go",
+        "line": 155,
+        "source_line": "func NearestOwnPort(ctx context.Context, tx pgx.Tx, worldID, ownerID uuid.UUID, fromQ, fromR int) (settlementID uuid.UUID, q, r int, found bool, err error) {"
+      },
+      {
+        "file": "server/internal/economy/trade_return.go",
+        "line": 195,
+        "source_line": "\t\t`SELECT s.id, p.map_q, p.map_r,"
+      }
+    ],
+    "source_files": [
+      "server/api/handlers/messenger_passage.go",
+      "server/internal/combat/ship_hull.go",
+      "server/internal/economy/trade_return.go",
+      "server/internal/messenger/passage.go",
+      "server/internal/province/pathfind.go",
+      "server/internal/transport/carrier.go"
+    ],
+    "churn_60days": {
+      "file_totals": {
+        "server/api/handlers/messenger_passage.go": {
+          "added": 577,
+          "deleted": 60,
+          "binary_changes": 0,
+          "commit_count": 5
+        },
+        "server/internal/combat/ship_hull.go": {
+          "added": 498,
+          "deleted": 31,
+          "binary_changes": 0,
+          "commit_count": 9
+        },
+        "server/internal/economy/trade_return.go": {
+          "added": 162,
+          "deleted": 89,
+          "binary_changes": 0,
+          "commit_count": 3
+        },
+        "server/internal/messenger/passage.go": {
+          "added": 1390,
+          "deleted": 174,
+          "binary_changes": 0,
+          "commit_count": 13
+        },
+        "server/internal/province/pathfind.go": {
+          "added": 131,
+          "deleted": 16,
+          "binary_changes": 0,
+          "commit_count": 4
+        },
+        "server/internal/transport/carrier.go": {
+          "added": 205,
+          "deleted": 0,
+          "binary_changes": 0,
+          "commit_count": 1
+        }
+      },
+      "distinct_commits": 32,
+      "added": 2963,
+      "deleted": 370
+    },
+    "call_sites": 13,
+    "consumer_files": 7,
+    "calls": [
+      {
+        "file": "server/api/handlers/messenger_passage.go",
+        "line": 326,
+        "function": "resolveOutboundDisembark",
+        "value": "isDryLandTerrain",
+        "package": "handlers"
+      },
+      {
+        "file": "server/api/handlers/messenger_passage.go",
+        "line": 376,
+        "function": "resolvePickupShore",
+        "value": "isDryLandTerrain",
+        "package": "handlers"
+      },
+      {
+        "file": "server/api/handlers/messenger_passage.go",
+        "line": 426,
+        "function": "graphNearestSeaNeighbor",
+        "value": "isSeaOrRiverTerrain",
+        "package": "handlers"
+      },
+      {
+        "file": "server/internal/combat/expedition.go",
+        "line": 122,
+        "function": "nextExpeditionLeg",
+        "value": "IsPassable",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/combat/ship_hull.go",
+        "line": 300,
+        "function": "marchShipToNearestOwnPort",
+        "value": "nearestOwnShipyardSettlement",
+        "package": "combat"
+      },
+      {
+        "file": "server/internal/province/pathfind.go",
+        "line": 185,
+        "function": "IsPassable",
+        "value": "isPassable",
+        "package": "province"
+      },
+      {
+        "file": "server/internal/province/pathfind.go",
+        "line": 375,
+        "function": "findPath",
+        "value": "isPassable",
+        "package": "province"
+      },
+      {
+        "file": "server/internal/province/pathfind.go",
+        "line": 375,
+        "function": "findPath",
+        "value": "isPassable",
+        "package": "province"
+      },
+      {
+        "file": "server/internal/province/pathfind.go",
+        "line": 425,
+        "function": "findPath",
+        "value": "isPassable",
+        "package": "province"
+      },
+      {
+        "file": "server/internal/province/trade_journey.go",
+        "line": 77,
+        "function": "TileGraph.tradeDock",
+        "value": "isPassable",
+        "package": "province"
+      },
+      {
+        "file": "server/internal/province/trade_journey.go",
+        "line": 82,
+        "function": "TileGraph.tradeDock",
+        "value": "isPassable",
+        "package": "province"
+      },
+      {
+        "file": "server/internal/transport/arrival.go",
+        "line": 227,
+        "function": "*ArrivalHandler.releaseArrivedShip",
+        "value": "NearestOwnPort",
+        "package": "transport"
+      },
+      {
+        "file": "server/internal/transport/intercept.go",
+        "line": 426,
+        "function": "*InterceptScanHandler.dispatchLimpedReturn",
+        "value": "NearestOwnPort",
+        "package": "transport"
+      }
+    ]
+  },
+  {
+    "id": "H",
+    "title": "Sparad rörelse kontra legacy interpolation",
+    "rows": [
+      10,
+      11
+    ],
+    "copies": [
+      "server/internal/movement/movement.go:134",
+      "server/internal/province/interpolate.go:20",
+      "server/internal/province/eyes.go:415",
+      "server/internal/transport/intercept.go:503",
+      "server/internal/transport/transport.go:136",
+      "server/internal/economy/trade_return.go:130",
+      "server/internal/transport/arrival.go:96"
+    ],
+    "copy_scope": "4 legacy positionsvägar jämfört med shared movement-kärna + 2 journey validation-kopior; CurrentPosition är RTA-test-only",
+    "symbols": [
+      "InterpolatePosition",
+      "InterpolateAlongPath",
+      "CurrentPosition",
+      "straightLineHexPosition",
+      "SavedPosition",
+      "RoutePositionAt"
+    ],
+    "consumers": "FOW/loadLiveEyes, interception, unit/world-vyer och returfrigörande; server + webbkarta/Keryx + Codex position/reselogik (4 ytor). NULL-journey är explicit legacykontrakt.",
+    "risk": "Hög men större substrate. 6e90d076 och 3911cbe3 rättade verkliga route/recall-fel. Det bevisar inte att alla legacyfallbacks kan rivas nu; programme steg10 väntar efter playtest.",
+    "bugs": [
+      "6e90d076",
+      "3911cbe3"
+    ],
+    "guard": "AST-förbud mot gamla interpolatorer med namngiven krympande legacy-undantagslista; sparad rutt/entering-costs kontrakt. Ingen automatisk deletion av RTA-test-only.",
+    "anchor_count": 7,
+    "anchor_source": [
+      {
+        "file": "server/internal/movement/movement.go",
+        "line": 134,
+        "source_line": "func PositionAt(m Move, t Milli) (Hex, error) {"
+      },
+      {
+        "file": "server/internal/province/interpolate.go",
+        "line": 20,
+        "source_line": "func InterpolatePosition("
+      },
+      {
+        "file": "server/internal/province/eyes.go",
+        "line": 415,
+        "source_line": "func InterpolateAlongPath(now, departsAt, arrivesAt time.Time, path []MapPosition) MapPosition {"
+      },
+      {
+        "file": "server/internal/transport/intercept.go",
+        "line": 503,
+        "source_line": "func straightLineHexPosition(origin, dest province.MapPosition, departsAt, arrivesAt, now time.Time) province.MapPosition {"
+      },
+      {
+        "file": "server/internal/transport/transport.go",
+        "line": 136,
+        "source_line": "func CurrentPosition("
+      },
+      {
+        "file": "server/internal/economy/trade_return.go",
+        "line": 130,
+        "source_line": "\t\t\tif len(journey) > 0 {"
+      },
+      {
+        "file": "server/internal/transport/arrival.go",
+        "line": 96,
+        "source_line": "\t\tif len(journey) > 0 {"
+      }
+    ],
+    "source_files": [
+      "server/internal/economy/trade_return.go",
+      "server/internal/movement/movement.go",
+      "server/internal/province/eyes.go",
+      "server/internal/province/interpolate.go",
+      "server/internal/transport/arrival.go",
+      "server/internal/transport/intercept.go",
+      "server/internal/transport/transport.go"
+    ],
+    "churn_60days": {
+      "file_totals": {
+        "server/internal/economy/trade_return.go": {
+          "added": 162,
+          "deleted": 89,
+          "binary_changes": 0,
+          "commit_count": 3
+        },
+        "server/internal/movement/movement.go": {
+          "added": 280,
+          "deleted": 24,
+          "binary_changes": 0,
+          "commit_count": 2
+        },
+        "server/internal/province/eyes.go": {
+          "added": 182,
+          "deleted": 96,
+          "binary_changes": 0,
+          "commit_count": 5
+        },
+        "server/internal/province/interpolate.go": {
+          "added": 1,
+          "deleted": 1,
+          "binary_changes": 0,
+          "commit_count": 1
+        },
+        "server/internal/transport/arrival.go": {
+          "added": 96,
+          "deleted": 14,
+          "binary_changes": 0,
+          "commit_count": 4
+        },
+        "server/internal/transport/intercept.go": {
+          "added": 366,
+          "deleted": 103,
+          "binary_changes": 0,
+          "commit_count": 7
+        },
+        "server/internal/transport/transport.go": {
+          "added": 124,
+          "deleted": 13,
+          "binary_changes": 0,
+          "commit_count": 3
+        }
+      },
+      "distinct_commits": 19,
+      "added": 1211,
+      "deleted": 340
+    },
+    "call_sites": 22,
+    "consumer_files": 11,
+    "calls": [
+      {
+        "file": "server/api/handlers/foreign_units.go",
+        "line": 182,
+        "function": "*WorldHandler.ForeignUnits",
+        "value": "InterpolateAlongPath",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 319,
+        "function": "hostCurrentPos",
+        "value": "RoutePositionAt",
+        "receiver": "combat",
+        "package": "formatet/megaron/server/internal/combat"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 645,
+        "function": "*UnitHandler.Recall",
+        "value": "RoutePositionAt",
+        "receiver": "combat",
+        "package": "formatet/megaron/server/internal/combat"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 653,
+        "function": "*UnitHandler.Recall",
+        "value": "InterpolatePosition",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 1705,
+        "function": "*UnitHandler.stanceToMarchingUnit",
+        "value": "RoutePositionAt",
+        "receiver": "combat",
+        "package": "formatet/megaron/server/internal/combat"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 1711,
+        "function": "*UnitHandler.stanceToMarchingUnit",
+        "value": "InterpolatePosition",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 2727,
+        "function": "unitSummaries",
+        "value": "RoutePositionAt",
+        "receiver": "combat",
+        "package": "formatet/megaron/server/internal/combat"
+      },
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 974,
+        "function": "interpolatedEyePos",
+        "value": "InterpolateAlongPath",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 1277,
+        "function": "*WorldHandler.MapTrades",
+        "value": "SavedPosition",
+        "receiver": "transport",
+        "package": "formatet/megaron/server/internal/transport"
+      },
+      {
+        "file": "server/internal/combat/march_encounter.go",
+        "line": 238,
+        "function": "*MarchEncounterHandler.loadCandidates",
+        "value": "InterpolateAlongPath",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/combat/march_sighting.go",
+        "line": 189,
+        "function": "*MarchSightingHandler.loadMarches",
+        "value": "InterpolateAlongPath",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/combat/recall_redirect.go",
+        "line": 101,
+        "function": "ExecuteRecall",
+        "value": "RoutePositionAt",
+        "package": "combat"
+      },
+      {
+        "file": "server/internal/combat/recall_redirect.go",
+        "line": 108,
+        "function": "ExecuteRecall",
+        "value": "InterpolatePosition",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/combat/unit_intercept_scan.go",
+        "line": 144,
+        "function": "*UnitInterceptScanHandler.Handle",
+        "value": "InterpolatePosition",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/province/eyes.go",
+        "line": 81,
+        "function": "LoadLiveEyes",
+        "value": "InterpolateAlongPath",
+        "package": "province"
+      },
+      {
+        "file": "server/internal/province/eyes.go",
+        "line": 171,
+        "function": "LoadLiveEyes",
+        "value": "InterpolateAlongPath",
+        "package": "province"
+      },
+      {
+        "file": "server/internal/province/eyes.go",
+        "line": 241,
+        "function": "LoadLiveEyes",
+        "value": "InterpolateAlongPath",
+        "package": "province"
+      },
+      {
+        "file": "server/internal/province/heading.go",
+        "line": 66,
+        "function": "ReadMarch",
+        "value": "InterpolateAlongPath",
+        "package": "province"
+      },
+      {
+        "file": "server/internal/transport/intercept.go",
+        "line": 176,
+        "function": "*InterceptScanHandler.Handle",
+        "value": "SavedPosition",
+        "package": "transport"
+      },
+      {
+        "file": "server/internal/transport/intercept.go",
+        "line": 184,
+        "function": "*InterceptScanHandler.Handle",
+        "value": "InterpolatePosition",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      },
+      {
+        "file": "server/internal/transport/intercept.go",
+        "line": 189,
+        "function": "*InterceptScanHandler.Handle",
+        "value": "straightLineHexPosition",
+        "package": "transport"
+      },
+      {
+        "file": "server/internal/transport/transport.go",
+        "line": 141,
+        "function": "CurrentPosition",
+        "value": "InterpolatePosition",
+        "receiver": "province",
+        "package": "formatet/megaron/server/internal/province"
+      }
+    ]
+  }
+]

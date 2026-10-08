@@ -1,0 +1,10 @@
+| ID | Kandidat/ägarrad | Ankare / kopior | 60d commits; +/− rader | Helper-anrop / konsumentfiler |
+|---|---|---|---|---|
+| A | Rekrytering: konkret beslut och atomisk domänhandling (4/15/16) | 4; se avgränsning | 41; +1680/−1368 | 4 / 2 |
+| B | Debitering på anroparens TX (7) | 5; se avgränsning | 57; +3717/−1988 | 6 / 3 |
+| C | Kredit/refund med explicit cap- och spillpolicy (8/9) | 7; se avgränsning | 72; +3654/−2356 | 2 / 2 |
+| D | ProductionEvaluation: gemensam inhämtning, skilda vyer (12/13/19) | 6; se avgränsning | 27; +1396/−945 | 36 / 20 |
+| E | Hexavstånd: Go-kanon och SQL-adapter (17) | 10; se avgränsning | 25; +1287/−528 | 41 / 22 |
+| F | Kontaktmängd: pensionera privat visibleOrigins (6) | 2; se avgränsning | 1; +73/−0 | 3 / 3 |
+| G | Passage-/hamnpredikat och portval (10/18) | 8; se avgränsning | 32; +2963/−370 | 13 / 7 |
+| H | Sparad rörelse kontra legacy interpolation (10/11) | 7; se avgränsning | 19; +1211/−340 | 22 / 11 |

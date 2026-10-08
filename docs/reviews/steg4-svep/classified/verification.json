@@ -1,0 +1,156 @@
+[
+  {
+    "name": "visibleOrigins SQL comments do not hide duplicate",
+    "passed": true,
+    "evidence": [
+      {
+        "id": "SQL068",
+        "normalized": "select distinct pos.q, pos.r from ( select p.map_q as q, p.map_r as r from provinces p join settlements s on s.province_id = p.id where p.world_id = $1 and ( s.owner_id = $2 or (s.kingdom_id is not null and s.kingdom_id in ( select km.kingdom_id from kingdom_members km where km.player_id = $2 )) ) union all select op.map_q, op.map_r from marching_armies ma join provinces op on op.id = ma.origin_id join settlements os on os.province_id = ma.origin_id where ma.world_id = $1 and ma.resolved = false and os.owner_id = $2 union all select tp.map_q, tp.map_r from marching_armies ma join provinces tp on tp.id = ma.target_id join settlements os on os.province_id = ma.origin_id where ma.world_id = $1 and ma.resolved = false and os.owner_id = $2 and ma.intent != 'explore' union all select dp.map_q, dp.map_r from messengers m join settlements ds on ds.id = m.destination_id join provinces dp on dp.id = ds.province_id where m.world_id = $1 and m.sender_id = $2 and m.status in ('delivered', 'returning', 'arrived') union all select p.map_q, p.map_r from player_scouted_provinces sp join provinces p on p.id = sp.province_id where sp.world_id = $1 and sp.player_id = $2 union all select q, r from player_scouted_tiles where world_id = $1 and player_id = $2 ) pos",
+        "sites": [
+          {
+            "file": "server/internal/capabilities/context.go",
+            "line": 193,
+            "function": "checkContext.visibleOrigins"
+          },
+          {
+            "file": "server/internal/province/contacts.go",
+            "line": 11,
+            "function": "VisibleOrigins"
+          }
+        ],
+        "owner_rows": [
+          6
+        ],
+        "classification": "kandidat",
+        "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+      }
+    ]
+  },
+  {
+    "name": "arrivedID unused in real return leg",
+    "passed": true,
+    "evidence": [
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 535,
+        "function": "dispatchShipReturnLeg",
+        "kind": "unused_parameter",
+        "value": "arrivedID",
+        "package": "economy"
+      }
+    ]
+  },
+  {
+    "name": "SQL comments inside quoted values survive",
+    "passed": true,
+    "evidence": "quote-aware comment removal"
+  },
+  {
+    "name": "SQL normalization mutant is red on visibleOrigins",
+    "passed": true,
+    "evidence": {
+      "exit": 1,
+      "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n    import json,sys; values=json.load(sys.stdin); assert len(set(\" \".join(v.lower().split()) for v in values))==1, \"visibleOrigins control missed\"\n                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: visibleOrigins control missed\n"
+    }
+  },
+  {
+    "name": "dupl planted full production file hits",
+    "passed": true,
+    "evidence": {
+      "source": "server/internal/transport/carrier.go",
+      "planted_output": "/tmp/megaron-steg4-control-fo47lpvh/planted.go:16-205: duplicate of server/internal/transport/carrier.go:16-205\nserver/internal/transport/carrier.go:16-205: duplicate of /tmp/megaron-steg4-control-fo47lpvh/planted.go:16-205\n"
+    }
+  },
+  {
+    "name": "removed planted copy disappears",
+    "passed": true,
+    "evidence": {
+      "before": "",
+      "after": "",
+      "temp_exists": false
+    }
+  },
+  {
+    "name": "unused AST distinguishes used shadowed captured params",
+    "passed": true,
+    "evidence": [
+      [
+        "shadow",
+        "id"
+      ],
+      [
+        "unused",
+        "arrivedID"
+      ]
+    ]
+  },
+  {
+    "name": "unused-parameter AST mutant is red on arrivedID",
+    "passed": true,
+    "evidence": {
+      "exit": 1,
+      "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n    import json,sys; a=json.load(sys.stdin); assert any(s[\"value\"]==\"arrivedID\" for s in a[\"unused_parameters\"]), \"arrivedID control missed\"\n                                                                                         ~^^^^^^^^^^^^^^^^^^^^^\nTypeError: 'NoneType' object is not iterable\n"
+    }
+  },
+  {
+    "name": "complete classification go-clones",
+    "passed": true,
+    "evidence": 110
+  },
+  {
+    "name": "complete classification js-clones",
+    "passed": true,
+    "evidence": 18
+  },
+  {
+    "name": "complete classification sql-statements",
+    "passed": true,
+    "evidence": 105
+  },
+  {
+    "name": "complete classification sql-production-test",
+    "passed": true,
+    "evidence": 43
+  },
+  {
+    "name": "complete classification sql-fragments",
+    "passed": true,
+    "evidence": 69
+  },
+  {
+    "name": "complete classification hex-sql",
+    "passed": true,
+    "evidence": 11
+  },
+  {
+    "name": "complete classification deadcode",
+    "passed": true,
+    "evidence": 42
+  },
+  {
+    "name": "complete classification unused-parameters",
+    "passed": true,
+    "evidence": 100
+  },
+  {
+    "name": "complete classification repeated-literals",
+    "passed": true,
+    "evidence": 3150
+  },
+  {
+    "name": "DB baseline includes every production handler file",
+    "passed": true,
+    "evidence": {
+      "files": 35,
+      "total": 457
+    }
+  },
+  {
+    "name": "DB receiver inventory has no unclassified call",
+    "passed": true,
+    "evidence": {
+      "excluded_url_query": 12,
+      "unknown": []
+    }
+  }
+]

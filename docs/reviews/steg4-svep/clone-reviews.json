@@ -1,0 +1,531 @@
+{
+  "server/api/handlers/settlement.go:1660-1665 | server/internal/gossip/gossip.go:187-192": {
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Scan-loop över skilda rumor/item-vyer, ingen delad regel"
+  },
+  "server/internal/combat/unit_arrival.go:1752-1761 | server/internal/combat/unit_arrival.go:758-767": {
+    "owner_rows": [
+      3
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "UnitArrived för olika ankomster/nivåer, inte samma utfall"
+  },
+  "server/internal/combat/march_encounter.go:89-91 | server/internal/combat/unit_intercept_scan.go:82-84": {
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Konstruktorer med samma dependency injection-form"
+  },
+  "server/internal/chronicle/chronicle.go:208-222 | server/internal/chronicle/chronicle.go:224-238": {
+    "owner_rows": [
+      5
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Namn-cache för olika identiteter/tabeller"
+  },
+  "server/internal/combat/march_sighting.go:161-163 | server/internal/combat/upkeep.go:340-342": {
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Scan av olika units-vyer, tokenlikhet utan samma fråga"
+  },
+  "server/api/handlers/settlement.go:1567-1576 | server/internal/combat/collapse.go:196-205": {
+    "owner_rows": [
+      16,
+      4
+    ],
+    "classification": "kandidat",
+    "reason": "Abandon och collapse avvecklar garrison/cargo i skilda mutationsägare"
+  },
+  "server/internal/combat/unit_arrival.go:1405-1412 | server/internal/combat/unit_arrival.go:1428-1435": {
+    "owner_rows": [
+      3
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Skilda frysta eventtyper swept/explore return"
+  },
+  "server/cmd/keryx/cmd_wants.go:101-109 | server/cmd/keryx/cmd_wants.go:92-100": {
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Shortage/surplus CLI presentation är två riktningar"
+  },
+  "server/internal/messenger/order_delivery.go:145-161 | server/internal/messenger/order_delivery.go:162-183": {
+    "owner_rows": [
+      3,
+      4
+    ],
+    "classification": "kandidat",
+    "reason": "Orderleverans stance/stance pursuit delar avvisningsprotokoll, handlingar skiljer"
+  },
+  "server/internal/combat/unit_arrival.go:448-463 | server/internal/combat/unit_arrival.go:474-489": {
+    "owner_rows": [
+      8,
+      9
+    ],
+    "classification": "kandidat",
+    "reason": "Återkredit silver/provisions med samma settled/cap-policy"
+  },
+  "server/api/handlers/kingdom.go:1004-1010 | server/internal/combat/standing_orders.go:189-194": {
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Skilda borrowed-army/order Scan-typer"
+  },
+  "server/api/handlers/settlement.go:88-90 | server/internal/combat/unit_intercept_scan.go:132-133": {
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Skilda settlement/march Scan-typer"
+  },
+  "server/internal/combat/unit_intercept_scan.go:132-133 | server/internal/messenger/passage.go:757-758": {
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Skilda march/ship Scan-typer"
+  },
+  "server/api/handlers/settlement.go:88-90 | server/internal/messenger/passage.go:757-758": {
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Skilda ship/settlement Scan-typer"
+  },
+  "server/internal/combat/unit_arrival.go:1123-1131 | server/internal/combat/unit_arrival.go:1679-1687": {
+    "owner_rows": [
+      3
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Ankomstnotiser för olika returorsaker"
+  },
+  "server/api/handlers/messenger_passage.go:437-446 | server/api/handlers/messenger_passage.go:453-464": {
+    "owner_rows": [
+      18
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Settlement-existens respektive portexistens är olika predikat"
+  },
+  "server/internal/economy/goods.go:63-67 | server/internal/province/model.go:51-55": {
+    "owner_rows": [
+      1,
+      7,
+      8
+    ],
+    "classification": "kandidat",
+    "reason": "Två legacy wall-minute resource Current-vyer; GoodState.Current är RTA-test-only"
+  },
+  "server/internal/province/eyes.go:167-175 | server/internal/province/eyes.go:237-243": {
+    "owner_rows": [
+      6,
+      10,
+      11
+    ],
+    "classification": "kandidat",
+    "reason": "LiveEyes gör legacy A* vid mål respektive hem; bevara skilda mål"
+  },
+  "server/internal/capabilities/trade_verbs.go:226-242 | server/internal/capabilities/trade_verbs.go:246-255": {
+    "owner_rows": [
+      19
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Sellable är inte shippable; silver-filter får inte harmoniseras"
+  },
+  "server/api/handlers/standing_order.go:243-258 | server/api/handlers/standing_order.go:260-275": {
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Standing-order outbound threshold respektive return floor"
+  },
+  "server/cmd/server/main.go:1071-1077 | server/cmd/server/main.go:1096-1102": {
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Retention på skilda eventfamiljer"
+  },
+  "server/api/handlers/standing_order.go:278-285 | server/api/handlers/standing_order.go:45-52": {
+    "owner_rows": [
+      5
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Ägarkontroll settlement/order har skilda id-tabeller"
+  },
+  "server/internal/world/mapgen.go:2060-2098 | server/internal/world/mapgen.go:2133-2171": {
+    "owner_rows": [
+      18
+    ],
+    "classification": "kandidat",
+    "reason": "Connected components med olika passability; dela traversal, inte predikat"
+  },
+  "server/internal/combat/ship_hull.go:417-467 | server/internal/transport/carrier.go:155-205": {
+    "owner_rows": [
+      10,
+      18
+    ],
+    "classification": "kandidat",
+    "reason": "Nearest shipyard/port har samma query/path/min-loop; policy måste vara explicit"
+  },
+  "server/internal/capabilities/kingdom_verbs.go:153-174 | server/internal/capabilities/kingdom_verbs.go:180-201": {
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "POST-MVP kingdom-verben har olika handling"
+  },
+  "server/internal/economy/recompute.go:687-697 | server/internal/economy/recompute.go:786-796": {
+    "owner_rows": [
+      13,
+      19
+    ],
+    "classification": "kandidat",
+    "reason": "Bemanning/rate-läsning i refining-loop och bronze-loop; receptkontexter bevaras"
+  },
+  "server/internal/messenger/passage.go:131-148 | server/internal/messenger/passage.go:188-200": {
+    "owner_rows": [
+      10
+    ],
+    "classification": "kandidat",
+    "reason": "Ut/retur använder samma courier resemodell med olika endpoint"
+  },
+  "server/api/handlers/god.go:75-82 | server/api/handlers/reports.go:210-216": {
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Scan-loop över skilda tile/report-vyer"
+  },
+  "server/api/handlers/world.go:1632-1643 | server/cmd/create-world/main.go:90-100": {
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Ingen kartrad: world seed INSERT/landmass-projektion i HTTP och create-world"
+  },
+  "server/internal/economy/sitos_tick.go:239-259 | server/internal/economy/sitos_tick.go:350-370": {
+    "owner_rows": [
+      14
+    ],
+    "classification": "kandidat",
+    "reason": "Granary read med TX respektive pool; ransonregeln är inte duplicerad här"
+  },
+  "server/api/handlers/unit.go:1889-1894 | server/api/handlers/unit.go:565-570": {
+    "owner_rows": [
+      15,
+      18
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Båda konsumerar redan samma RequireShipInPort-ägare"
+  },
+  "server/internal/world/mapgen.go:2340-2371 | server/internal/world/mapgen.go:2387-2418": {
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Ingen kartrad: percentile-sortering för moisture/height"
+  },
+  "server/internal/combat/recall_redirect.go:239-246 | server/internal/combat/recall_redirect.go:246-253": {
+    "owner_rows": [
+      3
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Frysta recall och redirect events, payloadens likhet är avsiktlig"
+  },
+  "server/api/handlers/world.go:106-110 | server/internal/province/names.go:157-163": {
+    "owner_rows": [
+      5
+    ],
+    "classification": "kandidat",
+    "reason": "Roman numeral namnsuffix i handler och province"
+  },
+  "server/api/handlers/province.go:2463-2473 | server/api/handlers/province.go:2580-2590": {
+    "owner_rows": [
+      4,
+      15,
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "TrainComplete enqueue i naval och land Recruit, hela TX måste bevaras"
+  },
+  "server/api/handlers/settlement.go:40-42 | server/internal/messenger/order_delivery.go:73-75": {
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Konstruktorer för skilda handlers"
+  },
+  "server/internal/combat/unit_arrival.go:2118-2126 | server/internal/combat/unit_arrival.go:2245-2253": {
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Garrison-deltagare i land och amphibious combat; stridsregler skiljer"
+  },
+  "server/api/handlers/unit.go:133-138 | server/api/handlers/unit_march_preview.go:99-102": {
+    "owner_rows": [
+      15,
+      18
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "March/preview konsumerar redan samma RequireShipInPort"
+  },
+  "server/cmd/keryx/client.go:162-171 | server/cmd/keryx/client.go:206-215": {
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "CLI HTTP-verb wrappers har olika method/status"
+  },
+  "server/api/handlers/messenger.go:745-746 | server/internal/combat/march_encounter.go:206-208": {
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Scan av helt olika messenger/march-vyer"
+  },
+  "server/internal/capabilities/context.go:102-114 | server/internal/capabilities/context.go:118-129": {
+    "owner_rows": [
+      15,
+      16
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Deployable/all units har olika krav"
+  },
+  "server/internal/capabilities/context.go:118-129 | server/internal/capabilities/context.go:133-145": {
+    "owner_rows": [
+      15,
+      16
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "All/idle naval units har olika krav"
+  },
+  "server/internal/capabilities/context.go:133-145 | server/internal/capabilities/context.go:149-161": {
+    "owner_rows": [
+      15,
+      16
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Idle/laden naval har olika lastfilter"
+  },
+  "server/internal/capabilities/context.go:102-114 | server/internal/capabilities/context.go:149-161": {
+    "owner_rows": [
+      15,
+      16
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Laden naval/deployable land är olika mängder"
+  },
+  "server/internal/world/mapgen.go:2287-2299 | server/internal/world/mapgen.go:2310-2322": {
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Olika Perlin-fält/frekvens"
+  },
+  "server/api/handlers/unit.go:139-144 | server/api/handlers/unit.go:151-163": {
+    "owner_rows": [
+      4,
+      10
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Direkt March och fysisk order till March delar typat beslut, ingen ny regelägare"
+  },
+  "server/api/handlers/province.go:4149-4175 | server/api/handlers/province.go:4218-4244": {
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Trade shortage/surplus observationer, skilda riktningar"
+  },
+  "server/internal/economy/recompute.go:445-449 | server/internal/gossip/gossip.go:28-32": {
+    "owner_rows": [
+      4
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Consumer-owned Tx-interface enligt G1; ska inte centraliseras bara för likhet"
+  },
+  "server/cmd/keryx/cmd_status.go:1273-1278 | server/internal/economy/founding_placement.go:110-115": {
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Sortering av skilda cohort/food-slot objekt"
+  },
+  "server/internal/economy/founding_placement.go:110-115 | server/internal/world/debugpng.go:252-257": {
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Sortering food-slot kontra map capacity"
+  },
+  "server/cmd/keryx/cmd_status.go:1273-1278 | server/internal/world/debugpng.go:252-257": {
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Sortering map capacity kontra cohort"
+  },
+  "server/api/handlers/messenger.go:1314-1327 | server/api/handlers/messenger.go:1448-1461": {
+    "owner_rows": [
+      3
+    ],
+    "classification": "kandidat",
+    "reason": "OfferAccepted payload återkommer i buy/sell gren"
+  },
+  "server/internal/auth/middleware.go:59-66 | server/internal/auth/middleware.go:78-85": {
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Web/optional auth har avsiktligt olika behörighetsflöde"
+  },
+  "server/api/handlers/province.go:3650-3659 | server/api/handlers/province.go:3684-3693": {
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Inbound/outbound route-vyer är olika riktningar"
+  },
+  "server/internal/capabilities/context.go:283-295 | server/internal/capabilities/context.go:299-311": {
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Inbound/outbound offer predicates är olika riktningar"
+  },
+  "server/api/handlers/god.go:77-80 | server/api/handlers/reports.go:212-214": {
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Skilda tile/report Scan"
+  },
+  "server/api/handlers/reports.go:212-214 | server/api/handlers/world.go:360-363": {
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Skilda report/map Scan"
+  },
+  "server/api/handlers/god.go:77-80 | server/api/handlers/world.go:360-363": {
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Skilda map/god Scan"
+  },
+  "server/internal/combat/occupation.go:680-689 | server/internal/combat/occupation.go:718-727": {
+    "owner_rows": [
+      7
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Lager respektive granary plundras; olika datakällor"
+  },
+  "server/api/handlers/messenger_passage.go:501-512 | server/internal/messenger/passage.go:517-528": {
+    "owner_rows": [
+      18,
+      4
+    ],
+    "classification": "kandidat",
+    "reason": "Eligible passage ship query och Scan i HTTP och domän"
+  },
+  "server/cmd/keryx/cmd_gossip.go:44-54 | server/cmd/keryx/cmd_messenger.go:315-325": {
+    "owner_rows": [
+      1
+    ],
+    "classification": "kandidat",
+    "reason": "CLI wall-clock age presentation kopierad; sanktionerat undantag"
+  },
+  "server/cmd/keryx/client.go:173-182 | server/cmd/keryx/client.go:184-193": {
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "HTTP POST/PUT wrappers"
+  },
+  "server/cmd/keryx/client.go:184-193 | server/cmd/keryx/client.go:195-204": {
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "HTTP PUT/PATCH wrappers"
+  },
+  "server/cmd/keryx/client.go:173-182 | server/cmd/keryx/client.go:195-204": {
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "HTTP PATCH/POST wrappers"
+  },
+  "server/internal/economy/trade_return.go:130-140 | server/internal/transport/arrival.go:96-106": {
+    "owner_rows": [
+      10,
+      11
+    ],
+    "classification": "kandidat",
+    "reason": "Saved journey parsing/port validation i return/arrival"
+  },
+  "server/internal/messenger/order_delivery.go:131-141 | server/internal/messenger/order_delivery.go:150-159": {
+    "owner_rows": [
+      3,
+      4
+    ],
+    "classification": "kandidat",
+    "reason": "OrderReject översätts identiskt; domänhandlingen ska behålla sitt eget verb"
+  },
+  "server/internal/messenger/order_delivery.go:150-159 | server/internal/messenger/order_delivery.go:172-181": {
+    "owner_rows": [
+      3,
+      4
+    ],
+    "classification": "kandidat",
+    "reason": "OrderReject stance/pursuit översätts identiskt"
+  },
+  "server/internal/messenger/order_delivery.go:172-181 | server/internal/messenger/order_delivery.go:235-247": {
+    "owner_rows": [
+      3,
+      4
+    ],
+    "classification": "kandidat",
+    "reason": "OrderReject pursuit/battle order översätts identiskt"
+  },
+  "server/internal/messenger/order_delivery.go:131-141 | server/internal/messenger/order_delivery.go:235-247": {
+    "owner_rows": [
+      3,
+      4
+    ],
+    "classification": "kandidat",
+    "reason": "OrderReject battle/march översätts identiskt"
+  },
+  "server/api/handlers/messenger.go:165-181 | server/api/handlers/messenger.go:182-198": {
+    "owner_rows": [
+      19
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Buy/sell validator spegel; offer/want goods och silver är skilda fält"
+  },
+  "server/internal/agora/client.go:224-232 | server/internal/agora/client.go:246-254": {
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Agora Create/ResetPassword delar säkerhetskontroll, olika operation"
+  },
+  "server/internal/province/model.go:109-124 | server/internal/world/model.go:43-69": {
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Const-block för byggnader och terräng; dupl ignorerar värdens semantik"
+  },
+  "server/api/handlers/dispatch_preferences.go:58-78 | server/api/handlers/dispatch_preferences.go:82-101": {
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Mute/unmute motsatta mutationer"
+  },
+  "server/internal/events/store.go:153-159 | server/internal/events/store.go:176-182": {
+    "owner_rows": [
+      3
+    ],
+    "classification": "kandidat",
+    "reason": "Samma Event Scan i stream/world-läsning, ingen fryst semantik ändras"
+  },
+  "server/api/handlers/messenger.go:1164-1175 | server/api/handlers/province.go:3356-3371": {
+    "owner_rows": [
+      10,
+      18,
+      4
+    ],
+    "classification": "kandidat",
+    "reason": "Val mellan naval carrier och verklig landrutt i TradeAccept/Trade"
+  },
+  "server/api/handlers/world.go:1721-1726 | server/api/handlers/world.go:1824-1829": {
+    "owner_rows": [
+      5,
+      6
+    ],
+    "classification": "kandidat",
+    "reason": "Samma contacted-city query/Scan i Wanaxes och loadCities; filtren bevaras"
+  },
+  "server/cmd/keryx/client.go:173-193 | server/cmd/keryx/client.go:184-204": {
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Överlappande fynd över redan klassade HTTP wrappers"
+  },
+  "server/api/handlers/notifications.go:140-161 | server/api/handlers/notifications.go:202-222": {
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "ReadAll/DeleteAll notiser är olika handlingar"
+  },
+  "server/internal/messenger/passage.go:1004-1013 | server/internal/messenger/passage.go:1030-1039": {
+    "owner_rows": [
+      10,
+      16
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Lost transport/ship carrier har olika FK och fortsatt passagepolicy"
+  },
+  "server/internal/world/mapgen.go:2352-2360 | server/internal/world/mapgen.go:2399-2407": {
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Moisture/height percentile olika fält"
+  },
+  "server/internal/world/mapgen.go:2399-2407 | server/internal/world/mapgen.go:2547-2555": {
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Sorteringsform för skilda height/river frågor"
+  },
+  "server/internal/world/mapgen.go:2547-2555 | server/internal/world/mapgen.go:3023-3031": {
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Sorteringsform river/lake frågor"
+  },
+  "server/internal/world/mapgen.go:2352-2360 | server/internal/world/mapgen.go:3023-3031": {
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Sorteringsform lake/moisture frågor"
+  }
+}

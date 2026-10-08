@@ -34,6 +34,7 @@ server/api/handlers/found_metropolis.go
 server/api/handlers/founding_forecast_parity_test.go
 server/api/handlers/founding_gifts_test.go
 server/api/handlers/fow_test.go
+server/api/handlers/gift_destinations.go
 server/api/handlers/god.go
 server/api/handlers/goods.go
 server/api/handlers/goods_catalog_test.go
@@ -83,6 +84,7 @@ server/api/handlers/order_origin_host_test.go
 server/api/handlers/p10_gate_visibility_test.go
 server/api/handlers/province.go
 server/api/handlers/province_build_hex_test.go
+server/api/handlers/province_gift_test.go
 server/api/handlers/province_labor_cult_preserve_test.go
 server/api/handlers/province_labor_narrow_test.go
 server/api/handlers/province_mine_catchment_test.go
@@ -196,6 +198,8 @@ server/cmd/keryx/cmd_expedition_mission.go
 server/cmd/keryx/cmd_expedition_test.go
 server/cmd/keryx/cmd_founding.go
 server/cmd/keryx/cmd_founding_test.go
+server/cmd/keryx/cmd_gift.go
+server/cmd/keryx/cmd_gift_test.go
 server/cmd/keryx/cmd_god.go
 server/cmd/keryx/cmd_goods.go
 server/cmd/keryx/cmd_goods_test.go
@@ -221,6 +225,7 @@ server/cmd/keryx/cmd_notifications.go
 server/cmd/keryx/cmd_notifications_caravan_test.go
 server/cmd/keryx/cmd_notifications_divine_test.go
 server/cmd/keryx/cmd_notifications_sighting_v2_test.go
+server/cmd/keryx/cmd_notifications_storm_test.go
 server/cmd/keryx/cmd_occupation.go
 server/cmd/keryx/cmd_password.go
 server/cmd/keryx/cmd_password_test.go
@@ -358,12 +363,15 @@ server/internal/combat/occupation.go
 server/internal/combat/occupation_check.go
 server/internal/combat/occupation_test.go
 server/internal/combat/origin_settlement_survives_march_test.go
+server/internal/combat/recall_home_test.go
 server/internal/combat/recall_redirect.go
 server/internal/combat/resolver.go
 server/internal/combat/retreat_default.go
 server/internal/combat/retreat_default_test.go
 server/internal/combat/route.go
 server/internal/combat/route_test.go
+server/internal/combat/sea_storm.go
+server/internal/combat/sea_storm_test.go
 server/internal/combat/ship_hull.go
 server/internal/combat/ship_hull_db_test.go
 server/internal/combat/ship_hull_test.go
@@ -428,8 +436,6 @@ server/internal/economy/catchment_p1_balance_test.go
 server/internal/economy/catchment_preview.go
 server/internal/economy/catchment_river_ford_test.go
 server/internal/economy/dice.go
-server/internal/economy/dice_seam_test.go
-server/internal/economy/dice_test.go
 server/internal/economy/discovery.go
 server/internal/economy/fieldstone_test.go
 server/internal/economy/food_consumption_split_test.go
@@ -441,6 +447,7 @@ server/internal/economy/founding_forecast.go
 server/internal/economy/founding_forecast_test.go
 server/internal/economy/founding_placement.go
 server/internal/economy/genesis_silver.go
+server/internal/economy/gift.go
 server/internal/economy/goods.go
 server/internal/economy/grain_consumption_test.go
 server/internal/economy/harbour_fish_shipyard_regression_test.go
@@ -496,9 +503,10 @@ server/internal/economy/trade_journey_test.go
 server/internal/economy/trade_legacy_test.go
 server/internal/economy/trade_naval_player_test.go
 server/internal/economy/trade_naval_preexisting_test.go
+server/internal/economy/trade_no_flat_die_test.go
 server/internal/economy/trade_return.go
+server/internal/economy/trade_return_helpers_test.go
 server/internal/economy/trade_return_idempotent_test.go
-server/internal/economy/trade_return_risk_test.go
 server/internal/economy/trade_transport_test.go
 server/internal/economy/wine_beyond_hills_test.go
 server/internal/economy/workplace_slots_p2_test.go
@@ -585,6 +593,7 @@ server/internal/province/building.go
 server/internal/province/building_purpose_test.go
 server/internal/province/catchment_overlap.go
 server/internal/province/catchment_overlap_test.go
+server/internal/province/contacts.go
 server/internal/province/courier_pathfind_test.go
 server/internal/province/culture_mvp_test.go
 server/internal/province/eyes.go

@@ -7,6 +7,7 @@ server/api/handlers/db.go
 server/api/handlers/dispatch_preferences.go
 server/api/handlers/foreign_units.go
 server/api/handlers/found_metropolis.go
+server/api/handlers/gift_destinations.go
 server/api/handlers/god.go
 server/api/handlers/goods.go
 server/api/handlers/helpers.go
@@ -50,6 +51,7 @@ server/cmd/keryx/cmd_dispatches.go
 server/cmd/keryx/cmd_expedition.go
 server/cmd/keryx/cmd_expedition_mission.go
 server/cmd/keryx/cmd_founding.go
+server/cmd/keryx/cmd_gift.go
 server/cmd/keryx/cmd_god.go
 server/cmd/keryx/cmd_goods.go
 server/cmd/keryx/cmd_gossip.go
@@ -129,6 +131,7 @@ server/internal/combat/recall_redirect.go
 server/internal/combat/resolver.go
 server/internal/combat/retreat_default.go
 server/internal/combat/route.go
+server/internal/combat/sea_storm.go
 server/internal/combat/ship_hull.go
 server/internal/combat/ship_port_call.go
 server/internal/combat/ship_repair.go
@@ -153,6 +156,7 @@ server/internal/economy/food_tick.go
 server/internal/economy/founding_forecast.go
 server/internal/economy/founding_placement.go
 server/internal/economy/genesis_silver.go
+server/internal/economy/gift.go
 server/internal/economy/goods.go
 server/internal/economy/hex_blockade.go
 server/internal/economy/hex_rules.go
@@ -197,6 +201,7 @@ server/internal/movement/movement.go
 server/internal/notify/hub.go
 server/internal/province/building.go
 server/internal/province/catchment_overlap.go
+server/internal/province/contacts.go
 server/internal/province/eyes.go
 server/internal/province/heading.go
 server/internal/province/hex.go

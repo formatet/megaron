@@ -1,0 +1,344 @@
+[
+  {
+    "id": "JS001",
+    "sites": [
+      {
+        "file": "web/static/js/megaron/render/founding_inline.test.mjs",
+        "line": 1,
+        "end": 8
+      },
+      {
+        "file": "web/static/js/megaron/render/host_simple.test.mjs",
+        "line": 1,
+        "end": 8
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "DOM/mock bootstrap i testfixture",
+    "tokens": 129
+  },
+  {
+    "id": "JS002",
+    "sites": [
+      {
+        "file": "web/static/js/megaron/render/founding_inline.test.mjs",
+        "line": 1,
+        "end": 8
+      },
+      {
+        "file": "web/static/js/megaron/render/inspect_simple.test.mjs",
+        "line": 1,
+        "end": 8
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "DOM/mock bootstrap i testfixture",
+    "tokens": 129
+  },
+  {
+    "id": "JS003",
+    "sites": [
+      {
+        "file": "web/static/js/megaron/render/founding_inline.test.mjs",
+        "line": 8,
+        "end": 15
+      },
+      {
+        "file": "web/static/js/megaron/render/host_simple.test.mjs",
+        "line": 9,
+        "end": 16
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "DOM/mock bootstrap i testfixture",
+    "tokens": 136
+  },
+  {
+    "id": "JS004",
+    "sites": [
+      {
+        "file": "web/static/js/megaron/render/founding_inline.test.mjs",
+        "line": 11,
+        "end": 20
+      },
+      {
+        "file": "web/static/js/megaron/render/inspect_simple.test.mjs",
+        "line": 12,
+        "end": 21
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "DOM/mock bootstrap i testfixture",
+    "tokens": 150
+  },
+  {
+    "id": "JS005",
+    "sites": [
+      {
+        "file": "web/static/js/megaron/render/host_simple.test.mjs",
+        "line": 4,
+        "end": 16
+      },
+      {
+        "file": "web/static/js/megaron/render/inspect_simple.test.mjs",
+        "line": 4,
+        "end": 16
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "DOM/mock bootstrap i testfixture",
+    "tokens": 240
+  },
+  {
+    "id": "JS006",
+    "sites": [
+      {
+        "file": "web/static/js/megaron/render/host_simple.test.mjs",
+        "line": 29,
+        "end": 44
+      },
+      {
+        "file": "web/static/js/megaron/render/inspect_simple.test.mjs",
+        "line": 27,
+        "end": 41
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "DOM/mock bootstrap i testfixture",
+    "tokens": 318
+  },
+  {
+    "id": "JS007",
+    "sites": [
+      {
+        "file": "web/static/js/megaron/render/map.js",
+        "line": 714,
+        "end": 733
+      },
+      {
+        "file": "web/static/js/megaron/render/map.js",
+        "line": 1299,
+        "end": 1308
+      }
+    ],
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Ingen kartrad: canvas clipping/raster/trädskugga återkommer för olika terränger; visuell familj, ingen serverregel",
+    "tokens": 122
+  },
+  {
+    "id": "JS008",
+    "sites": [
+      {
+        "file": "web/static/js/megaron/render/map.js",
+        "line": 974,
+        "end": 987
+      },
+      {
+        "file": "web/static/js/megaron/render/map.js",
+        "line": 1372,
+        "end": 1381
+      }
+    ],
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Ingen kartrad: canvas clipping/raster/trädskugga återkommer för olika terränger; visuell familj, ingen serverregel",
+    "tokens": 102
+  },
+  {
+    "id": "JS009",
+    "sites": [
+      {
+        "file": "web/static/js/megaron/render/map.js",
+        "line": 1141,
+        "end": 1159
+      },
+      {
+        "file": "web/static/js/megaron/render/map.js",
+        "line": 1194,
+        "end": 1203
+      }
+    ],
+    "owner_rows": [],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Ingen kartrad: canvas clipping/raster/trädskugga återkommer för olika terränger; visuell familj, ingen serverregel",
+    "tokens": 120
+  },
+  {
+    "id": "JS010",
+    "sites": [
+      {
+        "file": "web/static/js/megaron/render/map.test.mjs",
+        "line": 1,
+        "end": 29
+      },
+      {
+        "file": "web/static/js/megaron/ui/citygrid.test.mjs",
+        "line": 1,
+        "end": 19
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "DOM/mock bootstrap i testfixture",
+    "tokens": 135
+  },
+  {
+    "id": "JS011",
+    "sites": [
+      {
+        "file": "web/static/js/megaron/render/map.test.mjs",
+        "line": 1,
+        "end": 29
+      },
+      {
+        "file": "web/static/js/megaron/ui/drawers/report.test.mjs",
+        "line": 1,
+        "end": 20
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "DOM/mock bootstrap i testfixture",
+    "tokens": 135
+  },
+  {
+    "id": "JS012",
+    "sites": [
+      {
+        "file": "web/static/js/megaron/render/map.test.mjs",
+        "line": 1,
+        "end": 29
+      },
+      {
+        "file": "web/static/js/megaron/ui/marchctx.test.mjs",
+        "line": 1,
+        "end": 26
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "DOM/mock bootstrap i testfixture",
+    "tokens": 135
+  },
+  {
+    "id": "JS013",
+    "sites": [
+      {
+        "file": "web/static/js/megaron/render/map.test.mjs",
+        "line": 1,
+        "end": 29
+      },
+      {
+        "file": "web/static/js/megaron/ui/search.test.mjs",
+        "line": 1,
+        "end": 21
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "DOM/mock bootstrap i testfixture",
+    "tokens": 135
+  },
+  {
+    "id": "JS014",
+    "sites": [
+      {
+        "file": "web/static/js/megaron/render/map.test.mjs",
+        "line": 1,
+        "end": 29
+      },
+      {
+        "file": "web/static/js/megaron/ui/search_import.test.mjs",
+        "line": 1,
+        "end": 27
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "DOM/mock bootstrap i testfixture",
+    "tokens": 135
+  },
+  {
+    "id": "JS015",
+    "sites": [
+      {
+        "file": "web/static/js/megaron/ui/citygrid.test.mjs",
+        "line": 8,
+        "end": 22
+      },
+      {
+        "file": "web/static/js/megaron/ui/drawers/report.test.mjs",
+        "line": 9,
+        "end": 23
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "DOM/mock bootstrap i testfixture",
+    "tokens": 128
+  },
+  {
+    "id": "JS016",
+    "sites": [
+      {
+        "file": "web/static/js/megaron/ui/citygrid.test.mjs",
+        "line": 8,
+        "end": 22
+      },
+      {
+        "file": "web/static/js/megaron/ui/marchctx.test.mjs",
+        "line": 15,
+        "end": 29
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "DOM/mock bootstrap i testfixture",
+    "tokens": 128
+  },
+  {
+    "id": "JS017",
+    "sites": [
+      {
+        "file": "web/static/js/megaron/ui/citygrid.test.mjs",
+        "line": 8,
+        "end": 22
+      },
+      {
+        "file": "web/static/js/megaron/ui/search.test.mjs",
+        "line": 10,
+        "end": 24
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "DOM/mock bootstrap i testfixture",
+    "tokens": 128
+  },
+  {
+    "id": "JS018",
+    "sites": [
+      {
+        "file": "web/static/js/megaron/ui/citygrid.test.mjs",
+        "line": 8,
+        "end": 22
+      },
+      {
+        "file": "web/static/js/megaron/ui/search_import.test.mjs",
+        "line": 16,
+        "end": 30
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "DOM/mock bootstrap i testfixture",
+    "tokens": 128
+  }
+]
