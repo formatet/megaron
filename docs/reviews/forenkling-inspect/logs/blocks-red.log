@@ -1,0 +1,584 @@
+TAP version 13
+# Subtest: L actual inspect: owner and qualitative defence replace Culture/Walls/DP, actions keep IDs
+not ok 1 - L actual inspect: owner and qualitative defence replace Culture/Walls/DP, actions keep IDs
+  ---
+  duration_ms: 17.225268
+  type: 'test'
+  location: '/tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/inspect_simple.test.mjs:41:1'
+  failureType: 'testCodeFailure'
+  error: 'obsolete inspect blocks removed'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: |-
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>MEGARON</title>
+      <link rel="stylesheet" href="/static/megaron.css">
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&display=swap">
+      <script defer src="https://umami.formatet.se/script.js" data-website-id="6678e851-1e9b-4527-896d-f46ae55cde77"></script>
+    </head>
+    <body class="map-mode">
+    <div class="map-shell">
+    
+      <!-- ── Game top bar ─────────────────────────────────────────────────── -->
+      <div class="game-topbar">
+        <div class="gt-wanax" id="gt-wanax" onclick="toggleAccountWindow()" title="Account"></div>
+        <div class="gt-netstatus" id="net-status">återansluter…</div>
+        <div class="gt-dispatch-strip" id="gt-dispatch-strip">
+          <button class="dc-dismiss-all" id="dc-dismiss-all" style="display:none"
+                  onclick="dismissAllChips()" title="Dismiss all dispatches (they stay in the Notifications archive)">✕ all</button>
+        </div>
+        <div class="gt-celestial">
+          <div class="cel-arc-wrap">
+            <svg id="cel-svg" viewBox="-5 -7 90 56">
+              <line x1="2" y1="38" x2="78" y2="38" stroke="#333322" stroke-width="1"/>
+              <path d="M 6 38 A 34 34 0 0 1 74 38" fill="none" stroke="#2a2a1a" stroke-width="1" stroke-dasharray="3,4"/>
+              <defs>
+                <clipPath id="cel-body-clip"><circle id="cel-body-clip-c" cx="40" cy="4" r="8.5"/></clipPath>
+              </defs>
+              <circle id="cel-body" cx="40" cy="4" r="8.5" fill="#F9E79F"/>
+              <circle id="cel-shadow" cx="40" cy="4" r="8.5" clip-path="url(#cel-body-clip)" display="none"/>
+              <text id="cel-night-txt" x="30" y="22" font-size="8" fill="rgba(200,200,255,0.15)" font-family="serif" display="none">☽</text>
+            </svg>
+          </div>
+          <div class="cel-info">
+            <div class="cel-date" id="cel-date"></div>
+          </div>
+          <button class="gt-notif-btn" id="gt-notif-btn" onclick="toggleDrawer('notif')" title="Notifications">
+            ☍<span class="gt-notif-badge" id="gt-notif-badge" style="display:none">0</span>
+          </button>
+          <button class="gt-search-btn" onclick="toggleSearch()">⌕</button>
+          <button class="gt-codex-btn" id="gt-codex-btn" onclick="toggleCodex()" title="Codex — how the world works">?</button>
+        </div>
+      </div>
+    
+      <!-- ── Map canvas ───────────────────────────────────────────────────── -->
+      <div class="game-map" id="map-root">
+        <canvas id="hex-canvas"></canvas>
+    
+        <!-- Zoom toolbar overlay -->
+        <div class="map-zoom-overlay">
+          <button onclick="zoom(1.25)" class="mzo-btn" title="Zoom in">+</button>
+          <button onclick="zoom(0.8)"  class="mzo-btn" title="Zoom out">−</button>
+          <button onclick="resetView()" class="mzo-btn" title="Centre map (drag or WASD/arrows to pan)">⌂</button>
+          <button id="music-btn" class="mzo-btn" onclick="toggleMusic()" title="Music">♫</button>
+          <button id="activity-btn" class="mzo-btn" onclick="toggleActivityOverlay()" title="Activity overlay">⚒</button>
+        </div>
+    
+    
+        <!-- Inspect panel (right-side overlay) -->
+        <aside class="inspect-panel" id="inspect-panel" style="display:none">
+          <div class="inspect-header">
+            <span id="ip-name" class="inspect-title">—</span>
+            <button class="inspect-close" onclick="closeInspect()">✕</button>
+          </div>
+          <div class="inspect-body" id="ip-body">
+            <div class="inspect-row"><span class="ir-label">Terrain</span><span id="ip-terrain">—</span></div>
+            <div class="inspect-row" id="ip-deposits-row" style="display:none"><span class="ir-label">Deposits</span><span id="ip-deposits">—</span></div>
+            <div class="inspect-row"><span class="ir-label">Produces</span><span id="ip-produces">—</span></div>
+            <div class="inspect-row" id="ip-owner-row"><span class="ir-label">Owner</span><span id="ip-owner">—</span></div>
+            <div class="inspect-row" id="ip-defence-row"><span class="ir-label">Defence</span><span id="ip-defence">—</span></div>
+            <!-- Panel-specific detail that can grow without bound (the Host panel's
+                 stores + founding forecast). It belongs in the SCROLLING body, not
+                 in the foot: the foot carries the primary action, and an action you
+                 have to scroll to is an action that can be clipped away. -->
+            <div id="ip-culture-row">Culture</div><div id="ip-body-extra"></div>
+          </div>
+          <div class="inspect-foot" id="ip-foot"></div>
+        </aside>
+    
+        <!-- Map dim behind open drawer -->
+        <div class="map-dim" id="map-dim"></div>
+      </div>
+    
+      <!-- ── Bottom nav ───────────────────────────────────────────────────── -->
+      <nav class="game-nav">
+        <div class="win-trigger" id="trig-city"      onclick="toggleDrawer('city')">
+          <span class="wt-glyph">🏛</span>City
+        </div>
+        <div class="win-trigger" id="trig-war"        onclick="toggleDrawer('war')">
+          <span class="wt-glyph">⚔</span>War
+        </div>
+        <div class="win-trigger" id="trig-diplomacy"  onclick="toggleDrawer('diplomacy')">
+          <span class="wt-glyph">✉</span>Diplomacy
+          <span class="wt-badge" id="diplo-badge" style="display:none"></span>
+        </div>
+        <div class="win-trigger" id="trig-gossip"     onclick="toggleDrawer('gossip')">
+          <span class="wt-glyph">🗣</span>Gossip
+        </div>
+        <div class="win-trigger" id="trig-economy"    onclick="toggleDrawer('economy')">
+          <span class="wt-glyph">⚖</span>Economy
+        </div>
+        <div class="win-trigger" id="trig-kult"       onclick="toggleDrawer('kult')">
+          <span class="wt-glyph">⛩</span>Kult
+        </div>
+        <div class="win-trigger" id="trig-report"     onclick="toggleDrawer('report')">
+          <span class="wt-glyph">✎</span>Report
+        </div>
+      </nav>
+    
+    </div><!-- .map-shell -->
+    
+    <!-- ── CITY DRAWER ──────────────────────────────────────────────────────── -->
+    <div class="drawer" id="drawer-city">
+      <div class="drawer-header">
+        <div class="drawer-title-group">
+          <button class="drawer-nav" onclick="cycleCityView(-1)" title="Previous settlement">‹</button>
+          <span class="drawer-title" id="city-drawer-title">City</span>
+          <button class="drawer-nav" onclick="cycleCityView(1)" title="Next settlement">›</button>
+        </div>
+        <button class="drawer-help" onclick="openCodexForDrawer('city')" title="Read about this in the Codex">?</button>
+        <button class="drawer-close" onclick="closeDrawer('city')">✕</button>
+      </div>
+      <div class="drawer-body" id="city-body">
+        <div class="loading">Loading…</div>
+      </div>
+    </div>
+    
+    <!-- ── WAR DRAWER ───────────────────────────────────────────────────────── -->
+    <div class="drawer" id="drawer-war">
+      <div class="drawer-header">
+        <span class="drawer-title">War</span>
+        <button class="drawer-help" onclick="openCodexForDrawer('war')" title="Read about this in the Codex">?</button>
+        <button class="drawer-close" onclick="closeDrawer('war')">✕</button>
+      </div>
+      <div class="drawer-body" id="war-body">
+        <div class="loading">Loading…</div>
+      </div>
+    </div>
+    
+    <!-- ── DIPLOMACY DRAWER ─────────────────────────────────────────────────── -->
+    <div class="drawer" id="drawer-diplomacy">
+      <div class="drawer-header">
+        <span class="drawer-title">Diplomacy</span>
+        <button class="drawer-help" onclick="openCodexForDrawer('diplomacy')" title="Read about this in the Codex">?</button>
+        <button class="drawer-close" onclick="closeDrawer('diplomacy')">✕</button>
+      </div>
+      <div class="drawer-body" id="diplomacy-body">
+        <div class="loading">Loading…</div>
+      </div>
+    </div>
+    
+    <!-- ── GOSSIP DRAWER ────────────────────────────────────────────────────── -->
+    <div class="drawer" id="drawer-gossip">
+      <div class="drawer-header">
+        <span class="drawer-title">Gossip</span>
+        <button class="drawer-help" onclick="openCodexForDrawer('gossip')" title="Read about this in the Codex">?</button>
+        <button class="drawer-close" onclick="closeDrawer('gossip')">✕</button>
+      </div>
+      <div class="drawer-body" id="gossip-body">
+        <div class="loading">Loading…</div>
+      </div>
+    </div>
+    
+    <!-- ── ECONOMY DRAWER ──────────────────────────────────────────────────── -->
+    <div class="drawer" id="drawer-economy">
+      <div class="drawer-header">
+        <span class="drawer-title">Economy</span>
+        <button class="drawer-help" onclick="openCodexForDrawer('economy')" title="Read about this in the Codex">?</button>
+        <button class="drawer-close" onclick="closeDrawer('economy')">✕</button>
+      </div>
+      <div class="drawer-body" id="economy-body">
+        <div class="loading">Loading…</div>
+      </div>
+    </div>
+    
+    <!-- ── KULT DRAWER ──────────────────────────────────────────────────────── -->
+    <div class="drawer" id="drawer-kult">
+      <div class="drawer-header">
+        <span class="drawer-title">Kult</span>
+        <button class="drawer-help" onclick="openCodexForDrawer('kult')" title="Read about this in the Codex">?</button>
+        <button class="drawer-close" onclick="closeDrawer('kult')">✕</button>
+      </div>
+      <div class="drawer-body" id="kult-body">
+        <div class="loading">Loading…</div>
+      </div>
+    </div>
+    
+    <!-- ── NOTIFICATIONS DRAWER ─────────────────────────────────────────────── -->
+    <div class="drawer" id="drawer-notif">
+      <div class="drawer-header">
+        <span class="drawer-title">Notifications</span>
+        <span class="notif-archive-note" title="Nothing is removed from this list — it is the record of what happened while you were away">archive</span>
+        <button class="drawer-help" onclick="openCodexForDrawer('notif')" title="Read about this in the Codex">?</button>
+        <button class="drawer-close" onclick="closeDrawer('notif')">✕</button>
+      </div>
+      <div class="drawer-body" id="notif-body">
+        <div class="loading">Loading…</div>
+      </div>
+    </div>
+    
+    <!-- ── REPORT DRAWER ────────────────────────────────────────────────────── -->
+    <div class="drawer" id="drawer-report">
+      <div class="drawer-header">
+        <span class="drawer-title">Report</span>
+        <button class="drawer-help" onclick="openCodexForDrawer('report')" title="Read about this in the Codex">?</button>
+        <button class="drawer-close" onclick="closeDrawer('report')">✕</button>
+      </div>
+      <div class="drawer-body" id="report-body">
+        <div style="padding:.6rem .7rem">
+          <div style="font-size:.78rem;color:var(--text-dim);margin-bottom:.5rem">
+            Something broken, something that feels wrong, or something that confused you —
+            your position and the current tick are attached automatically.
+          </div>
+          <select id="report-kind" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.3rem .4rem;font-size:.82rem;margin-bottom:.4rem;box-sizing:border-box">
+            <option value="bug">Bug — something is broken</option>
+            <option value="design">Design — this feels wrong</option>
+            <option value="confused">Confused — I don't understand this</option>
+          </select>
+          <textarea id="report-text" maxlength="2000" placeholder="What happened?"
+            style="resize:vertical;min-height:6rem;width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.4rem .5rem;font-size:.82rem;font-family:var(--font);box-sizing:border-box"></textarea>
+          <div style="text-align:right;margin-top:.4rem">
+            <button class="btn-small btn-primary" onclick="submitReport()">Send</button>
+          </div>
+          <div id="report-status" style="font-size:.78rem;color:var(--text-dim);margin-top:.4rem"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- ── SEARCH OVERLAY ──────────────────────────────────────────────────── -->
+    <div class="search-overlay" id="search-overlay" onclick="closeSearch(event)">
+      <div class="search-box" onclick="event.stopPropagation()">
+        <div class="search-input-row">
+          <span class="si-glyph">⌕</span>
+          <input class="si-input" id="search-input" placeholder="City, army, received letter, rumour…">
+          <button class="si-esc" onclick="toggleSearch()">ESC</button>
+        </div>
+        <div class="search-hint">Known places and received news · ↑↓ navigate · Enter open</div>
+        <div class="search-results" id="search-results"></div>
+      </div>
+    </div>
+    
+    <!-- ── DISPATCH WINDOW — one window, two doors (megaron_plan_dispatches.md §1):
+         a dispatch chip click and a Notifications archive row click both open this
+         same overlay via ui/dispatch_window.js's openDispatchWindow(). ─────────── -->
+    <div class="dispatch-window-overlay" id="dispatch-window-overlay" onclick="closeDispatchWindow(event)">
+      <div class="dispatch-window" onclick="event.stopPropagation()">
+        <div class="dw-header">
+          <span class="drawer-title">Dispatch</span>
+          <button class="drawer-close" onclick="closeDispatchWindow()">✕</button>
+        </div>
+        <div class="dw-body" id="dw-body"></div>
+      </div>
+    </div>
+    
+    <!-- ── ACCOUNT WINDOW — change password / sign out (ui/account_window.js).
+         Opened from #gt-wanax (the identity anchor in the topbar). Same
+         overlay/panel chrome as the dispatch window above. ───────────────────── -->
+    <div class="dispatch-window-overlay" id="account-window-overlay" onclick="closeAccountWindow(event)">
+      <div class="dispatch-window" onclick="event.stopPropagation()">
+        <div class="dw-header">
+          <span class="drawer-title">Account</span>
+          <button class="drawer-close" onclick="closeAccountWindow()">✕</button>
+        </div>
+        <div class="dw-body" id="account-window-body"></div>
+      </div>
+    </div>
+    
+    <!-- ── CODEX — the player's wiki (ui/codex.js, megaron_plan_kodex.md). Anchored
+         left, outside the drawer system, so a drawer can stay open beside it. ──── -->
+    <aside class="codex-panel" id="codex-panel">
+      <div class="codex-header">
+        <button class="codex-back hidden" id="codex-back" onclick="codexBack()" title="Back">‹</button>
+        <span class="drawer-title" id="codex-title">Codex</span>
+        <button class="drawer-close" onclick="closeCodex()">✕</button>
+      </div>
+      <div class="codex-body" id="codex-body"></div>
+    </aside>
+    
+    <!-- ── Tile tooltip and march context (position:fixed) ─────────────────── -->
+    <div id="tile-tooltip" class="tile-tooltip" style="display:none"></div>
+    <div id="march-ctx" class="march-ctx" style="display:none">
+      <div class="mctx-header">
+        <span id="mctx-name" class="mctx-title"></span>
+        <button class="mctx-close" onclick="closeMarchCtx()">✕</button>
+      </div>
+      <div id="mctx-hint" style="padding:.35rem .55rem .15rem;font-size:.72rem;color:var(--text-dim)"></div>
+      <div id="mctx-colonize-row" style="display:none;padding:.1rem .55rem;font-size:.75rem;color:var(--text-dim)">
+        <label style="display:flex;align-items:center;gap:.35rem;cursor:pointer">
+          <input type="checkbox" id="mctx-colonize-chk" onchange="onColonizeToggle()"> Found a new settlement on arrival
+        </label>
+        <div id="mctx-colonize-preview" style="display:none;margin-top:.3rem;font-size:.72rem;line-height:1.35"></div>
+      </div>
+      <div id="mctx-explore-row" style="display:none;padding:.1rem .55rem;font-size:.75rem;color:var(--text-dim)">
+        <label style="display:flex;align-items:center;gap:.35rem;cursor:pointer">
+          <input type="checkbox" id="mctx-explore-chk" onchange="onExploreToggle()"> Explore the surrounding area, then return home
+        </label>
+      </div>
+      <div class="mctx-units" id="mctx-units"></div>
+      <details id="mctx-more" class="mctx-units">
+        <summary>More</summary>
+      <div id="mctx-expedition" style="display:none;padding:.25rem .55rem;font-size:.75rem">
+        <label>Expedition duration <input id="mctx-ticks" type="number" step="1" style="width:52px;font:inherit;background:var(--warm-white);color:var(--text);border:1px solid var(--border)"> game days</label>
+        <div id="mctx-mission" style="font-size:.72rem;margin-top:.2rem;color:var(--text-dim)"></div>
+      </div>
+        <input id="mctx-colony-name" type="text" maxlength="32" placeholder="Settlement name (optional)"
+          style="display:none;margin-top:.3rem;width:100%;box-sizing:border-box;font-size:.75rem;padding:.2rem .4rem;background:var(--warm-white);color:var(--text);border:1px solid var(--border);">
+      <div id="mctx-stance-row" style="display:none;padding:.15rem .55rem .3rem;font-size:.75rem;color:var(--text-dim)">
+        Stance:
+        <select id="mctx-stance"
+          style="margin-left:.3rem;font-size:.75rem;padding:.15rem .3rem;background:var(--warm-white);color:var(--text);border:1px solid var(--border);">
+          <option value="">none</option>
+          <option value="storm">storm</option>
+          <option value="sentry">sentry</option>
+        </select>
+      </div>
+      </details>
+      <div class="mctx-foot">
+        <button class="mctx-send" id="mctx-send" onclick="sendMarch()">March →</button>
+        <span class="mctx-error" id="mctx-err"></span>
+      </div>
+      <!-- Arrival forecast before dispatch and receipt after dispatch — owned by ui/time.js
+           via marchctx.js; hexval owns the rest of the panel. -->
+      <div class="mctx-eta" id="mctx-eta" aria-live="polite" style="display:none"></div>
+    </div>
+    
+    <style>
+    /* ── Lawagetas advisory brief ──────────────────────────────────────── */
+    .lawagetas-brief {
+      position: relative;
+      background: var(--bg-raised);
+      border-left: 3px solid var(--gold);
+      padding: .45rem .9rem .45rem .65rem;
+      margin: .45rem .45rem .15rem;
+      font-family: 'Cinzel', 'Georgia', serif;
+      font-size: .7rem;
+      font-style: italic;
+      color: var(--border-in);
+      line-height: 1.55;
+    }
+    .lb-head {
+      font-style: normal;
+      font-size: .58rem;
+      text-transform: uppercase;
+      letter-spacing: .13em;
+      color: var(--accent);
+      margin-bottom: .2rem;
+      font-family: var(--mono);
+    }
+    .lb-dismiss {
+      position: absolute;
+      top: .25rem; right: .35rem;
+      background: none; border: none;
+      color: var(--text-dim); cursor: pointer;
+      font-size: .7rem; padding: 0; line-height: 1;
+    }
+    .lb-dismiss:hover { color: var(--accent); }
+    
+    /* ── Map-specific styles (overlays, not in megaron.css) ──────────────── */
+    
+    /* Zoom overlay buttons */
+    .map-zoom-overlay {
+      position: absolute;
+      top: 0.5rem;
+      left: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      z-index: 10;
+    }
+    .mzo-btn {
+      width: 26px; height: 26px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0;
+    }
+    .mzo-btn:hover { background: var(--bg-raised); color: var(--accent); border-color: var(--accent); }
+    .mzo-btn.active { background: var(--accent); color: var(--bg-panel); border-color: var(--accent); }
+    
+    /* Legend overlay */
+    .map-legend-overlay {
+      position: absolute;
+      bottom: 0.4rem;
+      left: 0.5rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      font-size: 0.68rem;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      pointer-events: none;
+      z-index: 10;
+    }
+    .map-legend-overlay span { display: flex; align-items: center; gap: 0.2rem; }
+    .map-legend-overlay span::before { content: '■'; color: var(--tc); }
+    
+    /* World info overlay (top-right of map) */
+    .map-world-info {
+      position: absolute;
+      top: 0.4rem;
+      right: 0.5rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      text-align: right;
+      pointer-events: none;
+      z-index: 10;
+      line-height: 1.4;
+    }
+    .map-world-info strong { color: var(--gold); }
+    
+    /* Inspect panel — right-side overlay inside game-map */
+    .inspect-panel {
+      position: absolute;
+      top: 0; right: 0; bottom: 0;
+      width: 220px;
+      background: var(--bg-panel);
+      border-left: 2px solid var(--border);
+      box-shadow: -3px 0 12px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      font-size: .85rem;
+      z-index: 15;
+    }
+    .inspect-header {
+      background: var(--border); padding: .4rem .7rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .inspect-title { color: var(--warm-white); font-family: var(--mono); font-weight: bold; letter-spacing: .08em; }
+    .inspect-close { background: none; border: none; color: var(--warm-white); cursor: pointer; font-size: 1rem; padding: 0 .2rem; }
+    .inspect-body { padding: .7rem; flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+    .inspect-row { display: flex; justify-content: space-between; margin-bottom: .4rem; }
+    .ir-label { color: var(--text-dim); text-transform: uppercase; font-size: .72rem; letter-spacing: .08em; }
+    /* The foot carries the panel's primary action, so it yields LAST: flex-shrink 0
+       keeps it at its natural height and the scrolling body absorbs every squeeze.
+       max-height + overflow-y are the safety net for the opposite case — a foot whose
+       own content runs long can then scroll instead of growing past the panel's
+       absolute bottom, where it would be clipped with no way to reach it (the panel
+       itself has no overflow). That clipping is what hid the founding button
+       at short window heights; measured at 1280×720 it sat 71 px below the panel. */
+    .inspect-foot {
+      padding: .7rem; border-top: 1px solid var(--border);
+      flex: 0 0 auto; min-height: 0; max-height: 60%; overflow-y: auto;
+    }
+    .inspect-foot a {
+      display: block; text-align: center; padding: .4rem;
+      background: var(--bg-raised); border: 2px solid var(--border);
+      color: var(--text); font-family: var(--mono); font-size: .8rem;
+      letter-spacing: .1em; text-transform: uppercase; text-decoration: none;
+    }
+    .inspect-foot a:hover { background: var(--bg-raised); border-color: var(--accent); }
+    
+    .msg-textarea {
+      width: 100%; box-sizing: border-box; resize: none;
+      background: var(--warm-white); border: 1px solid var(--border);
+      font-family: var(--mono); font-size: .75rem; color: var(--text); padding: .3rem;
+    }
+    .msg-foot { display: flex; align-items: center; gap: .4rem; margin-top: .4rem; }
+    .msg-send {
+      padding: .25rem .6rem; background: var(--sandstone); border: 2px solid var(--border);
+      font-family: var(--mono); font-size: .72rem; letter-spacing: .07em; cursor: pointer;
+    }
+    .msg-send:hover { background: var(--bg-raised); border-color: var(--accent); }
+    .msg-err { font-size: .7rem; flex: 1; }
+    
+    /* Tile tooltip */
+    .tile-tooltip {
+      position: fixed; background: var(--bg); border: 1px solid var(--border);
+      color: var(--bg-panel); padding: .15rem .5rem; font-size: .75rem;
+      font-family: var(--mono); pointer-events: none; z-index: 400;
+    }
+    
+    /* March context menu */
+    .march-ctx {
+      position: fixed; z-index: 300; width: 210px;
+      background: var(--bg-panel); border: 2px solid var(--border);
+      box-shadow: inset 1px 1px 0 var(--bg-raised), inset -1px -1px 0 var(--border-in), 3px 3px 0 #1C1C1C;
+      font-size: .82rem; color: var(--text);
+      /* The menu grows async (unit list, colonize forecast) — never let it extend
+         past the viewport, or the send button becomes unreachable. */
+      max-height: calc(100vh - 16px); overflow-y: auto;
+    }
+    .mctx-header {
+      background: var(--border); padding: .35rem .6rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .mctx-title { color: var(--warm-white); font-family: var(--mono); font-weight: bold; font-size: .8rem; letter-spacing: .07em; }
+    .mctx-close { background: none; border: none; color: var(--warm-white); cursor: pointer; font-size: .9rem; padding: 0 .2rem; line-height: 1; }
+    .mctx-intent { display: flex; gap: 0; border-bottom: 1px solid var(--border); }
+    .mctx-ibtn {
+      flex: 1; padding: .3rem 0; border: none; border-right: 1px solid var(--border);
+      background: var(--bg-panel); color: var(--text-dim); font-family: var(--mono);
+      font-size: .72rem; letter-spacing: .06em; cursor: pointer;
+    }
+    .mctx-ibtn:last-child { border-right: none; }
+    .mctx-ibtn.active { background: var(--accent); color: var(--warm-white); }
+    .mctx-ibtn:disabled { opacity: .35; cursor: default; }
+    .mctx-units { padding: .5rem .6rem; display: flex; flex-direction: column; gap: .3rem; }
+    .mctx-row { display: flex; align-items: center; gap: .4rem; }
+    .mctx-label { flex: 1; color: var(--text-dim); font-size: .75rem; }
+    .mctx-loc { color: var(--text-dim); }
+    /* A marching unit reachable by redirect (Timothy 2026-09-25: orders must
+       reach a unit that already has orders) — marked distinctly from a plain
+       march group so the player knows this send goes to the Runner, not the map. */
+    .mctx-redirect { color: var(--accent-war); }
+    /* Members of a multi-unit group, listed under their row so the player can see
+       WHO is being ordered instead of counting hexes. Indented to the label column
+       and a step smaller — the count stays the affordance, the names inform it. */
+    .mctx-names { margin: -.15rem 0 .15rem .6rem; color: var(--text-dim); font-size: .68rem; line-height: 1.45; }
+    .mctx-input {
+      width: 44px; padding: .15rem .3rem; border: 1px solid var(--border);
+      background: var(--warm-white); font-family: var(--mono); font-size: .78rem;
+      text-align: right; color: var(--text);
+    }
+    .mctx-max { color: var(--text-dim); font-size: .72rem; min-width: 22px; }
+    .mctx-foot {
+      padding: .45rem .6rem; border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .mctx-send {
+      padding: .3rem .7rem; background: var(--sandstone); border: 2px solid var(--border);
+      font-family: var(--mono); font-size: .75rem; letter-spacing: .07em; cursor: pointer;
+    }
+    .mctx-send:hover { background: var(--bg-raised); border-color: var(--accent); }
+    .mctx-error { font-size: .72rem; color: var(--accent); flex: 1; }
+    .mctx-eta { padding: .3rem .6rem .45rem; font-size: .73rem; color: var(--safe); }
+    
+    /* World name hint in topbar area */
+    .map-page-hint {
+      font-size: .72rem; color: var(--text-dim); font-family: var(--mono);
+      padding: 0 .5rem; align-self: center; flex-shrink: 0;
+    }
+    </style>
+    
+    <script type="module" src="/static/js/megaron/main.js"></script>
+    </body>
+    </html>
+    
+  operator: 'doesNotMatch'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/inspect_simple.test.mjs:49:9)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: L actual inspect: fog never exposes marker/army and late army reply cannot update a different panel
+ok 2 - L actual inspect: fog never exposes marker/army and late army reply cannot update a different panel
+  ---
+  duration_ms: 1.570492
+  type: 'test'
+  ...
+# Subtest: L actual Host: food and escort pay durations use exact game days in words, never wall time
+ok 3 - L actual Host: food and escort pay durations use exact game days in words, never wall time
+  ---
+  duration_ms: 1.889138
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 2
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 75.17582

@@ -42,7 +42,7 @@ test('L actual inspect: owner and qualitative defence replace Culture/Walls/DP, 
  await click();assert.equal(element('ip-defence').textContent,'strong','visible defenders become qualitative defence');
  assert.equal(element('ip-owner').textContent,'Other Wanax');assert.match(element('ip-foot').innerHTML,/sendMessengerFromInspect\('foreign-settlement'\)/);assert.match(element('ip-foot').innerHTML,/March here/);
  let dest;window.openMarchCtx=d=>dest=d;element('ip-march-btn').events.click({clientX:0,clientY:0});assert.equal(dest.q,0);assert.equal(dest.known,true);assert.equal(dest.isSettlement,true);
- army={};await click();assert.equal(element('ip-defence').textContent,'weak');
+ army={};await click();assert.equal(element('ip-defence').textContent,'weak','zero defenders and no walls are weak');
  await click({city:{...marker,walls:1,allied:true}});assert.equal(element('ip-defence').textContent,'strong');assert.equal(element('ip-owner').textContent,'Other Wanax (allied)');
  refused=true;await click();assert.equal(element('ip-defence').textContent,'unknown','refused data cannot imply weak defence');refused=false;
  const {readFileSync}=await import('node:fs');const html=readFileSync(new URL('../../../map.html',import.meta.url),'utf8');
