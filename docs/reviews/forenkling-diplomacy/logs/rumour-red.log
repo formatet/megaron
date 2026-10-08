@@ -1,0 +1,76 @@
+TAP version 13
+# Subtest: M: actual drawer offers exactly Correspondence and Known
+ok 1 - M: actual drawer offers exactly Correspondence and Known
+  ---
+  duration_ms: 15.443195
+  type: 'test'
+  ...
+# Subtest: M: Known keeps ruler and city knowledge, writes numbers in words, gates rumours
+not ok 2 - M: Known keeps ruler and city knowledge, writes numbers in words, gates rumours
+  ---
+  duration_ms: 2.343391
+  type: 'test'
+  location: '/tmp/megaron-codex-diplomacy-simple-20261008/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:30:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input was expected to not match the regular expression /data-write="rumour"/. Input:
+    
+    '<div class="dsec-title">Alector <button class="btn-small" data-write="contact">Write</button></div><div>one known city · one rumoured city</div><div class="dsec"><div class="stat-row"><span class="sr-label">Kyme</span><span class="sr-val"><button class="btn-small" data-write="contact">Write</button></span></div>\n' +
+      '        <div>Alector · Can write</div>\n' +
+      '        <details><summary>Details</summary><div>three, four</div><div>Copper</div></details></div><div class="dsec"><div class="stat-row"><span class="sr-label">Rumour city</span><span class="sr-val"><button class="btn-small" data-write="rumour">Write</button></span></div>\n' +
+      '        <div>Alector · Can write</div>\n' +
+      '        <details><summary>Details</summary><div>east</div><div>tin</div></details></div><div class="dsec"><div class="stat-row"><span class="sr-label">Nostos</span><span class="sr-val"></span></div>\n' +
+      '        <div>Me · Your city</div>\n' +
+      '        <details><summary>Details</summary><div>Location unknown</div><div></div></details></div>'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: |-
+    <div class="dsec-title">Alector <button class="btn-small" data-write="contact">Write</button></div><div>one known city · one rumoured city</div><div class="dsec"><div class="stat-row"><span class="sr-label">Kyme</span><span class="sr-val"><button class="btn-small" data-write="contact">Write</button></span></div>
+            <div>Alector · Can write</div>
+            <details><summary>Details</summary><div>three, four</div><div>Copper</div></details></div><div class="dsec"><div class="stat-row"><span class="sr-label">Rumour city</span><span class="sr-val"><button class="btn-small" data-write="rumour">Write</button></span></div>
+            <div>Alector · Can write</div>
+            <details><summary>Details</summary><div>east</div><div>tin</div></details></div><div class="dsec"><div class="stat-row"><span class="sr-label">Nostos</span><span class="sr-val"></span></div>
+            <div>Me · Your city</div>
+            <details><summary>Details</summary><div>Location unknown</div><div></div></details></div>
+  operator: 'doesNotMatch'
+  stack: |-
+    file:///tmp/megaron-codex-diplomacy-simple-20261008/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:37:52
+    async rig (file:///tmp/megaron-codex-diplomacy-simple-20261008/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:21:7)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: M: first letter and both trade directions remain reachable without any prior letter
+ok 3 - M: first letter and both trade directions remain reachable without any prior letter
+  ---
+  duration_ms: 12.090383
+  type: 'test'
+  ...
+# Subtest: M: selecting rumour, own city or a removed contact creates no draft or dispatch
+ok 4 - M: selecting rumour, own city or a removed contact creates no draft or dispatch
+  ---
+  duration_ms: 0.398057
+  type: 'test'
+  ...
+# Subtest: M: host still reads both tabs but does not gain a settlement-only trade composer
+ok 5 - M: host still reads both tabs but does not gain a settlement-only trade composer
+  ---
+  duration_ms: 0.59171
+  type: 'test'
+  ...
+# Subtest: M: failed Known fetch offers retry without inventing an empty directory
+ok 6 - M: failed Known fetch offers retry without inventing an empty directory
+  ---
+  duration_ms: 1.348816
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 5
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 82.484048

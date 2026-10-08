@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Real Host/foreign-city/FOW inspect panels, baseline/after.
+"""M: real first letter, returned reply, buy/sell proposals and Inspect letter.
 Usage: python3 tools/diplomacy_live.py OUT BUILD_COMMIT baseline|after [WEB_DIR]
-OUT contains a freshly built temenos. baseline uses archived unchanged WEB_DIR.
-Every arm creates fresh PG16/Redis and uses ordinary player APIs and web clicks;
-no SQL fixtures. Only own processes/containers are removed.
+OUT/temenos must be a clean-env full build with the expected buildCommit.
+Fresh PG16/Redis per arm, ordinary register/join/settle/march, real browser.
+Only actor-pair selection reads landmass metadata (read-only SQL); no SQL
+writes or client knowledge fixtures. Pan the camera solely for map clicking.
+Own spawned processes/containers are always cleaned up.
 """
 import json
 import os

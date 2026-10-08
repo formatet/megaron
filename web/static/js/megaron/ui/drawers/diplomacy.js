@@ -239,7 +239,7 @@ async function loadDipThreads() {
         +   safeName + badges
         + '</span>'
         + '<span style="font-size:.68rem;color:var(--text-dim)">'
-        +   fmtAgo(latest.arrived_at || latest.sent_at || latest.created_at)
+        +   (msgs.length ? fmtAgo(latest.arrived_at || latest.sent_at || latest.created_at) : 'New conversation')
         +   ' <span class="dip-thread-expand-hint">' + (isOpen ? '▲' : '▼') + '</span>'
         + '</span>'
         + '</div>';

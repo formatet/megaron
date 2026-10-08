@@ -1,0 +1,63 @@
+TAP version 13
+# Subtest: M: actual drawer offers exactly Correspondence and Known
+ok 1 - M: actual drawer offers exactly Correspondence and Known
+  ---
+  duration_ms: 14.79769
+  type: 'test'
+  ...
+# Subtest: M: Known keeps ruler and city knowledge, writes numbers in words, gates rumours
+ok 2 - M: Known keeps ruler and city knowledge, writes numbers in words, gates rumours
+  ---
+  duration_ms: 1.898555
+  type: 'test'
+  ...
+# Subtest: M: first letter and both trade directions remain reachable without any prior letter
+not ok 3 - M: first letter and both trade directions remain reachable without any prior letter
+  ---
+  duration_ms: 2.399312
+  type: 'test'
+  location: '/tmp/megaron-codex-diplomacy-simple-20261008/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:42:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input was expected to not match the regular expression /NaN|Invalid Date/. Input:
+    
+    `<div class="dip-thread" id="dip-thread-Kyme" data-open><div class="dip-thread-header" onclick="dipToggleThread('dip-thread-Kyme')"><span style="font-size:.82rem;font-weight:bold;color:var(--accent-diplomacy)">Kyme</span><span style="font-size:.68rem;color:var(--text-dim)">NaNd ago <span class="dip-thread-expand-hint">▲</span></span></div><div class="dip-thread-body"><div class="dip-inline-compose" id="dip-thread-Kyme-compose"><textarea id="dip-thread-Kyme-compose-text" maxlength="1000" placeholder="Send a message to Kyme…"></textarea><details><summary style="cursor:pointer;color:var(--accent);font-size:.75rem;user-select:none">+ Attach trade offer</summary><div class="dip-inline-trade" style="margin-top:.3rem"><div style="display:flex;gap:.6rem;font-size:.7rem;margin-bottom:.3rem"><label><input type="radio" name="dip-thread-Kyme-compose-kind" value="buy" checked onchange="dipToggleKind('dip-thread-Kyme-compose')"> Buy</label><label><input type="radio" name="dip-thread-Kyme-compose-kind" value="sell" onchange="dipToggleKind('dip-thread-Kyme-compose')"> Sell</label></div><div id="dip-thread-Kyme-compose-buy-fields"><div><div style="font-size:.68rem;color:var(--text-dim)">Want good</div><select id="dip-thread-Kyme-compose-good"><option value="">— choose good —</option><option value="grain">Grain</option></select></div><div><div style="font-size:.68rem;color:var(--text-dim)">Quantity</div><input id="dip-thread-Kyme-compose-qty" type="number" min="0.1" step="0.1" placeholder="50"></div><div><div style="font-size:.68rem;color:var(--text-dim)">Offer silver</div><input id="dip-thread-Kyme-compose-silver" type="number" min="1" step="1" placeholder="60"></div></div><div id="dip-thread-Kyme-compose-sell-fields" style="display:none"><div><div style="font-size:.68rem;color:var(--text-dim)">Offer good</div><select id="dip-thread-Kyme-compose-offer-good"><option value="">— choose good —</option><option value="grain">Grain</option></select></div><div><div style="font-size:.68rem;color:var(--text-dim)">Quantity</div><input id="dip-thread-Kyme-compose-offer-qty" type="number" min="0.1" step="0.1" placeholder="20"></div><div><div style="font-size:.68rem;color:var(--text-dim)">Want silver</div><input id="dip-thread-Kyme-compose-want-silver" type="number" min="1" step="1" placeholder="80"></div></div></div></details><div class="dip-inline-compose-row"><button class="btn-small btn-primary" onclick="dipSendInThread('dip-thread-Kyme-compose','contact')">Dispatch →</button><span class="dip-compose-status" id="dip-thread-Kyme-compose-status"></span></div></div></div></div>`
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: `<div class="dip-thread" id="dip-thread-Kyme" data-open><div class="dip-thread-header" onclick="dipToggleThread('dip-thread-Kyme')"><span style="font-size:.82rem;font-weight:bold;color:var(--accent-diplomacy)">Kyme</span><span style="font-size:.68rem;color:var(--text-dim)">NaNd ago <span class="dip-thread-expand-hint">▲</span></span></div><div class="dip-thread-body"><div class="dip-inline-compose" id="dip-thread-Kyme-compose"><textarea id="dip-thread-Kyme-compose-text" maxlength="1000" placeholder="Send a message to Kyme…"></textarea><details><summary style="cursor:pointer;color:var(--accent);font-size:.75rem;user-select:none">+ Attach trade offer</summary><div class="dip-inline-trade" style="margin-top:.3rem"><div style="display:flex;gap:.6rem;font-size:.7rem;margin-bottom:.3rem"><label><input type="radio" name="dip-thread-Kyme-compose-kind" value="buy" checked onchange="dipToggleKind('dip-thread-Kyme-compose')"> Buy</label><label><input type="radio" name="dip-thread-Kyme-compose-kind" value="sell" onchange="dipToggleKind('dip-thread-Kyme-compose')"> Sell</label></div><div id="dip-thread-Kyme-compose-buy-fields"><div><div style="font-size:.68rem;color:var(--text-dim)">Want good</div><select id="dip-thread-Kyme-compose-good"><option value="">— choose good —</option><option value="grain">Grain</option></select></div><div><div style="font-size:.68rem;color:var(--text-dim)">Quantity</div><input id="dip-thread-Kyme-compose-qty" type="number" min="0.1" step="0.1" placeholder="50"></div><div><div style="font-size:.68rem;color:var(--text-dim)">Offer silver</div><input id="dip-thread-Kyme-compose-silver" type="number" min="1" step="1" placeholder="60"></div></div><div id="dip-thread-Kyme-compose-sell-fields" style="display:none"><div><div style="font-size:.68rem;color:var(--text-dim)">Offer good</div><select id="dip-thread-Kyme-compose-offer-good"><option value="">— choose good —</option><option value="grain">Grain</option></select></div><div><div style="font-size:.68rem;color:var(--text-dim)">Quantity</div><input id="dip-thread-Kyme-compose-offer-qty" type="number" min="0.1" step="0.1" placeholder="20"></div><div><div style="font-size:.68rem;color:var(--text-dim)">Want silver</div><input id="dip-thread-Kyme-compose-want-silver" type="number" min="1" step="1" placeholder="80"></div></div></div></details><div class="dip-inline-compose-row"><button class="btn-small btn-primary" onclick="dipSendInThread('dip-thread-Kyme-compose','contact')">Dispatch →</button><span class="dip-compose-status" id="dip-thread-Kyme-compose-status"></span></div></div></div></div>`
+  operator: 'doesNotMatch'
+  stack: |-
+    file:///tmp/megaron-codex-diplomacy-simple-20261008/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:46:107
+    async rig (file:///tmp/megaron-codex-diplomacy-simple-20261008/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:21:7)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: M: selecting rumour, own city or a removed contact creates no draft or dispatch
+ok 4 - M: selecting rumour, own city or a removed contact creates no draft or dispatch
+  ---
+  duration_ms: 0.396919
+  type: 'test'
+  ...
+# Subtest: M: host still reads both tabs but does not gain a settlement-only trade composer
+ok 5 - M: host still reads both tabs but does not gain a settlement-only trade composer
+  ---
+  duration_ms: 0.529656
+  type: 'test'
+  ...
+# Subtest: M: failed Known fetch offers retry without inventing an empty directory
+ok 6 - M: failed Known fetch offers retry without inventing an empty directory
+  ---
+  duration_ms: 1.412263
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 5
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 70.695432

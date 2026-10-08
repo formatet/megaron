@@ -43,7 +43,7 @@ test('M: first letter and both trade directions remain reachable without any pri
   await dip.loadDiplomacyDrawer();assert.equal(typeof dip.dipWrite,'function');
   await dip.dipWrite('contact');
   const html=node('dtab-threads').innerHTML;
-  assert.match(html,/Kyme/);assert.match(html,/data-open/);assert.match(html,/Attach trade offer/);
+  assert.match(html,/Kyme/);assert.match(html,/data-open/);assert.match(html,/Attach trade offer/);assert.doesNotMatch(html,/NaN|Invalid Date/);
   const cid='dip-thread-Kyme-compose';
   assert.match(html,new RegExp('id="'+cid+'-text"'));
   node(cid+'-text').value='First letter';await dip.dipSendInThread(cid,'contact');
