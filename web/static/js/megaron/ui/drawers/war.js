@@ -97,7 +97,10 @@ function fmtUnitCost(entry, isNaval) {
 }
 
 // ── War drawer ────────────────────────────────────────────────────────────
+// See cityLoadSeq: an older reply must not fill the nodes a newer load built.
+let warLoadSeq = 0;
 export async function loadWarDrawer() {
+  const seq = ++warLoadSeq;
   const body = document.getElementById('war-body');
   const capital = ownCapital();
   // Preserve recruit-city selection across reloads. Founder phase (no capital
@@ -145,6 +148,7 @@ export async function loadWarDrawer() {
         loadRetreatDefaultSection(),
       ]);
       const unitResponse = unitsRes && unitsRes.ok ? await unitsRes.json() : {};
+      if (seq !== warLoadSeq) return;
       const allUnits = unitResponse.units || [];
       let armyHtml = retreatSec + '<div class="dsec">' + recallAllControlsHTML(allUnits, recallAllResult, recallAllBusy) + '</div>' + '<div class="dsec"><div class="dsec-title">Units</div>';
       armyHtml += allUnits.length
@@ -174,6 +178,7 @@ export async function loadWarDrawer() {
     const canRec = {};
     (recPd.can_recruit || []).forEach(r => { canRec[r.unit] = r.can_recruit; });
     const unitResponse = unitsRes && unitsRes.ok ? await unitsRes.json() : {};
+    if (seq !== warLoadSeq) return;
     const allUnits = unitResponse.units || [];
     // catalogue is null on fetch failure (getUnitCatalogue already logged it) —
     // catByType then stays empty and every row degrades to "cost data
@@ -267,10 +272,13 @@ export async function loadWarDrawer() {
     // uses by default — this panel has its own city selector, and the panel
     // above (buildings/canRec) is already built from prevRecruitCity, so the
     // Locked hints must describe the same settlement or they contradict it.
-    document.getElementById('wtab-recruit').innerHTML += await renderLockedActions('military', prevRecruitCity);
+    const locked = await renderLockedActions('military', prevRecruitCity);
+    if (seq !== warLoadSeq) return;
+    document.getElementById('wtab-recruit').insertAdjacentHTML('beforeend', locked);
 
   } catch(e) {
     console.error('war drawer', e);
+    if (seq !== warLoadSeq) return;
     document.getElementById('wtab-army').innerHTML = '<p class="empty-state" style="padding:.5rem">Could not load.</p>';
     document.getElementById('wtab-recruit').innerHTML = '<p class="empty-state" style="padding:.5rem">Could not load.</p>';
   }

@@ -1,0 +1,97 @@
+[
+  {
+    "name": "garrison",
+    "passed": true,
+    "posts": []
+  },
+  {
+    "name": "recruit",
+    "passed": true,
+    "posts": []
+  },
+  {
+    "name": "transfer",
+    "passed": true,
+    "posts": []
+  },
+  {
+    "name": "build-hex",
+    "passed": true,
+    "posts": []
+  },
+  {
+    "name": "build-stale",
+    "passed": true,
+    "posts": []
+  },
+  {
+    "name": "build-refresh",
+    "passed": true,
+    "posts": [
+      {
+        "url": "/api/v1/worlds/W/provinces/P/build",
+        "body": {
+          "building_type": "farm",
+          "hex_q": 1,
+          "hex_r": 0
+        }
+      }
+    ]
+  },
+  {
+    "name": "grid",
+    "passed": true,
+    "posts": []
+  },
+  {
+    "name": "correspondence",
+    "passed": true,
+    "posts": [
+      {
+        "url": "/api/v1/worlds/W/settlements/S/messengers",
+        "body": {
+          "destination_id": "contact",
+          "message": "First letter"
+        }
+      },
+      {
+        "url": "/api/v1/worlds/W/settlements/S/messengers",
+        "body": {
+          "destination_id": "contact",
+          "message": "Second unfinished letter",
+          "trade_offer": {
+            "kind": "sell",
+            "offer_good": "grain",
+            "offer_qty": 12,
+            "want_silver": 7
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "automation",
+    "passed": true,
+    "posts": []
+  },
+  {
+    "name": "city-reload",
+    "passed": true,
+    "posts": []
+  },
+  {
+    "name": "war-reload",
+    "passed": true,
+    "posts": []
+  },
+  {
+    "name": "cult-reload",
+    "passed": true,
+    "posts": []
+  },
+  {
+    "name": "search",
+    "passed": true,
+    "posts": []
+  }
+]

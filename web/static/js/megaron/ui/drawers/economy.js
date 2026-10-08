@@ -360,13 +360,19 @@ async function refreshCargoInTransit() {
 
 // Populate the Good dropdown with the From settlement's goods in stock, so the
 // player picks a real good and sees how much is available (no more free-text).
+// Only the newest From selection may fill the good list; an older, slower
+// reply must not replace the good the player has since picked.
+let transferGoodsSeq = 0;
 export async function loadTransferGoods(fromProvId) {
   const sel = document.getElementById('ec-tr-good');
   if (!sel || !fromProvId) return;
+  const seq = ++transferGoodsSeq;
   sel.innerHTML = '<option value="">Loading…</option>';
   const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${fromProvId}/goods`);
+  if (seq !== transferGoodsSeq) return;
   if (!r.ok) { sel.innerHTML = '<option value="">Could not load goods</option>'; return; }
   const goods = ((await r.json()) || []).filter(g => (g.amount || 0) > 0);
+  if (seq !== transferGoodsSeq) return;
   sel.innerHTML = goods.length
     ? goods.map(g => `<option value="${g.key}">${esc(g.name || g.key)} — ${numberWords(Math.floor(g.amount || 0))} in stock</option>`).join('')
     : '<option value="">No goods in stock</option>';
@@ -451,8 +457,12 @@ function readStandingGoodsRows(group) {
     .filter(p => p.good_key && !isNaN(p.amount));
 }
 
+// Opening the tab twice quickly must not let the older goods reply rebuild the
+// form (and wipe what the player typed) after the newer one rendered it.
+let automationLoadSeq = 0;
 async function loadEconomyAutomation(mySettlements) {
   const el = document.getElementById('ectab-automation');
+  const seq = ++automationLoadSeq;
   if (mySettlements.length < 2) {
     el.innerHTML = '<p class="empty-state" style="padding:1rem">Need at least two of your own settlements for a standing order.</p>';
     return;
@@ -465,9 +475,11 @@ async function loadEconomyAutomation(mySettlements) {
     goods = ((await r.json()) || []).filter(g => g.key !== 'cult');
     if (!goods.length) throw new Error('empty inventory');
   } catch (_) {
+    if (seq !== automationLoadSeq) return;
     el.innerHTML = '<p class="empty-state">Could not load goods. Open Automation again to retry.</p>';
     return;
   }
+  if (seq !== automationLoadSeq) return;
   const inputStyle = 'width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem';
   const opts = mySettlements.map(s => `<option value="${s.settlement_id||s.id}">${esc(s.name)}${s.is_capital?' ★':''}</option>`).join('');
   el.innerHTML = `

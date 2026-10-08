@@ -171,7 +171,11 @@ export async function saveLaborAlloc(provinceID) {
 // this function is only ever called for the city drawer. `terrainLabel` is
 // computed but does not appear to be read anywhere below — a pre-existing
 // wart, not touched here.
+// A newer load rebuilds the drawer DOM; a slower older reply must not fill
+// (and so overwrite typed input in) the nodes that replaced its own.
+let cityLoadSeq = 0;
 export async function loadCityDrawer() {
+  const seq = ++cityLoadSeq;
   const capital = activeCitySettlement();
   // Get terrain from State.tileData (not in State.provinceData)
   const capitalTile = capital ? State.tileData.find(t => t.q === capital.q && t.r === capital.r) : null;
@@ -228,6 +232,7 @@ export async function loadCityDrawer() {
     ]);
     const pd    = settResp.ok  ? (await settResp.json()).settlement : null;
     const goods = goodsResp.ok ? await goodsResp.json() : [];
+    if (seq !== cityLoadSeq) return;
 
     // Canvas — start animated city scene.
     // `pd` skickas med: scenens citadell skalas av befolkning och murnivå ur
@@ -402,7 +407,9 @@ export async function loadCityDrawer() {
         <div id="war-disband-res" style="font-size:.72rem;margin-top:.2rem;min-height:.9rem"></div>`;
     }
 
-    document.getElementById('city-gar-sec').innerHTML += await renderLockedActions('province', capital.id);
+    const locked = await renderLockedActions('province', capital.id);
+    if (seq !== cityLoadSeq) return;
+    document.getElementById('city-gar-sec').insertAdjacentHTML('beforeend', locked);
 
   } catch(e) { console.error('city drawer', e); }
 }
@@ -478,11 +485,16 @@ export async function startBuild() {
 // hex-bound type (province.HexBoundBuildings via the catalogue's hex_bound
 // field), fetched fresh each time since occupancy changes with every build
 // (unlike the catalogue, this is NOT memoized).
-export async function onCityBuildTypeChange() {
+let buildTypeSeq = 0;
+export async function onCityBuildTypeChange(preferredHex) {
   const typeSel = document.getElementById('city-build-select');
   const hexSel = document.getElementById('city-build-hex');
   if (!typeSel || !hexSel) return;
+  // Only the newest type change may write the hex picker; an older reply
+  // (slow placement-options for a previous type) must not reopen or refill it.
+  const seq = ++buildTypeSeq;
   const catalogue = await getBuildingCatalogue();
+  if (seq !== buildTypeSeq) return;
   const entry = (catalogue || []).find(e => e.type === typeSel.value);
   if (!entry || !entry.hex_bound) {
     hexSel.style.display = 'none';
@@ -496,8 +508,13 @@ export async function onCityBuildTypeChange() {
     const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${capital.id}/placement-options`);
     if (res.ok) placementOpts = await res.json();
   } catch (e) { console.error('onCityBuildTypeChange', e); }
+  if (seq !== buildTypeSeq) return;
+  // A hex the player picked while this refresh was pending survives if it is
+  // still a valid choice.
+  const chosen = preferredHex || hexSel.value;
   const html = hexBuildOptionsHTML(entry.type, placementOpts);
   hexSel.innerHTML = html || '<option value="">(no valid catchment hex)</option>';
+  if (chosen && [...hexSel.options].some(o => o.value === chosen)) hexSel.value = chosen;
   hexSel.style.display = 'block';
 }
 
@@ -744,6 +761,7 @@ async function refreshCityBuildings(provinceID) {
       }
     }
     const prevSel = document.getElementById('city-build-select')?.value || '';
+    const prevHex = document.getElementById('city-build-hex')?.value || '';
     // #city-build-hex: the hex picker for a hex-bound type (farm/mine/
     // lumbermill/stonequarry) — hidden by default, shown and populated by
     // onCityBuildTypeChange() when the selected catalogue entry's hex_bound
@@ -766,7 +784,7 @@ async function refreshCityBuildings(provinceID) {
     if (newSel) {
       if (prevSel) newSel.value = prevSel;
       // Also on the first render: a hex-bound default type needs its hex picker.
-      onCityBuildTypeChange();
+      onCityBuildTypeChange(prevHex);
     }
   } catch(e) { console.error('refreshCityBuildings', e); }
 }

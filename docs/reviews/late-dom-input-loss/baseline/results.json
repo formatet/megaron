@@ -1,0 +1,67 @@
+[
+  {
+    "name": "garrison",
+    "passed": false,
+    "error": "Page.evaluate: Error: garrison: late hint replaced the input node\n    at check (http://127.0.0.1:33861/tools/late_dom_probe.mjs:34:56)\n    at Module.run (http://127.0.0.1:33861/tools/late_dom_probe.mjs:56:3)\n    at async <anonymous>:316:30"
+  },
+  {
+    "name": "recruit",
+    "passed": false,
+    "error": "Page.evaluate: Error: recruit: late hint replaced the input node\n    at check (http://127.0.0.1:33861/tools/late_dom_probe.mjs:34:56)\n    at Module.run (http://127.0.0.1:33861/tools/late_dom_probe.mjs:56:3)\n    at async <anonymous>:316:30"
+  },
+  {
+    "name": "transfer",
+    "passed": false,
+    "error": "Page.evaluate: Error: transfer: older From reply replaced selected good\n    at check (http://127.0.0.1:33861/tools/late_dom_probe.mjs:34:56)\n    at Module.run (http://127.0.0.1:33861/tools/late_dom_probe.mjs:63:3)\n    at async <anonymous>:316:30"
+  },
+  {
+    "name": "build-hex",
+    "passed": false,
+    "error": "Page.evaluate: Error: build-hex: hex choice lost while refresh pending\n    at check (http://127.0.0.1:33861/tools/late_dom_probe.mjs:34:56)\n    at Module.run (http://127.0.0.1:33861/tools/late_dom_probe.mjs:68:3)\n    at async <anonymous>:316:30"
+  },
+  {
+    "name": "build-stale",
+    "passed": false,
+    "error": "Page.evaluate: Error: build-stale: older farm response reopened hex picker for barracks\n    at check (http://127.0.0.1:33861/tools/late_dom_probe.mjs:34:56)\n    at Module.run (http://127.0.0.1:33861/tools/late_dom_probe.mjs:73:38)\n    at async <anonymous>:316:30"
+  },
+  {
+    "name": "build-refresh",
+    "passed": false,
+    "error": "Page.evaluate: Error: build-refresh: build completion refresh lost next build hex\n    at check (http://127.0.0.1:33861/tools/late_dom_probe.mjs:34:56)\n    at Module.run (http://127.0.0.1:33861/tools/late_dom_probe.mjs:79:3)\n    at async <anonymous>:316:30"
+  },
+  {
+    "name": "grid",
+    "passed": false,
+    "error": "Page.evaluate: Error: grid: silent refresh restored an obsolete hex\n    at check (http://127.0.0.1:33861/tools/late_dom_probe.mjs:34:56)\n    at Module.run (http://127.0.0.1:33861/tools/late_dom_probe.mjs:85:38)\n    at async <anonymous>:316:30"
+  },
+  {
+    "name": "correspondence",
+    "passed": false,
+    "error": "Page.evaluate: Error: correspondence: delayed send refresh erased new draft\n    at check (http://127.0.0.1:33861/tools/late_dom_probe.mjs:34:56)\n    at Module.run (http://127.0.0.1:33861/tools/late_dom_probe.mjs:94:3)\n    at async <anonymous>:316:30"
+  },
+  {
+    "name": "automation",
+    "passed": false,
+    "error": "Page.evaluate: Error: automation: older Automation load erased entered minimum\n    at check (http://127.0.0.1:33861/tools/late_dom_probe.mjs:34:56)\n    at Module.run (http://127.0.0.1:33861/tools/late_dom_probe.mjs:105:3)\n    at async <anonymous>:316:30"
+  },
+  {
+    "name": "city-reload",
+    "passed": false,
+    "error": "Page.evaluate: Error: city-reload: obsolete drawer load replaced active input\n    at check (http://127.0.0.1:33861/tools/late_dom_probe.mjs:34:56)\n    at Module.run (http://127.0.0.1:33861/tools/late_dom_probe.mjs:45:3)\n    at async <anonymous>:316:30"
+  },
+  {
+    "name": "war-reload",
+    "passed": false,
+    "error": "Page.evaluate: Error: war-reload: obsolete drawer load replaced active input\n    at check (http://127.0.0.1:33861/tools/late_dom_probe.mjs:34:56)\n    at Module.run (http://127.0.0.1:33861/tools/late_dom_probe.mjs:45:3)\n    at async <anonymous>:316:30"
+  },
+  {
+    "name": "cult-reload",
+    "passed": false,
+    "error": "Page.evaluate: Error: cult-reload: obsolete drawer load replaced active input\n    at check (http://127.0.0.1:33861/tools/late_dom_probe.mjs:34:56)\n    at Module.run (http://127.0.0.1:33861/tools/late_dom_probe.mjs:45:3)\n    at async <anonymous>:316:30"
+  },
+  {
+    "name": "search",
+    "passed": false,
+    "error": "Page.evaluate: Error: search: late letters reset highlighted city\n    at check (http://127.0.0.1:33861/tools/late_dom_probe.mjs:34:56)\n    at Module.run (http://127.0.0.1:33861/tools/late_dom_probe.mjs:50:3)\n    at async <anonymous>:316:30"
+  }
+]

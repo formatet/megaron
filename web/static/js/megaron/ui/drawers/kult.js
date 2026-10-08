@@ -9,7 +9,10 @@ import { renderLockedActions } from '../misc.js';
 import { kharisNetView } from './kult_kharis.js';
 
 // ── Kult drawer ───────────────────────────────────────────────────────────
+// See cityLoadSeq: an older reply must not replace what a newer load rendered.
+let kultLoadSeq = 0;
 export async function loadKultDrawer() {
+  const seq = ++kultLoadSeq;
   const el = document.getElementById('kult-body');
   el.innerHTML = '<div class="loading" style="padding:.5rem">Loading…</div>';
 
@@ -146,8 +149,10 @@ export async function loadKultDrawer() {
     html += '</div>';
 
     html += await renderLockedActions('cult');
+    if (seq !== kultLoadSeq) return;
     el.innerHTML = html;
   } catch(_) {
+    if (seq !== kultLoadSeq) return;
     el.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load.</p>';
   }
 }

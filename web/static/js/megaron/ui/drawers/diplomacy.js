@@ -156,6 +156,46 @@ export async function dipWrite(settlementID) {
   await loadDipThreads();
 }
 
+// A re-render (a delayed post-send refresh, a new reply) rebuilds every thread.
+// Whatever the player is mid-way through writing must survive it: draft text,
+// trade fields, buy/sell choice, open trade details, focus and text selection.
+function snapshotDrafts(root) {
+  const snap = { controls: new Map(), radios: new Map(), details: [], focus: null };
+  root.querySelectorAll('[id]').forEach(c => {
+    if (c.matches('input:not([type=radio]), textarea, select')) snap.controls.set(c.id, c.value);
+  });
+  root.querySelectorAll('input[type=radio]').forEach(r => { if (r.checked) snap.radios.set(r.name, r.value); });
+  root.querySelectorAll('.dip-thread').forEach(t => {
+    t.querySelectorAll('details').forEach((d, i) => { if (d.open) snap.details.push(t.id + ':' + i); });
+  });
+  const a = document.activeElement;
+  if (a && a.id && root.contains(a)) {
+    snap.focus = { id: a.id, start: a.selectionStart ?? null, end: a.selectionEnd ?? null };
+  }
+  return snap;
+}
+
+function restoreDrafts(root, snap) {
+  snap.controls.forEach((value, id) => {
+    const c = document.getElementById(id);
+    if (c && root.contains(c) && value !== '' ) c.value = value;
+  });
+  snap.radios.forEach((value, name) => {
+    root.querySelectorAll('input[type=radio]').forEach(r => { if (r.name === name) r.checked = r.value === value; });
+    if (name.endsWith('-kind')) dipToggleKind(name.slice(0, -5));
+  });
+  root.querySelectorAll('.dip-thread').forEach(t => {
+    t.querySelectorAll('details').forEach((d, i) => { if (snap.details.includes(t.id + ':' + i)) d.open = true; });
+  });
+  if (snap.focus) {
+    const f = document.getElementById(snap.focus.id);
+    if (f && root.contains(f)) {
+      f.focus();
+      if (snap.focus.start != null && f.setSelectionRange) f.setSelectionRange(snap.focus.start, snap.focus.end);
+    }
+  }
+}
+
 async function loadDipThreads() {
   const el = document.getElementById('dtab-threads');
   if (!el) return;
@@ -216,6 +256,7 @@ async function loadDipThreads() {
     const openSet = new Set();
     el.querySelectorAll('.dip-thread[data-open]').forEach(t => openSet.add(t.id));
 
+    const drafts = snapshotDrafts(el);
     el.innerHTML = keys.map(key => {
       const thread = threads[key];
       const msgs = [...thread.messages].sort((a,b) => msgTime(a) - msgTime(b));
@@ -387,6 +428,7 @@ async function loadDipThreads() {
       html += '</div></div>'; // close thread-body + thread
       return html;
     }).join('');
+    restoreDrafts(el, drafts);
     // Do not recreate an already writable textarea when capability hints arrive.
     el.insertAdjacentHTML('beforeend', await renderLockedActions('diplomacy'));
 
