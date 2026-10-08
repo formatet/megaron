@@ -56,7 +56,6 @@ import { loadNotifDrawer, notifShowKind } from './ui/drawers/notif.js';
 import { submitReport } from './ui/drawers/report.js';
 import { installErrorCapture } from './ui/diagnostics.js';
 import { playWarHorn, playBattleClash, playArrival, playDispatchChime } from './ui/sfx.js';
-import { loadGossipDrawer } from './ui/drawers/gossip.js';
 import { closeDispatchWindow } from './ui/dispatch_window.js';
 import { closeAccountWindow, toggleAccountWindow } from './ui/account_window.js';
 import { initCodex, openCodex, openCodexForDrawer, closeCodex, codexBack } from './ui/codex.js';
@@ -131,8 +130,6 @@ async function loadDrawerContent(name) {
     await loadKultDrawer();
   } else if (name === 'notif') {
     await loadNotifDrawer();
-  } else if (name === 'gossip') {
-    await loadGossipDrawer();
   }
 }
 

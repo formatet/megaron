@@ -6,6 +6,6 @@ Rumour is useful but blurred:
 - it can be old news;
 - it does **not** give you [[contact]] — you still have to reach a city before you can write to it or trade with it.
 
-The drawer has two parts: **Rumours**, and **Known Wanaxes** — the rulers you have heard of.
+Rumours appear in the same list as your notifications, newest first, each marked **Rumour** with a 🗣 so you can tell what you have only heard from what happened to you. The rulers you know are listed under **Known** in Diplomacy.
 
 Use gossip to decide where to send a messenger or a scout; use [[sight]] and [[contact]] to act on it.

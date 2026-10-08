@@ -44,3 +44,16 @@ test('AK2: notis-drawerns header i map.html saknar "Clear all"-knappen och visar
 test('AK3: clearAllNotifs finns inte kvar i main.js window-bryggan (den skulle annars vara nåbar även utan knapp i markupen)', () => {
   assert.doesNotMatch(mainJs, /clearAllNotifs/);
 });
+
+const { mergeFeed } = notifModule;
+const { renderRumourRowHTML } = await import('./gossip.js');
+test('O: one list, newest first, rumours kept as their own marked rows', () => {
+  const notifs = [{ kind: 'A', created_at: '2026-10-08T10:00:00Z' }, { kind: 'B', created_at: '2026-10-08T08:00:00Z' }];
+  const rumours = [{ text: 'a', generated_at: '2026-10-08T09:00:00Z' }, { text: 'b', generated_at: '2026-10-08T11:00:00Z' }];
+  const rows = mergeFeed(notifs, rumours);
+  assert.deepEqual(rows.map(r => r.type === 'rumour' ? 'R:' + r.g.text : r.n.kind), ['R:b', 'A', 'R:a', 'B']);
+  assert.equal(rows.find(r => r.type === 'notif' && r.n.kind === 'B').idx, 1, 'click index still points into notifs');
+  assert.deepEqual(mergeFeed(notifs, null).map(r => r.n.kind), ['A', 'B']);
+  const html = renderRumourRowHTML({ text: '<x>', source_region: 'Delta', category: 'war', hops: 2, generated_at: rumours[0].generated_at });
+  assert.match(html, /Rumour/); assert.match(html, /🗣/); assert.match(html, /2 hops away/); assert.doesNotMatch(html, /<x>/);
+});

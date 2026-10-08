@@ -14,7 +14,6 @@
 | 🏛 | **City** | One settlement: people, production, buildings, garrison — [[city]] |
 | ⚔ | **War** | Units, recruiting, armies in the field — [[units]] |
 | ✉ | **Diplomacy** | Letters, trade offers, known cities and rulers — [[messengers]] |
-| 🗣 | **Gossip** | Rumours that have reached you — [[gossip]] |
 | ⚖ | **Economy** | Goods across all cities, transfers, standing orders — [[goods]] |
 | ⛩ | **Kult** | The gods — [[kharis]] |
 | ✎ | **Report** | Tell the builders something is wrong — [[report]] |
