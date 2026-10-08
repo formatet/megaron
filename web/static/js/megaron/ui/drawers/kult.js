@@ -1,3 +1,4 @@
+import { showInlineResult } from '../inline_result.js';
 import { State, ownCapital } from '../../state.js';
 import { fetchAuth } from '../../api.js';
 import { track } from '../../telemetry.js';
@@ -185,10 +186,10 @@ async function castRite(prayerID, offering) {
   const d = await r.json().catch(function(){return {};});
   if (r.ok) {
     track('rite_performed', { rite: prayerID || '' });
-    alert(d.message || (d.success ? 'The gods answered!' : 'The gods are silent.'));
-    loadKultDrawer();
+    await loadKultDrawer();
+    showInlineResult('kult-body', d.message || (d.success ? 'The gods answered!' : 'The gods are silent.'));
   } else {
-    alert(d.error || 'Rite failed');
+    showInlineResult('kult-body', d.error || 'Rite failed', true);
   }
 }
 

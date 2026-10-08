@@ -3,6 +3,7 @@ import { fetchAuth } from '../../api.js';
 import { updateNotifBadge } from '../chips.js';
 import { fmtAgo, notifText, notifIcon, colonyFoundedGrainLine } from '../format.js';
 import { currentCalendarDate, monthLabel } from '../misc.js';
+import { numberWords } from '../number_words.js';
 import { openDispatchWindow } from '../dispatch_window.js';
 
 // ── Notifications drawer ──────────────────────────────────────────────────
@@ -17,34 +18,23 @@ const NOISY_NOTIF_KINDS = ['SitosIntervention', 'SitosFundLow'];
 // reading lives, off the same tick-anchor math (currentCalendarDate). The
 // month carries its 1..12 ordinal (monthLabel) so a Wanax can count days
 // between two notifications without a name-only calendar lookup.
-function notifDateHeader() {
-  const cal = currentCalendarDate();
+export function notifDateHeader(cal = currentCalendarDate(), state = State) {
   if (!cal) return '';
-  // World speed under the date (Timothy 2026-09-07): ticks per wall-clock hour
-  // = 3600 / TICK_SECONDS. Production cadence reads "1 tick per hour"; a test
-  // world runs faster, e.g. 600. A meta line, so it sits with the date, not in
-  // the event feed below.
-  // One tick is one game day (mig 109), so ticks-per-hour IS the multiplier
-  // against the intended pace of one game day per wall-clock hour. Said as a
-  // multiplier because "10 ticks per hour" does not tell a player the world is
-  // running ten times faster than it is meant to — and since the dev-tempo
-  // banner was removed from the topbar (2026-09-08), this line is the only
-  // place a tester can learn it (Timothy 2026-09-10).
-  let tempo = '';
-  if (State.TICK_SECONDS > 0) {
-    const mult = Math.round(3600 / State.TICK_SECONDS);
-    const days = `${mult} game ${mult === 1 ? 'day' : 'days'} per hour`;
-    tempo = `<div class="notif-world-tempo">World speed — ${mult === 1 ? `normal (${days})` : `<b>${mult}× normal</b> (${days})`}</div>`;
-  }
   // A world whose clock has not started yet. Without this the world simply
   // looks frozen, which reads as a broken game rather than as a lobby.
   let waiting = '';
-  if (State.WORLD_STATE === 'forming') {
-    const need = Math.max(0, (State.WANAXES_NEEDED || 0) - (State.WANAXES_JOINED || 0));
-    waiting = `<div class="notif-world-waiting">⏳ The world has not begun — waiting for ${need} more ${need === 1 ? 'Wanax' : 'Wanaxes'}.` +
+  if (state.WORLD_STATE === 'forming') {
+    const need = Math.max(0, (state.WANAXES_NEEDED || 0) - (state.WANAXES_JOINED || 0));
+    waiting = `<div class="notif-world-waiting">⏳ The world has not begun — waiting for ${numberWords(need)} more ${need === 1 ? 'Wanax' : 'Wanaxes'}.` +
       ` Time stands still until then; you may look around, but orders can be given only once it starts.</div>`;
   }
-  return `<div class="notif-date-header">Day ${cal.day} of ${monthLabel(cal)}, Year ${cal.year}${tempo}${waiting}</div>`;
+  return `<div class="notif-date-header">Day ${numberWords(cal.day)} of ${monthLabel(cal).replace(/\((\d+)\)/, (_, value) => `(${numberWords(Number(value))})`)}, Year ${numberWords(cal.year)}${waiting}</div>`;
+}
+
+
+export function hiddenNotifLabel(kind, count) {
+  const label = kind === 'SitosIntervention' ? 'food support reports' : 'food reserve warnings';
+  return `${numberWords(count)} ${label} — show reports`;
 }
 
 export function notifShowKind(kind) { loadNotifDrawer(kind || null); }
@@ -123,7 +113,7 @@ export async function loadNotifDrawer(kindFilter) {
           const count = (cd.notifications || []).length;
           if (count > 0) {
             html += `<div class="notif-list-item" style="cursor:pointer;color:var(--text-dim)" onclick="notifShowKind('${kind}')">
-              <span class="nli-kind">◉</span><span class="nli-text">+${count} ${kind} — click to view</span><span class="nli-time"></span></div>`;
+              <span class="nli-kind">◉</span><span class="nli-text">${hiddenNotifLabel(kind, count)}</span><span class="nli-time"></span></div>`;
           }
         } catch (_) {}
       }
