@@ -1,0 +1,624 @@
+{
+  "health": {
+    "commit": "016ac705",
+    "migration": 160,
+    "status": "ok"
+  },
+  "engine": "firefox",
+  "joins": [
+    {
+      "label": "giver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 6,
+        "R": 58,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 7,
+        "R": 41,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 48,
+        "R": 24,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 31,
+        "R": 48,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 24,
+        "R": 37,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 11,
+        "R": 61,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 44,
+        "R": 20,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 3,
+        "R": 37,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 25,
+        "R": 46,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 2,
+        "R": 64,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    }
+  ],
+  "recipient_distance": 6,
+  "destinations": [
+    {
+      "settlement_id": "412dc2bb-c690-4924-9f39-a1d5a8b411f4",
+      "name": "Nostos",
+      "owner_id": "61ef1046-5168-4bbd-9aa1-5a7566bbd53d",
+      "owner_name": "Knidia",
+      "own": false
+    }
+  ],
+  "receipts": [
+    {
+      "good": "silver",
+      "dispatch": {
+        "arrival_tick": 9,
+        "arrives_at": "2026-10-08T19:58:10.106349682+02:00",
+        "category": "land",
+        "departure_tick": 1,
+        "distance": 6,
+        "kind": "gift",
+        "route_id": "e3e1956d-c8b3-484d-b467-fd5a5c4a91ad",
+        "sent_qty": 50,
+        "transport_id": "e2f50d57-541c-4b37-8b94-7808f7679ab3",
+        "travel_min": 480,
+        "travel_ticks": 8
+      },
+      "outcome": {
+        "kind": "GiftDelivered",
+        "body": {
+          "reason": "",
+          "good_key": "silver",
+          "quantity": 50,
+          "route_id": "e3e1956d-c8b3-484d-b467-fd5a5c4a91ad",
+          "origin_id": "115d8e60-132f-4a74-982d-ec0d201c18bc",
+          "sender_id": "9f80923e-1385-46d4-a671-cc5e442ab1f1",
+          "origin_name": "Kyme",
+          "sender_name": "Areios",
+          "recipient_id": "61ef1046-5168-4bbd-9aa1-5a7566bbd53d",
+          "transport_id": "e2f50d57-541c-4b37-8b94-7808f7679ab3",
+          "lost_quantity": 0,
+          "owner_changed": false,
+          "destination_id": "412dc2bb-c690-4924-9f39-a1d5a8b411f4",
+          "recipient_name": "Knidia",
+          "destination_name": "Nostos",
+          "credited_quantity": 50,
+          "returned_quantity": 0,
+          "actual_recipient_id": "61ef1046-5168-4bbd-9aa1-5a7566bbd53d",
+          "actual_recipient_name": "Knidia"
+        },
+        "created_at": "2026-10-08T19:58:10.503128+02:00"
+      },
+      "recipient_before": 3720.0000000000005,
+      "recipient_after": 3764.7499999999995,
+      "quantity": 50,
+      "stock_delta": 44.74999999999909,
+      "other_stock_change": -5.2500000000009095
+    },
+    {
+      "good": "livestock",
+      "dispatch": {
+        "transport_id": "a0086719-be4e-4643-9195-5a9720d7e72b",
+        "kind": "gift"
+      },
+      "outcome": {
+        "kind": "GiftDelivered",
+        "body": {
+          "reason": "",
+          "good_key": "livestock",
+          "quantity": 2,
+          "route_id": "514a784e-27ad-464a-89af-ad91cafa5ad6",
+          "origin_id": "115d8e60-132f-4a74-982d-ec0d201c18bc",
+          "sender_id": "9f80923e-1385-46d4-a671-cc5e442ab1f1",
+          "origin_name": "Kyme",
+          "sender_name": "Areios",
+          "recipient_id": "61ef1046-5168-4bbd-9aa1-5a7566bbd53d",
+          "transport_id": "a0086719-be4e-4643-9195-5a9720d7e72b",
+          "lost_quantity": 0,
+          "owner_changed": false,
+          "destination_id": "412dc2bb-c690-4924-9f39-a1d5a8b411f4",
+          "recipient_name": "Knidia",
+          "destination_name": "Nostos",
+          "credited_quantity": 2,
+          "returned_quantity": 0,
+          "actual_recipient_id": "61ef1046-5168-4bbd-9aa1-5a7566bbd53d",
+          "actual_recipient_name": "Knidia"
+        },
+        "created_at": "2026-10-08T19:58:37.505418+02:00"
+      },
+      "recipient_before": 10,
+      "recipient_after": 12,
+      "quantity": 2,
+      "stock_delta": 2,
+      "other_stock_change": 0
+    }
+  ],
+  "raid_dispatch": {
+    "arrival_tick": 32,
+    "arrives_at": "2026-10-08T19:59:16.545456251+02:00",
+    "category": "land",
+    "departure_tick": 24,
+    "distance": 6,
+    "kind": "gift",
+    "route_id": "305d0976-3e6b-4955-b3e3-066808da7d00",
+    "sent_qty": 1,
+    "transport_id": "b42fad0a-90c9-4ab4-b43c-df6fc9d4c371",
+    "travel_min": 480,
+    "travel_ticks": 8
+  },
+  "raid_outcome": {
+    "kind": "GiftLost",
+    "body": {
+      "reason": "intercepted",
+      "good_key": "livestock",
+      "quantity": 1,
+      "route_id": "305d0976-3e6b-4955-b3e3-066808da7d00",
+      "origin_id": "115d8e60-132f-4a74-982d-ec0d201c18bc",
+      "sender_id": "9f80923e-1385-46d4-a671-cc5e442ab1f1",
+      "origin_name": "Kyme",
+      "sender_name": "Areios",
+      "recipient_id": "61ef1046-5168-4bbd-9aa1-5a7566bbd53d",
+      "transport_id": "b42fad0a-90c9-4ab4-b43c-df6fc9d4c371",
+      "lost_quantity": 1,
+      "owner_changed": false,
+      "destination_id": "412dc2bb-c690-4924-9f39-a1d5a8b411f4",
+      "recipient_name": "Knidia",
+      "destination_name": "Nostos",
+      "credited_quantity": 0,
+      "returned_quantity": 0,
+      "actual_recipient_id": "61ef1046-5168-4bbd-9aa1-5a7566bbd53d",
+      "actual_recipient_name": "Knidia"
+    },
+    "created_at": "2026-10-08T19:59:19.504246+02:00"
+  },
+  "guard": {
+    "id": "db823494-27ba-4e72-9171-c47b2ad45180",
+    "type": "spearman",
+    "category": "land",
+    "size": 100,
+    "status": "positioned",
+    "deployable": true,
+    "display_name": "2nd Spearmen of Nostos",
+    "ordinal": 2,
+    "support_settlement_id": "412dc2bb-c690-4924-9f39-a1d5a8b411f4",
+    "support_settlement_name": "Nostos",
+    "stance": "sentry",
+    "q": 2,
+    "r": 62,
+    "in_battle": false,
+    "can_fetch_by_ship": true,
+    "pickup_ships": [
+      {
+        "id": "a1c4009f-af02-4659-8eb7-1e20b24fabed",
+        "name": "Moon over the Sea",
+        "type": "galley",
+        "settlement_id": "412dc2bb-c690-4924-9f39-a1d5a8b411f4",
+        "settlement_name": "Nostos",
+        "can_carry_runner": true
+      }
+    ]
+  },
+  "recipient_notifications": {
+    "notifications": [
+      {
+        "id": "2c39ad70-0076-4516-9ff2-60c6abc535a2",
+        "kind": "GiftLost",
+        "level": 3,
+        "body": {
+          "reason": "intercepted",
+          "good_key": "livestock",
+          "quantity": 1,
+          "route_id": "305d0976-3e6b-4955-b3e3-066808da7d00",
+          "origin_id": "115d8e60-132f-4a74-982d-ec0d201c18bc",
+          "sender_id": "9f80923e-1385-46d4-a671-cc5e442ab1f1",
+          "origin_name": "Kyme",
+          "sender_name": "Areios",
+          "recipient_id": "61ef1046-5168-4bbd-9aa1-5a7566bbd53d",
+          "transport_id": "b42fad0a-90c9-4ab4-b43c-df6fc9d4c371",
+          "lost_quantity": 1,
+          "owner_changed": false,
+          "destination_id": "412dc2bb-c690-4924-9f39-a1d5a8b411f4",
+          "recipient_name": "Knidia",
+          "destination_name": "Nostos",
+          "credited_quantity": 0,
+          "returned_quantity": 0,
+          "actual_recipient_id": "61ef1046-5168-4bbd-9aa1-5a7566bbd53d",
+          "actual_recipient_name": "Knidia"
+        },
+        "created_at": "2026-10-08T19:59:19.504246+02:00",
+        "read_at": null
+      },
+      {
+        "id": "e84046b5-dc3c-4238-95ce-53a0cb4a9afa",
+        "kind": "CaravanSeized",
+        "level": 3,
+        "body": {
+          "q": 3,
+          "r": 62,
+          "goods": [
+            {
+              "good_key": "livestock",
+              "quantity": 1
+            }
+          ],
+          "transport_id": "b42fad0a-90c9-4ab4-b43c-df6fc9d4c371"
+        },
+        "created_at": "2026-10-08T19:59:01.512775+02:00",
+        "read_at": null
+      },
+      {
+        "id": "cd8ad277-f70f-428b-8019-458e06e467f6",
+        "kind": "UnitArrived",
+        "level": 4,
+        "body": {
+          "q": 2,
+          "r": 62,
+          "name": "2nd Spearmen of Nostos",
+          "type": "spearman",
+          "status": "positioned",
+          "unit_id": "db823494-27ba-4e72-9171-c47b2ad45180"
+        },
+        "created_at": "2026-10-08T19:58:52.507102+02:00",
+        "read_at": null
+      },
+      {
+        "id": "87b14a1d-a4a8-4651-81dc-b2ed0b87c8ee",
+        "kind": "GiftDelivered",
+        "level": 3,
+        "body": {
+          "reason": "",
+          "good_key": "livestock",
+          "quantity": 2,
+          "route_id": "514a784e-27ad-464a-89af-ad91cafa5ad6",
+          "origin_id": "115d8e60-132f-4a74-982d-ec0d201c18bc",
+          "sender_id": "9f80923e-1385-46d4-a671-cc5e442ab1f1",
+          "origin_name": "Kyme",
+          "sender_name": "Areios",
+          "recipient_id": "61ef1046-5168-4bbd-9aa1-5a7566bbd53d",
+          "transport_id": "a0086719-be4e-4643-9195-5a9720d7e72b",
+          "lost_quantity": 0,
+          "owner_changed": false,
+          "destination_id": "412dc2bb-c690-4924-9f39-a1d5a8b411f4",
+          "recipient_name": "Knidia",
+          "destination_name": "Nostos",
+          "credited_quantity": 2,
+          "returned_quantity": 0,
+          "actual_recipient_id": "61ef1046-5168-4bbd-9aa1-5a7566bbd53d",
+          "actual_recipient_name": "Knidia"
+        },
+        "created_at": "2026-10-08T19:58:37.505418+02:00",
+        "read_at": null
+      },
+      {
+        "id": "a493701d-6282-4fab-8789-2609312138e8",
+        "kind": "GiftDelivered",
+        "level": 3,
+        "body": {
+          "reason": "",
+          "good_key": "silver",
+          "quantity": 50,
+          "route_id": "e3e1956d-c8b3-484d-b467-fd5a5c4a91ad",
+          "origin_id": "115d8e60-132f-4a74-982d-ec0d201c18bc",
+          "sender_id": "9f80923e-1385-46d4-a671-cc5e442ab1f1",
+          "origin_name": "Kyme",
+          "sender_name": "Areios",
+          "recipient_id": "61ef1046-5168-4bbd-9aa1-5a7566bbd53d",
+          "transport_id": "e2f50d57-541c-4b37-8b94-7808f7679ab3",
+          "lost_quantity": 0,
+          "owner_changed": false,
+          "destination_id": "412dc2bb-c690-4924-9f39-a1d5a8b411f4",
+          "recipient_name": "Knidia",
+          "destination_name": "Nostos",
+          "credited_quantity": 50,
+          "returned_quantity": 0,
+          "actual_recipient_id": "61ef1046-5168-4bbd-9aa1-5a7566bbd53d",
+          "actual_recipient_name": "Knidia"
+        },
+        "created_at": "2026-10-08T19:58:10.503128+02:00",
+        "read_at": null
+      },
+      {
+        "id": "ad135c88-f7e6-492b-8b06-b14e1519ecaa",
+        "kind": "MetropolisFounded",
+        "level": 2,
+        "body": {
+          "q": 2,
+          "r": 64,
+          "name": "Nostos",
+          "coastal": true,
+          "grain_days": 3019.9999999999905,
+          "grain_ticks": 3019.9999999999905,
+          "known_hexes": 18,
+          "province_id": "19adb2ce-371e-48f1-83e2-02305dd270bb",
+          "grain_amount": 1208,
+          "grain_carried": 1200,
+          "poseidon_gift": "a1c4009f-af02-4659-8eb7-1e20b24fabed",
+          "settlement_id": "412dc2bb-c690-4924-9f39-a1d5a8b411f4",
+          "unknown_hexes": 1,
+          "silver_carried": 480,
+          "grain_net_per_tick": -0.40000000000000124
+        },
+        "created_at": "2026-10-08T19:57:38.195451+02:00",
+        "read_at": null
+      }
+    ],
+    "unread": 6
+  },
+  "browser_proofs": [
+    {
+      "engine": "firefox",
+      "version": "146.0.1",
+      "surface": "transfer",
+      "viewport": [
+        1280,
+        900
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "TRANSFER OR GIFT\nFrom \nTo \nGood \nQuantity \nSEND \u2192\nYOUR CARGO IN TRANSIT\n\nNothing of yours in transit."
+    },
+    {
+      "engine": "firefox",
+      "version": "146.0.1",
+      "surface": "transfer",
+      "viewport": [
+        390,
+        844
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "TRANSFER OR GIFT\nFrom \nTo \nGood \nQuantity \nSEND \u2192\nYOUR CARGO IN TRANSIT\n\nNothing of yours in transit."
+    },
+    {
+      "engine": "chromium",
+      "version": "145.0.7632.6",
+      "surface": "transfer",
+      "viewport": [
+        1280,
+        900
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "TRANSFER OR GIFT\nFrom \nKyme \u2605\nTo \nNostos \u2014 Knidia (gift)\nGood \nSilver \u2014 3,720 in stock\nGrain \u2014 1,214 in stock\nLivestock \u2014 10 in stock\nQuantity \nSEND \u2192\nYOUR CARGO IN TRANSIT\n\nNothing of yours in transit."
+    },
+    {
+      "engine": "chromium",
+      "version": "145.0.7632.6",
+      "surface": "transfer",
+      "viewport": [
+        390,
+        844
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "TRANSFER OR GIFT\nFrom \nKyme \u2605\nTo \nNostos \u2014 Knidia (gift)\nGood \nSilver \u2014 3,720 in stock\nGrain \u2014 1,214 in stock\nLivestock \u2014 10 in stock\nQuantity \nSEND \u2192\nYOUR CARGO IN TRANSIT\n\nNothing of yours in transit."
+    },
+    {
+      "engine": "webkit",
+      "version": "26.0",
+      "surface": "transfer",
+      "viewport": [
+        1280,
+        900
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "TRANSFER OR GIFT\nFrom \nTo \nGood \nQuantity \nSEND \u2192\nYOUR CARGO IN TRANSIT\nNothing of yours in transit.\n"
+    },
+    {
+      "engine": "webkit",
+      "version": "26.0",
+      "surface": "transfer",
+      "viewport": [
+        390,
+        844
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "TRANSFER OR GIFT\nFrom \nTo \nGood \nQuantity \nSEND \u2192\nYOUR CARGO IN TRANSIT\nNothing of yours in transit.\n"
+    },
+    {
+      "engine": "firefox",
+      "version": "146.0.1",
+      "surface": "thread",
+      "viewport": [
+        1280,
+        900
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "Kyme\njust now \u25b2\nGift \u00b7 just now\nGift delivered: Kyme \u2192 Nostos \u00b7 50 silver received; 0 lost.\nGift \u00b7 just now\nGift delivered: Kyme \u2192 Nostos \u00b7 2 livestock received; 0 lost.\n+ Attach trade offer\nDISPATCH \u2192\n\nUnavailable: reply ?"
+    },
+    {
+      "engine": "firefox",
+      "version": "146.0.1",
+      "surface": "thread",
+      "viewport": [
+        390,
+        844
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "Kyme\njust now \u25b2\nGift \u00b7 just now\nGift delivered: Kyme \u2192 Nostos \u00b7 50 silver received; 0 lost.\nGift \u00b7 just now\nGift delivered: Kyme \u2192 Nostos \u00b7 2 livestock received; 0 lost.\n+ Attach trade offer\nDISPATCH \u2192\n\nUnavailable: reply ?"
+    },
+    {
+      "engine": "chromium",
+      "version": "145.0.7632.6",
+      "surface": "thread",
+      "viewport": [
+        1280,
+        900
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "Kyme\njust now \u25b2\nGift \u00b7 just now\nGift delivered: Kyme \u2192 Nostos \u00b7 50 silver received; 0 lost.\nGift \u00b7 just now\nGift delivered: Kyme \u2192 Nostos \u00b7 2 livestock received; 0 lost.\n+ Attach trade offer\nDISPATCH \u2192\n\nUnavailable: reply ?"
+    },
+    {
+      "engine": "chromium",
+      "version": "145.0.7632.6",
+      "surface": "thread",
+      "viewport": [
+        390,
+        844
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "Kyme\njust now \u25b2\nGift \u00b7 just now\nGift delivered: Kyme \u2192 Nostos \u00b7 50 silver received; 0 lost.\nGift \u00b7 just now\nGift delivered: Kyme \u2192 Nostos \u00b7 2 livestock received; 0 lost.\n+ Attach trade offer\nDISPATCH \u2192\n\nUnavailable: reply ?"
+    },
+    {
+      "engine": "webkit",
+      "version": "26.0",
+      "surface": "thread",
+      "viewport": [
+        1280,
+        900
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "Kyme\njust now \u25b2\nGift \u00b7 just now\nGift delivered: Kyme \u2192 Nostos \u00b7 50 silver received; 0 lost.\nGift \u00b7 just now\nGift delivered: Kyme \u2192 Nostos \u00b7 2 livestock received; 0 lost.\n\n+ Attach trade offer\nDISPATCH \u2192\nUnavailable: reply ?\n"
+    },
+    {
+      "engine": "webkit",
+      "version": "26.0",
+      "surface": "thread",
+      "viewport": [
+        390,
+        844
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "Kyme\njust now \u25b2\nGift \u00b7 just now\nGift delivered: Kyme \u2192 Nostos \u00b7 50 silver received; 0 lost.\nGift \u00b7 just now\nGift delivered: Kyme \u2192 Nostos \u00b7 2 livestock received; 0 lost.\n\n+ Attach trade offer\nDISPATCH \u2192\nUnavailable: reply ?\n"
+    }
+  ],
+  "browser_errors": [],
+  "sql_mutations": false
+}

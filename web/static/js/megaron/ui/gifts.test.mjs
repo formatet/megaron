@@ -1,3 +1,4 @@
+import {readFileSync} from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {notifText, notifDomain} from './format.js';
@@ -25,4 +26,10 @@ test('actual Transfer destination loader shows foreign owner and protects replac
  globalThis.fetch=async()=>new Response(JSON.stringify([{settlement_id:'dest',name:'<Nostos>',owner_name:'Wanax <B>',own:false},{settlement_id:'home',name:'Home',own:true}]));
  await loadTransferDestinations('province');assert.match(sel.innerHTML,/Wanax &lt;B&gt; \(gift\)/);assert.match(sel.innerHTML,/your city/);assert.match(sel.innerHTML,/value="dest"/);
  let resolve;globalThis.fetch=()=>new Promise(r=>{resolve=r});const pending=loadTransferDestinations('province');sel={innerHTML:'new form'};resolve(new Response(JSON.stringify([{settlement_id:'old',name:'Old',own:true}])));await pending;assert.equal(sel.innerHTML,'new form');
+});
+
+test('gift formatter reads returned_quantity from a real PostgreSQL/scan/arrival payload',()=>{
+ const payload=JSON.parse(readFileSync(new URL('../../../../../docs/reviews/gava/payload-limped.json',import.meta.url),'utf8'));
+ assert.equal(payload.returned_quantity,25);assert.equal(payload.lost_quantity,25);assert.equal(payload.credited_quantity,0);
+ const text=notifText('GiftLost',payload);assert.match(text,/25 sent home/);assert.match(text,/25 lost/);assert.match(text,/0 silver received/);
 });

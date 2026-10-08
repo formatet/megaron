@@ -1,0 +1,11 @@
+{
+  "health": {
+    "commit": "e8c5200f",
+    "migration": 160,
+    "status": "ok"
+  },
+  "client_commit": "eb523aa2",
+  "one_city_transfer_blocked": true,
+  "browser_errors": [],
+  "sql_mutations": false
+}

@@ -35,7 +35,7 @@ try:
            'REDIS_URL': f'127.0.0.1:{redis}', 'JWT_SECRET': secrets.token_urlsafe(40),
            'PORT': str(gameport), 'TICK_SECONDS': '3', 'MAP_WIDTH': '56', 'MAP_HEIGHT': '40',
            'WORLD_NAME': 'Gift proof', 'POLEIA_WORLD_START_WANAXES': '1',
-           'STATIC_DIR': str(ROOT/'web/static'), 'TEMPLATE_DIR': str(ROOT/'web/templates'),
+           'STATIC_DIR': str(Path(sys.argv[4]).resolve()/'static') if len(sys.argv)>4 else str(ROOT/'web/static'), 'TEMPLATE_DIR': str(Path(sys.argv[4]).resolve()/'templates') if len(sys.argv)>4 else str(ROOT/'web/templates'),
            'CHRONICLE_DIR': str(OUT/'chronicles'), 'REPORTS_DIR': str(OUT/'reports')}
     assert not (ROOT/'server/.env').exists(), 'Proof must not load a game .env'
 
@@ -148,6 +148,10 @@ try:
         for attempt in range(6):
             before=stocks(b,bcity['province_id']).get(key,{'amount':0})['amount']
             if index==0:
+                page.evaluate("window.openDrawer('economy')")
+                page.locator('#economy-body button[data-tab="transfer"]').click()
+                page.wait_for_function('dest=>Array.from(document.querySelector("#ec-tr-to").options).some(o=>o.value===dest)',arg=dest)
+                page.locator('#ec-tr-to').select_option(dest)
                 page.locator('#ec-tr-good').select_option(key);page.locator('#ec-tr-qty').fill(str(quantity))
                 with page.expect_response(lambda r:r.url.endswith('/provinces/'+source+'/trade') and r.request.method=='POST') as pending:
                     page.locator('#ectab-transfer button').click()
@@ -204,8 +208,10 @@ try:
     # SQL is read-only: durable event identity, mover status and manifest.
     audit=command('docker','exec',containers[0],'psql','-U','postgres','-d','simple-recall-all','-tAc',"SELECT event_type,payload FROM events WHERE world_id='"+world+"' AND event_type IN('GiftDelivered','GiftLost','CaravanRaided') ORDER BY id;")
     (OUT/'audit.txt').write_text(audit+'\n')
+    schema=command('docker','exec',containers[0],'psql','-U','postgres','-d','simple-recall-all','-tAc','SELECT version,dirty FROM schema_migrations')
+    assert schema=='160|f',schema
     assert not errors,errors
-    proof={'health':health,'engine':engine,'joins':joins,'recipient_distance':dist(aj['tile'],bj['tile']),'destinations':destinations(),'receipts':receipts,'raid_dispatch':raid,'raid_outcome':lost,'guard':current,'recipient_notifications':notices,'browser_proofs':browser_proofs,'browser_errors':errors,'sql_mutations':False}
+    proof={'health':health,'schema':schema,'assets_dir':env['STATIC_DIR'],'engine':engine,'joins':joins,'recipient_distance':dist(aj['tile'],bj['tile']),'destinations':destinations(),'receipts':receipts,'raid_dispatch':raid,'raid_outcome':lost,'guard':current,'recipient_notifications':notices,'browser_proofs':browser_proofs,'browser_errors':errors,'sql_mutations':False}
     (OUT/'proof.json').write_text(json.dumps(proof,indent=2)+'\n')
     print(json.dumps({'health':health,'two_goods_delivered':chosen,'real_raid':True}))
 except Exception:

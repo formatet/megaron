@@ -1,0 +1,280 @@
+{
+  "health": {
+    "commit": "e8c5200f",
+    "migration": 160,
+    "status": "ok"
+  },
+  "joins": [
+    {
+      "label": "giver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 12,
+        "R": 43,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 49,
+        "R": 7,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 32,
+        "R": 31,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 22,
+        "R": 34,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 32,
+        "R": 43,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 23,
+        "R": 17,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 8,
+        "R": 41,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    }
+  ],
+  "receipts": [
+    {
+      "good": "silver",
+      "dispatch": {
+        "arrival_tick": 12,
+        "arrives_at": "2026-10-08T20:02:13.892439802+02:00",
+        "category": "land",
+        "departure_tick": 1,
+        "distance": 6,
+        "kind": "gift",
+        "route_id": "bbcae1f0-2c0d-42b7-a412-b55ec37fae34",
+        "sent_qty": 50,
+        "transport_id": "9c6f9429-1a13-412e-b4bc-d8fd982bf6ef",
+        "travel_min": 660,
+        "travel_ticks": 11
+      },
+      "outcome": {
+        "kind": "GiftDelivered",
+        "body": {
+          "reason": "",
+          "good_key": "silver",
+          "quantity": 50,
+          "route_id": "bbcae1f0-2c0d-42b7-a412-b55ec37fae34",
+          "origin_id": "bc2b4260-726d-485c-8bdf-995f88ba4b1c",
+          "sender_id": "140002c6-84bc-46a6-94dd-e743bfaeb4a4",
+          "origin_name": "Kyme",
+          "sender_name": "Plouteus",
+          "recipient_id": "753af3b3-608c-4e15-a117-8f3889319d96",
+          "transport_id": "9c6f9429-1a13-412e-b4bc-d8fd982bf6ef",
+          "lost_quantity": 0,
+          "owner_changed": false,
+          "destination_id": "2164fb1d-e88b-4c6a-b0bc-a17df0ac2d6e",
+          "recipient_name": "Gwasileus",
+          "destination_name": "Nostos",
+          "credited_quantity": 50,
+          "returned_quantity": 0,
+          "actual_recipient_id": "753af3b3-608c-4e15-a117-8f3889319d96",
+          "actual_recipient_name": "Gwasileus"
+        },
+        "created_at": "2026-10-08T20:02:14.491773+02:00"
+      },
+      "recipient_before": 3720.0000000000005,
+      "recipient_after": 3765.799999999998,
+      "quantity": 50,
+      "stock_delta": 45.79999999999745,
+      "other_stock_change": -4.200000000002547
+    },
+    {
+      "good": "livestock",
+      "dispatch": {
+        "transport_id": "95656f64-70e2-4d63-a7e2-29759d1ad9e7",
+        "kind": "gift"
+      },
+      "outcome": {
+        "kind": "GiftDelivered",
+        "body": {
+          "reason": "",
+          "good_key": "livestock",
+          "quantity": 2,
+          "route_id": "a00b5f59-f13a-4099-a99b-1597b26461e4",
+          "origin_id": "bc2b4260-726d-485c-8bdf-995f88ba4b1c",
+          "sender_id": "140002c6-84bc-46a6-94dd-e743bfaeb4a4",
+          "origin_name": "Kyme",
+          "sender_name": "Plouteus",
+          "recipient_id": "753af3b3-608c-4e15-a117-8f3889319d96",
+          "transport_id": "95656f64-70e2-4d63-a7e2-29759d1ad9e7",
+          "lost_quantity": 0,
+          "owner_changed": false,
+          "destination_id": "2164fb1d-e88b-4c6a-b0bc-a17df0ac2d6e",
+          "recipient_name": "Gwasileus",
+          "destination_name": "Nostos",
+          "credited_quantity": 2,
+          "returned_quantity": 0,
+          "actual_recipient_id": "753af3b3-608c-4e15-a117-8f3889319d96",
+          "actual_recipient_name": "Gwasileus"
+        },
+        "created_at": "2026-10-08T20:02:50.492586+02:00"
+      },
+      "recipient_before": 10,
+      "recipient_after": 12,
+      "quantity": 2,
+      "stock_delta": 2,
+      "other_stock_change": 0
+    }
+  ],
+  "browser_proofs": [
+    {
+      "engine": "firefox",
+      "version": "146.0.1",
+      "surface": "transfer",
+      "viewport": [
+        1280,
+        900
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "TRANSFER OR GIFT\nFrom \nTo \nGood \nQuantity \nSEND \u2192\nYOUR CARGO IN TRANSIT\n\nNothing of yours in transit."
+    },
+    {
+      "engine": "firefox",
+      "version": "146.0.1",
+      "surface": "transfer",
+      "viewport": [
+        390,
+        844
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "TRANSFER OR GIFT\nFrom \nTo \nGood \nQuantity \nSEND \u2192\nYOUR CARGO IN TRANSIT\n\nNothing of yours in transit."
+    },
+    {
+      "engine": "chromium",
+      "version": "145.0.7632.6",
+      "surface": "transfer",
+      "viewport": [
+        1280,
+        900
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "TRANSFER OR GIFT\nFrom \nKyme \u2605\nTo \nNostos \u2014 Gwasileus (gift)\nGood \nSilver \u2014 3,720 in stock\nFish \u2014 5 in stock\nGrain \u2014 1,211 in stock\nLivestock \u2014 10 in stock\nQuantity \nSEND \u2192\nYOUR CARGO IN TRANSIT\n\nNothing of yours in transit."
+    },
+    {
+      "engine": "chromium",
+      "version": "145.0.7632.6",
+      "surface": "transfer",
+      "viewport": [
+        390,
+        844
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "TRANSFER OR GIFT\nFrom \nKyme \u2605\nTo \nNostos \u2014 Gwasileus (gift)\nGood \nSilver \u2014 3,720 in stock\nFish \u2014 5 in stock\nGrain \u2014 1,211 in stock\nLivestock \u2014 10 in stock\nQuantity \nSEND \u2192\nYOUR CARGO IN TRANSIT\n\nNothing of yours in transit."
+    },
+    {
+      "engine": "webkit",
+      "version": "26.0",
+      "surface": "transfer",
+      "viewport": [
+        1280,
+        900
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "TRANSFER OR GIFT\nFrom \nTo \nGood \nQuantity \nSEND \u2192\nYOUR CARGO IN TRANSIT\nNothing of yours in transit.\n"
+    },
+    {
+      "engine": "webkit",
+      "version": "26.0",
+      "surface": "transfer",
+      "viewport": [
+        390,
+        844
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "TRANSFER OR GIFT\nFrom \nTo \nGood \nQuantity \nSEND \u2192\nYOUR CARGO IN TRANSIT\nNothing of yours in transit.\n"
+    }
+  ]
+}

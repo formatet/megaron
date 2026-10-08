@@ -449,6 +449,14 @@ func TestGiftLimpedRaidSeparatesReturnFromLoss(t *testing.T) {
 	if err := f.pool.QueryRow(ctx, `SELECT payload FROM events WHERE world_id=$1 AND event_type='GiftLost'`, f.worldID).Scan(&raw); err != nil {
 		t.Fatal(err)
 	}
+	var wire map[string]any
+	if err := json.Unmarshal(raw, &wire); err != nil {
+		t.Fatal(err)
+	}
+	if wire["returned_quantity"] != float64(25) || wire["lost_quantity"] != float64(25) || wire["credited_quantity"] != float64(0) {
+		t.Fatalf("wire quantities: %s", raw)
+	}
+	t.Logf("actual-limped-payload %s", raw)
 	var out economy.GiftOutcome
 	if err := json.Unmarshal(raw, &out); err != nil {
 		t.Fatal(err)

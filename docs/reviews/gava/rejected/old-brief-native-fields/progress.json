@@ -1,0 +1,328 @@
+{
+  "health": {
+    "commit": "016ac705",
+    "migration": 160,
+    "status": "ok"
+  },
+  "joins": [
+    {
+      "label": "giver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 6,
+        "R": 58,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 7,
+        "R": 41,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 48,
+        "R": 24,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 31,
+        "R": 48,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 24,
+        "R": 37,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 11,
+        "R": 61,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 44,
+        "R": 20,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 3,
+        "R": 37,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 25,
+        "R": 46,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    {
+      "label": "receiver",
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 2,
+        "R": 64,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    }
+  ],
+  "receipts": [
+    {
+      "good": "silver",
+      "dispatch": {
+        "arrival_tick": 9,
+        "arrives_at": "2026-10-08T19:58:10.106349682+02:00",
+        "category": "land",
+        "departure_tick": 1,
+        "distance": 6,
+        "kind": "gift",
+        "route_id": "e3e1956d-c8b3-484d-b467-fd5a5c4a91ad",
+        "sent_qty": 50,
+        "transport_id": "e2f50d57-541c-4b37-8b94-7808f7679ab3",
+        "travel_min": 480,
+        "travel_ticks": 8
+      },
+      "outcome": {
+        "kind": "GiftDelivered",
+        "body": {
+          "reason": "",
+          "good_key": "silver",
+          "quantity": 50,
+          "route_id": "e3e1956d-c8b3-484d-b467-fd5a5c4a91ad",
+          "origin_id": "115d8e60-132f-4a74-982d-ec0d201c18bc",
+          "sender_id": "9f80923e-1385-46d4-a671-cc5e442ab1f1",
+          "origin_name": "Kyme",
+          "sender_name": "Areios",
+          "recipient_id": "61ef1046-5168-4bbd-9aa1-5a7566bbd53d",
+          "transport_id": "e2f50d57-541c-4b37-8b94-7808f7679ab3",
+          "lost_quantity": 0,
+          "owner_changed": false,
+          "destination_id": "412dc2bb-c690-4924-9f39-a1d5a8b411f4",
+          "recipient_name": "Knidia",
+          "destination_name": "Nostos",
+          "credited_quantity": 50,
+          "returned_quantity": 0,
+          "actual_recipient_id": "61ef1046-5168-4bbd-9aa1-5a7566bbd53d",
+          "actual_recipient_name": "Knidia"
+        },
+        "created_at": "2026-10-08T19:58:10.503128+02:00"
+      },
+      "recipient_before": 3720.0000000000005,
+      "recipient_after": 3764.7499999999995,
+      "quantity": 50,
+      "stock_delta": 44.74999999999909,
+      "other_stock_change": -5.2500000000009095
+    },
+    {
+      "good": "livestock",
+      "dispatch": {
+        "transport_id": "a0086719-be4e-4643-9195-5a9720d7e72b",
+        "kind": "gift"
+      },
+      "outcome": {
+        "kind": "GiftDelivered",
+        "body": {
+          "reason": "",
+          "good_key": "livestock",
+          "quantity": 2,
+          "route_id": "514a784e-27ad-464a-89af-ad91cafa5ad6",
+          "origin_id": "115d8e60-132f-4a74-982d-ec0d201c18bc",
+          "sender_id": "9f80923e-1385-46d4-a671-cc5e442ab1f1",
+          "origin_name": "Kyme",
+          "sender_name": "Areios",
+          "recipient_id": "61ef1046-5168-4bbd-9aa1-5a7566bbd53d",
+          "transport_id": "a0086719-be4e-4643-9195-5a9720d7e72b",
+          "lost_quantity": 0,
+          "owner_changed": false,
+          "destination_id": "412dc2bb-c690-4924-9f39-a1d5a8b411f4",
+          "recipient_name": "Knidia",
+          "destination_name": "Nostos",
+          "credited_quantity": 2,
+          "returned_quantity": 0,
+          "actual_recipient_id": "61ef1046-5168-4bbd-9aa1-5a7566bbd53d",
+          "actual_recipient_name": "Knidia"
+        },
+        "created_at": "2026-10-08T19:58:37.505418+02:00"
+      },
+      "recipient_before": 10,
+      "recipient_after": 12,
+      "quantity": 2,
+      "stock_delta": 2,
+      "other_stock_change": 0
+    }
+  ],
+  "browser_proofs": [
+    {
+      "engine": "firefox",
+      "version": "146.0.1",
+      "surface": "transfer",
+      "viewport": [
+        1280,
+        900
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "TRANSFER OR GIFT\nFrom \nTo \nGood \nQuantity \nSEND \u2192\nYOUR CARGO IN TRANSIT\n\nNothing of yours in transit."
+    },
+    {
+      "engine": "firefox",
+      "version": "146.0.1",
+      "surface": "transfer",
+      "viewport": [
+        390,
+        844
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "TRANSFER OR GIFT\nFrom \nTo \nGood \nQuantity \nSEND \u2192\nYOUR CARGO IN TRANSIT\n\nNothing of yours in transit."
+    },
+    {
+      "engine": "chromium",
+      "version": "145.0.7632.6",
+      "surface": "transfer",
+      "viewport": [
+        1280,
+        900
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "TRANSFER OR GIFT\nFrom \nKyme \u2605\nTo \nNostos \u2014 Knidia (gift)\nGood \nSilver \u2014 3,720 in stock\nGrain \u2014 1,214 in stock\nLivestock \u2014 10 in stock\nQuantity \nSEND \u2192\nYOUR CARGO IN TRANSIT\n\nNothing of yours in transit."
+    },
+    {
+      "engine": "chromium",
+      "version": "145.0.7632.6",
+      "surface": "transfer",
+      "viewport": [
+        390,
+        844
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "TRANSFER OR GIFT\nFrom \nKyme \u2605\nTo \nNostos \u2014 Knidia (gift)\nGood \nSilver \u2014 3,720 in stock\nGrain \u2014 1,214 in stock\nLivestock \u2014 10 in stock\nQuantity \nSEND \u2192\nYOUR CARGO IN TRANSIT\n\nNothing of yours in transit."
+    },
+    {
+      "engine": "webkit",
+      "version": "26.0",
+      "surface": "transfer",
+      "viewport": [
+        1280,
+        900
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "TRANSFER OR GIFT\nFrom \nTo \nGood \nQuantity \nSEND \u2192\nYOUR CARGO IN TRANSIT\nNothing of yours in transit.\n"
+    },
+    {
+      "engine": "webkit",
+      "version": "26.0",
+      "surface": "transfer",
+      "viewport": [
+        390,
+        844
+      ],
+      "touch": true,
+      "overflow": false,
+      "text": "TRANSFER OR GIFT\nFrom \nTo \nGood \nQuantity \nSEND \u2192\nYOUR CARGO IN TRANSIT\nNothing of yours in transit.\n"
+    }
+  ]
+}

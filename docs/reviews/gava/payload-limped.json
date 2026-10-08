@@ -1,0 +1,22 @@
+{
+  "reason": "intercepted",
+  "good_key": "silver",
+  "quantity": 50,
+  "route_id": "40f9fbe7-767d-4473-b9f8-a3ef0d319c17",
+  "origin_id": "993a40c2-2111-4b99-b39b-73ff9a6bb49d",
+  "sender_id": "a819c3bd-c06a-4ccb-b6f8-9775796635f6",
+  "origin_name": "Origin",
+  "sender_name": "trader-147f0eba-d213-4575-8e5d-cde1eb8ccd38",
+  "recipient_id": "0d80230a-c5be-46bc-bbd0-7e43f7131f97",
+  "transport_id": "4f63f1bb-fbff-48bb-9ad9-b395186a90de",
+  "lost_quantity": 25,
+  "owner_changed": false,
+  "destination_id": "c661c304-803d-4e6d-b69a-8b7f8fe4f94b",
+  "recipient_name": "recipient-45706f63-adea-4d79-801e-bb2aab3b479b",
+  "destination_name": "Dest",
+  "credited_quantity": 0,
+  "returned_quantity": 25,
+  "actual_recipient_id": "0d80230a-c5be-46bc-bbd0-7e43f7131f97",
+  "return_transport_id": "97a3d76f-aeb8-4ad7-a168-90b9ac613e2d",
+  "actual_recipient_name": "recipient-45706f63-adea-4d79-801e-bb2aab3b479b"
+}

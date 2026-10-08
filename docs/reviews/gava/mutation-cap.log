@@ -1,0 +1,8 @@
+» färsk DB på migration 160 · commit 31224eb7+ändringar
+2026/10/08 19:53:12 INFO player registered id=9c2c6de7-1fe6-4652-8862-3bb678c017bc username=trader-eced7c4c-92ac-4c53-ad95-f5b539b327f9
+--- FAIL: TestGiftDeliveryLifecycle (0.08s)
+    --- FAIL: TestGiftDeliveryLifecycle/capacity (0.08s)
+        province_gift_test.go:216: outcome={GiftShipment:{TransportID:f5b96b61-0602-41b3-85e7-b13d7325f149 RouteID:ca2ef168-4def-4b59-85f6-5c78967ce186 SenderID:9c2c6de7-1fe6-4652-8862-3bb678c017bc RecipientID:75733649-ba94-427f-8bc4-15a67975ad26 OriginID:32a22ed9-5769-4870-b518-0f767379ebea DestinationID:2b00b67c-34b3-4019-96c5-ec47774d7ed0 OriginName:Origin DestinationName:Dest SenderName:trader-eced7c4c-92ac-4c53-ad95-f5b539b327f9 RecipientName:recipient-1747ea62-6fcc-44b8-871e-031e2c4292f8 GoodKey:silver Quantity:50} ActualRecipientID:75733649-ba94-427f-8bc4-15a67975ad26 ActualRecipientName:recipient-1747ea62-6fcc-44b8-871e-031e2c4292f8 CreditedQuantity:50 ReturnedQuantity:0 ReturnTransportID:<nil> LostQuantity:0 Reason: OwnerChanged:false}, want credit=5 lost=45
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.079s
+FAIL

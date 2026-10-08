@@ -1,0 +1,8 @@
+» färsk DB på migration 160 · commit 31224eb7+ändringar
+2026/10/08 19:53:21 INFO player registered id=c0ee9975-0508-4de6-8070-dc93bc5454a4 username=trader-f11c5c81-91fc-4884-89c9-8582a55bdf19
+2026/10/08 19:53:21 INFO caravan intercepted transport=e17554ec-d365-4596-b107-0d9d3ac5a02f by=99513a0d-2c09-449c-8cd3-ecdec1bb52c7 sentry=b8a39732-c0c6-406c-82fd-c794f3e00717 q=2 r=0 ship_outcome=limped
+--- FAIL: TestGiftLimpedRaidSeparatesReturnFromLoss (0.09s)
+    province_gift_test.go:457: limped outcome {GiftShipment:{TransportID:e17554ec-d365-4596-b107-0d9d3ac5a02f RouteID:25a2ab15-2d23-404b-b381-17d0834af1bd SenderID:c0ee9975-0508-4de6-8070-dc93bc5454a4 RecipientID:99513a0d-2c09-449c-8cd3-ecdec1bb52c7 OriginID:0aa0b56f-8cea-4e35-a603-723b12969d89 DestinationID:9acfa023-93ae-4bdf-95ab-690cb4ddf2ea OriginName:Origin DestinationName:Dest SenderName:trader-f11c5c81-91fc-4884-89c9-8582a55bdf19 RecipientName:recipient-9c2c5d2b-04b4-4cee-b7f0-0d5ae990b211 GoodKey:silver Quantity:50} ActualRecipientID:99513a0d-2c09-449c-8cd3-ecdec1bb52c7 ActualRecipientName:recipient-9c2c5d2b-04b4-4cee-b7f0-0d5ae990b211 CreditedQuantity:0 ReturnedQuantity:0 ReturnTransportID:76a00121-b018-48ec-81d9-10e09688f03c LostQuantity:50 Reason:intercepted OwnerChanged:false}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.088s
+FAIL
