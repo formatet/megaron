@@ -1,0 +1,115 @@
+TAP version 13
+# Subtest: Economy id: actual drawer joins settlement ids while links and goods keep province ids
+not ok 1 - Economy id: actual drawer joins settlement ids while links and goods keep province ids
+  ---
+  duration_ms: 15.26184
+  type: 'test'
+  location: '/tmp/megaron-codex-economy-id-20261008/web/static/js/megaron/ui/drawers/economy_id.test.mjs:18:1'
+  failureType: 'testCodeFailure'
+  error: 'settlement overview must join settlement id'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: |-
+    <div class="dsec-title">Settlements</div><div id="ec-settlements-overview"><table class="goods-mini">
+        <tr style="color:var(--text-dim);font-size:.7rem">
+          <td onclick="sortEconomySettlements('name')" style="cursor:pointer">Settlement</td>
+          <td onclick="sortEconomySettlements('population')" style="cursor:pointer;text-align:right">Pop</td>
+          <td onclick="sortEconomySettlements('grainRate')" style="cursor:pointer;text-align:right">Grain</td>
+          <td onclick="sortEconomySettlements('coverage')" style="cursor:pointer;text-align:right">Food lasts</td>
+          <td onclick="sortEconomySettlements('brist')" style="cursor:pointer">Status ▲</td>
+        </tr>
+        <tr onclick="openCitySettlement('province-a')" style="cursor:pointer">
+            <td>Same name ★</td>
+            <td style="text-align:right">zero</td>
+            <td style="text-align:right;color:var(--text-dim)">zero each game day</td>
+            <td style="text-align:right">zero game days</td>
+            <td><span class="sitos-state-rest">no data</span></td>
+          </tr><tr onclick="openCitySettlement('province-b')" style="cursor:pointer">
+            <td>Same name</td>
+            <td style="text-align:right">zero</td>
+            <td style="text-align:right;color:var(--text-dim)">zero each game day</td>
+            <td style="text-align:right">zero game days</td>
+            <td><span class="sitos-state-rest">no data</span></td>
+          </tr>
+      </table></div><div class="dsec-title" style="margin-top:.8rem">Same name ★</div><table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td>Amount</td><td>Rate</td></tr><tr><td>grain</td><td>one hundred</td><td style="color:var(--safe)">+one each game day</td></tr></table><div class="dsec-title" style="margin-top:.8rem">Same name</div><table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td>Amount</td><td>Rate</td></tr><tr><td>grain</td><td>one hundred</td><td style="color:var(--safe)">+one each game day</td></tr></table>
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-economy-id-20261008/web/static/js/megaron/ui/drawers/economy_id.test.mjs:20:9)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: Economy id: missing or refused overview remains no data; never match province id or name
+not ok 2 - Economy id: missing or refused overview remains no data; never match province id or name
+  ---
+  duration_ms: 3.560932
+  type: 'test'
+  location: '/tmp/megaron-codex-economy-id-20261008/web/static/js/megaron/ui/drawers/economy_id.test.mjs:26:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input was expected to not match the regular expression /one thousand/. Input:
+    
+    '<div class="dsec-title">Settlements</div><div id="ec-settlements-overview"><table class="goods-mini">\n' +
+      '    <tr style="color:var(--text-dim);font-size:.7rem">\n' +
+      `      <td onclick="sortEconomySettlements('name')" style="cursor:pointer">Settlement</td>\n` +
+      `      <td onclick="sortEconomySettlements('population')" style="cursor:pointer;text-align:right">Pop</td>\n` +
+      `      <td onclick="sortEconomySettlements('grainRate')" style="cursor:pointer;text-align:right">Grain</td>\n` +
+      `      <td onclick="sortEconomySettlements('coverage')" style="cursor:pointer;text-align:right">Food lasts</td>\n` +
+      `      <td onclick="sortEconomySettlements('brist')" style="cursor:pointer">Status ▲</td>\n` +
+      '    </tr>\n' +
+      `    <tr onclick="openCitySettlement('province-a')" style="cursor:pointer">\n` +
+      '        <td>Same name ★</td>\n' +
+      '        <td style="text-align:right">one thousand</td>\n' +
+      '        <td style="text-align:right;color:var(--safe)">+fifteen each game day</td>\n' +
+      '        <td style="text-align:right">forty game days</td>\n' +
+      '        <td><span class="sitos-state-store">surplus</span></td>\n' +
+      `      </tr><tr onclick="openCitySettlement('province-b')" style="cursor:pointer">\n` +
+      '        <td>Same name</td>\n' +
+      '        <td style="text-align:right">zero</td>\n' +
+      '        <td style="text-align:right;color:var(--text-dim)">zero each game day</td>\n' +
+      '        <td style="text-align:right">zero game days</td>\n' +
+      '        <td><span class="sitos-state-rest">no data</span></td>\n' +
+      '      </tr>\n' +
+      '  </table></div><div class="dsec-title" style="margin-top:.8rem">Same name ★</div><table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td>Amount</td><td>Rate</td></tr><tr><td>grain</td><td>one hundred</td><td style="color:var(--safe)">+one each game day</td></tr></table><div class="dsec-title" style="margin-top:.8rem">Same name</div><table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td>Amount</td><td>Rate</td></tr><tr><td>grain</td><td>one hundred</td><td style="color:var(--safe)">+one each game day</td></tr></table>'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: |-
+    <div class="dsec-title">Settlements</div><div id="ec-settlements-overview"><table class="goods-mini">
+        <tr style="color:var(--text-dim);font-size:.7rem">
+          <td onclick="sortEconomySettlements('name')" style="cursor:pointer">Settlement</td>
+          <td onclick="sortEconomySettlements('population')" style="cursor:pointer;text-align:right">Pop</td>
+          <td onclick="sortEconomySettlements('grainRate')" style="cursor:pointer;text-align:right">Grain</td>
+          <td onclick="sortEconomySettlements('coverage')" style="cursor:pointer;text-align:right">Food lasts</td>
+          <td onclick="sortEconomySettlements('brist')" style="cursor:pointer">Status ▲</td>
+        </tr>
+        <tr onclick="openCitySettlement('province-a')" style="cursor:pointer">
+            <td>Same name ★</td>
+            <td style="text-align:right">one thousand</td>
+            <td style="text-align:right;color:var(--safe)">+fifteen each game day</td>
+            <td style="text-align:right">forty game days</td>
+            <td><span class="sitos-state-store">surplus</span></td>
+          </tr><tr onclick="openCitySettlement('province-b')" style="cursor:pointer">
+            <td>Same name</td>
+            <td style="text-align:right">zero</td>
+            <td style="text-align:right;color:var(--text-dim)">zero each game day</td>
+            <td style="text-align:right">zero game days</td>
+            <td><span class="sitos-state-rest">no data</span></td>
+          </tr>
+      </table></div><div class="dsec-title" style="margin-top:.8rem">Same name ★</div><table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td>Amount</td><td>Rate</td></tr><tr><td>grain</td><td>one hundred</td><td style="color:var(--safe)">+one each game day</td></tr></table><div class="dsec-title" style="margin-top:.8rem">Same name</div><table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td>Amount</td><td>Rate</td></tr><tr><td>grain</td><td>one hundred</td><td style="color:var(--safe)">+one each game day</td></tr></table>
+  operator: 'doesNotMatch'
+  stack: |-
+    TestContext.<anonymous> (file:///tmp/megaron-codex-economy-id-20261008/web/static/js/megaron/ui/drawers/economy_id.test.mjs:28:60)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 59.793651

@@ -1,0 +1,3 @@
+# Economy overview id — BILD
+
+Kontrakt före kod: från mastercfac469d, reproduktion först med skilda verkliga province/settlement-id och positiva foodstocks, sedan ren klientkoppling overview-id → province.settlement_id. Behåll province-id för länkar/varu-API/C ity-val, inga server/regler/CSS. Saknad eller refuserad overview ger fortfarande ärlig no data. Regression i faktisk loadEconomyDrawer-kedja + fysisk mutation, färska riktiga världar före/efter desktop390, full fresh Go/vet en gång. Bevisar brist-översikten i kedjegrinden, inte hela kedjan. Hash och stopp, ingen merge/push/deploy. Founding-confirm i map.js bokförs separat: annan UI/grundningshandling än denna lilla id-fix.
