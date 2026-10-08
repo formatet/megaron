@@ -1,0 +1,24 @@
+{
+  "command": [
+    "/home/tk/.cache/megaron-steg4/tools/node_modules/.bin/jscpd",
+    "web/static/js",
+    "--format",
+    "javascript",
+    "--min-tokens",
+    "100",
+    "--min-lines",
+    "5",
+    "--mode",
+    "weak",
+    "--reporters",
+    "json",
+    "--output",
+    "/home/tk/wt/codex-steg4-svep/docs/reviews/steg4-svep/raw/jscpd",
+    "--silent",
+    "--no-colors",
+    "--fail-on-empty"
+  ],
+  "cwd": ".",
+  "exit": 0,
+  "elapsed_seconds": 0.139
+}

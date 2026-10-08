@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/home/tk/.cache/megaron-steg4/bin/dupl",
+    "-plumbing",
+    "-t",
+    "50",
+    "-files"
+  ],
+  "cwd": ".",
+  "exit": 0,
+  "elapsed_seconds": 0.258
+}

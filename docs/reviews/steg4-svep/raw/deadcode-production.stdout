@@ -1,0 +1,504 @@
+[
+	{
+		"Name": "handlers",
+		"Path": "formatet/megaron/server/api/handlers",
+		"Funcs": [
+			{
+				"Name": "loadLaborCapacities",
+				"Position": {
+					"File": "api/handlers/db.go",
+					"Line": 135,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "insufficientUnitsMsg",
+				"Position": {
+					"File": "api/handlers/helpers.go",
+					"Line": 126,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "ProvinceHandler.Marches",
+				"Position": {
+					"File": "api/handlers/province.go",
+					"Line": 3477,
+					"Col": 27
+				},
+				"Generated": false,
+				"Marker": false
+			}
+		]
+	},
+	{
+		"Name": "main",
+		"Path": "formatet/megaron/server/cmd/keryx",
+		"Funcs": [
+			{
+				"Name": "Client.patch",
+				"Position": {
+					"File": "cmd/keryx/client.go",
+					"Line": 195,
+					"Col": 18
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "die",
+				"Position": {
+					"File": "cmd/keryx/output.go",
+					"Line": 29,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			}
+		]
+	},
+	{
+		"Name": "ai",
+		"Path": "formatet/megaron/server/internal/ai",
+		"Funcs": [
+			{
+				"Name": "VoteWeighting",
+				"Position": {
+					"File": "internal/ai/governor.go",
+					"Line": 68,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			}
+		]
+	},
+	{
+		"Name": "capabilities",
+		"Path": "formatet/megaron/server/internal/capabilities",
+		"Funcs": [
+			{
+				"Name": "PopulationRequirement",
+				"Position": {
+					"File": "internal/capabilities/province_verbs.go",
+					"Line": 54,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			}
+		]
+	},
+	{
+		"Name": "clock",
+		"Path": "formatet/megaron/server/internal/clock",
+		"Funcs": [
+			{
+				"Name": "NewTestClock",
+				"Position": {
+					"File": "internal/clock/clock.go",
+					"Line": 61,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "TestClock.Now",
+				"Position": {
+					"File": "internal/clock/clock.go",
+					"Line": 66,
+					"Col": 21
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "TestClock.Set",
+				"Position": {
+					"File": "internal/clock/clock.go",
+					"Line": 73,
+					"Col": 21
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "TestClock.Advance",
+				"Position": {
+					"File": "internal/clock/clock.go",
+					"Line": 80,
+					"Col": 21
+				},
+				"Generated": false,
+				"Marker": false
+			}
+		]
+	},
+	{
+		"Name": "economy",
+		"Path": "formatet/megaron/server/internal/economy",
+		"Funcs": [
+			{
+				"Name": "CatchmentBasePotential",
+				"Position": {
+					"File": "internal/economy/catchment.go",
+					"Line": 35,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "rankedFoodSlotsAt",
+				"Position": {
+					"File": "internal/economy/founding_placement.go",
+					"Line": 80,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "GoodState.Current",
+				"Position": {
+					"File": "internal/economy/goods.go",
+					"Line": 63,
+					"Col": 20
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "effectiveRates",
+				"Position": {
+					"File": "internal/economy/production.go",
+					"Line": 16,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "LaborRates",
+				"Position": {
+					"File": "internal/economy/production.go",
+					"Line": 55,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			}
+		]
+	},
+	{
+		"Name": "events",
+		"Path": "formatet/megaron/server/internal/events",
+		"Funcs": [
+			{
+				"Name": "Worker.RegisterWithTimeout",
+				"Position": {
+					"File": "internal/events/scheduler.go",
+					"Line": 354,
+					"Col": 18
+				},
+				"Generated": false,
+				"Marker": false
+			}
+		]
+	},
+	{
+		"Name": "kharis",
+		"Path": "formatet/megaron/server/internal/kharis",
+		"Funcs": [
+			{
+				"Name": "templeDevotionCapacity",
+				"Position": {
+					"File": "internal/kharis/tick.go",
+					"Line": 105,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "templeTierMultiplier",
+				"Position": {
+					"File": "internal/kharis/tick.go",
+					"Line": 173,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			}
+		]
+	},
+	{
+		"Name": "loyalty",
+		"Path": "formatet/megaron/server/internal/loyalty",
+		"Funcs": [
+			{
+				"Name": "LoyaltyFromPoints",
+				"Position": {
+					"File": "internal/loyalty/points.go",
+					"Line": 41,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "clampPoints",
+				"Position": {
+					"File": "internal/loyalty/points.go",
+					"Line": 64,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			}
+		]
+	},
+	{
+		"Name": "messenger",
+		"Path": "formatet/megaron/server/internal/messenger",
+		"Funcs": [
+			{
+				"Name": "MessengerTravelDuration",
+				"Position": {
+					"File": "internal/messenger/recall.go",
+					"Line": 30,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "MessengerTravelTicks",
+				"Position": {
+					"File": "internal/messenger/recall.go",
+					"Line": 35,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			}
+		]
+	},
+	{
+		"Name": "movement",
+		"Path": "formatet/megaron/server/internal/movement",
+		"Funcs": [
+			{
+				"Name": "Presence",
+				"Position": {
+					"File": "internal/movement/movement.go",
+					"Line": 150,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "FirstContact",
+				"Position": {
+					"File": "internal/movement/movement.go",
+					"Line": 202,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			}
+		]
+	},
+	{
+		"Name": "religion",
+		"Path": "formatet/megaron/server/internal/religion",
+		"Funcs": [
+			{
+				"Name": "OfferingShortfall",
+				"Position": {
+					"File": "internal/religion/offering.go",
+					"Line": 131,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "goodDivisor",
+				"Position": {
+					"File": "internal/religion/valuation.go",
+					"Line": 79,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "SmoothDivineValue",
+				"Position": {
+					"File": "internal/religion/valuation.go",
+					"Line": 134,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "CountsAsHolder",
+				"Position": {
+					"File": "internal/religion/valuation.go",
+					"Line": 145,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			}
+		]
+	},
+	{
+		"Name": "settlement",
+		"Path": "formatet/megaron/server/internal/settlement",
+		"Funcs": [
+			{
+				"Name": "RevoltConditionsMet",
+				"Position": {
+					"File": "internal/settlement/loyalty.go",
+					"Line": 21,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "LoyaltyProjection",
+				"Position": {
+					"File": "internal/settlement/loyalty.go",
+					"Line": 27,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			}
+		]
+	},
+	{
+		"Name": "tick",
+		"Path": "formatet/megaron/server/internal/tick",
+		"Funcs": [
+			{
+				"Name": "ticksDue",
+				"Position": {
+					"File": "internal/tick/worker.go",
+					"Line": 227,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			}
+		]
+	},
+	{
+		"Name": "transport",
+		"Path": "formatet/megaron/server/internal/transport",
+		"Funcs": [
+			{
+				"Name": "CurrentPosition",
+				"Position": {
+					"File": "internal/transport/transport.go",
+					"Line": 136,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			}
+		]
+	},
+	{
+		"Name": "unit",
+		"Path": "formatet/megaron/server/internal/unit",
+		"Funcs": [
+			{
+				"Name": "CombatCapable",
+				"Position": {
+					"File": "internal/unit/model.go",
+					"Line": 83,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "CanFoundMetropolis",
+				"Position": {
+					"File": "internal/unit/model.go",
+					"Line": 89,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "RunnerName",
+				"Position": {
+					"File": "internal/unit/naming.go",
+					"Line": 134,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "CaravanName",
+				"Position": {
+					"File": "internal/unit/naming.go",
+					"Line": 144,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "journey",
+				"Position": {
+					"File": "internal/unit/naming.go",
+					"Line": 155,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "possessive",
+				"Position": {
+					"File": "internal/unit/naming.go",
+					"Line": 171,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			}
+		]
+	},
+	{
+		"Name": "world",
+		"Path": "formatet/megaron/server/internal/world",
+		"Funcs": [
+			{
+				"Name": "SpawnOreCatchmentScore",
+				"Position": {
+					"File": "internal/world/mapgen.go",
+					"Line": 3943,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			}
+		]
+	}
+]
