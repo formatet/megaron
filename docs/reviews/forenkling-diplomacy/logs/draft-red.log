@@ -1,0 +1,104 @@
+TAP version 13
+# Subtest: M: actual drawer offers exactly Correspondence and Known
+ok 1 - M: actual drawer offers exactly Correspondence and Known
+  ---
+  duration_ms: 14.414805
+  type: 'test'
+  ...
+# Subtest: M: Known keeps ruler and city knowledge, writes numbers in words, gates rumours
+ok 2 - M: Known keeps ruler and city knowledge, writes numbers in words, gates rumours
+  ---
+  duration_ms: 1.990432
+  type: 'test'
+  ...
+# Subtest: M: first letter and both trade directions remain reachable without any prior letter
+not ok 3 - M: first letter and both trade directions remain reachable without any prior letter
+  ---
+  duration_ms: 1.801665
+  type: 'test'
+  location: '/tmp/megaron-codex-diplomacy-simple-20261008/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:42:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /Kyme/. Input:
+    
+    '<p class="empty-state" style="padding:.5rem">No correspondence yet.</p>'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: '<p class="empty-state" style="padding:.5rem">No correspondence yet.</p>'
+  operator: 'match'
+  stack: |-
+    file:///tmp/megaron-codex-diplomacy-simple-20261008/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:46:10
+    async rig (file:///tmp/megaron-codex-diplomacy-simple-20261008/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:21:7)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: M: selecting rumour, own city or a removed contact creates no draft or dispatch
+ok 4 - M: selecting rumour, own city or a removed contact creates no draft or dispatch
+  ---
+  duration_ms: 0.42054
+  type: 'test'
+  ...
+# Subtest: M: host still reads both tabs but does not gain a settlement-only trade composer
+ok 5 - M: host still reads both tabs but does not gain a settlement-only trade composer
+  ---
+  duration_ms: 0.5624
+  type: 'test'
+  ...
+# Subtest: M: failed Known fetch offers retry without inventing an empty directory
+ok 6 - M: failed Known fetch offers retry without inventing an empty directory
+  ---
+  duration_ms: 1.431852
+  type: 'test'
+  ...
+# Subtest: M: Write clears a stale composer while the chosen conversation loads
+not ok 7 - M: Write clears a stale composer while the chosen conversation loads
+  ---
+  duration_ms: 0.783022
+  type: 'test'
+  location: '/tmp/megaron-codex-diplomacy-simple-20261008/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:83:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /dip-inline-compose/. Input:
+    
+    '<p class="empty-state" style="padding:.5rem">No correspondence yet.</p>'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: '<p class="empty-state" style="padding:.5rem">No correspondence yet.</p>'
+  operator: 'match'
+  stack: |-
+    file:///tmp/megaron-codex-diplomacy-simple-20261008/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:85:10
+    async rig (file:///tmp/megaron-codex-diplomacy-simple-20261008/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:21:7)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: M: late unavailable-actions response preserves a typed first letter
+not ok 8 - M: late unavailable-actions response preserves a typed first letter
+  ---
+  duration_ms: 5.795835
+  type: 'test'
+  location: '/tmp/megaron-codex-diplomacy-simple-20261008/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:95:1'
+  failureType: 'testCodeFailure'
+  error: 'actual composer reaches the delayed capability request'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    file:///tmp/megaron-codex-diplomacy-simple-20261008/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:101:10
+    async rig (file:///tmp/megaron-codex-diplomacy-simple-20261008/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:21:7)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 5
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 68.89544

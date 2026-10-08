@@ -2,7 +2,7 @@
 
 ## Making an offer
 
-In **Diplomacy → Compose** (or inside a conversation), expand **+ Attach trade offer** and choose:
+In a **Diplomacy → Correspondence** conversation (start one with **Known → Write**), expand **+ Attach trade offer** and choose:
 
 - **Buy** — the good you want, the quantity, and the silver you offer. Your silver is held in escrow.
 - **Sell** — the good you offer, the quantity, and the silver you want. Your goods are held in escrow.

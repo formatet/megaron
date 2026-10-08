@@ -49,7 +49,7 @@ import {
 import { loadKultDrawer, okRite, okRiteComposed, okOfferWorth } from './ui/drawers/kult.js';
 import {
   loadDiplomacyDrawer, dipToggleKind, dipToggleThread, dipSendInThread,
-  dipCancel, dipAccept, dipDecline, dipReply, dipComposeToggleKind, dipSend,
+  dipCancel, dipAccept, dipDecline, dipReply, dipWrite,
   dipArrangePassage, dipCallBack,
 } from './ui/drawers/diplomacy.js';
 import { loadNotifDrawer, notifShowKind } from './ui/drawers/notif.js';
@@ -184,10 +184,9 @@ Object.assign(window, {
   dipArrangePassage,
   dipCallBack,
   dipCancel,
-  dipComposeToggleKind,
   dipDecline,
   dipReply,
-  dipSend,
+  dipWrite,
   dipSendInThread,
   dipToggleKind,
   dipToggleThread,

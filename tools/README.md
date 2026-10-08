@@ -311,3 +311,17 @@ Chromium använder `/dev/shm`, CDP stänger cache; kamera centreras för klick
 men inget kart-/unit-/markerdata injiceras.
 `python3 tools/inspect_mutation.py OUT` ger fyra namngivna röda→återställda
 gröna: återinförd /24, dold försvararfrånvaro, sent svar i fog och Culture-block.
+
+### Diplomacy M — två flikar, bevarade brev/erbjudanden
+
+`tools/diplomacy_live.py OUT BUILD_COMMIT baseline|after [WEB_DIR]` använder
+färsk PG16/Redis och två vanliga register/join-spelare. Bygg OUT/temenos från
+server/ med ren `env -i HOME/PATH` och `-ldflags '-X main.buildCommit=<hash>'`.
+Baslinjen kan läsa arkiverad oförändrad web/. Vanlig Host-marsch och grundning,
+första brevet via Compose respektive Known→Write, mottagarens Reply, fysiskt
+återvänt läsbart svar, buy/sell-offert från tråden och Inspect-brev med 201.
+Desktop1280/390 BILD; inga SQL-skrivningar eller injicerad klientkunskap.
+`tools/diplomacy_mutation.py` provar fyra fysiska konsumentmutationer och
+återställer alltid. `tools/diplomacy_scope.py` verifierar oförändrade befintliga
+handels-/svarskonsumenter och server/Inspect/Gossip/CSS. Bevis/avgränsningar:
+`docs/reviews/forenkling-diplomacy/README.md`.

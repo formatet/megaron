@@ -1,0 +1,82 @@
+TAP version 13
+# Subtest: M: actual drawer offers exactly Correspondence and Known
+ok 1 - M: actual drawer offers exactly Correspondence and Known
+  ---
+  duration_ms: 14.233822
+  type: 'test'
+  ...
+# Subtest: M: Known keeps ruler and city knowledge, writes numbers in words, gates rumours
+not ok 2 - M: Known keeps ruler and city knowledge, writes numbers in words, gates rumours
+  ---
+  duration_ms: 2.119247
+  type: 'test'
+  location: '/tmp/megaron-codex-diplomacy-simple-20261008/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:30:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input was expected to not match the regular expression /\d/. Input:
+    
+    'Alector Writeone known city · one rumoured cityKymeWrite\n' +
+      '        Alector · Can write\n' +
+      '        Detailsthree, fourCopperRumour city\n' +
+      '        Alector · Rumour only\n' +
+      '        Details~15 hexes east of NostostinNostos\n' +
+      '        Me · Your city\n' +
+      '        DetailsLocation unknown'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: |-
+    Alector Writeone known city · one rumoured cityKymeWrite
+            Alector · Can write
+            Detailsthree, fourCopperRumour city
+            Alector · Rumour only
+            Details~15 hexes east of NostostinNostos
+            Me · Your city
+            DetailsLocation unknown
+  operator: 'doesNotMatch'
+  stack: |-
+    file:///tmp/megaron-codex-diplomacy-simple-20261008/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:39:10
+    async rig (file:///tmp/megaron-codex-diplomacy-simple-20261008/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:21:7)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: M: first letter and both trade directions remain reachable without any prior letter
+ok 3 - M: first letter and both trade directions remain reachable without any prior letter
+  ---
+  duration_ms: 11.381741
+  type: 'test'
+  ...
+# Subtest: M: selecting rumour, own city or a removed contact creates no draft or dispatch
+ok 4 - M: selecting rumour, own city or a removed contact creates no draft or dispatch
+  ---
+  duration_ms: 0.413984
+  type: 'test'
+  ...
+# Subtest: M: host still reads both tabs but does not gain a settlement-only trade composer
+ok 5 - M: host still reads both tabs but does not gain a settlement-only trade composer
+  ---
+  duration_ms: 0.529364
+  type: 'test'
+  ...
+# Subtest: M: failed Known fetch offers retry without inventing an empty directory
+ok 6 - M: failed Known fetch offers retry without inventing an empty directory
+  ---
+  duration_ms: 1.336078
+  type: 'test'
+  ...
+# Subtest: M: Write clears a stale composer while the chosen conversation loads
+ok 7 - M: Write clears a stale composer while the chosen conversation loads
+  ---
+  duration_ms: 5.27199
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 6
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 79.364123

@@ -5,6 +5,7 @@ import { track } from '../../telemetry.js';
 import { esc, fmtAgo, formatApiError, passageNote } from '../format.js';
 import { fmtEta, fmtArrival, arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
+import { numberWords } from '../number_words.js';
 import { sentStatusHTML } from '../runner_status.js';
 
 // "expires <eta>" while a trade offer's window is still open, collapsing to a
@@ -40,8 +41,8 @@ async function getTradeableGoods() {
 }
 
 // Renders the <option> list for a want_good/offer_good <select> — shared by
-// both composition surfaces (inline thread + Compose tab) and both fields,
-// so the four dropdowns can never drift apart from each other or from what
+// both fields in the inline conversation composer,
+// so the dropdowns can never drift apart from each other or from what
 // the server actually accepts. `goods === null` means the catalogue fetch
 // failed: an honest "could not load" placeholder, never a silent fallback
 // to free text (the tyst fallback CLAUDE.md forbids) — pair with
@@ -61,76 +62,98 @@ export function goodsSelectDisabledAttr(goods) {
 }
 
 // ── Diplomacy drawer ──────────────────────────────────────────────────────
+let draftDestination = null;
+
+// The exact destination set the former Compose dropdown used. The city
+// directory includes rumours too; it must never become a dispatch catalogue.
+function writableCities() {
+  return State.provinceData.filter(p => !p.own && !p.is_outpost && p.settlement_id && p.name);
+}
+
 export async function loadDiplomacyDrawer() {
+  draftDestination = null;
   const body = document.getElementById('diplomacy-body');
   body.innerHTML = `
     <div class="drawer-tabs">
       <button class="dtab active" data-tab="threads">Correspondence</button>
-      <button class="dtab" data-tab="compose">Compose</button>
-      <button class="dtab" data-tab="cities">Cities</button>
-      <button class="dtab" data-tab="rulers">Rulers</button>
+      <button class="dtab" data-tab="known">Known</button>
     </div>
     <div id="dtab-threads" class="city-tab"><div class="loading" style="font-size:.8rem">Loading…</div></div>
-    <div id="dtab-compose" class="city-tab" style="display:none"></div>
-    <div id="dtab-cities" class="city-tab" style="display:none"></div>
-    <div id="dtab-rulers" class="city-tab" style="display:none"></div>`;
+    <div id="dtab-known" class="city-tab" hidden></div>`;
 
   body.querySelectorAll('.dtab').forEach(tab => {
     tab.addEventListener('click', function() {
       body.querySelectorAll('.dtab').forEach(t => t.classList.remove('active'));
       this.classList.add('active');
-      body.querySelectorAll('.city-tab').forEach(c => c.style.display = 'none');
+      body.querySelectorAll('.city-tab').forEach(c => { c.hidden = true; c.style.display = 'none'; });
       const el = document.getElementById('dtab-' + this.dataset.tab);
-      if (el) el.style.display = '';
-      if (this.dataset.tab === 'compose') loadDipCompose();
-      else if (this.dataset.tab === 'cities') loadDipCities();
-      else if (this.dataset.tab === 'rulers') loadDipRulers();
+      if (el) { el.hidden = false; el.style.display = ''; }
+      if (this.dataset.tab === 'known') return loadDipKnown();
     });
   });
 
   await loadDipThreads();
 }
 
-async function loadDipCities() {
-  const el = document.getElementById('dtab-cities');
-  if (el.dataset.loaded) return;
+async function loadDipKnown() {
+  const el = document.getElementById('dtab-known');
+  if (!el || el.dataset.loaded) return;
   el.dataset.loaded = '1';
-  el.innerHTML = '<div class="loading" style="font-size:.8rem">Loading…</div>';
+  el.innerHTML = '<div class="loading">Loading…</div>';
   try {
-    const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/cities`);
-    if (!r.ok) throw new Error();
-    const cities = await r.json();
-    if (!cities.length) { el.innerHTML = '<p class="empty-state" style="padding:1rem">No cities known yet — explore the map.</p>'; return; }
-    el.innerHTML = `<table class="goods-mini">
-      <tr style="color:var(--text-dim);font-size:.7rem"><td>City</td><td>Owner</td><td>Loc</td><td>Deposits</td></tr>
-      ${cities.map(c => {
-        const deps = [c.copper_deposit?'Cu':null, c.tin_deposit?'Sn':null, c.silver_deposit?'Ag':null, c.cedar_deposit?'Cedar':null].filter(Boolean).join(' ');
-        const loc = c.knowledge === 'known' ? (c.q!=null ? `(${c.q},${c.r})` : '—') : (c.bearing || 'rumour');
-        return `<tr><td>${esc(c.name)}${c.own?' ★':''}</td><td>${esc(c.owner||'—')}</td><td style="color:var(--text-dim)">${loc}</td><td style="color:var(--text-dim)">${deps||c.industry_hint||''}</td></tr>`;
-      }).join('')}
-    </table>`;
+    const [cityResponse, rulerResponse] = await Promise.all([
+      fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/cities`),
+      fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/diplomacy`),
+    ]);
+    if (!cityResponse.ok || !rulerResponse.ok) throw new Error('directory unavailable');
+    const [cities, rulers] = await Promise.all([cityResponse.json(), rulerResponse.json()]);
+    const contacts = new Map(writableCities().map(p => [p.settlement_id, p]));
+    const writeButton = id => id && State.MY_SETTLEMENT_ID
+      ? `<button class="btn-small" data-write="${esc(id)}">Write</button>` : '';
+    const cityRow = c => {
+      const contact = !c.own && contacts.has(c.settlement_id);
+      const status = c.own ? 'Your city' : contact ? 'Can write' : c.knowledge === 'rumour' ? 'Rumour only' : 'Known';
+      const deposits = [c.copper_deposit ? 'Copper' : '', c.tin_deposit ? 'Tin' : '', c.silver_deposit ? 'Silver' : '', c.cedar_deposit ? 'Cedar' : ''].filter(Boolean).join(', ');
+      const location = c.knowledge === 'known' && c.q != null && c.r != null
+        ? `${numberWords(c.q)}, ${numberWords(c.r)}` : c.bearing ? c.bearing.replace(/^~(\d+) hexes /, (_, n) => `~${numberWords(Number(n))} hexes `) : 'Location unknown';
+      return `<div class="dsec"><div class="stat-row"><span class="sr-label">${esc(c.name)}</span><span class="sr-val">${contact ? writeButton(c.settlement_id) : ''}</span></div>
+        <div>${esc(c.owner || 'Owner unknown')} · ${status}</div>
+        <details><summary>Details</summary><div>${esc(location)}</div><div>${esc(deposits || c.industry_hint || '')}</div></details></div>`;
+    };
+    const grouped = new Set();
+    el.innerHTML = rulers.map(r => {
+      const owned = cities.filter(c => c.owner_id === r.owner_id);
+      owned.forEach(c => grouped.add(c));
+      const destination = owned.find(c => !c.own && contacts.has(c.settlement_id));
+      const known = `${numberWords(r.known_cities)} known ${r.known_cities === 1 ? 'city' : 'cities'}`;
+      const rumoured = `${numberWords(r.rumour_cities)} rumoured ${r.rumour_cities === 1 ? 'city' : 'cities'}`;
+      return `<div class="dsec-title">${esc(r.owner)} ${writeButton(destination?.settlement_id)}</div><div>${known} · ${rumoured}</div>` + owned.map(cityRow).join('');
+    }).join('') + cities.filter(c => !grouped.has(c)).map(cityRow).join('');
+    if (!cities.length && !rulers.length) el.innerHTML = '<p class="empty-state">No cities or rulers known yet — explore the map.</p>';
+    el.querySelectorAll('[data-write]').forEach(button => button.addEventListener('click', () => dipWrite(button.dataset.write)));
   } catch (_) {
-    el.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load cities.</p>';
+    delete el.dataset.loaded;
+    el.innerHTML = '<p class="empty-state">Could not load known cities and rulers. Open Known to retry.</p>';
   }
 }
 
-async function loadDipRulers() {
-  const el = document.getElementById('dtab-rulers');
-  if (el.dataset.loaded) return;
-  el.dataset.loaded = '1';
-  el.innerHTML = '<div class="loading" style="font-size:.8rem">Loading…</div>';
-  try {
-    const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/diplomacy`);
-    if (!r.ok) throw new Error();
-    const rulers = await r.json();
-    if (!rulers.length) { el.innerHTML = '<p class="empty-state" style="padding:1rem">No rulers known yet.</p>'; return; }
-    el.innerHTML = `<table class="goods-mini">
-      <tr style="color:var(--text-dim);font-size:.7rem"><td>Wanax</td><td>Known</td><td>Rumour</td></tr>
-      ${rulers.map(d => `<tr><td>${esc(d.owner)}${d.own?' ★':''}${d.rumour_only?' <span style="color:var(--text-dim);font-size:.68rem">(rumour only)</span>':''}</td><td>${d.known_cities}</td><td style="color:var(--text-dim)">${d.rumour_cities}</td></tr>`).join('')}
-    </table>`;
-  } catch (_) {
-    el.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load rulers.</p>';
-  }
+// Start the same inline composer used by existing correspondence, including
+// its untouched buy/sell offer fields. A directory rumour cannot seed a draft.
+export async function dipWrite(settlementID) {
+  const destination = writableCities().find(p => p.settlement_id === settlementID);
+  if (!destination || !State.MY_SETTLEMENT_ID) return;
+  draftDestination = destination;
+  const body = document.getElementById('diplomacy-body');
+  body.querySelectorAll('.dtab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.tab === 'threads');
+  });
+  body.querySelectorAll('.city-tab').forEach(tab => {
+    const show = tab.id === 'dtab-threads';
+    tab.hidden = !show;
+    tab.style.display = show ? '' : 'none';
+  });
+  document.getElementById('dtab-threads').innerHTML = '<div class="loading">Loading…</div>';
+  await loadDipThreads();
 }
 
 async function loadDipThreads() {
@@ -169,6 +192,16 @@ async function loadDipThreads() {
       threads[key].messages.push({ ...m, _dir: 'out' });
     }
 
+    let draftKey = null;
+    if (draftDestination && writableCities().some(p => p.settlement_id === draftDestination.settlement_id)) {
+      draftKey = Object.keys(threads).find(key => threads[key].settlement_id === draftDestination.settlement_id);
+      if (!draftKey) {
+        draftKey = draftDestination.name;
+        if (threads[draftKey]) draftKey += ' ' + draftDestination.settlement_id;
+        threads[draftKey] = { name: draftDestination.name, settlement_id: draftDestination.settlement_id, messages: [] };
+      }
+    }
+
     const keys = Object.keys(threads);
     if (!keys.length) { el.innerHTML = '<p class="empty-state" style="padding:.5rem">No correspondence yet.</p>'; return; }
 
@@ -186,12 +219,12 @@ async function loadDipThreads() {
     el.innerHTML = keys.map(key => {
       const thread = threads[key];
       const msgs = [...thread.messages].sort((a,b) => msgTime(a) - msgTime(b));
-      const latest = msgs[msgs.length - 1];
+      const latest = msgs[msgs.length - 1] || {};
       const hasPendingTrade = msgs.some(m => m._dir === 'in' && m.trade_offer && m.trade_offer.status === 'pending');
       const hasUnread = msgs.some(m => m._dir === 'in' && m.status === 'delivered');
 
       const threadId = 'dip-thread-' + key.replace(/[^a-z0-9]/gi,'_');
-      const isOpen = openSet.has(threadId);
+      const isOpen = key === draftKey || openSet.has(threadId);
       const safeDestId = esc(thread.settlement_id || '');
       const safeName   = esc(thread.name);
 
@@ -207,7 +240,7 @@ async function loadDipThreads() {
         +   safeName + badges
         + '</span>'
         + '<span style="font-size:.68rem;color:var(--text-dim)">'
-        +   fmtAgo(latest.arrived_at || latest.sent_at || latest.created_at)
+        +   (msgs.length ? fmtAgo(latest.arrived_at || latest.sent_at || latest.created_at) : 'New conversation')
         +   ' <span class="dip-thread-expand-hint">' + (isOpen ? '▲' : '▼') + '</span>'
         + '</span>'
         + '</div>';
@@ -354,7 +387,8 @@ async function loadDipThreads() {
       html += '</div></div>'; // close thread-body + thread
       return html;
     }).join('');
-    el.innerHTML += await renderLockedActions('diplomacy');
+    // Do not recreate an already writable textarea when capability hints arrive.
+    el.insertAdjacentHTML('beforeend', await renderLockedActions('diplomacy'));
 
   } catch(e) {
     console.error('loadDipThreads', e);
@@ -530,83 +564,6 @@ export async function dipCallBack(id, btn) {
   } else {
     btn.disabled = false;
     showInlineResult(btn.parentElement, formatApiError(data, 'Call back failed'), true);
-  }
-}
-
-async function loadDipCompose() {
-  const el = document.getElementById('dtab-compose');
-  if (!el || el.dataset.loaded) return;
-  el.dataset.loaded = '1';
-  const others = State.provinceData.filter(p => !p.own && !p.is_outpost && p.settlement_id && p.name);
-  const opts = others.length
-    ? '<option value="">— choose settlement —</option>' + others.map(p => '<option value="' + p.settlement_id + '">' + esc(p.name) + ' (' + (p.allied ? 'ally' : 'foreign') + ')</option>').join('')
-    : '<option value="">No visible settlements — explore the map</option>';
-  const tradeableGoods = await getTradeableGoods();
-  el.innerHTML = '<div class="dsec"><div class="dsec-title">Send Messenger</div>'
-    + '<div style="display:flex;flex-direction:column;gap:.5rem">'
-    + '<select id="dip-dest" style="background:var(--warm-white);border:1px solid var(--border);padding:.3rem .4rem;font-size:.82rem">' + opts + '</select>'
-    + '<textarea id="dip-msg-text" maxlength="1000" placeholder="Your words travel with the messenger…" style="resize:vertical;min-height:4rem;background:var(--warm-white);border:1px solid var(--border);padding:.3rem .4rem;font-size:.82rem;font-family:var(--font)"></textarea>'
-    + '<details><summary style="cursor:pointer;color:var(--accent);font-size:.78rem;user-select:none">+ Attach trade offer</summary>'
-    + '<div style="display:flex;gap:.6rem;font-size:.75rem;margin:.4rem 0 .2rem">'
-    + '<label><input type="radio" name="dip-kind" value="buy" checked onchange="dipComposeToggleKind()"> Buy</label>'
-    + '<label><input type="radio" name="dip-kind" value="sell" onchange="dipComposeToggleKind()"> Sell</label>'
-    + '</div>'
-    + '<div id="dip-buy-fields" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem">'
-    + '<div><div style="font-size:.7rem;color:var(--text-dim)">Want good</div><select id="dip-ogood" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.25rem .35rem;font-size:.78rem;box-sizing:border-box"' + goodsSelectDisabledAttr(tradeableGoods) + '>' + goodsOptionsHTML(tradeableGoods) + '</select></div>'
-    + '<div><div style="font-size:.7rem;color:var(--text-dim)">Quantity</div><input id="dip-oqty" type="number" min="0.1" step="0.1" placeholder="50" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.25rem .35rem;font-size:.78rem;box-sizing:border-box"></div>'
-    + '<div><div style="font-size:.7rem;color:var(--text-dim)">Offer silver</div><input id="dip-osilver" type="number" min="1" step="1" placeholder="60" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.25rem .35rem;font-size:.78rem;box-sizing:border-box"></div>'
-    + '</div>'
-    + '<div id="dip-sell-fields" style="display:none;grid-template-columns:1fr 1fr 1fr;gap:.4rem">'
-    + '<div><div style="font-size:.7rem;color:var(--text-dim)">Offer good</div><select id="dip-offer-good" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.25rem .35rem;font-size:.78rem;box-sizing:border-box"' + goodsSelectDisabledAttr(tradeableGoods) + '>' + goodsOptionsHTML(tradeableGoods) + '</select></div>'
-    + '<div><div style="font-size:.7rem;color:var(--text-dim)">Quantity</div><input id="dip-offer-qty" type="number" min="0.1" step="0.1" placeholder="20" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.25rem .35rem;font-size:.78rem;box-sizing:border-box"></div>'
-    + '<div><div style="font-size:.7rem;color:var(--text-dim)">Want silver</div><input id="dip-want-silver" type="number" min="1" step="1" placeholder="80" style="width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.25rem .35rem;font-size:.78rem;box-sizing:border-box"></div>'
-    + '</div>'
-    + '</details>'
-    + '<button onclick="dipSend()" style="padding:.3rem .8rem;background:var(--sandstone);border:2px solid var(--border);font-family:var(--mono);font-size:.78rem;letter-spacing:.07em;cursor:pointer;align-self:flex-start">Dispatch →</button>'
-    + '<div id="dip-compose-res" style="font-size:.78rem;min-height:1rem"></div>'
-    + '</div></div>';
-}
-
-export function dipComposeToggleKind() {
-  const kind = document.querySelector('input[name="dip-kind"]:checked')?.value || 'buy';
-  const buyEl = document.getElementById('dip-buy-fields');
-  const sellEl = document.getElementById('dip-sell-fields');
-  if (buyEl) buyEl.style.display = kind === 'buy' ? 'grid' : 'none';
-  if (sellEl) sellEl.style.display = kind === 'sell' ? 'grid' : 'none';
-}
-
-export async function dipSend() {
-  const destID = document.getElementById('dip-dest')?.value;
-  const text   = document.getElementById('dip-msg-text')?.value.trim();
-  const resEl  = document.getElementById('dip-compose-res');
-  function showDipRes(msg, ok) { if (resEl) { resEl.style.color = ok ? 'var(--safe)' : 'var(--accent)'; resEl.textContent = msg; } }
-  if (!destID) { showDipRes('choose a destination', false); return; }
-  if (!text)   { showDipRes('write a message', false); return; }
-  if (!State.MY_SETTLEMENT_ID) { showDipRes('you have no settlement', false); return; }
-  const body = { destination_id: destID, message: text };
-  const kind = document.querySelector('input[name="dip-kind"]:checked')?.value || 'buy';
-  if (kind === 'sell') {
-    const offerGood = document.getElementById('dip-offer-good')?.value.trim();
-    const offerQty  = parseFloat(document.getElementById('dip-offer-qty')?.value || '0');
-    const wantSilver = parseFloat(document.getElementById('dip-want-silver')?.value || '0');
-    if (offerGood && offerQty > 0 && wantSilver > 0) body.trade_offer = { kind: 'sell', offer_good: offerGood, offer_qty: offerQty, want_silver: wantSilver };
-  } else {
-    const good   = document.getElementById('dip-ogood')?.value.trim();
-    const qty    = parseFloat(document.getElementById('dip-oqty')?.value || '0');
-    const silver = parseFloat(document.getElementById('dip-osilver')?.value || '0');
-    if (good && qty > 0 && silver > 0) body.trade_offer = { kind: 'buy', want_good: good, want_qty: qty, offer_silver: silver };
-  }
-  const res = await fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/settlements/' + State.MY_SETTLEMENT_ID + '/messengers', {
-    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (res.ok) {
-    showDipRes('✓ Dispatched · arrives ' + fmtArrival(data.arrives_at) + passageNote(data), true);
-    const mtel = document.getElementById('dip-msg-text'); if (mtel) mtel.value = '';
-    const dsel = document.getElementById('dip-dest'); if (dsel) dsel.value = '';
-    fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/messengers').then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
-  } else {
-    showDipRes(data.error || 'send failed', false);
   }
 }
 

@@ -1,8 +1,8 @@
-A **messenger** is a person who walks your letter to another Wanax's city — and walks the reply back. The **Diplomacy (✉)** drawer holds everything: tabs **Correspondence**, **Compose**, **Cities** and **Rulers**.
+A **messenger** is a person who walks your letter to another Wanax's city — and walks the reply back. The **Diplomacy (✉)** drawer holds everything: tabs **Correspondence** and **Known**.
 
 ## Writing
 
-**Diplomacy → Compose**: choose a settlement (only cities you have [[contact|contacted]] appear), write, press **Dispatch →**. Inside an open conversation, an incoming letter has a **Reply** box directly under it.
+**Diplomacy → Known**: find a city or ruler and press **Write** to open a conversation. Write your letter and press **Dispatch →**. Rumours do not open a writing route. You can also write from a known city’s Inspect panel. Inside an open conversation, an incoming letter has a **Reply** box directly under it.
 
 **Correspondence** groups everything into conversations, one per counterpart. A **⚖** badge marks a pending [[trade|trade offer]]; a **●** marks something unread.
 

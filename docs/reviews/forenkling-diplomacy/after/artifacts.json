@@ -1,0 +1,13 @@
+{
+  "commit": "2527a23bfb62de0187fdcd74a719b013852dd116",
+  "binary_sha256": "d75c682f52d2bb3bfc873e9df631cc35fc511f45ea7c1620de9e053cca483165",
+  "binary_bytes": 30724134,
+  "runtime_health": {
+    "commit": "2527a23bfb62de0187fdcd74a719b013852dd116",
+    "migration": 160,
+    "status": "ok"
+  },
+  "source_js_sha256": "0c666cc086c8f6ff0cba6de276c0e43058ac5a309104fe31954986684279cefb",
+  "walk_steps": 3,
+  "walk_game_days": 14
+}

@@ -1,0 +1,37 @@
+[
+  {
+    "path": "/tmp/megaron-inspect-baseline/temenos",
+    "bytes": 30723966,
+    "sha256": "c6422720b621dfbf339fa89c60c0be313ad0d29bc2a0d19467f7795f15608fc3"
+  },
+  {
+    "path": "/tmp/megaron-inspect-after-land/temenos",
+    "bytes": 30724030,
+    "sha256": "d03a49521e8ff0f17228fceae4635226a155c74c919027899c84805ff5e8c8bf"
+  },
+  {
+    "path": "/tmp/megaron-diplomacy-after/temenos",
+    "bytes": 30724134,
+    "sha256": "3406e5ccb4cea5e626157d0d47f8a18c226f873278502c2b5e6458e61a67911b"
+  },
+  {
+    "path": "/tmp/megaron-diplomacy-after-clean/temenos",
+    "bytes": 30724134,
+    "sha256": "946f55686ff35ce267b96893a0f675f788ed235f79841aa028f9fbab70924d5a"
+  },
+  {
+    "path": "/tmp/megaron-diplomacy-final/temenos",
+    "bytes": 30724134,
+    "sha256": "6eda7d12d67dd32494002f6cf5d232968d871fd1abd2b147b449f51c9e1c46b5"
+  },
+  {
+    "path": "/tmp/megaron-diplomacy-baseline/temenos",
+    "bytes": 30724134,
+    "sha256": "6c262f827519b4c17b10de997114627ad10cf3322e3012c2fd46955dd1b30196"
+  },
+  {
+    "path": "/tmp/megaron-diplomacy-draft-safe/temenos",
+    "bytes": 30724134,
+    "sha256": "d75c682f52d2bb3bfc873e9df631cc35fc511f45ea7c1620de9e053cca483165"
+  }
+]
