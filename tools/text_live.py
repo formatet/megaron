@@ -150,6 +150,25 @@ try:
         assert pending.value.status>=400
         line=page.locator('#kult-body [data-inline-result]');line.wait_for();assert line.inner_text()==pending.value.json()['error']
         line.scroll_into_view_if_needed();page.locator('#drawer-kult').screenshot(path=str(OUT/'rite-inline-mobile.png'))
+        # Confirmation visual fixture: no colony or abandonment is fabricated in DB.
+        open_drawer('war');page.locator('#drawer-war button[data-tab="recruit"]').click();page.wait_for_timeout(200)
+        page.evaluate("""async()=>{
+          const {confirmInline}=await import('/static/js/megaron/ui/inline_result.js');
+          const host=document.createElement('div');host.id='confirm-proof';host.className='dsec';
+          document.getElementById('wtab-recruit').appendChild(host);
+          window.proofConfirmed=0;
+          window.proofPrompt=()=>confirmInline(host,'Abandon Proof colony? This cannot be undone.',async()=>{window.proofConfirmed++;});
+          window.proofPrompt();
+        }""")
+        for label,width,height in [('desktop',1280,900),('mobile',390,844)]:
+            page.set_viewport_size({'width':width,'height':height});page.locator('#confirm-proof').scroll_into_view_if_needed()
+            page.locator('#drawer-war').screenshot(path=str(OUT/('abandon-fixture-'+label+'.png')))
+        assert page.evaluate('window.proofConfirmed')==0
+        page.locator('#confirm-proof').get_by_role('button',name='Keep settlement',exact=True).click()
+        assert page.evaluate('window.proofConfirmed')==0
+        page.evaluate('window.proofPrompt()');page.locator('#confirm-proof').get_by_role('button',name='Abandon',exact=True).click()
+        assert page.evaluate('window.proofConfirmed')==1
+        receipts['abandon_visual_fixture']={'synthetic':True,'cancel_callbacks':0,'confirm_callbacks':1,'abandon_api_requests':0}
         # Explicit synthetic replay of historic kinds no longer emitted by the server.
         # No DB writes: only the archive endpoint is replayed, real renderer/click/filter.
         filters=[]
