@@ -15,19 +15,19 @@ export function showInlineResult(host, text, failed = false) {
   return result;
 }
 
-// Abandon still needs a deliberate second click. Merely opening this row or
+// Irreversible actions need a deliberate second click. Merely opening this row or
 // cancelling it cannot send the order; disable confirmation before awaiting.
-export function confirmInline(host, text, send) {
+export function confirmInline(host, text, send, { confirmLabel = 'Abandon', cancelLabel = 'Keep settlement' } = {}) {
   if (!host) return;
   host.replaceChildren();
   const prompt = document.createElement('p');
   prompt.textContent = text;
   const yes = document.createElement('button');
   yes.className = 'btn-small btn-danger';
-  yes.textContent = 'Abandon';
+  yes.textContent = confirmLabel;
   const no = document.createElement('button');
   no.className = 'btn-small';
-  no.textContent = 'Keep settlement';
+  no.textContent = cancelLabel;
   let sent = false;
   yes.addEventListener('click', async () => {
     if (sent) return;

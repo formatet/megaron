@@ -20,7 +20,7 @@ Not on sea, mountain, river or semi-desert, and **your catchment may not overlap
 
 ## Settling
 
-Press **⚒ Found the metropolis here** at the bottom of the Host panel, and confirm. In exchange:
+Press **⚒ Found the metropolis here** at the bottom of the Host panel. Read the warning beside the button, then press **Found the metropolis** to confirm. **Keep travelling** closes the warning without founding. In exchange:
 
 - The Host's people become your city's population.
 - Everything carried — grain and silver — pours into the city. A new city starts with **no timber and no stone**: its [[catchment]] needs forest and hills (or a neighbour to buy from) before the first building can rise.

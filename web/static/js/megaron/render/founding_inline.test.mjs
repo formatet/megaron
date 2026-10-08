@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 class Element {
- constructor(){this.style={};this.events={};this.children=[];this.dataset={};this.clientWidth=1280;this.clientHeight=900;}
+ constructor(){this.style={};this.classList={toggle(){}};this.events={};this.children=[];this.dataset={};this.clientWidth=1280;this.clientHeight=900;}
  addEventListener(k,fn){this.events[k]=fn;}
  append(...e){this.children.push(...e);}
  appendChild(e){this.append(e);}
@@ -43,6 +43,7 @@ test('Founding actual map click: opening/cancel never sends; confirmed request i
  assert.equal(host.children[1].textContent,'Found the metropolis');assert.equal(host.children[2].textContent,'Keep travelling');
  assert.equal(calls.length,0,'opening must not found');host.children[2].events.click();assert.equal(calls.length,0,'cancel must not found');assert.equal(host.children.length,0);
  await button.events.click();const yes=host.children[1];const sent=yes.events.click();yes.events.click();await button.events.click();
+ assert.equal(host.children[1],yes,'pending founding cannot reopen confirmation');
  assert.equal(calls.length,1,'one founding request while pending');assert.equal(button.disabled,true);
  assert.equal(calls[0].url,'/api/v1/worlds/world/founding/settle');assert.equal(calls[0].options.method,'POST');assert.deepEqual(JSON.parse(calls[0].options.body),{});
  reply=new Response('{}');resolveRequest();await sent;assert.equal(reloads,1,'success refreshes changed world');
