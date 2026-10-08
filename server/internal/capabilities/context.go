@@ -183,74 +183,12 @@ func (cc checkContext) ownSettlements() (total, nonCapital int) {
 	return total, nonCapital
 }
 
-// visibleOrigins mirrors api/handlers/world.go's loadVisibleOrigins — the
-// KNOWN-set (live settlements ∪ in-flight marches ∪ messenger contacts ∪
-// scouted tiles/provinces) used to FOW-gate messenger Send. Duplicated here
-// (capabilities sits below api/handlers in G1) rather than imported.
-// TODO: Fas 3 unify with handler gate.
-func (cc checkContext) visibleOrigins() []province.MapPosition {
-	rows, err := cc.pool.Query(cc.ctx,
-		`SELECT DISTINCT pos.q, pos.r FROM (
-		     SELECT p.map_q AS q, p.map_r AS r
-		     FROM provinces p
-		     JOIN settlements s ON s.province_id = p.id
-		     WHERE p.world_id = $1 AND (
-		         s.owner_id = $2
-		         OR (s.kingdom_id IS NOT NULL AND s.kingdom_id IN (
-		             SELECT km.kingdom_id FROM kingdom_members km WHERE km.player_id = $2
-		         ))
-		     )
-		     UNION ALL
-		     SELECT op.map_q, op.map_r
-		     FROM marching_armies ma
-		     JOIN provinces op ON op.id = ma.origin_id
-		     JOIN settlements os ON os.province_id = ma.origin_id
-		     WHERE ma.world_id = $1 AND ma.resolved = false AND os.owner_id = $2
-		     UNION ALL
-		     SELECT tp.map_q, tp.map_r
-		     FROM marching_armies ma
-		     JOIN provinces tp ON tp.id = ma.target_id
-		     JOIN settlements os ON os.province_id = ma.origin_id
-		     WHERE ma.world_id = $1 AND ma.resolved = false AND os.owner_id = $2
-		       AND ma.intent != 'explore'
-		     UNION ALL
-		     SELECT dp.map_q, dp.map_r
-		     FROM messengers m
-		     JOIN settlements ds ON ds.id = m.destination_id
-		     JOIN provinces dp ON dp.id = ds.province_id
-		     WHERE m.world_id = $1 AND m.sender_id = $2
-		       AND m.status IN ('delivered', 'returning', 'arrived')
-		     UNION ALL
-		     SELECT p.map_q, p.map_r
-		     FROM player_scouted_provinces sp
-		     JOIN provinces p ON p.id = sp.province_id
-		     WHERE sp.world_id = $1 AND sp.player_id = $2
-		     UNION ALL
-		     SELECT q, r FROM player_scouted_tiles WHERE world_id = $1 AND player_id = $2
-		 ) pos`,
-		cc.worldID, cc.playerID,
-	)
-	if err != nil {
-		return nil
-	}
-	defer rows.Close()
-
-	var origins []province.MapPosition
-	for rows.Next() {
-		var pos province.MapPosition
-		if err := rows.Scan(&pos.Q, &pos.R); err == nil {
-			origins = append(origins, pos)
-		}
-	}
-	return origins
-}
-
 // visibleForeignSettlements counts settlements owned by other Wanaxes that
 // fall within this player's visible-origins radius (6 hexes) — the FOW gate
 // that Send (message/trade-offer/messenger) enforces server-side.
 // TODO: Fas 3 unify with handler gate.
 func (cc checkContext) visibleForeignSettlements() int {
-	origins := cc.visibleOrigins()
+	origins := province.VisibleOrigins(cc.ctx, cc.pool, cc.worldID, cc.playerID)
 	if len(origins) == 0 {
 		return 0
 	}
