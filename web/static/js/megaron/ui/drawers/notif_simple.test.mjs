@@ -21,6 +21,6 @@ test('K: quiet kinds remain readable both in group and historic archive',()=>{
 });
 test('K: every short advisory has a drawer help link; locked reasons stay authoritative in tooltip',()=>{
  for(const [name,text] of Object.entries(LAWAGETAS_BRIEFS)){assert.ok(text.length<85);assert.match(drawerHelpHTML(name),new RegExp("openCodexForDrawer\\('"+name+"'\\)"));}
- const html=lockedActionsHTML('trade',[{name:'trade-offer',requirements:[{satisfied:true,hint:'irrelevant'},{satisfied:false,hint:'Send a messenger <first>'}]}]);
- assert.match(html,/Unavailable: /);assert.match(html,/title="Send a messenger &lt;first&gt;"/,'keep server reason');assert.match(html,/openCodexForDrawer\('economy'\)/);assert.doesNotMatch(html,/irrelevant/);assert.equal(lockedActionsHTML('trade',[]),'');
+ const html=lockedActionsHTML('trade',[{name:'trade-offer',requirements:[{satisfied:true,hint:'irrelevant'},{satisfied:false,hint:'Send a messenger <first>'}]},{name:'trade-offer',requirements:[{satisfied:false,hint:'Meet another city'}]}]);
+ assert.match(html,/Unavailable: /);assert.equal((html.match(/>trade offer</g)||[]).length,1,'one label, all reasons retained');assert.match(html,/title="Send a messenger &lt;first&gt; · Meet another city"/,'keep server reason');assert.match(html,/openCodexForDrawer\('economy'\)/);assert.doesNotMatch(html,/irrelevant/);assert.equal(lockedActionsHTML('trade',[]),'');
 });

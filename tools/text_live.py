@@ -125,6 +125,15 @@ try:
             page.evaluate('window.closeCodex()')
     receipts={}
     if MODE=='after':
+        open_drawer('economy');page.wait_for_selector('#economy-body .dsec .empty-state button')
+        hints=page.locator('#economy-body .dsec .empty-state span[title]')
+        assert hints.count()>0
+        receipts['locked_hints']=[h.get_attribute('title') for h in hints.all()]
+        page.locator('#economy-body .dsec .empty-state').scroll_into_view_if_needed()
+        page.locator('#drawer-economy').screenshot(path=str(OUT/'locked-mobile.png'))
+        page.locator('#economy-body .dsec .empty-state button').click()
+        page.wait_for_function('document.getElementById("codex-title").textContent==="Goods"')
+        page.evaluate('window.closeCodex()')
         open_drawer('city');page.wait_for_selector('#city-gubbe-grid svg')
         page.locator('#drawer-city button[data-tab="byggnader"]').click()
         with page.expect_response(lambda r:'/build-queue/' in r.url and r.request.method=='DELETE') as pending:
