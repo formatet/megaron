@@ -103,15 +103,18 @@ try:
     for leg in range(12):
         tiles=api(worldpath+'/map',token=token)
         tiles=tiles if isinstance(tiles,list) else tiles['tiles']
-        candidates=[t for t in tiles if t.get('terrain') not in ('sea','coastal_sea','mountain') and t.get('q') is not None and (t['q'],t['r']) not in visited]
+        candidates=[t for t in tiles if t.get('terrain') not in ('fog','river','river_ford','deep_sea','coastal_sea','mountain_limestone','mountain_red') and t.get('q') is not None and (t['q'],t['r']) not in visited]
         candidates.sort(key=lambda t:(dist((t['q'],t['r']),home)>=5,-dist((t['q'],t['r']),position),dist((t['q'],t['r']),home)),reverse=True)
         dispatched=False
         for t in candidates:
             target=(t['q'],t['r']);colonize=dist(target,home)>=5
             body={'target_q':target[0],'target_r':target[1],**({'intent':'colonize','name':'Kyme'} if colonize else {})}
-            try:order=api(worldpath+'/units/'+unit['id']+'/march','POST',body,token)
+            try:
+                preview=api(worldpath+'/units/'+unit['id']+'/march-preview?target_q='+str(target[0])+'&target_r='+str(target[1]),token=token)
+                if not preview.get('available') and preview.get('reason')!='courier_required':continue
+                order=api(worldpath+'/units/'+unit['id']+'/march','POST',body,token)
             except urllib.error.HTTPError:continue
-            journeys.append({'body':body,'receipt':order});dispatched=True;visited.add(target);print('leg',leg,body,flush=True)
+            journeys.append({'body':body,'receipt':order});dispatched=True;visited.add(target);print('leg',leg,body,order,flush=True)
             for _ in range(180):
                 time.sleep(1);colony=next((p for p in provinces() if p.get('own') and p.get('name')=='Kyme'),None)
                 if colony:break
