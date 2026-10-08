@@ -1,0 +1,8 @@
+leg 0 {'target_q': 0, 'target_r': 52} {'arrival_tick': 1, 'arrives_at': '2026-10-08T03:58:57.11567961+02:00', 'arrives_at_utc': '2026-10-08T01:58:57.11567961Z', 'carried_silver': 0, 'departs_at': '2026-10-08T03:58:51.11567961+02:00', 'duration_ticks': 1, 'expedition': None, 'origin_q': 1, 'origin_r': 52, 'purse_shortfall': 0, 'target_q': 0, 'target_r': 52, 'unit_id': '5146321a-cca4-4ddd-b0da-2051a1c51e76'}
+leg 1 {'target_q': 0, 'target_r': 51} {'courier_arrives_at': '2026-10-08T03:59:15.35147246+02:00', 'courier_due_tick': 3, 'messenger_id': 'b60c9cdd-9463-44f7-ba43-71357ef653c8', 'status': 'order_dispatched', 'target_q': 0, 'target_r': 51, 'unit_id': '5146321a-cca4-4ddd-b0da-2051a1c51e76', 'verb': 'march'}
+leg 2 {'target_q': 0, 'target_r': 50} {'courier_arrives_at': '2026-10-08T03:59:33.544197732+02:00', 'courier_due_tick': 6, 'messenger_id': '0a60df4b-51e4-4522-9b99-83363aff7fb8', 'status': 'order_dispatched', 'target_q': 0, 'target_r': 50, 'unit_id': '5146321a-cca4-4ddd-b0da-2051a1c51e76', 'verb': 'march'}
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-economy-goods-20261008/tools/economy_goods_live.py", line 126, in <module>
+    assert dispatched,'no reachable ordinary land site'
+           ^^^^^^^^^^
+AssertionError: no reachable ordinary land site

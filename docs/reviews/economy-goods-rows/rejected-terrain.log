@@ -1,0 +1,7 @@
+leg 0 {'target_q': 13, 'target_r': 22}
+leg 1 {'target_q': 8, 'target_r': 24, 'intent': 'colonize', 'name': 'Kyme'}
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-economy-goods-20261008/tools/economy_goods_live.py", line 116, in <module>
+    except urllib.error.HTTPError:continue
+        ^^^^^^^^^^^^^
+KeyboardInterrupt

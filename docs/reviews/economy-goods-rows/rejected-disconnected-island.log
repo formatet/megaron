@@ -1,0 +1,8 @@
+leg 0 {'target_q': 6, 'target_r': 27} {'arrival_tick': 4, 'arrives_at': '2026-10-08T03:56:39.210228078+02:00', 'arrives_at_utc': '2026-10-08T01:56:39.210228078Z', 'carried_silver': 0, 'departs_at': '2026-10-08T03:56:15.210228078+02:00', 'duration_ticks': 4, 'expedition': None, 'origin_q': 9, 'origin_r': 27, 'purse_shortfall': 0, 'target_q': 6, 'target_r': 27, 'unit_id': '8f601209-b3de-43b4-8c01-01da7bcc61c0'}
+leg 1 {'target_q': 5, 'target_r': 28} {'courier_arrives_at': '2026-10-08T03:57:02.638448172+02:00', 'courier_due_tick': 7, 'messenger_id': '2e8ade04-cd6f-4f7e-817a-7e75cc220bad', 'status': 'order_dispatched', 'target_q': 5, 'target_r': 28, 'unit_id': '8f601209-b3de-43b4-8c01-01da7bcc61c0', 'verb': 'march'}
+leg 2 {'target_q': 3, 'target_r': 28, 'intent': 'colonize', 'name': 'Kyme'} {'courier_arrives_at': '2026-10-08T03:57:32.943353853+02:00', 'courier_due_tick': 12, 'messenger_id': 'f746c6fa-1bf4-4cd7-95d9-d55c262ab1cb', 'status': 'order_dispatched', 'target_q': 3, 'target_r': 28, 'unit_id': '8f601209-b3de-43b4-8c01-01da7bcc61c0', 'verb': 'march'}
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-economy-goods-20261008/tools/economy_goods_live.py", line 119, in <module>
+    time.sleep(1);colony=next((p for p in provinces() if p.get('own') and p.get('name')=='Kyme'),None)
+    ~~~~~~~~~~^^^
+KeyboardInterrupt

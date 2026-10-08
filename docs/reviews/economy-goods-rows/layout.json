@@ -1,0 +1,44 @@
+[
+  {
+    "width": 362,
+    "scrollWidth": 362,
+    "color": "rgb(242, 234, 211)",
+    "expected": "rgb(28, 28, 28)",
+    "version": "8b2b8315"
+  },
+  {
+    "width": 390,
+    "scrollWidth": 390,
+    "color": "rgb(242, 234, 211)",
+    "expected": "rgb(28, 28, 28)",
+    "version": "8b2b8315"
+  },
+  {
+    "width": 362,
+    "scrollWidth": 393,
+    "color": "rgb(28, 28, 28)",
+    "expected": "rgb(28, 28, 28)",
+    "version": "dcba84cb"
+  },
+  {
+    "width": 390,
+    "scrollWidth": 421,
+    "color": "rgb(28, 28, 28)",
+    "expected": "rgb(28, 28, 28)",
+    "version": "dcba84cb"
+  },
+  {
+    "width": 362,
+    "scrollWidth": 362,
+    "color": "rgb(28, 28, 28)",
+    "expected": "rgb(28, 28, 28)",
+    "version": "current"
+  },
+  {
+    "width": 390,
+    "scrollWidth": 390,
+    "color": "rgb(28, 28, 28)",
+    "expected": "rgb(28, 28, 28)",
+    "version": "current"
+  }
+]

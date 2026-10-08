@@ -1,0 +1,17 @@
+[
+  {
+    "path": "/tmp/megaron-goods-baseline-clean/temenos",
+    "bytes": 30724446,
+    "sha256": "dd30f2cdc57ee7c3397e3f085a6f91189429e94757cafa76dd48442e94bfbfe1"
+  },
+  {
+    "path": "/tmp/megaron-goods-baseline-final/temenos",
+    "bytes": 30724446,
+    "sha256": "dd30f2cdc57ee7c3397e3f085a6f91189429e94757cafa76dd48442e94bfbfe1"
+  },
+  {
+    "path": "/tmp/megaron-goods-baseline-accepted/temenos",
+    "bytes": 4399104,
+    "sha256": "3e84835d12ac221122fbaddf5304f7b46edeec790de6a5b6a19d7385a6a8aef4"
+  }
+]

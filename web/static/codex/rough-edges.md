@@ -3,7 +3,7 @@ Honest notes on the current build, so you do not mistake a gap for your own mist
 ## Things that work, but awkwardly
 
 - **March in the Army tab takes typed coordinates**, not a map click. Right-clicking the map is the friendlier path — it also reaches units already on the march ([[marching]]).
-- **Standing-order goods are typed as text** (`grain:200,fish:50`), and the route list does not show what a route carries ([[routes]]).
+- **The standing-order list does not show what a route carries** ([[routes]]).
 
 ## Not in this version
 
