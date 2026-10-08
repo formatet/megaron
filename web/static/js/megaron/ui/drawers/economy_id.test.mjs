@@ -17,15 +17,15 @@ async function render(rows,status=200){
 }
 test('Economy id: actual drawer joins settlement ids while links and goods keep province ids',async()=>{
  const {html,calls}=await render(overview);
- assert.match(html,/one thousand/,'settlement overview must join settlement id');assert.match(html,/two thousand/);
- assert.doesNotMatch(html,/no data/);assert.match(html,/forty game days/);assert.match(html,/five game days/);
+ assert.match(html,/1,000/,'settlement overview must join settlement id');assert.match(html,/2,000/);
+ assert.doesNotMatch(html,/no data/);assert.match(html,/40 game days/);assert.match(html,/5 game days/);
  assert.match(html,/openCitySettlement\('province-a'\)/,'city link keeps province id');assert.match(html,/openCitySettlement\('province-b'\)/);
  assert.ok(calls.some(p=>p.endsWith('/provinces/province-a/goods')));assert.ok(calls.some(p=>p.endsWith('/provinces/province-b/goods')));
  assert.equal(calls.filter(p=>p.endsWith('/settlements/overview')).length,1,'one overview request');
 });
 test('Economy id: missing or refused overview remains no data; never match province id or name',async()=>{
  const wrong=[{...overview[1],id:'province-a'}];
- assert.match((await render(wrong)).html,/no data/);assert.doesNotMatch((await render(wrong)).html,/one thousand/);
- const partial=(await render([overview[1]])).html;assert.match(partial,/one thousand/,'matched row stays correct');assert.match(partial,/no data/,'missing sibling stays unavailable');
+ assert.match((await render(wrong)).html,/no data/);assert.doesNotMatch((await render(wrong)).html,/1,000/);
+ const partial=(await render([overview[1]])).html;assert.match(partial,/1,000/,'matched row stays correct');assert.match(partial,/no data/,'missing sibling stays unavailable');
  assert.match((await render([],403)).html,/no data/,'refused overview stays unavailable');
 });

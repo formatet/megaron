@@ -5,7 +5,7 @@ import { track } from '../../telemetry.js';
 import { esc, fmtAgo, formatApiError, passageNote } from '../format.js';
 import { fmtEta, fmtArrival, arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
-import { numberWords } from '../number_words.js';
+import { fmtNum } from '../fmt_num.js';
 import { sentStatusHTML } from '../runner_status.js';
 
 // "expires <eta>" while a trade offer's window is still open, collapsing to a
@@ -115,7 +115,7 @@ async function loadDipKnown() {
       const status = c.own ? 'Your city' : contact ? 'Can write' : c.knowledge === 'rumour' ? 'Rumour only' : 'Known';
       const deposits = [c.copper_deposit ? 'Copper' : '', c.tin_deposit ? 'Tin' : '', c.silver_deposit ? 'Silver' : '', c.cedar_deposit ? 'Cedar' : ''].filter(Boolean).join(', ');
       const location = c.knowledge === 'known' && c.q != null && c.r != null
-        ? `${numberWords(c.q)}, ${numberWords(c.r)}` : c.bearing ? c.bearing.replace(/^~(\d+) hexes /, (_, n) => `~${numberWords(Number(n))} hexes `) : 'Location unknown';
+        ? `${fmtNum(c.q)}, ${fmtNum(c.r)}` : c.bearing ? c.bearing.replace(/^~(\d+) hexes /, (_, n) => `~${fmtNum(Number(n))} hexes `) : 'Location unknown';
       return `<div class="dsec"><div class="stat-row"><span class="sr-label">${esc(c.name)}</span><span class="sr-val">${contact ? writeButton(c.settlement_id) : ''}</span></div>
         <div>${esc(c.owner || 'Owner unknown')} · ${status}</div>
         <details><summary>Details</summary><div>${esc(location)}</div><div>${esc(deposits || c.industry_hint || '')}</div></details></div>`;
@@ -125,8 +125,8 @@ async function loadDipKnown() {
       const owned = cities.filter(c => c.owner_id === r.owner_id);
       owned.forEach(c => grouped.add(c));
       const destination = owned.find(c => !c.own && contacts.has(c.settlement_id));
-      const known = `${numberWords(r.known_cities)} known ${r.known_cities === 1 ? 'city' : 'cities'}`;
-      const rumoured = `${numberWords(r.rumour_cities)} rumoured ${r.rumour_cities === 1 ? 'city' : 'cities'}`;
+      const known = `${fmtNum(r.known_cities)} known ${r.known_cities === 1 ? 'city' : 'cities'}`;
+      const rumoured = `${fmtNum(r.rumour_cities)} rumoured ${r.rumour_cities === 1 ? 'city' : 'cities'}`;
       return `<div class="dsec-title">${esc(r.owner)} ${writeButton(destination?.settlement_id)}</div><div>${known} · ${rumoured}</div>` + owned.map(cityRow).join('');
     }).join('') + cities.filter(c => !grouped.has(c)).map(cityRow).join('');
     if (!cities.length && !rulers.length) el.innerHTML = '<p class="empty-state">No cities or rulers known yet — explore the map.</p>';

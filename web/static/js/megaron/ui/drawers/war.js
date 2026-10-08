@@ -15,7 +15,7 @@ import { canTakeStance, stanceSentLine } from '../stance.js';
 import { warMovements } from '../movements.js';
 import { expeditionMissionText } from '../expedition.js';
 import { chooseMarchTarget } from '../marchctx.js';
-import { numberWords } from '../number_words.js';
+import { fmtNum, fmtDays } from '../fmt_num.js';
 import { orderRunnerHTML } from '../runner_status.js';
 import { recallAll, recallAllControlsHTML, recallAllResultHTML } from '../recall_all.js';
 let recallAllResult = '';
@@ -459,7 +459,7 @@ export function renderUnitCard(u) {
     // the shore for the fetched unit — ScheduledPickupTimeout is what sends
     // it home if the unit never makes it.
     const who = u.pickup_for ? esc(u.pickup_for) : 'the unit';
-    const until = u.waiting_until_tick != null ? ' until game day ' + numberWords(u.waiting_until_tick) : '';
+    const until = u.waiting_until_tick != null ? ' until game day ' + fmtNum(u.waiting_until_tick) : '';
     loc = 'waiting off (' + u.q + ',' + u.r + ') for ' + who + until;
   } else if (isMarching && u.target_q != null) {
     // Pickup (megaron_plan_hamta_hem.md): sailing to fetch a unit — target_q/r
@@ -488,16 +488,16 @@ export function renderUnitCard(u) {
     // same type into this settlement is what fills it — say so, so a
     // half-formed unit doesn't read as a stuck pipeline.
     const needed = u.men_to_deploy != null ? u.men_to_deploy : (100 - u.size);
-    progress = bar(u.size) + dim(numberWords(u.size) + ' of one hundred · ' + numberWords(needed) + ' more men needed before training starts');
+    progress = bar(u.size) + dim(fmtNum(u.size) + ' of 100 · ' + fmtNum(needed) + ' more men needed before training starts');
   } else if (isTraining) {
-    progress = bar(100) + dim('one hundred men · training — ' + readyWord(u.build_complete_at));
+    progress = bar(100) + dim('100 men · training — ' + readyWord(u.build_complete_at));
   } else if (isGarrison && u.reinforcing) {
     // Manskaps-underhåll (megaron_plan_rekryteringsmodell.md): a decimated
     // cohort trickles back to 100 out of its home city's population growth,
     // a few men per game-day — not a stuck pipeline, just slow by design.
     // (No separate origin-city name field on the wire — the server exposes
     // origin_settlement_id, not a name, so this stays generic.)
-    progress = bar(u.size) + dim(numberWords(u.size) + ' of one hundred · reinforcing from home-city growth');
+    progress = bar(u.size) + dim(fmtNum(u.size) + ' of 100 · reinforcing from home-city growth');
   }
 
   // Pending order (Fas 5): a Runner is en route to this unit — the order
@@ -512,14 +512,14 @@ export function renderUnitCard(u) {
 
   // Crew badge for naval
   const crewBadge = isNaval && u.crew
-    ? '<span style="font-size:.6rem;color:var(--text-dim);margin-left:.3rem">crew ' + numberWords(u.crew) + '</span>'
+    ? '<span style="font-size:.6rem;color:var(--text-dim);margin-left:.3rem">crew ' + fmtNum(u.crew) + '</span>'
     : '';
 
   // Hull badge (megaron_plan_skeppsreparation.md §B2) — only shown while
   // damaged (hull < 5); a pristine ship (hull omitted or 5) shows nothing,
   // same "don't clutter the common case" posture as crewBadge above.
   const hullBadge = isNaval && u.hull != null && u.hull < 5
-    ? '<span style="font-size:.6rem;color:var(--accent-war);margin-left:.3rem">hull ' + numberWords(u.hull) + ' of five</span>'
+    ? '<span style="font-size:.6rem;color:var(--accent-war);margin-left:.3rem">hull ' + fmtNum(u.hull) + '/5</span>'
     : '';
 
   // Matmätaren (megaron_plan_skeppsproviant.md §7, Timothy 2026-08-26). Dygn,
@@ -538,7 +538,7 @@ export function renderUnitCard(u) {
   const foodBadge = atSea
     ? '<span style="font-size:.6rem;margin-left:.3rem;color:' +
       (days <= 0 ? 'var(--accent-war)' : days < 3 ? 'var(--accent-war)' : 'var(--text-dim)') + '">' +
-      (days <= 0 ? 'out of food' : 'food for ' + numberWords(days) + ' game days') + '</span>'
+      (days <= 0 ? 'out of food' : 'food for ' + fmtDays(days)) + '</span>'
     : '';
 
   // Cargo badge
@@ -990,7 +990,7 @@ export async function unitPickup(unitID) {
   if (res.ok) {
     if (resEl) {
       resEl.style.color = 'var(--safe)';
-      resEl.textContent = 'Ship sails to (' + data.shore_q + ',' + data.shore_r + ') — arrives game day ' + numberWords(data.arrival_tick) +
+      resEl.textContent = 'Ship sails to (' + data.shore_q + ',' + data.shore_r + ') — arrives game day ' + fmtNum(data.arrival_tick) +
         (data.messenger_id ? ', a messenger rides along' : '') + '.';
     }
     loadWarDrawer();

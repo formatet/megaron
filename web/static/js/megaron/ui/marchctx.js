@@ -3,7 +3,7 @@ import { fetchAuth } from '../api.js';
 import { track } from '../telemetry.js';
 import { esc, formatApiError, passageNote, purseLine } from './format.js';
 import { unitTypeLabel } from './actornames.js';
-import { numberWords } from './number_words.js';
+import { fmtNum, fmtDays } from './fmt_num.js';
 import { arrivalHTML, fmtArrival } from './time.js';
 import { stanceSentLine } from './stance.js';
 import { MusicPlayer } from './misc.js';
@@ -54,7 +54,7 @@ function updateMarchPreview() {
   try { if (exploring) ticks = expeditionTicks(document.getElementById('mctx-ticks')); }
   catch (error) { document.getElementById('mctx-mission').textContent = error.message; marchPreview.update(State.WORLD_ID, [], {}); return; }
   document.getElementById('mctx-mission').textContent = exploring
-    ? 'Explore for ' + numberWords(ticks) + ' game days, then return home.'
+    ? 'Explore for ' + fmtDays(ticks) + ', then return home.'
       + (picks.some(p => p.mode === 'redirect') ? ' Only units starting a new march take this expedition; marching units receive a redirect and end their expedition.' : '')
     : '';
   marchPreview.update(State.WORLD_ID, picks, {
@@ -165,18 +165,18 @@ export function renderColonizePreviewHTML(p) {
   const netTick  = g.est_net_per_tick || 0;
   const consTick = prodTick - netTick;
 
-  let html = `<div style="color:var(--text-dim)">Catchment forecast — ${numberWords(known)} of ${numberWords(total)} hexes known</div>`;
-  html += `<div>Grain: produces about ${numberWords(Math.round(prodTick))} and eats about ${numberWords(Math.round(consTick))} each game day = ` +
-    `<b style="color:${netTick < 0 ? 'var(--accent)' : 'var(--safe)'}">net ${numberWords(Math.round(netTick))} per game day</b></div>`;
+  let html = `<div style="color:var(--text-dim)">Catchment forecast — ${fmtNum(known)} of ${fmtNum(total)} hexes known</div>`;
+  html += `<div>Grain: produces about ${fmtNum(Math.round(prodTick))} and eats about ${fmtNum(Math.round(consTick))} each game day = ` +
+    `<b style="color:${netTick < 0 ? 'var(--accent)' : 'var(--safe)'}">net ${fmtNum(Math.round(netTick))} per game day</b></div>`;
   if (netTick < 0) {
-    const reach = g.ticks_until_empty != null ? ` → lasts about ${numberWords(Math.round(g.ticks_until_empty))} game days` : '';
+    const reach = g.ticks_until_empty != null ? ` → lasts about ${fmtDays(Math.round(g.ticks_until_empty))}` : '';
     const farmNetTick = (g.with_farm_per_tick || 0) - consTick;
     const farmNote = (g.with_farm_per_tick || 0) <= (g.base_per_tick || 0)
       ? ' (no farmland in known catchment — a farm will not help here)' : '';
-    html += `<div>Seed ${numberWords(Math.round(g.seed || 0))} grain${reach}. With farm: ${numberWords(Math.round(farmNetTick))} net per game day${farmNote}</div>`;
+    html += `<div>Seed ${fmtNum(Math.round(g.seed || 0))} grain${reach}. With farm: ${fmtNum(Math.round(farmNetTick))} net per game day${farmNote}</div>`;
     html += `<div style="color:var(--text-dim)">A colony does not feed itself — build a farm if the land bears it, or send grain by internal transfer.</div>`;
   } else {
-    html += `<div>Seed ${numberWords(Math.round(g.seed || 0))} grain — the colony feeds itself.</div>`;
+    html += `<div>Seed ${fmtNum(Math.round(g.seed || 0))} grain — the colony feeds itself.</div>`;
   }
 
   const dep = {};
@@ -191,7 +191,7 @@ export function renderColonizePreviewHTML(p) {
   Object.keys(p.goods || {}).sort().forEach(gk => {
     if (gk === 'grain') return;
     const rate = p.goods[gk] || 0;
-    if (rate > 0) extras.push(`${esc(gk)} about ${numberWords(Math.round(rate))} per game day`);
+    if (rate > 0) extras.push(`${esc(gk)} about ${fmtNum(Math.round(rate))} per game day`);
   });
   if (extras.length) html += `<div style="color:var(--text-dim)">Also: ${extras.join(', ')}</div>`;
 
@@ -498,7 +498,7 @@ export function renderMarchUnitList() {
     return '<div class="mctx-row">'
       + '<span class="mctx-label">' + marchGroupLabelHTML(g) + '</span>'
       + '<input class="mctx-input" type="number" id="mg-' + i + '" min="0" max="' + max + '" value="' + marchDefaultQuantity(g, i) + '">'
-      + '<span class="mctx-max">of ' + numberWords(max) + '</span>'
+      + '<span class="mctx-max">of ' + fmtNum(max) + '</span>'
       + '</div>'
       + marchGroupNamesHTML(g);
   }).join('');
@@ -643,7 +643,7 @@ export async function sendMarch() {
   const stanceRefused = results.filter(r => r.ok && r.err);
   if (failed.length) {
     const okCount = results.length - failed.length;
-    document.getElementById('mctx-err').textContent = (okCount ? numberWords(okCount) + ' sent · ' : '') + failed[0].err;
+    document.getElementById('mctx-err').textContent = (okCount ? fmtNum(okCount) + ' sent · ' : '') + failed[0].err;
   } else if (stanceRefused.length) {
     document.getElementById('mctx-err').textContent = stanceRefused[0].err;
   } else if (showEta) {

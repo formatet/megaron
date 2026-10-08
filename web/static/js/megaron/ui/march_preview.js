@@ -1,5 +1,5 @@
 import { esc, formatApiError } from './format.js';
-import { numberWords } from './number_words.js';
+import { fmtNum, fmtDays } from './fmt_num.js';
 import { arrivalHTML } from './time.js';
 
 // Forecasts are read-only. Keep each unit separate: crew and cargo can make
@@ -19,7 +19,7 @@ export async function loadMarchPreview(worldID, pick, order, read) {
 export function marchPreviewHTML(data) {
   if (data.available && Number.isInteger(data.arrival_tick)) {
     return 'Estimated arrival: ' + arrivalHTML(data.arrives_at_utc, data.arrival_tick)
-      + ' · ' + esc(numberWords(data.duration_ticks)) + ' game days travelling';
+      + ' · ' + esc(fmtDays(data.duration_ticks)) + ' travelling';
   }
   if (data.reason === 'courier_required' || data.reason === 'redirect') {
     return 'Arrival not yet known — a messenger must deliver the order first.';
