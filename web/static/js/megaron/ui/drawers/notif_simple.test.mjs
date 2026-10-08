@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { notifDateHeader, hiddenNotifLabel } from './notif.js';
+const noopEl = new Proxy({}, {get:(_t,k)=>k==='style'?{}:()=>noopEl,set:()=>true});
+globalThis.document = {addEventListener(){},getElementById:()=>noopEl,createElement:()=>noopEl,querySelector:()=>noopEl,querySelectorAll:()=>[],body:noopEl};
+globalThis.window = {addEventListener(){},matchMedia:()=>({matches:false,addEventListener(){}})};
+globalThis.localStorage = {getItem:()=>null,setItem(){}};
+const { notifDateHeader, hiddenNotifLabel } = await import('./notif.js');
 import { notifText } from '../format.js';
 import { lockedActionsHTML, LAWAGETAS_BRIEFS, drawerHelpHTML } from '../misc.js';
 test('K: calendar and forming state survive without world speed',()=>{
