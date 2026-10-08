@@ -7,3 +7,5 @@ The runner follows that **actual ship to its next port**, steps ashore and conti
 You receive no instant rescue news or location. Your outbox says **no word**, and the runner's unknown position gives you no map marker or sight. The recipient simply receives the message later.
 
 The report says "Home on day N". When the runner comes home with its answer, it brings its own account of the rescue ship and the port where it landed. A one-way order runner does not send a report home from afar. Only [[runner-lost-at-sea|loss]] is reported immediately. See [[sea]] and [[messengers]].
+
+The account names the ship and the actual towns, for example "rescued aboard Sacred Dolphin; ashore at Tiryns". The town names are preserved when the runner steps ashore.

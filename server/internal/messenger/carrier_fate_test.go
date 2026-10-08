@@ -27,8 +27,32 @@ type carrierStormDice struct{}
 func (carrierStormDice) Float64() float64 { return 0 }
 func (carrierStormDice) Intn(int) int     { return 0 }
 
+// DB identities are human before freezing/export, not screenshot rewrites.
+func carrierHumanNames(t *testing.T, f *passageFixture) uuid.UUID {
+	t.Helper()
+	ctx := context.Background()
+	var recipient uuid.UUID
+	if err := f.pool.QueryRow(ctx, `INSERT INTO players(username,password_hash,wanax_name) VALUES($1,'x','Oledoledoff') RETURNING id`, "private-login-"+uuid.NewString()).Scan(&recipient); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.pool.Exec(ctx, `UPDATE players SET wanax_name='Atreus' WHERE id=$1`, f.ownerID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.pool.Exec(ctx, `UPDATE settlements SET name='Mycenae' WHERE id=$1`, f.originID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.pool.Exec(ctx, `UPDATE settlements SET name='Tiryns',owner_id=$2 WHERE id=$1`, f.destID, recipient); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		_, _ = f.pool.Exec(context.Background(), `UPDATE players SET wanax_name=NULL WHERE id=ANY($1::uuid[])`, []uuid.UUID{recipient, f.ownerID})
+	})
+	return recipient
+}
+
 func TestCarrierFate_StormTransportLosesPassenger(t *testing.T) {
 	f := setupPassageFixture(t)
+	recipient := carrierHumanNames(t, f)
 	ctx := context.Background()
 	ship := f.ship(t, f.originID, "galley")
 	if _, err := f.pool.Exec(ctx, `UPDATE units SET status='freighting', hull=1 WHERE id=$1`, ship); err != nil {
@@ -86,6 +110,12 @@ func TestCarrierFate_StormTransportLosesPassenger(t *testing.T) {
 	if _, err := f.pool.Exec(ctx, `UPDATE messengers SET message_text='changed AFTER loss',sent_tick=999 WHERE id=$1`, messengerID); err != nil {
 		t.Fatal(err)
 	}
+	if _, err := f.pool.Exec(ctx, `UPDATE players SET wanax_name='Changed After Loss' WHERE id=$1`, recipient); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.pool.Exec(ctx, `UPDATE settlements SET name='Renamed After Loss' WHERE id=ANY($1::uuid[])`, []uuid.UUID{f.originID, f.destID}); err != nil {
+		t.Fatal(err)
+	}
 	if err := scan.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: 501}); err != nil {
 		t.Fatal(err)
 	}
@@ -123,6 +153,10 @@ func TestCarrierFate_StormTransportLosesPassenger(t *testing.T) {
 	}
 	if envelope["message_text"] != "hello" || envelope["sent_tick"] != float64(500) || envelope["sent_at"] == nil || envelope["origin"] == nil || envelope["destination"] == nil || witness.SenderID != f.ownerID || witness.Reason != "storm" {
 		t.Fatalf("loss must freeze WHOLE letter/endpoints/time and sender: %s", body)
+	}
+	d := envelope["destination"].(map[string]any)
+	if d["wanax_name"] != "Oledoledoff" || d["name"] != "Tiryns" || envelope["origin"].(map[string]any)["name"] != "Mycenae" {
+		t.Fatalf("freeze public person and city identities, not login/live names: %s", body)
 	}
 	if path := *carrierFixtureDir; path != "" {
 		if err := os.WriteFile(path+"/messenger_lost_at_sea.json", body, 0644); err != nil {
@@ -211,6 +245,7 @@ func TestCarrierFate_BattleRescuesPassenger(t *testing.T) {
 
 func TestCarrierFate_PendingRescueCanLandBeforeProjectionAndReportOnlyAtHome(t *testing.T) {
 	f := setupPassageFixture(t)
+	carrierHumanNames(t, f)
 	ctx := context.Background()
 	clk := clock.NewTestClock(time.Now())
 	sched := events.NewScheduler(f.pool, clk)
@@ -346,6 +381,7 @@ func TestCarrierFate_LossFreezesTradeAndUnitOrder(t *testing.T) {
 	for _, kind := range []string{"trade", "order"} {
 		t.Run(kind, func(t *testing.T) {
 			f := setupPassageFixture(t)
+			carrierHumanNames(t, f)
 			ctx := context.Background()
 			clk := clock.NewTestClock(time.Now())
 			sched := events.NewScheduler(f.pool, clk)
@@ -356,17 +392,26 @@ func TestCarrierFate_LossFreezesTradeAndUnitOrder(t *testing.T) {
 				t.Fatal(err)
 			}
 			runner := f.waitingMessenger(t, f.originID, 500)
+			var target uuid.UUID
 			var offer, order []byte
 			rowKind := "message"
 			if kind == "trade" {
 				offer = []byte(`{"kind":"sell","status":"pending","offer_good":"bronze","offer_qty":31,"want_silver":145.7}`)
 			} else {
 				rowKind = "order"
-				order = []byte(`{"verb":"march","unit_id":"00000000-0000-0000-0000-000000000009","q":9,"r":4,"standing_orders":{"hold_to_last_man":true}}`)
+				if err := f.pool.QueryRow(ctx, `INSERT INTO units(world_id,owner_id,type,category,size,status,q,r,name) VALUES($1,$2,'spearman','land',100,'positioned',9,4,'Bronze Guard') RETURNING id`, f.worldID, f.ownerID).Scan(&target); err != nil {
+					t.Fatal(err)
+				}
+				order, _ = json.Marshal(map[string]any{"verb": "march", "unit_id": target, "q": 9, "r": 4, "standing_orders": map[string]bool{"hold_to_last_man": true}})
 			}
 			letter := "<script>untrusted text</script>\n" + strings.Repeat("whole sealed contents ", 150)
 			if _, err := f.pool.Exec(ctx, `UPDATE messengers SET passage_status='aboard',carrier_unit_id=$2,kind=$3,trade_offer=$4,order_payload=$5,message_text=$6 WHERE id=$1`, runner, ship, rowKind, offer, order, letter); err != nil {
 				t.Fatal(err)
+			}
+			if kind == "order" {
+				if _, err := f.pool.Exec(ctx, `UPDATE messengers SET destination_id=NULL,dest_q=9,dest_r=4 WHERE id=$1`, runner); err != nil {
+					t.Fatal(err)
+				}
 			}
 			storm := combat.NewSeaStormScanHandler(f.pool, sched, events.NewStore(f.pool), nil)
 			storm.Dice = carrierStormDice{}
@@ -376,6 +421,11 @@ func TestCarrierFate_LossFreezesTradeAndUnitOrder(t *testing.T) {
 			}
 			if _, err := f.pool.Exec(ctx, `UPDATE messengers SET message_text='AFTER',trade_offer=NULL,order_payload=NULL WHERE id=$1`, runner); err != nil {
 				t.Fatal(err)
+			}
+			if target != uuid.Nil {
+				if _, err := f.pool.Exec(ctx, `UPDATE units SET name='Changed Guard' WHERE id=$1`, target); err != nil {
+					t.Fatal(err)
+				}
 			}
 			if err := f.handler().Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: 501}); err != nil {
 				t.Fatal(err)
@@ -395,6 +445,16 @@ func TestCarrierFate_LossFreezesTradeAndUnitOrder(t *testing.T) {
 			var envelope map[string]json.RawMessage
 			if err := json.Unmarshal(w.Envelope, &envelope); err != nil {
 				t.Fatal(err)
+			}
+			if kind == "order" {
+				var d struct {
+					UnitName string `json:"unit_name"`
+					Own      bool   `json:"own_unit"`
+					Q, R     int
+				}
+				if err := json.Unmarshal(envelope["destination"], &d); err != nil || d.UnitName != "Bronze Guard" || !d.Own || d.Q != 9 || d.R != 4 {
+					t.Fatalf("freeze own named unit and original order coordinates: %s %v", w.Envelope, err)
+				}
 			}
 			if err := json.Unmarshal(envelope["message_text"], &e.Message); err != nil || e.Message != letter {
 				t.Fatalf("whole letter frozen at loss: len=%d %v", len(e.Message), err)

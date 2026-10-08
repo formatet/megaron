@@ -100,3 +100,23 @@ Nya Firefox-bilder med produktionsformatterare och de nya verkliga payloads, des
 - [Rescue mobil](day-wording-firefox/firefox-mobile-rescue.png)
 
 Loss-top visar det verkliga korta brevkuvertet med dagetiketten och hela panelen; riggen provar också fulla trade/order-kuvert och sparar lång orderns loss-bottom. Tidigare browser6-bilder bevaras som den föregående överlämningens historik; dessa är rättningens aktuella Firefox-bilder. BILD-beslutet före merge tillhör fortfarande Timothy/Claude. Ingen merge/push/deploy från Codex.
+
+
+## BILD-rättning: personer först och mänskliga namn
+
+Timothys senaste dom är införd på samma gren. Förlustens kuvert och rubrik säger **"From you, at Mycenae, to Wanax Oledoledoff at Tiryns"** / **"Your runner from you, at Mycenae, to Wanax Oledoledoff at Tiryns …"**. Order till egen enhet säger **"to your Bronze Guard at (9, 4)"**. Keryx och Codex använder samma identiteter och ordval. Räddningsrapporten säger **"ashore at Tiryns; ashore at Mycenae"**.
+
+`carrier` läser mottagarens `players.wanax_name` i samma utfalls-TX och fryser det som `envelope.destination.wanax_name`; aldrig login eller UUID som namnersättning. För order fryser den dessutom destinationens unit-namn (namn, annars typ), egenhetsflagga och kuvertets ursprungliga målkoordinater. Saknas ett offentligt Wanax-namn säger formatteraren "an unknown Wanax", utan att hitta på eller slå upp ett kontonamn senare. Befintliga stads-/hamnnamn förblir frysta i sina vittnesmål. Inga fysiska utfall, timers, G1-kanter eller migrationer ändras i detta komplement.
+
+Fixturerna har riktiga DB-värden **Mycenae/Tiryns**, **Atreus/Oledoledoff** och **Bronze Guard/Sacred Dolphin** före utfallet. Wanax-namnen skiljer sig uttryckligen från de slumpade privata inloggningsnamnen. JSON exporteras från de riktiga arkiverade notiserna; ingen UUID-maskering eller efterhandsändring av bildpayload. DB-proven ändrar mottagarens offentliga namn, stadsnamn och orderunitens namn EFTER förlusten och kontrollerar att kuvertet behåller de gamla mänskliga namnen. Rescue återger actual-port-namnen.
+
+Verifierat: full fresh Go **24 testpaket** exit 0 (`person-names-full-go.log`), full vet exit 0 (`person-names-vet.log`), **454 JS** utan skips (`person-names-js.log`), Temenos/Keryx build (`person-names-build.log`). Extra faktisk mutation byter `recipient.wanax_name` mot `recipient.username`: namngivet rött `TestCarrierFate_StormTransportLosesPassenger`, inte build-fel/timeout (`person-names-login-mutation.log`). Källan återställd byte för byte; fresh messenger/Keryx riktade prov gröna (`person-names-restored.log`). `git diff --check` och Python-kompilering gröna. Fixturproduktion: `person-names-fixtures.log`.
+
+Aktuella fyra Firefox-bilder, desktop 1280×900 och mobil 390×844, båda PASS (`person-names-firefox.log`/`person-names-firefox/results.json`), visuellt granskade på faktisk skärmbild med mänskliga namn och hela panelrubriken:
+
+- [Loss-top desktop](person-names-firefox/firefox-desktop-loss-top.png)
+- [Loss-top mobil](person-names-firefox/firefox-mobile-loss-top.png)
+- [Rescue desktop](person-names-firefox/firefox-desktop-rescue.png)
+- [Rescue mobil](person-names-firefox/firefox-mobile-rescue.png)
+
+Riggen nollställer sin föregående långa kuvertvy och inväntar Firefox-layout före rescue-bilden; inga produktions-CSS-/scrollregler ändrades för bilden. Hela brev/trade/order-innehållet och dagetiketterna provas fortfarande. Dessa är namnrättningens aktuella bilder; äldre UUID-bilder kvarstår enbart som tidigare bevisversioner. BILD-dom före merge tillhör Timothy/Claude. Ingen merge/push/deploy från Codex; STOPP efter hash.

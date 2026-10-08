@@ -357,8 +357,7 @@ export function notifText(kind, body) {
     }
     case 'MessengerLostAtSea': {
       const e = body.envelope || {};
-      const from = e.origin?.name || 'its origin';
-      const to = e.destination?.name || 'its target';
+      const { from, to } = messengerEnvelopeParties(e);
       return `Your runner from ${esc(from)} to ${esc(to)} was lost at sea` + (body.reason === 'storm' ? ' in a storm.' : ' with no surviving rescue ship.');
     }
     case 'MessengerRescuedAtSea': {
@@ -869,12 +868,23 @@ export function colonyFoundedGrainLine(body) {
 // letter/order later or truncate its contents to the chip's summary.
 export function messengerEnvelopeText(body) {
   const e = body.envelope || {};
-  const endpoint = p => p?.name || (p?.q != null && p?.r != null ? `(${p.q},${p.r})` : 'unknown');
+  const { from, to } = messengerEnvelopeParties(e);
   const sent = Number.isInteger(e.sent_tick) ? `Sent on day ${e.sent_tick}` : 'Sent on an unknown day';
-  const lines = [sent, `From: ${endpoint(e.origin)}`, `To: ${endpoint(e.destination)}`];
+  const lines = [sent, `From ${from} to ${to}`];
   if (e.message_text != null) lines.push(`Letter:\n${e.message_text}`);
   if (e.reply_text != null) lines.push(`Reply:\n${e.reply_text}`);
   if (e.trade_offer != null) lines.push(`Trade offer:\n${JSON.stringify(e.trade_offer, null, 2)}`);
   if (e.order_payload != null) lines.push(`Order:\n${JSON.stringify(e.order_payload, null, 2)}`);
   return lines.join('\n\n');
+}
+
+// Person first: these are sealed, frozen identities, never account logins.
+export function messengerEnvelopeParties(e) {
+  const from = 'you' + (e.origin?.name ? `, at ${e.origin.name},` : '');
+  const d = e.destination || {};
+  if (e.kind === 'order' && d.own_unit) {
+    const place = d.q != null && d.r != null ? ` at (${d.q}, ${d.r})` : '';
+    return { from, to: `your ${d.unit_name || 'unit'}${place}` };
+  }
+  return { from, to: (d.wanax_name ? `Wanax ${d.wanax_name}` : 'an unknown Wanax') + (d.name ? ` at ${d.name}` : '') };
 }

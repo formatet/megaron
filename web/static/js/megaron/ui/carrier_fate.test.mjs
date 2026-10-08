@@ -53,3 +53,25 @@ test('T2: missing legacy departure day is explicit, never UTC or a guessed day',
   assert.ok(!messengerEnvelopeText(body).includes(body.envelope.sent_at));
   assert.match(messengerEnvelopeText({ envelope: { sent_tick: 0 } }), /Sent on day 0/);
 });
+
+test('T2: frozen public persons come first in sealed envelope and headline', () => {
+  const expected = 'you, at Mycenae, to Wanax Oledoledoff at Tiryns';
+  assert.ok(messengerEnvelopeText(loss).includes('From ' + expected));
+  assert.ok(notifText('MessengerLostAtSea', loss).includes('Your runner from ' + expected));
+  for (const text of [messengerEnvelopeText(loss), notifText('MessengerLostAtSea', loss), notifText('MessengerRescuedAtSea', rescue)]) {
+    assert.doesNotMatch(text, /Passage-|private-login-|Changed After Loss|Renamed After Loss|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}/i);
+  }
+});
+test('T2: order recipient is your named unit at the original coordinates', () => {
+  const body = JSON.parse(readFileSync(new URL('./testdata/messenger_lost_order.json', import.meta.url)));
+  for (const text of [messengerEnvelopeText(body), notifText('MessengerLostAtSea', body)]) {
+    assert.ok(text.includes('you, at Mycenae, to your Bronze Guard at (9, 4)'));
+    assert.doesNotMatch(text, /Changed Guard|Wanax Atreus|to Wanax/);
+  }
+});
+test('T2: missing public recipient stays unknown without guessing a login or UUID', () => {
+  const body = {envelope:{origin:{name:'Mycenae'},destination:{name:'Tiryns',username:'private-login',id:'00000000-0000-0000-0000-000000000009'}}};
+  const text = messengerEnvelopeText(body);
+  assert.match(text, /From you, at Mycenae, to an unknown Wanax at Tiryns/);
+  assert.doesNotMatch(text, /private-login|00000000/);
+});

@@ -1,0 +1,7 @@
+» färsk DB på migration 162 · commit a4a9ce45+ändringar
+2026/10/09 00:08:51 INFO passage: messenger boarded messenger=07e69e36-d3c7-4d52-b3c3-34e9e4e43fee carrier=Test-galley arrives_at=2026-10-09T02:08:51.196+02:00
+--- FAIL: TestCarrierFate_StormTransportLosesPassenger (0.04s)
+    carrier_fate_test.go:159: freeze public person and city identities, not login/live names: {"tick": 500, "reason": "storm", "envelope": {"id": "07e69e36-d3c7-4d52-b3c3-34e9e4e43fee", "kind": "diplomatic", "origin": {"q": 0, "r": 0, "id": "191919e1-1a3d-4a1d-a9cd-1ae365aae71e", "name": "Mycenae"}, "sent_at": "2026-10-08T22:08:51.198562+00:00", "sender_id": "7e60dafd-e3b3-4690-9f9b-15ba32e0b557", "sent_tick": 500, "reply_text": null, "destination": {"q": 5, "r": 0, "id": "3e4ec374-3313-409e-8ffb-f13654f18d26", "name": "Tiryns", "own_unit": false, "unit_name": null, "wanax_name": "private-login-26c5dd1c-a26f-40c2-baca-a41020c39185"}, "origin_name": "Mycenae", "trade_offer": null, "message_text": "hello", "order_payload": null, "destination_name": "Tiryns"}, "messenger_id": "07e69e36-d3c7-4d52-b3c3-34e9e4e43fee", "sender_wanax_id": "7e60dafd-e3b3-4690-9f9b-15ba32e0b557"}
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.042s
+FAIL

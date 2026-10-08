@@ -10,10 +10,14 @@ func printMessengerFateLine(n notificationItem) {
 		Reason   string `json:"reason"`
 		HomeTick *int   `json:"home_tick"`
 		Envelope struct {
-			SentTick            *int `json:"sent_tick"`
+			Kind                string `json:"kind"`
+			SentTick            *int   `json:"sent_tick"`
 			Origin, Destination struct {
-				Name string `json:"name"`
-				Q, R *int
+				Name      string `json:"name"`
+				WanaxName string `json:"wanax_name"`
+				UnitName  string `json:"unit_name"`
+				OwnUnit   bool   `json:"own_unit"`
+				Q, R      *int
 			}
 			Message string          `json:"message_text"`
 			Reply   *string         `json:"reply_text"`
@@ -44,20 +48,33 @@ func printMessengerFateLine(n notificationItem) {
 		}
 		return
 	}
-	endpoint := func(name string, q, r *int) string {
-		if name != "" {
-			return name
+	from := "you"
+	if b.Envelope.Origin.Name != "" {
+		from += ", at " + b.Envelope.Origin.Name + ","
+	}
+	d := b.Envelope.Destination
+	to := "an unknown Wanax"
+	if d.WanaxName != "" {
+		to = "Wanax " + d.WanaxName
+	}
+	if d.Name != "" {
+		to += " at " + d.Name
+	}
+	if b.Envelope.Kind == "order" && d.OwnUnit {
+		name := d.UnitName
+		if name == "" {
+			name = "unit"
 		}
-		if q != nil && r != nil {
-			return fmt.Sprintf("(%d,%d)", *q, *r)
+		to = "your " + name
+		if d.Q != nil && d.R != nil {
+			to += fmt.Sprintf(" at (%d, %d)", *d.Q, *d.R)
 		}
-		return "unknown"
 	}
 	sent := "Sent on an unknown day"
 	if b.Envelope.SentTick != nil {
 		sent = fmt.Sprintf("Sent on day %d", *b.Envelope.SentTick)
 	}
-	fmt.Printf("    Your runner was lost at sea. %s. From: %s. To: %s.\n", sent, endpoint(b.Envelope.Origin.Name, b.Envelope.Origin.Q, b.Envelope.Origin.R), endpoint(b.Envelope.Destination.Name, b.Envelope.Destination.Q, b.Envelope.Destination.R))
+	fmt.Printf("    Your runner from %s to %s was lost at sea. %s.\n", from, to, sent)
 	fmt.Printf("    Letter:\n%s\n", b.Envelope.Message)
 	if b.Envelope.Reply != nil {
 		fmt.Printf("    Reply:\n%s\n", *b.Envelope.Reply)

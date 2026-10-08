@@ -53,7 +53,11 @@ try:
       expect(page.locator('#dispatch-window-overlay')).to_be_visible()
       text=page.locator('.dw-envelope').inner_text()
       assert body['envelope']['message_text'] in text
-      for key in ['origin','destination']:assert body['envelope'][key]['name'] in text
+      assert 'From you, at Mycenae, to ' in text
+      target = 'your Bronze Guard at (9, 4)' if label=='order' else 'Wanax Oledoledoff at Tiryns'
+      assert target in text
+      assert target in page.locator('.dw-text').inner_text()
+      assert not any(word in page.locator('.dw-text').inner_text() for word in ['Passage-','private-login-','Changed Guard'])
       assert f"Sent on day {body['envelope']['sent_tick']}" in text
       assert body['envelope']['sent_at'] not in text
       for key in ['trade_offer','order_payload']:
@@ -73,9 +77,16 @@ try:
        expect(page.locator('#dw-mute-chk')).to_be_visible()
        page.screenshot(path=str(a.output_dir/f'{engine}-{mode}-loss-bottom.png'))
       page.evaluate('t2dispatch.closeDispatchWindow()')
-     page.evaluate('(body)=>t2dispatch.openDispatchWindow("MessengerRescuedAtSea",body,"")',payloads['rescue'])
+     page.evaluate('''(body)=>{t2dispatch.openDispatchWindow("MessengerRescuedAtSea",body,"");document.getElementById('dispatch-window-overlay').scrollTop=0;document.getElementById('dw-body').scrollTop=0;window.scrollTo(0,0)}''',payloads['rescue'])
      expect(page.locator('.dw-text')).to_contain_text(f"Home on day {payloads['rescue']['home_tick']}.")
      expect(page.locator('.dw-text')).to_contain_text('Sacred Dolphin')
+     expect(page.locator('.dw-text')).to_contain_text('ashore at Tiryns')
+     expect(page.locator('.dw-text')).to_contain_text('ashore at Mycenae')
+     assert 'Passage-' not in page.locator('.dw-text').inner_text()
+     page.wait_for_timeout(150)
+     page.evaluate("document.getElementById('dispatch-window-overlay').scrollTop=0;document.getElementById('dw-body').scrollTop=0;window.scrollTo(0,0)")
+     page.wait_for_timeout(50)
+     assert page.locator('#dispatch-window-overlay .dw-header').bounding_box()['y']>=0
      page.screenshot(path=str(a.output_dir/f'{engine}-{mode}-rescue.png'))
      page.locator('#dw-codex-btn').click()
      expect(page.locator('#codex-panel')).to_be_visible()

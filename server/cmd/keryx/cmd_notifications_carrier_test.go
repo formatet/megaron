@@ -12,7 +12,7 @@ func TestMessengerFate_ActualArchivedPayloads(t *testing.T) {
 	for _, tc := range []struct {
 		kind, file string
 		terms      []string
-	}{{"MessengerLostAtSea", "messenger_lost_trade.json", []string{"bronze", "145.7", "Sent on day", "From:", "To:"}}, {"MessengerLostAtSea", "messenger_lost_order.json", []string{"march", "hold_to_last_man", "Sent on day", "From:", "To:"}}, {"MessengerLostAtSea", "messenger_lost_at_sea.json", []string{"Your runner was lost", "Sent on day", "From:", "To:", "hello"}}, {"MessengerRescuedAtSea", "messenger_rescued_at_sea.json", []string{"Home on day", "Sacred Dolphin", "Ashore at"}}} {
+	}{{"MessengerLostAtSea", "messenger_lost_trade.json", []string{"bronze", "145.7", "Sent on day", "from you, at Mycenae, to Wanax Oledoledoff at Tiryns"}}, {"MessengerLostAtSea", "messenger_lost_order.json", []string{"march", "hold_to_last_man", "Sent on day", "from you, at Mycenae, to your Bronze Guard at (9, 4)"}}, {"MessengerLostAtSea", "messenger_lost_at_sea.json", []string{"Your runner from you, at Mycenae, to Wanax Oledoledoff at Tiryns was lost", "Sent on day", "hello"}}, {"MessengerRescuedAtSea", "messenger_rescued_at_sea.json", []string{"Home on day", "Sacred Dolphin", "Ashore at Tiryns", "Ashore at Mycenae"}}} {
 		raw, err := os.ReadFile(filepath.Join("..", "..", "..", "web", "static", "js", "megaron", "ui", "testdata", tc.file))
 		if err != nil {
 			t.Fatal(err)
