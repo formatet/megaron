@@ -255,3 +255,16 @@ Economy, health/kvitton och ingen SQL-mutation sparas. `baseline` och fjärde
 argumentet arkiverad oförändrad web-katalog gör samma handlingar före ändringen.
 `python3 tools/production_mutations.py OUT` bryter stängd More, coverage-källa
 och reservtröskel; kräver namngiven röd assertion och återställt grönt per arm.
+
+## Spelartext och inline-dialoger (K, BILD)
+
+`python3 tools/text_live.py OUT EXPECTED_COMMIT after` kör ny PG16/Redis, rena
+servervariabler och vanliga register/join/founding. OUT ska ha byggd `temenos`
+med `-ldflags '-X main.buildCommit=<hash>'`. Sex drawers desktop/390, sex
+brief-help till exakt Codexartikel, Locked-tooltip/help och verkliga cancel404/
+rite400 visas inline; inga browserdialoger/fel. Historiska Sitos-grupper är
+uttryckligen syntetisk API-replay, och Abandon-bilden är en syntetisk
+DOM-fixtur med samma produktionshelper, ingen stad/DB/abandonorder fabriceras.
+`baseline` + fjärde argument arkiverad web-katalog tar oförändrade förebilder.
+`python3 tools/text_mutations.py OUT` kräver namngivet rött→återställt grönt
+för rå grupptext, tempo, Abandon före bekräftelse och ritesvar före refresh.
