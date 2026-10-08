@@ -104,7 +104,7 @@ try:
         tiles=api(worldpath+'/map',token=token)
         tiles=tiles if isinstance(tiles,list) else tiles['tiles']
         candidates=[t for t in tiles if t.get('terrain') not in ('fog','river','river_ford','deep_sea','coastal_sea','mountain_limestone','mountain_red') and t.get('q') is not None and (t['q'],t['r']) not in visited]
-        candidates.sort(key=lambda t:(dist((t['q'],t['r']),home)>=5,-dist((t['q'],t['r']),position),dist((t['q'],t['r']),home)),reverse=True)
+        candidates.sort(key=lambda t:(dist((t['q'],t['r']),home)>=5,dist((t['q'],t['r']),home),-dist((t['q'],t['r']),position)),reverse=True)
         dispatched=False
         for t in candidates:
             target=(t['q'],t['r']);colonize=dist(target,home)>=5
@@ -153,7 +153,7 @@ try:
     receipt=response.value;assert receipt.status==201,(receipt.status,receipt.text());order=receipt.json()
     expected={'from_settlement_id':city['settlement_id'],'to_settlement_id':colony['settlement_id'],'crewed_by_settlement_id':colony['settlement_id'],'outbound':[{'good_key':'grain','threshold':200},{'good_key':'fish','threshold':50}],'return':[{'good_key':'silver','floor':0},{'good_key':'stone','floor':20}]}
     assert posts[-1]['body']==expected,(posts[-1],expected)
-    page.locator('#economy-body [data-tab=transfer]').click();page.wait_for_selector('#ec-tr-good option[value=grain]')
+    page.locator('#economy-body [data-tab=transfer]').click();page.wait_for_selector('#ec-tr-good option[value=grain]',state='attached')
     page.locator('#ec-tr-from').select_option(city['id']);page.locator('#ec-tr-to').select_option(colony['settlement_id']);page.locator('#ec-tr-good').select_option('grain');page.locator('#ec-tr-qty').fill('1')
     with page.expect_response(lambda r:r.request.method=='POST' and r.url.endswith('/trade')) as response:
         page.get_by_role('button',name='Transfer →',exact=True).click()

@@ -368,7 +368,7 @@ export async function loadTransferGoods(fromProvId) {
   if (!r.ok) { sel.innerHTML = '<option value="">Could not load goods</option>'; return; }
   const goods = ((await r.json()) || []).filter(g => (g.amount || 0) > 0);
   sel.innerHTML = goods.length
-    ? goods.map(g => `<option value="${g.key}">${esc(g.name || g.key)} — ${Math.floor(g.amount || 0)} in stock</option>`).join('')
+    ? goods.map(g => `<option value="${g.key}">${esc(g.name || g.key)} — ${numberWords(Math.floor(g.amount || 0))} in stock</option>`).join('')
     : '<option value="">No goods in stock</option>';
 }
 
@@ -393,8 +393,8 @@ export async function startTransfer() {
     // the ship on a naval transfer — it's now bound to this round trip and
     // isn't free again until it sails home empty afterward.
     resultEl.textContent = d.ship_name
-      ? `${qty} ${good} sent aboard ${d.ship_name} — carried, can be intercepted en route, and sails home empty afterward.`
-      : `${qty} ${good} sent — physical cargo, can be intercepted en route.`;
+      ? `${numberWords(qty)} ${good} sent aboard ${d.ship_name} — carried, can be intercepted en route, and sails home empty afterward.`
+      : `${numberWords(qty)} ${good} sent — physical cargo, can be intercepted en route.`;
     if (Number.isInteger(d.arrival_tick)) {
       resultEl.textContent += ` Arrives on game day ${numberWords(d.arrival_tick)} (journey: ${numberWords(d.travel_ticks)} game days).`;
     }
@@ -422,10 +422,51 @@ export function parseGoodAmountPairs(spec) {
   }).filter(p => p.good_key && !isNaN(p.amount));
 }
 
+// Internal routes use the full inventory, including zero stocks, silver and
+// parked goods. The trade-offer catalogue deliberately excludes those goods.
+function standingGoodRowHTML(goods, group) {
+  const options = '<option value="">Choose a good</option>' + goods.map(g =>
+    `<option value="${esc(g.key)}">${esc(g.name || g.key)}</option>`).join('');
+  return `<div class="unit-row field" data-good-row>
+    <label class="obj-info">Good <select aria-label="Good">${options}</select></label>
+    <label class="obj-info">${group === 'out' ? 'Keep at least' : 'Leave at least'}
+      <input type="number" min="0" step="any" aria-label="Amount">
+    </label>
+    <button class="btn-small" type="button" data-remove-good>Remove</button>
+  </div>`;
+}
+
+function bindStandingGoodsRows(group, goods) {
+  const el = document.getElementById('ec-so-' + group);
+  const add = () => el.insertAdjacentHTML('beforeend', standingGoodRowHTML(goods, group));
+  add();
+  document.getElementById('ec-so-' + group + '-add').addEventListener('click', add);
+  el.addEventListener('click', event => {
+    event.target.closest('[data-remove-good]')?.closest('[data-good-row]')?.remove();
+  });
+}
+
+function readStandingGoodsRows(group) {
+  return [...(document.getElementById('ec-so-' + group)?.querySelectorAll('[data-good-row]') || [])]
+    .map(row => ({ good_key: row.querySelector('select').value.trim(), amount: parseFloat(row.querySelector('input').value) }))
+    .filter(p => p.good_key && !isNaN(p.amount));
+}
+
 async function loadEconomyAutomation(mySettlements) {
   const el = document.getElementById('ectab-automation');
   if (mySettlements.length < 2) {
     el.innerHTML = '<p class="empty-state" style="padding:1rem">Need at least two of your own settlements for a standing order.</p>';
+    return;
+  }
+  el.innerHTML = '<p class="loading">Loading goods…</p>';
+  let goods;
+  try {
+    const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${mySettlements[0].id}/goods`);
+    if (!r.ok) throw new Error('inventory unavailable');
+    goods = ((await r.json()) || []).filter(g => g.key !== 'cult');
+    if (!goods.length) throw new Error('empty inventory');
+  } catch (_) {
+    el.innerHTML = '<p class="empty-state">Could not load goods. Open Automation again to retry.</p>';
     return;
   }
   const inputStyle = 'width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem';
@@ -442,12 +483,14 @@ async function loadEconomyAutomation(mySettlements) {
             <option value="to">To (destination)</option>
           </select>
         </label>
-        <label>Keep at destination — good:threshold, comma-separated
-          <input id="ec-so-out" placeholder="grain:200,fish:50" style="${inputStyle}">
-        </label>
-        <label>Bring home — good:floor, comma-separated (optional)
-          <input id="ec-so-home" placeholder="silver:0,stone:20" style="${inputStyle}">
-        </label>
+        <div>Keep at destination
+          <div id="ec-so-out"></div>
+          <button id="ec-so-out-add" class="btn-small" type="button">Add a good</button>
+        </div>
+        <div>Bring home (optional) — leave this much at the destination
+          <div id="ec-so-home"></div>
+          <button id="ec-so-home-add" class="btn-small" type="button">Add a good</button>
+        </div>
         <button class="btn-primary btn-small" onclick="createStandingOrder()">Create route</button>
         <div id="ec-so-result" class="action-result"></div>
       </div>
@@ -458,6 +501,8 @@ async function loadEconomyAutomation(mySettlements) {
     </div>`;
   const toSel = document.getElementById('ec-so-to');
   if (toSel && mySettlements.length > 1) toSel.selectedIndex = 1;
+  bindStandingGoodsRows('out', goods);
+  bindStandingGoodsRows('home', goods);
   refreshStandingOrders();
 }
 
@@ -506,14 +551,12 @@ export async function createStandingOrder() {
   const from = document.getElementById('ec-so-from')?.value;
   const to = document.getElementById('ec-so-to')?.value;
   const crew = document.getElementById('ec-so-crew')?.value;
-  const outSpec = document.getElementById('ec-so-out')?.value || '';
-  const homeSpec = document.getElementById('ec-so-home')?.value || '';
   const resultEl = document.getElementById('ec-so-result');
   if (!resultEl) return;
   if (!from || !to || from === to) { resultEl.style.color = 'var(--accent)'; resultEl.textContent = 'Pick two different settlements.'; return; }
-  const outbound = parseGoodAmountPairs(outSpec).map(p => ({ good_key: p.good_key, threshold: p.amount }));
-  if (!outbound.length) { resultEl.style.color = 'var(--accent)'; resultEl.textContent = 'Name at least one good:threshold to keep topped up.'; return; }
-  const ret = parseGoodAmountPairs(homeSpec).map(p => ({ good_key: p.good_key, floor: p.amount }));
+  const outbound = readStandingGoodsRows('out').map(p => ({ good_key: p.good_key, threshold: p.amount }));
+  if (!outbound.length) { resultEl.style.color = 'var(--accent)'; resultEl.textContent = 'Choose at least one good and the stock to keep at the destination.'; return; }
+  const ret = readStandingGoodsRows('home').map(p => ({ good_key: p.good_key, floor: p.amount }));
   const crewedBy = crew === 'to' ? to : from;
   resultEl.textContent = '';
   const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/standing-orders`, {

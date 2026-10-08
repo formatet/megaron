@@ -6,7 +6,7 @@ ROOT=Path(__file__).resolve().parents[1]
 p=ROOT/'web/static/js/megaron/ui/drawers/economy.js';original=p.read_text()
 cases=[
  ('outbound','readStandingGoodsRows(\'out\')',"readStandingGoodsRows('home')",'N: actual POST preserves'),
- ('zero','!isNaN(p.amount)', '!isNaN(p.amount) && p.amount !== 0','N: actual POST preserves'),
+ ('zero',"readStandingGoodsRows('home').map", "readStandingGoodsRows('home').filter(p => p.amount !== 0).map",'N: actual POST preserves'),
  ('crew',"const crewedBy = crew === 'to' ? to : from;",'const crewedBy = from;','N: actual POST preserves'),
  ('return',"floor: p.amount",'floor: p.amount + 1','N: actual POST preserves'),
 ]

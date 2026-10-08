@@ -2,8 +2,8 @@ A **standing order** is a caravan route that runs by itself. For a game that run
 
 Under **New standing order**, set *From*, *To*, and which end supplies the caravan's crew. Then:
 
-- **Keep at destination** — for example `grain:200,fish:50`. The caravan keeps those goods topped up to that level at the destination.
-- **Bring home** — for example `stone:20`. On the way back it brings home anything above that floor.
+- **Keep at destination** — choose a good and the stock to keep there, for example two hundred grain and fifty fish. Use **Add a good** for another row and **Remove** to drop a row. The caravan keeps those goods topped up to that level at the destination.
+- **Bring home** — choose a good and the stock to leave at the destination, for example twenty stone. Zero means bring home everything available. Leave the rows empty for no return cargo. On the way back it brings home anything above that floor.
 
 Press **Create route**. Existing routes are listed below with **Pause**, **Resume** and **Delete**. A route pauses itself when it cannot run — when there is no surplus to send, or no spare citizen to crew the caravan — and the list says why. You are told each time a route sends a caravan, and when it pauses.
 

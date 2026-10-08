@@ -7,10 +7,10 @@ import * as economy from './economy.js';
 async function rig(run) {
   const saved={document:globalThis.document,fetch:globalThis.fetch,localStorage:globalThis.localStorage};
   const nodes=new Map(),calls=[];
-  function node(id){if(!nodes.has(id))nodes.set(id,{id,value:'',innerHTML:'',textContent:'',style:{},classList:{add(){},remove(){}},dataset:{},rows:[],querySelectorAll(){return this.rows;},addEventListener(_,fn){this.listener=fn;}});return nodes.get(id);}
+  function node(id){if(!nodes.has(id))nodes.set(id,{id,value:'',innerHTML:'',textContent:'',insertAdjacentHTML(_position,html){this.innerHTML+=html;},style:{},classList:{add(){},remove(){}},dataset:{},rows:[],querySelectorAll(){return this.rows;},addEventListener(_,fn){this.listener=fn;}});return nodes.get(id);}
   const body=node('economy-body');
   body.querySelectorAll=sel=>sel==='.dtab'?['goods','transfer','automation','wants'].map(name=>{const t=node('tab-'+name);t.dataset.tab=name;return t;}):[];
-  globalThis.document={getElementById:id=>id==='net-status'||id==='ec-so-out'||id==='ec-so-home'?id==='net-status'?null:node(id):node(id)};
+  globalThis.document={getElementById:id=>id==='net-status'?null:node(id)};
   globalThis.localStorage={getItem:()=>null};
   State.WORLD_ID='world';State.provinceData=[{id:'province-a',settlement_id:'city-a',own:true,name:'Nostos'},{id:'province-b',settlement_id:'city-b',own:true,name:'Kyme'}];
   globalThis.fetch=async(url,opts={})=>{calls.push({url,opts});return new Response(JSON.stringify(url.endsWith('/goods')?[{key:'grain',name:'Grain',amount:0},{key:'silver',name:'Silver',amount:0},{key:'horses',name:'Horses',amount:0}]:[]),{status:opts.method==='POST'?201:200});};
@@ -41,6 +41,7 @@ test('N: drawer keeps four tabs and crew choices, replaces both CSV inputs with 
   const html=node('ectab-automation').innerHTML;
   assert.match(html,/Crewed by \(which end supplies the gubbe\)/);assert.match(html,/value="from"/);assert.match(html,/value="to"/);
   assert.doesNotMatch(html,/comma-separated|grain:200|silver:0/);
+  assert.match(node('ec-so-out').innerHTML,/value="silver"/);assert.match(node('ec-so-out').innerHTML,/value="horses"/);
   assert.match(html,/ec-so-out-add/);assert.match(html,/ec-so-home-add/);
   assert.ok(calls.some(c=>c.url.endsWith('/provinces/province-a/goods')),'own inventory catalogue');
   assert.ok(!calls.some(c=>c.url==='/api/v1/goods'),'offer catalogue would lose silver and parked goods');
@@ -50,4 +51,16 @@ test('N: same-city and missing-outbound rows still cannot dispatch',()=>rig(asyn
   rows('out',[]);rows('home',[['silver','0']]);await economy.createStandingOrder();
   node('ec-so-to').value='city-a';rows('out',[['grain','200']]);await economy.createStandingOrder();
   assert.equal(calls.filter(c=>c.opts.method==='POST').length,0);
+}));
+
+
+test('N: failed goods fetch sends no form, reopening Automation retries full inventory',()=>rig(async({node})=>{
+  await economy.loadEconomyDrawer();
+  const fetch=globalThis.fetch;globalThis.fetch=async()=>new Response('{}',{status:400});
+  await node('tab-automation').listener.call(node('tab-automation'));
+  for(let i=0;i<10;i++)await new Promise(resolve=>setImmediate(resolve));
+  assert.match(node('ectab-automation').innerHTML,/Could not load goods/);assert.doesNotMatch(node('ectab-automation').innerHTML,/Create route/);
+  globalThis.fetch=fetch;await node('tab-automation').listener.call(node('tab-automation'));
+  for(let i=0;i<10;i++)await new Promise(resolve=>setImmediate(resolve));
+  assert.match(node('ectab-automation').innerHTML,/Create route/);assert.match(node('ec-so-home').innerHTML,/value="silver"/);
 }));
