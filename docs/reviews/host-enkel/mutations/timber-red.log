@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: Q actual Host: only site assessment is primary and all existing detail stays in one closed Details
+not ok 1 - Q actual Host: only site assessment is primary and all existing detail stays in one closed Details
+  ---
+  duration_ms: 22.743582
+  type: 'test'
+  location: '/home/tk/wt/codex-host-enkel/web/static/js/megaron/render/host_simple.test.mjs:44:1'
+  failureType: 'testCodeFailure'
+  error: 'positive timber potential gives Timber yes'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: '<div class="inspect-row"><span class="ir-label">Feeds itself:</span><span> no</span></div><div class="inspect-row"><span class="ir-label">Timber:</span><span> no</span></div><div class="inspect-row"><span class="ir-label">Stone:</span><span> no</span></div>'
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-host-enkel/web/static/js/megaron/render/host_simple.test.mjs:50:9)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: Q actual Host: unrounded net and raw goods, not carried stocks or a new food formula, decide yes/no
+ok 2 - Q actual Host: unrounded net and raw goods, not carried stocks or a new food formula, decide yes/no
+  ---
+  duration_ms: 3.104777
+  type: 'test'
+  ...
+# Subtest: Q actual Host: produces restores on another hex and late forecast cannot overwrite that panel
+ok 3 - Q actual Host: produces restores on another hex and late forecast cannot overwrite that panel
+  ---
+  duration_ms: 1.556954
+  type: 'test'
+  ...
+# Subtest: Q actual Host: archived real colonize-preview with timber 8 must show Timber yes
+not ok 4 - Q actual Host: archived real colonize-preview with timber 8 must show Timber yes
+  ---
+  duration_ms: 1.356607
+  type: 'test'
+  location: '/home/tk/wt/codex-host-enkel/web/static/js/megaron/render/host_simple.test.mjs:79:1'
+  failureType: 'testCodeFailure'
+  error: 'real forecast timber must show Timber yes'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: '<div class="inspect-row"><span class="ir-label">Feeds itself:</span><span> yes</span></div><div class="inspect-row"><span class="ir-label">Timber:</span><span> no</span></div><div class="inspect-row"><span class="ir-label">Stone:</span><span> yes</span></div>'
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-host-enkel/web/static/js/megaron/render/host_simple.test.mjs:85:9)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 2
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 82.571253

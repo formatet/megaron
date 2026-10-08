@@ -1,0 +1,159 @@
+{
+  "source": "docs/reviews/host-enkel/live-after2/proof.json at 8c38e01f",
+  "health": {
+    "commit": "538ce8cbcaa0b9710030cfdf285aa832cfdef1ca",
+    "migration": 160,
+    "status": "ok"
+  },
+  "forecast": {
+    "catchment": [
+      {
+        "q": 7,
+        "r": 24,
+        "known": true,
+        "terrain": "hills",
+        "copper_deposit": true
+      },
+      {
+        "q": 7,
+        "r": 25,
+        "known": true,
+        "terrain": "forest_olive_grove",
+        "coastal": true
+      },
+      {
+        "q": 7,
+        "r": 26,
+        "known": true,
+        "terrain": "coastal_sea"
+      },
+      {
+        "q": 8,
+        "r": 23,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 8,
+        "r": 24,
+        "known": true,
+        "terrain": "forest_olive_grove",
+        "coastal": true
+      },
+      {
+        "q": 8,
+        "r": 25,
+        "known": true,
+        "terrain": "coastal_sea"
+      },
+      {
+        "q": 8,
+        "r": 26,
+        "known": true,
+        "terrain": "coastal_sea"
+      },
+      {
+        "q": 9,
+        "r": 22,
+        "known": false
+      },
+      {
+        "q": 9,
+        "r": 23,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 9,
+        "r": 24,
+        "known": true,
+        "terrain": "plains",
+        "coastal": true
+      },
+      {
+        "q": 9,
+        "r": 25,
+        "known": true,
+        "terrain": "plains",
+        "coastal": true
+      },
+      {
+        "q": 9,
+        "r": 26,
+        "known": true,
+        "terrain": "coastal_sea"
+      },
+      {
+        "q": 10,
+        "r": 22,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 10,
+        "r": 23,
+        "known": true,
+        "terrain": "plains"
+      },
+      {
+        "q": 10,
+        "r": 24,
+        "known": true,
+        "terrain": "forest_olive_grove",
+        "coastal": true
+      },
+      {
+        "q": 10,
+        "r": 25,
+        "known": true,
+        "terrain": "coastal_sea"
+      },
+      {
+        "q": 11,
+        "r": 22,
+        "known": true,
+        "terrain": "hills",
+        "silver_deposit": true
+      },
+      {
+        "q": 11,
+        "r": 23,
+        "known": true,
+        "terrain": "forest_olive_grove",
+        "coastal": true
+      },
+      {
+        "q": 11,
+        "r": 24,
+        "known": true,
+        "terrain": "forest_olive_grove",
+        "coastal": true
+      }
+    ],
+    "founding_gifts": [
+      {
+        "detail": "an inland site whose catchment bears grain, so the city is founded with a farm already standing",
+        "key": "demeter_farm",
+        "label": "Demeter's farm"
+      }
+    ],
+    "goods": {
+      "copper": 0.9999999999999999,
+      "fish": 10,
+      "grain": 8.666666666666666,
+      "livestock": 2,
+      "oil": 20.666666666666664,
+      "stone": 9,
+      "timber": 8,
+      "wine": 5.999999999999999
+    },
+    "grain": {
+      "base_per_tick": 5.6,
+      "est_net_per_tick": 0.5999999999999996,
+      "seed": 1200,
+      "ticks_until_empty": null,
+      "with_farm_per_tick": 5.6
+    },
+    "unknown_hexes": 1
+  }
+}

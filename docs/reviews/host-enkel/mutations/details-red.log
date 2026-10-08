@@ -1,0 +1,59 @@
+TAP version 13
+# Subtest: Q actual Host: only site assessment is primary and all existing detail stays in one closed Details
+not ok 1 - Q actual Host: only site assessment is primary and all existing detail stays in one closed Details
+  ---
+  duration_ms: 22.954918
+  type: 'test'
+  location: '/home/tk/wt/codex-host-enkel/web/static/js/megaron/render/host_simple.test.mjs:44:1'
+  failureType: 'testCodeFailure'
+  error: 'Details must begin closed'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: |-
+    <div id="ip-found-summary">Fetching founding forecast…</div>
+         <details id="ip-host-details" class="dsec" open><summary class="dsec-title">Details</summary>
+         <div style="margin-bottom:.5rem;line-height:1.5">
+           <div>Deposits: —</div>
+           <div>Produces: grain, horses, wine</div>
+           <div>1,000 people · cannot fight · sight 2 hexes (4 by water or on mountains)</div>
+           <div>Food lasts 2.5 game days</div>
+           <div>Escort pay lasts 240 game days</div>
+           <div>2 Spearmen cohorts in the field</div>
+           <div>Messengers free to send</div>
+         </div>
+         <div id="ip-found-preview" style="font-size:.73rem;border-top:1px solid var(--border);padding-top:.4rem">Fetching founding forecast…</div>
+         </details>
+  operator: 'doesNotMatch'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-host-enkel/web/static/js/megaron/render/host_simple.test.mjs:47:62)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: Q actual Host: unrounded net and raw goods, not carried stocks or a new food formula, decide yes/no
+ok 2 - Q actual Host: unrounded net and raw goods, not carried stocks or a new food formula, decide yes/no
+  ---
+  duration_ms: 3.185122
+  type: 'test'
+  ...
+# Subtest: Q actual Host: produces restores on another hex and late forecast cannot overwrite that panel
+ok 3 - Q actual Host: produces restores on another hex and late forecast cannot overwrite that panel
+  ---
+  duration_ms: 1.339296
+  type: 'test'
+  ...
+# Subtest: Q actual Host: archived real colonize-preview with timber 8 must show Timber yes
+ok 4 - Q actual Host: archived real colonize-preview with timber 8 must show Timber yes
+  ---
+  duration_ms: 1.4415
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 3
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 80.052752

@@ -1,0 +1,376 @@
+{
+  "health": {
+    "commit": "097114588bed9aef7f71ffe4fd55686642fa6eb6",
+    "migration": 160,
+    "status": "ok"
+  },
+  "mode": "after",
+  "host": {
+    "id": "89d4e81c-e80d-4094-a2ad-fd045188fab7",
+    "type": "nomadic_host",
+    "category": "land",
+    "size": 1,
+    "status": "positioned",
+    "deployable": true,
+    "display_name": "Nomadic Host of Philona",
+    "q": 49,
+    "r": 14,
+    "in_battle": false
+  },
+  "phase": {
+    "active": true,
+    "current_tick": 0,
+    "grain": {
+      "amount": 1200,
+      "rate_per_tick": 0
+    },
+    "host_unit_id": "89d4e81c-e80d-4094-a2ad-fd045188fab7",
+    "population": 1000,
+    "q": 49,
+    "r": 14,
+    "silver": {
+      "amount": 480,
+      "rate_per_tick": -2,
+      "ticks_left": 240
+    },
+    "spearmen_in_field": 2,
+    "tick_seconds": 6
+  },
+  "forecast": {
+    "catchment": [
+      {
+        "q": 47,
+        "r": 14,
+        "known": true,
+        "terrain": "river_valley",
+        "coastal": true
+      },
+      {
+        "q": 47,
+        "r": 15,
+        "known": true,
+        "terrain": "hills",
+        "silver_deposit": true
+      },
+      {
+        "q": 47,
+        "r": 16,
+        "known": true,
+        "terrain": "forest_cedar",
+        "cedar_deposit": true
+      },
+      {
+        "q": 48,
+        "r": 13,
+        "known": true,
+        "terrain": "river_valley",
+        "coastal": true
+      },
+      {
+        "q": 48,
+        "r": 14,
+        "known": true,
+        "terrain": "forest_cedar",
+        "cedar_deposit": true
+      },
+      {
+        "q": 48,
+        "r": 15,
+        "known": true,
+        "terrain": "forest_cedar",
+        "cedar_deposit": true
+      },
+      {
+        "q": 48,
+        "r": 16,
+        "known": true,
+        "terrain": "plains"
+      },
+      {
+        "q": 49,
+        "r": 12,
+        "known": true,
+        "terrain": "river_valley",
+        "coastal": true
+      },
+      {
+        "q": 49,
+        "r": 13,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 49,
+        "r": 14,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 49,
+        "r": 15,
+        "known": true,
+        "terrain": "forest_cedar",
+        "cedar_deposit": true
+      },
+      {
+        "q": 49,
+        "r": 16,
+        "known": true,
+        "terrain": "plains"
+      },
+      {
+        "q": 50,
+        "r": 12,
+        "known": true,
+        "terrain": "mountain_limestone",
+        "tin_deposit": true
+      },
+      {
+        "q": 50,
+        "r": 13,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 50,
+        "r": 14,
+        "known": true,
+        "terrain": "forest_cedar",
+        "cedar_deposit": true
+      },
+      {
+        "q": 50,
+        "r": 15,
+        "known": true,
+        "terrain": "plains"
+      },
+      {
+        "q": 51,
+        "r": 12,
+        "known": true,
+        "terrain": "mountain_limestone",
+        "tin_deposit": true
+      },
+      {
+        "q": 51,
+        "r": 13,
+        "known": true,
+        "terrain": "mountain_limestone"
+      },
+      {
+        "q": 51,
+        "r": 14,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      }
+    ],
+    "founding_gifts": [
+      {
+        "detail": "a coastal founding is owed one galley, crewed by 20 of your citizens",
+        "key": "poseidon_galley",
+        "label": "Poseidon's galley"
+      }
+    ],
+    "goods": {
+      "cedar": 5,
+      "grain": 22.33333333333333,
+      "livestock": 3,
+      "oil": 11,
+      "stone": 21,
+      "timber": 6.333333333333333,
+      "tin": 1.9999999999999998,
+      "wine": 7.999999999999999
+    },
+    "grain": {
+      "base_per_tick": 5.5,
+      "est_net_per_tick": 0.5,
+      "seed": 1200,
+      "ticks_until_empty": null,
+      "with_farm_per_tick": 6.166666666666666
+    },
+    "unknown_hexes": 0
+  },
+  "timber_positive_probe": {
+    "catchment": [
+      {
+        "q": 47,
+        "r": 14,
+        "known": true,
+        "terrain": "river_valley",
+        "coastal": true
+      },
+      {
+        "q": 47,
+        "r": 15,
+        "known": true,
+        "terrain": "hills",
+        "silver_deposit": true
+      },
+      {
+        "q": 47,
+        "r": 16,
+        "known": true,
+        "terrain": "forest_cedar",
+        "cedar_deposit": true
+      },
+      {
+        "q": 48,
+        "r": 13,
+        "known": true,
+        "terrain": "river_valley",
+        "coastal": true
+      },
+      {
+        "q": 48,
+        "r": 14,
+        "known": true,
+        "terrain": "forest_cedar",
+        "cedar_deposit": true
+      },
+      {
+        "q": 48,
+        "r": 15,
+        "known": true,
+        "terrain": "forest_cedar",
+        "cedar_deposit": true
+      },
+      {
+        "q": 48,
+        "r": 16,
+        "known": true,
+        "terrain": "plains"
+      },
+      {
+        "q": 49,
+        "r": 12,
+        "known": true,
+        "terrain": "river_valley",
+        "coastal": true
+      },
+      {
+        "q": 49,
+        "r": 13,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 49,
+        "r": 14,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 49,
+        "r": 15,
+        "known": true,
+        "terrain": "forest_cedar",
+        "cedar_deposit": true
+      },
+      {
+        "q": 49,
+        "r": 16,
+        "known": true,
+        "terrain": "plains"
+      },
+      {
+        "q": 50,
+        "r": 12,
+        "known": true,
+        "terrain": "mountain_limestone",
+        "tin_deposit": true
+      },
+      {
+        "q": 50,
+        "r": 13,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 50,
+        "r": 14,
+        "known": true,
+        "terrain": "forest_cedar",
+        "cedar_deposit": true
+      },
+      {
+        "q": 50,
+        "r": 15,
+        "known": true,
+        "terrain": "plains"
+      },
+      {
+        "q": 51,
+        "r": 12,
+        "known": true,
+        "terrain": "mountain_limestone",
+        "tin_deposit": true
+      },
+      {
+        "q": 51,
+        "r": 13,
+        "known": true,
+        "terrain": "mountain_limestone"
+      },
+      {
+        "q": 51,
+        "r": 14,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      }
+    ],
+    "founding_gifts": [
+      {
+        "detail": "a coastal founding is owed one galley, crewed by 20 of your citizens",
+        "key": "poseidon_galley",
+        "label": "Poseidon's galley"
+      }
+    ],
+    "goods": {
+      "cedar": 5,
+      "grain": 22.33333333333333,
+      "livestock": 3,
+      "oil": 11,
+      "stone": 21,
+      "timber": 6.333333333333333,
+      "tin": 1.9999999999999998,
+      "wine": 7.999999999999999
+    },
+    "grain": {
+      "base_per_tick": 5.5,
+      "est_net_per_tick": 0.5,
+      "seed": 1200,
+      "ticks_until_empty": null,
+      "with_farm_per_tick": 6.166666666666666
+    },
+    "unknown_hexes": 0
+  },
+  "city": {
+    "id": "2cb094b0-880f-418e-aaf4-c62f4e23d1a8",
+    "settlement_id": "4652ad19-dac9-461e-b6ef-8c52674cb48f",
+    "name": "Petras",
+    "culture": "minoan",
+    "q": 49,
+    "r": 14,
+    "state": "active",
+    "walls": 0,
+    "size_tier": 1,
+    "owner": "Philona",
+    "own": true,
+    "is_capital": true,
+    "allied": false,
+    "visible": true,
+    "army_total": 200
+  },
+  "native_dialogs": [],
+  "founding_orders": [
+    {
+      "method": "POST",
+      "body": "{}"
+    }
+  ],
+  "founding_responses": [
+    201
+  ],
+  "browser_errors": [],
+  "sql_mutations": false
+}

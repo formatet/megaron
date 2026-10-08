@@ -1,0 +1,354 @@
+{
+  "health": {
+    "commit": "097114588bed9aef7f71ffe4fd55686642fa6eb6",
+    "migration": 160,
+    "status": "ok"
+  },
+  "mode": "after",
+  "host": {
+    "id": "5070a10b-5795-4f7b-9016-74d3cae8fa75",
+    "type": "nomadic_host",
+    "category": "land",
+    "size": 1,
+    "status": "positioned",
+    "deployable": true,
+    "display_name": "Nomadic Host of Nedawatas",
+    "q": 0,
+    "r": 61,
+    "in_battle": false
+  },
+  "phase": {
+    "active": true,
+    "current_tick": 0,
+    "grain": {
+      "amount": 1200,
+      "rate_per_tick": 0
+    },
+    "host_unit_id": "5070a10b-5795-4f7b-9016-74d3cae8fa75",
+    "population": 1000,
+    "q": 0,
+    "r": 61,
+    "silver": {
+      "amount": 480,
+      "rate_per_tick": -2,
+      "ticks_left": 240
+    },
+    "spearmen_in_field": 2,
+    "tick_seconds": 6
+  },
+  "forecast": {
+    "catchment": [
+      {
+        "q": -2,
+        "r": 61,
+        "known": false
+      },
+      {
+        "q": -2,
+        "r": 62,
+        "known": false
+      },
+      {
+        "q": -2,
+        "r": 63,
+        "known": false
+      },
+      {
+        "q": -1,
+        "r": 60,
+        "known": false
+      },
+      {
+        "q": -1,
+        "r": 61,
+        "known": false
+      },
+      {
+        "q": -1,
+        "r": 62,
+        "known": false
+      },
+      {
+        "q": -1,
+        "r": 63,
+        "known": false
+      },
+      {
+        "q": 0,
+        "r": 59,
+        "known": true,
+        "terrain": "plains",
+        "coastal": true
+      },
+      {
+        "q": 0,
+        "r": 60,
+        "known": true,
+        "terrain": "plains"
+      },
+      {
+        "q": 0,
+        "r": 61,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 0,
+        "r": 62,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 0,
+        "r": 63,
+        "known": true,
+        "terrain": "plains",
+        "coastal": true
+      },
+      {
+        "q": 1,
+        "r": 59,
+        "known": true,
+        "terrain": "plains"
+      },
+      {
+        "q": 1,
+        "r": 60,
+        "known": true,
+        "terrain": "hills",
+        "copper_deposit": true
+      },
+      {
+        "q": 1,
+        "r": 61,
+        "known": true,
+        "terrain": "hills",
+        "copper_deposit": true
+      },
+      {
+        "q": 1,
+        "r": 62,
+        "known": true,
+        "terrain": "hills",
+        "copper_deposit": true
+      },
+      {
+        "q": 2,
+        "r": 59,
+        "known": true,
+        "terrain": "hills",
+        "silver_deposit": true
+      },
+      {
+        "q": 2,
+        "r": 60,
+        "known": true,
+        "terrain": "hills",
+        "copper_deposit": true
+      },
+      {
+        "q": 2,
+        "r": 61,
+        "known": true,
+        "terrain": "hills",
+        "copper_deposit": true
+      }
+    ],
+    "founding_gifts": [
+      {
+        "detail": "an inland site whose catchment bears grain, so the city is founded with a farm already standing",
+        "key": "demeter_farm",
+        "label": "Demeter's farm"
+      }
+    ],
+    "goods": {
+      "copper": 4.999999999999999,
+      "grain": 17.999999999999993,
+      "livestock": 4,
+      "oil": 13.333333333333332,
+      "stone": 14.5,
+      "timber": 1,
+      "wine": 15.999999999999998
+    },
+    "grain": {
+      "base_per_tick": 5.6,
+      "est_net_per_tick": 0.5999999999999996,
+      "seed": 1200,
+      "ticks_until_empty": null,
+      "with_farm_per_tick": 5.6
+    },
+    "unknown_hexes": 7
+  },
+  "timber_positive_probe": {
+    "catchment": [
+      {
+        "q": -2,
+        "r": 61,
+        "known": false
+      },
+      {
+        "q": -2,
+        "r": 62,
+        "known": false
+      },
+      {
+        "q": -2,
+        "r": 63,
+        "known": false
+      },
+      {
+        "q": -1,
+        "r": 60,
+        "known": false
+      },
+      {
+        "q": -1,
+        "r": 61,
+        "known": false
+      },
+      {
+        "q": -1,
+        "r": 62,
+        "known": false
+      },
+      {
+        "q": -1,
+        "r": 63,
+        "known": false
+      },
+      {
+        "q": 0,
+        "r": 59,
+        "known": true,
+        "terrain": "plains",
+        "coastal": true
+      },
+      {
+        "q": 0,
+        "r": 60,
+        "known": true,
+        "terrain": "plains"
+      },
+      {
+        "q": 0,
+        "r": 61,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 0,
+        "r": 62,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 0,
+        "r": 63,
+        "known": true,
+        "terrain": "plains",
+        "coastal": true
+      },
+      {
+        "q": 1,
+        "r": 59,
+        "known": true,
+        "terrain": "plains"
+      },
+      {
+        "q": 1,
+        "r": 60,
+        "known": true,
+        "terrain": "hills",
+        "copper_deposit": true
+      },
+      {
+        "q": 1,
+        "r": 61,
+        "known": true,
+        "terrain": "hills",
+        "copper_deposit": true
+      },
+      {
+        "q": 1,
+        "r": 62,
+        "known": true,
+        "terrain": "hills",
+        "copper_deposit": true
+      },
+      {
+        "q": 2,
+        "r": 59,
+        "known": true,
+        "terrain": "hills",
+        "silver_deposit": true
+      },
+      {
+        "q": 2,
+        "r": 60,
+        "known": true,
+        "terrain": "hills",
+        "copper_deposit": true
+      },
+      {
+        "q": 2,
+        "r": 61,
+        "known": true,
+        "terrain": "hills",
+        "copper_deposit": true
+      }
+    ],
+    "founding_gifts": [
+      {
+        "detail": "an inland site whose catchment bears grain, so the city is founded with a farm already standing",
+        "key": "demeter_farm",
+        "label": "Demeter's farm"
+      }
+    ],
+    "goods": {
+      "copper": 4.999999999999999,
+      "grain": 17.999999999999993,
+      "livestock": 4,
+      "oil": 13.333333333333332,
+      "stone": 14.5,
+      "timber": 1,
+      "wine": 15.999999999999998
+    },
+    "grain": {
+      "base_per_tick": 5.6,
+      "est_net_per_tick": 0.5999999999999996,
+      "seed": 1200,
+      "ticks_until_empty": null,
+      "with_farm_per_tick": 5.6
+    },
+    "unknown_hexes": 7
+  },
+  "city": {
+    "id": "63ac1b88-1de3-4027-9bcf-6d4ddc7baed5",
+    "settlement_id": "17408ec0-9738-4867-b4fa-b2b634a5f628",
+    "name": "Siteia",
+    "culture": "minoan",
+    "q": 0,
+    "r": 61,
+    "state": "active",
+    "walls": 0,
+    "size_tier": 1,
+    "owner": "Nedawatas",
+    "own": true,
+    "is_capital": true,
+    "allied": false,
+    "visible": true,
+    "army_total": 200
+  },
+  "native_dialogs": [],
+  "founding_orders": [
+    {
+      "method": "POST",
+      "body": "{}"
+    }
+  ],
+  "founding_responses": [
+    201
+  ],
+  "browser_errors": [],
+  "sql_mutations": false
+}

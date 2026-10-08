@@ -1,0 +1,7 @@
+{
+  "commit": "097114588bed9aef7f71ffe4fd55686642fa6eb6",
+  "binary_sha256": "2c773a30d8b3bb8352866d3b120c17ad5591eb3917ce527726cca4785d3a23ad",
+  "command": "env -i HOME=/home/tk PATH=/usr/local/go/bin:/usr/bin:/bin GOMAXPROCS=2 GOCACHE=/home/tk/.cache/go-build go build -p 2 -ldflags \"-X main.buildCommit=097114588bed9aef7f71ffe4fd55686642fa6eb6\" -o OUT/temenos ./cmd/server",
+  "exit": 0,
+  "Go_tests": "not rerun, no Go changes; real server built and fresh migrated browser arms passed"
+}

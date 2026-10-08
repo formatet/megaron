@@ -1,0 +1,91 @@
+TAP version 13
+# Subtest: Q actual Host: only site assessment is primary and all existing detail stays in one closed Details
+not ok 1 - Q actual Host: only site assessment is primary and all existing detail stays in one closed Details
+  ---
+  duration_ms: 22.516073
+  type: 'test'
+  location: '/home/tk/wt/codex-host-enkel/web/static/js/megaron/render/host_simple.test.mjs:44:1'
+  failureType: 'testCodeFailure'
+  error: 'Host keeps all secondary information in one Details'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: |-
+    <div style="margin-bottom:.5rem;line-height:1.5">
+           <div>1,000 people · cannot fight · sight 2 hexes (4 by water or on mountains)</div>
+           <div>Food lasts 2.5 game days</div>
+           <div>Escort pay lasts 240 game days</div>
+           <div>2 Spearmen cohorts in the field</div>
+           <div>Messengers free to send</div>
+         </div>
+         <div id="ip-found-preview" style="font-size:.73rem;border-top:1px solid var(--border);padding-top:.4rem">Fetching founding forecast…</div>
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-host-enkel/web/static/js/megaron/render/host_simple.test.mjs:46:9)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: Q actual Host: unrounded net and raw goods, not carried stocks or a new food formula, decide yes/no
+not ok 2 - Q actual Host: unrounded net and raw goods, not carried stocks or a new food formula, decide yes/no
+  ---
+  duration_ms: 1.499717
+  type: 'test'
+  location: '/home/tk/wt/codex-host-enkel/web/static/js/megaron/render/host_simple.test.mjs:59:1'
+  failureType: 'testCodeFailure'
+  error: 'zero net matches existing self-sufficiency boundary'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-host-enkel/web/static/js/megaron/render/host_simple.test.mjs:63:9)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Q actual Host: produces restores on another hex and late forecast cannot overwrite that panel
+not ok 3 - Q actual Host: produces restores on another hex and late forecast cannot overwrite that panel
+  ---
+  duration_ms: 1.2053
+  type: 'test'
+  location: '/home/tk/wt/codex-host-enkel/web/static/js/megaron/render/host_simple.test.mjs:69:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    ordinary terrain keeps Produces
+    
+    undefined !== ''
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: ''
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-host-enkel/web/static/js/megaron/render/host_simple.test.mjs:71:48)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Q actual Host: archived real colonize-preview with timber 8 must show Timber yes
+not ok 4 - Q actual Host: archived real colonize-preview with timber 8 must show Timber yes
+  ---
+  duration_ms: 1.397167
+  type: 'test'
+  location: '/home/tk/wt/codex-host-enkel/web/static/js/megaron/render/host_simple.test.mjs:79:1'
+  failureType: 'testCodeFailure'
+  error: 'real forecast timber must show Timber yes'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-host-enkel/web/static/js/megaron/render/host_simple.test.mjs:85:9)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 0
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 76.705407

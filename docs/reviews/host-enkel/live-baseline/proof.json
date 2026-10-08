@@ -1,0 +1,217 @@
+{
+  "health": {
+    "commit": "35232e3d543da9f09b415b1143098ce378e4e5d0",
+    "migration": 160,
+    "status": "ok"
+  },
+  "mode": "baseline",
+  "host": {
+    "id": "3ff8da9b-017a-413d-b0c7-c1a6360f9454",
+    "type": "nomadic_host",
+    "category": "land",
+    "size": 1,
+    "status": "positioned",
+    "deployable": true,
+    "display_name": "Nomadic Host of Mikharios",
+    "q": 3,
+    "r": 55,
+    "in_battle": false
+  },
+  "phase": {
+    "active": true,
+    "current_tick": 0,
+    "grain": {
+      "amount": 1200,
+      "rate_per_tick": 0
+    },
+    "host_unit_id": "3ff8da9b-017a-413d-b0c7-c1a6360f9454",
+    "population": 1000,
+    "q": 3,
+    "r": 55,
+    "silver": {
+      "amount": 480,
+      "rate_per_tick": -2,
+      "ticks_left": 240
+    },
+    "spearmen_in_field": 2,
+    "tick_seconds": 6
+  },
+  "forecast": {
+    "catchment": [
+      {
+        "q": 1,
+        "r": 55,
+        "known": true,
+        "terrain": "mountain_limestone"
+      },
+      {
+        "q": 1,
+        "r": 56,
+        "known": true,
+        "terrain": "mountain_limestone"
+      },
+      {
+        "q": 1,
+        "r": 57,
+        "known": true,
+        "terrain": "mountain_limestone"
+      },
+      {
+        "q": 2,
+        "r": 54,
+        "known": true,
+        "terrain": "mountain_limestone"
+      },
+      {
+        "q": 2,
+        "r": 55,
+        "known": true,
+        "terrain": "mountain_limestone"
+      },
+      {
+        "q": 2,
+        "r": 56,
+        "known": true,
+        "terrain": "mountain_limestone",
+        "silver_deposit": true
+      },
+      {
+        "q": 2,
+        "r": 57,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 3,
+        "r": 53,
+        "known": true,
+        "terrain": "hills",
+        "copper_deposit": true
+      },
+      {
+        "q": 3,
+        "r": 54,
+        "known": true,
+        "terrain": "hills",
+        "copper_deposit": true
+      },
+      {
+        "q": 3,
+        "r": 55,
+        "known": true,
+        "terrain": "hills",
+        "copper_deposit": true
+      },
+      {
+        "q": 3,
+        "r": 56,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 3,
+        "r": 57,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 4,
+        "r": 53,
+        "known": true,
+        "terrain": "hills",
+        "copper_deposit": true
+      },
+      {
+        "q": 4,
+        "r": 54,
+        "known": true,
+        "terrain": "hills",
+        "copper_deposit": true
+      },
+      {
+        "q": 4,
+        "r": 55,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 4,
+        "r": 56,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 5,
+        "r": 53,
+        "known": true,
+        "terrain": "plains"
+      },
+      {
+        "q": 5,
+        "r": 54,
+        "known": true,
+        "terrain": "hills",
+        "copper_deposit": true
+      },
+      {
+        "q": 5,
+        "r": 55,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      }
+    ],
+    "founding_gifts": [
+      {
+        "detail": "an inland site whose catchment bears grain, so the city is founded with a farm already standing",
+        "key": "demeter_farm",
+        "label": "Demeter's farm"
+      }
+    ],
+    "goods": {
+      "copper": 4.999999999999999,
+      "grain": 5.666666666666665,
+      "livestock": 1,
+      "oil": 18.333333333333332,
+      "stone": 37.5,
+      "timber": 6,
+      "wine": 10.999999999999998
+    },
+    "grain": {
+      "base_per_tick": 5.6,
+      "est_net_per_tick": 0.5999999999999996,
+      "seed": 1200,
+      "ticks_until_empty": null,
+      "with_farm_per_tick": 5.6
+    },
+    "unknown_hexes": 0
+  },
+  "city": {
+    "id": "74c19e37-4a96-46f0-b3ad-08d898b1a342",
+    "settlement_id": "82841f44-b135-4692-ab8b-0048a98afddf",
+    "name": "Labyrinthos",
+    "culture": "minoan",
+    "q": 3,
+    "r": 55,
+    "state": "active",
+    "walls": 0,
+    "size_tier": 1,
+    "owner": "Mikharios",
+    "own": true,
+    "is_capital": true,
+    "allied": false,
+    "visible": true,
+    "army_total": 200
+  },
+  "native_dialogs": [],
+  "founding_orders": [
+    {
+      "method": "POST",
+      "body": "{}"
+    }
+  ],
+  "founding_responses": [
+    201
+  ],
+  "browser_errors": [],
+  "sql_mutations": false
+}
