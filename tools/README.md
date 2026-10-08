@@ -371,5 +371,10 @@ stad/Host borta. Summary jämförs med verklig colonize-preview, prognosen
 arkiveras med status/healthz, bilder desktop390 och kvitton.
 Bas: `baseline ARCHIVED_WEB` i egen OUT/ny DB.
 `python3 tools/host_simple_mutations.py OUT` bryter net-bedömning, stängd
-Details, stone-källa och late-response-vakt; named assertionrött och grönt
+Details, stone-källa, timber→lumber och late-response-vakt; named assertionrött och grönt
 efter återställning krävs. Alla verktyg/cache/worktrees under HOME.
+
+Q väljer för slutarmen en vanlig joined Host vars riktiga GET-prognos har
+`goods.timber > 0`; `Timber: yes` måste synas. Actual-handler-testet läser
+också arkiverad verklig forecast i `docs/reviews/host-enkel/fixtures/` så
+varunyckeln inte kan valideras bara mot en stubb med samma felstavning.

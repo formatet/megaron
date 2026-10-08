@@ -1,7 +1,7 @@
 {
-  "commit": "538ce8cbcaa0b9710030cfdf285aa832cfdef1ca",
-  "binary_sha256": "6c1f04c69344aca8d65014ad7f94df28f42e678363c2a2dc689a5d08cbe5675a",
-  "command": "env -i HOME=/home/tk PATH=/usr/local/go/bin:/usr/bin:/bin GOMAXPROCS=2 GOCACHE=/home/tk/.cache/go-build go build -p 2 -ldflags \"-X main.buildCommit=538ce8cbcaa0b9710030cfdf285aa832cfdef1ca\" -o OUT/temenos ./cmd/server",
+  "commit": "097114588bed9aef7f71ffe4fd55686642fa6eb6",
+  "binary_sha256": "2c773a30d8b3bb8352866d3b120c17ad5591eb3917ce527726cca4785d3a23ad",
+  "command": "env -i HOME=/home/tk PATH=/usr/local/go/bin:/usr/bin:/bin GOMAXPROCS=2 GOCACHE=/home/tk/.cache/go-build go build -p 2 -ldflags \"-X main.buildCommit=097114588bed9aef7f71ffe4fd55686642fa6eb6\" -o OUT/temenos ./cmd/server",
   "exit": 0,
   "Go_tests": "not rerun, no Go changes; real server built and fresh migrated browser arms passed"
 }
