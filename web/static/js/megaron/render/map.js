@@ -4358,9 +4358,9 @@ function hostForecastSummaryHTML(p) {
     const rate = p.goods[good] ?? 0;
     return typeof rate === 'number' && Number.isFinite(rate) ? (rate > 0 ? 'yes' : 'no') : 'unknown';
   };
-  return `<div class="inspect-row"><span class="ir-label">Feeds itself:</span><span>${feeds}</span></div>`
-    + `<div class="inspect-row"><span class="ir-label">Timber:</span><span>${potential('lumber')}</span></div>`
-    + `<div class="inspect-row"><span class="ir-label">Stone:</span><span>${potential('stone')}</span></div>`;
+  return `<div class="inspect-row"><span class="ir-label">Feeds itself:</span><span> ${feeds}</span></div>`
+    + `<div class="inspect-row"><span class="ir-label">Timber:</span><span> ${potential('lumber')}</span></div>`
+    + `<div class="inspect-row"><span class="ir-label">Stone:</span><span> ${potential('stone')}</span></div>`;
 }
 
 async function openHostPanel(h, tile) {

@@ -46,9 +46,9 @@ test('Q actual Host: only site assessment is primary and all existing detail sta
  assert.match(html,/<details id="ip-host-details"/,'Host keeps all secondary information in one Details');
  assert.equal((html.match(/<details/g)||[]).length,1);assert.doesNotMatch(html,/<details[^>]*\bopen\b/,'Details must begin closed');
  const [primary,details]=html.split('<details');
- assert.match(element('ip-found-summary').innerHTML,/Feeds itself:<\/span><span>no</,'negative net must not promise self-sufficiency');
- assert.match(element('ip-found-summary').innerHTML,/Timber:<\/span><span>yes</,'positive lumber potential gives Timber yes');
- assert.match(element('ip-found-summary').innerHTML,/Stone:<\/span><span>no</,'zero stone gives Stone no');
+ assert.match(element('ip-found-summary').innerHTML,/Feeds itself:<\/span><span> no</,'negative net must not promise self-sufficiency');
+ assert.match(element('ip-found-summary').innerHTML,/Timber:<\/span><span> yes</,'positive lumber potential gives Timber yes');
+ assert.match(element('ip-found-summary').innerHTML,/Stone:<\/span><span> no</,'zero stone gives Stone no');
  assert.doesNotMatch(primary,/Food lasts|Escort pay|people|Spearmen|Produces|Deposits|Full forecast/,'only summary belongs before Details');
  for(const text of ['people','Food lasts','Escort pay lasts','Spearmen','Messengers free','Produces','Deposits'])assert.ok(details.includes(text),text+' detail must remain');
  assert.deepEqual(renderedForecast,forecast,'same full forecast renderer gets same payload');
@@ -60,9 +60,9 @@ test('Q actual Host: unrounded net and raw goods, not carried stocks or a new fo
  forecast={grain:{est_net_per_tick:0},goods:{lumber:0,stone:0.001}};
  fp={...fp,grain:{amount:999,ticks_left:2.5},silver:{amount:999,ticks_left:240}};
  await click({city:null,host:true});let html=element('ip-found-summary').innerHTML;
- assert.match(html,/Feeds itself:<\/span><span>yes</,'zero net matches existing self-sufficiency boundary');assert.match(html,/Timber:<\/span><span>no</);assert.match(html,/Stone:<\/span><span>yes</,'small positive stone must not round to no');
+ assert.match(html,/Feeds itself:<\/span><span> yes</,'zero net matches existing self-sufficiency boundary');assert.match(html,/Timber:<\/span><span> no</);assert.match(html,/Stone:<\/span><span> yes</,'small positive stone must not round to no');
  forecast={grain:{est_net_per_tick:-0.001},goods:{fish:10000}};await click({city:null,host:true});html=element('ip-found-summary').innerHTML;
- assert.match(html,/Feeds itself:<\/span><span>no</,'negative raw net stays no regardless of carried food or fish potential');assert.match(html,/Timber:<\/span><span>no</);assert.match(html,/Stone:<\/span><span>no</);
+ assert.match(html,/Feeds itself:<\/span><span> no</,'negative raw net stays no regardless of carried food or fish potential');assert.match(html,/Timber:<\/span><span> no</);assert.match(html,/Stone:<\/span><span> no</);
  forecast={};await click({city:null,host:true});html=element('ip-found-summary').innerHTML;
  assert.equal((html.match(/unknown/g)||[]).length,3,'missing forecast values must remain unknown');assert.doesNotMatch(html,/>yes</);
 });

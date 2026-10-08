@@ -131,6 +131,7 @@ try:
     expect(page.locator('#ip-found-preview')).to_contain_text('Catchment forecast')
     phase=api(worldpath+'/founding/status',token=token)
     def shots(kind):
+        page.mouse.move(0,0)
         for label,width,height in [('desktop',1280,900),('mobile',390,844)]:
             page.set_viewport_size({'width':width,'height':height})
             page.locator('#inspect-panel').screenshot(path=str(OUT/(kind+'-'+label+'.png')))
