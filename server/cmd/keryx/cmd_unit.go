@@ -1085,7 +1085,8 @@ func unitRecallCmd() *cobra.Command {
 		Long: `Send a recall order to a marching unit. The order travels as a visible
 Runner; command is never instant — the unit keeps marching on its original
 course until the runner physically catches up with it, then turns for home
-(the hex it originally departed from). A passable route is required; a refusal
+(an expedition returns to its home city; an ordinary march returns to its
+departure hex). A passable route is required; a refusal
 at delivery appears in notifications with its reason.`,
 		Example: `  keryx recall --unit <id>
   keryx recall --all`,

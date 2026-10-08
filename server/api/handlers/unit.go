@@ -502,7 +502,7 @@ func insertOrderMessenger(
 // Sends a physical recall/redirect order to a marching unit via the order
 // envelope (temenos_orderlopare_plan.md — recall/redirect→kuvert-unifiering).
 // Body (optional): {"target_q":int,"target_r":int} — omitted = recall (turn home to
-// the hex the unit departed from); both given = redirect (new course). The order
+// its expedition home or ordinary departure hex); both given = redirect (new course). The order
 // travels as a visible runner; the unit keeps marching on its original course
 // until the courier physically catches up with it — command is never instant.
 func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {

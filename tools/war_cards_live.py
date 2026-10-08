@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = Path(sys.argv[1]).resolve()
 EXPECTED = sys.argv[2]
 MODE = sys.argv[3] if len(sys.argv) > 3 else "after"
-assert MODE in ("baseline", "after", "naval", "restored", "restored-naval", "before-restoration")
+assert MODE in ("baseline", "after", "naval", "restored", "restored-naval", "before-restoration", "recall-home")
 SIMPLIFIED = MODE in ("after", "naval", "before-restoration")
 NAVAL = MODE in ("naval", "restored-naval")
 PLAIN = MODE in ("restored", "before-restoration")
@@ -232,6 +232,15 @@ try:
         expect(card.locator('#uredir-q-'+uid)).to_be_visible()
         expect(card.locator('#uredir-r-'+uid)).to_be_visible()
         if SIMPLIFIED:card.locator('details summary').click()
+    if MODE=='recall-home':
+        deadline=time.monotonic()+90
+        while time.monotonic()<deadline:
+            later=next(u for u in api(worldpath+'/units',token=token)['units'] if u['id']==uid)
+            if later['status']=='marching' and (later['q'],later['r'])!=(homeq,homer):break
+            time.sleep(.5)
+        else:raise AssertionError({'no_later_leg':later})
+        (OUT/'later-leg.json').write_text(json.dumps({'unit':later,'home':{'q':homeq,'r':homer,'settlement_id':founded['settlement_id']}},indent=2)+'\n')
+        war()
     recall_attempts=[]
     for attempt in range(45):
         with page.expect_response(lambda r:r.url.endswith('/units/'+uid+'/recall') and r.request.method=='POST') as pending:
@@ -250,9 +259,18 @@ try:
     deadline=time.monotonic()+200
     while time.monotonic()<deadline:
         final=next(u for u in api(worldpath+'/units',token=token)['units'] if u['id']==uid)
+        if MODE=='recall-home':
+            recalled=command('docker','exec',containers[0],'psql','-U','postgres','-d','simple-recall-all','-Atc',
+                "SELECT payload FROM events WHERE stream_id='"+uid+"' AND event_type='MarchRecalled' ORDER BY created_at DESC LIMIT 1;")
+            if recalled:
+                outcome=json.loads(recalled)
+                (OUT/'recall-delivered.json').write_text(json.dumps({'event':outcome,'unit':final},indent=2)+'\n')
+                assert (outcome['origin_q'],outcome['origin_r'])==(homeq,homer),{'recall_target_not_home':outcome,'home':(homeq,homer)}
         if final['status']=='garrison':break
         time.sleep(.5)
     else:raise AssertionError({'not_home':final})
+    assert final.get('settlement_id')==founded['settlement_id'],final
+    if MODE=='recall-home':assert (final['q'],final['r'])==(homeq,homer),final
     audits=command('docker','exec',containers[0],'psql','-U','postgres','-d','simple-recall-all','-Atc',
         "SELECT event_type,count(*) FROM events WHERE stream_id='"+uid+"' AND event_type IN ('UnitMarchOrdered','MarchRecalled','UnitStanceChanged','OrderDeliveryFailed') GROUP BY event_type ORDER BY event_type;")
     assert 'UnitMarchOrdered|1' in audits and 'MarchRecalled|1' in audits,audits

@@ -50,7 +50,8 @@ type RecallApplied struct {
 }
 
 // ExecuteRecall turns a marching unit onto a new course: recall heads it home
-// to the hex it departed from, redirect sets a new target. Both re-interpolate
+// to its expedition home (otherwise the departure hex); redirect sets a new
+// target. Both re-interpolate
 // the unit's actual current position along the path it already proved
 // traversable, then route from there over the same passability graph — never
 // a straight-line teleport. Returns (nil, nil) when the unit is no longer
@@ -68,14 +69,14 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 	var targetQ, targetR *int // nulled once the unit is no longer marching
 	var departsAt, arrivesAt *time.Time
 	var marchIntent, colonyName *string
-	var cargoUnitID *uuid.UUID
+	var cargoUnitID, homeSettlementID *uuid.UUID
 	var departTick, arriveTick *int
 	var storedRouteRaw []byte
 	if err := tx.QueryRow(ctx,
-		`SELECT owner_id, type, category, status, q, r, crew, target_q, target_r, departs_at, arrives_at, march_intent, colony_name, cargo_unit_id, depart_tick, arrive_tick, march_route
+		`SELECT owner_id, type, category, status, q, r, crew, target_q, target_r, departs_at, arrives_at, march_intent, colony_name, cargo_unit_id, depart_tick, arrive_tick, march_route, home_settlement_id
 		 FROM units WHERE id = $1 FOR UPDATE`,
 		o.UnitID,
-	).Scan(&ownerID, &utype, &category, &status, &q, &r, &crew, &targetQ, &targetR, &departsAt, &arrivesAt, &marchIntent, &colonyName, &cargoUnitID, &departTick, &arriveTick, &storedRouteRaw); err != nil {
+	).Scan(&ownerID, &utype, &category, &status, &q, &r, &crew, &targetQ, &targetR, &departsAt, &arrivesAt, &marchIntent, &colonyName, &cargoUnitID, &departTick, &arriveTick, &storedRouteRaw, &homeSettlementID); err != nil {
 		return nil, fmt.Errorf("load recalled unit: %w", err)
 	}
 
@@ -113,7 +114,19 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 		}
 	}
 
-	newTarget := origin // recall: head home to where the unit departed from
+	newTarget := origin // Ordinary recall returns to the departure hex.
+	expeditionRecall := o.Mode == "recall" && marchIntent != nil && (*marchIntent == "explore" || *marchIntent == "explore_return")
+	if expeditionRecall {
+		home, err := expeditionReturnDestination(ctx, tx, unitRow{ownerID: ownerID, category: category, homeSettlementID: homeSettlementID}, currentPos.Q, currentPos.R, o.WorldID)
+		if err != nil {
+			return nil, fmt.Errorf("resolve recalled expedition home: %w", err)
+		}
+		if home == nil {
+			return nil, reject(422, "no reachable home settlement for this expedition; check this unit and choose a reachable destination")
+		}
+		newTarget = province.MapPosition{Q: home.q, R: home.r}
+		homeSettlementID = &home.id
+	}
 	if o.Mode == "redirect" && o.NewTargetQ != nil && o.NewTargetR != nil {
 		newTarget = province.MapPosition{Q: *o.NewTargetQ, R: *o.NewTargetR}
 	}
@@ -168,6 +181,12 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 	newIntent, newColonyName := marchIntent, colonyName
 	if o.Mode == "recall" {
 		newIntent, newColonyName = nil, nil
+		if expeditionRecall {
+			// The mission is cancelled below, but its return leg must still use the
+			// home-settlement arrival path (especially a ship's adjacent sea hex).
+			returnIntent := "explore_return"
+			newIntent = &returnIntent
+		}
 	}
 
 	if _, err := tx.Exec(ctx,
@@ -183,10 +202,11 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 		   depart_tick  = $10,
 		   arrive_tick  = $11,
 		   march_route  = $12,
+		   home_settlement_id = $13,
 		   updated_at   = now()
 		 WHERE id = $1`,
 		o.UnitID, currentPos.Q, currentPos.R, newTarget.Q, newTarget.R, now, arrivesAtNew, newIntent, newColonyName,
-		currentTick, currentTick+travelTicks, newMarchRoute,
+		currentTick, currentTick+travelTicks, newMarchRoute, homeSettlementID,
 	); err != nil {
 		return nil, fmt.Errorf("turn unit toward new course: %w", err)
 	}
