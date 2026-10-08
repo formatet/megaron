@@ -1,0 +1,33 @@
+» färsk DB på migration 160 · commit 35232e3d+ändringar
+=== RUN   TestRecallExpeditionLaterLegHome
+=== RUN   TestRecallExpeditionLaterLegHome/land
+2026/10/08 18:16:04 INFO recall/redirect order reached unit, new course set unit=c2af7ade-09f4-433f-9007-c20ed86cd558 mode=recall from_q=4 from_r=1 to_q=0 to_r=0 arrives_at=2026-10-08T22:16:04.814+02:00
+2026/10/08 18:16:04 INFO unit returned home from explore unit=c2af7ade-09f4-433f-9007-c20ed86cd558 settlement=5c70fa53-e910-4bfd-aa9a-1fd50a0921e8
+=== RUN   TestRecallExpeditionLaterLegHome/naval
+2026/10/08 18:16:05 INFO recall/redirect order reached unit, new course set unit=5f893237-94d3-464f-a877-a1ccdf5147af mode=recall from_q=5 from_r=0 to_q=1 to_r=0 arrives_at=2026-10-08T20:16:04.957+02:00
+2026/10/08 18:16:05 INFO unit returned home from explore unit=5f893237-94d3-464f-a877-a1ccdf5147af settlement=6eeb8df8-9795-45df-86bd-b61fe31d6810
+--- PASS: TestRecallExpeditionLaterLegHome (0.29s)
+    --- PASS: TestRecallExpeditionLaterLegHome/land (0.14s)
+    --- PASS: TestRecallExpeditionLaterLegHome/naval (0.15s)
+=== RUN   TestRecallPlainAndExpeditionRedirectDestinations
+=== RUN   TestRecallPlainAndExpeditionRedirectDestinations/recall
+2026/10/08 18:16:05 INFO recall/redirect order reached unit, new course set unit=ced79470-be66-43f9-b705-16622a15f957 mode=recall from_q=1 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-08T19:16:05.084+02:00
+2026/10/08 18:16:05 INFO unit arrived (garrison) unit=ced79470-be66-43f9-b705-16622a15f957 q=0 r=0 status=garrison
+=== RUN   TestRecallPlainAndExpeditionRedirectDestinations/redirect
+2026/10/08 18:16:05 INFO recall/redirect order reached unit, new course set unit=6526f178-2534-4fbe-93a3-2f90b4f1be34 mode=redirect from_q=4 from_r=1 to_q=4 to_r=0 arrives_at=2026-10-08T19:16:05.176+02:00
+2026/10/08 18:16:05 INFO scout report filed unit=6526f178-2534-4fbe-93a3-2f90b4f1be34 q=4 r=0 terrain=plains copper=false tin=false silver=false cedar=false
+2026/10/08 18:16:05 INFO field unit turning for home unit=6526f178-2534-4fbe-93a3-2f90b4f1be34 from_q=4 from_r=0 home_q=0 home_r=0
+2026/10/08 18:16:05 INFO unit returned home from explore unit=6526f178-2534-4fbe-93a3-2f90b4f1be34 settlement=04f19faf-2352-491c-8e90-53298941de25
+--- PASS: TestRecallPlainAndExpeditionRedirectDestinations (0.21s)
+    --- PASS: TestRecallPlainAndExpeditionRedirectDestinations/recall (0.09s)
+    --- PASS: TestRecallPlainAndExpeditionRedirectDestinations/redirect (0.12s)
+=== RUN   TestRecallExpeditionLostHome
+=== RUN   TestRecallExpeditionLostHome/fallback
+2026/10/08 18:16:05 INFO recall/redirect order reached unit, new course set unit=13fe47dd-32eb-4905-ab87-f481dbd71005 mode=recall from_q=4 from_r=1 to_q=-1 to_r=0 arrives_at=2026-10-08T23:16:05.293+02:00
+2026/10/08 18:16:05 INFO unit returned home from explore unit=13fe47dd-32eb-4905-ab87-f481dbd71005 settlement=f10626d6-6a42-41dc-97df-758bc82b206a
+=== RUN   TestRecallExpeditionLostHome/refusal
+--- PASS: TestRecallExpeditionLostHome (0.21s)
+    --- PASS: TestRecallExpeditionLostHome/fallback (0.12s)
+    --- PASS: TestRecallExpeditionLostHome/refusal (0.10s)
+PASS
+ok  	formatet/megaron/server/internal/combat	0.719s

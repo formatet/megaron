@@ -1,0 +1,26 @@
+{
+  "event": {
+    "from_q": 46,
+    "from_r": 8,
+    "unit_id": "7aab71c6-ccc8-4235-be27-863d2c15ab47",
+    "origin_q": 47,
+    "origin_r": 7,
+    "arrives_at": "2026-10-08T18:18:42+02:00"
+  },
+  "unit": {
+    "id": "7aab71c6-ccc8-4235-be27-863d2c15ab47",
+    "type": "spearman",
+    "category": "land",
+    "size": 100,
+    "status": "garrison",
+    "deployable": true,
+    "display_name": "1st Spearmen of Nostos",
+    "ordinal": 1,
+    "support_settlement_id": "a3956de5-1722-42d8-b565-6f1c59605f6a",
+    "support_settlement_name": "Nostos",
+    "settlement_id": "a3956de5-1722-42d8-b565-6f1c59605f6a",
+    "q": 47,
+    "r": 7,
+    "in_battle": false
+  }
+}

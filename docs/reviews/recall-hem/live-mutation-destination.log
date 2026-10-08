@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-recall-hem/tools/war_cards_live.py", line 268, in <module>
+    "SELECT payload FROM events WHERE stream_id='"+uid+"' AND event_type='MarchRecalled' ORDER BY created_at DESC LIMIT 1;")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'recall_target_not_home': {'from_q': 13, 'from_r': 58, 'unit_id': 'd6b0f1af-4512-4130-ac00-862391badd2b', 'origin_q': 10, 'origin_r': 61, 'arrives_at': '2026-10-08T18:20:17+02:00'}, 'home': (13, 57)}

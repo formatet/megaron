@@ -1,0 +1,26 @@
+» färsk DB på migration 160 · commit 35232e3d
+=== RUN   TestRecallExpeditionLaterLegHome
+=== RUN   TestRecallExpeditionLaterLegHome/land
+2026/10/08 18:14:27 INFO recall/redirect order reached unit, new course set unit=18ef5e20-dfac-402d-83b0-9e4ada82cf80 mode=recall from_q=4 from_r=1 to_q=4 to_r=0 arrives_at=2026-10-08T19:14:27.866+02:00
+    recall_home_test.go:72: recall target=(4,0), want home (0,0), later-leg origin=(4,0)
+=== RUN   TestRecallExpeditionLaterLegHome/naval
+2026/10/08 18:14:28 INFO recall/redirect order reached unit, new course set unit=fa5a5d06-5789-4533-a32d-1e4fb9d57b71 mode=recall from_q=5 from_r=0 to_q=4 to_r=0 arrives_at=2026-10-08T19:14:27.984+02:00
+    recall_home_test.go:66: naval target=(4,0), want home sea neighbour (1,0)
+--- FAIL: TestRecallExpeditionLaterLegHome (0.24s)
+    --- FAIL: TestRecallExpeditionLaterLegHome/land (0.12s)
+    --- FAIL: TestRecallExpeditionLaterLegHome/naval (0.12s)
+=== RUN   TestRecallPlainAndExpeditionRedirectDestinations
+=== RUN   TestRecallPlainAndExpeditionRedirectDestinations/recall
+2026/10/08 18:14:28 INFO recall/redirect order reached unit, new course set unit=d6847e7d-1188-4e91-958f-b41c84484da9 mode=recall from_q=1 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-08T19:14:28.080+02:00
+2026/10/08 18:14:28 INFO unit arrived (garrison) unit=d6847e7d-1188-4e91-958f-b41c84484da9 q=0 r=0 status=garrison
+=== RUN   TestRecallPlainAndExpeditionRedirectDestinations/redirect
+2026/10/08 18:14:28 INFO recall/redirect order reached unit, new course set unit=72f55a05-b6aa-4c7c-b1c3-b649e871c183 mode=redirect from_q=4 from_r=1 to_q=4 to_r=0 arrives_at=2026-10-08T19:14:28.167+02:00
+2026/10/08 18:14:28 INFO scout report filed unit=72f55a05-b6aa-4c7c-b1c3-b649e871c183 q=4 r=0 terrain=plains copper=false tin=false silver=false cedar=false
+2026/10/08 18:14:28 INFO field unit turning for home unit=72f55a05-b6aa-4c7c-b1c3-b649e871c183 from_q=4 from_r=0 home_q=0 home_r=0
+2026/10/08 18:14:28 INFO unit returned home from explore unit=72f55a05-b6aa-4c7c-b1c3-b649e871c183 settlement=c82e8c9c-b763-44a6-913d-5dc427ed0ffe
+--- PASS: TestRecallPlainAndExpeditionRedirectDestinations (0.20s)
+    --- PASS: TestRecallPlainAndExpeditionRedirectDestinations/recall (0.09s)
+    --- PASS: TestRecallPlainAndExpeditionRedirectDestinations/redirect (0.11s)
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.440s
+FAIL
