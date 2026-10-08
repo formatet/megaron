@@ -213,7 +213,8 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
   contacted** (`visibleOrigins`) — no global trade catalogue; (3) **internal transfer** own→own settlement =
   logistics, no consent, a physical caravan that does not roll the loss die; (4) **gift/tribute** (Timothy
   2026-10-08) = goods or silver to ANOTHER Wanax's contacted city, nothing in return, no consent — a physical
-  caravan that CAN be raided. Vault: `megaron_forslag_kredit_och_relationsminne.md`.
+  caravan that, like a trade caravan, ALSO rolls the storm/pirate loss die (every caravan can be
+  physically intercepted; only own→own skips the die). Vault: `megaron_forslag_kredit_och_relationsminne.md`.
 - **Kingdoms are POST-MVP** (Timothy 2026-07-08): all player surface disabled; server code kept gated.
 
 ## Visual style (palette lives in code)
