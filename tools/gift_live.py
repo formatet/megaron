@@ -94,8 +94,8 @@ try:
     assert any(d['settlement_id']==dest for d in destinations()),'physical contact did not reach partner'
     from playwright.sync_api import sync_playwright,expect
     playwright=sync_playwright().start();engine=sys.argv[3] if len(sys.argv)>3 else 'firefox';browser=getattr(playwright,engine).launch()
-    def open_player(token):
-        context=browser.new_context(viewport={'width':1280,'height':900},has_touch=True)
+    def open_player(token, active_browser=None):
+        context=(active_browser or browser).new_context(viewport={'width':1280,'height':900},has_touch=True)
         context.add_cookies([{'name':'poleia_token','value':token,'url':base}])
         page=context.new_page();page.on('pageerror',lambda e:errors.append(str(e)))
         page.goto(base+'/',wait_until='domcontentloaded');page.evaluate('t=>localStorage.setItem("poleia_token",t)',token)
@@ -106,10 +106,30 @@ try:
     page.wait_for_function('dest=>Array.from(document.querySelector("#ec-tr-to").options).some(o=>o.value===dest)',arg=dest)
     option=page.locator('#ec-tr-to option[value="'+dest+'"]');assert '(gift)' in option.inner_text(),option.inner_text()
     page.locator('#ec-tr-to').select_option(dest)
-    for label,width,height in [('desktop',1280,900),('mobile',390,844)]:
-        page.set_viewport_size({'width':width,'height':height});page.locator('#drawer-economy').screenshot(path=str(OUT/('transfer-'+label+'.png')))
-        assert page.locator('#ectab-transfer').evaluate('e=>e.scrollWidth<=e.clientWidth'),'transfer overflow'
-    page.set_viewport_size({'width':1280,'height':900})
+    browser_proofs=[]
+    def pictures(token,drawer,prefix):
+        for name in ['firefox','chromium','webkit']:
+            instance=getattr(playwright,name).launch()
+            try:
+                view=open_player(token,instance)
+                view.evaluate("d=>window.openDrawer(d)",drawer)
+                if drawer=='economy':
+                    view.locator('#economy-body button[data-tab="transfer"]').click()
+                    view.wait_for_function('dest=>Array.from(document.querySelector("#ec-tr-to").options).some(o=>o.value===dest)',arg=dest)
+                    view.locator('#ec-tr-to').select_option(dest)
+                    content='#ectab-transfer'
+                else:
+                    view.wait_for_selector('.dip-thread');view.locator('.dip-thread-header').first.click()
+                    expect(view.locator('#dtab-threads')).to_contain_text('Gift delivered:')
+                    content='#dtab-threads'
+                for label,width,height in [('desktop',1280,900),('mobile',390,844)]:
+                    view.set_viewport_size({'width':width,'height':height})
+                    view.locator('#drawer-'+drawer).screenshot(path=str(OUT/(prefix+'-'+name+'-'+label+'.png')))
+                    assert view.locator(content).evaluate('e=>e.scrollWidth<=e.clientWidth'),name+' '+prefix+' '+label+' overflow'
+                    browser_proofs.append({'engine':name,'version':instance.version,'surface':prefix,'viewport':[width,height],'touch':True,'overflow':False,'text':view.locator(content).inner_text()})
+            finally:instance.close()
+    pictures(a,'economy','transfer')
+
     def stocks(token,province):return {g['key']:g for g in api(worldpath+'/provinces/'+province+'/goods',token=token)}
     goods=stocks(a,source)
     good=next(k for k,g in goods.items() if k not in ('silver','grain','fish','cult') and g['amount']>=2 and g.get('rate_per_tick',0)==0)
@@ -123,11 +143,12 @@ try:
             time.sleep(.3)
         raise AssertionError('no gift outcome: '+tid)
     for index,key in enumerate(chosen):
+        quantity=50 if key=='silver' else 2
         delivered=False
         for attempt in range(6):
             before=stocks(b,bcity['province_id']).get(key,{'amount':0})['amount']
             if index==0:
-                page.locator('#ec-tr-good').select_option(key);page.locator('#ec-tr-qty').fill('2')
+                page.locator('#ec-tr-good').select_option(key);page.locator('#ec-tr-qty').fill(str(quantity))
                 with page.expect_response(lambda r:r.url.endswith('/provinces/'+source+'/trade') and r.request.method=='POST') as pending:
                     page.locator('#ectab-transfer button').click()
                 response=pending.value;assert response.status==201,(response.status,response.text())
@@ -135,25 +156,25 @@ try:
             else:
                 config=OUT/'keryx-config.json';config.write_text(json.dumps({'server':base,'token':a,'world_id':world,'province_id':source}))
                 cli_env={'HOME':os.environ['HOME'],'PATH':os.environ['PATH'],'POLEIA_CONFIG':str(config)}
-                text=subprocess.check_output([str(OUT/'keryx'),'transfer','--good',key,'--qty','2','--dest','Nostos'],env=cli_env,text=True)
+                text=subprocess.check_output([str(OUT/'keryx'),'transfer','--good',key,'--qty',str(quantity),'--dest','Nostos'],env=cli_env,text=True)
                 config.unlink();assert 'Gift dispatched' in text,text
                 (OUT/'keryx-transfer.txt').write_text(text)
                 history=api(worldpath+'/gifts',token=a);receipt={'transport_id':history[0]['body']['transport_id'],'kind':'gift'}
             assert receipt['kind']=='gift',receipt
             outcome=wait_outcome(receipt['transport_id']);after=stocks(b,bcity['province_id']).get(key,{'amount':0})['amount']
-            receipts.append({'good':key,'dispatch':receipt,'outcome':outcome,'recipient_before':before,'recipient_after':after})
+            receipts.append({'good':key,'dispatch':receipt,'outcome':outcome,'recipient_before':before,'recipient_after':after,'quantity':quantity,'stock_delta':after-before,'other_stock_change':after-before-outcome['body']['credited_quantity']})
+            (OUT/'progress.json').write_text(json.dumps({'health':health,'joins':joins,'receipts':receipts,'browser_proofs':browser_proofs},indent=2)+'\n')
             if outcome['kind']=='GiftDelivered':
-                assert outcome['body']['credited_quantity']==2 and outcome['body']['lost_quantity']==0,outcome
-                assert after>=before+2-0.000001,(before,after)
+                assert outcome['body']['credited_quantity']==quantity and outcome['body']['lost_quantity']==0,outcome
+                assert after>before,(key,before,after,quantity)
+                if key!='silver': assert abs(after-before-quantity)<0.000001,(before,after,quantity)
                 delivered=True;outcomes.append(outcome);break
         assert delivered,'no delivery within six ordinary dispatches'
     receiver_page=open_player(b)
     receiver_page.evaluate("window.openDrawer('diplomacy')")
     receiver_page.wait_for_selector('.dip-thread');receiver_page.locator('.dip-thread-header').first.click()
     expect(receiver_page.locator('#dtab-threads')).to_contain_text('Gift delivered:')
-    for label,width,height in [('desktop',1280,900),('mobile',390,844)]:
-        receiver_page.set_viewport_size({'width':width,'height':height});receiver_page.locator('#drawer-diplomacy').screenshot(path=str(OUT/('thread-'+label+'.png')))
-        assert receiver_page.locator('#dtab-threads').evaluate('e=>e.scrollWidth<=e.clientWidth'),'thread overflow'
+    pictures(b,'diplomacy','thread')
     # Place a real recipient unit on nearby land with a sentry order. Commands
     # travel by runner as usual; never forge positioned units or change ticks.
     bunits=api(worldpath+'/units',token=b)['units']
@@ -184,7 +205,7 @@ try:
     audit=command('docker','exec',containers[0],'psql','-U','postgres','-d','simple-recall-all','-tAc',"SELECT event_type,payload FROM events WHERE world_id='"+world+"' AND event_type IN('GiftDelivered','GiftLost','CaravanRaided') ORDER BY id;")
     (OUT/'audit.txt').write_text(audit+'\n')
     assert not errors,errors
-    proof={'health':health,'engine':engine,'joins':joins,'recipient_distance':dist(aj['tile'],bj['tile']),'destinations':destinations(),'receipts':receipts,'raid_dispatch':raid,'raid_outcome':lost,'guard':current,'recipient_notifications':notices,'browser_errors':errors,'sql_mutations':False}
+    proof={'health':health,'engine':engine,'joins':joins,'recipient_distance':dist(aj['tile'],bj['tile']),'destinations':destinations(),'receipts':receipts,'raid_dispatch':raid,'raid_outcome':lost,'guard':current,'recipient_notifications':notices,'browser_proofs':browser_proofs,'browser_errors':errors,'sql_mutations':False}
     (OUT/'proof.json').write_text(json.dumps(proof,indent=2)+'\n')
     print(json.dumps({'health':health,'two_goods_delivered':chosen,'real_raid':True}))
 except Exception:
