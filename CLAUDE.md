@@ -211,7 +211,9 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
 - **Trade & messenger layer — three distinct things, keep them apart:** (1) **message** = free text
   wanax↔wanax; (2) **trade offer** = structured, bilateral consent, **FOW-gated to cities you have actually
   contacted** (`visibleOrigins`) — no global trade catalogue; (3) **internal transfer** own→own settlement =
-  logistics, no consent, a physical caravan that does not roll the loss die.
+  logistics, no consent, a physical caravan that does not roll the loss die; (4) **gift/tribute** (Timothy
+  2026-10-08) = goods or silver to ANOTHER Wanax's contacted city, nothing in return, no consent — a physical
+  caravan that CAN be raided. Vault: `megaron_forslag_kredit_och_relationsminne.md`.
 - **Kingdoms are POST-MVP** (Timothy 2026-07-08): all player surface disabled; server code kept gated.
 
 ## Visual style (palette lives in code)
