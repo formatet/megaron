@@ -42,7 +42,7 @@ import {
   unitRetreatOrder, saveRetreatDefault, warFocusUnit, unitPickup, unitPickupToggle,
 } from './ui/drawers/war.js';
 import {
-  loadEconomyDrawer, loadTransferGoods, startTransfer,
+  loadEconomyDrawer, loadTransferGoods, loadTransferDestinations, startTransfer,
   createStandingOrder, pauseStandingOrder, resumeStandingOrder, deleteStandingOrder,
   sortEconomySettlements, openCitySettlement,
 } from './ui/drawers/economy.js';
@@ -191,6 +191,7 @@ Object.assign(window, {
   dismissBrief,
   loadTicklog,
   loadTransferGoods,
+  loadTransferDestinations,
   loadWarDrawer,
   notifShowKind,
   okRite,

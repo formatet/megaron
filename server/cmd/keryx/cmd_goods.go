@@ -169,12 +169,8 @@ func transferCmd() *cobra.Command {
 	var provinceID string
 
 	cmd := &cobra.Command{
-		Use: "transfer",
-		// "no loss" here means no storm/pirates dice roll (internal logistics never
-		// rolls it, unlike a negotiated trade) — it is still a physical caravan that
-		// can be intercepted and seized. Don't shorten this back to a bare "no loss";
-		// that reads as risk-free, which it isn't (see `keryx cargo`).
-		Short: "Send goods to one of your own settlements (no consent needed, no storm/pirates roll — but still a physical, seizable caravan)",
+		Use:   "transfer",
+		Short: "Send physical goods to your own city or a contacted foreign city as a gift, with nothing requested in return",
 		Example: `  keryx transfer --good grain --qty 50 --dest Korinth
   keryx transfer --from <colony> --good grain --qty 50 --dest Korinth   # pull a colony's surplus home`,
 		// --good, --qty and --dest are all required — no single one is the
@@ -182,10 +178,6 @@ func transferCmd() *cobra.Command {
 		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
-			destID, err := resolveSettlement(c, cfg.WorldID, destName)
-			if err != nil {
-				return fmt.Errorf("resolve destination %q: %w", destName, err)
-			}
 			// Default source is the capital; --from/--province lets you pull a
 			// colony's surplus home instead, mirroring `goods`/`build --province`.
 			src := cfg.ProvinceID
@@ -195,6 +187,10 @@ func transferCmd() *cobra.Command {
 					return err
 				}
 				src = resolved
+			}
+			destID, err := resolveTransferDestination(c, cfg.WorldID, src, destName)
+			if err != nil {
+				return fmt.Errorf("resolve destination %q: %w", destName, err)
 			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/trade", cfg.WorldID, src)
 			data, err := c.post(path, map[string]any{
@@ -213,7 +209,11 @@ func transferCmd() *cobra.Command {
 			if err := json.Unmarshal(data, &resp); err != nil {
 				return err
 			}
-			line := fmt.Sprintf("Transfer dispatched: %.1f %s → %s · %s", qty, good, destName, transferArrival(resp))
+			label := "Transfer"
+			if resp["kind"] == "gift" {
+				label = "Gift"
+			}
+			line := fmt.Sprintf("%s dispatched: %g %s → %s · %s", label, qty, good, destName, transferArrival(resp))
 			// Sjöhandel kräver skepp (megaron_plan_sjohandel_kraver_skepp.md
 			// R3): a naval transfer names the ship carrying it and warns it
 			// won't be free again until it's sailed home too.

@@ -1,0 +1,4 @@
+» färsk DB på migration 160 · commit a4833898+ändringar
+ok  	formatet/megaron/server/api/handlers	0.838s
+ok  	formatet/megaron/server/cmd/keryx	0.003s
+ok  	formatet/megaron/server/internal/capabilities	0.002s [no tests to run]

@@ -2,6 +2,7 @@
 // Pure functions, no DOM/State deps — safe for any other module to import
 // directly regardless of layer (config/state ← api/ws ← render ← ui ← main).
 // (clock.js sits on the same low layer, so importing it keeps that promise.)
+import { giftText } from './gifts.js';
 import { serverNow } from '../clock.js';
 export function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
@@ -148,7 +149,7 @@ export function notifDomain(kind) {
     SitosGranaryRelease: 'city', SitosIntervention: 'city', SitosFundLow: 'city',
     HexBlockaded: 'city', HexUnblockaded: 'city', HexTaken: 'city',
     // Trade — goods on the move, and the offers that set them moving.
-    TradeDelivery: 'trade', TradeReturn: 'trade', TradeLost: 'trade',
+    GiftDelivered: 'trade', GiftLost: 'trade', TradeDelivery: 'trade', TradeReturn: 'trade', TradeLost: 'trade',
     TradeCaravanArrival: 'trade', TransferDelivered: 'trade',
     CaravanSeized: 'trade', CaravanRaided: 'trade',
     StandingOrderDispatched: 'trade', StandingOrderPaused: 'trade',
@@ -173,6 +174,8 @@ export function notifIcon(kind) {
     OutpostEstablished: '⛺',
     OutpostCaptured:    '⚔',
     TradeDelivery:      '🐂',
+    GiftDelivered:     '🎁',
+    GiftLost:          '🌊',
     TradeLost:          '🌊',
     TradeReturn:        '🐂',
     MessengerArrival:   '✉',
@@ -321,6 +324,8 @@ export function notifText(kind, body) {
     case 'OutpostEstablished': return 'Outpost established';
     case 'OutpostCaptured':    return 'Enemy outpost captured';
     case 'TradeDelivery':      return `Trade delivered: ${Math.floor(body.quantity || 0)} ${body.good_key || ''}`;
+    case 'GiftDelivered':
+    case 'GiftLost': return giftText(kind, body);
     case 'TradeLost':          return `Caravan lost to ${body.reason || 'misfortune'}`;
     case 'TradeReturn':        return `Trade returned: ${Math.floor(body.quantity || 0)} ${body.good_key || ''}`;
     case 'MessengerArrival': {

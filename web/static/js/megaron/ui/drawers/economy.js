@@ -260,25 +260,25 @@ async function loadEconomyGoods(mySettlements) {
 
 async function loadEconomyTransfer(mySettlements) {
   const el = document.getElementById('ectab-transfer');
-  if (mySettlements.length < 2) {
-    el.innerHTML = '<p class="empty-state" style="padding:1rem">Need at least two of your own settlements to transfer between.</p>';
+  if (mySettlements.length < 1) {
+    el.innerHTML = '<p class="empty-state" style="padding:1rem">Found a city before sending goods.</p>';
     return;
   }
   // From is addressed by PROVINCE id (the /provinces/{id}/trade URL); To is the
   // DESTINATION SETTLEMENT id (the handler resolves the destination by settlement
   // id — sending a province id here was the "destination settlement not found" bug).
   const fromOpts = mySettlements.map(s => `<option value="${s.id}">${esc(s.name)}${s.is_capital?' ★':''}</option>`).join('');
-  const toOpts   = mySettlements.map(s => `<option value="${s.settlement_id||s.id}">${esc(s.name)}${s.is_capital?' ★':''}</option>`).join('');
+  const toOpts = '<option value="">Loading…</option>'; 
   const inputStyle = 'width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem';
   el.innerHTML = `
     <div class="dsec">
-      <div class="dsec-title">Internal transfer</div>
+      <div class="dsec-title">Transfer or gift</div>
       <div style="display:flex;flex-direction:column;gap:.35rem;font-size:.78rem">
-        <label>From <select id="ec-tr-from" onchange="loadTransferGoods(this.value)" style="${inputStyle}">${fromOpts}</select></label>
+        <label>From <select id="ec-tr-from" onchange="loadTransferGoods(this.value);loadTransferDestinations(this.value)" style="${inputStyle}">${fromOpts}</select></label>
         <label>To <select id="ec-tr-to" style="${inputStyle}">${toOpts}</select></label>
         <label>Good <select id="ec-tr-good" style="${inputStyle}"><option value="">Loading…</option></select></label>
         <label>Quantity <input type="number" id="ec-tr-qty" min="1" style="${inputStyle}"></label>
-        <button class="btn-primary btn-small" onclick="startTransfer()">Transfer →</button>
+        <button class="btn-primary btn-small" onclick="startTransfer()">Send →</button>
         <div id="ec-tr-result" class="action-result"></div>
       </div>
     </div>
@@ -286,8 +286,7 @@ async function loadEconomyTransfer(mySettlements) {
       <div class="dsec-title">Your cargo in transit</div>
       <div id="ec-tr-cargo" class="loading" style="padding:.4rem 0">Loading…</div>
     </div>`;
-  const toSel = document.getElementById('ec-tr-to');
-  if (toSel && mySettlements.length > 1) toSel.selectedIndex = 1;
+  loadTransferDestinations(document.getElementById('ec-tr-from').value);
   loadTransferGoods(document.getElementById('ec-tr-from').value);
   refreshCargoInTransit();
 }
@@ -358,6 +357,23 @@ async function refreshCargoInTransit() {
   }
 }
 
+let transferDestinationsSeq = 0;
+export async function loadTransferDestinations(fromProvId) {
+  const sel = document.getElementById('ec-tr-to');
+  if (!sel || !fromProvId) return;
+  const seq = ++transferDestinationsSeq, world = State.WORLD_ID;
+  sel.innerHTML = '<option value="">Loading…</option>';
+  try {
+    const r = await fetchAuth(`/api/v1/worlds/${world}/provinces/${fromProvId}/trade/destinations`);
+    const rows = r.ok ? (await r.json()) || [] : [];
+    if (seq !== transferDestinationsSeq || State.WORLD_ID !== world || document.getElementById('ec-tr-to') !== sel) return;
+    sel.innerHTML = rows.length ? rows.map(d => `<option value="${esc(d.settlement_id)}">${esc(d.name)} — ${d.own ? 'your city' : esc(d.owner_name) + ' (gift)'}</option>`).join('')
+      : '<option value="">No contacted destination</option>';
+  } catch {
+    if (seq === transferDestinationsSeq && document.getElementById('ec-tr-to') === sel) sel.innerHTML = '<option value="">Could not load destinations</option>';
+  }
+}
+
 // Populate the Good dropdown with the From settlement's goods in stock, so the
 // player picks a real good and sees how much is available (no more free-text).
 // Only the newest From selection may fill the good list; an older, slower
@@ -393,6 +409,7 @@ export async function startTransfer() {
     body: JSON.stringify({ destination_id: to, good_key: good, quantity: qty }),
   });
   const d = await r.json().catch(() => ({}));
+  if (document.getElementById('ec-tr-result') !== resultEl) return;
   if (r.ok) {
     resultEl.style.color = 'var(--safe)';
     // Sjöhandel kräver skepp (megaron_plan_sjohandel_kraver_skepp.md R3): name
@@ -401,6 +418,7 @@ export async function startTransfer() {
     resultEl.textContent = d.ship_name
       ? `${fmtNum(qty)} ${good} sent aboard ${d.ship_name} — carried, can be intercepted en route, and sails home empty afterward.`
       : `${fmtNum(qty)} ${good} sent — physical cargo, can be intercepted en route.`;
+    if (d.kind === 'gift') resultEl.textContent = 'Gift: ' + resultEl.textContent;
     if (Number.isInteger(d.arrival_tick)) {
       resultEl.textContent += ` Arrives on game day ${fmtNum(d.arrival_tick)} (journey: ${fmtDays(d.travel_ticks)}).`;
     }
@@ -463,7 +481,7 @@ let automationLoadSeq = 0;
 async function loadEconomyAutomation(mySettlements) {
   const el = document.getElementById('ectab-automation');
   const seq = ++automationLoadSeq;
-  if (mySettlements.length < 2) {
+  if (mySettlements.length < 1) {
     el.innerHTML = '<p class="empty-state" style="padding:1rem">Need at least two of your own settlements for a standing order.</p>';
     return;
   }

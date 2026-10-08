@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
+	"time"
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/province"
@@ -65,6 +67,46 @@ func (h *ProvinceHandler) TransferDestinations(w http.ResponseWriter, r *http.Re
 	}
 	if err := rows.Err(); err != nil {
 		writeError(w, 500, "could not read transfer destinations")
+		return
+	}
+	writeJSON(w, 200, list)
+}
+
+// GiftHistory returns only this Wanax's own dispatches and notified outcomes.
+// Intended recipients cannot read dispatches before the physical cargo arrives.
+func (h *ProvinceHandler) GiftHistory(w http.ResponseWriter, r *http.Request) {
+	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
+	if err != nil {
+		writeError(w, 400, "invalid world ID")
+		return
+	}
+	player, ok := auth.PlayerIDFromContext(r.Context())
+	if !ok {
+		writeError(w, 401, "not authenticated")
+		return
+	}
+	rows, err := h.pool.Query(r.Context(), `SELECT event_type,payload,created_at FROM (SELECT DISTINCT ON(payload->>'transport_id') event_type,payload,created_at,id FROM events WHERE world_id=$1 AND ((event_type='GiftDispatched' AND payload->>'sender_id'=$2) OR (event_type IN('GiftDelivered','GiftLost') AND (payload->>'sender_id'=$2 OR payload->>'recipient_id'=$2 OR payload->>'actual_recipient_id'=$2))) ORDER BY payload->>'transport_id',id DESC) gifts ORDER BY id DESC LIMIT 200`, worldID, player.String())
+	if err != nil {
+		writeError(w, 500, "could not load gifts")
+		return
+	}
+	defer rows.Close()
+	type gift struct {
+		Kind      string          `json:"kind"`
+		Body      json.RawMessage `json:"body"`
+		CreatedAt time.Time       `json:"created_at"`
+	}
+	list := []gift{}
+	for rows.Next() {
+		var g gift
+		if err := rows.Scan(&g.Kind, &g.Body, &g.CreatedAt); err != nil {
+			writeError(w, 500, "could not read gift")
+			return
+		}
+		list = append(list, g)
+	}
+	if rows.Err() != nil {
+		writeError(w, 500, "could not read gifts")
 		return
 	}
 	writeJSON(w, 200, list)

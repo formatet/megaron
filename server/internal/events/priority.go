@@ -77,6 +77,7 @@ var tickPriorities = map[ScheduledEventType]int{
 	ScheduledMessengerReturn:  tickPriorityArrival,
 	ScheduledMessengerStayEnd: tickPriorityArrival,
 	ScheduledTradeDelivery:    tickPriorityArrival,
+	ScheduledGiftDelivery:     tickPriorityArrival,
 	ScheduledTradeReturn:      tickPriorityArrival,
 	ScheduledBuildComplete:    tickPriorityArrival,
 	ScheduledTrainComplete:    tickPriorityArrival,

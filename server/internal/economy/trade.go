@@ -273,8 +273,7 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 	// the goods change owner. Moving grain between two of your own cities is
 	// logistics, not trade (CLAUDE.md trade-lagret punkt 3: "intern överföring
 	// ... fysisk karavan utan förlust"); it must never roll this die.
-	if !isInternalTransfer(ctx, tx, p.TradeRouteID, p.TransportID, p.DestinationID) && h.Dice.Float64() < tradeRiskPct {
-		reason := tradeLostReasons[h.Dice.Intn(len(tradeLostReasons))]
+	if reason := h.deliveryLoss(ctx, tx, p.TradeRouteID, p.TransportID, p.DestinationID); reason != "" {
 		if _, err = tx.Exec(ctx, `UPDATE trade_routes SET resolved = true WHERE id = $1`, p.TradeRouteID); err != nil {
 			return fmt.Errorf("mark lost route resolved: %w", err)
 		}
@@ -607,13 +606,13 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 // ship can never be left bound without a return mover and timer.
 func dispatchShipReturnLeg(ctx context.Context, tx pgx.Tx, sched *events.Scheduler, worldID uuid.UUID, transportID, arrivedID uuid.UUID) error {
 	var shipUnitID *uuid.UUID
-	var homeID uuid.UUID
+	var homeID, actualArrivalID *uuid.UUID
 	var ownerID uuid.UUID
 	var homeQ, homeR, arriveQ, arriveR int
 	if err := tx.QueryRow(ctx,
-		`SELECT ship_unit_id, origin_id, owner_id, origin_q, origin_r, dest_q, dest_r
+		`SELECT ship_unit_id, origin_id, dest_id, owner_id, origin_q, origin_r, dest_q, dest_r
 		 FROM transports WHERE id = $1`, transportID,
-	).Scan(&shipUnitID, &homeID, &ownerID, &homeQ, &homeR, &arriveQ, &arriveR); err != nil {
+	).Scan(&shipUnitID, &homeID, &actualArrivalID, &ownerID, &homeQ, &homeR, &arriveQ, &arriveR); err != nil {
 		return fmt.Errorf("load outbound leg: %w", err)
 	}
 	if shipUnitID == nil {
@@ -646,7 +645,7 @@ func dispatchShipReturnLeg(ctx context.Context, tx pgx.Tx, sched *events.Schedul
 		    interceptable, ship_unit_id, journey, departed_tick)
          VALUES ($1,$2,'ship_return',$3,$4,'naval',$5,$6,$7,$8,$9,$10,$11,true,$12,$13,$14)
 		 RETURNING id`,
-		worldID, ownerID, arrivedID, homeID,
+		worldID, ownerID, actualArrivalID, homeID,
 		arriveQ, arriveR, homeQ, homeR, departsAt, arrivesAt, currentTick+journey.TravelTicks, *shipUnitID, raw, currentTick,
 	).Scan(&returnID); err != nil {
 		return fmt.Errorf("insert ship return leg: %w", err)
@@ -689,4 +688,13 @@ func deliverTradeNotice(ctx context.Context, hub Broadcaster, worldID, owner uui
 		return
 	}
 	_ = hub.NotifyPlayer(ctx, worldID, owner, kind, 3, payload)
+}
+
+// deliveryLoss is the existing delivery risk shared by legacy trade and gifts.
+// Slice T will replace this flat die for every caller together.
+func (h *DeliveryHandler) deliveryLoss(ctx context.Context, tx pgx.Tx, route, transport, destination uuid.UUID) string {
+	if isInternalTransfer(ctx, tx, route, transport, destination) || h.Dice.Float64() >= tradeRiskPct {
+		return ""
+	}
+	return tradeLostReasons[h.Dice.Intn(len(tradeLostReasons))]
 }

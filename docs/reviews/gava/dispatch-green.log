@@ -1,0 +1,27 @@
+» färsk DB på migration 160 · commit a4833898+ändringar
+=== RUN   TestGiftContactedForeignCityDispatch
+2026/10/08 19:28:20 INFO player registered id=56ac9e03-c69a-44a4-abd2-be0cb57008fa username=trader-c1200692-8069-4eba-aeef-f5f1f5f9f276
+--- PASS: TestGiftContactedForeignCityDispatch (0.07s)
+=== RUN   TestGiftHiddenForeignCityDeniedWithoutDebit
+2026/10/08 19:28:20 INFO player registered id=bbfd261d-0b0e-4887-b296-a818f98cb1d3 username=trader-943ac505-aef2-4cf0-909a-a6afdd749492
+--- PASS: TestGiftHiddenForeignCityDeniedWithoutDebit (0.06s)
+=== RUN   TestGiftDestinationListMatchesLetterFOW
+=== RUN   TestGiftDestinationListMatchesLetterFOW/contacted
+2026/10/08 19:28:20 INFO player registered id=4f830f5a-2994-4b58-bf56-503bea8210f7 username=trader-d1e7c4d1-9397-4219-b553-90fa86db0aa7
+=== RUN   TestGiftDestinationListMatchesLetterFOW/hidden
+2026/10/08 19:28:20 INFO player registered id=2308a780-4665-4a76-b01b-dd849939464d username=trader-4684517a-472a-4b85-a7f4-a50bb79e4867
+--- PASS: TestGiftDestinationListMatchesLetterFOW (0.12s)
+    --- PASS: TestGiftDestinationListMatchesLetterFOW/contacted (0.06s)
+    --- PASS: TestGiftDestinationListMatchesLetterFOW/hidden (0.06s)
+=== RUN   TestTrade_InternalTransferCreatesPhysicalCaravan
+2026/10/08 19:28:20 INFO player registered id=1f9121ac-6cf0-4b68-818d-1efe623b52aa username=trader-cf8a4b35-dd99-460e-a2e2-4677d63f2ccd
+--- PASS: TestTrade_InternalTransferCreatesPhysicalCaravan (0.06s)
+=== RUN   TestTrade_InternalTransferCreditsDestinationExactlyOnce
+2026/10/08 19:28:20 INFO player registered id=88548608-8f37-403b-9863-68ad5888a3c2 username=trader-379606c6-9062-46cd-bee8-275eff17fbe8
+2026/10/08 19:28:20 INFO trade delivery destination=5f943a58-6a62-40d1-ba75-7d067a4a754e good=silver qty=50
+--- PASS: TestTrade_InternalTransferCreditsDestinationExactlyOnce (0.07s)
+=== RUN   TestTrade_InterceptedInternalTransferNotCredited
+2026/10/08 19:28:20 INFO player registered id=c49bdaee-06b6-4523-9afb-68a942696ef3 username=trader-1265893b-e4b7-4298-a994-3fb12e6b2568
+--- PASS: TestTrade_InterceptedInternalTransferNotCredited (0.06s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.456s

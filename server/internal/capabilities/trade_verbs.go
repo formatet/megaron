@@ -1,6 +1,9 @@
 package capabilities
 
-import "fmt"
+import (
+	"fmt"
+	"formatet/megaron/server/internal/province"
+)
 
 // HintTradeAcceptInsolvent is trade-accept's actionable hint when the
 // accepting settlement cannot yet cover a pending offer's cost. Shared
@@ -160,13 +163,25 @@ func canTradeCancel(cc checkContext) Verb {
 		})
 }
 
-// canTransfer is the internal (own -> own) logistics verb — CLI aliases
-// `transfer` and `trade` both hit ProvinceHandler.Trade, which rejects any
-// destination not owned by the caller. Requires a second own settlement and
-// a good to move. TODO: Fas 3 unify with handler gate.
+// canTransfer covers own-city logistics and a gift to a letter-reachable
+// foreign city. Both use the same persistent contact source as dispatch.
 func canTransfer(cc checkContext) Verb {
 	total, _ := cc.ownSettlements()
 	destOK := total >= 2
+	if !destOK && total >= 1 {
+		origins := province.VisibleOrigins(cc.ctx, cc.pool, cc.worldID, cc.playerID)
+		rows, err := cc.pool.Query(cc.ctx, `SELECT p.map_q,p.map_r FROM settlements s JOIN provinces p ON p.id=s.province_id WHERE s.world_id=$1 AND s.state='active' AND s.owner_id IS NOT NULL AND s.owner_id<>$2`, cc.worldID, cc.playerID)
+		if err == nil {
+			for rows.Next() {
+				var q, r int
+				if rows.Scan(&q, &r) == nil && province.VisibleFrom(province.MapPosition{Q: q, R: r}, origins, 6) {
+					destOK = true
+					break
+				}
+			}
+			rows.Close()
+		}
+	}
 	good, qty := cc.anySellableGood()
 	goodOK := good != ""
 	detail := "no goods in stock to move"
@@ -174,11 +189,11 @@ func canTransfer(cc checkContext) Verb {
 		detail = fmt.Sprintf("%s %.0f in stock", good, qty)
 	}
 	return verb("transfer", CategoryTrade,
-		"Send goods to one of your own settlements (no consent needed, no storm/pirates roll — but still a physical, seizable caravan).",
+		"Send goods to your own city or as a gift to another Wanax. All cargo can be intercepted.",
 		[]Requirement{
-			req("a second own settlement to send to", destOK,
-				fmt.Sprintf("%d/2 own settlements", total),
-				"found or hold a colony before transferring between your own cities"),
+			req("an own or contacted foreign destination", destOK,
+				fmt.Sprintf("%d own settlements; known destination: %t", total, destOK),
+				"contact another city or found a colony"),
 			req("a good in stock to move", goodOK, detail,
 				"allocate labor to a producible good, or wait for stock to accrue"),
 		})

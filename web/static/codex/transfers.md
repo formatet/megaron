@@ -1,6 +1,6 @@
 A **transfer** moves goods between two of your *own* settlements. No consent, no negotiation — simpler than [[trade]] with a stranger.
 
-Open **Economy → Transfer**, choose *From*, *To*, the good and the quantity, and press **Transfer →**. Below, **Your cargo in transit** lists everything on the road with its arrival time. A notification tells you when it is delivered.
+Open **Economy → Transfer**, choose *From*, *To*, the good and the quantity, and press **Send →**. Below, **Your cargo in transit** lists everything on the road with its arrival time. A notification tells you when it is delivered.
 
 ## Cargo is physical
 
@@ -22,7 +22,9 @@ A laden ship caught at sea does not always lose the same way a caravan does. One
 - **Damaged** — half the cargo is lost overboard in the fight; the ship limps home with the rest.
 - **Sunk** — the cargo and the ship are both gone.
 
-## Gift — a loyalty gesture, not logistics
+Sending to another Wanax is a [[gifts|gift or tribute]], with nothing requested in return.
+
+## Gift from capital — a loyalty gesture
 
 A **gift** also sends silver and/or grain to one of your own settlements, but the point is different: it always sends from your *capital*, and 50 or more silver-equivalent (silver + grain × ½) earns the destination +1 [[loyalty]] the moment you send it. Open **City** on the colony you want to gift, and use **Gift from capital** under **Production → More**.
 
