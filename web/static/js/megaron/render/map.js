@@ -8,7 +8,7 @@ import {
   PAN_SPEED_PX_PER_SEC,
 } from '../config.js';
 import { isTypingTarget } from '../ui/format.js';
-import { numberWords } from '../ui/number_words.js';
+import { fmtNum } from '../ui/fmt_num.js';
 import { canonicalUnitType, actorName } from '../ui/actornames.js';
 import { drawActor, spriteRuns, FOREIGN_ACCENT, FOREIGN_OUTLINE } from './actorsprites.js';
 import { eyeSees } from './sight.js';
@@ -4346,7 +4346,7 @@ function hostStoreLine(label, s) {
   if (!s || s.ticks_left == null) return `${label} lasts indefinitely`;
   const days = Number(s.ticks_left);
   if (!Number.isFinite(days)) return `${label} duration unknown`;
-  return `${label} lasts ${numberWords(days)} game ${days === 1 ? 'day' : 'days'}`;
+  return `${label} lasts ${fmtNum(days)} game ${days === 1 ? 'day' : 'days'}`;
 }
 
 async function openHostPanel(h, tile) {
@@ -4374,10 +4374,10 @@ async function openHostPanel(h, tile) {
   // share a container with it.
   document.getElementById('ip-body-extra').innerHTML =
     `<div style="margin-bottom:.5rem;line-height:1.5">
-       <div>${numberWords(fp.population || 0)} people · cannot fight · sight two hexes (four by water or on mountains)</div>
+       <div>${fmtNum(fp.population || 0)} people · cannot fight · sight 2 hexes (4 by water or on mountains)</div>
        <div>${hostStoreLine('Food', fp.grain)}</div>
        <div>${hostStoreLine('Escort pay', fp.silver)}</div>
-       <div>${numberWords(fp.spearmen_in_field || 0)} Spearmen ${fp.spearmen_in_field === 1 ? 'cohort' : 'cohorts'} in the field</div>
+       <div>${fmtNum(fp.spearmen_in_field || 0)} Spearmen ${fp.spearmen_in_field === 1 ? 'cohort' : 'cohorts'} in the field</div>
        <div>Messengers free to send</div>
      </div>
      <div id="ip-found-preview" style="font-size:.73rem;border-top:1px solid var(--border);padding-top:.4rem">Fetching founding forecast…</div>`;

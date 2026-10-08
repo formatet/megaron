@@ -13,9 +13,9 @@ test('duration follows changed server rules and refuses malformed or unavailable
 });
 test('mission shows authoritative ticks until turn, then its actual return reason',()=>{
  const e={area_q:9,area_r:2,length_ticks:12,turn_tick:108,home_by_tick:114};
- assert.match(expeditionMissionText(e),/turns home by game day one hundred eight; home by game day one hundred fourteen/);
+ assert.match(expeditionMissionText(e),/turns home by game day 108; home by game day 114/);
  e.homeward=true;e.turn_reason='no_path';
- assert.match(expeditionMissionText(e),/returning home — no reachable unexplored ground; home by game day one hundred fourteen/);
+ assert.match(expeditionMissionText(e),/returning home — no reachable unexplored ground; home by game day 114/);
  assert.doesNotMatch(expeditionMissionText(e),/turns home/);
  assert.equal(expeditionMissionText(null),'');
 });

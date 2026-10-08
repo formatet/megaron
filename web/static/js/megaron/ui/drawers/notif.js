@@ -3,7 +3,7 @@ import { fetchAuth } from '../../api.js';
 import { updateNotifBadge } from '../chips.js';
 import { fmtAgo, notifText, notifIcon, colonyFoundedGrainLine } from '../format.js';
 import { currentCalendarDate, monthLabel } from '../misc.js';
-import { numberWords } from '../number_words.js';
+import { fmtNum } from '../fmt_num.js';
 import { openDispatchWindow } from '../dispatch_window.js';
 
 // ── Notifications drawer ──────────────────────────────────────────────────
@@ -25,16 +25,16 @@ export function notifDateHeader(cal = currentCalendarDate(), state = State) {
   let waiting = '';
   if (state.WORLD_STATE === 'forming') {
     const need = Math.max(0, (state.WANAXES_NEEDED || 0) - (state.WANAXES_JOINED || 0));
-    waiting = `<div class="notif-world-waiting">⏳ The world has not begun — waiting for ${numberWords(need)} more ${need === 1 ? 'Wanax' : 'Wanaxes'}.` +
+    waiting = `<div class="notif-world-waiting">⏳ The world has not begun — waiting for ${fmtNum(need)} more ${need === 1 ? 'Wanax' : 'Wanaxes'}.` +
       ` Time stands still until then; you may look around, but orders can be given only once it starts.</div>`;
   }
-  return `<div class="notif-date-header">Day ${numberWords(cal.day)} of ${monthLabel(cal).replace(/\((\d+)\)/, (_, value) => `(${numberWords(Number(value))})`)}, Year ${numberWords(cal.year)}${waiting}</div>`;
+  return `<div class="notif-date-header">Day ${fmtNum(cal.day)} of ${monthLabel(cal).replace(/\((\d+)\)/, (_, value) => `(${fmtNum(Number(value))})`)}, Year ${fmtNum(cal.year)}${waiting}</div>`;
 }
 
 
 export function hiddenNotifLabel(kind, count) {
   const label = kind === 'SitosIntervention' ? 'food support reports' : 'food reserve warnings';
-  return `${numberWords(count)} ${label} — show reports`;
+  return `${fmtNum(count)} ${label} — show reports`;
 }
 
 export function notifShowKind(kind) { loadNotifDrawer(kind || null); }

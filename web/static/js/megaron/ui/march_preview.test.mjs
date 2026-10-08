@@ -41,7 +41,7 @@ test('each selected unit keeps its own arrival; names and API errors are escaped
   controller.update('w', [{id:'fast',name:'<fast>'},{id:'slow',name:'Slow'},{id:'bad',name:'Bad'}], { target_q: 1 });
   await pause();
   const html = output.at(-1);
-  assert.match(html, /two game days/); assert.match(html, /eight game days/);
+  assert.match(html, /2 game days/); assert.match(html, /8 game days/);
   assert.match(html, /&lt;fast&gt;/); assert.doesNotMatch(html, /<img|<fast>/);
   assert.match(html, /Forecast unavailable/);
 });

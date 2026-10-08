@@ -1,6 +1,6 @@
-import { numberWords } from '../number_words.js';
+import { fmtNum } from '../fmt_num.js';
 import { sitosStateHtml } from './sitos_view.js';
-const n = value => numberWords(Math.round(Number(value) * 100) / 100);
+const n = value => fmtNum(Math.round(Number(value) * 100) / 100);
 const row = (label, value) => `<div class="stat-row"><span class="sr-label">${label}</span><span class="sr-val">${value}</span></div>`;
 
 export function productionSectionsHTML(city) {
@@ -20,7 +20,7 @@ export function productionSectionsHTML(city) {
 
 export function populationHTML(pd, idle, livestock, provinceID) {
   return row('People', n(pd.population)) + row('Free to work', n(idle)) +
-    row('Livestock', n(Math.floor(livestock))) + `<button class="btn-small" onclick="slaughterLivestock('${provinceID}')" ${livestock < 1 ? 'disabled' : ''} title="Trade one animal for ten people, right now">Slaughter → ten people</button>` +
+    row('Livestock', n(Math.floor(livestock))) + `<button class="btn-small" onclick="slaughterLivestock('${provinceID}')" ${livestock < 1 ? 'disabled' : ''} title="Trade one animal for 10 people, right now">Slaughter → 10 people</button>` +
     '<div id="city-slaughter-result" class="action-result"></div>';
 }
 

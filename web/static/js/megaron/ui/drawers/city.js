@@ -9,7 +9,7 @@ import { unitTypeLabel } from '../actornames.js';
 import { startCityAnim } from '../../render/city.js';
 import { renderGubbeGrid, terrainLabel } from '../citygrid.js';
 import { productionSectionsHTML, populationHTML, foodSummaryHTML, foodDetailsHTML } from './city_production.js';
-import { numberWords } from '../number_words.js';
+import { fmtNum } from '../fmt_num.js';
 
 // The settlement the City drawer currently shows: cycle via the drawer's
 // prev/next arrows. Defaults to the capital (activeCitySettlement, state.js).
@@ -36,7 +36,7 @@ export function loyaltyLogRowsHTML(entries) {
       const sign  = delta > 0 ? '+' : '';
       const color = delta > 0 ? 'var(--safe)' : (delta < 0 ? 'var(--accent)' : 'var(--text-dim)');
       return `<tr>
-        <td style="color:${color};font-weight:bold">${sign}${numberWords(delta)}</td>
+        <td style="color:${color};font-weight:bold">${sign}${fmtNum(delta)}</td>
         <td>${esc(e.reason || '')}</td>
         <td style="color:var(--text-dim);font-size:.7rem;white-space:nowrap">${esc(fmtClock(new Date(e.created_at).getTime()))}</td>
       </tr>`;
@@ -87,7 +87,7 @@ export async function sendGift(settlementID) {
   const d = await r.json().catch(() => ({}));
   if (r.ok) {
     resultEl.style.color = 'var(--safe)';
-    resultEl.textContent = d.loyalty_delta > 0 ? `Gift sent — loyalty +${numberWords(d.loyalty_delta)}.` : 'Gift sent.';
+    resultEl.textContent = d.loyalty_delta > 0 ? `Gift sent — loyalty +${fmtNum(d.loyalty_delta)}.` : 'Gift sent.';
     const silverInp = document.getElementById('city-gift-silver');
     const grainInp = document.getElementById('city-gift-grain');
     if (silverInp) silverInp.value = '';
@@ -146,11 +146,11 @@ export async function saveLaborAlloc(provinceID) {
           const devCapPct2 = Math.round((pd2.devotion_capacity || 0) * 100);
           cultInp.value = devPct2;
           const cit = document.querySelector('.labor-cit[data-good="cult"]');
-          if (cit) cit.textContent = numberWords(Math.round((pd2.devotion || 0) * (pd2.labor_pool || 0)));
+          if (cit) cit.textContent = fmtNum(Math.round((pd2.devotion || 0) * (pd2.labor_pool || 0)));
           const rateCell = document.getElementById('labor-rate-cult');
           if (rateCell) {
             const atCap = devPct2 >= devCapPct2;
-            rateCell.textContent = `${numberWords(devPct2)} percent of ${numberWords(devCapPct2)} percent capacity${atCap ? ' · at cap — build a higher-level temple to devote more' : ''}`;
+            rateCell.textContent = `${fmtNum(devPct2)} percent of ${fmtNum(devCapPct2)} percent capacity${atCap ? ' · at cap — build a higher-level temple to devote more' : ''}`;
           }
         }
       }
@@ -270,7 +270,7 @@ export async function loadCityDrawer() {
       const livestockGood = goods.find(g => g.key === 'livestock');
       const livestock = livestockGood ? livestockGood.amount : 0;
       document.getElementById('city-pop-sec').innerHTML = populationHTML(pd, idle, livestock, capital.id);
-      document.getElementById('city-people-details').innerHTML = `<div class="stat-row"><span class="sr-label">In service</span><span class="sr-val">${numberWords(armyPop)}</span></div><div class="stat-row"><span class="sr-label">Workers</span><span class="sr-val">${numberWords(lp)}</span></div>`;
+      document.getElementById('city-people-details').innerHTML = `<div class="stat-row"><span class="sr-label">In service</span><span class="sr-val">${fmtNum(armyPop)}</span></div><div class="stat-row"><span class="sr-label">Workers</span><span class="sr-val">${fmtNum(lp)}</span></div>`;
     } else {
       document.getElementById('city-pop-sec').innerHTML = '<p class="empty-state">—</p>';
     }
@@ -279,11 +279,11 @@ export async function loadCityDrawer() {
     document.getElementById('city-reserve-sec').innerHTML = foodDetailsHTML(pd);
     if (pd && pd.last_tick) {
       const lt = pd.last_tick;
-      const prodRows = Object.entries(lt.production || {}).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--safe)">+${numberWords(Number(v.toFixed(2)))}</td></tr>`).join('');
-      const consRows = Object.entries(lt.consumption || {}).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--accent)">−${numberWords(Number(v.toFixed(2)))}</td></tr>`).join('');
+      const prodRows = Object.entries(lt.production || {}).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--safe)">+${fmtNum(Number(v.toFixed(2)))}</td></tr>`).join('');
+      const consRows = Object.entries(lt.consumption || {}).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--accent)">−${fmtNum(Number(v.toFixed(2)))}</td></tr>`).join('');
       document.getElementById('city-lasttick-sec').innerHTML = `
-        <div class="stat-row"><span class="sr-label">Game day</span><span class="sr-val">#${numberWords(lt.tick)}</span></div>
-        ${(lt.sitos_food_in > 0 || lt.sitos_food_out > 0) ? `<div class="stat-row"><span class="sr-label">Food reserve</span><span class="sr-val">${lt.sitos_food_in > 0 ? `<span style="color:var(--safe)">+${numberWords(Math.round(lt.sitos_food_in))} food from granary</span>` : ''}${(lt.sitos_food_in > 0 && lt.sitos_food_out > 0) ? ' · ' : ''}${lt.sitos_food_out > 0 ? `<span style="color:var(--text-dim)">${numberWords(Math.round(lt.sitos_food_out))} food stored</span>` : ''}</span></div>` : ''}
+        <div class="stat-row"><span class="sr-label">Game day</span><span class="sr-val">#${fmtNum(lt.tick)}</span></div>
+        ${(lt.sitos_food_in > 0 || lt.sitos_food_out > 0) ? `<div class="stat-row"><span class="sr-label">Food reserve</span><span class="sr-val">${lt.sitos_food_in > 0 ? `<span style="color:var(--safe)">+${fmtNum(Math.round(lt.sitos_food_in))} food from granary</span>` : ''}${(lt.sitos_food_in > 0 && lt.sitos_food_out > 0) ? ' · ' : ''}${lt.sitos_food_out > 0 ? `<span style="color:var(--text-dim)">${fmtNum(Math.round(lt.sitos_food_out))} food stored</span>` : ''}</span></div>` : ''}
         ${(prodRows||consRows) ? `<table class="goods-mini" style="margin-top:.3rem">${prodRows}${consRows}</table>` : ''}`;
     } else {
       document.getElementById('city-lasttick-sec').innerHTML = '<p class="empty-state">—</p>';
@@ -349,7 +349,7 @@ export async function loadCityDrawer() {
               style="width:3.5rem;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);padding:.15rem .3rem;font-size:.8rem;text-align:right">%
           </span>
         </div>
-        <div style="font-size:.72rem;color:var(--text-dim)"><span class="labor-cit" data-good="cult">${numberWords(Math.round(devWeight*lp))}</span> workers · <span id="labor-rate-cult">${numberWords(devPct)} percent of ${numberWords(devCapPct)} percent capacity${atCap ? ' · at cap — build a higher-level temple to devote more' : ''}</span></div>
+        <div style="font-size:.72rem;color:var(--text-dim)"><span class="labor-cit" data-good="cult">${fmtNum(Math.round(devWeight*lp))}</span> workers · <span id="labor-rate-cult">${fmtNum(devPct)} percent of ${fmtNum(devCapPct)} percent capacity${atCap ? ' · at cap — build a higher-level temple to devote more' : ''}</span></div>
         <div style="margin-top:.4rem;display:flex;gap:.4rem;align-items:center">
           <button id="labor-save-btn" onclick="saveLaborAlloc('${capital.id}')"
             style="padding:.3rem .7rem;background:var(--accent);border:none;color:#000;font-size:.8rem;cursor:pointer">
@@ -369,7 +369,7 @@ export async function loadCityDrawer() {
     const cultInp = document.getElementById('labor-input-cult');
     if (cultInp) cultInp.addEventListener('input', () => {
       const cit = document.querySelector('.labor-cit[data-good="cult"]');
-      if (cit) cit.textContent = numberWords(Math.round((parseFloat(cultInp.value||0)||0)/100*lp));
+      if (cit) cit.textContent = fmtNum(Math.round((parseFloat(cultInp.value||0)||0)/100*lp));
     });
 
     // ── Gubbe placement (P5) ────────────────────────────────────────────────
@@ -671,10 +671,10 @@ export async function loadTicklog() {
     el.innerHTML = `<table class="goods-mini">
       <tr style="color:var(--text-dim);font-size:.7rem"><td>Game day</td><td>Production</td><td>Consumption</td><td>Events</td></tr>
       ${ticks.map(t => {
-        const prod = Object.entries(t.production||{}).map(([k,v]) => `${k} +${numberWords(Number(v.toFixed(1)))}`).join(', ');
-        const cons = Object.entries(t.consumption||{}).map(([k,v]) => `${k} -${numberWords(Number(v.toFixed(1)))}`).join(', ');
+        const prod = Object.entries(t.production||{}).map(([k,v]) => `${k} +${fmtNum(Number(v.toFixed(1)))}`).join(', ');
+        const cons = Object.entries(t.consumption||{}).map(([k,v]) => `${k} -${fmtNum(Number(v.toFixed(1)))}`).join(', ');
         const evs  = (t.events||[]).map(e => e.type).join(', ');
-        return `<tr><td>#${numberWords(t.tick)}</td><td style="color:var(--safe)">${prod}</td><td style="color:var(--accent)">${cons}</td><td style="color:var(--text-dim)">${evs}</td></tr>`;
+        return `<tr><td>#${fmtNum(t.tick)}</td><td style="color:var(--safe)">${prod}</td><td style="color:var(--accent)">${cons}</td><td style="color:var(--text-dim)">${evs}</td></tr>`;
       }).join('')}
     </table>`;
   } catch (_) {

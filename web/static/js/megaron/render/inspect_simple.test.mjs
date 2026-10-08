@@ -57,6 +57,6 @@ test('L actual inspect: fog never exposes marker/army and late army reply cannot
 });
 test('L actual Host: food and escort pay durations use exact game days in words, never wall time',async()=>{
  await click({city:null,host:true});let html=element('ip-body-extra').innerHTML;
- assert.match(html,/Food lasts two point five game days/,'host food uses exact unscaled game days');assert.match(html,/Escort pay lasts two hundred forty game days/);assert.doesNotMatch(html.replace(/<[^>]*>/g,''),/tick left|real time|NaN|\d/,'Host status uses player words');assert.match(element('ip-foot').innerHTML,/Found the metropolis here/,'founding stays');
- fp={...fp,grain:{ticks_left:null},silver:{ticks_left:1},spearmen_in_field:1};await click({city:null,host:true});html=element('ip-body-extra').innerHTML;assert.match(html,/Food lasts indefinitely/);assert.match(html,/Escort pay lasts one game day</);assert.match(html,/one Spearmen cohort in the field/);
+ assert.match(html,/Food lasts 2.5 game days/,'host food uses exact unscaled game days');assert.match(html,/Escort pay lasts 240 game days/);assert.doesNotMatch(html.replace(/<[^>]*>/g,''),/tick left|real time|NaN/,'Host status uses no tick/wall-clock wording');assert.match(element('ip-foot').innerHTML,/Found the metropolis here/,'founding stays');
+ fp={...fp,grain:{ticks_left:null},silver:{ticks_left:1},spearmen_in_field:1};await click({city:null,host:true});html=element('ip-body-extra').innerHTML;assert.match(html,/Food lasts indefinitely/);assert.match(html,/Escort pay lasts 1 game day</);assert.match(html,/1 Spearmen cohort in the field/);
 });

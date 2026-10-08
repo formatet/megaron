@@ -27,16 +27,15 @@ test('M: actual drawer offers exactly Correspondence and Known',()=>rig(async({b
   assert.doesNotMatch(body.innerHTML,/Compose|Cities|Rulers/);
 }));
 
-test('M: Known keeps ruler and city knowledge, writes numbers in words, gates rumours',()=>rig(async({node})=>{
+test('M: Known keeps ruler and city knowledge, gates rumours',()=>rig(async({node})=>{
   await dip.loadDiplomacyDrawer();
   assert.ok(node('tab-known').listener,'real Known click registered');
   await node('tab-known').listener.call(node('tab-known'));
   const html=node('dtab-known').innerHTML;
   assert.match(html,/Alector/);assert.match(html,/Kyme/);assert.match(html,/Rumour city/);
-  assert.match(html,/one known city/);assert.match(html,/one rumoured city/);
+  assert.match(html,/1 known city/);assert.match(html,/1 rumoured city/);
   assert.match(html,/data-write="contact"/);assert.doesNotMatch(html,/data-write="rumour"/);
   assert.match(html,/Copper/);assert.match(html,/east/);assert.match(html,/tin/);
-  assert.doesNotMatch(html.replace(/<[^>]*>/g,''),/\d/);
 }));
 
 test('M: first letter and both trade directions remain reachable without any prior letter',()=>rig(async({node,calls})=>{
