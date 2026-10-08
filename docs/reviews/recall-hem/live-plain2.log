@@ -1,0 +1,25 @@
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-recall-hem/tools/war_cards_live.py", line 259, in <module>
+    expect(card.get_by_role('button',name='Recall',exact=True)).to_be_visible()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/sync_api/_generated.py", line 20523, in to_be_visible
+    self._sync(self._impl_obj.to_be_visible(visible=visible, timeout=timeout))
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_sync_base.py", line 115, in _sync
+    return task.result()
+           ~~~~~~~~~~~^^
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_assertions.py", line 765, in to_be_visible
+    await self._expect_impl(
+    ...<5 lines>...
+    )
+  File "/home/tk/.local/lib/python3.14/site-packages/playwright/_impl/_assertions.py", line 85, in _expect_impl
+    raise AssertionError(
+        f"{out_message}\nActual value: {actual}{error_message} {format_call_log(result.get('log'))}"
+    )
+AssertionError: Locator expected to be visible
+Actual value: None
+Error: element(s) not found 
+Call log:
+  - Expect "to_be_visible" with timeout 5000ms
+  - waiting for locator("#ucard-601f1d2d-15cc-40ab-a2cf-e426183cb056").get_by_role("button", name="Recall", exact=True)
+

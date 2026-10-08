@@ -1,0 +1,48 @@
+{
+  "event": {
+    "from_q": 53,
+    "from_r": 8,
+    "unit_id": "2f177912-d41e-4650-b58d-260c33177b34",
+    "origin_q": 54,
+    "origin_r": 6,
+    "arrives_at": "2026-10-08T18:16:44+02:00"
+  },
+  "unit": {
+    "id": "2f177912-d41e-4650-b58d-260c33177b34",
+    "type": "spearman",
+    "category": "land",
+    "size": 100,
+    "status": "marching",
+    "deployable": true,
+    "display_name": "1st Spearmen of Nostos",
+    "ordinal": 1,
+    "support_settlement_id": "20f0a296-558d-471f-b7db-02b305efb733",
+    "support_settlement_name": "Nostos",
+    "q": 53,
+    "r": 8,
+    "target_q": 54,
+    "target_r": 6,
+    "departs_at": "2026-10-08T18:16:20.709259+02:00",
+    "arrives_at": "2026-10-08T18:16:44.709259+02:00",
+    "arrival_tick": 13,
+    "duration_ticks": 4,
+    "arrives_at_utc": "2026-10-08T16:16:44.818854094Z",
+    "path": [
+      [
+        53,
+        8
+      ],
+      [
+        53,
+        7
+      ],
+      [
+        54,
+        6
+      ]
+    ],
+    "current_q": 53,
+    "current_r": 7,
+    "in_battle": false
+  }
+}

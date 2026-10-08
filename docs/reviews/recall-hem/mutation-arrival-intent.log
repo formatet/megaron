@@ -1,0 +1,16 @@
+» färsk DB på migration 160 · commit 35232e3d+ändringar
+=== RUN   TestRecallExpeditionLaterLegHome
+=== RUN   TestRecallExpeditionLaterLegHome/land
+2026/10/08 18:16:51 INFO recall/redirect order reached unit, new course set unit=0a128173-00e9-4363-a0a0-2b4b8960bd5b mode=recall from_q=4 from_r=1 to_q=0 to_r=0 arrives_at=2026-10-08T22:16:51.020+02:00
+2026/10/08 18:16:51 INFO unit arrived (garrison) unit=0a128173-00e9-4363-a0a0-2b4b8960bd5b q=0 r=0 status=garrison
+    recall_home_test.go:87: arrival status=garrison settlement=bfd2ef5d-0622-404a-9bf1-df5ee5667f4b home=bfd2ef5d-0622-404a-9bf1-df5ee5667f4b, want home garrison
+=== RUN   TestRecallExpeditionLaterLegHome/naval
+2026/10/08 18:16:51 INFO recall/redirect order reached unit, new course set unit=99374cc9-8cdf-47d0-a1c3-acb861e7bb36 mode=recall from_q=5 from_r=0 to_q=1 to_r=0 arrives_at=2026-10-08T20:16:51.152+02:00
+2026/10/08 18:16:51 INFO unit arrived (garrison) unit=99374cc9-8cdf-47d0-a1c3-acb861e7bb36 q=1 r=0 status=garrison
+    recall_home_test.go:87: arrival status=garrison settlement=4df68680-621c-4b82-ba03-29676720575e home=4df68680-621c-4b82-ba03-29676720575e, want home garrison
+--- FAIL: TestRecallExpeditionLaterLegHome (0.27s)
+    --- FAIL: TestRecallExpeditionLaterLegHome/land (0.13s)
+    --- FAIL: TestRecallExpeditionLaterLegHome/naval (0.14s)
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.270s
+FAIL

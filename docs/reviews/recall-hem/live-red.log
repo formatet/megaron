@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-recall-hem/tools/war_cards_live.py", line 268, in <module>
+    assert (outcome['origin_q'],outcome['origin_r'])==(homeq,homer),{'recall_target_not_home':outcome,'home':(homeq,homer)}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'recall_target_not_home': {'from_q': 53, 'from_r': 8, 'unit_id': '2f177912-d41e-4650-b58d-260c33177b34', 'origin_q': 54, 'origin_r': 6, 'arrives_at': '2026-10-08T18:16:44+02:00'}, 'home': (53, 10)}

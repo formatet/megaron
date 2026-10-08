@@ -1,0 +1,14 @@
+» färsk DB på migration 160 · commit 35232e3d+ändringar
+=== RUN   TestRecallExpeditionLaterLegHome
+=== RUN   TestRecallExpeditionLaterLegHome/land
+2026/10/08 18:16:47 INFO recall/redirect order reached unit, new course set unit=4834fad2-1ec9-498b-beb2-b6966bbef07d mode=recall from_q=4 from_r=1 to_q=4 to_r=0 arrives_at=2026-10-08T19:16:47.664+02:00
+    recall_home_test.go:72: recall target=(4,0), want home (0,0), later-leg origin=(4,0)
+=== RUN   TestRecallExpeditionLaterLegHome/naval
+2026/10/08 18:16:47 INFO recall/redirect order reached unit, new course set unit=4d789863-521a-40df-a38e-e34a6e41e2b4 mode=recall from_q=5 from_r=0 to_q=4 to_r=0 arrives_at=2026-10-08T19:16:47.783+02:00
+    recall_home_test.go:66: naval target=(4,0), want home sea neighbour (1,0)
+--- FAIL: TestRecallExpeditionLaterLegHome (0.24s)
+    --- FAIL: TestRecallExpeditionLaterLegHome/land (0.12s)
+    --- FAIL: TestRecallExpeditionLaterLegHome/naval (0.12s)
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.245s
+FAIL

@@ -1,0 +1,63 @@
+{
+  "unit": {
+    "id": "2f177912-d41e-4650-b58d-260c33177b34",
+    "type": "spearman",
+    "category": "land",
+    "size": 100,
+    "status": "marching",
+    "deployable": true,
+    "display_name": "1st Spearmen of Nostos",
+    "ordinal": 1,
+    "support_settlement_id": "20f0a296-558d-471f-b7db-02b305efb733",
+    "support_settlement_name": "Nostos",
+    "q": 54,
+    "r": 6,
+    "target_q": 53,
+    "target_r": 10,
+    "departs_at": "2026-10-08T18:16:08.711124+02:00",
+    "arrives_at": "2026-10-08T18:16:50.719702+02:00",
+    "arrival_tick": 14,
+    "duration_ticks": 7,
+    "arrives_at_utc": "2026-10-08T16:16:50.816385953Z",
+    "path": [
+      [
+        54,
+        6
+      ],
+      [
+        53,
+        7
+      ],
+      [
+        53,
+        8
+      ],
+      [
+        53,
+        9
+      ],
+      [
+        53,
+        10
+      ]
+    ],
+    "current_q": 53,
+    "current_r": 7,
+    "march_intent": "explore_return",
+    "in_battle": false,
+    "expedition": {
+      "area_q": 55,
+      "area_r": 10,
+      "length_ticks": 14,
+      "turn_tick": 7,
+      "home_by_tick": 14,
+      "homeward": true,
+      "turn_reason": "no_path"
+    }
+  },
+  "home": {
+    "q": 53,
+    "r": 10,
+    "settlement_id": "20f0a296-558d-471f-b7db-02b305efb733"
+  }
+}

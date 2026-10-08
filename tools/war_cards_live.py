@@ -59,7 +59,7 @@ try:
     env = {'HOME': os.environ['HOME'], 'PATH': os.environ['PATH'],
            'DATABASE_URL': f'postgres://postgres:simple-recall-all-pw@127.0.0.1:{pg}/simple-recall-all?sslmode=disable',
            'REDIS_URL': f'127.0.0.1:{redis}', 'JWT_SECRET': secrets.token_urlsafe(40),
-           'PORT': str(gameport), 'TICK_SECONDS': '6', 'MAP_WIDTH': '56', 'MAP_HEIGHT': '40',
+           'PORT': str(gameport), 'TICK_SECONDS': '12' if PLAIN else '6', 'MAP_WIDTH': '56', 'MAP_HEIGHT': '40',
            'WORLD_NAME': 'Expedition proof', 'POLEIA_WORLD_START_WANAXES': '1',
            'STATIC_DIR': str(Path(sys.argv[4]).resolve()/'static') if len(sys.argv)>4 else str(ROOT/'web/static'), 'TEMPLATE_DIR': str(Path(sys.argv[4]).resolve()/'templates') if len(sys.argv)>4 else str(ROOT/'web/templates'),
            'CHRONICLE_DIR': str(OUT/'chronicles'), 'REPORTS_DIR': str(OUT/'reports')}
@@ -191,7 +191,11 @@ try:
     if PLAIN:
         forecasts=[]
         for candidate in nearby:
-            preview=api(worldpath+'/units/'+uid+'/march-preview?target_q='+str(candidate['q'])+'&target_r='+str(candidate['r']),token=token)
+            try:
+                preview=api(worldpath+'/units/'+uid+'/march-preview?target_q='+str(candidate['q'])+'&target_r='+str(candidate['r']),token=token)
+            except urllib.error.HTTPError as error:
+                if error.code==422:continue  # Read-only refusal: try another ordinary destination.
+                raise
             if preview.get('available') and preview.get('duration_ticks',0)>=4:
                 forecasts.append((preview['duration_ticks'],candidate))
         assert forecasts,'no reachable known plain-march destination taking at least four game days'
