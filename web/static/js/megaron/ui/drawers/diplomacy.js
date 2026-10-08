@@ -1,3 +1,4 @@
+import { showInlineResult } from '../inline_result.js';
 import { State, ownCapital } from '../../state.js';
 import { fetchAuth } from '../../api.js';
 import { track } from '../../telemetry.js';
@@ -436,7 +437,7 @@ export async function dipCancel(id, btn) {
   } else {
     const data = await res.json().catch(() => ({}));
     btn.disabled = false;
-    alert(formatApiError(data, 'Cancel failed'));
+    showInlineResult(document.getElementById('dip-trade-' + id) || btn.parentElement, formatApiError(data, 'Cancel failed'), true);
   }
 }
 
@@ -509,7 +510,7 @@ export async function dipArrangePassage(id, selId, btn) {
     if (block) block.outerHTML = '<div style="font-size:.72rem;color:var(--safe);margin-top:.3rem;text-align:right">✓ Passage arranged — arrives ' + arrivalHTML(data.arrives_at) + '</div>';
   } else {
     btn.disabled = false;
-    alert(formatApiError(data, 'Arrange passage failed'));
+    showInlineResult(block || btn.parentElement, formatApiError(data, 'Arrange passage failed'), true);
   }
 }
 
@@ -528,7 +529,7 @@ export async function dipCallBack(id, btn) {
     if (row) row.outerHTML = '<div style="font-size:.72rem;color:var(--text-dim);margin-top:.3rem;text-align:right">↩ Called back — returns ' + arrivalHTML(data.returns_at) + ', undelivered</div>';
   } else {
     btn.disabled = false;
-    alert(formatApiError(data, 'Call back failed'));
+    showInlineResult(btn.parentElement, formatApiError(data, 'Call back failed'), true);
   }
 }
 

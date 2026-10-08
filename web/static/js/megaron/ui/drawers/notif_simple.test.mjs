@@ -1,0 +1,26 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+const noopEl = new Proxy({}, {get:(_t,k)=>k==='style'?{}:()=>noopEl,set:()=>true});
+globalThis.document = {addEventListener(){},getElementById:()=>noopEl,createElement:()=>noopEl,querySelector:()=>noopEl,querySelectorAll:()=>[],body:noopEl};
+globalThis.window = {addEventListener(){},matchMedia:()=>({matches:false,addEventListener(){}})};
+globalThis.localStorage = {getItem:()=>null,setItem(){}};
+const { notifDateHeader, hiddenNotifLabel } = await import('./notif.js');
+import { notifText } from '../format.js';
+import { lockedActionsHTML, LAWAGETAS_BRIEFS, drawerHelpHTML } from '../misc.js';
+test('K: calendar and forming state survive without world speed',()=>{
+ const cal={day:3,month:2,monthName:'Antherion',year:1};
+ const html=notifDateHeader(cal,{TICK_SECONDS:360,WORLD_STATE:'forming',WANAXES_NEEDED:10,WANAXES_JOINED:7});
+ assert.match(html,/Day three of Antherion \(two\), Year one/);assert.match(html,/waiting for three more Wanaxes/);
+ assert.doesNotMatch(html,/World speed|normal|per hour|×/,'world speed must be absent');assert.equal(notifDateHeader(null,{}),'');
+});
+test('K: quiet kinds remain readable both in group and historic archive',()=>{
+ for(const kind of ['SitosIntervention','SitosFundLow']){
+  assert.match(hiddenNotifLabel(kind,3),/^three food/,'group must use player words');assert.doesNotMatch(hiddenNotifLabel(kind,3),/Sitos|\+3/,'group must use player words');
+  assert.doesNotMatch(notifText(kind,{}),/Sitos/,'historic row must use player words');
+ }
+});
+test('K: every short advisory has a drawer help link; locked reasons stay authoritative in tooltip',()=>{
+ for(const [name,text] of Object.entries(LAWAGETAS_BRIEFS)){assert.ok(text.length<85);assert.match(drawerHelpHTML(name),new RegExp("openCodexForDrawer\\('"+name+"'\\)"));}
+ const html=lockedActionsHTML('trade',[{name:'trade-offer',requirements:[{satisfied:true,hint:'irrelevant'},{satisfied:false,hint:'Send a messenger <first>'}]},{name:'trade-offer',requirements:[{satisfied:false,hint:'Meet another city'}]}]);
+ assert.match(html,/Unavailable: /);assert.equal((html.match(/>trade offer</g)||[]).length,1,'one label, all reasons retained');assert.match(html,/title="Send a messenger &lt;first&gt; · Meet another city"/,'keep server reason');assert.match(html,/openCodexForDrawer\('economy'\)/);assert.doesNotMatch(html,/irrelevant/);assert.equal(lockedActionsHTML('trade',[]),'');
+});

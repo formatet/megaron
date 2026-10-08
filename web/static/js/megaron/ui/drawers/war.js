@@ -1,3 +1,4 @@
+import { showInlineResult, confirmInline } from '../inline_result.js';
 import { State, ownCapital } from '../../state.js';
 import { serverNow } from '../../clock.js';
 import { fetchAuth } from '../../api.js';
@@ -676,16 +677,17 @@ export function renderUnitCard(u) {
 }
 
 export async function warAbandon(settlementID, name) {
-  if (!confirm('Abandon ' + name + '? This cannot be undone.')) return;
-  const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/settlements/${settlementID}/abandon`, { method: 'POST' });
   const resEl = document.getElementById('war-abandon-res');
-  if (res.ok) {
-    await loadMap();
-    loadWarDrawer();
-  } else {
-    const d = await res.json().catch(() => ({}));
-    if (resEl) resEl.textContent = d.error || 'Abandon failed';
-  }
+  confirmInline(resEl, 'Abandon ' + name + '? This cannot be undone.', async () => {
+    const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/settlements/${settlementID}/abandon`, { method: 'POST' });
+    if (res.ok) {
+      await loadMap();
+      await loadWarDrawer();
+    } else {
+      const d = await res.json().catch(() => ({}));
+      showInlineResult(resEl, d.error || 'Abandon failed', true);
+    }
+  });
 }
 
 // The recall/redirect endpoint answers in one of two shapes. Every ordinary

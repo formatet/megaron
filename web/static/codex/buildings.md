@@ -39,3 +39,5 @@ A building costs what it is made of: **timber** for the Farm, Market, Stable, Ha
 
 A building produces nothing without people in it. Staff it from the centre **City** hex of the placement grid ([[citizens]]).
 
+
+If cancelling a queued build is refused, the reason appears in the Buildings tab.

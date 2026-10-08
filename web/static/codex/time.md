@@ -2,7 +2,7 @@
 
 The world advances in **ticks**, and one tick is one day. Wherever the game tells you how long something takes — a march, a building, a letter — it counts in game-days, because that is the unit your decisions are made in.
 
-How much real time a day takes is set per world. A test world usually runs faster than normal, and says so in a banner. The **date in the top bar** is the world's own calendar; the sun and moon beside it show the time of day.
+How much real time a day takes is set per world. A test world can run faster than normal. The **date in the top bar** is the world's own calendar; the sun and moon beside it show the time of day.
 
 ## The world does not wait for you
 

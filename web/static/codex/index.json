@@ -16,7 +16,7 @@
     {"id": "citizens",     "title": "Citizens and placement",       "category": "Your city", "related": ["catchment", "buildings", "surplus"]},
     {"id": "food",         "title": "Food and hunger",              "category": "Your city", "kinds": ["FoodShortfall", "SubsistenceWarning", "CityCollapsed"], "related": ["sitos", "growth", "upkeep"]},
     {"id": "growth",       "title": "Growth",                       "category": "Your city", "related": ["food", "citizens"]},
-    {"id": "sitos",        "title": "The Sitos granary",            "category": "Your city", "kinds": ["SitosGranaryRelease"], "related": ["food", "growth"]},
+    {"id": "sitos",        "title": "The Sitos granary",            "category": "Your city", "kinds": ["SitosGranaryRelease", "SitosIntervention", "SitosFundLow"], "related": ["food", "growth"]},
     {"id": "buildings",    "title": "Buildings",                    "category": "Your city", "kinds": ["BuildComplete", "GoodsCrafted"], "related": ["citizens", "goods", "temples"]},
 
     {"id": "goods",        "title": "Goods",                        "category": "Goods and trade", "drawer": "economy", "related": ["surplus", "silver", "bronze"]},

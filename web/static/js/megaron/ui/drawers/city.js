@@ -1,3 +1,4 @@
+import { showInlineResult } from '../inline_result.js';
 import { State, activeCitySettlement } from '../../state.js';
 import { fetchAuth } from '../../api.js';
 import { track } from '../../telemetry.js';
@@ -670,7 +671,7 @@ export async function cancelBuild(provinceID, queueID) {
     await refreshCityBuildings(provinceID);
   } else {
     const d = await res.json().catch(() => ({}));
-    alert(d.error || 'Could not cancel build');
+    showInlineResult('city-bld-sec', d.error || 'Could not cancel build', true);
   }
 }
 

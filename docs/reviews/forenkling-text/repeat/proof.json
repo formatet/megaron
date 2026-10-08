@@ -1,0 +1,45 @@
+{
+  "health": {
+    "commit": "0c0baf39e933e101fbc6d60fd4237c52cd943f38",
+    "migration": 160,
+    "status": "ok"
+  },
+  "mode": "after",
+  "browser_errors": [],
+  "browser_dialogs": [],
+  "receipts": {
+    "locked_hints": [
+      "march or send a messenger to scout a neighbour before contacting it",
+      "wait for a Wanax to send a trade offer, or check `keryx inbox`",
+      "wait for a Wanax to send a trade offer, or check `keryx inbox`",
+      "send a trade offer first, or check `keryx outbox`",
+      "found or hold a colony before transferring between your own cities",
+      "found or hold a colony before sending a gift"
+    ],
+    "cancel_refusal": {
+      "status": 404,
+      "body": {
+        "error": "build queue entry not found or not yours"
+      }
+    },
+    "rite_refusal": {
+      "status": 400,
+      "body": {
+        "error": "unknown prayer \"unknown-proof-prayer\""
+      }
+    },
+    "historic_replay": {
+      "synthetic": true,
+      "filters": [
+        "http://127.0.0.1:59927/api/v1/worlds/4a583c57-868c-4190-b7c7-9fe34abf56d1/notifications?exclude=SitosIntervention%2CSitosFundLow",
+        "http://127.0.0.1:59927/api/v1/worlds/4a583c57-868c-4190-b7c7-9fe34abf56d1/notifications?kind=SitosIntervention",
+        "http://127.0.0.1:59927/api/v1/worlds/4a583c57-868c-4190-b7c7-9fe34abf56d1/notifications?kind=SitosFundLow",
+        "http://127.0.0.1:59927/api/v1/worlds/4a583c57-868c-4190-b7c7-9fe34abf56d1/notifications?kind=SitosIntervention",
+        "http://127.0.0.1:59927/api/v1/worlds/4a583c57-868c-4190-b7c7-9fe34abf56d1/notifications?exclude=SitosIntervention%2CSitosFundLow",
+        "http://127.0.0.1:59927/api/v1/worlds/4a583c57-868c-4190-b7c7-9fe34abf56d1/notifications?kind=SitosIntervention",
+        "http://127.0.0.1:59927/api/v1/worlds/4a583c57-868c-4190-b7c7-9fe34abf56d1/notifications?kind=SitosFundLow"
+      ]
+    }
+  },
+  "sql_mutations": false
+}

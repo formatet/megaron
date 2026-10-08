@@ -23,3 +23,5 @@ Then look at **City → Production** for idle [[citizens]], and **Economy → Wa
 ## Making the next absence easier
 
 Set up [[routes|standing orders]] for food and materials, keep the [[sitos|granary]] full, and post a [[stances|watch]] where enemies would come from.
+
+Food support reports and food reserve warnings are grouped at the end of Notifications. Choose **show reports** to read them; **All notifications** returns to the archive. Gossip remains its own drawer.

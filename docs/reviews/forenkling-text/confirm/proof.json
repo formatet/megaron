@@ -1,0 +1,51 @@
+{
+  "health": {
+    "commit": "0c0baf39e933e101fbc6d60fd4237c52cd943f38",
+    "migration": 160,
+    "status": "ok"
+  },
+  "mode": "after",
+  "browser_errors": [],
+  "browser_dialogs": [],
+  "receipts": {
+    "locked_hints": [
+      "march or send a messenger to scout a neighbour before contacting it",
+      "wait for a Wanax to send a trade offer, or check `keryx inbox`",
+      "wait for a Wanax to send a trade offer, or check `keryx inbox`",
+      "send a trade offer first, or check `keryx outbox`",
+      "found or hold a colony before transferring between your own cities",
+      "found or hold a colony before sending a gift"
+    ],
+    "cancel_refusal": {
+      "status": 404,
+      "body": {
+        "error": "build queue entry not found or not yours"
+      }
+    },
+    "rite_refusal": {
+      "status": 400,
+      "body": {
+        "error": "unknown prayer \"unknown-proof-prayer\""
+      }
+    },
+    "abandon_visual_fixture": {
+      "synthetic": true,
+      "cancel_callbacks": 0,
+      "confirm_callbacks": 1,
+      "abandon_api_requests": 0
+    },
+    "historic_replay": {
+      "synthetic": true,
+      "filters": [
+        "http://127.0.0.1:55595/api/v1/worlds/bcf2290b-fa60-4870-a26b-7282a5343452/notifications?exclude=SitosIntervention%2CSitosFundLow",
+        "http://127.0.0.1:55595/api/v1/worlds/bcf2290b-fa60-4870-a26b-7282a5343452/notifications?kind=SitosIntervention",
+        "http://127.0.0.1:55595/api/v1/worlds/bcf2290b-fa60-4870-a26b-7282a5343452/notifications?kind=SitosFundLow",
+        "http://127.0.0.1:55595/api/v1/worlds/bcf2290b-fa60-4870-a26b-7282a5343452/notifications?kind=SitosIntervention",
+        "http://127.0.0.1:55595/api/v1/worlds/bcf2290b-fa60-4870-a26b-7282a5343452/notifications?exclude=SitosIntervention%2CSitosFundLow",
+        "http://127.0.0.1:55595/api/v1/worlds/bcf2290b-fa60-4870-a26b-7282a5343452/notifications?kind=SitosIntervention",
+        "http://127.0.0.1:55595/api/v1/worlds/bcf2290b-fa60-4870-a26b-7282a5343452/notifications?kind=SitosFundLow"
+      ]
+    }
+  },
+  "sql_mutations": false
+}

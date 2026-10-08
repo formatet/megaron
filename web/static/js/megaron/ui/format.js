@@ -713,6 +713,9 @@ export function notifText(kind, body) {
     }
     case 'StandingOrderPaused':
       return `Standing delivery paused — ${body.reason || 'reason unknown'}`;
+    // Historic archive kinds remain readable without exposing internal names.
+    case 'SitosIntervention': return 'Food support was given to the city';
+    case 'SitosFundLow': return 'The city’s food reserve needs attention';
     case 'SitosGranaryRelease': {
       const empty = body.granary_empty ? ' — granary now empty' : '';
       return `Granary released ${Math.round(body.food_released || 0)} grain (${body.coverage_days || 0} days' coverage)${empty}`;
