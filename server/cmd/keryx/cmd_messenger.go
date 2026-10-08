@@ -323,6 +323,9 @@ func outboxCmd() *cobra.Command {
 						when = fmt.Sprintf("%dd ago", int(ago.Hours()/24))
 					}
 				}
+				if passageStatus, _ := m["passage_status"].(string); passageStatus == "unknown" {
+					status = "no word"
+				}
 				line := fmt.Sprintf("→ %s  [%s]  (%s)  id:%s", dest, status, when, id)
 				// megaron_plan_budet_liftar.md: a sea-lifted runner's current
 				// state, once it has any (a purely-land runner never sets these).

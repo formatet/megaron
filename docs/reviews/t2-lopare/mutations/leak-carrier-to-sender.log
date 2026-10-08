@@ -1,0 +1,7 @@
+» färsk DB på migration 162 · commit daf740dd+ändringar
+2026/10/08 23:21:52 INFO player registered id=908b0f87-8f6a-49a3-9fe7-89f25affc89a username=leg-viewer-7abed21c-db9c-4834-9e5a-8e4a75169062
+--- FAIL: TestRescuedRunner_SenderOutboxMapAndEyesKeepPositionUnknown (0.09s)
+    messenger_carrier_fate_test.go:82: aboard outbox leaks rescue/port "SECRET RESCUE SHIP": [{"id":"4077efcc-8a81-408d-a29e-bde30ac79b76","destination_id":"d5a999be-a282-4c60-b972-50e593af7d26","destination_name":"Legdest","message_text":"sealed","status":"outbound","reply_text":null,"sent_at":"2026-10-08T23:21:52.908762+02:00","arrives_at":"2026-10-09T00:21:52.905436+02:00","passage_status":"unknown","carrier_name":"SECRET RESCUE SHIP","can_arrange_passage":false,"can_call_back":false}]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.089s
+FAIL

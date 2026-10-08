@@ -110,6 +110,9 @@ func printNotificationRow(c *Client, n notificationItem) {
 // Takes c only to hand to printExploreReturnedLine's game-day ETA (rad K) —
 // every other line below is pure formatting of the notification body.
 func printNotificationDetail(c *Client, n notificationItem) {
+	if n.Kind == "MessengerLostAtSea" || n.Kind == "MessengerRescuedAtSea" {
+		printMessengerFateLine(n)
+	}
 	if n.Kind == "GiftDelivered" || n.Kind == "GiftLost" {
 		printGiftOutcome(n)
 	}

@@ -29,6 +29,8 @@
 
     {"id": "sight",        "title": "Sight and memory",             "category": "The wider world", "kinds": ["ScoutReport", "UnitExploreReturned", "ExpeditionTurnedHome", "ExpeditionReport"], "related": ["contact", "defence", "horde"]},
     {"id": "contact",      "title": "Contact",                      "category": "The wider world", "related": ["messengers", "trade", "gossip"]},
+    {"id": "runner-lost-at-sea", "title": "A runner lost at sea", "category": "The wider world", "kinds": ["MessengerLostAtSea"], "related": ["messengers", "sea", "runner-rescued-at-sea"]},
+    {"id": "runner-rescued-at-sea", "title": "A runner rescued at sea", "category": "The wider world", "kinds": ["MessengerRescuedAtSea"], "related": ["messengers", "sea", "runner-lost-at-sea"]},
     {"id": "messengers",   "title": "Messengers and letters",       "category": "The wider world", "drawer": "diplomacy", "kinds": ["MessengerArrival", "MessengerReturned"], "related": ["contact", "trade", "runners"]},
     {"id": "gossip",       "title": "Gossip",                       "category": "The wider world", "drawer": "notif", "related": ["contact", "sight"]},
     {"id": "sea",          "title": "The Thalassa and ships",       "category": "The wider world", "kinds": ["ShipDamaged", "ShipStormDamaged", "ShipFoundered", "ShipRepaired", "UnitLostAtSea", "ShipCaptured", "ShipLost", "ShipStranded", "ShipSweptFromSea", "PassageStalled", "PickupWaiting", "UnitFetched", "PickupTimedOut"], "related": ["units", "bronze", "sight", "transfers"]},

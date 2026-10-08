@@ -1,0 +1,11 @@
+» färsk DB på migration 162 · commit daf740dd+ändringar
+2026/10/08 23:14:56 INFO passage: messenger boarded messenger=a07f7242-16d2-49cb-9385-07513e94e4d1 carrier="Stale ship" arrives_at=2026-10-09T01:14:56.033+02:00
+2026/10/08 23:14:56 INFO passage: messenger boarded messenger=07f3a72d-5bb2-4f10-bde0-65f2d5a0c340 carrier="Stale transport" arrives_at=2026-10-09T01:14:56.051+02:00
+--- FAIL: TestCarrierFate_StaleBoardingCannotBoardDeadCarrier (0.04s)
+    --- FAIL: TestCarrierFate_StaleBoardingCannotBoardDeadCarrier/mission (0.02s)
+        carrier_fate_test.go:514: carrier selected before death must not board after death: {status:outbound passageStatus:0x1311b750d0d0 carrierName:0x1311b750d0e0 carrierTransportID:<nil> carrierUnitID:0x1311b7502db0 lostUntil:<nil> generation:1}
+    --- FAIL: TestCarrierFate_StaleBoardingCannotBoardDeadCarrier/transport (0.02s)
+        carrier_fate_test.go:514: carrier selected before death must not board after death: {status:outbound passageStatus:0x1311b7395570 carrierName:0x1311b7395580 carrierTransportID:0x1311b739d290 carrierUnitID:<nil> lostUntil:<nil> generation:1}
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.038s
+FAIL

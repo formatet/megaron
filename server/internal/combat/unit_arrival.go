@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"time"
 
+	"formatet/megaron/server/internal/carrier"
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
@@ -45,6 +46,7 @@ import (
 // SetStance (stance can be set to 'sentry', sentry_q/r is persisted), but no
 // scan goroutine is started yet.
 type UnitArrivalHandler struct {
+	carrierOutcomes    *[]*events.Event
 	expeditionOutcomes *[]expeditionOutcome
 	pool               *pgxpool.Pool
 	eventStore         *events.Store
@@ -100,11 +102,16 @@ func (h *UnitArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	var outcomes []expeditionOutcome
 	local := *h
 	local.expeditionOutcomes = &outcomes
+	var passengerEvents []*events.Event
+	local.carrierOutcomes = &passengerEvents
 	if err := local.resolve(ctx, tx, payload.UnitID, payload.WorldID); err != nil {
 		return err
 	}
 	if err := tx.Commit(ctx); err != nil {
 		return err
+	}
+	for _, w := range passengerEvents {
+		h.eventStore.RecordCommitted(ctx, w)
 	}
 	for _, outcome := range outcomes {
 		h.eventStore.RecordCommitted(ctx, outcome.event)
@@ -159,7 +166,7 @@ func (h *UnitArrivalHandler) NotifyDeadLetter(ctx context.Context, e events.Sche
 	return nil
 }
 
-func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, worldID uuid.UUID) error {
+func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, worldID uuid.UUID) (result error) {
 	// Load arriving unit with FOR UPDATE — idempotency guard.
 	//
 	// q/r are scanned as NULLABLE and only moved into unitRow once the unit is
@@ -204,6 +211,48 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 	}
 
 	destQ, destR := *u.targetQ, *u.targetR
+	// A port visit is physical evidence, independent of how quickly the ship
+	// starts its next leg. Never synthesize it from an ETA or open-sea waypoint.
+	defer func() {
+		if result != nil || u.category != "naval" {
+			return
+		}
+		var port *uuid.UUID
+		if err := tx.QueryRow(ctx, `SELECT settlement_id FROM units WHERE id=$1 AND status='garrison'`, u.id).Scan(&port); err != nil && err != pgx.ErrNoRows {
+			result = err
+			return
+		}
+		if port == nil && u.marchIntent != nil && (*u.marchIntent == "passage" || *u.marchIntent == "land" || *u.marchIntent == "pickup") && u.landTargetQ != nil && u.landTargetR != nil {
+			err := tx.QueryRow(ctx, `SELECT s.id FROM settlements s JOIN provinces p ON p.id=s.province_id WHERE s.world_id=$1 AND p.map_q=$2 AND p.map_r=$3 AND s.state='active' AND (p.coastal OR EXISTS(SELECT 1 FROM buildings b WHERE b.settlement_id=s.id AND b.building_type='harbour'))`, worldID, *u.landTargetQ, *u.landTargetR).Scan(&port)
+			if err != nil && err != pgx.ErrNoRows {
+				result = err
+				return
+			}
+		}
+		shore := u.marchIntent != nil && (*u.marchIntent == "passage" || *u.marchIntent == "land" || *u.marchIntent == "pickup") && u.landTargetQ != nil && u.landTargetR != nil
+		if port == nil && !shore {
+			return
+		}
+		var currentTick int
+		if err := tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick); err != nil {
+			result = err
+			return
+		}
+		var witnesses []*events.Event
+		var err error
+		if port != nil {
+			witnesses, err = carrier.PortTx(ctx, tx, h.eventStore, worldID, u.id, *port, currentTick)
+		} else {
+			witnesses, err = carrier.ShoreTx(ctx, tx, h.eventStore, worldID, u.id, *u.landTargetQ, *u.landTargetR, currentTick)
+		}
+		if err != nil {
+			result = err
+			return
+		}
+		if h.carrierOutcomes != nil {
+			*h.carrierOutcomes = append(*h.carrierOutcomes, witnesses...)
+		}
+	}()
 
 	// Sweep FOW along the actual path walked by this unit. Best-effort: log on
 	// error, never abort the arrival. Runs for every arrival (garrison, combat,

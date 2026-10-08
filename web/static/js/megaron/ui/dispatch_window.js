@@ -1,7 +1,7 @@
 import { State } from '../state.js';
 import { openAccountWindow } from './account_window.js';
 import { fetchAuth } from '../api.js';
-import { notifText, notifIcon, colonyFoundedGrainLine, formatApiError, passageNote, esc } from './format.js';
+import { notifText, notifIcon, colonyFoundedGrainLine, formatApiError, passageNote, messengerEnvelopeText, esc } from './format.js';
 import { codexArticleForKind, openCodex } from './codex.js';
 import { fmtArrival } from './time.js';
 
@@ -278,6 +278,7 @@ export function openDispatchWindow(kind, payload, timeLabel) {
       <span class="dw-icon">${notifIcon(kind)}</span>
       <span class="dw-text">${notifText(kind, payload)}</span>
     </div>
+    ${kind === 'MessengerLostAtSea' ? `<pre class="dw-envelope">${esc(messengerEnvelopeText(payload))}</pre>` : ''}
     ${grainLine ? `<div class="dw-grain">${grainLine}</div>` : ''}
     ${timeLabel ? `<div class="dw-time">${timeLabel}</div>` : ''}
     ${showOcc ? occupationBlockHTML(occChoices) : ''}

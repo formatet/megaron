@@ -157,7 +157,7 @@ export function notifDomain(kind) {
     StandingOrderDispatched: 'trade', StandingOrderPaused: 'trade',
     OfferAccepted: 'trade', OfferDeclined: 'trade', OfferExpired: 'trade',
     // Diplomacy — the messenger channel.
-    MessengerArrival: 'diplomacy', MessengerReturned: 'diplomacy', PassageStalled: 'diplomacy',
+    MessengerLostAtSea: 'diplomacy', MessengerRescuedAtSea: 'diplomacy', MessengerArrival: 'diplomacy', MessengerReturned: 'diplomacy', PassageStalled: 'diplomacy',
     // Kult — the gods answering.
     DivinePunishment: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
   };
@@ -181,6 +181,8 @@ export function notifIcon(kind) {
     TradeLost:          '🌊',
     TradeReturn:        '🐂',
     MessengerArrival:   '✉',
+    MessengerLostAtSea: '🌊',
+    MessengerRescuedAtSea: '📜',
     MessengerReturned:  '📜',
     PassageStalled:     '⚓',
     UnitAttrition:      '💀',
@@ -352,6 +354,16 @@ export function notifText(kind, body) {
         return `Trade offer from ${from}${place} — wants ${wants}, offers ${offers}`;
       }
       return `Messenger from ${from} arrived${place}` + (body.message ? ` — "${body.message}"` : '');
+    }
+    case 'MessengerLostAtSea': {
+      const e = body.envelope || {};
+      const from = e.origin?.name || 'its origin';
+      const to = e.destination?.name || 'its target';
+      return `Your runner from ${esc(from)} to ${esc(to)} was lost at sea` + (body.reason === 'storm' ? ' in a storm.' : ' with no surviving rescue ship.');
+    }
+    case 'MessengerRescuedAtSea': {
+      const journey = (body.journey || []).map(j => j.ship ? `rescued aboard ${esc(j.ship)}` : j.port ? `ashore at ${esc(j.port)}` : '').filter(Boolean);
+      return 'Your runner is home with an account of its rescue at sea: ' + journey.join('; ');
     }
     case 'MessengerReturned': {
       // Your own messenger is home. The reply rides back WITH it (never in
@@ -850,4 +862,17 @@ export function colonyFoundedGrainLine(body) {
     return `${name} does not feed itself (~${Math.round(-perTick)} grain/tick deficit)${ticks}. Build a farm if the land bears it, or send grain by internal transfer.`;
   }
   return `${name} feeds itself (~+${Math.round(perTick)} grain/tick).`;
+}
+
+// The loss dispatch owns a frozen sealed envelope; never fetch the mutable
+// letter/order later or truncate its contents to the chip's summary.
+export function messengerEnvelopeText(body) {
+  const e = body.envelope || {};
+  const endpoint = p => p?.name || (p?.q != null && p?.r != null ? `(${p.q},${p.r})` : 'unknown');
+  const lines = [`Sent: ${e.sent_at || 'unknown'}`, `From: ${endpoint(e.origin)}`, `To: ${endpoint(e.destination)}`];
+  if (e.message_text != null) lines.push(`Letter:\n${e.message_text}`);
+  if (e.reply_text != null) lines.push(`Reply:\n${e.reply_text}`);
+  if (e.trade_offer != null) lines.push(`Trade offer:\n${JSON.stringify(e.trade_offer, null, 2)}`);
+  if (e.order_payload != null) lines.push(`Order:\n${JSON.stringify(e.order_payload, null, 2)}`);
+  return lines.join('\n\n');
 }

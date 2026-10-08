@@ -8,6 +8,7 @@ import (
 	"math"
 	"time"
 
+	"formatet/megaron/server/internal/carrier"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/gossip"
 	"formatet/megaron/server/internal/province"
@@ -466,6 +467,17 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 		}
 	}
 
+	var passengerEvents []*events.Event
+	if leg1ShipUnitID != nil {
+		store := h.eventStore
+		if store == nil {
+			store = events.NewStore(h.pool)
+		}
+		passengerEvents, err = carrier.PortTx(ctx, tx, store, e.WorldID, *leg1ShipUnitID, p.DestinationID, e.DueTick)
+		if err != nil {
+			return err
+		}
+	}
 	var deliveredEvent *events.Event
 	if h.eventStore != nil {
 		deliveredEvent, err = h.eventStore.AppendTx(ctx, tx, p.DestinationID, events.StreamProvince, "TradeDelivery", map[string]any{"good_key": p.GoodKey, "quantity": delivered, "route_id": p.TradeRouteID}, e.WorldID, nil)
@@ -481,9 +493,11 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("commit delivery: %w", err)
 	}
-	for _, record := range []*events.Event{titheEvent, deliveredEvent} {
+	for _, record := range append(passengerEvents, titheEvent, deliveredEvent) {
 		if record != nil {
-			h.eventStore.RecordCommitted(ctx, record)
+			if h.eventStore != nil {
+				h.eventStore.RecordCommitted(ctx, record)
+			}
 		}
 	}
 	deliverTradeNotice(ctx, h.hub, e.WorldID, recipient, noticeID, "TradeDelivery", notice)
@@ -617,4 +631,3 @@ func deliverTradeNotice(ctx context.Context, hub Broadcaster, worldID, owner uui
 	}
 	_ = hub.NotifyPlayer(ctx, worldID, owner, kind, 3, payload)
 }
-

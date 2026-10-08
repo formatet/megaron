@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"formatet/megaron/server/internal/carrier"
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/combat"
 	"formatet/megaron/server/internal/events"
@@ -91,7 +92,7 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 	ct, err := h.pool.Exec(ctx,
 		`UPDATE messengers SET status='arrived',
 		        passage_status = NULL, carrier_transport_id = NULL, carrier_unit_id = NULL, carrier_name = NULL
-		  WHERE id=$1 AND status != 'arrived' AND passage_generation = $2
+		  WHERE id=$1 AND status NOT IN ('arrived','lost') AND NOT EXISTS(SELECT 1 FROM events e WHERE e.stream_id=messengers.id AND e.id>messengers.carrier_witness_id AND e.event_type IN `+carrier.TypesSQL+`) AND passage_generation = $2
 		    AND (passage_status IS NULL OR passage_status = 'aboard')`,
 		p.MessengerID, p.PassageGeneration)
 	if err != nil {

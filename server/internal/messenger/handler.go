@@ -106,6 +106,13 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 	if err != nil {
 		return nil // deleted or not found — silently skip
 	}
+	pending, err := pendingCarrierWitness(ctx, tx, payload.MessengerID)
+	if err != nil {
+		return err
+	}
+	if pending || status == "lost" {
+		return nil
+	}
 	if status != "outbound" {
 		return nil // idempotent replay: already delivered (or further along)
 	}
@@ -286,6 +293,13 @@ func (h *ReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 	if err != nil {
 		return nil
 	}
+	pending, err := pendingCarrierWitness(ctx, tx, payload.MessengerID)
+	if err != nil {
+		return err
+	}
+	if pending || status == "lost" {
+		return nil
+	}
 	if status == "arrived" {
 		return nil // idempotent replay
 	}
@@ -319,8 +333,17 @@ func (h *ReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 	); err != nil {
 		return fmt.Errorf("mark messenger arrived: %w", err)
 	}
+	reportID, reportSender, reportBody, err := persistRescueReport(ctx, tx, e.WorldID, payload.MessengerID)
+	if err != nil {
+		return err
+	}
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("commit messenger return: %w", err)
+	}
+	if reportID != "" {
+		if delivery, ok := h.hub.(combat.CommittedNotificationDelivery); ok {
+			delivery.DeliverCommittedNotification(ctx, e.WorldID, reportSender, reportID, MessengerRescuedAtSea, 3, reportBody)
+		}
 	}
 
 	_, _ = h.store.Append(ctx, originID, events.StreamProvince, "MessengerReturned",

@@ -24,6 +24,7 @@ const dim = s => '<span style="color:var(--text-dim)">' + s + '</span>';
 function passagePhrase(m) {
   const port = m.passage_port ? ' in ' + esc(m.passage_port) : '';
   if (m.passage_status === 'awaiting_passage') return 'waiting' + port + ' for a ship';
+  if (m.passage_status === 'unknown') return 'no word';
   if (m.passage_status === 'returning_sealed') return 'its ship was lost — sealed, coming back to port' + (m.passage_port ? ' (' + esc(m.passage_port) + ')' : '');
   return '';
 }

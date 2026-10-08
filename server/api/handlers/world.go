@@ -1383,7 +1383,7 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		 -- so the leg drawn below stops there instead of the full sea crossing.
 		 LEFT JOIN settlements pps ON pps.id = m.passage_port_id
 		 LEFT JOIN provinces pp ON pp.id = pps.province_id
-		 WHERE m.world_id = $1 AND m.status IN ('outbound', 'returning')`,
+		 WHERE m.world_id = $1 AND m.status IN ('outbound', 'returning') AND NOT EXISTS(SELECT 1 FROM events e WHERE e.stream_id=m.id AND e.event_type='CarrierPassengerRescuedV1')`,
 		worldID,
 	)
 	if err != nil {

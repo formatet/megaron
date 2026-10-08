@@ -65,6 +65,7 @@ import (
 	"math"
 	"sort"
 
+	"formatet/megaron/server/internal/carrier"
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
@@ -401,10 +402,11 @@ type battleTickPayload struct {
 // handler-instance state) reaches the identical result. The battle_rounds PK
 // (battle_id, tick_index, round_index) is a belt-and-suspenders guard on top.
 type BattleTickHandler struct {
-	pool       *pgxpool.Pool
-	eventStore *events.Store
-	scheduler  *events.Scheduler
-	hub        Broadcaster
+	carrierOutcomes *[]*events.Event
+	pool            *pgxpool.Pool
+	eventStore      *events.Store
+	scheduler       *events.Scheduler
+	hub             Broadcaster
 	// clk (megaron_plan_skeppsreparation.md Slice B) is only needed for the
 	// routed side's damaged-ship home march (sendDamagedShipHome's arrives_at
 	// display stamp — the authoritative depart_tick/arrive_tick pair is
@@ -433,12 +435,18 @@ func (h *BattleTickHandler) Handle(ctx context.Context, e events.ScheduledEvent)
 	}
 	defer tx.Rollback(ctx)
 
-	ended, err := h.resolveTick(ctx, tx, payload.BattleID, e.WorldID, e.DueTick)
+	var witnesses []*events.Event
+	local := *h
+	local.carrierOutcomes = &witnesses
+	ended, err := local.resolveTick(ctx, tx, payload.BattleID, e.WorldID, e.DueTick)
 	if err != nil {
 		return err
 	}
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("commit: %w", err)
+	}
+	for _, w := range witnesses {
+		h.eventStore.RecordCommitted(ctx, w)
 	}
 	if ended {
 		return nil
@@ -721,6 +729,9 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 	ended := wiped || attRouted || defRouted
 
 	if !ended {
+		if err := h.witnessSunkPassengers(ctx, tx, worldID, battleID, q, r, tickIndex, participants); err != nil {
+			return false, err
+		}
 		if _, err := tx.Exec(ctx, `UPDATE battles SET current_tick = $2 WHERE id = $1`, battleID, tickIndex); err != nil {
 			return false, fmt.Errorf("battle tick: update current_tick: %w", err)
 		}
@@ -861,6 +872,9 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 	// and for the same reason: this whole tx only commits once.
 	h.applyNavalHullDamage(ctx, tx, battleID, worldID, q, r, tickIndex, participants, initialSizes, sizes, bySide, attRouted, defRouted)
 
+	if err := h.witnessSunkPassengers(ctx, tx, worldID, battleID, q, r, tickIndex, participants); err != nil {
+		return false, err
+	}
 	h.notifyBattleEnded(ctx, tx, battleID, worldID, q, r, tickIndex, winner)
 
 	return true, nil
@@ -1246,4 +1260,37 @@ func sumSizes(sizes []int, idx []int) int {
 		s += sizes[i]
 	}
 	return s
+}
+
+// Select rescue ships after ALL final hull draws, so the chosen survivor cannot
+// sink later in this same resolution. Ongoing battles also witness size deaths.
+func (h *BattleTickHandler) witnessSunkPassengers(ctx context.Context, tx pgx.Tx, world, battle uuid.UUID, q, r, tick int, participants []battleParticipant) error {
+	for _, p := range participants {
+		if unit.CategoryOf(unit.Type(p.utype)) != unit.CategoryNaval {
+			continue
+		}
+		var dead bool
+		if err := tx.QueryRow(ctx, `SELECT status='disbanded' OR size<=0 OR hull<=0 FROM units WHERE id=$1`, p.unitID).Scan(&dead); err != nil {
+			return err
+		}
+		if !dead {
+			continue
+		}
+		var rescue uuid.UUID
+		err := tx.QueryRow(ctx, `SELECT u.id FROM battle_participants bp JOIN units u ON u.id=bp.unit_id WHERE bp.battle_id=$1 AND bp.side!=$2 AND (bp.left_tick IS NULL OR bp.left_tick=$3) AND u.category='naval' AND u.status!='disbanded' AND u.size>0 AND u.hull>0 ORDER BY u.id LIMIT 1 FOR UPDATE OF u`, battle, p.side, tick).Scan(&rescue)
+		var chosen *uuid.UUID
+		if err == nil {
+			chosen = &rescue
+		} else if err != pgx.ErrNoRows {
+			return err
+		}
+		witnesses, err := carrier.OutcomeTx(ctx, tx, h.eventStore, world, p.unitID, chosen, "battle", q, r, tick)
+		if err != nil {
+			return err
+		}
+		if h.carrierOutcomes != nil {
+			*h.carrierOutcomes = append(*h.carrierOutcomes, witnesses...)
+		}
+	}
+	return nil
 }

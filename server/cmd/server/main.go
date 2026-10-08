@@ -178,7 +178,7 @@ func main() {
 	worker.Register(events.ScheduledTradeReturn, tradeReturnH.Handle)
 	logisticsH := handlers.NewLogisticsArrivalHandler(pool)
 	worker.Register(events.ScheduledLogisticsArrival, logisticsH.Handle)
-	transportH := transport.NewArrivalHandler(pool, hub)
+	transportH := transport.NewArrivalHandler(pool, hub, eventStore)
 	worker.Register(events.ScheduledTransportArrival, transportH.Handle)
 	interceptH := transport.NewInterceptScanHandler(pool, scheduler, eventStore, hub, gameClock)
 	worker.Register(events.ScheduledInterceptScan, interceptH.Handle)
