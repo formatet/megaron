@@ -124,6 +124,10 @@ try:
             expected_title=next(a['title'] for a in api('/static/codex/index.json')['articles'] if a.get('drawer')==drawer)
             page.wait_for_function('t=>document.getElementById("codex-title").textContent===t',arg=expected_title)
             page.evaluate('window.closeCodex()')
+    def extra_desktop(name,drawer):
+        page.set_viewport_size({'width':1280,'height':900})
+        page.locator('#drawer-'+drawer).screenshot(path=str(OUT/(name+'-desktop.png')))
+        page.set_viewport_size({'width':390,'height':844})
     receipts={}
     if MODE=='after':
         open_drawer('economy');page.wait_for_selector('#economy-body .dsec .empty-state button')
@@ -132,6 +136,7 @@ try:
         receipts['locked_hints']=[h.get_attribute('title') for h in hints.all()]
         page.locator('#economy-body .dsec .empty-state').scroll_into_view_if_needed()
         page.locator('#drawer-economy').screenshot(path=str(OUT/'locked-mobile.png'))
+        extra_desktop('locked','economy')
         page.locator('#economy-body .dsec .empty-state button').click()
         page.wait_for_function('document.getElementById("codex-title").textContent==="Goods"')
         page.evaluate('window.closeCodex()')
@@ -143,6 +148,7 @@ try:
         assert pending.value.status>=400
         line=page.locator('#city-bld-sec [data-inline-result]');line.wait_for();assert line.inner_text()==pending.value.json()['error']
         line.scroll_into_view_if_needed();page.locator('#drawer-city').screenshot(path=str(OUT/'cancel-inline-mobile.png'))
+        extra_desktop('cancel-inline','city')
         open_drawer('kult');page.wait_for_timeout(300)
         with page.expect_response(lambda r:r.url.endswith('/rite') and r.request.method=='POST') as pending:
             page.evaluate('window.okRite("unknown-proof-prayer")')
@@ -150,6 +156,7 @@ try:
         assert pending.value.status>=400
         line=page.locator('#kult-body [data-inline-result]');line.wait_for();assert line.inner_text()==pending.value.json()['error']
         line.scroll_into_view_if_needed();page.locator('#drawer-kult').screenshot(path=str(OUT/'rite-inline-mobile.png'))
+        extra_desktop('rite-inline','kult')
         # Confirmation visual fixture: no colony or abandonment is fabricated in DB.
         open_drawer('war');page.locator('#drawer-war button[data-tab="recruit"]').click();page.wait_for_timeout(200)
         page.evaluate("""async()=>{
@@ -180,6 +187,7 @@ try:
         page.route('**/notifications?*',historic)
         open_drawer('notif');page.get_by_text('three food support reports — show reports',exact=True).wait_for()
         page.locator('#drawer-notif').screenshot(path=str(OUT/'historic-groups-mobile.png'))
+        extra_desktop('historic-groups','notif')
         page.get_by_text('three food support reports — show reports',exact=True).click()
         page.get_by_text('Food support was given to the city',exact=True).first.wait_for()
         assert 'SitosIntervention' not in page.locator('#notif-body').inner_text()

@@ -37,13 +37,13 @@
     "historic_replay": {
       "synthetic": true,
       "filters": [
-        "http://127.0.0.1:57043/api/v1/worlds/1a06c90c-4fb8-4be0-9cf8-5009cc79b441/notifications?exclude=SitosIntervention%2CSitosFundLow",
-        "http://127.0.0.1:57043/api/v1/worlds/1a06c90c-4fb8-4be0-9cf8-5009cc79b441/notifications?kind=SitosIntervention",
-        "http://127.0.0.1:57043/api/v1/worlds/1a06c90c-4fb8-4be0-9cf8-5009cc79b441/notifications?kind=SitosFundLow",
-        "http://127.0.0.1:57043/api/v1/worlds/1a06c90c-4fb8-4be0-9cf8-5009cc79b441/notifications?kind=SitosIntervention",
-        "http://127.0.0.1:57043/api/v1/worlds/1a06c90c-4fb8-4be0-9cf8-5009cc79b441/notifications?exclude=SitosIntervention%2CSitosFundLow",
-        "http://127.0.0.1:57043/api/v1/worlds/1a06c90c-4fb8-4be0-9cf8-5009cc79b441/notifications?kind=SitosIntervention",
-        "http://127.0.0.1:57043/api/v1/worlds/1a06c90c-4fb8-4be0-9cf8-5009cc79b441/notifications?kind=SitosFundLow"
+        "http://127.0.0.1:55595/api/v1/worlds/bcf2290b-fa60-4870-a26b-7282a5343452/notifications?exclude=SitosIntervention%2CSitosFundLow",
+        "http://127.0.0.1:55595/api/v1/worlds/bcf2290b-fa60-4870-a26b-7282a5343452/notifications?kind=SitosIntervention",
+        "http://127.0.0.1:55595/api/v1/worlds/bcf2290b-fa60-4870-a26b-7282a5343452/notifications?kind=SitosFundLow",
+        "http://127.0.0.1:55595/api/v1/worlds/bcf2290b-fa60-4870-a26b-7282a5343452/notifications?kind=SitosIntervention",
+        "http://127.0.0.1:55595/api/v1/worlds/bcf2290b-fa60-4870-a26b-7282a5343452/notifications?exclude=SitosIntervention%2CSitosFundLow",
+        "http://127.0.0.1:55595/api/v1/worlds/bcf2290b-fa60-4870-a26b-7282a5343452/notifications?kind=SitosIntervention",
+        "http://127.0.0.1:55595/api/v1/worlds/bcf2290b-fa60-4870-a26b-7282a5343452/notifications?kind=SitosFundLow"
       ]
     }
   },
