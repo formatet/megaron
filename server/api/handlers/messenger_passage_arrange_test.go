@@ -179,6 +179,7 @@ func (f *passageArrangeFixture) runUnitArrival(t *testing.T, atTick int, unitID 
 		t.Fatalf("unit arrival: %v", err)
 	}
 	f.markProcessed(t, ev.ID)
+	f.projectCarrierWitnesses(t)
 }
 
 // T2: a physical arrival freezes a witness. The real PassageScan consumes it
@@ -223,6 +224,7 @@ func (f *passageArrangeFixture) runStayEnd(t *testing.T, atTick int, messengerID
 	t.Helper()
 	f.setTick(t, atTick)
 	ev := f.loadPendingEventBy(t, string(events.ScheduledMessengerStayEnd), "messenger_id", messengerID)
+	f.setTick(t, ev.DueTick)
 	if err := f.stayEndH.Handle(context.Background(), ev); err != nil {
 		t.Fatalf("stay end: %v", err)
 	}

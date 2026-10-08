@@ -1,0 +1,20 @@
+» färsk DB på migration 162 · commit ce681afd+ändringar
+=== RUN   TestCarrierDeploy_AlreadyAboardWithQueuedLegacyTimer
+=== RUN   TestCarrierDeploy_AlreadyAboardWithQueuedLegacyTimer/landed-before-deploy
+2026/10/08 23:37:46 INFO player registered id=d5bf73cd-df3e-403d-afba-e1ffed1d3365 username=initiator-d36f0ea0-ea0d-4ca5-98b8-59e576c6a9b8
+2026/10/08 23:37:46 INFO player registered id=f798ac18-288c-4e59-978b-15666311fc42 username=counterparty-4a824a9b-2ffa-4097-bb13-3dd8773bce64
+2026/10/08 23:37:46 INFO passage: messenger boarded messenger=0c616b84-92a9-4128-869a-89da237b4fb8 carrier=Emporos arrives_at=2026-10-09T02:37:46.518+02:00
+2026/10/08 23:37:46 INFO passage: ship waiting for runner's return unit=aa6299b5-efde-46bb-af83-068b7a4ab285 messenger=0c616b84-92a9-4128-869a-89da237b4fb8
+    messenger_carrier_deploy_test.go:84: legacy row with NO witness must arrive via unchanged queued timer: {status:outbound passageStatus:0xcea28be2e0 carrierUnitID:0xcea28b0520 passagePortID:0xcea28b0530}
+=== RUN   TestCarrierDeploy_AlreadyAboardWithQueuedLegacyTimer/lands-after-deploy
+2026/10/08 23:37:46 INFO player registered id=390cb099-e6be-43f4-8a06-0cb2d9ec87ce username=initiator-0e301da9-a823-4b79-90fe-abbcd28c73d9
+2026/10/08 23:37:46 INFO player registered id=f0cd958f-0f51-47e1-8ce5-210fba440dc9 username=counterparty-ce27b332-f83f-40fc-a071-feb3883bb975
+2026/10/08 23:37:46 INFO passage: messenger boarded messenger=bc07317f-756a-4486-acf7-e642ab3b8e57 carrier=Emporos arrives_at=2026-10-09T02:37:46.642+02:00
+2026/10/08 23:37:46 INFO passage: ship waiting for runner's return unit=eca3f082-7de6-4474-91dd-de9ae33506e5 messenger=bc07317f-756a-4486-acf7-e642ab3b8e57
+    messenger_carrier_deploy_test.go:117: legacy aboard runner must finish via new real scheduled completion
+--- FAIL: TestCarrierDeploy_AlreadyAboardWithQueuedLegacyTimer (0.25s)
+    --- FAIL: TestCarrierDeploy_AlreadyAboardWithQueuedLegacyTimer/landed-before-deploy (0.12s)
+    --- FAIL: TestCarrierDeploy_AlreadyAboardWithQueuedLegacyTimer/lands-after-deploy (0.13s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.256s
+FAIL

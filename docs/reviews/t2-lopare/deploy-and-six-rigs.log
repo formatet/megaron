@@ -1,0 +1,178 @@
+» färsk DB på migration 162 · commit ce681afd+ändringar
+=== RUN   TestCarrierDeploy_AlreadyAboardWithQueuedLegacyTimer
+=== RUN   TestCarrierDeploy_AlreadyAboardWithQueuedLegacyTimer/landed-before-deploy
+2026/10/08 23:34:43 INFO player registered id=33669442-8cb9-4862-bad6-7a6bdc7f4eb4 username=initiator-f706f299-6860-4b1e-832a-150b3a9185d1
+2026/10/08 23:34:43 INFO player registered id=f753eb71-e183-4962-adf0-13851dd9242e username=counterparty-957a5424-65c6-4cd9-96d9-06863bd7f8d5
+2026/10/08 23:34:43 INFO passage: messenger boarded messenger=e14f9c3a-b86d-4e8f-bbbe-2a89bced7d6f carrier=Emporos arrives_at=2026-10-09T02:34:43.733+02:00
+2026/10/08 23:34:43 INFO passage: ship waiting for runner's return unit=1985f956-1c7d-429f-9de5-cadaf7ddf25d messenger=e14f9c3a-b86d-4e8f-bbbe-2a89bced7d6f
+2026/10/08 23:34:43 INFO messenger delivered id=e14f9c3a-b86d-4e8f-bbbe-2a89bced7d6f destination=66887002-93cb-4006-aa73-a11ed9680a86
+    messenger_carrier_deploy_test.go:89: pre-deploy landing: retained generation=1, old due_tick=3 -> delivered, witness_id=0
+=== RUN   TestCarrierDeploy_AlreadyAboardWithQueuedLegacyTimer/lands-after-deploy
+2026/10/08 23:34:43 INFO player registered id=74e84450-f33a-4d65-abb7-3680ff1213e5 username=initiator-1fe976a3-f45b-414a-b710-cb4f99cf99fa
+2026/10/08 23:34:43 INFO player registered id=8449c008-e078-4d20-b7d0-279f1397e79f username=counterparty-223e147e-3073-41be-b1af-dcd625a5f29b
+2026/10/08 23:34:43 INFO passage: messenger boarded messenger=353fc6aa-bf79-4aed-9bbb-8d467a81d956 carrier=Emporos arrives_at=2026-10-09T02:34:43.860+02:00
+2026/10/08 23:34:43 INFO passage: ship waiting for runner's return unit=4d0060c5-2530-4a91-9222-ccd8bfd42e6f messenger=353fc6aa-bf79-4aed-9bbb-8d467a81d956
+2026/10/08 23:34:43 INFO messenger arrival: premature or stale passage generation — no-op id=353fc6aa-bf79-4aed-9bbb-8d467a81d956 passage_status=0x15e3f3054390 event_generation=1 current_generation=2
+2026/10/08 23:34:43 INFO messenger delivered id=353fc6aa-bf79-4aed-9bbb-8d467a81d956 destination=0c5424d0-83ee-4334-801f-6400bec4d52d
+    messenger_carrier_deploy_test.go:119: post-deploy landing: old generation=1 due=3 -> blocked; scan tick=3 -> generation=2 due=4 -> delivered
+--- PASS: TestCarrierDeploy_AlreadyAboardWithQueuedLegacyTimer (0.26s)
+    --- PASS: TestCarrierDeploy_AlreadyAboardWithQueuedLegacyTimer/landed-before-deploy (0.13s)
+    --- PASS: TestCarrierDeploy_AlreadyAboardWithQueuedLegacyTimer/lands-after-deploy (0.13s)
+=== RUN   TestRescuedRunner_SenderOutboxMapAndEyesKeepPositionUnknown
+2026/10/08 23:34:43 INFO player registered id=a5bafd18-9af7-4baf-95bc-d966cc48c389 username=leg-viewer-0d3a0444-be69-4586-a23f-d68c888532bf
+--- PASS: TestRescuedRunner_SenderOutboxMapAndEyesKeepPositionUnknown (0.10s)
+=== RUN   TestArrangePassage_OutboundRoundTrip_ShipCarriesBothLegs
+2026/10/08 23:34:44 INFO player registered id=85603a56-9fba-4fb0-9eae-45ca1470b56e username=initiator-c99ffc91-dadf-4d54-89a4-f42f03c16b1d
+2026/10/08 23:34:44 INFO player registered id=42109814-22e3-4418-b0dd-dfbbbffb7cfc username=counterparty-7915c5b0-d846-44a8-99c0-8a518919fb4d
+2026/10/08 23:34:44 INFO passage: messenger boarded messenger=055025dc-cc26-446e-983a-a392b5934b36 carrier=Emporos arrives_at=2026-10-09T02:34:44.089+02:00
+2026/10/08 23:34:44 INFO passage: ship waiting for runner's return unit=cd0e3318-a256-4401-b916-cd722d5d5feb messenger=055025dc-cc26-446e-983a-a392b5934b36
+2026/10/08 23:34:44 INFO messenger delivered id=055025dc-cc26-446e-983a-a392b5934b36 destination=fc9ad632-8951-448b-b905-9d761c449d58
+2026/10/08 23:34:44 INFO field unit turning for home unit=cd0e3318-a256-4401-b916-cd722d5d5feb from_q=4 from_r=0 home_q=1 home_r=0
+2026/10/08 23:34:44 INFO passage: passage_wait ship released unit=cd0e3318-a256-4401-b916-cd722d5d5feb
+2026/10/08 23:34:44 INFO passage: messenger boarded messenger=055025dc-cc26-446e-983a-a392b5934b36 carrier=Emporos arrives_at=2026-10-09T02:34:44.089+02:00
+2026/10/08 23:34:44 INFO unit returned home from explore unit=cd0e3318-a256-4401-b916-cd722d5d5feb settlement=9ed77a94-80a1-448c-844a-0784ca2acace
+2026/10/08 23:34:44 INFO messenger returned home id=055025dc-cc26-446e-983a-a392b5934b36
+--- PASS: TestArrangePassage_OutboundRoundTrip_ShipCarriesBothLegs (0.16s)
+=== RUN   TestArrangePassage_Unanswered_ShipCarriesHomeViaStayEnd
+2026/10/08 23:34:44 INFO player registered id=11e5f00d-e66a-4c16-b5c8-be8e5634ec40 username=initiator-3e634d73-1707-4c44-97ec-41878342d591
+2026/10/08 23:34:44 INFO player registered id=678c422e-2c0e-4940-a68a-ca1685074b17 username=counterparty-05ed70c1-fe64-44e5-8063-0e74affbe58e
+2026/10/08 23:34:44 INFO passage: messenger boarded messenger=56c00ea4-5af3-4f07-9913-510be1bb8bc7 carrier=Galley arrives_at=2026-10-09T02:34:44.250+02:00
+2026/10/08 23:34:44 INFO passage: ship waiting for runner's return unit=deb5c234-aa04-446f-acdc-f3c0c22f727d messenger=56c00ea4-5af3-4f07-9913-510be1bb8bc7
+2026/10/08 23:34:44 INFO messenger delivered id=56c00ea4-5af3-4f07-9913-510be1bb8bc7 destination=d44c4b3e-1ce3-4f0b-a7b2-3dea49353e20
+2026/10/08 23:34:44 INFO messenger stay ended — walking home unanswered id=56c00ea4-5af3-4f07-9913-510be1bb8bc7 returns_at=2026-10-08T23:34:44.250+02:00 passage_awaiting=true
+2026/10/08 23:34:44 INFO field unit turning for home unit=deb5c234-aa04-446f-acdc-f3c0c22f727d from_q=4 from_r=0 home_q=1 home_r=0
+2026/10/08 23:34:44 INFO passage: passage_wait ship released unit=deb5c234-aa04-446f-acdc-f3c0c22f727d
+2026/10/08 23:34:44 INFO passage: messenger boarded messenger=56c00ea4-5af3-4f07-9913-510be1bb8bc7 carrier=Galley arrives_at=2026-10-09T02:34:44.250+02:00
+2026/10/08 23:34:44 INFO unit returned home from explore unit=deb5c234-aa04-446f-acdc-f3c0c22f727d settlement=eeebe20c-45b7-4c34-abfe-7e2e1dd4f0ef
+2026/10/08 23:34:44 INFO messenger returned home id=56c00ea4-5af3-4f07-9913-510be1bb8bc7
+--- PASS: TestArrangePassage_Unanswered_ShipCarriesHomeViaStayEnd (0.16s)
+=== RUN   TestArrangePassage_OrderToOwnUnit_ShipGoesHomeImmediately
+2026/10/08 23:34:44 INFO player registered id=6ead77d0-22c1-4ce9-9abc-7bd0026e484a username=initiator-739d1e6a-1734-4ba5-ae0d-ac76809fc98e
+2026/10/08 23:34:44 INFO player registered id=1f0e87ef-402a-490a-844d-8bf07d8ff299 username=counterparty-57619747-163d-4bed-85af-a004dbfa8ec5
+2026/10/08 23:34:44 INFO passage: messenger boarded messenger=87958bb1-ad39-4f6e-b1c5-9e075432ef7d carrier=Galley arrives_at=2026-10-09T02:34:44.407+02:00
+2026/10/08 23:34:44 INFO passage: nothing left to wait for, ship turning for home unit=f3dc44c4-67a9-404a-9819-a1d0a2dfcefc messenger=87958bb1-ad39-4f6e-b1c5-9e075432ef7d
+2026/10/08 23:34:44 INFO field unit turning for home unit=f3dc44c4-67a9-404a-9819-a1d0a2dfcefc from_q=4 from_r=0 home_q=1 home_r=0
+2026/10/08 23:34:44 INFO order delivered — stance applied unit=764b81a8-2c22-4c6e-8a3a-0f192100c432 stance=fortify
+2026/10/08 23:34:44 INFO unit returned home from explore unit=f3dc44c4-67a9-404a-9819-a1d0a2dfcefc settlement=d564fd15-1dd7-4830-b61e-a4bada5177f8
+--- PASS: TestArrangePassage_OrderToOwnUnit_ShipGoesHomeImmediately (0.14s)
+=== RUN   TestArrangePassage_Pickup_ShipFetchesFromDifferentOwnPort
+2026/10/08 23:34:44 INFO player registered id=47a32991-e36e-4d0b-adf3-9a264509f19d username=initiator-18eb83c7-96c1-4891-a656-360848725adf
+2026/10/08 23:34:44 INFO player registered id=bfdf5f90-dad6-423e-8ae4-86d455ab33b7 username=counterparty-d717ec04-063f-4b1b-9695-b77bc9f3ad83
+2026/10/08 23:34:44 INFO passage: ship waiting for runner's return unit=3335ded1-4888-49f4-8d0f-0a916601857f messenger=fd688be7-577d-46e2-9f42-99884558af3b
+2026/10/08 23:34:44 INFO field unit turning for home unit=3335ded1-4888-49f4-8d0f-0a916601857f from_q=4 from_r=0 home_q=1 home_r=0
+2026/10/08 23:34:44 INFO passage: passage_wait ship released unit=3335ded1-4888-49f4-8d0f-0a916601857f
+2026/10/08 23:34:44 INFO passage: messenger boarded messenger=fd688be7-577d-46e2-9f42-99884558af3b carrier=Emporos arrives_at=2026-10-09T02:34:44.551+02:00
+2026/10/08 23:34:44 INFO unit returned home from explore unit=3335ded1-4888-49f4-8d0f-0a916601857f settlement=c8d6f195-e69c-4e2a-86fe-31e23b0269e0
+2026/10/08 23:34:44 INFO messenger returned home id=fd688be7-577d-46e2-9f42-99884558af3b
+--- PASS: TestArrangePassage_Pickup_ShipFetchesFromDifferentOwnPort (0.15s)
+=== RUN   TestArrangePassage_OrderToUnseenLandmass_PicksEmptyShoreNotForeignCity
+2026/10/08 23:34:44 INFO player registered id=b3c7d535-2f7c-47ae-ba14-aef35e2877a4 username=initiator-bc9ba28a-92b7-46d6-bfb7-09a02dd8249a
+2026/10/08 23:34:44 INFO player registered id=6fa341a7-be79-455d-8290-4c1a574f855d username=counterparty-c0dbaadd-b94e-4a18-bb32-bfb6ec5b4f84
+2026/10/08 23:34:44 INFO passage: messenger boarded messenger=92923c21-e4f3-4f74-a0a2-3f57758a62ae carrier=Galley arrives_at=2026-10-09T02:34:44.692+02:00
+--- PASS: TestArrangePassage_OrderToUnseenLandmass_PicksEmptyShoreNotForeignCity (0.11s)
+=== RUN   TestArrangePassage_Rejections
+2026/10/08 23:34:44 INFO player registered id=e88779d5-94e1-4b86-95f5-1374bc67446c username=initiator-fd998198-bca6-40aa-913a-cc838c11b9c4
+2026/10/08 23:34:44 INFO player registered id=6f79f6a8-7fa4-4bda-a72a-adf2d69d07a6 username=counterparty-2b3431c7-d145-4cb2-8c01-bb9a451fec02
+=== RUN   TestArrangePassage_Rejections/ship_in_wrong_own_port
+=== RUN   TestArrangePassage_Rejections/war_galley_refused
+=== RUN   TestArrangePassage_Rejections/ship_already_on_a_mission
+=== RUN   TestArrangePassage_Rejections/not_your_ship
+--- PASS: TestArrangePassage_Rejections (0.11s)
+    --- PASS: TestArrangePassage_Rejections/ship_in_wrong_own_port (0.00s)
+    --- PASS: TestArrangePassage_Rejections/war_galley_refused (0.00s)
+    --- PASS: TestArrangePassage_Rejections/ship_already_on_a_mission (0.00s)
+    --- PASS: TestArrangePassage_Rejections/not_your_ship (0.00s)
+=== RUN   TestArrangePassage_DispatchedMidTick_RunnerBoardsAtDispatchNotNextScan
+2026/10/08 23:34:44 INFO player registered id=7c92671b-06ab-4ea2-a8c2-253320f5b2fd username=initiator-2afc8934-18b7-492b-b7a6-eae64b0b95ad
+2026/10/08 23:34:44 INFO player registered id=fdb7c803-59ad-4ffb-9f5e-eeed5df6a3a3 username=counterparty-0d80f87f-6d44-4399-aff5-51e63927ca0c
+2026/10/08 23:34:44 INFO passage: messenger boarded messenger=090be774-e5a2-419e-8dfd-cc6d80b51663 carrier=Emporos arrives_at=2026-10-09T02:34:44.918+02:00
+2026/10/08 23:34:44 INFO passage: ship waiting for runner's return unit=e17ebc73-f66f-4446-bfaf-ecf60db0750a messenger=090be774-e5a2-419e-8dfd-cc6d80b51663
+2026/10/08 23:34:44 INFO messenger delivered id=090be774-e5a2-419e-8dfd-cc6d80b51663 destination=6ff8763f-92a5-4a97-b9ff-991e7d333719
+--- PASS: TestArrangePassage_DispatchedMidTick_RunnerBoardsAtDispatchNotNextScan (0.14s)
+=== RUN   TestPickup_UnitOnShore_NoRunnerNeeded
+2026/10/08 23:34:45 INFO player registered id=5de910db-13dc-404e-84f5-502b4218e929 username=initiator-b08bf273-2bde-451e-8acd-011d5c4a7da4
+2026/10/08 23:34:45 INFO player registered id=cc882ac1-14f3-48e7-89c8-d6c95f060c21 username=counterparty-6a2c351e-5f91-4798-8b75-764baa7754b4
+2026/10/08 23:34:45 INFO pickup: unit boarded fetching ship ship=ea9503dc-fe10-46fa-ba32-c6d743a554dd unit=0f3d54b3-76e9-4b23-b71f-3f8fdb4c70d0
+2026/10/08 23:34:45 INFO field unit turning for home unit=ea9503dc-fe10-46fa-ba32-c6d743a554dd from_q=4 from_r=0 home_q=1 home_r=0
+2026/10/08 23:34:45 INFO pickup: ship returned home with fetched unit unit=ea9503dc-fe10-46fa-ba32-c6d743a554dd settlement=f6781864-9c3e-4727-82f6-9e9747c998af cargo=0f3d54b3-76e9-4b23-b71f-3f8fdb4c70d0
+--- PASS: TestPickup_UnitOnShore_NoRunnerNeeded (0.12s)
+=== RUN   TestPickup_UnitInland_ShipArrivesFirst_BoardsViaR4
+2026/10/08 23:34:45 INFO player registered id=570e2d35-10d9-4d89-906c-da8bff5fdfda username=initiator-078d386a-f4d8-4aad-8027-f8086023389e
+2026/10/08 23:34:45 INFO player registered id=8b537680-5993-4d22-92fd-c8f769d7323c username=counterparty-901a558c-057d-49e0-a8b2-10d0f8841ef5
+2026/10/08 23:34:45 INFO passage: messenger boarded messenger=0e5be7bc-cc10-4022-a470-dd0f655c015b carrier=Emporos arrives_at=2026-10-09T02:34:45.180+02:00
+2026/10/08 23:34:45 INFO pickup: ship waiting off shore for fetched unit unit=52522aa1-a754-46d6-8218-2e652f572f25 pickup_unit=5881cc86-1504-44ee-a7f8-34e2078b452f until_tick=5
+2026/10/08 23:34:45 INFO order delivered — march started unit=5881cc86-1504-44ee-a7f8-34e2078b452f target_q=5 target_r=0 arrival_tick=5
+2026/10/08 23:34:45 INFO pickup: unit boarded fetching ship ship=52522aa1-a754-46d6-8218-2e652f572f25 unit=5881cc86-1504-44ee-a7f8-34e2078b452f
+2026/10/08 23:34:45 INFO field unit turning for home unit=52522aa1-a754-46d6-8218-2e652f572f25 from_q=4 from_r=0 home_q=1 home_r=0
+2026/10/08 23:34:45 INFO unit arrived (garrison) unit=5881cc86-1504-44ee-a7f8-34e2078b452f q=5 r=0 status=positioned
+2026/10/08 23:34:45 INFO pickup: ship returned home with fetched unit unit=52522aa1-a754-46d6-8218-2e652f572f25 settlement=6e97aac2-7834-4a52-8e08-d73ce90d70a1 cargo=5881cc86-1504-44ee-a7f8-34e2078b452f
+--- PASS: TestPickup_UnitInland_ShipArrivesFirst_BoardsViaR4 (0.14s)
+=== RUN   TestPickup_UnitInland_UnitArrivesFirst_BoardsViaR3
+2026/10/08 23:34:45 INFO player registered id=f71c0dca-7951-4aec-9e88-8ed2dba07343 username=initiator-7d01cf10-e6f1-4e92-9e1d-0f32adfa6ace
+2026/10/08 23:34:45 INFO player registered id=372c88a9-9ad4-472c-bb26-a6c8da991c8d username=counterparty-cb2a57c1-9b30-4036-9c16-65af27641e13
+2026/10/08 23:34:45 INFO passage: messenger boarded messenger=a6c505e6-5dcc-42d7-ace4-47d73c651a32 carrier=Emporos arrives_at=2026-10-09T02:34:45.325+02:00
+2026/10/08 23:34:45 INFO order delivered — march started unit=797a930e-57d0-4340-b054-842a9de19e6a target_q=5 target_r=0 arrival_tick=5
+2026/10/08 23:34:45 INFO unit arrived (garrison) unit=797a930e-57d0-4340-b054-842a9de19e6a q=5 r=0 status=positioned
+2026/10/08 23:34:45 INFO pickup: unit boarded fetching ship ship=436b45cf-be87-4c0d-b0b0-157af9f23fc8 unit=797a930e-57d0-4340-b054-842a9de19e6a
+2026/10/08 23:34:45 INFO field unit turning for home unit=436b45cf-be87-4c0d-b0b0-157af9f23fc8 from_q=4 from_r=0 home_q=1 home_r=0
+2026/10/08 23:34:45 INFO pickup: ship returned home with fetched unit unit=436b45cf-be87-4c0d-b0b0-157af9f23fc8 settlement=33d37ffc-064b-45d0-b3c5-9b6ac8a5edbc cargo=797a930e-57d0-4340-b054-842a9de19e6a
+--- PASS: TestPickup_UnitInland_UnitArrivesFirst_BoardsViaR3 (0.14s)
+=== RUN   TestPickup_Timeout_ShipSailsHomeEmpty
+2026/10/08 23:34:45 INFO player registered id=d11d64ae-d79b-4fec-9bd1-ffe89b6a0332 username=initiator-64c4ed10-01b9-42f3-aac5-ac4e9c39a908
+2026/10/08 23:34:45 INFO player registered id=c8b8c3c4-a5d1-4e9d-99da-2640d2fb0e20 username=counterparty-0ae3e6f5-e687-4555-b91f-1db163159e98
+2026/10/08 23:34:45 INFO passage: messenger boarded messenger=4ffd63f8-3972-406a-b580-9abef7b34188 carrier=Emporos arrives_at=2026-10-09T02:34:45.462+02:00
+2026/10/08 23:34:45 INFO pickup: ship waiting off shore for fetched unit unit=aeb1374a-c612-42ea-983a-e980d6bee131 pickup_unit=a18d8f37-2cfa-481e-8aa0-d4b52d702222 until_tick=5
+2026/10/08 23:34:45 INFO field unit turning for home unit=aeb1374a-c612-42ea-983a-e980d6bee131 from_q=4 from_r=0 home_q=1 home_r=0
+2026/10/08 23:34:45 INFO unit returned home from explore unit=aeb1374a-c612-42ea-983a-e980d6bee131 settlement=9f8c7b58-3a4f-495d-872e-a050ac1d9311
+--- PASS: TestPickup_Timeout_ShipSailsHomeEmpty (0.14s)
+=== RUN   TestPickup_Rejections
+2026/10/08 23:34:45 INFO player registered id=f752e0c0-815f-4941-b995-2e0c893dcf1f username=initiator-2f74a626-ac42-4a1e-9ee5-cd9b31d2a680
+2026/10/08 23:34:45 INFO player registered id=42769102-485f-4f27-bf97-6e20e8b72338 username=counterparty-86bed8e2-5e67-4ce5-910b-ab4974ec97be
+=== RUN   TestPickup_Rejections/fetched_unit_is_marching
+=== RUN   TestPickup_Rejections/fetched_unit_is_in_a_city
+=== RUN   TestPickup_Rejections/ship_already_carries_cargo
+=== RUN   TestPickup_Rejections/ship_not_in_its_own_port
+=== RUN   TestPickup_Rejections/war_galley_refused_when_a_runner_is_needed
+=== RUN   TestPickup_Rejections/war_galley_allowed_when_the_unit_already_stands_on_the_shore
+=== RUN   TestPickup_Rejections/wait_ticks_too_low
+=== RUN   TestPickup_Rejections/wait_ticks_too_high
+=== RUN   TestPickup_Rejections/not_your_unit
+=== RUN   TestPickup_Rejections/not_your_ship
+--- PASS: TestPickup_Rejections (0.12s)
+    --- PASS: TestPickup_Rejections/fetched_unit_is_marching (0.00s)
+    --- PASS: TestPickup_Rejections/fetched_unit_is_in_a_city (0.00s)
+    --- PASS: TestPickup_Rejections/ship_already_carries_cargo (0.00s)
+    --- PASS: TestPickup_Rejections/ship_not_in_its_own_port (0.00s)
+    --- PASS: TestPickup_Rejections/war_galley_refused_when_a_runner_is_needed (0.00s)
+    --- PASS: TestPickup_Rejections/war_galley_allowed_when_the_unit_already_stands_on_the_shore (0.00s)
+    --- PASS: TestPickup_Rejections/wait_ticks_too_low (0.00s)
+    --- PASS: TestPickup_Rejections/wait_ticks_too_high (0.00s)
+    --- PASS: TestPickup_Rejections/not_your_unit (0.00s)
+    --- PASS: TestPickup_Rejections/not_your_ship (0.00s)
+=== RUN   TestPickup_SweepShipsAtSeaOnDeploy_LeavesPickupWaitAlone
+2026/10/08 23:34:45 INFO player registered id=90677a33-6eba-4607-9277-a207d2d26954 username=initiator-4ad4b7c7-c825-4df5-9911-f2d328da1c2d
+2026/10/08 23:34:45 INFO player registered id=704f291c-67ca-46aa-86c6-e1a84bf27b18 username=counterparty-cefa9e56-014b-413c-b162-6d88862c6386
+2026/10/08 23:34:45 INFO passage: messenger boarded messenger=faeb55d9-5876-40a2-8b55-6c0e5c9f6eba carrier=Emporos arrives_at=2026-10-09T02:34:45.718+02:00
+2026/10/08 23:34:45 INFO pickup: ship waiting off shore for fetched unit unit=0981b0ab-e3a0-4a20-a557-b8b54cebc022 pickup_unit=6d0d9bf8-c614-49e4-8d54-a1e2cf7ed8b9 until_tick=5
+--- PASS: TestPickup_SweepShipsAtSeaOnDeploy_LeavesPickupWaitAlone (0.12s)
+=== RUN   TestPickup_UnitDisbandedWhileWaiting_TimeoutSailsHomeEmpty
+2026/10/08 23:34:45 INFO player registered id=2ef87d7f-6539-42f5-b630-78e5d3f30103 username=initiator-bff3337b-e8a7-4326-9753-2e73e0e1d36e
+2026/10/08 23:34:45 INFO player registered id=13fe6600-c8e9-409b-876e-4b417ba923ab username=counterparty-4169369f-76b8-497a-87d3-116698b67aa1
+2026/10/08 23:34:45 INFO passage: messenger boarded messenger=ab3ef550-a1d5-4853-957e-4d113b501b7f carrier=Emporos arrives_at=2026-10-09T02:34:45.848+02:00
+2026/10/08 23:34:45 INFO pickup: ship waiting off shore for fetched unit unit=0e7cea6f-3675-41bb-9534-e89e85b50973 pickup_unit=3e56bc43-7848-4e63-9d97-e9d57efcf95a until_tick=5
+2026/10/08 23:34:45 INFO field unit turning for home unit=0e7cea6f-3675-41bb-9534-e89e85b50973 from_q=4 from_r=0 home_q=1 home_r=0
+--- PASS: TestPickup_UnitDisbandedWhileWaiting_TimeoutSailsHomeEmpty (0.14s)
+=== RUN   TestPickup_ShipLostWhileWaiting_TimeoutIsNoOp
+2026/10/08 23:34:45 INFO player registered id=a66b8c84-7481-4a8c-8d41-e6eb0c15dff5 username=initiator-42bb171f-58bd-48ac-845b-a73992d8adef
+2026/10/08 23:34:45 INFO player registered id=14ece877-dd5f-4a09-a8dc-8c2a92d24901 username=counterparty-0e72cf55-b3de-4cb8-ac19-d0911d93dddd
+2026/10/08 23:34:46 INFO passage: messenger boarded messenger=d4283cf6-c317-4400-9db0-7b3d6c0ab63e carrier=Emporos arrives_at=2026-10-09T02:34:45.982+02:00
+2026/10/08 23:34:46 INFO pickup: ship waiting off shore for fetched unit unit=1ac37a51-8cf5-4667-8977-cf019c80aa13 pickup_unit=a910f480-8ce6-4da6-9b2c-06d139a5bf19 until_tick=5
+--- PASS: TestPickup_ShipLostWhileWaiting_TimeoutIsNoOp (0.13s)
+=== RUN   TestPickup_ListUnitsSurface
+2026/10/08 23:34:46 INFO player registered id=797f18df-7ce0-455a-8f91-9f5eabe72cc2 username=initiator-52dd5e53-39e6-4562-9226-b1cb9b2be72a
+2026/10/08 23:34:46 INFO player registered id=5e540b17-bc62-40d2-9252-9bcd54c4b592 username=counterparty-604c952a-1728-4926-9b32-69a150ec4a97
+2026/10/08 23:34:46 INFO passage: messenger boarded messenger=69741612-4c02-4f98-9e39-ba5c42487ad7 carrier=Emporos arrives_at=2026-10-09T02:34:46.109+02:00
+2026/10/08 23:34:46 INFO pickup: ship waiting off shore for fetched unit unit=bb02e087-9c71-4e9a-9203-9fc6b375bfb2 pickup_unit=194691af-1a57-4477-9cd1-967f9b571de6 until_tick=5
+--- PASS: TestPickup_ListUnitsSurface (0.13s)
+PASS
+ok  	formatet/megaron/server/api/handlers	2.512s
