@@ -139,7 +139,9 @@ func (f *passageArrangeFixture) loadPendingEventBy(t *testing.T, eventType, json
 	if err := f.pool.QueryRow(context.Background(),
 		`SELECT id, world_id, event_type, payload, due_tick FROM scheduled_events
 		  WHERE world_id = $1 AND event_type = $2 AND processed_at IS NULL AND (payload->>$3) = $4
-		  ORDER BY due_tick ASC LIMIT 1`,
+		  AND ($3 <> 'messenger_id' OR event_type NOT IN ('MessengerArrival','MessengerReturn','OrderDelivery')
+               OR COALESCE((payload->>'passage_generation')::int,0)=(SELECT passage_generation FROM messengers WHERE id=$4::uuid))
+          ORDER BY due_tick ASC LIMIT 1`,
 		f.worldID, eventType, jsonKey, jsonVal.String(),
 	).Scan(&e.ID, &e.WorldID, &e.EventType, &payload, &e.DueTick); err != nil {
 		t.Fatalf("load pending %s event (%s=%s): %v", eventType, jsonKey, jsonVal, err)
@@ -179,10 +181,26 @@ func (f *passageArrangeFixture) runUnitArrival(t *testing.T, atTick int, unitID 
 	f.markProcessed(t, ev.ID)
 }
 
+// T2: a physical arrival freezes a witness. The real PassageScan consumes it
+// and supersedes the boarding timer. Acceptance drivers must execute that phase
+// and then the current generation's actual scheduled completion, just as workers do.
+func (f *passageArrangeFixture) projectCarrierWitnesses(t *testing.T) {
+	t.Helper()
+	var pending bool
+	if err := f.pool.QueryRow(context.Background(), `SELECT EXISTS(SELECT 1 FROM events e JOIN messengers m ON m.id=e.stream_id WHERE m.world_id=$1 AND e.id>m.carrier_witness_id AND e.event_type LIKE 'CarrierPassenger%V1')`, f.worldID).Scan(&pending); err != nil {
+		t.Fatal(err)
+	}
+	if pending {
+		f.runPassageScan(t)
+	}
+}
+
 func (f *passageArrangeFixture) runMessengerArrival(t *testing.T, atTick int, messengerID uuid.UUID) {
 	t.Helper()
 	f.setTick(t, atTick)
+	f.projectCarrierWitnesses(t)
 	ev := f.loadPendingEventBy(t, string(events.ScheduledMessengerArrival), "messenger_id", messengerID)
+	f.setTick(t, ev.DueTick)
 	if err := f.msgArrivalH.Handle(context.Background(), ev); err != nil {
 		t.Fatalf("messenger arrival: %v", err)
 	}
@@ -192,7 +210,9 @@ func (f *passageArrangeFixture) runMessengerArrival(t *testing.T, atTick int, me
 func (f *passageArrangeFixture) runMessengerReturn(t *testing.T, atTick int, messengerID uuid.UUID) {
 	t.Helper()
 	f.setTick(t, atTick)
+	f.projectCarrierWitnesses(t)
 	ev := f.loadPendingEventBy(t, string(events.ScheduledMessengerReturn), "messenger_id", messengerID)
+	f.setTick(t, ev.DueTick)
 	if err := f.msgReturnH.Handle(context.Background(), ev); err != nil {
 		t.Fatalf("messenger return: %v", err)
 	}
@@ -212,7 +232,9 @@ func (f *passageArrangeFixture) runStayEnd(t *testing.T, atTick int, messengerID
 func (f *passageArrangeFixture) runOrderDelivery(t *testing.T, atTick int, messengerID uuid.UUID) {
 	t.Helper()
 	f.setTick(t, atTick)
+	f.projectCarrierWitnesses(t)
 	ev := f.loadPendingEventBy(t, string(events.ScheduledOrderDelivery), "messenger_id", messengerID)
+	f.setTick(t, ev.DueTick)
 	if err := f.orderDeliveryH.Handle(context.Background(), ev); err != nil {
 		t.Fatalf("order delivery: %v", err)
 	}
