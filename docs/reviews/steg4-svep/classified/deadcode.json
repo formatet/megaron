@@ -1,0 +1,404 @@
+[
+  {
+    "file": "server/api/handlers/db.go",
+    "line": 135,
+    "value": "loadLaborCapacities",
+    "owner_rows": [
+      13,
+      19
+    ],
+    "classification": "ej nåbar enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/api/handlers/helpers.go",
+    "line": 126,
+    "value": "insufficientUnitsMsg",
+    "owner_rows": [
+      15
+    ],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/api/handlers/province.go",
+    "line": 3519,
+    "value": "ProvinceHandler.Marches",
+    "owner_rows": [
+      10,
+      11
+    ],
+    "classification": "ej nåbar enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/cmd/keryx/client.go",
+    "line": 195,
+    "value": "Client.patch",
+    "owner_rows": [],
+    "classification": "ej nåbar enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/cmd/keryx/output.go",
+    "line": 29,
+    "value": "die",
+    "owner_rows": [],
+    "classification": "ej nåbar enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/ai/governor.go",
+    "line": 68,
+    "value": "VoteWeighting",
+    "owner_rows": [],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/capabilities/province_verbs.go",
+    "line": 54,
+    "value": "PopulationRequirement",
+    "owner_rows": [
+      15,
+      16
+    ],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/clock/clock.go",
+    "line": 61,
+    "value": "NewTestClock",
+    "owner_rows": [
+      1
+    ],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/clock/clock.go",
+    "line": 66,
+    "value": "TestClock.Now",
+    "owner_rows": [
+      1
+    ],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/clock/clock.go",
+    "line": 73,
+    "value": "TestClock.Set",
+    "owner_rows": [
+      1
+    ],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/clock/clock.go",
+    "line": 80,
+    "value": "TestClock.Advance",
+    "owner_rows": [
+      1
+    ],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/economy/catchment.go",
+    "line": 35,
+    "value": "CatchmentBasePotential",
+    "owner_rows": [
+      13
+    ],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/economy/founding_placement.go",
+    "line": 80,
+    "value": "rankedFoodSlotsAt",
+    "owner_rows": [
+      13
+    ],
+    "classification": "ej nåbar enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/economy/goods.go",
+    "line": 63,
+    "value": "GoodState.Current",
+    "owner_rows": [
+      1,
+      7,
+      8
+    ],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/economy/production.go",
+    "line": 16,
+    "value": "effectiveRates",
+    "owner_rows": [
+      13
+    ],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/economy/production.go",
+    "line": 55,
+    "value": "LaborRates",
+    "owner_rows": [
+      13,
+      16
+    ],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/events/scheduler.go",
+    "line": 360,
+    "value": "Worker.RegisterWithTimeout",
+    "owner_rows": [
+      2
+    ],
+    "classification": "ej nåbar enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/kharis/tick.go",
+    "line": 105,
+    "value": "templeDevotionCapacity",
+    "owner_rows": [],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/kharis/tick.go",
+    "line": 173,
+    "value": "templeTierMultiplier",
+    "owner_rows": [],
+    "classification": "ej nåbar enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/loyalty/points.go",
+    "line": 41,
+    "value": "LoyaltyFromPoints",
+    "owner_rows": [],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/loyalty/points.go",
+    "line": 64,
+    "value": "clampPoints",
+    "owner_rows": [],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/messenger/recall.go",
+    "line": 30,
+    "value": "MessengerTravelDuration",
+    "owner_rows": [
+      1,
+      10
+    ],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/messenger/recall.go",
+    "line": 35,
+    "value": "MessengerTravelTicks",
+    "owner_rows": [
+      1,
+      10
+    ],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/movement/movement.go",
+    "line": 150,
+    "value": "Presence",
+    "owner_rows": [
+      11
+    ],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/movement/movement.go",
+    "line": 202,
+    "value": "FirstContact",
+    "owner_rows": [
+      11
+    ],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/religion/offering.go",
+    "line": 131,
+    "value": "OfferingShortfall",
+    "owner_rows": [],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/religion/valuation.go",
+    "line": 79,
+    "value": "goodDivisor",
+    "owner_rows": [],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/religion/valuation.go",
+    "line": 134,
+    "value": "SmoothDivineValue",
+    "owner_rows": [],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/religion/valuation.go",
+    "line": 145,
+    "value": "CountsAsHolder",
+    "owner_rows": [],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/settlement/loyalty.go",
+    "line": 21,
+    "value": "RevoltConditionsMet",
+    "owner_rows": [],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/settlement/loyalty.go",
+    "line": 27,
+    "value": "LoyaltyProjection",
+    "owner_rows": [],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/tick/worker.go",
+    "line": 227,
+    "value": "ticksDue",
+    "owner_rows": [
+      1,
+      2
+    ],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/transport/transport.go",
+    "line": 136,
+    "value": "CurrentPosition",
+    "owner_rows": [
+      11
+    ],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/unit/model.go",
+    "line": 83,
+    "value": "CombatCapable",
+    "owner_rows": [
+      5,
+      16
+    ],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/unit/model.go",
+    "line": 89,
+    "value": "CanFoundMetropolis",
+    "owner_rows": [
+      5,
+      16
+    ],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/unit/naming.go",
+    "line": 134,
+    "value": "RunnerName",
+    "owner_rows": [
+      5
+    ],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/unit/naming.go",
+    "line": 144,
+    "value": "CaravanName",
+    "owner_rows": [
+      5
+    ],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/unit/naming.go",
+    "line": 155,
+    "value": "journey",
+    "owner_rows": [
+      5
+    ],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/unit/naming.go",
+    "line": 171,
+    "value": "possessive",
+    "owner_rows": [
+      5
+    ],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/world/mapgen.go",
+    "line": 3943,
+    "value": "SpawnOreCatchmentScore",
+    "owner_rows": [
+      12,
+      13
+    ],
+    "classification": "test-only enligt RTA",
+    "reason": "Statisk nåbarhet från Go main, ej säker raderingsorder; runtime/plugin/reflektion och framtida användning bedöms separat"
+  },
+  {
+    "file": "server/internal/economy/trade_return_helpers_test.go",
+    "line": 23,
+    "value": "fakeReturnBroadcaster.BroadcastEvent",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double metod ej nåbar ens med test; inget produktionsfynd"
+  },
+  {
+    "file": "server/internal/economy/trade_return_helpers_test.go",
+    "line": 25,
+    "value": "fakeReturnBroadcaster.NotifyPlayer",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double metod ej nåbar ens med test; inget produktionsfynd"
+  }
+]

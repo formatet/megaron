@@ -1,0 +1,1135 @@
+[
+  {
+    "file": "server/api/handlers/alfatestinfo.go",
+    "line": 12,
+    "function": "*WebHandler.AlfatestInfo",
+    "kind": "unused_parameter",
+    "value": "r",
+    "package": "handlers",
+    "owner_rows": [],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/api/handlers/messenger_trade_offer_good_validation_test.go",
+    "line": 153,
+    "function": "goodValidationRouter",
+    "kind": "unused_parameter",
+    "value": "accessToken",
+    "package": "handlers",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/api/handlers/province.go",
+    "line": 1831,
+    "function": "*ProvinceHandler.UnitCatalogue",
+    "kind": "unused_parameter",
+    "value": "r",
+    "package": "handlers",
+    "owner_rows": [],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/api/handlers/settlement.go",
+    "line": 1387,
+    "function": "*SettlementHandler.applyOracleRevealDeposits",
+    "kind": "unused_parameter",
+    "value": "settlementID",
+    "package": "handlers",
+    "owner_rows": [
+      6
+    ],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/api/handlers/web.go",
+    "line": 156,
+    "function": "*WebHandler.Index",
+    "kind": "unused_parameter",
+    "value": "r",
+    "package": "handlers",
+    "owner_rows": [],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/ai/governor.go",
+    "line": 16,
+    "function": "PassiveGovernorTick",
+    "kind": "unused_parameter",
+    "value": "worldID",
+    "package": "ai",
+    "owner_rows": [],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/capabilities/province_verbs.go",
+    "line": 29,
+    "function": "canBuild",
+    "kind": "unused_parameter",
+    "value": "cc",
+    "package": "capabilities",
+    "owner_rows": [
+      15
+    ],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/capabilities/province_verbs.go",
+    "line": 35,
+    "function": "canCancelBuild",
+    "kind": "unused_parameter",
+    "value": "cc",
+    "package": "capabilities",
+    "owner_rows": [
+      15
+    ],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/capabilities/province_verbs.go",
+    "line": 40,
+    "function": "canAllocate",
+    "kind": "unused_parameter",
+    "value": "cc",
+    "package": "capabilities",
+    "owner_rows": [
+      16
+    ],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/combat/battle.go",
+    "line": 902,
+    "function": "*BattleTickHandler.notifyBattleEnded",
+    "kind": "unused_parameter",
+    "value": "tickIndex",
+    "package": "combat",
+    "owner_rows": [
+      3
+    ],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/combat/battle_test.go",
+    "line": 33,
+    "function": "*sequenceDice.Intn",
+    "kind": "unused_parameter",
+    "value": "n",
+    "package": "combat",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/combat/battle_wall_test.go",
+    "line": 136,
+    "function": "runOneBattleTick",
+    "kind": "unused_parameter",
+    "value": "pool",
+    "package": "combat",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/combat/collapse.go",
+    "line": 96,
+    "function": "collapseSettlement",
+    "kind": "unused_parameter",
+    "value": "scheduler",
+    "package": "combat",
+    "owner_rows": [
+      4,
+      16
+    ],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/combat/march_sighting_test.go",
+    "line": 47,
+    "function": "*sightingRecorder.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "worldID",
+    "package": "combat",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/combat/march_sighting_test.go",
+    "line": 47,
+    "function": "*sightingRecorder.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "kind",
+    "package": "combat",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/combat/march_sighting_test.go",
+    "line": 47,
+    "function": "*sightingRecorder.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "payload",
+    "package": "combat",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/combat/occupation.go",
+    "line": 751,
+    "function": "dispatchPlunderCaravan",
+    "kind": "unused_parameter",
+    "value": "originTerrain",
+    "package": "combat",
+    "owner_rows": [
+      10,
+      18
+    ],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/combat/unit_arrival_field_mixed_owner_test.go",
+    "line": 41,
+    "function": "*recordingBroadcaster.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "worldID",
+    "package": "combat",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/combat/unit_arrival_field_mixed_owner_test.go",
+    "line": 41,
+    "function": "*recordingBroadcaster.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "kind",
+    "package": "combat",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/combat/unit_arrival_field_mixed_owner_test.go",
+    "line": 41,
+    "function": "*recordingBroadcaster.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "payload",
+    "package": "combat",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/combat/unit_arrival_field_mixed_owner_test.go",
+    "line": 43,
+    "function": "*recordingBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "ctx",
+    "package": "combat",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/combat/unit_arrival_field_mixed_owner_test.go",
+    "line": 43,
+    "function": "*recordingBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "worldID",
+    "package": "combat",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/combat/unit_arrival_field_mixed_owner_test.go",
+    "line": 43,
+    "function": "*recordingBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "level",
+    "package": "combat",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/combat/unit_arrival_field_mixed_owner_test.go",
+    "line": 43,
+    "function": "*recordingBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "payload",
+    "package": "combat",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/combat/unit_arrival_notify_test.go",
+    "line": 26,
+    "function": "*fakeBroadcaster.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "worldID",
+    "package": "combat",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/combat/unit_arrival_notify_test.go",
+    "line": 26,
+    "function": "*fakeBroadcaster.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "kind",
+    "package": "combat",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/combat/unit_arrival_notify_test.go",
+    "line": 26,
+    "function": "*fakeBroadcaster.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "payload",
+    "package": "combat",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/combat/unit_arrival_notify_test.go",
+    "line": 28,
+    "function": "*fakeBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "ctx",
+    "package": "combat",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/combat/unit_arrival_notify_test.go",
+    "line": 28,
+    "function": "*fakeBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "worldID",
+    "package": "combat",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/combat/unit_arrival_notify_test.go",
+    "line": 28,
+    "function": "*fakeBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "playerID",
+    "package": "combat",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/combat/unit_arrival_notify_test.go",
+    "line": 28,
+    "function": "*fakeBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "level",
+    "package": "combat",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/combat/upkeep_unpaid_warning_test.go",
+    "line": 47,
+    "function": "*unpaidWarningRecorder.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "worldID",
+    "package": "combat",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/combat/upkeep_unpaid_warning_test.go",
+    "line": 47,
+    "function": "*unpaidWarningRecorder.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "kind",
+    "package": "combat",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/combat/upkeep_unpaid_warning_test.go",
+    "line": 47,
+    "function": "*unpaidWarningRecorder.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "payload",
+    "package": "combat",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/food_shortfall_name_test.go",
+    "line": 23,
+    "function": "*foodShortfallNotifyRecorder.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "worldID",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/food_shortfall_name_test.go",
+    "line": 23,
+    "function": "*foodShortfallNotifyRecorder.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "kind",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/food_shortfall_name_test.go",
+    "line": 23,
+    "function": "*foodShortfallNotifyRecorder.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "payload",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/food_shortfall_name_test.go",
+    "line": 25,
+    "function": "*foodShortfallNotifyRecorder.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "ctx",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/food_shortfall_name_test.go",
+    "line": 25,
+    "function": "*foodShortfallNotifyRecorder.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "worldID",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/food_shortfall_name_test.go",
+    "line": 25,
+    "function": "*foodShortfallNotifyRecorder.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "playerID",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/food_shortfall_name_test.go",
+    "line": 25,
+    "function": "*foodShortfallNotifyRecorder.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "kind",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/food_shortfall_name_test.go",
+    "line": 25,
+    "function": "*foodShortfallNotifyRecorder.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "level",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/hex_blockade_test.go",
+    "line": 230,
+    "function": "*fakeBlockadeNotifier.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "ctx",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/placement_yield.go",
+    "line": 317,
+    "function": "placementYield",
+    "kind": "unused_parameter",
+    "value": "good",
+    "package": "economy",
+    "owner_rows": [
+      13
+    ],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/economy/placement_yield.go",
+    "line": 642,
+    "function": "ValidHexesForBuilding",
+    "kind": "unused_parameter",
+    "value": "settlementID",
+    "package": "economy",
+    "owner_rows": [
+      12,
+      13
+    ],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/economy/placement_yield.go",
+    "line": 850,
+    "function": "MarginalYieldForSlot",
+    "kind": "unused_parameter",
+    "value": "good",
+    "package": "economy",
+    "owner_rows": [
+      13
+    ],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/economy/recompute.go",
+    "line": 902,
+    "function": "goodCap",
+    "kind": "unused_parameter",
+    "value": "key",
+    "package": "economy",
+    "owner_rows": [
+      9
+    ],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/economy/siege_dispatch_test.go",
+    "line": 31,
+    "function": "*fakeSiegeNotifier.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "ctx",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/sitos_intervention_notify_test.go",
+    "line": 24,
+    "function": "*fakeSitosBroadcaster.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "worldID",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/sitos_intervention_notify_test.go",
+    "line": 24,
+    "function": "*fakeSitosBroadcaster.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "kind",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/sitos_intervention_notify_test.go",
+    "line": 24,
+    "function": "*fakeSitosBroadcaster.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "payload",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/sitos_intervention_notify_test.go",
+    "line": 26,
+    "function": "*fakeSitosBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "ctx",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/sitos_intervention_notify_test.go",
+    "line": 26,
+    "function": "*fakeSitosBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "worldID",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/sitos_intervention_notify_test.go",
+    "line": 26,
+    "function": "*fakeSitosBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "playerID",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/sitos_intervention_notify_test.go",
+    "line": 26,
+    "function": "*fakeSitosBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "level",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/sitos_intervention_notify_test.go",
+    "line": 26,
+    "function": "*fakeSitosBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "payload",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/trade.go",
+    "line": 535,
+    "function": "dispatchShipReturnLeg",
+    "kind": "unused_parameter",
+    "value": "arrivedID",
+    "package": "economy",
+    "owner_rows": [
+      10
+    ],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/economy/trade_return_helpers_test.go",
+    "line": 23,
+    "function": "*fakeReturnBroadcaster.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "worldID",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/trade_return_helpers_test.go",
+    "line": 23,
+    "function": "*fakeReturnBroadcaster.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "kind",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/trade_return_helpers_test.go",
+    "line": 23,
+    "function": "*fakeReturnBroadcaster.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "payload",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/trade_return_helpers_test.go",
+    "line": 25,
+    "function": "*fakeReturnBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "ctx",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/trade_return_helpers_test.go",
+    "line": 25,
+    "function": "*fakeReturnBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "worldID",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/trade_return_helpers_test.go",
+    "line": 25,
+    "function": "*fakeReturnBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "playerID",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/economy/trade_return_helpers_test.go",
+    "line": 25,
+    "function": "*fakeReturnBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "level",
+    "package": "economy",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/kharis/divine_effects_test.go",
+    "line": 40,
+    "function": "*divineNotifyRecorder.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "ctx",
+    "package": "kharis",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/kharis/divine_effects_test.go",
+    "line": 40,
+    "function": "*divineNotifyRecorder.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "worldID",
+    "package": "kharis",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/kharis/siege_starvation_clock_test.go",
+    "line": 71,
+    "function": "readSiegeStarvationTicks",
+    "kind": "unused_parameter",
+    "value": "worldID",
+    "package": "kharis",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/kharis/tick.go",
+    "line": 173,
+    "function": "templeTierMultiplier",
+    "kind": "unused_parameter",
+    "value": "level",
+    "package": "kharis",
+    "owner_rows": [],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/messenger/order_delivery_recall_miss_test.go",
+    "line": 33,
+    "function": "*fakeRecallBroadcaster.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "worldID",
+    "package": "messenger",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/messenger/order_delivery_recall_miss_test.go",
+    "line": 33,
+    "function": "*fakeRecallBroadcaster.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "kind",
+    "package": "messenger",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/messenger/order_delivery_recall_miss_test.go",
+    "line": 33,
+    "function": "*fakeRecallBroadcaster.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "payload",
+    "package": "messenger",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/messenger/order_delivery_recall_miss_test.go",
+    "line": 35,
+    "function": "*fakeRecallBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "ctx",
+    "package": "messenger",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/messenger/order_delivery_recall_miss_test.go",
+    "line": 35,
+    "function": "*fakeRecallBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "worldID",
+    "package": "messenger",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/messenger/order_delivery_recall_miss_test.go",
+    "line": 35,
+    "function": "*fakeRecallBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "playerID",
+    "package": "messenger",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/messenger/order_delivery_recall_miss_test.go",
+    "line": 35,
+    "function": "*fakeRecallBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "level",
+    "package": "messenger",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/messenger/passage.go",
+    "line": 393,
+    "function": "*PassageScanHandler.releasePassageWaitOne",
+    "kind": "unused_parameter",
+    "value": "currentTick",
+    "package": "messenger",
+    "owner_rows": [
+      10
+    ],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/messenger/passage.go",
+    "line": 682,
+    "function": "*PassageScanHandler.boardTransports",
+    "kind": "unused_parameter",
+    "value": "currentTick",
+    "package": "messenger",
+    "owner_rows": [
+      10
+    ],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/messenger/stay_end_test.go",
+    "line": 120,
+    "function": "deliver",
+    "kind": "unused_parameter",
+    "value": "pool",
+    "package": "messenger",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/province/model.go",
+    "line": 32,
+    "function": "NormaliseCulture",
+    "kind": "unused_parameter",
+    "value": "c",
+    "package": "province",
+    "owner_rows": [
+      5
+    ],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/transport/transport_test.go",
+    "line": 113,
+    "function": "*fakeBroadcaster.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "worldID",
+    "package": "transport",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/transport/transport_test.go",
+    "line": 113,
+    "function": "*fakeBroadcaster.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "kind",
+    "package": "transport",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/transport/transport_test.go",
+    "line": 113,
+    "function": "*fakeBroadcaster.BroadcastEvent",
+    "kind": "unused_parameter",
+    "value": "payload",
+    "package": "transport",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/transport/transport_test.go",
+    "line": 115,
+    "function": "*fakeBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "ctx",
+    "package": "transport",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/transport/transport_test.go",
+    "line": 115,
+    "function": "*fakeBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "worldID",
+    "package": "transport",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/transport/transport_test.go",
+    "line": 115,
+    "function": "*fakeBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "playerID",
+    "package": "transport",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/transport/transport_test.go",
+    "line": 115,
+    "function": "*fakeBroadcaster.NotifyPlayer",
+    "kind": "unused_parameter",
+    "value": "level",
+    "package": "transport",
+    "owner_rows": [],
+    "classification": "brus",
+    "reason": "Test-double signatur"
+  },
+  {
+    "file": "server/internal/world/debugpng.go",
+    "line": 244,
+    "function": "EstimatePlayerCapacity",
+    "kind": "unused_parameter",
+    "value": "width",
+    "package": "world",
+    "owner_rows": [],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/world/debugpng.go",
+    "line": 244,
+    "function": "EstimatePlayerCapacity",
+    "kind": "unused_parameter",
+    "value": "height",
+    "package": "world",
+    "owner_rows": [],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/world/mapgen.go",
+    "line": 1134,
+    "function": "generateMapOnce",
+    "kind": "unused_parameter",
+    "value": "worldID",
+    "package": "world",
+    "owner_rows": [],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/world/mapgen.go",
+    "line": 1966,
+    "function": "placeDepositClusters",
+    "kind": "unused_parameter",
+    "value": "width",
+    "package": "world",
+    "owner_rows": [],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/world/mapgen.go",
+    "line": 1966,
+    "function": "placeDepositClusters",
+    "kind": "unused_parameter",
+    "value": "height",
+    "package": "world",
+    "owner_rows": [],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/world/mapgen.go",
+    "line": 2587,
+    "function": "adjacentToExistingRiver",
+    "kind": "unused_parameter",
+    "value": "width",
+    "package": "world",
+    "owner_rows": [],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/world/mapgen.go",
+    "line": 2587,
+    "function": "adjacentToExistingRiver",
+    "kind": "unused_parameter",
+    "value": "height",
+    "package": "world",
+    "owner_rows": [],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/world/mapgen.go",
+    "line": 2605,
+    "function": "adjacentToExistingRiverExcept",
+    "kind": "unused_parameter",
+    "value": "width",
+    "package": "world",
+    "owner_rows": [],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/world/mapgen.go",
+    "line": 2605,
+    "function": "adjacentToExistingRiverExcept",
+    "kind": "unused_parameter",
+    "value": "height",
+    "package": "world",
+    "owner_rows": [],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/world/mapgen.go",
+    "line": 2633,
+    "function": "adjacentToOwnPath",
+    "kind": "unused_parameter",
+    "value": "width",
+    "package": "world",
+    "owner_rows": [],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/world/mapgen.go",
+    "line": 2633,
+    "function": "adjacentToOwnPath",
+    "kind": "unused_parameter",
+    "value": "height",
+    "package": "world",
+    "owner_rows": [],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/world/mapgen.go",
+    "line": 2690,
+    "function": "firstSeaNeighbour",
+    "kind": "unused_parameter",
+    "value": "grid",
+    "package": "world",
+    "owner_rows": [],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/world/mapgen.go",
+    "line": 3503,
+    "function": "smallestFragment",
+    "kind": "unused_parameter",
+    "value": "width",
+    "package": "world",
+    "owner_rows": [],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  },
+  {
+    "file": "server/internal/world/mapgen.go",
+    "line": 3503,
+    "function": "smallestFragment",
+    "kind": "unused_parameter",
+    "value": "height",
+    "package": "world",
+    "owner_rows": [],
+    "classification": "oanvänd parameter",
+    "reason": "Ingen identitetsbunden AST-användning i kroppen; adapter/signatur kan avsiktligt kräva parametern"
+  }
+]

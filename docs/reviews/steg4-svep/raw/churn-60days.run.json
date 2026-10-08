@@ -1,0 +1,20 @@
+{
+  "command": [
+    "git",
+    "-C",
+    "/home/tk/wt/codex-steg4-svep",
+    "log",
+    "daf740ddd0efa051adc78c945b92d3c0c5d94d48",
+    "--since-as-filter=2026-08-09T20:47:53+02:00",
+    "--until=2026-10-08T20:47:53+02:00",
+    "--no-renames",
+    "--format=commit %H %aI",
+    "--numstat",
+    "--",
+    "server",
+    "web"
+  ],
+  "cwd": ".",
+  "exit": 0,
+  "elapsed_seconds": 0.185
+}

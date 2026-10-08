@@ -1,0 +1,122 @@
+[
+	{
+		"Name": "handlers",
+		"Path": "formatet/megaron/server/api/handlers",
+		"Funcs": [
+			{
+				"Name": "loadLaborCapacities",
+				"Position": {
+					"File": "api/handlers/db.go",
+					"Line": 135,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "ProvinceHandler.Marches",
+				"Position": {
+					"File": "api/handlers/province.go",
+					"Line": 3519,
+					"Col": 27
+				},
+				"Generated": false,
+				"Marker": false
+			}
+		]
+	},
+	{
+		"Name": "main",
+		"Path": "formatet/megaron/server/cmd/keryx",
+		"Funcs": [
+			{
+				"Name": "Client.patch",
+				"Position": {
+					"File": "cmd/keryx/client.go",
+					"Line": 195,
+					"Col": 18
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "die",
+				"Position": {
+					"File": "cmd/keryx/output.go",
+					"Line": 29,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			}
+		]
+	},
+	{
+		"Name": "economy",
+		"Path": "formatet/megaron/server/internal/economy",
+		"Funcs": [
+			{
+				"Name": "rankedFoodSlotsAt",
+				"Position": {
+					"File": "internal/economy/founding_placement.go",
+					"Line": 80,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "fakeReturnBroadcaster.BroadcastEvent",
+				"Position": {
+					"File": "internal/economy/trade_return_helpers_test.go",
+					"Line": 23,
+					"Col": 33
+				},
+				"Generated": false,
+				"Marker": false
+			},
+			{
+				"Name": "fakeReturnBroadcaster.NotifyPlayer",
+				"Position": {
+					"File": "internal/economy/trade_return_helpers_test.go",
+					"Line": 25,
+					"Col": 33
+				},
+				"Generated": false,
+				"Marker": false
+			}
+		]
+	},
+	{
+		"Name": "events",
+		"Path": "formatet/megaron/server/internal/events",
+		"Funcs": [
+			{
+				"Name": "Worker.RegisterWithTimeout",
+				"Position": {
+					"File": "internal/events/scheduler.go",
+					"Line": 360,
+					"Col": 18
+				},
+				"Generated": false,
+				"Marker": false
+			}
+		]
+	},
+	{
+		"Name": "kharis",
+		"Path": "formatet/megaron/server/internal/kharis",
+		"Funcs": [
+			{
+				"Name": "templeTierMultiplier",
+				"Position": {
+					"File": "internal/kharis/tick.go",
+					"Line": 173,
+					"Col": 6
+				},
+				"Generated": false,
+				"Marker": false
+			}
+		]
+	}
+]

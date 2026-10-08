@@ -1,0 +1,120 @@
+[
+  {
+    "command": [
+      "/home/tk/.cache/megaron-steg4/bin/dupl",
+      "-plumbing",
+      "-t",
+      "100",
+      "-files"
+    ],
+    "cwd": ".",
+    "exit": 0,
+    "elapsed_seconds": 0.777
+  },
+  {
+    "command": [
+      "/home/tk/.cache/megaron-steg4/bin/dupl",
+      "-plumbing",
+      "-t",
+      "100",
+      "-files"
+    ],
+    "cwd": ".",
+    "exit": 0,
+    "elapsed_seconds": 0.342
+  },
+  {
+    "command": [
+      "/home/tk/.cache/megaron-steg4/bin/dupl",
+      "-plumbing",
+      "-t",
+      "50",
+      "-files"
+    ],
+    "cwd": ".",
+    "exit": 0,
+    "elapsed_seconds": 0.343
+  },
+  {
+    "command": [
+      "/home/tk/.cache/megaron-steg4/tools/node_modules/.bin/jscpd",
+      "web/static/js",
+      "--format",
+      "javascript",
+      "--min-tokens",
+      "100",
+      "--min-lines",
+      "5",
+      "--mode",
+      "weak",
+      "--max-size",
+      "250kb",
+      "--ignore",
+      "**/node_modules/**,**/vendor/**,**/*.min.js,**/generated/**",
+      "--workers",
+      "1",
+      "--reporters",
+      "json",
+      "--output",
+      "/home/tk/wt/codex-steg4-svep/docs/reviews/steg4-svep/raw/jscpd",
+      "--silent",
+      "--no-colors",
+      "--fail-on-empty"
+    ],
+    "cwd": ".",
+    "exit": 0,
+    "elapsed_seconds": 0.066
+  },
+  {
+    "command": [
+      "/home/tk/.cache/megaron-steg4/bin/deadcode",
+      "-json",
+      "./..."
+    ],
+    "cwd": "server",
+    "exit": 0,
+    "elapsed_seconds": 2.112
+  },
+  {
+    "command": [
+      "/home/tk/.cache/megaron-steg4/bin/deadcode",
+      "-json",
+      "-test",
+      "./..."
+    ],
+    "cwd": "server",
+    "exit": 0,
+    "elapsed_seconds": 2.794
+  },
+  {
+    "command": [
+      "go",
+      "run",
+      "docs/reviews/steg4-svep/ast_measure.go",
+      "server"
+    ],
+    "cwd": ".",
+    "exit": 0,
+    "elapsed_seconds": 0.274
+  },
+  {
+    "command": [
+      "git",
+      "-C",
+      "/home/tk/wt/codex-steg4-svep",
+      "log",
+      "daf740ddd0efa051adc78c945b92d3c0c5d94d48",
+      "--since-as-filter=2026-08-09T20:47:53+02:00",
+      "--until=2026-10-08T20:47:53+02:00",
+      "--no-renames",
+      "--format=commit %H %aI",
+      "--numstat",
+      "--",
+      "server",
+      "web"
+    ],
+    "cwd": ".",
+    "exit": 0,
+    "elapsed_seconds": 0.185
+  }
+]

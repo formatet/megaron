@@ -1,0 +1,23 @@
+{
+  "churn_since": "2026-08-09T20:47:53+02:00",
+  "churn_until": "2026-10-08T20:47:53+02:00",
+  "base": "daf740ddd0efa051adc78c945b92d3c0c5d94d48",
+  "measured_at": "2026-10-08T22:10:55.245560+02:00",
+  "cache": "/home/tk/.cache/megaron-steg4",
+  "platform": "linux/amd64",
+  "build_tags": [],
+  "versions": {
+    "dupl": "github.com/mibk/dupl@v1.1.0",
+    "deadcode": "golang.org/x/tools/cmd/deadcode@v0.51.0",
+    "jscpd": "5.4.0"
+  },
+  "go": "go version go1.27.1-X:nodwarf5 linux/amd64",
+  "tool_sha256": {
+    "dupl": "2079723034dcf2b5baea760de9a0bbe3ab77c849affc919ba0cad05c07e51e93",
+    "deadcode": "8880933af5a56fd5fb225d04fab5cae080df97219b2fecb87412a523461c5fdf",
+    "jscpd": "e81342e628de62d9b15fe94a918d25cc98e2e90a9b85c3f8ec636578c278467a"
+  },
+  "go_source_count": 677,
+  "production_go_source_count": 242,
+  "js_scan_max_size_argument": "250kb"
+}

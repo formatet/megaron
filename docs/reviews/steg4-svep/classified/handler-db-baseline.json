@@ -1,0 +1,298 @@
+{
+  "methods": [
+    "Exec",
+    "Query",
+    "QueryRow",
+    "Begin",
+    "BeginTx",
+    "SendBatch",
+    "CopyFrom"
+  ],
+  "receivers": [
+    "h.pool",
+    "pool",
+    "tx",
+    "db"
+  ],
+  "files": [
+    {
+      "file": "server/api/handlers/agora.go",
+      "total": 0,
+      "calls": {}
+    },
+    {
+      "file": "server/api/handlers/alfatestinfo.go",
+      "total": 0,
+      "calls": {}
+    },
+    {
+      "file": "server/api/handlers/auth.go",
+      "total": 0,
+      "calls": {}
+    },
+    {
+      "file": "server/api/handlers/capabilities.go",
+      "total": 1,
+      "calls": {
+        "QueryRow": 1
+      }
+    },
+    {
+      "file": "server/api/handlers/create_metropolis.go",
+      "total": 7,
+      "calls": {
+        "Exec": 5,
+        "QueryRow": 2
+      }
+    },
+    {
+      "file": "server/api/handlers/db.go",
+      "total": 7,
+      "calls": {
+        "Query": 2,
+        "QueryRow": 5
+      }
+    },
+    {
+      "file": "server/api/handlers/dispatch_preferences.go",
+      "total": 3,
+      "calls": {
+        "Exec": 2,
+        "Query": 1
+      }
+    },
+    {
+      "file": "server/api/handlers/foreign_units.go",
+      "total": 2,
+      "calls": {
+        "Query": 2
+      }
+    },
+    {
+      "file": "server/api/handlers/found_metropolis.go",
+      "total": 16,
+      "calls": {
+        "Begin": 1,
+        "Exec": 5,
+        "Query": 2,
+        "QueryRow": 8
+      }
+    },
+    {
+      "file": "server/api/handlers/gift_destinations.go",
+      "total": 3,
+      "calls": {
+        "Query": 2,
+        "QueryRow": 1
+      }
+    },
+    {
+      "file": "server/api/handlers/god.go",
+      "total": 2,
+      "calls": {
+        "Query": 2
+      }
+    },
+    {
+      "file": "server/api/handlers/goods.go",
+      "total": 1,
+      "calls": {
+        "Query": 1
+      }
+    },
+    {
+      "file": "server/api/handlers/helpers.go",
+      "total": 2,
+      "calls": {
+        "Exec": 1,
+        "QueryRow": 1
+      }
+    },
+    {
+      "file": "server/api/handlers/join.go",
+      "total": 10,
+      "calls": {
+        "Begin": 1,
+        "Exec": 3,
+        "QueryRow": 6
+      }
+    },
+    {
+      "file": "server/api/handlers/kingdom.go",
+      "total": 57,
+      "calls": {
+        "Begin": 5,
+        "Exec": 17,
+        "Query": 4,
+        "QueryRow": 31
+      }
+    },
+    {
+      "file": "server/api/handlers/logistics.go",
+      "total": 4,
+      "calls": {
+        "Begin": 1,
+        "Exec": 3
+      }
+    },
+    {
+      "file": "server/api/handlers/messenger.go",
+      "total": 44,
+      "calls": {
+        "Begin": 5,
+        "Exec": 12,
+        "Query": 3,
+        "QueryRow": 24
+      }
+    },
+    {
+      "file": "server/api/handlers/messenger_passage.go",
+      "total": 10,
+      "calls": {
+        "Query": 1,
+        "QueryRow": 9
+      }
+    },
+    {
+      "file": "server/api/handlers/nomadic_host.go",
+      "total": 3,
+      "calls": {
+        "Exec": 1,
+        "QueryRow": 2
+      }
+    },
+    {
+      "file": "server/api/handlers/notifications.go",
+      "total": 4,
+      "calls": {
+        "Exec": 3,
+        "Query": 1
+      }
+    },
+    {
+      "file": "server/api/handlers/province.go",
+      "total": 114,
+      "calls": {
+        "Begin": 6,
+        "Exec": 11,
+        "Query": 27,
+        "QueryRow": 70
+      }
+    },
+    {
+      "file": "server/api/handlers/reports.go",
+      "total": 3,
+      "calls": {
+        "Query": 1,
+        "QueryRow": 2
+      }
+    },
+    {
+      "file": "server/api/handlers/retreat_default.go",
+      "total": 0,
+      "calls": {}
+    },
+    {
+      "file": "server/api/handlers/rural.go",
+      "total": 1,
+      "calls": {
+        "Query": 1
+      }
+    },
+    {
+      "file": "server/api/handlers/settlement.go",
+      "total": 42,
+      "calls": {
+        "Begin": 4,
+        "Exec": 12,
+        "Query": 8,
+        "QueryRow": 18
+      }
+    },
+    {
+      "file": "server/api/handlers/settlement_placement.go",
+      "total": 22,
+      "calls": {
+        "Begin": 3,
+        "Exec": 7,
+        "Query": 6,
+        "QueryRow": 6
+      }
+    },
+    {
+      "file": "server/api/handlers/standing_order.go",
+      "total": 14,
+      "calls": {
+        "Begin": 2,
+        "Exec": 4,
+        "Query": 3,
+        "QueryRow": 5
+      }
+    },
+    {
+      "file": "server/api/handlers/trade_journey.go",
+      "total": 2,
+      "calls": {
+        "Query": 2
+      }
+    },
+    {
+      "file": "server/api/handlers/unit.go",
+      "total": 39,
+      "calls": {
+        "Begin": 4,
+        "Exec": 6,
+        "Query": 10,
+        "QueryRow": 19
+      }
+    },
+    {
+      "file": "server/api/handlers/unit_march_preview.go",
+      "total": 1,
+      "calls": {
+        "QueryRow": 1
+      }
+    },
+    {
+      "file": "server/api/handlers/unit_repair.go",
+      "total": 6,
+      "calls": {
+        "Begin": 1,
+        "Exec": 1,
+        "QueryRow": 4
+      }
+    },
+    {
+      "file": "server/api/handlers/web.go",
+      "total": 11,
+      "calls": {
+        "Query": 1,
+        "QueryRow": 10
+      }
+    },
+    {
+      "file": "server/api/handlers/world.go",
+      "total": 24,
+      "calls": {
+        "Begin": 1,
+        "Exec": 3,
+        "Query": 14,
+        "QueryRow": 4,
+        "SendBatch": 2
+      }
+    },
+    {
+      "file": "server/api/handlers/world_guard.go",
+      "total": 2,
+      "calls": {
+        "QueryRow": 2
+      }
+    },
+    {
+      "file": "server/api/handlers/ws.go",
+      "total": 0,
+      "calls": {}
+    }
+  ],
+  "total": 457
+}

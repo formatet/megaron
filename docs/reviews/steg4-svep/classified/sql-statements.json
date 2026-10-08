@@ -1,0 +1,2851 @@
+[
+  {
+    "id": "SQL001",
+    "normalized": "update settlement_goods set amount = $1, cap = $2, calc_tick = current_world_tick() where settlement_id = $3 and good_key = 'silver'",
+    "sites": [
+      {
+        "file": "server/api/handlers/create_metropolis.go",
+        "line": 158,
+        "function": "createMetropolis"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1956,
+        "function": "*UnitArrivalHandler.foundColony"
+      }
+    ],
+    "owner_rows": [
+      7,
+      8,
+      9
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL002",
+    "normalized": "select id from settlements where province_id = $1 and world_id = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/db.go",
+        "line": 67,
+        "function": "loadSettlementByProvince"
+      },
+      {
+        "file": "server/api/handlers/db.go",
+        "line": 83,
+        "function": "resolveSettlementID"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3665,
+        "function": "*ProvinceHandler.TradeRoutes"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL003",
+    "normalized": "select good_key, sum(level)::int from ( select distinct pr.good_key, b.id, b.level from production_rules pr join buildings b on b.settlement_id = $1 and b.building_type = pr.building_type ) t group by good_key",
+    "sites": [
+      {
+        "file": "server/api/handlers/db.go",
+        "line": 168,
+        "function": "loadLaborCapacities"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2846,
+        "function": "*ProvinceHandler.Goods"
+      }
+    ],
+    "owner_rows": [
+      13,
+      19
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL004",
+    "normalized": "update settlements set population = population - $1 where id = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/found_metropolis.go",
+        "line": 335,
+        "function": "foundMetropolisFromNomadicHost"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 1212,
+        "function": "*TickHandler.applyReinforcement"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL005",
+    "normalized": "select province_id from settlements where world_id = $1 and owner_id = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/join.go",
+        "line": 66,
+        "function": "*JoinHandler.Join"
+      },
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 835,
+        "function": "*WorldHandler.Provinces"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL006",
+    "normalized": "select count(*) from player_world_records where world_id = $1 and status = 'active'",
+    "sites": [
+      {
+        "file": "server/api/handlers/join.go",
+        "line": 392,
+        "function": "*JoinHandler.Join"
+      },
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 287,
+        "function": "*WorldHandler.Get"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL007",
+    "normalized": "update settlements set kingdom_id = $1 where id = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 138,
+        "function": "*KingdomHandler.Found"
+      },
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 264,
+        "function": "*KingdomHandler.Join"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL008",
+    "normalized": "select coalesce(wanax_name, username) from players where id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 148,
+        "function": "*KingdomHandler.Found"
+      },
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 287,
+        "function": "*KingdomHandler.Join"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 2039,
+        "function": "*UnitHandler.ListUnits"
+      },
+      {
+        "file": "server/api/handlers/web.go",
+        "line": 305,
+        "function": "*WebHandler.EpitaphView"
+      },
+      {
+        "file": "server/internal/chronicle/chronicle.go",
+        "line": 232,
+        "function": "*Chronicler.playerName"
+      },
+      {
+        "file": "server/internal/combat/battle.go",
+        "line": 1052,
+        "function": "ownerNameOf"
+      },
+      {
+        "file": "server/internal/unit/lookup.go",
+        "line": 54,
+        "function": "LoadDisplayName"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL009",
+    "normalized": "select role from kingdom_members where kingdom_id = $1 and player_id = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 171,
+        "function": "*KingdomHandler.Invite"
+      },
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 314,
+        "function": "*KingdomHandler.Leave"
+      },
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 490,
+        "function": "*KingdomHandler.BorrowArmy"
+      },
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 525,
+        "function": "*KingdomHandler.BorrowArmy"
+      },
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 615,
+        "function": "*KingdomHandler.AssignRole"
+      },
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 694,
+        "function": "*KingdomHandler.CallElection"
+      },
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 783,
+        "function": "*KingdomHandler.Vote"
+      },
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 1046,
+        "function": "*KingdomHandler.TreasuryDeposit"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL010",
+    "normalized": "select name from kingdoms where id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 286,
+        "function": "*KingdomHandler.Join"
+      },
+      {
+        "file": "server/internal/chronicle/chronicle.go",
+        "line": 254,
+        "function": "*Chronicler.kingdomName"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL011",
+    "normalized": "select id from settlements where world_id = $1 and owner_id = $2 and is_capital = true",
+    "sites": [
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 536,
+        "function": "*KingdomHandler.BorrowArmy"
+      },
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 1057,
+        "function": "*KingdomHandler.TreasuryDeposit"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 534,
+        "function": "*SettlementHandler.Gift"
+      },
+      {
+        "file": "server/api/handlers/web.go",
+        "line": 248,
+        "function": "*WebHandler.MapView"
+      },
+      {
+        "file": "server/internal/loyalty/borrowed_army.go",
+        "line": 166,
+        "function": "*BorrowedArmyPenaltyHandler.penaliseLenderLoyalty"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL012",
+    "normalized": "select p.map_q, p.map_r from settlements s join provinces p on p.id = s.province_id where s.id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 1069,
+        "function": "*KingdomHandler.TreasuryDeposit"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 546,
+        "function": "*SettlementHandler.Gift"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 552,
+        "function": "*SettlementHandler.Gift"
+      },
+      {
+        "file": "server/internal/combat/stance_set.go",
+        "line": 143,
+        "function": "setStance"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 807,
+        "function": "settlementHex"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1318,
+        "function": "*UnitArrivalHandler.dispatchReturnHome"
+      },
+      {
+        "file": "server/internal/transport/intercept.go",
+        "line": 438,
+        "function": "*InterceptScanHandler.dispatchLimpedReturn"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL013",
+    "normalized": "select current_world_tick()",
+    "sites": [
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 1098,
+        "function": "*KingdomHandler.TreasuryDeposit"
+      },
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 392,
+        "function": "*MessengerHandler.Send"
+      },
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 651,
+        "function": "*MessengerHandler.SendFromHost"
+      },
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 1016,
+        "function": "*MessengerHandler.Reply"
+      },
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 1207,
+        "function": "*MessengerHandler.TradeAccept"
+      },
+      {
+        "file": "server/api/handlers/messenger_passage.go",
+        "line": 246,
+        "function": "*PassageHandler.CallBack"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 614,
+        "function": "*ProvinceHandler.Get"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 1398,
+        "function": "*ProvinceHandler.Build"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2351,
+        "function": "*ProvinceHandler.Recruit"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2366,
+        "function": "*ProvinceHandler.Recruit"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3069,
+        "function": "*ProvinceHandler.Ticklog"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3381,
+        "function": "*ProvinceHandler.Trade"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 573,
+        "function": "*SettlementHandler.Gift"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 386,
+        "function": "*UnitHandler.sendOrderCourier"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 1007,
+        "function": "*UnitHandler.dispatchPickupRunner"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 2035,
+        "function": "*UnitHandler.ListUnits"
+      },
+      {
+        "file": "server/api/handlers/unit_repair.go",
+        "line": 124,
+        "function": "*UnitHandler.Repair"
+      },
+      {
+        "file": "server/internal/combat/battle.go",
+        "line": 272,
+        "function": "*UnitArrivalHandler.initiateOrJoinBattle"
+      },
+      {
+        "file": "server/internal/combat/expedition.go",
+        "line": 255,
+        "function": "*UnitArrivalHandler.expeditionArrived"
+      },
+      {
+        "file": "server/internal/combat/expedition.go",
+        "line": 344,
+        "function": "*UnitArrivalHandler.expeditionHome"
+      },
+      {
+        "file": "server/internal/combat/march_encounter.go",
+        "line": 137,
+        "function": "*MarchEncounterHandler.Handle"
+      },
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 739,
+        "function": "startMarch"
+      },
+      {
+        "file": "server/internal/combat/occupation.go",
+        "line": 379,
+        "function": "ExecuteOccupyAction"
+      },
+      {
+        "file": "server/internal/combat/occupation.go",
+        "line": 771,
+        "function": "dispatchPlunderCaravan"
+      },
+      {
+        "file": "server/internal/combat/occupation_check.go",
+        "line": 76,
+        "function": "*OccupationCheckHandler.Handle"
+      },
+      {
+        "file": "server/internal/combat/recall_redirect.go",
+        "line": 151,
+        "function": "ExecuteRecall"
+      },
+      {
+        "file": "server/internal/combat/siege_capitulation.go",
+        "line": 126,
+        "function": "*SiegeCapitulationHandler.Handle"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 495,
+        "function": "*StandingOrderTickHandler.dispatchOutboundIfNeeded"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 680,
+        "function": "*StandingOrderTickHandler.dispatchReturn"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 881,
+        "function": "*UnitArrivalHandler.pickupArrived"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1473,
+        "function": "*UnitArrivalHandler.dispatchLeg"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1746,
+        "function": "*UnitArrivalHandler.sentryArrived"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 895,
+        "function": "*TickHandler.applyDecay"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 1037,
+        "function": "*TickHandler.applySiegeStarvationClock"
+      },
+      {
+        "file": "server/internal/messenger/passage.go",
+        "line": 330,
+        "function": "*PassageScanHandler.Handle"
+      },
+      {
+        "file": "server/internal/transport/intercept.go",
+        "line": 289,
+        "function": "*InterceptScanHandler.seize"
+      }
+    ],
+    "owner_rows": [
+      1
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Gemensam befintlig tid/claim-primitiv används av olika handlingar"
+  },
+  {
+    "id": "SQL014",
+    "normalized": "update settlement_goods set amount = settled(amount, rate, calc_tick) - $1, calc_tick = current_world_tick() where settlement_id = $2 and good_key = 'silver' and settled(amount, rate, calc_tick) >= $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 1106,
+        "function": "*KingdomHandler.TreasuryDeposit"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 1371,
+        "function": "*ProvinceHandler.Build"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 583,
+        "function": "*SettlementHandler.Gift"
+      }
+    ],
+    "owner_rows": [
+      7
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL015",
+    "normalized": "insert into processed_deliveries (event_id) values ($1) on conflict do nothing",
+    "sites": [
+      {
+        "file": "server/api/handlers/logistics.go",
+        "line": 50,
+        "function": "*LogisticsArrivalHandler.Handle"
+      },
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 192,
+        "function": "*DeliveryHandler.Handle"
+      },
+      {
+        "file": "server/internal/transport/arrival.go",
+        "line": 54,
+        "function": "*ArrivalHandler.Handle"
+      }
+    ],
+    "owner_rows": [
+      3
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Gemensam befintlig tid/claim-primitiv används av olika handlingar"
+  },
+  {
+    "id": "SQL016",
+    "normalized": "insert into settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick) values ($1, $2, $3, 0, $4, current_world_tick()) on conflict (settlement_id, good_key) do update set amount = least( settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick) + $3, settlement_goods.cap), calc_tick = current_world_tick()",
+    "sites": [
+      {
+        "file": "server/api/handlers/logistics.go",
+        "line": 79,
+        "function": "*LogisticsArrivalHandler.Handle"
+      },
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 285,
+        "function": "*DeliveryHandler.Handle"
+      },
+      {
+        "file": "server/internal/economy/trade_return.go",
+        "line": 81,
+        "function": "*TradeReturnHandler.Handle"
+      },
+      {
+        "file": "server/internal/transport/arrival.go",
+        "line": 146,
+        "function": "*ArrivalHandler.Handle"
+      }
+    ],
+    "owner_rows": [
+      8,
+      9
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL017",
+    "normalized": "update settlement_goods set amount = settled(amount, rate, calc_tick) - $1, calc_tick = current_world_tick() where settlement_id=$2 and good_key=$3 and settled(amount, rate, calc_tick) >= $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 471,
+        "function": "*MessengerHandler.Send"
+      },
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 1355,
+        "function": "*MessengerHandler.TradeAccept"
+      }
+    ],
+    "owner_rows": [
+      7
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL018",
+    "normalized": "update settlement_goods set amount = settled(amount, rate, calc_tick) - $1, calc_tick = current_world_tick() where settlement_id=$2 and good_key='silver' and settled(amount, rate, calc_tick) >= $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 492,
+        "function": "*MessengerHandler.Send"
+      },
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 1219,
+        "function": "*MessengerHandler.TradeAccept"
+      }
+    ],
+    "owner_rows": [
+      7
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL019",
+    "normalized": "insert into messengers (world_id, sender_id, origin_id, destination_id, message_text, trade_offer, hex_q, hex_r, arrives_at, expires_at, passage_status, passage_port_id, passage_since_tick) values ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10, $11, $12, $13) returning id",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 507,
+        "function": "*MessengerHandler.Send"
+      },
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 541,
+        "function": "*MessengerHandler.Send"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL020",
+    "normalized": "select name from settlements where id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 565,
+        "function": "*MessengerHandler.Send"
+      },
+      {
+        "file": "server/api/handlers/settlement_placement.go",
+        "line": 649,
+        "function": "*ProvinceHandler.PlaceGubbe"
+      },
+      {
+        "file": "server/internal/chronicle/chronicle.go",
+        "line": 216,
+        "function": "*Chronicler.settlementName"
+      },
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 514,
+        "function": "*DeliveryHandler.Handle"
+      },
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 515,
+        "function": "*DeliveryHandler.Handle"
+      },
+      {
+        "file": "server/internal/gossip/gossip.go",
+        "line": 66,
+        "function": "Broadcast"
+      },
+      {
+        "file": "server/internal/gossip/gossip.go",
+        "line": 156,
+        "function": "PropagateOnContact"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 1571,
+        "function": "*TickHandler.applyDivinePunishment"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 1710,
+        "function": "*TickHandler.applyDivineBlessing"
+      },
+      {
+        "file": "server/internal/unit/lookup.go",
+        "line": 65,
+        "function": "LoadDisplayName"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL021",
+    "normalized": "select owner_id from settlements where id = $1 and world_id = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 777,
+        "function": "*MessengerHandler.ListSent"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 523,
+        "function": "*SettlementHandler.Gift"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 689,
+        "function": "*SettlementHandler.LoyaltyLog"
+      },
+      {
+        "file": "server/api/handlers/standing_order.go",
+        "line": 48,
+        "function": "*StandingOrderHandler.ownSettlement"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL022",
+    "normalized": "select owner_id from settlements where id=$1",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 1118,
+        "function": "*MessengerHandler.TradeAccept"
+      },
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 593,
+        "function": "persistTradeNotice"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL023",
+    "normalized": "update messengers set trade_offer = trade_offer || jsonb_build_object( 'status', 'accepted', 'goods_arrives_at', $2::timestamptz, 'silver_arrives_at', $3::timestamptz, 'ship_name', $4::text, 'goods_arrival_tick', $5::int, 'silver_arrival_tick', $6::int) where id=$1 and trade_offer->>'status'='pending'",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 1248,
+        "function": "*MessengerHandler.TradeAccept"
+      },
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 1384,
+        "function": "*MessengerHandler.TradeAccept"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL024",
+    "normalized": "update settlement_goods set amount = settled(amount, rate, calc_tick) + $1, calc_tick = current_world_tick() where settlement_id=$2 and good_key=$3",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 1565,
+        "function": "*MessengerHandler.TradeDecline"
+      },
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 1700,
+        "function": "*MessengerHandler.CancelOffer"
+      },
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 92,
+        "function": "*OfferExpiryHandler.Handle"
+      }
+    ],
+    "owner_rows": [
+      8,
+      9
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL025",
+    "normalized": "update settlement_goods set amount = settled(amount, rate, calc_tick) + $1, calc_tick = current_world_tick() where settlement_id=$2 and good_key='silver'",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 1576,
+        "function": "*MessengerHandler.TradeDecline"
+      },
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 1720,
+        "function": "*MessengerHandler.CancelOffer"
+      },
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 106,
+        "function": "*OfferExpiryHandler.Handle"
+      }
+    ],
+    "owner_rows": [
+      8,
+      9
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL026",
+    "normalized": "select s.owner_id, s.name, p.map_q, p.map_r from settlements s join provinces p on p.id = s.province_id where s.id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger_passage.go",
+        "line": 115,
+        "function": "*PassageHandler.Arrange"
+      },
+      {
+        "file": "server/internal/messenger/passage.go",
+        "line": 600,
+        "function": "*PassageScanHandler.notifyStalledOne"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL027",
+    "normalized": "select p.map_q, p.map_r from provinces p join settlements s on s.province_id = p.id where s.id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger_passage.go",
+        "line": 305,
+        "function": "resolveOutboundDisembark"
+      },
+      {
+        "file": "server/api/handlers/messenger_passage.go",
+        "line": 380,
+        "function": "resolvePickupShore"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 920,
+        "function": "*UnitHandler.Pickup"
+      },
+      {
+        "file": "server/internal/messenger/call_back.go",
+        "line": 92,
+        "function": "CallBack"
+      },
+      {
+        "file": "server/internal/messenger/return_leg.go",
+        "line": 68,
+        "function": "StartReturnLeg"
+      },
+      {
+        "file": "server/internal/messenger/return_leg.go",
+        "line": 76,
+        "function": "StartReturnLeg"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL028",
+    "normalized": "select terrain from map_tiles where world_id = $1 and q = $2 and r = $3",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger_passage.go",
+        "line": 374,
+        "function": "resolvePickupShore"
+      },
+      {
+        "file": "server/api/handlers/settlement_placement.go",
+        "line": 585,
+        "function": "*ProvinceHandler.PlaceGubbe"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 233,
+        "function": "*UnitHandler.dispatchMarchCourier"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 601,
+        "function": "*UnitHandler.Recall"
+      },
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 355,
+        "function": "startMarch"
+      },
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 425,
+        "function": "startMarch"
+      },
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 472,
+        "function": "startMarch"
+      },
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 536,
+        "function": "startMarch"
+      },
+      {
+        "file": "server/internal/province/pathfind.go",
+        "line": 227,
+        "function": "NearestSeaNeighbor"
+      }
+    ],
+    "owner_rows": [
+      18
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL029",
+    "normalized": "select u.id, u.name, u.type, u.settlement_id, s.name from units u join settlements s on s.id = u.settlement_id where u.world_id = $1 and u.owner_id = $2 and u.status = 'garrison' and u.type in ('galley', 'merchantman')",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger_passage.go",
+        "line": 485,
+        "function": "eligiblePassageShips"
+      },
+      {
+        "file": "server/internal/messenger/passage.go",
+        "line": 501,
+        "function": "stalledEligibleShips"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL030",
+    "normalized": "select exists(select 1 from buildings where settlement_id = $1 and building_type = 'temple')",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 482,
+        "function": "*ProvinceHandler.Get"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 1017,
+        "function": "*SettlementHandler.Rite"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL031",
+    "normalized": "select created_at from events where world_id = $1 and event_type = 'ritecast' and payload->>'player_id' = $2 and payload->>'prayer' = $3 and (payload->>'success')::boolean = true and stream_id = $4 order by created_at desc limit 1",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 551,
+        "function": "*ProvinceHandler.Get"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 1068,
+        "function": "*SettlementHandler.Rite"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL032",
+    "normalized": "select count(*) from settlements where world_id = $1 and owner_id = $2 and state = 'active'",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 710,
+        "function": "*ProvinceHandler.Get"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 335,
+        "function": "*UnitArrivalHandler.resolve"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 635,
+        "function": "*UnitArrivalHandler.landArrived"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL033",
+    "normalized": "select greatest(0, settled(amount, rate, calc_tick)) from settlement_goods where settlement_id = $1 and good_key = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 874,
+        "function": "settlementFoodSummary"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 1150,
+        "function": "*SettlementHandler.Rite"
+      },
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 75,
+        "function": "checkContext.goodAmount"
+      },
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 366,
+        "function": "checkContext.capitalGoodAmount"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 771,
+        "function": "settledStock"
+      },
+      {
+        "file": "server/internal/economy/food_tick.go",
+        "line": 138,
+        "function": "*FoodTickHandler.tickSettlement"
+      },
+      {
+        "file": "server/internal/economy/food_tick.go",
+        "line": 145,
+        "function": "*FoodTickHandler.tickSettlement"
+      },
+      {
+        "file": "server/internal/economy/food_tick.go",
+        "line": 152,
+        "function": "*FoodTickHandler.tickSettlement"
+      }
+    ],
+    "owner_rows": [
+      7,
+      8,
+      9
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL034",
+    "normalized": "select owner_id from settlements where province_id = $1 and world_id = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 1155,
+        "function": "*ProvinceHandler.Build"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2087,
+        "function": "*ProvinceHandler.Recruit"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3538,
+        "function": "*ProvinceHandler.Marches"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3613,
+        "function": "*ProvinceHandler.TradeRoutes"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL035",
+    "normalized": "select map_q, map_r from provinces where id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 1207,
+        "function": "*ProvinceHandler.Build"
+      },
+      {
+        "file": "server/internal/combat/collapse.go",
+        "line": 123,
+        "function": "collapseSettlement"
+      },
+      {
+        "file": "server/internal/combat/occupation.go",
+        "line": 372,
+        "function": "ExecuteOccupyAction"
+      },
+      {
+        "file": "server/internal/combat/siege_capitulation.go",
+        "line": 99,
+        "function": "*SiegeCapitulationHandler.Handle"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL036",
+    "normalized": "select exists(select 1 from buildings where settlement_id = $1 and building_type = $2)",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 1270,
+        "function": "*ProvinceHandler.Build"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2274,
+        "function": "*ProvinceHandler.Recruit"
+      },
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 59,
+        "function": "checkContext.hasBuilding"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL037",
+    "normalized": "select coalesce(level, 0) from buildings where settlement_id = $1 and building_type = $2 and hex_q = $3 and hex_r = $4",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 1287,
+        "function": "*ProvinceHandler.Build"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 1482,
+        "function": "cancelQueuedBuild"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL038",
+    "normalized": "select coalesce(max(level), 0) from buildings where settlement_id = $1 and building_type = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 1292,
+        "function": "*ProvinceHandler.Build"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 1487,
+        "function": "cancelQueuedBuild"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL039",
+    "normalized": "select wall_level from settlements where id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 1310,
+        "function": "*ProvinceHandler.Build"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 1464,
+        "function": "cancelQueuedBuild"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL040",
+    "normalized": "delete from build_queue where id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 1501,
+        "function": "cancelQueuedBuild"
+      },
+      {
+        "file": "server/internal/combat/build.go",
+        "line": 228,
+        "function": "*BuildCompleteHandler.Handle"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL041",
+    "normalized": "select count(*) from scheduled_events where world_id = $1 and event_type = 'traincomplete' and processed_at is null and failed_at is null and (payload->>'settlement_id')::uuid = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2108,
+        "function": "*ProvinceHandler.Recruit"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2287,
+        "function": "*ProvinceHandler.Recruit"
+      }
+    ],
+    "owner_rows": [
+      3
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Gemensam befintlig tid/claim-primitiv används av olika handlingar"
+  },
+  {
+    "id": "SQL042",
+    "normalized": "select population from settlements where id = $1 and state != 'collapsed'",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2126,
+        "function": "*ProvinceHandler.Recruit"
+      },
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 92,
+        "function": "checkContext.population"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL043",
+    "normalized": "select exists(select 1 from buildings where settlement_id = $1 and building_type = 'harbour')",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2177,
+        "function": "*ProvinceHandler.Recruit"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3188,
+        "function": "settlementHasHarbour"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 118,
+        "function": "settlementCoastalOrHarboured"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL044",
+    "normalized": "select population from settlements where id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2764,
+        "function": "*ProvinceHandler.Goods"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3884,
+        "function": "*ProvinceHandler.Disband"
+      },
+      {
+        "file": "server/internal/combat/occupation.go",
+        "line": 542,
+        "function": "executeSack"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 815,
+        "function": "settlementPopulation"
+      },
+      {
+        "file": "server/internal/economy/founding_placement.go",
+        "line": 150,
+        "function": "PlaceStartingWorkforce"
+      },
+      {
+        "file": "server/internal/economy/founding_placement.go",
+        "line": 252,
+        "function": "FoodGubbarRequired"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL045",
+    "normalized": "select prov.map_q, prov.map_r from settlements s join provinces prov on prov.id = s.province_id where s.id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2792,
+        "function": "*ProvinceHandler.Goods"
+      },
+      {
+        "file": "server/internal/combat/build.go",
+        "line": 104,
+        "function": "*BuildCompleteHandler.Handle"
+      },
+      {
+        "file": "server/internal/economy/founding_placement.go",
+        "line": 58,
+        "function": "rankedFoodSlotsWithOptions"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL046",
+    "normalized": "update settlement_goods set amount = settled(amount, rate, calc_tick) - $1, calc_tick = current_world_tick() where settlement_id = $2 and good_key = $3 and settled(amount, rate, calc_tick) >= $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3390,
+        "function": "*ProvinceHandler.Trade"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 789,
+        "function": "deductGood"
+      }
+    ],
+    "owner_rows": [
+      7
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL047",
+    "normalized": "select s.id from settlements s where s.province_id=$1 and s.world_id=$2 and s.owner_id=$3",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3767,
+        "function": "*ProvinceHandler.Disband"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3949,
+        "function": "*ProvinceHandler.LaborAlloc"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL048",
+    "normalized": "update units set status = 'disbanded', updated_at = now() where id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3849,
+        "function": "*ProvinceHandler.Disband"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 1580,
+        "function": "*SettlementHandler.Abandon"
+      },
+      {
+        "file": "server/internal/combat/collapse.go",
+        "line": 210,
+        "function": "collapseSettlement"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL049",
+    "normalized": "update settlement_goods set amount = settled(amount, rate, calc_tick) - $1, calc_tick = current_world_tick() where settlement_id = $2 and good_key = 'grain' and settled(amount, rate, calc_tick) >= $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 599,
+        "function": "*SettlementHandler.Gift"
+      },
+      {
+        "file": "server/internal/combat/upkeep.go",
+        "line": 468,
+        "function": "*UpkeepHandler.Handle"
+      }
+    ],
+    "owner_rows": [
+      7
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL050",
+    "normalized": "update settlement_goods set amount = greatest(0, settled(amount, rate, calc_tick) - $2), calc_tick = current_world_tick() where settlement_id = $1 and good_key = $3",
+    "sites": [
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 1162,
+        "function": "*SettlementHandler.Rite"
+      },
+      {
+        "file": "server/internal/combat/occupation.go",
+        "line": 697,
+        "function": "lootSettlementGoods"
+      },
+      {
+        "file": "server/internal/economy/food_tick.go",
+        "line": 180,
+        "function": "*FoodTickHandler.tickSettlement"
+      },
+      {
+        "file": "server/internal/economy/food_tick.go",
+        "line": 191,
+        "function": "*FoodTickHandler.tickSettlement"
+      },
+      {
+        "file": "server/internal/economy/food_tick.go",
+        "line": 202,
+        "function": "*FoodTickHandler.tickSettlement"
+      },
+      {
+        "file": "server/internal/economy/recompute.go",
+        "line": 842,
+        "function": "RecomputeProduction"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 2020,
+        "function": "*TickHandler.feedTempleBySubstitution"
+      }
+    ],
+    "owner_rows": [
+      7
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL051",
+    "normalized": "select id, cargo_unit_id from units where settlement_id = $1 and status = 'garrison'",
+    "sites": [
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 1559,
+        "function": "*SettlementHandler.Abandon"
+      },
+      {
+        "file": "server/internal/combat/collapse.go",
+        "line": 187,
+        "function": "collapseSettlement"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL052",
+    "normalized": "update units set status = 'disbanded', updated_at = now() where id = $1 and status = 'embarked'",
+    "sites": [
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 1584,
+        "function": "*SettlementHandler.Abandon"
+      },
+      {
+        "file": "server/internal/combat/collapse.go",
+        "line": 218,
+        "function": "collapseSettlement"
+      },
+      {
+        "file": "server/internal/combat/upkeep.go",
+        "line": 727,
+        "function": "*UpkeepHandler.cascadeCargoDisband"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL053",
+    "normalized": "insert into settlement_placement (settlement_id, gubbe_ordinal, target_kind, hex_q, hex_r, good_key) values ($1, $2, 'hex', $3, $4, $5)",
+    "sites": [
+      {
+        "file": "server/api/handlers/settlement_placement.go",
+        "line": 748,
+        "function": "*ProvinceHandler.PlaceGubbe"
+      },
+      {
+        "file": "server/internal/economy/founding_placement.go",
+        "line": 180,
+        "function": "PlaceStartingWorkforce"
+      }
+    ],
+    "owner_rows": [
+      12,
+      13,
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL054",
+    "normalized": "delete from settlement_placement where settlement_id = $1 and gubbe_ordinal = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/settlement_placement.go",
+        "line": 857,
+        "function": "*ProvinceHandler.UnplaceGubbe"
+      },
+      {
+        "file": "server/internal/economy/placement_reconcile.go",
+        "line": 81,
+        "function": "ReconcilePlacements"
+      }
+    ],
+    "owner_rows": [
+      12,
+      13,
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL055",
+    "normalized": "select population from settlements where id = $1 for update",
+    "sites": [
+      {
+        "file": "server/api/handlers/settlement_placement.go",
+        "line": 954,
+        "function": "*ProvinceHandler.SlaughterLivestock"
+      },
+      {
+        "file": "server/internal/economy/food_tick.go",
+        "line": 130,
+        "function": "*FoodTickHandler.tickSettlement"
+      },
+      {
+        "file": "server/internal/economy/sitos_tick.go",
+        "line": 138,
+        "function": "*SitosTickHandler.tickSettlement"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL056",
+    "normalized": "select good_key, threshold from standing_order_outbound_goods where standing_order_id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/standing_order.go",
+        "line": 245,
+        "function": "*StandingOrderHandler.loadOutbound"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 268,
+        "function": "*StandingOrderTickHandler.dispatchOutboundIfNeeded"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL057",
+    "normalized": "select s.id, p.map_q, p.map_r from settlements s join provinces p on p.id = s.province_id where s.world_id = $1 and s.owner_id = $2 and s.state = 'active'",
+    "sites": [
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 348,
+        "function": "*UnitHandler.resolveOrderOrigin"
+      },
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 1257,
+        "function": "nearestOwnedSettlement"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL058",
+    "normalized": "select coalesce(p.coastal, false) from settlements s join provinces p on p.id = s.province_id where s.id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 1170,
+        "function": "*UnitHandler.Load"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 1362,
+        "function": "*UnitHandler.Unload"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 108,
+        "function": "settlementCoastalOrHarboured"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL059",
+    "normalized": "select exists( select 1 from buildings b join settlements s on s.id = b.settlement_id where s.id = $1 and b.building_type = 'harbour' )",
+    "sites": [
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 1182,
+        "function": "*UnitHandler.Load"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 1374,
+        "function": "*UnitHandler.Unload"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL060",
+    "normalized": "select status, cargo_unit_id from units where id = $1 for update",
+    "sites": [
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 1207,
+        "function": "*UnitHandler.Load"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 1413,
+        "function": "*UnitHandler.Unload"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL061",
+    "normalized": "select status from units where id = $1 for update",
+    "sites": [
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 1224,
+        "function": "*UnitHandler.Load"
+      },
+      {
+        "file": "server/internal/combat/march_encounter.go",
+        "line": 288,
+        "function": "*MarchEncounterHandler.resolveHex"
+      },
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 815,
+        "function": "startMarch"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL062",
+    "normalized": "update units set cargo_unit_id = $2, updated_at = now() where id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 1236,
+        "function": "*UnitHandler.Load"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 956,
+        "function": "*UnitArrivalHandler.boardPickupUnit"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL063",
+    "normalized": "select id from worlds order by created_at desc limit 1",
+    "sites": [
+      {
+        "file": "server/api/handlers/web.go",
+        "line": 132,
+        "function": "*WebHandler.resolveWorldID"
+      },
+      {
+        "file": "server/cmd/server/main.go",
+        "line": 801,
+        "function": "ensureWorld"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL064",
+    "normalized": "insert into worlds (name, map_seed, map_width, map_height) values ($1, $2, $3, $4) returning id",
+    "sites": [
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 221,
+        "function": "*WorldHandler.Create"
+      },
+      {
+        "file": "server/cmd/server/main.go",
+        "line": 819,
+        "function": "ensureWorld"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL065",
+    "normalized": "update worlds set map_seed = $1 where id = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 235,
+        "function": "*WorldHandler.Create"
+      },
+      {
+        "file": "server/cmd/create-world/main.go",
+        "line": 76,
+        "function": "main"
+      },
+      {
+        "file": "server/cmd/server/main.go",
+        "line": 832,
+        "function": "ensureWorld"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL066",
+    "normalized": "select s.id, s.name, coalesce(p.wanax_name, p.username), s.culture_id, prov.terrain_type, (select k.name from kingdoms k join kingdom_members km on km.kingdom_id = k.id where km.player_id = s.owner_id and k.world_id = $1 limit 1), s.owner_id, coalesce(prov.copper_deposit, false), coalesce(prov.tin_deposit, false), coalesce(prov.silver_deposit, false), coalesce(prov.cedar_deposit, false), coalesce(prov.map_q, 0), coalesce(prov.map_r, 0), coalesce(prov.id::text, ''), s.is_capital from settlements s left join players p on p.id = s.owner_id left join provinces prov on prov.id = s.province_id where s.world_id = $1 and s.owner_id is not null and s.state != 'sunk' order by s.name",
+    "sites": [
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 1673,
+        "function": "*WorldHandler.Wanaxes"
+      },
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 1791,
+        "function": "*WorldHandler.loadCities"
+      }
+    ],
+    "owner_rows": [
+      18
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL067",
+    "normalized": "select loyalty from settlements where id = $1",
+    "sites": [
+      {
+        "file": "server/internal/ai/governor.go",
+        "line": 43,
+        "function": "PassiveGovernorTick"
+      },
+      {
+        "file": "server/internal/combat/loyalty.go",
+        "line": 33,
+        "function": "settlementLoyalty"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL068",
+    "normalized": "select distinct pos.q, pos.r from ( select p.map_q as q, p.map_r as r from provinces p join settlements s on s.province_id = p.id where p.world_id = $1 and ( s.owner_id = $2 or (s.kingdom_id is not null and s.kingdom_id in ( select km.kingdom_id from kingdom_members km where km.player_id = $2 )) ) union all select op.map_q, op.map_r from marching_armies ma join provinces op on op.id = ma.origin_id join settlements os on os.province_id = ma.origin_id where ma.world_id = $1 and ma.resolved = false and os.owner_id = $2 union all select tp.map_q, tp.map_r from marching_armies ma join provinces tp on tp.id = ma.target_id join settlements os on os.province_id = ma.origin_id where ma.world_id = $1 and ma.resolved = false and os.owner_id = $2 and ma.intent != 'explore' union all select dp.map_q, dp.map_r from messengers m join settlements ds on ds.id = m.destination_id join provinces dp on dp.id = ds.province_id where m.world_id = $1 and m.sender_id = $2 and m.status in ('delivered', 'returning', 'arrived') union all select p.map_q, p.map_r from player_scouted_provinces sp join provinces p on p.id = sp.province_id where sp.world_id = $1 and sp.player_id = $2 union all select q, r from player_scouted_tiles where world_id = $1 and player_id = $2 ) pos",
+    "sites": [
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 193,
+        "function": "checkContext.visibleOrigins"
+      },
+      {
+        "file": "server/internal/province/contacts.go",
+        "line": 11,
+        "function": "VisibleOrigins"
+      }
+    ],
+    "owner_rows": [
+      6
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL069",
+    "normalized": "select greatest(0, settled(kharis_amount, kharis_rate, kharis_calc_tick)) from player_world_records where player_id = $1 and world_id = $2",
+    "sites": [
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 334,
+        "function": "checkContext.kharisAmount"
+      },
+      {
+        "file": "server/internal/combat/battle.go",
+        "line": 531,
+        "function": "*BattleTickHandler.resolveTick"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL070",
+    "normalized": "select count(*) from kingdom_elections where kingdom_id = $1 and resolved_at is null and closes_at > now()",
+    "sites": [
+      {
+        "file": "server/internal/capabilities/kingdom_verbs.go",
+        "line": 80,
+        "function": "canKingdomVote"
+      },
+      {
+        "file": "server/internal/capabilities/kingdom_verbs.go",
+        "line": 108,
+        "function": "canKingdomElectionCall"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL071",
+    "normalized": "select count(*) from kingdom_members where kingdom_id = $1 and player_id != $2",
+    "sites": [
+      {
+        "file": "server/internal/capabilities/kingdom_verbs.go",
+        "line": 159,
+        "function": "canKingdomBorrowArmy"
+      },
+      {
+        "file": "server/internal/capabilities/kingdom_verbs.go",
+        "line": 186,
+        "function": "canKingdomCouncil"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL072",
+    "normalized": "insert into battle_participants (battle_id, unit_id, owner_id, side, joined_tick, initial_size, current_size, standing_orders) values ($1,$2,$3,$4,$5,$6,$6,",
+    "sites": [
+      {
+        "file": "server/internal/combat/battle.go",
+        "line": 329,
+        "function": "*UnitArrivalHandler.startBattle"
+      },
+      {
+        "file": "server/internal/combat/battle.go",
+        "line": 366,
+        "function": "*UnitArrivalHandler.joinBattle"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL073",
+    "normalized": "update units set status = 'disbanded', size = 0, updated_at = now() where id = $1",
+    "sites": [
+      {
+        "file": "server/internal/combat/battle.go",
+        "line": 633,
+        "function": "*BattleTickHandler.resolveTick"
+      },
+      {
+        "file": "server/internal/combat/ship_hull.go",
+        "line": 159,
+        "function": "*BattleTickHandler.drawShipHull"
+      },
+      {
+        "file": "server/internal/combat/upkeep.go",
+        "line": 837,
+        "function": "*UpkeepHandler.applyAttrition"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL074",
+    "normalized": "update units set size = $2, updated_at = now() where id = $1",
+    "sites": [
+      {
+        "file": "server/internal/combat/battle.go",
+        "line": 645,
+        "function": "*BattleTickHandler.resolveTick"
+      },
+      {
+        "file": "server/internal/combat/ship_hull.go",
+        "line": 216,
+        "function": "*BattleTickHandler.applyCargoLoss"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL075",
+    "normalized": "select owner_id from settlements where id = $1",
+    "sites": [
+      {
+        "file": "server/internal/combat/build.go",
+        "line": 246,
+        "function": "*BuildCompleteHandler.Handle"
+      },
+      {
+        "file": "server/internal/combat/train.go",
+        "line": 143,
+        "function": "*TrainCompleteHandler.Handle"
+      },
+      {
+        "file": "server/internal/economy/sitos_tick.go",
+        "line": 199,
+        "function": "*SitosTickHandler.tickSettlement"
+      },
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 132,
+        "function": "*OfferExpiryHandler.Handle"
+      },
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 499,
+        "function": "*DeliveryHandler.Handle"
+      },
+      {
+        "file": "server/internal/gossip/gossip.go",
+        "line": 146,
+        "function": "PropagateOnContact"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 1810,
+        "function": "*TickHandler.insertGarrisonUnit"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL076",
+    "normalized": "update provinces set territory_state = 'free', controller_id = null where id = $1",
+    "sites": [
+      {
+        "file": "server/internal/combat/collapse.go",
+        "line": 263,
+        "function": "collapseSettlement"
+      },
+      {
+        "file": "server/internal/combat/occupation.go",
+        "line": 500,
+        "function": "executeSack"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL077",
+    "normalized": "delete from unit_expeditions where unit_id = $1",
+    "sites": [
+      {
+        "file": "server/internal/combat/expedition.go",
+        "line": 189,
+        "function": "loadExpedition"
+      },
+      {
+        "file": "server/internal/combat/expedition.go",
+        "line": 437,
+        "function": "*UnitArrivalHandler.expeditionHome"
+      },
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 1096,
+        "function": "startMarch"
+      },
+      {
+        "file": "server/internal/combat/recall_redirect.go",
+        "line": 215,
+        "function": "ExecuteRecall"
+      },
+      {
+        "file": "server/internal/combat/sea_storm.go",
+        "line": 363,
+        "function": "*SeaStormScanHandler.founder"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL078",
+    "normalized": "update units set home_settlement_id = $2 where id = $1",
+    "sites": [
+      {
+        "file": "server/internal/combat/expedition.go",
+        "line": 249,
+        "function": "*UnitArrivalHandler.expeditionArrived"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1574,
+        "function": "*UnitArrivalHandler.exploreReturned"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL079",
+    "normalized": "insert into processed_tick_claims (event_id, scope_id) values ($1, $2) on conflict do nothing",
+    "sites": [
+      {
+        "file": "server/internal/combat/march_encounter.go",
+        "line": 272,
+        "function": "*MarchEncounterHandler.resolveHex"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 219,
+        "function": "*StandingOrderTickHandler.tickOrder"
+      },
+      {
+        "file": "server/internal/combat/upkeep.go",
+        "line": 407,
+        "function": "*UpkeepHandler.Handle"
+      },
+      {
+        "file": "server/internal/combat/upkeep.go",
+        "line": 586,
+        "function": "*UpkeepHandler.Handle"
+      },
+      {
+        "file": "server/internal/economy/food_tick.go",
+        "line": 119,
+        "function": "*FoodTickHandler.tickSettlement"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 528,
+        "function": "*TickHandler.processMaintenance"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 1173,
+        "function": "*TickHandler.applyReinforcement"
+      },
+      {
+        "file": "server/internal/loyalty/borrowed_army.go",
+        "line": 107,
+        "function": "*BorrowedArmyPenaltyHandler.penaliseKingKharis"
+      },
+      {
+        "file": "server/internal/loyalty/borrowed_army.go",
+        "line": 155,
+        "function": "*BorrowedArmyPenaltyHandler.penaliseLenderLoyalty"
+      },
+      {
+        "file": "server/internal/loyalty/colony.go",
+        "line": 99,
+        "function": "*ColonyPenaltyHandler.applyColonyPenalty"
+      },
+      {
+        "file": "server/internal/loyalty/decay.go",
+        "line": 119,
+        "function": "*DecayHandler.applyDecay"
+      }
+    ],
+    "owner_rows": [
+      3
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Gemensam befintlig tid/claim-primitiv används av olika handlingar"
+  },
+  {
+    "id": "SQL080",
+    "normalized": "update units set status = 'positioned', q = $2, r = $3, target_q = null, target_r = null, departs_at = null, arrives_at = null, depart_tick = null, arrive_tick = null, updated_at = now() where id = $1",
+    "sites": [
+      {
+        "file": "server/internal/combat/march_encounter.go",
+        "line": 366,
+        "function": "*MarchEncounterHandler.resolveHex"
+      },
+      {
+        "file": "server/internal/combat/unit_intercept_scan.go",
+        "line": 310,
+        "function": "*UnitInterceptScanHandler.intercept"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL081",
+    "normalized": "select size from units where id = $1",
+    "sites": [
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 843,
+        "function": "startMarch"
+      },
+      {
+        "file": "server/internal/combat/train.go",
+        "line": 86,
+        "function": "*TrainCompleteHandler.Handle"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL082",
+    "normalized": "select type, size from units where id = $1",
+    "sites": [
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 911,
+        "function": "startMarch"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 2229,
+        "function": "*UnitArrivalHandler.resolveAmphibiousAssault"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL083",
+    "normalized": "select status from transports where id = $1 for update",
+    "sites": [
+      {
+        "file": "server/internal/combat/sea_storm.go",
+        "line": 252,
+        "function": "*SeaStormScanHandler.sail"
+      },
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 223,
+        "function": "*DeliveryHandler.Handle"
+      },
+      {
+        "file": "server/internal/economy/trade_return.go",
+        "line": 64,
+        "function": "*TradeReturnHandler.Handle"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL084",
+    "normalized": "select s.id, p.map_q, p.map_r, exists(select 1 from buildings b where b.settlement_id = s.id and b.building_type = 'shipyard') as has_shipyard from settlements s join provinces p on p.id = s.province_id where s.owner_id = $1 and s.world_id = $2 and s.state = 'active'",
+    "sites": [
+      {
+        "file": "server/internal/combat/ship_hull.go",
+        "line": 419,
+        "function": "nearestOwnShipyardSettlement"
+      },
+      {
+        "file": "server/internal/economy/trade_return.go",
+        "line": 195,
+        "function": "releaseShipAfterTradeReturn"
+      },
+      {
+        "file": "server/internal/transport/carrier.go",
+        "line": 157,
+        "function": "NearestOwnPort"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL085",
+    "normalized": "select owner_id from units where id = $1",
+    "sites": [
+      {
+        "file": "server/internal/combat/ship_repair.go",
+        "line": 167,
+        "function": "*ShipRepairCompleteHandler.Handle"
+      },
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 419,
+        "function": "*DeliveryHandler.Handle"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL086",
+    "normalized": "update units set carried_silver = 0 where id = $1",
+    "sites": [
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 459,
+        "function": "*UnitArrivalHandler.arriveGarrison"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1966,
+        "function": "*UnitArrivalHandler.foundColony"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL087",
+    "normalized": "update units set cargo_unit_id = null where id = $1",
+    "sites": [
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 619,
+        "function": "*UnitArrivalHandler.landArrived"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1142,
+        "function": "*UnitArrivalHandler.pickupReturned"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL088",
+    "normalized": "update units set status = 'garrison', q = $2, r = $3, settlement_id = $4, home_settlement_id = null, target_q = null, target_r = null, departs_at = null, arrives_at = null, depart_tick = null, arrive_tick = null, march_intent = null, updated_at = now() where id = $1",
+    "sites": [
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1100,
+        "function": "*UnitArrivalHandler.pickupReturned"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1587,
+        "function": "*UnitArrivalHandler.exploreReturned"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1656,
+        "function": "*UnitArrivalHandler.damagedShipReturned"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL089",
+    "normalized": "select id, owner_id, type, size from units where settlement_id = $1 and status = 'garrison' and status != 'disbanded'",
+    "sites": [
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 2110,
+        "function": "*UnitArrivalHandler.resolveCombat"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 2237,
+        "function": "*UnitArrivalHandler.resolveAmphibiousAssault"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL090",
+    "normalized": "update units set status = 'positioned', q = $2, r = $3, settlement_id = null, target_q = null, target_r = null, departs_at = null, arrives_at = null, depart_tick = null, arrive_tick = null, updated_at = now() where id = $1",
+    "sites": [
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 2142,
+        "function": "*UnitArrivalHandler.resolveCombat"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival_field.go",
+        "line": 93,
+        "function": "*UnitArrivalHandler.resolveFieldCombat"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL091",
+    "normalized": "select id from settlements where world_id = $1 and owner_id is not null and state not in ('sunk', 'collapsed')",
+    "sites": [
+      {
+        "file": "server/internal/economy/food_tick.go",
+        "line": 68,
+        "function": "*FoodTickHandler.Handle"
+      },
+      {
+        "file": "server/internal/economy/sitos_tick.go",
+        "line": 75,
+        "function": "*SitosTickHandler.Handle"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 914,
+        "function": "*TickHandler.applyDecay"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL092",
+    "normalized": "select owner_id, name from settlements where id = $1",
+    "sites": [
+      {
+        "file": "server/internal/economy/food_tick.go",
+        "line": 229,
+        "function": "*FoodTickHandler.tickSettlement"
+      },
+      {
+        "file": "server/internal/economy/hex_blockade.go",
+        "line": 121,
+        "function": "SyncHexBlockade"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 1858,
+        "function": "*TickHandler.addDivineGossip"
+      },
+      {
+        "file": "server/internal/transport/arrival.go",
+        "line": 170,
+        "function": "*ArrivalHandler.Handle"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL093",
+    "normalized": "update trade_routes set resolved=true where id=$1",
+    "sites": [
+      {
+        "file": "server/internal/economy/gift.go",
+        "line": 147,
+        "function": "*DeliveryHandler.HandleGift"
+      },
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 229,
+        "function": "*DeliveryHandler.Handle"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL094",
+    "normalized": "select prov.world_id, prov.map_q, prov.map_r from settlements s join provinces prov on prov.id = s.province_id where s.id = $1",
+    "sites": [
+      {
+        "file": "server/internal/economy/hex_rules.go",
+        "line": 172,
+        "function": "RuleBuildingGoods"
+      },
+      {
+        "file": "server/internal/economy/placement_yield.go",
+        "line": 149,
+        "function": "LoadHexProductionOptions"
+      },
+      {
+        "file": "server/internal/economy/recompute.go",
+        "line": 176,
+        "function": "LoadHexCapacity"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL095",
+    "normalized": "select good_key, amount from settlement_granary where settlement_id = $1",
+    "sites": [
+      {
+        "file": "server/internal/economy/sitos_tick.go",
+        "line": 241,
+        "function": "loadGranary"
+      },
+      {
+        "file": "server/internal/economy/sitos_tick.go",
+        "line": 352,
+        "function": "GranaryTotals"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL096",
+    "normalized": "update settlement_goods set amount = greatest(0, settled(amount, rate, calc_tick) - $1), calc_tick = current_world_tick() where settlement_id = $2 and good_key = $3",
+    "sites": [
+      {
+        "file": "server/internal/economy/sitos_tick.go",
+        "line": 279,
+        "function": "*SitosTickHandler.store_"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 1198,
+        "function": "*TickHandler.applyReinforcement"
+      }
+    ],
+    "owner_rows": [
+      7
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL097",
+    "normalized": "update transports set status='delivered',updated_at=now() where id=$1",
+    "sites": [
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 309,
+        "function": "*DeliveryHandler.Handle"
+      },
+      {
+        "file": "server/internal/economy/trade_return.go",
+        "line": 104,
+        "function": "*TradeReturnHandler.Handle"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL098",
+    "normalized": "select current_tick from worlds where id=$1",
+    "sites": [
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 369,
+        "function": "*DeliveryHandler.Handle"
+      },
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 562,
+        "function": "dispatchShipReturnLeg"
+      },
+      {
+        "file": "server/internal/transport/intercept.go",
+        "line": 446,
+        "function": "*InterceptScanHandler.dispatchLimpedReturn"
+      },
+      {
+        "file": "server/internal/transport/transport.go",
+        "line": 178,
+        "function": "prepareJourney"
+      }
+    ],
+    "owner_rows": [
+      1
+    ],
+    "classification": "avsiktlig parallellitet",
+    "reason": "Gemensam befintlig tid/claim-primitiv används av olika handlingar"
+  },
+  {
+    "id": "SQL099",
+    "normalized": "insert into transport_goods (transport_id, good_key, quantity) values ($1,$2,$3)",
+    "sites": [
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 438,
+        "function": "*DeliveryHandler.Handle"
+      },
+      {
+        "file": "server/internal/transport/transport.go",
+        "line": 125,
+        "function": "insertRow"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL100",
+    "normalized": "select state, owner_id from settlements where id = $1",
+    "sites": [
+      {
+        "file": "server/internal/economy/trade_return.go",
+        "line": 186,
+        "function": "releaseShipAfterTradeReturn"
+      },
+      {
+        "file": "server/internal/transport/arrival.go",
+        "line": 221,
+        "function": "*ArrivalHandler.releaseArrivedShip"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL101",
+    "normalized": "update units set status = 'garrison', settlement_id = $2, updated_at = now() where id = $1 and status = 'freighting'",
+    "sites": [
+      {
+        "file": "server/internal/economy/trade_return.go",
+        "line": 189,
+        "function": "releaseShipAfterTradeReturn"
+      },
+      {
+        "file": "server/internal/economy/trade_return.go",
+        "line": 244,
+        "function": "releaseShipAfterTradeReturn"
+      },
+      {
+        "file": "server/internal/transport/carrier.go",
+        "line": 119,
+        "function": "ReleaseShip"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL102",
+    "normalized": "update units set status = 'positioned', settlement_id = null, q = $2, r = $3, updated_at = now() where id = $1 and status = 'freighting'",
+    "sites": [
+      {
+        "file": "server/internal/economy/trade_return.go",
+        "line": 231,
+        "function": "releaseShipAfterTradeReturn"
+      },
+      {
+        "file": "server/internal/transport/carrier.go",
+        "line": 136,
+        "function": "StrandShip"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL103",
+    "normalized": "insert into scheduled_events (world_id, event_type, payload, process_after, due_tick, priority) values ($1, $2, $3, now(), $4, $5)",
+    "sites": [
+      {
+        "file": "server/internal/events/scheduler.go",
+        "line": 249,
+        "function": "*Scheduler.EnqueueTick"
+      },
+      {
+        "file": "server/internal/events/scheduler.go",
+        "line": 297,
+        "function": "*Scheduler.EnqueueTickTx"
+      }
+    ],
+    "owner_rows": [
+      2
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL104",
+    "normalized": "select s.id, coalesce((select settled(sg.amount, sg.rate, sg.calc_tick) from settlement_goods sg where sg.settlement_id = s.id and sg.good_key = 'oil'), 0) as oil, coalesce((select settled(sg.amount, sg.rate, sg.calc_tick) from settlement_goods sg where sg.settlement_id = s.id and sg.good_key = 'wine'), 0) as wine from settlements s where s.owner_id = $1 and s.world_id = $2 and s.state not in ('sunk', 'collapsed') and exists (select 1 from buildings b where b.settlement_id = s.id and b.building_type = 'temple')",
+    "sites": [
+      {
+        "file": "server/internal/kharis/project.go",
+        "line": 109,
+        "function": "projectFedTemples"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 441,
+        "function": "*TickHandler.applyTempleOffering"
+      }
+    ],
+    "owner_rows": [
+      7,
+      8,
+      9
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  },
+  {
+    "id": "SQL105",
+    "normalized": "select sg.good_key, greatest(0, settled(sg.amount, sg.rate, sg.calc_tick)) from settlement_goods sg where sg.settlement_id = $1 and sg.good_key <> 'silver' and greatest(0, settled(sg.amount, sg.rate, sg.calc_tick)) > 0",
+    "sites": [
+      {
+        "file": "server/internal/kharis/project.go",
+        "line": 156,
+        "function": "canSubstituteFeed"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 1967,
+        "function": "*TickHandler.feedTempleBySubstitution"
+      }
+    ],
+    "owner_rows": [
+      7,
+      8,
+      9
+    ],
+    "classification": "kandidat",
+    "reason": "Samma normaliserade statement; rad anger berört kontrakt, inte order att slå ihop domänhandlingar"
+  }
+]

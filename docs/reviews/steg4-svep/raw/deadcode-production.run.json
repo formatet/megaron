@@ -1,0 +1,10 @@
+{
+  "command": [
+    "/home/tk/.cache/megaron-steg4/bin/deadcode",
+    "-json",
+    "./..."
+  ],
+  "cwd": "server",
+  "exit": 0,
+  "elapsed_seconds": 2.112
+}

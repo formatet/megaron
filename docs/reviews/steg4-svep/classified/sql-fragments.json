@@ -1,0 +1,1711 @@
+[
+  {
+    "normalized": "update settlement_goods set amount = $1, cap = $2, calc_tick = current_world_tick()",
+    "sites": [
+      {
+        "file": "server/api/handlers/create_metropolis.go",
+        "line": 158,
+        "function": "createMetropolis"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1956,
+        "function": "*UnitArrivalHandler.foundColony"
+      }
+    ],
+    "owner_rows": [
+      7,
+      8,
+      9
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "select id from settlements where province_id = $1 and world_id = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/db.go",
+        "line": 67,
+        "function": "loadSettlementByProvince"
+      },
+      {
+        "file": "server/api/handlers/db.go",
+        "line": 83,
+        "function": "resolveSettlementID"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3665,
+        "function": "*ProvinceHandler.TradeRoutes"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "join buildings b on b.settlement_id = $1 and b.building_type = pr.building_type",
+    "sites": [
+      {
+        "file": "server/api/handlers/db.go",
+        "line": 168,
+        "function": "loadLaborCapacities"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2846,
+        "function": "*ProvinceHandler.Goods"
+      },
+      {
+        "file": "server/internal/economy/recompute.go",
+        "line": 142,
+        "function": "LoadWorkplaceSlots"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "left join provinces p on p.world_id = mt.world_id and p.map_q = mt.q and p.map_r = mt.r",
+    "sites": [
+      {
+        "file": "server/api/handlers/found_metropolis.go",
+        "line": 130,
+        "function": "foundMetropolisFromNomadicHost"
+      },
+      {
+        "file": "server/api/handlers/join.go",
+        "line": 173,
+        "function": "*JoinHandler.Join"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "insert into units (world_id, owner_id, type, category, size, crew, status,",
+    "sites": [
+      {
+        "file": "server/api/handlers/found_metropolis.go",
+        "line": 324,
+        "function": "foundMetropolisFromNomadicHost"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2599,
+        "function": "*ProvinceHandler.Recruit"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 1822,
+        "function": "*TickHandler.insertGarrisonUnit"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "update settlements set population = population - $1 where id = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/found_metropolis.go",
+        "line": 335,
+        "function": "foundMetropolisFromNomadicHost"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2340,
+        "function": "*ProvinceHandler.Recruit"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 1212,
+        "function": "*TickHandler.applyReinforcement"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "join unnest($2::int[], $3::int[]) as hx(q, r) on hx.q = mt.q and hx.r = mt.r",
+    "sites": [
+      {
+        "file": "server/api/handlers/found_metropolis.go",
+        "line": 648,
+        "function": "countKnownCatchment"
+      },
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 488,
+        "function": "*WorldHandler.ColonizePreview"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "coalesce((select sum(size) from units u where u.settlement_id = s.id and u.status = 'garrison'), 0)::int as army_total,",
+    "sites": [
+      {
+        "file": "server/api/handlers/god.go",
+        "line": 89,
+        "function": "*GodHandler.View"
+      },
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 850,
+        "function": "*WorldHandler.Provinces"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "select province_id from settlements where world_id = $1 and owner_id = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/join.go",
+        "line": 66,
+        "function": "*JoinHandler.Join"
+      },
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 835,
+        "function": "*WorldHandler.Provinces"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "select count(*) from player_world_records where world_id = $1 and status = 'active'",
+    "sites": [
+      {
+        "file": "server/api/handlers/join.go",
+        "line": 392,
+        "function": "*JoinHandler.Join"
+      },
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 287,
+        "function": "*WorldHandler.Get"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "where world_id = $1 and owner_id = $2 and is_capital = true and state = 'active'",
+    "sites": [
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 105,
+        "function": "*KingdomHandler.Found"
+      },
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 380,
+        "function": "checkContext.capitalSettlement"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "select id from settlements where world_id = $1 and owner_id = $2 and is_capital = true",
+    "sites": [
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 1057,
+        "function": "*KingdomHandler.TreasuryDeposit"
+      },
+      {
+        "file": "server/api/handlers/web.go",
+        "line": 248,
+        "function": "*WebHandler.MapView"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "select p.map_q, p.map_r from settlements s join provinces p on p.id = s.province_id where s.id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 1069,
+        "function": "*KingdomHandler.TreasuryDeposit"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 546,
+        "function": "*SettlementHandler.Gift"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 552,
+        "function": "*SettlementHandler.Gift"
+      },
+      {
+        "file": "server/internal/combat/stance_set.go",
+        "line": 143,
+        "function": "setStance"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 807,
+        "function": "settlementHex"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1318,
+        "function": "*UnitArrivalHandler.dispatchReturnHome"
+      },
+      {
+        "file": "server/internal/transport/intercept.go",
+        "line": 438,
+        "function": "*InterceptScanHandler.dispatchLimpedReturn"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "insert into processed_deliveries (event_id) values ($1) on conflict do nothing",
+    "sites": [
+      {
+        "file": "server/api/handlers/logistics.go",
+        "line": 50,
+        "function": "*LogisticsArrivalHandler.Handle"
+      },
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 192,
+        "function": "*DeliveryHandler.Handle"
+      },
+      {
+        "file": "server/internal/transport/arrival.go",
+        "line": 54,
+        "function": "*ArrivalHandler.Handle"
+      }
+    ],
+    "owner_rows": [
+      3
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "select owner_id from settlements where id = $1 and world_id = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 777,
+        "function": "*MessengerHandler.ListSent"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 523,
+        "function": "*SettlementHandler.Gift"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 689,
+        "function": "*SettlementHandler.LoyaltyLog"
+      },
+      {
+        "file": "server/api/handlers/standing_order.go",
+        "line": 48,
+        "function": "*StandingOrderHandler.ownSettlement"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "select p.map_q, p.map_r from provinces p join settlements s on s.province_id = p.id where s.id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger_passage.go",
+        "line": 305,
+        "function": "resolveOutboundDisembark"
+      },
+      {
+        "file": "server/api/handlers/messenger_passage.go",
+        "line": 380,
+        "function": "resolvePickupShore"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 920,
+        "function": "*UnitHandler.Pickup"
+      },
+      {
+        "file": "server/internal/messenger/call_back.go",
+        "line": 92,
+        "function": "CallBack"
+      },
+      {
+        "file": "server/internal/messenger/return_leg.go",
+        "line": 68,
+        "function": "StartReturnLeg"
+      },
+      {
+        "file": "server/internal/messenger/return_leg.go",
+        "line": 76,
+        "function": "StartReturnLeg"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "select terrain from map_tiles where world_id = $1 and q = $2 and r = $3",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger_passage.go",
+        "line": 374,
+        "function": "resolvePickupShore"
+      },
+      {
+        "file": "server/api/handlers/settlement_placement.go",
+        "line": 585,
+        "function": "*ProvinceHandler.PlaceGubbe"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 233,
+        "function": "*UnitHandler.dispatchMarchCourier"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 601,
+        "function": "*UnitHandler.Recall"
+      },
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 355,
+        "function": "startMarch"
+      },
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 425,
+        "function": "startMarch"
+      },
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 472,
+        "function": "startMarch"
+      },
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 536,
+        "function": "startMarch"
+      },
+      {
+        "file": "server/internal/province/pathfind.go",
+        "line": 227,
+        "function": "NearestSeaNeighbor"
+      }
+    ],
+    "owner_rows": [
+      18
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "select 1 from provinces p join settlements s on s.province_id = p.id",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger_passage.go",
+        "line": 440,
+        "function": "hexIsSettled"
+      },
+      {
+        "file": "server/internal/province/pathfind.go",
+        "line": 266,
+        "function": "NearestUnclaimedLandNeighbor"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "where p.world_id = $1 and p.map_q = $2 and p.map_r = $3 and s.state = 'active')",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger_passage.go",
+        "line": 440,
+        "function": "hexIsSettled"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 586,
+        "function": "*UnitArrivalHandler.landArrived"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "where p.world_id = $1 and p.map_q = $2 and p.map_r = $3 and s.state = 'active'",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger_passage.go",
+        "line": 456,
+        "function": "settlementAtHexIsPort"
+      },
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 305,
+        "function": "startMarch"
+      },
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 366,
+        "function": "startMarch"
+      },
+      {
+        "file": "server/internal/province/pathfind.go",
+        "line": 315,
+        "function": "NearestSettlementNeighbor"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "where u.world_id = $1 and u.owner_id = $2 and u.status = 'garrison'",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger_passage.go",
+        "line": 485,
+        "function": "eligiblePassageShips"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 2578,
+        "function": "eligiblePickupShips"
+      },
+      {
+        "file": "server/internal/messenger/passage.go",
+        "line": 501,
+        "function": "stalledEligibleShips"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "from settlement_goods sg where sg.settlement_id = s.id and sg.good_key = 'oil'), 0) as oil,",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 452,
+        "function": "*ProvinceHandler.Get"
+      },
+      {
+        "file": "server/internal/kharis/project.go",
+        "line": 109,
+        "function": "projectFedTemples"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 441,
+        "function": "*TickHandler.applyTempleOffering"
+      }
+    ],
+    "owner_rows": [
+      7,
+      8,
+      9
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "from settlement_goods sg where sg.settlement_id = s.id and sg.good_key = 'wine'), 0) as wine",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 452,
+        "function": "*ProvinceHandler.Get"
+      },
+      {
+        "file": "server/internal/kharis/project.go",
+        "line": 109,
+        "function": "projectFedTemples"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 441,
+        "function": "*TickHandler.applyTempleOffering"
+      }
+    ],
+    "owner_rows": [
+      7,
+      8,
+      9
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "where s.owner_id = $1 and s.world_id = $2 and s.state not in ('sunk', 'collapsed')",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 452,
+        "function": "*ProvinceHandler.Get"
+      },
+      {
+        "file": "server/internal/kharis/project.go",
+        "line": 109,
+        "function": "projectFedTemples"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 441,
+        "function": "*TickHandler.applyTempleOffering"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "and exists (select 1 from buildings b where b.settlement_id = s.id and b.building_type = 'temple')",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 452,
+        "function": "*ProvinceHandler.Get"
+      },
+      {
+        "file": "server/internal/kharis/project.go",
+        "line": 109,
+        "function": "projectFedTemples"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 441,
+        "function": "*TickHandler.applyTempleOffering"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "select exists(select 1 from buildings where settlement_id = $1 and building_type = 'temple')",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 482,
+        "function": "*ProvinceHandler.Get"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 1017,
+        "function": "*SettlementHandler.Rite"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "select count(*) from settlements where world_id = $1 and owner_id = $2 and state = 'active'",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 710,
+        "function": "*ProvinceHandler.Get"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 335,
+        "function": "*UnitArrivalHandler.resolve"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 635,
+        "function": "*UnitArrivalHandler.landArrived"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "from settlement_goods sg join goods g on g.key = sg.good_key",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 862,
+        "function": "settlementFoodSummary"
+      },
+      {
+        "file": "server/internal/combat/occupation.go",
+        "line": 666,
+        "function": "lootSettlementGoods"
+      }
+    ],
+    "owner_rows": [
+      7,
+      8,
+      9
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "from settlement_goods where settlement_id = $1 and good_key = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 874,
+        "function": "settlementFoodSummary"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 1150,
+        "function": "*SettlementHandler.Rite"
+      },
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 75,
+        "function": "checkContext.goodAmount"
+      },
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 366,
+        "function": "checkContext.capitalGoodAmount"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 771,
+        "function": "settledStock"
+      },
+      {
+        "file": "server/internal/economy/food_tick.go",
+        "line": 138,
+        "function": "*FoodTickHandler.tickSettlement"
+      },
+      {
+        "file": "server/internal/economy/food_tick.go",
+        "line": 145,
+        "function": "*FoodTickHandler.tickSettlement"
+      },
+      {
+        "file": "server/internal/economy/food_tick.go",
+        "line": 152,
+        "function": "*FoodTickHandler.tickSettlement"
+      },
+      {
+        "file": "server/internal/economy/recompute.go",
+        "line": 829,
+        "function": "RecomputeProduction"
+      },
+      {
+        "file": "server/internal/economy/sitos_tick.go",
+        "line": 222,
+        "function": "*SitosTickHandler.loadFood"
+      }
+    ],
+    "owner_rows": [
+      7,
+      8,
+      9
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "select exists(select 1 from buildings where settlement_id = $1 and building_type = $2)",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 1270,
+        "function": "*ProvinceHandler.Build"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2274,
+        "function": "*ProvinceHandler.Recruit"
+      },
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 59,
+        "function": "checkContext.hasBuilding"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "select population from settlements where id = $1 and state != 'collapsed'",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2126,
+        "function": "*ProvinceHandler.Recruit"
+      },
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 92,
+        "function": "checkContext.population"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "select exists(select 1 from buildings where settlement_id = $1 and building_type = 'harbour')",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2177,
+        "function": "*ProvinceHandler.Recruit"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3188,
+        "function": "settlementHasHarbour"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 118,
+        "function": "settlementCoastalOrHarboured"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "from player_world_records where player_id = $1 and world_id = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2328,
+        "function": "*ProvinceHandler.Recruit"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 1043,
+        "function": "*SettlementHandler.Rite"
+      },
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 334,
+        "function": "checkContext.kharisAmount"
+      },
+      {
+        "file": "server/internal/combat/battle.go",
+        "line": 531,
+        "function": "*BattleTickHandler.resolveTick"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "join provinces prov on prov.id = s.province_id where s.id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2792,
+        "function": "*ProvinceHandler.Goods"
+      },
+      {
+        "file": "server/internal/combat/build.go",
+        "line": 104,
+        "function": "*BuildCompleteHandler.Handle"
+      },
+      {
+        "file": "server/internal/economy/hex_rules.go",
+        "line": 172,
+        "function": "RuleBuildingGoods"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "join map_tiles mt on mt.world_id = s.world_id and mt.q = catchment.q and mt.r = catchment.r",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2798,
+        "function": "*ProvinceHandler.Goods"
+      },
+      {
+        "file": "server/internal/combat/build.go",
+        "line": 111,
+        "function": "*BuildCompleteHandler.Handle"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "where s.province_id = $1 and s.world_id = $2 and s.owner_id = $3",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3237,
+        "function": "*ProvinceHandler.Trade"
+      },
+      {
+        "file": "server/api/handlers/settlement_placement.go",
+        "line": 36,
+        "function": "*ProvinceHandler.placementSettlement"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "update units set status = 'disbanded', updated_at = now() where id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3849,
+        "function": "*ProvinceHandler.Disband"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 1580,
+        "function": "*SettlementHandler.Abandon"
+      },
+      {
+        "file": "server/internal/combat/collapse.go",
+        "line": 210,
+        "function": "collapseSettlement"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "where s.world_id = $1 and s.owner_id = $2 and s.state = 'active'",
+    "sites": [
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 233,
+        "function": "*SettlementHandler.PlacementRoster"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 348,
+        "function": "*UnitHandler.resolveOrderOrigin"
+      },
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 1257,
+        "function": "nearestOwnedSettlement"
+      },
+      {
+        "file": "server/internal/messenger/passage.go",
+        "line": 226,
+        "function": "ownedCoastalPorts"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "from settlement_goods where settlement_id = $1 and good_key = 'grain'",
+    "sites": [
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 1304,
+        "function": "*SettlementHandler.applyHarvestBlessing"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 1541,
+        "function": "*TickHandler.applyDivinePunishment"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 1646,
+        "function": "*TickHandler.applyDivineBlessing"
+      }
+    ],
+    "owner_rows": [
+      7,
+      8,
+      9
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "update units set status = 'disbanded', updated_at = now() where id = $1 and status = 'embarked'",
+    "sites": [
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 1584,
+        "function": "*SettlementHandler.Abandon"
+      },
+      {
+        "file": "server/internal/combat/upkeep.go",
+        "line": 727,
+        "function": "*UpkeepHandler.cascadeCargoDisband"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "join map_tiles mt on mt.world_id = $1 and mt.q = want.q and mt.r = want.r",
+    "sites": [
+      {
+        "file": "server/api/handlers/settlement_placement.go",
+        "line": 285,
+        "function": "*ProvinceHandler.PlacementOptions"
+      },
+      {
+        "file": "server/internal/economy/hex_rules.go",
+        "line": 183,
+        "function": "RuleBuildingGoods"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "delete from settlement_placement where settlement_id = $1 and gubbe_ordinal = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/settlement_placement.go",
+        "line": 857,
+        "function": "*ProvinceHandler.UnplaceGubbe"
+      },
+      {
+        "file": "server/internal/economy/placement_reconcile.go",
+        "line": 81,
+        "function": "ReconcilePlacements"
+      }
+    ],
+    "owner_rows": [
+      12,
+      13,
+      16
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "update units set cargo_unit_id = $2, updated_at = now() where id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 1236,
+        "function": "*UnitHandler.Load"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 956,
+        "function": "*UnitArrivalHandler.boardPickupUnit"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "and world_id in (select id from worlds where status = 'active')",
+    "sites": [
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 207,
+        "function": "*WorldHandler.Create"
+      },
+      {
+        "file": "server/internal/events/scheduler.go",
+        "line": 414,
+        "function": "*Worker.processBatch"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "select q, r from player_scouted_tiles where world_id = $1 and player_id = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 984,
+        "function": "loadRememberedTiles"
+      },
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 193,
+        "function": "checkContext.visibleOrigins"
+      },
+      {
+        "file": "server/internal/province/contacts.go",
+        "line": 11,
+        "function": "VisibleOrigins"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "insert into map_tiles (world_id, q, r, terrain, coastal, fertility, mineral, copper_deposit, tin_deposit, silver_deposit, cedar_deposit, landmass_id)",
+    "sites": [
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 1638,
+        "function": "*WorldHandler.storeTiles"
+      },
+      {
+        "file": "server/cmd/create-world/main.go",
+        "line": 96,
+        "function": "main"
+      }
+    ],
+    "owner_rows": [
+      18
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "where s.world_id = $1 and s.owner_id is not null and s.state != 'sunk'",
+    "sites": [
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 1673,
+        "function": "*WorldHandler.Wanaxes"
+      },
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 1791,
+        "function": "*WorldHandler.loadCities"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 1303,
+        "function": "*TickHandler.applyStarvationWarning"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 1357,
+        "function": "*TickHandler.applySubsistenceCritical"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 1440,
+        "function": "*TickHandler.applyStarvation"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "where ma.world_id = $1 and ma.resolved = false and os.owner_id = $2",
+    "sites": [
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 193,
+        "function": "checkContext.visibleOrigins"
+      },
+      {
+        "file": "server/internal/province/contacts.go",
+        "line": 11,
+        "function": "VisibleOrigins"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "update units set status = 'disbanded', size = 0, updated_at = now() where id = $1",
+    "sites": [
+      {
+        "file": "server/internal/combat/battle.go",
+        "line": 633,
+        "function": "*BattleTickHandler.resolveTick"
+      },
+      {
+        "file": "server/internal/combat/ship_hull.go",
+        "line": 159,
+        "function": "*BattleTickHandler.drawShipHull"
+      },
+      {
+        "file": "server/internal/combat/upkeep.go",
+        "line": 837,
+        "function": "*UpkeepHandler.applyAttrition"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "update units set size = $2, updated_at = now() where id = $1",
+    "sites": [
+      {
+        "file": "server/internal/combat/battle.go",
+        "line": 645,
+        "function": "*BattleTickHandler.resolveTick"
+      },
+      {
+        "file": "server/internal/combat/ship_hull.go",
+        "line": 216,
+        "function": "*BattleTickHandler.applyCargoLoss"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "and not (s.state = 'razed' and s.recolonizable_after_tick is not null",
+    "sites": [
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 1178,
+        "function": "colonizeDispatchPreflight"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 315,
+        "function": "*UnitArrivalHandler.resolve"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "exists(select 1 from buildings b where b.settlement_id = s.id and b.building_type = 'shipyard') as has_shipyard",
+    "sites": [
+      {
+        "file": "server/internal/combat/ship_hull.go",
+        "line": 419,
+        "function": "nearestOwnShipyardSettlement"
+      },
+      {
+        "file": "server/internal/economy/trade_return.go",
+        "line": 195,
+        "function": "releaseShipAfterTradeReturn"
+      },
+      {
+        "file": "server/internal/transport/carrier.go",
+        "line": 157,
+        "function": "NearestOwnPort"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "where s.owner_id = $1 and s.world_id = $2 and s.state = 'active'",
+    "sites": [
+      {
+        "file": "server/internal/combat/ship_hull.go",
+        "line": 419,
+        "function": "nearestOwnShipyardSettlement"
+      },
+      {
+        "file": "server/internal/economy/trade_return.go",
+        "line": 195,
+        "function": "releaseShipAfterTradeReturn"
+      },
+      {
+        "file": "server/internal/transport/carrier.go",
+        "line": 157,
+        "function": "NearestOwnPort"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "status, q, r, target_q, target_r, stance, march_intent, colony_name, home_settlement_id, capture_mode,",
+    "sites": [
+      {
+        "file": "server/internal/combat/ship_sea_sweep.go",
+        "line": 114,
+        "function": "sweepOneShip"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 180,
+        "function": "*UnitArrivalHandler.resolve"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 789,
+        "function": "*UnitArrivalHandler.ReleasePassageWaitShip"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 990,
+        "function": "*UnitArrivalHandler.pickupWaitingShipFor"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1036,
+        "function": "*UnitArrivalHandler.HandlePickupTimeout"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1785,
+        "function": "*UnitArrivalHandler.HandleSentryReturn"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "insert into processed_tick_claims (event_id, scope_id) values ($1, $2) on conflict do nothing",
+    "sites": [
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 219,
+        "function": "*StandingOrderTickHandler.tickOrder"
+      },
+      {
+        "file": "server/internal/economy/food_tick.go",
+        "line": 119,
+        "function": "*FoodTickHandler.tickSettlement"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 1173,
+        "function": "*TickHandler.applyReinforcement"
+      }
+    ],
+    "owner_rows": [
+      3
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "update units set status = 'positioned', settlement_id = null, q = $2, r = $3, updated_at = now()",
+    "sites": [
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 613,
+        "function": "*UnitArrivalHandler.landArrived"
+      },
+      {
+        "file": "server/internal/economy/trade_return.go",
+        "line": 231,
+        "function": "releaseShipAfterTradeReturn"
+      },
+      {
+        "file": "server/internal/transport/carrier.go",
+        "line": 136,
+        "function": "StrandShip"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "where world_id = $1 and owner_id <> $2 and status = 'positioned' and stance = 'sentry'",
+    "sites": [
+      {
+        "file": "server/internal/combat/unit_intercept_scan.go",
+        "line": 164,
+        "function": "*UnitInterceptScanHandler.Handle"
+      },
+      {
+        "file": "server/internal/economy/siege.go",
+        "line": 73,
+        "function": "ReachableCatchmentHexes"
+      },
+      {
+        "file": "server/internal/economy/siege.go",
+        "line": 99,
+        "function": "ReachableCatchmentHexes"
+      },
+      {
+        "file": "server/internal/transport/intercept.go",
+        "line": 198,
+        "function": "*InterceptScanHandler.Handle"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "and (abs(sentry_q - $3) + abs(sentry_r - $4) + abs((sentry_q + sentry_r) - ($3 + $4))) / 2 <= $5",
+    "sites": [
+      {
+        "file": "server/internal/combat/unit_intercept_scan.go",
+        "line": 164,
+        "function": "*UnitInterceptScanHandler.Handle"
+      },
+      {
+        "file": "server/internal/economy/siege.go",
+        "line": 73,
+        "function": "ReachableCatchmentHexes"
+      },
+      {
+        "file": "server/internal/economy/siege.go",
+        "line": 99,
+        "function": "ReachableCatchmentHexes"
+      },
+      {
+        "file": "server/internal/transport/intercept.go",
+        "line": 198,
+        "function": "*InterceptScanHandler.Handle"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "where world_id = $1 and player_id = $2 and kind = $3 and read_at is null",
+    "sites": [
+      {
+        "file": "server/internal/combat/upkeep.go",
+        "line": 620,
+        "function": "*UpkeepHandler.notifyUnitLoss"
+      },
+      {
+        "file": "server/internal/combat/upkeep.go",
+        "line": 674,
+        "function": "*UpkeepHandler.notifyUpkeepUnpaid"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 1399,
+        "function": "*TickHandler.emitSubsistenceWarning"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "where world_id = $1 and owner_id is not null and state not in ('sunk', 'collapsed')",
+    "sites": [
+      {
+        "file": "server/internal/economy/food_tick.go",
+        "line": 68,
+        "function": "*FoodTickHandler.Handle"
+      },
+      {
+        "file": "server/internal/economy/sitos_tick.go",
+        "line": 75,
+        "function": "*SitosTickHandler.Handle"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 914,
+        "function": "*TickHandler.applyDecay"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "from settlements s join provinces prov on prov.id = s.province_id",
+    "sites": [
+      {
+        "file": "server/internal/economy/founding_placement.go",
+        "line": 58,
+        "function": "rankedFoodSlotsWithOptions"
+      },
+      {
+        "file": "server/internal/economy/placement_yield.go",
+        "line": 149,
+        "function": "LoadHexProductionOptions"
+      },
+      {
+        "file": "server/internal/economy/recompute.go",
+        "line": 176,
+        "function": "LoadHexCapacity"
+      },
+      {
+        "file": "server/internal/economy/recompute.go",
+        "line": 508,
+        "function": "RecomputeProduction"
+      },
+      {
+        "file": "server/internal/economy/siege_dispatch.go",
+        "line": 59,
+        "function": "SyncSiegeState"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "join unnest($2::int[], $3::int[]) as wanted(q, r) on wanted.q = sp.hex_q and wanted.r = sp.hex_r",
+    "sites": [
+      {
+        "file": "server/internal/economy/hex_take.go",
+        "line": 91,
+        "function": "LoadHexHolds"
+      },
+      {
+        "file": "server/internal/economy/placement_yield.go",
+        "line": 784,
+        "function": "GlobalHexOccupancy"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "join map_tiles mt on mt.world_id = $1 and mt.q = catchment.q and mt.r = catchment.r",
+    "sites": [
+      {
+        "file": "server/internal/economy/placement_yield.go",
+        "line": 206,
+        "function": "loadHexOptionsForHexes"
+      },
+      {
+        "file": "server/internal/economy/placement_yield.go",
+        "line": 505,
+        "function": "ChooseFarmHex"
+      },
+      {
+        "file": "server/internal/economy/recompute.go",
+        "line": 190,
+        "function": "LoadHexCapacity"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "update units set status = 'garrison', settlement_id = $2, updated_at = now()",
+    "sites": [
+      {
+        "file": "server/internal/economy/trade_return.go",
+        "line": 189,
+        "function": "releaseShipAfterTradeReturn"
+      },
+      {
+        "file": "server/internal/economy/trade_return.go",
+        "line": 244,
+        "function": "releaseShipAfterTradeReturn"
+      },
+      {
+        "file": "server/internal/transport/carrier.go",
+        "line": 119,
+        "function": "ReleaseShip"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "join buildings b on b.settlement_id = s2.id and b.building_type = 'temple'",
+    "sites": [
+      {
+        "file": "server/internal/kharis/project.go",
+        "line": 27,
+        "function": "ProjectDailyNet"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 255,
+        "function": "*TickHandler.Handle"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "left join settlement_labor sl on sl.settlement_id = s2.id and sl.good_key = 'cult'",
+    "sites": [
+      {
+        "file": "server/internal/kharis/project.go",
+        "line": 27,
+        "function": "ProjectDailyNet"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 255,
+        "function": "*TickHandler.Handle"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "and s3.is_capital = false and s3.state not in ('sunk', 'collapsed')",
+    "sites": [
+      {
+        "file": "server/internal/kharis/project.go",
+        "line": 27,
+        "function": "ProjectDailyNet"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 255,
+        "function": "*TickHandler.Handle"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "where s.world_id = $1 and s.state = 'active' and s.owner_id is not null",
+    "sites": [
+      {
+        "file": "server/internal/loyalty/welfare.go",
+        "line": 91,
+        "function": "*WelfareHandler.Handle"
+      },
+      {
+        "file": "server/internal/religion/index.go",
+        "line": 52,
+        "function": "RecomputeDivineValuations"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  },
+  {
+    "normalized": "passage_status = null, carrier_transport_id = null, carrier_unit_id = null, carrier_name = null",
+    "sites": [
+      {
+        "file": "server/internal/messenger/handler.go",
+        "line": 125,
+        "function": "*ArrivalHandler.Handle"
+      },
+      {
+        "file": "server/internal/messenger/handler.go",
+        "line": 315,
+        "function": "*ReturnHandler.Handle"
+      },
+      {
+        "file": "server/internal/messenger/order_delivery.go",
+        "line": 92,
+        "function": "*OrderDeliveryHandler.Handle"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "fragment",
+    "reason": "Gemensam SQL-rad; överlappar statementfynd, ej fristående kopietal"
+  }
+]

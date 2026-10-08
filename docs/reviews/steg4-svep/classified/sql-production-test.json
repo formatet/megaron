@@ -1,0 +1,2199 @@
+[
+  {
+    "normalized": "update worlds set status = 'archived' where status = 'active'",
+    "sites": [
+      {
+        "file": "server/api/handlers/army_display_units_test.go",
+        "line": 42,
+        "function": "TestLoadSettlement_ArmyReflectsUnitsGarrison"
+      },
+      {
+        "file": "server/api/handlers/army_upkeep_test.go",
+        "line": 24,
+        "function": "TestArmyUpkeep_SumsGarrisonViaUnitUpkeep"
+      },
+      {
+        "file": "server/api/handlers/culture_mvp_test.go",
+        "line": 41,
+        "function": "seedJoinableWorld"
+      },
+      {
+        "file": "server/api/handlers/disband_population_test.go",
+        "line": 47,
+        "function": "setupDisbandFixture"
+      },
+      {
+        "file": "server/api/handlers/escort_adoption_test.go",
+        "line": 62,
+        "function": "seedEscortWorld"
+      },
+      {
+        "file": "server/api/handlers/food_famine_garrison_test.go",
+        "line": 47,
+        "function": "TestFamine_GarrisonSurvivesWhilePopulationStarves"
+      },
+      {
+        "file": "server/api/handlers/join_landmass_balance_test.go",
+        "line": 60,
+        "function": "seedTwoLandmassWorld"
+      },
+      {
+        "file": "server/api/handlers/join_silver_bias_test.go",
+        "line": 46,
+        "function": "seedMetalBiasWorld"
+      },
+      {
+        "file": "server/api/handlers/join_viable_landmass_test.go",
+        "line": 28,
+        "function": "TestJoin_OnlyLandmassesWithTimber"
+      },
+      {
+        "file": "server/api/handlers/logistics_idempotent_test.go",
+        "line": 49,
+        "function": "TestLogisticsArrivalHandler_ReplayIsIdempotent"
+      },
+      {
+        "file": "server/api/handlers/messenger_expiry_visibility_test.go",
+        "line": 49,
+        "function": "TestMessengerExpiresAt_VisibleInInboxAndOutbox"
+      },
+      {
+        "file": "server/api/handlers/messenger_inbox_insolvent_test.go",
+        "line": 52,
+        "function": "TestInbox_InsolventPendingOfferStillVisible"
+      },
+      {
+        "file": "server/api/handlers/messenger_origin_eye_test.go",
+        "line": 55,
+        "function": "setupOriginEyeFixture"
+      },
+      {
+        "file": "server/api/handlers/messenger_reply_test.go",
+        "line": 61,
+        "function": "setupReplyFixture"
+      },
+      {
+        "file": "server/api/handlers/messenger_trade_naval_test.go",
+        "line": 66,
+        "function": "setupNavalPlayerFixture"
+      },
+      {
+        "file": "server/api/handlers/oracle_reveal_map_test.go",
+        "line": 47,
+        "function": "setupOracleMap"
+      },
+      {
+        "file": "server/api/handlers/order_origin_host_test.go",
+        "line": 32,
+        "function": "TestMarchCourier_OriginIsMarchingHostsCurrentPos"
+      },
+      {
+        "file": "server/api/handlers/province_status_goods_parity_test.go",
+        "line": 50,
+        "function": "TestStatusGoodsParity_AmountClampedToCapInBoth"
+      },
+      {
+        "file": "server/api/handlers/province_ticklog_grain_consumption_test.go",
+        "line": 53,
+        "function": "TestTicklog_GrainConsumptionShownEvenWhenNetRateIsPositive"
+      },
+      {
+        "file": "server/api/handlers/province_trade_internal_test.go",
+        "line": 55,
+        "function": "setupTradeInternalFixture"
+      },
+      {
+        "file": "server/api/handlers/province_trade_naval_test.go",
+        "line": 46,
+        "function": "setupTradeNavalFixture"
+      },
+      {
+        "file": "server/api/handlers/recruit_ship_test.go",
+        "line": 66,
+        "function": "setupRecruitShipFixture"
+      },
+      {
+        "file": "server/api/handlers/recruit_shipyard_gate_test.go",
+        "line": 41,
+        "function": "TestRecruit_GalleyRequiresShipyardNotJustHarbour"
+      },
+      {
+        "file": "server/api/handlers/reports_context_test.go",
+        "line": 32,
+        "function": "TestPlayerReports_ContextRoundTrips"
+      },
+      {
+        "file": "server/api/handlers/reports_log_test.go",
+        "line": 28,
+        "function": "TestPlayerReports_AppendedToLogOutsideDB"
+      },
+      {
+        "file": "server/api/handlers/rite_harvest_outcome_test.go",
+        "line": 40,
+        "function": "riteHarvestFixture"
+      },
+      {
+        "file": "server/api/handlers/settlement_overview_test.go",
+        "line": 53,
+        "function": "settlementsOverviewTestWorld"
+      },
+      {
+        "file": "server/api/handlers/settlement_rite_offering_test.go",
+        "line": 56,
+        "function": "TestRiteOffering_DeductedRegardlessOfOutcome"
+      },
+      {
+        "file": "server/api/handlers/siege_acceptance_test.go",
+        "line": 87,
+        "function": "newSiegeAcceptanceFixture"
+      },
+      {
+        "file": "server/api/handlers/standing_order_test.go",
+        "line": 40,
+        "function": "setupStandingOrderFixture"
+      },
+      {
+        "file": "server/api/handlers/unit_expedition_note_test.go",
+        "line": 17,
+        "function": "TestAttachExpeditionNotes_LiveOnly"
+      },
+      {
+        "file": "server/api/handlers/unit_freighting_note_test.go",
+        "line": 18,
+        "function": "TestAttachFreightingNotes_PrefersInFlightLegOverStandingRoute"
+      },
+      {
+        "file": "server/api/handlers/unit_in_battle_test.go",
+        "line": 18,
+        "function": "TestAttachBattleFlags_OnlyActiveParticipants"
+      },
+      {
+        "file": "server/api/handlers/unit_load_test.go",
+        "line": 60,
+        "function": "TestUnitLoad_RouteParamNameMatchesRouter"
+      },
+      {
+        "file": "server/api/handlers/unit_march_colonize_in_place_test.go",
+        "line": 36,
+        "function": "TestMarch_ColonizeInPlace_PositionedUnitFoundsOnOwnHex"
+      },
+      {
+        "file": "server/api/handlers/unit_march_fow_test.go",
+        "line": 35,
+        "function": "TestMarch_FOWRule"
+      },
+      {
+        "file": "server/api/handlers/unit_march_fow_test.go",
+        "line": 152,
+        "function": "TestRecall_FOW_RedirectNeverSeenRejected"
+      },
+      {
+        "file": "server/api/handlers/unit_march_preview_test.go",
+        "line": 28,
+        "function": "TestMarchPreview_ReadOnlyAndTiming"
+      },
+      {
+        "file": "server/api/handlers/unit_passage_note_test.go",
+        "line": 20,
+        "function": "TestAttachPassageNotes_NamesDestinationAndWaitingState"
+      },
+      {
+        "file": "server/api/handlers/unit_recall_courier_test.go",
+        "line": 46,
+        "function": "setupRecallCourierWorld"
+      },
+      {
+        "file": "server/api/handlers/unit_recall_interception_test.go",
+        "line": 57,
+        "function": "setupInterceptWorld"
+      },
+      {
+        "file": "server/api/handlers/unit_recall_interception_test.go",
+        "line": 247,
+        "function": "TestRecall_UnitOnAnotherLandmass_Fails422"
+      },
+      {
+        "file": "server/api/handlers/unit_recall_nomadic_host_test.go",
+        "line": 56,
+        "function": "setupNomadicHostRecallWorld"
+      },
+      {
+        "file": "server/api/handlers/unit_recall_route_test.go",
+        "line": 36,
+        "function": "TestAcceptance2_RecallPrecheck_CatchesWhereTimeSays"
+      },
+      {
+        "file": "server/api/handlers/unit_recall_route_test.go",
+        "line": 176,
+        "function": "TestAcceptance2_UnitJSON_CurrentPosMatches"
+      },
+      {
+        "file": "server/api/handlers/unit_repair_test.go",
+        "line": 48,
+        "function": "newShipRepairFixture"
+      },
+      {
+        "file": "server/api/handlers/unit_route_no_research_test.go",
+        "line": 30,
+        "function": "TestAcceptance3_PathNeverResearched_AfterTerrainChange"
+      },
+      {
+        "file": "server/api/handlers/unit_ship_order_gate_test.go",
+        "line": 41,
+        "function": "TestUnitMarch_PositionedShipAtSeaRejected"
+      },
+      {
+        "file": "server/api/handlers/unit_ship_order_gate_test.go",
+        "line": 114,
+        "function": "TestUnitMarch_StrandedShipWithNoSettlementsStillTakesOrders"
+      },
+      {
+        "file": "server/api/handlers/unit_stance_courier_test.go",
+        "line": 32,
+        "function": "TestStance_FieldUnitOrderTravelsByCourier"
+      },
+      {
+        "file": "server/api/handlers/unit_standing_orders_courier_test.go",
+        "line": 31,
+        "function": "TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBattle"
+      },
+      {
+        "file": "server/api/handlers/unit_tick_contract_test.go",
+        "line": 34,
+        "function": "TestMarch_ResponseCarriesTickContract"
+      },
+      {
+        "file": "server/api/handlers/unit_tick_contract_test.go",
+        "line": 156,
+        "function": "TestUnitSummary_TickContractDerivation"
+      },
+      {
+        "file": "server/api/handlers/unit_unload_landing_test.go",
+        "line": 33,
+        "function": "TestUnitUnload_FieldPositionedShipRejected"
+      },
+      {
+        "file": "server/api/handlers/unit_unload_landing_test.go",
+        "line": 134,
+        "function": "TestUnitUnload_InPort_ReturnsCarriedPurse"
+      },
+      {
+        "file": "server/api/handlers/upkeep_drain_test.go",
+        "line": 34,
+        "function": "TestSettlementUpkeepDrain_PayerAndSoldCirculation"
+      },
+      {
+        "file": "server/api/handlers/world.go",
+        "line": 214,
+        "function": "*WorldHandler.Create"
+      },
+      {
+        "file": "server/internal/combat/battle_notify_test.go",
+        "line": 26,
+        "function": "TestBattleTickHandler_NotifiesBothSidesOnBattleEnd"
+      },
+      {
+        "file": "server/internal/combat/battle_test.go",
+        "line": 53,
+        "function": "newBattleFixture"
+      },
+      {
+        "file": "server/internal/combat/battle_wall_test.go",
+        "line": 44,
+        "function": "newSiegeFixture"
+      },
+      {
+        "file": "server/internal/combat/build_notify_test.go",
+        "line": 38,
+        "function": "newBuildNotifyFixture"
+      },
+      {
+        "file": "server/internal/combat/collapse_test.go",
+        "line": 37,
+        "function": "TestCollapseSettlement_NotifiesOwner"
+      },
+      {
+        "file": "server/internal/combat/collapse_test.go",
+        "line": 129,
+        "function": "TestCollapseSettlement_NumbersWarbands"
+      },
+      {
+        "file": "server/internal/combat/colonist_purse_test.go",
+        "line": 183,
+        "function": "purseFixture"
+      },
+      {
+        "file": "server/internal/combat/expedition_test.go",
+        "line": 34,
+        "function": "newExpeditionFixture"
+      },
+      {
+        "file": "server/internal/combat/march_encounter_perf_test.go",
+        "line": 32,
+        "function": "TestMarchEncounterHandler_PerfManyMarches"
+      },
+      {
+        "file": "server/internal/combat/march_encounter_test.go",
+        "line": 48,
+        "function": "newMarchEncounterFixture"
+      },
+      {
+        "file": "server/internal/combat/march_route_test.go",
+        "line": 35,
+        "function": "setupLandMarchWorld"
+      },
+      {
+        "file": "server/internal/combat/march_route_test.go",
+        "line": 310,
+        "function": "TestAcceptance1_MarchShipToNearestOwnPort_SavesRoute"
+      },
+      {
+        "file": "server/internal/combat/march_route_test.go",
+        "line": 479,
+        "function": "setupFordMarchWorld"
+      },
+      {
+        "file": "server/internal/combat/march_sighting_test.go",
+        "line": 450,
+        "function": "TestMarchSighting_IgnorePolicyMarchStillNotifiesBothOwnersOnCrossing"
+      },
+      {
+        "file": "server/internal/combat/march_start_catchment_overlap_test.go",
+        "line": 32,
+        "function": "TestStartMarch_ColonizeRejectedByCatchmentOverlap"
+      },
+      {
+        "file": "server/internal/combat/march_start_crew_speed_test.go",
+        "line": 26,
+        "function": "TestStartMarch_ShorthandedGalleyIsSlower"
+      },
+      {
+        "file": "server/internal/combat/march_start_explore_test.go",
+        "line": 29,
+        "function": "TestStartMarch_ExploreFromFieldPositionResolvesNearestOwnedHome"
+      },
+      {
+        "file": "server/internal/combat/march_start_explore_test.go",
+        "line": 136,
+        "function": "TestStartMarch_ExploreFromFieldPositionRejectedWithNoSettlement"
+      },
+      {
+        "file": "server/internal/combat/march_start_land_test.go",
+        "line": 33,
+        "function": "setupLandMission"
+      },
+      {
+        "file": "server/internal/combat/march_start_passage_test.go",
+        "line": 31,
+        "function": "setupPassageMission"
+      },
+      {
+        "file": "server/internal/combat/march_start_patrol_alias_test.go",
+        "line": 33,
+        "function": "TestStartMarch_SentryIsADeprecatedAliasForPatrol"
+      },
+      {
+        "file": "server/internal/combat/march_start_patrol_alias_test.go",
+        "line": 142,
+        "function": "TestStartMarch_UnknownIntentErrorNamesPatrolNotSentry"
+      },
+      {
+        "file": "server/internal/combat/march_start_port_test.go",
+        "line": 23,
+        "function": "TestStartMarch_NavalPlainMarchToOpenSeaRejected"
+      },
+      {
+        "file": "server/internal/combat/march_start_port_test.go",
+        "line": 113,
+        "function": "TestStartMarch_NavalPlainMarchToFriendlyPortDocks"
+      },
+      {
+        "file": "server/internal/combat/march_start_rejection_hints_test.go",
+        "line": 31,
+        "function": "TestStartMarch_AlreadyMarchingRejectionNamesRedirect"
+      },
+      {
+        "file": "server/internal/combat/march_start_rejection_hints_test.go",
+        "line": 99,
+        "function": "TestStartMarch_NoRouteRejectionNamesLoadNotEmbark"
+      },
+      {
+        "file": "server/internal/combat/naval_seizure_test.go",
+        "line": 38,
+        "function": "newNavalCaptureFixture"
+      },
+      {
+        "file": "server/internal/combat/origin_settlement_survives_march_test.go",
+        "line": 29,
+        "function": "TestStartMarch_OriginSettlementIDSurvivesPlainMarch"
+      },
+      {
+        "file": "server/internal/combat/ship_sea_sweep_test.go",
+        "line": 22,
+        "function": "sweepTestWorld"
+      },
+      {
+        "file": "server/internal/combat/silver_audit_test.go",
+        "line": 33,
+        "function": "TestUpkeepSilverBookkeeping"
+      },
+      {
+        "file": "server/internal/combat/standing_orders_naval_test.go",
+        "line": 40,
+        "function": "newCoastalStandingOrderFixture"
+      },
+      {
+        "file": "server/internal/combat/succession_test.go",
+        "line": 21,
+        "function": "TestSuccession_PromoteThenGameOver"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival_assault_test.go",
+        "line": 34,
+        "function": "TestAmphibiousAssault_InitiatesBattleAndResolvesToWipeout"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival_catchment_overlap_test.go",
+        "line": 27,
+        "function": "TestResolve_ColonizeBlockedByCatchmentOverlapFallsBackToGarrison"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival_colonize_test.go",
+        "line": 54,
+        "function": "TestFoundColony_UnitDisbandsIntoPopulace"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival_disbanded_host_test.go",
+        "line": 45,
+        "function": "TestUnitArrivalHandler_DisbandedHostWithNullPositionIsNoOp"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival_explore_test.go",
+        "line": 28,
+        "function": "TestExploreOrder_AutoReturn"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival_explore_test.go",
+        "line": 241,
+        "function": "TestExploreOrder_RevealsRadiusAroundTarget"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival_field_mixed_owner_test.go",
+        "line": 56,
+        "function": "TestResolveFieldCombat_NotifiesAllDistinctDefenderOwners"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival_field_test.go",
+        "line": 33,
+        "function": "TestResolve_HostileFieldUnitOnSettlementlessHexTriggersCombat"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival_idempotent_test.go",
+        "line": 34,
+        "function": "TestUnitArrivalHandler_ReplayIsIdempotent"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival_livestock_test.go",
+        "line": 25,
+        "function": "TestFoundColony_SeedsStartingHerd"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival_scout_report_test.go",
+        "line": 27,
+        "function": "TestExploreOrder_ScoutReport"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival_sentry_test.go",
+        "line": 28,
+        "function": "TestSentryOrder_PostHoldAutoReturn"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival_siege_test.go",
+        "line": 29,
+        "function": "TestResolveCombat_SettlementSiege_AllGarrisonUnitsJoinAsDefenders"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival_stale_test.go",
+        "line": 31,
+        "function": "TestUnitArrivalHandler_SupersededArrivalIsNoOp"
+      },
+      {
+        "file": "server/internal/combat/unit_intercept_scan_test.go",
+        "line": 40,
+        "function": "newUnitInterceptFixture"
+      },
+      {
+        "file": "server/internal/combat/upkeep_desertion_cargo_test.go",
+        "line": 26,
+        "function": "TestUpkeepDesertion_CascadesEmbarkedCargo"
+      },
+      {
+        "file": "server/internal/combat/upkeep_naval_starvation_return_test.go",
+        "line": 41,
+        "function": "newStarvationFixture"
+      },
+      {
+        "file": "server/internal/combat/upkeep_support_settlement_test.go",
+        "line": 43,
+        "function": "newSupportFixture"
+      },
+      {
+        "file": "server/internal/economy/catchment_p1_balance_test.go",
+        "line": 30,
+        "function": "seedFullRingFixture"
+      },
+      {
+        "file": "server/internal/economy/food_tick_test.go",
+        "line": 40,
+        "function": "newFoodFixture"
+      },
+      {
+        "file": "server/internal/economy/founding_forecast_test.go",
+        "line": 96,
+        "function": "foundingForecastFixture"
+      },
+      {
+        "file": "server/internal/economy/offer_expiry_idempotent_test.go",
+        "line": 44,
+        "function": "TestOfferExpiryHandler_ReplayIsIdempotent"
+      },
+      {
+        "file": "server/internal/economy/recompute_floor_test.go",
+        "line": 21,
+        "function": "recomputeFixture"
+      },
+      {
+        "file": "server/internal/economy/siege_test.go",
+        "line": 31,
+        "function": "seedSiegeFixture"
+      },
+      {
+        "file": "server/internal/economy/sitos_conservation_test.go",
+        "line": 50,
+        "function": "granaryFixture"
+      },
+      {
+        "file": "server/internal/economy/trade_delivery_idempotent_test.go",
+        "line": 32,
+        "function": "TestDeliveryHandler_ReplayIsIdempotent"
+      },
+      {
+        "file": "server/internal/economy/trade_delivery_stale_cap_test.go",
+        "line": 42,
+        "function": "TestTradeDelivery_StaleCapTruncatesSecondDelivery"
+      },
+      {
+        "file": "server/internal/economy/trade_delivery_stale_cap_test.go",
+        "line": 143,
+        "function": "TestTradeReturn_StaleCapTruncatesSecondDelivery"
+      },
+      {
+        "file": "server/internal/economy/trade_internal_no_loss_test.go",
+        "line": 63,
+        "function": "mkTradeWorld"
+      },
+      {
+        "file": "server/internal/economy/trade_naval_player_test.go",
+        "line": 48,
+        "function": "newNavalPlayerTradeFixture"
+      },
+      {
+        "file": "server/internal/economy/trade_naval_preexisting_test.go",
+        "line": 24,
+        "function": "TestTradeDelivery_PreexistingNavalTransportWithoutShipDeliversNoHomeLeg"
+      },
+      {
+        "file": "server/internal/economy/trade_transport_test.go",
+        "line": 25,
+        "function": "TestTradeDelivery_InterceptedCaravanNotCredited"
+      },
+      {
+        "file": "server/internal/economy/trade_transport_test.go",
+        "line": 107,
+        "function": "TestTradeDelivery_PhysicalLegDeliversAndChainsReturn"
+      },
+      {
+        "file": "server/internal/events/priority_dispatch_test.go",
+        "line": 24,
+        "function": "TestProcessBatch_DispatchesInTickPriorityOrder"
+      },
+      {
+        "file": "server/internal/events/priority_dispatch_test.go",
+        "line": 100,
+        "function": "TestProcessBatch_ClaimsHighestPriorityAcrossBatchBoundary"
+      },
+      {
+        "file": "server/internal/events/worker_test.go",
+        "line": 45,
+        "function": "TestWorker_DeadLetterHookFiresOnceAfterRepeatedFailures"
+      },
+      {
+        "file": "server/internal/kharis/grain_growth_test.go",
+        "line": 52,
+        "function": "newGrowthFixture"
+      },
+      {
+        "file": "server/internal/kharis/siege_starvation_clock_test.go",
+        "line": 33,
+        "function": "siegeClockFixture"
+      },
+      {
+        "file": "server/internal/kharis/starvation_warning_test.go",
+        "line": 85,
+        "function": "starvationWarningFixture"
+      },
+      {
+        "file": "server/internal/loyalty/borrowed_army_idempotent_test.go",
+        "line": 69,
+        "function": "newBorrowedArmyFixture"
+      },
+      {
+        "file": "server/internal/loyalty/colony_idempotent_test.go",
+        "line": 59,
+        "function": "newColonyFixture"
+      },
+      {
+        "file": "server/internal/loyalty/decay_idempotent_test.go",
+        "line": 47,
+        "function": "newDecayFixture"
+      },
+      {
+        "file": "server/internal/loyalty/welfare_idempotent_test.go",
+        "line": 30,
+        "function": "TestWelfareHandler_ReplayIsIdempotent"
+      },
+      {
+        "file": "server/internal/messenger/handler_idempotent_test.go",
+        "line": 58,
+        "function": "newHandlerIdemFixture"
+      },
+      {
+        "file": "server/internal/messenger/order_delivery_test.go",
+        "line": 31,
+        "function": "TestOrderDelivery_MarchExecutesOnArrival"
+      },
+      {
+        "file": "server/internal/messenger/passage_test.go",
+        "line": 56,
+        "function": "setupPassageFixture"
+      },
+      {
+        "file": "server/internal/messenger/stay_end_test.go",
+        "line": 40,
+        "function": "setupLandFixture"
+      },
+      {
+        "file": "server/internal/transport/intercept_sea_leg_test.go",
+        "line": 46,
+        "function": "newActiveTestWorld"
+      },
+      {
+        "file": "server/internal/transport/intercept_seize_idempotent_test.go",
+        "line": 29,
+        "function": "TestInterceptScanHandler_SeizeReplayIsIdempotent"
+      },
+      {
+        "file": "server/internal/transport/transport_test.go",
+        "line": 49,
+        "function": "newFixture"
+      },
+      {
+        "file": "server/internal/unit/lookup_test.go",
+        "line": 44,
+        "function": "TestLoadDisplayName"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select population from settlements where id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/disband_population_test.go",
+        "line": 114,
+        "function": "*disbandFixture.population"
+      },
+      {
+        "file": "server/api/handlers/food_famine_garrison_test.go",
+        "line": 147,
+        "function": "TestFamine_GarrisonSurvivesWhilePopulationStarves"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2764,
+        "function": "*ProvinceHandler.Goods"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3884,
+        "function": "*ProvinceHandler.Disband"
+      },
+      {
+        "file": "server/api/handlers/recruit_pop_drawn_test.go",
+        "line": 49,
+        "function": "TestRecruit_ResponseReportsPopulationDrawn"
+      },
+      {
+        "file": "server/api/handlers/settlement_slaughter_livestock_test.go",
+        "line": 52,
+        "function": "TestSlaughterLivestock_GainsPopulationAndConsumesOneAnimal"
+      },
+      {
+        "file": "server/internal/combat/occupation.go",
+        "line": 542,
+        "function": "executeSack"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 815,
+        "function": "settlementPopulation"
+      },
+      {
+        "file": "server/internal/economy/founding_placement.go",
+        "line": 150,
+        "function": "PlaceStartingWorkforce"
+      },
+      {
+        "file": "server/internal/economy/founding_placement.go",
+        "line": 252,
+        "function": "FoodGubbarRequired"
+      },
+      {
+        "file": "server/internal/kharis/growth_gate_foodnet_test.go",
+        "line": 94,
+        "function": "TestApplyDecay_GrowthGateMatchesFoodNet"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select coalesce(wanax_name, username) from players where id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/escort_names_test.go",
+        "line": 58,
+        "function": "TestJoin_EscortCohortsNamedAfterWanax"
+      },
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 148,
+        "function": "*KingdomHandler.Found"
+      },
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 287,
+        "function": "*KingdomHandler.Join"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 2039,
+        "function": "*UnitHandler.ListUnits"
+      },
+      {
+        "file": "server/api/handlers/web.go",
+        "line": 305,
+        "function": "*WebHandler.EpitaphView"
+      },
+      {
+        "file": "server/internal/chronicle/chronicle.go",
+        "line": 232,
+        "function": "*Chronicler.playerName"
+      },
+      {
+        "file": "server/internal/combat/battle.go",
+        "line": 1052,
+        "function": "ownerNameOf"
+      },
+      {
+        "file": "server/internal/unit/lookup.go",
+        "line": 54,
+        "function": "LoadDisplayName"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select size from units where id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/food_famine_garrison_test.go",
+        "line": 139,
+        "function": "TestFamine_GarrisonSurvivesWhilePopulationStarves"
+      },
+      {
+        "file": "server/api/handlers/upkeep_fish_test.go",
+        "line": 107,
+        "function": "TestUpkeep_AK4_EmptyGrainLargeFish_StillAttrits_FishUntouched"
+      },
+      {
+        "file": "server/internal/combat/battle_population_test.go",
+        "line": 58,
+        "function": "TestBattleTick_CombatLossesDoNotDeductSettlementPopulation"
+      },
+      {
+        "file": "server/internal/combat/food_ordering_test.go",
+        "line": 64,
+        "function": "TestFoodOrdering_GarrisonFedInFullBeforePopulationTakesShortfall"
+      },
+      {
+        "file": "server/internal/combat/food_ordering_test.go",
+        "line": 84,
+        "function": "TestFoodOrdering_GarrisonFedInFullBeforePopulationTakesShortfall"
+      },
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 843,
+        "function": "startMarch"
+      },
+      {
+        "file": "server/internal/combat/train.go",
+        "line": 86,
+        "function": "*TrainCompleteHandler.Handle"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival_assault_test.go",
+        "line": 254,
+        "function": "TestAmphibiousAssault_InitiatesBattleAndResolvesToWipeout"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival_field_test.go",
+        "line": 178,
+        "function": "TestResolve_HostileFieldUnitOnSettlementlessHexTriggersCombat"
+      },
+      {
+        "file": "server/internal/combat/upkeep_attrition_test.go",
+        "line": 158,
+        "function": "TestUpkeepAttrition_LandCohortLossIsProportionalNotFlat"
+      },
+      {
+        "file": "server/internal/combat/upkeep_attrition_test.go",
+        "line": 161,
+        "function": "TestUpkeepAttrition_LandCohortLossIsProportionalNotFlat"
+      },
+      {
+        "file": "server/internal/combat/upkeep_support_settlement_test.go",
+        "line": 210,
+        "function": "TestUpkeep_FallenSupportSettlement_UnitDesertsInsteadOfBillingCapital"
+      },
+      {
+        "file": "server/internal/combat/upkeep_unpaid_warning_test.go",
+        "line": 216,
+        "function": "TestUpkeepUnpaidWarning_HandleFlow_AllPeriodsUntilDesertion"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "update units set status = 'disbanded', q = null, r = null where id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/found_metropolis.go",
+        "line": 296,
+        "function": "foundMetropolisFromNomadicHost"
+      },
+      {
+        "file": "server/api/handlers/unit_pickup_test.go",
+        "line": 569,
+        "function": "TestPickup_UnitDisbandedWhileWaiting_TimeoutSailsHomeEmpty"
+      },
+      {
+        "file": "server/api/handlers/unit_pickup_test.go",
+        "line": 594,
+        "function": "TestPickup_ShipLostWhileWaiting_TimeoutIsNoOp"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select prov.world_id, prov.map_q, prov.map_r from settlements s join provinces prov on prov.id = s.province_id where s.id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/founding_forecast_parity_test.go",
+        "line": 66,
+        "function": "TestFoundingGrainForecast_MatchesRealFounding"
+      },
+      {
+        "file": "server/internal/economy/hex_rules.go",
+        "line": 172,
+        "function": "RuleBuildingGoods"
+      },
+      {
+        "file": "server/internal/economy/placement_yield.go",
+        "line": 149,
+        "function": "LoadHexProductionOptions"
+      },
+      {
+        "file": "server/internal/economy/recompute.go",
+        "line": 176,
+        "function": "LoadHexCapacity"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select rate from settlement_goods where settlement_id = $1 and good_key = 'grain'",
+    "sites": [
+      {
+        "file": "server/api/handlers/founding_forecast_parity_test.go",
+        "line": 76,
+        "function": "TestFoundingGrainForecast_MatchesRealFounding"
+      },
+      {
+        "file": "server/cmd/recompute-all/main.go",
+        "line": 108,
+        "function": "main"
+      },
+      {
+        "file": "server/internal/economy/food_gubbar_required_test.go",
+        "line": 120,
+        "function": "readGrainNet"
+      },
+      {
+        "file": "server/internal/economy/founding_forecast_test.go",
+        "line": 182,
+        "function": "TestFoundingGrainNetPerTick_MatchesPlaceStartingWorkforce"
+      },
+      {
+        "file": "server/internal/economy/siege_test.go",
+        "line": 149,
+        "function": "readGrainRate"
+      }
+    ],
+    "owner_rows": [
+      7,
+      8,
+      9
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select owner_id from settlements where id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/hex_take_test.go",
+        "line": 37,
+        "function": "*twoSettlementHexFixture.owner"
+      },
+      {
+        "file": "server/api/handlers/standing_order_test.go",
+        "line": 254,
+        "function": "*standingOrderFixture.shipForOrder"
+      },
+      {
+        "file": "server/internal/combat/build.go",
+        "line": 246,
+        "function": "*BuildCompleteHandler.Handle"
+      },
+      {
+        "file": "server/internal/combat/train.go",
+        "line": 143,
+        "function": "*TrainCompleteHandler.Handle"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival_assault_test.go",
+        "line": 269,
+        "function": "TestAmphibiousAssault_InitiatesBattleAndResolvesToWipeout"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival_siege_test.go",
+        "line": 194,
+        "function": "TestResolveCombat_SettlementSiege_AllGarrisonUnitsJoinAsDefenders"
+      },
+      {
+        "file": "server/internal/economy/sitos_tick.go",
+        "line": 199,
+        "function": "*SitosTickHandler.tickSettlement"
+      },
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 132,
+        "function": "*OfferExpiryHandler.Handle"
+      },
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 499,
+        "function": "*DeliveryHandler.Handle"
+      },
+      {
+        "file": "server/internal/gossip/gossip.go",
+        "line": 146,
+        "function": "PropagateOnContact"
+      },
+      {
+        "file": "server/internal/kharis/reinforce_trickle_test.go",
+        "line": 40,
+        "function": "seedReinforcingUnit"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 1810,
+        "function": "*TickHandler.insertGarrisonUnit"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select settled(amount, rate, calc_tick) from settlement_goods where settlement_id = $1 and good_key = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/hex_take_test.go",
+        "line": 321,
+        "function": "TestPlaceGubbe_TakeCancelsAndRefundsHoldersQueuedBuild"
+      },
+      {
+        "file": "server/api/handlers/hex_take_test.go",
+        "line": 503,
+        "function": "TestCancelBuild_RefundsAndDeletesQueueRow"
+      },
+      {
+        "file": "server/api/handlers/settlement_slaughter_livestock_test.go",
+        "line": 61,
+        "function": "TestSlaughterLivestock_GainsPopulationAndConsumesOneAnimal"
+      },
+      {
+        "file": "server/api/handlers/upkeep_fish_test.go",
+        "line": 131,
+        "function": "settledGoodAmount"
+      },
+      {
+        "file": "server/internal/combat/upkeep_support_settlement_test.go",
+        "line": 106,
+        "function": "settledAmount"
+      },
+      {
+        "file": "server/internal/economy/recompute.go",
+        "line": 829,
+        "function": "RecomputeProduction"
+      },
+      {
+        "file": "server/internal/economy/refining_weakest_link_test.go",
+        "line": 101,
+        "function": "goodAmount"
+      }
+    ],
+    "owner_rows": [
+      7,
+      8,
+      9
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "insert into kingdom_members (kingdom_id, player_id, role) values ($1, $2, 'basileus')",
+    "sites": [
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 129,
+        "function": "*KingdomHandler.Found"
+      },
+      {
+        "file": "server/internal/loyalty/borrowed_army_idempotent_test.go",
+        "line": 106,
+        "function": "newBorrowedArmyFixture"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "insert into kingdom_members (kingdom_id, player_id, role) values ($1, $2, 'member')",
+    "sites": [
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 256,
+        "function": "*KingdomHandler.Join"
+      },
+      {
+        "file": "server/internal/loyalty/borrowed_army_idempotent_test.go",
+        "line": 112,
+        "function": "newBorrowedArmyFixture"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select p.map_q, p.map_r from settlements s join provinces p on p.id = s.province_id where s.id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 1069,
+        "function": "*KingdomHandler.TreasuryDeposit"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 546,
+        "function": "*SettlementHandler.Gift"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 552,
+        "function": "*SettlementHandler.Gift"
+      },
+      {
+        "file": "server/internal/combat/stance_set.go",
+        "line": 143,
+        "function": "setStance"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 807,
+        "function": "settlementHex"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1318,
+        "function": "*UnitArrivalHandler.dispatchReturnHome"
+      },
+      {
+        "file": "server/internal/transport/intercept.go",
+        "line": 438,
+        "function": "*InterceptScanHandler.dispatchLimpedReturn"
+      },
+      {
+        "file": "server/internal/transport/intercept_naval_test.go",
+        "line": 353,
+        "function": "TestInterceptScan_NavalLimped_Leg2SailsToHomePortHex"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select current_world_tick()",
+    "sites": [
+      {
+        "file": "server/api/handlers/kingdom.go",
+        "line": 1098,
+        "function": "*KingdomHandler.TreasuryDeposit"
+      },
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 392,
+        "function": "*MessengerHandler.Send"
+      },
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 651,
+        "function": "*MessengerHandler.SendFromHost"
+      },
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 1016,
+        "function": "*MessengerHandler.Reply"
+      },
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 1207,
+        "function": "*MessengerHandler.TradeAccept"
+      },
+      {
+        "file": "server/api/handlers/messenger_passage.go",
+        "line": 246,
+        "function": "*PassageHandler.CallBack"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 614,
+        "function": "*ProvinceHandler.Get"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 1398,
+        "function": "*ProvinceHandler.Build"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2351,
+        "function": "*ProvinceHandler.Recruit"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2366,
+        "function": "*ProvinceHandler.Recruit"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3069,
+        "function": "*ProvinceHandler.Ticklog"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3381,
+        "function": "*ProvinceHandler.Trade"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 573,
+        "function": "*SettlementHandler.Gift"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 386,
+        "function": "*UnitHandler.sendOrderCourier"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 1007,
+        "function": "*UnitHandler.dispatchPickupRunner"
+      },
+      {
+        "file": "server/api/handlers/unit.go",
+        "line": 2035,
+        "function": "*UnitHandler.ListUnits"
+      },
+      {
+        "file": "server/api/handlers/unit_recall_no_route_test.go",
+        "line": 28,
+        "function": "TestRecallNoRoute_HTTPRejectsNamed"
+      },
+      {
+        "file": "server/api/handlers/unit_repair.go",
+        "line": 124,
+        "function": "*UnitHandler.Repair"
+      },
+      {
+        "file": "server/internal/combat/battle.go",
+        "line": 272,
+        "function": "*UnitArrivalHandler.initiateOrJoinBattle"
+      },
+      {
+        "file": "server/internal/combat/expedition.go",
+        "line": 255,
+        "function": "*UnitArrivalHandler.expeditionArrived"
+      },
+      {
+        "file": "server/internal/combat/expedition.go",
+        "line": 344,
+        "function": "*UnitArrivalHandler.expeditionHome"
+      },
+      {
+        "file": "server/internal/combat/march_encounter.go",
+        "line": 137,
+        "function": "*MarchEncounterHandler.Handle"
+      },
+      {
+        "file": "server/internal/combat/march_route_integrity_test.go",
+        "line": 46,
+        "function": "TestStartMarch_TickReadFailureLeavesStateUnchanged"
+      },
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 739,
+        "function": "startMarch"
+      },
+      {
+        "file": "server/internal/combat/occupation.go",
+        "line": 379,
+        "function": "ExecuteOccupyAction"
+      },
+      {
+        "file": "server/internal/combat/occupation.go",
+        "line": 771,
+        "function": "dispatchPlunderCaravan"
+      },
+      {
+        "file": "server/internal/combat/occupation_check.go",
+        "line": 76,
+        "function": "*OccupationCheckHandler.Handle"
+      },
+      {
+        "file": "server/internal/combat/recall_redirect.go",
+        "line": 151,
+        "function": "ExecuteRecall"
+      },
+      {
+        "file": "server/internal/combat/siege_capitulation.go",
+        "line": 126,
+        "function": "*SiegeCapitulationHandler.Handle"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 495,
+        "function": "*StandingOrderTickHandler.dispatchOutboundIfNeeded"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 680,
+        "function": "*StandingOrderTickHandler.dispatchReturn"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 881,
+        "function": "*UnitArrivalHandler.pickupArrived"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1473,
+        "function": "*UnitArrivalHandler.dispatchLeg"
+      },
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 1746,
+        "function": "*UnitArrivalHandler.sentryArrived"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 895,
+        "function": "*TickHandler.applyDecay"
+      },
+      {
+        "file": "server/internal/kharis/tick.go",
+        "line": 1037,
+        "function": "*TickHandler.applySiegeStarvationClock"
+      },
+      {
+        "file": "server/internal/messenger/passage.go",
+        "line": 330,
+        "function": "*PassageScanHandler.Handle"
+      },
+      {
+        "file": "server/internal/transport/intercept.go",
+        "line": 289,
+        "function": "*InterceptScanHandler.seize"
+      }
+    ],
+    "owner_rows": [
+      1
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "insert into transport_goods (transport_id, good_key, quantity) values ($1,$2,$3)",
+    "sites": [
+      {
+        "file": "server/api/handlers/map_trades_mine_test.go",
+        "line": 134,
+        "function": "setupMapTradesMineFixture"
+      },
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 438,
+        "function": "*DeliveryHandler.Handle"
+      },
+      {
+        "file": "server/internal/transport/transport.go",
+        "line": 125,
+        "function": "insertRow"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select coalesce(settled(amount, rate, calc_tick), 0) from settlement_goods where settlement_id=$1 and good_key=$2",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 466,
+        "function": "*MessengerHandler.Send"
+      },
+      {
+        "file": "server/internal/economy/trade_return_helpers_test.go",
+        "line": 68,
+        "function": "settlementGoodAmount"
+      }
+    ],
+    "owner_rows": [
+      7,
+      8,
+      9
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select owner_id from settlements where id=$1",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger.go",
+        "line": 1118,
+        "function": "*MessengerHandler.TradeAccept"
+      },
+      {
+        "file": "server/api/handlers/province_gift_test.go",
+        "line": 401,
+        "function": "TestGiftLimpedRaidSeparatesReturnFromLoss"
+      },
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 593,
+        "function": "persistTradeNotice"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "update scheduled_events set processed_at = now() where id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger_passage_arrange_test.go",
+        "line": 153,
+        "function": "*passageArrangeFixture.markProcessed"
+      },
+      {
+        "file": "server/internal/events/scheduler.go",
+        "line": 505,
+        "function": "*Worker.markDone"
+      }
+    ],
+    "owner_rows": [
+      3
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select settled(amount, rate, calc_tick) from settlement_goods where settlement_id = $1 and good_key = 'silver'",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger_trade_naval_test.go",
+        "line": 523,
+        "function": "TestMessengerTrade_AcceptShipTakenMeanwhile_Returns422AndStaysPending"
+      },
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 1383,
+        "function": "*ProvinceHandler.Build"
+      },
+      {
+        "file": "server/internal/combat/embarked_upkeep_test.go",
+        "line": 103,
+        "function": "TestUpkeepHandle_EmbarkedCohortIsBilledFieldRation"
+      },
+      {
+        "file": "server/internal/combat/upkeep_circulation_test.go",
+        "line": 150,
+        "function": "TestUpkeepSoldCirculation"
+      },
+      {
+        "file": "server/internal/combat/upkeep_circulation_test.go",
+        "line": 300,
+        "function": "TestUpkeepSoldShareZeroIdentity"
+      }
+    ],
+    "owner_rows": [
+      7,
+      8,
+      9
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select coalesce(settled(amount, rate, calc_tick), 0) from settlement_goods where settlement_id = $1 and good_key = 'silver'",
+    "sites": [
+      {
+        "file": "server/api/handlers/messenger_trade_offer_good_validation_test.go",
+        "line": 167,
+        "function": "settlementSilver"
+      },
+      {
+        "file": "server/api/handlers/province_trade_internal_test.go",
+        "line": 305,
+        "function": "TestTrade_InternalTransferCreditsDestinationExactlyOnce"
+      },
+      {
+        "file": "server/api/handlers/province_trade_internal_test.go",
+        "line": 353,
+        "function": "TestTrade_InterceptedInternalTransferNotCredited"
+      },
+      {
+        "file": "server/internal/ai/governor.go",
+        "line": 34,
+        "function": "PassiveGovernorTick"
+      },
+      {
+        "file": "server/internal/economy/trade_internal_no_loss_test.go",
+        "line": 164,
+        "function": "TestDeliveryHandler_InternalTransferNeverLost"
+      },
+      {
+        "file": "server/internal/economy/trade_internal_no_loss_test.go",
+        "line": 200,
+        "function": "TestDeliveryHandler_InterceptedInternalTransferStillVetoed"
+      },
+      {
+        "file": "server/internal/economy/trade_transport_test.go",
+        "line": 84,
+        "function": "TestTradeDelivery_InterceptedCaravanNotCredited"
+      },
+      {
+        "file": "server/internal/economy/trade_transport_test.go",
+        "line": 189,
+        "function": "TestTradeDelivery_PhysicalLegDeliversAndChainsReturn"
+      },
+      {
+        "file": "server/internal/transport/intercept_naval_test.go",
+        "line": 125,
+        "function": "TestInterceptScan_PreexistingNavalTransportWithoutShipUsesOldBehaviour"
+      },
+      {
+        "file": "server/internal/transport/intercept_naval_test.go",
+        "line": 174,
+        "function": "TestInterceptScan_NavalCaptured_TakesCargoAndEnqueuesShipCapture"
+      },
+      {
+        "file": "server/internal/transport/intercept_naval_test.go",
+        "line": 220,
+        "function": "TestInterceptScan_NavalLimped_HalfCargoLostShipSailsHome"
+      },
+      {
+        "file": "server/internal/transport/intercept_naval_test.go",
+        "line": 313,
+        "function": "TestInterceptScan_NavalSunk_CargoAndShipBothLost"
+      },
+      {
+        "file": "server/internal/transport/intercept_sea_leg_test.go",
+        "line": 188,
+        "function": "TestInterceptScan_SeaLegLandCaravanIsPlacedAndSeized"
+      }
+    ],
+    "owner_rows": [
+      7,
+      8,
+      9
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select greatest(0, settled(amount, rate, calc_tick)) from settlement_goods where settlement_id = $1 and good_key = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 874,
+        "function": "settlementFoodSummary"
+      },
+      {
+        "file": "server/api/handlers/settlement.go",
+        "line": 1150,
+        "function": "*SettlementHandler.Rite"
+      },
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 75,
+        "function": "checkContext.goodAmount"
+      },
+      {
+        "file": "server/internal/capabilities/context.go",
+        "line": 366,
+        "function": "checkContext.capitalGoodAmount"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 771,
+        "function": "settledStock"
+      },
+      {
+        "file": "server/internal/economy/food_tick.go",
+        "line": 138,
+        "function": "*FoodTickHandler.tickSettlement"
+      },
+      {
+        "file": "server/internal/economy/food_tick.go",
+        "line": 145,
+        "function": "*FoodTickHandler.tickSettlement"
+      },
+      {
+        "file": "server/internal/economy/food_tick.go",
+        "line": 152,
+        "function": "*FoodTickHandler.tickSettlement"
+      },
+      {
+        "file": "server/internal/economy/food_tick_test.go",
+        "line": 105,
+        "function": "foodStockOf"
+      }
+    ],
+    "owner_rows": [
+      7,
+      8,
+      9
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select id, output_key, output_qty, building_type from recipes order by id",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 1909,
+        "function": "*ProvinceHandler.RecipeCatalogue"
+      },
+      {
+        "file": "server/api/handlers/recipe_catalogue_test.go",
+        "line": 60,
+        "function": "TestRecipeCatalogue_MatchesDB"
+      }
+    ],
+    "owner_rows": [
+      13,
+      19
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select settled(kharis_amount, kharis_rate, kharis_calc_tick) from player_world_records where player_id = $1 and world_id = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 2328,
+        "function": "*ProvinceHandler.Recruit"
+      },
+      {
+        "file": "server/internal/loyalty/borrowed_army_idempotent_test.go",
+        "line": 259,
+        "function": "TestBorrowedArmyPenaltyHandler_KingKharisDrainsAndIsIdempotent"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select good_key, rate from settlement_goods where settlement_id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 3093,
+        "function": "*ProvinceHandler.Ticklog"
+      },
+      {
+        "file": "server/internal/kharis/growth_gate_foodnet_test.go",
+        "line": 65,
+        "function": "TestApplyDecay_GrowthGateMatchesFoodNet"
+      }
+    ],
+    "owner_rows": [
+      7,
+      8,
+      9
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select weight from settlement_labor where settlement_id = $1 and good_key = 'cult'",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 4014,
+        "function": "*ProvinceHandler.LaborAlloc"
+      },
+      {
+        "file": "server/api/handlers/province_labor_cult_preserve_test.go",
+        "line": 59,
+        "function": "readCultWeight"
+      },
+      {
+        "file": "server/internal/combat/build_notify_test.go",
+        "line": 203,
+        "function": "TestBuildComplete_PreservesCultWeight"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "insert into settlement_labor (settlement_id, good_key, weight) values ($1, 'cult', $2) on conflict (settlement_id, good_key) do update set weight = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/province.go",
+        "line": 4056,
+        "function": "*ProvinceHandler.LaborAlloc"
+      },
+      {
+        "file": "server/api/handlers/province_labor_cult_preserve_test.go",
+        "line": 46,
+        "function": "seedTempleAndDevotion"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "insert into settlement_placement (settlement_id, gubbe_ordinal, target_kind, hex_q, hex_r, good_key) values ($1, $2, 'hex', $3, $4, $5)",
+    "sites": [
+      {
+        "file": "server/api/handlers/settlement_placement.go",
+        "line": 748,
+        "function": "*ProvinceHandler.PlaceGubbe"
+      },
+      {
+        "file": "server/internal/economy/founding_placement.go",
+        "line": 180,
+        "function": "PlaceStartingWorkforce"
+      },
+      {
+        "file": "server/internal/economy/placement_test_helpers_test.go",
+        "line": 19,
+        "function": "placeHexGubbe"
+      },
+      {
+        "file": "server/internal/economy/siege_test.go",
+        "line": 92,
+        "function": "placeGubbe"
+      }
+    ],
+    "owner_rows": [
+      12,
+      13,
+      16
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "insert into settlement_placement (settlement_id, gubbe_ordinal, target_kind, building_type, good_key) values ($1, $2, 'building', $3, $4)",
+    "sites": [
+      {
+        "file": "server/api/handlers/settlement_placement.go",
+        "line": 784,
+        "function": "*ProvinceHandler.PlaceGubbe"
+      },
+      {
+        "file": "server/internal/economy/placement_test_helpers_test.go",
+        "line": 31,
+        "function": "placeBuildingGubbe"
+      }
+    ],
+    "owner_rows": [
+      12,
+      13,
+      16
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "delete from settlement_placement where settlement_id = $1 and gubbe_ordinal = $2",
+    "sites": [
+      {
+        "file": "server/api/handlers/settlement_placement.go",
+        "line": 857,
+        "function": "*ProvinceHandler.UnplaceGubbe"
+      },
+      {
+        "file": "server/internal/economy/food_gubbar_required_test.go",
+        "line": 73,
+        "function": "TestFoodGubbarRequired_ParityWithEngine"
+      },
+      {
+        "file": "server/internal/economy/placement_reconcile.go",
+        "line": 81,
+        "function": "ReconcilePlacements"
+      }
+    ],
+    "owner_rows": [
+      12,
+      13,
+      16
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "insert into standing_orders (world_id, owner_id, from_settlement_id, to_settlement_id, crewed_by_settlement_id) values ($1,$2,$3,$4,$5) returning id",
+    "sites": [
+      {
+        "file": "server/api/handlers/standing_order.go",
+        "line": 123,
+        "function": "*StandingOrderHandler.Create"
+      },
+      {
+        "file": "server/internal/combat/standing_orders_test.go",
+        "line": 22,
+        "function": "newStandingOrder"
+      }
+    ],
+    "owner_rows": [
+      5
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "insert into standing_order_outbound_goods (standing_order_id, good_key, threshold) values ($1,$2,$3)",
+    "sites": [
+      {
+        "file": "server/api/handlers/standing_order.go",
+        "line": 132,
+        "function": "*StandingOrderHandler.Create"
+      },
+      {
+        "file": "server/internal/combat/standing_orders_test.go",
+        "line": 34,
+        "function": "addOutbound"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "insert into standing_order_return_goods (standing_order_id, good_key, floor) values ($1,$2,$3)",
+    "sites": [
+      {
+        "file": "server/api/handlers/standing_order.go",
+        "line": 141,
+        "function": "*StandingOrderHandler.Create"
+      },
+      {
+        "file": "server/internal/combat/standing_orders_test.go",
+        "line": 44,
+        "function": "addReturnGood"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "update standing_orders set ship_unit_id = $2 where id = $1",
+    "sites": [
+      {
+        "file": "server/api/handlers/standing_order_test.go",
+        "line": 290,
+        "function": "TestStandingOrderAPI_DeleteReleasesIdleShip"
+      },
+      {
+        "file": "server/api/handlers/standing_order_test.go",
+        "line": 341,
+        "function": "TestStandingOrderAPI_DeleteLeavesInFlightShipBound"
+      },
+      {
+        "file": "server/api/handlers/standing_order_test.go",
+        "line": 404,
+        "function": "TestStandingOrderAPI_ListNamesTheBoundShip"
+      },
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 569,
+        "function": "*StandingOrderTickHandler.resolveRouteShip"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select terrain from map_tiles where world_id=$1 and q=$2 and r=$3",
+    "sites": [
+      {
+        "file": "server/api/handlers/unit_march_preview.go",
+        "line": 83,
+        "function": "*UnitHandler.MarchPreview"
+      },
+      {
+        "file": "server/internal/transport/arrival_ship_release_test.go",
+        "line": 118,
+        "function": "TestArrival_ShipReturnStrandsWhenNoOwnPortLeft"
+      }
+    ],
+    "owner_rows": [
+      18
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select id from worlds order by created_at desc limit 1",
+    "sites": [
+      {
+        "file": "server/api/handlers/web.go",
+        "line": 132,
+        "function": "*WebHandler.resolveWorldID"
+      },
+      {
+        "file": "server/api/handlers/web_worldid_test.go",
+        "line": 106,
+        "function": "TestResolveWorldID_OrderByIsLoadBearing"
+      },
+      {
+        "file": "server/cmd/server/main.go",
+        "line": 801,
+        "function": "ensureWorld"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select coalesce(agora_state,''),coalesce(agora_localpart,'') from players where id=$1",
+    "sites": [
+      {
+        "file": "server/cmd/server/agora.go",
+        "line": 40,
+        "function": "*agoraService.Account"
+      },
+      {
+        "file": "server/cmd/server/agora_test.go",
+        "line": 127,
+        "function": "agoraFixture.assertState"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select owner_id from units where id = $1",
+    "sites": [
+      {
+        "file": "server/internal/combat/colonist_purse_test.go",
+        "line": 300,
+        "function": "TestArriveGarrison_ReturnsTheCarriedPurse"
+      },
+      {
+        "file": "server/internal/combat/ship_repair.go",
+        "line": 167,
+        "function": "*ShipRepairCompleteHandler.Handle"
+      },
+      {
+        "file": "server/internal/economy/trade.go",
+        "line": 419,
+        "function": "*DeliveryHandler.Handle"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select settlement_id from units where id = $1",
+    "sites": [
+      {
+        "file": "server/internal/combat/expedition_test.go",
+        "line": 205,
+        "function": "TestExpedition_TurnsByHalfTimeAndIsHomeByLength"
+      },
+      {
+        "file": "server/internal/combat/march_start_land_test.go",
+        "line": 269,
+        "function": "TestLandMission_WithColonizeCargoIntent_ColonyGetsThePurse"
+      },
+      {
+        "file": "server/internal/transport/intercept.go",
+        "line": 419,
+        "function": "*InterceptScanHandler.dispatchLimpedReturn"
+      }
+    ],
+    "owner_rows": [
+      16
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select q, r, terrain from map_tiles where world_id = $1",
+    "sites": [
+      {
+        "file": "server/internal/combat/march_route_integrity_test.go",
+        "line": 42,
+        "function": "TestStartMarch_RoutePricingFailureLeavesStateUnchanged"
+      },
+      {
+        "file": "server/internal/province/pathfind.go",
+        "line": 43,
+        "function": "LoadTileGraph"
+      }
+    ],
+    "owner_rows": [
+      18
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select count(*) from settlements s join provinces p on p.id = s.province_id where p.world_id = $1 and p.map_q = $2 and p.map_r = $3 and not (s.state = 'razed' and s.recolonizable_after_tick is not null and s.recolonizable_after_tick <= current_world_tick())",
+    "sites": [
+      {
+        "file": "server/internal/combat/march_start.go",
+        "line": 1178,
+        "function": "colonizeDispatchPreflight"
+      },
+      {
+        "file": "server/internal/combat/occupation_test.go",
+        "line": 492,
+        "function": "TestExecuteOccupyAction_Burn"
+      },
+      {
+        "file": "server/internal/combat/occupation_test.go",
+        "line": 509,
+        "function": "TestExecuteOccupyAction_Burn"
+      }
+    ],
+    "owner_rows": [
+      1
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select count(*) from settlement_placement where settlement_id = $1",
+    "sites": [
+      {
+        "file": "server/internal/combat/standing_orders.go",
+        "line": 829,
+        "function": "idleGubbar"
+      },
+      {
+        "file": "server/internal/economy/backfill_placements_test.go",
+        "line": 46,
+        "function": "TestBackfillPlacements_PlacesForPreP4SettlementsAndSkipsAlreadyPlaced"
+      },
+      {
+        "file": "server/internal/economy/backfill_placements_test.go",
+        "line": 52,
+        "function": "TestBackfillPlacements_PlacesForPreP4SettlementsAndSkipsAlreadyPlaced"
+      },
+      {
+        "file": "server/internal/economy/hex_rules_test.go",
+        "line": 208,
+        "function": "TestReconcilePlacements_TrimsOverCapAndDropsBuildingPlacements"
+      },
+      {
+        "file": "server/internal/economy/place_next_gubbe_test.go",
+        "line": 30,
+        "function": "TestPlaceNextGubbeOnBestFoodHex_PicksHighestYieldThenFallsToPool"
+      },
+      {
+        "file": "server/internal/economy/place_next_gubbe_test.go",
+        "line": 52,
+        "function": "TestPlaceNextGubbeOnBestFoodHex_PicksHighestYieldThenFallsToPool"
+      },
+      {
+        "file": "server/internal/economy/placement_prune_test.go",
+        "line": 90,
+        "function": "TestPrunePlacementsToPopulation_ConvergesInOnePass"
+      },
+      {
+        "file": "server/internal/economy/placement_prune_test.go",
+        "line": 143,
+        "function": "TestPrunePlacementsToPopulation_IdempotentWhenWithinCap"
+      },
+      {
+        "file": "server/internal/kharis/growth_placement_hook_test.go",
+        "line": 24,
+        "function": "TestApplyDecay_PopulationCrossingNewHundredPlacesOneGubbe"
+      },
+      {
+        "file": "server/internal/kharis/growth_placement_hook_test.go",
+        "line": 38,
+        "function": "TestApplyDecay_PopulationCrossingNewHundredPlacesOneGubbe"
+      }
+    ],
+    "owner_rows": [
+      12,
+      13,
+      16
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select amount, rate from settlement_goods where settlement_id = $1 and good_key = 'grain'",
+    "sites": [
+      {
+        "file": "server/internal/combat/unit_arrival.go",
+        "line": 2051,
+        "function": "*UnitArrivalHandler.foundColony"
+      },
+      {
+        "file": "server/internal/kharis/grain_growth_test.go",
+        "line": 324,
+        "function": "rawGrainRow"
+      }
+    ],
+    "owner_rows": [
+      7,
+      8,
+      9
+    ],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select base_value from goods where key = $1",
+    "sites": [
+      {
+        "file": "server/internal/economy/metal_prices_test.go",
+        "line": 53,
+        "function": "baseValueOf"
+      },
+      {
+        "file": "server/internal/economy/recompute.go",
+        "line": 457,
+        "function": "GoodBaseValue"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  },
+  {
+    "normalized": "select trade_offer->>'status' from messengers where id=$1",
+    "sites": [
+      {
+        "file": "server/internal/economy/trade_journey_test.go",
+        "line": 157,
+        "function": "TestTradeReturnSavedNavalStrandsAtWaterAndRollsBackReleaseFailure"
+      },
+      {
+        "file": "server/internal/economy/trade_return.go",
+        "line": 44,
+        "function": "*TradeReturnHandler.Handle"
+      }
+    ],
+    "owner_rows": [],
+    "classification": "brus/kontraktsfixture",
+    "reason": "Samma SQL i produktionsväg och seed/assertion; ingen ytterligare produktionsägare, kontrollera att testet inte bara speglar fel formel"
+  }
+]

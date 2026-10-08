@@ -1,0 +1,11 @@
+{
+  "command": [
+    "go",
+    "run",
+    "docs/reviews/steg4-svep/ast_measure.go",
+    "server"
+  ],
+  "cwd": ".",
+  "exit": 0,
+  "elapsed_seconds": 0.274
+}

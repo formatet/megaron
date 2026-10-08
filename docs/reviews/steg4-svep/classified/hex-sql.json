@@ -1,0 +1,123 @@
+[
+  {
+    "file": "server/api/handlers/join.go",
+    "line": 173,
+    "function": "*JoinHandler.Join",
+    "value": "WITH hosts AS (\n\t\t     SELECT hu.q, hu.r\n\t\t     FROM units hu\n\t\t     JOIN founder_phase fp ON fp.host_unit_id = hu.id AND fp.active\n\t\t     WHERE hu.world_id = $1 AND hu.q IS NOT NULL AND hu.r IS NOT NULL\n\t\t ),\n\t\t -- Per-landmass load: every occupied tile (settled province or active\n\t\t -- host) resolved to its map_tiles.landmass_id and counted. Tiles on a\n\t\t -- world generated before migration 124 (or the sea rows themselves)\n\t\t -- have landmass_id NULL, so they are excluded here on purpose — an\n\t\t -- old world simply gets no rows in this CTE and every candidate below\n\t\t -- falls through tier-1 with COALESCE(...,0), i.e. no landmass signal,\n\t\t -- deferring to the ore bias / RANDOM() tiers exactly as before Slice 2.\n\t\t landmass_load AS (\n\t\t     SELECT lt.landmass_id, count(*) AS count\n\t\t     FROM (\n\t\t         SELECT map_q AS q, map_r AS r FROM provinces WHERE world_id = $1\n\t\t         UNION ALL\n\t\t         SELECT q, r FROM hosts\n\t\t     ) occ\n\t\t     JOIN map_tiles lt ON lt.world_id = $1 AND lt.q = occ.q AND lt.r = occ.r\n\t\t     WHERE lt.landmass_id IS NOT NULL\n\t\t     GROUP BY lt.landmass_id\n\t\t ),\n\t\t -- Ore tiles materialised once (a few dozen rows on a 230² map) instead\n\t\t -- of re-scanning all of map_tiles per candidate below — the EXISTS\n\t\t -- against map_tiles nb was a nested-loop re-scan of ~53k rows for each\n\t\t -- of ~11k eligible candidates (~49s on a fresh 230² world, blowing the\n\t\t -- 30s request timeout). Found 2026-08-07 the first time a join ran\n\t\t -- against a truly empty full-size world. MATERIALIZED is required —\n\t\t -- Postgres 12+ inlines plain CTEs, which silently undoes this fix.\n\t\t copper_tiles AS MATERIALIZED (\n\t\t     SELECT q, r FROM map_tiles WHERE world_id = $1 AND copper_deposit\n\t\t ),\n\t\t tin_tiles AS MATERIALIZED (\n\t\t     SELECT q, r FROM map_tiles WHERE world_id = $1 AND tin_deposit\n\t\t ),\n\t\t silver_tiles AS MATERIALIZED (\n\t\t     SELECT q, r FROM map_tiles WHERE world_id = $1 AND COALESCE(silver_deposit, false)\n\t\t ),\n\t\t -- Landmasses with at least one timber hex (megaron_plan_byggkostnader\n\t\t -- steg 4): every building costs timber and a new city starts with none, so\n\t\t -- a landmass without forest is a dead end. Stone needs no rule — fieldstone\n\t\t -- (mig 156) is on every land hex. The timber terrains are read from\n\t\t -- production_rules, not listed here. MATERIALIZED for the same reason as\n\t\t -- the ore CTEs above: an inlined CTE is re-evaluated per candidate.\n\t\t viable_landmasses AS MATERIALIZED (\n\t\t     SELECT DISTINCT vt.landmass_id\n\t\t     FROM map_tiles vt\n\t\t     WHERE vt.world_id = $1 AND vt.landmass_id IS NOT NULL\n\t\t       AND vt.terrain IN (SELECT terrain_type FROM production_rules\n\t\t                          WHERE good_key = 'timber' AND building_type IS NULL\n\t\t                            AND terrain_type IS NOT NULL)\n\t\t )\n\t\t SELECT mt.q, mt.r, mt.terrain,\n\t\t        mt.copper_deposit, mt.tin_deposit,\n\t\t        COALESCE(mt.silver_deposit, false), COALESCE(mt.cedar_deposit, false),\n\t\t        COALESCE(mt.coastal, false)\n\t\t FROM map_tiles mt\n\t\t LEFT JOIN provinces p ON p.world_id = mt.world_id AND p.map_q = mt.q AND p.map_r = mt.r\n\t\t LEFT JOIN landmass_load ll ON ll.landmass_id = mt.landmass_id\n\t\t WHERE mt.world_id = $1\n\t\t   AND p.id IS NULL\n\t\t   AND mt.terrain NOT IN ('coastal_sea','deep_sea','river','river_ford','mountain_limestone','mountain_red','semi_desert')\n\t\t   -- A world generated before mig 124 has landmass_id NULL everywhere; let\n\t\t   -- those candidates through rather than declare the whole world full.\n\t\t   AND (mt.landmass_id IS NULL OR mt.landmass_id IN (SELECT landmass_id FROM viable_landmasses))\n\t\t   -- The \"<= 4\" below is the HOST spawn spacing, not the founding minimum:\n\t\t   -- it deliberately does NOT follow province.minSettlementCentreDistance\n\t\t   -- (lowered to 3 by megaron_plan_delad_catchment.md). Do not \"fix\" it.\n\t\t   -- Keep clear of settled ground …\n\t\t   AND NOT EXISTS (\n\t\t       SELECT 1 FROM provinces p2\n\t\t       WHERE p2.world_id = $1\n\t\t         AND (ABS(mt.q - p2.map_q) + ABS(mt.r - p2.map_r) +\n\t\t              ABS((mt.q + mt.r) - (p2.map_q + p2.map_r))) / 2 <= 4\n\t\t   )\n\t\t   -- … and of other hosts, by the same measure.\n\t\t   AND NOT EXISTS (\n\t\t       SELECT 1 FROM hosts h\n\t\t       WHERE (ABS(mt.q - h.q) + ABS(mt.r - h.r) +\n\t\t              ABS((mt.q + mt.r) - (h.q + h.r))) / 2 <= 4\n\t\t   )\n\t\t   -- NOTE: the old \"starter catchment must hold a grain tile\" filter is\n\t\t   -- deliberately gone. It was a self-sufficiency invariant for a capital\n\t\t   -- born where it lands; a host carries four months of rations and is\n\t\t   -- meant to go looking for its site. Pre-picking fertile ground would\n\t\t   -- answer the question the founder phase exists to ask. The grain check\n\t\t   -- lives in the founding forecast instead\n\t\t   -- (temenos_nomadic_host_plan.md §Spawn, §Platsprognos).\n\t\t ORDER BY\n\t\t   -- 1. Landmass balance: candidates on a landmass_id sort ahead of NULL\n\t\t   --    ones (old world, no migration-124 data), then by ascending load\n\t\t   --    (fewest settlements+hosts on that landmass first) so the next\n\t\t   --    joiner fills the emptiest continent instead of the emptiest\n\t\t   --    hemisphere.\n\t\t   (mt.landmass_id IS NULL) ASC,\n\t\t   COALESCE(ll.count, 0) ASC,\n\t\t   -- 2. Metal-catchment bias (tiebreak within the winning landmass):\n\t\t   --    west tiles that have a copper deposit within the future catchment\n\t\t   --    ring rank ahead of those that do not; east tiles prefer tin. This\n\t\t   --    ensures the first joiners land on ore-catchment tiles so they mine\n\t\t   --    from turn 1 — the self-sufficiency invariant is preserved because\n\t\t   --    the viability filters above still gate every candidate tile.\n\t\t   --    When no ore-catchment tile is eligible the bias is 0 for all and\n\t\t   --    we fall back to RANDOM() as before. Distance uses the same sum/2\n\t\t   --    axial hex-distance formula as the clearance checks above\n\t\t   --    (equivalent to hexgrid.Distance's max() formula); radius is\n\t\t   --    hexgrid.CatchmentRadius ($3, P1), excludes the tile itself (dist 0).\n\t\t   --\n\t\t   --    Silver scores 1 against the hemisphere ore's 2, so ore still wins\n\t\t   --    a straight fight and a silver tile only wins over ground with no\n\t\t   --    metal at all. Before this term nothing steered a settler towards\n\t\t   --    silver at all, and the drift world shows what that costs: 8\n\t\t   --    copper hexes reached 4 of 8 cities' catchments, 4 silver hexes\n\t\t   --    reached 1. Measured on fresh 60x60 worlds (10 joiners, four\n\t\t   --    runs) the term moves silver from 3-4 hosts to a steady 4\n\t\t   --    (megaron_silvergeografin.md, 2026-08-27) — small here because\n\t\t   --    tier 1 above already scatters joiners across landmasses, and\n\t\t   --    a 60x60 landmass rarely holds more than one metal. It matters\n\t\t   --    where landmasses are large enough for this tiebreak to actually\n\t\t   --    choose between many candidate tiles.\n\t\t   (CASE\n\t\t     WHEN mt.q <= $2 THEN (\n\t\t       EXISTS (\n\t\t         SELECT 1 FROM copper_tiles nb\n\t\t         WHERE (ABS(nb.q - mt.q) + ABS(nb.r - mt.r) + ABS((nb.q + nb.r) - (mt.q + mt.r)))\n\t\t               BETWEEN 2 AND 2 * $3::int\n\t\t       )::int\n\t\t     )\n\t\t     ELSE (\n\t\t       EXISTS (\n\t\t         SELECT 1 FROM tin_tiles nb\n\t\t         WHERE (ABS(nb.q - mt.q) + ABS(nb.r - mt.r) + ABS((nb.q + nb.r) - (mt.q + mt.r)))\n\t\t               BETWEEN 2 AND 2 * $3::int\n\t\t       )::int\n\t\t     )\n\t\t   END * 2 + EXISTS (\n\t\t     SELECT 1 FROM silver_tiles nb\n\t\t     WHERE (ABS(nb.q - mt.q) + ABS(nb.r - mt.r) + ABS((nb.q + nb.r) - (mt.q + mt.r)))\n\t\t           BETWEEN 2 AND 2 * $3::int\n\t\t   )::int) DESC,\n\t\t   RANDOM()\n\t\t LIMIT 1",
+    "owner_rows": [
+      17
+    ],
+    "classification": "kandidat",
+    "reason": "Minst tre ABS-uttryck i samma SQL-literal: axial avståndsformel (sum/2 eller max); inte bevis att övriga WHERE-policyer är identiska"
+  },
+  {
+    "file": "server/api/handlers/settlement.go",
+    "line": 1444,
+    "function": "*SettlementHandler.applyOracleRevealDeposits",
+    "value": "INSERT INTO player_scouted_tiles (world_id, player_id, q, r)\n\t\t SELECT $1, $2, mt.q, mt.r\n\t\t   FROM map_tiles mt\n\t\t  WHERE mt.world_id = $1\n\t\t    AND mt.q BETWEEN $3::int - $5::int AND $3::int + $5::int\n\t\t    AND mt.r BETWEEN $4::int - $5::int AND $4::int + $5::int\n\t\t    AND (ABS(mt.q - $3::int) + ABS((mt.q - $3::int) + (mt.r - $4::int)) + ABS(mt.r - $4::int)) / 2 <= $5::int\n\t\t ON CONFLICT DO NOTHING",
+    "owner_rows": [
+      17
+    ],
+    "classification": "kandidat",
+    "reason": "Minst tre ABS-uttryck i samma SQL-literal: axial avståndsformel (sum/2 eller max); inte bevis att övriga WHERE-policyer är identiska"
+  },
+  {
+    "file": "server/api/handlers/settlement.go",
+    "line": 1463,
+    "function": "*SettlementHandler.applyOracleRevealDeposits",
+    "value": "SELECT mt.q, mt.r\n\t\t   FROM map_tiles mt\n\t\t  WHERE mt.world_id = $1\n\t\t    AND mt.q BETWEEN $2::int - $4::int AND $2::int + $4::int\n\t\t    AND mt.r BETWEEN $3::int - $4::int AND $3::int + $4::int\n\t\t    AND (ABS(mt.q - $2::int) + ABS((mt.q - $2::int) + (mt.r - $3::int)) + ABS(mt.r - $3::int)) / 2 <= $4::int\n\t\t  ORDER BY mt.q, mt.r",
+    "owner_rows": [
+      17
+    ],
+    "classification": "kandidat",
+    "reason": "Minst tre ABS-uttryck i samma SQL-literal: axial avståndsformel (sum/2 eller max); inte bevis att övriga WHERE-policyer är identiska"
+  },
+  {
+    "file": "server/internal/combat/expedition_outcomes.go",
+    "line": 58,
+    "function": "expeditionReturnDestination",
+    "value": "SELECT s.id, p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id WHERE s.world_id=$1 AND s.owner_id=$2 AND s.state='active' ORDER BY CASE WHEN s.id=$3 THEN 0 ELSE 1 END, greatest(abs(p.map_q-$4),abs(p.map_r-$5),abs(p.map_q+p.map_r-$4-$5)), s.id FOR SHARE OF s",
+    "owner_rows": [
+      17
+    ],
+    "classification": "kandidat",
+    "reason": "Minst tre ABS-uttryck i samma SQL-literal: axial avståndsformel (sum/2 eller max); inte bevis att övriga WHERE-policyer är identiska"
+  },
+  {
+    "file": "server/internal/combat/unit_arrival.go",
+    "line": 2204,
+    "function": "*UnitArrivalHandler.resolveAmphibiousAssault",
+    "value": "SELECT s.id, s.owner_id, s.wall_level, p.id, p.terrain_type, p.map_q, p.map_r\n\t\t FROM provinces p\n\t\t JOIN settlements s ON s.province_id = p.id\n\t\t WHERE p.world_id = $1 AND s.state = 'active' AND s.owner_id <> $2\n\t\t   AND COALESCE(p.coastal, false) = true\n\t\t   AND (ABS(p.map_q - $3) + ABS(p.map_r - $4) +\n\t\t        ABS((p.map_q + p.map_r) - ($3 + $4))) / 2 = 1\n\t\t ORDER BY s.id\n\t\t LIMIT 1",
+    "owner_rows": [
+      17
+    ],
+    "classification": "kandidat",
+    "reason": "Minst tre ABS-uttryck i samma SQL-literal: axial avståndsformel (sum/2 eller max); inte bevis att övriga WHERE-policyer är identiska"
+  },
+  {
+    "file": "server/internal/combat/unit_intercept_scan.go",
+    "line": 164,
+    "function": "*UnitInterceptScanHandler.Handle",
+    "value": "SELECT id, owner_id, type, reaction_policy->>'foreign' FROM units\n\t\t\t WHERE world_id = $1 AND owner_id <> $2 AND status = 'positioned' AND stance = 'sentry'\n\t\t\t   AND sentry_q IS NOT NULL AND sentry_r IS NOT NULL\n\t\t\t   AND (reaction_policy->>'foreign') IN ('intercept', 'alert')\n\t\t\t   AND (ABS(sentry_q - $3) + ABS(sentry_r - $4) + ABS((sentry_q + sentry_r) - ($3 + $4))) / 2 <= $5\n\t\t\t ORDER BY size DESC\n\t\t\t LIMIT 1",
+    "owner_rows": [
+      17
+    ],
+    "classification": "kandidat",
+    "reason": "Minst tre ABS-uttryck i samma SQL-literal: axial avståndsformel (sum/2 eller max); inte bevis att övriga WHERE-policyer är identiska"
+  },
+  {
+    "file": "server/internal/economy/siege.go",
+    "line": 73,
+    "function": "ReachableCatchmentHexes",
+    "value": "SELECT EXISTS(\n\t\t   SELECT 1 FROM units\n\t\t   WHERE world_id = $1 AND owner_id <> $2 AND status = 'positioned' AND stance = 'sentry'\n\t\t     AND sentry_q IS NOT NULL AND sentry_r IS NOT NULL\n\t\t     AND (ABS(sentry_q - $3) + ABS(sentry_r - $4) + ABS((sentry_q + sentry_r) - ($3 + $4))) / 2 <= $5\n\t\t )",
+    "owner_rows": [
+      17
+    ],
+    "classification": "kandidat",
+    "reason": "Minst tre ABS-uttryck i samma SQL-literal: axial avståndsformel (sum/2 eller max); inte bevis att övriga WHERE-policyer är identiska"
+  },
+  {
+    "file": "server/internal/economy/siege.go",
+    "line": 99,
+    "function": "ReachableCatchmentHexes",
+    "value": "SELECT sentry_q, sentry_r FROM units\n\t\t WHERE world_id = $1 AND owner_id <> $2 AND status = 'positioned' AND stance = 'sentry'\n\t\t   AND sentry_q IS NOT NULL AND sentry_r IS NOT NULL\n\t\t   AND (ABS(sentry_q - $3) + ABS(sentry_r - $4) + ABS((sentry_q + sentry_r) - ($3 + $4))) / 2 <= $5",
+    "owner_rows": [
+      17
+    ],
+    "classification": "kandidat",
+    "reason": "Minst tre ABS-uttryck i samma SQL-literal: axial avståndsformel (sum/2 eller max); inte bevis att övriga WHERE-policyer är identiska"
+  },
+  {
+    "file": "server/internal/economy/siege.go",
+    "line": 201,
+    "function": "LoadBesiegers",
+    "value": "SELECT u.owner_id, COALESCE(pl.wanax_name, pl.username, ''), u.type, u.size, u.sentry_q, u.sentry_r\n\t\t FROM units u\n\t\t LEFT JOIN players pl ON pl.id = u.owner_id\n\t\t WHERE u.world_id = $1 AND u.owner_id <> $2 AND u.status = 'positioned' AND u.stance = 'sentry'\n\t\t   AND u.sentry_q IS NOT NULL AND u.sentry_r IS NOT NULL\n\t\t   AND (ABS(u.sentry_q - $3) + ABS(u.sentry_r - $4) + ABS((u.sentry_q + u.sentry_r) - ($3 + $4))) / 2 <= $5\n\t\t ORDER BY u.size DESC",
+    "owner_rows": [
+      17
+    ],
+    "classification": "kandidat",
+    "reason": "Minst tre ABS-uttryck i samma SQL-literal: axial avståndsformel (sum/2 eller max); inte bevis att övriga WHERE-policyer är identiska"
+  },
+  {
+    "file": "server/internal/gossip/gossip.go",
+    "line": 72,
+    "function": "Broadcast",
+    "value": "SELECT DISTINCT s2.owner_id\n\t\t FROM settlements s1\n\t\t JOIN provinces p1 ON p1.id = s1.province_id\n\t\t JOIN provinces p2 ON p2.world_id = p1.world_id\n\t\t JOIN settlements s2 ON s2.province_id = p2.id\n\t\t WHERE s1.id = $1\n\t\t   AND s2.owner_id IS NOT NULL\n\t\t   AND (ABS(p2.map_q - p1.map_q) + ABS(p2.map_r - p1.map_r) +\n\t\t        ABS((p2.map_q + p2.map_r) - (p1.map_q + p1.map_r))) / 2 <= $2",
+    "owner_rows": [
+      17
+    ],
+    "classification": "kandidat",
+    "reason": "Minst tre ABS-uttryck i samma SQL-literal: axial avståndsformel (sum/2 eller max); inte bevis att övriga WHERE-policyer är identiska"
+  },
+  {
+    "file": "server/internal/transport/intercept.go",
+    "line": 198,
+    "function": "*InterceptScanHandler.Handle",
+    "value": "SELECT id, owner_id FROM units\n\t\t\t WHERE world_id = $1 AND owner_id <> $2 AND status = 'positioned' AND stance = 'sentry'\n\t\t\t   AND sentry_q IS NOT NULL AND sentry_r IS NOT NULL\n\t\t\t   AND (reaction_policy->>'foreign') = 'intercept'\n\t\t\t   AND (ABS(sentry_q - $3) + ABS(sentry_r - $4) + ABS((sentry_q + sentry_r) - ($3 + $4))) / 2 <= $5\n\t\t\t ORDER BY size DESC\n\t\t\t LIMIT 1",
+    "owner_rows": [
+      17
+    ],
+    "classification": "kandidat",
+    "reason": "Minst tre ABS-uttryck i samma SQL-literal: axial avståndsformel (sum/2 eller max); inte bevis att övriga WHERE-policyer är identiska"
+  }
+]

@@ -1,0 +1,717 @@
+{
+  "duplicates": [
+    {
+      "firstFile": {
+        "end": 8,
+        "endLoc": {
+          "column": 37,
+          "line": 8,
+          "position": 393
+        },
+        "name": "megaron/render/founding_inline.test.mjs",
+        "start": 1,
+        "startLoc": {
+          "column": 0,
+          "line": 1,
+          "position": 0
+        }
+      },
+      "format": "javascript",
+      "fragment": "import test from 'node:test';\nimport assert from 'node:assert/strict';\nclass Element {\n constructor(){this.style={};this.classList={toggle(){}};this.events={};this.children=[];this.dataset={};this.clientWidth=1280;this.clientHeight=900;}\n addEventListener(k,fn){this.events[k]=fn;}\n append(...e){this.children.push(...e);}\n appendChild(e){this.append(e);}\n replaceChildren(){this.children=[];}",
+      "isNew": false,
+      "kind": "exact",
+      "lines": 8,
+      "secondFile": {
+        "end": 8,
+        "endLoc": {
+          "column": 37,
+          "line": 8,
+          "position": 393
+        },
+        "name": "megaron/render/host_simple.test.mjs",
+        "start": 1,
+        "startLoc": {
+          "column": 0,
+          "line": 1,
+          "position": 0
+        }
+      },
+      "tokens": 129
+    },
+    {
+      "firstFile": {
+        "end": 8,
+        "endLoc": {
+          "column": 37,
+          "line": 8,
+          "position": 393
+        },
+        "name": "megaron/render/founding_inline.test.mjs",
+        "start": 1,
+        "startLoc": {
+          "column": 0,
+          "line": 1,
+          "position": 0
+        }
+      },
+      "format": "javascript",
+      "fragment": "import test from 'node:test';\nimport assert from 'node:assert/strict';\nclass Element {\n constructor(){this.style={};this.classList={toggle(){}};this.events={};this.children=[];this.dataset={};this.clientWidth=1280;this.clientHeight=900;}\n addEventListener(k,fn){this.events[k]=fn;}\n append(...e){this.children.push(...e);}\n appendChild(e){this.append(e);}\n replaceChildren(){this.children=[];}",
+      "isNew": false,
+      "kind": "exact",
+      "lines": 8,
+      "secondFile": {
+        "end": 8,
+        "endLoc": {
+          "column": 37,
+          "line": 8,
+          "position": 393
+        },
+        "name": "megaron/render/inspect_simple.test.mjs",
+        "start": 1,
+        "startLoc": {
+          "column": 0,
+          "line": 1,
+          "position": 0
+        }
+      },
+      "tokens": 129
+    },
+    {
+      "firstFile": {
+        "end": 15,
+        "endLoc": {
+          "column": 122,
+          "line": 15,
+          "position": 806
+        },
+        "name": "megaron/render/founding_inline.test.mjs",
+        "start": 8,
+        "startLoc": {
+          "column": 33,
+          "line": 8,
+          "position": 389
+        }
+      },
+      "format": "javascript",
+      "fragment": " replaceChildren(){this.children=[];}\n querySelector(){return this.children.find(e=>e.dataset.inlineResult);}\n setAttribute(){}\n getBoundingClientRect(){return {left:0,top:0};}\n getContext(){return {};}\n}\nconst elements=new Map();const element=id=>{if(!elements.has(id))elements.set(id,new Element());return elements.get(id);};\nglobalThis.document={getElementById:element,createElement:()=>new Element(),addEventListener(){},querySelectorAll:()=>[]};",
+      "isNew": false,
+      "kind": "exact",
+      "lines": 8,
+      "secondFile": {
+        "end": 16,
+        "endLoc": {
+          "column": 122,
+          "line": 16,
+          "position": 838
+        },
+        "name": "megaron/render/host_simple.test.mjs",
+        "start": 9,
+        "startLoc": {
+          "column": 27,
+          "line": 9,
+          "position": 421
+        }
+      },
+      "tokens": 136
+    },
+    {
+      "firstFile": {
+        "end": 20,
+        "endLoc": {
+          "column": 3,
+          "line": 20,
+          "position": 1014
+        },
+        "name": "megaron/render/founding_inline.test.mjs",
+        "start": 11,
+        "startLoc": {
+          "column": 37,
+          "line": 11,
+          "position": 521
+        }
+      },
+      "format": "javascript",
+      "fragment": " getBoundingClientRect(){return {left:0,top:0};}\n getContext(){return {};}\n}\nconst elements=new Map();const element=id=>{if(!elements.has(id))elements.set(id,new Element());return elements.get(id);};\nglobalThis.document={getElementById:element,createElement:()=>new Element(),addEventListener(){},querySelectorAll:()=>[]};\nglobalThis.window={addEventListener(){},renderColonizePreviewHTML:()=>'<p>Forecast</p>'};\nglobalThis.localStorage={getItem:()=>null};\nglobalThis.setInterval=()=>0;\nglobalThis.requestAnimationFrame=()=>0;\nlet dialogs=0,reloads=0,calls=[],reply,resolveRequest;",
+      "isNew": false,
+      "kind": "exact",
+      "lines": 10,
+      "secondFile": {
+        "end": 21,
+        "endLoc": {
+          "column": 3,
+          "line": 21,
+          "position": 1046
+        },
+        "name": "megaron/render/inspect_simple.test.mjs",
+        "start": 12,
+        "startLoc": {
+          "column": 37,
+          "line": 12,
+          "position": 553
+        }
+      },
+      "tokens": 150
+    },
+    {
+      "firstFile": {
+        "end": 16,
+        "endLoc": {
+          "column": 122,
+          "line": 16,
+          "position": 838
+        },
+        "name": "megaron/render/host_simple.test.mjs",
+        "start": 4,
+        "startLoc": {
+          "column": 51,
+          "line": 4,
+          "position": 138
+        }
+      },
+      "format": "javascript",
+      "fragment": " constructor(){this.style={};this.classList={toggle(){}};this.events={};this.children=[];this.dataset={};this.clientWidth=1280;this.clientHeight=900;}\n addEventListener(k,fn){this.events[k]=fn;}\n append(...e){this.children.push(...e);}\n appendChild(e){this.append(e);}\n replaceChildren(){this.children=[];}\n querySelectorAll(){return [];}\n querySelector(){return this.children.find(e=>e.dataset.inlineResult);}\n setAttribute(){}\n getBoundingClientRect(){return {left:0,top:0};}\n getContext(){return {};}\n}\nconst elements=new Map();const element=id=>{if(!elements.has(id))elements.set(id,new Element());return elements.get(id);};\nglobalThis.document={getElementById:element,createElement:()=>new Element(),addEventListener(){},querySelectorAll:()=>[]};",
+      "isNew": false,
+      "kind": "exact",
+      "lines": 13,
+      "secondFile": {
+        "end": 16,
+        "endLoc": {
+          "column": 122,
+          "line": 16,
+          "position": 838
+        },
+        "name": "megaron/render/inspect_simple.test.mjs",
+        "start": 4,
+        "startLoc": {
+          "column": 51,
+          "line": 4,
+          "position": 138
+        }
+      },
+      "tokens": 240
+    },
+    {
+      "firstFile": {
+        "end": 44,
+        "endLoc": {
+          "column": 5,
+          "line": 44,
+          "position": 2654
+        },
+        "name": "megaron/render/host_simple.test.mjs",
+        "start": 29,
+        "startLoc": {
+          "column": 1,
+          "line": 29,
+          "position": 1670
+        }
+      },
+      "format": "javascript",
+      "fragment": " if(url.endsWith('/army')){\n  if(delay)return new Promise(resolve=>{delay.resolve=resolve;});\n  return new Response(JSON.stringify(army),{status:refused?403:200});\n }\n return new Promise(()=>{});\n};\nconst {State}=await import('../state.js');\nconst {initMap}=await import('./map.js');initMap();\nconst marker={id:'foreign-province',settlement_id:'foreign-settlement',name:'Kyme',owner:'Other Wanax',culture:'ionian',walls:0,q:0,r:0};\nasync function click({terrain='plains',city=marker,host=false}={}){\n State.WORLD_ID='world';State.MY_SETTLEMENT_ID='own-settlement';State.tileData=[{q:0,r:0,terrain}];State.provinceData=city?[city]:[];State.unitsData=host?[{type:'nomadic_host',q:0,r:0}]:[];State.foreignUnitData=[];State.ruralData=[];State.founderPhase=host?fp:null;State.camera={x:0,y:0,zoom:1};\n const canvas=element('hex-canvas');canvas.events.mousedown({clientX:0,clientY:0});canvas.events.mouseup({clientX:0,clientY:0});\n await new Promise(resolve=>setImmediate(resolve));\n}\n\ntest('Q actual Host: only site assessment is primary and all existing detail stays in one closed Details',async()=>{",
+      "isNew": false,
+      "kind": "exact",
+      "lines": 16,
+      "secondFile": {
+        "end": 41,
+        "endLoc": {
+          "column": 5,
+          "line": 41,
+          "position": 2396
+        },
+        "name": "megaron/render/inspect_simple.test.mjs",
+        "start": 27,
+        "startLoc": {
+          "column": 1,
+          "line": 27,
+          "position": 1413
+        }
+      },
+      "tokens": 318
+    },
+    {
+      "firstFile": {
+        "end": 733,
+        "endLoc": {
+          "column": 30,
+          "line": 733,
+          "position": 37727
+        },
+        "name": "megaron/render/map.js",
+        "start": 714,
+        "startLoc": {
+          "column": 42,
+          "line": 714,
+          "position": 36776
+        }
+      },
+      "format": "javascript",
+      "fragment": "function drawForestFloor(ctx, cx, cy, q, r) {\n  ctx.save();\n  hexPath(ctx, hexPts(cx, cy));\n  ctx.clip();\n\n  // Everything below is drawn as integer-aligned blocks, never as ellipses.\n  // The trees above are pixel sprites, and a soft anti-aliased smudge under a\n  // hard-edged sprite reads as two different pictures stacked in one hex.\n  //\n  // The ground is now ONE CONTINUOUS FIELD, not per-hex specks. Scattered\n  // independent marks read as decoration at every scale — that was the finding\n  // from both the plains probe and the tree-scale probe. Here the tone of each\n  // block comes from world-space noise, so the field runs unbroken from hex to\n  // hex and the clip between two groves has nothing to show.\n  const STEP = lodStep(3);\n  const x0 = Math.floor((cx - S) / STEP) * STEP, x1 = cx + S;\n  const y0 = Math.floor((cy - S) / STEP) * STEP, y1 = cy + S;\n  for (let wy = y0; wy <= y1; wy += STEP) {\n    for (let wx = x0; wx <= x1; wx += STEP) {\n      const n = noiseAt(wx, wy);",
+      "isNew": false,
+      "kind": "exact",
+      "lines": 20,
+      "secondFile": {
+        "end": 1308,
+        "endLoc": {
+          "column": 30,
+          "line": 1308,
+          "position": 67239
+        },
+        "name": "megaron/render/map.js",
+        "start": 1299,
+        "startLoc": {
+          "column": 35,
+          "line": 1299,
+          "position": 66904
+        }
+      },
+      "tokens": 122
+    },
+    {
+      "firstFile": {
+        "end": 987,
+        "endLoc": {
+          "column": 21,
+          "line": 987,
+          "position": 50109
+        },
+        "name": "megaron/render/map.js",
+        "start": 974,
+        "startLoc": {
+          "column": 49,
+          "line": 974,
+          "position": 49622
+        }
+      },
+      "format": "javascript",
+      "fragment": "      const h = 2 + rndInt(q, r, 1620 + m.c * 20 + i, 4);\n      ctx.fillRect(Math.round(cx + m.gx + Math.cos(a) * d - w / 2),\n                   Math.round(cy + m.gy + Math.sin(a) * d - h / 2), w, h);\n    }\n  }\n  ctx.globalAlpha = 1;\n\n  stand.sort((a, b) => a.y - b.y);\n\n  for (const t of stand) {\n    // Ground shadow cast down-right: the light in this world comes from the\n    // upper left (same side the sprites are lit on). It is what makes a tree\n    // read as standing up rather than lying flat on the hex.\n    ctx.globalAlpha = 0.38;",
+      "isNew": false,
+      "kind": "exact",
+      "lines": 14,
+      "secondFile": {
+        "end": 1381,
+        "endLoc": {
+          "column": 21,
+          "line": 1381,
+          "position": 70389
+        },
+        "name": "megaron/render/map.js",
+        "start": 1372,
+        "startLoc": {
+          "column": 49,
+          "line": 1372,
+          "position": 70120
+        }
+      },
+      "tokens": 102
+    },
+    {
+      "firstFile": {
+        "end": 1159,
+        "endLoc": {
+          "column": 45,
+          "line": 1159,
+          "position": 60716
+        },
+        "name": "megaron/render/map.js",
+        "start": 1141,
+        "startLoc": {
+          "column": 23,
+          "line": 1141,
+          "position": 59714
+        }
+      },
+      "format": "javascript",
+      "fragment": "function drawScrubField(ctx, cx, cy) {\n  ctx.save();\n  hexPath(ctx, hexPts(cx, cy));\n  ctx.clip();\n\n  // Globalt raster, aldrig relativt hexmitten: två skrubhexar bredvid varandra\n  // måste lägga sina block på samma rutnät, annars förråder fältet exakt den\n  // brickkant det finns för att dölja.\n  // EN bärande frekvens, och det är snåren. Ett eget markfält låg här och föll\n  // på två mätningar i rad: med kontrast nog att synas konkurrerade det med\n  // snåren och ytan läste som kamouflage (samma fel som bergsstrieringens\n  // jämnt fördelade toner, princip 30), och nedskruvat till knappt synligt\n  // kostade det 9,9 ms av `ground` vid minzoom för en skillnad man får leta\n  // efter i en A/B. Bastonen räcker som mark; snåren gör resten.\n  const step = lodStep(DRY_STEP);\n  const x0 = Math.floor((cx - S) / step) * step, x1 = cx + S;\n  const y0 = Math.floor((cy - S) / step) * step, y1 = cy + S;\n  for (let wy = y0; wy <= y1; wy += step) {\n    for (let wx = x0; wx <= x1; wx += step) {",
+      "isNew": false,
+      "kind": "exact",
+      "lines": 19,
+      "secondFile": {
+        "end": 1203,
+        "endLoc": {
+          "column": 45,
+          "line": 1203,
+          "position": 62673
+        },
+        "name": "megaron/render/map.js",
+        "start": 1194,
+        "startLoc": {
+          "column": 24,
+          "line": 1194,
+          "position": 62349
+        }
+      },
+      "tokens": 120
+    },
+    {
+      "firstFile": {
+        "end": 29,
+        "endLoc": {
+          "column": 63,
+          "line": 29,
+          "position": 1414
+        },
+        "name": "megaron/render/map.test.mjs",
+        "start": 1,
+        "startLoc": {
+          "column": 0,
+          "line": 1,
+          "position": 0
+        }
+      },
+      "format": "javascript",
+      "fragment": "import test from 'node:test';\nimport assert from 'node:assert/strict';\n\n// map.js is the biggest offender: `export const canvas = document.getElementById(...)`,\n// `tooltip`, `container` and `ctx = canvas.getContext('2d')` are ALL module-level DOM\n// reads, on top of the `window.addEventListener('resize', resizeCanvas)` this plan\n// originally flagged — moving all of that into an init() would mean converting several\n// module-level `const`s (exported and consumed by ui/search.js, ui/marchctx.js) into\n// `let`s assigned from initMap(), a structural change to the whole file, not a two-line\n// move (megaron_plan_modulniva_dom.md under-scoped this file — see the plan's own\n// ✅-notes for the full finding). Same stub-then-dynamic-import trick as\n// marchctx.test.mjs sidesteps needing that refactor at all: a getElementById/\n// getContext that always returns a usable no-op Proxy satisfies every module-level\n// read here without touching map.js's production code.\nconst noopEl = new Proxy({}, {\n  get: (_t, k) => (k === 'style' ? {} : (k === 'value' ? '' : () => noopEl)),\n  set: () => true,\n});\nglobalThis.document ??= {\n  addEventListener() {},\n  getElementById: () => noopEl,\n  createElement: () => noopEl,\n  querySelector: () => noopEl,\n  querySelectorAll: () => [],\n  body: noopEl,\n};\nglobalThis.window ??= {\n  addEventListener() {},\n  matchMedia: () => ({ matches: false, addEventListener() {} }),",
+      "isNew": false,
+      "kind": "exact",
+      "lines": 29,
+      "secondFile": {
+        "end": 19,
+        "endLoc": {
+          "column": 108,
+          "line": 19,
+          "position": 692
+        },
+        "name": "megaron/ui/citygrid.test.mjs",
+        "start": 1,
+        "startLoc": {
+          "column": 0,
+          "line": 1,
+          "position": 0
+        }
+      },
+      "tokens": 135
+    },
+    {
+      "firstFile": {
+        "end": 29,
+        "endLoc": {
+          "column": 63,
+          "line": 29,
+          "position": 1414
+        },
+        "name": "megaron/render/map.test.mjs",
+        "start": 1,
+        "startLoc": {
+          "column": 0,
+          "line": 1,
+          "position": 0
+        }
+      },
+      "format": "javascript",
+      "fragment": "import test from 'node:test';\nimport assert from 'node:assert/strict';\n\n// map.js is the biggest offender: `export const canvas = document.getElementById(...)`,\n// `tooltip`, `container` and `ctx = canvas.getContext('2d')` are ALL module-level DOM\n// reads, on top of the `window.addEventListener('resize', resizeCanvas)` this plan\n// originally flagged — moving all of that into an init() would mean converting several\n// module-level `const`s (exported and consumed by ui/search.js, ui/marchctx.js) into\n// `let`s assigned from initMap(), a structural change to the whole file, not a two-line\n// move (megaron_plan_modulniva_dom.md under-scoped this file — see the plan's own\n// ✅-notes for the full finding). Same stub-then-dynamic-import trick as\n// marchctx.test.mjs sidesteps needing that refactor at all: a getElementById/\n// getContext that always returns a usable no-op Proxy satisfies every module-level\n// read here without touching map.js's production code.\nconst noopEl = new Proxy({}, {\n  get: (_t, k) => (k === 'style' ? {} : (k === 'value' ? '' : () => noopEl)),\n  set: () => true,\n});\nglobalThis.document ??= {\n  addEventListener() {},\n  getElementById: () => noopEl,\n  createElement: () => noopEl,\n  querySelector: () => noopEl,\n  querySelectorAll: () => [],\n  body: noopEl,\n};\nglobalThis.window ??= {\n  addEventListener() {},\n  matchMedia: () => ({ matches: false, addEventListener() {} }),",
+      "isNew": false,
+      "kind": "exact",
+      "lines": 29,
+      "secondFile": {
+        "end": 20,
+        "endLoc": {
+          "column": 108,
+          "line": 20,
+          "position": 812
+        },
+        "name": "megaron/ui/drawers/report.test.mjs",
+        "start": 1,
+        "startLoc": {
+          "column": 0,
+          "line": 1,
+          "position": 0
+        }
+      },
+      "tokens": 135
+    },
+    {
+      "firstFile": {
+        "end": 29,
+        "endLoc": {
+          "column": 63,
+          "line": 29,
+          "position": 1414
+        },
+        "name": "megaron/render/map.test.mjs",
+        "start": 1,
+        "startLoc": {
+          "column": 0,
+          "line": 1,
+          "position": 0
+        }
+      },
+      "format": "javascript",
+      "fragment": "import test from 'node:test';\nimport assert from 'node:assert/strict';\n\n// map.js is the biggest offender: `export const canvas = document.getElementById(...)`,\n// `tooltip`, `container` and `ctx = canvas.getContext('2d')` are ALL module-level DOM\n// reads, on top of the `window.addEventListener('resize', resizeCanvas)` this plan\n// originally flagged — moving all of that into an init() would mean converting several\n// module-level `const`s (exported and consumed by ui/search.js, ui/marchctx.js) into\n// `let`s assigned from initMap(), a structural change to the whole file, not a two-line\n// move (megaron_plan_modulniva_dom.md under-scoped this file — see the plan's own\n// ✅-notes for the full finding). Same stub-then-dynamic-import trick as\n// marchctx.test.mjs sidesteps needing that refactor at all: a getElementById/\n// getContext that always returns a usable no-op Proxy satisfies every module-level\n// read here without touching map.js's production code.\nconst noopEl = new Proxy({}, {\n  get: (_t, k) => (k === 'style' ? {} : (k === 'value' ? '' : () => noopEl)),\n  set: () => true,\n});\nglobalThis.document ??= {\n  addEventListener() {},\n  getElementById: () => noopEl,\n  createElement: () => noopEl,\n  querySelector: () => noopEl,\n  querySelectorAll: () => [],\n  body: noopEl,\n};\nglobalThis.window ??= {\n  addEventListener() {},\n  matchMedia: () => ({ matches: false, addEventListener() {} }),",
+      "isNew": false,
+      "kind": "exact",
+      "lines": 29,
+      "secondFile": {
+        "end": 26,
+        "endLoc": {
+          "column": 108,
+          "line": 26,
+          "position": 1162
+        },
+        "name": "megaron/ui/marchctx.test.mjs",
+        "start": 1,
+        "startLoc": {
+          "column": 0,
+          "line": 1,
+          "position": 0
+        }
+      },
+      "tokens": 135
+    },
+    {
+      "firstFile": {
+        "end": 29,
+        "endLoc": {
+          "column": 63,
+          "line": 29,
+          "position": 1414
+        },
+        "name": "megaron/render/map.test.mjs",
+        "start": 1,
+        "startLoc": {
+          "column": 0,
+          "line": 1,
+          "position": 0
+        }
+      },
+      "format": "javascript",
+      "fragment": "import test from 'node:test';\nimport assert from 'node:assert/strict';\n\n// map.js is the biggest offender: `export const canvas = document.getElementById(...)`,\n// `tooltip`, `container` and `ctx = canvas.getContext('2d')` are ALL module-level DOM\n// reads, on top of the `window.addEventListener('resize', resizeCanvas)` this plan\n// originally flagged — moving all of that into an init() would mean converting several\n// module-level `const`s (exported and consumed by ui/search.js, ui/marchctx.js) into\n// `let`s assigned from initMap(), a structural change to the whole file, not a two-line\n// move (megaron_plan_modulniva_dom.md under-scoped this file — see the plan's own\n// ✅-notes for the full finding). Same stub-then-dynamic-import trick as\n// marchctx.test.mjs sidesteps needing that refactor at all: a getElementById/\n// getContext that always returns a usable no-op Proxy satisfies every module-level\n// read here without touching map.js's production code.\nconst noopEl = new Proxy({}, {\n  get: (_t, k) => (k === 'style' ? {} : (k === 'value' ? '' : () => noopEl)),\n  set: () => true,\n});\nglobalThis.document ??= {\n  addEventListener() {},\n  getElementById: () => noopEl,\n  createElement: () => noopEl,\n  querySelector: () => noopEl,\n  querySelectorAll: () => [],\n  body: noopEl,\n};\nglobalThis.window ??= {\n  addEventListener() {},\n  matchMedia: () => ({ matches: false, addEventListener() {} }),",
+      "isNew": false,
+      "kind": "exact",
+      "lines": 29,
+      "secondFile": {
+        "end": 21,
+        "endLoc": {
+          "column": 108,
+          "line": 21,
+          "position": 898
+        },
+        "name": "megaron/ui/search.test.mjs",
+        "start": 1,
+        "startLoc": {
+          "column": 0,
+          "line": 1,
+          "position": 0
+        }
+      },
+      "tokens": 135
+    },
+    {
+      "firstFile": {
+        "end": 29,
+        "endLoc": {
+          "column": 63,
+          "line": 29,
+          "position": 1414
+        },
+        "name": "megaron/render/map.test.mjs",
+        "start": 1,
+        "startLoc": {
+          "column": 0,
+          "line": 1,
+          "position": 0
+        }
+      },
+      "format": "javascript",
+      "fragment": "import test from 'node:test';\nimport assert from 'node:assert/strict';\n\n// map.js is the biggest offender: `export const canvas = document.getElementById(...)`,\n// `tooltip`, `container` and `ctx = canvas.getContext('2d')` are ALL module-level DOM\n// reads, on top of the `window.addEventListener('resize', resizeCanvas)` this plan\n// originally flagged — moving all of that into an init() would mean converting several\n// module-level `const`s (exported and consumed by ui/search.js, ui/marchctx.js) into\n// `let`s assigned from initMap(), a structural change to the whole file, not a two-line\n// move (megaron_plan_modulniva_dom.md under-scoped this file — see the plan's own\n// ✅-notes for the full finding). Same stub-then-dynamic-import trick as\n// marchctx.test.mjs sidesteps needing that refactor at all: a getElementById/\n// getContext that always returns a usable no-op Proxy satisfies every module-level\n// read here without touching map.js's production code.\nconst noopEl = new Proxy({}, {\n  get: (_t, k) => (k === 'style' ? {} : (k === 'value' ? '' : () => noopEl)),\n  set: () => true,\n});\nglobalThis.document ??= {\n  addEventListener() {},\n  getElementById: () => noopEl,\n  createElement: () => noopEl,\n  querySelector: () => noopEl,\n  querySelectorAll: () => [],\n  body: noopEl,\n};\nglobalThis.window ??= {\n  addEventListener() {},\n  matchMedia: () => ({ matches: false, addEventListener() {} }),",
+      "isNew": false,
+      "kind": "exact",
+      "lines": 29,
+      "secondFile": {
+        "end": 27,
+        "endLoc": {
+          "column": 108,
+          "line": 27,
+          "position": 1272
+        },
+        "name": "megaron/ui/search_import.test.mjs",
+        "start": 1,
+        "startLoc": {
+          "column": 0,
+          "line": 1,
+          "position": 0
+        }
+      },
+      "tokens": 135
+    },
+    {
+      "firstFile": {
+        "end": 22,
+        "endLoc": {
+          "column": 7,
+          "line": 22,
+          "position": 788
+        },
+        "name": "megaron/ui/citygrid.test.mjs",
+        "start": 8,
+        "startLoc": {
+          "column": 40,
+          "line": 8,
+          "position": 329
+        }
+      },
+      "format": "javascript",
+      "fragment": "  get: (_t, k) => (k === 'style' ? {} : (k === 'value' ? '' : () => noopEl)),\n  set: () => true,\n});\nglobalThis.document ??= {\n  addEventListener() {},\n  getElementById: () => noopEl,\n  createElement: () => noopEl,\n  querySelector: () => noopEl,\n  querySelectorAll: () => [],\n  body: noopEl,\n};\nglobalThis.window ??= { addEventListener() {}, matchMedia: () => ({ matches: false, addEventListener() {} }) };\nglobalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };\n\nconst { placementOutcome, refusalText, selectionKey, takeLabel, goodRowHTML } = await import('./citygrid.js');",
+      "isNew": false,
+      "kind": "exact",
+      "lines": 15,
+      "secondFile": {
+        "end": 23,
+        "endLoc": {
+          "column": 7,
+          "line": 23,
+          "position": 908
+        },
+        "name": "megaron/ui/drawers/report.test.mjs",
+        "start": 9,
+        "startLoc": {
+          "column": 40,
+          "line": 9,
+          "position": 449
+        }
+      },
+      "tokens": 128
+    },
+    {
+      "firstFile": {
+        "end": 22,
+        "endLoc": {
+          "column": 7,
+          "line": 22,
+          "position": 788
+        },
+        "name": "megaron/ui/citygrid.test.mjs",
+        "start": 8,
+        "startLoc": {
+          "column": 40,
+          "line": 8,
+          "position": 329
+        }
+      },
+      "format": "javascript",
+      "fragment": "  get: (_t, k) => (k === 'style' ? {} : (k === 'value' ? '' : () => noopEl)),\n  set: () => true,\n});\nglobalThis.document ??= {\n  addEventListener() {},\n  getElementById: () => noopEl,\n  createElement: () => noopEl,\n  querySelector: () => noopEl,\n  querySelectorAll: () => [],\n  body: noopEl,\n};\nglobalThis.window ??= { addEventListener() {}, matchMedia: () => ({ matches: false, addEventListener() {} }) };\nglobalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };\n\nconst { placementOutcome, refusalText, selectionKey, takeLabel, goodRowHTML } = await import('./citygrid.js');",
+      "isNew": false,
+      "kind": "exact",
+      "lines": 15,
+      "secondFile": {
+        "end": 29,
+        "endLoc": {
+          "column": 7,
+          "line": 29,
+          "position": 1258
+        },
+        "name": "megaron/ui/marchctx.test.mjs",
+        "start": 15,
+        "startLoc": {
+          "column": 40,
+          "line": 15,
+          "position": 799
+        }
+      },
+      "tokens": 128
+    },
+    {
+      "firstFile": {
+        "end": 22,
+        "endLoc": {
+          "column": 7,
+          "line": 22,
+          "position": 788
+        },
+        "name": "megaron/ui/citygrid.test.mjs",
+        "start": 8,
+        "startLoc": {
+          "column": 40,
+          "line": 8,
+          "position": 329
+        }
+      },
+      "format": "javascript",
+      "fragment": "  get: (_t, k) => (k === 'style' ? {} : (k === 'value' ? '' : () => noopEl)),\n  set: () => true,\n});\nglobalThis.document ??= {\n  addEventListener() {},\n  getElementById: () => noopEl,\n  createElement: () => noopEl,\n  querySelector: () => noopEl,\n  querySelectorAll: () => [],\n  body: noopEl,\n};\nglobalThis.window ??= { addEventListener() {}, matchMedia: () => ({ matches: false, addEventListener() {} }) };\nglobalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };\n\nconst { placementOutcome, refusalText, selectionKey, takeLabel, goodRowHTML } = await import('./citygrid.js');",
+      "isNew": false,
+      "kind": "exact",
+      "lines": 15,
+      "secondFile": {
+        "end": 24,
+        "endLoc": {
+          "column": 7,
+          "line": 24,
+          "position": 994
+        },
+        "name": "megaron/ui/search.test.mjs",
+        "start": 10,
+        "startLoc": {
+          "column": 40,
+          "line": 10,
+          "position": 535
+        }
+      },
+      "tokens": 128
+    },
+    {
+      "firstFile": {
+        "end": 22,
+        "endLoc": {
+          "column": 7,
+          "line": 22,
+          "position": 788
+        },
+        "name": "megaron/ui/citygrid.test.mjs",
+        "start": 8,
+        "startLoc": {
+          "column": 40,
+          "line": 8,
+          "position": 329
+        }
+      },
+      "format": "javascript",
+      "fragment": "  get: (_t, k) => (k === 'style' ? {} : (k === 'value' ? '' : () => noopEl)),\n  set: () => true,\n});\nglobalThis.document ??= {\n  addEventListener() {},\n  getElementById: () => noopEl,\n  createElement: () => noopEl,\n  querySelector: () => noopEl,\n  querySelectorAll: () => [],\n  body: noopEl,\n};\nglobalThis.window ??= { addEventListener() {}, matchMedia: () => ({ matches: false, addEventListener() {} }) };\nglobalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };\n\nconst { placementOutcome, refusalText, selectionKey, takeLabel, goodRowHTML } = await import('./citygrid.js');",
+      "isNew": false,
+      "kind": "exact",
+      "lines": 15,
+      "secondFile": {
+        "end": 30,
+        "endLoc": {
+          "column": 7,
+          "line": 30,
+          "position": 1368
+        },
+        "name": "megaron/ui/search_import.test.mjs",
+        "start": 16,
+        "startLoc": {
+          "column": 40,
+          "line": 16,
+          "position": 909
+        }
+      },
+      "tokens": 128
+    }
+  ],
+  "statistics": {
+    "detectionDate": "2026-10-08T20:10:56.788Z",
+    "formats": {
+      "javascript": {
+        "clones": 18,
+        "duplicatedLines": 321,
+        "duplicatedTokens": 2633,
+        "lines": 20802,
+        "newClones": 0,
+        "newDuplicatedLines": 0,
+        "percentage": 1.543120853764061,
+        "percentageTokens": 1.7187245014523973,
+        "sources": 102,
+        "tokens": 153195
+      }
+    },
+    "total": {
+      "clones": 18,
+      "duplicatedLines": 321,
+      "duplicatedTokens": 2633,
+      "lines": 20802,
+      "newClones": 0,
+      "newDuplicatedLines": 0,
+      "percentage": 1.543120853764061,
+      "percentageTokens": 1.7187245014523973,
+      "sources": 102,
+      "tokens": 153195
+    }
+  }
+}
