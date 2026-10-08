@@ -208,7 +208,7 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
   The city's refining workplace formula was deliberately left outside that change.)*
 - **Cost ↔ upkeep** — upkeep = grain+silver ∝ build cost. Strategic metals belong in build gates, recruit
   and attrition, **never flat upkeep** (bronze upkeep = desertion spiral).
-- **Trade & messenger layer — three distinct things, keep them apart:** (1) **message** = free text
+- **Trade & messenger layer — four distinct things, keep them apart:** (1) **message** = free text
   wanax↔wanax; (2) **trade offer** = structured, bilateral consent, **FOW-gated to cities you have actually
   contacted** (`visibleOrigins`) — no global trade catalogue; (3) **internal transfer** own→own settlement =
   logistics, no consent, a physical caravan that does not roll the loss die; (4) **gift/tribute** (Timothy
