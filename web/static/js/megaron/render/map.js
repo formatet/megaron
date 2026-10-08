@@ -8,6 +8,7 @@ import {
   PAN_SPEED_PX_PER_SEC,
 } from '../config.js';
 import { isTypingTarget } from '../ui/format.js';
+import { numberWords } from '../ui/number_words.js';
 import { canonicalUnitType, actorName } from '../ui/actornames.js';
 import { drawActor, spriteRuns, FOREIGN_ACCENT, FOREIGN_OUTLINE } from './actorsprites.js';
 import { eyeSees } from './sight.js';
@@ -4148,7 +4149,7 @@ function fillTerrainFields(tile) {
 }
 
 function setCityFieldsVisible(visible) {
-  ['ip-culture-row', 'ip-owner-row', 'ip-walls-row', 'ip-army-row'].forEach(id => {
+  ['ip-owner-row', 'ip-defence-row'].forEach(id => {
     document.getElementById(id).style.display = visible ? '' : 'none';
   });
 }
@@ -4181,27 +4182,31 @@ function openFogPanel(h) {
   document.getElementById('inspect-panel').style.display = 'flex';
 }
 
-// Foreign/allied settlement — today's openInspect content (Wanax/culture/walls/DP),
+// Foreign/allied settlement — owner and qualitative defence from the same data,
 // plus the units-here list and a Marschera button. Own settlements never reach
 // this function — they bypass the panel for the city drawer (see openHexPanel).
 function openCityPanel(h, tile, marker, units, foreignUnits) {
   document.getElementById('ip-name').textContent    = marker.name;
   setCityFieldsVisible(true);
-  document.getElementById('ip-culture').textContent = marker.culture;
   fillTerrainFields(tile);
 
   let ownerText = marker.owner || '(unoccupied)';
   if (marker.allied) ownerText += ' (allied)';
   document.getElementById('ip-owner').textContent = ownerText;
-  document.getElementById('ip-walls').textContent = '▓'.repeat(marker.walls) + '░'.repeat(Math.max(0,3-marker.walls));
-  document.getElementById('ip-army').textContent = '…';
-  fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${marker.id}/army`).then(r => {
-    if (!r.ok) { document.getElementById('ip-army').textContent = '—'; return; }
-    r.json().then(a => {
-      const dp = (a.Spearman||0)*1 + (a.EliteInfantry||0)*3 + (a.WarChariot||0)*4;
-      document.getElementById('ip-army').textContent = dp > 0 ? `${dp} DP` : '—';
-    });
-  }).catch(() => { document.getElementById('ip-army').textContent = '—'; });
+  const defence = document.getElementById('ip-defence');
+  // Coarsen only the walls and land defenders this panel already exposed.
+  // No combat odds/threshold are inferred. Refused data stays unknown.
+  const showDefence = army => {
+    if (State.selectedHex?.q !== h.q || State.selectedHex?.r !== h.r ||
+        document.getElementById('ip-defence-row').style.display === 'none') return;
+    const defended = marker.walls > 0 || (army &&
+      ((army.Spearman || 0) > 0 || (army.EliteInfantry || 0) > 0 || (army.WarChariot || 0) > 0));
+    defence.textContent = defended ? 'Defended' : army && Number.isFinite(marker.walls) ? 'No defenders seen' : 'unknown';
+  };
+  showDefence(null);
+  fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${marker.id}/army`)
+    .then(async r => showDefence(r.ok ? await r.json() : null))
+    .catch(() => showDefence(null));
 
   const foot = document.getElementById('ip-foot');
   let footHtml = unitListHTML(units, foreignUnits);
@@ -4335,18 +4340,13 @@ function openRuralPanel(h, tile, rural, units, foreignUnits) {
 // never its own), and the irreversible Settle. Disappears entirely the moment
 // founder_phase.active goes false.
 
-// One store line: "X tick kvar (≈ Y verklig tid)" — both derived from
-// ticks_left at render time (B2: never a stored wall clock).
-// ticks_left IS the tick count (tick == day, mig 109) — no ÷24 here; that
-// used to convert an hourly tick count into game-days and is the same class
-// of stale scaling as cmd_goods.go's Rate/d bug (mirrors keryx's already-
-// correct foundingStoreLine, cmd_founding.go).
-function hostStoreLine(label, s, tickSeconds) {
-  if (!s || s.ticks_left == null) return `${label}: lasts indefinitely`;
-  const ticksLeft = s.ticks_left;
-  const realH = Math.round(s.ticks_left * tickSeconds / 3600);
-  const real = realH >= 48 ? `≈ ${Math.round(realH / 24)} days` : `≈ ${realH} h`;
-  return `${label}: ${ticksLeft} tick left (${real} real time)`;
+// ticks_left already counts game days (one tick = one day). Never divide
+// by twenty-four or convert this player-facing store duration to wall time.
+function hostStoreLine(label, s) {
+  if (!s || s.ticks_left == null) return `${label} lasts indefinitely`;
+  const days = Number(s.ticks_left);
+  if (!Number.isFinite(days)) return `${label} duration unknown`;
+  return `${label} lasts ${numberWords(days)} game ${days === 1 ? 'day' : 'days'}`;
 }
 
 async function openHostPanel(h, tile) {
@@ -4374,10 +4374,10 @@ async function openHostPanel(h, tile) {
   // share a container with it.
   document.getElementById('ip-body-extra').innerHTML =
     `<div style="margin-bottom:.5rem;line-height:1.5">
-       <div>${(fp.population || 0).toLocaleString('en-US')} people · cannot fight · sight 2 hexes (4 by water or on mountains)</div>
-       <div>${hostStoreLine('Grain (escort\'s ration)', fp.grain, fp.tick_seconds)}</div>
-       <div>${hostStoreLine('Silver (escort\'s pay)', fp.silver, fp.tick_seconds)}</div>
-       <div>${fp.spearmen_in_field || 0} Spearmen ${fp.spearmen_in_field === 1 ? 'cohort' : 'cohorts'} in the field</div>
+       <div>${numberWords(fp.population || 0)} people · cannot fight · sight two hexes (four by water or on mountains)</div>
+       <div>${hostStoreLine('Food', fp.grain)}</div>
+       <div>${hostStoreLine('Escort pay', fp.silver)}</div>
+       <div>${numberWords(fp.spearmen_in_field || 0)} Spearmen ${fp.spearmen_in_field === 1 ? 'cohort' : 'cohorts'} in the field</div>
        <div>Messengers free to send</div>
      </div>
      <div id="ip-found-preview" style="font-size:.73rem;border-top:1px solid var(--border);padding-top:.4rem">Fetching founding forecast…</div>`;

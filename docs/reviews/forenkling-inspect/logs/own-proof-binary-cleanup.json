@@ -1,0 +1,42 @@
+[
+  {
+    "path": "/tmp/megaron-J-baseline-repeat/temenos",
+    "bytes": 30723886,
+    "sha256": "0781c448d93b4b98bffdb181d8d394985d5a7150684d61b689d09a1ea0891097"
+  },
+  {
+    "path": "/tmp/megaron-J-after-repeat/temenos",
+    "bytes": 30723958,
+    "sha256": "a9993fc764937bb6b65f82f658adb796407d617a2715e8ff708c52c3f161f64e"
+  },
+  {
+    "path": "/tmp/megaron-J-after-final/temenos",
+    "bytes": 30723958,
+    "sha256": "a9993fc764937bb6b65f82f658adb796407d617a2715e8ff708c52c3f161f64e"
+  },
+  {
+    "path": "/tmp/megaron-J-after/temenos",
+    "bytes": 30723886,
+    "sha256": "612e06fb994eea0af745bdaf760d14513c14b2b348508b7561314bf0bc935e2b"
+  },
+  {
+    "path": "/tmp/megaron-gray-repeat/temenos",
+    "bytes": 30723934,
+    "sha256": "ef6bb2b6231b12d00fdf5eafb270e8bf06f4aee53791d69628d6e7f86f2d79a0"
+  },
+  {
+    "path": "/tmp/megaron-gray-baseline/temenos",
+    "bytes": 30723934,
+    "sha256": "bfbe4dc203088ece78f1d48abc463064ff7fd93ba14e29b78444f5f1458dea4b"
+  },
+  {
+    "path": "/tmp/megaron-I-naval-repeat/temenos",
+    "bytes": 30720326,
+    "sha256": "fafa73f971b90957ac04583da913eacea6bbae30c6dcff7fb98cb9d766124957"
+  },
+  {
+    "path": "/tmp/megaron-I-final/temenos",
+    "bytes": 30720326,
+    "sha256": "fafa73f971b90957ac04583da913eacea6bbae30c6dcff7fb98cb9d766124957"
+  }
+]

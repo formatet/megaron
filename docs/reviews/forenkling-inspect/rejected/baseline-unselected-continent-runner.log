@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/tmp/megaron-codex-inspect-simple-20261008/tools/inspect_live.py", line 162, in <module>
+    visited.add((current['q'],current['r']))
+        ^^^^^^^^^^^^^^
+KeyboardInterrupt
