@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Physical I mutations: missing ETA, hidden stance, naval action gate.
+"""Physical War mutations: missing ETA, controls hidden in More, naval action gate.
 Usage: python3 tools/war_cards_mutations.py OUT
 """
 from pathlib import Path
@@ -8,7 +8,7 @@ ROOT=Path(__file__).resolve().parents[1]
 OUT=Path(sys.argv[1]);OUT.mkdir(parents=True,exist_ok=True)
 base=ROOT/'web/static/js/megaron/ui'
 arms=[('arrival',base/'time.js',"export function arrivalHTML(iso, arrivalTick, doneWord = 'arrived') {\n  const ms = msUntil(iso, arrivalTick);\n  if (!Number.isFinite(ms)) return '';", "export function arrivalHTML(iso, arrivalTick, doneWord = 'arrived') {\n  const ms = msUntil(iso, arrivalTick);", 'time.test.mjs','unknown arrival must be empty'),
- ('stance',base/'drawers/war.js',"moreActions += '<select id=\"ustance-", "actions += '<select id=\"ustance-",'war_cards.test.mjs','stance must stay under More'),
+ ('visibility',base/'drawers/war.js',"+ actions + '</div>'", "+ '<details><summary>More</summary>' + actions + '</details></div>'",'war_cards.test.mjs','garrison actions must not be hidden'),
  ('naval',base/'drawers/war.js','if (isMarching && !isNaval) {','if (isMarching) {','war_cards.test.mjs','ships must never promise recall or redirect')]
 for label,path,needle,mutation,test,assertion in arms:
  original=path.read_text();assert original.count(needle)==1,(label,original.count(needle))
