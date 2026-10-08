@@ -411,9 +411,8 @@ export async function startTransfer() {
 // fixed quantity/interval). Home per megaron_plan_stad_vs_ekonomi.md §1: a
 // flow between two settlements belongs to neither city's own drawer.
 
-// parseGoodAmountPairs parses "grain:200,fish:50" into [{good_key,amount}] —
-// same shape and separator as keryx's --out/--home flags (cmd_route.go), so
-// a Wanax moving between the two surfaces sees one format, not two.
+// The former text-input parser remains a reference for request compatibility
+// with keryx's --out/--home flags. The web form reads structured rows below.
 export function parseGoodAmountPairs(spec) {
   if (!spec || !spec.trim()) return [];
   return spec.split(',').map(part => {
@@ -427,12 +426,12 @@ export function parseGoodAmountPairs(spec) {
 function standingGoodRowHTML(goods, group) {
   const options = '<option value="">Choose a good</option>' + goods.map(g =>
     `<option value="${esc(g.key)}">${esc(g.name || g.key)}</option>`).join('');
-  return `<div class="unit-row field" data-good-row>
-    <label class="obj-info">Good <select aria-label="Good">${options}</select></label>
-    <label class="obj-info">${group === 'out' ? 'Keep at least' : 'Leave at least'}
-      <input type="number" min="0" step="any" aria-label="Amount">
+  return `<div class="inline-fields field" data-good-row>
+    <label class="obj-info">Good <select>${options}</select></label>
+    <label class="obj-info">${group === 'out' ? 'Minimum' : 'Leave'}
+      <input type="number" min="0" step="any">
     </label>
-    <button class="btn-small" type="button" data-remove-good>Remove</button>
+    <button class="btn-small" type="button" data-remove-good aria-label="Remove good">×</button>
   </div>`;
 }
 

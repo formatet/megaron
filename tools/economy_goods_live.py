@@ -84,9 +84,18 @@ try:
     assert health['commit'] == EXPECTED and health['migration'] == 160, health
     worlds = api('/api/v1/worlds')
     world = (worlds if isinstance(worlds, list) else worlds['worlds'])[0]['id']
-    token = api('/api/v1/auth/register', 'POST', {'username': 'simple-recall-all'+secrets.token_hex(4), 'password': secrets.token_urlsafe(32)})['access_token']
     worldpath = '/api/v1/worlds/' + world
-    joined = api(worldpath+'/join', 'POST', {}, token)
+    blocked=('fog','river','river_ford','deep_sea','coastal_sea','mountain_limestone','mountain_red')
+    spawn_attempts=[]
+    for attempt in range(20):
+        token = api('/api/v1/auth/register', 'POST', {'username': 'goods-proof'+secrets.token_hex(4), 'password': secrets.token_urlsafe(32)})['access_token']
+        joined = api(worldpath+'/join', 'POST', {}, token)
+        mapped=api(worldpath+'/map',token=token)
+        mapped=mapped if isinstance(mapped,list) else mapped['tiles']
+        land=[t for t in mapped if t.get('terrain') not in blocked]
+        spawn_attempts.append({'known_land':len(land)})
+        if len(land)>=4:break
+    else:raise RuntimeError('no ordinary spawn with enough known land')
     founded = api(worldpath+'/founding/settle', 'POST', {'name': 'Nostos'}, token)
     assert founded.get('settlement_id'), founded
     data=api(worldpath+'/units',token=token)
@@ -100,11 +109,23 @@ try:
     home=(city.get('q',city.get('map_q')),city.get('r',city.get('map_r')))
     def dist(a,b):return max(abs(a[0]-b[0]),abs(a[1]-b[1]),abs(sum(a)-sum(b)))
     colony=None;journeys=[];visited={home};position=home
-    for leg in range(12):
+    for leg in range(20):
         tiles=api(worldpath+'/map',token=token)
         tiles=tiles if isinstance(tiles,list) else tiles['tiles']
-        candidates=[t for t in tiles if t.get('terrain') not in ('fog','river','river_ford','deep_sea','coastal_sea','mountain_limestone','mountain_red') and t.get('q') is not None and (t['q'],t['r']) not in visited]
-        candidates.sort(key=lambda t:(dist((t['q'],t['r']),home)>=5,dist((t['q'],t['r']),home),-dist((t['q'],t['r']),position)),reverse=True)
+        land={(t['q'],t['r']):t for t in tiles if t.get('terrain') not in blocked}
+        from collections import deque
+        queue=deque([position]);parents={position:None}
+        while queue:
+            q,r=queue.popleft()
+            for neighbor in [(q+1,r),(q-1,r),(q,r+1),(q,r-1),(q+1,r-1),(q-1,r+1)]:
+                if neighbor in land and neighbor not in parents:
+                    parents[neighbor]=(q,r);queue.append(neighbor)
+        goals=sorted((v for v in parents if v not in visited),key=lambda v:dist(v,home),reverse=True)
+        candidates=[]
+        for goal in goals:
+            step=goal
+            while parents[step]!=position and parents[step] is not None:step=parents[step]
+            if step!=position and land[step] not in candidates:candidates.append(land[step])
         dispatched=False
         for t in candidates:
             target=(t['q'],t['r']);colonize=dist(target,home)>=5
@@ -113,7 +134,9 @@ try:
                 preview=api(worldpath+'/units/'+unit['id']+'/march-preview?target_q='+str(target[0])+'&target_r='+str(target[1]),token=token)
                 if not preview.get('available') and preview.get('reason')!='courier_required':continue
                 order=api(worldpath+'/units/'+unit['id']+'/march','POST',body,token)
-            except urllib.error.HTTPError:continue
+            except urllib.error.HTTPError as e:
+                if e.code>=500:raise
+                continue
             journeys.append({'body':body,'receipt':order});dispatched=True;visited.add(target);print('leg',leg,body,order,flush=True)
             for _ in range(180):
                 time.sleep(1);colony=next((p for p in provinces() if p.get('own') and p.get('name')=='Kyme'),None)
@@ -142,6 +165,19 @@ try:
                 if i:page.locator('#ec-so-'+group+'-add').click()
                 row=page.locator('#ec-so-'+group+' [data-good-row]').nth(i)
                 row.locator('select').select_option(good);row.locator('input').fill(amount)
+        for group in ('out','home'):
+            page.locator('#ec-so-'+group+'-add').click()
+            page.locator('#ec-so-'+group+' [data-good-row]').last.get_by_role('button',name='Remove good',exact=True).click()
+            assert page.locator('#ec-so-'+group+' [data-good-row]').count()==2
+            assert page.locator('#ec-so-'+group+' [data-good-row]').first.locator('input').input_value() in ('200','0')
+    palette=[]
+    if MODE=='after':
+        for row in page.locator('[data-good-row]').all():
+            colors=row.locator('input').evaluate("e=>{let s=getComputedStyle(e);return {color:s.color,background:s.backgroundColor,expected:getComputedStyle(document.documentElement).getPropertyValue('--text').trim()}}")
+            palette.append(colors)
+            # CSS field controls must use the ordinary readable foreground.
+            normalized=page.evaluate("c=>{let e=document.createElement('span');e.style.color=c;document.body.append(e);let color=getComputedStyle(e).color;e.remove();return color}",colors['expected'])
+            assert colors['color']==normalized,colors
     def pictures(kind):
         for label,w,h in [('desktop',1280,900),('mobile',390,844)]:
             page.set_viewport_size({'width':w,'height':h});page.wait_for_timeout(100)
@@ -160,7 +196,7 @@ try:
     transfer=response.value;assert transfer.status in (200,201),(transfer.status,transfer.text())
     assert posts[-1]['body']=={'destination_id':colony['settlement_id'],'good_key':'grain','quantity':1}
     pictures('transfer');assert not errors,errors
-    proof={'health':health,'mode':MODE,'city':city,'colony':colony,'journeys':journeys,'posts':posts,'standing_receipt':order,'transfer_receipt':transfer.json(),'browser_errors':errors,'sql_mutations':False}
+    proof={'health':health,'mode':MODE,'city':city,'colony':colony,'journeys':journeys,'spawn_attempts':spawn_attempts,'posts':posts,'standing_receipt':order,'transfer_receipt':transfer.json(),'browser_errors':errors,'palette':palette,'sql_mutations':False}
     (OUT/'proof.json').write_text(json.dumps(proof,indent=2)+'\n');print(json.dumps({'health':health,'mode':MODE,'posts':posts}),flush=True)
 except Exception:
     if browser is not None:
