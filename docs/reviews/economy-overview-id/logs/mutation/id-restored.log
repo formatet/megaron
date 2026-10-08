@@ -1,0 +1,22 @@
+TAP version 13
+# Subtest: Economy id: actual drawer joins settlement ids while links and goods keep province ids
+ok 1 - Economy id: actual drawer joins settlement ids while links and goods keep province ids
+  ---
+  duration_ms: 17.413047
+  type: 'test'
+  ...
+# Subtest: Economy id: missing or refused overview remains no data; never match province id or name
+ok 2 - Economy id: missing or refused overview remains no data; never match province id or name
+  ---
+  duration_ms: 4.64794
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 65.843785

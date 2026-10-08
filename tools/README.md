@@ -268,3 +268,15 @@ DOM-fixtur med samma produktionshelper, ingen stad/DB/abandonorder fabriceras.
 `baseline` + fjärde argument arkiverad web-katalog tar oförändrade förebilder.
 `python3 tools/text_mutations.py OUT` kräver namngivet rött→återställt grönt
 för rå grupptext, tempo, Abandon före bekräftelse och ritesvar före refresh.
+
+## Economy overview id (BILD)
+
+`python3 tools/economy_id_live.py OUT EXPECTED_COMMIT baseline|after [WEB_DIR]`
+skapar egen ny PG16/Redis och använder register/join/founding. OUT ska ha
+`temenos` byggd med ren miljö och `-ldflags '-X main.buildCommit=<hash>'`.
+Baslinjen använder arkiverade oförändrade assets och kräver `no data` trots
+positiv population/foodstocks/coverage; efterarmen jämför hela översiktsraden
+med serverns settlement-data och kontrollerar province-id i City-länken.
+Desktop390, health/API/DOM och inga SQL-mutationer sparas.
+`python3 tools/economy_id_mutation.py OUT` återinför det gamla uppslaget fysiskt
+och kräver namngivet rött i faktiska drawer-kedjan, sedan återställt grönt.

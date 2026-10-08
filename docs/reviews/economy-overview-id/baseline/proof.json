@@ -1,0 +1,760 @@
+{
+  "health": {
+    "commit": "cfac469d",
+    "migration": 160,
+    "status": "ok"
+  },
+  "mode": "baseline",
+  "province": {
+    "id": "71beee5a-10ce-43a5-b0e9-664786ed12c7",
+    "settlement_id": "2018d9d1-d26c-4d9a-8793-6712d7229b53",
+    "name": "Nostos",
+    "culture": "minoan",
+    "q": 6,
+    "r": 59,
+    "state": "active",
+    "walls": 0,
+    "size_tier": 1,
+    "owner": "Aithalos",
+    "own": true,
+    "is_capital": true,
+    "allied": false,
+    "visible": true,
+    "army_total": 200
+  },
+  "detail": {
+    "army": {
+      "Spearman": 200,
+      "WarChariot": 0,
+      "Ship": 0,
+      "EliteInfantry": 0,
+      "WarGalley": 0,
+      "Merchantman": 0
+    },
+    "army_upkeep": {
+      "grain": 1,
+      "silver": 2
+    },
+    "army_upkeep_circulated_silver": 1.4,
+    "available_prayers": [
+      {
+        "id": "minoan_oracle_deposits",
+        "name": "Potnia's Vision",
+        "god": "Potnia",
+        "effect_type": "oracle_reveal_deposits",
+        "effect": "Reveals nearby ore deposits (tin, copper, or silver) for colonisation.",
+        "min_kharis": 5,
+        "offering": {
+          "oil": 20,
+          "wine": 15
+        },
+        "affordable": false,
+        "favours": {
+          "bronze": 1.3,
+          "fish": 2.2,
+          "grain": 0.6,
+          "oil": 1.5,
+          "pottery": 1.1,
+          "purple": 2,
+          "silver": 1.4,
+          "stone": 0.4
+        }
+      },
+      {
+        "id": "minoan_harvest_blessing",
+        "name": "Britomartis' Gift",
+        "god": "Britomartis",
+        "effect_type": "harvest_blessing",
+        "effect": "Blesses the harvest \u2014 grain stores swell by a quarter.",
+        "min_kharis": 30,
+        "offering": {
+          "oil": 10,
+          "wine": 15
+        },
+        "affordable": false,
+        "favours": {
+          "copper": 0.5,
+          "fish": 0.9,
+          "grain": 1.3,
+          "livestock": 1.3,
+          "oil": 1.6,
+          "stone": 0.3,
+          "timber": 0.4,
+          "tin": 0.5,
+          "wine": 2
+        }
+      },
+      {
+        "id": "minoan_battle_frenzy",
+        "name": "Poseidon's Storm",
+        "god": "Poseidon",
+        "effect_type": "battle_frenzy",
+        "effect": "Grants your garrison battle frenzy \u2014 a temporary combat-strength boost.",
+        "min_kharis": 5,
+        "offering": {
+          "grain": 10,
+          "wine": 10
+        },
+        "affordable": false,
+        "favours": {
+          "bronze": 1.5,
+          "fish": 2.2,
+          "grain": 1,
+          "horses": 1.6,
+          "livestock": 2,
+          "pottery": 0.5,
+          "stone": 0.4,
+          "wine": 1.7
+        }
+      }
+    ],
+    "besieged": false,
+    "besieged_by": [],
+    "build_queue": [],
+    "build_queue_max": 2,
+    "buildings": [
+      {
+        "type": "farm",
+        "level": 1,
+        "hex_q": 7,
+        "hex_r": 60
+      }
+    ],
+    "can_afford": [
+      {
+        "type": "market",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "wall",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "shipyard",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "winery",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "barracks",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "mine",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "stonequarry",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "harbour",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "foundry",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "stable",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "temple",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "olive_press",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "farm",
+        "can_afford": false,
+        "next_level": 2
+      },
+      {
+        "type": "lumbermill",
+        "can_afford": false,
+        "next_level": 1
+      }
+    ],
+    "can_recruit": [
+      {
+        "unit": "galley",
+        "can_recruit": false,
+        "upkeep_grain_per_tick": 0.04,
+        "upkeep_silver_per_tick": 1.5,
+        "upkeep_silver_net_per_tick": 0.45000000000000007,
+        "sustainable": false
+      },
+      {
+        "unit": "elite_infantry",
+        "can_recruit": false,
+        "upkeep_grain_per_tick": 0.6,
+        "upkeep_silver_per_tick": 2,
+        "upkeep_silver_net_per_tick": 0.6000000000000001,
+        "sustainable": false
+      },
+      {
+        "unit": "war_galley",
+        "can_recruit": false,
+        "upkeep_grain_per_tick": 0.06,
+        "upkeep_silver_per_tick": 2.5,
+        "upkeep_silver_net_per_tick": 0.7500000000000001,
+        "sustainable": false
+      },
+      {
+        "unit": "merchantman",
+        "can_recruit": false,
+        "upkeep_grain_per_tick": 0.03,
+        "upkeep_silver_per_tick": 1,
+        "upkeep_silver_net_per_tick": 0.30000000000000004,
+        "sustainable": false
+      },
+      {
+        "unit": "spearman",
+        "can_recruit": false,
+        "upkeep_grain_per_tick": 0.5,
+        "upkeep_silver_per_tick": 1,
+        "upkeep_silver_net_per_tick": 0.30000000000000004,
+        "sustainable": false
+      },
+      {
+        "unit": "war_chariot",
+        "can_recruit": false,
+        "upkeep_grain_per_tick": 0.8,
+        "upkeep_silver_per_tick": 3,
+        "upkeep_silver_net_per_tick": 0.9000000000000001,
+        "sustainable": false
+      }
+    ],
+    "culture": "minoan",
+    "devotion": 0,
+    "devotion_capacity": 0,
+    "food_gubbar_placed": 3,
+    "food_gubbar_required": 3,
+    "food_self_sufficient": true,
+    "grain_consum_rate": 5,
+    "grain_prod_rate": 5.6,
+    "id": "2018d9d1-d26c-4d9a-8793-6712d7229b53",
+    "kharis": 25,
+    "kharis_cap": 25,
+    "kharis_devotion_idle": false,
+    "kharis_mood": "Suspicious",
+    "kharis_net_known": false,
+    "kharis_net_per_tick": -1.8,
+    "kharis_per_tick": 0.0025000000000000005,
+    "kharis_rate": 0.0025000000000000005,
+    "kingdom_id": null,
+    "labor_pool": 1000,
+    "last_tick": {
+      "consumption": {
+        "grain": 5
+      },
+      "production": {
+        "grain": 5.6
+      },
+      "sitos_food_in": 0,
+      "sitos_food_out": 0,
+      "sitos_interventions": 0,
+      "tick": 0
+    },
+    "loyalty": 3,
+    "max_temple_level": 0,
+    "name": "Nostos",
+    "net_grain_per_tick_after_upkeep": -0.40000000000000036,
+    "net_silver_per_tick_after_upkeep": -0.6000000000000001,
+    "owner_id": "ef14ddca-afb1-4bba-a82d-d44c65315623",
+    "population": 1000,
+    "resources": {
+      "bronze": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "cedar": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "copper": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "cult": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "fish": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "grain": {
+        "amount": 1208,
+        "rate": 5.6,
+        "cap": 1000000
+      },
+      "horses": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "livestock": {
+        "amount": 10,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "oil": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "pottery": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "purple": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "silver": {
+        "amount": 3720.0000000000005,
+        "rate": 0,
+        "cap": 6480.000000000001
+      },
+      "stone": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "timber": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "tin": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      },
+      "wine": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000000
+      }
+    },
+    "rite_kharis_cost": 4,
+    "settlement_cap": {
+      "max": 5,
+      "used": 1
+    },
+    "sitos": {
+      "coverage_ticks": 241.6,
+      "food_net_per_tick": 0.5999999999999996,
+      "granary_cap": 300,
+      "granary_per_good": {},
+      "granary_total": 0,
+      "high_ticks": 30,
+      "low_ticks": 10
+    },
+    "state": "active",
+    "temple_offers": [],
+    "training_units": [],
+    "walls": 0
+  },
+  "overview": [
+    {
+      "id": "2018d9d1-d26c-4d9a-8793-6712d7229b53",
+      "name": "Nostos",
+      "is_capital": true,
+      "population": 1000,
+      "grain_prod_rate": 5.6,
+      "grain_consum_rate": 5,
+      "food_self_sufficient": true,
+      "sitos": {
+        "coverage_ticks": 241.6,
+        "low_ticks": 10,
+        "high_ticks": 30,
+        "granary_total": 0,
+        "food_net_per_tick": 0.5999999999999996
+      }
+    }
+  ],
+  "stocks": [
+    {
+      "key": "cedar",
+      "name": "Cedar",
+      "tier": "commodity",
+      "category": "bulk",
+      "amount": 0,
+      "rate_per_tick": 0,
+      "cap": 1000000,
+      "base_value": 576,
+      "citizens": 0,
+      "percent": 0,
+      "marginal_yield": 0,
+      "producible": false,
+      "labor_pool": 1000,
+      "idle_citizens": 700,
+      "labor_capacity_percent": 0,
+      "employed_citizens": 0,
+      "unserved_citizens": 0,
+      "workplace_level": 0,
+      "workplace_slots": 0,
+      "hex_slots": 0
+    },
+    {
+      "key": "stone",
+      "name": "Stone",
+      "tier": "commodity",
+      "category": "bulk",
+      "amount": 0,
+      "rate_per_tick": 0,
+      "cap": 1000000,
+      "base_value": 14.4,
+      "citizens": 0,
+      "percent": 0,
+      "marginal_yield": 0.9999999999999999,
+      "producible": true,
+      "labor_pool": 1000,
+      "idle_citizens": 700,
+      "labor_capacity_percent": 2.5,
+      "employed_citizens": 0,
+      "unserved_citizens": 0,
+      "workplace_level": 0,
+      "workplace_slots": 0,
+      "hex_slots": 25
+    },
+    {
+      "key": "timber",
+      "name": "Timber",
+      "tier": "commodity",
+      "category": "bulk",
+      "amount": 0,
+      "rate_per_tick": 0,
+      "cap": 1000000,
+      "base_value": 864,
+      "citizens": 0,
+      "percent": 0,
+      "marginal_yield": 1,
+      "producible": true,
+      "labor_pool": 1000,
+      "idle_citizens": 700,
+      "labor_capacity_percent": 0.8999999999999999,
+      "employed_citizens": 0,
+      "unserved_citizens": 0,
+      "workplace_level": 0,
+      "workplace_slots": 0,
+      "hex_slots": 9
+    },
+    {
+      "key": "silver",
+      "name": "Silver",
+      "tier": "precious",
+      "category": "precious",
+      "amount": 3720.0000000000005,
+      "rate_per_tick": 0,
+      "cap": 6480.000000000001,
+      "base_value": 1,
+      "citizens": 0,
+      "percent": 0,
+      "marginal_yield": 0,
+      "producible": false,
+      "labor_pool": 1000,
+      "idle_citizens": 700,
+      "labor_capacity_percent": 0.1,
+      "employed_citizens": 0,
+      "unserved_citizens": 0,
+      "workplace_level": 0,
+      "workplace_slots": 0,
+      "hex_slots": 1
+    },
+    {
+      "key": "oil",
+      "name": "Oil",
+      "tier": "commodity",
+      "category": "prestige",
+      "amount": 0,
+      "rate_per_tick": 0,
+      "cap": 1000000,
+      "base_value": 86.4,
+      "citizens": 0,
+      "percent": 0,
+      "marginal_yield": 1,
+      "producible": true,
+      "labor_pool": 1000,
+      "idle_citizens": 700,
+      "labor_capacity_percent": 25,
+      "employed_citizens": 0,
+      "unserved_citizens": 0,
+      "workplace_level": 0,
+      "workplace_slots": 0,
+      "hex_slots": 0
+    },
+    {
+      "key": "purple",
+      "name": "Purple",
+      "tier": "commodity",
+      "category": "prestige",
+      "amount": 0,
+      "rate_per_tick": 0,
+      "cap": 1000000,
+      "base_value": 388.8,
+      "citizens": 0,
+      "percent": 0,
+      "marginal_yield": 0,
+      "producible": false,
+      "labor_pool": 1000,
+      "idle_citizens": 700,
+      "labor_capacity_percent": 0,
+      "employed_citizens": 0,
+      "unserved_citizens": 0,
+      "workplace_level": 0,
+      "workplace_slots": 0,
+      "hex_slots": 0
+    },
+    {
+      "key": "wine",
+      "name": "Wine",
+      "tier": "commodity",
+      "category": "prestige",
+      "amount": 0,
+      "rate_per_tick": 0,
+      "cap": 1000000,
+      "base_value": 72,
+      "citizens": 0,
+      "percent": 0,
+      "marginal_yield": 0.9999999999999999,
+      "producible": true,
+      "labor_pool": 1000,
+      "idle_citizens": 700,
+      "labor_capacity_percent": 25,
+      "employed_citizens": 0,
+      "unserved_citizens": 0,
+      "workplace_level": 0,
+      "workplace_slots": 0,
+      "hex_slots": 0
+    },
+    {
+      "key": "cult",
+      "name": "Cult",
+      "tier": "manufactured",
+      "category": "sacred",
+      "amount": 0,
+      "rate_per_tick": 0,
+      "cap": 1000000,
+      "base_value": 0,
+      "citizens": 0,
+      "percent": 0,
+      "marginal_yield": 0,
+      "producible": false,
+      "labor_pool": 1000,
+      "idle_citizens": 700,
+      "labor_capacity_percent": 0,
+      "employed_citizens": 0,
+      "unserved_citizens": 0,
+      "workplace_level": 0,
+      "workplace_slots": 0,
+      "hex_slots": 0
+    },
+    {
+      "key": "fish",
+      "name": "Fish",
+      "tier": "commodity",
+      "category": "staple",
+      "amount": 0,
+      "rate_per_tick": 0,
+      "cap": 1000000,
+      "base_value": 172.8,
+      "citizens": 0,
+      "percent": 0,
+      "marginal_yield": 0,
+      "producible": false,
+      "labor_pool": 1000,
+      "idle_citizens": 700,
+      "labor_capacity_percent": 0,
+      "employed_citizens": 0,
+      "unserved_citizens": 0,
+      "workplace_level": 0,
+      "workplace_slots": 0,
+      "hex_slots": 0
+    },
+    {
+      "key": "grain",
+      "name": "Grain",
+      "tier": "commodity",
+      "category": "staple",
+      "amount": 1208,
+      "rate_per_tick": 5.6,
+      "cap": 1000000,
+      "base_value": 129.60000000000002,
+      "citizens": 300,
+      "percent": 30,
+      "marginal_yield": 1.6999999999999997,
+      "producible": true,
+      "labor_pool": 1000,
+      "idle_citizens": 700,
+      "labor_capacity_percent": 100,
+      "employed_citizens": 300,
+      "unserved_citizens": 0,
+      "workplace_level": 0,
+      "workplace_slots": 0,
+      "hex_slots": 19
+    },
+    {
+      "key": "livestock",
+      "name": "Livestock",
+      "tier": "commodity",
+      "category": "staple",
+      "amount": 10,
+      "rate_per_tick": 0,
+      "cap": 1000000,
+      "base_value": 180,
+      "citizens": 0,
+      "percent": 0,
+      "marginal_yield": 1,
+      "producible": true,
+      "labor_pool": 1000,
+      "idle_citizens": 700,
+      "labor_capacity_percent": 0.2,
+      "employed_citizens": 0,
+      "unserved_citizens": 0,
+      "workplace_level": 0,
+      "workplace_slots": 0,
+      "hex_slots": 2
+    },
+    {
+      "key": "bronze",
+      "name": "Bronze",
+      "tier": "manufactured",
+      "category": "strategic",
+      "amount": 0,
+      "rate_per_tick": 0,
+      "cap": 1000000,
+      "base_value": 2851.2000000000003,
+      "citizens": 0,
+      "percent": 0,
+      "marginal_yield": 0,
+      "producible": false,
+      "labor_pool": 1000,
+      "idle_citizens": 700,
+      "labor_capacity_percent": 0,
+      "employed_citizens": 0,
+      "unserved_citizens": 0,
+      "workplace_level": 0,
+      "workplace_slots": 0,
+      "hex_slots": 0
+    },
+    {
+      "key": "copper",
+      "name": "Copper",
+      "tier": "commodity",
+      "category": "strategic",
+      "amount": 0,
+      "rate_per_tick": 0,
+      "cap": 1000000,
+      "base_value": 172.8,
+      "citizens": 0,
+      "percent": 0,
+      "marginal_yield": 0.9999999999999999,
+      "producible": true,
+      "labor_pool": 1000,
+      "idle_citizens": 700,
+      "labor_capacity_percent": 0.2,
+      "employed_citizens": 0,
+      "unserved_citizens": 0,
+      "workplace_level": 0,
+      "workplace_slots": 0,
+      "hex_slots": 2
+    },
+    {
+      "key": "horses",
+      "name": "Horses",
+      "tier": "commodity",
+      "category": "strategic",
+      "amount": 0,
+      "rate_per_tick": 0,
+      "cap": 1000000,
+      "base_value": 432,
+      "citizens": 0,
+      "percent": 0,
+      "marginal_yield": 0,
+      "producible": false,
+      "labor_pool": 1000,
+      "idle_citizens": 700,
+      "labor_capacity_percent": 0,
+      "employed_citizens": 0,
+      "unserved_citizens": 0,
+      "workplace_level": 0,
+      "workplace_slots": 0,
+      "hex_slots": 0
+    },
+    {
+      "key": "pottery",
+      "name": "Pottery",
+      "tier": "commodity",
+      "category": "strategic",
+      "amount": 0,
+      "rate_per_tick": 0,
+      "cap": 1000000,
+      "base_value": 108,
+      "citizens": 0,
+      "percent": 0,
+      "marginal_yield": 0,
+      "producible": false,
+      "labor_pool": 1000,
+      "idle_citizens": 700,
+      "labor_capacity_percent": 0,
+      "employed_citizens": 0,
+      "unserved_citizens": 0,
+      "workplace_level": 0,
+      "workplace_slots": 0,
+      "hex_slots": 0
+    },
+    {
+      "key": "tin",
+      "name": "Tin",
+      "tier": "commodity",
+      "category": "strategic",
+      "amount": 0,
+      "rate_per_tick": 0,
+      "cap": 1000000,
+      "base_value": 345.6,
+      "citizens": 0,
+      "percent": 0,
+      "marginal_yield": 0,
+      "producible": false,
+      "labor_pool": 1000,
+      "idle_citizens": 700,
+      "labor_capacity_percent": 0,
+      "employed_citizens": 0,
+      "unserved_citizens": 0,
+      "workplace_level": 0,
+      "workplace_slots": 0,
+      "hex_slots": 0
+    }
+  ],
+  "rendered": "Settlement\tPop\tGrain\tFood lasts\tStatus \u25b2\nNostos \u2605\tzero\tzero each game day\tzero game days\tno data",
+  "city_link": "Nostos",
+  "browser_errors": [],
+  "sql_mutations": false
+}
