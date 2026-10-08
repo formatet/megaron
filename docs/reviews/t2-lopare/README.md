@@ -9,7 +9,7 @@ Acceptans: tre röda verkliga livscykelprov → grönt; full fresh Go/vet/JS; fy
 Stopvillkor: kanonlucka tas till Claude. Arkitektur: utfall en gång där skeppet dör/kapas, i samma TX, uppåt som ny händelse enligt G1; ingen direkt messenger-SQL från combat/transport.
 Kedjegrind: bevisar fysiska order-/transportkontrakt; bud över havet ska inte fastna på en obefintlig återkomst.
 
-Implementation klar inför slutgrind. Utökad kanon från Claude 23:05: upplösning av svält/desertion skriver också utfall i döds-TX; vid/intill aktiv bosättning går löparen i land, till sjöss förloras den. Gäller egna och redan räddade löpare.
+Implementation och slutgrind klara. Utökad kanon från Claude 23:05: upplösning av svält/desertion skriver också utfall i döds-TX; vid/intill aktiv bosättning går löparen i land, till sjöss förloras den. Gäller egna och redan räddade löpare.
 
 `internal/carrier` äger fysiska vittnesmål och har bara `events` som intern kant. G1-listan och arkitekturprovet innehåller paketet och dess konsumenter i samma slice. Migration 162 är additiv: tillämpat vittnesmåls-id och partiellt eventindex. Gamla eventtyper ändras inte.
 
@@ -28,3 +28,12 @@ Bevis före slutgrind:
 - Browserriggen är uttryckligen renderingsbevis med verkliga arkiverade DB-payloads och produktionsmoduler/CSS. Preferences-GET är en märkt read-only HTTP-fixtur. Go-proven bevisar den verkliga DB-livscykeln; riggen påstår inte en livebackend eller iOS-paritet. Firefox först, sedan Chromium/WebKit, desktop och 390×844. Bilder och maskinresultat i `browser/`.
 
 Ingen merge, push eller deploy. Äldre rader utan nya vittnesmål har kvar det avgränsade legacy-skyddsnätet; ny fysisk död/kapning är kontrakterad via vittnesmål.
+
+
+Slutgrindens källor: produktionskod `8926303882045ee4e3a55bdffd79058375acebe9`; API-riggens uppdatering `d9d7c392` följer verklig PassageScan-projektion och den aktuella generationens schemalagda terminaltimer. Första fullkörningens sex gamla API-riggar stannade vid den numera avsiktligt spärrade gamla timern (`red-api-timers-full.log`). Ingen spärr togs bort; `green-api-scheduled-lifecycle.log` visar alla arrange/pickup-förlopp gröna med riktig hamnprojektion/ny timer. Produktionskod är identisk mellan dessa två commits.
+
+Full fresh Go på `d9d7c392` är grön: 24 testpaket, migration 162, exit 0 (`final-go.log`). Full vet på samma kod/prov är grön (`final-vet.log`). `+ändringar` i Go-loggens header avser bevisfiler som browserriggen skrev under körningen; `git diff d9d7c392 -- server web tools CLAUDE.md` var tomt före slutproof-commit. Browser6 efter sista Codex-prosan är gröna (`browser.log`/`browser/results.json`, 30 bilder); 450 JS utan skips gröna (`final-js.log`), Temenos/Keryx build gröna (`final-build.log`). Visuellt granskade Firefox mobile loss-bottom, WebKit mobile loss-bottom och Firefox desktop rescue på faktisk skärmbild: fulla långa kuvert kan skrollas, slutkontroller är nåbara och hemrapporten ryms.
+
+BILD-grinden före merge tillhör Timothy/Claude. Här finns konkreta bilder för den granskningen; inga mänskliga bild- eller textplaytestgodkännanden påstås. Ingen iOS-app ändrad eller testad i denna repo-slice.
+
+Slutlig mutation-/arbetskopiekontroll: samtliga åtta mutationer gav namngivet rött utan build-fel/timeout, återställda messenger/upkeep/API gröna; inga produktions-/prov-/verktygsändringar efter `d9d7c392`. `git diff --check` och Python-kompilering gröna. Endast bevis/loggar/bilder ändras i sista commit. Basen är uttryckligen låst `daf740dd` enligt START; Claude ansvarar för rebase, merge och deploy mot senare master.
