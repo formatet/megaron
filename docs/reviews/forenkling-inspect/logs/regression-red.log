@@ -2,53 +2,55 @@ TAP version 13
 # Subtest: L actual inspect: owner and qualitative defence replace Culture/Walls/DP, actions keep IDs
 not ok 1 - L actual inspect: owner and qualitative defence replace Culture/Walls/DP, actions keep IDs
   ---
-  duration_ms: 12.755717
+  duration_ms: 14.749791
   type: 'test'
-  location: '/tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/inspect_simple.test.mjs:40:1'
+  location: '/tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/inspect_simple.test.mjs:41:1'
   failureType: 'testCodeFailure'
-  error: 'foot.querySelectorAll is not a function'
-  code: 'ERR_TEST_FAILURE'
-  name: 'TypeError'
+  error: |-
+    visible defenders become qualitative defence
+    + actual - expected
+    
+    + undefined
+    - 'strong'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'strong'
+  operator: 'strictEqual'
   stack: |-
-    bindUnitButtons (file:///tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/map.js:4093:8)
-    openCityPanel (file:///tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/map.js:4221:3)
-    openHexPanel (file:///tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/map.js:4485:15)
-    Object.mouseup (file:///tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/map.js:4581:14)
-    click (file:///tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/inspect_simple.test.mjs:37:98)
-    TestContext.<anonymous> (file:///tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/inspect_simple.test.mjs:41:8)
-    Test.runInAsyncScope (node:async_hooks:214:14)
-    Test.run (node:internal/test_runner/test:1047:25)
-    Test.start (node:internal/test_runner/test:944:17)
-    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+    TestContext.<anonymous> (file:///tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/inspect_simple.test.mjs:42:23)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
   ...
 # Subtest: L actual inspect: fog never exposes marker/army and late army reply cannot update a different panel
 not ok 2 - L actual inspect: fog never exposes marker/army and late army reply cannot update a different panel
   ---
-  duration_ms: 0.223183
+  duration_ms: 1.209366
   type: 'test'
-  location: '/tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/inspect_simple.test.mjs:50:1'
+  location: '/tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/inspect_simple.test.mjs:51:1'
   failureType: 'testCodeFailure'
-  error: 'foot.querySelectorAll is not a function'
-  code: 'ERR_TEST_FAILURE'
-  name: 'TypeError'
+  error: |-
+    fog hides defence
+    + actual - expected
+    
+    + undefined
+    - 'none'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'none'
+  operator: 'strictEqual'
   stack: |-
-    bindUnitButtons (file:///tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/map.js:4093:8)
-    openCityPanel (file:///tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/map.js:4221:3)
-    openHexPanel (file:///tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/map.js:4485:15)
-    Object.mouseup (file:///tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/map.js:4581:14)
-    click (file:///tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/inspect_simple.test.mjs:37:98)
-    TestContext.<anonymous> (file:///tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/inspect_simple.test.mjs:51:17)
-    Test.runInAsyncScope (node:async_hooks:214:14)
-    Test.run (node:internal/test_runner/test:1047:25)
-    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
-    Test.postRun (node:internal/test_runner/test:1173:19)
+    TestContext.<anonymous> (file:///tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/inspect_simple.test.mjs:54:97)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
   ...
 # Subtest: L actual Host: food and escort pay durations use exact game days in words, never wall time
 not ok 3 - L actual Host: food and escort pay durations use exact game days in words, never wall time
   ---
-  duration_ms: 11.657611
+  duration_ms: 9.068714
   type: 'test'
-  location: '/tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/inspect_simple.test.mjs:57:1'
+  location: '/tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/inspect_simple.test.mjs:58:1'
   failureType: 'testCodeFailure'
   error: 'host food uses exact unscaled game days'
   code: 'ERR_ASSERTION'
@@ -65,7 +67,7 @@ not ok 3 - L actual Host: food and escort pay durations use exact game days in w
          <div id="ip-found-preview" style="font-size:.73rem;border-top:1px solid var(--border);padding-top:.4rem">Fetching founding forecast…</div>
   operator: 'match'
   stack: |-
-    TestContext.<anonymous> (file:///tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/inspect_simple.test.mjs:59:9)
+    TestContext.<anonymous> (file:///tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/inspect_simple.test.mjs:60:9)
     async Test.run (node:internal/test_runner/test:1054:7)
     async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
   ...
@@ -77,4 +79,4 @@ not ok 3 - L actual Host: food and escort pay durations use exact game days in w
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 76.562628
+# duration_ms 77.114664

@@ -6,6 +6,7 @@ class Element {
  append(...e){this.children.push(...e);}
  appendChild(e){this.append(e);}
  replaceChildren(){this.children=[];}
+ querySelectorAll(){return [];}
  querySelector(){return this.children.find(e=>e.dataset.inlineResult);}
  setAttribute(){}
  getBoundingClientRect(){return {left:0,top:0};}
@@ -44,7 +45,7 @@ test('L actual inspect: owner and qualitative defence replace Culture/Walls/DP, 
  army={};await click();assert.equal(element('ip-defence').textContent,'weak');
  await click({city:{...marker,walls:1,allied:true}});assert.equal(element('ip-defence').textContent,'strong');assert.equal(element('ip-owner').textContent,'Other Wanax (allied)');
  refused=true;await click();assert.equal(element('ip-defence').textContent,'unknown','refused data cannot imply weak defence');refused=false;
- const {readFileSync}=await import('node:fs');const html=readFileSync(new URL('../../../../map.html',import.meta.url),'utf8');
+ const {readFileSync}=await import('node:fs');const html=readFileSync(new URL('../../../map.html',import.meta.url),'utf8');
  assert.doesNotMatch(html,/id="ip-(culture|walls|army)(-row)?"/,'obsolete inspect blocks removed');assert.match(html,/Defence/);
 });
 test('L actual inspect: fog never exposes marker/army and late army reply cannot update a different panel',async()=>{
@@ -56,6 +57,6 @@ test('L actual inspect: fog never exposes marker/army and late army reply cannot
 });
 test('L actual Host: food and escort pay durations use exact game days in words, never wall time',async()=>{
  await click({city:null,host:true});let html=element('ip-body-extra').innerHTML;
- assert.match(html,/Food lasts two point five game days/,'host food uses exact unscaled game days');assert.match(html,/Escort pay lasts two hundred forty game days/);assert.doesNotMatch(html,/tick left|real time|NaN|\d/,'Host status uses player words');assert.match(element('ip-foot').innerHTML,/Found the metropolis here/,'founding stays');
+ assert.match(html,/Food lasts two point five game days/,'host food uses exact unscaled game days');assert.match(html,/Escort pay lasts two hundred forty game days/);assert.doesNotMatch(html.replace(/<[^>]*>/g,''),/tick left|real time|NaN|\d/,'Host status uses player words');assert.match(element('ip-foot').innerHTML,/Found the metropolis here/,'founding stays');
  fp={...fp,grain:{ticks_left:null},silver:{ticks_left:1},spearmen_in_field:1};await click({city:null,host:true});html=element('ip-body-extra').innerHTML;assert.match(html,/Food lasts indefinitely/);assert.match(html,/Escort pay lasts one game day</);assert.match(html,/one Spearmen cohort in the field/);
 });
