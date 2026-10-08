@@ -93,6 +93,9 @@ func (h *DeliveryHandler) HandleGift(ctx context.Context, e events.ScheduledEven
 	}
 	out.OwnerChanged = out.ActualRecipientID != nil && *out.ActualRecipientID != p.RecipientID
 	switch {
+	case status == "foundered":
+		// The ship went down in a storm with everything aboard (slice T).
+		out.Reason = "foundered"
 	case status != "in_transit":
 		out.Reason = "intercepted"
 		// This means physically sent home on the existing damaged-return voyage,

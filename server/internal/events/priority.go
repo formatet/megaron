@@ -18,6 +18,9 @@ package events
 //
 // Dygnets ordning, med skälet till varje steg:
 //
+//	 5 havet        — stormen slår mot det som är till sjöss innan något
+//	                  landar: den sjöhex ett skepp går in i på sin ankomstdag
+//	                  rullas före ankomsten, aldrig efter (megaron_transportrisk).
 //	10 ankomst      — världen rör sig först. Det som landar denna dag är
 //	                  närvarande när dagen räknas samman.
 //	20 blick        — ögonen läser läget EFTER rörelsen, aldrig före.
@@ -46,6 +49,7 @@ package events
 // glesa med flit — det finns plats mellan stegen för en ny typ utan att någon
 // befintlig behöver flyttas.
 const (
+	tickPrioritySea         = 5
 	tickPriorityArrival     = 10
 	tickPrioritySight       = 20
 	tickPriorityBattle      = 30
@@ -64,6 +68,8 @@ const (
 const DefaultTickPriority = 50
 
 var tickPriorities = map[ScheduledEventType]int{
+	// 5 — havet.
+	ScheduledSeaStormScan: tickPrioritySea,
 	// 10 — det som landar.
 	ScheduledUnitArrival:      tickPriorityArrival,
 	ScheduledTransportArrival: tickPriorityArrival,

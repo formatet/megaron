@@ -198,6 +198,11 @@ const (
 	// dispatched it home). One instance per pickup mission that ever waits,
 	// armed by combat.UnitArrivalHandler.pickupArrived.
 	ScheduledPickupTimeout ScheduledEventType = "PickupTimeout"
+	// ScheduledSeaStormScan (slice T, megaron_transportrisk.md) rolls the
+	// per-sea-hex storm risk for every ship at sea. Runs first in the day
+	// (tickPrioritySea) so the hex a ship enters on its arrival tick is rolled
+	// before the arrival lands it.
+	ScheduledSeaStormScan ScheduledEventType = "SeaStormScan"
 )
 
 // ScheduledEvent is a pending game event stored durably in PostgreSQL.
