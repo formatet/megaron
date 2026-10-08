@@ -205,6 +205,10 @@ export function selectionKey(g) {
 // would show one citizen placed when three were. Repeated clicking is exactly
 // the workflow this widget is for, so the race is the normal case, not an edge.
 let renderSeq = 0;
+// What the player has open per grid. A silent refresh started earlier must
+// restore THIS, not the selection it was started with — the player may have
+// clicked another hex while its reply was in flight.
+const liveSelection = new WeakMap();
 
 // renderGubbeGrid mounts the whole widget (SVG raster + selection panel)
 // into containerEl. centerQ/centerR are the settlement's own tile — the
@@ -219,7 +223,7 @@ let renderSeq = 0;
 export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR, renderOpts = {}) {
   const { selected = null, silent = false } = renderOpts;
   const mySeq = ++renderSeq;
-  if (!silent) containerEl.innerHTML = '<div class="loading" style="font-size:.8rem">Loading…</div>';
+  if (!silent) { liveSelection.delete(containerEl); containerEl.innerHTML = '<div class="loading" style="font-size:.8rem">Loading…</div>'; }
 
   let opts;
   try {
@@ -297,7 +301,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
 
   // What the player has open right now. Updated by selectTarget and handed to
   // the next render so +1/−1 does not close the panel they are clicking in.
-  let openKey = selected;
+  let openKey = silent && liveSelection.has(containerEl) ? liveSelection.get(containerEl) : selected;
 
   const rerender = () => renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
     { selected: openKey, silent: true });
@@ -342,6 +346,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
     const poly = g.querySelector('.gubbe-hex');
     if (poly) poly.classList.add('selected');
     openKey = selectionKey(g);
+    liveSelection.set(containerEl, openKey);
     const detail = containerEl.querySelector('#gubbe-detail');
     if (!detail) return;
 

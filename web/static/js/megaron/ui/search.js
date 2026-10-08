@@ -26,10 +26,22 @@ export function toggleSearch() {
     renderSearch('');
     loadSearchMessages(worldID, fetchAuth).then(data => {
       if (session !== searchSession || worldID !== State.WORLD_ID || !o.classList.contains('open')) return;
+      // The late message index must not drop an arrow-selection the player has
+      // already made: re-find the same row after the re-render.
+      const keep = State.searchFocusIdx >= 0
+        ? document.querySelector('#search-results .sr-item.focused .sr-name')?.textContent : null;
       correspondence = data;
       correspondenceLoading = false;
       State.searchFocusIdx = -1;
       renderSearch(input.value);
+      if (keep != null) {
+        const items = [...document.querySelectorAll('#search-results .sr-item')];
+        const idx = items.findIndex(el => el.querySelector('.sr-name')?.textContent === keep);
+        if (idx >= 0) {
+          State.searchFocusIdx = idx;
+          items.forEach((el, i) => el.classList.toggle('focused', i === idx));
+        }
+      }
     });
   } else {
     closeSearch();

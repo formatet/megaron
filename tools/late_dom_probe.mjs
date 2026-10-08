@@ -13,6 +13,7 @@ export async function run(name) {
   if(hook){const result=hook(url,opts);if(result)return result;}
   if(opts.method==='POST'){posts.push({url,body:JSON.parse(opts.body||'{}')});return response({id:'sent',arrives_at:new Date(Date.now()+60000).toISOString()},201);}
   if(url==='/api/v1/buildings')return response([{type:'farm',hex_bound:true},{type:'mine',hex_bound:true},{type:'barracks',hex_bound:false}]);
+  if(url==='/api/v1/goods')return response([{key:'grain',name:'Grain'},{key:'fish',name:'Fish'}]);
   if(url==='/api/v1/units')return response([{type:'galley',batch_men:40,costs:{grain:20},pop_cost:10}]);
   if(url.endsWith('/placement-options'))return response(placement);
   if(url.endsWith('/actions'))return response([{category:'province',available:false,name:'help',requirements:[]},{category:'military',available:false,name:'help',requirements:[]}]);
@@ -40,7 +41,7 @@ export async function run(name) {
   const load=name==='city-reload'?city.loadCityDrawer:name==='war-reload'?war.loadWarDrawer:kult.loadKultDrawer;
   const d=delay('/provinces/P');pending=load();await reached(()=>d.release);hook=null;await load();
   await reached(()=>name==='city-reload'?el('wdb-inf'):name==='war-reload'?el('wrc-name-ship'):el('kult-body').querySelector('.offer-goods input'));
-  const input=name==='city-reload'?el('wdb-inf'):name==='war-reload'?el('wrc-name-ship'):el('kult-body').querySelector('.offer-goods input');input.value=name==='war-reload'?'Thalassa':'19';input.focus();
+  const input=name==='city-reload'?el('wdb-inf'):name==='war-reload'?el('wrc-name-ship'):el('kult-body').querySelector('.offer-goods input');input.closest('.city-tab')&&(input.closest('.city-tab').style.display='');input.closest('details')&&(input.closest('details').open=true);input.value=name==='war-reload'?'Thalassa':'19';input.focus();
   d.release({settlement:pd});await pending;
   check(input.isConnected&&document.activeElement===input,'obsolete drawer load replaced active input');
  } else if(name==='search') {
@@ -50,7 +51,7 @@ export async function run(name) {
   check(State.searchFocusIdx===1&&el('search-results').querySelector('.focused .sr-name')?.textContent==='Kyme','late letters reset highlighted city');
  } else if(name==='garrison'||name==='recruit') {
   const d=delay('/actions');pending=name==='garrison'?city.loadCityDrawer():war.loadWarDrawer();await reached(()=>d.release);
-  const id=name==='garrison'?'wdb-inf':'wrc-name-ship';const input=el(id);check(input&&!input.disabled,'genuine editable control mounted');
+  const id=name==='garrison'?'wdb-inf':'wrc-name-ship';const input=el(id);check(input&&!input.disabled,'genuine editable control mounted');input.closest('.city-tab').style.display='';
   input.value=name==='garrison'?'17':'Thalassa';input.focus();if(name==='recruit')input.setSelectionRange(2,5);
   const value=input.value;d.release([{category:name==='garrison'?'province':'military',available:false,name:'help',requirements:[]}]);await pending;
   check(el(id)===input,'late hint replaced the input node');check(input.value===value,'typed value lost');check(document.activeElement===input,'focus lost');
@@ -89,12 +90,12 @@ export async function run(name) {
   const d=delay('/inbox');pending=timers.shift()();await reached(()=>d.release);
   const text=el(cid+'-text');text.value='Second unfinished letter';text.focus();text.setSelectionRange(3,8);
   el(cid).querySelector('details').open=true;el(cid+'-qty').value='37';el(cid+'-good').value='fish';
-  el(cid).querySelector('input[value="sell"]').checked=true;dip.dipToggleKind(cid);el(cid+'-offer-qty').value='12';el(cid+'-want-silver').value='7';
+  el(cid).querySelector('input[value="sell"]').checked=true;dip.dipToggleKind(cid);el(cid+'-offer-good').value='grain';el(cid+'-offer-qty').value='12';el(cid+'-want-silver').value='7';
   d.release([]);await pending;
   check(el(cid+'-text').value==='Second unfinished letter','delayed send refresh erased new draft');
   check(el(cid+'-qty').value==='37'&&el(cid+'-good').value==='fish','trade fields erased');
   check(el(cid).querySelector('details').open,'trade details collapsed');check(el(cid).querySelector('input[value="sell"]').checked,'direction reset');
-  check(el(cid+'-sell-fields').style.display!=='none','sell fields hidden');
+  check(el(cid+'-sell-fields').style.display!=='none','sell fields hidden');check(el(cid+'-offer-good').value==='grain'&&el(cid+'-offer-qty').value==='12'&&el(cid+'-want-silver').value==='7','sell fields erased');
   check(document.activeElement===el(cid+'-text')&&el(cid+'-text').selectionStart===3&&el(cid+'-text').selectionEnd===8,'draft focus/selection lost');
   await dip.dipSendInThread(cid,'contact');check(posts.at(-1).body.message==='Second unfinished letter','preserved draft dispatch');check(posts.at(-1).body.trade_offer.kind==='sell','preserved trade dispatch');
  } else if(name==='automation') {
