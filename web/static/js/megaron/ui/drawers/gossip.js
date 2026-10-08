@@ -24,6 +24,20 @@ export function hopsLabel(hops) {
   return hops === 1 ? '1 hop away' : hops + ' hops away';
 }
 
+// One rumour as a row of the notification list: marked "Rumour" so it can never
+// be read as something that certainly happened.
+export function renderRumourRowHTML(g) {
+  const hops = hopsLabel(g.hops);
+  return '<div class="notif-list-item nl-routine gossip-row' + (g.importance === 'major' ? ' gossip-major' : '') + '">'
+    + '<span class="nli-kind">🗣</span>'
+    + '<span class="nli-text"><i>Rumour</i> · ' + esc(g.source_region || 'Unknown region')
+    + (g.category ? ' · ' + esc(g.category) : '')
+    + (hops ? ' <span class="gossip-hops">(' + hops + ')</span>' : '')
+    + ': ' + esc(g.text) + '</span>'
+    + '<span class="nli-time">' + fmtAgo(g.generated_at) + '</span>'
+    + '</div>';
+}
+
 export function renderGossipRowsHTML(items) {
   if (!items || !items.length) {
     return '<p class="empty-state" style="padding:1rem">No rumours have reached you yet.</p>';

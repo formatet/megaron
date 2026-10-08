@@ -63,7 +63,7 @@ test('codex: every notification kind the client shows maps to exactly one articl
 test('codex: every drawer with a ? button has an article', () => {
   const html = readFileSync(join(here, '../../../map.html'), 'utf8');
   const drawers = [...html.matchAll(/openCodexForDrawer\('([a-z]+)'\)/g)].map(m => m[1]);
-  assert.ok(drawers.length >= 8);
+  assert.ok(drawers.length >= 7); // Gossip's drawer was merged into Notifications
   for (const d of drawers) assert.ok(articleForDrawer(d, index), `drawer ${d} has no article`);
 });
 

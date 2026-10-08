@@ -5,6 +5,7 @@ import { fmtAgo, notifText, notifIcon, colonyFoundedGrainLine } from '../format.
 import { currentCalendarDate, monthLabel } from '../misc.js';
 import { fmtNum } from '../fmt_num.js';
 import { openDispatchWindow } from '../dispatch_window.js';
+import { renderRumourRowHTML } from './gossip.js';
 
 // ── Notifications drawer ──────────────────────────────────────────────────
 // Mirrors keryx `notifications` (DEL B/D): the default view excludes the noisy
@@ -37,6 +38,20 @@ export function hiddenNotifLabel(kind, count) {
   return `${fmtNum(count)} ${label} — show reports`;
 }
 
+// One list, newest first: what happened to you and what you have only heard.
+// A rumour is NOT an event — it is blurred and may be old — so it keeps its own
+// marked row ("Rumour"), never the plain event look. Critical subsistence
+// warnings still float above everything (the caller sorts them first).
+export function mergeFeed(notifs, rumours) {
+  const stamp = x => { const t = new Date(x).getTime(); return Number.isFinite(t) ? t : 0; };
+  const rows = [
+    ...notifs.map((n, i) => ({ type: 'notif', idx: i, n, t: stamp(n.created_at) })),
+    ...(rumours || []).map(g => ({ type: 'rumour', g, t: stamp(g.generated_at) })),
+  ];
+  // Stable: events keep the server's order among equal timestamps.
+  return rows.map((r, order) => ({ ...r, order })).sort((a, b) => (b.t - a.t) || (a.order - b.order));
+}
+
 export function notifShowKind(kind) { loadNotifDrawer(kind || null); }
 
 // "Clear all" was REMOVED here 2026-08-22 (Timothy): "notislistan ska vara ett
@@ -61,6 +76,15 @@ export async function loadNotifDrawer(kindFilter) {
       return;
     }
     const data = await r.json();
+    // Rumours join the default view only; a kind drill-down stays events-only.
+    // A failed rumour fetch must never hide the events.
+    let rumours = [];
+    if (!kindFilter) {
+      try {
+        const gr = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/gossip`);
+        if (gr && gr.ok) rumours = (await gr.json().catch(() => [])) || [];
+      } catch (_) {}
+    }
     if (!kindFilter) {
       updateNotifBadge(0);
       fetchAuth(`${base}/read-all`, { method: 'POST' });
@@ -81,7 +105,9 @@ export async function loadNotifDrawer(kindFilter) {
       html += `<div class="notif-list-item" style="cursor:pointer;color:var(--text-dim)" onclick="notifShowKind()">
         <span class="nli-kind">←</span><span class="nli-text">All notifications</span><span class="nli-time"></span></div>`;
     }
-    html += notifs.map((n, i) => {
+    html += mergeFeed(notifs, rumours).map(row => {
+      if (row.type === 'rumour') return renderRumourRowHTML(row.g);
+      const n = row.n, i = row.idx;
       const ago = fmtAgo(n.created_at);
       const body_obj = typeof n.body === 'string' ? JSON.parse(n.body) : (n.body || {});
       const text = notifText(n.kind, body_obj);
