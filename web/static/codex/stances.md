@@ -1,4 +1,4 @@
-A **stance** tells a unit how to behave where it stands. Set it in the order menu when you march, or later from **War → Army → More** with the stance selector and **Set** — which, for a unit in the field, is an order carried by [[runners|Runner]].
+A **stance** tells a unit how to behave where it stands. Set it in the order menu when you march, or later from **War → Army** with the stance selector and **Set** — which, for a unit in the field, is an order carried by [[runners|Runner]].
 
 - **fortify** — dig in. Better defence, and more of your men engage when attacked. The unit cannot move until the stance is cleared.
 - **storm** — assault posture against an adjacent city. Halves what its wall absorbs, at the cost of much heavier losses of your own.
@@ -29,4 +29,4 @@ From the command line there are also dedicated watch orders: a ship on **patrol*
 When your men break off a battle is set in two places:
 
 - **For the whole realm** — **War → Army → When to retreat**, or `keryx retreat-default` ([[keryx]]). Choose a share of losses, **hold to the last man**, or leave it to the troops' [[loyalty]] (the default: the more loyal their city, the longer they hold). Every unit carries this into a battle it enters. It applies at once, since no one has to carry it anywhere, but only to battles entered from then on — a battle already under way keeps what its units brought.
-- **For one unit, in the battle it is fighting now** — the **this battle** selector under **More** on its card in **War → Army** (it only appears while the unit is fighting), or `keryx unit retreat-order`. It overrides the realm setting for that battle only. On a field unit it is an order, and travels by [[runners|Runner]].
+- **For one unit, in the battle it is fighting now** — the **this battle** selector on its card in **War → Army** (it only appears while the unit is fighting), or `keryx unit retreat-order`. It overrides the realm setting for that battle only. On a field unit it is an order, and travels by [[runners|Runner]].

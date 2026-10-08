@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Real War cards, More/stance and march/recall to per-unit audit and home.
-Usage: python3 tools/war_cards_live.py OUT BUILD_COMMIT baseline|after|naval [WEB_DIR]
+"""Real War cards, stance and march/recall to per-unit audit and home.
+Usage: python3 tools/war_cards_live.py OUT BUILD_COMMIT baseline|after|naval|before-restoration|restored|restored-naval [WEB_DIR]
 OUT contains a freshly built temenos. baseline uses archived unchanged WEB_DIR.
 Every arm creates fresh PG16/Redis and uses ordinary player APIs and web clicks;
 SQL is read-only audit, no fixtures. Only own processes/containers are removed.
@@ -20,7 +20,10 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = Path(sys.argv[1]).resolve()
 EXPECTED = sys.argv[2]
 MODE = sys.argv[3] if len(sys.argv) > 3 else "after"
-assert MODE in ("baseline", "after", "naval")
+assert MODE in ("baseline", "after", "naval", "restored", "restored-naval", "before-restoration")
+SIMPLIFIED = MODE in ("after", "naval", "before-restoration")
+NAVAL = MODE in ("naval", "restored-naval")
+PLAIN = MODE in ("restored", "before-restoration")
 OUT.mkdir(parents=True, exist_ok=True)
 PREFIX = 'megaron-war-cards-' + secrets.token_hex(4)
 containers, errors = [], []
@@ -87,7 +90,7 @@ try:
     token = api('/api/v1/auth/register', 'POST', {'username': 'simple-recall-all'+secrets.token_hex(4), 'password': secrets.token_urlsafe(32)})['access_token']
     worldpath = '/api/v1/worlds/' + world
     joined = api(worldpath+'/join', 'POST', {}, token)
-    if MODE == 'naval':
+    if NAVAL:
         for attempt in range(20):
             spawn = joined['tile']
             seen = api(worldpath+'/map', token=token)
@@ -108,7 +111,7 @@ try:
     homeq,homer=city.get('q',city.get('map_q')),city.get('r',city.get('map_r'))
     tiles=api(worldpath+'/map',token=token)
     tiles=tiles if isinstance(tiles,list) else tiles['tiles']
-    nearby=[t for t in tiles if t['terrain'] not in ('fog','coastal_sea','deep_sea','river','river_ford','mountain_limestone','mountain_red') and not any(p.get('q')==t['q'] and p.get('r')==t['r'] for p in provinces) and max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer))>=1 and max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer))<=2]
+    nearby=[t for t in tiles if t['terrain'] not in ('fog','coastal_sea','deep_sea','river','river_ford','mountain_limestone','mountain_red') and not any(p.get('q')==t['q'] and p.get('r')==t['r'] for p in provinces) and max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer))>=1 and max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer))<=(6 if PLAIN else 2)]
     from playwright.sync_api import sync_playwright, expect
     playwright=sync_playwright().start();browser=playwright.chromium.launch()
     page=browser.new_page(viewport={'width':1280,'height':900})
@@ -130,7 +133,8 @@ try:
             card.scroll_into_view_if_needed()
             page.locator('#drawer-war').screenshot(path=str(OUT/(prefix+'-'+label+'.png')))
             assert card.evaluate('(e)=>e.scrollWidth<=e.clientWidth'),'card overflow'
-            if MODE!='baseline':
+            if MODE.startswith('restored'):assert card.locator('details').count()==0,'restored card must have no More'
+            if SIMPLIFIED:
                 details=card.locator('details')
                 assert details.count()==1 and not details.evaluate('(e)=>e.open')
                 details.locator('summary').click()
@@ -140,16 +144,16 @@ try:
         page.set_viewport_size({'width':1280,'height':900})
     war()
     naval_receipts=[]
-    if MODE=='naval':
+    if NAVAL:
         ship=next(u for u in data['units'] if u['category']=='naval' and u['status']=='garrison')
         shipcard=page.locator('#ucard-'+ship['id'])
         for action in ['Load','Unload']:
-            shipcard.locator('details summary').click()
+            if SIMPLIFIED:shipcard.locator('details summary').click()
             expect(shipcard.get_by_role('button',name=action,exact=True)).to_be_visible()
             for label,width,height in [('desktop',1280,900),('mobile',390,844)]:
                 page.set_viewport_size({'width':width,'height':height})
                 shipcard.scroll_into_view_if_needed()
-                page.locator('#drawer-war').screenshot(path=str(OUT/('ship-'+action.lower()+'-more-'+label+'.png')))
+                page.locator('#drawer-war').screenshot(path=str(OUT/('ship-'+action.lower()+('-more-' if SIMPLIFIED else '-')+label+'.png')))
                 assert shipcard.evaluate('(e)=>e.scrollWidth<=e.clientWidth'),'ship More overflow'
             page.set_viewport_size({'width':1280,'height':900})
             with page.expect_response(lambda r:r.url.endswith('/units/'+ship['id']+'/'+action.lower()) and r.request.method=='POST') as pending:
@@ -160,7 +164,7 @@ try:
         finalship=next(u for u in api(worldpath+'/units',token=token)['units'] if u['id']==ship['id'])
         assert not finalship.get('cargo_unit_id'),finalship
     shots('city')
-    if MODE=='naval':
+    if NAVAL:
         final_units=api(worldpath+'/units',token=token)['units']
         cargo_id=naval_receipts[0]['request']['unit_id']
         assert next(u for u in final_units if u['id']==cargo_id)['status']=='garrison',final_units
@@ -171,10 +175,10 @@ try:
         raise SystemExit(0)
     if MODE!='baseline':
         expect(card).to_contain_text('in the city')
-        assert not card.locator('#ustance-'+uid).is_visible()
+        assert card.locator('#ustance-'+uid).is_visible() != SIMPLIFIED
     stance_receipts=[]
     for stance in ['sentry','fortify','none']:
-        if MODE!='baseline':card.locator('details summary').click()
+        if SIMPLIFIED:card.locator('details summary').click()
         card.locator('#ustance-'+uid).select_option(stance)
         with page.expect_response(lambda r:r.url.endswith('/units/'+uid+'/stance') and r.request.method=='POST') as pending:
             card.locator('button[onclick="unitStance(\''+uid+'\')"]').click()
@@ -184,7 +188,16 @@ try:
         war()
         if MODE!='baseline' and stance=='fortify':assert card.get_by_role('button',name='March',exact=True).count()==0
     card.get_by_role('button',name='March',exact=True).click()
-    centre=min(nearby,key=lambda t:(abs(t['r']-homer),abs(t['q']-homeq-4),t['q'],t['r']))
+    if PLAIN:
+        forecasts=[]
+        for candidate in nearby:
+            preview=api(worldpath+'/units/'+uid+'/march-preview?target_q='+str(candidate['q'])+'&target_r='+str(candidate['r']),token=token)
+            if preview.get('available') and preview.get('duration_ticks',0)>=4:
+                forecasts.append((preview['duration_ticks'],candidate))
+        assert forecasts,'no reachable known plain-march destination taking at least four game days'
+        centre=max(forecasts,key=lambda item:item[0])[1]
+    else:
+        centre=min(nearby,key=lambda t:(abs(t['r']-homer),abs(t['q']-homeq-4),t['q'],t['r']))
     q,r=centre['q'],centre['r']
     point=page.evaluate("""async ([q,r])=>{
       const {State}=await import('/static/js/megaron/state.js');
@@ -197,8 +210,11 @@ try:
     page.evaluate('window.closeInspect()')
     page.wait_for_function('p=>document.elementFromPoint(p.x,p.y)?.id==="hex-canvas"',arg=point)
     page.mouse.click(point['x'],point['y']);page.wait_for_selector('#mg-0')
-    if not page.locator('#mctx-explore-chk').is_checked():page.locator('#mctx-explore-chk').check()
-    page.locator('#mctx-more summary').click();page.locator('#mctx-ticks').fill('14')
+    if PLAIN:
+        if page.locator('#mctx-explore-chk').is_checked():page.locator('#mctx-explore-chk').uncheck()
+    else:
+        if not page.locator('#mctx-explore-chk').is_checked():page.locator('#mctx-explore-chk').check()
+        page.locator('#mctx-more summary').click();page.locator('#mctx-ticks').fill('14')
     with page.expect_response(lambda r:r.url.endswith('/units/'+uid+'/march') and r.request.method=='POST') as pending:
         page.locator('#mctx-send').click()
     march=pending.value;assert march.status==202,(march.status,march.json())
@@ -206,19 +222,29 @@ try:
     expect(card.get_by_role('button',name='Recall',exact=True)).to_be_visible()
     if MODE!='baseline':
         expect(card).to_contain_text('on the march')
-        assert not card.locator('#ustance-'+uid).is_visible()
-        assert not card.get_by_role('button',name='Redirect',exact=True).is_visible()
+        assert card.locator('#ustance-'+uid).is_visible() != SIMPLIFIED
+        assert card.get_by_role('button',name='Redirect',exact=True).is_visible() != SIMPLIFIED
     shots('marching')
     if MODE!='baseline':
-        card.locator('details summary').click()
+        if SIMPLIFIED:card.locator('details summary').click()
         card.get_by_role('button',name='Redirect',exact=True).click()
         card.get_by_text('or type coordinates',exact=True).click()
         expect(card.locator('#uredir-q-'+uid)).to_be_visible()
         expect(card.locator('#uredir-r-'+uid)).to_be_visible()
-        card.locator('details summary').click()
-    with page.expect_response(lambda r:r.url.endswith('/units/'+uid+'/recall') and r.request.method=='POST') as pending:
-        card.get_by_role('button',name='Recall',exact=True).click()
-    recall=pending.value;assert recall.status==202,recall.status
+        if SIMPLIFIED:card.locator('details summary').click()
+    recall_attempts=[]
+    for attempt in range(45):
+        with page.expect_response(lambda r:r.url.endswith('/units/'+uid+'/recall') and r.request.method=='POST') as pending:
+            card.get_by_role('button',name='Recall',exact=True).click()
+        recall=pending.value
+        recall_attempts.append({'http_status':recall.status,'receipt':recall.json()})
+        if recall.status==202:break
+        assert recall.status==422 and 'catch' in recall.json().get('error',''),recall_attempts
+        # A short outbound exploration leg may finish before a Runner can catch it.
+        # Wait for the next real leg; never mutate game state or bypass the gate.
+        time.sleep(2);war()
+        expect(card.get_by_role('button',name='Recall',exact=True)).to_be_visible()
+    else:raise AssertionError({'no_catchable_leg':recall_attempts})
     expect(card.locator('#uorder-'+uid)).to_contain_text('order sent by')
     if MODE!='baseline':expect(card.locator('#uorder-'+uid)).to_contain_text('messenger')
     deadline=time.monotonic()+200
@@ -232,10 +258,10 @@ try:
     assert 'UnitMarchOrdered|1' in audits and 'MarchRecalled|1' in audits,audits
     assert 'OrderDeliveryFailed' not in audits,audits
     assert not errors,errors
-    proof={'health':health,'mode':MODE,'browser_errors':errors,'stance_receipts':stance_receipts,'naval_receipts':naval_receipts,
+    proof={'health':health,'mode':MODE,'plain_march':PLAIN,'browser_errors':errors,'stance_receipts':stance_receipts,'naval_receipts':naval_receipts,
         'march':{'http_status':march.status,'request':march.request.post_data_json,'receipt':march.json()},
         'recall':{'http_status':recall.status,'request':recall.request.post_data_json,'receipt':recall.json()},
-        'final_unit':final,'audit_rows':audits,'sql_mutations':False}
+        'recall_attempts':recall_attempts,'final_unit':final,'audit_rows':audits,'sql_mutations':False}
     (OUT/'proof.json').write_text(json.dumps(proof,indent=2)+'\n')
     print(json.dumps({'health':health,'mode':MODE,'stance_orders':len(stance_receipts),'march_recall_home':True}))
 except Exception:

@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: P: garrison shows March and eligible Reinforce; stance and battle retreat are directly available
+ok 1 - P: garrison shows March and eligible Reinforce; stance and battle retreat are directly available
+  ---
+  duration_ms: 8.9091
+  type: 'test'
+  ...
+# Subtest: P: marching land has Recall, stance and typed redirect directly available
+ok 2 - P: marching land has Recall, stance and typed redirect directly available
+  ---
+  duration_ms: 0.240633
+  type: 'test'
+  ...
+# Subtest: P: positioned units remain orderable and fetch uses server-provided ships
+ok 3 - P: positioned units remain orderable and fetch uses server-provided ships
+  ---
+  duration_ms: 0.135206
+  type: 'test'
+  ...
+# Subtest: P: naval loading unloading and repair are directly available; at sea has no recall or redirect
+ok 4 - P: naval loading unloading and repair are directly available; at sea has no recall or redirect
+  ---
+  duration_ms: 0.321405
+  type: 'test'
+  ...
+# Subtest: P: forming training embarked repairing and freight do not offer inapplicable orders
+ok 5 - P: forming training embarked repairing and freight do not offer inapplicable orders
+  ---
+  duration_ms: 0.304056
+  type: 'test'
+  ...
+# Subtest: P: every server lifecycle status has a player label; unknown status never leaks raw jargon
+ok 6 - P: every server lifecycle status has a player label; unknown status never leaks raw jargon
+  ---
+  duration_ms: 0.133543
+  type: 'test'
+  ...
+# Subtest: P: ships off the coast take no March while a city remains, but keep the R6 stranded exception
+ok 7 - P: ships off the coast take no March while a city remains, but keep the R6 stranded exception
+  ---
+  duration_ms: 0.153446
+  type: 'test'
+  ...
+# Subtest: P: numeric values and missing ETA guards survive the restoration
+ok 8 - P: numeric values and missing ETA guards survive the restoration
+  ---
+  duration_ms: 0.207749
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 72.837916

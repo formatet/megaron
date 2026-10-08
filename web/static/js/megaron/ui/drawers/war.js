@@ -548,7 +548,6 @@ export function renderUnitCard(u) {
 
   // Action buttons
   let actions = '';
-  let moreActions = '';
 
   // March button: garrison or positioned, deployable per the
   // server's own march grind (march_start.go:120-136 — status must be garrison
@@ -573,7 +572,7 @@ export function renderUnitCard(u) {
   // overhaul 2026-07-09). A marching unit takes one too: the Runner must catch
   // up with it (megaron_styrande_beslut §11, canTakeStance mirrors the server).
   if (canTakeStance(u)) {
-    moreActions += '<select id="ustance-' + u.id + '" style="font-size:.65rem;padding:.1rem;border:1px solid var(--border);background:var(--warm-white)">'
+    actions += '<select id="ustance-' + u.id + '" style="font-size:.65rem;padding:.1rem;border:1px solid var(--border);background:var(--warm-white)">'
       + '<option value="none">stance…</option>'
       + '<option value="fortify">fortify</option>'
       + '<option value="storm">storm</option>'
@@ -588,7 +587,7 @@ export function renderUnitCard(u) {
     // SetStandingOrders checks); outside battle it could only ever answer
     // "unit is not in an active battle", and the realm-wide setting at the
     // top of this tab is what applies.
-    if (isGarrison || isPositioned) moreActions += unitRetreatControlHTML(u);
+    if (isGarrison || isPositioned) actions += unitRetreatControlHTML(u);
   }
 
   // Reinforce button (megaron_plan_rekryteringsmodell.md): only when the
@@ -603,12 +602,12 @@ export function renderUnitCard(u) {
 
   // Load button: naval garrison without cargo — pick from co-located garrison land units
   if (isNaval && isGarrison && !u.cargo_unit_id && u.settlement_id) {
-    moreActions += '<button onclick="unitLoadPrompt(\'' + u.id + '\',\'' + (u.settlement_id||'') + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Load</button> ';
+    actions += '<button onclick="unitLoadPrompt(\'' + u.id + '\',\'' + (u.settlement_id||'') + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Load</button> ';
   }
 
   // Unload button: naval garrison with cargo
   if (isNaval && isGarrison && u.cargo_unit_id) {
-    moreActions += '<button onclick="unitUnload(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Unload</button> ';
+    actions += '<button onclick="unitUnload(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Unload</button> ';
   }
 
   // Fetch by ship (R1, megaron_plan_hamta_hem.md, slice 2b): a field-
@@ -618,7 +617,7 @@ export function renderUnitCard(u) {
   // an action the server cannot perform).
   let pickupRow = '';
   if (isPositioned && !isNaval && u.can_fetch_by_ship && (u.pickup_ships || []).length) {
-    moreActions += '<button onclick="unitPickupToggle(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Fetch by ship</button> ';
+    actions += '<button onclick="unitPickupToggle(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Fetch by ship</button> ';
     const shipOptions = u.pickup_ships.map(s =>
       '<option value="' + s.id + '">' + esc(s.name) + ' (' + esc(s.settlement_name) + ')' +
       (s.can_carry_runner ? '' : ' — war galley, must already be on the shore') + '</option>'
@@ -636,7 +635,7 @@ export function renderUnitCard(u) {
   // or the yard is full — this button only knows the ship is damaged and
   // docked, same "let the server be the judge" posture as Load/Unload.
   if (isNaval && isGarrison && u.hull != null && u.hull < 5) {
-    moreActions += '<button onclick="unitRepair(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Repair</button> ';
+    actions += '<button onclick="unitRepair(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Repair</button> ';
   }
 
   // Recall/redirect: marching LAND units only. A marching ship is on a
@@ -653,7 +652,7 @@ export function renderUnitCard(u) {
   let redirectRow = '';
   if (isMarching && !isNaval) {
     actions += '<button onclick="unitRecall(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Recall</button> ';
-    moreActions += '<button onclick="unitRedirectToggle(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Redirect</button> ';
+    actions += '<button onclick="unitRedirectToggle(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Redirect</button> ';
     redirectRow = '<div id="uredir-' + u.id + '" style="display:none;margin-top:.2rem;font-size:.65rem;color:var(--text-dim)">'
       + '<div>Right-click the new destination on the map — a messenger carries the order to this unit.</div>'
       + '<div style="margin-top:.2rem"><a href="#" onclick="unitRedirectTypedToggle(\'' + u.id + '\');return false" style="color:var(--text-dim)">or type coordinates</a></div>'
@@ -679,8 +678,7 @@ export function renderUnitCard(u) {
     + (u.expedition ? '<div style="font-size:.72rem;color:var(--text-dim)">' + esc(expeditionMissionText(u.expedition)) + '</div>' : '')
     + pendingOrder
     + (actions ? '<div style="margin-top:.2rem;display:flex;gap:.2rem;flex-wrap:wrap;align-items:center">' + actions + '</div>' : '')
-    + (moreActions ? '<details id="umore-' + u.id + '" class="dsec"><summary class="dsec-title">More</summary>' + moreActions + (isMarching && !isNaval ? redirectRow : '') + pickupRow + '</details>' : '')
-    + (isMarching && isNaval ? redirectRow : '') + orderStatus
+    + redirectRow + pickupRow + orderStatus
     + '</div>';
 }
 

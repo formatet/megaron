@@ -1,0 +1,12 @@
+{
+  "base": "f586270d",
+  "order_handlers_identical": true,
+  "drawer_lifecycle_identical": true,
+  "unchanged_paths": [
+    "server",
+    "web/static/js/megaron/ui/time.js",
+    "web/static/js/megaron/ui/recall_all.js",
+    "web/static/js/megaron/ui/chips.js",
+    "web/static/js/megaron/ui/drawers/misc.js"
+  ]
+}
