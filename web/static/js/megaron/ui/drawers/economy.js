@@ -427,8 +427,8 @@ function standingGoodRowHTML(goods, group) {
   const options = '<option value="">Choose a good</option>' + goods.map(g =>
     `<option value="${esc(g.key)}">${esc(g.name || g.key)}</option>`).join('');
   return `<div class="inline-fields field" data-good-row>
-    <label class="obj-info">Good <select>${options}</select></label>
-    <label class="obj-info">${group === 'out' ? 'Minimum' : 'Leave'}
+    <label class="obj-info">Good<br><select>${options}</select></label>
+    <label class="obj-info">${group === 'out' ? 'Minimum' : 'Leave'}<br>
       <input type="number" min="0" step="any">
     </label>
     <button class="btn-small" type="button" data-remove-good aria-label="Remove good">×</button>
