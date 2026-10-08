@@ -1,0 +1,219 @@
+{
+  "health": {
+    "commit": "538ce8cbcaa0b9710030cfdf285aa832cfdef1ca",
+    "migration": 160,
+    "status": "ok"
+  },
+  "mode": "after",
+  "host": {
+    "id": "5600f372-fc61-4d39-9f49-0a861176881f",
+    "type": "nomadic_host",
+    "category": "land",
+    "size": 1,
+    "status": "positioned",
+    "deployable": true,
+    "display_name": "Nomadic Host of Sakereus",
+    "q": 9,
+    "r": 24,
+    "in_battle": false
+  },
+  "phase": {
+    "active": true,
+    "current_tick": 0,
+    "grain": {
+      "amount": 1200,
+      "rate_per_tick": 0
+    },
+    "host_unit_id": "5600f372-fc61-4d39-9f49-0a861176881f",
+    "population": 1000,
+    "q": 9,
+    "r": 24,
+    "silver": {
+      "amount": 480,
+      "rate_per_tick": -2,
+      "ticks_left": 240
+    },
+    "spearmen_in_field": 2,
+    "tick_seconds": 6
+  },
+  "forecast": {
+    "catchment": [
+      {
+        "q": 7,
+        "r": 24,
+        "known": true,
+        "terrain": "hills",
+        "copper_deposit": true
+      },
+      {
+        "q": 7,
+        "r": 25,
+        "known": true,
+        "terrain": "forest_olive_grove",
+        "coastal": true
+      },
+      {
+        "q": 7,
+        "r": 26,
+        "known": true,
+        "terrain": "coastal_sea"
+      },
+      {
+        "q": 8,
+        "r": 23,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 8,
+        "r": 24,
+        "known": true,
+        "terrain": "forest_olive_grove",
+        "coastal": true
+      },
+      {
+        "q": 8,
+        "r": 25,
+        "known": true,
+        "terrain": "coastal_sea"
+      },
+      {
+        "q": 8,
+        "r": 26,
+        "known": true,
+        "terrain": "coastal_sea"
+      },
+      {
+        "q": 9,
+        "r": 22,
+        "known": false
+      },
+      {
+        "q": 9,
+        "r": 23,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 9,
+        "r": 24,
+        "known": true,
+        "terrain": "plains",
+        "coastal": true
+      },
+      {
+        "q": 9,
+        "r": 25,
+        "known": true,
+        "terrain": "plains",
+        "coastal": true
+      },
+      {
+        "q": 9,
+        "r": 26,
+        "known": true,
+        "terrain": "coastal_sea"
+      },
+      {
+        "q": 10,
+        "r": 22,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 10,
+        "r": 23,
+        "known": true,
+        "terrain": "plains"
+      },
+      {
+        "q": 10,
+        "r": 24,
+        "known": true,
+        "terrain": "forest_olive_grove",
+        "coastal": true
+      },
+      {
+        "q": 10,
+        "r": 25,
+        "known": true,
+        "terrain": "coastal_sea"
+      },
+      {
+        "q": 11,
+        "r": 22,
+        "known": true,
+        "terrain": "hills",
+        "silver_deposit": true
+      },
+      {
+        "q": 11,
+        "r": 23,
+        "known": true,
+        "terrain": "forest_olive_grove",
+        "coastal": true
+      },
+      {
+        "q": 11,
+        "r": 24,
+        "known": true,
+        "terrain": "forest_olive_grove",
+        "coastal": true
+      }
+    ],
+    "founding_gifts": [
+      {
+        "detail": "an inland site whose catchment bears grain, so the city is founded with a farm already standing",
+        "key": "demeter_farm",
+        "label": "Demeter's farm"
+      }
+    ],
+    "goods": {
+      "copper": 0.9999999999999999,
+      "fish": 10,
+      "grain": 8.666666666666666,
+      "livestock": 2,
+      "oil": 20.666666666666664,
+      "stone": 9,
+      "timber": 8,
+      "wine": 5.999999999999999
+    },
+    "grain": {
+      "base_per_tick": 5.6,
+      "est_net_per_tick": 0.5999999999999996,
+      "seed": 1200,
+      "ticks_until_empty": null,
+      "with_farm_per_tick": 5.6
+    },
+    "unknown_hexes": 1
+  },
+  "city": {
+    "id": "7317f7fc-c79b-4b53-bdc6-bf389398750f",
+    "settlement_id": "6db1ee07-5c2e-4cf1-a0c4-555b5f42a2ee",
+    "name": "Zakros",
+    "culture": "minoan",
+    "q": 9,
+    "r": 24,
+    "state": "active",
+    "walls": 0,
+    "size_tier": 1,
+    "owner": "Sakereus",
+    "own": true,
+    "is_capital": true,
+    "allied": false,
+    "visible": true,
+    "army_total": 201
+  },
+  "native_dialogs": [],
+  "founding_orders": [
+    {
+      "method": "POST",
+      "body": "{}"
+    }
+  ],
+  "founding_responses": [
+    201
+  ],
+  "browser_errors": [],
+  "sql_mutations": false
+}

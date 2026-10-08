@@ -359,3 +359,17 @@ inte gameplaybevis: kör den verkliga row-renderern från historiska commits och
 aktuell kod med riktiga `megaron.css`. Det reproducerar blek fälttext (8b2) och
 nowrap-overflow (dcba) och kräver läsbar/innesluten aktuell rad vid båda drawerbredder.
 Ingen källmutation eller injicerad spelkunskap; körs även när en livearm pågår.
+
+
+## Enkel Host-panel (Q)
+
+`python3 tools/host_simple_live.py OUT FULL_HASH after` kräver en serverbinär
+byggd med den fasta hashen som `OUT/temenos`. Ny PG16/Redis, ren miljö,
+vanlig register/join → Host via faktiskt kartklick → stängd/öppen Details
+→ inlinegrundning avbryt (ingen POST) → confirm (en POST201, body `{}`) →
+stad/Host borta. Summary jämförs med verklig colonize-preview, prognosen
+arkiveras med status/healthz, bilder desktop390 och kvitton.
+Bas: `baseline ARCHIVED_WEB` i egen OUT/ny DB.
+`python3 tools/host_simple_mutations.py OUT` bryter net-bedömning, stängd
+Details, stone-källa och late-response-vakt; named assertionrött och grönt
+efter återställning krävs. Alla verktyg/cache/worktrees under HOME.

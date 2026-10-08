@@ -2,7 +2,7 @@ TAP version 13
 # Subtest: Q actual Host: only site assessment is primary and all existing detail stays in one closed Details
 not ok 1 - Q actual Host: only site assessment is primary and all existing detail stays in one closed Details
   ---
-  duration_ms: 23.560694
+  duration_ms: 22.252091
   type: 'test'
   location: '/home/tk/wt/codex-host-enkel/web/static/js/megaron/render/host_simple.test.mjs:44:1'
   failureType: 'testCodeFailure'
@@ -28,7 +28,7 @@ not ok 1 - Q actual Host: only site assessment is primary and all existing detai
 # Subtest: Q actual Host: unrounded net and raw goods, not carried stocks or a new food formula, decide yes/no
 not ok 2 - Q actual Host: unrounded net and raw goods, not carried stocks or a new food formula, decide yes/no
   ---
-  duration_ms: 1.584189
+  duration_ms: 1.478315
   type: 'test'
   location: '/home/tk/wt/codex-host-enkel/web/static/js/megaron/render/host_simple.test.mjs:59:1'
   failureType: 'testCodeFailure'
@@ -45,7 +45,7 @@ not ok 2 - Q actual Host: unrounded net and raw goods, not carried stocks or a n
 # Subtest: Q actual Host: produces restores on another hex and late forecast cannot overwrite that panel
 not ok 3 - Q actual Host: produces restores on another hex and late forecast cannot overwrite that panel
   ---
-  duration_ms: 1.188585
+  duration_ms: 1.284531
   type: 'test'
   location: '/home/tk/wt/codex-host-enkel/web/static/js/megaron/render/host_simple.test.mjs:69:1'
   failureType: 'testCodeFailure'
@@ -71,4 +71,4 @@ not ok 3 - Q actual Host: produces restores on another hex and late forecast can
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 78.526705
+# duration_ms 74.56446

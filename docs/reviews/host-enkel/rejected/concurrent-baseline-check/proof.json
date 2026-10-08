@@ -1,0 +1,216 @@
+{
+  "health": {
+    "commit": "538ce8cbcaa0b9710030cfdf285aa832cfdef1ca",
+    "migration": 160,
+    "status": "ok"
+  },
+  "mode": "after",
+  "host": {
+    "id": "b0e96306-9211-47d6-a784-e8123a3c1ec7",
+    "type": "nomadic_host",
+    "category": "land",
+    "size": 1,
+    "status": "positioned",
+    "deployable": true,
+    "display_name": "Nomadic Host of Wedaneus",
+    "q": 44,
+    "r": 21,
+    "in_battle": false
+  },
+  "phase": {
+    "active": true,
+    "current_tick": 0,
+    "grain": {
+      "amount": 1200,
+      "rate_per_tick": 0
+    },
+    "host_unit_id": "b0e96306-9211-47d6-a784-e8123a3c1ec7",
+    "population": 1000,
+    "q": 44,
+    "r": 21,
+    "silver": {
+      "amount": 480,
+      "rate_per_tick": -2,
+      "ticks_left": 240
+    },
+    "spearmen_in_field": 2,
+    "tick_seconds": 6
+  },
+  "forecast": {
+    "catchment": [
+      {
+        "q": 42,
+        "r": 21,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 42,
+        "r": 22,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 42,
+        "r": 23,
+        "known": true,
+        "terrain": "forest_olive_grove",
+        "coastal": true
+      },
+      {
+        "q": 43,
+        "r": 20,
+        "known": true,
+        "terrain": "plains"
+      },
+      {
+        "q": 43,
+        "r": 21,
+        "known": true,
+        "terrain": "hills"
+      },
+      {
+        "q": 43,
+        "r": 22,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 43,
+        "r": 23,
+        "known": true,
+        "terrain": "forest_olive_grove"
+      },
+      {
+        "q": 44,
+        "r": 19,
+        "known": true,
+        "terrain": "hills"
+      },
+      {
+        "q": 44,
+        "r": 20,
+        "known": true,
+        "terrain": "hills",
+        "silver_deposit": true
+      },
+      {
+        "q": 44,
+        "r": 21,
+        "known": true,
+        "terrain": "hills"
+      },
+      {
+        "q": 44,
+        "r": 22,
+        "known": true,
+        "terrain": "hills"
+      },
+      {
+        "q": 44,
+        "r": 23,
+        "known": true,
+        "terrain": "hills",
+        "coastal": true
+      },
+      {
+        "q": 45,
+        "r": 19,
+        "known": true,
+        "terrain": "semi_desert"
+      },
+      {
+        "q": 45,
+        "r": 20,
+        "known": true,
+        "terrain": "mountain_red"
+      },
+      {
+        "q": 45,
+        "r": 21,
+        "known": true,
+        "terrain": "mountain_limestone",
+        "tin_deposit": true
+      },
+      {
+        "q": 45,
+        "r": 22,
+        "known": true,
+        "terrain": "mountain_limestone",
+        "coastal": true
+      },
+      {
+        "q": 46,
+        "r": 19,
+        "known": true,
+        "terrain": "mountain_red"
+      },
+      {
+        "q": 46,
+        "r": 20,
+        "known": true,
+        "terrain": "mountain_limestone"
+      },
+      {
+        "q": 46,
+        "r": 21,
+        "known": true,
+        "terrain": "mountain_limestone",
+        "tin_deposit": true
+      }
+    ],
+    "founding_gifts": [
+      {
+        "detail": "an inland site whose catchment bears grain, so the city is founded with a farm already standing",
+        "key": "demeter_farm",
+        "label": "Demeter's farm"
+      }
+    ],
+    "goods": {
+      "grain": 5.666666666666665,
+      "livestock": 1,
+      "oil": 16.333333333333332,
+      "stone": 30.5,
+      "timber": 5,
+      "tin": 1.9999999999999998,
+      "wine": 10.999999999999998
+    },
+    "grain": {
+      "base_per_tick": 5.6,
+      "est_net_per_tick": 0.5999999999999996,
+      "seed": 1200,
+      "ticks_until_empty": null,
+      "with_farm_per_tick": 5.6
+    },
+    "unknown_hexes": 0
+  },
+  "city": {
+    "id": "91b92871-9eca-4945-b956-7db86cbb7130",
+    "settlement_id": "4752a9b8-3798-4f90-b724-2f56e6ac241e",
+    "name": "Nirou Chani",
+    "culture": "minoan",
+    "q": 44,
+    "r": 21,
+    "state": "active",
+    "walls": 0,
+    "size_tier": 1,
+    "owner": "Wedaneus",
+    "own": true,
+    "is_capital": true,
+    "allied": false,
+    "visible": true,
+    "army_total": 200
+  },
+  "native_dialogs": [],
+  "founding_orders": [
+    {
+      "method": "POST",
+      "body": "{}"
+    }
+  ],
+  "founding_responses": [
+    201
+  ],
+  "browser_errors": [],
+  "sql_mutations": false
+}

@@ -1,0 +1,12 @@
+{
+  "base": "35232e3d",
+  "inline_founding_handler_identical": true,
+  "unchanged_paths": [
+    "server",
+    "web/static/js/megaron/ui/marchctx.js",
+    "web/static/js/megaron/ui/drawers/war.js",
+    "web/static/js/megaron/ui/chips.js",
+    "web/static/js/megaron/ui/drawers/misc.js"
+  ],
+  "renderer_before_host_region": true
+}
