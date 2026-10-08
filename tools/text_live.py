@@ -121,7 +121,8 @@ try:
             assert len(brief.inner_text())<150,brief.inner_text()
             brief.get_by_role('button',name='Read the Codex',exact=True).click()
             page.wait_for_function('document.getElementById("codex-panel").classList.contains("open")')
-            assert page.locator('#codex-title').inner_text()==next(a['title'] for a in api('/static/codex/index.json')['articles'] if a.get('drawer')==drawer)
+            expected_title=next(a['title'] for a in api('/static/codex/index.json')['articles'] if a.get('drawer')==drawer)
+            page.wait_for_function('t=>document.getElementById("codex-title").textContent===t',arg=expected_title)
             page.evaluate('window.closeCodex()')
     receipts={}
     if MODE=='after':
