@@ -43,6 +43,7 @@ func printGiftOutcome(n notificationItem) {
 		DestinationName string  `json:"destination_name"`
 		Good            string  `json:"good_key"`
 		Credited        float64 `json:"credited_quantity"`
+		Returned        float64 `json:"returned_quantity"`
 		Lost            float64 `json:"lost_quantity"`
 		Reason          string  `json:"reason"`
 		Changed         bool    `json:"owner_changed"`
@@ -53,6 +54,9 @@ func printGiftOutcome(n notificationItem) {
 		return
 	}
 	fmt.Printf("    Gift: %s → %s · %g %s received; %g lost", b.OriginName, b.DestinationName, b.Credited, b.Good, b.Lost)
+	if b.Returned > 0 {
+		fmt.Printf(" · %g sent home aboard the damaged ship (return can still be intercepted)", b.Returned)
+	}
 	if b.Reason != "" {
 		fmt.Printf(" · %s", strings.ReplaceAll(b.Reason, "_", " "))
 	}

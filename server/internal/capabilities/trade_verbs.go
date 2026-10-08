@@ -182,7 +182,7 @@ func canTransfer(cc checkContext) Verb {
 			rows.Close()
 		}
 	}
-	good, qty := cc.anySellableGood()
+	good, qty := cc.anyShippableGood()
 	goodOK := good != ""
 	detail := "no goods in stock to move"
 	if goodOK {
@@ -235,6 +235,19 @@ func (cc checkContext) anySellableGood() (key string, qty float64) {
 		  ORDER BY good_key LIMIT 1`,
 		cc.settlementID,
 	).Scan(&key, &qty)
+	if err != nil {
+		return "", 0
+	}
+	return key, qty
+}
+
+// A gift/transfer can carry silver and parked goods; trade offers keep their
+// own filter. Weight is the same catalogue predicate as IsShippableGood.
+func (cc checkContext) anyShippableGood() (key string, qty float64) {
+	if !cc.hasSettlement() {
+		return "", 0
+	}
+	err := cc.pool.QueryRow(cc.ctx, `SELECT sg.good_key,GREATEST(0,settled(sg.amount,sg.rate,sg.calc_tick)) FROM settlement_goods sg JOIN goods g ON g.key=sg.good_key WHERE sg.settlement_id=$1 AND g.weight>0 AND settled(sg.amount,sg.rate,sg.calc_tick)>0 ORDER BY sg.good_key LIMIT 1`, cc.settlementID).Scan(&key, &qty)
 	if err != nil {
 		return "", 0
 	}

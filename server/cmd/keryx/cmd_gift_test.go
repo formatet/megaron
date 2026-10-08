@@ -47,13 +47,13 @@ func TestGiftTransferResolvesContactedForeignCity(t *testing.T) {
 }
 func TestGiftNoticeExactLossAndOwner(t *testing.T) {
 	out, err := captureStdout(t, func() error {
-		printNotificationDetail(nil, notificationItem{Kind: "GiftDelivered", Body: json.RawMessage(`{"origin_name":"Kyme","destination_name":"Nostos","good_key":"silver","credited_quantity":5.125,"lost_quantity":44.875,"reason":"storage_full","owner_changed":true,"actual_recipient_name":"New Wanax","recipient_name":"Old Wanax"}`)})
+		printNotificationDetail(nil, notificationItem{Kind: "GiftDelivered", Body: json.RawMessage(`{"origin_name":"Kyme","destination_name":"Nostos","good_key":"silver","credited_quantity":5.125,"lost_quantity":19.875,"returned_quantity":25,"reason":"storage_full","owner_changed":true,"actual_recipient_name":"New Wanax","recipient_name":"Old Wanax"}`)})
 		return nil
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"5.125 silver received", "44.875 lost", "New Wanax", "Old Wanax", "storage full"} {
+	for _, want := range []string{"5.125 silver received", "19.875 lost", "25 sent home", "New Wanax", "Old Wanax", "storage full"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("missing %s in %s", want, out)
 		}

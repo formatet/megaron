@@ -35,7 +35,7 @@ try:
            'REDIS_URL': f'127.0.0.1:{redis}', 'JWT_SECRET': secrets.token_urlsafe(40),
            'PORT': str(gameport), 'TICK_SECONDS': '3', 'MAP_WIDTH': '56', 'MAP_HEIGHT': '40',
            'WORLD_NAME': 'Gift proof', 'POLEIA_WORLD_START_WANAXES': '1',
-           'STATIC_DIR': str(Path(sys.argv[4]).resolve()/'static') if len(sys.argv)>4 else str(ROOT/'web/static'), 'TEMPLATE_DIR': str(Path(sys.argv[4]).resolve()/'templates') if len(sys.argv)>4 else str(ROOT/'web/templates'),
+           'STATIC_DIR': str(ROOT/'web/static'), 'TEMPLATE_DIR': str(ROOT/'web/templates'),
            'CHRONICLE_DIR': str(OUT/'chronicles'), 'REPORTS_DIR': str(OUT/'reports')}
     assert not (ROOT/'server/.env').exists(), 'Proof must not load a game .env'
 
@@ -93,9 +93,9 @@ try:
         while time.monotonic()<deadline and not any(d['settlement_id']==dest for d in destinations()):time.sleep(.4)
     assert any(d['settlement_id']==dest for d in destinations()),'physical contact did not reach partner'
     from playwright.sync_api import sync_playwright,expect
-    playwright=sync_playwright().start();browser=playwright.chromium.launch()
+    playwright=sync_playwright().start();engine=sys.argv[3] if len(sys.argv)>3 else 'firefox';browser=getattr(playwright,engine).launch()
     def open_player(token):
-        context=browser.new_context(viewport={'width':1280,'height':900})
+        context=browser.new_context(viewport={'width':1280,'height':900},has_touch=True)
         context.add_cookies([{'name':'poleia_token','value':token,'url':base}])
         page=context.new_page();page.on('pageerror',lambda e:errors.append(str(e)))
         page.goto(base+'/',wait_until='domcontentloaded');page.evaluate('t=>localStorage.setItem("poleia_token",t)',token)
@@ -184,7 +184,7 @@ try:
     audit=command('docker','exec',containers[0],'psql','-U','postgres','-d','simple-recall-all','-tAc',"SELECT event_type,payload FROM events WHERE world_id='"+world+"' AND event_type IN('GiftDelivered','GiftLost','CaravanRaided') ORDER BY id;")
     (OUT/'audit.txt').write_text(audit+'\n')
     assert not errors,errors
-    proof={'health':health,'joins':joins,'recipient_distance':dist(aj['tile'],bj['tile']),'destinations':destinations(),'receipts':receipts,'raid_dispatch':raid,'raid_outcome':lost,'guard':current,'recipient_notifications':notices,'browser_errors':errors,'sql_mutations':False}
+    proof={'health':health,'engine':engine,'joins':joins,'recipient_distance':dist(aj['tile'],bj['tile']),'destinations':destinations(),'receipts':receipts,'raid_dispatch':raid,'raid_outcome':lost,'guard':current,'recipient_notifications':notices,'browser_errors':errors,'sql_mutations':False}
     (OUT/'proof.json').write_text(json.dumps(proof,indent=2)+'\n')
     print(json.dumps({'health':health,'two_goods_delivered':chosen,'real_raid':True}))
 except Exception:

@@ -269,6 +269,7 @@ func (h *InterceptScanHandler) seize(ctx context.Context, worldID uuid.UUID, t i
 	// intentions). A land caravan, or a pre-slice naval transport with no
 	// bound ship (R6), keeps today's unconditional "loot goes to capital"
 	// behaviour untouched.
+	var returnEvent *events.Event
 	var shipOutcome *NavalSeizureOutcome
 	if t.shipUnitID != nil {
 		outcome := rollNavalSeizureOutcome(h.dice())
@@ -300,7 +301,8 @@ func (h *InterceptScanHandler) seize(ctx context.Context, worldID uuid.UUID, t i
 			// sails home with the same ship, released on arrival exactly
 			// like R3's ship_return leg (kind="damaged_return" is in
 			// ArrivalHandler's release set).
-			if err := h.dispatchLimpedReturn(ctx, tx, worldID, t, pos, goods); err != nil {
+			returnEvent, err = h.dispatchLimpedReturn(ctx, tx, worldID, t, pos, goods)
+			if err != nil {
 				return fmt.Errorf("dispatch limped return: %w", err)
 			}
 		case NavalSeizureSunk:
@@ -320,6 +322,10 @@ func (h *InterceptScanHandler) seize(ctx context.Context, worldID uuid.UUID, t i
 
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("commit: %w", err)
+	}
+
+	if returnEvent != nil {
+		h.eventStore.RecordCommitted(ctx, returnEvent)
 	}
 
 	// Audit + notify both Wanax: the raider (seized) and the victim (raided). Async
@@ -390,7 +396,7 @@ func creditLootToCapital(ctx context.Context, tx pgx.Tx, worldID, interceptor, t
 // there is nowhere to dispatch a leg TO, so the ship is stranded on the spot
 // instead (the half-cargo is lost either way — there's no settlement to
 // credit it to).
-func (h *InterceptScanHandler) dispatchLimpedReturn(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, t inFlightTransport, pos province.MapPosition, goods []manifestLine) error {
+func (h *InterceptScanHandler) dispatchLimpedReturn(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, t inFlightTransport, pos province.MapPosition, goods []manifestLine) (*events.Event, error) {
 	half := Manifest{}
 	for _, g := range goods {
 		if remaining := g.Quantity / 2; remaining > 0 {
@@ -422,7 +428,7 @@ func (h *InterceptScanHandler) dispatchLimpedReturn(ctx context.Context, tx pgx.
 		}
 	}
 	if destID == nil {
-		return StrandShip(ctx, tx, *t.shipUnitID, pos.Q, pos.R)
+		return nil, StrandShip(ctx, tx, *t.shipUnitID, pos.Q, pos.R)
 	}
 
 	// Steer for the port the ship is credited to — on leg 2 that is NOT the
@@ -434,23 +440,31 @@ func (h *InterceptScanHandler) dispatchLimpedReturn(ctx context.Context, tx pgx.
 
 	journey, err := province.PlanTradeJourney(ctx, tx, worldID, pos, province.MapPosition{Q: destQ, R: destR}, "naval")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	var currentTick int
 	if err := tx.QueryRow(ctx, `SELECT current_tick FROM worlds WHERE id=$1`, worldID).Scan(&currentTick); err != nil {
-		return err
+		return nil, err
 	}
 	departsAt := h.clk.Now()
 	arrivesAt := departsAt.Add(tick.RealUntil(currentTick+journey.TravelTicks, currentTick))
 
-	_, err = Dispatch(ctx, tx, h.scheduler, DispatchParams{
+	returnID, err := Dispatch(ctx, tx, h.scheduler, DispatchParams{
 		WorldID: worldID, OwnerID: t.owner, Kind: "damaged_return",
 		OriginID: *destID, DestID: *destID, Category: "naval",
 		OriginQ: pos.Q, OriginR: pos.R, DestQ: destQ, DestR: destR,
 		DepartsAt: departsAt, ArrivesAt: arrivesAt, DueTick: currentTick + journey.TravelTicks, DepartedTick: currentTick, Journey: &journey,
 		Manifest: half, Interceptable: true, ShipUnitID: t.shipUnitID,
 	})
-	return err
+	if err != nil {
+		return nil, err
+	}
+	// The return's identity and manifest are durable in the same seizure TX.
+	// A gift outcome can distinguish cargo sent home from cargo lost in combat.
+	if h.eventStore == nil {
+		return nil, nil
+	}
+	return h.eventStore.AppendTx(ctx, tx, t.id, events.StreamWorld, "TransportDamagedReturnDispatched", map[string]any{"transport_id": t.id, "return_transport_id": returnID, "returned_goods": half}, worldID, nil)
 }
 
 // manifestLine is one good in a seized caravan's notice payload — same

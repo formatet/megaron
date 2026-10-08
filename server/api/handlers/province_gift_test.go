@@ -396,3 +396,99 @@ func TestGiftCapabilityWithOneOwnCity(t *testing.T) {
 		})
 	}
 }
+
+// Uses a real scan and damaged-return dispatch, not a forged intercepted flag.
+func TestGiftLimpedRaidSeparatesReturnFromLoss(t *testing.T) {
+	f := giftFixture(t, false)
+	ctx := context.Background()
+	if _, err := f.pool.Exec(ctx, `UPDATE provinces SET coastal=true WHERE world_id=$1`, f.worldID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.pool.Exec(ctx, `UPDATE map_tiles SET terrain='coastal_sea' WHERE world_id=$1 AND q IN(1,2)`, f.worldID); err != nil {
+		t.Fatal(err)
+	}
+	var recipient uuid.UUID
+	if err := f.pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id=$1`, f.destID).Scan(&recipient); err != nil {
+		t.Fatal(err)
+	}
+	var ship uuid.UUID
+	if err := f.pool.QueryRow(ctx, `INSERT INTO units(world_id,owner_id,type,category,size,crew,status,settlement_id) VALUES($1,$2,'merchantman','naval',1,10,'garrison',$3) RETURNING id`, f.worldID, f.playerID, f.originID).Scan(&ship); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.pool.Exec(ctx, `INSERT INTO units(world_id,owner_id,type,category,size,status,stance,q,r,sentry_q,sentry_r,reaction_policy) VALUES($1,$2,'spearman','land',80,'positioned','sentry',0,0,0,0,'{"foreign":"intercept"}')`, f.worldID, recipient); err != nil {
+		t.Fatal(err)
+	}
+	code, body := f.post(t, "/worlds/"+f.worldID.String()+"/provinces/"+f.originProvince.String()+"/trade", map[string]any{"destination_id": f.destID, "good_key": "silver", "quantity": 50})
+	if code != 201 {
+		t.Fatalf("gift %d: %v", code, body)
+	}
+	scan := transport.NewInterceptScanHandler(f.pool, f.scheduler, events.NewStore(f.pool), nil, f.clk)
+	scan.Dice = limpedGiftDice{}
+	if err := scan.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID}); err != nil {
+		t.Fatal(err)
+	}
+	var status string
+	if err := f.pool.QueryRow(ctx, `SELECT status FROM transports WHERE id=$1`, body["transport_id"]).Scan(&status); err != nil {
+		t.Fatal(err)
+	}
+	if status != "intercepted" {
+		t.Fatalf("real scan did not raid gift: %s", status)
+	}
+	var e events.ScheduledEvent
+	e.WorldID = f.worldID
+	if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type='GiftDelivery'`, f.worldID).Scan(&e.ID, &e.Payload); err != nil {
+		t.Fatal(err)
+	}
+	h := economy.NewDeliveryHandler(f.pool, events.NewStore(f.pool), nil, f.scheduler)
+	for i := 0; i < 2; i++ {
+		if err := h.HandleGift(ctx, e); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var raw []byte
+	if err := f.pool.QueryRow(ctx, `SELECT payload FROM events WHERE world_id=$1 AND event_type='GiftLost'`, f.worldID).Scan(&raw); err != nil {
+		t.Fatal(err)
+	}
+	var out economy.GiftOutcome
+	if err := json.Unmarshal(raw, &out); err != nil {
+		t.Fatal(err)
+	}
+	if out.CreditedQuantity != 0 || out.LostQuantity != 25 || out.ReturnedQuantity != 25 || out.ReturnTransportID == nil {
+		t.Fatalf("limped outcome %+v", out)
+	}
+	var amount float64
+	if err := f.pool.QueryRow(ctx, `SELECT amount FROM settlement_goods WHERE settlement_id=$1 AND good_key='silver'`, f.originID).Scan(&amount); err != nil {
+		t.Fatal(err)
+	}
+	if amount != 99950 {
+		t.Fatalf("instant return minted: %v", amount)
+	}
+	var ret events.ScheduledEvent
+	ret.WorldID = f.worldID
+	if err := f.pool.QueryRow(ctx, `SELECT id,payload FROM scheduled_events WHERE world_id=$1 AND event_type='TransportArrival' AND payload->>'transport_id'=$2`, f.worldID, out.ReturnTransportID.String()).Scan(&ret.ID, &ret.Payload); err != nil {
+		t.Fatal(err)
+	}
+	a := transport.NewArrivalHandler(f.pool, nil)
+	for i := 0; i < 2; i++ {
+		if err := a.Handle(ctx, ret); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var home *uuid.UUID
+	if err := f.pool.QueryRow(ctx, `SELECT status,settlement_id FROM units WHERE id=$1`, ship).Scan(&status, &home); err != nil {
+		t.Fatal(err)
+	}
+	if status != "garrison" || home == nil || *home != f.originID {
+		t.Fatalf("damaged ship did not release home: %s %v", status, home)
+	}
+	if err := f.pool.QueryRow(ctx, `SELECT amount FROM settlement_goods WHERE settlement_id=$1 AND good_key='silver'`, f.originID).Scan(&amount); err != nil {
+		t.Fatal(err)
+	}
+	if amount != 99975 {
+		t.Fatalf("actual returned stock=%v want99975", amount)
+	}
+}
+
+type limpedGiftDice struct{}
+
+func (limpedGiftDice) Float64() float64 { return .5 }

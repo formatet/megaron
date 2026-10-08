@@ -9,6 +9,7 @@ test('gift notices preserve exact credited and lost quantities and changed owner
  const text=notifText('GiftDelivered',b);
  for(const word of ['5.125 silver received','44.875 lost','New Wanax','Old Wanax','storage full']) assert.ok(text.includes(word),word);
  assert.match(notifText('GiftLost',{...b,credited_quantity:0,lost_quantity:50}),/Gift lost/);
+ assert.match(notifText('GiftLost',{...b,credited_quantity:0,lost_quantity:25,returned_quantity:25}),/25 sent home aboard the damaged ship/);
  assert.equal(notifDomain('GiftDelivered'),'trade');
 });
 test('actual Diplomacy drawer places gift among letters with escaped text and no offer controls',async()=>{

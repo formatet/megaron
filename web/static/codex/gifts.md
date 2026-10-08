@@ -6,6 +6,8 @@ Open **Economy → Transfer**. Choose your sending city, a destination marked wi
 
 The goods leave your stock when sent. They travel in a physical caravan, or aboard a real free ship from your port when a sea route is used. Cargo can be intercepted. A ship remains bound until its empty voyage home finishes. A gift uses the existing trade delivery risk; it has no separate risk rule.
 
+A ship damaged in interception keeps the existing [[transfers|naval interception outcome]]: half the cargo is lost, half sails home. The gift notice separates the exact quantities **lost** and **sent home**. This is a physical damaged return, not an immediate refund; that voyage can itself be intercepted.
+
 ## At the destination
 
 The city receives only what fits in its store. Anything that does not fit is lost. **GiftDelivered** or **GiftLost** tells you the exact quantities received and lost. There is no return of goods.

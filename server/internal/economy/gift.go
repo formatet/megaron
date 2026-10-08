@@ -34,6 +34,8 @@ type GiftOutcome struct {
 	ActualRecipientID   *uuid.UUID `json:"actual_recipient_id"`
 	ActualRecipientName string     `json:"actual_recipient_name"`
 	CreditedQuantity    float64    `json:"credited_quantity"`
+	ReturnedQuantity    float64    `json:"returned_quantity"`
+	ReturnTransportID   *uuid.UUID `json:"return_transport_id,omitempty"`
 	LostQuantity        float64    `json:"lost_quantity"`
 	Reason              string     `json:"reason"`
 	OwnerChanged        bool       `json:"owner_changed"`
@@ -97,6 +99,15 @@ func (h *DeliveryHandler) HandleGift(ctx context.Context, e events.ScheduledEven
 	switch {
 	case status != "in_transit":
 		out.Reason = "intercepted"
+		// This means physically sent home on the existing damaged-return voyage,
+		// not an immediate stock refund. That voyage can still be intercepted.
+		var returned float64
+		er := tx.QueryRow(ctx, `SELECT (payload->>'return_transport_id')::uuid,COALESCE((payload->'returned_goods'->>$3)::double precision,0) FROM events WHERE world_id=$1 AND event_type='TransportDamagedReturnDispatched' AND payload->>'transport_id'=$2 ORDER BY id DESC LIMIT 1`, e.WorldID, p.TransportID.String(), p.GoodKey).Scan(&out.ReturnTransportID, &returned)
+		if er != nil && er != pgx.ErrNoRows {
+			return er
+		}
+		out.ReturnedQuantity = math.Min(p.Quantity, math.Max(0, returned))
+		out.LostQuantity = p.Quantity - out.ReturnedQuantity
 	case err == pgx.ErrNoRows || state != "active" || out.ActualRecipientID == nil:
 		out.Reason = "destination_fallen"
 	case lossReason != "":
