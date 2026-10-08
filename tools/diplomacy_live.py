@@ -247,7 +247,7 @@ try:
     with recipient.expect_response(lambda r:r.request.method=='POST' and r.url.endswith('/reply')) as replied:
         recipient.locator('#dip-reply-row-'+letter['id']).get_by_role('button',name='Reply',exact=True).click()
     assert replied.value.status==200
-    returned=wait_for(lambda:api(worldpath+'/settlements/'+own_id+'/messengers',token=token),lambda data:any(m['id']==letter['id'] and m['status']=='returned' for m in data),'reply not returned')
+    returned=wait_for(lambda:api(worldpath+'/settlements/'+own_id+'/messengers',token=token),lambda data:any(m['id']==letter['id'] and m['status']=='arrived' and m.get('reply_text')=='Kyme welcomes your letter.' for m in data),'reply not returned')
     page.reload(wait_until='networkidle');open_diplomacy(page);page.locator('.dip-thread-header').filter(has_text='Kyme').click()
     expect(page.locator('#dtab-threads')).to_contain_text('Kyme welcomes your letter.');dip_shots('returned-reply')
     offers=[]

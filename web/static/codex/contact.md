@@ -8,4 +8,4 @@ Contact is earned by walking, and once earned it never lapses. Sending a messeng
 
 **Rumour is not contact.** [[gossip|Gossip]] tells you that a city exists and roughly where, deliberately blurred, but it does not open the door. Seeing a city on the map ([[sight]]) does not either.
 
-Cities you have contacted appear in **Diplomacy → Compose** and in **Economy → Wants**.
+Cities you have contacted appear in **Diplomacy → Known** and in **Economy → Wants**.

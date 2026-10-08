@@ -1,0 +1,12 @@
+[
+  {
+    "path": "/tmp/megaron-inspect-baseline/temenos",
+    "bytes": 30723966,
+    "sha256": "c6422720b621dfbf339fa89c60c0be313ad0d29bc2a0d19467f7795f15608fc3"
+  },
+  {
+    "path": "/tmp/megaron-inspect-after-land/temenos",
+    "bytes": 30724030,
+    "sha256": "d03a49521e8ff0f17228fceae4635226a155c74c919027899c84805ff5e8c8bf"
+  }
+]

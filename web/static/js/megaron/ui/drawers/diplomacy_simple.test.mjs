@@ -14,7 +14,7 @@ async function rig(run) {
   body.querySelectorAll=selector=>selector==='.dtab'?[...body.innerHTML.matchAll(/data-tab="([^"]+)"/g)].map(([,name])=>{const t=node('tab-'+name);t.dataset.tab=name;t.addEventListener=(_,fn)=>t.listener=fn;return t;}):selector==='.city-tab'?[...body.innerHTML.matchAll(/id="(dtab-[^"]+)"/g)].map(([,id])=>node(id)):[];
   globalThis.document={getElementById:id=>id==='net-status'?null:node(id),querySelector:()=>({value:'buy'})};
   globalThis.localStorage={getItem:()=>null};globalThis.setTimeout=()=>0;
-  State.WORLD_ID='world';State.MY_SETTLEMENT_ID='origin';State.provinceData=[{id:'province',name:'Kyme',settlement_id:'contact',own:false,owner:'Alector'}];
+  State.WORLD_ID='world';State.MY_SETTLEMENT_ID='origin';State.provinceData=[{id:'province',name:'Kyme',settlement_id:'contact',own:false,owner:'Alector'},{settlement_id:'origin',name:'Nostos',own:true},{settlement_id:'outpost',name:'Outpost',is_outpost:true},{settlement_id:'unnamed'}];
   const cities=[{name:'Kyme',owner:'Alector',owner_id:'ruler',settlement_id:'contact',knowledge:'known',q:3,r:4,copper_deposit:true},{name:'Rumour city',owner:'Alector',owner_id:'ruler',settlement_id:'rumour',knowledge:'rumour',bearing:'east',industry_hint:'tin'}, {name:'Nostos',owner:'Me',own:true,settlement_id:'origin',knowledge:'known'}];
   const rulers=[{owner:'Alector',owner_id:'ruler',known_cities:1,rumour_cities:1}];
   globalThis.fetch=async(url,opts={})=>{calls.push({url,opts});let data=[];if(url.endsWith('/cities'))data=cities;else if(url.endsWith('/diplomacy'))data=rulers;else if(url.endsWith('/goods'))data=[{key:'grain',name:'Grain'}];else if(opts.method==='POST')data={id:'letter',arrives_at:new Date(Date.now()+60000).toISOString()};return new Response(JSON.stringify(data),{status:opts.method==='POST'?201:200});};
@@ -58,6 +58,24 @@ test('M: first letter and both trade directions remain reachable without any pri
 test('M: selecting rumour, own city or a removed contact creates no draft or dispatch',()=>rig(async({node,calls})=>{
   await dip.loadDiplomacyDrawer();assert.equal(typeof dip.dipWrite,'function');
   const before=node('dtab-threads').innerHTML;
-  for(const id of ['rumour','origin','missing'])await dip.dipWrite(id);
+  for(const id of ['rumour','origin','outpost','unnamed','missing'])await dip.dipWrite(id);
   assert.equal(node('dtab-threads').innerHTML,before);assert.equal(calls.filter(c=>c.opts.method==='POST').length,0);
+}));
+
+
+test('M: host still reads both tabs but does not gain a settlement-only trade composer',()=>rig(async({node})=>{
+  State.MY_SETTLEMENT_ID=null;
+  await dip.loadDiplomacyDrawer();await node('tab-known').listener.call(node('tab-known'));
+  assert.match(node('dtab-known').innerHTML,/Kyme/);assert.doesNotMatch(node('dtab-known').innerHTML,/data-write=/);
+  await dip.dipWrite('contact');assert.doesNotMatch(node('dtab-threads').innerHTML,/dip-inline-compose/);
+}));
+
+test('M: failed Known fetch offers retry without inventing an empty directory',()=>rig(async({node})=>{
+  await dip.loadDiplomacyDrawer();
+  const real=globalThis.fetch;
+  globalThis.fetch=async url=>url.endsWith('/cities')?new Response('{}',{status:403}):real(url);
+  await node('tab-known').listener.call(node('tab-known'));
+  assert.match(node('dtab-known').innerHTML,/Could not load/);assert.equal(node('dtab-known').dataset.loaded,undefined);
+  globalThis.fetch=real;await node('tab-known').listener.call(node('tab-known'));
+  assert.match(node('dtab-known').innerHTML,/Kyme/);
 }));
