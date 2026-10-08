@@ -1,3 +1,4 @@
+import { giftText } from '../gifts.js';
 import { showInlineResult } from '../inline_result.js';
 import { State, ownCapital } from '../../state.js';
 import { fetchAuth } from '../../api.js';
@@ -207,11 +208,13 @@ async function loadDipThreads() {
   }
   const tradeableGoods = await getTradeableGoods();
   try {
-    const [inR, outR] = await Promise.all([
+    const [inR, outR, giftR] = await Promise.all([
       fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/messengers/inbox'),
+
       fetchAuth('/api/v1/worlds/' + State.WORLD_ID + (State.MY_SETTLEMENT_ID
         ? '/settlements/' + State.MY_SETTLEMENT_ID + '/messengers'
         : '/founding/messengers')),
+      fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/gifts'),
     ]);
     const inbox  = (inR && inR.ok)  ? await inR.json().catch(() => [])  : [];
     const sent   = (outR && outR.ok) ? await outR.json().catch(() => []) : [];
@@ -230,6 +233,16 @@ async function loadDipThreads() {
       if (!threads[key]) threads[key] = { name: key, settlement_id: m.destination_id || null, messages: [] };
       else if (!threads[key].settlement_id) threads[key].settlement_id = m.destination_id || null;
       threads[key].messages.push({ ...m, _dir: 'out' });
+    }
+
+    const gifts = giftR?.ok ? (await giftR.json().catch(() => [])) || [] : [];
+    for (const g of gifts) {
+      const b = g.body, outgoing = b.sender_id === State.MY_PLAYER_ID;
+      const name = (outgoing ? b.destination_name : b.origin_name) || 'Unknown';
+      const cityId = outgoing ? b.destination_id : b.origin_id;
+      if (!threads[name]) threads[name] = { name, settlement_id: cityId, messages: [] };
+      threads[name].messages.push({ _gift: true, _dir: outgoing ? 'out' : 'in', created_at: g.created_at,
+        message: giftText(g.kind, b), id: b.transport_id });
     }
 
     let draftKey = null;
@@ -297,6 +310,10 @@ async function loadDipThreads() {
 
       // Messages as chat bubbles
       for (const m of msgs) {
+        if (m._gift) {
+          html += `<div class="dip-msg-row dip-msg-row-${m._dir}"><div class="dip-bubble dip-bubble-${m._dir}"><div class="dip-bubble-meta">Gift · ${fmtAgo(m.created_at)}</div><div class="dip-msg-text">${esc(m.message)}</div></div></div>`;
+          continue;
+        }
         if (m._dir === 'in') {
           const offer = m.trade_offer;
           let tradeHtml = '';

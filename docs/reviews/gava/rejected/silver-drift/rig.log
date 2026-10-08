@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-gava/tools/gift_live.py", line 167, in <module>
+    assert after>=before+2-0.000001,(before,after)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: (3718.9500000000003, 3718.85)

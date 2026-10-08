@@ -64,7 +64,7 @@ function coalesce(key, fn, ms = 2000) {
 // drawer showing that data should rebuild after them.
 const DATA_KINDS = new Set([
   'ArmyArrival','BuildComplete','GoodsCrafted','TrainComplete','MessengerArrival',
-  'TradeCaravanArrival','UnitAttrition','UnitDeserted','UnitArrived','UnitExploreReturned',
+  'GiftDelivered','GiftLost','TradeCaravanArrival','UnitAttrition','UnitDeserted','UnitArrived','UnitExploreReturned',
   'UnitReturnedStarving','ExpeditionTurnedHome','ExpeditionReport',
 ]);
 
@@ -160,7 +160,7 @@ export function initWS() {
         // Refetch goods — the city drawer's stock is now stale.
         coalesce('provinces', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces`).then(r => r.ok && r.json().then(d => { State.provinceData = d; State.dirty = true; })));
       }
-      if (msg.kind === 'TradeCaravanArrival') {
+      if (['TradeCaravanArrival','GiftDelivered','GiftLost'].includes(msg.kind)) {
         coalesce('trades', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/trades`).then(r => r.ok && r.json().then(d => { State.tradeData = d; State.dirty = true; })));
       }
       if (msg.kind === 'UnitAttrition' || msg.kind === 'UnitDeserted') {

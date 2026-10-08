@@ -3245,26 +3245,30 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get destination — also verify it's owned by the same player (internal transfer only).
-	// External trade requires messenger-based negotiation.
+	// A foreign transfer is a gift, gated exactly like letters.
 	var destQ, destR int
 	var destCoastal bool
 	var destOwnerID *uuid.UUID
-	err = h.pool.QueryRow(r.Context(),
-		`SELECT prov.map_q, prov.map_r, COALESCE(prov.coastal, false), s.owner_id
-		 FROM settlements s
-		 JOIN provinces prov ON prov.id = s.province_id
-		 WHERE s.id = $1 AND s.world_id = $2`,
-		req.DestinationID, worldID,
-	).Scan(&destQ, &destR, &destCoastal, &destOwnerID)
+	var destName, destOwnerName, destState string
+	err = h.pool.QueryRow(r.Context(), `SELECT prov.map_q,prov.map_r,COALESCE(prov.coastal,false),s.owner_id,s.name,COALESCE(NULLIF(pl.wanax_name,''),pl.username,''),s.state FROM settlements s JOIN provinces prov ON prov.id=s.province_id LEFT JOIN players pl ON pl.id=s.owner_id WHERE s.id=$1 AND s.world_id=$2`, req.DestinationID, worldID).Scan(&destQ, &destR, &destCoastal, &destOwnerID, &destName, &destOwnerName, &destState)
 	if err != nil {
-		writeError(w, http.StatusNotFound, "destination settlement not found")
+		writeError(w, 404, "destination settlement not found")
 		return
 	}
-	if destOwnerID == nil || *destOwnerID != playerID {
-		writeError(w, http.StatusForbidden,
-			"use messenger trade offers to trade with other players — /trade is for internal transfers only")
+	if destOwnerID == nil {
+		writeError(w, 403, "destination has no Wanax to receive goods")
 		return
+	}
+	isGift := *destOwnerID != playerID
+	if isGift {
+		if destState != "active" {
+			writeError(w, 403, "destination settlement is not active")
+			return
+		}
+		if !province.VisibleFrom(province.MapPosition{Q: destQ, R: destR}, loadVisibleOrigins(r.Context(), h.pool, worldID, playerID), 6) {
+			writeError(w, 403, "destination is not within your scouted range — send a scout or march closer before contacting this city")
+			return
+		}
 	}
 
 	weight, shippable, err := economy.IsShippableGood(r.Context(), h.pool, req.GoodKey)
@@ -3307,7 +3311,13 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	defer tx.Rollback(r.Context())
 
 	// Revalidate both endpoints under row locks before any debit or ship binding.
-	if !lockOwnedTradeSettlements(r.Context(), tx, worldID, playerID, originID, req.DestinationID) {
+	endpointsLocked := false
+	if isGift {
+		endpointsLocked = lockGiftSettlements(r.Context(), tx, worldID, playerID, *destOwnerID, originID, req.DestinationID)
+	} else {
+		endpointsLocked = lockOwnedTradeSettlements(r.Context(), tx, worldID, playerID, originID, req.DestinationID)
+	}
+	if !endpointsLocked {
 		writeError(w, http.StatusForbidden, "settlement ownership changed")
 		return
 	}
@@ -3409,10 +3419,14 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	// Dispatch, because the arrival is already driven by ScheduledTradeDelivery
 	// below; Dispatch would additionally schedule ScheduledTransportArrival and
 	// double-credit the destination.
+	transportKind := "transfer"
+	if isGift {
+		transportKind = "gift"
+	}
 	transportID, err := transport.CreateShadow(r.Context(), tx, transport.DispatchParams{
 		WorldID:      worldID,
 		OwnerID:      playerID,
-		Kind:         "transfer",
+		Kind:         transportKind,
 		OriginID:     originID,
 		DestID:       req.DestinationID,
 		Category:     category,
@@ -3433,19 +3447,39 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Internal transfer: no loss, no gain — delivered quantity equals what was sent.
-	// Enqueue delivery within the same transaction — atomic with the deduction.
-	if err := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledTradeDelivery,
-		map[string]any{
-			"trade_route_id":     routeID,
-			"destination_id":     req.DestinationID,
-			"good_key":           req.GoodKey,
-			"quantity":           req.Quantity,
-			"delivered_quantity": req.Quantity,
-			"transport_id":       transportID.String(),
-		}, tradeCurrentTick+tradeTravelTicks); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not schedule delivery")
-		return
+	var dispatchedGift *events.Event
+	if isGift {
+		var senderName string
+		if err := tx.QueryRow(r.Context(), `SELECT COALESCE(NULLIF(wanax_name,''),username) FROM players WHERE id=$1`, playerID).Scan(&senderName); err != nil {
+			writeError(w, 500, "could not read sender")
+			return
+		}
+		shipment := economy.GiftShipment{TransportID: transportID, RouteID: routeID, SenderID: playerID, RecipientID: *destOwnerID, OriginID: originID, DestinationID: req.DestinationID, OriginName: originName, DestinationName: destName, SenderName: senderName, RecipientName: destOwnerName, GoodKey: req.GoodKey, Quantity: req.Quantity}
+		if err := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledGiftDelivery, shipment, tradeCurrentTick+tradeTravelTicks); err != nil {
+			writeError(w, 500, "could not schedule gift")
+			return
+		}
+		dispatchedGift, err = h.eventStore.AppendTx(r.Context(), tx, originID, events.StreamProvince, "GiftDispatched", shipment, worldID, nil)
+		if err != nil {
+			writeError(w, 500, "could not record gift dispatch")
+			return
+		}
+	} else {
+		// Internal transfer: no loss, no gain — delivered quantity equals what was sent.
+		// Enqueue delivery within the same transaction — atomic with the deduction.
+		if err := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledTradeDelivery,
+			map[string]any{
+				"trade_route_id":     routeID,
+				"destination_id":     req.DestinationID,
+				"good_key":           req.GoodKey,
+				"quantity":           req.Quantity,
+				"delivered_quantity": req.Quantity,
+				"transport_id":       transportID.String(),
+			}, tradeCurrentTick+tradeTravelTicks); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not schedule delivery")
+			return
+		}
+
 	}
 
 	if err := tx.Commit(r.Context()); err != nil {
@@ -3453,8 +3487,12 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if dispatchedGift != nil {
+		h.eventStore.RecordCommitted(r.Context(), dispatchedGift)
+	}
 	resp := map[string]any{
 		"route_id":       routeID,
+		"kind":           transportKind,
 		"arrives_at":     arrivesAt,
 		"distance":       journey.Distance,
 		"travel_min":     float64(tradeTravelTicks) * 60,
@@ -3464,6 +3502,10 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		"transport_id":   transportID,
 		"delivered_qty":  req.Quantity,
 		"category":       category,
+	}
+	if isGift {
+		delete(resp, "delivered_qty")
+		resp["sent_qty"] = req.Quantity
 	}
 	if shipID != nil {
 		resp["ship_id"] = *shipID

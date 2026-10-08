@@ -1,0 +1,8 @@
+» färsk DB på migration 160 · commit 31224eb7+ändringar
+2026/10/08 19:53:17 INFO player registered id=afe4e3cb-0a14-45e8-9635-9c45ec7300f9 username=trader-f707995c-163e-474b-8899-5f30fde801fe
+--- FAIL: TestGiftDeliveryLifecycle (0.08s)
+    --- FAIL: TestGiftDeliveryLifecycle/new_owner (0.08s)
+        province_gift_test.go:240: notices=2 outcomes=1, want 3/1
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.078s
+FAIL

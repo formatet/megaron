@@ -1,0 +1,8 @@
+» färsk DB på migration 160 · commit 31224eb7+ändringar
+2026/10/08 19:53:26 INFO player registered id=d82519fd-ffbb-4cb9-8eeb-808275b7f319 username=trader-ecfd8c33-8b66-4746-86d3-aa309dea109e
+--- FAIL: TestGiftCapabilityWithOneOwnCity (0.08s)
+    --- FAIL: TestGiftCapabilityWithOneOwnCity/contacted (0.08s)
+        province_gift_test.go:390: transfer available=false with hidden=false: {Name:transfer Category:trade Purpose:Send goods to your own city or as a gift to another Wanax. All cargo can be intercepted. Available:false Requirements:[{Text:an own or contacted foreign destination Satisfied:true Detail:1 own settlements; known destination: true Hint:contact another city or found a colony} {Text:a good in stock to move Satisfied:false Detail:no goods in stock to move Hint:allocate labor to a producible good, or wait for stock to accrue}]}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.078s
+FAIL

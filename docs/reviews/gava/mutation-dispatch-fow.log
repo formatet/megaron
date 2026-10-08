@@ -1,0 +1,7 @@
+» färsk DB på migration 160 · commit 31224eb7+ändringar
+2026/10/08 19:53:03 INFO player registered id=76e42466-71e7-44df-a2ea-5757aeb58a7e username=trader-2ff476a6-4e7c-4622-aefc-00e9a34a0fdc
+--- FAIL: TestGiftHiddenForeignCityDeniedWithoutDebit (0.07s)
+    province_gift_test.go:65: hidden destination returned 201: map[arrival_tick:23 arrives_at:2026-10-09T18:53:03.084387427+02:00 category:land departure_tick:0 distance:20 kind:gift route_id:574e2afa-97a8-4849-8810-b0a13598b44f sent_qty:50 transport_id:a18489ae-cc12-4344-81f6-5a2bddbb4536 travel_min:1380 travel_ticks:23], want 403
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.070s
+FAIL

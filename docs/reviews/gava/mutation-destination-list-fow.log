@@ -1,0 +1,13 @@
+» färsk DB på migration 160 · commit eb523aa2+ändringar
+=== RUN   TestGiftDestinationListMatchesLetterFOW
+=== RUN   TestGiftDestinationListMatchesLetterFOW/contacted
+2026/10/08 19:21:28 INFO player registered id=ab1730f6-89a2-413c-864f-3926cd04b7ec username=trader-bc75cbe5-049c-42ed-8426-7659a25aefde
+=== RUN   TestGiftDestinationListMatchesLetterFOW/hidden
+2026/10/08 19:21:28 INFO player registered id=cf3e2644-5916-445b-8d7b-adda1b757b5e username=trader-1592e31d-e3dc-48be-a704-1d1f5636392b
+    province_gift_test.go:101: hidden destination leaked: [{ID:e9110336-deeb-40d1-a66a-92440667a31d Owner:2314fe58-71d4-48f6-b850-92d2d54d7c4c Name:Dest OwnerName:recipient-aa978eee-3901-4e14-8b9b-2ff9682b2a78 Own:false}]
+--- FAIL: TestGiftDestinationListMatchesLetterFOW (0.13s)
+    --- PASS: TestGiftDestinationListMatchesLetterFOW/contacted (0.06s)
+    --- FAIL: TestGiftDestinationListMatchesLetterFOW/hidden (0.07s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.132s
+FAIL

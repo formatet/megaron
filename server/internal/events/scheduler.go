@@ -74,6 +74,7 @@ const (
 	ScheduledMessengerStayEnd ScheduledEventType = "MessengerStayEnd"
 	ScheduledKharisTick       ScheduledEventType = "KharisTick"
 	ScheduledTradeDelivery    ScheduledEventType = "TradeDelivery"
+	ScheduledGiftDelivery     ScheduledEventType = "GiftDelivery"
 	ScheduledTradeReturn      ScheduledEventType = "TradeReturn"
 	ScheduledLogisticsArrival ScheduledEventType = "LogisticsArrival"
 	// Physical goods transport (movement-motor transport layer) — a caravan/ship

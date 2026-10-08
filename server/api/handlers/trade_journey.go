@@ -39,3 +39,31 @@ func lockOwnedTradeSettlements(ctx context.Context, tx pgx.Tx, worldID, ownerID,
 	}
 	return rows.Err() == nil && count == wanted
 }
+
+// Foreign gifts preserve both endpoint owners at dispatch. Ordered locks retain
+// the existing own→own deadlock avoidance without weakening origin ownership.
+func lockGiftSettlements(ctx context.Context, tx pgx.Tx, worldID, sender, recipient, origin, destination uuid.UUID) bool {
+	rows, err := tx.Query(ctx, `SELECT id,owner_id,state FROM settlements WHERE world_id=$1 AND (id=$2 OR id=$3) ORDER BY id FOR UPDATE`, worldID, origin, destination)
+	if err != nil {
+		return false
+	}
+	defer rows.Close()
+	n := 0
+	for rows.Next() {
+		var id uuid.UUID
+		var owner *uuid.UUID
+		var state string
+		if rows.Scan(&id, &owner, &state) != nil || owner == nil || state != "active" {
+			return false
+		}
+		expected := sender
+		if id == destination {
+			expected = recipient
+		}
+		if *owner != expected {
+			return false
+		}
+		n++
+	}
+	return rows.Err() == nil && n == 2
+}
