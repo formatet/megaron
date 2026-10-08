@@ -7,7 +7,7 @@ import {
   GARRISON_DOT_ZOOM, ACTIVITY_BADGE_ZOOM, ROAD_DEPOSIT_ZOOM,
   PAN_SPEED_PX_PER_SEC,
 } from '../config.js';
-import { isTypingTarget } from '../ui/format.js';
+import { isTypingTarget, esc } from '../ui/format.js';
 import { fmtNum } from '../ui/fmt_num.js';
 import { canonicalUnitType, actorName } from '../ui/actornames.js';
 import { drawActor, spriteRuns, FOREIGN_ACCENT, FOREIGN_OUTLINE } from './actorsprites.js';
@@ -4349,6 +4349,20 @@ function hostStoreLine(label, s) {
   return `${label} lasts ${fmtNum(days)} game ${days === 1 ? 'day' : 'days'}`;
 }
 
+// Summarize the same existing forecast. Do not round before deciding yes/no.
+function hostForecastSummaryHTML(p) {
+  const net = p?.grain?.est_net_per_tick;
+  const feeds = typeof net === 'number' && Number.isFinite(net) ? (net >= 0 ? 'yes' : 'no') : 'unknown';
+  const potential = good => {
+    if (!p?.goods || typeof p.goods !== 'object') return 'unknown';
+    const rate = p.goods[good] ?? 0;
+    return typeof rate === 'number' && Number.isFinite(rate) ? (rate > 0 ? 'yes' : 'no') : 'unknown';
+  };
+  return `<div class="inspect-row"><span class="ir-label">Feeds itself:</span><span>${feeds}</span></div>`
+    + `<div class="inspect-row"><span class="ir-label">Timber:</span><span>${potential('lumber')}</span></div>`
+    + `<div class="inspect-row"><span class="ir-label">Stone:</span><span>${potential('stone')}</span></div>`;
+}
+
 async function openHostPanel(h, tile) {
   // Refresh the store numbers on every open — they drain per tick.
   try {
@@ -4358,12 +4372,17 @@ async function openHostPanel(h, tile) {
       State.founderPhase = fp.active ? fp : null;
     }
   } catch (_) {}
+  if (State.selectedHex?.q !== h.q || State.selectedHex?.r !== h.r) return;
   const fp = State.founderPhase;
   if (!fp) { openHexPanel(h); return; } // settled meanwhile — normal routing
 
   document.getElementById('ip-name').textContent = 'Nomadic Host';
   setCityFieldsVisible(false);
   fillTerrainFields(tile);
+  const depositsRow = document.getElementById('ip-deposits-row');
+  const deposits = depositsRow.style.display === 'none' ? '—' : document.getElementById('ip-deposits').textContent;
+  depositsRow.style.display = 'none';
+  document.getElementById('ip-produces-row').style.display = 'none';
 
   // Stores and forecast go in the SCROLLING body; only the action stays in the
   // foot. Both used to live in the foot, which has no scroll of its own — so a
@@ -4373,14 +4392,19 @@ async function openHostPanel(h, tile) {
   // past the panel. The forecast is unbounded by nature; the button must not
   // share a container with it.
   document.getElementById('ip-body-extra').innerHTML =
-    `<div style="margin-bottom:.5rem;line-height:1.5">
+    `<div id="ip-found-summary">Fetching founding forecast…</div>
+     <details id="ip-host-details" class="dsec"><summary class="dsec-title">Details</summary>
+     <div style="margin-bottom:.5rem;line-height:1.5">
+       <div>Deposits: ${esc(deposits)}</div>
+       <div>Produces: ${esc(producesText(tile))}</div>
        <div>${fmtNum(fp.population || 0)} people · cannot fight · sight 2 hexes (4 by water or on mountains)</div>
        <div>${hostStoreLine('Food', fp.grain)}</div>
        <div>${hostStoreLine('Escort pay', fp.silver)}</div>
        <div>${fmtNum(fp.spearmen_in_field || 0)} Spearmen ${fp.spearmen_in_field === 1 ? 'cohort' : 'cohorts'} in the field</div>
        <div>Messengers free to send</div>
      </div>
-     <div id="ip-found-preview" style="font-size:.73rem;border-top:1px solid var(--border);padding-top:.4rem">Fetching founding forecast…</div>`;
+     <div id="ip-found-preview" style="font-size:.73rem;border-top:1px solid var(--border);padding-top:.4rem">Fetching founding forecast…</div>
+     </details>`;
 
   const foot = document.getElementById('ip-foot');
   foot.innerHTML =
@@ -4398,14 +4422,23 @@ async function openHostPanel(h, tile) {
   // The forecast for the hex the host STANDS on — settle founds here, nowhere else.
   // starter_farm=1: a metropolis founding seeds a starter farm (createMetropolis),
   // unlike a plain colony — see founding-forecast-fix-plan.
+  const previewEl = document.getElementById('ip-found-preview');
+  const summaryEl = document.getElementById('ip-found-summary');
+  const stillThisHost = () => State.founderPhase && State.selectedHex?.q === h.q && State.selectedHex?.r === h.r
+    && document.getElementById('ip-found-preview') === previewEl;
+  summaryEl.innerHTML = hostForecastSummaryHTML(null);
   fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/colonize-preview?q=${h.q}&r=${h.r}`
       + `&pop=${fp.population}&seed=${Math.max(0, Math.round(fp.grain?.amount || 0))}&starter_farm=1`)
     .then(r => r.ok ? r.json() : null)
     .then(p => {
-      const el = document.getElementById('ip-found-preview');
-      if (el && p) el.innerHTML = window.renderColonizePreviewHTML(p);
+      if (!stillThisHost()) return;
+      summaryEl.innerHTML = hostForecastSummaryHTML(p);
+      if (p) previewEl.innerHTML = window.renderColonizePreviewHTML(p);
+      else previewEl.textContent = 'Founding forecast unavailable.';
     })
-    .catch(() => {});
+    .catch(() => {
+      if (stillThisHost()) previewEl.textContent = 'Founding forecast unavailable.';
+    });
 
   const settleButton = document.getElementById('ip-settle-btn');
   const result = document.getElementById('ip-settle-err');
@@ -4453,6 +4486,7 @@ function openHexPanel(h) {
   // region gets reset. Without it the Host panel's stores would still be showing
   // after the next click on a sea hex.
   document.getElementById('ip-body-extra').innerHTML = '';
+  document.getElementById('ip-produces-row').style.display = '';
 
   const tile = State.tileData.find(t => t.q === h.q && t.r === h.r);
   const prov = State.provinceData.find(p => p.q === h.q && p.r === h.r);

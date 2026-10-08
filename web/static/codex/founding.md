@@ -2,9 +2,9 @@ Founding your first city — the **metropolis** — is the one decision in Megar
 
 ## Read the ground first
 
-While the [[horde|Host]] panel is open it shows a **founding forecast** for the hex you stand on, and it updates as you walk. The [[catchment]] you would claim glows on the map.
+The [[horde|Host]] panel shows the terrain and three short assessments for the hex you stand on: **Feeds itself: yes/no**, **Timber: yes/no**, and **Stone: yes/no**. They use the existing forecast for known ground; unknown means the forecast is unavailable. The [[catchment]] you would claim glows on the map. Open **Details** for the full founding forecast, deposits, production, gifts, each catchment hex, and the Host’s people and supplies. It updates as you walk.
 
-The forecast gives the grain your fields would produce against what your people would eat, and one of three verdicts:
+Under **Details**, the forecast gives the grain your fields would produce against what your people would eat, and one of three verdicts:
 
 - **It feeds itself** — the fields cover the mouths with room to spare.
 - **Marginal** — positive but thin. Draft one cohort and you are eating into the granary.
@@ -12,7 +12,7 @@ The forecast gives the grain your fields would produce against what your people 
 
 The gap between *marginal* and *does not feed itself* has killed more young cities than any war. See [[food]].
 
-Below the grain line, look for **deposits**: copper, tin, silver, cedar. A site with metal under it is worth walking extra days for. A site with none is not a mistake — you can buy metal ([[trade]]) — but you will be buying it from someone who walked those days. Read [[bronze]] before you decide.
+In **Details**, below the grain line, look for **deposits**: copper, tin, silver, cedar. A site with metal under it is worth walking extra days for. A site with none is not a mistake — you can buy metal ([[trade]]) — but you will be buying it from someone who walked those days. Read [[bronze]] before you decide.
 
 ## Where you cannot found
 

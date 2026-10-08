@@ -1,0 +1,6 @@
+# Q — enkel Host-panel
+
+Kontrakt före kod; bas35232e3d, order `.agents/order-war-tillbaka-och-host.md` §Q.
+Problem: platsvalet drunknar i prognos/förrådsrader. Spelarsanning: terräng, Feeds itself yes/no, Timber yes/no, Stone yes/no och Found är synliga; all detaljerad befintlig information går att öppna via EN stängd Details. Invariant: samma colonize-preview/status/request och FOW; ingen ny ekonomi/prognosformel; inline grundning/cancel kvar. Scope: Host-HTML och forecast-sammanfattning i map.js, produces-radens ID i map.html, founding Codex och prov. Övriga paneler/renderer/server/keryx utanför. Acceptans: sammanfattning från grain.est_net_per_tick≥0 och positiva goods.lumber/goods.stone; tomt eller felaktigt svar visar unknown, ingen falsk yes; alla gamla detaljer/kontroller bevaras; följande panel återställer produces; grundning kvar nåbar desktop/390; sena forecast-svar får inte ändra ny panel. Stopvillkor: nytt server-/kanonbehov. Bevisar geografi-grindens platsval.
+Bevisplan: oförändrad JS och actualhealth-bas, riktade actual-map-click tester rött→grönt och fysisk summary/Details-mutation; färsk riktig webb register/join→Host→Details→inline avbryt→confirm→city två gånger; BILD 1:1 före/efter; skyddade handlers/server diff.
+Status: pågår.
