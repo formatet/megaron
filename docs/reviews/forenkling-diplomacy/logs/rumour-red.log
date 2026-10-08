@@ -2,13 +2,13 @@ TAP version 13
 # Subtest: M: actual drawer offers exactly Correspondence and Known
 ok 1 - M: actual drawer offers exactly Correspondence and Known
   ---
-  duration_ms: 14.488037
+  duration_ms: 14.428976
   type: 'test'
   ...
 # Subtest: M: Known keeps ruler and city knowledge, writes numbers in words, gates rumours
 not ok 2 - M: Known keeps ruler and city knowledge, writes numbers in words, gates rumours
   ---
-  duration_ms: 2.104305
+  duration_ms: 2.175589
   type: 'test'
   location: '/tmp/megaron-codex-diplomacy-simple-20261008/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:30:1'
   failureType: 'testCodeFailure'
@@ -44,39 +44,45 @@ not ok 2 - M: Known keeps ruler and city knowledge, writes numbers in words, gat
 # Subtest: M: first letter and both trade directions remain reachable without any prior letter
 ok 3 - M: first letter and both trade directions remain reachable without any prior letter
   ---
-  duration_ms: 11.266599
+  duration_ms: 11.446827
   type: 'test'
   ...
 # Subtest: M: selecting rumour, own city or a removed contact creates no draft or dispatch
 ok 4 - M: selecting rumour, own city or a removed contact creates no draft or dispatch
   ---
-  duration_ms: 0.362616
+  duration_ms: 0.40057
   type: 'test'
   ...
 # Subtest: M: host still reads both tabs but does not gain a settlement-only trade composer
 ok 5 - M: host still reads both tabs but does not gain a settlement-only trade composer
   ---
-  duration_ms: 0.554971
+  duration_ms: 0.566731
   type: 'test'
   ...
 # Subtest: M: failed Known fetch offers retry without inventing an empty directory
 ok 6 - M: failed Known fetch offers retry without inventing an empty directory
   ---
-  duration_ms: 1.321667
+  duration_ms: 1.279377
   type: 'test'
   ...
 # Subtest: M: Write clears a stale composer while the chosen conversation loads
 ok 7 - M: Write clears a stale composer while the chosen conversation loads
   ---
-  duration_ms: 5.187286
+  duration_ms: 7.652289
   type: 'test'
   ...
-1..7
-# tests 7
+# Subtest: M: late unavailable-actions response preserves a typed first letter
+ok 8 - M: late unavailable-actions response preserves a typed first letter
+  ---
+  duration_ms: 1.460805
+  type: 'test'
+  ...
+1..8
+# tests 8
 # suites 0
-# pass 6
+# pass 7
 # fail 1
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 79.17894
+# duration_ms 83.063734

@@ -2,57 +2,76 @@ TAP version 13
 # Subtest: M: actual drawer offers exactly Correspondence and Known
 ok 1 - M: actual drawer offers exactly Correspondence and Known
   ---
-  duration_ms: 14.213487
+  duration_ms: 14.40424
   type: 'test'
   ...
 # Subtest: M: Known keeps ruler and city knowledge, writes numbers in words, gates rumours
 ok 2 - M: Known keeps ruler and city knowledge, writes numbers in words, gates rumours
   ---
-  duration_ms: 1.820475
+  duration_ms: 1.848666
   type: 'test'
   ...
 # Subtest: M: first letter and both trade directions remain reachable without any prior letter
 ok 3 - M: first letter and both trade directions remain reachable without any prior letter
   ---
-  duration_ms: 11.218793
+  duration_ms: 11.488581
   type: 'test'
   ...
 # Subtest: M: selecting rumour, own city or a removed contact creates no draft or dispatch
 ok 4 - M: selecting rumour, own city or a removed contact creates no draft or dispatch
   ---
-  duration_ms: 0.422237
+  duration_ms: 0.410243
   type: 'test'
   ...
 # Subtest: M: host still reads both tabs but does not gain a settlement-only trade composer
 ok 5 - M: host still reads both tabs but does not gain a settlement-only trade composer
   ---
-  duration_ms: 0.572866
+  duration_ms: 0.597219
   type: 'test'
   ...
 # Subtest: M: failed Known fetch offers retry without inventing an empty directory
 ok 6 - M: failed Known fetch offers retry without inventing an empty directory
   ---
-  duration_ms: 1.333152
+  duration_ms: 1.360535
   type: 'test'
   ...
 # Subtest: M: Write clears a stale composer while the chosen conversation loads
 ok 7 - M: Write clears a stale composer while the chosen conversation loads
   ---
-  duration_ms: 5.16775
+  duration_ms: 5.100068
   type: 'test'
   ...
 # Subtest: M: late unavailable-actions response preserves a typed first letter
-ok 8 - M: late unavailable-actions response preserves a typed first letter
+not ok 8 - M: late unavailable-actions response preserves a typed first letter
   ---
-  duration_ms: 1.251869
+  duration_ms: 1.853501
   type: 'test'
+  location: '/tmp/megaron-codex-diplomacy-simple-20261008/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:95:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + ''
+    - 'Keep these words while capabilities load.'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'Keep these words while capabilities load.'
+  actual: ''
+  operator: 'strictEqual'
+  stack: |-
+    file:///tmp/megaron-codex-diplomacy-simple-20261008/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:104:10
+    async rig (file:///tmp/megaron-codex-diplomacy-simple-20261008/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:21:7)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
   ...
 1..8
 # tests 8
 # suites 0
-# pass 8
-# fail 0
+# pass 7
+# fail 1
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 78.149639
+# duration_ms 79.479978

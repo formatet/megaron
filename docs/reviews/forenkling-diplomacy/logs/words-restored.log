@@ -2,51 +2,57 @@ TAP version 13
 # Subtest: M: actual drawer offers exactly Correspondence and Known
 ok 1 - M: actual drawer offers exactly Correspondence and Known
   ---
-  duration_ms: 14.141858
+  duration_ms: 14.202847
   type: 'test'
   ...
 # Subtest: M: Known keeps ruler and city knowledge, writes numbers in words, gates rumours
 ok 2 - M: Known keeps ruler and city knowledge, writes numbers in words, gates rumours
   ---
-  duration_ms: 1.85118
+  duration_ms: 1.810631
   type: 'test'
   ...
 # Subtest: M: first letter and both trade directions remain reachable without any prior letter
 ok 3 - M: first letter and both trade directions remain reachable without any prior letter
   ---
-  duration_ms: 11.307726
+  duration_ms: 11.25801
   type: 'test'
   ...
 # Subtest: M: selecting rumour, own city or a removed contact creates no draft or dispatch
 ok 4 - M: selecting rumour, own city or a removed contact creates no draft or dispatch
   ---
-  duration_ms: 0.377287
+  duration_ms: 0.385408
   type: 'test'
   ...
 # Subtest: M: host still reads both tabs but does not gain a settlement-only trade composer
 ok 5 - M: host still reads both tabs but does not gain a settlement-only trade composer
   ---
-  duration_ms: 0.547364
+  duration_ms: 0.585281
   type: 'test'
   ...
 # Subtest: M: failed Known fetch offers retry without inventing an empty directory
 ok 6 - M: failed Known fetch offers retry without inventing an empty directory
   ---
-  duration_ms: 1.353272
+  duration_ms: 1.287407
   type: 'test'
   ...
 # Subtest: M: Write clears a stale composer while the chosen conversation loads
 ok 7 - M: Write clears a stale composer while the chosen conversation loads
   ---
-  duration_ms: 4.855866
+  duration_ms: 5.171194
   type: 'test'
   ...
-1..7
-# tests 7
+# Subtest: M: late unavailable-actions response preserves a typed first letter
+ok 8 - M: late unavailable-actions response preserves a typed first letter
+  ---
+  duration_ms: 1.260692
+  type: 'test'
+  ...
+1..8
+# tests 8
 # suites 0
-# pass 7
+# pass 8
 # fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 76.534427
+# duration_ms 79.434292

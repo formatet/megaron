@@ -2,43 +2,43 @@ TAP version 13
 # Subtest: M: actual drawer offers exactly Correspondence and Known
 ok 1 - M: actual drawer offers exactly Correspondence and Known
   ---
-  duration_ms: 14.065509
+  duration_ms: 14.251928
   type: 'test'
   ...
 # Subtest: M: Known keeps ruler and city knowledge, writes numbers in words, gates rumours
 ok 2 - M: Known keeps ruler and city knowledge, writes numbers in words, gates rumours
   ---
-  duration_ms: 1.767452
+  duration_ms: 1.817623
   type: 'test'
   ...
 # Subtest: M: first letter and both trade directions remain reachable without any prior letter
 ok 3 - M: first letter and both trade directions remain reachable without any prior letter
   ---
-  duration_ms: 11.655567
+  duration_ms: 11.305241
   type: 'test'
   ...
 # Subtest: M: selecting rumour, own city or a removed contact creates no draft or dispatch
 ok 4 - M: selecting rumour, own city or a removed contact creates no draft or dispatch
   ---
-  duration_ms: 0.362648
+  duration_ms: 0.382591
   type: 'test'
   ...
 # Subtest: M: host still reads both tabs but does not gain a settlement-only trade composer
 ok 5 - M: host still reads both tabs but does not gain a settlement-only trade composer
   ---
-  duration_ms: 0.572469
+  duration_ms: 0.53187
   type: 'test'
   ...
 # Subtest: M: failed Known fetch offers retry without inventing an empty directory
 ok 6 - M: failed Known fetch offers retry without inventing an empty directory
   ---
-  duration_ms: 1.266877
+  duration_ms: 1.259913
   type: 'test'
   ...
 # Subtest: M: Write clears a stale composer while the chosen conversation loads
 not ok 7 - M: Write clears a stale composer while the chosen conversation loads
   ---
-  duration_ms: 5.200785
+  duration_ms: 5.429758
   type: 'test'
   location: '/tmp/megaron-codex-diplomacy-simple-20261008/web/static/js/megaron/ui/drawers/diplomacy_simple.test.mjs:83:1'
   failureType: 'testCodeFailure'
@@ -58,12 +58,18 @@ not ok 7 - M: Write clears a stale composer while the chosen conversation loads
     async Test.run (node:internal/test_runner/test:1054:7)
     async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
   ...
-1..7
-# tests 7
+# Subtest: M: late unavailable-actions response preserves a typed first letter
+ok 8 - M: late unavailable-actions response preserves a typed first letter
+  ---
+  duration_ms: 1.7071
+  type: 'test'
+  ...
+1..8
+# tests 8
 # suites 0
-# pass 6
+# pass 7
 # fail 1
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 78.246085
+# duration_ms 78.596556

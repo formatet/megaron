@@ -387,7 +387,8 @@ async function loadDipThreads() {
       html += '</div></div>'; // close thread-body + thread
       return html;
     }).join('');
-    el.innerHTML += await renderLockedActions('diplomacy');
+    // Do not recreate an already writable textarea when capability hints arrive.
+    el.insertAdjacentHTML('beforeend', await renderLockedActions('diplomacy'));
 
   } catch(e) {
     console.error('loadDipThreads', e);

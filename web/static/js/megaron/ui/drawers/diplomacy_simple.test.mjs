@@ -9,12 +9,12 @@ async function rig(run) {
   const saved={document:globalThis.document,fetch:globalThis.fetch,localStorage:globalThis.localStorage,setTimeout:globalThis.setTimeout};
   const nodes=new Map(),calls=[];
   const cls={add(){},remove(){},toggle(){}};
-  function node(id){if(!nodes.has(id))nodes.set(id,{id,innerHTML:'',style:{},dataset:{},classList:cls,value:'',querySelectorAll:()=>[],addEventListener(){},click(){this.listener?.call(this);}});return nodes.get(id);}
+  function node(id){if(!nodes.has(id))nodes.set(id,{id,_html:'',get innerHTML(){return this._html;},set innerHTML(html){this._html=html;for(const [,field] of html.matchAll(/<textarea id="([^"]+)"/g))node(field).value='';},insertAdjacentHTML(_position,html){this._html+=html;},style:{},dataset:{},classList:cls,value:'',querySelectorAll:()=>[],addEventListener(){},click(){this.listener?.call(this);}});return nodes.get(id);}
   const body=node('diplomacy-body');
   body.querySelectorAll=selector=>selector==='.dtab'?[...body.innerHTML.matchAll(/data-tab="([^"]+)"/g)].map(([,name])=>{const t=node('tab-'+name);t.dataset.tab=name;t.addEventListener=(_,fn)=>t.listener=fn;return t;}):selector==='.city-tab'?[...body.innerHTML.matchAll(/id="(dtab-[^"]+)"/g)].map(([,id])=>node(id)):[];
   globalThis.document={getElementById:id=>id==='net-status'?null:node(id),querySelector:()=>({value:'buy'})};
   globalThis.localStorage={getItem:()=>null};globalThis.setTimeout=()=>0;
-  State.WORLD_ID='world';State.MY_SETTLEMENT_ID='origin';State.provinceData=[{id:'province',name:'Kyme',settlement_id:'contact',own:false,owner:'Alector'},{settlement_id:'origin',name:'Nostos',own:true},{settlement_id:'outpost',name:'Outpost',is_outpost:true},{settlement_id:'unnamed'}];
+  State.WORLD_ID='world';State.MY_SETTLEMENT_ID='origin';State.provinceData=[{id:'province',name:'Kyme',settlement_id:'contact',own:false,owner:'Alector'},{id:'own-province',settlement_id:'origin',name:'Nostos',own:true,is_capital:true},{settlement_id:'outpost',name:'Outpost',is_outpost:true},{settlement_id:'unnamed'}];
   const cities=[{name:'Kyme',owner:'Alector',owner_id:'ruler',settlement_id:'contact',knowledge:'known',q:3,r:4,copper_deposit:true},{name:'Rumour city',owner:'Alector',owner_id:'ruler',settlement_id:'rumour',knowledge:'rumour',bearing:'~15 hexes east of Nostos',industry_hint:'tin'}, {name:'Nostos',owner:'Me',own:true,settlement_id:'origin',knowledge:'known'}];
   const rulers=[{owner:'Alector',owner_id:'ruler',known_cities:1,rumour_cities:1}];
   globalThis.fetch=async(url,opts={})=>{calls.push({url,opts});let data=[];if(url.endsWith('/cities'))data=cities;else if(url.endsWith('/diplomacy'))data=rulers;else if(url.endsWith('/goods'))data=[{key:'grain',name:'Grain'}];else if(opts.method==='POST')data={id:'letter',arrives_at:new Date(Date.now()+60000).toISOString()};return new Response(JSON.stringify(data),{status:opts.method==='POST'?201:200});};
@@ -89,4 +89,18 @@ test('M: Write clears a stale composer while the chosen conversation loads',()=>
   try {assert.doesNotMatch(node('dtab-threads').innerHTML,/dip-inline-compose/);assert.match(node('dtab-threads').innerHTML,/Loading/);}
   finally {await new Promise(resolve=>setImmediate(resolve));release();await pending;}
   assert.match(node('dtab-threads').innerHTML,/dip-inline-compose/);
+}));
+
+
+test('M: late unavailable-actions response preserves a typed first letter',()=>rig(async({node})=>{
+  await dip.loadDiplomacyDrawer();
+  const real=globalThis.fetch;let release;
+  globalThis.fetch=async(url,opts)=>url.endsWith('/actions')?await new Promise(resolve=>{release=()=>resolve(new Response(JSON.stringify([{category:'diplomacy',available:false,name:'reply',requirements:[]}]),{status:200}));}):real(url,opts);
+  const pending=dip.dipWrite('contact');
+  for(let i=0;i<20&&!release;i++)await new Promise(resolve=>setImmediate(resolve));
+  assert.ok(release,'actual composer reaches the delayed capability request');
+  const text=node('dip-thread-Kyme-compose-text');text.value='Keep these words while capabilities load.';
+  release();await pending;
+  assert.equal(text.value,'Keep these words while capabilities load.');
+  assert.match(node('dtab-threads').innerHTML,/Unavailable:.*reply/);
 }));

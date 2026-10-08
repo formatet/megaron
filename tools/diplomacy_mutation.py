@@ -11,6 +11,7 @@ cases=[
  ('rumour','const contacts = new Map(writableCities().map(p => [p.settlement_id, p]));', 'const contacts = new Map(cities.map(p => [p.settlement_id, p]));','Known keeps ruler and city knowledge'),
  ('draft-time', "(msgs.length ? fmtAgo(latest.arrived_at || latest.sent_at || latest.created_at) : 'New conversation')", "fmtAgo(latest.arrived_at || latest.sent_at || latest.created_at)", 'first letter and both trade directions'),
  ('loading', "  document.getElementById('dtab-threads').innerHTML = '<div class=\"loading\">Loading…</div>';", '', 'Write clears a stale composer'),
+ ('late-actions', "el.insertAdjacentHTML('beforeend', await renderLockedActions('diplomacy'));", "el.innerHTML += await renderLockedActions('diplomacy');", 'late unavailable-actions response preserves'),
  ('words','${numberWords(r.known_cities)} known', '${r.known_cities} known','Known keeps ruler and city knowledge'),
 ]
 for name,old,new,named in cases:

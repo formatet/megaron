@@ -8,5 +8,15 @@
     "path": "/tmp/megaron-inspect-after-land/temenos",
     "bytes": 30724030,
     "sha256": "d03a49521e8ff0f17228fceae4635226a155c74c919027899c84805ff5e8c8bf"
+  },
+  {
+    "path": "/tmp/megaron-diplomacy-after/temenos",
+    "bytes": 30724134,
+    "sha256": "3406e5ccb4cea5e626157d0d47f8a18c226f873278502c2b5e6458e61a67911b"
+  },
+  {
+    "path": "/tmp/megaron-diplomacy-after-clean/temenos",
+    "bytes": 30724134,
+    "sha256": "946f55686ff35ce267b96893a0f675f788ed235f79841aa028f9fbab70924d5a"
   }
 ]

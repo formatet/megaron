@@ -8,7 +8,7 @@ import {loadDiplomacyDrawer} from './diplomacy.js';
 test('Correspondence reads host and city outboxes and renders their letters', async () => {
   const original={fetch:globalThis.fetch,document:globalThis.document,localStorage:globalThis.localStorage};
   const body={innerHTML:'',querySelectorAll:()=>[]};
-  const threads={innerHTML:'',querySelectorAll:()=>[]};
+  const threads={innerHTML:'',querySelectorAll:()=>[],insertAdjacentHTML(_where,html){this.innerHTML+=html;}};
   globalThis.document={getElementById:id=>id==='diplomacy-body'?body:id==='dtab-threads'?threads:null};
   globalThis.localStorage={getItem:()=>null};
   State.WORLD_ID='test-world';State.provinceData=[];
