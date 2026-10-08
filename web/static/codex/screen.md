@@ -23,7 +23,7 @@ Every drawer has a **?** in its header that opens its article here.
 
 ## The map
 
-- **Left-click a hex** to look at it — the inspect panel opens on the right. A foreign city shows its owner and **Defence: weak or strong**, a broad description of the walls and land defenders you could already inspect. **Unknown** means the defence data could not be read. You can still write a message or open **March here**.
+- **Left-click a hex** to look at it — the inspect panel opens on the right. A foreign city shows its owner and **Defence: Defended** when walls or land defenders are seen, or **No defenders seen** when both are known to be absent. **Unknown** means the defence data could not be read. You can still write a message or open **March here**.
 - **Right-click a hex** to give an order there — the march menu opens ([[marching]]).
 - Drag, or use WASD or the arrow keys, to pan. **+** and **−** zoom, **⌂** re-centres.
 - **♫** silences all sound: the sign-in screen's opening theme, the music, the horn when troops receive a march order, the clash of a resolved battle, a short call when your units arrive, and a soft chime for each new dispatch while you are playing.

@@ -170,7 +170,7 @@ try:
         expect(page.locator('#ip-army')).to_contain_text('DP')
         assert page.locator('#ip-culture-row').is_visible() and page.locator('#ip-walls-row').is_visible()
     else:
-        expect(page.locator('#ip-defence')).to_have_text('strong')
+        expect(page.locator('#ip-defence')).to_have_text('Defended')
         assert page.locator('#ip-culture-row,#ip-walls-row,#ip-army-row').count()==0
         assert 'DP' not in page.locator('#inspect-panel').inner_text()
     expect(page.locator('#ip-owner')).to_have_text(marker['owner'])

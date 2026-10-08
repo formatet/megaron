@@ -4201,7 +4201,7 @@ function openCityPanel(h, tile, marker, units, foreignUnits) {
         document.getElementById('ip-defence-row').style.display === 'none') return;
     const defended = marker.walls > 0 || (army &&
       ((army.Spearman || 0) > 0 || (army.EliteInfantry || 0) > 0 || (army.WarChariot || 0) > 0));
-    defence.textContent = defended ? 'strong' : army && Number.isFinite(marker.walls) ? 'weak' : 'unknown';
+    defence.textContent = defended ? 'Defended' : army && Number.isFinite(marker.walls) ? 'No defenders seen' : 'unknown';
   };
   showDefence(null);
   fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${marker.id}/army`)

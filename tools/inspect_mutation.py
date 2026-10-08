@@ -6,7 +6,7 @@ ROOT=Path(__file__).resolve().parents[1];OUT=Path(sys.argv[1]);OUT.mkdir(parents
 mapfile='web/static/js/megaron/render/map.js';test=ROOT/'web/static/js/megaron/render/inspect_simple.test.mjs'
 cases=[
  ('words',mapfile,'numberWords(days)','numberWords(days / 24)','host food uses exact unscaled game days'),
- ('weak',mapfile,"defended ? 'strong'","true ? 'strong'",'zero defenders and no walls are weak'),
+ ('empty',mapfile,"defended ? 'Defended'","true ? 'Defended'",'zero defenders and no walls means no defenders seen'),
  ('stale',mapfile,"document.getElementById('ip-defence-row').style.display === 'none'",'false','late army reply must not change fog panel'),
  ('blocks','web/static/map.html','<div id="ip-body-extra"></div>','<div id="ip-culture-row">Culture</div><div id="ip-body-extra"></div>','obsolete inspect blocks removed'),
 ]

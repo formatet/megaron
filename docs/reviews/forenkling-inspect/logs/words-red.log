@@ -2,19 +2,19 @@ TAP version 13
 # Subtest: L actual inspect: owner and qualitative defence replace Culture/Walls/DP, actions keep IDs
 ok 1 - L actual inspect: owner and qualitative defence replace Culture/Walls/DP, actions keep IDs
   ---
-  duration_ms: 17.218112
+  duration_ms: 19.399868
   type: 'test'
   ...
 # Subtest: L actual inspect: fog never exposes marker/army and late army reply cannot update a different panel
 ok 2 - L actual inspect: fog never exposes marker/army and late army reply cannot update a different panel
   ---
-  duration_ms: 1.370398
+  duration_ms: 1.425946
   type: 'test'
   ...
 # Subtest: L actual Host: food and escort pay durations use exact game days in words, never wall time
 not ok 3 - L actual Host: food and escort pay durations use exact game days in words, never wall time
   ---
-  duration_ms: 1.691642
+  duration_ms: 1.490062
   type: 'test'
   location: '/tmp/megaron-codex-inspect-simple-20261008/web/static/js/megaron/render/inspect_simple.test.mjs:58:1'
   failureType: 'testCodeFailure'
@@ -45,4 +45,4 @@ not ok 3 - L actual Host: food and escort pay durations use exact game days in w
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 76.128959
+# duration_ms 86.829943
