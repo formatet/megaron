@@ -78,10 +78,7 @@ function recomputeChips() {
   chips.forEach((chip, i) => {
     const weight = i + 1;
     const width  = Math.round(MIN_W + (weight / totalW) * extra);
-    const depth  = n - 1 - i;
-    const op     = Math.max(0.42, 1 - depth * 0.1);
     chip.style.maxWidth = width + 'px';
-    chip.style.opacity  = op;
     const textEl = chip.querySelector('.dc-text');
     const timeEl = chip.querySelector('.dc-time');
     const xEl    = chip.querySelector('.dc-x');

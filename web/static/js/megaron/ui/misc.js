@@ -5,13 +5,20 @@ import { setSoundMuted } from './sfx.js';
 
 // ── Lawagetas advisory voice ──────────────────────────────────────────────
 export const LAWAGETAS_BRIEFS = {
-  city: 'Put your people to work, Wanax.',
-  war: 'Choose a host and give its orders, Wanax.',
-  diplomacy: 'Send word to those you have met, Wanax.',
-  economy: 'Keep your cities supplied, Wanax.',
-  kult: 'Choose what to ask of the gods, Wanax.',
-  notif: 'Read what has happened in your realm, Wanax.',
+  city:      "Your megaron rises above all you rule, Wanax. Here your people labor — farmers, craftsmen, soldiers — each serving the palace that feeds and protects them. Assign your workers well; a foundry lets your smiths turn copper and tin into bronze. Idle hands do not fill the granary.",
+  war:       "Bronze arms await your command, Wanax. March the army to distant lands — to raid, reinforce, or colonize. An order to recall or redirect a marching host travels by messenger, not by will alone; it takes time to arrive. In battle, numbers count, but walls and elite agema often decide the day.",
+  diplomacy: "Words travel on foot, Wanax — a messenger's legs are your reach. You may only treat with those cities whose walls your messengers have touched. The Known roll names the cities and rulers you have heard of; write to them, then make your offers — to buy or to sell.",
+  economy:   "The palace scribes track every ingot and measure of grain, Wanax. Move goods freely between your own cities, but silver alone crosses borders with strangers. Watch the Wants ledger — it names what your trading partners hunger for, and where your surplus might fetch a premium.",
+  kult:      "The gods watch your megaron, Wanax. Your temple's cult level and divine mood shape what rites you may call upon — tend it, and the gods answer; neglect it, and they turn away. Each prayer asks its own offering; choose with care.",
+  notif:     "Your herald brings word from beyond the megaron walls, Wanax — arrivals, battles resolved, buildings completed. Matters that demand your attention rise here first.",
 };
+
+// A brief is read once: dismissing it hides it for good in this browser
+// (Timothy 2026-10-08). No storage (private window) means it simply returns.
+const BRIEF_KEY = name => 'lb_dismissed_' + name;
+export function briefDismissed(name) {
+  try { return localStorage.getItem(BRIEF_KEY(name)) === '1'; } catch (_) { return false; }
+}
 
 export function drawerHelpHTML(name) {
   return `<button class="btn-small" onclick="openCodexForDrawer('${name}')" title="Read the Codex" aria-label="Read the Codex">?</button>`;
@@ -21,7 +28,7 @@ export function drawerHelpHTML(name) {
 export function showLawagatasBrief(name) {
   const text = LAWAGETAS_BRIEFS[name];
   if (!text) return;
-  if (sessionStorage.getItem('lb_dismissed_' + name)) return;
+  if (briefDismissed(name)) return;
   const drawer = document.getElementById('drawer-' + name);
   if (!drawer || drawer.querySelector('.lawagetas-brief')) return;
   const el = document.createElement('div');
@@ -38,7 +45,7 @@ export function showLawagatasBrief(name) {
 }
 
 export function dismissBrief(name) {
-  sessionStorage.setItem('lb_dismissed_' + name, '1');
+  try { localStorage.setItem(BRIEF_KEY(name), '1'); } catch (_) { /* no storage, no memory */ }
   const el = document.getElementById('lb-' + name);
   if (el) el.remove();
 }
