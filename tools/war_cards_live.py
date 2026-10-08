@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Real War cards, More/stance and march/recall to per-unit audit and home.
-Usage: python3 tools/war_cards_live.py OUT BUILD_COMMIT baseline|after|naval|restored|restored-naval [WEB_DIR]
+"""Real War cards, stance and march/recall to per-unit audit and home.
+Usage: python3 tools/war_cards_live.py OUT BUILD_COMMIT baseline|after|naval|before-restoration|restored|restored-naval [WEB_DIR]
 OUT contains a freshly built temenos. baseline uses archived unchanged WEB_DIR.
 Every arm creates fresh PG16/Redis and uses ordinary player APIs and web clicks;
 SQL is read-only audit, no fixtures. Only own processes/containers are removed.
@@ -20,9 +20,10 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = Path(sys.argv[1]).resolve()
 EXPECTED = sys.argv[2]
 MODE = sys.argv[3] if len(sys.argv) > 3 else "after"
-assert MODE in ("baseline", "after", "naval", "restored", "restored-naval")
-SIMPLIFIED = MODE in ("after", "naval")
+assert MODE in ("baseline", "after", "naval", "restored", "restored-naval", "before-restoration")
+SIMPLIFIED = MODE in ("after", "naval", "before-restoration")
 NAVAL = MODE in ("naval", "restored-naval")
+PLAIN = MODE in ("restored", "before-restoration")
 OUT.mkdir(parents=True, exist_ok=True)
 PREFIX = 'megaron-war-cards-' + secrets.token_hex(4)
 containers, errors = [], []
@@ -110,7 +111,7 @@ try:
     homeq,homer=city.get('q',city.get('map_q')),city.get('r',city.get('map_r'))
     tiles=api(worldpath+'/map',token=token)
     tiles=tiles if isinstance(tiles,list) else tiles['tiles']
-    nearby=[t for t in tiles if t['terrain'] not in ('fog','coastal_sea','deep_sea','river','river_ford','mountain_limestone','mountain_red') and not any(p.get('q')==t['q'] and p.get('r')==t['r'] for p in provinces) and max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer))>=1 and max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer))<=2]
+    nearby=[t for t in tiles if t['terrain'] not in ('fog','coastal_sea','deep_sea','river','river_ford','mountain_limestone','mountain_red') and not any(p.get('q')==t['q'] and p.get('r')==t['r'] for p in provinces) and max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer))>=1 and max(abs(t['q']-homeq),abs(t['r']-homer),abs(t['q']+t['r']-homeq-homer))<=(6 if PLAIN else 2)]
     from playwright.sync_api import sync_playwright, expect
     playwright=sync_playwright().start();browser=playwright.chromium.launch()
     page=browser.new_page(viewport={'width':1280,'height':900})
@@ -152,7 +153,7 @@ try:
             for label,width,height in [('desktop',1280,900),('mobile',390,844)]:
                 page.set_viewport_size({'width':width,'height':height})
                 shipcard.scroll_into_view_if_needed()
-                page.locator('#drawer-war').screenshot(path=str(OUT/('ship-'+action.lower()+'-more-'+label+'.png')))
+                page.locator('#drawer-war').screenshot(path=str(OUT/('ship-'+action.lower()+('-more-' if SIMPLIFIED else '-')+label+'.png')))
                 assert shipcard.evaluate('(e)=>e.scrollWidth<=e.clientWidth'),'ship More overflow'
             page.set_viewport_size({'width':1280,'height':900})
             with page.expect_response(lambda r:r.url.endswith('/units/'+ship['id']+'/'+action.lower()) and r.request.method=='POST') as pending:
@@ -187,7 +188,16 @@ try:
         war()
         if MODE!='baseline' and stance=='fortify':assert card.get_by_role('button',name='March',exact=True).count()==0
     card.get_by_role('button',name='March',exact=True).click()
-    centre=min(nearby,key=lambda t:(abs(t['r']-homer),abs(t['q']-homeq-4),t['q'],t['r']))
+    if PLAIN:
+        forecasts=[]
+        for candidate in nearby:
+            preview=api(worldpath+'/units/'+uid+'/march-preview?target_q='+str(candidate['q'])+'&target_r='+str(candidate['r']),token=token)
+            if preview.get('available') and preview.get('duration_ticks',0)>=4:
+                forecasts.append((preview['duration_ticks'],candidate))
+        assert forecasts,'no reachable known plain-march destination taking at least four game days'
+        centre=max(forecasts,key=lambda item:item[0])[1]
+    else:
+        centre=min(nearby,key=lambda t:(abs(t['r']-homer),abs(t['q']-homeq-4),t['q'],t['r']))
     q,r=centre['q'],centre['r']
     point=page.evaluate("""async ([q,r])=>{
       const {State}=await import('/static/js/megaron/state.js');
@@ -200,8 +210,11 @@ try:
     page.evaluate('window.closeInspect()')
     page.wait_for_function('p=>document.elementFromPoint(p.x,p.y)?.id==="hex-canvas"',arg=point)
     page.mouse.click(point['x'],point['y']);page.wait_for_selector('#mg-0')
-    if not page.locator('#mctx-explore-chk').is_checked():page.locator('#mctx-explore-chk').check()
-    page.locator('#mctx-more summary').click();page.locator('#mctx-ticks').fill('14')
+    if PLAIN:
+        if page.locator('#mctx-explore-chk').is_checked():page.locator('#mctx-explore-chk').uncheck()
+    else:
+        if not page.locator('#mctx-explore-chk').is_checked():page.locator('#mctx-explore-chk').check()
+        page.locator('#mctx-more summary').click();page.locator('#mctx-ticks').fill('14')
     with page.expect_response(lambda r:r.url.endswith('/units/'+uid+'/march') and r.request.method=='POST') as pending:
         page.locator('#mctx-send').click()
     march=pending.value;assert march.status==202,(march.status,march.json())
@@ -245,7 +258,7 @@ try:
     assert 'UnitMarchOrdered|1' in audits and 'MarchRecalled|1' in audits,audits
     assert 'OrderDeliveryFailed' not in audits,audits
     assert not errors,errors
-    proof={'health':health,'mode':MODE,'browser_errors':errors,'stance_receipts':stance_receipts,'naval_receipts':naval_receipts,
+    proof={'health':health,'mode':MODE,'plain_march':PLAIN,'browser_errors':errors,'stance_receipts':stance_receipts,'naval_receipts':naval_receipts,
         'march':{'http_status':march.status,'request':march.request.post_data_json,'receipt':march.json()},
         'recall':{'http_status':recall.status,'request':recall.request.post_data_json,'receipt':recall.json()},
         'recall_attempts':recall_attempts,'final_unit':final,'audit_rows':audits,'sql_mutations':False}

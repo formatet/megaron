@@ -1,0 +1,84 @@
+{
+  "health": {
+    "commit": "8650991adb9347a4fe27dfe4b7f0d7c01ef4f1f6",
+    "migration": 160,
+    "status": "ok"
+  },
+  "mode": "restored-naval",
+  "naval_receipts": [
+    {
+      "verb": "Load",
+      "http_status": 200,
+      "request": {
+        "unit_id": "add5ccb1-b0f2-462f-8b28-0742505f8788"
+      },
+      "receipt": {
+        "cargo_unit_id": "add5ccb1-b0f2-462f-8b28-0742505f8788",
+        "ship_id": "5d976676-99ac-4887-8f9a-3cd137dd0733"
+      }
+    },
+    {
+      "verb": "Unload",
+      "http_status": 200,
+      "request": {},
+      "receipt": {
+        "cargo_unit_id": "add5ccb1-b0f2-462f-8b28-0742505f8788",
+        "q": 0,
+        "r": 0,
+        "ship_id": "5d976676-99ac-4887-8f9a-3cd137dd0733",
+        "status": "garrison"
+      }
+    }
+  ],
+  "final_units": [
+    {
+      "id": "e206040c-d386-42be-97df-1aa0a2e99c20",
+      "type": "spearman",
+      "category": "land",
+      "size": 100,
+      "status": "garrison",
+      "deployable": true,
+      "display_name": "2nd Spearmen of Nostos",
+      "ordinal": 2,
+      "support_settlement_id": "61f74dd6-29f2-41b7-a932-38ac8af3c240",
+      "support_settlement_name": "Nostos",
+      "settlement_id": "61f74dd6-29f2-41b7-a932-38ac8af3c240",
+      "in_battle": false
+    },
+    {
+      "id": "add5ccb1-b0f2-462f-8b28-0742505f8788",
+      "type": "spearman",
+      "category": "land",
+      "size": 100,
+      "status": "garrison",
+      "deployable": true,
+      "display_name": "1st Spearmen of Nostos",
+      "ordinal": 1,
+      "support_settlement_id": "61f74dd6-29f2-41b7-a932-38ac8af3c240",
+      "support_settlement_name": "Nostos",
+      "settlement_id": "61f74dd6-29f2-41b7-a932-38ac8af3c240",
+      "q": 0,
+      "r": 0,
+      "in_battle": false
+    },
+    {
+      "id": "5d976676-99ac-4887-8f9a-3cd137dd0733",
+      "type": "galley",
+      "category": "naval",
+      "size": 1,
+      "crew": 20,
+      "hull": 5,
+      "status": "garrison",
+      "deployable": true,
+      "name": "Dusk Reef",
+      "display_name": "Dusk Reef, Galley of Nostos",
+      "ordinal": 1,
+      "support_settlement_id": "61f74dd6-29f2-41b7-a932-38ac8af3c240",
+      "support_settlement_name": "Nostos",
+      "settlement_id": "61f74dd6-29f2-41b7-a932-38ac8af3c240",
+      "in_battle": false
+    }
+  ],
+  "browser_errors": [],
+  "sql_mutations": false
+}

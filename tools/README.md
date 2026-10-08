@@ -223,7 +223,11 @@ Baslinje: samma kommando med `baseline` och fjärde argumentet en oförändrad
 arkiverad web-katalog. Varje arm får egen tom DB och eget OUT.
 `python3 tools/war_cards_mutations.py OUT` bryter ankomstvakten, More-placeringen
 och navalrecall-vakten fysiskt; kräver namngivet assertionrött och restoredgrönt.
-P använder `restored` / `restored-naval`: kontroller ska synas direkt utan More.
+P använder `before-restoration` med arkiverade web-assets som bas, sedan
+`restored` / `restored-naval`: kontroller ska synas direkt utan More.
+Landarmarna före/efter P väljer en känd, nåbar destination via läsande
+march-preview och marscherar utan expedition (Recall på senare Explore-ben
+har ett separat, befintligt fel; se P-rapporten).
 Korta expeditioners första ben kan avvisa Recall med korrekt 422 (ingen Runner
 kan hinna ikapp); riggen väntar på nästa verkliga ben och sparar alla svar.
 

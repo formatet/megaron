@@ -1,0 +1,29 @@
+{
+  "finding": "Recall on a later Explore leg returns to that leg origin rather than city",
+  "baseline": {
+    "commit": "f586270d",
+    "city": [
+      11,
+      31
+    ],
+    "unit": [
+      10,
+      36
+    ],
+    "status": "positioned"
+  },
+  "after": {
+    "commit": "8650991a",
+    "city": [
+      5,
+      38
+    ],
+    "unit": [
+      7,
+      43
+    ],
+    "status": "positioned"
+  },
+  "code_anchor": "server/internal/combat/recall_redirect.go:116 newTarget := origin",
+  "scope": "unchanged backend; sent to Claude for separate triage; exploratory arms are not passing P proofs"
+}
