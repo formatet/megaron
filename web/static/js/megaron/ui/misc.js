@@ -575,8 +575,13 @@ export async function renderLockedActions(category, provinceID) {
 export function lockedActionsHTML(category, verbs) {
   if (!verbs.length) return '';
   const drawer = {province:'city', military:'war', trade:'economy', diplomacy:'diplomacy', cult:'kult'}[category];
-  return '<div class="dsec"><p class="empty-state">Unavailable: ' + verbs.map(v => {
-    const hints = (v.requirements || []).filter(req => !req.satisfied).map(req => req.hint || '').filter(Boolean).join(' · ');
-    return '<span title="' + esc(hints) + '">' + esc(v.name) + '</span>';
+  const hintsByName = new Map();
+  for (const v of verbs) {
+    const hints = (v.requirements || []).filter(req => !req.satisfied).map(req => req.hint || '').filter(Boolean);
+    hintsByName.set(v.name, [...new Set([...(hintsByName.get(v.name) || []), ...hints])]);
+  }
+  return '<div class="dsec"><p class="empty-state">Unavailable: ' + [...hintsByName].map(([name, hints]) => {
+    const label = name.replace(/[-_]/g, ' ');
+    return '<span tabindex="0" title="' + esc(hints.join(' · ')) + '">' + esc(label) + '</span>';
   }).join(', ') + ' ' + (drawer ? drawerHelpHTML(drawer) : '') + '</p></div>';
 }

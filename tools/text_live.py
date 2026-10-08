@@ -121,14 +121,14 @@ try:
             assert len(brief.inner_text())<150,brief.inner_text()
             brief.get_by_role('button',name='Read the Codex',exact=True).click()
             page.wait_for_function('document.getElementById("codex-panel").classList.contains("open")')
-            assert page.locator('#codex-title').inner_text()
+            assert page.locator('#codex-title').inner_text()==next(a['title'] for a in api('/static/codex/index.json')['articles'] if a.get('drawer')==drawer)
             page.evaluate('window.closeCodex()')
     receipts={}
     if MODE=='after':
         open_drawer('city');page.wait_for_selector('#city-gubbe-grid svg')
         page.locator('#drawer-city button[data-tab="byggnader"]').click()
         with page.expect_response(lambda r:'/build-queue/' in r.url and r.request.method=='DELETE') as pending:
-            page.evaluate('(id)=>window.cancelBuild(id,"999999")',city['id'])
+            page.evaluate('(id)=>window.cancelBuild(id,"00000000-0000-0000-0000-000000000001")',city['id'])
         receipts['cancel_refusal']={'status':pending.value.status,'body':pending.value.json()}
         assert pending.value.status>=400
         line=page.locator('#city-bld-sec [data-inline-result]');line.wait_for();assert line.inner_text()==pending.value.json()['error']
@@ -154,7 +154,7 @@ try:
         page.get_by_text('three food support reports — show reports',exact=True).click()
         page.get_by_text('Food support was given to the city',exact=True).first.wait_for()
         assert 'SitosIntervention' not in page.locator('#notif-body').inner_text()
-        page.get_by_text('All notifications',exact=True).click();page.get_by_text('three food reserve warnings — show reports',exact=True).wait_for()
+        page.locator('#notif-body').get_by_text('All notifications',exact=True).click();page.get_by_text('three food reserve warnings — show reports',exact=True).wait_for()
         receipts['historic_replay']={'synthetic':True,'filters':filters}
         assert 'World speed' not in page.locator('#notif-body').inner_text()
     assert not dialogs,dialogs

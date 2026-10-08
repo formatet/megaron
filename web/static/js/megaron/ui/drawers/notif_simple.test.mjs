@@ -15,7 +15,7 @@ test('K: calendar and forming state survive without world speed',()=>{
 });
 test('K: quiet kinds remain readable both in group and historic archive',()=>{
  for(const kind of ['SitosIntervention','SitosFundLow']){
-  assert.match(hiddenNotifLabel(kind,3),/^three food/);assert.doesNotMatch(hiddenNotifLabel(kind,3),/Sitos|\+3/,'group must use player words');
+  assert.match(hiddenNotifLabel(kind,3),/^three food/,'group must use player words');assert.doesNotMatch(hiddenNotifLabel(kind,3),/Sitos|\+3/,'group must use player words');
   assert.doesNotMatch(notifText(kind,{}),/Sitos/,'historic row must use player words');
  }
 });
