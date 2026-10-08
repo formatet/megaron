@@ -12,7 +12,8 @@ test('T2: loss dispatch renders the WHOLE frozen sealed letter and endpoints', (
   assert.ok(text.includes(loss.envelope.message_text));
   assert.ok(text.includes(loss.envelope.origin.name));
   assert.ok(text.includes(loss.envelope.destination.name));
-  assert.ok(text.includes(loss.envelope.sent_at));
+  assert.ok(text.includes(`Sent on day ${loss.envelope.sent_tick}`));
+  assert.ok(!text.includes(loss.envelope.sent_at));
   assert.match(notifText('MessengerLostAtSea', loss), /lost at sea in a storm/);
   assert.doesNotMatch(text, /changed AFTER loss/);
 });
@@ -27,7 +28,7 @@ test('T2: full trade and unit order terms survive rendering, including long cont
 
 test('T2: rescue report names frozen ship and actual port after home return', () => {
   const text = notifText('MessengerRescuedAtSea', rescue);
-  assert.match(text, /home/);
+  assert.ok(text.includes(`Home on day ${rescue.home_tick}.`));
   assert.match(text, /Sacred Dolphin/);
   const port = rescue.journey.find(j => j.port).port;
   assert.ok(text.includes(port));
@@ -39,9 +40,16 @@ for (const file of ['messenger_lost_trade.json', 'messenger_lost_order.json']) {
     const body = JSON.parse(readFileSync(new URL(`./testdata/${file}`, import.meta.url)));
     const text = messengerEnvelopeText(body);
     assert.ok(text.includes(body.envelope.message_text));
-    assert.ok(text.includes(body.envelope.sent_at));
+    assert.ok(text.includes(`Sent on day ${body.envelope.sent_tick}`));
     for (const key of ['trade_offer', 'order_payload']) {
       if (body.envelope[key]) assert.ok(text.includes(JSON.stringify(body.envelope[key], null, 2)));
     }
   });
 }
+
+test('T2: missing legacy departure day is explicit, never UTC or a guessed day', () => {
+  const body = { envelope: { ...loss.envelope, sent_tick: null } };
+  assert.match(messengerEnvelopeText(body), /Sent on an unknown day/);
+  assert.ok(!messengerEnvelopeText(body).includes(body.envelope.sent_at));
+  assert.match(messengerEnvelopeText({ envelope: { sent_tick: 0 } }), /Sent on day 0/);
+});

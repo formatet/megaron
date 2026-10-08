@@ -101,7 +101,7 @@ func ShoreTx(ctx context.Context, tx pgx.Tx, store *events.Store, world, ship uu
 
 func record(ctx context.Context, tx pgx.Tx, store *events.Store, world, ship uuid.UUID, kind string, rescue, port *uuid.UUID, reason string, q, r, tick int) ([]*events.Event, error) {
 	rows, err := tx.Query(ctx, `SELECT m.id,m.sender_id,COALESCE(w.id,0),COALESCE(w.event_type='CarrierPassengerRescuedV1',false),
- jsonb_build_object('id',m.id,'sender_id',m.sender_id,'kind',m.kind,'sent_at',m.sent_at,'message_text',m.message_text,'reply_text',m.reply_text,'trade_offer',m.trade_offer,'order_payload',m.order_payload,'origin_name',COALESCE(os.name,ou.name),'destination_name',ds.name,'origin',jsonb_build_object('id',COALESCE(m.origin_id,m.origin_unit_id),'name',COALESCE(os.name,ou.name),'q',COALESCE(op.map_q,m.origin_q),'r',COALESCE(op.map_r,m.origin_r)),'destination',jsonb_build_object('id',m.destination_id,'name',ds.name,'q',COALESCE(m.dest_q,dp.map_q,m.hex_q),'r',COALESCE(m.dest_r,dp.map_r,m.hex_r)))
+ jsonb_build_object('id',m.id,'sender_id',m.sender_id,'kind',m.kind,'sent_at',m.sent_at,'sent_tick',m.sent_tick,'message_text',m.message_text,'reply_text',m.reply_text,'trade_offer',m.trade_offer,'order_payload',m.order_payload,'origin_name',COALESCE(os.name,ou.name),'destination_name',ds.name,'origin',jsonb_build_object('id',COALESCE(m.origin_id,m.origin_unit_id),'name',COALESCE(os.name,ou.name),'q',COALESCE(op.map_q,m.origin_q),'r',COALESCE(op.map_r,m.origin_r)),'destination',jsonb_build_object('id',m.destination_id,'name',ds.name,'q',COALESCE(m.dest_q,dp.map_q,m.hex_q),'r',COALESCE(m.dest_r,dp.map_r,m.hex_r)))
  FROM messengers m
  `+passengerJoinSQL+`
  LEFT JOIN settlements os ON os.id=m.origin_id

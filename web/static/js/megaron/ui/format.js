@@ -363,7 +363,8 @@ export function notifText(kind, body) {
     }
     case 'MessengerRescuedAtSea': {
       const journey = (body.journey || []).map(j => j.ship ? `rescued aboard ${esc(j.ship)}` : j.port ? `ashore at ${esc(j.port)}` : '').filter(Boolean);
-      return 'Your runner is home with an account of its rescue at sea: ' + journey.join('; ');
+      const home = Number.isInteger(body.home_tick) ? `Home on day ${body.home_tick}.` : 'Home on an unknown day.';
+      return home + ' Your runner brings an account of its rescue at sea: ' + journey.join('; ');
     }
     case 'MessengerReturned': {
       // Your own messenger is home. The reply rides back WITH it (never in
@@ -869,7 +870,8 @@ export function colonyFoundedGrainLine(body) {
 export function messengerEnvelopeText(body) {
   const e = body.envelope || {};
   const endpoint = p => p?.name || (p?.q != null && p?.r != null ? `(${p.q},${p.r})` : 'unknown');
-  const lines = [`Sent: ${e.sent_at || 'unknown'}`, `From: ${endpoint(e.origin)}`, `To: ${endpoint(e.destination)}`];
+  const sent = Number.isInteger(e.sent_tick) ? `Sent on day ${e.sent_tick}` : 'Sent on an unknown day';
+  const lines = [sent, `From: ${endpoint(e.origin)}`, `To: ${endpoint(e.destination)}`];
   if (e.message_text != null) lines.push(`Letter:\n${e.message_text}`);
   if (e.reply_text != null) lines.push(`Reply:\n${e.reply_text}`);
   if (e.trade_offer != null) lines.push(`Trade offer:\n${JSON.stringify(e.trade_offer, null, 2)}`);

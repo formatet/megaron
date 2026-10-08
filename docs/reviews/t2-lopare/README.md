@@ -80,3 +80,23 @@ Båda kontrollerar att gamla payloadbytes är oförändrade och att vanlig resa 
 Extra faktisk deploy-mutation: Arrival-vakten utökades temporärt till att avvisa alla bevarade `currentGeneration > 0`, alltså även den legitima äldre aboard-timern utan vittnesmål. `landed-before-deploy` gav namngivet rött på just utebliven legacy-leverans (`deploy-reject-legacy-mutation.log`), inte build-fel/timeout. Källfilen återställdes byte för byte i `finally`; fulla API/messenger-kontrollen efter återställning finns i `review-complement-fresh.log`. Detta är ett extra prov utöver de åtta tidigare mutationerna, inte en ny produktionsregel.
 
 Verifieringsomfång för granskningskomplementet: endast två API-prov-/riggfiler och README/loggar tillkommer mot ce681afd. Hela API- och messenger-paketen körs med färsk migration-162-DB efter sista riggändringen och mutationens återställning; full vet och diff-check tillkommer. Inga produktionsfiler ändras, så tidigare full fresh Go24paket/450JS/build/browser6 gäller fortfarande samma produktionskod. De gamla riggarnas första fullröda logg behålls, inklusive vilket fel varje rigg gav.
+
+
+## TEXT/BILD-rättning efter Claudes kärngranskning
+
+Spelartexten är nu **"Sent on day N"** (kuvertets frysta `sent_tick`) och **"Home on day N."** (hemrapportens frysta `home_tick`). Ingen rå `sent_at` visas i T2-kuvertet; den behålls bara som auditdata. Webb, Keryx och båda Codex-artiklarna använder samma ordval, utan "game day" eller "tick" i dagetiketten. Riggens tekniska "returned physically home" är borttagen.
+
+`sent_tick` fanns inte i underlaget. Den ännu omergade additiva migration 162 får därför, enligt den uttryckliga rättningsordern, också en nullable `messengers.sent_tick`: först ADD utan default, därefter SET DEFAULT `current_world_tick()` för NYA inserts. Befintliga rader får alltså inte dagens tick som påhittad avsändningsdag. När en historisk dag saknas visas **"Sent on an unknown day"**, aldrig härledd från osäker UTC/ändrad tickkadens. `carrier` fryser värdet i kuvertet; ingen ny intern kant behövs. `home_tick` fryses i befintlig fysisk Return-TX och ändras inte av en senare replay.
+
+Proven visar att avsändningsdag 500 överlever när live-radens sent_tick ändras till 999 efter förlust. Hemrapporten bevarar den verkliga completion-dagen även när Return replayas tio dagar senare. Keryx/JS täcker också dag 0 och äldre okänd dag, och förbjuder den råa UTC-strängen i dagtexten. Fixturerna exporterades om från riktiga arkiverade DB-notiser (`day-wording-fixtures.log`).
+
+Slutkontroller efter rättningen: hela fresh Go på migration 162, 24 testpaket exit 0 (`day-wording-full-go.log`); full vet exit 0 (`day-wording-vet.log`); **451 JS**, inga skips (`day-wording-js.log`); Temenos/Keryx build exit 0 (`day-wording-build.log`). Befintliga fysiska utfall, terminalspärrar och nio tidigare verifierade mutationer ändras inte av ordvalet. Scope-diff innehåller endast de två dagfälten/defaulten, deras kuvert/hemrapport, spelartext, Codex och tillhörande prov/bilder. Inga combat-/transport-/upkeepregler eller andra slicar ändrade.
+
+Nya Firefox-bilder med produktionsformatterare och de nya verkliga payloads, desktop 1280×900 och mobil 390×844, båda PASS (`day-wording-firefox.log`, `day-wording-firefox/results.json`). De fyra begärda bilderna är visuellt granskade på faktisk skärmbild:
+
+- [Loss-top desktop](day-wording-firefox/firefox-desktop-loss-top.png)
+- [Loss-top mobil](day-wording-firefox/firefox-mobile-loss-top.png)
+- [Rescue desktop](day-wording-firefox/firefox-desktop-rescue.png)
+- [Rescue mobil](day-wording-firefox/firefox-mobile-rescue.png)
+
+Loss-top visar det verkliga korta brevkuvertet med dagetiketten och hela panelen; riggen provar också fulla trade/order-kuvert och sparar lång orderns loss-bottom. Tidigare browser6-bilder bevaras som den föregående överlämningens historik; dessa är rättningens aktuella Firefox-bilder. BILD-beslutet före merge tillhör fortfarande Timothy/Claude. Ingen merge/push/deploy från Codex.

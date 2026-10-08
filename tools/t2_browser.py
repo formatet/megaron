@@ -14,7 +14,7 @@ import threading
 from playwright.sync_api import sync_playwright,expect
 
 ROOT=Path(__file__).resolve().parents[1]
-p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output-dir',type=Path,default=ROOT/'docs/reviews/t2-lopare/browser');a=p.parse_args();a.output_dir.mkdir(parents=True,exist_ok=True)
+p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output-dir',type=Path,default=ROOT/'docs/reviews/t2-lopare/browser');p.add_argument('--browsers',nargs='+',choices=['firefox','chromium','webkit'],default=['firefox','chromium','webkit']);a=p.parse_args();a.output_dir.mkdir(parents=True,exist_ok=True)
 class Handler(http.server.SimpleHTTPRequestHandler):
     def log_message(self,*args):pass
 server=http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Handler,directory=str(ROOT/'web')))
@@ -26,7 +26,7 @@ payloads={name:json.loads((fixtures/file).read_text()) for name,file in [('lette
 results=[]
 try:
  with sync_playwright() as pw:
-  for engine in ['firefox','chromium','webkit']:
+  for engine in a.browsers:
    browser=getattr(pw,engine).launch()
    try:
     for mode,width,height in [('desktop',1280,900),('mobile',390,844)]:
@@ -54,7 +54,8 @@ try:
       text=page.locator('.dw-envelope').inner_text()
       assert body['envelope']['message_text'] in text
       for key in ['origin','destination']:assert body['envelope'][key]['name'] in text
-      assert body['envelope']['sent_at'] in text
+      assert f"Sent on day {body['envelope']['sent_tick']}" in text
+      assert body['envelope']['sent_at'] not in text
       for key in ['trade_offer','order_payload']:
        if body['envelope'].get(key) is not None:
         for value in ['bronze','145.7'] if key=='trade_offer' else ['march','hold_to_last_man']:
@@ -64,15 +65,16 @@ try:
       assert bounds['x']>=-1 and bounds['x']+bounds['width']<=width+1,bounds
       assert bounds['y']+bounds['height']<=height+1,bounds
       expect(page.locator('#dw-codex-btn')).to_be_visible()
-      if label=='order':
+      if label=='letter':
        page.locator('#dispatch-window-overlay .dw-body').evaluate('(el)=>el.scrollTop=0')
        page.screenshot(path=str(a.output_dir/f'{engine}-{mode}-loss-top.png'))
+      if label=='order':
        page.locator('#dw-mute-chk').scroll_into_view_if_needed()
        expect(page.locator('#dw-mute-chk')).to_be_visible()
        page.screenshot(path=str(a.output_dir/f'{engine}-{mode}-loss-bottom.png'))
       page.evaluate('t2dispatch.closeDispatchWindow()')
-     page.evaluate('(body)=>t2dispatch.openDispatchWindow("MessengerRescuedAtSea",body,"returned physically home")',payloads['rescue'])
-     expect(page.locator('.dw-text')).to_contain_text('home')
+     page.evaluate('(body)=>t2dispatch.openDispatchWindow("MessengerRescuedAtSea",body,"")',payloads['rescue'])
+     expect(page.locator('.dw-text')).to_contain_text(f"Home on day {payloads['rescue']['home_tick']}.")
      expect(page.locator('.dw-text')).to_contain_text('Sacred Dolphin')
      page.screenshot(path=str(a.output_dir/f'{engine}-{mode}-rescue.png'))
      page.locator('#dw-codex-btn').click()

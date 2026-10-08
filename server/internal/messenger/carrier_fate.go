@@ -170,7 +170,7 @@ func (h *PassageScanHandler) landCarrierPassenger(ctx context.Context, tx pgx.Tx
 func persistRescueReport(ctx context.Context, tx pgx.Tx, world, messenger uuid.UUID) (string, uuid.UUID, json.RawMessage, error) {
 	var sender uuid.UUID
 	var body json.RawMessage
-	err := tx.QueryRow(ctx, `SELECT m.sender_id,jsonb_build_object('messenger_id',m.id,'sender_wanax_id',m.sender_id,'journey',
+	err := tx.QueryRow(ctx, `SELECT m.sender_id,jsonb_build_object('messenger_id',m.id,'sender_wanax_id',m.sender_id,'home_tick',current_world_tick(),'journey',
  (SELECT jsonb_agg(jsonb_build_object('event_type',e.event_type,'ship',e.payload->>'rescue_ship_name','port',e.payload->>'port_name','tick',e.payload->'tick') ORDER BY e.id)
  FROM events e WHERE e.stream_id=m.id AND e.id<=m.carrier_witness_id AND e.event_type IN ('CarrierPassengerRescuedV1','CarrierPassengerLandedV1')))
  FROM messengers m WHERE m.id=$1 AND EXISTS(SELECT 1 FROM events e WHERE e.stream_id=m.id AND e.id<=m.carrier_witness_id AND e.event_type='CarrierPassengerRescuedV1')`, messenger).Scan(&sender, &body)

@@ -83,7 +83,7 @@ func TestCarrierFate_StormTransportLosesPassenger(t *testing.T) {
 	if err := f.pool.QueryRow(ctx, `SELECT status FROM messengers WHERE id=$1`, messengerID).Scan(&before); err != nil || before != "outbound" {
 		t.Fatalf("pending loss must stop old timer: %s %v", before, err)
 	}
-	if _, err := f.pool.Exec(ctx, `UPDATE messengers SET message_text='changed AFTER loss' WHERE id=$1`, messengerID); err != nil {
+	if _, err := f.pool.Exec(ctx, `UPDATE messengers SET message_text='changed AFTER loss',sent_tick=999 WHERE id=$1`, messengerID); err != nil {
 		t.Fatal(err)
 	}
 	if err := scan.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: 501}); err != nil {
@@ -121,7 +121,7 @@ func TestCarrierFate_StormTransportLosesPassenger(t *testing.T) {
 	if err := json.Unmarshal(witness.Envelope, &envelope); err != nil {
 		t.Fatal(err)
 	}
-	if envelope["message_text"] != "hello" || envelope["sent_at"] == nil || envelope["origin"] == nil || envelope["destination"] == nil || witness.SenderID != f.ownerID || witness.Reason != "storm" {
+	if envelope["message_text"] != "hello" || envelope["sent_tick"] != float64(500) || envelope["sent_at"] == nil || envelope["origin"] == nil || envelope["destination"] == nil || witness.SenderID != f.ownerID || witness.Reason != "storm" {
 		t.Fatalf("loss must freeze WHOLE letter/endpoints/time and sender: %s", body)
 	}
 	if path := *carrierFixtureDir; path != "" {
@@ -300,8 +300,12 @@ func TestCarrierFate_PendingRescueCanLandBeforeProjectionAndReportOnlyAtHome(t *
 	}
 	assertNoRescueNotice(t, f, runner)
 	returning := f.loadScheduledEvent(t, string(events.ScheduledMessengerReturn), runner)
+	f.setTick(t, returning.DueTick)
 	h := NewReturnHandler(f.pool, store, nil)
 	for i := 0; i < 2; i++ {
+		if i == 1 {
+			f.setTick(t, returning.DueTick+10)
+		}
 		if err := h.Handle(ctx, returning); err != nil {
 			t.Fatal(err)
 		}
@@ -316,6 +320,12 @@ func TestCarrierFate_PendingRescueCanLandBeforeProjectionAndReportOnlyAtHome(t *
 	}
 	if !strings.Contains(string(report), "Sacred Dolphin") || strings.Contains(string(report), "renamed AFTER") {
 		t.Fatalf("report must contain frozen rescue and port: %s", report)
+	}
+	var homeReport struct {
+		HomeTick int `json:"home_tick"`
+	}
+	if err := json.Unmarshal(report, &homeReport); err != nil || homeReport.HomeTick != returning.DueTick {
+		t.Fatalf("freeze actual physical home day: %s %v", report, err)
 	}
 	if path := *carrierFixtureDir; path != "" {
 		if err := os.WriteFile(path+"/messenger_rescued_at_sea.json", report, 0644); err != nil {
