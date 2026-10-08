@@ -85,3 +85,40 @@ acceptans. Speldagar och spelets orderregler är oförändrade.
 Vanlig marsch: tredje färska arm `live-plain` grön med faktisk webborder,
 Runner202 → MarchRecalled → garrison i samma grundade stad; inga browserfel
 eller OrderDeliveryFailed. Samma rena c7e8496c-binär som expeditionernas armar.
+
+## Kunskap vid återkallelse — uppmätt efter Claudes fråga
+
+**Val:** behåll den redan bestående kartkunskapen och den befintliga regeln att
+recall avslutar expeditionen utan expeditionssammanfattning. Rapporten är inte
+transporten som låser upp kunskap vid hemkomst i denna implementation. Den
+sammanfattar kartan i ett event och en personlig arkivnotis. Att låta just recall
+skapa en ny sorts rapport är därför ingen nödvändig del av destinationsfixen.
+
+Spelaren förlorar **sammanfattningen** (speldagar ute, längst bort, antal sedda
+hexar, samlad fyndlista), inklusive dess arkivrad. Spelaren förlorar **inte** de
+sedda hexarnas terräng/fynd eller deras status som kända. Den separata listan
+över vad just expeditionen såg kaskadrensas när missionen avbryts; spelarens
+bestående kunskapslager berörs inte.
+
+Spårning, fil:rader i R:
+
+- `server/internal/combat/expedition.go:211-238`: varje avslutat ben sveper den
+  faktiska vägen med SweepLiveRadiusAlong och fyller även missionens synlista.
+- `server/internal/province/eyes.go:392-400`: svepet skriver bestående
+  `player_scouted_tiles`, oberoende av om spelaren läst kartan.
+- `server/api/handlers/world.go:1044-1046`: loadRememberedTiles läser det lagret;
+  `:371-376` gör hexen remembered/visible, `:377-385` maskerar bara fog. Kända
+  fynd förblir alltså tillgängliga utan en hemkomstrapport.
+- `server/internal/combat/expedition.go:347-417`: rapporten läser synlistan och
+  kart-/stadsrader för att skapa sammanfattningen. `:419-437` skriver event och
+  arkivnotis och rensar missionen; ingen kunskapsprojektion skrivs här.
+- `server/internal/combat/recall_redirect.go:215`: recall rensar missionen.
+  `server/db/migrations/159_unit_expeditions.up.sql:27` kaskadrensar bara dess
+  `unit_expedition_seen`, inte spelarens `player_scouted_tiles`.
+
+`knowledge.log`: färsk PG16/migration160; riktig StartMarch → första arrival →
+recall → hemkomst. **39 bestående kända hexar**, missionens synlista **39→0**,
+**0 förlorade hexar** ur den exakta före-mängden efter både leverans och hemkomst,
+**koppar (1,2) fortfarande känd**, **0 ExpeditionReport-notiser**. Ny regression
+`TestRecallExpeditionPreservesMapKnowledge` är grön. Produktionskod, tidigare
+fullsvit/vet/JS/mutationer och fysiska bevis är oförändrade (`c7e8496c`).

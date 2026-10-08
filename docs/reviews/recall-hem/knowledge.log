@@ -1,0 +1,8 @@
+» färsk DB på migration 160 · commit 019eca67+ändringar
+=== RUN   TestRecallExpeditionPreservesMapKnowledge
+2026/10/08 18:25:20 INFO recall/redirect order reached unit, new course set unit=13a80111-341a-4f2a-bd6e-cf3f2773e47f mode=recall from_q=4 from_r=1 to_q=0 to_r=0 arrives_at=2026-10-08T22:25:20.658+02:00
+2026/10/08 18:25:20 INFO unit returned home from explore unit=13a80111-341a-4f2a-bd6e-cf3f2773e47f settlement=3babdb6f-c9ee-4fc1-a150-68c217155cf3
+    recall_home_test.go:299: persistent known tiles=39, mission sight before=39 after=0, missing after recall/home=0, copper still known, report notifications=0
+--- PASS: TestRecallExpeditionPreservesMapKnowledge (0.11s)
+PASS
+ok  	formatet/megaron/server/internal/combat	0.111s

@@ -221,3 +221,80 @@ func TestRecallExpeditionLostHome(t *testing.T) {
 		})
 	}
 }
+
+// Knowledge lives in the player's persistent map, independently of the
+// expedition-only sight list used to format the homecoming notification.
+func TestRecallExpeditionPreservesMapKnowledge(t *testing.T) {
+	copper := [2]int{1, 2}
+	f := newExpeditionFixture(t, -2, 16, &copper)
+	ctx, pool := context.Background(), testPool(t)
+	f.start(t, 9, 0, 20)
+	if err := f.h.Handle(ctx, f.nextArrival(t)); err != nil {
+		t.Fatal(err)
+	}
+	rows, err := pool.Query(ctx, `SELECT q,r FROM player_scouted_tiles WHERE world_id=$1 AND player_id=$2 ORDER BY q,r`, f.worldID, f.ownerID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var knownQ, knownR []int
+	for rows.Next() {
+		var q, r int
+		if err := rows.Scan(&q, &r); err != nil {
+			rows.Close()
+			t.Fatal(err)
+		}
+		knownQ = append(knownQ, q)
+		knownR = append(knownR, r)
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		t.Fatal(err)
+	}
+	if len(knownQ) == 0 {
+		t.Fatal("no pre-recall knowledge to test")
+	}
+	var seenBefore int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM unit_expedition_seen WHERE unit_id=$1`, f.unitID).Scan(&seenBefore); err != nil {
+		t.Fatal(err)
+	}
+	if seenBefore == 0 {
+		t.Fatal("no mission sight list to cancel")
+	}
+	assertKnowledge := func(stage string) {
+		t.Helper()
+		var missing int
+		if err := pool.QueryRow(ctx, `SELECT count(*) FROM unnest($3::int[],$4::int[]) AS old(q,r) WHERE NOT EXISTS(SELECT 1 FROM player_scouted_tiles p WHERE p.world_id=$1 AND p.player_id=$2 AND p.q=old.q AND p.r=old.r)`, f.worldID, f.ownerID, knownQ, knownR).Scan(&missing); err != nil {
+			t.Fatal(err)
+		}
+		if missing != 0 {
+			t.Fatalf("%s lost %d known tiles", stage, missing)
+		}
+		var copperKnown bool
+		if err := pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM player_scouted_tiles p JOIN map_tiles t ON t.world_id=p.world_id AND t.q=p.q AND t.r=p.r WHERE p.world_id=$1 AND p.player_id=$2 AND p.q=1 AND p.r=2 AND t.copper_deposit)`, f.worldID, f.ownerID).Scan(&copperKnown); err != nil {
+			t.Fatal(err)
+		}
+		if !copperKnown {
+			t.Fatalf("%s lost known copper deposit", stage)
+		}
+	}
+	assertKnowledge("before recall")
+	if _, err := ExecuteRecall(ctx, pool, f.scheduler, f.eventStore, f.clk, RecallOrder{WorldID: f.worldID, UnitID: f.unitID, Mode: "recall"}); err != nil {
+		t.Fatal(err)
+	}
+	assertKnowledge("after delivery")
+	if err := f.h.Handle(ctx, f.nextArrival(t)); err != nil {
+		t.Fatal(err)
+	}
+	assertKnowledge("after homecoming")
+	var seenAfter, reports int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM unit_expedition_seen WHERE unit_id=$1`, f.unitID).Scan(&seenAfter); err != nil {
+		t.Fatal(err)
+	}
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM notifications WHERE player_id=$1 AND kind='ExpeditionReport'`, f.ownerID).Scan(&reports); err != nil {
+		t.Fatal(err)
+	}
+	if seenAfter != 0 || reports != 0 {
+		t.Fatalf("cancelled mission sight=%d reports=%d", seenAfter, reports)
+	}
+	t.Logf("persistent known tiles=%d, mission sight before=%d after=%d, missing after recall/home=0, copper still known, report notifications=%d", len(knownQ), seenBefore, seenAfter, reports)
+}
