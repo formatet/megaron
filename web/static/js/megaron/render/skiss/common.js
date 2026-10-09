@@ -39,6 +39,10 @@ export const PAL = {
   'X': '#B81E1E',  // blodröd — hot, fiende (signalnivån; en betydelse)
   'x': '#6E1212',  // blodröd, skuggad
   'Y': '#E8C040',  // aktivt bygge — signalgul markör
+  'j': '#D2B98C',  // sliten jord, ljus — port, gata, torg
+  'J': '#B39566',  // stadsgolv i skugga — murens insida, svackor
+  'Q': '#47797B',  // vågband på kusthav
+  'U': '#33606B',  // vågband på djuphav
 };
 
 // Murmur-finalizer — samma familj som terrängens seed. Deterministisk: samma
