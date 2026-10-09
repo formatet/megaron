@@ -157,7 +157,7 @@ export function notifDomain(kind) {
     StandingOrderDispatched: 'trade', StandingOrderPaused: 'trade',
     OfferAccepted: 'trade', OfferDeclined: 'trade', OfferExpired: 'trade',
     // Diplomacy — the messenger channel.
-    MessengerArrival: 'diplomacy', MessengerReturned: 'diplomacy', PassageStalled: 'diplomacy',
+    MessengerLostAtSea: 'diplomacy', MessengerRescuedAtSea: 'diplomacy', MessengerArrival: 'diplomacy', MessengerReturned: 'diplomacy', PassageStalled: 'diplomacy',
     // Kult — the gods answering.
     DivinePunishment: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
   };
@@ -181,6 +181,8 @@ export function notifIcon(kind) {
     TradeLost:          '🌊',
     TradeReturn:        '🐂',
     MessengerArrival:   '✉',
+    MessengerLostAtSea: '🌊',
+    MessengerRescuedAtSea: '📜',
     MessengerReturned:  '📜',
     PassageStalled:     '⚓',
     UnitAttrition:      '💀',
@@ -352,6 +354,29 @@ export function notifText(kind, body) {
         return `Trade offer from ${from}${place} — wants ${wants}, offers ${offers}`;
       }
       return `Messenger from ${from} arrived${place}` + (body.message ? ` — "${body.message}"` : '');
+    }
+    case 'MessengerLostAtSea': {
+      const e = body.envelope || {};
+      const { to } = messengerEnvelopeParties(e);
+      return `Your runner to ${esc(to)} was lost at sea` + (body.reason === 'storm' ? ' in a storm.' : ' with no surviving rescue ship.');
+    }
+    case 'MessengerRescuedAtSea': {
+      const journey = body.journey || [];
+      let account = '', landed = false;
+      for (const j of journey) {
+        if (j.ship) {
+          account += account ? `, then was rescued at sea by the ${esc(j.ship)}` : `Your runner was rescued at sea by the ${esc(j.ship)}`;
+          landed = false;
+        }
+        if (j.port) {
+          account += !account ? `Your runner was put ashore at ${esc(j.port)}`
+            : !landed ? ` and put ashore at ${esc(j.port)}`
+            : `, then went ashore at ${esc(j.port)}`;
+          landed = true;
+        }
+      }
+      const home = Number.isInteger(body.home_tick) ? `Home on day ${body.home_tick}.` : 'Home on an unknown day.';
+      return home + ' ' + (account || 'Your runner brings an account of its rescue at sea') + '.';
     }
     case 'MessengerReturned': {
       // Your own messenger is home. The reply rides back WITH it (never in
@@ -850,4 +875,29 @@ export function colonyFoundedGrainLine(body) {
     return `${name} does not feed itself (~${Math.round(-perTick)} grain/tick deficit)${ticks}. Build a farm if the land bears it, or send grain by internal transfer.`;
   }
   return `${name} feeds itself (~+${Math.round(perTick)} grain/tick).`;
+}
+
+// The loss dispatch owns a frozen sealed envelope; never fetch the mutable
+// letter/order later or truncate its contents to the chip's summary.
+export function messengerEnvelopeText(body) {
+  const e = body.envelope || {};
+  const { from, to } = messengerEnvelopeParties(e);
+  const sent = Number.isInteger(e.sent_tick) ? `Sent on day ${e.sent_tick}` : 'Sent on an unknown day';
+  const lines = [sent, `From ${from} to ${to}`];
+  if (e.message_text != null) lines.push(`Letter:\n${e.message_text}`);
+  if (e.reply_text != null) lines.push(`Reply:\n${e.reply_text}`);
+  if (e.trade_offer != null) lines.push(`Trade offer:\n${JSON.stringify(e.trade_offer, null, 2)}`);
+  if (e.order_payload != null) lines.push(`Order:\n${JSON.stringify(e.order_payload, null, 2)}`);
+  return lines.join('\n\n');
+}
+
+// Person first: these are sealed, frozen identities, never account logins.
+export function messengerEnvelopeParties(e) {
+  const from = 'you' + (e.origin?.name ? `, at ${e.origin.name},` : '');
+  const d = e.destination || {};
+  if (e.kind === 'order' && d.own_unit) {
+    const place = d.q != null && d.r != null ? ` at (${d.q}, ${d.r})` : '';
+    return { from, to: `your ${d.unit_name || 'unit'}${place}` };
+  }
+  return { from, to: (d.wanax_name ? `Wanax ${d.wanax_name}` : 'an unknown Wanax') + (d.name ? ` at ${d.name}` : '') };
 }

@@ -28,6 +28,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"formatet/megaron/server/internal/carrier"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
@@ -319,6 +320,13 @@ func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTi
 	}
 
 	var recorded []*events.Event
+	if hull <= 0 {
+		last := storms[len(storms)-1]
+		recorded, err = carrier.OutcomeTx(ctx, tx, h.eventStore, worldID, v.shipID, nil, "storm", last.Q, last.R, last.Tick)
+		if err != nil {
+			return err
+		}
+	}
 	for _, s := range storms {
 		kind := EventShipStormDamaged
 		if s.Foundered {

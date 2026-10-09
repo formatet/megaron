@@ -112,15 +112,15 @@ agora, ai, auth, clock, gossip, hexgrid, movement, notify, religion, unit, unit/
   ↑
 province(→hexgrid)
   ↑
-events(→clock) · tick(→clock,events) · chronicle(→events) · settlement(→province)
+events(→clock) · carrier(→events; owns physical passenger witnesses, never messenger state) · tick(→clock,events) · chronicle(→events) · settlement(→province)
   ↑
-economy(→clock,events,gossip,hexgrid,province,tick) · transport(→clock,events,movement,province,tick) · capabilities(→clock,province,religion,unit)
+economy(→carrier,clock,events,gossip,hexgrid,province,tick) · transport(→carrier,clock,events,movement,province,tick) · capabilities(→clock,province,religion,unit)
   ↑
 kharis(→ai,clock,economy,events,hexgrid,religion,unit) · loyalty(→clock,economy,events,settlement,tick)
   ↑
-combat(→…,hexgrid,movement)  ← may use capabilities, economy, gossip, loyalty, province, tick, transport, unit (+clock, events, movement)
+combat(→…,carrier,hexgrid,movement)  ← may use capabilities, economy, gossip, loyalty, province, tick, transport, unit (+clock, events, movement)
   ↑
-messenger  ← explicitly listed lower domain packages (not auth or notify)
+messenger(→carrier for witness consumption)  ← explicitly listed lower domain packages (not auth or notify)
   ↑
 api/handlers, cmd/server  ← may use all (the only ones that may import notify — the hub is consumed
                             via consumer interfaces, e.g. transport.Broadcaster)

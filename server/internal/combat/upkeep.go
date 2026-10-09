@@ -812,11 +812,8 @@ func (h *UpkeepHandler) applyAttrition(ctx context.Context, u upkeepUnitRow, _ f
 		}
 		newCrew := u.crew - lost
 		if newCrew <= 0 {
-			_, updateErr = h.pool.Exec(ctx,
-				`UPDATE units SET status = 'disbanded', crew = 0, updated_at = now() WHERE id = $1`,
-				u.id,
-			)
-			disbanded = true
+			updateErr = h.disbandNavalCarrier(ctx, u, worldID, "grain_shortage", nil)
+			disbanded = updateErr == nil
 		} else {
 			_, updateErr = h.pool.Exec(ctx,
 				`UPDATE units SET crew = $1, updated_at = now() WHERE id = $2`,
@@ -949,11 +946,12 @@ func (h *UpkeepHandler) recordUnpaid(ctx context.Context, u upkeepUnitRow, world
 		var disbanded bool
 		var updateErr error
 		if newSize <= 0 {
-			_, updateErr = h.pool.Exec(ctx,
-				`UPDATE units SET status = 'disbanded', size = 0, unpaid_periods = $1, updated_at = now() WHERE id = $2`,
-				np, u.id,
-			)
-			disbanded = true
+			if u.category == "naval" {
+				updateErr = h.disbandNavalCarrier(ctx, u, worldID, "silver_shortage", &np)
+			} else {
+				_, updateErr = h.pool.Exec(ctx, `UPDATE units SET status='disbanded',size=0,unpaid_periods=$1,updated_at=now() WHERE id=$2`, np, u.id)
+			}
+			disbanded = updateErr == nil
 		} else {
 			_, updateErr = h.pool.Exec(ctx,
 				`UPDATE units SET size = $1, unpaid_periods = $2, updated_at = now() WHERE id = $3`,

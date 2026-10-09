@@ -14,8 +14,9 @@
 // (R5, slice 3b-4).
 //
 // Invariant (R2/R4): boarding never changes the CARRIER's own order, and a
-// lost carrier never loses or reveals the messenger's contents — only delays
-// it. A messenger is never killed or read by this mechanic.
+// human captor never reads or holds the messenger. T2 physical witnesses
+// supersede the old sealed-return fallback: storm/no rescuer loses the runner;
+// battle/capture rescues it to a real ship and its actual next port.
 //
 // The RESERVE — the old abstract crossing a messenger with no real carrier
 // took after a short wait — is GONE (megaron_plan_ordna_passage.md, slice
@@ -329,6 +330,9 @@ func (h *PassageScanHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	var currentTick int
 	_ = h.pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
 
+	if err := h.consumeCarrierWitnesses(ctx, e.WorldID, currentTick); err != nil {
+		return fmt.Errorf("passage scan: carrier witnesses: %w", err)
+	}
 	if err := h.promoteSealed(ctx, e.WorldID, currentTick); err != nil {
 		slog.Error("passage scan: promote sealed", "err", err)
 	}
@@ -545,7 +549,7 @@ func (h *PassageScanHandler) notifyStalled(ctx context.Context, worldID uuid.UUI
 		`SELECT id FROM messengers
 		  WHERE world_id = $1 AND passage_status = 'awaiting_passage'
 		    AND passage_since_tick IS NOT NULL AND $2 - passage_since_tick >= $3
-		    AND passage_stalled_notified_tick IS NULL
+		    AND passage_stalled_notified_tick IS NULL AND NOT EXISTS(SELECT 1 FROM events e WHERE e.stream_id=messengers.id AND e.event_type='CarrierPassengerRescuedV1')
 		  FOR UPDATE SKIP LOCKED`,
 		worldID, currentTick, PassageStallNoticeTicks,
 	)
@@ -586,7 +590,7 @@ func (h *PassageScanHandler) notifyStalledOne(ctx context.Context, worldID, mess
 	var orderPayload []byte
 	if err := tx.QueryRow(ctx,
 		`SELECT sender_id, kind, order_payload, passage_port_id FROM messengers
-		  WHERE id = $1 AND passage_status = 'awaiting_passage' AND passage_stalled_notified_tick IS NULL
+		  WHERE id = $1 AND passage_status = 'awaiting_passage' AND passage_stalled_notified_tick IS NULL AND NOT EXISTS(SELECT 1 FROM events e WHERE e.stream_id=messengers.id AND e.event_type='CarrierPassengerRescuedV1')
 		  FOR UPDATE`,
 		messengerID,
 	).Scan(&senderID, &kind, &orderPayload, &portID); err != nil {
@@ -632,7 +636,7 @@ func (h *PassageScanHandler) notifyStalledOne(ctx context.Context, worldID, mess
 
 	tag, err := tx.Exec(ctx,
 		`UPDATE messengers SET passage_stalled_notified_tick = $2
-		  WHERE id = $1 AND passage_status = 'awaiting_passage' AND passage_stalled_notified_tick IS NULL`,
+		  WHERE id = $1 AND passage_status = 'awaiting_passage' AND passage_stalled_notified_tick IS NULL AND NOT EXISTS(SELECT 1 FROM events e WHERE e.stream_id=messengers.id AND e.event_type='CarrierPassengerRescuedV1')`,
 		messengerID, currentTick,
 	)
 	if err != nil {
@@ -927,6 +931,48 @@ func (h *PassageScanHandler) boardOne(ctx context.Context, worldID, messengerID 
 	}
 	defer tx.Rollback(ctx)
 
+	// Lock transport before ship, then messenger, just like physical death.
+	// A carrier selected outside this TX may have died, been seized or started
+	// another mission before boarding; it must not acquire an unwitnessed runner.
+	var shipID *uuid.UUID
+	var owner uuid.UUID
+	if carrier.transportID != nil {
+		var status string
+		var due int
+		if err := tx.QueryRow(ctx, `SELECT status,ship_unit_id,owner_id,due_tick FROM transports WHERE id=$1 AND world_id=$2 FOR UPDATE`, *carrier.transportID, worldID).Scan(&status, &shipID, &owner, &due); err == pgx.ErrNoRows {
+			return nil
+		} else if err != nil {
+			return err
+		}
+		if status != "in_transit" || due != carrierDueTick {
+			return nil
+		}
+	} else {
+		shipID = carrier.unitID
+	}
+	if shipID != nil {
+		var status string
+		var size, hull int
+		var shipOwner uuid.UUID
+		var arrival *int
+		if err := tx.QueryRow(ctx, `SELECT status,size,hull,owner_id,arrive_tick FROM units WHERE id=$1 AND world_id=$2 FOR UPDATE`, *shipID, worldID).Scan(&status, &size, &hull, &shipOwner, &arrival); err == pgx.ErrNoRows {
+			return nil
+		} else if err != nil {
+			return err
+		}
+		if status == "disbanded" || size <= 0 || hull <= 0 {
+			return nil
+		}
+		if carrier.transportID == nil {
+			if status != "marching" || (arrival != nil && *arrival != carrierDueTick) {
+				return nil
+			}
+			owner = shipOwner
+		} else if shipOwner != owner {
+			return nil
+		}
+	}
+
 	// disembark_q/r/boarded_at/disembark_at (mig 151, megaron_plan_budets_tre_ben.md
 	// R2): the physical leg the carrier itself covers — disembarkAt/carrierArrivesAt
 	// were already computed above (this call's own params) but previously only
@@ -940,9 +986,9 @@ func (h *PassageScanHandler) boardOne(ctx context.Context, worldID, messengerID 
 		`UPDATE messengers SET passage_status = 'aboard', carrier_transport_id = $2,
 		        carrier_unit_id = $3, carrier_name = $4, passage_stalled_notified_tick = NULL,
 		        disembark_q = $5, disembark_r = $6, boarded_at = $7, disembark_at = $8
-		  WHERE id = $1 AND passage_status = 'awaiting_passage'`,
+		  WHERE id = $1 AND passage_status = 'awaiting_passage' AND sender_id=$9`,
 		messengerID, carrier.transportID, carrier.unitID, carrier.name,
-		disembarkAt.Q, disembarkAt.R, h.clk.Now(), carrierArrivesAt,
+		disembarkAt.Q, disembarkAt.R, h.clk.Now(), carrierArrivesAt, owner,
 	)
 	if err != nil {
 		return err
@@ -993,7 +1039,7 @@ func (h *PassageScanHandler) detectLostCarriers(ctx context.Context, worldID uui
 	transportRows, err := h.pool.Query(ctx,
 		`SELECT m.id, m.sender_id, t.id
 		   FROM messengers m JOIN transports t ON t.id = m.carrier_transport_id
-		  WHERE m.world_id = $1 AND m.passage_status = 'aboard' AND t.status = 'intercepted'
+		  WHERE m.world_id = $1 AND m.passage_status = 'aboard' AND t.status IN ('intercepted','foundered') AND m.carrier_witness_id=0 AND NOT EXISTS(SELECT 1 FROM events e WHERE e.stream_id=m.id AND e.event_type IN ('CarrierPassengerLostV1','CarrierPassengerRescuedV1','CarrierPassengerLandedV1','CarrierPassengerRedirectedV1'))
 		  FOR UPDATE OF m SKIP LOCKED`,
 		worldID,
 	)
@@ -1020,7 +1066,7 @@ func (h *PassageScanHandler) detectLostCarriers(ctx context.Context, worldID uui
 		`SELECT m.id, m.sender_id, u.id
 		   FROM messengers m JOIN units u ON u.id = m.carrier_unit_id
 		  WHERE m.world_id = $1 AND m.passage_status = 'aboard'
-		    AND (u.status = 'disbanded' OR u.owner_id != m.sender_id)
+		    AND (u.status = 'disbanded' OR u.owner_id != m.sender_id) AND m.carrier_witness_id=0 AND NOT EXISTS(SELECT 1 FROM events e WHERE e.stream_id=m.id AND e.event_type IN ('CarrierPassengerLostV1','CarrierPassengerRescuedV1','CarrierPassengerLandedV1','CarrierPassengerRedirectedV1'))
 		  FOR UPDATE OF m SKIP LOCKED`,
 		worldID,
 	)

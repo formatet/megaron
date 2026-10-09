@@ -2058,3 +2058,9 @@ h4.cx-h { font-size: var(--fs-base); }
 #account-window-overlay .dispatch-window { display: flex; flex-direction: column; max-height: calc(88dvh - 1rem); }
 #account-window-overlay .dw-header { flex-shrink: 0; }
 #account-window-overlay .dw-body { min-height: 0; overflow-y: auto; }
+
+/* A whole sealed letter/order fits the dispatch on narrow screens too. */
+.dw-envelope { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 100%; margin: .8rem 0; font: inherit; line-height: 1.5; }
+#dispatch-window-overlay .dispatch-window { display: flex; flex-direction: column; max-height: calc(88dvh - 1rem); }
+#dispatch-window-overlay .dw-body { min-height: 0; overflow-y: auto; }
+#dispatch-window-overlay .dw-text { overflow-wrap: anywhere; }

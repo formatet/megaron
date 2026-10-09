@@ -125,7 +125,7 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 		 -- crossed yet.
 		 LEFT JOIN settlements pps ON pps.id = m.passage_port_id
 		 LEFT JOIN provinces pp ON pp.id = pps.province_id
-		 WHERE m.world_id = $1 AND m.sender_id = $2 AND m.status = 'outbound'`,
+		 WHERE m.world_id = $1 AND m.sender_id = $2 AND m.status = 'outbound' AND NOT EXISTS(SELECT 1 FROM events e WHERE e.stream_id=m.id AND e.event_type='CarrierPassengerRescuedV1')`,
 		worldID, playerID,
 	)
 	if err == nil {
@@ -196,7 +196,7 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 		 LEFT JOIN settlements pps ON pps.id = m.passage_port_id
 		 LEFT JOIN provinces pp ON pp.id = pps.province_id
 		 WHERE m.world_id = $1 AND m.sender_id = $2 AND m.status = 'returning'
-		   AND m.return_departs_at IS NOT NULL`,
+		   AND m.return_departs_at IS NOT NULL AND NOT EXISTS(SELECT 1 FROM events e WHERE e.stream_id=m.id AND e.event_type='CarrierPassengerRescuedV1')`,
 		worldID, playerID,
 	)
 	if err == nil {

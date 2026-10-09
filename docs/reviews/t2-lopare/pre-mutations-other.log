@@ -1,0 +1,4 @@
+» färsk DB på migration 162 · commit daf740dd+ändringar
+ok  	formatet/megaron/server/internal/transport	0.129s
+ok  	formatet/megaron/server/api/handlers	0.107s
+ok  	formatet/megaron/server/cmd/keryx	0.003s

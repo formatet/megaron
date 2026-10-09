@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"time"
 
+	"formatet/megaron/server/internal/carrier"
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
@@ -320,10 +321,36 @@ func (h *InterceptScanHandler) seize(ctx context.Context, worldID uuid.UUID, t i
 		}
 	}
 
+	var passengerEvents []*events.Event
+	if t.shipUnitID != nil {
+		var currentTick int
+		if err := tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick); err != nil {
+			return err
+		}
+		var rescue *uuid.UUID
+		reason := string(*shipOutcome)
+		if *shipOutcome == NavalSeizureCaptured || *shipOutcome == NavalSeizureLimped {
+			rescue = t.shipUnitID
+		} else {
+			var rescuer uuid.UUID
+			err := tx.QueryRow(ctx, `SELECT id FROM units WHERE id=$1 AND world_id=$2 AND owner_id=$3 AND category='naval' AND status!='disbanded' AND size>0 AND hull>0 FOR UPDATE`, sentryID, worldID, interceptor).Scan(&rescuer)
+			if err == nil {
+				rescue = &rescuer
+			} else if err != pgx.ErrNoRows {
+				return err
+			}
+		}
+		passengerEvents, err = carrier.OutcomeTx(ctx, tx, h.eventStore, worldID, *t.shipUnitID, rescue, reason, pos.Q, pos.R, currentTick)
+		if err != nil {
+			return err
+		}
+	}
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("commit: %w", err)
 	}
-
+	for _, w := range passengerEvents {
+		h.eventStore.RecordCommitted(ctx, w)
+	}
 	if returnEvent != nil {
 		h.eventStore.RecordCommitted(ctx, returnEvent)
 	}

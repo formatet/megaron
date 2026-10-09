@@ -1,0 +1,15 @@
+baseline-messenger: GREEN
+baseline-upkeep: GREEN
+baseline-visibility: GREEN
+dispatch-without-contents: RED (TestCarrierFate_StormTransportLosesPassenger)
+rescue-without-next-port: RED (TestCarrierFate_PendingRescueCanLandBeforeProjectionAndReportOnlyAtHome)
+double-scan-double-dispatch: RED (TestCarrierFate_StormTransportLosesPassenger)
+storm-as-battle: RED (TestCarrierFate_StormMissionLosesPassenger)
+leak-carrier-to-sender: RED (TestRescuedRunner_SenderOutboxMapAndEyesKeepPositionUnknown)
+upkeep-port-as-loss: RED (TestUpkeepCarrierFate_HarbourAndSea, TestUpkeepCarrierFate_HarbourAndSea/own/grain/port, TestUpkeepCarrierFate_HarbourAndSea/own/grain/adjacent, TestUpkeepCarrierFate_HarbourAndSea/rescued/grain/port, TestUpkeepCarrierFate_HarbourAndSea/rescued/grain/adjacent, TestUpkeepCarrierFate_HarbourAndSea/own/silver/port, TestUpkeepCarrierFate_HarbourAndSea/own/silver/adjacent, TestUpkeepCarrierFate_HarbourAndSea/rescued/silver/port, TestUpkeepCarrierFate_HarbourAndSea/rescued/silver/adjacent)
+upkeep-sea-as-home: RED (TestUpkeepCarrierFate_HarbourAndSea, TestUpkeepCarrierFate_HarbourAndSea/own/grain/sea, TestUpkeepCarrierFate_HarbourAndSea/own/grain/marching, TestUpkeepCarrierFate_HarbourAndSea/own/grain/freighting, TestUpkeepCarrierFate_HarbourAndSea/rescued/grain/sea, TestUpkeepCarrierFate_HarbourAndSea/rescued/grain/marching, TestUpkeepCarrierFate_HarbourAndSea/rescued/grain/freighting, TestUpkeepCarrierFate_HarbourAndSea/own/silver/sea, TestUpkeepCarrierFate_HarbourAndSea/own/silver/marching, TestUpkeepCarrierFate_HarbourAndSea/own/silver/freighting, TestUpkeepCarrierFate_HarbourAndSea/rescued/silver/sea, TestUpkeepCarrierFate_HarbourAndSea/rescued/silver/marching, TestUpkeepCarrierFate_HarbourAndSea/rescued/silver/freighting)
+stale-timer-before-projection: RED (TestCarrierFate_StormTransportLosesPassenger)
+restored-messenger: GREEN
+restored-upkeep: GREEN
+restored-visibility: GREEN
+All 8 real mutations rejected; sources restored.

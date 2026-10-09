@@ -1,0 +1,7 @@
+» färsk DB på migration 161 · commit daf740dd
+2026/10/08 22:33:07 INFO passage: messenger boarded messenger=29a7960f-1180-442b-8975-2adcc8f0e738 carrier=Test-galley arrives_at=2026-10-09T00:33:07.276+02:00
+--- FAIL: TestCarrierFate_StormTransportLosesPassenger (0.03s)
+    carrier_fate_test.go:71: storm passenger must be lost with no passage remaining: status="outbound" passage=0x14992c0d1560
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.031s
+FAIL

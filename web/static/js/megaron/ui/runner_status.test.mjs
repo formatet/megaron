@@ -59,3 +59,9 @@ test('order card: the ordinary land runner keeps its two states', () => {
   assert.match(orderRunnerHTML({ arrives_at: future }, Date.now()), /Messenger en route — order arrives/);
   assert.match(orderRunnerHTML({ arrives_at: past }, Date.now()), /Messenger carrying the order…/);
 });
+
+test('T2: rescue uncertainty says no word without an ETA or carrier hint', () => {
+  const s = sentStatusHTML({ status: 'outbound', passage_status: 'unknown', arrives_at: future, carrier_name: 'SECRET SHIP', passage_port: 'SECRET PORT' });
+  assert.match(s, /no word/);
+  assert.doesNotMatch(s, /SECRET|arrives|aboard|sealed/);
+});

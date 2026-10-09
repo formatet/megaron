@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"formatet/megaron/server/internal/carrier"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
@@ -23,14 +24,19 @@ import (
 // handler (worker retry, dead-letter replay) can never double-notify either — the
 // second call returns at the "already processed" guard before it reaches notify.
 type ArrivalHandler struct {
-	pool *pgxpool.Pool
-	hub  Broadcaster // nil-guarded; carries TransferDelivered to the destination's owner
+	pool       *pgxpool.Pool
+	eventStore *events.Store
+	hub        Broadcaster // nil-guarded; carries TransferDelivered to the destination's owner
 }
 
 // NewArrivalHandler creates an ArrivalHandler. hub may be nil (e.g. in tests that
 // don't care about notifications).
-func NewArrivalHandler(pool *pgxpool.Pool, hub Broadcaster) *ArrivalHandler {
-	return &ArrivalHandler{pool: pool, hub: hub}
+func NewArrivalHandler(pool *pgxpool.Pool, hub Broadcaster, stores ...*events.Store) *ArrivalHandler {
+	store := events.NewStore(pool)
+	if len(stores) > 0 && stores[0] != nil {
+		store = stores[0]
+	}
+	return &ArrivalHandler{pool: pool, hub: hub, eventStore: store}
 }
 
 // Handle delivers the manifest to the destination, or no-ops if the transport was
@@ -172,10 +178,20 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 		return fmt.Errorf("load destination owner: %w", err)
 	}
 
+	var passengerEvents []*events.Event
+	if shipUnitID != nil {
+		passengerEvents, err = carrier.PortTx(ctx, tx, h.eventStore, e.WorldID, *shipUnitID, *destID, e.DueTick)
+		if err != nil {
+			return err
+		}
+	}
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("commit: %w", err)
 	}
 
+	for _, w := range passengerEvents {
+		h.eventStore.RecordCommitted(ctx, w)
+	}
 	// Legibility gap (2026-07-24 sondrunda): the CLI already shows a departure ETA
 	// ("arrives in X min", cmd/keryx/cmd_goods.go), but until now arrival credited
 	// the goods completely silently — a Wanax checking too early sees nothing and

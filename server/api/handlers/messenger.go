@@ -711,9 +711,10 @@ func (h *MessengerHandler) ListFromHost(w http.ResponseWriter, r *http.Request) 
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT m.id, m.destination_id, COALESCE(s.name, ''), m.message_text, m.status, m.reply_text, m.sent_at, m.arrives_at,
-		        m.passage_status, pps.name, m.carrier_name
+		`SELECT m.id, m.destination_id, COALESCE(s.name, ''), m.message_text, CASE WHEN secret.no_word THEN 'outbound' ELSE m.status END, CASE WHEN secret.no_word THEN NULL ELSE m.reply_text END, m.sent_at, m.arrives_at,
+		        CASE WHEN secret.no_word THEN 'unknown' ELSE m.passage_status END, CASE WHEN secret.no_word THEN NULL ELSE pps.name END, CASE WHEN secret.no_word THEN NULL ELSE m.carrier_name END
 		 FROM messengers m
+ CROSS JOIN LATERAL (SELECT m.status NOT IN ('arrived','lost') AND EXISTS(SELECT 1 FROM events e WHERE e.stream_id=m.id AND e.event_type='CarrierPassengerRescuedV1') AS no_word) secret
 		 LEFT JOIN settlements s ON s.id = m.destination_id
 		 LEFT JOIN settlements pps ON pps.id = m.passage_port_id
 		 WHERE m.world_id = $1 AND m.sender_id = $2 AND m.origin_unit_id IS NOT NULL
@@ -783,9 +784,10 @@ func (h *MessengerHandler) ListSent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT m.id, m.destination_id, s.name, m.message_text, m.status, m.reply_text, m.sent_at, m.arrives_at, m.trade_offer, m.expires_at,
-		        m.passage_status, pps.id, pps.name, pps.owner_id, m.carrier_name
+		`SELECT m.id, m.destination_id, s.name, m.message_text, CASE WHEN secret.no_word THEN 'outbound' ELSE m.status END, CASE WHEN secret.no_word THEN NULL ELSE m.reply_text END, m.sent_at, m.arrives_at, m.trade_offer, m.expires_at,
+		        CASE WHEN secret.no_word THEN 'unknown' ELSE m.passage_status END, CASE WHEN secret.no_word THEN NULL ELSE pps.id END, CASE WHEN secret.no_word THEN NULL ELSE pps.name END, CASE WHEN secret.no_word THEN NULL ELSE pps.owner_id END, CASE WHEN secret.no_word THEN NULL ELSE m.carrier_name END
 		 FROM messengers m
+ CROSS JOIN LATERAL (SELECT m.status NOT IN ('arrived','lost') AND EXISTS(SELECT 1 FROM events e WHERE e.stream_id=m.id AND e.event_type='CarrierPassengerRescuedV1') AS no_word) secret
 		 JOIN settlements s ON s.id = m.destination_id
 		 LEFT JOIN settlements pps ON pps.id = m.passage_port_id
 		 WHERE m.origin_id = $1

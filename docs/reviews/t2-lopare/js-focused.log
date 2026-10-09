@@ -1,0 +1,154 @@
+TAP version 13
+# Subtest: T2: loss dispatch renders the WHOLE frozen sealed letter and endpoints
+ok 1 - T2: loss dispatch renders the WHOLE frozen sealed letter and endpoints
+  ---
+  duration_ms: 1.288205
+  type: 'test'
+  ...
+# Subtest: T2: full trade and unit order terms survive rendering, including long contents
+ok 2 - T2: full trade and unit order terms survive rendering, including long contents
+  ---
+  duration_ms: 0.1318
+  type: 'test'
+  ...
+# Subtest: T2: rescue report names frozen ship and actual port after home return
+ok 3 - T2: rescue report names frozen ship and actual port after home return
+  ---
+  duration_ms: 0.1189
+  type: 'test'
+  ...
+# Subtest: codex: index ids are unique and every category is declared
+ok 4 - codex: index ids are unique and every category is declared
+  ---
+  duration_ms: 0.823157
+  type: 'test'
+  ...
+# Subtest: codex: every index entry has a file and every file has an index entry
+ok 5 - codex: every index entry has a file and every file has an index entry
+  ---
+  duration_ms: 0.661875
+  type: 'test'
+  ...
+# Subtest: codex: every [[link]] and related entry resolves to an article
+ok 6 - codex: every [[link]] and related entry resolves to an article
+  ---
+  duration_ms: 0.434108
+  type: 'test'
+  ...
+# Subtest: codex: every notification kind the client shows maps to exactly one article
+ok 7 - codex: every notification kind the client shows maps to exactly one article
+  ---
+  duration_ms: 0.561325
+  type: 'test'
+  ...
+# Subtest: codex: every drawer with a ? button has an article
+ok 8 - codex: every drawer with a ? button has an article
+  ---
+  duration_ms: 0.21785
+  type: 'test'
+  ...
+# Subtest: codex: every article is reachable — linked from another article or listed as related
+ok 9 - codex: every article is reachable — linked from another article or listed as related
+  ---
+  duration_ms: 0.297148
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: escapes HTML and renders links, known and missing
+ok 10 - renderMarkdown: escapes HTML and renders links, known and missing
+  ---
+  duration_ms: 0.511816
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: headings, lists, tables, code and comments
+ok 11 - renderMarkdown: headings, lists, tables, code and comments
+  ---
+  duration_ms: 0.444662
+  type: 'test'
+  ...
+# Subtest: backlinksTo and searchArticles
+ok 12 - backlinksTo and searchArticles
+  ---
+  duration_ms: 0.342238
+  type: 'test'
+  ...
+# Subtest: codex: lowercase agora_ready is mapped and community rules match alpha policy
+ok 13 - codex: lowercase agora_ready is mapped and community rules match alpha policy
+  ---
+  duration_ms: 0.810179
+  type: 'test'
+  ...
+# Subtest: codex search finds abandon in Colonies and call-back in Sea
+ok 14 - codex search finds abandon in Colonies and call-back in Sea
+  ---
+  duration_ms: 5.158676
+  type: 'test'
+  ...
+# Subtest: outbox: an outbound runner on the road shows its arrival, never the raw status
+ok 15 - outbox: an outbound runner on the road shows its arrival, never the raw status
+  ---
+  duration_ms: 10.421429
+  type: 'test'
+  ...
+# Subtest: outbox: a runner waiting in port names the port, not a past arrival
+ok 16 - outbox: a runner waiting in port names the port, not a past arrival
+  ---
+  duration_ms: 0.180746
+  type: 'test'
+  ...
+# Subtest: outbox: a runner aboard names its ship
+ok 17 - outbox: a runner aboard names its ship
+  ---
+  duration_ms: 0.238191
+  type: 'test'
+  ...
+# Subtest: outbox: delivered, returning, arrived each read as what they are
+ok 18 - outbox: delivered, returning, arrived each read as what they are
+  ---
+  duration_ms: 0.225309
+  type: 'test'
+  ...
+# Subtest: outbox: a returning runner waiting for a ship home says so
+ok 19 - outbox: a returning runner waiting for a ship home says so
+  ---
+  duration_ms: 0.144778
+  type: 'test'
+  ...
+# Subtest: outbox: a sealed runner (ship lost) is not shown as arriving
+ok 20 - outbox: a sealed runner (ship lost) is not shown as arriving
+  ---
+  duration_ms: 0.10042
+  type: 'test'
+  ...
+# Subtest: outbox: a port name is escaped
+ok 21 - outbox: a port name is escaped
+  ---
+  duration_ms: 0.07871
+  type: 'test'
+  ...
+# Subtest: order card: a runner waiting for a ship never claims to be carrying the order
+ok 22 - order card: a runner waiting for a ship never claims to be carrying the order
+  ---
+  duration_ms: 0.115637
+  type: 'test'
+  ...
+# Subtest: order card: the ordinary land runner keeps its two states
+ok 23 - order card: the ordinary land runner keeps its two states
+  ---
+  duration_ms: 0.373048
+  type: 'test'
+  ...
+# Subtest: T2: rescue uncertainty says no word without an ETA or carrier hint
+ok 24 - T2: rescue uncertainty says no word without an ETA or carrier hint
+  ---
+  duration_ms: 0.288405
+  type: 'test'
+  ...
+1..24
+# tests 24
+# suites 0
+# pass 24
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 59.406967

@@ -1,0 +1,6 @@
+» färsk DB på migration 162 · commit daf740dd+ändringar
+--- FAIL: TestCarrierFate_StormMissionLosesPassenger (0.03s)
+    carrier_fate_test.go:159: storm mission passenger must be lost, not sealed: status="outbound" passage=0x947d27249a0
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.031s
+FAIL

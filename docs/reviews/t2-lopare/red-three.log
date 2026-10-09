@@ -1,0 +1,13 @@
+» färsk DB på migration 161 · commit daf740dd
+2026/10/08 22:36:03 INFO passage: messenger boarded messenger=4cbd0289-6443-48e4-aa26-404ccee8890e carrier=Test-galley arrives_at=2026-10-09T00:36:03.854+02:00
+--- FAIL: TestCarrierFate_StormTransportLosesPassenger (0.03s)
+    carrier_fate_test.go:72: storm passenger must be lost with no passage remaining: status="outbound" passage=0x2bbbe981bc20
+2026/10/08 22:36:03 INFO passage: carrier lost, messenger sealed messenger=7997dd0f-9108-4ede-82dd-d14fdd1980e9 carrier=unit:f23e5e6c-5212-436a-9852-bf7303d27cde
+--- FAIL: TestCarrierFate_StormMissionLosesPassenger (0.02s)
+    carrier_fate_test.go:101: storm mission passenger must be lost, not sealed: status="outbound" passage=0x2bbbe987fa60
+2026/10/08 22:36:03 INFO passage: carrier lost, messenger sealed messenger=45158ba3-6272-4991-a5e3-d16016e09727 carrier=unit:30ac7e78-5cce-425a-9472-b07fdb15bdf4
+--- FAIL: TestCarrierFate_BattleRescuesPassenger (0.05s)
+    carrier_fate_test.go:150: battle passenger must be aboard a surviving enemy ship: rescued=false err=<nil>
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.102s
+FAIL

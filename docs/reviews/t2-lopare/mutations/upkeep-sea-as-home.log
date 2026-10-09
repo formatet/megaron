@@ -1,0 +1,49 @@
+» färsk DB på migration 162 · commit daf740dd+ändringar
+2026/10/08 23:21:59 INFO upkeep: grain attrition unit=fe271c22-8d6e-44e7-a11a-6620c5472ed7 lost=2 disbanded=true
+2026/10/08 23:21:59 INFO upkeep: grain attrition unit=ffe43d8e-6ba9-4936-9c3c-2251d0e83f62 lost=2 disbanded=true
+2026/10/08 23:21:59 INFO upkeep: grain attrition unit=d2f02f0c-79e6-490f-912d-a486c843bf49 lost=2 disbanded=true
+2026/10/08 23:21:59 INFO upkeep: grain attrition unit=07013f24-d5cd-488d-9342-e7a5a9591377 lost=2 disbanded=true
+2026/10/08 23:21:59 INFO upkeep: grain attrition unit=35c0adf4-4030-412a-adb1-e3958e37ce1b lost=2 disbanded=true
+2026/10/08 23:21:59 INFO upkeep: grain attrition unit=9936a290-d2e8-4652-aab6-6c8b2e340f3e lost=2 disbanded=true
+2026/10/08 23:21:59 INFO upkeep: grain attrition unit=16bf00fd-a13b-4b03-a9b4-4568b712a9eb lost=2 disbanded=true
+2026/10/08 23:21:59 INFO upkeep: grain attrition unit=9003e29d-16bd-49b3-8e6c-288e7c576130 lost=2 disbanded=true
+2026/10/08 23:21:59 INFO upkeep: grain attrition unit=038d8cb9-fb4c-4621-a2e3-7a9905b53f24 lost=2 disbanded=true
+2026/10/08 23:21:59 INFO upkeep: grain attrition unit=1fbd75e4-8400-44d9-917a-5de2943fcff0 lost=2 disbanded=true
+2026/10/08 23:21:59 INFO upkeep: silver desertion unit=d9ee6a7e-7e17-4f18-addb-86643be9c1f8 lost=1 disbanded=true
+2026/10/08 23:21:59 INFO upkeep: silver desertion unit=d40c6dc8-18b1-438c-9811-eac45df2c257 lost=1 disbanded=true
+2026/10/08 23:21:59 INFO upkeep: silver desertion unit=bad8cd83-d9e9-4fac-87fc-4d9527150df5 lost=1 disbanded=true
+2026/10/08 23:21:59 INFO upkeep: silver desertion unit=2cb6f8c6-a4aa-45a7-837a-d7103b0699c3 lost=1 disbanded=true
+2026/10/08 23:22:00 INFO upkeep: silver desertion unit=016b6fc2-43cc-424c-88b0-ba91b7b4d6a1 lost=1 disbanded=true
+2026/10/08 23:22:00 INFO upkeep: silver desertion unit=972ced2b-75cb-4e67-95d8-87b47dd3a584 lost=1 disbanded=true
+2026/10/08 23:22:00 INFO upkeep: silver desertion unit=f2804298-f2b1-404d-85c6-ca813bac6c74 lost=1 disbanded=true
+2026/10/08 23:22:00 INFO upkeep: silver desertion unit=7c2d3183-e050-4421-9455-a9e4a3da1acd lost=1 disbanded=true
+2026/10/08 23:22:00 INFO upkeep: silver desertion unit=2795b689-5fa9-4762-9c66-fa0d7c37de40 lost=1 disbanded=true
+2026/10/08 23:22:00 INFO upkeep: silver desertion unit=a4caa020-fe82-4af0-b7c0-9ee2af6bf9eb lost=1 disbanded=true
+--- FAIL: TestUpkeepCarrierFate_HarbourAndSea (0.41s)
+    --- FAIL: TestUpkeepCarrierFate_HarbourAndSea/own/grain/sea (0.02s)
+        upkeep_carrier_fate_test.go:104: upkeep grain/sea must write CarrierPassengerLostV1 in ship death TX: no rows in result set
+    --- FAIL: TestUpkeepCarrierFate_HarbourAndSea/own/grain/marching (0.02s)
+        upkeep_carrier_fate_test.go:104: upkeep grain/marching must write CarrierPassengerLostV1 in ship death TX: no rows in result set
+    --- FAIL: TestUpkeepCarrierFate_HarbourAndSea/own/grain/freighting (0.02s)
+        upkeep_carrier_fate_test.go:104: upkeep grain/freighting must write CarrierPassengerLostV1 in ship death TX: no rows in result set
+    --- FAIL: TestUpkeepCarrierFate_HarbourAndSea/rescued/grain/sea (0.02s)
+        upkeep_carrier_fate_test.go:104: upkeep grain/sea must write CarrierPassengerLostV1 in ship death TX: no rows in result set
+    --- FAIL: TestUpkeepCarrierFate_HarbourAndSea/rescued/grain/marching (0.02s)
+        upkeep_carrier_fate_test.go:104: upkeep grain/marching must write CarrierPassengerLostV1 in ship death TX: no rows in result set
+    --- FAIL: TestUpkeepCarrierFate_HarbourAndSea/rescued/grain/freighting (0.02s)
+        upkeep_carrier_fate_test.go:104: upkeep grain/freighting must write CarrierPassengerLostV1 in ship death TX: no rows in result set
+    --- FAIL: TestUpkeepCarrierFate_HarbourAndSea/own/silver/sea (0.02s)
+        upkeep_carrier_fate_test.go:104: upkeep silver/sea must write CarrierPassengerLostV1 in ship death TX: no rows in result set
+    --- FAIL: TestUpkeepCarrierFate_HarbourAndSea/own/silver/marching (0.02s)
+        upkeep_carrier_fate_test.go:104: upkeep silver/marching must write CarrierPassengerLostV1 in ship death TX: no rows in result set
+    --- FAIL: TestUpkeepCarrierFate_HarbourAndSea/own/silver/freighting (0.02s)
+        upkeep_carrier_fate_test.go:104: upkeep silver/freighting must write CarrierPassengerLostV1 in ship death TX: no rows in result set
+    --- FAIL: TestUpkeepCarrierFate_HarbourAndSea/rescued/silver/sea (0.02s)
+        upkeep_carrier_fate_test.go:104: upkeep silver/sea must write CarrierPassengerLostV1 in ship death TX: no rows in result set
+    --- FAIL: TestUpkeepCarrierFate_HarbourAndSea/rescued/silver/marching (0.02s)
+        upkeep_carrier_fate_test.go:104: upkeep silver/marching must write CarrierPassengerLostV1 in ship death TX: no rows in result set
+    --- FAIL: TestUpkeepCarrierFate_HarbourAndSea/rescued/silver/freighting (0.02s)
+        upkeep_carrier_fate_test.go:104: upkeep silver/freighting must write CarrierPassengerLostV1 in ship death TX: no rows in result set
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.412s
+FAIL

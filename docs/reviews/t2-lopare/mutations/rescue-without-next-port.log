@@ -1,0 +1,7 @@
+» färsk DB på migration 162 · commit daf740dd+ändringar
+2026/10/08 23:21:43 INFO ship returned home intent=captured_return unit=ee631a3b-0205-46a9-a9b0-e408167f20e7 settlement=97bd4ffa-c190-4ef3-8bc0-8eff2ace0371
+--- FAIL: TestCarrierFate_PendingRescueCanLandBeforeProjectionAndReportOnlyAtHome (0.04s)
+    carrier_fate_test.go:271: must land at actual next port after ship has left: carrier=ee631a3b-0205-46a9-a9b0-e408167f20e7 q=<nil> r=<nil> err=<nil>
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.037s
+FAIL

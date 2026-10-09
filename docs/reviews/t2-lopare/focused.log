@@ -1,0 +1,6 @@
+» färsk DB på migration 162 · commit daf740dd+ändringar
+ok  	formatet/megaron/server/internal/messenger	1.402s
+ok  	formatet/megaron/server/internal/combat	6.713s
+ok  	formatet/megaron/server/internal/transport	0.604s
+ok  	formatet/megaron/server/internal/economy	4.238s
+ok  	formatet/megaron/server/cmd/server	1.082s

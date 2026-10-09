@@ -1,0 +1,8 @@
+» färsk DB på migration 162 · commit daf740dd+ändringar
+2026/10/08 23:22:02 INFO passage: messenger boarded messenger=393b1ebd-4131-49e1-83be-ec2edba8b31c carrier=Test-galley arrives_at=2026-10-09T01:22:02.789+02:00
+2026/10/08 23:22:02 INFO messenger delivered id=393b1ebd-4131-49e1-83be-ec2edba8b31c destination=b87478a6-1198-4ce2-8f7d-6664946b0332
+--- FAIL: TestCarrierFate_StormTransportLosesPassenger (0.03s)
+    carrier_fate_test.go:84: pending loss must stop old timer: delivered <nil>
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.034s
+FAIL

@@ -1,0 +1,41 @@
+» färsk DB på migration 162 · commit daf740dd+ändringar
+2026/10/08 23:21:56 INFO upkeep: grain attrition unit=1ddca877-2ef4-4f84-b764-20b75ef80051 lost=2 disbanded=true
+2026/10/08 23:21:56 INFO upkeep: grain attrition unit=41e56e78-2572-49e5-b243-45e2d74509ca lost=2 disbanded=true
+2026/10/08 23:21:56 INFO upkeep: grain attrition unit=b233c4bc-ddf5-4dfd-91b4-0de76b02a3d5 lost=2 disbanded=true
+2026/10/08 23:21:56 INFO upkeep: grain attrition unit=739799b0-0ff3-4b14-93de-1ac2cf7e4154 lost=2 disbanded=true
+2026/10/08 23:21:56 INFO upkeep: grain attrition unit=6b07d226-8bcc-44c0-9f08-211e33181668 lost=2 disbanded=true
+2026/10/08 23:21:56 INFO upkeep: grain attrition unit=97d91e26-3c8e-451d-b425-fc01bd091c8f lost=2 disbanded=true
+2026/10/08 23:21:56 INFO upkeep: grain attrition unit=a7ad6e5b-a2c1-49b8-9546-aaefef04930e lost=2 disbanded=true
+2026/10/08 23:21:56 INFO upkeep: grain attrition unit=c05eea3f-0955-45a0-98dd-cff5e657c941 lost=2 disbanded=true
+2026/10/08 23:21:56 INFO upkeep: grain attrition unit=d1947e8c-bc79-4ded-a591-0d4ff8861d2e lost=2 disbanded=true
+2026/10/08 23:21:56 INFO upkeep: grain attrition unit=341f1cee-851e-4947-ac53-2191be4d0256 lost=2 disbanded=true
+2026/10/08 23:21:56 INFO upkeep: silver desertion unit=61e5f1df-3306-4880-9ccd-ee3c5ef2c3a2 lost=1 disbanded=true
+2026/10/08 23:21:56 INFO upkeep: silver desertion unit=9d3c636c-4ee8-4586-a9a7-8d16037ef28a lost=1 disbanded=true
+2026/10/08 23:21:56 INFO upkeep: silver desertion unit=9cf9499a-22c4-4a61-b196-b9536338bc25 lost=1 disbanded=true
+2026/10/08 23:21:56 INFO upkeep: silver desertion unit=607bd816-353c-458d-97a0-fb58c16815be lost=1 disbanded=true
+2026/10/08 23:21:56 INFO upkeep: silver desertion unit=bf36d7ad-c7ce-4501-b347-eeb49058a010 lost=1 disbanded=true
+2026/10/08 23:21:56 INFO upkeep: silver desertion unit=78e55c81-62ab-437d-94bf-97f10fdd3f3c lost=1 disbanded=true
+2026/10/08 23:21:56 INFO upkeep: silver desertion unit=26e1d979-2130-495f-9a79-808ae5ef1186 lost=1 disbanded=true
+2026/10/08 23:21:56 INFO upkeep: silver desertion unit=8bd01561-10ae-4ee7-9907-85375a5ab517 lost=1 disbanded=true
+2026/10/08 23:21:56 INFO upkeep: silver desertion unit=6cc71aa0-f3d9-4ce4-8b6f-cd7d2637edfb lost=1 disbanded=true
+2026/10/08 23:21:56 INFO upkeep: silver desertion unit=84f131fe-6387-4d8d-ba1c-6f11c1a5c772 lost=1 disbanded=true
+--- FAIL: TestUpkeepCarrierFate_HarbourAndSea (0.41s)
+    --- FAIL: TestUpkeepCarrierFate_HarbourAndSea/own/grain/port (0.02s)
+        upkeep_carrier_fate_test.go:104: upkeep grain/port must write CarrierPassengerLandedV1 in ship death TX: no rows in result set
+    --- FAIL: TestUpkeepCarrierFate_HarbourAndSea/own/grain/adjacent (0.02s)
+        upkeep_carrier_fate_test.go:104: upkeep grain/adjacent must write CarrierPassengerLandedV1 in ship death TX: no rows in result set
+    --- FAIL: TestUpkeepCarrierFate_HarbourAndSea/rescued/grain/port (0.02s)
+        upkeep_carrier_fate_test.go:104: upkeep grain/port must write CarrierPassengerLandedV1 in ship death TX: no rows in result set
+    --- FAIL: TestUpkeepCarrierFate_HarbourAndSea/rescued/grain/adjacent (0.02s)
+        upkeep_carrier_fate_test.go:104: upkeep grain/adjacent must write CarrierPassengerLandedV1 in ship death TX: no rows in result set
+    --- FAIL: TestUpkeepCarrierFate_HarbourAndSea/own/silver/port (0.02s)
+        upkeep_carrier_fate_test.go:104: upkeep silver/port must write CarrierPassengerLandedV1 in ship death TX: no rows in result set
+    --- FAIL: TestUpkeepCarrierFate_HarbourAndSea/own/silver/adjacent (0.02s)
+        upkeep_carrier_fate_test.go:104: upkeep silver/adjacent must write CarrierPassengerLandedV1 in ship death TX: no rows in result set
+    --- FAIL: TestUpkeepCarrierFate_HarbourAndSea/rescued/silver/port (0.02s)
+        upkeep_carrier_fate_test.go:104: upkeep silver/port must write CarrierPassengerLandedV1 in ship death TX: no rows in result set
+    --- FAIL: TestUpkeepCarrierFate_HarbourAndSea/rescued/silver/adjacent (0.02s)
+        upkeep_carrier_fate_test.go:104: upkeep silver/adjacent must write CarrierPassengerLandedV1 in ship death TX: no rows in result set
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.413s
+FAIL

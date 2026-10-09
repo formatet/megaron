@@ -1,0 +1,40 @@
+[
+  {
+    "browser": "firefox",
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "payloads": [
+      "letter",
+      "trade",
+      "order",
+      "rescue"
+    ],
+    "full_contents": true,
+    "scroll_controls_reachable": true,
+    "unknown_position": true,
+    "codex": true,
+    "page_errors": [],
+    "read_only_preference_requests": 4
+  },
+  {
+    "browser": "firefox",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "payloads": [
+      "letter",
+      "trade",
+      "order",
+      "rescue"
+    ],
+    "full_contents": true,
+    "scroll_controls_reachable": true,
+    "unknown_position": true,
+    "codex": true,
+    "page_errors": [],
+    "read_only_preference_requests": 4
+  }
+]

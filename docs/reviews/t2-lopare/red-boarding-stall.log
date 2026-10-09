@@ -1,0 +1,14 @@
+» färsk DB på migration 162 · commit daf740dd+ändringar
+2026/10/08 23:15:36 INFO passage: messenger boarded messenger=19453f4c-38b4-48d5-a340-0e75326b952a carrier="Stale ship" arrives_at=2026-10-09T01:15:36.505+02:00
+2026/10/08 23:15:36 INFO passage: messenger boarded messenger=4fd65881-1246-4b72-a0d6-219f72fba6bd carrier="Stale transport" arrives_at=2026-10-09T01:15:36.523+02:00
+--- FAIL: TestCarrierFate_StaleBoardingCannotBoardDeadCarrier (0.04s)
+    --- FAIL: TestCarrierFate_StaleBoardingCannotBoardDeadCarrier/mission (0.02s)
+        carrier_fate_test.go:514: carrier selected before death must not board after death: {status:outbound passageStatus:0x337f7820c3c0 carrierName:0x337f7820c3d0 carrierTransportID:<nil> carrierUnitID:0x337f781dc730 lostUntil:<nil> generation:1}
+    --- FAIL: TestCarrierFate_StaleBoardingCannotBoardDeadCarrier/transport (0.02s)
+        carrier_fate_test.go:514: carrier selected before death must not board after death: {status:outbound passageStatus:0x337f78498280 carrierName:0x337f78498290 carrierTransportID:0x337f7844baa0 carrierUnitID:<nil> lostUntil:<nil> generation:1}
+2026/10/08 23:15:36 INFO passage: stalled, dispatch sent messenger=49dedb6e-dd95-49db-9283-4868c32caacd port=Passage-Dest-217de7cb-b63e-4c45-aebb-d0a2a609a149 own_port=false
+--- FAIL: TestCarrierFate_RescuedWaitingDoesNotSendRemotePassageNews (0.03s)
+    carrier_fate_test.go:566: foreign rescue port must not send news without physical carrier: [PassageStalled]
+FAIL
+FAIL	formatet/megaron/server/internal/messenger	0.072s
+FAIL

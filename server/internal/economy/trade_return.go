@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"formatet/megaron/server/internal/carrier"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
@@ -116,6 +117,7 @@ func (h *TradeReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	// nearest own port; no settlement left at all ⇒ left `positioned` on the
 	// arrival hex (R3, transport.StrandShip's exact contract, copied here
 	// because economy may not import transport — G1).
+	var passengerEvents []*events.Event
 	if p.TransportID != (uuid.UUID{}) {
 		var shipUnitID *uuid.UUID
 		var ownerID uuid.UUID
@@ -127,6 +129,14 @@ func (h *TradeReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent
 			return fmt.Errorf("read return carrier: %w", serr)
 		}
 		if shipUnitID != nil {
+			store := h.eventStore
+			if store == nil {
+				store = events.NewStore(h.pool)
+			}
+			passengerEvents, err = carrier.PortTx(ctx, tx, store, e.WorldID, *shipUnitID, p.DestinationID, e.DueTick)
+			if err != nil {
+				return err
+			}
 			if len(journey) > 0 {
 				var saved province.TradeJourney
 				if err := json.Unmarshal(journey, &saved); err != nil {
@@ -158,6 +168,11 @@ func (h *TradeReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	}
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("commit trade return: %w", err)
+	}
+	for _, w := range passengerEvents {
+		if h.eventStore != nil {
+			h.eventStore.RecordCommitted(ctx, w)
+		}
 	}
 	if returnedEvent != nil {
 		h.eventStore.RecordCommitted(ctx, returnedEvent)

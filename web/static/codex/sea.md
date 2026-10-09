@@ -37,7 +37,7 @@ A [[messengers|letter]] or a [[runners|Runner]] carrying your order cannot swim,
 
 - It runs to **your own nearest coastal or harboured city** and waits there — you are told which one, and why. If you have no coastal or harboured city anywhere, the message is refused outright at the moment you send it, rather than dispatched to wait forever.
 - The moment one of **your own** ships or trade routes sails from that port toward the right side of the sea, it **boards** — free, no cargo space taken — and steps off wherever that ship lands, then finishes the trip on foot.
-- If the ship carrying it is **captured, damaged home or sunk**, the letter or order is never lost, never read and never delayed for long: it comes back sealed to the port it left from after a short spell, and waits for the next ship.
+- A storm can [[runner-lost-at-sea|lose the runner]]. In battle a surviving enemy ship [[runner-rescued-at-sea|rescues it]]; a captured ship keeps it aboard. It leaves that actual ship in its next port and continues. A damaged ship that survives takes its runner home to the next port, without sealing or loss.
 - If no ship of yours sails that way for a while, it simply keeps waiting — nothing crosses on its own. See "A runner stuck waiting" below for what you can do about it.
 
 None of this changes anything for a message or order whose road stays on dry land — a Runner on land never needs a ship, only [[marching|the roads]] it can already walk (a river still needs a ford or a boat of its own, unrelated to sea passage).
@@ -49,11 +49,11 @@ Your own [[messengers|letter]] or [[runners|Runner]] is drawn exactly where it r
 - **Waiting** — it stands still in the port it ran to, a gold pennant marking it as yours. A small red mark on top means a **PassageStalled** dispatch has already fired for this wait.
 - **Aboard** — it rides the deck of whichever ship or trade route picked it up, moving exactly when and where that ship does. Hover it to see the carrier's name.
 - **Ashore** — once the ship lands it, it steps off and finishes the last stretch on foot, same as any Runner on land.
-- **Sealed** — a runner whose carrier was captured, damaged home or sunk stands dimmed at the port, a small wax seal marking it as out of reach until it reappears.
+- **No word** — after a rescue its location is unknown to you: no marker, carrier name or sight. It tells you about the detour only when it physically comes home. Sealed markers remain a recovery measure for older unresolved journeys.
 
 ## A runner stuck waiting — your decision, not the game's
 
-Wait long enough with no ship of yours sailing the right way, and you get a **PassageStalled** dispatch: the runner, the port it's standing in, where it's trying to reach, and the ships (if any) of yours already there. Nothing forces your hand — it keeps waiting exactly where it is until you act, and the dispatch only ever fires once per spell of waiting (a lost-and-resealed carrier can trigger it again later). Three choices:
+Wait long enough with no ship of yours sailing the right way, and you get a **PassageStalled** dispatch: the runner, the port it's standing in, where it's trying to reach, and the ships (if any) of yours already there. Nothing forces your hand — it keeps waiting exactly where it is until you act, and the dispatch only ever fires once per spell of waiting (a later known waiting spell can trigger it again; an unknown rescued runner sends no news from a foreign port). Three choices:
 
 - **Arrange passage** — the same button as above, right there in the dispatch.
 - **Call it back** — give up on this errand and bring the runner home undelivered. See the instructions below.
