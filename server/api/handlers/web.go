@@ -336,13 +336,24 @@ func (h *WebHandler) epitaphLines(ctx context.Context, settlementID *uuid.UUID, 
 	}
 	lines := []string{city + " rose on the shore of the Thalassa."}
 
+	// wanaxName names the rival in a fall line; "" when the id is unknown.
+	wanaxName := func(id string) string {
+		var name string
+		_ = h.pool.QueryRow(ctx,
+			`SELECT COALESCE(wanax_name, username) FROM players WHERE id::text = $1`, id).Scan(&name)
+		return name
+	}
+
 	if settlementID != nil {
+		// Filter to the crawl's own event types BEFORE the limit: a long reign fills
+		// the stream with daily bookkeeping (UpkeepSettled, LoyaltyDecay) that would
+		// otherwise push the fall itself past the cut.
 		rows, err := h.pool.Query(ctx,
 			`SELECT event_type, payload FROM events
-			 WHERE stream_id = $1
+			 WHERE stream_id = $1 AND event_type = ANY($2)
 			 ORDER BY id ASC
 			 LIMIT 200`,
-			*settlementID,
+			*settlementID, epitaphEventTypes,
 		)
 		if err == nil {
 			defer rows.Close()
@@ -352,7 +363,7 @@ func (h *WebHandler) epitaphLines(ctx context.Context, settlementID *uuid.UUID, 
 				if rows.Scan(&eventType, &payload) != nil {
 					continue
 				}
-				if line := epitaphLine(eventType, payload, city); line != "" {
+				if line := epitaphLine(eventType, payload, city, wanaxName); line != "" {
 					lines = append(lines, line)
 				}
 			}
@@ -363,10 +374,19 @@ func (h *WebHandler) epitaphLines(ctx context.Context, settlementID *uuid.UUID, 
 	return lines
 }
 
+// epitaphEventTypes are the event types epitaphLine renders; epitaphLines reads
+// only these from the stream. Keep the two in step.
+var epitaphEventTypes = []string{
+	"BuildComplete", "TrainComplete", "CombatResolved", "UnitCombatResolved",
+	"DivineBlessing", "DivinePunishment", "CityCollapsed",
+	"SettlementCaptured", "SettlementBurned",
+}
+
 // epitaphLine renders one reign-worthy event into an English crawl line, or "" to
 // skip it. Deliberately narrow — only the beats that read as a story (buildings
 // raised, armies mustered, battles, divine favour, the fall) earn a line.
-func epitaphLine(eventType string, payload []byte, city string) string {
+// wanaxName resolves a player id from the payload to a name for the fall lines.
+func epitaphLine(eventType string, payload []byte, city string, wanaxName func(string) string) string {
 	var p map[string]any
 	_ = json.Unmarshal(payload, &p)
 	str := func(k string) string {
@@ -392,6 +412,16 @@ func epitaphLine(eventType string, payload []byte, city string) string {
 		return "The gods smiled upon " + city + "."
 	case "DivinePunishment":
 		return "The gods turned away from " + city + "."
+	case "SettlementCaptured":
+		if n := wanaxName(str("new_owner")); n != "" {
+			return "Wanax " + n + " took " + city + "."
+		}
+		return "A rival Wanax took " + city + "."
+	case "SettlementBurned":
+		if n := wanaxName(str("raider_id")); n != "" {
+			return "Wanax " + n + " burned " + city + "."
+		}
+		return city + " was burned."
 	case "CityCollapsed":
 		switch str("cause") {
 		case "starvation":
