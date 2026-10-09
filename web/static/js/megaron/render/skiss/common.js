@@ -36,6 +36,9 @@ export const PAL = {
   '&': '#B2AEA2',  // rök, ljus
   '<': '#4F3A26',  // skeppsskrov
   '>': '#E9E0C8',  // segel
+  'X': '#B81E1E',  // blodröd — hot, fiende (signalnivån; en betydelse)
+  'x': '#6E1212',  // blodröd, skuggad
+  'Y': '#E8C040',  // aktivt bygge — signalgul markör
 };
 
 // Murmur-finalizer — samma familj som terrängens seed. Deterministisk: samma

@@ -22,7 +22,7 @@ const inEll = (x, y, cx, cy, rx, ry) => ((x - cx) / rx) ** 2 + ((y - cy) / ry) *
 const isSea = ch => ch >= '0' && ch <= '3';
 
 // ── Funktionsbyggnadernas planformer. (gg, x, y, w, h, lvl) ──
-const PLAN = {
+export const PLAN = {
   // Tempel: pelarkrans (prickar) runt röd cella, altare framför.
   temple(g, x, y, w, h) {
     rect(g, x, y, w, h, 'T');
@@ -70,9 +70,9 @@ const PLAN = {
     for (const [vx, vy] of [[1, 1], [5, 1], [3, 4]]) { rect(g, x + vx, y + vy, 3, 2, 'o'); set(g, x + vx + 1, y + vy, 'V'); }
   },
 };
-const WIDE = new Set(['temple', 'market', 'barracks', 'stable']);
+export const WIDE = new Set(['temple', 'market', 'barracks', 'stable']);
 
-function underConstruction(g, x, y, w, h, phase) {
+export function underConstruction(g, x, y, w, h, phase) {
   rect(g, x, y, w, h, 'E');
   const filled = Math.round(h * phase);
   for (let j = 0; j < filled; j++) row(g, x, y + h - 1 - j, w, 'd');
