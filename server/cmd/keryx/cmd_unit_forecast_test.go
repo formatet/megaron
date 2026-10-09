@@ -71,7 +71,7 @@ func TestRenderCatchmentForecast_ThreeStates(t *testing.T) {
 			if !strings.Contains(out, c.wantWord) {
 				t.Errorf("net=%.1f cons=%.1f: output missing %q\noutput:\n%s", c.net, c.cons, c.wantWord, out)
 			}
-			if strings.Contains(out, "+0/day") || strings.Contains(out, "-0/day") {
+			if strings.Contains(out, "+0 per day") || strings.Contains(out, "-0 per day") {
 				t.Errorf("net=%.1f: output prints the misleading +0/-0 rounding\noutput:\n%s", c.net, out)
 			}
 		})

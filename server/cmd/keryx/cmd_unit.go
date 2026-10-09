@@ -946,7 +946,7 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 	prodPerTick := p.Grain.BasePerTick
 	netPerTick := p.Grain.EstNetPerTick
 	consPerTick := prodPerTick - netPerTick
-	fmt.Printf("  Grain: production ~%.0f/day − consumption ~%.0f/day = NET %s/day\n",
+	fmt.Printf("  Grain: production ~%.0f per day − consumption ~%.0f per day = net %s per day\n",
 		prodPerTick, consPerTick, formatNetPerTick(netPerTick))
 
 	// Tre lägen, inte två (megaron_plan_grundningsprognosen.md §4): ett netto på
@@ -964,10 +964,10 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 		if p.Grain.TicksUntilEmpty != nil {
 			reach = fmt.Sprintf(" → lasts ~%s", formatDays(*p.Grain.TicksUntilEmpty, "%.0f"))
 		}
-		fmt.Printf("  Starting stock %.0f grain%s — the city starves. With a farm: ~%s/day%s\n",
+		fmt.Printf("  Starting stock %.0f grain%s — the city starves. With a farm: net ~%s per day%s\n",
 			p.Grain.Seed, reach, formatNetPerTick(farmNetPerTick), farmNote)
 	case netPerTick < marginalCeiling:
-		fmt.Printf("  Starting stock %.0f grain — marginal (NET %s/day). A farm gives ~%s/day.%s\n",
+		fmt.Printf("  Starting stock %.0f grain — marginal (net %s per day). A farm gives net ~%s per day.%s\n",
 			p.Grain.Seed, formatNetPerTick(netPerTick), formatNetPerTick(farmNetPerTick), farmNote)
 	default:
 		fmt.Printf("  Starting stock %.0f grain — the city is self-sufficient.\n", p.Grain.Seed)
@@ -1009,7 +1009,7 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 			continue
 		}
 		if rate := p.Goods[g]; rate > 0 {
-			extras = append(extras, fmt.Sprintf("%s ~%.0f/day", g, rate))
+			extras = append(extras, fmt.Sprintf("%s ~%.0f per day", g, rate))
 		}
 	}
 	if len(extras) > 0 {

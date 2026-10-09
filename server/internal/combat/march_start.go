@@ -933,7 +933,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 				// Båda talen med flit: en ärlig brist säger hur stor den är, så
 				// spelaren vet om hon ska vänta en dag eller bygga en åker.
 				return nil, reject(http.StatusUnprocessableEntity, "not enough grain to provision the voyage — the home port holds %.0f, "+
-					"the voyage needs %.0f (%.1f/day for %s out, on station and home again)", have, provisions, ration, tick.FormatDays(2*travelTicks+stationTicks))
+					"the voyage needs %.0f (%.1f per day for %s out, on station and home again)", have, provisions, ration, tick.FormatDays(2*travelTicks+stationTicks))
 			}
 			if _, err := tx.Exec(ctx,
 				`UPDATE settlement_goods

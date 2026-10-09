@@ -45,7 +45,7 @@ func rate(v float64) string {
 	}
 	// %+.1f supplies its own sign (was "+%.1f", which mangled negative rates
 	// into "+-5.3/tick" — DEL C grain-netto-märkning surfaced this).
-	return fmt.Sprintf("%+.1f/day", v)
+	return fmt.Sprintf("%+.1f per day", v)
 }
 
 // World-unit formatting is shared by every Keryx duration and absolute day.

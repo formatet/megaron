@@ -23,12 +23,12 @@ export function atStorageCeiling(amount, cap) {
 export function goodsRateCell(g) {
   const rate = g.rate_per_tick || 0;
   if (atStorageCeiling(g.amount || 0, g.cap || 0)) {
-    const lost = rate > 0 ? ` · +${fmtNum(Number(rate.toFixed(1)))} lost each day` : '';
+    const lost = rate > 0 ? ` · +${fmtNum(Number(rate.toFixed(1)))} lost per day` : '';
     const title = `Storage full (${fmtNum(Math.floor(g.amount || 0))} of ${fmtNum(Math.floor(g.cap || 0))}). `
       + 'Everything produced past the cap is discarded — move this labour or trade it away.';
     return `<td class="goods-atcap" title="${esc(title)}">full${lost}</td>`;
   }
-  return rate > 0 ? `<td style="color:var(--safe)">+${fmtNum(Number(rate.toFixed(1)))} each day</td>` : '<td></td>';
+  return rate > 0 ? `<td style="color:var(--safe)">+${fmtNum(Number(rate.toFixed(1)))} per day</td>` : '<td></td>';
 }
 
 // ── Settlements overview (S1, megaron_plan_stad_vs_ekonomi.md §3) ──────────
@@ -133,7 +133,7 @@ export function renderSettlementsOverviewHTML(rows, sortKey, sortDir) {
       return `<tr onclick="openCitySettlement('${r.id}')" style="cursor:pointer">
         <td>${esc(r.name)}${r.isCapital ? ' ★' : ''}</td>
         <td style="text-align:right">${fmtNum(Math.floor(r.population))}</td>
-        <td style="text-align:right;color:${rateColor}">${rateSign}${fmtNum(Number(r.grainRate.toFixed(1)))} each day</td>
+        <td style="text-align:right;color:${rateColor}">${rateSign}${fmtNum(Number(r.grainRate.toFixed(1)))} per day</td>
         <td style="text-align:right">${fmtDays(Number(r.coverage.toFixed(1)))}</td>
         <td><span class="sitos-state-${r.severity}">${esc(r.label)}</span></td>
       </tr>`;
@@ -243,7 +243,7 @@ async function loadEconomyGoods(mySettlements) {
             <div class="sb-label">Silver</div>
             <div class="sb-val">${fmtNum(Math.floor(silver.amount))}</div>
           </div>
-          ${silver.rate_per_tick ? `<div class="sb-rate">+${fmtNum(Number(silver.rate_per_tick.toFixed(1)))} each day</div>` : ''}
+          ${silver.rate_per_tick ? `<div class="sb-rate">+${fmtNum(Number(silver.rate_per_tick.toFixed(1)))} per day</div>` : ''}
         </div>`;
       }
       if (others.length) {
@@ -628,8 +628,8 @@ async function loadEconomyWants() {
     const wants = data.wants || [], surplus = data.surplus || [];
     if (!wants.length && !surplus.length) { el.innerHTML = '<p class="empty-state" style="padding:1rem">No known market intel yet — visit settlements to learn their market.</p>'; return; }
     const rateCell = g => g.rate < 0
-      ? `<span style="color:var(--danger)">▼ ${fmtNum(Number(g.rate.toFixed(1)))} each day</span>`
-      : `<span style="color:var(--safe)">▲ +${fmtNum(Number(g.rate.toFixed(1)))} each day</span>`;
+      ? `<span style="color:var(--danger)">▼ ${fmtNum(Number(g.rate.toFixed(1)))} per day</span>`
+      : `<span style="color:var(--safe)">▲ +${fmtNum(Number(g.rate.toFixed(1)))} per day</span>`;
     let html = '';
     if (wants.length) {
       html += '<div class="dsec-title">Wants — buy here at a premium</div>' + wants.map(sw => `

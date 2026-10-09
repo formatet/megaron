@@ -783,10 +783,10 @@ func printColonyFoundedGrainLine(n notificationItem) {
 		if grainTicks != nil {
 			ticks = fmt.Sprintf(" — grain lasts ~%s", formatDays(*grainTicks, "%.0f"))
 		}
-		fmt.Printf("      %s doesn't feed itself (~%.0f grain/day short)%s. Build a farm if the catchment supports it, otherwise send grain: keryx transfer --good grain --qty <n> --dest %s\n",
+		fmt.Printf("      %s doesn't feed itself (~%.0f grain per day short)%s. Build a farm if the catchment supports it, otherwise send grain: keryx transfer --good grain --qty <n> --dest %s\n",
 			name, -perTick, ticks, name)
 	} else {
-		fmt.Printf("      %s is self-sufficient (~%+.0f grain/day).\n", name, perTick)
+		fmt.Printf("      %s is self-sufficient (net ~%+.0f grain per day).\n", name, perTick)
 	}
 }
 

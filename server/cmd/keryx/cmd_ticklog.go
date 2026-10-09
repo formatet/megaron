@@ -110,7 +110,7 @@ func fmtFlows(m map[string]float64) string {
 		if i > 0 {
 			out += ", "
 		}
-		out += fmt.Sprintf("%s %+.2f/day", k, m[k])
+		out += fmt.Sprintf("%s %+.2f per day", k, m[k])
 	}
 	return out
 }

@@ -2636,8 +2636,8 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		newUnitUp := combat.UnitUpkeep(req.UnitType, string(cat), fullSize, "garrison")
 		if (netGrainPerDay-newUnitUp.Grain) < 0 || (netSilverPerDay-newUnitUp.Silver) < 0 {
 			upkeepWarning = fmt.Sprintf(
-				"warning: once this unit garrisons it needs %.1f grain + %.1f silver/day upkeep — "+
-					"this settlement's current net after its existing army's upkeep is %+.1f grain/day, %+.1f silver/day; "+
+				"warning: once this unit garrisons it needs %.1f grain + %.1f silver per day upkeep — "+
+					"this settlement's current net after its existing army's upkeep is %+.1f grain per day, %+.1f silver per day; "+
 					"it may starve/desert without more production or fewer units (`keryx status`)",
 				newUnitUp.Grain, newUnitUp.Silver, netGrainPerDay, netSilverPerDay)
 		}

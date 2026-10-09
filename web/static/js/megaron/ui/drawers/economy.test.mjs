@@ -19,7 +19,7 @@ test('goodsRateCell: a good at cap reads "full" (dimmed) not green growth, and n
   const html = goodsRateCell({ amount: 1000000, cap: 1000000, rate_per_tick: 12.3 });
   assert.match(html, /class="goods-atcap"/);   // dimmed, not --safe green
   assert.match(html, /full/);
-  assert.match(html, /\+12.3 lost each day/);           // the wasted labour is visible
+  assert.match(html, /\+12.3 lost per day/);           // the wasted labour is visible
   assert.doesNotMatch(html, /--safe/);
 });
 
@@ -33,7 +33,7 @@ test('goodsRateCell: at cap but idle (rate 0) reads plain "full", no wasted-rate
 test('goodsRateCell: below cap and producing keeps the green growth cell', () => {
   const html = goodsRateCell({ amount: 500, cap: 1000000, rate_per_tick: 4.5 });
   assert.match(html, /var\(--safe\)/);
-  assert.match(html, /\+4.5 each day/);
+  assert.match(html, /\+4.5 per day/);
   assert.doesNotMatch(html, /goods-atcap/);
 });
 
@@ -172,7 +172,7 @@ test('renderSettlementsOverviewHTML: each row links to openCitySettlement and sh
   assert.match(html, /Petras/);
   assert.match(html, /★/);
   assert.match(html, />800</);
-  assert.match(html, /-2.5 each day/);
+  assert.match(html, /-2.5 per day/);
   assert.match(html, /var\(--danger\)/); // negative rate reads as danger
   assert.match(html, /sitos-state-release/);
   assert.match(html, /drawing down reserve/);

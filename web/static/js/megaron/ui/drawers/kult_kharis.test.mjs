@@ -5,13 +5,13 @@ import { kharisNetView } from './kult_kharis.js';
 test('AK1: kharis_net_known true draws a Net row, distinct from Passive, signed with one decimal', () => {
   const view = kharisNetView({ kharis_net_per_tick: 2.34, kharis_net_known: true, kharis_devotion_idle: false });
   assert.match(view.netHtml, /sr-label">Net</, 'label must not be "Passive" — a distinct row');
-  assert.match(view.netHtml, /\+2\.3 kharis\/day/, 'signed, one decimal, same unit as the passive row');
+  assert.match(view.netHtml, /\+2\.3 kharis per day/, 'signed, one decimal, same unit as the passive row');
   assert.equal(view.idleHtml, '', 'idle not flagged — no warning');
 });
 
 test('AK1b: a negative net is signed with a minus, not a double sign', () => {
   const view = kharisNetView({ kharis_net_per_tick: -1.5, kharis_net_known: true });
-  assert.match(view.netHtml, /-1\.5 kharis\/day/);
+  assert.match(view.netHtml, /-1\.5 kharis per day/);
   assert.doesNotMatch(view.netHtml, /\+-/);
 });
 

@@ -7,7 +7,7 @@ from pathlib import Path
 import argparse,collections,json,re
 ROOT=Path(__file__).resolve().parents[1]
 TOKEN=re.compile(r'//[^\n]*|/\*[\s\S]*?\*/|"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|`(?:\\.|[^`\\])*`')
-FORBIDDEN=re.compile(r'game[ -]days?\b|(?<![\w-])ticks?\b|/tick|\bturns?\s+(?:\d|\$\{|%\d)|(?:\d+|%[-+.0-9]*[df])\s+turns?\b|/turns?\b|\bturns?\s+(?:remaining|left|to go)\b',re.I)
+FORBIDDEN=re.compile(r'game[ -]days?\b|(?<![\w-])ticks?\b|/tick|\bturns?\s+(?:\d|\$\{|%\d)|(?:\d+|%[-+.0-9]*[df])\s+turns?\b|/turns?\b|/ ?days?\b|^\s+each day\b|\bturns?\s+(?:remaining|left|to go)\b',re.I)
 WALL=re.compile(r'≈.*?\bdays?\b|(?:≈|~).*?\bdays?\b.*?real time|\bin ~.*?\bd(?:ays?)?\b|\bnine hours\b|%d[d]\b|\bd ago\b',re.I)
 
 def sources(surface):

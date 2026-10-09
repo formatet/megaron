@@ -724,7 +724,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						prodTick := gProdRate
 						consumTick := gConsumRate
 						netTick := prodTick - consumTick
-						line := fmt.Sprintf("  %-8s %6s  prod %.1f − consum %.1f = net %+.1f /day",
+						line := fmt.Sprintf("  %-8s %6s  prod %.1f − consum %.1f = net %+.1f per day",
 							"Grain", resource(gAmt), prodTick, consumTick, netTick)
 						// food_gubbar_required/placed/self_sufficient (P4-arvet,
 						// megaron_plan_p4_arvet_i_province.md §2) replace the old
@@ -756,7 +756,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						silverStock, _ = rd["amount"].(float64)
 					}
 					warn := armyUpkeepWarning(netG, netS, grainStock, silverStock)
-					fmt.Printf("  %-8s %+.1f grain/day, %+.1f silver/day (after the army's upkeep)%s\n",
+					fmt.Printf("  %-8s net %+.1f grain per day, %+.1f silver per day (after the army's upkeep)%s\n",
 						"Net", netG, netS, warn)
 				}
 
@@ -893,9 +893,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			// The DAILY MAINTENANCE net (temple gain − decay) is what actually moves
 			// kharis — the passive geographic rate alone hid a fading L1 Wanax behind
 			// "passiv +0.1/tick" (sondrunda 2026-07-24). Show the net when we have it.
-			netStr := fmt.Sprintf("passive %+.1f/day", kpd)
+			netStr := fmt.Sprintf("passive %+.1f per day", kpd)
 			if netKnown {
-				netStr = fmt.Sprintf("net %+.1f/day (temple − decay)", knet)
+				netStr = fmt.Sprintf("net %+.1f per day (temple − decay)", knet)
 			}
 			if kcap > 0 {
 				fmt.Printf("  %-8s %6s  (%s) · cap %.0f · %s\n", "Kharis", resource(kv), mood, kcap, netStr)
@@ -938,7 +938,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						mark = "✗"
 						anyUnfed = true
 					}
-					fmt.Printf("  Temple in %s: needs %.0f oil + %.0f wine/day — stock: oil %s, wine %s  %s\n",
+					fmt.Printf("  Temple in %s: needs %.0f oil + %.0f wine per day — stock: oil %s, wine %s  %s\n",
 						name, oilNeeded, wineNeeded, resource(oil), resource(wine), mark)
 				}
 				if mood == "Suspicious" || mood == "Wrathful" || anyUnfed {
@@ -986,13 +986,13 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						// everything this city supports — so a Wanax with half the army
 						// in the field reads "100 spearmen, upkeep for 200" and thinks
 						// the number is broken.
-						fmt.Printf("  %-10s %.1f grain, %.1f silver / day  (everything the city pays — including field units)\n", "Upkeep", g, s)
+						fmt.Printf("  %-10s %.1f grain, %.1f silver per day  (everything the city pays — including field units)\n", "Upkeep", g, s)
 						// Del C: soldiers standing in the town that pays them spend
 						// their sold there. Shown as its own line because it is the
 						// only reason the net below is not gross — an invisible flow
 						// is one the Wanax can neither plan for nor exploit.
 						if circ, ok := sett["army_upkeep_circulated_silver"].(float64); ok && circ > 0 {
-							fmt.Printf("  %-10s %.1f silver / day back into the city (garrison's pay)\n", "", circ)
+							fmt.Printf("  %-10s %.1f silver per day back into the city (garrison's pay)\n", "", circ)
 						}
 					}
 				}

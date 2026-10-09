@@ -278,7 +278,7 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 	}
 
 	fmt.Printf("%-24s  %-14s  %-28s  %-6s  %-5s  %-16s  %-6s  %s\n",
-		"Type (--unit)", "Batch", "Cost", "Days", "Pop", "Requires", "Afford", "Upkeep/day (once garrisoned)")
+		"Type (--unit)", "Batch", "Cost", "Days", "Pop", "Requires", "Afford", "Upkeep per day (once garrisoned)")
 	fmt.Println(strings.Repeat("─", 110))
 	for _, u := range catalogue {
 		label := u.Type
@@ -383,13 +383,13 @@ func unsustainableReason(netGrain, netSilver, unitGrain, unitSilver, grainStock,
 	}
 	switch {
 	case grainShort < 0 && silverShort < 0:
-		return fmt.Sprintf("upkeep exceeds this city: needs %.1f more grain/day and %.1f more silver/day%s%s",
+		return fmt.Sprintf("upkeep exceeds this city: needs %.1f more grain per day and %.1f more silver per day%s%s",
 			-grainShort, -silverShort, runway(grainStock, grainShort), runway(silverStock, silverShort))
 	case silverShort < 0:
-		return fmt.Sprintf("silver upkeep: net is %+.1f silver/day, needs %.1f more/day%s",
+		return fmt.Sprintf("silver upkeep: net is %+.1f silver per day, needs %.1f more per day%s",
 			netSilver, -silverShort, runway(silverStock, silverShort))
 	case grainShort < 0:
-		return fmt.Sprintf("grain upkeep: net is %+.1f grain/day, needs %.1f more/day%s",
+		return fmt.Sprintf("grain upkeep: net is %+.1f grain per day, needs %.1f more per day%s",
 			netGrain, -grainShort, runway(grainStock, grainShort))
 	default:
 		// sustainable was false but neither margin is negative — the server saw a

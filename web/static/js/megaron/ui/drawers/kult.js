@@ -55,7 +55,7 @@ export async function loadKultDrawer() {
     // per tick (keryx `status` parity; tick == day, mig 109).
     if (pd && pd.kharis_per_tick != null) {
       html += '<div class="stat-row"><span class="sr-label">Passive</span><span class="sr-val">' +
-        (pd.kharis_per_tick >= 0 ? '+' : '') + pd.kharis_per_tick.toFixed(1) + ' kharis/day</span></div>';
+        (pd.kharis_per_tick >= 0 ? '+' : '') + pd.kharis_per_tick.toFixed(1) + ' kharis per day</span></div>';
     }
     // Net kharis (temple gain − decay) — the figure that answers "did raising
     // devotion actually help", never computed client-side. See kult_kharis.js.
@@ -80,7 +80,7 @@ export async function loadKultDrawer() {
           const mark = t.fed ? '<span style="color:var(--safe)">✓</span>' : '<span style="color:var(--accent)">✗</span>';
           html += '<div class="stat-row" style="align-items:flex-start"><span class="sr-label">' + esc(t.name || '') + '</span>' +
             '<span class="sr-val">needs ' + (t.oil_needed || 0).toFixed(0) + ' oil + ' + (t.wine_needed || 0).toFixed(0) +
-            ' wine/day — has oil ' + Math.floor(t.oil || 0) + ', wine ' + Math.floor(t.wine || 0) + ' ' + mark + '</span></div>';
+            ' wine per day — has oil ' + Math.floor(t.oil || 0) + ', wine ' + Math.floor(t.wine || 0) + ' ' + mark + '</span></div>';
         });
       }
       html += '</div>';

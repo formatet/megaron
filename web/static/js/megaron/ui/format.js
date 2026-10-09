@@ -459,10 +459,10 @@ export function notifText(kind, body) {
       const netPerTick = body.net_per_tick ?? body.net_per_day;
       const ticksLeft = body.ticks_left ?? body.days_left;
       if (body.tier === 'critical') {
-        return `${name} is STARVING — ${body.pop_loss || 0} citizens lost. Grain ${(netPerTick || 0).toFixed(0)}/day.`;
+        return `${name} is STARVING — ${body.pop_loss || 0} citizens lost. Grain net ${(netPerTick || 0).toFixed(0)} per day.`;
       }
       const ticks = ticksLeft ? ` — grain lasts ~${fmtDays(Math.round(ticksLeft))}` : '';
-      return `${name}: grain net ${(netPerTick || 0).toFixed(0)}/day${ticks}`;
+      return `${name}: grain net ${(netPerTick || 0) >= 0 ? '+' : ''}${(netPerTick || 0).toFixed(0)} per day${ticks}`;
     }
     case 'OfferAccepted': {
       // Payload per TradeAccept (messenger.go): good_key/quantity/silver are
@@ -864,9 +864,9 @@ export function colonyFoundedGrainLine(body) {
   const ticksLeft = body.grain_ticks ?? body.grain_days;
   if (perTick < 0) {
     const ticks = ticksLeft != null ? ` — grain lasts ~${fmtDays(Math.round(ticksLeft))}` : '';
-    return `${name} does not feed itself (~${Math.round(-perTick)} grain/day deficit)${ticks}. Build a farm if the land bears it, or send grain by internal transfer.`;
+    return `${name} does not feed itself (~${Math.round(-perTick)} grain per day deficit)${ticks}. Build a farm if the land bears it, or send grain by internal transfer.`;
   }
-  return `${name} feeds itself (~+${Math.round(perTick)} grain/day).`;
+  return `${name} feeds itself (net ~+${Math.round(perTick)} grain per day).`;
 }
 
 // The loss dispatch owns a frozen sealed envelope; never fetch the mutable

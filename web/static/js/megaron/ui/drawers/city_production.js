@@ -36,7 +36,7 @@ export function foodSummaryHTML(pd) {
 
 export function foodDetailsHTML(pd) {
   const s = pd?.sitos;
-  const grain = pd?.grain_prod_rate != null ? row('Grain each day', `${n(pd.grain_prod_rate)} made · ${n(pd.grain_consum_rate || 0)} eaten · ${n((pd.grain_prod_rate || 0) - (pd.grain_consum_rate || 0))} net`) : '';
+  const grain = pd?.grain_prod_rate != null ? row('Grain per day', `${n(pd.grain_prod_rate)} made · ${n(pd.grain_consum_rate || 0)} eaten · ${n((pd.grain_prod_rate || 0) - (pd.grain_consum_rate || 0))} net`) : '';
   if (!s) return grain || '<p class="empty-state">Food reserve not reported.</p>';
   const perGood = Object.entries(s.granary_per_good || {}).filter(([,v])=>v>0).map(([k,v])=>`${n(v)} ${k}`).join(', ');
   const note = pd.food_gubbar_required == null ? '' : row('Food workers', `${n(pd.food_gubbar_required)} needed · ${n(pd.food_gubbar_placed || 0)} placed`);
