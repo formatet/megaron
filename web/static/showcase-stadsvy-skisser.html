@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Megaron — stadsvyskisser</title>
+<!--
+  Tre skisser av stadsvyn för Timothys dom (2026-10-09). Samma fyra städer i
+  varje vy. Varje canvas visas i 1:1 (420 px = lådans bredd).
+  ?vy=a|b|c visar en vy; utan parameter alla tre.
+  Kör: python3 -m http.server 8099 --directory web/
+-->
+<style>
+  body { margin: 0; padding: 8px; background: #14100C; font: 12px monospace; color: #C6BC9E; }
+  h1 { font-size: 14px; font-weight: normal; color: #E0D2A8; margin: 14px 0 6px; }
+  .grid { display: grid; grid-template-columns: repeat(2, 420px); gap: 12px 16px; }
+  .scene h2 { margin: 0 0 3px; font-size: 11px; font-weight: normal; color: #9A8A5E; max-width: 420px; }
+  canvas { display: block; image-rendering: pixelated; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="module">
+import { SCENES, W, H, S } from '/static/js/megaron/render/skiss/common.js';
+const VIEWS = {
+  a: ['A — Diorama: staden snett ovanifrån', '/static/js/megaron/render/skiss/a_diorama.js'],
+  b: ['B — Panorama: staden sedd från vägen', '/static/js/megaron/render/skiss/b_panorama.js'],
+  c: ['C — Plan: kartan inzoomad, rakt uppifrån', '/static/js/megaron/render/skiss/c_plan.js'],
+};
+const want = new URLSearchParams(location.search).get('vy');
+const root = document.getElementById('root');
+for (const [k, [title, path]] of Object.entries(VIEWS)) {
+  if (want && want !== k) continue;
+  const mod = await import(path);
+  const h1 = document.createElement('h1'); h1.textContent = title; root.appendChild(h1);
+  const grid = document.createElement('div'); grid.className = 'grid'; root.appendChild(grid);
+  for (const sc of SCENES) {
+    const d = document.createElement('div'); d.className = 'scene';
+    d.innerHTML = `<h2>${sc.title}</h2>`;
+    const c = document.createElement('canvas'); c.width = W * S; c.height = H * S;
+    const ctx = c.getContext('2d'); ctx.imageSmoothingEnabled = false;
+    mod.render(ctx, sc);
+    d.appendChild(c); grid.appendChild(d);
+  }
+}
+document.body.dataset.ready = '1';
+</script>
+</body>
+</html>
