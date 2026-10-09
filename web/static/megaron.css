@@ -1106,6 +1106,7 @@ body:has(.auth-page) main {
 }
 .game-map:active { cursor: grabbing; }
 .game-map canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; }
+#hex-canvas { touch-action: none; }
 
 /* Map dim overlay (behind open drawer) */
 .map-dim {
@@ -1212,7 +1213,10 @@ body:has(.auth-page) main {
 }
 
 @media (max-width: 480px) {
-  .drawer { width: 100%; border-left: none; }
+  /* Keep full labels and the 13px text floor: six tabs need two rows here. */
+  .game-nav { height: 68px; flex-wrap: wrap; }
+  .game-nav .win-trigger { flex: 0 0 33.333333%; min-width: 0; }
+  .drawer { width: 100%; border-left: none; bottom: 68px; }
 }
 
 .drawer-header {
@@ -1915,7 +1919,7 @@ body:has(.auth-page) main {
 }
 .codex-panel.open { transform: translateX(0); box-shadow: 6px 0 30px rgba(0,0,0,0.6); }
 @media (max-width: 480px) {
-  .codex-panel { width: 100%; border-right: none; }
+  .codex-panel { width: 100%; border-right: none; bottom: 68px; }
 }
 .codex-header {
   display: flex;

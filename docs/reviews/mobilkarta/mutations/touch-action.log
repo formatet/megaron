@@ -1,0 +1,6 @@
+U native touch drag keeps page still and moves camera: {"before": {"x": 150, "y": 250, "zoom": 1}, "after": {"x": 150, "y": 220, "zoom": 1}, "scrollY": 125, "events": [{"type": "pointerdown", "trusted": true, "pointerType": "touch"}, {"type": "pointermove", "trusted": true, "pointerType": "touch"}, {"type": "pointermove", "trusted": true, "pointerType": "touch"}, {"type": "pointercancel", "trusted": true, "pointerType": "touch"}]}
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-mobilkarta/tools/mobilkarta_browser.py", line 71, in <module>
+    assert native['scrollY']==0 and native['after']['y']<native['before']['y']-50,'U native touch drag keeps page still and moves camera'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: U native touch drag keeps page still and moves camera

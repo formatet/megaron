@@ -1,0 +1,5 @@
+touch-action: named RED, byte-identical restore
+drag-click: named RED, byte-identical restore
+long-click: named RED, byte-identical restore
+pinch-factor: named RED, byte-identical restore
+Restored full JS: GREEN

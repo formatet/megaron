@@ -385,3 +385,9 @@ varunyckeln inte kan valideras bara mot en stubb med samma felstavning.
 - `python3 tools/umami_verb_mutations.py`: tar bort en verklig katalograd, success-track och API-koppling var för sig; kräver namngivet rött och återställer byte för byte, sedan grön telemetrisvit. Kör i egen arbetskopia utan samtidiga ändringar i API/verb_telemetry.
 - `python3 tools/umami_verb_browser.py`: Firefox kör verkliga join-/inspect-kontroller med scriptade HTTP-svar. Verifierar headers/payload, utkast/feltext/redirect och exakt ett godkänt/refused-event; inga spel-DB-skrivningar eller externa analytics-anrop.
 - `python3 tools/umami_verb_proof.py --send --output OUT`: skickar ett `{test:1}`-event per nytt namn via vanlig Firefox-UA och bekräftar mottagning med SELECT i Umami CT105. `--send` kräver uttryckligt tillstånd för testevent; utan flaggan inventeras bara. Ingen direkt DB-skrivning eller radering. Bevishem: `docs/reviews/umami-verb/README.md`.
+
+## U — mobilkartan
+
+- `python3 tools/mobilkarta_browser.py`: Firefox först, sedan Chromium/WebKit; desktop och touch 390×844. Produktionskarta/CSS/marschmeny/Codex med namngivna, skrivskyddade HTTP-fixturer. Native mus på desktop och tap på mobil; programmerade pointer-gester i alla motorer, dessutom äkta CDP-drag/nyp/långtryck i Chromium. Browserbegränsningar och BILD finns i `docs/reviews/mobilkarta/README.md`.
+- `--baseline --source-root BAS_WORKTREE --output OUT`: samma prov mot oförändrad bas-web; kräver oflyttad kamera och för täta mobilmenynamn. `--browsers firefox` väljer motor.
+- `python3 tools/mobilkarta_mutations.py`: fyra fysiska mutationer, namngivet rött, byte-identisk återställning i finally, därefter full JS grön. Kräver egen worktree utan samtidiga browserkörningar mot dess källor. CSS-mutationen gör den explicita scrollproben rullande med äkta Chromium-touch och fångar pointercancel.

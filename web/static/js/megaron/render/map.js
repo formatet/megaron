@@ -14,6 +14,7 @@ import { eyeSees } from './sight.js';
 import { drawRemembered } from './memory.js';
 import { drawCityMass, citySprite, cityTop, cityFoot } from './citysprites.js';
 import { zoomStep, clampPan } from './camera.js';
+import { bindMapInput } from './map_input.js';
 import { confirmInline, showInlineResult } from '../ui/inline_result.js';
 import { unitHoverLines } from '../ui/hover.js';
 import { incomingTargetKeys } from '../ui/movements.js';
@@ -3311,7 +3312,7 @@ const heldKeys = new Set();
 //
 // Sign convention (easy to get backwards — verified against the existing
 // mouse-drag pan a few lines down in initMap(), which does
-// `camera.x += e.clientX - lastMouse.x`): dragging the map right increases
+// `camera.x += dx`): dragging the map right increases
 // camera.x and moves the *view* west, because camera.x is the translate
 // applied before the world is drawn — moving the content right on screen is
 // the same as the viewpoint sliding west. A direction key reproduces the drag
@@ -4594,102 +4595,91 @@ export function initMap() {
     if (document.visibilityState === 'hidden') heldKeys.clear();
   });
 
-  // ── Input: drag + zoom + click ──────────────────────────────────────────
-  canvas.addEventListener('mousedown', e => {
-    State.dragging = true;
-    State.lastMouse = {x: e.clientX, y: e.clientY};
-  });
-  canvas.addEventListener('mouseup', e => {
-    if (!State.dragging) return;
-    const dx = e.clientX - State.lastMouse.x, dy = e.clientY - State.lastMouse.y;
-    State.dragging = false;
-    if (Math.abs(dx) < 4 && Math.abs(dy) < 4) {
+  // ── Input: one pointer path; game actions remain the existing map paths ──
+  const cancelGesture = bindMapInput(canvas, {
+    pan(dx, dy) {
+      State.camera.x += dx; State.camera.y += dy;
+      clampCamera(); State.dirty = true;
+    },
+    zoom(factor, clientX, clientY, dx = 0, dy = 0) {
       const rect = canvas.getBoundingClientRect();
-      const h = hexAtScreen(e.clientX - rect.left, e.clientY - rect.top);
+      const next = zoomStep(State.camera, factor, clientX - rect.left, clientY - rect.top);
+      Object.assign(State.camera, next, { x: next.x + dx, y: next.y + dy });
+      clampCamera(); State.dirty = true;
+    },
+    tap(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      const h = hexAtScreen(clientX - rect.left, clientY - rect.top);
       if (State.marchCtxUnitID) {
         const tile = State.tileData.find(t => t.q === h.q && t.r === h.r);
         const target = State.provinceData.find(p => p.q === h.q && p.r === h.r);
-        if (tile) window.openMarchCtx(destFromHex(h, tile, target), e.clientX, e.clientY);
+        if (tile) window.openMarchCtx(destFromHex(h, tile, target), clientX, clientY);
       } else openHexPanel(h);
-    }
-  });
-  canvas.addEventListener('mouseleave', () => { State.dragging = false; tooltip.style.display = 'none'; });
-  canvas.addEventListener('mousemove', e => {
-    if (State.dragging && State.lastMouse) {
-      State.camera.x += e.clientX - State.lastMouse.x;
-      State.camera.y += e.clientY - State.lastMouse.y;
-      clampCamera();
-      State.lastMouse = {x: e.clientX, y: e.clientY};
-      State.dirty = true;
-    }
-    const rect = canvas.getBoundingClientRect();
-    const h = hexAtScreen(e.clientX - rect.left, e.clientY - rect.top);
-    const tile = State.tileData.find(t => t.q === h.q && t.r === h.r);
-    const prov = State.provinceData.find(p => p.q === h.q && p.r === h.r);
-    if (tile && tile.terrain !== 'fog') {
-      tooltip.style.display = 'block';
-      tooltip.style.left = (e.clientX + 14) + 'px';
-      tooltip.style.top  = (e.clientY - 22) + 'px';
-      const deposits = [tile.copper_deposit ? '⚒ Copper' : null, tile.tin_deposit ? '⚒ Tin' : null,
-                        tile.silver_deposit ? '⚒ Silver' : null, tile.cedar_deposit ? '⚒ Cedar' : null].filter(Boolean).join(' · ');
-      const tl = tile.terrain.charAt(0).toUpperCase() + tile.terrain.slice(1);
-      // display_name är serverformaterat ("2nd Spearmen of Knossos") — webben
-      // bygger aldrig om den grammatiken (se unit.go:DisplayName). Två fall som
-      // en naiv u.q-jämförelse får fel: garnisonerade förband saknar helt
-      // hexposition (matchas på provinsens settlement_id), och en MARSCHERANDE
-      // enhets u.q/u.r är avgångshexen — gångaren ritas vid pathPx/hexPathPx
-      // interpolerade waypoint, så tooltipen måste läsa samma position som
-      // spriten. Annars pekar namnet på en tom hex enheten lämnat.
-      const own = (State.unitsData || []).filter(u => {
-        const at = unitHexNow(u);
-        if (at) return at.q === h.q && at.r === h.r;
-        return prov && u.settlement_id && u.settlement_id === prov.settlement_id;
-      });
-      // Every other actor is placed exactly where render() draws it — foreign
-      // units only on live tiles, caravans and runners along their leg.
-      const here = at => at && at.q === h.q && at.r === h.r;
-      const foreign = (State.foreignUnitData || []).filter(u =>
-        (u.status === 'marching' || u.status === 'positioned') && here(unitHexNow(u)) && isTileLive(h.q, h.r));
-      const caravans = (State.tradeData || []).filter(t =>
-        here(legHexNow(t.origin_q, t.origin_r, t.dest_q, t.dest_r, t.departs_at, t.arrives_at)));
-      const runners = (State.messengerData || []).filter(m => here(messengerHexNow(m)));
-      const placeName = (q, r) => {
-        const p = State.provinceData.find(p => p.q === q && p.r === r);
-        return p && p.name ? p.name : `(${q},${r})`;
-      };
-      const names = unitHoverLines({ own, foreign, caravans, runners, placeName });
-      if (prov) {
-        const parts = [prov.name, tl];
-        if (prov.owner) parts.push(`Wanax: ${prov.owner}`);
-        if (prov.walls > 0) parts.push(`Walls L${prov.walls}`);
-        if (prov.culture) parts.push(prov.culture);
-        if (prov.own) parts.push('(you)');
-        else if (prov.allied) parts.push('(ally)');
-        if (deposits) parts.push(deposits);
-        if (names.length) parts.push(names.join(', '));
-        tooltip.textContent = parts.join(' · ');
+    },
+    orders: openMapOrders,
+    hideHover() { tooltip.style.display = 'none'; },
+    hover(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      const h = hexAtScreen(clientX - rect.left, clientY - rect.top);
+      const tile = State.tileData.find(t => t.q === h.q && t.r === h.r);
+      const prov = State.provinceData.find(p => p.q === h.q && p.r === h.r);
+      if (tile && tile.terrain !== 'fog') {
+        tooltip.style.display = 'block';
+        tooltip.style.left = (clientX + 14) + 'px';
+        tooltip.style.top  = (clientY - 22) + 'px';
+        const deposits = [tile.copper_deposit ? '⚒ Copper' : null, tile.tin_deposit ? '⚒ Tin' : null,
+                          tile.silver_deposit ? '⚒ Silver' : null, tile.cedar_deposit ? '⚒ Cedar' : null].filter(Boolean).join(' · ');
+        const tl = tile.terrain.charAt(0).toUpperCase() + tile.terrain.slice(1);
+        // display_name är serverformaterat ("2nd Spearmen of Knossos") — webben
+        // bygger aldrig om den grammatiken (se unit.go:DisplayName). Två fall som
+        // en naiv u.q-jämförelse får fel: garnisonerade förband saknar helt
+        // hexposition (matchas på provinsens settlement_id), och en MARSCHERANDE
+        // enhets u.q/u.r är avgångshexen — gångaren ritas vid pathPx/hexPathPx
+        // interpolerade waypoint, så tooltipen måste läsa samma position som
+        // spriten. Annars pekar namnet på en tom hex enheten lämnat.
+        const own = (State.unitsData || []).filter(u => {
+          const at = unitHexNow(u);
+          if (at) return at.q === h.q && at.r === h.r;
+          return prov && u.settlement_id && u.settlement_id === prov.settlement_id;
+        });
+        // Every other actor is placed exactly where render() draws it — foreign
+        // units only on live tiles, caravans and runners along their leg.
+        const here = at => at && at.q === h.q && at.r === h.r;
+        const foreign = (State.foreignUnitData || []).filter(u =>
+          (u.status === 'marching' || u.status === 'positioned') && here(unitHexNow(u)) && isTileLive(h.q, h.r));
+        const caravans = (State.tradeData || []).filter(t =>
+          here(legHexNow(t.origin_q, t.origin_r, t.dest_q, t.dest_r, t.departs_at, t.arrives_at)));
+        const runners = (State.messengerData || []).filter(m => here(messengerHexNow(m)));
+        const placeName = (q, r) => {
+          const p = State.provinceData.find(p => p.q === q && p.r === r);
+          return p && p.name ? p.name : `(${q},${r})`;
+        };
+        const names = unitHoverLines({ own, foreign, caravans, runners, placeName });
+        if (prov) {
+          const parts = [prov.name, tl];
+          if (prov.owner) parts.push(`Wanax: ${prov.owner}`);
+          if (prov.walls > 0) parts.push(`Walls L${prov.walls}`);
+          if (prov.culture) parts.push(prov.culture);
+          if (prov.own) parts.push('(you)');
+          else if (prov.allied) parts.push('(ally)');
+          if (deposits) parts.push(deposits);
+          if (names.length) parts.push(names.join(', '));
+          tooltip.textContent = parts.join(' · ');
+        } else {
+          const parts = [`(${h.q},${h.r}) ${tl}`];
+          if (deposits) parts.push(deposits);
+          if (names.length) parts.push(names.join(', '));
+          tooltip.textContent = parts.join(' · ');
+        }
       } else {
-        const parts = [`(${h.q},${h.r}) ${tl}`];
-        if (deposits) parts.push(deposits);
-        if (names.length) parts.push(names.join(', '));
-        tooltip.textContent = parts.join(' · ');
+        tooltip.style.display = 'none';
       }
-    } else {
-      tooltip.style.display = 'none';
-    }
+    },
   });
-  canvas.addEventListener('wheel', e => {
-    e.preventDefault();
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-    const factor = e.deltaY < 0 ? 1.1 : 0.91;
-    const next = zoomStep(State.camera, factor, mx, my);
-    State.camera.x = next.x;
-    State.camera.y = next.y;
-    State.camera.zoom = next.zoom;
-    clampCamera();
-    State.dirty = true;
-  }, {passive:false});
+  window.addEventListener('blur', cancelGesture);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') cancelGesture();
+  });
 
   window.addEventListener('resize', () => { State.dirty = true; });
 
@@ -4700,18 +4690,17 @@ export function initMap() {
 
   loadMap().then(() => { State.dirty = true; render(); });
 
-  // Right-click to open march menu
-  canvas.addEventListener('contextmenu', e => {
-    e.preventDefault();
+  // Mouse right-click and touch/pen long-press share every affordance/FOW rule.
+  function openMapOrders(clientX, clientY) {
     const capital = ownCapital();
     if (!capital) return;
     const rect = canvas.getBoundingClientRect();
-    const h = hexAtScreen(e.clientX - rect.left, e.clientY - rect.top);
+    const h = hexAtScreen(clientX - rect.left, clientY - rect.top);
     const target = State.provinceData.find(p => p.q === h.q && p.r === h.r);
     const tile = State.tileData.find(t => t.q === h.q && t.r === h.r);
     if (!tile) { window.closeMarchCtx(); return; }
     if (State.marchCtxUnitID) {
-      window.openMarchCtx(destFromHex(h, tile, target), e.clientX, e.clientY);
+      window.openMarchCtx(destFromHex(h, tile, target), clientX, clientY);
       return;
     }
     if (tile.terrain === 'fog') {
@@ -4721,7 +4710,7 @@ export function initMap() {
       // hex accepts is explore (march_start.go exempts intent=explore from
       // the "none of your men have ever seen it" FOW rule) — openMarchCtx
       // forces and locks that checkbox for an unknown dest.
-      window.openMarchCtx(destFromHex(h, tile, null), e.clientX, e.clientY);
+      window.openMarchCtx(destFromHex(h, tile, null), clientX, clientY);
       return;
     }
     const isMountain = tile.terrain === 'mountain_limestone' || tile.terrain === 'mountain_red';
@@ -4729,7 +4718,7 @@ export function initMap() {
       // Own settlement (capital included): march units home to reinforce the
       // garrison. Another Wanax's settlement: march to attack (or reinforce if
       // allied). Inspect lives on left-click — right-click is always orders.
-      window.openMarchCtx(destFromHex(h, tile, target), e.clientX, e.clientY);
+      window.openMarchCtx(destFromHex(h, tile, target), clientX, clientY);
       return;
     }
     // Empty hex. Mountains are impassable; sea hexes take ships.
@@ -4748,8 +4737,8 @@ export function initMap() {
       u.q === h.q && u.r === h.r && (u.status === 'garrison' || u.status === 'positioned') &&
       u.deployable);
     if (ownUnit) { window.closeMarchCtx(); window.warFocusUnit(ownUnit.id); return; }
-    window.openMarchCtx(destFromHex(h, tile, null), e.clientX, e.clientY);
-  });
+    window.openMarchCtx(destFromHex(h, tile, null), clientX, clientY);
+  }
 
   // Reload provinces, marches, messengers and trades every 30s
   setInterval(() => {
