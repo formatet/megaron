@@ -8,4 +8,4 @@ You receive no instant rescue news or location. Your outbox says **no word**, an
 
 The report says "Home on day N". When the runner comes home with its answer, it brings its own account of the rescue ship and the port where it landed. A one-way order runner does not send a report home from afar. Only [[runner-lost-at-sea|loss]] is reported immediately. See [[sea]] and [[messengers]].
 
-The account names the ship and the actual towns, for example "rescued aboard Sacred Dolphin; ashore at Tiryns". The town names are preserved when the runner steps ashore.
+The account names the ship and the actual towns in a sentence: "Home on day 509. Your runner was rescued at sea by the Sacred Dolphin and put ashore at Tiryns, then went ashore at Mycenae." With only one landing: "Home on day 509. Your runner was rescued at sea by the Sacred Dolphin and put ashore at Tiryns." The town names are preserved when the runner steps ashore.

@@ -357,13 +357,26 @@ export function notifText(kind, body) {
     }
     case 'MessengerLostAtSea': {
       const e = body.envelope || {};
-      const { from, to } = messengerEnvelopeParties(e);
-      return `Your runner from ${esc(from)} to ${esc(to)} was lost at sea` + (body.reason === 'storm' ? ' in a storm.' : ' with no surviving rescue ship.');
+      const { to } = messengerEnvelopeParties(e);
+      return `Your runner to ${esc(to)} was lost at sea` + (body.reason === 'storm' ? ' in a storm.' : ' with no surviving rescue ship.');
     }
     case 'MessengerRescuedAtSea': {
-      const journey = (body.journey || []).map(j => j.ship ? `rescued aboard ${esc(j.ship)}` : j.port ? `ashore at ${esc(j.port)}` : '').filter(Boolean);
+      const journey = body.journey || [];
+      let account = '', landed = false;
+      for (const j of journey) {
+        if (j.ship) {
+          account += account ? `, then was rescued at sea by the ${esc(j.ship)}` : `Your runner was rescued at sea by the ${esc(j.ship)}`;
+          landed = false;
+        }
+        if (j.port) {
+          account += !account ? `Your runner was put ashore at ${esc(j.port)}`
+            : !landed ? ` and put ashore at ${esc(j.port)}`
+            : `, then went ashore at ${esc(j.port)}`;
+          landed = true;
+        }
+      }
       const home = Number.isInteger(body.home_tick) ? `Home on day ${body.home_tick}.` : 'Home on an unknown day.';
-      return home + ' Your runner brings an account of its rescue at sea: ' + journey.join('; ');
+      return home + ' ' + (account || 'Your runner brings an account of its rescue at sea') + '.';
     }
     case 'MessengerReturned': {
       // Your own messenger is home. The reply rides back WITH it (never in

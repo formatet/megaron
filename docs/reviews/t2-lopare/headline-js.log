@@ -1,0 +1,154 @@
+TAP version 13
+# Subtest: T2: loss dispatch renders the WHOLE frozen sealed letter and endpoints
+ok 1 - T2: loss dispatch renders the WHOLE frozen sealed letter and endpoints
+  ---
+  duration_ms: 1.401384
+  type: 'test'
+  ...
+# Subtest: T2: full trade and unit order terms survive rendering, including long contents
+ok 2 - T2: full trade and unit order terms survive rendering, including long contents
+  ---
+  duration_ms: 0.177709
+  type: 'test'
+  ...
+# Subtest: T2: rescue report names frozen ship and actual port after home return
+ok 3 - T2: rescue report names frozen ship and actual port after home return
+  ---
+  duration_ms: 0.529864
+  type: 'test'
+  ...
+# Subtest: T2: actual archived messenger_lost_trade.json preserves every sealed parameter
+ok 4 - T2: actual archived messenger_lost_trade.json preserves every sealed parameter
+  ---
+  duration_ms: 0.175639
+  type: 'test'
+  ...
+# Subtest: T2: actual archived messenger_lost_order.json preserves every sealed parameter
+ok 5 - T2: actual archived messenger_lost_order.json preserves every sealed parameter
+  ---
+  duration_ms: 0.259742
+  type: 'test'
+  ...
+# Subtest: T2: missing legacy departure day is explicit, never UTC or a guessed day
+ok 6 - T2: missing legacy departure day is explicit, never UTC or a guessed day
+  ---
+  duration_ms: 0.114311
+  type: 'test'
+  ...
+# Subtest: T2: frozen public persons come first in sealed envelope and headline
+ok 7 - T2: frozen public persons come first in sealed envelope and headline
+  ---
+  duration_ms: 0.328899
+  type: 'test'
+  ...
+# Subtest: T2: order recipient is your named unit at the original coordinates
+ok 8 - T2: order recipient is your named unit at the original coordinates
+  ---
+  duration_ms: 0.180144
+  type: 'test'
+  ...
+# Subtest: T2: missing public recipient stays unknown without guessing a login or UUID
+ok 9 - T2: missing public recipient stays unknown without guessing a login or UUID
+  ---
+  duration_ms: 0.273744
+  type: 'test'
+  ...
+# Subtest: T2: rescue sentence from frozen fields with one landing
+ok 10 - T2: rescue sentence from frozen fields with one landing
+  ---
+  duration_ms: 0.234079
+  type: 'test'
+  ...
+# Subtest: T2: rescue sentence from frozen fields with home landing
+ok 11 - T2: rescue sentence from frozen fields with home landing
+  ---
+  duration_ms: 0.089565
+  type: 'test'
+  ...
+# Subtest: T2: rescue sentence escapes frozen names for HTML display
+ok 12 - T2: rescue sentence escapes frozen names for HTML display
+  ---
+  duration_ms: 0.079407
+  type: 'test'
+  ...
+# Subtest: T2: multiple rescue ships and ports stay ordered without inventing a home port
+ok 13 - T2: multiple rescue ships and ports stay ordered without inventing a home port
+  ---
+  duration_ms: 0.06784
+  type: 'test'
+  ...
+# Subtest: codex: index ids are unique and every category is declared
+ok 14 - codex: index ids are unique and every category is declared
+  ---
+  duration_ms: 0.725172
+  type: 'test'
+  ...
+# Subtest: codex: every index entry has a file and every file has an index entry
+ok 15 - codex: every index entry has a file and every file has an index entry
+  ---
+  duration_ms: 0.596703
+  type: 'test'
+  ...
+# Subtest: codex: every [[link]] and related entry resolves to an article
+ok 16 - codex: every [[link]] and related entry resolves to an article
+  ---
+  duration_ms: 1.020419
+  type: 'test'
+  ...
+# Subtest: codex: every notification kind the client shows maps to exactly one article
+ok 17 - codex: every notification kind the client shows maps to exactly one article
+  ---
+  duration_ms: 0.535024
+  type: 'test'
+  ...
+# Subtest: codex: every drawer with a ? button has an article
+ok 18 - codex: every drawer with a ? button has an article
+  ---
+  duration_ms: 0.212272
+  type: 'test'
+  ...
+# Subtest: codex: every article is reachable — linked from another article or listed as related
+ok 19 - codex: every article is reachable — linked from another article or listed as related
+  ---
+  duration_ms: 0.282175
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: escapes HTML and renders links, known and missing
+ok 20 - renderMarkdown: escapes HTML and renders links, known and missing
+  ---
+  duration_ms: 0.480132
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: headings, lists, tables, code and comments
+ok 21 - renderMarkdown: headings, lists, tables, code and comments
+  ---
+  duration_ms: 0.447772
+  type: 'test'
+  ...
+# Subtest: backlinksTo and searchArticles
+ok 22 - backlinksTo and searchArticles
+  ---
+  duration_ms: 0.32417
+  type: 'test'
+  ...
+# Subtest: codex: lowercase agora_ready is mapped and community rules match alpha policy
+ok 23 - codex: lowercase agora_ready is mapped and community rules match alpha policy
+  ---
+  duration_ms: 0.799061
+  type: 'test'
+  ...
+# Subtest: codex search finds abandon in Colonies and call-back in Sea
+ok 24 - codex search finds abandon in Colonies and call-back in Sea
+  ---
+  duration_ms: 5.383613
+  type: 'test'
+  ...
+1..24
+# tests 24
+# suites 0
+# pass 24
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 53.464845

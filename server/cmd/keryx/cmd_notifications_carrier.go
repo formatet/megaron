@@ -33,19 +33,36 @@ func printMessengerFateLine(n notificationItem) {
 		return
 	}
 	if n.Kind == "MessengerRescuedAtSea" {
+		home := "Home on an unknown day."
 		if b.HomeTick != nil {
-			fmt.Printf("    Home on day %d. Your runner brings its account of rescue at sea.\n", *b.HomeTick)
-		} else {
-			fmt.Println("    Home on an unknown day. Your runner brings its account of rescue at sea.")
+			home = fmt.Sprintf("Home on day %d.", *b.HomeTick)
 		}
+		account, landed := "", false
 		for _, j := range b.Journey {
 			if j.Ship != "" {
-				fmt.Printf("    Rescued aboard %s.\n", j.Ship)
+				if account == "" {
+					account = "Your runner was rescued at sea by the " + j.Ship
+				} else {
+					account += ", then was rescued at sea by the " + j.Ship
+				}
+				landed = false
 			}
 			if j.Port != "" {
-				fmt.Printf("    Ashore at %s.\n", j.Port)
+				switch {
+				case account == "":
+					account = "Your runner was put ashore at " + j.Port
+				case !landed:
+					account += " and put ashore at " + j.Port
+				default:
+					account += ", then went ashore at " + j.Port
+				}
+				landed = true
 			}
 		}
+		if account == "" {
+			account = "Your runner brings an account of its rescue at sea"
+		}
+		fmt.Printf("    %s %s.\n", home, account)
 		return
 	}
 	from := "you"
@@ -74,7 +91,12 @@ func printMessengerFateLine(n notificationItem) {
 	if b.Envelope.SentTick != nil {
 		sent = fmt.Sprintf("Sent on day %d", *b.Envelope.SentTick)
 	}
-	fmt.Printf("    Your runner from %s to %s was lost at sea. %s.\n", from, to, sent)
+	reason := " with no surviving rescue ship."
+	if b.Reason == "storm" {
+		reason = " in a storm."
+	}
+	fmt.Printf("    Your runner to %s was lost at sea%s\n", to, reason)
+	fmt.Printf("    From %s to %s\n    %s.\n", from, to, sent)
 	fmt.Printf("    Letter:\n%s\n", b.Envelope.Message)
 	if b.Envelope.Reply != nil {
 		fmt.Printf("    Reply:\n%s\n", *b.Envelope.Reply)

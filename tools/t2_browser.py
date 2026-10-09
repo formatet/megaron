@@ -56,7 +56,8 @@ try:
       assert 'From you, at Mycenae, to ' in text
       target = 'your Bronze Guard at (9, 4)' if label=='order' else 'Wanax Oledoledoff at Tiryns'
       assert target in text
-      assert target in page.locator('.dw-text').inner_text()
+      assert page.locator('.dw-text').inner_text().startswith('Your runner to '+target+' was lost at sea')
+      assert 'from you' not in page.locator('.dw-text').inner_text()
       assert not any(word in page.locator('.dw-text').inner_text() for word in ['Passage-','private-login-','Changed Guard'])
       assert f"Sent on day {body['envelope']['sent_tick']}" in text
       assert body['envelope']['sent_at'] not in text
@@ -81,7 +82,7 @@ try:
      expect(page.locator('.dw-text')).to_contain_text(f"Home on day {payloads['rescue']['home_tick']}.")
      expect(page.locator('.dw-text')).to_contain_text('Sacred Dolphin')
      expect(page.locator('.dw-text')).to_contain_text('ashore at Tiryns')
-     expect(page.locator('.dw-text')).to_contain_text('ashore at Mycenae')
+     expect(page.locator('.dw-text')).to_have_text(f"Home on day {payloads['rescue']['home_tick']}. Your runner was rescued at sea by the Sacred Dolphin and put ashore at Tiryns, then went ashore at Mycenae.")
      assert 'Passage-' not in page.locator('.dw-text').inner_text()
      page.wait_for_timeout(150)
      page.evaluate("document.getElementById('dispatch-window-overlay').scrollTop=0;document.getElementById('dw-body').scrollTop=0;window.scrollTo(0,0)")

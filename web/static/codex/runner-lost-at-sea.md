@@ -13,3 +13,5 @@ A lost runner cannot deliver the message later. Sending again is your decision. 
 An older sealed record may have no preserved departure day; it says "Sent on an unknown day" rather than guessing.
 
 The dispatch names people first: "From you, at Mycenae, to Wanax Oledoledoff at Tiryns." An order names "your Bronze Guard at (9, 4)" instead. The recipient's public Wanax name, your unit's name and the places are preserved when the runner is lost; later name changes do not rewrite the sealed record. Account logins are not used.
+
+The headline names only the recipient: "Your runner to Wanax Oledoledoff at Tiryns was lost at sea in a storm." For an order: "Your runner to your Bronze Guard at (9, 4) was lost at sea in a storm." The full origin stays in the sealed envelope below.

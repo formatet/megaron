@@ -57,15 +57,16 @@ test('T2: missing legacy departure day is explicit, never UTC or a guessed day',
 test('T2: frozen public persons come first in sealed envelope and headline', () => {
   const expected = 'you, at Mycenae, to Wanax Oledoledoff at Tiryns';
   assert.ok(messengerEnvelopeText(loss).includes('From ' + expected));
-  assert.ok(notifText('MessengerLostAtSea', loss).includes('Your runner from ' + expected));
+  assert.equal(notifText('MessengerLostAtSea', loss), 'Your runner to Wanax Oledoledoff at Tiryns was lost at sea in a storm.');
   for (const text of [messengerEnvelopeText(loss), notifText('MessengerLostAtSea', loss), notifText('MessengerRescuedAtSea', rescue)]) {
     assert.doesNotMatch(text, /Passage-|private-login-|Changed After Loss|Renamed After Loss|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}/i);
   }
 });
 test('T2: order recipient is your named unit at the original coordinates', () => {
   const body = JSON.parse(readFileSync(new URL('./testdata/messenger_lost_order.json', import.meta.url)));
+  assert.ok(messengerEnvelopeText(body).includes('From you, at Mycenae, to your Bronze Guard at (9, 4)'));
+  assert.equal(notifText('MessengerLostAtSea', body), 'Your runner to your Bronze Guard at (9, 4) was lost at sea in a storm.');
   for (const text of [messengerEnvelopeText(body), notifText('MessengerLostAtSea', body)]) {
-    assert.ok(text.includes('you, at Mycenae, to your Bronze Guard at (9, 4)'));
     assert.doesNotMatch(text, /Changed Guard|Wanax Atreus|to Wanax/);
   }
 });
@@ -74,4 +75,23 @@ test('T2: missing public recipient stays unknown without guessing a login or UUI
   const text = messengerEnvelopeText(body);
   assert.match(text, /From you, at Mycenae, to an unknown Wanax at Tiryns/);
   assert.doesNotMatch(text, /private-login|00000000/);
+});
+
+for (const [label, journey, ending] of [
+  ['one landing', rescue.journey.slice(0, 2), ' and put ashore at Tiryns.'],
+  ['home landing', rescue.journey, ' and put ashore at Tiryns, then went ashore at Mycenae.'],
+]) {
+  test(`T2: rescue sentence from frozen fields with ${label}`, () => {
+    const body = { ...rescue, journey };
+    assert.equal(notifText('MessengerRescuedAtSea', body), `Home on day ${rescue.home_tick}. Your runner was rescued at sea by the Sacred Dolphin${ending}`);
+  });
+}
+test('T2: rescue sentence escapes frozen names for HTML display', () => {
+  const text = notifText('MessengerRescuedAtSea', {home_tick:0, journey:[{ship:'<Dolphin>'},{port:'<Tiryns>'}]});
+  assert.equal(text, 'Home on day 0. Your runner was rescued at sea by the &lt;Dolphin&gt; and put ashore at &lt;Tiryns&gt;.');
+});
+
+test('T2: multiple rescue ships and ports stay ordered without inventing a home port', () => {
+  const text = notifText('MessengerRescuedAtSea', {home_tick:509, journey:[{ship:'Sacred Dolphin'},{port:'Tiryns'},{ship:'Blue Gull'},{port:'Knossos'},{port:'Mycenae'}]});
+  assert.equal(text, 'Home on day 509. Your runner was rescued at sea by the Sacred Dolphin and put ashore at Tiryns, then was rescued at sea by the Blue Gull and put ashore at Knossos, then went ashore at Mycenae.');
 });

@@ -1,0 +1,64 @@
+TAP version 13
+# Subtest: T2: loss dispatch renders the WHOLE frozen sealed letter and endpoints
+ok 1 - T2: loss dispatch renders the WHOLE frozen sealed letter and endpoints
+  ---
+  duration_ms: 1.462171
+  type: 'test'
+  ...
+# Subtest: T2: full trade and unit order terms survive rendering, including long contents
+ok 2 - T2: full trade and unit order terms survive rendering, including long contents
+  ---
+  duration_ms: 0.169961
+  type: 'test'
+  ...
+# Subtest: T2: rescue report names frozen ship and actual port after home return
+ok 3 - T2: rescue report names frozen ship and actual port after home return
+  ---
+  duration_ms: 0.115383
+  type: 'test'
+  ...
+# Subtest: T2: actual archived messenger_lost_trade.json preserves every sealed parameter
+ok 4 - T2: actual archived messenger_lost_trade.json preserves every sealed parameter
+  ---
+  duration_ms: 0.187431
+  type: 'test'
+  ...
+# Subtest: T2: actual archived messenger_lost_order.json preserves every sealed parameter
+ok 5 - T2: actual archived messenger_lost_order.json preserves every sealed parameter
+  ---
+  duration_ms: 0.251912
+  type: 'test'
+  ...
+# Subtest: T2: missing legacy departure day is explicit, never UTC or a guessed day
+ok 6 - T2: missing legacy departure day is explicit, never UTC or a guessed day
+  ---
+  duration_ms: 0.098543
+  type: 'test'
+  ...
+# Subtest: T2: frozen public persons come first in sealed envelope and headline
+ok 7 - T2: frozen public persons come first in sealed envelope and headline
+  ---
+  duration_ms: 0.30508
+  type: 'test'
+  ...
+# Subtest: T2: order recipient is your named unit at the original coordinates
+ok 8 - T2: order recipient is your named unit at the original coordinates
+  ---
+  duration_ms: 0.17816
+  type: 'test'
+  ...
+# Subtest: T2: missing public recipient stays unknown without guessing a login or UUID
+ok 9 - T2: missing public recipient stays unknown without guessing a login or UUID
+  ---
+  duration_ms: 0.271518
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 46.030471

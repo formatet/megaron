@@ -120,3 +120,31 @@ Aktuella fyra Firefox-bilder, desktop 1280×900 och mobil 390×844, båda PASS (
 - [Rescue mobil](person-names-firefox/firefox-mobile-rescue.png)
 
 Riggen nollställer sin föregående långa kuvertvy och inväntar Firefox-layout före rescue-bilden; inga produktions-CSS-/scrollregler ändrades för bilden. Hela brev/trade/order-innehållet och dagetiketterna provas fortfarande. Dessa är namnrättningens aktuella bilder; äldre UUID-bilder kvarstår enbart som tidigare bevisversioner. BILD-dom före merge tillhör Timothy/Claude. Ingen merge/push/deploy från Codex; STOPP efter hash.
+
+
+## Rubrik och sammanhängande räddningsrapport — kontrakt 2026-10-09
+
+Problem: rubriken dubblerar avsändaren och räddningsrapporten läses som en logg.
+Spelarsanning: rubriken identifierar mottagaren; hemrapporten berättar räddningen som en mening.
+Invariant: hela kuvertraden och frysta identiteter/dagar står kvar; ingen ny information hämtas.
+Scope: webb/Keryx-formatterare, två Codex-artiklar, riktade prov och bildrigg.
+Non-scope: serverns livscykel, migration, risk, synlighet och CSS.
+Acceptans: mottagare utan avsändare i rubrik; kuvert oförändrat; en/två landstigningar i löptext; samma webb/Keryx/Codex; nya Firefox desktop/390.
+Stopvillkor: ändrat kanon eller behov av nya serverfält.
+Bevisplan: grön oförändrad JS/Keryx-baslinje, riktade formatterprov, Firefox-renderingsrigg med befintliga DB-payloads. **Bevisar** kedjegrindens spelaryta.
+
+
+**Resultat:** Rubriken är "Your runner to Wanax Oledoledoff at Tiryns was lost at sea in a storm." Egen order identifierar enheten. Kuvertraden "From you, at Mycenae, to …" står kvar, även i Keryx. Hemrapporten säger "Home on day 509. Your runner was rescued at sea by the Sacred Dolphin and put ashore at Tiryns, then went ashore at Mycenae." En enda hamn avslutar meningen efter Tiryns; flera räddningsskepp/hamnar berättas i fryst ordning.
+
+**Semantisk precisering (Claude 07:10):** sista hamnen kallas inte hemorten: payloaden fryser hemkomstdagen men ingen hemortsidentitet. Webb/Keryx/Codex använder samma mening.
+
+**Verifierat:** oförändrad baslinje JS och fresh Keryx grön (`headline-baseline-*.log`); 24 riktade JS/Codex-prov utan skips och hela Keryx-paketet mot fresh mig162-DB gröna (`headline-js.log`, `headline-keryx-all.log`); Keryx vet och diffcheck gröna. Två verkliga mutationer återinför var sin ursprunglig produktionscase från 5621c6df i format.js. Namngivet rött för mottagarrubriken respektive räddningsmeningen, sedan byte-identisk återställning och 24 gröna (`headline-headline-mutation.log`, `headline-rescue-mutation.log`, `headline-restored-js.log`). Serverns domänkod, data och migration oförändrade; ingen ny full Go-svit påstås.
+
+**Firefox:** desktop 1280×900 och mobil 390×844 PASS (`headline-firefox.log`, `headline-firefox/results.json`). Fyra bilder granskade vid faktisk skala; hela texten syns. Detta är samma renderingsrigg med arkiverade DB-payloads och preferences-fixtur som ovan, inte ett nytt livebackend-prov. Timothy/Claude bedömer BILD före integration.
+
+- [Loss-top desktop](headline-firefox/firefox-desktop-loss-top.png)
+- [Loss-top mobil](headline-firefox/firefox-mobile-loss-top.png)
+- [Rescue desktop](headline-firefox/firefox-desktop-rescue.png)
+- [Rescue mobil](headline-firefox/firefox-mobile-rescue.png)
+
+Repro: `node --test web/static/js/megaron/ui/carrier_fate.test.mjs web/static/js/megaron/ui/codex.test.mjs`, `tools/gotest.sh ./cmd/keryx/`, `python3 tools/t2_browser.py --browsers firefox --output-dir docs/reviews/t2-lopare/headline-firefox`. Mutationerna byter endast respektive case till samma case i `git show 5621c6df:web/static/js/megaron/ui/format.js`; kör carrier_fate.test.mjs, kräv namngivet rött och återställ filen byte för byte innan nästa mutation.
