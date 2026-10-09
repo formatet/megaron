@@ -3346,11 +3346,16 @@ const tooltip = document.getElementById('tile-tooltip');
 const container = document.getElementById('map-root');
 
 function resizeCanvas() {
+  if (canvas.width === container.clientWidth && canvas.height === container.clientHeight) return;
   canvas.width  = container.clientWidth;
   canvas.height = container.clientHeight;
+  State.dirty = true;
 }
 resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
+// WebKit kan köra modulen innan stilmallen är applicerad: då mäts #map-root
+// som 1264×182 och fönstret ändrar aldrig storlek efteråt, så kartan blev en
+// remsa i Safari (browser_parity 2026-10-09). Följ behållaren, inte fönstret.
+new ResizeObserver(resizeCanvas).observe(container);
 
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;

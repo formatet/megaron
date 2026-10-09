@@ -399,3 +399,12 @@ varunyckeln inte kan valideras bara mot en stubb med samma felstavning.
 - `python3 tools/mobilkarta_mutations.py`: fyra fysiska mutationer, namngivet rött, byte-identisk återställning i finally, därefter full JS grön. Kräver egen worktree utan samtidiga browserkörningar mot dess källor. CSS-mutationen gör den explicita scrollproben rullande med äkta Chromium-touch och fångar pointercancel.
 
 U:s toppradstillägg: `python3 tools/mobilkarta_browser.py --topbar-only --output OUT` provar alla tre riktiga knappar med native tap/click, rect/hit-test och alla kalendernamn i tre motorer desktop/390. Original main.js-bryggor med enbart start-IIFE ersatt av State/HTTP-fixturen. `python3 tools/mobilkarta_topbar_mutation.py` tar fysiskt bort mobilens CSS-reservation, kräver namngivet rött rect-prov och återställer byte-identiskt. Ny BILD/proof i `docs/reviews/mobilkarta/topbar-v2/README.md`.
+
+## Webbläsarparitet
+
+`python3 tools/browser_parity.py --out DIR` loggar in i acceptansvärlden (`tools/acceptance.sh`, spelare
+`Agamemnon` med grundad stad) och öppnar kartan och varje låda/fönster via sin riktiga knapp i Firefox,
+Chromium och WebKit, desktop 1280 och mobil 390. Den mäter i stället för att jämföra bilder: sidled-scroll,
+canvas som inte följer sin behållare, klippta/utstickande element, knappar som täcks, JS-fel och
+innehållshöjd per motor (>15 % från medianen flaggas). Exit 1 vid fynd; bilderna hamnar i `DIR`.
+Första körningen (2026-10-09) fann att WebKit ritade kartan som en remsa på 182 px (9 av 10 laddningar).
