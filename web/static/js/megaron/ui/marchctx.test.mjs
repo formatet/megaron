@@ -15,6 +15,7 @@ const noopEl = new Proxy({}, {
   get: (_t, k) => (k === 'style' ? {} : (k === 'value' ? '' : () => noopEl)),
   set: () => true,
 });
+globalThis.ResizeObserver ??= class { observe() {} };
 globalThis.document ??= {
   addEventListener() {},
   getElementById: () => noopEl,

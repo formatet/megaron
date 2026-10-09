@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 const noopEl=new Proxy({}, { get:(_t,k)=>k==='style'?{}:k==='value'?'':()=>noopEl, set:()=>true });
+globalThis.ResizeObserver ??= class { observe() {} };
 globalThis.document ??= {addEventListener(){},getElementById:()=>noopEl,createElement:()=>noopEl,querySelector:()=>noopEl,querySelectorAll:()=>[],body:noopEl};
 globalThis.window ??= {addEventListener(){},matchMedia:()=>({matches:false,addEventListener(){}})};
 globalThis.localStorage ??= {getItem:()=>null,setItem(){},removeItem(){}};

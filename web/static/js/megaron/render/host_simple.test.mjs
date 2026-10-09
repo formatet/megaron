@@ -13,6 +13,7 @@ class Element {
  getContext(){return {};}
 }
 const elements=new Map();const element=id=>{if(!elements.has(id))elements.set(id,new Element());return elements.get(id);};
+globalThis.ResizeObserver ??= class { observe() {} };
 globalThis.document={getElementById:element,createElement:()=>new Element(),addEventListener(){},querySelectorAll:()=>[]};
 let renderedForecast;
 globalThis.window={addEventListener(){},renderColonizePreviewHTML:p=>{renderedForecast=p;return '<p>Full forecast and hex list</p>';}};

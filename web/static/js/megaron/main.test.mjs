@@ -53,6 +53,7 @@ function getElementById(id) {
   return elCache.get(id);
 }
 
+globalThis.ResizeObserver ??= class { observe() {} };
 globalThis.document = {
   getElementById,
   addEventListener() {},

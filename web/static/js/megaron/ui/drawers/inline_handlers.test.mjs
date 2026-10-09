@@ -9,6 +9,7 @@ class El {
 }
 const els=new Map(['city-bld-sec','kult-body','dip-trade-m','dip-passage-m','war-abandon-res'].map(k=>[k,new El()]));
 const noopEl=new Proxy({}, {get:(_t,k)=>k==='style'?{}:()=>noopEl,set:()=>true});
+globalThis.ResizeObserver ??= class { observe() {} };
 globalThis.document={getElementById:k=>k==='net-status'?null:els.get(k)||noopEl,querySelector:()=>null,querySelectorAll:()=>[],createElement:()=>new El(),addEventListener(){}};
 globalThis.window={addEventListener(){},matchMedia:()=>({matches:false,addEventListener(){}})};
 globalThis.localStorage={getItem:()=>null,setItem(){}};
