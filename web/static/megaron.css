@@ -1226,6 +1226,9 @@ body:has(.auth-page) main {
   /* Keep full labels and the 13px text floor: six tabs need two rows here. */
   .game-nav { height: 68px; flex-wrap: wrap; }
   .game-nav .win-trigger { flex: 0 0 33.333333%; min-width: 0; }
+  /* Two rows of three: a rule between the rows, none at the row's right edge (Timothy 2026-10-09). */
+  .game-nav .win-trigger:nth-child(-n+3) { border-bottom: 1px solid var(--border); }
+  .game-nav .win-trigger:nth-child(3n) { border-right: none; }
   .drawer { width: 100%; border-left: none; bottom: 68px; }
 }
 
