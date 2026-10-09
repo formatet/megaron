@@ -4,5 +4,5 @@
 // this MUST swallow silently and never surface an error into game code.
 // Policy (megaron_plan_umami.md): event-aggregates only, never player UUIDs.
 export function track(name, props) {
-  try { window.umami?.track(name, props); } catch (_) {}
+  try { window.umami?.track(name, props)?.catch?.(() => {}); } catch (_) {}
 }

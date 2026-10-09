@@ -1,0 +1,537 @@
+TAP version 13
+# Subtest: Umami parity: every mutating vault verb has an event or explicit kingdom exclusion
+not ok 1 - Umami parity: every mutating vault verb has an event or explicit kingdom exclusion
+  ---
+  duration_ms: 1.112126
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:52:1'
+  failureType: 'testCodeFailure'
+  error: 'No event for vault verb: build (build)'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    checkParity (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:47:14)
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:53:3)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: Umami parity: a newly added vault verb and removed catalog entry fail
+not ok 2 - Umami parity: a newly added vault verb and removed catalog entry fail
+  ---
+  duration_ms: 0.479581
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:56:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /Unmapped vault verb: new-verb/. Input:
+    
+    'AssertionError [ERR_ASSERTION]: No event for vault verb: build (build)'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: 'No event for vault verb: build (build)'
+  stack: |-
+    checkParity (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:47:14)
+    file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:57:23
+    getActual (node:assert:609:5)
+    Function.throws (node:assert:757:24)
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:57:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:57:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: Umami success: cancel-build DELETE /api/v1/worlds/:world/provinces/:province/build-queue/:queue
+ok 3 - Umami success: cancel-build DELETE /api/v1/worlds/:world/provinces/:province/build-queue/:queue
+  ---
+  duration_ms: 19.290403
+  type: 'test'
+  ...
+# Subtest: Umami success: recruit POST /api/v1/worlds/:world/provinces/:province/recruit
+ok 4 - Umami success: recruit POST /api/v1/worlds/:world/provinces/:province/recruit
+  ---
+  duration_ms: 0.761
+  type: 'test'
+  ...
+# Subtest: Umami success: place POST /api/v1/worlds/:world/provinces/:province/placements
+ok 5 - Umami success: place POST /api/v1/worlds/:world/provinces/:province/placements
+  ---
+  duration_ms: 0.660521
+  type: 'test'
+  ...
+# Subtest: Umami success: staff POST /api/v1/worlds/:world/provinces/:province/placements
+ok 6 - Umami success: staff POST /api/v1/worlds/:world/provinces/:province/placements
+  ---
+  duration_ms: 0.692043
+  type: 'test'
+  ...
+# Subtest: Umami success: unplace DELETE /api/v1/worlds/:world/provinces/:province/placements/:ordinal
+ok 7 - Umami success: unplace DELETE /api/v1/worlds/:world/provinces/:province/placements/:ordinal
+  ---
+  duration_ms: 0.815103
+  type: 'test'
+  ...
+# Subtest: Umami success: labor PUT /api/v1/worlds/:world/provinces/:province/labor
+ok 8 - Umami success: labor PUT /api/v1/worlds/:world/provinces/:province/labor
+  ---
+  duration_ms: 0.546024
+  type: 'test'
+  ...
+# Subtest: Umami success: slaughter POST /api/v1/worlds/:world/provinces/:province/slaughter-livestock
+ok 9 - Umami success: slaughter POST /api/v1/worlds/:world/provinces/:province/slaughter-livestock
+  ---
+  duration_ms: 1.346507
+  type: 'test'
+  ...
+# Subtest: Umami success: disband POST /api/v1/worlds/:world/provinces/:province/disband
+ok 10 - Umami success: disband POST /api/v1/worlds/:world/provinces/:province/disband
+  ---
+  duration_ms: 0.559535
+  type: 'test'
+  ...
+# Subtest: Umami success: transfer POST /api/v1/worlds/:world/provinces/:province/trade
+ok 11 - Umami success: transfer POST /api/v1/worlds/:world/provinces/:province/trade
+  ---
+  duration_ms: 1.855557
+  type: 'test'
+  ...
+# Subtest: Umami success: gift/tribute POST /api/v1/worlds/:world/provinces/:province/trade
+ok 12 - Umami success: gift/tribute POST /api/v1/worlds/:world/provinces/:province/trade
+  ---
+  duration_ms: 0.571967
+  type: 'test'
+  ...
+# Subtest: Umami success: abandon POST /api/v1/worlds/:world/settlements/:settlement/abandon
+ok 13 - Umami success: abandon POST /api/v1/worlds/:world/settlements/:settlement/abandon
+  ---
+  duration_ms: 0.437129
+  type: 'test'
+  ...
+# Subtest: Umami success: rite POST /api/v1/worlds/:world/settlements/:settlement/rite
+ok 14 - Umami success: rite POST /api/v1/worlds/:world/settlements/:settlement/rite
+  ---
+  duration_ms: 0.409428
+  type: 'test'
+  ...
+# Subtest: Umami success: gift POST /api/v1/worlds/:world/settlements/:settlement/gift
+ok 15 - Umami success: gift POST /api/v1/worlds/:world/settlements/:settlement/gift
+  ---
+  duration_ms: 0.366414
+  type: 'test'
+  ...
+# Subtest: Umami success: occupation-order POST /api/v1/worlds/:world/settlements/:settlement/occupation-order
+ok 16 - Umami success: occupation-order POST /api/v1/worlds/:world/settlements/:settlement/occupation-order
+  ---
+  duration_ms: 0.414807
+  type: 'test'
+  ...
+# Subtest: Umami success: march POST /api/v1/worlds/:world/units/:unit/march
+ok 17 - Umami success: march POST /api/v1/worlds/:world/units/:unit/march
+  ---
+  duration_ms: 0.336144
+  type: 'test'
+  ...
+# Subtest: Umami success: recall POST /api/v1/worlds/:world/units/:unit/recall
+ok 18 - Umami success: recall POST /api/v1/worlds/:world/units/:unit/recall
+  ---
+  duration_ms: 0.37846
+  type: 'test'
+  ...
+# Subtest: Umami success: redirect POST /api/v1/worlds/:world/units/:unit/recall
+ok 19 - Umami success: redirect POST /api/v1/worlds/:world/units/:unit/recall
+  ---
+  duration_ms: 0.337976
+  type: 'test'
+  ...
+# Subtest: Umami success: stance POST /api/v1/worlds/:world/units/:unit/stance
+ok 20 - Umami success: stance POST /api/v1/worlds/:world/units/:unit/stance
+  ---
+  duration_ms: 0.352889
+  type: 'test'
+  ...
+# Subtest: Umami success: retreat-order POST /api/v1/worlds/:world/units/:unit/standing-orders
+ok 21 - Umami success: retreat-order POST /api/v1/worlds/:world/units/:unit/standing-orders
+  ---
+  duration_ms: 1.065216
+  type: 'test'
+  ...
+# Subtest: Umami success: retreat-default PUT /api/v1/worlds/:world/retreat-default
+ok 22 - Umami success: retreat-default PUT /api/v1/worlds/:world/retreat-default
+  ---
+  duration_ms: 0.403752
+  type: 'test'
+  ...
+# Subtest: Umami success: reinforce POST /api/v1/worlds/:world/units/:unit/reinforce
+ok 23 - Umami success: reinforce POST /api/v1/worlds/:world/units/:unit/reinforce
+  ---
+  duration_ms: 0.382324
+  type: 'test'
+  ...
+# Subtest: Umami success: repair POST /api/v1/worlds/:world/units/:unit/repair
+ok 24 - Umami success: repair POST /api/v1/worlds/:world/units/:unit/repair
+  ---
+  duration_ms: 0.39794
+  type: 'test'
+  ...
+# Subtest: Umami success: load POST /api/v1/worlds/:world/units/:unit/load
+ok 25 - Umami success: load POST /api/v1/worlds/:world/units/:unit/load
+  ---
+  duration_ms: 0.436952
+  type: 'test'
+  ...
+# Subtest: Umami success: unload POST /api/v1/worlds/:world/units/:unit/unload
+ok 26 - Umami success: unload POST /api/v1/worlds/:world/units/:unit/unload
+  ---
+  duration_ms: 0.375788
+  type: 'test'
+  ...
+# Subtest: Umami success: join POST /api/v1/worlds/:world/join
+ok 27 - Umami success: join POST /api/v1/worlds/:world/join
+  ---
+  duration_ms: 0.337757
+  type: 'test'
+  ...
+# Subtest: Umami success: founding settle POST /api/v1/worlds/:world/founding/settle
+ok 28 - Umami success: founding settle POST /api/v1/worlds/:world/founding/settle
+  ---
+  duration_ms: 0.416665
+  type: 'test'
+  ...
+# Subtest: Umami success: message POST /api/v1/worlds/:world/settlements/:settlement/messengers
+ok 29 - Umami success: message POST /api/v1/worlds/:world/settlements/:settlement/messengers
+  ---
+  duration_ms: 0.335765
+  type: 'test'
+  ...
+# Subtest: Umami success: trade-offer POST /api/v1/worlds/:world/settlements/:settlement/messengers
+ok 30 - Umami success: trade-offer POST /api/v1/worlds/:world/settlements/:settlement/messengers
+  ---
+  duration_ms: 0.449861
+  type: 'test'
+  ...
+# Subtest: Umami success: message POST /api/v1/worlds/:world/founding/messengers
+ok 31 - Umami success: message POST /api/v1/worlds/:world/founding/messengers
+  ---
+  duration_ms: 0.466073
+  type: 'test'
+  ...
+# Subtest: Umami success: trade-offer POST /api/v1/worlds/:world/founding/messengers
+ok 32 - Umami success: trade-offer POST /api/v1/worlds/:world/founding/messengers
+  ---
+  duration_ms: 0.346285
+  type: 'test'
+  ...
+# Subtest: Umami success: reply POST /api/v1/worlds/:world/messengers/:messenger/reply
+ok 33 - Umami success: reply POST /api/v1/worlds/:world/messengers/:messenger/reply
+  ---
+  duration_ms: 0.328574
+  type: 'test'
+  ...
+# Subtest: Umami success: trade-accept POST /api/v1/worlds/:world/messengers/:messenger/trade-accept
+ok 34 - Umami success: trade-accept POST /api/v1/worlds/:world/messengers/:messenger/trade-accept
+  ---
+  duration_ms: 0.327019
+  type: 'test'
+  ...
+# Subtest: Umami success: trade-decline POST /api/v1/worlds/:world/messengers/:messenger/trade-decline
+ok 35 - Umami success: trade-decline POST /api/v1/worlds/:world/messengers/:messenger/trade-decline
+  ---
+  duration_ms: 0.375202
+  type: 'test'
+  ...
+# Subtest: Umami success: trade-cancel POST /api/v1/worlds/:world/messengers/:messenger/trade-cancel
+ok 36 - Umami success: trade-cancel POST /api/v1/worlds/:world/messengers/:messenger/trade-cancel
+  ---
+  duration_ms: 0.323083
+  type: 'test'
+  ...
+# Subtest: Umami success: arrange passage POST /api/v1/worlds/:world/messengers/:messenger/passage
+ok 37 - Umami success: arrange passage POST /api/v1/worlds/:world/messengers/:messenger/passage
+  ---
+  duration_ms: 0.322863
+  type: 'test'
+  ...
+# Subtest: Umami success: fetch by ship POST /api/v1/worlds/:world/units/:unit/pickup
+ok 38 - Umami success: fetch by ship POST /api/v1/worlds/:world/units/:unit/pickup
+  ---
+  duration_ms: 0.390283
+  type: 'test'
+  ...
+# Subtest: Umami success: call back POST /api/v1/worlds/:world/messengers/:messenger/call-back
+ok 39 - Umami success: call back POST /api/v1/worlds/:world/messengers/:messenger/call-back
+  ---
+  duration_ms: 0.330466
+  type: 'test'
+  ...
+# Subtest: Umami success: standing order POST /api/v1/worlds/:world/standing-orders
+ok 40 - Umami success: standing order POST /api/v1/worlds/:world/standing-orders
+  ---
+  duration_ms: 0.502649
+  type: 'test'
+  ...
+# Subtest: Umami success: standing order pause POST /api/v1/worlds/:world/standing-orders/:order/pause
+ok 41 - Umami success: standing order pause POST /api/v1/worlds/:world/standing-orders/:order/pause
+  ---
+  duration_ms: 0.330463
+  type: 'test'
+  ...
+# Subtest: Umami success: standing order resume POST /api/v1/worlds/:world/standing-orders/:order/resume
+ok 42 - Umami success: standing order resume POST /api/v1/worlds/:world/standing-orders/:order/resume
+  ---
+  duration_ms: 0.344881
+  type: 'test'
+  ...
+# Subtest: Umami success: standing order delete DELETE /api/v1/worlds/:world/standing-orders/:order
+ok 43 - Umami success: standing order delete DELETE /api/v1/worlds/:world/standing-orders/:order
+  ---
+  duration_ms: 0.327263
+  type: 'test'
+  ...
+# Subtest: Umami success: report POST /api/v1/worlds/:world/reports
+ok 44 - Umami success: report POST /api/v1/worlds/:world/reports
+  ---
+  duration_ms: 0.367606
+  type: 'test'
+  ...
+# Subtest: Umami success: mark notifications read (all) POST /api/v1/worlds/:world/notifications/read-all
+ok 45 - Umami success: mark notifications read (all) POST /api/v1/worlds/:world/notifications/read-all
+  ---
+  duration_ms: 0.332427
+  type: 'test'
+  ...
+# Subtest: Umami success: mark notification read (one) POST /api/v1/worlds/:world/notifications/:notification/read
+ok 46 - Umami success: mark notification read (one) POST /api/v1/worlds/:world/notifications/:notification/read
+  ---
+  duration_ms: 0.335533
+  type: 'test'
+  ...
+# Subtest: Umami success: delete notifications DELETE /api/v1/worlds/:world/notifications
+ok 47 - Umami success: delete notifications DELETE /api/v1/worlds/:world/notifications
+  ---
+  duration_ms: 0.394849
+  type: 'test'
+  ...
+# Subtest: Umami success: password POST /api/v1/auth/password
+ok 48 - Umami success: password POST /api/v1/auth/password
+  ---
+  duration_ms: 0.32233
+  type: 'test'
+  ...
+# Subtest: Umami success: agora password POST /api/v1/agora/password
+ok 49 - Umami success: agora password POST /api/v1/agora/password
+  ---
+  duration_ms: 0.296376
+  type: 'test'
+  ...
+# Subtest: Umami success: notification-preferences PUT /api/v1/notification-preferences/:kind
+ok 50 - Umami success: notification-preferences PUT /api/v1/notification-preferences/:kind
+  ---
+  duration_ms: 0.320755
+  type: 'test'
+  ...
+# Subtest: Umami success: notification-preferences DELETE /api/v1/notification-preferences/:kind
+ok 51 - Umami success: notification-preferences DELETE /api/v1/notification-preferences/:kind
+  ---
+  duration_ms: 0.310525
+  type: 'test'
+  ...
+# Subtest: Umami preserves all eight historical verb event names
+not ok 52 - Umami preserves all eight historical verb event names
+  ---
+  duration_ms: 0.261073
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:100:1'
+  failureType: 'testCodeFailure'
+  error: 'build_started'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:102:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami counts requests only after OK, including bulk partial success and 204
+ok 53 - Umami counts requests only after OK, including bulk partial success and 204
+  ---
+  duration_ms: 2.897838
+  type: 'test'
+  ...
+# Subtest: Umami drops IDs, names, passwords, free text, positions and arbitrary enum lookalikes
+not ok 54 - Umami drops IDs, names, passwords, free text, positions and arbitrary enum lookalikes
+  ---
+  duration_ms: 0.699128
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:118:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    5 !== 6
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 6
+  actual: 5
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:126:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami retains only known public category values
+not ok 55 - Umami retains only known public category values
+  ---
+  duration_ms: 0.930173
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:128:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      [
+        {
+    -     building: 'farm'
+    -   },
+    -   {
+          unit: 'galley'
+        },
+        {
+          intent: 'explore'
+        },
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0:
+      building: 'farm'
+    1:
+      unit: 'galley'
+    2:
+      intent: 'explore'
+    3:
+      rite: 'minoan_harvest_blessing'
+  actual:
+    0:
+      unit: 'galley'
+    1:
+      intent: 'explore'
+    2:
+      rite: 'minoan_harvest_blessing'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:136:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami refusal reason_code is whitelisted server token, never response prose or IDs
+not ok 56 - Umami refusal reason_code is whitelisted server token, never response prose or IDs
+  ---
+  duration_ms: 1.60917
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:138:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+    + []
+    - [
+    -   {
+    -     reason_code: 'insufficient_goods',
+    -     verb: 'build'
+    -   },
+    -   {
+    -     reason_code: 'insufficient_goods',
+    -     verb: 'build'
+    -   },
+    -   {
+    -     verb: 'build'
+    -   },
+    -   {
+    -     verb: 'build'
+    -   },
+    -   {
+    -     verb: 'build'
+    -   }
+    - ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0:
+      verb: 'build'
+      reason_code: 'insufficient_goods'
+    1:
+      verb: 'build'
+      reason_code: 'insufficient_goods'
+    2:
+      verb: 'build'
+    3:
+      verb: 'build'
+    4:
+      verb: 'build'
+  actual:
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:149:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami ignores GET, wrong method, unknown routes and gated kingdoms
+ok 57 - Umami ignores GET, wrong method, unknown routes and gated kingdoms
+  ---
+  duration_ms: 0.348032
+  type: 'test'
+  ...
+# Subtest: Umami never reports success/refusal for 5xx or network failure
+ok 58 - Umami never reports success/refusal for 5xx or network failure
+  ---
+  duration_ms: 0.408127
+  type: 'test'
+  ...
+# Subtest: Umami bodyless/non-JSON refusals, transfers and adblockers never break requests
+ok 59 - Umami bodyless/non-JSON refusals, transfers and adblockers never break requests
+  ---
+  duration_ms: 0.904882
+  type: 'test'
+  ...
+# Subtest: Umami shared response boundary owns verb tracking and former bare-fetch paths
+ok 60 - Umami shared response boundary owns verb tracking and former bare-fetch paths
+  ---
+  duration_ms: 1.470653
+  type: 'test'
+  ...
+1..60
+# tests 60
+# suites 0
+# pass 54
+# fail 6
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 93.993634

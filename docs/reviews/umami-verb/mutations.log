@@ -1,0 +1,4 @@
+catalog-row: named test RED
+success-track: named test RED
+api-wiring: named test RED
+restored: GREEN (byte-identical source)

@@ -1,6 +1,5 @@
 import { State, ownCapital } from '../state.js';
 import { fetchAuth } from '../api.js';
-import { track } from '../telemetry.js';
 import { serverNow } from '../clock.js';
 import {
   LOCAL_ZOOM,
@@ -4455,7 +4454,6 @@ async function openHostPanel(h, tile) {
           body: JSON.stringify({}),
         });
         if (res.ok) {
-          track('settle');
           // New province, new eyes, host gone: refresh the changed world.
           location.reload();
         } else {
@@ -4548,7 +4546,7 @@ export async function sendMessengerFromInspect(destSettlementID) {
   const sendPath = State.MY_SETTLEMENT_ID
     ? `/api/v1/worlds/${State.WORLD_ID}/settlements/${State.MY_SETTLEMENT_ID}/messengers`
     : `/api/v1/worlds/${State.WORLD_ID}/founding/messengers`;
-  const res = await fetch(sendPath, {
+  const res = await fetchAuth(sendPath, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
     body: JSON.stringify({ destination_id: destSettlementID, message: text }),

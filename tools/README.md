@@ -378,3 +378,10 @@ Q väljer för slutarmen en vanlig joined Host vars riktiga GET-prognos har
 `goods.timber > 0`; `Timber: yes` måste synas. Actual-handler-testet läser
 också arkiverad verklig forecast i `docs/reviews/host-enkel/fixtures/` så
 varunyckeln inte kan valideras bara mot en stubb med samma felstavning.
+
+
+## Umami för varje webbverb
+
+- `python3 tools/umami_verb_mutations.py`: tar bort en verklig katalograd, success-track och API-koppling var för sig; kräver namngivet rött och återställer byte för byte, sedan grön telemetrisvit. Kör i egen arbetskopia utan samtidiga ändringar i API/verb_telemetry.
+- `python3 tools/umami_verb_browser.py`: Firefox kör verkliga join-/inspect-kontroller med scriptade HTTP-svar. Verifierar headers/payload, utkast/feltext/redirect och exakt ett godkänt/refused-event; inga spel-DB-skrivningar eller externa analytics-anrop.
+- `python3 tools/umami_verb_proof.py --send --output OUT`: skickar ett `{test:1}`-event per nytt namn via vanlig Firefox-UA och bekräftar mottagning med SELECT i Umami CT105. `--send` kräver uttryckligt tillstånd för testevent; utan flaggan inventeras bara. Ingen direkt DB-skrivning eller radering. Bevishem: `docs/reviews/umami-verb/README.md`.

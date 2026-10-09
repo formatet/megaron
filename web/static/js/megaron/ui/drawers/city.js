@@ -1,7 +1,6 @@
 import { showInlineResult } from '../inline_result.js';
 import { State, activeCitySettlement } from '../../state.js';
 import { fetchAuth } from '../../api.js';
-import { track } from '../../telemetry.js';
 import { arrivalHTML, fmtClock } from '../time.js';
 import { renderLockedActions } from '../misc.js';
 import { esc, formatApiError } from '../format.js';
@@ -425,7 +424,6 @@ export async function slaughterLivestock(provinceID) {
   const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}/slaughter-livestock`, { method: 'POST' });
   const d = await res.json().catch(() => ({}));
   if (res.ok) {
-    track('livestock_slaughtered', { gubbar_placed: d.gubbar_placed || 0 });
     await loadCityDrawer();
   } else if (resultEl) {
     resultEl.style.color = 'var(--accent)';
@@ -469,7 +467,6 @@ export async function startBuild() {
   );
   const d = await r.json().catch(() => ({}));
   if (r.ok) {
-    track('build_started', { building: btype });
     resultEl.style.color = 'var(--safe)';
     resultEl.textContent = `${_BLD_LBL[btype]||btype} queued${hexLabel}.`;
     // Refresh only the buildings section — avoids resetting the active tab

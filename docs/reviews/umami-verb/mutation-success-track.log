@@ -1,0 +1,1224 @@
+TAP version 13
+# Subtest: Umami parity: every mutating vault verb has an event or explicit kingdom exclusion
+ok 1 - Umami parity: every mutating vault verb has an event or explicit kingdom exclusion
+  ---
+  duration_ms: 1.055707
+  type: 'test'
+  ...
+# Subtest: Umami parity: a newly added vault verb and removed catalog entry fail
+ok 2 - Umami parity: a newly added vault verb and removed catalog entry fail
+  ---
+  duration_ms: 0.841607
+  type: 'test'
+  ...
+# Subtest: Umami success: build POST /api/v1/worlds/:world/provinces/:province/build
+not ok 3 - Umami success: build POST /api/v1/worlds/:world/provinces/:province/build
+  ---
+  duration_ms: 18.227886
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: cancel-build DELETE /api/v1/worlds/:world/provinces/:province/build-queue/:queue
+not ok 4 - Umami success: cancel-build DELETE /api/v1/worlds/:world/provinces/:province/build-queue/:queue
+  ---
+  duration_ms: 1.209713
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: recruit POST /api/v1/worlds/:world/provinces/:province/recruit
+not ok 5 - Umami success: recruit POST /api/v1/worlds/:world/provinces/:province/recruit
+  ---
+  duration_ms: 0.86106
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: place POST /api/v1/worlds/:world/provinces/:province/placements
+not ok 6 - Umami success: place POST /api/v1/worlds/:world/provinces/:province/placements
+  ---
+  duration_ms: 0.892704
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: staff POST /api/v1/worlds/:world/provinces/:province/placements
+not ok 7 - Umami success: staff POST /api/v1/worlds/:world/provinces/:province/placements
+  ---
+  duration_ms: 0.723245
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: unplace DELETE /api/v1/worlds/:world/provinces/:province/placements/:ordinal
+not ok 8 - Umami success: unplace DELETE /api/v1/worlds/:world/provinces/:province/placements/:ordinal
+  ---
+  duration_ms: 1.340228
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: labor PUT /api/v1/worlds/:world/provinces/:province/labor
+not ok 9 - Umami success: labor PUT /api/v1/worlds/:world/provinces/:province/labor
+  ---
+  duration_ms: 0.691094
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: slaughter POST /api/v1/worlds/:world/provinces/:province/slaughter-livestock
+not ok 10 - Umami success: slaughter POST /api/v1/worlds/:world/provinces/:province/slaughter-livestock
+  ---
+  duration_ms: 0.599895
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: disband POST /api/v1/worlds/:world/provinces/:province/disband
+not ok 11 - Umami success: disband POST /api/v1/worlds/:world/provinces/:province/disband
+  ---
+  duration_ms: 0.955354
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: transfer POST /api/v1/worlds/:world/provinces/:province/trade
+ok 12 - Umami success: transfer POST /api/v1/worlds/:world/provinces/:province/trade
+  ---
+  duration_ms: 1.838193
+  type: 'test'
+  ...
+# Subtest: Umami success: gift/tribute POST /api/v1/worlds/:world/provinces/:province/trade
+ok 13 - Umami success: gift/tribute POST /api/v1/worlds/:world/provinces/:province/trade
+  ---
+  duration_ms: 0.58469
+  type: 'test'
+  ...
+# Subtest: Umami success: abandon POST /api/v1/worlds/:world/settlements/:settlement/abandon
+not ok 14 - Umami success: abandon POST /api/v1/worlds/:world/settlements/:settlement/abandon
+  ---
+  duration_ms: 0.431525
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: rite POST /api/v1/worlds/:world/settlements/:settlement/rite
+not ok 15 - Umami success: rite POST /api/v1/worlds/:world/settlements/:settlement/rite
+  ---
+  duration_ms: 0.537935
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: gift POST /api/v1/worlds/:world/settlements/:settlement/gift
+not ok 16 - Umami success: gift POST /api/v1/worlds/:world/settlements/:settlement/gift
+  ---
+  duration_ms: 0.481673
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: occupation-order POST /api/v1/worlds/:world/settlements/:settlement/occupation-order
+not ok 17 - Umami success: occupation-order POST /api/v1/worlds/:world/settlements/:settlement/occupation-order
+  ---
+  duration_ms: 0.547843
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: march POST /api/v1/worlds/:world/units/:unit/march
+not ok 18 - Umami success: march POST /api/v1/worlds/:world/units/:unit/march
+  ---
+  duration_ms: 1.278648
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: recall POST /api/v1/worlds/:world/units/:unit/recall
+not ok 19 - Umami success: recall POST /api/v1/worlds/:world/units/:unit/recall
+  ---
+  duration_ms: 0.531115
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: redirect POST /api/v1/worlds/:world/units/:unit/recall
+not ok 20 - Umami success: redirect POST /api/v1/worlds/:world/units/:unit/recall
+  ---
+  duration_ms: 0.439981
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: stance POST /api/v1/worlds/:world/units/:unit/stance
+not ok 21 - Umami success: stance POST /api/v1/worlds/:world/units/:unit/stance
+  ---
+  duration_ms: 0.507124
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: retreat-order POST /api/v1/worlds/:world/units/:unit/standing-orders
+not ok 22 - Umami success: retreat-order POST /api/v1/worlds/:world/units/:unit/standing-orders
+  ---
+  duration_ms: 0.49773
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: retreat-default PUT /api/v1/worlds/:world/retreat-default
+not ok 23 - Umami success: retreat-default PUT /api/v1/worlds/:world/retreat-default
+  ---
+  duration_ms: 0.435438
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: reinforce POST /api/v1/worlds/:world/units/:unit/reinforce
+not ok 24 - Umami success: reinforce POST /api/v1/worlds/:world/units/:unit/reinforce
+  ---
+  duration_ms: 0.46198
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: repair POST /api/v1/worlds/:world/units/:unit/repair
+not ok 25 - Umami success: repair POST /api/v1/worlds/:world/units/:unit/repair
+  ---
+  duration_ms: 0.487227
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: load POST /api/v1/worlds/:world/units/:unit/load
+not ok 26 - Umami success: load POST /api/v1/worlds/:world/units/:unit/load
+  ---
+  duration_ms: 0.50793
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: unload POST /api/v1/worlds/:world/units/:unit/unload
+not ok 27 - Umami success: unload POST /api/v1/worlds/:world/units/:unit/unload
+  ---
+  duration_ms: 0.48989
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: join POST /api/v1/worlds/:world/join
+not ok 28 - Umami success: join POST /api/v1/worlds/:world/join
+  ---
+  duration_ms: 0.473067
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: founding settle POST /api/v1/worlds/:world/founding/settle
+not ok 29 - Umami success: founding settle POST /api/v1/worlds/:world/founding/settle
+  ---
+  duration_ms: 0.516014
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: message POST /api/v1/worlds/:world/settlements/:settlement/messengers
+not ok 30 - Umami success: message POST /api/v1/worlds/:world/settlements/:settlement/messengers
+  ---
+  duration_ms: 0.463334
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: trade-offer POST /api/v1/worlds/:world/settlements/:settlement/messengers
+not ok 31 - Umami success: trade-offer POST /api/v1/worlds/:world/settlements/:settlement/messengers
+  ---
+  duration_ms: 0.44542
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: message POST /api/v1/worlds/:world/founding/messengers
+not ok 32 - Umami success: message POST /api/v1/worlds/:world/founding/messengers
+  ---
+  duration_ms: 0.541871
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: trade-offer POST /api/v1/worlds/:world/founding/messengers
+not ok 33 - Umami success: trade-offer POST /api/v1/worlds/:world/founding/messengers
+  ---
+  duration_ms: 0.465465
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: reply POST /api/v1/worlds/:world/messengers/:messenger/reply
+not ok 34 - Umami success: reply POST /api/v1/worlds/:world/messengers/:messenger/reply
+  ---
+  duration_ms: 0.478443
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: trade-accept POST /api/v1/worlds/:world/messengers/:messenger/trade-accept
+not ok 35 - Umami success: trade-accept POST /api/v1/worlds/:world/messengers/:messenger/trade-accept
+  ---
+  duration_ms: 0.49166
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: trade-decline POST /api/v1/worlds/:world/messengers/:messenger/trade-decline
+not ok 36 - Umami success: trade-decline POST /api/v1/worlds/:world/messengers/:messenger/trade-decline
+  ---
+  duration_ms: 0.561625
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: trade-cancel POST /api/v1/worlds/:world/messengers/:messenger/trade-cancel
+not ok 37 - Umami success: trade-cancel POST /api/v1/worlds/:world/messengers/:messenger/trade-cancel
+  ---
+  duration_ms: 0.493383
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: arrange passage POST /api/v1/worlds/:world/messengers/:messenger/passage
+not ok 38 - Umami success: arrange passage POST /api/v1/worlds/:world/messengers/:messenger/passage
+  ---
+  duration_ms: 0.44964
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: fetch by ship POST /api/v1/worlds/:world/units/:unit/pickup
+not ok 39 - Umami success: fetch by ship POST /api/v1/worlds/:world/units/:unit/pickup
+  ---
+  duration_ms: 0.435427
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: call back POST /api/v1/worlds/:world/messengers/:messenger/call-back
+not ok 40 - Umami success: call back POST /api/v1/worlds/:world/messengers/:messenger/call-back
+  ---
+  duration_ms: 1.604451
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: standing order POST /api/v1/worlds/:world/standing-orders
+not ok 41 - Umami success: standing order POST /api/v1/worlds/:world/standing-orders
+  ---
+  duration_ms: 0.548572
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: standing order pause POST /api/v1/worlds/:world/standing-orders/:order/pause
+not ok 42 - Umami success: standing order pause POST /api/v1/worlds/:world/standing-orders/:order/pause
+  ---
+  duration_ms: 0.487668
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: standing order resume POST /api/v1/worlds/:world/standing-orders/:order/resume
+not ok 43 - Umami success: standing order resume POST /api/v1/worlds/:world/standing-orders/:order/resume
+  ---
+  duration_ms: 0.52847
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: standing order delete DELETE /api/v1/worlds/:world/standing-orders/:order
+not ok 44 - Umami success: standing order delete DELETE /api/v1/worlds/:world/standing-orders/:order
+  ---
+  duration_ms: 0.440437
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: report POST /api/v1/worlds/:world/reports
+not ok 45 - Umami success: report POST /api/v1/worlds/:world/reports
+  ---
+  duration_ms: 0.465498
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: mark notifications read (all) POST /api/v1/worlds/:world/notifications/read-all
+not ok 46 - Umami success: mark notifications read (all) POST /api/v1/worlds/:world/notifications/read-all
+  ---
+  duration_ms: 0.465271
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: mark notification read (one) POST /api/v1/worlds/:world/notifications/:notification/read
+not ok 47 - Umami success: mark notification read (one) POST /api/v1/worlds/:world/notifications/:notification/read
+  ---
+  duration_ms: 0.454319
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: delete notifications DELETE /api/v1/worlds/:world/notifications
+not ok 48 - Umami success: delete notifications DELETE /api/v1/worlds/:world/notifications
+  ---
+  duration_ms: 0.391021
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: password POST /api/v1/auth/password
+not ok 49 - Umami success: password POST /api/v1/auth/password
+  ---
+  duration_ms: 0.405524
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: agora password POST /api/v1/agora/password
+not ok 50 - Umami success: agora password POST /api/v1/agora/password
+  ---
+  duration_ms: 0.38668
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: notification-preferences PUT /api/v1/notification-preferences/:kind
+not ok 51 - Umami success: notification-preferences PUT /api/v1/notification-preferences/:kind
+  ---
+  duration_ms: 0.390222
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami success: notification-preferences DELETE /api/v1/notification-preferences/:kind
+not ok 52 - Umami success: notification-preferences DELETE /api/v1/notification-preferences/:kind
+  ---
+  duration_ms: 0.397165
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:86:3'
+  failureType: 'testCodeFailure'
+  error: |-
+    each accepted API request must emit exactly one verb event
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:93:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami preserves all eight historical verb event names
+ok 53 - Umami preserves all eight historical verb event names
+  ---
+  duration_ms: 0.224418
+  type: 'test'
+  ...
+# Subtest: Umami counts requests only after OK, including bulk partial success and 204
+not ok 54 - Umami counts requests only after OK, including bulk partial success and 204
+  ---
+  duration_ms: 1.093734
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:105:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+    + []
+    - [
+    -   {
+    -     name: 'recall_sent',
+    -     props: undefined
+    -   }
+    - ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0:
+      name: 'recall_sent'
+  actual:
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:112:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami drops IDs, names, passwords, free text, positions and arbitrary enum lookalikes
+not ok 55 - Umami drops IDs, names, passwords, free text, positions and arbitrary enum lookalikes
+  ---
+  duration_ms: 0.641056
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:118:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    0 !== 6
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 6
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:126:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami retains only known public category values
+not ok 56 - Umami retains only known public category values
+  ---
+  duration_ms: 0.574435
+  type: 'test'
+  location: '/home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:128:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+    + []
+    - [
+    -   {
+    -     building: 'farm'
+    -   },
+    -   {
+    -     unit: 'galley'
+    -   },
+    -   {
+    -     intent: 'explore'
+    -   },
+    -   {
+    -     rite: 'minoan_harvest_blessing'
+    -   }
+    - ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0:
+      building: 'farm'
+    1:
+      unit: 'galley'
+    2:
+      intent: 'explore'
+    3:
+      rite: 'minoan_harvest_blessing'
+  actual:
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-umami-verb/web/static/js/megaron/verb_telemetry.test.mjs:136:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Umami refusal reason_code is whitelisted server token, never response prose or IDs
+ok 57 - Umami refusal reason_code is whitelisted server token, never response prose or IDs
+  ---
+  duration_ms: 3.103272
+  type: 'test'
+  ...
+# Subtest: Umami ignores GET, wrong method, unknown routes and gated kingdoms
+ok 58 - Umami ignores GET, wrong method, unknown routes and gated kingdoms
+  ---
+  duration_ms: 0.388017
+  type: 'test'
+  ...
+# Subtest: Umami never reports success/refusal for 5xx or network failure
+ok 59 - Umami never reports success/refusal for 5xx or network failure
+  ---
+  duration_ms: 0.460515
+  type: 'test'
+  ...
+# Subtest: Umami bodyless/non-JSON refusals, transfers and adblockers never break requests
+ok 60 - Umami bodyless/non-JSON refusals, transfers and adblockers never break requests
+  ---
+  duration_ms: 1.071962
+  type: 'test'
+  ...
+# Subtest: Umami shared response boundary owns verb tracking and former bare-fetch paths
+ok 61 - Umami shared response boundary owns verb tracking and former bare-fetch paths
+  ---
+  duration_ms: 1.763259
+  type: 'test'
+  ...
+1..61
+# tests 61
+# suites 0
+# pass 10
+# fail 51
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 102.789875

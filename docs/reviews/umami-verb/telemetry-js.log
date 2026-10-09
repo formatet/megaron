@@ -1,0 +1,376 @@
+TAP version 13
+# Subtest: Umami parity: every mutating vault verb has an event or explicit kingdom exclusion
+ok 1 - Umami parity: every mutating vault verb has an event or explicit kingdom exclusion
+  ---
+  duration_ms: 0.99131
+  type: 'test'
+  ...
+# Subtest: Umami parity: a newly added vault verb and removed catalog entry fail
+ok 2 - Umami parity: a newly added vault verb and removed catalog entry fail
+  ---
+  duration_ms: 0.680499
+  type: 'test'
+  ...
+# Subtest: Umami success: build POST /api/v1/worlds/:world/provinces/:province/build
+ok 3 - Umami success: build POST /api/v1/worlds/:world/provinces/:province/build
+  ---
+  duration_ms: 18.177075
+  type: 'test'
+  ...
+# Subtest: Umami success: cancel-build DELETE /api/v1/worlds/:world/provinces/:province/build-queue/:queue
+ok 4 - Umami success: cancel-build DELETE /api/v1/worlds/:world/provinces/:province/build-queue/:queue
+  ---
+  duration_ms: 0.729025
+  type: 'test'
+  ...
+# Subtest: Umami success: recruit POST /api/v1/worlds/:world/provinces/:province/recruit
+ok 5 - Umami success: recruit POST /api/v1/worlds/:world/provinces/:province/recruit
+  ---
+  duration_ms: 0.695826
+  type: 'test'
+  ...
+# Subtest: Umami success: place POST /api/v1/worlds/:world/provinces/:province/placements
+ok 6 - Umami success: place POST /api/v1/worlds/:world/provinces/:province/placements
+  ---
+  duration_ms: 0.713384
+  type: 'test'
+  ...
+# Subtest: Umami success: staff POST /api/v1/worlds/:world/provinces/:province/placements
+ok 7 - Umami success: staff POST /api/v1/worlds/:world/provinces/:province/placements
+  ---
+  duration_ms: 0.661619
+  type: 'test'
+  ...
+# Subtest: Umami success: unplace DELETE /api/v1/worlds/:world/provinces/:province/placements/:ordinal
+ok 8 - Umami success: unplace DELETE /api/v1/worlds/:world/provinces/:province/placements/:ordinal
+  ---
+  duration_ms: 0.554133
+  type: 'test'
+  ...
+# Subtest: Umami success: labor PUT /api/v1/worlds/:world/provinces/:province/labor
+ok 9 - Umami success: labor PUT /api/v1/worlds/:world/provinces/:province/labor
+  ---
+  duration_ms: 0.587657
+  type: 'test'
+  ...
+# Subtest: Umami success: slaughter POST /api/v1/worlds/:world/provinces/:province/slaughter-livestock
+ok 10 - Umami success: slaughter POST /api/v1/worlds/:world/provinces/:province/slaughter-livestock
+  ---
+  duration_ms: 1.245863
+  type: 'test'
+  ...
+# Subtest: Umami success: disband POST /api/v1/worlds/:world/provinces/:province/disband
+ok 11 - Umami success: disband POST /api/v1/worlds/:world/provinces/:province/disband
+  ---
+  duration_ms: 1.030691
+  type: 'test'
+  ...
+# Subtest: Umami success: transfer POST /api/v1/worlds/:world/provinces/:province/trade
+ok 12 - Umami success: transfer POST /api/v1/worlds/:world/provinces/:province/trade
+  ---
+  duration_ms: 1.080302
+  type: 'test'
+  ...
+# Subtest: Umami success: gift/tribute POST /api/v1/worlds/:world/provinces/:province/trade
+ok 13 - Umami success: gift/tribute POST /api/v1/worlds/:world/provinces/:province/trade
+  ---
+  duration_ms: 0.543795
+  type: 'test'
+  ...
+# Subtest: Umami success: abandon POST /api/v1/worlds/:world/settlements/:settlement/abandon
+ok 14 - Umami success: abandon POST /api/v1/worlds/:world/settlements/:settlement/abandon
+  ---
+  duration_ms: 0.426413
+  type: 'test'
+  ...
+# Subtest: Umami success: rite POST /api/v1/worlds/:world/settlements/:settlement/rite
+ok 15 - Umami success: rite POST /api/v1/worlds/:world/settlements/:settlement/rite
+  ---
+  duration_ms: 0.39528
+  type: 'test'
+  ...
+# Subtest: Umami success: gift POST /api/v1/worlds/:world/settlements/:settlement/gift
+ok 16 - Umami success: gift POST /api/v1/worlds/:world/settlements/:settlement/gift
+  ---
+  duration_ms: 0.433395
+  type: 'test'
+  ...
+# Subtest: Umami success: occupation-order POST /api/v1/worlds/:world/settlements/:settlement/occupation-order
+ok 17 - Umami success: occupation-order POST /api/v1/worlds/:world/settlements/:settlement/occupation-order
+  ---
+  duration_ms: 0.359676
+  type: 'test'
+  ...
+# Subtest: Umami success: march POST /api/v1/worlds/:world/units/:unit/march
+ok 18 - Umami success: march POST /api/v1/worlds/:world/units/:unit/march
+  ---
+  duration_ms: 0.321367
+  type: 'test'
+  ...
+# Subtest: Umami success: recall POST /api/v1/worlds/:world/units/:unit/recall
+ok 19 - Umami success: recall POST /api/v1/worlds/:world/units/:unit/recall
+  ---
+  duration_ms: 0.34551
+  type: 'test'
+  ...
+# Subtest: Umami success: redirect POST /api/v1/worlds/:world/units/:unit/recall
+ok 20 - Umami success: redirect POST /api/v1/worlds/:world/units/:unit/recall
+  ---
+  duration_ms: 0.376278
+  type: 'test'
+  ...
+# Subtest: Umami success: stance POST /api/v1/worlds/:world/units/:unit/stance
+ok 21 - Umami success: stance POST /api/v1/worlds/:world/units/:unit/stance
+  ---
+  duration_ms: 0.338561
+  type: 'test'
+  ...
+# Subtest: Umami success: retreat-order POST /api/v1/worlds/:world/units/:unit/standing-orders
+ok 22 - Umami success: retreat-order POST /api/v1/worlds/:world/units/:unit/standing-orders
+  ---
+  duration_ms: 1.063584
+  type: 'test'
+  ...
+# Subtest: Umami success: retreat-default PUT /api/v1/worlds/:world/retreat-default
+ok 23 - Umami success: retreat-default PUT /api/v1/worlds/:world/retreat-default
+  ---
+  duration_ms: 0.37326
+  type: 'test'
+  ...
+# Subtest: Umami success: reinforce POST /api/v1/worlds/:world/units/:unit/reinforce
+ok 24 - Umami success: reinforce POST /api/v1/worlds/:world/units/:unit/reinforce
+  ---
+  duration_ms: 0.33675
+  type: 'test'
+  ...
+# Subtest: Umami success: repair POST /api/v1/worlds/:world/units/:unit/repair
+ok 25 - Umami success: repair POST /api/v1/worlds/:world/units/:unit/repair
+  ---
+  duration_ms: 0.364486
+  type: 'test'
+  ...
+# Subtest: Umami success: load POST /api/v1/worlds/:world/units/:unit/load
+ok 26 - Umami success: load POST /api/v1/worlds/:world/units/:unit/load
+  ---
+  duration_ms: 0.365818
+  type: 'test'
+  ...
+# Subtest: Umami success: unload POST /api/v1/worlds/:world/units/:unit/unload
+ok 27 - Umami success: unload POST /api/v1/worlds/:world/units/:unit/unload
+  ---
+  duration_ms: 0.350345
+  type: 'test'
+  ...
+# Subtest: Umami success: join POST /api/v1/worlds/:world/join
+ok 28 - Umami success: join POST /api/v1/worlds/:world/join
+  ---
+  duration_ms: 0.401602
+  type: 'test'
+  ...
+# Subtest: Umami success: founding settle POST /api/v1/worlds/:world/founding/settle
+ok 29 - Umami success: founding settle POST /api/v1/worlds/:world/founding/settle
+  ---
+  duration_ms: 0.333011
+  type: 'test'
+  ...
+# Subtest: Umami success: message POST /api/v1/worlds/:world/settlements/:settlement/messengers
+ok 30 - Umami success: message POST /api/v1/worlds/:world/settlements/:settlement/messengers
+  ---
+  duration_ms: 0.373945
+  type: 'test'
+  ...
+# Subtest: Umami success: trade-offer POST /api/v1/worlds/:world/settlements/:settlement/messengers
+ok 31 - Umami success: trade-offer POST /api/v1/worlds/:world/settlements/:settlement/messengers
+  ---
+  duration_ms: 0.358916
+  type: 'test'
+  ...
+# Subtest: Umami success: message POST /api/v1/worlds/:world/founding/messengers
+ok 32 - Umami success: message POST /api/v1/worlds/:world/founding/messengers
+  ---
+  duration_ms: 0.406356
+  type: 'test'
+  ...
+# Subtest: Umami success: trade-offer POST /api/v1/worlds/:world/founding/messengers
+ok 33 - Umami success: trade-offer POST /api/v1/worlds/:world/founding/messengers
+  ---
+  duration_ms: 0.334134
+  type: 'test'
+  ...
+# Subtest: Umami success: reply POST /api/v1/worlds/:world/messengers/:messenger/reply
+ok 34 - Umami success: reply POST /api/v1/worlds/:world/messengers/:messenger/reply
+  ---
+  duration_ms: 0.275517
+  type: 'test'
+  ...
+# Subtest: Umami success: trade-accept POST /api/v1/worlds/:world/messengers/:messenger/trade-accept
+ok 35 - Umami success: trade-accept POST /api/v1/worlds/:world/messengers/:messenger/trade-accept
+  ---
+  duration_ms: 0.282158
+  type: 'test'
+  ...
+# Subtest: Umami success: trade-decline POST /api/v1/worlds/:world/messengers/:messenger/trade-decline
+ok 36 - Umami success: trade-decline POST /api/v1/worlds/:world/messengers/:messenger/trade-decline
+  ---
+  duration_ms: 0.31995
+  type: 'test'
+  ...
+# Subtest: Umami success: trade-cancel POST /api/v1/worlds/:world/messengers/:messenger/trade-cancel
+ok 37 - Umami success: trade-cancel POST /api/v1/worlds/:world/messengers/:messenger/trade-cancel
+  ---
+  duration_ms: 0.276939
+  type: 'test'
+  ...
+# Subtest: Umami success: arrange passage POST /api/v1/worlds/:world/messengers/:messenger/passage
+ok 38 - Umami success: arrange passage POST /api/v1/worlds/:world/messengers/:messenger/passage
+  ---
+  duration_ms: 0.303368
+  type: 'test'
+  ...
+# Subtest: Umami success: fetch by ship POST /api/v1/worlds/:world/units/:unit/pickup
+ok 39 - Umami success: fetch by ship POST /api/v1/worlds/:world/units/:unit/pickup
+  ---
+  duration_ms: 0.343072
+  type: 'test'
+  ...
+# Subtest: Umami success: call back POST /api/v1/worlds/:world/messengers/:messenger/call-back
+ok 40 - Umami success: call back POST /api/v1/worlds/:world/messengers/:messenger/call-back
+  ---
+  duration_ms: 0.30569
+  type: 'test'
+  ...
+# Subtest: Umami success: standing order POST /api/v1/worlds/:world/standing-orders
+ok 41 - Umami success: standing order POST /api/v1/worlds/:world/standing-orders
+  ---
+  duration_ms: 0.337953
+  type: 'test'
+  ...
+# Subtest: Umami success: standing order pause POST /api/v1/worlds/:world/standing-orders/:order/pause
+ok 42 - Umami success: standing order pause POST /api/v1/worlds/:world/standing-orders/:order/pause
+  ---
+  duration_ms: 0.323214
+  type: 'test'
+  ...
+# Subtest: Umami success: standing order resume POST /api/v1/worlds/:world/standing-orders/:order/resume
+ok 43 - Umami success: standing order resume POST /api/v1/worlds/:world/standing-orders/:order/resume
+  ---
+  duration_ms: 0.312562
+  type: 'test'
+  ...
+# Subtest: Umami success: standing order delete DELETE /api/v1/worlds/:world/standing-orders/:order
+ok 44 - Umami success: standing order delete DELETE /api/v1/worlds/:world/standing-orders/:order
+  ---
+  duration_ms: 0.303183
+  type: 'test'
+  ...
+# Subtest: Umami success: report POST /api/v1/worlds/:world/reports
+ok 45 - Umami success: report POST /api/v1/worlds/:world/reports
+  ---
+  duration_ms: 0.37296
+  type: 'test'
+  ...
+# Subtest: Umami success: mark notifications read (all) POST /api/v1/worlds/:world/notifications/read-all
+ok 46 - Umami success: mark notifications read (all) POST /api/v1/worlds/:world/notifications/read-all
+  ---
+  duration_ms: 0.311012
+  type: 'test'
+  ...
+# Subtest: Umami success: mark notification read (one) POST /api/v1/worlds/:world/notifications/:notification/read
+ok 47 - Umami success: mark notification read (one) POST /api/v1/worlds/:world/notifications/:notification/read
+  ---
+  duration_ms: 0.315441
+  type: 'test'
+  ...
+# Subtest: Umami success: delete notifications DELETE /api/v1/worlds/:world/notifications
+ok 48 - Umami success: delete notifications DELETE /api/v1/worlds/:world/notifications
+  ---
+  duration_ms: 0.312074
+  type: 'test'
+  ...
+# Subtest: Umami success: password POST /api/v1/auth/password
+ok 49 - Umami success: password POST /api/v1/auth/password
+  ---
+  duration_ms: 0.309016
+  type: 'test'
+  ...
+# Subtest: Umami success: agora password POST /api/v1/agora/password
+ok 50 - Umami success: agora password POST /api/v1/agora/password
+  ---
+  duration_ms: 0.302884
+  type: 'test'
+  ...
+# Subtest: Umami success: notification-preferences PUT /api/v1/notification-preferences/:kind
+ok 51 - Umami success: notification-preferences PUT /api/v1/notification-preferences/:kind
+  ---
+  duration_ms: 0.33894
+  type: 'test'
+  ...
+# Subtest: Umami success: notification-preferences DELETE /api/v1/notification-preferences/:kind
+ok 52 - Umami success: notification-preferences DELETE /api/v1/notification-preferences/:kind
+  ---
+  duration_ms: 0.309417
+  type: 'test'
+  ...
+# Subtest: Umami preserves all eight historical verb event names
+ok 53 - Umami preserves all eight historical verb event names
+  ---
+  duration_ms: 0.151125
+  type: 'test'
+  ...
+# Subtest: Umami counts requests only after OK, including bulk partial success and 204
+ok 54 - Umami counts requests only after OK, including bulk partial success and 204
+  ---
+  duration_ms: 1.497913
+  type: 'test'
+  ...
+# Subtest: Umami drops IDs, names, passwords, free text, positions and arbitrary enum lookalikes
+ok 55 - Umami drops IDs, names, passwords, free text, positions and arbitrary enum lookalikes
+  ---
+  duration_ms: 0.511854
+  type: 'test'
+  ...
+# Subtest: Umami retains only known public category values
+ok 56 - Umami retains only known public category values
+  ---
+  duration_ms: 0.407147
+  type: 'test'
+  ...
+# Subtest: Umami refusal reason_code is whitelisted server token, never response prose or IDs
+ok 57 - Umami refusal reason_code is whitelisted server token, never response prose or IDs
+  ---
+  duration_ms: 2.619616
+  type: 'test'
+  ...
+# Subtest: Umami ignores GET, wrong method, unknown routes and gated kingdoms
+ok 58 - Umami ignores GET, wrong method, unknown routes and gated kingdoms
+  ---
+  duration_ms: 0.365459
+  type: 'test'
+  ...
+# Subtest: Umami never reports success/refusal for 5xx or network failure
+ok 59 - Umami never reports success/refusal for 5xx or network failure
+  ---
+  duration_ms: 0.364892
+  type: 'test'
+  ...
+# Subtest: Umami bodyless/non-JSON refusals, transfers and adblockers never break requests
+ok 60 - Umami bodyless/non-JSON refusals, transfers and adblockers never break requests
+  ---
+  duration_ms: 0.829156
+  type: 'test'
+  ...
+# Subtest: Umami shared response boundary owns verb tracking and former bare-fetch paths
+ok 61 - Umami shared response boundary owns verb tracking and former bare-fetch paths
+  ---
+  duration_ms: 1.595059
+  type: 'test'
+  ...
+1..61
+# tests 61
+# suites 0
+# pass 61
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 91.302522
