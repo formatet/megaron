@@ -288,6 +288,14 @@ func cargoCmd() *cobra.Command {
 				orr, _ := m["origin_r"].(float64)
 				dq, _ := m["dest_q"].(float64)
 				dr, _ := m["dest_r"].(float64)
+				from, _ := m["origin_name"].(string)
+				if from == "" {
+					from = fmt.Sprintf("(%d,%d)", int(oq), int(orr))
+				}
+				to, _ := m["dest_name"].(string)
+				if to == "" {
+					to = fmt.Sprintf("(%d,%d)", int(dq), int(dr))
+				}
 				etaStr := "—"
 				if arrivalTick, ok := m["arrival_tick"].(float64); ok {
 					etaStr = fmt.Sprintf("%s", formatDay(arrivalTick, "%.0f"))
@@ -301,10 +309,7 @@ func cargoCmd() *cobra.Command {
 					direction = "incoming"
 				}
 				fmt.Printf("%-10s  %9.0f  %12s  %12s  %10s  %s\n",
-					good, qty,
-					fmt.Sprintf("(%d,%d)", int(oq), int(orr)),
-					fmt.Sprintf("(%d,%d)", int(dq), int(dr)),
-					etaStr, direction)
+					good, qty, from, to, etaStr, direction)
 			}
 			fmt.Println("\nPhysical cargo, not a promise — it can be intercepted and seized in transit.")
 			fmt.Println("Same risk for every cargo, own or traded: on land only interception;")

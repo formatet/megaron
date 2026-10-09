@@ -381,3 +381,34 @@ func findByID(markers []map[string]any, id string) map[string]any {
 	}
 	return nil
 }
+
+// TestMapTrades_PartiesSeeCityNames — the cargo list (web Economy → Transfer,
+// keryx cargo) printed "(0,0) → (50,50)" because /trades carried only
+// coordinates. Sender and recipient now get both end cities by name; a
+// stranger's caravan names neither — it is on the road, nothing more.
+func TestMapTrades_PartiesSeeCityNames(t *testing.T) {
+	f := setupMapTradesMineFixture(t)
+	strangerID := f.strangerCaravan(t, 12, 1, time.Now().Add(-time.Hour), time.Now().Add(time.Minute))
+	markers := f.get(t, f.tokenA)
+
+	own := findByGood(t, markers, "grain")
+	if own["origin_name"] != "Athenai" || own["dest_name"] != "Farland" {
+		t.Errorf("sender's cargo: origin_name=%v dest_name=%v, want Athenai → Farland", own["origin_name"], own["dest_name"])
+	}
+	incoming := findByGood(t, markers, "copper")
+	if incoming["origin_name"] != "Farland" || incoming["dest_name"] != "Athenai" {
+		t.Errorf("recipient's cargo: origin_name=%v dest_name=%v, want Farland → Athenai", incoming["origin_name"], incoming["dest_name"])
+	}
+	stranger := findByID(markers, strangerID)
+	if stranger == nil {
+		t.Fatalf("stranger caravan must be on A's map (fixture does not exercise the gate)")
+	}
+	if n, _ := stranger["dest_name"].(string); n != "" {
+		t.Errorf("stranger caravan leaks dest_name=%q to A", n)
+	}
+	for _, m := range f.get(t, "") {
+		if n, _ := m["origin_name"].(string); n != "" {
+			t.Errorf("unauthenticated caller got origin_name=%q", n)
+		}
+	}
+}

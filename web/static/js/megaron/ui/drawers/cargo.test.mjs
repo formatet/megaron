@@ -40,6 +40,13 @@ test('AK1: formatCargoRows carries good/quantity/from/to straight through', () =
   assert.equal(rows[0].to, '(3,0)');
 });
 
+test('cities by name: the row says Athenai → Knossos, coordinates only when no name came', () => {
+  const rows = formatCargoRows([{ ...BASE_TRADE, origin_name: 'Athenai', dest_name: 'Knossos' }], NOW);
+  assert.equal(rows[0].from, 'Athenai');
+  assert.equal(rows[0].to, 'Knossos');
+  assert.match(renderCargoHTML([{ ...BASE_TRADE, origin_name: 'Athenai', dest_name: 'Knossos' }], NOW), /Athenai → Knossos/);
+});
+
 test('AK2: ETA is computed from arrives_at - nowMs, not from the wall clock', () => {
   const rows = formatCargoRows([BASE_TRADE], NOW);
   assert.equal(rows[0].eta, '2h 0m');

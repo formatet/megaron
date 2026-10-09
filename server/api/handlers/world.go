@@ -1200,7 +1200,8 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		        COALESCE(top.good_key, ''), COALESCE(top.quantity, 0),
 		        t.origin_q, t.origin_r, COALESCE(op.terrain_type, ''),
 		        t.dest_q, t.dest_r, COALESCE(dp.terrain_type, ''),
-		        t.departs_at, t.arrives_at, t.category, COALESCE(pl.wanax_name, pl.username, ''), t.journey, t.departed_tick, t.due_tick
+		        t.departs_at, t.arrives_at, t.category, COALESCE(pl.wanax_name, pl.username, ''), t.journey, t.departed_tick, t.due_tick,
+		        COALESCE(os.name, ''), COALESCE(ds.name, '')
 		 FROM transports t
 		 LEFT JOIN players pl ON pl.id = t.owner_id
 		 LEFT JOIN settlements os ON os.id = t.origin_id
@@ -1253,6 +1254,11 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		// caravan is passing my walls" — the buyer paid for a shipment and
 		// then could not see it move.
 		Role string `json:"role"`
+		// OriginName/DestName name the two end cities so the cargo list reads
+		// "Athenai → Farland", not "(0,0) → (50,50)". Sender and recipient
+		// only — blanked below with the cargo for anyone else.
+		OriginName string `json:"origin_name"`
+		DestName   string `json:"dest_name"`
 	}
 
 	var markers []tradeMarker
@@ -1265,7 +1271,8 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		var departedTick *int
 		var dueTick int
 		if err := rows.Scan(&m.ID, &ownerID, &destOwnerID, &m.GoodKey, &m.Quantity, &m.OriginQ, &m.OriginR, &originTerrain,
-			&m.DestQ, &m.DestR, &destTerrain, &m.DepartsAt, &m.ArrivesAt, &category, &m.Owner, &savedJourney, &departedTick, &dueTick); err != nil {
+			&m.DestQ, &m.DestR, &destTerrain, &m.DepartsAt, &m.ArrivesAt, &category, &m.Owner, &savedJourney, &departedTick, &dueTick,
+			&m.OriginName, &m.DestName); err != nil {
 			continue
 		}
 		var savedPos *province.MapPosition
@@ -1325,6 +1332,7 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		// road, never what it carries. Only sender and recipient learn it.
 		if m.Role == "" {
 			m.GoodKey, m.Quantity = "", 0
+			m.OriginName, m.DestName = "", ""
 			m.ArrivalTick, m.DepartureTick, m.TravelTicks = nil, nil, nil
 		}
 		markers = append(markers, m)

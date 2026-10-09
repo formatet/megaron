@@ -83,3 +83,35 @@ func TestTradeOutboxDoesNotInferDeliveryFromWallTime(t *testing.T) {
 		t.Fatal(got)
 	}
 }
+
+// keryx cargo names the end cities ("Athenai → Knossos"), not coordinates,
+// and falls back to coordinates only when the server sent no name.
+func TestCargoNamesCities(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_ = json.NewEncoder(w).Encode([]map[string]any{
+			{"good_key": "grain", "quantity": 250, "origin_q": 0, "origin_r": 0, "dest_q": 3, "dest_r": 0,
+				"arrival_tick": 42, "role": "sender", "origin_name": "Athenai", "dest_name": "Knossos"},
+			{"good_key": "tin", "quantity": 5, "origin_q": 7, "origin_r": 1, "dest_q": 0, "dest_r": 0,
+				"arrival_tick": 43, "role": "recipient"},
+		})
+	}))
+	defer srv.Close()
+	oldCfg, oldJSON := cfg, jsonMode
+	defer func() { cfg, jsonMode = oldCfg, oldJSON }()
+	cfg = &Config{Server: srv.URL, WorldID: "world"}
+	jsonMode = false
+	cmd := cargoCmd()
+	cmd.SetArgs([]string{})
+	out, err := captureStdout(t, cmd.Execute)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"Athenai", "Knossos", "(7,1)"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("missing %q in %s", want, out)
+		}
+	}
+	if strings.Contains(out, "(3,0)") {
+		t.Errorf("named destination still printed as coordinates: %s", out)
+	}
+}
