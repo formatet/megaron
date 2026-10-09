@@ -91,14 +91,19 @@ export const render = (ctx, scene) => draw(ctx, scene, {});
 // C3 (Timothy 2026-10-09): C1:s tydliga konturer på C2:s kvarter.
 //   ink   kvarteren får bläckkontur; gränderna breddas så gatan syns mellan två konturer
 //   elev  snett uppifrån: varje massa visar sin södra fasad (vit puts, dörrar)
+//   side  C4: ännu mer från sidan, som A — himmel och åsar bakom, låga tak, höga fasader
 export function draw(ctx, scene, opts) {
-  const { ink = false, elev = false } = opts;
-  const FH = elev ? 2 : 0;                            // fasadhöjd
-  const BW = 10, BH = elev ? 6 : 7, SX = ink ? 13 : 12, SY = BH + FH + (ink ? 3 : 2);
+  const { ink = false, side: profile = false } = opts;
+  const side = profile;
+  const elev = side || !!opts.elev;
+  const FH = side ? 4 : elev ? 2 : 0;                 // fasadhöjd
+  const UP = side ? 3 : 0;                            // extra höjd på mur, torn och borg
+  const BW = 10, BH = side ? 4 : elev ? 6 : 7, SX = ink ? 13 : 12, SY = BH + FH + (ink ? 3 : 2);
   const paint = ink ? inked : (gg, fn) => fn(gg);
   const facade = (gg, x, y, w, seed) => {           // södra väggen under taket
     rect(gg, x, y, w, FH, 'p'); col(gg, x + w - 1, y, FH, 'd');
-    for (let i = 2 + seed % 3; i < w - 2; i += 4) set(gg, x + i, y + FH - 1, 'V');
+    for (let i = 2 + seed % 3; i < w - 2; i += 4) col(gg, x + i, y + FH - (side ? 2 : 1), side ? 2 : 1, 'V');
+    if (side) for (let i = 4 + seed % 2; i < w - 2; i += 4) set(gg, x + i, y + 1, 't');   // fönsterglugg
   };
   const { sett, terrain, coastal } = scene;
   const pop = sett.population, walls = sett.walls;
@@ -115,11 +120,11 @@ export function draw(ctx, scene, opts) {
   }
 
   const cx = coastal ? 90 : 105, cy = coastal ? 54 : 62;
-  const rx = Math.round(12 + 52 * t), ry = Math.round(8 + 36 * t);
+  const rx = Math.round(12 + 52 * t), ry = Math.round((8 + 36 * t) * (side ? 0.9 : 1));
 
   // ── Fält och träd — låg kontrast, ingen kontur ──
   const farmLvl = (sett.buildings.find(b => b.type === 'farm') || {}).level || 0;
-  const fields = [[6, 8], [150, 8], [6, 92], [32, 8], [176, 36]];
+  const fields = [[6, 8], [150, 8], [6, 92], [32, 8], [176, 36]].map(([x, y]) => [x, side && y < 20 ? y + 12 : y]);
   const taken = [];
   const free = (x, y, w, h) => !taken.some(([a, b, c, d]) => x < a + c && a < x + w && y < b + d && b < y + h);
   for (let i = 0; i < Math.max(1, farmLvl * 2); i++) {
@@ -141,6 +146,15 @@ export function draw(ctx, scene, opts) {
     row(g, x - 1, y - 1, 2, '+'); row(g, x - 1, y, 3, '+'); row(g, x, y + 1, 2, '#');
   }
 
+  // C4: himmel och fjärran åsar, som i A.
+  if (side) {
+    for (let y = 0; y < 12; y++) for (let x = 0; x < W; x++) set(g, x, y, y < 3 ? '`' : y < 7 ? '~' : '9');
+    for (let x = 0; x < W; x++) {
+      const top = 8 + Math.round(3 * Math.sin(x / 17) + 2 * Math.sin(x / 6.3 + 2));
+      for (let y = top; y < 15; y++) set(g, x, y, y === top || Math.sin((x + 1) / 17) > Math.sin(x / 17) ? ':' : '^');
+    }
+  }
+
   // ── Verk utanför muren: gruva, stenbrott, sågverk (konturerade senare) ──
   const OUT = {
     mine: gg => (x, y) => { rect(gg, x, y, 9, 6, '8'); rect(gg, x + 2, y + 1, 3, 3, 'V'); rect(gg, x + 6, y + 3, 4, 3, 'q'); },
@@ -152,7 +166,7 @@ export function draw(ctx, scene, opts) {
   let oseed = 5;
   for (const b of sett.buildings.filter(b => OUT[b.type])) {
     for (let tries = 0; tries < 300; tries++, oseed++) {
-      const x = 3 + hash(oseed, 1, 3) % (W - 16), y = 3 + hash(oseed, 2, 3) % (H - 10);
+      const x = 3 + hash(oseed, 1, 3) % (W - 16), y = (side ? 17 : 3) + hash(oseed, 2, 3) % (H - (side ? 24 : 10));
       if (inEll(x + 6, y + 3, cx, cy, rx + 12, ry + 10) < 1 || !free(x - 1, y - 1, 14, 9)) continue;
       if (isSea(at(g, x, y)) || isSea(at(g, x + 12, y + 7))) continue;
       taken.push([x - 1, y - 1, 14, 9]);
@@ -177,7 +191,7 @@ export function draw(ctx, scene, opts) {
     for (let side of [-1, 1]) for (let k = 0; k < 12; k++) {
       const x = side > 0 ? cx + 2 + k * SX : cx - 1 - BW - k * SX;
       const ok = [[x, y], [x + BW, y], [x, y + BH + FH], [x + BW, y + BH + FH]]
-        .every(([a, b]) => inEll(a, b, cx, cy, rx, ry) < 0.92 && !isSea(at(g, a, b)) && !isSea(at(g, a + 3, b + 3)));
+        .every(([a, b]) => inEll(a, b, cx, cy, rx, ry) < (profile ? 1 : 0.92) && !isSea(at(g, a, b)) && !isSea(at(g, a + 3, b + 3)));
       if (ok) cells.push({ x, y, r, side, k, used: false });
     }
   }
@@ -186,7 +200,7 @@ export function draw(ctx, scene, opts) {
   const cit = hasCitadel ? { w: Math.round(24 + 16 * t), h: Math.round(14 + 6 * t) } : null;
   if (cit) {
     cit.x = cx - (cit.w >> 1); cit.y = cy - ry + 1;
-    for (const c of cells) if (c.x < cit.x + cit.w + 2 && c.x + BW > cit.x - 2 && c.y < cit.y + cit.h + 2 + (elev ? 4 : 0)) c.used = true;
+    for (const c of cells) if (c.x < cit.x + cit.w + 2 && c.x + BW > cit.x - 2 && c.y < cit.y + cit.h + 2 + (elev ? 4 + UP : 0)) c.used = true;
   }
   // Funktionsbyggnader: var och en på sin plats i staden.
   const want = [
@@ -287,7 +301,7 @@ export function draw(ctx, scene, opts) {
     rect(g, x + 2, y + 2, w, h, 'K');                    // borgens slagskugga
     inked(g, gg => {
       rect(gg, x, y, w, h, 'T');
-      if (elev) { rect(gg, x, y + h, w, 4, 'q'); for (let i = 0; i < w; i++) set(gg, x + i, y + h + 1 + (i >> 2) % 2 * 2, 't'); }
+      if (elev) { rect(gg, x, y + h, w, 4 + UP, 'q'); for (let i = 0; i < w; i++) if (side) { for (let k = 1; k < 4 + UP; k += 2) set(gg, x + i, y + h + k + ((i >> 2) + (k >> 1)) % 2, 't'); } else set(gg, x + i, y + h + 1 + (i >> 2) % 2 * 2, 't'); }
       row(gg, x, y, w, 'P'); col(gg, x, y, h, 'P'); col(gg, x + w - 1, y, h, 'q'); row(gg, x, y + h - 1, w, 'q');
       const mw = 10 + Math.round(4 * t), mh = h - 4, mx = cx - (mw >> 1), my = y + 2;
       rect(gg, mx, my, mw, mh, 'R'); row(gg, mx, my, mw, 'M'); col(gg, mx + mw - 1, my, mh, 'r');
@@ -319,7 +333,7 @@ export function draw(ctx, scene, opts) {
         const face = [];
         for (let y = cy; y <= cy + ry + th + 2; y++) for (let x = cx - rx - th - 2; x <= cx + rx + th + 2; x++)
           if (at(gg, x, y) !== '.' && at(gg, x, y + 1) === '.' && inEll(x, y + 1, cx, cy, rx + 1, ry + 1) >= 1) face.push([x, y]);
-        for (const [x, y] of face) for (let k = 1; k <= th; k++) if (!isSea(at(g, x, y + k))) set(gg, x, y + k, (x + k * 2) % 5 === 0 ? 't' : 'q');
+        for (const [x, y] of face) for (let k = 1; k <= th + UP; k++) if (!isSea(at(g, x, y + k))) set(gg, x, y + k, (x + k * 2) % 5 === 0 ? 't' : 'q');
       }
       if (walls >= 2) {
         const n = walls === 2 ? 6 : 10;
@@ -330,7 +344,7 @@ export function draw(ctx, scene, opts) {
           const s = walls + 3;
           rect(gg, tx - (s >> 1), ty - (s >> 1), s, s, 'T');
           row(gg, tx - (s >> 1), ty - (s >> 1), s, 'P'); col(gg, tx + (s >> 1), ty - (s >> 1), s, 'q');
-          if (elev) rect(gg, tx - (s >> 1), ty + (s >> 1) + 1, s, 2, 't');
+          if (elev) rect(gg, tx - (s >> 1), ty + (s >> 1) + 1, s, 2 + UP, 't');
         }
       }
       // Porten: två tornstumpar och en mörk passage.
