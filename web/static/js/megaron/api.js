@@ -1,6 +1,7 @@
 import { BASE } from './config.js';
 import { noteServerDate } from './clock.js';
 import { track } from './telemetry.js';
+import { trackVerbResponse } from './verb_telemetry.js';
 import { recordApiFailure } from './ui/diagnostics.js';
 
 // Strip UUIDs from a path so retry/fail events aggregate by shape
@@ -56,6 +57,7 @@ export async function fetchAuth(url, opts = {}) {
           }).catch(() => {});
         } catch (_) { /* clone unsupported or body already gone — skip silently */ }
       }
+      trackVerbResponse(url, opts, res);
       return res;
     } catch (e) {
       if (attempt < backoffs.length) {

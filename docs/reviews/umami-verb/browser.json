@@ -1,0 +1,81 @@
+[
+  {
+    "controller": "join",
+    "token": true,
+    "status": 201,
+    "headers": "identical",
+    "redirect_or_error": "PASS",
+    "events": [
+      {
+        "name": "world_joined"
+      }
+    ]
+  },
+  {
+    "controller": "join",
+    "token": false,
+    "status": 201,
+    "headers": "identical",
+    "redirect_or_error": "PASS",
+    "events": [
+      {
+        "name": "world_joined"
+      }
+    ]
+  },
+  {
+    "controller": "join",
+    "token": true,
+    "status": 409,
+    "headers": "identical",
+    "redirect_or_error": "PASS",
+    "events": [
+      {
+        "name": "verb_refused",
+        "props": {
+          "verb": "join"
+        }
+      }
+    ]
+  },
+  {
+    "controller": "inspect",
+    "origin": "host",
+    "status": 201,
+    "headers_and_body": "identical",
+    "error_or_clear": "PASS",
+    "events": [
+      {
+        "name": "messenger_sent"
+      }
+    ]
+  },
+  {
+    "controller": "inspect",
+    "origin": "city",
+    "status": 201,
+    "headers_and_body": "identical",
+    "error_or_clear": "PASS",
+    "events": [
+      {
+        "name": "messenger_sent"
+      }
+    ]
+  },
+  {
+    "controller": "inspect",
+    "origin": "host",
+    "status": 422,
+    "headers_and_body": "identical",
+    "error_or_clear": "PASS",
+    "events": [
+      {
+        "name": "verb_refused",
+        "props": {
+          "verb": "message",
+          "reason_code": "insufficient_goods"
+        }
+      }
+    ]
+  }
+]

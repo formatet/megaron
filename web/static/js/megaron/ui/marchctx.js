@@ -1,6 +1,5 @@
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
-import { track } from '../telemetry.js';
 import { esc, formatApiError, passageNote, purseLine } from './format.js';
 import { unitTypeLabel } from './actornames.js';
 import { fmtNum, fmtDays } from './fmt_num.js';
@@ -581,7 +580,6 @@ export async function sendMarch() {
   document.getElementById('mctx-send').disabled = false;
   const failed = results.filter(r => !r.ok);
   if (failed.length < results.length) {
-    track('march_sent', { intent: intent || stance || 'march' });
     // Horn only for units that received the order on the spot. A field unit's
     // order rides a Runner ('order_dispatched') and sounds when it lands, in
     // ws.js — command is never instant, and the sound must not say otherwise.

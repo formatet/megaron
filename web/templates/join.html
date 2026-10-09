@@ -25,14 +25,13 @@
 .join-intro { font-size:var(--fs-base); line-height:1.6; margin-bottom:1.2rem; }
 .btn-join-world { width:100%; font-size:var(--fs-base); padding:.6rem 1rem; }
 </style>
-<script>
-async function joinWorld() {
-  const token = localStorage.getItem('poleia_token');
-  const res = await fetch('/api/v1/worlds/{{.WorldID}}/join', {
+<script type="module">
+import { fetchAuth } from '/static/js/megaron/api.js';
+window.joinWorld = async function joinWorld() {
+  const res = await fetchAuth('/api/v1/worlds/{{.WorldID}}/join', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? {'Authorization': 'Bearer ' + token} : {}),
     },
   });
   if (res.ok) {
