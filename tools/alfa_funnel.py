@@ -38,8 +38,10 @@ Kolumn -> auktoritativ källa (verifierad mot koden 2026-10-08):
  senaste aktivitet~     max av spelarens egna spår: refresh_tokens.created_at (inloggning),
                         messengers.sent_at, transports.created_at, UnitMarchOrdered/TrainComplete-events,
                         icke-motor-placeringar. Visas som tick~ + väggklocka.
- avslag                 antal notifications per kind i REFUSAL_KINDS. HTTP-avslag (400/403 från API:t,
-                        t.ex. "inte nog med sten") sparas INTE i DB -> EJ MÄTBART här (nginx/serverlogg).
+ avslag                 antal notifications per kind i REFUSAL_KINDS (asynkrona fel).
+ avslag (API)           tabellen refusals (mig 163, TILLFÄLLIG avslagslogg, megaron_plan_avslagslogg):
+                        varje 4xx på ett spelarverb, per verb (sista route-segmentet). Saknas tabellen
+                        (äldre DB) visas "ej loggat".
 
 Tickkalendern (väggklocka -> tick): WorldTick-eventen (events.event_type='WorldTick') bär både
 world_tick och created_at, så en väggklockstid översätts till tickens räknare utan antagande om
@@ -111,6 +113,17 @@ class Calendar:
 
 
 def load(db, world):
+    data = _load(db, world)
+    q = lambda sql: db.rows(sql.replace("{W}", world["id"]))
+    if data["has_refusals"] and data["has_refusals"][0]["ok"]:
+        data["api_refusals"] = q("""SELECT player_id, route, status, code, world_tick FROM refusals
+                                    WHERE world_id = '{W}' ORDER BY id""")
+    else:
+        data["api_refusals"] = None
+    return data
+
+
+def _load(db, world):
     w = world["id"]
     q = lambda sql: db.rows(sql.replace("{W}", w))
     return {
@@ -136,6 +149,7 @@ def load(db, world):
                        JOIN worlds w ON w.id = s.world_id
                        WHERE s.world_id = '{W}' AND sg.good_key = 'bronze'"""),
         "logins": q("SELECT player_id, max(created_at) AS last FROM refresh_tokens GROUP BY player_id"),
+        "has_refusals": q("SELECT to_regclass('public.refusals') IS NOT NULL AS ok"),
     }
 
 
@@ -226,18 +240,43 @@ def build(data, world):
         r.append("" if lw is None else "%s~ (%s)" % (cal.tick(lw), lw.astimezone().strftime("%m-%d %H:%M")))
         rf = refusals[pid]
         r.append(", ".join("%s:%d" % kv for kv in sorted(rf.items())))
+        if data["api_refusals"] is None:
+            r.append("ej loggat")
+        else:
+            per = {}
+            for a in data["api_refusals"]:
+                if a["player_id"] == pid:
+                    verb = route_verb(a["route"])
+                    per[verb] = per.get(verb, 0) + 1
+            r.append(", ".join("%s:%d" % kv for kv in sorted(per.items(), key=lambda kv: -kv[1])))
         rows.append(r)
     return rows, cal
 
 
+def route_verb(route):
+    """'/api/v1/worlds/{worldID}/provinces/{provinceID}/build' -> 'build'; id-segment hoppas över."""
+    parts = [p for p in route.strip("/").split("/") if p and not p.startswith("{")]
+    return parts[-1] if parts else route
+
+
 def render(world, data, rows, extra_note=""):
-    header = ["spelare"] + [h for _, h in COLUMNS] + ["senaste aktivitet", "avslag (notiser)"]
+    header = ["spelare"] + [h for _, h in COLUMNS] + ["senaste aktivitet", "avslag (notiser)", "avslag (API)"]
     out = ["# Alfa-funnel — värld %s (%s), tick %s, %s\n" % (world["name"], world["id"][:8], world["current_tick"], world["state"]),
            alfa_db.md_table(header, rows) if rows else "_inga människor har gått med i världen_", ""]
     out.append("Celler = speldygn (tick). `N~` = uppskattat ur väggklocka via WorldTick-kalendern; tomt = aldrig. "
                "`nu` (brons) = lager finns nu, tidpunkt ej mätbar i DB.")
-    out.append("Ej mätbart i DB: HTTP-avslag från API:t (fel i `place`/`build`/`recruit` före order) — bara serverlogg; "
-               "borttagna placeringar; när bronset först uppstod.")
+    if data["api_refusals"]:
+        top = {}
+        for a in data["api_refusals"]:
+            k = (route_verb(a["route"]), a["status"], a["code"])
+            top[k] = top.get(k, 0) + 1
+        out.append("\n## Vanligaste API-avslagen (alla spelare)\n")
+        out.append(alfa_db.md_table(["verb", "status", "kod/text", "antal"],
+                                    [[v, st, c, n] for (v, st, c), n in sorted(top.items(), key=lambda kv: -kv[1])[:20]]))
+        out.append("")
+    if data["api_refusals"] is None:
+        out.append("Ej mätbart i DB: HTTP-avslag från API:t — tabellen refusals saknas (före mig 163).")
+    out.append("Ej mätbart i DB: borttagna placeringar; när bronset först uppstod.")
     n = data["unjoined"][0]["n"] if data["unjoined"] else 0
     out.append("Registrerade människor som aldrig gått med i den här världen: %s." % n)
     return "\n".join(out)
