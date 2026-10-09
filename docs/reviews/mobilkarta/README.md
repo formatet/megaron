@@ -105,3 +105,10 @@ BILD (meny, paneler) väntar Timothy före merge; TEXT (kontrollraden) hör till
 playtest. Inga HTML-mallar, server-/Keryx-filer eller migrationer ändrade;
 inget mallorsakat systemctl-restartkrav. Ingen merge, push eller deploy utförd.
 Day-grenen @72e56c2d är orörd och väntar sina redan bokförda val.
+
+## Tillägg efter granskning: topprad vid 390px
+
+[Topbar v2](topbar-v2/README.md) gör ☍, ⌕ och ? nåbara med native tap i alla
+motorer. Ny fysisk CSS-mutation, 90 layoutfall, 531 JS och full gestregression
+gröna; nya Firefox-bilder i topbar-v2. Ovanstående bilder/källhashar är den
+bevarade b19-basleveransen; tilläggets slutkällor finns i topbar-v2/source-sha256.json.

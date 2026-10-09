@@ -1,0 +1,9 @@
+firefox desktop topbar: PASS
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-mobilkarta/tools/mobilkarta_browser.py", line 77, in <module>
+    topbar_layout(name)
+    ~~~~~~~~~~~~~^^^^^^
+  File "/home/tk/wt/codex-mobilkarta/tools/mobilkarta_browser.py", line 72, in topbar_layout
+    assert all(b['inside'] and b['hit'] for b in metrics) and no_scroll,('U topbar buttons are within viewport and reachable at 390',row)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('U topbar buttons are within viewport and reachable at 390', {'engine': 'firefox', 'mode': 'mobile', 'label': 'the Shadow Days of the Goddess', 'buttons': [{'text': '☍0', 'rect': {'x': 336.2833251953125, 'y': 9.949996948242188, 'width': 26.833328247070312, 'height': 24.100006103515625, 'top': 9.949996948242188, 'right': 363.1166534423828, 'bottom': 34.05000305175781, 'left': 336.2833251953125}, 'inside': True, 'hit': True}, {'text': '⌕', 'rect': {'x': 373.1166687011719, 'y': 9.949996948242188, 'width': 26.833328247070312, 'height': 24.100006103515625, 'top': 9.949996948242188, 'right': 399.9499969482422, 'bottom': 34.05000305175781, 'left': 373.1166687011719}, 'inside': False, 'hit': True}, {'text': '?', 'rect': {'x': 409.95001220703125, 'y': 10.949996948242188, 'width': 26.800003051757812, 'height': 22.100006103515625, 'top': 10.949996948242188, 'right': 436.75001525878906, 'bottom': 33.05000305175781, 'left': 409.95001220703125}, 'inside': False, 'hit': False}], 'no_horizontal_scroll': True})

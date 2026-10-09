@@ -7,7 +7,7 @@ import argparse,datetime,functools,http.server,json,re,threading
 from pathlib import Path
 from playwright.sync_api import sync_playwright,expect
 ROOT=Path(__file__).resolve().parents[1]
-p=argparse.ArgumentParser(description=__doc__);p.add_argument('--source-root',type=Path,default=ROOT);p.add_argument('--baseline',action='store_true');p.add_argument('--output',type=Path,default=ROOT/'docs/reviews/mobilkarta/browser');p.add_argument('--browsers',nargs='+',default=['firefox','chromium','webkit']);p.add_argument('--touch-mutation',action='store_true');a=p.parse_args();ROOT=a.source_root.resolve();a.output.mkdir(parents=True,exist_ok=True)
+p=argparse.ArgumentParser(description=__doc__);p.add_argument('--source-root',type=Path,default=ROOT);p.add_argument('--baseline',action='store_true');p.add_argument('--output',type=Path,default=ROOT/'docs/reviews/mobilkarta/browser');p.add_argument('--browsers',nargs='+',default=['firefox','chromium','webkit']);p.add_argument('--touch-mutation',action='store_true');p.add_argument('--topbar-only',action='store_true');a=p.parse_args();ROOT=a.source_root.resolve();a.output.mkdir(parents=True,exist_ok=True)
 W='11111111-1111-1111-1111-111111111111';S='22222222-2222-2222-2222-222222222222'
 provinces=[dict(id='mycenae',settlement_id=S,name='Mycenae',owner='Agamemnon',own=True,is_capital=True,q=0,r=0,walls=1),dict(id='tiryns',settlement_id='tiryns-city',name='Tiryns',owner='Nestor',own=False,q=3,r=0,walls=1)]
 units=[dict(id='bronze-guard',name='Bronze Guard',display_name='Bronze Guard',type='spearman',category='land',status='garrison',settlement_id=S,home_name='Mycenae',deployable=True,size=100,max_size=100,stance='sentry')]
@@ -34,15 +34,22 @@ try:
     page=browser.new_page(viewport=dict(width=width,height=height),has_touch=mode=='mobile',is_mobile=engine!='firefox' and mode=='mobile',locale='en-GB',timezone_id='Europe/Stockholm');page.clock.set_fixed_time(datetime.datetime(2026,10,9,7,0,tzinfo=datetime.timezone.utc));errors=[];unexpected=[];calls=[]
     page.on('pageerror',lambda e:errors.append(str(e)))
     page.route('https://**',lambda r:r.abort())
+    if a.topbar_only:
+     # Exact production imports/bridges/controllers; explicit fixture bootstrap
+     # replaces only main.js's start IIFE, never its button handlers.
+     main_source=(ROOT/'web/static/js/megaron/main.js').read_text();assert main_source.count('// ── Start ─')==1
+     page.route('**/static/js/megaron/main.js',lambda r:r.fulfill(content_type='text/javascript',body=main_source.split('// ── Start ─')[0]))
     page.route('**/fixture',lambda r:r.fulfill(content_type='text/html',body=html))
     def api(route):
      req=route.request;tail=req.url.split('/api/v1/')[-1].removeprefix('worlds/'+W+'/');calls.append(tail)
+     if a.topbar_only and req.method=='POST' and tail=='notifications/read-all':route.fulfill(content_type='application/json',body='{}');return
      assert req.method=='GET',req.method
      assert req.headers.get('authorization')=='Bearer mobile-read-fixture'
      if tail=='map':data=tiles
      elif tail=='provinces':data=provinces
      elif tail=='units':data=dict(units=units)
-     elif tail in ['marches','messengers','trades','rural-projections','foreign-units','settlements/placement-roster']:data=[]
+     elif tail in ['marches','messengers','trades','rural-projections','foreign-units','settlements/placement-roster','messengers/inbox','gossip']:data=[]
+     elif tail.startswith('notifications?'):data=dict(notifications=[])
      elif tail=='provinces/tiryns/army':data=dict(Spearman=1)
      elif tail.startswith('units/bronze-guard/march-preview?'):data=dict(available=True,arrival_tick=68,duration_ticks=3,arrives_at_utc='2026-10-09T10:00:00Z')
      else:unexpected.append(tail);route.fulfill(status=500,body='{}');return
@@ -56,6 +63,35 @@ try:
      window.map=await import('/static/js/megaron/render/map.js');const march=await import('/static/js/megaron/ui/marchctx.js');window.openMarchCtx=march.openMarchCtx;window.closeMarchCtx=march.closeMarchCtx;
      window.warFocusUnit=()=>{};map.initMap();
     }''',[W,S,provinces]);page.wait_for_function('State.tileData.length>0');reset(page)
+    if a.topbar_only:
+     page.evaluate("async()=>{await import('/static/js/megaron/main.js');window.cx=await import('/static/js/megaron/ui/codex.js');cx.initCodex();window.misc=await import('/static/js/megaron/ui/misc.js')}")
+     def topbar_layout(label):
+      metrics=page.locator('.gt-notif-btn,.gt-search-btn,.gt-codex-btn').evaluate_all('''els=>els.map(e=>{const r=e.getBoundingClientRect();return {text:e.textContent.trim(),rect:r.toJSON(),inside:r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight,hit:e.contains(document.elementFromPoint(r.left+r.width/2,r.top+r.height/2))}})''')
+      no_scroll=page.evaluate('document.documentElement.scrollWidth<=innerWidth&&scrollX===0')
+      row=dict(engine=engine,mode=mode,label=label,buttons=metrics,no_horizontal_scroll=no_scroll);records.append(row)
+      assert all(b['inside'] and b['hit'] for b in metrics) and no_scroll,('U topbar buttons are within viewport and reachable at 390',row)
+     page.screenshot(path=str(a.output/f'{engine}-{mode}-header.png'));topbar_layout('original-U-fixture')
+     # Every real calendar month, including the long intercalary phrase.
+     for tick in [*range(0,360,30),360]:
+      name=page.evaluate('''tick=>{State.CURRENT_TICK=tick;const save=window.setInterval;window.setInterval=()=>0;try{misc.initCelestial()}finally{window.setInterval=save}return misc.currentCalendarDate().monthName}''',tick)
+      topbar_layout(name)
+     page.screenshot(path=str(a.output/f'{engine}-{mode}-shadow-days.png'))
+     page.evaluate("document.getElementById('gt-wanax').textContent='Wanax Agamemnon son of Atreus';document.getElementById('net-status').classList.add('visible')")
+     topbar_layout('long-human-name-and-network-status')
+     page.evaluate("document.getElementById('gt-wanax').textContent='Wanax Agamemnon';document.getElementById('net-status').classList.remove('visible');State.CURRENT_TICK=65;const save=window.setInterval;window.setInterval=()=>0;try{misc.initCelestial()}finally{window.setInterval=save}")
+     for selector,target,label in [('.gt-notif-btn','#drawer-notif','notifications'),('.gt-search-btn','#search-overlay','search'),('.gt-codex-btn','#codex-panel','help')]:
+      button=page.locator(selector)
+      if mode=='mobile':button.tap()
+      else:button.click()
+      expect(page.locator(target)).to_be_visible();page.wait_for_timeout(220)
+      if label=='help':expect(page.locator('#codex-body')).to_contain_text('Welcome')
+      page.screenshot(path=str(a.output/f'{engine}-{mode}-{label}.png'))
+      if label=='notifications':page.evaluate("closeDrawer('notif')")
+      elif label=='search':page.evaluate('closeSearch()')
+      else:page.evaluate('cx.closeCodex()')
+      page.wait_for_timeout(220)
+     assert not errors and not unexpected,(errors,unexpected)
+     records.append(dict(engine=engine,mode=mode,native_buttons=True,errors=errors,requests=calls));print(engine+' '+mode+' topbar: PASS',flush=True);page.close();continue
     rect=page.locator('#hex-canvas').bounding_box();y=rect['y']+350
     before=camera(page);pointer(page,'pointerdown',150,y);pointer(page,'pointermove',190,y+60);pointer(page,'pointerup',190,y+60);after=camera(page)
     nav=page.locator('.win-trigger').evaluate_all('''els=>els.map(el=>{const range=document.createRange();const text=[...el.childNodes].find(n=>n.nodeType===3&&n.textContent.trim());range.selectNode(text);const t=range.getBoundingClientRect(),b=el.getBoundingClientRect();return {name:text.textContent.trim(),fits:t.left>=b.left+4&&t.right<=b.right-4,text:[t.left,t.right],button:[b.left,b.right]}})''')
