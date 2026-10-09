@@ -224,8 +224,11 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
 
 - Use the CSS custom properties in `web/static/megaron.css` `:root`. **Never** hardcode hex in
   templates/CSS and never inline `style="color:#..."` — add a class to `megaron.css`.
-- Pixel art: 1px CHARCOAL outline on solids; no anti-aliasing, gradients or rounded corners; background
-  terrain desaturated, foreground objects saturated.
+- Pixel art: whole pixels, no anti-aliasing, blur or soft gradients (stepped bands and dithering are fine).
+  **Contour hierarchy, not an outline on everything** — 1px CHARCOAL marks visual weight (wall, gate,
+  banner, ships, unique buildings, units, status); secondary houses and ground get value steps or no ink.
+  Three contrast levels: background · structure · signal. Show data as meaning, not one object per row.
+  Rules (Timothy/Sana 2026-10-09): `megaron_grafikregler.md` — read it before any graphics work.
 - The canvas renderer is exempt from the CSS vars (its own internal palette; culture accents live there).
 - Full spec: `temenos_designprinciper.md`. Rendering principles: `megaron_terrangrendering.md`.
 
