@@ -23,6 +23,7 @@ import (
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -47,7 +48,7 @@ func NormalizeExpeditionLength(length int) (int, *OrderReject) {
 		length = ExpeditionDefaultTicks
 	}
 	if length < ExpeditionMinTicks || length > ExpeditionMaxTicks {
-		return 0, reject(http.StatusBadRequest, "an expedition lasts %d to %d ticks (asked for %d)", ExpeditionMinTicks, ExpeditionMaxTicks, length)
+		return 0, reject(http.StatusBadRequest, "an expedition lasts %d to %s (asked for %d)", ExpeditionMinTicks, tick.FormatDays(ExpeditionMaxTicks), length)
 	}
 	return length, nil
 }

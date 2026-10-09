@@ -1,0 +1,294 @@
+{
+  "server/cmd/keryx/cmd_unit.go": {
+    "reason": "Stable JSON/query keys or CLI option identifiers; contract explicitly retains them.",
+    "literals": [
+      "ticks"
+    ],
+    "counts": {
+      "ticks": 4
+    }
+  },
+  "server/cmd/keryx/cmd_status.go": {
+    "reason": "Stable JSON/query keys or CLI option identifiers; contract explicitly retains them.",
+    "literals": [
+      "tick"
+    ],
+    "counts": {
+      "tick": 1
+    }
+  },
+  "server/api/handlers/reports.go": {
+    "reason": "Stable JSON/query keys or CLI option identifiers; contract explicitly retains them.",
+    "literals": [
+      "tick"
+    ],
+    "counts": {
+      "tick": 1
+    }
+  },
+  "server/api/handlers/province.go": {
+    "reason": "Stable JSON/query keys or CLI option identifiers; contract explicitly retains them.",
+    "literals": [
+      "tick",
+      "ticks"
+    ],
+    "counts": {
+      "tick": 1,
+      "ticks": 1
+    }
+  },
+  "server/api/handlers/unit_march_preview.go": {
+    "reason": "Stable JSON/query keys or CLI option identifiers; contract explicitly retains them.",
+    "literals": [
+      "ticks"
+    ],
+    "counts": {
+      "ticks": 1
+    }
+  },
+  "server/internal/combat/expedition.go": {
+    "reason": "Internal worker diagnostics/logs and SQL-adjacent data keys; not delivered as player prose.",
+    "literals": [
+      "expedition: read tick: %w",
+      "expedition report: read tick: %w"
+    ],
+    "counts": {
+      "expedition: read tick: %w": 1,
+      "expedition report: read tick: %w": 1
+    }
+  },
+  "server/internal/combat/silver_audit.go": {
+    "reason": "Internal worker diagnostics/logs and SQL-adjacent data keys; not delivered as player prose.",
+    "literals": [
+      "silver audit: read world tick failed"
+    ],
+    "counts": {
+      "silver audit: read world tick failed": 1
+    }
+  },
+  "server/internal/combat/ship_hull.go": {
+    "reason": "Internal worker diagnostics/logs and SQL-adjacent data keys; not delivered as player prose.",
+    "literals": [
+      "battle tick: draw ship hull failed",
+      "battle tick: sink hull-damaged ship failed",
+      "battle tick: mark hull-sunk participant left failed",
+      "battle tick: send damaged ship home failed",
+      "battle tick: sink embarked cargo with ship failed",
+      "battle tick: load embarked cargo for hull loss failed",
+      "battle tick: apply embarked cargo hull loss failed",
+      "battle tick: notify ship damaged failed"
+    ],
+    "counts": {
+      "battle tick: draw ship hull failed": 1,
+      "battle tick: sink hull-damaged ship failed": 1,
+      "battle tick: mark hull-sunk participant left failed": 1,
+      "battle tick: send damaged ship home failed": 1,
+      "battle tick: sink embarked cargo with ship failed": 1,
+      "battle tick: load embarked cargo for hull loss failed": 1,
+      "battle tick: apply embarked cargo hull loss failed": 1,
+      "battle tick: notify ship damaged failed": 1
+    }
+  },
+  "server/internal/combat/battle.go": {
+    "reason": "Internal worker diagnostics/logs and SQL-adjacent data keys; not delivered as player prose.",
+    "literals": [
+      "initiate/join battle: read current tick: %w",
+      "start battle: enqueue first tick: %w",
+      "unmarshal battle tick payload: %w",
+      "battle tick: load battle: %w",
+      "battle tick: load participants: %w",
+      "battle tick: scan participant: %w",
+      "battle tick: insert round %d: %w",
+      "battle tick: append BattleRoundResolved failed",
+      "battle tick: disband %s: %w",
+      "battle tick: mark %s left: %w",
+      "battle tick: update size %s: %w",
+      "battle tick: update participant size %s: %w",
+      "battle tick: could not persist last_participation",
+      "battle tick: update current_tick: %w",
+      "battle tick: mark attacker routed: %w",
+      "battle tick: mark defender routed: %w",
+      "battle tick: load city at hex: %w",
+      "battle tick: end battle: %w",
+      "battle tick: append BattleEnded failed",
+      "battle tick: occupy settlement: %w",
+      "battle tick: reset occupation defense: %w",
+      "battle tick: attacker battle loyalty failed",
+      "battle tick: defender battle loyalty failed"
+    ],
+    "counts": {
+      "initiate/join battle: read current tick: %w": 1,
+      "start battle: enqueue first tick: %w": 1,
+      "unmarshal battle tick payload: %w": 1,
+      "battle tick: load battle: %w": 1,
+      "battle tick: load participants: %w": 1,
+      "battle tick: scan participant: %w": 1,
+      "battle tick: insert round %d: %w": 1,
+      "battle tick: append BattleRoundResolved failed": 1,
+      "battle tick: disband %s: %w": 1,
+      "battle tick: mark %s left: %w": 1,
+      "battle tick: update size %s: %w": 1,
+      "battle tick: update participant size %s: %w": 1,
+      "battle tick: could not persist last_participation": 1,
+      "battle tick: update current_tick: %w": 1,
+      "battle tick: mark attacker routed: %w": 1,
+      "battle tick: mark defender routed: %w": 1,
+      "battle tick: load city at hex: %w": 1,
+      "battle tick: end battle: %w": 1,
+      "battle tick: append BattleEnded failed": 1,
+      "battle tick: occupy settlement: %w": 1,
+      "battle tick: reset occupation defense: %w": 1,
+      "battle tick: attacker battle loyalty failed": 1,
+      "battle tick: defender battle loyalty failed": 1
+    }
+  },
+  "server/internal/combat/march_encounter.go": {
+    "reason": "Internal worker diagnostics/logs and SQL-adjacent data keys; not delivered as player prose.",
+    "literals": [
+      "march encounter: read current tick: %w",
+      "claim march encounter tick: %w"
+    ],
+    "counts": {
+      "march encounter: read current tick: %w": 1,
+      "claim march encounter tick: %w": 1
+    }
+  },
+  "server/internal/combat/standing_orders.go": {
+    "reason": "Internal worker diagnostics/logs and SQL-adjacent data keys; not delivered as player prose.",
+    "literals": [
+      "standing order tick: query orders: %w",
+      "standing order tick: order failed",
+      "claim standing order tick: %w",
+      "read current tick: %w"
+    ],
+    "counts": {
+      "standing order tick: query orders: %w": 1,
+      "standing order tick: order failed": 1,
+      "claim standing order tick: %w": 1,
+      "read current tick: %w": 2
+    }
+  },
+  "server/internal/tick/worker.go": {
+    "reason": "Internal worker diagnostics/logs and SQL-adjacent data keys; not delivered as player prose.",
+    "literals": [
+      "tick worker started",
+      "tick advance failed on startup",
+      "tick worker stopped",
+      "tick advance failed",
+      "begin tick tx: %w",
+      "find world to tick: %w",
+      "advance tick for world %s: %w",
+      "commit tick tx: %w",
+      "tick",
+      "world tick advanced"
+    ],
+    "counts": {
+      "tick worker started": 1,
+      "tick advance failed on startup": 1,
+      "tick worker stopped": 1,
+      "tick advance failed": 1,
+      "begin tick tx: %w": 1,
+      "find world to tick: %w": 1,
+      "advance tick for world %s: %w": 1,
+      "commit tick tx: %w": 1,
+      "tick": 2,
+      "world tick advanced": 1
+    }
+  },
+  "server/internal/kharis/tick.go": {
+    "reason": "Internal diagnostics/logging; API callers send a separate player-safe error.",
+    "literals": [
+      "query player_world_records for kharis tick: %w",
+      "passive governor tick failed",
+      "claim kharis tick: %w",
+      "recompute after pop tick failed",
+      "siege starvation clock tick failed",
+      "starvation warning tick failed",
+      "subsistence critical tick failed",
+      "starvation tick failed"
+    ],
+    "counts": {
+      "query player_world_records for kharis tick: %w": 1,
+      "passive governor tick failed": 1,
+      "claim kharis tick: %w": 1,
+      "recompute after pop tick failed": 1,
+      "siege starvation clock tick failed": 1,
+      "starvation warning tick failed": 1,
+      "subsistence critical tick failed": 1,
+      "starvation tick failed": 1
+    }
+  },
+  "server/internal/transport/intercept.go": {
+    "reason": "Internal diagnostics/logging; API callers send a separate player-safe error.",
+    "literals": [
+      "saved transport %s missing departure tick"
+    ],
+    "counts": {
+      "saved transport %s missing departure tick": 1
+    }
+  },
+  "server/internal/messenger/passage.go": {
+    "reason": "Internal diagnostics/logging; API callers send a separate player-safe error.",
+    "literals": [
+      "plan outbound route: land ticks: %w",
+      "plan return route: land ticks: %w"
+    ],
+    "counts": {
+      "plan outbound route: land ticks: %w": 1,
+      "plan return route: land ticks: %w": 1
+    }
+  },
+  "server/internal/loyalty/decay.go": {
+    "reason": "Internal diagnostics/logging; API callers send a separate player-safe error.",
+    "literals": [
+      "claim decay tick: %w"
+    ],
+    "counts": {
+      "claim decay tick: %w": 1
+    }
+  },
+  "server/internal/loyalty/welfare.go": {
+    "reason": "Internal diagnostics/logging; API callers send a separate player-safe error.",
+    "literals": [
+      "query settlements for welfare tick: %w"
+    ],
+    "counts": {
+      "query settlements for welfare tick: %w": 1
+    }
+  },
+  "server/internal/economy/founding_forecast.go": {
+    "reason": "Internal diagnostics/logging; API callers send a separate player-safe error.",
+    "literals": [
+      "founding grain net per tick: %w"
+    ],
+    "counts": {
+      "founding grain net per tick: %w": 2
+    }
+  },
+  "server/internal/economy/sitos_tick.go": {
+    "reason": "Internal diagnostics/logging; API callers send a separate player-safe error.",
+    "literals": [
+      "sitos tick: query settlements: %w",
+      "sitos tick: settlement failed",
+      "claim sitos tick: %w"
+    ],
+    "counts": {
+      "sitos tick: query settlements: %w": 1,
+      "sitos tick: settlement failed": 1,
+      "claim sitos tick: %w": 1
+    }
+  },
+  "server/internal/economy/food_tick.go": {
+    "reason": "Internal diagnostics/logging; API callers send a separate player-safe error.",
+    "literals": [
+      "food tick: query settlements: %w",
+      "food tick: settlement failed",
+      "claim food tick: %w"
+    ],
+    "counts": {
+      "food tick: query settlements: %w": 1,
+      "food tick: settlement failed": 1,
+      "claim food tick: %w": 1
+    }
+  }
+}

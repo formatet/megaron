@@ -181,7 +181,7 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 		// anything above that has no altar to serve at — it would silently pay
 		// nothing. Say so where the number is chosen.
 		fmt.Println("\n  cult = devotion: the share serving the temple. It produces no good — the kharis")
-		fmt.Println("  tick reads it. A temple employs 15% of the city per level, and devotion beyond")
+		fmt.Println("  day reads it. A temple employs 15% of the city per level, and devotion beyond")
 		fmt.Println("  that is not served: to devote more, raise the temple.")
 	}
 	fmt.Println("\nProduction is set by placing citizens on hexes/buildings — see `keryx place`,")

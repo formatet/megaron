@@ -428,12 +428,5 @@ func favouredGoods(favours map[string]float64) string {
 	return strings.Join(parts, ", ")
 }
 
-// gameDaysRemaining mirrors internal/tick.FormatGameDays. Duplicated because
-// cmd/keryx is a separate binary; singular is load-bearing — keryx shipped
-// "arrives in 1 game-days" until rad K caught it.
-func gameDaysRemaining(days int) string {
-	if days == 1 {
-		return "1 game-day remaining"
-	}
-	return fmt.Sprintf("%d game-days remaining", days)
-}
+// gameDaysRemaining uses the shared Keryx unit formatter.
+func gameDaysRemaining(days int) string { return formatDays(days) + " remaining" }

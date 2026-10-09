@@ -165,14 +165,14 @@ export function renderColonizePreviewHTML(p) {
   const consTick = prodTick - netTick;
 
   let html = `<div style="color:var(--text-dim)">Catchment forecast — ${fmtNum(known)} of ${fmtNum(total)} hexes known</div>`;
-  html += `<div>Grain: produces about ${fmtNum(Math.round(prodTick))} and eats about ${fmtNum(Math.round(consTick))} each game day = ` +
-    `<b style="color:${netTick < 0 ? 'var(--accent)' : 'var(--safe)'}">net ${fmtNum(Math.round(netTick))} per game day</b></div>`;
+  html += `<div>Grain: produces about ${fmtNum(Math.round(prodTick))} and eats about ${fmtNum(Math.round(consTick))} per day = ` +
+    `<b style="color:${netTick < 0 ? 'var(--accent)' : 'var(--safe)'}">net ${netTick >= 0 ? '+' : ''}${fmtNum(Math.round(netTick))} per day</b></div>`;
   if (netTick < 0) {
     const reach = g.ticks_until_empty != null ? ` → lasts about ${fmtDays(Math.round(g.ticks_until_empty))}` : '';
     const farmNetTick = (g.with_farm_per_tick || 0) - consTick;
     const farmNote = (g.with_farm_per_tick || 0) <= (g.base_per_tick || 0)
       ? ' (no farmland in known catchment — a farm will not help here)' : '';
-    html += `<div>Seed ${fmtNum(Math.round(g.seed || 0))} grain${reach}. With farm: ${fmtNum(Math.round(farmNetTick))} net per game day${farmNote}</div>`;
+    html += `<div>Seed ${fmtNum(Math.round(g.seed || 0))} grain${reach}. With farm: net ${farmNetTick >= 0 ? '+' : ''}${fmtNum(Math.round(farmNetTick))} per day${farmNote}</div>`;
     html += `<div style="color:var(--text-dim)">A colony does not feed itself — build a farm if the land bears it, or send grain by internal transfer.</div>`;
   } else {
     html += `<div>Seed ${fmtNum(Math.round(g.seed || 0))} grain — the colony feeds itself.</div>`;
@@ -190,7 +190,7 @@ export function renderColonizePreviewHTML(p) {
   Object.keys(p.goods || {}).sort().forEach(gk => {
     if (gk === 'grain') return;
     const rate = p.goods[gk] || 0;
-    if (rate > 0) extras.push(`${esc(gk)} about ${fmtNum(Math.round(rate))} per game day`);
+    if (rate > 0) extras.push(`${esc(gk)} about ${fmtNum(Math.round(rate))} per day`);
   });
   if (extras.length) html += `<div style="color:var(--text-dim)">Also: ${extras.join(', ')}</div>`;
 

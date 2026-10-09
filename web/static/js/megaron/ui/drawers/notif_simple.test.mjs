@@ -32,3 +32,8 @@ test('a dismissed brief stays dismissed after reload (localStorage, not session)
  globalThis.localStorage={getItem(){throw new Error('blocked');},setItem(){throw new Error('blocked');}};
  try{assert.equal(briefDismissed('city'),false);assert.doesNotThrow(()=>dismissBrief('city'));}finally{globalThis.localStorage=prev;}
 });
+test('calendar BILD alternatives keep the date with or without month ordinal',()=>{
+ const cal={day:1,month:1,monthName:'Pithoi',year:1};
+ assert.match(notifDateHeader(cal,{WORLD_STATE:'active'},true), /Day 1 of Pithoi \(1\), Year 1/);
+ assert.match(notifDateHeader(cal,{WORLD_STATE:'active'},false), /Day 1 of Pithoi, Year 1/);
+});

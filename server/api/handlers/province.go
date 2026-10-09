@@ -2211,7 +2211,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 			).Scan(&queued)
 			if queued {
 				writeError(w, http.StatusUnprocessableEntity,
-					"foundry is still finishing here — it becomes usable within a tick of completion; retry shortly")
+					"foundry is still finishing here — it becomes usable within a day of completion; retry shortly")
 			} else {
 				writeError(w, http.StatusUnprocessableEntity,
 					// Do NOT reintroduce "bronze is smelted at a foundry" here: war_galley
@@ -2349,7 +2349,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	if popAfter <= 100 {
 		var collapseCurrentTick int
 		if err := tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&collapseCurrentTick); err != nil {
-			writeError(w, http.StatusInternalServerError, "could not read recruitment tick")
+			writeError(w, http.StatusInternalServerError, "could not read recruitment day")
 			return
 		}
 		if err := h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledCollapseSettlement,
@@ -2364,7 +2364,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	batchTicks := recruitBatchTicks(req.UnitType)
 	var trainCurrentTick int
 	if err := tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&trainCurrentTick); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not read recruitment tick")
+		writeError(w, http.StatusInternalServerError, "could not read recruitment day")
 		return
 	}
 
@@ -2636,8 +2636,8 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 		newUnitUp := combat.UnitUpkeep(req.UnitType, string(cat), fullSize, "garrison")
 		if (netGrainPerDay-newUnitUp.Grain) < 0 || (netSilverPerDay-newUnitUp.Silver) < 0 {
 			upkeepWarning = fmt.Sprintf(
-				"warning: once this unit garrisons it needs %.1f grain + %.1f silver/tick upkeep — "+
-					"this settlement's current net after its existing army's upkeep is %+.1f grain/tick, %+.1f silver/tick; "+
+				"warning: once this unit garrisons it needs %.1f grain + %.1f silver per day upkeep — "+
+					"this settlement's current net after its existing army's upkeep is %+.1f grain per day, %+.1f silver per day; "+
 					"it may starve/desert without more production or fewer units (`keryx status`)",
 				newUnitUp.Grain, newUnitUp.Silver, netGrainPerDay, netSilverPerDay)
 		}
@@ -3379,7 +3379,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	}
 	var tradeCurrentTick int
 	if err := tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&tradeCurrentTick); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not read current tick")
+		writeError(w, http.StatusInternalServerError, "could not read current day")
 		return
 	}
 	tradeTravelTicks := journey.TravelTicks

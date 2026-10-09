@@ -371,9 +371,9 @@ func formatSize(c *Client, u unitRow) string {
 		case u.ProvisionDays <= 0:
 			food = ", OUT OF FOOD"
 		case u.ProvisionDays < provisionsLowDays:
-			food = fmt.Sprintf(", food %d days LOW", u.ProvisionDays)
+			food = fmt.Sprintf(", food %s LOW", formatDays(u.ProvisionDays, "%d"))
 		default:
-			food = fmt.Sprintf(", food %d days", u.ProvisionDays)
+			food = fmt.Sprintf(", food %s", formatDays(u.ProvisionDays, "%d"))
 		}
 		return fmt.Sprintf("1 vessel (crew %d%s%s)", u.Crew, hull, food)
 	}
@@ -480,7 +480,7 @@ func locationStr(c *Client, u unitRow, homes map[string]settlementPos) string {
 		}
 		until := ""
 		if u.WaitingUntilTick != nil {
-			until = fmt.Sprintf(" until tick %d", *u.WaitingUntilTick)
+			until = fmt.Sprintf(" until %s", formatDay(*u.WaitingUntilTick, "%d"))
 		}
 		return fmt.Sprintf("waiting off %sfor %s%s", shore, who, until)
 	}
@@ -626,7 +626,7 @@ Exploring: an explore order may target an area in fog. The server chooses
 unseen reachable ground there and records what the unit sees along its route.
 Run 'keryx map' to see the frontier coordinates.
 
---intent explore explores an area around the chosen hex for --ticks game days.
+--intent explore explores an area around the chosen hex for --ticks days.
 It turns home by half the duration and reports what it saw on return. It needs
 a reachable city of yours to return to. A land unit in the field receives the
 order by Runner; a ship must be commanded in port. Works for land or naval
@@ -660,7 +660,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
   keryx unit march --unit <id> --intent colonize --name Thapsos
   # Any march reveals fog along its route toward a frontier coordinate:
   keryx unit march --unit <id> --q 12 --r -8
-  # Explore an area for 12 game days, then automatically return home
+  # Explore an area for 12 days, then automatically return home
   keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
   # Land troops from a laden ship in port, then sail home on its own:
   keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
@@ -826,7 +826,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 		},
 	}
 
-	cmd.Flags().IntVar(&expeditionTicks, "ticks", 0, "explore duration in game days (omit for server default)")
+	cmd.Flags().IntVar(&expeditionTicks, "ticks", 0, "explore duration in days (omit for server default)")
 	cmd.Flags().BoolVar(&previewOnly, "preview", false, "estimate arrival without sending an order")
 	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
 	cmd.Flags().IntVar(&targetQ, "q", 0, "target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)")
@@ -946,7 +946,7 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 	prodPerTick := p.Grain.BasePerTick
 	netPerTick := p.Grain.EstNetPerTick
 	consPerTick := prodPerTick - netPerTick
-	fmt.Printf("  Grain: production ~%.0f/tick − consumption ~%.0f/tick = NET %s/tick\n",
+	fmt.Printf("  Grain: production ~%.0f per day − consumption ~%.0f per day = net %s per day\n",
 		prodPerTick, consPerTick, formatNetPerTick(netPerTick))
 
 	// Tre lägen, inte två (megaron_plan_grundningsprognosen.md §4): ett netto på
@@ -962,12 +962,12 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 	case netPerTick < 0:
 		reach := ""
 		if p.Grain.TicksUntilEmpty != nil {
-			reach = fmt.Sprintf(" → lasts ~%.0f tick", *p.Grain.TicksUntilEmpty)
+			reach = fmt.Sprintf(" → lasts ~%s", formatDays(*p.Grain.TicksUntilEmpty, "%.0f"))
 		}
-		fmt.Printf("  Starting stock %.0f grain%s — the city starves. With a farm: ~%s/tick%s\n",
+		fmt.Printf("  Starting stock %.0f grain%s — the city starves. With a farm: net ~%s per day%s\n",
 			p.Grain.Seed, reach, formatNetPerTick(farmNetPerTick), farmNote)
 	case netPerTick < marginalCeiling:
-		fmt.Printf("  Starting stock %.0f grain — marginal (NET %s/tick). A farm gives ~%s/tick.%s\n",
+		fmt.Printf("  Starting stock %.0f grain — marginal (net %s per day). A farm gives net ~%s per day.%s\n",
 			p.Grain.Seed, formatNetPerTick(netPerTick), formatNetPerTick(farmNetPerTick), farmNote)
 	default:
 		fmt.Printf("  Starting stock %.0f grain — the city is self-sufficient.\n", p.Grain.Seed)
@@ -1009,7 +1009,7 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 			continue
 		}
 		if rate := p.Goods[g]; rate > 0 {
-			extras = append(extras, fmt.Sprintf("%s ~%.0f/tick", g, rate))
+			extras = append(extras, fmt.Sprintf("%s ~%.0f per day", g, rate))
 		}
 	}
 	if len(extras) > 0 {
@@ -1224,8 +1224,7 @@ repair completes and its hull returns to full.`,
 				CompleteAt    string  `json:"complete_at"`
 			}
 			_ = json.Unmarshal(data, &resp)
-			fmt.Printf("Repair started on unit %s (hull %d→%d), costing %.1f %s over %d ticks",
-				unitID[:8], resp.HullBefore, resp.HullTarget, resp.Amount, resp.Good, resp.DurationTicks)
+			fmt.Printf("Repair started on unit %s (hull %d→%d), costing %.1f %s over %s", unitID[:8], resp.HullBefore, resp.HullTarget, resp.Amount, resp.Good, formatDays(resp.DurationTicks, "%d"))
 			if t, err := time.Parse(time.RFC3339, resp.CompleteAt); err == nil {
 				fmt.Printf(" — ready %s", gameETA(c, t))
 			}
@@ -1651,22 +1650,20 @@ func unitPickupCmd() *cobra.Command {
 			if err := json.Unmarshal(data, &resp); err != nil {
 				return err
 			}
-			fmt.Printf("Ship %s sails to (%d,%d), arriving tick %d, waiting %d ticks there",
-				resp.UnitID[:8], resp.ShoreQ, resp.ShoreR, resp.ArrivalTick, resp.WaitTicks)
+			fmt.Printf("Ship %s sails to (%d,%d), arriving %s, waiting %s there", resp.UnitID[:8], resp.ShoreQ, resp.ShoreR, formatDay(resp.ArrivalTick, "%d"), formatDays(resp.WaitTicks, "%d"))
 			if resp.MessengerID != nil {
-				fmt.Printf(" — a runner rides along, estimated %d ticks to reach the unit and march it to the shore", resp.EstimatedTicksToShore)
+				fmt.Printf(" — a runner rides along, estimated %s to reach the unit and march it to the shore", formatDays(resp.EstimatedTicksToShore, "%d"))
 			}
 			fmt.Println()
 			if resp.MessengerID != nil && resp.WaitTicks < resp.EstimatedTicksToShore {
-				fmt.Printf("Note: the wait (%d ticks) is SHORTER than the estimate (%d ticks) — the ship may leave before the unit gets there. Consider --wait %d or more.\n",
-					resp.WaitTicks, resp.EstimatedTicksToShore, resp.EstimatedTicksToShore)
+				fmt.Printf("Note: the wait (%s) is SHORTER than the estimate (%s) — the ship may leave before the unit gets there. Consider --wait %d or more.\n", formatDays(resp.WaitTicks, "%d"), formatDays(resp.EstimatedTicksToShore, "%d"), resp.EstimatedTicksToShore)
 			}
 			return nil
 		},
 	}
 
 	cmd.Flags().StringVar(&shipID, "ship", "", "ship UUID to send (required; galley or merchantman if a runner is needed)")
-	cmd.Flags().IntVar(&waitTicks, "wait", 0, "ticks to wait off the shore before turning home regardless (default: server default)")
+	cmd.Flags().IntVar(&waitTicks, "wait", 0, "days to wait off the shore before turning home regardless (default: server default)")
 	_ = cmd.MarkFlagRequired("ship")
 	return cmd
 }

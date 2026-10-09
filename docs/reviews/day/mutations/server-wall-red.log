@@ -1,0 +1,6 @@
+--- FAIL: TestDayPlayerLanguageGuard (0.15s)
+    day_guard_test.go:16: Day guard server: exit status 1
+        server/internal/tick/eta.go:60: forbidden player time: ≈ 3 days real time
+FAIL
+FAIL	formatet/megaron/server/internal/tick	0.151s
+FAIL

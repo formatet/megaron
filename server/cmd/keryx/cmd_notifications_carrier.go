@@ -35,7 +35,7 @@ func printMessengerFateLine(n notificationItem) {
 	if n.Kind == "MessengerRescuedAtSea" {
 		home := "Home on an unknown day."
 		if b.HomeTick != nil {
-			home = fmt.Sprintf("Home on day %d.", *b.HomeTick)
+			home = fmt.Sprintf("Home on %s.", formatDay(*b.HomeTick, "%d"))
 		}
 		account, landed := "", false
 		for _, j := range b.Journey {
@@ -89,7 +89,7 @@ func printMessengerFateLine(n notificationItem) {
 	}
 	sent := "Sent on an unknown day"
 	if b.Envelope.SentTick != nil {
-		sent = fmt.Sprintf("Sent on day %d", *b.Envelope.SentTick)
+		sent = fmt.Sprintf("Sent on %s", formatDay(*b.Envelope.SentTick, "%d"))
 	}
 	reason := " with no surviving rescue ship."
 	if b.Reason == "storm" {

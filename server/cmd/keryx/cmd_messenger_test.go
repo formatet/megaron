@@ -121,10 +121,10 @@ func TestDeliveryETALine(t *testing.T) {
 			"silver_arrives_at": future(4 * time.Hour),
 		}
 		got := deliveryETALine(c, offer)
-		if !strings.Contains(got, "goods in") {
+		if !strings.Contains(got, "goods ≈") {
 			t.Errorf("expected a goods countdown, got %q", got)
 		}
-		if !strings.Contains(got, "silver in") {
+		if !strings.Contains(got, "silver ≈") {
 			t.Errorf("expected a silver countdown, got %q", got)
 		}
 	})
@@ -138,7 +138,7 @@ func TestDeliveryETALine(t *testing.T) {
 		if !strings.Contains(got, "goods delivered") {
 			t.Errorf("expected past leg to read 'goods delivered', got %q", got)
 		}
-		if !strings.Contains(got, "silver in") {
+		if !strings.Contains(got, "silver ≈") {
 			t.Errorf("expected future leg to still show a countdown, got %q", got)
 		}
 	})

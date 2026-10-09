@@ -42,15 +42,7 @@ func gossipCmd() *cobra.Command {
 				hops, _ := g["hops"].(float64)
 				var when string
 				if t, err := time.Parse(time.RFC3339, tsStr); err == nil {
-					ago := time.Since(t)
-					switch {
-					case ago < time.Hour:
-						when = fmt.Sprintf("%dm ago", int(ago.Minutes()))
-					case ago < 24*time.Hour:
-						when = fmt.Sprintf("%dh ago", int(ago.Hours()))
-					default:
-						when = fmt.Sprintf("%dd ago", int(ago.Hours()/24))
-					}
+					when = clockTime(t)
 				}
 				marker := " "
 				if importance == "major" {

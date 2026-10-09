@@ -76,15 +76,7 @@ func notificationAge(createdAt string) string {
 	if err != nil {
 		return ""
 	}
-	ago := time.Since(t)
-	switch {
-	case ago < time.Hour:
-		return fmt.Sprintf("%dm ago", int(ago.Minutes()))
-	case ago < 24*time.Hour:
-		return fmt.Sprintf("%dh ago", int(ago.Hours()))
-	default:
-		return fmt.Sprintf("%dd ago", int(ago.Hours()/24))
-	}
+	return clockTime(t)
 }
 
 func printNotificationRow(c *Client, n notificationItem) {
@@ -367,8 +359,7 @@ func printForeignMarchSightedLine(n notificationItem) {
 	if body.ThreatensName != "" {
 		threat = " — YOUR CITY " + body.ThreatensName
 	}
-	fmt.Printf("      %s %s (%d%s) marching to (%d,%d)%s — lands tick %d\n",
-		owner, unitType, body.Size, stance, body.TargetQ, body.TargetR, threat, body.ArriveTick)
+	fmt.Printf("      %s %s (%d%s) marching to (%d,%d)%s — lands %s\n", owner, unitType, body.Size, stance, body.TargetQ, body.TargetR, threat, formatDay(body.ArriveTick, "%d"))
 }
 
 // printForeignMarchSightedV2Line — the sighting since 2026-09-26 (Timothy:
@@ -413,7 +404,7 @@ func printForeignMarchSightedV2Line(n notificationItem) {
 	if body.ThreatensName != "" {
 		line += " — toward YOUR CITY " + body.ThreatensName + "'s lands"
 		if body.EtaIfTick != nil {
-			line += fmt.Sprintf("; there by tick %d if that is its goal", *body.EtaIfTick)
+			line += fmt.Sprintf("; there by %s if that is its goal", formatDay(*body.EtaIfTick, "%d"))
 		}
 	}
 	fmt.Println(line)
@@ -443,15 +434,12 @@ func printOccupationLine(n notificationItem) {
 	switch n.Kind {
 	case "CityOccupied":
 		if body.Role == "attacker" {
-			fmt.Printf("      %s fell — your army holds it under occupation. Choosing nothing leaves it occupied; annexation is offered after %d uncontested tick. `keryx occupation order --settlement %s --action sack|burn|annex`\n",
-				name, body.OccupationTicksToAnnex, body.SettlementID)
+			fmt.Printf("      %s fell — your army holds it under occupation. Choosing nothing leaves it occupied; annexation is offered after %s. `keryx occupation order --settlement %s --action sack|burn|annex`\n", name, formatDays(body.OccupationTicksToAnnex, "%d", "uncontested"), body.SettlementID)
 		} else {
-			fmt.Printf("      %s has fallen under occupation — not lost yet. Relief within %d tick resets the enemy's counter.\n",
-				name, body.OccupationTicksToAnnex)
+			fmt.Printf("      %s has fallen under occupation — not lost yet. Relief within %s resets the enemy's counter.\n", name, formatDays(body.OccupationTicksToAnnex, "%d"))
 		}
 	case "OccupationDefended":
-		fmt.Printf("      The occupation of %s held against an attack — the annexation counter has been reset, %d new tick required.\n",
-			name, body.OccupationTicksToAnnex)
+		fmt.Printf("      The occupation of %s held against an attack — the annexation counter has been reset, %s required.\n", name, formatDays(body.OccupationTicksToAnnex, "%d"))
 	case "CityAnnexReady":
 		fmt.Printf("      %s has been uncontested long enough — annex with `keryx occupation order --settlement %s --action annex`\n",
 			name, body.SettlementID)
@@ -793,12 +781,12 @@ func printColonyFoundedGrainLine(n notificationItem) {
 	if perTick < 0 {
 		ticks := ""
 		if grainTicks != nil {
-			ticks = fmt.Sprintf(" — grain lasts ~%.0f tick", *grainTicks)
+			ticks = fmt.Sprintf(" — grain lasts ~%s", formatDays(*grainTicks, "%.0f"))
 		}
-		fmt.Printf("      %s doesn't feed itself (~%.0f grain/tick short)%s. Build a farm if the catchment supports it, otherwise send grain: keryx transfer --good grain --qty <n> --dest %s\n",
+		fmt.Printf("      %s doesn't feed itself (~%.0f grain per day short)%s. Build a farm if the catchment supports it, otherwise send grain: keryx transfer --good grain --qty <n> --dest %s\n",
 			name, -perTick, ticks, name)
 	} else {
-		fmt.Printf("      %s is self-sufficient (~%+.0f grain/tick).\n", name, perTick)
+		fmt.Printf("      %s is self-sufficient (net ~%+.0f grain per day).\n", name, perTick)
 	}
 }
 

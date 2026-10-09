@@ -1096,7 +1096,7 @@ func (h *KingdomHandler) TreasuryDeposit(w http.ResponseWriter, r *http.Request)
 	defer tx.Rollback(r.Context())
 	var kingdomTribCurrentTick int
 	if err := tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&kingdomTribCurrentTick); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not read current tick")
+		writeError(w, http.StatusInternalServerError, "could not read current day")
 		return
 	}
 	kingdomTribDueTick := kingdomTribCurrentTick + travelTicks

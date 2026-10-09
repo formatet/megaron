@@ -13,14 +13,14 @@ type expeditionMission struct {
 }
 
 func expeditionMissionText(e *expeditionMission) string {
-	state := fmt.Sprintf("turns home by game day %d", e.TurnTick)
+	state := fmt.Sprintf("turns home by %s", formatDay(e.TurnTick, "%d"))
 	if e.Homeward {
 		state = "returning home"
 		if e.TurnReason != nil {
 			state += " — " + expeditionReason(*e.TurnReason)
 		}
 	}
-	return fmt.Sprintf("Expedition around (%d,%d), %d game days; %s; home by game day %d", e.AreaQ, e.AreaR, e.LengthTicks, state, e.HomeByTick)
+	return fmt.Sprintf("Expedition around (%d,%d), %s; %s; home by %s", e.AreaQ, e.AreaR, formatDays(e.LengthTicks, "%d"), state, formatDay(e.HomeByTick, "%d"))
 }
 func expeditionReason(reason string) string {
 	switch reason {

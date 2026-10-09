@@ -24,6 +24,6 @@
 
 **The Thalassa** — the sea. See [[sea]].
 
-**Tick** — one day in the world. See [[time]].
+**Day** — the world’s unit of time; the calendar names its date. See [[time]].
 
 **Wanax** — a ruler; you. See [[welcome]].

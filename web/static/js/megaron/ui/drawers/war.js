@@ -14,7 +14,7 @@ import { canTakeStance, stanceSentLine } from '../stance.js';
 import { warMovements } from '../movements.js';
 import { expeditionMissionText } from '../expedition.js';
 import { chooseMarchTarget } from '../marchctx.js';
-import { fmtNum, fmtDays } from '../fmt_num.js';
+import { fmtNum, fmtDays, fmtDay } from '../fmt_num.js';
 import { orderRunnerHTML } from '../runner_status.js';
 import { recallAll, recallAllControlsHTML, recallAllResultHTML } from '../recall_all.js';
 let recallAllResult = '';
@@ -456,7 +456,7 @@ export function renderUnitCard(u) {
     // the shore for the fetched unit — ScheduledPickupTimeout is what sends
     // it home if the unit never makes it.
     const who = u.pickup_for ? esc(u.pickup_for) : 'the unit';
-    const until = u.waiting_until_tick != null ? ' until game day ' + fmtNum(u.waiting_until_tick) : '';
+    const until = u.waiting_until_tick != null ? ' until ' + fmtDay(u.waiting_until_tick) : '';
     loc = 'waiting off (' + u.q + ',' + u.r + ') for ' + who + until;
   } else if (isMarching && u.target_q != null) {
     // Pickup (megaron_plan_hamta_hem.md): sailing to fetch a unit — target_q/r
@@ -985,7 +985,7 @@ export async function unitPickup(unitID) {
   if (res.ok) {
     if (resEl) {
       resEl.style.color = 'var(--safe)';
-      resEl.textContent = 'Ship sails to (' + data.shore_q + ',' + data.shore_r + ') — arrives game day ' + fmtNum(data.arrival_tick) +
+      resEl.textContent = 'Ship sails to (' + data.shore_q + ',' + data.shore_r + ') — arrives day ' + fmtNum(data.arrival_tick) +
         (data.messenger_id ? ', a messenger rides along' : '') + '.';
     }
     loadWarDrawer();

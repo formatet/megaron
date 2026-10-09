@@ -19,7 +19,7 @@ func ticklogCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "ticklog",
 		Aliases: []string{"journal"},
-		Short:   "Per-tick journal for a city: prod/cons, trade, Sitos, builds (newest first)",
+		Short:   "Daily journal for a city: prod/cons, trade, Sitos, builds (newest first)",
 		Example: `  keryx ticklog --last 10
   keryx ticklog --province <province-id> --last 20 --asc`,
 		// --province and --last are both plausible for a stray positional —
@@ -66,11 +66,11 @@ func ticklogCmd() *cobra.Command {
 				return err
 			}
 			if len(resp.Ticks) == 0 {
-				fmt.Println("No ticks to show.")
+				fmt.Println("No days to show.")
 				return nil
 			}
 			for _, t := range resp.Ticks {
-				fmt.Printf("── Tick %d ──\n", t.Tick)
+				fmt.Printf("── %s ──\n", formatDay(t.Tick))
 				fmt.Printf("  Prod:  %s\n", fmtFlows(t.Production))
 				fmt.Printf("  Cons:  %s\n", fmtFlows(t.Consumption))
 				if len(t.Events) == 0 {
@@ -90,7 +90,7 @@ func ticklogCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID (default: your capital)")
-	cmd.Flags().IntVar(&last, "last", 10, "number of most-recent ticks to show")
+	cmd.Flags().IntVar(&last, "last", 10, "number of most-recent days to show")
 	cmd.Flags().BoolVar(&asc, "asc", false, "chronological order (oldest first)")
 	return cmd
 }
@@ -110,7 +110,7 @@ func fmtFlows(m map[string]float64) string {
 		if i > 0 {
 			out += ", "
 		}
-		out += fmt.Sprintf("%s %+.2f/tick", k, m[k])
+		out += fmt.Sprintf("%s %+.2f per day", k, m[k])
 	}
 	return out
 }
@@ -133,11 +133,9 @@ func renderTickEvent(etype string, payload json.RawMessage) string {
 		sort.Strings(goods)
 		detail := strings.Join(goods, " + ")
 		if etype == "SitosGranaryReleased" {
-			return fmt.Sprintf("Sitos: the granary gave the city %s (coverage was %.1f tick, left in the granary %.1f)",
-				detail, p.CoverageDays, p.GranaryAfter)
+			return fmt.Sprintf("Sitos: the granary gave the city %s (coverage was %s, left in the granary %.1f)", detail, formatDays(p.CoverageDays, "%.1f"), p.GranaryAfter)
 		}
-		return fmt.Sprintf("Sitos: stored away %s (coverage %.1f tick, in the granary %.1f)",
-			detail, p.CoverageDays, p.GranaryAfter)
+		return fmt.Sprintf("Sitos: stored away %s (coverage %s, in the granary %.1f)", detail, formatDays(p.CoverageDays, "%.1f"), p.GranaryAfter)
 	// SitosTransaction is the FUND's event type, frozen and no longer emitted
 	// (mig 106). Kept so a journal that reaches back past the migration still
 	// reads correctly — the rows mean what they meant.

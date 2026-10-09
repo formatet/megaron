@@ -50,7 +50,7 @@ func TestExploreTicksOrderAndPreview(t *testing.T) {
 				if calls != 1 {
 					t.Fatalf("calls=%d", calls)
 				}
-				if !preview && (!strings.Contains(out, "12 game days") || !strings.Contains(out, "home by game day 112")) {
+				if !preview && (!strings.Contains(out, "12 days") || !strings.Contains(out, "home by day 112")) {
 					t.Fatalf("missing mission: %s", out)
 				}
 			})
@@ -72,7 +72,7 @@ func TestExpeditionMissionLifecycleText(t *testing.T) {
 		t.Fatal(err)
 	}
 	text := expeditionMissionText(u.Expedition)
-	for _, want := range []string{"(9,2)", "12 game days", "returning home", "area explored", "home by game day 14"} {
+	for _, want := range []string{"(9,2)", "12 days", "returning home", "area explored", "home by day 14"} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %s: %s", want, text)
 		}

@@ -38,7 +38,7 @@ A marching army eats more than one in garrison and cannot forage ([[upkeep]]). I
 
 ## Exploring an area
 
-Choose **Explore** in the map menu; the default expedition duration is ready to use. Open **More** to change the duration in **game days**. The chosen hex is the centre of an area, even in fog. The order summary shows its extent and duration before sending; **War → Army → March** offers the same controls.
+Choose **Explore** in the map menu; the default expedition duration is ready to use. Open **More** to change the duration in **days**. The chosen hex is the centre of an area, even in fog. The order summary shows its extent and duration before sending; **War → Army → March** offers the same controls.
 
 The unit chooses nearby unexplored ground on its own, and turns home by half the duration. It can turn earlier if the area is already explored or nothing further is reachable. **War → Army** and `keryx unit list` show the area, duration, latest turn and home day, and why it has turned. A Runner-delivered order begins when received, so those days become known when it starts. On return, Dispatches carries the report ([[sight]]).
 

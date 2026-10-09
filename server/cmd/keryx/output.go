@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -44,8 +45,34 @@ func rate(v float64) string {
 	}
 	// %+.1f supplies its own sign (was "+%.1f", which mangled negative rates
 	// into "+-5.3/tick" — DEL C grain-netto-märkning surfaced this).
-	return fmt.Sprintf("%+.1f/tick", v)
+	return fmt.Sprintf("%+.1f per day", v)
 }
+
+// World-unit formatting is shared by every Keryx duration and absolute day.
+func formatDays(value any, precision ...string) string {
+	number := fmt.Sprint(value)
+	if len(precision) > 0 {
+		number = fmt.Sprintf(precision[0], value)
+	}
+	qualifier := ""
+	if len(precision) > 1 {
+		qualifier = precision[1] + " "
+	}
+	n, _ := strconv.ParseFloat(number, 64)
+	if n == 1 {
+		return number + " " + qualifier + "day"
+	}
+	return number + " " + qualifier + "days"
+}
+func formatDay(value any, precision ...string) string {
+	number := fmt.Sprint(value)
+	if len(precision) > 0 {
+		number = fmt.Sprintf(precision[0], value)
+	}
+	return "day " + number
+}
+func clockTime(t time.Time) string { return t.In(keryxTZ).Format("Mon Jan 2 15:04") }
+func wallClock(t time.Time) string { return "≈ " + clockTime(t) }
 
 // countdown formats the time remaining until t (e.g. a pending trade offer's
 // escrow expires_at) as a short human string, for inbox/outbox display —
@@ -56,13 +83,7 @@ func countdown(t time.Time) string {
 	if remaining <= 0 {
 		return "any moment"
 	}
-	if remaining < time.Hour {
-		return fmt.Sprintf("%dm", int(remaining.Minutes()))
-	}
-	if remaining < 24*time.Hour {
-		return fmt.Sprintf("%dh %dm", int(remaining.Hours()), int(remaining.Minutes())%60)
-	}
-	return fmt.Sprintf("%dd %dh", int(remaining.Hours()/24), int(remaining.Hours())%24)
+	return wallClock(t)
 }
 
 // keryxTZ is the timezone every keryx ETA's wall-clock support renders in —
@@ -76,42 +97,20 @@ var keryxTZ = func() *time.Location {
 	return time.Local
 }()
 
-// gameETA renders the time remaining until t as game-days-first — Megaron's
-// actual time unit, one tick = one game-day ("Ticket ÄR dygnet",
-// megaron_plan_ticket_ar_dygnet) — with the Europe/Stockholm wall clock as
-// secondary support in parens, e.g. "in 3 game-days (19:04 Aug 24)" (rad K,
-// megaron_plan_cli_sanning.md: a game measured in speldygn was showing raw
-// wall-clock countdowns instead). English throughout, including the unit —
-// "game-days" not "days": every call site around this reads as English
-// ("arrives", "the runner reaches it", "ready"), and at a slow tick pace
-// (e.g. 60 min/tick) a bare "in 3 days" would contradict its own wall-clock
-// parenthetical (which might say "tonight"). Naming the unit removes the
-// contradiction and teaches the tick/wall-clock exchange rate for free.
-//
-// Days are rounded UP: a Wanax plans in whole game-days, and "0 game-days
-// left" would read as "already here" when it isn't — except when it
-// genuinely IS here or past due, where "any moment" (countdown's own word
-// for the same state) is used instead of a false "days" figure.
-//
-// Degrades to the old wall-clock-relative countdown ("in 3h 20m (...)") when
-// c can't report the server's tick cadence (TickSeconds' second return is
-// false) — never drop the ETA, same discipline arrivalETA already had for an
-// unparseable timestamp.
+// gameETA renders world days alongside the wall-clock instant. A wait with
+// any time remaining rounds up. Missing world cadence falls back to clock/date.
 func gameETA(c *Client, t time.Time) string {
-	wall := t.In(keryxTZ).Format("15:04 Jan 2")
+	wall := wallClock(t)
 	tickSeconds, ok := c.TickSeconds()
 	if !ok {
-		return fmt.Sprintf("in %s (%s)", countdown(t), wall)
+		return countdown(t)
 	}
 	days := time.Until(t).Seconds() / tickSeconds
 	if days <= 0 {
 		return fmt.Sprintf("any moment (%s)", wall)
 	}
 	whole := int(math.Ceil(days))
-	if whole == 1 {
-		return fmt.Sprintf("in 1 game-day (%s)", wall)
-	}
-	return fmt.Sprintf("in %d game-days (%s)", whole, wall)
+	return fmt.Sprintf("in %s (%s)", formatDays(whole, "%d"), wall)
 }
 
 // arrivalETA parses a server RFC3339 arrival timestamp and renders it via
@@ -150,9 +149,9 @@ func printPassageNote(resp map[string]any) {
 func transferArrival(resp map[string]any) string {
 	if arrival, ok := resp["arrival_tick"].(float64); ok {
 		if duration, ok := resp["travel_ticks"].(float64); ok {
-			return fmt.Sprintf("arrives tick %.0f (journey: %.0f ticks)", arrival, duration)
+			return fmt.Sprintf("arrives %s (journey: %s)", formatDay(arrival, "%.0f"), formatDays(duration, "%.0f"))
 		}
-		return fmt.Sprintf("arrives tick %.0f", arrival)
+		return fmt.Sprintf("arrives %s", formatDay(arrival, "%.0f"))
 	}
 	if at, ok := resp["arrives_at"].(string); ok {
 		return "arrives " + at
@@ -166,7 +165,7 @@ func tradeArrival(c *Client, resp map[string]any, good bool) string {
 		key, timestamp = "goods_arrival_tick", "goods_arrives_at"
 	}
 	if at, ok := resp[key].(float64); ok {
-		return fmt.Sprintf("tick %.0f", at)
+		return fmt.Sprintf("%s", formatDay(at, "%.0f"))
 	}
 	at, _ := resp[timestamp].(string)
 	return arrivalETA(c, at)

@@ -1,8 +1,8 @@
-## A tick is a day
+## Days and the clock
 
-The world advances in **ticks**, and one tick is one day. Wherever the game tells you how long something takes — a march, a building, a letter — it counts in game-days, because that is the unit your decisions are made in.
+The world advances one **day** at a time. Wherever the game tells you how long something takes — a march, a building, a letter — it counts in days, because that is the unit your decisions are made in.
 
-How much real time a day takes is set per world. A test world can run faster than normal. The **date in the top bar** is the world's own calendar; the sun and moon beside it show the time of day.
+How much real time a day takes is set per world. A test world can run faster than normal. The **date in the top bar** is the world's own calendar; the sun and moon beside it show the time of day. An arrival such as **day 12** belongs to this world. When a real-world estimate is shown beside it, it uses a clock time and date, such as **≈ Fri 21:30**.
 
 ## The world does not wait for you
 

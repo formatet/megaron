@@ -39,14 +39,7 @@ func inboxCmd() *cobra.Command {
 				arrivedStr, _ := m["arrived_at"].(string)
 				var when string
 				if t, err := time.Parse(time.RFC3339, arrivedStr); err == nil {
-					ago := time.Since(t)
-					if ago < time.Hour {
-						when = fmt.Sprintf("%dm ago", int(ago.Minutes()))
-					} else if ago < 24*time.Hour {
-						when = fmt.Sprintf("%dh ago", int(ago.Hours()))
-					} else {
-						when = fmt.Sprintf("%dd ago", int(ago.Hours()/24))
-					}
+					when = clockTime(t)
 				}
 				// A delivered messenger may carry a trade offer — either a buy offer
 				// (sender wants a good from you, offers silver) or a sell offer

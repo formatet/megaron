@@ -3,13 +3,8 @@ import assert from 'node:assert/strict';
 import { State } from '../state.js';
 import { currentCalendarDate, monthLabel, shouldPlayCue, introHandoff, nextBedTrack, bedGapMs } from './misc.js';
 
-// The notifications drawer's date header only showed the month NAME ("Day 6
-// of the Olive, Year 1") — with no ordinal there is no way to count days
-// between two notifications, which is exactly what the asynchronicity gate
-// needs (megaron_arbetssatt.md: a Wanax back after nine hours must be able to
-// read what happened and when). monthLabel appends the month's 1..12 ordinal;
-// the intercalary Shadow Days (month 0) sit outside that numbered cycle and
-// must NOT gain a misleading "(0)".
+// The existing month ordinal remains the default until Timothy chooses a
+// calendar BILD alternative. Shadow Days remain outside the numbered months.
 //
 // state.js/misc.js have no top-level DOM side effects (only inside functions
 // called later), so this file imports them directly — no globalThis.document
@@ -46,6 +41,7 @@ test('AK3 (regression): the notification drawer date header carries the ordinal 
   const cal = currentCalendarDate();
   const header = `Day ${cal.day} of ${monthLabel(cal)}, Year ${cal.year}`;
   assert.equal(header, 'Day 6 of the Olive (3), Year 1');
+  assert.equal(`Day ${cal.day} of ${cal.monthName}, Year ${cal.year}`, 'Day 6 of the Olive, Year 1');
 });
 
 // ── Music cue priority/throttle (Timothy 2026-09-25) ───────────────────────

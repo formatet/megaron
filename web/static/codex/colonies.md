@@ -2,7 +2,7 @@ Beyond your metropolis you may hold more settlements — up to **five** in all. 
 
 ## Founding a colony
 
-Right-click the site, tick **Found a new settlement on arrival**, name it, choose the unit, and **March →**. Or left-click empty land and press **Colonize →**. You get the same [[catchment]] forecast as when you [[founding|founded]] your first city.
+Right-click the site, select **Found a new settlement on arrival**, name it, choose the unit, and **March →**. Or left-click empty land and press **Colonize →**. You get the same [[catchment]] forecast as when you [[founding|founded]] your first city.
 
 **The unit is consumed.** Those men become the colony's population. You cannot recall them and you cannot change your mind.
 

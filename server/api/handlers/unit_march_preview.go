@@ -61,7 +61,7 @@ func (h *UnitHandler) MarchPreview(w http.ResponseWriter, r *http.Request) {
 	if raw := query.Get("ticks"); raw != "" {
 		length, parseErr := strconv.Atoi(raw)
 		if parseErr != nil {
-			writeError(w, http.StatusBadRequest, "invalid ticks")
+			writeError(w, http.StatusBadRequest, "invalid expedition duration")
 			return
 		}
 		order.ExpeditionTicks = length

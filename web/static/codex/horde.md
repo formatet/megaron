@@ -18,6 +18,6 @@ Unlike everything else you will ever command, **the Host obeys instantly**: you 
 
 ## The clock in the store
 
-The panel shows **Food lasts** and **Escort pay lasts**, in game days. Food lasts indefinitely while the Host eats nothing; the silver pays the escort. When the escort's pay runs out, it begins to desert ([[upkeep]]). You have long enough to be picky about where you settle, not long enough to wander aimlessly.
+The panel shows **Food lasts** and **Escort pay lasts**, in days. Food lasts indefinitely while the Host eats nothing; the silver pays the escort. When the escort's pay runs out, it begins to desert ([[upkeep]]). You have long enough to be picky about where you settle, not long enough to wander aimlessly.
 
 When you have found your place: [[founding]].

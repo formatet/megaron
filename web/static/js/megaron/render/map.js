@@ -7,7 +7,7 @@ import {
   PAN_SPEED_PX_PER_SEC,
 } from '../config.js';
 import { isTypingTarget, esc } from '../ui/format.js';
-import { fmtNum } from '../ui/fmt_num.js';
+import { fmtNum, fmtDays } from '../ui/fmt_num.js';
 import { canonicalUnitType, actorName } from '../ui/actornames.js';
 import { drawActor, spriteRuns, FOREIGN_ACCENT, FOREIGN_OUTLINE } from './actorsprites.js';
 import { eyeSees } from './sight.js';
@@ -4345,7 +4345,7 @@ function hostStoreLine(label, s) {
   if (!s || s.ticks_left == null) return `${label} lasts indefinitely`;
   const days = Number(s.ticks_left);
   if (!Number.isFinite(days)) return `${label} duration unknown`;
-  return `${label} lasts ${fmtNum(days)} game ${days === 1 ? 'day' : 'days'}`;
+  return `${label} lasts ${fmtDays(days)}`;
 }
 
 // Summarize the same existing forecast. Do not round before deciding yes/no.

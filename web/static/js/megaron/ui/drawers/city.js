@@ -281,7 +281,7 @@ export async function loadCityDrawer() {
       const prodRows = Object.entries(lt.production || {}).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--safe)">+${fmtNum(Number(v.toFixed(2)))}</td></tr>`).join('');
       const consRows = Object.entries(lt.consumption || {}).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--accent)">−${fmtNum(Number(v.toFixed(2)))}</td></tr>`).join('');
       document.getElementById('city-lasttick-sec').innerHTML = `
-        <div class="stat-row"><span class="sr-label">Game day</span><span class="sr-val">#${fmtNum(lt.tick)}</span></div>
+        <div class="stat-row"><span class="sr-label">Day</span><span class="sr-val">#${fmtNum(lt.tick)}</span></div>
         ${(lt.sitos_food_in > 0 || lt.sitos_food_out > 0) ? `<div class="stat-row"><span class="sr-label">Food reserve</span><span class="sr-val">${lt.sitos_food_in > 0 ? `<span style="color:var(--safe)">+${fmtNum(Math.round(lt.sitos_food_in))} food from granary</span>` : ''}${(lt.sitos_food_in > 0 && lt.sitos_food_out > 0) ? ' · ' : ''}${lt.sitos_food_out > 0 ? `<span style="color:var(--text-dim)">${fmtNum(Math.round(lt.sitos_food_out))} food stored</span>` : ''}</span></div>` : ''}
         ${(prodRows||consRows) ? `<table class="goods-mini" style="margin-top:.3rem">${prodRows}${consRows}</table>` : ''}`;
     } else {
@@ -666,7 +666,7 @@ export async function loadTicklog() {
     const ticks = data.ticks || [];
     if (!ticks.length) { el.innerHTML = '<p class="empty-state">No daily history yet.</p>'; return; }
     el.innerHTML = `<table class="goods-mini">
-      <tr style="color:var(--text-dim);font-size:.7rem"><td>Game day</td><td>Production</td><td>Consumption</td><td>Events</td></tr>
+      <tr style="color:var(--text-dim);font-size:.7rem"><td>Day</td><td>Production</td><td>Consumption</td><td>Events</td></tr>
       ${ticks.map(t => {
         const prod = Object.entries(t.production||{}).map(([k,v]) => `${k} +${fmtNum(Number(v.toFixed(1)))}`).join(', ');
         const cons = Object.entries(t.consumption||{}).map(([k,v]) => `${k} -${fmtNum(Number(v.toFixed(1)))}`).join(', ');
@@ -749,7 +749,7 @@ async function refreshCityBuildings(provinceID) {
         h2 += `
           <div class="dsec-title" style="margin-top:.8rem">Foundry — ${outputName}</div>
           <div style="font-size:.72rem;color:var(--text-dim);margin-bottom:.3rem">${ingredientsStr} → ${foundryRecipe.output_qty} ${foundryRecipe.output_key} · stock: ${stockStr}</div>
-          <p class="empty-state" style="font-size:.72rem">Smelted on its own every tick — put a worker in the foundry and keep the ingredients in store.</p>`;
+          <p class="empty-state" style="font-size:.72rem">Smelted on its own every day — put a worker in the foundry and keep the ingredients in store.</p>`;
       } else {
         // Degrade honestly: no fabricated ratio.
         h2 += `

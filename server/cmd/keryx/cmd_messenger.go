@@ -313,15 +313,7 @@ func outboxCmd() *cobra.Command {
 				sentStr, _ := m["sent_at"].(string)
 				var when string
 				if t, err := time.Parse(time.RFC3339, sentStr); err == nil {
-					ago := time.Since(t)
-					switch {
-					case ago < time.Hour:
-						when = fmt.Sprintf("%dm ago", int(ago.Minutes()))
-					case ago < 24*time.Hour:
-						when = fmt.Sprintf("%dh ago", int(ago.Hours()))
-					default:
-						when = fmt.Sprintf("%dd ago", int(ago.Hours()/24))
-					}
+					when = clockTime(t)
 				}
 				if passageStatus, _ := m["passage_status"].(string); passageStatus == "unknown" {
 					status = "no word"
@@ -503,12 +495,12 @@ func deliveryETALine(c *Client, offer map[string]any) string {
 	silverAt, _ := offer["silver_arrives_at"].(string)
 	var parts []string
 	if at, ok := offer["goods_arrival_tick"].(float64); ok {
-		parts = append(parts, fmt.Sprintf("goods scheduled tick %.0f", at))
+		parts = append(parts, fmt.Sprintf("goods scheduled %s", formatDay(at, "%.0f")))
 	} else if s := fmtLeg("goods", goodsAt); s != "" {
 		parts = append(parts, s)
 	}
 	if at, ok := offer["silver_arrival_tick"].(float64); ok {
-		parts = append(parts, fmt.Sprintf("silver scheduled tick %.0f", at))
+		parts = append(parts, fmt.Sprintf("silver scheduled %s", formatDay(at, "%.0f")))
 	} else if s := fmtLeg("silver", silverAt); s != "" {
 		parts = append(parts, s)
 	}

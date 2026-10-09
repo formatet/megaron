@@ -4,7 +4,7 @@ This Codex is the world's book of knowledge. Every article links onward — foll
 
 ## Three rules that explain almost everything
 
-**A day is a tick.** The world advances one day at a time, and every duration the game shows you counts in game-days. See [[time]].
+**Days belong to the world.** The world advances one day at a time, and every duration the game shows you counts in days. See [[time]].
 
 **The world runs without you.** Nobody pauses. Fields are worked, soldiers are paid and granaries fill and empty while you sleep. You do not win by being online more; you win by leaving good [[routes|standing orders]] and by reading [[coming-back|what happened while you were gone]].
 

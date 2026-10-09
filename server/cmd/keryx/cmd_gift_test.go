@@ -41,7 +41,7 @@ func TestGiftTransferResolvesContactedForeignCity(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if calls != 2 || !strings.Contains(out, "Gift dispatched") || !strings.Contains(out, "arrives tick 42") {
+	if calls != 2 || !strings.Contains(out, "Gift dispatched") || !strings.Contains(out, "arrives day 42") {
 		t.Fatalf("calls=%d output=%s", calls, out)
 	}
 }
