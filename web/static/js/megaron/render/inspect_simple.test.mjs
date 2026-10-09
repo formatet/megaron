@@ -35,7 +35,7 @@ const {initMap}=await import('./map.js');initMap();
 const marker={id:'foreign-province',settlement_id:'foreign-settlement',name:'Kyme',owner:'Other Wanax',culture:'ionian',walls:0,q:0,r:0};
 async function click({terrain='plains',city=marker,host=false}={}){
  State.WORLD_ID='world';State.MY_SETTLEMENT_ID='own-settlement';State.tileData=[{q:0,r:0,terrain}];State.provinceData=city?[city]:[];State.unitsData=host?[{type:'nomadic_host',q:0,r:0}]:[];State.foreignUnitData=[];State.ruralData=[];State.founderPhase=host?fp:null;State.camera={x:0,y:0,zoom:1};
- const canvas=element('hex-canvas');canvas.events.mousedown({clientX:0,clientY:0});canvas.events.mouseup({clientX:0,clientY:0});
+ const canvas=element('hex-canvas');canvas.events.pointerdown({pointerId:1,pointerType:'mouse',button:0,clientX:0,clientY:0});canvas.events.pointerup({pointerId:1,pointerType:'mouse',clientX:0,clientY:0});
  await new Promise(resolve=>setImmediate(resolve));
 }
 test('L actual inspect: owner and qualitative defence replace Culture/Walls/DP, actions keep IDs',async()=>{

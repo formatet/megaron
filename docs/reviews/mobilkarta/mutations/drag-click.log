@@ -1,0 +1,102 @@
+TAP version 13
+# Subtest: U one pointer path registers no legacy mouse/touch handlers
+ok 1 - U one pointer path registers no legacy mouse/touch handlers
+  ---
+  duration_ms: 0.796891
+  type: 'test'
+  ...
+# Subtest: U mouse: tap selects once; drag pans and never selects even on release at last move
+ok 2 - U mouse: tap selects once; drag pans and never selects even on release at last move
+  ---
+  duration_ms: 0.749704
+  type: 'test'
+  ...
+# Subtest: U touch: tap selects once; drag pans and never selects even on release at last move
+ok 3 - U touch: tap selects once; drag pans and never selects even on release at last move
+  ---
+  duration_ms: 0.143651
+  type: 'test'
+  ...
+# Subtest: U pen: tap selects once; drag pans and never selects even on release at last move
+ok 4 - U pen: tap selects once; drag pans and never selects even on release at last move
+  ---
+  duration_ms: 0.147079
+  type: 'test'
+  ...
+# Subtest: U long touch/pen opens orders once, release never selects, browser menu is prevented
+ok 5 - U long touch/pen opens orders once, release never selects, browser menu is prevented
+  ---
+  duration_ms: 0.258283
+  type: 'test'
+  ...
+# Subtest: U motion cancels long press even if finger returns to its start
+not ok 6 - U motion cancels long press even if finger returns to its start
+  ---
+  duration_ms: 0.552173
+  type: 'test'
+  location: '/home/tk/wt/codex-mobilkarta/web/static/js/megaron/render/map_input.test.mjs:33:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-mobilkarta/web/static/js/megaron/render/map_input.test.mjs:34:172)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: U pinch uses moving midpoint, cancels long press and never becomes a tap after one finger lifts
+ok 7 - U pinch uses moving midpoint, cancels long press and never becomes a tap after one finger lifts
+  ---
+  duration_ms: 0.173443
+  type: 'test'
+  ...
+# Subtest: U pinch and wheel share zoom clamps and preserve the world anchor at both limits
+ok 8 - U pinch and wheel share zoom clamps and preserve the world anchor at both limits
+  ---
+  duration_ms: 0.42267
+  type: 'test'
+  ...
+# Subtest: U pointercancel cancels selection and pending long press
+ok 9 - U pointercancel cancels selection and pending long press
+  ---
+  duration_ms: 0.228801
+  type: 'test'
+  ...
+# Subtest: U lostpointercapture cancels selection and pending long press
+ok 10 - U lostpointercapture cancels selection and pending long press
+  ---
+  duration_ms: 0.613014
+  type: 'test'
+  ...
+# Subtest: U blur/hidden cleanup releases all captures and cancels timers; a fresh gesture still works
+ok 11 - U blur/hidden cleanup releases all captures and cancels timers; a fresh gesture still works
+  ---
+  duration_ms: 0.143424
+  type: 'test'
+  ...
+# Subtest: U mouse hover, leave, right-click and wheel retain their routes; right down never starts drag
+ok 12 - U mouse hover, leave, right-click and wheel retain their routes; right down never starts drag
+  ---
+  duration_ms: 0.100779
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 11
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 45.898132

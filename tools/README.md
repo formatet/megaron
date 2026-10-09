@@ -391,3 +391,11 @@ varunyckeln inte kan valideras bara mot en stubb med samma felstavning.
 `tools/day_guard.py web|keryx|codex|server` checks player time vocabulary against exact, counted infrastructure exceptions. Suite entry points are `ui/day_guard.test.mjs`, `cmd/keryx/day_guard_test.go` and `internal/tick/day_guard_test.go`.
 
 `python3 tools/day_mutations.py` physically changes production literals, requires named red tests, restores byte-identical source and requires green. `python3 tools/day_browser.py` exercises real Economy/War/Host/notification controllers and CSS with explicitly scripted HTTP, human fixture names, Firefox first then Chromium/WebKit desktop/390. It produces both calendar ordinal alternatives; it neither chooses one nor claims live game acceptance. Proof and investigation-row outcomes: `docs/reviews/day/README.md`.
+
+## U — mobilkartan
+
+- `python3 tools/mobilkarta_browser.py`: Firefox först, sedan Chromium/WebKit; desktop och touch 390×844. Produktionskarta/CSS/marschmeny/Codex med namngivna, skrivskyddade HTTP-fixturer. Native mus på desktop och tap på mobil; programmerade pointer-gester i alla motorer, dessutom äkta CDP-drag/nyp/långtryck i Chromium. Browserbegränsningar och BILD finns i `docs/reviews/mobilkarta/README.md`.
+- `--baseline --source-root BAS_WORKTREE --output OUT`: samma prov mot oförändrad bas-web; kräver oflyttad kamera och för täta mobilmenynamn. `--browsers firefox` väljer motor.
+- `python3 tools/mobilkarta_mutations.py`: fyra fysiska mutationer, namngivet rött, byte-identisk återställning i finally, därefter full JS grön. Kräver egen worktree utan samtidiga browserkörningar mot dess källor. CSS-mutationen gör den explicita scrollproben rullande med äkta Chromium-touch och fångar pointercancel.
+
+U:s toppradstillägg: `python3 tools/mobilkarta_browser.py --topbar-only --output OUT` provar alla tre riktiga knappar med native tap/click, rect/hit-test och alla kalendernamn i tre motorer desktop/390. Original main.js-bryggor med enbart start-IIFE ersatt av State/HTTP-fixturen. `python3 tools/mobilkarta_topbar_mutation.py` tar fysiskt bort mobilens CSS-reservation, kräver namngivet rött rect-prov och återställer byte-identiskt. Ny BILD/proof i `docs/reviews/mobilkarta/topbar-v2/README.md`.

@@ -1,0 +1,9 @@
+firefox desktop topbar: PASS
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-mobilkarta/tools/mobilkarta_browser.py", line 73, in <module>
+    page.screenshot(path=str(a.output/f'{engine}-{mode}-header.png'));topbar_layout('original-U-fixture')
+                                                                      ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tk/wt/codex-mobilkarta/tools/mobilkarta_browser.py", line 72, in topbar_layout
+    assert all(b['inside'] and b['hit'] for b in metrics) and no_scroll,('U topbar buttons are within viewport and reachable at 390',row)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('U topbar buttons are within viewport and reachable at 390', {'engine': 'firefox', 'mode': 'mobile', 'label': 'original-U-fixture', 'buttons': [{'text': '☍0', 'rect': {'x': 367.8500061035156, 'y': 9.949996948242188, 'width': 26.833328247070312, 'height': 24.100006103515625, 'top': 9.949996948242188, 'right': 394.68333435058594, 'bottom': 34.05000305175781, 'left': 367.8500061035156}, 'inside': False, 'hit': True}, {'text': '⌕', 'rect': {'x': 404.683349609375, 'y': 9.949996948242188, 'width': 26.833328247070312, 'height': 24.100006103515625, 'top': 9.949996948242188, 'right': 431.5166778564453, 'bottom': 34.05000305175781, 'left': 404.683349609375}, 'inside': False, 'hit': False}, {'text': '?', 'rect': {'x': 441.51666259765625, 'y': 10.949996948242188, 'width': 26.800003051757812, 'height': 22.100006103515625, 'top': 10.949996948242188, 'right': 468.31666564941406, 'bottom': 33.05000305175781, 'left': 441.51666259765625}, 'inside': False, 'hit': False}], 'no_horizontal_scroll': True})

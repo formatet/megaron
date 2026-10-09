@@ -1,0 +1,604 @@
+[
+  {
+    "engine": "firefox",
+    "mode": "desktop",
+    "drag_before": {
+      "x": 150,
+      "y": 250,
+      "zoom": 1
+    },
+    "drag_after": {
+      "x": 150,
+      "y": 250,
+      "zoom": 1
+    },
+    "native": null,
+    "nav": [
+      {
+        "name": "City",
+        "fits": true,
+        "text": [
+          88.05000305175781,
+          124.44999694824219
+        ],
+        "button": [
+          0,
+          213.5
+        ]
+      },
+      {
+        "name": "War",
+        "fits": true,
+        "text": [
+          306.1000061035156,
+          333.3999938964844
+        ],
+        "button": [
+          213.5,
+          427
+        ]
+      },
+      {
+        "name": "Diplomacy",
+        "fits": true,
+        "text": [
+          492.29998779296875,
+          574.1999816894531
+        ],
+        "button": [
+          427,
+          640.5
+        ]
+      },
+      {
+        "name": "Economy",
+        "fits": true,
+        "text": [
+          714.9000244140625,
+          778.6000366210938
+        ],
+        "button": [
+          640.5,
+          854
+        ]
+      },
+      {
+        "name": "Kult",
+        "fits": true,
+        "text": [
+          942.0499877929688,
+          978.4499816894531
+        ],
+        "button": [
+          854,
+          1067.5
+        ]
+      },
+      {
+        "name": "Report",
+        "fits": true,
+        "text": [
+          1146.449951171875,
+          1201.0499572753906
+        ],
+        "button": [
+          1067.5,
+          1280
+        ]
+      }
+    ]
+  },
+  {
+    "engine": "firefox",
+    "mode": "mobile",
+    "drag_before": {
+      "x": 150,
+      "y": 250,
+      "zoom": 1
+    },
+    "drag_after": {
+      "x": 150,
+      "y": 250,
+      "zoom": 1
+    },
+    "native": null,
+    "nav": [
+      {
+        "name": "City",
+        "fits": true,
+        "text": [
+          11.716659545898438,
+          48.116668701171875
+        ],
+        "button": [
+          0,
+          60.850006103515625
+        ]
+      },
+      {
+        "name": "War",
+        "fits": true,
+        "text": [
+          77.11666870117188,
+          104.41667175292969
+        ],
+        "button": [
+          60.850006103515625,
+          121.69999694824219
+        ]
+      },
+      {
+        "name": "Diplomacy",
+        "fits": false,
+        "text": [
+          121.69999694824219,
+          203.60000610351562
+        ],
+        "button": [
+          121.69999694824219,
+          204.60000610351562
+        ]
+      },
+      {
+        "name": "Economy",
+        "fits": false,
+        "text": [
+          204.60000610351562,
+          268.3000030517578
+        ],
+        "button": [
+          204.60000610351562,
+          269.3000030517578
+        ]
+      },
+      {
+        "name": "Kult",
+        "fits": true,
+        "text": [
+          281.01666259765625,
+          317.4166717529297
+        ],
+        "button": [
+          269.29998779296875,
+          330.1499786376953
+        ]
+      },
+      {
+        "name": "Report",
+        "fits": false,
+        "text": [
+          332.76666259765625,
+          387.3666687011719
+        ],
+        "button": [
+          330.1499938964844,
+          390
+        ]
+      }
+    ]
+  },
+  {
+    "engine": "chromium",
+    "mode": "desktop",
+    "drag_before": {
+      "x": 150,
+      "y": 250,
+      "zoom": 1
+    },
+    "drag_after": {
+      "x": 150,
+      "y": 250,
+      "zoom": 1
+    },
+    "native": {
+      "before": {
+        "x": 150,
+        "y": 250,
+        "zoom": 1
+      },
+      "after": {
+        "x": 150,
+        "y": 250,
+        "zoom": 1
+      },
+      "scrollY": 100,
+      "events": [
+        {
+          "type": "pointerdown",
+          "trusted": true,
+          "pointerType": "touch"
+        },
+        {
+          "type": "pointermove",
+          "trusted": true,
+          "pointerType": "touch"
+        },
+        {
+          "type": "pointermove",
+          "trusted": true,
+          "pointerType": "touch"
+        },
+        {
+          "type": "pointercancel",
+          "trusted": true,
+          "pointerType": "touch"
+        }
+      ]
+    },
+    "nav": [
+      {
+        "name": "City",
+        "fits": true,
+        "text": [
+          88.046875,
+          124.453125
+        ],
+        "button": [
+          0,
+          213.5
+        ]
+      },
+      {
+        "name": "War",
+        "fits": true,
+        "text": [
+          306.09375,
+          333.40625
+        ],
+        "button": [
+          213.5,
+          427
+        ]
+      },
+      {
+        "name": "Diplomacy",
+        "fits": true,
+        "text": [
+          492.28125,
+          574.203125
+        ],
+        "button": [
+          427,
+          640.5
+        ]
+      },
+      {
+        "name": "Economy",
+        "fits": true,
+        "text": [
+          714.890625,
+          778.609375
+        ],
+        "button": [
+          640.5,
+          854
+        ]
+      },
+      {
+        "name": "Kult",
+        "fits": true,
+        "text": [
+          942.046875,
+          978.453125
+        ],
+        "button": [
+          854,
+          1067.5
+        ]
+      },
+      {
+        "name": "Report",
+        "fits": true,
+        "text": [
+          1146.4375,
+          1201.046875
+        ],
+        "button": [
+          1067.5,
+          1280
+        ]
+      }
+    ]
+  },
+  {
+    "engine": "chromium",
+    "mode": "mobile",
+    "drag_before": {
+      "x": 150,
+      "y": 250,
+      "zoom": 1
+    },
+    "drag_after": {
+      "x": 150,
+      "y": 250,
+      "zoom": 1
+    },
+    "native": {
+      "before": {
+        "x": 150,
+        "y": 250,
+        "zoom": 1
+      },
+      "after": {
+        "x": 150,
+        "y": 250,
+        "zoom": 1
+      },
+      "scrollY": 125,
+      "events": [
+        {
+          "type": "pointerdown",
+          "trusted": true,
+          "pointerType": "touch"
+        },
+        {
+          "type": "pointermove",
+          "trusted": true,
+          "pointerType": "touch"
+        },
+        {
+          "type": "pointermove",
+          "trusted": true,
+          "pointerType": "touch"
+        },
+        {
+          "type": "pointercancel",
+          "trusted": true,
+          "pointerType": "touch"
+        }
+      ]
+    },
+    "nav": [
+      {
+        "name": "City",
+        "fits": true,
+        "text": [
+          11.703125,
+          48.109375
+        ],
+        "button": [
+          0,
+          60.828125
+        ]
+      },
+      {
+        "name": "War",
+        "fits": true,
+        "text": [
+          77.09375,
+          104.40625
+        ],
+        "button": [
+          60.828125,
+          121.671875
+        ]
+      },
+      {
+        "name": "Diplomacy",
+        "fits": false,
+        "text": [
+          121.671875,
+          203.59375
+        ],
+        "button": [
+          121.671875,
+          204.59375
+        ]
+      },
+      {
+        "name": "Economy",
+        "fits": false,
+        "text": [
+          204.59375,
+          268.3125
+        ],
+        "button": [
+          204.59375,
+          269.3125
+        ]
+      },
+      {
+        "name": "Kult",
+        "fits": true,
+        "text": [
+          281.03125,
+          317.4375
+        ],
+        "button": [
+          269.3125,
+          330.15625
+        ]
+      },
+      {
+        "name": "Report",
+        "fits": false,
+        "text": [
+          332.765625,
+          387.375
+        ],
+        "button": [
+          330.15625,
+          390
+        ]
+      }
+    ]
+  },
+  {
+    "engine": "webkit",
+    "mode": "desktop",
+    "drag_before": {
+      "x": 150,
+      "y": 250,
+      "zoom": 1
+    },
+    "drag_after": {
+      "x": 150,
+      "y": 250,
+      "zoom": 1
+    },
+    "native": null,
+    "nav": [
+      {
+        "name": "City",
+        "fits": true,
+        "text": [
+          88.046875,
+          124.45195007324219
+        ],
+        "button": [
+          0,
+          213.5
+        ]
+      },
+      {
+        "name": "War",
+        "fits": true,
+        "text": [
+          306.09375,
+          333.3975524902344
+        ],
+        "button": [
+          213.5,
+          427
+        ]
+      },
+      {
+        "name": "Diplomacy",
+        "fits": true,
+        "text": [
+          492.28125,
+          574.1926879882812
+        ],
+        "button": [
+          427,
+          640.5
+        ]
+      },
+      {
+        "name": "Economy",
+        "fits": true,
+        "text": [
+          714.890625,
+          778.5994873046875
+        ],
+        "button": [
+          640.5,
+          854
+        ]
+      },
+      {
+        "name": "Kult",
+        "fits": true,
+        "text": [
+          942.046875,
+          978.4519653320312
+        ],
+        "button": [
+          854,
+          1067.5
+        ]
+      },
+      {
+        "name": "Report",
+        "fits": true,
+        "text": [
+          1146.4375,
+          1201.045166015625
+        ],
+        "button": [
+          1067.5,
+          1280
+        ]
+      }
+    ]
+  },
+  {
+    "engine": "webkit",
+    "mode": "mobile",
+    "drag_before": {
+      "x": 150,
+      "y": 250,
+      "zoom": 1
+    },
+    "drag_after": {
+      "x": 150,
+      "y": 250,
+      "zoom": 1
+    },
+    "native": null,
+    "nav": [
+      {
+        "name": "City",
+        "fits": true,
+        "text": [
+          11.71875,
+          48.12382888793945
+        ],
+        "button": [
+          0,
+          60.84375
+        ]
+      },
+      {
+        "name": "War",
+        "fits": true,
+        "text": [
+          77.109375,
+          104.4131851196289
+        ],
+        "button": [
+          60.84375,
+          121.6875
+        ]
+      },
+      {
+        "name": "Diplomacy",
+        "fits": false,
+        "text": [
+          121.6875,
+          203.59893798828125
+        ],
+        "button": [
+          121.6875,
+          204.609375
+        ]
+      },
+      {
+        "name": "Economy",
+        "fits": false,
+        "text": [
+          204.609375,
+          268.3182678222656
+        ],
+        "button": [
+          204.609375,
+          269.328125
+        ]
+      },
+      {
+        "name": "Kult",
+        "fits": true,
+        "text": [
+          281.046875,
+          317.45196533203125
+        ],
+        "button": [
+          269.328125,
+          330.171875
+        ]
+      },
+      {
+        "name": "Report",
+        "fits": false,
+        "text": [
+          332.78125,
+          387.38885498046875
+        ],
+        "button": [
+          330.171875,
+          390.015625
+        ]
+      }
+    ]
+  }
+]

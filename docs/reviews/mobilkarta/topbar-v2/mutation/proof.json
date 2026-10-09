@@ -1,0 +1,6 @@
+{
+  "named_failure": "U topbar buttons are within viewport and reachable at 390",
+  "exit_code": 1,
+  "restored_byte_identically": true,
+  "css_sha256": "f2cf6ff42019dfd51c511e69169691fc2c3062d17a8eccfe45d1198ad09d1931"
+}

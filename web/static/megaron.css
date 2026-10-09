@@ -1106,6 +1106,7 @@ body:has(.auth-page) main {
 }
 .game-map:active { cursor: grabbing; }
 .game-map canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; }
+#hex-canvas { touch-action: none; }
 
 /* Map dim overlay (behind open drawer) */
 .map-dim {
@@ -1212,7 +1213,23 @@ body:has(.auth-page) main {
 }
 
 @media (max-width: 480px) {
-  .drawer { width: 100%; border-left: none; }
+  /* Reserve the three map tools before allocating identity/chips/calendar text.
+     Month text may elide; its full value and the exact date remain in Notifications. */
+  .gt-celestial { flex: 0 0 60%; min-width: 0; gap: 4px; padding: 0 4px; }
+  .gt-wanax { flex-shrink: 1; min-width: 0; max-width: 40%; padding: 0 0.4rem; overflow: hidden; }
+  .gt-netstatus { flex-shrink: 1; min-width: 0; max-width: 20%; padding: 0 0.4rem; overflow: hidden; }
+  .gt-dispatch-strip { padding: 0 3px; }
+  .cel-arc-wrap { width: 40px; height: 25px; flex-shrink: 1; min-width: 0; }
+  .cel-arc-wrap #cel-svg { width: 100%; height: 25px; }
+  .cel-info { flex: 1; min-width: 0; overflow: hidden; }
+  .cel-date { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  /* Keep full labels and the 13px text floor: six tabs need two rows here. */
+  .game-nav { height: 68px; flex-wrap: wrap; }
+  .game-nav .win-trigger { flex: 0 0 33.333333%; min-width: 0; }
+  /* Two rows of three: a rule between the rows, none at the row's right edge (Timothy 2026-10-09). */
+  .game-nav .win-trigger:nth-child(-n+3) { border-bottom: 1px solid var(--border); }
+  .game-nav .win-trigger:nth-child(3n) { border-right: none; }
+  .drawer { width: 100%; border-left: none; bottom: 68px; }
 }
 
 .drawer-header {
@@ -1915,7 +1932,7 @@ body:has(.auth-page) main {
 }
 .codex-panel.open { transform: translateX(0); box-shadow: 6px 0 30px rgba(0,0,0,0.6); }
 @media (max-width: 480px) {
-  .codex-panel { width: 100%; border-right: none; }
+  .codex-panel { width: 100%; border-right: none; bottom: 68px; }
 }
 .codex-header {
   display: flex;

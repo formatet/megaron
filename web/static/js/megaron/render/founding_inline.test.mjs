@@ -32,7 +32,7 @@ const {State}=await import('../state.js');
 const {initMap}=await import('./map.js');initMap();
 async function openHost(){
  State.WORLD_ID='world';State.tileData=[{q:0,r:0,terrain:'plains'}];State.provinceData=[];State.unitsData=[{type:'nomadic_host',q:0,r:0}];State.founderPhase=fp;State.camera={x:0,y:0,zoom:1};
- const canvas=element('hex-canvas');canvas.events.mousedown({clientX:0,clientY:0});canvas.events.mouseup({clientX:0,clientY:0});
+ const canvas=element('hex-canvas');canvas.events.pointerdown({pointerId:1,pointerType:'mouse',button:0,clientX:0,clientY:0});canvas.events.pointerup({pointerId:1,pointerType:'mouse',clientX:0,clientY:0});
  await new Promise(resolve=>setImmediate(resolve));
  element('ip-settle-err').replaceChildren();
 }

@@ -1,0 +1,26 @@
+[
+  {
+    "name": "touch-action",
+    "named_failure": "U native touch drag keeps page still and moves camera",
+    "exit_code": 1,
+    "before_sha256": "27ba818013331c479ced0dfa1941b151cafc7f75b273eb09e429729f07700780"
+  },
+  {
+    "name": "drag-click",
+    "named_failure": "not ok 6 - U motion cancels long press",
+    "exit_code": 1,
+    "before_sha256": "1b33b5884e3038f177dd28ad28298a12ab96440324a0725d158b9cfad46fc5ee"
+  },
+  {
+    "name": "long-click",
+    "named_failure": "not ok 5 - U long touch/pen opens orders",
+    "exit_code": 1,
+    "before_sha256": "1b33b5884e3038f177dd28ad28298a12ab96440324a0725d158b9cfad46fc5ee"
+  },
+  {
+    "name": "pinch-factor",
+    "named_failure": "not ok 7 - U pinch uses moving midpoint",
+    "exit_code": 1,
+    "before_sha256": "1b33b5884e3038f177dd28ad28298a12ab96440324a0725d158b9cfad46fc5ee"
+  }
+]
