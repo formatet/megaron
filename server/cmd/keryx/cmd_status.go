@@ -306,8 +306,7 @@ func surplusWithoutSinkWarning(label string, amount, rateVal, capacity float64, 
 	if gubbar == 1 {
 		who = "1 citizen"
 	}
-	return fmt.Sprintf("⚠ %-8s %6s  %s  — known sinks absorb at most %s within %d tick; %s produces with no receiver (`keryx place`)",
-		label, resource(amount), rate(rateVal), resource(capacity), productionHorizonTicks, who)
+	return fmt.Sprintf("⚠ %-8s %6s  %s  — known sinks absorb at most %s within %s; %s produces with no receiver (`keryx place`)", label, resource(amount), rate(rateVal), resource(capacity), formatDays(productionHorizonTicks, "%d"), who)
 }
 
 // capitalize upper-cases a good_key's first letter for display ("stone" →
@@ -400,7 +399,7 @@ func armyUpkeepWarning(netG, netS, grainStock, silverStock float64) string {
 		if stock > 0 {
 			ticks = stock / -net
 		}
-		note = fmt.Sprintf(" — stock %s lasts ~%.0f tick at this rate", resource(stock), ticks)
+		note = fmt.Sprintf(" — stock %s lasts ~%s at this rate", resource(stock), formatDays(ticks, "%.0f"))
 		return note, ticks < netUpkeepWarningRunwayTicks
 	}
 	gNote, gCritical := runway(netG, grainStock)
@@ -480,7 +479,7 @@ rate and cap live NESTED under settlement.resources, not at the settlement
 top level:
 
   settlement.resources.<good>.amount   current stock (e.g. .grain.amount, .silver.amount)
-  settlement.resources.<good>.rate     net per tick (production − consumption)
+  settlement.resources.<good>.rate     net per day (production − consumption)
   settlement.resources.<good>.cap      storage cap
 
 There is no top-level settlement.grain / settlement.silver / settlement.storage_cap
@@ -633,8 +632,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				// filling up fast. The net food rate is what tells them apart.
 				net, _ := sitos["food_net_per_tick"].(float64)
 				state := sitosGranaryState(cov, low, high, total, net)
-				fmt.Printf("Sitos granary: %s stored%s / cap %s · coverage %.1f tick (granary fills above %.0f, drains below %.0f) · %s\n\n",
-					resource(total), parts, resource(gcap), cov, high, low, state)
+				fmt.Printf("Sitos granary: %s stored%s / cap %s · coverage %s (granary fills above %.0f, drains below %.0f) · %s\n\n", resource(total), parts, resource(gcap), formatDays(cov, "%.1f"), high, low, state)
 			}
 
 			// "Last tick" summary: summarizes the journal (keryx ticklog)
@@ -673,8 +671,8 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 					}
 					sitosNote = detail
 				}
-				fmt.Printf("Last tick (%d): %d goods produced, %d consumed, %s  ·  keryx ticklog for details\n\n",
-					int(tk), prodN, consN, sitosNote)
+				fmt.Printf("Last %s: %d goods produced, %d consumed, %s  ·  keryx ticklog for details\n\n",
+					formatDay(int(tk)), prodN, consN, sitosNote)
 			}
 
 			// Resources: silver + the bronze-chain goods live in resources as
@@ -683,7 +681,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			// print when present so a colony's tin/copper output is visible here, not
 			// only via `goods`.
 			fmt.Println("Resources")
-			fmt.Println("  (rate = net: production − consumption, per tick)")
+			fmt.Println("  (rate = net: production − consumption, per day)")
 			if res, ok := sett["resources"].(map[string]any); ok {
 				printRes := func(label, key string, always bool) {
 					rd, ok := res[key].(map[string]any)
@@ -701,7 +699,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 							// balance a stock buffer absorbs, not an emergency (DEL C
 							// grain-netto-märkning: don't cry wolf).
 							if amt/-rt < 1 {
-								line += "  ⚠ runs out within one tick"
+								line += "  ⚠ runs out within one day"
 							}
 						}
 						fmt.Println(line)
@@ -726,7 +724,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						prodTick := gProdRate
 						consumTick := gConsumRate
 						netTick := prodTick - consumTick
-						line := fmt.Sprintf("  %-8s %6s  prod %.1f − consum %.1f = net %+.1f /tick",
+						line := fmt.Sprintf("  %-8s %6s  prod %.1f − consum %.1f = net %+.1f /day",
 							"Grain", resource(gAmt), prodTick, consumTick, netTick)
 						// food_gubbar_required/placed/self_sufficient (P4-arvet,
 						// megaron_plan_p4_arvet_i_province.md §2) replace the old
@@ -758,7 +756,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						silverStock, _ = rd["amount"].(float64)
 					}
 					warn := armyUpkeepWarning(netG, netS, grainStock, silverStock)
-					fmt.Printf("  %-8s %+.1f grain/tick, %+.1f silver/tick (after the army's upkeep)%s\n",
+					fmt.Printf("  %-8s %+.1f grain/day, %+.1f silver/day (after the army's upkeep)%s\n",
 						"Net", netG, netS, warn)
 				}
 
@@ -895,9 +893,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			// The DAILY MAINTENANCE net (temple gain − decay) is what actually moves
 			// kharis — the passive geographic rate alone hid a fading L1 Wanax behind
 			// "passiv +0.1/tick" (sondrunda 2026-07-24). Show the net when we have it.
-			netStr := fmt.Sprintf("passive %+.1f/tick", kpd)
+			netStr := fmt.Sprintf("passive %+.1f/day", kpd)
 			if netKnown {
-				netStr = fmt.Sprintf("net %+.1f/tick (temple − decay)", knet)
+				netStr = fmt.Sprintf("net %+.1f/day (temple − decay)", knet)
 			}
 			if kcap > 0 {
 				fmt.Printf("  %-8s %6s  (%s) · cap %.0f · %s\n", "Kharis", resource(kv), mood, kcap, netStr)
@@ -940,7 +938,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						mark = "✗"
 						anyUnfed = true
 					}
-					fmt.Printf("  Temple in %s: needs %.0f oil + %.0f wine/tick — stock: oil %s, wine %s  %s\n",
+					fmt.Printf("  Temple in %s: needs %.0f oil + %.0f wine/day — stock: oil %s, wine %s  %s\n",
 						name, oilNeeded, wineNeeded, resource(oil), resource(wine), mark)
 				}
 				if mood == "Suspicious" || mood == "Wrathful" || anyUnfed {
@@ -988,13 +986,13 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						// everything this city supports — so a Wanax with half the army
 						// in the field reads "100 spearmen, upkeep for 200" and thinks
 						// the number is broken.
-						fmt.Printf("  %-10s %.1f grain, %.1f silver / tick  (everything the city pays — including field units)\n", "Upkeep", g, s)
+						fmt.Printf("  %-10s %.1f grain, %.1f silver / day  (everything the city pays — including field units)\n", "Upkeep", g, s)
 						// Del C: soldiers standing in the town that pays them spend
 						// their sold there. Shown as its own line because it is the
 						// only reason the net below is not gross — an invisible flow
 						// is one the Wanax can neither plan for nor exploit.
 						if circ, ok := sett["army_upkeep_circulated_silver"].(float64); ok && circ > 0 {
-							fmt.Printf("  %-10s %.1f silver / tick back into the city (garrison's pay)\n", "", circ)
+							fmt.Printf("  %-10s %.1f silver / day back into the city (garrison's pay)\n", "", circ)
 						}
 					}
 				}
@@ -1079,7 +1077,7 @@ type loyaltyLogEntry struct {
 // and battle deltas (internal/combat/unit_arrival.go applyBattleLoyalty) — it
 // was just never surfaced to a Wanax. This legend names the actual levers so
 // `status` teaches the mechanic instead of just showing a stuck number.
-const loyaltyLegend = "  Raised by: kharis ≥ favor threshold, fed/varied diet (daily welfare tick), " +
+const loyaltyLegend = "  Raised by: kharis ≥ favor threshold, fed/varied diet (daily welfare), " +
 	"gifts ≥50 silver-equivalent (`keryx transfer`), won/defended battles.\n" +
 	"  Lowered by: starvation, too many colonies (overextension), neglect (>2 days without a gift), " +
 	"lost battles, a borrowed army kept too long."

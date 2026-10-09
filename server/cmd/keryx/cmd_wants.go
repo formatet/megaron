@@ -119,5 +119,5 @@ func rateStr(rate float64) string {
 	if rate < 0 {
 		arrow = "▼"
 	}
-	return fmt.Sprintf("%s %+.1f/tick", arrow, rate)
+	return fmt.Sprintf("%s %+.1f/day", arrow, rate)
 }

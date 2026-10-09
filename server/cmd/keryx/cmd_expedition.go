@@ -61,7 +61,7 @@ func expeditionTurnedText(b expeditionBody) string {
 	}
 	home := ""
 	if b.ArriveTick != nil {
-		home = fmt.Sprintf(" — home by tick %d", *b.ArriveTick)
+		home = fmt.Sprintf(" — home by %s", formatDay(*b.ArriveTick, "%d"))
 	}
 	return fmt.Sprintf("%s turns home from the land around (%d, %d): %s%s",
 		expeditionSubject(b), b.AreaQ, b.AreaR, why, home)
@@ -96,6 +96,5 @@ func expeditionReportText(b expeditionBody) string {
 	if len(parts) > 0 {
 		found = strings.Join(parts, "; ")
 	}
-	return fmt.Sprintf("%s is home after %d days, %d hexes out at the furthest — saw %d hexes around (%d, %d): %s",
-		expeditionSubject(b), b.TicksOut, b.Furthest, b.HexesSeen, b.AreaQ, b.AreaR, found)
+	return fmt.Sprintf("%s is home after %s, %d hexes out at the furthest — saw %d hexes around (%d, %d): %s", expeditionSubject(b), formatDays(b.TicksOut, "%d"), b.Furthest, b.HexesSeen, b.AreaQ, b.AreaR, found)
 }

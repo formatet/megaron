@@ -29,4 +29,4 @@ keryx password               # change your password
 keryx occupation order ...   # sack, burn or annex an occupied city
 ```
 
-Orders given through Keryx obey the same rules as in the browser: they travel by [[runners|Runner]] and take game-days ([[time]]).
+Orders given through Keryx obey the same rules as in the browser: they travel by [[runners|Runner]] and take days ([[time]]).

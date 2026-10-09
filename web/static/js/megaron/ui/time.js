@@ -11,6 +11,8 @@
 import { serverNow } from '../clock.js';
 import { State } from '../state.js';
 import { esc } from './format.js';
+import { fmtClock } from './fmt_clock.js';
+export { fmtClock } from './fmt_clock.js';
 
 // Milliseconds until an instant. Tick path: estimate the world's current tick
 // from the bootstrap anchor (State.CURRENT_TICK at State.TICK_ANCHOR_MS,
@@ -28,8 +30,7 @@ export function msUntil(iso, arrivalTick) {
   return new Date(iso).getTime() - serverNow();
 }
 
-// Short relative duration: "3h 18m" / "42m" / doneWord. The compact form for
-// tight cells and expiry countdowns (moved here from ui/format.js fmtEta).
+// Wall-clock estimate or doneWord, sharing the same date context as arrivals.
 // `doneWord` names what "the instant has passed" means to THIS caller — a
 // march or messenger has "arrived" (the default), but a finished build has
 // not; it is "ready". Pass it, don't reinterpret the string downstream.
@@ -37,38 +38,20 @@ export function fmtEta(iso, arrivalTick, doneWord = 'arrived') {
   const ms = msUntil(iso, arrivalTick);
   if (!Number.isFinite(ms)) return '';
   if (ms <= 0) return doneWord;
-  const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000);
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  return '≈ ' + fmtClock(Date.now() + ms);
 }
 
 // Local clock time with date context — never a bare "19:00" that lies across
 // midnight (Fas B rule 2). "today 21:14" / "tomorrow 08:12" / "Fri 21:14" /
 // "18 Jul 21:14". Formatting is the player's locale; the input is an epoch ms
 // in the player's frame.
-export function fmtClock(epochMs) {
-  const at = new Date(epochMs);
-  const hm = at.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const now = new Date();
-  const dayDiff = Math.round(
-    (new Date(at.getFullYear(), at.getMonth(), at.getDate())
-     - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000);
-  if (dayDiff === 0) return `today ${hm}`;
-  if (dayDiff === 1) return `tomorrow ${hm}`;
-  if (dayDiff > 1 && dayDiff < 7) {
-    return `${at.toLocaleDateString([], { weekday: 'short' })} ${hm}`;
-  }
-  return `${at.toLocaleDateString([], { day: 'numeric', month: 'short' })} ${hm}`;
-}
-
-// Arrival line: primary local clock, secondary relative — "today 21:14 · in
-// 3h 18m". The remaining duration is measured against server time, then
-// projected into the player's clock frame for display (Date.now() + ms), so a
-// skewed player clock still reads its own local time correctly.
+// Arrival clock/date. The remaining time still uses the authoritative tick
+// anchor, projected into the player's clock frame (Date.now() + ms).
 export function fmtArrival(iso, arrivalTick, doneWord = 'arrived') {
   const ms = msUntil(iso, arrivalTick);
   if (!Number.isFinite(ms)) return '';
   if (ms <= 0) return doneWord;
-  return `${fmtClock(Date.now() + ms)} · in ${fmtEta(iso, arrivalTick, doneWord)}`;
+  return '≈ ' + fmtClock(Date.now() + ms);
 }
 
 // fmtArrival wrapped in a span whose hover title spells out the full instant

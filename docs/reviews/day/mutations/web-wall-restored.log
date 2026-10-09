@@ -1,0 +1,22 @@
+TAP version 13
+# Subtest: Day guard web: player units and wall clock stay distinct
+ok 1 - Day guard web: player units and wall clock stay distinct
+  ---
+  duration_ms: 188.930374
+  type: 'test'
+  ...
+# Subtest: Day guard codex: player units and wall clock stay distinct
+ok 2 - Day guard codex: player units and wall clock stay distinct
+  ---
+  duration_ms: 47.009828
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 274.07809

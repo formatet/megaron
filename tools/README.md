@@ -385,3 +385,9 @@ varunyckeln inte kan valideras bara mot en stubb med samma felstavning.
 - `python3 tools/umami_verb_mutations.py`: tar bort en verklig katalograd, success-track och API-koppling var för sig; kräver namngivet rött och återställer byte för byte, sedan grön telemetrisvit. Kör i egen arbetskopia utan samtidiga ändringar i API/verb_telemetry.
 - `python3 tools/umami_verb_browser.py`: Firefox kör verkliga join-/inspect-kontroller med scriptade HTTP-svar. Verifierar headers/payload, utkast/feltext/redirect och exakt ett godkänt/refused-event; inga spel-DB-skrivningar eller externa analytics-anrop.
 - `python3 tools/umami_verb_proof.py --send --output OUT`: skickar ett `{test:1}`-event per nytt namn via vanlig Firefox-UA och bekräftar mottagning med SELECT i Umami CT105. `--send` kräver uttryckligt tillstånd för testevent; utan flaggan inventeras bara. Ingen direkt DB-skrivning eller radering. Bevishem: `docs/reviews/umami-verb/README.md`.
+
+### Day language and BILD proof
+
+`tools/day_guard.py web|keryx|codex|server` checks player time vocabulary against exact, counted infrastructure exceptions. Suite entry points are `ui/day_guard.test.mjs`, `cmd/keryx/day_guard_test.go` and `internal/tick/day_guard_test.go`.
+
+`python3 tools/day_mutations.py` physically changes production literals, requires named red tests, restores byte-identical source and requires green. `python3 tools/day_browser.py` exercises real Economy/War/Host/notification controllers and CSS with explicitly scripted HTTP, human fixture names, Firefox first then Chromium/WebKit desktop/390. It produces both calendar ordinal alternatives; it neither chooses one nor claims live game acceptance. Proof and investigation-row outcomes: `docs/reviews/day/README.md`.

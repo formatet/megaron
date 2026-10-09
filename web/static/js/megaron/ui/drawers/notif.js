@@ -19,7 +19,7 @@ const NOISY_NOTIF_KINDS = ['SitosIntervention', 'SitosFundLow'];
 // reading lives, off the same tick-anchor math (currentCalendarDate). The
 // month carries its 1..12 ordinal (monthLabel) so a Wanax can count days
 // between two notifications without a name-only calendar lookup.
-export function notifDateHeader(cal = currentCalendarDate(), state = State) {
+export function notifDateHeader(cal = currentCalendarDate(), state = State, showMonthNumber = true) {
   if (!cal) return '';
   // A world whose clock has not started yet. Without this the world simply
   // looks frozen, which reads as a broken game rather than as a lobby.
@@ -29,7 +29,8 @@ export function notifDateHeader(cal = currentCalendarDate(), state = State) {
     waiting = `<div class="notif-world-waiting">⏳ The world has not begun — waiting for ${fmtNum(need)} more ${need === 1 ? 'Wanax' : 'Wanaxes'}.` +
       ` Time stands still until then; you may look around, but orders can be given only once it starts.</div>`;
   }
-  return `<div class="notif-date-header">Day ${fmtNum(cal.day)} of ${monthLabel(cal).replace(/\((\d+)\)/, (_, value) => `(${fmtNum(Number(value))})`)}, Year ${fmtNum(cal.year)}${waiting}</div>`;
+  const month = showMonthNumber ? monthLabel(cal) : monthLabel(cal).replace(/\s*\(\d+\)/, '');
+  return `<div class="notif-date-header">Day ${fmtNum(cal.day)} of ${month.replace(/\((\d+)\)/, (_, value) => `(${fmtNum(Number(value))})`)}, Year ${fmtNum(cal.year)}${waiting}</div>`;
 }
 
 

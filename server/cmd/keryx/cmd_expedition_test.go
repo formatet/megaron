@@ -7,7 +7,7 @@ import "testing"
 func TestExpeditionTexts(t *testing.T) {
 	tick := 11
 	if got, want := expeditionTurnedText(expeditionBody{Name: "Spearmen I", AreaQ: 9, Reason: "half_time", ArriveTick: &tick}),
-		"Spearmen I turns home from the land around (9, 0): half its time is spent — home by tick 11"; got != want {
+		"Spearmen I turns home from the land around (9, 0): half its time is spent — home by day 11"; got != want {
 		t.Errorf("turned:\n got %q\nwant %q", got, want)
 	}
 	got := expeditionReportText(expeditionBody{

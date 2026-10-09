@@ -8,7 +8,9 @@ export function fmtNum(value) {
   return (Object.is(rounded, -0) ? 0 : rounded).toLocaleString('en-US', { maximumFractionDigits: 1 });
 }
 
-// "1 game day" / "5 game days".
-export function fmtDays(value) {
-  return fmtNum(value) + (Number(value) === 1 ? ' game day' : ' game days');
+// All world durations and absolute days share these formatters.
+export function fmtDays(value, qualifier = '') {
+  const number = fmtNum(value);
+  return number + ' ' + (qualifier ? qualifier + ' ' : '') + (Number(number.replaceAll(',', '')) === 1 ? 'day' : 'days');
 }
+export function fmtDay(value) { return 'day ' + fmtNum(value); }

@@ -1207,7 +1207,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 	dist := journey.Distance
 	var tradeAcceptCurrentTick int
 	if err := tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&tradeAcceptCurrentTick); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not read current tick")
+		writeError(w, http.StatusInternalServerError, "could not read current day")
 		return
 	}
 	tradeAcceptDueTick := tradeAcceptCurrentTick + journey.TravelTicks

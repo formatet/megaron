@@ -63,7 +63,7 @@ func TestMarchPreviewNeverDispatches(t *testing.T) {
 							t.Fatalf("wrong forecast: %s", out)
 						}
 					} else {
-						want := map[string]string{"": "game day 42 (journey: 3 game days)", "courier_required": "Runner must deliver", "unknown_terrain": "unknown terrain"}[reason]
+						want := map[string]string{"": "day 42 (journey: 3 days)", "courier_required": "Runner must deliver", "unknown_terrain": "unknown terrain"}[reason]
 						if !strings.Contains(out, want) || !strings.Contains(out, "No order sent") {
 							t.Fatalf("wrong forecast %q", out)
 						}

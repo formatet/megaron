@@ -127,3 +127,10 @@ test('codex search finds abandon in Colonies and call-back in Sea', () => {
   assert.ok(searchArticles('abandon', index, bodies).some(a => a.id === 'colonies'), 'abandon must lead to the colony instructions');
   assert.ok(searchArticles('call-back', index, bodies).some(a => a.id === 'sea'), 'CLI call-back must lead to the passage instructions');
 });
+
+test('codex: days name the world unit and clock/date names wall time', () => {
+  assert.match(bodies.time, /## Days and the clock/);
+  assert.match(bodies.time, /one \*\*day\*\* at a time/);
+  assert.doesNotMatch(bodies.time + bodies.welcome + bodies['coming-back'], /game[ -]day|\bticks?\b|nine hours/i);
+  assert.match(bodies['coming-back'], /While you were away, the world kept moving/);
+});

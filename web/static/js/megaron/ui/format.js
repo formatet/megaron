@@ -3,7 +3,8 @@
 // directly regardless of layer (config/state ← api/ws ← render ← ui ← main).
 // (clock.js sits on the same low layer, so importing it keeps that promise.)
 import { giftText } from './gifts.js';
-import { fmtNum } from './fmt_num.js';
+import { fmtNum, fmtDays, fmtDay } from './fmt_num.js';
+import { fmtClock } from './fmt_clock.js';
 import { serverNow } from '../clock.js';
 export function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
@@ -74,11 +75,9 @@ export function fmtSilver(amount) {
 // (relative, local-clock, tick-aware) lives there now.
 
 export function fmtAgo(iso) {
-  const ms = serverNow() - new Date(iso).getTime();
-  if (ms < 60000)   return 'just now';
-  if (ms < 3600000) return Math.floor(ms / 60000) + 'm ago';
-  if (ms < 86400000) return Math.floor(ms / 3600000) + 'h ago';
-  return Math.floor(ms / 86400000) + 'd ago';
+  const at = new Date(iso).getTime();
+  if (!Number.isFinite(at)) return '';
+  return fmtClock(at);
 }
 
 // formatApiError turns a failed fetchAuth response body into player-readable
@@ -104,19 +103,12 @@ export function formatApiError(data, fallback) {
   return (data && data.error) || fallback;
 }
 
-// fmtSoon: local, minimal future-relative helper for notifText's OfferAccepted
-// ETA tail. Deliberately NOT delegated to ui/time.js's fmtEta — that module
-// imports esc/fmtAgo FROM this file, so importing it back here would be a
-// cycle. Same rough bucketing as fmtAgo above, just future-facing. Guards
-// missing/invalid timestamps by returning '' so callers can omit the tail.
+// Notification wall-clock estimates share the same clock/date formatter as ETAs.
 function fmtSoon(iso) {
   const t = iso ? new Date(iso).getTime() : NaN;
-  if (Number.isNaN(t)) return '';
+  if (!Number.isFinite(t)) return '';
   const ms = t - serverNow();
-  if (ms <= 0)        return 'any moment now';
-  if (ms < 3600000)   return 'in ~' + Math.max(1, Math.round(ms / 60000)) + ' min';
-  if (ms < 86400000)  return 'in ~' + (ms / 3600000).toFixed(1) + ' h';
-  return 'in ~' + (ms / 86400000).toFixed(1) + ' d';
+  return ms <= 0 ? 'any moment now' : '≈ ' + fmtClock(Date.now() + ms);
 }
 
 // notifDomain maps a notification kind to the colour family a dispatch chip
@@ -245,7 +237,7 @@ export function expeditionReportText(body) {
   const parts = Object.entries(byKind).map(([k, at]) => `${k} at ${at.join(', ')}`);
   if (cities.length) parts.push(`cities: ${cities.join(', ')}`);
   const found = parts.length ? parts.join('; ') : 'nothing of value';
-  return `${subject} is home after ${body.ticks_out ?? '?'} days, ${body.furthest ?? '?'} hexes out at the furthest — ` +
+  return `${subject} is home after ${fmtDays(body.ticks_out ?? '?')}, ${body.furthest ?? '?'} hexes out at the furthest — ` +
          `saw ${body.hexes_seen ?? 0} hexes around (${body.area_q}, ${body.area_r}): ${found}`;
 }
 
@@ -375,7 +367,7 @@ export function notifText(kind, body) {
           landed = true;
         }
       }
-      const home = Number.isInteger(body.home_tick) ? `Home on day ${body.home_tick}.` : 'Home on an unknown day.';
+      const home = Number.isInteger(body.home_tick) ? `Home on ${fmtDay(body.home_tick)}.` : 'Home on an unknown day.';
       return home + ' ' + (account || 'Your runner brings an account of its rescue at sea') + '.';
     }
     case 'MessengerReturned': {
@@ -435,7 +427,7 @@ export function notifText(kind, body) {
       const owner = body.owner ? `${body.owner}'s` : 'An unknown';
       const force = body.unit_type || 'force';
       const size = body.size ? ` (${body.size})` : '';
-      const lands = body.arrive_tick ? ` — lands tick ${body.arrive_tick}` : '';
+      const lands = body.arrive_tick ? ` — lands ${fmtDay(body.arrive_tick)}` : '';
       // The threatened city is the urgent end of the irreversibility gradient
       // and must not read like a march merely passing through.
       if (body.threatens_name) {
@@ -452,7 +444,7 @@ export function notifText(kind, body) {
       const size = body.size ? ` (${body.size})` : '';
       const heading = body.heading ? `, heading ${body.heading}` : '';
       if (body.threatens_name) {
-        const when = body.eta_if_tick != null ? ` — there by tick ${body.eta_if_tick} if that is its goal` : '';
+        const when = body.eta_if_tick != null ? ` — there by ${fmtDay(body.eta_if_tick)} if that is its goal` : '';
         return `${owner} ${force}${size} is heading for ${body.threatens_name}'s lands${when}`;
       }
       return `${owner} ${force}${size} sighted at (${body.q},${body.r})${heading}`;
@@ -467,10 +459,10 @@ export function notifText(kind, body) {
       const netPerTick = body.net_per_tick ?? body.net_per_day;
       const ticksLeft = body.ticks_left ?? body.days_left;
       if (body.tier === 'critical') {
-        return `${name} is STARVING — ${body.pop_loss || 0} citizens lost. Grain ${(netPerTick || 0).toFixed(0)}/tick.`;
+        return `${name} is STARVING — ${body.pop_loss || 0} citizens lost. Grain ${(netPerTick || 0).toFixed(0)}/day.`;
       }
-      const ticks = ticksLeft ? ` — grain lasts ~${Math.round(ticksLeft)} ticks` : '';
-      return `${name}: grain net ${(netPerTick || 0).toFixed(0)}/tick${ticks}`;
+      const ticks = ticksLeft ? ` — grain lasts ~${fmtDays(Math.round(ticksLeft))}` : '';
+      return `${name}: grain net ${(netPerTick || 0).toFixed(0)}/day${ticks}`;
     }
     case 'OfferAccepted': {
       // Payload per TradeAccept (messenger.go): good_key/quantity/silver are
@@ -578,14 +570,14 @@ export function notifText(kind, body) {
       const ticks = body.occupation_ticks_to_annex;
       if (body.role === 'attacker') {
         return `${body.name || 'The city'} has fallen — your army holds it under occupation. ` +
-               `Doing nothing leaves it occupied; annex becomes possible after ${ticks ?? '?'} unchallenged ticks.`;
+               `Doing nothing leaves it occupied; annex becomes possible after ${fmtDays(ticks ?? '?', 'unchallenged')}.`;
       }
       return `${body.name || 'Your city'} has fallen under occupation — not lost yet. ` +
-             `A relief force within ${ticks ?? '?'} ticks resets the enemy's countdown.`;
+             `A relief force within ${fmtDays(ticks ?? '?')} resets the enemy's countdown.`;
     }
     case 'OccupationDefended':
       return `The occupation of ${body.name || 'the city'} held off an attack — the annex countdown reset ` +
-             `(${body.occupation_ticks_to_annex ?? '?'} ticks needed again).`;
+             `(${fmtDays(body.occupation_ticks_to_annex ?? '?')} needed again).`;
     case 'CityAnnexReady':
       return `${body.name || 'The city'} has stood unchallenged long enough — you may annex it now.`;
     case 'SettlementLooted': {
@@ -700,7 +692,7 @@ export function notifText(kind, body) {
         no_path: 'the rest of it cannot be reached',
       }[body.reason] || 'its search is over';
       const subject = body.name || 'The expedition';
-      const home = body.arrive_tick != null ? ` — home by tick ${body.arrive_tick}` : '';
+      const home = body.arrive_tick != null ? ` — home by ${fmtDay(body.arrive_tick)}` : '';
       return `${subject} turns home from the land around (${body.area_q}, ${body.area_r}): ${why}${home}`;
     }
     case 'ExpeditionReport': return expeditionReportText(body);
@@ -764,7 +756,7 @@ export function notifText(kind, body) {
     case 'SitosFundLow': return 'The city’s food reserve needs attention';
     case 'SitosGranaryRelease': {
       const empty = body.granary_empty ? ' — granary now empty' : '';
-      return `Granary released ${Math.round(body.food_released || 0)} grain (${body.coverage_days || 0} days' coverage)${empty}`;
+      return `Granary released ${Math.round(body.food_released || 0)} grain (${fmtDays(body.coverage_days || 0)} of coverage)${empty}`;
     }
     case 'TransferDelivered': {
       const goods = (body.goods || [])
@@ -871,10 +863,10 @@ export function colonyFoundedGrainLine(body) {
   const perTick = body.grain_net_per_tick;
   const ticksLeft = body.grain_ticks ?? body.grain_days;
   if (perTick < 0) {
-    const ticks = ticksLeft != null ? ` — grain lasts ~${Math.round(ticksLeft)} ticks` : '';
-    return `${name} does not feed itself (~${Math.round(-perTick)} grain/tick deficit)${ticks}. Build a farm if the land bears it, or send grain by internal transfer.`;
+    const ticks = ticksLeft != null ? ` — grain lasts ~${fmtDays(Math.round(ticksLeft))}` : '';
+    return `${name} does not feed itself (~${Math.round(-perTick)} grain/day deficit)${ticks}. Build a farm if the land bears it, or send grain by internal transfer.`;
   }
-  return `${name} feeds itself (~+${Math.round(perTick)} grain/tick).`;
+  return `${name} feeds itself (~+${Math.round(perTick)} grain/day).`;
 }
 
 // The loss dispatch owns a frozen sealed envelope; never fetch the mutable
@@ -882,7 +874,7 @@ export function colonyFoundedGrainLine(body) {
 export function messengerEnvelopeText(body) {
   const e = body.envelope || {};
   const { from, to } = messengerEnvelopeParties(e);
-  const sent = Number.isInteger(e.sent_tick) ? `Sent on day ${e.sent_tick}` : 'Sent on an unknown day';
+  const sent = Number.isInteger(e.sent_tick) ? `Sent on ${fmtDay(e.sent_tick)}` : 'Sent on an unknown day';
   const lines = [sent, `From ${from} to ${to}`];
   if (e.message_text != null) lines.push(`Letter:\n${e.message_text}`);
   if (e.reply_text != null) lines.push(`Reply:\n${e.reply_text}`);

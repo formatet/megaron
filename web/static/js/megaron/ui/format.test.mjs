@@ -212,7 +212,7 @@ test('A7: the sixteen previously-uncased kinds get real text, not the default ar
   );
   assert.equal(
     notifText('SitosGranaryRelease', { food_released: 450, coverage_days: 3, granary_empty: true }),
-    "Granary released 450 grain (3 days' coverage) — granary now empty",
+    "Granary released 450 grain (3 days of coverage) — granary now empty",
   );
   assert.equal(
     notifText('TransferDelivered', { dest_name: 'PolisCm4', goods: [{ good_key: 'grain', quantity: 200 }] }),
@@ -481,7 +481,7 @@ test('ForeignMarchSightedV2 says which way — never where — and an arrival on
   assert.equal(
     notifText('ForeignMarchSightedV2', { owner: 'Minos', unit_type: 'spearman', size: 100, q: 15, r: 0, heading: 'south-east',
       threatens_name: 'Mycenae', eta_if_tick: 3017 }),
-    "Minos's spearman (100) is heading for Mycenae's lands — there by tick 3017 if that is its goal",
+    "Minos's spearman (100) is heading for Mycenae's lands — there by day 3,017 if that is its goal",
   );
 });
 
@@ -623,7 +623,7 @@ test('agora_ready directs to Account and ignores unexpected secret fields', () =
 // rather than going blank.
 test('notifText: ExpeditionTurnedHome says why it turned', () => {
   const t = notifText('ExpeditionTurnedHome', { name: 'Spearmen I', area_q: 9, area_r: 0, reason: 'half_time', arrive_tick: 11 });
-  assert.equal(t, 'Spearmen I turns home from the land around (9, 0): half its time is spent — home by tick 11');
+  assert.equal(t, 'Spearmen I turns home from the land around (9, 0): half its time is spent — home by day 11');
 });
 
 test('notifText: ExpeditionReport groups finds and names cities', () => {

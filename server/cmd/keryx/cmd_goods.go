@@ -290,7 +290,7 @@ func cargoCmd() *cobra.Command {
 				dr, _ := m["dest_r"].(float64)
 				etaStr := "—"
 				if arrivalTick, ok := m["arrival_tick"].(float64); ok {
-					etaStr = fmt.Sprintf("tick %.0f", arrivalTick)
+					etaStr = fmt.Sprintf("%s", formatDay(arrivalTick, "%.0f"))
 				} else if arrivesStr, ok := m["arrives_at"].(string); ok {
 					if t, err := time.Parse(time.RFC3339, arrivesStr); err == nil {
 						etaStr = gameETA(c, t)

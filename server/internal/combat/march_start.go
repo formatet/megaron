@@ -737,7 +737,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	now := clk.Now()
 	var currentTick int
 	if err := pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick); err != nil {
-		slog.Error("march route: could not read current tick", "unit", o.UnitID, "err", err)
+		slog.Error("march route: could not read current day", "unit", o.UnitID, "err", err)
 		return nil, reject(http.StatusInternalServerError, "pathfinding error")
 	}
 	travelTicks := max(1, int(math.Round(moveTicks)))
@@ -745,9 +745,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		expeditionPlan.TurnTick = ExpeditionTurnTick(currentTick, expeditionPlan.LengthTicks)
 		expeditionPlan.HomeByTick = currentTick + expeditionPlan.LengthTicks
 		if currentTick+travelTicks > expeditionPlan.TurnTick {
-			return nil, reject(http.StatusUnprocessableEntity,
-				"the nearest unseen ground around (%d,%d) is %d ticks away — more than half of the %d ticks you gave, so it could not get back in time; give it at least %d ticks",
-				expeditionPlan.AreaQ, expeditionPlan.AreaR, travelTicks, expeditionPlan.LengthTicks, 2*travelTicks)
+			return nil, reject(http.StatusUnprocessableEntity, "the nearest unseen ground around (%d,%d) is %s away — more than half of the %s you gave, so it could not get back in time; give it at least %s", expeditionPlan.AreaQ, expeditionPlan.AreaR, tick.FormatDays(travelTicks), tick.FormatDays(expeditionPlan.LengthTicks), tick.FormatDays(2*travelTicks))
 		}
 		// Entered-terrain costs and tick rounding are asymmetric: reserve the
 		// actual route home, rather than assuming it costs the outbound leg.
@@ -760,7 +758,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		}
 		returnTicks := legTravelTicks(u.Type, u.Crew, u.CargoUnitID != nil, home.cost)
 		if travelTicks+returnTicks > expeditionPlan.LengthTicks {
-			return nil, reject(http.StatusUnprocessableEntity, "the expedition needs at least %d ticks for its outward and return routes", travelTicks+returnTicks)
+			return nil, reject(http.StatusUnprocessableEntity, "the expedition needs at least %s for its outward and return routes", tick.FormatDays(travelTicks+returnTicks))
 		}
 		exploreHomeID = &home.id
 	}
@@ -934,10 +932,8 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			if have < provisions {
 				// Båda talen med flit: en ärlig brist säger hur stor den är, så
 				// spelaren vet om hon ska vänta en dag eller bygga en åker.
-				return nil, reject(http.StatusUnprocessableEntity,
-					"not enough grain to provision the voyage — the home port holds %.0f, "+
-						"the voyage needs %.0f (%.1f/day for %d days out, on station and home again)",
-					have, provisions, ration, 2*travelTicks+stationTicks)
+				return nil, reject(http.StatusUnprocessableEntity, "not enough grain to provision the voyage — the home port holds %.0f, "+
+					"the voyage needs %.0f (%.1f/day for %s out, on station and home again)", have, provisions, ration, tick.FormatDays(2*travelTicks+stationTicks))
 			}
 			if _, err := tx.Exec(ctx,
 				`UPDATE settlement_goods

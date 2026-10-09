@@ -571,7 +571,7 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 	}
 	var giftCurrentTick int
 	if err := tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&giftCurrentTick); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not read current tick")
+		writeError(w, http.StatusInternalServerError, "could not read current day")
 		return
 	}
 	giftDueTick := giftCurrentTick + journey.TravelTicks
@@ -1030,7 +1030,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		).Scan(&queued)
 		if queued {
 			writeError(w, http.StatusBadRequest,
-				"temple is still finishing here — it becomes usable within a tick of completion; retry shortly")
+				"temple is still finishing here — it becomes usable within a day of completion; retry shortly")
 		} else {
 			writeError(w, http.StatusBadRequest,
 				"temple required — build a temple here first (rites are performed at a temple)")
@@ -1086,7 +1086,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 					// counts in. Same class as cli-sanning row K's ETA fix, one
 					// surface that round missed.
 					fmt.Sprintf("prayer %q is on cooldown for another %s",
-						prayerID, tick.FormatGameDays(tick.GameDaysLeft(remaining))))
+						prayerID, tick.FormatDays(tick.GameDaysLeft(remaining))))
 				return
 			}
 		}

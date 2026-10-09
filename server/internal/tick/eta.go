@@ -52,15 +52,17 @@ func GameDaysLeft(d time.Duration) int {
 	return days
 }
 
-// FormatGameDays renders a whole game-day count with the right number.
+// FormatDays renders a world duration; day is the player-facing unit.
 // Singular matters: keryx shipped "arrives in 1 game-days" until it was caught
 // (rad K, cli-sanning), and a plural on 1 reads as a bug to the player.
-func FormatGameDays(days int) string {
+func FormatDays(days int) string {
 	if days == 1 {
-		return "1 game-day"
+		return "1 day"
 	}
-	return strconv.Itoa(days) + " game-days"
+	return strconv.Itoa(days) + " days"
 }
+
+func FormatDay(day int) string { return "day " + strconv.Itoa(day) }
 
 // EtaAt returns the wall-clock instant dueTick is expected to fire, given the
 // world's currentTick and clk as the time source. This is the ETA-display

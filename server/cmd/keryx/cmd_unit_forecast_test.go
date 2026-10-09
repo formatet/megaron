@@ -53,12 +53,12 @@ func TestRenderCatchmentForecast_ThreeStates(t *testing.T) {
 		wantWord   string
 		forbidWord string
 	}{
-		// −5/tick: starving outright, well below zero.
+		// −5/day: starving outright, well below zero.
 		{name: "starving", cons: 20, net: -5, wantWord: "starves"},
-		// +0.4/tick with consumption 10 → marginal ceiling is 1.0, so 0.4 is
+		// +0.4/day with consumption 10 → marginal ceiling is 1.0, so 0.4 is
 		// "on the margin", one missed hex from starving — NOT self-sufficient.
 		{name: "marginal", cons: 10, net: 0.4, wantWord: "marginal"},
-		// +900/tick with consumption 50 → marginal ceiling is 5.0, so 900 is
+		// +900/day with consumption 50 → marginal ceiling is 5.0, so 900 is
 		// unambiguously self-sufficient.
 		{name: "self-sufficient", cons: 50, net: 900, wantWord: "self-sufficient"},
 	}
@@ -71,7 +71,7 @@ func TestRenderCatchmentForecast_ThreeStates(t *testing.T) {
 			if !strings.Contains(out, c.wantWord) {
 				t.Errorf("net=%.1f cons=%.1f: output missing %q\noutput:\n%s", c.net, c.cons, c.wantWord, out)
 			}
-			if strings.Contains(out, "+0/tick") || strings.Contains(out, "-0/tick") {
+			if strings.Contains(out, "+0/day") || strings.Contains(out, "-0/day") {
 				t.Errorf("net=%.1f: output prints the misleading +0/-0 rounding\noutput:\n%s", c.net, out)
 			}
 		})

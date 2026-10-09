@@ -26,7 +26,7 @@ export function kharisNetView(pd) {
   if (pd.kharis_net_known === true) {
     const v = pd.kharis_net_per_tick || 0;
     out.netHtml = '<div class="stat-row"><span class="sr-label">Net</span><span class="sr-val">' +
-      (v >= 0 ? '+' : '') + v.toFixed(1) + ' kharis/tick</span></div>';
+      (v >= 0 ? '+' : '') + v.toFixed(1) + ' kharis/day</span></div>';
   }
 
   if (pd.kharis_devotion_idle === true) {

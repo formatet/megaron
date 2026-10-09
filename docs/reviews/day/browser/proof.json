@@ -1,0 +1,1082 @@
+[
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "surface": "economy",
+    "text": "ECONOMY\n?\n\u2715\nGOODS\nTRANSFER\nAUTOMATION\nWANTS\nSETTLEMENTS\nSettlement\tPop\tGrain\tFood lasts\tStatus \u25b2\nTiryns\t800\t-40 each day\t1 day\tstarving\nMycenae \u2605\t1,000\t+40 each day\t40 days\tsurplus\nMYCENAE \u2605\nSILVER\n1,200\n+4 each day\nGood\tAmount\tRate\nGrain\t4,000\t+40 each day\nBronze\t100\t+1 each day\nTIRYNS\nSILVER\n1,200\n+4 each day\nGood\tAmount\tRate\nGrain\t4,000\t+40 each day\nBronze\t100\t+1 each day",
+    "bounds": {
+      "x": 860,
+      "y": 34,
+      "width": 420,
+      "height": 832
+    }
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "surface": "war",
+    "text": "WAR\n?\n\u2715\nARMY\nRECRUIT\nMOVEMENTS\nWHEN TO RETREAT\nSave\n\nYour whole realm: every unit carries this into a battle it enters. A change applies to battles entered from now on \u2014 a battle under way keeps what it had; change a fighting unit from its card below.\n\nRECALL ALL\nUNITS\nBronze Guard, Spearmen\nsentry\nin the field\n(2,0)\nExpedition around (3,1), 12 days; turns home by day 71; home by day 77.\nSet\nSacred Dolphin, Galley\nfood for 1 day\noff the coast\nwaiting off (2,1) for Bronze Guard until day 68",
+    "bounds": {
+      "x": 860,
+      "y": 34,
+      "width": 420,
+      "height": 832
+    }
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "surface": "notifications",
+    "text": "NOTIFICATIONS\nARCHIVE\n?\n\u2715\nDAY 6 OF THE OLIVE (3), YEAR 1\n\ud83d\udee1\nNestor's spearman (100) is heading for Tiryns's lands \u2014 there by day 68 if that is its goal\ntoday 07:00\n\ud83c\udf3e\nTiryns: grain net -40/day \u2014 grain lasts ~1 day\ntoday 07:00\n\u25c9\nTiryns has fallen \u2014 your army holds it under occupation. Doing nothing leaves it occupied; annex becomes possible after 3 unchallenged days.\ntoday 07:00\n\ud83d\udd2d\nBronze Guard turns home from the land around (3, 1): half its time is spent \u2014 home by day 68\ntoday 07:00",
+    "bounds": {
+      "x": 860,
+      "y": 34,
+      "width": 420,
+      "height": 832
+    }
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "surface": "calendar-with",
+    "text": "NOTIFICATIONS\nARCHIVE\n?\n\u2715\nDAY 1 OF PITHOI (1), YEAR 1\n\ud83d\udee1\nNestor's spearman (100) is heading for Tiryns's lands \u2014 there by day 68 if that is its goal\ntoday 07:00\n\ud83c\udf3e\nTiryns: grain net -40/day \u2014 grain lasts ~1 day\ntoday 07:00\n\u25c9\nTiryns has fallen \u2014 your army holds it under occupation. Doing nothing leaves it occupied; annex becomes possible after 3 unchallenged days.\ntoday 07:00\n\ud83d\udd2d\nBronze Guard turns home from the land around (3, 1): half its time is spent \u2014 home by day 68\ntoday 07:00",
+    "bounds": {
+      "x": 860,
+      "y": 34,
+      "width": 420,
+      "height": 832
+    }
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "surface": "calendar-without",
+    "text": "NOTIFICATIONS\nARCHIVE\n?\n\u2715\nDAY 1 OF PITHOI, YEAR 1\n\ud83d\udee1\nNestor's spearman (100) is heading for Tiryns's lands \u2014 there by day 68 if that is its goal\ntoday 07:00\n\ud83c\udf3e\nTiryns: grain net -40/day \u2014 grain lasts ~1 day\ntoday 07:00\n\u25c9\nTiryns has fallen \u2014 your army holds it under occupation. Doing nothing leaves it occupied; annex becomes possible after 3 unchallenged days.\ntoday 07:00\n\ud83d\udd2d\nBronze Guard turns home from the land around (3, 1): half its time is spent \u2014 home by day 68\ntoday 07:00",
+    "bounds": {
+      "x": 860,
+      "y": 34,
+      "width": 420,
+      "height": 832
+    }
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "surface": "host",
+    "text": "Nomadic Host\n\u2715\nTERRAIN\nPlains\nFEEDS ITSELF:\nyes\nTIMBER:\nyes\nSTONE:\nyes\nDETAILS\nDeposits: \u2014\nProduces: grain, horses, wine\n1,000 people \u00b7 cannot fight \u00b7 sight 2 hexes (4 by water or on mountains)\nFood lasts 1 day\nEscort pay lasts 3 days\n2 Spearmen cohorts in the field\nMessengers free to send\nCatchment forecast \u2014 19 of 19 hexes known\nGrain: produces about 120 and eats about 100 each day = net 20 per day\nSeed 100 grain \u2014 the colony feeds itself.\nAlso: stone about 4 per day, timber about 20 per day\nPlains (center)\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\n\u2692 Found the metropolis here",
+    "bounds": {
+      "x": 1060,
+      "y": 44,
+      "width": 220,
+      "height": 822
+    }
+  },
+  {
+    "engine": "firefox",
+    "viewport": "desktop",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "map"
+      },
+      {
+        "method": "GET",
+        "path": "provinces"
+      },
+      {
+        "method": "GET",
+        "path": "marches"
+      },
+      {
+        "method": "GET",
+        "path": "messengers"
+      },
+      {
+        "method": "GET",
+        "path": "trades"
+      },
+      {
+        "method": "GET",
+        "path": "units"
+      },
+      {
+        "method": "GET",
+        "path": "rural-projections"
+      },
+      {
+        "method": "GET",
+        "path": "foreign-units"
+      },
+      {
+        "method": "GET",
+        "path": "settlements/placement-roster"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222/goods"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/33333333-3333-3333-3333-333333333333/goods"
+      },
+      {
+        "method": "GET",
+        "path": "settlements/overview"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222/actions"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222"
+      },
+      {
+        "method": "GET",
+        "path": "units"
+      },
+      {
+        "method": "GET",
+        "path": "units"
+      },
+      {
+        "method": "GET",
+        "path": "retreat-default"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222/actions"
+      },
+      {
+        "method": "GET",
+        "path": "notifications?exclude=SitosIntervention%2CSitosFundLow"
+      },
+      {
+        "method": "GET",
+        "path": "gossip"
+      },
+      {
+        "method": "POST",
+        "path": "notifications/read-all"
+      },
+      {
+        "method": "GET",
+        "path": "notifications?kind=SitosIntervention"
+      },
+      {
+        "method": "GET",
+        "path": "notifications?kind=SitosFundLow"
+      },
+      {
+        "method": "GET",
+        "path": "founding/status"
+      },
+      {
+        "method": "GET",
+        "path": "colonize-preview?q=0&r=0&pop=1000&seed=100&starter_farm=1"
+      }
+    ],
+    "errors": [],
+    "unexpected": []
+  },
+  {
+    "engine": "firefox",
+    "viewport": "390",
+    "surface": "economy",
+    "text": "ECONOMY\n?\n\u2715\nGOODS\nTRANSFER\nAUTOMATION\nWANTS\nSETTLEMENTS\nSettlement\tPop\tGrain\tFood lasts\tStatus \u25b2\nTiryns\t800\t-40 each day\t1 day\tstarving\nMycenae \u2605\t1,000\t+40 each day\t40 days\tsurplus\nMYCENAE \u2605\nSILVER\n1,200\n+4 each day\nGood\tAmount\tRate\nGrain\t4,000\t+40 each day\nBronze\t100\t+1 each day\nTIRYNS\nSILVER\n1,200\n+4 each day\nGood\tAmount\tRate\nGrain\t4,000\t+40 each day\nBronze\t100\t+1 each day",
+    "bounds": {
+      "x": 0,
+      "y": 34,
+      "width": 390,
+      "height": 776
+    }
+  },
+  {
+    "engine": "firefox",
+    "viewport": "390",
+    "surface": "war",
+    "text": "WAR\n?\n\u2715\nARMY\nRECRUIT\nMOVEMENTS\nWHEN TO RETREAT\nSave\n\nYour whole realm: every unit carries this into a battle it enters. A change applies to battles entered from now on \u2014 a battle under way keeps what it had; change a fighting unit from its card below.\n\nRECALL ALL\nUNITS\nBronze Guard, Spearmen\nsentry\nin the field\n(2,0)\nExpedition around (3,1), 12 days; turns home by day 71; home by day 77.\nSet\nSacred Dolphin, Galley\nfood for 1 day\noff the coast\nwaiting off (2,1) for Bronze Guard until day 68",
+    "bounds": {
+      "x": 0,
+      "y": 34,
+      "width": 390,
+      "height": 776
+    }
+  },
+  {
+    "engine": "firefox",
+    "viewport": "390",
+    "surface": "notifications",
+    "text": "NOTIFICATIONS\nARCHIVE\n?\n\u2715\nDAY 6 OF THE OLIVE (3), YEAR 1\n\ud83d\udee1\nNestor's spearman (100) is heading for Tiryns's lands \u2014 there by day 68 if that is its goal\ntoday 07:00\n\ud83c\udf3e\nTiryns: grain net -40/day \u2014 grain lasts ~1 day\ntoday 07:00\n\u25c9\nTiryns has fallen \u2014 your army holds it under occupation. Doing nothing leaves it occupied; annex becomes possible after 3 unchallenged days.\ntoday 07:00\n\ud83d\udd2d\nBronze Guard turns home from the land around (3, 1): half its time is spent \u2014 home by day 68\ntoday 07:00",
+    "bounds": {
+      "x": 0,
+      "y": 34,
+      "width": 390,
+      "height": 776
+    }
+  },
+  {
+    "engine": "firefox",
+    "viewport": "390",
+    "surface": "calendar-with",
+    "text": "NOTIFICATIONS\nARCHIVE\n?\n\u2715\nDAY 1 OF PITHOI (1), YEAR 1\n\ud83d\udee1\nNestor's spearman (100) is heading for Tiryns's lands \u2014 there by day 68 if that is its goal\ntoday 07:00\n\ud83c\udf3e\nTiryns: grain net -40/day \u2014 grain lasts ~1 day\ntoday 07:00\n\u25c9\nTiryns has fallen \u2014 your army holds it under occupation. Doing nothing leaves it occupied; annex becomes possible after 3 unchallenged days.\ntoday 07:00\n\ud83d\udd2d\nBronze Guard turns home from the land around (3, 1): half its time is spent \u2014 home by day 68\ntoday 07:00",
+    "bounds": {
+      "x": 0,
+      "y": 34,
+      "width": 390,
+      "height": 776
+    }
+  },
+  {
+    "engine": "firefox",
+    "viewport": "390",
+    "surface": "calendar-without",
+    "text": "NOTIFICATIONS\nARCHIVE\n?\n\u2715\nDAY 1 OF PITHOI, YEAR 1\n\ud83d\udee1\nNestor's spearman (100) is heading for Tiryns's lands \u2014 there by day 68 if that is its goal\ntoday 07:00\n\ud83c\udf3e\nTiryns: grain net -40/day \u2014 grain lasts ~1 day\ntoday 07:00\n\u25c9\nTiryns has fallen \u2014 your army holds it under occupation. Doing nothing leaves it occupied; annex becomes possible after 3 unchallenged days.\ntoday 07:00\n\ud83d\udd2d\nBronze Guard turns home from the land around (3, 1): half its time is spent \u2014 home by day 68\ntoday 07:00",
+    "bounds": {
+      "x": 0,
+      "y": 34,
+      "width": 390,
+      "height": 776
+    }
+  },
+  {
+    "engine": "firefox",
+    "viewport": "390",
+    "surface": "host",
+    "text": "Nomadic Host\n\u2715\nTERRAIN\nPlains\nFEEDS ITSELF:\nyes\nTIMBER:\nyes\nSTONE:\nyes\nDETAILS\nDeposits: \u2014\nProduces: grain, horses, wine\n1,000 people \u00b7 cannot fight \u00b7 sight 2 hexes (4 by water or on mountains)\nFood lasts 1 day\nEscort pay lasts 3 days\n2 Spearmen cohorts in the field\nMessengers free to send\nCatchment forecast \u2014 19 of 19 hexes known\nGrain: produces about 120 and eats about 100 each day = net 20 per day\nSeed 100 grain \u2014 the colony feeds itself.\nAlso: stone about 4 per day, timber about 20 per day\nPlains (center)\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\n\u2692 Found the metropolis here",
+    "bounds": {
+      "x": 170,
+      "y": 44,
+      "width": 220,
+      "height": 766
+    }
+  },
+  {
+    "engine": "firefox",
+    "viewport": "390",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "map"
+      },
+      {
+        "method": "GET",
+        "path": "provinces"
+      },
+      {
+        "method": "GET",
+        "path": "marches"
+      },
+      {
+        "method": "GET",
+        "path": "messengers"
+      },
+      {
+        "method": "GET",
+        "path": "trades"
+      },
+      {
+        "method": "GET",
+        "path": "units"
+      },
+      {
+        "method": "GET",
+        "path": "rural-projections"
+      },
+      {
+        "method": "GET",
+        "path": "foreign-units"
+      },
+      {
+        "method": "GET",
+        "path": "settlements/placement-roster"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222/goods"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/33333333-3333-3333-3333-333333333333/goods"
+      },
+      {
+        "method": "GET",
+        "path": "settlements/overview"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222/actions"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222"
+      },
+      {
+        "method": "GET",
+        "path": "units"
+      },
+      {
+        "method": "GET",
+        "path": "units"
+      },
+      {
+        "method": "GET",
+        "path": "retreat-default"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222/actions"
+      },
+      {
+        "method": "GET",
+        "path": "notifications?exclude=SitosIntervention%2CSitosFundLow"
+      },
+      {
+        "method": "GET",
+        "path": "gossip"
+      },
+      {
+        "method": "POST",
+        "path": "notifications/read-all"
+      },
+      {
+        "method": "GET",
+        "path": "notifications?kind=SitosIntervention"
+      },
+      {
+        "method": "GET",
+        "path": "notifications?kind=SitosFundLow"
+      },
+      {
+        "method": "GET",
+        "path": "founding/status"
+      },
+      {
+        "method": "GET",
+        "path": "colonize-preview?q=0&r=0&pop=1000&seed=100&starter_farm=1"
+      }
+    ],
+    "errors": [],
+    "unexpected": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "surface": "economy",
+    "text": "ECONOMY\n?\n\u2715\nGOODS\nTRANSFER\nAUTOMATION\nWANTS\nSETTLEMENTS\nSettlement\tPop\tGrain\tFood lasts\tStatus \u25b2\nTiryns\t800\t-40 each day\t1 day\tstarving\nMycenae \u2605\t1,000\t+40 each day\t40 days\tsurplus\nMYCENAE \u2605\nSILVER\n1,200\n+4 each day\nGood\tAmount\tRate\nGrain\t4,000\t+40 each day\nBronze\t100\t+1 each day\nTIRYNS\nSILVER\n1,200\n+4 each day\nGood\tAmount\tRate\nGrain\t4,000\t+40 each day\nBronze\t100\t+1 each day",
+    "bounds": {
+      "x": 860,
+      "y": 34,
+      "width": 420,
+      "height": 832
+    }
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "surface": "war",
+    "text": "WAR\n?\n\u2715\nARMY\nRECRUIT\nMOVEMENTS\nWHEN TO RETREAT\nby the troops' loyalty (default)\nretreat at 25% losses\nretreat at 50% losses\nretreat at 75% losses\nhold to the last man\nSave\n\nYour whole realm: every unit carries this into a battle it enters. A change applies to battles entered from now on \u2014 a battle under way keeps what it had; change a fighting unit from its card below.\n\nRECALL ALL\nUNITS\nBronze Guard, Spearmen\nsentry\nin the field\n(2,0)\nExpedition around (3,1), 12 days; turns home by day 71; home by day 77.\nstance\u2026\nfortify\nstorm\nsentry\n\u2014 clear\nSet\nSacred Dolphin, Galley\nfood for 1 day\noff the coast\nwaiting off (2,1) for Bronze Guard until day 68",
+    "bounds": {
+      "x": 860,
+      "y": 34,
+      "width": 420,
+      "height": 832
+    }
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "surface": "notifications",
+    "text": "NOTIFICATIONS\nARCHIVE\n?\n\u2715\nDAY 6 OF THE OLIVE (3), YEAR 1\n\ud83d\udee1\nNestor's spearman (100) is heading for Tiryns's lands \u2014 there by day 68 if that is its goal\ntoday 07:00\n\ud83c\udf3e\nTiryns: grain net -40/day \u2014 grain lasts ~1 day\ntoday 07:00\n\u25c9\nTiryns has fallen \u2014 your army holds it under occupation. Doing nothing leaves it occupied; annex becomes possible after 3 unchallenged days.\ntoday 07:00\n\ud83d\udd2d\nBronze Guard turns home from the land around (3, 1): half its time is spent \u2014 home by day 68\ntoday 07:00",
+    "bounds": {
+      "x": 860,
+      "y": 34,
+      "width": 420,
+      "height": 832
+    }
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "surface": "calendar-with",
+    "text": "NOTIFICATIONS\nARCHIVE\n?\n\u2715\nDAY 1 OF PITHOI (1), YEAR 1\n\ud83d\udee1\nNestor's spearman (100) is heading for Tiryns's lands \u2014 there by day 68 if that is its goal\ntoday 07:00\n\ud83c\udf3e\nTiryns: grain net -40/day \u2014 grain lasts ~1 day\ntoday 07:00\n\u25c9\nTiryns has fallen \u2014 your army holds it under occupation. Doing nothing leaves it occupied; annex becomes possible after 3 unchallenged days.\ntoday 07:00\n\ud83d\udd2d\nBronze Guard turns home from the land around (3, 1): half its time is spent \u2014 home by day 68\ntoday 07:00",
+    "bounds": {
+      "x": 860,
+      "y": 34,
+      "width": 420,
+      "height": 832
+    }
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "surface": "calendar-without",
+    "text": "NOTIFICATIONS\nARCHIVE\n?\n\u2715\nDAY 1 OF PITHOI, YEAR 1\n\ud83d\udee1\nNestor's spearman (100) is heading for Tiryns's lands \u2014 there by day 68 if that is its goal\ntoday 07:00\n\ud83c\udf3e\nTiryns: grain net -40/day \u2014 grain lasts ~1 day\ntoday 07:00\n\u25c9\nTiryns has fallen \u2014 your army holds it under occupation. Doing nothing leaves it occupied; annex becomes possible after 3 unchallenged days.\ntoday 07:00\n\ud83d\udd2d\nBronze Guard turns home from the land around (3, 1): half its time is spent \u2014 home by day 68\ntoday 07:00",
+    "bounds": {
+      "x": 860,
+      "y": 34,
+      "width": 420,
+      "height": 832
+    }
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "surface": "host",
+    "text": "Nomadic Host\n\u2715\nTERRAIN\nPlains\nFEEDS ITSELF:\nyes\nTIMBER:\nyes\nSTONE:\nyes\nDETAILS\nDeposits: \u2014\nProduces: grain, horses, wine\n1,000 people \u00b7 cannot fight \u00b7 sight 2 hexes (4 by water or on mountains)\nFood lasts 1 day\nEscort pay lasts 3 days\n2 Spearmen cohorts in the field\nMessengers free to send\nCatchment forecast \u2014 19 of 19 hexes known\nGrain: produces about 120 and eats about 100 each day = net 20 per day\nSeed 100 grain \u2014 the colony feeds itself.\nAlso: stone about 4 per day, timber about 20 per day\nPlains (center)\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\n\u2692 Found the metropolis here",
+    "bounds": {
+      "x": 1060,
+      "y": 44,
+      "width": 220,
+      "height": 822
+    }
+  },
+  {
+    "engine": "chromium",
+    "viewport": "desktop",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "map"
+      },
+      {
+        "method": "GET",
+        "path": "provinces"
+      },
+      {
+        "method": "GET",
+        "path": "marches"
+      },
+      {
+        "method": "GET",
+        "path": "messengers"
+      },
+      {
+        "method": "GET",
+        "path": "trades"
+      },
+      {
+        "method": "GET",
+        "path": "units"
+      },
+      {
+        "method": "GET",
+        "path": "rural-projections"
+      },
+      {
+        "method": "GET",
+        "path": "foreign-units"
+      },
+      {
+        "method": "GET",
+        "path": "settlements/placement-roster"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222/goods"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/33333333-3333-3333-3333-333333333333/goods"
+      },
+      {
+        "method": "GET",
+        "path": "settlements/overview"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222/actions"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222"
+      },
+      {
+        "method": "GET",
+        "path": "units"
+      },
+      {
+        "method": "GET",
+        "path": "units"
+      },
+      {
+        "method": "GET",
+        "path": "retreat-default"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222/actions"
+      },
+      {
+        "method": "GET",
+        "path": "notifications?exclude=SitosIntervention%2CSitosFundLow"
+      },
+      {
+        "method": "GET",
+        "path": "gossip"
+      },
+      {
+        "method": "POST",
+        "path": "notifications/read-all"
+      },
+      {
+        "method": "GET",
+        "path": "notifications?kind=SitosIntervention"
+      },
+      {
+        "method": "GET",
+        "path": "notifications?kind=SitosFundLow"
+      },
+      {
+        "method": "GET",
+        "path": "founding/status"
+      },
+      {
+        "method": "GET",
+        "path": "colonize-preview?q=0&r=0&pop=1000&seed=100&starter_farm=1"
+      }
+    ],
+    "errors": [],
+    "unexpected": []
+  },
+  {
+    "engine": "chromium",
+    "viewport": "390",
+    "surface": "economy",
+    "text": "ECONOMY\n?\n\u2715\nGOODS\nTRANSFER\nAUTOMATION\nWANTS\nSETTLEMENTS\nSettlement\tPop\tGrain\tFood lasts\tStatus \u25b2\nTiryns\t800\t-40 each day\t1 day\tstarving\nMycenae \u2605\t1,000\t+40 each day\t40 days\tsurplus\nMYCENAE \u2605\nSILVER\n1,200\n+4 each day\nGood\tAmount\tRate\nGrain\t4,000\t+40 each day\nBronze\t100\t+1 each day\nTIRYNS\nSILVER\n1,200\n+4 each day\nGood\tAmount\tRate\nGrain\t4,000\t+40 each day\nBronze\t100\t+1 each day",
+    "bounds": {
+      "x": 0,
+      "y": 34,
+      "width": 390,
+      "height": 776
+    }
+  },
+  {
+    "engine": "chromium",
+    "viewport": "390",
+    "surface": "war",
+    "text": "WAR\n?\n\u2715\nARMY\nRECRUIT\nMOVEMENTS\nWHEN TO RETREAT\nby the troops' loyalty (default)\nretreat at 25% losses\nretreat at 50% losses\nretreat at 75% losses\nhold to the last man\nSave\n\nYour whole realm: every unit carries this into a battle it enters. A change applies to battles entered from now on \u2014 a battle under way keeps what it had; change a fighting unit from its card below.\n\nRECALL ALL\nUNITS\nBronze Guard, Spearmen\nsentry\nin the field\n(2,0)\nExpedition around (3,1), 12 days; turns home by day 71; home by day 77.\nstance\u2026\nfortify\nstorm\nsentry\n\u2014 clear\nSet\nSacred Dolphin, Galley\nfood for 1 day\noff the coast\nwaiting off (2,1) for Bronze Guard until day 68",
+    "bounds": {
+      "x": 0,
+      "y": 34,
+      "width": 390,
+      "height": 776
+    }
+  },
+  {
+    "engine": "chromium",
+    "viewport": "390",
+    "surface": "notifications",
+    "text": "NOTIFICATIONS\nARCHIVE\n?\n\u2715\nDAY 6 OF THE OLIVE (3), YEAR 1\n\ud83d\udee1\nNestor's spearman (100) is heading for Tiryns's lands \u2014 there by day 68 if that is its goal\ntoday 07:00\n\ud83c\udf3e\nTiryns: grain net -40/day \u2014 grain lasts ~1 day\ntoday 07:00\n\u25c9\nTiryns has fallen \u2014 your army holds it under occupation. Doing nothing leaves it occupied; annex becomes possible after 3 unchallenged days.\ntoday 07:00\n\ud83d\udd2d\nBronze Guard turns home from the land around (3, 1): half its time is spent \u2014 home by day 68\ntoday 07:00",
+    "bounds": {
+      "x": 0,
+      "y": 34,
+      "width": 390,
+      "height": 776
+    }
+  },
+  {
+    "engine": "chromium",
+    "viewport": "390",
+    "surface": "calendar-with",
+    "text": "NOTIFICATIONS\nARCHIVE\n?\n\u2715\nDAY 1 OF PITHOI (1), YEAR 1\n\ud83d\udee1\nNestor's spearman (100) is heading for Tiryns's lands \u2014 there by day 68 if that is its goal\ntoday 07:00\n\ud83c\udf3e\nTiryns: grain net -40/day \u2014 grain lasts ~1 day\ntoday 07:00\n\u25c9\nTiryns has fallen \u2014 your army holds it under occupation. Doing nothing leaves it occupied; annex becomes possible after 3 unchallenged days.\ntoday 07:00\n\ud83d\udd2d\nBronze Guard turns home from the land around (3, 1): half its time is spent \u2014 home by day 68\ntoday 07:00",
+    "bounds": {
+      "x": 0,
+      "y": 34,
+      "width": 390,
+      "height": 776
+    }
+  },
+  {
+    "engine": "chromium",
+    "viewport": "390",
+    "surface": "calendar-without",
+    "text": "NOTIFICATIONS\nARCHIVE\n?\n\u2715\nDAY 1 OF PITHOI, YEAR 1\n\ud83d\udee1\nNestor's spearman (100) is heading for Tiryns's lands \u2014 there by day 68 if that is its goal\ntoday 07:00\n\ud83c\udf3e\nTiryns: grain net -40/day \u2014 grain lasts ~1 day\ntoday 07:00\n\u25c9\nTiryns has fallen \u2014 your army holds it under occupation. Doing nothing leaves it occupied; annex becomes possible after 3 unchallenged days.\ntoday 07:00\n\ud83d\udd2d\nBronze Guard turns home from the land around (3, 1): half its time is spent \u2014 home by day 68\ntoday 07:00",
+    "bounds": {
+      "x": 0,
+      "y": 34,
+      "width": 390,
+      "height": 776
+    }
+  },
+  {
+    "engine": "chromium",
+    "viewport": "390",
+    "surface": "host",
+    "text": "Nomadic Host\n\u2715\nTERRAIN\nPlains\nFEEDS ITSELF:\nyes\nTIMBER:\nyes\nSTONE:\nyes\nDETAILS\nDeposits: \u2014\nProduces: grain, horses, wine\n1,000 people \u00b7 cannot fight \u00b7 sight 2 hexes (4 by water or on mountains)\nFood lasts 1 day\nEscort pay lasts 3 days\n2 Spearmen cohorts in the field\nMessengers free to send\nCatchment forecast \u2014 19 of 19 hexes known\nGrain: produces about 120 and eats about 100 each day = net 20 per day\nSeed 100 grain \u2014 the colony feeds itself.\nAlso: stone about 4 per day, timber about 20 per day\nPlains (center)\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\n\u2692 Found the metropolis here",
+    "bounds": {
+      "x": 170,
+      "y": 44,
+      "width": 220,
+      "height": 766
+    }
+  },
+  {
+    "engine": "chromium",
+    "viewport": "390",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "map"
+      },
+      {
+        "method": "GET",
+        "path": "provinces"
+      },
+      {
+        "method": "GET",
+        "path": "marches"
+      },
+      {
+        "method": "GET",
+        "path": "messengers"
+      },
+      {
+        "method": "GET",
+        "path": "trades"
+      },
+      {
+        "method": "GET",
+        "path": "units"
+      },
+      {
+        "method": "GET",
+        "path": "rural-projections"
+      },
+      {
+        "method": "GET",
+        "path": "foreign-units"
+      },
+      {
+        "method": "GET",
+        "path": "settlements/placement-roster"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222/goods"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/33333333-3333-3333-3333-333333333333/goods"
+      },
+      {
+        "method": "GET",
+        "path": "settlements/overview"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222/actions"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222"
+      },
+      {
+        "method": "GET",
+        "path": "units"
+      },
+      {
+        "method": "GET",
+        "path": "units"
+      },
+      {
+        "method": "GET",
+        "path": "retreat-default"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222/actions"
+      },
+      {
+        "method": "GET",
+        "path": "notifications?exclude=SitosIntervention%2CSitosFundLow"
+      },
+      {
+        "method": "GET",
+        "path": "gossip"
+      },
+      {
+        "method": "POST",
+        "path": "notifications/read-all"
+      },
+      {
+        "method": "GET",
+        "path": "notifications?kind=SitosIntervention"
+      },
+      {
+        "method": "GET",
+        "path": "notifications?kind=SitosFundLow"
+      },
+      {
+        "method": "GET",
+        "path": "founding/status"
+      },
+      {
+        "method": "GET",
+        "path": "colonize-preview?q=0&r=0&pop=1000&seed=100&starter_farm=1"
+      }
+    ],
+    "errors": [],
+    "unexpected": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "surface": "economy",
+    "text": "ECONOMY\n?\n\u2715\nGOODS\nTRANSFER\nAUTOMATION\nWANTS\nSETTLEMENTS\nSettlement\tPop\tGrain\tFood lasts\tStatus \u25b2\nTiryns\t800\t-40 each day\t1 day\tstarving\nMycenae \u2605\t1,000\t+40 each day\t40 days\tsurplus\nMYCENAE \u2605\nSILVER\n1,200\n+4 each day\nGood\tAmount\tRate\nGrain\t4,000\t+40 each day\nBronze\t100\t+1 each day\nTIRYNS\nSILVER\n1,200\n+4 each day\nGood\tAmount\tRate\nGrain\t4,000\t+40 each day\nBronze\t100\t+1 each day\n",
+    "bounds": {
+      "x": 860,
+      "y": 34,
+      "width": 420,
+      "height": 832
+    }
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "surface": "war",
+    "text": "WAR\n?\n\u2715\nARMY\nRECRUIT\nMOVEMENTS\nWHEN TO RETREAT\n\nSave\nYour whole realm: every unit carries this into a battle it enters. A change applies to battles entered from now on \u2014 a battle under way keeps what it had; change a fighting unit from its card below.\nRECALL ALL\nUNITS\nBronze Guard, Spearmen\nsentry\nin the field\n(2,0)\nExpedition around (3,1), 12 days; turns home by day 71; home by day 77.\n\nSet\nSacred Dolphin, Galley\nfood for 1 day\noff the coast\nwaiting off (2,1) for Bronze Guard until day 68\n",
+    "bounds": {
+      "x": 860,
+      "y": 34,
+      "width": 420,
+      "height": 832
+    }
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "surface": "notifications",
+    "text": "NOTIFICATIONS\nARCHIVE\n?\n\u2715\nDAY 6 OF THE OLIVE (3), YEAR 1\n\ud83d\udee1\nNestor's spearman (100) is heading for Tiryns's lands \u2014 there by day 68 if that is its goal\ntoday 07:00\n\ud83c\udf3e\nTiryns: grain net -40/day \u2014 grain lasts ~1 day\ntoday 07:00\n\u25c9\nTiryns has fallen \u2014 your army holds it under occupation. Doing nothing leaves it occupied; annex becomes possible after 3 unchallenged days.\ntoday 07:00\n\ud83d\udd2d\nBronze Guard turns home from the land around (3, 1): half its time is spent \u2014 home by day 68\ntoday 07:00\n",
+    "bounds": {
+      "x": 860,
+      "y": 34,
+      "width": 420,
+      "height": 832
+    }
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "surface": "calendar-with",
+    "text": "NOTIFICATIONS\nARCHIVE\n?\n\u2715\nDAY 1 OF PITHOI (1), YEAR 1\n\ud83d\udee1\nNestor's spearman (100) is heading for Tiryns's lands \u2014 there by day 68 if that is its goal\ntoday 07:00\n\ud83c\udf3e\nTiryns: grain net -40/day \u2014 grain lasts ~1 day\ntoday 07:00\n\u25c9\nTiryns has fallen \u2014 your army holds it under occupation. Doing nothing leaves it occupied; annex becomes possible after 3 unchallenged days.\ntoday 07:00\n\ud83d\udd2d\nBronze Guard turns home from the land around (3, 1): half its time is spent \u2014 home by day 68\ntoday 07:00\n",
+    "bounds": {
+      "x": 860,
+      "y": 34,
+      "width": 420,
+      "height": 832
+    }
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "surface": "calendar-without",
+    "text": "NOTIFICATIONS\nARCHIVE\n?\n\u2715\nDAY 1 OF PITHOI, YEAR 1\n\ud83d\udee1\nNestor's spearman (100) is heading for Tiryns's lands \u2014 there by day 68 if that is its goal\ntoday 07:00\n\ud83c\udf3e\nTiryns: grain net -40/day \u2014 grain lasts ~1 day\ntoday 07:00\n\u25c9\nTiryns has fallen \u2014 your army holds it under occupation. Doing nothing leaves it occupied; annex becomes possible after 3 unchallenged days.\ntoday 07:00\n\ud83d\udd2d\nBronze Guard turns home from the land around (3, 1): half its time is spent \u2014 home by day 68\ntoday 07:00\n",
+    "bounds": {
+      "x": 860,
+      "y": 34,
+      "width": 420,
+      "height": 832
+    }
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "surface": "host",
+    "text": "Nomadic Host\n\u2715\nTERRAIN\nPlains\nFEEDS ITSELF:\nyes\nTIMBER:\nyes\nSTONE:\nyes\nDETAILS\nDeposits: \u2014\nProduces: grain, horses, wine\n1,000 people \u00b7 cannot fight \u00b7 sight 2 hexes (4 by water or on mountains)\nFood lasts 1 day\nEscort pay lasts 3 days\n2 Spearmen cohorts in the field\nMessengers free to send\nCatchment forecast \u2014 19 of 19 hexes known\nGrain: produces about 120 and eats about 100 each day = net 20 per day\nSeed 100 grain \u2014 the colony feeds itself.\nAlso: stone about 4 per day, timber about 20 per day\nPlains (center)\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\n\u2692 Found the metropolis here\n",
+    "bounds": {
+      "x": 1060,
+      "y": 44,
+      "width": 220,
+      "height": 822
+    }
+  },
+  {
+    "engine": "webkit",
+    "viewport": "desktop",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "map"
+      },
+      {
+        "method": "GET",
+        "path": "provinces"
+      },
+      {
+        "method": "GET",
+        "path": "marches"
+      },
+      {
+        "method": "GET",
+        "path": "messengers"
+      },
+      {
+        "method": "GET",
+        "path": "trades"
+      },
+      {
+        "method": "GET",
+        "path": "units"
+      },
+      {
+        "method": "GET",
+        "path": "rural-projections"
+      },
+      {
+        "method": "GET",
+        "path": "foreign-units"
+      },
+      {
+        "method": "GET",
+        "path": "settlements/placement-roster"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222/goods"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/33333333-3333-3333-3333-333333333333/goods"
+      },
+      {
+        "method": "GET",
+        "path": "settlements/overview"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222/actions"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222"
+      },
+      {
+        "method": "GET",
+        "path": "units"
+      },
+      {
+        "method": "GET",
+        "path": "units"
+      },
+      {
+        "method": "GET",
+        "path": "retreat-default"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222/actions"
+      },
+      {
+        "method": "GET",
+        "path": "notifications?exclude=SitosIntervention%2CSitosFundLow"
+      },
+      {
+        "method": "GET",
+        "path": "gossip"
+      },
+      {
+        "method": "POST",
+        "path": "notifications/read-all"
+      },
+      {
+        "method": "GET",
+        "path": "notifications?kind=SitosIntervention"
+      },
+      {
+        "method": "GET",
+        "path": "notifications?kind=SitosFundLow"
+      },
+      {
+        "method": "GET",
+        "path": "founding/status"
+      },
+      {
+        "method": "GET",
+        "path": "colonize-preview?q=0&r=0&pop=1000&seed=100&starter_farm=1"
+      }
+    ],
+    "errors": [],
+    "unexpected": []
+  },
+  {
+    "engine": "webkit",
+    "viewport": "390",
+    "surface": "economy",
+    "text": "ECONOMY\n?\n\u2715\nGOODS\nTRANSFER\nAUTOMATION\nWANTS\nSETTLEMENTS\nSettlement\tPop\tGrain\tFood lasts\tStatus \u25b2\nTiryns\t800\t-40 each day\t1 day\tstarving\nMycenae \u2605\t1,000\t+40 each day\t40 days\tsurplus\nMYCENAE \u2605\nSILVER\n1,200\n+4 each day\nGood\tAmount\tRate\nGrain\t4,000\t+40 each day\nBronze\t100\t+1 each day\nTIRYNS\nSILVER\n1,200\n+4 each day\nGood\tAmount\tRate\nGrain\t4,000\t+40 each day\nBronze\t100\t+1 each day\n",
+    "bounds": {
+      "x": 0,
+      "y": 34,
+      "width": 390,
+      "height": 776
+    }
+  },
+  {
+    "engine": "webkit",
+    "viewport": "390",
+    "surface": "war",
+    "text": "WAR\n?\n\u2715\nARMY\nRECRUIT\nMOVEMENTS\nWHEN TO RETREAT\n\nSave\nYour whole realm: every unit carries this into a battle it enters. A change applies to battles entered from now on \u2014 a battle under way keeps what it had; change a fighting unit from its card below.\nRECALL ALL\nUNITS\nBronze Guard, Spearmen\nsentry\nin the field\n(2,0)\nExpedition around (3,1), 12 days; turns home by day 71; home by day 77.\n\nSet\nSacred Dolphin, Galley\nfood for 1 day\noff the coast\nwaiting off (2,1) for Bronze Guard until day 68\n",
+    "bounds": {
+      "x": 0,
+      "y": 34,
+      "width": 390,
+      "height": 776
+    }
+  },
+  {
+    "engine": "webkit",
+    "viewport": "390",
+    "surface": "notifications",
+    "text": "NOTIFICATIONS\nARCHIVE\n?\n\u2715\nDAY 6 OF THE OLIVE (3), YEAR 1\n\ud83d\udee1\nNestor's spearman (100) is heading for Tiryns's lands \u2014 there by day 68 if that is its goal\ntoday 07:00\n\ud83c\udf3e\nTiryns: grain net -40/day \u2014 grain lasts ~1 day\ntoday 07:00\n\u25c9\nTiryns has fallen \u2014 your army holds it under occupation. Doing nothing leaves it occupied; annex becomes possible after 3 unchallenged days.\ntoday 07:00\n\ud83d\udd2d\nBronze Guard turns home from the land around (3, 1): half its time is spent \u2014 home by day 68\ntoday 07:00\n",
+    "bounds": {
+      "x": 0,
+      "y": 34,
+      "width": 390,
+      "height": 776
+    }
+  },
+  {
+    "engine": "webkit",
+    "viewport": "390",
+    "surface": "calendar-with",
+    "text": "NOTIFICATIONS\nARCHIVE\n?\n\u2715\nDAY 1 OF PITHOI (1), YEAR 1\n\ud83d\udee1\nNestor's spearman (100) is heading for Tiryns's lands \u2014 there by day 68 if that is its goal\ntoday 07:00\n\ud83c\udf3e\nTiryns: grain net -40/day \u2014 grain lasts ~1 day\ntoday 07:00\n\u25c9\nTiryns has fallen \u2014 your army holds it under occupation. Doing nothing leaves it occupied; annex becomes possible after 3 unchallenged days.\ntoday 07:00\n\ud83d\udd2d\nBronze Guard turns home from the land around (3, 1): half its time is spent \u2014 home by day 68\ntoday 07:00\n",
+    "bounds": {
+      "x": 0,
+      "y": 34,
+      "width": 390,
+      "height": 776
+    }
+  },
+  {
+    "engine": "webkit",
+    "viewport": "390",
+    "surface": "calendar-without",
+    "text": "NOTIFICATIONS\nARCHIVE\n?\n\u2715\nDAY 1 OF PITHOI, YEAR 1\n\ud83d\udee1\nNestor's spearman (100) is heading for Tiryns's lands \u2014 there by day 68 if that is its goal\ntoday 07:00\n\ud83c\udf3e\nTiryns: grain net -40/day \u2014 grain lasts ~1 day\ntoday 07:00\n\u25c9\nTiryns has fallen \u2014 your army holds it under occupation. Doing nothing leaves it occupied; annex becomes possible after 3 unchallenged days.\ntoday 07:00\n\ud83d\udd2d\nBronze Guard turns home from the land around (3, 1): half its time is spent \u2014 home by day 68\ntoday 07:00\n",
+    "bounds": {
+      "x": 0,
+      "y": 34,
+      "width": 390,
+      "height": 776
+    }
+  },
+  {
+    "engine": "webkit",
+    "viewport": "390",
+    "surface": "host",
+    "text": "Nomadic Host\n\u2715\nTERRAIN\nPlains\nFEEDS ITSELF:\nyes\nTIMBER:\nyes\nSTONE:\nyes\nDETAILS\nDeposits: \u2014\nProduces: grain, horses, wine\n1,000 people \u00b7 cannot fight \u00b7 sight 2 hexes (4 by water or on mountains)\nFood lasts 1 day\nEscort pay lasts 3 days\n2 Spearmen cohorts in the field\nMessengers free to send\nCatchment forecast \u2014 19 of 19 hexes known\nGrain: produces about 120 and eats about 100 each day = net 20 per day\nSeed 100 grain \u2014 the colony feeds itself.\nAlso: stone about 4 per day, timber about 20 per day\nPlains (center)\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\nPlains\n\u2692 Found the metropolis here\n",
+    "bounds": {
+      "x": 170,
+      "y": 44,
+      "width": 220,
+      "height": 765.984375
+    }
+  },
+  {
+    "engine": "webkit",
+    "viewport": "390",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "map"
+      },
+      {
+        "method": "GET",
+        "path": "provinces"
+      },
+      {
+        "method": "GET",
+        "path": "marches"
+      },
+      {
+        "method": "GET",
+        "path": "messengers"
+      },
+      {
+        "method": "GET",
+        "path": "trades"
+      },
+      {
+        "method": "GET",
+        "path": "units"
+      },
+      {
+        "method": "GET",
+        "path": "rural-projections"
+      },
+      {
+        "method": "GET",
+        "path": "foreign-units"
+      },
+      {
+        "method": "GET",
+        "path": "settlements/placement-roster"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222/goods"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/33333333-3333-3333-3333-333333333333/goods"
+      },
+      {
+        "method": "GET",
+        "path": "settlements/overview"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222/actions"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222"
+      },
+      {
+        "method": "GET",
+        "path": "units"
+      },
+      {
+        "method": "GET",
+        "path": "units"
+      },
+      {
+        "method": "GET",
+        "path": "retreat-default"
+      },
+      {
+        "method": "GET",
+        "path": "provinces/22222222-2222-2222-2222-222222222222/actions"
+      },
+      {
+        "method": "GET",
+        "path": "notifications?exclude=SitosIntervention%2CSitosFundLow"
+      },
+      {
+        "method": "GET",
+        "path": "gossip"
+      },
+      {
+        "method": "POST",
+        "path": "notifications/read-all"
+      },
+      {
+        "method": "GET",
+        "path": "notifications?kind=SitosIntervention"
+      },
+      {
+        "method": "GET",
+        "path": "notifications?kind=SitosFundLow"
+      },
+      {
+        "method": "GET",
+        "path": "founding/status"
+      },
+      {
+        "method": "GET",
+        "path": "colonize-preview?q=0&r=0&pop=1000&seed=100&starter_farm=1"
+      }
+    ],
+    "errors": [],
+    "unexpected": []
+  }
+]

@@ -39,7 +39,7 @@ choice; it executes only when the Runner arrives, not instantly.
           portability) and weaken it: population -⅓, its strongest production
           building drops one level. The city stays with its original owner.
   burn  — sack, then raze the city outright. It becomes ownerless and its hex
-          cannot be recolonized until the karens (a fixed number of ticks)
+          cannot be recolonized until the karens (a fixed number of days)
           has passed.
   annex — take the city for good. Only possible once the occupation has gone
           unchallenged long enough (see the CityAnnexReady notification) —

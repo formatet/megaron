@@ -1,0 +1,6 @@
+--- FAIL: TestDayPlayerLanguageGuard (0.08s)
+    day_guard_test.go:16: Day guard keryx: exit status 1
+        server/cmd/keryx/output.go:63: forbidden player time: game day
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.079s
+FAIL

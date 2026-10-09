@@ -197,7 +197,7 @@ func TestArmyUpkeepWarning(t *testing.T) {
 			name: "already empty and falling is critical, not silently dropped (old runway() bug)",
 			netG: 100, netS: weakNegRate, grainStock: 5000, silverStock: 0,
 			wantWarn:     true,
-			wantContains: []string{"stock 0 lasts ~0 tick"},
+			wantContains: []string{"stock 0 lasts ~0 days"},
 		},
 		{
 			name: "just above the threshold stays silent",

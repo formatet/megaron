@@ -30,3 +30,15 @@ func TestFoundingSettleHelpMatchesJSONBehavior(t *testing.T) {
 		t.Error("--yes usage claims the forecast is still printed without qualifying that this excludes --json mode")
 	}
 }
+
+func TestFoundingStoreDaysAndWallClock(t *testing.T) {
+	for _, days := range []int{1, 3, 1000} {
+		got := foundingStoreLine("Food", foundingStore{Amount: 50, TicksLeft: &days}, 86400)
+		if !strings.Contains(got, formatDays(float64(days), "%.0f")) || !strings.Contains(got, "≈ ") || !strings.Contains(got, ":") {
+			t.Fatalf("world duration and clock/date: %q", got)
+		}
+		if strings.Contains(got, "real time") || strings.Contains(got, "tick") {
+			t.Fatalf("mixed time units: %q", got)
+		}
+	}
+}

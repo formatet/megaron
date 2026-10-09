@@ -97,6 +97,6 @@ test('AK9: the direction reaches the markup, not just the row object', () => {
 
 test('cargo uses the authoritative rounded arrival tick even when wall projection is overdue', () => {
   const trade = { ...BASE_TRADE, arrival_tick: 42, role: 'recipient' };
-  assert.equal(formatCargoRows([trade], NOW + 86400000)[0].eta, 'tick 42');
-  assert.match(renderCargoHTML([trade], NOW), /tick 42/);
+  assert.equal(formatCargoRows([trade], NOW + 86400000)[0].eta, 'day 42');
+  assert.match(renderCargoHTML([trade], NOW), /day 42/);
 });

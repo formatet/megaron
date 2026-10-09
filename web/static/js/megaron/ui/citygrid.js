@@ -76,13 +76,13 @@ export function goodRowHTML(target, good, take) {
     ? Array.from({ length: good.cap }, (_, i) =>
         `<span class="gubbe-pip${i < good.placed ? '' : ' empty'}"></span>`).join('')
     : `<span style="color:var(--text-dim)">${fmtNum(good.placed)} placed, uncapped</span>`;
-  const nextLabel = full ? 'full' : `+${fmtNum(Number(good.marginal_yield.toFixed(1)))} each game day next`;
+  const nextLabel = full ? 'full' : `+${fmtNum(Number(good.marginal_yield.toFixed(1)))} each day next`;
   const targetAttr = JSON.stringify(target).replace(/"/g, '&quot;');
   return `
     <div class="gubbe-good-row" data-good="${good.good_key}" data-cap="${good.cap ?? ''}" data-target="${targetAttr}">
       <div>
         <b>${good.good_key}</b>
-        <span style="color:var(--text-dim)"> ${fmtNum(Number(good.rate_per_tick.toFixed(1)))} each game day total · ${nextLabel}</span>
+        <span style="color:var(--text-dim)"> ${fmtNum(Number(good.rate_per_tick.toFixed(1)))} each day total · ${nextLabel}</span>
         <div>${pipsHTML}</div>
       </div>
       <div style="display:flex;gap:.3rem">

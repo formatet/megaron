@@ -1,4 +1,4 @@
-You were away nine hours; the world may have run many days. Here is how to catch up.
+While you were away, the world kept moving. Here is how to catch up.
 
 ## Open the Notifications archive (☍)
 

@@ -29,7 +29,7 @@ func TestTransferDisplaysServerTicksAndShip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"arrives tick 42 (journey: 7 ticks)", "Naia", "sails home empty"} {
+	for _, want := range []string{"arrives day 42 (journey: 7 days)", "Naia", "sails home empty"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("missing %q in %s", want, out)
 		}
@@ -59,7 +59,7 @@ func TestTradeAcceptShowsBothLegsFromRecipientPerspective(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			for _, want := range []string{"goods arrive tick 42", "silver arrives tick 49"} {
+			for _, want := range []string{"goods arrive day 42", "silver arrives day 49"} {
 				if !strings.Contains(out, want) {
 					t.Errorf("missing %q in %s", want, out)
 				}
@@ -79,7 +79,7 @@ func TestTradeAcceptShowsBothLegsFromRecipientPerspective(t *testing.T) {
 
 func TestTradeOutboxDoesNotInferDeliveryFromWallTime(t *testing.T) {
 	got := deliveryETALine(nil, map[string]any{"goods_arrival_tick": float64(42), "silver_arrival_tick": float64(49), "goods_arrives_at": "2000-01-01T00:00:00Z"})
-	if got != "  goods scheduled tick 42 · silver scheduled tick 49" {
+	if got != "  goods scheduled day 42 · silver scheduled day 49" {
 		t.Fatal(got)
 	}
 }

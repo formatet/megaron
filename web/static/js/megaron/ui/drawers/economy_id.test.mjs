@@ -18,7 +18,7 @@ async function render(rows,status=200){
 test('Economy id: actual drawer joins settlement ids while links and goods keep province ids',async()=>{
  const {html,calls}=await render(overview);
  assert.match(html,/1,000/,'settlement overview must join settlement id');assert.match(html,/2,000/);
- assert.doesNotMatch(html,/no data/);assert.match(html,/40 game days/);assert.match(html,/5 game days/);
+ assert.doesNotMatch(html,/no data/);assert.match(html,/40 days/);assert.match(html,/5 days/);
  assert.match(html,/openCitySettlement\('province-a'\)/,'city link keeps province id');assert.match(html,/openCitySettlement\('province-b'\)/);
  assert.ok(calls.some(p=>p.endsWith('/provinces/province-a/goods')));assert.ok(calls.some(p=>p.endsWith('/provinces/province-b/goods')));
  assert.equal(calls.filter(p=>p.endsWith('/settlements/overview')).length,1,'one overview request');
