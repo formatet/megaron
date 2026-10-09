@@ -158,7 +158,7 @@ export function draw(ctx, scene, status) {
   }
   // Borgen: större, tyngre — centrum ska läsas direkt efter muren.
   const hasCitadel = pop >= 1000;
-  const cit = hasCitadel ? { w: Math.round(28 + 18 * t), h: Math.round(14 + 6 * t) } : null;
+  const cit = hasCitadel ? { w: Math.round(24 + 10 * t), h: Math.round(13 + 3 * t) } : null;
   if (cit) {
     cit.x = cx - (cit.w >> 1); cit.y = cy - ry + 1;
     for (const c of cells) if (c.x < cit.x + cit.w + 6 && c.x + BW > cit.x - 6 && c.y < cit.y + cit.h + 12) c.used = true;
@@ -243,7 +243,7 @@ export function draw(ctx, scene, status) {
   if (cit) {
     const { x, y, w, h } = cit;
     // Platån: en lägre, bredare terrass som knyter borgen till staden.
-    const px = x - 5, pw = w + 10, py = y + 4, ph = h + 3;
+    const px = x - 4, pw = w + 8, py = y + 4, ph = h + 2;
     rect(g, px + 4, py + 3, pw, ph + 4, 'e');               // bred skugga nedre/höger
     rect(g, px + pw, py + 2, 2, ph + 2, 'G');
     inked(g, gg => {
@@ -259,7 +259,7 @@ export function draw(ctx, scene, status) {
       row(gg, x, y, w, 'P'); col(gg, x, y, h, 'P'); col(gg, x + w - 1, y, h, 'q');
       rect(gg, x, y + h, w, 4, 'q');                       // klippfoten, ditherad
       for (let i = 0; i < w; i++) for (let k = 0; k < 4; k++) if ((i + k) % 3 === 0) set(gg, x + i, y + h + k, 't');
-      const mw = 12 + Math.round(4 * t), mh = h - 4, mx = cx - (mw >> 1), my = y + 2;
+      const mw = 10 + Math.round(4 * t), mh = h - 4, mx = cx - (mw >> 1), my = y + 2;
       rect(gg, mx, my, mw, mh, 'R'); row(gg, mx, my, mw, 'M'); col(gg, mx + mw - 1, my, mh, 'r');
       row(gg, mx, my + mh - 3, mw, 'O'); row(gg, mx, my + mh - 2, mw, 'o');
       rect(gg, cx - 2, my + 3, 4, 4, 'O'); rect(gg, cx - 1, my + 4, 2, 2, 'F');
@@ -361,7 +361,8 @@ export function draw(ctx, scene, status) {
 
   // ── Liv: folk i band, rök ──
   const geo = { cx, cy, rx, ry, gate, walls, blocks, cit, specials, coastal };
-  const starving = status === 'svält';
+  const kinds = [].concat(status || []);
+  const starving = kinds.includes('svält');
   over(g, gg => {
     const nPeople = starving ? 0 : peopleBand(pop);
     let n = 0;
@@ -374,7 +375,7 @@ export function draw(ctx, scene, status) {
     if (!starving) smokes.forEach(([x, y], i) => smoke(gg, x, y, 7, i));
   });
 
-  if (status) statusLayer(g, geo, status);
+  for (const k of kinds) statusLayer(g, geo, k);
   blit(ctx, g);
 }
 
@@ -401,6 +402,24 @@ export function statusLayer(g, geo, kind) {
         row(gg, x + 2, y, 3, 'Y'); set(gg, x + 3, y - 1, 'Y'); row(gg, x + 1, y + 1, 5, 'f');
       });
       over(g, gg => { for (let k = 0; k < 12; k++) { const sx = x + 3 + Math.round(Math.sin(k / 2) * 1.5); set(gg, sx, y - 5 - k, k % 3 ? 'G' : '%'); if (k > 3) set(gg, sx + 1, y - 5 - k, 'G'); } });
+    }
+  }
+  if (kind === 'offer') {
+    // Offerrök: eld på altaret framför templet, en tjock rökpelare som står högre än härdarnas.
+    const s = specials.find(s => s.b.type === 'temple' && s.b.phase >= 1);
+    if (s) {
+      const ax = s.x + (s.w >> 1) - 1, ay = s.y + s.h + FH + 2;
+      inked(g, gg => { rect(gg, ax, ay, 3, 2, 'T'); row(gg, ax, ay + 1, 3, 'q'); set(gg, ax + 1, ay - 1, 'F'); set(gg, ax, ay - 1, 'f'); set(gg, ax + 2, ay - 1, 'f'); });
+      over(g, gg => {
+        set(gg, ax - 2, ay + 1, '@'); set(gg, ax - 2, ay + 2, '$');      // prästen vid altaret
+        for (let k = 0; k < 24; k++) {                     // pelaren vidgas och glesnar uppåt
+          const sx = ax + Math.round(k / 4 + Math.sin(k / 3)), w = 2 + (k >> 3);
+          for (let i = 0; i < w; i++) {
+            if (k > 12 && (i + k) % 2) continue;
+            set(gg, sx + i, ay - 2 - k, k < 10 ? '%' : '&');
+          }
+        }
+      });
     }
   }
   if (kind === 'belägrad') {
