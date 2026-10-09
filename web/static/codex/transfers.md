@@ -1,6 +1,6 @@
 A **transfer** moves goods between two of your *own* settlements. No consent, no negotiation — simpler than [[trade]] with a stranger.
 
-Open **Economy → Transfer**, choose *From*, *To*, the good and the quantity, and press **Send →**. Below, **Your cargo in transit** lists everything on the road with its arrival time. A notification tells you when it is delivered.
+Open **Economy → Transfer**, choose *From*, *To*, the good and the quantity, and press **Send →**. Below, **Your cargo in transit** lists everything on the road — which city it left, which city it is bound for, and the day it arrives. A notification tells you when it is delivered.
 
 ## Cargo is physical
 

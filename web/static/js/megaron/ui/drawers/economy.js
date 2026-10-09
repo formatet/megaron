@@ -308,8 +308,8 @@ export function formatCargoRows(trades, nowMs) {
     return {
       good: t.good_key || '?',
       qty: Math.floor(t.quantity || 0),
-      from: `(${t.origin_q},${t.origin_r})`,
-      to: `(${t.dest_q},${t.dest_r})`,
+      from: t.origin_name || `(${t.origin_q},${t.origin_r})`,
+      to: t.dest_name || `(${t.dest_q},${t.dest_r})`,
       eta,
       direction: t.role === 'recipient' ? 'incoming' : 'outgoing',
     };
