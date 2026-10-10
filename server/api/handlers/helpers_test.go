@@ -15,7 +15,7 @@ func TestInsufficientGoodsErrorMessage(t *testing.T) {
 		{Good: "timber", Need: 100, Have: 0},
 	}}
 	got := err.Error()
-	want := "insufficient resources: stone (need 200, have 50, 150 short), timber (need 100, have 0, 100 short)"
+	want := "insufficient resources: stone (need 200, have 50, 150 short), timber (need 100, have 0, 100 short) [cedar counts as timber]"
 	if got != want {
 		t.Errorf("Error() = %q, want %q", got, want)
 	}

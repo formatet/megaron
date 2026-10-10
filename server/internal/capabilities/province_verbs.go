@@ -2,6 +2,7 @@ package capabilities
 
 import (
 	"fmt"
+	"math"
 	"sort"
 
 	"formatet/megaron/server/internal/province"
@@ -107,7 +108,14 @@ func canRecruit(cc checkContext) Verb {
 		}
 		afford := true
 		for good, perMan := range spec.Costs {
-			if cc.goodAmount(good) < perMan*float64(men) {
+			need := perMan * float64(men)
+			have := cc.goodAmount(good)
+			if good == "timber" {
+				// Cedar left after the cost's own cedar covers missing timber 1:1
+				// (api/handlers coverTimberWithCedar — keep the two in step).
+				have += math.Max(0, cc.goodAmount("cedar")-spec.Costs["cedar"]*float64(men))
+			}
+			if have < need {
 				afford = false
 				break
 			}

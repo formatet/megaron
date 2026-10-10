@@ -103,7 +103,11 @@ func trimNum(v float64) string {
 func (e *insufficientGoodsError) Error() string {
 	parts := make([]string, len(e.Short))
 	for i, s := range e.Short {
-		parts[i] = fmt.Sprintf("%s (%s)", s.Good, shortfall(s.Need, s.Have))
+		hint := ""
+		if s.Good == "timber" {
+			hint = " [cedar counts as timber]"
+		}
+		parts[i] = fmt.Sprintf("%s (%s)%s", s.Good, shortfall(s.Need, s.Have), hint)
 	}
 	return "insufficient resources: " + strings.Join(parts, ", ")
 }
@@ -147,6 +151,56 @@ func insufficientUnitsMsg(want, have province.ArmyComposition) string {
 	return "insufficient units: " + strings.Join(parts, ", ")
 }
 
+// coverTimberWithCedar lets cedar stand in for timber 1:1 (megaron_plan_cedar_virke.md,
+// Timothy 2026-10-10: a Wanax rich in cedar must not be unable to build chariots for lack
+// of olive groves). Timber is paid first; what is missing is taken from the cedar left over
+// after the cost's own cedar line (chariot, level surcharge). It returns the costs to
+// deduct and the spare cedar (stock minus the cost's own cedar), which is what a
+// timber shortfall report may count as available.
+func coverTimberWithCedar(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, costs map[string]float64) (map[string]float64, float64, error) {
+	need := costs["timber"]
+	if need <= 0 {
+		return costs, 0, nil
+	}
+	stock := func(good string) (float64, error) {
+		var have float64
+		err := tx.QueryRow(ctx,
+			`SELECT settled(amount, rate, calc_tick)
+			   FROM settlement_goods
+			  WHERE settlement_id = $1 AND good_key = $2
+			  FOR UPDATE`,
+			settlementID, good).Scan(&have)
+		if err == pgx.ErrNoRows {
+			return 0, nil
+		}
+		return have, err
+	}
+	timber, err := stock("timber")
+	if err != nil {
+		return nil, 0, err
+	}
+	cedar, err := stock("cedar")
+	if err != nil {
+		return nil, 0, err
+	}
+	spare := math.Max(0, cedar-costs["cedar"])
+	missing := need - timber
+	if missing <= 0 {
+		return costs, spare, nil
+	}
+	cover := math.Min(missing, spare)
+	if cover <= 0 {
+		return costs, spare, nil
+	}
+	out := make(map[string]float64, len(costs)+1)
+	for k, v := range costs {
+		out[k] = v
+	}
+	out["timber"] = need - cover
+	out["cedar"] += cover
+	return out, spare, nil
+}
+
 // deductGoods checks and deducts each good in costs from settlement_goods, using
 // the caller's transaction tx. All goods are checked first: if ANY good lacks
 // stock, nothing is deducted and an *insufficientGoodsError (listing every
@@ -154,6 +208,10 @@ func insufficientUnitsMsg(want, have province.ArmyComposition) string {
 // atomically together with silver/kharis/population — closing the partial-drain
 // where goods were committed before a later currency deduction failed.
 func deductGoods(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, costs map[string]float64) error {
+	costs, cedarSpare, err := coverTimberWithCedar(ctx, tx, settlementID, costs)
+	if err != nil {
+		return err
+	}
 	// Pass 1: lock the rows and check effective (lazy-evaluated) stock.
 	var short []goodShortfall
 	for key, qty := range costs {
@@ -174,6 +232,9 @@ func deductGoods(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, costs m
 			return err
 		}
 		if have < qty {
+			if key == "timber" {
+				have += cedarSpare // cedar would have covered it: show the pot, not half of it
+			}
 			short = append(short, goodShortfall{Good: key, Need: qty, Have: have})
 		}
 	}
