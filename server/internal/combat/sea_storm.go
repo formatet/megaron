@@ -26,6 +26,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"sort"
 
 	"formatet/megaron/server/internal/carrier"
 	"formatet/megaron/server/internal/economy"
@@ -76,7 +77,10 @@ type SeaStormPayload struct {
 	HullBefore  int             `json:"hull_before"`
 	Hull        int             `json:"hull"`
 	HullMax     int             `json:"hull_max"`
-	Damage      int             `json:"damage"` // hull lost to this storm (absent on events before 2026-10-10: 1)
+	StormID     uuid.UUID       `json:"storm_id"`
+	StormName   string          `json:"storm_name"`    // the storm's name when it has one
+	FirstToMeet bool            `json:"first_to_meet"` // this blow gave the owner the right to name the storm
+	Damage      int             `json:"damage"`        // hull lost to this storm (absent on events before 2026-10-10: 1)
 	Foundered   bool            `json:"foundered"`
 	Errand      string          `json:"errand"` // "march" or the transport kind
 	TransportID *uuid.UUID      `json:"transport_id,omitempty"`
@@ -304,6 +308,7 @@ func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTi
 		if _, still := inStorm(t - 1); still {
 			continue
 		}
+		stormID := occupied[t][hx]
 		before := hull
 		hull -= StormDamage
 		if hull < 0 {
@@ -311,7 +316,7 @@ func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTi
 		}
 		storms = append(storms, SeaStormPayload{
 			WorldID: worldID, ShipID: v.shipID, OwnerID: v.owner, ShipType: v.shipType,
-			Q: hx[0], R: hx[1], Tick: t, HullBefore: before, Hull: hull, HullMax: hullMax, Damage: before - hull,
+			Q: hx[0], R: hx[1], Tick: t, HullBefore: before, Hull: hull, HullMax: hullMax, Damage: before - hull, StormID: stormID,
 			Foundered: hull <= 0, Errand: v.errand, TransportID: v.transportID,
 		})
 		if hull <= 0 {
@@ -336,6 +341,9 @@ func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTi
 	name := unit.LoadDisplayName(ctx, tx, v.shipID)
 	for i := range storms {
 		storms[i].Name = name
+		if err := claimStorm(ctx, tx, occupied, v.owner, &storms[i]); err != nil {
+			return err
+		}
 	}
 	if hull > 0 {
 		if _, err := tx.Exec(ctx, `UPDATE units SET hull = $2, updated_at = now() WHERE id = $1`, v.shipID, hull); err != nil {
@@ -434,13 +442,25 @@ func (h *SeaStormScanHandler) founder(ctx context.Context, tx pgx.Tx, v seaVoyag
 }
 
 // stormOccupancy is "which hexes a storm covers at which tick", read from the stored tracks.
-type stormOccupancy map[int]map[[2]int]bool
+type stormOccupancy map[int]map[[2]int]uuid.UUID
 
-func (o stormOccupancy) at(tick int, hx [2]int) bool { return o[tick][hx] }
+func (o stormOccupancy) at(tick int, hx [2]int) bool { _, ok := o[tick][hx]; return ok }
+
+// hexesOf lists the hexes storm id covers at tick (for the first-meeting memory).
+func (o stormOccupancy) hexesOf(tick int, id uuid.UUID) [][2]int {
+	var out [][2]int
+	for hx, sid := range o[tick] {
+		if sid == id {
+			out = append(out, hx)
+		}
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i][0] < out[j][0] || out[i][0] == out[j][0] && out[i][1] < out[j][1] })
+	return out
+}
 
 func loadStormOccupancy(ctx context.Context, pool *pgxpool.Pool, worldID uuid.UUID, fromTick, toTick int) (stormOccupancy, error) {
 	rows, err := pool.Query(ctx,
-		`SELECT t.tick, t.q, t.r FROM sea_storm_track t JOIN sea_storms s ON s.id = t.storm_id
+		`SELECT t.tick, t.q, t.r, t.storm_id FROM sea_storm_track t JOIN sea_storms s ON s.id = t.storm_id
 		  WHERE s.world_id = $1 AND t.tick BETWEEN $2 AND $3`, worldID, fromTick, toTick)
 	if err != nil {
 		return nil, fmt.Errorf("sea storm scan: load storm tracks: %w", err)
@@ -449,13 +469,14 @@ func loadStormOccupancy(ctx context.Context, pool *pgxpool.Pool, worldID uuid.UU
 	out := stormOccupancy{}
 	for rows.Next() {
 		var tick, q, r int
-		if err := rows.Scan(&tick, &q, &r); err != nil {
+		var sid uuid.UUID
+		if err := rows.Scan(&tick, &q, &r, &sid); err != nil {
 			return nil, err
 		}
 		if out[tick] == nil {
-			out[tick] = map[[2]int]bool{}
+			out[tick] = map[[2]int]uuid.UUID{}
 		}
-		out[tick][[2]int{q, r}] = true
+		out[tick][[2]int{q, r}] = sid
 	}
 	return out, rows.Err()
 }
@@ -477,4 +498,42 @@ func (h *SeaStormScanHandler) stepWeather(ctx context.Context, worldID uuid.UUID
 		return err
 	}
 	return tx.Commit(ctx)
+}
+
+// claimStorm gives the owner of the first ship a storm ever strikes the right to name it
+// (megaron_plan_stormnamn.md): sea_storms.claimed_by is set once, in the same TX as the
+// blow, even if this blow sinks the ship. The first meeting also writes the owner a
+// storm memory at the place of the blow, so a Wanax whose ship went down can still find
+// the storm to name. A storm that already has a name carries it into the payload.
+func claimStorm(ctx context.Context, tx pgx.Tx, occupied stormOccupancy, owner uuid.UUID, s *SeaStormPayload) error {
+	tag, err := tx.Exec(ctx,
+		`UPDATE sea_storms SET claimed_by = $2, claimed_tick = $3 WHERE id = $1 AND claimed_by IS NULL`,
+		s.StormID, owner, s.Tick)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 1 {
+		s.FirstToMeet = true
+		hexes := make([]map[string]int, 0, 3)
+		for _, hx := range occupied.hexesOf(s.Tick, s.StormID) {
+			hexes = append(hexes, map[string]int{"q": hx[0], "r": hx[1]})
+		}
+		raw, err := json.Marshal(hexes)
+		if err != nil {
+			return err
+		}
+		_, err = tx.Exec(ctx,
+			`INSERT INTO player_storm_sightings (player_id, storm_id, seen_tick, hexes) VALUES ($1, $2, $3, $4)
+			 ON CONFLICT (player_id, storm_id) DO UPDATE SET seen_tick = EXCLUDED.seen_tick, hexes = EXCLUDED.hexes`,
+			owner, s.StormID, s.Tick, raw)
+		return err
+	}
+	var nm *string
+	if err := tx.QueryRow(ctx, `SELECT name FROM sea_storms WHERE id = $1`, s.StormID).Scan(&nm); err != nil {
+		return err
+	}
+	if nm != nil {
+		s.StormName = *nm
+	}
+	return nil
 }

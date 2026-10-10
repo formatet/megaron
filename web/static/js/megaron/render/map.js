@@ -19,6 +19,7 @@ import { bindMapInput } from './map_input.js';
 import { confirmInline, showInlineResult } from '../ui/inline_result.js';
 import { unitHoverLines } from '../ui/hover.js';
 import { drawStorm, STORM_FRAMES } from './storms.js';
+import { stormPanelHTML } from '../ui/stormname.js';
 import { incomingTargetKeys } from '../ui/movements.js';
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
@@ -4271,6 +4272,7 @@ function openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits) {
 
   const foot = document.getElementById('ip-foot');
   let footHtml = workersHereHTML(h) + unitListHTML(units, foreignUnits);
+  if (isSea) footHtml += stormPanelHTML((State.stormData || []).filter(st => st.hexes.some(sh => sh.q === h.q && sh.r === h.r)));
 
   if (isMountain) {
     footHtml += '<p class="empty-state">Impassable — armies cannot go here.</p>';
@@ -4564,6 +4566,11 @@ function openHexPanel(h) {
   const isMountain = tile.terrain === 'mountain_limestone' || tile.terrain === 'mountain_red';
   const isSea = tile.terrain === 'coastal_sea' || tile.terrain === 'deep_sea';
   openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits);
+}
+
+// Re-render the open hex panel from fresh State (e.g. after a storm has been named).
+export function reopenSelectedHex() {
+  if (State.selectedHex) openHexPanel(State.selectedHex);
 }
 
 export function closeInspect() {

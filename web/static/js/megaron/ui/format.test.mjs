@@ -662,3 +662,12 @@ test('ShipStormDamaged: reads as hull left, not as a loss', () => {
   const line = notifText('ShipStormDamaged', { ...foundered, foundered: false, hull: 3, hull_before: 4, cargo: undefined });
   assert.equal(line, 'Your Galley was battered by a storm at (6,0) — hull 3/5');
 });
+
+test('storm notices: a named storm is called by name; the first to meet an unnamed one is told they may name it', () => {
+  const hit = { ...foundered, foundered: false, hull: 3, hull_before: 5, cargo: undefined };
+  assert.equal(notifText('ShipStormDamaged', { ...hit, storm_name: 'Skyla' }),
+    'Your Galley was battered by the storm Skyla at (6,0) — hull 3/5');
+  assert.equal(notifText('ShipStormDamaged', { ...hit, first_to_meet: true }),
+    'Your Galley was battered by a storm at (6,0) — hull 3/5. You were the first to meet this storm — click it on the map to name it.');
+  assert.match(notifText('ShipFoundered', { ...foundered, first_to_meet: true }), /lost with her: 40 silver\. You were the first to meet this storm/);
+});
