@@ -1,4 +1,4 @@
-A **storm** is three connected hexes of dark cloud on the Thalassa. There is about one for every 36 hexes of sea, and they never stop wandering. <!-- src: server/internal/combat/sea_storm_weather.go SeaHexesPerStorm -->
+A **storm** is three connected hexes of dark cloud on the Thalassa. There is about one for every 100 hexes of sea, and they never stop wandering. <!-- src: server/internal/combat/sea_storm_weather.go SeaHexesPerStorm -->
 
 ## How they move
 

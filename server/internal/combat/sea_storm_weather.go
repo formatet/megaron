@@ -22,8 +22,8 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// SeaHexesPerStorm: the world holds floor(sea hexes / this) storms (Timothy's 36).
-const SeaHexesPerStorm = 36
+// SeaHexesPerStorm: the world holds floor(sea hexes / this) storms (Timothy 2026-10-10: 100, was 36 — seafaring was lethal).
+const SeaHexesPerStorm = 100
 
 // StormHexes is how many hexes one storm covers.
 const StormHexes = 3

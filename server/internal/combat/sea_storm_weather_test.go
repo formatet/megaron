@@ -108,13 +108,13 @@ func stormTracks(t *testing.T, pool *pgxpool.Pool, worldID uuid.UUID) (storms, r
 }
 
 func TestSeaStormWeather_OneStormPerThirtySixSeaHexesAndNoDoubleStep(t *testing.T) {
-	pool, worldID := seaWorld(t, 12) // 144 hexes → 4 storms
+	pool, worldID := seaWorld(t, 20) // 400 hexes → 4 storms
 	h := NewSeaStormScanHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil)
 	h.Dice = newStormDice(5)
 	runStormDay(t, h, worldID, 1)
 	storms, rows := stormTracks(t, pool, worldID)
-	if storms != 144/SeaHexesPerStorm {
-		t.Fatalf("storms = %d, want %d (144 sea hexes / %d)", storms, 144/SeaHexesPerStorm, SeaHexesPerStorm)
+	if storms != 400/SeaHexesPerStorm {
+		t.Fatalf("storms = %d, want %d (400 sea hexes / %d)", storms, 400/SeaHexesPerStorm, SeaHexesPerStorm)
 	}
 	runStormDay(t, h, worldID, 1) // duplicate scan of the same tick
 	if _, again := stormTracks(t, pool, worldID); again != rows {
@@ -147,13 +147,13 @@ func TestSeaStormWeather_LateScanEqualsDailyScans(t *testing.T) {
 		}
 		return out
 	}
-	poolA, worldA := seaWorld(t, 7) // 49 hexes → one storm, so the dice order is the same
+	poolA, worldA := seaWorld(t, 10) // 100 hexes → one storm, so the dice order is the same
 	a := NewSeaStormScanHandler(poolA, events.NewScheduler(poolA, nil), events.NewStore(poolA), nil)
 	a.Dice = newStormDice(7)
 	for day := 1; day <= 8; day++ {
 		runStormDay(t, a, worldA, day)
 	}
-	poolB, worldB := seaWorld(t, 7)
+	poolB, worldB := seaWorld(t, 10)
 	b := NewSeaStormScanHandler(poolB, events.NewScheduler(poolB, nil), events.NewStore(poolB), nil)
 	b.Dice = newStormDice(7)
 	runStormDay(t, b, worldB, 1)
