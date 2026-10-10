@@ -467,10 +467,11 @@ func TestExecuteOccupyAction_Burn(t *testing.T) {
 
 	var ownerID *uuid.UUID
 	var state string
-	var recolAfter *int
+	var recolAfter, burnedTick *int
+	var nowTick int
 	if err := pool.QueryRow(ctx,
-		`SELECT owner_id, state, recolonizable_after_tick FROM settlements WHERE id = $1`, f.defSettlement,
-	).Scan(&ownerID, &state, &recolAfter); err != nil {
+		`SELECT owner_id, state, recolonizable_after_tick, burned_tick, current_world_tick() FROM settlements WHERE id = $1`, f.defSettlement,
+	).Scan(&ownerID, &state, &recolAfter, &burnedTick, &nowTick); err != nil {
 		t.Fatalf("read settlement: %v", err)
 	}
 	if ownerID != nil {
@@ -481,6 +482,11 @@ func TestExecuteOccupyAction_Burn(t *testing.T) {
 	}
 	if recolAfter == nil {
 		t.Fatal("recolonizable_after_tick is nil, want set")
+	}
+	// The map draws the fire for exactly the tick of the burning (world.go
+	// /provinces `burning`), so the burn must stamp that tick.
+	if burnedTick == nil || *burnedTick != nowTick {
+		t.Errorf("burned_tick = %v, want %d (the tick the city was burned)", burnedTick, nowTick)
 	}
 
 	// RED BEFORE / GREEN AFTER for the karens itself (S5's other half): the

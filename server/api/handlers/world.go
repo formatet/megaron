@@ -853,7 +853,8 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 		        EXISTS (SELECT 1 FROM build_queue bq WHERE bq.settlement_id = s.id) AS build_active,
 		        EXISTS (SELECT 1 FROM scheduled_events se WHERE se.event_type = 'TrainComplete'
 		                AND se.processed_at IS NULL
-		                AND (se.payload->>'settlement_id')::uuid = s.id) AS train_active
+		                AND (se.payload->>'settlement_id')::uuid = s.id) AS train_active,
+		        (s.state = 'razed' AND s.burned_tick IS NOT NULL AND s.burned_tick = (SELECT current_tick FROM worlds WHERE id = $1)) AS burning
 		 FROM provinces p
 		 JOIN settlements s ON s.province_id = p.id
 		 LEFT JOIN players pl ON pl.id = s.owner_id
@@ -891,13 +892,17 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 		ArmyTotal   int    `json:"army_total,omitempty"`
 		BuildActive bool   `json:"build_active,omitempty"`
 		TrainActive bool   `json:"train_active,omitempty"`
+		// Burning: sacked and burned THIS tick (settlements.burned_tick). The
+		// map draws the fire for that one game day, then the ruin. Live sight
+		// only — a fire is activity, and memory carries none.
+		Burning bool `json:"burning,omitempty"`
 	}
 	var markers []provinceMarker
 	for rows.Next() {
 		var m provinceMarker
 		var population int
 		var terrain string
-		if err := rows.Scan(&m.ID, &m.SettlementID, &m.Name, &m.Culture, &m.KingdomID, &m.Q, &m.R, &terrain, &m.State, &m.Besieged, &m.Walls, &population, &m.Owner, &m.KingdomName, &m.ArmyTotal, &m.BuildActive, &m.TrainActive); err != nil {
+		if err := rows.Scan(&m.ID, &m.SettlementID, &m.Name, &m.Culture, &m.KingdomID, &m.Q, &m.R, &terrain, &m.State, &m.Besieged, &m.Walls, &population, &m.Owner, &m.KingdomName, &m.ArmyTotal, &m.BuildActive, &m.TrainActive, &m.Burning); err != nil {
 			continue
 		}
 		m.SizeTier = settlement.SizeTier(population)
@@ -919,6 +924,7 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 			// remembered city; AnyEyeSees narrows this branch to live only.
 			if !province.AnyEyeSees(eyes, pos, terrain) {
 				m.ArmyTotal = 0
+				m.Burning = false
 			}
 			// Build/train activity stays hidden from outside regardless of tier.
 			m.BuildActive = false

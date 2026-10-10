@@ -490,7 +490,8 @@ func executeSack(
 			`UPDATE settlements SET
 			   owner_id = NULL, control_type = 'occupied', kingdom_id = NULL, state = 'razed',
 			   occupant_id = NULL, occupied_since_tick = NULL, annex_ready_notified = false,
-			   recolonizable_after_tick = current_world_tick() + $2, updated_at = now()
+			   recolonizable_after_tick = current_world_tick() + $2,
+			   burned_tick = current_world_tick(), updated_at = now()
 			 WHERE id = $1`,
 			settlementID, burnRecolonizeKaren,
 		); err != nil {
