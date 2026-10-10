@@ -549,11 +549,14 @@ export function notifText(kind, body) {
       // when the ship entered sea hex (q,r); hull is the value after it.
       const subject = `Your ${body.name || body.ship_type || 'ship'}`;
       const at = `at (${body.q},${body.r})`;
-      if (kind === 'ShipStormDamaged') return `${subject} was battered by a storm ${at} — hull ${body.hull ?? '?'}/${body.hull_max ?? 5}`;
+      // A named storm is called by its name; the first Wanax to meet an unnamed one may name it.
+      const storm = body.storm_name ? `the storm ${body.storm_name}` : 'a storm';
+      const first = body.first_to_meet ? '. You were the first to meet this storm — click it on the map to name it.' : '';
+      if (kind === 'ShipStormDamaged') return `${subject} was battered by ${storm} ${at} — hull ${body.hull ?? '?'}/${body.hull_max ?? 5}${first}`;
       const lost = [];
       for (const c of body.cargo || []) lost.push(`${fmtNum(c.quantity)} ${c.good_key}`);
       if (body.troops) lost.push(`${body.troops.size} ${body.troops.unit_type}`);
-      return `${subject} foundered in a storm ${at}` + (lost.length ? ` — lost with her: ${lost.join(', ')}` : '');
+      return `${subject} foundered in ${storm} ${at}` + (lost.length ? ` — lost with her: ${lost.join(', ')}` : '') + first;
     }
     case 'ShipRepaired': {
       // Payload per ShipRepairCompleteHandler (megaron_plan_skeppsreparation.md

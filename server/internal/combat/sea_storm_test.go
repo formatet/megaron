@@ -346,3 +346,91 @@ func assertSameKeysAsWebFixture(t *testing.T, raw []byte, name string) {
 		}
 	}
 }
+
+// The first ship a storm strikes gives its owner the right to name it, once (stormnamn.md):
+// two ships of two Wanaxes meet the same storm at the same tick — exactly one claims, the
+// claim never moves on a later blow, and a ship that sinks in its first blow still claims
+// and keeps a memory of the storm to find it by.
+func TestSeaStorm_FirstToMeetClaimsTheNameOnce(t *testing.T) {
+	pool, worldID, owner, route := seaStormWorld(t)
+	var other uuid.UUID
+	if err := pool.QueryRow(context.Background(), `INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`,
+		"storm-other-"+uuid.New().String()).Scan(&other); err != nil {
+		t.Fatal(err)
+	}
+	a, _ := mkStormFleet(t, pool, worldID, owner, route)
+	b, _ := mkStormFleet(t, pool, worldID, other, route)
+	stormsOverHexes(t, pool, worldID, 1, 2, 4)
+	h := NewSeaStormScanHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil)
+	h.Dice = newStormDice(1)
+	for day := 0; day <= 3; day++ {
+		runStormDay(t, h, worldID, day)
+	}
+	runStormDay(t, h, worldID, 3) // a retried day claims nothing again
+
+	rows, err := pool.Query(context.Background(), `SELECT id, claimed_by FROM sea_storms WHERE world_id = $1 AND claimed_by IS NOT NULL`, worldID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	claims := map[uuid.UUID]uuid.UUID{}
+	for rows.Next() {
+		var id, by uuid.UUID
+		_ = rows.Scan(&id, &by)
+		claims[id] = by
+	}
+	rows.Close()
+	if len(claims) != 2 {
+		t.Fatalf("claimed storms = %d, want 2 (the storm at hex 2 is met in the same encounter as hex 1)", len(claims))
+	}
+	var payloads []SeaStormPayload
+	for _, ship := range []uuid.UUID{a, b} {
+		prows, err := pool.Query(context.Background(), `SELECT payload FROM events WHERE stream_id = $1 AND event_type = $2`, ship, EventShipStormDamaged)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for prows.Next() {
+			var raw []byte
+			_ = prows.Scan(&raw)
+			var p SeaStormPayload
+			_ = json.Unmarshal(raw, &p)
+			payloads = append(payloads, p)
+		}
+		prows.Close()
+	}
+	first := 0
+	for _, p := range payloads {
+		if p.FirstToMeet {
+			first++
+			if claims[p.StormID] != p.OwnerID {
+				t.Fatalf("first_to_meet payload owner %s != claimant %s", p.OwnerID, claims[p.StormID])
+			}
+		}
+	}
+	if first != 2 {
+		t.Fatalf("first_to_meet payloads = %d, want exactly one per claimed storm (2)", first)
+	}
+}
+
+func TestSeaStorm_ShipSunkInFirstBlowStillClaimsAndRemembers(t *testing.T) {
+	pool, worldID, owner, route := seaStormWorld(t)
+	ship, _ := mkStormFleet(t, pool, worldID, owner, route)
+	if _, err := pool.Exec(context.Background(), `UPDATE units SET hull = 1 WHERE id = $1`, ship); err != nil {
+		t.Fatal(err)
+	}
+	stormsOverHexes(t, pool, worldID, 1, 2)
+	h := NewSeaStormScanHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil)
+	h.Dice = newStormDice(1)
+	runStormDay(t, h, worldID, 0)
+	if status, _ := shipState(t, pool, ship); status != "disbanded" {
+		t.Fatalf("ship status = %s, want disbanded", status)
+	}
+	var stormID uuid.UUID
+	if err := pool.QueryRow(context.Background(), `SELECT id FROM sea_storms WHERE world_id = $1 AND claimed_by = $2`, worldID, owner).Scan(&stormID); err != nil {
+		t.Fatalf("no claim by the sunk ship's owner: %v", err)
+	}
+	var n int
+	_ = pool.QueryRow(context.Background(), `SELECT count(*) FROM player_storm_sightings WHERE player_id = $1 AND storm_id = $2`, owner, stormID).Scan(&n)
+	if n != 1 {
+		t.Fatalf("sightings for the claimant = %d, want 1 (the memory lets a sunk ship's owner find the storm)", n)
+	}
+}

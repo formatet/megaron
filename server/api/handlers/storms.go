@@ -25,6 +25,8 @@ type stormView struct {
 	Heading   string         `json:"heading,omitempty"` // live only: where it is drifting
 	SeenTick  int            `json:"seen_tick"`         // live: now; remembered: when you last saw it
 	LastKnown bool           `json:"last_known,omitempty"`
+	Name      string         `json:"name,omitempty"` // empty until the first Wanax to meet it names it
+	CanName   bool           `json:"can_name,omitempty"` // you were first to meet it and have not named it yet
 }
 
 // Storms handles GET /worlds/:worldID/storms (megaron_plan_stormar.md).
@@ -176,6 +178,7 @@ func (h *WorldHandler) Storms(w http.ResponseWriter, r *http.Request) {
 		}
 		out = append(out, stormView{ID: id, Tier: "remembered", Hexes: m.hexes, SeenTick: m.seen, LastKnown: true})
 	}
+	h.nameStorms(ctx, worldID, playerID, out)
 	writeJSON(w, http.StatusOK, map[string]any{"tick": tick, "storms": out})
 }
 
@@ -188,4 +191,35 @@ func (h *WorldHandler) rememberStorm(ctx context.Context, playerID, stormID uuid
 		`INSERT INTO player_storm_sightings (player_id, storm_id, seen_tick, hexes) VALUES ($1, $2, $3, $4)
 		 ON CONFLICT (player_id, storm_id) DO UPDATE SET seen_tick = EXCLUDED.seen_tick, hexes = EXCLUDED.hexes`,
 		playerID, stormID, tick, raw)
+}
+
+// nameStorms adds each listed storm's name and whether this Wanax may still name it. Only
+// storms already in the FOW-filtered list are touched, so a name never reveals a storm.
+func (h *WorldHandler) nameStorms(ctx context.Context, worldID, playerID uuid.UUID, out []stormView) {
+	if len(out) == 0 {
+		return
+	}
+	type nm struct {
+		name      string
+		claimedBy *uuid.UUID
+		named     bool
+	}
+	byID := map[uuid.UUID]nm{}
+	rows, err := h.pool.Query(ctx, `SELECT id, COALESCE(name, ''), claimed_by, named_tick IS NOT NULL FROM sea_storms WHERE world_id = $1`, worldID)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id uuid.UUID
+		var n nm
+		if rows.Scan(&id, &n.name, &n.claimedBy, &n.named) == nil {
+			byID[id] = n
+		}
+	}
+	for i := range out {
+		n := byID[out[i].ID]
+		out[i].Name = n.name
+		out[i].CanName = !n.named && n.claimedBy != nil && *n.claimedBy == playerID
+	}
 }

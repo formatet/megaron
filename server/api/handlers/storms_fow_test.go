@@ -26,6 +26,8 @@ type stormsResp struct {
 		Tier     string    `json:"tier"`
 		Heading  string    `json:"heading"`
 		SeenTick int       `json:"seen_tick"`
+		Name     string    `json:"name"`
+		CanName  bool      `json:"can_name"`
 		Hexes    []struct {
 			Q int `json:"q"`
 			R int `json:"r"`

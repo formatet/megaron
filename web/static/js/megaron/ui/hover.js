@@ -79,9 +79,10 @@ export function unitHoverLines({ own = [], foreign = [], caravans = [], runners 
     }
   }
   for (const st of storms) {
+    const title = st.name ? `Storm ${st.name}` : 'Storm';
     lines.push(st.tier === 'live'
-      ? `Storm${st.heading ? ' — drifting ' + st.heading : ''}`
-      : `Storm — last seen on day ${st.seen_tick}`);
+      ? `${title}${st.heading ? ' — drifting ' + st.heading : ''}`
+      : `${title} — last seen on day ${st.seen_tick}`);
   }
   return lines;
 }

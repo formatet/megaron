@@ -348,6 +348,8 @@ func main() {
 		r.Get("/admin/worlds/{worldID}/god-view", godH.View)
 		r.Get("/admin/worlds/{worldID}/reports", rh.List)
 		r.Post("/admin/worlds/{worldID}/backfill-placements", ph.BackfillPlacements)
+		r.Put("/admin/worlds/{worldID}/storms/{stormID}/name", wh.AdminNameStorm)
+		r.Delete("/admin/worlds/{worldID}/storms/{stormID}/name", wh.AdminClearStormName)
 		// Reference catalogue — no auth, static data.
 		r.Get("/buildings", ph.BuildingCatalogue)
 		r.Get("/units", ph.UnitCatalogue)
@@ -378,6 +380,7 @@ func main() {
 		// whole map use the X-Admin-Key god view (api/handlers/god.go).
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/map", wh.Map)
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/storms", wh.Storms)
+		r.With(auth.Middleware(authSvc)).Post("/worlds/{worldID}/storms/{stormID}/name", wh.NameStorm)
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/colonize-preview", wh.ColonizePreview)
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/provinces", wh.Provinces)
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/marches", wh.Marches)

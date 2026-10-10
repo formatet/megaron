@@ -16,9 +16,10 @@ import { track } from './telemetry.js';
 import { initWS, fullResync, checkWsLiveness } from './ws.js';
 import {
   initMap, refreshTiles, loadMap, zoom, resetView, toggleActivityOverlay,
-  closeInspect, sendMessengerFromInspect,
+  closeInspect, sendMessengerFromInspect, reopenSelectedHex,
 } from './render/map.js';
 import { stopCityAnim } from './render/city.js';
+import { nameStorm } from './ui/stormname.js';
 import {
   showLawagatasBrief, dismissBrief, MusicPlayer, toggleMusic,
   initCelestial, initMusicAutostart, initMusicVisibility, initSoundPrefs,
@@ -211,6 +212,8 @@ Object.assign(window, {
   sendGift,
   sendMarch,
   sendMessengerFromInspect,
+  nameStorm,
+  reopenSelectedHex,
   slaughterLivestock,
   sortEconomySettlements,
   startBuild,
