@@ -113,3 +113,38 @@ func TestApplyDecay_GrowthGateMatchesFoodNet(t *testing.T) {
 		})
 	}
 }
+
+// The third state: a city FoodTick could not feed (food_unmet_amount > 0)
+// shrinks even when its daily balance is positive, and GrowthState must say so.
+// Without this case the hunger branch of GrowthState was pinned to nothing.
+func TestApplyDecay_HungerShrinksMatchesGrowthState(t *testing.T) {
+	const population = 1000
+	need := economy.GrainConsumptionPerTick(population)
+	terrains := [6]string{"plains", "mountain_limestone", "mountain_limestone", "mountain_limestone", "mountain_limestone", "mountain_limestone"}
+	pool, worldID, settlementID := newGrowthFixture(t, terrains, population)
+	ctx := context.Background()
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+		 VALUES ($1, $2, 10000, $3, 1000000, current_world_tick())
+		 ON CONFLICT (settlement_id, good_key) DO UPDATE
+		 SET amount = EXCLUDED.amount, rate = EXCLUDED.rate, cap = EXCLUDED.cap, calc_tick = EXCLUDED.calc_tick`,
+		settlementID, economy.GoodGrain, need+0.25); err != nil {
+		t.Fatal(err)
+	}
+	const unmet = 50.0
+	if _, err := pool.Exec(ctx, `UPDATE settlements SET food_unmet_amount = $2 WHERE id = $1`, settlementID, unmet); err != nil {
+		t.Fatal(err)
+	}
+	state := economy.GrowthState(unmet, economy.FoodNet(need+0.25, population))
+	if state != economy.GrowthShrinking {
+		t.Fatalf("GrowthState with unmet food = %s, want %s", state, economy.GrowthShrinking)
+	}
+	newTestTickHandler(pool).applyDecay(ctx, worldID, atomic.AddInt64(&advanceOneDayEventID, 1))
+	var after int
+	if err := pool.QueryRow(ctx, `SELECT population FROM settlements WHERE id = $1`, settlementID).Scan(&after); err != nil {
+		t.Fatal(err)
+	}
+	if after >= population {
+		t.Errorf("GrowthState says %s but population %d->%d", state, population, after)
+	}
+}
