@@ -526,7 +526,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				if fp.Active {
 					return printFoundingStatus(fp)
 				}
-				return fmt.Errorf("no province in config and no active founder phase — rejoin the world or set province_id")
+				return fmt.Errorf("no city and no host in this world — if your last city fell, run: keryx rise (or keryx leave); if you never joined, run: keryx join")
 			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s", cfg.WorldID, prov)
 			data, err := c.get(path)

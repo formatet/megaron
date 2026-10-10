@@ -181,11 +181,12 @@ func (h *WebHandler) Play(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// No settlement. A dispossessed Wanax (lost their last city) is shown their
-	// epitaph; a Wanax who never joined goes to the join page.
+	// epitaph, where they rise again or leave; one who left sees it too, without
+	// the choice. A Wanax who never joined goes to the join page.
 	var dispossessed bool
 	_ = h.pool.QueryRow(r.Context(),
 		`SELECT EXISTS (SELECT 1 FROM player_world_records
-		   WHERE player_id = $1 AND world_id = $2 AND status = 'dispossessed')`,
+		   WHERE player_id = $1 AND world_id = $2 AND status IN ('dispossessed', 'departed'))`,
 		playerID, wid,
 	).Scan(&dispossessed)
 	if dispossessed {
@@ -295,7 +296,7 @@ func (h *WebHandler) EpitaphView(w http.ResponseWriter, r *http.Request) {
 		 WHERE player_id = $1 AND world_id = $2`,
 		playerID, wid,
 	).Scan(&status, &lastSettlementID)
-	if err != nil || status != "dispossessed" {
+	if err != nil || (status != "dispossessed" && status != "departed") {
 		http.Redirect(w, r, "/play", http.StatusSeeOther)
 		return
 	}
@@ -315,12 +316,13 @@ func (h *WebHandler) EpitaphView(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.render(w, "epitaph.html", map[string]any{
-		"Wanax":   wanax,
-		"City":    cityName,
-		"Culture": culture,
-		"Lines":   h.epitaphLines(r.Context(), lastSettlementID, cityName),
-		"WorldID": wid,
-		"MapMode": true, // suppress the site nav/footer for a full-screen crawl
+		"Wanax":    wanax,
+		"City":     cityName,
+		"Culture":  culture,
+		"Lines":    h.epitaphLines(r.Context(), lastSettlementID, cityName),
+		"WorldID":  wid,
+		"Departed": status == "departed",
+		"MapMode":  true, // suppress the site nav/footer for a full-screen crawl
 	})
 }
 

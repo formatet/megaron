@@ -9,9 +9,9 @@
 
   <div class="epitaph-viewport">
     <div class="epitaph-crawl">
-      <div class="epitaph-kicker">Här slutar</div>
+      <div class="epitaph-kicker">Here ends the reign of</div>
       <h1 class="epitaph-name">Wanax {{.Wanax}}</h1>
-      {{if .City}}<div class="epitaph-seat">av {{.City}}</div>{{end}}
+      {{if .City}}<div class="epitaph-seat">of {{.City}}</div>{{end}}
       <div class="epitaph-body">
         {{range .Lines}}<p>{{.}}</p>{{end}}
       </div>
@@ -19,7 +19,15 @@
   </div>
 
   <div class="epitaph-actions">
-    <button class="epitaph-btn" onclick="beginAnew()">Begin anew</button>
+    {{if .Departed}}
+    <p class="epitaph-note">You have left this world. Your account remains for the next one.</p>
+    <button class="epitaph-btn" onclick="logOut()">Log out</button>
+    {{else}}
+    <button class="epitaph-btn" onclick="riseAgain()">Gather the survivors</button>
+    <button class="epitaph-btn" onclick="leaveWorld()">Leave this world</button>
+    <p class="epitaph-note">Survivors set out as a small host on another shore, with one company of spearmen.</p>
+    <p class="epitaph-note" id="epitaph-result"></p>
+    {{end}}
   </div>
 </div>
 
@@ -89,8 +97,12 @@
 
   /* "Begin anew" — always reachable, floating above the crawl. */
   .epitaph-actions {
-    position: absolute; left: 0; right: 0; bottom: 2rem; z-index: 5;
-    display: flex; justify-content: center;
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 5;
+    display: flex; flex-wrap: wrap; justify-content: center; gap: .75rem;
+    /* Bottom fade, the top fade's twin: the crawl passes behind the choice
+       instead of through its words. */
+    padding: 4rem 1rem 2rem;
+    background: linear-gradient(rgba(5,6,10,0), #05060a 40%);
   }
   .epitaph-btn {
     background: transparent; color: #f3d688;
@@ -104,6 +116,8 @@
     border-color: #f9e79f; color: #f9e79f;
   }
 
+  .epitaph-note { flex-basis: 100%; margin: 0; text-align: center; }
+
   @media (prefers-reduced-motion: reduce) {
     .epitaph-crawl {
       position: static; transform: none; animation: none;
@@ -114,14 +128,23 @@
   }
 </style>
 
-<script>
-  function beginAnew() {
+<script type="module">
+  import { fetchAuth } from '/static/js/megaron/api.js';
+  async function choose(path) {
+    const res = await fetchAuth('/api/v1/worlds/{{.WorldID}}/' + path, { method: 'POST' });
+    if (res.ok) { window.location.href = '/play'; return; }
+    const d = await res.json().catch(() => ({}));
+    document.getElementById('epitaph-result').textContent = d.error || 'The gods did not answer. Try again.';
+  }
+  window.riseAgain = () => choose('rise');
+  window.leaveWorld = () => choose('leave');
+  window.logOut = function logOut() {
     try {
       localStorage.removeItem('poleia_token');
       localStorage.removeItem('poleia_refresh');
     } catch (e) { /* ignore */ }
     // /logout clears the httpOnly auth cookie server-side, then redirects to /.
     window.location.href = '/logout';
-  }
+  };
 </script>
 {{end}}
