@@ -12,6 +12,7 @@ import { canonicalUnitType, actorName } from '../ui/actornames.js';
 import { drawActor, spriteRuns, FOREIGN_ACCENT, FOREIGN_OUTLINE } from './actorsprites.js';
 import { eyeSees } from './sight.js';
 import { drawRemembered } from './memory.js';
+import { drawFire, FIRE_FRAMES } from './doomfire.js';
 import { drawCityMass, citySprite, cityTop, cityFoot } from './citysprites.js';
 import { zoomStep, clampPan } from './camera.js';
 import { bindMapInput } from './map_input.js';
@@ -2930,6 +2931,8 @@ function drawProvince(ctx, cx, cy, p) {
     ctx.fillStyle = '#3A342E';
     ctx.fillRect(cx - 1, cy + 1, 2, 1);
     ctx.restore();
+    // Sacked and burned this tick: the city burns for that one game day.
+    if (p.burning) drawFire(ctx, cx, cy + 3, p.settlement_id || p.id, State.animFrame);
     return;
   }
   const walls = Math.min(3, p.walls || 0);
@@ -3414,8 +3417,12 @@ export function render() {
   const blinkTick = (State.animFrame / FOREIGN_BLINK_FRAMES) | 0;
   const blinkChanged = State.foreignUnitData.length > 0 && blinkTick !== State.lastBlinkTick;
   if (blinkChanged) State.lastBlinkTick = blinkTick;
+  // A burning city animates by itself, like the blink: wake on the fire's step.
+  const fireTick = (State.animFrame / FIRE_FRAMES) | 0;
+  const fireChanged = fireTick !== State.lastFireTick && State.provinceData.some(p => p.burning);
+  if (fireChanged) State.lastFireTick = fireTick;
 
-  if (!State.dirty && !seaChanged && !blinkChanged && State.marchData.length === 0 && State.messengerData.length === 0 && State.tradeData.length === 0
+  if (!State.dirty && !seaChanged && !blinkChanged && !fireChanged && State.marchData.length === 0 && State.messengerData.length === 0 && State.tradeData.length === 0
       && !State.unitsData.some(u => u.status === 'marching')
       && !State.foreignUnitData.some(u => u.status === 'marching')) {
     requestAnimationFrame(render);
