@@ -543,3 +543,21 @@ func TestPrintWanaxGreeting_SilentOnFailure(t *testing.T) {
 		t.Errorf("printWanaxGreeting on failure printed %q, want silence", out)
 	}
 }
+
+func TestGrowthLine(t *testing.T) {
+	cases := []struct {
+		state string
+		net   float64
+		want  string
+	}{
+		{"holding", -1.67, "Population 1000 — not growing: food net -1.7 per day (needs more than 0)"},
+		{"growing", 30.8, "Population 1000 — growing: food net +30.8 per day"},
+		{"shrinking", -5, "Population 1000 — shrinking: hunger"},
+		{"", 3, ""},
+	}
+	for _, c := range cases {
+		if got := growthLine(1000, c.state, c.net); got != c.want {
+			t.Errorf("growthLine(%q, %g) = %q, want %q", c.state, c.net, got, c.want)
+		}
+	}
+}

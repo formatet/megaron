@@ -443,6 +443,22 @@ func sitosGranaryState(coverage, low, high, total, net float64) string {
 	}
 }
 
+// growthLine says in one sentence what the population is doing and why. state
+// and net are the server's growth_state / food_net_per_tick (the tick gate's
+// own inputs); "" when the server did not report a state. The web drawer
+// (city_production.js growthLineText) says the same words.
+func growthLine(pop float64, state string, net float64) string {
+	switch state {
+	case "growing":
+		return fmt.Sprintf("Population %.0f — growing: food net %+.1f per day", pop, net)
+	case "holding":
+		return fmt.Sprintf("Population %.0f — not growing: food net %+.1f per day (needs more than 0)", pop, net)
+	case "shrinking":
+		return fmt.Sprintf("Population %.0f — shrinking: hunger", pop)
+	}
+	return ""
+}
+
 // multiCityHint (legibility fix, 2026-07-24 — three separate soak rounds):
 // `status` shows exactly ONE settlement — the capital by default, or whichever
 // `--province <id>` names — and that scope was invisible. It was repeatedly
@@ -567,6 +583,13 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			}
 			fmt.Printf("%s [%s]  Pop: %s  Labor: %s  Walls: %.0f/3  Loyalty: %.0f%s%s\n",
 				name, culture, resource(pop), resource(labor), walls, loyalty, settlementsNote, coastalNote)
+			if sitos, ok := sett["sitos"].(map[string]any); ok {
+				gs, _ := sitos["growth_state"].(string)
+				net, _ := sitos["food_net_per_tick"].(float64)
+				if line := growthLine(pop, gs, net); line != "" {
+					fmt.Println(line)
+				}
+			}
 			if besieged, _ := sett["besieged"].(bool); besieged {
 				fmt.Println("  ⚔ BESIEGED — an enemy holds an access road, catchment production is choked")
 			}

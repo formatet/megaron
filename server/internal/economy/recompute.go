@@ -338,6 +338,31 @@ func FoodNet(foodRate float64, population int) float64 {
 	return foodRate - GrainConsumptionPerTick(population)
 }
 
+// Growth states a city can be in — what kharis/tick.go applyDecay's growth
+// gate does to its population this tick.
+const (
+	GrowthGrowing   = "growing"
+	GrowthHolding   = "holding"
+	GrowthShrinking = "shrinking"
+)
+
+// GrowthState names the direction applyDecay's growth SQL gives a city:
+// unmet food (FoodTick wrote food_unmet_amount > 0) shrinks it, a positive
+// FoodNet grows it, anything else holds. The SQL gate in applyDecay is the
+// same three-way test written in SQL; TestGrowthStateMatchesTickGate pins
+// the two against each other so a surface never says something the tick
+// does not do.
+func GrowthState(unmet, foodNet float64) string {
+	switch {
+	case unmet > 0:
+		return GrowthShrinking
+	case foodNet > 0:
+		return GrowthGrowing
+	default:
+		return GrowthHolding
+	}
+}
+
 // livestockFoodValue is the food value of one slaughtered animal — Timothy
 // 2026-08-07: "jag tycker nästan att ett kreatur kan få leverera 200 mat om
 // det dödas." Explicitly a ratt, not a lock (megaron_plan_foda_konsistens.md

@@ -18,8 +18,23 @@ export function productionSectionsHTML(city) {
     </details>`;
 }
 
+// Same sentence as keryx `status` (growthLine in cmd_status.go). growth_state
+// and food_net_per_tick come from the server's growth gate; '' if not reported.
+export function growthLineText(pd) {
+  const s = pd?.sitos;
+  if (!s || !s.growth_state) return '';
+  const pop = n(pd.population);
+  const net = Number(s.food_net_per_tick) || 0;
+  const signed = (net >= 0 ? '+' : '-') + Math.abs(net).toFixed(1);
+  if (s.growth_state === 'growing') return `Population ${pop} — growing: food net ${signed} per day`;
+  if (s.growth_state === 'holding') return `Population ${pop} — not growing: food net ${signed} per day (needs more than 0)`;
+  if (s.growth_state === 'shrinking') return `Population ${pop} — shrinking: hunger`;
+  return '';
+}
+
 export function populationHTML(pd, idle, livestock, provinceID) {
-  return row('People', n(pd.population)) + row('Free to work', n(idle)) +
+  const g = growthLineText(pd);
+  return (g ? `<p class="growth-line">${g}</p>` : '') + row('People', n(pd.population)) + row('Free to work', n(idle)) +
     row('Livestock', n(Math.floor(livestock))) + `<button class="btn-small" onclick="slaughterLivestock('${provinceID}')" ${livestock < 1 ? 'disabled' : ''} title="Trade one animal for 10 people, right now">Slaughter → 10 people</button>` +
     '<div id="city-slaughter-result" class="action-result"></div>';
 }
