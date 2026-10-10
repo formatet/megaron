@@ -92,7 +92,7 @@ const (
 type hostSpec struct {
 	population  int // civilians, founder_phase.population
 	spearmen    int // escort cohorts of nomadicHostSpearmenSize men
-	rationTicks int // days of the escort's sold the store carries
+	rationTicks int // ticks of the escort's sold the store carries
 }
 
 var newcomerHost = hostSpec{nomadicHostPopulation, nomadicHostSpearmen, nomadicHostRationTicks}

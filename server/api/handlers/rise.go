@@ -20,7 +20,7 @@ const (
 	risenHostMinGubbar   = 4  // 400 people
 	risenHostMaxGubbar   = 8  // 800 people
 	risenHostSpearmen    = 1  // one cohort, where a newcomer has two
-	risenHostRationTicks = 60 // days of sold — "very limited silver"; a newcomer carries 240
+	risenHostRationTicks = 60 // ticks of sold — "very limited silver"; a newcomer carries 240
 )
 
 // riseIntn draws the risen host's size; a test may pin it.

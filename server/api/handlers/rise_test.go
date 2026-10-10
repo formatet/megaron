@@ -133,7 +133,7 @@ func TestRise_RefugeeHostOnAnotherLandmass_AndLeave(t *testing.T) {
 	}
 	perTick := combat.UnitUpkeep(string(unit.TypeSpearman), string(unit.CategoryLand), nomadicHostSpearmenSize, "positioned")
 	if want := perTick.Silver * risenHostRationTicks; silver != want {
-		t.Errorf("risen host silver = %v, want %v (one cohort's sold for %d days)", silver, want, risenHostRationTicks)
+		t.Errorf("risen host silver = %v, want %v (one cohort's sold for %d ticks)", silver, want, risenHostRationTicks)
 	}
 	var spearmen int
 	if err := pool.QueryRow(ctx,
