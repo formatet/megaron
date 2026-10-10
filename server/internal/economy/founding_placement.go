@@ -172,7 +172,7 @@ func PlaceStartingWorkforce(ctx context.Context, tx Tx, settlementID uuid.UUID) 
 	guaranteedFood := NearjordGrainPerTick + (grainBasePotential/REF_LABOR)*float64(remainderCitizens)
 	demand := GrainConsumptionPerTick(population)
 
-	placements, sufficient := placeGreedyOnFoodSlots(slots, guaranteedFood, demand, totalGubbar)
+	placements, sufficient := placeStartingGubbar(slots, guaranteedFood, demand, totalGubbar)
 
 	gubbeOrdinal := 1
 	for _, p := range placements {
@@ -195,6 +195,21 @@ type gubbePlacement struct {
 	hex   hexgrid.Coord
 	good  string
 	yield float64
+}
+
+// placeStartingGubbar is the founding's placement: greedy-until-sufficient,
+// but never zero. The first gubbe always goes to the best food slot by
+// production (Timothy 2026-10-10). A colony of 100 is fed exactly by
+// NearjordGrainPerTick, so the greedy rule placed nobody and the colony held
+// at food net 0 forever, its one citizen idle. Shared by PlaceStartingWorkforce
+// and FoundingGrainNetPerTick so the forecast and the founding agree;
+// FoodGubbarRequired keeps the pure greedy answer ("how many are NEEDED").
+func placeStartingGubbar(slots []foodSlot, guaranteedFood, demand float64, totalGubbar int) (placements []gubbePlacement, sufficient bool) {
+	placements, sufficient = placeGreedyOnFoodSlots(slots, guaranteedFood, demand, totalGubbar)
+	if len(placements) == 0 && totalGubbar > 0 && len(slots) > 0 && slots[0].cap > 0 {
+		placements = []gubbePlacement{{slots[0].hex, slots[0].good, slots[0].yield}}
+	}
+	return placements, sufficient
 }
 
 // placeGreedyOnFoodSlots is PlaceStartingWorkforce's placement DECISION as a

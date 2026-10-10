@@ -202,3 +202,50 @@ func TestFoundingGrainNetPerTick_MatchesPlaceStartingWorkforce(t *testing.T) {
 			forecastProd, actualRate, diff, forecastNet)
 	}
 }
+
+// TestPlaceStartingGubbar_FirstGubbeAlwaysOnBestFood: a founding never leaves
+// its only citizen idle (Timothy 2026-10-10). Near ground alone feeds a city
+// of 100 exactly, so the pure greedy rule placed nobody and the colony held at
+// food net 0 forever. The best slot by production gets the first gubbe.
+func TestPlaceStartingGubbar_FirstGubbeAlwaysOnBestFood(t *testing.T) {
+	best := foodSlot{hex: hexgrid.Coord{Q: 1, R: 0}, good: GoodFish, yield: 1.0, cap: 2, ordinal: 1}
+	slots := []foodSlot{best, {hex: hexgrid.Coord{Q: 2, R: 0}, good: GoodGrain, yield: 0.5, cap: 4, ordinal: 2}}
+
+	placements, _ := placeStartingGubbar(slots, NearjordGrainPerTick, GrainConsumptionPerTick(100), 1)
+	if len(placements) != 1 || placements[0].hex != best.hex || placements[0].good != best.good {
+		t.Fatalf("placements = %+v, want the one gubbe on the best slot %+v", placements, best)
+	}
+	// FoodGubbarRequired's pure greedy answer is untouched: none are NEEDED.
+	if greedy, _ := placeGreedyOnFoodSlots(slots, NearjordGrainPerTick, GrainConsumptionPerTick(100), 1); len(greedy) != 0 {
+		t.Errorf("greedy placed %d, want 0 — the minimum belongs to the founding only", len(greedy))
+	}
+	// No gubbe at all (a column under 100) → nothing to place.
+	if p, _ := placeStartingGubbar(slots, NearjordGrainPerTick, GrainConsumptionPerTick(50), 0); len(p) != 0 {
+		t.Errorf("placed %d with no whole gubbe", len(p))
+	}
+}
+
+// TestPlaceStartingWorkforce_ColonyOfOneHundredGrows: the real founding path
+// places the first gubbe, so a plains colony of 100 starts with food net > 0 —
+// the growth gate — and the forecast says the same.
+func TestPlaceStartingWorkforce_ColonyOfOneHundredGrows(t *testing.T) {
+	const pop = 100
+	worldID, center, settlementID := foundingForecastFixture(t, pop, "plains")
+	pool := testPool(t)
+	ctx := context.Background()
+
+	_, forecastNet, err := FoundingGrainNetPerTick(ctx, pool, worldID, center, false, nil, pop)
+	if err != nil {
+		t.Fatalf("FoundingGrainNetPerTick: %v", err)
+	}
+	placed, _, err := PlaceStartingWorkforce(ctx, pool, settlementID)
+	if err != nil {
+		t.Fatalf("PlaceStartingWorkforce: %v", err)
+	}
+	if placed != 1 {
+		t.Fatalf("placed %d gubbar, want 1", placed)
+	}
+	if forecastNet <= 0 {
+		t.Errorf("forecast net %.3f, want > 0 — the colony must be able to grow", forecastNet)
+	}
+}

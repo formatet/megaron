@@ -82,7 +82,7 @@ func FoundingGrainNetPerTick(ctx context.Context, tx Tx, worldID uuid.UUID, cent
 	guaranteedFood := NearjordGrainPerTick + remainderTerm
 	demand := GrainConsumptionPerTick(pop)
 
-	placements, _ := placeGreedyOnFoodSlots(slots, guaranteedFood, demand, totalGubbar)
+	placements, _ := placeStartingGubbar(slots, guaranteedFood, demand, totalGubbar)
 
 	grainProd := NearjordGrainPerTick + remainderTerm
 	fishProd := 0.0
