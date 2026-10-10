@@ -65,6 +65,7 @@ func main() {
 		leaveCmd(),
 		statusCmd(),
 		mapCmd(),
+		stormsCmd(),
 		sightingsCmd(),
 		recruitCmd(),
 		disbandCmd(),

@@ -26,7 +26,7 @@ func TestNoAnonymousFogOfWarReads(t *testing.T) {
 			t.Errorf("route %s %s accepts anonymous callers (OptionalMiddleware) — fog-of-war reads must require a token", m[1], m[2])
 		}
 	}
-	for _, p := range []string{"/worlds/{worldID}/map", "/worlds/{worldID}/provinces", "/worlds/{worldID}/colonize-preview"} {
+	for _, p := range []string{"/worlds/{worldID}/map", "/worlds/{worldID}/storms", "/worlds/{worldID}/provinces", "/worlds/{worldID}/colonize-preview"} {
 		if !regexp.MustCompile(`auth\.Middleware\(authSvc\)\)\.Get\("` + regexp.QuoteMeta(p) + `"`).Match(src) {
 			t.Errorf("%s must be mounted with auth.Middleware", p)
 		}

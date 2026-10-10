@@ -290,5 +290,14 @@
       "food tick: settlement failed": 1,
       "claim food tick: %w": 1
     }
+  },
+  "server/api/handlers/storms.go": {
+    "reason": "Stable JSON/query keys or CLI option identifiers; contract explicitly retains them.",
+    "literals": [
+      "tick"
+    ],
+    "counts": {
+      "tick": 1
+    }
   }
 }
