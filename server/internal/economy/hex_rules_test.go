@@ -28,7 +28,7 @@ func TestRuleTable_LevelOneNumbersAndLevelMultipliers(t *testing.T) {
 		{"grain hills", "hills", false, false, false, GoodGrain, 1.0 / 3, 1, 5, 0.57, "0.33"},
 		{"grain river_valley", "river_valley", false, false, false, GoodGrain, 5.0 / 3, 2, 6, 2.83, "1.67"},
 		{"grain river_delta", "river_delta", false, false, false, GoodGrain, 8.0 / 3, 3, 7, 4.53, "2.67"},
-		{"cedar", "forest_cedar", false, false, false, "cedar", 1.0, 1, 5, 1.70, "1.0"},
+		{"cedar", "forest_cedar", false, false, false, "cedar", 1.0, 3, 7, 1.70, "1.0"},
 		{"fish coastal", "coastal_sea", false, false, false, "fish", 1.0, 2, 6, 1.70, "1.0"},
 		{"copper", "hills", true, false, false, "copper", 1.0, 1, 5, 1.70, "1.0"},
 		{"tin", "mountain_limestone", false, true, false, "tin", 1.0, 1, 5, 1.70, "1.0"},

@@ -4,7 +4,7 @@ Everything your cities make, eat and trade is a **good**. The **Economy (⚖)** 
 |---|---|
 | **Grain, fish, livestock** | Food, eaten in that order ([[food]]). |
 | **Timber, stone** | The material of nearly every [[buildings|building]]. Early on, timber is almost always your bottleneck. |
-| **Cedar** | Scarce, found only where there is a deposit. Levels your best buildings; builds war galleys. |
+| **Cedar** | Found only where there is a deposit, but a cedar forest yields far more wood than an olive grove. Levels your best buildings; builds war galleys. **Cedar stands in for timber:** whatever a cost needs in timber and you lack, your cedar covers one for one. |
 | **Copper, tin** | The two halves of bronze — never found together ([[bronze]]). |
 | **Bronze** | Elite infantry, war chariots, war galleys, the best walls. |
 | **Wine, oil** | The temple's daily offering ([[temples]]), food variety, good trade goods. |

@@ -35,7 +35,7 @@ Buildings level up to three. **A higher level makes every worker on the hex prod
 
 Levelling a Harbour, Shipyard or Temple further also needs **cedar**, which is scarce and often only available by [[trade]].
 
-A building costs what it is made of: **timber** for the Farm, Market, Stable, Harbour, Shipyard and Palisade; **stone** for the Stone Quarry, Mine, Barracks, Temple and Stone Wall. The prices are shown live in Construct.
+A building costs what it is made of: **timber** for the Farm, Market, Stable, Harbour, Shipyard and Palisade; **stone** for the Stone Quarry, Mine, Barracks, Temple and Stone Wall. The prices are shown live in Construct. If you are short of timber, your **cedar** pays the difference one for one — in buildings, ships and chariots alike.
 
 A building produces nothing without people in it. Staff it from the centre **City** hex of the placement grid ([[citizens]]).
 

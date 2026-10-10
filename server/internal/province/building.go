@@ -125,6 +125,8 @@ var LevelledBuildings = map[BuildingType]bool{
 // Cedar är den knappa ädelträvaran (deposit-gatead, 5 hex av 2 240) och bär därmed
 // stadens tillväxt bortom det grundläggande: nivå 1 kostar som förut i timber+sten,
 // men att bygga ut en arbetsplats kräver handel eller kolonisering efter cedar.
+// Sedan 2026-10-10 (megaron_plan_cedar_virke) ger en cedarhex 3 basplatser och cedar täcker
+// dessutom timber-brist 1:1 i alla kostnader (deductGoods) — hexarna är få men rika.
 // STRAWMAN-kalibrering — siffrorna hör hemma i temenos_balans_spakar.md §8.
 //
 // ⚠️ Omskalad ÷72 (mig 136). Gäller sedan S2 (megaron_plan_dagsverkesskalan,

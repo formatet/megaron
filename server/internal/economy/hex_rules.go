@@ -32,8 +32,7 @@ const BuildingExtraPlaces = 4
 const BuildingRatePerLevel = 0.7
 
 // HexFallbackCap is the per-hex worker places for a good with a real
-// production_rules rate but no rule in hexRules (oil, wine, timber on cedar
-// forest). No building raises them.
+// production_rules rate but no rule in hexRules (oil, wine). No building raises them.
 const HexFallbackCap = 2
 
 // hexRule is one row of the rule table.
@@ -65,7 +64,7 @@ func hexRules(terrain string, copperDep, tinDep, silverDep bool) []hexRule {
 	case "forest_olive_grove":
 		out = append(out, hexRule{"timber", 1, "lumbermill"}, fieldStone)
 	case "forest_cedar":
-		out = append(out, hexRule{"cedar", 1, "lumbermill"}, fieldStone)
+		out = append(out, hexRule{"cedar", 3, "lumbermill"}, fieldStone)
 	case "scrub_maquis", "semi_desert", "mountain_red":
 		out = append(out, fieldStone)
 	case "coastal_sea":
@@ -106,7 +105,7 @@ func (r hexRule) placesAndMult(level int) (places int, mult float64) {
 }
 
 // hexGoodPlaces returns places and rate multiplier for one good on one hex.
-// A good without a rule (oil, wine, timber on cedar forest) gets HexFallbackCap
+// A good without a rule (oil, wine) gets HexFallbackCap
 // places and no multiplier. levels is the building-level map scoped to the hex
 // (BuildingSet.levelsAt).
 func hexGoodPlaces(terrain string, copperDep, tinDep, silverDep bool, levels map[string]int, good string) (places int, mult float64) {

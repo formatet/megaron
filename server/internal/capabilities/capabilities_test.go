@@ -545,3 +545,30 @@ func TestVerb_AvailableIsANDOfRequirements(t *testing.T) {
 		t.Error("Requirements must never be nil (JSON should encode [], not null)")
 	}
 }
+
+// Cedar covers missing timber 1:1 (megaron_plan_cedar_virke.md): a Wanax with cedar and
+// no timber must see a galley (30 timber) as affordable, and not one hair below.
+func TestCanRecruit_CedarCoversTimberForGalley(t *testing.T) {
+	pool := testPool(t)
+	f := newFixture(t, pool)
+	f.exec(t, `INSERT INTO buildings (settlement_id, building_type) VALUES ($1, 'shipyard')`, f.settlementID)
+	f.exec(t, `INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick) VALUES ($1, 'cedar', 30, 0, 5000, 0), ($1, 'silver', 6, 0, 5000, 0)`, f.settlementID)
+	cc := f.cc(fakeClock(time.Date(2026, 10, 10, 0, 0, 0, 0, time.UTC)))
+	galleyListed := func() bool {
+		v := CanRecruit(cc)
+		_, names, _ := strings.Cut(v.Requirements[1].Detail, "affordable now: ")
+		for _, name := range strings.Split(names, ", ") {
+			if name == "galley" {
+				return true
+			}
+		}
+		return false
+	}
+	if !galleyListed() {
+		t.Fatal("30 cedar and no timber must afford a galley")
+	}
+	f.exec(t, `UPDATE settlement_goods SET amount = 29.99 WHERE settlement_id = $1 AND good_key = 'cedar'`, f.settlementID)
+	if galleyListed() {
+		t.Fatal("29.99 cedar must not afford a 30-timber galley")
+	}
+}
