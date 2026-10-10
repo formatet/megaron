@@ -51,6 +51,24 @@ test('workedHexesFromRoster: one marker per hex, dedup across gubbar/goods', () 
   assert.deepEqual(new Set(out.map(h => `${h.q},${h.r}`)), new Set(['-2,0', '-2,2']));
 });
 
+// The hex panel's "Workers here" row (inspel 2026-09-08) reads the same reduced
+// entry, so it carries the hex's total gubbar and the goods they work.
+test('workedHexesFromRoster: sums gubbar per hex and lists their goods', () => {
+  const out = workedHexesFromRoster([{
+    assignments: [
+      { target_kind: 'hex', hex_q: -2, hex_r: 0, good_key: 'grain', count: 3 },
+      { target_kind: 'hex', hex_q: -2, hex_r: 0, good_key: 'olives', count: 1 },
+      { target_kind: 'hex', hex_q: -2, hex_r: 2, good_key: 'fish', count: 2 },
+      { target_kind: 'building', building_type: 'stonequarry', good_key: 'stone', count: 5 },
+    ],
+  }]);
+  const byKey = Object.fromEntries(out.map(h => [`${h.q},${h.r}`, h]));
+  assert.equal(byKey['-2,0'].count, 4);
+  assert.deepEqual(byKey['-2,0'].goods, ['grain', 'olives']);
+  assert.equal(byKey['-2,2'].count, 2);
+  assert.deepEqual(byKey['-2,2'].goods, ['fish']);
+});
+
 test('workedHexesFromRoster: spans settlements and tolerates empty/missing', () => {
   assert.deepEqual(workedHexesFromRoster([]), []);
   assert.deepEqual(workedHexesFromRoster(null), []);

@@ -3281,23 +3281,23 @@ function drawWorkerMarker(ctx, cx, cy) {
 }
 
 // workedHexesFromRoster reduces the /settlements/placement-roster payload to a
-// deduped [{q,r}] of own catchment hexes that carry at least one placed gubbe
-// on a HEX (building assignments have no q/r — they live inside the city, not
-// on the map). One marker per hex regardless of how many gubbar or goods sit
-// there; the city drawer holds the breakdown.
+// deduped [{q,r,count,goods}] of own catchment hexes that carry at least one
+// placed gubbe on a HEX (building assignments have no q/r — they live inside
+// the city, not on the map). One map marker per hex; count (total gubbar) and
+// goods feed the hex panel's "Workers here" row.
 export function workedHexesFromRoster(roster) {
-  const seen = new Set();
-  const out = [];
+  const byKey = new Map();
   for (const s of roster || []) {
     for (const a of s.assignments || []) {
       if (a.target_kind !== 'hex' || a.hex_q == null || a.hex_r == null) continue;
       const key = a.hex_q + ',' + a.hex_r;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push({ q: a.hex_q, r: a.hex_r });
+      let wh = byKey.get(key);
+      if (!wh) { wh = { q: a.hex_q, r: a.hex_r, count: 0, goods: [] }; byKey.set(key, wh); }
+      wh.count += a.count ?? 1;
+      if (a.good_key && !wh.goods.includes(a.good_key)) wh.goods.push(a.good_key);
     }
   }
-  return out;
+  return [...byKey.values()];
 }
 
 // ── Keyboard pan (WASD / arrows) ────────────────────────────────────────────
@@ -4241,16 +4241,24 @@ function openCityPanel(h, tile, marker, units, foreignUnits) {
   document.getElementById('inspect-panel').style.display = 'flex';
 }
 
+// "Workers here" line for the player's own worked hexes (inspel 2026-09-08).
+// The roster is owner-scoped, so a foreign or unworked hex simply has no line.
+function workersHereHTML(h) {
+  const wh = (State.workedHexes || []).find(w => w.q === h.q && w.r === h.r);
+  if (!wh) return '';
+  return `<p class="empty-state">Workers here: ${wh.count} (${wh.goods.join(', ')})</p>`;
+}
+
 // Mountain / sea / empty land — no province here. Mountains explain their own
 // absence of affordances; sea gets galleys; empty land gets march + colonize.
 function openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits) {
   document.getElementById('ip-name').textContent =
-    isSea ? `Sea (${h.q},${h.r})` : (isMountain ? `Mountains (${h.q},${h.r})` : `Empty hex (${h.q},${h.r})`);
+    isSea ? `Sea (${h.q},${h.r})` : (isMountain ? `Mountains (${h.q},${h.r})` : `${terrainLabel(tile.terrain)} (${h.q},${h.r})`);
   setCityFieldsVisible(false);
   fillTerrainFields(tile);
 
   const foot = document.getElementById('ip-foot');
-  let footHtml = unitListHTML(units, foreignUnits);
+  let footHtml = workersHereHTML(h) + unitListHTML(units, foreignUnits);
 
   if (isMountain) {
     footHtml += '<p class="empty-state">Impassable — armies cannot go here.</p>';
@@ -4326,12 +4334,16 @@ const RURAL_LABELS = {
 };
 
 function openRuralPanel(h, tile, rural, units, foreignUnits) {
-  document.getElementById('ip-name').textContent = RURAL_LABELS[rural.building_type] || rural.building_type;
+  // Title is the ground, not the building (inspel 2026-09-08): the building is
+  // a line in the card.
+  document.getElementById('ip-name').textContent = `${terrainLabel(tile.terrain)} (${h.q},${h.r})`;
   setCityFieldsVisible(false);
   fillTerrainFields(tile);
 
   const foot = document.getElementById('ip-foot');
-  let footHtml = `<p class="empty-state">Part of ${rural.name}'s hinterland — worked from here.</p>`;
+  const buildingLabel = RURAL_LABELS[rural.building_type] || rural.building_type;
+  let footHtml = `<p class="empty-state">${buildingLabel} — part of ${rural.name}'s hinterland, worked from here.</p>`;
+  footHtml += workersHereHTML(h);
   footHtml += unitListHTML(units, foreignUnits);
   footHtml += `<button id="ip-rural-city-btn" style="${MARCH_BTN_STYLE}">Open ${rural.name} →</button>`;
   foot.innerHTML = footHtml;
