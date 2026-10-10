@@ -42,3 +42,16 @@ func TestFoundingStoreDaysAndWallClock(t *testing.T) {
 		}
 	}
 }
+
+func TestFoundingTexts(t *testing.T) {
+	if err := errNeedYes("keryx founding settle", "the founding"); !strings.Contains(err.Error(), "--yes") || !strings.Contains(err.Error(), "keryx founding settle") {
+		t.Fatalf("refusal must name --yes and the command: %v", err)
+	}
+	got := foundingStoresLine(1200, 476, 1200, 3716)
+	if !strings.Contains(got, "476") || !strings.Contains(got, "3716") {
+		t.Fatalf("line must show carried and held silver: %q", got)
+	}
+	if errNoCityYet("") == nil || errNoCityYet("abc") != nil {
+		t.Fatal("errNoCityYet must fire only on an empty province ID")
+	}
+}

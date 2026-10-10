@@ -214,7 +214,7 @@ settling. To found somewhere else: march the host there first
 				}
 				if !yes {
 					if !stdinIsTerminal() {
-						return fmt.Errorf("non-interactive run: add --yes to confirm the irreversible founding")
+						return errNeedYes("keryx founding settle", "the irreversible founding")
 					}
 					ok, aerr := askYesNo("Found the metropolis here? The host dissolves — forever.")
 					if aerr != nil {
@@ -260,11 +260,13 @@ settling. To found somewhere else: march the host there first
 				PoseidonGift  *string `json:"poseidon_gift"`
 				GrainCarried  float64 `json:"grain_carried"`
 				SilverCarried float64 `json:"silver_carried"`
+				GrainTotal    float64 `json:"grain_total"`
+				SilverTotal   float64 `json:"silver_total"`
 			}
 			_ = json.Unmarshal(data, &resp)
 			fmt.Printf("⚒ Metropolis founded at (%d,%d)! The host is dissolved — the people have a home.\n",
 				resp.Tile.Q, resp.Tile.R)
-			fmt.Printf("  Carried into the city: %.0f grain, %.0f silver\n", resp.GrainCarried, resp.SilverCarried)
+			fmt.Println(foundingStoresLine(resp.GrainCarried, resp.SilverCarried, resp.GrainTotal, resp.SilverTotal))
 			if resp.PoseidonGift != nil {
 				fmt.Println("  Poseidon's gift: a galley lies in the harbor.")
 			}
@@ -277,4 +279,16 @@ settling. To found somewhere else: march the host there first
 	cmd.Flags().StringVar(&culture, "culture", "", "culture (MVP: minoan only)")
 	cmd.Flags().BoolVar(&yes, "yes", false, "skip the interactive confirmation (required for non-interactive/agent use); the forecast is only printed in non-json mode")
 	return cmd
+}
+
+// foundingStoresLine says what the host carried in AND what the city holds now
+// (the city also gets an opening seed of its own, so the two differ).
+func foundingStoresLine(grainCarried, silverCarried, grainTotal, silverTotal float64) string {
+	return fmt.Sprintf("  Carried in by the host: %.0f grain, %.0f silver. The city now holds %.0f grain, %.0f silver (your host's stores plus the city's own opening stores).",
+		grainCarried, silverCarried, grainTotal, silverTotal)
+}
+
+// errNeedYes is the refusal for a non-interactive run: it names the command to re-run.
+func errNeedYes(cmdline, what string) error {
+	return fmt.Errorf("non-interactive run: re-run with --yes to confirm %s (%s ... --yes)", what, cmdline)
 }

@@ -36,6 +36,9 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 				}
 				prov = resolved
 			}
+			if err := errNoCityYet(prov); err != nil {
+				return err
+			}
 
 			opts, err := fetchPlacementOptions(c, cfg.WorldID, prov)
 			if err != nil {
@@ -125,4 +128,13 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 		},
 	}
 	return cmd
+}
+
+// errNoCityYet turns the empty province ID of a player who has not founded
+// anything yet into a pointer at the founding flow (instead of the server's 400).
+func errNoCityYet(prov string) error {
+	if prov == "" {
+		return fmt.Errorf("you have no city yet — found one first: keryx founding status")
+	}
+	return nil
 }
