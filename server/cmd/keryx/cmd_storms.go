@@ -14,7 +14,7 @@ func stormsCmd() *cobra.Command {
 		Short: "Storms at sea you can see, and where you last saw the others",
 		Long: `A storm is three connected sea hexes that drift slowly. You see one only inside your
 sight; afterwards it is remembered where you LAST saw it (with the day), not where it is now.
-A ship that stands on a storm's hex takes one hull point of damage.`,
+A ship that sails into a storm takes 2 hull damage (of 5), once per storm however long it stays inside.`,
 		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)

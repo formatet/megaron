@@ -23,7 +23,7 @@ import (
 
 var carrierFixtureDir = flag.String("t2-fixture-dir", "", "export actual notification payloads for four-surface proof")
 
-// carrierStormOver puts storms over the whole test lane (r=0, q -2..12) for ticks 498..510,
+// carrierStormOver puts storms over the whole test lane (r=0, q -2..12) for ticks 501..510 (the storm arrives the tick of the scan: a ship already inside one at the tick before is mid-encounter and not hit again),
 // so a storm scan in these fixtures hits any ship on it — the stored-track replacement for the
 // old "the die always says storm" stub (megaron_plan_stormar.md). Storms are inserted with a
 // track longer than the scan, so the scan has no steps of its own to add.
@@ -35,7 +35,7 @@ func carrierStormOver(t *testing.T, pool *pgxpool.Pool, worldID uuid.UUID) {
 		if err := pool.QueryRow(ctx, `INSERT INTO sea_storms (world_id, heading, created_tick) VALUES ($1, 0, 498) RETURNING id`, worldID).Scan(&id); err != nil {
 			t.Fatal(err)
 		}
-		for tick := 498; tick <= 510; tick++ {
+		for tick := 501; tick <= 510; tick++ {
 			for slot := 0; slot < 3; slot++ {
 				if _, err := pool.Exec(ctx, `INSERT INTO sea_storm_track (storm_id, tick, slot, q, r) VALUES ($1, $2, $3, $4, 0)`, id, tick, slot, start+slot); err != nil {
 					t.Fatal(err)

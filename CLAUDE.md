@@ -219,7 +219,7 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
   logistics, no consent, a physical caravan; (4) **gift/tribute** (Timothy 2026-10-08) = goods or silver to
   ANOTHER Wanax's contacted city, nothing in return, no consent. Vault: `megaron_forslag_kredit_och_relationsminne.md`.
   **Risk is the same for all four kinds of transport** (Timothy 2026-10-08): on land only interception; at sea a
-  per-hex storm (`combat/sea_storm.go`, `StormChancePerSeaHex`; storm = −1 hull, hull 0 founders). The old flat
+  drifting storm (`combat/sea_storm.go`; −2 hull per storm entered, hull 0 founders). The old flat
   trade die is GONE (T1, 2026-10-08) — `megaron_transportrisk.md`. Ownership never changes the risk; it only changes consent.
 - **Kingdoms are POST-MVP** (Timothy 2026-07-08): all player surface disabled; server code kept gated.
 
