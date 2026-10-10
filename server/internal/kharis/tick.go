@@ -47,19 +47,20 @@ const (
 // Wanax clear of divine punishment"); motsvarande assertion för nivå 0 skrevs aldrig,
 // och nivå 0 bryter den med fem poäng.
 //
-// Talet 24 är INTE kalibrerat mot hur lång tid templet tar. Den mekaniska
-// minimivägen är ~5 dygn: templet kostar 60 timmer + 60 sten ur ett startlager på
-// 200/300, alltså är det gratis från dygn ett, och bygget tar 4 tick
-// (province.BuildingSpecs). 24 är kalibrerat mot INLOGGNINGSKADENSEN. Ett tick är
-// ett dygn och den kanoniska takten är 60 min/tick, så 24 tick är ett verkligt
-// dygn — en Wanax som loggar in en gång om dagen får exakt ett inlogg på sig att
-// reagera innan gudarna börjar rulla. Det är asynkronitetsgrinden, inte byggtiden.
+// Talet var 24, kalibrerat mot inloggningskadensen (ett verkligt dygn vid
+// 60 min/tick) — asynkronitetsgrinden, som Timothy tonade ned 2026-09-27.
+// Höjt 24 → 60 (Timothy 2026-10-10, "kanske ska ta längre tid?") efter
+// AI-spelningen samma dag: kharis föll från 25 till golvet på ~14 dygn, och från
+// dygn 24 rullade gudarna straff 30 % per dygn innan spelaren ens förstått att
+// templet behövdes. Den mekaniska minimivägen är fortfarande ~5 dygn (templet
+// kostar 60 timmer + 60 sten ur startlagret och tar 4 tick); 60 dygn — två
+// månader — är tiden att FÖRSTÅ att det behövs, inte att bygga det.
 //
 // ⚠️ Fristen stänger inte brunnen, den ger tid att ta sig ur den. En Wanax som
 // SENARE förlorar sitt tempel faller tillbaka i samma inversion utan frist — se
 // megaron_todo.md §NU. Decay rörs inte: hon tynar fortfarande mot golvet, vilket är
 // den tempellösas ärliga konsekvens enligt takets egen kommentar.
-const foundingGraceTicks = 24
+const foundingGraceTicks = 60
 
 // shouldRollPunishment avgör om missed-grenen ska rulla för gudastraff alls.
 // Ren funktion med flit: utfallet beror på ett tärningskast, så själva BESLUTET

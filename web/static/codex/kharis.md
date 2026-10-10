@@ -9,7 +9,7 @@
 
 Blessings and punishments arrive as notifications.
 
-Kharis never falls all the way to nothing, and a newly founded Wanax is protected from punishment for the first weeks.
+Kharis never falls all the way to nothing, and a newly founded Wanax is protected from punishment for the first 60 days. Build a temple before they run out.
 
 ## How to raise it
 
