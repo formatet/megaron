@@ -18,6 +18,7 @@ import { zoomStep, clampPan } from './camera.js';
 import { bindMapInput } from './map_input.js';
 import { confirmInline, showInlineResult } from '../ui/inline_result.js';
 import { unitHoverLines } from '../ui/hover.js';
+import { drawStorm, STORM_FRAMES } from './storms.js';
 import { incomingTargetKeys } from '../ui/movements.js';
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
@@ -3415,6 +3416,9 @@ export function render() {
   // något test: en fryst bild ser identisk ut med en korrekt bild). Väck
   // loopen på FASBYTET, som havstakten gör, i stället för varje frame.
   const blinkTick = (State.animFrame / FOREIGN_BLINK_FRAMES) | 0;
+  const stormTick = (State.animFrame / STORM_FRAMES) | 0;
+  const stormChanged = (State.stormData || []).some(st => st.tier === 'live') && stormTick !== State.lastStormTick;
+  if (stormChanged) State.lastStormTick = stormTick;
   const blinkChanged = State.foreignUnitData.length > 0 && blinkTick !== State.lastBlinkTick;
   if (blinkChanged) State.lastBlinkTick = blinkTick;
   // A burning city animates by itself, like the blink: wake on the fire's step.
@@ -3422,7 +3426,7 @@ export function render() {
   const fireChanged = fireTick !== State.lastFireTick && State.provinceData.some(p => p.burning);
   if (fireChanged) State.lastFireTick = fireTick;
 
-  if (!State.dirty && !seaChanged && !blinkChanged && !fireChanged && State.marchData.length === 0 && State.messengerData.length === 0 && State.tradeData.length === 0
+  if (!State.dirty && !seaChanged && !blinkChanged && !stormChanged && !fireChanged && State.marchData.length === 0 && State.messengerData.length === 0 && State.tradeData.length === 0
       && !State.unitsData.some(u => u.status === 'marching')
       && !State.foreignUnitData.some(u => u.status === 'marching')) {
     requestAnimationFrame(render);
@@ -3788,6 +3792,10 @@ export function render() {
     }
   }
 
+  // 4c. Storms at sea (GET /storms): under the actors, so ships stay readable inside one.
+  // Live ones only on tier-1 hexes is the SERVER's rule (sight); a remembered one is a ghost.
+  for (const storm of State.stormData || []) drawStorm(ctx, storm, { S, hexPx, hexPts, frame: State.animFrame });
+
   // 5. Animated walkers for marching armies
   const walkPhase = Math.floor(State.animFrame / 8) % 4;
   for (const m of State.marchData) {
@@ -3932,7 +3940,7 @@ export function render() {
 
 // ── Data loading ──────────────────────────────────────────────────────────
 export async function loadMap() {
-  const [tilesRes, provRes, marchRes, msgRes, tradeRes, unitsRes, ruralRes, foreignUnitsRes, rosterRes] = await Promise.all([
+  const [tilesRes, provRes, marchRes, msgRes, tradeRes, unitsRes, ruralRes, foreignUnitsRes, rosterRes, stormsRes] = await Promise.all([
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/map`),
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces`),
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/marches`),
@@ -3942,6 +3950,7 @@ export async function loadMap() {
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/rural-projections`),
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/foreign-units`),
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/settlements/placement-roster`),
+    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/storms`),
   ]);
 
   if (tilesRes.ok) {
@@ -3973,6 +3982,9 @@ export async function loadMap() {
   }
   if (rosterRes.ok) {
     State.workedHexes = workedHexesFromRoster(await rosterRes.json());
+  }
+  if (stormsRes.ok) {
+    State.stormData = (await stormsRes.json()).storms || [];
   }
   window.MusicPlayer.update();
 }
@@ -4678,7 +4690,8 @@ export function initMap() {
           const p = State.provinceData.find(p => p.q === q && p.r === r);
           return p && p.name ? p.name : `(${q},${r})`;
         };
-        const names = unitHoverLines({ own, foreign, caravans, runners, placeName });
+        const storms = (State.stormData || []).filter(st => st.hexes.some(sh => here(sh)));
+        const names = unitHoverLines({ own, foreign, caravans, runners, storms, placeName });
         if (prov) {
           const parts = [prov.name, tl];
           if (prov.owner) parts.push(`Wanax: ${prov.owner}`);
@@ -4775,6 +4788,7 @@ export function initMap() {
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/rural-projections`).then(r => r.ok && r.json().then(d => { State.ruralData = d; State.dirty = true; }));
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/foreign-units`).then(r => r.ok && r.json().then(d => { State.foreignUnitData = d; State.dirty = true; }));
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/settlements/placement-roster`).then(r => r.ok && r.json().then(d => { State.workedHexes = workedHexesFromRoster(d); State.dirty = true; }));
+    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/storms`).then(r => r.ok && r.json().then(d => { State.stormData = d.storms || []; State.dirty = true; }));
   }, 30000);
 
   // While any own unit is marching, refresh units + fog fast so the fog visibly

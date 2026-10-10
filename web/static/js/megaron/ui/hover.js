@@ -26,8 +26,10 @@ function cargo(t) {
 //               one carries the server's .heading (province.ReadMarch)
 //   caravans  — trade markers (GET /trades) here
 //   runners   — messenger markers (GET /messengers) here
+//   storms    — storms (GET /storms) with a hex here: live ones say where they drift,
+//               remembered ones the day they were last seen
 //   placeName — (q, r) → the settlement's name, or "(q,r)"
-export function unitHoverLines({ own = [], foreign = [], caravans = [], runners = [], placeName }) {
+export function unitHoverLines({ own = [], foreign = [], caravans = [], runners = [], storms = [], placeName }) {
   const lines = [];
   for (const u of own) {
     let line = actorName(u);
@@ -75,6 +77,11 @@ export function unitHoverLines({ own = [], foreign = [], caravans = [], runners 
     } else {
       lines.push(m.sender ? `Runner of ${m.sender}` : 'Runner');
     }
+  }
+  for (const st of storms) {
+    lines.push(st.tier === 'live'
+      ? `Storm${st.heading ? ' — drifting ' + st.heading : ''}`
+      : `Storm — last seen on day ${st.seen_tick}`);
   }
   return lines;
 }

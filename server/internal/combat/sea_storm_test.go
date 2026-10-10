@@ -13,14 +13,39 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// stormDice returns v for every Float64 and counts the rolls.
-type stormDice struct {
-	v     float64
-	calls int
-}
+// stormDice is a deterministic Dice (xorshift) so weather tests replay exactly.
+type stormDice struct{ x uint64 }
 
-func (d *stormDice) Float64() float64 { d.calls++; return d.v }
-func (d *stormDice) Intn(int) int     { return 0 }
+func newStormDice(seed uint64) *stormDice { return &stormDice{x: seed*2654435761 + 88172645463325252} }
+func (d *stormDice) next() uint64 {
+	d.x ^= d.x << 13
+	d.x ^= d.x >> 7
+	d.x ^= d.x << 17
+	return d.x
+}
+func (d *stormDice) Float64() float64 { return float64(d.next()>>11) / float64(1<<53) }
+func (d *stormDice) Intn(n int) int   { return int(d.next() % uint64(n)) }
+
+// stormsOverLane stores storms over the whole test lane (r=0, q 0..12) for ticks 0..20, so a
+// ship holding a sea hex at any of those ticks is hit; the tracks outlast the scans, so the
+// scan adds no steps of its own.
+func stormsOverLane(t *testing.T, pool *pgxpool.Pool, worldID uuid.UUID) {
+	t.Helper()
+	ctx := context.Background()
+	for start := 0; start <= 12; start += 3 {
+		var id uuid.UUID
+		if err := pool.QueryRow(ctx, `INSERT INTO sea_storms (world_id, heading, created_tick) VALUES ($1, 0, 0) RETURNING id`, worldID).Scan(&id); err != nil {
+			t.Fatal(err)
+		}
+		for tick := 0; tick <= 20; tick++ {
+			for slot := 0; slot < 3; slot++ {
+				if _, err := pool.Exec(ctx, `INSERT INTO sea_storm_track (storm_id, tick, slot, q, r) VALUES ($1, $2, $3, $4, 0)`, id, tick, slot, start+slot); err != nil {
+					t.Fatal(err)
+				}
+			}
+		}
+	}
+}
 
 // seaStormWorld lays out a ten-step lane along r=0: (0,0) is the land port the
 // voyage leaves from (never entered), (3,0) is a river (navigable, not sea),
@@ -138,36 +163,33 @@ func countShipEvents(t *testing.T, pool *pgxpool.Pool, id uuid.UUID, kind string
 	return n
 }
 
-// Every entered SEA hex is rolled exactly once (not the start port, not the
-// river), a storm costs one hull point, a retried day rolls nothing, and hull
-// 0 founders the ship with its embarked troops.
-func TestSeaStorm_EachEnteredSeaHexOnceThenFounders(t *testing.T) {
+// A ship is hit once per tick it holds a sea hex that a storm covers (not the river, not a
+// tick before the voyage), a storm costs one hull point, a retried day hits nothing twice,
+// and hull 0 founders the ship with its embarked troops.
+func TestSeaStorm_HitsOncePerStormyTickThenFounders(t *testing.T) {
 	pool, worldID, owner, route := seaStormWorld(t)
 	ship, troops := mkStormFleet(t, pool, worldID, owner, route)
-	dice := &stormDice{v: 0}
+	stormsOverLane(t, pool, worldID)
 	h := NewSeaStormScanHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil)
-	h.Dice = dice
+	h.Dice = newStormDice(1)
 
-	// Hex q is entered at tick q-1 (hex 1 at departure). By the end of day 3
-	// the ship has entered (1,0) (2,0) (3,0 river) (4,0): three sea hexes.
+	// At tick t the ship holds hex (t+1,0): tick 1 → (2,0), tick 2 → (3,0) river, tick 3 → (4,0).
 	for day := 1; day <= 3; day++ {
 		runStormDay(t, h, worldID, day)
 	}
 	runStormDay(t, h, worldID, 3) // retry of the same day
-	if dice.calls != 3 {
-		t.Fatalf("rolls after day 3 = %d, want 3 (start port and river never roll, retry rolls nothing)", dice.calls)
+	if status, hull := shipState(t, pool, ship); status != "marching" || hull != 3 {
+		t.Fatalf("after day 3: status=%s hull=%d, want marching/3 (two sea ticks hit, the river tick not, the retry nothing)", status, hull)
 	}
-	if status, hull := shipState(t, pool, ship); status != "marching" || hull != 2 {
-		t.Fatalf("after three storms: status=%s hull=%d, want marching/2", status, hull)
-	}
-	if n := countShipEvents(t, pool, ship, EventShipStormDamaged); n != 3 {
-		t.Fatalf("ShipStormDamaged events = %d, want 3", n)
+	if n := countShipEvents(t, pool, ship, EventShipStormDamaged); n != 2 {
+		t.Fatalf("ShipStormDamaged events = %d, want 2", n)
 	}
 
-	runStormDay(t, h, worldID, 4)
-	runStormDay(t, h, worldID, 5)
+	for day := 4; day <= 6; day++ {
+		runStormDay(t, h, worldID, day)
+	}
 	if status, hull := shipState(t, pool, ship); status != "disbanded" || hull != 0 {
-		t.Fatalf("after fifth storm: status=%s hull=%d, want disbanded/0 (foundered)", status, hull)
+		t.Fatalf("after day 6: status=%s hull=%d, want disbanded/0 (foundered)", status, hull)
 	}
 	if status, _ := shipState(t, pool, troops); status != "disbanded" {
 		t.Fatalf("embarked troops status=%s, want disbanded (drowned with the ship)", status)
@@ -179,30 +201,58 @@ func TestSeaStorm_EachEnteredSeaHexOnceThenFounders(t *testing.T) {
 	}
 	var p SeaStormPayload
 	_ = json.Unmarshal(raw, &p)
-	if p.OwnerID != owner || p.Hull != 0 || p.Q != 6 || p.Troops == nil || p.Troops.Size != 100 {
-		t.Fatalf("founder payload = %+v, want owner, hull 0 at (6,0), 100 drowned troops", p)
+	if p.OwnerID != owner || p.Hull != 0 || p.Q != 7 || p.Troops == nil || p.Troops.Size != 100 {
+		t.Fatalf("founder payload = %+v, want owner, hull 0 at (7,0), 100 drowned troops", p)
 	}
-	runStormDay(t, h, worldID, 6)
-	if dice.calls != 5 {
-		t.Fatalf("rolls after founder = %d, want 5 (a sunk ship sails no further)", dice.calls)
+	runStormDay(t, h, worldID, 7)
+	if n := countShipEvents(t, pool, ship, EventShipFoundered); n != 1 {
+		t.Fatalf("ShipFoundered events = %d, want 1 (a sunk ship sails no further)", n)
 	}
 }
 
-// Calm seas: rolls happen, nothing changes but the progress mark.
+// Calm seas: no storm over the lane, nothing changes; a small world gets no storms of its own.
 func TestSeaStorm_CalmSeaLeavesShipWhole(t *testing.T) {
 	pool, worldID, owner, route := seaStormWorld(t)
 	ship, _ := mkStormFleet(t, pool, worldID, owner, route)
-	dice := &stormDice{v: 0.99}
 	h := NewSeaStormScanHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil)
-	h.Dice = dice
+	h.Dice = newStormDice(2)
 	for day := 1; day <= 10; day++ {
 		runStormDay(t, h, worldID, day)
 	}
-	if dice.calls != 9 {
-		t.Fatalf("rolls = %d, want 9 (ten entered hexes minus the river)", dice.calls)
-	}
 	if status, hull := shipState(t, pool, ship); status != "marching" || hull != 5 {
 		t.Fatalf("calm voyage: status=%s hull=%d, want marching/5", status, hull)
+	}
+	var n int
+	_ = pool.QueryRow(context.Background(), `SELECT count(*) FROM sea_storms WHERE world_id = $1`, worldID).Scan(&n)
+	if n != 0 {
+		t.Fatalf("storms in a %d-sea-hex world = %d, want 0 (one per %d)", 9, n, SeaHexesPerStorm)
+	}
+}
+
+// A storm beside the ship, on the neighbouring hex, does nothing.
+func TestSeaStorm_NeighbouringHexDoesNotHit(t *testing.T) {
+	pool, worldID, owner, route := seaStormWorld(t)
+	ship, _ := mkStormFleet(t, pool, worldID, owner, route)
+	ctx := context.Background()
+	var id uuid.UUID
+	if err := pool.QueryRow(ctx, `INSERT INTO sea_storms (world_id, heading, created_tick) VALUES ($1, 0, 0) RETURNING id`, worldID).Scan(&id); err != nil {
+		t.Fatal(err)
+	}
+	for tick := 0; tick <= 20; tick++ {
+		for slot := 0; slot < 3; slot++ {
+			// the lane hex of tick t is q = t+1; the storm sits one hex ahead of it
+			if _, err := pool.Exec(ctx, `INSERT INTO sea_storm_track (storm_id, tick, slot, q, r) VALUES ($1, $2, $3, $4, 0)`, id, tick, slot, tick+2+slot); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	h := NewSeaStormScanHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil)
+	h.Dice = newStormDice(3)
+	for day := 1; day <= 8; day++ {
+		runStormDay(t, h, worldID, day)
+	}
+	if _, hull := shipState(t, pool, ship); hull != 5 {
+		t.Fatalf("hull = %d, want 5: a storm one hex ahead never shares the ship's hex", hull)
 	}
 }
 
@@ -219,16 +269,17 @@ func TestSeaStorm_SameRiskForEveryErrandAndOwner(t *testing.T) {
 	fleet, _ := mkStormFleet(t, pool, worldID, other, route)
 	freighter, transportID := mkStormFreight(t, pool, worldID, owner, route)
 	h := NewSeaStormScanHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil)
-	h.Dice = &stormDice{v: 0}
+	stormsOverLane(t, pool, worldID)
+	h.Dice = newStormDice(4)
 	for day := 1; day <= 2; day++ {
 		runStormDay(t, h, worldID, day)
 	}
 	_, fleetHull := shipState(t, pool, fleet)
 	_, freightHull := shipState(t, pool, freighter)
-	if fleetHull != 3 || freightHull != 3 {
-		t.Fatalf("hull after two sea hexes: fleet=%d freighter=%d, want 3/3", fleetHull, freightHull)
+	if fleetHull != 4 || freightHull != 4 {
+		t.Fatalf("hull after day 2 (one sea tick, one river tick): fleet=%d freighter=%d, want 4/4", fleetHull, freightHull)
 	}
-	for day := 3; day <= 6; day++ {
+	for day := 3; day <= 7; day++ {
 		runStormDay(t, h, worldID, day)
 	}
 	var status string

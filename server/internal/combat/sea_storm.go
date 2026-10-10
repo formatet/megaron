@@ -1,20 +1,19 @@
 package combat
 
-// Slice T (megaron_transportrisk.md, Timothy 2026-10-08): the risk of the sea
-// lives in the sea. Every ship at sea — a marching fleet, a ship carrying an
-// army, an expedition, a galley bound to a trade/transfer/gift leg — rolls
-// StormChancePerSeaHex for every sea hex it ENTERS. A storm costs one hull
-// point; at hull 0 the ship founders and takes its cargo and embarked troops
-// with it. Ownership and errand never change the risk.
+// Slice T (megaron_transportrisk.md, Timothy 2026-10-08), reworked by megaron_plan_stormar.md
+// (Timothy 2026-10-10): the risk of the sea lives in the sea, as storms you can see. A
+// storm is three connected sea hexes that crawl (sea_storm_weather.go). A ship that
+// stands on any hex of a storm at a tick takes one hull point; at hull 0 it founders and
+// takes its cargo and embarked troops with it. Ownership and errand never change the risk.
 //
 // One recurring scan per world (ScheduledSeaStormScan, first in the day —
-// events.tickPrioritySea) reads each voyage's SAVED route (units.march_route /
-// transports.journey — never a re-search) and rolls every hex entered up to
-// the scan's tick. sea_storm_progress (mig 161) is the per-voyage high-water
-// mark, written in the same TX as the hull outcome: a retried or duplicated
-// scan never rolls a hex twice, and a scan that ran late rolls every hex it
-// missed. Outcomes are rolled once here and stored as outcomes (CLAUDE.md
-// Events): ShipStormDamaged / ShipFoundered.
+// events.tickPrioritySea) first walks the storms to the scan's tick, then reads each
+// voyage's SAVED route (units.march_route / transports.journey — never a re-search) and
+// checks the hex the ship holds at every tick since its last check against the stored
+// track. sea_storm_progress.last_tick (mig 168) is the per-voyage high-water mark, written
+// in the same TX as the hull outcome: a retried or duplicated scan never hits a tick
+// twice, and a scan that ran late checks every tick it missed. Outcomes are stored as
+// outcomes (CLAUDE.md Events): ShipStormDamaged / ShipFoundered.
 //
 // G1: lives in combat because combat owns the unit route parser (route.go)
 // and may read transports; transport may not import combat.
@@ -37,10 +36,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
-
-// StormChancePerSeaHex is the chance that one entered sea hex brings a storm
-// (Timothy's starting value; tuned in playtest).
-const StormChancePerSeaHex = 0.05
 
 // SeaStormScanIntervalTicks: every day, so no entered hex waits a day for its roll.
 const SeaStormScanIntervalTicks = 1
@@ -90,7 +85,7 @@ type SeaStormScanHandler struct {
 	scheduler  *events.Scheduler
 	eventStore *events.Store
 	hub        Broadcaster
-	// Dice is the storm roll seam; defaults to economy.NewWallDice().
+	// Dice is the weather seam (creating storms, their steps); defaults to economy.NewWallDice().
 	Dice economy.Dice
 }
 
@@ -119,12 +114,19 @@ func (h *SeaStormScanHandler) Handle(ctx context.Context, e events.ScheduledEven
 	if err != nil {
 		return fmt.Errorf("sea storm scan: load terrain: %w", err)
 	}
+	if err := h.stepWeather(ctx, e.WorldID, e.DueTick, graph); err != nil {
+		return fmt.Errorf("sea storm scan: weather: %w", err)
+	}
+	occupied, err := loadStormOccupancy(ctx, h.pool, e.WorldID, e.DueTick-stormTrackKeepTicks, e.DueTick)
+	if err != nil {
+		return err
+	}
 	voyages, err := h.loadVoyages(ctx, e.WorldID)
 	if err != nil {
 		return err
 	}
 	for _, v := range voyages {
-		if err := h.sail(ctx, e.WorldID, e.DueTick, graph, v); err != nil {
+		if err := h.sail(ctx, e.WorldID, e.DueTick, graph, occupied, v); err != nil {
 			// One ship's failure must not stop the sea for every other ship;
 			// its progress row did not move, so the next scan retries it.
 			slog.Warn("sea storm scan: voyage failed", "voyage", v.key, "err", err)
@@ -211,12 +213,11 @@ func journeyRoute(raw []byte, departed, due int) (StoredRoute, bool) {
 
 // sail rolls every sea hex this voyage has entered since its last roll, up
 // to the end of dueTick, in one TX with the progress mark.
-func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTick int, graph province.TileGraph, v seaVoyage) error {
+func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTick int, graph province.TileGraph, occupied stormOccupancy, v seaVoyage) error {
 	enter, err := RouteEnterMilli(v.route)
 	if err != nil {
 		return err
 	}
-	now := int64(dueTick) * 1000
 
 	tx, err := h.pool.Begin(ctx)
 	if err != nil {
@@ -224,26 +225,22 @@ func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTi
 	}
 	defer tx.Rollback(ctx)
 
-	// A voyage first seen now starts from the hex it held at the previous
-	// day's scan: hexes entered strictly before that were never this scan's to
-	// roll (a ship already at sea when the scan was deployed is not
-	// retro-stormed). Hex 1 is entered AT departure (movement's convention),
-	// so a voyage that left since the last scan keeps every hex.
-	start := 0
-	for i := 1; i < len(enter); i++ {
-		if enter[i] < now-1000 {
-			start = i
-		}
-	}
+	// A voyage first seen now is checked from the previous scan's tick on: ticks before
+	// that were never this scan's (a ship already at sea when the scan was deployed is
+	// not retro-stormed). The mark is in ticks; last_hex only exists on older rows.
 	if _, err := tx.Exec(ctx,
-		`INSERT INTO sea_storm_progress (voyage_key, world_id, ship_unit_id, last_hex)
-		 VALUES ($1, $2, $3, $4) ON CONFLICT (voyage_key) DO NOTHING`,
-		v.key, worldID, v.shipID, start); err != nil {
+		`INSERT INTO sea_storm_progress (voyage_key, world_id, ship_unit_id, last_hex, last_tick)
+		 VALUES ($1, $2, $3, 0, $4) ON CONFLICT (voyage_key) DO NOTHING`,
+		v.key, worldID, v.shipID, dueTick-1); err != nil {
 		return err
 	}
-	var last int
-	if err := tx.QueryRow(ctx, `SELECT last_hex FROM sea_storm_progress WHERE voyage_key = $1 FOR UPDATE`, v.key).Scan(&last); err != nil {
+	var lastTick *int
+	if err := tx.QueryRow(ctx, `SELECT last_tick FROM sea_storm_progress WHERE voyage_key = $1 FOR UPDATE`, v.key).Scan(&lastTick); err != nil {
 		return err
+	}
+	last := dueTick - 1
+	if lastTick != nil {
+		last = *lastTick
 	}
 
 	// Re-check under lock that the voyage is still this voyage. Transport
@@ -273,29 +270,35 @@ func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTi
 	}
 
 	var storms []SeaStormPayload
-	for i := last + 1; i < len(enter) && enter[i] <= now; i++ {
-		last = i
-		hx := v.route.Hexes[i]
-		if !isSeaTerrain(graph[hx]) {
-			continue
+	for t := last + 1; t <= dueTick; t++ {
+		if t > v.arriveTick || int64(t)*1000 < enter[0] {
+			continue // not under way at this tick
 		}
-		if h.Dice.Float64() >= StormChancePerSeaHex {
+		i := 0
+		for j := range enter {
+			if enter[j] <= int64(t)*1000 {
+				i = j
+			}
+		}
+		hx := v.route.Hexes[i]
+		if !isSeaTerrain(graph[hx]) || !occupied.at(t, hx) {
 			continue
 		}
 		before := hull
 		hull--
 		storms = append(storms, SeaStormPayload{
 			WorldID: worldID, ShipID: v.shipID, OwnerID: v.owner, ShipType: v.shipType,
-			Q: hx[0], R: hx[1], Tick: int(enter[i] / 1000), HullBefore: before, Hull: hull, HullMax: hullMax,
+			Q: hx[0], R: hx[1], Tick: t, HullBefore: before, Hull: hull, HullMax: hullMax,
 			Foundered: hull <= 0, Errand: v.errand, TransportID: v.transportID,
 		})
 		if hull <= 0 {
 			break
 		}
 	}
+	last = dueTick
 
 	if _, err := tx.Exec(ctx,
-		`UPDATE sea_storm_progress SET last_hex = $2, updated_at = now() WHERE voyage_key = $1`, v.key, last); err != nil {
+		`UPDATE sea_storm_progress SET last_tick = $2, updated_at = now() WHERE voyage_key = $1`, v.key, last); err != nil {
 		return err
 	}
 	// Keep one progress row per ship: an earlier march's mark is finished.
@@ -405,4 +408,50 @@ func (h *SeaStormScanHandler) founder(ctx context.Context, tx pgx.Tx, v seaVoyag
 		return rows.Err()
 	}
 	return nil
+}
+
+// stormOccupancy is "which hexes a storm covers at which tick", read from the stored tracks.
+type stormOccupancy map[int]map[[2]int]bool
+
+func (o stormOccupancy) at(tick int, hx [2]int) bool { return o[tick][hx] }
+
+func loadStormOccupancy(ctx context.Context, pool *pgxpool.Pool, worldID uuid.UUID, fromTick, toTick int) (stormOccupancy, error) {
+	rows, err := pool.Query(ctx,
+		`SELECT t.tick, t.q, t.r FROM sea_storm_track t JOIN sea_storms s ON s.id = t.storm_id
+		  WHERE s.world_id = $1 AND t.tick BETWEEN $2 AND $3`, worldID, fromTick, toTick)
+	if err != nil {
+		return nil, fmt.Errorf("sea storm scan: load storm tracks: %w", err)
+	}
+	defer rows.Close()
+	out := stormOccupancy{}
+	for rows.Next() {
+		var tick, q, r int
+		if err := rows.Scan(&tick, &q, &r); err != nil {
+			return nil, err
+		}
+		if out[tick] == nil {
+			out[tick] = map[[2]int]bool{}
+		}
+		out[tick][[2]int{q, r}] = true
+	}
+	return out, rows.Err()
+}
+
+// stepWeather creates the world's storms on first sight and walks every track to dueTick.
+func (h *SeaStormScanHandler) stepWeather(ctx context.Context, worldID uuid.UUID, dueTick int, graph province.TileGraph) error {
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtext($1))`, "sea_storms:"+worldID.String()); err != nil {
+		return err
+	}
+	if err := ensureStorms(ctx, tx, worldID, dueTick, graph, h.Dice); err != nil {
+		return err
+	}
+	if err := advanceStorms(ctx, tx, worldID, dueTick, graph, h.Dice); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
 }

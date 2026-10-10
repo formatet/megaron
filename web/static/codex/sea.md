@@ -19,9 +19,9 @@ A [[transfers|transfer]] or [[routes|standing order]] that goes by sea needs a f
 
 ## Storms
 
-The open sea is never quite safe. **Every sea hex a ship enters brings a 5% chance of a storm**, whatever the ship is doing — a fleet, a ship carrying an army, an expedition, a galley carrying a trade, a transfer or a gift. Whose ship it is and why it sails never change the chance. A longer voyage simply meets more sea. Rivers and land have no storms. <!-- src: server/internal/combat/sea_storm.go StormChancePerSeaHex -->
+The open sea is never quite safe, but **you can see its storms** — see [[storms]]. A storm is three sea hexes of dark cloud that drift slowly across the Thalassa; a ship that stands on one of them takes the damage, whatever the ship is doing — a fleet, a ship carrying an army, an expedition, a galley carrying a trade, a transfer or a gift. Whose ship it is and why it sails never change that. Rivers and land have no storms. <!-- src: server/internal/combat/sea_storm_weather.go SeaHexesPerStorm -->
 
-- **A storm costs the ship one point of hull** (of five). You are told where it struck and how much hull is left.
+- **A storm costs the ship one point of hull** (of five) for every day it spends in one. You are told where it struck and how much hull is left.
 - **At hull 0 the ship founders.** It goes down with everything aboard: its crew, any troops it carries, and any cargo. You are told where, and what was lost with her.
 - A battered ship keeps sailing. Bring it home and **Repair** it at a Shipyard before its next long voyage.
 

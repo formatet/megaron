@@ -377,6 +377,7 @@ func main() {
 		// honest anonymous answer, so there is none: 401. Tools that need the
 		// whole map use the X-Admin-Key god view (api/handlers/god.go).
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/map", wh.Map)
+		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/storms", wh.Storms)
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/colonize-preview", wh.ColonizePreview)
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/provinces", wh.Provinces)
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/marches", wh.Marches)

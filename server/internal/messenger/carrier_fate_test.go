@@ -16,16 +16,34 @@ import (
 	"formatet/megaron/server/internal/transport"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"os"
 	"strings"
 )
 
 var carrierFixtureDir = flag.String("t2-fixture-dir", "", "export actual notification payloads for four-surface proof")
 
-type carrierStormDice struct{}
-
-func (carrierStormDice) Float64() float64 { return 0 }
-func (carrierStormDice) Intn(int) int     { return 0 }
+// carrierStormOver puts storms over the whole test lane (r=0, q -2..12) for ticks 498..510,
+// so a storm scan in these fixtures hits any ship on it — the stored-track replacement for the
+// old "the die always says storm" stub (megaron_plan_stormar.md). Storms are inserted with a
+// track longer than the scan, so the scan has no steps of its own to add.
+func carrierStormOver(t *testing.T, pool *pgxpool.Pool, worldID uuid.UUID) {
+	t.Helper()
+	ctx := context.Background()
+	for start := -2; start <= 12; start += 3 {
+		var id uuid.UUID
+		if err := pool.QueryRow(ctx, `INSERT INTO sea_storms (world_id, heading, created_tick) VALUES ($1, 0, 498) RETURNING id`, worldID).Scan(&id); err != nil {
+			t.Fatal(err)
+		}
+		for tick := 498; tick <= 510; tick++ {
+			for slot := 0; slot < 3; slot++ {
+				if _, err := pool.Exec(ctx, `INSERT INTO sea_storm_track (storm_id, tick, slot, q, r) VALUES ($1, $2, $3, $4, 0)`, id, tick, slot, start+slot); err != nil {
+					t.Fatal(err)
+				}
+			}
+		}
+	}
+}
 
 // DB identities are human before freezing/export, not screenshot rewrites.
 func carrierHumanNames(t *testing.T, f *passageFixture) uuid.UUID {
@@ -89,7 +107,7 @@ func TestCarrierFate_StormTransportLosesPassenger(t *testing.T) {
 	}
 	stale := f.loadScheduledEvent(t, string(events.ScheduledMessengerArrival), messengerID)
 	storm := combat.NewSeaStormScanHandler(f.pool, sched, events.NewStore(f.pool), nil)
-	storm.Dice = carrierStormDice{}
+	carrierStormOver(t, f.pool, f.worldID)
 	f.setTick(t, 501)
 	if err := storm.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: 501}); err != nil {
 		t.Fatal(err)
@@ -180,7 +198,7 @@ func TestCarrierFate_StormMissionLosesPassenger(t *testing.T) {
 	}
 	clk := clock.NewTestClock(time.Now())
 	storm := combat.NewSeaStormScanHandler(f.pool, events.NewScheduler(f.pool, clk), events.NewStore(f.pool), nil)
-	storm.Dice = carrierStormDice{}
+	carrierStormOver(t, f.pool, f.worldID)
 	f.setTick(t, 501)
 	if err := storm.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: 501}); err != nil {
 		t.Fatal(err)
@@ -414,7 +432,7 @@ func TestCarrierFate_LossFreezesTradeAndUnitOrder(t *testing.T) {
 				}
 			}
 			storm := combat.NewSeaStormScanHandler(f.pool, sched, events.NewStore(f.pool), nil)
-			storm.Dice = carrierStormDice{}
+			carrierStormOver(t, f.pool, f.worldID)
 			f.setTick(t, 501)
 			if err := storm.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: 501}); err != nil {
 				t.Fatal(err)
@@ -529,7 +547,7 @@ func TestCarrierFate_PendingRescueCanBeLostAgainAndAtomicWitnessFailure(t *testi
 		_, _ = f.pool.Exec(context.Background(), `DROP FUNCTION IF EXISTS `+function+`()`)
 	})
 	storm := combat.NewSeaStormScanHandler(f.pool, sched, store, nil)
-	storm.Dice = carrierStormDice{}
+	carrierStormOver(t, f.pool, f.worldID)
 	f.setTick(t, 501)
 	if err := storm.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: 501}); err != nil {
 		t.Fatal(err)

@@ -41,6 +41,7 @@ export const State = {
   tradeData: [],
   unitsData: [],  // per-unit armies/fleets (units table) — drawn on the canvas
   foreignUnitData: [], // GET /foreign-units — non-owned units currently in live vision
+  stormData: [],       // GET /storms — live storms in sight + remembered ones (ghosts)
   ruralData: [],  // rural building projections on own catchment hexes (Fas A2)
   workedHexes: [], // own catchment hexes with >=1 placed gubbe: [{q,r}] (report 54f2b747)
 
@@ -56,6 +57,7 @@ export const State = {
   // väcker renderloopen vid fasbytet, så blinket inte tystnar när inget annat
   // rör sig på kartan (fow/frammande-enheter, funnet i acceptanskörningen).
   lastBlinkTick: -1,
+  lastStormTick: -1,
   lastFireTick: -1,
   activityOverlay: false,
 
