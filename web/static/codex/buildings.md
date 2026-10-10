@@ -4,7 +4,7 @@ Open **City → Buildings**. The tab shows what is **built** (and its level), th
 |---|---|
 | **Farm** | Stands on a grain hex you choose and works that field. |
 | **Harbour** | Works the settlement's coastal waters and enables sea trade ([[sea]]). Stands in the city — see below. |
-| **Shipyard** | Builds and repairs ships (needs a coastal city — an adjacent sea hex). |
+| **Shipyard** | Builds and repairs ships (needs a coastal city). |
 | **Lumbermill** | Stands on a forest hex and works its stands. |
 | **Stone Quarry** | Stands on a land hex you choose and works the stone there — far more on hills and limestone. |
 | **Mine** | Stands on an ore deposit hex and extracts whatever it holds — copper, tin or silver. |
@@ -16,6 +16,8 @@ Open **City → Buildings**. The tab shows what is **built** (and its level), th
 | **Market** | Enables trade offers and updates market price snapshots. |
 | **Temple** | Enables rites, produces cult, and unlocks oracle prayers. More important than it looks — see [[temples]]. |
 | **Wall** | Palisade, then stone, then bronze. Absorbs damage in [[battle]]. |
+
+**The coast rule.** A city can build a Harbour or a Shipyard only if its own hex borders the sea or a river; an inland city never can, so to reach the sea you must found a coastal colony ([[colonies]]). The [[founding]] forecast tells you which kind of site you are looking at.
 
 ## On a hex
 

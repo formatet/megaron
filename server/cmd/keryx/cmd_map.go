@@ -240,7 +240,7 @@ func mapCmd() *cobra.Command {
 				}
 				coastTag := ""
 				if t.Coastal {
-					coastTag = " [coastal—can build harbour]"
+					coastTag = " [coastal hex — a city founded here could build a harbour]"
 				}
 				dep := ""
 				impassable := t.Terrain == "mountain_limestone" || t.Terrain == "mountain_red"

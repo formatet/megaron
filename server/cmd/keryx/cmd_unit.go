@@ -864,6 +864,7 @@ type colonizePreview struct {
 	} `json:"grain"`
 	UnknownHexes    int    `json:"unknown_hexes"`
 	IsolatedWarning string `json:"isolated_warning,omitempty"`
+	HarbourNote     string `json:"harbour_note,omitempty"`
 	// FoundingGifts is only sent for a metropolis founding (?starter_farm=1) —
 	// the gifts this site earns (Demeter's farm, Poseidon's galley). Empty for
 	// colonies, which are owed nothing.
@@ -941,6 +942,10 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 	// march/settle call will refuse this exact site with the same message.
 	if p.CatchmentConflict != nil && p.CatchmentConflict.Blocked {
 		fmt.Printf("  ⛔ BLOCKED: %s\n", p.CatchmentConflict.Message)
+	}
+
+	if p.HarbourNote != "" {
+		fmt.Printf("  %s\n", p.HarbourNote)
 	}
 
 	prodPerTick := p.Grain.BasePerTick
