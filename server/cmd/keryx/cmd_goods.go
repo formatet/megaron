@@ -313,7 +313,7 @@ func cargoCmd() *cobra.Command {
 			}
 			fmt.Println("\nPhysical cargo, not a promise — it can be intercepted and seized in transit.")
 			fmt.Println("Same risk for every cargo, own or traded: on land only interception;")
-			fmt.Println("at sea every entered sea hex may bring a storm (1 hull; hull 0 founders the ship).")
+			fmt.Println("at sea every storm the ship sails into costs 2 hull (of 5); hull 0 founders the ship.")
 			return nil
 		},
 	}

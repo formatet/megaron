@@ -6,7 +6,7 @@ Each day **one** of a storm's three hexes steps to a neighbouring sea hex, and t
 
 ## What they do
 
-A ship that **stands on a storm's hex** takes one point of hull damage for each day it stays there; at hull 0 she founders with everything aboard ([[sea]]). A ship beside a storm is safe. Ships follow the route they were given and cannot steer round a storm once they sail ([[sea]]), so look before you send them.
+A ship that **sails into a storm** takes two points of hull damage (of five) — once per storm, however many days it spends inside it; three storms sink a ship from full hull. at hull 0 she founders with everything aboard ([[sea]]). A ship beside a storm is safe. Ships follow the route they were given and cannot steer round a storm once they sail ([[sea]]), so look before you send them.
 
 ## What you see
 

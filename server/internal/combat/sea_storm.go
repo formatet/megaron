@@ -3,7 +3,7 @@ package combat
 // Slice T (megaron_transportrisk.md, Timothy 2026-10-08), reworked by megaron_plan_stormar.md
 // (Timothy 2026-10-10): the risk of the sea lives in the sea, as storms you can see. A
 // storm is three connected sea hexes that crawl (sea_storm_weather.go). A ship that
-// stands on any hex of a storm at a tick takes one hull point; at hull 0 it founders and
+// sails into a storm takes StormDamage hull points, once per storm however many ticks it spends inside; at hull 0 it founders and
 // takes its cargo and embarked troops with it. Ownership and errand never change the risk.
 //
 // One recurring scan per world (ScheduledSeaStormScan, first in the day —
@@ -40,6 +40,10 @@ import (
 // SeaStormScanIntervalTicks: every day, so no entered hex waits a day for its roll.
 const SeaStormScanIntervalTicks = 1
 
+// StormDamage is the hull a ship loses each time it enters a storm (Timothy 2026-10-10:
+// two or three storms must sink a ship; hull max is 5, so three do).
+const StormDamage = 2
+
 const (
 	EventShipStormDamaged = "ShipStormDamaged"
 	EventShipFoundered    = "ShipFoundered"
@@ -72,6 +76,7 @@ type SeaStormPayload struct {
 	HullBefore  int             `json:"hull_before"`
 	Hull        int             `json:"hull"`
 	HullMax     int             `json:"hull_max"`
+	Damage      int             `json:"damage"` // hull lost to this storm (absent on events before 2026-10-10: 1)
 	Foundered   bool            `json:"foundered"`
 	Errand      string          `json:"errand"` // "march" or the transport kind
 	TransportID *uuid.UUID      `json:"transport_id,omitempty"`
@@ -269,10 +274,10 @@ func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTi
 		return tx.Commit(ctx)
 	}
 
-	var storms []SeaStormPayload
-	for t := last + 1; t <= dueTick; t++ {
+	// holds returns the sea hex the ship is on at tick t, if it is under way then.
+	holds := func(t int) ([2]int, bool) {
 		if t > v.arriveTick || int64(t)*1000 < enter[0] {
-			continue // not under way at this tick
+			return [2]int{}, false
 		}
 		i := 0
 		for j := range enter {
@@ -281,14 +286,32 @@ func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTi
 			}
 		}
 		hx := v.route.Hexes[i]
-		if !isSeaTerrain(graph[hx]) || !occupied.at(t, hx) {
+		return hx, isSeaTerrain(graph[hx])
+	}
+	inStorm := func(t int) ([2]int, bool) {
+		hx, ok := holds(t)
+		return hx, ok && occupied.at(t, hx)
+	}
+
+	var storms []SeaStormPayload
+	for t := last + 1; t <= dueTick; t++ {
+		hx, hit := inStorm(t)
+		if !hit {
+			continue
+		}
+		// One storm is one blow: a ship that was already in a storm hex the tick
+		// before is still inside the same encounter (Timothy 2026-10-10).
+		if _, still := inStorm(t - 1); still {
 			continue
 		}
 		before := hull
-		hull--
+		hull -= StormDamage
+		if hull < 0 {
+			hull = 0
+		}
 		storms = append(storms, SeaStormPayload{
 			WorldID: worldID, ShipID: v.shipID, OwnerID: v.owner, ShipType: v.shipType,
-			Q: hx[0], R: hx[1], Tick: t, HullBefore: before, Hull: hull, HullMax: hullMax,
+			Q: hx[0], R: hx[1], Tick: t, HullBefore: before, Hull: hull, HullMax: hullMax, Damage: before - hull,
 			Foundered: hull <= 0, Errand: v.errand, TransportID: v.transportID,
 		})
 		if hull <= 0 {
