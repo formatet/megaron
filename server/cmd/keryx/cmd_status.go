@@ -513,7 +513,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			// shows for a nomadic host too. Suppressed in --json mode, which emits
 			// the server's raw payload verbatim.
 			if !jsonMode {
-				printWanaxGreeting(c)
+				printWanaxGreeting(c, cfg.WorldID)
 			}
 			// Default to the capital; --province lets you inspect any province you own
 			// (the server FOW/ownership-gates it), mirroring `build --province`.
@@ -1153,14 +1153,39 @@ func fetchMe(c *Client) string {
 }
 
 // printWanaxGreeting prints the top-of-status line addressing the player by
-// their Wanax name. Best-effort: silently skipped if /auth/me fails, same
-// convention as printNoTradeContactsHint/printLoyaltyLog below.
-func printWanaxGreeting(c *Client) {
+// their Wanax name, and today's day of the world. Best-effort: silently
+// skipped if /auth/me fails, same convention as printNoTradeContactsHint/
+// printLoyaltyLog below; the day is dropped alone if the world read fails.
+// The day answers "what day is it?", which an AI playtest (2026-10-10) could
+// only answer through the database.
+func printWanaxGreeting(c *Client, worldID string) {
 	name := fetchMe(c)
 	if name == "" {
 		return
 	}
+	if tick, ok := fetchWorldTick(c, worldID); ok {
+		fmt.Printf("Wanax %s · %s of the world\n\n", name, formatDay(tick))
+		return
+	}
 	fmt.Printf("Wanax %s\n\n", name)
+}
+
+// fetchWorldTick reads the world's current tick (1 tick = 1 day on player surfaces).
+func fetchWorldTick(c *Client, worldID string) (int, bool) {
+	if worldID == "" {
+		return 0, false
+	}
+	data, err := c.get("/api/v1/worlds/" + worldID)
+	if err != nil {
+		return 0, false
+	}
+	var w struct {
+		CurrentTick *int `json:"current_tick"`
+	}
+	if err := json.Unmarshal(data, &w); err != nil || w.CurrentTick == nil {
+		return 0, false
+	}
+	return *w.CurrentTick, true
 }
 
 func printNoTradeContactsHint(c *Client, worldID, prov string) {

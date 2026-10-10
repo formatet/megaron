@@ -521,7 +521,7 @@ func TestPrintWanaxGreeting_AddressesPlayerByName(t *testing.T) {
 	cfg := &Config{Server: ts.URL, WorldID: "world-1"}
 	c := newClient(cfg)
 
-	out, _ := captureStdout(t, func() error { printWanaxGreeting(c); return nil })
+	out, _ := captureStdout(t, func() error { printWanaxGreeting(c, cfg.WorldID); return nil })
 	if !strings.Contains(out, "Idomeneus") {
 		t.Errorf("printWanaxGreeting did not address the player by name:\n%s", out)
 	}
@@ -538,7 +538,7 @@ func TestPrintWanaxGreeting_SilentOnFailure(t *testing.T) {
 	cfg := &Config{Server: ts.URL, WorldID: "world-1"}
 	c := newClient(cfg)
 
-	out, _ := captureStdout(t, func() error { printWanaxGreeting(c); return nil })
+	out, _ := captureStdout(t, func() error { printWanaxGreeting(c, cfg.WorldID); return nil })
 	if out != "" {
 		t.Errorf("printWanaxGreeting on failure printed %q, want silence", out)
 	}
@@ -559,5 +559,26 @@ func TestGrowthLine(t *testing.T) {
 		if got := growthLine(1000, c.state, c.net); got != c.want {
 			t.Errorf("growthLine(%q, %g) = %q, want %q", c.state, c.net, got, c.want)
 		}
+	}
+}
+
+// TestPrintWanaxGreeting_SaysTheDay: the header answers "what day is it?"
+// from the world's current tick.
+func TestPrintWanaxGreeting_SaysTheDay(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if r.URL.Path == "/api/v1/worlds/world-1" {
+			_, _ = w.Write([]byte(`{"current_tick":281}`))
+			return
+		}
+		_, _ = w.Write([]byte(`{"wanax_name":"Idomeneus"}`))
+	}))
+	defer ts.Close()
+	cfg := &Config{Server: ts.URL, WorldID: "world-1"}
+	c := newClient(cfg)
+
+	out, _ := captureStdout(t, func() error { printWanaxGreeting(c, cfg.WorldID); return nil })
+	if !strings.Contains(out, "Wanax Idomeneus · day 281 of the world") {
+		t.Errorf("status header does not say the day:\n%s", out)
 	}
 }
