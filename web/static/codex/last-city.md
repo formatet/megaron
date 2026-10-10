@@ -13,7 +13,7 @@ Everything you knew stays yours: your letters, the cities you have [[contact|mad
 
 ## Leave this world
 
-You leave this world for good and cannot rise in it again. **Your account remains**, and the next world is open to you. To delete the account itself, email the admin.
+You leave this world for good and cannot rise in it again. **Your account remains**, and the next world is open to you. To delete the account itself, write to the admin in the [[community-chat|community chat]].
 
 In [[keryx|Keryx]] the same two choices are `keryx rise` and `keryx leave`.
 

@@ -69,6 +69,7 @@ type fakeAgoraRemote struct {
 	created, createCalls   int
 	down, crashAfterCreate bool
 	secrets                []string
+	deactivated            []string
 }
 
 func newFakeAgoraRemote() *fakeAgoraRemote {

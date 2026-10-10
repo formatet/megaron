@@ -253,6 +253,19 @@ func (c *Client) ResetPassword(ctx context.Context, txnID, localpart, password s
 	return c.command(ctx, txnID, "!admin users reset-password -- "+localpart+" "+password, "Successfully reset the password for user "+c.UserID(localpart)+": ", false)
 }
 
+// Deactivate closes an erased player's Agora account. Success text measured on
+// 26.9.1 (tools/agora_acceptance/README.md). Replaying txnID confirms the
+// original operation, so a crash between command and bookkeeping is safe.
+func (c *Client) Deactivate(ctx context.Context, txnID, localpart string) error {
+	if !validLocalpart(localpart) {
+		return ErrUnavailable
+	}
+	if err := c.Initialize(ctx); err != nil {
+		return err
+	}
+	return c.command(ctx, txnID, "!admin users deactivate -- "+c.UserID(localpart), "User "+c.UserID(localpart)+" has been deactivated", false)
+}
+
 // SetDisplayName authenticates with an ephemeral provisioning password. Neither
 // password nor user token is persisted, and the temporary session is logged out.
 func (c *Client) SetDisplayName(ctx context.Context, localpart, password, name string) error {

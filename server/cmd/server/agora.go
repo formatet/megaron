@@ -26,6 +26,7 @@ type agoraRemote interface {
 	Create(context.Context, string, string, string) error
 	ResetPassword(context.Context, string, string, string) error
 	SetDisplayName(context.Context, string, string, string) error
+	Deactivate(context.Context, string, string) error
 }
 
 type agoraService struct {
@@ -128,8 +129,9 @@ func (s *agoraService) run(ctx context.Context) {
 }
 
 func (s *agoraService) pass(ctx context.Context) {
+	s.deactivateErased(ctx)
 	rows, err := s.pool.Query(ctx, `SELECT p.id FROM players p
-		WHERE p.agora_localpart IS NULL AND p.wanax_name IS NOT NULL
+		WHERE p.agora_localpart IS NULL AND p.wanax_name IS NOT NULL AND p.erased_at IS NULL
 		AND (p.agora_claim_localpart IS NOT NULL OR EXISTS(SELECT 1 FROM settlements s WHERE s.owner_id=p.id))
 		ORDER BY p.id`)
 	if err != nil {
@@ -161,6 +163,45 @@ func (s *agoraService) pass(ctx context.Context) {
 		cancel()
 		if err != nil {
 			slog.Warn("Agora account awaits reconciliation", "player", id.String())
+		}
+	}
+}
+
+// deactivateErased closes the Agora account of every player an admin erased
+// (cmd/erase-player). The flag is cleared only after the remote confirms, so an
+// Agora outage delays the deactivation instead of losing it.
+func (s *agoraService) deactivateErased(ctx context.Context) {
+	rows, err := s.pool.Query(ctx, `SELECT id, agora_localpart FROM players
+		WHERE agora_deactivate_pending AND agora_localpart IS NOT NULL ORDER BY id`)
+	if err != nil {
+		slog.Warn("Agora deactivation query failed")
+		return
+	}
+	type pending struct {
+		id        uuid.UUID
+		localpart string
+	}
+	var list []pending
+	for rows.Next() {
+		var p pending
+		if rows.Scan(&p.id, &p.localpart) == nil {
+			list = append(list, p)
+		}
+	}
+	rows.Close()
+	for _, p := range list {
+		if ctx.Err() != nil {
+			return
+		}
+		callCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+		err := s.remote.Deactivate(callCtx, "deactivate-"+p.id.String(), p.localpart)
+		cancel()
+		if err != nil {
+			slog.Warn("Agora deactivation awaits reconciliation", "player", p.id.String())
+			continue
+		}
+		if _, err := s.pool.Exec(ctx, `UPDATE players SET agora_deactivate_pending = false WHERE id = $1`, p.id); err != nil {
+			slog.Warn("Agora deactivation bookkeeping failed", "player", p.id.String())
 		}
 	}
 }

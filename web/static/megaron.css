@@ -2069,6 +2069,7 @@ h4.cx-h { font-size: var(--fs-base); }
 .account-chat dd { margin: 0 0 .5rem; overflow-wrap: anywhere; font-family: var(--mono); }
 .account-chat a { color: var(--accent); }
 .account-chat-secret { white-space: pre-wrap; overflow-wrap: anywhere; padding: .6rem; margin: .6rem 0; background: var(--warm-white); border: 1px solid var(--border); color: var(--text); user-select: all; }
+.account-delete-note { margin: 1rem 0; font-size: var(--fs-sm); color: var(--text-dim); }
 #acc-chat-status { font-size: var(--fs-sm); margin-top: .6rem; }
 
 #account-window-overlay { padding-top: 12dvh; padding-inline: .5rem; }

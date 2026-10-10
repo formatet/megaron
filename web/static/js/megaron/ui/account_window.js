@@ -71,6 +71,7 @@ export function openAccountWindow() {
       <button type="submit" class="btn-primary">Change password</button>
     </form>
     <section id="acc-chat" class="account-chat" aria-labelledby="acc-chat-title" hidden></section>
+    <p class="account-delete-note">To delete your account, write to the admin in the community chat.</p>
     <button class="dw-goto-btn" id="acc-signout-btn">Sign out</button>
   `;
   overlay.classList.add('open');
