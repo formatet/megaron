@@ -2,7 +2,7 @@
 
 | Mood | Meaning |
 |---|---|
-| **Favorable** | The gods may bless you: a swollen harvest, unexpected recruits, a ship from the sea. |
+| **Favorable** | The gods may bless you: a swollen harvest or unexpected recruits. |
 | **Indifferent** | They have noticed you and do nothing. |
 | **Suspicious** | You are exposed to punishment. |
 | **Wrathful** | Chariots break, ships are lost, granaries rot, plague takes the garrison. |

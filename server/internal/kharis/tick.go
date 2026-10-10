@@ -14,7 +14,6 @@ import (
 	"formatet/megaron/server/internal/ai"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
-	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
@@ -1664,48 +1663,14 @@ func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, wor
 			"Warriors answer a divine call and join your ranks. New hoplites have arrived.",
 			"",
 		},
-		{
-			"sea_blessing",
-			"Poseidon guides a vessel to your harbour. A trireme joins your fleet.",
-			"",
-		},
 	}
 
 	b := blessings[rand.Intn(len(blessings))]
-	// Poseidon does not beach triremes inland: sea_blessing requires a coastal
-	// settlement (a sea tile among the province's six neighbours — coast is a
-	// neighbourhood property, not a terrain). Inland cities get divine recruits
-	// instead. Before this gate, blessing-ships spawned landlocked (Sparta,
-	// 2026-07-13) and could never depart — the march handler 422s on "no
-	// adjacent sea hex".
-	if b.name == "sea_blessing" {
-		// Coastal adjacency, NOT catchment — this checks the settlement's
-		// immediate 6 neighbours regardless of hexgrid.CatchmentRadius (P1
-		// doubled the catchment ring, but "does the coast touch this city"
-		// stays a radius-1 question). Offsets sourced from hexgrid.Neighbors
-		// (relative to Coord{}, i.e. the raw offsets) instead of a hardcoded
-		// tuple list.
-		neighbors := hexgrid.Neighbors(hexgrid.Coord{})
-		offQ, offR := hexgrid.QRArrays(neighbors[:])
-		var coastal bool
-		if err := h.pool.QueryRow(ctx,
-			`SELECT EXISTS (
-			   SELECT 1
-			   FROM settlements s
-			   JOIN provinces p ON p.id = s.province_id
-			   JOIN unnest($3::int[], $4::int[]) AS off(dq, dr) ON true
-			   JOIN map_tiles t ON t.world_id = $2 AND t.q = p.map_q + off.dq AND t.r = p.map_r + off.dr
-			   WHERE s.id = $1 AND t.terrain IN ('coastal_sea','deep_sea','river','river_ford'))`,
-			settlementID, worldID, offQ, offR,
-		).Scan(&coastal); err != nil || !coastal {
-			for i := range blessings {
-				if blessings[i].name == "divine_recruits" {
-					b = blessings[i]
-					break
-				}
-			}
-		}
-	}
+	// No sea_blessing (Timothy 2026-10-10): a ship arrives with certainty when a
+	// Wanax founds the first city by the sea — Poseidon's galley, whose crew is
+	// drawn from the city — and never otherwise. The blessing conjured a galley
+	// AND its 20 crew out of nothing; disbanding it turned them into citizens.
+	// Old DivineBlessing events with type "sea_blessing" keep their meaning.
 	var settlementName string
 	if err := h.pool.QueryRow(ctx,
 		`SELECT name FROM settlements WHERE id = $1`, settlementID,
@@ -1748,7 +1713,7 @@ func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, wor
 
 // applyArmyBlessing grants the army-boosting divine blessings against the units
 // table (SB7: the army lives in units, not the retired settlements.* columns).
-// Returns the amount gained (men for divine_recruits, ships for sea_blessing) so
+// Returns the amount gained (men for divine_recruits) so
 // the caller can report it — previously discarded (plan §Hål 1 Fel B, same bug
 // as applyDivinePunishment's SQL).
 func (h *TickHandler) applyArmyBlessing(ctx context.Context, settlementID, worldID uuid.UUID, name string) (int, error) {
@@ -1794,12 +1759,6 @@ func (h *TickHandler) applyArmyBlessing(ctx context.Context, settlementID, world
 			return 0, err
 		}
 		return gained, nil
-	case "sea_blessing":
-		const formedShips = 1
-		if err := h.insertGarrisonUnit(ctx, settlementID, worldID, "galley", "naval", formedShips, 20); err != nil {
-			return 0, err
-		}
-		return formedShips, nil
 	}
 	return 0, nil
 }

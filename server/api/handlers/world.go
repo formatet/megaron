@@ -748,10 +748,9 @@ func foundingGifts(farmGift bool, coastalCentre bool) []map[string]string {
 	}
 	if coastalCentre {
 		gifts = append(gifts, map[string]string{
-			"key":   "poseidon_galley",
-			"label": "Poseidon's galley",
-			"detail": fmt.Sprintf("a coastal founding is owed one galley, crewed by %d of your citizens",
-				poseidonGalleyCrew),
+			"key":    "poseidon_galley",
+			"label":  "Poseidon's galley",
+			"detail": "a coastal founding is owed one galley, crewed and ready — a gift, not drawn from your people",
 		})
 	}
 	return gifts

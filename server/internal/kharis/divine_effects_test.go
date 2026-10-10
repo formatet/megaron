@@ -186,3 +186,33 @@ func TestApplyDivineBlessing_EventAndNotificationCarryRealAmount(t *testing.T) {
 		}
 	}
 }
+
+// TestApplyDivineBlessing_NeverConjuresAShip: a ship comes with certainty when a
+// Wanax founds the first city by the sea (Poseidon's galley) and never as a
+// blessing (Timothy 2026-10-10). The old sea_blessing made a galley and its 20
+// crew out of nothing. The city is made coastal first — the old blessing only
+// fired there — and one in three blessings would have been the ship.
+func TestApplyDivineBlessing_NeverConjuresAShip(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	worldID, settlementID, ownerID := starvationWarningFixture(t, 400, 0)
+
+	// The fixture's city stands at (0,0) with no map tiles; a sea tile east of it
+	// makes it coastal.
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, 1, 0, 'coastal_sea')
+		 ON CONFLICT (world_id, q, r) DO UPDATE SET terrain = 'coastal_sea'`,
+		worldID,
+	); err != nil {
+		t.Fatalf("make the city coastal: %v", err)
+	}
+
+	for i := 0; i < 30; i++ {
+		seedDivineGarrison(t, pool, ctx, worldID, settlementID, ownerID)
+		h := NewTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), &divineNotifyRecorder{})
+		h.applyDivineBlessing(ctx, settlementID, worldID, ownerID)
+		if typ, _ := latestEventPayload(t, pool, ctx, settlementID, "DivineBlessing"); typ == "sea_blessing" {
+			t.Fatalf("iter %d: the gods conjured a ship", i)
+		}
+	}
+}

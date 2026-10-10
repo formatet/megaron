@@ -25,7 +25,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// poseidonGalleyCrew is the crew of the gift galley, drawn from the new
+// poseidonGalleyCrew is the crew of the gift galley. A pure gift (Timothy
+// 2026-10-10): the crew come with the ship and are NOT drawn from the new
 // metropolis's population. It mirrors the coastal starter galley
 // (starter_units.go) rather than UnitSpecs["galley"].PopCost — that field is an
 // affordability gate and a catalogue figure, never a population deduction.
@@ -332,13 +333,9 @@ func foundMetropolisFromNomadicHost(
 		).Scan(&galleyID); err != nil {
 			return out, fmt.Errorf("poseidon galley: %w", err)
 		}
-		// Her crew are citizens: the city is that many hands short in the fields.
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlements SET population = population - $1 WHERE id = $2`,
-			poseidonGalleyCrew, m.SettlementID,
-		); err != nil {
-			return out, fmt.Errorf("poseidon galley crew: %w", err)
-		}
+		// The galley comes crewed — part of the host's endowment, like its grain and
+		// silver (Timothy 2026-10-10: "grundargalären behöver inte dra sina män
+		// från staden"). Until then her crew were drawn from the new city.
 		if _, err := eventStore.Append(ctx, galleyID, events.StreamType(unit.StreamUnit),
 			unit.EventUnitFormed, unit.UnitFormedPayload{
 				UnitID:       galleyID,
@@ -349,7 +346,7 @@ func foundMetropolisFromNomadicHost(
 				Category:     string(unit.CategoryNaval),
 				InitialSize:  1,
 				Crew:         poseidonGalleyCrew,
-				PopDrawn:     poseidonGalleyCrew,
+				PopDrawn:     0, // a pure gift — no one is drawn from the city
 			}, worldID, nil,
 		); err != nil {
 			return out, fmt.Errorf("append UnitFormed for poseidon galley: %w", err)
