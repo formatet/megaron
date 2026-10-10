@@ -318,7 +318,7 @@ type UnitScoutReportPayload struct {
 	CedarDeposit  bool      `json:"cedar_deposit"`
 }
 
-// CityCollapsedPayload is emitted when a settlement's population reaches ≤ 100
+// CityCollapsedPayload is emitted when a settlement's population falls below the collapse line (economy.CollapseBelowPopulation; ≤ 100 until 2026-10-10)
 // and it ceases to exist as a city. The last 100 inhabitants leave as a warband.
 // Cause is "starvation" (daily tick) or "overmobilisation" (recruit drain).
 type CityCollapsedPayload struct {

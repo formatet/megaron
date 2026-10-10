@@ -352,6 +352,9 @@ func expectedDayResult(prevPop int, prevAmount, prevRate float64) (newPop int, n
 	switch {
 	case starving:
 		newPop = int(float64(prevPop)*0.995 + 0.5)
+		if newPop > prevPop-1 {
+			newPop = prevPop - 1 // at least one person per tick
+		}
 	case economy.FoodNet(prevRate, prevPop) > 0:
 		softcap := 1.0 - float64(prevPop)/30000.0
 		if softcap < 0 {
@@ -366,8 +369,8 @@ func expectedDayResult(prevPop int, prevAmount, prevRate float64) (newPop int, n
 	default:
 		newPop = prevPop
 	}
-	if newPop < 101 {
-		newPop = 101
+	if newPop < 0 {
+		newPop = 0
 	}
 	if newPop > 30000 {
 		newPop = 30000
@@ -449,5 +452,45 @@ func TestApplyDecay_Growth_GeographyDifferentiates(t *testing.T) {
 
 	if popRich <= popPoor {
 		t.Errorf("expected richer catchment to grow faster: rich pop=%d, poor pop=%d", popRich, popPoor)
+	}
+}
+
+// TestApplyDecay_StarvationCanTakeACityBelowTheCollapseLine: a starving city
+// loses at least one person per tick and nothing lifts it back, so when it
+// falls below economy.CollapseBelowPopulation the collapse is scheduled
+// (Timothy 2026-10-10). Until then GREATEST(101, …) lifted every city to 101
+// before the collapse query ran, and a city under 100 rounded its 0.5 % loss
+// to nothing. The stores and rates are emptied by hand: in play the near
+// ground (NearjordGrainPerTick) feeds 100 people, so starvation shrinks a city
+// to what its land carries — this pins the mechanism, not that equilibrium.
+func TestApplyDecay_StarvationCanTakeACityBelowTheCollapseLine(t *testing.T) {
+	terrains := [6]string{"mountain_limestone", "mountain_limestone", "mountain_limestone", "mountain_limestone", "mountain_limestone", "mountain_limestone"}
+	start := economy.CollapseBelowPopulation
+	pool, worldID, settlementID := newGrowthFixture(t, terrains, start)
+	ctx := context.Background()
+	if _, err := pool.Exec(ctx,
+		`UPDATE settlement_goods SET amount = 0, rate = 0
+		 WHERE settlement_id = $1 AND good_key IN ('grain', 'fish', 'livestock')`, settlementID,
+	); err != nil {
+		t.Fatalf("empty the stores: %v", err)
+	}
+
+	advanceOneDay(t, newTestTickHandler(pool), pool, worldID)
+
+	pop, _ := snapshot(t, pool, settlementID)
+	if pop != start-1 {
+		t.Fatalf("pop %d → %d, want exactly one lost (starving, under 100)", start, pop)
+	}
+	var n int
+	if err := pool.QueryRow(ctx,
+		`SELECT count(*) FROM scheduled_events
+		 WHERE world_id = $1 AND event_type = 'CollapseSettlement'
+		   AND payload->>'settlement_id' = $2`,
+		worldID, settlementID.String(),
+	).Scan(&n); err != nil {
+		t.Fatalf("count collapse events: %v", err)
+	}
+	if n == 0 {
+		t.Errorf("a city starved to %d has no collapse scheduled", pop)
 	}
 }

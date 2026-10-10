@@ -2355,7 +2355,7 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Collapse is part of the same durable action as the draft.
-	if popAfter <= 100 {
+	if popAfter < economy.CollapseBelowPopulation {
 		var collapseCurrentTick int
 		if err := tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&collapseCurrentTick); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not read recruitment day")

@@ -1,6 +1,6 @@
 package combat
 
-// collapseSettlement — C-collapse: a city whose population reaches ≤ 100 ceases
+// collapseSettlement — C-collapse: a city whose population falls below economy.CollapseBelowPopulation ceases
 // to exist. The last 100 inhabitants leave as a single spearman warband (100 men)
 // placed on the city's hex. The city is then torn down.
 //
@@ -84,7 +84,7 @@ func (h *CollapseSettlementHandler) Handle(ctx context.Context, e events.Schedul
 	return tx.Commit(ctx)
 }
 
-// collapseSettlement performs the full teardown of a city reduced to ≤ 100 pop.
+// collapseSettlement performs the full teardown of a city reduced below economy.CollapseBelowPopulation.
 // All DB writes use ctx and tx (G2). Succession/game-over is handled inline in
 // step 6 via handleOwnerCityLoss (succession.go).
 //

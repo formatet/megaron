@@ -15,6 +15,12 @@ import (
 // megaron_koloni_legibilitet_plan.md) estimate the founding grain balance BEFORE
 // any settlement row exists to read. Change a number here and both the live
 // colony and its preview move together.
+// CollapseBelowPopulation: a settlement with fewer people than this collapses
+// (Timothy 2026-10-10). Was "≤ 100", which a colony now starts at — and which a
+// 101 floor in the growth tick made unreachable by starvation, so a starving
+// city sat at 101 forever. 50 is also the floor battle and sack leave behind.
+const CollapseBelowPopulation = 50
+
 const (
 	// ColonyForecastPopulation is the founding population the colonize preview
 	// assumes when the caller does not say which column will found the colony:

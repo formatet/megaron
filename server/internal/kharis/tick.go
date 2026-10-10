@@ -200,7 +200,7 @@ const growthRatePerTick = 0.005
 // to write the real pop mutation, and applyStarvationWarning multiplies by it
 // to report the modelled pop_loss in the critical SubsistenceWarning payload.
 // Retune here and both move together. (Reported loss stays an estimate: the
-// SQL rounds survivors and floors at 101, the warning truncates the loss —
+// SQL rounds survivors (at least one lost), the warning truncates the loss —
 // same rate, not same delta.)
 const starvationPopLossRatePerTick = 0.005
 
@@ -743,8 +743,9 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 	//
 	// Growth model (daily tick, Timothy 2026-09-26 — see growthRatePerTick):
 	//   starving  (food_unmet_amount > 0, written by FoodTick at 55)
-	//             → −0.5% (starvationPopLossRatePerTick), floor 101 (collapse
-	//               fires for pop ≤ 100).
+	//             → −0.5% (starvationPopLossRatePerTick), at least one person
+	//               per tick; no floor — collapse fires below
+	//               economy.CollapseBelowPopulation.
 	//   fed, food_net ≤ 0 → population holds. The city eats what it makes (or
 	//               lives off its stores) — no överflöd, no growth.
 	//   fed, food_net > 0 → + GREATEST(1, ROUND(pop × growthRatePerTick ×
@@ -758,9 +759,10 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 	// function, so "+X food/day" on screen and "this city grows" agree.
 	// TestApplyDecay_GrowthGateMatchesFoodNet pins the two against each other.
 	//
-	// C-collapse: the floor is 101, not 50. Any settlement that would drop below 101
-	// from starvation is held at 101 here; a follow-up query then schedules
-	// CollapseSettlement events for all settlements at pop ≤ 100.
+	// C-collapse: there is no population floor here (Timothy 2026-10-10). Until
+	// then GREATEST(101, …) lifted every city to 101 before the collapse query
+	// ran, so starvation could never kill one. The follow-up query schedules
+	// CollapseSettlement for settlements below economy.CollapseBelowPopulation.
 	growthRows, err := h.pool.Query(ctx,
 		`WITH claim AS (
 		     -- G2 exactly-once claim (migration 098): one row per (event_id,
@@ -805,13 +807,16 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 		 final AS (
 		     SELECT
 		         id, pop AS old_pop,
-		         GREATEST(101, LEAST(30000,
+		         GREATEST(0, LEAST(30000,
 		             CASE
 		                 -- Starvation: retain (1 - starvationPopLossRatePerTick) of pop. The
 		                 -- ::numeric cast keeps this exact numeric ROUND (half away from
 		                 -- zero) — a bare float8 product would round half-to-even and drift
 		                 -- by ±1 at pop ≡ 100 (mod 200); verified over pop 101..30000.
-		                 WHEN unmet > 0 THEN ROUND(pop * (1 - $3::float8)::numeric)
+		                 -- LEAST(…, pop - 1): at least one person per tick, or a
+		                 -- city under 100 would round its loss to nothing and
+		                 -- starve forever without dying.
+		                 WHEN unmet > 0 THEN LEAST(ROUND(pop * (1 - $3::float8)::numeric), pop - 1)
 		                 WHEN food_net > 0 THEN pop + GREATEST(1, ROUND(pop * $7::float8 * variety * softcap))
 		                 ELSE pop
 		             END
@@ -869,18 +874,15 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 		h.applyReinforcement(ctx, worldID, eventID, crossings)
 	}
 
-	// C-collapse: schedule CollapseSettlement for any settlement that has already
-	// reached pop ≤ 100 (e.g. from overmobilisation via Recruit). The bulk UPDATE
-	// above floors at 101 so starvation alone won't create new ≤100 cases in one
-	// tick, but once pop is already at 101 and starvation fires, the GREATEST(101,…)
-	// clips it — meaning starvation settlement-death takes a second tick to manifest.
-	// This is acceptable: starvation collapse is a gradual process.
+	// C-collapse: schedule CollapseSettlement for any settlement below
+	// economy.CollapseBelowPopulation — starved there by the UPDATE above, or
+	// overmobilised by Recruit.
 	collapseRows, err := h.pool.Query(ctx,
 		`SELECT id FROM settlements
 		 WHERE world_id = $1 AND owner_id IS NOT NULL
 		   AND state NOT IN ('sunk', 'collapsed')
-		   AND population <= 100`,
-		worldID,
+		   AND population < $2`,
+		worldID, economy.CollapseBelowPopulation,
 	)
 	if err == nil {
 		var collapseIDs []uuid.UUID

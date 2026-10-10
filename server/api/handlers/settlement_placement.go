@@ -897,7 +897,7 @@ func (h *ProvinceHandler) UnplaceGubbe(w http.ResponseWriter, r *http.Request) {
 // second, parallel placement path. Population is capped at
 // economy.MaxGenesisPopulation (30000, "the settlement population soft cap"
 // per that constant's own doc comment) — the same ceiling growth's tick
-// query enforces (kharis/tick.go: GREATEST(101, LEAST(30000, ...))).
+// query enforces (kharis/tick.go: LEAST(30000, ...)).
 // Slaughter is just another population add and must not open a way past an
 // invariant the rest of the game already holds.
 func (h *ProvinceHandler) SlaughterLivestock(w http.ResponseWriter, r *http.Request) {

@@ -5,7 +5,8 @@ Your people eat every day, in a fixed order: **grain first, then fish, then live
 If all three run out and the day's need is still unmet:
 
 - the settlement **loses part of its population that day**, and keeps losing while the shortfall lasts;
-- below about a hundred people, **the settlement collapses and is gone.**
+- it shrinks until what its land yields can feed those who are left — the ground right around a city always feeds about a hundred;
+- below **50 people** — starved there, or emptied by drafting soldiers — **the settlement collapses and is gone.**
 
 You get an urgent notification the first day it happens, and starving cities always sit at the top of the archive. Starvation is slow enough to fix and fast enough to kill — act in the same session.
 
