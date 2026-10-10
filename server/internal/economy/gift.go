@@ -139,7 +139,7 @@ func (h *DeliveryHandler) HandleGift(ctx context.Context, e events.ScheduledEven
 		// No goods return. The existing empty voyage releases the sender's real
 		// naval carrier even when the cargo was lost or the destination fell.
 		if ship != nil {
-			if err := dispatchShipReturnLeg(ctx, tx, h.scheduler, e.WorldID, p.TransportID, p.DestinationID); err != nil {
+			if err := dispatchShipReturnLeg(ctx, tx, h.scheduler, e.WorldID, p.TransportID); err != nil {
 				return err
 			}
 		}

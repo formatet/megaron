@@ -334,7 +334,7 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 	// that chained leg 2 IS the ship's way home (same ship, cargo instead of
 	// an empty hold); dispatching BOTH would sail the same hull twice.
 	if p.TransportID != (uuid.UUID{}) && len(p.ThenReturn) == 0 {
-		if err := dispatchShipReturnLeg(ctx, tx, h.scheduler, e.WorldID, p.TransportID, p.DestinationID); err != nil {
+		if err := dispatchShipReturnLeg(ctx, tx, h.scheduler, e.WorldID, p.TransportID); err != nil {
 			return fmt.Errorf("dispatch ship return leg: %w", err)
 		}
 	}
@@ -546,7 +546,7 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 // when the leg wasn't naval or bound no ship (every land caravan and every
 // pre-slice naval transport, R6). A failure rolls the delivery back so a
 // ship can never be left bound without a return mover and timer.
-func dispatchShipReturnLeg(ctx context.Context, tx pgx.Tx, sched *events.Scheduler, worldID uuid.UUID, transportID, arrivedID uuid.UUID) error {
+func dispatchShipReturnLeg(ctx context.Context, tx pgx.Tx, sched *events.Scheduler, worldID uuid.UUID, transportID uuid.UUID) error {
 	var shipUnitID *uuid.UUID
 	var homeID, actualArrivalID *uuid.UUID
 	var ownerID uuid.UUID
