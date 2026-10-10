@@ -59,6 +59,7 @@ const (
 	ExpeditionTurnHalfTime  = "half_time"
 	ExpeditionTurnAreaKnown = "area_known"
 	ExpeditionTurnNoPath    = "no_path"
+	ExpeditionTurnRecalled  = "recalled"
 )
 
 // ExpeditionTurnTick is the last tick a leg may end on: half the length after

@@ -182,7 +182,7 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 	if o.Mode == "recall" {
 		newIntent, newColonyName = nil, nil
 		if expeditionRecall {
-			// The mission is cancelled below, but its return leg must still use the
+			// The mission turns home below, and its return leg must use the
 			// home-settlement arrival path (especially a ship's adjacent sea hex).
 			returnIntent := "explore_return"
 			newIntent = &returnIntent
@@ -211,9 +211,20 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 		return nil, fmt.Errorf("turn unit toward new course: %w", err)
 	}
 
-	// Arrival ticks can coincide; cancellation is explicit, not inferred from time.
-	if _, err := tx.Exec(ctx, `DELETE FROM unit_expeditions WHERE unit_id = $1`, o.UnitID); err != nil {
-		return nil, fmt.Errorf("close recalled expedition: %w", err)
+	// Arrival ticks can coincide; the mission's fate is explicit, not inferred from time.
+	// A recalled expedition turns home (homeward, 'recalled') and keeps its sight list,
+	// so the homecoming files the report; a redirect cancels it.
+	if expeditionRecall {
+		if _, err := tx.Exec(ctx,
+			`UPDATE unit_expeditions
+			    SET homeward = true, turn_reason = $2, leg_arrive_tick = $3
+			  WHERE unit_id = $1`,
+			o.UnitID, ExpeditionTurnRecalled, currentTick+travelTicks,
+		); err != nil {
+			return nil, fmt.Errorf("turn recalled expedition home: %w", err)
+		}
+	} else if _, err := tx.Exec(ctx, `DELETE FROM unit_expeditions WHERE unit_id = $1`, o.UnitID); err != nil {
+		return nil, fmt.Errorf("close expedition: %w", err)
 	}
 
 	newArriveTick := currentTick + travelTicks

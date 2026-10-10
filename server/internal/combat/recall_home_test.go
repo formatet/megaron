@@ -2,6 +2,7 @@ package combat
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
 	"formatet/megaron/server/internal/province"
@@ -92,8 +93,13 @@ func TestRecallExpeditionLaterLegHome(t *testing.T) {
 			if err := pool.QueryRow(ctx, `SELECT count(*) FROM unit_expeditions WHERE unit_id=$1`, f.unitID).Scan(&rows); err != nil {
 				t.Fatal(err)
 			}
-			if rows != 0 || len(f.eventPayloads(t, unit.EventExpeditionReport)) != 0 {
-				t.Fatal("recall retained/reported cancelled expedition")
+			reports := f.eventPayloads(t, unit.EventExpeditionReport)
+			if rows != 0 || len(reports) != 1 {
+				t.Fatalf("recalled expedition rows=%d reports=%d, want closed with exactly one report", rows, len(reports))
+			}
+			var rep unit.ExpeditionReportPayload
+			if err := json.Unmarshal(reports[0], &rep); err != nil || rep.TurnReason != ExpeditionTurnRecalled {
+				t.Fatalf("report turn_reason=%q err=%v, want %q", rep.TurnReason, err, ExpeditionTurnRecalled)
 			}
 			if len(f.eventPayloads(t, unit.EventUnitArrived)) != 1 {
 				t.Fatal("arrival retry produced duplicate outcomes")
@@ -293,8 +299,8 @@ func TestRecallExpeditionPreservesMapKnowledge(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT count(*) FROM notifications WHERE player_id=$1 AND kind='ExpeditionReport'`, f.ownerID).Scan(&reports); err != nil {
 		t.Fatal(err)
 	}
-	if seenAfter != 0 || reports != 0 {
-		t.Fatalf("cancelled mission sight=%d reports=%d", seenAfter, reports)
+	if seenAfter != 0 || reports != 1 {
+		t.Fatalf("closed mission sight=%d reports=%d, want 0 and 1", seenAfter, reports)
 	}
 	t.Logf("persistent known tiles=%d, mission sight before=%d after=%d, missing after recall/home=0, copper still known, report notifications=%d", len(knownQ), seenBefore, seenAfter, reports)
 }

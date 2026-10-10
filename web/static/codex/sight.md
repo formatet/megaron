@@ -29,7 +29,7 @@ You cannot **march** an army into land none of your people has ever seen — but
 - **The order reserves time for the journey home.** It turns back no later than halfway through its days, so it is home by the end of them. It turns sooner if nothing in the area is left unseen, or if what is left cannot be reached. You are told when it turns, and why. If its home is lost during the expedition, it seeks another reachable city of yours; its mission line then shows the actual return day. Without a reachable home it stops where it is.
 - **It reports when it is home**: how long it was out, how far it went, how much it saw, and what it found — copper, tin, silver and cedar, and the foreign cities on the way.
 - An expedition into ground you already know all of is refused, and so is one too short to reach the nearest unseen ground and come back.
-- A Runner that recalls or redirects it ends the expedition; it then behaves like any other march.
+- A Runner that recalls it turns it home at once; it still files its report on arrival, covering what it saw so far. A Runner that redirects it ends the expedition; it then behaves like any other march.
 - Out in the field it eats double, from home, like any unit away from its city ([[upkeep]]). A ship takes on food for every day of the expedition before it sails ([[sea]]).
 <!-- src: server/internal/combat/expedition.go, march_start.go (explore) -->
 

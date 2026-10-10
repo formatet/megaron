@@ -30,6 +30,8 @@ func expeditionReason(reason string) string {
 		return "area explored"
 	case "no_path":
 		return "no reachable unexplored ground"
+	case "recalled":
+		return "recalled"
 	default:
 		return reason
 	}

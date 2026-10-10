@@ -20,7 +20,7 @@ Right-click a new destination and a unit already marching shows up in the menu t
 
 A unit standing in its city hears you at once. A unit out in the field does not — **Recall** and **Redirect** are carried by a [[runners|Runner]], and the game tells you when he will reach the unit. The horn sounds when the soldiers *receive* the order, not when you give it.
 
-Recall ends an expedition and sends it to its home city, where it rejoins the garrison. An ordinary march returns to its departure hex. Redirect sends the unit to the destination you choose.
+Recall turns an expedition home to its city, where it rejoins the garrison and files its report ([[sight]]). An ordinary march returns to its departure hex. Redirect sends the unit to the destination you choose.
 
 **War → Army → Recall all**, or `keryx recall --all`, sends a separate recall order to each of your marching units.
 
