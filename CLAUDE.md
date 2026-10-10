@@ -146,6 +146,9 @@ navigation through `auth.WebMiddleware`; all API calls use Bearer.) Wired in
 ## Naming (MUST)
 
 - **Lazy-tuple suffixes:** `*_amount`, `*_rate`, `*_cap`, `*_calc_tick` — NOT `*_last_calc_at`.
+- **Time = ticks internally** (Timothy 2026-10-10): code, comments, plans, vault, todo and agent messages say
+  **ticks**, the only fixed time the server knows. **"Days" only on player surfaces** (web, keryx output, Codex),
+  where 1 tick reads as 1 day. Never convert ticks to hours.
 - **Silver is a good in `settlement_goods`** (mig 057) — **no `silver_*`/`gold_*` columns on
   settlements, no exceptions.** *(This line named `sitos_fund_silver` as a sole exception until
   2026-08-22. That column was DROPPED by mig 106 line 59 when the Sitos fund became a granary —
