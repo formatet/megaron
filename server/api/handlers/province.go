@@ -802,6 +802,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				"granary_cap":       granaryCap,
 				"coverage_ticks":    coverageDays,
 				"food_net_per_tick": foodNetPerDay,
+				"growth_state":      foodSummary.GrowthState,
 				"low_ticks":         h.sitosCfg.LowDays,
 				"high_ticks":        h.sitosCfg.HighDays,
 			},
@@ -834,6 +835,7 @@ type FoodSummary struct {
 	GranaryCap         float64
 	CoverageTicks      float64
 	FoodNetPerTick     float64
+	GrowthState        string
 	LowTicks           float64
 	HighTicks          float64
 }
@@ -900,6 +902,9 @@ func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.
 	// the rate, that was raw production, so every city read "+" here whether
 	// or not it fed itself.
 	foodNetPerDay := economy.FoodNet(foodRatePerTick, population)
+	// The growth gate's other input: did the city eat today (FoodTick).
+	var foodUnmet float64
+	_ = pool.QueryRow(ctx, `SELECT food_unmet_amount FROM settlements WHERE id = $1`, settID).Scan(&foodUnmet)
 
 	// Grain-netto-märkning (DEL C, megaron_ekonomi_legibilitet_plan.md).
 	//
@@ -937,6 +942,7 @@ func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.
 		GranaryCap:         granaryCap,
 		CoverageTicks:      coverageDays,
 		FoodNetPerTick:     foodNetPerDay,
+		GrowthState:        economy.GrowthState(foodUnmet, foodNetPerDay),
 		LowTicks:           sitosCfg.LowDays,
 		HighTicks:          sitosCfg.HighDays,
 	}

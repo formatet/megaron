@@ -89,10 +89,19 @@ func TestApplyDecay_GrowthGateMatchesFoodNet(t *testing.T) {
 				t.Fatalf("fixture/canonical food balance changed: net=%g, want growth=%v", foodNet, tc.wantGrow)
 			}
 
+			// The state every surface reports must be the direction the tick takes.
+			state := economy.GrowthState(0, foodNet)
+			if (state == economy.GrowthGrowing) != tc.wantGrow {
+				t.Fatalf("GrowthState(0, %g) = %s, but the gate grows=%v", foodNet, state, tc.wantGrow)
+			}
+
 			newTestTickHandler(pool).applyDecay(ctx, worldID, atomic.AddInt64(&advanceOneDayEventID, 1))
 			var after int
 			if err := pool.QueryRow(ctx, `SELECT population FROM settlements WHERE id = $1`, settlementID).Scan(&after); err != nil {
 				t.Fatal(err)
+			}
+			if (after > population) != (state == economy.GrowthGrowing) || (after == population) != (state == economy.GrowthHolding) {
+				t.Errorf("GrowthState %s but population %d->%d", state, population, after)
 			}
 			if tc.wantGrow {
 				if after <= population {

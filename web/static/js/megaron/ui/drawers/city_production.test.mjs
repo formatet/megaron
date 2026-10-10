@@ -30,3 +30,11 @@ test('J: population and slaughter capability keep input-free player words and el
  assert.match(populationHTML(pd(),700,10,'p'),/onclick="slaughterLivestock\('p'\)"/);
  assert.match(populationHTML(pd(),0,0,'p'),/disabled/);
 });
+test('growth line: one sentence per state, from the server growth_state',()=>{
+ const g=(state,net)=>populationHTML(pd({sitos:{growth_state:state,food_net_per_tick:net}}),0,0,'p');
+ assert.match(g('holding',-1.67),/Population 1,000 — not growing: food net -1\.7 per day \(needs more than 0\)/);
+ assert.match(g('growing',30.8),/growing: food net \+30\.8 per day/);
+ assert.match(g('shrinking',-5),/shrinking: hunger/);
+ assert.match(g('growing',1),/class="growth-line"/);
+ assert.doesNotMatch(populationHTML(pd(),0,0,'p'),/growth-line/,'no state reported, no line');
+});

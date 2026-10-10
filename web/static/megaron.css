@@ -1470,6 +1470,7 @@ body:has(.auth-page) main {
 /* Kult drawer: unused temple devotion capacity — actionable, not alarming.
    Shared with .stat-warn (city drawer's inline stat-row warnings, e.g. a
    catchment that cannot feed its population — megaron_plan_p4_arvet_i_province.md). */
+.growth-line { color: var(--text-dim); font-size: var(--fs-sm); margin: 0.3rem 0; }
 .kult-warn, .stat-warn { color: var(--accent); font-size: var(--fs-sm); font-style: italic; margin: 0.3rem 0; }
 
 /* Silver balance card */

@@ -5,6 +5,8 @@ A city grows when it has a **surplus of food** — when it produces more food ea
 - **Variety.** Grain alone feeds people. Fish, oil, wine and livestock in store alongside it make them multiply faster.
 - **Size.** Growth slows as a city approaches its practical ceiling.
 
+In short: a city grows only while it makes more food than it eats; it holds steady when it does not; and it shrinks when it goes hungry. The city screen and `keryx status` say which of the three it is, and the food net behind it, for example "not growing: food net -1.7 per day (needs more than 0)".
+
 More people eat more, so a growing city eats into its own surplus until the balance reaches zero and growth stops — unless you put the new citizens to work on food.
 
 Each time the population crosses another hundred, a new [[citizens|citizen]] appears and places itself on your best food hex.

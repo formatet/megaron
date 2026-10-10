@@ -140,6 +140,7 @@ func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.R
 		HighTicks      float64 `json:"high_ticks"`
 		GranaryTotal   float64 `json:"granary_total"`
 		FoodNetPerTick float64 `json:"food_net_per_tick"`
+		GrowthState    string  `json:"growth_state"`
 	}
 	type item struct {
 		ID                 uuid.UUID `json:"id"`
@@ -184,6 +185,7 @@ func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.R
 				HighTicks:      fs.HighTicks,
 				GranaryTotal:   fs.GranaryTotal,
 				FoodNetPerTick: fs.FoodNetPerTick,
+				GrowthState:    fs.GrowthState,
 			},
 		})
 	}
