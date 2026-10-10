@@ -342,3 +342,20 @@ func TestArriveGarrison_ReturnsTheCarriedPurse(t *testing.T) {
 		t.Errorf("unit still carries %v after handing the purse over — it would exist twice", stillCarried)
 	}
 }
+
+// TestFoundColony_RecordsFounder: a colony remembers who founded it (mig 166).
+func TestFoundColony_RecordsFounder(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	worldID, motherID, unitID := purseFixture(t, pool, ctx, 3000, 700)
+	runColonizeArrival(t, pool, ctx, worldID, unitID)
+	var same bool
+	if err := pool.QueryRow(ctx,
+		`SELECT s.founder_id IS NOT NULL AND s.founder_id = m.owner_id
+		 FROM settlements s JOIN settlements m ON m.id = $2
+		 WHERE s.world_id = $1 AND s.id <> $2`,
+		worldID, motherID,
+	).Scan(&same); err != nil || !same {
+		t.Errorf("colony founder_id = founder's id: %v (err %v), want true", same, err)
+	}
+}

@@ -319,24 +319,26 @@ func (h *WebHandler) EpitaphView(w http.ResponseWriter, r *http.Request) {
 		"Wanax":    wanax,
 		"City":     cityName,
 		"Culture":  culture,
-		"Lines":    h.epitaphLines(r.Context(), lastSettlementID, cityName),
+		"Lines":    h.epitaphLines(r.Context(), playerID, wid, lastSettlementID),
 		"WorldID":  wid,
 		"Departed": status == "departed",
 		"MapMode":  true, // suppress the site nav/footer for a full-screen crawl
 	})
 }
 
-// epitaphLines reconstructs a fallen Wanax's reign as short English prose lines,
-// drawn from the fallen capital's own event stream (stream_id = settlementID). The
-// founding and closing lines are synthesized — the event log carries no explicit
-// "settlement founded" event — so the crawl always has a beginning and an end even
-// for a very short reign.
-func (h *WebHandler) epitaphLines(ctx context.Context, settlementID *uuid.UUID, cityName string) []string {
-	city := cityName
-	if city == "" {
-		city = "the city"
-	}
-	lines := []string{city + " rose on the shore of the Thalassa."}
+// epitaphLines tells the whole reign of a fallen Wanax in this world as short
+// English prose lines (Timothy 2026-10-10: the WHOLE Wanax's history, every
+// reign, not only the last city's). Sources, ordered by game tick:
+//   - every city the Wanax founded (settlements.founder_id), with a founding
+//     line, then that city's own events — but only while the Wanax held it:
+//     the stream is cut at its first fall, so a conqueror's later works never
+//     enter the wrong epitaph;
+//   - cities the Wanax took or burned, and those it lost without having
+//     founded them (the payloads name the Wanax);
+//   - the battles its units fought (battle_participants).
+// A city from before founder_id existed falls back to the last city alone.
+func (h *WebHandler) epitaphLines(ctx context.Context, playerID, worldID uuid.UUID, lastSettlementID *uuid.UUID) []string {
+	var lines []string
 
 	// wanaxName names the rival in a fall line; "" when the id is unknown.
 	wanaxName := func(id string) string {
@@ -346,32 +348,72 @@ func (h *WebHandler) epitaphLines(ctx context.Context, settlementID *uuid.UUID, 
 		return name
 	}
 
-	if settlementID != nil {
-		// Filter to the crawl's own event types BEFORE the limit: a long reign fills
-		// the stream with daily bookkeeping (UpkeepSettled, LoyaltyDecay) that would
-		// otherwise push the fall itself past the cut.
-		rows, err := h.pool.Query(ctx,
-			`SELECT event_type, payload FROM events
-			 WHERE stream_id = $1 AND event_type = ANY($2)
-			 ORDER BY id ASC
-			 LIMIT 200`,
-			*settlementID, epitaphEventTypes,
-		)
-		if err == nil {
-			defer rows.Close()
-			for rows.Next() {
-				var eventType string
-				var payload []byte
-				if rows.Scan(&eventType, &payload) != nil {
-					continue
-				}
-				if line := epitaphLine(eventType, payload, city, wanaxName); line != "" {
-					lines = append(lines, line)
-				}
+	rows, err := h.pool.Query(ctx,
+		`WITH founded AS (
+		     SELECT id, name, COALESCE(founded_tick, 0) AS ft, founded_from IS NOT NULL AS colony
+		     FROM settlements
+		     WHERE world_id = $2 AND (founder_id = $1 OR (founder_id IS NULL AND id = $3))
+		 ),
+		 held_until AS (
+		     SELECT f.id, min(e.id) AS end_id
+		     FROM founded f
+		     JOIN events e ON e.stream_id = f.id
+		      AND e.event_type IN ('SettlementCaptured', 'SettlementBurned', 'CityCollapsed', 'SettlementAbandoned')
+		     GROUP BY f.id
+		 ),
+		 fought AS (
+		     SELECT DISTINCT bp.battle_id, bp.side
+		     FROM battle_participants bp JOIN battles b ON b.id = bp.battle_id
+		     WHERE bp.owner_id = $1 AND b.world_id = $2
+		 )
+		 SELECT kind, payload, city FROM (
+		     SELECT f.ft AS tick, 0::bigint AS seq, 'EpitaphFounded' AS kind,
+		            jsonb_build_object('colony', f.colony) AS payload, f.name AS city
+		     FROM founded f
+		   UNION ALL
+		     SELECT e.world_tick, e.id, e.event_type, e.payload, f.name
+		     FROM founded f
+		     JOIN events e ON e.stream_id = f.id
+		     LEFT JOIN held_until hu ON hu.id = f.id
+		     WHERE e.event_type = ANY($4) AND (hu.end_id IS NULL OR e.id <= hu.end_id)
+		   UNION ALL
+		     SELECT e.world_tick, e.id, e.event_type, e.payload, s.name
+		     FROM events e JOIN settlements s ON s.id = e.stream_id
+		     WHERE e.world_id = $2 AND s.id NOT IN (SELECT id FROM founded) AND (
+		           (e.event_type = 'SettlementCaptured' AND $1::text IN (e.payload->>'new_owner', e.payload->>'former_owner'))
+		        OR (e.event_type = 'SettlementBurned' AND $1::text IN (e.payload->>'raider_id', e.payload->>'former_owner'))
+		        OR (e.event_type = 'CityCollapsed' AND e.payload->>'owner_id' = $1::text))
+		   UNION ALL
+		     SELECT e.world_tick, e.id, 'EpitaphBattle',
+		            jsonb_build_object('outcome', CASE WHEN COALESCE(e.payload->>'winner', '') = '' THEN 'none'
+		                                               WHEN e.payload->>'winner' = f.side THEN 'won' ELSE 'lost' END),
+		            COALESCE(s.name, '')
+		     FROM fought f
+		     JOIN events e ON e.stream_id = f.battle_id AND e.event_type = 'BattleEnded'
+		     LEFT JOIN provinces p ON p.world_id = $2
+		      AND p.map_q = (e.payload->>'q')::int AND p.map_r = (e.payload->>'r')::int
+		     LEFT JOIN settlements s ON s.province_id = p.id
+		 ) reign
+		 ORDER BY tick, seq
+		 LIMIT 500`,
+		playerID, worldID, lastSettlementID, epitaphEventTypes,
+	)
+	if err == nil {
+		defer rows.Close()
+		for rows.Next() {
+			var kind, city string
+			var payload []byte
+			if rows.Scan(&kind, &payload, &city) != nil {
+				continue
+			}
+			if line := epitaphLine(kind, payload, city, wanaxName); line != "" {
+				lines = append(lines, line)
 			}
 		}
 	}
-
+	if len(lines) == 0 {
+		lines = append(lines, "A Wanax rose on the shore of the Thalassa.")
+	}
 	lines = append(lines, "So ended a Wanax's reign.")
 	return lines
 }
@@ -398,6 +440,24 @@ func epitaphLine(eventType string, payload []byte, city string, wanaxName func(s
 		return ""
 	}
 	switch eventType {
+	case "EpitaphFounded":
+		if p["colony"] == true {
+			return "Founded " + city + "."
+		}
+		return city + " rose on the shore of the Thalassa."
+	case "EpitaphBattle":
+		place := " in the field."
+		if city != "" {
+			place = " at " + city + "."
+		}
+		switch str("outcome") {
+		case "won":
+			return "Won a battle" + place
+		case "lost":
+			return "Lost a battle" + place
+		default:
+			return "A battle" + place[:len(place)-1] + " left no one standing."
+		}
 	case "BuildComplete":
 		if b := str("building_type"); b != "" {
 			return "Raised " + b + " in " + city + "."
