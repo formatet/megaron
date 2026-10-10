@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -155,8 +154,10 @@ func TestFoundColony_UnitDisbandsIntoPopulace(t *testing.T) {
 	).Scan(&population); err != nil {
 		t.Fatalf("load colony population: %v", err)
 	}
-	if population != economy.ColonyBaseFoundingPopulation+unitSize {
-		t.Errorf("expected population=%d (baseline+unit size), got %d", economy.ColonyBaseFoundingPopulation+unitSize, population)
+	// The colony's people are the column's men and nobody else (Timothy
+	// 2026-10-10) — no baseline appears out of nowhere.
+	if population != unitSize {
+		t.Errorf("expected population=%d (the colonists themselves), got %d", unitSize, population)
 	}
 
 	var unitStatus string

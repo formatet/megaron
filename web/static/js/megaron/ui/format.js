@@ -36,12 +36,12 @@ export function purseLine(data) {
   const short = Number(data && data.purse_shortfall) || 0;
   if (short > 0 && carried > 0) {
     return 'Carries ' + fmtSilver(carried) + ' from home — ' + fmtSilver(short) +
-      ' less than the colony needs. It will be founded poor.';
+      ' short of the men\'s 30 days\' pay. The colony will be founded poor.';
   }
   if (short > 0) {
     return '⚠ Carries no silver — the city had nothing to send. The colony is founded at 0 and cannot pay its troops.';
   }
-  if (carried > 0) return 'Carries ' + fmtSilver(carried) + ' from home, drawn from the city\'s coffers now.';
+  if (carried > 0) return 'Carries ' + fmtSilver(carried) + ' from home — the men\'s pay for 30 days, drawn from the city\'s coffers now.';
   return '';
 }
 

@@ -94,7 +94,10 @@ func TestColonizePreview_AK5_WaterInCatchmentRaisesForecastNet(t *testing.T) {
 	noWaterHexes := seedSite(0, "mountain_limestone")
 	withWaterHexes := seedSite(100, "coastal_sea")
 
-	const forecastPop = economy.ColonyBaseFoundingPopulation
+	// A population that needs more than the near ground gives, so fish has to
+	// count. A one-cohort colony (ColonyForecastPopulation, 100) eats exactly
+	// NearjordGrainPerTick and would forecast 0 with or without water.
+	const forecastPop = 1600
 
 	noWaterGoods, err := economy.CatchmentBasePotentialAt(ctx, pool, worldID, noWaterHexes, nil)
 	if err != nil {

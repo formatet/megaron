@@ -4,9 +4,9 @@ Beyond your metropolis you may hold more settlements — up to **five** in all. 
 
 Right-click the site, select **Found a new settlement on arrival**, name it, choose the unit, and **March →**. Or left-click empty land and press **Colonize →**. You get the same [[catchment]] forecast as when you [[founding|founded]] your first city.
 
-**The unit is consumed.** Those men become the colony's population. You cannot recall them and you cannot change your mind.
+**The unit is consumed.** Those men become the colony's population — a cohort of 100 founds a colony of 100, and nobody else comes with them. You cannot recall them and you cannot change your mind. To make a colony bigger, march more men there and [[units|disband]] them: they settle as citizens.
 
-**They carry the colony's silver.** The city they leave pays the colonists' purse the moment they set out — the colony does not get silver from nowhere. Sent from a city with too little, they take what there is, and the order tells you how much short they are. A colony founded with nothing cannot pay its troops' [[upkeep]]. A purse that never reaches a new colony comes back to whichever of your cities the men walk into. <!-- src: server/internal/combat/march_start.go colonistPurse -->
+**They carry their own pay.** The men take 30 days of their [[upkeep|pay]] in silver from the city they leave — 30 silver for a cohort of 100 spearmen — and that is the colony's starting silver. A colony costs no silver until it keeps troops or ships of its own; send more with a [[transfers|transfer]] when it needs it. Sent from a city with too little, they take what there is, and the order tells you how much short they are. A purse that never reaches a new colony comes back to whichever of your cities the men walk into. <!-- src: server/internal/combat/march_start.go colonistPurse -->
 
 You are notified when the colony is founded, with how its food looks.
 

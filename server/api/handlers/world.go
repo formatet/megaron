@@ -568,7 +568,7 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 	// metropolis (1 000 people, the host's carried grain as stock) instead of
 	// growing its own endpoint — temenos_nomadic_host_fas4_plan.md 4.3. Defaults
 	// are the colony's, so every existing caller is untouched.
-	forecastPop := economy.ColonyBaseFoundingPopulation
+	forecastPop := economy.ColonyForecastPopulation
 	if v, err := strconv.Atoi(r.URL.Query().Get("pop")); err == nil && v > 0 {
 		forecastPop = v
 	}

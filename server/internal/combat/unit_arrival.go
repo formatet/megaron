@@ -1921,13 +1921,14 @@ func (h *UnitArrivalHandler) foundColony(
 		}
 	}
 
-	// Create the colony. Baseline population (economy.ColonyBaseFoundingPopulation,
-	// currently 1500 — a real but modest second city) plus the colonizing unit's
-	// own size, since its colonists join the founding populace (they become
-	// citizens, not a garrison; see below). Unlike the capital the colony is NOT
-	// guaranteed self-sufficient (it can starve if neglected); that asymmetry is
-	// the intended cost of expansion.
-	population := economy.ColonyBaseFoundingPopulation + u.size
+	// Create the colony. Its people are the colonizing unit's men and nobody
+	// else (they become citizens, not a garrison; see below). Until 2026-10-10 a
+	// baseline of 1 500 was added out of nowhere — more than the capital that
+	// sent them (Timothy: "100 ska de ha, från de grundande soldaterna"). A
+	// colony grows by food surplus, or by marching more men there and disbanding
+	// them. Unlike the capital the colony is NOT guaranteed self-sufficient (it
+	// can starve if neglected); that asymmetry is the intended cost of expansion.
+	population := u.size
 	var colonyID uuid.UUID
 	if err := tx.QueryRow(ctx,
 		`INSERT INTO settlements

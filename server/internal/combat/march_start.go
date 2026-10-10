@@ -24,13 +24,11 @@ import (
 
 	"formatet/megaron/server/internal/capabilities"
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -835,15 +833,15 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	// if founding is refused on the beach, keeps the purse and hands it over
 	// when it walks into one of its own cities, like any expedition).
 	var purse, purseShortfall float64
-	purseFrom, purseCarrier, purseSize := u.SupportSettlementID, o.UnitID, u.Size
+	purseFrom, purseCarrier, purseSize, purseType := u.SupportSettlementID, o.UnitID, u.Size, string(u.Type)
 	if landMission && o.CargoIntent == "colonize" {
 		purseFrom, purseCarrier = u.SettlementID, *u.CargoUnitID
-		if err := tx.QueryRow(ctx, `SELECT size FROM units WHERE id = $1`, purseCarrier).Scan(&purseSize); err != nil {
+		if err := tx.QueryRow(ctx, `SELECT size, type FROM units WHERE id = $1`, purseCarrier).Scan(&purseSize, &purseType); err != nil {
 			return nil, reject(http.StatusInternalServerError, "could not load the cargo")
 		}
 	}
 	if (o.Intent == "colonize" || (landMission && o.CargoIntent == "colonize")) && purseFrom != nil {
-		want := colonistPurse(ctx, tx, purseSize)
+		want := colonistPurse(purseType, purseSize)
 		if want > 0 {
 			var have float64
 			if err := tx.QueryRow(ctx,
@@ -1222,26 +1220,18 @@ func colonizeDispatchPreflight(ctx context.Context, pool *pgxpool.Pool, clk cloc
 	return nil
 }
 
-// colonistPurse is what a colonising expedition tries to take with it: exactly
-// the liquid silver the colony used to be seeded with out of thin air, so the
-// colony's balance sheet is unchanged and only its SOURCE moves — from the
-// world's faucet to the mother city's treasury. Priced against the population
-// the colony will actually have (base + the column's own men), the same figure
-// foundColony computes on arrival.
-//
-// Returns 0 rather than an error if grain's base value can't be read: an
-// expedition that leaves without a purse is a worse outcome than a failed
-// dispatch would be honest about, but silently minting is worse than both, and
-// a colony can legitimately be founded penniless.
-func colonistPurse(ctx context.Context, tx pgx.Tx, unitSize int) float64 {
-	grainBaseValue, err := economy.GoodBaseValue(ctx, tx, "grain")
-	if err != nil {
-		slog.Error("colonist purse: load grain base value", "err", err)
-		return 0
-	}
-	seed, _ := economy.GenesisSilverLiquid(economy.ColonyBaseFoundingPopulation+unitSize,
-		grainBaseValue, economy.LoadSitosConfig())
-	return seed
+// ColonistPurseDays is how many days of their own pay the colonists carry out
+// of the mother city (Timothy 2026-10-10: "30 dagars sold").
+const ColonistPurseDays = 30
+
+// colonistPurse is what a colonising expedition takes with it: the men's own
+// pay (sold, UnitUpkeep's silver) for ColonistPurseDays. Until 2026-10-10 it
+// was the genesis seed of a 1 500 + column city — ~3 600 silver for 100
+// spearmen, i.e. years of their pay — and it emptied the capital that sent
+// them (AI playtest 2026-10-10). A colony costs no silver until it supports
+// units of its own; more silver is a deliberate transfer.
+func colonistPurse(unitType string, unitSize int) float64 {
+	return UnitUpkeep(unitType, string(unit.CategoryOf(unit.Type(unitType))), unitSize, "garrison").Silver * ColonistPurseDays
 }
 
 // nearestOwnedSettlement finds the player's active settlement closest to

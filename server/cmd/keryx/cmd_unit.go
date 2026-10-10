@@ -815,11 +815,11 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 				short, _ := resp["purse_shortfall"].(float64)
 				switch {
 				case short > 0 && carried > 0:
-					fmt.Printf("  Carries %.0f silver from home — %.0f less than the colony needs. It will be founded poor.\n", carried, short)
+					fmt.Printf("  Carries %.0f silver from home — %.0f short of the men's 30 days' pay. The colony will be founded poor.\n", carried, short)
 				case short > 0:
 					fmt.Printf("  ⚠ Carries NO silver — the mother city had nothing to send. The colony is founded at 0 and cannot pay its troops.\n")
 				case carried > 0:
-					fmt.Printf("  Carries %.0f silver from home (drawn from the mother city's coffers now, not minted at founding).\n", carried)
+					fmt.Printf("  Carries %.0f silver from home — the men's pay for 30 days, drawn from the mother city's coffers now.\n", carried)
 				}
 			}
 			return nil

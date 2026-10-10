@@ -16,9 +16,12 @@ import (
 // any settlement row exists to read. Change a number here and both the live
 // colony and its preview move together.
 const (
-	// ColonyBaseFoundingPopulation is a new colony's baseline population before
-	// the colonising unit's own size is added (see foundColony).
-	ColonyBaseFoundingPopulation = 1500
+	// ColonyForecastPopulation is the founding population the colonize preview
+	// assumes when the caller does not say which column will found the colony:
+	// one full cohort. A real colony's people are exactly its colonists
+	// (foundColony, population = unit size — Timothy 2026-10-10; it was 1 500 +
+	// the column until then), so callers that know the unit pass ?pop=.
+	ColonyForecastPopulation = 100
 	// ColonyGrainSeed is the starting grain stockpile a colony is seeded with.
 	// 8 (megaron_plan_byggkostnader steg 3, Timothy 2026-10-01) — samma som
 	// huvudstadens startlager i create_metropolis.go.

@@ -46,36 +46,23 @@ func worldSilver(t *testing.T, pool *pgxpool.Pool, ctx context.Context, worldID 
 	return liquid + carried
 }
 
-// TestColonistPurse_IsWhatTheColonyUsedToBeGiven: the purse is priced at exactly
-// the seed the colony used to get for free, so only the SOURCE of the colony's
-// starting silver changes — from the world's faucet to the mother city's
-// treasury. If these drift apart, colonies silently get richer or poorer than
-// the balance the rest of the economy was tuned against.
-func TestColonistPurse_IsWhatTheColonyUsedToBeGiven(t *testing.T) {
-	pool := testPool(t)
-	ctx := context.Background()
-
-	tx, err := pool.Begin(ctx)
-	if err != nil {
-		t.Fatalf("begin: %v", err)
-	}
-	defer tx.Rollback(ctx)
-
-	const unitSize = 500
-	got := colonistPurse(ctx, tx, unitSize)
-
-	grainBase, err := economy.GoodBaseValue(ctx, pool, "grain")
-	if err != nil {
-		t.Fatalf("grain base value: %v", err)
-	}
-	want, _ := economy.GenesisSilverLiquid(
-		economy.ColonyBaseFoundingPopulation+unitSize, grainBase, economy.LoadSitosConfig())
-
+// TestColonistPurse_IsTheMensOwnPay: the colonists carry their own sold for
+// ColonistPurseDays and nothing more (Timothy 2026-10-10). The old purse was a
+// 1 600-person city's genesis seed — ~3 600 silver for 100 spearmen — and it
+// emptied the capital that sent them. Pinned against UnitUpkeep so a change to
+// the pay table moves the purse with it, and against a literal so the purse
+// cannot silently grow back to a city's treasury.
+func TestColonistPurse_IsTheMensOwnPay(t *testing.T) {
+	got := colonistPurse("spearman", 100)
+	want := UnitUpkeep("spearman", "land", 100, "garrison").Silver * ColonistPurseDays
 	if math.Abs(got-want) > 1e-9 {
-		t.Errorf("purse = %v, want %v (the seed the colony used to be handed)", got, want)
+		t.Errorf("purse = %v, want %v (the men's pay for %d days)", got, want, ColonistPurseDays)
 	}
-	if got <= 0 {
-		t.Fatalf("purse = %v — a zero purse would make this test vacuous", got)
+	if got != 30 {
+		t.Errorf("100 spearmen carry %v silver, want 30 (1 silver/day × 30 days)", got)
+	}
+	if half := colonistPurse("spearman", 50); half != got/2 {
+		t.Errorf("50 spearmen carry %v, want half of 100's (%v) — pay scales with the men", half, got/2)
 	}
 }
 
