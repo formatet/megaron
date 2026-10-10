@@ -61,6 +61,8 @@ func main() {
 		passwordCmd(),
 		agoraCmd(),
 		joinCmd(),
+		riseCmd(),
+		leaveCmd(),
 		statusCmd(),
 		mapCmd(),
 		sightingsCmd(),

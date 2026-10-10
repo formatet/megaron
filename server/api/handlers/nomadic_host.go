@@ -87,12 +87,33 @@ const (
 // map (status 'positioned', q/r set, settlement_id NULL), which is also why
 // combat.UpkeepHandler must skip these units — it processes 'positioned' and
 // would bill the cohorts a second time (temenos_nomadic_host_bygg.md B3).
+// hostSpec is what a host sets out with. A newcomer gets newcomerHost; a Wanax
+// rising again after losing every city gets a smaller one (Rise, rise.go).
+type hostSpec struct {
+	population  int // civilians, founder_phase.population
+	spearmen    int // escort cohorts of nomadicHostSpearmenSize men
+	rationTicks int // days of the escort's sold the store carries
+}
+
+var newcomerHost = hostSpec{nomadicHostPopulation, nomadicHostSpearmen, nomadicHostRationTicks}
+
 func seedNomadicHost(
 	ctx context.Context,
 	tx pgx.Tx,
 	eventStore *events.Store,
 	worldID, playerID uuid.UUID,
 	q, r int,
+) (uuid.UUID, error) {
+	return seedHost(ctx, tx, eventStore, worldID, playerID, q, r, newcomerHost)
+}
+
+func seedHost(
+	ctx context.Context,
+	tx pgx.Tx,
+	eventStore *events.Store,
+	worldID, playerID uuid.UUID,
+	q, r int,
+	spec hostSpec,
 ) (uuid.UUID, error) {
 	// The host token: one movable marker. Its 1 000 people live in
 	// founder_phase.population — units.size is 0–100 for land and means men.
@@ -116,8 +137,8 @@ func seedNomadicHost(
 	// escort is simply 1st and 2nd, and renders "1st Spearmen of <Wanax>"
 	// (unit.LandUnitName). At founding foundMetropolis re-draws both numbers from
 	// the metropolis's counter in this same order, so 1st stays 1st.
-	spearIDs := make([]uuid.UUID, 0, nomadicHostSpearmen)
-	for i := 0; i < nomadicHostSpearmen; i++ {
+	spearIDs := make([]uuid.UUID, 0, spec.spearmen)
+	for i := 0; i < spec.spearmen; i++ {
 		var id uuid.UUID
 		if err := tx.QueryRow(ctx,
 			`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, q, r, ordinal)
@@ -147,14 +168,14 @@ func seedNomadicHost(
 	// the status doesn't change the figure; it is just the honest status.
 	perTick := combat.UnitUpkeep(string(unit.TypeSpearman), string(unit.CategoryLand), nomadicHostSpearmenSize, "positioned")
 	grainRate := 0.0
-	silverRate := -float64(nomadicHostSpearmen) * perTick.Silver
+	silverRate := -float64(spec.spearmen) * perTick.Silver
 
 	// grainAmount is the named dowry constant (SLICE A, 2026-08-05) — see
 	// nomadicHostDowryGrain's comment: it stopped following the upkeep table
 	// when that table was recalibrated for an unrelated reason. silverAmount
 	// still follows its rate, so silver alone still tracks the upkeep table.
 	grainAmount := float64(nomadicHostDowryGrain)
-	silverAmount := -silverRate * nomadicHostRationTicks
+	silverAmount := -silverRate * float64(spec.rationTicks)
 
 	// Upsert, not insert: founder_phase is unique per (world, owner), and a Wanax
 	// who founded once keeps that row forever (active=false, founded_tick set).
@@ -183,7 +204,7 @@ func seedNomadicHost(
 		   calc_tick     = EXCLUDED.calc_tick,
 		   founded_tick  = NULL,
 		   active        = true`,
-		worldID, playerID, hostID, nomadicHostPopulation,
+		worldID, playerID, hostID, spec.population,
 		grainAmount, grainRate, silverAmount, silverRate,
 	); err != nil {
 		return uuid.Nil, fmt.Errorf("insert founder phase: %w", err)
@@ -194,9 +215,9 @@ func seedNomadicHost(
 	// city's population to draw from (the cohorts ride on top of the 1 000).
 	formed := append([]uuid.UUID{hostID}, spearIDs...)
 	types := append([]unit.Type{unit.TypeNomadicHost},
-		make([]unit.Type, nomadicHostSpearmen)...)
-	sizes := append([]int{1}, make([]int, nomadicHostSpearmen)...)
-	for i := 1; i <= nomadicHostSpearmen; i++ {
+		make([]unit.Type, spec.spearmen)...)
+	sizes := append([]int{1}, make([]int, spec.spearmen)...)
+	for i := 1; i <= spec.spearmen; i++ {
 		types[i] = unit.TypeSpearman
 		sizes[i] = nomadicHostSpearmenSize
 	}

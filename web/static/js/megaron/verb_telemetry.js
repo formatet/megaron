@@ -30,6 +30,8 @@ export const VERB_EVENTS = [
   {"verb": "load", "method": "POST", "route": "/api/v1/worlds/:world/units/:unit/load", "event": "troops_loaded"},
   {"verb": "unload", "method": "POST", "route": "/api/v1/worlds/:world/units/:unit/unload", "event": "troops_unloaded"},
   {"verb": "join", "method": "POST", "route": "/api/v1/worlds/:world/join", "event": "world_joined"},
+  {"verb": "rise", "method": "POST", "route": "/api/v1/worlds/:world/rise", "event": "wanax_rose"},
+  {"verb": "leave", "method": "POST", "route": "/api/v1/worlds/:world/leave", "event": "world_left"},
   {"verb": "founding settle", "method": "POST", "route": "/api/v1/worlds/:world/founding/settle", "event": "settle"},
   {"verb": "message", "method": "POST", "route": "/api/v1/worlds/:world/settlements/:settlement/messengers", "event": "messenger_sent"},
   {"verb": "trade-offer", "method": "POST", "route": "/api/v1/worlds/:world/settlements/:settlement/messengers", "event": "trade_offer"},

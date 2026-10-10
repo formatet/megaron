@@ -433,6 +433,9 @@ func main() {
 			r.Get("/worlds/{worldID}/market/wants", ph.MarketWants)
 
 			r.Post("/worlds/{worldID}/join", jh.Join)
+			// The last city fell: rise again as a host elsewhere, or leave (megaron_sista_staden.md).
+			r.Post("/worlds/{worldID}/rise", jh.Rise)
+			r.Post("/worlds/{worldID}/leave", jh.Leave)
 			// Founder phase: the Nomadic Host becomes a metropolis where it stands.
 			r.Post("/worlds/{worldID}/founding/settle", jh.Settle)
 			// Founder phase: messengers from the wandering host (mig 087).

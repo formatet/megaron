@@ -23,7 +23,7 @@ const coverage = {
   'march': ['march'], 'recall / redirect': ['recall', 'redirect'], 'stance': ['stance'],
   'retreat-order': ['retreat-order'], 'retreat-default': ['retreat-default'],
   'reinforce': ['reinforce'], 'repair': ['repair'], 'load / unload': ['load', 'unload'],
-  'join': ['join'], 'founding settle': ['founding settle'], 'message / reply': ['message', 'reply'],
+  'join': ['join'], 'rise / leave': ['rise', 'leave'], 'founding settle': ['founding settle'], 'message / reply': ['message', 'reply'],
   'trade offer/accept/decline/cancel': ['trade-offer', 'trade-accept', 'trade-decline', 'trade-cancel'],
   'arrange passage (skepp för ett väntande bud)': ['arrange passage'],
   'fetch by ship (hämta hem en fältenhet)': ['fetch by ship'],

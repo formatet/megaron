@@ -10,6 +10,7 @@
 
     {"id": "horde",        "title": "The Nomadic Host",             "category": "Founding", "related": ["founding", "sight"]},
     {"id": "founding",     "title": "Founding your city",           "category": "Founding", "kinds": ["MetropolisFounded"], "related": ["catchment", "horde", "food"]},
+    {"id": "last-city",    "title": "When your last city falls",    "category": "Founding", "related": ["horde", "founding", "occupation"]},
 
     {"id": "city",         "title": "The City drawer",              "category": "Your city", "drawer": "city", "related": ["citizens", "sitos", "buildings"]},
     {"id": "catchment",    "title": "Catchment",                    "category": "Your city", "related": ["citizens", "founding", "sieges"]},
