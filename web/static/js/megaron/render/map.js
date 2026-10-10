@@ -153,6 +153,7 @@ const LOD_MIN_BLOCK_PX = 4;
 // `Math.floor(x / step) * step` fortsätter ligga på samma globala lattice och
 // rastret betraktar fortfarande inte hexkanten (princip 2).
 function lodStep(base) {
+  if (BAKE) return base;  // markrastret bakas alltid i full upplösning
   const px = base * State.camera.zoom * SCALE;
   const k = Math.max(1, Math.round(LOD_MIN_BLOCK_PX / px));
   return base * k;
@@ -716,8 +717,7 @@ const FOREST_SCRUB = '#8A9152'; // sage scrub catching light
 const FOREST_EDGE  = '#BDB47C'; // sun-bleached ground where the grove opens up
 function drawForestFloor(ctx, cx, cy, q, r) {
   ctx.save();
-  hexPath(ctx, hexPts(cx, cy));
-  ctx.clip();
+  hexClip(ctx, cx, cy);
 
   // Everything below is drawn as integer-aligned blocks, never as ellipses.
   // The trees above are pixel sprites, and a soft anti-aliased smudge under a
@@ -729,8 +729,8 @@ function drawForestFloor(ctx, cx, cy, q, r) {
   // block comes from world-space noise, so the field runs unbroken from hex to
   // hex and the clip between two groves has nothing to show.
   const STEP = lodStep(3);
-  const x0 = Math.floor((cx - S) / STEP) * STEP, x1 = cx + S;
-  const y0 = Math.floor((cy - S) / STEP) * STEP, y1 = cy + S;
+  const x0 = Math.floor((cx - padS()) / STEP) * STEP, x1 = cx + padS();
+  const y0 = Math.floor((cy - padS()) / STEP) * STEP, y1 = cy + padS();
   for (let wy = y0; wy <= y1; wy += STEP) {
     for (let wx = x0; wx <= x1; wx += STEP) {
       const n = noiseAt(wx, wy);
@@ -970,6 +970,7 @@ function drawCanopy(ctx, cx, cy, q, r) {
   ctx.globalAlpha = 0.14;
   ctx.fillStyle = '#2A3318';
   for (const m of masses) {
+    if (!footIsForest(cx + m.gx, cy + m.gy)) continue;
     for (let i = 0; i < 14; i++) {
       const a = rnd(q, r, 1500 + m.c * 20 + i) * Math.PI * 2;
       const d = Math.sqrt(rnd(q, r, 1540 + m.c * 20 + i)) * m.rad * 0.8;
@@ -981,6 +982,12 @@ function drawCanopy(ctx, cx, cy, q, r) {
   }
   ctx.globalAlpha = 1;
 
+  if (MARKRASTER) {
+    // Där skogens förvrängda region når ut över hexkanten står också träd,
+    // och där slätten vandrat in över hexen står inga.
+    for (let i = stand.length - 1; i >= 0; i--) if (!footIsForest(stand[i].x, stand[i].y)) stand.splice(i, 1);
+    for (const p of spillStand(q, r, cx, cy)) stand.push({ x: p.x, y: p.y, sprite: p.roll > 0.65 ? SPRITE_MID : SPRITE_SMALL, warm: true });
+  }
   stand.sort((a, b) => a.y - b.y);
 
   for (const t of stand) {
@@ -1042,16 +1049,15 @@ const PLAINS_DITHER = 0.19;
 // which is the whole point of it.
 function drawPlainsField(ctx, cx, cy) {
   ctx.save();
-  hexPath(ctx, hexPts(cx, cy));
-  ctx.clip();
+  hexClip(ctx, cx, cy);
 
   // Blocks on integer coordinates aligned to a GLOBAL lattice (floor to STEP,
   // not relative to the hex centre): two neighbouring plains hexes must place
   // their blocks on the same grid, or the field betrays the tile boundary it is
   // supposed to hide.
   const STEP = lodStep(4);
-  const x0 = Math.floor((cx - S) / STEP) * STEP, x1 = cx + S;
-  const y0 = Math.floor((cy - S) / STEP) * STEP, y1 = cy + S;
+  const x0 = Math.floor((cx - padS()) / STEP) * STEP, x1 = cx + padS();
+  const y0 = Math.floor((cy - padS()) / STEP) * STEP, y1 = cy + padS();
   for (let wy = y0; wy <= y1; wy += STEP) {
     for (let wx = x0; wx <= x1; wx += STEP) {
       // One independent draw per block, indexed on the GLOBAL block lattice so
@@ -1074,7 +1080,64 @@ function drawPlainsField(ctx, cx, cy) {
     }
   }
   ctx.globalAlpha = 1;
+  if (MARKRASTER) drawPlainsParcels(ctx, cx, cy);
   ctx.restore();
+}
+
+// Lapptäcket (Timothy 2026-10-10: princip 15 ger vika — slätten är ODLAD mark
+// och ska se brukad ut). Tegar om ~15×10 px i förskjutna rader, kanterna
+// lätt vågiga ur ett världsrymdsfält så att inget rutnät syns. Varje teg
+// drar en gröda ur sin hash: mörk gröda, ljus gröda, mogen säd, träda —
+// och basen själv som vanligaste val, så ytan fortfarande vilar. Fårorna
+// följer tegen; en mörk 1 px-ren skiljer tegarna åt. Ritas bara i
+// markrastret, där det bakas en gång.
+const PARCEL_W = 15, PARCEL_H = 10;
+const PARCEL_TONES = [
+  null, null, null,
+  ['#6A7834', 0.50], ['#6A7834', 0.50],
+  ['#9DAA5A', 0.48],
+  ['#B7AA5C', 0.62],
+  ['#A38C54', 0.55],
+];
+function plainsParcel(wx, wy) {
+  const ox = (noiseAt(wx, wy, 37, 3141) - 0.5) * 12;
+  const oy = (noiseAt(wx, wy, 37, 3142) - 0.5) * 8;
+  const py = Math.floor((wy + oy) / PARCEL_H);
+  // Bredd och förskjutning per rad, så tegarna inte murar sig som tegel.
+  const rh = hash32(py, 0, 3144);
+  const w = PARCEL_W - 5 + (rh % 13);
+  const px = Math.floor((wx + ox + ((rh >>> 8) % w)) / w);
+  return px * 65536 + py;
+}
+function drawPlainsParcels(ctx, cx, cy) {
+  const STEP = 2;
+  const x0 = Math.floor((cx - padS()) / STEP) * STEP, x1 = cx + padS();
+  const y0 = Math.floor((cy - padS()) / STEP) * STEP, y1 = cy + padS();
+  for (let wy = y0; wy <= y1; wy += STEP) {
+    for (let wx = x0; wx <= x1; wx += STEP) {
+      const id = plainsParcel(wx, wy);
+      const h = hash32(id, 0, 3143);
+      const tone = PARCEL_TONES[h % PARCEL_TONES.length];
+      if (tone) {
+        ctx.globalAlpha = tone[1];
+        ctx.fillStyle = tone[0];
+        ctx.fillRect(wx, wy, STEP, STEP);
+      }
+      // Fåror: var tredje rad i tegen, bara på bruten jord.
+      if (tone && ((wy >> 1) + (h >>> 8)) % 3 === 0) {
+        ctx.globalAlpha = 0.16;
+        ctx.fillStyle = '#3E4620';
+        ctx.fillRect(wx, wy, STEP, 1);
+      }
+      // Renen mellan två tegar.
+      if (plainsParcel(wx - STEP, wy) !== id || plainsParcel(wx, wy - STEP) !== id) {
+        ctx.globalAlpha = 0.30;
+        ctx.fillStyle = '#4F5A28';
+        ctx.fillRect(wx, wy, 1, 1);
+      }
+    }
+  }
+  ctx.globalAlpha = 1;
 }
 
 // ── Torrmarken — halvöknen och skruben ───────────────────────────────────
@@ -1143,8 +1206,7 @@ function scrubBush(wx, wy) {
 
 function drawScrubField(ctx, cx, cy) {
   ctx.save();
-  hexPath(ctx, hexPts(cx, cy));
-  ctx.clip();
+  hexClip(ctx, cx, cy);
 
   // Globalt raster, aldrig relativt hexmitten: två skrubhexar bredvid varandra
   // måste lägga sina block på samma rutnät, annars förråder fältet exakt den
@@ -1156,8 +1218,8 @@ function drawScrubField(ctx, cx, cy) {
   // kostade det 9,9 ms av `ground` vid minzoom för en skillnad man får leta
   // efter i en A/B. Bastonen räcker som mark; snåren gör resten.
   const step = lodStep(DRY_STEP);
-  const x0 = Math.floor((cx - S) / step) * step, x1 = cx + S;
-  const y0 = Math.floor((cy - S) / step) * step, y1 = cy + S;
+  const x0 = Math.floor((cx - padS()) / step) * step, x1 = cx + padS();
+  const y0 = Math.floor((cy - padS()) / step) * step, y1 = cy + padS();
   for (let wy = y0; wy <= y1; wy += step) {
     for (let wx = x0; wx <= x1; wx += step) {
       // Snåren. Sammanhängande fläckar ur ett fält, inte N spridda märken —
@@ -1196,12 +1258,11 @@ const DESERT_DITHER = 0.22;      // per-block-brus, aldrig ordnad dither (princi
 
 function drawDesertField(ctx, cx, cy) {
   ctx.save();
-  hexPath(ctx, hexPts(cx, cy));
-  ctx.clip();
+  hexClip(ctx, cx, cy);
 
   const step = lodStep(DRY_STEP);
-  const x0 = Math.floor((cx - S) / step) * step, x1 = cx + S;
-  const y0 = Math.floor((cy - S) / step) * step, y1 = cy + S;
+  const x0 = Math.floor((cx - padS()) / step) * step, x1 = cx + padS();
+  const y0 = Math.floor((cy - padS()) / step) * step, y1 = cy + padS();
   for (let wy = y0; wy <= y1; wy += step) {
     for (let wx = x0; wx <= x1; wx += step) {
       const gx = Math.floor(wx / step), gy = Math.floor(wy / step);
@@ -1301,11 +1362,10 @@ const CEDAR_DUFF   = '#6A6A44'; // torr förna där taket öppnar sig
 // den ändå skymtar, ingenting mer.
 function drawCedarFloor(ctx, cx, cy) {
   ctx.save();
-  hexPath(ctx, hexPts(cx, cy));
-  ctx.clip();
+  hexClip(ctx, cx, cy);
   const STEP = lodStep(3);
-  const x0 = Math.floor((cx - S) / STEP) * STEP, x1 = cx + S;
-  const y0 = Math.floor((cy - S) / STEP) * STEP, y1 = cy + S;
+  const x0 = Math.floor((cx - padS()) / STEP) * STEP, x1 = cx + padS();
+  const y0 = Math.floor((cy - padS()) / STEP) * STEP, y1 = cy + padS();
   for (let wy = y0; wy <= y1; wy += STEP) {
     for (let wx = x0; wx <= x1; wx += STEP) {
       const n = noiseAt(wx, wy, 21, 8181);
@@ -1368,6 +1428,7 @@ function drawCedarCanopy(ctx, cx, cy, q, r) {
   ctx.globalAlpha = 0.15;
   ctx.fillStyle = '#1E2A18';
   for (const m of masses) {
+    if (!footIsForest(cx + m.gx, cy + m.gy)) continue;
     for (let i = 0; i < 26; i++) {
       const a = rnd(q, r, 2400 + m.c * 32 + i) * Math.PI * 2;
       const d = Math.sqrt(rnd(q, r, 2460 + m.c * 32 + i)) * m.rad * 0.9;
@@ -1379,6 +1440,12 @@ function drawCedarCanopy(ctx, cx, cy, q, r) {
   }
   ctx.globalAlpha = 1;
 
+  if (MARKRASTER) {
+    // Där skogens förvrängda region når ut över hexkanten står också träd,
+    // och där slätten vandrat in över hexen står inga.
+    for (let i = stand.length - 1; i >= 0; i--) if (!footIsForest(stand[i].x, stand[i].y)) stand.splice(i, 1);
+    for (const p of spillStand(q, r, cx, cy)) stand.push({ x: p.x, y: p.y, sprite: p.roll > 0.5 ? SPRITE_CEDAR_MID : SPRITE_CEDAR_SMALL, rim: true });
+  }
   stand.sort((a, b) => a.y - b.y);
   for (const t of stand) {
     ctx.globalAlpha = 0.42;
@@ -1462,8 +1529,7 @@ function riverAxis(q, r) {
 
 function drawRiver(ctx, cx, cy, q, r) {
   ctx.save();
-  hexPath(ctx, hexPts(cx, cy));
-  ctx.clip();
+  hexClip(ctx, cx, cy);
 
   // Fåran genereras ur KEDJEGRAFEN, inte ur hexkanterna. Varje granne som är
   // vatten ger ett segment från hexens mitt ut till mitten av den delade
@@ -1494,8 +1560,8 @@ function drawRiver(ctx, cx, cy, q, r) {
   const [axx, axy] = riverAxis(q, r);
 
   const STEP = 2;
-  const x0 = Math.floor((cx - S) / STEP) * STEP, x1 = cx + S;
-  const y0 = Math.floor((cy - S) / STEP) * STEP, y1 = cy + S;
+  const x0 = Math.floor((cx - padS()) / STEP) * STEP, x1 = cx + padS();
+  const y0 = Math.floor((cy - padS()) / STEP) * STEP, y1 = cy + padS();
   for (let wy = y0; wy <= y1; wy += STEP) {
     for (let wx = x0; wx <= x1; wx += STEP) {
       const dx = wx + STEP / 2 - cx, dy = wy + STEP / 2 - cy;
@@ -1570,8 +1636,7 @@ const DELTA_SILT  = '#B5B884';
 
 function drawValleyField(ctx, cx, cy, q, r, isDelta) {
   ctx.save();
-  hexPath(ctx, hexPts(cx, cy));
-  ctx.clip();
+  hexClip(ctx, cx, cy);
 
   // Tegarnas riktning: LÄNGS vattnet, alltså vinkelrätt mot riktningen till
   // närmaste flodhex. En dalhex som inte rör vatten (andra ledet, eller en
@@ -1591,8 +1656,8 @@ function drawValleyField(ctx, cx, cy, q, r, isDelta) {
   const silt  = isDelta ? DELTA_SILT  : VALLEY_SILT;
 
   const STEP = lodStep(3);
-  const x0 = Math.floor((cx - S) / STEP) * STEP, x1 = cx + S;
-  const y0 = Math.floor((cy - S) / STEP) * STEP, y1 = cy + S;
+  const x0 = Math.floor((cx - padS()) / STEP) * STEP, x1 = cx + padS();
+  const y0 = Math.floor((cy - padS()) / STEP) * STEP, y1 = cy + padS();
   for (let wy = y0; wy <= y1; wy += STEP) {
     for (let wx = x0; wx <= x1; wx += STEP) {
       const u = wx * ax + wy * ay;
@@ -1879,6 +1944,292 @@ function hexAtWorld(wx, wy) {
   return [rq, rr];
 }
 
+// ── Markrastret ──────────────────────────────────────────────────────────
+// Varför: varje markpass klipptes mot sin hexpolygon, så varje gräns mellan
+// två terränger — kust, skogsbryn, slättens kant — var en sexhörning. Princip
+// 18: "samma yta med hexkanter läser som bricka". Det här är punkt 3b:s
+// "enda pass över det globala rutnätet där varje block slår upp sin hex",
+// med ett tillägg: uppslagningen sker i FÖRVRÄNGDA koordinater. Varje pixel
+// frågar "vilken hex ligger jag i?" en bit bredvid där den står, ur ett
+// världsrymdsfält. Gränserna blir organiska; hexens mitt tillhör alltid sin
+// egen hex (amplituden < inradien), så hexen anas men ritas inte.
+//
+// Ritfunktionerna är OFÖRÄNDRADE. De klipps bara mot sin förvrängda region
+// i stället för polygonen (`hexClip`, `BAKE.region`), och marken bakas en gång
+// till en cache i världsupplösning. Därmed ritas marken inte om varje frame,
+// och regionernas raka 1 px-spann ger noll kantutjämning på varje zoom.
+//
+// Floden förvrängs inte: dess kedja ritas ur grafen (princip 45) och får inte
+// strypas av en granne som vandrar in över fåran.
+//
+// Jämför: lägg till `markraster=0` i riggens URL för den gamla renderaren.
+export const MARKRASTER = !(typeof location !== 'undefined' && /[?&]markraster=0/.test(location.search));
+let BAKE = null;                // { region: Path2D } medan en markbit bakas
+const WARP_AMP = 13;            // max förskjutning; < R_IN (19) så hexmitten alltid är sin egen
+const WARP_PAD = WARP_AMP + 2;  // hur långt en region kan nå utanför polygonen
+const padS = () => (BAKE ? S + WARP_PAD : S);
+
+function hexClip(ctx, cx, cy) {
+  if (BAKE) { ctx.clip(BAKE.region); return; }
+  hexPath(ctx, hexPts(cx, cy));
+  ctx.clip();
+}
+
+const isRiverTerrain = t => t === 'river' || t === 'river_ford';
+function warpOffset(wx, wy) {
+  // Två oktaver: en bred som ger kustens vikar och uddar, en smalare som
+  // fransar dem. Plus en pixels hashbrus, så att gränsen blir blockig (princip
+  // 16: per-block-brus, aldrig ordnad dither) i stället för en jämn kurva.
+  const ax = 0.7 * noiseAt(wx, wy, 41, 8101) + 0.3 * noiseAt(wx, wy, 13, 8102);
+  const ay = 0.7 * noiseAt(wx, wy, 41, 8103) + 0.3 * noiseAt(wx, wy, 13, 8104);
+  const jx = hash32(wx | 0, wy | 0, 8105) / 4294967296 - 0.5;
+  const jy = hash32(wx | 0, wy | 0, 8106) / 4294967296 - 0.5;
+  return [(ax - 0.5) * 2.6 * WARP_AMP + jx * 1.6, (ay - 0.5) * 2.6 * WARP_AMP + jy * 1.6];
+}
+// Vilken hex en världspunkt HÖR TILL i markrastret.
+export function markHexAt(wx, wy) {
+  const [eq, er] = hexAtWorld(wx, wy);
+  if (isRiverTerrain(terrainAt(eq, er))) return [eq, er];
+  const [dx, dy] = warpOffset(wx, wy);
+  let [q, r] = hexAtWorld(wx + Math.max(-WARP_AMP, Math.min(WARP_AMP, dx)),
+                          wy + Math.max(-WARP_AMP, Math.min(WARP_AMP, dy)));
+  const t = terrainAt(q, r);
+  if (t === undefined || isRiverTerrain(t)) return [eq, er];
+  return [q, r];
+}
+const markTerrainAt = (wx, wy) => { const [q, r] = markHexAt(wx, wy); return terrainAt(q, r); };
+const isForestTerrain = t => t === 'forest_olive_grove' || t === 'forest_cedar';
+// Ett träd står bara där marken under foten är skog — annars står det på
+// slätt som vandrat in över hexen. Princip 12 i ny form: stammen står i SKOG.
+function footIsForest(x, y) { return !MARKRASTER || isForestTerrain(markTerrainAt(x, y)); }
+
+let tileObjIndex = new Map(), tileObjFor;
+function tileByKey(k) {
+  if (tileObjFor !== State.tileData) {
+    tileObjFor = State.tileData;
+    tileObjIndex = new Map(State.tileData.map(t => [tileKey(t.q, t.r), t]));
+  }
+  return tileObjIndex.get(k);
+}
+
+const CHUNK = 256;        // världspixlar per cachebit
+const CHUNK_MARGIN = 12;  // grannskap som strand och skum läser över bitkanten
+let chunks = new Map(), chunksFor = null, chunksSalt = null;
+export const markrasterStats = { chunks: 0, bakeMs: 0 };
+// Markrastrets kod (se markCode) i en världspunkt, ur den bakade biten.
+function markCodeAt(wx, wy) {
+  const ix = Math.floor(wx / CHUNK), iy = Math.floor(wy / CHUNK);
+  let ch = chunks.get(ix * 100003 + iy);
+  if (!ch || chunksFor !== State.tileData) return markCode(markTerrainAt(wx, wy));
+  const x = Math.floor(wx) - ch.X0 + ch.M, y = Math.floor(wy) - ch.Y0 + ch.M;
+  return ch.code[y * ch.W + x];
+}
+const markIsSea = (wx, wy) => { const c = markCodeAt(wx, wy); return c === 3 || c === 4; };
+
+// Kod per pixel för strand/skum/djup: 0 utanför · 1 fog · 2 land · 3 kusthav · 4 djuphav · 5 flod
+function markCode(t) {
+  if (t === undefined) return 0;
+  if (t === 'fog') return 1;
+  if (t === 'coastal_sea') return 3;
+  if (t === 'deep_sea') return 4;
+  if (isRiverTerrain(t)) return 5;
+  return 2;
+}
+
+// Avstånd (chamfer 3-4, i px) till närmaste källcell. Två svep räcker.
+function chamfer(src, w, h) {
+  const BIG = 1e6, d = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) d[i] = src[i] ? 0 : BIG;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x; let v = d[i];
+    if (x > 0) v = Math.min(v, d[i - 1] + 3);
+    if (y > 0) {
+      v = Math.min(v, d[i - w] + 3);
+      if (x > 0) v = Math.min(v, d[i - w - 1] + 4);
+      if (x < w - 1) v = Math.min(v, d[i - w + 1] + 4);
+    }
+    d[i] = v;
+  }
+  for (let y = h - 1; y >= 0; y--) for (let x = w - 1; x >= 0; x--) {
+    const i = y * w + x; let v = d[i];
+    if (x < w - 1) v = Math.min(v, d[i + 1] + 3);
+    if (y < h - 1) {
+      v = Math.min(v, d[i + w] + 3);
+      if (x < w - 1) v = Math.min(v, d[i + w + 1] + 4);
+      if (x > 0) v = Math.min(v, d[i + w - 1] + 4);
+    }
+    d[i] = v;
+  }
+  for (let i = 0; i < w * h; i++) d[i] /= 3;
+  return d;
+}
+
+const hexRGB = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+const RGB_SAND = hexRGB(SHORE_SAND), RGB_WET = hexRGB(SHORE_WET), RGB_FOAM = hexRGB(SURF_FOAM);
+const RGB_SHALLOW = hexRGB('#5C9AB2'), RGB_SHELF = hexRGB('#3E7C9E');
+
+function bakeChunk(ix, iy) {
+  const X0 = ix * CHUNK - 1, Y0 = iy * CHUNK - 1, CS = CHUNK + 2;   // 1 px överlapp mot sömmar
+  const M = CHUNK_MARGIN, W = CS + 2 * M;
+  const lab = new Float64Array(W * W);   // tileKey + 1, 0 = ingen hex
+  const code = new Uint8Array(W * W);
+  for (let y = 0; y < W; y++) {
+    for (let x = 0; x < W; x++) {
+      const [q, r] = markHexAt(X0 - M + x + 0.5, Y0 - M + y + 0.5);
+      const t = terrainAt(q, r);
+      const i = y * W + x;
+      code[i] = markCode(t);
+      lab[i] = t === undefined ? 0 : tileKey(q, r) + 1;
+    }
+  }
+  const cv = document.createElement('canvas');
+  cv.width = CS; cv.height = CS;
+  const c = cv.getContext('2d');
+  c.translate(-X0, -Y0);
+  // Regioner som spann om 1 px höjd — exakt, ingen kantutjämning.
+  const regions = new Map();
+  for (let y = 0; y < CS; y++) {
+    let x = 0;
+    while (x < CS) {
+      const k = lab[(y + M) * W + x + M];
+      let e = x + 1;
+      while (e < CS && lab[(y + M) * W + e + M] === k) e++;
+      if (k) {
+        let p = regions.get(k);
+        if (!p) regions.set(k, p = new Path2D());
+        p.rect(X0 + x, Y0 + y, e - x, 1);
+      }
+      x = e;
+    }
+  }
+  const tiles = [...regions.keys()].map(k => [tileByKey(k - 1), regions.get(k)]).filter(([t]) => t);
+  for (const [t, path] of tiles) {
+    c.fillStyle = (TERRAIN_BASE[t.terrain] || TERRAIN_BASE.fog).c0;
+    c.fill(path);
+  }
+  for (const [t, path] of tiles) {
+    if (t.terrain === 'fog') continue;
+    const { x, y } = hexPx(t.q, t.r);
+    BAKE = { region: path };
+    try { drawDetail(c, x, y, t.terrain, (t.q * 137 + t.r * 31) & 0xff, t.q, t.r); }
+    finally { BAKE = null; }
+  }
+  // Kusten ur samma mask: strand på land, skum och grundvatten på havet,
+  // hyllan där kusthavet möter djupet. En gräns, ritad en gång.
+  const isSea = new Uint8Array(W * W), isLand = new Uint8Array(W * W), isShelf = new Uint8Array(W * W);
+  for (let i = 0; i < W * W; i++) {
+    isSea[i] = code[i] === 3 || code[i] === 4;
+    isLand[i] = code[i] === 2;
+    isShelf[i] = code[i] === 3;
+  }
+  const dSea = chamfer(isSea, W, W), dLand = chamfer(isLand, W, W), dShelf = chamfer(isShelf, W, W);
+  const img = c.getImageData(0, 0, CS, CS), px = img.data;
+  const put = (o, rgb, a) => {
+    px[o] += (rgb[0] - px[o]) * a; px[o + 1] += (rgb[1] - px[o + 1]) * a; px[o + 2] += (rgb[2] - px[o + 2]) * a;
+  };
+  for (let y = 0; y < CS; y++) {
+    for (let x = 0; x < CS; x++) {
+      const i = (y + M) * W + x + M, o = (y * CS + x) * 4;
+      const wx = X0 + x, wy = Y0 + y, k = code[i];
+      if (k === 2) {
+        const w = 1.2 + 4.4 * noiseAt(wx, wy, 9, 6161);
+        const d = dSea[i];
+        if (d <= w) put(o, d > w * 0.62 ? RGB_SAND : (d <= 1.01 ? RGB_WET : RGB_SAND), 1);
+      } else if (k === 3 || k === 4) {
+        const d = dLand[i];
+        if (d <= 1.01) put(o, RGB_FOAM, 0.75);
+        else if (d <= 2.5 && hash32(wx, wy, 7172) > 0x9fffffff) put(o, RGB_FOAM, 0.45);
+        else if (k === 3 && d <= 7 + 5 * noiseAt(wx, wy, 17, 7173)) put(o, RGB_SHALLOW, 0.45 * (1 - d / 13));
+        if (k === 4) {
+          const s = dShelf[i], w = 1 + 9 * noiseAt(wx, wy, 15, 6262);
+          if (s <= w * 0.5 || (s <= w && hash32(wx, wy, 6263) > 0x8ccccccc)) put(o, RGB_SHELF, 1);
+        }
+      }
+    }
+  }
+  c.putImageData(img, 0, 0);
+  // Minnesmasken: grått där regionen hör till en minnesruta. Läggs på med
+  // 'saturation' efter terrängen, precis som drawRemembered — men i samma
+  // form som marken, inte som hexpolygoner.
+  let mem = null;
+  const memTiles = tiles.filter(([t]) => t.tier === 'remembered' && t.terrain !== 'fog');
+  if (memTiles.length) {
+    mem = document.createElement('canvas');
+    mem.width = CS; mem.height = CS;
+    const mc = mem.getContext('2d');
+    mc.translate(-X0, -Y0);
+    mc.fillStyle = '#808080';
+    for (const [, path] of memTiles) mc.fill(path);
+  }
+  return { img: cv, mem, X0, Y0, code, W, M };
+}
+
+function chunkRange() {
+  const z = State.camera.zoom * SCALE;
+  const x0 = (-State.camera.x) / z, y0 = (-State.camera.y) / z;
+  const x1 = (canvas.width - State.camera.x) / z, y1 = (canvas.height - State.camera.y) / z;
+  return [Math.floor(x0 / CHUNK), Math.floor(y0 / CHUNK), Math.floor(x1 / CHUNK), Math.floor(y1 / CHUNK)];
+}
+
+function visibleChunks() {
+  if (chunksFor !== State.tileData || chunksSalt !== salt()) {
+    chunks = new Map(); chunksFor = State.tileData; chunksSalt = salt();
+  }
+  const [cx0, cy0, cx1, cy1] = chunkRange();
+  const out = [];
+  for (let iy = cy0; iy <= cy1; iy++) {
+    for (let ix = cx0; ix <= cx1; ix++) {
+      const k = ix * 100003 + iy;
+      let ch = chunks.get(k);
+      if (!ch) {
+        const t0 = performance.now();
+        chunks.set(k, ch = bakeChunk(ix, iy));
+        markrasterStats.chunks++; markrasterStats.bakeMs += performance.now() - t0;
+      }
+      out.push(ch);
+    }
+  }
+  return out;
+}
+
+let spillCache = new Map(), spillFor = null;
+function spillStand(q, r, cx, cy) {
+  if (spillFor !== State.tileData) { spillCache = new Map(); spillFor = State.tileData; }
+  const key = tileKey(q, r);
+  let out = spillCache.get(key);
+  if (out) return out;
+  out = [];
+  const STEP = 7, R = S + WARP_PAD;
+  for (let gy = Math.floor((cy - R) / STEP); gy <= Math.ceil((cy + R) / STEP); gy++) {
+    for (let gx = Math.floor((cx - R) / STEP); gx <= Math.ceil((cx + R) / STEP); gx++) {
+      const h = hash32(gx, gy, 8201);
+      const x = gx * STEP + (h & 0x7) - 1, y = gy * STEP + ((h >>> 3) & 0x7) - 1;
+      const [eq, er] = hexAtWorld(x, y);
+      if (eq === q && er === r) continue;            // inne i polygonen sköter hexen själv
+      const [mq, mr] = markHexAt(x, y);
+      if (mq !== q || mr !== r) continue;            // regionen når inte hit
+      out.push({ x, y, roll: (h >>> 8) / 16777216 });
+    }
+  }
+  spillCache.set(key, out);
+  return out;
+}
+
+function drawMarkraster(ctx) {
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  for (const ch of visibleChunks()) ctx.drawImage(ch.img, ch.X0, ch.Y0);
+  ctx.restore();
+}
+
+function drawMarkMemory(ctx) {
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  ctx.globalCompositeOperation = 'saturation';
+  for (const ch of visibleChunks()) if (ch.mem) ctx.drawImage(ch.mem, ch.X0, ch.Y0);
+  ctx.restore();
+}
+
 // Dyningen. ETT pass över hela det globala rastret — inte ett pass per hex.
 // Skillnaden är inte kosmetisk: per hex ritas varje rastercell om av varje
 // granne vars bbox den råkar ligga i, och ägarskapstestet som skulle hindra det
@@ -1930,7 +2281,14 @@ function drawSwellField(ctx, seaTick) {
       const px = gx * SWELL_CELL + (h & 0x7);
       const py = gy * SWELL_CELL + ((h >>> 3) & 0x7);
       const [q, r] = hexAtWorld(px, py);
-      if (!isSeaTerrain(terrainAt(q, r))) continue;
+      if (MARKRASTER) {
+        // Dyningen följer den förvrängda kusten: både start, slut och en
+        // marginal måste vara hav i markrastret, annars sköljer den upp på land.
+        const crest0 = ((gy + (h >>> 6)) & 0x3) === 0;
+        const len0 = crest0 ? 12 : 7;
+        if (!markIsSea(px - 4, py) || !markIsSea(px + len0 + 6, py)
+            || !markIsSea(px + len0 / 2, py - 4) || !markIsSea(px + len0 / 2, py + 5)) continue;
+      } else if (!isSeaTerrain(terrainAt(q, r))) continue;
       // Nära en kant mot land får dyningen inte nå fram — den skulle skölja upp
       // på stranden, och strandens vatten är bränningens ärende. Punkter långt
       // in i hexen kan aldrig vara nära en kant: radien avgör det med en
@@ -1938,7 +2296,7 @@ function drawSwellField(ctx, seaTick) {
       // ligger långt in.
       const c = hexPx(q, r);
       const dx = px - c.x, dy = py - c.y;
-      if (dx * dx + dy * dy > (R_IN - 5) * (R_IN - 5)) {
+      if (!MARKRASTER && dx * dx + dy * dy > (R_IN - 5) * (R_IN - 5)) {
         let toward = 0, best = -1e9;
         for (let i = 0; i < 6; i++) {
           const p = dx * DIR_NX[i] + dy * DIR_NY[i];
@@ -2091,13 +2449,14 @@ const HILL_D = 4;
 // one block short simply leaves the base showing — the same tone by
 // construction, since TERRAIN_BASE is kept in sync with the texture.
 function hexHalfWidth(dy) {
+  if (BAKE) return 1e9;   // markrastret: regionens klipp gör jobbet
   return S - Math.abs(dy) / Math.sqrt(3);
 }
 
 function reliefGrid(cx, cy, step, cell, stream, steps, ridged) {
-  const x0 = Math.floor((cx - S) / step) * step - step;
-  const y0 = Math.floor((cy - S) / step) * step - step;
-  const nx = Math.ceil((2 * S) / step) + 3, ny = Math.ceil((2 * S) / step) + 3;
+  const x0 = Math.floor((cx - padS()) / step) * step - step;
+  const y0 = Math.floor((cy - padS()) / step) * step - step;
+  const nx = Math.ceil((2 * padS()) / step) + 3, ny = Math.ceil((2 * padS()) / step) + 3;
   const lv = new Int8Array(nx * ny);
   for (let j = 0; j < ny; j++) {
     for (let i = 0; i < nx; i++) {
@@ -2657,6 +3016,7 @@ function drawPeaks(ctx, cx, cy, q, r, terrain) {
 // antyder att marken kan röra sig.
 function drawDetail(ctx, cx, cy, terrain, seed, q, r) {
   ctx.save();
+  if (BAKE) ctx.clip(BAKE.region);
   switch (terrain) {
     case 'plains': {
       drawPlainsField(ctx, cx, cy);
@@ -3468,63 +3828,69 @@ export function render() {
   // edge, leaving a light line on every border — the residual "grid" inside the
   // forest was this overdraw, not a drawn grid (none exists; the stroke uses
   // the fill colour). Separating the passes removes it outright.
-  for (const t of vis) {
-    const {x,y} = hexPx(t.q, t.r);
-    const base = TERRAIN_BASE[t.terrain] || TERRAIN_BASE.fog;
-    const seed = (t.q*137 + t.r*31) & 0xff;
-    fillHex(ctx, hexPts(x, y), base.c0, base.c1, seed);
-  }
-  pass('base');
+  if (MARKRASTER) {
+    // Bas, mark, övergång, strand, skum och hylla: bakade en gång (se Markrastret).
+    drawMarkraster(ctx);
+    pass('base');
+  } else {
+    for (const t of vis) {
+      const {x,y} = hexPx(t.q, t.r);
+      const base = TERRAIN_BASE[t.terrain] || TERRAIN_BASE.fog;
+      const seed = (t.q*137 + t.r*31) & 0xff;
+      fillHex(ctx, hexPts(x, y), base.c0, base.c1, seed);
+    }
+    pass('base');
 
-  // 1a. Ground texture pass.
-  for (const t of vis) {
-    if (t.terrain === 'fog') continue;
-    const {x,y} = hexPx(t.q, t.r);
-    const seed = (t.q*137 + t.r*31) & 0xff;
-    drawDetail(ctx, x, y, t.terrain, seed, t.q, t.r);
-  }
-  pass('ground');
+    // 1a. Ground texture pass.
+    for (const t of vis) {
+      if (t.terrain === 'fog') continue;
+      const {x,y} = hexPx(t.q, t.r);
+      const seed = (t.q*137 + t.r*31) & 0xff;
+      drawDetail(ctx, x, y, t.terrain, seed, t.q, t.r);
+    }
+    pass('ground');
 
-  // 1a1. Markövergången — grannens ton blöder in i vår kantzon där två
-  // marktyper möts. Egen loop av samma skäl som strandbandet nedan: zonen är
-  // en egenskap hos MÖTET mellan två hexar, inte hos terrängen i en av dem.
-  // Före strandbandet, för sanden är kartans ljusaste yta och ska inte dithras
-  // sönder av en markzon ritad ovanpå den.
-  for (const t of vis) {
-    if (!GROUND_BLEND.has(t.terrain)) continue;
-    const { x, y } = hexPx(t.q, t.r);
-    drawGroundBlend(ctx, x, y, t.q, t.r, t.terrain);
-  }
-  pass('blend');
+    // 1a1. Markövergången — grannens ton blöder in i vår kantzon där två
+    // marktyper möts. Egen loop av samma skäl som strandbandet nedan: zonen är
+    // en egenskap hos MÖTET mellan två hexar, inte hos terrängen i en av dem.
+    // Före strandbandet, för sanden är kartans ljusaste yta och ska inte dithras
+    // sönder av en markzon ritad ovanpå den.
+    for (const t of vis) {
+      if (!GROUND_BLEND.has(t.terrain)) continue;
+      const { x, y } = hexPx(t.q, t.r);
+      drawGroundBlend(ctx, x, y, t.q, t.r, t.terrain);
+    }
+    pass('blend');
 
-  // 1a2. Strandbandet — sand på LANDSIDAN längs varje kant mot hav. Klippt.
-  // Egen loop och inte en gren i drawDetail: bandet är en egenskap hos MÖTET
-  // mellan två hexar, inte hos terrängen i en av dem, och samma sand ska ligga
-  // under slätt, lund, kulle och berg utan att var och en får sin egen kopia.
-  // 1a3. Havet — dyning över hela ytan, bränning där den möter land. OKLIPPT.
-  for (const t of vis) {
-    // Gallringen går på `isWaterTerrain`, inte `isSeaTerrain`. Floden är inte
-    // hav, alltså släpptes en flodhex förbi hit och fick strandband + bränning
-    // mot sina havsgrannar — en sandstrand runt vattnet vid varje mynning.
-    // Enhetsriggen fångade det; ingen tonmätning kunde ha gjort det.
-    // Grannskapstestet nedan står kvar på `isSeaTerrain` med flit: det är LAND
-    // som ska få strand mot HAV, och en landhex vid en flod ska inte få det
-    // (kontrastbudgeten, princip 6 — den ljusa sanden hör kustlinjen till).
-    if (t.terrain === 'fog' || isWaterTerrain(t.terrain)) continue;
-    const seaDirs = neighborDirs(t.q, t.r, isSeaTerrain);
-    if (!seaDirs.length) continue;
-    const { x, y } = hexPx(t.q, t.r);
-    drawShore(ctx, x, y, seaDirs);
-    drawSurf(ctx, x, y, seaDirs, State.animFrame >> 5);
-  }
-  pass('shore');
+    // 1a2. Strandbandet — sand på LANDSIDAN längs varje kant mot hav. Klippt.
+    // Egen loop och inte en gren i drawDetail: bandet är en egenskap hos MÖTET
+    // mellan två hexar, inte hos terrängen i en av dem, och samma sand ska ligga
+    // under slätt, lund, kulle och berg utan att var och en får sin egen kopia.
+    // 1a3. Havet — dyning över hela ytan, bränning där den möter land. OKLIPPT.
+    for (const t of vis) {
+      // Gallringen går på `isWaterTerrain`, inte `isSeaTerrain`. Floden är inte
+      // hav, alltså släpptes en flodhex förbi hit och fick strandband + bränning
+      // mot sina havsgrannar — en sandstrand runt vattnet vid varje mynning.
+      // Enhetsriggen fångade det; ingen tonmätning kunde ha gjort det.
+      // Grannskapstestet nedan står kvar på `isSeaTerrain` med flit: det är LAND
+      // som ska få strand mot HAV, och en landhex vid en flod ska inte få det
+      // (kontrastbudgeten, princip 6 — den ljusa sanden hör kustlinjen till).
+      if (t.terrain === 'fog' || isWaterTerrain(t.terrain)) continue;
+      const seaDirs = neighborDirs(t.q, t.r, isSeaTerrain);
+      if (!seaDirs.length) continue;
+      const { x, y } = hexPx(t.q, t.r);
+      drawShore(ctx, x, y, seaDirs);
+      drawSurf(ctx, x, y, seaDirs, State.animFrame >> 5);
+    }
+    pass('shore');
 
-  for (const t of vis) {
-    if (t.terrain !== 'deep_sea') continue;
-    const shelf = neighborDirs(t.q, t.r, n => n === 'coastal_sea');
-    if (!shelf.length) continue;
-    const { x, y } = hexPx(t.q, t.r);
-    drawDepthBand(ctx, x, y, shelf);
+    for (const t of vis) {
+      if (t.terrain !== 'deep_sea') continue;
+      const shelf = neighborDirs(t.q, t.r, n => n === 'coastal_sea');
+      if (!shelf.length) continue;
+      const { x, y } = hexPx(t.q, t.r);
+      drawDepthBand(ctx, x, y, shelf);
+    }
   }
   drawSwellField(ctx, State.animFrame >> 5);
   pass('sea');
@@ -3684,7 +4050,8 @@ export function render() {
 
   // Knowledge tint includes the whole painted hex (ground, canopy, peaks,
   // deposits and remembered buildings), before player UI and live actors.
-  drawRemembered(ctx, vis, t => { const p = hexPx(t.q, t.r); return hexPts(p.x, p.y); });
+  if (MARKRASTER) drawMarkMemory(ctx);
+  else drawRemembered(ctx, vis, t => { const p = hexPx(t.q, t.r); return hexPts(p.x, p.y); });
   pass('memory');
 
   // 3. Highlight selected hex
