@@ -54,7 +54,7 @@ func leaveCmd() *cobra.Command {
 		Short: "After your last city fell: leave this world (your account remains)",
 		Long: `Only for a Wanax who has lost every city in this world. You leave this world
 for good and cannot rise in it again. Your account remains for the next world.
-To delete the account itself, email the admin.`,
+To delete the account itself, write to the admin in the community chat.`,
 		Example: `  keryx leave`,
 		Args:    noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
