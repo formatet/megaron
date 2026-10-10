@@ -61,6 +61,8 @@ type foundedMetropolis struct {
 	GalleyID      *uuid.UUID // Poseidon's gift; nil inland
 	GrainCarried  float64    // store moved into the city
 	SilverCarried float64
+	GrainTotal    float64 // what the city holds right after founding (genesis seed + carried)
+	SilverTotal   float64
 }
 
 // foundMetropolisFromNomadicHost turns a wandering host into a player's first and
@@ -365,6 +367,14 @@ func foundMetropolisFromNomadicHost(
 	out.ProvinceID, out.SettlementID = m.ProvinceID, m.SettlementID
 	out.Q, out.R, out.Coastal = q, r, coastal
 	out.GrainCarried, out.SilverCarried = grainLeft, silverLeft
+	// What the city actually holds now: createMetropolis' opening seed plus the carried store.
+	if err := tx.QueryRow(ctx,
+		`SELECT COALESCE(SUM(settled(amount, rate, calc_tick)) FILTER (WHERE good_key = 'grain'), 0),
+		        COALESCE(SUM(settled(amount, rate, calc_tick)) FILTER (WHERE good_key = 'silver'), 0)
+		 FROM settlement_goods WHERE settlement_id = $1`, m.SettlementID,
+	).Scan(&out.GrainTotal, &out.SilverTotal); err != nil {
+		return out, fmt.Errorf("read founded stores: %w", err)
+	}
 	return out, nil
 }
 
@@ -515,6 +525,8 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 		"poseidon_gift":  founded.GalleyID,
 		"grain_carried":  founded.GrainCarried,
 		"silver_carried": founded.SilverCarried,
+		"grain_total":    founded.GrainTotal,
+		"silver_total":   founded.SilverTotal,
 	})
 }
 

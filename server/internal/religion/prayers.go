@@ -89,7 +89,7 @@ var (
 // grandest prayers demand trade goods you must acquire: religion drives trade.
 // Kharis is NEVER part of an offering — it is standing, gated by MinKharis.
 
-// EffectOracleRevealDeposits reveals nearby ore deposits to the caster.
+// EffectOracleRevealDeposits reveals an unseen ore deposit anywhere in the world to the caster.
 const EffectOracleRevealDeposits = "oracle_reveal_deposits"
 
 // EffectBattleFrenzy applies a combat strength buff.
@@ -110,7 +110,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodSuspicious, Offering: map[string]float64{"oil": 20, "wine": 10},
 		CooldownTicks: 24, TargetKind: "",
 		God: "Apollon", Name: "Apollon's Sight",
-		Description: "Reveals nearby ore deposits (tin, copper, or silver) for colonisation.",
+		Description: "Reveals one ore deposit you have never seen — copper, tin or silver, somewhere in the world.",
 	},
 	"akhaier_harvest_blessing": {
 		ID: "akhaier_harvest_blessing", EffectType: EffectHarvestBlessing,
@@ -133,7 +133,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodSuspicious, Offering: map[string]float64{"grain": 25, "oil": 15},
 		CooldownTicks: 24, TargetKind: "",
 		God: "Thoth", Name: "Thoth's Revelation",
-		Description: "Reveals nearby ore deposits (tin, copper, or silver) for colonisation.",
+		Description: "Reveals one ore deposit you have never seen — copper, tin or silver, somewhere in the world.",
 	},
 	"khemetiu_harvest_blessing": {
 		ID: "khemetiu_harvest_blessing", EffectType: EffectHarvestBlessing,
@@ -156,7 +156,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodSuspicious, Offering: map[string]float64{"oil": 20, "wine": 15},
 		CooldownTicks: 24, TargetKind: "",
 		God: "El", Name: "El's Oracle",
-		Description: "Reveals nearby ore deposits (tin, copper, or silver) for colonisation.",
+		Description: "Reveals one ore deposit you have never seen — copper, tin or silver, somewhere in the world.",
 	},
 	"knaani_harvest_blessing": {
 		ID: "knaani_harvest_blessing", EffectType: EffectHarvestBlessing,
@@ -179,7 +179,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodSuspicious, Offering: map[string]float64{"wine": 25, "oil": 10},
 		CooldownTicks: 24, TargetKind: "",
 		God: "Sabazios", Name: "Sabazios' Dream",
-		Description: "Reveals nearby ore deposits (tin, copper, or silver) for colonisation.",
+		Description: "Reveals one ore deposit you have never seen — copper, tin or silver, somewhere in the world.",
 	},
 	"thrakes_harvest_blessing": {
 		ID: "thrakes_harvest_blessing", EffectType: EffectHarvestBlessing,
@@ -202,7 +202,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodSuspicious, Offering: map[string]float64{"oil": 20, "wine": 15},
 		CooldownTicks: 24, TargetKind: "",
 		God: "Potnia", Name: "Potnia's Vision",
-		Description: "Reveals nearby ore deposits (tin, copper, or silver) for colonisation.",
+		Description: "Reveals one ore deposit you have never seen — copper, tin or silver, somewhere in the world.",
 		Favours:     potniaTheronOracleFavours,
 	},
 	"minoan_harvest_blessing": {
@@ -227,7 +227,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodSuspicious, Offering: map[string]float64{"grain": 20, "wine": 15},
 		CooldownTicks: 24, TargetKind: "",
 		God: "Hepat", Name: "Hepat's Counsel",
-		Description: "Reveals nearby ore deposits (tin, copper, or silver) for colonisation.",
+		Description: "Reveals one ore deposit you have never seen — copper, tin or silver, somewhere in the world.",
 	},
 	"hatti_harvest_blessing": {
 		ID: "hatti_harvest_blessing", EffectType: EffectHarvestBlessing,

@@ -1,6 +1,9 @@
 package religion
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 // TestPrayerCatalog_AllCulturesHaveThreePrayers verifies each culture has exactly
 // oracle, harvest_blessing, and battle_frenzy entries.
@@ -214,6 +217,14 @@ func TestPrayerSpecsHaveRequiredFields(t *testing.T) {
 			if amt <= 0 {
 				t.Errorf("PrayerSpecs[%q].Offering[%q] = %v, want > 0", key, good, amt)
 			}
+		}
+	}
+}
+
+func TestOracleDepositsDescriptionNotNearby(t *testing.T) {
+	for key, spec := range PrayerSpecs {
+		if spec.EffectType == EffectOracleRevealDeposits && strings.Contains(spec.Description, "nearby") {
+			t.Errorf("%s: description says nearby but the reveal is world-wide", key)
 		}
 	}
 }
