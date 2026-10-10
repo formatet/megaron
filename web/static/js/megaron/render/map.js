@@ -14,6 +14,7 @@ import { eyeSees } from './sight.js';
 import { drawRemembered } from './memory.js';
 import { drawFire, FIRE_FRAMES } from './doomfire.js';
 import { drawCityMass, citySprite, cityTop, cityFoot } from './citysprites.js';
+import { cityIcon, drawCityIcon, drawStamp, ACTIVITY_ICONS, CITY_ICON_PALETTE } from './cityicons.js';
 import { zoomStep, clampPan } from './camera.js';
 import { bindMapInput } from './map_input.js';
 import { confirmInline, showInlineResult } from '../ui/inline_result.js';
@@ -1099,6 +1100,35 @@ const PARCEL_TONES = [
   ['#B7AA5C', 0.62],
   ['#A38C54', 0.55],
 ];
+// Odlingsgrad 0–1: full inom en stads upptagningsområde, avtagande ut till
+// ungefär fem hexar. Källorna är städerna spelaren känner till — samma data
+// kartan redan visar — så lapptäcket säger något sant: här bor folk.
+const CULT_NEAR = 55, CULT_FAR = 125;
+let cultSrc = [], cultSig = null;
+function cultivationList() {
+  const sig = (State.provinceData || []).map(p => p.q + ',' + p.r).join(';');
+  if (sig !== cultSig) {
+    cultSig = sig;
+    cultSrc = (State.provinceData || []).map(p => { const c = hexPx(p.q, p.r); return [c.x, c.y]; });
+  }
+  return cultSrc;
+}
+function cultivationSources(cx, cy) {
+  const R = CULT_FAR + S + WARP_PAD;
+  return cultivationList().filter(([x, y]) => Math.abs(x - cx) < R && Math.abs(y - cy) < R);
+}
+function cultivationAt(near, wx, wy) {
+  let c = 0;
+  for (const [x, y] of near) {
+    const d = Math.hypot(wx - x, wy - y) + (noiseAt(wx, wy, 29, 3146) - 0.5) * 50;
+    c = Math.max(c, Math.min(1, Math.max(0, (CULT_FAR - d) / (CULT_FAR - CULT_NEAR))));
+  }
+  return c;
+}
+function wildBush(wx, wy) {
+  return noiseAt(wx, wy, 5, 6363) + 0.25 * (1 - noiseAt(wx, wy, 33, 6364)) > 0.965;
+}
+
 function plainsParcel(wx, wy) {
   const ox = (noiseAt(wx, wy, 37, 3141) - 0.5) * 12;
   const oy = (noiseAt(wx, wy, 37, 3142) - 0.5) * 8;
@@ -1111,12 +1141,28 @@ function plainsParcel(wx, wy) {
 }
 function drawPlainsParcels(ctx, cx, cy) {
   const STEP = 2;
+  const near = cultivationSources(cx, cy);
   const x0 = Math.floor((cx - padS()) / STEP) * STEP, x1 = cx + padS();
   const y0 = Math.floor((cy - padS()) / STEP) * STEP, y1 = cy + padS();
   for (let wy = y0; wy <= y1; wy += STEP) {
     for (let wx = x0; wx <= x1; wx += STEP) {
       const id = plainsParcel(wx, wy);
       const h = hash32(id, 0, 3143);
+      // Brukad bara där någon bor: tegen finns om dess dragning understiger
+      // odlingsgraden här. Utanför är slätten vild — gräs och buskage.
+      if (hash32(id, 0, 3145) / 4294967296 >= cultivationAt(near, wx, wy)) {
+        if (wildBush(wx, wy)) {
+          ctx.globalAlpha = 0.55;
+          ctx.fillStyle = '#56652E';
+          ctx.fillRect(wx, wy, STEP, STEP);
+          if (!wildBush(wx, wy - STEP)) {
+            ctx.globalAlpha = 0.6;
+            ctx.fillStyle = '#A2AD68';
+            ctx.fillRect(wx, wy, STEP, 1);
+          }
+        }
+        continue;
+      }
       const tone = PARCEL_TONES[h % PARCEL_TONES.length];
       if (tone) {
         ctx.globalAlpha = tone[1];
@@ -1527,7 +1573,104 @@ function riverAxis(q, r) {
   return [ax / m, ay / m];
 }
 
-function drawRiver(ctx, cx, cy, q, r) {
+// Floden i markrastret (Timothy 2026-10-10: "floder och levande värld").
+// Samma graf som drawRiver — varje vattengranne ger en gren ut till den
+// delade kantens mittpunkt (princip 45) — men grenen är en KURVA: en kubisk
+// Bézier som lämnar kantmitten längs kantnormalen och når hexens mitt längs
+// flödesaxeln. Två grannhexar möter alltså varandra i samma punkt med samma
+// tangent, och kedjan blir en mjuk, obruten fåra. Mitten förskjuts lite
+// tvärs flödet ur hexens hash: det är meandern.
+//
+// Fåran är smalare än förut och vassen bara ett band. Utanför bandet ritas
+// INGENTING här — bakningen har redan lagt dalens fält under hela flodhexen,
+// så hexkanten mot grannens dal finns inte längre att se (princip 44: det var
+// vassen ut till kanten som ritade hexagonen).
+//
+// Vadstället (`river_ford`) är samma flod, grundare: ljusare vatten och en
+// rad stenar tvärs fåran — en passage som syns från kartan.
+const isChainTerrain = t => isWaterTerrain(t) || t === 'river_ford';
+function riverCurves(q, r) {
+  const dirs = [];
+  for (let i = 0; i < 6; i++) if (isChainTerrain(terrainAt(q + HEX_DIRS[i][0], r + HEX_DIRS[i][1]))) dirs.push(i);
+  if (!dirs.length) dirs.push(0, 3);
+  let [axx, axy] = riverAxis(q, r);
+  const m = (rnd(q, r, 2490) - 0.5) * 7;          // meander, px tvärs flödet
+  const ccx = -axy * m, ccy = axx * m;
+  const k = R_IN * 0.5;
+  return dirs.map(i => {
+    const nx = DIR_NX[i], ny = DIR_NY[i];
+    const sgn = (nx * axx + ny * axy) >= 0 ? 1 : -1;
+    const p0 = [nx * R_IN, ny * R_IN], p1 = [nx * (R_IN - k), ny * (R_IN - k)];
+    const p2 = [ccx + sgn * axx * k * 0.6, ccy + sgn * axy * k * 0.6], p3 = [ccx, ccy];
+    const pts = [];
+    for (let j = 0; j <= 12; j++) {
+      const t = j / 12, u = 1 - t;
+      pts.push([u*u*u*p0[0] + 3*u*u*t*p1[0] + 3*u*t*t*p2[0] + t*t*t*p3[0],
+                u*u*u*p0[1] + 3*u*u*t*p1[1] + 3*u*t*t*p2[1] + t*t*t*p3[1]]);
+    }
+    return pts;
+  });
+}
+const RIVER_HALF_M = 5.5;
+function drawRiverCurve(ctx, cx, cy, q, r, isFord) {
+  ctx.save();
+  hexClip(ctx, cx, cy);
+  const curves = riverCurves(q, r);
+  const [axx, axy] = riverAxis(q, r);
+  const water = (isFord ? TERRAIN_BASE.river_ford : TERRAIN_BASE.river).c0;
+  const STEP = 2;
+  const x0 = Math.floor((cx - padS()) / STEP) * STEP, x1 = cx + padS();
+  const y0 = Math.floor((cy - padS()) / STEP) * STEP, y1 = cy + padS();
+  for (let wy = y0; wy <= y1; wy += STEP) {
+    for (let wx = x0; wx <= x1; wx += STEP) {
+      const dx = wx + STEP / 2 - cx, dy = wy + STEP / 2 - cy;
+      let dist = Infinity;
+      for (const pts of curves) {
+        for (let j = 0; j < pts.length - 1; j++) {
+          const ax = pts[j][0], ay = pts[j][1], bx = pts[j + 1][0] - ax, by = pts[j + 1][1] - ay;
+          const L2 = bx * bx + by * by || 1;
+          let t = ((dx - ax) * bx + (dy - ay) * by) / L2;
+          t = t < 0 ? 0 : t > 1 ? 1 : t;
+          const d = Math.hypot(dx - ax - t * bx, dy - ay - t * by);
+          if (d < dist) dist = d;
+        }
+      }
+      const half = RIVER_HALF_M + (noiseAt(wx, wy, RIVER_CELL, 2411) - 0.5) * 4.0;
+      if (dist > half) {
+        const reed = 3 + 3 * noiseAt(wx, wy, 11, 2412);
+        if (isFord || dist > half + 2 + reed) continue;
+        ctx.globalAlpha = dist < half + 2 ? 0.9 : 0.55;
+        ctx.fillStyle = dist < half + 2 ? RIVER_MUD : RIVER_REED;
+        ctx.fillRect(wx, wy, STEP, STEP);
+        continue;
+      }
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = water;
+      ctx.fillRect(wx, wy, STEP, STEP);
+      if (isFord) {
+        // Stenarna i vadet: en rad tvärs flödet, ljusa block med skuggsida.
+        const along = dx * axx + dy * axy;
+        if (Math.abs(along) < 4 && hash32(wx >> 1, wy >> 1, 2413) > 0x70000000) {
+          ctx.fillStyle = hash32(wx, wy, 2414) & 1 ? '#C8B98C' : '#8E8164';
+          ctx.fillRect(wx, wy, STEP, STEP);
+        }
+        continue;
+      }
+      const u = wx * axx + wy * axy, v = -wx * axy + wy * axx;
+      const n = noiseAt(u * 0.32, v, RIVER_CELL, 5310);
+      if (n > 0.56) {
+        ctx.globalAlpha = n > 0.78 ? 0.52 : 0.28;
+        ctx.fillStyle = RIVER_CURRENT;
+        ctx.fillRect(wx, wy, STEP, STEP);
+      }
+    }
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function drawRiver(ctx, cx, cy, q, r, isFord = false) {
+  if (MARKRASTER) { drawRiverCurve(ctx, cx, cy, q, r, isFord); return; }
   ctx.save();
   hexClip(ctx, cx, cy);
 
@@ -2014,7 +2157,7 @@ function tileByKey(k) {
 
 const CHUNK = 256;        // världspixlar per cachebit
 const CHUNK_MARGIN = 12;  // grannskap som strand och skum läser över bitkanten
-let chunks = new Map(), chunksFor = null, chunksSalt = null;
+let chunks = new Map(), chunksFor = null, chunksSalt = null, chunksCult = null;
 export const markrasterStats = { chunks: 0, bakeMs: 0 };
 // Markrastrets kod (se markCode) i en världspunkt, ur den bakade biten.
 function markCodeAt(wx, wy) {
@@ -2067,6 +2210,7 @@ function chamfer(src, w, h) {
 const hexRGB = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
 const RGB_SAND = hexRGB(SHORE_SAND), RGB_WET = hexRGB(SHORE_WET), RGB_FOAM = hexRGB(SURF_FOAM);
 const RGB_SHALLOW = hexRGB('#5C9AB2'), RGB_SHELF = hexRGB('#3E7C9E');
+const RGB_HATCH = hexRGB('#40362A');
 
 function bakeChunk(ix, iy) {
   const X0 = ix * CHUNK - 1, Y0 = iy * CHUNK - 1, CS = CHUNK + 2;   // 1 px överlapp mot sömmar
@@ -2104,15 +2248,18 @@ function bakeChunk(ix, iy) {
   }
   const tiles = [...regions.keys()].map(k => [tileByKey(k - 1), regions.get(k)]).filter(([t]) => t);
   for (const [t, path] of tiles) {
-    c.fillStyle = (TERRAIN_BASE[t.terrain] || TERRAIN_BASE.fog).c0;
+    // En flodhex står på dalens mark; fåran ritas ovanpå (drawRiverCurve).
+    c.fillStyle = (TERRAIN_BASE[isRiverTerrain(t.terrain) ? 'river_valley' : t.terrain] || TERRAIN_BASE.fog).c0;
     c.fill(path);
   }
   for (const [t, path] of tiles) {
     if (t.terrain === 'fog') continue;
     const { x, y } = hexPx(t.q, t.r);
     BAKE = { region: path };
-    try { drawDetail(c, x, y, t.terrain, (t.q * 137 + t.r * 31) & 0xff, t.q, t.r); }
-    finally { BAKE = null; }
+    try {
+      if (isRiverTerrain(t.terrain)) drawValleyField(c, x, y, t.q, t.r, false);
+      drawDetail(c, x, y, t.terrain, (t.q * 137 + t.r * 31) & 0xff, t.q, t.r);
+    } finally { BAKE = null; }
   }
   // Kusten ur samma mask: strand på land, skum och grundvatten på havet,
   // hyllan där kusthavet möter djupet. En gräns, ritad en gång.
@@ -2131,14 +2278,17 @@ function bakeChunk(ix, iy) {
     for (let x = 0; x < CS; x++) {
       const i = (y + M) * W + x + M, o = (y * CS + x) * 4;
       const wx = X0 + x, wy = Y0 + y, k = code[i];
-      if (k === 2) {
+      if (k === 1) {
+        // Aldrig sett: skraffering, så okänt aldrig kan läsas som djuphav
+        // (dimmans register — kunskap och geografi ska inte förväxlas).
+        if ((((wx + wy) % 7) + 7) % 7 === 0) put(o, RGB_HATCH, 1);
+      } else if (k === 2) {
         const w = 1.2 + 4.4 * noiseAt(wx, wy, 9, 6161);
         const d = dSea[i];
         if (d <= w) put(o, d > w * 0.62 ? RGB_SAND : (d <= 1.01 ? RGB_WET : RGB_SAND), 1);
       } else if (k === 3 || k === 4) {
         const d = dLand[i];
         if (d <= 1.01) put(o, RGB_FOAM, 0.75);
-        else if (d <= 2.5 && hash32(wx, wy, 7172) > 0x9fffffff) put(o, RGB_FOAM, 0.45);
         else if (k === 3 && d <= 7 + 5 * noiseAt(wx, wy, 17, 7173)) put(o, RGB_SHALLOW, 0.45 * (1 - d / 13));
         if (k === 4) {
           const s = dShelf[i], w = 1 + 9 * noiseAt(wx, wy, 15, 6262);
@@ -2148,6 +2298,23 @@ function bakeChunk(ix, iy) {
     }
   }
   c.putImageData(img, 0, 0);
+  // Bränningen är animerad och ritas live (drawMarkSurf); här samlas bara
+  // de 2 px-block i havet som ligger inom räckhåll från land, med avstånd
+  // och fasbrus, så att livepasset inte behöver räkna något.
+  const surf = [];
+  for (let y = 0; y < CS; y++) {
+    const wy = Y0 + y;
+    if (wy & 1) continue;
+    for (let x = 0; x < CS; x++) {
+      const wx = X0 + x;
+      if (wx & 1) continue;
+      const i = (y + M) * W + x + M, k = code[i];
+      if (k !== 3 && k !== 4) continue;
+      const d = dLand[i];
+      if (d <= 1.01 || d > 7) continue;
+      surf.push(wx, wy, d, noiseAt(wx, wy, 23, 7171) * 5);
+    }
+  }
   // Minnesmasken: grått där regionen hör till en minnesruta. Läggs på med
   // 'saturation' efter terrängen, precis som drawRemembered — men i samma
   // form som marken, inte som hexpolygoner.
@@ -2161,7 +2328,7 @@ function bakeChunk(ix, iy) {
     mc.fillStyle = '#808080';
     for (const [, path] of memTiles) mc.fill(path);
   }
-  return { img: cv, mem, X0, Y0, code, W, M };
+  return { img: cv, mem, X0, Y0, code, W, M, surf: new Float32Array(surf) };
 }
 
 function chunkRange() {
@@ -2172,8 +2339,9 @@ function chunkRange() {
 }
 
 function visibleChunks() {
-  if (chunksFor !== State.tileData || chunksSalt !== salt()) {
-    chunks = new Map(); chunksFor = State.tileData; chunksSalt = salt();
+  const sig = cultivationList();
+  if (chunksFor !== State.tileData || chunksSalt !== salt() || chunksCult !== sig) {
+    chunks = new Map(); chunksFor = State.tileData; chunksSalt = salt(); chunksCult = sig;
   }
   const [cx0, cy0, cx1, cy1] = chunkRange();
   const out = [];
@@ -2219,6 +2387,26 @@ function drawMarkraster(ctx) {
   ctx.save();
   ctx.imageSmoothingEnabled = false;
   for (const ch of visibleChunks()) ctx.drawImage(ch.img, ch.X0, ch.Y0);
+  ctx.restore();
+}
+
+// Bränningen, live: vågkrön parallella med den förvrängda kusten som rullar
+// in mot land med seaTick. Samma formel som drawSurf, men avståndet är
+// avståndet till land i markrastrets mask, inte till en hexkant.
+function drawMarkSurf(ctx, seaTick) {
+  ctx.save();
+  ctx.fillStyle = SURF_FOAM;
+  for (const ch of visibleChunks()) {
+    const a = ch.surf;
+    for (let i = 0; i < a.length; i += 4) {
+      const d = a[i + 2];
+      const out = (d - 1) / 6;
+      if (Math.sin(d * 0.9 + seaTick * 0.55 + a[i + 3]) < 0.35 + 0.45 * out) continue;
+      ctx.globalAlpha = 0.62 - 0.42 * out;
+      ctx.fillRect(a[i], a[i + 1], 2, 2);
+    }
+  }
+  ctx.globalAlpha = 1;
   ctx.restore();
 }
 
@@ -3034,6 +3222,10 @@ function drawDetail(ctx, cx, cy, terrain, seed, q, r) {
       drawRiver(ctx, cx, cy, q, r);
       break;
     }
+    case 'river_ford': {
+      if (MARKRASTER) drawRiver(ctx, cx, cy, q, r, true);
+      break;
+    }
     case 'forest_cedar': {
       // Golv bara. Kronorna är ett eget pass, av samma skäl som lunden.
       drawCedarFloor(ctx, cx, cy);
@@ -3278,7 +3470,58 @@ function drawCityBank(ctx, cx, cy, sprite) {
 }
 
 // ── Province building sprite + flag ──────────────────────────────────────
+// Stadsikonerna (cityicons.js, Timothy 2026-10-10). `?stader=gamla` ger de
+// inhägnade ¾-massorna för jämförelse.
+export const CITYICONS = !(typeof location !== 'undefined' && /[?&]stader=gamla/.test(location.search));
+const provinceSeed = p => (p.settlement_id || p.id || (p.q * 131 + p.r * 7)) | 0;
+function provinceIcon(p) {
+  const ruin = p.state === 'razed' || p.state === 'collapsed';
+  const coastal = neighborDirs(p.q, p.r, isSeaTerrain).length > 0;
+  return cityIcon(p.size_tier ? 1 : 0, Math.min(3, p.walls || 0), p.culture || 'akhaier',
+                  provinceSeed(p) % 997, coastal, ruin);
+}
+function drawProvinceIcon(ctx, cx, cy, p) {
+  const ruin = p.state === 'razed' || p.state === 'collapsed';
+  const ic = provinceIcon(p);
+  const { ox, oy } = drawCityIcon(ctx, ic, cx, cy);
+  if (ruin) {
+    if (p.burning) drawFire(ctx, cx, cy + 3, p.settlement_id || p.id, State.animFrame);
+    return;
+  }
+  if (p.is_outpost) return;
+  // Vimpeln: ägaren i FORM och färg. Egen = fyrkantig duk, annans = triangel.
+  const accent = p.own ? '#D4AC0D' : (p.allied ? '#4CAF50' : '#C0392B');
+  const fx = Math.round(cx) + 2, fy = oy - 6;
+  ctx.fillStyle = '#1C1612';
+  ctx.fillRect(fx, fy, 1, 7);
+  const flag = p.own ? ['AAAA', 'AAAA', 'AAAA'] : ['AA..', 'AAAA', 'AA..'];
+  drawStamp(ctx, flag, fx + 1, fy, { A: accent });
+  // Garnisonen står i porten (servern nollar army_total utanför LIVE-synen).
+  if (p.army_total > 0 && State.camera.zoom >= GARRISON_DOT_ZOOM) {
+    const gx = Math.round(cx) - 1, gy = Math.round(cy) + 14 - 4;
+    drawStamp(ctx, ['KKK', 'KAK', 'KKK'], gx, gy, { K: '#1C1612', A: '#D9A441' });
+  }
+  if (p.besieged) drawSiegeDust(ctx, ox, oy, ic.w, ic.h, provinceSeed(p));
+  if (p.burning) drawFire(ctx, cx, cy + 3, p.settlement_id || p.id, State.animFrame);
+}
+// Belägringen: dammoln runt muren, pixelvis (ingen arc()).
+function drawSiegeDust(ctx, ox, oy, w, h, seed) {
+  for (let k = 0; k < 70; k++) {
+    const t = hash32(seed, k, 9301) / 4294967296;
+    const per = 2 * (w + h + 8);
+    let d = t * per, x, y;
+    if (d < w + 4) { x = ox - 2 + d; y = oy - 3; }
+    else if ((d -= w + 4) < h + 4) { x = ox + w + 1; y = oy - 2 + d; }
+    else if ((d -= h + 4) < w + 4) { x = ox + w + 2 - d; y = oy + h + 1; }
+    else { d -= w + 4; x = ox - 2; y = oy + h + 2 - d; }
+    x = Math.round(x + (hash32(seed, k, 9302) % 5) - 2);
+    y = Math.round(y + (hash32(seed, k, 9303) % 5) - 2);
+    ctx.fillStyle = k % 3 ? '#B0A48C' : '#7A6E62';
+    ctx.fillRect(x, y, 2, 2);
+  }
+}
 function drawProvince(ctx, cx, cy, p) {
+  if (CITYICONS) { drawProvinceIcon(ctx, cx, cy, p); return; }
   // Razed (Del 2b sack) or collapsed: an abandoned ruin, not a standing city —
   // no owner, no flag, no garrison dot. Dim broken rubble instead of the building.
   if (p.state === 'razed' || p.state === 'collapsed') {
@@ -3423,6 +3666,13 @@ function drawLabel(ctx, cx, cy, text, own) {
 // ── Activity overlay badge — build/train/idle indicator ──────────────────
 function drawActivityBadge(ctx, cx, cy, p) {
   ctx.save();
+  if (CITYICONS) {
+    const ic = provinceIcon(p);
+    const rows = p.build_active ? ACTIVITY_ICONS.build : p.train_active ? ACTIVITY_ICONS.train : ACTIVITY_ICONS.idle;
+    drawStamp(ctx, rows, Math.round(cx) - 9, Math.round(cy) + 14 - ic.h - 6);
+    ctx.restore();
+    return;
+  }
   // Strax till vänster om standaret, på samma höjd: de två är stadens
   // statusmärken och ska läsa som EN grupp. Den gamla fasta −13 hamnar mitt
   // inne i en palatsstads takrader, och ett märke placerat vid massans
@@ -3831,6 +4081,7 @@ export function render() {
   if (MARKRASTER) {
     // Bas, mark, övergång, strand, skum och hylla: bakade en gång (se Markrastret).
     drawMarkraster(ctx);
+    drawMarkSurf(ctx, State.animFrame >> 5);
     pass('base');
   } else {
     for (const t of vis) {
