@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { stormOuterEdges, stormTone, EDGE_NEIGHBOUR } from './storms.js';
+import { stormOuterEdges, stormTone, stormRain, EDGE_NEIGHBOUR } from './storms.js';
 
 // Axial → pixel centre in S units, flat-top (the same as hexPx in map.js).
 const centre = (q, r) => [1.5 * q, Math.sqrt(3) * (r + q / 2)];
@@ -40,4 +40,14 @@ test('the cloud is deterministic per pixel and phase, always one of three tones,
   }
   assert.equal(tones.size, 3);
   assert.ok(differs > 100, 'a new phase must change the picture');
+});
+
+test('rain streaks are sparse, deterministic and slide with the phase', () => {
+  let n = 0, moved = 0;
+  for (let y = 0; y < 40; y++) for (let x = 0; x < 40; x++) {
+    if (stormRain(x, y, 0)) n++;
+    if (stormRain(x, y, 0) !== stormRain(x, y, 1)) moved++;
+  }
+  assert.ok(n > 40 && n < 400, `rain pixels: ${n}`);
+  assert.ok(moved > 0, 'the streaks must slide between phases');
 });

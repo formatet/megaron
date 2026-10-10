@@ -4,16 +4,18 @@
 // where it was LAST SEEN as a dithered ghost — never where it is now.
 //
 // Whole pixels, a stepped palette, no blending (megaron_grafikregler): chunky
-// 2×2 cloud blocks in horizontal bands, a 1px charcoal contour only round the
-// storm's OUTER edge (weight marks the storm, not each hex), a rare lightning
-// flash. The cloud churns on a slow phase clocked off State.animFrame, never
+// 2×2 cloud blocks in horizontal bands, sliding rain streaks, a 1px charcoal
+// contour only round the storm's OUTER edge (weight marks the storm, not each
+// hex), a lightning flash on two phases in four. The cloud churns on a slow phase clocked off State.animFrame, never
 // the wall clock, so the frozen-frame rigs get the same picture every time.
 
 export const STORM_FRAMES = 40; // render frames per cloud phase; the loop wakes on a phase change
 export const STORM_PHASES = 4;
 
 const CHARCOAL = '#1E232B';
-const TONES = ['#6F7D90', '#4A5668', '#2E3846']; // light · mid · dark
+// Violet-slate, deliberately NOT the grey-blue of mountains: a storm must not read as rock.
+const TONES = ['#7A7FA6', '#4F5478', '#2B2F4A']; // light · mid · dark
+const RAIN = '#C4D2E6';
 const FLASH = '#F4E27A';
 
 // Neighbour across edge i of a flat-top hex whose corner i sits at angle i·60°
@@ -40,6 +42,11 @@ export function stormTone(x, y, phase) {
   return v < 2 ? 0 : v < 6 ? 1 : 2;
 }
 
+// Rain: short diagonal streaks that slide down-left one step per phase.
+export function stormRain(x, y, phase) {
+  return (x * 2 + y + phase * 3) % 9 === 0 && (y % 5) < 3;
+}
+
 function inHex(dx, dy, S) {
   const ax = Math.abs(dx), ay = Math.abs(dy);
   return ay <= S * Math.sqrt(3) / 2 && Math.sqrt(3) * ax + ay <= Math.sqrt(3) * S;
@@ -59,7 +66,7 @@ function hexSprite(S, phase, ghost) {
     for (let x = 0; x < w; x++) {
       if (!inHex(x - cx, y - cy, S)) continue;
       if (ghost && ((x + y) & 1)) continue; // dither: a remembered storm is half there
-      g.fillStyle = ghost ? TONES[1] : TONES[stormTone(x, y, phase)];
+      g.fillStyle = ghost ? TONES[1] : (stormRain(x, y, phase) ? RAIN : TONES[stormTone(x, y, phase)]);
       g.fillRect(x, y, 1, 1);
     }
   }
@@ -95,7 +102,7 @@ export function drawStorm(ctx, storm, { S, hexPx, hexPts, frame }) {
   });
   ctx.restore();
   // A lightning flash in one hex now and then (one phase in four).
-  if (!ghost && phase === 2) {
+  if (!ghost && (phase === 1 || phase === 3)) {
     const h = storm.hexes[(hash(storm.hexes[0].q, storm.hexes[0].r, 7) >>> 3) % 3];
     const { x, y } = hexPx(h.q, h.r);
     ctx.fillStyle = FLASH;
