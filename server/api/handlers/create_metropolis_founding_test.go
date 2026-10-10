@@ -211,3 +211,16 @@ func TestFounding_BarrenCatchment_GrantsNoFarm(t *testing.T) {
 		t.Errorf("barren catchment: expected zero grain placements (no grain-capable hex), got %d", n)
 	}
 }
+
+// TestFounding_RecordsFounder: the metropolis remembers who founded it, so the
+// epitaph can tell the whole reign after the city changes hands (mig 166).
+func TestFounding_RecordsFounder(t *testing.T) {
+	terrains := [7]string{"plains", "plains", "mountain_limestone", "mountain_limestone", "mountain_limestone", "mountain_limestone", "mountain_limestone"}
+	pool, sid := foundMetropolisFixture(t, terrains)
+	var same bool
+	if err := pool.QueryRow(context.Background(),
+		`SELECT founder_id IS NOT NULL AND founder_id = owner_id FROM settlements WHERE id = $1`, sid,
+	).Scan(&same); err != nil || !same {
+		t.Errorf("metropolis founder_id = owner_id: %v (err %v), want true", same, err)
+	}
+}

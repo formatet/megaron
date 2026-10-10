@@ -89,8 +89,8 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 	// Silver now lives in settlement_goods (seeded below via GenesisSilverLiquid).
 	err = tx.QueryRow(ctx,
 		`INSERT INTO settlements
-		 (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, loyalty, loyalty_points, population)
-		 VALUES ($1,$2,$3,$4,$5,'capital',true,3,$6,$7)
+		 (world_id, province_id, name, culture_id, owner_id, founder_id, control_type, is_capital, loyalty, loyalty_points, population)
+		 VALUES ($1,$2,$3,$4,$5,$5,'capital',true,3,$6,$7)
 		 RETURNING id`,
 		p.WorldID, out.ProvinceID, p.Name, p.Culture, p.PlayerID, loyalty.LoyaltyStartCapital, p.Population,
 	).Scan(&out.SettlementID)
