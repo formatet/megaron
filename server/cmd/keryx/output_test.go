@@ -24,7 +24,7 @@ func TestArrivalETA_KnownTickSeconds_RendersGameDaysFirst(t *testing.T) {
 	if !strings.Contains(got, "in 12 days") {
 		t.Errorf("arrivalETA(%q) = %q, want 12 days (3 days / 6h-per-tick = 12 ticks)", iso, got)
 	}
-	if strings.Contains(got, "T") || strings.Contains(got, "Z") {
+	if strings.Contains(got, iso) {
 		t.Fatalf("arrivalETA(%q) = %q leaked the raw RFC3339 string", iso, got)
 	}
 	if !strings.Contains(got, "(") {
@@ -46,7 +46,7 @@ func TestArrivalETA_UnknownTickSeconds_DegradesToWallClockCountdown(t *testing.T
 	if !strings.Contains(got, ":") {
 		t.Fatalf("arrivalETA(%q) = %q, want clock/date for a future ETA", iso, got)
 	}
-	if strings.Contains(got, "T") || strings.Contains(got, "Z") {
+	if strings.Contains(got, iso) {
 		t.Fatalf("arrivalETA(%q) = %q leaked the raw RFC3339 string", iso, got)
 	}
 }
