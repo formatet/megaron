@@ -117,7 +117,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodIndifferent, Offering: map[string]float64{"wine": 15, "oil": 10},
 		CooldownTicks: 12, TargetKind: "",
 		God: "Demeter", Name: "Demeter's Bounty",
-		Description: "Blesses the harvest — grain stores swell by a quarter.",
+		Description: "Blesses the harvest — grain, livestock, oil and wine yield a quarter more for 25 days.",
 	},
 	"akhaier_battle_frenzy": {
 		ID: "akhaier_battle_frenzy", EffectType: EffectBattleFrenzy,
@@ -140,7 +140,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodIndifferent, Offering: map[string]float64{"grain": 20, "oil": 10},
 		CooldownTicks: 12, TargetKind: "",
 		God: "Osiris", Name: "Osiris' Flood",
-		Description: "Blesses the harvest — grain stores swell by a quarter.",
+		Description: "Blesses the harvest — grain, livestock, oil and wine yield a quarter more for 25 days.",
 	},
 	"khemetiu_battle_frenzy": {
 		ID: "khemetiu_battle_frenzy", EffectType: EffectBattleFrenzy,
@@ -163,7 +163,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodIndifferent, Offering: map[string]float64{"wine": 15, "oil": 10},
 		CooldownTicks: 12, TargetKind: "",
 		God: "Baal", Name: "Baal's Rain",
-		Description: "Blesses the harvest — grain stores swell by a quarter.",
+		Description: "Blesses the harvest — grain, livestock, oil and wine yield a quarter more for 25 days.",
 	},
 	"knaani_battle_frenzy": {
 		ID: "knaani_battle_frenzy", EffectType: EffectBattleFrenzy,
@@ -186,7 +186,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodIndifferent, Offering: map[string]float64{"wine": 20, "oil": 10},
 		CooldownTicks: 12, TargetKind: "",
 		God: "Bendis", Name: "Bendis' Harvest",
-		Description: "Blesses the harvest — grain stores swell by a quarter.",
+		Description: "Blesses the harvest — grain, livestock, oil and wine yield a quarter more for 25 days.",
 	},
 	"thrakes_battle_frenzy": {
 		ID: "thrakes_battle_frenzy", EffectType: EffectBattleFrenzy,
@@ -210,7 +210,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodIndifferent, Offering: map[string]float64{"wine": 15, "oil": 10},
 		CooldownTicks: 12, TargetKind: "",
 		God: "Britomartis", Name: "Britomartis' Gift",
-		Description: "Blesses the harvest — grain stores swell by a quarter.",
+		Description: "Blesses the harvest — grain, livestock, oil and wine yield a quarter more for 25 days.",
 	},
 	"minoan_battle_frenzy": {
 		ID: "minoan_battle_frenzy", EffectType: EffectBattleFrenzy,
@@ -234,7 +234,7 @@ var PrayerSpecs = map[string]PrayerSpec{
 		MinKharis: MoodIndifferent, Offering: map[string]float64{"wine": 15, "oil": 10},
 		CooldownTicks: 12, TargetKind: "",
 		God: "Telipinu", Name: "Telipinu's Return",
-		Description: "Blesses the harvest — grain stores swell by a quarter.",
+		Description: "Blesses the harvest — grain, livestock, oil and wine yield a quarter more for 25 days.",
 	},
 	"hatti_battle_frenzy": {
 		ID: "hatti_battle_frenzy", EffectType: EffectBattleFrenzy,

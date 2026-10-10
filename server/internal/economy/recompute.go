@@ -529,12 +529,14 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	var ownerID uuid.UUID
 	var worldID uuid.UUID
 	var settlementQ, settlementR int
+	var harvestBlessed bool
 	err := tx.QueryRow(ctx,
-		`SELECT s.population, s.owner_id, prov.world_id, prov.map_q, prov.map_r
+		`SELECT s.population, s.owner_id, prov.world_id, prov.map_q, prov.map_r,
+		        COALESCE(s.harvest_blessing_until_tick > current_world_tick(), false)
 		 FROM settlements s JOIN provinces prov ON prov.id = s.province_id
 		 WHERE s.id = $1`,
 		settlementID,
-	).Scan(&population, &ownerID, &worldID, &settlementQ, &settlementR)
+	).Scan(&population, &ownerID, &worldID, &settlementQ, &settlementR, &harvestBlessed)
 	if err != nil {
 		return fmt.Errorf("recompute: load settlement: %w", err)
 	}
@@ -757,6 +759,16 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	// from the catchment ring above). Added directly to the rate here, not
 	// routed through LaborCapacity/weight scaling like every other good.
 	rawRates["grain"] += NearjordGrainPerTick
+
+	// The harvest blessing (harvest_blessing.go): every food good but fish
+	// yields a quarter more while it lasts, near ground included. Read here on
+	// every recompute — the daily tick recomputes every city — so it ends by
+	// itself when the span runs out.
+	if harvestBlessed {
+		for _, g := range HarvestBlessedGoods() {
+			rawRates[g] *= 1 + HarvestBlessingYieldBonus
+		}
+	}
 
 	// 5b. Write every producible good's rate — RAW, un-netted production.
 	//

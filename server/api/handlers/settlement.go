@@ -1295,41 +1295,24 @@ func (h *SettlementHandler) applyBattleFrenzy(ctx context.Context, tx pgx.Tx, se
 	return map[string]any{"expires_at": t}, "The gods answer your plea — your warriors fight with divine fury!", nil
 }
 
-// applyHarvestBlessing boosts the settlement's grain by 25% (one-shot abundance).
-// Shares its form with the tick-level applyDivineBlessing harvest_blessing branch
-// (internal/kharis/tick.go) — both read the actual RETURNING delta rather than
-// reporting the 1.25 multiplier as if it were the outcome (megaron_plan_ritens_
-// utfall.md: events store outcomes, not intentions, CLAUDE.md §Events).
+// applyHarvestBlessing raises the yield of every food good but fish by a
+// quarter for economy.HarvestBlessingTicks (Timothy 2026-10-10). It was a
+// one-shot ×1.25 on the grain store, which gave the most to the fullest
+// granary and nothing to an empty one. Shared with the divine favour
+// (kharis/tick.go "bountiful_harvest") through economy.ApplyHarvestBlessing.
 func (h *SettlementHandler) applyHarvestBlessing(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, spec religion.PrayerSpec) (map[string]any, string, error) {
-	var gained, grainNow float64
-	if err := tx.QueryRow(ctx,
-		`WITH old AS (
-		     SELECT settled(amount, rate, calc_tick) AS grain_now, cap
-		     FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'grain'
-		 ), upd AS (
-		     UPDATE settlement_goods sg SET
-		        amount    = LEAST(o.cap, o.grain_now * 1.25),
-		        calc_tick = current_world_tick()
-		     FROM old o
-		     WHERE sg.settlement_id = $1 AND sg.good_key = 'grain'
-		     RETURNING sg.amount - o.grain_now AS gained, o.grain_now AS grain_now
-		 )
-		 SELECT COALESCE(SUM(gained), 0)::float8, COALESCE(MAX(grain_now), 0)::float8 FROM upd`,
-		settlementID,
-	).Scan(&gained, &grainNow); err != nil {
+	untilTick, err := economy.ApplyHarvestBlessing(ctx, tx, settlementID)
+	if err != nil {
 		return nil, "", err
 	}
-
-	var msg string
-	switch {
-	case gained > 0:
-		msg = fmt.Sprintf("%s smiles upon your fields — grain stocks swell by a quarter (+%.0f grain).", spec.God, gained)
-	case grainNow <= 0:
-		msg = fmt.Sprintf("%s smiles upon your fields — but your granaries stand empty, and a quarter of nothing is nothing.", spec.God)
-	default:
-		msg = fmt.Sprintf("%s smiles upon your fields — but your granaries are already full; there is nowhere to put the abundance.", spec.God)
-	}
-	return map[string]any{"good": "grain", "multiplier": 1.25, "gained": gained}, msg, nil
+	msg := fmt.Sprintf("%s smiles upon your fields — grain, livestock, oil and wine yield a quarter more for %d days.",
+		spec.God, economy.HarvestBlessingTicks)
+	return map[string]any{
+		"goods":       economy.HarvestBlessedGoods(),
+		"yield_bonus": economy.HarvestBlessingYieldBonus,
+		"days":        economy.HarvestBlessingTicks,
+		"until_tick":  untilTick,
+	}, msg, nil
 }
 
 // applyOracleRevealDeposits reveals SEVEN hexes of map — an ore hex somewhere in

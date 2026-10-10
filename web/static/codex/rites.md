@@ -13,7 +13,7 @@ After a rite, the prayer cannot be repeated for a while.
 ## The prayers
 
 - **The oracle** — names one ore deposit you have never seen — copper, tin or silver, anywhere in the world, chosen by the gods — and lifts the fog from it and the land around it. Whether you can *reach* it is another matter ([[bronze]], [[sea]]).
-- **The harvest blessing** — swells your grain.
+- **The harvest blessing** — for 25 days your grain, livestock, oil and wine yield a quarter more. Fish is not the fields' to give.
 - **Battle frenzy** — strengthens a garrison for a while ([[battle]]).
 
 The answer or a refusal appears in the Kult drawer after you offer; it stays beside the prayers.

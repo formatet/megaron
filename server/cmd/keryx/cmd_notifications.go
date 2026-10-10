@@ -1005,7 +1005,7 @@ func printDivinePunishmentLine(n notificationItem) {
 // printDivineBlessingLine mirrors printDivinePunishmentLine — same payload
 // shape (type/amount/name), good side of the same DivineTick roll. amount's
 // UNIT depends on type (megaron_plan_tre_tysta_notiserna.md §4): grain for
-// harvest_blessing, men for divine_recruits, ships for sea_blessing. A
+// harvest_blessing, days for bountiful_harvest, men for divine_recruits, ships for sea_blessing. A
 // generic "+N" line would be wrong for two of the three.
 func printDivineBlessingLine(n notificationItem) {
 	var body struct {
@@ -1028,6 +1028,9 @@ func printDivineBlessingLine(n notificationItem) {
 	switch body.Type {
 	case "harvest_blessing":
 		line = fmt.Sprintf("The gods fill the granaries%s — +%s grain.", where, resource(amount))
+	case "bountiful_harvest":
+		// amount = days the yield bonus lasts (2026-10-10).
+		line = fmt.Sprintf("The gods bless the fields%s — grain, livestock, oil and wine yield a quarter more for %.0f days.", where, amount)
 	case "divine_recruits":
 		line = fmt.Sprintf("Warriors answer a divine calling%s — +%.0f men.", where, amount)
 	case "sea_blessing":

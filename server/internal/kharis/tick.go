@@ -1643,20 +1643,13 @@ func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, wor
 
 	blessings := []blessing{
 		{
-			"harvest_blessing",
-			"The gods smile upon your fields. An abundant harvest fills your granaries.",
-			`WITH old AS (
-			     SELECT settled(amount, rate, calc_tick) AS grain_now, cap
-			     FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'grain'
-			 ), upd AS (
-			     UPDATE settlement_goods sg SET
-			        amount    = LEAST(o.cap, o.grain_now * 1.25),
-			        calc_tick = current_world_tick()
-			     FROM old o
-			     WHERE sg.settlement_id = $1 AND sg.good_key = 'grain'
-			     RETURNING sg.amount - o.grain_now AS gained
-			 )
-			 SELECT COALESCE(SUM(gained), 0)::float8 FROM upd`,
+			// "bountiful_harvest" (Timothy 2026-10-10) replaces "harvest_blessing"
+			// (×1.25 on the grain store, amount = grain gained). A new type, not a
+			// reinterpretation: old events keep their meaning. amount = the days
+			// the yield bonus lasts. Empty sql: applied via economy below.
+			"bountiful_harvest",
+			"The gods smile upon your fields. For a season they bear more than any hand could make them.",
+			"",
 		},
 		{
 			// Army lives in the units table (SB7) — handled by applyArmyBlessing,
@@ -1681,7 +1674,13 @@ func (h *TickHandler) applyDivineBlessing(ctx context.Context, settlementID, wor
 	}
 
 	var amount float64
-	if b.sql != "" {
+	if b.name == "bountiful_harvest" {
+		if _, err := economy.ApplyHarvestBlessing(ctx, h.pool, settlementID); err != nil {
+			slog.Error("divine blessing failed", "settlement", settlementID, "type", b.name, "err", err)
+			return
+		}
+		amount = economy.HarvestBlessingTicks
+	} else if b.sql != "" {
 		if err := h.pool.QueryRow(ctx, b.sql, settlementID).Scan(&amount); err != nil {
 			slog.Error("divine blessing failed", "settlement", settlementID, "type", b.name, "err", err)
 			return

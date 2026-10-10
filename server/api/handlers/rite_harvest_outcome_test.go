@@ -13,7 +13,7 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
+	"math"
 	"strings"
 	"testing"
 	"time"
@@ -107,88 +107,57 @@ func callApplyHarvestBlessing(t *testing.T, pool *pgxpool.Pool, settlementID uui
 	return effect, message
 }
 
-func TestHarvestBlessing_EmptyGranaryReportsZero(t *testing.T) {
-	pool := armyDisplayTestPool(t)
-	_, settlementID := riteHarvestFixture(t, pool, 0)
-
-	effect, message := callApplyHarvestBlessing(t, pool, settlementID)
-
-	gained, _ := effect["gained"].(float64)
-	if gained != 0 {
-		t.Errorf("gained = %v, want 0 (empty granary)", gained)
+func grainRate(t *testing.T, pool *pgxpool.Pool, settlementID uuid.UUID) float64 {
+	t.Helper()
+	var r float64
+	if err := pool.QueryRow(context.Background(),
+		`SELECT rate FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'grain'`, settlementID,
+	).Scan(&r); err != nil {
+		t.Fatalf("read grain rate: %v", err)
 	}
-	if !strings.Contains(message, "empty") {
-		t.Errorf("message = %q, want it to say the granary is empty", message)
-	}
-	mult, _ := effect["multiplier"].(float64)
-	if mult != 1.25 {
-		t.Errorf("multiplier = %v, want unchanged 1.25 (old field keeps its meaning)", mult)
-	}
+	return r
 }
 
-func TestHarvestBlessing_ReportsActualGain(t *testing.T) {
+// TestHarvestBlessing_RaisesYieldForItsSpan: the harvest blessing is a quarter
+// more yield for economy.HarvestBlessingTicks, then nothing (Timothy
+// 2026-10-10) — no longer ×1.25 on the grain store, which gave the most to the
+// fullest granary and nothing to an empty one.
+func TestHarvestBlessing_RaisesYieldForItsSpan(t *testing.T) {
 	pool := armyDisplayTestPool(t)
-	_, settlementID := riteHarvestFixture(t, pool, 400)
-
-	effect, message := callApplyHarvestBlessing(t, pool, settlementID)
-
-	gained, _ := effect["gained"].(float64)
-	if gained != 100 {
-		t.Errorf("gained = %v, want 100 (400 * 0.25)", gained)
-	}
-	if !strings.Contains(message, "+100") {
-		t.Errorf("message = %q, want it to contain +100", message)
-	}
-}
-
-func TestHarvestBlessing_ClippedByCapReportsWhatFit(t *testing.T) {
-	pool := armyDisplayTestPool(t)
-	_, settlementID := riteHarvestFixture(t, pool, 900) // cap 1000: 900*1.25=1125, clipped to 1000
-
-	effect, message := callApplyHarvestBlessing(t, pool, settlementID)
-
-	gained, _ := effect["gained"].(float64)
-	if gained != 100 {
-		t.Errorf("gained = %v, want 100 (clipped to cap 1000, NOT 225 = 900*0.25)", gained)
-	}
-	if !strings.Contains(message, "+100") {
-		t.Errorf("message = %q, want it to contain the actual clipped gain +100", message)
-	}
-}
-
-// TestHarvestBlessing_RiteCastEventCarriesGained proves the event payload
-// (not just the direct return value) carries the real outcome — the whole
-// point of the fix is that RiteCast becomes calibratable.
-func TestHarvestBlessing_RiteCastEventCarriesGained(t *testing.T) {
-	pool := armyDisplayTestPool(t)
-	worldID, settlementID := riteHarvestFixture(t, pool, 400)
 	ctx := context.Background()
-
-	effect, _ := callApplyHarvestBlessing(t, pool, settlementID)
-	store := events.NewStore(pool)
-	if _, err := store.Append(ctx, settlementID, events.StreamReligion, "RiteCast", map[string]any{
-		"effect_type": religion.EffectHarvestBlessing,
-		"effect":      effect,
-	}, worldID, nil); err != nil {
-		t.Fatalf("append RiteCast: %v", err)
+	worldID, settlementID := riteHarvestFixture(t, pool, 0) // an EMPTY granary is blessed too
+	if err := economy.RecomputeProduction(ctx, pool, settlementID); err != nil {
+		t.Fatalf("baseline recompute: %v", err)
+	}
+	before := grainRate(t, pool, settlementID)
+	if before <= 0 {
+		t.Fatalf("baseline grain rate %v — the test needs some production to raise", before)
+	}
+	var now int
+	if err := pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&now); err != nil {
+		t.Fatalf("read tick: %v", err)
 	}
 
-	var raw []byte
-	if err := pool.QueryRow(ctx,
-		`SELECT payload FROM events WHERE stream_id = $1 AND event_type = 'RiteCast' ORDER BY id DESC LIMIT 1`,
-		settlementID,
-	).Scan(&raw); err != nil {
-		t.Fatalf("read RiteCast event: %v", err)
+	effect, msg := callApplyHarvestBlessing(t, pool, settlementID)
+
+	if got, want := grainRate(t, pool, settlementID), before*(1+economy.HarvestBlessingYieldBonus); math.Abs(got-want) > 1e-9 {
+		t.Errorf("blessed grain rate %v, want %v (a quarter more)", got, want)
 	}
-	var p struct {
-		Effect struct {
-			Gained float64 `json:"gained"`
-		} `json:"effect"`
+	if until, _ := effect["until_tick"].(int); until != now+economy.HarvestBlessingTicks {
+		t.Errorf("until_tick = %v, want %d", effect["until_tick"], now+economy.HarvestBlessingTicks)
 	}
-	if err := json.Unmarshal(raw, &p); err != nil {
-		t.Fatalf("unmarshal RiteCast payload: %v", err)
+	if !strings.Contains(msg, "25 days") {
+		t.Errorf("message %q does not say how long", msg)
 	}
-	if p.Effect.Gained != 100 {
-		t.Errorf("RiteCast event effect.gained = %v, want 100 (the actual DB delta)", p.Effect.Gained)
+
+	if _, err := pool.Exec(ctx, `UPDATE worlds SET current_tick = $2 WHERE id = $1`,
+		worldID, now+economy.HarvestBlessingTicks); err != nil {
+		t.Fatalf("advance to the end of the span: %v", err)
+	}
+	if err := economy.RecomputeProduction(ctx, pool, settlementID); err != nil {
+		t.Fatalf("recompute after the span: %v", err)
+	}
+	if got := grainRate(t, pool, settlementID); math.Abs(got-before) > 1e-9 {
+		t.Errorf("grain rate %v after the blessing ended, want %v", got, before)
 	}
 }
