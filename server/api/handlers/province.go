@@ -1176,7 +1176,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	// hex (coast is a property, not a terrain) — shipyard split off from
 	// harbour (megaron_plan_skeppsreparation.md Slice A, §Beslut B1) and
 	// carries the same coastal gate BuildingPurposes promises for it.
-	if req.BuildingType == "harbour" || req.BuildingType == "shipyard" {
+	if province.NeedsWaterNeighbour(province.BuildingType(req.BuildingType)) {
 		var pq, pr int
 		_ = h.pool.QueryRow(r.Context(),
 			`SELECT p.map_q, p.map_r FROM provinces p WHERE p.id = $1`, provinceID,
@@ -1197,7 +1197,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		).Scan(&coastNeighbour)
 		if !coastNeighbour {
 			writeError(w, http.StatusUnprocessableEntity,
-				fmt.Sprintf("%s requires a coastal, sea, river or river ford tile on an adjacent hex", req.BuildingType))
+				province.InlandBuildRefusal(province.BuildingType(req.BuildingType)))
 			return
 		}
 	}
@@ -1808,8 +1808,11 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 				}
 			}
 		}
+		if province.NeedsWaterNeighbour(province.BuildingType(bt)) {
+			entry.RequiresCoastal = true
+		}
 		if g, ok := gates[bt]; ok {
-			entry.RequiresCoastal = g.requiresCoastal
+			entry.RequiresCoastal = entry.RequiresCoastal || g.requiresCoastal
 			if len(g.requiresDeposits) > 0 {
 				sort.Strings(g.requiresDeposits)
 				entry.RequiresDeposits = g.requiresDeposits

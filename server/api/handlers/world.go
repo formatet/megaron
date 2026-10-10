@@ -712,6 +712,11 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 	if starterFarm {
 		resp["founding_gifts"] = foundingGifts(farmGift, coastalCentre)
 	}
+	// The harbour rule, told before the irreversible step (only when the centre
+	// hex is known — a fogged centre must not leak its coast).
+	if len(view) > 0 && view[0].Known {
+		resp["harbour_note"] = harbourNote(coastalCentre)
+	}
 	if isolatedWarning != "" {
 		resp["isolated_warning"] = isolatedWarning
 	}
@@ -750,6 +755,14 @@ func foundingGifts(farmGift bool, coastalCentre bool) []map[string]string {
 		})
 	}
 	return gifts
+}
+
+// harbourNote is the forecast line for the harbour rule (province.HarbourRule*).
+func harbourNote(coastalCentre bool) string {
+	if coastalCentre {
+		return province.HarbourRuleCoastal
+	}
+	return province.HarbourRuleInland
 }
 
 func isolationWarningText(hasHills, hasMetal, hasNeighbor bool, radius int) string {

@@ -226,3 +226,10 @@ test('H: landing preserves cargo-colonize/name and omits naval stance; explore a
   assert.match(html, /fish about 2 per day/);
   assert.doesNotMatch(html, /\/day|\d+ ticks/);
 });
+
+test('forecast shows the server harbour note and nothing when absent', () => {
+  const base = {catchment:[{known:true,terrain:'plains'}],grain:{base_per_tick:3,est_net_per_tick:1,seed:8,with_farm_per_tick:3},goods:{}};
+  const inland = menu.renderColonizePreviewHTML({...base, harbour_note:'Inland: a city here can never build a harbour or ships'});
+  assert.match(inland, /can never build a harbour or ships/);
+  assert.doesNotMatch(menu.renderColonizePreviewHTML(base), /harbour/);
+});

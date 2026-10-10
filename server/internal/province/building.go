@@ -27,12 +27,31 @@ var BuildingPurposes = map[BuildingType]string{
 	BuildingMarket:      "Enables trade offers and updates market price snapshots",
 	BuildingWall:        "Adds a wall tier (Palisade → Stone Wall → Bronze Wall) for combat defence",
 	BuildingHarbour:     "Works the settlement's coastal waters and enables sea trade",
-	BuildingShipyard:    "Builds and repairs ships (requires coastal — adjacent sea hex)",
+	BuildingShipyard:    "Builds and repairs ships",
 	BuildingFoundry:     "Smelts copper and tin into bronze",
 	BuildingStable:      "Enables war chariots",
 	BuildingTemple:      "Enables rites, produces cult, and unlocks oracle prayers",
 	BuildingOlivePress:  "Refines a press-worker's oil from the settlement's groves",
 	BuildingWinery:      "Refines a vintner's wine from the settlement's vines",
+}
+
+// The ONE harbour rule, told the same on every surface: a city may build a
+// harbour or a shipyard only if its own hex borders water (sea, river or ford)
+// — the same property as map_tiles.coastal. The check itself lives in
+// api/handlers/province.go (Build); these are only the words.
+const (
+	HarbourRuleInland  = "Inland: a city here can never build a harbour or ships — to reach the sea you will need a coastal colony."
+	HarbourRuleCoastal = "Coastal: a city here can build a harbour and ships."
+)
+
+// NeedsWaterNeighbour reports whether the harbour rule gates this building type.
+func NeedsWaterNeighbour(bt BuildingType) bool {
+	return bt == BuildingHarbour || bt == BuildingShipyard
+}
+
+// InlandBuildRefusal is the 422 text for a harbour/shipyard at a city that fails the rule.
+func InlandBuildRefusal(bt BuildingType) string {
+	return string(bt) + " requires a coastal, sea, river or river ford tile on an adjacent hex — this city is inland; found a colony on the coast to build ships."
 }
 
 // BuildingSpecs is the canonical catalogue of all constructable buildings.

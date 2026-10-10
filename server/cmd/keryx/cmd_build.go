@@ -119,7 +119,7 @@ func buildCmd() *cobra.Command {
 						reqs = append(reqs, "hex-bound — pick with --hex q,r")
 					}
 					if b.RequiresCoastal {
-						reqs = append(reqs, "coastal (adj sea)")
+						reqs = append(reqs, "coastal city (sea or river)")
 					}
 					for _, d := range b.RequiresDeposits {
 						reqs = append(reqs, d+" deposit")

@@ -165,6 +165,7 @@ export function renderColonizePreviewHTML(p) {
   const consTick = prodTick - netTick;
 
   let html = `<div style="color:var(--text-dim)">Catchment forecast — ${fmtNum(known)} of ${fmtNum(total)} hexes known</div>`;
+  if (p.harbour_note) html += `<div>${esc(p.harbour_note)}</div>`;
   html += `<div>Grain: produces about ${fmtNum(Math.round(prodTick))} and eats about ${fmtNum(Math.round(consTick))} per day = ` +
     `<b style="color:${netTick < 0 ? 'var(--accent)' : 'var(--safe)'}">net ${netTick >= 0 ? '+' : ''}${fmtNum(Math.round(netTick))} per day</b></div>`;
   if (netTick < 0) {
