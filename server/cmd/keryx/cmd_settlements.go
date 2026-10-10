@@ -40,8 +40,12 @@ func settlementsCmd() *cobra.Command {
 				state, _ := m["state"].(string)
 				// A razed/collapsed settlement is a ruin, not "foreign" — say so
 				// (owner_id is NULL on both, which otherwise falls through to foreign).
+				// Burning: razed this very tick and in live sight (the map's fire).
+				burning, _ := m["burning"].(bool)
 				rel := "foreign"
 				switch {
+				case burning:
+					rel = "burning"
 				case state == "razed" || state == "collapsed":
 					rel = state
 				case own:

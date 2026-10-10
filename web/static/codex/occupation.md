@@ -7,7 +7,8 @@ This is a deliberately contestable window. **Any new fighting resets the clock.*
 Hold it unchallenged long enough and you are told the city is ripe. Then you may:
 
 - **sack** it — loot it and weaken it; it stays theirs;
-- **burn** it — sack it, then raze it; nobody may resettle there for a long while;
+- **burn** it — sack it, then raze it; nobody may resettle there for a long while. The city burns
+  on the map for the rest of that day, for anyone who has eyes on it, and stands as a ruin after;
 - **annex** it — keep it as your own.
 
 Doing nothing leaves it occupied, which is the safe and reversible choice.
