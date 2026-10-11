@@ -106,6 +106,7 @@ func mapCmd() *cobra.Command {
 				Q             int    `json:"q"`
 				R             int    `json:"r"`
 				Terrain       string `json:"terrain"`
+				RiverName     string `json:"river_name,omitempty"`
 				Coastal       bool   `json:"coastal"`
 				Visible       bool   `json:"visible"`
 				Tier          string `json:"tier"`
@@ -137,6 +138,7 @@ func mapCmd() *cobra.Command {
 				Q             int    `json:"q"`
 				R             int    `json:"r"`
 				Terrain       string `json:"terrain"`
+				RiverName     string `json:"river_name,omitempty"`
 				Coastal       bool   `json:"coastal,omitempty"`
 				Distance      int    `json:"distance"`
 				Tier          string `json:"tier"`
@@ -168,7 +170,7 @@ func mapCmd() *cobra.Command {
 					tier = "live" // back-compat with servers predating the tier field
 				}
 				out = append(out, cand{
-					Q: t.Q, R: t.R, Terrain: t.Terrain, Coastal: t.Coastal, Distance: d, Tier: tier,
+					Q: t.Q, R: t.R, Terrain: t.Terrain, RiverName: t.RiverName, Coastal: t.Coastal, Distance: d, Tier: tier,
 					Occupied:      occupied[[2]int{t.Q, t.R}],
 					CopperDeposit: t.CopperDeposit, TinDeposit: t.TinDeposit,
 					CedarDeposit: t.CedarDeposit, SilverDeposit: t.SilverDeposit,
@@ -220,18 +222,18 @@ func mapCmd() *cobra.Command {
 				bearing := compassDirection(oq, or, t.Q, t.R)
 				if t.Terrain == "deep_sea" || t.Terrain == "coastal_sea" {
 					// Sea hexes: no deposit/occupied tags, just label
-					fmt.Printf("  (%3d,%3d) d%-2d %-3s %-20s[sea]%s\n", t.Q, t.R, t.Distance, bearing, t.Terrain, dim)
+					fmt.Printf("  (%3d,%3d) d%-2d %-3s %-20s[sea]%s\n", t.Q, t.R, t.Distance, bearing, namedRiverTerrain(t.Terrain, t.RiverName), dim)
 					continue
 				}
 				if t.Terrain == "river" {
 					// River: its own glyph — a wall for land units, a lane for ships.
-					fmt.Printf("  (%3d,%3d) d%-2d %-3s %-20s[river]%s\n", t.Q, t.R, t.Distance, bearing, t.Terrain, dim)
+					fmt.Printf("  (%3d,%3d) d%-2d %-3s %-20s[river]%s\n", t.Q, t.R, t.Distance, bearing, namedRiverTerrain(t.Terrain, t.RiverName), dim)
 					continue
 				}
 				if t.Terrain == "river_ford" {
 					// Ford: the river's port — crossable AND sailable, unlike plain
 					// river (megaron_plan_flodbudget_och_vadstalle.md).
-					fmt.Printf("  (%3d,%3d) d%-2d %-3s %-20s[ford]%s\n", t.Q, t.R, t.Distance, bearing, t.Terrain, dim)
+					fmt.Printf("  (%3d,%3d) d%-2d %-3s %-20s[ford]%s\n", t.Q, t.R, t.Distance, bearing, namedRiverTerrain(t.Terrain, t.RiverName), dim)
 					continue
 				}
 				tag := ""
@@ -260,7 +262,7 @@ func mapCmd() *cobra.Command {
 						}
 					}
 				}
-				fmt.Printf("  (%3d,%3d) d%-2d %-3s %-20s%s%s%s%s\n", t.Q, t.R, t.Distance, bearing, t.Terrain, dep, coastTag, tag, dim)
+				fmt.Printf("  (%3d,%3d) d%-2d %-3s %-20s%s%s%s%s\n", t.Q, t.R, t.Distance, bearing, namedRiverTerrain(t.Terrain, t.RiverName), dep, coastTag, tag, dim)
 			}
 			if len(frontier) > 0 {
 				fmt.Printf("\nFrontier — unexplored hexes bordering the known world (%d, nearest first):\n", len(frontier))

@@ -1,0 +1,53 @@
+TAP version 13
+# Subtest: L actual inspect: owner and qualitative defence replace Culture/Walls/DP, actions keep IDs
+ok 1 - L actual inspect: owner and qualitative defence replace Culture/Walls/DP, actions keep IDs
+  ---
+  duration_ms: 17.714075
+  type: 'test'
+  ...
+# Subtest: L actual inspect: fog never exposes marker/army and late army reply cannot update a different panel
+ok 2 - L actual inspect: fog never exposes marker/army and late army reply cannot update a different panel
+  ---
+  duration_ms: 1.114149
+  type: 'test'
+  ...
+# Subtest: L actual Host: food and escort pay durations use exact days in words, never wall time
+ok 3 - L actual Host: food and escort pay durations use exact days in words, never wall time
+  ---
+  duration_ms: 10.122046
+  type: 'test'
+  ...
+# Subtest: actual hex panel uses server river names and never exposes a fog name
+not ok 4 - actual hex panel uses server river names and never exposes a fog name
+  ---
+  duration_ms: 1.00376
+  type: 'test'
+  location: '/home/tk/wt/codex-flodnamn/web/static/js/megaron/render/inspect_simple.test.mjs:65:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+
+    + 'River'
+    - 'River Alpheios'
+            ^
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'River Alpheios'
+  actual: 'River'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-flodnamn/web/static/js/megaron/render/inspect_simple.test.mjs:68:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 3
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 89.493541

@@ -246,7 +246,7 @@ func printHexGoodRow(opts *placementOptionsResp, ordinal int, roll string) {
 		}
 		for _, g := range h.Goods {
 			if g.GoodKey == roll {
-				fmt.Printf("  #%-3d %-14s %s\n", h.HexOrdinal, h.Terrain, goodCell(g))
+				fmt.Printf("  #%-3d %-14s %s\n", h.HexOrdinal, namedRiverTerrain(h.Terrain, h.RiverName), goodCell(g))
 			}
 		}
 	}

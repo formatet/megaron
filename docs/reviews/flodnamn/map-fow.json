@@ -1,0 +1,164 @@
+{
+  "tiles": [
+    {
+      "fertility": 0.5,
+      "mineral": 0.5,
+      "q": 0,
+      "r": 0,
+      "river_name": "Eurotas",
+      "terrain": "river",
+      "tier": "live",
+      "visible": true
+    },
+    {
+      "fertility": 0.5,
+      "mineral": 0.5,
+      "q": 1,
+      "r": 0,
+      "river_name": "Eurotas",
+      "terrain": "river",
+      "tier": "live",
+      "visible": true
+    },
+    {
+      "fertility": 0.5,
+      "mineral": 0.5,
+      "q": 2,
+      "r": 0,
+      "river_name": "Eurotas",
+      "terrain": "river",
+      "tier": "live",
+      "visible": true
+    },
+    {
+      "fertility": 0.5,
+      "mineral": 0.5,
+      "q": 3,
+      "r": 0,
+      "river_name": "Eurotas",
+      "terrain": "river_ford",
+      "tier": "remembered",
+      "visible": true
+    },
+    {
+      "frontier": true,
+      "q": 4,
+      "r": 0,
+      "terrain": "fog",
+      "tier": "fog",
+      "visible": false
+    },
+    {
+      "q": 5,
+      "r": 0,
+      "terrain": "fog",
+      "tier": "fog",
+      "visible": false
+    },
+    {
+      "q": 6,
+      "r": 0,
+      "terrain": "fog",
+      "tier": "fog",
+      "visible": false
+    },
+    {
+      "frontier": true,
+      "q": 7,
+      "r": 0,
+      "terrain": "fog",
+      "tier": "fog",
+      "visible": false
+    },
+    {
+      "fertility": 0.5,
+      "mineral": 0.5,
+      "q": 8,
+      "r": 0,
+      "river_name": "Eurotas",
+      "terrain": "river",
+      "tier": "remembered",
+      "visible": true
+    },
+    {
+      "frontier": true,
+      "q": 9,
+      "r": 0,
+      "terrain": "fog",
+      "tier": "fog",
+      "visible": false
+    },
+    {
+      "q": 10,
+      "r": 0,
+      "terrain": "fog",
+      "tier": "fog",
+      "visible": false
+    },
+    {
+      "q": 11,
+      "r": 0,
+      "terrain": "fog",
+      "tier": "fog",
+      "visible": false
+    },
+    {
+      "q": 12,
+      "r": 0,
+      "terrain": "fog",
+      "tier": "fog",
+      "visible": false
+    },
+    {
+      "q": 13,
+      "r": 0,
+      "terrain": "fog",
+      "tier": "fog",
+      "visible": false
+    },
+    {
+      "q": 14,
+      "r": 0,
+      "terrain": "fog",
+      "tier": "fog",
+      "visible": false
+    },
+    {
+      "frontier": true,
+      "q": 15,
+      "r": 0,
+      "terrain": "fog",
+      "tier": "fog",
+      "visible": false
+    },
+    {
+      "fertility": 0.5,
+      "mineral": 0.5,
+      "q": 16,
+      "r": 0,
+      "river_name": "Eurotas",
+      "terrain": "river_delta",
+      "tier": "remembered",
+      "visible": true
+    },
+    {
+      "frontier": true,
+      "q": 17,
+      "r": 0,
+      "terrain": "fog",
+      "tier": "fog",
+      "visible": false
+    },
+    {
+      "fertility": 0.5,
+      "mineral": 0.5,
+      "q": 18,
+      "r": 0,
+      "river_name": "Eurotas",
+      "terrain": "river_delta",
+      "tier": "remembered",
+      "visible": true
+    }
+  ],
+  "world_id": "c129a488-15c1-445f-b061-2302d3adfc47"
+}

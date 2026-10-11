@@ -421,3 +421,12 @@ närbilder och determinism/inneslutningsdiff mot `0d149589`. Servera `web/` på 
 `python3 tools/markraster_flod_mutation.py` återinför tre produktionsfel och kräver rött,
 sedan byte-identisk återställning och grönt. Bevis och avgränsningar:
 [`docs/reviews/markraster-flod/README.md`](../docs/reviews/markraster-flod/README.md).
+
+## Flodnamn
+
+`python3 tools/flodnamn_browser.py` (Firefox först, sedan Chromium/WebKit, 1280/390)
+kontrollerar riktiga panelklick och mäter flodetiketter mot stadsnamn. `--baseline`
+serverar basens `map.js` via route. `python3 tools/flodnamn_mutation.py` återinför sju
+produktionsfel och återställer varje fil byte-identiskt. API-fixturen skapas av
+`tools/gotest.sh ./api/handlers/ -run TestMapRiverNamesFOW -args -river-proof-dir=<absolut katalog>`.
+Kontrakt, bildlänkar och begränsningar: [flodnamnsrapporten](../docs/reviews/flodnamn/README.md).

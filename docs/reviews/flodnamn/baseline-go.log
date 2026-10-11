@@ -1,0 +1,9 @@
+» färsk DB på migration 171 · commit f57eb4b0
+ok  	formatet/megaron/server/internal/world	95.798s
+# formatet/megaron/server/api/handlers [formatet/megaron/server/api/handlers.test]
+api/handlers/world.go:394:17: undefined: world.RiverNames
+# formatet/megaron/server/internal/world
+vet: internal/world/mapgen.go:3594:24: undefined: riverComponents
+FAIL	formatet/megaron/server/api/handlers [build failed]
+ok  	formatet/megaron/server/cmd/keryx	0.099s
+FAIL

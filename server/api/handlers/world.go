@@ -338,6 +338,7 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type tileView struct {
+		RiverName     string  `json:"river_name,omitempty"`
 		Q             int     `json:"q"`
 		R             int     `json:"r"`
 		Terrain       string  `json:"terrain"`
@@ -352,6 +353,7 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 		CedarDeposit  bool    `json:"cedar_deposit,omitempty"`
 		SilverDeposit bool    `json:"silver_deposit,omitempty"`
 	}
+	var fullMap []world.MapTile
 	var tiles []tileView
 	tierByPos := map[[2]int]string{}
 	var liveTiles []province.MapPosition
@@ -361,6 +363,7 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 			&t.CedarDeposit, &t.SilverDeposit); err != nil {
 			continue
 		}
+		fullMap = append(fullMap, world.MapTile{Q: t.Q, R: t.R, Terrain: world.Terrain(t.Terrain)})
 		pos := province.MapPosition{Q: t.Q, R: t.R}
 		switch {
 		case !authenticated:
@@ -386,6 +389,13 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 		}
 		tierByPos[[2]int{t.Q, t.R}] = t.Tier
 		tiles = append(tiles, t)
+	}
+
+	names := world.RiverNames(worldID.String(), fullMap)
+	for i := range tiles {
+		if tiles[i].Visible {
+			tiles[i].RiverName = names[[2]int{tiles[i].Q, tiles[i].R}]
+		}
 	}
 
 	// Frontier: a fog tile adjacent to a known (live or remembered) tile — the edge
