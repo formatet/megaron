@@ -1,0 +1,20 @@
+--- FAIL: TestNotificationHumanFeedGroupingAndJSON (0.00s)
+    notification_kinds_test.go:381: missing "×2 (latest)": 4 notification(s), 4 unread
+        ────────────────────────────────────────────────────────────
+        *[]  SubsistenceWarning [CRITICAL]
+              Tiryns is STARVING — 3 citizens lost. Grain net -2 per day.
+        *[]  UnitArrived
+              Bronze Guard arrived at (6, 7) — positioned
+        *[]  SitosIntervention  ×2 (latest: {"secret":"machine-only"})
+              Food support was given to the city
+    notification_kinds_test.go:388: human feed leaked JSON: 4 notification(s), 4 unread
+        ────────────────────────────────────────────────────────────
+        *[]  SubsistenceWarning [CRITICAL]
+              Tiryns is STARVING — 3 citizens lost. Grain net -2 per day.
+        *[]  UnitArrived
+              Bronze Guard arrived at (6, 7) — positioned
+        *[]  SitosIntervention  ×2 (latest: {"secret":"machine-only"})
+              Food support was given to the city
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

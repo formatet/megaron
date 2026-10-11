@@ -1,0 +1,85 @@
+--- FAIL: TestEveryNotificationKindHasReadableDetail (0.14s)
+    notification_kinds_test.go:293: Known notification kinds: 78
+    notification_kinds_test.go:293: ArmyArrival: Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: BattleLost: ../../internal/combat/battle.go#notifyBattleEnded, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: BattleWon: ../../internal/combat/battle.go#notifyBattleEnded, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: BuildComplete: ../../internal/combat/build.go#Handle, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: CaravanRaided: ../../internal/notify/hub.go#NotifyPlayer, ../../internal/transport/intercept.go#seize, Codex/client text
+    notification_kinds_test.go:293: CaravanSeized: ../../internal/notify/hub.go#NotifyPlayer, ../../internal/transport/intercept.go#seize, Codex/client text
+    notification_kinds_test.go:293: CityAnnexReady: ../../internal/combat/occupation_check.go#Handle, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: CityCollapsed: ../../internal/combat/collapse.go#collapseSettlement, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: CityOccupied: ../../internal/combat/occupation.go#occupySettlement, ../../internal/combat/occupation.go#occupySettlement, ../../internal/combat/siege_capitulation.go#Handle, ../../internal/combat/siege_capitulation.go#Handle, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: ColonyFounded: ../../internal/combat/unit_arrival.go#foundColony, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: DivineBlessing: ../../internal/kharis/tick.go#applyDivineBlessing, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: DivinePunishment: ../../internal/kharis/tick.go#applyDivinePunishment, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ExpeditionReport: ../../internal/combat/expedition_outcomes.go#expeditionOutcome, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ExpeditionTurnedHome: ../../internal/combat/expedition_outcomes.go#expeditionOutcome, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: FoodShortfall: ../../internal/economy/food_tick.go#tickSettlement, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ForeignMarchSighted: Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ForeignMarchSightedV2: ../../internal/combat/march_sighting.go#notifySighting, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: GiftDelivered: ../../internal/economy/gift.go#HandleGift, ../../internal/economy/trade.go#deliverTradeNotice, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: GiftLost: ../../internal/economy/gift.go#HandleGift, ../../internal/economy/trade.go#deliverTradeNotice, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: GoodsCrafted: Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: HexBlockaded: ../../internal/economy/hex_blockade.go#SyncHexBlockade#dispatch, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: HexTaken: ../../internal/economy/hex_take.go#DispatchHexTaken, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: HexUnblockaded: ../../internal/economy/hex_blockade.go#SyncHexBlockade#dispatch, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: MarchStalled: ../../internal/combat/unit_arrival.go#NotifyDeadLetter, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: MessengerArrival: ../../internal/messenger/handler.go#notifyDelivered, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: MessengerLostAtSea: ../../internal/messenger/carrier_fate.go#applyCarrierWitness, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: MessengerRescuedAtSea: ../../internal/messenger/carrier_fate.go#persistRescueReport, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: MessengerReturned: ../../internal/messenger/handler.go#notifyReturned, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: MetropolisFounded: ../../api/handlers/found_metropolis.go#Settle, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: OccupationDefended: ../../internal/combat/occupation.go#resetOccupationDefense, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: OfferAccepted: ../../api/handlers/messenger.go#TradeAccept, ../../api/handlers/messenger.go#TradeAccept, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: OfferDeclined: ../../api/handlers/messenger.go#TradeDecline, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: OfferExpired: ../../internal/economy/trade.go#Handle, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: OrderFailed: ../../internal/messenger/order_delivery.go#NotifyDeadLetter, ../../internal/messenger/order_delivery.go#notifyOrderFailed, ../../internal/messenger/order_delivery_failure.go#failSingleRecall, ../../internal/messenger/passage.go#sealLostCarrier, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: OutpostCaptured: Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: OutpostEstablished: Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: PassageStalled: ../../internal/messenger/passage.go#notifyStalledOne, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: PickupTimedOut: ../../internal/combat/unit_arrival.go#HandlePickupTimeout, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: PickupWaiting: ../../internal/combat/unit_arrival.go#pickupArrived, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ScoutReport: ../../internal/combat/unit_arrival.go#reportScoutFindings, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: SentryAlerted: ../../internal/combat/unit_intercept_scan.go#intercept, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: SettlementBurned: ../../internal/combat/occupation.go#executeSack, ../../internal/combat/occupation.go#executeSack, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: SettlementCaptured: ../../internal/combat/occupation.go#executeAnnex, ../../internal/combat/occupation.go#executeAnnex, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: SettlementDefended: Codex/client text
+    notification_kinds_test.go:293: SettlementLooted: ../../internal/combat/occupation.go#executeSack, ../../internal/combat/occupation.go#executeSack, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: SettlementSacked: Codex/client text
+    notification_kinds_test.go:293: ShipCaptured: ../../internal/combat/naval_seizure.go#Handle, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ShipDamaged: ../../internal/combat/ship_hull.go#notifyShipDamaged, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ShipFoundered: ../../internal/combat/sea_storm.go#sail, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ShipLost: ../../internal/combat/naval_seizure.go#Handle, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ShipRepaired: ../../internal/combat/ship_repair.go#Handle, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ShipStormDamaged: ../../internal/combat/sea_storm.go#sail, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ShipStranded: ../../internal/notify/hub.go#NotifyPlayer, ../../internal/transport/arrival.go#releaseArrivedShip, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ShipSweptFromSea: ../../internal/combat/unit_arrival.go#dispatchReturnHome, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: SiegeLifted: ../../internal/economy/siege_dispatch.go#SyncSiegeState, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: SiegeStarted: ../../internal/economy/siege_dispatch.go#SyncSiegeState, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: SitosFundLow: Codex/client text
+    notification_kinds_test.go:293: SitosGranaryRelease: ../../internal/economy/sitos_tick.go#tickSettlement, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: SitosIntervention: Codex/client text
+    notification_kinds_test.go:293: StandingOrderDispatched: ../../internal/combat/standing_orders.go#notifyDispatch, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: StandingOrderPaused: ../../internal/combat/standing_orders.go#pauseOrder, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: SubsistenceWarning: ../../internal/kharis/tick.go#emitSubsistenceWarning, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: TradeDelivery: ../../internal/economy/trade.go#persistTradeNotice, ../../internal/economy/trade.go#deliverTradeNotice, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: TradeLost: Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: TradeReturn: ../../internal/economy/trade.go#persistTradeNotice, ../../internal/economy/trade.go#deliverTradeNotice, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: TrainComplete: ../../internal/combat/train.go#Handle, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: TransferDelivered: ../../internal/notify/hub.go#NotifyPlayer, ../../internal/transport/arrival.go#Handle, Codex/client text
+    notification_kinds_test.go:293: UnitArrived: ../../internal/combat/expedition_outcomes.go#expeditionOutcome, ../../internal/combat/expedition_outcomes.go#expeditionOutcome, ../../internal/combat/unit_arrival.go#arriveGarrison, ../../internal/combat/unit_arrival.go#landArrived, ../../internal/combat/unit_arrival.go#landArrived, ../../internal/combat/unit_arrival.go#notifyLandColonizeFailed, ../../internal/combat/unit_arrival.go#passageArrived, ../../internal/combat/unit_arrival.go#pickupReturned, ../../internal/combat/unit_arrival.go#pickupReturned, ../../internal/combat/unit_arrival.go#exploreReturned, ../../internal/combat/unit_arrival.go#damagedShipReturned, ../../internal/combat/unit_arrival.go#sentryArrived, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: UnitAttrition: ../../internal/combat/upkeep.go#notifyUnitLoss, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: UnitDeserted: ../../internal/combat/upkeep.go#notifyUnitLoss, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: UnitExploreReturned: ../../internal/combat/unit_arrival.go#dispatchReturnHome, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: UnitFetched: ../../internal/combat/unit_arrival.go#boardPickupUnit, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: UnitLostAtSea: ../../internal/combat/upkeep.go#cascadeCargoDisband, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: UnitRecalled: ../../internal/messenger/order_delivery.go#Handle, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: UnitRedirected: ../../internal/messenger/order_delivery.go#Handle, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: UnitReturnedStarving: ../../internal/combat/unit_arrival.go#dispatchReturnHome, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: UpkeepUnpaid: ../../internal/combat/upkeep.go#notifyUpkeepUnpaid, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: agora_ready: ../../cmd/server/agora.go#ready, Codex/client icons, Codex/client text
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/TrainComplete (0.00s)
+        notification_kinds_test.go:322: notification kind TrainComplete has no readable detail
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.144s
+FAIL

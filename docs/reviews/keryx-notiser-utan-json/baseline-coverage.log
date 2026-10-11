@@ -1,0 +1,88 @@
+--- FAIL: TestEveryNotificationKindHasReadableDetail (0.15s)
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/ArmyArrival (0.00s)
+        notification_kinds_test.go:260: notification kind ArmyArrival has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/BuildComplete (0.00s)
+        notification_kinds_test.go:260: notification kind BuildComplete has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/CityCollapsed (0.00s)
+        notification_kinds_test.go:260: notification kind CityCollapsed has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/GoodsCrafted (0.00s)
+        notification_kinds_test.go:260: notification kind GoodsCrafted has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/HexBlockaded (0.00s)
+        notification_kinds_test.go:260: notification kind HexBlockaded has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/HexUnblockaded (0.00s)
+        notification_kinds_test.go:260: notification kind HexUnblockaded has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/MarchStalled (0.00s)
+        notification_kinds_test.go:260: notification kind MarchStalled has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/MetropolisFounded (0.00s)
+        notification_kinds_test.go:260: notification kind MetropolisFounded has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/OfferAccepted (0.00s)
+        notification_kinds_test.go:260: notification kind OfferAccepted has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/OfferDeclined (0.00s)
+        notification_kinds_test.go:260: notification kind OfferDeclined has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/OfferExpired (0.00s)
+        notification_kinds_test.go:260: notification kind OfferExpired has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/OrderFailed (0.00s)
+        notification_kinds_test.go:260: notification kind OrderFailed has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/OutpostCaptured (0.00s)
+        notification_kinds_test.go:260: notification kind OutpostCaptured has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/OutpostEstablished (0.00s)
+        notification_kinds_test.go:260: notification kind OutpostEstablished has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/PickupTimedOut (0.00s)
+        notification_kinds_test.go:260: notification kind PickupTimedOut has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/PickupWaiting (0.00s)
+        notification_kinds_test.go:260: notification kind PickupWaiting has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/SentryAlerted (0.00s)
+        notification_kinds_test.go:260: notification kind SentryAlerted has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/SettlementCaptured (0.00s)
+        notification_kinds_test.go:260: notification kind SettlementCaptured has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/SettlementDefended (0.00s)
+        notification_kinds_test.go:260: notification kind SettlementDefended has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/SettlementSacked (0.00s)
+        notification_kinds_test.go:260: notification kind SettlementSacked has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/ShipCaptured (0.00s)
+        notification_kinds_test.go:260: notification kind ShipCaptured has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/ShipLost (0.00s)
+        notification_kinds_test.go:260: notification kind ShipLost has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/ShipStranded (0.00s)
+        notification_kinds_test.go:260: notification kind ShipStranded has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/ShipSweptFromSea (0.00s)
+        notification_kinds_test.go:260: notification kind ShipSweptFromSea has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/SitosFundLow (0.00s)
+        notification_kinds_test.go:260: notification kind SitosFundLow has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/SitosGranaryRelease (0.01s)
+        notification_kinds_test.go:260: notification kind SitosGranaryRelease has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/SitosIntervention (0.00s)
+        notification_kinds_test.go:260: notification kind SitosIntervention has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/StandingOrderDispatched (0.00s)
+        notification_kinds_test.go:260: notification kind StandingOrderDispatched has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/StandingOrderPaused (0.00s)
+        notification_kinds_test.go:260: notification kind StandingOrderPaused has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/SubsistenceWarning (0.00s)
+        notification_kinds_test.go:260: notification kind SubsistenceWarning has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/TradeDelivery (0.00s)
+        notification_kinds_test.go:260: notification kind TradeDelivery has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/TradeLost (0.00s)
+        notification_kinds_test.go:260: notification kind TradeLost has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/TradeReturn (0.00s)
+        notification_kinds_test.go:260: notification kind TradeReturn has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/TrainComplete (0.00s)
+        notification_kinds_test.go:260: notification kind TrainComplete has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/TransferDelivered (0.00s)
+        notification_kinds_test.go:260: notification kind TransferDelivered has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/UnitArrived (0.00s)
+        notification_kinds_test.go:260: notification kind UnitArrived has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/UnitAttrition (0.00s)
+        notification_kinds_test.go:260: notification kind UnitAttrition has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/UnitDeserted (0.00s)
+        notification_kinds_test.go:260: notification kind UnitDeserted has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/UnitFetched (0.00s)
+        notification_kinds_test.go:260: notification kind UnitFetched has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/UnitLostAtSea (0.00s)
+        notification_kinds_test.go:260: notification kind UnitLostAtSea has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/UnitRecalled (0.00s)
+        notification_kinds_test.go:260: notification kind UnitRecalled has no readable detail
+    --- FAIL: TestEveryNotificationKindHasReadableDetail/UnitRedirected (0.00s)
+        notification_kinds_test.go:260: notification kind UnitRedirected has no readable detail
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.155s
+FAIL
