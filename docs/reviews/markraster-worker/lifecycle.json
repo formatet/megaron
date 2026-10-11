@@ -1,0 +1,84 @@
+{
+  "firefox": {
+    "worker": {
+      "stats": {
+        "chunks": 25,
+        "bakeMs": 486,
+        "pending": 0,
+        "mode": "worker"
+      },
+      "errors": []
+    },
+    "no-offscreen": {
+      "stats": {
+        "chunks": 34,
+        "bakeMs": 731,
+        "pending": 0,
+        "mode": "budget"
+      },
+      "errors": [],
+      "changed_pixels_vs_worker": 0
+    },
+    "constructor-failure": {
+      "stats": {
+        "chunks": 34,
+        "bakeMs": 759,
+        "pending": 0,
+        "mode": "budget"
+      },
+      "errors": [],
+      "changed_pixels_vs_worker": 0
+    },
+    "runtime-failure": {
+      "stats": {
+        "chunks": 25,
+        "bakeMs": 524,
+        "pending": 0,
+        "mode": "budget"
+      },
+      "errors": [],
+      "changed_pixels_vs_worker": 0
+    }
+  },
+  "chromium": {
+    "worker": {
+      "stats": {
+        "chunks": 25,
+        "bakeMs": 364.1999998688698,
+        "pending": 0,
+        "mode": "worker"
+      },
+      "errors": []
+    },
+    "no-offscreen": {
+      "stats": {
+        "chunks": 34,
+        "bakeMs": 532.0000001192093,
+        "pending": 0,
+        "mode": "budget"
+      },
+      "errors": [],
+      "changed_pixels_vs_worker": 0
+    },
+    "constructor-failure": {
+      "stats": {
+        "chunks": 34,
+        "bakeMs": 587.4000000953674,
+        "pending": 0,
+        "mode": "budget"
+      },
+      "errors": [],
+      "changed_pixels_vs_worker": 0
+    },
+    "runtime-failure": {
+      "stats": {
+        "chunks": 25,
+        "bakeMs": 411.1000002026558,
+        "pending": 0,
+        "mode": "budget"
+      },
+      "errors": [],
+      "changed_pixels_vs_worker": 0
+    }
+  }
+}

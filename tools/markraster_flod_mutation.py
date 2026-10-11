@@ -2,12 +2,16 @@
 """Reintroduce each ground exemption and the old river endpoint; always restore."""
 from pathlib import Path
 import subprocess
-p = Path('web/static/js/megaron/render/map.js')
-out = Path('docs/reviews/markraster-flod')
+import argparse
+p = Path('web/static/js/megaron/render/markraster.js')
+parser = argparse.ArgumentParser()
+parser.add_argument('--out', default='docs/reviews/markraster-flod')
+out = Path(parser.parse_args().out)
+out.mkdir(parents=True, exist_ok=True)
 original = p.read_bytes()
 s = original.decode()
 mutations = {
-    'exact-ground': ('  const [eq, er] = hexAtWorld(wx, wy);\n  const [dx, dy]', '  const [eq, er] = hexAtWorld(wx, wy);\n  if (isRiverTerrain(terrainAt(eq, er))) return [eq, er];\n  const [dx, dy]'),
+    'exact-ground': ('  const [eq, er] = hexAtWorld(wx, wy);\n    const [dx, dy]', '  const [eq, er] = hexAtWorld(wx, wy);\n    if (isRiverTerrain(terrainAt(eq, er))) return [eq, er];\n    const [dx, dy]'),
     'warped-ground': ('  if (t === undefined) return [eq, er];', '  if (t === undefined || isRiverTerrain(t)) return [eq, er];'),
     'mouth': ('    const p0 = [nx * reach, ny * reach]', '    const p0 = [nx * R_IN, ny * R_IN]'),
 }

@@ -1,0 +1,26 @@
+{
+  "base": "547fd79ec7c236c31c14bdc68cf3ca2dc7b2abed",
+  "date": "2026-10-11T19:45:22+02:00",
+  "node": "v22.23.2",
+  "fixtures": {
+    "web/static/fixtures/world-fow.json": "0c13980d43e26226dbe200b4ada74737e01a84ef2ed18367d5c2b96420654ee9",
+    "web/static/fixtures/world-full.json": "89e15bb3b27073a09efd61136d5e579ad36f72fe0e892abb672db7ea672a78db",
+    "web/static/fixtures/world-stor230.json": "a79ab7f7d9afcbee64932cf09552b82ee0a75c7fe727dcbb6fe9c6d5a9d613d4",
+    "web/static/showcase-units.html": "1812574d3ee526b02a07e4db697e4f2bd647c97013a319ef08712c3dc83eb0a7",
+    "web/static/showcase-forest.html": "51323add8ff425d938ce872c2c82d3b6271b7844fefa51845fa9a3761e19c774",
+    "web/static/showcase-cities.html": "bfcba1f38c37b4e2296d0fee809501cea37461f3dfcd283c920e807a763b9410",
+    "web/static/showcase-glyphs.html": "65bf5f3231d95df8a6be16a610cfbd6cf6da9a7a75bb471065ed1e68d15b07ce",
+    "web/static/showcase-cityview.html": "b6cb96d0181626e6f08f22f22d39070686e57a4e104ed7949719e40a1bde6f0e",
+    "web/static/showcase-world.html": "05891e7dbd5575ae614d4d82876079e3b0feb601758d0db6c1f283f2f3b0a043"
+  },
+  "production_sha256": {
+    "web/static/js/megaron/render/markraster.js": "ff920fe857feb74a041e45e9e5116acc69d15892ddbc7b4d3ea5dd3579740d31",
+    "web/static/js/megaron/render/markraster_worker.js": "14aa7bb946aebaf90c24af357692160fe84214413bca26e57d7c1fb5a046bf49",
+    "web/static/js/megaron/render/chunk_worker.js": "189dd91bf9f233e237c51e25470be5b46910842a68b94ab68fd49a5d5252fa05",
+    "web/static/js/megaron/render/map.js": "ed53d466f9a7c0802c7b03bc84b1855711d2f37205cef4d720079898b7999a66"
+  },
+  "browsers": {
+    "firefox": "146.0.1",
+    "chromium": "145.0.7632.6"
+  }
+}

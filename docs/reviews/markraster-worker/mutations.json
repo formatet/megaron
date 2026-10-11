@@ -1,0 +1,8 @@
+{
+  "stale-scene": "not ok 2 - late river/FOW/world result is discarded and both transferred bitmaps are closed",
+  "camera-priority": "not ok 1 - worker queue keeps only one bake in flight and replaces obsolete camera priorities",
+  "release-bitmaps": "not ok 2 - late river/FOW/world result is discarded and both transferred bitmaps are closed",
+  "worker-disabled": "RED: supported browser must bake in worker (got budget)",
+  "pixel-rule": "RED: bitidentical forest pixel contract (73074 changed pixels)",
+  "restore": "all edited production files restored byte-identically; targeted green"
+}

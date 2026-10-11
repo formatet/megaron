@@ -1,0 +1,168 @@
+{
+  "base": "547fd79e",
+  "mode": "after",
+  "engines": {
+    "firefox": {
+      "world": {
+        "first_view_max_render_block_ms": 47,
+        "first_view_max_timer_lateness_ms": 51,
+        "chunks": {
+          "chunks": 54,
+          "bakeMs": 1502,
+          "pending": 0,
+          "mode": "worker"
+        },
+        "changed_pixels": 0,
+        "zoom_out_max_render_block_ms": 43,
+        "zoom_out_max_timer_lateness_ms": 41
+      },
+      "forest": {
+        "first_view_max_render_block_ms": 16,
+        "first_view_max_timer_lateness_ms": 30,
+        "chunks": {
+          "chunks": 25,
+          "bakeMs": 438,
+          "pending": 0,
+          "mode": "worker"
+        },
+        "changed_pixels": 0
+      },
+      "relief": {
+        "first_view_max_render_block_ms": 17,
+        "first_view_max_timer_lateness_ms": 19,
+        "chunks": {
+          "chunks": 25,
+          "bakeMs": 435,
+          "pending": 0,
+          "mode": "worker"
+        },
+        "changed_pixels": 0
+      },
+      "cities": {
+        "first_view_max_render_block_ms": 21,
+        "first_view_max_timer_lateness_ms": 26,
+        "chunks": {
+          "chunks": 25,
+          "bakeMs": 462,
+          "pending": 0,
+          "mode": "worker"
+        },
+        "changed_pixels": 0
+      },
+      "river": {
+        "first_view_max_render_block_ms": 11,
+        "first_view_max_timer_lateness_ms": 16,
+        "chunks": {
+          "chunks": 25,
+          "bakeMs": 476,
+          "pending": 0,
+          "mode": "worker"
+        },
+        "changed_pixels": 0
+      },
+      "world-min": {
+        "first_view_max_render_block_ms": 76,
+        "first_view_max_timer_lateness_ms": 75,
+        "chunks": {
+          "chunks": 104,
+          "bakeMs": 2335,
+          "pending": 0,
+          "mode": "worker"
+        },
+        "changed_pixels": 0
+      },
+      "world-fow": {
+        "first_view_max_render_block_ms": 22,
+        "first_view_max_timer_lateness_ms": 23,
+        "chunks": {
+          "chunks": 54,
+          "bakeMs": 1110,
+          "pending": 0,
+          "mode": "worker"
+        },
+        "changed_pixels": 0
+      }
+    },
+    "chromium": {
+      "world": {
+        "first_view_max_render_block_ms": 51,
+        "first_view_max_timer_lateness_ms": 55.19999998807907,
+        "chunks": {
+          "chunks": 54,
+          "bakeMs": 1062.2999997735023,
+          "pending": 0,
+          "mode": "worker"
+        },
+        "changed_pixels": 0,
+        "zoom_out_max_render_block_ms": 42.5,
+        "zoom_out_max_timer_lateness_ms": 40.69999998807907
+      },
+      "forest": {
+        "first_view_max_render_block_ms": 16.100000023841858,
+        "first_view_max_timer_lateness_ms": 25.80000001192093,
+        "chunks": {
+          "chunks": 25,
+          "bakeMs": 372.3000000715256,
+          "pending": 0,
+          "mode": "worker"
+        },
+        "changed_pixels": 0
+      },
+      "relief": {
+        "first_view_max_render_block_ms": 14.5,
+        "first_view_max_timer_lateness_ms": 26,
+        "chunks": {
+          "chunks": 25,
+          "bakeMs": 330,
+          "pending": 0,
+          "mode": "worker"
+        },
+        "changed_pixels": 0
+      },
+      "cities": {
+        "first_view_max_render_block_ms": 16.19999998807907,
+        "first_view_max_timer_lateness_ms": 27.899999976158142,
+        "chunks": {
+          "chunks": 25,
+          "bakeMs": 352.2000000476837,
+          "pending": 0,
+          "mode": "worker"
+        },
+        "changed_pixels": 0
+      },
+      "river": {
+        "first_view_max_render_block_ms": 10.5,
+        "first_view_max_timer_lateness_ms": 19.099999964237213,
+        "chunks": {
+          "chunks": 25,
+          "bakeMs": 411.39999973773956,
+          "pending": 0,
+          "mode": "worker"
+        },
+        "changed_pixels": 0
+      },
+      "world-min": {
+        "first_view_max_render_block_ms": 68.39999997615814,
+        "first_view_max_timer_lateness_ms": 70.5,
+        "chunks": {
+          "chunks": 104,
+          "bakeMs": 1574.9999992251396,
+          "pending": 0,
+          "mode": "worker"
+        },
+        "changed_pixels": 0
+      },
+      "world-fow": {
+        "first_view_max_render_block_ms": 21.599999964237213,
+        "first_view_max_timer_lateness_ms": 24,
+        "chunks": {
+          "chunks": 54,
+          "bakeMs": 769.5999997854233,
+          "pending": 0,
+          "mode": "worker"
+        },
+        "changed_pixels": 0
+      }
+    }
+  }
+}

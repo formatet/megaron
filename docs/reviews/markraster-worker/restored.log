@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: worker queue keeps only one bake in flight and replaces obsolete camera priorities
+ok 1 - worker queue keeps only one bake in flight and replaces obsolete camera priorities
+  ---
+  duration_ms: 1.114431
+  type: 'test'
+  ...
+# Subtest: late river/FOW/world result is discarded and both transferred bitmaps are closed
+ok 2 - late river/FOW/world result is discarded and both transferred bitmaps are closed
+  ---
+  duration_ms: 0.175434
+  type: 'test'
+  ...
+# Subtest: worker failure terminates the queue and invokes the synchronous fallback once
+ok 3 - worker failure terminates the queue and invokes the synchronous fallback once
+  ---
+  duration_ms: 0.596695
+  type: 'test'
+  ...
+# Subtest: constructor failure allows immediate synchronous fallback
+ok 4 - constructor failure allows immediate synchronous fallback
+  ---
+  duration_ms: 0.086419
+  type: 'test'
+  ...
+# Subtest: terrain renderer has independent scene caches and needs no DOM or global game State
+ok 5 - terrain renderer has independent scene caches and needs no DOM or global game State
+  ---
+  duration_ms: 0.554525
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 40.232831
