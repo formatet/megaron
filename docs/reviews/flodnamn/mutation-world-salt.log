@@ -1,0 +1,5 @@
+--- FAIL: TestRiverNamesDeterministicAcrossProcesses (0.00s)
+    river_names_test.go:44: world ID must salt names
+FAIL
+FAIL	formatet/megaron/server/internal/world	0.004s
+FAIL

@@ -38,6 +38,7 @@ type placementValidHex struct {
 }
 
 type placementHex struct {
+	RiverName  string                `json:"river_name,omitempty"`
 	HexQ       int                   `json:"hex_q"`
 	HexR       int                   `json:"hex_r"`
 	HexOrdinal int                   `json:"hex_ordinal"`

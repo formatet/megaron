@@ -1,0 +1,18 @@
+--- FAIL: TestKeryxRiverNamesMap (0.00s)
+    river_names_test.go:45: missing River Alpheios in Your hex: (0,0) · radius 8 · 3 known hexes (2 live, 1 remembered; 0 sea, 1 river, 1 ford, 0 coastal land):
+
+          (  1,  0) d1  SE  river               [river]
+          (  2,  0) d2  SE  Ford of Alpheios    [ford] [remembered]
+          (  3,  0) d3  SE  Delta of Alpheios
+
+        To act on a hex, march a land unit there (find unit IDs with `keryx unit list`):
+          keryx unit march --unit <id> --q <Q> --r <R>
+          keryx unit march --unit <id> --q <Q> --r <R> --intent colonize --name <name>
+        Intent: colonize — founds a colony when the unit arrives on an empty hex.
+        Note: ore on mountain terrain is impassable — colonize an ADJACENT passable hex
+              so the deposit falls in the new colony's catchment.
+        To explore: march a unit toward a frontier hex above — the route is revealed
+              and remembered on arrival, pushing the frontier outward.
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

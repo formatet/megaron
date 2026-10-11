@@ -297,7 +297,13 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 			trows.Close()
 		}
 	}
+	names, err := loadRiverNames(r.Context(), h.pool, worldID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load river names")
+		return
+	}
 	type hexOut struct {
+		RiverName  string          `json:"river_name,omitempty"`
 		HexQ       int             `json:"hex_q"`
 		HexR       int             `json:"hex_r"`
 		HexOrdinal int             `json:"hex_ordinal"`
@@ -330,6 +336,7 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 			HexR:       opt.Coord.R,
 			HexOrdinal: ordinal,
 			Terrain:    opt.Terrain,
+			RiverName:  names[[2]int{opt.Coord.Q, opt.Coord.R}],
 			Goods: buildGoods(opt.RatePerGood, func(good string, rate float64) float64 {
 				return economy.HexYieldPerWorker(rate, opt.MultPerGood[good])
 			}, opt.PlaceCapPerGood, globalHexOccupancy[opt.Coord], placedOrdinals.Hex[opt.Coord]),

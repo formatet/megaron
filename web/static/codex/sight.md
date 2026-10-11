@@ -34,3 +34,7 @@ You cannot **march** an army into land none of your people has ever seen — but
 <!-- src: server/internal/combat/expedition.go, march_start.go (explore) -->
 
 The oracle rite reveals ore deposits you cannot see — see [[rites]]. Seeing a city does not open trade with it — that takes [[contact]].
+
+## Rivers
+
+Every river has a name. The river, its fords and its delta share that name. Select a known hex to read **River Alpheios**, **Ford of Alpheios** or **Delta of Alpheios** in the hex panel; Keryx shows the same names in `map` and city catchment rows. At local map zoom, the name appears once near the known stretch of the river, where it fits clear of city labels. Unexplored hexes reveal no river name; names on remembered ground remain known.

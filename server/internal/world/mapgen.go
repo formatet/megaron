@@ -3568,13 +3568,9 @@ type riverChainInfo struct {
 	deltaTiles int
 }
 
-// riverChains groups every TerrainRiver/TerrainRiverFord tile into connected
-// river-family components. A river_ford counts as "river" for THIS traversal
-// (it sits mid-chain, still water) but is never itself a BFS start point —
-// every chain's two path endpoints (source and the mouth-adjacent hex) are
-// always plain TerrainRiver by construction (addRiver never places a ford on
-// index 0 or len(line)-1), so starting only from TerrainRiver cells still
-// reaches every chain in full.
+// riverChains reports metrics for riverComponents' canonical connected
+// river-family groups. Both river and river_ford belong to the water path;
+// valley flanks and delta ground are not traversal edges.
 //
 // Used both by riverInvariantFailures (the per-chain §7a/§7d/ford-density
 // assertions) and by ComputeMapMetrics (the "rivers per landmass" + "chain
@@ -3590,58 +3586,41 @@ func riverChains(tiles []MapTile, width, height int) []riverChainInfo {
 	comp := landComponents(tiles)
 	mainSea := mainSeaComponent(grid, width, height)
 
-	seen := map[cell]bool{}
 	var chains []riverChainInfo
-	for q := 0; q < width; q++ {
-		base := rowOrigin(q, width)
-		for r := base; r < base+height; r++ {
-			start := cell{q, r}
-			if grid[start] != TerrainRiver || seen[start] {
-				continue
+	for _, chain := range riverComponents(tiles) {
+		start := chain[0]
+		info := riverChainInfo{landmass: comp[[2]int{start.q, start.r}]}
+		deltaSeen := map[cell]bool{}
+		for _, cur := range chain {
+			info.size++
+			if grid[cur] == TerrainRiverFord {
+				info.fords++
 			}
-			info := riverChainInfo{landmass: comp[[2]int{start.q, start.r}]}
-			deltaSeen := map[cell]bool{}
-			queue := []cell{start}
-			seen[start] = true
-			for len(queue) > 0 {
-				cur := queue[0]
-				queue = queue[1:]
-				info.size++
-				if grid[cur] == TerrainRiverFord {
-					info.fords++
-				}
-				if grid[cur] == TerrainRiver {
-					riverNbrs := 0
-					for _, n := range hexNeighbours(cur, width, height) {
-						if grid[n] == TerrainRiver {
-							riverNbrs++
-						}
-					}
-					if riverNbrs == 3 {
-						info.forkNodes++
-					}
-				}
+			if grid[cur] == TerrainRiver {
+				riverNbrs := 0
 				for _, n := range hexNeighbours(cur, width, height) {
-					nt := grid[n]
-					if nt == TerrainRiverDelta {
-						info.hasDelta = true
-						if !deltaSeen[n] {
-							deltaSeen[n] = true
-							info.deltaTiles++
-						}
-					}
-					if mainSea[n] {
-						info.hasMainSea = true
-					}
-					if (nt == TerrainRiver || nt == TerrainRiverFord) && !seen[n] {
-						seen[n] = true
-						queue = append(queue, n)
+					if grid[n] == TerrainRiver {
+						riverNbrs++
 					}
 				}
+				if riverNbrs == 3 {
+					info.forkNodes++
+				}
 			}
-			chains = append(chains, info)
+			for _, n := range hexNeighbours(cur, width, height) {
+				if grid[n] == TerrainRiverDelta {
+					info.hasDelta = true
+					deltaSeen[n] = true
+				}
+				if mainSea[n] {
+					info.hasMainSea = true
+				}
+			}
 		}
+		info.deltaTiles = len(deltaSeen)
+		chains = append(chains, info)
 	}
+
 	return chains
 }
 

@@ -1,0 +1,176 @@
+[
+  {
+    "rivers": [
+      {
+        "text": "Eurotas",
+        "left": 540.6833324432373,
+        "right": 595.3166675567627,
+        "top": 424,
+        "bottom": 444
+      }
+    ],
+    "cities": [
+      {
+        "text": "Mycenae",
+        "left": 206.48333358764648,
+        "right": 269.5166664123535,
+        "top": 148,
+        "bottom": 168
+      },
+      {
+        "text": "Tiryns",
+        "left": 544.2999992370605,
+        "right": 591.7000007629395,
+        "top": 262,
+        "bottom": 282
+      }
+    ],
+    "engine": "firefox",
+    "width": 1280
+  },
+  {
+    "rivers": [
+      {
+        "text": "Eurotas",
+        "left": 78.6833324432373,
+        "right": 133.3166675567627,
+        "top": 158,
+        "bottom": 178
+      }
+    ],
+    "cities": [
+      {
+        "text": "Mycenae",
+        "left": 206.48333358764648,
+        "right": 269.5166664123535,
+        "top": 148,
+        "bottom": 168
+      },
+      {
+        "text": "Tiryns",
+        "left": 544.2999992370605,
+        "right": 591.7000007629395,
+        "top": 262,
+        "bottom": 282
+      }
+    ],
+    "engine": "firefox",
+    "width": 390
+  },
+  {
+    "rivers": [
+      {
+        "text": "Eurotas",
+        "left": 540.7138671875,
+        "right": 595.2861328125,
+        "top": 424,
+        "bottom": 444
+      }
+    ],
+    "cities": [
+      {
+        "text": "Mycenae",
+        "left": 206.49951171875,
+        "right": 269.50048828125,
+        "top": 148,
+        "bottom": 168
+      },
+      {
+        "text": "Tiryns",
+        "left": 544.326171875,
+        "right": 591.673828125,
+        "top": 262,
+        "bottom": 282
+      }
+    ],
+    "engine": "chromium",
+    "width": 1280
+  },
+  {
+    "rivers": [
+      {
+        "text": "Eurotas",
+        "left": 78.7138671875,
+        "right": 133.2861328125,
+        "top": 158,
+        "bottom": 178
+      }
+    ],
+    "cities": [
+      {
+        "text": "Mycenae",
+        "left": 206.49951171875,
+        "right": 269.50048828125,
+        "top": 148,
+        "bottom": 168
+      },
+      {
+        "text": "Tiryns",
+        "left": 544.326171875,
+        "right": 591.673828125,
+        "top": 262,
+        "bottom": 282
+      }
+    ],
+    "engine": "chromium",
+    "width": 390
+  },
+  {
+    "rivers": [
+      {
+        "text": "Eurotas",
+        "left": 540.7138671875,
+        "right": 595.2861328125,
+        "top": 424,
+        "bottom": 444
+      }
+    ],
+    "cities": [
+      {
+        "text": "Mycenae",
+        "left": 206.49951171875,
+        "right": 269.50048828125,
+        "top": 148,
+        "bottom": 168
+      },
+      {
+        "text": "Tiryns",
+        "left": 544.326171875,
+        "right": 591.673828125,
+        "top": 262,
+        "bottom": 282
+      }
+    ],
+    "engine": "webkit",
+    "width": 1280
+  },
+  {
+    "rivers": [
+      {
+        "text": "Eurotas",
+        "left": 78.7138671875,
+        "right": 133.2861328125,
+        "top": 158,
+        "bottom": 178
+      }
+    ],
+    "cities": [
+      {
+        "text": "Mycenae",
+        "left": 206.49951171875,
+        "right": 269.50048828125,
+        "top": 148,
+        "bottom": 168
+      },
+      {
+        "text": "Tiryns",
+        "left": 544.326171875,
+        "right": 591.673828125,
+        "top": 262,
+        "bottom": 282
+      }
+    ],
+    "engine": "webkit",
+    "width": 390
+  }
+]

@@ -1,0 +1,5 @@
+--- FAIL: TestRiverNamesUniqueAndDeltaInheritance (0.00s)
+    river_names_test.go:67: duplicate name Leontes
+FAIL
+FAIL	formatet/megaron/server/internal/world	0.001s
+FAIL

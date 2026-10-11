@@ -1,0 +1,49 @@
+TAP version 13
+# Subtest: river panel names river, ford and delta; fog cannot reveal a supplied name
+ok 1 - river panel names river, ford and delta; fog cannot reveal a supplied name
+  ---
+  duration_ms: 0.520013
+  type: 'test'
+  ...
+# Subtest: river labels appear once across known fragments and avoid city labels, fog and minzoom
+not ok 2 - river labels appear once across known fragments and avoid city labels, fog and minzoom
+  ---
+  duration_ms: 1.119177
+  type: 'test'
+  location: '/home/tk/wt/codex-flodnamn/web/static/js/megaron/render/river_names.test.mjs:14:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+
+    + []
+    - [
+    -   'Alpheios',
+    -   'Eurotas'
+    - ]
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'Alpheios'
+    1: 'Eurotas'
+  actual:
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-flodnamn/web/static/js/megaron/render/river_names.test.mjs:20:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 1
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 39.966705

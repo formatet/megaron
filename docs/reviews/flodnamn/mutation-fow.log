@@ -1,0 +1,7 @@
+2026/10/11 19:23:29 INFO player registered id=f39f6335-cdae-4ac4-8cf3-ab1a7856de2f username=river-names-viewer-97b4fd12-a600-4a51-9a68-1e7cc9194845
+--- FAIL: TestMapRiverNamesFOW (0.08s)
+    river_names_test.go:80: unknown river hex leaked river_name
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.086s
+FAIL
+» färsk DB på migration 171 · commit f57eb4b0+ändringar

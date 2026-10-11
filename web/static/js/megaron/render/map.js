@@ -22,6 +22,7 @@ import { unitHoverLines } from '../ui/hover.js';
 import { drawStorm, STORM_FRAMES } from './storms.js';
 import { stormPanelHTML } from '../ui/stormname.js';
 import { incomingTargetKeys } from '../ui/movements.js';
+import { namedRiverTerrain, riverLabelLayout } from './river_names.js';
 
 // ── Palette — Settlers 2 warmth, Mediterranean olive country ─────────────
 const TERRAIN_BASE = {
@@ -4569,6 +4570,20 @@ export function render() {
     if (tileTier(p.q, p.r) !== 'remembered') drawProvince(ctx, x, y, p);
     if (State.camera.zoom >= LOCAL_ZOOM) drawLabel(ctx, x, y, p.name, p.own);
   }
+  // One label per known river name, using the same two-pass palette as city names.
+  if (State.camera.zoom >= LOCAL_ZOOM) {
+    const z=State.camera.zoom*SCALE;
+    ctx.save();
+    const measure=(text,own)=>{ctx.font=own?'bold 7px monospace':'6px monospace';return ctx.measureText(text).width;};
+    const labels=riverLabelLayout(State.tileData,State.provinceData,{
+      hexPx,measure,zoom:State.camera.zoom,
+      viewport:{left:-State.camera.x/z,top:-State.camera.y/z,right:(canvas.width-State.camera.x)/z,bottom:(canvas.height-State.camera.y)/z},
+    });
+    ctx.font='6px monospace';ctx.textAlign='center';ctx.textBaseline='top';
+    ctx.strokeStyle='#000000aa';ctx.lineWidth=2;ctx.fillStyle='#E8D0A8';
+    for (const label of labels) {ctx.strokeText(label.name,label.x,label.y);ctx.fillText(label.name,label.x,label.y);}
+    ctx.restore();
+  }
   pass('cities');
 
   // 4b. Activity overlay badges (own non-outpost cities, zoom >= ACTIVITY_BADGE_ZOOM)
@@ -4947,7 +4962,7 @@ function terrainLabel(t) {
 }
 
 function fillTerrainFields(tile) {
-  document.getElementById('ip-terrain').textContent = terrainLabel(tile.terrain);
+  document.getElementById('ip-terrain').textContent = namedRiverTerrain(tile, terrainLabel(tile.terrain));
   const deps = [tile.copper_deposit ? 'Copper' : null, tile.tin_deposit ? 'Tin' : null,
                 tile.silver_deposit ? 'Silver' : null, tile.cedar_deposit ? 'Cedar' : null].filter(Boolean);
   const depRow = document.getElementById('ip-deposits-row');
@@ -4979,7 +4994,7 @@ function destFromHex(h, tile, target) {
              name: target.name, isSettlement: true, allied: target.own ? true : !!target.allied };
   }
   return { q: h.q, r: h.r, terrain: tile.terrain, isSea, known,
-           name: known ? `${terrainLabel(tile.terrain)} (${h.q},${h.r})` : `Unexplored (${h.q},${h.r})`,
+           name: known ? `${namedRiverTerrain(tile, terrainLabel(tile.terrain))} (${h.q},${h.r})` : `Unexplored (${h.q},${h.r})`,
            isSettlement: false, allied: false };
 }
 
@@ -5053,7 +5068,7 @@ function workersHereHTML(h) {
 // absence of affordances; sea gets galleys; empty land gets march + colonize.
 function openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits) {
   document.getElementById('ip-name').textContent =
-    isSea ? `Sea (${h.q},${h.r})` : (isMountain ? `Mountains (${h.q},${h.r})` : `${terrainLabel(tile.terrain)} (${h.q},${h.r})`);
+    isSea ? `Sea (${h.q},${h.r})` : (isMountain ? `Mountains (${h.q},${h.r})` : `${namedRiverTerrain(tile, terrainLabel(tile.terrain))} (${h.q},${h.r})`);
   setCityFieldsVisible(false);
   fillTerrainFields(tile);
 
@@ -5137,7 +5152,7 @@ const RURAL_LABELS = {
 function openRuralPanel(h, tile, rural, units, foreignUnits) {
   // Title is the ground, not the building (inspel 2026-09-08): the building is
   // a line in the card.
-  document.getElementById('ip-name').textContent = `${terrainLabel(tile.terrain)} (${h.q},${h.r})`;
+  document.getElementById('ip-name').textContent = `${namedRiverTerrain(tile, terrainLabel(tile.terrain))} (${h.q},${h.r})`;
   setCityFieldsVisible(false);
   fillTerrainFields(tile);
 

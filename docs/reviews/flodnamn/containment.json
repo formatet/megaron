@@ -1,0 +1,68 @@
+[
+  {
+    "engine": "firefox",
+    "width": 1280,
+    "changed_bbox": [
+      541,
+      468,
+      594,
+      485
+    ],
+    "outside_label_changed_pixels": 0
+  },
+  {
+    "engine": "firefox",
+    "width": 390,
+    "changed_bbox": [
+      79,
+      202,
+      132,
+      219
+    ],
+    "outside_label_changed_pixels": 0
+  },
+  {
+    "engine": "chromium",
+    "width": 1280,
+    "changed_bbox": [
+      541,
+      468,
+      594,
+      485
+    ],
+    "outside_label_changed_pixels": 0
+  },
+  {
+    "engine": "chromium",
+    "width": 390,
+    "changed_bbox": [
+      79,
+      202,
+      132,
+      219
+    ],
+    "outside_label_changed_pixels": 0
+  },
+  {
+    "engine": "webkit",
+    "width": 1280,
+    "changed_bbox": [
+      541,
+      471,
+      594,
+      484
+    ],
+    "outside_label_changed_pixels": 0
+  },
+  {
+    "engine": "webkit",
+    "width": 390,
+    "changed_bbox": [
+      79,
+      205,
+      132,
+      218
+    ],
+    "outside_label_changed_pixels": 0
+  }
+]

@@ -34,8 +34,8 @@ globalThis.fetch=async(url)=>{
 const {State}=await import('../state.js');
 const {initMap}=await import('./map.js');initMap();
 const marker={id:'foreign-province',settlement_id:'foreign-settlement',name:'Kyme',owner:'Other Wanax',culture:'ionian',walls:0,q:0,r:0};
-async function click({terrain='plains',city=marker,host=false}={}){
- State.WORLD_ID='world';State.MY_SETTLEMENT_ID='own-settlement';State.tileData=[{q:0,r:0,terrain}];State.provinceData=city?[city]:[];State.unitsData=host?[{type:'nomadic_host',q:0,r:0}]:[];State.foreignUnitData=[];State.ruralData=[];State.founderPhase=host?fp:null;State.camera={x:0,y:0,zoom:1};
+async function click({terrain='plains',city=marker,host=false,river_name=''}={}){
+ State.WORLD_ID='world';State.MY_SETTLEMENT_ID='own-settlement';State.tileData=[{q:0,r:0,terrain,river_name}];State.provinceData=city?[city]:[];State.unitsData=host?[{type:'nomadic_host',q:0,r:0}]:[];State.foreignUnitData=[];State.ruralData=[];State.founderPhase=host?fp:null;State.camera={x:0,y:0,zoom:1};
  const canvas=element('hex-canvas');canvas.events.pointerdown({pointerId:1,pointerType:'mouse',button:0,clientX:0,clientY:0});canvas.events.pointerup({pointerId:1,pointerType:'mouse',clientX:0,clientY:0});
  await new Promise(resolve=>setImmediate(resolve));
 }
@@ -60,4 +60,15 @@ test('L actual Host: food and escort pay durations use exact days in words, neve
  await click({city:null,host:true});let html=element('ip-body-extra').innerHTML;
  assert.match(html,/Food lasts 2.5 days/,'host food uses exact unscaled days');assert.match(html,/Escort pay lasts 240 days/);assert.doesNotMatch(html.replace(/<[^>]*>/g,''),/day left|real time|NaN/,'Host status uses no tick/wall-clock wording');assert.match(element('ip-foot').innerHTML,/Found the metropolis here/,'founding stays');
  fp={...fp,grain:{ticks_left:null},silver:{ticks_left:1},spearmen_in_field:1};await click({city:null,host:true});html=element('ip-body-extra').innerHTML;assert.match(html,/Food lasts indefinitely/);assert.match(html,/Escort pay lasts 1 day</);assert.match(html,/1 Spearmen cohort in the field/);
+});
+
+test('actual hex panel uses server river names and never exposes a fog name',async()=>{
+ for(const [terrain,text] of [['river','River Alpheios'],['river_ford','Ford of Alpheios'],['river_delta','Delta of Alpheios']]) {
+  await click({city:null,terrain,river_name:'Alpheios'});
+  assert.equal(element('ip-terrain').textContent,text);
+  assert.equal(element('ip-name').textContent,`${text} (0,0)`);
+ }
+ await click({city:null,terrain:'fog',river_name:'Secret'});
+ assert.equal(element('ip-name').textContent,'Unexplored land');
+ assert.doesNotMatch(element('ip-terrain').textContent,/Secret/);
 });
