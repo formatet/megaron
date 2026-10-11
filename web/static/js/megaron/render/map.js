@@ -1093,12 +1093,21 @@ function drawPlainsField(ctx, cx, cy) {
 // följer tegen; en mörk 1 px-ren skiljer tegarna åt. Ritas bara i
 // markrastret, där det bakas en gång.
 const PARCEL_W = 15, PARCEL_H = 10;
+// Tegen syns genom sin TON, inte genom en kontur: renarna (en prick varannan
+// pixel) läste som streckade staket och gjorde marken för kultiverad
+// (Timothy 2026-10-11). Utan dem flöt de tre trädesteg som bar bastonen ihop
+// med grannarna och fälten försvann — därför bara en träda av sju, och
+// plöjd jord i stället. Ljusa tegar högst två av sju: fler (en stubbton
+// prövades) lyfte slättens markton 139,5 → 148 och gav paret
+// plains ↔ olivlund 9,8 L (princip 17).
 const PARCEL_TONES = [
-  null, null, null,
-  ['#6A7834', 0.50], ['#6A7834', 0.50],
-  ['#9DAA5A', 0.48],
-  ['#B7AA5C', 0.62],
-  ['#A38C54', 0.55],
+  null,
+  ['#6A7834', 0.55],
+  ['#7C7440', 0.50],
+  ['#6A7834', 0.55],
+  ['#9DAA5A', 0.55],
+  ['#B7AA5C', 0.55],
+  ['#A38C54', 0.60],
 ];
 // Odlingsgrad 0–1: full inom en stads upptagningsområde, avtagande ut till
 // ungefär fem hexar. Källorna är städerna spelaren känner till — samma data
@@ -1280,13 +1289,13 @@ function drawScrubField(ctx, cx, cy) {
       const h = hash32(gx, gy, 6174);
       const x = gx * G + (h & 3), y = gy * G + ((h >>> 2) & 3);
       const wet = 1 - noiseAt(x, y, SCRUB_CELL, 6161);
-      if ((h >>> 4) / 268435456 > -0.05 + 0.85 * wet) continue;
+      if ((h >>> 4) / 268435456 > -0.10 + 0.72 * wet) continue;
       const r = hash32(gx, gy, 6175);
       // Större buskar där det är fuktigt.
       const shape = SCRUB_SHAPES[Math.min(3, Math.floor((r % 1000) / 1000 * 2.2 + wet * 1.8))];
       const body = SCRUB_TONES[(r >>> 10) % SCRUB_TONES.length];
       const b = (r >>> 14) % 100;
-      const bloom = shape.length > 4 && b < 6 ? SCRUB_BLOOM[b & 1] : null;
+      const bloom = shape.length > 4 && b < 3 ? SCRUB_BLOOM[b & 1] : null;
       for (let dy = 0; dy < shape.length; dy++) {
         const row = shape[dy];
         for (let dx = 0; dx < row.length; dx++) {
