@@ -1,7 +1,7 @@
 // Wall-clock dates only: never world durations. Shared without UI dependencies.
 export function fmtClock(epochMs) {
   const at = new Date(epochMs);
-  const hm = at.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const hm = at.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
   const now = new Date();
   const dayDiff = Math.round(
     (new Date(at.getFullYear(), at.getMonth(), at.getDate())

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { State } from '../state.js';
-import { arrivalHTML, fmtArrival, fmtEta } from './time.js';
+import { arrivalHTML, fmtArrival, fmtEta, fmtClock } from './time.js';
 
 test('I: missing or invalid arrival never prints Invalid Date or NaNm', () => {
   State.TICK_SECONDS = 6;
@@ -40,4 +40,13 @@ test('wall-clock estimate after several real dates stays clock/date, not days or
   assert.match(text,/≈.*\d[:.]\d/);
   assert.doesNotMatch(text,/\bdays?\b|\d+d\b|\d+h\b/);
  }
+});
+
+test('clock is always 24 h, whatever the browser locale (Timothy 2026-10-11)', () => {
+  const evening = new Date();
+  evening.setHours(19, 4, 0, 0);
+  assert.match(fmtClock(evening.getTime()), /^today 19:04$/);
+  State.TICK_SECONDS = 0;
+  const html = arrivalHTML(new Date(Date.now() + 3600e3).toISOString());
+  assert.doesNotMatch(html, /\b(AM|PM)\b/i, 'hover title must be 24 h too');
 });
