@@ -63,7 +63,7 @@ test('L actual Host: food and escort pay durations use exact days in words, neve
 });
 
 test('river hex and rural panel name appears only in title, terrain row stays generic and fog stays unnamed',async()=>{
- for(const [terrain,text,label] of [['river','River Alpheios','River'],['river_ford','Ford of Alpheios','River ford'],['river_delta','Delta of Alpheios','River delta']]) {
+ for(const [terrain,text,label] of [['river','River Alpheios','River'],['river_ford','Ford of Alpheios','River Ford'],['river_delta','Delta of Alpheios','River Delta']]) {
   for(const rural of [null,{q:0,r:0,building_type:'farm',name:'Mycenae',province_id:'mycenae'}]) {
    await click({city:null,terrain,river_name:'Alpheios',rural});
    assert.equal(element('ip-terrain').textContent,label,'TERRAIN must describe ground without repeating river name');
