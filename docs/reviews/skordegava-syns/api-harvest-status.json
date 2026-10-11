@@ -1,0 +1,30 @@
+{
+  "origin": "Actual ProvinceHandler.Get in fresh PostgreSQL integration test; fixture current_tick=100",
+  "cases": {
+    "until112": {
+      "goods": [
+        "grain",
+        "livestock",
+        "wine",
+        "oil"
+      ],
+      "remaining_ticks": 12,
+      "until_tick": 112,
+      "yield_bonus": 0.25
+    },
+    "until101": {
+      "goods": [
+        "grain",
+        "livestock",
+        "wine",
+        "oil"
+      ],
+      "remaining_ticks": 1,
+      "until_tick": 101,
+      "yield_bonus": 0.25
+    },
+    "until100": null,
+    "until99": null,
+    "untilNULL": null
+  }
+}

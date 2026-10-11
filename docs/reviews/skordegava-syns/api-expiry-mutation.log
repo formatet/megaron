@@ -1,0 +1,8 @@
+2026/10/11 20:43:51 INFO player registered id=108ca6e7-6318-4321-891c-c292473626be username=rite-harvest-db011c3d-da72-426f-a060-f5238ef855d2
+--- FAIL: TestProvinceHarvestBlessingStatus (0.10s)
+    --- FAIL: TestProvinceHarvestBlessingStatus/end_tick (0.01s)
+        harvest_status_test.go:56: ended harvest blessing leaked active status: {"goods":["grain","livestock","wine","oil"],"remaining_ticks":0,"until_tick":100,"yield_bonus":0.25}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.099s
+FAIL
+» färsk DB på migration 171 · commit 6b8b69ea+ändringar

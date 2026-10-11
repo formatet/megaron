@@ -1,0 +1,10 @@
+2026/10/11 20:43:56 INFO player registered id=65a04598-c7b3-4549-90c1-a41cc3559a2a username=rite-harvest-ae0a4fad-e2cf-410d-9927-23864dbd8f5b
+--- FAIL: TestProvinceHarvestBlessingStatus (0.09s)
+    --- FAIL: TestProvinceHarvestBlessingStatus/active (0.01s)
+        harvest_status_test.go:70: harvest status contradicts economy/column: {UntilTick:112 RemainingTicks:12 YieldBonus:0 Goods:[grain livestock wine oil]}
+    --- FAIL: TestProvinceHarvestBlessingStatus/last_tick (0.01s)
+        harvest_status_test.go:70: harvest status contradicts economy/column: {UntilTick:101 RemainingTicks:1 YieldBonus:0 Goods:[grain livestock wine oil]}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.096s
+FAIL
+» färsk DB på migration 171 · commit 6b8b69ea+ändringar

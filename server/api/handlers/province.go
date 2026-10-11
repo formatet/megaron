@@ -611,7 +611,14 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// showing the reserve without it would show the answer and hide the
 		// question.
 		var currentTick int
-		_ = h.pool.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&currentTick)
+		var harvestBlessingUntil *int
+		if err := h.pool.QueryRow(r.Context(),
+			`SELECT current_world_tick(), harvest_blessing_until_tick FROM settlements WHERE id = $1`,
+			sett.ID,
+		).Scan(&currentTick, &harvestBlessingUntil); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not read settlement status")
+			return
+		}
 		// Extracted to settlementFoodSummary (megaron_plan_oversiktsendpoint.md,
 		// 2026-09-06) so SettlementsOverview reads the exact same economy.* calls
 		// — the two surfaces can never disagree about a settlement's food state.
@@ -767,6 +774,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"food_gubbar_required": foodGubbarRequired,
 			"food_gubbar_placed":   foodGubbarPlaced,
 			"food_self_sufficient": foodSelfSufficient,
+			"harvest_blessing":     harvestBlessingStatus(harvestBlessingUntil, currentTick),
 			"army":                 sett.Army,
 			"army_upkeep":          armyUp,
 			// Del C: the sold a garrison spends back into the town it holds. Without
@@ -4261,4 +4269,18 @@ func (h *ProvinceHandler) MarketWants(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, map[string]any{"wants": wants, "surplus": surplusList})
+}
+
+// harvestBlessingStatus reports the same strict expiry gate and tuning as
+// economy's production recomputation. Clients translate remaining ticks to days.
+func harvestBlessingStatus(until *int, currentTick int) any {
+	if until == nil || *until <= currentTick {
+		return nil
+	}
+	return map[string]any{
+		"until_tick":      *until,
+		"remaining_ticks": *until - currentTick,
+		"yield_bonus":     economy.HarvestBlessingYieldBonus,
+		"goods":           economy.HarvestBlessedGoods(),
+	}
 }

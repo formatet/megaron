@@ -1,0 +1,33 @@
+» färsk DB på migration 171 · commit 6b8b69ea+ändringar
+=== RUN   TestProvinceHarvestBlessingStatus
+2026/10/11 20:46:34 INFO player registered id=c6146e21-8526-42a2-88c3-a4dfd09e6363 username=rite-harvest-6ff1b4d2-736e-4bb1-aae7-337cdbca8b28
+=== RUN   TestProvinceHarvestBlessingStatus/active
+    harvest_status_test.go:54: settlement.harvest_blessing = {"goods":["grain","livestock","wine","oil"],"remaining_ticks":12,"until_tick":112,"yield_bonus":0.25}
+=== RUN   TestProvinceHarvestBlessingStatus/last_tick
+    harvest_status_test.go:54: settlement.harvest_blessing = {"goods":["grain","livestock","wine","oil"],"remaining_ticks":1,"until_tick":101,"yield_bonus":0.25}
+=== RUN   TestProvinceHarvestBlessingStatus/end_tick
+    harvest_status_test.go:54: settlement.harvest_blessing = null
+=== RUN   TestProvinceHarvestBlessingStatus/expired
+    harvest_status_test.go:54: settlement.harvest_blessing = null
+=== RUN   TestProvinceHarvestBlessingStatus/never_blessed
+    harvest_status_test.go:54: settlement.harvest_blessing = null
+--- PASS: TestProvinceHarvestBlessingStatus (0.09s)
+    --- PASS: TestProvinceHarvestBlessingStatus/active (0.01s)
+    --- PASS: TestProvinceHarvestBlessingStatus/last_tick (0.01s)
+    --- PASS: TestProvinceHarvestBlessingStatus/end_tick (0.01s)
+    --- PASS: TestProvinceHarvestBlessingStatus/expired (0.01s)
+    --- PASS: TestProvinceHarvestBlessingStatus/never_blessed (0.01s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.099s
+=== RUN   TestHarvestBlessingBothCityCommands
+=== RUN   TestHarvestBlessingBothCityCommands/active
+=== RUN   TestHarvestBlessingBothCityCommands/end_tick
+=== RUN   TestHarvestBlessingBothCityCommands/expired
+=== RUN   TestHarvestBlessingBothCityCommands/none
+--- PASS: TestHarvestBlessingBothCityCommands (0.00s)
+    --- PASS: TestHarvestBlessingBothCityCommands/active (0.00s)
+    --- PASS: TestHarvestBlessingBothCityCommands/end_tick (0.00s)
+    --- PASS: TestHarvestBlessingBothCityCommands/expired (0.00s)
+    --- PASS: TestHarvestBlessingBothCityCommands/none (0.00s)
+PASS
+ok  	formatet/megaron/server/cmd/keryx	0.005s

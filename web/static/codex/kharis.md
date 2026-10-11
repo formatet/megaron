@@ -24,3 +24,7 @@ Three things must be true, every day:
 Kharis decays every day regardless — and faster for each colony without a temple, beyond a handful. Expansion has a religious price ([[colonies]]).
 
 To *spend* kharis on a request, see [[rites]].
+
+An ongoing **blessed harvest** appears beside Food in the city drawer and in
+`keryx status` and `keryx city`, with its yield bonus, affected goods and days left.
+The row disappears when the blessing ends; fish receives no harvest bonus.

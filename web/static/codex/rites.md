@@ -17,3 +17,7 @@ After a rite, the prayer cannot be repeated for a while.
 - **Battle frenzy** — strengthens a garrison for a while ([[battle]]).
 
 The answer or a refusal appears in the Kult drawer after you offer; it stays beside the prayers.
+
+An ongoing **blessed harvest** appears beside Food in the city drawer and in
+`keryx status` and `keryx city`, with its yield bonus, affected goods and days left.
+The row disappears when the blessing ends; fish receives no harvest bonus.

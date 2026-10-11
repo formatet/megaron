@@ -1,0 +1,4 @@
+» färsk DB på migration 171 · commit 6b8b69ea
+ok  	formatet/megaron/server/api/handlers	27.848s
+ok  	formatet/megaron/server/cmd/keryx	0.098s
+ok  	formatet/megaron/server/internal/economy	4.290s

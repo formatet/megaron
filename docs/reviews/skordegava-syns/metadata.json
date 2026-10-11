@@ -1,0 +1,21 @@
+{
+  "production_commit": "5df4aa7db0993361bb3d63f63aaa206aad811dea",
+  "base": "6b8b69ea",
+  "proof_kind": "Fresh PostgreSQL16/migration171 + explicit HTTP browser/Keryx fixtures; no acceptance-world state change",
+  "go": "go version go1.27.1-X:nodwarf5 linux/amd64",
+  "source_sha256": {
+    "server/api/handlers/province.go": "2c4e13bbcbbfd25bf962e02dc72d516237335a3eb5e78c60a5452243b716d2b5",
+    "server/api/handlers/harvest_status_test.go": "28e6905e87437f708fbb23091400003ddea7b7415ceeaa8c7d87108e8544f065",
+    "server/internal/economy/harvest_blessing.go": "e56cb7b2c523ef2d83619d9dca5abd6afa86bbafec16550a4a40cbd390610a8c",
+    "server/cmd/keryx/harvest_status.go": "6a3b3b8d30ac0f333ec5b311251c5570542fcff0d2b65ec6534f426ba1cecc94",
+    "server/cmd/keryx/cmd_status.go": "8e20e30d693580aa85725b08a7f97eff5cfa66fa314f58662d9c48e61bfe6b0d",
+    "server/cmd/keryx/cmd_city.go": "ce41f884c8c9eaf45fe28ed6bedb75bf37ee2e69200356dcaa86053a4af57f54",
+    "web/static/js/megaron/ui/drawers/city_production.js": "c7fad98346fba3379d3a5a461196491d9372641ade6d34da943d494796de6906",
+    "web/static/codex/kharis.md": "c82297cbb6552804cc28983a682e9d63945f9f89d15d67ed9fb65b24377c6fb5",
+    "web/static/codex/rites.md": "b136273ff99e79cab664ebaaeaad9a8f8ed84d787b2f9a316b2767567af391d0"
+  },
+  "built_binary_sha256": {
+    "/tmp/skordegava-keryx": "b71e70b2e490fd15056dcf79eae7ba64bd3b41c646a1795c33e8d84baaf7fffc",
+    "/tmp/skordegava-temenos": "51fe1b93cdaeb274ee792a4ea2522fbe6781e54884d46279f8d991c71d8a7370"
+  }
+}
