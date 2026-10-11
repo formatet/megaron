@@ -88,7 +88,7 @@ func printNotificationRow(c *Client, n notificationItem) {
 	if tier := subsistenceTier(n); tier != "" {
 		kind = n.Kind + " [" + subsistenceTierLabel(tier) + "]"
 	}
-	fmt.Printf("%s[%s]  %-20s  %s\n", marker, notificationAge(n.CreatedAt), kind, string(n.Body))
+	fmt.Printf("%s[%s]  %s\n", marker, notificationAge(n.CreatedAt), kind)
 	printNotificationDetail(c, n)
 }
 
@@ -99,9 +99,10 @@ func printNotificationRow(c *Client, n notificationItem) {
 // listing-only fields (id, created_at, read_at). Two renderers of the same
 // notification kind is exactly the fifth-copy fate megaron_plan_keryx_strom.md
 // §3 point 3 calls out — this is the single shared function both call.
-// Takes c only to hand to printExploreReturnedLine's game-day ETA (rad K) —
-// every other line below is pure formatting of the notification body.
+// Uses c for authoritative world cadence when a body carries an arrival ETA.
+// All other details are pure formatting of the archived notification body.
 func printNotificationDetail(c *Client, n notificationItem) {
+	printNotificationSummary(c, n)
 	if n.Kind == "MessengerLostAtSea" || n.Kind == "MessengerRescuedAtSea" {
 		printMessengerFateLine(n)
 	}
@@ -511,9 +512,8 @@ func printBattleReportLine(n notificationItem) {
 	case body.Outcome == "defender_holds" && body.Role == "attacker":
 		trailer = " The attack was repelled."
 	}
-	fmt.Printf("      %s at %s — your %s (%d→%d, −%d dead) vs %s's %s (%d→%d).%s\n",
-		outcomeWord, place, body.OwnUnit.Type, body.OwnUnit.SizeBefore, body.OwnUnit.SizeAfter, body.OwnUnit.PopLost,
-		body.Opponent, body.EnemyUnit.Type, body.EnemyUnit.SizeBefore, body.EnemyUnit.SizeAfter, trailer)
+	fmt.Printf("      %s against %s at %s — your %s (%d→%d, −%d dead) vs their %s (%d→%d).%s\n",
+		outcomeWord, firstNotificationText(body.Opponent, "an enemy"), place, body.OwnUnit.Type, body.OwnUnit.SizeBefore, body.OwnUnit.SizeAfter, body.OwnUnit.PopLost, body.EnemyUnit.Type, body.EnemyUnit.SizeBefore, body.EnemyUnit.SizeAfter, trailer)
 }
 
 // printShipDamagedLine renders the human-readable follow-up to a ShipDamaged
@@ -521,6 +521,7 @@ func printBattleReportLine(n notificationItem) {
 // BattleTickHandler.notifyShipDamaged's payload.
 func printShipDamagedLine(n notificationItem) {
 	var body struct {
+		Name          string `json:"name"`
 		UnitType      string `json:"unit_type"`
 		Hull          int    `json:"hull"`
 		HullMax       int    `json:"hull_max"`
@@ -532,13 +533,13 @@ func printShipDamagedLine(n notificationItem) {
 	}
 	switch {
 	case body.Sunk:
-		fmt.Printf("      Your %s was sunk in the battle.\n", body.UnitType)
+		fmt.Printf("      Your %s was sunk in the battle.\n", firstNotificationText(body.Name, body.UnitType, "ship"))
 	case body.ReturningHome:
 		fmt.Printf("      Your %s took damage (hull %d/%d) and limps home for repair.\n",
-			body.UnitType, body.Hull, body.HullMax)
+			firstNotificationText(body.Name, body.UnitType, "ship"), body.Hull, body.HullMax)
 	default:
 		fmt.Printf("      Your %s took damage (hull %d/%d) but keeps its orders.\n",
-			body.UnitType, body.Hull, body.HullMax)
+			firstNotificationText(body.Name, body.UnitType, "ship"), body.Hull, body.HullMax)
 	}
 }
 
@@ -590,13 +591,14 @@ func printSeaStormLine(n notificationItem) {
 // 4) — ShipRepairCompleteHandler's payload.
 func printShipRepairedLine(n notificationItem) {
 	var body struct {
+		Name     string `json:"name"`
 		UnitType string `json:"unit_type"`
 		Hull     int    `json:"hull"`
 	}
 	if err := json.Unmarshal(n.Body, &body); err != nil {
 		return
 	}
-	fmt.Printf("      Your %s is repaired (hull %d/5) and ready to sail again.\n", body.UnitType, body.Hull)
+	fmt.Printf("      Your %s is repaired (hull %d/5) and ready to sail again.\n", firstNotificationText(body.Name, body.UnitType, "ship"), body.Hull)
 }
 
 // printCaravanSeizureLine names the cargo that changed hands — the same text
@@ -706,6 +708,7 @@ func printScoutReportLine(n notificationItem) {
 // surfaces say the same thing.
 func printExploreReturnedLine(c *Client, n notificationItem) {
 	var body struct {
+		Name      string `json:"name"`
 		Q         int    `json:"q"`
 		R         int    `json:"r"`
 		ArrivesAt string `json:"arrives_at"`
@@ -717,7 +720,7 @@ func printExploreReturnedLine(c *Client, n notificationItem) {
 	if t, err := time.Parse(time.RFC3339, body.ArrivesAt); err == nil {
 		eta = ", home " + gameETA(c, t)
 	}
-	fmt.Printf("      scout reached (%d,%d) and turned for home%s\n", body.Q, body.R, eta)
+	fmt.Printf("      %s reached (%d,%d) and turned for home%s\n", firstNotificationText(body.Name, "Scout"), body.Q, body.R, eta)
 }
 
 // printStarvingReturnLine renders the human-readable follow-up to a
@@ -731,6 +734,7 @@ func printExploreReturnedLine(c *Client, n notificationItem) {
 // (web/static/js/megaron/ui/format.js) so both surfaces say the same thing.
 func printStarvingReturnLine(c *Client, n notificationItem) {
 	var body struct {
+		Name      string `json:"name"`
 		Q         int    `json:"q"`
 		R         int    `json:"r"`
 		ArrivesAt string `json:"arrives_at"`
@@ -743,8 +747,8 @@ func printStarvingReturnLine(c *Client, n notificationItem) {
 	if t, err := time.Parse(time.RFC3339, body.ArrivesAt); err == nil {
 		eta = ", home " + gameETA(c, t)
 	}
-	fmt.Printf("      crew starved to half strength (%d) at (%d,%d) — turning home on its own, sailing slower%s\n",
-		body.CrewAfter, body.Q, body.R, eta)
+	fmt.Printf("      %s's crew starved to half strength (%d) at (%d,%d) — turning home on its own, sailing slower%s\n",
+		firstNotificationText(body.Name, "Ship"), body.CrewAfter, body.Q, body.R, eta)
 }
 
 // printColonyFoundedGrainLine renders the founding grain balance carried in a
@@ -933,7 +937,8 @@ func notificationsCmd() *cobra.Command {
 						break
 					}
 				}
-				fmt.Printf("%s[%s]  %-20s  ×%d (latest: %s)\n", marker, notificationAge(latest.CreatedAt), kind, len(occ), string(latest.Body))
+				fmt.Printf("%s[%s]  %s  ×%d (latest)\n", marker, notificationAge(latest.CreatedAt), kind, len(occ))
+				printNotificationDetail(c, latest)
 			}
 
 			// Default-view summary for kinds excluded from the fetch entirely.
@@ -1085,7 +1090,7 @@ func printSiegeLine(n notificationItem) {
 		if besieger == "" {
 			besieger = "an enemy"
 		}
-		fmt.Printf("      %s is under siege — %s holds the approaches\n", place, besieger)
+		fmt.Printf("      %s holds the approaches — %s is under siege\n", besieger, place)
 	case "SiegeLifted":
 		fmt.Printf("      The siege of %s has lifted\n", place)
 	}
