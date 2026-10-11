@@ -1,0 +1,162 @@
+{
+  "health": {
+    "commit": "c92dd92",
+    "migration": 172,
+    "status": "ok"
+  },
+  "world": "3b5fb9cd-8c06-4685-88df-b162c9acff99",
+  "account": "ParityNomad",
+  "setup": "normal APIs only; no SQL",
+  "start": {
+    "active": true,
+    "current_tick": 2731,
+    "grain": {
+      "amount": 1200,
+      "rate_per_tick": 0
+    },
+    "host_unit_id": "f99bec2f-cacf-4fe1-9d79-c58d331741ad",
+    "population": 1000,
+    "q": 41,
+    "r": 74,
+    "silver": {
+      "amount": 0,
+      "rate_per_tick": -2,
+      "ticks_left": 0
+    },
+    "spearmen_in_field": 2,
+    "tick_seconds": 6
+  },
+  "before": {
+    "places": [
+      {
+        "kind": "river",
+        "id": "41,75",
+        "name": "",
+        "can_name": true,
+        "hexes": [
+          {
+            "q": 41,
+            "r": 74
+          },
+          {
+            "q": 41,
+            "r": 75
+          },
+          {
+            "q": 42,
+            "r": 75
+          },
+          {
+            "q": 43,
+            "r": 75
+          }
+        ]
+      }
+    ]
+  },
+  "target": {
+    "place_kind": "river",
+    "place_id": "41,75",
+    "can_name": true,
+    "q": 41,
+    "r": 74,
+    "terrain": "river_delta",
+    "coastal": true,
+    "visible": true,
+    "tier": "live",
+    "fertility": 0.5916751809946337,
+    "mineral": 0.27385721927025586
+  },
+  "preview": null,
+  "order": {
+    "resume": "previous normal API march; see live-host-reached.json and DB route proof"
+  },
+  "trace": [],
+  "claimed": {
+    "kind": "river",
+    "id": "41,75",
+    "name": "",
+    "can_name": true,
+    "hexes": [
+      {
+        "q": 41,
+        "r": 74
+      },
+      {
+        "q": 41,
+        "r": 75
+      },
+      {
+        "q": 42,
+        "r": 75
+      },
+      {
+        "q": 43,
+        "r": 75
+      }
+    ]
+  },
+  "notices": {
+    "notifications": [
+      {
+        "id": "7cf928e2-3acb-4bc3-a22b-d8790f9bd53f",
+        "kind": "UnitArrived",
+        "level": 4,
+        "body": {
+          "q": 41,
+          "r": 74,
+          "name": "Nomadic Host of Eumedes",
+          "type": "nomadic_host",
+          "status": "positioned",
+          "unit_id": "f99bec2f-cacf-4fe1-9d79-c58d331741ad"
+        },
+        "created_at": "2026-10-11T22:21:54.724071Z",
+        "read_at": null
+      },
+      {
+        "id": "e1cbfdb5-6954-4e30-b041-7fb66bfcba68",
+        "kind": "PlaceFirstReached",
+        "level": 1,
+        "body": {
+          "q": 41,
+          "r": 74,
+          "kind": "river",
+          "unit_id": "f99bec2f-cacf-4fe1-9d79-c58d331741ad",
+          "place_id": "41,75",
+          "unit_name": "",
+          "unit_type": "nomadic_host"
+        },
+        "created_at": "2026-10-11T22:21:48.744945Z",
+        "read_at": null
+      }
+    ],
+    "unread": 2
+  },
+  "after": {
+    "places": [
+      {
+        "kind": "river",
+        "id": "41,75",
+        "name": "Doria",
+        "hexes": [
+          {
+            "q": 41,
+            "r": 74
+          },
+          {
+            "q": 41,
+            "r": 75
+          },
+          {
+            "q": 42,
+            "r": 75
+          },
+          {
+            "q": 43,
+            "r": 75
+          }
+        ]
+      }
+    ]
+  }
+}

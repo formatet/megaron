@@ -1,0 +1,6 @@
+--- FAIL: TestPlaceReachMovementHookFirstOwnerAndRerun (0.02s)
+    place_reach_test.go:103: physical movement reach hook missing: claims=0 want1
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.018s
+FAIL
+» färsk DB på migration 172 · commit c92dd928+ändringar

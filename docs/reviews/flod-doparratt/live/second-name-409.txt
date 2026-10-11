@@ -1,0 +1,9 @@
+Error: this place has already been named (HTTP 409)
+Usage:
+  keryx places name <kind> <q,r> <name> [flags]
+
+Flags:
+  -h, --help   help for name
+
+Global Flags:
+  -j, --json   output as JSON (for scripts and MCP)

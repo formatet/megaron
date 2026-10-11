@@ -1,0 +1,15 @@
+{
+  "health": {
+    "commit": "a14f611",
+    "migration": 172,
+    "status": "ok"
+  },
+  "assets": {
+    "map.html": "05d791f634301f54c7a87396e4c1f20542bab52328ec3e463d118f66d043e107",
+    "js/megaron/render/map.js": "5dbbc9bc06c240c1b005c609efb00d94f5441ad93ff1b8fe3965c4467126c69f",
+    "js/megaron/render/place_names.js": "a54672506bd7179cf5d72e5a1f1dd9065f4da23091d970599c22a80e52245d2d",
+    "js/megaron/ui/placename.js": "470524dcd022639d853e5afa213973b9583d16c4c371098c5b4d21e9b1fb3b8c",
+    "js/megaron/ui/drawers/city_production.js": "d237cb70daad4e53f12920733f4d0a048adeaa43ef999684017f7c1b3ef25d60",
+    "js/megaron/render/river_names.js": "d2fb9b5a0266a6751cf021a76f41fa6d7d0625d6f4398c3930e23b2370bb75b4"
+  }
+}

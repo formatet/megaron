@@ -1,0 +1,9 @@
+2026/10/12 00:37:38 INFO scheduled event worker started poll=10ms
+2026/10/12 00:37:38 ERROR scheduled event handler failed type=UnitArrival id=2 attempt=1 err="catch-up arrival erased last reached hex: scanned=true claims=0"
+2026/10/12 00:37:38 INFO scheduled event worker stopped
+--- FAIL: TestPlaceReachWorkerCatchupArrivalFlushesLastHexSameBatch (0.03s)
+    place_reach_test.go:407: catch-up arrival erased last reached hex: scanned=true claims=0
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.037s
+FAIL
+» färsk DB på migration 172 · commit c92dd928+ändringar

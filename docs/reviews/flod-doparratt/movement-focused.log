@@ -1,0 +1,4 @@
+» färsk DB på migration 172 · commit 0f550114+ändringar
+ok  	formatet/megaron/server/internal/combat	1.269s
+ok  	formatet/megaron/server/internal/events	0.003s
+ok  	formatet/megaron/server/cmd/server	0.113s
