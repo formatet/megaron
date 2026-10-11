@@ -1,3 +1,4 @@
+import { esc } from '../format.js';
 import { fmtNum, fmtDays } from '../fmt_num.js';
 import { sitosStateHtml } from './sitos_view.js';
 const n = value => fmtNum(Math.round(Number(value) * 100) / 100);
@@ -39,14 +40,22 @@ export function populationHTML(pd, idle, livestock, provinceID) {
     '<div id="city-slaughter-result" class="action-result"></div>';
 }
 
+export function harvestBlessingHTML(pd) {
+  const b = pd?.harvest_blessing;
+  if (!b || !(b.remaining_ticks > 0) || !(b.yield_bonus > 0) || !b.goods?.length) return '';
+  const percent = Number((b.yield_bonus * 100).toFixed(6));
+  return `<p class="harvest-blessing">Blessed harvest: +${percent}% ${esc(b.goods.join(', '))} yield · ${fmtNum(b.remaining_ticks)} ${b.remaining_ticks === 1 ? 'day' : 'days'} left</p>`;
+}
+
 // Coverage is the city's grain+fish stock at current consumption, not a
 // depletion forecast including future production, or days bought by reserve.
 export function foodSummaryHTML(pd) {
+  const blessing = harvestBlessingHTML(pd);
   const s = pd?.sitos;
-  if (!s || s.coverage_ticks == null || !Number.isFinite(Number(s.coverage_ticks))) return '<p class="empty-state">Food stores not reported.</p>';
+  if (!s || s.coverage_ticks == null || !Number.isFinite(Number(s.coverage_ticks))) return blessing + '<p class="empty-state">Food stores not reported.</p>';
   const growing = Number(s.food_net_per_tick) > 0;
   const warning = pd.food_self_sufficient === false ? ' · the fields cannot feed everyone' : '';
-  return `<p${warning ? ' class="stat-warn"' : ''} title="Current city food at today’s consumption; reserve details are under More.">Food lasts ${fmtDays(s.coverage_ticks)}${growing ? ' · stocks growing' : ''}${warning}.</p>`;
+  return blessing + `<p${warning ? ' class="stat-warn"' : ''} title="Current city food at today’s consumption; reserve details are under More.">Food lasts ${fmtDays(s.coverage_ticks)}${growing ? ' · stocks growing' : ''}${warning}.</p>`;
 }
 
 export function foodDetailsHTML(pd) {

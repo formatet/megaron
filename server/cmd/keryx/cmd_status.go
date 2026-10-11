@@ -615,6 +615,10 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			// adding a new field — best-effort, never blocks `status`.
 			printNoTradeContactsHint(c, cfg.WorldID, prov)
 
+			if line := harvestBlessingLine(sett); line != "" {
+				fmt.Println(line)
+			}
+
 			// Sitos-magasinet: the food the city has set aside, and the number the
 			// whole mechanic turns on — ticks of food covered. Coverage is what
 			// triggers both legs, so the reserve is printed WITH it and with the

@@ -38,3 +38,11 @@ test('growth line: one sentence per state, from the server growth_state',()=>{
  assert.match(g('growing',1),/class="growth-line"/);
  assert.doesNotMatch(populationHTML(pd(),0,0,'p'),/growth-line/,'no state reported, no line');
 });
+
+test('blessed harvest: food section shows authoritative bonus and goods, hides at end tick',()=>{
+ const blessing={until_tick:112,remaining_ticks:12,yield_bonus:0.37,goods:['grain','wine']};
+ assert.match(foodSummaryHTML(pd({harvest_blessing:blessing})),/Blessed harvest: \+37% grain, wine yield · 12 days left/,'active harvest missing from food section');
+ assert.doesNotMatch(foodSummaryHTML(pd({harvest_blessing:blessing})),/fish|25%|ticks/,'no invented bonus, fish or internal time');
+ for(const b of [null,{...blessing,remaining_ticks:0},{...blessing,remaining_ticks:-1}])assert.doesNotMatch(foodSummaryHTML(pd({harvest_blessing:b})),/Blessed harvest/,'no row once blessing ends');
+ assert.match(foodSummaryHTML(pd({harvest_blessing:{...blessing,remaining_ticks:1}})),/1 day left/);
+});

@@ -127,9 +127,10 @@ func fetchPlacementOptions(c *Client, worldID, provinceID string) (*placementOpt
 // server code (megaron_plan_omfordelningsmatningen.md: "add zero server
 // code" was the instruction, and both fields already exist).
 type foodStatus struct {
-	Required       int
-	Placed         int
-	SelfSufficient bool
+	HarvestBlessing string
+	Required        int
+	Placed          int
+	SelfSufficient  bool
 }
 
 // fetchFoodStatus calls GET .../provinces/{id} and pulls out the food_gubbar_*
@@ -155,7 +156,7 @@ func fetchFoodStatus(c *Client, worldID, provinceID string) (*foodStatus, error)
 	}
 	placed, _ := sett["food_gubbar_placed"].(float64)
 	suff, _ := sett["food_self_sufficient"].(bool)
-	return &foodStatus{Required: int(req), Placed: int(placed), SelfSufficient: suff}, nil
+	return &foodStatus{Required: int(req), Placed: int(placed), SelfSufficient: suff, HarvestBlessing: harvestBlessingLine(sett)}, nil
 }
 
 // foodSurplus reports how many placed food (grain/fish) citizens exceed what
