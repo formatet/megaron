@@ -1,0 +1,2084 @@
+[
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 1280,
+   "top": 44,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 822,
+  "canvas_mismatch": null,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "desktop",
+  "surface": "map",
+  "errors": [],
+  "worker": {
+   "chunks": 25,
+   "bakeMs": 510,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "map_facts": {
+   "known_rivers": 3,
+   "cities": 1,
+   "tiers": [
+    "fog",
+    "remembered",
+    "live"
+   ],
+   "zoom": 1
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 1280,
+   "top": 44,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 822,
+  "canvas_mismatch": null,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "desktop",
+  "surface": "map-river",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 581,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "map_facts": {
+   "known_rivers": 3,
+   "cities": 1,
+   "tiers": [
+    "fog",
+    "remembered",
+    "live"
+   ],
+   "zoom": 1
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1062,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "desktop",
+  "surface": "city",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 581,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1062,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "desktop",
+  "surface": "city-food",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 581,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "harvest": "Blessed harvest: +25% grain, livestock, wine, oil yield · 1,960 days left",
+  "harvest_box": {
+   "x": 875.5999755859375,
+   "y": 696.8833618164062,
+   "width": 390.7999267578125,
+   "height": 54.4000244140625
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 1060,
+   "right": 1280,
+   "top": 44,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 669,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "desktop",
+  "surface": "river",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 581,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "river": {
+   "q": 6,
+   "r": 79,
+   "name": "Sangarios",
+   "title": "Delta of Sangarios (6,79)",
+   "terrain": "River Delta"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 44,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 732,
+  "canvas_mismatch": null,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "mobile",
+  "surface": "map",
+  "errors": [],
+  "worker": {
+   "chunks": 12,
+   "bakeMs": 297,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "map_facts": {
+   "known_rivers": 3,
+   "cities": 1,
+   "tiers": [
+    "fog",
+    "remembered",
+    "live"
+   ],
+   "zoom": 1
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 44,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 732,
+  "canvas_mismatch": null,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "mobile",
+  "surface": "map-river",
+  "errors": [],
+  "worker": {
+   "chunks": 19,
+   "bakeMs": 429,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "map_facts": {
+   "known_rivers": 3,
+   "cities": 1,
+   "tiers": [
+    "fog",
+    "remembered",
+    "live"
+   ],
+   "zoom": 1
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1071,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "mobile",
+  "surface": "city",
+  "errors": [],
+  "worker": {
+   "chunks": 19,
+   "bakeMs": 429,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1071,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "mobile",
+  "surface": "city-food",
+  "errors": [],
+  "worker": {
+   "chunks": 19,
+   "bakeMs": 429,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "harvest": "Blessed harvest: +25% grain, livestock, wine, oil yield · 1,958 days left",
+  "harvest_box": {
+   "x": 13.600000381469727,
+   "y": 606.9833374023438,
+   "width": 362.79999351501465,
+   "height": 54.4000244140625
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 170,
+   "right": 390,
+   "top": 44,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 579,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "mobile",
+  "surface": "river",
+  "errors": [],
+  "worker": {
+   "chunks": 19,
+   "bakeMs": 429,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "river": {
+   "q": 6,
+   "r": 79,
+   "name": "Sangarios",
+   "title": "Delta of Sangarios (6,79)",
+   "terrain": "River Delta"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 1060,
+   "right": 1280,
+   "top": 44,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 709,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "desktop",
+  "surface": "host",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 354,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "ships": "SHIPS:\nnever — inland",
+  "ships_box": {
+   "x": 1073.9000244140625,
+   "y": 212.28334045410156,
+   "width": 194.199951171875,
+   "height": 23.116668701171875
+  },
+  "ships_visible": true
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 1060,
+   "right": 1280,
+   "top": 44,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1126,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "desktop",
+  "surface": "host-details",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 354,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "ships": "SHIPS:\nnever — inland",
+  "ships_box": {
+   "x": 1073.9000244140625,
+   "y": 212.28334045410156,
+   "width": 194.199951171875,
+   "height": 23.116668701171875
+  },
+  "ships_visible": true
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 170,
+   "right": 390,
+   "top": 44,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 619,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "mobile",
+  "surface": "host",
+  "errors": [],
+  "worker": {
+   "chunks": 12,
+   "bakeMs": 219,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "ships": "SHIPS:\nnever — inland",
+  "ships_box": {
+   "x": 183.89999389648438,
+   "y": 212.28334045410156,
+   "width": 194.19998168945312,
+   "height": 23.116668701171875
+  },
+  "ships_visible": true
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 170,
+   "right": 390,
+   "top": 44,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1126,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "mobile",
+  "surface": "host-details",
+  "errors": [],
+  "worker": {
+   "chunks": 12,
+   "bakeMs": 219,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "ships": "SHIPS:\nnever — inland",
+  "ships_box": {
+   "x": 183.89999389648438,
+   "y": 212.28334045410156,
+   "width": 194.19998168945312,
+   "height": 23.116668701171875
+  },
+  "ships_visible": true
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1084,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "desktop",
+  "surface": "rich-production",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 546,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1084,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "desktop",
+  "surface": "rich-food",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 546,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "harvest": "Blessed harvest: +25% grain, livestock, wine, oil yield · 1,954 days left",
+  "harvest_box": {
+   "x": 875.5999755859375,
+   "y": 696.9833374023438,
+   "width": 390.7999267578125,
+   "height": 54.4000244140625
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1422,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "desktop",
+  "surface": "rich-buildings",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 546,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "built_rows": 30
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 602,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "desktop",
+  "surface": "rich-garrison",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 546,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "garrison_rows": "Unit\tCount\tPop\tDP\nSpearmen\t216\t1080\t216\nElite Infantry\t16\t160\t48\nWar Chariot\t16\t128\t64\nGalley\t1\t10\t1\nTotal\t\t1378\t329 DP\nDISBAND\nSpearmen \nChariot \nDISBAND →\n\nUnavailable: abandon ?"
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1093,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "mobile",
+  "surface": "rich-production",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 372,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1093,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "mobile",
+  "surface": "rich-food",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 372,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "harvest": "Blessed harvest: +25% grain, livestock, wine, oil yield · 1,951 days left",
+  "harvest_box": {
+   "x": 13.600000381469727,
+   "y": 607.0833129882812,
+   "width": 362.79999351501465,
+   "height": 54.4000244140625
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1408,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "mobile",
+  "surface": "rich-buildings",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 372,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "built_rows": 30
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 554,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "version": "146.0.1",
+  "mode": "mobile",
+  "surface": "rich-garrison",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 372,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "garrison_rows": "Unit\tCount\tPop\tDP\nSpearmen\t212\t1060\t212\nElite Infantry\t12\t120\t36\nWar Chariot\t12\t96\t48\nGalley\t1\t10\t1\nTotal\t\t1286\t297 DP\nDISBAND\nSpearmen \nChariot \nDISBAND →\n\nUnavailable: abandon ?"
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 1280,
+   "top": 44,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 822,
+  "canvas_mismatch": null,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "chromium",
+  "version": "145.0.7632.6",
+  "mode": "desktop",
+  "surface": "map",
+  "errors": [],
+  "worker": {
+   "chunks": 25,
+   "bakeMs": 398.3999996185303,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "map_facts": {
+   "known_rivers": 3,
+   "cities": 1,
+   "tiers": [
+    "fog",
+    "remembered",
+    "live"
+   ],
+   "zoom": 1
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 1280,
+   "top": 44,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 822,
+  "canvas_mismatch": null,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "chromium",
+  "version": "145.0.7632.6",
+  "mode": "desktop",
+  "surface": "map-river",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 456.59999972581863,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "map_facts": {
+   "known_rivers": 3,
+   "cities": 1,
+   "tiers": [
+    "fog",
+    "remembered",
+    "live"
+   ],
+   "zoom": 1
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1058,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "chromium",
+  "version": "145.0.7632.6",
+  "mode": "desktop",
+  "surface": "city",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 456.59999972581863,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1058,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "chromium",
+  "version": "145.0.7632.6",
+  "mode": "desktop",
+  "surface": "city-food",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 456.59999972581863,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "harvest": "Blessed harvest: +25% grain, livestock, wine, oil yield · 1,949 days left",
+  "harvest_box": {
+   "x": 875.59375,
+   "y": 699.0625,
+   "width": 390.8125,
+   "height": 54.375
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 1060,
+   "right": 1280,
+   "top": 44,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 673,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "chromium",
+  "version": "145.0.7632.6",
+  "mode": "desktop",
+  "surface": "river",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 456.59999972581863,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "river": {
+   "q": 6,
+   "r": 79,
+   "name": "Sangarios",
+   "title": "Delta of Sangarios (6,79)",
+   "terrain": "River Delta"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 44,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 732,
+  "canvas_mismatch": null,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "chromium",
+  "version": "145.0.7632.6",
+  "mode": "mobile",
+  "surface": "map",
+  "errors": [],
+  "worker": {
+   "chunks": 12,
+   "bakeMs": 269.8000000715256,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "map_facts": {
+   "known_rivers": 3,
+   "cities": 1,
+   "tiers": [
+    "fog",
+    "remembered",
+    "live"
+   ],
+   "zoom": 1
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 44,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 732,
+  "canvas_mismatch": null,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "chromium",
+  "version": "145.0.7632.6",
+  "mode": "mobile",
+  "surface": "map-river",
+  "errors": [],
+  "worker": {
+   "chunks": 19,
+   "bakeMs": 366.5000001192093,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "map_facts": {
+   "known_rivers": 3,
+   "cities": 1,
+   "tiers": [
+    "fog",
+    "remembered",
+    "live"
+   ],
+   "zoom": 1
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1067,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "chromium",
+  "version": "145.0.7632.6",
+  "mode": "mobile",
+  "surface": "city",
+  "errors": [],
+  "worker": {
+   "chunks": 19,
+   "bakeMs": 366.5000001192093,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1067,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "chromium",
+  "version": "145.0.7632.6",
+  "mode": "mobile",
+  "surface": "city-food",
+  "errors": [],
+  "worker": {
+   "chunks": 19,
+   "bakeMs": 366.5000001192093,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "harvest": "Blessed harvest: +25% grain, livestock, wine, oil yield · 1,948 days left",
+  "harvest_box": {
+   "x": 13.59375,
+   "y": 609.140625,
+   "width": 362.8125,
+   "height": 54.375
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 170,
+   "right": 390,
+   "top": 44,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 583,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "chromium",
+  "version": "145.0.7632.6",
+  "mode": "mobile",
+  "surface": "river",
+  "errors": [],
+  "worker": {
+   "chunks": 19,
+   "bakeMs": 366.5000001192093,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "river": {
+   "q": 6,
+   "r": 79,
+   "name": "Sangarios",
+   "title": "Delta of Sangarios (6,79)",
+   "terrain": "River Delta"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 1060,
+   "right": 1280,
+   "top": 44,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 727,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "chromium",
+  "version": "145.0.7632.6",
+  "mode": "desktop",
+  "surface": "host",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 328.1000000834465,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "ships": "SHIPS:\nnever — inland",
+  "ships_box": {
+   "x": 1073.890625,
+   "y": 212.296875,
+   "width": 194.21875,
+   "height": 23.125
+  },
+  "ships_visible": true
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 1060,
+   "right": 1280,
+   "top": 44,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1125,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "chromium",
+  "version": "145.0.7632.6",
+  "mode": "desktop",
+  "surface": "host-details",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 328.1000000834465,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "ships": "SHIPS:\nnever — inland",
+  "ships_box": {
+   "x": 1073.890625,
+   "y": 212.296875,
+   "width": 194.21875,
+   "height": 23.125
+  },
+  "ships_visible": true
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 170,
+   "right": 390,
+   "top": 44,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 637,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "chromium",
+  "version": "145.0.7632.6",
+  "mode": "mobile",
+  "surface": "host",
+  "errors": [],
+  "worker": {
+   "chunks": 12,
+   "bakeMs": 231.80000007152557,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "ships": "SHIPS:\nnever — inland",
+  "ships_box": {
+   "x": 183.890625,
+   "y": 212.296875,
+   "width": 194.21875,
+   "height": 23.125
+  },
+  "ships_visible": true
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 170,
+   "right": 390,
+   "top": 44,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1125,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "chromium",
+  "version": "145.0.7632.6",
+  "mode": "mobile",
+  "surface": "host-details",
+  "errors": [],
+  "worker": {
+   "chunks": 12,
+   "bakeMs": 231.80000007152557,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "ships": "SHIPS:\nnever — inland",
+  "ships_box": {
+   "x": 183.890625,
+   "y": 212.296875,
+   "width": 194.21875,
+   "height": 23.125
+  },
+  "ships_visible": true
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1081,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "chromium",
+  "version": "145.0.7632.6",
+  "mode": "desktop",
+  "surface": "rich-production",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 442.30000019073486,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1081,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "chromium",
+  "version": "145.0.7632.6",
+  "mode": "desktop",
+  "surface": "rich-food",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 442.30000019073486,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "harvest": "Blessed harvest: +25% grain, livestock, wine, oil yield · 1,946 days left",
+  "harvest_box": {
+   "x": 875.59375,
+   "y": 698.140625,
+   "width": 390.8125,
+   "height": 54.375
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1420,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "chromium",
+  "version": "145.0.7632.6",
+  "mode": "desktop",
+  "surface": "rich-buildings",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 442.30000019073486,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "built_rows": 30
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 603,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "chromium",
+  "version": "145.0.7632.6",
+  "mode": "desktop",
+  "surface": "rich-garrison",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 442.30000019073486,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "garrison_rows": "Unit\tCount\tPop\tDP\nSpearmen\t200\t1000\t200\nGalley\t1\t10\t1\nTotal\t\t1010\t201 DP\nDISBAND\nSpearmen \nChariot \nDISBAND →\n\nUnavailable: abandon ?"
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1090,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "chromium",
+  "version": "145.0.7632.6",
+  "mode": "mobile",
+  "surface": "rich-production",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 348.3000000715256,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1090,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "chromium",
+  "version": "145.0.7632.6",
+  "mode": "mobile",
+  "surface": "rich-food",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 348.3000000715256,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "harvest": "Blessed harvest: +25% grain, livestock, wine, oil yield · 1,945 days left",
+  "harvest_box": {
+   "x": 13.59375,
+   "y": 608.21875,
+   "width": 362.8125,
+   "height": 54.375
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1407,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "chromium",
+  "version": "145.0.7632.6",
+  "mode": "mobile",
+  "surface": "rich-buildings",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 348.3000000715256,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "built_rows": 30
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 513,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "chromium",
+  "version": "145.0.7632.6",
+  "mode": "mobile",
+  "surface": "rich-garrison",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 348.3000000715256,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "garrison_rows": "Unit\tCount\tPop\tDP\nSpearmen\t200\t1000\t200\nGalley\t1\t10\t1\nTotal\t\t1010\t201 DP\nDISBAND\nSpearmen \nChariot \nDISBAND →\n\nUnavailable: abandon ?"
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 1280,
+   "top": 44,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 822,
+  "canvas_mismatch": null,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "webkit",
+  "version": "26.0",
+  "mode": "desktop",
+  "surface": "map",
+  "errors": [],
+  "worker": {
+   "chunks": 25,
+   "bakeMs": 942.9999999999997,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "map_facts": {
+   "known_rivers": 3,
+   "cities": 1,
+   "tiers": [
+    "fog",
+    "remembered",
+    "live"
+   ],
+   "zoom": 1
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 1280,
+   "top": 44,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 822,
+  "canvas_mismatch": null,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "webkit",
+  "version": "26.0",
+  "mode": "desktop",
+  "surface": "map-river",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 1100.9999999999995,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "map_facts": {
+   "known_rivers": 3,
+   "cities": 1,
+   "tiers": [
+    "fog",
+    "remembered",
+    "live"
+   ],
+   "zoom": 1
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1047,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "webkit",
+  "version": "26.0",
+  "mode": "desktop",
+  "surface": "city",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 1100.9999999999995,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1047,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "webkit",
+  "version": "26.0",
+  "mode": "desktop",
+  "surface": "city-food",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 1100.9999999999995,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "harvest": "Blessed harvest: +25% grain, livestock, wine, oil yield · 1,944 days left",
+  "harvest_box": {
+   "x": 875.59375,
+   "y": 700.921875,
+   "width": 378.8125,
+   "height": 54
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 1060,
+   "right": 1280,
+   "top": 44,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 671,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "webkit",
+  "version": "26.0",
+  "mode": "desktop",
+  "surface": "river",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 1100.9999999999995,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "river": {
+   "q": 6,
+   "r": 79,
+   "name": "Sangarios",
+   "title": "Delta of Sangarios (6,79)",
+   "terrain": "River Delta"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 44,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 732,
+  "canvas_mismatch": null,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "webkit",
+  "version": "26.0",
+  "mode": "mobile",
+  "surface": "map",
+  "errors": [],
+  "worker": {
+   "chunks": 15,
+   "bakeMs": 690.0000000000001,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "map_facts": {
+   "known_rivers": 3,
+   "cities": 1,
+   "tiers": [
+    "fog",
+    "remembered",
+    "live"
+   ],
+   "zoom": 1
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 44,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 732,
+  "canvas_mismatch": null,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "webkit",
+  "version": "26.0",
+  "mode": "mobile",
+  "surface": "map-river",
+  "errors": [],
+  "worker": {
+   "chunks": 22,
+   "bakeMs": 871.0000000000001,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "map_facts": {
+   "known_rivers": 3,
+   "cities": 1,
+   "tiers": [
+    "fog",
+    "remembered",
+    "live"
+   ],
+   "zoom": 1
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1056,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "webkit",
+  "version": "26.0",
+  "mode": "mobile",
+  "surface": "city",
+  "errors": [],
+  "worker": {
+   "chunks": 22,
+   "bakeMs": 871.0000000000001,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1056,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "webkit",
+  "version": "26.0",
+  "mode": "mobile",
+  "surface": "city-food",
+  "errors": [],
+  "worker": {
+   "chunks": 22,
+   "bakeMs": 871.0000000000001,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "harvest": "Blessed harvest: +25% grain, livestock, wine, oil yield · 1,942 days left",
+  "harvest_box": {
+   "x": 13.59375,
+   "y": 610.625,
+   "width": 350.8125,
+   "height": 54
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 170,
+   "right": 390,
+   "top": 44,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 581,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "webkit",
+  "version": "26.0",
+  "mode": "mobile",
+  "surface": "river",
+  "errors": [],
+  "worker": {
+   "chunks": 22,
+   "bakeMs": 871.0000000000001,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "river": {
+   "q": 6,
+   "r": 79,
+   "name": "Sangarios",
+   "title": "Delta of Sangarios (6,79)",
+   "terrain": "River Delta"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 1060,
+   "right": 1280,
+   "top": 44,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 711,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "webkit",
+  "version": "26.0",
+  "mode": "desktop",
+  "surface": "host",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 640,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "ships": "SHIPS:\nnever — inland\n",
+  "ships_box": {
+   "x": 1073.890625,
+   "y": 211.671875,
+   "width": 194.21875,
+   "height": 23
+  },
+  "ships_visible": true
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 1060,
+   "right": 1280,
+   "top": 44,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1089,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "webkit",
+  "version": "26.0",
+  "mode": "desktop",
+  "surface": "host-details",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 640,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "ships": "SHIPS:\nnever — inland\n",
+  "ships_box": {
+   "x": 1073.890625,
+   "y": 211.671875,
+   "width": 194.21875,
+   "height": 23
+  },
+  "ships_visible": true
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 170,
+   "right": 390,
+   "top": 44,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 621,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "webkit",
+  "version": "26.0",
+  "mode": "mobile",
+  "surface": "host",
+  "errors": [],
+  "worker": {
+   "chunks": 12,
+   "bakeMs": 371,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "ships": "SHIPS:\nnever — inland\n",
+  "ships_box": {
+   "x": 183.890625,
+   "y": 211.671875,
+   "width": 194.21875,
+   "height": 23
+  },
+  "ships_visible": true
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 170,
+   "right": 390,
+   "top": 44,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1089,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "webkit",
+  "version": "26.0",
+  "mode": "mobile",
+  "surface": "host-details",
+  "errors": [],
+  "worker": {
+   "chunks": 12,
+   "bakeMs": 371,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "ships": "SHIPS:\nnever — inland\n",
+  "ships_box": {
+   "x": 183.890625,
+   "y": 211.671875,
+   "width": 194.21875,
+   "height": 23
+  },
+  "ships_visible": true
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1069,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "webkit",
+  "version": "26.0",
+  "mode": "desktop",
+  "surface": "rich-production",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 943.0000000000002,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1069,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "webkit",
+  "version": "26.0",
+  "mode": "desktop",
+  "surface": "rich-food",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 943.0000000000002,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "harvest": "Blessed harvest: +25% grain, livestock, wine, oil yield · 1,939 days left",
+  "harvest_box": {
+   "x": 875.59375,
+   "y": 700.828125,
+   "width": 378.8125,
+   "height": 54
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1407,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "webkit",
+  "version": "26.0",
+  "mode": "desktop",
+  "surface": "rich-buildings",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 943.0000000000002,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "built_rows": 30
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 607,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "webkit",
+  "version": "26.0",
+  "mode": "desktop",
+  "surface": "rich-garrison",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 943.0000000000002,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "garrison_rows": "Unit\tCount\tPop\tDP\nSpearmen\t200\t1000\t200\nGalley\t1\t10\t1\nTotal\t\t1010\t201 DP\nDISBAND\nSpearmen \nChariot \nDISBAND →\nUnavailable: abandon ?\n"
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1078,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "webkit",
+  "version": "26.0",
+  "mode": "mobile",
+  "surface": "rich-production",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 582.0000000000002,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1078,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "webkit",
+  "version": "26.0",
+  "mode": "mobile",
+  "surface": "rich-food",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 582.0000000000002,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "harvest": "Blessed harvest: +25% grain, livestock, wine, oil yield · 1,938 days left",
+  "harvest_box": {
+   "x": 13.59375,
+   "y": 610.53125,
+   "width": 350.8125,
+   "height": 54
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1394,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "webkit",
+  "version": "26.0",
+  "mode": "mobile",
+  "surface": "rich-buildings",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 582.0000000000002,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "built_rows": 30
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 517,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "webkit",
+  "version": "26.0",
+  "mode": "mobile",
+  "surface": "rich-garrison",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 582.0000000000002,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "garrison_rows": "Unit\tCount\tPop\tDP\nSpearmen\t200\t1000\t200\nGalley\t1\t10\t1\nTotal\t\t1010\t201 DP\nDISBAND\nSpearmen \nChariot \nDISBAND →\nUnavailable: abandon ?\n"
+ }
+]

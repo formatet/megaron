@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-paritet-20261011/tools/browser_parity_probe.py", line 11, in <module>
+    m=page.evaluate(MEASURE,['.panel',None]);assert not m['covered'],f'scrolled-away control wrongly counted as covered: {m}'
+                                                    ^^^^^^^^^^^^^^^^
+AssertionError: scrolled-away control wrongly counted as covered: {'found': True, 'page_hscroll': False, 'box': {'left': 0, 'right': 300, 'top': 30, 'bottom': 330}, 'box_outside': False, 'content_height': 300, 'sticking': [], 'clipped': [], 'covered': ['#scrolled «A scrolled-away action» ← div.header «Header»']}

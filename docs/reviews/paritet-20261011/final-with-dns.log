@@ -1,0 +1,17 @@
+firefox complete 22 measurements
+chromium complete 44 measurements
+webkit complete 66 measurements
+chromium desktop map       JS-fel: Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+chromium mobile  map       JS-fel: Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+chromium desktop host      JS-fel: Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+chromium mobile  host      JS-fel: Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+chromium desktop rich-production JS-fel: Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+chromium mobile  rich-production JS-fel: Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+webkit   desktop map       JS-fel: Failed to load resource: Error resolving “umami.formatet.se”: Name or service not known
+webkit   mobile  map       JS-fel: Failed to load resource: Error resolving “umami.formatet.se”: Name or service not known
+webkit   desktop host      JS-fel: Failed to load resource: Error resolving “umami.formatet.se”: Name or service not known
+webkit   mobile  host      JS-fel: Failed to load resource: Error resolving “umami.formatet.se”: Name or service not known
+webkit   desktop rich-production JS-fel: Failed to load resource: Error resolving “umami.formatet.se”: Name or service not known
+webkit   mobile  rich-production JS-fel: Failed to load resource: Error resolving “umami.formatet.se”: Name or service not known
+
+66 mätningar, 12 fynd → docs/reviews/paritet-20261011/final
