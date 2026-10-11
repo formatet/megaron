@@ -414,6 +414,16 @@ med Details stängd och öppen, och "Found the metropolis here" måste ligga i b
 Vid 390 px trycker verktyget (`tap`): Playwrights Firefox med pekskärm skickar inga pointer-händelser för
 ett musklick, så kartan ser inget klick. Det är en artefakt i riggen och ingen bugg i spelet.
 
+Kvällsytor kan väljas med `--surfaces map map-river city city-food river`; `--rich-user NAMN`
+lägger till samma stadsflöde i en stad med mycket innehåll (Production/Food/Buildings/Garrison).
+Flodkortet öppnas från spelarens faktiska kända flod och Host mäter också den alltid synliga Ships-raden.
+Kontroller som är scrollade utanför sin förälders klippruta räknas inte som täckta; kalibrera med
+`python3 tools/browser_parity_probe.py` (äkta täckning och huvudknapp ska fortfarande upptäckas).
+`tools/parity_fixture.py` skapar den namngivna innehållsfixturen för 2026-10-11 i acceptansriggen:
+normalt register/join/found, sedan explicit SQL-stressdata. Det är layoutbevis, inte ett progressionsprov.
+`tools/parity_rig_runtime.py` är DNS-fallbacken: lokal CGO0-server från aktuell gren på cachad
+acceptansruntime, aktuella migrationer och verifierade branch-assets. Rapport: `docs/reviews/paritet-20261011/`.
+
 ## Markraster-flod (slice A)
 
 `python3 tools/markraster_flod.py --host http://localhost:8742` tar frysta Firefox-bilder,
