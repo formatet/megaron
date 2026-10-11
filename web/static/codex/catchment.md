@@ -2,6 +2,8 @@ A settlement lives off the land around it. That land is its **catchment**: the c
 
 The catchment is the **only** place production comes from. There is no abstract "income": every sack of grain, every log and every ingot was produced by one of your [[citizens]] standing on one of these hexes, or working in a [[buildings|building]] in the city.
 
+On the map, a city's catchment is outlined in gold when you have that city in focus: when its City drawer is open, or when you click the city itself.
+
 ## What it means for you
 
 - **Where you found decides what you can make.** A catchment of plains and coast feeds people; one with a mountain may hold copper or silver. The [[founding]] forecast shows you the catchment before you commit.

@@ -32,7 +32,7 @@ globalThis.window ??= {
 };
 globalThis.localStorage ??= { getItem: () => null, setItem() {}, removeItem() {} };
 
-const { panDelta, CATCHMENT_OFFSETS, CATCHMENT_RADIUS, workedHexesFromRoster, messengerLegPosition, hexPx } = await import('./map.js');
+const { panDelta, CATCHMENT_OFFSETS, CATCHMENT_RADIUS, workedHexesFromRoster, messengerLegPosition, hexPx, catchmentFocusCities } = await import('./map.js');
 
 // The worked-hex map markers (report 54f2b747) come from the placement-roster
 // payload reduced to one {q,r} per own catchment hex carrying a placed gubbe.
@@ -240,4 +240,21 @@ test('physical river ink survives encroaching ground and stops at sea and fog', 
     }
   }
   assert.ok(fog > 0);
+});
+
+test('catchment tint only for the city in focus: open City drawer or own city selected', async () => {
+  const { State } = await import('../state.js');
+  const myc = { id: 'myc', q: 0, r: 0, own: true, is_capital: true }, tir = { id: 'tir', q: 5, r: 0, own: true }, kyme = { id: 'kyme', q: 9, r: 0, own: false };
+  State.provinceData = [myc, tir, kyme];
+  State.activeDrawer = null; State.selectedHex = null; State.cityViewID = null;
+  assert.deepEqual(catchmentFocusCities(), [], 'no tint on the plain map');
+  State.activeDrawer = 'city'; State.cityViewID = 'tir';
+  assert.deepEqual(catchmentFocusCities(), [tir], 'the city the drawer shows');
+  State.activeDrawer = 'war';
+  assert.deepEqual(catchmentFocusCities(), [], 'another drawer is not the city');
+  State.activeDrawer = null; State.selectedHex = { q: 0, r: 0 };
+  assert.deepEqual(catchmentFocusCities(), [myc], 'own city selected on the map');
+  State.selectedHex = { q: 9, r: 0 };
+  assert.deepEqual(catchmentFocusCities(), [], 'a foreign city gives no tint');
+  State.selectedHex = null;
 });

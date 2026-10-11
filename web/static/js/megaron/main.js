@@ -83,6 +83,7 @@ export function openDrawer(name) {
   if (tr) tr.classList.add('active');
   document.getElementById('map-dim').classList.add('visible');
   State.activeDrawer = name;
+  State.dirty = true; // the map's catchment tint follows the City drawer
   track('drawer_open', { name });
   showLawagatasBrief(name);
   loadDrawerContent(name);
@@ -95,6 +96,7 @@ export function closeDrawer(name) {
   if (tr) tr.classList.remove('active');
   document.getElementById('map-dim').classList.remove('visible');
   State.activeDrawer = null;
+  State.dirty = true;
   State.previousDrawer = name;
   if (name === 'city') stopCityAnim();
 }

@@ -19,6 +19,7 @@ export function cycleCityView(dir) {
   let idx = mine.findIndex(p => p.id === current.id);
   idx = (idx + dir + mine.length) % mine.length;
   State.cityViewID = mine[idx].id;
+  State.dirty = true; // the map's catchment tint follows the shown city
   loadCityDrawer();
 }
 

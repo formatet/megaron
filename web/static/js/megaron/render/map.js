@@ -1,4 +1,4 @@
-import { State, ownCapital } from '../state.js';
+import { State, ownCapital, activeCitySettlement } from '../state.js';
 import { fetchAuth } from '../api.js';
 import { serverNow } from '../clock.js';
 import {
@@ -2761,10 +2761,11 @@ export function render() {
 
   // 2.5 Catchment zone — subtle gold tint on the 19 catchment tiles of own
   // cities (the city's own hex + the radius-2 disc). [0,0] = the settlement's
-  // own hex. See CATCHMENT_OFFSETS.
+  // own hex. See CATCHMENT_OFFSETS. Only for the city in focus (Timothy
+  // 2026-10-11): the one the City drawer shows, or the own city selected on the
+  // map. With the warped ground the tint read as a hex grid over every city.
   if (State.camera.zoom >= LOCAL_ZOOM) {
-    for (const p of State.provinceData) {
-      if (!p.own || p.is_outpost) continue;
+    for (const p of catchmentFocusCities()) {
       for (const [dq, dr] of CATCHMENT_OFFSETS) {
         const nq = p.q + dq, nr = p.r + dr;
         if (dq !== 0 || dr !== 0) {
@@ -3316,6 +3317,19 @@ const TERRAIN_LABELS = {
   mountain_limestone: 'Limestone Mountains', mountain_red: 'Red Mountains',
   river_ford: 'River Ford',
 };
+
+// The own cities whose catchment tint is shown: the one the City drawer is
+// open on, and an own city whose hex is selected on the map.
+export function catchmentFocusCities() {
+  const out = [];
+  if (State.activeDrawer === 'city') { const c = activeCitySettlement(); if (c) out.push(c); }
+  const h = State.selectedHex;
+  if (h) {
+    const p = State.provinceData.find(x => x.q === h.q && x.r === h.r && x.own && !x.is_outpost);
+    if (p && !out.includes(p)) out.push(p);
+  }
+  return out;
+}
 
 function terrainLabel(t) {
   return TERRAIN_LABELS[t] || (t.charAt(0).toUpperCase() + t.slice(1).replaceAll('_', ' '));
