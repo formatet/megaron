@@ -162,11 +162,14 @@ State.tileData = tiles;
 // Rutnätet: rad = befolkningsled, kolumn = murnivå. Namnet bär båda så en
 // skärmdump går att läsa utan att man räknar rutor.
 const LED = ['Hamlet', 'Town'];
+// ?kultur=hatti|khemetiu|… byter ledrutnätets kultur, så att citadellens tre
+// former (megaron, torn, pylon) går att se — alla världsfixturer är akhaiska.
+const KULTUR = new URLSearchParams(location.search).get('kultur') || 'akhaier';
 const cities = [];
 LED.forEach((name, tier) => {
   for (let wl = 0; wl < 4; wl++) {
     cities.push(Object.assign(ax(wl * 2, tier * 3), {
-      name: `${name}·mur${wl}`, own: true, culture: 'akhaier',
+      name: `${name}·mur${wl}`, own: true, culture: KULTUR,
       walls: wl, size_tier: tier, state: 'active',
       army_total: wl === 3 ? 4 : 0, is_outpost: false,
     }));
