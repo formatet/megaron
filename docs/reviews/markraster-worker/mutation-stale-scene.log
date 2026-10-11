@@ -1,0 +1,60 @@
+TAP version 13
+# Subtest: worker queue keeps only one bake in flight and replaces obsolete camera priorities
+ok 1 - worker queue keeps only one bake in flight and replaces obsolete camera priorities
+  ---
+  duration_ms: 1.104525
+  type: 'test'
+  ...
+# Subtest: late river/FOW/world result is discarded and both transferred bitmaps are closed
+not ok 2 - late river/FOW/world result is discarded and both transferred bitmaps are closed
+  ---
+  duration_ms: 0.553515
+  type: 'test'
+  location: '/home/tk/wt/codex-markraster-worker/web/static/js/megaron/render/chunk_worker.test.mjs:27:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    stale scene must never enter the chunk cache
+
+    1 !== 0
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-markraster-worker/web/static/js/megaron/render/chunk_worker.test.mjs:33:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: worker failure terminates the queue and invokes the synchronous fallback once
+ok 3 - worker failure terminates the queue and invokes the synchronous fallback once
+  ---
+  duration_ms: 0.203057
+  type: 'test'
+  ...
+# Subtest: constructor failure allows immediate synchronous fallback
+ok 4 - constructor failure allows immediate synchronous fallback
+  ---
+  duration_ms: 0.103766
+  type: 'test'
+  ...
+# Subtest: terrain renderer has independent scene caches and needs no DOM or global game State
+ok 5 - terrain renderer has independent scene caches and needs no DOM or global game State
+  ---
+  duration_ms: 0.59044
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 4
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 43.272863

@@ -1,0 +1,126 @@
+{
+  "base": "547fd79e",
+  "mode": "before",
+  "engines": {
+    "firefox": {
+      "world": {
+        "first_view_max_render_block_ms": 850,
+        "first_view_max_timer_lateness_ms": 849,
+        "chunks": {
+          "chunks": 54,
+          "bakeMs": 1395
+        },
+        "zoom_out_max_render_block_ms": 196,
+        "zoom_out_max_timer_lateness_ms": 191
+      },
+      "forest": {
+        "first_view_max_render_block_ms": 226,
+        "first_view_max_timer_lateness_ms": 231,
+        "chunks": {
+          "chunks": 25,
+          "bakeMs": 437
+        }
+      },
+      "relief": {
+        "first_view_max_render_block_ms": 221,
+        "first_view_max_timer_lateness_ms": 225,
+        "chunks": {
+          "chunks": 25,
+          "bakeMs": 466
+        }
+      },
+      "cities": {
+        "first_view_max_render_block_ms": 252,
+        "first_view_max_timer_lateness_ms": 257,
+        "chunks": {
+          "chunks": 25,
+          "bakeMs": 462
+        }
+      },
+      "river": {
+        "first_view_max_render_block_ms": 262,
+        "first_view_max_timer_lateness_ms": 266,
+        "chunks": {
+          "chunks": 25,
+          "bakeMs": 500
+        }
+      },
+      "world-min": {
+        "first_view_max_render_block_ms": 1551,
+        "first_view_max_timer_lateness_ms": 1550,
+        "chunks": {
+          "chunks": 104,
+          "bakeMs": 2033
+        }
+      },
+      "world-fow": {
+        "first_view_max_render_block_ms": 591,
+        "first_view_max_timer_lateness_ms": 591,
+        "chunks": {
+          "chunks": 54,
+          "bakeMs": 998
+        }
+      }
+    },
+    "chromium": {
+      "world": {
+        "first_view_max_render_block_ms": 638.3000000119209,
+        "first_view_max_timer_lateness_ms": 650.4000000357628,
+        "chunks": {
+          "chunks": 54,
+          "bakeMs": 1034.3999998569489
+        },
+        "zoom_out_max_render_block_ms": 167.80000001192093,
+        "zoom_out_max_timer_lateness_ms": 165.69999998807907
+      },
+      "forest": {
+        "first_view_max_render_block_ms": 189.30000001192093,
+        "first_view_max_timer_lateness_ms": 202.10000002384186,
+        "chunks": {
+          "chunks": 25,
+          "bakeMs": 357.60000014305115
+        }
+      },
+      "relief": {
+        "first_view_max_render_block_ms": 214.30000001192093,
+        "first_view_max_timer_lateness_ms": 223.69999998807907,
+        "chunks": {
+          "chunks": 25,
+          "bakeMs": 422.6000000834465
+        }
+      },
+      "cities": {
+        "first_view_max_render_block_ms": 202.69999998807907,
+        "first_view_max_timer_lateness_ms": 212.69999998807907,
+        "chunks": {
+          "chunks": 25,
+          "bakeMs": 435.9000000357628
+        }
+      },
+      "river": {
+        "first_view_max_render_block_ms": 208.0999999642372,
+        "first_view_max_timer_lateness_ms": 217.5999999642372,
+        "chunks": {
+          "chunks": 25,
+          "bakeMs": 388.6000000834465
+        }
+      },
+      "world-min": {
+        "first_view_max_render_block_ms": 1185,
+        "first_view_max_timer_lateness_ms": 1194.699999988079,
+        "chunks": {
+          "chunks": 104,
+          "bakeMs": 1513.300000011921
+        }
+      },
+      "world-fow": {
+        "first_view_max_render_block_ms": 473.5,
+        "first_view_max_timer_lateness_ms": 480.9000000357628,
+        "chunks": {
+          "chunks": 54,
+          "bakeMs": 821.6000000238419
+        }
+      }
+    }
+  }
+}
