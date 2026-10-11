@@ -1,0 +1,15 @@
+Mycenae []  Pop: 1.0k  Labor: 10  Walls: 1/3  Loyalty: 0
+  Loyalty 1–4 (1=lowest; revolt also requires a hostile garrison majority + a triggering event)
+  Raised by: kharis ≥ favor threshold, fed/varied diet (daily welfare), gifts ≥50 silver-equivalent (`keryx transfer`), won/defended battles.
+  Lowered by: starvation, too many colonies (overextension), neglect (>2 days without a gift), lost battles, a borrowed army kept too long.
+
+Blessed harvest: +25% grain, livestock, wine, oil yield · 12 days left
+Sitos granary: 200 stored (200 grain) / cap 600 · coverage 12.0 days (granary fills above 30, drains below 10) · resting — neither storing nor releasing
+
+Resources
+  (rate = net: production − consumption, per day)
+  ⚠ Timber production ~0 — timber gates harbour (140)/barracks (80)/foundry (80)/temple (60). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).
+  Kharis        0  () · passive +0.0 per day
+
+Army (garrison in Mycenae)
+  Field units and other cities are shown in `keryx unit list`.

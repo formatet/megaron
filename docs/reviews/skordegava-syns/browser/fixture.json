@@ -1,0 +1,51 @@
+{
+  "world": "11111111-1111-1111-1111-111111111111",
+  "province": "22222222-2222-2222-2222-222222222222",
+  "settlement": {
+    "id": "33333333-3333-3333-3333-333333333333",
+    "name": "Mycenae",
+    "population": 1000,
+    "labor_pool": 10,
+    "army": {},
+    "walls": 1,
+    "buildings": [],
+    "build_queue": [],
+    "can_afford": [],
+    "can_recruit": [],
+    "resources": {},
+    "available_prayers": [],
+    "food_gubbar_required": 7,
+    "food_gubbar_placed": 7,
+    "food_self_sufficient": true,
+    "grain_prod_rate": 12,
+    "grain_consum_rate": 5,
+    "sitos": {
+      "coverage_ticks": 12,
+      "low_ticks": 10,
+      "high_ticks": 30,
+      "granary_total": 200,
+      "granary_cap": 600,
+      "granary_per_good": {
+        "grain": 200
+      },
+      "food_net_per_tick": 7
+    },
+    "harvest_blessing": {
+      "until_tick": 112,
+      "remaining_ticks": 12,
+      "yield_bonus": 0.25,
+      "goods": [
+        "grain",
+        "livestock",
+        "wine",
+        "oil"
+      ]
+    }
+  },
+  "placement_options": {
+    "hexes": [],
+    "buildings": [],
+    "total_gubbar": 10,
+    "pool_size": 3
+  }
+}

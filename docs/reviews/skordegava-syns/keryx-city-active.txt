@@ -1,0 +1,7 @@
+Citizens: 7/10 placed, 3 idle
+
+Blessed harvest: +25% grain, livestock, wine, oil yield · 12 days left
+Food: 7 needed, 7 placed
+
+Catchment:
+  (no scouted catchment hexes yet)

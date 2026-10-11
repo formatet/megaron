@@ -1,0 +1,14 @@
+--- FAIL: TestHarvestBlessingBothCityCommands (0.00s)
+    --- FAIL: TestHarvestBlessingBothCityCommands/active (0.00s)
+        harvest_status_test.go:44: status missing authoritative harvest row: Mycenae []  Pop: 1.0k  Labor: 0  Walls: 0/3  Loyalty: 0
+              Loyalty 1–4 (1=lowest; revolt also requires a hostile garrison majority + a triggering event)
+              Raised by: kharis ≥ favor threshold, fed/varied diet (daily welfare), gifts ≥50 silver-equivalent (`keryx transfer`), won/defended battles.
+              Lowered by: starvation, too many colonies (overextension), neglect (>2 days without a gift), lost battles, a borrowed army kept too long.
+
+            Resources
+              (rate = net: production − consumption, per day)
+              Kharis        0  () · passive +0.0 per day
+
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.005s
+FAIL

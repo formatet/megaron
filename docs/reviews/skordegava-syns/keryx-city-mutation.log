@@ -1,0 +1,11 @@
+--- FAIL: TestHarvestBlessingBothCityCommands (0.00s)
+    --- FAIL: TestHarvestBlessingBothCityCommands/active (0.00s)
+        harvest_status_test.go:44: city missing authoritative harvest row: Citizens: 7/10 placed, 3 idle
+
+            Food: 7 needed, 7 placed
+
+            Catchment:
+              (no scouted catchment hexes yet)
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.004s
+FAIL

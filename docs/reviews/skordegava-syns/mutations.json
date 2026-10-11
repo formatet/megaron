@@ -1,0 +1,27 @@
+[
+  {
+    "mutation": "api-expiry",
+    "red": "ended harvest blessing leaked",
+    "restored_sha256": "2c4e13bbcbbfd25bf962e02dc72d516237335a3eb5e78c60a5452243b716d2b5"
+  },
+  {
+    "mutation": "api-bonus",
+    "red": "harvest status contradicts",
+    "restored_sha256": "2c4e13bbcbbfd25bf962e02dc72d516237335a3eb5e78c60a5452243b716d2b5"
+  },
+  {
+    "mutation": "web-row",
+    "red": "active harvest missing",
+    "restored_sha256": "c7fad98346fba3379d3a5a461196491d9372641ade6d34da943d494796de6906"
+  },
+  {
+    "mutation": "keryx-status",
+    "red": "status missing authoritative harvest row",
+    "restored_sha256": "8e20e30d693580aa85725b08a7f97eff5cfa66fa314f58662d9c48e61bfe6b0d"
+  },
+  {
+    "mutation": "keryx-city",
+    "red": "city missing authoritative harvest row",
+    "restored_sha256": "ce41f884c8c9eaf45fe28ed6bedb75bf37ee2e69200356dcaa86053a4af57f54"
+  }
+]

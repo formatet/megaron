@@ -1,0 +1,67 @@
+{
+  "browser": "Firefox",
+  "fixture": "explicit HTTP + State/bootstrap; actual CSS/drawer/map renderer, no gameplay claims",
+  "source_sha256": {
+    "web/static/js/megaron/ui/drawers/city_production.js": "c7fad98346fba3379d3a5a461196491d9372641ade6d34da943d494796de6906",
+    "web/static/js/megaron/ui/drawers/city.js": "36057d31b514284afeafcee78dabab7a8201b0049d6699f536e8e1e54cdfb9e5",
+    "web/static/megaron.css": "e6378deb59641a9a798fb5fa3b75c4f9155127d5d6f94d4906ec4da737afd81f"
+  },
+  "results": [
+    {
+      "width": 1280,
+      "mode": "before",
+      "food": "Food lasts 12 days \u00b7 stocks growing.",
+      "errors": [],
+      "unexpected": []
+    },
+    {
+      "width": 1280,
+      "mode": "active",
+      "food": "Blessed harvest: +25% grain, livestock, wine, oil yield \u00b7 12 days left\n\nFood lasts 12 days \u00b7 stocks growing.",
+      "errors": [],
+      "unexpected": []
+    },
+    {
+      "width": 1280,
+      "mode": "end",
+      "food": "Food lasts 12 days \u00b7 stocks growing.",
+      "errors": [],
+      "unexpected": []
+    },
+    {
+      "width": 1280,
+      "mode": "active-repeat",
+      "food": "Blessed harvest: +25% grain, livestock, wine, oil yield \u00b7 12 days left\n\nFood lasts 12 days \u00b7 stocks growing.",
+      "errors": [],
+      "unexpected": []
+    },
+    {
+      "width": 390,
+      "mode": "before",
+      "food": "Food lasts 12 days \u00b7 stocks growing.",
+      "errors": [],
+      "unexpected": []
+    },
+    {
+      "width": 390,
+      "mode": "active",
+      "food": "Blessed harvest: +25% grain, livestock, wine, oil yield \u00b7 12 days left\n\nFood lasts 12 days \u00b7 stocks growing.",
+      "errors": [],
+      "unexpected": []
+    },
+    {
+      "width": 390,
+      "mode": "end",
+      "food": "Food lasts 12 days \u00b7 stocks growing.",
+      "errors": [],
+      "unexpected": []
+    },
+    {
+      "width": 390,
+      "mode": "active-repeat",
+      "food": "Blessed harvest: +25% grain, livestock, wine, oil yield \u00b7 12 days left\n\nFood lasts 12 days \u00b7 stocks growing.",
+      "errors": [],
+      "unexpected": []
+    }
+  ]
+}

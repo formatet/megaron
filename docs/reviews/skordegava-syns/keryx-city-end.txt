@@ -1,0 +1,6 @@
+Citizens: 7/10 placed, 3 idle
+
+Food: 7 needed, 7 placed
+
+Catchment:
+  (no scouted catchment hexes yet)

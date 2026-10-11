@@ -1,0 +1,30 @@
+[
+  {
+    "width": 1280,
+    "a": "active",
+    "b": "active-repeat",
+    "different_pixels": 0,
+    "bbox": null
+  },
+  {
+    "width": 1280,
+    "a": "before",
+    "b": "end",
+    "different_pixels": 0,
+    "bbox": null
+  },
+  {
+    "width": 390,
+    "a": "active",
+    "b": "active-repeat",
+    "different_pixels": 0,
+    "bbox": null
+  },
+  {
+    "width": 390,
+    "a": "before",
+    "b": "end",
+    "different_pixels": 0,
+    "bbox": null
+  }
+]
