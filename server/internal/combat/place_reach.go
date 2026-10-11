@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/unit"
 	"formatet/megaron/server/internal/world"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -56,6 +57,7 @@ func (h *PlaceReachScanHandler) Handle(ctx context.Context, e events.ScheduledEv
 
 type placeVoyage struct {
 	id, owner      uuid.UUID
+	displayID      uuid.UUID
 	key, name, typ string
 	route          StoredRoute
 	departed       time.Time
@@ -90,7 +92,11 @@ func loadPlaceVoyages(ctx context.Context, tx pgx.Tx, worldID uuid.UUID) ([]plac
 		v.route = r
 		v.key = "t:" + v.id.String()
 		if v.name == "" {
-			v.name = kind
+			if v.typ == "caravan" {
+				v.name = "Caravan"
+			} else {
+				v.name = unit.DisplayName(v.typ)
+			}
 		}
 		out = append(out, v)
 	}
@@ -117,6 +123,7 @@ func loadPlaceVoyages(ctx context.Context, tx pgx.Tx, worldID uuid.UUID) ([]plac
 			continue
 		}
 		v.route = r
+		v.displayID = v.id
 		if departed != nil {
 			v.departed = *departed
 		}
@@ -218,7 +225,13 @@ func recordPlaceEntriesTx(ctx context.Context, tx pgx.Tx, store *events.Store, w
 			if named != nil {
 				continue
 			} // admin-spent right never promises a naming action
-			body := map[string]any{"unit_id": v.id, "unit_name": v.name, "unit_type": v.typ, "kind": p.Kind, "place_id": fmt.Sprintf("%d,%d", p.Anchor[0], p.Anchor[1]), "q": entry.hex[0], "r": entry.hex[1]}
+			displayName := v.name
+			if v.displayID != uuid.Nil {
+				if name := unit.LoadDisplayName(ctx, tx, v.displayID); name != "" {
+					displayName = name
+				}
+			}
+			body := map[string]any{"unit_id": v.id, "unit_name": displayName, "unit_type": v.typ, "kind": p.Kind, "place_id": fmt.Sprintf("%d,%d", p.Anchor[0], p.Anchor[1]), "q": entry.hex[0], "r": entry.hex[1]}
 			raw, _ := json.Marshal(body)
 			var id string
 			if err = tx.QueryRow(ctx, `INSERT INTO notifications(world_id,player_id,kind,level,body_json) VALUES($1,$2,'PlaceFirstReached',1,$3) RETURNING id`, worldID, v.owner, raw).Scan(&id); err != nil {

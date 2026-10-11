@@ -93,6 +93,14 @@ func (h *WorldHandler) NamePlace(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusUnauthorized, "authentication required")
 		return
 	}
+	if exists, err := h.ensurePlaceRow(r, worldID, kind, anchor); err != nil {
+		writeError(w, 500, "could not load geography")
+		return
+	} else if !exists {
+		writeError(w, 404, "no such place")
+		return
+	}
+
 	name, ok := readPlaceName(w, r)
 	if !ok {
 		return

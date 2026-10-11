@@ -3,6 +3,7 @@ package combat
 import (
 	"context"
 	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 
@@ -342,5 +343,22 @@ func TestPlaceReachGenericKindsFromPhysicalSavedRoute(t *testing.T) {
 				t.Fatal("first reach revealed unentered object component")
 			}
 		})
+	}
+}
+
+func TestPlaceReachNoticeUsesCanonicalUnitName(t *testing.T) {
+	f := reachWorld(t)
+	ctx := context.Background()
+	id := f.mover(t, "nomadic_host", f.owner, reachRoute(0, 6, 0, 6))
+	if _, err := f.pool.Exec(ctx, `UPDATE units SET name=NULL WHERE id=$1`, id); err != nil {
+		t.Fatal(err)
+	}
+	f.scan(t, 3)
+	var name string
+	if err := f.pool.QueryRow(ctx, `SELECT body_json->>'unit_name' FROM notifications WHERE world_id=$1 AND kind='PlaceFirstReached'`, f.world).Scan(&name); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasPrefix(name, "Nomadic Host of ") {
+		t.Fatalf("first reach notice lacks recognizable subject: %q", name)
 	}
 }
