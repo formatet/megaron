@@ -1,0 +1,18 @@
+{
+  "core_commit": "07f5ae93a9cfe711d82cd9cfd4197e3dd2a3a0eb",
+  "health": {
+    "commit": "07f5ae9",
+    "migration": 171,
+    "status": "ok"
+  },
+  "source_sha256": {
+    "server/cmd/server/main.go": "f50d4cf6e200fb86b9b7bcab5cbc744defda3f298fadb7c00937e73ce4a820a8",
+    "server/cmd/server/timeout_test.go": "fa51aab47e1d7e4db6b2f5c60f3d426e24d8988127a4973fc4d683d29deeda49",
+    "server/api/handlers/ws.go": "a5bea8fc5892a5cc180b7495e5a84831c3733b03eecb230884eaef453ef22842",
+    "server/internal/notify/hub.go": "272c19e9caa66ef209229d8a4634cd50849407716fda9552ebe46ee84c14952e"
+  },
+  "binary_sha256": "a58e723e7fd5ac75f15055cdcd76b75aa11a7c37380184d2b614526b904aa8eb",
+  "container_binary_sha256": "a58e723e7fd5ac75f15055cdcd76b75aa11a7c37380184d2b614526b904aa8eb",
+  "go": "go version go1.27.1-X:nodwarf5 linux/amd64",
+  "build": "CGO_ENABLED=0 go build -ldflags \"-s -w -X main.buildCommit=07f5ae9\" ./cmd/server; cached runtime image via temporary acceptance Compose build override"
+}

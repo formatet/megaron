@@ -1,0 +1,27 @@
+{
+  "messages": [
+    {
+      "after_ms": 24986,
+      "kind": "Heartbeat"
+    },
+    {
+      "after_ms": 49989,
+      "kind": "Heartbeat"
+    }
+  ],
+  "errors": 0,
+  "open": 115,
+  "closed": {
+    "code": 1000,
+    "clean": true,
+    "after_ms": 65021
+  },
+  "health": {
+    "commit": "07f5ae9",
+    "migration": 171,
+    "status": "ok"
+  },
+  "world": "3b5fb9cd-8c06-4685-88df-b162c9acff99",
+  "browser": "146.0.1",
+  "started": "2026-10-11T18:18:23.732101+00:00"
+}
