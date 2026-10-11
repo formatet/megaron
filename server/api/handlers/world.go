@@ -339,6 +339,10 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 
 	type tileView struct {
 		RiverName     string  `json:"river_name,omitempty"`
+		PlaceName     string  `json:"place_name,omitempty"`
+		PlaceKind     string  `json:"place_kind,omitempty"`
+		PlaceID       string  `json:"place_id,omitempty"`
+		CanName       bool    `json:"can_name,omitempty"`
 		Q             int     `json:"q"`
 		R             int     `json:"r"`
 		Terrain       string  `json:"terrain"`
@@ -391,10 +395,33 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 		tiles = append(tiles, t)
 	}
 
-	names := world.RiverNames(worldID.String(), fullMap)
+	rows.Close()
+	states, err := loadPlaceStates(r.Context(), h.pool, worldID)
+	if err != nil {
+		writeError(w, 500, "could not load place names")
+		return
+	}
+	byHex := map[[2]int]world.Place{}
+	for _, p := range world.Places(fullMap) {
+		for _, xy := range p.Hexes {
+			byHex[xy] = p
+		}
+	}
 	for i := range tiles {
-		if tiles[i].Visible {
-			tiles[i].RiverName = names[[2]int{tiles[i].Q, tiles[i].R}]
+		if !tiles[i].Visible {
+			continue
+		}
+		p, ok := byHex[[2]int{tiles[i].Q, tiles[i].R}]
+		if !ok {
+			continue
+		}
+		s := states[placeKey{p.Kind, p.Anchor}]
+		tiles[i].PlaceKind = p.Kind
+		tiles[i].PlaceID = fmt.Sprintf("%d,%d", p.Anchor[0], p.Anchor[1])
+		tiles[i].PlaceName = s.Name
+		tiles[i].CanName = authenticated && s.ClaimedBy != nil && *s.ClaimedBy == playerID && !s.Named
+		if p.Kind == "river" {
+			tiles[i].RiverName = s.Name
 		}
 	}
 

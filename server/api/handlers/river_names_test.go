@@ -69,8 +69,11 @@ func TestMapRiverNamesFOW(t *testing.T) {
 		}
 		return got
 	}
+	if _, e := pool.Exec(ctx, `INSERT INTO place_names(world_id,kind,anchor_q,anchor_r,claimed_by,claimed_tick,name,named_tick) VALUES($1,'river',0,0,$2,0,'Thaleia',1)`, wid, viewer); e != nil {
+		t.Fatal(e)
+	}
 	got := read()
-	want := world.RiverNames(wid.String(), ts)[[2]int{0, 0}]
+	want := "Thaleia"
 	counts := map[string]int{}
 	for _, tile := range got {
 		tier := tile["tier"].(string)
@@ -78,6 +81,11 @@ func TestMapRiverNamesFOW(t *testing.T) {
 		if tier == "fog" {
 			if _, ok := tile["river_name"]; ok {
 				t.Fatal("unknown river hex leaked river_name")
+			}
+			for _, key := range []string{"place_name", "place_kind", "place_id", "can_name"} {
+				if _, ok := tile[key]; ok {
+					t.Fatalf("unknown river hex leaked %s", key)
+				}
 			}
 			continue
 		}

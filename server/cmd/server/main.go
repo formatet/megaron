@@ -349,6 +349,8 @@ func main() {
 		r.Get("/admin/worlds/{worldID}/god-view", godH.View)
 		r.Get("/admin/worlds/{worldID}/reports", rh.List)
 		r.Post("/admin/worlds/{worldID}/backfill-placements", ph.BackfillPlacements)
+		r.Put("/admin/worlds/{worldID}/places/{kind}/{placeID}/name", wh.AdminNamePlace)
+		r.Delete("/admin/worlds/{worldID}/places/{kind}/{placeID}/name", wh.AdminClearPlaceName)
 		r.Put("/admin/worlds/{worldID}/storms/{stormID}/name", wh.AdminNameStorm)
 		r.Delete("/admin/worlds/{worldID}/storms/{stormID}/name", wh.AdminClearStormName)
 		// Reference catalogue — no auth, static data.
@@ -380,6 +382,8 @@ func main() {
 		// honest anonymous answer, so there is none: 401. Tools that need the
 		// whole map use the X-Admin-Key god view (api/handlers/god.go).
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/map", wh.Map)
+		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/places", wh.Places)
+		r.With(auth.Middleware(authSvc)).Post("/worlds/{worldID}/places/{kind}/{placeID}/name", wh.NamePlace)
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/storms", wh.Storms)
 		r.With(auth.Middleware(authSvc)).Post("/worlds/{worldID}/storms/{stormID}/name", wh.NameStorm)
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/colonize-preview", wh.ColonizePreview)
