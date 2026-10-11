@@ -21,6 +21,7 @@ import { confirmInline, showInlineResult } from '../ui/inline_result.js';
 import { unitHoverLines } from '../ui/hover.js';
 import { drawStorm, STORM_FRAMES } from './storms.js';
 import { stormPanelHTML } from '../ui/stormname.js';
+import { riverPanelHTML } from '../ui/rivername.js';
 import { incomingTargetKeys } from '../ui/movements.js';
 import { namedRiverTerrain, riverLabelLayout } from './river_names.js';
 import { createMarkRenderer } from './markraster.js';
@@ -3410,7 +3411,7 @@ function openCityPanel(h, tile, marker, units, foreignUnits) {
     .catch(() => showDefence(null));
 
   const foot = document.getElementById('ip-foot');
-  let footHtml = unitListHTML(units, foreignUnits);
+  let footHtml = riverPanelHTML(tile) + unitListHTML(units, foreignUnits);
   // A settlement OR a wandering host can send — the host's first contact with a
   // met city is one of its designed uses (mig 087; sendMessengerFromInspect
   // picks the endpoint).
@@ -3447,7 +3448,7 @@ function openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits) {
   fillTerrainFields(tile);
 
   const foot = document.getElementById('ip-foot');
-  let footHtml = workersHereHTML(h) + unitListHTML(units, foreignUnits);
+  let footHtml = riverPanelHTML(tile) + workersHereHTML(h) + unitListHTML(units, foreignUnits);
   if (isSea) footHtml += stormPanelHTML((State.stormData || []).filter(st => st.hexes.some(sh => sh.q === h.q && sh.r === h.r)));
 
   if (isMountain) {
@@ -3533,6 +3534,7 @@ function openRuralPanel(h, tile, rural, units, foreignUnits) {
   const foot = document.getElementById('ip-foot');
   const buildingLabel = RURAL_LABELS[rural.building_type] || rural.building_type;
   let footHtml = `<p class="empty-state">${buildingLabel} — part of ${rural.name}'s hinterland, worked from here.</p>`;
+  footHtml += riverPanelHTML(tile);
   footHtml += workersHereHTML(h);
   footHtml += unitListHTML(units, foreignUnits);
   footHtml += `<button id="ip-rural-city-btn" style="${MARCH_BTN_STYLE}">Open ${rural.name} →</button>`;

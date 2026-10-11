@@ -103,6 +103,15 @@ func printNotificationRow(c *Client, n notificationItem) {
 // All other details are pure formatting of the archived notification body.
 func printNotificationDetail(c *Client, n notificationItem) {
 	printNotificationSummary(c, n)
+	if n.Kind == "RiverFirstReached" {
+		var body struct { UnitName string `json:"unit_name"`; UnitType string `json:"unit_type"`; RiverID string `json:"river_id"` }
+		if json.Unmarshal(n.Body, &body) == nil {
+			name := body.UnitName
+			if name == "" { name = body.UnitType }
+			if name == "" { name = "unit" }
+			fmt.Printf("      Your %s is the first to reach this river — you may name it. `keryx rivers name %s \"<name>\"`\n", name, body.RiverID)
+		}
+	}
 	if n.Kind == "MessengerLostAtSea" || n.Kind == "MessengerRescuedAtSea" {
 		printMessengerFateLine(n)
 	}

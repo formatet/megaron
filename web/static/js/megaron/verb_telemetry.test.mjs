@@ -13,6 +13,7 @@ const vault = existsSync(vaultPath) ? readFileSync(vaultPath, 'utf8') : snapshot
 // An explicit interpretation of compound rows, not a list inferred from the
 // implementation under test. A new vault row or missing branch must fail.
 const coverage = {
+  'name_river': ['name_river'],
   'build': ['build'], 'cancel-build': ['cancel-build'], 'recruit': ['recruit'],
   'place / staff': ['place', 'staff', 'unplace'],
   'place → ta hex (gren av `place`)': ['place'], 'labor (cult)': ['labor'],
