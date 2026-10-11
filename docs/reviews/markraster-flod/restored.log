@@ -1,0 +1,118 @@
+TAP version 13
+# Subtest: workedHexesFromRoster: one marker per hex, dedup across gubbar/goods
+ok 1 - workedHexesFromRoster: one marker per hex, dedup across gubbar/goods
+  ---
+  duration_ms: 1.173209
+  type: 'test'
+  ...
+# Subtest: workedHexesFromRoster: sums gubbar per hex and lists their goods
+ok 2 - workedHexesFromRoster: sums gubbar per hex and lists their goods
+  ---
+  duration_ms: 0.184472
+  type: 'test'
+  ...
+# Subtest: workedHexesFromRoster: spans settlements and tolerates empty/missing
+ok 3 - workedHexesFromRoster: spans settlements and tolerates empty/missing
+  ---
+  duration_ms: 0.226712
+  type: 'test'
+  ...
+# Subtest: catchment offsets cover the full radius-2 disc (19 hexes), not 7
+ok 4 - catchment offsets cover the full radius-2 disc (19 hexes), not 7
+  ---
+  duration_ms: 0.226706
+  type: 'test'
+  ...
+# Subtest: AK1: import does not touch DOM/window before this point (proven by reaching here)
+ok 5 - AK1: import does not touch DOM/window before this point (proven by reaching here)
+  ---
+  duration_ms: 0.076075
+  type: 'test'
+  ...
+# Subtest: AK2: panDelta normalizes a diagonal so W+D is not sqrt(2)x faster than one direction
+ok 6 - AK2: panDelta normalizes a diagonal so W+D is not sqrt(2)x faster than one direction
+  ---
+  duration_ms: 0.128062
+  type: 'test'
+  ...
+# Subtest: AK3: no keys held means no movement
+ok 7 - AK3: no keys held means no movement
+  ---
+  duration_ms: 0.120493
+  type: 'test'
+  ...
+# Subtest: messengerLegPosition: no leg set → null (today's flat interpolation applies)
+ok 8 - messengerLegPosition: no leg set → null (today's flat interpolation applies)
+  ---
+  duration_ms: 0.14196
+  type: 'test'
+  ...
+# Subtest: messengerLegPosition: to_port walks from origin to the port over the leg window
+ok 9 - messengerLegPosition: to_port walks from origin to the port over the leg window
+  ---
+  duration_ms: 0.40549
+  type: 'test'
+  ...
+# Subtest: messengerLegPosition: waiting stands still at the port
+ok 10 - messengerLegPosition: waiting stands still at the port
+  ---
+  duration_ms: 0.298855
+  type: 'test'
+  ...
+# Subtest: messengerLegPosition: sealed stands still at the port
+ok 11 - messengerLegPosition: sealed stands still at the port
+  ---
+  duration_ms: 0.170298
+  type: 'test'
+  ...
+# Subtest: messengerLegPosition: ashore walks from the disembark point to the true target
+ok 12 - messengerLegPosition: ashore walks from the disembark point to the true target
+  ---
+  duration_ms: 0.112748
+  type: 'test'
+  ...
+# Subtest: messengerLegPosition: aboard draws on a located carrier unit, ignoring the reserve leg
+ok 13 - messengerLegPosition: aboard draws on a located carrier unit, ignoring the reserve leg
+  ---
+  duration_ms: 0.117114
+  type: 'test'
+  ...
+# Subtest: messengerLegPosition: aboard draws on a located /trades transport when no unit matches
+ok 14 - messengerLegPosition: aboard draws on a located /trades transport when no unit matches
+  ---
+  duration_ms: 0.133479
+  type: 'test'
+  ...
+# Subtest: messengerLegPosition: aboard falls back to the server's reserve leg when no carrier is found client-side
+ok 15 - messengerLegPosition: aboard falls back to the server's reserve leg when no carrier is found client-side
+  ---
+  duration_ms: 0.085852
+  type: 'test'
+  ...
+# Subtest: river valley ground warps across its physical hex boundary like other land
+ok 16 - river valley ground warps across its physical hex boundary like other land
+  ---
+  duration_ms: 8.704062
+  type: 'test'
+  ...
+# Subtest: every river mouth reaches a sea pixel in the warped mask, all directions and salts
+ok 17 - every river mouth reaches a sea pixel in the warped mask, all directions and salts
+  ---
+  duration_ms: 1.416569
+  type: 'test'
+  ...
+# Subtest: physical river ink survives encroaching ground and stops at sea and fog
+ok 18 - physical river ink survives encroaching ground and stops at sea and fog
+  ---
+  duration_ms: 6.842537
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 18
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 82.163937

@@ -413,3 +413,11 @@ mäter Host-panelen, det första en ny Wanax ser. Den öppnas med ett klick/tryc
 med Details stängd och öppen, och "Found the metropolis here" måste ligga i bild och vara träffbar.
 Vid 390 px trycker verktyget (`tap`): Playwrights Firefox med pekskärm skickar inga pointer-händelser för
 ett musklick, så kartan ser inget klick. Det är en artefakt i riggen och ingen bugg i spelet.
+
+## Markraster-flod (slice A)
+
+`python3 tools/markraster_flod.py --host http://localhost:8742` tar frysta Firefox-bilder,
+närbilder och determinism/inneslutningsdiff mot `0d149589`. Servera `web/` på samma port.
+`python3 tools/markraster_flod_mutation.py` återinför tre produktionsfel och kräver rött,
+sedan byte-identisk återställning och grönt. Bevis och avgränsningar:
+[`docs/reviews/markraster-flod/README.md`](../docs/reviews/markraster-flod/README.md).

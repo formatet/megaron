@@ -1613,7 +1613,7 @@ function riverAxis(q, r) {
 // Vadstället (`river_ford`) är samma flod, grundare: ljusare vatten och en
 // rad stenar tvärs fåran — en passage som syns från kartan.
 const isChainTerrain = t => isWaterTerrain(t) || t === 'river_ford';
-function riverCurves(q, r) {
+export function riverCurves(q, r) {
   const dirs = [];
   for (let i = 0; i < 6; i++) if (isChainTerrain(terrainAt(q + HEX_DIRS[i][0], r + HEX_DIRS[i][1]))) dirs.push(i);
   if (!dirs.length) dirs.push(0, 3);
@@ -1624,7 +1624,16 @@ function riverCurves(q, r) {
   return dirs.map(i => {
     const nx = DIR_NX[i], ny = DIR_NY[i];
     const sgn = (nx * axx + ny * axy) >= 0 ? 1 : -1;
-    const p0 = [nx * R_IN, ny * R_IN], p1 = [nx * (R_IN - k), ny * (R_IN - k)];
+    // Havets kant ligger i den förvrängda masken, inte vid hexkantens mitt.
+    // Fortsätt längs samma tangent till första havspixeln; grannens mitt är
+    // alltid i sin egen region (WARP_AMP < R_IN).
+    let reach = R_IN;
+    const nt = terrainAt(q + HEX_DIRS[i][0], r + HEX_DIRS[i][1]);
+    if (nt === 'coastal_sea' || nt === 'deep_sea') {
+      const { x, y } = hexPx(q, r);
+      while (reach < 2 * R_IN && !isSeaTerrain(markTerrainAt(x + nx * reach, y + ny * reach))) reach++;
+    }
+    const p0 = [nx * reach, ny * reach], p1 = [nx * (R_IN - k), ny * (R_IN - k)];
     const p2 = [ccx + sgn * axx * k * 0.6, ccy + sgn * axy * k * 0.6], p3 = [ccx, ccy];
     const pts = [];
     for (let j = 0; j <= 12; j++) {
@@ -1636,7 +1645,7 @@ function riverCurves(q, r) {
   });
 }
 const RIVER_HALF_M = 5.5;
-function drawRiverCurve(ctx, cx, cy, q, r, isFord) {
+function drawRiverCurve(ctx, cx, cy, q, r, isFord, ink = null) {
   ctx.save();
   hexClip(ctx, cx, cy);
   const curves = riverCurves(q, r);
@@ -1663,11 +1672,13 @@ function drawRiverCurve(ctx, cx, cy, q, r, isFord) {
       if (dist > half) {
         const reed = 3 + 3 * noiseAt(wx, wy, 11, 2412);
         if (isFord || dist > half + 2 + reed) continue;
+        if (ink) ink.rect(wx, wy, STEP, STEP);
         ctx.globalAlpha = dist < half + 2 ? 0.9 : 0.55;
         ctx.fillStyle = dist < half + 2 ? RIVER_MUD : RIVER_REED;
         ctx.fillRect(wx, wy, STEP, STEP);
         continue;
       }
+      if (ink) ink.rect(wx, wy, STEP, STEP);
       ctx.globalAlpha = 1;
       ctx.fillStyle = water;
       ctx.fillRect(wx, wy, STEP, STEP);
@@ -2099,7 +2110,7 @@ function drawDepthBand(ctx, cx, cy, shelfDirs) {
 // Världsrymd → axial hex. Samma avrundning som `hexAtScreen`, men utan
 // kamerasteget: dyningens pass går över det globala rastret och behöver fråga
 // "vilken hex ligger den här punkten i?", inte "var klickade någon?".
-function hexAtWorld(wx, wy) {
+export function hexAtWorld(wx, wy) {
   const q = (2 / 3 * wx) / S;
   const r = (-1 / 3 * wx + SQRT3 / 3 * wy) / S;
   const s = -q - r;
@@ -2126,8 +2137,8 @@ function hexAtWorld(wx, wy) {
 // till en cache i världsupplösning. Därmed ritas marken inte om varje frame,
 // och regionernas raka 1 px-spann ger noll kantutjämning på varje zoom.
 //
-// Floden förvrängs inte: dess kedja ritas ur grafen (princip 45) och får inte
-// strypas av en granne som vandrar in över fåran.
+// Flodens mark förvrängs liksom annan mark. Fåran följer kedjegrafen
+// (princip 45) i ett separat pass så att marken inte stryper den.
 //
 // Jämför: lägg till `markraster=0` i riggens URL för den gamla renderaren.
 export const MARKRASTER = !(typeof location !== 'undefined' && /[?&]markraster=0/.test(location.search));
@@ -2160,12 +2171,11 @@ function warpOffset(wx, wy, nz, i) {
 // Vilken hex en världspunkt HÖR TILL i markrastret.
 export function markHexAt(wx, wy, nz, i) {
   const [eq, er] = hexAtWorld(wx, wy);
-  if (isRiverTerrain(terrainAt(eq, er))) return [eq, er];
   const [dx, dy] = warpOffset(wx, wy, nz, i);
   let [q, r] = hexAtWorld(wx + Math.max(-WARP_AMP, Math.min(WARP_AMP, dx)),
                           wy + Math.max(-WARP_AMP, Math.min(WARP_AMP, dy)));
   const t = terrainAt(q, r);
-  if (t === undefined || isRiverTerrain(t)) return [eq, er];
+  if (t === undefined) return [eq, er];
   return [q, r];
 }
 // noiseAt i varje punkt av rutnätet xs × ys — bitidentiskt med noiseAt (samma
@@ -2273,6 +2283,18 @@ const RGB_SAND = hexRGB(SHORE_SAND), RGB_WET = hexRGB(SHORE_WET), RGB_FOAM = hex
 const RGB_SHALLOW = hexRGB('#5C9AB2'), RGB_SHELF = hexRGB('#3E7C9E');
 const RGB_HATCH = hexRGB('#40362A');
 
+// Fårans kedja är fysisk; bara marken följer den förvrängda uppslagningen.
+// Klipp fåran mot sin exakta hex och havsgrannarnas exakta hexar, men aldrig
+// över den förvrängda havsytan eller okänd mark. Havsgrenens kurva avgör hur
+// mycket av grannhexen som faktiskt får bläck.
+export function riverInkAt(q, r, wx, wy) {
+  const t = markTerrainAt(wx, wy);
+  if (t === undefined || t === 'fog' || isSeaTerrain(t)) return false;
+  const [eq, er] = hexAtWorld(wx, wy);
+  if (eq === q && er === r) return true;
+  return HEX_DIRS.some(([dq, dr]) => eq === q + dq && er === r + dr && isSeaTerrain(terrainAt(eq, er)));
+}
+
 function bakeChunk(ix, iy) {
   const X0 = ix * CHUNK - 1, Y0 = iy * CHUNK - 1, CS = CHUNK + 2;   // 1 px överlapp mot sömmar
   const M = CHUNK_MARGIN, W = CS + 2 * M;
@@ -2322,7 +2344,7 @@ function bakeChunk(ix, iy) {
     BAKE = { region: path };
     try {
       if (isRiverTerrain(t.terrain)) drawValleyField(c, x, y, t.q, t.r, false);
-      drawDetail(c, x, y, t.terrain, (t.q * 137 + t.r * 31) & 0xff, t.q, t.r);
+      else drawDetail(c, x, y, t.terrain, (t.q * 137 + t.r * 31) & 0xff, t.q, t.r);
     } finally { BAKE = null; }
   }
   // Kusten ur samma mask: strand på land, skum och grundvatten på havet,
@@ -2365,6 +2387,31 @@ function bakeChunk(ix, iy) {
     }
   }
   c.putImageData(img, 0, 0);
+  // Rita fårorna sist så att varken grannens mark eller strandpasset stryper
+  // kedjan. Heltalsspann ger samma hårda pixelklipp som markens regioner.
+  const riverPaths = [];
+  for (const t of State.tileData) {
+    if (!isRiverTerrain(t.terrain)) continue;
+    const { x: cx, y: cy } = hexPx(t.q, t.r), pad = S + WARP_PAD;
+    const x0 = Math.max(X0, Math.floor(cx - pad)), x1 = Math.min(X0 + CS, Math.ceil(cx + pad));
+    const y0 = Math.max(Y0, Math.floor(cy - pad)), y1 = Math.min(Y0 + CS, Math.ceil(cy + pad));
+    if (x0 >= x1 || y0 >= y1) continue;
+    const path = new Path2D();
+    for (let y = y0; y < y1; y++) {
+      let x = x0;
+      while (x < x1) {
+        if (!riverInkAt(t.q, t.r, x + 0.5, y + 0.5)) { x++; continue; }
+        const start = x++;
+        while (x < x1 && riverInkAt(t.q, t.r, x + 0.5, y + 0.5)) x++;
+        path.rect(start, y, x - start, 1);
+      }
+    }
+    const ink = t.tier === 'remembered' ? new Path2D() : null;
+    BAKE = { region: path };
+    try { drawRiverCurve(c, cx, cy, t.q, t.r, t.terrain === 'river_ford', ink); }
+    finally { BAKE = null; }
+    if (ink) riverPaths.push([path, ink]);
+  }
   // Bränningen är animerad och ritas live (drawMarkSurf); här samlas bara
   // de 2 px-block i havet som ligger inom räckhåll från land, med avstånd
   // och fasbrus, så att livepasset inte behöver räkna något.
@@ -2387,13 +2434,16 @@ function bakeChunk(ix, iy) {
   // form som marken, inte som hexpolygoner.
   let mem = null;
   const memTiles = tiles.filter(([t]) => t.tier === 'remembered' && t.terrain !== 'fog');
-  if (memTiles.length) {
+  if (memTiles.length || riverPaths.length) {
     mem = document.createElement('canvas');
     mem.width = CS; mem.height = CS;
     const mc = mem.getContext('2d');
     mc.translate(-X0, -Y0);
     mc.fillStyle = '#808080';
     for (const [, path] of memTiles) mc.fill(path);
+    for (const [path, ink] of riverPaths) {
+      mc.save(); mc.clip(path); mc.fill(ink); mc.restore();
+    }
   }
   return { img: cv, mem, X0, Y0, code, W, M, surf: new Float32Array(surf) };
 }
