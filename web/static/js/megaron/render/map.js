@@ -2119,26 +2119,57 @@ function hexClip(ctx, cx, cy) {
 }
 
 const isRiverTerrain = t => t === 'river' || t === 'river_ford';
-function warpOffset(wx, wy) {
+// [cell, ström] för warpens fyra brusfält: x bred, x smal, y bred, y smal.
+const WARP_NOISE = [[41, 8101], [13, 8102], [41, 8103], [13, 8104]];
+// nz/i: förberäknade brusvärden (noiseGrid, ordnade som WARP_NOISE) när
+// bakningen slår upp en hel bit; utan dem räknas bruset på plats.
+function warpOffset(wx, wy, nz, i) {
   // Två oktaver: en bred som ger kustens vikar och uddar, en smalare som
   // fransar dem. Plus en pixels hashbrus, så att gränsen blir blockig (princip
   // 16: per-block-brus, aldrig ordnad dither) i stället för en jämn kurva.
-  const ax = 0.7 * noiseAt(wx, wy, 41, 8101) + 0.3 * noiseAt(wx, wy, 13, 8102);
-  const ay = 0.7 * noiseAt(wx, wy, 41, 8103) + 0.3 * noiseAt(wx, wy, 13, 8104);
+  const ax = nz ? 0.7 * nz[0][i] + 0.3 * nz[1][i] : 0.7 * noiseAt(wx, wy, 41, 8101) + 0.3 * noiseAt(wx, wy, 13, 8102);
+  const ay = nz ? 0.7 * nz[2][i] + 0.3 * nz[3][i] : 0.7 * noiseAt(wx, wy, 41, 8103) + 0.3 * noiseAt(wx, wy, 13, 8104);
   const jx = hash32(wx | 0, wy | 0, 8105) / 4294967296 - 0.5;
   const jy = hash32(wx | 0, wy | 0, 8106) / 4294967296 - 0.5;
   return [(ax - 0.5) * 2.6 * WARP_AMP + jx * 1.6, (ay - 0.5) * 2.6 * WARP_AMP + jy * 1.6];
 }
 // Vilken hex en världspunkt HÖR TILL i markrastret.
-export function markHexAt(wx, wy) {
+export function markHexAt(wx, wy, nz, i) {
   const [eq, er] = hexAtWorld(wx, wy);
   if (isRiverTerrain(terrainAt(eq, er))) return [eq, er];
-  const [dx, dy] = warpOffset(wx, wy);
+  const [dx, dy] = warpOffset(wx, wy, nz, i);
   let [q, r] = hexAtWorld(wx + Math.max(-WARP_AMP, Math.min(WARP_AMP, dx)),
                           wy + Math.max(-WARP_AMP, Math.min(WARP_AMP, dy)));
   const t = terrainAt(q, r);
   if (t === undefined || isRiverTerrain(t)) return [eq, er];
   return [q, r];
+}
+// noiseAt i varje punkt av rutnätet xs × ys — bitidentiskt med noiseAt (samma
+// aritmetik i samma ordning), men varje gitterhörn hashas en gång i stället
+// för fyra gånger per punkt. Hela bakningen gick från 38 till 24 ms per bit (helvyn 1,07 → 0,68 s).
+function noiseGrid(xs, ys, cell, stream) {
+  const prep = v => {
+    const g0 = Math.floor(v[0] / cell);
+    const ci = new Int32Array(v.length), sv = new Float64Array(v.length);
+    for (let k = 0; k < v.length; k++) {
+      const g = Math.floor(v[k] / cell), f = v[k] / cell - g;
+      ci[k] = g - g0; sv[k] = f * f * (3 - 2 * f);
+    }
+    return [g0, ci, sv, ci[v.length - 1] + 2];
+  };
+  const [gx0, cx, sx, gw] = prep(xs), [gy0, cy, sy, gh] = prep(ys);
+  const lat = new Float64Array(gw * gh);
+  for (let j = 0; j < gh; j++) for (let k = 0; k < gw; k++) lat[j * gw + k] = hash32(gx0 + k, gy0 + j, stream) / 4294967296;
+  const out = new Float64Array(xs.length * ys.length);
+  for (let y = 0; y < ys.length; y++) {
+    const row = cy[y] * gw, t = sy[y];
+    for (let x = 0; x < xs.length; x++) {
+      const o = row + cx[x], u = sx[x];
+      const a = lat[o], b = lat[o + 1], d = lat[o + gw], e = lat[o + gw + 1];
+      out[y * xs.length + x] = (a + (b - a) * u) * (1 - t) + (d + (e - d) * u) * t;
+    }
+  }
+  return out;
 }
 const markTerrainAt = (wx, wy) => { const [q, r] = markHexAt(wx, wy); return terrainAt(q, r); };
 const isForestTerrain = t => t === 'forest_olive_grove' || t === 'forest_cedar';
@@ -2157,7 +2188,7 @@ function tileByKey(k) {
 
 const CHUNK = 256;        // världspixlar per cachebit
 const CHUNK_MARGIN = 12;  // grannskap som strand och skum läser över bitkanten
-let chunks = new Map(), chunksFor = null, chunksSalt = null, chunksCult = null;
+let chunks = new Map(), chunksFor = null, chunksSalt = null, shownChunks = [];
 export const markrasterStats = { chunks: 0, bakeMs: 0 };
 // Markrastrets kod (se markCode) i en världspunkt, ur den bakade biten.
 function markCodeAt(wx, wy) {
@@ -2180,30 +2211,36 @@ function markCode(t) {
 }
 
 // Avstånd (chamfer 3-4, i px) till närmaste källcell. Två svep räcker.
+// Utan en enda källcell (inlandsbit, öppet hav) är svaret oändligt överallt
+// och svepen hoppas över — de var bakningens dyraste enskilda steg.
+const CHAMFER_FAR = 1e6;
 function chamfer(src, w, h) {
-  const BIG = 1e6, d = new Float32Array(w * h);
-  for (let i = 0; i < w * h; i++) d[i] = src[i] ? 0 : BIG;
+  const d = new Float32Array(w * h);
+  if (!src.includes(1)) return d.fill(CHAMFER_FAR);
+  // Heltal under svepen (3/4-stegen är exakta), delat med 3 på slutet.
+  const BIG = 1 << 30, a = new Int32Array(w * h);
+  for (let i = 0; i < w * h; i++) a[i] = src[i] ? 0 : BIG;
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    const i = y * w + x; let v = d[i];
-    if (x > 0) v = Math.min(v, d[i - 1] + 3);
+    const i = y * w + x; let v = a[i], u;
+    if (x > 0 && (u = a[i - 1] + 3) < v) v = u;
     if (y > 0) {
-      v = Math.min(v, d[i - w] + 3);
-      if (x > 0) v = Math.min(v, d[i - w - 1] + 4);
-      if (x < w - 1) v = Math.min(v, d[i - w + 1] + 4);
+      if ((u = a[i - w] + 3) < v) v = u;
+      if (x > 0 && (u = a[i - w - 1] + 4) < v) v = u;
+      if (x < w - 1 && (u = a[i - w + 1] + 4) < v) v = u;
     }
-    d[i] = v;
+    a[i] = v;
   }
   for (let y = h - 1; y >= 0; y--) for (let x = w - 1; x >= 0; x--) {
-    const i = y * w + x; let v = d[i];
-    if (x < w - 1) v = Math.min(v, d[i + 1] + 3);
+    const i = y * w + x; let v = a[i], u;
+    if (x < w - 1 && (u = a[i + 1] + 3) < v) v = u;
     if (y < h - 1) {
-      v = Math.min(v, d[i + w] + 3);
-      if (x < w - 1) v = Math.min(v, d[i + w + 1] + 4);
-      if (x > 0) v = Math.min(v, d[i + w - 1] + 4);
+      if ((u = a[i + w] + 3) < v) v = u;
+      if (x < w - 1 && (u = a[i + w + 1] + 4) < v) v = u;
+      if (x > 0 && (u = a[i + w - 1] + 4) < v) v = u;
     }
-    d[i] = v;
+    a[i] = v;
   }
-  for (let i = 0; i < w * h; i++) d[i] /= 3;
+  for (let i = 0; i < w * h; i++) d[i] = a[i] / 3;
   return d;
 }
 
@@ -2217,11 +2254,14 @@ function bakeChunk(ix, iy) {
   const M = CHUNK_MARGIN, W = CS + 2 * M;
   const lab = new Float64Array(W * W);   // tileKey + 1, 0 = ingen hex
   const code = new Uint8Array(W * W);
+  const xs = new Float64Array(W), ys = new Float64Array(W);
+  for (let k = 0; k < W; k++) { xs[k] = X0 - M + k + 0.5; ys[k] = Y0 - M + k + 0.5; }
+  const nz = WARP_NOISE.map(([cell, stream]) => noiseGrid(xs, ys, cell, stream));
   for (let y = 0; y < W; y++) {
     for (let x = 0; x < W; x++) {
-      const [q, r] = markHexAt(X0 - M + x + 0.5, Y0 - M + y + 0.5);
-      const t = terrainAt(q, r);
       const i = y * W + x;
+      const [q, r] = markHexAt(xs[x], ys[y], nz, i);
+      const t = terrainAt(q, r);
       code[i] = markCode(t);
       lab[i] = t === undefined ? 0 : tileKey(q, r) + 1;
     }
@@ -2283,14 +2323,17 @@ function bakeChunk(ix, iy) {
         // (dimmans register — kunskap och geografi ska inte förväxlas).
         if ((((wx + wy) % 7) + 7) % 7 === 0) put(o, RGB_HATCH, 1);
       } else if (k === 2) {
-        const w = 1.2 + 4.4 * noiseAt(wx, wy, 9, 6161);
+        // Bruset räknas bara där avståndet kan klara sin tröskel (max 5,6 /
+        // 12 / 10) — samma utfall, en bråkdel av anropen.
         const d = dSea[i];
+        if (d > 5.6) continue;
+        const w = 1.2 + 4.4 * noiseAt(wx, wy, 9, 6161);
         if (d <= w) put(o, d > w * 0.62 ? RGB_SAND : (d <= 1.01 ? RGB_WET : RGB_SAND), 1);
       } else if (k === 3 || k === 4) {
         const d = dLand[i];
         if (d <= 1.01) put(o, RGB_FOAM, 0.75);
-        else if (k === 3 && d <= 7 + 5 * noiseAt(wx, wy, 17, 7173)) put(o, RGB_SHALLOW, 0.45 * (1 - d / 13));
-        if (k === 4) {
+        else if (k === 3 && d <= 12 && d <= 7 + 5 * noiseAt(wx, wy, 17, 7173)) put(o, RGB_SHALLOW, 0.45 * (1 - d / 13));
+        if (k === 4 && dShelf[i] <= 10) {
           const s = dShelf[i], w = 1 + 9 * noiseAt(wx, wy, 15, 6262);
           if (s <= w * 0.5 || (s <= w && hash32(wx, wy, 6263) > 0x8ccccccc)) put(o, RGB_SHELF, 1);
         }
@@ -2338,26 +2381,74 @@ function chunkRange() {
   return [Math.floor(x0 / CHUNK), Math.floor(y0 / CHUNK), Math.floor(x1 / CHUNK), Math.floor(y1 / CHUNK)];
 }
 
-function visibleChunks() {
-  const sig = cultivationList();
-  if (chunksFor !== State.tileData || chunksSalt !== salt() || chunksCult !== sig) {
-    chunks = new Map(); chunksFor = State.tileData; chunksSalt = salt(); chunksCult = sig;
-  }
-  const [cx0, cy0, cx1, cy1] = chunkRange();
-  const out = [];
-  for (let iy = cy0; iy <= cy1; iy++) {
-    for (let ix = cx0; ix <= cx1; ix++) {
-      const k = ix * 100003 + iy;
-      let ch = chunks.get(k);
-      if (!ch) {
-        const t0 = performance.now();
-        chunks.set(k, ch = bakeChunk(ix, iy));
-        markrasterStats.chunks++; markrasterStats.bakeMs += performance.now() - t0;
+// Vad en bit beror av: terräng och tier för varje hex som kan nå in i den,
+// och städerna vars odling når dit. Hexens region når S + WARP_PAD från
+// mitten, ritningen läser grannarna (en hex till) och strand och skum läser
+// CHUNK_MARGIN över kanten — 4·S täcker allt. Odlingen når CULT_FAR plus
+// brusets ±25 från staden, räknat från tegens hex.
+const SIG_REACH = 4 * S, CULT_REACH = CULT_FAR + 25 + SIG_REACH;
+let chunkSigs = new Map(), chunkSigsFor = null, chunkSigsCult = null;
+function chunkSig(ix, iy) {
+  const cult = cultivationList();
+  if (chunkSigsFor !== State.tileData || chunkSigsCult !== cult) {
+    chunkSigsFor = State.tileData; chunkSigsCult = cult;
+    const parts = new Map();
+    const add = (x, y, reach, part) => {
+      for (let jy = Math.floor((y - reach) / CHUNK); jy <= Math.floor((y + reach) / CHUNK); jy++) {
+        for (let jx = Math.floor((x - reach) / CHUNK); jx <= Math.floor((x + reach) / CHUNK); jx++) {
+          const k = jx * 100003 + jy;
+          let a = parts.get(k);
+          if (!a) parts.set(k, a = []);
+          a.push(part);
+        }
       }
-      out.push(ch);
+    };
+    for (const t of State.tileData) {
+      const { x, y } = hexPx(t.q, t.r);
+      add(x, y, SIG_REACH, `${t.q},${t.r}:${t.terrain}:${t.tier}`);
+    }
+    for (const [x, y] of cult) add(x, y, CULT_REACH, `c${x},${y}`);
+    chunkSigs = new Map([...parts].map(([k, a]) => [k, a.join('|')]));
+  }
+  return chunkSigs.get(ix * 100003 + iy) || '';
+}
+
+// Bakningen får inte frysa spelet. En bit som saknas helt i utsnittet bakas
+// direkt — det finns inget annat att visa. Men när dimman uppdateras
+// (refreshTiles) eller en stad blir känd bakas bara bitar vars signatur
+// ändrats om, och de visar sin gamla bild tills de hunnit: högst
+// BAKE_BUDGET_MS per frame. Det som blir över förbakar ringen runt utsnittet,
+// så att en panorering inte stannar vid kanten. En bit (~25 ms) går inte att
+// dela, så budgeten avgör hur många som påbörjas, inte exakt tid.
+const BAKE_BUDGET_MS = 8;
+function updateChunks() {
+  if (chunksSalt !== salt()) { chunks = new Map(); chunksSalt = salt(); }
+  chunksFor = State.tileData;
+  const t0 = performance.now();
+  const bake = (ix, iy, k) => {
+    const t = performance.now();
+    const ch = bakeChunk(ix, iy);
+    ch.sig = chunkSig(ix, iy);
+    chunks.set(k, ch);
+    markrasterStats.chunks++; markrasterStats.bakeMs += performance.now() - t;
+  };
+  const [cx0, cy0, cx1, cy1] = chunkRange();
+  const later = [];
+  for (let iy = cy0 - 1; iy <= cy1 + 1; iy++) {
+    for (let ix = cx0 - 1; ix <= cx1 + 1; ix++) {
+      const k = ix * 100003 + iy, ch = chunks.get(k);
+      const inView = ix >= cx0 && ix <= cx1 && iy >= cy0 && iy <= cy1;
+      if (!ch && inView) bake(ix, iy, k);
+      else if (!ch || ch.sig !== chunkSig(ix, iy)) later.push([ix, iy, k, inView]);
     }
   }
-  return out;
+  later.sort((a, b) => b[3] - a[3]);   // utsnittets inaktuella bitar före ringen
+  for (const [ix, iy, k] of later) {
+    if (performance.now() - t0 > BAKE_BUDGET_MS) { State.dirty = true; break; }
+    bake(ix, iy, k);
+  }
+  shownChunks = [];
+  for (let iy = cy0; iy <= cy1; iy++) for (let ix = cx0; ix <= cx1; ix++) shownChunks.push(chunks.get(ix * 100003 + iy));
 }
 
 let spillCache = new Map(), spillFor = null;
@@ -2386,7 +2477,8 @@ function spillStand(q, r, cx, cy) {
 function drawMarkraster(ctx) {
   ctx.save();
   ctx.imageSmoothingEnabled = false;
-  for (const ch of visibleChunks()) ctx.drawImage(ch.img, ch.X0, ch.Y0);
+  updateChunks();
+  for (const ch of shownChunks) ctx.drawImage(ch.img, ch.X0, ch.Y0);
   ctx.restore();
 }
 
@@ -2396,7 +2488,7 @@ function drawMarkraster(ctx) {
 function drawMarkSurf(ctx, seaTick) {
   ctx.save();
   ctx.fillStyle = SURF_FOAM;
-  for (const ch of visibleChunks()) {
+  for (const ch of shownChunks) {
     const a = ch.surf;
     for (let i = 0; i < a.length; i += 4) {
       const d = a[i + 2];
@@ -2414,7 +2506,7 @@ function drawMarkMemory(ctx) {
   ctx.save();
   ctx.imageSmoothingEnabled = false;
   ctx.globalCompositeOperation = 'saturation';
-  for (const ch of visibleChunks()) if (ch.mem) ctx.drawImage(ch.mem, ch.X0, ch.Y0);
+  for (const ch of shownChunks) if (ch.mem) ctx.drawImage(ch.mem, ch.X0, ch.Y0);
   ctx.restore();
 }
 
