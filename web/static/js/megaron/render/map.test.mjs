@@ -183,3 +183,61 @@ test('messengerLegPosition: aboard falls back to the server\'s reserve leg when 
   const p0 = hexPx(3, 0), p1 = hexPx(10, 0);
   assert.ok(Math.abs(leg.x - (p0.x + p1.x) / 2) < 1, 'interpolated roughly halfway along the reserve leg');
 });
+
+const { State } = await import('../state.js');
+const { markHexAt, hexAtWorld, riverCurves, riverInkAt } = await import('./map.js');
+const dirs = [[1,0],[1,-1],[0,-1],[-1,0],[-1,1],[0,1]];
+function riverFixture(seaDir = 3, river = 'river') {
+  State.tileData = [];
+  for (let q = -3; q <= 3; q++) for (let r = -3; r <= 3; r++) {
+    State.tileData.push({ q, r, terrain: q === 0 && r === 0 ? river :
+      q === dirs[seaDir][0] && r === dirs[seaDir][1] ? 'coastal_sea' : 'plains' });
+  }
+}
+const terrain = (q, r) => State.tileData.find(t => t.q === q && t.r === r)?.terrain;
+test('river valley ground warps across its physical hex boundary like other land', () => {
+  State.WORLD_ID = 'showcase-forest-0000-0000-000000000000';
+  riverFixture();
+  let inward = 0, outward = 0;
+  for (let x = -32; x <= 32; x++) for (let y = -32; y <= 32; y++) {
+    const exact = hexAtWorld(x + .5, y + .5), warped = markHexAt(x + .5, y + .5);
+    if (exact[0] === 0 && exact[1] === 0 && (warped[0] !== 0 || warped[1] !== 0)) inward++;
+    if ((exact[0] !== 0 || exact[1] !== 0) && warped[0] === 0 && warped[1] === 0) outward++;
+  }
+  assert.ok(inward > 0, 'neighbour ground must enter the physical river hex');
+  assert.ok(outward > 0, 'river valley ground must extend beyond the physical hex');
+});
+test('every river mouth reaches a sea pixel in the warped mask, all directions and salts', () => {
+  for (const salt of ['showcase-forest-0000-0000-000000000000', 'Mycenae', 'Tiryns', 'Nestor']) {
+    State.WORLD_ID = salt;
+    for (let dir = 0; dir < 6; dir++) for (const type of ['river', 'river_ford']) {
+      riverFixture(dir, type);
+      const endpoint = riverCurves(0, 0)[0][0];
+      const qr = markHexAt(...endpoint);
+      assert.equal(terrain(...qr), 'coastal_sea', `mouth ${dir} ${salt} ${type} must meet water`);
+    }
+  }
+});
+test('physical river ink survives encroaching ground and stops at sea and fog', () => {
+  State.WORLD_ID = 'showcase-forest-0000-0000-000000000000';
+  riverFixture();
+  let encroaching = 0;
+  for (let x = -18; x <= 18; x++) for (let y = -18; y <= 18; y++) {
+    const wx = x + .5, wy = y + .5;
+    const exact = hexAtWorld(wx, wy), warped = markHexAt(wx, wy);
+    const t = terrain(...warped);
+    if (t === 'coastal_sea') assert.equal(riverInkAt(0,0,wx,wy), false);
+    else if (exact[0] === 0 && exact[1] === 0 && t === 'plains') {
+      assert.equal(riverInkAt(0,0,wx,wy), true, 'ground cannot clip the physical channel'); encroaching++;
+    }
+  }
+  assert.ok(encroaching > 0);
+  State.tileData = State.tileData.map(t => ({ ...t, terrain: t.terrain === 'plains' ? 'fog' : t.terrain }));
+  let fog = 0;
+  for (let x = -30; x <= 30; x++) for (let y = -30; y <= 30; y++) {
+    if (terrain(...markHexAt(x+.5,y+.5)) === 'fog') {
+      assert.equal(riverInkAt(0,0,x+.5,y+.5), false, 'river cannot reveal fog'); fog++;
+    }
+  }
+  assert.ok(fog > 0);
+});
