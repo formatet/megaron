@@ -5133,9 +5133,13 @@ function hostForecastSummaryHTML(p) {
     const rate = p.goods[good] ?? 0;
     return typeof rate === 'number' && Number.isFinite(rate) ? (rate > 0 ? 'yes' : 'no') : 'unknown';
   };
+  // The harbour rule is the one irreversible geography fact: an inland
+  // metropolis never gets ships. It must not hide behind Details.
+  const ships = typeof p?.harbour_note === 'string' ? (p.harbour_note.startsWith('Coastal') ? 'yes' : 'never — inland') : 'unknown';
   return `<div class="inspect-row"><span class="ir-label">Feeds itself:</span><span> ${feeds}</span></div>`
     + `<div class="inspect-row"><span class="ir-label">Timber:</span><span> ${potential('timber')}</span></div>`
-    + `<div class="inspect-row"><span class="ir-label">Stone:</span><span> ${potential('stone')}</span></div>`;
+    + `<div class="inspect-row"><span class="ir-label">Stone:</span><span> ${potential('stone')}</span></div>`
+    + `<div class="inspect-row"><span class="ir-label">Ships:</span><span> ${ships}</span></div>`;
 }
 
 async function openHostPanel(h, tile) {

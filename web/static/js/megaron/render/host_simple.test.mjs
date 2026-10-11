@@ -65,7 +65,13 @@ test('Q actual Host: unrounded net and raw goods, not carried stocks or a new fo
  forecast={grain:{est_net_per_tick:-0.001},goods:{fish:10000}};await click({city:null,host:true});html=element('ip-found-summary').innerHTML;
  assert.match(html,/Feeds itself:<\/span><span> no</,'negative raw net stays no regardless of carried food or fish potential');assert.match(html,/Timber:<\/span><span> no</);assert.match(html,/Stone:<\/span><span> no</);
  forecast={};await click({city:null,host:true});html=element('ip-found-summary').innerHTML;
- assert.equal((html.match(/unknown/g)||[]).length,3,'missing forecast values must remain unknown');assert.doesNotMatch(html,/>yes</);
+ assert.equal((html.match(/unknown/g)||[]).length,4,'missing forecast values must remain unknown');assert.doesNotMatch(html,/>yes</);
+});
+test('Host summary tells an inland site it never gets ships, before Details',async()=>{
+ forecast={grain:{est_net_per_tick:1},goods:{},harbour_note:'Inland: a city here can never build a harbour or ships — to reach the sea you will need a coastal colony.'};
+ await click({city:null,host:true});assert.match(element('ip-found-summary').innerHTML,/Ships:<\/span><span> never — inland</);
+ forecast={grain:{est_net_per_tick:1},goods:{},harbour_note:'Coastal: a city here can build a harbour and ships.'};
+ await click({city:null,host:true});assert.match(element('ip-found-summary').innerHTML,/Ships:<\/span><span> yes</);
 });
 test('Q actual Host: produces restores on another hex and late forecast cannot overwrite that panel',async()=>{
  forecastDelay={};await click({city:null,host:true});const pending=forecastDelay;forecastDelay=null;
