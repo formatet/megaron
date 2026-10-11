@@ -1,0 +1,90 @@
+[
+  {
+    "tag": "BUTTON",
+    "id": "",
+    "cls": "btn-small",
+    "x": 13.600006103515625,
+    "y": 80.98333740234375,
+    "w": 251.6999969482422,
+    "h": 29.5,
+    "overflowX": "visible",
+    "overflowY": "visible"
+  },
+  {
+    "tag": "DIV",
+    "id": "city-pop-sec",
+    "cls": "",
+    "x": 13.600006103515625,
+    "y": -38.46665954589844,
+    "w": 362.79998779296875,
+    "h": 169.75,
+    "overflowX": "visible",
+    "overflowY": "visible"
+  },
+  {
+    "tag": "DIV",
+    "id": "",
+    "cls": "dsec",
+    "x": 13.600006103515625,
+    "y": -73.01666259765625,
+    "w": 362.79998779296875,
+    "h": 204.3000030517578,
+    "overflowX": "visible",
+    "overflowY": "visible"
+  },
+  {
+    "tag": "DIV",
+    "id": "ctab-produktion",
+    "cls": "city-tab",
+    "x": 13.600006103515625,
+    "y": -73.01666259765625,
+    "w": 362.79998779296875,
+    "h": 816.3499755859375,
+    "overflowX": "visible",
+    "overflowY": "visible"
+  },
+  {
+    "tag": "DIV",
+    "id": "city-body",
+    "cls": "drawer-body",
+    "x": 0,
+    "y": 244.03334045410156,
+    "w": 390,
+    "h": 531.9666748046875,
+    "overflowX": "auto",
+    "overflowY": "scroll"
+  },
+  {
+    "tag": "DIV",
+    "id": "drawer-city",
+    "cls": "drawer open",
+    "x": 0,
+    "y": 34,
+    "w": 390,
+    "h": 742,
+    "overflowX": "visible",
+    "overflowY": "visible"
+  },
+  {
+    "tag": "BODY",
+    "id": "",
+    "cls": "map-mode",
+    "x": 0,
+    "y": 0,
+    "w": 390,
+    "h": 844,
+    "overflowX": "hidden",
+    "overflowY": "hidden"
+  },
+  {
+    "tag": "HTML",
+    "id": "",
+    "cls": "",
+    "x": 0,
+    "y": 0,
+    "w": 390,
+    "h": 844,
+    "overflowX": "visible",
+    "overflowY": "visible"
+  }
+]

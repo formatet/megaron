@@ -40,6 +40,9 @@ HOST_USER = os.environ.get("PANEL_HOST_USER", "Nomad")
 # yta → (hur den öppnas, selektorn för dess ruta)
 SURFACES = {
     "map": (None, "#hex-canvas"),
+    "map-river": ("@river-map", "#hex-canvas"),
+    "river": ("@river", "#inspect-panel"),
+    "city-food": ("@food", "#drawer-city"),
     "city": ("#trig-city", "#drawer-city"),
     "war": ("#trig-war", "#drawer-war"),
     "diplomacy": ("#trig-diplomacy", "#drawer-diplomacy"),
@@ -55,6 +58,12 @@ SURFACES = {
 HOST_SURFACES = {
     "host": ("#hex-canvas", "#inspect-panel", "#ip-settle-btn"),
     "host-details": ("#ip-host-details > summary", "#inspect-panel", "#ip-settle-btn"),
+}
+RICH_SURFACES = {
+ "rich-production": ("#trig-city", "#drawer-city"),
+ "rich-food": ("@rich-food", "#drawer-city"),
+ "rich-buildings": ('.dtab[data-tab="byggnader"]', "#drawer-city"),
+ "rich-garrison": ('.dtab[data-tab="garnison"]', "#drawer-city"),
 }
 MODES = {"desktop": (1280, 900), "mobile": (390, 844)}
 
@@ -74,6 +83,17 @@ MEASURE = r"""
   const visible = e => { const s = getComputedStyle(e); const r = e.getBoundingClientRect();
     return s.visibility !== 'hidden' && s.display !== 'none' && r.width > 0 && r.height > 0; };
   const label = e => (e.id ? '#' + e.id : e.tagName.toLowerCase() + (e.className && typeof e.className === 'string' ? '.' + e.className.trim().split(/\s+/).join('.') : '')) + ' «' + (e.textContent || e.value || '').trim().slice(0, 40) + '»';
+  // Scrolled content retains a DOM rectangle behind the fixed header/brief.
+  // A centre outside an ancestor's clipping viewport is not a visible control.
+  const centreExposed = (e, r) => {
+    const x=r.left+r.width/2, y=r.top+r.height/2;
+    for (let p=e.parentElement; p; p=p.parentElement) {
+      const s=getComputedStyle(p), b=p.getBoundingClientRect();
+      if (s.overflowX!=='visible' && (x<b.left || x>b.right)) return false;
+      if (s.overflowY!=='visible' && (y<b.top || y>b.bottom)) return false;
+    }
+    return true;
+  };
   const sticking = [], clipped = [], covered = [];
   for (const e of box.querySelectorAll('button, input, select, textarea, a, span, td, th, label, div, p, h1, h2, h3, h4, li')) {
     if (!visible(e)) continue;
@@ -90,7 +110,7 @@ MEASURE = r"""
         s.overflowX !== 'visible' && s.textOverflow !== 'ellipsis' && s.overflowX !== 'auto' && s.overflowX !== 'scroll')
       clipped.push(label(e) + ` [${e.scrollWidth}>${e.clientWidth}]`);
     // knappar i viewporten som inte går att träffa
-    if (e.matches('button, a, select, input') && r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth &&
+    if (centreExposed(e,r) && e.matches('button, a, select, input') && r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth &&
         r.top >= b.top && r.bottom <= b.bottom) {
       const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
       if (hit && !e.contains(hit) && !hit.contains(e)) covered.push(label(e) + ' ← ' + label(hit));
@@ -123,9 +143,10 @@ def login(user):
     return d.get("access_token") or d["token"]
 
 
-def run_engine(pw, engine, token, out, surfaces=SURFACES):
+def run_engine(pw, engine, token, out, surfaces=SURFACES, close_drawers=True):
     rows = []
     browser = getattr(pw, engine).launch()
+    version=browser.version
     for mode, (w, h) in MODES.items():
         ctx = browser.new_context(viewport={"width": w, "height": h}, locale="en-GB",
                                   timezone_id="Europe/Stockholm", has_touch=mode == "mobile")
@@ -133,28 +154,74 @@ def run_engine(pw, engine, token, out, surfaces=SURFACES):
         ctx.add_init_script(f"localStorage.setItem('poleia_token', {json.dumps(token)})")
         page = ctx.new_page()
         errors = []
+        city_payloads=[]
+        def record_city(response):
+            if '/provinces/' in response.url and response.status==200:
+                try:
+                    data=response.json()
+                    if isinstance(data,dict) and 'settlement' in data:city_payloads.append(data['settlement'])
+                except Exception:pass
+        page.on('response',record_city)
         page.on("pageerror", lambda e: errors.append(str(e)))
+        page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
         page.goto(f"{HOST}/play", wait_until="networkidle")
         page.wait_for_function("() => window.centreOn !== undefined", timeout=20000)
+        page.evaluate("""async()=>{window.__parityState=(await import('/static/js/megaron/state.js')).State;window.__parityMap=await import('/static/js/megaron/render/map.js');}""")
+        page.wait_for_function("__parityState.tileData.length > 0 && __parityMap.markrasterStats.pending===0",timeout=30000)
         page.wait_for_timeout(800)
         for name, (trigger, sel, *reach) in surfaces.items():
-            before = len(errors)
-            if trigger:
-                # 390 px trycker med fingret, som en mobilspelare. (Playwrights Firefox med
-                # has_touch skickar inga pointer-händelser för ett musklick — kartan, som
-                # lyssnar på Pointer Events, ser då inget klick. Mätt 2026-10-09.)
-                el = page.locator(trigger).first
-                el.tap() if mode == "mobile" else el.click()
+            before = 0 if name == next(iter(surfaces)) else len(errors)
+            if trigger in ("@river", "@river-map"):
+                river = page.evaluate("() => __parityState.tileData.find(t=>t.river_name && t.tier!=='fog' && t.terrain.startsWith('river'))")
+                if not river: raise RuntimeError("no known named river in this player's actual map")
+                page.evaluate("t=>window.centreOn(t.q,t.r)",river)
+                page.wait_for_function("__parityMap.markrasterStats.pending===0",timeout=30000)
+                page.wait_for_timeout(400)
+                if trigger=="@river":
+                    point=page.evaluate("t=>{const p=__parityMap.hexPx(t.q,t.r),s=__parityState;return {x:s.camera.x+p.x*__parityMap.SCALE*s.camera.zoom,y:s.camera.y+p.y*__parityMap.SCALE*s.camera.zoom}}",river)
+                    el=page.locator('#hex-canvas');el.tap(position=point) if mode=="mobile" else el.click(position=point)
+                    page.wait_for_timeout(900)
+            elif trigger in ("@food","@rich-food"):
+                if trigger=="@food":
+                    el=page.locator('#trig-city');el.tap() if mode=="mobile" else el.click()
+                page.locator('.harvest-blessing').wait_for(state='visible',timeout=10000)
+                page.locator('.harvest-blessing').scroll_into_view_if_needed()
+                page.wait_for_timeout(400)
+            elif trigger:
+                # Touch input for mobile, including Firefox's canvas Pointer Events.
+                el=page.locator(trigger).first
+                el.tap() if mode=="mobile" else el.click()
                 page.wait_for_timeout(900)
             m = page.evaluate(MEASURE, [sel, reach[0] if reach else None])
-            m.update(engine=engine, mode=mode, surface=name, errors=errors[before:])
+            m.update(engine=engine, version=version, mode=mode, surface=name, errors=errors[before:])
+            m['worker']=page.evaluate("()=>({...__parityMap.markrasterStats})")
+            if name in ('map','map-river'):
+                m['map_facts']=page.evaluate("()=>({known_rivers:__parityState.tileData.filter(t=>t.river_name && t.tier!=='fog').length,cities:__parityState.provinceData.length,tiers:[...new Set(__parityState.tileData.map(t=>t.tier))],zoom:__parityState.camera.zoom})")
+            if name=='river':
+                m['field_spacing']=page.evaluate("""()=>[...document.querySelectorAll('#ip-body .inspect-row')].filter(row=>{const r=row.getBoundingClientRect();return r.width>0 && row.children.length===2}).map(row=>{const a=row.children[0].getBoundingClientRect(),b=row.children[1].getBoundingClientRect();return {label:row.children[0].textContent,gap:b.left-a.right}})""")
+
+                m['river']={'q':river['q'],'r':river['r'],'name':river['river_name'],'title':page.locator('#ip-name').inner_text(),'terrain':page.locator('#ip-terrain').inner_text()}
+                if river['river_name'] not in m['river']['title'] or river['river_name'] in m['river']['terrain']:m['errors'].append('river name/title/terrain mismatch')
+            if name in ('host','host-details'):
+                row=page.locator('.inspect-row').filter(has_text='Ships:')
+                m['ships']=row.inner_text();m['ships_box']=row.bounding_box()
+                b=m['ships_box'];m['ships_visible']=bool(b and b['y']>=0 and b['y']+b['height']<=h)
+                if not m['ships_visible']:m['errors'].append('Ships row not visible')
+            if name in ('city-food','rich-food'):
+                line=page.locator('.harvest-blessing');m['harvest']=line.inner_text();m['harvest_box']=line.bounding_box();m['harvest_api']=city_payloads[-1].get('harvest_blessing') if city_payloads else None
+                if 'days left' not in m['harvest'] or 'fish' in m['harvest'] or not m['harvest_api']:m['errors'].append('harvest display mismatch')
+            if name=='rich-buildings':m['built_rows']=page.locator('#city-bld-sec .goods-mini tr').count()
+            if name=='rich-garrison':m['garrison_rows']=page.locator('#city-gar-sec').inner_text()
             page.screenshot(path=str(out / f"{engine}-{mode}-{name}.png"))
             rows.append(m)
-            if trigger and surfaces is SURFACES:  # stäng igen (Host-ytorna bygger på varandra) med samma knapp, sedan Escape som reserv
+            if trigger and close_drawers:  # stäng igen (Host-ytorna bygger på varandra) med samma knapp, sedan Escape som reserv
                 page.keyboard.press("Escape")
                 page.wait_for_timeout(200)
                 if page.evaluate(f"(() => {{ const e = document.querySelector({json.dumps(sel)}); return e && e.getBoundingClientRect().width > 0 && getComputedStyle(e).visibility !== 'hidden' && e.classList.contains('open'); }})()"):
-                    page.locator(trigger).first.click(force=True)
+                    if trigger.startswith('@'):
+                        if trigger=='@river':page.evaluate('__parityMap.closeInspect()')
+                        elif trigger=='@food':page.locator('#trig-city').click()
+                    else:page.locator(trigger).first.click(force=True)
                     page.wait_for_timeout(300)
         ctx.close()
     browser.close()
@@ -171,13 +238,15 @@ def findings(rows):
         if r["page_hscroll"]: out.append(f"{tag} sidan scrollar i sidled")
         if r["box_outside"]: out.append(f"{tag} rutan utanför viewporten {r['box']}")
         if r.get("canvas_mismatch"): out.append(f"{tag} {r['canvas_mismatch']}")
+        for field in r.get("field_spacing",[]):
+            if field["gap"]<1:out.append(f"{tag} label/value touch: {field}")
         if r.get("unreachable"): out.append(f"{tag} går inte att trycka på: {r['unreachable']}")
         for k in ("sticking", "clipped", "covered"):
             for x in r[k]: out.append(f"{tag} {k}: {x}")
         for e in r["errors"]: out.append(f"{tag} JS-fel: {e[:160]}")
     # innehållshöjd per motor, samma yta och läge
     for mode in MODES:
-        for s in [*SURFACES, *HOST_SURFACES]:
+        for s in sorted({r["surface"] for r in rows}):
             hs = {r["engine"]: r.get("content_height") for r in rows if r["mode"] == mode and r["surface"] == s and r.get("content_height")}
             if len(hs) < 2: continue
             med = statistics.median(hs.values())
@@ -191,6 +260,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--out", type=pathlib.Path, default=pathlib.Path("browser-parity"))
     ap.add_argument("--browsers", nargs="+", default=["firefox", "chromium", "webkit"])
+    ap.add_argument('--surfaces',nargs='+',choices=list(SURFACES),default=[k for k in SURFACES if k not in ("map-river","river","city-food")])
+    ap.add_argument('--rich-user',help='additional content-stress city account')
     a = ap.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
     token = login(USER)
@@ -199,10 +270,15 @@ def main():
     except urllib.error.HTTPError:
         sys.exit(f"ingen spelare {HOST_USER} — skapa en utan stad: tools/acceptance.sh player {HOST_USER}")
     rows = []
+    rich_token=login(a.rich_user) if a.rich_user else None
+    surfaces={k:SURFACES[k] for k in a.surfaces}
     with sync_playwright() as pw:
         for engine in a.browsers:
-            rows += run_engine(pw, engine, token, a.out)
-            rows += run_engine(pw, engine, host_token, a.out, HOST_SURFACES)
+            rows += run_engine(pw, engine, token, a.out, surfaces)
+            rows += run_engine(pw, engine, host_token, a.out, HOST_SURFACES,close_drawers=False)
+            if rich_token:rows += run_engine(pw,engine,rich_token,a.out,RICH_SURFACES,close_drawers=False)
+            (a.out / "measurements.json").write_text(json.dumps(rows,indent=1,ensure_ascii=False))
+            print(engine,'complete',len(rows),'measurements',flush=True)
     (a.out / "measurements.json").write_text(json.dumps(rows, indent=1, ensure_ascii=False))
     f = findings(rows)
     (a.out / "findings.txt").write_text("\n".join(f) + "\n")

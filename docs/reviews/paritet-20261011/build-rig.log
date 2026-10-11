@@ -1,0 +1,38 @@
+→ bygger och startar acceptansvärlden (projekt megaron-acc)
+time="2026-10-11T21:38:55+02:00" level=warning msg="buildx Docker CLI plugin not found: falling back to the classic builder. BuildKit-only build features (multi-arch, secrets, ssh, additional contexts, ...) will not be available"
+ Image megaron-acc-server Building
+ Image megaron-acc-server Building
+Sending build context to Docker daemon  548.1kB
+Sending build context to Docker daemon   9.59MB
+Sending build context to Docker daemon  19.16MB
+Sending build context to Docker daemon  27.14MB
+Sending build context to Docker daemon  38.39MB
+Sending build context to Docker daemon   55.5MB
+Sending build context to Docker daemon  67.71MB
+Sending build context to Docker daemon  73.03MB
+Sending build context to Docker daemon  78.81MB
+Sending build context to Docker daemon   80.9MB
+Sending build context to Docker daemon  87.23MB
+Sending build context to Docker daemon  91.97MB
+Sending build context to Docker daemon  97.21MB
+Sending build context to Docker daemon  112.8MB
+Sending build context to Docker daemon    113MB
+
+Step 1/20 : FROM golang:1.25-alpine AS builder
+ ---> 523c3effe300
+Step 2/20 : LABEL com.megaron.build-stage=builder
+ ---> Using cache
+ ---> b98a543889b5
+Step 3/20 : WORKDIR /build
+ ---> Using cache
+ ---> 99ec2f8951cd
+Step 4/20 : RUN apk add --no-cache gcc musl-dev
+ ---> Running in 26fd1d94af89
+[91mWARNING: fetching https://dl-cdn.alpinelinux.org/alpine/v3.24/main/x86_64/APKINDEX.tar.gz: DNS: transient error (try again later)
+[0m[91mWARNING: fetching https://dl-cdn.alpinelinux.org/alpine/v3.24/community/x86_64/APKINDEX.tar.gz: DNS: transient error (try again later)
+[0m[91mERROR: unable to select packages:
+  gcc (no such package):
+    required by: world[gcc]
+  musl-dev (no such package):
+    required by: world[musl-dev]
+[0mThe command '/bin/sh -c apk add --no-cache gcc musl-dev' returned a non-zero code: 2

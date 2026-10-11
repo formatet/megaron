@@ -1,0 +1,682 @@
+[
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 1280,
+   "top": 44,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 822,
+  "canvas_mismatch": null,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "mode": "desktop",
+  "surface": "map",
+  "errors": [],
+  "worker": {
+   "chunks": 25,
+   "bakeMs": 526,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "map_facts": {
+   "known_rivers": 3,
+   "cities": 1,
+   "tiers": [
+    "fog",
+    "remembered",
+    "live"
+   ],
+   "zoom": 1
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 1280,
+   "top": 44,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 822,
+  "canvas_mismatch": null,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "mode": "desktop",
+  "surface": "map-river",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 600,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "map_facts": {
+   "known_rivers": 3,
+   "cities": 1,
+   "tiers": [
+    "fog",
+    "remembered",
+    "live"
+   ],
+   "zoom": 1
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1062,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "mode": "desktop",
+  "surface": "city",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 600,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1062,
+  "sticking": [],
+  "clipped": [],
+  "covered": [
+   "button.btn-small «Slaughter → 10 people» ← #lb-city «⊛ LawagetasYour megaron rises above all »"
+  ],
+  "engine": "firefox",
+  "mode": "desktop",
+  "surface": "city-food",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 600,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "harvest": "Blessed harvest: +25% grain, livestock, wine, oil yield · 1,982 days left",
+  "harvest_box": {
+   "x": 875.5999755859375,
+   "y": 696.8833618164062,
+   "width": 390.7999267578125,
+   "height": 54.4000244140625
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 1060,
+   "right": 1280,
+   "top": 44,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 669,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "mode": "desktop",
+  "surface": "river",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 600,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "river": {
+   "q": 6,
+   "r": 79,
+   "name": "Sangarios",
+   "title": "Delta of Sangarios (6,79)",
+   "terrain": "River Delta"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 44,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 732,
+  "canvas_mismatch": null,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "mode": "mobile",
+  "surface": "map",
+  "errors": [],
+  "worker": {
+   "chunks": 12,
+   "bakeMs": 278,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "map_facts": {
+   "known_rivers": 3,
+   "cities": 1,
+   "tiers": [
+    "fog",
+    "remembered",
+    "live"
+   ],
+   "zoom": 1
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 44,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 732,
+  "canvas_mismatch": null,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "mode": "mobile",
+  "surface": "map-river",
+  "errors": [],
+  "worker": {
+   "chunks": 19,
+   "bakeMs": 381,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "map_facts": {
+   "known_rivers": 3,
+   "cities": 1,
+   "tiers": [
+    "fog",
+    "remembered",
+    "live"
+   ],
+   "zoom": 1
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1071,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "mode": "mobile",
+  "surface": "city",
+  "errors": [],
+  "worker": {
+   "chunks": 19,
+   "bakeMs": 381,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1071,
+  "sticking": [],
+  "clipped": [],
+  "covered": [
+   "button.btn-small «Slaughter → 10 people» ← div.lb-head «⊛ Lawagetas»"
+  ],
+  "engine": "firefox",
+  "mode": "mobile",
+  "surface": "city-food",
+  "errors": [],
+  "worker": {
+   "chunks": 19,
+   "bakeMs": 381,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "harvest": "Blessed harvest: +25% grain, livestock, wine, oil yield · 1,980 days left",
+  "harvest_box": {
+   "x": 13.600000381469727,
+   "y": 606.9833374023438,
+   "width": 362.79999351501465,
+   "height": 54.4000244140625
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 170,
+   "right": 390,
+   "top": 44,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 579,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "mode": "mobile",
+  "surface": "river",
+  "errors": [],
+  "worker": {
+   "chunks": 19,
+   "bakeMs": 381,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "river": {
+   "q": 6,
+   "r": 79,
+   "name": "Sangarios",
+   "title": "Delta of Sangarios (6,79)",
+   "terrain": "River Delta"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 1060,
+   "right": 1280,
+   "top": 44,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 709,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "mode": "desktop",
+  "surface": "host",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 388,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "ships": "SHIPS:\nnever — inland",
+  "ships_box": {
+   "x": 1073.9000244140625,
+   "y": 212.28334045410156,
+   "width": 194.199951171875,
+   "height": 23.116668701171875
+  },
+  "ships_visible": true
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 1060,
+   "right": 1280,
+   "top": 44,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1126,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "mode": "desktop",
+  "surface": "host-details",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 388,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "ships": "SHIPS:\nnever — inland",
+  "ships_box": {
+   "x": 1073.9000244140625,
+   "y": 212.28334045410156,
+   "width": 194.199951171875,
+   "height": 23.116668701171875
+  },
+  "ships_visible": true
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 170,
+   "right": 390,
+   "top": 44,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 619,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "mode": "mobile",
+  "surface": "host",
+  "errors": [],
+  "worker": {
+   "chunks": 12,
+   "bakeMs": 216,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "ships": "SHIPS:\nnever — inland",
+  "ships_box": {
+   "x": 183.89999389648438,
+   "y": 212.28334045410156,
+   "width": 194.19998168945312,
+   "height": 23.116668701171875
+  },
+  "ships_visible": true
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 170,
+   "right": 390,
+   "top": 44,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1126,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "mode": "mobile",
+  "surface": "host-details",
+  "errors": [],
+  "worker": {
+   "chunks": 12,
+   "bakeMs": 216,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "ships": "SHIPS:\nnever — inland",
+  "ships_box": {
+   "x": 183.89999389648438,
+   "y": 212.28334045410156,
+   "width": 194.19998168945312,
+   "height": 23.116668701171875
+  },
+  "ships_visible": true
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1084,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "mode": "desktop",
+  "surface": "rich-production",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 532,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1084,
+  "sticking": [],
+  "clipped": [],
+  "covered": [
+   "button.btn-small «Slaughter → 10 people» ← #lb-city «⊛ LawagetasYour megaron rises above all »"
+  ],
+  "engine": "firefox",
+  "mode": "desktop",
+  "surface": "rich-food",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 532,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "harvest": "Blessed harvest: +25% grain, livestock, wine, oil yield · 1,976 days left",
+  "harvest_box": {
+   "x": 875.5999755859375,
+   "y": 696.9833374023438,
+   "width": 390.7999267578125,
+   "height": 54.4000244140625
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 1422,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "mode": "desktop",
+  "surface": "rich-buildings",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 532,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "built_rows": 30
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 860,
+   "right": 1280,
+   "top": 34,
+   "bottom": 866
+  },
+  "box_outside": false,
+  "content_height": 602,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "mode": "desktop",
+  "surface": "rich-garrison",
+  "errors": [],
+  "worker": {
+   "chunks": 30,
+   "bakeMs": 532,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "garrison_rows": "Unit\tCount\tPop\tDP\nSpearmen\t300\t1500\t300\nElite Infantry\t100\t1000\t300\nWar Chariot\t100\t800\t400\nGalley\t1\t10\t1\nTotal\t\t3310\t1001 DP\nDISBAND\nSpearmen \nChariot \nDISBAND →\n\nUnavailable: abandon ?"
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1093,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "mode": "mobile",
+  "surface": "rich-production",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 359,
+   "pending": 0,
+   "mode": "worker"
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1093,
+  "sticking": [],
+  "clipped": [],
+  "covered": [
+   "button.btn-small «Slaughter → 10 people» ← div.drawer-header «‹\n      City — Parity Rich Mycenae ★\n   »"
+  ],
+  "engine": "firefox",
+  "mode": "mobile",
+  "surface": "rich-food",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 359,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "harvest": "Blessed harvest: +25% grain, livestock, wine, oil yield · 1,975 days left",
+  "harvest_box": {
+   "x": 13.600000381469727,
+   "y": 607.0833129882812,
+   "width": 362.79999351501465,
+   "height": 54.4000244140625
+  }
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 1408,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "mode": "mobile",
+  "surface": "rich-buildings",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 359,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "built_rows": 30
+ },
+ {
+  "found": true,
+  "page_hscroll": false,
+  "box": {
+   "left": 0,
+   "right": 390,
+   "top": 34,
+   "bottom": 776
+  },
+  "box_outside": false,
+  "content_height": 554,
+  "sticking": [],
+  "clipped": [],
+  "covered": [],
+  "engine": "firefox",
+  "mode": "mobile",
+  "surface": "rich-garrison",
+  "errors": [],
+  "worker": {
+   "chunks": 20,
+   "bakeMs": 359,
+   "pending": 0,
+   "mode": "worker"
+  },
+  "garrison_rows": "Unit\tCount\tPop\tDP\nSpearmen\t288\t1440\t288\nElite Infantry\t88\t880\t264\nWar Chariot\t88\t704\t352\nGalley\t1\t10\t1\nTotal\t\t3034\t905 DP\nDISBAND\nSpearmen \nChariot \nDISBAND →\n\nUnavailable: abandon ?"
+ }
+]

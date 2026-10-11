@@ -1,0 +1,986 @@
+[
+  {
+    "found": true,
+    "page_hscroll": false,
+    "box": {
+      "left": 1060,
+      "right": 1280,
+      "top": 44,
+      "bottom": 866
+    },
+    "box_outside": false,
+    "content_height": 669,
+    "inspect_text": [
+      {
+        "text": "TerrainRiver Delta",
+        "spans": [
+          {
+            "text": "Terrain",
+            "x": 1073.9000244140625,
+            "w": 59.88334655761719,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 1073.9000244140625,
+                "y": 118.51666259765625,
+                "w": 59.88334655761719,
+                "h": 14
+              }
+            ]
+          },
+          {
+            "text": "River Delta",
+            "x": 1201.066650390625,
+            "w": 67.03334045410156,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 1201.066650390625,
+                "y": 118.78334045410156,
+                "w": 67.03334045410156,
+                "h": 17
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Deposits\u2014",
+        "spans": [
+          {
+            "text": "Deposits",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          },
+          {
+            "text": "\u2014",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          }
+        ]
+      },
+      {
+        "text": "Producesgrain \u00d74 (richest \u2014 exposed coast), fish",
+        "spans": [
+          {
+            "text": "Produces",
+            "x": 1073.9000244140625,
+            "w": 71.76667785644531,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 1073.9000244140625,
+                "y": 148.43333435058594,
+                "w": 71.76667785644531,
+                "h": 14
+              }
+            ]
+          },
+          {
+            "text": "grain \u00d74 (richest \u2014 exposed coast), fish",
+            "x": 1145.6666259765625,
+            "w": 122.43333435058594,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 1145.6666259765625,
+                "y": 148.6999969482422,
+                "w": 113.75,
+                "h": 17
+              },
+              {
+                "x": 1145.6666259765625,
+                "y": 171.81666564941406,
+                "w": 114.43333435058594,
+                "h": 17
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Owner\u2014",
+        "spans": [
+          {
+            "text": "Owner",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          },
+          {
+            "text": "\u2014",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          }
+        ]
+      },
+      {
+        "text": "Defence\u2014",
+        "spans": [
+          {
+            "text": "Defence",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          },
+          {
+            "text": "\u2014",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          }
+        ]
+      }
+    ],
+    "sticking": [],
+    "clipped": [],
+    "covered": [],
+    "engine": "firefox",
+    "version": "146.0.1",
+    "mode": "desktop",
+    "surface": "river",
+    "errors": [],
+    "worker": {
+      "chunks": 30,
+      "bakeMs": 607,
+      "pending": 0,
+      "mode": "worker"
+    },
+    "river": {
+      "q": 6,
+      "r": 79,
+      "name": "Sangarios",
+      "title": "Delta of Sangarios (6,79)",
+      "terrain": "River Delta"
+    }
+  },
+  {
+    "found": true,
+    "page_hscroll": false,
+    "box": {
+      "left": 170,
+      "right": 390,
+      "top": 44,
+      "bottom": 776
+    },
+    "box_outside": false,
+    "content_height": 579,
+    "inspect_text": [
+      {
+        "text": "TerrainRiver Delta",
+        "spans": [
+          {
+            "text": "Terrain",
+            "x": 183.89999389648438,
+            "w": 59.88334655761719,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 183.89999389648438,
+                "y": 118.51666259765625,
+                "w": 59.88334655761719,
+                "h": 14
+              }
+            ]
+          },
+          {
+            "text": "River Delta",
+            "x": 311.066650390625,
+            "w": 67.03334045410156,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 311.066650390625,
+                "y": 118.78334045410156,
+                "w": 67.03334045410156,
+                "h": 17
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Deposits\u2014",
+        "spans": [
+          {
+            "text": "Deposits",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          },
+          {
+            "text": "\u2014",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          }
+        ]
+      },
+      {
+        "text": "Producesgrain \u00d74 (richest \u2014 exposed coast), fish",
+        "spans": [
+          {
+            "text": "Produces",
+            "x": 183.89999389648438,
+            "w": 71.76667785644531,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 183.89999389648438,
+                "y": 148.43333435058594,
+                "w": 71.76667785644531,
+                "h": 14
+              }
+            ]
+          },
+          {
+            "text": "grain \u00d74 (richest \u2014 exposed coast), fish",
+            "x": 255.6666717529297,
+            "w": 122.43333435058594,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 255.6666717529297,
+                "y": 148.6999969482422,
+                "w": 113.75,
+                "h": 17
+              },
+              {
+                "x": 255.6666717529297,
+                "y": 171.81666564941406,
+                "w": 114.43333435058594,
+                "h": 17
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Owner\u2014",
+        "spans": [
+          {
+            "text": "Owner",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          },
+          {
+            "text": "\u2014",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          }
+        ]
+      },
+      {
+        "text": "Defence\u2014",
+        "spans": [
+          {
+            "text": "Defence",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          },
+          {
+            "text": "\u2014",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          }
+        ]
+      }
+    ],
+    "sticking": [],
+    "clipped": [],
+    "covered": [],
+    "engine": "firefox",
+    "version": "146.0.1",
+    "mode": "mobile",
+    "surface": "river",
+    "errors": [],
+    "worker": {
+      "chunks": 19,
+      "bakeMs": 427,
+      "pending": 0,
+      "mode": "worker"
+    },
+    "river": {
+      "q": 6,
+      "r": 79,
+      "name": "Sangarios",
+      "title": "Delta of Sangarios (6,79)",
+      "terrain": "River Delta"
+    }
+  },
+  {
+    "found": true,
+    "page_hscroll": false,
+    "box": {
+      "left": 1060,
+      "right": 1280,
+      "top": 44,
+      "bottom": 866
+    },
+    "box_outside": false,
+    "content_height": 673,
+    "inspect_text": [
+      {
+        "text": "TerrainRiver Delta",
+        "spans": [
+          {
+            "text": "Terrain",
+            "x": 1073.890625,
+            "w": 59.875,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 1073.890625,
+                "y": 117.734375,
+                "w": 59.875,
+                "h": 14
+              }
+            ]
+          },
+          {
+            "text": "River Delta",
+            "x": 1201.15625,
+            "w": 66.953125,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 1201.15625,
+                "y": 118.734375,
+                "w": 66.953125,
+                "h": 16
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Deposits\u2014",
+        "spans": [
+          {
+            "text": "Deposits",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          },
+          {
+            "text": "\u2014",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          }
+        ]
+      },
+      {
+        "text": "Producesgrain \u00d74 (richest \u2014 exposed coast), fish",
+        "spans": [
+          {
+            "text": "Produces",
+            "x": 1073.890625,
+            "w": 71.75,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 1073.890625,
+                "y": 147.65625,
+                "w": 71.75,
+                "h": 14
+              }
+            ]
+          },
+          {
+            "text": "grain \u00d74 (richest \u2014 exposed coast), fish",
+            "x": 1145.640625,
+            "w": 122.46875,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 1145.640625,
+                "y": 148.65625,
+                "w": 113.59375,
+                "h": 16
+              },
+              {
+                "x": 1145.640625,
+                "y": 171.78125,
+                "w": 114.28125,
+                "h": 16
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Owner\u2014",
+        "spans": [
+          {
+            "text": "Owner",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          },
+          {
+            "text": "\u2014",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          }
+        ]
+      },
+      {
+        "text": "Defence\u2014",
+        "spans": [
+          {
+            "text": "Defence",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          },
+          {
+            "text": "\u2014",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          }
+        ]
+      }
+    ],
+    "sticking": [],
+    "clipped": [],
+    "covered": [],
+    "engine": "chromium",
+    "version": "145.0.7632.6",
+    "mode": "desktop",
+    "surface": "river",
+    "errors": [],
+    "worker": {
+      "chunks": 30,
+      "bakeMs": 532.8000000715256,
+      "pending": 0,
+      "mode": "worker"
+    },
+    "river": {
+      "q": 6,
+      "r": 79,
+      "name": "Sangarios",
+      "title": "Delta of Sangarios (6,79)",
+      "terrain": "River Delta"
+    }
+  },
+  {
+    "found": true,
+    "page_hscroll": false,
+    "box": {
+      "left": 170,
+      "right": 390,
+      "top": 44,
+      "bottom": 776
+    },
+    "box_outside": false,
+    "content_height": 583,
+    "inspect_text": [
+      {
+        "text": "TerrainRiver Delta",
+        "spans": [
+          {
+            "text": "Terrain",
+            "x": 183.890625,
+            "w": 59.875,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 183.890625,
+                "y": 117.734375,
+                "w": 59.875,
+                "h": 14
+              }
+            ]
+          },
+          {
+            "text": "River Delta",
+            "x": 311.15625,
+            "w": 66.953125,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 311.15625,
+                "y": 118.734375,
+                "w": 66.953125,
+                "h": 16
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Deposits\u2014",
+        "spans": [
+          {
+            "text": "Deposits",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          },
+          {
+            "text": "\u2014",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          }
+        ]
+      },
+      {
+        "text": "Producesgrain \u00d74 (richest \u2014 exposed coast), fish",
+        "spans": [
+          {
+            "text": "Produces",
+            "x": 183.890625,
+            "w": 71.75,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 183.890625,
+                "y": 147.65625,
+                "w": 71.75,
+                "h": 14
+              }
+            ]
+          },
+          {
+            "text": "grain \u00d74 (richest \u2014 exposed coast), fish",
+            "x": 255.640625,
+            "w": 122.46875,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 255.640625,
+                "y": 148.65625,
+                "w": 113.59375,
+                "h": 16
+              },
+              {
+                "x": 255.640625,
+                "y": 171.78125,
+                "w": 114.28125,
+                "h": 16
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Owner\u2014",
+        "spans": [
+          {
+            "text": "Owner",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          },
+          {
+            "text": "\u2014",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          }
+        ]
+      },
+      {
+        "text": "Defence\u2014",
+        "spans": [
+          {
+            "text": "Defence",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          },
+          {
+            "text": "\u2014",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          }
+        ]
+      }
+    ],
+    "sticking": [],
+    "clipped": [],
+    "covered": [],
+    "engine": "chromium",
+    "version": "145.0.7632.6",
+    "mode": "mobile",
+    "surface": "river",
+    "errors": [],
+    "worker": {
+      "chunks": 19,
+      "bakeMs": 411.09999990463257,
+      "pending": 0,
+      "mode": "worker"
+    },
+    "river": {
+      "q": 6,
+      "r": 79,
+      "name": "Sangarios",
+      "title": "Delta of Sangarios (6,79)",
+      "terrain": "River Delta"
+    }
+  },
+  {
+    "found": true,
+    "page_hscroll": false,
+    "box": {
+      "left": 1060,
+      "right": 1280,
+      "top": 44,
+      "bottom": 866
+    },
+    "box_outside": false,
+    "content_height": 671,
+    "inspect_text": [
+      {
+        "text": "TerrainRiver Delta",
+        "spans": [
+          {
+            "text": "Terrain",
+            "x": 1073.890625,
+            "w": 59.875,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 1073.890625,
+                "y": 117.484375,
+                "w": 59.8660888671875,
+                "h": 14
+              }
+            ]
+          },
+          {
+            "text": "River Delta",
+            "x": 1201.15625,
+            "w": 66.953125,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 1201.15625,
+                "y": 118.484375,
+                "w": 66.94970703125,
+                "h": 16
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Deposits\u2014",
+        "spans": [
+          {
+            "text": "Deposits",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          },
+          {
+            "text": "\u2014",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          }
+        ]
+      },
+      {
+        "text": "Producesgrain \u00d74 (richest \u2014 exposed coast), fish",
+        "spans": [
+          {
+            "text": "Produces",
+            "x": 1073.890625,
+            "w": 71.75,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 1073.890625,
+                "y": 147.28125,
+                "w": 71.7415771484375,
+                "h": 14
+              }
+            ]
+          },
+          {
+            "text": "grain \u00d74 (richest \u2014 exposed coast), fish",
+            "x": 1145.640625,
+            "w": 122.46875,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 1145.640625,
+                "y": 148.28125,
+                "w": 113.58251953125,
+                "h": 16
+              },
+              {
+                "x": 1145.640625,
+                "y": 171.28125,
+                "w": 114.266357421875,
+                "h": 16
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Owner\u2014",
+        "spans": [
+          {
+            "text": "Owner",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          },
+          {
+            "text": "\u2014",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          }
+        ]
+      },
+      {
+        "text": "Defence\u2014",
+        "spans": [
+          {
+            "text": "Defence",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          },
+          {
+            "text": "\u2014",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          }
+        ]
+      }
+    ],
+    "sticking": [],
+    "clipped": [],
+    "covered": [],
+    "engine": "webkit",
+    "version": "26.0",
+    "mode": "desktop",
+    "surface": "river",
+    "errors": [],
+    "worker": {
+      "chunks": 30,
+      "bakeMs": 1062.0000000000007,
+      "pending": 0,
+      "mode": "worker"
+    },
+    "river": {
+      "q": 6,
+      "r": 79,
+      "name": "Sangarios",
+      "title": "Delta of Sangarios (6,79)",
+      "terrain": "River Delta"
+    }
+  },
+  {
+    "found": true,
+    "page_hscroll": false,
+    "box": {
+      "left": 170,
+      "right": 390,
+      "top": 44,
+      "bottom": 776
+    },
+    "box_outside": false,
+    "content_height": 581,
+    "inspect_text": [
+      {
+        "text": "TerrainRiver Delta",
+        "spans": [
+          {
+            "text": "Terrain",
+            "x": 183.890625,
+            "w": 59.875,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 183.890625,
+                "y": 117.484375,
+                "w": 59.86607360839844,
+                "h": 14
+              }
+            ]
+          },
+          {
+            "text": "River Delta",
+            "x": 311.15625,
+            "w": 66.953125,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 311.15625,
+                "y": 118.484375,
+                "w": 66.94967651367188,
+                "h": 16
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Deposits\u2014",
+        "spans": [
+          {
+            "text": "Deposits",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          },
+          {
+            "text": "\u2014",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          }
+        ]
+      },
+      {
+        "text": "Producesgrain \u00d74 (richest \u2014 exposed coast), fish",
+        "spans": [
+          {
+            "text": "Produces",
+            "x": 183.890625,
+            "w": 71.75,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 183.890625,
+                "y": 147.28125,
+                "w": 71.74154663085938,
+                "h": 14
+              }
+            ]
+          },
+          {
+            "text": "grain \u00d74 (richest \u2014 exposed coast), fish",
+            "x": 255.640625,
+            "w": 122.46875,
+            "shrink": "1",
+            "text_rects": [
+              {
+                "x": 255.640625,
+                "y": 148.28125,
+                "w": 113.58251953125,
+                "h": 16
+              },
+              {
+                "x": 255.640625,
+                "y": 171.28125,
+                "w": 114.26632690429688,
+                "h": 16
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Owner\u2014",
+        "spans": [
+          {
+            "text": "Owner",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          },
+          {
+            "text": "\u2014",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          }
+        ]
+      },
+      {
+        "text": "Defence\u2014",
+        "spans": [
+          {
+            "text": "Defence",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          },
+          {
+            "text": "\u2014",
+            "x": 0,
+            "w": 0,
+            "shrink": "1",
+            "text_rects": []
+          }
+        ]
+      }
+    ],
+    "sticking": [],
+    "clipped": [],
+    "covered": [],
+    "engine": "webkit",
+    "version": "26.0",
+    "mode": "mobile",
+    "surface": "river",
+    "errors": [],
+    "worker": {
+      "chunks": 19,
+      "bakeMs": 682.9999999999999,
+      "pending": 0,
+      "mode": "worker"
+    },
+    "river": {
+      "q": 6,
+      "r": 79,
+      "name": "Sangarios",
+      "title": "Delta of Sangarios (6,79)",
+      "terrain": "River Delta"
+    }
+  }
+]

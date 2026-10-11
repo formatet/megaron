@@ -1,0 +1,20 @@
+[
+  {
+    "engine": "firefox",
+    "pageerrors": [],
+    "console_errors": [],
+    "failed_requests": []
+  },
+  {
+    "engine": "chromium",
+    "pageerrors": [],
+    "console_errors": [],
+    "failed_requests": []
+  },
+  {
+    "engine": "webkit",
+    "pageerrors": [],
+    "console_errors": [],
+    "failed_requests": []
+  }
+]

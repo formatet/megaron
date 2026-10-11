@@ -1,0 +1,6 @@
+firefox  desktop city-food covered: button.btn-small «Slaughter → 10 people» ← #lb-city «⊛ LawagetasYour megaron rises above all »
+firefox  mobile  city-food covered: button.btn-small «Slaughter → 10 people» ← div.lb-head «⊛ Lawagetas»
+firefox  desktop rich-food covered: button.btn-small «Slaughter → 10 people» ← #lb-city «⊛ LawagetasYour megaron rises above all »
+firefox  mobile  rich-food covered: button.btn-small «Slaughter → 10 people» ← div.drawer-header «‹
+      City — Parity Rich Mycenae ★
+   »

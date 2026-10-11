@@ -1,0 +1,26 @@
+{
+  "world": "3b5fb9cd-8c06-4685-88df-b162c9acff99",
+  "rich_player": "ParityRich",
+  "host_player": "ParityNomad",
+  "rich_city": {
+    "id": "3d2d4a29-4fc6-45b2-a12d-403adcb8eae7",
+    "settlement_id": "28e50b4a-5d74-4fb4-bdcd-e6f11323b826",
+    "name": "Parity Rich Mycenae",
+    "culture": "minoan",
+    "q": 30,
+    "r": 61,
+    "state": "active",
+    "walls": 0,
+    "size_tier": 1,
+    "owner": "Karpathia",
+    "own": true,
+    "is_capital": true,
+    "allied": false,
+    "visible": true,
+    "army_total": 201
+  },
+  "coastal": true,
+  "buildings": 30,
+  "fixture_garrison": 12,
+  "setup": "normal register/join/found; explicit SQL content-stress + active blessing; not normal gameplay progression"
+}
