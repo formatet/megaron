@@ -1,0 +1,24 @@
+{"time":"2026-10-11T18:18:24.434790972Z","level":"INFO","msg":"world tick advanced","world":"3b5fb9cd-8c06-4685-88df-b162c9acff99","tick":192}
+2026/10/11 18:18:24 [465bb0676067/7GbFbKbNvP-000018] "GET http://localhost:8097/healthz HTTP/1.1" from 172.19.0.1:43998 - 200 76B in 355.904µs
+2026/10/11 18:18:24 [465bb0676067/7GbFbKbNvP-000019] "GET http://localhost:8097/favicon.ico HTTP/1.1" from 172.19.0.1:43998 - 404 44B in 109.562µs
+{"time":"2026-10-11T18:18:30.436590707Z","level":"INFO","msg":"world tick advanced","world":"3b5fb9cd-8c06-4685-88df-b162c9acff99","tick":193}
+{"time":"2026-10-11T18:18:30.496981243Z","level":"INFO","msg":"divine punishment applied","settlement":"ca0b8f80-2911-4200-9d90-a31364c0ffb0","type":"harvest_failure","amount":15.48242465328172}
+{"time":"2026-10-11T18:18:30.498555286Z","level":"INFO","msg":"divine punishment rolled but found nothing to take","settlement":"a455b324-b42f-4bef-8b8e-a36ac443b190","type":"chariot_loss"}
+{"time":"2026-10-11T18:18:36.437189344Z","level":"INFO","msg":"world tick advanced","world":"3b5fb9cd-8c06-4685-88df-b162c9acff99","tick":194}
+{"time":"2026-10-11T18:18:42.438910534Z","level":"INFO","msg":"world tick advanced","world":"3b5fb9cd-8c06-4685-88df-b162c9acff99","tick":195}
+{"time":"2026-10-11T18:18:42.506765921Z","level":"INFO","msg":"divine punishment rolled but found nothing to take","settlement":"9b57fe2e-c434-42e9-88ea-735e2a0e2a29","type":"ship_loss"}
+{"time":"2026-10-11T18:18:42.50825883Z","level":"INFO","msg":"divine punishment rolled but found nothing to take","settlement":"ca0b8f80-2911-4200-9d90-a31364c0ffb0","type":"ship_loss"}
+{"time":"2026-10-11T18:18:48.436629146Z","level":"INFO","msg":"world tick advanced","world":"3b5fb9cd-8c06-4685-88df-b162c9acff99","tick":196}
+{"time":"2026-10-11T18:18:54.434646201Z","level":"INFO","msg":"world tick advanced","world":"3b5fb9cd-8c06-4685-88df-b162c9acff99","tick":197}
+{"time":"2026-10-11T18:19:00.434740391Z","level":"INFO","msg":"world tick advanced","world":"3b5fb9cd-8c06-4685-88df-b162c9acff99","tick":198}
+{"time":"2026-10-11T18:19:06.434123554Z","level":"INFO","msg":"world tick advanced","world":"3b5fb9cd-8c06-4685-88df-b162c9acff99","tick":199}
+{"time":"2026-10-11T18:19:06.490500494Z","level":"INFO","msg":"divine punishment rolled but found nothing to take","settlement":"9b57fe2e-c434-42e9-88ea-735e2a0e2a29","type":"ship_loss"}
+{"time":"2026-10-11T18:19:12.437056066Z","level":"INFO","msg":"world tick advanced","world":"3b5fb9cd-8c06-4685-88df-b162c9acff99","tick":200}
+{"time":"2026-10-11T18:19:18.43908537Z","level":"INFO","msg":"world tick advanced","world":"3b5fb9cd-8c06-4685-88df-b162c9acff99","tick":201}
+{"time":"2026-10-11T18:19:18.499670121Z","level":"INFO","msg":"divine punishment rolled but found nothing to take","settlement":"95d59c2c-2b1f-4e1a-8159-f5259291dd1a","type":"chariot_loss"}
+{"time":"2026-10-11T18:19:24.437566424Z","level":"INFO","msg":"world tick advanced","world":"3b5fb9cd-8c06-4685-88df-b162c9acff99","tick":202}
+2026/10/11 18:19:29 [465bb0676067/7GbFbKbNvP-000020] "GET http://localhost:8097/ws/3b5fb9cd-8c06-4685-88df-b162c9acff99 HTTP/1.1" from 172.19.0.1:44002 - 000 0B in 1m5.035422075s
+{"time":"2026-10-11T18:19:30.437588782Z","level":"INFO","msg":"world tick advanced","world":"3b5fb9cd-8c06-4685-88df-b162c9acff99","tick":203}
+{"time":"2026-10-11T18:19:30.494449289Z","level":"INFO","msg":"divine punishment rolled but found nothing to take","settlement":"a455b324-b42f-4bef-8b8e-a36ac443b190","type":"chariot_loss"}
+{"time":"2026-10-11T18:19:30.495915423Z","level":"INFO","msg":"divine punishment rolled but found nothing to take","settlement":"95d59c2c-2b1f-4e1a-8159-f5259291dd1a","type":"chariot_loss"}
+{"time":"2026-10-11T18:19:30.497353569Z","level":"INFO","msg":"divine punishment rolled but found nothing to take","settlement":"9b57fe2e-c434-42e9-88ea-735e2a0e2a29","type":"ship_loss"}

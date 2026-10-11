@@ -1,0 +1,47 @@
+→ bygger och startar acceptansvärlden (projekt megaron-acc)
+time="2026-10-11T20:16:34+02:00" level=warning msg="buildx Docker CLI plugin not found: falling back to the classic builder. BuildKit-only build features (multi-arch, secrets, ssh, additional contexts, ...) will not be available"
+ Image megaron-acc-server Building
+ Image megaron-acc-server Building
+Sending build context to Docker daemon  524.5kB
+Sending build context to Docker daemon  3.671MB
+Sending build context to Docker daemon  7.343MB
+Sending build context to Docker daemon  8.128MB
+
+Step 1/4 : FROM sha256:688a590987203ceac731b75c2aee36be6ef1bf0ab6c6346615c880571117c36e
+ ---> 688a59098720
+Step 2/4 : COPY temenos /app/temenos
+ ---> da66e973aed3
+Step 3/4 : COPY db /app/db
+ ---> 00fd898757be
+Step 4/4 : LABEL com.docker.compose.image.builder=classic
+ ---> Running in 8a6462852aea
+ ---> Removed intermediate container 8a6462852aea
+ ---> 083aa865bb9e
+[Warning] One or more build-args [BUILD_COMMIT] were not consumed
+Successfully built 083aa865bb9e
+Successfully tagged megaron-acc-server:latest
+ Image megaron-acc-server Built
+ Image megaron-acc-server Built
+ Container megaron-acc-redis-1 Running
+ Container megaron-acc-postgres-1 Running
+ Container megaron-acc-server-1 Recreate
+ Container megaron-acc-server-1 Recreated
+ Container megaron-acc-redis-1 Waiting
+ Container megaron-acc-postgres-1 Waiting
+ Container megaron-acc-redis-1 Healthy
+ Container megaron-acc-postgres-1 Healthy
+ Container megaron-acc-server-1 Starting
+ Container megaron-acc-server-1 Started
+  städat: föregående slutimage (176MB)
+  städat: gammalt byggsteg (810MB)
+
+  acceptansvärlden kör
+  ────────────────────────────────────────────────
+  webb      http://localhost:8097
+  API       http://localhost:8097/api/v1
+  värld     3b5fb9cd-8c06-4685-88df-b162c9acff99
+  commit    07f5ae9 (codex/ws-timeout) — ur /healthz
+  migration 171/171
+  tick      6 s     karta 80x60
+
+  nästa:    tools/acceptance.sh player Wanax1

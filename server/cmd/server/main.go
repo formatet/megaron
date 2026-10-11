@@ -11,6 +11,7 @@ import (
 	"os/signal"
 	"runtime/debug"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -660,7 +661,19 @@ func installMiddleware(r chi.Router) {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-	r.Use(middleware.Timeout(30 * time.Second))
+	r.Use(func(next http.Handler) http.Handler {
+		timed := middleware.Timeout(30 * time.Second)(next)
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Upgraded connections live until disconnect; Timeout would try to
+			// write a 504 on the hijacked connection when that handler returns.
+			// The WS hub owns transport deadlines instead.
+			if strings.HasPrefix(r.URL.Path, "/ws/") {
+				next.ServeHTTP(w, r)
+				return
+			}
+			timed.ServeHTTP(w, r)
+		})
+	})
 	r.Use(corsMiddleware)
 	r.Use(middleware.Compress(5))
 }

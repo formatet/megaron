@@ -1,0 +1,21 @@
+2026/10/11 20:15:08 [tki9/BSOOzaRLTy-000001] "GET http://example.com/api/v1/worlds/x/map HTTP/1.1" from 192.0.2.1:1234 - 200 265B in 102.677µs
+2026/10/11 20:15:08 [tki9/BSOOzaRLTy-000002] "GET http://example.com/api/v1/worlds/x/map HTTP/1.1" from 192.0.2.1:1234 - 200 66000B in 124.476µs
+2026/10/11 20:15:08 [tki9/BSOOzaRLTy-000003] "GET http://example.com/ws/abc HTTP/1.1" from 192.0.2.1:1234 - 000 0B in 13.895µs
+2026/10/11 20:15:08 [tki9/BSOOzaRLTy-000004] "GET http://example.com/static/megaron.css HTTP/1.1" from 192.0.2.1:1234 - 200 41B in 230.215µs
+2026/10/11 20:15:08 [tki9/BSOOzaRLTy-000005] "GET http://example.com/ws/world HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 28.208µs
+2026/10/11 20:15:08 [tki9/BSOOzaRLTy-000006] "GET http://example.com/ws/ HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 14.621µs
+2026/10/11 20:15:08 [tki9/BSOOzaRLTy-000007] "GET http://example.com/api/v1/worlds HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 4.608µs
+2026/10/11 20:15:08 [tki9/BSOOzaRLTy-000008] "GET http://example.com/api/ws/world HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 2.987µs
+2026/10/11 20:15:08 [tki9/BSOOzaRLTy-000009] "GET http://example.com/ws HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 2.781µs
+2026/10/11 20:15:08 [tki9/BSOOzaRLTy-000010] "GET http://example.com/ws-other HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 3.58µs
+2026/10/11 20:15:08 [tki9/BSOOzaRLTy-000011] "GET http://example.com/static/map.js HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 5.354µs
+2026/10/11 20:15:08 [tki9/BSOOzaRLTy-000012] "GET http://example.com/healthz HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 3.151µs
+2026/10/11 20:15:08 [tki9/BSOOzaRLTy-000013] "GET http://example.com/ HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 2.506µs
+--- FAIL: TestRequestTimeoutMiddleware (0.00s)
+    --- FAIL: TestRequestTimeoutMiddleware//ws/world (0.00s)
+        timeout_test.go:22: /ws/ request must have no middleware deadline; got 2026-10-11 20:15:38.861518188 +0200 CEST m=+30.002095789
+    --- FAIL: TestRequestTimeoutMiddleware//ws/ (0.00s)
+        timeout_test.go:22: /ws/ request must have no middleware deadline; got 2026-10-11 20:15:38.861596045 +0200 CEST m=+30.002173646
+FAIL
+FAIL	formatet/megaron/server/cmd/server	0.004s
+FAIL
