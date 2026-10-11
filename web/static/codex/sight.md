@@ -37,4 +37,4 @@ The oracle rite reveals ore deposits you cannot see — see [[rites]]. Seeing a 
 
 ## Rivers
 
-Every river has a name. The river, its fords and its delta share that name. Select a known hex to read **River Alpheios**, **Ford of Alpheios** or **Delta of Alpheios** in the hex panel; Keryx shows the same names in `map` and city catchment rows. At local map zoom, the name appears once near the known stretch of the river, where it fits clear of city labels. Unexplored hexes reveal no river name; names on remembered ground remain known.
+Rivers begin unnamed. The first Wanax whose own physical unit reaches a river earns the right to name it; seeing it gives no right. The river, its fords and connected delta share the chosen name. A named river appears in its known hex panels, map label and Keryx catchment rows. Unexplored hexes reveal no name or naming right; remembered ground keeps its name visible. See [[naming-the-land]] for the naming action and the other kinds of land.

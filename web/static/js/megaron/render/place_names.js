@@ -1,6 +1,6 @@
 // Generic geographic names come from Temenos, never from partial client chains.
-import { namedRiverTerrain, riverLabelOverlap } from './river_names.js';
-export { riverLabelOverlap as placeLabelOverlap };
+import { namedRiverTerrain } from './river_names.js';
+export const placeLabelOverlap=(a,b)=>a.left<b.right&&b.left<a.right&&a.top<b.bottom&&b.top<a.bottom;
 export function namedPlaceTerrain(tile,fallback){
  if(tile.terrain==='fog'||tile.tier==='fog'||tile.visible===false)return fallback;
  if(tile.place_name)return tile.place_name;
@@ -38,7 +38,7 @@ export function placeLabelLayout(tiles,provinces,{hexPx,measure,measureCity,zoom
    let angle=0;
    if(t.place_kind==='river'&&neighbours.length){const a=neighbours[0],b=neighbours.length>1?neighbours.at(-1):t;angle=Math.atan2(b.y-a.y,b.x-a.x);if(angle>Math.PI/2)angle-=Math.PI;if(angle<-Math.PI/2)angle+=Math.PI;}
    const rw=Math.abs(w*Math.cos(angle))+Math.abs(h*Math.sin(angle)),rh=Math.abs(w*Math.sin(angle))+Math.abs(h*Math.cos(angle));
-   for(const dy of [0,-14,14,-26,26]){const rect={left:t.x-rw/2,right:t.x+rw/2,top:t.y+dy-rh/2,bottom:t.y+dy+rh/2};if(rect.left<viewport.left||rect.right>viewport.right||rect.top<viewport.top||rect.bottom>viewport.bottom||occupied.some(o=>riverLabelOverlap(rect,o)))continue;chosen={id,kind:t.place_kind,name,x:t.x,y:t.y+dy,angle,rect};break;}
+   for(const dy of [0,-14,14,-26,26]){const rect={left:t.x-rw/2,right:t.x+rw/2,top:t.y+dy-rh/2,bottom:t.y+dy+rh/2};if(rect.left<viewport.left||rect.right>viewport.right||rect.top<viewport.top||rect.bottom>viewport.bottom||occupied.some(o=>placeLabelOverlap(rect,o)))continue;chosen={id,kind:t.place_kind,name,x:t.x,y:t.y+dy,angle,rect};break;}
    if(chosen)break;
   }
   if(chosen){out.push(chosen);occupied.push(chosen.rect);}

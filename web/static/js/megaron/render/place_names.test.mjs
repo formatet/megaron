@@ -11,9 +11,9 @@ test('generic names and nameless terrain headers cannot leak through fog',()=>{
 test('all four place labels occur once, avoid measured city boxes, fog and unreadable zoom in both variants',()=>{
  const tiles=[];for(const [i,kind] of ['river','massif','desert','forest'].entries())for(let q=0;q<5;q++)tiles.push({q:q-2,r:i*3-5,terrain:kind==='river'?'river':'forest_cedar',place_kind:kind,place_id:`${i},0`,place_name:['Thaleia','Mount Ida','Damon Sands','Ariadne Cedars'][i],tier:'remembered'});
  tiles.push({q:0,r:0,terrain:'fog',place_kind:'forest',place_id:'hidden',place_name:'Hidden',tier:'fog'});
- const provinces=[{q:0,r:0,name:'Mycenae',own:true}];
+ const provinces=[{q:0,r:1,name:'Mycenae',own:true}];
  for(const variant of ['a','b']){const labels=placeLabelLayout(tiles,provinces,{...opts,variant});assert.equal(labels.length,4);assert.equal(new Set(labels.map(l=>l.id)).size,4);assert.ok(!labels.some(l=>l.name==='Hidden'));assert.ok(labels.some(l=>l.kind==='river'&&l.angle!==0));
-  const p=hexPx(0,0),city={left:p.x-18,right:p.x+18,top:p.y+17,bottom:p.y+29};assert.ok(labels.every(l=>!placeLabelOverlap(l.rect,city)));for(let i=0;i<labels.length;i++)for(let j=i+1;j<labels.length;j++)assert.ok(!placeLabelOverlap(labels[i].rect,labels[j].rect));
+  const p=hexPx(0,1),city={left:p.x-18,right:p.x+18,top:p.y+17,bottom:p.y+29};assert.ok(labels.every(l=>!placeLabelOverlap(l.rect,city)));const cityArt={left:p.x-24,right:p.x+24,top:p.y-30,bottom:p.y+18};assert.ok(labels.every(l=>!placeLabelOverlap(l.rect,cityArt)),'place label must yield to city icon at its preferred centre');for(let i=0;i<labels.length;i++)for(let j=i+1;j<labels.length;j++)assert.ok(!placeLabelOverlap(labels[i].rect,labels[j].rect));
   assert.deepEqual(placeLabelLayout([...tiles].reverse(),provinces,{...opts,variant}),labels);assert.deepEqual(placeLabelLayout(tiles,provinces,{...opts,variant,zoom:.3}),[]);
  }
 });
