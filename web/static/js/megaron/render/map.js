@@ -1175,12 +1175,8 @@ function drawPlainsParcels(ctx, cx, cy) {
         ctx.fillStyle = '#3E4620';
         ctx.fillRect(wx, wy, STEP, 1);
       }
-      // Renen mellan två tegar.
-      if (plainsParcel(wx - STEP, wy) !== id || plainsParcel(wx, wy - STEP) !== id) {
-        ctx.globalAlpha = 0.30;
-        ctx.fillStyle = '#4F5A28';
-        ctx.fillRect(wx, wy, 1, 1);
-      }
+      // Ingen markerad ren mellan tegarna: en prick varannan pixel läste som
+      // streckade linjer (Timothy 2026-10-11, "ska bort"). Tegens ton bär gränsen.
     }
   }
   ctx.globalAlpha = 1;
@@ -1231,58 +1227,77 @@ const DRY_STEP = 3;   // samma korn som skogsbottnen — torr mark har finare gr
 // Hue bär det som valören inte kan: lundens golv är khaki (varmt gult),
 // skruben är gråsage (blått höjt). Det är också den sanna färgen — maquis är
 // städsegrön hårdbladsvegetation med grå, läderartade blad, inte gräs.
-const SCRUB_CELL  = 26;   // markens fläckighet — ett par snårlängder, inte ett par hexar
-const SCRUB_CLUMP = 7;    // ETT snår: 5–8 px, ungefär ett träd i lunden
-const SCRUB_BUSH  = '#5F6C3C'; // snårets massa
-const SCRUB_CROWN = '#AFB87E'; // 1 px sol på snårets överkant
-
-// Täckningen: `clump` moduleras av det grova fältet så att snåren står tätare
-// i svackorna. Det är princip 1 — detaljen kommer ur en struktur (fukten
-// följer terrängen) i stället för att strös ut för att ytan känns tom.
-//
-// Snårcellen är 7 px och inte 15: vid 15 blev "snåren" fläckar på en tredjedels
-// hex och hela fältet läste som molnskuggor, alltså FORM där princip 3 kräver
-// textur. Skalan är densamma som lundens träd (6–8 px) med flit — ett snår och
-// ett olivträd är samma storleksordning i verkligheten, och kartan får inte
-// säga något annat.
-function scrubBush(wx, wy) {
-  const coarse = noiseAt(wx, wy, SCRUB_CELL, 6161);
-  return noiseAt(wx, wy, SCRUB_CLUMP, 6262) + 0.34 * (1 - coarse) > 0.86;
-}
+const SCRUB_CELL  = 26;   // fuktfältet: svacka (tätt snår) och krön (bar jord), ett par snårlängder
+// MACCHIAN SOM LANDSKAP (Timothy 2026-10-11: "den behöver bli mer levande").
+// Det gamla fältet var en enda frekvens — mörka 3 px-block i en ton på platt
+// bas — och läste som kamouflage. Grafikprovet Timothy pekade på hade
+// enskilda buskar med egen skugga och varm jord emellan. Två lager, inte fler:
+//   1. bar, varm jord på de torra krönen (motsatsen till fuktfältet)
+//   2. buskar — pixelfigurer med ljus krona, mörk undersida och slagskugga mot
+//      sydost — på ett globalt jittrat rutnät. Tätheten följer fuktfältet:
+//      i svackorna står de så tätt att de växer ihop till snår, på krönen
+//      står de glest i jorden. Ritas uppifrån och ned så att de nedre
+//      överlappar de övre. Ett fåtal blommar (cistusrosa, ginstergul).
+// Ett första försök hade dessutom ett reliefskuggat block-lager och de gamla
+// snårblocken kvar under buskarna: tre lager i samma valörband läste som
+// grumligt korn — samma fel som princip 30 beskriver. Buskarna bär ytan själva.
+// Bastonen (markton 162, se ovan) är orörd.
+const SCRUB_GRID   = 5;   // högst en buske per 5×5-cell
+const SCRUB_TONES  = ['#4E5F33', '#5A6A3A', '#677442', '#737A48']; // kermesek, mastix, cistus, torr
+const SCRUB_SUN    = '#A9B676';
+const SCRUB_DARK   = '#3A4726';
+const SCRUB_SHADOW = '#4A4630';
+const SCRUB_EARTH  = '#C4A970'; // bar, varm jord
+const SCRUB_BLOOM  = ['#D890A4', '#E2C452'];
+// L sol · B kropp · D undersida · s slagskugga · . tomt
+const SCRUB_SHAPES = [
+  ['.L.', 'LBD', '.Ds', '..s'],
+  ['.LL.', 'LBBD', 'BBDD', '.DDs', '..ss'],
+  ['.LLB.', 'LBBBB', 'BBBBD', 'BBBDD', '.DDDs', '..sss'],
+  ['..LL..', '.LBBB.', 'LBBBBD', 'BBBBDD', '.BDDD.', '..sss.'],
+];
 
 function drawScrubField(ctx, cx, cy) {
   ctx.save();
   hexClip(ctx, cx, cy);
-
-  // Globalt raster, aldrig relativt hexmitten: två skrubhexar bredvid varandra
-  // måste lägga sina block på samma rutnät, annars förråder fältet exakt den
-  // brickkant det finns för att dölja.
-  // EN bärande frekvens, och det är snåren. Ett eget markfält låg här och föll
-  // på två mätningar i rad: med kontrast nog att synas konkurrerade det med
-  // snåren och ytan läste som kamouflage (samma fel som bergsstrieringens
-  // jämnt fördelade toner, princip 30), och nedskruvat till knappt synligt
-  // kostade det 9,9 ms av `ground` vid minzoom för en skillnad man får leta
-  // efter i en A/B. Bastonen räcker som mark; snåren gör resten.
   const step = lodStep(DRY_STEP);
   const x0 = Math.floor((cx - padS()) / step) * step, x1 = cx + padS();
   const y0 = Math.floor((cy - padS()) / step) * step, y1 = cy + padS();
+  // 1. Bar jord, med per-block-brus i kanten (princip 16).
+  ctx.fillStyle = SCRUB_EARTH;
   for (let wy = y0; wy <= y1; wy += step) {
     for (let wx = x0; wx <= x1; wx += step) {
-      // Snåren. Sammanhängande fläckar ur ett fält, inte N spridda märken —
-      // det är hela skillnaden mot de fem cirklarna som stod här. Överkanten
-      // får 1 px sol: princip 4 säger att massa uppstår ur gemensam undervolym
-      // och gemensamt valörfält, och en fläck utan ljus på sin övre gräns är
-      // en fläck. Kanten följer FLÄCKENS form, inte blockets, eftersom den
-      // läses ur samma villkor en rad upp.
-      if (!scrubBush(wx, wy)) continue;
-      ctx.globalAlpha = 0.66;
-      ctx.fillStyle = SCRUB_BUSH;
+      const dry = noiseAt(wx, wy, SCRUB_CELL, 6161) + (hash32(wx / step | 0, wy / step | 0, 6172) / 4294967296 - 0.5) * 0.10;
+      if (dry < 0.62) continue;
+      ctx.globalAlpha = Math.min(0.5, (dry - 0.62) * 2.2);
       ctx.fillRect(wx, wy, step, step);
-      if (!scrubBush(wx, wy - step)) {
-        ctx.globalAlpha = 0.70;
-        ctx.fillStyle = SCRUB_CROWN;
-        ctx.fillRect(wx, wy, step, 1);
+    }
+  }
+  // 2. Buskarna.
+  const G = SCRUB_GRID;
+  for (let gy = Math.floor((cy - padS()) / G) - 2; gy <= Math.ceil((cy + padS()) / G); gy++) {
+    for (let gx = Math.floor((cx - padS()) / G) - 2; gx <= Math.ceil((cx + padS()) / G); gx++) {
+      const h = hash32(gx, gy, 6174);
+      const x = gx * G + (h & 3), y = gy * G + ((h >>> 2) & 3);
+      const wet = 1 - noiseAt(x, y, SCRUB_CELL, 6161);
+      if ((h >>> 4) / 268435456 > -0.05 + 0.85 * wet) continue;
+      const r = hash32(gx, gy, 6175);
+      // Större buskar där det är fuktigt.
+      const shape = SCRUB_SHAPES[Math.min(3, Math.floor((r % 1000) / 1000 * 2.2 + wet * 1.8))];
+      const body = SCRUB_TONES[(r >>> 10) % SCRUB_TONES.length];
+      const b = (r >>> 14) % 100;
+      const bloom = shape.length > 4 && b < 6 ? SCRUB_BLOOM[b & 1] : null;
+      for (let dy = 0; dy < shape.length; dy++) {
+        const row = shape[dy];
+        for (let dx = 0; dx < row.length; dx++) {
+          const c = row[dx];
+          if (c === '.') continue;
+          if (c === 's') { ctx.globalAlpha = 0.40; ctx.fillStyle = SCRUB_SHADOW; }
+          else { ctx.globalAlpha = 1; ctx.fillStyle = c === 'L' ? SCRUB_SUN : c === 'D' ? SCRUB_DARK : body; }
+          ctx.fillRect(x + dx, y + dy, 1, 1);
+        }
       }
+      if (bloom) { ctx.globalAlpha = 1; ctx.fillStyle = bloom; ctx.fillRect(x + 2, y + 1, 1, 1); }
     }
   }
   ctx.globalAlpha = 1;
