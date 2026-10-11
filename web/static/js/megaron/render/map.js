@@ -21,9 +21,9 @@ import { confirmInline, showInlineResult } from '../ui/inline_result.js';
 import { unitHoverLines } from '../ui/hover.js';
 import { drawStorm, STORM_FRAMES } from './storms.js';
 import { stormPanelHTML } from '../ui/stormname.js';
-import { riverPanelHTML } from '../ui/rivername.js';
+import { placePanelHTML } from '../ui/placename.js';
 import { incomingTargetKeys } from '../ui/movements.js';
-import { namedRiverTerrain, riverLabelLayout } from './river_names.js';
+import { namedPlaceTerrain, placeLabelLayout, PLACE_LABEL_VARIANTS, placeLabelVariant } from './place_names.js';
 import { createMarkRenderer } from './markraster.js';
 import { createChunkWorker } from './chunk_worker.js';
 const ground = createMarkRenderer(State, () => document.createElement('canvas'),
@@ -2932,18 +2932,23 @@ export function render() {
     if (tileTier(p.q, p.r) !== 'remembered') drawProvince(ctx, x, y, p);
     if (State.camera.zoom >= LOCAL_ZOOM) drawLabel(ctx, x, y, p.name, p.own);
   }
-  // One label per known river name, using the same two-pass palette as city names.
+  // Geographic names: no city plate/outline; two cartographic alternatives
+  // retained for Timothy's BILD choice (?ortnamn=a|b).
   if (State.camera.zoom >= LOCAL_ZOOM) {
-    const z=State.camera.zoom*SCALE;
+    const z=State.camera.zoom*SCALE,variant=placeLabelVariant(globalThis.location?.search||''),style=PLACE_LABEL_VARIANTS[variant];
     ctx.save();
-    const measure=(text,own)=>{ctx.font=own?'bold 7px monospace':'6px monospace';return ctx.measureText(text).width;};
-    const labels=riverLabelLayout(State.tileData,State.provinceData,{
-      hexPx,measure,zoom:State.camera.zoom,
+    const measureCity=(text,own)=>{ctx.font=own?'bold 7px monospace':'6px monospace';return ctx.measureText(text).width;};
+    const measure=(text)=>{ctx.font=style.font;return ctx.measureText(text).width;};
+    const labels=placeLabelLayout(State.tileData,State.provinceData,{
+      hexPx,measure,measureCity,variant,zoom:State.camera.zoom,
       viewport:{left:-State.camera.x/z,top:-State.camera.y/z,right:(canvas.width-State.camera.x)/z,bottom:(canvas.height-State.camera.y)/z},
     });
-    ctx.font='6px monospace';ctx.textAlign='center';ctx.textBaseline='top';
-    ctx.strokeStyle='#000000aa';ctx.lineWidth=2;ctx.fillStyle='#E8D0A8';
-    for (const label of labels) {ctx.strokeText(label.name,label.x,label.y);ctx.fillText(label.name,label.x,label.y);}
+    ctx.font=style.font;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#E8D0A8';ctx.globalAlpha=.85;
+    for(const label of labels){ctx.save();ctx.translate(label.x,label.y);ctx.rotate(label.angle);
+      if(!style.spacing)ctx.fillText(label.name,0,0);
+      else {const chars=[...label.name],width=ctx.measureText(label.name).width+(chars.length-1)*style.spacing;let x=-width/2;ctx.textAlign='left';for(const ch of chars){ctx.fillText(ch,x,0);x+=ctx.measureText(ch).width+style.spacing;}}
+      ctx.restore();
+    }
     ctx.restore();
   }
   pass('cities');
@@ -3369,7 +3374,7 @@ function destFromHex(h, tile, target) {
              name: target.name, isSettlement: true, allied: target.own ? true : !!target.allied };
   }
   return { q: h.q, r: h.r, terrain: tile.terrain, isSea, known,
-           name: known ? `${namedRiverTerrain(tile, terrainLabel(tile.terrain))} (${h.q},${h.r})` : `Unexplored (${h.q},${h.r})`,
+           name: known ? `${namedPlaceTerrain(tile, terrainLabel(tile.terrain))} (${h.q},${h.r})` : `Unexplored (${h.q},${h.r})`,
            isSettlement: false, allied: false };
 }
 
@@ -3411,7 +3416,7 @@ function openCityPanel(h, tile, marker, units, foreignUnits) {
     .catch(() => showDefence(null));
 
   const foot = document.getElementById('ip-foot');
-  let footHtml = riverPanelHTML(tile) + unitListHTML(units, foreignUnits);
+  let footHtml = placePanelHTML(tile) + unitListHTML(units, foreignUnits);
   // A settlement OR a wandering host can send — the host's first contact with a
   // met city is one of its designed uses (mig 087; sendMessengerFromInspect
   // picks the endpoint).
@@ -3443,12 +3448,12 @@ function workersHereHTML(h) {
 // absence of affordances; sea gets galleys; empty land gets march + colonize.
 function openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits) {
   document.getElementById('ip-name').textContent =
-    isSea ? `Sea (${h.q},${h.r})` : (isMountain ? `Mountains (${h.q},${h.r})` : `${namedRiverTerrain(tile, terrainLabel(tile.terrain))} (${h.q},${h.r})`);
+    isSea ? `Sea (${h.q},${h.r})` : `${namedPlaceTerrain(tile, isMountain ? 'Mountains' : terrainLabel(tile.terrain))} (${h.q},${h.r})`;
   setCityFieldsVisible(false);
   fillTerrainFields(tile);
 
   const foot = document.getElementById('ip-foot');
-  let footHtml = riverPanelHTML(tile) + workersHereHTML(h) + unitListHTML(units, foreignUnits);
+  let footHtml = placePanelHTML(tile) + workersHereHTML(h) + unitListHTML(units, foreignUnits);
   if (isSea) footHtml += stormPanelHTML((State.stormData || []).filter(st => st.hexes.some(sh => sh.q === h.q && sh.r === h.r)));
 
   if (isMountain) {
@@ -3527,14 +3532,14 @@ const RURAL_LABELS = {
 function openRuralPanel(h, tile, rural, units, foreignUnits) {
   // Title is the ground, not the building (inspel 2026-09-08): the building is
   // a line in the card.
-  document.getElementById('ip-name').textContent = `${namedRiverTerrain(tile, terrainLabel(tile.terrain))} (${h.q},${h.r})`;
+  document.getElementById('ip-name').textContent = `${namedPlaceTerrain(tile, terrainLabel(tile.terrain))} (${h.q},${h.r})`;
   setCityFieldsVisible(false);
   fillTerrainFields(tile);
 
   const foot = document.getElementById('ip-foot');
   const buildingLabel = RURAL_LABELS[rural.building_type] || rural.building_type;
   let footHtml = `<p class="empty-state">${buildingLabel} — part of ${rural.name}'s hinterland, worked from here.</p>`;
-  footHtml += riverPanelHTML(tile);
+  footHtml += placePanelHTML(tile);
   footHtml += workersHereHTML(h);
   footHtml += unitListHTML(units, foreignUnits);
   footHtml += `<button id="ip-rural-city-btn" style="${MARCH_BTN_STYLE}">Open ${rural.name} →</button>`;

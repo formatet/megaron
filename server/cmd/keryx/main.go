@@ -66,7 +66,7 @@ func main() {
 		statusCmd(),
 		mapCmd(),
 		stormsCmd(),
-		riversCmd(),
+		placesCmd(),
 		sightingsCmd(),
 		recruitCmd(),
 		disbandCmd(),

@@ -129,7 +129,7 @@ export function notifDomain(kind) {
     UnitAttrition: 'war', UnitDeserted: 'war', UnitLostAtSea: 'war',
     UnitRecalled: 'war', UnitRedirected: 'war', MarchStalled: 'war', OrderFailed: 'war',
     UpkeepUnpaid: 'war', ShipDamaged: 'war', ShipRepaired: 'war',
-    RiverFirstReached: 'world',
+    PlaceFirstReached: 'war',
     ShipStormDamaged: 'war', ShipFoundered: 'war',
     ShipCaptured: 'war', ShipLost: 'war', ShipStranded: 'war',
     SiegeStarted: 'war', SiegeLifted: 'war',
@@ -193,7 +193,7 @@ export function notifIcon(kind) {
     BattleWon:          '⚔',
     BattleLost:         '⚔',
     ShipDamaged:        '⛵',
-    RiverFirstReached: '🌊',
+    PlaceFirstReached: '🌊',
     ShipStormDamaged:   '🌊',
     ShipFoundered:      '🌊',
     ShipRepaired:       '🔨',
@@ -309,7 +309,10 @@ export function notifText(kind, body) {
       return `Cast ${Math.round(body.produced || 0)} ${body.output_key || ''}` +
              (from ? ` from ${from}` : '');
     }
-    case 'RiverFirstReached': return `Your ${body.unit_name || body.unit_type || 'unit'} is the first to reach this river — you may name it. Click the river at (${body.q},${body.r}) on the map.`;
+    case 'PlaceFirstReached': {
+      const place = { river: 'river', massif: 'mountain massif', desert: 'desert', forest: 'cedar forest' }[body.kind] || 'place';
+      return `Your ${esc(body.unit_name || body.unit_type || 'unit')} is the first to reach this ${place} — you may name it. Click it at (${body.q},${body.r}) on the map.`;
+    }
     case 'TrainComplete':      return `Training done: ${body.count || ''} ${body.unit_type || ''}`;
     case 'ArmyArrival':        return `Army arrived — ${body.outcome || ''}`;
     case 'ColonyFounded':      return `Colony founded: ${body.name || ''}`;

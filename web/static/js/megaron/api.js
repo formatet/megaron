@@ -7,7 +7,8 @@ import { recordApiFailure } from './ui/diagnostics.js';
 // Strip UUIDs from a path so retry/fail events aggregate by shape
 // (`/api/v1/worlds/:id/units`) instead of exploding per world/unit.
 const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
-const telemetryPath = url => url.split('?')[0].replace(UUID_RE, ':id');
+const telemetryPath = url => url.split('?')[0].replace(UUID_RE, ':id')
+  .replace(/(\/places\/(?:river|massif|desert|forest)\/)-?\d+,-?\d+(?=\/|$)/g, '$1:id');
 
 // fetchAuth — the one place a Bearer token is attached to an API request.
 // Call sites pass a path relative to the API root (e.g. `/api/v1/worlds/...`);

@@ -20,7 +20,7 @@ import {
 } from './render/map.js';
 import { stopCityAnim } from './render/city.js';
 import { nameStorm } from './ui/stormname.js';
-import { nameRiver } from './ui/rivername.js';
+import { namePlace } from './ui/placename.js';
 import {
   showLawagatasBrief, dismissBrief, MusicPlayer, toggleMusic,
   initCelestial, initMusicAutostart, initMusicVisibility, initSoundPrefs,
@@ -216,7 +216,7 @@ Object.assign(window, {
   sendMarch,
   sendMessengerFromInspect,
   nameStorm,
-  nameRiver,
+  namePlace,
   reopenSelectedHex,
   slaughterLivestock,
   sortEconomySettlements,
