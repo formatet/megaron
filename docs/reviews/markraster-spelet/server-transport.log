@@ -1,0 +1,2 @@
+server-1  | {"time":"2026-10-11T18:04:19.640648425Z","level":"INFO","msg":"http: response.WriteHeader on hijacked connection from github.com/go-chi/chi/v5/middleware.(*basicWriter).WriteHeader (wrap_writer.go:88)"}
+server-1  | 2026/10/11 18:04:19 [ec68b5c3f9e9/fNgMmm4sNs-000213] "GET http://localhost:8097/ws/3b5fb9cd-8c06-4685-88df-b162c9acff99 HTTP/1.1" from 172.19.0.1:35540 - 504 0B in 46.068896781s

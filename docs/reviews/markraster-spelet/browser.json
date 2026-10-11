@@ -1,0 +1,582 @@
+{
+  "health": {
+    "commit": "ad2dc27",
+    "migration": 171,
+    "status": "ok"
+  },
+  "world": "3b5fb9cd-8c06-4685-88df-b162c9acff99",
+  "browser": "146.0.1",
+  "asset_sha256": "93b793f452c92ef17238255a431264a83ed8be6199a4b92fe2d6b5238cbda019",
+  "reports": [
+    {
+      "player": "Eirene",
+      "width": 1280,
+      "city": {
+        "coastal": false,
+        "grain_carried": 1200,
+        "grain_total": 1208,
+        "poseidon_gift": null,
+        "province_id": "e632c045-6ab5-4b1a-8714-efd25e0cab1d",
+        "settlement_id": "a455b324-b42f-4bef-8b8e-a36ac443b190",
+        "silver_carried": 462,
+        "silver_total": 3702.0000000000005,
+        "tile": {
+          "WorldID": "00000000-0000-0000-0000-000000000000",
+          "Q": 12,
+          "R": 80,
+          "Terrain": "",
+          "Coastal": false,
+          "Fertility": 0,
+          "Mineral": 0,
+          "CopperDeposit": false,
+          "TinDeposit": false,
+          "SilverDeposit": false,
+          "CedarDeposit": false
+        }
+      },
+      "first_view": {
+        "stats": {
+          "chunks": 25,
+          "bakeMs": 445,
+          "pending": 0,
+          "mode": "worker"
+        },
+        "max_render_ms": 20,
+        "tiers": {
+          "live": 43,
+          "remembered": 0,
+          "fog": 4757
+        }
+      },
+      "equal_refresh_bakes": 0,
+      "equal_refresh_same_tiles": true,
+      "order_receipt": {
+        "arrival_tick": 49,
+        "arrives_at": "2026-10-11T18:04:11.543622088Z",
+        "arrives_at_utc": "2026-10-11T18:04:11.543622088Z",
+        "carried_silver": 0,
+        "departs_at": "2026-10-11T18:03:35.543622088Z",
+        "duration_ticks": 6,
+        "expedition": {
+          "area_q": 6,
+          "area_r": 80,
+          "home_by_tick": 71,
+          "length_ticks": 28,
+          "turn_tick": 57
+        },
+        "origin_q": 12,
+        "origin_r": 80,
+        "purse_shortfall": 0,
+        "target_q": 8,
+        "target_r": 80,
+        "unit_id": "d86cebbc-10fb-47ed-9494-e0ffd62fd687"
+      },
+      "history": [
+        {
+          "tiers": {
+            "live": 43,
+            "remembered": 0,
+            "fog": 4757
+          },
+          "changes": [],
+          "baked_keys": [],
+          "river_tiles": []
+        },
+        {
+          "tiers": {
+            "live": 43,
+            "remembered": 0,
+            "fog": 4757
+          },
+          "changes": [],
+          "baked_keys": [],
+          "river_tiles": []
+        },
+        {
+          "tiers": {
+            "live": 43,
+            "remembered": 0,
+            "fog": 4757
+          },
+          "changes": [],
+          "baked_keys": [],
+          "river_tiles": []
+        },
+        {
+          "tiers": {
+            "live": 46,
+            "remembered": 0,
+            "fog": 4754
+          },
+          "changes": [
+            {
+              "q": 8,
+              "r": 80,
+              "from": "fog",
+              "to": "live"
+            },
+            {
+              "q": 9,
+              "r": 79,
+              "from": "fog",
+              "to": "live"
+            },
+            {
+              "q": 10,
+              "r": 78,
+              "from": "fog",
+              "to": "live"
+            }
+          ],
+          "baked_keys": [
+            12,
+            100015
+          ],
+          "river_tiles": []
+        },
+        {
+          "tiers": {
+            "live": 46,
+            "remembered": 0,
+            "fog": 4754
+          },
+          "changes": [],
+          "baked_keys": [],
+          "river_tiles": []
+        },
+        {
+          "tiers": {
+            "live": 46,
+            "remembered": 0,
+            "fog": 4754
+          },
+          "changes": [],
+          "baked_keys": [],
+          "river_tiles": []
+        },
+        {
+          "tiers": {
+            "live": 51,
+            "remembered": 0,
+            "fog": 4749
+          },
+          "changes": [
+            {
+              "q": 7,
+              "r": 80,
+              "from": "fog",
+              "to": "live"
+            },
+            {
+              "q": 7,
+              "r": 81,
+              "from": "fog",
+              "to": "live"
+            },
+            {
+              "q": 7,
+              "r": 82,
+              "from": "fog",
+              "to": "live"
+            },
+            {
+              "q": 8,
+              "r": 79,
+              "from": "fog",
+              "to": "live"
+            },
+            {
+              "q": 9,
+              "r": 78,
+              "from": "fog",
+              "to": "live"
+            }
+          ],
+          "baked_keys": [
+            11,
+            100014,
+            12,
+            100015,
+            13,
+            100016
+          ],
+          "river_tiles": []
+        },
+        {
+          "tiers": {
+            "live": 51,
+            "remembered": 0,
+            "fog": 4749
+          },
+          "changes": [],
+          "baked_keys": [],
+          "river_tiles": []
+        },
+        {
+          "tiers": {
+            "live": 56,
+            "remembered": 0,
+            "fog": 4744
+          },
+          "changes": [
+            {
+              "q": 6,
+              "r": 80,
+              "from": "fog",
+              "to": "live"
+            },
+            {
+              "q": 6,
+              "r": 81,
+              "from": "fog",
+              "to": "live"
+            },
+            {
+              "q": 6,
+              "r": 82,
+              "from": "fog",
+              "to": "live"
+            },
+            {
+              "q": 7,
+              "r": 79,
+              "from": "fog",
+              "to": "live"
+            },
+            {
+              "q": 8,
+              "r": 78,
+              "from": "fog",
+              "to": "live"
+            }
+          ],
+          "baked_keys": [
+            11,
+            100014,
+            12,
+            100015
+          ],
+          "river_tiles": [
+            {
+              "q": 6,
+              "r": 80,
+              "terrain": "river_delta",
+              "tier": "live",
+              "river_name": "Sangarios"
+            }
+          ]
+        },
+        {
+          "tiers": {
+            "live": 56,
+            "remembered": 0,
+            "fog": 4744
+          },
+          "changes": [],
+          "baked_keys": [],
+          "river_tiles": [
+            {
+              "q": 6,
+              "r": 80,
+              "terrain": "river_delta",
+              "tier": "live",
+              "river_name": "Sangarios"
+            }
+          ]
+        },
+        {
+          "tiers": {
+            "live": 56,
+            "remembered": 0,
+            "fog": 4744
+          },
+          "changes": [],
+          "baked_keys": [],
+          "river_tiles": [
+            {
+              "q": 6,
+              "r": 80,
+              "terrain": "river_delta",
+              "tier": "live",
+              "river_name": "Sangarios"
+            }
+          ]
+        },
+        {
+          "tiers": {
+            "live": 60,
+            "remembered": 1,
+            "fog": 4739
+          },
+          "changes": [
+            {
+              "q": 5,
+              "r": 80,
+              "from": "fog",
+              "to": "live"
+            },
+            {
+              "q": 5,
+              "r": 81,
+              "from": "fog",
+              "to": "live"
+            },
+            {
+              "q": 5,
+              "r": 82,
+              "from": "fog",
+              "to": "live"
+            },
+            {
+              "q": 6,
+              "r": 79,
+              "from": "fog",
+              "to": "live"
+            },
+            {
+              "q": 7,
+              "r": 78,
+              "from": "fog",
+              "to": "live"
+            },
+            {
+              "q": 10,
+              "r": 78,
+              "from": "live",
+              "to": "remembered"
+            }
+          ],
+          "baked_keys": [
+            11,
+            100014,
+            12,
+            100015
+          ],
+          "river_tiles": [
+            {
+              "q": 6,
+              "r": 79,
+              "terrain": "river_delta",
+              "tier": "live",
+              "river_name": "Sangarios"
+            },
+            {
+              "q": 6,
+              "r": 80,
+              "terrain": "river_delta",
+              "tier": "live",
+              "river_name": "Sangarios"
+            },
+            {
+              "q": 7,
+              "r": 78,
+              "terrain": "river",
+              "tier": "live",
+              "river_name": "Sangarios"
+            }
+          ]
+        }
+      ],
+      "fog_to_live": true,
+      "live_to_memory": true,
+      "river_seen": true,
+      "river_panel": {
+        "title": "Delta of Sangarios (6,79)",
+        "terrain": "River Delta"
+      },
+      "render": {
+        "active_median_ms": 9,
+        "active_p95_ms": 12,
+        "max_ms": 26,
+        "raf_p95_ms": 17.220000000000255,
+        "stats": {
+          "chunks": 41,
+          "bakeMs": 918,
+          "pending": 0,
+          "mode": "worker"
+        }
+      },
+      "errors": [],
+      "http_errors": [],
+      "only_changed_signatures_checked": true
+    },
+    {
+      "player": "Eirene",
+      "width": 390,
+      "city": {
+        "coastal": false,
+        "grain_carried": 1200,
+        "grain_total": 1208,
+        "poseidon_gift": null,
+        "province_id": "e632c045-6ab5-4b1a-8714-efd25e0cab1d",
+        "settlement_id": "a455b324-b42f-4bef-8b8e-a36ac443b190",
+        "silver_carried": 462,
+        "silver_total": 3702.0000000000005,
+        "tile": {
+          "WorldID": "00000000-0000-0000-0000-000000000000",
+          "Q": 12,
+          "R": 80,
+          "Terrain": "",
+          "Coastal": false,
+          "Fertility": 0,
+          "Mineral": 0,
+          "CopperDeposit": false,
+          "TinDeposit": false,
+          "SilverDeposit": false,
+          "CedarDeposit": false
+        }
+      },
+      "first_view": {
+        "stats": {
+          "chunks": 12,
+          "bakeMs": 294,
+          "pending": 0,
+          "mode": "worker"
+        },
+        "max_render_ms": 22,
+        "tiers": {
+          "live": 58,
+          "remembered": 49,
+          "fog": 4693
+        }
+      },
+      "equal_refresh_bakes": 0,
+      "equal_refresh_same_tiles": true,
+      "river_panel": {
+        "title": "Delta of Sangarios (6,79)",
+        "terrain": "River Delta"
+      },
+      "render": {
+        "active_median_ms": 8,
+        "active_p95_ms": 9,
+        "max_ms": 22,
+        "raf_p95_ms": 17.239999999999895,
+        "stats": {
+          "chunks": 20,
+          "bakeMs": 441,
+          "pending": 0,
+          "mode": "worker"
+        }
+      },
+      "errors": [],
+      "http_errors": [],
+      "only_changed_signatures_checked": true
+    },
+    {
+      "player": "Melia",
+      "width": 1280,
+      "city": {
+        "coastal": true,
+        "grain_carried": 1200,
+        "grain_total": 1208,
+        "poseidon_gift": "2b4a664d-21be-4f62-beb9-c77c49ce921e",
+        "province_id": "d45bef9d-de38-4761-ab65-f7532cf35be2",
+        "settlement_id": "ca0b8f80-2911-4200-9d90-a31364c0ffb0",
+        "silver_carried": 462,
+        "silver_total": 3702.0000000000005,
+        "tile": {
+          "WorldID": "00000000-0000-0000-0000-000000000000",
+          "Q": 14,
+          "R": 32,
+          "Terrain": "",
+          "Coastal": false,
+          "Fertility": 0,
+          "Mineral": 0,
+          "CopperDeposit": false,
+          "TinDeposit": false,
+          "SilverDeposit": false,
+          "CedarDeposit": false
+        }
+      },
+      "first_view": {
+        "stats": {
+          "chunks": 30,
+          "bakeMs": 511,
+          "pending": 0,
+          "mode": "worker"
+        },
+        "max_render_ms": 14,
+        "tiers": {
+          "live": 25,
+          "remembered": 0,
+          "fog": 4775
+        }
+      },
+      "equal_refresh_bakes": 0,
+      "equal_refresh_same_tiles": true,
+      "render": {
+        "active_median_ms": 4,
+        "active_p95_ms": 9,
+        "max_ms": 14,
+        "raf_p95_ms": 17.180000000000064,
+        "stats": {
+          "chunks": 30,
+          "bakeMs": 511,
+          "pending": 0,
+          "mode": "worker"
+        }
+      },
+      "errors": [],
+      "http_errors": [],
+      "only_changed_signatures_checked": true
+    },
+    {
+      "player": "Melia",
+      "width": 390,
+      "city": {
+        "coastal": true,
+        "grain_carried": 1200,
+        "grain_total": 1208,
+        "poseidon_gift": "2b4a664d-21be-4f62-beb9-c77c49ce921e",
+        "province_id": "d45bef9d-de38-4761-ab65-f7532cf35be2",
+        "settlement_id": "ca0b8f80-2911-4200-9d90-a31364c0ffb0",
+        "silver_carried": 462,
+        "silver_total": 3702.0000000000005,
+        "tile": {
+          "WorldID": "00000000-0000-0000-0000-000000000000",
+          "Q": 14,
+          "R": 32,
+          "Terrain": "",
+          "Coastal": false,
+          "Fertility": 0,
+          "Mineral": 0,
+          "CopperDeposit": false,
+          "TinDeposit": false,
+          "SilverDeposit": false,
+          "CedarDeposit": false
+        }
+      },
+      "first_view": {
+        "stats": {
+          "chunks": 16,
+          "bakeMs": 282,
+          "pending": 0,
+          "mode": "worker"
+        },
+        "max_render_ms": 14,
+        "tiers": {
+          "live": 25,
+          "remembered": 0,
+          "fog": 4775
+        }
+      },
+      "equal_refresh_bakes": 0,
+      "equal_refresh_same_tiles": true,
+      "render": {
+        "active_median_ms": 2,
+        "active_p95_ms": 3,
+        "max_ms": 14,
+        "raf_p95_ms": 17.180000000000064,
+        "stats": {
+          "chunks": 16,
+          "bakeMs": 282,
+          "pending": 0,
+          "mode": "worker"
+        }
+      },
+      "errors": [],
+      "http_errors": [],
+      "only_changed_signatures_checked": true
+    }
+  ]
+}

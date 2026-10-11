@@ -1,0 +1,136 @@
+Your hex: (12,80) · radius 12 · 107 known hexes (43 live, 64 remembered; 36 sea, 1 river, 0 ford, 11 coastal land):
+
+  ( 12, 80) d0      hills                [settled]
+  ( 13, 80) d1  SE  hills                +copper
+  ( 11, 80) d1  NW  hills
+  ( 11, 81) d1  SW  hills
+  ( 12, 79) d1  N   hills
+  ( 12, 81) d1  S   hills
+  ( 13, 79) d1  NE  scrub_maquis
+  ( 11, 79) d2  NW  hills
+  ( 10, 81) d2  W   mountain_limestone
+  ( 10, 80) d2  NW  hills
+  ( 10, 82) d2  SW  mountain_limestone
+  ( 14, 80) d2  SE  hills                +copper
+  ( 13, 78) d2  NE  scrub_maquis
+  ( 14, 79) d2  E   hills
+  ( 14, 78) d2  NE  scrub_maquis
+  ( 11, 82) d2  SW  hills
+  ( 12, 82) d2  S   hills
+  ( 12, 78) d2  N   hills
+  ( 13, 81) d2  SE  hills
+  (  9, 83) d3  SW  mountain_limestone
+  (  9, 82) d3  W   mountain_limestone
+  ( 12, 77) d3  N   scrub_maquis
+  ( 11, 83) d3  S   hills                +copper
+  ( 12, 83) d3  S   forest_olive_grove
+  ( 13, 77) d3  N   scrub_maquis
+  ( 13, 82) d3  S   hills
+  ( 15, 78) d3  E   hills
+  ( 11, 78) d3  N   hills
+  ( 10, 83) d3  SW  hills                +copper
+  ( 15, 77) d3  NE  scrub_maquis
+  ( 14, 81) d3  SE  hills
+  ( 14, 77) d3  NE  scrub_maquis
+  ( 10, 79) d3  NW  hills
+  (  9, 80) d3  NW  forest_olive_grove
+  ( 15, 80) d3  SE  hills                +copper
+  ( 15, 79) d3  E   hills
+  (  9, 81) d3  W   mountain_limestone
+  (  8, 80) d4  NW  forest_olive_grove   [remembered]
+  (  8, 81) d4  W   mountain_limestone
+  (  9, 79) d4  NW  forest_olive_grove   [remembered]
+  (  8, 82) d4  W   mountain_limestone
+  (  8, 83) d4  W   mountain_limestone
+  (  9, 84) d4  SW  mountain_limestone
+  ( 10, 78) d4  NW  hills                [remembered]
+  (  8, 84) d4  SW  mountain_limestone
+  (  9, 78) d5  NW  plains               [remembered]
+  (  8, 79) d5  NW  forest_olive_grove   [remembered]
+  (  7, 80) d5  NW  plains               [remembered]
+  (  7, 84) d5  W   mountain_limestone
+  (  7, 83) d5  W   forest_olive_grove   [remembered]
+  (  7, 82) d5  W   forest_olive_grove   [remembered]
+  (  7, 81) d5  W   forest_olive_grove   [remembered]
+  (  7, 79) d6  NW  river_valley         [coastal hex — a city founded here could build a harbour] [remembered]
+  (  6, 81) d6  W   plains               [coastal hex — a city founded here could build a harbour] [remembered]
+  (  6, 80) d6  NW  Delta of Sangarios   [coastal hex — a city founded here could build a harbour] [remembered]
+  (  6, 85) d6  W   forest_olive_grove   [remembered]
+  (  6, 84) d6  W   forest_olive_grove   [remembered]
+  (  6, 83) d6  W   forest_olive_grove   [remembered]
+  (  6, 82) d6  W   plains               [remembered]
+  (  8, 78) d6  NW  river_valley         [coastal hex — a city founded here could build a harbour] [remembered]
+  (  5, 84) d7  W   forest_olive_grove   [coastal hex — a city founded here could build a harbour] [remembered]
+  (  5, 80) d7  NW  coastal_sea         [sea] [remembered]
+  (  6, 79) d7  NW  Delta of Sangarios   [coastal hex — a city founded here could build a harbour] [remembered]
+  (  5, 86) d7  W   forest_olive_grove   [remembered]
+  (  5, 85) d7  W   forest_olive_grove   [remembered]
+  (  7, 78) d7  NW  River Sangarios     [river] [remembered]
+  (  5, 83) d7  W   plains               [coastal hex — a city founded here could build a harbour] [remembered]
+  (  5, 82) d7  W   plains               [coastal hex — a city founded here could build a harbour] [remembered]
+  (  5, 81) d7  W   coastal_sea         [sea] [remembered]
+  (  4, 80) d8  NW  deep_sea            [sea] [remembered]
+  (  5, 79) d8  NW  coastal_sea         [sea] [remembered]
+  (  4, 87) d8  SW  forest_olive_grove   [remembered]
+  (  4, 86) d8  W   forest_olive_grove   [coastal hex — a city founded here could build a harbour] [remembered]
+  (  4, 85) d8  W   forest_olive_grove   [coastal hex — a city founded here could build a harbour] [remembered]
+  (  4, 84) d8  W   coastal_sea         [sea] [remembered]
+  (  4, 83) d8  W   coastal_sea         [sea] [remembered]
+  (  4, 82) d8  W   coastal_sea         [sea] [remembered]
+  (  4, 81) d8  NW  deep_sea            [sea] [remembered]
+  (  4, 79) d9  NW  coastal_sea         [sea] [remembered]
+  (  3, 80) d9  NW  deep_sea            [sea] [remembered]
+  (  3, 87) d9  W   plains               [coastal hex — a city founded here could build a harbour] [remembered]
+  (  3, 86) d9  W   coastal_sea         [sea] [remembered]
+  (  3, 85) d9  W   coastal_sea         [sea] [remembered]
+  (  3, 84) d9  W   deep_sea            [sea] [remembered]
+  (  3, 83) d9  W   deep_sea            [sea] [remembered]
+  (  3, 82) d9  W   deep_sea            [sea] [remembered]
+  (  3, 81) d9  NW  deep_sea            [sea] [remembered]
+  (  2, 82) d10 W   deep_sea            [sea] [remembered]
+  (  2, 81) d10 NW  deep_sea            [sea] [remembered]
+  (  2, 86) d10 W   deep_sea            [sea] [remembered]
+  (  2, 85) d10 W   deep_sea            [sea] [remembered]
+  (  2, 84) d10 W   deep_sea            [sea] [remembered]
+  (  2, 83) d10 W   deep_sea            [sea] [remembered]
+  (  2, 87) d10 W   coastal_sea         [sea] [remembered]
+  (  1, 88) d11 W   deep_sea            [sea] [remembered]
+  (  1, 89) d11 W   coastal_sea         [sea] [remembered]
+  (  1, 87) d11 W   deep_sea            [sea] [remembered]
+  (  1, 86) d11 W   deep_sea            [sea] [remembered]
+  (  1, 85) d11 W   deep_sea            [sea] [remembered]
+  (  1, 84) d11 W   deep_sea            [sea] [remembered]
+  (  1, 83) d11 W   deep_sea            [sea] [remembered]
+  (  1, 82) d11 W   deep_sea            [sea] [remembered]
+  (  0, 85) d12 W   deep_sea            [sea] [remembered]
+  (  0, 89) d12 W   deep_sea            [sea] [remembered]
+  (  0, 88) d12 W   deep_sea            [sea] [remembered]
+  (  0, 87) d12 W   deep_sea            [sea] [remembered]
+  (  0, 86) d12 W   deep_sea            [sea] [remembered]
+
+Frontier — unexplored hexes bordering the known world (40, nearest first):
+  ( 10, 84) d4  SW
+  ( 16, 80) d4  SE
+  ( 16, 79) d4  E
+  ( 16, 78) d4  E
+  ( 16, 77) d4  E
+  ( 16, 76) d4  NE
+  ( 15, 81) d4  SE
+  ( 15, 76) d4  NE
+  ( 14, 82) d4  SE
+  ( 14, 76) d4  NE
+  ( 13, 83) d4  S
+  ( 13, 76) d4  N
+  ( 12, 84) d4  S
+  ( 12, 76) d4  N
+  ( 11, 84) d4  S
+  … and 25 more
+
+To act on a hex, march a land unit there (find unit IDs with `keryx unit list`):
+  keryx unit march --unit <id> --q <Q> --r <R>
+  keryx unit march --unit <id> --q <Q> --r <R> --intent colonize --name <name>
+Intent: colonize — founds a colony when the unit arrives on an empty hex.
+Note: ore on mountain terrain is impassable — colonize an ADJACENT passable hex
+      so the deposit falls in the new colony's catchment.
+To explore: march a unit toward a frontier hex above — the route is revealed
+      and remembered on arrival, pushing the frontier outward.
