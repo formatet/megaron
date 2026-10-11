@@ -34,8 +34,8 @@ globalThis.fetch=async(url)=>{
 const {State}=await import('../state.js');
 const {initMap}=await import('./map.js');initMap();
 const marker={id:'foreign-province',settlement_id:'foreign-settlement',name:'Kyme',owner:'Other Wanax',culture:'ionian',walls:0,q:0,r:0};
-async function click({terrain='plains',city=marker,host=false,river_name=''}={}){
- State.WORLD_ID='world';State.MY_SETTLEMENT_ID='own-settlement';State.tileData=[{q:0,r:0,terrain,river_name}];State.provinceData=city?[city]:[];State.unitsData=host?[{type:'nomadic_host',q:0,r:0}]:[];State.foreignUnitData=[];State.ruralData=[];State.founderPhase=host?fp:null;State.camera={x:0,y:0,zoom:1};
+async function click({terrain='plains',city=marker,host=false,river_name='',rural=null}={}){
+ State.WORLD_ID='world';State.MY_SETTLEMENT_ID='own-settlement';State.tileData=[{q:0,r:0,terrain,river_name}];State.provinceData=city?[city]:[];State.unitsData=host?[{type:'nomadic_host',q:0,r:0}]:[];State.foreignUnitData=[];State.ruralData=rural?[rural]:[];State.founderPhase=host?fp:null;State.camera={x:0,y:0,zoom:1};
  const canvas=element('hex-canvas');canvas.events.pointerdown({pointerId:1,pointerType:'mouse',button:0,clientX:0,clientY:0});canvas.events.pointerup({pointerId:1,pointerType:'mouse',clientX:0,clientY:0});
  await new Promise(resolve=>setImmediate(resolve));
 }
@@ -62,11 +62,13 @@ test('L actual Host: food and escort pay durations use exact days in words, neve
  fp={...fp,grain:{ticks_left:null},silver:{ticks_left:1},spearmen_in_field:1};await click({city:null,host:true});html=element('ip-body-extra').innerHTML;assert.match(html,/Food lasts indefinitely/);assert.match(html,/Escort pay lasts 1 day</);assert.match(html,/1 Spearmen cohort in the field/);
 });
 
-test('actual hex panel uses server river names and never exposes a fog name',async()=>{
- for(const [terrain,text] of [['river','River Alpheios'],['river_ford','Ford of Alpheios'],['river_delta','Delta of Alpheios']]) {
-  await click({city:null,terrain,river_name:'Alpheios'});
-  assert.equal(element('ip-terrain').textContent,text);
-  assert.equal(element('ip-name').textContent,`${text} (0,0)`);
+test('river hex and rural panel name appears only in title, terrain row stays generic and fog stays unnamed',async()=>{
+ for(const [terrain,text,label] of [['river','River Alpheios','River'],['river_ford','Ford of Alpheios','River ford'],['river_delta','Delta of Alpheios','River delta']]) {
+  for(const rural of [null,{q:0,r:0,building_type:'farm',name:'Mycenae',province_id:'mycenae'}]) {
+   await click({city:null,terrain,river_name:'Alpheios',rural});
+   assert.equal(element('ip-terrain').textContent,label,'TERRAIN must describe ground without repeating river name');
+   assert.equal(element('ip-name').textContent,`${text} (0,0)`);
+  }
  }
  await click({city:null,terrain:'fog',river_name:'Secret'});
  assert.equal(element('ip-name').textContent,'Unexplored land');

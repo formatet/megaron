@@ -1,0 +1,38 @@
+[
+  {
+    "q": 0,
+    "rural": false,
+    "title": "River Eurotas (0,0)",
+    "terrain": "River"
+  },
+  {
+    "q": 0,
+    "rural": true,
+    "title": "River Eurotas (0,0)",
+    "terrain": "River"
+  },
+  {
+    "q": 3,
+    "rural": false,
+    "title": "Ford of Eurotas (3,0)",
+    "terrain": "River ford"
+  },
+  {
+    "q": 3,
+    "rural": true,
+    "title": "Ford of Eurotas (3,0)",
+    "terrain": "River ford"
+  },
+  {
+    "q": 16,
+    "rural": false,
+    "title": "Delta of Eurotas (16,0)",
+    "terrain": "River delta"
+  },
+  {
+    "q": 16,
+    "rural": true,
+    "title": "Delta of Eurotas (16,0)",
+    "terrain": "River delta"
+  }
+]

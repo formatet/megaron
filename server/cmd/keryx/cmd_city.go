@@ -93,7 +93,7 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 				bldSuffix := ""
 				if h.Building != nil {
 					if h.Terrain != "" {
-						bldSuffix = fmt.Sprintf("  [%s L%d @ (%d,%d) %s]", h.Building.Type, h.Building.Level, h.HexQ, h.HexR, namedRiverTerrain(h.Terrain, h.RiverName))
+						bldSuffix = fmt.Sprintf("  [%s L%d @ (%d,%d) %s]", h.Building.Type, h.Building.Level, h.HexQ, h.HexR, h.Terrain)
 					} else {
 						bldSuffix = fmt.Sprintf("  [%s L%d @ (%d,%d)]", h.Building.Type, h.Building.Level, h.HexQ, h.HexR)
 					}

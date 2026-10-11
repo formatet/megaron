@@ -3310,11 +3310,11 @@ function bindCatchmentPreviewButton(btn, dest) {
 const TERRAIN_LABELS = {
   plains: 'Plains', hills: 'Hills', forest_olive_grove: 'Olive Grove',
   scrub_maquis: 'Maquis Scrub', semi_desert: 'Semi-Desert',
-  river_valley: 'River Valley', river_delta: 'River Delta',
+  river_valley: 'River Valley', river_delta: 'River delta',
   river: 'River', forest_cedar: 'Cedar Forest',
   coastal_sea: 'Coastal Sea', deep_sea: 'Deep Sea',
   mountain_limestone: 'Limestone Mountains', mountain_red: 'Red Mountains',
-  river_ford: 'Ford',
+  river_ford: 'River ford',
 };
 
 function terrainLabel(t) {
@@ -3322,7 +3322,7 @@ function terrainLabel(t) {
 }
 
 function fillTerrainFields(tile) {
-  document.getElementById('ip-terrain').textContent = namedRiverTerrain(tile, terrainLabel(tile.terrain));
+  document.getElementById('ip-terrain').textContent = terrainLabel(tile.terrain);
   const deps = [tile.copper_deposit ? 'Copper' : null, tile.tin_deposit ? 'Tin' : null,
                 tile.silver_deposit ? 'Silver' : null, tile.cedar_deposit ? 'Cedar' : null].filter(Boolean);
   const depRow = document.getElementById('ip-deposits-row');

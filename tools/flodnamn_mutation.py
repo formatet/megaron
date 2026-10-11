@@ -9,7 +9,7 @@ cases=[
  ('delta','server/internal/world/river_names.go','if deltas[n] {','if false {',['go','test','./internal/world','-run','TestRiverNamesUnique','-count=1'],'server'),
  ('fow','server/api/handlers/world.go','if tiles[i].Visible {','if true {',['tools/gotest.sh','./api/handlers/','-run','TestMapRiverNamesFOW'],'.'),
  ('keryx','server/cmd/keryx/river_names.go','return "River " + name','return terrain',['go','test','./cmd/keryx','-run','TestKeryxRiverNamesMap','-count=1'],'server'),
- ('panel','web/static/js/megaron/render/map.js',"document.getElementById('ip-terrain').textContent = namedRiverTerrain(tile, terrainLabel(tile.terrain));", "document.getElementById('ip-terrain').textContent = terrainLabel(tile.terrain);",['node','--test','web/static/js/megaron/render/inspect_simple.test.mjs'],'.'),
+ ('panel','web/static/js/megaron/render/map.js',"`${namedRiverTerrain(tile, terrainLabel(tile.terrain))} (${h.q},${h.r})`", "`${terrainLabel(tile.terrain)} (${h.q},${h.r})`",['node','--test','web/static/js/megaron/render/inspect_simple.test.mjs'],'.'),
  ('labels','web/static/js/megaron/render/river_names.js','if (zoom < .55) return [];','if (zoom < 2) return [];',['node','--test','web/static/js/megaron/render/river_names.test.mjs'],'.'),
 ]
 for name,file,old,new,cmd,cwd in cases:
