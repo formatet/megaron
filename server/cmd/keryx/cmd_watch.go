@@ -143,7 +143,7 @@ func printWatchMessage(c *Client, m wsMsg) {
 	if tier := subsistenceTier(n); tier != "" {
 		kind = m.Kind + " [" + subsistenceTierLabel(tier) + "]"
 	}
-	fmt.Printf(" [%s]  %-20s  %s\n", time.Now().Format("15:04:05"), kind, string(m.Payload))
+	fmt.Printf(" [%s]  %s\n", time.Now().Format("15:04:05"), kind)
 	printNotificationDetail(c, n)
 }
 

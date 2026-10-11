@@ -1,0 +1,99 @@
+51 notification(s), 51 unread
+────────────────────────────────────────────────────────────
+*[Sun Oct 11 21:21]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":41.998580955887746,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 42 grain rotted.
+*[Sun Oct 11 21:20]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":66.97359788302208,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 67 grain rotted.
+*[Sun Oct 11 21:17]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":70.261409988025,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 70 grain rotted.
+*[Sun Oct 11 21:15]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":106.58575603098329,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 107 grain rotted.
+*[Sun Oct 11 21:15]  DivinePunishment      {"name":"Mycenae","type":"garrison_plague","amount":2,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      A plague swept through the barracks in Mycenae — 2 men fell.
+*[Sun Oct 11 21:13]  DivinePunishment      {"name":"Mycenae","type":"garrison_plague","amount":2,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      A plague swept through the barracks in Mycenae — 2 men fell.
+*[Sun Oct 11 21:06]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":46.126369913226156,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 46 grain rotted.
+*[Sun Oct 11 21:05]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":75.64986325151644,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 76 grain rotted.
+*[Sun Oct 11 21:00]  DivinePunishment      {"name":"Mycenae","type":"garrison_plague","amount":2,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      A plague swept through the barracks in Mycenae — 2 men fell.
+*[Sun Oct 11 21:00]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":43.54935589176389,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 44 grain rotted.
+*[Sun Oct 11 20:59]  DivinePunishment      {"name":"Mycenae","type":"garrison_plague","amount":2,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      A plague swept through the barracks in Mycenae — 2 men fell.
+*[Sun Oct 11 20:59]  DivinePunishment      {"name":"Mycenae","type":"garrison_plague","amount":2,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      A plague swept through the barracks in Mycenae — 2 men fell.
+*[Sun Oct 11 20:59]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":61.72322876323415,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 62 grain rotted.
+*[Sun Oct 11 20:58]  DivinePunishment      {"name":"Mycenae","type":"garrison_plague","amount":2,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      A plague swept through the barracks in Mycenae — 2 men fell.
+*[Sun Oct 11 20:56]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":63.281200712622805,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 63 grain rotted.
+*[Sun Oct 11 20:54]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":87.81992323743584,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 88 grain rotted.
+*[Sun Oct 11 20:53]  DivinePunishment      {"name":"Mycenae","type":"garrison_plague","amount":2,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      A plague swept through the barracks in Mycenae — 2 men fell.
+*[Sun Oct 11 20:53]  DivinePunishment      {"name":"Mycenae","type":"garrison_plague","amount":2,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      A plague swept through the barracks in Mycenae — 2 men fell.
+*[Sun Oct 11 20:50]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":116.78870444528424,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 117 grain rotted.
+*[Sun Oct 11 20:50]  DivinePunishment      {"name":"Mycenae","type":"garrison_plague","amount":4,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      A plague swept through the barracks in Mycenae — 4 men fell.
+*[Sun Oct 11 20:42]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":99.31372537444807,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 99 grain rotted.
+*[Sun Oct 11 20:41]  DivinePunishment      {"name":"Mycenae","type":"garrison_plague","amount":4,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      A plague swept through the barracks in Mycenae — 4 men fell.
+*[Sun Oct 11 20:37]  DivinePunishment      {"name":"Mycenae","type":"garrison_plague","amount":6,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      A plague swept through the barracks in Mycenae — 6 men fell.
+*[Sun Oct 11 20:33]  DivinePunishment      {"name":"Mycenae","type":"garrison_plague","amount":6,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      A plague swept through the barracks in Mycenae — 6 men fell.
+*[Sun Oct 11 20:33]  SitosGranaryRelease   {"per_good":{"grain":1.1385440899446735},"coverage_days":9.772291182011065,"food_released":1.1385440899446735,"granary_after":285.8697379222735,"granary_empty":false,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+*[Sun Oct 11 20:32]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":39.253995868742756,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 39 grain rotted.
+*[Sun Oct 11 20:31]  SitosGranaryRelease   {"per_good":{"grain":0.4134366240908349},"coverage_days":9.917312675181833,"food_released":0.4134366240908349,"granary_after":287.00828201221816,"granary_empty":false,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+*[Sun Oct 11 20:31]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":39.986427652433505,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 40 grain rotted.
+*[Sun Oct 11 20:30]  DivinePunishment      {"name":"Mycenae","type":"garrison_plague","amount":8,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      A plague swept through the barracks in Mycenae — 8 men fell.
+*[Sun Oct 11 20:29]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":50.865972437409276,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 51 grain rotted.
+*[Sun Oct 11 20:28]  DivinePunishment      {"name":"Mycenae","type":"garrison_plague","amount":10,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      A plague swept through the barracks in Mycenae — 10 men fell.
+*[Sun Oct 11 20:28]  DivinePunishment      {"name":"Mycenae","type":"garrison_plague","amount":12,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      A plague swept through the barracks in Mycenae — 12 men fell.
+*[Sun Oct 11 20:27]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":54.48673255267604,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 54 grain rotted.
+*[Sun Oct 11 20:25]  DivinePunishment      {"name":"Mycenae","type":"garrison_plague","amount":16,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      A plague swept through the barracks in Mycenae — 16 men fell.
+*[Sun Oct 11 20:24]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":47.18517139753588,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 47 grain rotted.
+*[Sun Oct 11 20:23]  DivinePunishment      {"name":"Mycenae","type":"garrison_plague","amount":20,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      A plague swept through the barracks in Mycenae — 20 men fell.
+*[Sun Oct 11 20:21]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":44.78611915677799,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 45 grain rotted.
+*[Sun Oct 11 20:20]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":78.60071000130478,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 79 grain rotted.
+*[Sun Oct 11 20:17]  DivinePunishment      {"name":"Mycenae","type":"garrison_plague","amount":24,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      A plague swept through the barracks in Mycenae — 24 men fell.
+*[Sun Oct 11 20:13]  DivinePunishment      {"name":"Mycenae","type":"garrison_plague","amount":32,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      A plague swept through the barracks in Mycenae — 32 men fell.
+*[Sun Oct 11 20:13]  SitosGranaryRelease   {"per_good":{"grain":18.137586133522156},"coverage_days":6.372482773295569,"food_released":18.137586133522156,"granary_after":281.8624138664778,"granary_empty":false,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+*[Sun Oct 11 20:13]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":27.133751380280653,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 27 grain rotted.
+*[Sun Oct 11 20:13]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":55.62374016218313,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 56 grain rotted.
+*[Sun Oct 11 20:11]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":90.6027772784159,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 91 grain rotted.
+*[Sun Oct 11 20:08]  DivinePunishment      {"name":"Mycenae","type":"garrison_plague","amount":40,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      A plague swept through the barracks in Mycenae — 40 men fell.
+*[Sun Oct 11 20:08]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":172.80612898238803,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 173 grain rotted.
+*[Sun Oct 11 20:07]  DivinePunishment      {"name":"Mycenae","type":"harvest_failure","amount":343.3812534415754,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190"}
+      The fields in Mycenae lay fallow at the gods' will — 343 grain rotted.
+*[Sun Oct 11 20:06]  ExpeditionReport      {"name":"1st Spearmen of Mycenae","finds":[{"q":13,"r":80,"kind":"copper"},{"q":14,"r":80,"kind":"copper"}],"area_q":6,"area_r":80,"unit_id":"d86cebbc-10fb-47ed-9494-e0ffd62fd687","furthest":8,"ticks_out":26,"hexes_seen":95,"turn_reason":"half_time"}
+      1st Spearmen of Mycenae is home after 26 days, 8 hexes out at the furthest — saw 95 hexes around (6, 80): copper at (13, 80), (14, 80)
+*[Sun Oct 11 20:06]  UnitArrived           {"q":12,"r":80,"name":"1st Spearmen of Mycenae","status":"garrison","unit_id":"d86cebbc-10fb-47ed-9494-e0ffd62fd687"}
+*[Sun Oct 11 20:04]  ExpeditionTurnedHome  {"q":4,"r":85,"name":"1st Spearmen of Mycenae","area_q":6,"area_r":80,"reason":"half_time","unit_id":"d86cebbc-10fb-47ed-9494-e0ffd62fd687","arrive_tick":68}
+      1st Spearmen of Mycenae turns home from the land around (6, 80): half its time is spent — home by day 68
+*[Sun Oct 11 20:00]  MetropolisFounded     {"q":12,"r":80,"name":"Mycenae","coastal":false,"grain_days":680043543732944900,"grain_ticks":680043543732944900,"known_hexes":19,"province_id":"e632c045-6ab5-4b1a-8714-efd25e0cab1d","grain_amount":1208,"grain_carried":1200,"settlement_id":"a455b324-b42f-4bef-8b8e-a36ac443b190","unknown_hexes":0,"silver_carried":462,"grain_net_per_tick":-0.0000000000000017763568394002505}

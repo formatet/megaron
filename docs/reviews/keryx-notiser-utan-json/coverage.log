@@ -1,0 +1,269 @@
+=== RUN   TestEveryNotificationKindHasReadableDetail
+    notification_kinds_test.go:293: Known notification kinds: 78
+    notification_kinds_test.go:293: ArmyArrival: Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: BattleLost: ../../internal/combat/battle.go#notifyBattleEnded, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: BattleWon: ../../internal/combat/battle.go#notifyBattleEnded, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: BuildComplete: ../../internal/combat/build.go#Handle, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: CaravanRaided: ../../internal/notify/hub.go#NotifyPlayer, ../../internal/transport/intercept.go#seize, Codex/client text
+    notification_kinds_test.go:293: CaravanSeized: ../../internal/notify/hub.go#NotifyPlayer, ../../internal/transport/intercept.go#seize, Codex/client text
+    notification_kinds_test.go:293: CityAnnexReady: ../../internal/combat/occupation_check.go#Handle, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: CityCollapsed: ../../internal/combat/collapse.go#collapseSettlement, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: CityOccupied: ../../internal/combat/occupation.go#occupySettlement, ../../internal/combat/occupation.go#occupySettlement, ../../internal/combat/siege_capitulation.go#Handle, ../../internal/combat/siege_capitulation.go#Handle, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: ColonyFounded: ../../internal/combat/unit_arrival.go#foundColony, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: DivineBlessing: ../../internal/kharis/tick.go#applyDivineBlessing, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: DivinePunishment: ../../internal/kharis/tick.go#applyDivinePunishment, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ExpeditionReport: ../../internal/combat/expedition_outcomes.go#expeditionOutcome, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ExpeditionTurnedHome: ../../internal/combat/expedition_outcomes.go#expeditionOutcome, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: FoodShortfall: ../../internal/economy/food_tick.go#tickSettlement, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ForeignMarchSighted: Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ForeignMarchSightedV2: ../../internal/combat/march_sighting.go#notifySighting, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: GiftDelivered: ../../internal/economy/gift.go#HandleGift, ../../internal/economy/trade.go#deliverTradeNotice, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: GiftLost: ../../internal/economy/gift.go#HandleGift, ../../internal/economy/trade.go#deliverTradeNotice, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: GoodsCrafted: Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: HexBlockaded: ../../internal/economy/hex_blockade.go#SyncHexBlockade#dispatch, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: HexTaken: ../../internal/economy/hex_take.go#DispatchHexTaken, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: HexUnblockaded: ../../internal/economy/hex_blockade.go#SyncHexBlockade#dispatch, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: MarchStalled: ../../internal/combat/unit_arrival.go#NotifyDeadLetter, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: MessengerArrival: ../../internal/messenger/handler.go#notifyDelivered, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: MessengerLostAtSea: ../../internal/messenger/carrier_fate.go#applyCarrierWitness, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: MessengerRescuedAtSea: ../../internal/messenger/carrier_fate.go#persistRescueReport, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: MessengerReturned: ../../internal/messenger/handler.go#notifyReturned, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: MetropolisFounded: ../../api/handlers/found_metropolis.go#Settle, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: OccupationDefended: ../../internal/combat/occupation.go#resetOccupationDefense, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: OfferAccepted: ../../api/handlers/messenger.go#TradeAccept, ../../api/handlers/messenger.go#TradeAccept, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: OfferDeclined: ../../api/handlers/messenger.go#TradeDecline, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: OfferExpired: ../../internal/economy/trade.go#Handle, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: OrderFailed: ../../internal/messenger/order_delivery.go#NotifyDeadLetter, ../../internal/messenger/order_delivery.go#notifyOrderFailed, ../../internal/messenger/order_delivery_failure.go#failSingleRecall, ../../internal/messenger/passage.go#sealLostCarrier, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: OutpostCaptured: Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: OutpostEstablished: Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: PassageStalled: ../../internal/messenger/passage.go#notifyStalledOne, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: PickupTimedOut: ../../internal/combat/unit_arrival.go#HandlePickupTimeout, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: PickupWaiting: ../../internal/combat/unit_arrival.go#pickupArrived, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ScoutReport: ../../internal/combat/unit_arrival.go#reportScoutFindings, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: SentryAlerted: ../../internal/combat/unit_intercept_scan.go#intercept, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: SettlementBurned: ../../internal/combat/occupation.go#executeSack, ../../internal/combat/occupation.go#executeSack, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: SettlementCaptured: ../../internal/combat/occupation.go#executeAnnex, ../../internal/combat/occupation.go#executeAnnex, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: SettlementDefended: Codex/client text
+    notification_kinds_test.go:293: SettlementLooted: ../../internal/combat/occupation.go#executeSack, ../../internal/combat/occupation.go#executeSack, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: SettlementSacked: Codex/client text
+    notification_kinds_test.go:293: ShipCaptured: ../../internal/combat/naval_seizure.go#Handle, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ShipDamaged: ../../internal/combat/ship_hull.go#notifyShipDamaged, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ShipFoundered: ../../internal/combat/sea_storm.go#sail, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ShipLost: ../../internal/combat/naval_seizure.go#Handle, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ShipRepaired: ../../internal/combat/ship_repair.go#Handle, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ShipStormDamaged: ../../internal/combat/sea_storm.go#sail, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ShipStranded: ../../internal/notify/hub.go#NotifyPlayer, ../../internal/transport/arrival.go#releaseArrivedShip, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: ShipSweptFromSea: ../../internal/combat/unit_arrival.go#dispatchReturnHome, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: SiegeLifted: ../../internal/economy/siege_dispatch.go#SyncSiegeState, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: SiegeStarted: ../../internal/economy/siege_dispatch.go#SyncSiegeState, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: SitosFundLow: Codex/client text
+    notification_kinds_test.go:293: SitosGranaryRelease: ../../internal/economy/sitos_tick.go#tickSettlement, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: SitosIntervention: Codex/client text
+    notification_kinds_test.go:293: StandingOrderDispatched: ../../internal/combat/standing_orders.go#notifyDispatch, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: StandingOrderPaused: ../../internal/combat/standing_orders.go#pauseOrder, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: SubsistenceWarning: ../../internal/kharis/tick.go#emitSubsistenceWarning, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: TradeDelivery: ../../internal/economy/trade.go#persistTradeNotice, ../../internal/economy/trade.go#deliverTradeNotice, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: TradeLost: Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: TradeReturn: ../../internal/economy/trade.go#persistTradeNotice, ../../internal/economy/trade.go#deliverTradeNotice, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: TrainComplete: ../../internal/combat/train.go#Handle, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: TransferDelivered: ../../internal/notify/hub.go#NotifyPlayer, ../../internal/transport/arrival.go#Handle, Codex/client text
+    notification_kinds_test.go:293: UnitArrived: ../../internal/combat/expedition_outcomes.go#expeditionOutcome, ../../internal/combat/expedition_outcomes.go#expeditionOutcome, ../../internal/combat/unit_arrival.go#arriveGarrison, ../../internal/combat/unit_arrival.go#landArrived, ../../internal/combat/unit_arrival.go#landArrived, ../../internal/combat/unit_arrival.go#notifyLandColonizeFailed, ../../internal/combat/unit_arrival.go#passageArrived, ../../internal/combat/unit_arrival.go#pickupReturned, ../../internal/combat/unit_arrival.go#pickupReturned, ../../internal/combat/unit_arrival.go#exploreReturned, ../../internal/combat/unit_arrival.go#damagedShipReturned, ../../internal/combat/unit_arrival.go#sentryArrived, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: UnitAttrition: ../../internal/combat/upkeep.go#notifyUnitLoss, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: UnitDeserted: ../../internal/combat/upkeep.go#notifyUnitLoss, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: UnitExploreReturned: ../../internal/combat/unit_arrival.go#dispatchReturnHome, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: UnitFetched: ../../internal/combat/unit_arrival.go#boardPickupUnit, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: UnitLostAtSea: ../../internal/combat/upkeep.go#cascadeCargoDisband, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: UnitRecalled: ../../internal/messenger/order_delivery.go#Handle, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: UnitRedirected: ../../internal/messenger/order_delivery.go#Handle, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: UnitReturnedStarving: ../../internal/combat/unit_arrival.go#dispatchReturnHome, ../../internal/notify/hub.go#NotifyPlayer, Codex/client text
+    notification_kinds_test.go:293: UpkeepUnpaid: ../../internal/combat/upkeep.go#notifyUpkeepUnpaid, ../../internal/notify/hub.go#NotifyPlayer, Codex/client icons, Codex/client text
+    notification_kinds_test.go:293: agora_ready: ../../cmd/server/agora.go#ready, Codex/client icons, Codex/client text
+=== RUN   TestEveryNotificationKindHasReadableDetail/ArmyArrival
+=== RUN   TestEveryNotificationKindHasReadableDetail/BattleLost
+=== RUN   TestEveryNotificationKindHasReadableDetail/BattleWon
+=== RUN   TestEveryNotificationKindHasReadableDetail/BuildComplete
+=== RUN   TestEveryNotificationKindHasReadableDetail/CaravanRaided
+=== RUN   TestEveryNotificationKindHasReadableDetail/CaravanSeized
+=== RUN   TestEveryNotificationKindHasReadableDetail/CityAnnexReady
+=== RUN   TestEveryNotificationKindHasReadableDetail/CityCollapsed
+=== RUN   TestEveryNotificationKindHasReadableDetail/CityOccupied
+=== RUN   TestEveryNotificationKindHasReadableDetail/ColonyFounded
+=== RUN   TestEveryNotificationKindHasReadableDetail/DivineBlessing
+=== RUN   TestEveryNotificationKindHasReadableDetail/DivinePunishment
+=== RUN   TestEveryNotificationKindHasReadableDetail/ExpeditionReport
+=== RUN   TestEveryNotificationKindHasReadableDetail/ExpeditionTurnedHome
+=== RUN   TestEveryNotificationKindHasReadableDetail/FoodShortfall
+=== RUN   TestEveryNotificationKindHasReadableDetail/ForeignMarchSighted
+=== RUN   TestEveryNotificationKindHasReadableDetail/ForeignMarchSightedV2
+=== RUN   TestEveryNotificationKindHasReadableDetail/GiftDelivered
+=== RUN   TestEveryNotificationKindHasReadableDetail/GiftLost
+=== RUN   TestEveryNotificationKindHasReadableDetail/GoodsCrafted
+=== RUN   TestEveryNotificationKindHasReadableDetail/HexBlockaded
+=== RUN   TestEveryNotificationKindHasReadableDetail/HexTaken
+=== RUN   TestEveryNotificationKindHasReadableDetail/HexUnblockaded
+=== RUN   TestEveryNotificationKindHasReadableDetail/MarchStalled
+=== RUN   TestEveryNotificationKindHasReadableDetail/MessengerArrival
+=== RUN   TestEveryNotificationKindHasReadableDetail/MessengerLostAtSea
+=== RUN   TestEveryNotificationKindHasReadableDetail/MessengerRescuedAtSea
+=== RUN   TestEveryNotificationKindHasReadableDetail/MessengerReturned
+=== RUN   TestEveryNotificationKindHasReadableDetail/MetropolisFounded
+=== RUN   TestEveryNotificationKindHasReadableDetail/OccupationDefended
+=== RUN   TestEveryNotificationKindHasReadableDetail/OfferAccepted
+=== RUN   TestEveryNotificationKindHasReadableDetail/OfferDeclined
+=== RUN   TestEveryNotificationKindHasReadableDetail/OfferExpired
+=== RUN   TestEveryNotificationKindHasReadableDetail/OrderFailed
+=== RUN   TestEveryNotificationKindHasReadableDetail/OutpostCaptured
+=== RUN   TestEveryNotificationKindHasReadableDetail/OutpostEstablished
+=== RUN   TestEveryNotificationKindHasReadableDetail/PassageStalled
+=== RUN   TestEveryNotificationKindHasReadableDetail/PickupTimedOut
+=== RUN   TestEveryNotificationKindHasReadableDetail/PickupWaiting
+=== RUN   TestEveryNotificationKindHasReadableDetail/ScoutReport
+=== RUN   TestEveryNotificationKindHasReadableDetail/SentryAlerted
+=== RUN   TestEveryNotificationKindHasReadableDetail/SettlementBurned
+=== RUN   TestEveryNotificationKindHasReadableDetail/SettlementCaptured
+=== RUN   TestEveryNotificationKindHasReadableDetail/SettlementDefended
+=== RUN   TestEveryNotificationKindHasReadableDetail/SettlementLooted
+=== RUN   TestEveryNotificationKindHasReadableDetail/SettlementSacked
+=== RUN   TestEveryNotificationKindHasReadableDetail/ShipCaptured
+=== RUN   TestEveryNotificationKindHasReadableDetail/ShipDamaged
+=== RUN   TestEveryNotificationKindHasReadableDetail/ShipFoundered
+=== RUN   TestEveryNotificationKindHasReadableDetail/ShipLost
+=== RUN   TestEveryNotificationKindHasReadableDetail/ShipRepaired
+=== RUN   TestEveryNotificationKindHasReadableDetail/ShipStormDamaged
+=== RUN   TestEveryNotificationKindHasReadableDetail/ShipStranded
+=== RUN   TestEveryNotificationKindHasReadableDetail/ShipSweptFromSea
+=== RUN   TestEveryNotificationKindHasReadableDetail/SiegeLifted
+=== RUN   TestEveryNotificationKindHasReadableDetail/SiegeStarted
+=== RUN   TestEveryNotificationKindHasReadableDetail/SitosFundLow
+=== RUN   TestEveryNotificationKindHasReadableDetail/SitosGranaryRelease
+=== RUN   TestEveryNotificationKindHasReadableDetail/SitosIntervention
+=== RUN   TestEveryNotificationKindHasReadableDetail/StandingOrderDispatched
+=== RUN   TestEveryNotificationKindHasReadableDetail/StandingOrderPaused
+=== RUN   TestEveryNotificationKindHasReadableDetail/SubsistenceWarning
+=== RUN   TestEveryNotificationKindHasReadableDetail/TradeDelivery
+=== RUN   TestEveryNotificationKindHasReadableDetail/TradeLost
+=== RUN   TestEveryNotificationKindHasReadableDetail/TradeReturn
+=== RUN   TestEveryNotificationKindHasReadableDetail/TrainComplete
+=== RUN   TestEveryNotificationKindHasReadableDetail/TransferDelivered
+=== RUN   TestEveryNotificationKindHasReadableDetail/UnitArrived
+=== RUN   TestEveryNotificationKindHasReadableDetail/UnitAttrition
+=== RUN   TestEveryNotificationKindHasReadableDetail/UnitDeserted
+=== RUN   TestEveryNotificationKindHasReadableDetail/UnitExploreReturned
+=== RUN   TestEveryNotificationKindHasReadableDetail/UnitFetched
+=== RUN   TestEveryNotificationKindHasReadableDetail/UnitLostAtSea
+=== RUN   TestEveryNotificationKindHasReadableDetail/UnitRecalled
+=== RUN   TestEveryNotificationKindHasReadableDetail/UnitRedirected
+=== RUN   TestEveryNotificationKindHasReadableDetail/UnitReturnedStarving
+=== RUN   TestEveryNotificationKindHasReadableDetail/UpkeepUnpaid
+=== RUN   TestEveryNotificationKindHasReadableDetail/agora_ready
+--- PASS: TestEveryNotificationKindHasReadableDetail (0.16s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/ArmyArrival (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/BattleLost (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/BattleWon (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/BuildComplete (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/CaravanRaided (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/CaravanSeized (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/CityAnnexReady (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/CityCollapsed (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/CityOccupied (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/ColonyFounded (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/DivineBlessing (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/DivinePunishment (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/ExpeditionReport (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/ExpeditionTurnedHome (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/FoodShortfall (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/ForeignMarchSighted (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/ForeignMarchSightedV2 (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/GiftDelivered (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/GiftLost (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/GoodsCrafted (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/HexBlockaded (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/HexTaken (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/HexUnblockaded (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/MarchStalled (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/MessengerArrival (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/MessengerLostAtSea (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/MessengerRescuedAtSea (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/MessengerReturned (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/MetropolisFounded (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/OccupationDefended (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/OfferAccepted (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/OfferDeclined (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/OfferExpired (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/OrderFailed (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/OutpostCaptured (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/OutpostEstablished (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/PassageStalled (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/PickupTimedOut (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/PickupWaiting (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/ScoutReport (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/SentryAlerted (0.01s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/SettlementBurned (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/SettlementCaptured (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/SettlementDefended (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/SettlementLooted (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/SettlementSacked (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/ShipCaptured (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/ShipDamaged (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/ShipFoundered (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/ShipLost (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/ShipRepaired (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/ShipStormDamaged (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/ShipStranded (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/ShipSweptFromSea (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/SiegeLifted (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/SiegeStarted (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/SitosFundLow (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/SitosGranaryRelease (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/SitosIntervention (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/StandingOrderDispatched (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/StandingOrderPaused (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/SubsistenceWarning (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/TradeDelivery (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/TradeLost (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/TradeReturn (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/TrainComplete (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/TransferDelivered (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/UnitArrived (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/UnitAttrition (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/UnitDeserted (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/UnitExploreReturned (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/UnitFetched (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/UnitLostAtSea (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/UnitRecalled (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/UnitRedirected (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/UnitReturnedStarving (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/UpkeepUnpaid (0.00s)
+    --- PASS: TestEveryNotificationKindHasReadableDetail/agora_ready (0.00s)
+=== RUN   TestNotificationSourceDiscovery
+--- PASS: TestNotificationSourceDiscovery (0.00s)
+=== RUN   TestNotificationHumanFeedGroupingAndJSON
+--- PASS: TestNotificationHumanFeedGroupingAndJSON (0.00s)
+=== RUN   TestNotificationWordsAndArchiveSemantics
+=== RUN   TestNotificationWordsAndArchiveSemantics/SubsistenceWarning{"name":"Tiryns","net_per_tick":-3,"net_per_day":999,"ticks_left":12,"days_left":999}
+=== RUN   TestNotificationWordsAndArchiveSemantics/SubsistenceWarning{"name":"Tiryns","net_per_day":-3,"days_left":12}
+=== RUN   TestNotificationWordsAndArchiveSemantics/SitosGranaryRelease{"food_released":50,"coverage_days":12,"per_good":{"grain":30,"fish":20},"granary_empty":true}
+=== RUN   TestNotificationWordsAndArchiveSemantics/SitosGranaryRelease{"food_released":0.3,"coverage_days":12,"per_good":{"grain":0.3}}
+=== RUN   TestNotificationWordsAndArchiveSemantics/OfferDeclined{"kind":"buy","quantity":0,"silver":15}
+=== RUN   TestNotificationWordsAndArchiveSemantics/OfferExpired{"kind":"sell","quantity":12,"good_key":"tin"}
+=== RUN   TestNotificationWordsAndArchiveSemantics/OfferAccepted{"kind":"sell","quantity":12,"good_key":"tin","silver":15,"silver_arrival_tick":130}
+=== RUN   TestNotificationWordsAndArchiveSemantics/UnitAttrition{"name":"Bronze_Guard","lost":7,"disbanded":true}
+=== RUN   TestNotificationWordsAndArchiveSemantics/UnitDeserted{"name":"Bronze_Guard","lost":7}
+=== RUN   TestNotificationWordsAndArchiveSemantics/CityCollapsed{"name":"Tiryns","last_settlement":true}
+=== RUN   TestNotificationWordsAndArchiveSemantics/ColonyFounded{"name":"Tiryns"}
+=== RUN   TestNotificationWordsAndArchiveSemantics/OrderFailed{"name":"Bronze_Guard","verb":"stance_pursuit","reason":"target_lost"}
+--- PASS: TestNotificationWordsAndArchiveSemantics (0.01s)
+    --- PASS: TestNotificationWordsAndArchiveSemantics/SubsistenceWarning{"name":"Tiryns","net_per_tick":-3,"net_per_day":999,"ticks_left":12,"days_left":999} (0.00s)
+    --- PASS: TestNotificationWordsAndArchiveSemantics/SubsistenceWarning{"name":"Tiryns","net_per_day":-3,"days_left":12} (0.00s)
+    --- PASS: TestNotificationWordsAndArchiveSemantics/SitosGranaryRelease{"food_released":50,"coverage_days":12,"per_good":{"grain":30,"fish":20},"granary_empty":true} (0.00s)
+    --- PASS: TestNotificationWordsAndArchiveSemantics/SitosGranaryRelease{"food_released":0.3,"coverage_days":12,"per_good":{"grain":0.3}} (0.00s)
+    --- PASS: TestNotificationWordsAndArchiveSemantics/OfferDeclined{"kind":"buy","quantity":0,"silver":15} (0.00s)
+    --- PASS: TestNotificationWordsAndArchiveSemantics/OfferExpired{"kind":"sell","quantity":12,"good_key":"tin"} (0.00s)
+    --- PASS: TestNotificationWordsAndArchiveSemantics/OfferAccepted{"kind":"sell","quantity":12,"good_key":"tin","silver":15,"silver_arrival_tick":130} (0.00s)
+    --- PASS: TestNotificationWordsAndArchiveSemantics/UnitAttrition{"name":"Bronze_Guard","lost":7,"disbanded":true} (0.00s)
+    --- PASS: TestNotificationWordsAndArchiveSemantics/UnitDeserted{"name":"Bronze_Guard","lost":7} (0.00s)
+    --- PASS: TestNotificationWordsAndArchiveSemantics/CityCollapsed{"name":"Tiryns","last_settlement":true} (0.00s)
+    --- PASS: TestNotificationWordsAndArchiveSemantics/ColonyFounded{"name":"Tiryns"} (0.00s)
+    --- PASS: TestNotificationWordsAndArchiveSemantics/OrderFailed{"name":"Bronze_Guard","verb":"stance_pursuit","reason":"target_lost"} (0.00s)
+PASS
+ok  	formatet/megaron/server/cmd/keryx	0.168s
