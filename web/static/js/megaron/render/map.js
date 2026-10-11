@@ -3617,7 +3617,7 @@ async function openHostPanel(h, tile) {
   // past the panel. The forecast is unbounded by nature; the button must not
   // share a container with it.
   document.getElementById('ip-body-extra').innerHTML =
-    `<div id="ip-found-summary">Fetching founding forecast…</div>
+    placePanelHTML(tile, {showName:true}) + `<div id="ip-found-summary">Fetching founding forecast…</div>
      <details id="ip-host-details" class="dsec"><summary class="dsec-title">Details</summary>
      <div style="margin-bottom:.5rem;line-height:1.5">
        <div>Deposits: ${esc(deposits)}</div>

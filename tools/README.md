@@ -440,3 +440,16 @@ serverar basens `map.js` via route. `python3 tools/flodnamn_mutation.py` återin
 produktionsfel och återställer varje fil byte-identiskt. API-fixturen skapas av
 `tools/gotest.sh ./api/handlers/ -run TestMapRiverNamesFOW -args -river-proof-dir=<absolut katalog>`.
 Kontrakt, bildlänkar och begränsningar: [flodnamnsrapporten](../docs/reviews/flodnamn/README.md).
+
+## Geographic naming proof (flod-doparratt)
+
+`tools/place_names_rig.py` builds the current branch's server with CGO=0 on the cached isolated
+acceptance runtime, copies current migrations and verifies served branch assets. It does not reset the world.
+`tools/place_names_pictures.py` prepares explicit rights/FOW BILD data on Eirene and uses the actual web
+name action for four kinds at 1280+390 in Firefox, variants `?ortnamn=a|b` on `/world/{id}/map`.
+This fixture proves layout, not natural first reach. `tools/place_names_live.py` uses normal register/join,
+known-map march preview, march, web naming and CLI; a nearby unclaimed eligible object is required.
+`PLACE_PROOF_RESUME=1 PLACE_PROOF_USER=ParityNomad` resumes the separately recorded natural delta arrival.
+`tools/place_api_mutation.py`, `tools/place_reach_mutation.py` and `tools/place_client_mutation.py` remove
+physical gates, require named red results, restore source in finally and check green. Run mutations before
+full suites; they temporarily change the source. Proof: `docs/reviews/flod-doparratt/README.md`.

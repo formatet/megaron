@@ -3,6 +3,7 @@ package combat
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -360,5 +362,106 @@ func TestPlaceReachNoticeUsesCanonicalUnitName(t *testing.T) {
 	}
 	if !strings.HasPrefix(name, "Nomadic Host of ") {
 		t.Fatalf("first reach notice lacks recognizable subject: %q", name)
+	}
+}
+
+// Exercise the actual worker's claimed/sorted batch: the recurring scan skips
+// ahead on catch-up, so only the arrival prerequisite can preserve its last hex.
+func TestPlaceReachWorkerCatchupArrivalFlushesLastHexSameBatch(t *testing.T) {
+	f := reachWorld(t)
+	ctx := context.Background()
+	id := f.mover(t, "infantry", f.owner, reachRoute(0, 4, 0, 6))
+	if _, err := f.pool.Exec(ctx, `UPDATE worlds SET current_tick=10 WHERE id=$1`, f.world); err != nil {
+		t.Fatal(err)
+	}
+	if err := f.h.scheduler.EnqueueTick(ctx, f.world, events.ScheduledPlaceReachScan, struct{}{}, 1); err != nil {
+		t.Fatal(err)
+	}
+	if err := f.h.scheduler.EnqueueTick(ctx, f.world, events.ScheduledUnitArrival, struct{}{}, 4); err != nil {
+		t.Fatal(err)
+	}
+	worker := events.NewWorker(f.pool, f.clk)
+	worker.SetPollInterval(10 * time.Millisecond)
+	scanned := false
+	done := make(chan error, 1)
+	worker.Register(events.ScheduledPlaceReachScan, func(ctx context.Context, e events.ScheduledEvent) error { scanned = true; return f.h.Handle(ctx, e) })
+	worker.Register(events.ScheduledUnitArrival, f.h.BeforeArrival(func(ctx context.Context, e events.ScheduledEvent) error {
+		var n int
+		err := f.pool.QueryRow(ctx, `SELECT count(*) FROM place_names WHERE world_id=$1 AND anchor_q=6 AND claimed_by=$2`, f.world, f.owner).Scan(&n)
+		if err == nil && (!scanned || n != 1) {
+			err = fmt.Errorf("catch-up arrival erased last reached hex: scanned=%v claims=%d", scanned, n)
+		}
+		if err == nil {
+			_, err = f.pool.Exec(ctx, `UPDATE units SET status='positioned',march_route=NULL WHERE id=$1`, id)
+		}
+		done <- err
+		return err
+	}))
+	runCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	stopped := make(chan struct{})
+	go func() { worker.Run(runCtx); close(stopped) }()
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatal(err)
+		}
+	case <-time.After(3 * time.Second):
+		t.Fatal("worker did not process catch-up arrival")
+	}
+	cancel()
+	<-stopped
+	if f.claims(t) != 2 {
+		t.Fatal("catch-up skipped physical first-reach claims")
+	}
+}
+func TestPlaceReachArrivalFlushFailurePreservesJourney(t *testing.T) {
+	f := reachWorld(t)
+	ctx := context.Background()
+	id := f.mover(t, "infantry", f.owner, reachRoute(0, 4, 0, 6))
+	called := false
+	handler := f.h.BeforeArrival(func(context.Context, events.ScheduledEvent) error { called = true; return nil })
+	failed, cancel := context.WithCancel(ctx)
+	cancel()
+	if err := handler(failed, events.ScheduledEvent{WorldID: f.world, DueTick: 4}); err == nil {
+		t.Fatal("failed entry flush allowed arrival")
+	}
+	if called {
+		t.Fatal("arrival ran despite failed entry persistence")
+	}
+	var status string
+	var raw []byte
+	if err := f.pool.QueryRow(ctx, `SELECT status,march_route FROM units WHERE id=$1`, id).Scan(&status, &raw); err != nil {
+		t.Fatal(err)
+	}
+	if status != "marching" || len(raw) == 0 {
+		t.Fatal("failed entry flush erased retryable journey")
+	}
+}
+func TestPlaceReachFreightShipCanonicalSubject(t *testing.T) {
+	f := reachWorld(t)
+	ctx := context.Background()
+	route := reachRoute(0, 6, 0, 6)
+	ship := f.mover(t, "galley", f.owner, route)
+	if _, err := f.pool.Exec(ctx, `UPDATE units SET status='freighting',name='Ariadne' WHERE id=$1`, ship); err != nil {
+		t.Fatal(err)
+	}
+	var path []province.MapPosition
+	for _, hex := range route.Hexes {
+		path = append(path, province.MapPosition{Q: hex[0], R: hex[1]})
+	}
+	j := province.TradeJourney{Category: "naval", Path: path, StepCosts: route.Costs, TravelTicks: 9, Distance: 6}
+	raw, _ := json.Marshal(j)
+	if _, err := f.pool.Exec(ctx, `INSERT INTO transports(world_id,owner_id,kind,category,origin_q,origin_r,dest_q,dest_r,departs_at,arrives_at,due_tick,departed_tick,journey,ship_unit_id) VALUES($1,$2,'internal_transfer','naval',0,0,6,0,$3,$4,9,0,$5,$6)`, f.world, f.owner, f.clk.Now(), f.clk.Now().Add(time.Hour), raw, ship); err != nil {
+		t.Fatal(err)
+	}
+	f.scan(t, 3)
+	var name, id string
+	if err := f.pool.QueryRow(ctx, `SELECT body_json->>'unit_name',body_json->>'unit_id' FROM notifications WHERE world_id=$1 AND kind='PlaceFirstReached'`, f.world).Scan(&name, &id); err != nil {
+		t.Fatal(err)
+	}
+	want := unit.LoadDisplayName(ctx, f.pool, ship)
+	if name != want || id != ship.String() {
+		t.Fatalf("freight ship first reach lacks canonical subject: name=%q want=%q id=%s want=%s", name, want, id, ship)
 	}
 }

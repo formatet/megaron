@@ -36,7 +36,7 @@ with sync_playwright() as pw:
     page.evaluate('h=>centreOn(h.q,h.r)',p['focus']);page.wait_for_function('__pm.markrasterStats.pending===0');page.wait_for_timeout(400)
     if variant=='a':
      point=page.evaluate('h=>{const p=__pm.hexPx(h.q,h.r);return {x:__ps.camera.x+p.x*__pm.SCALE*__ps.camera.zoom,y:__ps.camera.y+p.y*__pm.SCALE*__ps.camera.zoom}}',p['focus'])
-     canvas=page.locator('#hex-canvas');canvas.tap(position=point) if mode=='mobile' else canvas.click(position=point);page.locator('[aria-label="Place name"]').wait_for();page.screenshot(path=str(OUT/f'{mode}-{p["kind"]}-form.png'));page.locator('[aria-label="Place name"]').fill(p['human_name']);page.locator('#ip-foot button').filter(has_text='Name it').click();page.locator('[aria-label="Place name"]').wait_for(state='hidden');page.keyboard.press('Escape');page.evaluate('__pm.closeInspect()')
+     canvas=page.locator('#hex-canvas');canvas.tap(position=point) if mode=='mobile' else canvas.click(position=point);page.locator('[aria-label="Place name"]').wait_for();page.screenshot(path=str(OUT/f'{mode}-{p["kind"]}-form.png'));page.locator('[aria-label="Place name"]').fill(p['human_name']);page.locator('.place-note button').filter(has_text='Name it').click();page.locator('[aria-label="Place name"]').wait_for(state='hidden');page.keyboard.press('Escape');page.evaluate('__pm.closeInspect()')
     else:
      # Already named by the first desktop web sequence; reread real map.
      page.evaluate('async()=>{await window.refreshTiles();}');page.wait_for_timeout(500)

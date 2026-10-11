@@ -1,12 +1,18 @@
 import { esc } from '../format.js';
 import { fmtNum, fmtDays } from '../fmt_num.js';
 import { sitosStateHtml } from './sitos_view.js';
+import { State } from '../../state.js';
+import { placePanelHTML } from '../placename.js';
 const n = value => fmtNum(Math.round(Number(value) * 100) / 100);
 const row = (label, value) => `<div class="stat-row"><span class="sr-label">${label}</span><span class="sr-val">${value}</span></div>`;
 
 export function productionSectionsHTML(city) {
+  // An owned city opens its drawer instead of the terrain card. Keep the
+  // same naming action reachable for the place under its centre hex.
+  const centre = (State.tileData || []).find(t => t.q === city.q && t.r === city.r);
+  const placeNameForm = centre ? placePanelHTML(centre, {showName:true}) : '';
   return `<div class="dsec"><div class="dsec-title">Population</div><div id="city-pop-sec"></div></div>
-    <div class="dsec"><div class="dsec-title">Catchment &amp; workplaces</div><div id="city-prod-sec"></div></div>
+    <div class="dsec"><div class="dsec-title">Catchment &amp; workplaces</div>${placeNameForm}<div id="city-prod-sec"></div></div>
     <div class="dsec"><div class="dsec-title">Food</div><div id="city-sitos-sec"></div></div>
     <details id="city-more" class="dsec"><summary class="dsec-title">More</summary>
       <div class="dsec-title">People at work</div><div id="city-people-details"></div>

@@ -35,7 +35,25 @@ func placeReachLock(ctx context.Context, tx pgx.Tx, worldID uuid.UUID) error {
 	_, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtextextended($1, 617))`, worldID.String())
 	return err
 }
+
+// BeforeArrival makes physical-entry persistence a prerequisite for handlers
+// that finish/remove frozen journeys. Priority alone is insufficient when a
+// delayed recurring scan skips ticks or when its previous attempt failed.
+func (h *PlaceReachScanHandler) BeforeArrival(next events.Handler) events.Handler {
+	return func(ctx context.Context, e events.ScheduledEvent) error {
+		if err := h.flushEntries(ctx, e); err != nil {
+			return err
+		}
+		return next(ctx, e)
+	}
+}
 func (h *PlaceReachScanHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
+	if err := h.flushEntries(ctx, e); err != nil {
+		return err
+	}
+	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledPlaceReachScan, struct{}{}, e.DueTick, 1)
+}
+func (h *PlaceReachScanHandler) flushEntries(ctx context.Context, e events.ScheduledEvent) error {
 	tx, err := h.pool.Begin(ctx)
 	if err != nil {
 		return err
@@ -52,7 +70,7 @@ func (h *PlaceReachScanHandler) Handle(ctx context.Context, e events.ScheduledEv
 		return err
 	}
 	deliverPlaceReach(ctx, h.store, h.hub, e.WorldID, outcomes)
-	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledPlaceReachScan, struct{}{}, e.DueTick, 1)
+	return nil
 }
 
 type placeVoyage struct {
@@ -72,7 +90,7 @@ type placeEntry struct {
 func loadPlaceVoyages(ctx context.Context, tx pgx.Tx, worldID uuid.UUID) ([]placeVoyage, error) {
 	var out []placeVoyage
 	// Transport then unit matches storm/interception row-lock order.
-	rows, err := tx.Query(ctx, `SELECT t.id,t.owner_id,COALESCE(u.name,''),COALESCE(u.type,'caravan'),t.kind,t.journey,t.departed_tick,t.due_tick,t.departs_at FROM transports t LEFT JOIN units u ON u.id=t.ship_unit_id WHERE t.world_id=$1 AND t.status='in_transit' AND t.journey IS NOT NULL AND t.departed_tick IS NOT NULL ORDER BY t.id FOR UPDATE OF t`, worldID)
+	rows, err := tx.Query(ctx, `SELECT t.id,t.owner_id,COALESCE(u.name,''),COALESCE(u.type,'caravan'),t.kind,t.journey,t.departed_tick,t.due_tick,t.departs_at,t.ship_unit_id FROM transports t LEFT JOIN units u ON u.id=t.ship_unit_id WHERE t.world_id=$1 AND t.status='in_transit' AND t.journey IS NOT NULL AND t.departed_tick IS NOT NULL ORDER BY t.id FOR UPDATE OF t`, worldID)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +99,8 @@ func loadPlaceVoyages(ctx context.Context, tx pgx.Tx, worldID uuid.UUID) ([]plac
 		var raw []byte
 		var dep, arr int
 		var kind string
-		if err = rows.Scan(&v.id, &v.owner, &v.name, &v.typ, &kind, &raw, &dep, &arr, &v.departed); err != nil {
+		var shipID *uuid.UUID
+		if err = rows.Scan(&v.id, &v.owner, &v.name, &v.typ, &kind, &raw, &dep, &arr, &v.departed, &shipID); err != nil {
 			rows.Close()
 			return nil, err
 		}
@@ -91,6 +110,9 @@ func loadPlaceVoyages(ctx context.Context, tx pgx.Tx, worldID uuid.UUID) ([]plac
 		}
 		v.route = r
 		v.key = "t:" + v.id.String()
+		if shipID != nil {
+			v.displayID = *shipID
+		}
 		if v.name == "" {
 			if v.typ == "caravan" {
 				v.name = "Caravan"
@@ -231,7 +253,11 @@ func recordPlaceEntriesTx(ctx context.Context, tx pgx.Tx, store *events.Store, w
 					displayName = name
 				}
 			}
-			body := map[string]any{"unit_id": v.id, "unit_name": displayName, "unit_type": v.typ, "kind": p.Kind, "place_id": fmt.Sprintf("%d,%d", p.Anchor[0], p.Anchor[1]), "q": entry.hex[0], "r": entry.hex[1]}
+			subjectID := v.id
+			if v.displayID != uuid.Nil {
+				subjectID = v.displayID
+			}
+			body := map[string]any{"unit_id": subjectID, "unit_name": displayName, "unit_type": v.typ, "kind": p.Kind, "place_id": fmt.Sprintf("%d,%d", p.Anchor[0], p.Anchor[1]), "q": entry.hex[0], "r": entry.hex[1]}
 			raw, _ := json.Marshal(body)
 			var id string
 			if err = tx.QueryRow(ctx, `INSERT INTO notifications(world_id,player_id,kind,level,body_json) VALUES($1,$2,'PlaceFirstReached',1,$3) RETURNING id`, worldID, v.owner, raw).Scan(&id); err != nil {

@@ -5,10 +5,13 @@ import { esc } from './format.js';
 
 export const PLACE_LABELS = { river: 'river', massif: 'mountain massif', desert: 'desert', forest: 'cedar forest' };
 
-export function placePanelHTML(tile) {
+export function placePanelHTML(tile, { showName = false } = {}) {
   const kind = tile.place_kind, id = tile.place_id;
-  if (!tile.can_name || !Object.hasOwn(PLACE_LABELS, kind) || !/^-?\d+,-?\d+$/.test(id || '') ||
+  if (!Object.hasOwn(PLACE_LABELS, kind) || !/^-?\d+,-?\d+$/.test(id || '') ||
       tile.terrain === 'fog' || tile.tier === 'fog' || tile.visible === false) return '';
+  if (!tile.can_name) {
+    return showName && tile.place_name ? `<div class="place-note" style="font-size:.73rem;border-top:1px solid var(--border);padding:.4rem 0"><strong>${esc(tile.place_name)}</strong> — ${PLACE_LABELS[kind]}</div>` : '';
+  }
   const key = kind + '-' + id;
   return `<div class="place-note" style="font-size:.73rem;border-top:1px solid var(--border);padding:.4rem 0">`
     + `<div style="margin-top:.3rem">Your unit was the first to reach this ${PLACE_LABELS[kind]}. Give it a name (once, 2–30 characters):</div>`
@@ -35,7 +38,10 @@ export async function namePlace(kind, placeID) {
     // the name and spent right together, while unseen hexes stay hidden.
     const map = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/map`);
     if (map.ok) { State.tileData = await map.json(); State.dirty = true; }
-    if (window.reopenSelectedHex) window.reopenSelectedHex();
+    // Opening a drawer clears selectedHex. An owned-city naming form therefore
+    // refreshes its current drawer rather than attempting to reopen a hex.
+    if (State.activeDrawer === 'city' && window.openDrawer) window.openDrawer('city');
+    else if (window.reopenSelectedHex) window.reopenSelectedHex();
   } catch (_) {
     if (err) { err.style.color = 'var(--accent)'; err.textContent = 'Could not reach the server. Check the place before trying again.'; }
   }

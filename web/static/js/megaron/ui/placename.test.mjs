@@ -78,3 +78,9 @@ test('first-reached WS notice refreshes naming rights mid-route without waiting 
   assert.equal(dispatch.kind,'PlaceFirstReached');
   assert.equal(dispatch.payload.unit_name,'Bronze Guard');
 });
+
+test('actor/city panels show a spent place name safely, terrain titles avoid repeating it',()=>{
+ const tile={terrain:'river',place_kind:'river',place_id:'6,79',place_name:'<Ariadne>',can_name:false};
+ assert.equal(placePanelHTML(tile),'');assert.match(placePanelHTML(tile,{showName:true}),/<strong>&lt;Ariadne&gt;<\/strong>/);assert.doesNotMatch(placePanelHTML(tile,{showName:true}),/namePlace\(/);
+ assert.equal(placePanelHTML({...tile,tier:'fog'},{showName:true}),'');
+});

@@ -34,8 +34,8 @@ globalThis.fetch=async(url)=>{
 const {State}=await import('../state.js');
 const {initMap}=await import('./map.js');initMap();
 const marker={id:'foreign-province',settlement_id:'foreign-settlement',name:'Kyme',owner:'Other Wanax',culture:'ionian',walls:0,q:0,r:0};
-async function click({terrain='plains',city=marker,host=false,river_name='',rural=null}={}){
- State.WORLD_ID='world';State.MY_SETTLEMENT_ID='own-settlement';State.tileData=[{q:0,r:0,terrain,river_name}];State.provinceData=city?[city]:[];State.unitsData=host?[{type:'nomadic_host',q:0,r:0}]:[];State.foreignUnitData=[];State.ruralData=rural?[rural]:[];State.founderPhase=host?fp:null;State.camera={x:0,y:0,zoom:1};
+async function click({terrain='plains',city=marker,host=false,river_name='',rural=null,place={}}={}){
+ State.WORLD_ID='world';State.MY_SETTLEMENT_ID='own-settlement';State.tileData=[{q:0,r:0,terrain,river_name,...place}];State.provinceData=city?[city]:[];State.unitsData=host?[{type:'nomadic_host',q:0,r:0}]:[];State.foreignUnitData=[];State.ruralData=rural?[rural]:[];State.founderPhase=host?fp:null;State.camera={x:0,y:0,zoom:1};
  const canvas=element('hex-canvas');canvas.events.pointerdown({pointerId:1,pointerType:'mouse',button:0,clientX:0,clientY:0});canvas.events.pointerup({pointerId:1,pointerType:'mouse',clientX:0,clientY:0});
  await new Promise(resolve=>setImmediate(resolve));
 }
@@ -74,3 +74,10 @@ test('river hex and rural panel name appears only in title, terrain row stays ge
  assert.equal(element('ip-name').textContent,'Unexplored land');
  assert.doesNotMatch(element('ip-terrain').textContent,/Secret/);
 });
+
+ test('first-reaching Host exposes generic naming form without hiding founding action',async()=>{
+  await click({city:null,host:true,terrain:'river_delta',place:{place_kind:'river',place_id:'0,0',can_name:true}});
+  assert.match(element('ip-body-extra').innerHTML,/Your unit was the first to reach this river/);
+  assert.match(element('ip-body-extra').innerHTML,/aria-label="Place name"/);
+  assert.match(element('ip-foot').innerHTML,/Found the metropolis here/);
+ });
