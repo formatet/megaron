@@ -202,7 +202,8 @@ const (
 	// per-sea-hex storm risk for every ship at sea. Runs first in the day
 	// (tickPrioritySea) so the hex a ship enters on its arrival tick is rolled
 	// before the arrival lands it.
-	ScheduledSeaStormScan ScheduledEventType = "SeaStormScan"
+	ScheduledSeaStormScan   ScheduledEventType = "SeaStormScan"
+	ScheduledPlaceReachScan ScheduledEventType = "PlaceReachScan"
 )
 
 // ScheduledEvent is a pending game event stored durably in PostgreSQL.

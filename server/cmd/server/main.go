@@ -188,6 +188,8 @@ func main() {
 	worker.Register(events.ScheduledUnitInterceptScan, unitInterceptH.Handle)
 	seaStormH := combat.NewSeaStormScanHandler(pool, scheduler, eventStore, hub)
 	worker.Register(events.ScheduledSeaStormScan, seaStormH.Handle)
+	placeReachH := combat.NewPlaceReachScanHandler(pool, scheduler, eventStore, hub)
+	worker.Register(events.ScheduledPlaceReachScan, placeReachH.Handle)
 	marchSightH := combat.NewMarchSightingHandler(pool, scheduler, hub, gameClock)
 	worker.Register(events.ScheduledMarchSightingScan, marchSightH.Handle)
 	marchEncounterH := combat.NewMarchEncounterHandler(pool, scheduler, eventStore, gameClock, hub)
@@ -597,6 +599,7 @@ func seedDailyTicks(ctx context.Context, pool *pgxpool.Pool, sched *events.Sched
 		events.ScheduledStandingOrderTick,
 		events.ScheduledPassageScan,
 		events.ScheduledSeaStormScan,
+		events.ScheduledPlaceReachScan,
 	}
 
 	for _, wid := range worldIDs {

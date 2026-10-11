@@ -2938,7 +2938,7 @@ export function render() {
     const z=State.camera.zoom*SCALE,variant=placeLabelVariant(globalThis.location?.search||''),style=PLACE_LABEL_VARIANTS[variant];
     ctx.save();
     const measureCity=(text,own)=>{ctx.font=own?'bold 7px monospace':'6px monospace';return ctx.measureText(text).width;};
-    const measure=(text)=>{ctx.font=style.font;return ctx.measureText(text).width;};
+    const measure=(text)=>{ctx.font=style.font;return style.spacing?[...text].reduce((n,ch)=>n+ctx.measureText(ch).width,0):ctx.measureText(text).width;};
     const labels=placeLabelLayout(State.tileData,State.provinceData,{
       hexPx,measure,measureCity,variant,zoom:State.camera.zoom,
       viewport:{left:-State.camera.x/z,top:-State.camera.y/z,right:(canvas.width-State.camera.x)/z,bottom:(canvas.height-State.camera.y)/z},
@@ -2946,7 +2946,7 @@ export function render() {
     ctx.font=style.font;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#E8D0A8';ctx.globalAlpha=.85;
     for(const label of labels){ctx.save();ctx.translate(label.x,label.y);ctx.rotate(label.angle);
       if(!style.spacing)ctx.fillText(label.name,0,0);
-      else {const chars=[...label.name],width=ctx.measureText(label.name).width+(chars.length-1)*style.spacing;let x=-width/2;ctx.textAlign='left';for(const ch of chars){ctx.fillText(ch,x,0);x+=ctx.measureText(ch).width+style.spacing;}}
+      else {const chars=[...label.name],width=chars.reduce((n,ch)=>n+ctx.measureText(ch).width,0)+(chars.length-1)*style.spacing;let x=-width/2;ctx.textAlign='left';for(const ch of chars){ctx.fillText(ch,x,0);x+=ctx.measureText(ch).width+style.spacing;}}
       ctx.restore();
     }
     ctx.restore();

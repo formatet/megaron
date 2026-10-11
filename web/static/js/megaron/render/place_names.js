@@ -3,7 +3,8 @@ import { namedRiverTerrain, riverLabelOverlap } from './river_names.js';
 export { riverLabelOverlap as placeLabelOverlap };
 export function namedPlaceTerrain(tile,fallback){
  if(tile.terrain==='fog'||tile.tier==='fog'||tile.visible===false)return fallback;
- if(tile.place_name)return tile.place_kind==='river'?namedRiverTerrain({...tile,river_name:tile.place_name},fallback):tile.place_name;
+ if(tile.place_name)return tile.place_name;
+ if(tile.place_kind==='river'&&!tile.river_name)return {river:'River',river_ford:'River Ford',river_delta:'River Delta'}[tile.terrain]||fallback;
  if(tile.place_kind==='massif')return 'Mountains';
  if(tile.place_kind==='desert')return 'Desert';
  if(tile.place_kind==='forest')return 'Cedar Forest';

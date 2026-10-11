@@ -3,7 +3,7 @@ import {namedPlaceTerrain,placeLabelLayout,placeLabelOverlap,placeLabelVariant} 
 const hexPx=(q,r)=>({x:q*33,y:(r+q/2)*38});
 const opts={hexPx,measure:s=>s.length*4,measureCity:s=>s.length*4,zoom:1,viewport:{left:-400,top:-400,right:400,bottom:400}};
 test('generic names and nameless terrain headers cannot leak through fog',()=>{
- for(const [kind,terrain,label] of [['massif','mountain_red','Mountains'],['desert','semi_desert','Desert'],['forest','forest_cedar','Cedar Forest']]){
+ for(const [kind,terrain,label] of [['river','river','River'],['massif','mountain_red','Mountains'],['desert','semi_desert','Desert'],['forest','forest_cedar','Cedar Forest']]){
   const t={place_kind:kind,terrain};assert.equal(namedPlaceTerrain(t,terrain),label);assert.equal(namedPlaceTerrain({...t,place_name:'Ariadne'},label),'Ariadne');assert.equal(namedPlaceTerrain({...t,tier:'fog',place_name:'Hidden'},'Unexplored'),'Unexplored');
  }
  assert.equal(placeLabelVariant('?ortnamn=b'),'b');assert.equal(placeLabelVariant('?ortnamn=a'),'a');

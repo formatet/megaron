@@ -70,6 +70,8 @@ const DefaultTickPriority = 50
 var tickPriorities = map[ScheduledEventType]int{
 	// 5 — havet.
 	ScheduledSeaStormScan: tickPrioritySea,
+	// Physical naming rights: after sea losses, before arrival clears saved routes.
+	ScheduledPlaceReachScan: 7,
 	// 10 — det som landar.
 	ScheduledUnitArrival:      tickPriorityArrival,
 	ScheduledTransportArrival: tickPriorityArrival,
