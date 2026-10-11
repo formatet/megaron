@@ -69,7 +69,8 @@ function stamp(g, rows, x, y) {
   }
 }
 
-/** Stadens bild som textrader. size 0 = liten (under 800 inv.), 1 = stor. */
+/** Stadens bild som textrader. size 0 = liten (under 800 inv.), 1 = stor.
+ *  coastal: false, 'left' eller 'right' — åt vilket håll kajen går ut mot havet. */
 export function cityIconGrid(size, wall, culture, seed, coastal = false, ruin = false) {
   const W = size ? 43 : 31, H = size ? 31 : 25;
   const g = Array.from({ length: H }, () => Array(W).fill('.'));
@@ -122,10 +123,12 @@ export function cityIconGrid(size, wall, culture, seed, coastal = false, ruin = 
     stamp(g, T, W - 5, base - 10);
     stamp(g, ['..K..', '.KAK.', 'KAKAK'], cx - 2, base - 7);   // lejonportens avlastningstriangel
   }
-  if (coastal) {   // kaj och brygga åt höger
+  if (coastal) {   // kaj och brygga åt havets sida
+    const left = coastal === 'left';
     g.push(Array(W).fill('.'), Array(W).fill('.'));
-    for (let x = cx; x < W; x++) { g[H][x] = x % 2 ? 'G' : 'S'; g[H + 1][x] = 'K'; }
-    stamp(g, ['W..', 'W..', 'KW.', 'KKK'], W - 3, H - 2);
+    for (let x = left ? 0 : cx; x <= (left ? cx : W - 1); x++) { g[H][x] = x % 2 ? 'G' : 'S'; g[H + 1][x] = 'K'; }
+    if (left) stamp(g, ['..W', '..W', '.WK', 'KKK'], 0, H - 2);
+    else stamp(g, ['W..', 'W..', 'KW.', 'KKK'], W - 3, H - 2);
   }
   if (ruin) {
     for (let y = 0; y < g.length; y++) {
@@ -144,7 +147,7 @@ export function cityIconGrid(size, wall, culture, seed, coastal = false, ruin = 
 const cache = new Map();
 /** {w, h, runs} för en stad. Cachas — samma stad ritas varje frame. */
 export function cityIcon(size, wall, culture, seed, coastal, ruin) {
-  const key = `${size}|${wall}|${culture}|${seed}|${coastal ? 1 : 0}|${ruin ? 1 : 0}`;
+  const key = `${size}|${wall}|${culture}|${seed}|${coastal || 0}|${ruin ? 1 : 0}`;
   let ic = cache.get(key);
   if (ic) return ic;
   const rows = cityIconGrid(size, wall, culture, seed, coastal, ruin);

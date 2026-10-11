@@ -3568,7 +3568,10 @@ export const CITYICONS = !(typeof location !== 'undefined' && /[?&]stader=gamla/
 const provinceSeed = p => (p.settlement_id || p.id || (p.q * 131 + p.r * 7)) | 0;
 function provinceIcon(p) {
   const ruin = p.state === 'razed' || p.state === 'collapsed';
-  const coastal = neighborDirs(p.q, p.r, isSeaTerrain).length > 0;
+  // Kajen går ut åt den sida där havsgrannarna ligger (summan av deras
+  // kantnormalers x). Hav rakt norr eller söder: höger, som förut.
+  const sea = neighborDirs(p.q, p.r, isSeaTerrain);
+  const coastal = sea.length ? (sea.reduce((a, i) => a + DIR_NX[i], 0) < -1e-9 ? 'left' : 'right') : false;
   return cityIcon(p.size_tier ? 1 : 0, Math.min(3, p.walls || 0), p.culture || 'akhaier',
                   provinceSeed(p) % 997, coastal, ruin);
 }
