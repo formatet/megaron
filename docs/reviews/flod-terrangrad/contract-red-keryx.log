@@ -1,0 +1,8 @@
+--- FAIL: TestKeryxRiverNameOnceOnBuildingCatchmentRow (0.00s)
+    river_names_test.go:64: river name repeated in catchment row: Citizens: 0/0 placed, 0 idle
+
+        Catchment:
+          #1   Ford of Eurotas (no producible good)  [farm L1 @ (2,3) Ford of Eurotas]
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

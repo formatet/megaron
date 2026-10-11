@@ -58,3 +58,13 @@ func TestKeryxRiverNamesCatchment(t *testing.T) {
 		t.Fatal("named nonriver")
 	}
 }
+
+func TestKeryxRiverNameOnceOnBuildingCatchmentRow(t *testing.T) {
+	out := runCityCmd(t, `{"hexes":[{"hex_q":2,"hex_r":3,"hex_ordinal":1,"terrain":"river_ford","river_name":"Eurotas","building":{"type":"farm","level":1},"goods":[]}]}`, `{}`)
+	if strings.Count(out, "Eurotas") != 1 {
+		t.Fatalf("river name repeated in catchment row: %s", out)
+	}
+	if !strings.Contains(out, "Ford of Eurotas") || !strings.Contains(out, "farm L1 @ (2,3)") {
+		t.Fatalf("missing river/building identity: %s", out)
+	}
+}
