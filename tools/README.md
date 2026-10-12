@@ -489,3 +489,16 @@ and restores the original doctrine in finally. It does not write SQL or change a
 `python3 tools/retreat_client_mutation.py` physically restores percentage bodies, requires named red,
 and byte-restores the source before checking green. Run mutations before full tests.
 Proof: `docs/reviews/retreat-tva-lagen/README.md`.
+
+## One Offer per prayer (offer-en-knapp)
+
+`python3 tools/offer_fixture.py` registers/joins its own test player in the active acceptance world and
+seeds that player's temple/city/stock/kharis. It never changes another player's rows; setup is explicit SQL,
+not natural temple founding. `PLACE_PROOF_OUTPUT="$PWD/docs/reviews/offer-en-knapp/rig" python3 tools/place_names_rig.py`
+builds/verifies current production in the isolated runtime. `python3 tools/offer_proof.py baseline` serves real
+53d33910 UI modules against that backend and captures Firefox1280+390. `check` requires no composer or
+numeric offering fields in native DOM; `after` also clicks a real Offer, requires HTTP200/recipe-only request,
+and records inline + actual API before/after. It has no SQL writes during the action and no payload/FOW overrides.
+`python3 tools/offer_dom_mutation.py` physically restores a composer, requires named native-DOM red, then
+byte-restores and checks green. A fresh fixture is needed to repeat an action after cooldown; checks are read-only.
+Proof: `docs/reviews/offer-en-knapp/README.md`.

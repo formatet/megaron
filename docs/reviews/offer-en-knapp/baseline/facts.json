@@ -1,0 +1,46 @@
+{
+  "health": {
+    "commit": "33253f3",
+    "migration": 173,
+    "status": "ok"
+  },
+  "fixture": {
+    "world": "3b5fb9cd-8c06-4685-88df-b162c9acff99",
+    "province": "3aa1d43d-2705-40cf-9b55-f59cbeac6978",
+    "settlement": "a3330f17-3af5-43e1-91fa-629f2841ae25",
+    "viewer": "8eb20f30-6382-4308-b6b6-ea85f4552277",
+    "username": "OfferNestor69d37",
+    "name": "Mycenae",
+    "prayer_ids": [
+      "minoan_oracle_deposits",
+      "minoan_harvest_blessing",
+      "minoan_battle_frenzy"
+    ],
+    "fixture": "own freshly registered/joined test player; explicit SQL temple/city/stock/kharis setup in active isolated world, actual API/FOW; not natural temple founding/production; Offer action uses native web/API with no SQL writes"
+  },
+  "ui_source": "53d33910 modules via interception",
+  "captures": [
+    {
+      "mode": "desktop",
+      "composer_count": 3,
+      "numeric_count": 9,
+      "errors": [],
+      "prayer_ids": [
+        "okRite('minoan_oracle_deposits')",
+        "okRite('minoan_harvest_blessing')",
+        "okRite('minoan_battle_frenzy')"
+      ]
+    },
+    {
+      "mode": "mobile",
+      "composer_count": 3,
+      "numeric_count": 9,
+      "errors": [],
+      "prayer_ids": [
+        "okRite('minoan_oracle_deposits')",
+        "okRite('minoan_harvest_blessing')",
+        "okRite('minoan_battle_frenzy')"
+      ]
+    }
+  ]
+}

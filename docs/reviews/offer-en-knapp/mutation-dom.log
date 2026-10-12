@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-offer-en-knapp/tools/offer_proof.py", line 31, in <module>
+    assert composer==0 and numbers==0,'composed offering leaked into DOM'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: composed offering leaked into DOM
