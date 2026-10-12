@@ -8,3 +8,5 @@ Every soldier draws pay every day. A Wanax who runs dry watches his cohorts walk
 - **Out of someone else's ground, through [[trade]].** Most Wanaxes will not have a deposit. That is the point: silver is why the map has merchants on it.
 
 Silver is kept with your other goods — the **Economy → Goods** tab shows your balance ([[goods]]).
+
+Your first founding fills the treasury to at least **730 silver inland**, or **1,278 on the coast**, including what your Host still carries. This covers a year of the starting forces' pay. A Host rising after losing every city carries only its remaining refugee purse; founding again adds no new endowment. A colony carries existing silver from its mother city, rather than receiving new currency.

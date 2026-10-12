@@ -121,6 +121,14 @@ func TestFoundColony_DoesNotMintSilver(t *testing.T) {
 	).Scan(&colonySilver); err != nil {
 		t.Fatalf("read colony silver: %v", err)
 	}
+	var colonyCap float64
+	if err := pool.QueryRow(ctx, `SELECT sg.cap FROM settlement_goods sg JOIN settlements s ON s.id=sg.settlement_id
+	 WHERE s.world_id=$1 AND s.id<>$2 AND sg.good_key='silver'`, worldID, motherID).Scan(&colonyCap); err != nil {
+		t.Fatal(err)
+	}
+	if colonyCap != 1400 {
+		t.Fatalf("colony cap=%g want 2*purse=1400", colonyCap)
+	}
 	if math.Abs(colonySilver-700) > 1e-6 {
 		t.Errorf("colony silver = %v, want 700 (exactly the purse it carried)", colonySilver)
 	}

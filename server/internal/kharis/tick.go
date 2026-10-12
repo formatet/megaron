@@ -577,13 +577,15 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 
 		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisOffering",
 			map[string]any{
-				"temples_fed":       offerFed,
-				"temples_total":     offerTotal,
-				"offer_fraction":    offerFraction,
-				"devotion_sum":      w.devotionSum,
-				"scarcity_factor":   scarcity,
-				"gain_before_offer": devotionGain,
-				"kharis_gain":       gain,
+				"temples_fed":         offerFed,
+				"temples_total":       offerTotal,
+				"offer_fraction":      offerFraction,
+				"devotion_sum":        w.devotionSum,
+				"scarcity_factor":     scarcity,
+				"valuation_version":   religion.LaborValuationVersion,
+				"offering_value_unit": religion.LaborValueUnit,
+				"gain_before_offer":   devotionGain,
+				"kharis_gain":         gain,
 			},
 			worldID, nil)
 	}
@@ -1871,17 +1873,8 @@ func (h *TickHandler) templeOfferScarcity(ctx context.Context, worldID uuid.UUID
 	if err != nil || len(values) == 0 {
 		return 1.0 // never let a missing price list change the day's outcome
 	}
-	offering := map[string]float64{"oil": OfferOilPerTemple, "wine": OfferWinePerTemple}
-
-	var divine, base float64
-	for good, amount := range offering {
-		divine += amount * values[good]
-		base += amount * baseValues[good]
-	}
-	if base <= 0 || divine <= 0 {
-		return 1.0
-	}
-	return clampTempleScarcity(divine / base)
+	baseValues, err := religion.LoadLaborValues(ctx, h.pool)
+	return scarcityFromValues(values, baseValues, err)
 }
 
 // clampTempleScarcity bounds what a shortage can be worth to a temple. Pure, so
@@ -1896,11 +1889,6 @@ func clampTempleScarcity(factor float64) float64 {
 	}
 	return factor
 }
-
-// baseValues mirrors the goods catalogue for the two goods the altars burn.
-// Read from the catalogue would mean a query per Wanax per day for two constants
-// that have not moved since migration 008.
-var baseValues = map[string]float64{"oil": 4, "wine": 5}
 
 // templeScarcityCeil bounds what a shortage can be worth to a temple.
 const templeScarcityCeil = 2.0

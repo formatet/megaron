@@ -91,12 +91,13 @@ const (
 // hostSpec is what a host sets out with. A newcomer gets newcomerHost; a Wanax
 // rising again after losing every city gets a smaller one (Rise, rise.go).
 type hostSpec struct {
-	population  int // civilians, founder_phase.population
-	spearmen    int // escort cohorts of nomadicHostSpearmenSize men
-	rationTicks int // ticks of the escort's sold the store carries
+	population  int  // civilians, founder_phase.population
+	spearmen    int  // escort cohorts of nomadicHostSpearmenSize men
+	rationTicks int  // ticks of the escort's sold the store carries
+	refugee     bool // returning hosts never receive a founding top-up
 }
 
-var newcomerHost = hostSpec{nomadicHostPopulation, nomadicHostSpearmen, nomadicHostRationTicks}
+var newcomerHost = hostSpec{population: nomadicHostPopulation, spearmen: nomadicHostSpearmen, rationTicks: nomadicHostRationTicks}
 
 func seedNomadicHost(
 	ctx context.Context,
@@ -193,8 +194,8 @@ func seedHost(
 	if _, err := tx.Exec(ctx,
 		`INSERT INTO founder_phase
 		   (world_id, owner_id, host_unit_id, population,
-		    grain_amount, grain_rate, silver_amount, silver_rate, calc_tick, active)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, current_world_tick(), true)
+		    grain_amount, grain_rate, silver_amount, silver_rate, calc_tick, active, is_refugee)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, current_world_tick(), true, $9)
 		 ON CONFLICT (world_id, owner_id) DO UPDATE SET
 		   host_unit_id  = EXCLUDED.host_unit_id,
 		   population    = EXCLUDED.population,
@@ -204,9 +205,10 @@ func seedHost(
 		   silver_rate   = EXCLUDED.silver_rate,
 		   calc_tick     = EXCLUDED.calc_tick,
 		   founded_tick  = NULL,
-		   active        = true`,
+		   active        = true,
+		   is_refugee    = EXCLUDED.is_refugee`,
 		worldID, playerID, hostID, spec.population,
-		grainAmount, grainRate, silverAmount, silverRate,
+		grainAmount, grainRate, silverAmount, silverRate, spec.refugee,
 	); err != nil {
 		return uuid.Nil, fmt.Errorf("insert founder phase: %w", err)
 	}

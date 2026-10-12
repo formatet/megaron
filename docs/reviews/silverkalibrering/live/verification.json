@@ -1,0 +1,370 @@
+{
+  "health": {
+    "commit": "cef1e46",
+    "migration": 177,
+    "status": "ok"
+  },
+  "source_parent_commit": "cef1e46",
+  "source_working_diff_sha256_at_build": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "traditional_recipes": {
+    "minoan_potnia_vision_v2": {
+      "grain": 10,
+      "silver": 3
+    },
+    "minoan_potnia_walls": {
+      "grain": 8,
+      "timber": 4
+    },
+    "minoan_velchanos_green_shoots": {
+      "grain": 15,
+      "silver": 2
+    },
+    "minoan_asterion_thread": {
+      "timber": 4,
+      "silver": 3
+    },
+    "minoan_stillness_passage": {
+      "fish": 6,
+      "silver": 3
+    }
+  },
+  "initial_bank": {
+    "key": "silver",
+    "name": "Silver",
+    "tier": "precious",
+    "category": "precious",
+    "amount": 730,
+    "rate_per_tick": 0,
+    "cap": 1460,
+    "labor_value": 1,
+    "citizens": 0,
+    "percent": 0,
+    "marginal_yield": 0,
+    "producible": false,
+    "labor_pool": 1000,
+    "idle_citizens": 700,
+    "labor_capacity_percent": 0,
+    "employed_citizens": 0,
+    "unserved_citizens": 0,
+    "workplace_level": 0,
+    "workplace_slots": 0,
+    "hex_slots": 0
+  },
+  "initial_founding": {
+    "coastal": false,
+    "grain_carried": 1200,
+    "grain_total": 1208,
+    "poseidon_gift": null,
+    "province_id": "397b992f-ebed-45dd-ba97-e7bd0f85223b",
+    "settlement_id": "8f9a2102-2c44-4dec-875b-072d91f5c921",
+    "silver_carried": 480,
+    "silver_total": 730,
+    "tile": {
+      "WorldID": "00000000-0000-0000-0000-000000000000",
+      "Q": 1,
+      "R": 59,
+      "Terrain": "",
+      "Coastal": false,
+      "Fertility": 0,
+      "Mineral": 0,
+      "CopperDeposit": false,
+      "TinDeposit": false,
+      "SilverDeposit": false,
+      "CedarDeposit": false
+    }
+  },
+  "world": "6ad2415c-bc36-42aa-8f1c-6e606357d840",
+  "username": "Alpha-B-1fad92a3",
+  "normal_register_join_founding": true,
+  "fixture": "Own city temple level3, grain/timber/fish/silver1000, realm kharis90/rate0 before actions; not natural temple build",
+  "sql_writes_during_actions": false,
+  "payload_overrides": false,
+  "captures": [
+    {
+      "mode": "desktop",
+      "errors": [],
+      "text": "DIVINE FAVOUR\nMood\nFavorable\nPassive\n+0.0 kharis per day\nNet\n-1.8 kharis per day\n\nTemple capacity is standing idle \u2014 raise cult labor to put it to work.\n\nCULT LEVEL\nLevel\nNot yet assessed\nTEMPLE OFFERINGS\nPhaistos\nneeds 2 oil + 1 wine per day \u2014 has oil 0, wine 0 \u2717\nPRAYERS\nPotnia's Vision (Potnia, \u22655 kharis)\nMarks an unseen ore deposit and the unknown ground within two hexes as memory; no live activity.\ntraditional offering: 10 grain + 3 silver\nOFFER\nMistress of the Walls (Potnia, \u22655 kharis)\nYour own garrison defending this city fights a quarter stronger for 6 days.\ntraditional offering: 8 grain + 4 timber\nOFFER\nGreen Shoots (Velchanos, \u226530 kharis)\nGrain, livestock, oil and wine yield a quarter more for 25 days; fish is unchanged.\ntraditional offering: 15 grain + 2 silver\nOFFER\nThe Thread Shows a Path (Asterion, \u22655 kharis)\nYour next land caravan or Runner from this city travels faster; the caravan is harder to intercept.\ntraditional offering: 3 silver + 4 timber\nawaiting next departure; god waits 12 days\nFavourable Passage (The Sea Daimons of Stillness, \u22655 kharis)\nThe next ship leaving this port sails faster and takes no storm damage on its outward leg.\ntraditional offering: 6 fish + 3 silver\nawaiting next departure; god waits 12 days\nThe Sea Daimons of Stillness shelter the next ship departing this port \u2014 faster sailing and no storm damage on its outward leg."
+    },
+    {
+      "mode": "mobile",
+      "errors": [],
+      "text": "DIVINE FAVOUR\nMood\nFavorable\nPassive\n+0.0 kharis per day\nNet\n-1.8 kharis per day\n\nTemple capacity is standing idle \u2014 raise cult labor to put it to work.\n\nCULT LEVEL\nLevel\nNot yet assessed\nTEMPLE OFFERINGS\nPhaistos\nneeds 2 oil + 1 wine per day \u2014 has oil 0, wine 0 \u2717\nPRAYERS\nPotnia's Vision (Potnia, \u22655 kharis)\nMarks an unseen ore deposit and the unknown ground within two hexes as memory; no live activity.\ntraditional offering: 10 grain + 3 silver\nOFFER\nMistress of the Walls (Potnia, \u22655 kharis)\nYour own garrison defending this city fights a quarter stronger for 6 days.\ntraditional offering: 8 grain + 4 timber\nOFFER\nGreen Shoots (Velchanos, \u226530 kharis)\nGrain, livestock, oil and wine yield a quarter more for 25 days; fish is unchanged.\ntraditional offering: 15 grain + 2 silver\nOFFER\nThe Thread Shows a Path (Asterion, \u22655 kharis)\nYour next land caravan or Runner from this city travels faster; the caravan is harder to intercept.\ntraditional offering: 3 silver + 4 timber\nawaiting next departure; god waits 12 days\nFavourable Passage (The Sea Daimons of Stillness, \u22655 kharis)\nThe next ship leaving this port sails faster and takes no storm damage on its outward leg.\ntraditional offering: 6 fish + 3 silver\nawaiting next departure; god waits 12 days"
+    }
+  ],
+  "actions": [
+    {
+      "prayer_id": "minoan_asterion_thread",
+      "attempts": [
+        {
+          "effect": {
+            "departure_pending": true,
+            "time_factor": 0.75
+          },
+          "effect_type": "next_land_departure",
+          "kharis_spent": 4,
+          "message": "Asterion's thread waits for your next land caravan or Runner from this city.",
+          "mood": "Favorable",
+          "offer_multiplier": 1,
+          "offering_expected": 11.899999999999999,
+          "offering_value_unit": "worker_ticks",
+          "offering_verdict": "worthy \u2014 meets what this god expects",
+          "offering_work": 11.899999999999999,
+          "offering_worth": 11.899999999999999,
+          "prayer": "minoan_asterion_thread",
+          "success": true,
+          "valuation_version": 2
+        }
+      ],
+      "after": [
+        {
+          "id": "minoan_potnia_vision_v2",
+          "name": "Potnia's Vision",
+          "god": "Potnia",
+          "effect_type": "oracle_memory_v2",
+          "effect": "Marks an unseen ore deposit and the unknown ground within two hexes as memory; no live activity.",
+          "min_kharis": 5,
+          "offering": {
+            "grain": 10,
+            "silver": 3
+          },
+          "affordable": true,
+          "is_default": false,
+          "favours": {
+            "bronze": 1.3,
+            "fish": 2.2,
+            "grain": 0.6,
+            "oil": 1.5,
+            "pottery": 1.1,
+            "purple": 2,
+            "silver": 1.4,
+            "stone": 0.4
+          },
+          "offering_baseline": 17.339999999999996
+        },
+        {
+          "id": "minoan_potnia_walls",
+          "name": "Mistress of the Walls",
+          "god": "Potnia",
+          "effect_type": "garrison_defense",
+          "effect": "Your own garrison defending this city fights a quarter stronger for 6 days.",
+          "min_kharis": 5,
+          "offering": {
+            "grain": 8,
+            "timber": 4
+          },
+          "affordable": true,
+          "is_default": true,
+          "favours": {
+            "bronze": 1.5,
+            "fish": 0.4,
+            "grain": 1,
+            "horses": 1.6,
+            "livestock": 2,
+            "pottery": 0.5,
+            "stone": 0.4,
+            "wine": 1.7
+          },
+          "offering_baseline": 20.4
+        },
+        {
+          "id": "minoan_velchanos_green_shoots",
+          "name": "Green Shoots",
+          "god": "Velchanos",
+          "effect_type": "harvest_blessing",
+          "effect": "Grain, livestock, oil and wine yield a quarter more for 25 days; fish is unchanged.",
+          "min_kharis": 30,
+          "offering": {
+            "grain": 15,
+            "silver": 2
+          },
+          "affordable": true,
+          "is_default": false,
+          "favours": {
+            "copper": 0.5,
+            "fish": 0.9,
+            "grain": 1.3,
+            "livestock": 1.3,
+            "oil": 1.6,
+            "stone": 0.3,
+            "timber": 0.4,
+            "tin": 0.5,
+            "wine": 2
+          },
+          "offering_baseline": 36.55
+        },
+        {
+          "id": "minoan_asterion_thread",
+          "name": "The Thread Shows a Path",
+          "god": "Asterion",
+          "effect_type": "next_land_departure",
+          "effect": "Your next land caravan or Runner from this city travels faster; the caravan is harder to intercept.",
+          "min_kharis": 5,
+          "offering": {
+            "silver": 3,
+            "timber": 4
+          },
+          "affordable": false,
+          "is_default": false,
+          "departure_pending": true,
+          "cooldown_remaining_game_days": 12,
+          "offering_baseline": 11.899999999999999
+        },
+        {
+          "id": "minoan_stillness_passage",
+          "name": "Favourable Passage",
+          "god": "The Sea Daimons of Stillness",
+          "effect_type": "next_ship_departure",
+          "effect": "The next ship leaving this port sails faster and takes no storm damage on its outward leg.",
+          "min_kharis": 5,
+          "offering": {
+            "fish": 6,
+            "silver": 3
+          },
+          "affordable": true,
+          "is_default": false,
+          "offering_baseline": 15.299999999999999
+        }
+      ],
+      "inline": "Asterion's thread waits for your next land caravan or Runner from this city.",
+      "sql_writes_during_action": false
+    },
+    {
+      "prayer_id": "minoan_stillness_passage",
+      "attempts": [
+        {
+          "effect": {
+            "departure_pending": true,
+            "time_factor": 0.75
+          },
+          "effect_type": "next_ship_departure",
+          "kharis_spent": 4,
+          "message": "The Sea Daimons of Stillness shelter the next ship departing this port \u2014 faster sailing and no storm damage on its outward leg.",
+          "mood": "Favorable",
+          "offer_multiplier": 1,
+          "offering_expected": 15.299999999999999,
+          "offering_value_unit": "worker_ticks",
+          "offering_verdict": "worthy \u2014 meets what this god expects",
+          "offering_work": 15.299999999999999,
+          "offering_worth": 15.299999999999999,
+          "prayer": "minoan_stillness_passage",
+          "success": true,
+          "valuation_version": 2
+        }
+      ],
+      "after": [
+        {
+          "id": "minoan_potnia_vision_v2",
+          "name": "Potnia's Vision",
+          "god": "Potnia",
+          "effect_type": "oracle_memory_v2",
+          "effect": "Marks an unseen ore deposit and the unknown ground within two hexes as memory; no live activity.",
+          "min_kharis": 5,
+          "offering": {
+            "grain": 10,
+            "silver": 3
+          },
+          "affordable": true,
+          "is_default": false,
+          "favours": {
+            "bronze": 1.3,
+            "fish": 2.2,
+            "grain": 0.6,
+            "oil": 1.5,
+            "pottery": 1.1,
+            "purple": 2,
+            "silver": 1.4,
+            "stone": 0.4
+          },
+          "offering_baseline": 17.339999999999996
+        },
+        {
+          "id": "minoan_potnia_walls",
+          "name": "Mistress of the Walls",
+          "god": "Potnia",
+          "effect_type": "garrison_defense",
+          "effect": "Your own garrison defending this city fights a quarter stronger for 6 days.",
+          "min_kharis": 5,
+          "offering": {
+            "grain": 8,
+            "timber": 4
+          },
+          "affordable": true,
+          "is_default": true,
+          "favours": {
+            "bronze": 1.5,
+            "fish": 0.4,
+            "grain": 1,
+            "horses": 1.6,
+            "livestock": 2,
+            "pottery": 0.5,
+            "stone": 0.4,
+            "wine": 1.7
+          },
+          "offering_baseline": 20.4
+        },
+        {
+          "id": "minoan_velchanos_green_shoots",
+          "name": "Green Shoots",
+          "god": "Velchanos",
+          "effect_type": "harvest_blessing",
+          "effect": "Grain, livestock, oil and wine yield a quarter more for 25 days; fish is unchanged.",
+          "min_kharis": 30,
+          "offering": {
+            "grain": 15,
+            "silver": 2
+          },
+          "affordable": true,
+          "is_default": false,
+          "favours": {
+            "copper": 0.5,
+            "fish": 0.9,
+            "grain": 1.3,
+            "livestock": 1.3,
+            "oil": 1.6,
+            "stone": 0.3,
+            "timber": 0.4,
+            "tin": 0.5,
+            "wine": 2
+          },
+          "offering_baseline": 36.55
+        },
+        {
+          "id": "minoan_asterion_thread",
+          "name": "The Thread Shows a Path",
+          "god": "Asterion",
+          "effect_type": "next_land_departure",
+          "effect": "Your next land caravan or Runner from this city travels faster; the caravan is harder to intercept.",
+          "min_kharis": 5,
+          "offering": {
+            "silver": 3,
+            "timber": 4
+          },
+          "affordable": false,
+          "is_default": false,
+          "departure_pending": true,
+          "cooldown_remaining_game_days": 12,
+          "offering_baseline": 11.899999999999999
+        },
+        {
+          "id": "minoan_stillness_passage",
+          "name": "Favourable Passage",
+          "god": "The Sea Daimons of Stillness",
+          "effect_type": "next_ship_departure",
+          "effect": "The next ship leaving this port sails faster and takes no storm damage on its outward leg.",
+          "min_kharis": 5,
+          "offering": {
+            "fish": 6,
+            "silver": 3
+          },
+          "affordable": false,
+          "is_default": false,
+          "departure_pending": true,
+          "cooldown_remaining_game_days": 12,
+          "offering_baseline": 15.299999999999999
+        }
+      ],
+      "inline": "The Sea Daimons of Stillness shelter the next ship departing this port \u2014 faster sailing and no storm damage on its outward leg.",
+      "sql_writes_during_action": false
+    }
+  ]
+}

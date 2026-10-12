@@ -1,0 +1,132 @@
+{"time":"2026-10-12T23:29:01.537158281+02:00","level":"INFO","msg":"migrations applied"}
+{"time":"2026-10-12T23:29:02.493150204+02:00","level":"INFO","msg":"world created","name":"Religion alpha B proof","id":"196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b","seed":1791840541539446530}
+{"time":"2026-10-12T23:29:02.499949615+02:00","level":"INFO","msg":"world ready","id":"196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b"}
+{"time":"2026-10-12T23:29:02.500195057+02:00","level":"INFO","msg":"chronicle opened","world":"Religion alpha B proof","dir":"/tmp/megaron-religion-b-live-bevg8kvx/chronicles"}
+{"time":"2026-10-12T23:29:02.501746673+02:00","level":"INFO","msg":"scheduled event worker started","poll":10000000000}
+{"time":"2026-10-12T23:29:02.501755981+02:00","level":"INFO","msg":"build","commit":"cef1e46"}
+{"time":"2026-10-12T23:29:02.501749487+02:00","level":"INFO","msg":"tick worker started","tick_seconds":3600}
+{"time":"2026-10-12T23:29:02.502169081+02:00","level":"INFO","msg":"keryx server starting","addr":":38241"}
+{"time":"2026-10-12T23:29:02.508522031+02:00","level":"INFO","msg":"daily ticks seeded","worlds":1}
+2026/10/12 23:29:02 [tki9/rnbZ69Xp1n-000001] "GET http://127.0.0.1:38241/healthz HTTP/1.1" from 127.0.0.1:36212 - 200 51B in 479.53µs
+2026/10/12 23:29:02 [tki9/rnbZ69Xp1n-000002] "GET http://127.0.0.1:38241/api/v1/worlds HTTP/1.1" from 127.0.0.1:36228 - 200 174B in 332.623µs
+{"time":"2026-10-12T23:29:02.638888555+02:00","level":"INFO","msg":"player registered","id":"240770fb-a81f-4157-932e-3f395094b288","username":"Alpha-B-524e119a"}
+2026/10/12 23:29:02 [tki9/rnbZ69Xp1n-000003] "POST http://127.0.0.1:38241/api/v1/auth/register HTTP/1.1" from 127.0.0.1:36230 - 201 391B in 47.292011ms
+{"time":"2026-10-12T23:29:02.654875243+02:00","level":"INFO","msg":"world started","world":"196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b","wanaxes":1}
+2026/10/12 23:29:02 [tki9/rnbZ69Xp1n-000004] "POST http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/join HTTP/1.1" from 127.0.0.1:36238 - 201 303B in 14.958714ms
+2026/10/12 23:29:02 [tki9/rnbZ69Xp1n-000005] "POST http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/founding/settle HTTP/1.1" from 127.0.0.1:36242 - 201 437B in 70.437039ms
+2026/10/12 23:29:02 [tki9/rnbZ69Xp1n-000006] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/provinces HTTP/1.1" from 127.0.0.1:36258 - 200 288B in 4.973894ms
+2026/10/12 23:29:02 [tki9/rnbZ69Xp1n-000007] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/provinces/76276032-ca46-4140-b7d4-0b922ab26788 HTTP/1.1" from 127.0.0.1:36266 - 200 6387B in 25.041575ms
+2026/10/12 23:29:02 [tki9/rnbZ69Xp1n-000008] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/provinces/76276032-ca46-4140-b7d4-0b922ab26788/goods HTTP/1.1" from 127.0.0.1:36270 - 200 5836B in 37.201801ms
+2026/10/12 23:29:02 [tki9/rnbZ69Xp1n-000009] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/provinces/76276032-ca46-4140-b7d4-0b922ab26788 HTTP/1.1" from 127.0.0.1:36276 - 200 6456B in 23.191023ms
+2026/10/12 23:29:02 [tki9/rnbZ69Xp1n-000010] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/provinces/76276032-ca46-4140-b7d4-0b922ab26788/goods HTTP/1.1" from 127.0.0.1:36286 - 200 614B in 33.191818ms
+2026/10/12 23:29:02 [tki9/rnbZ69Xp1n-000011] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/provinces/76276032-ca46-4140-b7d4-0b922ab26788 HTTP/1.1" from 127.0.0.1:36294 - 200 2097B in 23.115598ms
+2026/10/12 23:29:03 [tki9/rnbZ69Xp1n-000012] "GET http://127.0.0.1:38241/world/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/map HTTP/1.1" from 127.0.0.1:36304 - 200 6827B in 2.798877ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000013] "GET http://127.0.0.1:38241/static/megaron.css HTTP/1.1" from 127.0.0.1:36304 - 200 19588B in 895.385µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000014] "GET http://127.0.0.1:38241/static/js/megaron/main.js HTTP/1.1" from 127.0.0.1:36304 - 200 5465B in 484.976µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000015] "GET http://127.0.0.1:38241/static/js/megaron/config.js HTTP/1.1" from 127.0.0.1:36304 - 200 2094B in 158.897µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000017] "GET http://127.0.0.1:38241/static/js/megaron/clock.js HTTP/1.1" from 127.0.0.1:36316 - 200 948B in 95.581µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000016] "GET http://127.0.0.1:38241/static/js/megaron/state.js HTTP/1.1" from 127.0.0.1:36304 - 200 2765B in 301.697µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000018] "GET http://127.0.0.1:38241/static/js/megaron/world_time.js HTTP/1.1" from 127.0.0.1:36304 - 200 560B in 73.674µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000019] "GET http://127.0.0.1:38241/static/js/megaron/telemetry.js HTTP/1.1" from 127.0.0.1:36304 - 200 350B in 52.394µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000020] "GET http://127.0.0.1:38241/static/js/megaron/ws.js HTTP/1.1" from 127.0.0.1:36304 - 200 4950B in 243.774µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000023] "GET http://127.0.0.1:38241/static/js/megaron/ui/stormname.js HTTP/1.1" from 127.0.0.1:36318 - 200 1103B in 167.384µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000022] "GET http://127.0.0.1:38241/static/js/megaron/render/city.js HTTP/1.1" from 127.0.0.1:36316 - 200 7012B in 723.008µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000024] "GET http://127.0.0.1:38241/static/js/megaron/ui/placename.js HTTP/1.1" from 127.0.0.1:36332 - 200 1374B in 152.039µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000025] "GET http://127.0.0.1:38241/static/js/megaron/ui/misc.js HTTP/1.1" from 127.0.0.1:36336 - 200 10735B in 593.634µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000027] "GET http://127.0.0.1:38241/static/js/megaron/ui/search.js HTTP/1.1" from 127.0.0.1:36332 - 200 2485B in 236.723µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000026] "GET http://127.0.0.1:38241/static/js/megaron/ui/chips.js HTTP/1.1" from 127.0.0.1:36316 - 200 3775B in 288.9µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000021] "GET http://127.0.0.1:38241/static/js/megaron/render/map.js HTTP/1.1" from 127.0.0.1:36304 - 200 71706B in 2.95866ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000028] "GET http://127.0.0.1:38241/static/js/megaron/ui/marchctx.js HTTP/1.1" from 127.0.0.1:36336 - 200 12071B in 1.831672ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000029] "GET http://127.0.0.1:38241/static/js/megaron/ui/drawers/war.js HTTP/1.1" from 127.0.0.1:36318 - 200 16294B in 1.808074ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000032] "GET http://127.0.0.1:38241/static/js/megaron/ui/drawers/kult.js HTTP/1.1" from 127.0.0.1:36348 - 200 3331B in 1.323884ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000030] "GET http://127.0.0.1:38241/static/js/megaron/ui/drawers/city.js HTTP/1.1" from 127.0.0.1:36332 - 200 14304B in 2.099383ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000033] "GET http://127.0.0.1:38241/static/js/megaron/ui/drawers/diplomacy.js HTTP/1.1" from 127.0.0.1:36304 - 200 10175B in 1.088848ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000031] "GET http://127.0.0.1:38241/static/js/megaron/ui/drawers/economy.js HTTP/1.1" from 127.0.0.1:36316 - 200 10497B in 2.018824ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000035] "GET http://127.0.0.1:38241/static/js/megaron/ui/drawers/report.js HTTP/1.1" from 127.0.0.1:36318 - 200 1919B in 195.353µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000034] "GET http://127.0.0.1:38241/static/js/megaron/ui/drawers/notif.js HTTP/1.1" from 127.0.0.1:36336 - 200 3647B in 403.406µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000036] "GET http://127.0.0.1:38241/static/js/megaron/ui/diagnostics.js HTTP/1.1" from 127.0.0.1:36304 - 200 2127B in 127.045µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000037] "GET http://127.0.0.1:38241/static/js/megaron/ui/sfx.js HTTP/1.1" from 127.0.0.1:36304 - 200 3919B in 149.595µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000038] "GET http://127.0.0.1:38241/static/js/megaron/ui/dispatch_window.js HTTP/1.1" from 127.0.0.1:36304 - 200 5529B in 309.565µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000039] "GET http://127.0.0.1:38241/static/js/megaron/ui/codex.js HTTP/1.1" from 127.0.0.1:36332 - 200 4586B in 247.12µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000040] "GET http://127.0.0.1:38241/static/js/megaron/ui/account_window.js HTTP/1.1" from 127.0.0.1:36318 - 200 3134B in 297.751µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000041] "GET http://127.0.0.1:38241/static/js/megaron/api.js HTTP/1.1" from 127.0.0.1:36304 - 200 1829B in 138.194µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000043] "GET http://127.0.0.1:38241/static/js/megaron/render/pixelgrid.js HTTP/1.1" from 127.0.0.1:36318 - 200 7885B in 304.735µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000044] "GET http://127.0.0.1:38241/static/js/megaron/render/citybuildings.js HTTP/1.1" from 127.0.0.1:36332 - 200 5334B in 298.815µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000045] "GET http://127.0.0.1:38241/static/js/megaron/ui/search_messages.js HTTP/1.1" from 127.0.0.1:36336 - 200 1096B in 146.96µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000046] "GET http://127.0.0.1:38241/static/js/megaron/ui/movements.js HTTP/1.1" from 127.0.0.1:36348 - 200 1543B in 122.071µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000047] "GET http://127.0.0.1:38241/static/js/megaron/ui/time.js HTTP/1.1" from 127.0.0.1:36316 - 200 1550B in 139.277µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000042] "GET http://127.0.0.1:38241/static/js/megaron/ui/format.js HTTP/1.1" from 127.0.0.1:36304 - 200 17335B in 938.585µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000048] "GET http://127.0.0.1:38241/static/js/megaron/ui/inline_result.js HTTP/1.1" from 127.0.0.1:36304 - 200 691B in 70.058µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000049] "GET http://127.0.0.1:38241/static/js/megaron/ui/fmt_num.js HTTP/1.1" from 127.0.0.1:36304 - 200 475B in 71.589µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000050] "GET http://127.0.0.1:38241/static/js/megaron/ui/drawers/kult_kharis.js HTTP/1.1" from 127.0.0.1:36304 - 200 1019B in 219.14µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000051] "GET http://127.0.0.1:38241/static/js/megaron/ui/actornames.js HTTP/1.1" from 127.0.0.1:36304 - 200 1402B in 121.5µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000052] "GET http://127.0.0.1:38241/static/js/megaron/ui/stance.js HTTP/1.1" from 127.0.0.1:36318 - 200 831B in 94.934µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000053] "GET http://127.0.0.1:38241/static/js/megaron/ui/expedition.js HTTP/1.1" from 127.0.0.1:36304 - 200 702B in 102.5µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000054] "GET http://127.0.0.1:38241/static/js/megaron/ui/march_preview.js HTTP/1.1" from 127.0.0.1:36304 - 200 1120B in 158.283µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000055] "GET http://127.0.0.1:38241/static/js/megaron/ui/retreat.js HTTP/1.1" from 127.0.0.1:36304 - 200 1047B in 163.267µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000056] "GET http://127.0.0.1:38241/static/js/megaron/ui/runner_status.js HTTP/1.1" from 127.0.0.1:36304 - 200 1529B in 106.441µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000057] "GET http://127.0.0.1:38241/static/js/megaron/ui/recall_all.js HTTP/1.1" from 127.0.0.1:36318 - 200 751B in 120.723µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000060] "GET http://127.0.0.1:38241/static/js/megaron/ui/gifts.js HTTP/1.1" from 127.0.0.1:36332 - 200 529B in 90.466µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000059] "GET http://127.0.0.1:38241/static/js/megaron/ui/drawers/city_production.js HTTP/1.1" from 127.0.0.1:36318 - 200 2105B in 249.368µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000058] "GET http://127.0.0.1:38241/static/js/megaron/ui/citygrid.js HTTP/1.1" from 127.0.0.1:36304 - 200 8150B in 328.733µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000061] "GET http://127.0.0.1:38241/static/js/megaron/ui/drawers/sitos_view.js HTTP/1.1" from 127.0.0.1:36304 - 200 1430B in 95.798µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000062] "GET http://127.0.0.1:38241/static/js/megaron/render/routes.js HTTP/1.1" from 127.0.0.1:36304 - 200 2296B in 224.977µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000063] "GET http://127.0.0.1:38241/static/js/megaron/render/actorsprites.js HTTP/1.1" from 127.0.0.1:36318 - 200 5852B in 315.365µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000064] "GET http://127.0.0.1:38241/static/js/megaron/render/sight.js HTTP/1.1" from 127.0.0.1:36304 - 200 1334B in 121.369µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000065] "GET http://127.0.0.1:38241/static/js/megaron/render/memory.js HTTP/1.1" from 127.0.0.1:36332 - 200 1000B in 101.198µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000066] "GET http://127.0.0.1:38241/static/js/megaron/render/doomfire.js HTTP/1.1" from 127.0.0.1:36304 - 200 1876B in 110.47µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000067] "GET http://127.0.0.1:38241/static/js/megaron/render/citysprites.js HTTP/1.1" from 127.0.0.1:36318 - 200 8747B in 351.007µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000068] "GET http://127.0.0.1:38241/static/js/megaron/render/cityicons.js HTTP/1.1" from 127.0.0.1:36304 - 200 3923B in 175.01µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000069] "GET http://127.0.0.1:38241/static/js/megaron/render/camera.js HTTP/1.1" from 127.0.0.1:36332 - 200 1542B in 105.371µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000070] "GET http://127.0.0.1:38241/static/js/megaron/render/map_input.js HTTP/1.1" from 127.0.0.1:36336 - 200 1475B in 106.833µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000071] "GET http://127.0.0.1:38241/static/js/megaron/ui/hover.js HTTP/1.1" from 127.0.0.1:36304 - 200 1734B in 93.447µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000072] "GET http://127.0.0.1:38241/static/js/megaron/render/storms.js HTTP/1.1" from 127.0.0.1:36304 - 200 2169B in 143.044µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000073] "GET http://127.0.0.1:38241/static/js/megaron/render/place_names.js HTTP/1.1" from 127.0.0.1:36304 - 200 1741B in 125.998µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000074] "GET http://127.0.0.1:38241/static/js/megaron/render/markraster.js HTTP/1.1" from 127.0.0.1:36304 - 200 34271B in 1.099213ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000075] "GET http://127.0.0.1:38241/static/js/megaron/render/chunk_worker.js HTTP/1.1" from 127.0.0.1:36318 - 200 794B in 110.057µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000076] "GET http://127.0.0.1:38241/static/js/megaron/ui/drawers/gossip.js HTTP/1.1" from 127.0.0.1:36304 - 200 771B in 76.19µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000077] "GET http://127.0.0.1:38241/static/js/megaron/ui/account_profile.js HTTP/1.1" from 127.0.0.1:36304 - 200 340B in 54.142µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000079] "GET http://127.0.0.1:38241/static/js/megaron/ui/fmt_clock.js HTTP/1.1" from 127.0.0.1:36318 - 200 384B in 72.772µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000080] "GET http://127.0.0.1:38241/static/js/megaron/render/river_names.js HTTP/1.1" from 127.0.0.1:36332 - 200 255B in 72.537µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000078] "GET http://127.0.0.1:38241/static/js/megaron/verb_telemetry.js HTTP/1.1" from 127.0.0.1:36304 - 200 2876B in 240.866µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000081] "GET http://127.0.0.1:38241/api/v1/auth/me HTTP/1.1" from 127.0.0.1:36304 - 200 186B in 682.353µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000082] "GET http://127.0.0.1:38241/favicon.ico HTTP/1.1" from 127.0.0.1:36304 - 404 44B in 25.103µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000083] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b HTTP/1.1" from 127.0.0.1:36304 - 200 243B in 766.564µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000084] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/provinces HTTP/1.1" from 127.0.0.1:36318 - 200 229B in 11.011532ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000085] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/founding/status HTTP/1.1" from 127.0.0.1:36304 - 200 42B in 1.752947ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000088] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/messengers/inbox HTTP/1.1" from 127.0.0.1:36318 - 200 28B in 2.361992ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000086] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/provinces HTTP/1.1" from 127.0.0.1:36304 - 200 229B in 7.27133ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000094] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/rural-projections HTTP/1.1" from 127.0.0.1:36304 - 200 191B in 1.082295ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000093] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/units HTTP/1.1" from 127.0.0.1:36318 - 200 335B in 4.918493ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000096] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/settlements/placement-roster HTTP/1.1" from 127.0.0.1:36318 - 200 232B in 1.433878ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000095] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/foreign-units HTTP/1.1" from 127.0.0.1:36304 - 200 28B in 8.368322ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000098] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/notifications?unread=true&dispatchable=true HTTP/1.1" from 127.0.0.1:36304 - 200 343B in 957.962µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000090] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/marches HTTP/1.1" from 127.0.0.1:36336 - 200 28B in 15.18712ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000099] "GET http://127.0.0.1:38241/static/codex/index.json HTTP/1.1" from 127.0.0.1:36304 - 200 2257B in 173.461µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000097] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/storms HTTP/1.1" from 127.0.0.1:36318 - 200 48B in 7.371283ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000091] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/messengers HTTP/1.1" from 127.0.0.1:36316 - 200 28B in 20.702268ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000092] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/trades HTTP/1.1" from 127.0.0.1:36348 - 200 28B in 20.74305ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000089] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/map HTTP/1.1" from 127.0.0.1:36332 - 200 9926B in 31.703725ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000100] "GET http://127.0.0.1:38241/static/music/minoan_templet_sf.ogg HTTP/1.1" from 127.0.0.1:36304 - 206 675596B in 247.49µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000101] "GET http://127.0.0.1:38241/static/js/megaron/render/markraster_worker.js HTTP/1.1" from 127.0.0.1:36304 - 200 620B in 145.369µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000102] "GET http://127.0.0.1:38241/static/js/megaron/render/markraster.js HTTP/1.1" from 127.0.0.1:36304 - 304 0B in 87.832µs
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000104] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/settlements/overview HTTP/1.1" from 127.0.0.1:36318 - 200 225B in 22.620604ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000103] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/provinces/76276032-ca46-4140-b7d4-0b922ab26788/goods HTTP/1.1" from 127.0.0.1:36304 - 200 614B in 42.502917ms
+2026/10/12 23:29:04 [tki9/rnbZ69Xp1n-000105] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/provinces/76276032-ca46-4140-b7d4-0b922ab26788/actions HTTP/1.1" from 127.0.0.1:36304 - 200 2901B in 16.651683ms
+2026/10/12 23:29:05 [tki9/rnbZ69Xp1n-000106] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/settlements/ef4d419a-86d9-4a09-90eb-c252c0c06354 HTTP/1.1" from 127.0.0.1:36304 - 200 383B in 2.152094ms
+2026/10/12 23:29:05 [tki9/rnbZ69Xp1n-000107] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/provinces/76276032-ca46-4140-b7d4-0b922ab26788 HTTP/1.1" from 127.0.0.1:36318 - 200 2094B in 30.840201ms
+2026/10/12 23:29:05 [tki9/rnbZ69Xp1n-000108] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/provinces/76276032-ca46-4140-b7d4-0b922ab26788/actions HTTP/1.1" from 127.0.0.1:36304 - 200 2901B in 16.794431ms
+2026/10/12 23:29:34 [tki9/rnbZ69Xp1n-000111] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/marches HTTP/1.1" from 127.0.0.1:36332 - 200 28B in 3.440892ms
+2026/10/12 23:29:34 [tki9/rnbZ69Xp1n-000114] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/units HTTP/1.1" from 127.0.0.1:36348 - 200 335B in 2.305268ms
+2026/10/12 23:29:34 [tki9/rnbZ69Xp1n-000115] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/rural-projections HTTP/1.1" from 127.0.0.1:36332 - 200 191B in 1.209399ms
+2026/10/12 23:29:34 [tki9/rnbZ69Xp1n-000117] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/settlements/placement-roster HTTP/1.1" from 127.0.0.1:36332 - 200 232B in 2.439621ms
+2026/10/12 23:29:34 [tki9/rnbZ69Xp1n-000110] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/provinces HTTP/1.1" from 127.0.0.1:36318 - 200 229B in 9.085605ms
+2026/10/12 23:29:34 [tki9/rnbZ69Xp1n-000112] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/messengers HTTP/1.1" from 127.0.0.1:36336 - 200 28B in 9.135753ms
+2026/10/12 23:29:34 [tki9/rnbZ69Xp1n-000109] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/map HTTP/1.1" from 127.0.0.1:36304 - 200 9926B in 12.22879ms
+2026/10/12 23:29:34 [tki9/rnbZ69Xp1n-000116] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/foreign-units HTTP/1.1" from 127.0.0.1:36348 - 200 28B in 7.01978ms
+2026/10/12 23:29:34 [tki9/rnbZ69Xp1n-000118] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/storms HTTP/1.1" from 127.0.0.1:36332 - 200 48B in 6.751052ms
+2026/10/12 23:29:34 [tki9/rnbZ69Xp1n-000113] "GET http://127.0.0.1:38241/api/v1/worlds/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b/trades HTTP/1.1" from 127.0.0.1:36316 - 200 28B in 15.168915ms
+2026/10/12 23:29:35 [tki9/rnbZ69Xp1n-000087] "GET http://127.0.0.1:38241/ws/196cc0e5-d4cb-4ff7-b3ef-5c8b69677d6b HTTP/1.1" from 127.0.0.1:36364 - 000 0B in 30.973712476s
+{"time":"2026-10-12T23:29:35.503251474+02:00","level":"INFO","msg":"scheduled event worker stopped"}
+{"time":"2026-10-12T23:29:35.503255987+02:00","level":"INFO","msg":"shutting down"}
+{"time":"2026-10-12T23:29:35.503259119+02:00","level":"INFO","msg":"tick worker stopped"}

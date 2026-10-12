@@ -1,0 +1,20 @@
+SETTLEMENTS
+Settlement	Pop	Grain	Food lasts	Status ▲
+Phaistos ★	1,000	-5 per day	400 days	surplus
+
+Workdays/unit: reference labour on standard ground, including ingredients. Gods weigh scarcity separately; Wanaxes agree trade prices.
+
+PHAISTOS ★
+SILVER · 1 WORKDAYS/UNIT
+1,000
+Good	Amount	Rate	Workdays/unit
+Stone	0		2
+Timber	1,000		1
+Oil	0		1
+Wine	0		1
+Fish	1,000		1
+Grain	1,000		1
+Livestock	10		1
+Copper	0		1
+
+Unavailable: trade offer, trade accept, trade decline, trade cancel, transfer, gift ?

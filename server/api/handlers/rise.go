@@ -91,6 +91,7 @@ func (h *JoinHandler) Rise(w http.ResponseWriter, r *http.Request) {
 		population:  100 * (risenHostMinGubbar + riseIntn(risenHostMaxGubbar-risenHostMinGubbar+1)),
 		spearmen:    risenHostSpearmen,
 		rationTicks: risenHostRationTicks,
+		refugee:     true,
 	}
 
 	tx, err := h.pool.Begin(r.Context())

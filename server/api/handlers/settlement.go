@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"math"
 	"math/rand"
 	"net/http"
 	"sort"
@@ -1141,27 +1142,22 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	// temenos_prayers_komposition_plan.md
 	offering := scaleOffering(spec.Offering, offerMultiplier)
 	offerMod := riteOfferMod(offerMultiplier)
-	var offeringWorth, offeringBaseline float64
-	if len(body.Offering) > 0 {
-		divineValues, dvErr := religion.LoadDivineValues(r.Context(), h.pool, worldID)
-		if dvErr != nil {
-			writeError(w, http.StatusInternalServerError, "could not read the gods' reckoning")
-			return
-		}
-		if len(divineValues) == 0 {
-			// The daily tick has not priced this world yet (fresh world, or the
-			// first day). Fall back rather than value every gift at zero, which
-			// would read as an empty altar and floor the odds.
-			offering = scaleOffering(spec.Offering, offerMultiplier)
-		} else {
-			favours := religion.FavoursFor(spec)
-			offering = body.Offering
-			offeringWorth = religion.OfferingWorth(offering, divineValues, favours)
-			offeringBaseline = religion.TraditionalBaseline(spec, divineValues)
-			offerMod = religion.OfferMod(offeringWorth, offeringBaseline,
-				religion.DistinctGoods(offering))
-		}
+	divineValues, dvErr := religion.LoadDivineValues(r.Context(), h.pool, worldID)
+	if dvErr != nil {
+		writeError(w, http.StatusInternalServerError, "could not read the gods' reckoning")
+		return
 	}
+	composed := len(body.Offering) > 0 && len(divineValues) > 0
+	if composed {
+		offering = body.Offering
+	}
+	favours := religion.FavoursFor(spec)
+	offeringWorth := religion.OfferingWorth(offering, divineValues, favours)
+	offeringBaseline := religion.TraditionalBaseline(spec, divineValues)
+	if composed {
+		offerMod = religion.OfferMod(offeringWorth, offeringBaseline, religion.DistinctGoods(offering))
+	}
+
 	successChance := riteSuccessChance(kharisNow, offerMod)
 	chance := int(successChance*100 + 0.5) // percentage, rounded — for the roll ONLY.
 	// DESIGN INVARIANT (Timothy 2026-07-11, HARD): `chance` never leaves this handler —
@@ -1284,10 +1280,12 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		// (Fas 2.4: old fields keep their meaning) — without them a composed
 		// offering leaves no trace of WHY the odds were what they were, and the
 		// whole system becomes uncalibratable after the fact.
-		"offering_worth":    offeringWorth,
-		"offering_baseline": offeringBaseline,
-		"offer_mod":         offerMod,
-		"kharis_spent":      riteKharisCost,
+		"offering_work":          offeringWorth,
+		"offering_work_baseline": offeringBaseline,
+		"offering_value_unit":    religion.LaborValueUnit,
+		"valuation_version":      religion.LaborValuationVersion,
+		"offer_mod":              offerMod,
+		"kharis_spent":           riteKharisCost,
 	}
 	if success && spec.GodID != "" {
 		if err = religion.SetGodCooldown(r.Context(), tx, worldID, playerID, spec.GodID, nowTick+spec.CooldownTicks); err != nil {
@@ -1323,11 +1321,16 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	// just burns the Wanax's stores.
 	if offeringBaseline > 0 {
 		resp["offering_worth"] = offeringWorth
+		resp["offering_work"] = offeringWorth
+		resp["offering_value_unit"] = religion.LaborValueUnit
+		resp["valuation_version"] = religion.LaborValuationVersion
 		resp["offering_expected"] = offeringBaseline
 		switch {
 		case offerMod >= riteOfferModFat:
 			resp["offering_verdict"] = "as generous as the gods will notice — more would be wasted"
-		case offeringWorth >= offeringBaseline:
+		case math.Abs(offeringWorth-offeringBaseline) < 1e-9:
+			resp["offering_verdict"] = "worthy — meets what this god expects"
+		case offeringWorth > offeringBaseline:
 			resp["offering_verdict"] = "worthy — beyond what this god expects"
 		default:
 			// Same rounding lie as row D and the need/have pairs (helpers.go

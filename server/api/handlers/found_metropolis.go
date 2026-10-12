@@ -175,19 +175,20 @@ func foundMetropolisFromNomadicHost(
 
 	// 4. Raise the metropolis through the same path an ordinary join uses.
 	m, err := createMetropolis(ctx, tx, sitosCfg, metropolisParams{
-		WorldID:    worldID,
-		PlayerID:   playerID,
-		Q:          q,
-		R:          r,
-		Terrain:    terrain,
-		Copper:     copperDep,
-		Tin:        tinDep,
-		Silver:     silverDep,
-		Cedar:      cedarDep,
-		Coastal:    coastal,
-		Name:       name,
-		Culture:    culture,
-		Population: pop,
+		WorldID:       worldID,
+		PlayerID:      playerID,
+		Q:             q,
+		R:             r,
+		Terrain:       terrain,
+		Copper:        copperDep,
+		Tin:           tinDep,
+		Silver:        silverDep,
+		Cedar:         cedarDep,
+		Coastal:       coastal,
+		Name:          name,
+		Culture:       culture,
+		Population:    pop,
+		CarriedSilver: silverLeft,
 	})
 	if err != nil {
 		return out, err
@@ -276,10 +277,12 @@ func foundMetropolisFromNomadicHost(
 		}
 	}
 
-	// 6. Pour the remaining rations into the city's stores. ADD rather than set:
+	// 6. Silver was initialized once by createMetropolis, including the carried
+	// balance and any first-founding top-up. Only grain is added here.
+	// Pour the remaining rations into the city's stores. ADD rather than set:
 	// createMetropolis already seeded opening amounts, and the host's grain is
 	// carried in on top of them.
-	for good, amount := range map[string]float64{"grain": grainLeft, "silver": silverLeft} {
+	for good, amount := range map[string]float64{"grain": grainLeft} {
 		if amount <= 0 {
 			continue
 		}

@@ -1,0 +1,26 @@
+--- FAIL: TestSilverCalibrationLaborIndexNeverSmoothsHistoricalPrices (0.01s)
+    labor_index_test.go:51: grain labor_value=2 want1
+    labor_index_test.go:54: grain v2=3.4 want1.7; historical price cannot seed smoothing
+    labor_index_test.go:51: cedar labor_value=2 want1
+    labor_index_test.go:54: cedar v2=3.4 want1.7; historical price cannot seed smoothing
+    labor_index_test.go:51: oil labor_value=2 want1
+    labor_index_test.go:54: oil v2=3.4 want1.7; historical price cannot seed smoothing
+    labor_index_test.go:51: wine labor_value=2 want1
+    labor_index_test.go:54: wine v2=3.4 want1.7; historical price cannot seed smoothing
+    labor_index_test.go:51: fish labor_value=2 want1
+    labor_index_test.go:54: fish v2=3.4 want1.7; historical price cannot seed smoothing
+    labor_index_test.go:51: livestock labor_value=2 want1
+    labor_index_test.go:54: livestock v2=3.4 want1.7; historical price cannot seed smoothing
+    labor_index_test.go:51: timber labor_value=2 want1
+    labor_index_test.go:54: timber v2=3.4 want1.7; historical price cannot seed smoothing
+    labor_index_test.go:51: copper labor_value=2 want1
+    labor_index_test.go:54: copper v2=3.4 want1.7; historical price cannot seed smoothing
+    labor_index_test.go:51: tin labor_value=2 want1
+    labor_index_test.go:54: tin v2=3.4 want1.7; historical price cannot seed smoothing
+    labor_index_test.go:51: silver labor_value=2 want1
+    labor_index_test.go:54: silver v2=3.4 want1.7; historical price cannot seed smoothing
+    labor_index_test.go:61: silver offering=6.8 want3.4 worker_ticks, no floor
+FAIL
+FAIL	formatet/megaron/server/internal/religion	0.013s
+FAIL
+» färsk DB på migration 177 · commit cef1e461+ändringar

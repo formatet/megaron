@@ -1,0 +1,6 @@
+--- FAIL: TestSilverCalibrationRefugeeFoundingNeverMints (0.04s)
+    silver_calibration_test.go:121: refugee founding minted silver: 730 want carried17
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.038s
+FAIL
+» färsk DB på migration 177 · commit 26f41bd2+ändringar

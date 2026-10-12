@@ -7,13 +7,11 @@ import (
 
 func testSitosCfg() SitosConfig {
 	return SitosConfig{
-		GranaryCapDays:      60,
-		LowDays:             10,
-		HighDays:            30,
-		TithePct:            0.1,
-		SubsistenceGoods:    []string{"grain", "fish"},
-		SilverLiquidCapDays: 10,
-		SilverStartDays:     5,
+		GranaryCapDays:   60,
+		LowDays:          10,
+		HighDays:         30,
+		TithePct:         0.1,
+		SubsistenceGoods: []string{"grain", "fish"},
 	}
 }
 
@@ -35,32 +33,13 @@ func TestGranaryCap_PopInvariant(t *testing.T) {
 	}
 }
 
-// TestGenesisSilverLiquid_PopInvariant: the genesis LIQUID silver seed and cap,
-// in days-of-grain-need, are exactly SilverStartDays / SilverLiquidCapDays for
-// any population. This is now one of only TWO silver faucets in the game (B3),
-// so its shape matters more than it did when the fund also minted.
-func TestGenesisSilverLiquid_PopInvariant(t *testing.T) {
-	cfg := testSitosCfg()
-	const base = 3.0
-	for _, pop := range []int{100, 20000} {
-		need := dailyGrainNeedInSilver(pop, base)
-		seed, cap := GenesisSilverLiquid(pop, base, cfg)
-		if math.Abs(seed/need-cfg.SilverStartDays) > 1e-9 {
-			t.Errorf("pop=%d seed-days=%.6f, want %.1f", pop, seed/need, cfg.SilverStartDays)
-		}
-		if math.Abs(cap/need-cfg.SilverLiquidCapDays) > 1e-9 {
-			t.Errorf("pop=%d cap-days=%.6f, want %.1f", pop, cap/need, cfg.SilverLiquidCapDays)
-		}
-	}
-}
-
 // TestCoverageDays_CountsTheWholeBasket: coverage is food units over the ONE
 // food need (B6), not grain over a grain need. A city fed mostly on fish is not
 // starving, and a coverage figure that only saw grain would say it was — and
 // would then release a reserve it did not need. The population has a single
 // food need covered grain-first, fish-for-the-rest (FoodConsumptionSplit).
 func TestCoverageDays_CountsTheWholeBasket(t *testing.T) {
-	const pop = 1000                  // need = 5/day (mig 136, GrainConsumptionPerCitizenPerTick ÷100, not ÷43.2: 500→5)
+	const pop = 1000                   // need = 5/day (mig 136, GrainConsumptionPerCitizenPerTick ÷100, not ÷43.2: 500→5)
 	grainOnly := CoverageDays(20, pop) // 2000 → 20 (mig 136, same ÷100); 4 days on grain alone
 	if math.Abs(grainOnly-4) > 1e-9 {
 		t.Fatalf("grain-only coverage = %v, want 4", grainOnly)

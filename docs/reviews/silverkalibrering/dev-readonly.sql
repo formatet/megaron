@@ -1,0 +1,12 @@
+BEGIN READ ONLY;
+SELECT json_build_object('table','worlds','row',row_to_json(x)) FROM worlds x;
+SELECT json_build_object('table','goods','row',row_to_json(x)) FROM goods x ORDER BY key;
+SELECT json_build_object('table','production_rules','row',row_to_json(x)) FROM production_rules x ORDER BY id;
+SELECT json_build_object('table','recipes','row',row_to_json(x)) FROM recipes x;
+SELECT json_build_object('table','recipe_ingredients','row',row_to_json(x)) FROM recipe_ingredients x;
+SELECT json_build_object('table','silver_tiles','row',row_to_json(x)) FROM (SELECT world_id,terrain,count(*) AS hexes FROM map_tiles WHERE silver_deposit GROUP BY world_id,terrain) x;
+SELECT json_build_object('table','owners','row',row_to_json(x)) FROM (SELECT world_id,count(*) AS wanaxes FROM player_world_records GROUP BY world_id) x;
+SELECT json_build_object('table','active_owners','row',row_to_json(x)) FROM (SELECT world_id,count(DISTINCT owner_id) AS wanaxes FROM settlements WHERE state='active' AND owner_id IS NOT NULL GROUP BY world_id) x;
+SELECT json_build_object('table','functions','row',row_to_json(x)) FROM (SELECT proname,pg_get_functiondef(p.oid) AS definition FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND p.prokind='f') x;
+SELECT json_build_object('table','migration','row',row_to_json(x)) FROM schema_migrations x;
+COMMIT;

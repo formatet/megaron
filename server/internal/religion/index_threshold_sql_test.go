@@ -55,7 +55,7 @@ func TestRecomputeDivineValuations_PerGoodThresholdSQLExecutes(t *testing.T) {
 		t.Fatalf("insert smoke world: %v", err)
 	}
 	t.Cleanup(func() {
-		_, _ = pool.Exec(context.Background(), `DELETE FROM divine_valuations WHERE world_id=$1`, worldID)
+		_, _ = pool.Exec(context.Background(), `DELETE FROM divine_labor_valuations WHERE world_id=$1`, worldID)
 		_, _ = pool.Exec(context.Background(), `DELETE FROM worlds WHERE id=$1`, worldID)
 	})
 
@@ -68,11 +68,11 @@ func TestRecomputeDivineValuations_PerGoodThresholdSQLExecutes(t *testing.T) {
 
 	var n int
 	if err := pool.QueryRow(ctx,
-		`SELECT COUNT(*) FROM divine_valuations WHERE world_id=$1`, worldID,
+		`SELECT COUNT(*) FROM divine_labor_valuations WHERE world_id=$1`, worldID,
 	).Scan(&n); err != nil {
 		t.Fatalf("count valuations: %v", err)
 	}
 	if n == 0 {
-		t.Error("recompute wrote no divine_valuations — the threshold query produced no rows")
+		t.Error("recompute wrote no divine_labor_valuations — the threshold query produced no rows")
 	}
 }

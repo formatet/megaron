@@ -1,0 +1,33 @@
+{
+  "before_settled_balances": [
+    [
+      "00000000-0000-0000-0000-000000000005",
+      104.608
+    ],
+    [
+      "00000000-0000-0000-0000-000000000006",
+      5000
+    ]
+  ],
+  "after_amount_rate_cap": [
+    [
+      "00000000-0000-0000-0000-000000000005",
+      104.608,
+      1,
+      1460
+    ],
+    [
+      "00000000-0000-0000-0000-000000000006",
+      5000,
+      0,
+      10000
+    ]
+  ],
+  "legacy_events_unchanged": true,
+  "legacy_prices_unchanged": true,
+  "legacy_index_not_copied": true,
+  "refugee_backfill": true,
+  "down_up_conserves_silver": true,
+  "migration": 177,
+  "dirty": false
+}

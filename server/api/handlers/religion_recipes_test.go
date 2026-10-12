@@ -14,11 +14,11 @@ import (
 // and freeze that same sacrifice in RiteCast, even when the answer is silent.
 func TestAlphaOfferDebitsDecisionRecipeExactly(t *testing.T) {
 	expected := map[string]map[string]float64{
-		religion.PrayerPotniaVision:     {"grain": 10, "silver": 100},
+		religion.PrayerPotniaVision:     {"grain": 10, "silver": 3},
 		religion.PrayerPotniaWalls:      {"grain": 8, "timber": 4},
-		religion.PrayerGreenShoots:      {"grain": 15, "silver": 50},
-		religion.PrayerAsterionThread:   {"timber": 4, "silver": 100},
-		religion.PrayerStillnessPassage: {"fish": 6, "silver": 100},
+		religion.PrayerGreenShoots:      {"grain": 15, "silver": 2},
+		religion.PrayerAsterionThread:   {"timber": 4, "silver": 3},
+		religion.PrayerStillnessPassage: {"fish": 6, "silver": 3},
 	}
 	for id, recipe := range expected {
 		for _, silent := range []bool{false, true} {
@@ -61,6 +61,19 @@ func TestAlphaOfferDebitsDecisionRecipeExactly(t *testing.T) {
 				var raw []byte
 				if err := f.pool.QueryRow(ctx, `SELECT payload FROM events WHERE stream_id=$1 AND event_type='RiteCast' ORDER BY created_at DESC LIMIT 1`, f.cities[0]).Scan(&raw); err != nil {
 					t.Fatal(err)
+				}
+				var units map[string]any
+				if err := json.Unmarshal(raw, &units); err != nil {
+					t.Fatal(err)
+				}
+				if units["valuation_version"] != float64(2) || units["offering_value_unit"] != "worker_ticks" {
+					t.Fatalf("missing explicit new measure: %s", raw)
+				}
+				if _, exists := units["offering_worth"]; exists {
+					t.Fatalf("old price-unit field reused: %s", raw)
+				}
+				if _, exists := units["offering_baseline"]; exists {
+					t.Fatalf("old baseline-unit field reused: %s", raw)
 				}
 				var payload struct {
 					Offering map[string]float64 `json:"offering"`

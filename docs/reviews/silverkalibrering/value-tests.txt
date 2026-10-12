@@ -1,0 +1,11 @@
+server/internal/economy/metal_prices_test.go:10://     base_value by its own old production rate so that value per MAN-DAY held
+server/internal/economy/metal_prices_test.go:53:		`SELECT base_value FROM goods WHERE key = $1`, key).Scan(&v); err != nil {
+server/internal/economy/metal_prices_test.go:54:		t.Fatalf("read base_value for %s: %v", key, err)
+server/internal/economy/metal_prices_test.go:67:		t.Fatalf("copper base_value = %v, want > 0 — the anchor cannot be zero", copper)
+server/internal/economy/metal_prices_test.go:86:		`SELECT SUM(ri.quantity * g.base_value)
+server/internal/economy/metal_prices_test.go:101:		t.Fatalf("bronze base_value = %v but its ingredients are worth %v — smelting would destroy "+
+server/internal/economy/metal_prices_test.go:117:		t.Errorf("silver base_value = %v, want 1 — silver is the numéraire and must stay the anchor", got)
+server/internal/economy/sitos_test.go:38:// TestGenesisSilverLiquid_PopInvariant: the genesis LIQUID silver seed and cap,
+server/internal/economy/sitos_test.go:42:func TestGenesisSilverLiquid_PopInvariant(t *testing.T) {
+server/internal/economy/sitos_test.go:47:		seed, cap := GenesisSilverLiquid(pop, base, cfg)
+server/internal/combat/colonist_purse_test.go:4:// every founding also minted the colony's liquid silver — GenesisSilverLiquid

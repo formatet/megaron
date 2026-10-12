@@ -1,0 +1,5 @@
+» färsk DB på migration 177 · commit 26f41bd2+ändringar
+ok  	formatet/megaron/server/internal/religion	0.016s
+ok  	formatet/megaron/server/internal/kharis	0.033s
+ok  	formatet/megaron/server/internal/combat	0.150s
+ok  	formatet/megaron/server/api/handlers	1.010s

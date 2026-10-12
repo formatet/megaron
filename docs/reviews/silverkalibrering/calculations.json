@@ -1,0 +1,997 @@
+{
+  "unit_upkeep": {
+    "spearman": {
+      "grain": 0.5,
+      "silver": 1.0
+    },
+    "elite_infantry": {
+      "grain": 0.6,
+      "silver": 2.0
+    },
+    "war_chariot": {
+      "grain": 0.8,
+      "silver": 3.0
+    },
+    "galley": {
+      "grain": 0.04,
+      "silver": 1.5
+    },
+    "war_galley": {
+      "grain": 0.06,
+      "silver": 2.5
+    },
+    "merchantman": {
+      "grain": 0.03,
+      "silver": 1.0
+    }
+  },
+  "unit_recruit_costs": {
+    "spearman": {
+      "grain": 12.0,
+      "silver": 20.0
+    },
+    "war_chariot": {
+      "grain": 40.0,
+      "timber": 8.0,
+      "cedar": 8.0,
+      "bronze": 20.0,
+      "silver": 50.0
+    },
+    "galley": {
+      "timber": 30.0,
+      "silver": 6.0
+    },
+    "elite_infantry": {
+      "grain": 24.0,
+      "bronze": 16.0,
+      "silver": 40.0
+    },
+    "war_galley": {
+      "cedar": 100.0,
+      "silver": 30.0
+    },
+    "merchantman": {
+      "timber": 16.0,
+      "silver": 2.0
+    }
+  },
+  "base_commit": "acf5c96f",
+  "goods": {
+    "grain": {
+      "current_base_value": 129.60000000000002,
+      "proposed_labor_value": 1.0000000000000002
+    },
+    "fish": {
+      "current_base_value": 172.8,
+      "proposed_labor_value": 1.0
+    },
+    "livestock": {
+      "current_base_value": 180,
+      "proposed_labor_value": 1.0
+    },
+    "timber": {
+      "current_base_value": 864,
+      "proposed_labor_value": 1.0
+    },
+    "cedar": {
+      "current_base_value": 576,
+      "proposed_labor_value": 1.0
+    },
+    "copper": {
+      "current_base_value": 172.8,
+      "proposed_labor_value": 1.0000000000000002
+    },
+    "tin": {
+      "current_base_value": 345.6,
+      "proposed_labor_value": 1.0000000000000002
+    },
+    "stone": {
+      "current_base_value": 14.4,
+      "proposed_labor_value": 2.0
+    },
+    "oil": {
+      "current_base_value": 86.4,
+      "proposed_labor_value": 1.0
+    },
+    "wine": {
+      "current_base_value": 72,
+      "proposed_labor_value": 1.0000000000000002
+    },
+    "bronze": {
+      "current_base_value": 2851.2000000000003,
+      "proposed_labor_value": 11.000000000000002
+    },
+    "silver": {
+      "current_base_value": 1,
+      "proposed_labor_value": 1
+    },
+    "horses": {
+      "current_base_value": 432,
+      "proposed_labor_value": 1.0000000000000002
+    },
+    "pottery": {
+      "current_base_value": 108,
+      "proposed_labor_value": 1.0000000000000002
+    },
+    "purple": {
+      "current_base_value": 388.8,
+      "proposed_labor_value": null
+    },
+    "cult": {
+      "current_base_value": 0,
+      "proposed_labor_value": null
+    }
+  },
+  "P6": {
+    "oil": {
+      "raw": 1,
+      "boost": 1.6666666666666665,
+      "refiner": 3.333333333333333,
+      "workers_per_extractor": 1.5,
+      "output_per_extractor": 2.6666666666666665,
+      "labor_per_unit": 0.5625,
+      "one_plus_one_labor_per_unit": 0.75
+    },
+    "wine": {
+      "raw": 0.9999999999999999,
+      "boost": 2.5,
+      "refiner": 5,
+      "workers_per_extractor": 1.5,
+      "output_per_extractor": 3.5,
+      "labor_per_unit": 0.42857142857142855,
+      "one_plus_one_labor_per_unit": 0.5714285714285714
+    }
+  },
+  "mapgen": [
+    {
+      "effective_seed": 1788982388878976733,
+      "height": 64,
+      "requested_seed": 1788982388878976733,
+      "silver_hexes": {
+        "hills": 4
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 20.0,
+      "silver_L3": 36.470588235294116
+    },
+    {
+      "effective_seed": 7,
+      "height": 64,
+      "requested_seed": 0,
+      "silver_hexes": {
+        "hills": 4
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 20.0,
+      "silver_L3": 36.470588235294116
+    },
+    {
+      "effective_seed": 7,
+      "height": 64,
+      "requested_seed": 1,
+      "silver_hexes": {
+        "hills": 4
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 20.0,
+      "silver_L3": 36.470588235294116
+    },
+    {
+      "effective_seed": 7,
+      "height": 64,
+      "requested_seed": 2,
+      "silver_hexes": {
+        "hills": 4
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 20.0,
+      "silver_L3": 36.470588235294116
+    },
+    {
+      "effective_seed": 7,
+      "height": 64,
+      "requested_seed": 3,
+      "silver_hexes": {
+        "hills": 4
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 20.0,
+      "silver_L3": 36.470588235294116
+    },
+    {
+      "effective_seed": 7,
+      "height": 64,
+      "requested_seed": 4,
+      "silver_hexes": {
+        "hills": 4
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 20.0,
+      "silver_L3": 36.470588235294116
+    },
+    {
+      "effective_seed": 7,
+      "height": 64,
+      "requested_seed": 5,
+      "silver_hexes": {
+        "hills": 4
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 20.0,
+      "silver_L3": 36.470588235294116
+    },
+    {
+      "effective_seed": 7,
+      "height": 64,
+      "requested_seed": 6,
+      "silver_hexes": {
+        "hills": 4
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 20.0,
+      "silver_L3": 36.470588235294116
+    },
+    {
+      "effective_seed": 7,
+      "height": 64,
+      "requested_seed": 7,
+      "silver_hexes": {
+        "hills": 4
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 20.0,
+      "silver_L3": 36.470588235294116
+    },
+    {
+      "effective_seed": 10,
+      "height": 64,
+      "requested_seed": 8,
+      "silver_hexes": {
+        "hills": 1,
+        "mountain_limestone": 3
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 42.5,
+      "silver_L3": 77.49999999999999
+    },
+    {
+      "effective_seed": 10,
+      "height": 64,
+      "requested_seed": 9,
+      "silver_hexes": {
+        "hills": 1,
+        "mountain_limestone": 3
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 42.5,
+      "silver_L3": 77.49999999999999
+    },
+    {
+      "effective_seed": 10,
+      "height": 64,
+      "requested_seed": 10,
+      "silver_hexes": {
+        "hills": 1,
+        "mountain_limestone": 3
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 42.5,
+      "silver_L3": 77.49999999999999
+    },
+    {
+      "effective_seed": 11,
+      "height": 64,
+      "requested_seed": 11,
+      "silver_hexes": {
+        "hills": 3,
+        "mountain_limestone": 1
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 27.5,
+      "silver_L3": 50.147058823529406
+    },
+    {
+      "effective_seed": 12,
+      "height": 64,
+      "requested_seed": 12,
+      "silver_hexes": {
+        "hills": 4
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 20.0,
+      "silver_L3": 36.470588235294116
+    },
+    {
+      "effective_seed": 14,
+      "height": 64,
+      "requested_seed": 13,
+      "silver_hexes": {
+        "hills": 4
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 20.0,
+      "silver_L3": 36.470588235294116
+    },
+    {
+      "effective_seed": 14,
+      "height": 64,
+      "requested_seed": 14,
+      "silver_hexes": {
+        "hills": 4
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 20.0,
+      "silver_L3": 36.470588235294116
+    },
+    {
+      "effective_seed": 15,
+      "height": 64,
+      "requested_seed": 15,
+      "silver_hexes": {
+        "hills": 3,
+        "mountain_limestone": 1
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 27.5,
+      "silver_L3": 50.147058823529406
+    },
+    {
+      "effective_seed": 17,
+      "height": 64,
+      "requested_seed": 16,
+      "silver_hexes": {
+        "hills": 4
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 20.0,
+      "silver_L3": 36.470588235294116
+    },
+    {
+      "effective_seed": 17,
+      "height": 64,
+      "requested_seed": 17,
+      "silver_hexes": {
+        "hills": 4
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 20.0,
+      "silver_L3": 36.470588235294116
+    },
+    {
+      "effective_seed": 20,
+      "height": 64,
+      "requested_seed": 18,
+      "silver_hexes": {
+        "hills": 3,
+        "mountain_limestone": 1
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 27.5,
+      "silver_L3": 50.147058823529406
+    },
+    {
+      "effective_seed": 20,
+      "height": 64,
+      "requested_seed": 19,
+      "silver_hexes": {
+        "hills": 3,
+        "mountain_limestone": 1
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 27.5,
+      "silver_L3": 50.147058823529406
+    },
+    {
+      "effective_seed": 1011,
+      "height": 64,
+      "requested_seed": 1009,
+      "silver_hexes": {
+        "hills": 3,
+        "mountain_limestone": 1
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 27.5,
+      "silver_L3": 50.147058823529406
+    },
+    {
+      "effective_seed": 2018,
+      "height": 64,
+      "requested_seed": 2018,
+      "silver_hexes": {
+        "hills": 3,
+        "mountain_limestone": 1
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 27.5,
+      "silver_L3": 50.147058823529406
+    },
+    {
+      "effective_seed": 3029,
+      "height": 64,
+      "requested_seed": 3027,
+      "silver_hexes": {
+        "hills": 1,
+        "mountain_limestone": 3
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 42.5,
+      "silver_L3": 77.49999999999999
+    },
+    {
+      "effective_seed": 4036,
+      "height": 64,
+      "requested_seed": 4036,
+      "silver_hexes": {
+        "hills": 4
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 20.0,
+      "silver_L3": 36.470588235294116
+    },
+    {
+      "effective_seed": 5046,
+      "height": 64,
+      "requested_seed": 5045,
+      "silver_hexes": {
+        "hills": 4
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 20.0,
+      "silver_L3": 36.470588235294116
+    },
+    {
+      "effective_seed": 6055,
+      "height": 64,
+      "requested_seed": 6054,
+      "silver_hexes": {
+        "hills": 2,
+        "mountain_limestone": 2
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 35.0,
+      "silver_L3": 63.823529411764696
+    },
+    {
+      "effective_seed": 7065,
+      "height": 64,
+      "requested_seed": 7063,
+      "silver_hexes": {
+        "hills": 3,
+        "mountain_limestone": 1
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 27.5,
+      "silver_L3": 50.147058823529406
+    },
+    {
+      "effective_seed": 8073,
+      "height": 64,
+      "requested_seed": 8072,
+      "silver_hexes": {
+        "hills": 4
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 20.0,
+      "silver_L3": 36.470588235294116
+    },
+    {
+      "effective_seed": 9084,
+      "height": 64,
+      "requested_seed": 9081,
+      "silver_hexes": {
+        "hills": 2,
+        "mountain_limestone": 2
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 35.0,
+      "silver_L3": 63.823529411764696
+    },
+    {
+      "effective_seed": 10092,
+      "height": 64,
+      "requested_seed": 10090,
+      "silver_hexes": {
+        "hills": 3,
+        "mountain_limestone": 1
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 27.5,
+      "silver_L3": 50.147058823529406
+    },
+    {
+      "effective_seed": 11101,
+      "height": 64,
+      "requested_seed": 11099,
+      "silver_hexes": {
+        "hills": 3,
+        "mountain_limestone": 1
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 27.5,
+      "silver_L3": 50.147058823529406
+    },
+    {
+      "effective_seed": 12109,
+      "height": 64,
+      "requested_seed": 12108,
+      "silver_hexes": {
+        "hills": 4
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 20.0,
+      "silver_L3": 36.470588235294116
+    },
+    {
+      "effective_seed": 13118,
+      "height": 64,
+      "requested_seed": 13117,
+      "silver_hexes": {
+        "hills": 3,
+        "mountain_limestone": 1
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 27.5,
+      "silver_L3": 50.147058823529406
+    },
+    {
+      "effective_seed": 14126,
+      "height": 64,
+      "requested_seed": 14126,
+      "silver_hexes": {
+        "hills": 3,
+        "mountain_limestone": 1
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 27.5,
+      "silver_L3": 50.147058823529406
+    },
+    {
+      "effective_seed": 15135,
+      "height": 64,
+      "requested_seed": 15135,
+      "silver_hexes": {
+        "hills": 4
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 20.0,
+      "silver_L3": 36.470588235294116
+    },
+    {
+      "effective_seed": 16144,
+      "height": 64,
+      "requested_seed": 16144,
+      "silver_hexes": {
+        "hills": 3,
+        "mountain_limestone": 1
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 27.5,
+      "silver_L3": 50.147058823529406
+    },
+    {
+      "effective_seed": 17153,
+      "height": 64,
+      "requested_seed": 17153,
+      "silver_hexes": {
+        "hills": 3,
+        "mountain_limestone": 1
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 27.5,
+      "silver_L3": 50.147058823529406
+    },
+    {
+      "effective_seed": 18170,
+      "height": 64,
+      "requested_seed": 18162,
+      "silver_hexes": {
+        "hills": 2,
+        "mountain_limestone": 2
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 35.0,
+      "silver_L3": 63.823529411764696
+    },
+    {
+      "effective_seed": 19172,
+      "height": 64,
+      "requested_seed": 19171,
+      "silver_hexes": {
+        "hills": 2,
+        "mountain_limestone": 2
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 35.0,
+      "silver_L3": 63.823529411764696
+    },
+    {
+      "effective_seed": 20182,
+      "height": 64,
+      "requested_seed": 20180,
+      "silver_hexes": {
+        "hills": 3,
+        "mountain_limestone": 1
+      },
+      "tiles": 4096,
+      "width": 64,
+      "workers": 20,
+      "silver_L1": 27.5,
+      "silver_L3": 50.147058823529406
+    }
+  ],
+  "sample_mean_L1": 27.875,
+  "sample_mean_L3": 50.83088235294117,
+  "L3_to_L1": 1.8235294117647056,
+  "armies": {
+    "dev": {
+      "1": {
+        "silver_per_tick": 20,
+        "per_10_wanaxes": 2.0,
+        "gross_army_equivalents": {
+          "spearman": 20.0,
+          "elite_infantry": 10.0,
+          "war_chariot": 6.666666666666667,
+          "galley": 13.333333333333334,
+          "war_galley": 8.0,
+          "merchantman": 20.0
+        },
+        "whole_units": {
+          "spearman": 20,
+          "elite_infantry": 10,
+          "war_chariot": 6,
+          "galley": 13,
+          "war_galley": 8,
+          "merchantman": 20
+        },
+        "same_payer_garrison_net_equivalents_default_share_0_7": {
+          "spearman": 66.66666666666667,
+          "elite_infantry": 33.333333333333336,
+          "war_chariot": 22.222222222222225,
+          "galley": 44.44444444444445,
+          "war_galley": 26.666666666666668,
+          "merchantman": 66.66666666666667
+        }
+      },
+      "3": {
+        "silver_per_tick": 36.470588235294116,
+        "per_10_wanaxes": 3.6470588235294117,
+        "gross_army_equivalents": {
+          "spearman": 36.470588235294116,
+          "elite_infantry": 18.235294117647058,
+          "war_chariot": 12.156862745098039,
+          "galley": 24.313725490196077,
+          "war_galley": 14.588235294117647,
+          "merchantman": 36.470588235294116
+        },
+        "whole_units": {
+          "spearman": 36,
+          "elite_infantry": 18,
+          "war_chariot": 12,
+          "galley": 24,
+          "war_galley": 14,
+          "merchantman": 36
+        },
+        "same_payer_garrison_net_equivalents_default_share_0_7": {
+          "spearman": 121.56862745098039,
+          "elite_infantry": 60.78431372549019,
+          "war_chariot": 40.52287581699347,
+          "galley": 81.04575163398694,
+          "war_galley": 48.627450980392155,
+          "merchantman": 121.56862745098039
+        }
+      }
+    },
+    "new_64x64_mean": {
+      "1": {
+        "silver_per_tick": 27.875,
+        "per_10_wanaxes": 2.7875,
+        "gross_army_equivalents": {
+          "spearman": 27.875,
+          "elite_infantry": 13.9375,
+          "war_chariot": 9.291666666666666,
+          "galley": 18.583333333333332,
+          "war_galley": 11.15,
+          "merchantman": 27.875
+        },
+        "whole_units": {
+          "spearman": 27,
+          "elite_infantry": 13,
+          "war_chariot": 9,
+          "galley": 18,
+          "war_galley": 11,
+          "merchantman": 27
+        },
+        "same_payer_garrison_net_equivalents_default_share_0_7": {
+          "spearman": 92.91666666666667,
+          "elite_infantry": 46.458333333333336,
+          "war_chariot": 30.972222222222225,
+          "galley": 61.94444444444445,
+          "war_galley": 37.166666666666664,
+          "merchantman": 92.91666666666667
+        }
+      },
+      "3": {
+        "silver_per_tick": 50.83088235294117,
+        "per_10_wanaxes": 5.083088235294117,
+        "gross_army_equivalents": {
+          "spearman": 50.83088235294117,
+          "elite_infantry": 25.415441176470583,
+          "war_chariot": 16.94362745098039,
+          "galley": 33.88725490196078,
+          "war_galley": 20.332352941176467,
+          "merchantman": 50.83088235294117
+        },
+        "whole_units": {
+          "spearman": 50,
+          "elite_infantry": 25,
+          "war_chariot": 16,
+          "galley": 33,
+          "war_galley": 20,
+          "merchantman": 50
+        },
+        "same_payer_garrison_net_equivalents_default_share_0_7": {
+          "spearman": 169.4362745098039,
+          "elite_infantry": 84.71813725490195,
+          "war_chariot": 56.478758169934636,
+          "galley": 112.95751633986927,
+          "war_galley": 67.77450980392156,
+          "merchantman": 169.4362745098039
+        }
+      }
+    },
+    "sample_low": {
+      "1": {
+        "silver_per_tick": 20.0,
+        "per_10_wanaxes": 2.0,
+        "gross_army_equivalents": {
+          "spearman": 20.0,
+          "elite_infantry": 10.0,
+          "war_chariot": 6.666666666666667,
+          "galley": 13.333333333333334,
+          "war_galley": 8.0,
+          "merchantman": 20.0
+        },
+        "whole_units": {
+          "spearman": 20,
+          "elite_infantry": 10,
+          "war_chariot": 6,
+          "galley": 13,
+          "war_galley": 8,
+          "merchantman": 20
+        },
+        "same_payer_garrison_net_equivalents_default_share_0_7": {
+          "spearman": 66.66666666666667,
+          "elite_infantry": 33.333333333333336,
+          "war_chariot": 22.222222222222225,
+          "galley": 44.44444444444445,
+          "war_galley": 26.666666666666668,
+          "merchantman": 66.66666666666667
+        }
+      },
+      "3": {
+        "silver_per_tick": 36.470588235294116,
+        "per_10_wanaxes": 3.6470588235294117,
+        "gross_army_equivalents": {
+          "spearman": 36.470588235294116,
+          "elite_infantry": 18.235294117647058,
+          "war_chariot": 12.156862745098039,
+          "galley": 24.313725490196077,
+          "war_galley": 14.588235294117647,
+          "merchantman": 36.470588235294116
+        },
+        "whole_units": {
+          "spearman": 36,
+          "elite_infantry": 18,
+          "war_chariot": 12,
+          "galley": 24,
+          "war_galley": 14,
+          "merchantman": 36
+        },
+        "same_payer_garrison_net_equivalents_default_share_0_7": {
+          "spearman": 121.56862745098039,
+          "elite_infantry": 60.78431372549019,
+          "war_chariot": 40.52287581699347,
+          "galley": 81.04575163398694,
+          "war_galley": 48.627450980392155,
+          "merchantman": 121.56862745098039
+        }
+      }
+    },
+    "sample_high": {
+      "1": {
+        "silver_per_tick": 42.5,
+        "per_10_wanaxes": 4.25,
+        "gross_army_equivalents": {
+          "spearman": 42.5,
+          "elite_infantry": 21.25,
+          "war_chariot": 14.166666666666666,
+          "galley": 28.333333333333332,
+          "war_galley": 17.0,
+          "merchantman": 42.5
+        },
+        "whole_units": {
+          "spearman": 42,
+          "elite_infantry": 21,
+          "war_chariot": 14,
+          "galley": 28,
+          "war_galley": 17,
+          "merchantman": 42
+        },
+        "same_payer_garrison_net_equivalents_default_share_0_7": {
+          "spearman": 141.66666666666669,
+          "elite_infantry": 70.83333333333334,
+          "war_chariot": 47.22222222222223,
+          "galley": 94.44444444444446,
+          "war_galley": 56.666666666666664,
+          "merchantman": 141.66666666666669
+        }
+      },
+      "3": {
+        "silver_per_tick": 77.49999999999999,
+        "per_10_wanaxes": 7.749999999999998,
+        "gross_army_equivalents": {
+          "spearman": 77.49999999999999,
+          "elite_infantry": 38.74999999999999,
+          "war_chariot": 25.83333333333333,
+          "galley": 51.66666666666666,
+          "war_galley": 30.999999999999993,
+          "merchantman": 77.49999999999999
+        },
+        "whole_units": {
+          "spearman": 77,
+          "elite_infantry": 38,
+          "war_chariot": 25,
+          "galley": 51,
+          "war_galley": 31,
+          "merchantman": 77
+        },
+        "same_payer_garrison_net_equivalents_default_share_0_7": {
+          "spearman": 258.3333333333333,
+          "elite_infantry": 129.16666666666666,
+          "war_chariot": 86.1111111111111,
+          "galley": 172.2222222222222,
+          "war_galley": 103.33333333333331,
+          "merchantman": 258.3333333333333
+        }
+      }
+    },
+    "theoretical_4_limestone": {
+      "1": {
+        "silver_per_tick": 50,
+        "per_10_wanaxes": 5.0,
+        "gross_army_equivalents": {
+          "spearman": 50.0,
+          "elite_infantry": 25.0,
+          "war_chariot": 16.666666666666668,
+          "galley": 33.333333333333336,
+          "war_galley": 20.0,
+          "merchantman": 50.0
+        },
+        "whole_units": {
+          "spearman": 50,
+          "elite_infantry": 25,
+          "war_chariot": 16,
+          "galley": 33,
+          "war_galley": 20,
+          "merchantman": 50
+        },
+        "same_payer_garrison_net_equivalents_default_share_0_7": {
+          "spearman": 166.66666666666669,
+          "elite_infantry": 83.33333333333334,
+          "war_chariot": 55.555555555555564,
+          "galley": 111.11111111111113,
+          "war_galley": 66.66666666666667,
+          "merchantman": 166.66666666666669
+        }
+      },
+      "3": {
+        "silver_per_tick": 91.17647058823528,
+        "per_10_wanaxes": 9.117647058823527,
+        "gross_army_equivalents": {
+          "spearman": 91.17647058823528,
+          "elite_infantry": 45.58823529411764,
+          "war_chariot": 30.392156862745093,
+          "galley": 60.784313725490186,
+          "war_galley": 36.47058823529411,
+          "merchantman": 91.17647058823528
+        },
+        "whole_units": {
+          "spearman": 91,
+          "elite_infantry": 45,
+          "war_chariot": 30,
+          "galley": 60,
+          "war_galley": 36,
+          "merchantman": 91
+        },
+        "same_payer_garrison_net_equivalents_default_share_0_7": {
+          "spearman": 303.92156862745094,
+          "elite_infantry": 151.96078431372547,
+          "war_chariot": 101.30718954248366,
+          "galley": 202.6143790849673,
+          "war_galley": 121.56862745098037,
+          "merchantman": 303.92156862745094
+        }
+      }
+    }
+  }
+}

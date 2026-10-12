@@ -17,10 +17,10 @@ type Execer interface {
 	Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error)
 }
 
-// RecomputeDivineValuations rebuilds a world's divine price list.
+// RecomputeDivineValuations rebuilds valuation version 2 in worker ticks.
 //
 // Runs ONCE PER DAY on the tick, never per rite: a prayer must not pay for a
-// world-wide scan. The result lands in divine_valuations and is read by both
+// world-wide scan. The result lands in divine_labor_valuations and is read by both
 // consumers — a prayer's odds and the standing cult's flow.
 //
 // The measure deliberately counts only ACTIVE settlements and distinct OWNERS.
@@ -61,7 +61,7 @@ func RecomputeDivineValuations(ctx context.Context, db Execer, worldID uuid.UUID
 		     SELECT * FROM unnest($3::text[], $4::float8[]) AS t(good_key, min_stock)
 		 )
 		 SELECT g.key,
-		        g.base_value,
+		        g.labor_value,
 		        COALESCE(COUNT(DISTINCT stock.owner_id) FILTER (
 		            WHERE stock.amount >= COALESCE(threshold.min_stock, $2)
 		        ), 0) AS holders,
@@ -69,7 +69,8 @@ func RecomputeDivineValuations(ctx context.Context, db Execer, worldID uuid.UUID
 		 FROM goods g
 		 LEFT JOIN stock ON stock.good_key = g.key
 		 LEFT JOIN threshold ON threshold.good_key = g.key
-		 GROUP BY g.key, g.base_value`,
+		 WHERE g.labor_value IS NOT NULL AND g.status = 'active'
+		 GROUP BY g.key, g.labor_value`,
 		worldID, holderMinStock, goodKeys, goodThresholds)
 	if err != nil {
 		return fmt.Errorf("load world stock: %w", err)
@@ -121,15 +122,15 @@ func RecomputeDivineValuations(ctx context.Context, db Execer, worldID uuid.UUID
 		// Smoothing reads the previous value inside the UPSERT so the whole
 		// recompute stays one statement per good and cannot half-apply.
 		if _, err := db.Exec(ctx,
-			`INSERT INTO divine_valuations
+			`INSERT INTO divine_labor_valuations
 			   (world_id, good_key, rarity_spread, rarity_volume, divine_value, calc_tick)
 			 VALUES ($1, $2, $3, $4, $5, current_world_tick())
 			 ON CONFLICT (world_id, good_key) DO UPDATE SET
 			   rarity_spread = EXCLUDED.rarity_spread,
 			   rarity_volume = EXCLUDED.rarity_volume,
 			   divine_value  = CASE
-			       WHEN divine_valuations.divine_value <= 0 THEN EXCLUDED.divine_value
-			       ELSE divine_valuations.divine_value * (1 - $6) + EXCLUDED.divine_value * $6
+			       WHEN divine_labor_valuations.divine_value <= 0 THEN EXCLUDED.divine_value
+			       ELSE divine_labor_valuations.divine_value * (1 - $6::float8) + EXCLUDED.divine_value * $6::float8
 			   END,
 			   calc_tick = EXCLUDED.calc_tick`,
 			worldID, g.key, rarity.Spread, rarity.Volume, computed, smoothing,
@@ -143,7 +144,7 @@ func RecomputeDivineValuations(ctx context.Context, db Execer, worldID uuid.UUID
 // LoadDivineValues reads a world's divine price list as good_key→value.
 func LoadDivineValues(ctx context.Context, db Execer, worldID uuid.UUID) (map[string]float64, error) {
 	rows, err := db.Query(ctx,
-		`SELECT good_key, divine_value FROM divine_valuations WHERE world_id = $1`, worldID)
+		`SELECT good_key, divine_value FROM divine_labor_valuations WHERE world_id = $1`, worldID)
 	if err != nil {
 		return nil, err
 	}
@@ -158,4 +159,65 @@ func LoadDivineValues(ctx context.Context, db Execer, worldID uuid.UUID) (map[st
 		values[key] = v
 	}
 	return values, rows.Err()
+}
+
+// LaborValueUnit labels the measure in event payloads; player surfaces say workdays.
+const LaborValueUnit = "worker_ticks"
+const LaborValuationVersion = 2
+
+// LoadLaborValues is the shared reference used by the index and both cult consumers.
+func LoadLaborValues(ctx context.Context, db Execer) (map[string]float64, error) {
+	rows, err := db.Query(ctx, `SELECT key,labor_value FROM goods WHERE labor_value IS NOT NULL AND status='active'`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	values := map[string]float64{}
+	for rows.Next() {
+		var key string
+		var value float64
+		if err := rows.Scan(&key, &value); err != nil {
+			return nil, err
+		}
+		values[key] = value
+	}
+	return values, rows.Err()
+}
+
+// InitializeLaborValuations runs before serving requests. Existing v2 history
+// is retained on restarts; the historical v1 table never supplies a seed value.
+func InitializeLaborValuations(ctx context.Context, db interface {
+	Execer
+	Begin(context.Context) (pgx.Tx, error)
+}, worldID uuid.UUID) error {
+	tx, err := db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	// Serialize the first initialization for this world. The whole index appears
+	// atomically; a failed boot cannot leave a partial history to smooth later.
+	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtext($1))`, worldID.String()); err != nil {
+		return err
+	}
+	rows, err := tx.Query(ctx, `SELECT EXISTS(SELECT 1 FROM goods g WHERE g.labor_value IS NOT NULL
+ AND g.status='active' AND NOT EXISTS(SELECT 1 FROM divine_labor_valuations dv
+ WHERE dv.world_id=$1 AND dv.good_key=g.key))`, worldID)
+	if err != nil {
+		return err
+	}
+	var missing bool
+	if rows.Next() {
+		err = rows.Scan(&missing)
+	}
+	rows.Close()
+	if err != nil {
+		return err
+	}
+	if missing {
+		if err := RecomputeDivineValuations(ctx, tx, worldID); err != nil {
+			return err
+		}
+	}
+	return tx.Commit(ctx)
 }

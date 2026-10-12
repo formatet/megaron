@@ -27,6 +27,7 @@ import (
 	"formatet/megaron/server/internal/loyalty"
 	"formatet/megaron/server/internal/messenger"
 	"formatet/megaron/server/internal/notify"
+	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/transport"
 	"formatet/megaron/server/internal/world"
@@ -109,6 +110,10 @@ func main() {
 	serverWorldID, err := ensureWorld(ctx, pool, gameClock)
 	if err != nil {
 		slog.Error("ensure world", "err", err)
+		os.Exit(1)
+	}
+	if err := religion.InitializeLaborValuations(ctx, pool, serverWorldID); err != nil {
+		slog.Error("initialize labor valuations", "err", err)
 		os.Exit(1)
 	}
 	slog.Info("world ready", "id", serverWorldID)

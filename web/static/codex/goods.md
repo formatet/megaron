@@ -16,3 +16,9 @@ Everything your cities make, eat and trade is a **good**. The **Economy (⚖)** 
 - **Transfer** — move goods between your own cities ([[transfers]]).
 - **Automation** — [[routes|standing orders]] that move goods for you while you are away.
 - **Wants** — shortages and surpluses in every city you have [[contact|contacted]]: where to [[trade]].
+
+## Workdays per unit
+
+Economy → Goods and `keryx goods` show **Workdays/unit**: reference labour on standard ground, including a refined good's ingredients. Most raw goods represent one workday; ordinary fieldstone takes two, and bronze takes eleven. Faster ground and better buildings improve your actual output. The gods weigh world scarcity separately ([[rites]]).
+
+Goods have no fixed buying price. Wanaxes agree their own trade prices. One miner on a hill with a level-one mine produces one silver per day; limestone produces two and a half. Without a mine, silver is not extracted.

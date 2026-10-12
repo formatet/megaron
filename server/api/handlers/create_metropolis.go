@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"formatet/megaron/server/internal/province"
-	"log/slog"
 
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/hexgrid"
@@ -32,9 +31,10 @@ type metropolisParams struct {
 	Cedar   bool
 	Coastal bool
 
-	Name       string
-	Culture    string
-	Population int
+	Name          string
+	Culture       string
+	Population    int
+	CarriedSilver float64 // already owned by the founding host
 }
 
 // createdMetropolis identifies the rows createMetropolis raised.
@@ -86,7 +86,7 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 	}
 
 	// Create the settlement (capital).
-	// Silver now lives in settlement_goods (seeded below via GenesisSilverLiquid).
+	// Silver now lives in settlement_goods (seeded below from the founding endowment).
 	err = tx.QueryRow(ctx,
 		`INSERT INTO settlements
 		 (world_id, province_id, name, culture_id, owner_id, founder_id, control_type, is_capital, loyalty, loyalty_points, population)
@@ -101,7 +101,7 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 	// No Sitos seed. The fund's genesis silver is gone with migration 106 — the
 	// granary holds food, not silver, and it starts empty: a city has no reserve
 	// before its first surplus. The capital's own starting silver still comes
-	// from GenesisSilverLiquid below, which is one of the two sanctioned faucets
+	// from the endowment below, which is one of the two sanctioned faucets
 	// (B3: starting silver and mines).
 
 	// Link province back to its controlling settlement.
@@ -135,7 +135,7 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 		                 -- the old per-good caps predated the 2026-07-05 cap
 		                 -- loosening and pinned never-produced/never-crafted goods
 		                 -- at a low binding value (silver's real cap is set by the
-		                 -- Sitos liquid-silver seed below)
+		                 -- endowment below)
 		        current_world_tick()
 		 FROM goods g
 		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
@@ -144,23 +144,20 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 		return out, &metropolisError{"could not seed goods", err}
 	}
 
-	// Sitos genesis seed: sow LIQUID silver (goods.silver), separate from the
-	// fund seed above — a settlement with 0 liquid silver can't pay for buy
-	// offers or army upkeep even with a full fund (temenos_sitos.md). Same
-	// silver-invariant exception class as the fund seed. Runs before
-	// RecomputeProduction below so a same-tick recompute settles from this
-	// amount rather than the bulk-insert's placeholder 0.
-	if grainBaseValue, gbErr := economy.GoodBaseValue(ctx, tx, "grain"); gbErr != nil {
-		slog.Error("sitos genesis: load grain base value for liquid silver", "err", gbErr)
-	} else {
-		liquidSeed, liquidCap := economy.GenesisSilverLiquid(p.Population, grainBaseValue, sitosCfg)
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlement_goods SET amount = $1, cap = $2, calc_tick = current_world_tick()
-			 WHERE settlement_id = $3 AND good_key = 'silver'`,
-			liquidSeed, liquidCap, out.SettlementID,
-		); err != nil {
-			slog.Error("sitos genesis: seed liquid silver failed", "err", err, "settlement", out.SettlementID)
-		}
+	// A prior-city witness or refugee host forbids a second endowment, including
+	// direct internal callers that did not come through the host HTTP surface.
+	var refugee bool
+	if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM founder_phase
+	 WHERE world_id=$1 AND owner_id=$2 AND active AND is_refugee)
+	 OR EXISTS(SELECT 1 FROM player_world_records WHERE world_id=$1
+	 AND player_id=$2 AND last_settlement_id IS NOT NULL)`, p.WorldID, p.PlayerID).Scan(&refugee); err != nil {
+		return out, &metropolisError{"could not read founding endowment eligibility", err}
+	}
+	liquidSeed, liquidCap := economy.MetropolisSilver(p.Coastal, p.CarriedSilver, refugee)
+	if _, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=$1,
+	 cap=GREATEST($2, GREATEST(0,settled(amount,rate,calc_tick))), calc_tick=current_world_tick()
+	 WHERE settlement_id=$3 AND good_key='silver'`, liquidSeed, liquidCap, out.SettlementID); err != nil {
+		return out, &metropolisError{"could not seed starting silver", err}
 	}
 
 	// Compute starting kharis_rate from local pantheon power.

@@ -7,11 +7,11 @@ import (
 
 func TestAlphaTraditionalRecipesOctoberDecision(t *testing.T) {
 	expected := map[string]map[string]float64{
-		PrayerPotniaVision:     {"grain": 10, "silver": 100},
+		PrayerPotniaVision:     {"grain": 10, "silver": 3},
 		PrayerPotniaWalls:      {"grain": 8, "timber": 4},
-		PrayerGreenShoots:      {"grain": 15, "silver": 50},
-		PrayerAsterionThread:   {"timber": 4, "silver": 100},
-		PrayerStillnessPassage: {"fish": 6, "silver": 100},
+		PrayerGreenShoots:      {"grain": 15, "silver": 2},
+		PrayerAsterionThread:   {"timber": 4, "silver": 3},
+		PrayerStillnessPassage: {"fish": 6, "silver": 3},
 	}
 	for id, recipe := range expected {
 		t.Run(id, func(t *testing.T) {

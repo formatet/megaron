@@ -1,0 +1,17 @@
+inland_endowment NAMED RED; BYTE RESTORED
+coastal_endowment NAMED RED; BYTE RESTORED
+founding_double_credit NAMED RED; BYTE RESTORED
+refugee_no_extra_mint NAMED RED; BYTE RESTORED
+colony_cap NAMED RED; BYTE RESTORED
+bronze_work_chain NAMED RED; BYTE RESTORED
+stone_work_reference NAMED RED; BYTE RESTORED
+hills_miner_anchor NAMED RED; BYTE RESTORED
+limestone_miner_anchor NAMED RED; BYTE RESTORED
+silver_no_floor NAMED RED; BYTE RESTORED
+kharis_shared_reference NAMED RED; BYTE RESTORED
+v2_smoothing_float NAMED RED; BYTE RESTORED
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-silverkalibrering/tools/silver_calibration_mutations.py", line 36, in <module>
+    (OUT/'restored-fresh-green.log').write_text(r.stdout+r.stderr);assert r.returncode==0,(r.stdout,r.stderr)
+                                                                          ^^^^^^^^^^^^^^^
+AssertionError: ('ok  \tformatet/megaron/server/internal/economy\t0.007s\nok  \tformatet/megaron/server/internal/religion\t0.016s\nok  \tformatet/megaron/server/internal/kharis\t0.038s\nok  \tformatet/megaron/server/internal/combat\t0.151s\n2026/10/12 23:21:04 INFO player registered id=eaa7054f-4fda-47c2-8e42-73138d83f116 username=alpha-af8bbb6d-124a-4812-8cc3-3ff8d11af23d\n2026/10/12 23:21:04 INFO player registered id=da912f78-cc82-4eb1-b343-bbad46006bcd username=alpha-86ff2ad3-3e37-460e-b54d-178098dd7967\n2026/10/12 23:21:04 INFO player registered id=b198a8ff-6194-4037-9cec-26bc9a380da2 username=alpha-4588be0d-d28e-449f-a903-6da3eb18b9a6\n2026/10/12 23:21:04 INFO player registered id=2b77cdb6-6d46-4a08-93c1-26f184183925 username=alpha-974f12bd-1bd0-4c28-9668-7e1355ac0e33\n2026/10/12 23:21:04 INFO player registered id=a2ece47d-5b7a-4036-aef9-f3f9664c83bb username=alpha-e2f1c9d4-bb29-450c-80fd-de9def26f390\n2026/10/12 23:21:04 INFO player registered id=635b1c95-9cbe-4c00-95c8-a274754f9a85 username=alpha-acd1ef8c-abe0-455e-8a5f-71249bbf69e7\n2026/10/12 23:21:04 INFO player registered id=3c485db9-790f-4c17-a6bb-259bc3c0754c username=alpha-b67d6466-cbc4-456a-96f8-3d98a5134e4e\n2026/10/12 23:21:04 INFO player registered id=3616645e-a958-4a6d-9b15-98bc24c81ae9 username=alpha-b464d537-764f-4b17-bae5-18595687edeb\n2026/10/12 23:21:04 INFO player registered id=e4aff3cc-3826-4f5b-b665-9575374f15d0 username=alpha-a9ca1187-2f52-4f5a-9018-623f33176ad8\n2026/10/12 23:21:04 INFO player registered id=2cf99cb9-2b21-462a-9cd4-7b25c750d8d3 username=alpha-2d60a3a3-0e72-4fc7-9b2e-33415dde3ddf\n2026/10/12 23:21:05 INFO player registered id=36e219c3-ea0b-4da6-857b-40e61b7ced73 username=alpha-84d98785-61cf-47d6-891c-ab1f7f2a2045\n--- FAIL: TestSilverCalibrationOfferWorkAndLegacyPayloadRead (0.08s)\n    silver_calibration_test.go:161: offer work=0 want19.439980023413185 from grain/silver labor values\nFAIL\nFAIL\tformatet/megaron/server/api/handlers\t1.075s\nFAIL\n', '» färsk DB på migration 177 · commit 26f41bd2+ändringar\n')
