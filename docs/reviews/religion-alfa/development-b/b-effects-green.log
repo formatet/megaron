@@ -1,0 +1,21 @@
+» färsk DB på migration 176 · commit 2ddee968+ändringar
+2026/10/12 19:30:36 INFO player registered id=dca5e17d-05e3-4129-94f8-0602050f9e65 username=alpha-b7635698-8109-4af8-98b7-7146476e0c38
+2026/10/12 19:30:37 INFO player registered id=ca16a551-3bfc-4205-8024-f87d488fdfd2 username=alpha-f2d53875-dd13-467c-8400-9d7768543243
+2026/10/12 19:30:37 INFO player registered id=282906ac-48ac-47e9-9e34-c1e4f112f158 username=alpha-1df5d3ab-b216-47b4-8fff-55575219e629
+2026/10/12 19:30:37 INFO player registered id=354c0bbe-425b-465a-af6b-07495debfcef username=alpha-d8f0fe19-886e-4631-a537-1546f7730b99
+2026/10/12 19:30:37 INFO player registered id=53b0c0c2-1532-4e37-b556-96a9b78c2272 username=alpha-6f06e920-332e-4a10-bf45-1ab690be439e
+2026/10/12 19:30:37 INFO player registered id=915563cf-d60f-4263-8c10-34f020df5ae4 username=alpha-437b0bea-28e7-4abc-b54f-854eed50dbdc
+2026/10/12 19:30:37 INFO player registered id=663b9d5d-2a76-472f-a940-78fa89465077 username=alpha-d542d486-e8c4-41f8-a925-7b0f7cace5ef
+2026/10/12 19:30:37 INFO player registered id=e7320867-c681-4eef-bdb3-47fc941767bf username=alpha-96e86072-2e47-4e9e-9795-5e55bead218d
+2026/10/12 19:30:37 INFO player registered id=658dc7d8-1eeb-4d9a-8d7d-de7d3a3f848a username=alpha-1869f4ce-95b2-451a-984f-9aef5585f238
+2026/10/12 19:30:37 INFO player registered id=0443cb3d-53fd-4229-91b3-1ae5452a6fb3 username=alpha-8cb375eb-193a-4eb7-b835-73e5728d90c5
+2026/10/12 19:30:37 INFO player registered id=92fa6325-f40b-4e3a-adbd-cc7092b6947b username=thread-sender-f7f1aafe-41fa-4f81-aa59-880992acee0c
+2026/10/12 19:30:37 INFO player registered id=2c6011fe-813c-44c1-9043-2b292fbbd777 username=thread-recipient-b2aeeef9-2b30-47e3-b526-0a238c6b342e
+--- FAIL: TestBetaRunnerRealSendConsumesThread (0.10s)
+    religion_departure_test.go:184: send422 map[error:no port of yours to take ship from — a runner cannot cross the sea without a ship]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.850s
+ok  	formatet/megaron/server/internal/transport	0.019s
+ok  	formatet/megaron/server/internal/combat	0.250s
+ok  	formatet/megaron/server/internal/religion	0.002s
+FAIL

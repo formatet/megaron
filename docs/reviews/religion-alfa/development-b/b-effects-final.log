@@ -1,0 +1,11 @@
+» färsk DB på migration 176 · commit 2ddee968+ändringar
+ok  	formatet/megaron/server/internal/combat	0.181s
+# formatet/megaron/server/api/handlers [formatet/megaron/server/api/handlers.test]
+api/handlers/religion_departure_test.go:168:39: too many arguments in call to f.settlement
+	have (*testing.T, "github.com/google/uuid".UUID, number, number, bool)
+	want (*testing.T, string, int, "github.com/google/uuid".UUID)
+api/handlers/religion_departure_test.go:169:41: too many arguments in call to f.settlement
+	have (*testing.T, "github.com/google/uuid".UUID, number, number, bool)
+	want (*testing.T, string, int, "github.com/google/uuid".UUID)
+FAIL	formatet/megaron/server/api/handlers [build failed]
+FAIL

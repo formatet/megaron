@@ -1,0 +1,11 @@
+thread-flag named red; byte restored
+thread-radius named red; byte restored
+runner-factor named red; byte restored
+stillness-speed named red; byte restored
+stillness-storm named red; byte restored
+freight-stamp named red; byte restored
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-religion-alfa/tools/religion_beta_mutations.py", line 28, in <module>
+    assert r.returncode!=0 and '--- FAIL: '+test in r.stdout,(name,'missing named red',r.stdout,r.stderr)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('storm-owner', 'missing named red', '', "docker: Error response from daemon: failed to set up container networking: driver failed programming external connectivity on endpoint megaron-gotest-3235395 (ab968e19f5fa9fe28618444df9dd62a6cd8710df5f5db491c2cb2a9723ffb386): Bind for 0.0.0.0:56379 failed: port is already allocated\n\nRun 'docker run --help' for more information\n")

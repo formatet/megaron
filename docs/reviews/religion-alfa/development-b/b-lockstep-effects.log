@@ -1,0 +1,8 @@
+» färsk DB på migration 176 · commit 2ddee968+ändringar
+# formatet/megaron/server/internal/combat
+internal/combat/march_start.go:922:15: undefined: currentStatus
+FAIL	formatet/megaron/server/api/handlers [build failed]
+ok  	formatet/megaron/server/internal/transport	0.020s
+FAIL	formatet/megaron/server/internal/combat [build failed]
+ok  	formatet/megaron/server/internal/religion	0.002s
+FAIL

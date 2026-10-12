@@ -1,0 +1,10 @@
+» färsk DB på migration 176 · commit 2ddee968+ändringar
+ok  	formatet/megaron/server/api/handlers	0.666s
+ok  	formatet/megaron/server/internal/transport	0.020s
+# formatet/megaron/server/internal/combat [formatet/megaron/server/internal/combat.test]
+internal/combat/departure_prayer_test.go:116:54: not enough arguments in call to NewUnitArrivalHandler
+	have (*pgxpool.Pool, *events.Scheduler, *events.Store, *clock.TestClock, nil)
+	want (*pgxpool.Pool, *events.Store, Broadcaster, *events.Scheduler, clock.Clock, economy.SitosConfig)
+FAIL	formatet/megaron/server/internal/combat [build failed]
+ok  	formatet/megaron/server/internal/religion	0.002s
+FAIL

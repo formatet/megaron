@@ -1,0 +1,7 @@
+2026/10/12 19:37:18 INFO player registered id=f6c4a828-56b4-4086-a481-0cf2309e6fd8 username=alpha-4d6f7701-50ed-4561-8c58-afc896f58553
+--- FAIL: TestBetaPrayerAfterShipDepartureDoesNotProtectVoyage (0.07s)
+    religion_departure_test.go:235: late prayer altered or protected the departed ship
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.069s
+FAIL
+» färsk DB på migration 176 · commit 2ddee968+ändringar

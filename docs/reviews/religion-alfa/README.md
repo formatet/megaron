@@ -1,6 +1,23 @@
-# Religion-alfa — inventering och talförslag före kod
+# Religion-alfa — inventering, implementation och verifiering
 
-## Sammanfattning / granskningspunkt
+## Checkpoint B — granskningspunkt
+
+Bas **2ddee968** (A mergad och LIVE av Claude), samma gren `codex/religion-alfa`.
+B-produktion **3858cfab**, migration **176**. Fem minoiska böner är nu aktiva.
+
+- Asterion: lokal ägarstämplad engångsgåva för nästa utresande landkaravan eller Runner. Tid ×0,75; landkaravanens överfallsradie2→1, Runner fortsatt helig. Arméer läser/förbrukar ingen av gåvorna.
+- Stillhet: **The Sea Daimons of Stillness**, bön **Favourable Passage**. Nästa verkliga skepp från den egna staden får utresans tid ×0,75. Stormskadan läser en ägarstämpel för exakt avfärds-/ankomsttick. Bud ombord följer bärarens redan sparade resa. Stormväder, heltick-sampling och ordinarie skadebelopp orörda.
+- `departure_prayers` konsumeras i samma TX som avfärden; pending kan inte förnyas, överförs inte till ny ägare och återställs vid rollback. Gudsväntan12, kharis-gates och successful-only från A. Förbrukning flyttar aldrig en pågående resa; returer läser ingen ny bön och ärver ingen bonus.
+- **12 fysiska mutationer**: Thread-flagga/radie, Runner-fart, Stillness-fart/stormskydd/fraktskeppsstämpel/ägare, stående retur/returförbrukning, sena böner för verklig karavan/skepp, armébehörighet. Samtliga named red → byteåterställt → färsk gemensam grön. [Resultat](mutations-b/results.json), [återställt](mutations-b/restored-fresh.log).
+- **Full färsk Go/tomDB/mig176, 608 JS och vet gröna.** Resultat: [Go](b-full-go.log), [JS](b-js.log), [vet](b-vet.log). Slutstatus i [verifiering](checkpoint-b-verification.json). Go-loggens `+ändringar` gäller rapportens README, produktionen `server/web` är exakt3858cfab.
+- **Native Firefox1280/390 + Keryx:** healthz **3858cfa/mig176**, tom produktionsdiff. Fem böner, rätt gudsnamn, två verkliga Offer200/lyckade svar, båda pending och wait12 utan falsk varaktighet; inga JS-fel/HTTP-overrides. [Fakta](live-b/verification.json), [Keryx](live-b/keryx-after.txt).
+- **BILD till Claude/Timothy:** [desktop](live-b/desktop.png), [pending](live-b/desktop-pending.png), [desktop avfärdsböner](live-b/desktop-departure-prayers.png), [mobil](live-b/mobile.png), [mobil böner](live-b/mobile-prayers.png). Ingen egen bildapproval påstås.
+
+Spelarprovet använder normal register/join/grundning följt av **explicit egen PRE-ACTION SQL-fixtur**: tempel3, kharis90/rate0, grain/timber/fish/silver100. Ingen SQL under handlingarna. Det bevisar tempelinteraktionen, **inte naturligt tempelbygge eller ekonomisk nåbarhet**. Resornas beteende provas i DB/HTTP/worker-integration; inget naturligt stormväders- eller balansexperiment påstås för B. Egna runtime/containrar städade. Ingen merge/push/deploy från Codex.
+
+## Checkpoint A — tidigare överlämning (nu mergad/LIVE 2ddee968)
+
+Följande sammanfattning beskriver A vid dess överlämning; B ovan är aktuellt resultat.
 
 Bas **6f89290b**, gren `codex/religion-alfa`, worktree `/home/tk/wt/codex-religion-alfa`.
 **CHECKPOINT A KLAR + STOPP FÖR CLAUDES GRANSKNING.** Tal/inventering c52314c1 godkända 18:47;
@@ -14,7 +31,7 @@ produktion **ee0762cc**, migration **175**. Asterion/Stillhet hör till **B och 
 - Verklig Firefox/Keryx mot **healthz ee0762c/mig175**: Offer200, aktiv Walls6 och delad Visionwait24, explicit default/effekttext, ingaJSfel eller HTTP-overrides. [Fakta](live-a/verification.json), [Keryx](live-a/keryx-after.txt).
 - **BILD-bunt:** [desktop](live-a/desktop.png), [desktop aktiv](live-a/desktop-active.png), [mobil](live-a/mobile.png), [mobil alla tre böner](live-a/mobile-prayers.png). Kräver Claudes/Timothys bilddom enligt överlämningskedjan; ingen egen approval påstås.
 
-**Kvar:** Claude granskar/integrerar A och ger separat START för B. Ingen merge, push eller deploy från Codex.
+**Då kvar:** Claude granskar/integrerar A och ger separat START för B (utfört19:19). Ingen merge, push eller deploy från Codex.
 Hela `megaron_religion_sammanstallning_20261012.md` läst före arbetet; kanon §5b/§5c och ordern gäller.
 
 Claude 18:37 godkände tre uppmätta avgränsningar: Mistress behöver en faktisk garnisonsförsvarsläsare
@@ -22,7 +39,7 @@ Claude 18:37 godkände tre uppmätta avgränsningar: Mistress behöver en faktis
 Asterion ger landkaravan radie2→1 och fart; bud får bara fart eftersom de redan är heliga.
 Vaultens sammanställning §2 rättad för skördeeffekten. Stormscanens heltick-sampling är **inte i scope**.
 
-**Traditionella offer — godkända av Claude 18:47 (B fortfarande reserverad):**
+**Traditionella offer — godkända av Claude 18:47 (B reserverades då):**
 
 | Bön / gud | Spannmål | Timmer | Fisk | Silver | Varför |
 |---|---:|---:|---:|---:|---|
@@ -291,3 +308,21 @@ python3 tools/religion_alpha_mutations.py; python3 tools/religion_alpha_live.py.
 
 Grindar A: kod/semantik gröna, faktisk tempelinteraktion/API+Keryx+Firefox grön med angiven fixtur.
 BILD levererad för separat dom; drift väntar Claude. Checkpoint B är inte påbörjad.
+
+## Checkpoint B contract (START 2026-10-12, base 2ddee968)
+
+Problem: the two reserved travel prayers have no departure consumers. Player truth: a successful offering waits in its city for one eligible outward departure. Invariant: owner-stamped pending blessings are consumed transactionally once; saved journeys, armies, return legs and storm sampling retain their behavior. Scope: one pending-departure projection, frozen journey metadata, caravan/Runner/ship departure consumers, existing interception/storm damage readers and four surfaces. Acceptance: five usable prayers; factor 0.75 at departure; land caravan radius1; Stillness no damage only that leg; late cast and return inheritance tests with physical mutations. Fresh baseline then full fresh Go/JS/vet plus native Firefox/Keryx proof. Hash and STOPP; Claude integrates. Supports the trade part of the chain, does not prove a natural full economic progression.
+
+## B — lifecycle, grindar och avvikelser
+
+Alla transport.Dispatch-writers går genom samma consumption. Shadow-writers för intern transfer/gift och bilateral trade förbereder gåvan **före** ETA, fryst journey och schemaläggning; stående order gör samma för utresan. Returjourneys planeras separat och får inget av utresans metadata. Gamla JSON utan nya fält använder samma ursprungliga faktor1 och kalibrering; historiska payloads och StepCosts skrivs inte om.
+
+Runner Send (inklusive offerbud) och sendOrderCourier fryser den första avfärdslegens ETA i samma insert/schedule-TX som förbrukningen. En väntande budpassage behöver verkligt skepp; dess sjöleg/retur och senare landleg konsumerar inte Asterion. Skeppets StartMarch låser status och konsumtion före tidskontrollerna; preview läser pending men konsumerar aldrig. Expeditionens returnresolver använder samma TX för sina FOR SHARE-lås. Return/redirect/limp rensar skeppsstämpeln, medan stormvakten också kräver exakt voyage och nuvarande ägare.
+
+Färsk baslinje på2ddee968/mig175: [baseline](b-baseline.log). Riktade finalprov Beta/Alpha/Expedition: [final](b-targeted-restored.log). Testerna omfattar faktisk transport.Dispatch/schemaläggning, freighting-skepp, riktig Messenger Send-HTTP, verklig StartMarch+preview+dispatchLeg-retur, riktig stående retur, prayer-after-actual-departure, owner/rollback och fortsatt pending efter return. Stormproven använder avsiktligt lagrade testspår från den befintliga testfixturen, inte naturligt weather/seedad riskandel.
+
+Granskningen hittade två implementationfel före slutkod: stående return preflight hade fel outward=true; expedition preview och execution använde olika bonus före tidsvakterna. Båda rättade; riktade prov gröna. Flytten till avfärds-TX exponerade först en self-blocking FOR SHARE via pool i expeditionreturn-resolvern; den använder nu samma TX, fresh Expedition-gruppen och fullsviten provar det. Egna blockerade testprocessen avbröts/städades, ingen delad process. Initiala testfixturer korrigerades för aktuella RÖ1-kostnader/signaturer och riktig sammanhängande karta, ingen balansändring.
+
+En fysiskmutationskörning avbröts av upptagen testport före DB/teststart; därefter väljs ledig port per mutation och alla12 namedred samt restored-green kördes. Arkiv b-mutations-initial-port-collision.log; b-mutations.log är slutkörningen. Native UI-riggen upptäckte dolt Godnamn i Keryx när Favours saknas (rättad display) och omitempty active0 (rättad assertion). Båda före slutprovet. Precommit-resultat är arkiv; live-b och b-live.log är omkörda mot3858cfab.
+
+Repro: tools/gotest.sh; go -C server vet ./...; node --test $(rg --files web/static/js -g '*.test.mjs'); python3 tools/religion_beta_mutations.py; python3 tools/religion_beta_live.py. Grindar: funktion/semantik och faktisk UIinteraktion med angiven fixtur; BILD ligger i bunten, integration/drift ägs av Claude. **Hash och STOPP.**

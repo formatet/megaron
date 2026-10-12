@@ -1,0 +1,6 @@
+--- FAIL: TestBetaStandingReturnDoesNotConsumePendingGift (0.03s)
+    departure_prayer_test.go:196: standing return inherited Thread
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.029s
+FAIL
+» färsk DB på migration 176 · commit 2ddee968+ändringar

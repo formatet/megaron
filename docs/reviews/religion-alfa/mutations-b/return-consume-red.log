@@ -1,0 +1,11 @@
+2026/10/12 19:37:10 INFO player registered id=5deb03de-9422-43f8-b1e8-da8bb15e99c4 username=alpha-6adfbc15-fe7a-4f7f-85f1-53bd4e48ad8c
+2026/10/12 19:37:10 INFO player registered id=7e118c80-ec47-4ce2-9b9e-b2c8c0ec3182 username=alpha-25ab8507-205b-42e4-826f-b7c97acb684b
+--- FAIL: TestBetaDeparturePrayerCastConsumeLateAndReturn (0.14s)
+    --- FAIL: TestBetaDeparturePrayerCastConsumeLateAndReturn/next_land_departure (0.07s)
+        religion_departure_test.go:70: return inherited blessing {Category:land Path:[{Q:4 R:0} {Q:3 R:0} {Q:2 R:0} {Q:1 R:0} {Q:0 R:0}] StepCosts:[1000 1000 1000 1000] TravelTicks:5 Distance:4 TimeFactorMilli:750 Thread:true Stillness:false DepartureChecked:true}
+    --- FAIL: TestBetaDeparturePrayerCastConsumeLateAndReturn/next_ship_departure (0.07s)
+        religion_departure_test.go:70: return inherited blessing {Category:naval Path:[{Q:4 R:0} {Q:3 R:0} {Q:2 R:0} {Q:1 R:0} {Q:0 R:0}] StepCosts:[1000 1000 1000 1000] TravelTicks:5 Distance:4 TimeFactorMilli:750 Thread:false Stillness:true DepartureChecked:true}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.141s
+FAIL
+» färsk DB på migration 176 · commit 2ddee968+ändringar

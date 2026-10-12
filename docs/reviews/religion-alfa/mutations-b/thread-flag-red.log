@@ -1,0 +1,6 @@
+--- FAIL: TestBetaTransportFrozenDeparture (0.02s)
+    departure_test.go:50: outbound {Category:land Path:[{Q:0 R:0} {Q:1 R:0} {Q:2 R:0} {Q:3 R:0}] StepCosts:[1000 1000 1000] TravelTicks:5 Distance:3 TimeFactorMilli:0 Thread:false Stillness:false DepartureChecked:true} due5
+FAIL
+FAIL	formatet/megaron/server/internal/transport	0.017s
+FAIL
+» färsk DB på migration 176 · commit 2ddee968+ändringar

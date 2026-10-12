@@ -1,0 +1,7 @@
+2026/10/12 19:37:14 INFO player registered id=e40b1f48-5c32-48cc-b45b-412fe4186e8a username=alpha-76ce5fa1-0a2b-409f-bc47-28b4d0a773be
+--- FAIL: TestBetaPrayerAfterActualTransportDeparture (0.07s)
+    religion_departure_test.go:154: prayer after physical departure changed journey
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.071s
+FAIL
+» färsk DB på migration 176 · commit 2ddee968+ändringar

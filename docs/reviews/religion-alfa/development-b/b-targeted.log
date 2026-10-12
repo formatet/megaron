@@ -1,0 +1,13 @@
+» färsk DB på migration 176 · commit 2ddee968+ändringar
+ok  	formatet/megaron/server/api/handlers	0.714s
+--- FAIL: TestBetaTransportFrozenDeparture (0.02s)
+    departure_test.go:49: outbound {Category:land Path:[{Q:0 R:0} {Q:1 R:0} {Q:2 R:0} {Q:3 R:0}] StepCosts:[1000 1000 1000] TravelTicks:3 Distance:3 TimeFactorMilli:750 Thread:true Stillness:false DepartureChecked:true} due3
+FAIL
+FAIL	formatet/megaron/server/internal/transport	0.094s
+ok  	formatet/megaron/server/internal/messenger	0.002s [no tests to run]
+ok  	formatet/megaron/server/internal/combat	1.075s
+--- FAIL: TestAlphaCatalogueAndSilverFloor (0.00s)
+    alpha_test.go:31: floor lowered expensive silver
+FAIL
+FAIL	formatet/megaron/server/internal/religion	0.003s
+FAIL
