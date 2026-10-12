@@ -102,8 +102,10 @@ func TestAcceptance3_PathNeverResearched_AfterTerrainChange(t *testing.T) {
 		}
 		var resp struct {
 			Units []struct {
-				ID   uuid.UUID `json:"id"`
-				Path [][2]int  `json:"path"`
+				ID            uuid.UUID `json:"id"`
+				Path          [][2]int  `json:"path"`
+				StepCosts     []int64   `json:"step_costs"`
+				DepartureTick *int      `json:"departure_tick"`
 			} `json:"units"`
 		}
 		if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
@@ -111,6 +113,9 @@ func TestAcceptance3_PathNeverResearched_AfterTerrainChange(t *testing.T) {
 		}
 		for _, u := range resp.Units {
 			if u.ID == unitID {
+				if len(u.StepCosts) != len(u.Path)-1 || u.DepartureTick == nil {
+					t.Fatalf("own frozen path lacks costs/departure tick: %+v", u)
+				}
 				return u.Path
 			}
 		}

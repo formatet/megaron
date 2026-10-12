@@ -10,6 +10,7 @@
 // module from api/ws upward may import it.
 import { serverNow } from '../clock.js';
 import { State } from '../state.js';
+import { worldTickNow } from '../world_time.js';
 import { esc } from './format.js';
 import { fmtClock } from './fmt_clock.js';
 export { fmtClock } from './fmt_clock.js';
@@ -22,8 +23,7 @@ export { fmtClock } from './fmt_clock.js';
 // time (clock.js skew-anchored).
 export function msUntil(iso, arrivalTick) {
   if (arrivalTick != null && State.TICK_SECONDS > 0 && State.TICK_ANCHOR_MS != null) {
-    const nowTick = State.CURRENT_TICK
-      + (serverNow() - State.TICK_ANCHOR_MS) / (State.TICK_SECONDS * 1000);
+    const nowTick = worldTickNow();
     return (arrivalTick - nowTick) * State.TICK_SECONDS * 1000;
   }
   if (iso == null || iso === '') return NaN;

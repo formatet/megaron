@@ -460,3 +460,18 @@ named `massif border entry rights=0 want1` failure and restores the source befor
 `python3 tools/place_arrival_mutation.py` restores movement-blocking/global corrupt-journey failures,
 requires named red failures and restores the current fail-open behavior before checking green. Run mutations before
 full suites; they temporarily change the source. Proof: `docs/reviews/flod-doparratt/README.md`.
+
+## Remaining routes and compass arrows (fardvag)
+
+`PLACE_PROOF_OUTPUT="$PWD/docs/reviews/fardvag/rig" python3 tools/place_names_rig.py` rebuilds
+current branch production in the existing isolated acceptance runtime without resetting its active world.
+`python3 tools/fardvag_fixture.py create` creates an explicitly synthetic archived movement picture world;
+use only when a fresh fixture is needed. `python3 tools/fardvag_fixture.py after` records actual API payloads.
+`python3 tools/fardvag_pictures.py` captures nine actor/relation cases in Firefox 1280+390, asserting LIVE
+focus and route/arrow primitives. `--baseline-ui` serves real 746398ed JS modules through interception
+against the current compatible backend, not an old backend build. Tokens stay out of artifacts.
+`python3 tools/fardvag_live.py` uses the existing ParityNomad Host in the active world, normal march-preview
+and march, actual web/CLI reads, and arrival without SQL writes. It moves that isolated test actor.
+`python3 tools/fardvag_api_mutation.py` and `python3 tools/fardvag_client_mutation.py` require named red
+failures and restore source in finally before checking green; the API tool also supports `--agreement-only`.
+Run mutations sequentially before the full suites. Proof: `docs/reviews/fardvag/README.md`.

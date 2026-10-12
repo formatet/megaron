@@ -1,0 +1,85 @@
+{
+  "unit": {
+    "id": "f99bec2f-cacf-4fe1-9d79-c58d331741ad",
+    "type": "nomadic_host",
+    "category": "land",
+    "size": 1,
+    "status": "marching",
+    "deployable": true,
+    "display_name": "Nomadic Host of Eumedes",
+    "q": 41,
+    "r": 74,
+    "target_q": 44,
+    "target_r": 71,
+    "departs_at": "2026-10-12T06:19:59.550469Z",
+    "arrives_at": "2026-10-12T06:20:35.550469Z",
+    "arrival_tick": 7413,
+    "duration_ticks": 6,
+    "arrives_at_utc": "2026-10-12T06:20:35.554551889Z",
+    "path": [
+      [
+        41,
+        74
+      ],
+      [
+        42,
+        73
+      ],
+      [
+        43,
+        72
+      ],
+      [
+        44,
+        71
+      ]
+    ],
+    "step_costs": [
+      750,
+      750,
+      1500
+    ],
+    "departure_tick": 7407,
+    "current_q": 42,
+    "current_r": 73,
+    "in_battle": false
+  },
+  "primitive": {
+    "type": "route",
+    "kind": "army",
+    "actor_id": "f99bec2f-cacf-4fe1-9d79-c58d331741ad",
+    "segments": [
+      [
+        {
+          "x": 1386,
+          "y": 3582,
+          "q": 42,
+          "r": 73,
+          "index": 1,
+          "local": 0
+        },
+        {
+          "x": 1419,
+          "y": 3563,
+          "q": 43,
+          "r": 72
+        }
+      ],
+      [
+        {
+          "x": 1419,
+          "y": 3563,
+          "q": 43,
+          "r": 72
+        },
+        {
+          "x": 1452,
+          "y": 3544,
+          "q": 44,
+          "r": 71
+        }
+      ]
+    ],
+    "relation": "own"
+  }
+}

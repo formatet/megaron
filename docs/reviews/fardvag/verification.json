@@ -1,0 +1,40 @@
+{
+  "base": "746398ed",
+  "production_source": "cdfe6abb",
+  "runtime": {
+    "commit": "cdfe6ab",
+    "migration": 172,
+    "status": "ok"
+  },
+  "served_assets_sha256": {
+    "js/megaron/render/map.js": "833e8c82dd56435d9a771a5bd9ce733a00e5d1feb576a22c6d7045c7be10019a",
+    "js/megaron/render/routes.js": "f2ea5a2ff6b11be4535f240498a4575d54cf204800f2cc074f77c54feb9becfb",
+    "js/megaron/world_time.js": "233ee40961002783549493863609f395d18245c54819dab755be3a8d09ac2400"
+  },
+  "full_go": "green, isolated fresh migration 172",
+  "vet": "green",
+  "js": {
+    "passed": 598,
+    "failed": 0
+  },
+  "physical_mutations": 8,
+  "firefox_captures": 18,
+  "before_ui_captures": 18,
+  "before_ui_backend": "current cdfe6ab; base 746398ed native modules",
+  "natural_march": {
+    "world": "3b5fb9cd-8c06-4685-88df-b162c9acff99",
+    "unit": "Nomadic Host of Eumedes",
+    "origin": [
+      41,
+      74
+    ],
+    "target": [
+      44,
+      71
+    ],
+    "duration_ticks": 6,
+    "sql_mutations": false,
+    "arrival_route_absent": true
+  },
+  "visual_reviewer": "Claude; Timothy BILD gate waived by explicit 2026-10-12 07:54 message"
+}

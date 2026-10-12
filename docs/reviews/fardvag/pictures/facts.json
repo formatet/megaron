@@ -1,0 +1,1527 @@
+{
+  "health": {
+    "commit": "cdfe6ab",
+    "migration": 172,
+    "status": "ok"
+  },
+  "ui_source": "cdfe6ab",
+  "fixture": "explicit SQL movement snapshot in its own archived world; valid canonical unit types and saved journeys; normal LIVE eyes from two own cities, marching army and ship; no browser payload/FOW overrides; not a natural dispatch playthrough",
+  "captures": [
+    {
+      "mode": "desktop",
+      "actor": {
+        "label": "Spearmen of Lykoros",
+        "kind": "army",
+        "id": "600140ee-07f8-4ab4-8ea5-f39442f2e26e",
+        "path": [
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            4
+          ],
+          [
+            6,
+            4
+          ],
+          [
+            7,
+            4
+          ],
+          [
+            8,
+            4
+          ]
+        ],
+        "own": true,
+        "focus": {
+          "q": 5,
+          "r": 4
+        }
+      },
+      "url": "http://localhost:8097/world/1588ebaf-fd9a-4bc4-bd22-a23c6c8f2850/map",
+      "sample": {
+        "primitive": {
+          "type": "route",
+          "kind": "army",
+          "actor_id": "600140ee-07f8-4ab4-8ea5-f39442f2e26e",
+          "segments": [
+            [
+              {
+                "x": 165,
+                "y": 248,
+                "q": 5,
+                "r": 4,
+                "index": 3,
+                "local": 0
+              },
+              {
+                "x": 198,
+                "y": 267,
+                "q": 6,
+                "r": 4
+              }
+            ],
+            [
+              {
+                "x": 198,
+                "y": 267,
+                "q": 6,
+                "r": 4
+              },
+              {
+                "x": 231,
+                "y": 286,
+                "q": 7,
+                "r": 4
+              }
+            ],
+            [
+              {
+                "x": 231,
+                "y": 286,
+                "q": 7,
+                "r": 4
+              },
+              {
+                "x": 264,
+                "y": 305,
+                "q": 8,
+                "r": 4
+              }
+            ]
+          ],
+          "relation": "own"
+        },
+        "tile": {
+          "q": 0,
+          "r": 0,
+          "terrain": "plains",
+          "visible": true,
+          "tier": "remembered",
+          "fertility": 0.5,
+          "mineral": 0.5
+        },
+        "zoom": 1,
+        "frame": 1
+      },
+      "errors": []
+    },
+    {
+      "mode": "desktop",
+      "actor": {
+        "label": "Doria",
+        "kind": "ship",
+        "id": "cbc1c017-2ee5-4290-8ce7-6e9fd027a1be",
+        "path": [
+          [
+            13,
+            1
+          ],
+          [
+            13,
+            2
+          ],
+          [
+            13,
+            3
+          ],
+          [
+            13,
+            4
+          ],
+          [
+            13,
+            5
+          ],
+          [
+            13,
+            6
+          ],
+          [
+            13,
+            7
+          ]
+        ],
+        "own": true,
+        "focus": {
+          "q": 13,
+          "r": 4
+        }
+      },
+      "url": "http://localhost:8097/world/1588ebaf-fd9a-4bc4-bd22-a23c6c8f2850/map",
+      "sample": {
+        "primitive": {
+          "type": "route",
+          "kind": "ship",
+          "actor_id": "cbc1c017-2ee5-4290-8ce7-6e9fd027a1be",
+          "segments": [
+            [
+              {
+                "x": 429,
+                "y": 400,
+                "q": 13,
+                "r": 4,
+                "index": 3,
+                "local": 0
+              },
+              {
+                "x": 429,
+                "y": 438,
+                "q": 13,
+                "r": 5
+              }
+            ],
+            [
+              {
+                "x": 429,
+                "y": 438,
+                "q": 13,
+                "r": 5
+              },
+              {
+                "x": 429,
+                "y": 476,
+                "q": 13,
+                "r": 6
+              }
+            ],
+            [
+              {
+                "x": 429,
+                "y": 476,
+                "q": 13,
+                "r": 6
+              },
+              {
+                "x": 429,
+                "y": 514,
+                "q": 13,
+                "r": 7
+              }
+            ]
+          ],
+          "relation": "own"
+        },
+        "tile": {
+          "q": 0,
+          "r": 0,
+          "terrain": "plains",
+          "visible": true,
+          "tier": "remembered",
+          "fertility": 0.5,
+          "mineral": 0.5
+        },
+        "zoom": 1,
+        "frame": 1
+      },
+      "errors": []
+    },
+    {
+      "mode": "desktop",
+      "actor": {
+        "label": "Spearmen of Priam",
+        "kind": "foreign-army",
+        "id": "0e704488-ffa7-4437-a817-af5888cfe853",
+        "path": [
+          [
+            8,
+            2
+          ],
+          [
+            8,
+            3
+          ],
+          [
+            8,
+            4
+          ],
+          [
+            8,
+            5
+          ],
+          [
+            8,
+            6
+          ]
+        ],
+        "own": false,
+        "focus": {
+          "q": 8,
+          "r": 6
+        }
+      },
+      "url": "http://localhost:8097/world/1588ebaf-fd9a-4bc4-bd22-a23c6c8f2850/map",
+      "sample": {
+        "primitive": {
+          "type": "arrow",
+          "kind": "army",
+          "actor_id": "0e704488-ffa7-4437-a817-af5888cfe853",
+          "x": 264,
+          "y": 381,
+          "heading": "south"
+        },
+        "tile": {
+          "q": 0,
+          "r": 0,
+          "terrain": "plains",
+          "visible": true,
+          "tier": "remembered",
+          "fertility": 0.5,
+          "mineral": 0.5
+        },
+        "zoom": 1,
+        "frame": 1
+      },
+      "errors": []
+    },
+    {
+      "mode": "desktop",
+      "actor": {
+        "label": "Galley of Tyre",
+        "kind": "foreign-ship",
+        "id": "4bb4c37e-9bd7-44b1-bf4d-e2c824aa9f90",
+        "path": [
+          [
+            15,
+            1
+          ],
+          [
+            15,
+            2
+          ],
+          [
+            15,
+            3
+          ],
+          [
+            15,
+            4
+          ],
+          [
+            15,
+            5
+          ],
+          [
+            15,
+            6
+          ]
+        ],
+        "own": false,
+        "focus": {
+          "q": 15,
+          "r": 6
+        }
+      },
+      "url": "http://localhost:8097/world/1588ebaf-fd9a-4bc4-bd22-a23c6c8f2850/map",
+      "sample": {
+        "primitive": {
+          "type": "arrow",
+          "kind": "ship",
+          "actor_id": "4bb4c37e-9bd7-44b1-bf4d-e2c824aa9f90",
+          "x": 495,
+          "y": 514,
+          "heading": "south"
+        },
+        "tile": {
+          "q": 0,
+          "r": 0,
+          "terrain": "plains",
+          "visible": true,
+          "tier": "remembered",
+          "fertility": 0.5,
+          "mineral": 0.5
+        },
+        "zoom": 1,
+        "frame": 1
+      },
+      "errors": []
+    },
+    {
+      "mode": "desktop",
+      "actor": {
+        "label": "Caravan of Lykoros",
+        "kind": "caravan",
+        "id": "dd8abf2c-6db9-4f52-9486-49ca7ff79e17",
+        "path": [
+          [
+            4,
+            7
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            4,
+            12
+          ]
+        ],
+        "own": true,
+        "focus": {
+          "q": 4,
+          "r": 10
+        }
+      },
+      "url": "http://localhost:8097/world/1588ebaf-fd9a-4bc4-bd22-a23c6c8f2850/map",
+      "sample": {
+        "primitive": {
+          "type": "route",
+          "kind": "caravan",
+          "actor_id": "dd8abf2c-6db9-4f52-9486-49ca7ff79e17",
+          "segments": [
+            [
+              {
+                "x": 132,
+                "y": 457,
+                "q": 4,
+                "r": 10,
+                "index": 3,
+                "local": 0
+              },
+              {
+                "x": 132,
+                "y": 495,
+                "q": 4,
+                "r": 11
+              }
+            ],
+            [
+              {
+                "x": 132,
+                "y": 495,
+                "q": 4,
+                "r": 11
+              },
+              {
+                "x": 132,
+                "y": 533,
+                "q": 4,
+                "r": 12
+              }
+            ]
+          ],
+          "relation": "own"
+        },
+        "tile": {
+          "q": 0,
+          "r": 0,
+          "terrain": "plains",
+          "visible": true,
+          "tier": "remembered",
+          "fertility": 0.5,
+          "mineral": 0.5
+        },
+        "zoom": 1,
+        "frame": 1
+      },
+      "errors": []
+    },
+    {
+      "mode": "desktop",
+      "actor": {
+        "label": "Agreed caravan of Priam",
+        "kind": "agreed",
+        "id": "164daeb0-4020-4310-8a26-453353b1a103",
+        "path": [
+          [
+            6,
+            1
+          ],
+          [
+            6,
+            2
+          ],
+          [
+            6,
+            3
+          ],
+          [
+            6,
+            4
+          ],
+          [
+            6,
+            5
+          ],
+          [
+            6,
+            6
+          ]
+        ],
+        "own": false,
+        "focus": {
+          "q": 6,
+          "r": 4
+        }
+      },
+      "url": "http://localhost:8097/world/1588ebaf-fd9a-4bc4-bd22-a23c6c8f2850/map",
+      "sample": {
+        "primitive": {
+          "type": "route",
+          "kind": "caravan",
+          "actor_id": "164daeb0-4020-4310-8a26-453353b1a103",
+          "segments": [
+            [
+              {
+                "x": 198,
+                "y": 267,
+                "q": 6,
+                "r": 4,
+                "index": 3,
+                "local": 0
+              },
+              {
+                "x": 198,
+                "y": 305,
+                "q": 6,
+                "r": 5
+              }
+            ],
+            [
+              {
+                "x": 198,
+                "y": 305,
+                "q": 6,
+                "r": 5
+              },
+              {
+                "x": 198,
+                "y": 343,
+                "q": 6,
+                "r": 6
+              }
+            ]
+          ],
+          "relation": "foreign"
+        },
+        "tile": {
+          "q": 0,
+          "r": 0,
+          "terrain": "plains",
+          "visible": true,
+          "tier": "remembered",
+          "fertility": 0.5,
+          "mineral": 0.5
+        },
+        "zoom": 1,
+        "frame": 1
+      },
+      "errors": []
+    },
+    {
+      "mode": "desktop",
+      "actor": {
+        "label": "Gift from Priam",
+        "kind": "gift",
+        "id": "a16729ac-3a7a-4c52-a9b9-67ce043aff8d",
+        "path": [
+          [
+            9,
+            5
+          ],
+          [
+            9,
+            6
+          ],
+          [
+            9,
+            7
+          ],
+          [
+            9,
+            8
+          ],
+          [
+            9,
+            9
+          ],
+          [
+            9,
+            10
+          ],
+          [
+            9,
+            11
+          ]
+        ],
+        "own": false,
+        "focus": {
+          "q": 9,
+          "r": 8
+        }
+      },
+      "url": "http://localhost:8097/world/1588ebaf-fd9a-4bc4-bd22-a23c6c8f2850/map",
+      "sample": {
+        "primitive": {
+          "type": "arrow",
+          "kind": "caravan",
+          "actor_id": "a16729ac-3a7a-4c52-a9b9-67ce043aff8d",
+          "x": 297,
+          "y": 476,
+          "heading": "south"
+        },
+        "tile": {
+          "q": 0,
+          "r": 0,
+          "terrain": "plains",
+          "visible": true,
+          "tier": "remembered",
+          "fertility": 0.5,
+          "mineral": 0.5
+        },
+        "zoom": 1,
+        "frame": 1
+      },
+      "errors": []
+    },
+    {
+      "mode": "desktop",
+      "actor": {
+        "label": "Runner of Lykoros",
+        "kind": "runner",
+        "id": "e13a90e3-50a4-4db8-9bcd-38962e137cc0",
+        "path": [
+          [
+            5,
+            7
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        "own": true,
+        "focus": {
+          "q": 6,
+          "r": 10
+        }
+      },
+      "url": "http://localhost:8097/world/1588ebaf-fd9a-4bc4-bd22-a23c6c8f2850/map",
+      "sample": {
+        "primitive": {
+          "type": "route",
+          "kind": "runner",
+          "actor_id": "e13a90e3-50a4-4db8-9bcd-38962e137cc0",
+          "segments": [
+            [
+              {
+                "x": 198,
+                "y": 482.65114,
+                "q": 6,
+                "r": 10,
+                "index": 3,
+                "local": 0.6750299999999996
+              },
+              {
+                "x": 198,
+                "y": 495,
+                "q": 6,
+                "r": 10
+              }
+            ],
+            [
+              {
+                "x": 198,
+                "y": 495,
+                "q": 6,
+                "r": 10
+              },
+              {
+                "x": 198,
+                "y": 533,
+                "q": 6,
+                "r": 11
+              }
+            ],
+            [
+              {
+                "x": 198,
+                "y": 533,
+                "q": 6,
+                "r": 11
+              },
+              {
+                "x": 231,
+                "y": 553,
+                "q": 7,
+                "r": 11
+              }
+            ]
+          ],
+          "relation": "own"
+        },
+        "tile": {
+          "q": 0,
+          "r": 0,
+          "terrain": "plains",
+          "visible": true,
+          "tier": "remembered",
+          "fertility": 0.5,
+          "mineral": 0.5
+        },
+        "zoom": 1,
+        "frame": 1
+      },
+      "errors": []
+    },
+    {
+      "mode": "desktop",
+      "actor": {
+        "label": "Runner of Priam",
+        "kind": "incoming-runner",
+        "id": "e6c1f55d-4f9c-4732-bb6f-b75901110ea1",
+        "path": [
+          [
+            9,
+            4
+          ],
+          [
+            8,
+            4
+          ],
+          [
+            7,
+            5
+          ],
+          [
+            6,
+            6
+          ],
+          [
+            5,
+            7
+          ]
+        ],
+        "own": false,
+        "focus": {
+          "q": 7,
+          "r": 5
+        }
+      },
+      "url": "http://localhost:8097/world/1588ebaf-fd9a-4bc4-bd22-a23c6c8f2850/map",
+      "sample": {
+        "primitive": {
+          "type": "arrow",
+          "kind": "runner",
+          "actor_id": "e6c1f55d-4f9c-4732-bb6f-b75901110ea1",
+          "x": 231,
+          "y": 324,
+          "heading": "south-west"
+        },
+        "tile": {
+          "q": 0,
+          "r": 0,
+          "terrain": "plains",
+          "visible": true,
+          "tier": "remembered",
+          "fertility": 0.5,
+          "mineral": 0.5
+        },
+        "zoom": 1,
+        "frame": 1
+      },
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "actor": {
+        "label": "Spearmen of Lykoros",
+        "kind": "army",
+        "id": "600140ee-07f8-4ab4-8ea5-f39442f2e26e",
+        "path": [
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            4
+          ],
+          [
+            6,
+            4
+          ],
+          [
+            7,
+            4
+          ],
+          [
+            8,
+            4
+          ]
+        ],
+        "own": true,
+        "focus": {
+          "q": 5,
+          "r": 4
+        }
+      },
+      "url": "http://localhost:8097/world/1588ebaf-fd9a-4bc4-bd22-a23c6c8f2850/map",
+      "sample": {
+        "primitive": {
+          "type": "route",
+          "kind": "army",
+          "actor_id": "600140ee-07f8-4ab4-8ea5-f39442f2e26e",
+          "segments": [
+            [
+              {
+                "x": 165,
+                "y": 248,
+                "q": 5,
+                "r": 4,
+                "index": 3,
+                "local": 0
+              },
+              {
+                "x": 198,
+                "y": 267,
+                "q": 6,
+                "r": 4
+              }
+            ],
+            [
+              {
+                "x": 198,
+                "y": 267,
+                "q": 6,
+                "r": 4
+              },
+              {
+                "x": 231,
+                "y": 286,
+                "q": 7,
+                "r": 4
+              }
+            ],
+            [
+              {
+                "x": 231,
+                "y": 286,
+                "q": 7,
+                "r": 4
+              },
+              {
+                "x": 264,
+                "y": 305,
+                "q": 8,
+                "r": 4
+              }
+            ]
+          ],
+          "relation": "own"
+        },
+        "tile": {
+          "q": 0,
+          "r": 0,
+          "terrain": "plains",
+          "visible": true,
+          "tier": "remembered",
+          "fertility": 0.5,
+          "mineral": 0.5
+        },
+        "zoom": 1,
+        "frame": 2
+      },
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "actor": {
+        "label": "Doria",
+        "kind": "ship",
+        "id": "cbc1c017-2ee5-4290-8ce7-6e9fd027a1be",
+        "path": [
+          [
+            13,
+            1
+          ],
+          [
+            13,
+            2
+          ],
+          [
+            13,
+            3
+          ],
+          [
+            13,
+            4
+          ],
+          [
+            13,
+            5
+          ],
+          [
+            13,
+            6
+          ],
+          [
+            13,
+            7
+          ]
+        ],
+        "own": true,
+        "focus": {
+          "q": 13,
+          "r": 4
+        }
+      },
+      "url": "http://localhost:8097/world/1588ebaf-fd9a-4bc4-bd22-a23c6c8f2850/map",
+      "sample": {
+        "primitive": {
+          "type": "route",
+          "kind": "ship",
+          "actor_id": "cbc1c017-2ee5-4290-8ce7-6e9fd027a1be",
+          "segments": [
+            [
+              {
+                "x": 429,
+                "y": 400,
+                "q": 13,
+                "r": 4,
+                "index": 3,
+                "local": 0
+              },
+              {
+                "x": 429,
+                "y": 438,
+                "q": 13,
+                "r": 5
+              }
+            ],
+            [
+              {
+                "x": 429,
+                "y": 438,
+                "q": 13,
+                "r": 5
+              },
+              {
+                "x": 429,
+                "y": 476,
+                "q": 13,
+                "r": 6
+              }
+            ],
+            [
+              {
+                "x": 429,
+                "y": 476,
+                "q": 13,
+                "r": 6
+              },
+              {
+                "x": 429,
+                "y": 514,
+                "q": 13,
+                "r": 7
+              }
+            ]
+          ],
+          "relation": "own"
+        },
+        "tile": {
+          "q": 0,
+          "r": 0,
+          "terrain": "plains",
+          "visible": true,
+          "tier": "remembered",
+          "fertility": 0.5,
+          "mineral": 0.5
+        },
+        "zoom": 1,
+        "frame": 1
+      },
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "actor": {
+        "label": "Spearmen of Priam",
+        "kind": "foreign-army",
+        "id": "0e704488-ffa7-4437-a817-af5888cfe853",
+        "path": [
+          [
+            8,
+            2
+          ],
+          [
+            8,
+            3
+          ],
+          [
+            8,
+            4
+          ],
+          [
+            8,
+            5
+          ],
+          [
+            8,
+            6
+          ]
+        ],
+        "own": false,
+        "focus": {
+          "q": 8,
+          "r": 6
+        }
+      },
+      "url": "http://localhost:8097/world/1588ebaf-fd9a-4bc4-bd22-a23c6c8f2850/map",
+      "sample": {
+        "primitive": {
+          "type": "arrow",
+          "kind": "army",
+          "actor_id": "0e704488-ffa7-4437-a817-af5888cfe853",
+          "x": 264,
+          "y": 381,
+          "heading": "south"
+        },
+        "tile": {
+          "q": 0,
+          "r": 0,
+          "terrain": "plains",
+          "visible": true,
+          "tier": "remembered",
+          "fertility": 0.5,
+          "mineral": 0.5
+        },
+        "zoom": 1,
+        "frame": 1
+      },
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "actor": {
+        "label": "Galley of Tyre",
+        "kind": "foreign-ship",
+        "id": "4bb4c37e-9bd7-44b1-bf4d-e2c824aa9f90",
+        "path": [
+          [
+            15,
+            1
+          ],
+          [
+            15,
+            2
+          ],
+          [
+            15,
+            3
+          ],
+          [
+            15,
+            4
+          ],
+          [
+            15,
+            5
+          ],
+          [
+            15,
+            6
+          ]
+        ],
+        "own": false,
+        "focus": {
+          "q": 15,
+          "r": 6
+        }
+      },
+      "url": "http://localhost:8097/world/1588ebaf-fd9a-4bc4-bd22-a23c6c8f2850/map",
+      "sample": {
+        "primitive": {
+          "type": "arrow",
+          "kind": "ship",
+          "actor_id": "4bb4c37e-9bd7-44b1-bf4d-e2c824aa9f90",
+          "x": 495,
+          "y": 514,
+          "heading": "south"
+        },
+        "tile": {
+          "q": 0,
+          "r": 0,
+          "terrain": "plains",
+          "visible": true,
+          "tier": "remembered",
+          "fertility": 0.5,
+          "mineral": 0.5
+        },
+        "zoom": 1,
+        "frame": 1
+      },
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "actor": {
+        "label": "Caravan of Lykoros",
+        "kind": "caravan",
+        "id": "dd8abf2c-6db9-4f52-9486-49ca7ff79e17",
+        "path": [
+          [
+            4,
+            7
+          ],
+          [
+            4,
+            8
+          ],
+          [
+            4,
+            9
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            4,
+            11
+          ],
+          [
+            4,
+            12
+          ]
+        ],
+        "own": true,
+        "focus": {
+          "q": 4,
+          "r": 10
+        }
+      },
+      "url": "http://localhost:8097/world/1588ebaf-fd9a-4bc4-bd22-a23c6c8f2850/map",
+      "sample": {
+        "primitive": {
+          "type": "route",
+          "kind": "caravan",
+          "actor_id": "dd8abf2c-6db9-4f52-9486-49ca7ff79e17",
+          "segments": [
+            [
+              {
+                "x": 132,
+                "y": 457,
+                "q": 4,
+                "r": 10,
+                "index": 3,
+                "local": 0
+              },
+              {
+                "x": 132,
+                "y": 495,
+                "q": 4,
+                "r": 11
+              }
+            ],
+            [
+              {
+                "x": 132,
+                "y": 495,
+                "q": 4,
+                "r": 11
+              },
+              {
+                "x": 132,
+                "y": 533,
+                "q": 4,
+                "r": 12
+              }
+            ]
+          ],
+          "relation": "own"
+        },
+        "tile": {
+          "q": 0,
+          "r": 0,
+          "terrain": "plains",
+          "visible": true,
+          "tier": "remembered",
+          "fertility": 0.5,
+          "mineral": 0.5
+        },
+        "zoom": 1,
+        "frame": 1
+      },
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "actor": {
+        "label": "Agreed caravan of Priam",
+        "kind": "agreed",
+        "id": "164daeb0-4020-4310-8a26-453353b1a103",
+        "path": [
+          [
+            6,
+            1
+          ],
+          [
+            6,
+            2
+          ],
+          [
+            6,
+            3
+          ],
+          [
+            6,
+            4
+          ],
+          [
+            6,
+            5
+          ],
+          [
+            6,
+            6
+          ]
+        ],
+        "own": false,
+        "focus": {
+          "q": 6,
+          "r": 4
+        }
+      },
+      "url": "http://localhost:8097/world/1588ebaf-fd9a-4bc4-bd22-a23c6c8f2850/map",
+      "sample": {
+        "primitive": {
+          "type": "route",
+          "kind": "caravan",
+          "actor_id": "164daeb0-4020-4310-8a26-453353b1a103",
+          "segments": [
+            [
+              {
+                "x": 198,
+                "y": 267,
+                "q": 6,
+                "r": 4,
+                "index": 3,
+                "local": 0
+              },
+              {
+                "x": 198,
+                "y": 305,
+                "q": 6,
+                "r": 5
+              }
+            ],
+            [
+              {
+                "x": 198,
+                "y": 305,
+                "q": 6,
+                "r": 5
+              },
+              {
+                "x": 198,
+                "y": 343,
+                "q": 6,
+                "r": 6
+              }
+            ]
+          ],
+          "relation": "foreign"
+        },
+        "tile": {
+          "q": 0,
+          "r": 0,
+          "terrain": "plains",
+          "visible": true,
+          "tier": "remembered",
+          "fertility": 0.5,
+          "mineral": 0.5
+        },
+        "zoom": 1,
+        "frame": 1
+      },
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "actor": {
+        "label": "Gift from Priam",
+        "kind": "gift",
+        "id": "a16729ac-3a7a-4c52-a9b9-67ce043aff8d",
+        "path": [
+          [
+            9,
+            5
+          ],
+          [
+            9,
+            6
+          ],
+          [
+            9,
+            7
+          ],
+          [
+            9,
+            8
+          ],
+          [
+            9,
+            9
+          ],
+          [
+            9,
+            10
+          ],
+          [
+            9,
+            11
+          ]
+        ],
+        "own": false,
+        "focus": {
+          "q": 9,
+          "r": 8
+        }
+      },
+      "url": "http://localhost:8097/world/1588ebaf-fd9a-4bc4-bd22-a23c6c8f2850/map",
+      "sample": {
+        "primitive": {
+          "type": "arrow",
+          "kind": "caravan",
+          "actor_id": "a16729ac-3a7a-4c52-a9b9-67ce043aff8d",
+          "x": 297,
+          "y": 476,
+          "heading": "south"
+        },
+        "tile": {
+          "q": 0,
+          "r": 0,
+          "terrain": "plains",
+          "visible": true,
+          "tier": "remembered",
+          "fertility": 0.5,
+          "mineral": 0.5
+        },
+        "zoom": 1,
+        "frame": 1
+      },
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "actor": {
+        "label": "Runner of Lykoros",
+        "kind": "runner",
+        "id": "e13a90e3-50a4-4db8-9bcd-38962e137cc0",
+        "path": [
+          [
+            5,
+            7
+          ],
+          [
+            6,
+            7
+          ],
+          [
+            6,
+            8
+          ],
+          [
+            7,
+            8
+          ],
+          [
+            7,
+            9
+          ],
+          [
+            7,
+            10
+          ],
+          [
+            7,
+            11
+          ]
+        ],
+        "own": true,
+        "focus": {
+          "q": 6,
+          "r": 10
+        }
+      },
+      "url": "http://localhost:8097/world/1588ebaf-fd9a-4bc4-bd22-a23c6c8f2850/map",
+      "sample": {
+        "primitive": {
+          "type": "route",
+          "kind": "runner",
+          "actor_id": "e13a90e3-50a4-4db8-9bcd-38962e137cc0",
+          "segments": [
+            [
+              {
+                "x": 198,
+                "y": 482.6892033333333,
+                "q": 6,
+                "r": 10,
+                "index": 3,
+                "local": 0.6760316666666664
+              },
+              {
+                "x": 198,
+                "y": 495,
+                "q": 6,
+                "r": 10
+              }
+            ],
+            [
+              {
+                "x": 198,
+                "y": 495,
+                "q": 6,
+                "r": 10
+              },
+              {
+                "x": 198,
+                "y": 533,
+                "q": 6,
+                "r": 11
+              }
+            ],
+            [
+              {
+                "x": 198,
+                "y": 533,
+                "q": 6,
+                "r": 11
+              },
+              {
+                "x": 231,
+                "y": 553,
+                "q": 7,
+                "r": 11
+              }
+            ]
+          ],
+          "relation": "own"
+        },
+        "tile": {
+          "q": 0,
+          "r": 0,
+          "terrain": "plains",
+          "visible": true,
+          "tier": "remembered",
+          "fertility": 0.5,
+          "mineral": 0.5
+        },
+        "zoom": 1,
+        "frame": 1
+      },
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "actor": {
+        "label": "Runner of Priam",
+        "kind": "incoming-runner",
+        "id": "e6c1f55d-4f9c-4732-bb6f-b75901110ea1",
+        "path": [
+          [
+            9,
+            4
+          ],
+          [
+            8,
+            4
+          ],
+          [
+            7,
+            5
+          ],
+          [
+            6,
+            6
+          ],
+          [
+            5,
+            7
+          ]
+        ],
+        "own": false,
+        "focus": {
+          "q": 7,
+          "r": 5
+        }
+      },
+      "url": "http://localhost:8097/world/1588ebaf-fd9a-4bc4-bd22-a23c6c8f2850/map",
+      "sample": {
+        "primitive": {
+          "type": "arrow",
+          "kind": "runner",
+          "actor_id": "e6c1f55d-4f9c-4732-bb6f-b75901110ea1",
+          "x": 231,
+          "y": 324,
+          "heading": "south-west"
+        },
+        "tile": {
+          "q": 0,
+          "r": 0,
+          "terrain": "plains",
+          "visible": true,
+          "tier": "remembered",
+          "fertility": 0.5,
+          "mineral": 0.5
+        },
+        "zoom": 1,
+        "frame": 1
+      },
+      "errors": []
+    }
+  ]
+}

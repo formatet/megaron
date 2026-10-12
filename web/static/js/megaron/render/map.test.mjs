@@ -258,3 +258,27 @@ test('catchment tint only for the city in focus: open City drawer or own city se
   assert.deepEqual(catchmentFocusCities(), [], 'a foreign city gives no tint');
   State.selectedHex = null;
 });
+
+test('production scene shows four own trails and only current arrows for every non-owner, including recipients',async()=>{
+ const {journeyOverlays}=await import('./map.js');
+ const saved={};for(const k of ['tileData','unitsData','marchData','tradeData','messengerData','foreignUnitData','CURRENT_TICK','TICK_SECONDS','TICK_ANCHOR_MS'])saved[k]=State[k];
+ try{
+  State.CURRENT_TICK=1;State.TICK_SECONDS=6;State.TICK_ANCHOR_MS=0;
+  State.tileData=[0,1,2,3].map(q=>({q,r:0,terrain:'plains',tier:'live'}));
+  const base={path:[[0,0],[1,0],[2,0],[3,0]],departure_tick:0,arrival_tick:4,step_costs:[1000,1000,1000],departs_at:'1970-01-01T00:00:00Z',arrives_at:'1970-01-01T00:00:24Z'};
+  State.unitsData=[{...base,id:'army',category:'land',status:'marching'},{...base,id:'ship',category:'naval',status:'marching'}];State.marchData=[];
+  const observed={id:'foreign-caravan',mine:false,role:'recipient',current_q:1,current_r:0,heading:'east'};
+  for(const key of ['path','dest_q','dest_r','departs_at','arrives_at'])Object.defineProperty(observed,key,{get(){throw Error('recipient route leaked into rendering');}});
+  State.tradeData=[{...base,id:'caravan',mine:true,category:'land'},observed];
+  State.messengerData=[{...base,id:'runner',own:true},{id:'foreign-runner',own:false,current_q:1,current_r:0,heading:'east'}];
+  State.foreignUnitData=[{id:'foreign-army',q:1,r:0,heading:'east',category:'land'},{id:'foreign-ship',q:1,r:0,heading:'east',category:'naval'}];
+  const out=journeyOverlays(3000);assert.equal(out.filter(p=>p.type==='route').length,4,'own movement kinds lost an always-visible trail');assert.equal(out.filter(p=>p.type==='arrow').length,4);
+  assert.equal(out.find(p=>p.actor_id==='foreign-caravan').type,'arrow');
+  State.tradeData.push({...base,id:'agreed',mine:false,role:'recipient',route_known:true,category:'land'});
+  const agreement=journeyOverlays(3000).find(p=>p.actor_id==='agreed');assert.equal(agreement?.type,'route','agreed recipient caravan lost its forward route');assert.equal(agreement.relation,'foreign');
+  State.tradeData.push({id:'gift',mine:false,role:'recipient',route_known:false,current_q:1,current_r:0,heading:'east'});
+  assert.equal(journeyOverlays(3000).find(p=>p.actor_id==='gift').type,'arrow','unagreed gift exposed a route');
+  assert.equal(out.find(p=>p.actor_id==='foreign-runner').type,'arrow');
+  State.tileData=State.tileData.map(t=>({...t,tier:'remembered'}));assert.deepEqual(journeyOverlays(3000),[],'movement marks leaked onto remembered terrain');
+ }finally{Object.assign(State,saved);}
+});
