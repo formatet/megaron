@@ -12,6 +12,7 @@
 import { BASE } from './config.js';
 import { State } from './state.js';
 import { serverNow } from './clock.js';
+import { anchorWorldTime } from './world_time.js';
 import { track } from './telemetry.js';
 import { initWS, fullResync, checkWsLiveness } from './ws.js';
 import {
@@ -307,9 +308,7 @@ async function bootstrap() {
     // no Date header has passed through noteServerDate yet — but the skew is
     // bounded by clock.js's noise floor and self-corrects at first re-anchor.
     if (world.current_tick != null && world.tick_seconds > 0) {
-      State.CURRENT_TICK   = world.current_tick;
-      State.TICK_SECONDS   = world.tick_seconds;
-      State.TICK_ANCHOR_MS = serverNow();
+      anchorWorldTime(world);
       // World speed (ticks/wall-clock hour) now lives in the Notifications
       // archive under the date line (ui/drawers/notif.js), not as a topbar
       // banner (Timothy 2026-09-07). State.TICK_SECONDS above still feeds that.

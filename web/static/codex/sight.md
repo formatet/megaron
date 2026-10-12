@@ -21,6 +21,12 @@ The map shows **colour for live sight, grayscale for remembered ground, and blac
 
 **Foreign units are drawn only on ground you can see live**, never on remembered ground. They are drawn with a blinking outline.
 
+## Moving actors on the map
+
+Your marching armies, ships, Runners and caravans always show their **remaining route ahead**, beginning where the actor is now. The line shrinks as they travel; nothing is drawn behind them. Solid lines mark armies, long dashes mark ships, dots mark Runners, and mixed long/short dashes mark caravans. The line shows only ground you can see live.
+
+A foreign actor shows only a **compass arrow at its current live position**. It tells you which way the actor goes now, never its destination or full route. Your lines are azure; foreign arrows use the foreign unit's muted accent. Line patterns and arrow shapes carry meaning alongside colour. An agreed trade caravan coming to you shows its remaining route too, in the foreign accent. Its known cargo and arrival remain in the trade details. Gifts are not agreed deliveries and show only an arrow. A Runner coming to you from another Wanax also shows only an arrow. Waiting or sealed Runners have no forward route, and a Runner aboard follows the real carrier. Runners remain sacred and cannot be attacked.
+
 ## Exploring
 
 You cannot **march** an army into land none of your people has ever seen — but you can **explore** it. Right-click a hex, seen or unseen, land or sea, and choose **Explore**: the unit sets out as an **expedition** to the land within 5 hexes of that place, for as many days as you give it (4 to 30; 10 if you do not say).

@@ -54,7 +54,7 @@ export function unitHoverLines({ own = [], foreign = [], caravans = [], runners 
     } else if (t.role === 'recipient') {
       lines.push(`Caravan to you${t.owner ? ' from ' + t.owner : ''}${load ? ': ' + load : ''}`);
     } else {
-      lines.push(t.owner ? `Caravan of ${t.owner}` : 'Caravan');
+      lines.push((t.owner ? `Caravan of ${t.owner}` : 'Caravan')+(t.heading?` — heading ${t.heading}`:''));
     }
   }
   for (const m of runners) {
@@ -75,7 +75,7 @@ export function unitHoverLines({ own = [], foreign = [], caravans = [], runners 
         lines.push('Your Runner — ' + route(placeName, m.origin_q, m.origin_r, m.dest_q, m.dest_r));
       }
     } else {
-      lines.push(m.sender ? `Runner of ${m.sender}` : 'Runner');
+      lines.push((m.sender ? `Runner of ${m.sender}` : 'Runner')+(m.heading?` — heading ${m.heading}`:''));
     }
   }
   for (const st of storms) {

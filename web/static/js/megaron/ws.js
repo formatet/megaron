@@ -1,6 +1,7 @@
 import { BASE } from './config.js';
 import { State } from './state.js';
 import { serverNow } from './clock.js';
+import { anchorWorldTime } from './world_time.js';
 import { fetchAuth } from './api.js';
 import { track } from './telemetry.js';
 // sfx.js imports nothing, so pulling it in here cannot create the cycle the
@@ -99,7 +100,7 @@ export function initWS() {
         // what makes stored wall-clock stamps — and a stale anchor — lie.
         fetchAuth(`/api/v1/worlds/${State.WORLD_ID}`).then(r => r.ok && r.json().then(d => {
           if (d.current_tick != null && d.tick_seconds > 0) {
-            State.CURRENT_TICK = d.current_tick; State.TICK_SECONDS = d.tick_seconds; State.TICK_ANCHOR_MS = serverNow();
+            anchorWorldTime(d);
           }
           // A reconnect is exactly when the world may have STARTED while the
           // tab was away, so re-read the gate too, not only the tick anchor.

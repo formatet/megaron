@@ -1,6 +1,8 @@
 import { State, ownCapital, activeCitySettlement } from '../state.js';
 import { fetchAuth } from '../api.js';
 import { serverNow } from '../clock.js';
+import { anchorWorldTime, movementTickNow } from '../world_time.js';
+import { routePosition, routeProgress, actorRoute, foreignArrow, drawMovement } from './routes.js';
 import {
   LOCAL_ZOOM,
   GARRISON_DOT_ZOOM, ACTIVITY_BADGE_ZOOM, ROAD_DEPOSIT_ZOOM,
@@ -207,22 +209,8 @@ function hexPathPx(q1, r1, q2, r2, progress) {
 // walks the true route (via sea / around mountains) instead of a straight hex
 // line, so the walker is drawn where the unit actually is. Returns null for an
 // empty list so callers can fall back to the straight-line hexPathPx.
-function pathPx(waypoints, progress) {
-  if (!waypoints || waypoints.length === 0) return null;
-  if (waypoints.length === 1) {
-    const p = hexPx(waypoints[0][0], waypoints[0][1]);
-    return {x: p.x, y: p.y, q: waypoints[0][0], r: waypoints[0][1]};
-  }
-  const idx   = Math.min(waypoints.length - 2, Math.floor(progress * (waypoints.length - 1)));
-  const local = (progress * (waypoints.length - 1)) - idx;
-  const a = hexPx(waypoints[idx][0],   waypoints[idx][1]);
-  const b = hexPx(waypoints[idx+1][0], waypoints[idx+1][1]);
-  return {
-    x: a.x + (b.x - a.x) * local,
-    y: a.y + (b.y - a.y) * local,
-    q: waypoints[idx][0],
-    r: waypoints[idx][1],
-  };
+function pathPx(waypoints, progress, costs=null,durationTicks=null) {
+  return routePosition(waypoints,progress,hexPx,costs,durationTicks);
 }
 
 // Hexen en enhet står på JUST NU — samma gren som ritningen av aktören använder
@@ -232,18 +220,8 @@ function pathPx(waypoints, progress) {
 // spriten; delad kod är hela poängen, en andra kopia av interpolationen skulle
 // glida isär från renderaren.
 function unitHexNow(u) {
-  if (u.status === 'marching' && u.departs_at && u.arrives_at && u.q != null && u.target_q != null) {
-    const departs = new Date(u.departs_at).getTime();
-    const arrives = new Date(u.arrives_at).getTime();
-    const progress = Math.min(1, Math.max(0, (serverNow() - departs) / (arrives - departs)));
-    const pos = (u.path && u.path.length > 1)
-      ? pathPx(u.path, progress)
-      : hexPathPx(u.q, u.r, u.target_q, u.target_r, progress);
-    // hexPathPx faller tillbaka på en ren pixel utan q/r när ingen väg finns —
-    // då är avgångshexen det ärligaste svaret, inte "ingenstans".
-    return pos && pos.q != null ? {q: pos.q, r: pos.r} : {q: u.q, r: u.r};
-  }
-  return u.q != null ? {q: u.q, r: u.r} : null;
+ const pos=unitPixelNow(u);
+ return pos&&pos.q!=null?{q:pos.q,r:pos.r}:u.q!=null?{q:u.q,r:u.r}:null;
 }
 
 // legHexNow: the hex a caravan or runner walker is drawn on right now —
@@ -263,26 +241,22 @@ function legHexNow(oq, or, dq, dr, startIso, endIso) {
 // the carrier's own sprite is drawn at, without a second copy of this math —
 // 5b's own drawing is unchanged, it just calls this now. Returns null when u
 // has neither a marching route nor a standing hex.
-function unitPixelNow(u) {
-  if (u.status === 'marching' && u.departs_at && u.arrives_at && u.q != null && u.target_q != null) {
-    const departs = new Date(u.departs_at).getTime();
-    const arrives = new Date(u.arrives_at).getTime();
-    const progress = Math.min(1, Math.max(0, (serverNow() - departs) / (arrives - departs)));
-    return (u.path && u.path.length > 1) ? pathPx(u.path, progress) : hexPathPx(u.q, u.r, u.target_q, u.target_r, progress);
-  }
-  if (u.status === 'positioned' && u.q != null) return hexPx(u.q, u.r);
-  return null;
+function unitPixelNow(u,nowMs=serverNow()) {
+ if(u.status==='marching'&&u.departs_at&&u.arrives_at&&u.q!=null&&u.target_q!=null){
+  const progress=routeProgress(u,nowMs,movementTickNow(nowMs));
+  return u.path?.length>1?pathPx(u.path,progress,u.step_costs,u.arrival_tick-u.departure_tick):hexPathPx(u.q,u.r,u.target_q,u.target_r,progress);
+ }
+ return u.status==='positioned'&&u.q!=null?{...hexPx(u.q,u.r),q:u.q,r:u.r}:null;
 }
 
 // transportPixelNow: same idea as unitPixelNow, for a /trades caravan —
 // extracted from render() step 7 so step 6's runner-on-carrier lookup can
 // place a runner marker on the exact same pixel a naval transport's own
 // caravan sprite draws at.
-function transportPixelNow(t) {
-  const departs = new Date(t.departs_at).getTime();
-  const arrives = new Date(t.arrives_at).getTime();
-  const progress = Math.min(1, Math.max(0, (serverNow() - departs) / (arrives - departs)));
-  return hexPathPx(t.origin_q, t.origin_r, t.dest_q, t.dest_r, progress);
+function transportPixelNow(t,nowMs=serverNow()) {
+ if(t.mine===false&&t.route_known!==true)return t.current_q!=null?{...hexPx(t.current_q,t.current_r),q:t.current_q,r:t.current_r}:null;
+ const progress=routeProgress(t,nowMs,movementTickNow(nowMs));
+ return t.path?.length>1?pathPx(t.path,progress,t.step_costs,t.arrival_tick-t.departure_tick):hexPathPx(t.origin_q,t.origin_r,t.dest_q,t.dest_r,progress);
 }
 
 // messengerLegPosition (megaron_plan_budets_tre_ben.md, slice 3c, R4): where
@@ -304,7 +278,7 @@ export function messengerLegPosition(m, units, trades, nowMs) {
     ? Math.min(1, Math.max(0, (nowMs - legStart) / (legEnd - legStart)))
     : 1;
   if (m.leg === 'to_port' || m.leg === 'ashore') {
-    const pos = hexPathPx(m.leg_from_q, m.leg_from_r, m.leg_to_q, m.leg_to_r, progress);
+    const pos = m.path?.length>1 ? pathPx(m.path,progress) : hexPathPx(m.leg_from_q, m.leg_from_r, m.leg_to_q, m.leg_to_r, progress);
     return {mode: 'walk', x: pos.x, y: pos.y, q: pos.q, r: pos.r};
   }
   if (m.leg === 'waiting') {
@@ -318,20 +292,20 @@ export function messengerLegPosition(m, units, trades, nowMs) {
   if (m.leg === 'aboard') {
     if (m.carrier_unit_id) {
       const u = (units || []).find(x => x.id === m.carrier_unit_id);
-      const pos = u && unitPixelNow(u);
+      const pos = u && unitPixelNow(u,nowMs);
       if (pos) return {mode: 'aboard-carrier', x: pos.x, y: pos.y};
     }
     if (m.carrier_transport_id) {
       const t = (trades || []).find(x => x.id === m.carrier_transport_id);
       if (t) {
-        const pos = transportPixelNow(t);
+        const pos = transportPixelNow(t,nowMs);
         return {mode: 'aboard-carrier', x: pos.x, y: pos.y};
       }
     }
     // R4's stop condition: the carrier isn't in the client's own data (an
     // allied ship, or a transport /trades didn't send) — use the server's
     // own reserve leg instead of hiding the runner.
-    const pos = hexPathPx(m.leg_from_q, m.leg_from_r, m.leg_to_q, m.leg_to_r, progress);
+    const pos = m.path?.length>1 ? pathPx(m.path,routeProgress(m,nowMs,movementTickNow(nowMs)),m.step_costs,m.arrival_tick-m.departure_tick) : hexPathPx(m.leg_from_q, m.leg_from_r, m.leg_to_q, m.leg_to_r, progress);
     return {mode: 'aboard-reserve', x: pos.x, y: pos.y, q: pos.q, r: pos.r};
   }
   return null;
@@ -345,7 +319,8 @@ export function messengerLegPosition(m, units, trades, nowMs) {
 // messengerLegPosition) since it is only ever called from the hover
 // hex-match filter below, which already does.
 function messengerHexNow(m) {
-  if (!m.leg) return legHexNow(m.origin_q, m.origin_r, m.dest_q, m.dest_r, m.sent_at, m.arrives_at);
+  if(!m.own)return m.current_q!=null?{q:m.current_q,r:m.current_r}:null;
+  if (!m.leg) { const p=m.path?.length>1?pathPx(m.path,routeProgress(m,serverNow())):null; return p?{q:p.q,r:p.r}:legHexNow(m.origin_q,m.origin_r,m.dest_q,m.dest_r,m.sent_at,m.arrives_at); }
   const leg = messengerLegPosition(m, State.unitsData, State.tradeData, serverNow());
   if (leg && leg.q != null) return {q: leg.q, r: leg.r};
   // 'aboard-carrier' has no q/r of its own — match the carrier's own hex.
@@ -356,7 +331,7 @@ function messengerHexNow(m) {
   }
   if (m.carrier_transport_id) {
     const t = (State.tradeData || []).find(x => x.id === m.carrier_transport_id);
-    if (t) return legHexNow(t.origin_q, t.origin_r, t.dest_q, t.dest_r, t.departs_at, t.arrives_at);
+    if (t) { const p=transportPixelNow(t);return p?{q:p.q,r:p.r}:null; }
   }
   return {q: m.leg_from_q, r: m.leg_from_r};
 }
@@ -2960,6 +2935,8 @@ export function render() {
   // Live ones only on tier-1 hexes is the SERVER's rule (sight); a remembered one is a ghost.
   for (const storm of State.stormData || []) drawStorm(ctx, storm, { S, hexPx, hexPts, frame: State.animFrame });
 
+  drawJourneyOverlays(ctx);
+
   // 5. Animated walkers for marching armies
   const walkPhase = Math.floor(State.animFrame / 8) % 4;
   for (const m of State.marchData) {
@@ -3042,6 +3019,12 @@ export function render() {
   // no notion of "waiting at a port" or "aboard a ship". A runner without
   // m.leg (a plain land courier, or any foreign one) draws exactly as before.
   for (const m of State.messengerData) {
+    if(!m.own){
+      if(m.current_q!=null&&isTileLive(m.current_q,m.current_r)){
+        const p=hexPx(m.current_q,m.current_r);drawMessenger(ctx,p.x,p.y,walkPhase,m.kind==='order',false,false);
+      }
+      continue;
+    }
     if (m.own && m.leg) {
       const leg = messengerLegPosition(m, State.unitsData, State.tradeData, serverNow());
       if (!leg) continue;
@@ -3073,7 +3056,7 @@ export function render() {
     const sent   = new Date(m.sent_at).getTime();
     const arrives = new Date(m.arrives_at).getTime();
     const progress = Math.min(1, Math.max(0, (now - sent) / (arrives - sent)));
-    const pos = hexPathPx(m.origin_q, m.origin_r, m.dest_q, m.dest_r, progress);
+    const pos = m.path?.length>1 ? pathPx(m.path,progress) : hexPathPx(m.origin_q,m.origin_r,m.dest_q,m.dest_r,progress);
     const visible = isTileVisible(pos.q, pos.r);
     // An order runner at journey's end hasn't "failed to move" — it has arrived
     // and is delivering; the unit starts marching once the worker applies the
@@ -3092,7 +3075,7 @@ export function render() {
   // 7. Animated trade caravans
   for (const t of State.tradeData) {
     const pos = transportPixelNow(t);
-    if (isTileVisible(pos.q, pos.r)) {
+    if (pos && (t.mine ? isTileVisible(pos.q,pos.r) : isTileLive(pos.q,pos.r))) {
       drawCaravan(ctx, Math.round(pos.x), Math.round(pos.y), walkPhase);
     }
   }
@@ -3101,6 +3084,28 @@ export function render() {
   ctx.restore();
   requestAnimationFrame(render);
 }
+
+// Shared geometry is used by both the sprites and these forward-only trails.
+export function journeyOverlays(nowMs=serverNow()){
+ const out=[],tickNow=movementTickNow(nowMs);
+ const own=(actor,kind,relation='own')=>{const p=actorRoute(actor,kind,nowMs,tickNow,hexPx,isTileLive);if(p){p.relation=relation;out.push(p);}};
+ const foreign=(actor,kind)=>{const p=foreignArrow(actor,hexPx,isTileLive,kind);if(p)out.push(p);};
+ for(const u of State.unitsData)if(u.status==='marching')own(u,u.category==='naval'?'ship':'army');
+ for(const m of State.marchData)own(m,m.is_naval?'ship':'army');
+ for(const t of State.tradeData)(t.mine||t.route_known===true)?own(t,t.category==='naval'?'ship':'caravan',t.mine?'own':'foreign'):foreign(t,t.category==='naval'?'ship':'caravan');
+ for(const m of State.messengerData){
+  if(!m.own){foreign(m,'runner');continue;}
+  if(m.leg==='waiting'||m.leg==='sealed')continue;
+  if(m.leg==='aboard'){
+   const carrier=State.unitsData.find(u=>u.id===m.carrier_unit_id)||State.tradeData.find(t=>t.id===m.carrier_transport_id&&t.mine);
+   own(carrier?{...carrier,id:m.id}:m,'runner');
+  }else if(m.leg){own({...m,departs_at:m.leg_start,arrives_at:m.leg_end},'runner');}
+  else own(m,'runner');
+ }
+ for(const u of State.foreignUnitData)foreign(u,u.category==='naval'?'ship':'army');
+ return out;
+}
+function drawJourneyOverlays(ctx){const livePixel=(x,y)=>{const [q,r]=markHexAt(x,y);return isTileLive(q,r);};for(const p of journeyOverlays())drawMovement(ctx,p,livePixel);}
 
 // ── Data loading ──────────────────────────────────────────────────────────
 export async function loadMap() {
@@ -3872,7 +3877,7 @@ export function initMap() {
         const foreign = (State.foreignUnitData || []).filter(u =>
           (u.status === 'marching' || u.status === 'positioned') && here(unitHexNow(u)) && isTileLive(h.q, h.r));
         const caravans = (State.tradeData || []).filter(t =>
-          here(legHexNow(t.origin_q, t.origin_r, t.dest_q, t.dest_r, t.departs_at, t.arrives_at)));
+          here(transportPixelNow(t)));
         const runners = (State.messengerData || []).filter(m => here(messengerHexNow(m)));
         const placeName = (q, r) => {
           const p = State.provinceData.find(p => p.q === q && p.r === r);
@@ -3991,14 +3996,17 @@ export function initMap() {
     // across the map. That is the surface the incoming-march warning is meant
     // to make watchable — an alert you cannot then follow is half a warning.
     const foreignMoving = (State.foreignUnitData || []).some(u => u.status === 'marching');
-    if (!State.unitsData.some(u => u.status === 'marching') && !courierOut && !foreignMoving) return;
+    const civilianMoving=State.tradeData.length>0||State.messengerData.some(m=>!m.own&&m.heading);
+    if (!State.unitsData.some(u => u.status === 'marching') && !courierOut && !foreignMoving && !civilianMoving) return;
     refreshTiles();
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units`).then(r => r.ok && r.json().then(d => { State.unitsData = d.units || []; State.dirty = true; }));
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/foreign-units`).then(r => r.ok && r.json().then(d => { State.foreignUnitData = d; State.dirty = true; }));
     // A Runner en route needs the same fast cadence: its delivery flips
     // the unit to marching (or applies a stance) server-side — poll messengers
     // so the runner vanishes and the unit moves without waiting for the 30s tick.
-    if (courierOut) {
+    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}`).then(r=>r.ok&&r.json().then(d=>anchorWorldTime(d)));
+    if(State.tradeData.length)fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/trades`).then(r=>r.ok&&r.json().then(d=>{State.tradeData=d;State.dirty=true;}));
+    if (courierOut || civilianMoving) {
       fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
     }
   }, 3000);
