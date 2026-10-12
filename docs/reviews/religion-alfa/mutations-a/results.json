@@ -1,0 +1,65 @@
+[
+  {
+    "mutation": "vision-radius",
+    "test": "TestAlphaVisionOnlyNewMemoryRadiusTwo",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "walls-consumer",
+    "test": "TestAlphaWallsRealDefenderStrengthAndOwnerExpiry",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "walls-owner",
+    "test": "TestAlphaWallsRealDefenderStrengthAndOwnerExpiry",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "green-span",
+    "test": "TestAlphaGreenShootsCannotRenewActiveHarvest",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "green-renew",
+    "test": "TestAlphaGreenShootsCannotRenewActiveHarvest",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "silent-wait",
+    "test": "TestAlphaPrayerSharedGodCooldownAndSilentAnswer",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "shared-god",
+    "test": "TestAlphaPrayerSharedGodCooldownAndSilentAnswer",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "silver-floor",
+    "test": "TestAlphaCatalogueAndSilverFloor",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "memory-activity",
+    "test": "TestAlphaVisionMemoryAPIHidesActivity",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  }
+]

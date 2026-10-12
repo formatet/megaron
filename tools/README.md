@@ -539,3 +539,9 @@ Walls defender consumer/owner gate, Green's span/renewal guard, successful-only
 and shared-god waiting, silver valuation and remembered-city activity. It requires
 named red tests, restores bytes and runs all Alpha cases against fresh PG16.
 Proof: `docs/reviews/religion-alfa/README.md`; departure effects are checkpoint B.
+
+`python3 tools/religion_alpha_live.py` uses its own fresh PG16/Redis, normal
+register/join/founding and an explicitly labelled own-city temple/stock fixture
+before native Offer actions. It verifies process healthz, real Firefox1280/390,
+shared waiting/active state and actual Keryx output. No payload overrides or SQL
+writes during actions; all owned resources are removed. Images await BILD review.

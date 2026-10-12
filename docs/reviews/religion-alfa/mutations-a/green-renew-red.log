@@ -1,0 +1,7 @@
+2026/10/12 19:00:01 INFO player registered id=fe797768-df30-4ffe-a6c9-525ba0f0e579 username=alpha-db6cb678-0f51-40a3-a97d-ed8cf9df55b6
+--- FAIL: TestAlphaGreenShootsCannotRenewActiveHarvest (0.08s)
+    religion_alpha_test.go:151: active harvest renewed: 200 {"effect":{"days":25,"goods":["grain","livestock","wine","oil"],"until_tick":125,"yield_bonus":0.25},"effect_type":"harvest_blessing","kharis_spent":4,"message":"Velchanos smiles upon your fields — grain, livestock, oil and wine yield a quarter more for 25 days.","mood":"Favorable","offer_multiplier":1,"prayer":"minoan_velchanos_green_shoots","success":true}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.081s
+FAIL
+» färsk DB på migration 175 · commit c52314c1+ändringar

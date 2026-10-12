@@ -1,0 +1,7 @@
+2026/10/12 18:59:57 INFO player registered id=7b45223b-aaac-449b-8d66-8c7b304a2316 username=alpha-a44edcf4-06f1-4c00-b203-1a488d8e25ba
+--- FAIL: TestAlphaGreenShootsCannotRenewActiveHarvest (0.07s)
+    religion_alpha_test.go:146: Green Shoots span 124, want125
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.076s
+FAIL
+» färsk DB på migration 175 · commit c52314c1+ändringar

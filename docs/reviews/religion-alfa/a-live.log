@@ -1,0 +1,17 @@
+ERROR:  there is no unique or exclusion constraint matching the ON CONFLICT specification
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-religion-alfa/tools/religion_alpha_live.py", line 61, in <module>
+    run('docker','exec',containers[0],'psql','-U','postgres','-d','ro1_proof','-v','ON_ERROR_STOP=1','-c',sql)
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tk/wt/codex-religion-alfa/tools/religion_alpha_live.py", line 13, in run
+    def run(*args,**kw):return subprocess.check_output(args,text=True,**kw).strip()
+                               ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 473, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+               **kwargs).stdout
+               ^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '('docker', 'exec', 'megaron-religion-a-0ffa80ee-pg', 'psql', '-U', 'postgres', '-d', 'ro1_proof', '-v', 'ON_ERROR_STOP=1', '-c', "INSERT INTO buildings(settlement_id,building_type,level) VALUES('9b159f9f-3c7a-4753-a7bd-911f0355052c','temple',3) ON CONFLICT(settlement_id,building_type) DO UPDATE SET level=3;\n  UPDATE settlement_goods SET amount=100,rate=0,calc_tick=current_world_tick() WHERE settlement_id='9b159f9f-3c7a-4753-a7bd-911f0355052c' AND good_key IN('grain','timber','fish','silver');\n  UPDATE player_world_records SET kharis_amount=90,kharis_rate=0,kharis_calc_tick=current_world_tick() WHERE world_id='5fac2e4c-4948-479c-8d40-c7fb37bc9a9b' AND settlement_id='9b159f9f-3c7a-4753-a7bd-911f0355052c';")' returned non-zero exit status 1.

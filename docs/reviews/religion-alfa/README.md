@@ -3,7 +3,18 @@
 ## Sammanfattning / granskningspunkt
 
 Bas **6f89290b**, gren `codex/religion-alfa`, worktree `/home/tk/wt/codex-religion-alfa`.
-**INVENTERING + FÖRSLAG + STOPP. Ingen produktionskod eller offertal låsta.**
+**CHECKPOINT A KLAR + STOPP FÖR CLAUDES GRANSKNING.** Tal/inventering c52314c1 godkända 18:47;
+produktion **ee0762cc**, migration **175**. Asterion/Stillhet hör till **B och är inte påbörjade**.
+
+- Tre riktiga aktiva minoiska böner: Vision disk2/unknown-only memory, Walls ×1,25/6ticks på ägarens försvarande garnison, Green befintlig matlista/+25%/25ticks med förnyelseguard. Två godkända specs reserverade för B, ej kastbara/annonserade i A.
+- Lyckad-only GodID+Wanax+värld-väntan i samma TX som gåva/debit/standing/RiteCast. Potnia24 delad/Velchanos25. Missar betalar men får **ingen** väntetid.
+- Silvergolv100 endast i offervärdering. Gamla prayer-ID/specs/outcome-payloads orörda; pensionerade minoiska IDs kan inte nykastas. Övriga kulturers gamla regler bevarade.
+- **Full färsk Go/tomDB/mig175, vet och605JS gröna.** [Go](a-full-go.log), [vet](a-vet.log), [JS](a-full-js.log), [verifiering](checkpoint-a-verification.json).
+- **Nio fysiska mutationer** namngivet rött → byteåterställt och gemensamt färskt grönt. [Mutationer](mutations-a/results.json). Concurrent två städer och event-skrivfel/rollback provas genom riktig HTTP.
+- Verklig Firefox/Keryx mot **healthz ee0762c/mig175**: Offer200, aktiv Walls6 och delad Visionwait24, explicit default/effekttext, ingaJSfel eller HTTP-overrides. [Fakta](live-a/verification.json), [Keryx](live-a/keryx-after.txt).
+- **BILD-bunt:** [desktop](live-a/desktop.png), [desktop aktiv](live-a/desktop-active.png), [mobil](live-a/mobile.png), [mobil alla tre böner](live-a/mobile-prayers.png). Kräver Claudes/Timothys bilddom enligt överlämningskedjan; ingen egen approval påstås.
+
+**Kvar:** Claude granskar/integrerar A och ger separat START för B. Ingen merge, push eller deploy från Codex.
 Hela `megaron_religion_sammanstallning_20261012.md` läst före arbetet; kanon §5b/§5c och ordern gäller.
 
 Claude 18:37 godkände tre uppmätta avgränsningar: Mistress behöver en faktisk garnisonsförsvarsläsare
@@ -11,7 +22,7 @@ Claude 18:37 godkände tre uppmätta avgränsningar: Mistress behöver en faktis
 Asterion ger landkaravan radie2→1 och fart; bud får bara fart eftersom de redan är heliga.
 Vaultens sammanställning §2 rättad för skördeeffekten. Stormscanens heltick-sampling är **inte i scope**.
 
-**Föreslagna traditionella offer (inte beslutade):**
+**Traditionella offer — godkända av Claude 18:47 (B fortfarande reserverad):**
 
 | Bön / gud | Spannmål | Timmer | Fisk | Silver | Varför |
 |---|---:|---:|---:|---:|---|
@@ -25,7 +36,7 @@ Varorna är **poolen av tidiga offer**, inte fyra obligatoriska ingredienser i v
 alla fyra i varje recept skulle göra fisken till en spärr för inlandets första bön.
 Spelarspråket är engelska; "Gynnsam passage" föreslås heta **Favourable Passage** i de fyra ytorna.
 
-**Andra tal som behöver Claudes granskning innan implementation:**
+**Utförartal — godkända 18:47 utom den uttryckligen avslagna raden nedan:**
 
 | Parameter | Förslag | Avgränsning |
 |---|---|---|
@@ -39,14 +50,14 @@ Spelarspråket är engelska; "Gynnsam passage" föreslås heta **Favourable Pass
 | Velchanos väntetid | **25 ticks** | Matchar den befintliga 25-tickseffekten och gör den inte möjlig att förnya på tick12. |
 | Asterion / Stillhet väntetid | **12 / 12 ticks** | Avfärdsgåvor ska vara val, inte varje karavan. Ingen automatisk giltighetsgräns föreslås för oanvänd flagga. |
 | Kharis-gate | **5 Vision/Walls/Thread/Passage; 30 Green Shoots** | Behåll befintliga två gates; ingen ny kharisskala eller ändring av 4-kharis-insatsen. |
-| Väntetidens utlösare | **rekommendation: varje giltigt kast, också tyst svar** | Nytt mot dagens lyckad-only. Ska uttryckligen godkännas; alternativet är behåll lyckad-only. Ingen vänta/debit på valideringsfel. |
+| Väntetidens utlösare | **Lyckad-only, bevarad** | Claude AVSLOG väntetid efter tyst svar. Misslyckat kast tar offer/standing, ingen väntetid. Valideringsfel tar varken offer eller väntetid. |
 
 Green Shoots har kvar **+25% i 25 ticks** för **grain, livestock, oil, wine**, aldrig fish.
 Oanvänd avfärdsflagga och aktiv skörde-/försvarseffekt får inte skrivas över/förnyas av en ny bön.
 För avfärdseffekter föreslås återbön i samma stad dessutom nekas medan den välsignade färden fortfarande
-är aktiv; samma guds realm-väntetid gäller oberoende av stad. Detta behöver bekräftas tillsammans med talen.
+är aktiv; samma guds realm-väntetid gäller oberoende av stad. Detta är checkpoint B:s avfärdsscope, godkänt vid talgranskningen.
 Utresans avfärdsleg är mottagaren; en senare separat returleg är en ny färd och får ingen ärvd ny fartgåva.
-Inget tal ovan är inlagt i katalog, DB eller produktion.
+A:s tal är implementerade i ee0762cc; B:s katalogspecs är reserverade och inga avfärdskonsumenter/flaggscheman är byggda.
 
 ## Varför den storleksordningen
 
@@ -87,7 +98,7 @@ använder uttryckligen dagens vikter, inte en ny hemligt låst viktkalibrering.
 | Scope | Religionskatalog/offervärdering, kast-/cooldownprojektion, FOW-minnesskrivning, transport/bud/ship-avfärd, försvarskonsument, fyra ytor och Codex. |
 | Non-scope | Patrongud/nya tempelslots, Vrede/stormstyrning, ny intercepttärning, arméfartgåva, stormscanens sampling. |
 | Acceptans | Alla fem effekter bevisade via riktig konsument + mutation; atomisk per-gud-väntan/ingen förnyelse; minnes-FOW; fryst avfärd/risk utan dubbelkonsumtion; web+Keryx och färska fulla sviter. |
-| Stopvillkor | **Nu: granska offertal/effekttal, väntetidens kast-utlösare och avfärdseffektens leg-scope före kod.** Kanonkonflikt till Timothy via Claude. |
+| Stopvillkor | **Nu: A-hash + STOPP före B.** Kanonkonflikt till Timothy via Claude. |
 | Bevisplan | Färsk DB-baslinje och riktade riktiga handler/workerprov; fysisk mutation för varje effekt, owner/FOW, delad cooldown och avfärd; fullfreshGo/JS/vet; Firefox1280/390 av templet, BILD i bunten. |
 
 **Kedjegrind: bevisar** geografi → brist → brons → elit genom oraklets malmminne och genomförbara handelsfärder.
@@ -231,5 +242,52 @@ Dev-läsningen ovan var separat READ ONLY; det är ingen spelacceptans eller bal
 Kod: katalog/minnes-/harvest-baslinje grön. Semantik: lagradeIDs, verkliga konsumentglapp och väntetidskällan inventerade.
 BILD/användarflöde/fullsviter: återstår efter godkända tal och implementation. Drift: ingen merge/push/deploy.
 
-**Nästa handling:** Claude granskar offer/silvergolv/styrka/fart/väntetid/leg-scope och ny FOW-aktivitetguard,
-därefter implementation på samma gren. Hash + STOPP gäller tills besked.
+**Nästa handling:** Claude granskar A/BILD, integrerar och ger separat START för B. Asterion/Stillhet och stormsampling är orörda.
+
+## Checkpoint A — genomförande och slutbevis
+
+Migration175 skapar GodID-väntetid med nyckel(world,player,god) och world/player-cascade;
+försvarsgåvan har until_tick och owner-stämpel på staden. Inga historiska events/legacy-flaggor skrivs om.
+Ny-prayer-ID-versionen börjar med ny väntetidsprojektion; den använder inte äldre cast-loggtid som falskt exakta ticks.
+De pensionerade minoiska IDs/specs finns kvar för historia, men bara de tre implementerade nya är i CulturePrayers.
+De övriga fem kulturerna behåller sina befintliga per-tempel-event-väntetider. B:s två godkända spec-ID:n är ännu inte aktiva.
+
+Rite tar samma Wanax/PWR-lås över båda städerna, och outcome-event appendas med AppendTx.
+Lyckad bön skriver väntetid; miss gör det aldrig. ActiveRemaining och GodCooldown har gemensamma läsare i cast/status.
+CLI väljer serverns is_default och visar aktiva dagar + wait; Kult visar serverns game_days, effekttext och rätt Offer-guard.
+Ingen ny verb/Umami-kind. Rites/Battle i spelar-Codex, rite-pariteten och religions-vaulten uppdaterade i A.
+
+Vision har egen oracle_memory_v2-consumer, medan den gamla sjuhaxseffekten förblir kvar.
+Kandidater filtreras mot faktisk live-sikt och HELA minnesunionen (tiles/provinces/budkontakter).
+Disk2 skriver bara nya riktiga hexar (INSERT/ON CONFLICT), och payloaden listar bara faktiskt nya minnesrader.
+Real /map-provet visar19remembered, /provinces-provet visar minnesstad utan ArmyTotal/Besieged.
+Ingen storm-/unit-sighting eller live-eye skapas. Noll ny fyndighet får ärligt svar.
+
+Walls läses i den riktiga BattleTick/rollSide-vägen för eligible garrison/defender/stad/owner/expiry.
+Ett real siege-prov jämför likadan seed med/utan gåva; egna defenders får exakt ×1,25 dice,
+attacker får samma dice, fel owner/utgången gåva/borttagen settlement-länk får noll bonus.
+Gammal battle_frenzy_until får ingen retroaktiv combatbetydelse. Green går genom befintlig
+ApplyHarvestBlessing/RecomputeProduction och blockeras före debit när active; befintliga hela yield-/fishprov passerar.
+
+Mutationer: Vision-radius; Walls-consumer; Walls-owner; Green-span; Green-förnyelse;
+miss-väntetid; delad-Potnia-key; silvergolv; Besieged-i-minne. Varje har named-red-logg och byte-restoration;
+alla Alpha HTTP/workerprov omkörda mot ny tom DB i restored-fresh.log. Fullsuite på ee0762cc/mig175 efter slutkod är grön.
+
+Firefox-beviset skapade egen färsk PG16/Redis och körde nybyggd server/Keryx, isolerad miljö, tick60s.
+Normal register+join+grundning **Phaistos**, sedan EXPLICIT SQL-fixtur endast på den egna nya staden:
+tempel3, kharis90/rate0, grain/timber/fish/silver100. Detta är INTE ett naturligt bygg-/kult-ekonomibevis.
+Efter fixturen sker ingen SQL eller HTTP-override: native Offer-clicks använder riktiga requests/utfall,
+missar skulle få försöka igen utan wait; success ger Wallsactive6/Visionwait24 och riktig inline-svarrad.
+Keryx --list läser samma process före/efter. Alla4 bilder är nya från sista rena scenariot med brief stängd;
+mobile-prayers är skrollad i själva Kult-drawern. Alla processer/container resurser var egna och stängdes.
+
+Provverktyget rättades under arbetet för hexmodellens avsaknad av unik(settlement,building_type)
+och för CLI-konfigurationens province_id. De första riggförsöken hann inte prova något Offer och används
+inte som bevis; a-live-clean.log och live-a/ är slutbeviset. En gotest-container fick portkrock före DB/teststart;
+färsk omkörning grön (a-effects-retry.log), ingen testregression normaliserad.
+
+Repro: tools/gotest.sh; go -C server vet ./...; node --test $(rg --files web/static/js -g '*.test.mjs');
+python3 tools/religion_alpha_mutations.py; python3 tools/religion_alpha_live.py.
+
+Grindar A: kod/semantik gröna, faktisk tempelinteraktion/API+Keryx+Firefox grön med angiven fixtur.
+BILD levererad för separat dom; drift väntar Claude. Checkpoint B är inte påbörjad.

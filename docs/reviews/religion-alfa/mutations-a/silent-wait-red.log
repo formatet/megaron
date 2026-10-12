@@ -1,0 +1,7 @@
+2026/10/12 19:00:06 INFO player registered id=df366fdb-8f0f-468f-8090-27183ba9bbb0 username=alpha-de77f1dc-7149-44a0-8dbe-a40dc6cee12f
+--- FAIL: TestAlphaPrayerSharedGodCooldownAndSilentAnswer (0.07s)
+    religion_alpha_test.go:109: silent answer imposed a god cooldown
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.068s
+FAIL
+» färsk DB på migration 175 · commit c52314c1+ändringar

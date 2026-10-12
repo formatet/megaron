@@ -1,0 +1,5 @@
+--- FAIL: TestAlphaCatalogueAndSilverFloor (0.00s)
+    alpha_test.go:25: silver altar floor missing: 3.4
+FAIL
+FAIL	formatet/megaron/server/internal/religion	0.002s
+FAIL

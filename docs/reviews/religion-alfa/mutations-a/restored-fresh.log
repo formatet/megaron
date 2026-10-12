@@ -1,0 +1,4 @@
+ok  	formatet/megaron/server/api/handlers	0.465s
+ok  	formatet/megaron/server/internal/combat	0.074s
+ok  	formatet/megaron/server/internal/religion	0.002s
+» färsk DB på migration 175 · commit c52314c1+ändringar

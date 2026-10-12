@@ -1,0 +1,9 @@
+2026/10/12 18:59:52 INFO settlement combat: battle initiated/joined unit=44d20780-b2a8-4427-8f84-18c9172732d6 settlement=060c22b0-d719-4390-b366-1e7431025ff4 q=1 r=0 defenders=1
+2026/10/12 18:59:52 INFO settlement combat: battle initiated/joined unit=9fd77ae2-c2ad-48d5-b363-af43a53912d6 settlement=d64cb8ca-3171-4d8b-afbe-198d8e064883 q=1 r=0 defenders=1
+2026/10/12 18:59:52 INFO settlement combat: battle initiated/joined unit=b4be9d90-4496-440f-abb6-b5f046add7df settlement=6acb3097-5759-4f68-8064-a954c073abe3 q=1 r=0 defenders=1
+--- FAIL: TestAlphaWallsRealDefenderStrengthAndOwnerExpiry (0.05s)
+    garrison_defense_test.go:54: Walls escaped owner/expiry/garrison scope (wrong owner): got3000 want2400
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.053s
+FAIL
+» färsk DB på migration 175 · commit c52314c1+ändringar

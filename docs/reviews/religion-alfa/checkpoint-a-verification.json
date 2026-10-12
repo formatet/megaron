@@ -1,0 +1,93 @@
+{
+  "base": "6f89290b",
+  "inventory": "c52314c1",
+  "implementation": "ee0762cc",
+  "migration": 175,
+  "checkpoint": "A",
+  "next_checkpoint": "B not started",
+  "full_fresh_go": "passed, empty PG16 migration175, isolated env, serialized packages",
+  "vet": "passed",
+  "js_tests": 605,
+  "mutations": [
+    {
+      "mutation": "vision-radius",
+      "test": "TestAlphaVisionOnlyNewMemoryRadiusTwo",
+      "named_red": true,
+      "byte_restored": true,
+      "restored_fresh_green": true
+    },
+    {
+      "mutation": "walls-consumer",
+      "test": "TestAlphaWallsRealDefenderStrengthAndOwnerExpiry",
+      "named_red": true,
+      "byte_restored": true,
+      "restored_fresh_green": true
+    },
+    {
+      "mutation": "walls-owner",
+      "test": "TestAlphaWallsRealDefenderStrengthAndOwnerExpiry",
+      "named_red": true,
+      "byte_restored": true,
+      "restored_fresh_green": true
+    },
+    {
+      "mutation": "green-span",
+      "test": "TestAlphaGreenShootsCannotRenewActiveHarvest",
+      "named_red": true,
+      "byte_restored": true,
+      "restored_fresh_green": true
+    },
+    {
+      "mutation": "green-renew",
+      "test": "TestAlphaGreenShootsCannotRenewActiveHarvest",
+      "named_red": true,
+      "byte_restored": true,
+      "restored_fresh_green": true
+    },
+    {
+      "mutation": "silent-wait",
+      "test": "TestAlphaPrayerSharedGodCooldownAndSilentAnswer",
+      "named_red": true,
+      "byte_restored": true,
+      "restored_fresh_green": true
+    },
+    {
+      "mutation": "shared-god",
+      "test": "TestAlphaPrayerSharedGodCooldownAndSilentAnswer",
+      "named_red": true,
+      "byte_restored": true,
+      "restored_fresh_green": true
+    },
+    {
+      "mutation": "silver-floor",
+      "test": "TestAlphaCatalogueAndSilverFloor",
+      "named_red": true,
+      "byte_restored": true,
+      "restored_fresh_green": true
+    },
+    {
+      "mutation": "memory-activity",
+      "test": "TestAlphaVisionMemoryAPIHidesActivity",
+      "named_red": true,
+      "byte_restored": true,
+      "restored_fresh_green": true
+    }
+  ],
+  "runtime_health": {
+    "commit": "ee0762c",
+    "migration": 175,
+    "status": "ok"
+  },
+  "browser_proof": "live-a/verification.json",
+  "fixture_before_action": "normal register/join/founding; own temple3,kharis90,stocks100 via SQL before action; no SQL during action",
+  "images": [
+    "live-a/desktop.png",
+    "live-a/desktop-active.png",
+    "live-a/mobile.png",
+    "live-a/mobile-prayers.png"
+  ],
+  "no_departure_effect_consumers": true,
+  "storm_production_diff": false,
+  "successful_only_cooldown": true,
+  "BILD": "provided, awaiting separate judgment"
+}

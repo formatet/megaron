@@ -55,11 +55,11 @@ try:
   settlement=city['settlement_id'];province=city['id']
   # Fixture is explicit, scoped to this newly registered city/realm, before
   # user action; this proves temple interaction, not natural temple construction.
-  sql=f"""INSERT INTO buildings(settlement_id,building_type,level) VALUES('{settlement}','temple',3) ON CONFLICT(settlement_id,building_type) DO UPDATE SET level=3;
+  sql=f"""INSERT INTO buildings(settlement_id,building_type,level) VALUES('{settlement}','temple',3);
   UPDATE settlement_goods SET amount=100,rate=0,calc_tick=current_world_tick() WHERE settlement_id='{settlement}' AND good_key IN('grain','timber','fish','silver');
   UPDATE player_world_records SET kharis_amount=90,kharis_rate=0,kharis_calc_tick=current_world_tick() WHERE world_id='{world}' AND settlement_id='{settlement}';"""
   run('docker','exec',containers[0],'psql','-U','postgres','-d','ro1_proof','-v','ON_ERROR_STOP=1','-c',sql)
-  cfg=tmp/'config.json';cfg.write_text(json.dumps({'server':base,'world_id':world,'token':token}));cfg.chmod(0o600)
+  cfg=tmp/'config.json';cfg.write_text(json.dumps({'server':base,'world_id':world,'province_id':province,'token':token}));cfg.chmod(0o600)
   clienv={**clean,'POLEIA_CONFIG':str(cfg)}
   cli=run(str(tmp/'keryx'),'rite','--list',env=clienv)
   assert all(name in cli for name in ["Potnia's Vision","Mistress of the Walls","Green Shoots"]),cli
@@ -78,11 +78,17 @@ try:
     if brief.is_visible():brief.click()
    page.evaluate("openDrawer('kult')")
    page.wait_for_function("document.getElementById('kult-body')?.textContent.includes('Mistress of the Walls')")
+   for brief in page.locator('.lb-dismiss').all():
+    if brief.is_visible():brief.click()
    page.evaluate("async()=>await Promise.all([...document.querySelectorAll('.drawer.open')].flatMap(d=>d.getAnimations()).map(a=>a.finished.catch(()=>{})))")
    text=page.locator('#kult-body').inner_text()
    assert all(name in text for name in ["Potnia's Vision","Mistress of the Walls","Green Shoots"]),text
    assert 'quarter stronger' in text and 'unknown ground' in text,text
    page.screenshot(path=str(OUT/(label+'.png')))
+   if label=='mobile':
+    page.locator('#kult-body').evaluate('(el)=>{el.scrollTop=el.scrollHeight;}')
+    page.evaluate('async()=>await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))')
+    page.screenshot(path=str(OUT/'mobile-prayers.png'))
    if label=='desktop':
     attempts=[]
     for _ in range(25):
