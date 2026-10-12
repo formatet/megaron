@@ -1,0 +1,43 @@
+server/internal/economy/recompute.go:476:// GoodBaseValue reads a good's base_value from the goods catalog. Shared by the
+server/internal/economy/recompute.go:480:func GoodBaseValue(ctx context.Context, tx Tx, key string) (float64, error) {
+server/internal/economy/recompute.go:482:	if err := tx.QueryRow(ctx, `SELECT base_value FROM goods WHERE key = $1`, key).Scan(&v); err != nil {
+server/internal/economy/goods.go:49:	BaseValue float64
+server/internal/economy/genesis_silver.go:17:// base_value. It anchors the genesis silver figures so they stay pop-invariant:
+server/internal/economy/genesis_silver.go:21:func dailyGrainNeedInSilver(population int, grainBaseValue float64) float64 {
+server/internal/economy/genesis_silver.go:22:	return DailyFoodNeed(population) * grainBaseValue
+server/internal/economy/genesis_silver.go:25:// GenesisSilverLiquid returns a new settlement's starting LIQUID silver (goods
+server/internal/economy/genesis_silver.go:30:func GenesisSilverLiquid(population int, grainBaseValue float64, cfg SitosConfig) (seed, cap float64) {
+server/internal/economy/genesis_silver.go:31:	need := genesisNeed(population, grainBaseValue)
+server/internal/economy/genesis_silver.go:42:func genesisNeed(population int, grainBaseValue float64) float64 {
+server/internal/economy/genesis_silver.go:46:	return dailyGrainNeedInSilver(population, grainBaseValue)
+server/internal/economy/sitos_config.go:44:	// dailyGrainNeedInSilver × SilverLiquidCapDays (see GenesisSilverLiquid).
+server/internal/economy/sitos_config.go:47:	// dailyGrainNeedInSilver × SilverStartDays (see GenesisSilverLiquid).
+server/api/handlers/create_metropolis.go:89:	// Silver now lives in settlement_goods (seeded below via GenesisSilverLiquid).
+server/api/handlers/create_metropolis.go:104:	// from GenesisSilverLiquid below, which is one of the two sanctioned faucets
+server/api/handlers/create_metropolis.go:153:	if grainBaseValue, gbErr := economy.GoodBaseValue(ctx, tx, "grain"); gbErr != nil {
+server/api/handlers/create_metropolis.go:156:		liquidSeed, liquidCap := economy.GenesisSilverLiquid(p.Population, grainBaseValue, sitosCfg)
+server/api/handlers/province.go:899:	var grainBaseValue, grainAmount, grainRate, grainCap float64
+server/api/handlers/province.go:902:		`SELECT g.base_value, sg.amount, sg.rate, sg.cap, sg.calc_tick
+server/api/handlers/province.go:906:	).Scan(&grainBaseValue, &grainAmount, &grainRate, &grainCap, &grainCalcTick)
+server/api/handlers/province.go:2914:		        g.base_value, g.name, g.tier, g.category
+server/api/handlers/province.go:2986:		BaseValue     float64 `json:"base_value"`
+server/api/handlers/province.go:3010:		var baseValue float64
+server/api/handlers/province.go:3011:		if err := rows.Scan(&key, &current, &rate, &capV, &baseValue, &name, &tier, &category); err != nil {
+server/api/handlers/province.go:3055:			BaseValue:     baseValue,
+server/internal/religion/valuation.go:51:// (and rate_per_tick, base_value) by, so "one gubbe on standard terrain"
+server/internal/religion/valuation.go:123:// lifted by world scarcity. Anchored on baseValue on purpose — without the
+server/internal/religion/valuation.go:126:func DivineValue(baseValue float64, r GoodRarity) float64 {
+server/internal/religion/valuation.go:128:	return baseValue * (1 + scarcityGain*rarity)
+server/internal/kharis/project.go:96:		base += amount * baseValues[good]
+server/internal/religion/index.go:64:		        g.base_value,
+server/internal/religion/index.go:72:		 GROUP BY g.key, g.base_value`,
+server/internal/religion/index.go:80:		baseValue  float64
+server/internal/religion/index.go:88:		if err := rows.Scan(&g.key, &g.baseValue, &g.holders, &g.worldStock); err != nil {
+server/internal/religion/index.go:119:		computed := DivineValue(g.baseValue, rarity)
+server/internal/kharis/tick.go:1879:		base += amount * baseValues[good]
+server/internal/kharis/tick.go:1900:// baseValues mirrors the goods catalogue for the two goods the altars burn.
+server/internal/kharis/tick.go:1903:var baseValues = map[string]float64{"oil": 4, "wine": 5}
+server/internal/combat/unit_arrival.go:1992:	// this line called GenesisSilverLiquid and created ~10 500 silver per colony
+server/internal/combat/unit_arrival.go:1997:	// The cap still comes from GenesisSilverLiquid: a cap is a shape, not silver,
+server/internal/combat/unit_arrival.go:2002:	if grainBaseValue, gbErr := economy.GoodBaseValue(ctx, tx, "grain"); gbErr != nil {
+server/internal/combat/unit_arrival.go:2005:		_, liquidCap := economy.GenesisSilverLiquid(population, grainBaseValue, h.sitosCfg)

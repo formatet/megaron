@@ -1,0 +1,62 @@
+server/db/migrations/031_timber_split.up.sql:14:INSERT INTO goods (key, name, tier, category, base_value, weight) VALUES
+server/db/migrations/136_dagsverkesskalan.down.sql:3:-- Ordningen är up:s spegelvända: base_value → settlement_goods → återskapa
+server/db/migrations/136_dagsverkesskalan.down.sql:13:-- ── 6. base_value tillbaka ─────────────────────────────────────────────────────
+server/db/migrations/136_dagsverkesskalan.down.sql:14:UPDATE goods SET base_value = base_value / 216   WHERE key = 'timber';
+server/db/migrations/136_dagsverkesskalan.down.sql:15:UPDATE goods SET base_value = base_value / 86.4  WHERE key = 'fish';
+server/db/migrations/136_dagsverkesskalan.down.sql:16:UPDATE goods SET base_value = base_value / 72    WHERE key = 'cedar';
+server/db/migrations/136_dagsverkesskalan.down.sql:17:UPDATE goods SET base_value = base_value / 43.2  WHERE key = 'grain';
+server/db/migrations/136_dagsverkesskalan.down.sql:18:UPDATE goods SET base_value = base_value / 36    WHERE key = 'livestock';
+server/db/migrations/136_dagsverkesskalan.down.sql:19:UPDATE goods SET base_value = base_value / 28.8  WHERE key = 'copper';
+server/db/migrations/136_dagsverkesskalan.down.sql:20:UPDATE goods SET base_value = base_value / 21.6  WHERE key = 'oil';
+server/db/migrations/136_dagsverkesskalan.down.sql:21:UPDATE goods SET base_value = base_value / 14.4  WHERE key = 'tin';
+server/db/migrations/136_dagsverkesskalan.down.sql:22:UPDATE goods SET base_value = base_value / 14.4  WHERE key = 'wine';
+server/db/migrations/136_dagsverkesskalan.down.sql:23:UPDATE goods SET base_value = base_value / 7.2   WHERE key = 'stone';
+server/db/migrations/136_dagsverkesskalan.down.sql:24:UPDATE goods SET base_value = base_value / 43.2  WHERE key = 'pottery';
+server/db/migrations/136_dagsverkesskalan.down.sql:25:UPDATE goods SET base_value = base_value / 28.8  WHERE key = 'horses';
+server/db/migrations/136_dagsverkesskalan.down.sql:26:UPDATE goods SET base_value = base_value / 21.6  WHERE key = 'purple';
+server/db/migrations/067_tick_substrate.up.sql:21:CREATE OR REPLACE FUNCTION current_world_tick() RETURNS int LANGUAGE sql STABLE AS $$
+server/db/migrations/067_tick_substrate.up.sql:52:CREATE FUNCTION settled(p_amount double precision, p_rate double precision, p_calc_tick int)
+server/db/migrations/019_livestock_pressings.up.sql:4:INSERT INTO goods (key, name, tier, category, base_value, weight) VALUES
+server/db/migrations/048_settled_fn.up.sql:11:CREATE OR REPLACE FUNCTION settled(p_amount double precision, p_rate double precision, p_calc_at timestamptz)
+server/db/migrations/072_sitos_fund.up.sql:17:--        = (population × 0.5 × grain.base_value) × 10
+server/db/migrations/072_sitos_fund.up.sql:22:SET sitos_fund_silver = s.population * 0.5 * g.base_value * 10
+server/db/migrations/118_remove_luxury.down.sql:4:INSERT INTO goods (key, name, tier, category, base_value, weight, religious) VALUES
+server/db/migrations/139_metallpriser.up.sql:4:-- Kontext (kodverifierat 2026-09-02): goods.base_value är pris per enhet, läst
+server/db/migrations/139_metallpriser.up.sql:8:-- varas base_value med dess GAMLA produktionstakt för att hålla värdet per
+server/db/migrations/139_metallpriser.up.sql:15:-- kvoten base_value(gammal)/divisor landade lika). Tennets knapphet är
+server/db/migrations/139_metallpriser.up.sql:32:-- 172,8 × 2 = 345,6. Skrivet som en subquery mot kopparns LIVE base_value,
+server/db/migrations/139_metallpriser.up.sql:34:UPDATE goods SET base_value = (SELECT base_value FROM goods WHERE key = 'copper') * 2
+server/db/migrations/139_metallpriser.up.sql:54:-- Räknat av SQL:en nedan (SUM(ri.quantity * g.base_value) över receptets
+server/db/migrations/139_metallpriser.up.sql:58:UPDATE goods SET base_value = (
+server/db/migrations/139_metallpriser.up.sql:59:    SELECT SUM(ri.quantity * g.base_value) * 1.5
+server/db/migrations/139_metallpriser.up.sql:67:-- ⛔ SILVER RÖRS INTE — valutans ankare (numéraire), base_value = 1, oförändrat.
+server/db/migrations/139_metallpriser.up.sql:70:-- ENDAST mot grain.base_value — economy.GoodBaseValue anropas i hela kodbasen
+server/db/migrations/093_divine_valuation.up.sql:28:    -- base_value × (1 + K·rarity), utjämnad mot föregående dygn så gudarnas
+server/db/migrations/067_tick_substrate.down.sql:13:CREATE FUNCTION settled(p_amount double precision, p_rate double precision, p_calc_at timestamptz)
+server/db/migrations/139_metallpriser.down.sql:4:-- eftersom migration 136 skalade varje varas base_value med dess egen
+server/db/migrations/139_metallpriser.down.sql:6:-- (koppar 6, tenn 12). Down skriver därför tenn = kopparns LIVE base_value,
+server/db/migrations/139_metallpriser.down.sql:9:UPDATE goods SET base_value = (SELECT base_value FROM goods WHERE key = 'copper')
+server/db/migrations/139_metallpriser.down.sql:17:UPDATE goods SET base_value = 20 WHERE key = 'bronze';
+server/db/migrations/025_silver_good.up.sql:12:INSERT INTO goods (key, name, base_value, weight, tier, category)
+server/db/migrations/052_three_tier_goods.up.sql:11:INSERT INTO goods (key, name, tier, category, base_value, weight) VALUES
+server/db/migrations/136_dagsverkesskalan.up.sql:155:-- ── 6. goods.base_value — priset per enhet följer enheten ──────────────────────
+server/db/migrations/136_dagsverkesskalan.up.sql:160:-- stads dagliga matbehov via grain.base_value) skulle tyst kollapsa.
+server/db/migrations/136_dagsverkesskalan.up.sql:167:UPDATE goods SET base_value = base_value * 216   WHERE key = 'timber';
+server/db/migrations/136_dagsverkesskalan.up.sql:168:UPDATE goods SET base_value = base_value * 86.4  WHERE key = 'fish';
+server/db/migrations/136_dagsverkesskalan.up.sql:169:UPDATE goods SET base_value = base_value * 72    WHERE key = 'cedar';
+server/db/migrations/136_dagsverkesskalan.up.sql:170:UPDATE goods SET base_value = base_value * 43.2  WHERE key = 'grain';
+server/db/migrations/136_dagsverkesskalan.up.sql:171:UPDATE goods SET base_value = base_value * 36    WHERE key = 'livestock';
+server/db/migrations/136_dagsverkesskalan.up.sql:172:UPDATE goods SET base_value = base_value * 28.8  WHERE key = 'copper';
+server/db/migrations/136_dagsverkesskalan.up.sql:173:UPDATE goods SET base_value = base_value * 21.6  WHERE key = 'oil';
+server/db/migrations/136_dagsverkesskalan.up.sql:174:UPDATE goods SET base_value = base_value * 14.4  WHERE key = 'tin';
+server/db/migrations/136_dagsverkesskalan.up.sql:175:UPDATE goods SET base_value = base_value * 14.4  WHERE key = 'wine';
+server/db/migrations/136_dagsverkesskalan.up.sql:176:UPDATE goods SET base_value = base_value * 7.2   WHERE key = 'stone';
+server/db/migrations/136_dagsverkesskalan.up.sql:177:UPDATE goods SET base_value = base_value * 43.2  WHERE key = 'pottery';
+server/db/migrations/136_dagsverkesskalan.up.sql:178:UPDATE goods SET base_value = base_value * 28.8  WHERE key = 'horses';
+server/db/migrations/136_dagsverkesskalan.up.sql:179:UPDATE goods SET base_value = base_value * 21.6  WHERE key = 'purple';
+server/db/migrations/018_merge_economy.up.sql:7:INSERT INTO goods (key, name, tier, category, base_value, weight) VALUES
+server/db/migrations/055_cult_via_temple.up.sql:8:INSERT INTO goods (key, name, tier, category, base_value, weight)
+server/db/migrations/008_economy_substrate.up.sql:13:    base_value FLOAT NOT NULL DEFAULT 1.0,
+server/db/migrations/008_economy_substrate.up.sql:17:INSERT INTO goods (key, name, tier, category, base_value, weight) VALUES
+server/db/migrations/105_wine_river_valley.up.sql:29:-- Ingen annan vara och inte goods.base_value rebalanseras här. Ingen ändring
+server/db/migrations/103_wine_beyond_hills.up.sql:35:-- ceder, timmer, sten) och inte goods.base_value rebalanseras här. river_valley

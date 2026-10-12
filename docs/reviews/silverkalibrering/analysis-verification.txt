@@ -1,0 +1,23 @@
+PASS: 16 goods; bronze chain 11; fieldstone 2; P6 separate labor; 20 distinct new maps; 4 silver hexes/map; L1 mean 27.875; L3 ratio 31/17; all six payroll types.
+MUTATION grain: named RED STANDARD_GRAIN_WORKDAY_REFERENCE
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-silverkalibrering/docs/reviews/silverkalibrering/calculate.py", line 23, in <module>
+    assert math.isclose(values['grain'],1), 'STANDARD_GRAIN_WORKDAY_REFERENCE'
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+AssertionError: STANDARD_GRAIN_WORKDAY_REFERENCE
+BYTE RESTORED; PASS: 16 goods; bronze chain 11; fieldstone 2; P6 separate labor; 20 distinct new maps; 4 silver hexes/map; L1 mean 27.875; L3 ratio 31/17; all six payroll types.
+MUTATION bronze: named RED BRONZE_FULL_INPUT_CHAIN
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-silverkalibrering/docs/reviews/silverkalibrering/calculate.py", line 24, in <module>
+    assert math.isclose(values['bronze'],11), 'BRONZE_FULL_INPUT_CHAIN'
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+AssertionError: BRONZE_FULL_INPUT_CHAIN
+BYTE RESTORED; PASS: 16 goods; bronze chain 11; fieldstone 2; P6 separate labor; 20 distinct new maps; 4 silver hexes/map; L1 mean 27.875; L3 ratio 31/17; all six payroll types.
+MUTATION silver_hex: named RED MEASURED_SILVER_HEX_CAPACITY
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-silverkalibrering/docs/reviews/silverkalibrering/calculate.py", line 41, in <module>
+    assert sum(c.values())==4, 'MEASURED_SILVER_HEX_CAPACITY'
+           ^^^^^^^^^^^^^^^^^^
+AssertionError: MEASURED_SILVER_HEX_CAPACITY
+BYTE RESTORED; PASS: 16 goods; bronze chain 11; fieldstone 2; P6 separate labor; 20 distinct new maps; 4 silver hexes/map; L1 mean 27.875; L3 ratio 31/17; all six payroll types.
+MAPGEN_REPEAT: all 41 requests byte-identical stdout; 20 distinct effective seeds in spread sample. Temporary command directory removed.

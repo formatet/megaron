@@ -1,0 +1,3 @@
+package main
+import("encoding/json"; "os"; "formatet/megaron/server/internal/world"; "github.com/google/uuid")
+func main(){enc:=json.NewEncoder(os.Stdout); seeds:=[]int64{1788982388878976733}; for i:=int64(0);i<20;i++{seeds=append(seeds,i)}; for i:=int64(1);i<=20;i++{seeds=append(seeds,1009*i)}; for _,s:=range seeds{tiles,eff:=world.GenerateMap(uuid.Nil,s,64,64);counts:=map[string]int{};for _,t:=range tiles{if t.SilverDeposit{counts[string(t.Terrain)]++}};enc.Encode(map[string]interface{}{"requested_seed":s,"effective_seed":eff,"width":64,"height":64,"tiles":len(tiles),"silver_hexes":counts})}}

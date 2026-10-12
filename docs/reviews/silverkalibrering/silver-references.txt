@@ -1,0 +1,816 @@
+server/cmd/server/main.go:363:		// accepts (silver is the price side, cult is temple labor), read from
+server/cmd/server/main.go:878:			                        copper_deposit, tin_deposit, silver_deposit, cedar_deposit, landmass_id)
+server/internal/unit/events.go:280:// (Kind = copper|tin|silver|cedar) or a foreign city (Kind = "city", Name and
+server/internal/unit/events.go:317:	SilverDeposit bool      `json:"silver_deposit"`
+server/internal/economy/hex_rules.go:8://     plus the silver/mine rows, which only apply when a mine stands on the hex);
+server/internal/economy/hex_rules.go:51:func hexRules(terrain string, copperDep, tinDep, silverDep bool) []hexRule {
+server/internal/economy/hex_rules.go:81:	if silverDep {
+server/internal/economy/hex_rules.go:82:		out = append(out, hexRule{"silver", 1, "mine"})
+server/internal/economy/hex_rules.go:90:func RuleBuildingSupportsHex(buildingType, terrain string, copperDep, tinDep, silverDep bool) bool {
+server/internal/economy/hex_rules.go:91:	for _, r := range hexRules(terrain, copperDep, tinDep, silverDep) {
+server/internal/economy/hex_rules.go:111:func hexGoodPlaces(terrain string, copperDep, tinDep, silverDep bool, levels map[string]int, good string) (places int, mult float64) {
+server/internal/economy/hex_rules.go:112:	for _, r := range hexRules(terrain, copperDep, tinDep, silverDep) {
+server/internal/economy/hex_rules.go:145:// silver) that do. A building needs ANY of them; a deposit-only building (mine)
+server/internal/economy/hex_rules.go:154:	for _, d := range []string{"copper", "tin", "silver"} {
+server/internal/economy/hex_rules.go:155:		if RuleBuildingSupportsHex(buildingType, "", d == "copper", d == "tin", d == "silver") {
+server/internal/economy/hex_rules.go:182:		`SELECT mt.terrain, COALESCE(mt.copper_deposit, false), COALESCE(mt.tin_deposit, false), COALESCE(mt.silver_deposit, false)
+server/cmd/keryx/cmd_recruit.go:160:			// server projects this unit will push the settlement into grain/silver
+server/cmd/keryx/cmd_recruit.go:219:	// upkeep_grain_per_tick/upkeep_silver_per_tick + sustainable (P6, soak
+server/cmd/keryx/cmd_recruit.go:237:	// before giving up — one of them was sitting on 118k grain, short only silver).
+server/cmd/keryx/cmd_recruit.go:238:	var netGrain, netSilver, grainStock, silverStock float64
+server/cmd/keryx/cmd_recruit.go:244:				netSilver, _ = sett["net_silver_per_tick_after_upkeep"].(float64)
+server/cmd/keryx/cmd_recruit.go:248:				// silver, ~5000 ticks of runway).
+server/cmd/keryx/cmd_recruit.go:253:					if s, ok := resmap["silver"].(map[string]any); ok {
+server/cmd/keryx/cmd_recruit.go:254:						silverStock, _ = s["amount"].(float64)
+server/cmd/keryx/cmd_recruit.go:263:						us, _ := m["upkeep_silver_per_tick"].(float64)
+server/cmd/keryx/cmd_recruit.go:264:						usNet, netOK := m["upkeep_silver_net_per_tick"].(float64)
+server/cmd/keryx/cmd_recruit.go:332:				upkeepStr = fmt.Sprintf("%.1f grain, %.1f silver", info.upkeepGrain, info.upkeepSilv)
+server/cmd/keryx/cmd_recruit.go:342:						netGrain, netSilver, info.upkeepGrain, info.upkeepSilvNet, grainStock, silverStock)
+server/cmd/keryx/cmd_recruit.go:368:// silver. Reports the shortfall as a per-tick figure because that is the unit the
+server/cmd/keryx/cmd_recruit.go:370:func unsustainableReason(netGrain, netSilver, unitGrain, unitSilver, grainStock, silverStock float64) string {
+server/cmd/keryx/cmd_recruit.go:372:	silverShort := netSilver - unitSilver
+server/cmd/keryx/cmd_recruit.go:374:	// A city with 36k silver and −7/tick has ~5000 ticks, but the bare "✗ needs more"
+server/cmd/keryx/cmd_recruit.go:385:	case grainShort < 0 && silverShort < 0:
+server/cmd/keryx/cmd_recruit.go:386:		return fmt.Sprintf("upkeep exceeds this city: needs %.1f more grain per day and %.1f more silver per day%s%s",
+server/cmd/keryx/cmd_recruit.go:387:			-grainShort, -silverShort, runway(grainStock, grainShort), runway(silverStock, silverShort))
+server/cmd/keryx/cmd_recruit.go:388:	case silverShort < 0:
+server/cmd/keryx/cmd_recruit.go:389:		return fmt.Sprintf("silver upkeep: net is %+.1f silver per day, needs %.1f more per day%s",
+server/cmd/keryx/cmd_recruit.go:390:			netSilver, -silverShort, runway(silverStock, silverShort))
+server/cmd/keryx/cmd_status.go:19:// copper, tin AND silver (silver_mine is retired, megaron_plan_byggnad_pa_hex.md
+server/cmd/keryx/cmd_status.go:20:// §A: a mine on a silver-deposit hex produces silver, exactly like copper/tin on
+server/cmd/keryx/cmd_status.go:44:		case "copper", "tin", "silver":
+server/cmd/keryx/cmd_status.go:117:// remainingBuildingCosts sums the material (+ silver) cost of every building
+server/cmd/keryx/cmd_status.go:156:				total["silver"] += spec.CostSilver
+server/cmd/keryx/cmd_status.go:175:			total["silver"] += spec.CostSilver
+server/cmd/keryx/cmd_status.go:216://   - Upkeep: this settlement's OWN current army_upkeep grain/silver draw
+server/cmd/keryx/cmd_status.go:249:	cap["silver"] += ctx.armyUpkeepSilver * productionHorizonTicks
+server/cmd/keryx/cmd_status.go:384:// `status` said, in the same breath, "⚠ silver täcker inte arméns sold" and
+server/cmd/keryx/cmd_status.go:386:// grounding with "stop the silver bleed" while holding 30 474 silver. A
+server/cmd/keryx/cmd_status.go:388:// and silver are graded symmetrically. Pure — unit-testable without a server.
+server/cmd/keryx/cmd_status.go:389:func armyUpkeepWarning(netG, netS, grainStock, silverStock float64) string {
+server/cmd/keryx/cmd_status.go:406:	sNote, sCritical := runway(netS, silverStock)
+server/cmd/keryx/cmd_status.go:408:	// healthy grain and a critical silver runway should never read as a
+server/cmd/keryx/cmd_status.go:412:		return "  ⚠ neither grain nor silver covers the army's upkeep — units starve/desert once the stock runs out" + gNote + sNote + " (see `keryx recruit --list`)"
+server/cmd/keryx/cmd_status.go:414:		return "  ⚠ grain doesn't cover the army's upkeep — units can starve" + gNote + " (silver is fine; see `keryx recruit --list`)"
+server/cmd/keryx/cmd_status.go:416:		return "  ⚠ silver doesn't cover the army's pay — units can desert" + sNote + " (food is fine; see `keryx recruit --list`)"
+server/cmd/keryx/cmd_status.go:487:		// grain/silver — nested, not at the top level a script naturally
+server/cmd/keryx/cmd_status.go:489:		// read `settlement.grain`/`settlement.silver` (no such keys exist) and
+server/cmd/keryx/cmd_status.go:497:  settlement.resources.<good>.amount   current stock (e.g. .grain.amount, .silver.amount)
+server/cmd/keryx/cmd_status.go:501:There is no top-level settlement.grain / settlement.silver / settlement.storage_cap
+server/cmd/keryx/cmd_status.go:504:grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_upkeep.`,
+server/cmd/keryx/cmd_status.go:507:  keryx status --json | jq '.settlement.resources.silver.amount'`,
+server/cmd/keryx/cmd_status.go:680:				// Sitos itemization: what MOVED, in food. There is no silver leg
+server/cmd/keryx/cmd_status.go:682:				// rather than a delta of zero silver — a number that would now
+server/cmd/keryx/cmd_status.go:705:			// Resources: silver + the bronze-chain goods live in resources as
+server/cmd/keryx/cmd_status.go:735:				printRes("Silver", "silver", true)
+server/cmd/keryx/cmd_status.go:769:				// Netto EFTER arméns upkeep (P6, soak 2026-07-18): grain/silver "netto"
+server/cmd/keryx/cmd_status.go:776:					netS, _ := sett["net_silver_per_tick_after_upkeep"].(float64)
+server/cmd/keryx/cmd_status.go:781:					silverStock := 0.0
+server/cmd/keryx/cmd_status.go:782:					if rd, ok := res["silver"].(map[string]any); ok {
+server/cmd/keryx/cmd_status.go:783:						silverStock, _ = rd["amount"].(float64)
+server/cmd/keryx/cmd_status.go:785:					warn := armyUpkeepWarning(netG, netS, grainStock, silverStock)
+server/cmd/keryx/cmd_status.go:786:					fmt.Printf("  %-8s net %+.1f grain per day, %+.1f silver per day (after the army's upkeep)%s\n",
+server/cmd/keryx/cmd_status.go:833:					armyUpkeepSilver, _ = up["silver"].(float64)
+server/cmd/keryx/cmd_status.go:897:			// unusedCatchmentDeposits — flaggar koppar/tenn/silver som ligger i
+server/cmd/keryx/cmd_status.go:898:			// stadens catchment men saknar mine. silver_mine avskaffad
+server/cmd/keryx/cmd_status.go:899:			// (megaron_plan_byggnad_pa_hex.md §A) — mine på en silverhex ger
+server/cmd/keryx/cmd_status.go:900:			// silver, precis som koppar/tenn, så det finns bara ett meddelande nu.
+server/cmd/keryx/cmd_status.go:1005:				// stands (grain shortage → attrition, silver shortage → desertion).
+server/cmd/keryx/cmd_status.go:1009:					s, _ := up["silver"].(float64)
+server/cmd/keryx/cmd_status.go:1016:						fmt.Printf("  %-10s %.1f grain, %.1f silver per day  (everything the city pays — including field units)\n", "Upkeep", g, s)
+server/cmd/keryx/cmd_status.go:1021:						if circ, ok := sett["army_upkeep_circulated_silver"].(float64); ok && circ > 0 {
+server/cmd/keryx/cmd_status.go:1022:							fmt.Printf("  %-10s %.1f silver per day back into the city (garrison's pay)\n", "", circ)
+server/cmd/keryx/cmd_status.go:1108:	"gifts ≥50 silver-equivalent (`keryx transfer`), won/defended battles.\n" +
+server/internal/economy/founding_placement.go:381:		                 ELSE 3                                        -- övrig icke-mat (stone/timber/cedar/silver/copper/tin/…)
+server/internal/economy/trade_return.go:74:	// Credit goods to buyer — silver is now a normal good in settlement_goods.
+server/cmd/keryx/cmd_rise.go:19:silver) on another landmass than the one that fell. Your letters, contacts and
+server/cmd/keryx/cmd_messenger_split.go:112://   - buy:  --want-good G --want-qty N --offer-silver S  (buyer escrows silver)
+server/cmd/keryx/cmd_messenger_split.go:113://   - sell: --offer-good G --offer-qty N --want-silver S (seller escrows goods)
+server/cmd/keryx/cmd_messenger_split.go:121:		Example: `  keryx trade-offer --to Korinth --want-good grain --want-qty 100 --offer-silver 80
+server/cmd/keryx/cmd_messenger_split.go:122:  keryx trade-offer --to Athenai --offer-good copper --offer-qty 50 --want-silver 120`,
+server/cmd/keryx/cmd_messenger_split.go:128:				return fmt.Errorf("specify either a buy offer (--want-good --want-qty --offer-silver) OR a sell offer (--offer-good --offer-qty --want-silver), not both/incomplete")
+server/cmd/keryx/cmd_messenger_split.go:154:					msgText = fmt.Sprintf("Trade offer: %g %s for %g silver", wantQty, wantGood, offerSilver)
+server/cmd/keryx/cmd_messenger_split.go:160:					"offer_silver": offerSilver,
+server/cmd/keryx/cmd_messenger_split.go:164:					msgText = fmt.Sprintf("Selling %g %s for %g silver", offerQty, offerGood, wantSilver)
+server/cmd/keryx/cmd_messenger_split.go:170:					"want_silver": wantSilver,
+server/cmd/keryx/cmd_messenger_split.go:191:				fmt.Printf("Trade offer dispatched to %s (want %.0f %s, offer %.0f silver) · arrives %s\n",
+server/cmd/keryx/cmd_messenger_split.go:194:				fmt.Printf("Sell offer dispatched to %s (selling %.0f %s for %.0f silver) · arrives %s\n",
+server/cmd/keryx/cmd_messenger_split.go:204:	cmd.Flags().Float64Var(&offerSilver, "offer-silver", 0, "silver to offer in exchange (buy mode)")
+server/cmd/keryx/cmd_messenger_split.go:207:	cmd.Flags().Float64Var(&wantSilver, "want-silver", 0, "silver to request in exchange (sell mode)")
+server/cmd/keryx/cmd_reports.go:120:  keryx report --kind design --text "silver upkeep feels punishing"
+server/internal/economy/recompute.go:191:		        COALESCE(mt.tin_deposit, false), COALESCE(mt.silver_deposit, false)
+server/internal/economy/recompute.go:205:		var copperDep, tinDep, silverDep bool
+server/internal/economy/recompute.go:206:		if err := rows.Scan(&hq, &hr, &terrain, &copperDep, &tinDep, &silverDep); err != nil {
+server/internal/economy/recompute.go:210:		for _, rule := range hexRules(terrain, copperDep, tinDep, silverDep) {
+server/internal/economy/recompute.go:230:// instead, the way P3 covers grain/timber/cedar/livestock/copper/tin/silver/fish.
+server/cmd/keryx/notification_text.go:15:		SilverArrivesAt   string             `json:"silver_arrives_at"`
+server/cmd/keryx/notification_text.go:17:		SilverArrivalTick *float64           `json:"silver_arrival_tick"`
+server/cmd/keryx/notification_text.go:28:		Silver            float64            `json:"silver"`
+server/cmd/keryx/notification_text.go:127:		line = fmt.Sprintf("Offer accepted: %s %s for %s silver", notificationAmount(b.Quantity), b.GoodKey, notificationAmount(b.Silver))
+server/cmd/keryx/notification_text.go:135:			refund = notificationAmount(b.Silver) + " silver"
+server/cmd/keryx/notification_text.go:150:		if b.Reason == "silver_shortage" {
+server/cmd/keryx/notification_text.go:279:			at, day, leg = b.SilverArrivesAt, b.SilverArrivalTick, "silver"
+server/internal/economy/goods.go:23:	GoodSilver    = "silver"
+server/internal/economy/goods.go:92:// (api/handlers/messenger.go) also excludes silver from offers, but for an
+server/internal/economy/goods.go:93:// unrelated reason (an offer negotiates silver-for-goods, never
+server/internal/economy/goods.go:94:// silver-for-silver) — don't reuse that predicate's exclusion set here.
+server/cmd/keryx/cmd_kingdoms_stub.go:67:	return kingdomStubCmd("kingdom-treasury-deposit", "Send silver to the kingdom treasury")
+server/internal/economy/sitos_tick.go:16:// those two carry silver meaning and their semantics are frozen forever
+server/internal/economy/sitos_tick.go:49:// It touches NO SILVER (B3). Before migration 106 this was a silver fund that
+server/internal/economy/sitos_tick.go:51:// — all silver_shortage — while stabilising nothing.
+server/cmd/keryx/cmd_goods.go:228:	cmd.Flags().StringVarP(&good, "good", "g", "", "good key (e.g. grain, timber, silver)")
+server/cmd/keryx/cmd_goods.go:323:	var silver, grain float64
+server/cmd/keryx/cmd_goods.go:328:		Short: "Send silver/grain from your capital to one of your own colonies (boosts loyalty at 50+ silver-equivalent)",
+server/cmd/keryx/cmd_goods.go:329:		Example: `  keryx gift --silver 60 --dest Korinth
+server/cmd/keryx/cmd_goods.go:330:  keryx gift --grain 100 --silver 20 --dest Korinth`,
+server/cmd/keryx/cmd_goods.go:331:		// --silver/--grain/--dest are all plausible — no single one is the
+server/cmd/keryx/cmd_goods.go:335:			if silver <= 0 && grain <= 0 {
+server/cmd/keryx/cmd_goods.go:336:				return fmt.Errorf("gift must include --silver or --grain")
+server/cmd/keryx/cmd_goods.go:345:				"silver": silver,
+server/cmd/keryx/cmd_goods.go:357:				SilverSent   float64 `json:"silver_sent"`
+server/cmd/keryx/cmd_goods.go:364:			fmt.Printf("Gift dispatched to %s: silver %.0f, grain %.0f · arrives %s\n",
+server/cmd/keryx/cmd_goods.go:369:				fmt.Println("Below the 50 silver-equivalent threshold — no loyalty gain.")
+server/cmd/keryx/cmd_goods.go:375:	cmd.Flags().Float64Var(&silver, "silver", 0, "silver to send")
+server/cmd/keryx/cmd_founding.go:23:	Silver          foundingStore `json:"silver"`
+server/cmd/keryx/cmd_founding.go:92:	// skälet till att prognosens fyndighetsrad ("Övrigt: silver-deposit ✓") är
+server/cmd/keryx/cmd_founding.go:165:remaining grain and silver are carried into the city's stores. The founding
+server/cmd/keryx/cmd_founding.go:262:				SilverCarried float64 `json:"silver_carried"`
+server/cmd/keryx/cmd_founding.go:264:				SilverTotal   float64 `json:"silver_total"`
+server/cmd/keryx/cmd_founding.go:286:func foundingStoresLine(grainCarried, silverCarried, grainTotal, silverTotal float64) string {
+server/cmd/keryx/cmd_founding.go:287:	return fmt.Sprintf("  Carried in by the host: %.0f grain, %.0f silver. The city now holds %.0f grain, %.0f silver (your host's stores plus the city's own opening stores).",
+server/cmd/keryx/cmd_founding.go:288:		grainCarried, silverCarried, grainTotal, silverTotal)
+server/cmd/keryx/cmd_cities.go:56:				silver, _ := e["silver_deposit"].(bool)
+server/cmd/keryx/cmd_cities.go:65:				if silver {
+server/cmd/keryx/cmd_cities.go:66:					deposit = "⛏silver"
+server/internal/economy/genesis_silver.go:3:// Genesis silver — the sanctioned faucets.
+server/internal/economy/genesis_silver.go:5:// B3 (Timothy 2026-08-02): silver enters the game ONLY via starting silver and
+server/internal/economy/genesis_silver.go:6:// mines. Everything else moves silver that already exists. This file is the
+server/internal/economy/genesis_silver.go:7:// starting-silver half, kept apart from the granary (sitos.go, sitos_tick.go)
+server/internal/economy/genesis_silver.go:8:// so that "the granary never touches silver" is a property you can check by
+server/internal/economy/genesis_silver.go:12:// Sitos fund seed, pop x 10.5, so a ~2000-pop colony printed ~21 000 silver
+server/internal/economy/genesis_silver.go:17:// base_value. It anchors the genesis silver figures so they stay pop-invariant:
+server/internal/economy/genesis_silver.go:19:// of coverage. The granary is measured in food and never in silver, so it does
+server/internal/economy/genesis_silver.go:25:// GenesisSilverLiquid returns a new settlement's starting LIQUID silver (goods
+server/internal/economy/genesis_silver.go:26:// amount) and its silver-good cap, both pop-anchored to grain-need so the ratio
+server/internal/economy/genesis_silver.go:27:// stays pop-invariant. This is one of the TWO sanctioned silver faucets in the
+server/internal/economy/genesis_silver.go:28:// game (B3: starting silver and mines, full stop) — the other being the mines.
+server/internal/economy/genesis_silver.go:36:// MaxGenesisPopulation. Genesis is a place silver is created rather than moved,
+server/internal/economy/genesis_silver.go:37:// so it is a place where a corrupt population turns into minted silver — and on
+server/internal/economy/genesis_silver.go:40:// the world's silver. The seed must never price itself against a caller's
+server/cmd/keryx/cmd_build.go:81:					CostSilver       float64                       `json:"cost_silver"`
+server/cmd/keryx/cmd_build.go:109:						costParts = append(costParts, fmt.Sprintf("silver×%.0f", b.CostSilver))
+server/internal/province/model.go:57:// ResourceLedger holds the settlement column resource: silver (the currency shekel).
+server/internal/province/model.go:64:// Snapshot returns the current silver value at the given time.
+server/internal/province/model.go:67:		"silver": rl.Silver.Current(at),
+server/internal/province/model.go:78:// SnapshotFull returns amount, rate, and cap for silver.
+server/internal/province/model.go:81:		"silver": {Amount: rl.Silver.Current(at), Rate: rl.Silver.RatePerMinute, Cap: rl.Silver.Cap},
+server/cmd/keryx/cmd_map.go:117:				SilverDeposit bool   `json:"silver_deposit"`
+server/cmd/keryx/cmd_map.go:149:				SilverDeposit bool   `json:"silver_deposit,omitempty"`
+server/cmd/keryx/cmd_map.go:256:					{"silver", t.SilverDeposit},
+server/cmd/keryx/cmd_gossip.go:77:  keryx messenger --to Korinth --message "Buy grain offer" --want-good grain --want-qty 100 --offer-silver 80`,
+server/cmd/keryx/cmd_gossip.go:111:					"offer_silver": offerSilver,
+server/cmd/keryx/cmd_gossip.go:128:				fmt.Printf("Trade offer dispatched to %s (want %.0f %s, offer %.0f silver) · arrives %s\n",
+server/cmd/keryx/cmd_gossip.go:138:	cmd.Flags().StringVar(&fromName, "from", "", "your city to send from (default: capital — the silver hub)")
+server/cmd/keryx/cmd_gossip.go:141:	cmd.Flags().Float64Var(&offerSilver, "offer-silver", 0, "silver to offer in exchange")
+server/cmd/keryx/cmd_gossip.go:158:	// whose province id matches cfg.ProvinceID) — it holds the silver by the
+server/cmd/keryx/cmd_gossip.go:161:	// so offers shipped from an arbitrary (often silver-less) colony and the
+server/cmd/keryx/cmd_gossip.go:162:	// recipient's accept failed with "buyer has insufficient silver".
+server/internal/economy/sitos_config.go:14:// It replaced a silver fund on 2026-08-02 (migration 106). The fund's tunables
+server/internal/economy/sitos_config.go:43:	// SilverLiquidCapDays: a settlement's liquid silver-good cap =
+server/internal/economy/sitos_config.go:46:	// SilverStartDays: a settlement's genesis liquid silver seed =
+server/internal/province/building.go:5:// settlement_goods. CostSilver is deducted from the settlement_goods silver row.
+server/internal/province/building.go:8:	CostSilver    float64            // silver deducted from settlement_goods (good_key='silver')
+server/internal/province/building.go:189:// vineri, silvergruva — betalar i stället sin nivåtrappa i timmer och sten,
+server/cmd/keryx/cmd_route.go:79:  keryx route --from Petras --to Colony --out grain:200,fish:50 --home silver:0,stone:20 --crew from`,
+server/cmd/keryx/cmd_route.go:147:	cmd.Flags().StringVar(&homeSpec, "home", "", "return goods to bring home, leaving at least this much behind, e.g. silver:0,stone:20")
+server/cmd/keryx/output.go:79:// without this, a pending offer's silver/goods stayed locked with no visible
+server/cmd/keryx/output.go:163:	key, timestamp := "silver_arrival_tick", "silver_arrives_at"
+server/internal/economy/tithe.go:4:// in the catalog — e.g. wine, oil, purple) the temple takes a share of the silver.
+server/internal/economy/tithe.go:6:// Chosen (Timothy 2026-07-22) over a standing silver upkeep for the cult, and
+server/internal/economy/tithe.go:9:// worse, the two Wanaxes holding the world's tin were measured at ZERO silver
+server/internal/economy/tithe.go:10:// the same evening. A tithe on completed trade only bites when silver actually
+server/internal/economy/tithe.go:17:	// titheRate is the share of trade silver the temple takes on a religious
+server/internal/economy/tithe.go:23:	// it every 2-silver sale spawns an event row for a rounding artefact.
+server/internal/economy/tithe.go:27:// Tithe returns the silver the temple takes from a trade payment, and the
+server/internal/economy/tithe.go:28:// silver that reaches the seller.
+server/internal/economy/tithe.go:33:func Tithe(silver float64, goodIsReligious, hasTemple bool) (toTemple, toSeller float64) {
+server/internal/economy/tithe.go:34:	if !goodIsReligious || !hasTemple || silver < titheMinSilver {
+server/internal/economy/tithe.go:35:		return 0, silver
+server/internal/economy/tithe.go:37:	toTemple = silver * titheRate
+server/internal/economy/tithe.go:38:	return toTemple, silver - toTemple
+server/internal/province/training.go:75:// timmer ÷216 · ceder ÷72. Brons och silver rörs inte (divisor 1 respektive
+server/internal/province/training.go:108:	"spearman":       {Costs: map[string]float64{"grain": 0.12, "silver": 0.2}, PopCost: 5, DurationTicks: 1, RequiresBarracks: true},
+server/internal/province/training.go:109:	"war_chariot":    {Costs: map[string]float64{"grain": 0.40, "timber": 0.08, "cedar": 0.08, "bronze": 0.20, "silver": 0.5}, PopCost: 8, DurationTicks: 3, RequiresStable: true},
+server/internal/province/training.go:110:	"galley":         {Costs: map[string]float64{"timber": 1.5, "silver": 0.3}, PopCost: 10, DurationTicks: 3, RequiresShipyard: true},
+server/internal/province/training.go:111:	"elite_infantry": {Costs: map[string]float64{"grain": 0.24, "bronze": 0.16, "silver": 0.4}, PopCost: 10, DurationTicks: 4, RequiresBarracks: true, RequiresFoundry: true},
+server/internal/province/training.go:112:	"war_galley":     {Costs: map[string]float64{"cedar": 2.0, "silver": 0.6}, PopCost: 12, DurationTicks: 5, RequiresShipyard: true, RequiresFoundry: true},
+server/internal/province/training.go:113:	"merchantman":    {Costs: map[string]float64{"timber": 1.6, "silver": 0.2}, PopCost: 8, DurationTicks: 4, RequiresShipyard: true},
+server/cmd/keryx/cmd_messenger.go:74:				fmt.Printf("Trade accepted · %.0f %s incoming · silver sent: %.0f · goods arrive %s · silver arrives %s\n",
+server/cmd/keryx/cmd_messenger.go:75:					resp["quantity"], resp["good_key"], resp["silver_paid"], tradeArrival(c, resp, true), tradeArrival(c, resp, false))
+server/cmd/keryx/cmd_messenger.go:77:				fmt.Printf("Trade accepted · %.0f %s outgoing · silver incoming: %.0f · goods arrive %s · silver arrives %s\n",
+server/cmd/keryx/cmd_messenger.go:78:					resp["quantity"], resp["good_key"], resp["silver_paid"], tradeArrival(c, resp, true), tradeArrival(c, resp, false))
+server/cmd/keryx/cmd_messenger.go:125:		Short:   "Cancel an outgoing pending trade offer and reclaim escrowed silver",
+server/cmd/keryx/cmd_messenger.go:147:			silver, _ := resp["silver_refunded"].(float64)
+server/cmd/keryx/cmd_messenger.go:149:				fmt.Printf("Offer cancelled · %.0f silver refunded\n", silver)
+server/cmd/keryx/cmd_messenger.go:380:						silver, _ := offer["want_silver"].(float64)
+server/cmd/keryx/cmd_messenger.go:381:						line += fmt.Sprintf("  trade: sell %.0f %s for %.0f silver [%s]", qty, good, silver, offerStatusLabel(offerStatus))
+server/cmd/keryx/cmd_messenger.go:388:						silver, _ := offer["offer_silver"].(float64)
+server/cmd/keryx/cmd_messenger.go:389:						line += fmt.Sprintf("  trade: want %.0f %s for %.0f silver [%s]", qty, good, silver, offerStatusLabel(offerStatus))
+server/cmd/keryx/cmd_messenger.go:390:						// Pending buy offers have the buyer's silver held in escrow until the
+server/cmd/keryx/cmd_messenger.go:393:							line += fmt.Sprintf("  (%.0f silver escrowed — cancel with: keryx trade-cancel --id %s)", silver, id)
+server/cmd/keryx/cmd_messenger.go:427:					// ONLY place goods_arrives_at/silver_arrives_at ever appeared; outbox
+server/cmd/keryx/cmd_messenger.go:442:			// offers out had no single place to see how much silver/goods were
+server/cmd/keryx/cmd_messenger.go:475:// deliveryETALine formats the goods/silver delivery ETA for an ACCEPTED trade
+server/cmd/keryx/cmd_messenger.go:477:// silver_arrives_at). Returns "" if neither timestamp is present (e.g. an
+server/cmd/keryx/cmd_messenger.go:495:	silverAt, _ := offer["silver_arrives_at"].(string)
+server/cmd/keryx/cmd_messenger.go:502:	if at, ok := offer["silver_arrival_tick"].(float64); ok {
+server/cmd/keryx/cmd_messenger.go:503:		parts = append(parts, fmt.Sprintf("silver scheduled %s", formatDay(at, "%.0f")))
+server/cmd/keryx/cmd_messenger.go:504:	} else if s := fmtLeg("silver", silverAt); s != "" {
+server/cmd/keryx/cmd_messenger.go:520:// line: total silver (from pending buy offers) plus total quantity per good
+server/cmd/keryx/cmd_messenger.go:546:			silver, _ := offer["offer_silver"].(float64)
+server/cmd/keryx/cmd_messenger.go:547:			totalSilver += silver
+server/cmd/keryx/cmd_messenger.go:557:		parts = append(parts, fmt.Sprintf("%.0f silver", totalSilver))
+server/internal/economy/placement_yield.go:24:	// terrain/deposit rows; silver's mine rows only when a mine stands here).
+server/internal/economy/placement_yield.go:57:// silver+mine, fish+harbour, livestock+pasture) are unaffected.
+server/internal/economy/placement_yield.go:207:		        COALESCE(mt.copper_deposit, false), COALESCE(mt.tin_deposit, false), COALESCE(mt.silver_deposit, false),
+server/internal/economy/placement_yield.go:229:		          OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
+server/internal/economy/placement_yield.go:241:	type hexFlags struct{ copper, tin, silver bool }
+server/internal/economy/placement_yield.go:248:		var copperDep, tinDep, silverDep bool
+server/internal/economy/placement_yield.go:251:		if err := rows.Scan(&qq, &rr, &terrain, &copperDep, &tinDep, &silverDep, &goodKey, &rate, &buildingType); err != nil {
+server/internal/economy/placement_yield.go:267:			flags[c] = hexFlags{copperDep, tinDep, silverDep}
+server/internal/economy/placement_yield.go:273:		// is silver's mine rows and the olive press / winery boost rows.
+server/internal/economy/placement_yield.go:296:			places, mult := hexGoodPlaces(opt.Terrain, fl.copper, fl.tin, fl.silver, levels, good)
+server/internal/economy/placement_yield.go:370:// both are: only mine's copper/tin/silver rows are terrain+deposit-gated
+server/internal/economy/placement_yield.go:578:	var copperDep, tinDep, silverDep bool
+server/internal/economy/placement_yield.go:580:		`SELECT mt.terrain, COALESCE(mt.copper_deposit, false), COALESCE(mt.tin_deposit, false), COALESCE(mt.silver_deposit, false)
+server/internal/economy/placement_yield.go:583:	).Scan(&terrain, &copperDep, &tinDep, &silverDep)
+server/internal/economy/placement_yield.go:590:	return RuleBuildingSupportsHex(buildingType, terrain, copperDep, tinDep, silverDep), nil
+server/cmd/keryx/cmd_unit.go:644:Ore on mountain terrain (copper, tin, silver):
+server/cmd/keryx/cmd_unit.go:651:  sack (default) — loot goods (silver + a share of the rest, weighted by
+server/cmd/keryx/cmd_unit.go:809:			// silver, the column carries it from home. Printed at dispatch because
+server/cmd/keryx/cmd_unit.go:814:				carried, _ := resp["carried_silver"].(float64)
+server/cmd/keryx/cmd_unit.go:818:					fmt.Printf("  Carries %.0f silver from home — %.0f short of the men's 30 days' pay. The colony will be founded poor.\n", carried, short)
+server/cmd/keryx/cmd_unit.go:820:					fmt.Printf("  ⚠ Carries NO silver — the mother city had nothing to send. The colony is founded at 0 and cannot pay its troops.\n")
+server/cmd/keryx/cmd_unit.go:822:					fmt.Printf("  Carries %.0f silver from home — the men's pay for 30 days, drawn from the mother city's coffers now.\n", carried)
+server/cmd/keryx/cmd_unit.go:854:		SilverDeposit bool   `json:"silver_deposit"`
+server/cmd/keryx/cmd_unit.go:996:			dep["silver"] = true
+server/cmd/keryx/cmd_unit.go:1002:	for _, d := range []string{"copper", "tin", "silver", "cedar"} {
+server/internal/economy/catchment_preview.go:73:// MaxGenesisPopulation bounds the population a genesis silver seed will price
+server/internal/economy/catchment_preview.go:76:// documented exceptions to "silver never comes from nothing" — which makes it
+server/internal/economy/catchment_preview.go:77:// the one place where a corrupt population becomes minted silver. It did:
+server/internal/economy/catchment_preview.go:79:// Phaistos with 31.2 M silver, 99.5 % of the world's supply (2026-07-23).
+server/internal/religion/valuation.go:56:// A good absent here (silver, bronze) has an implicit divisor of 1 — mig 136
+server/internal/religion/valuation.go:58:// bronze was already 1.0 per-gubbe via the foundry, and silver is a currency
+server/internal/religion/valuation.go:78:// 1 (unscaled) for goods mig 136 did not touch — silver and bronze.
+server/cmd/keryx/cmd_notifications.go:291:			OfferSilver float64 `json:"offer_silver"`
+server/cmd/keryx/cmd_notifications.go:294:			WantSilver  float64 `json:"want_silver"`
+server/cmd/keryx/cmd_notifications.go:323:		wants, offers := fmt.Sprintf("%.0f %s", o.WantQty, o.WantGood), fmt.Sprintf("%.0f silver", o.OfferSilver)
+server/cmd/keryx/cmd_notifications.go:325:			wants, offers = fmt.Sprintf("%.0f silver", o.WantSilver), fmt.Sprintf("%.0f %s", o.OfferQty, o.OfferGood)
+server/cmd/keryx/cmd_notifications.go:653:// period a unit's silver upkeep goes unpaid, before desertion actually starts —
+server/cmd/keryx/cmd_notifications.go:662:		SilverUnpaid          float64 `json:"silver_unpaid"`
+server/cmd/keryx/cmd_notifications.go:675:	fmt.Printf("      %s unpaid (period %d) — %.0f silver short — %s\n",
+server/cmd/keryx/cmd_notifications.go:691:		SilverDeposit bool   `json:"silver_deposit"`
+server/cmd/keryx/cmd_notifications.go:705:		deposits = append(deposits, "silver")
+server/cmd/keryx/cmd_occupation.go:38:  sack  — loot the city (silver plus a share of its other goods, weighted by
+server/cmd/keryx/cmd_occupation.go:48:  keryx occupation order --settlement <id> --action sack --goods silver,bronze
+server/cmd/mapgen-debug/main.go:83:		"copper=%d tin=%d silver=%d cedar=%d straits=%d delta=%d river=%d river_valley=%d river_ford=%d "+
+server/cmd/mapgen-debug/main.go:84:		"target_players=%d player_capacity=%d copper_sources=%d tin_sources=%d silver_sources=%d "+
+server/internal/religion/offering.go:60:		if good == "silver" {
+server/internal/economy/trade.go:21:// OfferExpiryHandler refunds escrowed silver to the buyer when a trade offer
+server/internal/economy/trade.go:75:		        COALESCE((trade_offer->>'offer_silver')::float, 0),
+server/internal/economy/trade.go:80:		        COALESCE((trade_offer->>'want_silver')::float, 0)
+server/internal/economy/trade.go:89:	//   buy  → silver to buyer (origin)
+server/internal/economy/trade.go:110:			  WHERE settlement_id=$2 AND good_key='silver'`,
+server/internal/economy/trade.go:113:			return fmt.Errorf("refund silver on expiry: %w", err)
+server/internal/economy/trade.go:118:		slog.Info("trade offer expired, silver refunded", "messenger", messengerID, "silver", offerSilver)
+server/internal/economy/trade.go:125:	// trade_offer fields are kind-dependent (buy: want_*/offer_silver · sell:
+server/internal/economy/trade.go:126:	// offer_*/want_silver) — pick per kind, mirroring OfferAccepted.
+server/internal/economy/trade.go:141:			"silver":          notifSilver,
+server/internal/economy/trade.go:191:	// would double-credit silver and double-schedule the goods return.
+server/internal/economy/trade.go:203:	// Idempotency: only check trade_routes for route-based deliveries (zero UUID = direct silver leg).
+server/internal/economy/trade.go:238:	// Temple tithe (Timothy 2026-07-22, vägval c): when the silver leg of a sale
+server/internal/economy/trade.go:241:	// The counterpart good rides in ThenReturn (this is the silver leg; the goods
+server/internal/economy/trade.go:245:	if p.GoodKey == "silver" && len(p.ThenReturn) > 0 {
+server/internal/economy/trade.go:263:					"silver", delivered, "tithe", toTemple)
+server/internal/economy/trade.go:268:							"trade_silver": delivered,
+server/internal/economy/trade.go:280:	// Credit goods to destination — silver is now a normal good in settlement_goods.
+server/internal/economy/trade.go:342:	// Chain: if this was a silver leg, dispatch the goods return now — as its own
+server/internal/economy/trade.go:450:				if ret.GoodKey == "silver" {
+server/internal/economy/trade.go:451:					keyTick, keyAt = "silver_arrival_tick", "silver_arrives_at"
+server/internal/economy/building_effect.go:19:	PlacesWithout int     // worker places without the building (0 = the good cannot be produced without it: silver)
+server/internal/economy/building_effect.go:23:	NeedsBuilding bool // silver: no base yield, the hex gives nothing without a mine
+server/internal/economy/building_effect.go:28:// terrain/deposit row(s) for the good, or (silver) the mine row.
+server/internal/economy/building_effect.go:29:func HexBuildEffects(ctx context.Context, tx Tx, buildingType, terrain string, copperDep, tinDep, silverDep bool) ([]HexBuildEffect, error) {
+server/internal/economy/building_effect.go:30:	rules := hexRules(terrain, copperDep, tinDep, silverDep)
+server/internal/economy/building_effect.go:36:		needs := rule.good == "silver"
+server/internal/economy/building_effect.go:52:				        OR (pr.requires_deposit = 'silver' AND $5))`,
+server/internal/economy/building_effect.go:53:				rule.good, terrain, copperDep, tinDep, silverDep).Scan(&r0)
+server/internal/economy/building_effect.go:88:// "grain production ×1.7 · space for 4 more workers"; silver, which has no
+server/internal/economy/building_effect.go:89:// base yield: "silver can be mined · space for 5 workers". Goods joined by "; ".
+server/cmd/keryx/cmd_ticklog.go:146:			SilverDelta float64 `json:"silver_delta"`
+server/cmd/keryx/cmd_ticklog.go:153:			return fmt.Sprintf("Sitos: tax +%.1f silver → the fund", p.SilverDelta)
+server/cmd/keryx/cmd_ticklog.go:155:			return fmt.Sprintf("Sitos: bought %.1f %s (ref %.2f), city +%.1f silver",
+server/cmd/keryx/cmd_ticklog.go:158:			return fmt.Sprintf("Sitos: sold %.1f %s (ref %.2f), city −%.1f silver",
+server/internal/religion/index.go:40:	// the arrays (silver, bronze) fall back to holderMinStock via COALESCE.
+server/internal/religion/prayers.go:53:		"purple": 2.0, "oil": 1.5, "silver": 1.4, "bronze": 1.3, "pottery": 1.1,
+server/internal/religion/prayers.go:79:		"purple": 2.0, "oil": 1.5, "silver": 1.4, "bronze": 1.3, "pottery": 1.1,
+server/internal/religion/prayers.go:114:		Description: "Reveals one ore deposit you have never seen — copper, tin or silver, somewhere in the world.",
+server/internal/religion/prayers.go:137:		Description: "Reveals one ore deposit you have never seen — copper, tin or silver, somewhere in the world.",
+server/internal/religion/prayers.go:160:		Description: "Reveals one ore deposit you have never seen — copper, tin or silver, somewhere in the world.",
+server/internal/religion/prayers.go:183:		Description: "Reveals one ore deposit you have never seen — copper, tin or silver, somewhere in the world.",
+server/internal/religion/prayers.go:206:		Description: "Reveals one ore deposit you have never seen — copper, tin or silver, somewhere in the world.",
+server/internal/religion/prayers.go:231:		Description: "Reveals one ore deposit you have never seen — copper, tin or silver, somewhere in the world.",
+server/internal/religion/prayers.go:263:	PrayerSpecs[PrayerPotniaVision] = PrayerSpec{ID: PrayerPotniaVision, GodID: "potnia", EffectType: EffectOracleMemory, MinKharis: MoodSuspicious, Offering: map[string]float64{"grain": 10, "silver": 100}, CooldownTicks: 24, God: "Potnia", Name: "Potnia's Vision", Description: "Marks an unseen ore deposit and the unknown ground within two hexes as memory; no live activity.", Favours: potniaTheronOracleFavours}
+server/internal/religion/prayers.go:265:	PrayerSpecs[PrayerGreenShoots] = PrayerSpec{ID: PrayerGreenShoots, GodID: "velchanos", EffectType: EffectHarvestBlessing, MinKharis: MoodIndifferent, Offering: map[string]float64{"grain": 15, "silver": 50}, CooldownTicks: 25, God: "Velchanos", Name: "Green Shoots", Description: "Grain, livestock, oil and wine yield a quarter more for 25 days; fish is unchanged."}
+server/internal/religion/prayers.go:266:	PrayerSpecs[PrayerAsterionThread] = PrayerSpec{ID: PrayerAsterionThread, GodID: "asterion", EffectType: EffectNextLandDeparture, MinKharis: MoodSuspicious, Offering: map[string]float64{"timber": 4, "silver": 100}, CooldownTicks: 12, God: "Asterion", Name: "The Thread Shows a Path", Description: "Your next land caravan or Runner from this city travels faster; the caravan is harder to intercept."}
+server/internal/religion/prayers.go:267:	PrayerSpecs[PrayerStillnessPassage] = PrayerSpec{ID: PrayerStillnessPassage, GodID: "sea_daimons_stillness", EffectType: EffectNextShipDeparture, MinKharis: MoodSuspicious, Offering: map[string]float64{"fish": 6, "silver": 100}, CooldownTicks: 12, God: "The Sea Daimons of Stillness", Name: "Favourable Passage", Description: "The next ship leaving this port sails faster and takes no storm damage on its outward leg."}
+server/cmd/create-world/main.go:96:			`INSERT INTO map_tiles (world_id, q, r, terrain, coastal, fertility, mineral, copper_deposit, tin_deposit, silver_deposit, cedar_deposit, landmass_id)
+server/cmd/keryx/cmd_marches.go:45:				// (sender wants a good from you, offers silver) or a sell offer
+server/cmd/keryx/cmd_marches.go:46:				// (sender offers a good, wants silver from you). Render it from the
+server/cmd/keryx/cmd_marches.go:58:						silver, _ := offer["want_silver"].(float64)
+server/cmd/keryx/cmd_marches.go:59:						fmt.Printf("  ⇄ TRADE OFFER — they want to sell %.0f %s, asking %.0f silver\n", qty, good, silver)
+server/cmd/keryx/cmd_marches.go:60:						fmt.Printf("    → you BUY %.0f %s and pay %.0f silver\n", qty, good, silver)
+server/cmd/keryx/cmd_marches.go:64:						silver, _ := offer["offer_silver"].(float64)
+server/cmd/keryx/cmd_marches.go:65:						fmt.Printf("  ⇄ TRADE OFFER — they want to buy %.0f %s, paying %.0f silver\n", qty, good, silver)
+server/cmd/keryx/cmd_marches.go:66:						fmt.Printf("    → you SELL %.0f %s and receive %.0f silver\n", qty, good, silver)
+server/cmd/keryx/cmd_marches.go:72:						fmt.Println("    you can't yet afford this — wait for silver/goods to accrue, or decline it")
+server/internal/events/scheduler.go:98:	// W4e — daily grain+silver upkeep for all active units.
+server/internal/events/scheduler.go:107:	// Escrow expiry: refund buyer silver if a trade offer expires without being accepted.
+server/internal/combat/silver_audit.go:12:// Silver flow bookkeeping (temenos_silver_cirkulation_plan.md, Del A). Two new
+server/internal/combat/silver_audit.go:14:// rule) — turn the world's silver from an unmeasurable stock into an auditable
+server/internal/combat/silver_audit.go:18:// upkeepAgg accumulates one settlement's silver/grain outflow across the upkeep
+server/internal/combat/silver_audit.go:25:	silverGross      float64 // silver actually debited for upkeep
+server/internal/combat/silver_audit.go:26:	silverCirculated float64 // credited back to a garrison town (Del C; 0 until then)
+server/internal/combat/silver_audit.go:27:	silverDestroyed  float64 // left the world entirely
+server/internal/combat/silver_audit.go:28:	silverUnpaid     float64 // gate-stopped: never debited, never left the world
+server/internal/combat/silver_audit.go:32:// silver_gross = silver_circulated + silver_destroyed; silver_unpaid is the
+server/internal/combat/silver_audit.go:43:	SilverGross      float64               `json:"silver_gross"`
+server/internal/combat/silver_audit.go:44:	SilverCirculated float64               `json:"silver_circulated"`
+server/internal/combat/silver_audit.go:45:	SilverDestroyed  float64               `json:"silver_destroyed"`
+server/internal/combat/silver_audit.go:46:	SilverUnpaid     float64               `json:"silver_unpaid"`
+server/internal/combat/silver_audit.go:50:// SilverAuditPayload is the world's daily silver stock-take. Stocks are point-
+server/internal/combat/silver_audit.go:80:		if a.silverCirculated > 0 {
+server/internal/combat/silver_audit.go:81:			circulatedTo[sid] = a.silverCirculated
+server/internal/combat/silver_audit.go:89:				SilverGross:      a.silverGross,
+server/internal/combat/silver_audit.go:90:				SilverCirculated: a.silverCirculated,
+server/internal/combat/silver_audit.go:91:				SilverDestroyed:  a.silverDestroyed,
+server/internal/combat/silver_audit.go:92:				SilverUnpaid:     a.silverUnpaid,
+server/internal/combat/silver_audit.go:99:// emitSilverAudit takes the world's silver stock-take once per daily upkeep tick
+server/internal/combat/silver_audit.go:108:		slog.Error("silver audit: read world tick failed", "world", worldID, "err", err)
+server/internal/combat/silver_audit.go:120:		   AND s.state NOT IN ('sunk', 'collapsed') AND sg.good_key = 'silver'`,
+server/internal/combat/silver_audit.go:123:		slog.Error("silver audit: liquid sum failed", "world", worldID, "err", err)
+server/internal/combat/silver_audit.go:128:	// silver (B3), and the balances it did hold were moved into liquid silver by
+server/internal/combat/silver_audit.go:135:	// mined_since_last = Σ(rate) over silver rows that mine (rate>0) × elapsed ticks.
+server/internal/combat/silver_audit.go:142:		   AND sg.good_key = 'silver' AND sg.rate > 0`,
+server/internal/combat/silver_audit.go:145:		slog.Error("silver audit: mine rate sum failed", "world", worldID, "err", err)
+server/internal/combat/silver_audit.go:149:	// Escrow = silver locked in still-pending BUY offers. SELL offers escrow goods,
+server/internal/combat/silver_audit.go:150:	// not silver; accepted/expired offers have already settled (see messenger.go /
+server/internal/combat/silver_audit.go:151:	// trade.go). offer_silver lives in the messenger's trade_offer JSON.
+server/internal/combat/silver_audit.go:154:		`SELECT COALESCE(SUM((trade_offer->>'offer_silver')::float), 0)
+server/internal/combat/silver_audit.go:160:		slog.Error("silver audit: escrow sum failed", "world", worldID, "err", err)
+server/internal/ai/governor.go:31:	// silver reserve as a care action. If silver > 20, register a minimal gift event.
+server/internal/ai/governor.go:32:	var silver float64
+server/internal/ai/governor.go:35:		 FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'`,
+server/internal/ai/governor.go:37:	).Scan(&silver); err != nil {
+server/internal/ai/governor.go:38:		silver = 0
+server/internal/ai/governor.go:49:	if silver >= 20 && loyalty <= 2 {
+server/internal/ai/governor.go:54:			 WHERE settlement_id = $1 AND good_key = 'silver'
+server/internal/ai/governor.go:59:			slog.Warn("passive governor silver deduction failed", "settlement", settlementID)
+server/api/handlers/oracle_memory.go:27:	rows, err := tx.Query(ctx, `SELECT q,r,CASE WHEN copper_deposit THEN 'copper' WHEN tin_deposit THEN 'tin' ELSE 'silver' END FROM map_tiles WHERE world_id=$1 AND (copper_deposit OR tin_deposit OR COALESCE(silver_deposit,false)) ORDER BY q,r`, worldID)
+server/internal/combat/ship_sea_sweep.go:116:		        carried_silver, provisions, land_target_q, land_target_r, land_cargo_intent
+server/internal/capabilities/province_verbs.go:17:// its own hex, silver included since silver_mine's 2026-09-28 retirement;
+server/internal/combat/loyalty.go:59:// desertionStepForLoyalty (L2) scales silver-shortage desertion by the supplying
+server/internal/kharis/project.go:158:		 WHERE sg.settlement_id = $1 AND sg.good_key <> 'silver'
+server/api/handlers/web.go:100:		// fmtSilver formats a silver amount as DECIMAL silver (Timothy
+server/api/handlers/web.go:101:		// 2026-08-13: sexagesimal shekel/mina/talang retired — count in silver
+server/api/handlers/web.go:104:		// always plain float64 silver.
+server/api/handlers/web.go:108:				return fmt.Sprintf("%d silver", int64(r))
+server/api/handlers/web.go:110:			return fmt.Sprintf("%.1f silver", r)
+server/internal/capabilities/trade_verbs.go:16:const HintTradeAcceptInsolvent = "you can't yet cover this offer's cost — wait for silver/goods to accrue, or decline the offer"
+server/internal/capabilities/trade_verbs.go:27:// contacted Wanax in exchange for silver you hold.
+server/internal/capabilities/trade_verbs.go:36:	silver := cc.goodAmount("silver")
+server/internal/capabilities/trade_verbs.go:37:	silverOK := silver > 0
+server/internal/capabilities/trade_verbs.go:39:		"Send a buy offer (want a good, offer silver) to a contacted Wanax — bilateral, FOW-gated.",
+server/internal/capabilities/trade_verbs.go:44:			req("silver to offer", silverOK,
+server/internal/capabilities/trade_verbs.go:45:				fmt.Sprintf("silver %.0f", silver),
+server/internal/capabilities/trade_verbs.go:46:				"sell goods or tax production for silver first"),
+server/internal/capabilities/trade_verbs.go:51:// exchange for silver. Named "trade-offer" (not "sell") in the actions
+server/internal/capabilities/trade_verbs.go:53:// (--offer-good/--offer-qty/--want-silver) on `keryx trade-offer`; a
+server/internal/capabilities/trade_verbs.go:67:		"Send a sell offer to a contacted Wanax: trade-offer --offer-good <good> --offer-qty <n> --want-silver <n> — bilateral, FOW-gated.",
+server/internal/capabilities/trade_verbs.go:98:// side of the cost (silver for a "sell" offer, the wanted good for a "buy"
+server/internal/capabilities/trade_verbs.go:112:		        COALESCE((trade_offer->>'want_silver')::float,0)
+server/internal/capabilities/trade_verbs.go:125:		need, key = wantSilver, "silver"
+server/internal/capabilities/trade_verbs.go:131:// the ACCEPTOR side of a trade offer: silver >= wantSilver for a "sell" offer
+server/internal/capabilities/trade_verbs.go:132:// (the accepting buyer pays silver), or wantGood >= wantQty for a "buy" offer
+server/internal/capabilities/trade_verbs.go:137:		have = cc.goodAmount("silver")
+server/internal/capabilities/trade_verbs.go:158:		"Cancel your own pending outgoing trade offer and reclaim escrowed silver/goods.",
+server/internal/capabilities/trade_verbs.go:205:// only silver/grain and applies +1 loyalty at 50+ silver-equivalent sent.
+server/internal/capabilities/trade_verbs.go:209:	silver := cc.capitalGoodAmount("silver")
+server/internal/capabilities/trade_verbs.go:211:	haveOK := silver > 0 || grain > 0
+server/internal/capabilities/trade_verbs.go:213:		"Send silver/grain from your capital to one of your own colonies — boosts loyalty at 50+ silver-equivalent.",
+server/internal/capabilities/trade_verbs.go:218:			req("silver or grain at your capital", haveOK,
+server/internal/capabilities/trade_verbs.go:219:				fmt.Sprintf("silver %.0f, grain %.0f", silver, grain),
+server/internal/capabilities/trade_verbs.go:220:				"tax production for silver, or wait for grain to accrue"),
+server/internal/capabilities/trade_verbs.go:224:// anySellableGood returns the first non-silver good in stock (amount > 0),
+server/internal/capabilities/trade_verbs.go:233:		  WHERE settlement_id = $1 AND good_key != 'silver'
+server/internal/capabilities/trade_verbs.go:244:// A gift/transfer can carry silver and parked goods; trade offers keep their
+server/internal/capabilities/kingdom_verbs.go:136:	silver := 0.0
+server/internal/capabilities/kingdom_verbs.go:138:		silver = cc.capitalSilver()
+server/internal/capabilities/kingdom_verbs.go:140:	silverOK := silver > 0
+server/internal/capabilities/kingdom_verbs.go:142:		"Send silver from your capital to the kingdom treasury.",
+server/internal/capabilities/kingdom_verbs.go:147:			req("silver at your capital to deposit", silverOK,
+server/internal/capabilities/kingdom_verbs.go:148:				fmt.Sprintf("silver %.0f", silver),
+server/internal/capabilities/kingdom_verbs.go:149:				"sell goods or tax production for silver first"),
+server/internal/capabilities/kingdom_verbs.go:203:// capitalSilver returns the live silver stock at the player's capital.
+server/internal/capabilities/kingdom_verbs.go:205:	return cc.capitalGoodAmount("silver")
+server/api/handlers/found_metropolis.go:131:	var copperDep, tinDep, silverDep, cedarDep, coastal bool
+server/api/handlers/found_metropolis.go:134:		        COALESCE(mt.silver_deposit,false), COALESCE(mt.cedar_deposit,false),
+server/api/handlers/found_metropolis.go:142:	).Scan(&terrain, &copperDep, &tinDep, &silverDep, &cedarDep, &coastal)
+server/api/handlers/found_metropolis.go:166:	var grainLeft, silverLeft float64
+server/api/handlers/found_metropolis.go:169:		        GREATEST(0, settled(silver_amount, silver_rate, calc_tick))
+server/api/handlers/found_metropolis.go:172:	).Scan(&grainLeft, &silverLeft); err != nil {
+server/api/handlers/found_metropolis.go:185:		Silver:     silverDep,
+server/api/handlers/found_metropolis.go:204:	// that column is the sole payer of grain and silver upkeep — it starved
+server/api/handlers/found_metropolis.go:282:	for good, amount := range map[string]float64{"grain": grainLeft, "silver": silverLeft} {
+server/api/handlers/found_metropolis.go:337:		// silver (Timothy 2026-10-10: "grundargalären behöver inte dra sina män
+server/api/handlers/found_metropolis.go:366:	out.GrainCarried, out.SilverCarried = grainLeft, silverLeft
+server/api/handlers/found_metropolis.go:370:		        COALESCE(SUM(settled(amount, rate, calc_tick)) FILTER (WHERE good_key = 'silver'), 0)
+server/api/handlers/found_metropolis.go:495:			"silver_carried":     founded.SilverCarried,
+server/api/handlers/found_metropolis.go:524:		"silver_carried": founded.SilverCarried,
+server/api/handlers/found_metropolis.go:526:		"silver_total":   founded.SilverTotal,
+server/api/handlers/found_metropolis.go:553:		silverAmt, silverRate float64
+server/api/handlers/found_metropolis.go:559:		        GREATEST(0, settled(fp.silver_amount, fp.silver_rate, fp.calc_tick)), fp.silver_rate,
+server/api/handlers/found_metropolis.go:565:	).Scan(&hostID, &q, &r2, &population, &grainAmt, &grainRate, &silverAmt, &silverRate, &currentTick)
+server/api/handlers/found_metropolis.go:598:		"silver":            store(silverAmt, silverRate),
+server/internal/combat/upkeep.go:18:// silver upkeep the soldiers spend back into their garrison town (silver-plan
+server/internal/combat/upkeep.go:41:// UpkeepSpec — grain + silver per upkeep-period för en full-size enhet.
+server/internal/combat/upkeep.go:62:// silverupkeep, formen "halvera hela tabellen". Grain rörs inte — slice A
+server/internal/combat/upkeep.go:86:// UnitUpkeep returns the grain + silver one unit costs per upkeep-period (the
+server/internal/combat/upkeep.go:202:	upkeepDesertionStep               = 10 // män förlorade per tick vid silver-brist (efter tröskel)
+server/internal/combat/upkeep.go:212:	upkeepDesertionTicks = 72 // obetalda silver-ticks före desertering börjar
+server/internal/combat/upkeep.go:216:// each period a unit's silver upkeep goes unpaid, before desertion actually starts
+server/internal/combat/upkeep.go:255:// UpkeepHandler applies grain + silver upkeep to all active units each tick.
+server/internal/combat/upkeep.go:256:// Grain-brist → attrition; silver-brist → desertering after upkeepDesertionTicks.
+server/internal/combat/upkeep.go:287:	// keep is already folded into founder_phase's grain/silver drain rate, and
+server/internal/combat/upkeep.go:299:	// silver, for as long as it stood embarked. Before slice A's ×10 land-grain
+server/internal/combat/upkeep.go:309:	// a free way to dodge silver upkeep.
+server/internal/combat/upkeep.go:370:	// Per-settlement silver/grain accounting for the UpkeepSettled audit event
+server/internal/combat/upkeep.go:371:	// (silver flow bookkeeping, Del A). Keyed by paying settlement; units with no
+server/internal/combat/upkeep.go:397:		// re-deducted grain/silver, re-incremented unpaid_periods and re-emitted
+server/internal/combat/upkeep.go:418:		silverNeed := up.Silver
+server/internal/combat/upkeep.go:492:		if silverNeed <= 0 {
+server/internal/combat/upkeep.go:498:			h.recordUnpaid(ctx, u, e.WorldID, defaultLoyalty, sid, silverNeed)
+server/internal/combat/upkeep.go:525:		// why silver_circulated below is exactly `credit`.
+server/internal/combat/upkeep.go:528:			credit = h.soldShare * silverNeed
+server/internal/combat/upkeep.go:535:			 WHERE settlement_id = $3 AND good_key = 'silver'
+server/internal/combat/upkeep.go:537:			silverNeed, credit, sid,
+server/internal/combat/upkeep.go:540:			slog.Error("upkeep: silver deduction failed", "unit", u.id, "err", err)
+server/internal/combat/upkeep.go:549:			a.silverGross += silverNeed
+server/internal/combat/upkeep.go:550:			a.silverCirculated += credit
+server/internal/combat/upkeep.go:551:			a.silverDestroyed += silverNeed - credit
+server/internal/combat/upkeep.go:562:			// Unpaid — silver the town couldn't afford. silver_unpaid keeps this
+server/internal/combat/upkeep.go:563:			// out of silver_destroyed: it never left the world, the gate stopped it.
+server/internal/combat/upkeep.go:566:			a.silverUnpaid += silverNeed
+server/internal/combat/upkeep.go:567:			h.recordUnpaid(ctx, u, e.WorldID, loyalty, sid, silverNeed)
+server/internal/combat/upkeep.go:577:	// is different — it snapshots the world's CURRENT silver stock unconditionally,
+server/internal/combat/upkeep.go:584:	auditScope := uuid.NewSHA1(e.WorldID, []byte("silver_audit"))
+server/internal/combat/upkeep.go:589:		slog.Error("upkeep: silver audit claim failed", "world", e.WorldID, "err", err)
+server/internal/combat/upkeep.go:600:// silver desertion. Before this, these losses were audit-only (an event append
+server/internal/combat/upkeep.go:649:// notifyUpkeepUnpaid warns the owner that a unit's silver upkeep went unpaid this
+server/internal/combat/upkeep.go:663:func (h *UpkeepHandler) notifyUpkeepUnpaid(ctx context.Context, u upkeepUnitRow, worldID, sid uuid.UUID, unpaidPeriods, periodsUntilDesertion int, silverNeed float64) {
+server/internal/combat/upkeep.go:691:		"silver_unpaid":           silverNeed,
+server/internal/combat/upkeep.go:702:// is disbanded (grain attrition or silver desertion). Mirrors collapse.go's
+server/internal/combat/upkeep.go:711:// ("grain_shortage" | "silver_shortage") so the cause reads the same for both
+server/internal/combat/upkeep.go:932:// silverNeed = the silver upkeep that could not be debited this period, for the
+server/internal/combat/upkeep.go:935:func (h *UpkeepHandler) recordUnpaid(ctx context.Context, u upkeepUnitRow, worldID uuid.UUID, loyalty int, sid uuid.UUID, silverNeed float64) {
+server/internal/combat/upkeep.go:950:				updateErr = h.disbandNavalCarrier(ctx, u, worldID, "silver_shortage", &np)
+server/internal/combat/upkeep.go:965:			h.cascadeCargoDisband(ctx, worldID, u.id, u.cargoUnitID, u.q, u.r, "silver_shortage")
+server/internal/combat/upkeep.go:973:				"reason":    "silver_shortage",
+server/internal/combat/upkeep.go:977:		slog.Info("upkeep: silver desertion", "unit", u.id, "lost", lost, "disbanded", disbanded)
+server/internal/combat/upkeep.go:978:		h.notifyUnitLoss(ctx, u, worldID, sid, "UnitDeserted", "silver_shortage", lost, disbanded)
+server/internal/combat/upkeep.go:1000:			"silver_unpaid":           silverNeed,
+server/internal/combat/upkeep.go:1001:			"reason":                  "silver_shortage",
+server/internal/combat/upkeep.go:1009:		h.notifyUpkeepUnpaid(ctx, u, worldID, sid, np, periodsUntilDesertion, silverNeed)
+server/internal/chronicle/chronicle.go:391:		return fmt.Sprintf("Soldiers deserted (%v men) — silver shortage", p["lost"])
+server/api/handlers/join.go:162:	//   land on ore-catchment tiles and produce ore from turn 1; a silver
+server/api/handlers/join.go:164:	//   no metal at all (megaron_silvergeografin.md).
+server/api/handlers/join.go:265:	var copperDeposit, tinDeposit, silverDeposit, cedarDeposit, tileCoastal bool
+server/api/handlers/join.go:309:		 silver_tiles AS MATERIALIZED (
+server/api/handlers/join.go:310:		     SELECT q, r FROM map_tiles WHERE world_id = $1 AND COALESCE(silver_deposit, false)
+server/api/handlers/join.go:328:		        COALESCE(mt.silver_deposit, false), COALESCE(mt.cedar_deposit, false),
+server/api/handlers/join.go:385:		   --    a straight fight and a silver tile only wins over ground with no
+server/api/handlers/join.go:387:		   --    silver at all, and the drift world shows what that costs: 8
+server/api/handlers/join.go:388:		   --    copper hexes reached 4 of 8 cities' catchments, 4 silver hexes
+server/api/handlers/join.go:390:		   --    runs) the term moves silver from 3-4 hosts to a steady 4
+server/api/handlers/join.go:391:		   --    (megaron_silvergeografin.md, 2026-08-27) — small here because
+server/api/handlers/join.go:412:		     SELECT 1 FROM silver_tiles nb
+server/api/handlers/join.go:419:	).Scan(&q, &r, &terrainType, &copperDeposit, &tinDeposit, &silverDeposit, &cedarDeposit, &tileCoastal)
+server/internal/combat/build.go:124:		        OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
+server/internal/combat/build.go:204:		// A mine is hex-bound now (silver_mine retired, migration 154) — read
+server/internal/combat/build.go:207:		// Prefers copper, then tin, then silver when a hex somehow carries
+server/internal/combat/build.go:209:		ore := "silver"
+server/api/handlers/kingdom.go:1018:// Any kingdom member may deposit silver from their capital into the shared treasury.
+server/api/handlers/kingdom.go:1065:	// The silver physically travels to the treasury's seat — the Heqetas (Basileus) capital —
+server/api/handlers/kingdom.go:1104:	// Deduct from settlement silver good row, fail if insufficient.
+server/api/handlers/kingdom.go:1109:		 WHERE settlement_id = $2 AND good_key = 'silver'
+server/api/handlers/kingdom.go:1114:		writeError(w, http.StatusInternalServerError, "could not deduct silver")
+server/api/handlers/kingdom.go:1118:		writeError(w, http.StatusUnprocessableEntity, "insufficient silver")
+server/api/handlers/kingdom.go:1124:		map[string]any{"kind": "treasury", "destination": kingdomID, "good_key": "silver", "quantity": req.Amount},
+server/api/handlers/settlement.go:512:		Silver float64 `json:"silver"`
+server/api/handlers/settlement.go:520:		writeError(w, http.StatusBadRequest, "gift must include silver or grain")
+server/api/handlers/settlement.go:584:	// Deduct silver from source settlement good row.
+server/api/handlers/settlement.go:590:			 WHERE settlement_id = $2 AND good_key = 'silver'
+server/api/handlers/settlement.go:595:			writeError(w, http.StatusUnprocessableEntity, "insufficient silver")
+server/api/handlers/settlement.go:635:		Manifest:      transport.Manifest{"silver": req.Silver, "grain": req.Grain},
+server/api/handlers/settlement.go:643:	// Apply loyalty event — significant gift (50+ silver equivalent) gives +1 loyalty.
+server/api/handlers/settlement.go:665:		"silver_sent":   req.Silver,
+server/api/handlers/settlement.go:1175:	// The offering is in trade goods (wine/oil/silver/…), the deliberate economic
+server/api/handlers/settlement.go:1456:		             ELSE 'silver' END
+server/api/handlers/settlement.go:1459:		    AND (mt.copper_deposit OR mt.tin_deposit OR COALESCE(mt.silver_deposit, false))
+server/api/handlers/helpers.go:208:// atomically together with silver/kharis/population — closing the partial-drain
+server/internal/kharis/tick.go:719:	// derived-scope convention upkeep.go's silver_audit and borrowed_army.go use
+server/internal/kharis/tick.go:1733:		// them founded a colony that minted 99.5 % of the world's silver. A
+server/internal/kharis/tick.go:1933:		 WHERE sg.settlement_id = $1 AND sg.good_key <> 'silver'
+server/api/handlers/unit.go:194:		"carried_silver":  res.CarriedSilver,
+server/api/handlers/unit.go:1477:			   SELECT carried_silver FROM units WHERE id = $1 AND carried_silver > 0
+server/api/handlers/unit.go:1480:			      SET amount = LEAST(cap, settled(amount, rate, calc_tick) + (SELECT carried_silver FROM p)),
+server/api/handlers/unit.go:1482:			    WHERE settlement_id = $2 AND good_key = 'silver' AND EXISTS (SELECT 1 FROM p)
+server/api/handlers/unit.go:1484:			 UPDATE units SET carried_silver = 0 WHERE id = $1 AND carried_silver > 0`,
+server/internal/combat/march_start.go:844:	// starting silver; now the expedition carries it from the city that sent it.
+server/internal/combat/march_start.go:846:	// silver is never in two places at once.
+server/internal/combat/march_start.go:850:	// choice — a colony with no silver cannot pay upkeep — and the response
+server/internal/combat/march_start.go:873:				 FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver' FOR UPDATE`,
+server/internal/combat/march_start.go:885:				  WHERE settlement_id = $2 AND good_key = 'silver'`,
+server/internal/combat/march_start.go:891:				`UPDATE units SET carried_silver = carried_silver + $2 WHERE id = $1`,
+server/internal/combat/march_start.go:903:	// HÅRD. En koloni utan silver är ett legitimt, magert val; ett skepp utan mat
+server/internal/combat/march_start.go:1253:// pay (sold, UnitUpkeep's silver) for ColonistPurseDays. Until 2026-10-10 it
+server/internal/combat/march_start.go:1254:// was the genesis seed of a 1 500 + column city — ~3 600 silver for 100
+server/internal/combat/march_start.go:1256:// them (AI playtest 2026-10-10). A colony costs no silver until it supports
+server/internal/combat/march_start.go:1257:// units of its own; more silver is a deliberate transfer.
+server/api/handlers/settlement_placement.go:279:		copper, tin, silver bool
+server/api/handlers/settlement_placement.go:285:			`SELECT mt.q, mt.r, mt.terrain, COALESCE(mt.copper_deposit, false), COALESCE(mt.tin_deposit, false), COALESCE(mt.silver_deposit, false)
+server/api/handlers/settlement_placement.go:293:				if trows.Scan(&qq, &rr2, &t.terrain, &t.copper, &t.tin, &t.silver) == nil {
+server/api/handlers/settlement_placement.go:360:				if fx, ferr := economy.HexBuildEffects(r.Context(), h.pool, b.Type, t.terrain, t.copper, t.tin, t.silver); ferr == nil {
+server/api/handlers/settlement_placement.go:404:				if fx, ferr := economy.HexBuildEffects(r.Context(), h.pool, string(bt), t.terrain, t.copper, t.tin, t.silver); ferr == nil {
+server/api/handlers/create_metropolis.go:80:		                        copper_deposit, tin_deposit, silver_deposit, cedar_deposit, coastal)
+server/api/handlers/create_metropolis.go:101:	// No Sitos seed. The fund's genesis silver is gone with migration 106 — the
+server/api/handlers/create_metropolis.go:102:	// granary holds food, not silver, and it starts empty: a city has no reserve
+server/api/handlers/create_metropolis.go:103:	// before its first surplus. The capital's own starting silver still comes
+server/api/handlers/create_metropolis.go:105:	// (B3: starting silver and mines).
+server/api/handlers/create_metropolis.go:137:		                 -- at a low binding value (silver's real cap is set by the
+server/api/handlers/create_metropolis.go:138:		                 -- Sitos liquid-silver seed below)
+server/api/handlers/create_metropolis.go:147:	// Sitos genesis seed: sow LIQUID silver (goods.silver), separate from the
+server/api/handlers/create_metropolis.go:148:	// fund seed above — a settlement with 0 liquid silver can't pay for buy
+server/api/handlers/create_metropolis.go:150:	// silver-invariant exception class as the fund seed. Runs before
+server/api/handlers/create_metropolis.go:154:		slog.Error("sitos genesis: load grain base value for liquid silver", "err", gbErr)
+server/api/handlers/create_metropolis.go:159:			 WHERE settlement_id = $3 AND good_key = 'silver'`,
+server/api/handlers/create_metropolis.go:162:			slog.Error("sitos genesis: seed liquid silver failed", "err", err, "settlement", out.SettlementID)
+server/api/handlers/messenger.go:50:// in the live `goods` table, excluding silver (payment currency) and cult
+server/api/handlers/messenger.go:61:// escrow only ever touches silver, so the bad key was never checked at all —
+server/api/handlers/messenger.go:62:// the offer was created, silver locked, and the messenger delivered a trade
+server/api/handlers/messenger.go:63:// that could never be accepted, tying up the buyer's silver until it expired.
+server/api/handlers/messenger.go:92:	silverWeight, _, err := economy.IsShippableGood(ctx, pool, "silver")
+server/api/handlers/messenger.go:101:		return math.Max(goodWeight*offerQty, silverWeight*wantSilver), nil
+server/api/handlers/messenger.go:107:	return math.Max(silverWeight*offerSilver, goodWeight*wantQty), nil
+server/api/handlers/messenger.go:136:			OfferSilver float64 `json:"offer_silver"`
+server/api/handlers/messenger.go:139:			WantSilver  float64 `json:"want_silver"`
+server/api/handlers/messenger.go:167:				writeError(w, http.StatusBadRequest, "buy trade_offer requires want_good, want_qty > 0, offer_silver > 0")
+server/api/handlers/messenger.go:170:			if req.TradeOffer.WantGood == "silver" || req.TradeOffer.WantGood == "gold" {
+server/api/handlers/messenger.go:171:				writeError(w, http.StatusBadRequest, "cannot trade for silver — silver is the payment currency, not a tradeable good")
+server/api/handlers/messenger.go:184:				writeError(w, http.StatusBadRequest, "sell trade_offer requires offer_good, offer_qty > 0, want_silver > 0")
+server/api/handlers/messenger.go:187:			if req.TradeOffer.OfferGood == "silver" || req.TradeOffer.OfferGood == "gold" {
+server/api/handlers/messenger.go:188:				writeError(w, http.StatusBadRequest, "cannot sell silver — silver is the payment currency, not a tradeable good")
+server/api/handlers/messenger.go:427:				"want_silver": req.TradeOffer.WantSilver,
+server/api/handlers/messenger.go:435:				"offer_silver": req.TradeOffer.OfferSilver,
+server/api/handlers/messenger.go:468:		// so a crash can never leave goods/silver deducted without a messenger,
+server/api/handlers/messenger.go:493:			// Escrow: deduct offer_silver from the buyer (origin) now.
+server/api/handlers/messenger.go:497:				   FROM settlement_goods WHERE settlement_id=$1 AND good_key='silver'`,
+server/api/handlers/messenger.go:504:				  WHERE settlement_id=$2 AND good_key='silver'
+server/api/handlers/messenger.go:510:					insufficientTradeMsg("buyer", "silver", req.TradeOffer.OfferSilver, buyerSilver))
+server/api/handlers/messenger.go:588:// messenger (design §Budbärare) — no grain, silver or capacity cost, and no trade:
+server/api/handlers/messenger.go:589:// the founder phase's silver is locked to the escort.
+server/api/handlers/messenger.go:913:		                  AND sg.good_key = 'silver'
+server/api/handlers/messenger.go:915:		                      >= (m.trade_offer->>'want_silver')::float
+server/api/handlers/messenger.go:1091:		        COALESCE((m.trade_offer->>'offer_silver')::float, 0),
+server/api/handlers/messenger.go:1094:		        COALESCE((m.trade_offer->>'want_silver')::float, 0),
+server/api/handlers/messenger.go:1237:		// Step 1: deduct want_silver from buyer (destination). Goods already escrowed at send — do NOT deduct again.
+server/api/handlers/messenger.go:1242:			 WHERE settlement_id=$2 AND good_key='silver'
+server/api/handlers/messenger.go:1256:		// same travel duration) returns silver to the seller — compute both ETAs
+server/api/handlers/messenger.go:1261:		silverArrivesAt := leg1ArrivesAt.Add(tick.RealUntil(returnJourney.TravelTicks, 0))
+server/api/handlers/messenger.go:1271:			     'silver_arrives_at', $3::timestamptz,
+server/api/handlers/messenger.go:1272:			     'ship_name', $4::text, 'goods_arrival_tick', $5::int, 'silver_arrival_tick', $6::int)
+server/api/handlers/messenger.go:1274:			messengerID, goodsArrivesAt, silverArrivesAt, shipName, tradeAcceptDueTick, returnDueTick,
+server/api/handlers/messenger.go:1286:		// the silver return (leg 2) on arrival. The shadow transport row carries map
+server/api/handlers/messenger.go:1308:				// Chained: when goods arrive at buyer, dispatch silver to seller (leg 2:
+server/api/handlers/messenger.go:1311:					"destination_id": originID.String(), // seller receives silver
+server/api/handlers/messenger.go:1312:					"good_key":       "silver",
+server/api/handlers/messenger.go:1342:				"silver":            wantSilver,
+server/api/handlers/messenger.go:1345:				"silver_arrives_at": silverArrivesAt,
+server/api/handlers/messenger.go:1352:			"silver_paid":       wantSilver,
+server/api/handlers/messenger.go:1354:			"silver_arrives_at": silverArrivesAt,
+server/api/handlers/messenger.go:1365:		sellResp["silver_arrival_tick"] = returnDueTick
+server/api/handlers/messenger.go:1372:		// Buy offer: origin=buyer (escrowed silver at send), destination=seller (acceptor).
+server/api/handlers/messenger.go:1391:		// P5 (leverans-ETA): leg 1 delivers silver to the seller, leg 2 (chained,
+server/api/handlers/messenger.go:1395:		silverArrivesAt := leg1ArrivesAt
+server/api/handlers/messenger.go:1399:		// status='pending' so that if the offer expired (and its silver was refunded)
+server/api/handlers/messenger.go:1401:		// instead of shipping refunded silver to the seller — which would mint silver
+server/api/handlers/messenger.go:1407:			     'silver_arrives_at', $3::timestamptz,
+server/api/handlers/messenger.go:1408:			     'ship_name', $4::text, 'goods_arrival_tick', $5::int, 'silver_arrival_tick', $6::int)
+server/api/handlers/messenger.go:1410:			messengerID, goodsArrivesAt, silverArrivesAt, shipName, returnDueTick, tradeAcceptDueTick,
+server/api/handlers/messenger.go:1421:		// Step 3: dispatch leg 1 as a PHYSICAL caravan (silver buyer→seller), then chain
+server/api/handlers/messenger.go:1429:			Manifest: transport.Manifest{"silver": offerSilver}, Interceptable: true,
+server/api/handlers/messenger.go:1433:			writeError(w, http.StatusInternalServerError, "could not dispatch silver caravan")
+server/api/handlers/messenger.go:1438:				"destination_id":     destID, // seller receives silver
+server/api/handlers/messenger.go:1439:				"good_key":           "silver",
+server/api/handlers/messenger.go:1443:				// Chained: when silver arrives at seller, dispatch goods to buyer (leg 2:
+server/api/handlers/messenger.go:1457:			writeError(w, http.StatusInternalServerError, "could not schedule silver delivery")
+server/api/handlers/messenger.go:1476:				"silver":            offerSilver,
+server/api/handlers/messenger.go:1479:				"silver_arrives_at": silverArrivesAt,
+server/api/handlers/messenger.go:1486:			"silver_paid":       offerSilver,
+server/api/handlers/messenger.go:1487:			"silver_arrives_at": silverArrivesAt,
+server/api/handlers/messenger.go:1499:		buyResp["silver_arrival_tick"] = tradeAcceptDueTick
+server/api/handlers/messenger.go:1533:		        COALESCE((m.trade_offer->>'offer_silver')::float, 0),
+server/api/handlers/messenger.go:1538:		        COALESCE((m.trade_offer->>'want_silver')::float, 0)
+server/api/handlers/messenger.go:1581:	//   buy  → silver to buyer (origin)
+server/api/handlers/messenger.go:1599:			  WHERE settlement_id=$2 AND good_key='silver'`,
+server/api/handlers/messenger.go:1602:			writeError(w, http.StatusInternalServerError, "could not refund silver to buyer")
+server/api/handlers/messenger.go:1614:	// trade_offer fields are kind-dependent (buy: want_*/offer_silver · sell:
+server/api/handlers/messenger.go:1615:	// offer_*/want_silver) — pick per kind, mirroring OfferAccepted.
+server/api/handlers/messenger.go:1628:			"silver":          notifSilver,
+server/api/handlers/messenger.go:1638:// escrowed silver. The ScheduledOfferExpiry event is left in place — its
+server/api/handlers/messenger.go:1641:// cancelled), returns 200 with no silver movement.
+server/api/handlers/messenger.go:1667:		        COALESCE((m.trade_offer->>'offer_silver')::float, 0),
+server/api/handlers/messenger.go:1716:	//   buy  → silver to buyer (origin)
+server/api/handlers/messenger.go:1743:			  WHERE settlement_id=$2 AND good_key='silver'`,
+server/api/handlers/messenger.go:1746:			writeError(w, http.StatusInternalServerError, "could not refund silver")
+server/api/handlers/messenger.go:1755:			"silver_refunded": offerSilver,
+server/internal/combat/expedition.go:363:		       ('silver', COALESCE(t.silver_deposit, false)),
+server/internal/combat/unit_intercept_scan.go:299:	// genesis-silver path only; Dice: nil-safe, falls back to
+server/api/handlers/goods.go:26:// want_good/offer_good before any silver or goods are escrowed). Two
+server/api/handlers/goods.go:28:// apart. Excludes silver (payment currency) and cult (temple labor, not a
+server/api/handlers/goods.go:38:		`SELECT key, name, tier, category FROM goods WHERE key NOT IN ('silver', 'cult') AND status = 'active' ORDER BY key`)
+server/api/handlers/god.go:51:		        COALESCE(cedar_deposit,false), COALESCE(silver_deposit,false),
+server/api/handlers/god.go:71:		SilverDeposit bool    `json:"silver_deposit,omitempty"`
+server/api/handlers/logistics.go:29:// Handle credits silver/goods to a settlement, or silver to a kingdom treasury, on arrival.
+server/api/handlers/logistics.go:34:		GoodKey     string    `json:"good_key"`    // "silver" (currency) or a good key (e.g. "grain")
+server/api/handlers/logistics.go:60:		// Silver into the kingdom treasury (kingdoms.silver_amount is the silver balance).
+server/api/handlers/logistics.go:63:			     silver_amount  = settled(silver_amount, silver_rate, silver_calc_tick) + $1,
+server/api/handlers/logistics.go:64:			     silver_calc_tick = current_world_tick()
+server/internal/combat/occupation.go:652:// old (now-dead) sackSettlement (sack.go): silver 50%, every other good
+server/internal/combat/occupation.go:668:		        CASE WHEN sg.good_key = 'silver' THEN 0.5 ELSE 0.5 / g.weight END) AS loot
+server/api/handlers/rise.go:23:	risenHostRationTicks = 60 // ticks of sold — "very limited silver"; a newcomer carries 240
+server/api/handlers/db.go:24:		        COALESCE(silver_deposit, false), COALESCE(cedar_deposit, false),
+server/api/handlers/db.go:43:		        COALESCE((SELECT settled(amount,rate,calc_tick) FROM settlement_goods sg WHERE sg.settlement_id=settlements.id AND sg.good_key='silver'),0),
+server/api/handlers/db.go:44:		        COALESCE((SELECT rate FROM settlement_goods sg WHERE sg.settlement_id=settlements.id AND sg.good_key='silver'),0),
+server/api/handlers/db.go:45:		        COALESCE((SELECT cap  FROM settlement_goods sg WHERE sg.settlement_id=settlements.id AND sg.good_key='silver'),1000),
+server/api/handlers/db.go:95:	var silverCalcAt time.Time
+server/api/handlers/db.go:102:		&s.Resources.Silver.Amount, &s.Resources.Silver.RatePerMinute, &s.Resources.Silver.Cap, &silverCalcAt,
+server/api/handlers/db.go:111:	s.Resources.Silver.LastCalcAt = silverCalcAt
+server/internal/world/debugpng.go:319:	SilverDeposits  int `json:"silver_deposits"`
+server/internal/world/debugpng.go:372:	SilverSources int `json:"silver_sources"`
+server/internal/combat/unit_arrival.go:189:		        carried_silver, provisions, land_target_q, land_target_r, land_cargo_intent, passage_messenger_id,
+server/internal/combat/unit_arrival.go:489:	// on arrival — all of them funnel through here, so the silver comes home by
+server/internal/combat/unit_arrival.go:495:	// That is deliberate: the silver was physically on the road, and the road is
+server/internal/combat/unit_arrival.go:502:			  WHERE settlement_id = $2 AND good_key = 'silver'`,
+server/internal/combat/unit_arrival.go:508:			`UPDATE units SET carried_silver = 0 WHERE id = $1`, u.id,
+server/internal/combat/unit_arrival.go:699:			// carried_silver is the colonist purse the port paid at dispatch
+server/internal/combat/unit_arrival.go:703:			_ = tx.QueryRow(ctx, `SELECT size, carried_silver FROM units WHERE id = $1`, cargoID).Scan(&cargoSize, &cargoPurse)
+server/internal/combat/unit_arrival.go:840:		        carried_silver, provisions, land_target_q, land_target_r, land_cargo_intent, passage_messenger_id
+server/internal/combat/unit_arrival.go:1041:		        carried_silver, provisions
+server/internal/combat/unit_arrival.go:1087:		        carried_silver, provisions, pickup_unit_id
+server/internal/combat/unit_arrival.go:1277:	var copperDep, tinDep, silverDep, cedarDep bool
+server/internal/combat/unit_arrival.go:1280:		        COALESCE(silver_deposit,false), COALESCE(cedar_deposit,false)
+server/internal/combat/unit_arrival.go:1283:	).Scan(&terrain, &copperDep, &tinDep, &silverDep, &cedarDep); err != nil {
+server/internal/combat/unit_arrival.go:1296:			SilverDeposit: silverDep,
+server/internal/combat/unit_arrival.go:1308:			"silver_deposit": silverDep,
+server/internal/combat/unit_arrival.go:1314:		"copper", copperDep, "tin", tinDep, "silver", silverDep, "cedar", cedarDep)
+server/internal/combat/unit_arrival.go:1837:		        carried_silver, provisions
+server/internal/combat/unit_arrival.go:1892:		var copperDep, tinDep, silverDep, cedarDep, coastal bool
+server/internal/combat/unit_arrival.go:1895:			        COALESCE(silver_deposit,false), COALESCE(cedar_deposit,false), COALESCE(coastal,false)
+server/internal/combat/unit_arrival.go:1898:		).Scan(&terrain, &copperDep, &tinDep, &silverDep, &cedarDep, &coastal); err != nil {
+server/internal/combat/unit_arrival.go:1903:			                        copper_deposit, tin_deposit, silver_deposit, cedar_deposit, coastal)
+server/internal/combat/unit_arrival.go:1905:			worldID, destQ, destR, terrain, copperDep, tinDep, silverDep, cedarDep, coastal,
+server/internal/combat/unit_arrival.go:1945:	// No Sitos seed. The fund this used to sow was silver minted out of nothing
+server/internal/combat/unit_arrival.go:1981:		                 -- by the Sitos liquid-silver seed below, same as for capitals.
+server/internal/combat/unit_arrival.go:1990:	// The colony's starting silver is the purse the colonists CARRIED here
+server/internal/combat/unit_arrival.go:1991:	// (mig 107), not silver minted at the moment of founding. Until 2026-08-03
+server/internal/combat/unit_arrival.go:1992:	// this line called GenesisSilverLiquid and created ~10 500 silver per colony
+server/internal/combat/unit_arrival.go:1995:	// insolvency. B3: silver enters only via genesis and mines.
+server/internal/combat/unit_arrival.go:1997:	// The cap still comes from GenesisSilverLiquid: a cap is a shape, not silver,
+server/internal/combat/unit_arrival.go:2003:		slog.Error("colony silver: load grain base value", "err", gbErr)
+server/internal/combat/unit_arrival.go:2008:			 WHERE settlement_id = $3 AND good_key = 'silver'`,
+server/internal/combat/unit_arrival.go:2011:			slog.Error("colony silver: credit carried purse failed", "err", err, "settlement", colonyID)
+server/internal/combat/unit_arrival.go:2014:			// transaction is what keeps the silver from existing twice if the
+server/internal/combat/unit_arrival.go:2017:				`UPDATE units SET carried_silver = 0 WHERE id = $1`, u.id,
+server/internal/combat/unit_arrival.go:2384:	// carriedSilver is the colonist purse (mig 107): silver debited from the
+server/api/handlers/nomadic_host.go:47:	// would have blown the opening silver 480 → 11 520. 120 keeps the calibrated
+server/api/handlers/nomadic_host.go:48:	// 480 with the UN-halved silver column. SLICE B (Timothy 2026-08-05) then
+server/api/handlers/nomadic_host.go:49:	// halved that column (silver 2 → 1), which on its own drops the store
+server/api/handlers/nomadic_host.go:51:	// note foresaw ("balans/silverupkeep-halveras doubles it to 240"). Net:
+server/api/handlers/nomadic_host.go:52:	// 2 spearmen × 1 silver × 240 ticks = 480, the calibrated opening, restored.
+server/api/handlers/nomadic_host.go:168:	// founding — but silver is statusoberoende (UnitUpkeep never doubles it), so
+server/api/handlers/nomadic_host.go:172:	silverRate := -float64(spec.spearmen) * perTick.Silver
+server/api/handlers/nomadic_host.go:176:	// when that table was recalibrated for an unrelated reason. silverAmount
+server/api/handlers/nomadic_host.go:177:	// still follows its rate, so silver alone still tracks the upkeep table.
+server/api/handlers/nomadic_host.go:179:	silverAmount := -silverRate * float64(spec.rationTicks)
+server/api/handlers/nomadic_host.go:196:		    grain_amount, grain_rate, silver_amount, silver_rate, calc_tick, active)
+server/api/handlers/nomadic_host.go:203:		   silver_amount = EXCLUDED.silver_amount,
+server/api/handlers/nomadic_host.go:204:		   silver_rate   = EXCLUDED.silver_rate,
+server/api/handlers/nomadic_host.go:209:		grainAmount, grainRate, silverAmount, silverRate,
+server/api/handlers/province.go:102:		    CASE WHEN COALESCE(silver_deposit,false) THEN 'silver' END,
+server/api/handlers/province.go:113:			var copper, tin, silver, cedar *string
+server/api/handlers/province.go:114:			_ = cdrows.Scan(&copper, &tin, &silver, &cedar)
+server/api/handlers/province.go:115:			for _, v := range []*string{copper, tin, silver, cedar} {
+server/api/handlers/province.go:137:		"silver_deposit":     prov.SilverDeposit,
+server/api/handlers/province.go:259:		silverStock := sett.Resources.Silver.Current(now)
+server/api/handlers/province.go:293:			afford := !atMax && silverStock >= spec.CostSilver
+server/api/handlers/province.go:325:			    COALESCE((SELECT rate FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'), 0)`,
+server/api/handlers/province.go:345:		// upkeep_grain_per_tick/upkeep_silver_per_tick + sustainable project what this
+server/api/handlers/province.go:355:			UpkeepSilverPerDay float64 `json:"upkeep_silver_per_tick"`
+server/api/handlers/province.go:359:			UpkeepSilverNetPerDay float64 `json:"upkeep_silver_net_per_tick"`
+server/api/handlers/province.go:609:		// Silver is authoritative in settlement_goods (mig 057 silver_unify); the
+server/api/handlers/province.go:612:		// shows the same stock as `goods` (previously it reported only silver+metals,
+server/api/handlers/province.go:677:		// per-tick rates already in resSnap, and sum this tick's Sitos silver delta
+server/api/handlers/province.go:708:		// What the granary did for this settlement this tick. There is no silver
+server/api/handlers/province.go:812:			// mechanic would be invisible — a silver flow the Wanax cannot see or plan
+server/api/handlers/province.go:814:			"army_upkeep_circulated_silver":    circulatedSilver,
+server/api/handlers/province.go:816:			"net_silver_per_tick_after_upkeep": netSilverPerDay,
+server/api/handlers/province.go:989:// upkeepAmount is a grain+silver upkeep total per upkeep-period (the daily tick).
+server/api/handlers/province.go:992:	Silver float64 `json:"silver"`
+server/api/handlers/province.go:1003:// the city's own silver, or the projection will drift from the debit.
+server/api/handlers/province.go:1050://   - Sold circulation (silver-plan Del C). Soldiers standing in the town that
+server/api/handlers/province.go:1051://     pays them spend soldShare of their silver back into it, so that town's net
+server/api/handlers/province.go:1052://     silver drain is (1−share)·gross. Projecting gross overstates it — a false
+server/api/handlers/province.go:1061:// pays nothing — combat/upkeep.go step 2). Returns the gross grain+silver
+server/api/handlers/province.go:1062:// and, separately, the silver that comes back, so the caller can show the
+server/api/handlers/province.go:1095:// upkeepNetPerDay converts a settlement's raw grain/silver production rates
+server/api/handlers/province.go:1105:func upkeepNetPerDay(grainRatePerTick, silverRatePerTick float64, up upkeepAmount, circulatedSilver float64) (grainNetPerDay, silverNetPerDay float64) {
+server/api/handlers/province.go:1107:	silverNetPerDay = silverRatePerTick - (up.Silver - circulatedSilver)
+server/api/handlers/province.go:1108:	return grainNetPerDay, silverNetPerDay
+server/api/handlers/province.go:1245:	// §A). silver_mine is retired: a mine on a silver-deposit hex now
+server/api/handlers/province.go:1246:	// produces silver, exactly like copper/tin — there is no longer a second
+server/api/handlers/province.go:1393:	// Deduct building costs (goods + silver) atomically in one transaction so a
+server/api/handlers/province.go:1394:	// silver shortfall can't leave the goods already committed (partial-drain).
+server/api/handlers/province.go:1412:	// Deduct silver if required.
+server/api/handlers/province.go:1418:			 WHERE settlement_id = $2 AND good_key = 'silver'
+server/api/handlers/province.go:1424:			// a bare "insufficient silver" left a silver-poor Wanax guessing.
+server/api/handlers/province.go:1428:				  WHERE settlement_id = $1 AND good_key = 'silver'`,
+server/api/handlers/province.go:1431:				fmt.Sprintf("insufficient silver (%s)", shortfall(spec.CostSilver, have)))
+server/api/handlers/province.go:1792:		CostSilver float64            `json:"cost_silver,omitempty"`
+server/api/handlers/province.go:2686:				"warning: once this unit garrisons it needs %.1f grain + %.1f silver per day upkeep — "+
+server/api/handlers/province.go:2687:					"this settlement's current net after its existing army's upkeep is %+.1f grain per day, %+.1f silver per day; "+
+server/api/handlers/province.go:2729:// settlementUpkeepCapacity loads this settlement's current grain/silver
+server/api/handlers/province.go:2736:func settlementUpkeepCapacity(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID) (grainNetPerDay, silverNetPerDay float64, err error) {
+server/api/handlers/province.go:2737:	var grainRate, silverRate float64
+server/api/handlers/province.go:2742:		    COALESCE((SELECT rate FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'), 0),
+server/api/handlers/province.go:2745:	).Scan(&grainRate, &silverRate, &population); err != nil {
+server/api/handlers/province.go:2762:	grainNetPerDay, silverNetPerDay = upkeepNetPerDay(grainNetOfPopulation, silverRate, up, circulatedSilver)
+server/api/handlers/province.go:2763:	return grainNetPerDay, silverNetPerDay, nil
+server/api/handlers/province.go:2859:		          OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit,false))
+server/api/handlers/province.go:3439:	// Deduct from origin — silver is now a normal good in settlement_goods.
+server/api/handlers/province.go:4174:		   AND ms.good_key <> 'silver'
+server/api/handlers/province.go:4246:		   AND ms.good_key <> 'silver'
+server/api/handlers/world.go:330:		        COALESCE(cedar_deposit,false), COALESCE(silver_deposit,false)
+server/api/handlers/world.go:365:		SilverDeposit bool    `json:"silver_deposit,omitempty"`
+server/api/handlers/world.go:533:		        COALESCE(mt.cedar_deposit,false), COALESCE(mt.silver_deposit,false)
+server/api/handlers/world.go:561:		SilverDeposit bool   `json:"silver_deposit,omitempty"`
+server/api/handlers/world.go:816:		"isolated start: no hills and no copper/tin/silver deposit in this catchment, "+
+server/api/handlers/world.go:1797:			`INSERT INTO map_tiles (world_id, q, r, terrain, coastal, fertility, mineral, copper_deposit, tin_deposit, silver_deposit, cedar_deposit, landmass_id)
+server/api/handlers/world.go:1839:		        COALESCE(prov.silver_deposit, false),
+server/api/handlers/world.go:1868:		SilverDeposit bool   `json:"silver_deposit,omitempty"`
+server/api/handlers/world.go:1925:	SilverDeposit bool   `json:"silver_deposit,omitempty"`
+server/api/handlers/world.go:1957:		        COALESCE(prov.silver_deposit, false),
+server/api/handlers/world.go:2024:		        COALESCE(prov.silver_deposit, false),
+server/internal/world/mapgen.go:396:// roll (35 % copper/tin, 8 % silver on candidate terrain) — that made metal
+server/internal/world/mapgen.go:423:	// asks for "cirka 25-40 % av spelbara städer har lokal silvertillgång".
+server/internal/world/mapgen.go:425:	// apart (join.go's clustering guard), so one silver SOURCE serves at most
+server/internal/world/mapgen.go:426:	// one city — the share of cities with local silver can therefore never
+server/internal/world/mapgen.go:429:	// directly (megaron_silvergeografin.md, 2026-08-27).
+server/internal/world/mapgen.go:431:	// Quantity is held down at the other end instead: a silver source is ONE
+server/internal/world/mapgen.go:433:	// against copper's ~16 sources x 2-4 hexes — silver stays the thinnest
+server/internal/world/mapgen.go:437:	silverClusterMin    = 1
+server/internal/world/mapgen.go:438:	silverClusterMax    = 1
+server/internal/world/mapgen.go:439:	silverSourceFloor   = 4 // 4 sources against the 10-player floor = 40 %
+server/internal/world/mapgen.go:440:	silverSourceDivisor = 3
+server/internal/world/mapgen.go:442:	// silverSourceSpacing keeps two silver sources out of the SAME city's
+server/internal/world/mapgen.go:446:	// every source is a distinct potential silver city. Copper and tin pass
+server/internal/world/mapgen.go:449:	silverSourceSpacing = 2*mineableRadius + 1
+server/internal/world/mapgen.go:497:func silverSourceTarget(players int) int {
+server/internal/world/mapgen.go:498:	v := players / silverSourceDivisor
+server/internal/world/mapgen.go:499:	if v < silverSourceFloor {
+server/internal/world/mapgen.go:500:		v = silverSourceFloor
+server/internal/world/mapgen.go:1285:	// (cedar) in the mid moisture band, mountain_limestone (tin, silver) in
+server/internal/world/mapgen.go:1609:		silverCand []int // any productive metal terrain, no copper/tin
+server/internal/world/mapgen.go:1651:				silverCand = append(silverCand, idx)
+server/internal/world/mapgen.go:1660:					silverCand = append(silverCand, idx)
+server/internal/world/mapgen.go:1685:	var silverCandFree []int
+server/internal/world/mapgen.go:1686:	for _, idx := range silverCand {
+server/internal/world/mapgen.go:1688:			silverCandFree = append(silverCandFree, idx)
+server/internal/world/mapgen.go:1691:	placeDepositClusters(tiles, silverCandFree, landmap, rng,
+server/internal/world/mapgen.go:1692:		silverSourceTarget(players), silverClusterMin, silverClusterMax, silverSourceSpacing, width, height,
+server/internal/world/mapgen.go:1810:	// tin/silver tile (from step 8) depended on — checking against the
+server/internal/world/mapgen.go:1893:// silverSourceSpacing so no two silver sources can fall inside one
+server/internal/world/mapgen.go:1958:// placeDepositClusters is step 8's shared engine for copper/tin/silver: pick
+server/internal/world/mapgen.go:1999:// (copper_sources/tin_sources/silver_sources, debugpng.go) need. Adjacency
+server/internal/world/mapgen.go:3830:// silver's deposit terrain — is ITSELF excluded from spawnBuildable, unlike
+server/internal/world/mapgen.go:3863:// have silently undone this fix: it strips any tin/silver deposit that fails
