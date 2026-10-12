@@ -1,12 +1,12 @@
 {
-  "commit": "871d638",
+  "commit": "94101f6",
   "health": {
-    "commit": "871d638",
+    "commit": "94101f6",
     "migration": 174,
     "status": "ok"
   },
-  "runtime_base": "sha256:096571ce7f5ee02b48c55c5944a733c8e111a3a662a20fae8c3b65b3ba9bc5e7",
-  "binary_sha256": "393e1c8239c3f0148ec6c725672ee9ad53d01779eb59ea311cfa1a33959a0100",
+  "runtime_base": "sha256:5949f971ae383e7809b4c39a49b4647d46726c96f1b9bc8c292cf54404ca4150",
+  "binary_sha256": "51ec05108ed013177bb250a0dc0508762273c347405ce8bffae34932b2c61f53",
   "assets": {
     "js/megaron/render/map.js": "833e8c82dd56435d9a771a5bd9ce733a00e5d1feb576a22c6d7045c7be10019a",
     "js/megaron/render/place_names.js": "543ade88558adc401956d32e764ae1b4fab332d371d08eb11bf0f25eb96bc033",

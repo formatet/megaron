@@ -2,7 +2,7 @@
 
 Inventering före kod, bas062276e6, gren codex/kharis-golv-vard, eget worktree.
 
-Kontrakt: ny Host startar på samma golv som tickens Kharis-clamp. Grundningens seed förblir oförändrad. Befintliga aktiva Hosts under golvet lyfts additivt; stadsrealmer/avslutade Hosts påverkas inte. Ingen ny yta, BILD undantagen av ordern. Kedjegrind: visar en korrekt egen relation före grundning, ingen ny progression/balans.
+Kontrakt: ny Host startar på samma golv som tickens Kharis-clamp. Rise behåller den settled relationen, med golvet som minimum. Grundningens seed förblir oförändrad. Befintliga aktiva Hosts under golvet lyfts additivt; stadsrealmer/avslutade Hosts påverkas inte. Ingen ny yta, BILD undantagen av ordern. Kedjegrind: visar en korrekt egen relation före grundning, ingen ny progression/balans.
 
 ## Inventering före implementation
 
@@ -20,12 +20,12 @@ Färsk Go-baslinje join/rise/grundning före kod. Verklig join→me visar Floor,
 Implementation: PWR active-upsert har EN ägare i seedHost; gamla statusupdateringar i join/rise är borttagna. Seeden håller last_settlement_id/founded_tick orörda. Floor är exporterat alias till tickens kharisFloor. Mig174:s down är avsiktligt en no-op: additiv reparation kan inte säkert återskapa gamla nollvärden. Codex kharis beskriver Host/rise och rättar den nu felaktiga uppgiften att inget tal syns (Account visar redan mängden).
 
 
-## Slutbevis
+## Första checkpointens bevis (871d6388, ersatt av granskningen nedan)
 
 - Full färsk `tools/gotest.sh ./...` grön på871d6388, tom DB/migration174. Full `go vet ./...` grön och602JS gröna. [Full Go](full-go.log), [JS](full-js.log), [vet](vet.log).
 - Fysisk seedmutation: seedHost argument Floor ersattes med0.0 (import bort så giltig kompilering). Namngivet rött både `new Host missing shared kharis floor` och `risen Host did not reset kharis to shared floor`; byteåterställt färskt grönt. [Rött](seed-mutation.log), [återställt](seed-restored.log).
 - Färsk DB testar mig174 efter en verklig joinmiljö: låg aktiv Host repareras, redan hög Host, aktiv stad, avslutad fas, dispossessed och ingen fas lämnas exakt orörda. Omkörning är idempotent. Grundning visar fortsatt25 och aktuell calc_tick, produktionsdiff0 i create_metropolis.go.
-- Isolerad runtime871d638/mig174: NORMAL auth/register→join för ny Wanax **Deukalas**, world/me och nybyggd Keryx me/JSON visar delade Floor1.0 före grundning. **Eumedes**, tidigare0.0 i spelarprofilens bevis, läses nu1.0 efter174. Ingen SQL-skrivning eller payloadoverride i provhandlingen. [CLI me](new-host-cli.txt), [status](new-host-status.txt), [verification](verification.json). Status behåller sin befintliga Hostinformation och har ingen numerisk Kharisrad; det är API/me och keryx me som bevisar talet. Ingen onödig presentationsändring.
+- Isolerad runtime94101f6/mig174 efter granskningen: NORMAL auth/register→join för ny Wanax **Theseus**, world/me och nybyggd Keryx me/JSON visar delade Floor1.0 före grundning. **Eumedes**, tidigare0.0 i spelarprofilens bevis, läses nu1.0 efter174. Ingen SQL-skrivning eller payloadoverride i provhandlingen. [CLI me](new-host-cli.txt), [status](new-host-status.txt), [verification](verification.json). Status behåller sin befintliga Hostinformation och har ingen numerisk Kharisrad; det är API/me och keryx me som bevisar talet. Ingen onödig presentationsändring.
 - Rigg byggd CGO0 lokalt på cachad acceptansruntime, nuvarande migreringar + eget webmount; ingen ren basimagebuild. [Runtime](rig/runtime.json). Tre labbvärldar: script väljer uttryckligen aktiv3b5fb9cd, acceptance provenance väljer automatiskt nyaste arkiverad2e335492. Inga dev-containerändringar.
 
 Repro: `PLACE_PROOF_OUTPUT="$PWD/docs/reviews/kharis-golv-vard/rig" python3 tools/place_names_rig.py`, sedan `python3 tools/host_kharis_proof.py`. CLI-token ligger bara i tillfällig0600-fil och sparas inte i rapporten. Värdens join är verklig; tidigare labbvärldsdata kommer från föregående acceptansslicers, inget påstående om naturligt ekonomiförlopp.
@@ -35,3 +35,9 @@ Grindar: kod/färska prov och faktiskt läsbeteende gröna; samma golvsemantik p
 
 ## Granskningsrättelse 2026-10-12
 Claude klargjorde att golvet är ett minimum: fall/rise raderar inte relationen till gudarna. Ursprungliga871d6388 satte ovillkorligt golvet på konflikt; ersatt med GREATEST(settled(gamla tupeln),Floor), därefter calc_tick=current och rate0. Ny PWR-rad får fortsatt Floor. Mig174 och grundning är orörda. Riktigt Rise-prov:15→15,0→Floor, lazy10/rate0.5 under10ticks→15; rate0 och reankrad tick i samtliga. Codex/vault rättas till bevarad relation. Tidigare seedmutation/runtimebevis avser första checkpoint; nytt konfliktmutation/fullGo-bevis nedan gäller handover.
+
+
+## Slutbevis efter granskningen — 94101f68
+Full färsk Go mot tom DB/migration174 omkörd och grön EFTER rättelsen; full vet och602JS gröna. Efter sista Codex-förtydligandet "first Host" är12 riktade Codex-prov gröna. [Full Go](review-full-go.log), [vet](review-vet.log), [JS](review-js.log), [Codex](review-codex.log).
+Prov på faktisk Rise-handler:15→15,0→Floor och lazy10+5→15; i samtliga rate0/reankrad tick. Ny join, mig174scope/idempotens och grundning fortfarande gröna. Fysisk konfliktmutation tillbaka till EXCLUDED.floor gav namngivet rött `rise lost existing kharis above floor` (1 iställetför15); byteåterställt färskt grönt. [Mutation](retain-mutation.log), [återställning](retain-restored.log).
+Rigg/CLI-filerna ovan är omtagna med runtime94101f6 och normal ny Host Theseus. Mig174 och grundning är oförändrade från föregående checkpoint. Ingen BILD enligt ordern, kärna/semantik och verklig read verifierade. Claude granskar/integrerar; ny hash+STOPP.

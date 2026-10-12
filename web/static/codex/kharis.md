@@ -9,7 +9,7 @@
 
 Blessings and punishments arrive as notifications.
 
-Your Host begins at the Kharis floor, even before founding. Rising again keeps your standing with the gods, with the floor as a minimum. Kharis never falls all the way to nothing, and a newly founded Wanax is protected from punishment for the first 60 days. Build a temple before they run out.
+Your first Host begins at the Kharis floor, even before founding. Rising again keeps your standing with the gods, with the floor as a minimum. Kharis never falls all the way to nothing, and a newly founded Wanax is protected from punishment for the first 60 days. Build a temple before they run out.
 
 ## How to raise it
 
