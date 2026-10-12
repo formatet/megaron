@@ -59,7 +59,7 @@ func TestDispatchPersistsJourneyAndRejectsNoPathAtomically(t *testing.T) {
 	if err := json.Unmarshal(raw, &j); err != nil {
 		t.Fatal(err)
 	}
-	if len(j.Path) != 4 || len(j.StepCosts) != 3 || due-departed != 3 {
+	if len(j.Path) != 4 || len(j.StepCosts) != 3 || due-departed != 5 {
 		t.Fatalf("saved %+v ticks %d/%d", j, departed, due)
 	}
 	// Mutate terrain after dispatch: frozen position does not change or query it.

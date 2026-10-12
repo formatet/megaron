@@ -52,23 +52,16 @@ func straightLinePath(n int) []province.MapPosition {
 	return path
 }
 
-// TestInterceptAlongPath_FindsCatchableHexPastNaiveSnapshot is the red/green
-// pin for the interception fix. Fixture: a spearman-speed unit 75% through an
-// 8-hex, 6-hour plains march ((0,0)→(8,0); departed 4.5h ago, arrives in
-// 1.5h) — its dispatch-instant snapshot is hex (6,0). A courier origin at
-// (8,3) is 5 hexes (courier: 1.875h ≈ 2 ticks) from that snapshot — MORE than
-// the 1.5h left on the march, so aiming there (the OLD behaviour) is a
-// guaranteed miss. But (8,3) is only 3 hexes (1.125h ≈ 1 tick) from the
-// march's own destination (8,0), comfortably inside the 1.5h remaining.
-// InterceptAlongPath must find (8,0), not the stale snapshot (6,0).
+// RÖ1: the eight-tick plains march has two ticks left at 75% progress.
+// The snapshot costs the runner three ticks; the destination costs two.
 func TestInterceptAlongPath_FindsCatchableHexPastNaiveSnapshot(t *testing.T) {
 	withTickSeconds(t, 3600) // 1 tick = 1 real hour, matching the hand-worked math above
 	g := straightLineGrid(8, 5)
-	path := straightLinePath(9) // (0,0)..(8,0): 8 hexes, matches TestRecall fixtures' 0.75h/hex plains
+	path := straightLinePath(9) // eight plains steps
 
 	now := time.Now()
-	departsAt := now.Add(-4*time.Hour - 30*time.Minute) // 4.5h elapsed of a 6h march = 75%
-	arrivesAt := departsAt.Add(6 * time.Hour)
+	departsAt := now.Add(-6 * time.Hour) // six ticks elapsed of an eight-tick march
+	arrivesAt := departsAt.Add(8 * time.Hour)
 	courierOrigin := province.MapPosition{Q: 8, R: 3}
 
 	// Sanity-check the fixture's own premise: the naive snapshot really is

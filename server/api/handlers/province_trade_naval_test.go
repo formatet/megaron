@@ -344,8 +344,8 @@ func TestTrade_TwoInlandSettlementsGoLand(t *testing.T) {
 		t.Fatalf("category = %q, want land (neither settlement is coastal)", got)
 	}
 
-	// Three entered plains hexes: 3 × .75 × 1.5 = 3.375, rounded once to three ticks.
-	if resp["travel_ticks"] != float64(3) || resp["travel_min"] != float64(180) {
+	// Three entered plains hexes: 3 × 1 × 1.5 = 4.5, rounded once to five ticks.
+	if resp["travel_ticks"] != float64(5) || resp["travel_min"] != float64(300) {
 		t.Fatalf("terrain ETA: %v", resp)
 	}
 

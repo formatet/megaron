@@ -43,3 +43,21 @@ Choose **Explore** in the map menu; the default expedition duration is ready to 
 The unit chooses nearby unexplored ground on its own, and turns home by half the duration. It can turn earlier if the area is already explored or nothing further is reachable. **War → Army** and `keryx unit list` show the area, duration, latest turn and home day, and why it has turned. A Runner-delivered order begins when received, so those days become known when it starts. On return, Dispatches carries the report ([[sight]]).
 
 In Keryx: `unit march --unit <id> --target q,r --intent explore --ticks N`. Omit `--ticks` for the server's default duration; the current allowed range comes from the game. Add `--preview` to check the order without dispatching. Exploration routes cross unknown ground, so their arrival forecast stays unavailable.
+
+## Terrain and journey time
+
+For foot soldiers, each plain, river valley or delta takes **1 day**; olive groves
+and maquis **1.5 days**; hills and cedar forest **2 days**; semi-desert **3 days**.
+A ford takes **2.5 days** on foot. Mountains cannot be crossed. The Nomadic Host
+needs twice the foot soldiers' time. A Runner takes half the foot time on land.
+
+A fully crewed Galley sails **3 coastal hexes per day** or **5 deep-sea hexes per
+day**, **2 river hexes per day**, and takes **1 day** through a ford. A War Galley
+needs 60% of the Galley's time; an Emporos needs 140%. A short crew or a carried
+land unit slows a marching ship. Runners aboard follow their carrier's journey.
+Cargo journeys use the separate [[routes|caravan rule]]: 1.5 times the base route
+time, including at sea; cargo weight does not change their speed.
+
+These are base costs before rounding the whole journey to at least one day.
+The route and its costs are fixed at departure. A journey already underway keeps
+its recorded costs and arrival day when the movement rules change.

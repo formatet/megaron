@@ -2,8 +2,7 @@ package province
 
 // CategoryCourier routing (temenos_orderlopare_plan.md Fas 4): runners
 // run land at half a land unit's terrain hours (2× spearman speed) and route
-// around mountains like land. Sea used to be a boat crossing at the flat
-// CourierSeaTicks rate — the "abstract boat" — removed in
+// around mountains like land. Sea used to be an abstract boat crossing — the "abstract boat" — removed in
 // megaron_plan_ordna_passage.md slice 3b-4 R3: a courier may only cross open
 // sea aboard a real carrier now, never on its own.
 
@@ -48,10 +47,10 @@ func TestFindPath_CourierStillCrossesRiverByBoat(t *testing.T) {
 	if len(path) != 3 {
 		t.Fatalf("courier path length = %d, want 3 (origin, river, target)", len(path))
 	}
-	// Cost: enter river (boat, 0.5) + enter plains at half land hours (0.75/2).
-	want := CourierSeaTicks + TerrainMoveTicks("plains")/2
+	// Cost: enter river (boat, 0.5) + enter plains at half land ticks (1/2).
+	want := 0.5 + 0.5
 	if diff := cost - want; diff > 1e-9 || diff < -1e-9 {
-		t.Errorf("courier cost = %v, want %v (river boat rate + half plains hours)", cost, want)
+		t.Errorf("courier cost = %v, want %v (river boat rate + half plains ticks)", cost, want)
 	}
 }
 

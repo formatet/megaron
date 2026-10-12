@@ -1,7 +1,6 @@
 package province
 
 import (
-	"math"
 	"testing"
 )
 
@@ -79,31 +78,19 @@ func TestFindPath_RiverFordIsTheOnlyLandCrossing(t *testing.T) {
 	}
 }
 
-// TestFindPath_RiverFordShipPaysSameCostAsLand is the plan's decision (a)
-// (megaron_todo.md, Timothy: "bygg (a) om ingen säger annat" — canon table in
-// the plan): a ship crossing a ford pays the SAME steep rate a land unit does,
-// because moveHoursFor has no naval branch for river_ford — a ford is shallow
-// and narrow water, a galley crawls through it too.
-func TestFindPath_RiverFordShipPaysSameCostAsLand(t *testing.T) {
-	landCost := moveHoursFor("river_ford", "land")
-	navalCost := moveHoursFor("river_ford", "naval")
-	if math.Abs(landCost-navalCost) > 1e-9 {
-		t.Errorf("expected river_ford to cost the same for land and naval (decision a), got land=%.2f naval=%.2f", landCost, navalCost)
+// RÖ1: ships use the shallow-water branch; land units still wade.
+func TestFindPath_RiverFordLandCost(t *testing.T) {
+	if got := moveHoursFor("river_ford", "land"); got != 2.5 {
+		t.Fatalf("ford land cost = %v, want 2.5", got)
 	}
 }
-
-// TestFindPath_RiverFordCourierWadesNotSails: a courier crossing a ford falls
-// through to ordinary TerrainMoveTicks/2 (land rate), NOT the flat
-// CourierSeaTicks boat rate — a runner wades a ford, he does not commandeer a
-// boat for it (pathfind.go's moveHoursFor doc comment).
-func TestFindPath_RiverFordCourierWadesNotSails(t *testing.T) {
-	got := moveHoursFor("river_ford", CategoryCourier)
-	want := TerrainMoveTicks("river_ford") / 2
-	if math.Abs(got-want) > 1e-9 {
-		t.Errorf("expected courier river_ford cost = TerrainMoveTicks/2 = %.3f (wading), got %.3f (looks like the flat boat rate %.3f was used instead)",
-			want, got, CourierSeaTicks)
+func TestFindPath_RiverFordNavalCost(t *testing.T) {
+	if got := moveHoursFor("river_ford", "naval"); got != 1 {
+		t.Fatalf("ford naval cost = %v, want 1", got)
 	}
-	if math.Abs(got-CourierSeaTicks) < 1e-9 {
-		t.Error("courier paid the flat sea-boat rate for a ford crossing — it should wade, not sail")
+}
+func TestFindPath_RiverFordCourierWadesNotSails(t *testing.T) {
+	if got := moveHoursFor("river_ford", CategoryCourier); got != 1.25 {
+		t.Fatalf("ford courier cost = %v, want 1.25 (wading)", got)
 	}
 }

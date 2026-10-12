@@ -23,3 +23,9 @@ Letters to other Wanaxes travel the same way, but they are sacred and cannot be 
 ## Crossing the sea
 
 A Runner whose road to your unit crosses open water cannot swim it — it waits in your own port for one of your ships to sail that way, the same as a letter does. See [[sea]] for how the crossing works, and what happens if the ship carrying it is lost.
+
+## Runner speed
+
+On land a Runner needs half a foot army's terrain time ([[marching]]). At an
+ordinary river crossing he uses the ship's river cost; at a ford he wades.
+At sea he has no separate speed: he travels with the real ship carrying him.

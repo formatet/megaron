@@ -80,17 +80,17 @@ func TestCaravanTransfer_BentPathSavedAndETAAnchored(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := []province.MapPosition{{Q: 0, R: 0}, {Q: 0, R: 1}, {Q: 1, R: 1}, {Q: 2, R: 1}, {Q: 3, R: 0}}
-	if !reflect.DeepEqual(journey.Path, want) || !reflect.DeepEqual(journey.StepCosts, []int64{750, 2500, 750, 750}) || journey.TravelTicks != 7 {
+	if !reflect.DeepEqual(journey.Path, want) || !reflect.DeepEqual(journey.StepCosts, []int64{1000, 2500, 1000, 1000}) || journey.TravelTicks != 8 {
 		t.Fatalf("journey=%+v", journey)
 	}
-	if arr-dep != 7 || due != arr || resp["arrival_tick"] != float64(arr) || resp["travel_ticks"] != float64(7) {
+	if arr-dep != 8 || due != arr || resp["arrival_tick"] != float64(arr) || resp["travel_ticks"] != float64(8) {
 		t.Fatalf("ticks dep%d arr%d due%d response%v", dep, arr, due, resp)
 	}
 	parsed, err := time.Parse(time.RFC3339Nano, resp["arrives_at"].(string))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if parsed.Sub(f.clk.Now()) != tick.RealUntil(7, 0) {
+	if parsed.Sub(f.clk.Now()) != tick.RealUntil(8, 0) {
 		t.Fatalf("wall ETA duration %v", parsed.Sub(f.clk.Now()))
 	}
 }
@@ -212,7 +212,7 @@ func TestCaravanAccept_ConcurrentBuyAndSellCommitOnceWithAsymmetricETA(t *testin
 					if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
 						t.Fatal(err)
 					}
-					if resp["travel_ticks"] != float64(6) || resp["return_travel_ticks"] != float64(8) {
+					if resp["travel_ticks"] != float64(7) || resp["return_travel_ticks"] != float64(8) {
 						t.Fatalf("asymmetric ETA: %v", resp)
 					}
 				} else if rec.Code == 409 {

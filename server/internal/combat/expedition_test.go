@@ -246,9 +246,14 @@ func TestExpedition_RecordsSightAlongTheWholeLeg(t *testing.T) {
 // A small area is used up before the time is: the expedition turns because
 // there is nothing more to see, and the report names what it found.
 func TestExpedition_AreaKnownTurnsEarlyAndReportsFinds(t *testing.T) {
-	copper := [2]int{6, -1}
-	f := newExpeditionFixture(t, -2, 8, &copper)
-	f.start(t, 5, 0, 30)
+	copper := [2]int{4, 0}
+	f := newExpeditionFixture(t, -2, 6, &copper)
+	// RÖ1 slows the outward march. Use a narrow mapped corridor so this
+	// test still proves exhausting an area BEFORE the half-time turn.
+	if _, err := testPool(t).Exec(context.Background(), `DELETE FROM map_tiles WHERE world_id=$1 AND r<>0`, f.worldID); err != nil {
+		t.Fatal(err)
+	}
+	f.start(t, 3, 0, 30)
 	legs := f.runUntilHome(t)
 	if last := legs[len(legs)-1]; last.tick > 30 {
 		t.Errorf("home at tick %d, after start+length 30", last.tick)

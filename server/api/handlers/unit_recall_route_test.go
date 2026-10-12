@@ -123,10 +123,10 @@ func TestAcceptance2_RecallPrecheck_CatchesWhereTimeSays(t *testing.T) {
 	if err != nil {
 		t.Fatalf("StartMarch: %v", err)
 	}
-	if res.DurationTicks != 3 {
-		t.Fatalf("test fixture assumption broken: march took %d ticks, want 3", res.DurationTicks)
+	if res.DurationTicks != 4 {
+		t.Fatalf("test fixture assumption broken: march took %d ticks, want 4", res.DurationTicks)
 	}
-	clk.Advance(time.Duration(0.3*3*float64(tick.TickSeconds)) * time.Second) // 30% through
+	clk.Advance(time.Duration(0.3*float64(res.DurationTicks)*float64(tick.TickSeconds)) * time.Second) // 30% through
 
 	uh := NewUnitHandler(pool, scheduler, eventStore, clk)
 	router := chi.NewRouter()
@@ -235,10 +235,10 @@ func TestAcceptance2_UnitJSON_CurrentPosMatches(t *testing.T) {
 	if err != nil {
 		t.Fatalf("StartMarch: %v", err)
 	}
-	if res.DurationTicks != 3 {
-		t.Fatalf("test fixture assumption broken: march took %d ticks, want 3", res.DurationTicks)
+	if res.DurationTicks != 4 {
+		t.Fatalf("test fixture assumption broken: march took %d ticks, want 4", res.DurationTicks)
 	}
-	clk.Advance(time.Duration(0.3*3*float64(tick.TickSeconds)) * time.Second) // 30% through
+	clk.Advance(time.Duration(0.3*float64(res.DurationTicks)*float64(tick.TickSeconds)) * time.Second) // 30% through
 
 	uh := NewUnitHandler(pool, scheduler, eventStore, clk)
 	router := chi.NewRouter()

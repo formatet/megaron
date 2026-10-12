@@ -115,22 +115,12 @@ var axialDirs = func() [6][2]int {
 //
 // SEA is a wall (megaron_plan_ordna_passage.md, slice 3b-4, R3): the old
 // "abstract boat" — a courier silently commandeering a boat to cross
-// coastal_sea/deep_sea at the flat CourierSeaTicks rate — is gone. A runner
+// coastal_sea/deep_sea at a separate flat boat rate — is gone. A runner
 // may only cross open sea aboard a real carrier now (internal/messenger's
 // sea-lift mechanic); a route needing the sea reports ok=false here, same as
-// for a land unit. RIVER is untouched and stays a boat crossing (below) —
-// that is a separate, pre-existing design (megaron_floden_plan.md, Timothy
-// 2026-07-29: "a runner commandeers a boat over a river the same as over the
-// sea") this slice does not touch; only rivers have their own ford substrate
-// (river_ford) as the deliberate land crossing.
+// for a land unit. RIVER retains its existing boat crossing, at the shared
+// naval terrain cost (RÖ1); river_ford is the deliberate wading crossing.
 const CategoryCourier = "courier"
-
-// CourierSeaTicks is a courier's ticks per RIVER hex — the abstracted boat
-// passage over a plain river (megaron_floden_plan.md), unaffected by 3b-4.
-// The name is a pre-existing misnomer now that sea itself is impassable for
-// CategoryCourier — kept as-is rather than renamed, to avoid an unrelated
-// identifier churn across the tree for a slice that did not touch rivers.
-const CourierSeaTicks = 0.5
 
 // CategoryCourierLand is CategoryCourier's land-only twin (megaron_plan_
 // budet_liftar.md R1, "en ren landväg — courier-graf utan havshex"): same
@@ -148,11 +138,11 @@ const CategoryCourierLand = "courier_land"
 //   - "courier_land": everything "courier" allows, minus river too — a pure
 //     land route with no water crossing of any kind.
 //   - "land" (and any other value): coastal_sea, deep_sea, river, mountain_limestone,
-//     mountain_red are impassable; semi_desert costs 2.0 but is passable.
+//     mountain_red are impassable; semi_desert costs 3 but is passable.
 //     River is a wall for land units (megaron_floden_plan.md — Timothy 2026-07-29).
 //     river_ford is the one deliberate gap in that wall (megaron_plan_
 //     flodbudget_och_vadstalle.md, Timothy 2026-08-02) — passable for BOTH land
-//     and naval, at a steep TerrainMoveTicks cost (movement.go) rather than
+//     and naval, at category-specific TerrainMoveTicksFor costs (movement.go) rather than
 //     being excluded here.
 func isPassable(terrain, category string) bool {
 	if category == "naval" {
@@ -184,30 +174,20 @@ func isPassable(terrain, category string) bool {
 // many hexes before paying for a search (combat/expedition.go).
 func IsPassable(terrain, category string) bool { return isPassable(terrain, category) }
 
-// moveHoursFor returns the cost to enter a hex of terrain for the category.
-// Couriers run land at half a land unit's terrain hours (2× spearman speed —
-// temenos_synlighet.md §Nivå 1) and cross a plain RIVER (a runner commandeers a
-// boat over a river the same as over the sea used to be, megaron_floden_plan.md
-// — untouched by 3b-4) at the flat boat rate; every other category pays the
-// plain TerrainMoveTicks. Sea never reaches this function for CategoryCourier —
-// isPassable above walls it out before moveHoursFor is ever asked its cost.
-// river_ford is deliberately ABSENT from the courier-boat-rate branch below: a
-// runner does not commandeer a boat to cross a ford, he wades (megaron_plan_
-// flodbudget_och_vadstalle.md) — it falls through to TerrainMoveTicks/2 like
-// any other land terrain, and TerrainMoveTicks("river_ford") is itself steep
-// (movement.go), so the runner still pays for the crossing, just not at the
-// flat boat rate.
+// moveHoursFor returns the category's entering-hex cost in ticks.
+// Runners halve land costs and wade fords; ordinary rivers use the shared
+// ship terrain cost. Open sea remains impassable without a real carrier.
 func moveHoursFor(terrain, category string) float64 {
 	if category == CategoryCourier {
 		if terrain == "river" {
-			return CourierSeaTicks
+			return moveHoursFor(terrain, "naval")
 		}
 		return TerrainMoveTicks(terrain) / 2
 	}
 	if category == CategoryCourierLand {
 		return TerrainMoveTicks(terrain) / 2
 	}
-	return TerrainMoveTicks(terrain)
+	return TerrainMoveTicksFor(terrain, category)
 }
 
 // NearestSeaNeighbor returns the coordinates of a hex adjacent to (q,r) that is
@@ -337,28 +317,16 @@ func NearestSettlementNeighbor(ctx context.Context, db Queryer, worldID uuid.UUI
 	return uuid.Nil, 0, 0, false, nil
 }
 
-// minPassableCost returns the cheapest TerrainMoveTicks among terrains passable
-// for the given category. It is the admissible A* heuristic multiplier: the
-// heuristic (HexDistance × minPassableCost) must never overestimate the true
-// remaining cost, and the true cost per hex is never lower than this floor.
-//   - land: plains (0.75) is the cheapest passable terrain.
-//   - naval: coastal_sea (0.4) is the cheapest passable terrain — river (0.5) and
-//     river_ford (2.5, movement.go) are both more expensive so the floor stands;
-//     a ford is deliberately the priciest naval hex there is (deliberate design,
-//     megaron_plan_flodbudget_och_vadstalle.md: "a ford IS shallow and narrow" —
-//     it can only ever push this floor down further from admissible, never up).
-//     If river's rate is ever tuned below 0.4, this floor must be recomputed or
-//     the A* heuristic becomes inadmissible.
-//   - courier: plains at half hours (0.375) is the cheapest passable terrain
-//     (cheaper than the 0.5 sea boat rate).
+// minPassableCost is the admissible A* lower bound per entered hex.
+// RÖ1: deep sea is cheapest for ships, plains for land, half plains for runners.
 func minPassableCost(category string) float64 {
 	if category == "naval" {
-		return TerrainMoveTicks("coastal_sea") // 0.4
+		return TerrainMoveTicks("deep_sea")
 	}
 	if category == CategoryCourier || category == CategoryCourierLand {
-		return TerrainMoveTicks("plains") / 2 // 0.375
+		return TerrainMoveTicks("plains") / 2
 	}
-	return TerrainMoveTicks("plains") // 0.75
+	return TerrainMoveTicks("plains")
 }
 
 // findPath is the pure A* implementation over an in-memory tile map.

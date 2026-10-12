@@ -86,3 +86,10 @@ A land [[units|unit]] stranded on another shore — landed there, or marched off
 - **Home is the end of the errand.** The moment the ship docks, the fetched unit steps off straight into that city's garrison — no separate Unload needed.
 
 None of this reaches a ship already at sea (ships take no orders once they sail — see "At sea" above): a pickup is a whole mission, given from port, same as Land, Patrol or Explore.
+
+## Sailing time
+
+With a full crew, a Galley covers **3 coastal hexes** or **5 deep-sea hexes per
+day**. Rivers allow **2 hexes per day**; a ford takes **1 day** for a ship.
+Deep water is faster, and [[storms|storms]] can still damage or sink a ship.
+See [[marching]] for ship, crew and cargo modifiers and journey rounding.

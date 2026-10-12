@@ -1405,7 +1405,7 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 		if fromTerrain == "" {
 			fromTerrain = "plains"
 		}
-		moveTicks = province.TerrainMoveTicks(fromTerrain) * float64(dist)
+		moveTicks = province.TerrainMoveTicksFor(fromTerrain, u.category) * float64(dist)
 	}
 	returnIntent := "explore_return"
 	// R6 (megaron_plan_hamta_hem.md): a pickup ship sailing home WITH its
