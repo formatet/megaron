@@ -1263,7 +1263,7 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		        t.origin_q, t.origin_r, COALESCE(op.terrain_type, ''),
 		        t.dest_q, t.dest_r, COALESCE(dp.terrain_type, ''),
 		        t.departs_at, t.arrives_at, t.category, COALESCE(pl.wanax_name, pl.username, ''), t.journey, t.departed_tick, t.due_tick,
-		        COALESCE(os.name, ''), COALESCE(ds.name, ''),t.ship_unit_id
+		        COALESCE(os.name, ''), COALESCE(ds.name, ''),t.ship_unit_id,t.kind
 		 FROM transports t
 		 LEFT JOIN players pl ON pl.id = t.owner_id
 		 LEFT JOIN settlements os ON os.id = t.origin_id
@@ -1284,6 +1284,8 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type tradeMarker struct {
+		Kind          string     `json:"kind"`
+		RouteKnown    bool       `json:"route_known"`
 		Path          [][2]int   `json:"path,omitempty"`
 		StepCosts     []int64    `json:"step_costs,omitempty"`
 		Category      string     `json:"category"`
@@ -1339,7 +1341,7 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		var dueTick int
 		if err := rows.Scan(&m.ID, &ownerID, &destOwnerID, &m.GoodKey, &m.Quantity, &m.OriginQ, &m.OriginR, &originTerrain,
 			&m.DestQ, &m.DestR, &destTerrain, &m.DepartsAt, &m.ArrivesAt, &category, &m.Owner, &savedJourney, &departedTick, &dueTick,
-			&m.OriginName, &m.DestName, &m.ShipUnitID); err != nil {
+			&m.OriginName, &m.DestName, &m.ShipUnitID, &m.Kind); err != nil {
 			continue
 		}
 		m.Category = category
@@ -1368,10 +1370,7 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		// Unauthenticated callers get no ownership info at all — never let an
 		// anonymous request see mine:true on any row.
 		m.Mine = authenticated && ownerID == playerID
-		if m.Mine && journey != nil {
-			m.Path = pathCoordinates(journey.Path)
-			m.StepCosts = journey.StepCosts
-		}
+
 		switch {
 		case !authenticated:
 			m.Role = ""
@@ -1379,6 +1378,11 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 			m.Role = "sender"
 		case destOwnerID != nil && *destOwnerID == playerID:
 			m.Role = "recipient"
+		}
+		m.RouteKnown = m.Mine || (m.Role == "recipient" && agreedTransportKind(m.Kind))
+		if m.RouteKnown && journey != nil {
+			m.Path = pathCoordinates(journey.Path)
+			m.StepCosts = journey.StepCosts
 		}
 		if savedPos == nil && gerr == nil {
 			from := province.MapPosition{Q: m.OriginQ, R: m.OriginR}
@@ -1388,7 +1392,7 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 					m.CurrentQ, m.CurrentR = &read.Pos.Q, &read.Pos.R
 					m.Heading = read.Heading
 				}
-				if m.Mine {
+				if m.RouteKnown {
 					m.Path = pathCoordinates(path)
 				}
 			}

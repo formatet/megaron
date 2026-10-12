@@ -37,6 +37,13 @@ func pathCoordinates(path []province.MapPosition) [][2]int {
 	return out
 }
 
+// Only the two legs of accepted bilateral trade establish the recipient's
+// advance route knowledge. Gifts need no consent; own logistics/ship returns
+// are known through ownership, never by reclassifying their recipient.
+func agreedTransportKind(kind string) bool {
+	return kind == "trade" || kind == "trade_return"
+}
+
 // The compass is the same ScreenCompass used by ReadMarch, but its current
 // step comes from the frozen journey's weighted clock, matching SavedPosition.
 func frozenHeading(path []province.MapPosition, costs []int64, start, end int, at int64) string {

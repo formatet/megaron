@@ -217,3 +217,52 @@ func TestFardvagOwnRunnerCurrentLandAndFrozenCarrierPaths(t *testing.T) {
 		t.Fatal("waiting runner invented forward route")
 	}
 }
+
+func TestFardvagAgreedRecipientKnowsRouteGiftDoesNot(t *testing.T) {
+	for _, kind := range []string{"trade", "trade_return", "gift", "transfer", "standing_order_out", "standing_order_return", "plunder", "ship_return", "damaged_return"} {
+		t.Run(kind, func(t *testing.T) {
+			f := setupMapTradesMineFixture(t)
+			ctx := context.Background()
+			j := province.TradeJourney{Category: "land", Path: []province.MapPosition{{Q: 3, R: 0}, {Q: 2, R: 0}, {Q: 1, R: 0}, {Q: 0, R: 0}}, StepCosts: []int64{750, 2500, 750}, Distance: 3, TravelTicks: 6}
+			raw, _ := json.Marshal(j)
+			if _, err := f.pool.Exec(ctx, `UPDATE transports SET kind=$1,journey=$2,departed_tick=10,due_tick=16 WHERE world_id=$3 AND owner_id=$4 AND dest_q=0 AND dest_r=0`, kind, raw, f.worldID, f.playerB); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := f.pool.Exec(ctx, `UPDATE worlds SET current_tick=12,last_tick_at=now() WHERE id=$1`, f.worldID); err != nil {
+				t.Fatal(err)
+			}
+			row := findByGood(t, f.get(t, f.tokenA), "copper")
+			if row["mine"] != false || row["role"] != "recipient" || row["kind"] != kind {
+				t.Fatalf("recipient ownership/kind was changed: %+v", row)
+			}
+			agreed := kind == "trade" || kind == "trade_return"
+			if agreed {
+				if row["route_known"] != true || len(row["path"].([]any)) != 4 || len(row["step_costs"].([]any)) != 3 {
+					t.Fatalf("agreed recipient lost frozen route and costs: %+v", row)
+				}
+			} else {
+				_, path := row["path"]
+				_, costs := row["step_costs"]
+				if row["route_known"] != false || path || costs {
+					t.Fatalf("unagreed %s recipient received route knowledge: %+v", kind, row)
+				}
+			}
+			if row["quantity"] != float64(7) || row["arrives_at"] == nil || row["arrival_tick"] != float64(16) {
+				t.Fatal("party lost existing incoming shipment cargo/ETA")
+			}
+		})
+	}
+}
+func TestFardvagGiftSenderStillKnowsOwnRoute(t *testing.T) {
+	f := setupMapTradesMineFixture(t)
+	ctx := context.Background()
+	j := province.TradeJourney{Category: "land", Path: []province.MapPosition{{Q: 0, R: 0}, {Q: 1, R: 0}, {Q: 2, R: 0}, {Q: 3, R: 0}}, StepCosts: []int64{750, 2500, 750}, Distance: 3, TravelTicks: 6}
+	raw, _ := json.Marshal(j)
+	if _, err := f.pool.Exec(ctx, `UPDATE transports SET kind='gift',journey=$1,departed_tick=10,due_tick=16 WHERE world_id=$2 AND owner_id=$3`, raw, f.worldID, f.playerA); err != nil {
+		t.Fatal(err)
+	}
+	row := findByGood(t, f.get(t, f.tokenA), "grain")
+	if row["mine"] != true || row["route_known"] != true || len(row["path"].([]any)) != 4 || len(row["step_costs"].([]any)) != 3 {
+		t.Fatalf("gift sender lost known owned journey: %+v", row)
+	}
+}

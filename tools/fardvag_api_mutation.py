@@ -4,6 +4,7 @@ Run only while no other Go build/test is reading the shared worktree.
 """
 import pathlib
 import subprocess
+import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 OUT = ROOT / 'docs/reviews/fardvag'
@@ -27,14 +28,25 @@ def mutation(label, path, old, new, test, expected):
         file.write_bytes(original)
 
 
-mutation('foreign-path', 'server/api/handlers/map_actor_routes.go',
-         'if caravan {', 'out["path"] = [][2]int{{999, 999}}\n if caravan {',
-         'TestFardvagThirdParty', 'third-party map actor leaked path')
-mutation('return-window', 'server/api/handlers/world.go',
-         'legStart, legEnd = *returnDepartsAt, m.ArrivesAt',
-         'legStart, legEnd = *returnDepartsAt, returnDepartsAt.Add(m.ArrivesAt.Sub(legStart))',
-         'TestFardvagReturningRunnerUsesActualActiveWindow',
-         'returning runner current position used obsolete outbound/stay duration')
+if '--agreement-only' not in sys.argv:
+    mutation('foreign-path', 'server/api/handlers/map_actor_routes.go',
+             'if caravan {', 'out["path"] = [][2]int{{999, 999}}\n if caravan {',
+             'TestFardvagThirdParty', 'third-party map actor leaked path')
+    mutation('return-window', 'server/api/handlers/world.go',
+             'legStart, legEnd = *returnDepartsAt, m.ArrivesAt',
+             'legStart, legEnd = *returnDepartsAt, returnDepartsAt.Add(m.ArrivesAt.Sub(legStart))',
+             'TestFardvagReturningRunnerUsesActualActiveWindow',
+             'returning runner current position used obsolete outbound/stay duration')
+mutation('agreed-recipient', 'server/api/handlers/world.go',
+         'm.RouteKnown = m.Mine || (m.Role == "recipient" && agreedTransportKind(m.Kind))',
+         'm.RouteKnown = m.Mine',
+         'TestFardvagAgreedRecipientKnowsRouteGiftDoesNot',
+         'agreed recipient lost frozen route and costs')
+mutation('gift-agreement', 'server/api/handlers/map_actor_routes.go',
+         'return kind == "trade" || kind == "trade_return"',
+         'return kind == "trade" || kind == "trade_return" || kind == "gift"',
+         'TestFardvagAgreedRecipientKnowsRouteGiftDoesNot',
+         'unagreed gift recipient received route knowledge')
 with (OUT / 'restored-api.log').open('w') as log:
     subprocess.run(['tools/gotest.sh', './api/handlers/', './cmd/keryx/', '-run',
                     'TestFardvag|TestForeignCivilianSightings|TestAcceptance3'],
