@@ -10,16 +10,21 @@ export function namedPlaceTerrain(tile,fallback){
  if(tile.place_kind==='forest')return 'Cedar Forest';
  return namedRiverTerrain(tile,fallback);
 }
-export const PLACE_LABEL_VARIANTS={
- a:{font:'italic 7px serif',spacing:0,height:9},
- b:{font:'6px serif',spacing:1,height:8},
-};
-export function placeLabelVariant(search=''){return new URLSearchParams(search).get('ortnamn')==='b'?'b':'a';}
+export const PLACE_LABEL_STYLE={font:'italic 7px serif',height:9};
+// A crisp one-logical-pixel halo from the existing renderer palette keeps the
+// chosen italic lettering readable over white limestone, without a plate.
+export function drawPlaceLabel(ctx,label){
+ ctx.save();ctx.translate(label.x,label.y);ctx.rotate(label.angle);
+ ctx.font=PLACE_LABEL_STYLE.font;ctx.textAlign='center';ctx.textBaseline='middle';ctx.globalAlpha=.95;
+ ctx.fillStyle='#241F18';
+ for(const [dx,dy] of [[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]])ctx.fillText(label.name,dx,dy);
+ ctx.fillStyle='#E8D0A8';ctx.fillText(label.name,0,0);ctx.restore();
+}
 // World-space AABBs conservatively contain rotated text and clearance. These
 // are collision facts, not a substitute for Timothy's visual choice.
-export function placeLabelLayout(tiles,provinces,{hexPx,measure,measureCity,zoom,viewport,variant='a'}){
+export function placeLabelLayout(tiles,provinces,{hexPx,measure,measureCity,zoom,viewport}){
  if(zoom<.55)return [];
- const style=PLACE_LABEL_VARIANTS[variant]||PLACE_LABEL_VARIANTS.a;
+ const style=PLACE_LABEL_STYLE;
  const occupied=[];
  for(const p of provinces){const {x,y}=hexPx(p.q,p.r),w=measureCity(p.name,!!p.own)+4;occupied.push({left:x-w/2,right:x+w/2,top:y+17,bottom:y+29},{left:x-24,right:x+24,top:y-30,bottom:y+18});}
  const groups=new Map();
@@ -29,7 +34,7 @@ export function placeLabelLayout(tiles,provinces,{hexPx,measure,measureCity,zoom
   const points=group.map(t=>({...t,...hexPx(t.q,t.r)}));
   const cx=points.reduce((n,t)=>n+t.x,0)/points.length,cy=points.reduce((n,t)=>n+t.y,0)/points.length;
   points.sort((a,b)=>Math.hypot(a.x-cx,a.y-cy)-Math.hypot(b.x-cx,b.y-cy)||a.q-b.q||a.r-b.r);
-  const name=group[0].place_name,w=measure(name,style)+Math.max(0,[...name].length-1)*style.spacing+4,h=style.height+4;
+  const name=group[0].place_name,w=measure(name,style)+4,h=style.height+4;
   let chosen;
   for(const t of points){
    // A river follows the local known channel. Other kinds lie over the known

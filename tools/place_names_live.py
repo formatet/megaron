@@ -60,7 +60,7 @@ with tempfile.TemporaryDirectory(prefix='place-live-') as tmp:
   browser=pw.firefox.launch()
   for mode,(w,h) in {'desktop':(1280,900),'mobile':(390,844)}.items():
    ctx=browser.new_context(viewport={'width':w,'height':h},has_touch=mode=='mobile');ctx.add_cookies([{'name':'poleia_token','value':token,'url':BASE}]);ctx.add_init_script(f"localStorage.setItem('poleia_token',{json.dumps(token)})");page=ctx.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
-   page.goto(BASE+f'/world/{world}/map?ortnamn=a',wait_until='networkidle');page.evaluate("async()=>{window.__ls=(await import('/static/js/megaron/state.js')).State;window.__lm=await import('/static/js/megaron/render/map.js');}");page.wait_for_function('__ls.tileData.length>0 && __lm.markrasterStats.pending===0');page.evaluate('t=>centreOn(t.q,t.r)',target);page.wait_for_timeout(500)
+   page.goto(BASE+f'/world/{world}/map',wait_until='networkidle');page.evaluate("async()=>{window.__ls=(await import('/static/js/megaron/state.js')).State;window.__lm=await import('/static/js/megaron/render/map.js');}");page.wait_for_function('__ls.tileData.length>0 && __lm.markrasterStats.pending===0');page.evaluate('t=>centreOn(t.q,t.r)',target);page.wait_for_timeout(500)
    point=page.evaluate('t=>{const p=__lm.hexPx(t.q,t.r);return {x:__ls.camera.x+p.x*__lm.SCALE*__ls.camera.zoom,y:__ls.camera.y+p.y*__lm.SCALE*__ls.camera.zoom}}',target);el=page.locator('#hex-canvas');el.tap(position=point) if mode=='mobile' else el.click(position=point)
    page.locator('[aria-label="Place name"]').wait_for();page.screenshot(path=str(OUT/f'{mode}-natural-form.png'))
    if mode=='mobile':

@@ -5,7 +5,7 @@ rebuilt/copied from this worktree. No DB reset. All source/provenance recorded.
 """
 import hashlib,json,os,pathlib,shutil,subprocess,tempfile,time,urllib.request
 ROOT=pathlib.Path(__file__).resolve().parents[1]
-OUT=ROOT/'docs/reviews/flod-doparratt';OUT.mkdir(parents=True,exist_ok=True)
+OUT=pathlib.Path(os.environ.get('PLACE_PROOF_OUTPUT',str(ROOT/'docs/reviews/flod-doparratt')));OUT.mkdir(parents=True,exist_ok=True)
 def run(args,**kw):return subprocess.run(args,check=True,**kw)
 commit=subprocess.check_output(['git','-C',str(ROOT),'rev-parse','--short=7','HEAD'],text=True).strip()
 base=subprocess.check_output(['docker','image','inspect','-f','{{.Id}}','megaron-acc-server'],text=True).strip()

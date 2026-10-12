@@ -23,7 +23,7 @@ import { drawStorm, STORM_FRAMES } from './storms.js';
 import { stormPanelHTML } from '../ui/stormname.js';
 import { placePanelHTML } from '../ui/placename.js';
 import { incomingTargetKeys } from '../ui/movements.js';
-import { namedPlaceTerrain, placeLabelLayout, PLACE_LABEL_VARIANTS, placeLabelVariant } from './place_names.js';
+import { namedPlaceTerrain, placeLabelLayout, PLACE_LABEL_STYLE, drawPlaceLabel } from './place_names.js';
 import { createMarkRenderer } from './markraster.js';
 import { createChunkWorker } from './chunk_worker.js';
 const ground = createMarkRenderer(State, () => document.createElement('canvas'),
@@ -2932,23 +2932,17 @@ export function render() {
     if (tileTier(p.q, p.r) !== 'remembered') drawProvince(ctx, x, y, p);
     if (State.camera.zoom >= LOCAL_ZOOM) drawLabel(ctx, x, y, p.name, p.own);
   }
-  // Geographic names: no city plate/outline; two cartographic alternatives
-  // retained for Timothy's BILD choice (?ortnamn=a|b).
+  // Geographic names: chosen italic lettering with a crisp dark halo, no plate.
   if (State.camera.zoom >= LOCAL_ZOOM) {
-    const z=State.camera.zoom*SCALE,variant=placeLabelVariant(globalThis.location?.search||''),style=PLACE_LABEL_VARIANTS[variant];
+    const z=State.camera.zoom*SCALE,style=PLACE_LABEL_STYLE;
     ctx.save();
     const measureCity=(text,own)=>{ctx.font=own?'bold 7px monospace':'6px monospace';return ctx.measureText(text).width;};
-    const measure=(text)=>{ctx.font=style.font;return style.spacing?[...text].reduce((n,ch)=>n+ctx.measureText(ch).width,0):ctx.measureText(text).width;};
+    const measure=(text)=>{ctx.font=style.font;return ctx.measureText(text).width;};
     const labels=placeLabelLayout(State.tileData,State.provinceData,{
-      hexPx,measure,measureCity,variant,zoom:State.camera.zoom,
+      hexPx,measure,measureCity,zoom:State.camera.zoom,
       viewport:{left:-State.camera.x/z,top:-State.camera.y/z,right:(canvas.width-State.camera.x)/z,bottom:(canvas.height-State.camera.y)/z},
     });
-    ctx.font=style.font;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#E8D0A8';ctx.globalAlpha=.85;
-    for(const label of labels){ctx.save();ctx.translate(label.x,label.y);ctx.rotate(label.angle);
-      if(!style.spacing)ctx.fillText(label.name,0,0);
-      else {const chars=[...label.name],width=chars.reduce((n,ch)=>n+ctx.measureText(ch).width,0)+(chars.length-1)*style.spacing;let x=-width/2;ctx.textAlign='left';for(const ch of chars){ctx.fillText(ch,x,0);x+=ctx.measureText(ch).width+style.spacing;}}
-      ctx.restore();
-    }
+    for(const label of labels)drawPlaceLabel(ctx,label);
     ctx.restore();
   }
   pass('cities');
