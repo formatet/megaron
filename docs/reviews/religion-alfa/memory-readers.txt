@@ -1,0 +1,171 @@
+Base: 6f89290b
+Command: rg -n player_scouted_tiles|loadRememberedTiles|AnyEyeSees|player_scouted_provinces|tier.*remembered server/internal/province server/api/handlers server/db/migrations web/static/js/megaron/render/memory.js
+
+web/static/js/megaron/render/memory.js:28:  const remembered = tiles.filter(t => t.tier === 'remembered' && t.terrain !== 'fog');
+server/api/handlers/world.go:344:		remembered = loadRememberedTiles(r.Context(), h.pool, worldID, playerID)
+server/api/handlers/world.go:358:		Tier          string  `json:"tier"` // "live" | "remembered" | "fog"
+server/api/handlers/world.go:382:		case province.AnyEyeSees(eyes, pos, t.Terrain):
+server/api/handlers/world.go:435:	// Frontier: a fog tile adjacent to a known (live or remembered) tile — the edge
+server/api/handlers/world.go:455:	// into player_scouted_tiles so they remain (dimmed) after the eye moves on.
+server/api/handlers/world.go:461:				`INSERT INTO player_scouted_tiles (world_id, player_id, q, r)
+server/api/handlers/world.go:480:// FOW-CRITICAL: the catchment is tiered with the SAME live∪remembered logic as
+server/api/handlers/world.go:481:// Map (loadLiveEyes + loadRememberedTiles + AnyEyeSees). A fog hex is reported as
+server/api/handlers/world.go:516:		remembered = loadRememberedTiles(ctx, h.pool, worldID, playerID)
+server/api/handlers/world.go:577:			case province.AnyEyeSees(eyes, province.MapPosition{Q: c[0], R: c[1]}, ct.terrain):
+server/api/handlers/world.go:881:		remembered = loadRememberedTiles(r.Context(), h.pool, worldID, playerID)
+server/api/handlers/world.go:980:			// remembered city; AnyEyeSees narrows this branch to live only.
+server/api/handlers/world.go:981:			if !province.AnyEyeSees(eyes, pos, terrain) {
+server/api/handlers/world.go:1008:// live-vision eyes used for map rendering (see loadLiveEyes/loadRememberedTiles).
+server/api/handlers/world.go:1012:// loadRememberedTiles) instead, same as /map (fow/provinces-samma-kunskap,
+server/api/handlers/world.go:1039:// loadRememberedTiles returns the set of tiles the player has ever live-seen and
+server/api/handlers/world.go:1044:func loadRememberedTiles(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uuid.UUID) map[[2]int]bool {
+server/api/handlers/world.go:1046:		`SELECT q, r FROM player_scouted_tiles WHERE world_id = $1 AND player_id = $2
+server/api/handlers/world.go:1049:		 FROM player_scouted_provinces sp
+server/api/handlers/world.go:1077:// actual map knowledge — tier-1 live eyes (AnyEyeSees/LiveRadius) ∪ tier-2 remembered
+server/api/handlers/world.go:1078:// tiles (loadRememberedTiles) — the SAME model /map uses. This replaces the old flat
+server/api/handlers/world.go:1081:// 2026-07-28: "en stad ska aldrig kunna stå på svart"). Because loadRememberedTiles
+server/api/handlers/world.go:1088:	return province.AnyEyeSees(eyes, pos, terrain) || remembered[[2]int{pos.Q, pos.R}]
+server/api/handlers/world.go:1095:// or target sits on a tier-1 LIVE tile — remembered (tier-2) tiles show frozen
+server/api/handlers/world.go:1212:// then AnyEyeSees the single current hex, exactly as foreign_units.go does. Fails
+server/api/handlers/world.go:1223:	return province.AnyEyeSees(eyes, pos, terrain)
+server/api/handlers/world.go:1412:					seen = exists && province.AnyEyeSees(eyes, *savedPos, terrain)
+server/api/handlers/world.go:1419:					seen = province.AnyEyeSees(eyes, from, originTerrain) || province.AnyEyeSees(eyes, to, destTerrain)
+server/api/handlers/world.go:1727:				seen = province.AnyEyeSees(eyes, from, originTerrain) || province.AnyEyeSees(eyes, to, destTerrain)
+server/api/handlers/world.go:1808:// tier-1 live eyes ∪ tier-2 remembered tiles, the same knowledge /map uses (this
+server/api/handlers/world.go:1809:// includes messenger-contacted destinations: loadRememberedTiles folds those in as
+server/api/handlers/world.go:1828:	remembered := loadRememberedTiles(r.Context(), h.pool, worldID, playerID)
+server/api/handlers/world.go:1937:// the "known" tier is the same tier-1 (live eyes) ∪ tier-2 (remembered tiles)
+server/api/handlers/world.go:1938:// knowledge /map uses — loadRememberedTiles already folds in messenger-contacted
+server/api/handlers/world.go:1946:	remembered := loadRememberedTiles(ctx, h.pool, worldID, playerID)
+server/api/handlers/world.go:2014:	// Rumour tier: settlements heard of via gossip but never seen/remembered/contacted.
+server/api/handlers/found_metropolis.go:629:	remembered := loadRememberedTiles(ctx, pool, worldID, playerID)
+server/api/handlers/found_metropolis.go:648:	remembered := loadRememberedTiles(ctx, pool, worldID, playerID)
+server/api/handlers/found_metropolis.go:678:		if exists && (province.AnyEyeSees(eyes, province.MapPosition{Q: c[0], R: c[1]}, terrain) || remembered[key]) {
+server/api/handlers/messenger_origin_eye_test.go:237:		`INSERT INTO player_scouted_tiles (world_id, player_id, q, r) VALUES ($1, $2, 4, 0)`,
+server/api/handlers/oracle_reveal_map_test.go:132:		`SELECT q, r FROM player_scouted_tiles WHERE world_id = $1 AND player_id = $2 ORDER BY q, r`,
+server/api/handlers/oracle_reveal_map_test.go:135:		t.Fatalf("query player_scouted_tiles: %v", err)
+server/api/handlers/oracle_reveal_map_test.go:177:		t.Errorf("player_scouted_tiles = %v (%d rows), want 7 — the fog must lift on the whole patch, "+
+server/api/handlers/oracle_reveal_map_test.go:191:		`INSERT INTO player_scouted_tiles (world_id, player_id, q, r) VALUES ($1,$2,40,0)`,
+server/api/handlers/oracle_reveal_map_test.go:221:		`INSERT INTO player_scouted_tiles (world_id, player_id, q, r) VALUES ($1,$2,40,0)`,
+server/api/handlers/oracle_reveal_map_test.go:237:		t.Errorf("player_scouted_tiles = %v, want only the pre-scouted hex — nothing new may be revealed", got)
+server/api/handlers/oracle_reveal_map_test.go:263:			t.Errorf("player_scouted_tiles contains %v, a coordinate with no map_tiles row — "+
+server/api/handlers/foreign_units_fow_test.go:176:// on a hex the viewer has scouted before (player_scouted_tiles, tier 2) but does
+server/api/handlers/foreign_units_fow_test.go:228:		`INSERT INTO player_scouted_tiles (world_id, player_id, q, r) VALUES ($1, $2, 6, 0)`,
+server/api/handlers/foreign_units_fow_test.go:449:// as fog under GET /map, and no player_scouted_tiles row may exist for the
+server/api/handlers/foreign_units_fow_test.go:567:	// No player_scouted_tiles row for any hex outside the viewer's own capital
+server/api/handlers/foreign_units_fow_test.go:571:		`SELECT q, r FROM player_scouted_tiles WHERE world_id = $1 AND player_id = $2`,
+server/api/handlers/foreign_units_fow_test.go:575:		t.Fatalf("query player_scouted_tiles: %v", err)
+server/api/handlers/foreign_units_fow_test.go:581:			t.Fatalf("scan player_scouted_tiles row: %v", err)
+server/api/handlers/foreign_units_fow_test.go:584:			t.Errorf("unexpected player_scouted_tiles row (%d,%d) — outside the viewer's own vision, "+
+server/api/handlers/foreign_units_fow_test.go:594:// memory (player_scouted_tiles) — closing the sibling hole where a remembered
+server/api/handlers/foreign_units_fow_test.go:683:		`INSERT INTO player_scouted_tiles (world_id, player_id, q, r) VALUES ($1, $2, 6, 0)`,
+server/api/handlers/foreign_units_fow_test.go:735:		t.Errorf("Fadingkeep army_total = %d, want 0 — remembered tier must not leak a live garrison count", remembered.ArmyTotal)
+server/api/handlers/fow_test.go:14://   2. The tiered LIVE+REMEMBERED set — province.AnyEyeSees(eyes, target,
+server/api/handlers/fow_test.go:15://      terrain) ∪ remembered tiles, fed by loadLiveEyes/loadRememberedTiles,
+server/api/handlers/fow_test.go:155:// "live" if province.AnyEyeSees(eyes, tile, terrain) is true; else "remembered"
+server/api/handlers/fow_test.go:160:func tierOf(eyes []province.Eye, remembered map[[2]int]bool, tile province.MapPosition, terrain string) string {
+server/api/handlers/fow_test.go:161:	if province.AnyEyeSees(eyes, tile, terrain) {
+server/api/handlers/fow_test.go:176:	if got := tierOf(eyes, remembered, province.MapPosition{Q: 3, R: 0}, "plains"); got != "live" {
+server/api/handlers/fow_test.go:179:	if got := tierOf(eyes, remembered, province.MapPosition{Q: 4, R: 0}, "plains"); got != "fog" {
+server/api/handlers/fow_test.go:189:	if got := tierOf(eyes, remembered, province.MapPosition{Q: 2, R: 0}, "plains"); got != "live" {
+server/api/handlers/fow_test.go:192:	if got := tierOf(eyes, remembered, province.MapPosition{Q: 3, R: 0}, "plains"); got != "fog" {
+server/api/handlers/fow_test.go:210:	if got := tierOf(eyes, remembered, province.MapPosition{Q: 0, R: 4}, "coastal_sea"); got != "live" {
+server/api/handlers/fow_test.go:213:	if got := tierOf(eyes, remembered, province.MapPosition{Q: 1, R: 0}, "plains"); got != "live" {
+server/api/handlers/fow_test.go:216:	if got := tierOf(eyes, remembered, province.MapPosition{Q: 2, R: 0}, "plains"); got != "fog" {
+server/api/handlers/fow_test.go:226:	if got := tierOf(eyes, remembered, province.MapPosition{Q: 5, R: 0}, "mountain_limestone"); got != "live" {
+server/api/handlers/fow_test.go:229:	if got := tierOf(eyes, remembered, province.MapPosition{Q: 6, R: 0}, "mountain_limestone"); got != "fog" {
+server/api/handlers/fow_test.go:235:// a tile once live-seen (and therefore persisted to player_scouted_tiles) stays
+server/api/handlers/fow_test.go:237:// anymore. This is what loadRememberedTiles supplies.
+server/api/handlers/fow_test.go:246:	if got := tierOf(eyes, remembered, tile, "plains"); got != "remembered" {
+server/api/handlers/fow_test.go:262:	if tierOf(eyes, remembered, tile, "plains") != "remembered" {
+server/api/handlers/fow_test.go:265:	// The Marches/MapTrades/MapMessengers gate is province.AnyEyeSees directly
+server/api/handlers/fow_test.go:267:	if province.AnyEyeSees(eyes, tile, "plains") {
+server/api/handlers/fow_test.go:276:// reachable — loadVisibleOrigins includes player_scouted_tiles/provinces and
+server/api/handlers/provinces_burning_test.go:67:		`INSERT INTO player_scouted_tiles (world_id, player_id, q, r) VALUES ($1, $2, 6, 0)`,
+server/internal/province/sea_horizon_test.go:53:		if AnyEyeSees(eyes, lake, "coastal_sea") {
+server/internal/province/sea_horizon_test.go:57:	if !AnyEyeSees(eyes, MapPosition{Q: 32, R: 18}, "deep_sea") {
+server/internal/province/sea_horizon_test.go:75:			if !AnyEyeSees(eyes, target, "coastal_sea") {
+server/internal/province/sea_horizon_test.go:79:		if AnyEyeSees(eyes, MapPosition{Q: 5, R: 0}, "coastal_sea") {
+server/internal/province/sea_horizon_test.go:93:		if AnyEyeSees(eyes, behind, "deep_sea") {
+server/internal/province/sea_horizon_test.go:97:	if !AnyEyeSees(eyes, MapPosition{Q: 1, R: 0}, "deep_sea") {
+server/internal/province/sea_horizon_test.go:100:	if !AnyEyeSees(eyes, MapPosition{Q: 0, R: 4}, "deep_sea") {
+server/internal/province/sea_horizon_test.go:115:	if !AnyEyeSees(eyes, MapPosition{Q: 2, R: 0}, "coastal_sea") {
+server/internal/province/sea_horizon_test.go:118:	if AnyEyeSees(eyes, MapPosition{Q: 3, R: 0}, "coastal_sea") {
+server/internal/province/sea_horizon_test.go:136:	if AnyEyeSees(eyes, MapPosition{Q: 4, R: 0}, "coastal_sea") {
+server/internal/province/sea_horizon_test.go:145:	if AnyEyeSees([]Eye{{Pos: MapPosition{}, Kind: EyeShip}}, far, "deep_sea") {
+server/internal/province/sea_horizon_test.go:149:	if AnyEyeSees(unknown, far, "deep_sea") {
+server/api/handlers/settlement_placement.go:201:	remembered := loadRememberedTiles(r.Context(), h.pool, worldID, playerID)
+server/api/handlers/settlement_placement.go:599:		remembered := loadRememberedTiles(r.Context(), h.pool, worldID, playerID)
+server/internal/province/hex.go:128:// is the one sight test — AnyEyeSees and SweepLiveRadius both go through it.
+server/internal/province/hex.go:137:// AnyEyeSees returns true if target (of targetTerrain) is within live vision of any
+server/internal/province/hex.go:139:func AnyEyeSees(eyes []Eye, target MapPosition, targetTerrain string) bool {
+server/api/handlers/unit_march_preview.go:80:		return province.AnyEyeSees(eyes, target, terrain) || loadRememberedTiles(fctx, h.pool, worldID, playerID)[[2]int{target.Q, target.R}]
+server/internal/province/contacts.go:51:		     FROM player_scouted_provinces sp
+server/internal/province/contacts.go:56:		     SELECT q, r FROM player_scouted_tiles WHERE world_id = $1 AND player_id = $2
+server/api/handlers/messenger_passage_arrange_test.go:657:	// scouts it: no player_scouted_tiles row is ever written for it, exactly
+server/api/handlers/place_names_test.go:48:			if _, err := pool.Exec(ctx, `INSERT INTO player_scouted_tiles(world_id,player_id,q,r) VALUES($1,$2,$3,0)`, wid, viewer, spec.q+i); err != nil {
+server/api/handlers/place_names_test.go:186:	if _, err := n.pool.Exec(ctx, `DELETE FROM player_scouted_tiles WHERE world_id=$1`, n.world); err != nil {
+server/internal/province/hex_test.go:47:// TestAnyEyeSees_ShipSeesFarOverSeaButNotInland verifies the ship's asymmetric
+server/internal/province/hex_test.go:49:func TestAnyEyeSees_ShipSeesFarOverSeaButNotInland(t *testing.T) {
+server/internal/province/hex_test.go:62:	if !AnyEyeSees(eyes, seaTile, "coastal_sea") {
+server/internal/province/hex_test.go:67:	if !AnyEyeSees(eyes, landNear, "plains") {
+server/internal/province/hex_test.go:72:	if AnyEyeSees(eyes, landFar, "plains") {
+server/internal/province/hex_test.go:77:// TestAnyEyeSees_SettlementLandRadiusThreeNotFour is the exact regression the
+server/internal/province/hex_test.go:79:func TestAnyEyeSees_SettlementLandRadiusThreeNotFour(t *testing.T) {
+server/internal/province/hex_test.go:83:	if !AnyEyeSees(eyes, within, "plains") {
+server/internal/province/hex_test.go:88:	if AnyEyeSees(eyes, beyond, "plains") {
+server/internal/province/hex_test.go:93:// TestAnyEyeSees_LandUnitRadiusTwo verifies the locked default (land-unit = 2, not 1).
+server/internal/province/hex_test.go:94:func TestAnyEyeSees_LandUnitRadiusTwo(t *testing.T) {
+server/internal/province/hex_test.go:98:	if !AnyEyeSees(eyes, within, "plains") {
+server/internal/province/hex_test.go:103:	if AnyEyeSees(eyes, beyond, "plains") {
+server/internal/province/eyes.go:21:// contacts are NOT eyes — they are tier-2 memory (see loadRememberedTiles in
+server/internal/province/eyes.go:303:// SweepLiveRadius force-records into player_scouted_tiles every tile that a live
+server/internal/province/eyes.go:306:// applies via AnyEyeSees. /map normally does this memory-write itself on every read (see
+server/internal/province/eyes.go:333:// seen, whether or not it was already in player_scouted_tiles.
+server/internal/province/eyes.go:382:		if !AnyEyeSees(eyes, target, t) {
+server/internal/province/eyes.go:393:		`INSERT INTO player_scouted_tiles (world_id, player_id, q, r)
+server/internal/province/nomadic_host_vision_test.go:45:func TestAnyEyeSees_NomadicHostKeepsTheOpenHorizon(t *testing.T) {
+server/internal/province/nomadic_host_vision_test.go:54:	if !AnyEyeSees(eyes, MapPosition{Q: 4, R: 0}, "coastal_sea") {
+server/api/handlers/foreign_units.go:192:		if !province.AnyEyeSees(eyes, pos, terrain) {
+server/api/handlers/provinces_fow_test.go:8:// (loadLiveEyes + province.AnyEyeSees, per-eye-kind × per-target-terrain radius)
+server/api/handlers/provinces_fow_test.go:9:// union tier-2 remembered tiles (loadRememberedTiles). A hex could therefore get
+server/api/handlers/provinces_fow_test.go:37:	return province.AnyEyeSees(eyes, pos, terrain) || remembered[[2]int{pos.Q, pos.R}]
+server/api/handlers/provinces_fow_test.go:181:// (loadLiveEyes/AnyEyeSees ∪ loadRememberedTiles) — never a superset.
+server/api/handlers/provinces_fow_test.go:296:	remembered := loadRememberedTiles(ctx, pool, worldID, viewerID)
+server/api/handlers/unit.go:108:	// layer that owns the fog helpers — tier-1 live ∪ tier-2 remembered.
+server/api/handlers/unit.go:111:		if province.AnyEyeSees(eyes, target, terrain) {
+server/api/handlers/unit.go:114:		return loadRememberedTiles(fctx, h.pool, worldID, playerID)[[2]int{target.Q, target.R}]
+server/api/handlers/unit.go:613:		if !province.AnyEyeSees(eyes, fowTarget, destTerrain) &&
+server/api/handlers/unit.go:614:			!loadRememberedTiles(ctx, h.pool, worldID, playerID)[[2]int{newTargetQ, newTargetR}] {
+server/db/migrations/068_player_scouted_tiles.down.sql:1:DROP TABLE IF EXISTS player_scouted_tiles;
+server/api/handlers/storms.go:23:	Tier      string         `json:"tier"` // "live" | "remembered"
+server/api/handlers/storms.go:151:		return province.AnyEyeSees(eyes, province.MapPosition{Q: hx.Q, R: hx.R}, terrain[[2]int{hx.Q, hx.R}])
+server/db/migrations/068_player_scouted_tiles.up.sql:1:CREATE TABLE player_scouted_tiles (
+server/db/migrations/068_player_scouted_tiles.up.sql:9:CREATE INDEX ON player_scouted_tiles (world_id, player_id);
+server/api/handlers/river_names_test.go:50:		if _, e := pool.Exec(ctx, `INSERT INTO player_scouted_tiles(world_id,player_id,q,r) VALUES($1,$2,$3,0)`, wid, viewer, q); e != nil {
+server/api/handlers/river_names_test.go:96:	for _, tier := range []string{"live", "remembered", "fog"} {
+server/api/handlers/places.go:37:	memory := loadRememberedTiles(r.Context(), h.pool, wid, viewer)
+server/api/handlers/places.go:41:		known[pos] = memory[pos] || province.AnyEyeSees(eyes, province.MapPosition{Q: t.Q, R: t.R}, string(t.Terrain))
+server/db/migrations/040_explore_contacts.up.sql:4:CREATE TABLE player_scouted_provinces (
+server/db/migrations/040_explore_contacts.up.sql:11:CREATE INDEX ON player_scouted_provinces (world_id, player_id);
+server/api/handlers/settlement.go:1367:// player_scouted_tiles, so a retried TX is safe. A retry re-rolls the ore hex,
+server/api/handlers/settlement.go:1399:		        SELECT 1 FROM player_scouted_tiles pst
+server/api/handlers/settlement.go:1429:		`INSERT INTO player_scouted_tiles (world_id, player_id, q, r)
+server/db/migrations/070_gossip_rumour_tiers.up.sql:10:-- Rumour-known settlements: a fourth, weaker knowledge tier (seen/live > remembered
+server/db/migrations/104_world_cascade.down.sql:15:ALTER TABLE player_scouted_tiles DROP CONSTRAINT player_scouted_tiles_world_id_fkey;
+server/db/migrations/104_world_cascade.down.sql:16:ALTER TABLE player_scouted_provinces DROP CONSTRAINT player_scouted_provinces_world_id_fkey;
+server/db/migrations/040_explore_contacts.down.sql:1:DROP TABLE IF EXISTS player_scouted_provinces;
+server/db/migrations/104_world_cascade.proof.sh:12:#         known_settlements/player_scouted_provinces blockerar via sina
+server/db/migrations/104_world_cascade.proof.sh:19:#         player_scouted_tiles, scheduled_events. (loyalty_events råkar
+server/db/migrations/104_world_cascade.proof.sh:92:INSERT INTO player_scouted_provinces (world_id, player_id, province_id)
+server/db/migrations/104_world_cascade.proof.sh:95:INSERT INTO player_scouted_tiles (world_id, player_id, q, r)
+server/db/migrations/104_world_cascade.proof.sh:114:UNION ALL SELECT 'player_scouted_provinces', count(*) FROM player_scouted_provinces WHERE world_id = '${world}'
+server/db/migrations/104_world_cascade.proof.sh:115:UNION ALL SELECT 'player_scouted_tiles', count(*) FROM player_scouted_tiles WHERE world_id = '${world}'
+server/db/migrations/104_world_cascade.proof.sh:145:psql_c -c "DELETE FROM player_scouted_provinces WHERE world_id = '${WORLD_RED}';"
+server/db/migrations/104_world_cascade.proof.sh:151:echo "Rader kvar efter radering (RÖTT — ska vara >0 i build_queue/events/gossip_events/player_scouted_tiles/scheduled_events):"
+server/db/migrations/104_world_cascade.up.sql:47:DELETE FROM player_scouted_provinces WHERE world_id NOT IN (SELECT id FROM worlds);
+server/db/migrations/104_world_cascade.up.sql:48:DELETE FROM player_scouted_tiles WHERE world_id NOT IN (SELECT id FROM worlds);
+server/db/migrations/104_world_cascade.up.sql:71:ALTER TABLE player_scouted_provinces
+server/db/migrations/104_world_cascade.up.sql:72:    ADD CONSTRAINT player_scouted_provinces_world_id_fkey
+server/db/migrations/104_world_cascade.up.sql:75:ALTER TABLE player_scouted_tiles
+server/db/migrations/104_world_cascade.up.sql:76:    ADD CONSTRAINT player_scouted_tiles_world_id_fkey

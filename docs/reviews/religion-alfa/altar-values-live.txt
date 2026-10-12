@@ -1,0 +1,31 @@
+Read-only dev DB at 10.0.1.92; queries issued under BEGIN READ ONLY; no credentials in artifact.
+BEGIN
+                  id                  | status | current_tick
+--------------------------------------+--------+--------------
+ f7c90afa-4653-46a6-b14c-473a268efa3e | active |          150
+(1 row)
+
+  key   |     base_value     |    divine_value    | calc_tick
+--------+--------------------+--------------------+-----------
+ fish   |              172.8 |             293.76 |       150
+ grain  | 129.60000000000002 | 220.32000000000002 |       150
+ oil    |               86.4 |             146.88 |       150
+ silver |                  1 |                1.7 |       150
+ timber |                864 |             1468.8 |       150
+ wine   |                 72 | 122.39999999999999 |       150
+(6 rows)
+
+    terrain_type    | good_key |    rate_per_tick
+--------------------+----------+---------------------
+ coastal_sea        | fish     |                   1
+ deep_sea           | fish     | 0.16666666666666663
+ river              | fish     |                 0.5
+ river_ford         | fish     |                 0.5
+ hills              | grain    | 0.33333333333333326
+ plains             | grain    |  0.9999999999999999
+ river_delta        | grain    |   2.666666666666666
+ river_valley       | grain    |  1.6666666666666665
+ forest_olive_grove | timber   |                   1
+(9 rows)
+
+COMMIT

@@ -1,0 +1,80 @@
+server/internal/messenger/return_leg.go:101:	// Give the return leg its own time window: return_departs_at = now,
+server/internal/messenger/return_leg.go:107:		        return_departs_at = $2, arrives_at = $3,
+server/internal/messenger/call_back.go:134:		        return_departs_at = $2, arrives_at = $3,
+server/api/handlers/unit.go:178:		"departs_at": res.DepartsAt,
+server/api/handlers/unit.go:270:			"unit_id": res.UnitID, "departs_at": res.DepartsAt, "arrives_at": res.ArrivesAt,
+server/api/handlers/unit.go:302:		`SELECT fp.host_unit_id, u.status, u.category, u.q, u.r, u.target_q, u.target_r, u.departs_at, u.arrives_at,
+server/api/handlers/unit.go:489:		`INSERT INTO messengers
+server/api/handlers/unit.go:2194:	// along its route (same as marches/messengers/trades); without departs_at a
+server/api/handlers/unit.go:2196:	DepartsAt *time.Time `json:"departs_at,omitempty"`
+server/internal/economy/trade.go:428:				`INSERT INTO transports
+server/internal/economy/trade.go:430:				    origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick, interceptable, ship_unit_id, journey, departed_tick)
+server/internal/economy/trade.go:584:		`INSERT INTO transports
+server/internal/economy/trade.go:586:		    origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick,
+server/internal/messenger/passage.go:64:	// naval transport's departs_at (a wall-clock timestamp; transports carry
+server/internal/messenger/passage.go:684:// wall-clock departs_at), so "just departed" is a small window of the last
+server/internal/messenger/passage.go:692:		    AND category = 'naval' AND departs_at >= $2`,
+server/api/handlers/settlement.go:618:	transportID, err2 := transport.Dispatch(r.Context(), tx, h.scheduler, transport.DispatchParams{
+server/api/handlers/messenger.go:507:			`INSERT INTO messengers (world_id, sender_id, origin_id, destination_id, message_text, trade_offer, hex_q, hex_r, arrives_at, expires_at, passage_status, passage_port_id, passage_since_tick)
+server/api/handlers/messenger.go:541:			`INSERT INTO messengers (world_id, sender_id, origin_id, destination_id, message_text, trade_offer, hex_q, hex_r, arrives_at, expires_at, passage_status, passage_port_id, passage_since_tick)
+server/api/handlers/messenger.go:672:		`INSERT INTO messengers (world_id, sender_id, origin_unit_id, origin_q, origin_r, destination_id, message_text, hex_q, hex_r, arrives_at, passage_status, passage_port_id, passage_since_tick)
+server/api/handlers/messenger.go:1270:		leg1ID, tErr := transport.CreateShadow(r.Context(), tx, transport.DispatchParams{
+server/api/handlers/messenger.go:1405:		leg1ID, tErr := transport.CreateShadow(r.Context(), tx, transport.DispatchParams{
+server/api/handlers/map_actor_routes.go:108:		if err := h.pool.QueryRow(ctx, `SELECT march_route,depart_tick,arrive_tick,status FROM units WHERE id=$1 AND world_id=$2`, *carrierUnit, worldID).Scan(&raw, &start, &end, &status); err != nil {
+server/api/handlers/foreign_units.go:131:		        u.target_q, u.target_r, u.departs_at, u.arrives_at, u.depart_tick, u.arrive_tick,
+server/api/handlers/province.go:3443:	transportID, err := transport.CreateShadow(r.Context(), tx, transport.DispatchParams{
+server/api/handlers/province.go:3639:		`SELECT tr.id, ds.name, tr.good_key, tr.quantity, tr.departs_at, tr.arrives_at,
+server/api/handlers/province.go:3663:		DepartsAt    time.Time `json:"departs_at"`
+server/api/handlers/province.go:3688:			`SELECT tr.id, os.name, tr.good_key, tr.quantity, tr.departs_at, tr.arrives_at,
+server/internal/combat/standing_orders.go:502:	if _, err := transport.Dispatch(ctx, tx, h.scheduler, transport.DispatchParams{
+server/internal/combat/standing_orders.go:687:	if _, err := transport.Dispatch(ctx, tx, h.scheduler, transport.DispatchParams{
+server/api/handlers/messenger_passage.go:213:		"departs_at":     res.DepartsAt,
+server/internal/combat/march_encounter.go:183:		`SELECT id, owner_id, type, size, q, r, target_q, target_r, departs_at, arrives_at, category
+server/internal/combat/march_encounter.go:188:		   AND departs_at IS NOT NULL AND arrives_at IS NOT NULL
+server/internal/combat/march_encounter.go:372:			   departs_at    = NULL,
+server/api/handlers/world.go:1108:		        ma.departs_at, ma.arrives_at, ma.depart_tick, ma.arrive_tick,
+server/api/handlers/world.go:1131:		DepartsAt time.Time `json:"departs_at"`
+server/api/handlers/world.go:1265:		        t.departs_at, t.arrives_at, t.category, COALESCE(pl.wanax_name, pl.username, ''), t.journey, t.departed_tick, t.due_tick,
+server/api/handlers/world.go:1301:		DepartsAt     time.Time  `json:"departs_at"`
+server/api/handlers/world.go:1475:		        m.sent_at, m.arrives_at, m.status, m.return_departs_at,
+server/api/handlers/world.go:1600:		// starts at return_departs_at, not the original outbound sent_at.
+server/api/handlers/world.go:1605:		// (and their terrain) and use return_departs_at as the leg's start; the
+server/internal/combat/ship_hull.go:374:		   departs_at         = now(),
+server/internal/combat/ship_hull.go:390:		   march_route        = $11,
+server/internal/combat/march_sighting.go:136:		        u.departs_at, u.arrives_at, u.arrive_tick, u.depart_tick
+server/internal/combat/march_sighting.go:142:		   AND u.departs_at IS NOT NULL AND u.arrives_at IS NOT NULL`,
+server/internal/combat/march_sighting.go:211:		// march by the same unit gets a new departs_at and therefore a new key,
+server/internal/combat/unit_arrival_field.go:100:		   departs_at    = NULL,
+server/internal/combat/expedition_outcomes.go:101:	if _, err := tx.Exec(ctx, `UPDATE units SET status='positioned', q=$2, r=$3, settlement_id=NULL, home_settlement_id=NULL, target_q=NULL, target_r=NULL, departs_at=NULL, arrives_at=NULL, depart_tick=NULL, arrive_tick=NULL, march_intent=NULL, march_route=NULL, updated_at=now() WHERE id=$1`, u.id, q, r); err != nil {
+server/internal/transport/intercept.go:149:		`SELECT id, owner_id, origin_id, origin_q, origin_r, dest_q, dest_r, category, departs_at, arrives_at, ship_unit_id, journey, departed_tick, due_tick
+server/internal/transport/transport.go:92:func CreateShadow(ctx context.Context, tx pgx.Tx, p DispatchParams) (uuid.UUID, error) {
+server/internal/transport/transport.go:107:		`INSERT INTO transports
+server/internal/transport/transport.go:109:		    origin_q, origin_r, dest_q, dest_r, departs_at, arrives_at, due_tick, interceptable,
+server/internal/combat/upkeep_carrier_fate.go:25:	if err := tx.QueryRow(ctx, `SELECT status,settlement_id,q,r,target_q,target_r,march_route,depart_tick,arrive_tick,departs_at,arrives_at FROM units WHERE id=$1 AND world_id=$2 FOR UPDATE`, u.id, world).Scan(&state.status, &state.settlement, &state.q, &state.r, &state.tq, &state.tr, &state.route, &state.departTick, &state.arriveTick, &state.departs, &state.arrives); err != nil {
+server/internal/combat/upkeep_carrier_fate.go:90:		err := tx.QueryRow(ctx, `SELECT journey,departed_tick,due_tick,origin_q,origin_r,dest_q,dest_r,departs_at,arrives_at FROM transports WHERE ship_unit_id=$1 AND world_id=$2 AND status='in_transit' ORDER BY due_tick,id LIMIT 1`, ship, world).Scan(&raw, &departure, &due, &oq, &or, &dq, &dr, &departs, &arrives)
+server/internal/combat/unit_intercept_scan.go:118:		`SELECT id, owner_id, type, category, size, q, r, target_q, target_r, departs_at, arrives_at, depart_tick
+server/internal/combat/unit_intercept_scan.go:123:		   AND departs_at IS NOT NULL AND arrives_at IS NOT NULL`,
+server/internal/combat/unit_intercept_scan.go:210:		// departs_at (unit/model.go). Fail closed rather than guess a guard key.
+server/internal/combat/unit_intercept_scan.go:316:		   departs_at    = NULL,
+server/internal/combat/place_reach.go:135:	rows, err := tx.Query(ctx, `SELECT t.id,t.owner_id,COALESCE(u.name,''),COALESCE(u.type,'caravan'),t.kind,t.journey,t.departed_tick,t.due_tick,t.departs_at,t.ship_unit_id FROM transports t LEFT JOIN units u ON u.id=t.ship_unit_id WHERE t.world_id=$1 AND t.status='in_transit' AND t.journey IS NOT NULL AND t.departed_tick IS NOT NULL ORDER BY t.id FOR UPDATE OF t`, worldID)
+server/internal/combat/place_reach.go:173:	rows, err = tx.Query(ctx, `SELECT id,owner_id,COALESCE(name,''),type,march_route,depart_tick,arrive_tick,departs_at FROM units WHERE world_id=$1 AND status='marching' AND size>0 AND march_route IS NOT NULL ORDER BY id FOR UPDATE`, worldID)
+server/internal/combat/recall_redirect.go:89:		`SELECT owner_id, type, category, status, q, r, crew, target_q, target_r, departs_at, arrives_at, march_intent, colony_name, cargo_unit_id, depart_tick, arrive_tick, march_route, home_settlement_id
+server/internal/combat/recall_redirect.go:214:		   departs_at   = $6,
+server/internal/combat/recall_redirect.go:220:		   march_route  = $12,
+server/internal/combat/occupation.go:218:			   departs_at    = NULL,
+server/internal/combat/occupation.go:779:	if _, err := transport.Dispatch(ctx, tx, scheduler, transport.DispatchParams{
+server/internal/combat/march_start.go:1063:		   departs_at   = $6,
+server/internal/combat/march_start.go:1079:		   march_route  = $21,
+server/internal/combat/unit_arrival.go:41:// computes their interpolated hex from departs_at/arrives_at on a straight line,
+server/internal/combat/unit_arrival.go:468:		   departs_at    = NULL,
+server/internal/combat/unit_arrival.go:795:		   departs_at   = NULL,
+server/internal/combat/unit_arrival.go:914:		   departs_at   = NULL,
+server/internal/combat/unit_arrival.go:1157:		   departs_at         = NULL,
+server/internal/combat/unit_arrival.go:1559:		   departs_at    = now(),
+server/internal/combat/unit_arrival.go:1575:		   march_route   = $11,
+server/internal/combat/unit_arrival.go:1644:		   departs_at         = NULL,
+server/internal/combat/unit_arrival.go:1713:		   departs_at         = NULL,
+server/internal/combat/unit_arrival.go:1782:		   departs_at   = NULL,
+server/internal/combat/unit_arrival.go:2058:		   departs_at    = NULL,
+server/internal/combat/unit_arrival.go:2199:		   departs_at    = NULL,
+server/internal/combat/unit_arrival.go:2322:		   departs_at = NULL, arrives_at = NULL, depart_tick = NULL, arrive_tick = NULL, updated_at = now()

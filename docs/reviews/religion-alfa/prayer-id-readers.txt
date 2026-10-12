@@ -1,0 +1,59 @@
+Base: 6f89290b
+Command: rg -n RiteCast|prayer_id|payload->>'prayer'|minoan_oracle_deposits|minoan_harvest_blessing|minoan_battle_frenzy|DefaultBattleFrenzyFor|CulturePrayers server web tools
+
+tools/snapshot.py:156:      AND event_type = 'RiteCast'
+tools/offer_fixture.py:21:s={'world':world,'province':pid,'settlement':sid,'viewer':owner,'username':username,'name':'Mycenae','prayer_ids':[p['id'] for p in prayers],'fixture':'own freshly registered/joined test player; explicit SQL temple/city/stock/kharis setup in active isolated world, actual API/FOW; not natural temple founding/production; Offer action uses native web/API with no SQL writes'}
+tools/offer_proof.py:38:  facts['captures'].append({'mode':mode,'composer_count':composer,'numeric_count':numbers,'errors':list(errors),'prayer_ids':page.locator('#kult-body button[onclick^="okRite("]').evaluate_all('(els)=>els.map(e=>e.getAttribute("onclick"))')})
+tools/offer_proof.py:40:   prayer=next(x for x in s['prayer_ids'] if 'oracle' in x)
+web/static/js/megaron/verb_telemetry.js:67:const RITES = ["akhaier_oracle_deposits", "akhaier_harvest_blessing", "akhaier_battle_frenzy", "khemetiu_oracle_deposits", "khemetiu_harvest_blessing", "khemetiu_battle_frenzy", "knaani_oracle_deposits", "knaani_harvest_blessing", "knaani_battle_frenzy", "thrakes_oracle_deposits", "thrakes_harvest_blessing", "thrakes_battle_frenzy", "minoan_oracle_deposits", "minoan_harvest_blessing", "minoan_battle_frenzy", "hatti_oracle_deposits", "hatti_harvest_blessing", "hatti_battle_frenzy"];
+web/static/js/megaron/verb_telemetry.test.mjs:135:    ['settlements/:id/rite', { prayer: 'minoan_harvest_blessing' }],
+web/static/js/megaron/verb_telemetry.test.mjs:137:  assert.deepEqual(events.map(event => event.props), [{ building: 'farm' }, { unit: 'galley' }, { intent: 'explore' }, { rite: 'minoan_harvest_blessing' }]);
+server/cmd/keryx/cmd_rite.go:192:				confirmed, err := confirmRiteCast(c, markers, settlementID, prayerID, offerMultiplier)
+server/cmd/keryx/cmd_rite.go:287:// confirmRiteCast fetches the target settlement's live mood + the chosen prayer's
+server/cmd/keryx/cmd_rite.go:292:func confirmRiteCast(c *Client, markers []map[string]any, settlementID, prayerID string, offerMultiplier float64) (bool, error) {
+server/cmd/keryx/cmd_rite.go:324:	// culture's battle_frenzy default (mirrors religion.DefaultBattleFrenzyFor
+server/internal/capabilities/cult_verbs.go:15:	prayerID := religion.DefaultBattleFrenzyFor(culture)
+server/internal/religion/prayers_test.go:16:	for culture, ids := range CulturePrayers {
+server/internal/religion/prayers_test.go:44:		if _, ok := CulturePrayers[c]; !ok {
+server/internal/religion/prayers_test.go:52:	for culture, ids := range CulturePrayers {
+server/internal/religion/prayers_test.go:77:// TestDefaultBattleFrenzyFor verifies the backward-compat lookup.
+server/internal/religion/prayers_test.go:78:func TestDefaultBattleFrenzyFor(t *testing.T) {
+server/internal/religion/prayers_test.go:79:	for culture := range CulturePrayers {
+server/internal/religion/prayers_test.go:80:		id := DefaultBattleFrenzyFor(culture)
+server/internal/religion/prayers_test.go:83:			t.Errorf("DefaultBattleFrenzyFor(%q) = %q, not in PrayerSpecs", culture, id)
+server/internal/religion/prayers_test.go:87:			t.Errorf("DefaultBattleFrenzyFor(%q): spec.EffectType = %q, want %q", culture, spec.EffectType, EffectBattleFrenzy)
+server/internal/religion/prayers_test.go:119:		{"minoan_oracle_deposits", EffectOracleRevealDeposits},
+server/internal/religion/prayers_test.go:120:		{"minoan_battle_frenzy", EffectBattleFrenzy},
+server/internal/religion/prayers_test.go:155:		{"minoan_oracle_deposits", EffectOracleRevealDeposits},
+server/internal/religion/prayers_test.go:156:		{"minoan_battle_frenzy", EffectBattleFrenzy},
+server/internal/religion/prayers_test.go:177:		if id == "minoan_oracle_deposits" || id == "minoan_battle_frenzy" {
+server/internal/religion/prayers.go:200:	"minoan_oracle_deposits": {
+server/internal/religion/prayers.go:201:		ID: "minoan_oracle_deposits", EffectType: EffectOracleRevealDeposits,
+server/internal/religion/prayers.go:208:	"minoan_harvest_blessing": {
+server/internal/religion/prayers.go:209:		ID: "minoan_harvest_blessing", EffectType: EffectHarvestBlessing,
+server/internal/religion/prayers.go:215:	"minoan_battle_frenzy": {
+server/internal/religion/prayers.go:216:		ID: "minoan_battle_frenzy", EffectType: EffectBattleFrenzy,
+server/internal/religion/prayers.go:248:// CulturePrayers maps a culture key to its allowed prayer IDs.
+server/internal/religion/prayers.go:250:var CulturePrayers = map[string][]string{
+server/internal/religion/prayers.go:255:	"minoan":   {"minoan_oracle_deposits", "minoan_harvest_blessing", "minoan_battle_frenzy"},
+server/internal/religion/prayers.go:261:	for _, id := range CulturePrayers[culture] {
+server/internal/religion/prayers.go:269:// DefaultBattleFrenzyFor returns the battle_frenzy prayer ID for a culture.
+server/internal/religion/prayers.go:271:func DefaultBattleFrenzyFor(culture string) string {
+server/api/handlers/settlement_test.go:90:		ids := religion.CulturePrayers[culture]
+server/api/handlers/settlement_test.go:109:	for culture := range religion.CulturePrayers {
+server/api/handlers/settlement_test.go:110:		id := religion.DefaultBattleFrenzyFor(culture)
+server/api/handlers/settlement_test.go:113:			t.Errorf("DefaultBattleFrenzyFor(%q) = %q not found in PrayerSpecs", culture, id)
+server/api/handlers/rite_harvest_outcome_test.go:99:	spec := religion.PrayerSpec{ID: "minoan_harvest_blessing", EffectType: religion.EffectHarvestBlessing, God: "Poseidon"}
+server/api/handlers/province.go:534:		for _, pid := range religion.CulturePrayers[string(sett.CultureID)] {
+server/api/handlers/province.go:553:					   AND event_type = 'RiteCast'
+server/api/handlers/province.go:555:					   AND payload->>'prayer' = $3
+server/api/handlers/settlement.go:932:// Body: {"prayer":"<prayer_id>","target":"<optional uuid>","offer_multiplier":<optional float>}.
+server/api/handlers/settlement.go:944:// Outcome is rolled once in the handler and stored in the RiteCast event (Fas 2.3).
+server/api/handlers/settlement.go:1000:		prayerID = religion.DefaultBattleFrenzyFor(cultureID)
+server/api/handlers/settlement.go:1063:	// Cooldown check: query last successful RiteCast for this (player, prayer, temple) from events table.
+server/api/handlers/settlement.go:1072:			   AND event_type = 'RiteCast'
+server/api/handlers/settlement.go:1074:			   AND payload->>'prayer' = $3
+server/api/handlers/settlement.go:1225:	// Emit RiteCast event AFTER commit (event store uses pool, not the now-committed TX).
+server/api/handlers/settlement.go:1244:	_, _ = h.eventStore.Append(r.Context(), settlementID, events.StreamReligion, "RiteCast",
+server/api/handlers/settlement.go:1351:// Payload (nested under "effect" in the RiteCast event):
+server/api/handlers/settlement.go:1360:// reinterpreting keeps every historical RiteCast event readable as what it meant

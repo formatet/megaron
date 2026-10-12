@@ -1,0 +1,11 @@
+{
+  "observed_at": "2026-10-12 18:45",
+  "healthz": {
+    "commit": "6f89290",
+    "migration": 174,
+    "status": "ok"
+  },
+  "db_read_only": true,
+  "host": "10.0.1.92",
+  "no_db_mutations": true
+}
