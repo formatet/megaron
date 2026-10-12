@@ -3,8 +3,8 @@ package religion
 import "testing"
 
 func TestAlphaCatalogueAndSilverFloor(t *testing.T) {
-	if len(CulturePrayers["minoan"]) != 3 {
-		t.Fatal("checkpoint A must expose three implemented prayers")
+	if len(CulturePrayers["minoan"]) != 5 {
+		t.Fatal("checkpoint B must expose five implemented prayers")
 	}
 	for _, id := range []string{PrayerPotniaVision, PrayerPotniaWalls, PrayerGreenShoots, PrayerAsterionThread, PrayerStillnessPassage} {
 		spec, ok := PrayerSpecs[id]

@@ -148,21 +148,22 @@ async function castRite(prayerID) {
 
 // Server-owned waiting/active state gates the same Offer button the drawer uses.
 export function prayerStatusHTML(p, frenzyActive = false, frenzyUntil = null) {
-        const onCooldown = p.cooldown_remaining_game_days > 0;
-        let statusHtml;
-        if (p.active_remaining_game_days > 0) {
- statusHtml = `<span class="empty-state">active — ${esc(fmtDays(p.active_remaining_game_days))} left</span>`;
- } else if (p.effect_type === 'battle_frenzy' && frenzyActive) {
-          // frenzyActive already guards ms > 0 here, so the doneWord branch
-          // is unreachable — 'expired' is defensive, matching diplomacy's
-          // offer-countdown wording rather than the arrival default.
-          statusHtml = `<span style="color:var(--safe);font-size:.72rem">active — expires ${fmtEta(frenzyUntil, undefined, 'expired')}</span>`;
-        } else if (onCooldown) {
-          statusHtml = `<span style="color:var(--text-dim);font-size:.72rem">on cooldown — ${esc(fmtDays(p.cooldown_remaining_game_days))}</span>`;
-        } else if (!p.affordable) {
-          statusHtml = `<span style="color:var(--text-dim);font-size:.72rem">not affordable</span>`;
-        } else {
-          statusHtml = `<button class="obj-cta btn-small" onclick="okRite('${p.id}')">Offer</button>`;
-        }
- return statusHtml;
+  const waitDays = p.cooldown_remaining_game_days || 0;
+  if (p.departure_pending) {
+    const waiting = waitDays > 0 ? `; god waits ${esc(fmtDays(waitDays))}` : '';
+    return `<span class="empty-state">awaiting next departure${waiting}</span>`;
+  }
+  if (p.active_remaining_game_days > 0) {
+    return `<span class="empty-state">active — ${esc(fmtDays(p.active_remaining_game_days))} left</span>`;
+  }
+  if (p.effect_type === 'battle_frenzy' && frenzyActive) {
+    return `<span style="color:var(--safe);font-size:.72rem">active — expires ${fmtEta(frenzyUntil, undefined, 'expired')}</span>`;
+  }
+  if (waitDays > 0) {
+    return `<span style="color:var(--text-dim);font-size:.72rem">on cooldown — ${esc(fmtDays(waitDays))}</span>`;
+  }
+  if (!p.affordable) {
+    return '<span style="color:var(--text-dim);font-size:.72rem">not affordable</span>';
+  }
+  return `<button class="obj-cta btn-small" onclick="okRite('${p.id}')">Offer</button>`;
 }

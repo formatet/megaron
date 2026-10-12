@@ -503,6 +503,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			Offering            map[string]float64 `json:"offering"`
 			Affordable          bool               `json:"affordable"`
 			Default             bool               `json:"is_default"`
+			DeparturePending    bool               `json:"departure_pending,omitempty"`
 			ActiveRemainingDays int                `json:"active_remaining_game_days,omitempty"`
 			// Game-days, not wall-clock minutes: CooldownTicks is a TICK count
 			// and one tick IS one day (megaron_plan_ticket_ar_dygnet). The old
@@ -590,7 +591,11 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 					afford = false
 				}
 			}
-			prayers = append(prayers, prayerRow{
+			departurePending := activeRemainingDays > 0 && (spec.EffectType == religion.EffectNextLandDeparture || spec.EffectType == religion.EffectNextShipDeparture)
+			if departurePending {
+				activeRemainingDays = 0
+			}
+			prayers = append(prayers, prayerRow{DeparturePending: departurePending,
 				ID: spec.ID, Name: spec.Name, God: spec.God, EffectType: spec.EffectType,
 				Default: spec.ID == religion.DefaultBattleFrenzyFor(string(sett.CultureID)), ActiveRemainingDays: activeRemainingDays,
 				Effect:    spec.Description,
@@ -3422,6 +3427,10 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	var tradeCurrentTick int
 	if err := tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&tradeCurrentTick); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not read current day")
+		return
+	}
+	if err := transport.BlessDeparture(r.Context(), tx, worldID, playerID, originID, &journey, true); err != nil {
+		writeError(w, 500, "could not prepare departure")
 		return
 	}
 	tradeTravelTicks := journey.TravelTicks

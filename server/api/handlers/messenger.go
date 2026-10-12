@@ -402,6 +402,21 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	tx, err := h.pool.Begin(r.Context())
+	if err != nil {
+		writeError(w, 500, "transaction error")
+		return
+	}
+	defer tx.Rollback(r.Context())
+	arrivesAt, msgArrivalDueTick, err = messenger.BlessRunner(r.Context(), tx, worldID, playerID, originID, now, msgSendCurrentTick, msgArrivalDueTick)
+	if err != nil {
+		writeError(w, 500, "could not prepare Runner departure")
+		return
+	}
+	if passage != nil {
+		passageSinceTick = msgArrivalDueTick
+	}
+
 	var tradeOfferJSON []byte
 	if req.TradeOffer != nil {
 		if req.TradeOffer.Kind == "sell" {
@@ -452,12 +467,6 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		// Trade offer: escrow atomically with the INSERT and both scheduled events
 		// so a crash can never leave goods/silver deducted without a messenger,
 		// or a messenger without an expiry that would refund on timeout.
-		tx, err := h.pool.Begin(r.Context())
-		if err != nil {
-			writeError(w, http.StatusInternalServerError, "transaction error")
-			return
-		}
-		defer tx.Rollback(r.Context())
 
 		if req.TradeOffer.Kind == "sell" {
 			// Escrow: deduct offer_qty of offer_good from the seller (origin) now.
@@ -531,13 +540,9 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		// arrival (and, for an offer, its expiry) once it boards a carrier or
 		// takes the reserve (megaron_plan_budet_liftar.md R1/R2/R5).
 
-		if err = tx.Commit(r.Context()); err != nil {
-			writeError(w, http.StatusInternalServerError, "commit failed")
-			return
-		}
 	} else {
-		// Plain message: non-transactional path unchanged.
-		err = h.pool.QueryRow(r.Context(),
+		// Plain message shares the departure transaction.
+		err = tx.QueryRow(r.Context(),
 			`INSERT INTO messengers (world_id, sender_id, origin_id, destination_id, message_text, trade_offer, hex_q, hex_r, arrives_at, expires_at, passage_status, passage_port_id, passage_since_tick)
 			 VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10, $11, $12, $13) RETURNING id`,
 			worldID, playerID, originID, destID, req.Message, tradeOfferJSON, dQ, dR, arrivesAt, expiresAt,
@@ -549,9 +554,18 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if passage == nil {
-			_ = h.scheduler.EnqueueTick(r.Context(), worldID, events.ScheduledMessengerArrival,
+			err = h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledMessengerArrival,
 				messenger.ArrivalPayload{MessengerID: messengerID}, msgArrivalDueTick)
+			if err != nil {
+				writeError(w, 500, "could not schedule Runner arrival")
+				return
+			}
 		}
+	}
+
+	if err = tx.Commit(r.Context()); err != nil {
+		writeError(w, 500, "could not commit Runner departure")
+		return
 	}
 
 	resp := map[string]any{
@@ -1208,6 +1222,10 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 	var tradeAcceptCurrentTick int
 	if err := tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&tradeAcceptCurrentTick); err != nil {
 		writeError(w, http.StatusInternalServerError, "could not read current day")
+		return
+	}
+	if err := transport.BlessDeparture(r.Context(), tx, worldID, originOwner, originID, &journey, true); err != nil {
+		writeError(w, 500, "could not prepare departure")
 		return
 	}
 	tradeAcceptDueTick := tradeAcceptCurrentTick + journey.TravelTicks

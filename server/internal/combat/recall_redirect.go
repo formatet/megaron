@@ -216,6 +216,7 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 		   march_intent = $8,
 		   colony_name  = $9,
 		   depart_tick  = $10,
+   stillness_depart_tick=NULL, stillness_arrive_tick=NULL, stillness_owner_id=NULL,
 		   arrive_tick  = $11,
 		   march_route  = $12,
 		   home_settlement_id = $13,

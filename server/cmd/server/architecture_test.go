@@ -29,11 +29,11 @@ var g1Allowed = map[string][]string{
 	"carrier":   {"events"},
 	"chronicle": {"events"}, "settlement": {"province"},
 	"economy":      {"carrier", "clock", "events", "gossip", "hexgrid", "province", "tick"},
-	"transport":    {"carrier", "clock", "events", "province", "movement", "tick"},
+	"transport":    {"religion", "carrier", "clock", "events", "province", "movement", "tick"},
 	"capabilities": {"clock", "province", "religion", "unit"},
 	"kharis":       {"ai", "clock", "economy", "events", "hexgrid", "religion", "unit"},
 	"loyalty":      {"clock", "economy", "events", "settlement", "tick"},
-	"combat":       {"carrier", "capabilities", "clock", "economy", "events", "gossip", "hexgrid", "loyalty", "movement", "province", "tick", "transport", "unit", "world"},
+	"combat":       {"religion", "carrier", "capabilities", "clock", "economy", "events", "gossip", "hexgrid", "loyalty", "movement", "province", "tick", "transport", "unit", "world"},
 	"messenger":    {"carrier", "ai", "clock", "gossip", "hexgrid", "movement", "province", "religion", "unit", "unit/shipnames", "world", "events", "tick", "chronicle", "settlement", "economy", "transport", "capabilities", "kharis", "loyalty", "combat"},
 }
 

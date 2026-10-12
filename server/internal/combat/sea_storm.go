@@ -297,10 +297,14 @@ func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTi
 		return hx, ok && occupied.at(t, hx)
 	}
 
+	var protected bool
+	if err := tx.QueryRow(ctx, `SELECT COALESCE(stillness_depart_tick=$2 AND stillness_arrive_tick=$3 AND stillness_owner_id=$4 AND owner_id=$4,false) FROM units WHERE id=$1`, v.shipID, v.departTick, v.arriveTick, v.owner).Scan(&protected); err != nil {
+		return err
+	}
 	var storms []SeaStormPayload
 	for t := last + 1; t <= dueTick; t++ {
 		hx, hit := inStorm(t)
-		if !hit {
+		if !hit || protected {
 			continue
 		}
 		// One storm is one blow: a ship that was already in a storm hex the tick

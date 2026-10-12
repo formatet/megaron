@@ -15,6 +15,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"formatet/megaron/server/internal/events"
@@ -101,6 +102,11 @@ func insertRow(ctx context.Context, tx pgx.Tx, p DispatchParams) (uuid.UUID, err
 	raw, err := json.Marshal(p.Journey)
 	if err != nil {
 		return uuid.Nil, err
+	}
+	if p.ShipUnitID != nil {
+		if _, err := tx.Exec(ctx, `UPDATE units SET stillness_depart_tick=$2,stillness_arrive_tick=$3,stillness_owner_id=$4 WHERE id=$1`, *p.ShipUnitID, nullableBlessingTick(p.Journey.Stillness, p.DepartedTick), nullableBlessingTick(p.Journey.Stillness, p.DueTick), p.OwnerID); err != nil {
+			return uuid.Nil, err
+		}
 	}
 	var id uuid.UUID
 	if err := tx.QueryRow(ctx,
@@ -194,6 +200,9 @@ func prepareJourney(ctx context.Context, tx pgx.Tx, p DispatchParams) (DispatchP
 		return p, fmt.Errorf("journey endpoints differ from transport")
 	}
 
+	if err := BlessDeparture(ctx, tx, p.WorldID, p.OwnerID, p.OriginID, p.Journey, !strings.Contains(p.Kind, "return")); err != nil {
+		return p, err
+	}
 	p.DueTick = p.DepartedTick + p.Journey.TravelTicks
 	p.ArrivesAt = p.DepartsAt.Add(tick.RealUntil(p.DueTick, p.DepartedTick))
 	// Timestamp fields are compatibility projections only; tick time owns ETA.

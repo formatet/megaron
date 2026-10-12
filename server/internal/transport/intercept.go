@@ -203,7 +203,7 @@ func (h *InterceptScanHandler) Handle(ctx context.Context, e events.ScheduledEve
 			   AND (ABS(sentry_q - $3) + ABS(sentry_r - $4) + ABS((sentry_q + sentry_r) - ($3 + $4))) / 2 <= $5
 			 ORDER BY size DESC
 			 LIMIT 1`,
-			e.WorldID, t.owner, pos.Q, pos.R, interceptRadius,
+			e.WorldID, t.owner, pos.Q, pos.R, departureInterceptRadius(t),
 		).Scan(&sentryID, &interceptor); qErr != nil {
 			continue // no intercept-policy sentry in reach
 		}

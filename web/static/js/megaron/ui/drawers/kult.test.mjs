@@ -48,3 +48,21 @@ test('Alpha: active gift shows its remaining days and cannot be offered again', 
 test('Alpha: affordable available prayer still exposes the real cast action', () => {
  assert.match(prayerStatusHTML({id:'minoan_potnia_vision_v2',affordable:true}),/okRite\('minoan_potnia_vision_v2'\).*Offer/);
 });
+
+test('Alpha B: unused departure gift remains pending after god wait expires', () => {
+  const html = prayerStatusHTML({ id: 'minoan_asterion_thread', departure_pending: true, affordable: false, cooldown_remaining_game_days: 0 });
+  assert.match(html, /awaiting next departure/);
+  assert.doesNotMatch(html, /Offer|not affordable|active|days|expires/);
+});
+
+test('Alpha B: pending ship gift shows god wait separately without a gift duration', () => {
+  const html = prayerStatusHTML({ id: 'minoan_stillness_passage', departure_pending: true, affordable: false, cooldown_remaining_game_days: 12 });
+  assert.match(html, /awaiting next departure; god waits 12 days/);
+  assert.doesNotMatch(html, /Offer|not affordable|active|left|expires/);
+});
+
+test('Alpha B: consumed departure gift waits for the god before another Offer', () => {
+  const html = prayerStatusHTML({ id: 'minoan_asterion_thread', departure_pending: false, affordable: false, cooldown_remaining_game_days: 7 });
+  assert.match(html, /on cooldown.*7 days/);
+  assert.doesNotMatch(html, /Offer|awaiting next departure|not affordable/);
+});

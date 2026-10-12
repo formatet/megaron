@@ -264,7 +264,7 @@ func init() {
 	PrayerSpecs[PrayerPotniaWalls] = PrayerSpec{ID: PrayerPotniaWalls, GodID: "potnia", EffectType: EffectGarrisonDefense, MinKharis: MoodSuspicious, Offering: map[string]float64{"grain": 3, "timber": 1}, CooldownTicks: 24, God: "Potnia", Name: "Mistress of the Walls", Description: "Your own garrison defending this city fights a quarter stronger for 6 days.", Favours: favoursByEffect[EffectBattleFrenzy]}
 	PrayerSpecs[PrayerGreenShoots] = PrayerSpec{ID: PrayerGreenShoots, GodID: "velchanos", EffectType: EffectHarvestBlessing, MinKharis: MoodIndifferent, Offering: map[string]float64{"grain": 2, "silver": 2}, CooldownTicks: 25, God: "Velchanos", Name: "Green Shoots", Description: "Grain, livestock, oil and wine yield a quarter more for 25 days; fish is unchanged."}
 	PrayerSpecs[PrayerAsterionThread] = PrayerSpec{ID: PrayerAsterionThread, GodID: "asterion", EffectType: EffectNextLandDeparture, MinKharis: MoodSuspicious, Offering: map[string]float64{"timber": 1, "silver": 2}, CooldownTicks: 12, God: "Asterion", Name: "The Thread Shows a Path", Description: "Your next land caravan or Runner from this city travels faster; the caravan is harder to intercept."}
-	PrayerSpecs[PrayerStillnessPassage] = PrayerSpec{ID: PrayerStillnessPassage, GodID: "sea_daimons_stillness", EffectType: EffectNextShipDeparture, MinKharis: MoodSuspicious, Offering: map[string]float64{"fish": 2, "silver": 3}, CooldownTicks: 12, God: "Havsdaimonerna in Stillness", Name: "Favourable Passage", Description: "The next ship leaving this port sails faster and takes no storm damage on its outward leg."}
+	PrayerSpecs[PrayerStillnessPassage] = PrayerSpec{ID: PrayerStillnessPassage, GodID: "sea_daimons_stillness", EffectType: EffectNextShipDeparture, MinKharis: MoodSuspicious, Offering: map[string]float64{"fish": 2, "silver": 3}, CooldownTicks: 12, God: "The Sea Daimons of Stillness", Name: "Favourable Passage", Description: "The next ship leaving this port sails faster and takes no storm damage on its outward leg."}
 }
 
 // CulturePrayers maps a culture key to its allowed prayer IDs.
@@ -274,7 +274,7 @@ var CulturePrayers = map[string][]string{
 	"khemetiu": {"khemetiu_oracle_deposits", "khemetiu_harvest_blessing", "khemetiu_battle_frenzy"},
 	"knaani":   {"knaani_oracle_deposits", "knaani_harvest_blessing", "knaani_battle_frenzy"},
 	"thrakes":  {"thrakes_oracle_deposits", "thrakes_harvest_blessing", "thrakes_battle_frenzy"},
-	"minoan":   {PrayerPotniaVision, PrayerPotniaWalls, PrayerGreenShoots},
+	"minoan":   {PrayerPotniaVision, PrayerPotniaWalls, PrayerGreenShoots, PrayerAsterionThread, PrayerStillnessPassage},
 	"hatti":    {"hatti_oracle_deposits", "hatti_harvest_blessing", "hatti_battle_frenzy"},
 }
 
