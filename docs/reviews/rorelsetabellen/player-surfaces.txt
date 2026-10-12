@@ -1,0 +1,86 @@
+Command: rg -n march-preview|duration_ticks|travel_ticks|travel_min|arrival_tick|terrain costs|march time|journey speed|faster|slower server/cmd/keryx web/static/js/megaron web/static/codex
+Base: b0762ebf
+
+web/static/codex/time.md:5:How much real time a day takes is set per world. A test world can run faster than normal. The **date in the top bar** is the world's own calendar; the sun and moon beside it show the time of day. An arrival such as **day 12** belongs to this world. When a real-world estimate is shown beside it, it uses a clock time and date, such as **≈ Fri 21:30**.
+web/static/codex/colonies.md:17:Each colony without a temple, beyond a handful, makes your [[kharis]] decay faster.
+web/static/codex/growth.md:4:- **The pace is fixed.** A city with a surplus always grows at the full rate, about half a percent a day. A bigger surplus does not grow it faster, only fills your stores faster.
+web/static/codex/growth.md:5:- **Variety.** Grain alone feeds people. Fish, oil, wine and livestock in store alongside it make them multiply faster.
+web/static/codex/routes.md:26:Cargo follows a real route around impassable ground. Its path and the terrain costs
+web/static/codex/routes.md:27:are fixed when each leg departs. Caravan time is **1.5 times the march time on that
+web/static/codex/routes.md:30:weight limits a ship's hold; it does not change journey speed.
+web/static/codex/trade.md:38:Cargo follows a real route around impassable ground. Its path and the terrain costs
+web/static/codex/trade.md:39:are fixed when each leg departs. Caravan time is **1.5 times the march time on that
+web/static/codex/trade.md:42:weight limits a ship's hold; it does not change journey speed.
+web/static/codex/sea.md:18:- **Supplies.** A crew eats. A ship whose crew runs short of food turns for home on its own — you are told why, and a thinned crew sails slower ([[upkeep]]).
+web/static/codex/transfers.md:35:Cargo follows a real route around impassable ground. Its path and the terrain costs
+web/static/codex/transfers.md:36:are fixed when each leg departs. Caravan time is **1.5 times the march time on that
+web/static/codex/transfers.md:39:weight limits a ship's hold; it does not change journey speed.
+web/static/codex/kharis.md:24:Kharis decays every day regardless — and faster for each colony without a temple, beyond a handful. Expansion has a religious price ([[colonies]]).
+web/static/js/megaron/state.js:20:  // seconds per tick. Lets ui/time.js convert an authoritative arrival_tick
+server/cmd/keryx/output.go:150:	if arrival, ok := resp["arrival_tick"].(float64); ok {
+server/cmd/keryx/output.go:151:		if duration, ok := resp["travel_ticks"].(float64); ok {
+server/cmd/keryx/output.go:163:	key, timestamp := "silver_arrival_tick", "silver_arrives_at"
+server/cmd/keryx/output.go:165:		key, timestamp = "goods_arrival_tick", "goods_arrives_at"
+server/cmd/keryx/cmd_march_preview_test.go:21:						if r.Method != "GET" || r.URL.Path != "/api/v1/worlds/world/units/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/march-preview" {
+server/cmd/keryx/cmd_march_preview_test.go:32:						_ = json.NewEncoder(w).Encode(map[string]any{"available": reason == "", "reason": reason, "arrival_tick": 42, "duration_ticks": 3, "arrives_at_utc": "2026-10-06T15:00:00Z"})
+server/cmd/keryx/cmd_march_preview.go:26:		ArrivalTick   int64  `json:"arrival_tick"`
+server/cmd/keryx/cmd_march_preview.go:27:		DurationTicks int64  `json:"duration_ticks"`
+server/cmd/keryx/cmd_messenger.go:497:	if at, ok := offer["goods_arrival_tick"].(float64); ok {
+server/cmd/keryx/cmd_messenger.go:502:	if at, ok := offer["silver_arrival_tick"].(float64); ok {
+web/static/js/megaron/ui/format.js:713:      // it costs (a thinned crew sails slower), never reuse the scout's text.
+web/static/js/megaron/ui/format.js:717:      return `${subject} starved to half strength${crew} — turning home on its own, sailing slower${eta ? `, arrives ${eta}` : ''}`;
+web/static/js/megaron/ui/format.test.mjs:199:    "Ship's crew starved to half strength (crew down to 10) — turning home on its own, sailing slower",
+web/static/js/megaron/ui/format.test.mjs:374:    "White Dolphin, Galley of Kydonia's crew starved to half strength (crew down to 10) — turning home on its own, sailing slower",
+web/static/js/megaron/ui/fmt_num.js:2:// slower and hide the size of a quantity (Timothy 2026-10-08). At most one
+web/static/js/megaron/ui/march_preview.test.mjs:13:    return { ok: true, json: async () => ({ available: true, arrival_tick: 9 }) };
+web/static/js/megaron/ui/march_preview.test.mjs:15:  assert.equal(url.pathname, '/api/v1/worlds/w/units/u/march-preview');
+web/static/js/megaron/ui/march_preview.test.mjs:20:  assert.equal(result.arrival_tick, 9);
+web/static/js/megaron/ui/march_preview.test.mjs:37:      available: true, arrival_tick: 20, duration_ticks: url.includes('/slow/') ? 8 : 2,
+web/static/js/megaron/ui/drawers/economy.js:304:    if (Number.isInteger(t.arrival_tick)) eta = `${fmtDay(t.arrival_tick)}`;
+web/static/js/megaron/ui/drawers/economy.js:379:// Only the newest From selection may fill the good list; an older, slower
+web/static/js/megaron/ui/drawers/economy.js:422:    if (Number.isInteger(d.arrival_tick)) {
+web/static/js/megaron/ui/drawers/economy.js:423:      resultEl.textContent += ` Arrives on ${fmtDay(d.arrival_tick)} (journey: ${fmtDays(d.travel_ticks)}).`;
+server/cmd/keryx/notification_text.go:17:		SilverArrivalTick *float64           `json:"silver_arrival_tick"`
+server/cmd/keryx/notification_text.go:18:		GoodsArrivalTick  *float64           `json:"goods_arrival_tick"`
+web/static/js/megaron/ui/march_preview.js:13:  const response = await read(`/api/v1/worlds/${worldID}/units/${pick.id}/march-preview?${query}`);
+web/static/js/megaron/ui/march_preview.js:20:  if (data.available && Number.isInteger(data.arrival_tick)) {
+web/static/js/megaron/ui/march_preview.js:21:    return 'Estimated arrival: ' + arrivalHTML(data.arrives_at_utc, data.arrival_tick)
+web/static/js/megaron/ui/march_preview.js:22:      + ' · ' + esc(fmtDays(data.duration_ticks)) + ' travelling';
+server/cmd/keryx/cmd_goods.go:300:				if arrivalTick, ok := m["arrival_tick"].(float64); ok {
+web/static/js/megaron/ui/drawers/city.js:174:// A newer load rebuilds the drawer DOM; a slower older reply must not fill
+web/static/js/megaron/ui/drawers/war.js:467:    // arrival_tick is the authoritative arrival (K4) — the stored arrives_at
+web/static/js/megaron/ui/drawers/war.js:469:    const arrival = arrivalHTML(u.arrives_at, u.arrival_tick);
+web/static/js/megaron/ui/drawers/war.js:988:      resEl.textContent = 'Ship sails to (' + data.shore_q + ',' + data.shore_r + ') — arrives day ' + fmtNum(data.arrival_tick) +
+web/static/js/megaron/ui/drawers/trade_schedule.test.mjs:6:  assert.equal(tradeScheduleText({status:'accepted', goods_arrival_tick:42, silver_arrival_tick:49, goods_arrives_at:'2000-01-01T00:00:00Z'}), ' · goods scheduled day 42 · silver scheduled day 49');
+web/static/js/megaron/ui/drawers/trade_schedule.test.mjs:7:  assert.equal(tradeScheduleText({status:'pending', goods_arrival_tick:42}), '');
+web/static/js/megaron/ui/drawers/trade_schedule.test.mjs:29:        return new Response(JSON.stringify({kind, quantity:3,good_key:'<grain>',silver_paid:2,goods_arrival_tick:42,silver_arrival_tick:49}), {status:200,headers:{'Content-Type':'application/json'}});
+web/static/js/megaron/ui/marchctx.js:607:  // arrival_tick + derived arrives_at_utc (K4). Same destination for every
+web/static/js/megaron/ui/marchctx.js:629:        arrivalHTML(first.data.arrives_at_utc || first.data.arrives_at, first.data.arrival_tick);
+web/static/js/megaron/render/routes.js:8: const start=actor.departure_tick,end=actor.arrival_tick;
+web/static/js/megaron/render/routes.js:52: const points=remainingRoute(actor.path,routeProgress(actor,nowMs,tickNow),hexPx,actor.step_costs,actor.arrival_tick-actor.departure_tick);
+server/cmd/keryx/cmd_unit.go:1228:				DurationTicks int     `json:"duration_ticks"`
+server/cmd/keryx/cmd_unit.go:1645:				ArrivalTick           int     `json:"arrival_tick"`
+web/static/js/megaron/ui/drawers/diplomacy.js:545:    const goodsETA = Number.isInteger(data.goods_arrival_tick) ? fmtDay(data.goods_arrival_tick) : arrivalHTML(data.goods_arrives_at);
+web/static/js/megaron/ui/drawers/diplomacy.js:546:    const silverETA = Number.isInteger(data.silver_arrival_tick) ? fmtDay(data.silver_arrival_tick) : arrivalHTML(data.silver_arrives_at);
+web/static/js/megaron/ui/drawers/diplomacy.js:631:  if (Number.isInteger(offer.goods_arrival_tick)) legs.push(`goods scheduled ${fmtDay(offer.goods_arrival_tick)}`);
+web/static/js/megaron/ui/drawers/diplomacy.js:632:  if (Number.isInteger(offer.silver_arrival_tick)) legs.push(`silver scheduled ${fmtDay(offer.silver_arrival_tick)}`);
+web/static/js/megaron/ui/time.js:3:// the K4 tick-contract: `arrival_tick` is the AUTHORITATIVE arrival time
+server/cmd/keryx/cmd_expedition_client_test.go:19:						if r.Method != "GET" || !strings.HasSuffix(r.URL.Path, "/march-preview") || r.URL.Query().Get("ticks") != "12" || r.URL.Query().Get("intent") != "explore" {
+web/static/js/megaron/render/routes.test.mjs:11: assert.equal(routeProgress({departure_tick:10,arrival_tick:12},0,10.5),.25);
+web/static/js/megaron/render/routes.test.mjs:36: drawMovement(ctx,actorRoute({path,departure_tick:0,arrival_tick:1},'ship',0,.5,px,live));
+web/static/js/megaron/ui/drawers/cargo.test.mjs:106:  const trade = { ...BASE_TRADE, arrival_tick: 42, role: 'recipient' };
+server/cmd/keryx/cmd_notifications.go:768:	fmt.Printf("      %s's crew starved to half strength (%d) at (%d,%d) — turning home on its own, sailing slower%s\n",
+web/static/js/megaron/render/map.test.mjs:102:test('AK2: panDelta normalizes a diagonal so W+D is not sqrt(2)x faster than one direction', () => {
+web/static/js/megaron/render/map.test.mjs:268:  const base={path:[[0,0],[1,0],[2,0],[3,0]],departure_tick:0,arrival_tick:4,step_costs:[1000,1000,1000],departs_at:'1970-01-01T00:00:00Z',arrives_at:'1970-01-01T00:00:24Z'};
+server/cmd/keryx/cmd_caravan_time_test.go:19:		_ = json.NewEncoder(w).Encode(map[string]any{"arrival_tick": 42, "travel_ticks": 7, "travel_min": 99999, "ship_name": "Naia"})
+server/cmd/keryx/cmd_caravan_time_test.go:49:				_ = json.NewEncoder(w).Encode(map[string]any{"kind": kind, "goods_arrival_tick": 42, "silver_arrival_tick": 49, "quantity": 3, "good_key": "grain", "silver_paid": 2})
+server/cmd/keryx/cmd_caravan_time_test.go:81:	got := deliveryETALine(nil, map[string]any{"goods_arrival_tick": float64(42), "silver_arrival_tick": float64(49), "goods_arrives_at": "2000-01-01T00:00:00Z"})
+server/cmd/keryx/cmd_caravan_time_test.go:93:				"arrival_tick": 42, "role": "sender", "origin_name": "Athenai", "dest_name": "Knossos"},
+server/cmd/keryx/cmd_caravan_time_test.go:95:				"arrival_tick": 43, "role": "recipient"},
+web/static/js/megaron/render/markraster.js:1622:  //   MORE TERRACES over the same distance, so the ground climbs faster.
+server/cmd/keryx/cmd_gift_test.go:30:			json.NewEncoder(w).Encode(map[string]any{"kind": "gift", "arrival_tick": 42, "travel_ticks": 7})
+server/cmd/keryx/notification_kinds_test.go:422:		{"OfferAccepted", `{"kind":"sell","quantity":12,"good_key":"tin","silver":15,"silver_arrival_tick":130}`, []string{"12 tin", "15 silver", "silver arrives day 130"}, []string{"tick"}},
+web/static/js/megaron/render/map.js:247:  return u.path?.length>1?pathPx(u.path,progress,u.step_costs,u.arrival_tick-u.departure_tick):hexPathPx(u.q,u.r,u.target_q,u.target_r,progress);
+web/static/js/megaron/render/map.js:259: return t.path?.length>1?pathPx(t.path,progress,t.step_costs,t.arrival_tick-t.departure_tick):hexPathPx(t.origin_q,t.origin_r,t.dest_q,t.dest_r,progress);
+web/static/js/megaron/render/map.js:308:    const pos = m.path?.length>1 ? pathPx(m.path,routeProgress(m,nowMs,movementTickNow(nowMs)),m.step_costs,m.arrival_tick-m.departure_tick) : hexPathPx(m.leg_from_q, m.leg_from_r, m.leg_to_q, m.leg_to_r, progress);
+web/static/js/megaron/render/map.js:2451:  // Normalize so a diagonal (W+D) isn't sqrt(2)x faster than a single direction.

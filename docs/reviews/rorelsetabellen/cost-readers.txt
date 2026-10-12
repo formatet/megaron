@@ -1,0 +1,341 @@
+Command: rg -n TerrainMoveTicks|CourierSeaTicks|moveHoursFor|TravelFactor|MarchHoursFactorFor|NavalSpeedFactor|StepHours|FindPath|PlanTradeJourney|CourierTravel|MessengerTravelTicks|MessengerTravelDuration server --glob *.go
+Base: b0762ebf
+
+server/internal/economy/trade.go:567:	journey, err := province.PlanTradeJourney(ctx, tx, worldID, province.MapPosition{Q: arriveQ, R: arriveR}, province.MapPosition{Q: homeQ, R: homeR}, "naval")
+server/internal/economy/trade_legacy_test.go:106:// empty voyage home is planned from the map via province.PlanTradeJourney. The
+server/internal/economy/trade_journey_test.go:37:			journey, err := g.PlanTradeJourney(province.MapPosition{Q: 5}, province.MapPosition{}, category)
+server/internal/transport/transport_test.go:6:// interpolated along its FindPath route. DB-gated on DATABASE_URL.
+server/internal/messenger/courier_travel_sea_wall_test.go:3:// TestCourierTravelOnGraph_NoLongerShortcutsOverSea is 3b-4's acceptance
+server/internal/messenger/courier_travel_sea_wall_test.go:7:// Pure in-memory TileGraph test, no DB needed (CourierTravelOnGraph never
+server/internal/messenger/courier_travel_sea_wall_test.go:27://   - Old (pre-3b-4, sea passable at province.CourierSeaTicks=0.5 per hex):
+server/internal/messenger/courier_travel_sea_wall_test.go:31:func TestCourierTravelOnGraph_NoLongerShortcutsOverSea(t *testing.T) {
+server/internal/messenger/courier_travel_sea_wall_test.go:36:	ticks, _, ok := CourierTravelOnGraph(g, province.MapPosition{Q: 0, R: 0}, province.MapPosition{Q: 3, R: 0})
+server/internal/messenger/courier_travel_sea_wall_test.go:43:		t.Errorf("CourierTravelOnGraph ticks = %d, want %d (the pure land detour) — "+
+server/internal/messenger/courier_travel_sea_wall_test.go:48:// TestCourierTravelOnGraph_UnreachableIsNeverARaklinje is the rest of
+server/internal/messenger/courier_travel_sea_wall_test.go:52:// (province.HexDistance + MessengerTravelTicks) is gone from
+server/internal/messenger/courier_travel_sea_wall_test.go:53:// CourierTravelOnGraph entirely; this pins that it stays gone.
+server/internal/messenger/courier_travel_sea_wall_test.go:54:func TestCourierTravelOnGraph_UnreachableIsNeverARaklinje(t *testing.T) {
+server/internal/messenger/courier_travel_sea_wall_test.go:58:	ticks, dur, ok := CourierTravelOnGraph(g, province.MapPosition{Q: 0, R: 0}, province.MapPosition{Q: 2, R: 0})
+server/internal/messenger/courier_travel_sea_wall_test.go:60:		t.Fatalf("CourierTravelOnGraph = ok=true (ticks=%d, dur=%v), want ok=false — no land route exists around the sea in this fixture",
+server/internal/messenger/courier_travel_sea_wall_test.go:64:		t.Errorf("CourierTravelOnGraph on ok=false = (%d, %v), want the zero value, not a guessed straight-line time", ticks, dur)
+server/internal/transport/intercept.go:468:	journey, err := province.PlanTradeJourney(ctx, tx, worldID, pos, province.MapPosition{Q: destQ, R: destR}, "naval")
+server/internal/transport/transport.go:173:		j, err := province.PlanTradeJourney(ctx, tx, p.WorldID, province.MapPosition{Q: p.OriginQ, R: p.OriginR}, province.MapPosition{Q: p.DestQ, R: p.DestR}, p.Category)
+server/internal/messenger/intercept_test.go:77:	_, naiveDur, naiveOK := CourierTravelOnGraph(g, courierOrigin, snapshot)
+server/internal/messenger/call_back.go:107:	ticks, dur, ok, cErr := CourierTravel(ctx, tx, worldID,
+server/internal/messenger/call_back.go:124:	// FindPath(destination→origin) fails outright now that the sea walls
+server/internal/transport/intercept_sea_leg_test.go:5:// uninterceptable: province.InterpolatePosition returns ok=false when FindPath
+server/internal/transport/intercept_sea_leg_test.go:112:// resolvable FindPath route (province.isPassable rejects sea for "land"), and no
+server/internal/messenger/passage_test.go:685:	// The far side needs its own province row (plain FindPath target
+server/internal/combat/standing_orders.go:355:			if _, ferr := province.PlanTradeJourney(ctx, tx, o.worldID,
+server/internal/combat/standing_orders.go:369:	journey, err := province.PlanTradeJourney(ctx, tx, o.worldID, province.MapPosition{Q: fromQ, R: fromR}, province.MapPosition{Q: toQ, R: toR}, category)
+server/internal/combat/standing_orders.go:373:	returnJourney, err := province.PlanTradeJourney(ctx, tx, o.worldID, province.MapPosition{Q: toQ, R: toR}, province.MapPosition{Q: fromQ, R: fromR}, category)
+server/internal/combat/standing_orders.go:611:	journey, err := province.PlanTradeJourney(ctx, tx, o.worldID, province.MapPosition{Q: toQ, R: toR}, province.MapPosition{Q: fromQ, R: fromR}, category)
+server/internal/messenger/travel_duration_test.go:6:// Root cause: MessengerTravelDuration
+server/internal/messenger/travel_duration_test.go:40:// TestMessengerTravelDuration_MatchesTicksAtFastCadence is the load-bearing
+server/internal/messenger/travel_duration_test.go:44:// (MessengerTravelTicks), each worth 1 real minute — not 1 real hour. Before
+server/internal/messenger/travel_duration_test.go:46:func TestMessengerTravelDuration_MatchesTicksAtFastCadence(t *testing.T) {
+server/internal/messenger/travel_duration_test.go:49:	wantTicks := MessengerTravelTicks(dist)
+server/internal/messenger/travel_duration_test.go:51:	if got := MessengerTravelDuration(dist); got != want {
+server/internal/messenger/travel_duration_test.go:52:		t.Errorf("MessengerTravelDuration(%d) = %v, want %v (%d ticks × 1 min/tick)", dist, got, want, wantTicks)
+server/internal/messenger/travel_duration_test.go:56:// TestMessengerTravelDuration_MatchesDefaultCadence pins the historical
+server/internal/messenger/travel_duration_test.go:59:func TestMessengerTravelDuration_MatchesDefaultCadence(t *testing.T) {
+server/internal/messenger/travel_duration_test.go:62:	want := time.Duration(MessengerTravelTicks(dist)) * time.Hour
+server/internal/messenger/travel_duration_test.go:63:	if got := MessengerTravelDuration(dist); got != want {
+server/internal/messenger/travel_duration_test.go:64:		t.Errorf("MessengerTravelDuration(%d) at default cadence = %v, want %v", dist, got, want)
+server/internal/messenger/travel_duration_test.go:68:// TestMessengerTravelDuration_ExactAtSubMinuteCadence is the Fas A Run 2
+server/internal/messenger/travel_duration_test.go:73:func TestMessengerTravelDuration_ExactAtSubMinuteCadence(t *testing.T) {
+server/internal/messenger/travel_duration_test.go:76:	wantTicks := MessengerTravelTicks(dist)
+server/internal/messenger/travel_duration_test.go:78:	if got := MessengerTravelDuration(dist); got != want {
+server/internal/messenger/travel_duration_test.go:79:		t.Errorf("MessengerTravelDuration(%d) at TICK_SECONDS=6 = %v, want %v exact (%d ticks × 6s)", dist, got, want, wantTicks)
+server/internal/messenger/recall_test.go:10:// MessengerTravelDuration now converts
+server/internal/messenger/recall_test.go:14:func TestMessengerTravelDuration(t *testing.T) {
+server/internal/messenger/recall_test.go:20:		{0, time.Hour},      // floors to 1 tick (MessengerTravelTicks' own floor) = 1h at default cadence
+server/internal/messenger/recall_test.go:25:		if got := MessengerTravelDuration(c.dist); got != c.want {
+server/internal/messenger/recall_test.go:26:			t.Errorf("MessengerTravelDuration(%d) = %v, want %v", c.dist, got, c.want)
+server/internal/combat/march_start_crew_speed_test.go:6:// from the DB and feeds it into TravelFactor), not just the pure function.
+server/internal/movement/movement.go:37:// TerrainMoveTicks); this package only cares about their ratios.
+server/internal/messenger/passage.go:4:// abstract province.CourierSeaTicks rate (the "abstract boat"). This file
+server/internal/messenger/passage.go:102:	// Land: full travel ticks/duration from→to, exactly as CourierTravel would
+server/internal/messenger/passage.go:110:	// caller falls back to the plain CourierTravel(from,to) crossing, exactly
+server/internal/messenger/passage.go:128:	_, _, landOK, err := province.FindPath(ctx, db, worldID, from, to, province.CategoryCourierLand)
+server/internal/messenger/passage.go:133:		// CourierTravel (plain CategoryCourier, river still boatable —
+server/internal/messenger/passage.go:141:		ticks, dur, ok, cErr := CourierTravel(ctx, db, worldID, from, to)
+server/internal/messenger/passage.go:159:		_, cost, ok, ferr := province.FindPath(ctx, db, worldID, from, province.MapPosition{Q: p.Q, R: p.R}, province.CategoryCourierLand)
+server/internal/messenger/passage.go:185:	_, _, landOK, err := province.FindPath(ctx, db, worldID, from, to, province.CategoryCourierLand)
+server/internal/messenger/passage.go:190:		// See PlanOutboundRoute's own comment: plain CourierTravel, not the
+server/internal/messenger/passage.go:193:		ticks, dur, ok, cErr := CourierTravel(ctx, db, worldID, from, to)
+server/internal/messenger/passage.go:208:// ticksFromHours mirrors CourierTravelOnGraph's own rounding (>=1 tick).
+server/internal/messenger/passage.go:259:// SendFromHost, sendOrderCourier) calls in place of a bare CourierTravel, per
+server/internal/messenger/passage.go:912:		_, _, landOK, err := province.FindPath(ctx, h.pool, worldID, disembarkAt, province.MapPosition{Q: targetQ, R: targetR}, province.CategoryCourierLand)
+server/internal/messenger/passage.go:1001:	// disembarkAt to the target right before calling this — CourierTravel
+server/internal/messenger/passage.go:1005:	landTicks, landDur, ok, err := CourierTravel(ctx, tx, worldID, disembarkAt, province.MapPosition{Q: targetQ, R: targetR})
+server/internal/messenger/recall.go:24:// MessengerTravelDuration returns the wall-clock travel time for a messenger over dist hexes,
+server/internal/messenger/recall.go:25:// for the messengers.arrives_at DISPLAY column. Scheduling uses MessengerTravelTicks (1 tick =
+server/internal/messenger/recall.go:30:func MessengerTravelDuration(dist int) time.Duration {
+server/internal/messenger/recall.go:31:	return tick.RealUntil(MessengerTravelTicks(dist), 0)
+server/internal/messenger/recall.go:34:// MessengerTravelTicks returns the world-tick travel time for a messenger over dist hexes.
+server/internal/messenger/recall.go:35:func MessengerTravelTicks(dist int) int {
+server/internal/messenger/recall.go:43:// CourierTravel returns the world-tick and wall-clock travel time for a
+server/internal/messenger/recall.go:47:// (province.CourierSeaTicks, megaron_floden_plan.md — untouched by 3b-4).
+server/internal/messenger/recall.go:55:func CourierTravel(ctx context.Context, db province.Queryer, worldID uuid.UUID, from, to province.MapPosition) (ticks int, dur time.Duration, ok bool, err error) {
+server/internal/messenger/recall.go:60:	ticks, dur, ok = CourierTravelOnGraph(g, from, to)
+server/internal/messenger/recall.go:64:// CourierTravelOnGraph is CourierTravel over an already-loaded TileGraph —
+server/internal/messenger/recall.go:69:// CourierTravel's own doc comment; no raklinjefallback here either.
+server/internal/messenger/recall.go:70:func CourierTravelOnGraph(g province.TileGraph, from, to province.MapPosition) (ticks int, dur time.Duration, ok bool) {
+server/internal/messenger/recall.go:71:	_, hours, pathOK := g.FindPath(from, to, province.CategoryCourier)
+server/internal/messenger/recall.go:83:// already-validated outbound path (as returned by province.FindPath) where a
+server/internal/messenger/recall.go:94:// 2× a land unit's speed (sea legs at the flat CourierSeaTicks rate), so an
+server/internal/messenger/recall.go:151:// on its own (CourierTravelOnGraph's ok=false).
+server/internal/messenger/recall.go:174:		// its own is no longer a candidate at all — CourierTravelOnGraph's
+server/internal/messenger/recall.go:179:		_, courierDur, courierOK := CourierTravelOnGraph(g, courierOrigin, path[i])
+server/internal/messenger/recall.go:201:	path, _, pathOK, err := province.FindPath(ctx, db, worldID, marchOrigin, marchTarget, category)
+server/internal/combat/march_encounter.go:25://   - position: province.LoadTileGraph + TileGraph.FindPath, preloaded ONCE
+server/internal/combat/march_encounter.go:230:		path, _, ok := g.FindPath(pos, province.MapPosition{Q: m.targetQ, R: m.targetR}, m.category)
+server/internal/combat/standing_orders_naval_test.go:178:	journey, err := province.PlanTradeJourney(context.Background(), pool, f.worldID,
+server/internal/combat/occupation.go:765:	journey, err := province.PlanTradeJourney(ctx, tx, worldID,
+server/internal/unit/model.go:116:// MarchHoursFactorFor returns the multiplier to apply to
+server/internal/unit/model.go:117:// province.TerrainMoveTicks for this unit type.
+server/internal/unit/model.go:123:// (messengers already halve it themselves, see TerrainMoveTicks' own comment).
+server/internal/unit/model.go:124:func MarchHoursFactorFor(t Type) float64 {
+server/internal/unit/model.go:369:	// R1): the raw JSON of the path + per-hex costs FindPath produced when this
+server/internal/combat/march_encounter_perf_test.go:46:	const gridSize = 40 // 1,600 land tiles — enough for FindPath to do real A* work, not a straight line
+server/internal/combat/route.go:5:// per-hex costs it ALREADY has from province.FindPath/StepHoursDB and saves
+server/internal/combat/route.go:32:// province.TileGraph.StepHours/StepHoursDB, over that SAME path — never a
+server/internal/combat/ship_hull.go:317:	path, pathTicks, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
+server/internal/combat/ship_hull.go:327:			slog.Warn("march ship to nearest own port: FindPath failed, falling back to straight line", "unit", unitID, "err", pathErr)
+server/internal/combat/ship_hull.go:333:		moveTicks = province.TerrainMoveTicks("coastal_sea") * float64(dist)
+server/internal/combat/ship_hull.go:335:	// Mirrors march_start.go's TravelFactor — the one home for every leg.
+server/internal/combat/ship_hull.go:336:	moveTicks *= TravelFactor(unit.Type(utype), crew, cargoUnitID != nil)
+server/internal/combat/ship_hull.go:346:	// it at read time. NULL when FindPath fell back to a straight line.
+server/internal/combat/ship_hull.go:349:		if stepHours, shErr := province.StepHoursDB(ctx, tx, worldID, path, "naval"); shErr == nil {
+server/internal/combat/ship_hull.go:413:// the real march via FindPath afterward). Falls back to the nearest own
+server/internal/combat/march_start.go:123:// NavalSpeedFactor scales a unit's travel time by ship type (Timothy
+server/internal/combat/march_start.go:126:func NavalSpeedFactor(t unit.Type) float64 {
+server/internal/combat/march_start.go:139:// NavalSpeedFactor's 0.6/1.4 — kalibreras i soak, inte här
+server/internal/combat/march_start.go:165:// TravelFactor is the complete multiplier applied to a path's raw tick cost:
+server/internal/combat/march_start.go:172:func TravelFactor(t unit.Type, crew int, laden bool) float64 {
+server/internal/combat/march_start.go:173:	f := NavalSpeedFactor(t) * unit.MarchHoursFactorFor(t) * CrewSpeedFactor(t, crew)
+server/internal/combat/march_start.go:272:		// this, FindPath always rejected the unit's own origin as impassable and
+server/internal/combat/march_start.go:543:	// deliberately bypasses FindPath (a zero-distance query it was never built
+server/internal/combat/march_start.go:700:		p, pathCost, pathOK, pathErr := province.FindPath(ctx, pool, o.WorldID,
+server/internal/combat/march_start.go:732:	// in TravelFactor — the one home for every leg.
+server/internal/combat/march_start.go:733:	moveTicks *= TravelFactor(u.Type, u.Crew, u.CargoUnitID != nil)
+server/internal/combat/march_start.go:770:	// movement 2a, R1: a real journey must save the path FindPath already
+server/internal/combat/march_start.go:776:		stepHours, err := province.StepHoursDB(ctx, pool, o.WorldID, path, category)
+server/internal/combat/expedition.go:74:	return max(1, int(math.Round(moveTicks*TravelFactor(t, crew, laden))))
+server/internal/combat/expedition.go:81:	Cost   float64 // raw path cost, before TravelFactor
+server/internal/combat/expedition.go:148:		if path, cost, ok := g.FindPath(from, c, category); ok {
+server/internal/combat/expedition.go:216:	if path, _, ok := g.FindPath(province.MapPosition{Q: u.q, R: u.r}, here, u.category); ok {
+server/internal/combat/expedition.go:278:		_, returnCost, reachable := g.FindPath(leg.Target, province.MapPosition{Q: home.q, R: home.r}, u.category)
+server/internal/unit/nomadic_host_test.go:35:	host, base := MarchHoursFactorFor(TypeNomadicHost), MarchHoursFactorFor(TypeSpearman)
+server/internal/combat/expedition_outcomes.go:86:		path, cost, ok := g.FindPath(province.MapPosition{Q: q, R: r}, province.MapPosition{Q: home.q, R: home.r}, u.category)
+server/internal/combat/march_route_test.go:4:// march-dispatching write sites must save the EXACT path FindPath found (and
+server/internal/combat/march_route_test.go:97:// shared state with the code under test), the real FindPath + StepHours, and
+server/internal/combat/march_route_test.go:106:	path, _, ok := g.FindPath(origin, target, category)
+server/internal/combat/march_route_test.go:108:		t.Fatalf("oracle FindPath found no route %v -> %v", origin, target)
+server/internal/combat/march_route_test.go:110:	steps := g.StepHours(path, category)
+server/internal/combat/recall_redirect.go:152:	path, pathTicks, pathOK, pathErr := province.FindPath(ctx, tx, o.WorldID, currentPos, newTarget, category)
+server/internal/combat/recall_redirect.go:161:	// TravelFactor) — a war galley/merchantman/nomadic host recalled or
+server/internal/combat/recall_redirect.go:164:	moveTicks *= TravelFactor(unit.Type(utype), crew, cargoUnitID != nil)
+server/internal/combat/recall_redirect.go:186:		if stepHours, shErr := province.StepHoursDB(ctx, tx, o.WorldID, path, category); shErr == nil {
+server/internal/province/interpolate.go:14:// so FindPath is deterministic — and steps along it in proportion to elapsed
+server/internal/province/interpolate.go:25:	path, _, pathOK, err := FindPath(ctx, db, worldID, origin, target, category)
+server/internal/combat/unit_arrival.go:260:	if path, _, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
+server/internal/combat/unit_arrival.go:1383:	path, pathTicks, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
+server/internal/combat/unit_arrival.go:1395:		slog.Warn("return home: FindPath failed, falling back to straight line", "unit", u.id, "err", pathErr)
+server/internal/combat/unit_arrival.go:1408:		moveTicks = province.TerrainMoveTicks(fromTerrain) * float64(dist)
+server/internal/combat/unit_arrival.go:1502:// speed (TravelFactor), the saved route, the unit row and its scheduled
+server/internal/combat/unit_arrival.go:1515:	// TravelFactor) — without these a war galley/merchantman's return trip
+server/internal/combat/unit_arrival.go:1529:	// it at read time. NULL when FindPath fell back to a straight line (path
+server/internal/combat/unit_arrival.go:1533:		if stepHours, shErr := province.StepHoursDB(ctx, tx, worldID, path, u.category); shErr == nil {
+server/internal/province/movement.go:3:// TerrainMoveTicks returns ticks per hex for an army marching through the given terrain.
+server/internal/province/movement.go:5:func TerrainMoveTicks(terrain string) float64 {
+server/internal/province/movement.go:16:		// pays this SAME rate too (moveHoursFor has no naval branch for it):
+server/internal/combat/travel_factor_test.go:3:// Slice A (megaron_plan_skeppsfart_besattning.md §3): TravelFactor collects
+server/internal/combat/travel_factor_test.go:6:// behaviour-neutrality proof: it checks TravelFactor's output against the
+server/internal/combat/travel_factor_test.go:8:// 2.0 nomadic host, ×1.5 laden) — never against NavalSpeedFactor/
+server/internal/combat/travel_factor_test.go:9:// MarchHoursFactorFor themselves, so a bug that crept into both the
+server/internal/combat/travel_factor_test.go:12:// Slice B (§4) added the crew term to TravelFactor's signature. Every case
+server/internal/combat/travel_factor_test.go:25:func TestTravelFactor_MatchesLiteralProducts(t *testing.T) {
+server/internal/combat/travel_factor_test.go:31:		// Land units and the plain "galley" type: NavalSpeedFactor's default
+server/internal/combat/travel_factor_test.go:32:		// case (1.0) × MarchHoursFactorFor's default case (1.0).
+server/internal/combat/travel_factor_test.go:37:		// War galley: NavalSpeedFactor 0.6 × MarchHoursFactorFor 1.0.
+server/internal/combat/travel_factor_test.go:39:		// Merchantman: NavalSpeedFactor 1.4 × MarchHoursFactorFor 1.0.
+server/internal/combat/travel_factor_test.go:41:		// Nomadic host: NavalSpeedFactor 1.0 (default) × MarchHoursFactorFor 2.0.
+server/internal/combat/travel_factor_test.go:48:		if got := TravelFactor(c.utype, fullCrew, false); math.Abs(got-c.notLaden) > epsilon {
+server/internal/combat/travel_factor_test.go:49:			t.Errorf("TravelFactor(%s, crew=%d (full), laden=false) = %v, want %v", c.utype, fullCrew, got, c.notLaden)
+server/internal/combat/travel_factor_test.go:51:		if got := TravelFactor(c.utype, fullCrew, true); math.Abs(got-c.laden) > epsilon {
+server/internal/combat/travel_factor_test.go:52:			t.Errorf("TravelFactor(%s, crew=%d (full), laden=true) = %v, want %v", c.utype, fullCrew, got, c.laden)
+server/internal/combat/march_sighting.go:188:		if path, _, ok := g.FindPath(pos, province.MapPosition{Q: m.targetQ, R: m.targetR}, m.category); ok && len(path) > 0 {
+server/internal/province/trade_journey_test.go:11:	j, err := g.PlanTradeJourney(MapPosition{}, MapPosition{Q: 2}, "land")
+server/internal/province/trade_journey_test.go:20:	reverse, err := g.PlanTradeJourney(MapPosition{Q: 2}, MapPosition{}, "land")
+server/internal/province/trade_journey_test.go:31:	if _, err := g.PlanTradeJourney(MapPosition{}, MapPosition{Q: 3}, "land"); !errors.Is(err, ErrNoTradePath) {
+server/internal/province/trade_journey_test.go:34:	j, err := g.PlanTradeJourney(MapPosition{}, MapPosition{Q: 3}, "naval")
+server/internal/province/trade_journey_test.go:50:	j, err := g.PlanTradeJourney(MapPosition{}, MapPosition{}, "land")
+server/internal/province/pathfind.go:12:// Queryer abstracts *pgxpool.Pool and pgx.Tx for tile loading in FindPath.
+server/internal/province/pathfind.go:18:// FindPath runs A* over the world's hex terrain graph. It loads all map_tiles for
+server/internal/province/pathfind.go:22:// cost is the sum of TerrainMoveTicks for each tile entered (path[1:]).
+server/internal/province/pathfind.go:25:func FindPath(ctx context.Context, db Queryer, worldID uuid.UUID, origin, target MapPosition, category string) (path []MapPosition, cost float64, ok bool, err error) {
+server/internal/province/pathfind.go:30:	path, cost, ok = g.FindPath(origin, target, category)
+server/internal/province/pathfind.go:35:// LoadTileGraph, then call FindPath many times without re-querying map_tiles —
+server/internal/province/pathfind.go:37:// /units map endpoints), where per-unit FindPath would reload all tiles each time.
+server/internal/province/pathfind.go:63:// FindPath runs A* over an already-loaded graph (no DB access). Semantics match
+server/internal/province/pathfind.go:64:// the package-level FindPath: path includes origin (first) and target (last);
+server/internal/province/pathfind.go:66:func (g TileGraph) FindPath(origin, target MapPosition, category string) (path []MapPosition, cost float64, ok bool) {
+server/internal/province/pathfind.go:70:// StepHours returns the cost of entering each hex of an ALREADY-FOUND path
+server/internal/province/pathfind.go:71:// (path[1:]), using the same moveHoursFor A* itself uses. It does not search
+server/internal/province/pathfind.go:75:func (g TileGraph) StepHours(path []MapPosition, category string) []float64 {
+server/internal/province/pathfind.go:82:		out[i-1] = moveHoursFor(terrain, category)
+server/internal/province/pathfind.go:87:// StepHoursDB is StepHours for a caller that only holds a path from the
+server/internal/province/pathfind.go:88:// package-level FindPath, which loads its own TileGraph internally and does
+server/internal/province/pathfind.go:92:func StepHoursDB(ctx context.Context, db Queryer, worldID uuid.UUID, path []MapPosition, category string) ([]float64, error) {
+server/internal/province/pathfind.go:97:	return g.StepHours(path, category), nil
+server/internal/province/pathfind.go:118:// coastal_sea/deep_sea at the flat CourierSeaTicks rate — is gone. A runner
+server/internal/province/pathfind.go:128:// CourierSeaTicks is a courier's ticks per RIVER hex — the abstracted boat
+server/internal/province/pathfind.go:133:const CourierSeaTicks = 0.5
+server/internal/province/pathfind.go:155://     and naval, at a steep TerrainMoveTicks cost (movement.go) rather than
+server/internal/province/pathfind.go:187:// moveHoursFor returns the cost to enter a hex of terrain for the category.
+server/internal/province/pathfind.go:192:// plain TerrainMoveTicks. Sea never reaches this function for CategoryCourier —
+server/internal/province/pathfind.go:193:// isPassable above walls it out before moveHoursFor is ever asked its cost.
+server/internal/province/pathfind.go:196:// flodbudget_och_vadstalle.md) — it falls through to TerrainMoveTicks/2 like
+server/internal/province/pathfind.go:197:// any other land terrain, and TerrainMoveTicks("river_ford") is itself steep
+server/internal/province/pathfind.go:200:func moveHoursFor(terrain, category string) float64 {
+server/internal/province/pathfind.go:203:			return CourierSeaTicks
+server/internal/province/pathfind.go:205:		return TerrainMoveTicks(terrain) / 2
+server/internal/province/pathfind.go:208:		return TerrainMoveTicks(terrain) / 2
+server/internal/province/pathfind.go:210:	return TerrainMoveTicks(terrain)
+server/internal/province/pathfind.go:221:// instead of letting FindPath reject the unit at its own settlement.
+server/internal/province/pathfind.go:340:// minPassableCost returns the cheapest TerrainMoveTicks among terrains passable
+server/internal/province/pathfind.go:356:		return TerrainMoveTicks("coastal_sea") // 0.4
+server/internal/province/pathfind.go:359:		return TerrainMoveTicks("plains") / 2 // 0.375
+server/internal/province/pathfind.go:361:	return TerrainMoveTicks("plains") // 0.75
+server/internal/province/pathfind.go:367:// Exported via FindPath; also callable directly in tests.
+server/internal/province/pathfind.go:428:			ng := gScore[pos] + moveHoursFor(nterrain, category) // cost to ENTER npos
+server/internal/province/eyes.go:78:				path, _, ok, pathErr := FindPath(ctx, db, worldID, pos,
+server/internal/province/eyes.go:83:				// FindPath failure/empty path: best-effort fallback to the stored
+server/internal/province/eyes.go:168:				path, _, ok, pathErr := FindPath(ctx, db, worldID, pos,
+server/internal/province/eyes.go:173:				// FindPath failure: best-effort fallback to the origin hex — the
+server/internal/province/eyes.go:238:				path, _, ok, pathErr := FindPath(ctx, db, worldID, pos,
+server/internal/province/eyes.go:411:// precomputed by the caller (FindPath) so this is unit-testable with fixed
+server/internal/province/courier_pathfind_test.go:6:// CourierSeaTicks rate — the "abstract boat" — removed in
+server/internal/province/courier_pathfind_test.go:12:// TestFindPath_CourierCannotCrossSeaAnymore is 3b-4's R3: a courier is walled
+server/internal/province/courier_pathfind_test.go:14:// TestFindPath_CourierCrossesSeaByBoat before this slice, which pinned the
+server/internal/province/courier_pathfind_test.go:16:func TestFindPath_CourierCannotCrossSeaAnymore(t *testing.T) {
+server/internal/province/courier_pathfind_test.go:32:// TestFindPath_CourierStillCrossesRiverByBoat: rivers are untouched by 3b-4
+server/internal/province/courier_pathfind_test.go:35:func TestFindPath_CourierStillCrossesRiverByBoat(t *testing.T) {
+server/internal/province/courier_pathfind_test.go:52:	want := CourierSeaTicks + TerrainMoveTicks("plains")/2
+server/internal/province/courier_pathfind_test.go:58:func TestFindPath_CourierRoutesAroundMountains(t *testing.T) {
+server/internal/province/pathfind_ford_test.go:8:// TestFindPath_RiverFordIsTheOnlyLandCrossing is A2 of
+server/internal/province/pathfind_ford_test.go:11:// TestFindPath_RiverBlocksLand already covers); with exactly one river_ford
+server/internal/province/pathfind_ford_test.go:13:// paying its steep TerrainMoveTicks cost, and a naval unit still gets a route
+server/internal/province/pathfind_ford_test.go:23:func TestFindPath_RiverFordIsTheOnlyLandCrossing(t *testing.T) {
+server/internal/province/pathfind_ford_test.go:31:	// all — same invariant TestFindPath_RiverBlocksLand already proves, cross-
+server/internal/province/pathfind_ford_test.go:43:	// paying TerrainMoveTicks("river_ford") for it.
+server/internal/province/pathfind_ford_test.go:62:	fordCost := TerrainMoveTicks("river_ford")
+server/internal/province/pathfind_ford_test.go:63:	if fordCost <= TerrainMoveTicks("hills") {
+server/internal/province/pathfind_ford_test.go:65:			fordCost, TerrainMoveTicks("hills"))
+server/internal/province/pathfind_ford_test.go:82:// TestFindPath_RiverFordShipPaysSameCostAsLand is the plan's decision (a)
+server/internal/province/pathfind_ford_test.go:85:// because moveHoursFor has no naval branch for river_ford — a ford is shallow
+server/internal/province/pathfind_ford_test.go:87:func TestFindPath_RiverFordShipPaysSameCostAsLand(t *testing.T) {
+server/internal/province/pathfind_ford_test.go:88:	landCost := moveHoursFor("river_ford", "land")
+server/internal/province/pathfind_ford_test.go:89:	navalCost := moveHoursFor("river_ford", "naval")
+server/internal/province/pathfind_ford_test.go:95:// TestFindPath_RiverFordCourierWadesNotSails: a courier crossing a ford falls
+server/internal/province/pathfind_ford_test.go:96:// through to ordinary TerrainMoveTicks/2 (land rate), NOT the flat
+server/internal/province/pathfind_ford_test.go:97:// CourierSeaTicks boat rate — a runner wades a ford, he does not commandeer a
+server/internal/province/pathfind_ford_test.go:98:// boat for it (pathfind.go's moveHoursFor doc comment).
+server/internal/province/pathfind_ford_test.go:99:func TestFindPath_RiverFordCourierWadesNotSails(t *testing.T) {
+server/internal/province/pathfind_ford_test.go:100:	got := moveHoursFor("river_ford", CategoryCourier)
+server/internal/province/pathfind_ford_test.go:101:	want := TerrainMoveTicks("river_ford") / 2
+server/internal/province/pathfind_ford_test.go:103:		t.Errorf("expected courier river_ford cost = TerrainMoveTicks/2 = %.3f (wading), got %.3f (looks like the flat boat rate %.3f was used instead)",
+server/internal/province/pathfind_ford_test.go:104:			want, got, CourierSeaTicks)
+server/internal/province/pathfind_ford_test.go:106:	if math.Abs(got-CourierSeaTicks) < 1e-9 {
+server/internal/province/trade_journey.go:27:// PlanTradeJourney uses one terrain snapshot for A* and its entering-hex costs.
+server/internal/province/trade_journey.go:30:func PlanTradeJourney(ctx context.Context, db Queryer, worldID uuid.UUID, origin, dest MapPosition, category string) (TradeJourney, error) {
+server/internal/province/trade_journey.go:35:	return g.PlanTradeJourney(origin, dest, category)
+server/internal/province/trade_journey.go:38:// PlanTradeJourney is the pure planner on an already loaded terrain snapshot.
+server/internal/province/trade_journey.go:39:func (g TileGraph) PlanTradeJourney(origin, dest MapPosition, category string) (TradeJourney, error) {
+server/internal/province/trade_journey.go:54:	path, _, ok := g.FindPath(origin, dest, category)
+server/internal/province/trade_journey.go:60:	for _, cost := range g.StepHours(path, category) {
+server/internal/province/trade_route.go:18:		j, err := g.PlanTradeJourney(origin, dest, "naval")
+server/internal/province/trade_route.go:26:	j, err := g.PlanTradeJourney(origin, dest, "land")
+server/internal/province/pathfind_test.go:8:// TestFindPath_LandAroundMountain verifies that a land unit routes around a
+server/internal/province/pathfind_test.go:20:func TestFindPath_LandAroundMountain(t *testing.T) {
+server/internal/province/pathfind_test.go:54:// TestFindPath_Naval verifies that a naval unit travels over sea tiles.
+server/internal/province/pathfind_test.go:55:func TestFindPath_Naval(t *testing.T) {
+server/internal/province/pathfind_test.go:73:	expected := 2 * TerrainMoveTicks("coastal_sea")
+server/internal/province/pathfind_test.go:79:// TestFindPath_LandBlockedBySea verifies that a land unit returns ok=false when
+server/internal/province/pathfind_test.go:81:func TestFindPath_LandBlockedBySea(t *testing.T) {
+server/internal/province/pathfind_test.go:97:// TestFindPath_StraightLandCost verifies that the returned cost equals the sum of
+server/internal/province/pathfind_test.go:98:// TerrainMoveTicks for each tile entered on a clear straight-line path.
+server/internal/province/pathfind_test.go:99:func TestFindPath_StraightLandCost(t *testing.T) {
+server/internal/province/pathfind_test.go:111:	expected := 2 * TerrainMoveTicks("plains")
+server/internal/province/pathfind_test.go:123:// TestFindPath_HeuristicAdmissibility_NavalDetourCheaperThanDirect is a regression
+server/internal/province/pathfind_test.go:134:func TestFindPath_HeuristicAdmissibility_NavalDetourCheaperThanDirect(t *testing.T) {
+server/internal/province/pathfind_test.go:162:// TestFindPath_RiverBlocksLand is megaron_floden_plan.md's A2: a river is a
+server/internal/province/pathfind_test.go:169:func TestFindPath_RiverBlocksLand(t *testing.T) {
+server/internal/province/pathfind_test.go:199:// TestFindPath_RiverBlocksLand_DetourAround covers the plan's "or a route
+server/internal/province/pathfind_test.go:203:func TestFindPath_RiverBlocksLand_DetourAround(t *testing.T) {
+server/internal/province/pathfind_test.go:226:// TestStepHours_SumMatchesFindPathCost is R2 (megaron_plan_rorelse_sparad_vag.md):
+server/internal/province/pathfind_test.go:227:// StepHours must not re-search a path, only price one already found — and its
+server/internal/province/pathfind_test.go:228:// per-step sum must equal FindPath's own total cost for that exact path, since
+server/internal/province/pathfind_test.go:229:// both use the same moveHoursFor.
+server/internal/province/pathfind_test.go:230:func TestStepHours_SumMatchesFindPathCost(t *testing.T) {
+server/internal/province/pathfind_test.go:265:			path, wantCost, ok := g.FindPath(c.origin, c.target, c.category)
+server/internal/province/pathfind_test.go:267:				t.Fatalf("FindPath did not find a route")
+server/internal/province/pathfind_test.go:269:			steps := g.StepHours(path, c.category)
+server/internal/province/pathfind_test.go:271:				t.Fatalf("StepHours returned %d steps, want %d (len(path)-1)", len(steps), len(path)-1)
+server/internal/province/pathfind_test.go:278:				t.Errorf("sum(StepHours) = %f, want FindPath cost %f", sum, wantCost)
+server/internal/province/pathfind_test.go:284:// TestStepHours_TooShortPath: a path with fewer than two hexes (nothing to
+server/internal/province/pathfind_test.go:286:func TestStepHours_TooShortPath(t *testing.T) {
+server/internal/province/pathfind_test.go:288:	if got := g.StepHours([]MapPosition{{Q: 0, R: 0}}, "land"); got != nil {
+server/internal/province/pathfind_test.go:289:		t.Errorf("StepHours(single-hex path) = %v, want nil", got)
+server/internal/province/pathfind_test.go:291:	if got := g.StepHours(nil, "land"); got != nil {
+server/internal/province/pathfind_test.go:292:		t.Errorf("StepHours(nil path) = %v, want nil", got)
+server/api/handlers/messenger_passage.go:333:			_, landCost, landOK := graph.FindPath(
+server/api/handlers/messenger_passage.go:338:			_, _, navalOK := graph.FindPath(
+server/api/handlers/messenger_passage.go:384:					if _, _, navalOK, nErr := province.FindPath(ctx, pool, worldID,
+server/api/handlers/kingdom.go:1080:		journey, jerr := province.PlanTradeJourney(r.Context(), h.pool, worldID, province.MapPosition{Q: cQ, R: cR}, province.MapPosition{Q: bQ, R: bR}, "land")
+server/api/handlers/messenger_callback_eye_test.go:84:	// START. Buggy: FindPath(destination(7,0) -> origin(0,0)) fails (sea
+server/api/handlers/vision_test.go:100:// TestInterpolatedEyePos_EmptyPathFallsBackSanely verifies an empty path (FindPath
+server/api/handlers/marches_messengers_fow_test.go:81:	// Straight plains corridor q=2..20 so FindPath routes along r=0.
+server/api/handlers/foreign_units.go:177:			p, _, ok := g.FindPath(pos, province.MapPosition{Q: *targetQ, R: *targetR}, fu.Category)
+server/api/handlers/unit_march_colonize_in_place_test.go:8:// positioned unit's own hex, bypassing FindPath (a zero-distance query) and
+server/api/handlers/unit_march_colonize_in_place_test.go:88:	// bypasses FindPath (see doc comment above); since 3b-4 (megaron_plan_
+server/api/handlers/unit_recall_courier_test.go:113:	// remaining time exactly, and CourierTravel's round-to-the-nearest-tick can
+server/api/handlers/world.go:1149:	// same endpoint-OR leak, and the same FindPath+interpolatedEyePos fix, that
+server/api/handlers/world.go:1197:	path, _, ok := g.FindPath(province.MapPosition{Q: oq, R: or}, province.MapPosition{Q: tq, R: tr}, category)
+server/api/handlers/world.go:1211:// streamed in full while its body crossed fog). One FindPath + interpolatedEyePos,
+server/api/handlers/world.go:1216:	if p, _, ok := g.FindPath(from, to, category); ok && len(p) > 0 {
+server/api/handlers/world.go:1390:			if path, _, ok := g.FindPath(from, to, category); ok {
+server/api/handlers/world.go:1760:			if path, _, ok := g.FindPath(from, to, province.CategoryCourier); ok {
+server/api/handlers/messenger_origin_eye_test.go:222:	// The host's own tile (0,0) — missing it made FindPath see no origin at
+server/api/handlers/province.go:3379:			if _, ferr := province.PlanTradeJourney(r.Context(), tx, worldID,
+server/api/handlers/province.go:3391:	journey, err := province.PlanTradeJourney(r.Context(), tx, worldID,
+server/api/handlers/settlement.go:569:	journey, err := province.PlanTradeJourney(r.Context(), tx, worldID, province.MapPosition{Q: sQ, R: sR}, province.MapPosition{Q: tQ, R: tR}, "land")
+server/api/handlers/unit.go:292:// eye: FindPath over the unit's own category + interpolatedEyePos.
+server/api/handlers/unit.go:315:		// (invariant 2); otherwise the old FindPath + interpolatedEyePos,
+server/api/handlers/unit.go:324:		path, _, ok, err := province.FindPath(ctx, pool, worldID, pos,
+server/api/handlers/unit.go:329:		// FindPath failure: best-effort fallback to the stored origin hex.
+server/api/handlers/unit.go:668:		if _, _, pathOK, pathErr := province.FindPath(ctx, h.pool, worldID, currentPos, newTarget, category); pathErr != nil {
+server/api/handlers/unit.go:1048:	_, courierHours, courierOK, cErr := province.FindPath(ctx, pool, worldID, shore, unitPos, province.CategoryCourierLand)
+server/api/handlers/unit.go:1052:	_, marchHours, marchOK, mErr := province.FindPath(ctx, pool, worldID, unitPos, shore, string(unit.CategoryOf(unitType)))
+server/api/handlers/unit.go:1056:	marchHours *= combat.TravelFactor(unitType, unitCrew, false)
+server/api/handlers/unit.go:2102:	// Path directly — route.Hexes, no FindPath at all. Only units WITHOUT one
+server/api/handlers/unit_route_no_research_test.go:8:// och ingen FindPath körs."
+server/api/handlers/messenger.go:364:				_, _, landOK, lerr := province.FindPath(r.Context(), h.pool, worldID,
+server/api/handlers/messenger.go:1168:			if _, lerr := province.PlanTradeJourney(r.Context(), tx, worldID,
+server/api/handlers/messenger.go:1197:	journey, jerr := province.PlanTradeJourney(r.Context(), tx, worldID, province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR}, category)
+server/api/handlers/messenger.go:1202:	returnJourney, jerr := province.PlanTradeJourney(r.Context(), tx, worldID, province.MapPosition{Q: dQ, R: dR}, province.MapPosition{Q: oQ, R: oR}, category)
+
+Additional route-mode readers (rg -n ResolveTradeRoute server --glob *.go):
+server/internal/transport/carrier.go:3:// Until this slice, ResolveTradeRoute could hand back "naval" for a trade/
+server/internal/province/trade_route.go:9:// ResolveTradeRoute prefers an actual naval route when both settlements are
+server/internal/province/trade_route.go:12:func ResolveTradeRoute(ctx context.Context, db Queryer, worldID uuid.UUID, originCoastal, destCoastal bool, origin, dest MapPosition) (category string, dist int, err error) {
+server/internal/combat/standing_orders_naval_test.go:30:// gate province.ResolveTradeRoute checks. Returned as a supportFixture so the
+server/internal/combat/standing_orders.go:45:// (province.ResolveTradeRoute — same substrate api/handlers/province.go's
+server/internal/combat/standing_orders.go:315:	// actually connects them (province.ResolveTradeRoute — the same
+server/internal/combat/standing_orders.go:327:	category, _, err := province.ResolveTradeRoute(ctx, tx, o.worldID, fromCoastal, toCoastal,
+server/internal/combat/standing_orders.go:603:	category, _, err := province.ResolveTradeRoute(ctx, tx, o.worldID, toCoastal, fromCoastal,
+server/api/handlers/province.go:3313:	category, _, err := province.ResolveTradeRoute(r.Context(), h.pool, worldID,
+server/api/handlers/messenger.go:334:		category, _, rerr := province.ResolveTradeRoute(r.Context(), h.pool, worldID,
+server/api/handlers/messenger.go:1140:	category, _, rerr := province.ResolveTradeRoute(r.Context(), tx, worldID,
