@@ -26,11 +26,10 @@ func TestSetStandingOrders_AppliesToActiveParticipant(t *testing.T) {
 	runFieldArrival(t, pool, h, f.worldID, attackerUnitID)
 	battleID := loadBattleID(t, pool, f.worldID, 1, 0)
 
-	loss := 0.75
 	hold := true
 	res, err := SetStandingOrders(context.Background(), pool, h.eventStore, StandingOrdersOrder{
 		WorldID: f.worldID, PlayerID: f.defender, UnitID: defenderUnitID,
-		RetreatAtLoss: &loss, HoldToLastMan: &hold,
+		HoldToLastMan: &hold,
 	})
 	if err != nil {
 		t.Fatalf("SetStandingOrders: %v", err)
@@ -38,8 +37,8 @@ func TestSetStandingOrders_AppliesToActiveParticipant(t *testing.T) {
 	if res.BattleID != battleID {
 		t.Errorf("BattleID = %v, want %v", res.BattleID, battleID)
 	}
-	if res.RetreatAtLoss == nil || *res.RetreatAtLoss != 0.75 {
-		t.Errorf("RetreatAtLoss = %v, want 0.75", res.RetreatAtLoss)
+	if res.RetreatAtLoss != nil {
+		t.Errorf("RetreatAtLoss = %v, want nil", res.RetreatAtLoss)
 	}
 	if !res.HoldToLastMan {
 		t.Error("HoldToLastMan = false, want true")
@@ -56,8 +55,8 @@ func TestSetStandingOrders_AppliesToActiveParticipant(t *testing.T) {
 	if err := json.Unmarshal(raw, &so); err != nil {
 		t.Fatalf("unmarshal standing_orders: %v", err)
 	}
-	if so.RetreatAtLoss == nil || *so.RetreatAtLoss != 0.75 || !so.HoldToLastMan {
-		t.Errorf("standing_orders row = %+v, want retreat_at_loss=0.75 hold_to_last_man=true", so)
+	if so.RetreatAtLoss != nil || !so.HoldToLastMan {
+		t.Errorf("standing_orders row = %+v, want hold_to_last_man=true only", so)
 	}
 
 	var eventCount int
@@ -71,7 +70,7 @@ func TestSetStandingOrders_AppliesToActiveParticipant(t *testing.T) {
 	}
 }
 
-func TestSetStandingOrders_PartialUpdatePreservesOtherField(t *testing.T) {
+func TestSetStandingOrders_ReplacesModeClearsLegacyThreshold(t *testing.T) {
 	pool := testPool(t)
 	f := newBattleFixture(t, pool)
 
@@ -89,20 +88,32 @@ func TestSetStandingOrders_PartialUpdatePreservesOtherField(t *testing.T) {
 		t.Fatalf("first SetStandingOrders: %v", err)
 	}
 
-	loss := 0.2
+	if _, err := pool.Exec(context.Background(), `UPDATE battle_participants SET standing_orders=standing_orders || '{"retreat_at_loss":0.2,"other":"keep"}'::jsonb WHERE battle_id=$1 AND unit_id=$2`, battleID, defenderUnitID); err != nil {
+		t.Fatal(err)
+	}
 	res, err := SetStandingOrders(context.Background(), pool, h.eventStore, StandingOrdersOrder{
-		WorldID: f.worldID, PlayerID: f.defender, UnitID: defenderUnitID, RetreatAtLoss: &loss,
+		WorldID: f.worldID, PlayerID: f.defender, UnitID: defenderUnitID, ByLoyalty: true,
 	})
 	if err != nil {
 		t.Fatalf("second SetStandingOrders: %v", err)
 	}
-	if !res.HoldToLastMan {
-		t.Error("HoldToLastMan reverted to false — setting retreat_at_loss alone must not clobber it")
+	if res.HoldToLastMan {
+		t.Error("loyalty replacement retained legacy hold")
 	}
-	if res.RetreatAtLoss == nil || *res.RetreatAtLoss != 0.2 {
-		t.Errorf("RetreatAtLoss = %v, want 0.2", res.RetreatAtLoss)
+	if res.RetreatAtLoss != nil {
+		t.Errorf("RetreatAtLoss = %v, want nil", res.RetreatAtLoss)
 	}
-	_ = battleID
+	var raw []byte
+	if err := pool.QueryRow(context.Background(), `SELECT standing_orders FROM battle_participants WHERE battle_id=$1 AND unit_id=$2`, battleID, defenderUnitID).Scan(&raw); err != nil {
+		t.Fatal(err)
+	}
+	var stored map[string]any
+	if err := json.Unmarshal(raw, &stored); err != nil {
+		t.Fatal(err)
+	}
+	if stored["other"] != "keep" || stored["retreat_at_loss"] != nil || stored["hold_to_last_man"] != nil {
+		t.Fatalf("mode replacement lost unrelated JSON or retained legacy fields: %s", raw)
+	}
 }
 
 func TestSetStandingOrders_RejectsUnitNotInActiveBattle(t *testing.T) {
@@ -118,9 +129,8 @@ func TestSetStandingOrders_RejectsUnitNotInActiveBattle(t *testing.T) {
 		t.Fatalf("create idle unit: %v", err)
 	}
 
-	loss := 0.5
 	_, err := SetStandingOrders(context.Background(), pool, events.NewStore(pool), StandingOrdersOrder{
-		WorldID: f.worldID, PlayerID: f.defender, UnitID: idleUnitID, RetreatAtLoss: &loss,
+		WorldID: f.worldID, PlayerID: f.defender, UnitID: idleUnitID, ByLoyalty: true,
 	})
 	if err == nil {
 		t.Fatal("SetStandingOrders on a unit with no active battle: want error, got nil")
@@ -144,9 +154,8 @@ func TestSetStandingOrders_RejectsWrongOwner(t *testing.T) {
 	h := newArrivalHandler(pool, &sequenceDice{ints: []int{424243, 909091}})
 	runFieldArrival(t, pool, h, f.worldID, attackerUnitID)
 
-	loss := 0.5
 	_, err := SetStandingOrders(context.Background(), pool, h.eventStore, StandingOrdersOrder{
-		WorldID: f.worldID, PlayerID: f.attacker, UnitID: defenderUnitID, RetreatAtLoss: &loss,
+		WorldID: f.worldID, PlayerID: f.attacker, UnitID: defenderUnitID, ByLoyalty: true,
 	})
 	if err == nil {
 		t.Fatal("SetStandingOrders on someone else's unit: want error, got nil")

@@ -1,7 +1,7 @@
 package handlers
 
 // Realm-wide retreat default (War → "When to retreat"; keryx retreat-default).
-// GET/PUT /worlds/{worldID}/retreat-default. The rules — three states,
+// GET/PUT /worlds/{worldID}/retreat-default. The rules — two player modes,
 // validation, seeding onto battle participants — live in
 // internal/combat/retreat_default.go; this file only speaks HTTP.
 //
@@ -70,7 +70,7 @@ func (h *RetreatDefaultHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 // Put handles PUT /worlds/{worldID}/retreat-default.
-// Body: exactly one of {"retreat_at_loss": 0-1} · {"hold_to_last_man": true} · {"by_loyalty": true}.
+// Body: exactly one of {"hold_to_last_man": true} or {"by_loyalty": true}.
 func (h *RetreatDefaultHandler) Put(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -83,16 +83,21 @@ func (h *RetreatDefaultHandler) Put(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req struct {
-		RetreatAtLoss *float64 `json:"retreat_at_loss"`
-		HoldToLastMan bool     `json:"hold_to_last_man"`
-		ByLoyalty     bool     `json:"by_loyalty"`
+		RetreatAtLoss json.RawMessage `json:"retreat_at_loss"`
+		HoldToLastMan bool            `json:"hold_to_last_man"`
+		ByLoyalty     bool            `json:"by_loyalty"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
 		return
 	}
+	if len(req.RetreatAtLoss) > 0 {
+		writeError(w, http.StatusBadRequest, combat.RetreatPercentNotAllowed)
+		return
+	}
+
 	d, err := combat.SetRetreatDefault(r.Context(), h.pool, worldID, playerID, combat.RetreatDefaultOrder{
-		RetreatAtLoss: req.RetreatAtLoss, HoldToLastMan: req.HoldToLastMan, ByLoyalty: req.ByLoyalty,
+		HoldToLastMan: req.HoldToLastMan, ByLoyalty: req.ByLoyalty,
 	})
 	if err != nil {
 		writeOrderErr(w, err, "could not save retreat default")

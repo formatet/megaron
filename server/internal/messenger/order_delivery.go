@@ -232,7 +232,15 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 		if p.StandingOrders == nil {
 			return fmt.Errorf("order delivery %s: standing_orders verb without standing_orders payload", p.MessengerID)
 		}
-		res, err := combat.SetStandingOrders(ctx, h.pool, h.eventStore, *p.StandingOrders)
+		// Old sealed orders keep their original bytes. Interpret their removed
+		// threshold at application time only, including passage-rebuilt copies.
+		order := *p.StandingOrders
+		if order.RetreatAtLoss != nil {
+			order.RetreatAtLoss = nil
+			order.HoldToLastMan = nil
+			order.ByLoyalty = true
+		}
+		res, err := combat.SetStandingOrders(ctx, h.pool, h.eventStore, order)
 		if err != nil {
 			var rej *combat.OrderReject
 			if errors.As(err, &rej) {
