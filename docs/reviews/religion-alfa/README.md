@@ -3,17 +3,30 @@
 ## Checkpoint B — granskningspunkt
 
 Bas **2ddee968** (A mergad och LIVE av Claude), samma gren `codex/religion-alfa`.
-B-produktion **3858cfab**, migration **176**. Fem minoiska böner är nu aktiva.
+B-grund **3858cfab**, separat receptcommit **242329a8**, migration **176**. Fem minoiska böner är aktiva.
+
+**Timothys receptbeslut19:33 ingår i senaste B-hashen:**
+
+| Bön | Grain | Timber | Fish | Silver |
+|---|---:|---:|---:|---:|
+| Vision | 10 | — | — | 100 |
+| Walls | 8 | 4 | — | — |
+| Green Shoots | 15 | — | — | 50 |
+| Thread | — | 4 | — | 100 |
+| Passage | — | — | 6 | 100 |
+
+Produktionsdiffen i receptcommiten är endast dessa fem Offering-maps + Codex `rites`; testfixturer/prov följer med. Silvergolv100, chans/gates, väntetid och effekter är oförändrade. Web/Keryx använder serverkatalogen.
 
 - Asterion: lokal ägarstämplad engångsgåva för nästa utresande landkaravan eller Runner. Tid ×0,75; landkaravanens överfallsradie2→1, Runner fortsatt helig. Arméer läser/förbrukar ingen av gåvorna.
 - Stillhet: **The Sea Daimons of Stillness**, bön **Favourable Passage**. Nästa verkliga skepp från den egna staden får utresans tid ×0,75. Stormskadan läser en ägarstämpel för exakt avfärds-/ankomsttick. Bud ombord följer bärarens redan sparade resa. Stormväder, heltick-sampling och ordinarie skadebelopp orörda.
 - `departure_prayers` konsumeras i samma TX som avfärden; pending kan inte förnyas, överförs inte till ny ägare och återställs vid rollback. Gudsväntan12, kharis-gates och successful-only från A. Förbrukning flyttar aldrig en pågående resa; returer läser ingen ny bön och ärver ingen bonus.
-- **12 fysiska mutationer**: Thread-flagga/radie, Runner-fart, Stillness-fart/stormskydd/fraktskeppsstämpel/ägare, stående retur/returförbrukning, sena böner för verklig karavan/skepp, armébehörighet. Samtliga named red → byteåterställt → färsk gemensam grön. [Resultat](mutations-b/results.json), [återställt](mutations-b/restored-fresh.log).
-- **Full färsk Go/tomDB/mig176, 608 JS och vet gröna.** Resultat: [Go](b-full-go.log), [JS](b-js.log), [vet](b-vet.log). Slutstatus i [verifiering](checkpoint-b-verification.json). Go-loggens `+ändringar` gäller rapportens README, produktionen `server/web` är exakt3858cfab.
-- **Native Firefox1280/390 + Keryx:** healthz **3858cfa/mig176**, tom produktionsdiff. Fem böner, rätt gudsnamn, två verkliga Offer200/lyckade svar, båda pending och wait12 utan falsk varaktighet; inga JS-fel/HTTP-overrides. [Fakta](live-b/verification.json), [Keryx](live-b/keryx-after.txt).
-- **BILD till Claude/Timothy:** [desktop](live-b/desktop.png), [pending](live-b/desktop-pending.png), [desktop avfärdsböner](live-b/desktop-departure-prayers.png), [mobil](live-b/mobile.png), [mobil böner](live-b/mobile-prayers.png). Ingen egen bildapproval påstås.
+- **12 fysiska mutationer**: Thread-flagga/radie, Runner-fart, Stillness-fart/stormskydd/fraktskeppsstämpel/ägare, stående retur/returförbrukning, sena böner för verklig karavan/skepp, armébehörighet. Samtliga named red → byteåterställt → färsk gemensam grön före recepttillägget; nya fullsviten provar samma livscykler med större offer. [Resultat](mutations-b/results.json), [återställt](mutations-b/restored-fresh.log).
+- **Fem nya fysiska receptmutationer:** för varje bön blir både en oberoende katalogassertion och verklig HTTP Offer-debit namngivet röda. Debit och lagrat RiteCast-offer provas för både lyckat och tyst svar, alla andra varor orörda. Byteåterställt/färsk Alpha+Beta-grön. [Resultat](mutations-recipes/results.json), [återställt](mutations-recipes/restored-fresh.log).
+- **Full färsk Go efter recepttillägget grön:** [Go](recipes-full-go.log). **608 JS och vet gröna:** [JS](recipes-js.log), [vet](recipes-vet.log). Slutstatus i [receptverifiering](recipe-verification.json). Tidigare B-grundens fullsvit finns i b-full-go.log/checkpoint-b-verification.json. Den nya Go-loggens `+ändringar` gäller provverktyget, server/web är exakt242329a8.
+- **Native Firefox1280/390 + Keryx:** healthz **242329a/mig176**, tom produktionsdiff. Fem beslutade recept, rätt gudsnamn, två verkliga Offer200/lyckade svar, båda pending och wait12 utan falsk varaktighet; inga JS-fel/HTTP-overrides. [Fakta](live-b-recipes/verification.json), [Keryx](live-b-recipes/keryx-after.txt).
+- **BILD till Claude/Timothy:** [desktop](live-b-recipes/desktop.png), [pending](live-b-recipes/desktop-pending.png), [desktop avfärdsböner](live-b-recipes/desktop-departure-prayers.png), [mobil](live-b-recipes/mobile.png), [mobil böner](live-b-recipes/mobile-prayers.png). Ingen egen bildapproval påstås.
 
-Spelarprovet använder normal register/join/grundning följt av **explicit egen PRE-ACTION SQL-fixtur**: tempel3, kharis90/rate0, grain/timber/fish/silver100. Ingen SQL under handlingarna. Det bevisar tempelinteraktionen, **inte naturligt tempelbygge eller ekonomisk nåbarhet**. Resornas beteende provas i DB/HTTP/worker-integration; inget naturligt stormväders- eller balansexperiment påstås för B. Egna runtime/containrar städade. Ingen merge/push/deploy från Codex.
+Spelarprovet använder normal register/join/grundning följt av **explicit egen PRE-ACTION SQL-fixtur**: tempel3, kharis90/rate0, grain/timber/fish/silver1000 (så två större offer och möjliga missar ryms). Ingen SQL under handlingarna. Det bevisar tempelinteraktionen, **inte naturligt tempelbygge eller ekonomisk nåbarhet**. Resornas beteende provas i DB/HTTP/worker-integration; inget naturligt stormväders- eller balansexperiment påstås för B. Egna runtime/containrar städade. Ingen merge/push/deploy från Codex.
 
 ## Checkpoint A — tidigare överlämning (nu mergad/LIVE 2ddee968)
 
@@ -326,3 +339,13 @@ Granskningen hittade två implementationfel före slutkod: stående return prefl
 En fysiskmutationskörning avbröts av upptagen testport före DB/teststart; därefter väljs ledig port per mutation och alla12 namedred samt restored-green kördes. Arkiv b-mutations-initial-port-collision.log; b-mutations.log är slutkörningen. Native UI-riggen upptäckte dolt Godnamn i Keryx när Favours saknas (rättad display) och omitempty active0 (rättad assertion). Båda före slutprovet. Precommit-resultat är arkiv; live-b och b-live.log är omkörda mot3858cfab.
 
 Repro: tools/gotest.sh; go -C server vet ./...; node --test $(rg --files web/static/js -g '*.test.mjs'); python3 tools/religion_beta_mutations.py; python3 tools/religion_beta_live.py. Grindar: funktion/semantik och faktisk UIinteraktion med angiven fixtur; BILD ligger i bunten, integration/drift ägs av Claude. **Hash och STOPP.**
+
+## Recepttillägg — utförande och repro
+
+Tillägget19:33 kom i agentlogg under B men levererades till Codex-turen efter den första överlämningen20bf4cd4. Separat commit242329a8 ersätter endast de aktiva katalogrecepten; äldre events/offering-payloads är fortfarande frysta. Codex-artikeln visar samma nya siffror. Testfixturen för Alpha har silver500 i stället för100 för de upprepade avfärdskasten, medan övriga varor förblir100; Walls silent-debit-assertion är nu92 efter ett offer8. Ingen produktions-stock/startregel ändras.
+
+`TestAlphaTraditionalRecipesOctoberDecision` har fem bokstavliga beslutade maps som är oberoende av katalogen. `TestAlphaOfferDebitsDecisionRecipeExactly` kör riktiga default-Offer-HTTP-kast för alla fem, både answered/silent, läser alla lager före/efter och samma TX:s RiteCast-offer. Mutationer sänker en ingrediens för varje bön: Visiongrain10→9, Wallstimber4→3, Greengrain15→14, Threadsilver100→99, Passagefish6→5. Varje måste ge namedred i BÅDA testgrupperna och återställas byteexakt före färsk gemensam grön.
+
+Ny native-rigg med health242329a/mig176 och tom produktionsdiff läser katalogens samtliga maps, jämför dem i CLI-listan och den verkliga drawerns text. Offer-knappen skickar fortfarande endast prayer-ID och servern räknar det traditionella offret. Två verkliga Thread/Passage-Offer200 lyckades; pending+wait12 visas. Fem nya slutbilder ligger i live-b-recipes; äldre live-b är föregående receptversions bevis och används inte som bevis för de större recepten. Egen fixturestock1000 inför handlingarna är explicit, inte ett naturligt ekonomibevis.
+
+Repro för tillägget: python3 tools/religion_recipe_mutations.py; tools/gotest.sh; go -C server vet ./...; node --test $(rg --files web/static/js -g '*.test.mjs'); RELIGION_PROOF_OUT=live-b-recipes python3 tools/religion_beta_live.py. Migration fortsatt176. Alla uppdaterade slutprov gröna; hash och STOPP.

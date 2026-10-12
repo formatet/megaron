@@ -5,7 +5,7 @@ No SQL writes during actions, HTTP overrides or shared acceptance runtime.
 """
 import hashlib, json, os, pathlib, secrets, socket, subprocess, tempfile, time, urllib.request
 ROOT=pathlib.Path(__file__).resolve().parents[1]
-OUT=ROOT/'docs/reviews/religion-alfa/live-b'
+OUT=ROOT/'docs/reviews/religion-alfa'/os.environ.get('RELIGION_PROOF_OUT','live-b')
 OUT.mkdir(parents=True,exist_ok=True)
 commit=subprocess.check_output(['git','-C',str(ROOT),'rev-parse','--short=7','HEAD'],text=True).strip()
 source_diff_hash=hashlib.sha256(subprocess.check_output(['git','-C',str(ROOT),'diff','HEAD','--','server','web'])).hexdigest()
@@ -57,12 +57,25 @@ try:
   # Fixture is explicit, scoped to this newly registered city/realm, before
   # user action; this proves temple interaction, not natural temple construction.
   sql=f"""INSERT INTO buildings(settlement_id,building_type,level) VALUES('{settlement}','temple',3);
-  UPDATE settlement_goods SET amount=100,rate=0,calc_tick=current_world_tick() WHERE settlement_id='{settlement}' AND good_key IN('grain','timber','fish','silver');
+  UPDATE settlement_goods SET amount=1000,rate=0,calc_tick=current_world_tick() WHERE settlement_id='{settlement}' AND good_key IN('grain','timber','fish','silver');
   UPDATE player_world_records SET kharis_amount=90,kharis_rate=0,kharis_calc_tick=current_world_tick() WHERE world_id='{world}' AND settlement_id='{settlement}';"""
   run('docker','exec',containers[0],'psql','-U','postgres','-d','religion_b_proof','-v','ON_ERROR_STOP=1','-c',sql)
   cfg=tmp/'config.json';cfg.write_text(json.dumps({'server':base,'world_id':world,'province_id':province,'token':token}));cfg.chmod(0o600)
   clienv={**clean,'POLEIA_CONFIG':str(cfg)}
+  expected_recipes={
+   'minoan_potnia_vision_v2':{'grain':10,'silver':100},
+   'minoan_potnia_walls':{'grain':8,'timber':4},
+   'minoan_velchanos_green_shoots':{'grain':15,'silver':50},
+   'minoan_asterion_thread':{'timber':4,'silver':100},
+   'minoan_stillness_passage':{'fish':6,'silver':100},
+  }
+  catalogue=api(wp+'/provinces/'+province,token=token)['settlement']['available_prayers']
+  by_prayer={p['id']:p for p in catalogue}
+  for prayer_id,recipe in expected_recipes.items():assert by_prayer[prayer_id]['offering']==recipe,by_prayer[prayer_id]
   cli=run(str(tmp/'keryx'),'rite','--list',env=clienv)
+  for prayer_id,recipe in expected_recipes.items():
+   row=next(line for line in cli.splitlines() if line.startswith(prayer_id))
+   assert all(str(amount) in row and good+'×'+str(amount) in row for good,amount in recipe.items()),row
   assert all(name in cli for name in ["Potnia's Vision","Mistress of the Walls","Green Shoots","The Thread Shows a Path","Favourable Passage"]),cli
   assert 'Britomartis' not in cli and 'Poseidon' not in cli and 'The Sea Daimons of Stillness' in cli,cli
   (OUT/'keryx-before.txt').write_text(cli+'\n')
@@ -85,6 +98,9 @@ try:
    text=page.locator('#kult-body').inner_text()
    assert all(name in text for name in ["Potnia's Vision","Mistress of the Walls","Green Shoots","The Thread Shows a Path","Favourable Passage"]),text
    assert 'The Sea Daimons of Stillness' in text and 'Havsdaimonerna' not in text,text
+   for recipe in expected_recipes.values():
+    recipe_text='traditional offering: '+' + '.join(str(amount)+' '+good for good,amount in sorted(recipe.items()))
+    assert recipe_text in text,(recipe_text,text)
    page.screenshot(path=str(OUT/(label+'.png')))
    if label=='mobile':
     page.locator('#kult-body').evaluate('(el)=>{el.scrollTop=el.scrollHeight;}')
@@ -117,7 +133,7 @@ try:
   after=run(str(tmp/'keryx'),'rite','--list',env=clienv);(OUT/'keryx-after.txt').write_text(after+'\n')
   assert after.count('awaiting next departure')==2 and after.count('12 days')==2,after
   assert all(not c['errors'] for c in captures),captures
-  (OUT/'verification.json').write_text(json.dumps({'health':health,'source_parent_commit':commit,'source_working_diff_sha256_at_build':source_diff_hash,'world':world,'username':username,'normal_register_join_founding':True,'fixture':'Own city temple level3, grain/timber/fish/silver100, realm kharis90/rate0 before actions; not natural temple build','sql_writes_during_actions':False,'payload_overrides':False,'captures':captures,'actions':actions},indent=2)+'\n')
+  (OUT/'verification.json').write_text(json.dumps({'health':health,'source_parent_commit':commit,'source_working_diff_sha256_at_build':source_diff_hash,'traditional_recipes':expected_recipes,'world':world,'username':username,'normal_register_join_founding':True,'fixture':'Own city temple level3, grain/timber/fish/silver1000, realm kharis90/rate0 before actions; not natural temple build','sql_writes_during_actions':False,'payload_overrides':False,'captures':captures,'actions':actions},indent=2)+'\n')
   print('Firefox1280/390 five prayers + real Thread/Passage Offer200/pending/wait12 + Keryx list; explicit pre-action fixture')
 finally:
  if browser:browser.close()

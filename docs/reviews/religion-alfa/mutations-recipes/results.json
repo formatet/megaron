@@ -1,0 +1,37 @@
+[
+  {
+    "recipe": "vision",
+    "catalogue_named_red": true,
+    "actual_default_Offer_debit_named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "recipe": "walls",
+    "catalogue_named_red": true,
+    "actual_default_Offer_debit_named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "recipe": "green",
+    "catalogue_named_red": true,
+    "actual_default_Offer_debit_named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "recipe": "thread",
+    "catalogue_named_red": true,
+    "actual_default_Offer_debit_named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "recipe": "passage",
+    "catalogue_named_red": true,
+    "actual_default_Offer_debit_named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  }
+]

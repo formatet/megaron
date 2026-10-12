@@ -1,0 +1,24 @@
+--- FAIL: TestAlphaTraditionalRecipesOctoberDecision (0.00s)
+    --- FAIL: TestAlphaTraditionalRecipesOctoberDecision/minoan_velchanos_green_shoots (0.00s)
+        recipes_test.go:19: catalogue recipe map[grain:14 silver:50], want map[grain:15 silver:50]
+FAIL
+FAIL	formatet/megaron/server/internal/religion	0.002s
+2026/10/12 19:45:43 INFO player registered id=6d1645f5-9233-4ce8-95a3-0a702d158f7a username=alpha-eba92b09-254e-4cad-b3cb-01e558b6a160
+2026/10/12 19:45:43 INFO player registered id=f453950d-08bf-45b9-9d2d-0ce6dda2ec3d username=alpha-74c0539d-7479-4d92-af43-d78f141e4d84
+2026/10/12 19:45:43 INFO player registered id=03a32547-4778-4141-9eea-180b9161470d username=alpha-7419f9bc-0e6f-4fca-b461-161960b9223f
+2026/10/12 19:45:44 INFO player registered id=b71dcbf6-0ca4-4866-8312-ed56c96223f1 username=alpha-37fa220b-e098-42c0-9ebb-a0f87ee3e879
+2026/10/12 19:45:44 INFO player registered id=c0f06460-5232-4317-9143-ac49f8794f20 username=alpha-11c1febb-264f-4315-9b05-d253d57350d0
+2026/10/12 19:45:44 INFO player registered id=ae81c766-a41a-4fc7-b526-da116fb7aa65 username=alpha-e94e817e-c85d-42a3-96e2-8355b0643629
+2026/10/12 19:45:44 INFO player registered id=cc29d4e0-2488-4679-9084-56fb076d36e4 username=alpha-01c87eaf-2ca1-4e3a-a2cb-d402d85d7293
+2026/10/12 19:45:44 INFO player registered id=a5e75c82-90db-44eb-acbe-47f7a567fd5e username=alpha-6ae8c980-88f9-412a-9891-e4000c988b85
+2026/10/12 19:45:44 INFO player registered id=4c226269-0eb1-4a16-a0c5-1f0095aaeedb username=alpha-38a7aa95-8664-49ac-a81e-e7d86b6adb70
+2026/10/12 19:45:44 INFO player registered id=3cb2807b-8919-424f-aa83-354dbc0bf70c username=alpha-df110ecf-1813-4498-b9bd-38f739ba99b4
+--- FAIL: TestAlphaOfferDebitsDecisionRecipeExactly (0.67s)
+    --- FAIL: TestAlphaOfferDebitsDecisionRecipeExactly/minoan_velchanos_green_shoots/answered (0.07s)
+        religion_recipes_test.go:58: Offer debited grain: before100 after86, expected debit15
+    --- FAIL: TestAlphaOfferDebitsDecisionRecipeExactly/minoan_velchanos_green_shoots/silent (0.06s)
+        religion_recipes_test.go:58: Offer debited grain: before100 after86, expected debit15
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.681s
+FAIL
+» färsk DB på migration 176 · commit 20bf4cd4+ändringar

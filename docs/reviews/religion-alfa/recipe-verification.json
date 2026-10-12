@@ -1,0 +1,106 @@
+{
+  "status": "complete_for_Claude_review_STOP",
+  "branch": "codex/religion-alfa",
+  "B_previous_handover": "20bf4cd4",
+  "B_implementation": "3858cfab",
+  "recipe_commit": "242329a8",
+  "migration": 176,
+  "recipes": {
+    "minoan_potnia_vision_v2": {
+      "grain": 10,
+      "silver": 100
+    },
+    "minoan_potnia_walls": {
+      "grain": 8,
+      "timber": 4
+    },
+    "minoan_velchanos_green_shoots": {
+      "grain": 15,
+      "silver": 50
+    },
+    "minoan_asterion_thread": {
+      "timber": 4,
+      "silver": 100
+    },
+    "minoan_stillness_passage": {
+      "fish": 6,
+      "silver": 100
+    }
+  },
+  "production_scope": "Only the five active PrayerSpecs Offering maps and Codex rites text; tests/fixtures adjusted. No other production rules.",
+  "unchanged": [
+    "silver altar floor100",
+    "chance formula and bounds",
+    "kharis gates",
+    "successful-only god cooldowns",
+    "all B departure effects and storm integer-tick sampling",
+    "historical payloads"
+  ],
+  "checks": {
+    "catalogue_and_default_HTTP_Offer": "five independent literal decision recipes, answered/silent, every good before/after and frozen RiteCast offering",
+    "physical_mutations": [
+      {
+        "recipe": "vision",
+        "catalogue_named_red": true,
+        "actual_default_Offer_debit_named_red": true,
+        "byte_restored": true,
+        "restored_fresh_green": true
+      },
+      {
+        "recipe": "walls",
+        "catalogue_named_red": true,
+        "actual_default_Offer_debit_named_red": true,
+        "byte_restored": true,
+        "restored_fresh_green": true
+      },
+      {
+        "recipe": "green",
+        "catalogue_named_red": true,
+        "actual_default_Offer_debit_named_red": true,
+        "byte_restored": true,
+        "restored_fresh_green": true
+      },
+      {
+        "recipe": "thread",
+        "catalogue_named_red": true,
+        "actual_default_Offer_debit_named_red": true,
+        "byte_restored": true,
+        "restored_fresh_green": true
+      },
+      {
+        "recipe": "passage",
+        "catalogue_named_red": true,
+        "actual_default_Offer_debit_named_red": true,
+        "byte_restored": true,
+        "restored_fresh_green": true
+      }
+    ],
+    "full_fresh_go": "passed; recipes-full-go.log, empty PG16 migration176 dirty=false",
+    "vet": "passed; recipes-vet.log",
+    "javascript": {
+      "passed": 608,
+      "failed": 0,
+      "log": "recipes-js.log"
+    },
+    "native_runtime": {
+      "commit": "242329a",
+      "migration": 176,
+      "status": "ok"
+    },
+    "native_production_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native_Firefox_Keryx": "passed,1280/390,all5recipes from catalogue+CLI+realdrawer;actualThread/Passage Offer200 and pending+wait12"
+  },
+  "images": [
+    "live-b-recipes/desktop.png",
+    "live-b-recipes/desktop-pending.png",
+    "live-b-recipes/desktop-departure-prayers.png",
+    "live-b-recipes/mobile.png",
+    "live-b-recipes/mobile-prayers.png"
+  ],
+  "limits": [
+    "Normal register/join/found then EXPLICIT own pre-action temple3/kharis90/stocks1000 fixture. Not a natural economy/temple-build proof.",
+    "No SQL during actions, no HTTP payload overrides. Own runtime/containers cleaned.",
+    "Twelve earlier B effect mutations remain at their recorded source; five new mutations cover each changed recipe. New full suite exercises B/Alpha with new recipes.",
+    "BILD to Claude/Timothy; no Codex merge/push/deploy."
+  ]
+}

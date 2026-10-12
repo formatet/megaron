@@ -126,5 +126,11 @@
     "node --test $(rg --files web/static/js -g '*.test.mjs')",
     "python3 tools/religion_beta_mutations.py",
     "python3 tools/religion_beta_live.py"
-  ]
+  ],
+  "latest_recipe_addendum": {
+    "production_commit": "242329a8",
+    "report": "recipe-verification.json",
+    "native_proof": "live-b-recipes/verification.json",
+    "older_native_proof": "live-b is the earlier, smaller-recipe build"
+  }
 }

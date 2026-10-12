@@ -1,0 +1,24 @@
+--- FAIL: TestAlphaTraditionalRecipesOctoberDecision (0.00s)
+    --- FAIL: TestAlphaTraditionalRecipesOctoberDecision/minoan_stillness_passage (0.00s)
+        recipes_test.go:19: catalogue recipe map[fish:5 silver:100], want map[fish:6 silver:100]
+FAIL
+FAIL	formatet/megaron/server/internal/religion	0.002s
+2026/10/12 19:45:55 INFO player registered id=eaeced59-c33b-4584-997e-04425eda791a username=alpha-ed28471f-10d6-4729-96c8-845e78b9596e
+2026/10/12 19:45:55 INFO player registered id=e3cb68b3-37d5-4b05-9aed-ed30c3dc10ba username=alpha-a273a88e-ffae-4e77-8939-03d28ebf9528
+2026/10/12 19:45:55 INFO player registered id=a22ab937-e793-48b1-8abb-8db5be766e0a username=alpha-da67d6d5-1f50-4938-af98-e20971996bd6
+2026/10/12 19:45:55 INFO player registered id=30e06576-75b3-405e-b6f2-cad032b1693f username=alpha-5cce597f-ec9b-4dd6-963c-ffcd8e9ce7e5
+2026/10/12 19:45:55 INFO player registered id=ec5f519f-8303-4959-b5ed-92654e64f7c4 username=alpha-1acd2c5a-4400-48a7-9d88-51099c6b8cb9
+2026/10/12 19:45:55 INFO player registered id=65fc750f-1a7f-4418-a63b-696af4c6aaac username=alpha-38c3edec-e475-4031-aa3c-241c279104b8
+2026/10/12 19:45:55 INFO player registered id=9afd6dcf-2116-4233-b372-cd4b7b3e9056 username=alpha-f396ab69-958f-45a2-ab8b-ffb57a2cd947
+2026/10/12 19:45:55 INFO player registered id=b010d6a4-5643-428a-91cb-37a0186efd2c username=alpha-be40f48f-36bc-4c5e-916d-51dd4d102245
+2026/10/12 19:45:55 INFO player registered id=357d6565-270a-41d2-8ec1-ab0e84fd12bc username=alpha-5c6fb258-e925-4baa-b836-33c71fb5dfcc
+2026/10/12 19:45:55 INFO player registered id=e7c2b5ad-7ccf-4772-a66e-32569eaacb3f username=alpha-bc940b54-2200-4b1a-aabf-97e69c4f0519
+--- FAIL: TestAlphaOfferDebitsDecisionRecipeExactly (0.69s)
+    --- FAIL: TestAlphaOfferDebitsDecisionRecipeExactly/minoan_stillness_passage/answered (0.06s)
+        religion_recipes_test.go:58: Offer debited fish: before100 after95, expected debit6
+    --- FAIL: TestAlphaOfferDebitsDecisionRecipeExactly/minoan_stillness_passage/silent (0.07s)
+        religion_recipes_test.go:58: Offer debited fish: before100 after95, expected debit6
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.694s
+FAIL
+» färsk DB på migration 176 · commit 20bf4cd4+ändringar

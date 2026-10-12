@@ -1,0 +1,24 @@
+--- FAIL: TestAlphaTraditionalRecipesOctoberDecision (0.00s)
+    --- FAIL: TestAlphaTraditionalRecipesOctoberDecision/minoan_potnia_walls (0.00s)
+        recipes_test.go:19: catalogue recipe map[grain:8 timber:3], want map[grain:8 timber:4]
+FAIL
+FAIL	formatet/megaron/server/internal/religion	0.002s
+2026/10/12 19:45:38 INFO player registered id=9cd6276b-65cb-47b3-a4e5-f487a8fd0310 username=alpha-94a1b4d0-6e49-4117-a04f-7cec73a032a0
+2026/10/12 19:45:38 INFO player registered id=b537249e-5d6c-4925-944e-dc28cb7a74f0 username=alpha-ca9a945e-f592-42df-9052-df4af2c2ab17
+2026/10/12 19:45:38 INFO player registered id=9c1097ab-7631-4444-8af4-496c2f38fe23 username=alpha-35ce60ac-a7bb-427d-a564-a3a59c886d9e
+2026/10/12 19:45:38 INFO player registered id=419fa9fb-7fc5-462d-8d83-771b4eb7d453 username=alpha-f1f33eda-535b-4b15-af36-be6ec1e67a35
+2026/10/12 19:45:38 INFO player registered id=20d80e20-3520-4182-9209-507a656542a5 username=alpha-b4caf85d-43a4-46d6-be93-4c7320d9553c
+2026/10/12 19:45:38 INFO player registered id=d1a0fcb8-479e-44e8-a7b6-5c50bed0993c username=alpha-e94fc646-e718-4ce3-85db-5e4e898c0472
+2026/10/12 19:45:38 INFO player registered id=4cc4f89c-f02f-40cb-9717-40cb6bf0878c username=alpha-21f10ebe-1c83-4ca1-9c93-ce62be60905f
+2026/10/12 19:45:38 INFO player registered id=ad451120-0377-42ba-aa1d-75cf95f1a587 username=alpha-ff0703fa-11e9-4604-a9e8-66f9a0b962bd
+2026/10/12 19:45:38 INFO player registered id=841eeeb9-3d4a-4147-8083-5d1500c516ae username=alpha-3cf9e9f8-115b-485d-979e-84814941e4fb
+2026/10/12 19:45:38 INFO player registered id=36ea3bc3-2caf-4798-b9ed-501305e1d5b7 username=alpha-429befa0-98d4-43a9-a5cd-cbca2960fdbb
+--- FAIL: TestAlphaOfferDebitsDecisionRecipeExactly (0.68s)
+    --- FAIL: TestAlphaOfferDebitsDecisionRecipeExactly/minoan_potnia_walls/answered (0.06s)
+        religion_recipes_test.go:58: Offer debited timber: before100 after97, expected debit4
+    --- FAIL: TestAlphaOfferDebitsDecisionRecipeExactly/minoan_potnia_walls/silent (0.07s)
+        religion_recipes_test.go:58: Offer debited timber: before100 after97, expected debit4
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.691s
+FAIL
+» färsk DB på migration 176 · commit 20bf4cd4+ändringar
