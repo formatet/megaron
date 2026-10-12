@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 // autostart) — same problem documented in cargo.test.mjs/economy.test.mjs.
 // Stub the one global it touches, then dynamically import.
 globalThis.document ??= { addEventListener() {} };
-const { cultLevelLabel } = await import('./kult.js');
+const { cultLevelLabel, prayerStatusHTML } = await import('./kult.js');
 
 // The server never runs a five-tier cult-level model (forsummad/enkel/vardig/
 // praktfull/overdadig) — internal/kharis/tick.go's deriveMood "replaces
@@ -34,4 +34,17 @@ test('AK3: enkel (pre-first-tick fallback) gets an honest label, not a fake tier
 
 test('AK4: a value the server never sends still falls back to itself, not a fabricated label', () => {
   assert.equal(cultLevelLabel('some_unknown_value'), 'some_unknown_value');
+});
+
+
+test('Alpha: realm god waiting time uses game days and blocks Offer', () => {
+ const html=prayerStatusHTML({id:'minoan_potnia_walls',affordable:false,cooldown_remaining_game_days:24});
+ assert.match(html,/on cooldown.*24 days/);assert.doesNotMatch(html,/Offer|24m|not affordable/);
+});
+test('Alpha: active gift shows its remaining days and cannot be offered again', () => {
+ const html=prayerStatusHTML({id:'minoan_velchanos_green_shoots',affordable:false,active_remaining_game_days:25,cooldown_remaining_game_days:25});
+ assert.match(html,/active.*25 days/);assert.doesNotMatch(html,/Offer|not affordable/);
+});
+test('Alpha: affordable available prayer still exposes the real cast action', () => {
+ assert.match(prayerStatusHTML({id:'minoan_potnia_vision_v2',affordable:true}),/okRite\('minoan_potnia_vision_v2'\).*Offer/);
 });

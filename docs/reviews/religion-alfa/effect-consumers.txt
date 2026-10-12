@@ -1,0 +1,190 @@
+Base: 6f89290b
+Command: rg -n battle_frenzy_until|Frenzied|frenzied|harvest_blessing_until_tick|ApplyHarvestBlessing|interceptRadius|TravelFactor|PlanTradeJourney|CourierTravel|PlanOutboundRoute|PlanReturnRoute|prepareJourney|RouteEnterMilli|StormDamage server web
+
+server/db/migrations/171_harvest_blessing_until.down.sql:1:ALTER TABLE settlements DROP COLUMN IF EXISTS harvest_blessing_until_tick;
+server/db/migrations/171_harvest_blessing_until.up.sql:5:ALTER TABLE settlements ADD COLUMN harvest_blessing_until_tick INT;
+server/db/migrations/020_priest_to_rite.down.sql:2:ALTER TABLE settlements DROP COLUMN IF EXISTS battle_frenzy_until;
+server/db/migrations/020_priest_to_rite.up.sql:2:-- the kharis-based rite system. battle_frenzy_until tracks active frenzy buffs.
+server/db/migrations/020_priest_to_rite.up.sql:4:ALTER TABLE settlements ADD COLUMN IF NOT EXISTS battle_frenzy_until TIMESTAMPTZ;
+server/internal/economy/harvest_blessing.go:31:// ApplyHarvestBlessing blesses the settlement's harvest from now for
+server/internal/economy/harvest_blessing.go:35:func ApplyHarvestBlessing(ctx context.Context, tx Tx, settlementID uuid.UUID) (untilTick int, err error) {
+server/internal/economy/harvest_blessing.go:38:		 SET harvest_blessing_until_tick = GREATEST(COALESCE(harvest_blessing_until_tick, 0), current_world_tick() + $2)
+server/internal/economy/harvest_blessing.go:40:		 RETURNING harvest_blessing_until_tick`,
+server/internal/economy/trade.go:567:	journey, err := province.PlanTradeJourney(ctx, tx, worldID, province.MapPosition{Q: arriveQ, R: arriveR}, province.MapPosition{Q: homeQ, R: homeR}, "naval")
+web/static/codex/index.json:38:    {"id": "sea",          "title": "The Thalassa and ships",       "category": "The wider world", "kinds": ["ShipDamaged", "ShipStormDamaged", "ShipFoundered", "ShipRepaired", "UnitLostAtSea", "ShipCaptured", "ShipLost", "ShipStranded", "ShipSweptFromSea", "PassageStalled", "PickupWaiting", "UnitFetched", "PickupTimedOut"], "related": ["units", "bronze", "sight", "transfers", "storms"]},
+server/internal/economy/recompute.go:535:		        COALESCE(s.harvest_blessing_until_tick > current_world_tick(), false)
+server/internal/economy/trade_legacy_test.go:106:// empty voyage home is planned from the map via province.PlanTradeJourney. The
+server/internal/economy/trade_journey_test.go:37:			journey, err := g.PlanTradeJourney(province.MapPosition{Q: 5}, province.MapPosition{}, category)
+server/internal/messenger/courier_travel_sea_wall_test.go:3:// TestCourierTravelOnGraph_NoLongerShortcutsOverSea is 3b-4's acceptance
+server/internal/messenger/courier_travel_sea_wall_test.go:7:// Pure in-memory TileGraph test, no DB needed (CourierTravelOnGraph never
+server/internal/messenger/courier_travel_sea_wall_test.go:31:func TestCourierTravelOnGraph_NoLongerShortcutsOverSea(t *testing.T) {
+server/internal/messenger/courier_travel_sea_wall_test.go:36:	ticks, _, ok := CourierTravelOnGraph(g, province.MapPosition{Q: 0, R: 0}, province.MapPosition{Q: 3, R: 0})
+server/internal/messenger/courier_travel_sea_wall_test.go:43:		t.Errorf("CourierTravelOnGraph ticks = %d, want %d (the pure land detour) — "+
+server/internal/messenger/courier_travel_sea_wall_test.go:48:// TestCourierTravelOnGraph_UnreachableIsNeverARaklinje is the rest of
+server/internal/messenger/courier_travel_sea_wall_test.go:53:// CourierTravelOnGraph entirely; this pins that it stays gone.
+server/internal/messenger/courier_travel_sea_wall_test.go:54:func TestCourierTravelOnGraph_UnreachableIsNeverARaklinje(t *testing.T) {
+server/internal/messenger/courier_travel_sea_wall_test.go:58:	ticks, dur, ok := CourierTravelOnGraph(g, province.MapPosition{Q: 0, R: 0}, province.MapPosition{Q: 2, R: 0})
+server/internal/messenger/courier_travel_sea_wall_test.go:60:		t.Fatalf("CourierTravelOnGraph = ok=true (ticks=%d, dur=%v), want ok=false — no land route exists around the sea in this fixture",
+server/internal/messenger/courier_travel_sea_wall_test.go:64:		t.Errorf("CourierTravelOnGraph on ok=false = (%d, %v), want the zero value, not a guessed straight-line time", ticks, dur)
+web/static/js/megaron/ui/format.js:133:    ShipStormDamaged: 'war', ShipFoundered: 'war',
+web/static/js/megaron/ui/format.js:197:    ShipStormDamaged:   '🌊',
+web/static/js/megaron/ui/format.js:552:    case 'ShipStormDamaged':
+web/static/js/megaron/ui/format.js:561:      if (kind === 'ShipStormDamaged') return `${subject} was battered by ${storm} ${at} — hull ${body.hull ?? '?'}/${body.hull_max ?? 5}${first}`;
+server/internal/messenger/intercept_test.go:70:	_, naiveDur, naiveOK := CourierTravelOnGraph(g, courierOrigin, snapshot)
+server/internal/economy/siege.go:12:// siegeInterceptRadius mirrors transport.interceptRadius (unexported there,
+server/internal/economy/siege.go:17:// interceptRadius)."
+server/internal/messenger/stay_end_test.go:31:// PlanReturnRoute's own land check (province.CategoryCourierLand) finds a
+server/internal/messenger/recall.go:43:// CourierTravel returns the world-tick and wall-clock travel time for a
+server/internal/messenger/recall.go:55:func CourierTravel(ctx context.Context, db province.Queryer, worldID uuid.UUID, from, to province.MapPosition) (ticks int, dur time.Duration, ok bool, err error) {
+server/internal/messenger/recall.go:60:	ticks, dur, ok = CourierTravelOnGraph(g, from, to)
+server/internal/messenger/recall.go:64:// CourierTravelOnGraph is CourierTravel over an already-loaded TileGraph —
+server/internal/messenger/recall.go:69:// CourierTravel's own doc comment; no raklinjefallback here either.
+server/internal/messenger/recall.go:70:func CourierTravelOnGraph(g province.TileGraph, from, to province.MapPosition) (ticks int, dur time.Duration, ok bool) {
+server/internal/messenger/recall.go:130:// (combat.RouteEnterMilli, converted to wall clock via tick.Anchor.WallAt)
+server/internal/messenger/recall.go:151:// on its own (CourierTravelOnGraph's ok=false).
+server/internal/messenger/recall.go:174:		// its own is no longer a candidate at all — CourierTravelOnGraph's
+server/internal/messenger/recall.go:179:		_, courierDur, courierOK := CourierTravelOnGraph(g, courierOrigin, path[i])
+server/internal/messenger/recall.go:219:// combat.RouteEnterMilli + anchor.WallAt. err is non-nil only for a
+server/internal/messenger/recall.go:230:	enterMilli, err := combat.RouteEnterMilli(route)
+server/cmd/keryx/cmd_god.go:54:					Frenzied   bool    `json:"frenzied"`
+server/cmd/keryx/cmd_god.go:71:				if s.Frenzied {
+server/internal/messenger/carrier_fate.go:147:		route, err = PlanReturnRoute(ctx, tx, world, *w.PortID, province.MapPosition{Q: w.Q, R: w.R}, province.MapPosition{Q: q, R: r})
+server/internal/messenger/carrier_fate.go:149:		route, err = PlanOutboundRoute(ctx, tx, world, w.SenderID, province.MapPosition{Q: w.Q, R: w.R}, province.MapPosition{Q: q, R: r})
+server/internal/messenger/call_back.go:107:	ticks, dur, ok, cErr := CourierTravel(ctx, tx, worldID,
+web/static/js/megaron/ui/format.test.mjs:665:test('ShipStormDamaged: reads as hull left, not as a loss', () => {
+web/static/js/megaron/ui/format.test.mjs:666:  const line = notifText('ShipStormDamaged', { ...foundered, foundered: false, hull: 3, hull_before: 4, cargo: undefined });
+web/static/js/megaron/ui/format.test.mjs:672:  assert.equal(notifText('ShipStormDamaged', { ...hit, storm_name: 'Skyla' }),
+web/static/js/megaron/ui/format.test.mjs:674:  assert.equal(notifText('ShipStormDamaged', { ...hit, first_to_meet: true }),
+web/static/js/megaron/ui/drawers/kult.js:86:      const frenzyUntil = sd.battle_frenzy_until ? new Date(sd.battle_frenzy_until) : null;
+web/static/js/megaron/ui/drawers/kult.js:96:          statusHtml = `<span style="color:var(--safe);font-size:.72rem">active — expires ${fmtEta(sd.battle_frenzy_until, undefined, 'expired')}</span>`;
+server/internal/messenger/passage.go:73:// RouteMode is PlanOutboundRoute/PlanReturnRoute's verdict.
+server/internal/messenger/passage.go:99:// RouteDecision is PlanOutboundRoute/PlanReturnRoute's result.
+server/internal/messenger/passage.go:102:	// Land: full travel ticks/duration from→to, exactly as CourierTravel would
+server/internal/messenger/passage.go:110:	// caller falls back to the plain CourierTravel(from,to) crossing, exactly
+server/internal/messenger/passage.go:121:// PlanOutboundRoute decides whether a messenger dispatched by ownerID from
+server/internal/messenger/passage.go:127:func PlanOutboundRoute(ctx context.Context, db province.Queryer, worldID, ownerID uuid.UUID, from, to province.MapPosition) (RouteDecision, error) {
+server/internal/messenger/passage.go:133:		// CourierTravel (plain CategoryCourier, river still boatable —
+server/internal/messenger/passage.go:141:		ticks, dur, ok, cErr := CourierTravel(ctx, db, worldID, from, to)
+server/internal/messenger/passage.go:181:// PlanReturnRoute is PlanOutboundRoute's return-leg twin (R6): the port is
+server/internal/messenger/passage.go:184:func PlanReturnRoute(ctx context.Context, db province.Queryer, worldID uuid.UUID, standingAt uuid.UUID, from, to province.MapPosition) (RouteDecision, error) {
+server/internal/messenger/passage.go:190:		// See PlanOutboundRoute's own comment: plain CourierTravel, not the
+server/internal/messenger/passage.go:193:		ticks, dur, ok, cErr := CourierTravel(ctx, db, worldID, from, to)
+server/internal/messenger/passage.go:208:// ticksFromHours mirrors CourierTravelOnGraph's own rounding (>=1 tick).
+server/internal/messenger/passage.go:259:// SendFromHost, sendOrderCourier) calls in place of a bare CourierTravel, per
+server/internal/messenger/passage.go:268:	rd, err := PlanOutboundRoute(ctx, db, worldID, ownerID, from, to)
+server/internal/messenger/passage.go:284:	rd, err := PlanReturnRoute(ctx, db, worldID, standingAt, from, to)
+server/internal/messenger/passage.go:1001:	// disembarkAt to the target right before calling this — CourierTravel
+server/internal/messenger/passage.go:1005:	landTicks, landDur, ok, err := CourierTravel(ctx, tx, worldID, disembarkAt, province.MapPosition{Q: targetQ, R: targetR})
+server/cmd/keryx/cmd_notifications.go:160:	if n.Kind == "ShipStormDamaged" || n.Kind == "ShipFoundered" {
+server/cmd/keryx/cmd_notifications.go:589:	if n.Kind == "ShipStormDamaged" {
+server/internal/province/trade_journey_test.go:11:	j, err := g.PlanTradeJourney(MapPosition{}, MapPosition{Q: 2}, "land")
+server/internal/province/trade_journey_test.go:20:	reverse, err := g.PlanTradeJourney(MapPosition{Q: 2}, MapPosition{}, "land")
+server/internal/province/trade_journey_test.go:31:	if _, err := g.PlanTradeJourney(MapPosition{}, MapPosition{Q: 3}, "land"); !errors.Is(err, ErrNoTradePath) {
+server/internal/province/trade_journey_test.go:34:	j, err := g.PlanTradeJourney(MapPosition{}, MapPosition{Q: 3}, "naval")
+server/internal/province/trade_journey_test.go:50:	j, err := g.PlanTradeJourney(MapPosition{}, MapPosition{}, "land")
+server/internal/province/trade_journey.go:27:// PlanTradeJourney uses one terrain snapshot for A* and its entering-hex costs.
+server/internal/province/trade_journey.go:30:func PlanTradeJourney(ctx context.Context, db Queryer, worldID uuid.UUID, origin, dest MapPosition, category string) (TradeJourney, error) {
+server/internal/province/trade_journey.go:35:	return g.PlanTradeJourney(origin, dest, category)
+server/internal/province/trade_journey.go:38:// PlanTradeJourney is the pure planner on an already loaded terrain snapshot.
+server/internal/province/trade_journey.go:39:func (g TileGraph) PlanTradeJourney(origin, dest MapPosition, category string) (TradeJourney, error) {
+server/internal/province/movement_ro1_test.go:56:		j, err := g.PlanTradeJourney(MapPosition{}, MapPosition{Q: 4}, category)
+server/internal/province/trade_route.go:18:		j, err := g.PlanTradeJourney(origin, dest, "naval")
+server/internal/province/trade_route.go:26:	j, err := g.PlanTradeJourney(origin, dest, "land")
+server/api/handlers/kingdom.go:1080:		journey, jerr := province.PlanTradeJourney(r.Context(), h.pool, worldID, province.MapPosition{Q: cQ, R: cR}, province.MapPosition{Q: bQ, R: bR}, "land")
+server/api/handlers/rite_harvest_outcome_test.go:89:func callApplyHarvestBlessing(t *testing.T, pool *pgxpool.Pool, settlementID uuid.UUID) (effect map[string]any, message string) {
+server/api/handlers/rite_harvest_outcome_test.go:141:	effect, msg := callApplyHarvestBlessing(t, pool, settlementID)
+server/internal/transport/intercept.go:75:	interceptRadius            = 2
+server/internal/transport/intercept.go:206:			e.WorldID, t.owner, pos.Q, pos.R, interceptRadius,
+server/internal/transport/intercept.go:215:		// snubbeltråd"). A naval sentry within interceptRadius but beyond its own
+server/internal/transport/intercept.go:468:	journey, err := province.PlanTradeJourney(ctx, tx, worldID, pos, province.MapPosition{Q: destQ, R: destR}, "naval")
+server/internal/transport/intercept_test.go:141:// distance 2 sits inside the ship's interceptRadius (2) yet outside its
+server/internal/transport/intercept_test.go:163:	// caravan's halfway hex (1,0) is 2 = interceptRadius, so the proximity
+server/api/handlers/unit_recall_courier_test.go:113:	// remaining time exactly, and CourierTravel's round-to-the-nearest-tick can
+server/internal/transport/transport.go:73:	p, err := prepareJourney(ctx, tx, p)
+server/internal/transport/transport.go:93:	p, err := prepareJourney(ctx, tx, p)
+server/internal/transport/transport.go:148:// prepareJourney makes new writers fail closed even when a caller omitted its
+server/internal/transport/transport.go:150:func prepareJourney(ctx context.Context, tx pgx.Tx, p DispatchParams) (DispatchParams, error) {
+server/internal/transport/transport.go:173:		j, err := province.PlanTradeJourney(ctx, tx, p.WorldID, province.MapPosition{Q: p.OriginQ, R: p.OriginR}, province.MapPosition{Q: p.DestQ, R: p.DestR}, p.Category)
+server/internal/kharis/tick.go:1681:		if _, err := economy.ApplyHarvestBlessing(ctx, h.pool, settlementID); err != nil {
+server/internal/combat/recall_redirect.go:161:	// TravelFactor) — a war galley/merchantman/nomadic host recalled or
+server/internal/combat/recall_redirect.go:164:	moveTicks *= TravelFactor(unit.Type(utype), crew, cargoUnitID != nil)
+server/internal/combat/march_start.go:165:// TravelFactor is the complete multiplier applied to a path's raw tick cost:
+server/internal/combat/march_start.go:172:func TravelFactor(t unit.Type, crew int, laden bool) float64 {
+server/internal/combat/march_start.go:732:	// in TravelFactor — the one home for every leg.
+server/internal/combat/march_start.go:733:	moveTicks *= TravelFactor(u.Type, u.Crew, u.CargoUnitID != nil)
+server/api/handlers/province.go:616:			`SELECT current_world_tick(), harvest_blessing_until_tick FROM settlements WHERE id = $1`,
+server/api/handlers/province.go:3379:			if _, ferr := province.PlanTradeJourney(r.Context(), tx, worldID,
+server/api/handlers/province.go:3391:	journey, err := province.PlanTradeJourney(r.Context(), tx, worldID,
+server/internal/combat/unit_arrival.go:1502:// speed (TravelFactor), the saved route, the unit row and its scheduled
+server/internal/combat/unit_arrival.go:1515:	// TravelFactor) — without these a war galley/merchantman's return trip
+server/internal/combat/place_reach.go:239:		entered, err := RouteEnterMilli(v.route)
+server/internal/combat/standing_orders_naval_test.go:178:	journey, err := province.PlanTradeJourney(context.Background(), pool, f.worldID,
+server/internal/combat/expedition.go:74:	return max(1, int(math.Round(moveTicks*TravelFactor(t, crew, laden))))
+server/internal/combat/expedition.go:81:	Cost   float64 // raw path cost, before TravelFactor
+server/internal/combat/occupation.go:765:	journey, err := province.PlanTradeJourney(ctx, tx, worldID,
+server/api/handlers/settlement.go:439:	// battle_frenzy_until is still on the settlement (it's a per-settlement combat state).
+server/api/handlers/settlement.go:442:		`SELECT battle_frenzy_until FROM settlements WHERE id = $1`,
+server/api/handlers/settlement.go:476:		"battle_frenzy_until": frenzyUntil,
+server/api/handlers/settlement.go:569:	journey, err := province.PlanTradeJourney(r.Context(), tx, worldID, province.MapPosition{Q: sQ, R: sR}, province.MapPosition{Q: tQ, R: tR}, "land")
+server/api/handlers/settlement.go:983:	var alreadyFrenzied bool
+server/api/handlers/settlement.go:986:		        (battle_frenzy_until IS NOT NULL AND battle_frenzy_until > now())
+server/api/handlers/settlement.go:991:	).Scan(&cultureID, &alreadyFrenzied)
+server/api/handlers/settlement.go:1058:	if spec.EffectType == religion.EffectBattleFrenzy && alreadyFrenzied {
+server/api/handlers/settlement.go:1286:// applyBattleFrenzy sets battle_frenzy_until for 6 scaled hours.
+server/api/handlers/settlement.go:1290:		`UPDATE settlements SET battle_frenzy_until = $1 WHERE id = $2`,
+server/api/handlers/settlement.go:1302:// (kharis/tick.go "bountiful_harvest") through economy.ApplyHarvestBlessing.
+server/api/handlers/settlement.go:1304:	untilTick, err := economy.ApplyHarvestBlessing(ctx, tx, settlementID)
+server/internal/combat/route_test.go:155:// TestRouteEnterMilli: Hexes[0] enters at StartTick*1000 (val A — instant
+server/internal/combat/route_test.go:162:func TestRouteEnterMilli(t *testing.T) {
+server/internal/combat/route_test.go:168:	enter, err := RouteEnterMilli(r)
+server/internal/combat/route_test.go:170:		t.Fatalf("RouteEnterMilli: %v", err)
+server/internal/combat/unit_intercept_scan.go:61:// with transport.interceptRadius/interceptScanIntervalTicks — transport and
+server/internal/combat/route.go:103:// RouteEnterMilli returns, for each hex in r.Hexes, the Milli at which the
+server/internal/combat/route.go:113:func RouteEnterMilli(r StoredRoute) ([]int64, error) {
+server/api/handlers/messenger.go:1168:			if _, lerr := province.PlanTradeJourney(r.Context(), tx, worldID,
+server/api/handlers/messenger.go:1197:	journey, jerr := province.PlanTradeJourney(r.Context(), tx, worldID, province.MapPosition{Q: oQ, R: oR}, province.MapPosition{Q: dQ, R: dR}, category)
+server/api/handlers/messenger.go:1202:	returnJourney, jerr := province.PlanTradeJourney(r.Context(), tx, worldID, province.MapPosition{Q: dQ, R: dR}, province.MapPosition{Q: oQ, R: oR}, category)
+server/api/handlers/god.go:95:		        s.battle_frenzy_until,
+server/api/handlers/god.go:127:		Frenzied    bool     `json:"frenzied,omitempty"`
+server/api/handlers/god.go:156:		s.Frenzied = frenzyUntil != nil
+server/internal/combat/sea_storm_test.go:163:// A ship is hit once per storm it sails into (StormDamage hull points), not once per tick it
+server/internal/combat/sea_storm_test.go:179:		t.Fatalf("after day 3: status=%s hull=%d, want marching/1 (two storms, %d each; the retry nothing)", status, hull, StormDamage)
+server/internal/combat/sea_storm_test.go:181:	if n := countShipEvents(t, pool, ship, EventShipStormDamaged); n != 2 {
+server/internal/combat/sea_storm_test.go:182:		t.Fatalf("ShipStormDamaged events = %d, want 2", n)
+server/internal/combat/sea_storm_test.go:214:// is five ticks of the same weather and costs StormDamage once.
+server/internal/combat/sea_storm_test.go:224:	if status, hull := shipState(t, pool, ship); status != "marching" || hull != 5-StormDamage {
+server/internal/combat/sea_storm_test.go:225:		t.Fatalf("status=%s hull=%d, want marching/%d (five ticks in one storm, one blow)", status, hull, 5-StormDamage)
+server/internal/combat/sea_storm_test.go:227:	if n := countShipEvents(t, pool, ship, EventShipStormDamaged); n != 1 {
+server/internal/combat/sea_storm_test.go:228:		t.Fatalf("ShipStormDamaged events = %d, want 1", n)
+server/internal/combat/sea_storm_test.go:387:		prows, err := pool.Query(context.Background(), `SELECT payload FROM events WHERE stream_id = $1 AND event_type = $2`, ship, EventShipStormDamaged)
+server/internal/combat/standing_orders.go:355:			if _, ferr := province.PlanTradeJourney(ctx, tx, o.worldID,
+server/internal/combat/standing_orders.go:369:	journey, err := province.PlanTradeJourney(ctx, tx, o.worldID, province.MapPosition{Q: fromQ, R: fromR}, province.MapPosition{Q: toQ, R: toR}, category)
+server/internal/combat/standing_orders.go:373:	returnJourney, err := province.PlanTradeJourney(ctx, tx, o.worldID, province.MapPosition{Q: toQ, R: toR}, province.MapPosition{Q: fromQ, R: fromR}, category)
+server/internal/combat/standing_orders.go:611:	journey, err := province.PlanTradeJourney(ctx, tx, o.worldID, province.MapPosition{Q: toQ, R: toR}, province.MapPosition{Q: fromQ, R: fromR}, category)
+server/api/handlers/harvest_status_test.go:39:			if _, err := pool.Exec(ctx, `UPDATE settlements SET harvest_blessing_until_tick=$2 WHERE id=$1`, settID, tc.until); err != nil {
+server/internal/combat/march_start_crew_speed_test.go:6:// from the DB and feeds it into TravelFactor), not just the pure function.
+server/internal/combat/ro1_storm_simulation_test.go:98:					j, err := g.PlanTradeJourney(path[0], path[len(path)-1], "naval")
+server/internal/combat/ro1_storm_simulation_test.go:127:				enter, err := RouteEnterMilli(route)
+server/internal/combat/ro1_storm_simulation_test.go:149:						hull -= StormDamage
+server/internal/combat/ro1_storm_simulation_test.go:174:	}{worlds, samples, len(sea), len(sea) / SeaHexesPerStorm, HullMax, StormDamage, results}
+server/internal/combat/travel_factor_test.go:3:// Slice A (megaron_plan_skeppsfart_besattning.md §3): TravelFactor collects
+server/internal/combat/travel_factor_test.go:6:// behaviour-neutrality proof: it checks TravelFactor's output against the
+server/internal/combat/travel_factor_test.go:12:// Slice B (§4) added the crew term to TravelFactor's signature. Every case
+server/internal/combat/travel_factor_test.go:25:func TestTravelFactor_MatchesLiteralProducts(t *testing.T) {
+server/internal/combat/travel_factor_test.go:48:		if got := TravelFactor(c.utype, fullCrew, false); math.Abs(got-c.notLaden) > epsilon {
+server/internal/combat/travel_factor_test.go:49:			t.Errorf("TravelFactor(%s, crew=%d (full), laden=false) = %v, want %v", c.utype, fullCrew, got, c.notLaden)
+server/internal/combat/travel_factor_test.go:51:		if got := TravelFactor(c.utype, fullCrew, true); math.Abs(got-c.laden) > epsilon {
+server/internal/combat/travel_factor_test.go:52:			t.Errorf("TravelFactor(%s, crew=%d (full), laden=true) = %v, want %v", c.utype, fullCrew, got, c.laden)
+server/api/handlers/unit.go:1056:	marchHours *= combat.TravelFactor(unitType, unitCrew, false)
+server/internal/combat/sea_storm.go:6:// sails into a storm takes StormDamage hull points, once per storm however many ticks it spends inside; at hull 0 it founders and
+server/internal/combat/sea_storm.go:16:// outcomes (CLAUDE.md Events): ShipStormDamaged / ShipFoundered.
+server/internal/combat/sea_storm.go:44:// StormDamage is the hull a ship loses each time it enters a storm (Timothy 2026-10-10:
+server/internal/combat/sea_storm.go:46:const StormDamage = 2
+server/internal/combat/sea_storm.go:49:	EventShipStormDamaged = "ShipStormDamaged"
+server/internal/combat/sea_storm.go:206:// kinds of voyage share one hex-entry clock (RouteEnterMilli).
+server/internal/combat/sea_storm.go:226:	enter, err := RouteEnterMilli(v.route)
+server/internal/combat/sea_storm.go:313:		hull -= StormDamage
+server/internal/combat/sea_storm.go:365:		kind := EventShipStormDamaged
+server/internal/combat/sea_storm.go:385:		kind, level := EventShipStormDamaged, 3
+server/internal/combat/ship_hull.go:335:	// Mirrors march_start.go's TravelFactor — the one home for every leg.
+server/internal/combat/ship_hull.go:336:	moveTicks *= TravelFactor(unit.Type(utype), crew, cargoUnitID != nil)

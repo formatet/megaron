@@ -1,0 +1,7 @@
+2026/10/12 18:59:45 INFO player registered id=72f4c4c9-ae3c-422d-bff3-22d0c7738857 username=alpha-ce2c1d53-8ce0-43c8-8b64-a4e80c2f0725
+--- FAIL: TestAlphaVisionOnlyNewMemoryRadiusTwo (0.08s)
+    religion_alpha_test.go:247: Vision did not reveal only new radius2 memory: {"effect":{"revealed_ore":{"ore":"copper","q":40,"r":0},"revealed_tiles":[{"q":39,"r":0},{"q":39,"r":1},{"q":40,"r":-1},{"q":40,"r":0},{"q":40,"r":1},{"q":41,"r":-1},{"q":41,"r":0}],"tier":"remembered"},"effect_type":"oracle_memory_v2","kharis_spent":4,"message":"Potnia marks a vein of copper at (40,0) and the unknown ground around it as memory — no living eyes are there.","mood":"Favorable","offer_multiplier":1,"prayer":"minoan_potnia_vision_v2","success":true}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.088s
+FAIL
+» färsk DB på migration 175 · commit c52314c1+ändringar

@@ -1,0 +1,7 @@
+2026/10/12 19:00:10 INFO player registered id=5f588a16-3e78-44d0-8818-c9087cf895b9 username=alpha-51992f2b-31a4-4922-80bc-bdccd58aee12
+--- FAIL: TestAlphaPrayerSharedGodCooldownAndSilentAnswer (0.08s)
+    religion_alpha_test.go:127: Potnia prayers did not share realm cooldown: 200 {"effect":{"revealed_ore":null,"revealed_tiles":[]},"effect_type":"oracle_memory_v2","kharis_spent":4,"message":"Potnia finds no unseen vein of ore to mark on your map.","mood":"Favorable","offer_multiplier":1,"prayer":"minoan_potnia_vision_v2","success":true}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.084s
+FAIL
+» färsk DB på migration 175 · commit c52314c1+ändringar

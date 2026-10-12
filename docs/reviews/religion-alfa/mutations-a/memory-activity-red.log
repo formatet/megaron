@@ -1,0 +1,7 @@
+2026/10/12 19:00:14 INFO player registered id=a7bbf1ff-c2b7-47b0-8fe5-1e03da02af4a username=alpha-440a60ae-5cb8-4764-9a28-f6f944f5a7b1
+--- FAIL: TestAlphaVisionMemoryAPIHidesActivity (0.10s)
+    religion_alpha_test.go:327: remembered city leaked activity: {SettlementID:6f6aff11-9feb-4694-b280-ab313856056f Besieged:true Army:0}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.107s
+FAIL
+» färsk DB på migration 175 · commit c52314c1+ändringar

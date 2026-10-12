@@ -1,0 +1,11 @@
+--- FAIL: TestOtherCultures_FishStaysAtArchetypeWeight (0.00s)
+    prayers_test.go:185: minoan_potnia_walls: fish weight = 0.40, want 0.00 (unfavoured archetype default)
+    prayers_test.go:185: minoan_potnia_vision_v2: fish weight = 2.20, want 0.00 (unfavoured archetype default)
+FAIL
+FAIL	formatet/megaron/server/internal/religion	0.002s
+ok  	formatet/megaron/server/cmd/keryx	0.286s
+--- FAIL: TestRiteOraclePrayerExistsPerCulture (0.00s)
+    settlement_test.go:101: culture "minoan" has no oracle_reveal_deposits prayer
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.020s
+FAIL

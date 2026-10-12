@@ -13,6 +13,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/combat"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/hexgrid"
@@ -34,6 +35,7 @@ type SettlementHandler struct {
 	scheduler  *events.Scheduler
 	clk        clock.Clock
 	sitosCfg   economy.SitosConfig
+	RiteDice   economy.Dice // injectable outcome seam; nil uses the production roll
 }
 
 // NewSettlementHandler creates a SettlementHandler.
@@ -981,13 +983,13 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	// Lock the settlement row and read culture + battle_frenzy state.
 	var cultureID string
 	var alreadyFrenzied bool
+	var nowTick int
 	err = tx.QueryRow(r.Context(),
-		`SELECT culture_id,
-		        (battle_frenzy_until IS NOT NULL AND battle_frenzy_until > now())
+		`SELECT culture_id, (battle_frenzy_until IS NOT NULL AND battle_frenzy_until > $4)
 		 FROM settlements
 		 WHERE id = $1 AND world_id = $2 AND owner_id = $3
 		 FOR UPDATE`,
-		settlementID, worldID, playerID,
+		settlementID, worldID, playerID, h.clk.Now(),
 	).Scan(&cultureID, &alreadyFrenzied)
 	if err != nil {
 		writeError(w, http.StatusForbidden, "not your settlement")
@@ -1048,6 +1050,22 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		playerID, worldID,
 	).Scan(&kharisNow)
 
+	if err := tx.QueryRow(r.Context(), `SELECT current_tick FROM worlds WHERE id=$1`, worldID).Scan(&nowTick); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not read world time")
+		return
+	}
+	if spec.GodID != "" {
+		active, activeErr := religion.PrayerActiveRemaining(r.Context(), tx, settlementID, playerID, spec.EffectType, nowTick)
+		if activeErr != nil {
+			writeError(w, http.StatusInternalServerError, "could not read active prayer")
+			return
+		}
+		if active > 0 {
+			writeError(w, http.StatusConflict, "prayer effect already active — wait for it to end")
+			return
+		}
+	}
+
 	// Kharis tier gate.
 	if kharisNow < spec.MinKharis {
 		writeError(w, http.StatusBadRequest, insufficientKharisMessage(prayerID, spec.MinKharis, kharisNow))
@@ -1060,11 +1078,22 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if spec.GodID != "" {
+		remaining, cdErr := religion.GodCooldownRemaining(r.Context(), tx, worldID, playerID, spec.GodID, nowTick)
+		if cdErr != nil {
+			writeError(w, http.StatusInternalServerError, "could not read divine waiting time")
+			return
+		}
+		if remaining > 0 {
+			writeError(w, http.StatusConflict, fmt.Sprintf("%s is on cooldown for another %s", spec.God, tick.FormatDays(remaining)))
+			return
+		}
+	}
 	// Cooldown check: query last successful RiteCast for this (player, prayer, temple) from events table.
 	// Column-free: uses the existing event log, no new schema.
 	// Keyed on stream_id = settlementID so the cooldown is per TEMPLE, not per Wanax:
 	// a Wanax with temples in five cities can cast five prayers per cycle (one per city).
-	if spec.CooldownTicks > 0 {
+	if spec.GodID == "" && spec.CooldownTicks > 0 {
 		var lastCast time.Time
 		cooldownErr := h.pool.QueryRow(r.Context(),
 			`SELECT created_at FROM events
@@ -1189,7 +1218,13 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Roll outcome once (Fas 2.3 — result goes into the event, not "roll_pending").
-	success := rand.Intn(100) < chance
+	var roll int
+	if h.RiteDice != nil {
+		roll = h.RiteDice.Intn(100)
+	} else {
+		roll = rand.Intn(100)
+	}
+	success := roll < chance
 
 	// Apply effect on success.
 	effectPayload := map[string]any{}
@@ -1197,6 +1232,13 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 
 	if success {
 		switch spec.EffectType {
+		case religion.EffectOracleMemory:
+			effectPayload, message, err = h.applyOracleMemory(r.Context(), tx, worldID, playerID, spec)
+		case religion.EffectGarrisonDefense:
+			until := nowTick + combat.GarrisonDefenseTicks
+			_, err = tx.Exec(r.Context(), `UPDATE settlements SET garrison_defense_until_tick=$2,garrison_defense_owner_id=$3 WHERE id=$1`, settlementID, until, playerID)
+			effectPayload = map[string]any{"until_tick": until, "strength_factor": combat.GarrisonDefenseFactor}
+			message = "Potnia shelters your walls — your own garrison defends this city a quarter stronger for 6 days."
 		case religion.EffectBattleFrenzy:
 			effectPayload, message, err = h.applyBattleFrenzy(r.Context(), tx, settlementID)
 		case religion.EffectOracleRevealDeposits:
@@ -1217,12 +1259,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		message = "The gods are silent. Your offering was received, but they do not answer."
 	}
 
-	if err := tx.Commit(r.Context()); err != nil {
-		writeError(w, http.StatusInternalServerError, "commit failed")
-		return
-	}
-
-	// Emit RiteCast event AFTER commit (event store uses pool, not the now-committed TX).
+	// Effect, successful-only waiting time and outcome are one transaction.
 	// Payload carries the full outcome (Fas 2.3).
 	eventPayload := map[string]any{
 		"player_id":        playerID.String(),
@@ -1241,8 +1278,22 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		"offer_mod":         offerMod,
 		"kharis_spent":      riteKharisCost,
 	}
-	_, _ = h.eventStore.Append(r.Context(), settlementID, events.StreamReligion, "RiteCast",
-		eventPayload, worldID, nil)
+	if success && spec.GodID != "" {
+		if err = religion.SetGodCooldown(r.Context(), tx, worldID, playerID, spec.GodID, nowTick+spec.CooldownTicks); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not record divine waiting time")
+			return
+		}
+	}
+	eventPayload["god_id"] = spec.GodID
+	eventPayload["cast_tick"] = nowTick
+	if _, err = h.eventStore.AppendTx(r.Context(), tx, settlementID, events.StreamReligion, "RiteCast", eventPayload, worldID, nil); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not record prayer outcome")
+		return
+	}
+	if err = tx.Commit(r.Context()); err != nil {
+		writeError(w, http.StatusInternalServerError, "commit failed")
+		return
+	}
 
 	resp := map[string]any{
 		"success":          success,

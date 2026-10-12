@@ -1,0 +1,8 @@
+2026/10/12 18:59:49 INFO settlement combat: battle initiated/joined unit=c67c07fb-a5f7-42c9-b620-958790461b83 settlement=11835b4b-60b4-42d3-b84a-79f3887f42d0 q=1 r=0 defenders=1
+2026/10/12 18:59:49 INFO settlement combat: battle initiated/joined unit=1ed4c0b9-758b-4d9a-9aa9-da139bdf35c1 settlement=7913b7d4-9416-4046-ae71-1c38bf30cfd0 q=1 r=0 defenders=1
+--- FAIL: TestAlphaWallsRealDefenderStrengthAndOwnerExpiry (0.04s)
+    garrison_defense_test.go:46: Walls did not strengthen real city defenders: base 2400 boosted 2400
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.041s
+FAIL
+» färsk DB på migration 175 · commit c52314c1+ändringar

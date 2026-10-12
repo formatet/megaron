@@ -494,14 +494,16 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// gods are not machines. Gynnsamhet is read via the settlement's kharis_mood
 		// sibling field (kharisToMood, web.go), not a computed percentage.
 		type prayerRow struct {
-			ID         string             `json:"id"`
-			Name       string             `json:"name"`
-			God        string             `json:"god"`
-			EffectType string             `json:"effect_type"`
-			Effect     string             `json:"effect"`
-			MinKharis  float64            `json:"min_kharis"`
-			Offering   map[string]float64 `json:"offering"`
-			Affordable bool               `json:"affordable"`
+			ID                  string             `json:"id"`
+			Name                string             `json:"name"`
+			God                 string             `json:"god"`
+			EffectType          string             `json:"effect_type"`
+			Effect              string             `json:"effect"`
+			MinKharis           float64            `json:"min_kharis"`
+			Offering            map[string]float64 `json:"offering"`
+			Affordable          bool               `json:"affordable"`
+			Default             bool               `json:"is_default"`
+			ActiveRemainingDays int                `json:"active_remaining_game_days,omitempty"`
 			// Game-days, not wall-clock minutes: CooldownTicks is a TICK count
 			// and one tick IS one day (megaron_plan_ticket_ar_dygnet). The old
 			// cooldown_remaining_minutes reported 1440 for a 24-tick cooldown —
@@ -530,6 +532,11 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			                  ORDER BY level DESC LIMIT 1), 0)`,
 			sett.ID, kharis.TempleDevotionPerLevel,
 		).Scan(&devotionWeight, &devotionCapacity)
+		var prayerTick int
+		if err := h.pool.QueryRow(r.Context(), `SELECT current_tick FROM worlds WHERE id=$1`, worldID).Scan(&prayerTick); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not read prayer time")
+			return
+		}
 		prayers := []prayerRow{}
 		for _, pid := range religion.CulturePrayers[string(sett.CultureID)] {
 			spec := religion.PrayerSpecs[pid]
@@ -545,7 +552,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			// Check cooldown: same query as the Rite handler.
 			// Use sett.OwnerID (not request auth) so spectators see the owner's cooldown.
 			var cooldownRemainingDays int
-			if spec.CooldownTicks > 0 && sett.OwnerID != nil {
+			if spec.GodID == "" && spec.CooldownTicks > 0 && sett.OwnerID != nil {
 				var lastCast time.Time
 				if cdErr := h.pool.QueryRow(r.Context(),
 					`SELECT created_at FROM events
@@ -566,8 +573,26 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
+			activeRemainingDays := 0
+			if spec.GodID != "" && sett.OwnerID != nil {
+				var cdErr error
+				cooldownRemainingDays, cdErr = religion.GodCooldownRemaining(r.Context(), h.pool, worldID, *sett.OwnerID, spec.GodID, prayerTick)
+				if cdErr != nil {
+					writeError(w, http.StatusInternalServerError, "could not read divine waiting time")
+					return
+				}
+				activeRemainingDays, cdErr = religion.PrayerActiveRemaining(r.Context(), h.pool, sett.ID, *sett.OwnerID, spec.EffectType, prayerTick)
+				if cdErr != nil {
+					writeError(w, http.StatusInternalServerError, "could not read active prayer")
+					return
+				}
+				if cooldownRemainingDays > 0 || activeRemainingDays > 0 {
+					afford = false
+				}
+			}
 			prayers = append(prayers, prayerRow{
 				ID: spec.ID, Name: spec.Name, God: spec.God, EffectType: spec.EffectType,
+				Default: spec.ID == religion.DefaultBattleFrenzyFor(string(sett.CultureID)), ActiveRemainingDays: activeRemainingDays,
 				Effect:    spec.Description,
 				MinKharis: spec.MinKharis, Offering: spec.Offering, Affordable: afford,
 				CooldownRemainingDays: cooldownRemainingDays,

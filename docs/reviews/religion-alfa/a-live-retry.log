@@ -1,0 +1,40 @@
+Error: HTTP 404
+Usage:
+  keryx rite [flags]
+
+Examples:
+  keryx rite --list
+  keryx rite --prayer <prayer-id>
+  keryx rite --prayer <prayer-id> --settlement <settlement-uuid>
+  keryx rite --prayer <prayer-id> --offer-multiplier 2.0
+  keryx rite --prayer <prayer-id> --yes
+  keryx rite --json
+
+Flags:
+  -h, --help                     help for rite
+      --list                     list this culture's available prayers (id + affordability) and exit
+      --offer string             composed offering, e.g. --offer wine=20,oil=10 (overrides --offer-multiplier; the gods value what the world is short of)
+      --offer-multiplier float   scale the material offering (0.5-2.0; a fatter offer pleases the gods more, a stingy one less — omit for baseline 1.0)
+      --prayer string            prayer ID (run --list to see your culture's prayers; defaults to the culture's listed default prayer)
+      --settlement string        settlement UUID (defaults to your capital)
+      --target string            target province UUID (for future targeted prayers)
+      --yes                      skip the pre-cast confirmation (required for non-interactive/agent use)
+
+Global Flags:
+  -j, --json   output as JSON (for scripts and MCP)
+
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-religion-alfa/tools/religion_alpha_live.py", line 64, in <module>
+    cli=run(str(tmp/'keryx'),'rite','--list',env=clienv)
+  File "/home/tk/wt/codex-religion-alfa/tools/religion_alpha_live.py", line 13, in run
+    def run(*args,**kw):return subprocess.check_output(args,text=True,**kw).strip()
+                               ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 473, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+               **kwargs).stdout
+               ^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '('/tmp/megaron-ro1-live-eg_25h4t/keryx', 'rite', '--list')' returned non-zero exit status 1.

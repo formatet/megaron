@@ -1,0 +1,16 @@
+Read-only dev DB at 10.0.1.92; queries issued under BEGIN READ ONLY; no credentials in artifact.
+BEGIN
+ world_id | prayer | effect_type | success | count
+----------+--------+-------------+---------+-------
+(0 rows)
+
+ event_type | count
+------------+-------
+(0 rows)
+
+ version | dirty
+---------+-------
+     174 | f
+(1 row)
+
+COMMIT
