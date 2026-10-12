@@ -275,7 +275,7 @@ test('production scene shows four own trails and only current arrows for every n
   const out=journeyOverlays(3000);assert.equal(out.filter(p=>p.type==='route').length,4,'own movement kinds lost an always-visible trail');assert.equal(out.filter(p=>p.type==='arrow').length,4);
   assert.equal(out.find(p=>p.actor_id==='foreign-caravan').type,'arrow');
   State.tradeData.push({...base,id:'agreed',mine:false,role:'recipient',route_known:true,category:'land'});
-  const agreement=journeyOverlays(3000).find(p=>p.actor_id==='agreed');assert.equal(agreement.type,'route','agreed recipient caravan lost its forward route');assert.equal(agreement.relation,'foreign');
+  const agreement=journeyOverlays(3000).find(p=>p.actor_id==='agreed');assert.equal(agreement?.type,'route','agreed recipient caravan lost its forward route');assert.equal(agreement.relation,'foreign');
   State.tradeData.push({id:'gift',mine:false,role:'recipient',route_known:false,current_q:1,current_r:0,heading:'east'});
   assert.equal(journeyOverlays(3000).find(p=>p.actor_id==='gift').type,'arrow','unagreed gift exposed a route');
   assert.equal(out.find(p=>p.actor_id==='foreign-runner').type,'arrow');

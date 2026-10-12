@@ -1,0 +1,27 @@
+2026/10/12 07:59:04 INFO player registered id=cefb46b0-41f3-4029-9750-a66b41d346ac username=wanax-a-631c4928-e7f4-4701-ad30-2c9e94e1b212
+2026/10/12 07:59:04 INFO player registered id=7824f631-c59a-4246-b958-810eb8968227 username=wanax-b-1cfce466-233d-479c-99f9-7b2504a236c9
+2026/10/12 07:59:04 INFO player registered id=0b572dee-117c-443e-928f-d99a010b74d9 username=wanax-a-43931381-3866-433b-a9c7-9464e8e826eb
+2026/10/12 07:59:04 INFO player registered id=40208464-a65b-4d2c-849e-fb4b263026e3 username=wanax-b-e8a1246f-fd96-4bfa-8fe5-c6105a1aadf5
+2026/10/12 07:59:04 INFO player registered id=a42c8140-4406-44aa-a1fc-f3c26f767358 username=wanax-a-3a611f5a-43fb-469c-9700-86806d954133
+2026/10/12 07:59:04 INFO player registered id=7568158f-e11b-4f24-91b8-8e34bb0d453e username=wanax-b-fb804ed5-2ecf-4d46-a23e-9f6211d810e6
+2026/10/12 07:59:04 INFO player registered id=413353db-8535-497d-a35e-83865d1feb16 username=wanax-a-503779b5-9639-4f7d-bef5-9bb24763540d
+2026/10/12 07:59:04 INFO player registered id=c7454f02-f57c-4820-9603-bb90b7a4735a username=wanax-b-6f927f16-6264-48ae-9d5f-8bee66a04b3a
+2026/10/12 07:59:04 INFO player registered id=3cda6da9-1ff0-481b-82a5-132a7928aa54 username=wanax-a-e02075c8-b4f0-4510-9ad6-d478e524caa2
+2026/10/12 07:59:04 INFO player registered id=0f96cd99-b090-4f11-ac3c-87b7a83292fe username=wanax-b-b3ff31b2-c9dc-4293-9d4f-99daf964cbc8
+2026/10/12 07:59:04 INFO player registered id=bcb7ce88-cb00-4cfa-87a4-7f1d659d7b21 username=wanax-a-83e9b224-2251-4cca-bf0b-112a23e2ac8d
+2026/10/12 07:59:04 INFO player registered id=fb98210d-20d5-49c8-b6b9-505c0f8ace14 username=wanax-b-dd17d2d2-d6e5-4e58-a1f5-c5db9c5ca496
+2026/10/12 07:59:04 INFO player registered id=3fb6f155-9784-41bb-aac0-a56ff25eb2b3 username=wanax-a-b928254a-a08d-4711-bbfe-678b71b3ea55
+2026/10/12 07:59:04 INFO player registered id=d62796e9-f6a8-48da-98d0-5d91cf08aebf username=wanax-b-02ce5419-9689-45cf-ae18-baabc261de0b
+2026/10/12 07:59:04 INFO player registered id=1b2eb48b-5350-4396-84ec-6df34c28af9e username=wanax-a-78a4a773-7c5d-40a9-9f45-35bcf0f5860d
+2026/10/12 07:59:05 INFO player registered id=adf68757-2cce-4724-8c79-8986fe626b08 username=wanax-b-ab132822-d02b-47af-a788-da5ceb07502c
+2026/10/12 07:59:05 INFO player registered id=c4dd35cf-e345-4f02-a18e-670e3bc72f90 username=wanax-a-1b5d0fd5-88c5-4ef4-b08c-15a7ef4041a9
+2026/10/12 07:59:05 INFO player registered id=d790ff86-119f-47fb-a24d-313895817d3b username=wanax-b-fe365de4-f2ba-4c9a-aeed-e5c0288a45b2
+--- FAIL: TestFardvagAgreedRecipientKnowsRouteGiftDoesNot (1.05s)
+    --- FAIL: TestFardvagAgreedRecipientKnowsRouteGiftDoesNot/trade (0.11s)
+        fardvag_routes_test.go:241: agreed recipient lost frozen route and costs: map[arrival_tick:16 arrives_at:2026-10-12T08:59:04.238355+02:00 category:land current_q:1 current_r:0 departs_at:2026-10-12T07:59:04.238355+02:00 departure_tick:10 dest_name:Athenai dest_q:0 dest_r:0 good_key:copper heading:north-west id:0db00b9c-1bfe-44cd-b201-2282bfeae7eb kind:trade mine:false origin_name:Farland origin_q:50 origin_r:50 owner:wanax-b-1cfce466-233d-479c-99f9-7b2504a236c9 quantity:7 role:recipient route_known:false travel_ticks:6]
+    --- FAIL: TestFardvagAgreedRecipientKnowsRouteGiftDoesNot/trade_return (0.12s)
+        fardvag_routes_test.go:241: agreed recipient lost frozen route and costs: map[arrival_tick:16 arrives_at:2026-10-12T08:59:04.354678+02:00 category:land current_q:1 current_r:0 departs_at:2026-10-12T07:59:04.354678+02:00 departure_tick:10 dest_name:Athenai dest_q:0 dest_r:0 good_key:copper heading:north-west id:9e1ea73f-8344-4fff-9c80-77c9f3929c67 kind:trade_return mine:false origin_name:Farland origin_q:50 origin_r:50 owner:wanax-b-e8a1246f-fd96-4bfa-8fe5-c6105a1aadf5 quantity:7 role:recipient route_known:false travel_ticks:6]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	1.052s
+FAIL
+» färsk DB på migration 172 · commit f7a7201d+ändringar

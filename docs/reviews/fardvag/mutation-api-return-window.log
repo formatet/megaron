@@ -1,0 +1,8 @@
+2026/10/12 07:43:23 INFO player registered id=0f3007a6-6ea6-49ce-b53c-ccca7dca9173 username=wanax-a-8764c7d2-ca82-4e47-8728-9331d5136501
+2026/10/12 07:43:23 INFO player registered id=dce38f7f-3b84-41b3-b4da-2897f88b4dda username=wanax-b-b84688ea-94ce-4c37-af5a-9e125a5c29f7
+--- FAIL: TestFardvagReturningRunnerUsesActualActiveWindow (0.12s)
+    fardvag_routes_test.go:158: returning runner current position used obsolete outbound/stay duration: map[arrives_at:2026-10-12T08:43:23.959948+02:00 current_q:11 current_r:0 dest_q:0 dest_r:0 heading:north-west id:07f8f2ef-4bfd-40ce-8760-4db46a29d818 kind:message origin_q:12 origin_r:0 own:true path:[[12 0] [11 0] [10 0] [9 0] [8 0] [7 0] [6 0] [5 0] [4 0] [3 0] [2 0] [1 0] [0 0]] sender:wanax-a-8764c7d2-ca82-4e47-8728-9331d5136501 sent_at:2026-10-12T06:43:23.959948+02:00]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.124s
+FAIL
+» färsk DB på migration 172 · commit 07213863+ändringar

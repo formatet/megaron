@@ -1,0 +1,3267 @@
+{
+  "health": {
+    "commit": "cdfe6ab",
+    "migration": 172,
+    "status": "ok"
+  },
+  "world": "1588ebaf-fd9a-4bc4-bd22-a23c6c8f2850",
+  "source_base": "cdfe6ab",
+  "world_info": {
+    "created_at": "2026-10-12T05:59:49.105738Z",
+    "current_tick": 128,
+    "era_number": 1,
+    "era_started_at": "2026-10-12T05:59:49.105738Z",
+    "id": "1588ebaf-fd9a-4bc4-bd22-a23c6c8f2850",
+    "name": "Fardvag 1588ebaf",
+    "prestige": 0,
+    "state": "active",
+    "tick_anchor_at": "2026-10-12T05:59:28.95127Z",
+    "tick_seconds": 6,
+    "wanaxes_joined": 0,
+    "wanaxes_needed": 4
+  },
+  "map": [
+    {
+      "q": 0,
+      "r": 0,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 0,
+      "r": 1,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 0,
+      "r": 2,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 0,
+      "r": 3,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 0,
+      "r": 4,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 0,
+      "r": 5,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 0,
+      "r": 6,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 0,
+      "r": 7,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 0,
+      "r": 8,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 0,
+      "r": 9,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 0,
+      "r": 10,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 0,
+      "r": 11,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 0,
+      "r": 12,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 0,
+      "r": 13,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 0,
+      "r": 14,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 1,
+      "r": 0,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 1,
+      "r": 1,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 1,
+      "r": 2,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 1,
+      "r": 3,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 1,
+      "r": 4,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 1,
+      "r": 5,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 1,
+      "r": 6,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 1,
+      "r": 7,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 1,
+      "r": 8,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 1,
+      "r": 9,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 1,
+      "r": 10,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 1,
+      "r": 11,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 1,
+      "r": 12,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 1,
+      "r": 13,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 1,
+      "r": 14,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 2,
+      "r": 0,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 2,
+      "r": 1,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 2,
+      "r": 2,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 2,
+      "r": 3,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 2,
+      "r": 4,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 2,
+      "r": 5,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 2,
+      "r": 6,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 2,
+      "r": 7,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 2,
+      "r": 8,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 2,
+      "r": 9,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 2,
+      "r": 10,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 2,
+      "r": 11,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 2,
+      "r": 12,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 2,
+      "r": 13,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 2,
+      "r": 14,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 3,
+      "r": 0,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 3,
+      "r": 1,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "forest",
+      "place_id": "3,2",
+      "q": 3,
+      "r": 2,
+      "terrain": "forest_cedar",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "forest",
+      "place_id": "3,2",
+      "q": 3,
+      "r": 3,
+      "terrain": "forest_cedar",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "forest",
+      "place_id": "3,2",
+      "q": 3,
+      "r": 4,
+      "terrain": "forest_cedar",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 3,
+      "r": 5,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 3,
+      "r": 6,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 3,
+      "r": 7,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 3,
+      "r": 8,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 3,
+      "r": 9,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 3,
+      "r": 10,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 3,
+      "r": 11,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 3,
+      "r": 12,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 3,
+      "r": 13,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 3,
+      "r": 14,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 4,
+      "r": 0,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 4,
+      "r": 1,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "forest",
+      "place_id": "3,2",
+      "q": 4,
+      "r": 2,
+      "terrain": "forest_cedar",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "forest",
+      "place_id": "3,2",
+      "q": 4,
+      "r": 3,
+      "terrain": "forest_cedar",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "forest",
+      "place_id": "3,2",
+      "q": 4,
+      "r": 4,
+      "terrain": "forest_cedar",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 4,
+      "r": 5,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 4,
+      "r": 6,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 4,
+      "r": 7,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 4,
+      "r": 8,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 4,
+      "r": 9,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 4,
+      "r": 10,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 4,
+      "r": 11,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 4,
+      "r": 12,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 4,
+      "r": 13,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 4,
+      "r": 14,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 5,
+      "r": 0,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 5,
+      "r": 1,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "forest",
+      "place_id": "3,2",
+      "q": 5,
+      "r": 2,
+      "terrain": "forest_cedar",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "forest",
+      "place_id": "3,2",
+      "q": 5,
+      "r": 3,
+      "terrain": "forest_cedar",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "forest",
+      "place_id": "3,2",
+      "q": 5,
+      "r": 4,
+      "terrain": "forest_cedar",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 5,
+      "r": 5,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 5,
+      "r": 6,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 5,
+      "r": 7,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 5,
+      "r": 8,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 5,
+      "r": 9,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 5,
+      "r": 10,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 5,
+      "r": 11,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 5,
+      "r": 12,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 5,
+      "r": 13,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 5,
+      "r": 14,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 6,
+      "r": 0,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 6,
+      "r": 1,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 6,
+      "r": 2,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 6,
+      "r": 3,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 6,
+      "r": 4,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 6,
+      "r": 5,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 6,
+      "r": 6,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 6,
+      "r": 7,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 6,
+      "r": 8,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 6,
+      "r": 9,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 6,
+      "r": 10,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 6,
+      "r": 11,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 6,
+      "r": 12,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 6,
+      "r": 13,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 6,
+      "r": 14,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 7,
+      "r": 0,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 7,
+      "r": 1,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 7,
+      "r": 2,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 7,
+      "r": 3,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 7,
+      "r": 4,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 7,
+      "r": 5,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 7,
+      "r": 6,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "desert",
+      "place_id": "7,7",
+      "q": 7,
+      "r": 7,
+      "terrain": "semi_desert",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "desert",
+      "place_id": "7,7",
+      "q": 7,
+      "r": 8,
+      "terrain": "semi_desert",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "desert",
+      "place_id": "7,7",
+      "q": 7,
+      "r": 9,
+      "terrain": "semi_desert",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "desert",
+      "place_id": "7,7",
+      "q": 7,
+      "r": 10,
+      "terrain": "semi_desert",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "desert",
+      "place_id": "7,7",
+      "q": 7,
+      "r": 11,
+      "terrain": "semi_desert",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 7,
+      "r": 12,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 7,
+      "r": 13,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 7,
+      "r": 14,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 8,
+      "r": 0,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 8,
+      "r": 1,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 8,
+      "r": 2,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 8,
+      "r": 3,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 8,
+      "r": 4,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 8,
+      "r": 5,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 8,
+      "r": 6,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "desert",
+      "place_id": "7,7",
+      "q": 8,
+      "r": 7,
+      "terrain": "semi_desert",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "desert",
+      "place_id": "7,7",
+      "q": 8,
+      "r": 8,
+      "terrain": "semi_desert",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "desert",
+      "place_id": "7,7",
+      "q": 8,
+      "r": 9,
+      "terrain": "semi_desert",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "desert",
+      "place_id": "7,7",
+      "q": 8,
+      "r": 10,
+      "terrain": "semi_desert",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "desert",
+      "place_id": "7,7",
+      "q": 8,
+      "r": 11,
+      "terrain": "semi_desert",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 8,
+      "r": 12,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 8,
+      "r": 13,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 8,
+      "r": 14,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 9,
+      "r": 0,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 9,
+      "r": 1,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 9,
+      "r": 2,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 9,
+      "r": 3,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 9,
+      "r": 4,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 9,
+      "r": 5,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 9,
+      "r": 6,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "desert",
+      "place_id": "7,7",
+      "q": 9,
+      "r": 7,
+      "terrain": "semi_desert",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "desert",
+      "place_id": "7,7",
+      "q": 9,
+      "r": 8,
+      "terrain": "semi_desert",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "desert",
+      "place_id": "7,7",
+      "q": 9,
+      "r": 9,
+      "terrain": "semi_desert",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "desert",
+      "place_id": "7,7",
+      "q": 9,
+      "r": 10,
+      "terrain": "semi_desert",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "desert",
+      "place_id": "7,7",
+      "q": 9,
+      "r": 11,
+      "terrain": "semi_desert",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 9,
+      "r": 12,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 9,
+      "r": 13,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 9,
+      "r": 14,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 10,
+      "r": 0,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 10,
+      "r": 1,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 10,
+      "r": 2,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 10,
+      "r": 3,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 10,
+      "r": 4,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 10,
+      "r": 5,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 10,
+      "r": 6,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "desert",
+      "place_id": "7,7",
+      "q": 10,
+      "r": 7,
+      "terrain": "semi_desert",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "desert",
+      "place_id": "7,7",
+      "q": 10,
+      "r": 8,
+      "terrain": "semi_desert",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "desert",
+      "place_id": "7,7",
+      "q": 10,
+      "r": 9,
+      "terrain": "semi_desert",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "desert",
+      "place_id": "7,7",
+      "q": 10,
+      "r": 10,
+      "terrain": "semi_desert",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "place_kind": "desert",
+      "place_id": "7,7",
+      "q": 10,
+      "r": 11,
+      "terrain": "semi_desert",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 10,
+      "r": 12,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 10,
+      "r": 13,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 10,
+      "r": 14,
+      "terrain": "plains",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 11,
+      "r": 0,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 11,
+      "r": 1,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 11,
+      "r": 2,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 11,
+      "r": 3,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 11,
+      "r": 4,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 11,
+      "r": 5,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 11,
+      "r": 6,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 11,
+      "r": 7,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 11,
+      "r": 8,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 11,
+      "r": 9,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 11,
+      "r": 10,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 11,
+      "r": 11,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 11,
+      "r": 12,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 11,
+      "r": 13,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 11,
+      "r": 14,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 12,
+      "r": 0,
+      "terrain": "fog",
+      "visible": false,
+      "tier": "fog",
+      "frontier": true
+    },
+    {
+      "q": 12,
+      "r": 1,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 12,
+      "r": 2,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 12,
+      "r": 3,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 12,
+      "r": 4,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 12,
+      "r": 5,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 12,
+      "r": 6,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 12,
+      "r": 7,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 12,
+      "r": 8,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 12,
+      "r": 9,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 12,
+      "r": 10,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 12,
+      "r": 11,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 12,
+      "r": 12,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 12,
+      "r": 13,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 12,
+      "r": 14,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 13,
+      "r": 0,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 13,
+      "r": 1,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 13,
+      "r": 2,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 13,
+      "r": 3,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 13,
+      "r": 4,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 13,
+      "r": 5,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 13,
+      "r": 6,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 13,
+      "r": 7,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 13,
+      "r": 8,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 13,
+      "r": 9,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 13,
+      "r": 10,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 13,
+      "r": 11,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 13,
+      "r": 12,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 13,
+      "r": 13,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 13,
+      "r": 14,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 14,
+      "r": 0,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 14,
+      "r": 1,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 14,
+      "r": 2,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 14,
+      "r": 3,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 14,
+      "r": 4,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 14,
+      "r": 5,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 14,
+      "r": 6,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 14,
+      "r": 7,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 14,
+      "r": 8,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 14,
+      "r": 9,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 14,
+      "r": 10,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 14,
+      "r": 11,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 14,
+      "r": 12,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 14,
+      "r": 13,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 14,
+      "r": 14,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 15,
+      "r": 0,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 15,
+      "r": 1,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 15,
+      "r": 2,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 15,
+      "r": 3,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 15,
+      "r": 4,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 15,
+      "r": 5,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 15,
+      "r": 6,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 15,
+      "r": 7,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 15,
+      "r": 8,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 15,
+      "r": 9,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 15,
+      "r": 10,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 15,
+      "r": 11,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 15,
+      "r": 12,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 15,
+      "r": 13,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 15,
+      "r": 14,
+      "terrain": "fog",
+      "visible": false,
+      "tier": "fog",
+      "frontier": true
+    },
+    {
+      "q": 16,
+      "r": 0,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 16,
+      "r": 1,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 16,
+      "r": 2,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 16,
+      "r": 3,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 16,
+      "r": 4,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 16,
+      "r": 5,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 16,
+      "r": 6,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 16,
+      "r": 7,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 16,
+      "r": 8,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 16,
+      "r": 9,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 16,
+      "r": 10,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 16,
+      "r": 11,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 16,
+      "r": 12,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 16,
+      "r": 13,
+      "terrain": "fog",
+      "visible": false,
+      "tier": "fog",
+      "frontier": true
+    },
+    {
+      "q": 16,
+      "r": 14,
+      "terrain": "fog",
+      "visible": false,
+      "tier": "fog"
+    },
+    {
+      "q": 17,
+      "r": 0,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 17,
+      "r": 1,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 17,
+      "r": 2,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 17,
+      "r": 3,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 17,
+      "r": 4,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 17,
+      "r": 5,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 17,
+      "r": 6,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 17,
+      "r": 7,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "live",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 17,
+      "r": 8,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 17,
+      "r": 9,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 17,
+      "r": 10,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 17,
+      "r": 11,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 17,
+      "r": 12,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 17,
+      "r": 13,
+      "terrain": "fog",
+      "visible": false,
+      "tier": "fog",
+      "frontier": true
+    },
+    {
+      "q": 17,
+      "r": 14,
+      "terrain": "fog",
+      "visible": false,
+      "tier": "fog"
+    },
+    {
+      "q": 18,
+      "r": 0,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 18,
+      "r": 1,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 18,
+      "r": 2,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 18,
+      "r": 3,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 18,
+      "r": 4,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 18,
+      "r": 5,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 18,
+      "r": 6,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 18,
+      "r": 7,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 18,
+      "r": 8,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 18,
+      "r": 9,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 18,
+      "r": 10,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 18,
+      "r": 11,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 18,
+      "r": 12,
+      "terrain": "fog",
+      "visible": false,
+      "tier": "fog",
+      "frontier": true
+    },
+    {
+      "q": 18,
+      "r": 13,
+      "terrain": "fog",
+      "visible": false,
+      "tier": "fog"
+    },
+    {
+      "q": 18,
+      "r": 14,
+      "terrain": "fog",
+      "visible": false,
+      "tier": "fog"
+    },
+    {
+      "q": 19,
+      "r": 0,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 19,
+      "r": 1,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 19,
+      "r": 2,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 19,
+      "r": 3,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 19,
+      "r": 4,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 19,
+      "r": 5,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 19,
+      "r": 6,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 19,
+      "r": 7,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 19,
+      "r": 8,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 19,
+      "r": 9,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 19,
+      "r": 10,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 19,
+      "r": 11,
+      "terrain": "fog",
+      "visible": false,
+      "tier": "fog",
+      "frontier": true
+    },
+    {
+      "q": 19,
+      "r": 12,
+      "terrain": "fog",
+      "visible": false,
+      "tier": "fog"
+    },
+    {
+      "q": 19,
+      "r": 13,
+      "terrain": "fog",
+      "visible": false,
+      "tier": "fog"
+    },
+    {
+      "q": 19,
+      "r": 14,
+      "terrain": "fog",
+      "visible": false,
+      "tier": "fog"
+    },
+    {
+      "q": 20,
+      "r": 0,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 20,
+      "r": 1,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 20,
+      "r": 2,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 20,
+      "r": 3,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 20,
+      "r": 4,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 20,
+      "r": 5,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 20,
+      "r": 6,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 20,
+      "r": 7,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 20,
+      "r": 8,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 20,
+      "r": 9,
+      "terrain": "coastal_sea",
+      "visible": true,
+      "tier": "remembered",
+      "fertility": 0.5,
+      "mineral": 0.5
+    },
+    {
+      "q": 20,
+      "r": 10,
+      "terrain": "fog",
+      "visible": false,
+      "tier": "fog",
+      "frontier": true
+    },
+    {
+      "q": 20,
+      "r": 11,
+      "terrain": "fog",
+      "visible": false,
+      "tier": "fog"
+    },
+    {
+      "q": 20,
+      "r": 12,
+      "terrain": "fog",
+      "visible": false,
+      "tier": "fog"
+    },
+    {
+      "q": 20,
+      "r": 13,
+      "terrain": "fog",
+      "visible": false,
+      "tier": "fog"
+    },
+    {
+      "q": 20,
+      "r": 14,
+      "terrain": "fog",
+      "visible": false,
+      "tier": "fog"
+    }
+  ],
+  "units": {
+    "expedition_rules": {
+      "area_radius": 5,
+      "default_ticks": 10,
+      "max_ticks": 30,
+      "min_ticks": 4
+    },
+    "units": [
+      {
+        "id": "600140ee-07f8-4ab4-8ea5-f39442f2e26e",
+        "type": "spearman",
+        "category": "land",
+        "size": 100,
+        "crew": 30,
+        "status": "marching",
+        "deployable": true,
+        "name": "Eumedes",
+        "display_name": "Spearmen of Lykoros",
+        "settlement_id": "c70b3c09-1403-4ae5-9465-084f2dfbf6b6",
+        "q": 2,
+        "r": 4,
+        "target_q": 8,
+        "target_r": 4,
+        "departs_at": "2026-10-12T05:59:00.95127Z",
+        "arrives_at": "2026-10-12T06:01:00.95127Z",
+        "arrival_tick": 140,
+        "duration_ticks": 20,
+        "arrives_at_utc": "2026-10-12T06:13:16.456161862Z",
+        "path": [
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            4
+          ],
+          [
+            6,
+            4
+          ],
+          [
+            7,
+            4
+          ],
+          [
+            8,
+            4
+          ]
+        ],
+        "step_costs": [
+          1000,
+          1000,
+          1000,
+          1000,
+          1000,
+          1000
+        ],
+        "departure_tick": 120,
+        "current_q": 5,
+        "current_r": 4,
+        "in_battle": false
+      },
+      {
+        "id": "cbc1c017-2ee5-4290-8ce7-6e9fd027a1be",
+        "type": "galley",
+        "category": "naval",
+        "size": 100,
+        "crew": 30,
+        "hull": 2,
+        "status": "marching",
+        "deployable": true,
+        "name": "Doria",
+        "display_name": "Doria, Galley",
+        "settlement_id": "c70b3c09-1403-4ae5-9465-084f2dfbf6b6",
+        "q": 13,
+        "r": 1,
+        "target_q": 13,
+        "target_r": 7,
+        "departs_at": "2026-10-12T05:59:00.95127Z",
+        "arrives_at": "2026-10-12T06:01:00.95127Z",
+        "arrival_tick": 140,
+        "duration_ticks": 20,
+        "arrives_at_utc": "2026-10-12T06:13:16.456172399Z",
+        "path": [
+          [
+            13,
+            1
+          ],
+          [
+            13,
+            2
+          ],
+          [
+            13,
+            3
+          ],
+          [
+            13,
+            4
+          ],
+          [
+            13,
+            5
+          ],
+          [
+            13,
+            6
+          ],
+          [
+            13,
+            7
+          ]
+        ],
+        "step_costs": [
+          1000,
+          1000,
+          1000,
+          1000,
+          1000,
+          1000
+        ],
+        "departure_tick": 120,
+        "current_q": 13,
+        "current_r": 4,
+        "in_battle": false
+      }
+    ]
+  },
+  "foreign-units": [
+    {
+      "id": "0e704488-ffa7-4437-a817-af5888cfe853",
+      "name": "Spearmen of Priam of Tyre",
+      "owner": "Priam of Tyre",
+      "owner_id": "8bd250b5-e4c6-435c-ac3d-646f746f10b0",
+      "type": "spearman",
+      "category": "land",
+      "size": 100,
+      "crew": 30,
+      "status": "marching",
+      "q": 8,
+      "r": 6,
+      "heading": "south",
+      "toward": {
+        "settlement_id": "7380ddb7-70a7-48ab-82f7-24068fcc2b0b",
+        "name": "Knossos",
+        "eta_at": "2026-10-12T06:02:30.95127Z",
+        "eta_tick": 155
+      }
+    },
+    {
+      "id": "4bb4c37e-9bd7-44b1-bf4d-e2c824aa9f90",
+      "name": "Galley of Tyre, Galley",
+      "owner": "Priam of Tyre",
+      "owner_id": "8bd250b5-e4c6-435c-ac3d-646f746f10b0",
+      "type": "galley",
+      "category": "naval",
+      "size": 100,
+      "crew": 30,
+      "status": "marching",
+      "q": 15,
+      "r": 6,
+      "heading": "south"
+    }
+  ],
+  "messengers": [
+    {
+      "path": [
+        [
+          5,
+          7
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          6,
+          8
+        ],
+        [
+          6,
+          9
+        ],
+        [
+          6,
+          10
+        ],
+        [
+          6,
+          11
+        ],
+        [
+          7,
+          11
+        ]
+      ],
+      "current_q": 6,
+      "current_r": 10,
+      "heading": "south",
+      "id": "e13a90e3-50a4-4db8-9bcd-38962e137cc0",
+      "origin_q": 5,
+      "origin_r": 7,
+      "dest_q": 7,
+      "dest_r": 11,
+      "sent_at": "2026-10-12T04:59:48.95127Z",
+      "arrives_at": "2026-10-12T06:59:48.95127Z",
+      "own": true,
+      "kind": "message",
+      "sender": "Lykoros"
+    },
+    {
+      "current_q": 7,
+      "current_r": 5,
+      "heading": "south-west",
+      "id": "e6c1f55d-4f9c-4732-bb6f-b75901110ea1",
+      "origin_q": 9,
+      "origin_r": 4,
+      "dest_q": 5,
+      "dest_r": 7,
+      "sent_at": "2026-10-12T04:59:48.95127Z",
+      "arrives_at": "2026-10-12T06:59:48.95127Z",
+      "own": false,
+      "kind": "message",
+      "sender": "Priam of Tyre"
+    }
+  ],
+  "trades": [
+    {
+      "kind": "transfer",
+      "route_known": true,
+      "path": [
+        [
+          4,
+          7
+        ],
+        [
+          4,
+          8
+        ],
+        [
+          4,
+          9
+        ],
+        [
+          4,
+          10
+        ],
+        [
+          4,
+          11
+        ],
+        [
+          4,
+          12
+        ]
+      ],
+      "step_costs": [
+        1000,
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "category": "land",
+      "heading": "south",
+      "id": "dd8abf2c-6db9-4f52-9486-49ca7ff79e17",
+      "good_key": "grain",
+      "quantity": 25,
+      "origin_q": 4,
+      "origin_r": 7,
+      "dest_q": 4,
+      "dest_r": 12,
+      "departs_at": "2026-10-12T05:59:00.95127Z",
+      "arrives_at": "2026-10-12T06:01:00.95127Z",
+      "mine": true,
+      "arrival_tick": 133,
+      "departure_tick": 125,
+      "travel_ticks": 8,
+      "current_q": 4,
+      "current_r": 10,
+      "owner": "Lykoros",
+      "role": "sender",
+      "origin_name": "Mycenae",
+      "dest_name": "Knossos"
+    },
+    {
+      "kind": "trade",
+      "route_known": true,
+      "path": [
+        [
+          6,
+          1
+        ],
+        [
+          6,
+          2
+        ],
+        [
+          6,
+          3
+        ],
+        [
+          6,
+          4
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          6,
+          6
+        ]
+      ],
+      "step_costs": [
+        1000,
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "category": "land",
+      "heading": "south",
+      "id": "164daeb0-4020-4310-8a26-453353b1a103",
+      "good_key": "grain",
+      "quantity": 25,
+      "origin_q": 6,
+      "origin_r": 1,
+      "dest_q": 6,
+      "dest_r": 6,
+      "departs_at": "2026-10-12T05:59:00.95127Z",
+      "arrives_at": "2026-10-12T06:01:00.95127Z",
+      "mine": false,
+      "arrival_tick": 133,
+      "departure_tick": 125,
+      "travel_ticks": 8,
+      "current_q": 6,
+      "current_r": 4,
+      "owner": "Priam of Tyre",
+      "role": "recipient",
+      "origin_name": "Tyre",
+      "dest_name": "Mycenae"
+    },
+    {
+      "kind": "gift",
+      "route_known": false,
+      "category": "land",
+      "heading": "south",
+      "id": "a16729ac-3a7a-4c52-a9b9-67ce043aff8d",
+      "good_key": "grain",
+      "quantity": 25,
+      "origin_q": 9,
+      "origin_r": 5,
+      "dest_q": 9,
+      "dest_r": 11,
+      "departs_at": "2026-10-12T05:59:00.95127Z",
+      "arrives_at": "2026-10-12T06:01:00.95127Z",
+      "mine": false,
+      "arrival_tick": 134,
+      "departure_tick": 125,
+      "travel_ticks": 9,
+      "current_q": 9,
+      "current_r": 8,
+      "owner": "Priam of Tyre",
+      "role": "recipient",
+      "origin_name": "Tyre",
+      "dest_name": "Knossos"
+    }
+  ]
+}

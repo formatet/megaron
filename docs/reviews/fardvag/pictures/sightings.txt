@@ -1,0 +1,16 @@
+Sightings — what your eyes see right now
+
+  UNITS
+  3 hexes E    Priam of Tyre spearman      ×100   marching at (8,6), heading south — toward Knossos's lands, there any moment (≈ Mon Oct 12 08:02) if that is its goal
+                   Spearmen of Priam of Tyre
+  7 hexes S    Priam of Tyre galley        ×100   marching at (15,6), heading south
+                   Galley of Tyre, Galley
+
+  MESSENGERS
+  1 hexes NE   Priam of Tyre's Runner at (6,6), heading south-west
+
+  CARAVANS AND FREIGHT SHIPS
+  3 hexes N   Priam of Tyre's Caravan at (6,4), heading south
+  3 hexes NE   Priam of Tyre's Caravan at (9,8), heading south
+
+March there: keryx unit march --unit <id> --q <q> --r <r>   (your units: keryx unit list)

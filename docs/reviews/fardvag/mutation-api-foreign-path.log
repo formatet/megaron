@@ -1,0 +1,12 @@
+2026/10/12 07:43:19 INFO player registered id=722f55ba-40f3-4209-9f39-b17473425db0 username=wanax-a-d17bde4c-a565-4f46-8ae8-5aa30af83194
+2026/10/12 07:43:19 INFO player registered id=796f5ce0-d264-47bc-8f72-db705529b1bc username=wanax-b-88736d8d-47d2-49c6-999e-2f0571b81330
+--- FAIL: TestFardvagThirdPartyTradeProjection (0.12s)
+    fardvag_routes_test.go:36: third-party map actor leaked path
+2026/10/12 07:43:19 INFO player registered id=25e57725-a3b8-4abe-a9bf-4eaae32f8dd0 username=wanax-a-c41265b4-ba29-4368-8086-16127ec4f0dd
+2026/10/12 07:43:19 INFO player registered id=7fe03d71-4030-4ec6-93b7-39583764254b username=wanax-b-24911b04-7d83-4da9-83f0-99acd816ba07
+--- FAIL: TestFardvagThirdPartyMessengerProjectionAndRecipientKnowledge (0.12s)
+    fardvag_routes_test.go:72: third-party map actor leaked path
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.236s
+FAIL
+» färsk DB på migration 172 · commit 07213863+ändringar
