@@ -176,6 +176,8 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
   **command is never instant.** Everything else on the map *can* be intercepted.
   **One deliberate exception (Timothy 2026-10-08):** that YOUR OWN messenger is lost (storm, no rescue) reaches
   the sender at once — "den sortens information är omedelbar". It carries no other news. `megaron_transportrisk.md`.
+  **Second exception (Timothy 2026-10-12): divine omens** may tell you what none of your people have seen — but as
+  omens, vague, never an exact position or count. `megaron_religion_sammanstallning_20261012.md` §5b.
 - **Catchment is the only production source** — the settlement's own hex + a radius-2 ring around it
   (19 hexes, 18 worked; P1, 2026-08-07 — was radius-1/7 hexes before), worked without outposts; dynamic,
   lazy, deterministic. Radius lives in `internal/hexgrid.CatchmentRadius`.
