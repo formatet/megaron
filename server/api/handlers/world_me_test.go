@@ -20,6 +20,18 @@ func TestWorldMe_OwnWorldIsolation(t *testing.T) {
 	svc := auth.NewService(pool, "profile-test-secret")
 	a, token := settlementsOverviewRegisterPlayer(t, svc, ctx, "profile-a-"+uuid.New().String())
 	b, _ := settlementsOverviewRegisterPlayer(t, svc, ctx, "profile-b-"+uuid.New().String())
+	var other uuid.UUID
+	// The final username-fallback fixture must not become an Agora provisioning
+	// candidate for later packages. Remove only this test's worlds and accounts.
+	t.Cleanup(func() {
+		if _, err := pool.Exec(ctx, `DELETE FROM worlds WHERE id IN ($1,$2)`, worldID, other); err != nil {
+			t.Errorf("clean profile worlds: %v", err)
+			return
+		}
+		if _, err := pool.Exec(ctx, `DELETE FROM players WHERE id IN ($1,$2)`, a, b); err != nil {
+			t.Errorf("clean profile players: %v", err)
+		}
+	})
 	exec := func(sql string, args ...any) {
 		t.Helper()
 		if _, err := pool.Exec(ctx, sql, args...); err != nil {
@@ -36,7 +48,6 @@ func TestWorldMe_OwnWorldIsolation(t *testing.T) {
 		id := settlementsOverviewSeedSettlement(t, pool, ctx, worldID, a, state, false, 3+i, 0)
 		exec(`UPDATE settlements SET state=$1,population=9000 WHERE id=$2`, state, id)
 	}
-	var other uuid.UUID
 	if err := pool.QueryRow(ctx, `INSERT INTO worlds (name,status) VALUES ($1,'archived') RETURNING id`, "profile-other-"+uuid.New().String()).Scan(&other); err != nil {
 		t.Fatal(err)
 	}
