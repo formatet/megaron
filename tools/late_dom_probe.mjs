@@ -40,10 +40,17 @@ export async function run(name) {
  if(['city-reload','war-reload','cult-reload'].includes(name)) {
   const load=name==='city-reload'?city.loadCityDrawer:name==='war-reload'?war.loadWarDrawer:kult.loadKultDrawer;
   const d=delay('/provinces/P');pending=load();await reached(()=>d.release);hook=null;await load();
-  await reached(()=>name==='city-reload'?el('wdb-inf'):name==='war-reload'?el('wrc-name-ship'):el('kult-body').querySelector('.offer-goods input'));
-  const input=name==='city-reload'?el('wdb-inf'):name==='war-reload'?el('wrc-name-ship'):el('kult-body').querySelector('.offer-goods input');input.closest('.city-tab')&&(input.closest('.city-tab').style.display='');input.closest('details')&&(input.closest('details').open=true);input.value=name==='war-reload'?'Thalassa':'19';input.focus();
+  const control=()=>name==='city-reload'?el('wdb-inf'):name==='war-reload'?el('wrc-name-ship'):el('kult-body').querySelector('button[onclick^="okRite("]');
+  await reached(control);
+  const input=control();
+  if(name!=='cult-reload') {
+   input.closest('.city-tab')&&(input.closest('.city-tab').style.display='');
+   input.closest('details')&&(input.closest('details').open=true);
+   input.value=name==='war-reload'?'Thalassa':'19';
+  }
+  input.focus();
   d.release({settlement:pd});await pending;
-  check(input.isConnected&&document.activeElement===input,'obsolete drawer load replaced active input');
+  check(input.isConnected&&document.activeElement===input,'obsolete drawer load replaced active control');
  } else if(name==='search') {
   const d=delay('/inbox');search.toggleSearch();await reached(()=>d.release);
   const input=el('search-input');input.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}));input.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}));

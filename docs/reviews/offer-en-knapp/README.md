@@ -60,3 +60,14 @@ Orderns fyra alert() var redan konverterade i basmaster: kult.js har inga alert-
 Metodisk lärdom: en läsbar archived-värld är en layoutfixtur, inte ett handlingsbevis; ett lyckat request måste prövas på en aktiv värld. Ingen naturlig tempelgrundning eller full tre-browser-paritet påstås.
 
 **HASH + STOPP:** Claude granskar bevis och bilder, integrerar och deployar.
+
+## Granskningens CSS-städning
+
+Claude12:08: den borttagna kompositörens `.offer-*`-block var kvar. Hela blocket och dess kommentar
+är borttaget i samma gren; sökning av klasser/selectors i web/templates/JS hittar inga andra produktionsbrukare.
+Trade-flaggor/element-ID med offer-good är inte dessa CSS-klasser och berörs inte.
+Ett befintligt kontrollverktyg, late_dom_probe, väntade däremot på den borttagna varuinmatningen;
+`cult-reload` följer nu den riktiga Offer-knappen och provar samma fokusbevarande vid sent svar.
+[Riktat Chromium-DOM-prov](late-dom/results.json) grönt, [598 JS omkörda](full-js.log) gröna.
+Efterbilderna visar samma synliga UI; borttagna regler saknade matchande produktionsnoder.
+Serverad slut-CSS är bytejämförd, SHA i verification.json; runtime.jsons ursprungliga CSS-SHA avser bildbygget före städningen.
