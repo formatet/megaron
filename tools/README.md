@@ -502,3 +502,10 @@ and records inline + actual API before/after. It has no SQL writes during the ac
 `python3 tools/offer_dom_mutation.py` physically restores a composer, requires named native-DOM red, then
 byte-restores and checks green. A fresh fixture is needed to repeat an action after cooldown; checks are read-only.
 Proof: `docs/reviews/offer-en-knapp/README.md`.
+
+`python3 tools/profile_proof.py` checks the own-world profile in the isolated acceptance rig through real
+Bearer API, a freshly built `keryx me` (text and JSON), and Firefox1280+390. It uses existing Lykoros/Eumedes
+accounts in the active acceptance world: founded and ungrounded Host, exactly five rows, no SQL writes or
+payload/FOW overrides. `PLACE_PROOF_OUTPUT="$PWD/docs/reviews/spelarprofil/rig" python3 tools/place_names_rig.py`
+first rebuilds/verifies the current binary and migrations with current worktree web assets in the cached
+acceptance runtime. Proof and four screenshots: `docs/reviews/spelarprofil/README.md`.

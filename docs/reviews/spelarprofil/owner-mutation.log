@@ -1,0 +1,8 @@
+» färsk DB på migration 173 · commit af9d0532+ändringar
+2026/10/12 12:26:44 INFO player registered id=00f70f86-0ec6-4a05-a735-009fef59dc32 username=profile-a-93295681-a3e5-459c-9c00-1dcd0de569a6
+2026/10/12 12:26:44 INFO player registered id=32741228-83c1-4fc6-b8b1-9c4739e12f31 username=profile-b-830dac4a-2ebd-418f-b757-810aadb5a972
+--- FAIL: TestWorldMe_OwnWorldIsolation (0.11s)
+    world_me_test.go:77: own profile includes foreign/stale data or raw kharis: {WanaxName:Nestor FoundedTick:0x1c9faf38aef0 Cities:3 Population:2400 Kharis:15}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.113s
+FAIL

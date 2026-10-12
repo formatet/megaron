@@ -1,0 +1,164 @@
+{
+  "world": "3b5fb9cd-8c06-4685-88df-b162c9acff99",
+  "health": {
+    "commit": "23efbe2",
+    "migration": 173,
+    "status": "ok"
+  },
+  "sql_writes": false,
+  "payload_overrides": false,
+  "captures": [
+    {
+      "kind": "founded",
+      "viewport": [
+        1280,
+        900
+      ],
+      "rows": [
+        "WanaxLykoros",
+        "FoundedSince day 9",
+        "Cities1",
+        "Population2009",
+        "Kharis1.0"
+      ],
+      "api": {
+        "wanax_name": "Lykoros",
+        "founded_tick": 9,
+        "cities": 1,
+        "population": 2009,
+        "kharis": 1.005
+      },
+      "errors": [],
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map"
+    },
+    {
+      "kind": "founded",
+      "viewport": [
+        390,
+        844
+      ],
+      "rows": [
+        "WanaxLykoros",
+        "FoundedSince day 9",
+        "Cities1",
+        "Population2009",
+        "Kharis1.0"
+      ],
+      "api": {
+        "wanax_name": "Lykoros",
+        "founded_tick": 9,
+        "cities": 1,
+        "population": 2009,
+        "kharis": 1.005
+      },
+      "errors": [],
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map"
+    },
+    {
+      "kind": "host",
+      "viewport": [
+        1280,
+        900
+      ],
+      "rows": [
+        "WanaxEumedes",
+        "FoundedNot yet founded",
+        "Cities0",
+        "Population0",
+        "Kharis0.0"
+      ],
+      "api": {
+        "wanax_name": "Eumedes",
+        "founded_tick": null,
+        "cities": 0,
+        "population": 0,
+        "kharis": 0
+      },
+      "errors": [],
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map"
+    },
+    {
+      "kind": "host",
+      "viewport": [
+        390,
+        844
+      ],
+      "rows": [
+        "WanaxEumedes",
+        "FoundedNot yet founded",
+        "Cities0",
+        "Population0",
+        "Kharis0.0"
+      ],
+      "api": {
+        "wanax_name": "Eumedes",
+        "founded_tick": null,
+        "cities": 0,
+        "population": 0,
+        "kharis": 0
+      },
+      "errors": [],
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map"
+    }
+  ],
+  "assets": {
+    "js/megaron/ui/account_window.js": "129ffd54f8481a301b1ddc852942453e39359bb9bf95bb955c7c99441637fc26",
+    "js/megaron/ui/account_profile.js": "2ac15ec2c8c668f9802a4c1f1c8dda0fed51c63ae7d6be7c6098ae8b505d9028",
+    "megaron.css": "4f28a746245bebc52f44ad9bbbb07e7d26a7fa7cd1820d003bebd8cb42e2b17f",
+    "codex/account.md": "7a8b4a0ae82c89f454f4bdac366ac7486a3e59eb15bfa4e73cacbd44e0ef8d34"
+  },
+  "founded": {
+    "api": {
+      "wanax_name": "Lykoros",
+      "founded_tick": 9,
+      "cities": 1,
+      "population": 2009,
+      "kharis": 1.005
+    },
+    "cli_json": {
+      "cities": 1,
+      "founded_tick": 9,
+      "kharis": 1.005,
+      "population": 2009,
+      "wanax_name": "Lykoros"
+    }
+  },
+  "host": {
+    "api": {
+      "wanax_name": "Eumedes",
+      "founded_tick": null,
+      "cities": 0,
+      "population": 0,
+      "kharis": 0
+    },
+    "cli_json": {
+      "cities": 0,
+      "founded_tick": null,
+      "kharis": 0,
+      "population": 0,
+      "wanax_name": "Eumedes"
+    }
+  },
+  "checks": {
+    "full_go": {
+      "command": "tools/gotest.sh ./...",
+      "commit": "4d2bc50f",
+      "migration": 173,
+      "fresh_database": true,
+      "exit_code": 0
+    },
+    "js": {
+      "tests": 602,
+      "failed": 0
+    },
+    "vet": {
+      "exit_code": 0
+    },
+    "owner_mutation": {
+      "named_red": "TestWorldMe_OwnWorldIsolation",
+      "byte_restored_green": true
+    },
+    "initial_full_go_failure": "Own test left other-world city; fixed own fixture cleanup in 4d2bc50f; original red log retained",
+    "runtime_delta_after_23efbe23": "Only fixture cleanup, tools and proof docs; production unchanged"
+  }
+}
