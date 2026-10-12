@@ -237,9 +237,14 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 		// including passage-rebuilt copies.
 		order := *p.StandingOrders
 		if order.RetreatAtLoss != nil || (!order.ByLoyalty && order.HoldToLastMan != nil && !*order.HoldToLastMan) {
+			// Match migration 173 and the old engine: hold wins over an
+			// ignored percentage; otherwise the removed mode becomes loyalty.
+			hold := order.HoldToLastMan != nil && *order.HoldToLastMan
 			order.RetreatAtLoss = nil
-			order.HoldToLastMan = nil
-			order.ByLoyalty = true
+			order.ByLoyalty = !hold
+			if !hold {
+				order.HoldToLastMan = nil
+			}
 		}
 		res, err := combat.SetStandingOrders(ctx, h.pool, h.eventStore, order)
 		if err != nil {

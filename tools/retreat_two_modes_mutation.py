@@ -32,6 +32,10 @@ mutation('legacy-reset-false','server/internal/messenger/order_delivery.go',
  'if order.RetreatAtLoss != nil || (!order.ByLoyalty && order.HoldToLastMan != nil && !*order.HoldToLastMan) {','if order.RetreatAtLoss != nil {',
  './api/handlers/','TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBattle',
  'legacy retreat courier did not translate to loyalty on arrival (reset_false)')
+mutation('legacy-hold','server/internal/messenger/order_delivery.go',
+ 'order.ByLoyalty = !hold','order.HoldToLastMan = nil\n\t\t\torder.ByLoyalty = true',
+ './api/handlers/','TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBattle',
+ 'legacy held retreat courier lost hold on arrival')
 with (OUT/'restored-server.log').open('w') as log:
  subprocess.run(['tools/gotest.sh','./internal/combat/','./api/handlers/','./internal/messenger/','-run','TestRetreat|TestSetStandingOrders|TestStandingOrders_Field|TestRequireStartedWorld'],cwd=ROOT,stdout=log,stderr=subprocess.STDOUT,check=True)
 print('server: restored green')

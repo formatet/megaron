@@ -235,9 +235,13 @@ func TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBatt
 	}
 	// A letter sealed before deploy keeps its original bytes. Interpret only
 	// the applied copy when it arrives, including a passage-reconstructed event.
-	for _, legacyMode := range []string{"percentage", "reset_false"} {
+	for _, legacyMode := range []string{"percentage", "reset_false", "percentage_hold"} {
 		t.Run(legacyMode, func(t *testing.T) {
-			if _, err := pool.Exec(ctx, `UPDATE battle_participants SET standing_orders='{"hold_to_last_man":true}'::jsonb WHERE unit_id=$1`, unitID); err != nil {
+			initial := `{"hold_to_last_man":true}`
+			if legacyMode == "percentage_hold" {
+				initial = `{}` // A refused letter must not masquerade as applied hold.
+			}
+			if _, err := pool.Exec(ctx, `UPDATE battle_participants SET standing_orders=$2::jsonb WHERE unit_id=$1`, unitID, initial); err != nil {
 				t.Fatal(err)
 			}
 			legacy := map[string]any{}
@@ -245,8 +249,11 @@ func TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBatt
 				t.Fatal(err)
 			}
 			standing := map[string]any{"WorldID": worldID, "PlayerID": playerID, "UnitID": unitID, "HoldToLastMan": false}
-			if legacyMode == "percentage" {
+			if legacyMode != "reset_false" {
 				standing["RetreatAtLoss"] = 0.75
+			}
+			if legacyMode == "percentage_hold" {
+				standing["HoldToLastMan"] = true
 			}
 			legacy["standing_orders"] = standing
 			var legacyID uuid.UUID
@@ -272,7 +279,15 @@ func TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBatt
 			_ = pool.QueryRow(ctx, `SELECT standing_orders FROM battle_participants WHERE unit_id=$1`, unitID).Scan(&orders)
 			_ = pool.QueryRow(ctx, `SELECT order_payload FROM messengers WHERE id=$1`, legacyID).Scan(&letterAfter)
 			_ = pool.QueryRow(ctx, `SELECT payload FROM scheduled_events WHERE id=$1`, eventID).Scan(&queueAfter)
-			if string(orders) != "{}" {
+			if legacyMode == "percentage_hold" {
+				var applied map[string]any
+				if err := json.Unmarshal(orders, &applied); err != nil {
+					t.Fatal(err)
+				}
+				if applied["hold_to_last_man"] != true || len(applied) != 1 {
+					t.Fatalf("legacy held retreat courier lost hold on arrival: %s", orders)
+				}
+			} else if string(orders) != "{}" {
 				t.Fatalf("legacy retreat courier did not translate to loyalty on arrival (%s): %s", legacyMode, orders)
 			}
 			if !bytes.Equal(letterBefore, letterAfter) || !bytes.Equal(queueBefore, queueAfter) {
