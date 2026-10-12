@@ -62,6 +62,19 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 		return nil, fmt.Errorf("begin tx: %w", err)
 	}
 	defer tx.Rollback(ctx)
+	if err := placeReachLock(ctx, tx, o.WorldID); err != nil {
+		return nil, err
+	}
+
+	now := clk.Now()
+	reachAnchor, err := tick.LoadAnchor(ctx, tx, o.WorldID)
+	if err != nil {
+		return nil, err
+	}
+	reachOutcomes, err := recordPlaceEntriesTx(ctx, tx, eventStore, o.WorldID, reachAnchor.MilliAt(now))
+	if err != nil {
+		return nil, err
+	}
 
 	var ownerID uuid.UUID
 	var utype, category, status string
@@ -85,12 +98,15 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 	if status != string(unit.StatusMarching) || targetQ == nil || targetR == nil || departsAt == nil || arrivesAt == nil {
 		slog.Info("recall/redirect order arrived but unit no longer marching — order missed",
 			"unit", o.UnitID, "status", status, "mode", o.Mode)
-		return nil, tx.Commit(ctx)
+		if err := tx.Commit(ctx); err != nil {
+			return nil, err
+		}
+		deliverPlaceReach(ctx, eventStore, nil, o.WorldID, reachOutcomes)
+		return nil, nil
 	}
 
 	origin := province.MapPosition{Q: q, R: r}
 	target := province.MapPosition{Q: *targetQ, R: *targetR}
-	now := clk.Now()
 
 	// movement 2a, R6.a: read via the saved route when it applies to this
 	// march (invariant 2); otherwise fall back to the old re-walk, unchanged.
@@ -246,6 +262,7 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 	if err := tx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("commit: %w", err)
 	}
+	deliverPlaceReach(ctx, eventStore, nil, o.WorldID, reachOutcomes)
 
 	if o.Mode == "redirect" {
 		_, _ = eventStore.Append(ctx, o.UnitID, events.StreamType(unit.StreamUnit), unit.EventUnitMarchRedirected,

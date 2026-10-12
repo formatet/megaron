@@ -175,6 +175,11 @@ export function initWS() {
         coalesce('foreignUnits', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/foreign-units`)
           .then(r => r.ok && r.json().then(d => { State.foreignUnitData = d; State.dirty = true; })));
       }
+      if (msg.kind === 'PlaceFirstReached') {
+        // This can happen mid-route, before UnitArrived. Expose the new naming
+        // right on the authoritative FOW map as soon as the notice arrives.
+        window.refreshTiles();
+      }
       if (['UnitArrived','UnitExploreReturned','UnitReturnedStarving','ArmyArrival','ExpeditionTurnedHome','ExpeditionReport'].includes(msg.kind)) {
         // A unit reached or left a hex: its route may have revealed fog and its
         // position changed. Refresh the fog map and the unit layer immediately

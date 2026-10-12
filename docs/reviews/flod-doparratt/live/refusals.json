@@ -1,0 +1,10 @@
+[
+  {
+    "status": 403,
+    "body": "{\"error\":\"only the first Wanax to reach a place may name it\"}\n"
+  },
+  {
+    "status": 400,
+    "body": "{\"error\":\"a place's name must be 2 to 30 characters\"}\n"
+  }
+]

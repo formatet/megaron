@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: place naming form is rights-gated for every kind and excludes fog
+ok 1 - place naming form is rights-gated for every kind and excludes fog
+  ---
+  duration_ms: 0.984801
+  type: 'test'
+  ...
+# Subtest: place first reached notification puts named unit before place and offers naming
+ok 2 - place first reached notification puts named unit before place and offers naming
+  ---
+  duration_ms: 0.859787
+  type: 'test'
+  ...
+# Subtest: naming POST uses Bearer then authoritative FOW map before reopening
+ok 3 - naming POST uses Bearer then authoritative FOW map before reopening
+  ---
+  duration_ms: 15.898542
+  type: 'test'
+  ...
+# Subtest: naming 400 shows server reason without stale success
+ok 4 - naming 400 shows server reason without stale success
+  ---
+  duration_ms: 1.768015
+  type: 'test'
+  ...
+# Subtest: naming 403 shows server reason without stale success
+ok 5 - naming 403 shows server reason without stale success
+  ---
+  duration_ms: 0.933414
+  type: 'test'
+  ...
+# Subtest: naming 409 shows server reason without stale success
+ok 6 - naming 409 shows server reason without stale success
+  ---
+  duration_ms: 0.873434
+  type: 'test'
+  ...
+# Subtest: place naming notification escapes a unit name before inserting HTML
+ok 7 - place naming notification escapes a unit name before inserting HTML
+  ---
+  duration_ms: 0.151975
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 72.71956

@@ -157,6 +157,7 @@ func main() {
 	// and handed down as messenger's own PassageShipReleaser interface.
 	unitArrivalH := combat.NewUnitArrivalHandler(pool, eventStore, hub, scheduler, gameClock, sitosCfg)
 	passageScanH := messenger.NewPassageScanHandler(pool, scheduler, hub, gameClock, unitArrivalH)
+	placeReachH := combat.NewPlaceReachScanHandler(pool, scheduler, eventStore, hub)
 	worker.Register(events.ScheduledBuildComplete, buildH.Handle)
 	worker.Register(events.ScheduledTrainComplete, trainH.Handle)
 	worker.Register(events.ScheduledShipRepairComplete, shipRepairH.Handle)
@@ -174,13 +175,13 @@ func main() {
 	worker.Register(events.ScheduledMessengerStayEnd, messengerStayEndH.Handle)
 	worker.Register(events.ScheduledKharisTick, kharisH.Handle)
 	worker.Register(events.ScheduledSitosTick, sitosH.Handle)
-	worker.Register(events.ScheduledTradeDelivery, tradeH.Handle)
-	worker.Register(events.ScheduledGiftDelivery, tradeH.HandleGift)
-	worker.Register(events.ScheduledTradeReturn, tradeReturnH.Handle)
+	worker.Register(events.ScheduledTradeDelivery, placeReachH.BeforeArrival(tradeH.Handle))
+	worker.Register(events.ScheduledGiftDelivery, placeReachH.BeforeArrival(tradeH.HandleGift))
+	worker.Register(events.ScheduledTradeReturn, placeReachH.BeforeArrival(tradeReturnH.Handle))
 	logisticsH := handlers.NewLogisticsArrivalHandler(pool)
-	worker.Register(events.ScheduledLogisticsArrival, logisticsH.Handle)
+	worker.Register(events.ScheduledLogisticsArrival, placeReachH.BeforeArrival(logisticsH.Handle))
 	transportH := transport.NewArrivalHandler(pool, hub, eventStore)
-	worker.Register(events.ScheduledTransportArrival, transportH.Handle)
+	worker.Register(events.ScheduledTransportArrival, placeReachH.BeforeArrival(transportH.Handle))
 	interceptH := transport.NewInterceptScanHandler(pool, scheduler, eventStore, hub, gameClock)
 	worker.Register(events.ScheduledInterceptScan, interceptH.Handle)
 	worker.Register(events.ScheduledPassageScan, passageScanH.Handle)
@@ -188,21 +189,22 @@ func main() {
 	worker.Register(events.ScheduledUnitInterceptScan, unitInterceptH.Handle)
 	seaStormH := combat.NewSeaStormScanHandler(pool, scheduler, eventStore, hub)
 	worker.Register(events.ScheduledSeaStormScan, seaStormH.Handle)
+	worker.Register(events.ScheduledPlaceReachScan, placeReachH.Handle)
 	marchSightH := combat.NewMarchSightingHandler(pool, scheduler, hub, gameClock)
 	worker.Register(events.ScheduledMarchSightingScan, marchSightH.Handle)
 	marchEncounterH := combat.NewMarchEncounterHandler(pool, scheduler, eventStore, gameClock, hub)
 	worker.Register(events.ScheduledMarchEncounterScan, marchEncounterH.Handle)
 	// unitArrivalH itself is constructed earlier, above passageScanH — see the
 	// comment there.
-	worker.Register(events.ScheduledUnitArrival, unitArrivalH.Handle)
+	worker.Register(events.ScheduledUnitArrival, placeReachH.BeforeArrival(unitArrivalH.Handle))
 	// P3 soak fix (2026-07-19): same reasoning as the order-delivery hook above —
 	// a marching unit's arrival that dead-letters must tell its owner, not just
 	// stay silently "marching" forever with no player-facing signal.
 	worker.RegisterDeadLetterHook(events.ScheduledUnitArrival, unitArrivalH.NotifyDeadLetter)
-	worker.Register(events.ScheduledSentryReturn, unitArrivalH.HandleSentryReturn)
+	worker.Register(events.ScheduledSentryReturn, placeReachH.BeforeArrival(unitArrivalH.HandleSentryReturn))
 	// R6 (megaron_plan_hamta_hem.md, slice 2b): a pickup ship's own wait timer,
 	// same self-terminating-sea-order shape as the sentry patrol above.
-	worker.Register(events.ScheduledPickupTimeout, unitArrivalH.HandlePickupTimeout)
+	worker.Register(events.ScheduledPickupTimeout, placeReachH.BeforeArrival(unitArrivalH.HandlePickupTimeout))
 	// R6 (megaron_plan_skeppsuppdrag_landsatt.md): one-time deploy transition —
 	// a ship left 'positioned' at sea under the pre-R3 rules can no longer take
 	// any fresh order (R3), so send each one home once, at startup. Idempotent;
@@ -349,6 +351,8 @@ func main() {
 		r.Get("/admin/worlds/{worldID}/god-view", godH.View)
 		r.Get("/admin/worlds/{worldID}/reports", rh.List)
 		r.Post("/admin/worlds/{worldID}/backfill-placements", ph.BackfillPlacements)
+		r.Put("/admin/worlds/{worldID}/places/{kind}/{placeID}/name", wh.AdminNamePlace)
+		r.Delete("/admin/worlds/{worldID}/places/{kind}/{placeID}/name", wh.AdminClearPlaceName)
 		r.Put("/admin/worlds/{worldID}/storms/{stormID}/name", wh.AdminNameStorm)
 		r.Delete("/admin/worlds/{worldID}/storms/{stormID}/name", wh.AdminClearStormName)
 		// Reference catalogue — no auth, static data.
@@ -380,6 +384,8 @@ func main() {
 		// honest anonymous answer, so there is none: 401. Tools that need the
 		// whole map use the X-Admin-Key god view (api/handlers/god.go).
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/map", wh.Map)
+		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/places", wh.Places)
+		r.With(auth.Middleware(authSvc)).Post("/worlds/{worldID}/places/{kind}/{placeID}/name", wh.NamePlace)
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/storms", wh.Storms)
 		r.With(auth.Middleware(authSvc)).Post("/worlds/{worldID}/storms/{stormID}/name", wh.NameStorm)
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/colonize-preview", wh.ColonizePreview)
@@ -593,6 +599,7 @@ func seedDailyTicks(ctx context.Context, pool *pgxpool.Pool, sched *events.Sched
 		events.ScheduledStandingOrderTick,
 		events.ScheduledPassageScan,
 		events.ScheduledSeaStormScan,
+		events.ScheduledPlaceReachScan,
 	}
 
 	for _, wid := range worldIDs {

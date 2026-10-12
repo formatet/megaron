@@ -1,0 +1,6 @@
+2 notification(s), 2 unread
+────────────────────────────────────────────────────────────
+*[Mon Oct 12 00:21]  UnitArrived
+      Nomadic Host of Eumedes arrived at (41, 74) — positioned
+*[Mon Oct 12 00:21]  PlaceFirstReached
+      Your nomadic_host is the first to reach this river — you may name it. `keryx places name river 41,75 "<name>"`

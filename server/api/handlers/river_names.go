@@ -7,10 +7,35 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// loadRiverNames reads complete static geography for presentation. Callers
-// must gate each returned name with the same visibility as its terrain.
-func loadRiverNames(ctx context.Context, pool *pgxpool.Pool, worldID uuid.UUID) (map[[2]int]string, error) {
-	rows, err := pool.Query(ctx, `SELECT q,r,terrain FROM map_tiles WHERE world_id=$1`, worldID)
+type placeState struct {
+	Name      string
+	ClaimedBy *uuid.UUID
+	Named     bool
+}
+type placeKey struct {
+	Kind   string
+	Anchor [2]int
+}
+
+func loadPlaceStates(ctx context.Context, pool *pgxpool.Pool, w uuid.UUID) (map[placeKey]placeState, error) {
+	rows, err := pool.Query(ctx, `SELECT kind,anchor_q,anchor_r,COALESCE(name,''),claimed_by,named_tick IS NOT NULL FROM place_names WHERE world_id=$1`, w)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := map[placeKey]placeState{}
+	for rows.Next() {
+		var k placeKey
+		var s placeState
+		if err := rows.Scan(&k.Kind, &k.Anchor[0], &k.Anchor[1], &s.Name, &s.ClaimedBy, &s.Named); err != nil {
+			return nil, err
+		}
+		out[k] = s
+	}
+	return out, rows.Err()
+}
+func loadGeography(ctx context.Context, pool *pgxpool.Pool, w uuid.UUID) ([]world.MapTile, error) {
+	rows, err := pool.Query(ctx, `SELECT q,r,terrain FROM map_tiles WHERE world_id=$1`, w)
 	if err != nil {
 		return nil, err
 	}
@@ -23,8 +48,29 @@ func loadRiverNames(ctx context.Context, pool *pgxpool.Pool, worldID uuid.UUID) 
 		}
 		tiles = append(tiles, t)
 	}
-	if err := rows.Err(); err != nil {
+	return tiles, rows.Err()
+}
+
+// Catchment callers already authorize the settlement's known ring. Geography
+// only identifies components; player-chosen names come from the projection.
+func loadRiverNames(ctx context.Context, pool *pgxpool.Pool, w uuid.UUID) (map[[2]int]string, error) {
+	tiles, err := loadGeography(ctx, pool, w)
+	if err != nil {
 		return nil, err
 	}
-	return world.RiverNames(worldID.String(), tiles), nil
+	states, err := loadPlaceStates(ctx, pool, w)
+	if err != nil {
+		return nil, err
+	}
+	out := map[[2]int]string{}
+	for _, p := range world.Places(tiles) {
+		if p.Kind != "river" {
+			continue
+		}
+		s := states[placeKey{p.Kind, p.Anchor}]
+		for _, h := range p.Hexes {
+			out[h] = s.Name
+		}
+	}
+	return out, nil
 }

@@ -1,0 +1,148 @@
+TAP version 13
+# Subtest: L actual inspect: owner and qualitative defence replace Culture/Walls/DP, actions keep IDs
+ok 1 - L actual inspect: owner and qualitative defence replace Culture/Walls/DP, actions keep IDs
+  ---
+  duration_ms: 18.096744
+  type: 'test'
+  ...
+# Subtest: L actual inspect: fog never exposes marker/army and late army reply cannot update a different panel
+ok 2 - L actual inspect: fog never exposes marker/army and late army reply cannot update a different panel
+  ---
+  duration_ms: 1.189942
+  type: 'test'
+  ...
+# Subtest: L actual Host: food and escort pay durations use exact days in words, never wall time
+ok 3 - L actual Host: food and escort pay durations use exact days in words, never wall time
+  ---
+  duration_ms: 10.635887
+  type: 'test'
+  ...
+# Subtest: river hex and rural panel name appears only in title, terrain row stays generic and fog stays unnamed
+ok 4 - river hex and rural panel name appears only in title, terrain row stays generic and fog stays unnamed
+  ---
+  duration_ms: 0.751077
+  type: 'test'
+  ...
+# Subtest: first-reaching Host exposes generic naming form without hiding founding action
+ok 5 - first-reaching Host exposes generic naming form without hiding founding action
+  ---
+  duration_ms: 0.839517
+  type: 'test'
+  ...
+# Subtest: J: only three primary sections, all secondary abilities remain under closed More
+ok 6 - J: only three primary sections, all secondary abilities remain under closed More
+  ---
+  duration_ms: 0.804502
+  type: 'test'
+  ...
+# Subtest: J: food days come from authoritative mixed-food coverage, not grain net or reserve
+ok 7 - J: food days come from authoritative mixed-food coverage, not grain net or reserve
+  ---
+  duration_ms: 9.600624
+  type: 'test'
+  ...
+# Subtest: J: growing low stocks never say starving; food-worker warning survives
+ok 8 - J: growing low stocks never say starving; food-worker warning survives
+  ---
+  duration_ms: 0.795636
+  type: 'test'
+  ...
+# Subtest: J: missing/invalid coverage is honestly unavailable, never zero or NaN days
+ok 9 - J: missing/invalid coverage is honestly unavailable, never zero or NaN days
+  ---
+  duration_ms: 0.12753
+  type: 'test'
+  ...
+# Subtest: J: population and slaughter capability keep input-free player words and eligibility
+ok 10 - J: population and slaughter capability keep input-free player words and eligibility
+  ---
+  duration_ms: 0.49664
+  type: 'test'
+  ...
+# Subtest: growth line: one sentence per state, from the server growth_state
+ok 11 - growth line: one sentence per state, from the server growth_state
+  ---
+  duration_ms: 0.566199
+  type: 'test'
+  ...
+# Subtest: blessed harvest: food section shows authoritative bonus and goods, hides at end tick
+ok 12 - blessed harvest: food section shows authoritative bonus and goods, hides at end tick
+  ---
+  duration_ms: 0.501836
+  type: 'test'
+  ...
+# Subtest: owned city centre offers the authoritative place naming form inside Catchment, other tiles never do
+ok 13 - owned city centre offers the authoritative place naming form inside Catchment, other tiles never do
+  ---
+  duration_ms: 1.020159
+  type: 'test'
+  ...
+# Subtest: owned-city naming success refreshes authoritative map and rerenders City despite cleared selectedHex
+ok 14 - owned-city naming success refreshes authoritative map and rerenders City despite cleared selectedHex
+  ---
+  duration_ms: 14.520376
+  type: 'test'
+  ...
+# Subtest: place naming form is rights-gated for every kind and excludes fog
+ok 15 - place naming form is rights-gated for every kind and excludes fog
+  ---
+  duration_ms: 0.95622
+  type: 'test'
+  ...
+# Subtest: place first reached notification puts named unit before place and offers naming
+ok 16 - place first reached notification puts named unit before place and offers naming
+  ---
+  duration_ms: 0.820592
+  type: 'test'
+  ...
+# Subtest: naming POST uses Bearer then authoritative FOW map before reopening
+ok 17 - naming POST uses Bearer then authoritative FOW map before reopening
+  ---
+  duration_ms: 14.36632
+  type: 'test'
+  ...
+# Subtest: naming 400 shows server reason without stale success
+ok 18 - naming 400 shows server reason without stale success
+  ---
+  duration_ms: 1.541172
+  type: 'test'
+  ...
+# Subtest: naming 403 shows server reason without stale success
+ok 19 - naming 403 shows server reason without stale success
+  ---
+  duration_ms: 0.858512
+  type: 'test'
+  ...
+# Subtest: naming 409 shows server reason without stale success
+ok 20 - naming 409 shows server reason without stale success
+  ---
+  duration_ms: 0.835391
+  type: 'test'
+  ...
+# Subtest: place naming notification escapes a unit name before inserting HTML
+ok 21 - place naming notification escapes a unit name before inserting HTML
+  ---
+  duration_ms: 0.134403
+  type: 'test'
+  ...
+# Subtest: first-reached WS notice refreshes naming rights mid-route without waiting for arrival
+ok 22 - first-reached WS notice refreshes naming rights mid-route without waiting for arrival
+  ---
+  duration_ms: 2.645643
+  type: 'test'
+  ...
+# Subtest: actor/city panels show a spent place name safely, terrain titles avoid repeating it
+ok 23 - actor/city panels show a spent place name safely, terrain titles avoid repeating it
+  ---
+  duration_ms: 0.176432
+  type: 'test'
+  ...
+1..23
+# tests 23
+# suites 0
+# pass 23
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 91.958225

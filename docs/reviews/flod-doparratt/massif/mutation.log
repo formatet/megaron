@@ -1,0 +1,21 @@
+=== RUN   TestPlaceReachMassifBorderEntry
+=== RUN   TestPlaceReachMassifBorderEntry/adjacent
+    place_reach_test.go:523: massif border entry rights=0 want1
+=== RUN   TestPlaceReachMassifBorderEntry/two_massifs
+    place_reach_test.go:523: massif border entry rights=0 want2
+=== RUN   TestPlaceReachMassifBorderEntry/farther_visible
+=== RUN   TestPlaceReachMassifBorderEntry/sea_is_not_land
+=== RUN   TestPlaceReachMassifBorderEntry/river_is_not_land
+=== RUN   TestPlaceReachMassifBorderEntry/ford_is_land_crossing
+    place_reach_test.go:523: massif border entry rights=0 want1
+--- FAIL: TestPlaceReachMassifBorderEntry (0.14s)
+    --- FAIL: TestPlaceReachMassifBorderEntry/adjacent (0.02s)
+    --- FAIL: TestPlaceReachMassifBorderEntry/two_massifs (0.02s)
+    --- PASS: TestPlaceReachMassifBorderEntry/farther_visible (0.02s)
+    --- PASS: TestPlaceReachMassifBorderEntry/sea_is_not_land (0.02s)
+    --- PASS: TestPlaceReachMassifBorderEntry/river_is_not_land (0.03s)
+    --- FAIL: TestPlaceReachMassifBorderEntry/ford_is_land_crossing (0.02s)
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.144s
+FAIL
+» färsk DB på migration 172 · commit 6f04dbf9+ändringar

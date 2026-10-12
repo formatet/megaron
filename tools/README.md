@@ -440,3 +440,23 @@ serverar basens `map.js` via route. `python3 tools/flodnamn_mutation.py` återin
 produktionsfel och återställer varje fil byte-identiskt. API-fixturen skapas av
 `tools/gotest.sh ./api/handlers/ -run TestMapRiverNamesFOW -args -river-proof-dir=<absolut katalog>`.
 Kontrakt, bildlänkar och begränsningar: [flodnamnsrapporten](../docs/reviews/flodnamn/README.md).
+
+## Geographic naming proof (flod-doparratt)
+
+`tools/place_names_rig.py` builds the current branch's server with CGO=0 on the cached isolated
+acceptance runtime, copies current migrations and verifies served branch assets. It does not reset the world.
+`tools/place_names_pictures.py` uses the existing named-object BILD data on Eirene and inserts
+explicit positioned scouts on passable land to obtain real server LIVE sight. It captures the chosen
+italic label for four kinds at 1280+390 in Firefox on `/world/{id}/map`, measures labels and live tiers,
+and deletes only its own fixture scouts in finally. Output: `docs/reviews/flod-doparratt/live-labels/`.
+Set `PLACE_PROOF_OUTPUT` when rebuilding the rig to preserve earlier provenance in a separate folder.
+This fixture proves layout, not natural first reach. `tools/place_names_live.py` uses normal register/join,
+known-map march preview, march, web naming and CLI; a nearby unclaimed eligible object is required.
+`PLACE_PROOF_RESUME=1 PLACE_PROOF_USER=ParityNomad` resumes the separately recorded natural delta arrival.
+`tools/place_api_mutation.py`, `tools/place_reach_mutation.py` and `tools/place_client_mutation.py` remove
+physical gates, require named red results, restore source in finally and check green.
+`python3 tools/place_massif_mutation.py` removes the massif border-entry mapping, requires the
+named `massif border entry rights=0 want1` failure and restores the source before checking green.
+`python3 tools/place_arrival_mutation.py` restores movement-blocking/global corrupt-journey failures,
+requires named red failures and restores the current fail-open behavior before checking green. Run mutations before
+full suites; they temporarily change the source. Proof: `docs/reviews/flod-doparratt/README.md`.

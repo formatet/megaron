@@ -1,0 +1,4 @@
+» färsk DB på migration 171 · commit c71bf82f
+ok  	formatet/megaron/server/internal/world	0.004s
+ok  	formatet/megaron/server/internal/combat	0.002s [no tests to run]
+ok  	formatet/megaron/server/api/handlers	0.729s

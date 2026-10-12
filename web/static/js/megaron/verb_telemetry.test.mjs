@@ -13,6 +13,7 @@ const vault = existsSync(vaultPath) ? readFileSync(vaultPath, 'utf8') : snapshot
 // An explicit interpretation of compound rows, not a list inferred from the
 // implementation under test. A new vault row or missing branch must fail.
 const coverage = {
+  'name_place': ['name_place'],
   'build': ['build'], 'cancel-build': ['cancel-build'], 'recruit': ['recruit'],
   'place / staff': ['place', 'staff', 'unplace'],
   'place → ta hex (gren av `place`)': ['place'], 'labor (cult)': ['labor'],
@@ -194,4 +195,16 @@ test('Umami shared response boundary owns verb tracking and former bare-fetch pa
     assert.doesNotMatch(source, /\btrack\(/, 'former callers must not double-count accepted requests');
   }
   assert.match(readFileSync(new URL('render/map.js', import.meta.url), 'utf8'), /await fetchAuth\(sendPath,/);
+});
+
+test('place naming telemetry counts accepted names without kind, name, anchor or coordinates', async t => {
+  const events = harness(t, async () => new Response('{"name":"Alpheios","place_id":"-6,79"}'));
+  await fetchAuth(W + 'places/river/-6,79/name', { method: 'POST', body: JSON.stringify({ name:'Alpheios', q:-6, r:79 }) });
+  assert.deepEqual(events,[{name:'place_named',props:undefined}]);
+});
+
+test('place naming network failure scrubs geographic anchor from fetch telemetry', async t => {
+  const events = harness(t, async () => { throw new Error('offline'); });
+  await assert.rejects(fetchAuth(W+'places/forest/-6,79/name',{method:'POST',body:'{"name":"Dryads"}'}),/offline/);
+  assert.deepEqual(events,[{name:'fetch_fail',props:{path:'/api/v1/worlds/:id/places/forest/:id/name',status:0}}]);
 });

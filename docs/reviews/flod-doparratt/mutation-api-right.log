@@ -1,0 +1,8 @@
+2026/10/12 00:14:13 INFO player registered id=b2aabcb4-8088-4c05-9153-1ef530a88027 username=place-viewer-c0735261-5d71-4ef4-8c73-53c2237b1eb7
+2026/10/12 00:14:13 INFO player registered id=4577e52e-8d4b-4bfe-9ff7-f2abada80ad9 username=place-other-f5c6b9ee-ae2e-48d0-a9e8-e8a58c9715aa
+--- FAIL: TestPlaceNameOnlyFirstToReachAndOnce (0.12s)
+    place_names_test.go:91: nonclaimant naming = 409, want403: {"error":"this place has already been named"}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.122s
+FAIL
+» färsk DB på migration 172 · commit 0f550114+ändringar

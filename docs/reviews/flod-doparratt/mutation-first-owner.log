@@ -1,0 +1,6 @@
+--- FAIL: TestPlaceReachMovementHookFirstOwnerAndRerun (0.02s)
+    place_reach_test.go:110: earliest physical entry did not retain first owner
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.025s
+FAIL
+» färsk DB på migration 172 · commit c92dd928+ändringar

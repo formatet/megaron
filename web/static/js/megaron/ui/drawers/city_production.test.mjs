@@ -46,3 +46,42 @@ test('blessed harvest: food section shows authoritative bonus and goods, hides a
  for(const b of [null,{...blessing,remaining_ticks:0},{...blessing,remaining_ticks:-1}])assert.doesNotMatch(foodSummaryHTML(pd({harvest_blessing:b})),/Blessed harvest/,'no row once blessing ends');
  assert.match(foodSummaryHTML(pd({harvest_blessing:{...blessing,remaining_ticks:1}})),/1 day left/);
 });
+
+test('owned city centre offers the authoritative place naming form inside Catchment, other tiles never do',async t=>{
+ const {State}=await import('../../state.js');
+ const saved=State.tileData;t.after(()=>State.tileData=saved);
+ const city={id:'own-city',q:6,r:79,is_capital:true};
+ for(const [kind,terrain] of [['river','river_ford'],['massif','mountain_red'],['desert','semi_desert'],['forest','forest_cedar']]){
+  const tile={q:6,r:79,terrain,place_kind:kind,place_id:'6,79',can_name:true};
+  State.tileData=[{...tile,q:7,r:79},tile];
+  const html=productionSectionsHTML(city),form=html.indexOf('place-name-'+kind+'-6,79');
+  assert.ok(form>html.indexOf('Catchment &amp; workplaces') && form<html.indexOf('id="city-prod-sec"'),'owned city naming stays beside catchment');
+  assert.ok(html.includes(`namePlace('${kind}','6,79')`),'same usable action as hexpanel');
+  assert.equal((html.split('<details')[0].match(/class="dsec"/g)||[]).length,3,'no new primary section');
+  for(const patch of [{can_name:false},{terrain:'fog'},{tier:'fog'},{visible:false}]){
+   State.tileData=[{...tile,...patch}];assert.doesNotMatch(productionSectionsHTML(city),/place-name-|namePlace\(/,'spent or unknown centre has no form');
+  }
+  State.tileData=[{...tile,q:7}];assert.doesNotMatch(productionSectionsHTML(city),/namePlace\(/,'neighbour rights cannot stand in for centre');
+ }
+ State.tileData=[];assert.doesNotMatch(productionSectionsHTML(city),/namePlace\(/,'missing terrain does not guess a naming right');
+});
+
+test('owned-city naming success refreshes authoritative map and rerenders City despite cleared selectedHex',async t=>{
+ const {State}=await import('../../state.js');const {namePlace}=await import('../placename.js');
+ const saved=Object.fromEntries(['document','window','localStorage','fetch'].map(k=>[k,globalThis[k]]));
+ const state=Object.fromEntries(['tileData','WORLD_ID','activeDrawer','selectedHex','dirty'].map(k=>[k,State[k]]));
+ t.after(()=>{for(const [k,v] of Object.entries(saved)) v===undefined ? delete globalThis[k] : globalThis[k]=v;Object.assign(State,state);});
+ const city={id:'own-city',q:6,r:79,is_capital:true};
+ const tile={q:6,r:79,terrain:'river_ford',place_kind:'river',place_id:'6,79',can_name:true};
+ State.tileData=[tile];State.WORLD_ID='world';State.activeDrawer='city';State.selectedHex=null;
+ let cityHTML=productionSectionsHTML(city),opened=0;assert.match(cityHTML,/place-name-river-6,79/);
+ globalThis.document={getElementById:id=>id==='place-name-river-6,79'?{value:'Alpheios'}:null};
+ globalThis.localStorage={getItem:()=>null};
+ globalThis.window={openDrawer:name=>{assert.equal(name,'city');cityHTML=productionSectionsHTML(city);opened++;},reopenSelectedHex:()=>assert.fail('owned City has no selected hex to reopen')};
+ globalThis.fetch=async url=>url.endsWith('/name')?new Response('{"name":"Alpheios"}'):new Response(JSON.stringify([{...tile,place_name:'Alpheios',can_name:false}]));
+ await namePlace('river','6,79');
+ assert.equal(opened,1,'successful name reopens the same City drawer');
+ assert.equal(State.tileData[0].place_name,'Alpheios');
+ assert.match(cityHTML,/<strong>Alpheios<\/strong>/,'named place remains visible beside own-city catchment');
+ assert.doesNotMatch(cityHTML,/namePlace\(|place-name-/,'spent naming right disappears from actual City template');
+});

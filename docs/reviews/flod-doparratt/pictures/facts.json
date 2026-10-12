@@ -1,0 +1,935 @@
+{
+  "health": {
+    "commit": "a14f611",
+    "migration": 172,
+    "status": "ok"
+  },
+  "world": "3b5fb9cd-8c06-4685-88df-b162c9acff99",
+  "fixture": "explicit SQL rights and remembered geography; actual web name POST",
+  "places": [
+    {
+      "kind": "river",
+      "id": "6,74",
+      "name": "Thaleia",
+      "hexes": [
+        {
+          "q": 5,
+          "r": 78
+        },
+        {
+          "q": 6,
+          "r": 74
+        },
+        {
+          "q": 6,
+          "r": 78
+        },
+        {
+          "q": 6,
+          "r": 79
+        },
+        {
+          "q": 6,
+          "r": 80
+        },
+        {
+          "q": 7,
+          "r": 74
+        },
+        {
+          "q": 7,
+          "r": 78
+        },
+        {
+          "q": 8,
+          "r": 74
+        },
+        {
+          "q": 8,
+          "r": 75
+        },
+        {
+          "q": 8,
+          "r": 76
+        },
+        {
+          "q": 8,
+          "r": 77
+        }
+      ],
+      "human_name": "Thaleia",
+      "focus": {
+        "q": 8,
+        "r": 77
+      }
+    },
+    {
+      "kind": "massif",
+      "id": "0,75",
+      "name": "Mount Ida",
+      "hexes": [
+        {
+          "q": 0,
+          "r": 75
+        },
+        {
+          "q": 1,
+          "r": 75
+        },
+        {
+          "q": 1,
+          "r": 76
+        },
+        {
+          "q": 2,
+          "r": 73
+        },
+        {
+          "q": 2,
+          "r": 74
+        },
+        {
+          "q": 2,
+          "r": 75
+        },
+        {
+          "q": 3,
+          "r": 73
+        },
+        {
+          "q": 3,
+          "r": 74
+        },
+        {
+          "q": 3,
+          "r": 75
+        },
+        {
+          "q": 3,
+          "r": 76
+        },
+        {
+          "q": 4,
+          "r": 72
+        },
+        {
+          "q": 4,
+          "r": 73
+        },
+        {
+          "q": 4,
+          "r": 74
+        },
+        {
+          "q": 5,
+          "r": 72
+        },
+        {
+          "q": 5,
+          "r": 73
+        },
+        {
+          "q": 6,
+          "r": 71
+        },
+        {
+          "q": 6,
+          "r": 72
+        },
+        {
+          "q": 7,
+          "r": 71
+        },
+        {
+          "q": 7,
+          "r": 72
+        }
+      ],
+      "human_name": "Mount Ida",
+      "focus": {
+        "q": 4,
+        "r": 73
+      }
+    },
+    {
+      "kind": "desert",
+      "id": "31,60",
+      "name": "Damon Sands",
+      "hexes": [
+        {
+          "q": 31,
+          "r": 60
+        },
+        {
+          "q": 32,
+          "r": 59
+        },
+        {
+          "q": 33,
+          "r": 59
+        },
+        {
+          "q": 34,
+          "r": 57
+        },
+        {
+          "q": 34,
+          "r": 58
+        },
+        {
+          "q": 34,
+          "r": 59
+        },
+        {
+          "q": 34,
+          "r": 61
+        },
+        {
+          "q": 35,
+          "r": 55
+        },
+        {
+          "q": 35,
+          "r": 56
+        },
+        {
+          "q": 35,
+          "r": 57
+        },
+        {
+          "q": 35,
+          "r": 58
+        },
+        {
+          "q": 35,
+          "r": 59
+        },
+        {
+          "q": 35,
+          "r": 60
+        },
+        {
+          "q": 35,
+          "r": 61
+        },
+        {
+          "q": 36,
+          "r": 53
+        },
+        {
+          "q": 36,
+          "r": 54
+        },
+        {
+          "q": 36,
+          "r": 55
+        },
+        {
+          "q": 36,
+          "r": 56
+        },
+        {
+          "q": 36,
+          "r": 57
+        },
+        {
+          "q": 36,
+          "r": 58
+        },
+        {
+          "q": 36,
+          "r": 59
+        },
+        {
+          "q": 36,
+          "r": 60
+        },
+        {
+          "q": 37,
+          "r": 53
+        },
+        {
+          "q": 37,
+          "r": 54
+        },
+        {
+          "q": 37,
+          "r": 55
+        },
+        {
+          "q": 37,
+          "r": 56
+        },
+        {
+          "q": 37,
+          "r": 57
+        },
+        {
+          "q": 37,
+          "r": 58
+        },
+        {
+          "q": 37,
+          "r": 59
+        },
+        {
+          "q": 37,
+          "r": 60
+        },
+        {
+          "q": 38,
+          "r": 51
+        },
+        {
+          "q": 38,
+          "r": 52
+        },
+        {
+          "q": 38,
+          "r": 53
+        },
+        {
+          "q": 38,
+          "r": 54
+        },
+        {
+          "q": 38,
+          "r": 55
+        },
+        {
+          "q": 38,
+          "r": 56
+        },
+        {
+          "q": 38,
+          "r": 57
+        },
+        {
+          "q": 38,
+          "r": 58
+        },
+        {
+          "q": 39,
+          "r": 51
+        },
+        {
+          "q": 39,
+          "r": 52
+        },
+        {
+          "q": 39,
+          "r": 53
+        },
+        {
+          "q": 39,
+          "r": 54
+        },
+        {
+          "q": 39,
+          "r": 55
+        },
+        {
+          "q": 39,
+          "r": 56
+        },
+        {
+          "q": 40,
+          "r": 51
+        },
+        {
+          "q": 40,
+          "r": 52
+        },
+        {
+          "q": 40,
+          "r": 53
+        },
+        {
+          "q": 40,
+          "r": 54
+        },
+        {
+          "q": 40,
+          "r": 55
+        },
+        {
+          "q": 41,
+          "r": 51
+        },
+        {
+          "q": 41,
+          "r": 52
+        },
+        {
+          "q": 41,
+          "r": 53
+        },
+        {
+          "q": 41,
+          "r": 54
+        },
+        {
+          "q": 41,
+          "r": 55
+        },
+        {
+          "q": 41,
+          "r": 56
+        },
+        {
+          "q": 41,
+          "r": 57
+        },
+        {
+          "q": 41,
+          "r": 58
+        },
+        {
+          "q": 42,
+          "r": 51
+        },
+        {
+          "q": 42,
+          "r": 52
+        },
+        {
+          "q": 42,
+          "r": 53
+        },
+        {
+          "q": 42,
+          "r": 54
+        },
+        {
+          "q": 42,
+          "r": 55
+        },
+        {
+          "q": 42,
+          "r": 56
+        },
+        {
+          "q": 42,
+          "r": 57
+        },
+        {
+          "q": 43,
+          "r": 54
+        },
+        {
+          "q": 43,
+          "r": 55
+        },
+        {
+          "q": 43,
+          "r": 56
+        },
+        {
+          "q": 44,
+          "r": 54
+        },
+        {
+          "q": 44,
+          "r": 55
+        }
+      ],
+      "human_name": "Damon Sands",
+      "focus": {
+        "q": 38,
+        "r": 56
+      }
+    },
+    {
+      "kind": "forest",
+      "id": "58,18",
+      "name": "Ariadne Cedars",
+      "hexes": [
+        {
+          "q": 58,
+          "r": 18
+        },
+        {
+          "q": 58,
+          "r": 19
+        },
+        {
+          "q": 58,
+          "r": 20
+        },
+        {
+          "q": 58,
+          "r": 21
+        },
+        {
+          "q": 58,
+          "r": 22
+        },
+        {
+          "q": 59,
+          "r": 17
+        },
+        {
+          "q": 59,
+          "r": 18
+        },
+        {
+          "q": 59,
+          "r": 19
+        },
+        {
+          "q": 59,
+          "r": 20
+        },
+        {
+          "q": 60,
+          "r": 19
+        }
+      ],
+      "human_name": "Ariadne Cedars",
+      "focus": {
+        "q": 59,
+        "r": 19
+      }
+    }
+  ],
+  "measurements": [
+    {
+      "mode": "desktop",
+      "variant": "a",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map?ortnamn=a",
+      "kind": "river",
+      "labels": [
+        {
+          "id": "river:6,74",
+          "kind": "river",
+          "name": "Thaleia",
+          "x": 264,
+          "y": 3048,
+          "angle": 1.5707963267948966,
+          "rect": {
+            "left": 257.5,
+            "right": 270.5,
+            "top": 3032.9416666030884,
+            "bottom": 3063.0583333969116
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "desktop",
+      "variant": "a",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map?ortnamn=a",
+      "kind": "massif",
+      "labels": [
+        {
+          "id": "massif:0,75",
+          "kind": "massif",
+          "name": "Mount Ida",
+          "x": 132,
+          "y": 2858,
+          "angle": 0,
+          "rect": {
+            "left": 111.57500076293945,
+            "right": 152.42499923706055,
+            "top": 2851.5,
+            "bottom": 2864.5
+          }
+        },
+        {
+          "id": "river:6,74",
+          "kind": "river",
+          "name": "Thaleia",
+          "x": 264,
+          "y": 3048,
+          "angle": 1.5707963267948966,
+          "rect": {
+            "left": 257.5,
+            "right": 270.5,
+            "top": 3032.9416666030884,
+            "bottom": 3063.0583333969116
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "desktop",
+      "variant": "a",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map?ortnamn=a",
+      "kind": "desert",
+      "labels": [
+        {
+          "id": "desert:31,60",
+          "kind": "desert",
+          "name": "Damon Sands",
+          "x": 1254,
+          "y": 2858,
+          "angle": 0,
+          "rect": {
+            "left": 1227.5416660308838,
+            "right": 1280.4583339691162,
+            "top": 2851.5,
+            "bottom": 2864.5
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "desktop",
+      "variant": "a",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map?ortnamn=a",
+      "kind": "forest",
+      "labels": [
+        {
+          "id": "forest:58,18",
+          "kind": "forest",
+          "name": "Ariadne Cedars",
+          "x": 1947,
+          "y": 1848,
+          "angle": 0,
+          "rect": {
+            "left": 1917.3666667938232,
+            "right": 1976.6333332061768,
+            "top": 1841.5,
+            "bottom": 1854.5
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "desktop",
+      "variant": "b",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map?ortnamn=b",
+      "kind": "river",
+      "labels": [
+        {
+          "id": "massif:0,75",
+          "kind": "massif",
+          "name": "Mount Ida",
+          "x": 99,
+          "y": 2891,
+          "angle": 0,
+          "rect": {
+            "left": 77.20000022649765,
+            "right": 120.79999977350235,
+            "top": 2885,
+            "bottom": 2897
+          }
+        },
+        {
+          "id": "river:6,74",
+          "kind": "river",
+          "name": "Thaleia",
+          "x": 264,
+          "y": 3048,
+          "angle": 1.5707963267948966,
+          "rect": {
+            "left": 258,
+            "right": 270,
+            "top": 3031.791666865349,
+            "bottom": 3064.208333134651
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "desktop",
+      "variant": "b",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map?ortnamn=b",
+      "kind": "massif",
+      "labels": [
+        {
+          "id": "massif:0,75",
+          "kind": "massif",
+          "name": "Mount Ida",
+          "x": 132,
+          "y": 2858,
+          "angle": 0,
+          "rect": {
+            "left": 110.20000022649765,
+            "right": 153.79999977350235,
+            "top": 2852,
+            "bottom": 2864
+          }
+        },
+        {
+          "id": "river:6,74",
+          "kind": "river",
+          "name": "Thaleia",
+          "x": 264,
+          "y": 3034,
+          "angle": 1.5707963267948966,
+          "rect": {
+            "left": 258,
+            "right": 270,
+            "top": 3017.791666865349,
+            "bottom": 3050.208333134651
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "desktop",
+      "variant": "b",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map?ortnamn=b",
+      "kind": "desert",
+      "labels": [
+        {
+          "id": "desert:31,60",
+          "kind": "desert",
+          "name": "Damon Sands",
+          "x": 1254,
+          "y": 2858,
+          "angle": 0,
+          "rect": {
+            "left": 1226.0250002741814,
+            "right": 1281.9749997258186,
+            "top": 2852,
+            "bottom": 2864
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "desktop",
+      "variant": "b",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map?ortnamn=b",
+      "kind": "forest",
+      "labels": [
+        {
+          "id": "forest:58,18",
+          "kind": "forest",
+          "name": "Ariadne Cedars",
+          "x": 1947,
+          "y": 1848,
+          "angle": 0,
+          "rect": {
+            "left": 1914.8250002861023,
+            "right": 1979.1749997138977,
+            "top": 1842,
+            "bottom": 1854
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "variant": "a",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map?ortnamn=a",
+      "kind": "river",
+      "labels": [
+        {
+          "id": "river:6,74",
+          "kind": "river",
+          "name": "Thaleia",
+          "x": 264,
+          "y": 3048,
+          "angle": 1.5707963267948966,
+          "rect": {
+            "left": 257.5,
+            "right": 270.5,
+            "top": 3032.9416666030884,
+            "bottom": 3063.0583333969116
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "variant": "a",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map?ortnamn=a",
+      "kind": "massif",
+      "labels": [
+        {
+          "id": "massif:0,75",
+          "kind": "massif",
+          "name": "Mount Ida",
+          "x": 132,
+          "y": 2858,
+          "angle": 0,
+          "rect": {
+            "left": 111.57500076293945,
+            "right": 152.42499923706055,
+            "top": 2851.5,
+            "bottom": 2864.5
+          }
+        },
+        {
+          "id": "river:6,74",
+          "kind": "river",
+          "name": "Thaleia",
+          "x": 198,
+          "y": 2934,
+          "angle": 0.5224034317165289,
+          "rect": {
+            "left": 181.70684122350295,
+            "right": 214.29315877649705,
+            "top": 2920.8533810663066,
+            "bottom": 2947.1466189336934
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "variant": "a",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map?ortnamn=a",
+      "kind": "desert",
+      "labels": [
+        {
+          "id": "desert:31,60",
+          "kind": "desert",
+          "name": "Damon Sands",
+          "x": 1254,
+          "y": 2858,
+          "angle": 0,
+          "rect": {
+            "left": 1227.5416660308838,
+            "right": 1280.4583339691162,
+            "top": 2851.5,
+            "bottom": 2864.5
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "variant": "a",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map?ortnamn=a",
+      "kind": "forest",
+      "labels": [
+        {
+          "id": "forest:58,18",
+          "kind": "forest",
+          "name": "Ariadne Cedars",
+          "x": 1947,
+          "y": 1848,
+          "angle": 0,
+          "rect": {
+            "left": 1917.3666667938232,
+            "right": 1976.6333332061768,
+            "top": 1841.5,
+            "bottom": 1854.5
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "variant": "b",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map?ortnamn=b",
+      "kind": "river",
+      "labels": [
+        {
+          "id": "river:6,74",
+          "kind": "river",
+          "name": "Thaleia",
+          "x": 264,
+          "y": 3048,
+          "angle": 1.5707963267948966,
+          "rect": {
+            "left": 258,
+            "right": 270,
+            "top": 3031.791666865349,
+            "bottom": 3064.208333134651
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "variant": "b",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map?ortnamn=b",
+      "kind": "massif",
+      "labels": [
+        {
+          "id": "massif:0,75",
+          "kind": "massif",
+          "name": "Mount Ida",
+          "x": 132,
+          "y": 2858,
+          "angle": 0,
+          "rect": {
+            "left": 110.20000022649765,
+            "right": 153.79999977350235,
+            "top": 2852,
+            "bottom": 2864
+          }
+        },
+        {
+          "id": "river:6,74",
+          "kind": "river",
+          "name": "Thaleia",
+          "x": 198,
+          "y": 2934,
+          "angle": 0.5224034317165289,
+          "rect": {
+            "left": 180.95970784781193,
+            "right": 215.04029215218807,
+            "top": 2920.712883314005,
+            "bottom": 2947.287116685995
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "variant": "b",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map?ortnamn=b",
+      "kind": "desert",
+      "labels": [
+        {
+          "id": "desert:31,60",
+          "kind": "desert",
+          "name": "Damon Sands",
+          "x": 1254,
+          "y": 2858,
+          "angle": 0,
+          "rect": {
+            "left": 1226.0250002741814,
+            "right": 1281.9749997258186,
+            "top": 2852,
+            "bottom": 2864
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "variant": "b",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map?ortnamn=b",
+      "kind": "forest",
+      "labels": [
+        {
+          "id": "forest:58,18",
+          "kind": "forest",
+          "name": "Ariadne Cedars",
+          "x": 1947,
+          "y": 1848,
+          "angle": 0,
+          "rect": {
+            "left": 1914.8250002861023,
+            "right": 1979.1749997138977,
+            "top": 1842,
+            "bottom": 1854
+          }
+        }
+      ],
+      "errors": []
+    }
+  ]
+}
