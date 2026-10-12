@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { State } from '../state.js';
 import assert from 'node:assert/strict';
 import { openAccountWindow, closeAccountWindow } from './account_window.js';
 import { diagnosticsSnapshot } from './diagnostics.js';
@@ -7,6 +8,8 @@ import { openDispatchWindow } from './dispatch_window.js';
 // Small DOM harness executes the real controller and fetchAuth, without a browser
 // dependency. The acceptance rig separately exercises actual HTML and services.
 function harness(t, handler) {
+  const previousWorld = State.WORLD_ID;
+  State.WORLD_ID = null;
   const nodes = new Map();
   class Node {
     constructor(id) { this.id = id; this.hidden = true; this.textContent = ''; this.events = {}; this.children = []; this.classes = new Set(); this.classList = { add: x => this.classes.add(x), remove: x => this.classes.delete(x), contains: x => this.classes.has(x) }; }
@@ -29,7 +32,7 @@ function harness(t, handler) {
   globalThis.localStorage = { getItem: () => 'game-token', setItem: (...args) => changes.push(['set', ...args]), removeItem: key => changes.push(['remove', key]) };
   globalThis.window = { location: {} };
   globalThis.fetch = async (url, options) => { requests.push({ url, options }); return handler(url, options); };
-  t.after(() => { closeAccountWindow(); Object.assign(globalThis, previous); });
+  t.after(() => { State.WORLD_ID = previousWorld; closeAccountWindow(); Object.assign(globalThis, previous); });
   return { nodes, requests, changes };
 }
 const response = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
@@ -120,4 +123,30 @@ test('ReadyRenderedLinkUsesConfiguredHomeserver', async t => {
   assert.ok(h.nodes.get('acc-chat').innerHTML.includes(`href="${homeserver}"`));
   assert.ok(!h.nodes.get('acc-chat').innerHTML.includes('https://agora.formatet.se'));
   assert.ok(h.requests.every(r => !r.url.endsWith('/password')));
+});
+
+const profile = { wanax_name: 'Nestor', founded_tick: 0, cities: 2, population: 320, kharis: 4.5 };
+test('account loads five own-world profile rows, including a real day zero', async t => {
+  const h = harness(t, url => response(url.endsWith('/me') ? profile : { enabled: false }));
+  State.WORLD_ID = 'my-world'; openAccountWindow(); await settle();
+  const html = h.nodes.get('acc-profile').innerHTML;
+  assert.equal((html.match(/class="stat-row"/g) || []).length, 5);
+  assert.match(html, /Since day 0/); assert.match(html, /Nestor/);
+  assert.equal(h.requests.find(r => r.url.endsWith('/me')).url, '/api/v1/worlds/my-world/me');
+});
+for (const change of ['close', 'world']) {
+  test(`late profile ignored after ${change}`, async t => {
+    let resolve;
+    const h = harness(t, url => url.endsWith('/me') ? new Promise(r => resolve = r) : response({ enabled: false }));
+    State.WORLD_ID = 'old-world'; openAccountWindow(); await settle();
+    if (change === 'close') closeAccountWindow(); else State.WORLD_ID = 'new-world';
+    resolve(response(profile)); await settle();
+    assert.ok(!h.nodes.get('acc-profile').innerHTML.includes('Nestor'));
+  });
+}
+test('profile error does not invent zero-valued statistics', async t => {
+  const h = harness(t, url => response(url.endsWith('/me') ? { error: 'Not a member of this world' } : { enabled: false }, url.endsWith('/me') ? 404 : 200));
+  State.WORLD_ID = 'world'; openAccountWindow(); await settle();
+  assert.match(h.nodes.get('acc-profile').textContent, /Not a member/);
+  assert.equal(h.nodes.get('acc-profile').innerHTML, '');
 });

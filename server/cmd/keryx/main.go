@@ -123,6 +123,7 @@ func main() {
 		briefCmd(),
 		unitCmd(),
 		retreatDefaultCmd(),
+		meCmd(),
 		dispatchesCmd(),
 		armyAliasCmd(),
 		marchAliasCmd(),

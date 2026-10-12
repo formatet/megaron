@@ -376,6 +376,7 @@ func main() {
 		r.Get("/worlds", wh.List)
 		r.With(auth.Middleware(authSvc)).Post("/worlds", wh.Create)
 		r.Get("/worlds/{worldID}", wh.Get)
+		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/me", wh.Me)
 		// Map-shaped reads REQUIRE a token (Timothy 2026-09-25: "upptäckten ÄR
 		// spelet"). They used OptionalMiddleware, and an anonymous caller got the
 		// no-eyes branch — which on /map meant EVERY tile live, deposits included,
