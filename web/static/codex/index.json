@@ -2,6 +2,7 @@
   "categories": ["Start here", "Founding", "Your city", "Goods and trade", "The wider world", "War", "The gods", "Growing", "Reference"],
   "articles": [
     {"id": "welcome",      "title": "Welcome, Wanax",               "category": "Start here", "related": ["time", "runners", "coming-back"]},
+    {"id": "account", "title": "Your account and realm", "category": "Start here", "related": ["community-chat", "keryx", "horde"]},
     {"id": "getting-in",   "title": "Getting in",                   "category": "Start here", "related": ["time", "horde"]},
     {"id": "time",         "title": "Days and the clock",           "category": "Start here", "related": ["welcome", "coming-back"]},
     {"id": "screen",       "title": "The screen",                   "category": "Start here", "related": ["coming-back", "report"]},

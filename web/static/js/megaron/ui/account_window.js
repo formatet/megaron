@@ -1,5 +1,7 @@
 import { fetchAuth, getAgoraAccount, requestAgoraPassword } from '../api.js';
 import { formatApiError, esc } from './format.js';
+import { State } from '../state.js';
+import { accountProfileHTML } from './account_profile.js';
 
 // ── Account window — every keryx verb lives in the web too (Timothy
 // 2026-09-25, CLAUDE.md "A verb lives on FOUR surfaces"). `keryx password`
@@ -50,6 +52,7 @@ export function openAccountWindow() {
   if (!body) return;
 
   body.innerHTML = `
+    <section id="acc-profile" class="account-profile" aria-label="Your realm"></section>
     <form id="acc-pw-form">
       <div class="field">
         <label>Current password</label>
@@ -81,6 +84,7 @@ export function openAccountWindow() {
     submitPasswordChange();
   });
   document.getElementById('acc-signout-btn').addEventListener('click', signOut);
+  loadProfile(generation, State.WORLD_ID);
   loadChatAccount(generation);
 }
 
@@ -189,5 +193,22 @@ async function getChatPassword(generation) {
     if (accountIsCurrent(generation)) status.textContent = 'Could not get a chat password. Try again later.';
   } finally {
     if (accountIsCurrent(generation)) button.disabled = false;
+  }
+}
+
+async function loadProfile(generation, worldID) {
+  const section = document.getElementById('acc-profile');
+  if (!worldID) { section.textContent = 'Choose a world to see your realm.'; return; }
+  section.textContent = 'Loading your realm…';
+  const current = () => accountIsCurrent(generation) && State.WORLD_ID === worldID;
+  try {
+    const response = await fetchAuth(`/api/v1/worlds/${encodeURIComponent(worldID)}/me`);
+    if (!current()) return;
+    const data = await response.json();
+    if (!current()) return;
+    if (!response.ok) { section.textContent = formatApiError(data, 'Could not load your realm.'); return; }
+    section.innerHTML = accountProfileHTML(data);
+  } catch (_) {
+    if (current()) section.textContent = 'Could not load your realm. Close this window and try again later.';
   }
 }
