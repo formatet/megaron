@@ -2,6 +2,7 @@ package combat
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -415,27 +416,66 @@ func TestPlaceReachWorkerCatchupArrivalFlushesLastHexSameBatch(t *testing.T) {
 		t.Fatal("catch-up skipped physical first-reach claims")
 	}
 }
-func TestPlaceReachArrivalFlushFailurePreservesJourney(t *testing.T) {
+func TestPlaceReachArrivalFlushFailureStillRunsMovement(t *testing.T) {
 	f := reachWorld(t)
-	ctx := context.Background()
-	id := f.mover(t, "infantry", f.owner, reachRoute(0, 4, 0, 6))
 	called := false
 	handler := f.h.BeforeArrival(func(context.Context, events.ScheduledEvent) error { called = true; return nil })
-	failed, cancel := context.WithCancel(ctx)
+	failed, cancel := context.WithCancel(context.Background())
 	cancel()
-	if err := handler(failed, events.ScheduledEvent{WorldID: f.world, DueTick: 4}); err == nil {
-		t.Fatal("failed entry flush allowed arrival")
+	if err := handler(failed, events.ScheduledEvent{WorldID: f.world, DueTick: 4}); err != nil {
+		t.Fatalf("naming flush failure stopped movement: %v", err)
 	}
-	if called {
-		t.Fatal("arrival ran despite failed entry persistence")
+	if !called {
+		t.Fatal("naming flush failure stopped movement handler")
 	}
-	var status string
-	var raw []byte
-	if err := f.pool.QueryRow(ctx, `SELECT status,march_route FROM units WHERE id=$1`, id).Scan(&status, &raw); err != nil {
+}
+
+func TestPlaceReachCorruptJourneyDoesNotBlockHealthyArrival(t *testing.T) {
+	f := reachWorld(t)
+	ctx := context.Background()
+	bad := f.mover(t, "infantry", f.owner, reachRoute(0, 2, 0, 2))
+	healthy := f.mover(t, "infantry", f.owner, reachRoute(0, 1, 4, 6))
+	broken := reachRoute(0, 2, 0, 2)
+	broken.Costs[0] = 0
+	raw, _ := json.Marshal(broken)
+	if _, err := f.pool.Exec(ctx, `UPDATE units SET march_route=$2 WHERE id=$1`, bad, raw); err != nil {
 		t.Fatal(err)
 	}
-	if status != "marching" || len(raw) == 0 {
-		t.Fatal("failed entry flush erased retryable journey")
+	if err := f.pool.QueryRow(ctx, `SELECT march_route FROM units WHERE id=$1`, bad).Scan(&raw); err != nil {
+		t.Fatal(err)
+	}
+	key := fmt.Sprintf("u:%s:%x", bad, sha256.Sum256(raw))
+	if _, err := f.pool.Exec(ctx, `INSERT INTO place_reach_progress(journey_key,world_id,last_tick,last_milli) VALUES($1,$2,0,700)`, key, f.world); err != nil {
+		t.Fatal(err)
+	}
+	called := false
+	handler := f.h.BeforeArrival(func(ctx context.Context, e events.ScheduledEvent) error {
+		called = true
+		var n int
+		if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM place_names WHERE world_id=$1 AND anchor_q=6 AND claimed_by=$2`, f.world, f.owner).Scan(&n); err != nil {
+			return err
+		}
+		if n != 1 {
+			return fmt.Errorf("corrupt journey blocked healthy arrival claim: claims=%d want1", n)
+		}
+		_, err := f.pool.Exec(ctx, `UPDATE units SET status='positioned',march_route=NULL WHERE id=$1`, healthy)
+		return err
+	})
+	if err := handler(ctx, events.ScheduledEvent{WorldID: f.world, DueTick: 1}); err != nil {
+		t.Fatal(err)
+	}
+	if !called {
+		t.Fatal("corrupt journey blocked healthy arrival handler")
+	}
+	var progress int64
+	if err := f.pool.QueryRow(ctx, `SELECT last_milli FROM place_reach_progress WHERE journey_key=$1`, key).Scan(&progress); err != nil {
+		t.Fatal(err)
+	}
+	if progress != 700 {
+		t.Fatalf("corrupt journey consumed progress: got%d want700", progress)
+	}
+	if f.claims(t) != 1 {
+		t.Fatal("corrupt journey granted a false right")
 	}
 }
 func TestPlaceReachFreightShipCanonicalSubject(t *testing.T) {

@@ -456,5 +456,7 @@ known-map march preview, march, web naming and CLI; a nearby unclaimed eligible 
 `tools/place_api_mutation.py`, `tools/place_reach_mutation.py` and `tools/place_client_mutation.py` remove
 physical gates, require named red results, restore source in finally and check green.
 `python3 tools/place_massif_mutation.py` removes the massif border-entry mapping, requires the
-named `massif border entry rights=0 want1` failure and restores the source before checking green. Run mutations before
+named `massif border entry rights=0 want1` failure and restores the source before checking green.
+`python3 tools/place_arrival_mutation.py` restores movement-blocking/global corrupt-journey failures,
+requires named red failures and restores the current fail-open behavior before checking green. Run mutations before
 full suites; they temporarily change the source. Proof: `docs/reviews/flod-doparratt/README.md`.

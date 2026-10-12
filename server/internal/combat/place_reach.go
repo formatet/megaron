@@ -8,6 +8,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"sort"
 	"time"
 
@@ -38,13 +39,12 @@ func placeReachLock(ctx context.Context, tx pgx.Tx, worldID uuid.UUID) error {
 	return err
 }
 
-// BeforeArrival makes physical-entry persistence a prerequisite for handlers
-// that finish/remove frozen journeys. Priority alone is insufficient when a
-// delayed recurring scan skips ticks or when its previous attempt failed.
+// BeforeArrival preserves reached hexes before handlers remove frozen journeys.
+// Naming is best effort: a persistence failure must never stop movement.
 func (h *PlaceReachScanHandler) BeforeArrival(next events.Handler) events.Handler {
 	return func(ctx context.Context, e events.ScheduledEvent) error {
 		if err := h.flushEntries(ctx, e); err != nil {
-			return err
+			slog.Warn("place reach before arrival failed; continuing movement", "world", e.WorldID, "error", err)
 		}
 		return next(ctx, e)
 	}
@@ -82,6 +82,7 @@ type placeVoyage struct {
 	route          StoredRoute
 	departed       time.Time
 	last           int64
+	skip           bool
 }
 type placeEntry struct {
 	voyage int
@@ -147,6 +148,7 @@ func loadPlaceVoyages(ctx context.Context, tx pgx.Tx, worldID uuid.UUID) ([]plac
 		}
 		r, ok := journeyRoute(raw, dep, arr)
 		if !ok {
+			slog.Warn("place reach skips invalid transport route", "world", worldID, "transport", v.id)
 			continue
 		}
 		v.route = r
@@ -183,6 +185,7 @@ func loadPlaceVoyages(ctx context.Context, tx pgx.Tx, worldID uuid.UUID) ([]plac
 		}
 		r, ok := LoadActiveRoute(raw, "marching", dep, arr)
 		if !ok {
+			slog.Warn("place reach skips invalid unit route", "world", worldID, "unit", v.id)
 			continue
 		}
 		v.route = r
@@ -233,6 +236,12 @@ func recordPlaceEntriesTx(ctx context.Context, tx pgx.Tx, store *events.Store, w
 	var entries []placeEntry
 	for i := range voyages {
 		v := &voyages[i]
+		entered, err := RouteEnterMilli(v.route)
+		if err != nil {
+			slog.Warn("place reach skips unreadable route", "world", worldID, "journey", v.key, "error", err)
+			v.skip = true
+			continue
+		}
 		initial := int64(v.route.StartTick)*1000 - 1
 		// Existing journeys skip the deployment's partial tick. New departures
 		// after deployment retain their immediate first-step boundary.
@@ -243,10 +252,6 @@ func recordPlaceEntriesTx(ctx context.Context, tx pgx.Tx, store *events.Store, w
 			return nil, err
 		}
 		if err = tx.QueryRow(ctx, `SELECT last_milli FROM place_reach_progress WHERE journey_key=$1 FOR UPDATE`, v.key).Scan(&v.last); err != nil {
-			return nil, err
-		}
-		entered, err := RouteEnterMilli(v.route)
-		if err != nil {
 			return nil, err
 		}
 		for j := 1; j < len(entered); j++ {
@@ -315,7 +320,7 @@ func recordPlaceEntriesTx(ctx context.Context, tx pgx.Tx, store *events.Store, w
 		}
 	}
 	for _, v := range voyages {
-		if through > v.last {
+		if !v.skip && through > v.last {
 			if _, err = tx.Exec(ctx, `UPDATE place_reach_progress SET last_milli=$2,last_tick=$3 WHERE journey_key=$1`, v.key, through, int(through/1000)); err != nil {
 				return nil, err
 			}

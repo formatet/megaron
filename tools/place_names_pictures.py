@@ -56,7 +56,7 @@ ids=[];facts=[]
 try:
     for i,t in enumerate(eyes.values()):
         raw=sql(f"INSERT INTO units(world_id,owner_id,type,category,size,status,q,r,name) VALUES('{world}','{player}','infantry','land',100,'positioned',{t['q']},{t['r']},'BILD live scout {i}') RETURNING id").strip()
-        ids.append(raw)
+        ids.append(raw.splitlines()[0])
     with sync_playwright() as pw:
         browser=pw.firefox.launch()
         for mode,(width,height) in {'desktop':(1280,900),'mobile':(390,844)}.items():

@@ -12,6 +12,6 @@ def mutation(label,old,new,expected,test='TestPlaceReachMovementHookFirstOwnerAn
  finally:f.write_bytes(original)
 mutation('first-owner','AND claimed_by IS NULL RETURNING named_tick','RETURNING named_tick','earliest physical entry did not retain first owner')
 mutation('movement-hook','outcomes, err := recordPlaceEntriesTx(ctx, tx, h.store, e.WorldID, int64(e.DueTick)*1000)','var outcomes []expeditionOutcome; err = nil','physical movement reach hook missing')
-mutation('arrival-prerequisite','if err := h.flushEntries(ctx, e); err != nil {\n\t\t\treturn err\n\t\t}', '', 'catch-up arrival erased last reached hex', 'TestPlaceReachWorkerCatchupArrivalFlushesLastHexSameBatch')
+mutation('arrival-prerequisite','if err := h.flushEntries(ctx, e); err != nil {\n\t\t\tslog.Warn("place reach before arrival failed; continuing movement", "world", e.WorldID, "error", err)\n\t\t}', '', 'catch-up arrival erased last reached hex', 'TestPlaceReachWorkerCatchupArrivalFlushesLastHexSameBatch')
 with (OUT/'restored-reach.log').open('w') as log:subprocess.run(['tools/gotest.sh','./internal/combat/','-run','TestPlaceReach'],cwd=ROOT,stdout=log,stderr=subprocess.STDOUT,check=True)
 print('reach: restored green')
