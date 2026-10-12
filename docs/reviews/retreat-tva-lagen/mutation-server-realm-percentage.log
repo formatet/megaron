@@ -1,0 +1,8 @@
+2026/10/12 08:49:49 INFO player registered id=d3c4f405-6025-473c-ab5c-8410a5ee447f username=gate-a-3a6b8e5c-8145-4070-bf09-aaa9778d9662
+2026/10/12 08:49:49 INFO player registered id=d76b6564-6232-4d38-9780-b6fa7c36d57a username=gate-b-db174e36-06ab-431e-9e8f-69b451a45a3a
+--- FAIL: TestRequireStartedWorld_NoOrdersUntilThresholdJoins (0.13s)
+    world_start_gate_test.go:156: realm retreat_at_loss request accepted: 200 {"retreat_at_loss":null,"hold_to_last_man":true,"by_loyalty":false}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.137s
+FAIL
+» färsk DB på migration 173 · commit c9e6a780+ändringar

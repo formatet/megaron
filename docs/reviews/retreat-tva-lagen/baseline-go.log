@@ -1,0 +1,4 @@
+» färsk DB på migration 172 · commit 2b83b1f6
+ok  	formatet/megaron/server/api/handlers	0.077s
+ok  	formatet/megaron/server/internal/combat	0.170s
+ok  	formatet/megaron/server/cmd/keryx	0.002s

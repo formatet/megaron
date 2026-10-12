@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: realm and battle retreat offer only the two decided modes
+ok 1 - realm and battle retreat offer only the two decided modes
+  ---
+  duration_ms: 1.087726
+  type: 'test'
+  ...
+# Subtest: retreatBody rejects every retired percentage and sends exactly one mode
+ok 2 - retreatBody rejects every retired percentage and sends exactly one mode
+  ---
+  duration_ms: 0.105638
+  type: 'test'
+  ...
+# Subtest: GET mode reads back with the selected value and exact player wording
+ok 3 - GET mode reads back with the selected value and exact player wording
+  ---
+  duration_ms: 0.149845
+  type: 'test'
+  ...
+# Subtest: realm setting keeps its save action without explanatory prose
+ok 4 - realm setting keeps its save action without explanatory prose
+  ---
+  duration_ms: 0.117446
+  type: 'test'
+  ...
+# Subtest: a stale percentage cannot reappear as a selectable third mode
+ok 5 - a stale percentage cannot reappear as a selectable third mode
+  ---
+  duration_ms: 0.137655
+  type: 'test'
+  ...
+# Subtest: failed read gives the server reason instead of claiming a default
+ok 6 - failed read gives the server reason instead of claiming a default
+  ---
+  duration_ms: 0.070996
+  type: 'test'
+  ...
+# Subtest: battle override is available only to a fighting unit and is scoped to this battle
+ok 7 - battle override is available only to a fighting unit and is scoped to this battle
+  ---
+  duration_ms: 0.122333
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 41.765268

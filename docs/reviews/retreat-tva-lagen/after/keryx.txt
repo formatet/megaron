@@ -1,0 +1,28 @@
+$ keryx retreat-default --hold-to-last-man
+Retreat default: Hold to the last man
+Applies to units entering a battle from now on; battles under way keep what they had.
+
+$ keryx retreat-default --by-loyalty
+Retreat default: Retreat when it goes badly
+Applies to units entering a battle from now on; battles under way keep what they had.
+
+$ keryx retreat-default
+Retreat default: Retreat when it goes badly
+
+$ keryx retreat-default --retreat-at-loss 0.5
+Error: unknown flag: --retreat-at-loss
+Usage:
+  keryx retreat-default [flags]
+
+Examples:
+  keryx retreat-default
+  keryx retreat-default --hold-to-last-man
+  keryx retreat-default --by-loyalty
+
+Flags:
+      --by-loyalty         break by the troops' loyalty (the default)
+  -h, --help               help for retreat-default
+      --hold-to-last-man   never break — fight to annihilation
+
+Global Flags:
+  -j, --json   output as JSON (for scripts and MCP)

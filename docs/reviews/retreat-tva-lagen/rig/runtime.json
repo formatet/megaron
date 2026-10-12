@@ -1,0 +1,17 @@
+{
+  "commit": "939c9d9",
+  "health": {
+    "commit": "939c9d9",
+    "migration": 173,
+    "status": "ok"
+  },
+  "runtime_base": "sha256:abf7e49b3127a9ffd7f39b143a0187b8074609e3fa979f68db47b3a5b623ecd3",
+  "binary_sha256": "1414d9f495d9ee8b9fca73d873f3489154e68c2f3d51b44d22012d74d875c1b3",
+  "assets": {
+    "js/megaron/render/map.js": "833e8c82dd56435d9a771a5bd9ce733a00e5d1feb576a22c6d7045c7be10019a",
+    "js/megaron/render/place_names.js": "543ade88558adc401956d32e764ae1b4fab332d371d08eb11bf0f25eb96bc033",
+    "js/megaron/ui/placename.js": "470524dcd022639d853e5afa213973b9583d16c4c371098c5b4d21e9b1fb3b8c",
+    "megaron.css": "e6378deb59641a9a798fb5fa3b75c4f9155127d5d6f94d4906ec4da737afd81f"
+  },
+  "build": "CGO=0 local Go; cached acceptance runtime; current migrations; current worktree web mount"
+}

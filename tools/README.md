@@ -484,6 +484,8 @@ rebuilds the current branch in the isolated cached acceptance runtime and applie
 `python3 tools/retreat_proof.py after` uses normal ParityNomad login, actual realm web saves,
 CLI and API reads/writes, captures Firefox 1280+390 for both modes, checks retired percentage rejection,
 and restores the original doctrine in finally. It does not write SQL or change any battle.
+`python3 tools/retreat_two_modes_mutation.py` removes API/domain guards and legacy arrival interpretations;
+`--legacy-only` runs the three sealed-letter targets. Each requires named red and restores before green.
 `python3 tools/retreat_client_mutation.py` physically restores percentage bodies, requires named red,
 and byte-restores the source before checking green. Run mutations before full tests.
 Proof: `docs/reviews/retreat-tva-lagen/README.md`.

@@ -1,0 +1,13 @@
+2026/10/12 11:29:14 INFO player registered id=bfbba486-eea5-4885-aef5-e3d71ff8db90 username=standing-orders-ad6783ab-3d59-4492-8854-8d354a56819d
+2026/10/12 11:29:14 INFO order delivered but no longer executable unit=1ed734bb-38e5-4182-8650-f20f51243c9b verb=standing_orders reason="unit is not in an active battle"
+2026/10/12 11:29:14 INFO order delivered — standing orders applied unit=1ed734bb-38e5-4182-8650-f20f51243c9b battle=d1885c66-48fa-4938-90af-43792c6eec93 hold_to_last_man=true
+2026/10/12 11:29:14 INFO order delivered — standing orders applied unit=1ed734bb-38e5-4182-8650-f20f51243c9b battle=d1885c66-48fa-4938-90af-43792c6eec93 hold_to_last_man=false
+2026/10/12 11:29:14 INFO order delivered but no longer executable unit=1ed734bb-38e5-4182-8650-f20f51243c9b verb=standing_orders reason="choose exactly one of hold_to_last_man: true or by_loyalty: true"
+2026/10/12 11:29:14 INFO order delivered — standing orders applied unit=1ed734bb-38e5-4182-8650-f20f51243c9b battle=d1885c66-48fa-4938-90af-43792c6eec93 hold_to_last_man=true
+--- FAIL: TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBattle (0.09s)
+    --- FAIL: TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBattle/reset_false (0.00s)
+        unit_standing_orders_courier_test.go:291: legacy retreat courier did not translate to loyalty on arrival (reset_false): {"hold_to_last_man": true}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.088s
+FAIL
+» färsk DB på migration 173 · commit 962d0ef3+ändringar

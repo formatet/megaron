@@ -1,0 +1,5 @@
+domain-percentage: named red
+realm-percentage: named red
+before-courier: named red
+legacy-arrival: named red
+server: restored green
