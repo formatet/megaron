@@ -810,7 +810,7 @@ export async function unitStance(unitID) {
   }
 }
 
-// unitRetreatOrder sets a unit's mid-battle rout threshold (KR3 §5). Same
+// unitRetreatOrder chooses one of the two mid-battle retreat modes. Same
 // latency rule as unitStance: a field unit's commander only hears it when a
 // Runner physically arrives (order_dispatched, 202); a garrisoned unit
 // already inside the battle (distance 0 — the Wanax is in that city) applies
