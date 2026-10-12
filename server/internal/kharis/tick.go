@@ -181,6 +181,9 @@ func templeTierMultiplier(level int) float64 {
 // strawman pick, easy to retune — temenos_balans_spakar.md §9.
 const kharisFloor = 1.0
 
+// Floor is the minimum realm Kharis, including a Host before founding.
+const Floor = kharisFloor
+
 // growthRatePerTick is the most a fed city grows in one tick, as a fraction of
 // its population, before the food-variety multiplier and the size soft cap.
 //

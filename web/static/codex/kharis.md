@@ -1,4 +1,4 @@
-**Kharis** is your standing with the gods — a relationship, not a resource. It is held for your whole realm, not per city, and you never see it as a number. The **Kult (⛩)** drawer shows it as a mood:
+**Kharis** is your standing with the gods — a relationship, not a resource. It is held for your whole realm, not per city, and your [[account|Account]] summary shows its current amount. The **Kult (⛩)** drawer shows it as a mood:
 
 | Mood | Meaning |
 |---|---|
@@ -9,7 +9,7 @@
 
 Blessings and punishments arrive as notifications.
 
-Kharis never falls all the way to nothing, and a newly founded Wanax is protected from punishment for the first 60 days. Build a temple before they run out.
+Your first Host begins at the Kharis floor, even before founding. Rising again keeps your standing with the gods, with the floor as a minimum. Kharis never falls all the way to nothing, and a newly founded Wanax is protected from punishment for the first 60 days. Build a temple before they run out.
 
 ## How to raise it
 

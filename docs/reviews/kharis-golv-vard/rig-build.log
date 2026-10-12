@@ -1,0 +1,35 @@
+time="2026-10-12T12:51:05+02:00" level=warning msg="buildx Docker CLI plugin not found: falling back to the classic builder. BuildKit-only build features (multi-arch, secrets, ssh, additional contexts, ...) will not be available"
+ Image megaron-acc-server Building
+ Image megaron-acc-server Building
+Sending build context to Docker daemon  524.5kB
+Sending build context to Docker daemon  3.671MB
+Sending build context to Docker daemon  6.818MB
+Sending build context to Docker daemon  8.163MB
+
+Step 1/4 : FROM sha256:5949f971ae383e7809b4c39a49b4647d46726c96f1b9bc8c292cf54404ca4150
+ ---> 5949f971ae38
+Step 2/4 : COPY temenos /app/temenos
+ ---> 1794779ffe1d
+Step 3/4 : COPY db /app/db
+ ---> e60d5ce180ff
+Step 4/4 : LABEL com.docker.compose.image.builder=classic
+ ---> Running in 6698280c1cd8
+ ---> Removed intermediate container 6698280c1cd8
+ ---> 72502c5408ba
+[Warning] One or more build-args [BUILD_COMMIT] were not consumed
+Successfully built 72502c5408ba
+Successfully tagged megaron-acc-server:latest
+ Image megaron-acc-server Built
+ Image megaron-acc-server Built
+ Container megaron-acc-postgres-1 Running
+ Container megaron-acc-redis-1 Running
+ Container megaron-acc-server-1 Recreate
+ Container megaron-acc-server-1 Recreated
+ Container megaron-acc-redis-1 Waiting
+ Container megaron-acc-postgres-1 Waiting
+ Container megaron-acc-redis-1 Healthy
+ Container megaron-acc-postgres-1 Healthy
+ Container megaron-acc-server-1 Starting
+ Container megaron-acc-server-1 Started
+acceptance: 3 världar finns — väljer nyaste (2e335492-c9f8-4100-b8e7-5fee38158745)
+current process and branch assets verified

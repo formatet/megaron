@@ -1,0 +1,1 @@
+-- Data repair is additive. Previous sub-floor balances cannot be reconstructed.

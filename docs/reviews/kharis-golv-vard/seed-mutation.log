@@ -1,0 +1,10 @@
+» färsk DB på migration 174 · commit f7575999+ändringar
+2026/10/12 12:43:19 INFO player registered id=a545e90d-a28d-48ca-a79e-423ce90d651d username=host-floor-a77558d6-fb99-4603-b963-e5bc039d4b23-8f3f7a2b-3724-42ed-8152-1e1abbcc2c5c
+--- FAIL: TestJoinHostKharisFloorVisibleInMe (0.08s)
+    host_kharis_floor_test.go:50: new Host missing shared kharis floor: amount=0 rate=0 tick=500
+2026/10/12 12:43:19 INFO player registered id=a1dc4640-38cc-4f2e-b491-8fe281bad895 username=rise-817edbd7-e841-4e93-94c4-f7369c44bda5
+--- FAIL: TestRise_RefugeeHostOnAnotherLandmass_AndLeave (0.08s)
+    rise_test.go:127: risen Host did not reset kharis to shared floor: 0/0/0, world0
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.162s
+FAIL

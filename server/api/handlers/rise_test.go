@@ -19,6 +19,7 @@ import (
 	"formatet/megaron/server/internal/combat"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/kharis"
 	"formatet/megaron/server/internal/unit"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -110,8 +111,20 @@ func TestRise_RefugeeHostOnAnotherLandmass_AndLeave(t *testing.T) {
 
 	// ── Rise ──
 	risen, token := dispossessed("rise")
+	if _, err := pool.Exec(ctx, `UPDATE player_world_records SET kharis_amount=15,kharis_rate=0,kharis_calc_tick=0 WHERE player_id=$1 AND world_id=$2`, risen, worldID); err != nil {
+		t.Fatal(err)
+	}
+
 	if rec := post(token, "rise"); rec.Code != http.StatusCreated {
 		t.Fatalf("POST /rise = %d %q, want 201", rec.Code, rec.Body.String())
+	}
+	var amount, rate float64
+	var calcTick, worldTick int
+	if err := pool.QueryRow(ctx, `SELECT pwr.kharis_amount,pwr.kharis_rate,pwr.kharis_calc_tick,w.current_tick FROM player_world_records pwr JOIN worlds w ON w.id=pwr.world_id WHERE pwr.player_id=$1 AND pwr.world_id=$2`, risen, worldID).Scan(&amount, &rate, &calcTick, &worldTick); err != nil {
+		t.Fatal(err)
+	}
+	if amount != 15 || rate != 0 || calcTick != worldTick {
+		t.Fatalf("rise lost existing kharis above floor: %v/%v/%v, world%v", amount, rate, calcTick, worldTick)
 	}
 	var landmass, population int
 	var silver float64
@@ -150,6 +163,38 @@ func TestRise_RefugeeHostOnAnotherLandmass_AndLeave(t *testing.T) {
 	}
 	if rec := post(token, "rise"); rec.Code != http.StatusOK || !strings.Contains(rec.Body.String(), `"existing":true`) {
 		t.Errorf("second POST /rise = %d %q, want 200 existing", rec.Code, rec.Body.String())
+	}
+
+	// A rise lifts a below-floor relationship and settles a lazy one; it does
+	// not discard either standing with the gods or income already accrued.
+	if _, err := pool.Exec(ctx, `UPDATE worlds SET current_tick=500 WHERE id=$1`, worldID); err != nil {
+		t.Fatal(err)
+	}
+	for i, tc := range []struct {
+		name         string
+		amount, rate float64
+		calc         int
+		want         float64
+	}{
+		{"zero", 0, 0, 500, kharis.Floor},
+		{"lazy", 10, 0.5, 490, 15},
+	} {
+		if _, err := pool.Exec(ctx, `INSERT INTO map_tiles(world_id,q,r,terrain,landmass_id) VALUES($1,0,$2,'plains',2)`, worldID, 80+i*10); err != nil {
+			t.Fatal(err)
+		}
+		player, bearer := dispossessed("rise-" + tc.name)
+		if _, err := pool.Exec(ctx, `UPDATE player_world_records SET kharis_amount=$1,kharis_rate=$2,kharis_calc_tick=$3 WHERE player_id=$4 AND world_id=$5`, tc.amount, tc.rate, tc.calc, player, worldID); err != nil {
+			t.Fatal(err)
+		}
+		if rec := post(bearer, "rise"); rec.Code != http.StatusCreated {
+			t.Fatalf("%s rise %d %s", tc.name, rec.Code, rec.Body.String())
+		}
+		if err := pool.QueryRow(ctx, `SELECT kharis_amount,kharis_rate,kharis_calc_tick FROM player_world_records WHERE player_id=$1 AND world_id=$2`, player, worldID).Scan(&amount, &rate, &calcTick); err != nil {
+			t.Fatal(err)
+		}
+		if amount != tc.want || rate != 0 || calcTick != 500 {
+			t.Fatalf("%s rise did not retain settled kharis with floor: %v/%v/%v want%v/0/500", tc.name, amount, rate, calcTick, tc.want)
+		}
 	}
 
 	// ── Only the dispossessed may choose ──
