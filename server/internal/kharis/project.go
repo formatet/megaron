@@ -75,7 +75,11 @@ func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID 
 	}
 
 	values, verr := religion.LoadDivineValues(ctx, pool, worldID)
-	scarcity := scarcityFromValues(values, verr)
+	baseValues, berr := religion.LoadLaborValues(ctx, pool)
+	if berr != nil {
+		return 0, false, 0, 0, berr
+	}
+	scarcity := scarcityFromValues(values, baseValues, verr)
 	fed := projectFedTemples(ctx, pool, playerID, worldID, values)
 	offerFraction := computeOfferFraction(fed, templeCities)
 
@@ -85,7 +89,7 @@ func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID 
 
 // scarcityFromValues mirrors templeOfferScarcity without a TickHandler receiver,
 // so both the tick and this projection read the same number.
-func scarcityFromValues(values map[string]float64, err error) float64 {
+func scarcityFromValues(values, baseValues map[string]float64, err error) float64 {
 	if err != nil || len(values) == 0 {
 		return 1.0
 	}

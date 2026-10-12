@@ -240,19 +240,19 @@ async function loadEconomyGoods(mySettlements) {
       if (silver) {
         html += `<div class="silver-balance">
           <div>
-            <div class="sb-label">Silver</div>
+            <div class="sb-label">Silver · ${silver.labor_value ?? '—'} workdays/unit</div>
             <div class="sb-val">${fmtNum(Math.floor(silver.amount))}</div>
           </div>
           ${silver.rate_per_tick ? `<div class="sb-rate">+${fmtNum(Number(silver.rate_per_tick.toFixed(1)))} per day</div>` : ''}
         </div>`;
       }
       if (others.length) {
-        html += `<table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td>Amount</td><td>Rate</td></tr>${others.map(g =>
-          `<tr><td>${g.name||g.key}</td><td>${fmtNum(Math.floor(g.amount||0))}</td>${goodsRateCell(g)}</tr>`
+        html += `<table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td>Amount</td><td>Rate</td><td>Workdays/unit</td></tr>${others.map(g =>
+          `<tr><td>${g.name||g.key}</td><td>${fmtNum(Math.floor(g.amount||0))}</td>${goodsRateCell(g)}<td>${g.labor_value == null ? '—' : fmtNum(g.labor_value)}</td></tr>`
         ).join('')}</table>`;
       }
     }
-    el.innerHTML = overviewHtml + (html || '<p class="empty-state" style="padding:1rem">No goods data.</p>') + await renderLockedActions('trade');
+    el.innerHTML = overviewHtml + '<p class="dim">Workdays/unit: reference labour on standard ground, including ingredients. Gods weigh scarcity separately; Wanaxes agree trade prices.</p>' + (html || '<p class="empty-state" style="padding:1rem">No goods data.</p>') + await renderLockedActions('trade');
   } catch (_) {
     el.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load goods.</p>';
   }

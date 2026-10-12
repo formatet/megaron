@@ -2,7 +2,7 @@ package religion
 
 import "testing"
 
-func TestAlphaCatalogueAndSilverFloor(t *testing.T) {
+func TestSilverCalibrationCatalogueAndNoAltarFloor(t *testing.T) {
 	if len(CulturePrayers["minoan"]) != 5 {
 		t.Fatal("checkpoint B must expose five implemented prayers")
 	}
@@ -21,8 +21,8 @@ func TestAlphaCatalogueAndSilverFloor(t *testing.T) {
 		}
 	}
 	values := map[string]float64{"silver": 1.7, "grain": 220.32}
-	if got := OfferingWorth(map[string]float64{"silver": 2}, values, nil); got != 200 {
-		t.Fatalf("silver altar floor missing: %v", got)
+	if got := OfferingWorth(map[string]float64{"silver": 2}, values, nil); got != 3.4 {
+		t.Fatalf("silver labor value was replaced by a floor: %v", got)
 	}
 	if values["silver"] != 1.7 {
 		t.Fatal("altar floor mutated market/valuation input")

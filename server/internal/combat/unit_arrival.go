@@ -1994,31 +1994,15 @@ func (h *UnitArrivalHandler) foundColony(
 	// printing press, and a Wanax could always found their way out of
 	// insolvency. B3: silver enters only via genesis and mines.
 	//
-	// The cap still comes from GenesisSilverLiquid: a cap is a shape, not silver,
-	// and the colony needs the same headroom a capital gets or it would clip its
-	// own income later. If the expedition arrived empty-handed the colony starts
-	// at 0 — poor, unable to pay upkeep, and that is a real consequence of
-	// sending it out of a treasury that had nothing to give.
-	if grainBaseValue, gbErr := economy.GoodBaseValue(ctx, tx, "grain"); gbErr != nil {
-		slog.Error("colony silver: load grain base value", "err", gbErr)
-	} else {
-		_, liquidCap := economy.GenesisSilverLiquid(population, grainBaseValue, h.sitosCfg)
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlement_goods SET amount = $1, cap = $2, calc_tick = current_world_tick()
-			 WHERE settlement_id = $3 AND good_key = 'silver'`,
-			u.carriedSilver, liquidCap, colonyID,
-		); err != nil {
-			slog.Error("colony silver: credit carried purse failed", "err", err, "settlement", colonyID)
-		} else if u.carriedSilver > 0 {
-			// The purse is spent the moment it lands. Zeroing it in the same
-			// transaction is what keeps the silver from existing twice if the
-			// unit row outlives the founding for any reason.
-			if _, err := tx.Exec(ctx,
-				`UPDATE units SET carried_silver = 0 WHERE id = $1`, u.id,
-			); err != nil {
-				return fmt.Errorf("foundColony: clear carried purse: %w", err)
-			}
-		}
+	// The carried purse is moved atomically, with a payroll-shaped cap.
+	if _, err := tx.Exec(ctx, `UPDATE settlement_goods
+	 SET amount=GREATEST(0,settled(amount,rate,calc_tick))+$1,
+	 cap=GREATEST($2,GREATEST(0,settled(amount,rate,calc_tick))+$1),calc_tick=current_world_tick()
+	 WHERE settlement_id=$3 AND good_key='silver'`, u.carriedSilver, economy.ColonySilverCap(u.carriedSilver, 0), colonyID); err != nil {
+		return fmt.Errorf("foundColony: credit carried purse: %w", err)
+	}
+	if _, err := tx.Exec(ctx, `UPDATE units SET carried_silver=0 WHERE id=$1`, u.id); err != nil {
+		return fmt.Errorf("foundColony: clear carried purse: %w", err)
 	}
 
 	// Cult floor keeps a temple (once built) non-inert — cult labor is a

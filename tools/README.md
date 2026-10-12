@@ -553,3 +553,9 @@ writes during actions; all owned resources are removed. Images await BILD review
 
 `python3 tools/religion_recipe_mutations.py` provar varje beslutat traditionellt recept genom en fysisk katalogmutation som måste göra både katalog- och verklig default-Offer-debit-assertion röda, därefter byteåterställt/färskgrönt.
 `RELIGION_PROOF_OUT=live-b-recipes python3 tools/religion_beta_live.py` sparar nya bilder och läser fem större recept från samma native server/Keryx/web-katalog; explicit pre-action stocks1000 räcker till de två100silver-offren.
+
+`python3 tools/silver_calibration_mutations.py` physically mutates silver endowments,
+refugee protection, colony caps, labour references, both miner anchors, altar floor,
+cult denominator and index smoothing. Each case requires a named failing test on
+fresh PG16/migration177, restores source bytes, then reruns the shared calibration
+cases green. Evidence: `docs/reviews/silverkalibrering/mutations/`.

@@ -14,6 +14,7 @@ import (
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/settlement"
 	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/transport"
@@ -248,6 +249,10 @@ func (h *WorldHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := religion.InitializeLaborValuations(r.Context(), h.pool, id); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not initialize labor valuations")
+		return
+	}
 	writeJSON(w, http.StatusCreated, map[string]any{"id": id, "map_seed": effSeed})
 }
 

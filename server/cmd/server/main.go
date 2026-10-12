@@ -111,6 +111,10 @@ func main() {
 		slog.Error("ensure world", "err", err)
 		os.Exit(1)
 	}
+	if err := religion.InitializeLaborValuations(ctx, pool, serverWorldID); err != nil {
+		slog.Error("initialize labor valuations", "err", err)
+		os.Exit(1)
+	}
 	slog.Info("world ready", "id", serverWorldID)
 
 	// Chronicle: append-only world log + daily prose Markdown.

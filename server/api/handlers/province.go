@@ -896,14 +896,14 @@ func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.
 	if granErr != nil {
 		slog.Error("granary read failed", "err", granErr, "settlement", settID)
 	}
-	var grainBaseValue, grainAmount, grainRate, grainCap float64
+	var grainAmount, grainRate, grainCap float64
 	var grainCalcTick int
 	_ = pool.QueryRow(ctx,
-		`SELECT g.base_value, sg.amount, sg.rate, sg.cap, sg.calc_tick
+		`SELECT sg.amount, sg.rate, sg.cap, sg.calc_tick
 		 FROM settlement_goods sg JOIN goods g ON g.key = sg.good_key
 		 WHERE sg.settlement_id = $1 AND sg.good_key = 'grain'`,
 		settID,
-	).Scan(&grainBaseValue, &grainAmount, &grainRate, &grainCap, &grainCalcTick)
+	).Scan(&grainAmount, &grainRate, &grainCap, &grainCalcTick)
 	// Coverage is measured on the whole food basket (B6) — grain first, fish
 	// for the remainder, one need (economy.FoodConsumptionSplit). Counting
 	// grain alone would call a fish-fed city starving.
@@ -2911,7 +2911,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT sg.good_key, settled(sg.amount, sg.rate, sg.calc_tick), sg.rate, sg.cap,
-		        g.base_value, g.name, g.tier, g.category
+		        g.labor_value, g.name, g.tier, g.category
 		 FROM settlement_goods sg
 		 JOIN goods g ON g.key = sg.good_key
 		 WHERE sg.settlement_id = $1
@@ -2976,20 +2976,20 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type goodRow struct {
-		Key           string  `json:"key"`
-		Name          string  `json:"name"`
-		Tier          string  `json:"tier"`
-		Category      string  `json:"category"`
-		Amount        float64 `json:"amount"`
-		Rate          float64 `json:"rate_per_tick"`
-		Cap           float64 `json:"cap"`
-		BaseValue     float64 `json:"base_value"`
-		Citizens      int     `json:"citizens"`
-		Percent       float64 `json:"percent"`
-		MarginalYield float64 `json:"marginal_yield"`
-		Producible    bool    `json:"producible"`
-		LaborPool     int     `json:"labor_pool"`
-		IdleCitizens  int     `json:"idle_citizens"`
+		Key           string   `json:"key"`
+		Name          string   `json:"name"`
+		Tier          string   `json:"tier"`
+		Category      string   `json:"category"`
+		Amount        float64  `json:"amount"`
+		Rate          float64  `json:"rate_per_tick"`
+		Cap           float64  `json:"cap"`
+		LaborValue    *float64 `json:"labor_value"`
+		Citizens      int      `json:"citizens"`
+		Percent       float64  `json:"percent"`
+		MarginalYield float64  `json:"marginal_yield"`
+		Producible    bool     `json:"producible"`
+		LaborPool     int      `json:"labor_pool"`
+		IdleCitizens  int      `json:"idle_citizens"`
 		// Workplace capacity (2026-07-23). CapacityPercent is the share of the city
 		// this good's fields + buildings can actually employ; EmployedCitizens is what
 		// is really working it; UnservedCitizens is the allocation that has no
@@ -3007,8 +3007,8 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var key, name, tier, category string
 		var current, rate, capV float64
-		var baseValue float64
-		if err := rows.Scan(&key, &current, &rate, &capV, &baseValue, &name, &tier, &category); err != nil {
+		var laborValue *float64
+		if err := rows.Scan(&key, &current, &rate, &capV, &laborValue, &name, &tier, &category); err != nil {
 			continue
 		}
 		if current < 0 {
@@ -3052,7 +3052,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 			Amount:        current,
 			Rate:          rate,
 			Cap:           capV,
-			BaseValue:     baseValue,
+			LaborValue:    laborValue,
 			Citizens:      employed,
 			Percent:       percent,
 			MarginalYield: marginalYields[key],

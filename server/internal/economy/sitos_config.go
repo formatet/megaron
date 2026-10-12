@@ -40,12 +40,6 @@ type SitosConfig struct {
 	// for the remainder — see FoodConsumptionSplit), so the granary holds what
 	// the city actually eats.
 	SubsistenceGoods []string
-	// SilverLiquidCapDays: a settlement's liquid silver-good cap =
-	// dailyGrainNeedInSilver × SilverLiquidCapDays (see GenesisSilverLiquid).
-	SilverLiquidCapDays float64
-	// SilverStartDays: a settlement's genesis liquid silver seed =
-	// dailyGrainNeedInSilver × SilverStartDays (see GenesisSilverLiquid).
-	SilverStartDays float64
 }
 
 func envFloat(key string, def float64) float64 {
@@ -77,12 +71,10 @@ func LoadSitosConfig() SitosConfig {
 		// at 60 min/tick). A tenth of the surplus per tick converges on the
 		// high threshold inside a game day when there is a real surplus, and
 		// the cap stops it there.
-		GranaryCapDays:      envFloat("SITOS_GRANARY_CAP_DAYS", 60),
-		LowDays:             envFloat("SITOS_LOW_DAYS", 10),
-		HighDays:            envFloat("SITOS_HIGH_DAYS", 30),
-		TithePct:            envFloat("SITOS_TITHE_PCT", 0.1),
-		SubsistenceGoods:    list,
-		SilverLiquidCapDays: envFloat("SITOS_SILVER_CAP_DAYS", 10),
-		SilverStartDays:     envFloat("SITOS_SILVER_START_DAYS", 5),
+		GranaryCapDays:   envFloat("SITOS_GRANARY_CAP_DAYS", 60),
+		LowDays:          envFloat("SITOS_LOW_DAYS", 10),
+		HighDays:         envFloat("SITOS_HIGH_DAYS", 30),
+		TithePct:         envFloat("SITOS_TITHE_PCT", 0.1),
+		SubsistenceGoods: list,
 	}
 }

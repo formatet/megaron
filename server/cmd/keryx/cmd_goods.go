@@ -57,7 +57,7 @@ func goodsCmd() *cobra.Command {
 				fmt.Printf("Labor pool: %d workers  ·  Idle: %d workers\n\n", int(lp), int(idle))
 			}
 			fmt.Printf("%-10s  %9s  %8s  %6s  %10s  %8s  %8s\n",
-				"Good", "Stock", "Rate/t", "Lvl", "Workers", "Marg/g", "Value")
+				"Good", "Stock", "Rate/t", "Lvl", "Workers", "Marg/g", "Workdays/unit")
 			fmt.Println("──────────────────────────────────────────────────────────────────────────")
 			for _, g := range goods {
 				key, _ := g["key"].(string)
@@ -65,7 +65,10 @@ func goodsCmd() *cobra.Command {
 				capV, _ := g["cap"].(float64)
 				percent, _ := g["percent"].(float64)
 				rateT, _ := g["rate_per_tick"].(float64)
-				baseValue, _ := g["base_value"].(float64)
+				laborText := "—"
+				if laborValue, ok := g["labor_value"].(float64); ok {
+					laborText = fmt.Sprintf("%.1f", laborValue)
+				}
 				// marginal_yield (P4-arvet, megaron_plan_p4_arvet_i_province.md §3 yta 3):
 				// what the NEXT gubbe placed on this good would produce — the same
 				// number `keryx city`/`placement-options` show per hex, not the old
@@ -106,9 +109,10 @@ func goodsCmd() *cobra.Command {
 					stockStr += "*"
 					capNotes = append(capNotes, capNote{key: key, percent: percent})
 				}
-				fmt.Printf("%-10s  %9s  %8.1f  %6s  %10s  %8s  %8.1f\n",
-					key, stockStr, rateT, lvlStr, workersStr, yieldStr, baseValue)
+				fmt.Printf("%-10s  %9s  %8.1f  %6s  %10s  %8s  %12s\n",
+					key, stockStr, rateT, lvlStr, workersStr, yieldStr, laborText)
 			}
+			fmt.Println("\nWorkdays/unit: reference labour on standard ground, including recipe inputs; gods weigh scarcity separately. Trade prices are agreed by Wanaxes.")
 			if sawUnserved {
 				fmt.Println("\n! = citizens allocated beyond what the workplace can employ. They produce")
 				fmt.Println("    nothing. Raise the building's level (build it again) or move the labor.")
