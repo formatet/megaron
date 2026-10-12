@@ -226,11 +226,12 @@ func randomSeed(d economy.Dice) int64 {
 // can call this from the other three entry points named in the plan without
 // changing its signature.
 type battleParticipant struct {
-	unitID      uuid.UUID
-	ownerID     uuid.UUID
-	utype       string
-	side        string // "attacker" | "defender"
-	currentSize int
+	unitID       uuid.UUID
+	ownerID      uuid.UUID
+	utype        string
+	side         string // "attacker" | "defender"
+	currentSize  int
+	defenseBoost bool
 	// stance is optional (nil for callers that don't care — field arrival and
 	// interception never set it, so storm below is always false for them,
 	// same as before this field existed). Read only by startBattle, only off
@@ -473,12 +474,19 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 		return true, nil // already ended — stale re-enqueue race, idempotent no-op
 	}
 
+	var defenseTick int
+	if err := tx.QueryRow(ctx, `SELECT current_tick FROM worlds WHERE id=$1`, worldID).Scan(&defenseTick); err != nil {
+		return false, err
+	}
 	rows, err := tx.Query(ctx,
-		`SELECT bp.unit_id, bp.owner_id, bp.side, bp.current_size, bp.initial_size, bp.standing_orders, u.type, u.stance, u.hull, u.cargo_unit_id
+		`SELECT bp.unit_id, bp.owner_id, bp.side, bp.current_size, bp.initial_size, bp.standing_orders, u.type, u.stance, u.hull, u.cargo_unit_id,
+ COALESCE((SELECT s.garrison_defense_until_tick > $2 AND s.garrison_defense_owner_id=u.owner_id AND s.owner_id=u.owner_id
+ FROM settlements s JOIN provinces sp ON sp.id=s.province_id
+ WHERE s.id=u.settlement_id AND s.state='active' AND bp.side='defender' AND sp.world_id=$3 AND sp.map_q=$4 AND sp.map_r=$5),false)
 		 FROM battle_participants bp JOIN units u ON u.id = bp.unit_id
 		 WHERE bp.battle_id = $1 AND bp.left_tick IS NULL
 		 FOR UPDATE OF bp`,
-		battleID,
+		battleID, defenseTick, worldID, q, r,
 	)
 	if err != nil {
 		return false, fmt.Errorf("battle tick: load participants: %w", err)
@@ -492,7 +500,7 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 	var loaded []row
 	for rows.Next() {
 		var rr row
-		if scanErr := rows.Scan(&rr.p.unitID, &rr.p.ownerID, &rr.p.side, &rr.p.currentSize, &rr.initialSize, &rr.standingOrders, &rr.p.utype, &rr.stance, &rr.p.hull, &rr.p.cargoUnitID); scanErr != nil {
+		if scanErr := rows.Scan(&rr.p.unitID, &rr.p.ownerID, &rr.p.side, &rr.p.currentSize, &rr.initialSize, &rr.standingOrders, &rr.p.utype, &rr.stance, &rr.p.hull, &rr.p.cargoUnitID, &rr.p.defenseBoost); scanErr != nil {
 			rows.Close()
 			return false, fmt.Errorf("battle tick: scan participant: %w", scanErr)
 		}
@@ -1192,6 +1200,9 @@ func rollSide(participants []battleParticipant, sizes []int, idx []int, part flo
 		}
 		activeCombatants += active
 		diceCount := active * battleDiceMultiplier(participants[i].utype)
+		if participants[i].defenseBoost {
+			diceCount = int(math.Round(float64(diceCount) * GarrisonDefenseFactor))
+		}
 		if unit.CategoryOf(unit.Type(participants[i].utype)) == unit.CategoryNaval {
 			diceCount = int(math.Round(float64(diceCount) * float64(participants[i].hull) / float64(hullMax)))
 		}

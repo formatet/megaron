@@ -3,6 +3,7 @@ import { State, ownCapital } from '../../state.js';
 import { fetchAuth } from '../../api.js';
 import { esc } from '../format.js';
 import { fmtEta } from '../time.js';
+import { fmtDays } from '../fmt_num.js';
 import { serverNow } from '../../clock.js';
 import { renderLockedActions } from '../misc.js';
 import { kharisNetView } from './kult_kharis.js';
@@ -87,24 +88,11 @@ export async function loadKultDrawer() {
       const frenzyActive = frenzyUntil && frenzyUntil.getTime() > serverNow();
       prayers.forEach(p => {
         const offeringStr = Object.entries(p.offering || {}).map(([g,q]) => `${q} ${g}`).join(' + ') || '—';
-        const onCooldown = p.cooldown_remaining_minutes > 0;
-        let statusHtml;
-        if (p.effect_type === 'battle_frenzy' && frenzyActive) {
-          // frenzyActive already guards ms > 0 here, so the doneWord branch
-          // is unreachable — 'expired' is defensive, matching diplomacy's
-          // offer-countdown wording rather than the arrival default.
-          statusHtml = `<span style="color:var(--safe);font-size:.72rem">active — expires ${fmtEta(sd.battle_frenzy_until, undefined, 'expired')}</span>`;
-        } else if (onCooldown) {
-          statusHtml = `<span style="color:var(--text-dim);font-size:.72rem">on cooldown — ${Math.ceil(p.cooldown_remaining_minutes)}m</span>`;
-        } else if (!p.affordable) {
-          statusHtml = `<span style="color:var(--text-dim);font-size:.72rem">not affordable</span>`;
-        } else {
-          statusHtml = `<button class="obj-cta btn-small" onclick="okRite('${p.id}')">Offer</button>`;
-        }
+        const statusHtml = prayerStatusHTML(p, frenzyActive, sd.battle_frenzy_until);
 
         html += `<div class="stat-row" style="align-items:flex-start;flex-wrap:wrap">
           <span class="sr-label">${esc(p.name)} <span style="color:var(--text-dim);font-size:.68rem">(${esc(p.god)}, ≥${p.min_kharis} kharis)</span><br>
-          <span style="color:var(--text-dim);font-size:.7rem">traditional offering: ${offeringStr}</span></span>
+          <span style="color:var(--text-dim);font-size:.7rem">${esc(p.effect || '')}<br>traditional offering: ${offeringStr}</span></span>
           <span class="sr-val">${statusHtml}</span>
         </div>`;
       });
@@ -156,4 +144,25 @@ async function castRite(prayerID) {
   } else {
     showInlineResult('kult-body', d.error || 'Rite failed', true);
   }
+}
+
+// Server-owned waiting/active state gates the same Offer button the drawer uses.
+export function prayerStatusHTML(p, frenzyActive = false, frenzyUntil = null) {
+        const onCooldown = p.cooldown_remaining_game_days > 0;
+        let statusHtml;
+        if (p.active_remaining_game_days > 0) {
+ statusHtml = `<span class="empty-state">active — ${esc(fmtDays(p.active_remaining_game_days))} left</span>`;
+ } else if (p.effect_type === 'battle_frenzy' && frenzyActive) {
+          // frenzyActive already guards ms > 0 here, so the doneWord branch
+          // is unreachable — 'expired' is defensive, matching diplomacy's
+          // offer-countdown wording rather than the arrival default.
+          statusHtml = `<span style="color:var(--safe);font-size:.72rem">active — expires ${fmtEta(frenzyUntil, undefined, 'expired')}</span>`;
+        } else if (onCooldown) {
+          statusHtml = `<span style="color:var(--text-dim);font-size:.72rem">on cooldown — ${esc(fmtDays(p.cooldown_remaining_game_days))}</span>`;
+        } else if (!p.affordable) {
+          statusHtml = `<span style="color:var(--text-dim);font-size:.72rem">not affordable</span>`;
+        } else {
+          statusHtml = `<button class="obj-cta btn-small" onclick="okRite('${p.id}')">Offer</button>`;
+        }
+ return statusHtml;
 }

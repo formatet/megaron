@@ -18,6 +18,7 @@ package religion
 // commit an offering. Never states an odds — that stays internal to the Rite handler.
 type PrayerSpec struct {
 	ID            string
+	GodID         string             // stable cooldown key; empty preserves legacy per-temple prayers
 	EffectType    string             // "oracle_reveal_deposits" | "battle_frenzy" | "harvest_blessing"
 	MinKharis     float64            // tier-gate (required divine standing, NOT a cost)
 	Offering      map[string]float64 // good_key→amount, consumed on cast regardless of outcome
@@ -245,6 +246,27 @@ var PrayerSpecs = map[string]PrayerSpec{
 	},
 }
 
+// Alpha IDs never reinterpret a historical RiteCast prayer/effect.
+const (
+	PrayerPotniaVision      = "minoan_potnia_vision_v2"
+	PrayerPotniaWalls       = "minoan_potnia_walls"
+	PrayerGreenShoots       = "minoan_velchanos_green_shoots"
+	PrayerAsterionThread    = "minoan_asterion_thread"
+	PrayerStillnessPassage  = "minoan_stillness_passage"
+	EffectOracleMemory      = "oracle_memory_v2"
+	EffectGarrisonDefense   = "garrison_defense"
+	EffectNextLandDeparture = "next_land_departure"
+	EffectNextShipDeparture = "next_ship_departure"
+)
+
+func init() {
+	PrayerSpecs[PrayerPotniaVision] = PrayerSpec{ID: PrayerPotniaVision, GodID: "potnia", EffectType: EffectOracleMemory, MinKharis: MoodSuspicious, Offering: map[string]float64{"grain": 2, "silver": 4}, CooldownTicks: 24, God: "Potnia", Name: "Potnia's Vision", Description: "Marks an unseen ore deposit and the unknown ground within two hexes as memory; no live activity.", Favours: potniaTheronOracleFavours}
+	PrayerSpecs[PrayerPotniaWalls] = PrayerSpec{ID: PrayerPotniaWalls, GodID: "potnia", EffectType: EffectGarrisonDefense, MinKharis: MoodSuspicious, Offering: map[string]float64{"grain": 3, "timber": 1}, CooldownTicks: 24, God: "Potnia", Name: "Mistress of the Walls", Description: "Your own garrison defending this city fights a quarter stronger for 6 days.", Favours: favoursByEffect[EffectBattleFrenzy]}
+	PrayerSpecs[PrayerGreenShoots] = PrayerSpec{ID: PrayerGreenShoots, GodID: "velchanos", EffectType: EffectHarvestBlessing, MinKharis: MoodIndifferent, Offering: map[string]float64{"grain": 2, "silver": 2}, CooldownTicks: 25, God: "Velchanos", Name: "Green Shoots", Description: "Grain, livestock, oil and wine yield a quarter more for 25 days; fish is unchanged."}
+	PrayerSpecs[PrayerAsterionThread] = PrayerSpec{ID: PrayerAsterionThread, GodID: "asterion", EffectType: EffectNextLandDeparture, MinKharis: MoodSuspicious, Offering: map[string]float64{"timber": 1, "silver": 2}, CooldownTicks: 12, God: "Asterion", Name: "The Thread Shows a Path", Description: "Your next land caravan or Runner from this city travels faster; the caravan is harder to intercept."}
+	PrayerSpecs[PrayerStillnessPassage] = PrayerSpec{ID: PrayerStillnessPassage, GodID: "sea_daimons_stillness", EffectType: EffectNextShipDeparture, MinKharis: MoodSuspicious, Offering: map[string]float64{"fish": 2, "silver": 3}, CooldownTicks: 12, God: "Havsdaimonerna in Stillness", Name: "Favourable Passage", Description: "The next ship leaving this port sails faster and takes no storm damage on its outward leg."}
+}
+
 // CulturePrayers maps a culture key to its allowed prayer IDs.
 // A culture only sees its own prayer names — same effect behind the scenes.
 var CulturePrayers = map[string][]string{
@@ -252,7 +274,7 @@ var CulturePrayers = map[string][]string{
 	"khemetiu": {"khemetiu_oracle_deposits", "khemetiu_harvest_blessing", "khemetiu_battle_frenzy"},
 	"knaani":   {"knaani_oracle_deposits", "knaani_harvest_blessing", "knaani_battle_frenzy"},
 	"thrakes":  {"thrakes_oracle_deposits", "thrakes_harvest_blessing", "thrakes_battle_frenzy"},
-	"minoan":   {"minoan_oracle_deposits", "minoan_harvest_blessing", "minoan_battle_frenzy"},
+	"minoan":   {PrayerPotniaVision, PrayerPotniaWalls, PrayerGreenShoots},
 	"hatti":    {"hatti_oracle_deposits", "hatti_harvest_blessing", "hatti_battle_frenzy"},
 }
 
@@ -266,8 +288,12 @@ func AllowedForCulture(culture, prayerID string) bool {
 	return false
 }
 
-// DefaultBattleFrenzyFor returns the battle_frenzy prayer ID for a culture.
+// DefaultBattleFrenzyFor returns the default cultural prayer (legacy function name).
+// Minoan defaults to Walls; historical cultures retain battle frenzy.
 // Used for backward-compatible rite calls that omit the prayer parameter.
 func DefaultBattleFrenzyFor(culture string) string {
+	if culture == "minoan" {
+		return PrayerPotniaWalls
+	}
 	return culture + "_battle_frenzy"
 }

@@ -531,3 +531,11 @@ isolated PG16/Redis, registers/joins normally, finds a known two-step plains
 corridor, checks Host forecast in API/Keryx/Firefox's production web module, and
 sends the real march. It records process healthz and removes its own resources;
 no SQL fixtures or HTTP overrides. See `docs/reviews/rorelsetabellen/README.md`.
+
+### Religion alpha checkpoint A
+
+`python3 tools/religion_alpha_mutations.py` physically mutates Vision, the actual
+Walls defender consumer/owner gate, Green's span/renewal guard, successful-only
+and shared-god waiting, silver valuation and remembered-city activity. It requires
+named red tests, restores bytes and runs all Alpha cases against fresh PG16.
+Proof: `docs/reviews/religion-alfa/README.md`; departure effects are checkpoint B.

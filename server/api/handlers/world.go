@@ -981,6 +981,7 @@ func (h *WorldHandler) Provinces(w http.ResponseWriter, r *http.Request) {
 			if !province.AnyEyeSees(eyes, pos, terrain) {
 				m.ArmyTotal = 0
 				m.Burning = false
+				m.Besieged = false
 			}
 			// Build/train activity stays hidden from outside regardless of tier.
 			m.BuildActive = false

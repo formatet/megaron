@@ -17,6 +17,8 @@ import (
 // prayerRow struct in api/handlers/province.go). Shared by --list and the
 // pre-cast confirmation so both read the exact same fields.
 type riteAvailablePrayer struct {
+	Default               bool               `json:"is_default"`
+	ActiveRemainingDays   int                `json:"active_remaining_game_days"`
 	ID                    string             `json:"id"`
 	Name                  string             `json:"name"`
 	God                   string             `json:"god"`
@@ -118,6 +120,10 @@ func riteCmd() *cobra.Command {
 				for _, pr := range p.Settlement.AvailablePrayers {
 					ready := "yes"
 					cooldownStr := "—"
+					if pr.ActiveRemainingDays > 0 {
+						ready = "active"
+						cooldownStr = gameDaysRemaining(pr.ActiveRemainingDays)
+					}
 					if pr.CooldownRemainingDays > 0 {
 						ready = "cooldown"
 						// Game-days, the unit the player counts in — the old
@@ -126,8 +132,15 @@ func riteCmd() *cobra.Command {
 						// arithmetically right and reads as a wall-clock wait
 						// the Wanax has no way to relate to a prayer's cadence.
 						cooldownStr = gameDaysRemaining(pr.CooldownRemainingDays)
-					} else if !pr.Affordable {
+					} else if !pr.Affordable && pr.ActiveRemainingDays == 0 {
 						ready = "no"
+					}
+					if pr.ActiveRemainingDays > 0 {
+						ready = "active"
+						cooldownStr = gameDaysRemaining(pr.ActiveRemainingDays) + " active"
+						if pr.CooldownRemainingDays > 0 {
+							cooldownStr += "; " + gameDaysRemaining(pr.CooldownRemainingDays) + " wait"
+						}
 					}
 					fmt.Printf("%-28s  %-20s  %-8.0f  %-22s  %-45s  %-12s  %s\n",
 						pr.ID, pr.Name, pr.MinKharis, formatOffering(pr.Offering), pr.Effect, ready, cooldownStr)
@@ -274,7 +287,7 @@ func riteCmd() *cobra.Command {
 
 	cmd.Flags().BoolVar(&list, "list", false, "list this culture's available prayers (id + affordability) and exit")
 	cmd.Flags().StringVar(&settlementID, "settlement", "", "settlement UUID (defaults to your capital)")
-	cmd.Flags().StringVar(&prayerID, "prayer", "", "prayer ID (run --list to see your culture's prayers; defaults to culture battle_frenzy)")
+	cmd.Flags().StringVar(&prayerID, "prayer", "", "prayer ID (run --list to see your culture's prayers; defaults to the culture's listed default prayer)")
 	cmd.Flags().StringVar(&targetID, "target", "", "target province UUID (for future targeted prayers)")
 	cmd.Flags().BoolVar(&yes, "yes", false, "skip the pre-cast confirmation (required for non-interactive/agent use)")
 	cmd.Flags().StringVar(&offer, "offer", "",
@@ -331,7 +344,7 @@ func confirmRiteCast(c *Client, markers []map[string]any, settlementID, prayerID
 			chosen = pr
 			break
 		}
-		if prayerID == "" && strings.HasSuffix(pr.ID, "_battle_frenzy") {
+		if prayerID == "" && pr.Default {
 			chosen = pr
 			break
 		}

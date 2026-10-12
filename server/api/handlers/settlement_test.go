@@ -42,7 +42,7 @@ func TestRiteCultureGate_KnaaniCanCastOwnPrayer(t *testing.T) {
 // (Was 100 on the pre-2026-07-09 0-2000 scale.)
 func TestRiteTierGate_OraclePrayerRequires5Kharis(t *testing.T) {
 	for id, spec := range religion.PrayerSpecs {
-		if spec.EffectType == religion.EffectOracleRevealDeposits {
+		if spec.EffectType == religion.EffectOracleRevealDeposits || spec.EffectType == religion.EffectOracleMemory {
 			if spec.MinKharis < 5 {
 				t.Errorf("prayer %q: oracle MinKharis = %.0f, want >= 5 (tier gate)", id, spec.MinKharis)
 			}
@@ -91,7 +91,7 @@ func TestRiteOraclePrayerExistsPerCulture(t *testing.T) {
 		found := false
 		for _, id := range ids {
 			if spec, ok := religion.PrayerSpecs[id]; ok {
-				if spec.EffectType == religion.EffectOracleRevealDeposits {
+				if spec.EffectType == religion.EffectOracleRevealDeposits || spec.EffectType == religion.EffectOracleMemory {
 					found = true
 					break
 				}
@@ -113,7 +113,7 @@ func TestRiteBackwardCompat_EmptyPrayerDefaultsToBattleFrenzy(t *testing.T) {
 			t.Errorf("DefaultBattleFrenzyFor(%q) = %q not found in PrayerSpecs", culture, id)
 			continue
 		}
-		if spec.EffectType != religion.EffectBattleFrenzy {
+		if spec.EffectType != religion.EffectBattleFrenzy && !(culture == "minoan" && spec.EffectType == religion.EffectGarrisonDefense) {
 			t.Errorf("culture %q default prayer %q has effect %q, want battle_frenzy", culture, id, spec.EffectType)
 		}
 		if !religion.AllowedForCulture(culture, id) {
@@ -163,7 +163,7 @@ func TestRiteAffordableFlag_SufficientKharisIsAffordable(t *testing.T) {
 // duplicate effects: the prayer has a Cooldown that prevents rapid re-submission.
 func TestRiteIdempotencyContract_OracleCooldownPreventsDoubleReveal(t *testing.T) {
 	for id, spec := range religion.PrayerSpecs {
-		if spec.EffectType == religion.EffectOracleRevealDeposits {
+		if spec.EffectType == religion.EffectOracleRevealDeposits || spec.EffectType == religion.EffectOracleMemory {
 			if spec.CooldownTicks <= 0 {
 				t.Errorf("oracle prayer %q has zero cooldown — double-reveal is possible", id)
 			}

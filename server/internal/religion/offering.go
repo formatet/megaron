@@ -11,6 +11,8 @@ import "math"
 // Without it, "compose an offering" is just addition with extra steps.
 
 const (
+	// SilverAltarValueFloor changes only sacrifice valuation, never market prices.
+	SilverAltarValueFloor = 100.0
 	// affinityDefault applies to any good a god has no stated opinion about.
 	// Not zero: an unfavoured gift is a lesser gift, never an insult.
 	affinityDefault = 1.0
@@ -54,6 +56,9 @@ func OfferingWorth(offering map[string]float64, divineValues map[string]float64,
 		value, known := divineValues[good]
 		if !known {
 			continue
+		}
+		if good == "silver" {
+			value = math.Max(value, SilverAltarValueFloor)
 		}
 		affinity := affinityDefault
 		if a, ok := favours[good]; ok {
