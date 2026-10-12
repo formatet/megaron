@@ -213,13 +213,14 @@ func seedHost(
 
 	// Both join and rise begin a new Host life here. With no capital there is
 	// no geographic Kharis income. Keep the last city's witness and founding
-	// tick, but start the relationship at the shared floor, anchored in this
+	// tick and settle the existing relationship, bounded by the shared floor, in this
 	// world's tick (also valid before a forming world starts).
 	if _, err := tx.Exec(ctx,
 		`INSERT INTO player_world_records (player_id, world_id, status, kharis_amount, kharis_rate, kharis_calc_tick)
 		 VALUES ($1, $2, 'active', $3, 0, (SELECT current_tick FROM worlds WHERE id = $2))
 		 ON CONFLICT (player_id, world_id) DO UPDATE SET
-		   status = 'active', kharis_amount = EXCLUDED.kharis_amount,
+		   status = 'active',
+		   kharis_amount = GREATEST(settled(player_world_records.kharis_amount, player_world_records.kharis_rate, player_world_records.kharis_calc_tick), EXCLUDED.kharis_amount),
 		   kharis_rate = 0, kharis_calc_tick = EXCLUDED.kharis_calc_tick`,
 		playerID, worldID, kharis.Floor,
 	); err != nil {

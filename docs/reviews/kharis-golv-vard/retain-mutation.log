@@ -1,0 +1,7 @@
+» färsk DB på migration 174 · commit 93a54803+ändringar
+2026/10/12 12:50:30 INFO player registered id=b7c6e8c3-376f-4c1d-83c9-384d873af62a username=rise-caed8b66-7558-4de7-b085-9644249fcf94
+--- FAIL: TestRise_RefugeeHostOnAnotherLandmass_AndLeave (0.09s)
+    rise_test.go:127: rise lost existing kharis above floor: 1/0/0, world0
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.088s
+FAIL

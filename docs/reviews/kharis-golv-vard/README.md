@@ -2,7 +2,7 @@
 
 Inventering före kod, bas062276e6, gren codex/kharis-golv-vard, eget worktree.
 
-Kontrakt: ny och återuppstånden Host startar på samma golv som tickens Kharis-clamp. Grundningens seed förblir oförändrad. Befintliga aktiva Hosts under golvet lyfts additivt; stadsrealmer/avslutade Hosts påverkas inte. Ingen ny yta, BILD undantagen av ordern. Kedjegrind: visar en korrekt egen relation före grundning, ingen ny progression/balans.
+Kontrakt: ny Host startar på samma golv som tickens Kharis-clamp. Grundningens seed förblir oförändrad. Befintliga aktiva Hosts under golvet lyfts additivt; stadsrealmer/avslutade Hosts påverkas inte. Ingen ny yta, BILD undantagen av ordern. Kedjegrind: visar en korrekt egen relation före grundning, ingen ny progression/balans.
 
 ## Inventering före implementation
 
@@ -15,7 +15,7 @@ Kontrakt: ny och återuppstånden Host startar på samma golv som tickens Kharis
 - Tick: tempelunderhåll behandlar stadsrealmer; Host når inte clamping via en aktiv stad. Därför behövs mig174 för befintliga aktiva founder_phase utan aktiv egen stad. Begränsa också PWRstatusactive; grundade/avslutade/dispossessed lämnas. Migrationens1.0 är fryst historisk golvkalibrering; Go-seed använder konstantens ägare. Liftade rader får rate0 och egen världstick för att inte ackumulera förra livets geografiska takt.
 
 ## Provplan
-Färsk Go-baslinje join/rise/grundning före kod. Verklig join→me visar Floor, delad rise-seed och riktig rise visar Floor/rate0/calc_tick, återbesök resetter inte. Grundningens amount/calc oförändrade. Mig174 inkluderar låg aktiv Host men utesluter aktiv stad, avslutad/dispossessed och redan hög Host; omkörning ändrar inget. Fysisk seedmutation ger namngivet rött, byteåterställt grönt. Full färsk Go/JS/vet. Claude integrerar efter hash+STOPP.
+Färsk Go-baslinje join/rise/grundning före kod. Verklig join→me visar Floor, delad rise-seed och riktig rise bevarar settled amount med Floor som minimum och rate0/calc_tick, återbesök resetter inte. Grundningens amount/calc oförändrade. Mig174 inkluderar låg aktiv Host men utesluter aktiv stad, avslutad/dispossessed och redan hög Host; omkörning ändrar inget. Fysisk seedmutation ger namngivet rött, byteåterställt grönt. Full färsk Go/JS/vet. Claude integrerar efter hash+STOPP.
 
 Implementation: PWR active-upsert har EN ägare i seedHost; gamla statusupdateringar i join/rise är borttagna. Seeden håller last_settlement_id/founded_tick orörda. Floor är exporterat alias till tickens kharisFloor. Mig174:s down är avsiktligt en no-op: additiv reparation kan inte säkert återskapa gamla nollvärden. Codex kharis beskriver Host/rise och rättar den nu felaktiga uppgiften att inget tal syns (Account visar redan mängden).
 
@@ -31,3 +31,7 @@ Implementation: PWR active-upsert har EN ägare i seedHost; gamla statusupdateri
 Repro: `PLACE_PROOF_OUTPUT="$PWD/docs/reviews/kharis-golv-vard/rig" python3 tools/place_names_rig.py`, sedan `python3 tools/host_kharis_proof.py`. CLI-token ligger bara i tillfällig0600-fil och sparas inte i rapporten. Värdens join är verklig; tidigare labbvärldsdata kommer från föregående acceptansslicers, inget påstående om naturligt ekonomiförlopp.
 
 Grindar: kod/färska prov och faktiskt läsbeteende gröna; samma golvsemantik på delad seed och migration; ingen BILD enligt uttrycklig order (tal). Claude granskar/integrerar efter hash+STOPP. Ingen merge/push/deploy från Codex.
+
+
+## Granskningsrättelse 2026-10-12
+Claude klargjorde att golvet är ett minimum: fall/rise raderar inte relationen till gudarna. Ursprungliga871d6388 satte ovillkorligt golvet på konflikt; ersatt med GREATEST(settled(gamla tupeln),Floor), därefter calc_tick=current och rate0. Ny PWR-rad får fortsatt Floor. Mig174 och grundning är orörda. Riktigt Rise-prov:15→15,0→Floor, lazy10/rate0.5 under10ticks→15; rate0 och reankrad tick i samtliga. Codex/vault rättas till bevarad relation. Tidigare seedmutation/runtimebevis avser första checkpoint; nytt konfliktmutation/fullGo-bevis nedan gäller handover.
