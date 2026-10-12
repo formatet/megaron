@@ -13,16 +13,11 @@ package combat
 // applies at once (no Runner) — command is still never instant, because it
 // only reaches men who enter a battle after the change.
 //
-// Three states, exactly one at a time:
-//   - by loyalty ('{}', the column default): break at the loyalty-derived
-//     threshold (routFractionForLoyalty) — today's behaviour.
-//   - retreat_at_loss = x: break when the side is down to x of its starting
-//     strength (same meaning as SetStandingOrders' field of the same name).
-//   - hold_to_last_man: never break.
+// Two player modes: by loyalty ('{}') or hold to the last man. The engine
+// still understands legacy fixed thresholds, but players cannot set them.
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -40,7 +35,7 @@ type RetreatDefault struct {
 func (d RetreatDefault) ByLoyalty() bool { return d.RetreatAtLoss == nil && !d.HoldToLastMan }
 
 // RetreatDefaultOrder is a request to change the default. Exactly one of the
-// three must be set.
+// two modes must be selected.
 type RetreatDefaultOrder struct {
 	RetreatAtLoss *float64
 	HoldToLastMan bool
@@ -64,36 +59,18 @@ func LoadRetreatDefault(ctx context.Context, pool *pgxpool.Pool, worldID, player
 // SetRetreatDefault validates and stores a new default. Any *OrderReject
 // return carries the HTTP status + reason for the handler to answer with.
 func SetRetreatDefault(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uuid.UUID, o RetreatDefaultOrder) (RetreatDefault, error) {
-	set := 0
-	if o.RetreatAtLoss != nil {
-		set++
-	}
-	if o.HoldToLastMan {
-		set++
-	}
-	if o.ByLoyalty {
-		set++
-	}
-	if set != 1 {
-		return RetreatDefault{}, reject(http.StatusBadRequest,
-			"set exactly one of retreat_at_loss, hold_to_last_man: true, or by_loyalty: true")
-	}
-	// Same range SetStandingOrders accepts for the same field — one rule, not two.
-	if o.RetreatAtLoss != nil && (*o.RetreatAtLoss < 0 || *o.RetreatAtLoss > 1) {
-		return RetreatDefault{}, reject(http.StatusBadRequest, "retreat_at_loss must be between 0 and 1")
+	if rej := ValidateRetreatMode(o.RetreatAtLoss, o.HoldToLastMan, o.ByLoyalty); rej != nil {
+		return RetreatDefault{}, rej
 	}
 
-	d := RetreatDefault{RetreatAtLoss: o.RetreatAtLoss, HoldToLastMan: o.HoldToLastMan}
+	d := RetreatDefault{HoldToLastMan: o.HoldToLastMan}
 	raw := []byte(`{}`)
-	if !d.ByLoyalty() {
-		b, err := json.Marshal(standingOrdersFields{RetreatAtLoss: d.RetreatAtLoss, HoldToLastMan: d.HoldToLastMan})
-		if err != nil {
-			return RetreatDefault{}, reject(http.StatusInternalServerError, "could not encode retreat default")
-		}
-		raw = b
+	if d.HoldToLastMan {
+		raw = []byte(`{"hold_to_last_man":true}`)
 	}
+
 	tag, err := pool.Exec(ctx,
-		`UPDATE player_world_records SET retreat_default = $3 WHERE world_id = $1 AND player_id = $2`,
+		`UPDATE player_world_records SET retreat_default = (retreat_default - 'retreat_at_loss' - 'hold_to_last_man' - 'by_loyalty') || $3::jsonb WHERE world_id = $1 AND player_id = $2`,
 		worldID, playerID, raw,
 	)
 	if err != nil {

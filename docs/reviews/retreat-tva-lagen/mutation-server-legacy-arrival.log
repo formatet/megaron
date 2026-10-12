@@ -1,0 +1,17 @@
+2026/10/12 11:29:10 INFO player registered id=e8b16584-8e94-4d43-ac4d-0ceb9ff60104 username=standing-orders-ec9b5a8b-47f8-4ba8-8481-19d6ffeeb8b2
+2026/10/12 11:29:10 INFO order delivered but no longer executable unit=a1306632-452b-4637-aa2e-c05bd505086b verb=standing_orders reason="unit is not in an active battle"
+2026/10/12 11:29:10 INFO order delivered — standing orders applied unit=a1306632-452b-4637-aa2e-c05bd505086b battle=3aa552b9-63be-4a52-8ca9-a4f2474e316b hold_to_last_man=true
+2026/10/12 11:29:10 INFO order delivered but no longer executable unit=a1306632-452b-4637-aa2e-c05bd505086b verb=standing_orders reason="retreat_at_loss is no longer a player choice; choose hold_to_last_man: true or by_loyalty: true"
+2026/10/12 11:29:10 INFO order delivered but no longer executable unit=a1306632-452b-4637-aa2e-c05bd505086b verb=standing_orders reason="choose exactly one of hold_to_last_man: true or by_loyalty: true"
+2026/10/12 11:29:10 INFO order delivered but no longer executable unit=a1306632-452b-4637-aa2e-c05bd505086b verb=standing_orders reason="retreat_at_loss is no longer a player choice; choose hold_to_last_man: true or by_loyalty: true"
+--- FAIL: TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBattle (0.08s)
+    --- FAIL: TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBattle/percentage (0.00s)
+        unit_standing_orders_courier_test.go:291: legacy retreat courier did not translate to loyalty on arrival (percentage): {"hold_to_last_man": true}
+    --- FAIL: TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBattle/reset_false (0.00s)
+        unit_standing_orders_courier_test.go:291: legacy retreat courier did not translate to loyalty on arrival (reset_false): {"hold_to_last_man": true}
+    --- FAIL: TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBattle/percentage_hold (0.00s)
+        unit_standing_orders_courier_test.go:288: legacy held retreat courier lost hold on arrival: {}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.086s
+FAIL
+» färsk DB på migration 173 · commit 962d0ef3+ändringar

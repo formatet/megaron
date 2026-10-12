@@ -1,0 +1,51 @@
+{
+  "base": "2b83b1f6",
+  "production_source": "939c9d9a",
+  "runtime": {
+    "commit": "939c9d9",
+    "migration": 173,
+    "status": "ok"
+  },
+  "full_go": "green, fresh empty isolated database migration173",
+  "vet": "green exit0",
+  "js": {
+    "passed": 598,
+    "failed": 0,
+    "js_source": "unchanged since962d0ef3"
+  },
+  "distinct_physical_mutations": [
+    "domain-percentage",
+    "realm-percentage",
+    "before-courier",
+    "legacy-arrival",
+    "legacy-reset-false",
+    "legacy-hold",
+    "client-retired-percentage"
+  ],
+  "sealed_legacy_cases": [
+    "percentage -> loyalty",
+    "hold:false -> loyalty",
+    "percentage+hold:true -> hold"
+  ],
+  "sealed_and_pending_payloads": "byte unchanged in migration/delivery DB tests",
+  "engine_battle_go_diff": "empty against2b83b1f6",
+  "firefox": {
+    "before": 2,
+    "after": 4,
+    "widths": [
+      1280,
+      390
+    ],
+    "javascript_errors": 0,
+    "actual_player": "ParityNomad",
+    "world": "3b5fb9cd-8c06-4685-88df-b162c9acff99",
+    "sql_writes": false,
+    "original_doctrine_restored": true
+  },
+  "served_assets_sha256": {
+    "js/megaron/ui/retreat.js": "436bb6527a53109904f0386c75d41e925fa04e984f043d6c06ce233a08b76f76",
+    "js/megaron/ui/drawers/war.js": "202f6437dcd8e315f77220e0774020c2946a79e0c3d6c861b51ad3d26ee55e09"
+  },
+  "schema": "173|f\nOrderDelivery pending|0",
+  "integration_owner": "Claude; no Codex merge/push/deploy"
+}

@@ -14,7 +14,6 @@ package combat
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 
 	"formatet/megaron/server/internal/events"
@@ -24,14 +23,15 @@ import (
 )
 
 // StandingOrdersOrder is one retreat-order command against one unit's active
-// battle participation. RetreatAtLoss/HoldToLastMan are pointers so the caller
-// can change either field alone without clobbering the other.
+// battle participation. Hold or ByLoyalty replaces the entire retreat mode;
+// RetreatAtLoss remains only to reject legacy callers explicitly.
 type StandingOrdersOrder struct {
 	WorldID       uuid.UUID
 	PlayerID      uuid.UUID
 	UnitID        uuid.UUID
 	RetreatAtLoss *float64
 	HoldToLastMan *bool
+	ByLoyalty     bool
 }
 
 // StandingOrdersApplied describes the applied order (the handler's 200 body fields).
@@ -46,11 +46,9 @@ type StandingOrdersApplied struct {
 // atomically. Any *OrderReject return carries the HTTP status + reason
 // exactly as the SetStandingOrders handler answered.
 func SetStandingOrders(ctx context.Context, pool *pgxpool.Pool, eventStore *events.Store, o StandingOrdersOrder) (*StandingOrdersApplied, error) {
-	if o.RetreatAtLoss == nil && o.HoldToLastMan == nil {
-		return nil, reject(http.StatusBadRequest, "must set retreat_at_loss and/or hold_to_last_man")
-	}
-	if o.RetreatAtLoss != nil && (*o.RetreatAtLoss < 0 || *o.RetreatAtLoss > 1) {
-		return nil, reject(http.StatusBadRequest, "retreat_at_loss must be between 0 and 1")
+	hold := o.HoldToLastMan != nil && *o.HoldToLastMan
+	if rej := ValidateRetreatMode(o.RetreatAtLoss, hold, o.ByLoyalty); rej != nil {
+		return nil, rej
 	}
 
 	store := unit.NewStore(pool)
@@ -84,20 +82,15 @@ func SetStandingOrders(ctx context.Context, pool *pgxpool.Pool, eventStore *even
 		return nil, reject(http.StatusUnprocessableEntity, "unit is not in an active battle")
 	}
 
-	fields := parseStandingOrders(existingRaw)
-	if o.RetreatAtLoss != nil {
-		fields.RetreatAtLoss = o.RetreatAtLoss
-	}
-	if o.HoldToLastMan != nil {
-		fields.HoldToLastMan = *o.HoldToLastMan
-	}
-	raw, mErr := json.Marshal(fields)
-	if mErr != nil {
-		return nil, reject(http.StatusInternalServerError, "could not encode standing orders")
+	fields := standingOrdersFields{HoldToLastMan: hold}
+
+	raw := []byte(`{}`)
+	if hold {
+		raw = []byte(`{"hold_to_last_man":true}`)
 	}
 
 	if _, err := tx.Exec(ctx,
-		`UPDATE battle_participants SET standing_orders = $3 WHERE battle_id = $1 AND unit_id = $2`,
+		`UPDATE battle_participants SET standing_orders = (standing_orders - 'retreat_at_loss' - 'hold_to_last_man' - 'by_loyalty') || $3::jsonb WHERE battle_id = $1 AND unit_id = $2`,
 		battleID, o.UnitID, raw,
 	); err != nil {
 		return nil, reject(http.StatusInternalServerError, "could not update standing orders")

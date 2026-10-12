@@ -1,0 +1,13 @@
+2026/10/12 11:29:18 INFO player registered id=c2a1ee10-7543-46eb-acb6-fef4bac2b4c8 username=standing-orders-017e32de-d092-4b80-8f36-4ae14ba30809
+2026/10/12 11:29:18 INFO order delivered but no longer executable unit=a8f41ef8-5cdf-422c-aef4-c19f7b50515f verb=standing_orders reason="unit is not in an active battle"
+2026/10/12 11:29:18 INFO order delivered — standing orders applied unit=a8f41ef8-5cdf-422c-aef4-c19f7b50515f battle=c1c4f02c-2e26-43ac-be7a-8e1c87f3b453 hold_to_last_man=true
+2026/10/12 11:29:18 INFO order delivered — standing orders applied unit=a8f41ef8-5cdf-422c-aef4-c19f7b50515f battle=c1c4f02c-2e26-43ac-be7a-8e1c87f3b453 hold_to_last_man=false
+2026/10/12 11:29:18 INFO order delivered — standing orders applied unit=a8f41ef8-5cdf-422c-aef4-c19f7b50515f battle=c1c4f02c-2e26-43ac-be7a-8e1c87f3b453 hold_to_last_man=false
+2026/10/12 11:29:18 INFO order delivered — standing orders applied unit=a8f41ef8-5cdf-422c-aef4-c19f7b50515f battle=c1c4f02c-2e26-43ac-be7a-8e1c87f3b453 hold_to_last_man=false
+--- FAIL: TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBattle (0.09s)
+    --- FAIL: TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBattle/percentage_hold (0.00s)
+        unit_standing_orders_courier_test.go:288: legacy held retreat courier lost hold on arrival: {}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.088s
+FAIL
+» färsk DB på migration 173 · commit 962d0ef3+ändringar

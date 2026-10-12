@@ -1,0 +1,6 @@
+--- FAIL: TestRetreatTwoModesDomainRejectsPercentageEvenWithValidMode (0.00s)
+    retreat_two_modes_migration_test.go:88: retreat_at_loss domain guard missing
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.002s
+FAIL
+» färsk DB på migration 173 · commit c9e6a780+ändringar

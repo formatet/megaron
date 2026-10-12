@@ -1,0 +1,1 @@
+baseline {'commit': 'cdfe6ab', 'migration': 172, 'status': 'ok'} Firefox1280+390; normal login/web/CLI/API, no SQL writes

@@ -1452,21 +1452,24 @@ func stanceDispatchLine(resp map[string]any, stance, unitShort, eta string) stri
 // retreat default the unit carried in (`keryx retreat-default`, mig 145).
 func unitStandingOrdersCmd() *cobra.Command {
 	var unitID string
-	var retreatAtLoss float64
-	var holdToLastMan bool
+	var holdToLastMan, byLoyalty bool
 
 	cmd := &cobra.Command{
 		Use:   "retreat-order",
-		Short: "Change a unit's mid-battle retreat threshold",
-		Long: `Change the retreat threshold of a unit that is fighting in a battle right now.
+		Short: "Choose when a fighting unit retreats",
+		Long: `Choose Hold to the last man or Retreat when it goes badly for a fighting unit.
 It overrides your realm-wide retreat default (keryx retreat-default) for this
 battle only. A unit not in a battle is refused — set the default instead.`,
-		Example: `  keryx unit retreat-order --unit <id> --retreat-at-loss 0.5
+		Example: `  keryx unit retreat-order --unit <id> --by-loyalty
   keryx unit retreat-order --unit <id> --hold-to-last-man`,
 		Args: rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if !cmd.Flags().Changed("retreat-at-loss") && !cmd.Flags().Changed("hold-to-last-man") {
-				return fmt.Errorf("set at least one of --retreat-at-loss or --hold-to-last-man")
+			if cmd.Flags().Changed("hold-to-last-man") == cmd.Flags().Changed("by-loyalty") {
+				return fmt.Errorf("choose exactly one of --hold-to-last-man or --by-loyalty")
+			}
+			body, modeErr := retreatModeBody(holdToLastMan, byLoyalty)
+			if modeErr != nil {
+				return modeErr
 			}
 			c := newClient(cfg)
 			resolvedID, rerr := resolveUnitID(c, cfg.WorldID, unitID)
@@ -1475,13 +1478,6 @@ battle only. A unit not in a battle is refused — set the default instead.`,
 			}
 			unitID = resolvedID
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/standing-orders", cfg.WorldID, unitID)
-			body := map[string]any{}
-			if cmd.Flags().Changed("retreat-at-loss") {
-				body["retreat_at_loss"] = retreatAtLoss
-			}
-			if cmd.Flags().Changed("hold-to-last-man") {
-				body["hold_to_last_man"] = holdToLastMan
-			}
 			data, err := c.post(path, body)
 			if err != nil {
 				return err
@@ -1503,16 +1499,15 @@ battle only. A unit not in a battle is refused — set the default instead.`,
 				printPassageNote(resp)
 				return nil
 			}
-			fmt.Printf("Unit %s standing orders updated (retreat_at_loss=%v, hold_to_last_man=%v)\n",
-				unitID[:8], resp["retreat_at_loss"], resp["hold_to_last_man"])
+			hold, _ := resp["hold_to_last_man"].(bool)
+			fmt.Printf("Unit %s: %s (this battle only)\n", unitID[:8], describeRetreatDefault(hold))
 			return nil
 		},
 	}
 
 	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
-	cmd.Flags().Float64Var(&retreatAtLoss, "retreat-at-loss", 0,
-		"fraction of starting strength (0-1) at which this unit's side breaks and retreats")
 	cmd.Flags().BoolVar(&holdToLastMan, "hold-to-last-man", false, "disable rout for this unit's side — fight to annihilation")
+	cmd.Flags().BoolVar(&byLoyalty, "by-loyalty", false, "Retreat when it goes badly — determined by loyalty")
 	_ = cmd.MarkFlagRequired("unit")
 	return cmd
 }

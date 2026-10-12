@@ -1834,8 +1834,7 @@ func (h *UnitHandler) Reinforce(w http.ResponseWriter, r *http.Request) {
 // SetStandingOrders handles POST /worlds/{worldID}/units/{unitID}/standing-orders
 //
 // KR3 §5: change a unit's mid-battle rout threshold. Body:
-// {"retreat_at_loss": 0.5} and/or {"hold_to_last_man": true} — either field
-// may be omitted to leave it unchanged.
+// {"hold_to_last_man": true} or {"by_loyalty": true} — replaces the mode.
 //
 // The unit must currently be a participant in an active battle —
 // standing_orders lives on battle_participants (migration 114), not on the
@@ -1864,18 +1863,29 @@ func (h *UnitHandler) SetStandingOrders(w http.ResponseWriter, r *http.Request) 
 	}
 
 	var req struct {
-		RetreatAtLoss *float64 `json:"retreat_at_loss,omitempty"`
-		HoldToLastMan *bool    `json:"hold_to_last_man,omitempty"`
+		RetreatAtLoss json.RawMessage `json:"retreat_at_loss,omitempty"`
+		HoldToLastMan *bool           `json:"hold_to_last_man,omitempty"`
+		ByLoyalty     bool            `json:"by_loyalty"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
 		return
 	}
 
+	if len(req.RetreatAtLoss) > 0 {
+		writeError(w, http.StatusBadRequest, combat.RetreatPercentNotAllowed)
+		return
+	}
+	hold := req.HoldToLastMan != nil && *req.HoldToLastMan
+	if rej := combat.ValidateRetreatMode(nil, hold, req.ByLoyalty); rej != nil {
+		writeError(w, rej.Status, rej.Reason)
+		return
+	}
+
 	ctx := r.Context()
 	order := combat.StandingOrdersOrder{
 		WorldID: worldID, PlayerID: playerID, UnitID: unitID,
-		RetreatAtLoss: req.RetreatAtLoss, HoldToLastMan: req.HoldToLastMan,
+		HoldToLastMan: req.HoldToLastMan, ByLoyalty: req.ByLoyalty,
 	}
 
 	// Same distance-0-vs-courier split as SetStance: a field unit (no
@@ -1924,6 +1934,7 @@ func (h *UnitHandler) SetStandingOrders(w http.ResponseWriter, r *http.Request) 
 		"battle_id":        res.BattleID,
 		"retreat_at_loss":  res.RetreatAtLoss,
 		"hold_to_last_man": res.HoldToLastMan,
+		"by_loyalty":       !res.HoldToLastMan,
 	})
 }
 

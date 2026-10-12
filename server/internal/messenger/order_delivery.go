@@ -232,7 +232,21 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 		if p.StandingOrders == nil {
 			return fmt.Errorf("order delivery %s: standing_orders verb without standing_orders payload", p.MessengerID)
 		}
-		res, err := combat.SetStandingOrders(ctx, h.pool, h.eventStore, *p.StandingOrders)
+		// Old sealed orders keep their original bytes. Interpret their removed
+		// threshold or explicit hold:false reset at application time only,
+		// including passage-rebuilt copies.
+		order := *p.StandingOrders
+		if order.RetreatAtLoss != nil || (!order.ByLoyalty && order.HoldToLastMan != nil && !*order.HoldToLastMan) {
+			// Match migration 173 and the old engine: hold wins over an
+			// ignored percentage; otherwise the removed mode becomes loyalty.
+			hold := order.HoldToLastMan != nil && *order.HoldToLastMan
+			order.RetreatAtLoss = nil
+			order.ByLoyalty = !hold
+			if !hold {
+				order.HoldToLastMan = nil
+			}
+		}
+		res, err := combat.SetStandingOrders(ctx, h.pool, h.eventStore, order)
 		if err != nil {
 			var rej *combat.OrderReject
 			if errors.As(err, &rej) {

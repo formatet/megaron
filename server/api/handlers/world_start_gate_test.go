@@ -144,12 +144,17 @@ func TestRequireStartedWorld_NoOrdersUntilThresholdJoins(t *testing.T) {
 		!strings.Contains(rec.Body.String(), `"by_loyalty":true`) {
 		t.Fatalf("GET retreat-default fresh = %d %q, want 200 by_loyalty", rec.Code, rec.Body.String())
 	}
-	if rec := gateDo(t, r, http.MethodPut, rdPath, tokA, `{"retreat_at_loss":0.5}`); rec.Code != http.StatusOK {
+	if rec := gateDo(t, r, http.MethodPut, rdPath, tokA, `{"hold_to_last_man":true}`); rec.Code != http.StatusOK {
 		t.Fatalf("PUT retreat-default while forming = %d %q, want 200", rec.Code, rec.Body.String())
 	}
-	if rec := gateDo(t, r, http.MethodGet, rdPath, tokA, ""); !strings.Contains(rec.Body.String(), `"retreat_at_loss":0.5`) ||
+	if rec := gateDo(t, r, http.MethodGet, rdPath, tokA, ""); !strings.Contains(rec.Body.String(), `"hold_to_last_man":true`) ||
 		!strings.Contains(rec.Body.String(), `"by_loyalty":false`) {
-		t.Fatalf("GET retreat-default after PUT = %q, want retreat_at_loss 0.5", rec.Body.String())
+		t.Fatalf("GET retreat-default after PUT = %q, want hold", rec.Body.String())
+	}
+	for _, bad := range []string{`{"retreat_at_loss":0.5,"hold_to_last_man":true}`, `{"retreat_at_loss":null,"by_loyalty":true}`} {
+		if rec := gateDo(t, r, http.MethodPut, rdPath, tokA, bad); rec.Code != http.StatusBadRequest || !strings.Contains(rec.Body.String(), "retreat_at_loss") {
+			t.Fatalf("realm retreat_at_loss request accepted: %d %s", rec.Code, rec.Body.String())
+		}
 	}
 	if rec := gateDo(t, r, http.MethodPut, rdPath, tokA, `{"retreat_at_loss":0.5,"hold_to_last_man":true}`); rec.Code != http.StatusBadRequest {
 		t.Fatalf("PUT two modes = %d %q, want 400", rec.Code, rec.Body.String())

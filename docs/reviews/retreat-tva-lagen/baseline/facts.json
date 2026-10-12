@@ -1,0 +1,62 @@
+{
+  "health": {
+    "commit": "cdfe6ab",
+    "migration": 172,
+    "status": "ok"
+  },
+  "world": "3b5fb9cd-8c06-4685-88df-b162c9acff99",
+  "initial": {
+    "retreat_at_loss": null,
+    "hold_to_last_man": false,
+    "by_loyalty": true
+  },
+  "no_sql_writes": true,
+  "captures": [
+    {
+      "mode": "desktop",
+      "choice": "baseline",
+      "options": [
+        "by the troops' loyalty (default)",
+        "retreat at 25% losses",
+        "retreat at 50% losses",
+        "retreat at 75% losses",
+        "hold to the last man"
+      ],
+      "value": {
+        "retreat_at_loss": null,
+        "hold_to_last_man": false,
+        "by_loyalty": true
+      },
+      "box": {
+        "x": 875.5999755859375,
+        "y": 322.9333190917969,
+        "width": 240,
+        "height": 22.399993896484375
+      },
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "choice": "baseline",
+      "options": [
+        "by the troops' loyalty (default)",
+        "retreat at 25% losses",
+        "retreat at 50% losses",
+        "retreat at 75% losses",
+        "hold to the last man"
+      ],
+      "value": {
+        "retreat_at_loss": null,
+        "hold_to_last_man": false,
+        "by_loyalty": true
+      },
+      "box": {
+        "x": 13.600000381469727,
+        "y": 341.3833312988281,
+        "width": 240.0000057220459,
+        "height": 22.399993896484375
+      },
+      "errors": []
+    }
+  ]
+}

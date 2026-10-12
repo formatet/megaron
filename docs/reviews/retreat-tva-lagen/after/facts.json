@@ -1,0 +1,111 @@
+{
+  "health": {
+    "commit": "939c9d9",
+    "migration": 173,
+    "status": "ok"
+  },
+  "world": "3b5fb9cd-8c06-4685-88df-b162c9acff99",
+  "initial": {
+    "retreat_at_loss": null,
+    "hold_to_last_man": false,
+    "by_loyalty": true
+  },
+  "no_sql_writes": true,
+  "captures": [
+    {
+      "mode": "desktop",
+      "choice": "loyalty",
+      "options": [
+        "Retreat when it goes badly",
+        "Hold to the last man"
+      ],
+      "value": {
+        "retreat_at_loss": null,
+        "hold_to_last_man": false,
+        "by_loyalty": true
+      },
+      "box": {
+        "x": 875.5999755859375,
+        "y": 322.9333190917969,
+        "width": 215,
+        "height": 22.399993896484375
+      },
+      "errors": []
+    },
+    {
+      "mode": "desktop",
+      "choice": "hold",
+      "options": [
+        "Retreat when it goes badly",
+        "Hold to the last man"
+      ],
+      "value": {
+        "retreat_at_loss": null,
+        "hold_to_last_man": true,
+        "by_loyalty": false
+      },
+      "box": {
+        "x": 875.5999755859375,
+        "y": 322.9333190917969,
+        "width": 215,
+        "height": 22.399993896484375
+      },
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "choice": "loyalty",
+      "options": [
+        "Retreat when it goes badly",
+        "Hold to the last man"
+      ],
+      "value": {
+        "retreat_at_loss": null,
+        "hold_to_last_man": false,
+        "by_loyalty": true
+      },
+      "box": {
+        "x": 13.600000381469727,
+        "y": 341.3833312988281,
+        "width": 215.0000057220459,
+        "height": 22.399993896484375
+      },
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "choice": "hold",
+      "options": [
+        "Retreat when it goes badly",
+        "Hold to the last man"
+      ],
+      "value": {
+        "retreat_at_loss": null,
+        "hold_to_last_man": true,
+        "by_loyalty": false
+      },
+      "box": {
+        "x": 13.600000381469727,
+        "y": 341.3833312988281,
+        "width": 215.0000057220459,
+        "height": 22.399993896484375
+      },
+      "errors": []
+    }
+  ],
+  "assets": {
+    "js/megaron/ui/retreat.js": "436bb6527a53109904f0386c75d41e925fa04e984f043d6c06ce233a08b76f76",
+    "js/megaron/ui/drawers/war.js": "202f6437dcd8e315f77220e0774020c2946a79e0c3d6c861b51ad3d26ee55e09"
+  },
+  "retired_request": {
+    "status": 400,
+    "body": {
+      "error": "retreat_at_loss is no longer a player choice; choose hold_to_last_man: true or by_loyalty: true"
+    }
+  },
+  "restored": {
+    "retreat_at_loss": null,
+    "hold_to_last_man": false,
+    "by_loyalty": true
+  }
+}

@@ -16,7 +16,8 @@ test('P: garrison shows March and eligible Reinforce; stance and battle retreat 
  assert.doesNotMatch(html,/>Recall<|<details/,'garrison actions must not be hidden');
  assert.match(html,/ustance-u/,'stance must be on the card');
  assert.match(html,/uretreat-u/,'all battle retreat choices must survive');
- for(const value of ['0.75','0.5','0.25','hold']) assert.match(html,new RegExp('value="'+value+'"'));
+ for(const value of ['loyalty','hold']) assert.match(html,new RegExp('value="'+value+'"'));
+ assert.doesNotMatch(html,/value="0\.(?:75|5|25)"/,'retired percentage must not be a battle choice');
  assert.doesNotMatch(html,/<details/,'all applicable controls must be directly visible');
  assert.doesNotMatch(renderUnitCard(unit({can_reinforce:true,reinforcing:true})),/>Reinforce</);
  assert.doesNotMatch(renderUnitCard(unit({stance:'fortify'})),/>March</);

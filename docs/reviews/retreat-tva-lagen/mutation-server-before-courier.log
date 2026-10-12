@@ -1,0 +1,7 @@
+2026/10/12 08:49:53 INFO player registered id=f2c15cea-8f5b-43e1-9358-f9fc0f810497 username=standing-orders-e5cf4edd-eeb5-4830-8bed-115db2c6bcd4
+--- FAIL: TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBattle (0.07s)
+    unit_standing_orders_courier_test.go:112: retreat_at_loss was accepted before courier dispatch: 202 {"courier_arrives_at":"2026-10-12T10:49:53.444359223+02:00","courier_due_tick":2,"messenger_id":"389f508e-106b-4da7-a414-cf85c3338d13","status":"order_dispatched","unit_id":"48591832-755a-421e-84c0-d5a53ad3a0b7","verb":"standing_orders"}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.069s
+FAIL
+» färsk DB på migration 173 · commit c9e6a780+ändringar
