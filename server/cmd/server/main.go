@@ -27,6 +27,7 @@ import (
 	"formatet/megaron/server/internal/loyalty"
 	"formatet/megaron/server/internal/messenger"
 	"formatet/megaron/server/internal/notify"
+	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/transport"
 	"formatet/megaron/server/internal/world"
