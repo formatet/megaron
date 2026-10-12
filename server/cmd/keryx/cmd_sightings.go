@@ -62,6 +62,48 @@ type sightingGarrison struct {
 	Bearing  string `json:"bearing"`
 }
 
+type sightingCivilian struct {
+	Owner    string `json:"owner,omitempty"`
+	Sender   string `json:"sender,omitempty"`
+	Kind     string `json:"kind,omitempty"`
+	Category string `json:"category,omitempty"`
+	Heading  string `json:"heading,omitempty"`
+	CurrentQ *int   `json:"current_q,omitempty"`
+	CurrentR *int   `json:"current_r,omitempty"`
+	Own      bool   `json:"own,omitempty"`
+	Mine     bool   `json:"mine,omitempty"`
+	Distance int    `json:"distance"`
+	Bearing  string `json:"bearing"`
+}
+
+func foreignCivilianSightings(raw []byte) ([]sightingCivilian, error) {
+	var rows []sightingCivilian
+	if err := json.Unmarshal(raw, &rows); err != nil {
+		return nil, err
+	}
+	out := make([]sightingCivilian, 0, len(rows))
+	for _, row := range rows {
+		if !row.Own && !row.Mine && row.CurrentQ != nil && row.CurrentR != nil {
+			out = append(out, row)
+		}
+	}
+	return out, nil
+}
+func printCivilianSighting(u sightingCivilian, kind string) {
+	owner := u.Owner
+	if owner == "" {
+		owner = u.Sender
+	}
+	if owner == "" {
+		owner = "—"
+	}
+	heading := ""
+	if u.Heading != "" {
+		heading = ", heading " + u.Heading
+	}
+	fmt.Printf("  %d hexes %s   %s's %s at (%d,%d)%s\n", u.Distance, u.Bearing, owner, kind, *u.CurrentQ, *u.CurrentR, heading)
+}
+
 func sightingsCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "sightings",
@@ -146,12 +188,32 @@ something of mine", not "how far is it from my palace".`,
 			}
 			sort.Slice(garrisons, func(i, j int) bool { return garrisons[i].Distance < garrisons[j].Distance })
 
+			var messengers, caravans []sightingCivilian
+			for _, source := range []struct {
+				path   string
+				target *[]sightingCivilian
+			}{{"messengers", &messengers}, {"trades", &caravans}} {
+				raw, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/%s", cfg.WorldID, source.path))
+				if err != nil {
+					return err
+				}
+				rows, err := foreignCivilianSightings(raw)
+				if err != nil {
+					return err
+				}
+				for i := range rows {
+					rows[i].Distance, rows[i].Bearing = nearest(*rows[i].CurrentQ, *rows[i].CurrentR)
+				}
+				sort.Slice(rows, func(i, j int) bool { return rows[i].Distance < rows[j].Distance })
+				*source.target = rows
+			}
+
 			if jsonMode {
-				printJSON(map[string]any{"units": rawUnits, "garrisons": garrisons})
+				printJSON(map[string]any{"units": rawUnits, "garrisons": garrisons, "messengers": messengers, "caravans": caravans})
 				return nil
 			}
 
-			if len(rawUnits) == 0 && len(garrisons) == 0 {
+			if len(rawUnits) == 0 && len(garrisons) == 0 && len(messengers) == 0 && len(caravans) == 0 {
 				fmt.Println("No foreign units in sight.")
 				return nil
 			}
@@ -193,6 +255,22 @@ something of mine", not "how far is it from my palace".`,
 						fmt.Printf("                                                   carrying: %s ×%d\n",
 							u.Cargo.Type, u.Cargo.Size)
 					}
+				}
+			}
+			if len(messengers) > 0 {
+				fmt.Println("\n  MESSENGERS")
+				for _, u := range messengers {
+					printCivilianSighting(u, "Runner")
+				}
+			}
+			if len(caravans) > 0 {
+				fmt.Println("\n  CARAVANS AND FREIGHT SHIPS")
+				for _, u := range caravans {
+					kind := "Caravan"
+					if u.Category == "naval" {
+						kind = "Freight ship"
+					}
+					printCivilianSighting(u, kind)
 				}
 			}
 			if len(garrisons) > 0 {

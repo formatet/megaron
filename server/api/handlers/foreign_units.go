@@ -87,12 +87,9 @@ type foreignCargo struct {
 // see world.go's provinceMarker.ArmyTotal gate). Kanonbeslut Timothy 2026-08-03:
 //  1. Live tier reveals a foreign unit in full — type, size AND stance. No blur.
 //  2. Remembered (tier 2) reveals nothing — memory carries no activity.
-//  3. A march is revealed in full (target/timing/route) as knowledge about the
-//     UNIT, but never turns the target/route hexes into map knowledge — the gate
-//     that decides whether the unit itself is listed is its CURRENT interpolated
-//     position, exactly the same two calls (FindPath + interpolatedEyePos) used to
-//     place the viewer's own eyes in loadLiveEyes, so the watcher and the watched
-//     never disagree about where anything is.
+//  3. A march reveals its current position and compass direction, never its
+//     destination, route or real arrival. Toward is only an estimate for the
+//     viewer's own city if the observed heading continues that way.
 //
 // Unauthenticated callers always get an empty list — unlike /map, which shows the
 // whole world to a logged-out caller, no unit data leaves the server for someone

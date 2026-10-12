@@ -260,18 +260,19 @@ func (h *WorldHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var wld world.World
+	var tickAnchor *time.Time
 	err = h.pool.QueryRow(r.Context(),
 		`SELECT id, name, state, prestige, era_number, era_started_at,
 		        max_provinces, min_era_weeks, max_era_weeks,
 		        kingdom_min_size, kingdom_max_size, map_seed, map_width, map_height, created_at,
-		        current_tick
+		        current_tick,last_tick_at
 		 FROM worlds WHERE id = $1`,
 		worldID,
 	).Scan(
 		&wld.ID, &wld.Name, &wld.State, &wld.Prestige, &wld.EraNumber, &wld.EraStartedAt,
 		&wld.MaxProvinces, &wld.MinEraWeeks, &wld.MaxEraWeeks,
 		&wld.KingdomMinSize, &wld.KingdomMaxSize, &wld.MapSeed, &wld.MapWidth, &wld.MapHeight,
-		&wld.CreatedAt, &wld.CurrentTick,
+		&wld.CreatedAt, &wld.CurrentTick, &tickAnchor,
 	)
 	if err != nil {
 		writeError(w, http.StatusNotFound, "world not found")
@@ -290,6 +291,11 @@ func (h *WorldHandler) Get(w http.ResponseWriter, r *http.Request) {
 		joined = 0
 	}
 
+	if tickAnchor != nil {
+		utc := tickAnchor.UTC()
+		tickAnchor = &utc
+	}
+
 	writeJSON(w, http.StatusOK, map[string]any{
 		"id":             wld.ID,
 		"name":           wld.Name,
@@ -303,8 +309,9 @@ func (h *WorldHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// Tick anchor for the client (Tid & kalender Fas B / K4 contract):
 		// current_tick + the runtime cadence let countdowns be recomputed
 		// locally from an authoritative arrival_tick without a new fetch.
-		"current_tick": wld.CurrentTick,
-		"tick_seconds": tick.TickSeconds,
+		"current_tick":   wld.CurrentTick,
+		"tick_seconds":   tick.TickSeconds,
+		"tick_anchor_at": tickAnchor,
 	})
 }
 
@@ -1256,7 +1263,7 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		        t.origin_q, t.origin_r, COALESCE(op.terrain_type, ''),
 		        t.dest_q, t.dest_r, COALESCE(dp.terrain_type, ''),
 		        t.departs_at, t.arrives_at, t.category, COALESCE(pl.wanax_name, pl.username, ''), t.journey, t.departed_tick, t.due_tick,
-		        COALESCE(os.name, ''), COALESCE(ds.name, '')
+		        COALESCE(os.name, ''), COALESCE(ds.name, ''),t.ship_unit_id
 		 FROM transports t
 		 LEFT JOIN players pl ON pl.id = t.owner_id
 		 LEFT JOIN settlements os ON os.id = t.origin_id
@@ -1277,21 +1284,26 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type tradeMarker struct {
-		ID            uuid.UUID `json:"id"`
-		GoodKey       string    `json:"good_key"`
-		Quantity      float64   `json:"quantity"`
-		OriginQ       int       `json:"origin_q"`
-		OriginR       int       `json:"origin_r"`
-		DestQ         int       `json:"dest_q"`
-		DestR         int       `json:"dest_r"`
-		DepartsAt     time.Time `json:"departs_at"`
-		ArrivesAt     time.Time `json:"arrives_at"`
-		Mine          bool      `json:"mine"`
-		ArrivalTick   *int      `json:"arrival_tick,omitempty"`
-		DepartureTick *int      `json:"departure_tick,omitempty"`
-		TravelTicks   *int      `json:"travel_ticks,omitempty"`
-		CurrentQ      *int      `json:"current_q,omitempty"`
-		CurrentR      *int      `json:"current_r,omitempty"`
+		Path          [][2]int   `json:"path,omitempty"`
+		StepCosts     []int64    `json:"step_costs,omitempty"`
+		Category      string     `json:"category"`
+		Heading       string     `json:"heading,omitempty"`
+		ShipUnitID    *uuid.UUID `json:"ship_unit_id,omitempty"`
+		ID            uuid.UUID  `json:"id"`
+		GoodKey       string     `json:"good_key"`
+		Quantity      float64    `json:"quantity"`
+		OriginQ       int        `json:"origin_q"`
+		OriginR       int        `json:"origin_r"`
+		DestQ         int        `json:"dest_q"`
+		DestR         int        `json:"dest_r"`
+		DepartsAt     time.Time  `json:"departs_at"`
+		ArrivesAt     time.Time  `json:"arrives_at"`
+		Mine          bool       `json:"mine"`
+		ArrivalTick   *int       `json:"arrival_tick,omitempty"`
+		DepartureTick *int       `json:"departure_tick,omitempty"`
+		TravelTicks   *int       `json:"travel_ticks,omitempty"`
+		CurrentQ      *int       `json:"current_q,omitempty"`
+		CurrentR      *int       `json:"current_r,omitempty"`
 		// Owner is the dispatching Wanax's name — whose caravan it is, which the
 		// map tooltip says for every caravan in sight. Never what it carries.
 		Owner string `json:"owner"`
@@ -1316,7 +1328,7 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		DestName   string `json:"dest_name"`
 	}
 
-	var markers []tradeMarker
+	var markers []any
 	for rows.Next() {
 		var m tradeMarker
 		var ownerID uuid.UUID
@@ -1327,9 +1339,11 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		var dueTick int
 		if err := rows.Scan(&m.ID, &ownerID, &destOwnerID, &m.GoodKey, &m.Quantity, &m.OriginQ, &m.OriginR, &originTerrain,
 			&m.DestQ, &m.DestR, &destTerrain, &m.DepartsAt, &m.ArrivesAt, &category, &m.Owner, &savedJourney, &departedTick, &dueTick,
-			&m.OriginName, &m.DestName); err != nil {
+			&m.OriginName, &m.DestName, &m.ShipUnitID); err != nil {
 			continue
 		}
+		m.Category = category
+		var journey *province.TradeJourney
 		var savedPos *province.MapPosition
 		if len(savedJourney) > 0 {
 			// A malformed new route must never silently become a legacy journey.
@@ -1340,6 +1354,12 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				continue
 			}
+			var j province.TradeJourney
+			if json.Unmarshal(savedJourney, &j) != nil {
+				continue
+			}
+			journey = &j
+			m.Heading = frozenHeading(j.Path, j.StepCosts, *departedTick, dueTick, anchor.MilliAt(now))
 			savedPos = &pos
 			m.CurrentQ, m.CurrentR = &pos.Q, &pos.R
 			duration := dueTick - *departedTick
@@ -1348,6 +1368,10 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		// Unauthenticated callers get no ownership info at all — never let an
 		// anonymous request see mine:true on any row.
 		m.Mine = authenticated && ownerID == playerID
+		if m.Mine && journey != nil {
+			m.Path = pathCoordinates(journey.Path)
+			m.StepCosts = journey.StepCosts
+		}
 		switch {
 		case !authenticated:
 			m.Role = ""
@@ -1355,6 +1379,19 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 			m.Role = "sender"
 		case destOwnerID != nil && *destOwnerID == playerID:
 			m.Role = "recipient"
+		}
+		if savedPos == nil && gerr == nil {
+			from := province.MapPosition{Q: m.OriginQ, R: m.OriginR}
+			to := province.MapPosition{Q: m.DestQ, R: m.DestR}
+			if path, _, ok := g.FindPath(from, to, category); ok {
+				if read, ok := province.ReadMarch(path, m.DepartsAt, m.ArrivesAt, now); ok {
+					m.CurrentQ, m.CurrentR = &read.Pos.Q, &read.Pos.R
+					m.Heading = read.Heading
+				}
+				if m.Mine {
+					m.Path = pathCoordinates(path)
+				}
+			}
 		}
 		// Sender and recipient always see their own shipment. Everyone else's
 		// caravan is gated on where it IS now (the same interpolated-position
@@ -1390,10 +1427,14 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 			m.OriginName, m.DestName = "", ""
 			m.ArrivalTick, m.DepartureTick, m.TravelTicks = nil, nil, nil
 		}
-		markers = append(markers, m)
+		if m.Role == "" {
+			markers = append(markers, foreignCivilianProjection(m.ID, m.CurrentQ, m.CurrentR, m.Heading, m.Category, m.Owner, true))
+		} else {
+			markers = append(markers, m)
+		}
 	}
 	if markers == nil {
-		markers = []tradeMarker{}
+		markers = []any{}
 	}
 	writeJSON(w, http.StatusOK, markers)
 }
@@ -1431,7 +1472,7 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		        m.passage_status, pp.map_q, pp.map_r, pps.name, m.withdrawn,
 		        m.carrier_transport_id, m.carrier_unit_id, m.carrier_name,
 		        m.disembark_q, m.disembark_r, m.boarded_at, m.disembark_at,
-		        m.passage_stalled_notified_tick
+		        m.passage_stalled_notified_tick,ds.owner_id
 		 FROM messengers m
 		 -- LEFT: a host-sent messenger (mig 087) has no origin settlement; its frozen
 		 -- departure point (origin_q/origin_r) places it, with terrain off the tile.
@@ -1456,13 +1497,20 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type messengerMarker struct {
-		ID        uuid.UUID `json:"id"`
-		OriginQ   int       `json:"origin_q"`
-		OriginR   int       `json:"origin_r"`
-		DestQ     int       `json:"dest_q"`
-		DestR     int       `json:"dest_r"`
-		SentAt    time.Time `json:"sent_at"`
-		ArrivesAt time.Time `json:"arrives_at"`
+		Path          [][2]int  `json:"path,omitempty"`
+		StepCosts     []int64   `json:"step_costs,omitempty"`
+		DepartureTick *int      `json:"departure_tick,omitempty"`
+		ArrivalTick   *int      `json:"arrival_tick,omitempty"`
+		CurrentQ      *int      `json:"current_q,omitempty"`
+		CurrentR      *int      `json:"current_r,omitempty"`
+		Heading       string    `json:"heading,omitempty"`
+		ID            uuid.UUID `json:"id"`
+		OriginQ       int       `json:"origin_q"`
+		OriginR       int       `json:"origin_r"`
+		DestQ         int       `json:"dest_q"`
+		DestR         int       `json:"dest_r"`
+		SentAt        time.Time `json:"sent_at"`
+		ArrivesAt     time.Time `json:"arrives_at"`
 		// Own marks the requesting player's runners — the client draws
 		// them along their WHOLE route (dimmed over fog): a player's own
 		// courier is information they already possess (temenos_orderlopare_
@@ -1518,10 +1566,11 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 		Stalled *bool `json:"stalled,omitempty"`
 	}
 
-	var markers []messengerMarker
+	var markers []any
 	for rows.Next() {
 		var m messengerMarker
 		var senderID uuid.UUID
+		var recipientID *uuid.UUID
 		var orderUnitID *string
 		var originTerrain, destTerrain string
 		var status string
@@ -1539,15 +1588,14 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 			&m.PassageStatus, &portQ, &portR, &m.PassagePort, &withdrawn,
 			&carrierTransportID, &carrierUnitID, &carrierName,
 			&disembarkQ, &disembarkR, &boardedAt, &disembarkAt,
-			&stalledNotifiedTick); err != nil {
+			&stalledNotifiedTick, &recipientID); err != nil {
 			continue
 		}
 		// The current leg's travel window. Outbound: sent_at → arrives_at. Return:
-		// the courier runs the same route home, departing return_departs_at for the
-		// same duration (there is no return_arrives_at column). Captured before the
-		// swap overwrites m.SentAt.
+		// arrives_at is the actual current leg completion; a returning runner
+		// starts at return_departs_at, not the original outbound sent_at.
 		legStart, legEnd := m.SentAt, m.ArrivesAt
-		outboundDur := m.ArrivesAt.Sub(m.SentAt)
+
 		// Return leg: the courier runs home, so the client must draw it
 		// destination→origin over the fresh return window. Swap the endpoints
 		// (and their terrain) and use return_departs_at as the leg's start; the
@@ -1558,7 +1606,7 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 			originTerrain, destTerrain = destTerrain, originTerrain
 			if returnDepartsAt != nil {
 				m.SentAt = *returnDepartsAt
-				legStart, legEnd = *returnDepartsAt, returnDepartsAt.Add(outboundDur)
+				legStart, legEnd = *returnDepartsAt, m.ArrivesAt
 			}
 			// 3b-4 R5 "kalla tillbaka" (planner review fix,
 			// megaron_plan_ordna_passage.md): a withdrawn runner's leg just
@@ -1678,10 +1726,53 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 		}
-		markers = append(markers, m)
+		from := province.MapPosition{Q: m.OriginQ, R: m.OriginR}
+		to := province.MapPosition{Q: m.DestQ, R: m.DestR}
+		startAt, endAt := legStart, legEnd
+		if m.LegFromQ != nil && m.LegFromR != nil && m.LegToQ != nil && m.LegToR != nil {
+			from = province.MapPosition{Q: *m.LegFromQ, R: *m.LegFromR}
+			to = province.MapPosition{Q: *m.LegToQ, R: *m.LegToR}
+		}
+		if m.LegStart != nil && m.LegEnd != nil {
+			startAt, endAt = *m.LegStart, *m.LegEnd
+		}
+		stopped := m.Leg != nil && (*m.Leg == "waiting" || *m.Leg == "sealed")
+		if !m.Own && m.PassageStatus != nil && *m.PassageStatus == "awaiting_passage" && !now.Before(m.ArrivesAt) {
+			from = to
+			stopped = true
+		}
+		if stopped {
+			m.CurrentQ, m.CurrentR = &from.Q, &from.R
+		} else if m.Own && m.Leg != nil && *m.Leg == "aboard" {
+			if route := h.messengerCarrierRoute(r.Context(), worldID, m.CarrierUnitID, m.CarrierTransportID, now); route != nil {
+				m.Path = route.Path
+				m.StepCosts = route.Costs
+				m.DepartureTick = &route.Start
+				m.ArrivalTick = &route.End
+				m.CurrentQ, m.CurrentR = &route.CurrentQ, &route.CurrentR
+				m.Heading = route.Heading
+			}
+		} else if gerr == nil {
+			if path, _, ok := g.FindPath(from, to, province.CategoryCourier); ok {
+				if read, ok := province.ReadMarch(path, startAt, endAt, now); ok {
+					m.CurrentQ, m.CurrentR = &read.Pos.Q, &read.Pos.R
+					m.Heading = read.Heading
+				} else {
+					m.CurrentQ, m.CurrentR = &from.Q, &from.R
+				}
+				if m.Own {
+					m.Path = pathCoordinates(path)
+				}
+			}
+		}
+		if !m.Own && !(authenticated && recipientID != nil && *recipientID == playerID) {
+			markers = append(markers, foreignCivilianProjection(m.ID, m.CurrentQ, m.CurrentR, m.Heading, m.Kind, m.Sender, false))
+		} else {
+			markers = append(markers, m)
+		}
 	}
 	if markers == nil {
-		markers = []messengerMarker{}
+		markers = []any{}
 	}
 	writeJSON(w, http.StatusOK, markers)
 }
