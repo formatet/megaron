@@ -1,0 +1,86 @@
+[
+  {
+    "mutation": "plains",
+    "test": "TestRO1TerrainCosts/plains",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_green": true
+  },
+  {
+    "mutation": "coastal_sea",
+    "test": "TestRO1TerrainCosts/coastal_sea",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_green": true
+  },
+  {
+    "mutation": "deep_sea",
+    "test": "TestRO1TerrainCosts/deep_sea",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_green": true
+  },
+  {
+    "mutation": "river",
+    "test": "TestRO1TerrainCosts/river",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_green": true
+  },
+  {
+    "mutation": "forest_olive_grove",
+    "test": "TestRO1TerrainCosts/forest_olive_grove",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_green": true
+  },
+  {
+    "mutation": "hills",
+    "test": "TestRO1TerrainCosts/hills",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_green": true
+  },
+  {
+    "mutation": "semi_desert",
+    "test": "TestRO1TerrainCosts/semi_desert",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_green": true
+  },
+  {
+    "mutation": "ford-land",
+    "test": "TestFindPath_RiverFordLandCost",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_green": true
+  },
+  {
+    "mutation": "ford-naval",
+    "test": "TestFindPath_RiverFordNavalCost",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_green": true
+  },
+  {
+    "mutation": "courier-river",
+    "test": "TestRO1CourierLandAndRiver",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_green": true
+  },
+  {
+    "mutation": "naval-heuristic",
+    "test": "TestFindPath_HeuristicAdmissibility_NavalDetourCheaperThanDirect",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_green": true
+  },
+  {
+    "mutation": "caravan-factor",
+    "test": "TestRO1CaravanFactorAndFrozenJourney",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_green": true
+  }
+]

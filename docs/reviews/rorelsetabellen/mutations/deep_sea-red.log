@@ -1,0 +1,6 @@
+--- FAIL: TestRO1TerrainCosts (0.00s)
+    --- FAIL: TestRO1TerrainCosts/deep_sea (0.00s)
+        movement_ro1_test.go:20: RÖ1 deep_sea cost = 0.7, want 0.2
+FAIL
+FAIL	formatet/megaron/server/internal/province	0.002s
+FAIL

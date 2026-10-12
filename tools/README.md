@@ -525,3 +525,9 @@ the named invariant to go red, restores bytes, and requires green afterwards.
 using identical synthetic seas, weather seeds and lanes through the production
 weather/planner/route clock. It writes `storm-before.json` and `storm-after.json`;
 it changes no storm rules and removes only its own temporary baseline worktree.
+
+`python3 tools/ro1_live_proof.py` builds the current server/Keryx, creates fresh
+isolated PG16/Redis, registers/joins normally, finds a known two-step plains
+corridor, checks Host forecast in API/Keryx/Firefox's production web module, and
+sends the real march. It records process healthz and removes its own resources;
+no SQL fixtures or HTTP overrides. See `docs/reviews/rorelsetabellen/README.md`.

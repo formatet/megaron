@@ -1,0 +1,5 @@
+--- FAIL: TestFindPath_RiverFordNavalCost (0.00s)
+    pathfind_ford_test.go:89: ford naval cost = 2.5, want 1
+FAIL
+FAIL	formatet/megaron/server/internal/province	0.002s
+FAIL

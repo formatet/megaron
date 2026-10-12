@@ -3,7 +3,17 @@
 ## Sammanfattning
 
 Bas **b0762ebf**, gren `codex/rorelsetabellen`, worktree `/home/tk/wt/codex-rorelsetabellen`.
-**INVENTERING + STOPP för Claudes granskning. Ingen produktionskod ändrad.** Ingen deploy eller runtime-mätning påstås.
+**KLAR FÖR GRANSKNING + STOPP.** Inventering b574c24c godkänd av Claude; implementation **bc6a7139**.
+
+- RÖ1-tal i en terrängägare; skeppets vadställe 1 tick, land 2,5. Courier-flod läser naval-grenen 0,5; `CourierSeaTicks` bort.
+- Naval-A* använder djuphavets 0,2; kategorikostnad även i naval-ford-returfallbacken.
+- Befintlig karavan ×1,5, skeppstyper, värd ×2, last/besättning och **frysta färder** bevarade. Ingen migration eller stormändring.
+- **Full färsk Go, vet och 602 JS gröna.** [Verifiering](verification.json), [Go](full-go.log), [JS](full-js.log), [vet](vet.log).
+- **12 fysiska mutationer**, alla namngivet rött → byteåterställt grönt: varje aktiv terränggren, båda vadställesgrenar, courier-flod, heuristic och karavanfaktor. [Mutationer](mutations/results.json).
+- **Normal register/join → API/Keryx/Firefox-prognos → verklig marsch**: två slättsteg med Host ger 4 dagar/ticks i samtliga. Processens healthz **bc6a713 / migration174**. [Spelarflöde](live/verification.json).
+- Stormsimulering, 500 parade väderseeds ×20 banor/fall: 40hex basgalär kust **0,68%→0,35%**, djup **2,14%→0,01%** förlis; frakt djup **4,21%→0,14%**. [Samtliga 18 fall och metod](storm-summary.md). Ingen tuning.
+
+**Kvar hos Claude:** kärndiffgranskning, egen mutation, integration och eventuell uppföljning av stormrisken. Ingen merge, push eller deploy från Codex.
 RÖ1 är beslutad kanon (Timothy 2026-10-12, `temenos_terrain.md` §Beslut RÖ1).
 
 Tre konkreta fynd:
@@ -14,7 +24,7 @@ Tre konkreta fynd:
    Behåll river-passability och ford-vadning; en ändring till krav på verklig bärare även på flod är en annan mekanik.
 2. **Karavan ×1,5 finns redan**, i `province/trade_journey.go:68` och sparad-data-validatorn på rad 105,
    för **både land och naval**. Ingen ny faktor får läggas ovanpå. Orderns uppgift om att regeln aldrig byggts
-   motsägs av aktuell kod och Codex-artiklarna routes/trade/transfers. Förslag: behåll och mutationsbevisa den.
+   motsägs av aktuell kod och Codex-artiklarna routes/trade/transfers. **Claude bekräftade att ordern hade fel:** regeln är byggd. Bevara och mutationsbevisa den.
 3. A*-golvet för naval läser kusthavet (`pathfind.go:356`). Med RÖ1 blir djuphavet billigast:
    golvet måste följa **0,2**, annars kan A* välja fel väg. Det befintliga kustdetour-provet är byggt för gamla tal.
 
@@ -150,4 +160,42 @@ inte aktiv kod. Ändra inte stormregler om nya farter avviker från tidigare må
 | Användare | API/webb/CLI-scenario återstår i implementation. |
 | Drift | Ingen merge, push eller deploy; frysta rutter inte skrivna. |
 
-Nästa handling: Claude granskar flodförslaget och karavanens befintliga faktor, sedan implementation.
+Inventeringscheckpointen ovan godkändes av Claude före implementation; flodförslaget och bevarad karavanfaktor är genomförda i bc6a7139.
+
+## Implementationens prov och avgränsningar
+
+Baslinjens äldre kostnadsberoende DB-prov kördes på oförändrad b0762ebf mot egen tom DB och var gröna
+([baslinje](old-cost-baseline-fresh.log)). Första RÖ1-körningen hittade hårdkodade ETA/proviant-/budgetantaganden
+([råutfall](targeted-fresh.log)), inga ändrade frysta ruttfixturer. Nya färder i dessa tester använder nu
+RÖ1: slättsteg1000, ny karavan-ETA/proviant, ford+slätt4ticks och motsvarande 30%-klocka.
+Budmötesprovet använder en huvudstad två hexar från destinationen så dess ursprungliga
+kontrakt (snapshot för sent, destination i tid) fortfarande är verkligt under den nya courier-kostnaden.
+Den lilla area's-used-up-expeditionen använder en smal kartlagd korridor: den gamla helt okända
+radie-2-ytan förbrukades inte längre före halvtiden på 30ticks med långsammare slättmarsch.
+Det är ett prov av **tidig vändning när området är känt**, inte ett löfte om att utforska hela
+radie-2-ytan på samma budget. Produktions-expeditionsregler är orörda.
+
+Färska slut-Go-proven omfattar verkliga HTTP march-preview/dispatch, karavantransfer/accept/rollback,
+stående rutter, recall/current-position, returrutter, stormscan/idempotens och gamla sparade priser.
+Ingen omtolkning av lagrade 750/400/2500-fixturer gjordes. `TradeJourney` och dess validator är
+produktionsmässigt byteidentiska med basen; inga stormproduktionsfiler eller migrationer ändrades.
+
+Spelarflödet använde fem normalt registrerade/joinade labb-Wanaxes för att hitta en naturligt känd
+slättkorridor; inga SQL-fixturer eller payloadoverrides. Keryx kördes nybyggd med privat tillfällig
+konfiguration (token sparas inte). Firefox körde webbens verkliga `loadMarchPreview` och formatter
+med `fetchAuth`, därefter normal API-marsch. **Ingen menyupptäckbarhets-/BILD-dom påstås**;
+webbkontrollen är ett funktionsprov av den befintliga prognosmodulen. Alla isolerade runtime-resurser
+stängdes efteråt. TICK_SECONDS60 var riggens uttalade kadens, inte en ärvd driftmiljö.
+
+Stormprocenten mäter syntetiska raka sjöbanor och nuvarande heltick-sampling. Snabbare fart
+minskar kraftigt de samplade exponeringarna; ingen naturlig kart-/spelar-risk eller exakt
+populationssannolikhet påstås. Historiskt T1-mål 0,3%/4,8% vid20/40hex låg över denna
+1/100-baslinjes galärrisk redan före RÖ1; nu blir risken ännu lägre. Resultatet är rapporterat
+till Claude utan förändring av stormarnas täthet, drift, skada eller scan.
+
+Repro: `tools/gotest.sh`; `go -C server vet ./...`; `node --test $(rg --files web/static/js -g '*.test.mjs')`;
+`python3 tools/ro1_movement_mutations.py`; `tools/ro1_storm_simulation.sh`;
+`python3 tools/ro1_live_proof.py`.
+
+Grindar vid slutet: kod och semantik gröna; faktiskt API/Keryx/Firefox-funktionsflöde grönt;
+ingen BILD enligt order. Drift väntar Claude. Vaultens RÖ1/balansspakar och egen todo-rad uppdaterade.

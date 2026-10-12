@@ -1,0 +1,5 @@
+--- FAIL: TestFindPath_HeuristicAdmissibility_NavalDetourCheaperThanDirect (0.00s)
+    pathfind_test.go:136: naval heuristic missed cheaper deep-sea detour: cost 1, want 0.9333333333333333
+FAIL
+FAIL	formatet/megaron/server/internal/province	0.002s
+FAIL
