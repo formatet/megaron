@@ -1,0 +1,2 @@
+Estimated arrival: day 4 (journey: 4 days), if dispatched now. Conditions may change.
+No order sent. Run again without --preview to send it.

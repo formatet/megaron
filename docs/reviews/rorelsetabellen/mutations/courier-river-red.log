@@ -1,0 +1,5 @@
+--- FAIL: TestRO1CourierLandAndRiver (0.00s)
+    movement_ro1_test.go:39: courier river cost = 0.25, want 0.5
+FAIL
+FAIL	formatet/megaron/server/internal/province	0.002s
+FAIL

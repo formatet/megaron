@@ -9,9 +9,9 @@ package handlers
 // (departed 4.5h ago, arrives in 1.5h). Two capitals placed off the march line
 // give two outcomes with the SAME unit/march geometry, differing only in where
 // the Runner sets out from:
-//   - capital at (8,3): 3 hexes (≈1 tick, 1h) from the march's destination
+//   - capital at (8,2): 2 hexes (1 tick) from the march's destination
 //     (8,0) — comfortably catchable there, though NOT at the dispatch-time
-//     snapshot (6,0), which is 5 hexes away (≈2 ticks, 2h > the 1.5h
+//     snapshot (6,0), which is 4 hexes away (2 ticks > the 1.5h
 //     remaining). The OLD code aimed at that snapshot and would have missed.
 //   - capital at (6,5): uniformly 5 hexes from every remaining hex on the
 //     path, including the destination — no Runner can catch this unit at all;
@@ -130,12 +130,12 @@ func setupInterceptWorld(t *testing.T, capitalQ, capitalR int) (interceptFixture
 
 // TestRecall_InterceptsAheadOfStaleSnapshot proves the fixed dispatch aims the
 // Runner PAST the naive dispatch-time snapshot (6,0) — at (8,0), the only hex
-// on the remaining path a courier from (8,3) can reach before the unit does —
+// on the remaining path a courier from (8,2) can reach before the unit does —
 // and that delivering the order there actually turns the still-marching unit.
 func TestRecall_InterceptsAheadOfStaleSnapshot(t *testing.T) {
 	pool := unitLoadTestPool(t)
 	ctx := context.Background()
-	f, router := setupInterceptWorld(t, 8, 3)
+	f, router := setupInterceptWorld(t, 8, 2)
 
 	req := httptest.NewRequest(http.MethodPost,
 		"/worlds/"+f.worldID.String()+"/units/"+f.unitID.String()+"/recall", bytes.NewReader([]byte("{}")))
@@ -144,11 +144,11 @@ func TestRecall_InterceptsAheadOfStaleSnapshot(t *testing.T) {
 	router.ServeHTTP(rec, req)
 
 	if rec.Code != http.StatusAccepted {
-		t.Fatalf("Recall = %d %q, want 202 order_dispatched (a Runner from (8,3) can catch this unit at its destination)",
+		t.Fatalf("Recall = %d %q, want 202 order_dispatched (a Runner from (8,2) can catch this unit at its destination)",
 			rec.Code, rec.Body.String())
 	}
 	var resp struct {
-		MessengerID     uuid.UUID `json:"messenger_id"`
+		MessengerID      uuid.UUID `json:"messenger_id"`
 		CourierArrivesAt time.Time `json:"courier_arrives_at"`
 	}
 	if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
@@ -161,12 +161,12 @@ func TestRecall_InterceptsAheadOfStaleSnapshot(t *testing.T) {
 		t.Fatalf("read messenger dest: %v", err)
 	}
 	if destQ == 6 && destR == 0 {
-		t.Fatalf("Runner aimed at the stale dispatch-time snapshot (6,0) — the old bug: a courier from "+
-			"(8,3) cannot reach (6,0) (5 hexes, ≈2h) before the unit's 1.5h-remaining march completes")
+		t.Fatalf("Runner aimed at the stale dispatch-time snapshot (6,0) — the old bug: a courier from " +
+			"(8,2) cannot reach (6,0) (4 hexes, 2 ticks) before the unit's 1.5h-remaining march completes")
 	}
 	if destQ != 8 || destR != 0 {
 		t.Errorf("Runner aimed at (%d,%d), want (8,0) — the only hex on the remaining path a courier "+
-			"from (8,3) can reach before the unit does", destQ, destR)
+			"from (8,2) can reach before the unit does", destQ, destR)
 	}
 
 	// The computed courier ETA must land BEFORE the unit's own arrival — this

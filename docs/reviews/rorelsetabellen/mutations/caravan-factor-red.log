@@ -1,0 +1,5 @@
+--- FAIL: TestRO1CaravanFactorAndFrozenJourney (0.00s)
+    movement_ro1_test.go:58: caravan land duration = 4, want 6 (1.5×); err <nil>
+FAIL
+FAIL	formatet/megaron/server/internal/province	0.002s
+FAIL

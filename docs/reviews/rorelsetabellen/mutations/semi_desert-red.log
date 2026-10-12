@@ -1,0 +1,6 @@
+--- FAIL: TestRO1TerrainCosts (0.00s)
+    --- FAIL: TestRO1TerrainCosts/semi_desert (0.00s)
+        movement_ro1_test.go:20: RÖ1 semi_desert cost = 2, want 3
+FAIL
+FAIL	formatet/megaron/server/internal/province	0.002s
+FAIL

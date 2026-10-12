@@ -44,7 +44,7 @@ func MessengerTravelTicks(dist int) int {
 // runner from 'from' to 'to' (temenos_orderlopare_plan.md Fas 4): A*
 // over the courier graph — land at half a land unit's terrain ticks (2×
 // spearman speed), mountains routed around, rivers by boat
-// (province.CourierSeaTicks, megaron_floden_plan.md — untouched by 3b-4).
+// (the shared ship terrain cost, RÖ1).
 // ok=false when no such route exists — most often because it needs the sea,
 // which a courier may no longer cross on its own (megaron_plan_ordna_
 // passage.md, slice 3b-4, R3: the old straight-line raklinjefallback is
@@ -91,7 +91,7 @@ func CourierTravelOnGraph(g province.TileGraph, from, to province.MapPosition) (
 //
 // Scans path indices from the start (skipping every hex the unit has already
 // passed) to the last (the march's own destination). CategoryCourier runs at
-// 2× a land unit's speed (sea legs at the flat CourierSeaTicks rate), so an
+// 2× a land unit's speed (river legs at the shared ship terrain cost), so an
 // intercept normally exists somewhere along the remaining path — the earlier
 // on the path it is found, the sooner the order is delivered.
 //

@@ -525,7 +525,7 @@ func alignWorldTickAnchor(t *testing.T, pool *pgxpool.Pool, worldID uuid.UUID, c
 	}
 }
 
-// TestAcceptance2_ExecuteRecall_CatchesWhereTimeSays: at 30% of a 3-tick
+// TestAcceptance2_ExecuteRecall_CatchesWhereTimeSays: at 30% of a 4-tick
 // march dominated by the ford's cost, the OLD floor-based interpolation
 // (idx=floor(0.3*2)=0) says the unit is still at the ORIGIN — but the core
 // says it already entered the ford at departure (val A: the cost of a hex is
@@ -556,12 +556,12 @@ func TestAcceptance2_ExecuteRecall_CatchesWhereTimeSays(t *testing.T) {
 	if err != nil {
 		t.Fatalf("StartMarch: %v", err)
 	}
-	if res.DurationTicks != 3 {
-		t.Fatalf("test fixture assumption broken: march took %d ticks, want 3 (2.5h ford + 0.75h plains, rounds to 3)", res.DurationTicks)
+	if res.DurationTicks != 4 {
+		t.Fatalf("test fixture assumption broken: march took %d ticks, want 4 (2.5 ticks ford + 1 tick plains, rounds to 4)", res.DurationTicks)
 	}
 
-	// 30% of the 3-tick journey.
-	clk.Advance(time.Duration(0.3*3*float64(tick.TickSeconds)) * time.Second)
+	// 30% of the 4-tick journey.
+	clk.Advance(time.Duration(0.3*float64(res.DurationTicks)*float64(tick.TickSeconds)) * time.Second)
 
 	applied, err := ExecuteRecall(ctx, pool, scheduler, eventStore, clk, RecallOrder{
 		WorldID: worldID, UnitID: unitID, Mode: "recall",

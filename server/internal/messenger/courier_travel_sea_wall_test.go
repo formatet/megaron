@@ -24,10 +24,10 @@ import (
 // neighbours make hand arithmetic unreliable, confirmed the hard way while
 // building this fixture: a narrower strait gave the SAME tick count both
 // ways by coincidence):
-//   - Old (pre-3b-4, sea passable at province.CourierSeaTicks=0.5 per hex):
+//   - Old (pre-3b-4, sea passable at a flat boat rate of 0.5 per hex):
 //     path (0,0)→(1,0)→(2,0)→(3,0), cost 0.5+0.5+0.375=1.375h → 1 tick.
 //   - New (this test, sea now a wall — R3): path (0,0)→(0,1)→(1,1)→(2,1)→
-//     (3,0), cost 4×0.375=1.5h → 2 ticks.
+//     (3,0), RÖ1 cost 4×0.5=2 ticks.
 func TestCourierTravelOnGraph_NoLongerShortcutsOverSea(t *testing.T) {
 	g := province.TileGraph{
 		{0, 0}: "plains", {1, 0}: "coastal_sea", {2, 0}: "coastal_sea", {3, 0}: "plains",

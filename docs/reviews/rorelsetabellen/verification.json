@@ -1,0 +1,114 @@
+{
+  "implementation_commit": "bc6a7139b7f92ba4f9ffb711c4cb99593aeeeca8",
+  "base_commit": "b0762ebf",
+  "inventory_commit": "b574c24c",
+  "migration": 174,
+  "mutation_results": [
+    {
+      "mutation": "plains",
+      "test": "TestRO1TerrainCosts/plains",
+      "named_red": true,
+      "byte_restored": true,
+      "restored_green": true
+    },
+    {
+      "mutation": "coastal_sea",
+      "test": "TestRO1TerrainCosts/coastal_sea",
+      "named_red": true,
+      "byte_restored": true,
+      "restored_green": true
+    },
+    {
+      "mutation": "deep_sea",
+      "test": "TestRO1TerrainCosts/deep_sea",
+      "named_red": true,
+      "byte_restored": true,
+      "restored_green": true
+    },
+    {
+      "mutation": "river",
+      "test": "TestRO1TerrainCosts/river",
+      "named_red": true,
+      "byte_restored": true,
+      "restored_green": true
+    },
+    {
+      "mutation": "forest_olive_grove",
+      "test": "TestRO1TerrainCosts/forest_olive_grove",
+      "named_red": true,
+      "byte_restored": true,
+      "restored_green": true
+    },
+    {
+      "mutation": "hills",
+      "test": "TestRO1TerrainCosts/hills",
+      "named_red": true,
+      "byte_restored": true,
+      "restored_green": true
+    },
+    {
+      "mutation": "semi_desert",
+      "test": "TestRO1TerrainCosts/semi_desert",
+      "named_red": true,
+      "byte_restored": true,
+      "restored_green": true
+    },
+    {
+      "mutation": "ford-land",
+      "test": "TestFindPath_RiverFordLandCost",
+      "named_red": true,
+      "byte_restored": true,
+      "restored_green": true
+    },
+    {
+      "mutation": "ford-naval",
+      "test": "TestFindPath_RiverFordNavalCost",
+      "named_red": true,
+      "byte_restored": true,
+      "restored_green": true
+    },
+    {
+      "mutation": "courier-river",
+      "test": "TestRO1CourierLandAndRiver",
+      "named_red": true,
+      "byte_restored": true,
+      "restored_green": true
+    },
+    {
+      "mutation": "naval-heuristic",
+      "test": "TestFindPath_HeuristicAdmissibility_NavalDetourCheaperThanDirect",
+      "named_red": true,
+      "byte_restored": true,
+      "restored_green": true
+    },
+    {
+      "mutation": "caravan-factor",
+      "test": "TestRO1CaravanFactorAndFrozenJourney",
+      "named_red": true,
+      "byte_restored": true,
+      "restored_green": true
+    }
+  ],
+  "js_tests": 602,
+  "vet_passed": true,
+  "live_proof": "live/verification.json",
+  "storm": {
+    "before": "storm-before.json",
+    "after": "storm-after.json",
+    "summary": "storm-summary.md",
+    "independent_weather_seeds": 500,
+    "paired_lanes_per_seed": 20
+  },
+  "no_storm_production_diff": true,
+  "no_migration_diff": true,
+  "trade_journey_production_unchanged": true,
+  "frozen_fixture_files_unchanged": [
+    "server/api/handlers/map_trade_journey_test.go",
+    "server/api/handlers/fardvag_routes_test.go",
+    "server/internal/combat/route_test.go",
+    "server/internal/combat/place_reach_test.go",
+    "server/internal/combat/sea_storm_test.go"
+  ],
+  "full_go": "passed: tools/gotest.sh, fresh empty DB, migration 174, serialized packages, clean environment",
+  "go_packages_passed": 25
+}

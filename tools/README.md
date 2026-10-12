@@ -515,3 +515,19 @@ its Kharis via world/me and freshly built Keryx me/JSON; status retains the exis
 It also reads Eumedes (the earlier zero-valued Host) after migration174. No SQL writes or payload overrides.
 First rebuild with `PLACE_PROOF_OUTPUT="$PWD/docs/reviews/kharis-golv-vard/rig" python3 tools/place_names_rig.py`.
 Proof: `docs/reviews/kharis-golv-vard/README.md`. No BILD required for this numerical correction.
+
+### RÖ1 movement proof
+
+`python3 tools/ro1_movement_mutations.py` physically changes each terrain branch,
+both ford branches, the naval heuristic and the existing caravan factor, requires
+the named invariant to go red, restores bytes, and requires green afterwards.
+`tools/ro1_storm_simulation.sh [output-dir]` compares b0762ebf and the current worktree
+using identical synthetic seas, weather seeds and lanes through the production
+weather/planner/route clock. It writes `storm-before.json` and `storm-after.json`;
+it changes no storm rules and removes only its own temporary baseline worktree.
+
+`python3 tools/ro1_live_proof.py` builds the current server/Keryx, creates fresh
+isolated PG16/Redis, registers/joins normally, finds a known two-step plains
+corridor, checks Host forecast in API/Keryx/Firefox's production web module, and
+sends the real march. It records process healthz and removes its own resources;
+no SQL fixtures or HTTP overrides. See `docs/reviews/rorelsetabellen/README.md`.

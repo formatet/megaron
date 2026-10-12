@@ -154,9 +154,9 @@ func TestStandingOrder_DispatchesWhenDestinationBelowThreshold(t *testing.T) {
 		t.Errorf("latest transport = (%s, %s), want (standing_order_out, in_transit)", kind, tstatus)
 	}
 
-	// 1000 seeded − 200 shipped − 2 provisions (crew == source) = 798.
-	if got := settledAmount(t, pool, f.capitalID, "grain"); got != 790 {
-		t.Errorf("capital grain after dispatch = %v, want 790 (1000 − 200 shipped − 10 provisions)", got)
+	// RÖ1: 1000 seeded − 200 shipped − 12 provisions = 788.
+	if got := settledAmount(t, pool, f.capitalID, "grain"); got != 788 {
+		t.Errorf("capital grain after dispatch = %v, want 788 (1000 − 200 shipped − 12 provisions)", got)
 	}
 }
 

@@ -1,0 +1,100 @@
+{
+  "health": {
+    "commit": "bc6a713",
+    "migration": 174,
+    "status": "ok"
+  },
+  "world": "7ffc1329-af3c-4105-a709-3c6fc3e155ab",
+  "username": "RO1-2e54ea92",
+  "registration_attempts": 5,
+  "host": "d74a813f-09bf-4008-9aed-9b77511c176d",
+  "origin": [
+    13,
+    59
+  ],
+  "target": [
+    13,
+    57
+  ],
+  "api_preview": {
+    "arrival_tick": 4,
+    "arrives_at_utc": "2026-10-12T16:30:24.415111235Z",
+    "available": true,
+    "duration_ticks": 4,
+    "expedition": null
+  },
+  "cli_preview": {
+    "arrival_tick": 4,
+    "arrives_at_utc": "2026-10-12T16:30:24.441008213Z",
+    "available": true,
+    "duration_ticks": 4,
+    "expedition": null
+  },
+  "web_preview": {
+    "data": {
+      "arrival_tick": 4,
+      "arrives_at_utc": "2026-10-12T16:30:25.806779959Z",
+      "available": true,
+      "duration_ticks": 4,
+      "expedition": null
+    },
+    "html": "Estimated arrival: <span title=\"Mon, 12 Oct 2026, 18:30 CEST\">\u2248 today 18:30</span> \u00b7 4 days travelling"
+  },
+  "march_receipt": {
+    "arrival_tick": 4,
+    "arrives_at": "2026-10-12T18:30:25.846643093+02:00",
+    "arrives_at_utc": "2026-10-12T16:30:25.846643093Z",
+    "departs_at": "2026-10-12T18:26:25.846643093+02:00",
+    "duration_ticks": 4,
+    "expedition": null,
+    "origin_q": 13,
+    "origin_r": 59,
+    "target_q": 13,
+    "target_r": 57,
+    "unit_id": "d74a813f-09bf-4008-9aed-9b77511c176d"
+  },
+  "after_dispatch": {
+    "id": "d74a813f-09bf-4008-9aed-9b77511c176d",
+    "type": "nomadic_host",
+    "category": "land",
+    "size": 1,
+    "status": "marching",
+    "deployable": true,
+    "display_name": "Nomadic Host of Dunios",
+    "q": 13,
+    "r": 59,
+    "target_q": 13,
+    "target_r": 57,
+    "departs_at": "2026-10-12T18:26:25.846643+02:00",
+    "arrives_at": "2026-10-12T18:30:25.846643+02:00",
+    "arrival_tick": 4,
+    "duration_ticks": 4,
+    "arrives_at_utc": "2026-10-12T16:30:25.853774445Z",
+    "path": [
+      [
+        13,
+        59
+      ],
+      [
+        13,
+        58
+      ],
+      [
+        13,
+        57
+      ]
+    ],
+    "step_costs": [
+      1000,
+      1000
+    ],
+    "departure_tick": 0,
+    "current_q": 13,
+    "current_r": 58,
+    "in_battle": false
+  },
+  "browser_errors": [],
+  "sql_fixtures": false,
+  "payload_overrides": false,
+  "scope": "Natural joined Host, two known plains steps, expected 4 ticks vs pre-RO1 3. Production web module and formatter called in Firefox; this is a functional proof, not a UI discoverability/BILD verdict."
+}

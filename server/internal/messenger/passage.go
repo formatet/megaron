@@ -1,7 +1,7 @@
 // Package messenger — budet liftar (megaron_plan_budet_liftar.md, slice 3a).
 //
 // A messenger whose route needs sea used to cross it instantly at the flat
-// abstract province.CourierSeaTicks rate (the "abstract boat"). This file
+// abstract boat rate (the "abstract boat"). This file
 // makes that crossing physical: the messenger runs to its own nearest
 // coastal/harbour port (a real landward leg, no sea involved) and waits there
 // (passage_status='awaiting_passage'). It boards an eligible carrier — a real

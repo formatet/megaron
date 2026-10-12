@@ -12,10 +12,10 @@ func TestTradeJourneyTerrainAndRounding(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if j.TravelTicks != 5 || j.Distance != 2 || j.StepCosts[0] != 2500 || j.StepCosts[1] != 750 {
+	if j.TravelTicks != 5 || j.Distance != 2 || j.StepCosts[0] != 2500 || j.StepCosts[1] != 1000 {
 		t.Fatalf("journey %+v", j)
 	}
-	// 1.5*(2.5+.75)=4.875 rounds ONCE to5; reversing enters a different start.
+	// 1.5*(2.5+1)=5.25 rounds ONCE to5; reversing enters a different start.
 	g[[2]int{0, 0}] = "river_ford"
 	reverse, err := g.PlanTradeJourney(MapPosition{Q: 2}, MapPosition{}, "land")
 	if err != nil {

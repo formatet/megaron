@@ -1,0 +1,5 @@
+--- FAIL: TestFindPath_RiverFordLandCost (0.00s)
+    pathfind_ford_test.go:84: ford land cost = 1, want 2.5
+FAIL
+FAIL	formatet/megaron/server/internal/province	0.002s
+FAIL

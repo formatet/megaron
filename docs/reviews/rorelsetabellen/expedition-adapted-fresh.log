@@ -1,0 +1,9 @@
+» färsk DB på migration 174 · commit b574c24c+ändringar
+2026/10/12 18:24:17 INFO expedition turning for home unit=58aa5769-a171-4ad4-8530-cac66df09855 reason=half_time q=3 r=-2 arrive_tick=16
+2026/10/12 18:24:17 INFO expedition home unit=58aa5769-a171-4ad4-8530-cac66df09855 ticks_out=16 hexes_seen=50 finds=1
+2026/10/12 18:24:17 INFO unit returned home from explore unit=58aa5769-a171-4ad4-8530-cac66df09855 settlement=205448bb-9062-4637-9e90-ba71762b3c91
+--- FAIL: TestExpedition_AreaKnownTurnsEarlyAndReportsFinds (0.09s)
+    expedition_test.go:264: turn reason = "half_time", want "area_known"
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.088s
+FAIL

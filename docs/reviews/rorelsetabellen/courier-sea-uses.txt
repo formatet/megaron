@@ -1,0 +1,16 @@
+Command: rg -n CourierSeaTicks server web tools
+Base: b0762ebf
+
+server/internal/messenger/courier_travel_sea_wall_test.go:27://   - Old (pre-3b-4, sea passable at province.CourierSeaTicks=0.5 per hex):
+server/internal/messenger/recall.go:47:// (province.CourierSeaTicks, megaron_floden_plan.md — untouched by 3b-4).
+server/internal/messenger/recall.go:94:// 2× a land unit's speed (sea legs at the flat CourierSeaTicks rate), so an
+server/internal/province/pathfind_ford_test.go:97:// CourierSeaTicks boat rate — a runner wades a ford, he does not commandeer a
+server/internal/province/pathfind_ford_test.go:104:			want, got, CourierSeaTicks)
+server/internal/province/pathfind_ford_test.go:106:	if math.Abs(got-CourierSeaTicks) < 1e-9 {
+server/internal/province/pathfind.go:118:// coastal_sea/deep_sea at the flat CourierSeaTicks rate — is gone. A runner
+server/internal/province/pathfind.go:128:// CourierSeaTicks is a courier's ticks per RIVER hex — the abstracted boat
+server/internal/province/pathfind.go:133:const CourierSeaTicks = 0.5
+server/internal/province/pathfind.go:203:			return CourierSeaTicks
+server/internal/province/courier_pathfind_test.go:6:// CourierSeaTicks rate — the "abstract boat" — removed in
+server/internal/province/courier_pathfind_test.go:52:	want := CourierSeaTicks + TerrainMoveTicks("plains")/2
+server/internal/messenger/passage.go:4:// abstract province.CourierSeaTicks rate (the "abstract boat"). This file

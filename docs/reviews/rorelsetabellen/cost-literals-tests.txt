@@ -1,0 +1,223 @@
+Command: rg -n 0\.75|0\.375|0\.4\b|0\.7\b|1\.25|2\.5|750|400|700|1250|2500|DurationTicks|TravelTicks server/internal/province server/internal/messenger server/internal/combat server/internal/transport server/internal/economy server/api/handlers --glob *_test.go
+Base: b0762ebf
+
+server/internal/economy/building_hex_test.go:130:	// shows up in the per-gubbe multiplier instead (1 + 0.7 x level).
+server/internal/economy/wine_beyond_hills_test.go:66:	want := map[string]float64{"": 1.0, "winery": 2.5}
+server/internal/economy/is_shippable_good_test.go:52:// turns into a generic 400 "unknown good", distinct from cult's specific
+server/api/handlers/upkeep_fish_test.go:37:	const tick = 4000
+server/api/handlers/create_metropolis_founding_test.go:99:		Population: 4000,
+server/internal/economy/founding_forecast_test.go:163:	const pop = 4000
+server/internal/transport/intercept_naval_test.go:21:// down a specific branch (captured < 0.4 <= limped < 0.8 <= sunk).
+server/internal/transport/intercept_naval_test.go:159:	h.Dice = fixedDice{0.1} // < 0.4 -> captured
+server/internal/transport/intercept_naval_test.go:212:	h.Dice = fixedDice{0.5} // 0.4 <= x < 0.8 -> limped
+server/internal/transport/intercept_naval_test.go:280:	h.Dice = fixedDice{0.5} // 0.4 <= x < 0.8 -> limped
+server/internal/economy/sitos_test.go:141:	// 40 shortfall (4000→40).
+server/internal/economy/grain_consumption_test.go:19:	const pop = 4000
+server/internal/economy/grain_consumption_test.go:36:	if got, want := GrainConsumptionPerTick(8000), 2*GrainConsumptionPerTick(4000); math.Abs(got-want) > 1e-9 {
+server/api/handlers/province_build_hex_test.go:124:// 400, not a 422 — the request itself is malformed, not merely invalid for
+server/api/handlers/province_build_hex_test.go:130:		t.Fatalf("build farm without hex_q/hex_r = %d: %v, want 400", code, resp)
+server/api/handlers/province_build_hex_test.go:140:		t.Fatalf("build market WITH hex_q/hex_r = %d: %v, want 400", code, resp)
+server/internal/transport/journey_test.go:16:	j := province.TradeJourney{Category: "land", Path: []province.MapPosition{{}, {Q: 1}, {Q: 2}}, StepCosts: []int64{2500, 750}, TravelTicks: 5, Distance: 2}
+server/internal/economy/livestock_fallback_test.go:34:	// pop=500 -> demand = 500*0.005 = 2.5/tick (mig 136, GrainConsumptionPerCitizenPerTick
+server/internal/economy/trade_legacy_test.go:68:	// travel_mins 150 -> round(2.5) = 3 ticks.
+server/api/handlers/storm_names_test.go:91:			t.Fatalf("name %q = %d, want 400", bad, c)
+server/internal/economy/stone_soak_test.go:13:// fixes (see the plan's §1: the sink is the 750-stone build catalogue, not
+server/api/handlers/unit_load_test.go:7:// request (valid ship UUID or garbage) died with the same 400 "invalid ship
+server/internal/economy/food_tick_test.go:38:	const tick = 4000
+server/internal/economy/trade_journey_test.go:47:			raw, err := json.Marshal(map[string]any{"transport_id": leg, "destination_id": f.counterCity, "good_key": "silver", "quantity": 100, "then_return": map[string]any{"messenger_id": uuid.New().String(), "destination_id": f.initiatorCity, "owner_id": f.counterparty, "good_key": "copper", "quantity": 20, "travel_mins": 1, "travel_ticks": journey.TravelTicks, "journey": journey, "origin_q": 5, "origin_r": 0, "dest_q": 0, "dest_r": 0}})
+server/internal/economy/trade_journey_test.go:100:			if departed != 17 || due != 17+journey.TravelTicks || stored.TravelTicks != journey.TravelTicks || len(stored.Path) != len(journey.Path) {
+server/internal/economy/trade_journey_test.go:126:	journey := province.TradeJourney{Category: "naval", Path: []province.MapPosition{{Q: 1, R: 1}, {R: 1}}, StepCosts: []int64{400}, TravelTicks: 1, Distance: 1}
+server/api/handlers/unit_standing_orders_courier_test.go:253:				standing["RetreatAtLoss"] = 0.75
+server/internal/economy/food_consumption_split_test.go:132:// the fractional 0.7 is never itself treated as edible.
+server/internal/economy/food_consumption_split_test.go:138:		t.Errorf("livestockConsumed = %v, want 2 (floor(2.7), the 0.7 is not a slaughterable animal)", livestockConsumed)
+server/api/handlers/caravan_journey_test.go:83:	if !reflect.DeepEqual(journey.Path, want) || !reflect.DeepEqual(journey.StepCosts, []int64{750, 2500, 750, 750}) || journey.TravelTicks != 7 {
+server/api/handlers/caravan_journey_test.go:260:			if payload.Return.Ticks != 8 || payload.Return.Journey.TravelTicks != 8 {
+server/internal/economy/recompute_stale_rate_test.go:60:	// pop=400 (not 100): demand (200) must exceed NearjordGrainPerTick (50, P1)
+server/internal/economy/recompute_stale_rate_test.go:63:	settlementID := recomputeFixture(t, tick, /*pop*/ 400, /*grainAmount*/ 50, /*grainRate*/ 0)
+server/internal/economy/recompute_stale_rate_test.go:129:	// pop=400 (not 100): see the sibling test above — demand must exceed
+server/internal/economy/recompute_stale_rate_test.go:131:	settlementID := recomputeFixture(t, tick, /*pop*/ 400, /*grainAmount*/ 5, /*grainRate*/ 0)
+server/api/handlers/place_names_test.go:132:		if got := n.do("POST", "river", "0,0", bad, n.token, ""); got.Code != 400 {
+server/api/handlers/messenger_trade_offer_good_validation_test.go:18:// This file tests the fix: both offer kinds are rejected with 400 before any silver or
+server/api/handlers/messenger_trade_offer_good_validation_test.go:194:// ever accept. The fix must reject it with 400 BEFORE any silver moves.
+server/api/handlers/messenger_trade_offer_good_validation_test.go:216:		t.Fatalf("Send(buy want_good=Tin) = %d, want 400: %s", rec.Code, rec.Body.String())
+server/api/handlers/messenger_trade_offer_good_validation_test.go:240:// 400 before that misleading 422 path is even reached.
+server/api/handlers/messenger_trade_offer_good_validation_test.go:261:		t.Fatalf("Send(sell offer_good=Tin) = %d, want 400: %s", rec.Code, rec.Body.String())
+server/api/handlers/messenger_trade_offer_good_validation_test.go:339:		t.Fatalf("Send(buy want_good=silver) = %d, want 400: %s", silverRec.Code, silverRec.Body.String())
+server/api/handlers/messenger_trade_offer_good_validation_test.go:353:		t.Fatalf("Send(buy want_good=cult) = %d, want 400: %s", cultRec.Code, cultRec.Body.String())
+server/internal/economy/sitos_conservation_test.go:207:	// release the 40 shortfall (4000→40).
+server/internal/economy/sitos_conservation_test.go:268:	// The city's grain cap is 25 (2500→25, mig 136 ÷100), so only 15 can physically arrive.
+server/api/handlers/province_trade_cult_test.go:17:// settlements). Both are wrong: the rejection must be a 400, before any
+server/api/handlers/province_trade_cult_test.go:32:// with NO cult row at all must still get 400 with an actionable message, not
+server/api/handlers/province_trade_cult_test.go:42:	if code != 400 {
+server/api/handlers/province_trade_cult_test.go:43:		t.Fatalf("trade good_key=cult (no stock) returned %d: %v, want 400", code, resp)
+server/api/handlers/province_trade_cult_test.go:87:	if code != 400 {
+server/api/handlers/province_trade_cult_test.go:88:		t.Fatalf("trade good_key=cult (50 in stock) returned %d: %v, want 400", code, resp)
+server/api/handlers/province_trade_cult_test.go:117:	if code != 400 {
+server/api/handlers/province_trade_cult_test.go:118:		t.Fatalf("trade good_key=unobtainium returned %d: %v, want 400", code, resp)
+server/internal/province/pathfind_test.go:72:	// Cost: entering (1,0) + entering (2,0) = 0.4 + 0.4 = 0.8
+server/internal/province/pathfind_test.go:110:	// Entering (1,0) and (2,0): 2 × 0.75 = 1.5
+server/internal/province/pathfind_test.go:125:// (0.4 for naval, the cost of coastal_sea) rather than HexDistance × 1.0.
+server/internal/province/pathfind_test.go:128:// crosses deep_sea (0.7/hex, total 1.8 incl. the shared target hex) while a longer
+server/internal/province/pathfind_test.go:129:// 4-hex detour stays on coastal_sea (0.4/hex, total 1.6). The detour is truly
+server/internal/province/pathfind_test.go:153:	const wantCost = 1.6 // 3×0.4 (detour intermediates) + 0.4 (target) — NOT 1.8 (2×0.7 + 0.4 direct)
+server/internal/province/courier_pathfind_test.go:51:	// Cost: enter river (boat, 0.5) + enter plains at half land hours (0.75/2).
+server/api/handlers/world_me_test.go:42:	exec(`INSERT INTO player_world_records (player_id,world_id,founded_tick,kharis_amount,kharis_rate,kharis_calc_tick) VALUES ($1,$3,42,12.5,0.25,990),($2,$3,900,70,0,1000)`, a, b, worldID)
+server/api/handlers/world_me_test.go:43:	exec(`INSERT INTO founder_phase (world_id,owner_id,population,grain_amount,grain_rate,silver_amount,silver_rate,active,founded_tick) VALUES ($1,$2,4000,0,0,0,0,false,10)`, worldID, a)
+server/api/handlers/world_me_test.go:103:		{"invalid world", "bad", token, 400},
+server/internal/province/trade_journey_test.go:15:	if j.TravelTicks != 5 || j.Distance != 2 || j.StepCosts[0] != 2500 || j.StepCosts[1] != 750 {
+server/internal/province/trade_journey_test.go:18:	// 1.5*(2.5+.75)=4.875 rounds ONCE to5; reversing enters a different start.
+server/internal/province/trade_journey_test.go:24:	if reverse.TravelTicks == j.TravelTicks {
+server/internal/province/trade_journey_test.go:38:	if j.Path[0] != (MapPosition{Q: 1}) || j.Path[len(j.Path)-1] != (MapPosition{Q: 2}) || j.TravelTicks != 1 {
+server/internal/province/trade_journey_test.go:51:	if err != nil || j.TravelTicks != 1 || j.Validate() != nil {
+server/internal/province/trade_journey_test.go:54:	j = TradeJourney{Category: "land", Path: []MapPosition{{}, {Q: 1}}, StepCosts: []int64{math.MaxInt64}, Distance: 1, TravelTicks: 1}
+server/internal/province/levelled_building_test.go:87:	if l3.DurationTicks <= l2.DurationTicks {
+server/internal/province/recipe_invariants_test.go:41:			if got.DurationTicks != base.DurationTicks*lvl {
+server/internal/province/recipe_invariants_test.go:42:				t.Errorf("%s L%d duration = %d, want %d", bt, lvl, got.DurationTicks, base.DurationTicks*lvl)
+server/api/handlers/unit_pickup_test.go:497:		if code != 400 {
+server/api/handlers/unit_pickup_test.go:498:			t.Errorf("status = %d, want 400 (%v)", code, resp)
+server/api/handlers/unit_pickup_test.go:507:		if code != 400 {
+server/api/handlers/unit_pickup_test.go:508:			t.Errorf("status = %d, want 400 (%v)", code, resp)
+server/api/handlers/unit_recall_interception_test.go:112:	// 75% through an 8-hex, 6h plains march ((0,0)→(8,0), 8×0.75h/hex).
+server/api/handlers/map_trade_journey_test.go:16:	j := province.TradeJourney{Category: "land", Path: []province.MapPosition{{Q: 0, R: 0}, {Q: 0, R: 1}, {Q: 1, R: 1}, {Q: 2, R: 0}}, StepCosts: []int64{750, 2500, 750}, Distance: 3, TravelTicks: 6}
+server/api/handlers/culture_mvp_test.go:106:// must silently normalise to minoan (tyst tvång, not a 400 — an inactive
+server/api/handlers/settlement_test.go:54:// are gated at the Indifferent tier (30 on the 0-100 scale, was 400) — they're
+server/api/handlers/settlement_test.go:80:	if !strings.Contains(msg, "0.4 short") {
+server/api/handlers/settlement_test.go:175:// bogus ID — the handler returns 400 in this case.
+server/api/handlers/unit_repair_test.go:158:		DurationTicks int     `json:"duration_ticks"`
+server/api/handlers/unit_repair_test.go:176:	if resp.DurationTicks != combat.RepairDurationTicks(combat.HullMax-2) {
+server/api/handlers/unit_repair_test.go:177:		t.Errorf("duration_ticks = %d, want %d", resp.DurationTicks, combat.RepairDurationTicks(combat.HullMax-2))
+server/api/handlers/foreign_units_fow_test.go:312:	// elapsed/total = 4h/10h = 0.4; interpolatedEyePos picks
+server/api/handlers/foreign_units_fow_test.go:313:	// idx = round(0.4*(17-1)) = round(6.4) = 6, i.e. q = -8+6 = -2, r=0 — hex
+server/api/handlers/foreign_units_fow_test.go:327:	arrivesAt := now.Add(6 * time.Hour) // total 10h, 4h elapsed -> progress 0.4
+server/api/handlers/foreign_units_fow_test.go:361:		t.Errorf("interpolated position = (%d,%d), want (-2,0) — 0.4 progress along the 17-hex path", got.Q, got.R)
+server/api/handlers/upkeep_drain_test.go:97:		// The sold circulates → net silver 0.6 at share 0.7.
+server/api/handlers/upkeep_drain_test.go:124:	const share = 0.7
+server/api/handlers/upkeep_drain_test.go:140:	// Only the unit standing in the town that pays it circulates: 0.7 × 1.
+server/api/handlers/upkeep_drain_test.go:142:	if math.Abs(circulated-0.7) > eps {
+server/api/handlers/upkeep_drain_test.go:143:		t.Errorf("Mykene circulated silver = %v, want 0.7 (0.7 × 1 from the home garrison only)", circulated)
+server/api/handlers/upkeep_drain_test.go:157:	if math.Abs(circulatedT-0.7) > eps {
+server/api/handlers/upkeep_drain_test.go:158:		t.Errorf("Tiryns circulated silver = %v, want 0.7", circulatedT)
+server/api/handlers/upkeep_capacity_test.go:65:			circulated:    1.4, // share 0.7 of the whole 2
+server/api/handlers/building_catalogue_duration_test.go:4:// minutes. The old field (duration_minutes = DurationTicks*TickMinutes) read a
+server/api/handlers/building_catalogue_duration_test.go:11:// spec.DurationTicks (one tick = one game-day, megaron_plan_ticket_ar_dygnet),
+server/api/handlers/building_catalogue_duration_test.go:13:// Reverting the handler to DurationTicks*TickMinutes fails the mutation guard.
+server/api/handlers/building_catalogue_duration_test.go:63:		if b.DurationGameDays != spec.DurationTicks {
+server/api/handlers/building_catalogue_duration_test.go:64:			t.Errorf("%s: duration_game_days = %d, want %d (= DurationTicks; a tick IS a game-day)",
+server/api/handlers/building_catalogue_duration_test.go:65:				b.Type, b.DurationGameDays, spec.DurationTicks)
+server/api/handlers/building_catalogue_duration_test.go:70:		if spec.DurationTicks > 0 {
+server/api/handlers/building_catalogue_duration_test.go:72:			oldMinutes := spec.DurationTicks * tick.TickMinutes
+server/api/handlers/building_catalogue_duration_test.go:73:			if b.DurationGameDays == oldMinutes && oldMinutes != spec.DurationTicks {
+server/api/handlers/building_catalogue_duration_test.go:74:				t.Errorf("%s: duration_game_days = %d equals the OLD DurationTicks*TickMinutes (%d) — regressed to wall-clock minutes",
+server/api/handlers/building_catalogue_duration_test.go:80:		t.Fatal("no building with DurationTicks > 0 — cannot distinguish game-days from minutes")
+server/api/handlers/unit_march_preview_test.go:72:	// (0.75 h) still rounds to the 1-tick floor the assertions expect.
+server/api/handlers/unit_march_preview_test.go:147:		DurationTicks int       `json:"duration_ticks"`
+server/api/handlers/unit_march_preview_test.go:178:		{"?target_q=bad&target_r=0", 400, ""},
+server/api/handlers/unit_march_preview_test.go:180:		{"?target_q=1&target_r=0&intent=explore&ticks=3", 400, ""},
+server/api/handlers/unit_march_preview_test.go:181:		{"?target_q=40&target_r=0&intent=explore&ticks=31", 400, ""},
+server/api/handlers/unit_march_preview_test.go:182:		{"?target_q=1&target_r=0&intent=explore&ticks=no", 400, ""},
+server/api/handlers/unit_march_preview_test.go:201:	if invalidReceipt.Code != 400 || snapshot() != before {
+server/api/handlers/unit_march_preview_test.go:224:		DurationTicks int       `json:"duration_ticks"`
+server/api/handlers/unit_march_preview_test.go:230:	if preview.ArrivalTick != actual.ArrivalTick || preview.DurationTicks != actual.DurationTicks || !preview.Arrives.Equal(actual.Arrives) {
+server/api/handlers/world_start_gate_test.go:160:		t.Fatalf("PUT two modes = %d %q, want 400", rec.Code, rec.Body.String())
+server/api/handlers/standing_order_test.go:226:// never fulfil its own threshold is worse than a 400 up front.
+server/api/handlers/standing_order_test.go:238:		t.Fatalf("Create with good_key=cult = %d %v, want 400 (cult is temple labor, never shippable)", code, resp)
+server/api/handlers/rite_harvest_outcome_test.go:4:// used to report its INTENTION ({"multiplier":1.25}) rather than its outcome —
+server/api/handlers/rite_harvest_outcome_test.go:123:// 2026-10-10) — no longer ×1.25 on the grain store, which gave the most to the
+server/internal/combat/march_start_crew_speed_test.go:9:// identical DurationTicks.
+server/internal/combat/march_start_crew_speed_test.go:112:		if preview.DurationTicks != res.DurationTicks || preview.ArrivalTick != res.ArrivalTick || !preview.ArrivesAt.Equal(res.ArrivesAt) {
+server/internal/combat/march_start_crew_speed_test.go:115:		return res.DurationTicks
+server/api/handlers/nomadic_host_dowry_test.go:9:// twentyfold the dowry to 24000 — nobody asked for that. This test locks the
+server/api/handlers/unit_recall_courier_test.go:118:	f.arrivesAt = f.departsAt.Add(3 * time.Hour)    // 4 hexes × 0.75h/hex plains
+server/api/handlers/unit_tick_contract_test.go:78:	// (0.75 h) still rounds to the 1-tick floor the assertions expect.
+server/api/handlers/unit_tick_contract_test.go:116:		DurationTicks *int      `json:"duration_ticks"`
+server/api/handlers/unit_tick_contract_test.go:122:	// A one-hex plains march (0.75 h) travels the floor of 1 tick.
+server/api/handlers/unit_tick_contract_test.go:123:	if resp.DurationTicks == nil || *resp.DurationTicks != 1 {
+server/api/handlers/unit_tick_contract_test.go:124:		t.Errorf("duration_ticks = %v, want 1", resp.DurationTicks)
+server/api/handlers/unit_tick_contract_test.go:219:			DurationTicks *int       `json:"duration_ticks"`
+server/api/handlers/unit_tick_contract_test.go:231:		DurationTicks *int       `json:"duration_ticks"`
+server/api/handlers/unit_tick_contract_test.go:250:	if marching.DurationTicks == nil || *marching.DurationTicks != arriveTick-departTick {
+server/api/handlers/unit_tick_contract_test.go:251:		t.Errorf("marching duration_ticks = %v, want %d", marching.DurationTicks, arriveTick-departTick)
+server/api/handlers/unit_tick_contract_test.go:260:	if garrison.ArrivalTick != nil || garrison.DurationTicks != nil || garrison.ArrivesAtUTC != nil {
+server/api/handlers/unit_tick_contract_test.go:262:			garrison.ArrivalTick, garrison.DurationTicks, garrison.ArrivesAtUTC)
+server/api/handlers/province_trade_internal_test.go:324:		map[string]any{"destination_id": f.destID.String(), "good_key": "silver", "quantity": 400.0})
+server/internal/combat/unit_upkeep_test.go:29:		{"naval war_galley flat", "war_galley", "naval", 3, 0.06, 2.5},
+server/api/handlers/fardvag_routes_test.go:84:	j := province.TradeJourney{Category: "land", Path: []province.MapPosition{{Q: 0, R: 0}, {Q: 0, R: 1}, {Q: 1, R: 1}, {Q: 2, R: 0}}, StepCosts: []int64{750, 2500, 750}, TravelTicks: 6, Distance: 3}
+server/api/handlers/fardvag_routes_test.go:197:	route := map[string]any{"start_tick": 10, "end_tick": 16, "hexes": [][2]int{{0, 0}, {0, 1}, {1, 1}, {2, 0}}, "costs": []int64{750, 2500, 750}}
+server/api/handlers/fardvag_routes_test.go:226:			j := province.TradeJourney{Category: "land", Path: []province.MapPosition{{Q: 3, R: 0}, {Q: 2, R: 0}, {Q: 1, R: 0}, {Q: 0, R: 0}}, StepCosts: []int64{750, 2500, 750}, Distance: 3, TravelTicks: 6}
+server/api/handlers/fardvag_routes_test.go:259:	j := province.TradeJourney{Category: "land", Path: []province.MapPosition{{Q: 0, R: 0}, {Q: 1, R: 0}, {Q: 2, R: 0}, {Q: 3, R: 0}}, StepCosts: []int64{750, 2500, 750}, Distance: 3, TravelTicks: 6}
+server/api/handlers/unit_recall_route_test.go:126:	if res.DurationTicks != 3 {
+server/api/handlers/unit_recall_route_test.go:127:		t.Fatalf("test fixture assumption broken: march took %d ticks, want 3", res.DurationTicks)
+server/api/handlers/unit_recall_route_test.go:238:	if res.DurationTicks != 3 {
+server/api/handlers/unit_recall_route_test.go:239:		t.Fatalf("test fixture assumption broken: march took %d ticks, want 3", res.DurationTicks)
+server/api/handlers/settlement_rite_offering_test.go:107:	// cooldown) at chance=60%: P(15/15 identical outcomes) ≈ 0.6^15+0.4^15 <
+server/internal/combat/upkeep_circulation_test.go:180:	h.soldShare = 0.7
+server/internal/combat/upkeep_circulation_test.go:186:	// Garrison: net debit (1−0.7)·1 = 0.3 → 1000 − 0.3 = 999.7. circ 0.7, destr 0.3.
+server/internal/combat/upkeep_circulation_test.go:191:	if s := readSettled(sG); s.paid != 1 || !approx(s.gross, 1) || !approx(s.circ, 0.7) || !approx(s.destroyed, 0.3) {
+server/internal/combat/upkeep_circulation_test.go:192:		t.Errorf("garrison UpkeepSettled = %+v, want {paid1 gross1 circ0.7 destr0.3}", s)
+server/internal/combat/upkeep_circulation_test.go:199:	).Scan(&circMap); err != nil || !approx(circMap, 0.7) {
+server/internal/combat/upkeep_circulation_test.go:200:		t.Errorf("garrison circulated_to[%s] = %.4f (err %v), want 0.7", sG, circMap, err)
+server/api/handlers/recruit_batch_test.go:16:// anything else is a 400.
+server/internal/messenger/courier_travel_sea_wall_test.go:28://     path (0,0)→(1,0)→(2,0)→(3,0), cost 0.5+0.5+0.375=1.375h → 1 tick.
+server/internal/messenger/courier_travel_sea_wall_test.go:30://     (3,0), cost 4×0.375=1.5h → 2 ticks.
+server/internal/messenger/courier_travel_sea_wall_test.go:52:// (province.HexDistance + MessengerTravelTicks) is gone from
+server/internal/combat/embarked_upkeep_test.go:31:	const tick = 4000
+server/api/handlers/settlement_overview_test.go:94:		 VALUES ($1, 'grain', 500, 12.5, 5000, 1000), ($1, 'fish', 100, 2.0, 2000, 1000)`,
+server/api/handlers/settlement_overview_test.go:177:		if row.GrainProdRate != 12.5 {
+server/api/handlers/settlement_overview_test.go:178:			t.Errorf("settlement %s: grain_prod_rate = %.2f, want 12.5", row.Name, row.GrainProdRate)
+server/api/handlers/settlement_overview_test.go:258:	// the same figure growth is gated on (2026-09-26). Seeded: grain 12.5 +
+server/api/handlers/refusals_test.go:99:	long := make([]byte, 0, 400)
+server/api/handlers/settlement_placement_test.go:452:		t.Errorf("hex_ordinal=99 (out of range) = %d: %v, want 400", code, resp)
+server/internal/messenger/intercept_test.go:67:	path := straightLinePath(9) // (0,0)..(8,0): 8 hexes, matches TestRecall fixtures' 0.75h/hex plains
+server/api/handlers/host_kharis_floor_test.go:97:	exec(`UPDATE worlds SET current_tick=700 WHERE id=$1`, worldID)
+server/api/handlers/host_kharis_floor_test.go:118:				exec(`INSERT INTO founder_phase(world_id,owner_id,population,grain_amount,grain_rate,silver_amount,silver_rate,active) VALUES($1,$2,400,0,0,0,0,$3)`, worldID, player, tc.phase)
+server/api/handlers/host_kharis_floor_test.go:136:					wantAmount, wantRate, wantTick = kharis.Floor, 0, 700
+server/api/handlers/founding_forecast_parity_test.go:56:	const pop = 4000
+server/internal/combat/route_test.go:16:	steps := []float64{2.5, 0.75} // ford, plains — same numbers as movement's T1
+server/internal/combat/route_test.go:30:	wantCosts := []int64{2500, 750}
+server/internal/combat/route_test.go:81:		Costs: []int64{2500, 750},
+server/internal/combat/route_test.go:166:		Costs: []int64{2500, 750}, // same fixture as movement's T1: bounds = [0, 7692, 10000]
+server/internal/messenger/carrier_fate_test.go:80:	journey := province.TradeJourney{Category: "naval", TravelTicks: 5, Distance: 5}
+server/internal/combat/ship_repair_test.go:79:func TestRepairDurationTicks(t *testing.T) {
+server/internal/combat/ship_repair_test.go:91:		if got := RepairDurationTicks(c.hullPoints); got != c.want {
+server/internal/combat/ship_repair_test.go:92:			t.Errorf("RepairDurationTicks(%d) = %d, want %d", c.hullPoints, got, c.want)
+server/internal/combat/battle_test.go:397:		{"loyalty 1 + huge kharis still ≥ MIN, ≤ loyalty1+caps", 1, 1000, false, 0.65, 0.75},
+server/internal/combat/place_reach_test.go:191:	j := province.TradeJourney{Category: "land", Path: path, StepCosts: r.Costs, TravelTicks: 9, Distance: 6}
+server/internal/combat/place_reach_test.go:448:	if _, err := f.pool.Exec(ctx, `INSERT INTO place_reach_progress(journey_key,world_id,last_tick,last_milli) VALUES($1,$2,0,700)`, key, f.world); err != nil {
+server/internal/combat/place_reach_test.go:474:	if progress != 700 {
+server/internal/combat/place_reach_test.go:475:		t.Fatalf("corrupt journey consumed progress: got%d want700", progress)
+server/internal/combat/place_reach_test.go:493:	j := province.TradeJourney{Category: "naval", Path: path, StepCosts: route.Costs, TravelTicks: 9, Distance: 6}
+server/internal/combat/battle_wall_test.go:220:	f := newSiegeFixture(t, pool, 3) // wall_level=3, N=15/tick — trivial next to a 4000-strong siege
+server/internal/combat/battle_wall_test.go:222:	attackerUnitID := mkSiegeAttacker(t, pool, f, 4000, false)
+server/internal/combat/battle_wall_test.go:236:		t.Errorf("garrison status = %q, want disbanded (a 4000-strong siege must break a level-3 wall within 30 battle-ticks)", status)
+server/internal/combat/march_route_test.go:198:		res.ArrivalTick-res.DurationTicks, res.ArrivalTick)
+server/internal/combat/march_route_test.go:431:	outboundDepart := res.ArrivalTick - res.DurationTicks
+server/internal/combat/march_route_test.go:469:// fixture: (0,0) plains -> (1,0) river_ford (steep, 2.5h) -> (2,0) plains
+server/internal/combat/march_route_test.go:470:// (0.75h) — a real ford hex, passable for land, dominating the journey's cost
+server/internal/combat/march_route_test.go:559:	if res.DurationTicks != 3 {
+server/internal/combat/march_route_test.go:560:		t.Fatalf("test fixture assumption broken: march took %d ticks, want 3 (2.5h ford + 0.75h plains, rounds to 3)", res.DurationTicks)
+server/internal/messenger/travel_duration_test.go:44:// (MessengerTravelTicks), each worth 1 real minute — not 1 real hour. Before
+server/internal/messenger/travel_duration_test.go:49:	wantTicks := MessengerTravelTicks(dist)
+server/internal/messenger/travel_duration_test.go:62:	want := time.Duration(MessengerTravelTicks(dist)) * time.Hour
+server/internal/messenger/travel_duration_test.go:76:	wantTicks := MessengerTravelTicks(dist)
+server/internal/combat/storage_cap_test.go:11:	wid, mother, uid := purseFixture(t, pool, ctx, 3000, 700)
+server/internal/combat/unit_upkeep_silver_test.go:28:		{"war_galley garrison", "war_galley", "naval", 1, "garrison", 2.5},
+server/internal/combat/standing_orders_naval_test.go:183:	travelTicks := journey.TravelTicks
+server/internal/messenger/recall_test.go:20:		{0, time.Hour},      // floors to 1 tick (MessengerTravelTicks' own floor) = 1h at default cadence
+server/internal/combat/upkeep_naval_starvation_return_test.go:277:		if err := h.Handle(ctx, events.ScheduledEvent{ID: 97000 + i, WorldID: f.worldID}); err != nil {
+server/internal/combat/sea_storm_test.go:114:	j := province.TradeJourney{Category: "naval", TravelTicks: route.EndTick - route.StartTick, Distance: len(route.Hexes) - 1}
+server/internal/combat/colonist_purse_test.go:79:		{want: 1000, have: 400, wantPurse: 400, wantShort: 600},
+server/internal/combat/colonist_purse_test.go:102:	worldID, motherID, unitID := purseFixture(t, pool, ctx, 3000 /*mother silver*/, 700 /*purse on the unit*/)
+server/internal/combat/colonist_purse_test.go:124:	if math.Abs(colonySilver-700) > 1e-6 {
+server/internal/combat/colonist_purse_test.go:125:		t.Errorf("colony silver = %v, want 700 (exactly the purse it carried)", colonySilver)
+server/internal/combat/colonist_purse_test.go:201:		 VALUES ($1, $2, 'Mother City', 'achaean', $3, 'capital', true, 4000) RETURNING id`,
+server/internal/combat/colonist_purse_test.go:283:	worldID, motherID, unitID := purseFixture(t, pool, ctx, 3000, 700)
+server/internal/combat/colonist_purse_test.go:292:		size: 50, status: "marching", q: 10, r: 10, carriedSilver: 700,
+server/internal/combat/colonist_purse_test.go:320:	if math.Abs(motherSilver-3700) > 1e-6 {
+server/internal/combat/colonist_purse_test.go:321:		t.Errorf("mother city silver = %v, want 3700 (3000 + the 700 handed back)", motherSilver)
+server/internal/combat/colonist_purse_test.go:337:	worldID, motherID, unitID := purseFixture(t, pool, ctx, 3000, 700)
+server/internal/combat/sea_storm_weather_test.go:111:	pool, worldID := seaWorld(t, 20) // 400 hexes → 4 storms
+server/internal/combat/sea_storm_weather_test.go:116:	if storms != 400/SeaHexesPerStorm {
+server/internal/combat/sea_storm_weather_test.go:117:		t.Fatalf("storms = %d, want %d (400 sea hexes / %d)", storms, 400/SeaHexesPerStorm, SeaHexesPerStorm)
+server/internal/combat/retreat_two_modes_migration_test.go:21:	cases := []struct{ before, want string }{{`{"retreat_at_loss":0.5,"other":"keep"}`, `{"other":"keep"}`}, {`{"hold_to_last_man":true,"other":7}`, `{"hold_to_last_man":true,"other":7}`}, {`{}`, `{}`}, {`{"retreat_at_loss":0.75,"hold_to_last_man":true,"other":"held"}`, `{"hold_to_last_man":true,"other":"held"}`}}
+server/internal/combat/retreat_two_modes_migration_test.go:41:	sealed := `{"verb":"standing_orders","standing_orders":{"RetreatAtLoss":0.75,"HoldToLastMan":false}}`
+server/internal/combat/retreat_two_modes_migration_test.go:87:	if rej := ValidateRetreatMode(&loss, true, false); rej == nil || rej.Status != 400 {

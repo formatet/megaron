@@ -1,0 +1,12 @@
+» färsk DB på migration 174 · commit b574c24c+ändringar
+ok  	formatet/megaron/server/api/handlers	0.599s
+2026/10/12 18:23:39 INFO expedition turning for home unit=cc85a5bc-85e3-4a53-834c-45404f5c1f52 reason=half_time q=3 r=-2 arrive_tick=16
+2026/10/12 18:23:39 INFO expedition home unit=cc85a5bc-85e3-4a53-834c-45404f5c1f52 ticks_out=16 hexes_seen=56 finds=1
+2026/10/12 18:23:39 INFO unit returned home from explore unit=cc85a5bc-85e3-4a53-834c-45404f5c1f52 settlement=26caa259-116d-4934-95a7-56eb9b89f15c
+--- FAIL: TestExpedition_AreaKnownTurnsEarlyAndReportsFinds (0.09s)
+    expedition_test.go:264: turn reason = "half_time", want "area_known"
+2026/10/12 18:23:39 INFO recall/redirect order reached unit, new course set unit=eed1d515-5359-419d-a0dd-8292daf2fb7e mode=recall from_q=1 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-12T20:35:39.130+02:00
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.141s
+ok  	formatet/megaron/server/internal/transport	0.017s
+FAIL
