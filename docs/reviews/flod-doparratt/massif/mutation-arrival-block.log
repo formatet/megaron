@@ -1,0 +1,8 @@
+=== RUN   TestPlaceReachArrivalFlushFailureStillRunsMovement
+2026/10/12 06:39:33 WARN place reach before arrival failed; continuing movement world=21760d09-51a8-4de4-b62f-19834ed0f21f error="context canceled"
+    place_reach_test.go:426: naming flush failure stopped movement: context canceled
+--- FAIL: TestPlaceReachArrivalFlushFailureStillRunsMovement (0.02s)
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.017s
+FAIL
+» färsk DB på migration 172 · commit 4820b9f7+ändringar

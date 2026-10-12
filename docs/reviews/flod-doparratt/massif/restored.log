@@ -1,0 +1,17 @@
+» färsk DB på migration 172 · commit 6f04dbf9+ändringar
+=== RUN   TestPlaceReachMassifBorderEntry
+=== RUN   TestPlaceReachMassifBorderEntry/adjacent
+=== RUN   TestPlaceReachMassifBorderEntry/two_massifs
+=== RUN   TestPlaceReachMassifBorderEntry/farther_visible
+=== RUN   TestPlaceReachMassifBorderEntry/sea_is_not_land
+=== RUN   TestPlaceReachMassifBorderEntry/river_is_not_land
+=== RUN   TestPlaceReachMassifBorderEntry/ford_is_land_crossing
+--- PASS: TestPlaceReachMassifBorderEntry (0.15s)
+    --- PASS: TestPlaceReachMassifBorderEntry/adjacent (0.03s)
+    --- PASS: TestPlaceReachMassifBorderEntry/two_massifs (0.03s)
+    --- PASS: TestPlaceReachMassifBorderEntry/farther_visible (0.02s)
+    --- PASS: TestPlaceReachMassifBorderEntry/sea_is_not_land (0.02s)
+    --- PASS: TestPlaceReachMassifBorderEntry/river_is_not_land (0.02s)
+    --- PASS: TestPlaceReachMassifBorderEntry/ford_is_land_crossing (0.03s)
+PASS
+ok  	formatet/megaron/server/internal/combat	0.148s

@@ -1,0 +1,9 @@
+» färsk DB på migration 172 · commit 4820b9f7+ändringar
+=== RUN   TestPlaceReachArrivalFlushFailureStillRunsMovement
+2026/10/12 06:39:39 WARN place reach before arrival failed; continuing movement world=1c16c645-4656-4bcb-97f7-de5d62f21511 error="context canceled"
+--- PASS: TestPlaceReachArrivalFlushFailureStillRunsMovement (0.01s)
+=== RUN   TestPlaceReachCorruptJourneyDoesNotBlockHealthyArrival
+2026/10/12 06:39:39 WARN place reach skips invalid unit route world=96cf3d55-3533-4d41-9938-b072f8162ad0 unit=3be2bf35-65e7-44cd-a9f7-69b2b9bc7bcd
+--- PASS: TestPlaceReachCorruptJourneyDoesNotBlockHealthyArrival (0.02s)
+PASS
+ok  	formatet/megaron/server/internal/combat	0.036s

@@ -1,0 +1,9 @@
+=== RUN   TestPlaceReachCorruptJourneyDoesNotBlockHealthyArrival
+2026/10/12 06:39:37 WARN place reach skips invalid unit route world=03f2a8bd-f49f-48bf-963f-0e506c93271d unit=e03e6b00-15c9-48c8-aa27-f93c52255b2c
+2026/10/12 06:39:37 WARN place reach before arrival failed; continuing movement world=03f2a8bd-f49f-48bf-963f-0e506c93271d error="broken journey"
+    place_reach_test.go:465: corrupt journey blocked healthy arrival claim: claims=0 want1
+--- FAIL: TestPlaceReachCorruptJourneyDoesNotBlockHealthyArrival (0.02s)
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.020s
+FAIL
+» färsk DB på migration 172 · commit 4820b9f7+ändringar

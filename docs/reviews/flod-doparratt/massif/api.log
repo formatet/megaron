@@ -1,0 +1,7 @@
+» färsk DB på migration 172 · commit 6f04dbf9+ändringar
+=== RUN   TestPlaceMassifPhysicalBorderClaimCanBeNamedThroughAPI
+2026/10/12 06:29:50 INFO player registered id=34ae4892-46ba-4810-9bdd-ea348d8d20a1 username=place-viewer-98fa5cbc-17a6-49e5-86f9-47ecba8ac840
+2026/10/12 06:29:50 INFO player registered id=6becb67c-b0f1-4eda-b1ca-9bf8db87b11a username=place-other-eb6eebf2-c0f0-4e87-b183-392dc71a5f79
+--- PASS: TestPlaceMassifPhysicalBorderClaimCanBeNamedThroughAPI (0.14s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.139s

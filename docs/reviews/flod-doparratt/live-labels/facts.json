@@ -1,0 +1,8379 @@
+{
+  "health": {
+    "commit": "46e8f71",
+    "migration": 172,
+    "status": "ok"
+  },
+  "world": "3b5fb9cd-8c06-4685-88df-b162c9acff99",
+  "fixture": "explicit SQL positioned land scouts on passable terrain; existing SQL naming fixture; normal server LIVE FOW, no client overrides",
+  "units": [
+    {
+      "q": 6,
+      "r": 75,
+      "terrain": "river_valley"
+    },
+    {
+      "q": 8,
+      "r": 80,
+      "terrain": "forest_olive_grove"
+    },
+    {
+      "q": 11,
+      "r": 73,
+      "terrain": "forest_olive_grove"
+    },
+    {
+      "q": 13,
+      "r": 76,
+      "terrain": "hills"
+    },
+    {
+      "q": 8,
+      "r": 71,
+      "terrain": "forest_olive_grove"
+    },
+    {
+      "q": 12,
+      "r": 80,
+      "terrain": "hills"
+    },
+    {
+      "q": 1,
+      "r": 78,
+      "terrain": "plains"
+    },
+    {
+      "q": 5,
+      "r": 84,
+      "terrain": "forest_olive_grove"
+    },
+    {
+      "q": 6,
+      "r": 77,
+      "terrain": "river_valley"
+    },
+    {
+      "q": 9,
+      "r": 78,
+      "terrain": "plains"
+    },
+    {
+      "q": 13,
+      "r": 73,
+      "terrain": "forest_olive_grove"
+    },
+    {
+      "q": 14,
+      "r": 77,
+      "terrain": "scrub_maquis"
+    },
+    {
+      "q": 8,
+      "r": 85,
+      "terrain": "forest_olive_grove"
+    },
+    {
+      "q": 3,
+      "r": 71,
+      "terrain": "forest_olive_grove"
+    },
+    {
+      "q": 7,
+      "r": 76,
+      "terrain": "river_valley"
+    },
+    {
+      "q": 3,
+      "r": 67,
+      "terrain": "hills"
+    },
+    {
+      "q": 9,
+      "r": 71,
+      "terrain": "plains"
+    },
+    {
+      "q": 2,
+      "r": 77,
+      "terrain": "forest_olive_grove"
+    },
+    {
+      "q": 6,
+      "r": 69,
+      "terrain": "forest_olive_grove"
+    },
+    {
+      "q": 10,
+      "r": 73,
+      "terrain": "forest_olive_grove"
+    },
+    {
+      "q": 0,
+      "r": 71,
+      "terrain": "forest_olive_grove"
+    },
+    {
+      "q": 0,
+      "r": 74,
+      "terrain": "forest_olive_grove"
+    },
+    {
+      "q": 4,
+      "r": 76,
+      "terrain": "forest_olive_grove"
+    },
+    {
+      "q": 5,
+      "r": 78,
+      "terrain": "river_delta"
+    },
+    {
+      "q": 35,
+      "r": 57,
+      "terrain": "semi_desert"
+    },
+    {
+      "q": 35,
+      "r": 62,
+      "terrain": "scrub_maquis"
+    },
+    {
+      "q": 40,
+      "r": 53,
+      "terrain": "semi_desert"
+    },
+    {
+      "q": 40,
+      "r": 58,
+      "terrain": "scrub_maquis"
+    },
+    {
+      "q": 44,
+      "r": 53,
+      "terrain": "scrub_maquis"
+    },
+    {
+      "q": 34,
+      "r": 54,
+      "terrain": "scrub_maquis"
+    },
+    {
+      "q": 44,
+      "r": 49,
+      "terrain": "plains"
+    },
+    {
+      "q": 39,
+      "r": 62,
+      "terrain": "forest_olive_grove"
+    },
+    {
+      "q": 44,
+      "r": 57,
+      "terrain": "scrub_maquis"
+    },
+    {
+      "q": 39,
+      "r": 50,
+      "terrain": "river_valley"
+    },
+    {
+      "q": 30,
+      "r": 59,
+      "terrain": "plains"
+    },
+    {
+      "q": 30,
+      "r": 64,
+      "terrain": "forest_olive_grove"
+    },
+    {
+      "q": 37,
+      "r": 58,
+      "terrain": "semi_desert"
+    },
+    {
+      "q": 35,
+      "r": 54,
+      "terrain": "scrub_maquis"
+    },
+    {
+      "q": 46,
+      "r": 52,
+      "terrain": "scrub_maquis"
+    },
+    {
+      "q": 31,
+      "r": 55,
+      "terrain": "plains"
+    },
+    {
+      "q": 34,
+      "r": 64,
+      "terrain": "forest_olive_grove"
+    },
+    {
+      "q": 39,
+      "r": 57,
+      "terrain": "scrub_maquis"
+    },
+    {
+      "q": 40,
+      "r": 48,
+      "terrain": "river_valley"
+    },
+    {
+      "q": 40,
+      "r": 60,
+      "terrain": "forest_olive_grove"
+    },
+    {
+      "q": 58,
+      "r": 21,
+      "terrain": "forest_cedar"
+    },
+    {
+      "q": 63,
+      "r": 18,
+      "terrain": "plains"
+    },
+    {
+      "q": 58,
+      "r": 18,
+      "terrain": "forest_cedar"
+    },
+    {
+      "q": 58,
+      "r": 11,
+      "terrain": "scrub_maquis"
+    },
+    {
+      "q": 65,
+      "r": 15,
+      "terrain": "plains"
+    },
+    {
+      "q": 56,
+      "r": 23,
+      "terrain": "forest_olive_grove"
+    }
+  ],
+  "unit_ids": [
+    "442453b8-c017-4850-8e7f-a2ee15607df5",
+    "5ecd1499-2750-4d34-b203-ae5476f0c7db",
+    "9c764315-4c0e-4c19-af29-e282cb2e149a",
+    "5873dc6e-0a7f-458e-b86e-20ffbf99e769",
+    "ac2142a2-ffb6-4de8-a628-8a1033e49b16",
+    "326adbd9-66ad-4eb0-a7ab-e600b9873ce1",
+    "5653f6df-ddac-4dc4-9484-df94ae60c979",
+    "70d0b663-026a-4e86-8f9d-8eb1f1f6f636",
+    "6786d405-17a8-4571-8d33-dcbedcd012a2",
+    "11588fa3-ee1c-48a0-8dba-5f4d303e6a6a",
+    "9d569555-1c13-4120-89d7-907c035aee0e",
+    "5b54ca7a-459b-4194-ab47-7cc2f10be77f",
+    "5989604a-4b49-4ac8-9f18-cb3b1b9b88c0",
+    "683c1c47-429d-4d7c-b284-7e4b5921bfef",
+    "84b571bc-49b9-4f88-952c-d757d274325a",
+    "23b30e0e-74b2-4945-b5fc-648c354f3615",
+    "e2ae482f-163d-40a2-9a8a-b1e631cef945",
+    "49bfb98f-11cb-4f03-bb56-136b69c02fca",
+    "3ba0058c-6e24-4c8c-80e3-65265e2c1fde",
+    "6e17e70b-c798-402c-9f8f-4f6e6ad8b789",
+    "0926100c-4148-43cd-acc7-6907ccc6a03c",
+    "9a39f68d-3e16-4456-860f-f2b21714a520",
+    "e897eae4-edc8-4e45-bbc0-f795e2f36c7d",
+    "a7d6daa0-6bfb-4232-a412-8ad8d69928b1",
+    "32fe923a-4c17-42f2-8c2f-59eab1608eb6",
+    "d6a254cb-5d44-4c50-a8e8-f53c0bfdf0a7",
+    "9c2cde5c-d99a-453e-b797-48ed008b265f",
+    "ea44e514-feae-42c9-8b03-b7bb39e00c9c",
+    "c02cad4d-eb09-422c-b96c-c0ed938857e0",
+    "2748ae98-bc88-49bf-84ce-64753d3399f7",
+    "cc9aa924-7978-4805-9781-ad88d5597ac6",
+    "926a0489-f9b6-4d8b-9c24-844c5be86b69",
+    "f7e9e7c1-923f-46e4-9baa-3577a812a8a0",
+    "176eae9b-62ed-4d0d-8d76-6af71303dee0",
+    "c2677735-2953-4ffd-8164-c9628a98a689",
+    "1bb2b3e6-d6b4-4909-b3b5-2a8ea6f0edfd",
+    "acf58732-328e-4637-ac96-617a835e8363",
+    "70a842ae-8cc6-4b39-9c3d-f589c497fdf5",
+    "f48deda9-1d73-476b-b278-e10aa862c37b",
+    "5a5a6534-4a74-4d2c-8e6f-24c08f5996a2",
+    "ebe6464d-876d-41cf-aa6c-d5a2ccd06448",
+    "85965d62-d00f-4866-b829-bdeb1fdd373c",
+    "59b599f3-c510-4949-9b30-532806762ad3",
+    "e0d8fff3-5ab3-4f01-b505-8c15bf7bedfe",
+    "6730906c-f458-4480-b353-82d876e9d3d7",
+    "c3ebb57d-aef5-4527-9aa6-0de0868a7764",
+    "15effd61-f3b2-42b4-9c68-e3911be67994",
+    "4d1a7122-fd69-4945-9caf-e88c4c5e7e4a",
+    "bb8f351f-4fae-4f7d-873b-1c449d39ad1f",
+    "bc7bf3bb-f5d7-42f1-8359-66f3c5e10fea"
+  ],
+  "places": [
+    {
+      "kind": "river",
+      "id": "6,74",
+      "name": "Thaleia",
+      "hexes": [
+        {
+          "q": 5,
+          "r": 78
+        },
+        {
+          "q": 6,
+          "r": 74
+        },
+        {
+          "q": 6,
+          "r": 78
+        },
+        {
+          "q": 6,
+          "r": 79
+        },
+        {
+          "q": 6,
+          "r": 80
+        },
+        {
+          "q": 7,
+          "r": 74
+        },
+        {
+          "q": 7,
+          "r": 78
+        },
+        {
+          "q": 8,
+          "r": 74
+        },
+        {
+          "q": 8,
+          "r": 75
+        },
+        {
+          "q": 8,
+          "r": 76
+        },
+        {
+          "q": 8,
+          "r": 77
+        }
+      ],
+      "human_name": "Thaleia",
+      "focus": {
+        "q": 8,
+        "r": 77
+      }
+    },
+    {
+      "kind": "massif",
+      "id": "0,75",
+      "name": "Mount Ida",
+      "hexes": [
+        {
+          "q": 0,
+          "r": 75
+        },
+        {
+          "q": 1,
+          "r": 75
+        },
+        {
+          "q": 1,
+          "r": 76
+        },
+        {
+          "q": 2,
+          "r": 73
+        },
+        {
+          "q": 2,
+          "r": 74
+        },
+        {
+          "q": 2,
+          "r": 75
+        },
+        {
+          "q": 3,
+          "r": 73
+        },
+        {
+          "q": 3,
+          "r": 74
+        },
+        {
+          "q": 3,
+          "r": 75
+        },
+        {
+          "q": 3,
+          "r": 76
+        },
+        {
+          "q": 4,
+          "r": 72
+        },
+        {
+          "q": 4,
+          "r": 73
+        },
+        {
+          "q": 4,
+          "r": 74
+        },
+        {
+          "q": 5,
+          "r": 72
+        },
+        {
+          "q": 5,
+          "r": 73
+        },
+        {
+          "q": 6,
+          "r": 71
+        },
+        {
+          "q": 6,
+          "r": 72
+        },
+        {
+          "q": 7,
+          "r": 71
+        },
+        {
+          "q": 7,
+          "r": 72
+        }
+      ],
+      "human_name": "Mount Ida",
+      "focus": {
+        "q": 4,
+        "r": 73
+      }
+    },
+    {
+      "kind": "desert",
+      "id": "31,60",
+      "name": "Damon Sands",
+      "hexes": [
+        {
+          "q": 31,
+          "r": 60
+        },
+        {
+          "q": 32,
+          "r": 59
+        },
+        {
+          "q": 33,
+          "r": 59
+        },
+        {
+          "q": 34,
+          "r": 57
+        },
+        {
+          "q": 34,
+          "r": 58
+        },
+        {
+          "q": 34,
+          "r": 59
+        },
+        {
+          "q": 34,
+          "r": 61
+        },
+        {
+          "q": 35,
+          "r": 55
+        },
+        {
+          "q": 35,
+          "r": 56
+        },
+        {
+          "q": 35,
+          "r": 57
+        },
+        {
+          "q": 35,
+          "r": 58
+        },
+        {
+          "q": 35,
+          "r": 59
+        },
+        {
+          "q": 35,
+          "r": 60
+        },
+        {
+          "q": 35,
+          "r": 61
+        },
+        {
+          "q": 36,
+          "r": 53
+        },
+        {
+          "q": 36,
+          "r": 54
+        },
+        {
+          "q": 36,
+          "r": 55
+        },
+        {
+          "q": 36,
+          "r": 56
+        },
+        {
+          "q": 36,
+          "r": 57
+        },
+        {
+          "q": 36,
+          "r": 58
+        },
+        {
+          "q": 36,
+          "r": 59
+        },
+        {
+          "q": 36,
+          "r": 60
+        },
+        {
+          "q": 37,
+          "r": 53
+        },
+        {
+          "q": 37,
+          "r": 54
+        },
+        {
+          "q": 37,
+          "r": 55
+        },
+        {
+          "q": 37,
+          "r": 56
+        },
+        {
+          "q": 37,
+          "r": 57
+        },
+        {
+          "q": 37,
+          "r": 58
+        },
+        {
+          "q": 37,
+          "r": 59
+        },
+        {
+          "q": 37,
+          "r": 60
+        },
+        {
+          "q": 38,
+          "r": 51
+        },
+        {
+          "q": 38,
+          "r": 52
+        },
+        {
+          "q": 38,
+          "r": 53
+        },
+        {
+          "q": 38,
+          "r": 54
+        },
+        {
+          "q": 38,
+          "r": 55
+        },
+        {
+          "q": 38,
+          "r": 56
+        },
+        {
+          "q": 38,
+          "r": 57
+        },
+        {
+          "q": 38,
+          "r": 58
+        },
+        {
+          "q": 39,
+          "r": 51
+        },
+        {
+          "q": 39,
+          "r": 52
+        },
+        {
+          "q": 39,
+          "r": 53
+        },
+        {
+          "q": 39,
+          "r": 54
+        },
+        {
+          "q": 39,
+          "r": 55
+        },
+        {
+          "q": 39,
+          "r": 56
+        },
+        {
+          "q": 40,
+          "r": 51
+        },
+        {
+          "q": 40,
+          "r": 52
+        },
+        {
+          "q": 40,
+          "r": 53
+        },
+        {
+          "q": 40,
+          "r": 54
+        },
+        {
+          "q": 40,
+          "r": 55
+        },
+        {
+          "q": 41,
+          "r": 51
+        },
+        {
+          "q": 41,
+          "r": 52
+        },
+        {
+          "q": 41,
+          "r": 53
+        },
+        {
+          "q": 41,
+          "r": 54
+        },
+        {
+          "q": 41,
+          "r": 55
+        },
+        {
+          "q": 41,
+          "r": 56
+        },
+        {
+          "q": 41,
+          "r": 57
+        },
+        {
+          "q": 41,
+          "r": 58
+        },
+        {
+          "q": 42,
+          "r": 51
+        },
+        {
+          "q": 42,
+          "r": 52
+        },
+        {
+          "q": 42,
+          "r": 53
+        },
+        {
+          "q": 42,
+          "r": 54
+        },
+        {
+          "q": 42,
+          "r": 55
+        },
+        {
+          "q": 42,
+          "r": 56
+        },
+        {
+          "q": 42,
+          "r": 57
+        },
+        {
+          "q": 43,
+          "r": 54
+        },
+        {
+          "q": 43,
+          "r": 55
+        },
+        {
+          "q": 43,
+          "r": 56
+        },
+        {
+          "q": 44,
+          "r": 54
+        },
+        {
+          "q": 44,
+          "r": 55
+        }
+      ],
+      "human_name": "Damon Sands",
+      "focus": {
+        "q": 38,
+        "r": 56
+      }
+    },
+    {
+      "kind": "forest",
+      "id": "58,18",
+      "name": "Ariadne Cedars",
+      "hexes": [
+        {
+          "q": 58,
+          "r": 18
+        },
+        {
+          "q": 58,
+          "r": 19
+        },
+        {
+          "q": 58,
+          "r": 20
+        },
+        {
+          "q": 58,
+          "r": 21
+        },
+        {
+          "q": 58,
+          "r": 22
+        },
+        {
+          "q": 59,
+          "r": 17
+        },
+        {
+          "q": 59,
+          "r": 18
+        },
+        {
+          "q": 59,
+          "r": 19
+        },
+        {
+          "q": 59,
+          "r": 20
+        },
+        {
+          "q": 60,
+          "r": 19
+        }
+      ],
+      "human_name": "Ariadne Cedars",
+      "focus": {
+        "q": 59,
+        "r": 19
+      }
+    }
+  ],
+  "captures": [
+    {
+      "mode": "desktop",
+      "kind": "river",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map",
+      "label": {
+        "id": "river:6,74",
+        "kind": "river",
+        "name": "Thaleia",
+        "x": 264,
+        "y": 3048,
+        "angle": 1.5707963267948966,
+        "rect": {
+          "left": 257.5,
+          "right": 270.5,
+          "top": 3032.9416666030884,
+          "bottom": 3063.0583333969116
+        }
+      },
+      "group": [
+        {
+          "q": 5,
+          "r": 78,
+          "tier": "live",
+          "terrain": "river_delta"
+        },
+        {
+          "q": 6,
+          "r": 74,
+          "tier": "live",
+          "terrain": "river"
+        },
+        {
+          "q": 6,
+          "r": 78,
+          "tier": "live",
+          "terrain": "river"
+        },
+        {
+          "q": 6,
+          "r": 79,
+          "tier": "live",
+          "terrain": "river_delta"
+        },
+        {
+          "q": 6,
+          "r": 80,
+          "tier": "live",
+          "terrain": "river_delta"
+        },
+        {
+          "q": 7,
+          "r": 74,
+          "tier": "live",
+          "terrain": "river"
+        },
+        {
+          "q": 7,
+          "r": 78,
+          "tier": "live",
+          "terrain": "river"
+        },
+        {
+          "q": 8,
+          "r": 74,
+          "tier": "live",
+          "terrain": "river"
+        },
+        {
+          "q": 8,
+          "r": 75,
+          "tier": "live",
+          "terrain": "river"
+        },
+        {
+          "q": 8,
+          "r": 76,
+          "tier": "live",
+          "terrain": "river"
+        },
+        {
+          "q": 8,
+          "r": 77,
+          "tier": "live",
+          "terrain": "river"
+        }
+      ],
+      "live_land": 121,
+      "visible_land": 125,
+      "measurements": {
+        "labels": [
+          {
+            "id": "massif:0,75",
+            "kind": "massif",
+            "name": "Mount Ida",
+            "x": 99,
+            "y": 2891,
+            "angle": 0,
+            "rect": {
+              "left": 78.57500076293945,
+              "right": 119.42499923706055,
+              "top": 2884.5,
+              "bottom": 2897.5
+            }
+          },
+          {
+            "id": "river:6,74",
+            "kind": "river",
+            "name": "Thaleia",
+            "x": 264,
+            "y": 3048,
+            "angle": 1.5707963267948966,
+            "rect": {
+              "left": 257.5,
+              "right": 270.5,
+              "top": 3032.9416666030884,
+              "bottom": 3063.0583333969116
+            }
+          }
+        ],
+        "visible": [
+          {
+            "q": 0,
+            "r": 77,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 0,
+            "r": 78,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 0,
+            "r": 79,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 0,
+            "r": 80,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 0,
+            "r": 81,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 0,
+            "r": 82,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 0,
+            "r": 83,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 0,
+            "r": 84,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 0,
+            "r": 85,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 0,
+            "r": 86,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 1,
+            "r": 76,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 1,
+            "r": 77,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 1,
+            "r": 78,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 1,
+            "r": 79,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 1,
+            "r": 80,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 1,
+            "r": 81,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 1,
+            "r": 82,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 1,
+            "r": 83,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 1,
+            "r": 84,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 1,
+            "r": 85,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 1,
+            "r": 86,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 76,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 77,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 78,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 79,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 80,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 81,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 82,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 83,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 84,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 85,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 75,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 76,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 77,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 78,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 79,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 80,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 81,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 82,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 83,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 84,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 85,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 75,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 76,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 77,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 78,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 79,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 80,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 81,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 82,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 83,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 84,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 74,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 75,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 76,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 77,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 78,
+            "terrain": "river_delta",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 79,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 80,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 81,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 82,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 83,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 84,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 74,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 75,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 76,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 77,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 78,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 79,
+            "terrain": "river_delta",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 80,
+            "terrain": "river_delta",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 81,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 82,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 83,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 73,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 74,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 75,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 76,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 77,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 78,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 79,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 80,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 81,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 82,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 83,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 73,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 74,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 75,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 76,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 77,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 78,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 79,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 80,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 81,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 82,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 72,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 73,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 74,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 75,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 76,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 77,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 78,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 79,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 80,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 81,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 82,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 72,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 73,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 74,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 75,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 76,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 77,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 78,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 79,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 80,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 81,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 11,
+            "r": 71,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 11,
+            "r": 72,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 11,
+            "r": 73,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 11,
+            "r": 74,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 11,
+            "r": 75,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 11,
+            "r": 76,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 11,
+            "r": 77,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 11,
+            "r": 78,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 11,
+            "r": 79,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 11,
+            "r": 80,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 11,
+            "r": 81,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 12,
+            "r": 71,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 12,
+            "r": 72,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 12,
+            "r": 73,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 12,
+            "r": 74,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 12,
+            "r": 75,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 12,
+            "r": 76,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 12,
+            "r": 77,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 12,
+            "r": 78,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 12,
+            "r": 79,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 12,
+            "r": 80,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 13,
+            "r": 70,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 13,
+            "r": 71,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 13,
+            "r": 72,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 13,
+            "r": 73,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 13,
+            "r": 74,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 13,
+            "r": 75,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 13,
+            "r": 76,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 13,
+            "r": 77,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 13,
+            "r": 78,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 13,
+            "r": 79,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 13,
+            "r": 80,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 14,
+            "r": 70,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 14,
+            "r": 71,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 14,
+            "r": 72,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 14,
+            "r": 73,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 14,
+            "r": 74,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 14,
+            "r": 75,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 14,
+            "r": 76,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 14,
+            "r": 77,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 14,
+            "r": 78,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 14,
+            "r": 79,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 15,
+            "r": 69,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 15,
+            "r": 70,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 15,
+            "r": 71,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 15,
+            "r": 72,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 15,
+            "r": 73,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 15,
+            "r": 74,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 15,
+            "r": 75,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 15,
+            "r": 76,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 15,
+            "r": 77,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 15,
+            "r": 78,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 15,
+            "r": 79,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 16,
+            "r": 69,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 16,
+            "r": 70,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 16,
+            "r": 71,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 16,
+            "r": 72,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 16,
+            "r": 73,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 16,
+            "r": 74,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 16,
+            "r": 75,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 16,
+            "r": 76,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 16,
+            "r": 77,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 16,
+            "r": 78,
+            "terrain": "hills",
+            "tier": "remembered"
+          },
+          {
+            "q": 17,
+            "r": 68,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 17,
+            "r": 69,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 17,
+            "r": 70,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 17,
+            "r": 71,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 17,
+            "r": 72,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 17,
+            "r": 73,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 17,
+            "r": 74,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 17,
+            "r": 75,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 17,
+            "r": 76,
+            "terrain": "plains",
+            "tier": "remembered"
+          },
+          {
+            "q": 17,
+            "r": 77,
+            "terrain": "forest_olive_grove",
+            "tier": "remembered"
+          },
+          {
+            "q": 17,
+            "r": 78,
+            "terrain": "hills",
+            "tier": "remembered"
+          }
+        ],
+        "zoom": 1
+      },
+      "errors": []
+    },
+    {
+      "mode": "desktop",
+      "kind": "massif",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map",
+      "label": {
+        "id": "massif:0,75",
+        "kind": "massif",
+        "name": "Mount Ida",
+        "x": 132,
+        "y": 2858,
+        "angle": 0,
+        "rect": {
+          "left": 111.57500076293945,
+          "right": 152.42499923706055,
+          "top": 2851.5,
+          "bottom": 2864.5
+        }
+      },
+      "group": [
+        {
+          "q": 0,
+          "r": 75,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 1,
+          "r": 75,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 1,
+          "r": 76,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 2,
+          "r": 73,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 2,
+          "r": 74,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 2,
+          "r": 75,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 3,
+          "r": 73,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 3,
+          "r": 74,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 3,
+          "r": 75,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 3,
+          "r": 76,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 4,
+          "r": 72,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 4,
+          "r": 73,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 4,
+          "r": 74,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 5,
+          "r": 72,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 5,
+          "r": 73,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 6,
+          "r": 71,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 6,
+          "r": 72,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 7,
+          "r": 71,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 7,
+          "r": 72,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        }
+      ],
+      "live_land": 112,
+      "visible_land": 112,
+      "measurements": {
+        "labels": [
+          {
+            "id": "massif:0,75",
+            "kind": "massif",
+            "name": "Mount Ida",
+            "x": 132,
+            "y": 2858,
+            "angle": 0,
+            "rect": {
+              "left": 111.57500076293945,
+              "right": 152.42499923706055,
+              "top": 2851.5,
+              "bottom": 2864.5
+            }
+          },
+          {
+            "id": "river:6,74",
+            "kind": "river",
+            "name": "Thaleia",
+            "x": 264,
+            "y": 3048,
+            "angle": 1.5707963267948966,
+            "rect": {
+              "left": 257.5,
+              "right": 270.5,
+              "top": 3032.9416666030884,
+              "bottom": 3063.0583333969116
+            }
+          }
+        ],
+        "visible": [
+          {
+            "q": 0,
+            "r": 71,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 0,
+            "r": 72,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 0,
+            "r": 73,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 0,
+            "r": 74,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 0,
+            "r": 75,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 0,
+            "r": 76,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 0,
+            "r": 77,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 0,
+            "r": 78,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 0,
+            "r": 79,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 0,
+            "r": 80,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 1,
+            "r": 70,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 1,
+            "r": 71,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 1,
+            "r": 72,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 1,
+            "r": 73,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 1,
+            "r": 74,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 1,
+            "r": 75,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 1,
+            "r": 76,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 1,
+            "r": 77,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 1,
+            "r": 78,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 1,
+            "r": 79,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 1,
+            "r": 80,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 70,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 71,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 72,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 73,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 74,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 75,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 76,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 77,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 78,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 79,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 69,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 70,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 71,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 72,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 73,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 74,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 75,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 76,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 77,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 78,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 79,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 69,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 70,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 71,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 72,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 73,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 74,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 75,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 76,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 77,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 78,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 68,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 69,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 70,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 71,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 72,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 73,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 74,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 75,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 76,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 77,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 78,
+            "terrain": "river_delta",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 68,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 69,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 70,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 71,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 72,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 73,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 74,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 75,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 76,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 77,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 67,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 68,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 69,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 70,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 71,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 72,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 73,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 74,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 75,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 76,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 77,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 67,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 68,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 69,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 70,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 71,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 72,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 73,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 74,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 75,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 76,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 66,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 67,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 9,
+            "r": 68,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 9,
+            "r": 69,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 70,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 71,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 72,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 73,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 74,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 75,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 76,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 66,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 67,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 10,
+            "r": 68,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 10,
+            "r": 69,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 70,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 71,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 72,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 73,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 74,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 75,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 11,
+            "r": 65,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 11,
+            "r": 66,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 11,
+            "r": 67,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 11,
+            "r": 68,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 11,
+            "r": 69,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 11,
+            "r": 70,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 11,
+            "r": 71,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 11,
+            "r": 72,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 11,
+            "r": 73,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 11,
+            "r": 74,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 11,
+            "r": 75,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 12,
+            "r": 65,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 12,
+            "r": 66,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 12,
+            "r": 67,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 12,
+            "r": 68,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 12,
+            "r": 69,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 12,
+            "r": 70,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 12,
+            "r": 71,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 12,
+            "r": 72,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 12,
+            "r": 73,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 12,
+            "r": 74,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 13,
+            "r": 64,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 13,
+            "r": 65,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 13,
+            "r": 66,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 13,
+            "r": 67,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 13,
+            "r": 68,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 13,
+            "r": 69,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 13,
+            "r": 70,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 13,
+            "r": 71,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 13,
+            "r": 72,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 13,
+            "r": 73,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 13,
+            "r": 74,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 14,
+            "r": 64,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 14,
+            "r": 65,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 14,
+            "r": 66,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 14,
+            "r": 67,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 14,
+            "r": 68,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 14,
+            "r": 69,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 14,
+            "r": 70,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 14,
+            "r": 71,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 14,
+            "r": 72,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 14,
+            "r": 73,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 15,
+            "r": 63,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 15,
+            "r": 64,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 15,
+            "r": 65,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 15,
+            "r": 66,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 15,
+            "r": 67,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 15,
+            "r": 68,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 15,
+            "r": 69,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 15,
+            "r": 70,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 15,
+            "r": 71,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 15,
+            "r": 72,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 15,
+            "r": 73,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 16,
+            "r": 63,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 16,
+            "r": 64,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 16,
+            "r": 65,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 16,
+            "r": 66,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 16,
+            "r": 67,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 16,
+            "r": 68,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 16,
+            "r": 69,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 16,
+            "r": 70,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 16,
+            "r": 71,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 16,
+            "r": 72,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 17,
+            "r": 62,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 17,
+            "r": 63,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 17,
+            "r": 64,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 17,
+            "r": 65,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 17,
+            "r": 66,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 17,
+            "r": 67,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 17,
+            "r": 68,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 17,
+            "r": 69,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 17,
+            "r": 70,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 17,
+            "r": 71,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 17,
+            "r": 72,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          }
+        ],
+        "zoom": 1
+      },
+      "errors": []
+    },
+    {
+      "mode": "desktop",
+      "kind": "desert",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map",
+      "label": {
+        "id": "desert:31,60",
+        "kind": "desert",
+        "name": "Damon Sands",
+        "x": 1254,
+        "y": 2858,
+        "angle": 0,
+        "rect": {
+          "left": 1227.5416660308838,
+          "right": 1280.4583339691162,
+          "top": 2851.5,
+          "bottom": 2864.5
+        }
+      },
+      "group": [
+        {
+          "q": 31,
+          "r": 60,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 32,
+          "r": 59,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 33,
+          "r": 59,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 34,
+          "r": 57,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 34,
+          "r": 58,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 34,
+          "r": 59,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 34,
+          "r": 61,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 35,
+          "r": 55,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 35,
+          "r": 56,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 35,
+          "r": 57,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 35,
+          "r": 58,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 35,
+          "r": 59,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 35,
+          "r": 60,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 35,
+          "r": 61,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 36,
+          "r": 53,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 36,
+          "r": 54,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 36,
+          "r": 55,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 36,
+          "r": 56,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 36,
+          "r": 57,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 36,
+          "r": 58,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 36,
+          "r": 59,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 36,
+          "r": 60,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 37,
+          "r": 53,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 37,
+          "r": 54,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 37,
+          "r": 55,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 37,
+          "r": 56,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 37,
+          "r": 57,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 37,
+          "r": 58,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 37,
+          "r": 59,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 37,
+          "r": 60,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 38,
+          "r": 51,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 38,
+          "r": 52,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 38,
+          "r": 53,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 38,
+          "r": 54,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 38,
+          "r": 55,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 38,
+          "r": 56,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 38,
+          "r": 57,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 38,
+          "r": 58,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 39,
+          "r": 51,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 39,
+          "r": 52,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 39,
+          "r": 53,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 39,
+          "r": 54,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 39,
+          "r": 55,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 39,
+          "r": 56,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 40,
+          "r": 51,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 40,
+          "r": 52,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 40,
+          "r": 53,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 40,
+          "r": 54,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 40,
+          "r": 55,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 41,
+          "r": 51,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 41,
+          "r": 52,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 41,
+          "r": 53,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 41,
+          "r": 54,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 41,
+          "r": 55,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 41,
+          "r": 56,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 41,
+          "r": 57,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 41,
+          "r": 58,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 42,
+          "r": 51,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 42,
+          "r": 52,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 42,
+          "r": 53,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 42,
+          "r": 54,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 42,
+          "r": 55,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 42,
+          "r": 56,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 42,
+          "r": 57,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 43,
+          "r": 54,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 43,
+          "r": 55,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 43,
+          "r": 56,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 44,
+          "r": 54,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 44,
+          "r": 55,
+          "tier": "live",
+          "terrain": "semi_desert"
+        }
+      ],
+      "live_land": 172,
+      "visible_land": 176,
+      "measurements": {
+        "labels": [
+          {
+            "id": "desert:31,60",
+            "kind": "desert",
+            "name": "Damon Sands",
+            "x": 1254,
+            "y": 2858,
+            "angle": 0,
+            "rect": {
+              "left": 1227.5416660308838,
+              "right": 1280.4583339691162,
+              "top": 2851.5,
+              "bottom": 2864.5
+            }
+          }
+        ],
+        "visible": [
+          {
+            "q": 29,
+            "r": 56,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 29,
+            "r": 57,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 29,
+            "r": 58,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 29,
+            "r": 59,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 29,
+            "r": 60,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 29,
+            "r": 61,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 29,
+            "r": 62,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 29,
+            "r": 63,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 29,
+            "r": 64,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 29,
+            "r": 65,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 29,
+            "r": 66,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 30,
+            "r": 56,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 30,
+            "r": 57,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 30,
+            "r": 58,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 30,
+            "r": 59,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 30,
+            "r": 60,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 30,
+            "r": 61,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 30,
+            "r": 62,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 30,
+            "r": 63,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 30,
+            "r": 64,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 30,
+            "r": 65,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 31,
+            "r": 55,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 31,
+            "r": 56,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 31,
+            "r": 57,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 31,
+            "r": 58,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 31,
+            "r": 59,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 31,
+            "r": 60,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 31,
+            "r": 61,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 31,
+            "r": 62,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 31,
+            "r": 63,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 31,
+            "r": 64,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 31,
+            "r": 65,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 32,
+            "r": 55,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 32,
+            "r": 56,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 32,
+            "r": 57,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 32,
+            "r": 58,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 32,
+            "r": 59,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 32,
+            "r": 60,
+            "terrain": "mountain_red",
+            "tier": "live"
+          },
+          {
+            "q": 32,
+            "r": 61,
+            "terrain": "mountain_red",
+            "tier": "live"
+          },
+          {
+            "q": 32,
+            "r": 62,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 32,
+            "r": 63,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 32,
+            "r": 64,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 33,
+            "r": 54,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 33,
+            "r": 55,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 33,
+            "r": 56,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 33,
+            "r": 57,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 33,
+            "r": 58,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 33,
+            "r": 59,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 33,
+            "r": 60,
+            "terrain": "mountain_red",
+            "tier": "live"
+          },
+          {
+            "q": 33,
+            "r": 61,
+            "terrain": "mountain_red",
+            "tier": "live"
+          },
+          {
+            "q": 33,
+            "r": 62,
+            "terrain": "mountain_red",
+            "tier": "live"
+          },
+          {
+            "q": 33,
+            "r": 63,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 33,
+            "r": 64,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 34,
+            "r": 54,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 34,
+            "r": 55,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 34,
+            "r": 56,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 34,
+            "r": 57,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 34,
+            "r": 58,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 34,
+            "r": 59,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 34,
+            "r": 60,
+            "terrain": "mountain_red",
+            "tier": "live"
+          },
+          {
+            "q": 34,
+            "r": 61,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 34,
+            "r": 62,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 34,
+            "r": 63,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 35,
+            "r": 53,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 35,
+            "r": 54,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 35,
+            "r": 55,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 35,
+            "r": 56,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 35,
+            "r": 57,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 35,
+            "r": 58,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 35,
+            "r": 59,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 35,
+            "r": 60,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 35,
+            "r": 61,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 35,
+            "r": 62,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 35,
+            "r": 63,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 36,
+            "r": 53,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 36,
+            "r": 54,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 36,
+            "r": 55,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 36,
+            "r": 56,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 36,
+            "r": 57,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 36,
+            "r": 58,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 36,
+            "r": 59,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 36,
+            "r": 60,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 36,
+            "r": 61,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 36,
+            "r": 62,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 37,
+            "r": 52,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 37,
+            "r": 53,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 37,
+            "r": 54,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 37,
+            "r": 55,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 37,
+            "r": 56,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 37,
+            "r": 57,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 37,
+            "r": 58,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 37,
+            "r": 59,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 37,
+            "r": 60,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 37,
+            "r": 61,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 37,
+            "r": 62,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 38,
+            "r": 52,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 38,
+            "r": 53,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 38,
+            "r": 54,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 38,
+            "r": 55,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 38,
+            "r": 56,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 38,
+            "r": 57,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 38,
+            "r": 58,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 38,
+            "r": 59,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 38,
+            "r": 60,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 38,
+            "r": 61,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 39,
+            "r": 51,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 39,
+            "r": 52,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 39,
+            "r": 53,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 39,
+            "r": 54,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 39,
+            "r": 55,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 39,
+            "r": 56,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 39,
+            "r": 57,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 39,
+            "r": 58,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 39,
+            "r": 59,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 39,
+            "r": 60,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 39,
+            "r": 61,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 40,
+            "r": 51,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 40,
+            "r": 52,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 40,
+            "r": 53,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 40,
+            "r": 54,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 40,
+            "r": 55,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 40,
+            "r": 56,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 40,
+            "r": 57,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 40,
+            "r": 58,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 40,
+            "r": 59,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 40,
+            "r": 60,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 41,
+            "r": 50,
+            "terrain": "mountain_red",
+            "tier": "live"
+          },
+          {
+            "q": 41,
+            "r": 51,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 41,
+            "r": 52,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 41,
+            "r": 53,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 41,
+            "r": 54,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 41,
+            "r": 55,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 41,
+            "r": 56,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 41,
+            "r": 57,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 41,
+            "r": 58,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 41,
+            "r": 59,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 41,
+            "r": 60,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 42,
+            "r": 50,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 42,
+            "r": 51,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 42,
+            "r": 52,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 42,
+            "r": 53,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 42,
+            "r": 54,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 42,
+            "r": 55,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 42,
+            "r": 56,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 42,
+            "r": 57,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 42,
+            "r": 58,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 42,
+            "r": 59,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 43,
+            "r": 49,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 43,
+            "r": 50,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 43,
+            "r": 51,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 43,
+            "r": 52,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 43,
+            "r": 53,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 43,
+            "r": 54,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 43,
+            "r": 55,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 43,
+            "r": 56,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 43,
+            "r": 57,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 43,
+            "r": 58,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 43,
+            "r": 59,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 44,
+            "r": 49,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 44,
+            "r": 50,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 44,
+            "r": 51,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 44,
+            "r": 52,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 44,
+            "r": 53,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 44,
+            "r": 54,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 44,
+            "r": 55,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 44,
+            "r": 56,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 44,
+            "r": 57,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 44,
+            "r": 58,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 45,
+            "r": 48,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 45,
+            "r": 49,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 45,
+            "r": 50,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 45,
+            "r": 51,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 45,
+            "r": 52,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 45,
+            "r": 53,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 45,
+            "r": 54,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 45,
+            "r": 55,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 45,
+            "r": 56,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 45,
+            "r": 57,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 45,
+            "r": 58,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 46,
+            "r": 48,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 46,
+            "r": 49,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 46,
+            "r": 50,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 46,
+            "r": 51,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 46,
+            "r": 52,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 46,
+            "r": 53,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 46,
+            "r": 54,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 46,
+            "r": 55,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 46,
+            "r": 56,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 46,
+            "r": 57,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 47,
+            "r": 47,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 47,
+            "r": 48,
+            "terrain": "plains",
+            "tier": "remembered"
+          },
+          {
+            "q": 47,
+            "r": 49,
+            "terrain": "scrub_maquis",
+            "tier": "remembered"
+          },
+          {
+            "q": 47,
+            "r": 50,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 47,
+            "r": 51,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 47,
+            "r": 52,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 47,
+            "r": 53,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 47,
+            "r": 54,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 47,
+            "r": 55,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 47,
+            "r": 56,
+            "terrain": "plains",
+            "tier": "remembered"
+          },
+          {
+            "q": 47,
+            "r": 57,
+            "terrain": "plains",
+            "tier": "remembered"
+          }
+        ],
+        "zoom": 1
+      },
+      "errors": []
+    },
+    {
+      "mode": "desktop",
+      "kind": "forest",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map",
+      "label": {
+        "id": "forest:58,18",
+        "kind": "forest",
+        "name": "Ariadne Cedars",
+        "x": 1947,
+        "y": 1848,
+        "angle": 0,
+        "rect": {
+          "left": 1917.3666667938232,
+          "right": 1976.6333332061768,
+          "top": 1841.5,
+          "bottom": 1854.5
+        }
+      },
+      "group": [
+        {
+          "q": 58,
+          "r": 18,
+          "tier": "live",
+          "terrain": "forest_cedar"
+        },
+        {
+          "q": 58,
+          "r": 19,
+          "tier": "live",
+          "terrain": "forest_cedar"
+        },
+        {
+          "q": 58,
+          "r": 20,
+          "tier": "live",
+          "terrain": "forest_cedar"
+        },
+        {
+          "q": 58,
+          "r": 21,
+          "tier": "live",
+          "terrain": "forest_cedar"
+        },
+        {
+          "q": 58,
+          "r": 22,
+          "tier": "live",
+          "terrain": "forest_cedar"
+        },
+        {
+          "q": 59,
+          "r": 17,
+          "tier": "live",
+          "terrain": "forest_cedar"
+        },
+        {
+          "q": 59,
+          "r": 18,
+          "tier": "live",
+          "terrain": "forest_cedar"
+        },
+        {
+          "q": 59,
+          "r": 19,
+          "tier": "live",
+          "terrain": "forest_cedar"
+        },
+        {
+          "q": 59,
+          "r": 20,
+          "tier": "live",
+          "terrain": "forest_cedar"
+        },
+        {
+          "q": 60,
+          "r": 19,
+          "tier": "live",
+          "terrain": "forest_cedar"
+        }
+      ],
+      "live_land": 41,
+      "visible_land": 41,
+      "measurements": {
+        "labels": [
+          {
+            "id": "forest:58,18",
+            "kind": "forest",
+            "name": "Ariadne Cedars",
+            "x": 1947,
+            "y": 1848,
+            "angle": 0,
+            "rect": {
+              "left": 1917.3666667938232,
+              "right": 1976.6333332061768,
+              "top": 1841.5,
+              "bottom": 1854.5
+            }
+          }
+        ],
+        "visible": [
+          {
+            "q": 50,
+            "r": 19,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 50,
+            "r": 20,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 50,
+            "r": 21,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 50,
+            "r": 22,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 50,
+            "r": 23,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 50,
+            "r": 24,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 50,
+            "r": 25,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 50,
+            "r": 26,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 50,
+            "r": 27,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 50,
+            "r": 28,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 50,
+            "r": 29,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 51,
+            "r": 19,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 51,
+            "r": 20,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 51,
+            "r": 21,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 51,
+            "r": 22,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 51,
+            "r": 23,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 51,
+            "r": 24,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 51,
+            "r": 25,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 51,
+            "r": 26,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 51,
+            "r": 27,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 51,
+            "r": 28,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 52,
+            "r": 18,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 52,
+            "r": 19,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 52,
+            "r": 20,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 52,
+            "r": 21,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 52,
+            "r": 22,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 52,
+            "r": 23,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 52,
+            "r": 24,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 52,
+            "r": 25,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 52,
+            "r": 26,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 52,
+            "r": 27,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 52,
+            "r": 28,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 53,
+            "r": 18,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 53,
+            "r": 19,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 53,
+            "r": 20,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 53,
+            "r": 21,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 53,
+            "r": 22,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 53,
+            "r": 23,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 53,
+            "r": 24,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 53,
+            "r": 25,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 53,
+            "r": 26,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 53,
+            "r": 27,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 54,
+            "r": 17,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 54,
+            "r": 18,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 54,
+            "r": 19,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 54,
+            "r": 20,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 54,
+            "r": 21,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 54,
+            "r": 22,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 54,
+            "r": 23,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 54,
+            "r": 24,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 54,
+            "r": 25,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 54,
+            "r": 26,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 54,
+            "r": 27,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 55,
+            "r": 17,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 55,
+            "r": 18,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 55,
+            "r": 19,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 55,
+            "r": 20,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 55,
+            "r": 21,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 55,
+            "r": 22,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 55,
+            "r": 23,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 55,
+            "r": 24,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 55,
+            "r": 25,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 55,
+            "r": 26,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 56,
+            "r": 16,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 56,
+            "r": 17,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 56,
+            "r": 18,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 56,
+            "r": 19,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 56,
+            "r": 20,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 56,
+            "r": 21,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 56,
+            "r": 22,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 56,
+            "r": 23,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 56,
+            "r": 24,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 56,
+            "r": 25,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 56,
+            "r": 26,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 57,
+            "r": 16,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 57,
+            "r": 17,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 57,
+            "r": 18,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 57,
+            "r": 19,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 57,
+            "r": 20,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 57,
+            "r": 21,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 57,
+            "r": 22,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 57,
+            "r": 23,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 57,
+            "r": 24,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 57,
+            "r": 25,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 58,
+            "r": 15,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 58,
+            "r": 16,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 58,
+            "r": 17,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 58,
+            "r": 18,
+            "terrain": "forest_cedar",
+            "tier": "live"
+          },
+          {
+            "q": 58,
+            "r": 19,
+            "terrain": "forest_cedar",
+            "tier": "live"
+          },
+          {
+            "q": 58,
+            "r": 20,
+            "terrain": "forest_cedar",
+            "tier": "live"
+          },
+          {
+            "q": 58,
+            "r": 21,
+            "terrain": "forest_cedar",
+            "tier": "live"
+          },
+          {
+            "q": 58,
+            "r": 22,
+            "terrain": "forest_cedar",
+            "tier": "live"
+          },
+          {
+            "q": 58,
+            "r": 23,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 58,
+            "r": 24,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 58,
+            "r": 25,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 59,
+            "r": 15,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 59,
+            "r": 16,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 59,
+            "r": 17,
+            "terrain": "forest_cedar",
+            "tier": "live"
+          },
+          {
+            "q": 59,
+            "r": 18,
+            "terrain": "forest_cedar",
+            "tier": "live"
+          },
+          {
+            "q": 59,
+            "r": 19,
+            "terrain": "forest_cedar",
+            "tier": "live"
+          },
+          {
+            "q": 59,
+            "r": 20,
+            "terrain": "forest_cedar",
+            "tier": "live"
+          },
+          {
+            "q": 59,
+            "r": 21,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 59,
+            "r": 22,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 59,
+            "r": 23,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 59,
+            "r": 24,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 60,
+            "r": 14,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 60,
+            "r": 15,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 60,
+            "r": 16,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 60,
+            "r": 17,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 60,
+            "r": 18,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 60,
+            "r": 19,
+            "terrain": "forest_cedar",
+            "tier": "live"
+          },
+          {
+            "q": 60,
+            "r": 20,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 60,
+            "r": 21,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 60,
+            "r": 22,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 60,
+            "r": 23,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 60,
+            "r": 24,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 61,
+            "r": 14,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 61,
+            "r": 15,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 61,
+            "r": 16,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 61,
+            "r": 17,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 61,
+            "r": 18,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 61,
+            "r": 19,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 61,
+            "r": 20,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 61,
+            "r": 21,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 61,
+            "r": 22,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 61,
+            "r": 23,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 62,
+            "r": 13,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 62,
+            "r": 14,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 62,
+            "r": 15,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 62,
+            "r": 16,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 62,
+            "r": 17,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 62,
+            "r": 18,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 62,
+            "r": 19,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 62,
+            "r": 20,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 62,
+            "r": 21,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 62,
+            "r": 22,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 62,
+            "r": 23,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 63,
+            "r": 13,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 63,
+            "r": 14,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 63,
+            "r": 15,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 63,
+            "r": 16,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 63,
+            "r": 17,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 63,
+            "r": 18,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 63,
+            "r": 19,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 63,
+            "r": 20,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 63,
+            "r": 21,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 63,
+            "r": 22,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 64,
+            "r": 12,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 64,
+            "r": 13,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 64,
+            "r": 14,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 64,
+            "r": 15,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 64,
+            "r": 16,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 64,
+            "r": 17,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 64,
+            "r": 18,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 64,
+            "r": 19,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 64,
+            "r": 20,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 64,
+            "r": 21,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 64,
+            "r": 22,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 65,
+            "r": 12,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 65,
+            "r": 13,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 65,
+            "r": 14,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 65,
+            "r": 15,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 65,
+            "r": 16,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 65,
+            "r": 17,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 65,
+            "r": 18,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 65,
+            "r": 19,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 65,
+            "r": 20,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 65,
+            "r": 21,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 66,
+            "r": 11,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 66,
+            "r": 12,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 66,
+            "r": 13,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 66,
+            "r": 14,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 66,
+            "r": 15,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 66,
+            "r": 16,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 66,
+            "r": 17,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 66,
+            "r": 18,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 66,
+            "r": 19,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 66,
+            "r": 20,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 66,
+            "r": 21,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 67,
+            "r": 11,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 67,
+            "r": 12,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 67,
+            "r": 13,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 67,
+            "r": 14,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 67,
+            "r": 15,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 67,
+            "r": 16,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 67,
+            "r": 17,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 67,
+            "r": 18,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 67,
+            "r": 19,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 67,
+            "r": 20,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 68,
+            "r": 10,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 68,
+            "r": 11,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 68,
+            "r": 12,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 68,
+            "r": 13,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 68,
+            "r": 14,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 68,
+            "r": 15,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 68,
+            "r": 16,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 68,
+            "r": 17,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 68,
+            "r": 18,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 68,
+            "r": 19,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 68,
+            "r": 20,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          }
+        ],
+        "zoom": 1
+      },
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "kind": "river",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map",
+      "label": {
+        "id": "river:6,74",
+        "kind": "river",
+        "name": "Thaleia",
+        "x": 264,
+        "y": 3048,
+        "angle": 1.5707963267948966,
+        "rect": {
+          "left": 257.5,
+          "right": 270.5,
+          "top": 3032.9416666030884,
+          "bottom": 3063.0583333969116
+        }
+      },
+      "group": [
+        {
+          "q": 5,
+          "r": 78,
+          "tier": "live",
+          "terrain": "river_delta"
+        },
+        {
+          "q": 6,
+          "r": 74,
+          "tier": "live",
+          "terrain": "river"
+        },
+        {
+          "q": 6,
+          "r": 78,
+          "tier": "live",
+          "terrain": "river"
+        },
+        {
+          "q": 6,
+          "r": 79,
+          "tier": "live",
+          "terrain": "river_delta"
+        },
+        {
+          "q": 6,
+          "r": 80,
+          "tier": "live",
+          "terrain": "river_delta"
+        },
+        {
+          "q": 7,
+          "r": 74,
+          "tier": "live",
+          "terrain": "river"
+        },
+        {
+          "q": 7,
+          "r": 78,
+          "tier": "live",
+          "terrain": "river"
+        },
+        {
+          "q": 8,
+          "r": 74,
+          "tier": "live",
+          "terrain": "river"
+        },
+        {
+          "q": 8,
+          "r": 75,
+          "tier": "live",
+          "terrain": "river"
+        },
+        {
+          "q": 8,
+          "r": 76,
+          "tier": "live",
+          "terrain": "river"
+        },
+        {
+          "q": 8,
+          "r": 77,
+          "tier": "live",
+          "terrain": "river"
+        }
+      ],
+      "live_land": 50,
+      "visible_land": 50,
+      "measurements": {
+        "labels": [
+          {
+            "id": "river:6,74",
+            "kind": "river",
+            "name": "Thaleia",
+            "x": 264,
+            "y": 3048,
+            "angle": 1.5707963267948966,
+            "rect": {
+              "left": 257.5,
+              "right": 270.5,
+              "top": 3032.9416666030884,
+              "bottom": 3063.0583333969116
+            }
+          }
+        ],
+        "visible": [
+          {
+            "q": 6,
+            "r": 74,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 75,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 76,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 77,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 78,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 79,
+            "terrain": "river_delta",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 80,
+            "terrain": "river_delta",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 81,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 82,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 83,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 74,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 75,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 76,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 77,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 78,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 79,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 80,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 81,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 82,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 7,
+            "r": 83,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 73,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 74,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 75,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 76,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 77,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 78,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 79,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 80,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 81,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 8,
+            "r": 82,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 73,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 74,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 75,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 76,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 77,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 78,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 79,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 80,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 81,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 9,
+            "r": 82,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 72,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 73,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 74,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 75,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 76,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 77,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 78,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 79,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 80,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 10,
+            "r": 81,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          }
+        ],
+        "zoom": 1
+      },
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "kind": "massif",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map",
+      "label": {
+        "id": "massif:0,75",
+        "kind": "massif",
+        "name": "Mount Ida",
+        "x": 132,
+        "y": 2858,
+        "angle": 0,
+        "rect": {
+          "left": 111.57500076293945,
+          "right": 152.42499923706055,
+          "top": 2851.5,
+          "bottom": 2864.5
+        }
+      },
+      "group": [
+        {
+          "q": 0,
+          "r": 75,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 1,
+          "r": 75,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 1,
+          "r": 76,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 2,
+          "r": 73,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 2,
+          "r": 74,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 2,
+          "r": 75,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 3,
+          "r": 73,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 3,
+          "r": 74,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 3,
+          "r": 75,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 3,
+          "r": 76,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 4,
+          "r": 72,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 4,
+          "r": 73,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 4,
+          "r": 74,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 5,
+          "r": 72,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 5,
+          "r": 73,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 6,
+          "r": 71,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 6,
+          "r": 72,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 7,
+          "r": 71,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        },
+        {
+          "q": 7,
+          "r": 72,
+          "tier": "live",
+          "terrain": "mountain_limestone"
+        }
+      ],
+      "live_land": 43,
+      "visible_land": 43,
+      "measurements": {
+        "labels": [
+          {
+            "id": "massif:0,75",
+            "kind": "massif",
+            "name": "Mount Ida",
+            "x": 132,
+            "y": 2858,
+            "angle": 0,
+            "rect": {
+              "left": 111.57500076293945,
+              "right": 152.42499923706055,
+              "top": 2851.5,
+              "bottom": 2864.5
+            }
+          },
+          {
+            "id": "river:6,74",
+            "kind": "river",
+            "name": "Thaleia",
+            "x": 198,
+            "y": 2934,
+            "angle": 0.5224034317165289,
+            "rect": {
+              "left": 181.70684122350295,
+              "right": 214.29315877649705,
+              "top": 2920.8533810663066,
+              "bottom": 2947.1466189336934
+            }
+          }
+        ],
+        "visible": [
+          {
+            "q": 2,
+            "r": 70,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 71,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 72,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 73,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 74,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 75,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 76,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 77,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 78,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 2,
+            "r": 79,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 70,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 71,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 72,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 73,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 74,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 75,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 76,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 77,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 78,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 3,
+            "r": 79,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 69,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 70,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 71,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 72,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 73,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 74,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 75,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 76,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 77,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 4,
+            "r": 78,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 69,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 70,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 71,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 72,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 73,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 74,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 75,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 76,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 77,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 5,
+            "r": 78,
+            "terrain": "river_delta",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 68,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 69,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 70,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 71,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 72,
+            "terrain": "mountain_limestone",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 73,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 74,
+            "terrain": "river",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 75,
+            "terrain": "river_valley",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 76,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 6,
+            "r": 77,
+            "terrain": "river_valley",
+            "tier": "live"
+          }
+        ],
+        "zoom": 1
+      },
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "kind": "desert",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map",
+      "label": {
+        "id": "desert:31,60",
+        "kind": "desert",
+        "name": "Damon Sands",
+        "x": 1254,
+        "y": 2858,
+        "angle": 0,
+        "rect": {
+          "left": 1227.5416660308838,
+          "right": 1280.4583339691162,
+          "top": 2851.5,
+          "bottom": 2864.5
+        }
+      },
+      "group": [
+        {
+          "q": 31,
+          "r": 60,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 32,
+          "r": 59,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 33,
+          "r": 59,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 34,
+          "r": 57,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 34,
+          "r": 58,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 34,
+          "r": 59,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 34,
+          "r": 61,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 35,
+          "r": 55,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 35,
+          "r": 56,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 35,
+          "r": 57,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 35,
+          "r": 58,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 35,
+          "r": 59,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 35,
+          "r": 60,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 35,
+          "r": 61,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 36,
+          "r": 53,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 36,
+          "r": 54,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 36,
+          "r": 55,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 36,
+          "r": 56,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 36,
+          "r": 57,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 36,
+          "r": 58,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 36,
+          "r": 59,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 36,
+          "r": 60,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 37,
+          "r": 53,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 37,
+          "r": 54,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 37,
+          "r": 55,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 37,
+          "r": 56,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 37,
+          "r": 57,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 37,
+          "r": 58,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 37,
+          "r": 59,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 37,
+          "r": 60,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 38,
+          "r": 51,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 38,
+          "r": 52,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 38,
+          "r": 53,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 38,
+          "r": 54,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 38,
+          "r": 55,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 38,
+          "r": 56,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 38,
+          "r": 57,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 38,
+          "r": 58,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 39,
+          "r": 51,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 39,
+          "r": 52,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 39,
+          "r": 53,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 39,
+          "r": 54,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 39,
+          "r": 55,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 39,
+          "r": 56,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 40,
+          "r": 51,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 40,
+          "r": 52,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 40,
+          "r": 53,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 40,
+          "r": 54,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 40,
+          "r": 55,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 41,
+          "r": 51,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 41,
+          "r": 52,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 41,
+          "r": 53,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 41,
+          "r": 54,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 41,
+          "r": 55,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 41,
+          "r": 56,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 41,
+          "r": 57,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 41,
+          "r": 58,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 42,
+          "r": 51,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 42,
+          "r": 52,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 42,
+          "r": 53,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 42,
+          "r": 54,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 42,
+          "r": 55,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 42,
+          "r": 56,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 42,
+          "r": 57,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 43,
+          "r": 54,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 43,
+          "r": 55,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 43,
+          "r": 56,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 44,
+          "r": 54,
+          "tier": "live",
+          "terrain": "semi_desert"
+        },
+        {
+          "q": 44,
+          "r": 55,
+          "tier": "live",
+          "terrain": "semi_desert"
+        }
+      ],
+      "live_land": 50,
+      "visible_land": 50,
+      "measurements": {
+        "labels": [
+          {
+            "id": "desert:31,60",
+            "kind": "desert",
+            "name": "Damon Sands",
+            "x": 1254,
+            "y": 2858,
+            "angle": 0,
+            "rect": {
+              "left": 1227.5416660308838,
+              "right": 1280.4583339691162,
+              "top": 2851.5,
+              "bottom": 2864.5
+            }
+          }
+        ],
+        "visible": [
+          {
+            "q": 36,
+            "r": 53,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 36,
+            "r": 54,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 36,
+            "r": 55,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 36,
+            "r": 56,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 36,
+            "r": 57,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 36,
+            "r": 58,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 36,
+            "r": 59,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 36,
+            "r": 60,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 36,
+            "r": 61,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 36,
+            "r": 62,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 37,
+            "r": 53,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 37,
+            "r": 54,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 37,
+            "r": 55,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 37,
+            "r": 56,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 37,
+            "r": 57,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 37,
+            "r": 58,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 37,
+            "r": 59,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 37,
+            "r": 60,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 37,
+            "r": 61,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 37,
+            "r": 62,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 38,
+            "r": 52,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 38,
+            "r": 53,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 38,
+            "r": 54,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 38,
+            "r": 55,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 38,
+            "r": 56,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 38,
+            "r": 57,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 38,
+            "r": 58,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 38,
+            "r": 59,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 38,
+            "r": 60,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 38,
+            "r": 61,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 39,
+            "r": 52,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 39,
+            "r": 53,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 39,
+            "r": 54,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 39,
+            "r": 55,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 39,
+            "r": 56,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 39,
+            "r": 57,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 39,
+            "r": 58,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 39,
+            "r": 59,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 39,
+            "r": 60,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 39,
+            "r": 61,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 40,
+            "r": 51,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 40,
+            "r": 52,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 40,
+            "r": 53,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 40,
+            "r": 54,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 40,
+            "r": 55,
+            "terrain": "semi_desert",
+            "tier": "live"
+          },
+          {
+            "q": 40,
+            "r": 56,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 40,
+            "r": 57,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 40,
+            "r": 58,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 40,
+            "r": 59,
+            "terrain": "scrub_maquis",
+            "tier": "live"
+          },
+          {
+            "q": 40,
+            "r": 60,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          }
+        ],
+        "zoom": 1
+      },
+      "errors": []
+    },
+    {
+      "mode": "mobile",
+      "kind": "forest",
+      "url": "http://localhost:8097/world/3b5fb9cd-8c06-4685-88df-b162c9acff99/map",
+      "label": {
+        "id": "forest:58,18",
+        "kind": "forest",
+        "name": "Ariadne Cedars",
+        "x": 1947,
+        "y": 1848,
+        "angle": 0,
+        "rect": {
+          "left": 1917.3666667938232,
+          "right": 1976.6333332061768,
+          "top": 1841.5,
+          "bottom": 1854.5
+        }
+      },
+      "group": [
+        {
+          "q": 58,
+          "r": 18,
+          "tier": "live",
+          "terrain": "forest_cedar"
+        },
+        {
+          "q": 58,
+          "r": 19,
+          "tier": "live",
+          "terrain": "forest_cedar"
+        },
+        {
+          "q": 58,
+          "r": 20,
+          "tier": "live",
+          "terrain": "forest_cedar"
+        },
+        {
+          "q": 58,
+          "r": 21,
+          "tier": "live",
+          "terrain": "forest_cedar"
+        },
+        {
+          "q": 58,
+          "r": 22,
+          "tier": "live",
+          "terrain": "forest_cedar"
+        },
+        {
+          "q": 59,
+          "r": 17,
+          "tier": "live",
+          "terrain": "forest_cedar"
+        },
+        {
+          "q": 59,
+          "r": 18,
+          "tier": "live",
+          "terrain": "forest_cedar"
+        },
+        {
+          "q": 59,
+          "r": 19,
+          "tier": "live",
+          "terrain": "forest_cedar"
+        },
+        {
+          "q": 59,
+          "r": 20,
+          "tier": "live",
+          "terrain": "forest_cedar"
+        },
+        {
+          "q": 60,
+          "r": 19,
+          "tier": "live",
+          "terrain": "forest_cedar"
+        }
+      ],
+      "live_land": 27,
+      "visible_land": 27,
+      "measurements": {
+        "labels": [
+          {
+            "id": "forest:58,18",
+            "kind": "forest",
+            "name": "Ariadne Cedars",
+            "x": 1947,
+            "y": 1848,
+            "angle": 0,
+            "rect": {
+              "left": 1917.3666667938232,
+              "right": 1976.6333332061768,
+              "top": 1841.5,
+              "bottom": 1854.5
+            }
+          }
+        ],
+        "visible": [
+          {
+            "q": 57,
+            "r": 16,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 57,
+            "r": 17,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 57,
+            "r": 18,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 57,
+            "r": 19,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 57,
+            "r": 20,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 57,
+            "r": 21,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 57,
+            "r": 22,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 57,
+            "r": 23,
+            "terrain": "hills",
+            "tier": "live"
+          },
+          {
+            "q": 57,
+            "r": 24,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 57,
+            "r": 25,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 58,
+            "r": 16,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 58,
+            "r": 17,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 58,
+            "r": 18,
+            "terrain": "forest_cedar",
+            "tier": "live"
+          },
+          {
+            "q": 58,
+            "r": 19,
+            "terrain": "forest_cedar",
+            "tier": "live"
+          },
+          {
+            "q": 58,
+            "r": 20,
+            "terrain": "forest_cedar",
+            "tier": "live"
+          },
+          {
+            "q": 58,
+            "r": 21,
+            "terrain": "forest_cedar",
+            "tier": "live"
+          },
+          {
+            "q": 58,
+            "r": 22,
+            "terrain": "forest_cedar",
+            "tier": "live"
+          },
+          {
+            "q": 58,
+            "r": 23,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 58,
+            "r": 24,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 58,
+            "r": 25,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 59,
+            "r": 15,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 59,
+            "r": 16,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 59,
+            "r": 17,
+            "terrain": "forest_cedar",
+            "tier": "live"
+          },
+          {
+            "q": 59,
+            "r": 18,
+            "terrain": "forest_cedar",
+            "tier": "live"
+          },
+          {
+            "q": 59,
+            "r": 19,
+            "terrain": "forest_cedar",
+            "tier": "live"
+          },
+          {
+            "q": 59,
+            "r": 20,
+            "terrain": "forest_cedar",
+            "tier": "live"
+          },
+          {
+            "q": 59,
+            "r": 21,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 59,
+            "r": 22,
+            "terrain": "forest_olive_grove",
+            "tier": "live"
+          },
+          {
+            "q": 59,
+            "r": 23,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 59,
+            "r": 24,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 60,
+            "r": 15,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 60,
+            "r": 16,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 60,
+            "r": 17,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 60,
+            "r": 18,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 60,
+            "r": 19,
+            "terrain": "forest_cedar",
+            "tier": "live"
+          },
+          {
+            "q": 60,
+            "r": 20,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 60,
+            "r": 21,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 60,
+            "r": 22,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 60,
+            "r": 23,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 60,
+            "r": 24,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 61,
+            "r": 14,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 61,
+            "r": 15,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 61,
+            "r": 16,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 61,
+            "r": 17,
+            "terrain": "coastal_sea",
+            "tier": "live"
+          },
+          {
+            "q": 61,
+            "r": 18,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 61,
+            "r": 19,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 61,
+            "r": 20,
+            "terrain": "plains",
+            "tier": "live"
+          },
+          {
+            "q": 61,
+            "r": 21,
+            "terrain": "coastal_sea",
+            "tier": "remembered"
+          },
+          {
+            "q": 61,
+            "r": 22,
+            "terrain": "deep_sea",
+            "tier": "live"
+          },
+          {
+            "q": 61,
+            "r": 23,
+            "terrain": "deep_sea",
+            "tier": "remembered"
+          }
+        ],
+        "zoom": 1
+      },
+      "errors": []
+    }
+  ]
+}

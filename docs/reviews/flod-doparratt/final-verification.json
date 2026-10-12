@@ -1,0 +1,27 @@
+{
+  "production_commit": "46e8f716",
+  "frontend_commit": "4820b9f7",
+  "base": "0db368c5",
+  "full_go": "passed fresh migration172",
+  "vet": "passed",
+  "js": {
+    "passed": 587,
+    "failed": 0
+  },
+  "mutations": [
+    "massif adjacency removed",
+    "arrival blocks on naming failure",
+    "corrupt journey becomes global failure",
+    "label halo removed"
+  ],
+  "pathfind_diff": "empty against origin/master",
+  "runtime": {
+    "commit": "46e8f71",
+    "migration": 172,
+    "status": "ok"
+  },
+  "captures": 8,
+  "fixture_scouts_remaining": 0,
+  "tracked_production_diff_since_build": "empty",
+  "pending": "Timothy BILD judgment of improved A contrast"
+}
