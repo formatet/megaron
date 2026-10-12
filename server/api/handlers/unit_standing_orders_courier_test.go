@@ -235,39 +235,51 @@ func TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBatt
 	}
 	// A letter sealed before deploy keeps its original bytes. Interpret only
 	// the applied copy when it arrives, including a passage-reconstructed event.
-	legacy := map[string]any{}
-	if err := json.Unmarshal(rawPayload2, &legacy); err != nil {
-		t.Fatal(err)
-	}
-	legacy["standing_orders"] = map[string]any{"WorldID": worldID, "PlayerID": playerID, "UnitID": unitID, "RetreatAtLoss": 0.75, "HoldToLastMan": false}
-	var legacyID uuid.UUID
-	if err := pool.QueryRow(ctx, `INSERT INTO messengers(world_id,sender_id,origin_id,kind,status,message_text,hex_q,hex_r,dest_q,dest_r,arrives_at,order_payload) VALUES($1,$2,(SELECT id FROM settlements WHERE world_id=$1 AND owner_id=$2 LIMIT 1),'order','outbound','legacy retreat',0,0,5,0,$3,'{}') RETURNING id`, worldID, playerID, clk.Now()).Scan(&legacyID); err != nil {
-		t.Fatal(err)
-	}
-	legacy["messenger_id"] = legacyID
-	sealed, _ := json.Marshal(legacy)
-	if _, err := pool.Exec(ctx, `UPDATE messengers SET order_payload=$2 WHERE id=$1`, legacyID, sealed); err != nil {
-		t.Fatal(err)
-	}
-	var eventID int64
-	if err := pool.QueryRow(ctx, `INSERT INTO scheduled_events(world_id,event_type,payload,process_after,due_tick) VALUES($1,'OrderDelivery',$2,now(),1) RETURNING id`, worldID, sealed).Scan(&eventID); err != nil {
-		t.Fatal(err)
-	}
-	var letterBefore, queueBefore []byte
-	_ = pool.QueryRow(ctx, `SELECT order_payload FROM messengers WHERE id=$1`, legacyID).Scan(&letterBefore)
-	_ = pool.QueryRow(ctx, `SELECT payload FROM scheduled_events WHERE id=$1`, eventID).Scan(&queueBefore)
-	if err := odh.Handle(ctx, events.ScheduledEvent{WorldID: worldID, Payload: sealed}); err != nil {
-		t.Fatal(err)
-	}
-	var orders, letterAfter, queueAfter []byte
-	_ = pool.QueryRow(ctx, `SELECT standing_orders FROM battle_participants WHERE unit_id=$1`, unitID).Scan(&orders)
-	_ = pool.QueryRow(ctx, `SELECT order_payload FROM messengers WHERE id=$1`, legacyID).Scan(&letterAfter)
-	_ = pool.QueryRow(ctx, `SELECT payload FROM scheduled_events WHERE id=$1`, eventID).Scan(&queueAfter)
-	if string(orders) != "{}" {
-		t.Fatalf("legacy retreat courier did not translate to loyalty on arrival: %s", orders)
-	}
-	if !bytes.Equal(letterBefore, letterAfter) || !bytes.Equal(queueBefore, queueAfter) {
-		t.Fatal("legacy retreat letter or pending queue payload changed in transit")
+	for _, legacyMode := range []string{"percentage", "reset_false"} {
+		t.Run(legacyMode, func(t *testing.T) {
+			if _, err := pool.Exec(ctx, `UPDATE battle_participants SET standing_orders='{"hold_to_last_man":true}'::jsonb WHERE unit_id=$1`, unitID); err != nil {
+				t.Fatal(err)
+			}
+			legacy := map[string]any{}
+			if err := json.Unmarshal(rawPayload2, &legacy); err != nil {
+				t.Fatal(err)
+			}
+			standing := map[string]any{"WorldID": worldID, "PlayerID": playerID, "UnitID": unitID, "HoldToLastMan": false}
+			if legacyMode == "percentage" {
+				standing["RetreatAtLoss"] = 0.75
+			}
+			legacy["standing_orders"] = standing
+			var legacyID uuid.UUID
+			if err := pool.QueryRow(ctx, `INSERT INTO messengers(world_id,sender_id,origin_id,kind,status,message_text,hex_q,hex_r,dest_q,dest_r,arrives_at,order_payload) VALUES($1,$2,(SELECT id FROM settlements WHERE world_id=$1 AND owner_id=$2 LIMIT 1),'order','outbound','legacy retreat',0,0,5,0,$3,'{}') RETURNING id`, worldID, playerID, clk.Now()).Scan(&legacyID); err != nil {
+				t.Fatal(err)
+			}
+			legacy["messenger_id"] = legacyID
+			sealed, _ := json.Marshal(legacy)
+			if _, err := pool.Exec(ctx, `UPDATE messengers SET order_payload=$2 WHERE id=$1`, legacyID, sealed); err != nil {
+				t.Fatal(err)
+			}
+			var eventID int64
+			if err := pool.QueryRow(ctx, `INSERT INTO scheduled_events(world_id,event_type,payload,process_after,due_tick) VALUES($1,'OrderDelivery',$2,now(),1) RETURNING id`, worldID, sealed).Scan(&eventID); err != nil {
+				t.Fatal(err)
+			}
+			var letterBefore, queueBefore []byte
+			_ = pool.QueryRow(ctx, `SELECT order_payload FROM messengers WHERE id=$1`, legacyID).Scan(&letterBefore)
+			_ = pool.QueryRow(ctx, `SELECT payload FROM scheduled_events WHERE id=$1`, eventID).Scan(&queueBefore)
+			if err := odh.Handle(ctx, events.ScheduledEvent{WorldID: worldID, Payload: sealed}); err != nil {
+				t.Fatal(err)
+			}
+			var orders, letterAfter, queueAfter []byte
+			_ = pool.QueryRow(ctx, `SELECT standing_orders FROM battle_participants WHERE unit_id=$1`, unitID).Scan(&orders)
+			_ = pool.QueryRow(ctx, `SELECT order_payload FROM messengers WHERE id=$1`, legacyID).Scan(&letterAfter)
+			_ = pool.QueryRow(ctx, `SELECT payload FROM scheduled_events WHERE id=$1`, eventID).Scan(&queueAfter)
+			if string(orders) != "{}" {
+				t.Fatalf("legacy retreat courier did not translate to loyalty on arrival (%s): %s", legacyMode, orders)
+			}
+			if !bytes.Equal(letterBefore, letterAfter) || !bytes.Equal(queueBefore, queueAfter) {
+				t.Fatal("legacy retreat letter or pending queue payload changed in transit")
+			}
+
+		})
 	}
 
 }

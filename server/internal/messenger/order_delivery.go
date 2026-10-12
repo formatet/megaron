@@ -233,9 +233,10 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 			return fmt.Errorf("order delivery %s: standing_orders verb without standing_orders payload", p.MessengerID)
 		}
 		// Old sealed orders keep their original bytes. Interpret their removed
-		// threshold at application time only, including passage-rebuilt copies.
+		// threshold or explicit hold:false reset at application time only,
+		// including passage-rebuilt copies.
 		order := *p.StandingOrders
-		if order.RetreatAtLoss != nil {
+		if order.RetreatAtLoss != nil || (!order.ByLoyalty && order.HoldToLastMan != nil && !*order.HoldToLastMan) {
 			order.RetreatAtLoss = nil
 			order.HoldToLastMan = nil
 			order.ByLoyalty = true
