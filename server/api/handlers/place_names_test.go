@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/combat"
+	"formatet/megaron/server/internal/events"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -164,5 +166,70 @@ func TestPlacesUnknownObjectDoesNotLeakNameOrRight(t *testing.T) {
 	}
 	if len(v.Places) != 0 {
 		t.Fatalf("unknown places leaked name/right: %s", got.Body)
+	}
+}
+
+func TestPlaceMassifPhysicalBorderClaimCanBeNamedThroughAPI(t *testing.T) {
+	n := newPlaceRig(t)
+	ctx := context.Background()
+	if _, err := n.pool.Exec(ctx, `UPDATE worlds SET status='archived' WHERE status='active'`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := n.pool.Exec(ctx, `UPDATE worlds SET status='active' WHERE id=$1`, n.world); err != nil {
+		t.Fatal(err)
+	}
+	// Remove the API fixture's synthetic rights and memory: only the scan may
+	// grant this right and retain a visible mountain witness.
+	if _, err := n.pool.Exec(ctx, `DELETE FROM place_names WHERE world_id=$1`, n.world); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := n.pool.Exec(ctx, `DELETE FROM player_scouted_tiles WHERE world_id=$1`, n.world); err != nil {
+		t.Fatal(err)
+	}
+	for q := 9; q <= 10; q++ {
+		if _, err := n.pool.Exec(ctx, `INSERT INTO map_tiles(world_id,q,r,terrain) VALUES($1,$2,1,'plains')`, n.world, q); err != nil {
+			t.Fatal(err)
+		}
+	}
+	clk := clock.NewTestClock(time.Date(2026, 10, 12, 0, 0, 0, 0, time.UTC))
+	route, _ := json.Marshal(combat.StoredRoute{StartTick: 12, EndTick: 13, Hexes: [][2]int{{9, 1}, {10, 1}}, Costs: []int64{1000}})
+	if _, err := n.pool.Exec(ctx, `INSERT INTO units(world_id,owner_id,type,category,size,status,q,r,target_q,target_r,depart_tick,arrive_tick,march_route,departs_at,arrives_at) VALUES($1,$2,'infantry','land',100,'marching',9,1,10,1,12,13,$3,$4,$5)`, n.world, n.viewer, route, clk.Now(), clk.Now().Add(time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	h := combat.NewPlaceReachScanHandler(n.pool, events.NewScheduler(n.pool, clk), events.NewStore(n.pool), nil)
+	if err := h.Handle(ctx, events.ScheduledEvent{WorldID: n.world, DueTick: 12}); err != nil {
+		t.Fatal(err)
+	}
+	// After the unit is gone, its persistent right and border witness remain;
+	// the live eye must not mask a broken memory/action link.
+	if _, err := n.pool.Exec(ctx, `UPDATE units SET status='disbanded',size=0 WHERE world_id=$1`, n.world); err != nil {
+		t.Fatal(err)
+	}
+	got := n.do("GET", "", "", "", n.token, "")
+	var body struct {
+		Places []struct {
+			Kind    string               `json:"kind"`
+			ID      string               `json:"id"`
+			CanName bool                 `json:"can_name"`
+			Hexes   []struct{ Q, R int } `json:"hexes"`
+		} `json:"places"`
+	}
+	if got.Code != 200 {
+		t.Fatalf("massif catalogue HTTP%d: %s", got.Code, got.Body)
+	}
+	if err := json.Unmarshal(got.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	if len(body.Places) != 1 || body.Places[0].Kind != "massif" || body.Places[0].ID != "10,0" || !body.Places[0].CanName || len(body.Places[0].Hexes) != 1 {
+		t.Fatalf("physical massif right not actionable without hidden component: %s", got.Body)
+	}
+	if got := n.do("POST", "massif", "10,0", `{"name":"Mount Ida"}`, n.other, ""); got.Code != 403 {
+		t.Fatalf("other Wanax named reached massif: HTTP%d", got.Code)
+	}
+	if got := n.do("POST", "massif", "10,0", `{"name":"Mount Ida"}`, n.token, ""); got.Code != 200 {
+		t.Fatalf("physical massif claimant cannot name it: HTTP%d %s", got.Code, got.Body)
+	}
+	if got := n.do("POST", "massif", "10,0", `{"name":"Second Try"}`, n.token, ""); got.Code != 409 {
+		t.Fatalf("massif right reused: HTTP%d", got.Code)
 	}
 }

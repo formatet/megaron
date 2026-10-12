@@ -12,6 +12,8 @@ import (
 	"time"
 
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/hexgrid"
+	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/unit"
 	"formatet/megaron/server/internal/world"
 	"github.com/google/uuid"
@@ -85,6 +87,45 @@ type placeEntry struct {
 	voyage int
 	milli  int64
 	hex    [2]int
+}
+
+type placeReachTarget struct {
+	place world.Place
+	// A known object hex for the notice's map action. For a massif this is
+	// the bordering mountain, not the land hex the unit actually entered.
+	hex [2]int
+}
+
+func placeReachTargets(tiles []world.MapTile) map[[2]int][]placeReachTarget {
+	terrain := make(map[[2]int]world.Terrain, len(tiles))
+	for _, t := range tiles {
+		terrain[[2]int{t.Q, t.R}] = t.Terrain
+	}
+	objects := map[[2]int][]placeReachTarget{}
+	for _, p := range world.Places(tiles) {
+		if p.Kind != "massif" {
+			for _, hex := range p.Hexes {
+				objects[hex] = append(objects[hex], placeReachTarget{p, hex})
+			}
+			continue
+		}
+		// Mountains remain impassable. First entry on bordering land grants
+		// the right; sight alone never does. Deduplicate shared borders and
+		// choose the first canonical adjacent mountain as the visible witness.
+		seen := map[[2]int]bool{}
+		for _, hex := range p.Hexes {
+			for _, n := range hexgrid.Neighbors(hexgrid.Coord{Q: hex[0], R: hex[1]}) {
+				border := [2]int{n.Q, n.R}
+				t, exists := terrain[border]
+				if !exists || !province.IsPassable(string(t), "land") || seen[border] {
+					continue
+				}
+				seen[border] = true
+				objects[border] = append(objects[border], placeReachTarget{p, hex})
+			}
+		}
+	}
+	return objects
 }
 
 func loadPlaceVoyages(ctx context.Context, tx pgx.Tx, worldID uuid.UUID) ([]placeVoyage, error) {
@@ -178,12 +219,7 @@ func recordPlaceEntriesTx(ctx context.Context, tx pgx.Tx, store *events.Store, w
 	if err != nil {
 		return nil, err
 	}
-	objects := map[[2]int][]world.Place{}
-	for _, p := range world.Places(tiles) {
-		for _, hex := range p.Hexes {
-			objects[hex] = append(objects[hex], p)
-		}
-	}
+	objects := placeReachTargets(tiles)
 	voyages, err := loadPlaceVoyages(ctx, tx, worldID)
 	if err != nil {
 		return nil, err
@@ -229,7 +265,8 @@ func recordPlaceEntriesTx(ctx context.Context, tx pgx.Tx, store *events.Store, w
 	var outcomes []expeditionOutcome
 	for _, entry := range entries {
 		v := voyages[entry.voyage]
-		for _, p := range objects[entry.hex] {
+		for _, target := range objects[entry.hex] {
+			p := target.place
 			if _, err = tx.Exec(ctx, `INSERT INTO place_names(world_id,kind,anchor_q,anchor_r) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING`, worldID, p.Kind, p.Anchor[0], p.Anchor[1]); err != nil {
 				return nil, err
 			}
@@ -244,6 +281,13 @@ func recordPlaceEntriesTx(ctx context.Context, tx pgx.Tx, store *events.Store, w
 			if _, err = tx.Exec(ctx, `INSERT INTO player_scouted_tiles(world_id,player_id,q,r) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING`, worldID, v.owner, entry.hex[0], entry.hex[1]); err != nil {
 				return nil, err
 			}
+			if target.hex != entry.hex {
+				// Adjacent mountains are visible from this physical border step.
+				// Retain only this witness, never the unseen rest of the massif.
+				if _, err = tx.Exec(ctx, `INSERT INTO player_scouted_tiles(world_id,player_id,q,r) VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING`, worldID, v.owner, target.hex[0], target.hex[1]); err != nil {
+					return nil, err
+				}
+			}
 			if named != nil {
 				continue
 			} // admin-spent right never promises a naming action
@@ -257,7 +301,7 @@ func recordPlaceEntriesTx(ctx context.Context, tx pgx.Tx, store *events.Store, w
 			if v.displayID != uuid.Nil {
 				subjectID = v.displayID
 			}
-			body := map[string]any{"unit_id": subjectID, "unit_name": displayName, "unit_type": v.typ, "kind": p.Kind, "place_id": fmt.Sprintf("%d,%d", p.Anchor[0], p.Anchor[1]), "q": entry.hex[0], "r": entry.hex[1]}
+			body := map[string]any{"unit_id": subjectID, "unit_name": displayName, "unit_type": v.typ, "kind": p.Kind, "place_id": fmt.Sprintf("%d,%d", p.Anchor[0], p.Anchor[1]), "q": target.hex[0], "r": target.hex[1]}
 			raw, _ := json.Marshal(body)
 			var id string
 			if err = tx.QueryRow(ctx, `INSERT INTO notifications(world_id,player_id,kind,level,body_json) VALUES($1,$2,'PlaceFirstReached',1,$3) RETURNING id`, worldID, v.owner, raw).Scan(&id); err != nil {

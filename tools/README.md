@@ -451,5 +451,7 @@ This fixture proves layout, not natural first reach. `tools/place_names_live.py`
 known-map march preview, march, web naming and CLI; a nearby unclaimed eligible object is required.
 `PLACE_PROOF_RESUME=1 PLACE_PROOF_USER=ParityNomad` resumes the separately recorded natural delta arrival.
 `tools/place_api_mutation.py`, `tools/place_reach_mutation.py` and `tools/place_client_mutation.py` remove
-physical gates, require named red results, restore source in finally and check green. Run mutations before
+physical gates, require named red results, restore source in finally and check green.
+`python3 tools/place_massif_mutation.py` removes the massif border-entry mapping, requires the
+named `massif border entry rights=0 want1` failure and restores the source before checking green. Run mutations before
 full suites; they temporarily change the source. Proof: `docs/reviews/flod-doparratt/README.md`.

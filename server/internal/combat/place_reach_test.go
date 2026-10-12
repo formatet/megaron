@@ -465,3 +465,86 @@ func TestPlaceReachFreightShipCanonicalSubject(t *testing.T) {
 		t.Fatalf("freight ship first reach lacks canonical subject: name=%q want=%q id=%s want=%s", name, want, id, ship)
 	}
 }
+
+// Two separate five-hex massifs lie on opposite sides of the saved land route.
+// No route ever enters an impassable mountain.
+func TestPlaceReachMassifBorderEntry(t *testing.T) {
+	for _, scenario := range []struct {
+		name   string
+		rows   []int
+		ground string
+		want   int
+	}{
+		{"adjacent", []int{1}, "plains", 1},
+		{"two_massifs", []int{-1, 1}, "plains", 2},
+		{"farther_visible", []int{2}, "plains", 0},
+		{"sea_is_not_land", []int{1}, "coastal_sea", 0},
+		{"river_is_not_land", []int{1}, "river", 0},
+		{"ford_is_land_crossing", []int{1}, "river_ford", 1},
+	} {
+		t.Run(scenario.name, func(t *testing.T) {
+			f := reachWorld(t)
+			ctx := context.Background()
+			if _, err := f.pool.Exec(ctx, `UPDATE map_tiles SET terrain='plains' WHERE world_id=$1`, f.world); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := f.pool.Exec(ctx, `UPDATE map_tiles SET terrain=$2 WHERE world_id=$1 AND q=1 AND r=0`, f.world, scenario.ground); err != nil {
+				t.Fatal(err)
+			}
+			for _, r := range scenario.rows {
+				for q := 1; q <= 5; q++ {
+					terrain := "mountain_limestone"
+					if q%2 == 0 {
+						terrain = "mountain_red"
+					}
+					if _, err := f.pool.Exec(ctx, `INSERT INTO map_tiles(world_id,q,r,terrain) VALUES($1,$2,$3,$4)`, f.world, q, r, terrain); err != nil {
+						t.Fatal(err)
+					}
+				}
+			}
+			// Remembering a distant mountain must never grant its naming right.
+			if scenario.name == "farther_visible" {
+				if _, err := f.pool.Exec(ctx, `INSERT INTO player_scouted_tiles(world_id,player_id,q,r) VALUES($1,$2,1,2)`, f.world, f.owner); err != nil {
+					t.Fatal(err)
+				}
+			}
+			typ := "infantry"
+			if scenario.ground == "coastal_sea" || scenario.ground == "river" {
+				typ = "galley"
+			}
+			f.mover(t, typ, f.owner, reachRoute(0, 1, 0, 1))
+			f.scan(t, 0)
+			f.scan(t, 0)
+			var claims, notices int
+			if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM place_names WHERE world_id=$1 AND kind='massif' AND claimed_by=$2`, f.world, f.owner).Scan(&claims); err != nil {
+				t.Fatal(err)
+			}
+			if claims != scenario.want {
+				t.Fatalf("massif border entry rights=%d want%d", claims, scenario.want)
+			}
+			if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM notifications WHERE world_id=$1 AND kind='PlaceFirstReached' AND body_json->>'kind'='massif'`, f.world).Scan(&notices); err != nil {
+				t.Fatal(err)
+			}
+			if notices != scenario.want {
+				t.Fatalf("massif rerun notices=%d want%d", notices, scenario.want)
+			}
+			if scenario.want == 0 {
+				return
+			}
+			var actionable int
+			if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM notifications n JOIN map_tiles t ON t.world_id=n.world_id AND t.q=(n.body_json->>'q')::int AND t.r=(n.body_json->>'r')::int JOIN player_scouted_tiles s ON s.world_id=t.world_id AND s.player_id=n.player_id AND s.q=t.q AND s.r=t.r WHERE n.world_id=$1 AND n.kind='PlaceFirstReached' AND n.body_json->>'kind'='massif' AND t.terrain IN ('mountain_limestone','mountain_red')`, f.world).Scan(&actionable); err != nil {
+				t.Fatal(err)
+			}
+			if actionable != scenario.want {
+				t.Fatal("massif notice does not target a remembered mountain hex")
+			}
+			var leaked int
+			if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM player_scouted_tiles WHERE world_id=$1 AND player_id=$2 AND q=5`, f.world, f.owner).Scan(&leaked); err != nil {
+				t.Fatal(err)
+			}
+			if leaked != 0 {
+				t.Fatal("massif border entry revealed unseen component")
+			}
+		})
+	}
+}
