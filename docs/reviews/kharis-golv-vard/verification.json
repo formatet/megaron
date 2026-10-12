@@ -1,0 +1,71 @@
+{
+  "health": {
+    "commit": "871d638",
+    "migration": 174,
+    "status": "ok"
+  },
+  "world": "3b5fb9cd-8c06-4685-88df-b162c9acff99",
+  "username": "HostFloore0df6920",
+  "join": {
+    "culture": "minoan",
+    "host_unit_id": "ce5ba7b0-8542-4a90-a2bb-7695c7e4f01e",
+    "population": 1000,
+    "tile": {
+      "WorldID": "00000000-0000-0000-0000-000000000000",
+      "Q": 24,
+      "R": 70,
+      "Terrain": "",
+      "Coastal": false,
+      "Fertility": 0,
+      "Mineral": 0,
+      "CopperDeposit": false,
+      "TinDeposit": false,
+      "SilverDeposit": false,
+      "CedarDeposit": false
+    }
+  },
+  "floor_from_source": 1.0,
+  "new_host": {
+    "wanax_name": "Deukalas",
+    "founded_tick": null,
+    "cities": 0,
+    "population": 0,
+    "kharis": 1
+  },
+  "repaired_existing_host": {
+    "wanax_name": "Eumedes",
+    "founded_tick": null,
+    "cities": 0,
+    "population": 0,
+    "kharis": 1
+  },
+  "cli_json": {
+    "cities": 0,
+    "founded_tick": null,
+    "kharis": 1,
+    "population": 0,
+    "wanax_name": "Deukalas"
+  },
+  "sql_writes": false,
+  "payload_overrides": false,
+  "note": "Existing Eumedes read 0.0 in prior profile proof; migration174 now reads same floor as newly joined Host. Status keeps existing Host output without adding a numeric Kharis row.",
+  "checks": {
+    "full_fresh_go": {
+      "commit": "871d6388",
+      "migration": 174,
+      "exit_code": 0
+    },
+    "js": {
+      "tests": 602,
+      "failed": 0
+    },
+    "vet_exit_code": 0,
+    "seed_mutation": {
+      "join_named_red": true,
+      "rise_named_red": true,
+      "byte_restored_fresh_green": true
+    },
+    "founding_production_diff": 0,
+    "BILD": "Explicitly not required by order"
+  }
+}

@@ -509,3 +509,9 @@ accounts in the active acceptance world: founded and ungrounded Host, exactly fi
 payload/FOW overrides. `PLACE_PROOF_OUTPUT="$PWD/docs/reviews/spelarprofil/rig" python3 tools/place_names_rig.py`
 first rebuilds/verifies the current binary and migrations with current worktree web assets in the cached
 acceptance runtime. Proof and four screenshots: `docs/reviews/spelarprofil/README.md`.
+
+`python3 tools/host_kharis_proof.py` registers/joins a new Host through the real isolated API and checks
+its Kharis via world/me and freshly built Keryx me/JSON; status retains the existing Host presentation.
+It also reads Eumedes (the earlier zero-valued Host) after migration174. No SQL writes or payload overrides.
+First rebuild with `PLACE_PROOF_OUTPUT="$PWD/docs/reviews/kharis-golv-vard/rig" python3 tools/place_names_rig.py`.
+Proof: `docs/reviews/kharis-golv-vard/README.md`. No BILD required for this numerical correction.
