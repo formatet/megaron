@@ -1,0 +1,6 @@
+--- FAIL: TestBetaFreightStillnessFrozenOnShip (0.03s)
+    departure_test.go:120: can't scan into dest[0]: cannot scan NULL into *int
+FAIL
+FAIL	formatet/megaron/server/internal/transport	0.029s
+FAIL
+» färsk DB på migration 176 · commit 2ddee968+ändringar

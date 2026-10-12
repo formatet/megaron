@@ -1,0 +1,6 @@
+--- FAIL: TestBetaTransportFrozenDeparture (0.02s)
+    departure_test.go:54: Thread interception radius was not reduced
+FAIL
+FAIL	formatet/megaron/server/internal/transport	0.018s
+FAIL
+» färsk DB på migration 176 · commit 2ddee968+ändringar

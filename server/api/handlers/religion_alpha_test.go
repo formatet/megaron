@@ -67,6 +67,9 @@ func newAlphaFixture(t *testing.T) alphaFixture {
 		must(err)
 		_, err = f.pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) SELECT $1,key,100,0,1000,100 FROM goods`, city)
 		must(err)
+		// Updated recipes include 100 silver; repeated-departure tests need two offerings.
+		_, err = f.pool.Exec(ctx, `UPDATE settlement_goods SET amount=500 WHERE settlement_id=$1 AND good_key='silver'`, city)
+		must(err)
 		_, err = f.pool.Exec(ctx, `INSERT INTO map_tiles(world_id,q,r,terrain) VALUES($1,$2,0,'plains')`, f.world, q)
 		must(err)
 	}
@@ -108,7 +111,7 @@ func TestAlphaPrayerSharedGodCooldownAndSilentAnswer(t *testing.T) {
 	if count != 0 {
 		t.Fatal("silent answer imposed a god cooldown")
 	}
-	if got := f.stock(t, f.cities[0], "grain"); got != 97 {
+	if got := f.stock(t, f.cities[0], "grain"); got != 92 {
 		t.Fatalf("silent offering not consumed: %v", got)
 	}
 	f.h.RiteDice = alphaDice{0}

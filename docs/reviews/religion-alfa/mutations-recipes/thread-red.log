@@ -1,0 +1,24 @@
+--- FAIL: TestAlphaTraditionalRecipesOctoberDecision (0.00s)
+    --- FAIL: TestAlphaTraditionalRecipesOctoberDecision/minoan_asterion_thread (0.00s)
+        recipes_test.go:19: catalogue recipe map[silver:99 timber:4], want map[silver:100 timber:4]
+FAIL
+FAIL	formatet/megaron/server/internal/religion	0.002s
+2026/10/12 19:45:49 INFO player registered id=05a841cd-357e-45c7-b982-52d01f1ac121 username=alpha-eb6b2ad6-15e1-404e-90f7-88675d69fba2
+2026/10/12 19:45:49 INFO player registered id=20235489-0c89-4830-b002-8c886b7ed1d0 username=alpha-6d6fa821-db16-4fb3-a789-17aecdcdffeb
+2026/10/12 19:45:49 INFO player registered id=3991341a-de1d-4dbf-ae26-a258a2225cf3 username=alpha-18f0de6f-9b82-49e4-a06c-e0ac6a645a72
+2026/10/12 19:45:49 INFO player registered id=e6df7c2c-3f75-4381-b982-3c625ee78a48 username=alpha-876c152d-7c09-4900-b3f3-546acd9953f2
+2026/10/12 19:45:49 INFO player registered id=b065d339-9658-4d69-aeb7-26ccf14a7210 username=alpha-f9006b76-862b-426c-bfb1-0faf2f79f32a
+2026/10/12 19:45:49 INFO player registered id=71e9847b-079a-48b8-b030-2c2b23992cb5 username=alpha-6146a6d3-906e-439f-92c9-a4b48d34b98a
+2026/10/12 19:45:49 INFO player registered id=c50eba6a-deae-421c-9806-a12c8033bcf2 username=alpha-49a72530-f12a-442a-9318-ccda3c5e9ea3
+2026/10/12 19:45:50 INFO player registered id=f1f07e94-6307-4f93-859b-123005126fbf username=alpha-e63bb2e4-2b5c-48b0-97ab-08a6da4a4e70
+2026/10/12 19:45:50 INFO player registered id=b26548bf-5d0d-467d-a682-6eac0a5ae4ed username=alpha-15780cfa-810d-49a0-9b25-925526bdfb79
+2026/10/12 19:45:50 INFO player registered id=79219683-195c-45cd-b10b-b923c28e6c02 username=alpha-17688fa2-54c9-4b06-9b13-0e3eac339223
+--- FAIL: TestAlphaOfferDebitsDecisionRecipeExactly (0.68s)
+    --- FAIL: TestAlphaOfferDebitsDecisionRecipeExactly/minoan_asterion_thread/answered (0.07s)
+        religion_recipes_test.go:58: Offer debited silver: before500 after401, expected debit100
+    --- FAIL: TestAlphaOfferDebitsDecisionRecipeExactly/minoan_asterion_thread/silent (0.06s)
+        religion_recipes_test.go:58: Offer debited silver: before500 after401, expected debit100
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.684s
+FAIL
+» färsk DB på migration 176 · commit 20bf4cd4+ändringar

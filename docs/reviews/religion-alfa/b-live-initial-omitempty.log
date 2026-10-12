@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-religion-alfa/tools/religion_beta_live.py", line 108, in <module>
+    assert by_id[prayer_id]['active_remaining_game_days']==0,by_id
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'active_remaining_game_days'

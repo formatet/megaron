@@ -1,0 +1,39 @@
+» färsk DB på migration 176 · commit 2ddee968+ändringar
+2026/10/12 19:31:19 INFO player registered id=d0b45ed8-df13-470a-95a8-e0c5ca090011 username=alpha-845ac5d2-cdb5-42a1-bc85-bb14e8135e68
+2026/10/12 19:31:19 INFO player registered id=2d314c18-0563-43f1-aa8d-6ba50e7773c6 username=alpha-7b1d9233-1eed-4865-96b8-6721d5b8ae98
+2026/10/12 19:31:19 INFO player registered id=f681f115-1f25-45fd-b282-7ef4359f0c59 username=alpha-896b0606-5913-47b2-87ad-435e4c46710b
+2026/10/12 19:31:19 INFO player registered id=d4a0a8da-b511-48e9-abc1-41d89df85da3 username=alpha-b5a3e0b7-ee1d-442e-a4df-415d1056fab4
+2026/10/12 19:31:19 INFO player registered id=5459f4a5-4946-4d4e-ae07-80f2e35d7cf8 username=alpha-b3d802a0-1d83-4d13-9731-bd2877c93fb8
+2026/10/12 19:31:19 INFO player registered id=ef123e65-8cd3-45c0-b14e-4abe26d10bdf username=alpha-4ec2994e-c95c-499c-8932-f76767d2936d
+2026/10/12 19:31:20 INFO player registered id=271ac243-1c86-485e-b42d-741cf229e591 username=alpha-453c5ad4-db3c-4f42-ac1c-826ff1bf42d7
+2026/10/12 19:31:20 INFO player registered id=59f219bd-3c72-47fb-b81a-1979da4d955b username=alpha-455c9123-f43d-4afd-a548-dd4c517c6d9f
+2026/10/12 19:31:20 INFO player registered id=e9b5a7f0-e268-42dd-8c3b-0c89c9e51b8b username=alpha-202e5a48-317e-4c28-b9fa-d3e2376814cf
+2026/10/12 19:31:20 INFO player registered id=1d768656-c13c-4bd8-a0ef-3fec1198d1f9 username=alpha-eef6137b-240c-4685-aa63-6cfdb61f4ae3
+2026/10/12 19:31:20 INFO player registered id=e5991e0e-235a-4f3e-8a59-a762e6203f55 username=thread-sender-4770df18-7665-4571-aa96-194f09564341
+2026/10/12 19:31:20 INFO player registered id=0d23ccb3-0f1b-4fc7-86cb-eecf822cdbb9 username=thread-recipient-27274813-3aa8-4670-b296-2dbc44eb57e4
+--- FAIL: TestBetaRunnerRealSendConsumesThread (0.10s)
+    religion_departure_test.go:186: insert map tile (0,0)=plains: ERROR: duplicate key value violates unique constraint "map_tiles_pkey" (SQLSTATE 23505)
+2026/10/12 19:31:20 INFO player registered id=2c8b1e2d-05ba-4620-b95d-a468437dde09 username=so-owner-2a91e126-55ef-413e-b541-4e5c4379147e
+2026/10/12 19:31:20 INFO player registered id=9f1959fb-9486-42d6-ae65-05bdd5c28f2a username=so-other-e3c07963-56c6-4171-917e-4ae1168607ca
+2026/10/12 19:31:20 INFO player registered id=689624a1-b8ae-4ec9-8163-52f5a740d0b4 username=so-owner-264129c7-1733-4f43-ba89-418c2536dc3f
+2026/10/12 19:31:20 INFO player registered id=9b66a942-7395-45d2-a1d1-439380193977 username=so-other-21f7485a-d584-46a9-8ece-76b4dbbc2b2a
+2026/10/12 19:31:20 INFO player registered id=c9369cc0-e569-43c8-ad6c-3d692670855b username=so-owner-25dd9edc-c0f0-4cc9-83d4-8ced476ba50b
+2026/10/12 19:31:20 INFO player registered id=9accc4c7-7583-45f7-a239-d6539bc4addb username=so-other-c8b802e8-7eec-4520-9f5d-aa07b29dda93
+2026/10/12 19:31:20 INFO player registered id=79eeb02d-9d10-4a8f-8cc4-158257f3a67a username=so-owner-3e016fd8-043b-4fe5-a83e-44100c26477b
+2026/10/12 19:31:20 INFO player registered id=73895d23-dd93-480a-ac81-30ed526e39dc username=so-other-6515be13-95e3-47af-8c2e-de6c2633e5b3
+2026/10/12 19:31:20 INFO player registered id=3222a84f-097e-453b-96c7-a4771bf5d5ea username=so-owner-7fb37142-7d5e-46cf-80f8-d44ccbe214e3
+2026/10/12 19:31:20 INFO player registered id=07cba428-e29c-4a79-bea0-f49c19ddb5e6 username=so-other-4a7741fb-7dcc-4df5-936d-1c95ee004266
+2026/10/12 19:31:20 INFO player registered id=8f79f0b2-3cbe-403e-8601-ae8126804ab6 username=so-owner-7a20ab5d-216b-4a5f-9ed2-24e4701fc669
+2026/10/12 19:31:20 INFO player registered id=41bc7bde-17c0-4800-a5a8-6470469396f9 username=so-other-1004ec3f-d083-42d2-aaf2-e791ae474803
+2026/10/12 19:31:21 INFO player registered id=b3149056-e156-4119-ae43-f3ce62743dbf username=standing-orders-0afa3595-7dc1-45fb-b2c4-67221b6b7377
+2026/10/12 19:31:21 INFO order delivered but no longer executable unit=e1ff9da1-a885-4e17-8f5b-f12b3320953a verb=standing_orders reason="unit is not in an active battle"
+2026/10/12 19:31:21 INFO order delivered — standing orders applied unit=e1ff9da1-a885-4e17-8f5b-f12b3320953a battle=9fc97498-e883-450f-a4c9-5ad1dac44cdd hold_to_last_man=true
+2026/10/12 19:31:21 INFO order delivered — standing orders applied unit=e1ff9da1-a885-4e17-8f5b-f12b3320953a battle=9fc97498-e883-450f-a4c9-5ad1dac44cdd hold_to_last_man=false
+2026/10/12 19:31:21 INFO order delivered — standing orders applied unit=e1ff9da1-a885-4e17-8f5b-f12b3320953a battle=9fc97498-e883-450f-a4c9-5ad1dac44cdd hold_to_last_man=false
+2026/10/12 19:31:21 INFO order delivered — standing orders applied unit=e1ff9da1-a885-4e17-8f5b-f12b3320953a battle=9fc97498-e883-450f-a4c9-5ad1dac44cdd hold_to_last_man=true
+FAIL
+FAIL	formatet/megaron/server/api/handlers	1.557s
+ok  	formatet/megaron/server/internal/transport	0.019s
+ok  	formatet/megaron/server/internal/combat	0.562s
+ok  	formatet/megaron/server/internal/religion	0.002s
+FAIL

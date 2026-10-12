@@ -1,0 +1,136 @@
+{
+  "checkpoint": "B",
+  "status": "complete_for_Claude_review_STOP",
+  "branch": "codex/religion-alfa",
+  "base_commit": "2ddee968",
+  "production_commit": "3858cfab",
+  "migration": 176,
+  "production_diff_at_final_runtime": "empty",
+  "native_health": {
+    "commit": "3858cfa",
+    "migration": 176,
+    "status": "ok"
+  },
+  "native_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "checks": {
+    "full_fresh_go": "passed, empty PG16, migration176 dirty=false; b-full-go.log",
+    "vet": "passed; b-vet.log",
+    "javascript": {
+      "passed": 608,
+      "failed": 0,
+      "log": "b-js.log"
+    },
+    "physical_mutations": [
+      {
+        "mutation": "thread-flag",
+        "test": "TestBetaTransportFrozenDeparture",
+        "named_red": true,
+        "byte_restored": true,
+        "restored_fresh_green": true
+      },
+      {
+        "mutation": "thread-radius",
+        "test": "TestBetaTransportFrozenDeparture",
+        "named_red": true,
+        "byte_restored": true,
+        "restored_fresh_green": true
+      },
+      {
+        "mutation": "runner-factor",
+        "test": "TestBetaRunnerRealSendConsumesThread",
+        "named_red": true,
+        "byte_restored": true,
+        "restored_fresh_green": true
+      },
+      {
+        "mutation": "stillness-speed",
+        "test": "TestBetaShipDepartureSpeedLatePrayerAndActualReturn",
+        "named_red": true,
+        "byte_restored": true,
+        "restored_fresh_green": true
+      },
+      {
+        "mutation": "stillness-storm",
+        "test": "TestBetaStillnessDamageSnapshotAndReturn",
+        "named_red": true,
+        "byte_restored": true,
+        "restored_fresh_green": true
+      },
+      {
+        "mutation": "freight-stamp",
+        "test": "TestBetaFreightStillnessFrozenOnShip",
+        "named_red": true,
+        "byte_restored": true,
+        "restored_fresh_green": true
+      },
+      {
+        "mutation": "storm-owner",
+        "test": "TestBetaStillnessDoesNotFollowShipOwner",
+        "named_red": true,
+        "byte_restored": true,
+        "restored_fresh_green": true
+      },
+      {
+        "mutation": "standing-return",
+        "test": "TestBetaStandingReturnDoesNotConsumePendingGift",
+        "named_red": true,
+        "byte_restored": true,
+        "restored_fresh_green": true
+      },
+      {
+        "mutation": "return-consume",
+        "test": "TestBetaDeparturePrayerCastConsumeLateAndReturn",
+        "named_red": true,
+        "byte_restored": true,
+        "restored_fresh_green": true
+      },
+      {
+        "mutation": "late-caravan",
+        "test": "TestBetaPrayerAfterActualTransportDeparture",
+        "named_red": true,
+        "byte_restored": true,
+        "restored_fresh_green": true
+      },
+      {
+        "mutation": "late-ship",
+        "test": "TestBetaPrayerAfterShipDepartureDoesNotProtectVoyage",
+        "named_red": true,
+        "byte_restored": true,
+        "restored_fresh_green": true
+      },
+      {
+        "mutation": "army-eligible",
+        "test": "TestBetaArmyDoesNotConsumeDeparturePrayers",
+        "named_red": true,
+        "byte_restored": true,
+        "restored_fresh_green": true
+      }
+    ],
+    "native_firefox_keryx": "passed, 1280/390, real Offers, five prayers, God label, pending+wait12; live-b/verification.json"
+  },
+  "scope": {
+    "Asterion": "outbound local caravan/Runner duration0.75, caravan radius1; no army",
+    "Stillness": "outbound actual ship duration0.75, damage guard exact departure/arrival/owner; onboard Runner actual carrier",
+    "pending": "city+owner+effect, consume once in departureTX, no renewing active gift, no newowner inheritance",
+    "wait": "successful-only 12ticks per God+Wanax+world",
+    "preserved": "existing routes/outcome payloads, storm rules and integer-tick sampling"
+  },
+  "limits": [
+    "Native flow has explicit own-city temple3/stock100/kharis90 fixture BEFORE player actions; not natural build/economy proof.",
+    "Journey behavior uses actual DB/HTTP/worker integration and scripted storm tracks; no natural-weather risk/balance claim.",
+    "BILD delivered for Claude/Timothy review; no Codex merge/push/deploy."
+  ],
+  "reproduction": [
+    "tools/gotest.sh",
+    "go -C server vet ./...",
+    "node --test $(rg --files web/static/js -g '*.test.mjs')",
+    "python3 tools/religion_beta_mutations.py",
+    "python3 tools/religion_beta_live.py"
+  ],
+  "latest_recipe_addendum": {
+    "production_commit": "242329a8",
+    "report": "recipe-verification.json",
+    "native_proof": "live-b-recipes/verification.json",
+    "older_native_proof": "live-b is the earlier, smaller-recipe build"
+  }
+}

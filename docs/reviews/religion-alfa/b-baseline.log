@@ -1,0 +1,5 @@
+» färsk DB på migration 175 · commit 2ddee968
+ok  	formatet/megaron/server/internal/transport	0.089s
+ok  	formatet/megaron/server/internal/messenger	0.002s [no tests to run]
+ok  	formatet/megaron/server/internal/combat	0.754s
+ok  	formatet/megaron/server/internal/religion	0.002s

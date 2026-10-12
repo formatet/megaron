@@ -6,7 +6,7 @@ Each prayer names its god, the minimum standing it needs, and its traditional of
 
 The offering is consumed whether the gods answer or not, and the rite **spends kharis** either way. Its chance is essentially your standing ([[kharis]]). You are never shown the exact odds — only the gods' mood, and whether they seem worth asking. That is on purpose.
 
-For the Minoan prayers, a successful answer starts a waiting time for that god across all your cities. A silent answer takes the offering and kharis, but starts no waiting time. Potnia's two prayers share her 24-day wait. An active gift cannot be renewed before it ends.
+For the Minoan prayers, a successful answer starts a waiting time for that god across all your cities. A silent answer takes the offering and kharis, but starts no waiting time. Potnia's two prayers share her 24-day wait. An active gift cannot be renewed before it ends. A gift awaiting departure cannot be renewed before it is used.
 
 ## The prayers
 
@@ -22,13 +22,18 @@ The row disappears when the blessing ends; fish receives no harvest bonus.
 
 ## The Minoan prayers
 
-- **Potnia's Vision** — offer 2 grain + 4 silver. Potnia marks one ore deposit you neither see nor remember, and unknown ground within two hexes, as grey memory. It creates no living eyes and shows no moving activity. Potnia waits 24 days after answering.
-- **Mistress of the Walls** — offer 3 grain + 1 timber. Potnia strengthens your own garrison defending this city by a quarter for 6 days. It helps neither an attacking army nor soldiers away from that city. It shares Vision's wait.
-- **Green Shoots** — offer 2 grain + 2 silver. Velchanos raises grain, livestock, oil and wine yield by a quarter for 25 days. Fish is unchanged. He waits 25 days after answering.
+- **Potnia's Vision** — offer 10 grain + 100 silver. Potnia marks one ore deposit you neither see nor remember, and unknown ground within two hexes, as grey memory. It creates no living eyes and shows no moving activity. Potnia waits 24 days after answering.
+- **Mistress of the Walls** — offer 8 grain + 4 timber. Potnia strengthens your own garrison defending this city by a quarter for 6 days. It helps neither an attacking army nor soldiers away from that city. It shares Vision's wait.
+- **Green Shoots** — offer 15 grain + 50 silver. Velchanos raises grain, livestock, oil and wine yield by a quarter for 25 days. Fish is unchanged. He waits 25 days after answering.
 
-Vision and Walls require at least 5 kharis; Green Shoots requires 30. An ongoing gift cannot be renewed; its remaining days appear beside the prayer. The temple's ordinary daily offering is separate.
+- **The Thread Shows a Path** — offer 4 timber + 100 silver to Asterion. The next land caravan or Runner leaving this city takes a quarter less time on its outward leg. A land caravan can be intercepted only within one hex of an enemy army, instead of two. Runners remain sacred. Asterion waits 12 days after answering.
+- **Favourable Passage** — offer 6 fish + 100 silver to The Sea Daimons of Stillness. The next ship leaving this city takes a quarter less time and suffers no storm damage on its outward leg. A Runner aboard travels at that ship's actual speed. The Sea Daimons wait 12 days after answering.
 
-In Keryx, `rite --list` shows your prayers, their effects, offerings, active days and waiting time. `rite --prayer <id>` chooses one. Omitting the ID uses the prayer marked as the culture's default — Mistress of the Walls for Minoans.
+Vision, Walls and the two departure prayers require at least 5 kharis; Green Shoots requires 30. The temple's ordinary daily offering is separate.
+
+A departure gift stays in the city where you offered until an eligible journey physically leaves. It is used once. It cannot follow the city to a new owner, change a journey already underway, or bless a return leg. **Awaiting next departure** appears beside the prayer while the gift is unused; the god's waiting time is shown separately. Other ongoing gifts show their remaining days.
+
+In Keryx, `rite --list` shows your prayers, their effects, offerings, active days, pending departure gifts and waiting time. `rite --prayer <id>` chooses one. Omitting the ID uses the prayer marked as the culture's default — Mistress of the Walls for Minoans.
 
 ## Silver at the altar
 

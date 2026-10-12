@@ -1,0 +1,8 @@
+2026/10/12 19:37:02 WARN sea storm: unreadable track, storm skipped storm=0f27f034-f282-48a9-a5d9-ec0931eea6cd err="storm 0f27f034-f282-48a9-a5d9-ec0931eea6cd: track has 1 hexes, want 3"
+2026/10/12 19:37:02 WARN sea storm: unreadable track, storm skipped storm=80029de2-c44f-449e-8092-1c3d134c59cf err="storm 80029de2-c44f-449e-8092-1c3d134c59cf: track has 1 hexes, want 3"
+--- FAIL: TestBetaStillnessDoesNotFollowShipOwner (0.04s)
+    departure_prayer_test.go:220: captured owner inherited Stillness: hull5
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.040s
+FAIL
+» färsk DB på migration 176 · commit 2ddee968+ändringar

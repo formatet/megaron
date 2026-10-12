@@ -1,0 +1,6 @@
+--- FAIL: TestBetaShipDepartureSpeedLatePrayerAndActualReturn (0.03s)
+    departure_prayer_test.go:100: Stillness speed/preview got4/4 want3
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.028s
+FAIL
+» färsk DB på migration 176 · commit 2ddee968+ändringar

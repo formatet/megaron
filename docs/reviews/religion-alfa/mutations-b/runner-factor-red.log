@@ -1,0 +1,8 @@
+2026/10/12 19:36:50 INFO player registered id=1c9835ba-c1a6-4f83-853e-8575c3f7903a username=thread-sender-5117a183-84cf-44ad-ba07-33f11cc196df
+2026/10/12 19:36:50 INFO player registered id=5d452839-97ba-42d8-abd2-65c5b817ee60 username=thread-recipient-2d883f66-019a-45a9-8a04-f32dba779c71
+--- FAIL: TestBetaRunnerRealSendConsumesThread (0.11s)
+    religion_departure_test.go:201: Runner departure factor missing: ticks3
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.112s
+FAIL
+» färsk DB på migration 176 · commit 2ddee968+ändringar

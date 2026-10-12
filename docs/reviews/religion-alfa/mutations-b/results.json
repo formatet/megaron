@@ -1,0 +1,86 @@
+[
+  {
+    "mutation": "thread-flag",
+    "test": "TestBetaTransportFrozenDeparture",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "thread-radius",
+    "test": "TestBetaTransportFrozenDeparture",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "runner-factor",
+    "test": "TestBetaRunnerRealSendConsumesThread",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "stillness-speed",
+    "test": "TestBetaShipDepartureSpeedLatePrayerAndActualReturn",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "stillness-storm",
+    "test": "TestBetaStillnessDamageSnapshotAndReturn",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "freight-stamp",
+    "test": "TestBetaFreightStillnessFrozenOnShip",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "storm-owner",
+    "test": "TestBetaStillnessDoesNotFollowShipOwner",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "standing-return",
+    "test": "TestBetaStandingReturnDoesNotConsumePendingGift",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "return-consume",
+    "test": "TestBetaDeparturePrayerCastConsumeLateAndReturn",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "late-caravan",
+    "test": "TestBetaPrayerAfterActualTransportDeparture",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "late-ship",
+    "test": "TestBetaPrayerAfterShipDepartureDoesNotProtectVoyage",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "army-eligible",
+    "test": "TestBetaArmyDoesNotConsumeDeparturePrayers",
+    "named_red": true,
+    "byte_restored": true,
+    "restored_fresh_green": true
+  }
+]

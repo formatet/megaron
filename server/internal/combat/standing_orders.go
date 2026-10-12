@@ -498,6 +498,11 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 	departsAt := h.clk.Now()
 	arrivesAt := departsAt.Add(tick.RealUntil(travelTicks, 0))
 
+	if err := transport.BlessDeparture(ctx, tx, o.worldID, o.ownerID, o.fromID, &journey, true); err != nil {
+		return err
+	}
+	travelTicks = journey.TravelTicks
+	arrivesAt = departsAt.Add(tick.RealUntil(travelTicks, 0))
 	orderID := o.id
 	if _, err := transport.Dispatch(ctx, tx, h.scheduler, transport.DispatchParams{
 		WorldID: o.worldID, OwnerID: o.ownerID, Kind: "standing_order_out",
@@ -683,6 +688,11 @@ func (h *StandingOrderTickHandler) dispatchReturn(ctx context.Context, tx pgx.Tx
 	departsAt := h.clk.Now()
 	arrivesAt := departsAt.Add(tick.RealUntil(travelTicks, 0))
 
+	if err := transport.BlessDeparture(ctx, tx, o.worldID, o.ownerID, o.toID, &journey, false); err != nil {
+		return err
+	}
+	travelTicks = journey.TravelTicks
+	arrivesAt = departsAt.Add(tick.RealUntil(travelTicks, 0))
 	orderID := o.id
 	if _, err := transport.Dispatch(ctx, tx, h.scheduler, transport.DispatchParams{
 		WorldID: o.worldID, OwnerID: o.ownerID, Kind: "standing_order_return",

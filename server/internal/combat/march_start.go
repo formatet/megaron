@@ -26,9 +26,11 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -738,7 +740,39 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		slog.Error("march route: could not read current day", "unit", o.UnitID, "err", err)
 		return nil, reject(http.StatusInternalServerError, "pathfinding error")
 	}
-	travelTicks := max(1, int(math.Round(moveTicks)))
+	var tx pgx.Tx
+	var departureDB province.Queryer = pool
+	var currentStatus string
+	stillness := false
+	departureFactor := 1.0
+	if !preview {
+		tx, err = pool.Begin(ctx)
+		if err != nil {
+			return nil, reject(http.StatusInternalServerError, "could not begin transaction")
+		}
+		defer tx.Rollback(ctx)
+		departureDB = tx
+		if err := tx.QueryRow(ctx, `SELECT status FROM units WHERE id=$1 FOR UPDATE`, o.UnitID).Scan(&currentStatus); err != nil {
+			return nil, reject(http.StatusNotFound, "unit not found in transaction")
+		}
+		if unit.Status(currentStatus) != unit.StatusGarrison && unit.Status(currentStatus) != unit.StatusPositioned {
+			return nil, reject(http.StatusConflict, "unit status changed; march not sent")
+		}
+	}
+	if unit.CategoryOf(u.Type) == unit.CategoryNaval && u.SettlementID != nil {
+		if preview {
+			stillness, err = religion.DeparturePending(ctx, pool, *u.SettlementID, o.PlayerID, religion.EffectNextShipDeparture)
+		} else {
+			stillness, err = religion.ConsumeDeparture(ctx, tx, o.WorldID, o.PlayerID, *u.SettlementID, religion.EffectNextShipDeparture)
+		}
+		if err != nil {
+			return nil, reject(http.StatusInternalServerError, "could not prepare ship departure")
+		}
+		if stillness {
+			departureFactor = religion.DepartureTimeFactor
+		}
+	}
+	travelTicks := max(1, int(math.Round(moveTicks*departureFactor)))
 	if expeditionPlan != nil {
 		expeditionPlan.TurnTick = ExpeditionTurnTick(currentTick, expeditionPlan.LengthTicks)
 		expeditionPlan.HomeByTick = currentTick + expeditionPlan.LengthTicks
@@ -747,7 +781,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		}
 		// Entered-terrain costs and tick rounding are asymmetric: reserve the
 		// actual route home, rather than assuming it costs the outbound leg.
-		home, homeErr := expeditionReturnDestination(ctx, pool, unitRow{ownerID: o.PlayerID, category: string(unit.CategoryOf(u.Type)), homeSettlementID: exploreHomeID}, targetQ, targetR, o.WorldID)
+		home, homeErr := expeditionReturnDestination(ctx, departureDB, unitRow{ownerID: o.PlayerID, category: string(unit.CategoryOf(u.Type)), homeSettlementID: exploreHomeID}, targetQ, targetR, o.WorldID)
 		if homeErr != nil {
 			return nil, reject(http.StatusInternalServerError, "could not resolve the expedition's return route")
 		}
@@ -773,7 +807,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	// colonize-in-place has no journey and intentionally stores NULL.
 	var marchRoute []byte
 	if !colonizeInPlace {
-		stepHours, err := province.StepHoursDB(ctx, pool, o.WorldID, path, category)
+		stepHours, err := province.StepHoursDB(ctx, departureDB, o.WorldID, path, category)
 		if err != nil {
 			slog.Error("march route: could not read step costs", "unit", o.UnitID, "err", err)
 			return nil, reject(http.StatusInternalServerError, "pathfinding error")
@@ -798,22 +832,12 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		}, nil
 	}
 
-	// Atomic DB update: set unit to marching and schedule arrival event.
-	tx, err := pool.Begin(ctx)
-	if err != nil {
-		return nil, reject(http.StatusInternalServerError, "could not begin transaction")
-	}
-	defer tx.Rollback(ctx)
-
-	// Idempotency guard: re-read status inside the transaction with FOR UPDATE.
-	var currentStatus string
-	if err := tx.QueryRow(ctx,
-		`SELECT status FROM units WHERE id = $1 FOR UPDATE`, o.UnitID,
-	).Scan(&currentStatus); err != nil {
-		return nil, reject(http.StatusNotFound, "unit not found in transaction")
-	}
-	if unit.Status(currentStatus) != unit.StatusGarrison && unit.Status(currentStatus) != unit.StatusPositioned {
-		return nil, reject(http.StatusConflict, "unit status changed; march not sent")
+	// The departure transaction and blessing were locked before itinerary
+	// checks, so preview and execution use the same outward speed rule.
+	var stillnessDepart, stillnessArrive *int
+	if stillness {
+		d, a := currentTick, currentTick+travelTicks
+		stillnessDepart, stillnessArrive = &d, &a
 	}
 
 	// The colonist purse (B3, mig 107). A founding used to MINT the colony's
@@ -1077,11 +1101,12 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		   pickup_unit_id = $19,
 		   pickup_wait_ticks = $20,
 		   march_route  = $21,
+   stillness_depart_tick=$22, stillness_arrive_tick=$23, stillness_owner_id=$24,
 		   updated_at   = now()
 		 WHERE id = $1`,
 		o.UnitID, originQ, originR, targetQ, targetR, now, arrivesAt, stanceArg, intentArg, nameArg, homeSettlementArg, captureMode,
 		currentTick, currentTick+travelTicks, landTargetQArg, landTargetRArg, landCargoIntentArg, passageMessengerArg,
-		pickupUnitArg, pickupWaitArg, marchRoute,
+		pickupUnitArg, pickupWaitArg, marchRoute, stillnessDepart, stillnessArrive, o.PlayerID,
 	); err != nil {
 		return nil, reject(http.StatusInternalServerError, "could not update unit")
 	}

@@ -1,0 +1,106 @@
+» färsk DB på migration 176 · commit 2ddee968+ändringar
+ok  	formatet/megaron/server/api/handlers	0.847s
+ok  	formatet/megaron/server/internal/transport	0.042s
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=38011403-2f42-4892-a443-a18f2a6f88d6 err="storm 38011403-2f42-4892-a443-a18f2a6f88d6: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=3834adc5-5c51-4873-a0e5-cb89b2dce193 err="storm 3834adc5-5c51-4873-a0e5-cb89b2dce193: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=8d05fc37-b079-473a-929b-c98cfc844cbb err="storm 8d05fc37-b079-473a-929b-c98cfc844cbb: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=d707a8d8-824f-40cd-a2ac-69243c6ce8af err="storm d707a8d8-824f-40cd-a2ac-69243c6ce8af: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=db8cf96c-238f-49c8-9127-77495a086a0d err="storm db8cf96c-238f-49c8-9127-77495a086a0d: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=38011403-2f42-4892-a443-a18f2a6f88d6 err="storm 38011403-2f42-4892-a443-a18f2a6f88d6: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=3834adc5-5c51-4873-a0e5-cb89b2dce193 err="storm 3834adc5-5c51-4873-a0e5-cb89b2dce193: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=8d05fc37-b079-473a-929b-c98cfc844cbb err="storm 8d05fc37-b079-473a-929b-c98cfc844cbb: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=d707a8d8-824f-40cd-a2ac-69243c6ce8af err="storm d707a8d8-824f-40cd-a2ac-69243c6ce8af: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=db8cf96c-238f-49c8-9127-77495a086a0d err="storm db8cf96c-238f-49c8-9127-77495a086a0d: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=38011403-2f42-4892-a443-a18f2a6f88d6 err="storm 38011403-2f42-4892-a443-a18f2a6f88d6: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=3834adc5-5c51-4873-a0e5-cb89b2dce193 err="storm 3834adc5-5c51-4873-a0e5-cb89b2dce193: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=8d05fc37-b079-473a-929b-c98cfc844cbb err="storm 8d05fc37-b079-473a-929b-c98cfc844cbb: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=d707a8d8-824f-40cd-a2ac-69243c6ce8af err="storm d707a8d8-824f-40cd-a2ac-69243c6ce8af: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=db8cf96c-238f-49c8-9127-77495a086a0d err="storm db8cf96c-238f-49c8-9127-77495a086a0d: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=38011403-2f42-4892-a443-a18f2a6f88d6 err="storm 38011403-2f42-4892-a443-a18f2a6f88d6: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=3834adc5-5c51-4873-a0e5-cb89b2dce193 err="storm 3834adc5-5c51-4873-a0e5-cb89b2dce193: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=8d05fc37-b079-473a-929b-c98cfc844cbb err="storm 8d05fc37-b079-473a-929b-c98cfc844cbb: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=d707a8d8-824f-40cd-a2ac-69243c6ce8af err="storm d707a8d8-824f-40cd-a2ac-69243c6ce8af: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=db8cf96c-238f-49c8-9127-77495a086a0d err="storm db8cf96c-238f-49c8-9127-77495a086a0d: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=38011403-2f42-4892-a443-a18f2a6f88d6 err="storm 38011403-2f42-4892-a443-a18f2a6f88d6: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=3834adc5-5c51-4873-a0e5-cb89b2dce193 err="storm 3834adc5-5c51-4873-a0e5-cb89b2dce193: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=8d05fc37-b079-473a-929b-c98cfc844cbb err="storm 8d05fc37-b079-473a-929b-c98cfc844cbb: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=d707a8d8-824f-40cd-a2ac-69243c6ce8af err="storm d707a8d8-824f-40cd-a2ac-69243c6ce8af: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=db8cf96c-238f-49c8-9127-77495a086a0d err="storm db8cf96c-238f-49c8-9127-77495a086a0d: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=38011403-2f42-4892-a443-a18f2a6f88d6 err="storm 38011403-2f42-4892-a443-a18f2a6f88d6: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=3834adc5-5c51-4873-a0e5-cb89b2dce193 err="storm 3834adc5-5c51-4873-a0e5-cb89b2dce193: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=8d05fc37-b079-473a-929b-c98cfc844cbb err="storm 8d05fc37-b079-473a-929b-c98cfc844cbb: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=d707a8d8-824f-40cd-a2ac-69243c6ce8af err="storm d707a8d8-824f-40cd-a2ac-69243c6ce8af: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=db8cf96c-238f-49c8-9127-77495a086a0d err="storm db8cf96c-238f-49c8-9127-77495a086a0d: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=38011403-2f42-4892-a443-a18f2a6f88d6 err="storm 38011403-2f42-4892-a443-a18f2a6f88d6: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=3834adc5-5c51-4873-a0e5-cb89b2dce193 err="storm 3834adc5-5c51-4873-a0e5-cb89b2dce193: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=8d05fc37-b079-473a-929b-c98cfc844cbb err="storm 8d05fc37-b079-473a-929b-c98cfc844cbb: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=d707a8d8-824f-40cd-a2ac-69243c6ce8af err="storm d707a8d8-824f-40cd-a2ac-69243c6ce8af: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=db8cf96c-238f-49c8-9127-77495a086a0d err="storm db8cf96c-238f-49c8-9127-77495a086a0d: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=38011403-2f42-4892-a443-a18f2a6f88d6 err="storm 38011403-2f42-4892-a443-a18f2a6f88d6: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=3834adc5-5c51-4873-a0e5-cb89b2dce193 err="storm 3834adc5-5c51-4873-a0e5-cb89b2dce193: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=8d05fc37-b079-473a-929b-c98cfc844cbb err="storm 8d05fc37-b079-473a-929b-c98cfc844cbb: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=d707a8d8-824f-40cd-a2ac-69243c6ce8af err="storm d707a8d8-824f-40cd-a2ac-69243c6ce8af: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=db8cf96c-238f-49c8-9127-77495a086a0d err="storm db8cf96c-238f-49c8-9127-77495a086a0d: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=13ca9ec3-5c3e-451c-b516-342dc04b2895 err="storm 13ca9ec3-5c3e-451c-b516-342dc04b2895: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=23035bb2-77aa-454a-a307-1e79c2dae6bd err="storm 23035bb2-77aa-454a-a307-1e79c2dae6bd: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=3ae4c596-8c91-4745-8510-9d3df9eaafbd err="storm 3ae4c596-8c91-4745-8510-9d3df9eaafbd: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=466a2719-641c-4435-b023-b285091c0980 err="storm 466a2719-641c-4435-b023-b285091c0980: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=4e55ee94-243a-494f-a9e0-159b8eee153c err="storm 4e55ee94-243a-494f-a9e0-159b8eee153c: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=13ca9ec3-5c3e-451c-b516-342dc04b2895 err="storm 13ca9ec3-5c3e-451c-b516-342dc04b2895: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=23035bb2-77aa-454a-a307-1e79c2dae6bd err="storm 23035bb2-77aa-454a-a307-1e79c2dae6bd: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=3ae4c596-8c91-4745-8510-9d3df9eaafbd err="storm 3ae4c596-8c91-4745-8510-9d3df9eaafbd: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=466a2719-641c-4435-b023-b285091c0980 err="storm 466a2719-641c-4435-b023-b285091c0980: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=4e55ee94-243a-494f-a9e0-159b8eee153c err="storm 4e55ee94-243a-494f-a9e0-159b8eee153c: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=13ca9ec3-5c3e-451c-b516-342dc04b2895 err="storm 13ca9ec3-5c3e-451c-b516-342dc04b2895: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=23035bb2-77aa-454a-a307-1e79c2dae6bd err="storm 23035bb2-77aa-454a-a307-1e79c2dae6bd: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=3ae4c596-8c91-4745-8510-9d3df9eaafbd err="storm 3ae4c596-8c91-4745-8510-9d3df9eaafbd: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=466a2719-641c-4435-b023-b285091c0980 err="storm 466a2719-641c-4435-b023-b285091c0980: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=4e55ee94-243a-494f-a9e0-159b8eee153c err="storm 4e55ee94-243a-494f-a9e0-159b8eee153c: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=13ca9ec3-5c3e-451c-b516-342dc04b2895 err="storm 13ca9ec3-5c3e-451c-b516-342dc04b2895: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=23035bb2-77aa-454a-a307-1e79c2dae6bd err="storm 23035bb2-77aa-454a-a307-1e79c2dae6bd: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=3ae4c596-8c91-4745-8510-9d3df9eaafbd err="storm 3ae4c596-8c91-4745-8510-9d3df9eaafbd: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=466a2719-641c-4435-b023-b285091c0980 err="storm 466a2719-641c-4435-b023-b285091c0980: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=4e55ee94-243a-494f-a9e0-159b8eee153c err="storm 4e55ee94-243a-494f-a9e0-159b8eee153c: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=13ca9ec3-5c3e-451c-b516-342dc04b2895 err="storm 13ca9ec3-5c3e-451c-b516-342dc04b2895: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=23035bb2-77aa-454a-a307-1e79c2dae6bd err="storm 23035bb2-77aa-454a-a307-1e79c2dae6bd: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=3ae4c596-8c91-4745-8510-9d3df9eaafbd err="storm 3ae4c596-8c91-4745-8510-9d3df9eaafbd: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=466a2719-641c-4435-b023-b285091c0980 err="storm 466a2719-641c-4435-b023-b285091c0980: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=4e55ee94-243a-494f-a9e0-159b8eee153c err="storm 4e55ee94-243a-494f-a9e0-159b8eee153c: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=13ca9ec3-5c3e-451c-b516-342dc04b2895 err="storm 13ca9ec3-5c3e-451c-b516-342dc04b2895: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=23035bb2-77aa-454a-a307-1e79c2dae6bd err="storm 23035bb2-77aa-454a-a307-1e79c2dae6bd: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=3ae4c596-8c91-4745-8510-9d3df9eaafbd err="storm 3ae4c596-8c91-4745-8510-9d3df9eaafbd: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=466a2719-641c-4435-b023-b285091c0980 err="storm 466a2719-641c-4435-b023-b285091c0980: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=4e55ee94-243a-494f-a9e0-159b8eee153c err="storm 4e55ee94-243a-494f-a9e0-159b8eee153c: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=13ca9ec3-5c3e-451c-b516-342dc04b2895 err="storm 13ca9ec3-5c3e-451c-b516-342dc04b2895: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=23035bb2-77aa-454a-a307-1e79c2dae6bd err="storm 23035bb2-77aa-454a-a307-1e79c2dae6bd: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=3ae4c596-8c91-4745-8510-9d3df9eaafbd err="storm 3ae4c596-8c91-4745-8510-9d3df9eaafbd: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=466a2719-641c-4435-b023-b285091c0980 err="storm 466a2719-641c-4435-b023-b285091c0980: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=4e55ee94-243a-494f-a9e0-159b8eee153c err="storm 4e55ee94-243a-494f-a9e0-159b8eee153c: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=13ca9ec3-5c3e-451c-b516-342dc04b2895 err="storm 13ca9ec3-5c3e-451c-b516-342dc04b2895: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=23035bb2-77aa-454a-a307-1e79c2dae6bd err="storm 23035bb2-77aa-454a-a307-1e79c2dae6bd: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=3ae4c596-8c91-4745-8510-9d3df9eaafbd err="storm 3ae4c596-8c91-4745-8510-9d3df9eaafbd: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=466a2719-641c-4435-b023-b285091c0980 err="storm 466a2719-641c-4435-b023-b285091c0980: track has 1 hexes, want 3"
+2026/10/12 19:33:23 WARN sea storm: unreadable track, storm skipped storm=4e55ee94-243a-494f-a9e0-159b8eee153c err="storm 4e55ee94-243a-494f-a9e0-159b8eee153c: track has 1 hexes, want 3"
+2026/10/12 19:33:23 INFO expedition turning for home unit=1e36f54d-414f-474f-9d50-e2dcfe430f8d reason=half_time q=4 r=0 arrive_tick=8
+2026/10/12 19:33:23 INFO expedition home unit=1e36f54d-414f-474f-9d50-e2dcfe430f8d ticks_out=8 hexes_seen=39 finds=0
+2026/10/12 19:33:23 INFO unit returned home from explore unit=1e36f54d-414f-474f-9d50-e2dcfe430f8d settlement=2c42e6d0-ef3b-4e8d-b5dd-da3688a2943a
+2026/10/12 19:33:23 INFO expedition turning for home unit=084716f7-6a8f-4bbf-9c41-c4f777aa9b55 reason=half_time q=4 r=0 arrive_tick=9
+2026/10/12 19:33:23 INFO expedition home unit=084716f7-6a8f-4bbf-9c41-c4f777aa9b55 ticks_out=9 hexes_seen=39 finds=1
+2026/10/12 19:33:23 INFO unit returned home from explore unit=084716f7-6a8f-4bbf-9c41-c4f777aa9b55 settlement=49fa0626-d287-469d-a6ee-6f751458c641
+2026/10/12 19:33:23 INFO expedition turning for home unit=2b6f5564-3aa0-4199-b037-5f52b4b4a8cd reason=half_time q=4 r=0 arrive_tick=8
+2026/10/12 19:33:23 INFO expedition home unit=2b6f5564-3aa0-4199-b037-5f52b4b4a8cd ticks_out=9 hexes_seen=39 finds=1
+2026/10/12 19:33:23 INFO unit returned home from explore unit=2b6f5564-3aa0-4199-b037-5f52b4b4a8cd settlement=92e451ed-5366-4551-8194-a374202b0eb5
+2026/10/12 19:33:23 INFO expedition turning for home unit=6da553bf-d6a0-406d-8d74-f8aa4ca2f79e reason=half_time q=4 r=0 arrive_tick=9
+2026/10/12 19:33:23 INFO expedition home unit=6da553bf-d6a0-406d-8d74-f8aa4ca2f79e ticks_out=9 hexes_seen=39 finds=1
+2026/10/12 19:33:23 INFO unit returned home from explore unit=6da553bf-d6a0-406d-8d74-f8aa4ca2f79e settlement=c68db2fa-f424-4b03-9e6f-b8c77f3a48da
+2026/10/12 19:33:23 INFO recall/redirect order reached unit, new course set unit=bed0c9f8-b9cb-4e90-9a65-ae9f227b06fe mode=redirect from_q=1 from_r=0 to_q=4 to_r=0 arrives_at=2026-10-12T22:33:23.875+02:00
+2026/10/12 19:33:23 INFO scout report filed unit=bed0c9f8-b9cb-4e90-9a65-ae9f227b06fe q=4 r=0 terrain=plains copper=false tin=false silver=false cedar=false
+2026/10/12 19:33:23 INFO field unit turning for home unit=bed0c9f8-b9cb-4e90-9a65-ae9f227b06fe from_q=4 from_r=0 home_q=0 home_r=0
+2026/10/12 19:33:23 INFO unit returned home from explore unit=bed0c9f8-b9cb-4e90-9a65-ae9f227b06fe settlement=f6c6d903-19e7-4213-b211-a3d0375dcc24
+2026/10/12 19:33:24 INFO expedition turning for home unit=ea9edea9-e37f-4771-830e-3718c99d341b reason=half_time q=5 r=0 arrive_tick=11
+2026/10/12 19:33:24 INFO expedition home unit=ea9edea9-e37f-4771-830e-3718c99d341b ticks_out=11 hexes_seen=8 finds=0
+2026/10/12 19:33:24 INFO unit returned home from explore unit=ea9edea9-e37f-4771-830e-3718c99d341b settlement=4ef76630-a284-4b96-a54e-f51903a91306
+signal: terminated
+FAIL	formatet/megaron/server/internal/combat	81.416s
+ok  	formatet/megaron/server/internal/religion	0.002s
+FAIL

@@ -545,3 +545,11 @@ register/join/founding and an explicitly labelled own-city temple/stock fixture
 before native Offer actions. It verifies process healthz, real Firefox1280/390,
 shared waiting/active state and actual Keryx output. No payload overrides or SQL
 writes during actions; all owned resources are removed. Images await BILD review.
+
+### Religion checkpoint B
+
+`python3 tools/religion_beta_mutations.py` muterar de tolv avfärdsinvarianterna fysiskt, kräver namngiven testfailure, byteåterställer och kör Beta-proven på färsk DB.
+`python3 tools/religion_beta_live.py` kör egen native server/Keryx/Firefox1280+390 på färsk PG16/Redis, normal register/join/found med explicit tempel/stocks-fixtur före handlingarna. Två riktiga Offer-clicks visar pending+wait12; healthz och produktionsdiffhash registreras i `docs/reviews/religion-alfa/live-b/verification.json`. Riggen städar bara sina egna resurser.
+
+`python3 tools/religion_recipe_mutations.py` provar varje beslutat traditionellt recept genom en fysisk katalogmutation som måste göra både katalog- och verklig default-Offer-debit-assertion röda, därefter byteåterställt/färskgrönt.
+`RELIGION_PROOF_OUT=live-b-recipes python3 tools/religion_beta_live.py` sparar nya bilder och läser fem större recept från samma native server/Keryx/web-katalog; explicit pre-action stocks1000 räcker till de två100silver-offren.

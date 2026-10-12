@@ -374,6 +374,7 @@ func marchShipToNearestOwnPort(
 		   departs_at         = now(),
 		   arrives_at         = $6,
 		   depart_tick        = $8,
+   stillness_depart_tick=NULL, stillness_arrive_tick=NULL, stillness_owner_id=NULL,
 		   arrive_tick        = $9,
 		   settlement_id      = NULL,
 		   stance             = NULL,

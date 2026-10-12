@@ -17,11 +17,15 @@ var ErrNoTradePath = errors.New("no traversable trade route")
 // unrounded march ticks for the entered hexes; only the total caravan duration
 // is rounded. Reverse legs are planned separately because entering costs differ.
 type TradeJourney struct {
-	Category    string        `json:"category"`
-	Path        []MapPosition `json:"path"`
-	StepCosts   []int64       `json:"step_costs"`
-	TravelTicks int           `json:"travel_ticks"`
-	Distance    int           `json:"distance"`
+	Category         string        `json:"category"`
+	Path             []MapPosition `json:"path"`
+	StepCosts        []int64       `json:"step_costs"`
+	TravelTicks      int           `json:"travel_ticks"`
+	Distance         int           `json:"distance"`
+	TimeFactorMilli  int           `json:"time_factor_milli,omitempty"`
+	Thread           bool          `json:"asterion_thread,omitempty"`
+	Stillness        bool          `json:"stillness,omitempty"`
+	DepartureChecked bool          `json:"departure_checked,omitempty"`
 }
 
 // PlanTradeJourney uses one terrain snapshot for A* and its entering-hex costs.
@@ -101,7 +105,17 @@ func (j TradeJourney) Validate() error {
 		}
 		total += c
 	}
-	ticks := int((total*3 + 1000) / 2000)
+	factor := j.TimeFactorMilli
+	if factor == 0 {
+		factor = 1000
+	}
+	if factor != 1000 && factor != 750 {
+		return fmt.Errorf("invalid saved departure factor")
+	}
+	if (j.Thread || j.Stillness) != (factor == 750) || (j.Thread && j.Category != "land") || (j.Stillness && j.Category != "naval") {
+		return fmt.Errorf("invalid saved departure blessing")
+	}
+	ticks := int((total*3*int64(factor) + 1000000) / 2000000)
 	if ticks < 1 {
 		ticks = 1
 	}
