@@ -1,8 +1,6 @@
 A **rite** is a request to the gods. Open **Kult → Prayers**.
 
-Each prayer names its god, the minimum standing it needs, its traditional offering, and what that god particularly favours. Press **Perform →**.
-
-Or expand **Compose your own offering** and build it yourself: set quantities from your stores and watch the live estimate — *"estimated worth X of ~Y expected"* — then **Offer this →**. A richer offering improves your odds; a stingy one hurts them.
+Each prayer names its god, the minimum standing it needs, and its traditional offering. Press **Offer**. The temple brings that prayer's recipe.
 
 ## A rite is a wager
 
