@@ -116,14 +116,6 @@ func (h *JoinHandler) Rise(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "could not gather the survivors")
 		return
 	}
-	// last_settlement_id is kept: it is the fallen city, and only the next fall replaces it.
-	if _, err := tx.Exec(r.Context(),
-		`UPDATE player_world_records SET status = 'active' WHERE player_id = $1 AND world_id = $2`,
-		playerID, worldID,
-	); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not record the rising")
-		return
-	}
 	if err := tx.Commit(r.Context()); err != nil {
 		writeError(w, http.StatusInternalServerError, "commit failed")
 		return

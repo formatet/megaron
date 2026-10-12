@@ -87,6 +87,14 @@ func TestCreateMetropolis_StampsFoundedTickOnTheJoinUpsertPath(t *testing.T) {
 		t.Fatalf("commit founding tx: %v", err)
 	}
 
+	var amount float64
+	var calcTick int
+	if err := pool.QueryRow(ctx, `SELECT kharis_amount,kharis_calc_tick FROM player_world_records WHERE player_id=$1 AND world_id=$2`, playerID, worldID).Scan(&amount, &calcTick); err != nil {
+		t.Fatal(err)
+	}
+	if amount != 25 || calcTick != worldTick {
+		t.Fatalf("founding kharis seed changed: amount%v calcTick%v", amount, calcTick)
+	}
 	var foundedTick int
 	if err := pool.QueryRow(ctx,
 		`SELECT founded_tick FROM player_world_records WHERE player_id=$1 AND world_id=$2`,

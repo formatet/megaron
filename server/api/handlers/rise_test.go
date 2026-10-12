@@ -19,6 +19,7 @@ import (
 	"formatet/megaron/server/internal/combat"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/kharis"
 	"formatet/megaron/server/internal/unit"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -110,8 +111,20 @@ func TestRise_RefugeeHostOnAnotherLandmass_AndLeave(t *testing.T) {
 
 	// ── Rise ──
 	risen, token := dispossessed("rise")
+	if _, err := pool.Exec(ctx, `UPDATE player_world_records SET kharis_amount=70,kharis_rate=0.5,kharis_calc_tick=0 WHERE player_id=$1 AND world_id=$2`, risen, worldID); err != nil {
+		t.Fatal(err)
+	}
+
 	if rec := post(token, "rise"); rec.Code != http.StatusCreated {
 		t.Fatalf("POST /rise = %d %q, want 201", rec.Code, rec.Body.String())
+	}
+	var amount, rate float64
+	var calcTick, worldTick int
+	if err := pool.QueryRow(ctx, `SELECT pwr.kharis_amount,pwr.kharis_rate,pwr.kharis_calc_tick,w.current_tick FROM player_world_records pwr JOIN worlds w ON w.id=pwr.world_id WHERE pwr.player_id=$1 AND pwr.world_id=$2`, risen, worldID).Scan(&amount, &rate, &calcTick, &worldTick); err != nil {
+		t.Fatal(err)
+	}
+	if amount != kharis.Floor || rate != 0 || calcTick != worldTick {
+		t.Fatalf("risen Host did not reset kharis to shared floor: %v/%v/%v, world%v", amount, rate, calcTick, worldTick)
 	}
 	var landmass, population int
 	var silver float64

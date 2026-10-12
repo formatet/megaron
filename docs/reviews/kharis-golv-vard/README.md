@@ -16,3 +16,5 @@ Kontrakt: ny och återuppstånden Host startar på samma golv som tickens Kharis
 
 ## Provplan
 Färsk Go-baslinje join/rise/grundning före kod. Verklig join→me visar Floor, delad rise-seed och riktig rise visar Floor/rate0/calc_tick, återbesök resetter inte. Grundningens amount/calc oförändrade. Mig174 inkluderar låg aktiv Host men utesluter aktiv stad, avslutad/dispossessed och redan hög Host; omkörning ändrar inget. Fysisk seedmutation ger namngivet rött, byteåterställt grönt. Full färsk Go/JS/vet. Claude integrerar efter hash+STOPP.
+
+Implementation: PWR active-upsert har EN ägare i seedHost; gamla statusupdateringar i join/rise är borttagna. Seeden håller last_settlement_id/founded_tick orörda. Floor är exporterat alias till tickens kharisFloor. Mig174:s down är avsiktligt en no-op: additiv reparation kan inte säkert återskapa gamla nollvärden. Codex kharis beskriver Host/rise och rättar den nu felaktiga uppgiften att inget tal syns (Account visar redan mängden).

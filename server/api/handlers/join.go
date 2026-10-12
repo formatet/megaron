@@ -201,21 +201,6 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		slog.Error("join: could not set wanax name", "err", err, "player", playerID)
 	}
 
-	// Record the player as active with no settlement yet — settlement_id is
-	// nullable and stays NULL until founding fills it in. kharis_rate keeps its
-	// default: it is derived from the pantheon geography of the capital's hex,
-	// which does not exist yet.
-	if _, err := tx.Exec(r.Context(),
-		`INSERT INTO player_world_records (player_id, world_id, status)
-		 VALUES ($1, $2, 'active')
-		 ON CONFLICT (player_id, world_id) DO UPDATE SET status = 'active'`,
-		playerID, worldID,
-	); err != nil {
-		slog.Error("could not record join", "err", err, "player", playerID, "world", worldID)
-		writeError(w, http.StatusInternalServerError, "could not record join")
-		return
-	}
-
 	// Transition world to active once enough Wanaxes have joined.
 	//
 	// The world used to start on the FIRST join, which meant an alpha world
