@@ -1,0 +1,45 @@
+{
+  "base": "53d33910",
+  "production_source": "33253f33",
+  "runtime": {
+    "commit": "33253f3",
+    "migration": 173,
+    "status": "ok"
+  },
+  "server_and_cli_diff": "zero",
+  "js": {
+    "passed": 598,
+    "failed": 0
+  },
+  "native_dom": {
+    "composer": 0,
+    "numeric_offering_inputs": 0,
+    "before_composers": 3
+  },
+  "physical_mutation": "composer restored -> named red -> byte restored native DOM green",
+  "firefox": {
+    "widths": [
+      1280,
+      390
+    ],
+    "before": 2,
+    "after": 3,
+    "javascript_errors": 0
+  },
+  "offering": {
+    "request": {
+      "prayer": "minoan_oracle_deposits"
+    },
+    "http_status": 200,
+    "inline": "The gods are silent. Your offering was received, but they do not answer.",
+    "sql_writes_during_action": false
+  },
+  "fixture": "own freshly registered/joined test player; explicit SQL temple/city/stock/kharis setup in active isolated world, actual API/FOW; not natural temple founding/production; Offer action uses native web/API with no SQL writes",
+  "before_ui": "53d33910 modules intercepted; actual current backend/data",
+  "served_sha256": {
+    "js/megaron/main.js": "ce56e6336b6e0cdb9a18575e7adc79dbd9cd9e9fce3609f90e88fa985aaa87be",
+    "js/megaron/ui/drawers/kult.js": "a37a9e3bc9021dc86c3b1b3b4864d72dfa2fce2bb642e019ef4a9c80b44f0a5a",
+    "codex/rites.md": "3f9744c91fee2fbed4a140fe0e74e82dfbfbdd417a5b7db99478766da3cc3167"
+  },
+  "integration_owner": "Claude; Codex stops without merge/push/deploy"
+}

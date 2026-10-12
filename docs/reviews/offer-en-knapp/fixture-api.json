@@ -1,0 +1,326 @@
+{
+  "catchment_deposits": [],
+  "cedar_deposit": false,
+  "coastal": false,
+  "copper_deposit": false,
+  "id": "3aa1d43d-2705-40cf-9b55-f59cbeac6978",
+  "map_tile": {
+    "Q": 6,
+    "R": 59
+  },
+  "settlement": {
+    "army": {
+      "Spearman": 0,
+      "WarChariot": 0,
+      "Ship": 0,
+      "EliteInfantry": 0,
+      "WarGalley": 0,
+      "Merchantman": 0
+    },
+    "army_upkeep": {
+      "grain": 0,
+      "silver": 0
+    },
+    "army_upkeep_circulated_silver": 0,
+    "available_prayers": [
+      {
+        "id": "minoan_oracle_deposits",
+        "name": "Potnia's Vision",
+        "god": "Potnia",
+        "effect_type": "oracle_reveal_deposits",
+        "effect": "Reveals one ore deposit you have never seen \u2014 copper, tin or silver, somewhere in the world.",
+        "min_kharis": 5,
+        "offering": {
+          "oil": 20,
+          "wine": 15
+        },
+        "affordable": true,
+        "favours": {
+          "bronze": 1.3,
+          "fish": 2.2,
+          "grain": 0.6,
+          "oil": 1.5,
+          "pottery": 1.1,
+          "purple": 2,
+          "silver": 1.4,
+          "stone": 0.4
+        },
+        "offering_baseline": 6242.4
+      },
+      {
+        "id": "minoan_harvest_blessing",
+        "name": "Britomartis' Gift",
+        "god": "Britomartis",
+        "effect_type": "harvest_blessing",
+        "effect": "Blesses the harvest \u2014 grain, livestock, oil and wine yield a quarter more for 25 days.",
+        "min_kharis": 30,
+        "offering": {
+          "oil": 10,
+          "wine": 15
+        },
+        "affordable": true,
+        "favours": {
+          "copper": 0.5,
+          "fish": 0.9,
+          "grain": 1.3,
+          "livestock": 1.3,
+          "oil": 1.6,
+          "stone": 0.3,
+          "timber": 0.4,
+          "tin": 0.5,
+          "wine": 2
+        },
+        "offering_baseline": 6022.08
+      },
+      {
+        "id": "minoan_battle_frenzy",
+        "name": "Poseidon's Storm",
+        "god": "Poseidon",
+        "effect_type": "battle_frenzy",
+        "effect": "Grants your garrison battle frenzy \u2014 a temporary combat-strength boost.",
+        "min_kharis": 5,
+        "offering": {
+          "grain": 10,
+          "wine": 10
+        },
+        "affordable": true,
+        "favours": {
+          "bronze": 1.5,
+          "fish": 2.2,
+          "grain": 1,
+          "horses": 1.6,
+          "livestock": 2,
+          "pottery": 0.5,
+          "stone": 0.4,
+          "wine": 1.7
+        },
+        "offering_baseline": 4284
+      }
+    ],
+    "besieged": false,
+    "besieged_by": [],
+    "build_queue": [],
+    "build_queue_max": 2,
+    "buildings": [
+      {
+        "type": "temple",
+        "level": 1
+      }
+    ],
+    "can_afford": [
+      {
+        "type": "wall",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "harbour",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "shipyard",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "foundry",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "stable",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "farm",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "mine",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "stonequarry",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "temple",
+        "can_afford": false,
+        "next_level": 2
+      },
+      {
+        "type": "olive_press",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "winery",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "barracks",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "lumbermill",
+        "can_afford": false,
+        "next_level": 1
+      },
+      {
+        "type": "market",
+        "can_afford": false,
+        "next_level": 1
+      }
+    ],
+    "can_recruit": [
+      {
+        "unit": "war_galley",
+        "can_recruit": false,
+        "upkeep_grain_per_tick": 0.06,
+        "upkeep_silver_per_tick": 2.5,
+        "upkeep_silver_net_per_tick": 0.7500000000000001,
+        "sustainable": false
+      },
+      {
+        "unit": "merchantman",
+        "can_recruit": false,
+        "upkeep_grain_per_tick": 0.03,
+        "upkeep_silver_per_tick": 1,
+        "upkeep_silver_net_per_tick": 0.30000000000000004,
+        "sustainable": false
+      },
+      {
+        "unit": "spearman",
+        "can_recruit": false,
+        "upkeep_grain_per_tick": 0.5,
+        "upkeep_silver_per_tick": 1,
+        "upkeep_silver_net_per_tick": 0.30000000000000004,
+        "sustainable": false
+      },
+      {
+        "unit": "war_chariot",
+        "can_recruit": false,
+        "upkeep_grain_per_tick": 0.8,
+        "upkeep_silver_per_tick": 3,
+        "upkeep_silver_net_per_tick": 0.9000000000000001,
+        "sustainable": false
+      },
+      {
+        "unit": "galley",
+        "can_recruit": false,
+        "upkeep_grain_per_tick": 0.04,
+        "upkeep_silver_per_tick": 1.5,
+        "upkeep_silver_net_per_tick": 0.45000000000000007,
+        "sustainable": false
+      },
+      {
+        "unit": "elite_infantry",
+        "can_recruit": false,
+        "upkeep_grain_per_tick": 0.6,
+        "upkeep_silver_per_tick": 2,
+        "upkeep_silver_net_per_tick": 0.6000000000000001,
+        "sustainable": false
+      }
+    ],
+    "culture": "minoan",
+    "devotion": 0,
+    "devotion_capacity": 0.15,
+    "food_gubbar_placed": 0,
+    "food_gubbar_required": 6,
+    "food_self_sufficient": true,
+    "grain_consum_rate": 6,
+    "grain_prod_rate": 0,
+    "harvest_blessing": null,
+    "id": "a3330f17-3af5-43e1-91fa-629f2841ae25",
+    "kharis": 100,
+    "kharis_cap": 50,
+    "kharis_devotion_idle": true,
+    "kharis_mood": "Favorable",
+    "kharis_net_known": true,
+    "kharis_net_per_tick": -1.8,
+    "kharis_per_tick": 0,
+    "kharis_rate": 0,
+    "kingdom_id": null,
+    "labor_pool": 1200,
+    "last_tick": {
+      "consumption": {
+        "grain": 6
+      },
+      "production": {},
+      "sitos_food_in": 0,
+      "sitos_food_out": 0,
+      "sitos_interventions": 0,
+      "tick": 9592
+    },
+    "loyalty": 2,
+    "max_temple_level": 1,
+    "name": "Mycenae",
+    "net_grain_per_tick_after_upkeep": -6,
+    "net_silver_per_tick_after_upkeep": 0,
+    "owner_id": "8eb20f30-6382-4308-b6b6-ea85f4552277",
+    "population": 1200,
+    "resources": {
+      "grain": {
+        "amount": 2000,
+        "rate": 0,
+        "cap": 5000
+      },
+      "oil": {
+        "amount": 2000,
+        "rate": 0,
+        "cap": 5000
+      },
+      "silver": {
+        "amount": 0,
+        "rate": 0,
+        "cap": 1000
+      },
+      "wine": {
+        "amount": 2000,
+        "rate": 0,
+        "cap": 5000
+      }
+    },
+    "rite_kharis_cost": 4,
+    "settlement_cap": {
+      "max": 5,
+      "used": 1
+    },
+    "sitos": {
+      "coverage_ticks": 333.3333333333333,
+      "food_net_per_tick": -6,
+      "granary_cap": 360,
+      "granary_per_good": {},
+      "granary_total": 0,
+      "growth_state": "holding",
+      "high_ticks": 30,
+      "low_ticks": 10
+    },
+    "state": "active",
+    "temple_offers": [
+      {
+        "settlement_id": "a3330f17-3af5-43e1-91fa-629f2841ae25",
+        "name": "Mycenae",
+        "oil": 2000,
+        "wine": 2000,
+        "oil_needed": 2,
+        "wine_needed": 1,
+        "fed": true
+      }
+    ],
+    "training_units": [],
+    "walls": 0
+  },
+  "silver_deposit": false,
+  "terrain_type": "plains",
+  "territory_state": "free",
+  "tin_deposit": false,
+  "world_id": "3b5fb9cd-8c06-4685-88df-b162c9acff99"
+}

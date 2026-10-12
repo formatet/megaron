@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Native Firefox temple DOM proof, with actual server fixture/API and no payload overrides."""
-import argparse,hashlib,json,pathlib,urllib.request
+import argparse,hashlib,json,pathlib,urllib.request,subprocess,urllib.parse
 from playwright.sync_api import sync_playwright
-from fardvag_fixture import api,credentials,BASE
+from fardvag_fixture import api,BASE,PW
 ROOT=pathlib.Path(__file__).resolve().parents[1];OUT=ROOT/'docs/reviews/offer-en-knapp'
 p=argparse.ArgumentParser();p.add_argument('mode',choices=['baseline','after','check']);args=p.parse_args()
-s=json.loads((OUT/'scenario.json').read_text());token,_=credentials();health=json.load(urllib.request.urlopen(BASE+'/healthz'))
-folder=OUT/args.mode;folder.mkdir(exist_ok=True);facts={'health':health,'fixture':s,'captures':[]}
+s=json.loads((OUT/'scenario.json').read_text());token=api('auth/login',data={'username_or_email':s['username'],'password':PW})['access_token'];health=json.load(urllib.request.urlopen(BASE+'/healthz'))
+folder=OUT/args.mode;folder.mkdir(exist_ok=True);facts={'health':health,'fixture':s,'ui_source':'53d33910 modules via interception' if args.mode=='baseline' else 'current worktree modules','captures':[]}
 if args.mode=='after':
  served=urllib.request.urlopen(BASE+'/static/js/megaron/ui/drawers/kult.js').read();assert served==(ROOT/'web/static/js/megaron/ui/drawers/kult.js').read_bytes()
  facts['kult_sha256']=hashlib.sha256(served).hexdigest()
@@ -14,6 +14,12 @@ with sync_playwright() as pw:
  browser=pw.firefox.launch()
  for mode,(width,height) in {'desktop':(1280,900),'mobile':(390,844)}.items():
   ctx=browser.new_context(viewport={'width':width,'height':height});ctx.add_cookies([{'name':'poleia_token','value':token,'url':BASE}]);ctx.add_init_script(f"localStorage.setItem('poleia_token',{json.dumps(token)})")
+  if args.mode=='baseline':
+   def baseline_module(route):
+    rel=urllib.parse.urlparse(route.request.url).path.removeprefix('/static/')
+    data=subprocess.check_output(['git','-C',str(ROOT),'show','53d33910:web/static/'+rel])
+    route.fulfill(body=data,content_type='text/javascript')
+   ctx.route('**/static/js/megaron/**',baseline_module)
   page=ctx.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)));requests=[]
   page.on('request',lambda req:requests.append(json.loads(req.post_data)) if req.method=='POST' and req.url.endswith('/rite') else None)
   page.goto(BASE+'/world/'+s['world']+'/map',wait_until='networkidle');page.evaluate("openDrawer('kult')")
