@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-silverkalibrering/tools/silver_calibration_migration.py", line 16, in <module>
+    migrate('goto','176')
+    ~~~~~~~^^^^^^^^^^^^^^
+  File "/home/tk/wt/codex-silverkalibrering/tools/silver_calibration_migration.py", line 14, in migrate
+    def migrate(*a):return run('migrate','-path',str(ROOT/'server/db/migrations'),'-database',dsn,*a)
+                           ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tk/wt/codex-silverkalibrering/tools/silver_calibration_migration.py", line 6, in run
+    def run(*a):return subprocess.check_output(a,text=True,stderr=subprocess.PIPE).strip()
+                       ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 473, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+               **kwargs).stdout
+               ^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '('migrate', '-path', '/home/tk/wt/codex-silverkalibrering/server/db/migrations', '-database', 'postgres://postgres:proof@127.0.0.1:32840/proof?sslmode=disable', 'goto', '176')' returned non-zero exit status 1.

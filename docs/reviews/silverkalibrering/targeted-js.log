@@ -1,0 +1,214 @@
+TAP version 13
+# Subtest: codex: index ids are unique and every category is declared
+ok 1 - codex: index ids are unique and every category is declared
+  ---
+  duration_ms: 0.780486
+  type: 'test'
+  ...
+# Subtest: codex: every index entry has a file and every file has an index entry
+ok 2 - codex: every index entry has a file and every file has an index entry
+  ---
+  duration_ms: 0.599106
+  type: 'test'
+  ...
+# Subtest: codex: every [[link]] and related entry resolves to an article
+ok 3 - codex: every [[link]] and related entry resolves to an article
+  ---
+  duration_ms: 0.450389
+  type: 'test'
+  ...
+# Subtest: codex: every notification kind the client shows maps to exactly one article
+ok 4 - codex: every notification kind the client shows maps to exactly one article
+  ---
+  duration_ms: 0.577244
+  type: 'test'
+  ...
+# Subtest: codex: every drawer with a ? button has an article
+ok 5 - codex: every drawer with a ? button has an article
+  ---
+  duration_ms: 0.227346
+  type: 'test'
+  ...
+# Subtest: codex: every article is reachable — linked from another article or listed as related
+ok 6 - codex: every article is reachable — linked from another article or listed as related
+  ---
+  duration_ms: 0.577516
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: escapes HTML and renders links, known and missing
+ok 7 - renderMarkdown: escapes HTML and renders links, known and missing
+  ---
+  duration_ms: 0.537201
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: headings, lists, tables, code and comments
+ok 8 - renderMarkdown: headings, lists, tables, code and comments
+  ---
+  duration_ms: 0.423091
+  type: 'test'
+  ...
+# Subtest: backlinksTo and searchArticles
+ok 9 - backlinksTo and searchArticles
+  ---
+  duration_ms: 0.383793
+  type: 'test'
+  ...
+# Subtest: codex: lowercase agora_ready is mapped and community rules match alpha policy
+ok 10 - codex: lowercase agora_ready is mapped and community rules match alpha policy
+  ---
+  duration_ms: 0.502334
+  type: 'test'
+  ...
+# Subtest: codex search finds abandon in Colonies and call-back in Sea
+ok 11 - codex search finds abandon in Colonies and call-back in Sea
+  ---
+  duration_ms: 5.217262
+  type: 'test'
+  ...
+# Subtest: codex: days name the world unit and clock/date names wall time
+ok 12 - codex: days name the world unit and clock/date names wall time
+  ---
+  duration_ms: 0.148503
+  type: 'test'
+  ...
+# Subtest: atStorageCeiling: mirrors keryx — >=99% of a positive cap, nothing without a cap
+ok 13 - atStorageCeiling: mirrors keryx — >=99% of a positive cap, nothing without a cap
+  ---
+  duration_ms: 0.671079
+  type: 'test'
+  ...
+# Subtest: goodsRateCell: a good at cap reads "full" (dimmed) not green growth, and names the wasted rate
+ok 14 - goodsRateCell: a good at cap reads "full" (dimmed) not green growth, and names the wasted rate
+  ---
+  duration_ms: 9.238266
+  type: 'test'
+  ...
+# Subtest: goodsRateCell: at cap but idle (rate 0) reads plain "full", no wasted-rate tail
+ok 15 - goodsRateCell: at cap but idle (rate 0) reads plain "full", no wasted-rate tail
+  ---
+  duration_ms: 0.180329
+  type: 'test'
+  ...
+# Subtest: goodsRateCell: below cap and producing keeps the green growth cell
+ok 16 - goodsRateCell: below cap and producing keeps the green growth cell
+  ---
+  duration_ms: 0.162154
+  type: 'test'
+  ...
+# Subtest: goodsRateCell: below cap and idle renders an empty cell
+ok 17 - goodsRateCell: below cap and idle renders an empty cell
+  ---
+  duration_ms: 0.08961
+  type: 'test'
+  ...
+# Subtest: AK1: economy.js imports under node --test without a DOM (proves the misc.js pointerdown listener no longer runs at module scope)
+ok 18 - AK1: economy.js imports under node --test without a DOM (proves the misc.js pointerdown listener no longer runs at module scope)
+  ---
+  duration_ms: 0.070654
+  type: 'test'
+  ...
+# Subtest: parseGoodAmountPairs: matches keryx cmd_route.go's good:amount,good:amount shape
+ok 19 - parseGoodAmountPairs: matches keryx cmd_route.go's good:amount,good:amount shape
+  ---
+  duration_ms: 0.609911
+  type: 'test'
+  ...
+# Subtest: parseGoodAmountPairs: empty/blank input is an empty list, not an error
+ok 20 - parseGoodAmountPairs: empty/blank input is an empty list, not an error
+  ---
+  duration_ms: 0.119273
+  type: 'test'
+  ...
+# Subtest: parseGoodAmountPairs: a malformed pair is dropped, not thrown — a typo must not crash the form
+ok 21 - parseGoodAmountPairs: a malformed pair is dropped, not thrown — a typo must not crash the form
+  ---
+  duration_ms: 0.256526
+  type: 'test'
+  ...
+# Subtest: renderStandingOrdersHTML: empty list renders the empty-state message
+ok 22 - renderStandingOrdersHTML: empty list renders the empty-state message
+  ---
+  duration_ms: 0.317604
+  type: 'test'
+  ...
+# Subtest: renderStandingOrdersHTML: an active order offers Pause, a paused one offers Resume and shows its reason
+ok 23 - renderStandingOrdersHTML: an active order offers Pause, a paused one offers Resume and shows its reason
+  ---
+  duration_ms: 0.170988
+  type: 'test'
+  ...
+# Subtest: renderStandingOrdersHTML: a naval route names its bound ship
+ok 24 - renderStandingOrdersHTML: a naval route names its bound ship
+  ---
+  duration_ms: 0.083895
+  type: 'test'
+  ...
+# Subtest: settlementFoodRow: a self-sufficient, well-stocked settlement reads "stable"
+ok 25 - settlementFoodRow: a self-sufficient, well-stocked settlement reads "stable"
+  ---
+  duration_ms: 0.136339
+  type: 'test'
+  ...
+# Subtest: settlementFoodRow: empty granary and shrinking reads "starving" and ranks worst (except cannot-feed)
+ok 26 - settlementFoodRow: empty granary and shrinking reads "starving" and ranks worst (except cannot-feed)
+  ---
+  duration_ms: 0.069469
+  type: 'test'
+  ...
+# Subtest: settlementFoodRow: food_self_sufficient===false overrides the granary state — always the worst, even mid-store
+ok 27 - settlementFoodRow: food_self_sufficient===false overrides the granary state — always the worst, even mid-store
+  ---
+  duration_ms: 0.058173
+  type: 'test'
+  ...
+# Subtest: settlementFoodRow: no province data (failed fetch) renders "no data" instead of throwing or guessing
+ok 28 - settlementFoodRow: no province data (failed fetch) renders "no data" instead of throwing or guessing
+  ---
+  duration_ms: 0.05041
+  type: 'test'
+  ...
+# Subtest: sortSettlementRows: default brist sort puts cannot-feed first, then starving, then stable
+ok 29 - sortSettlementRows: default brist sort puts cannot-feed first, then starving, then stable
+  ---
+  duration_ms: 0.106682
+  type: 'test'
+  ...
+# Subtest: sortSettlementRows: sorting by population desc does not mutate the input array
+ok 30 - sortSettlementRows: sorting by population desc does not mutate the input array
+  ---
+  duration_ms: 0.081363
+  type: 'test'
+  ...
+# Subtest: renderSettlementsOverviewHTML: empty rows render nothing
+ok 31 - renderSettlementsOverviewHTML: empty rows render nothing
+  ---
+  duration_ms: 0.087446
+  type: 'test'
+  ...
+# Subtest: renderSettlementsOverviewHTML: each row links to openCitySettlement and shows name/pop/rate/status
+ok 32 - renderSettlementsOverviewHTML: each row links to openCitySettlement and shows name/pop/rate/status
+  ---
+  duration_ms: 0.28129
+  type: 'test'
+  ...
+# Subtest: renderSettlementsOverviewHTML: the active sort column shows its arrow, others do not
+ok 33 - renderSettlementsOverviewHTML: the active sort column shows its arrow, others do not
+  ---
+  duration_ms: 0.181527
+  type: 'test'
+  ...
+# Subtest: loadEconomyDrawer: with no owned settlements, renders the empty-state message and returns before touching anything else
+ok 34 - loadEconomyDrawer: with no owned settlements, renders the empty-state message and returns before touching anything else
+  ---
+  duration_ms: 0.148284
+  type: 'test'
+  ...
+1..34
+# tests 34
+# suites 0
+# pass 34
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 68.254997

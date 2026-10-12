@@ -1,0 +1,7 @@
+--- FAIL: TestSilverCalibrationLaborIndexNeverSmoothsHistoricalPrices (0.02s)
+    labor_index_test.go:51: stone labor_value=1 want2
+    labor_index_test.go:54: stone v2=1.7 want3.4; historical price cannot seed smoothing
+FAIL
+FAIL	formatet/megaron/server/internal/religion	0.017s
+FAIL
+» färsk DB på migration 177 · commit 26f41bd2+ändringar

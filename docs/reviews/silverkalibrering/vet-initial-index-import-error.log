@@ -1,0 +1,3 @@
+# formatet/megaron/server/cmd/server
+# [formatet/megaron/server/cmd/server]
+vet: cmd/server/main.go:114:12: undefined: religion

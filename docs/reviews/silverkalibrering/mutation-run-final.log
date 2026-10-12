@@ -1,0 +1,13 @@
+inland_endowment NAMED RED; BYTE RESTORED
+coastal_endowment NAMED RED; BYTE RESTORED
+founding_double_credit NAMED RED; BYTE RESTORED
+refugee_no_extra_mint NAMED RED; BYTE RESTORED
+colony_cap NAMED RED; BYTE RESTORED
+bronze_work_chain NAMED RED; BYTE RESTORED
+stone_work_reference NAMED RED; BYTE RESTORED
+hills_miner_anchor NAMED RED; BYTE RESTORED
+limestone_miner_anchor NAMED RED; BYTE RESTORED
+silver_no_floor NAMED RED; BYTE RESTORED
+kharis_shared_reference NAMED RED; BYTE RESTORED
+v2_smoothing_float NAMED RED; BYTE RESTORED
+ALL RESTORED; FRESH GREEN

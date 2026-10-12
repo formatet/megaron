@@ -1,0 +1,18 @@
+# formatet/megaron/server/cmd/server
+cmd/server/main.go:114:12: undefined: religion
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-silverkalibrering/tools/silver_calibration_live.py", line 24, in <module>
+    run('go','build','-ldflags','-X main.buildCommit='+commit,'-o',str(tmp/'temenos'),'./cmd/server',cwd=ROOT/'server',env=clean)
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tk/wt/codex-silverkalibrering/tools/silver_calibration_live.py", line 14, in run
+    def run(*args,**kw):return subprocess.check_output(args,text=True,**kw).strip()
+                               ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 473, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+               **kwargs).stdout
+               ^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '('go', 'build', '-ldflags', '-X main.buildCommit=22b1ed6', '-o', '/tmp/megaron-religion-b-live-07906tqx/temenos', './cmd/server')' returned non-zero exit status 1.

@@ -1,0 +1,5 @@
+# formatet/megaron/server/api/handlers
+api/handlers/settlement.go:1330:8: undefined: math
+# formatet/megaron/server/api/handlers
+# [formatet/megaron/server/api/handlers]
+vet: api/handlers/settlement.go:1330:8: undefined: math

@@ -1,0 +1,13 @@
+--- FAIL: TestSilverCalibrationCatalogueAndNoAltarFloor (0.00s)
+    alpha_test.go:25: silver labor value was replaced by a floor: 200
+--- FAIL: TestSilverCalibrationLaborIndexNeverSmoothsHistoricalPrices (0.01s)
+    labor_index_test.go:61: silver offering=200 want3.4 worker_ticks, no floor
+FAIL
+FAIL	formatet/megaron/server/internal/religion	0.014s
+2026/10/12 23:25:11 INFO player registered id=3ea21c1a-a523-4534-87c9-e8fb132e45bc username=alpha-31491e0e-cf7a-41d4-b371-d6d0b6b745ad
+--- FAIL: TestSilverCalibrationOfferWorkAndLegacyPayloadRead (0.08s)
+    silver_calibration_test.go:161: offer work=222.67197403043713 want24.67197403043714 from grain/silver labor values
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.398s
+FAIL
+» färsk DB på migration 177 · commit 26f41bd2+ändringar

@@ -1,6 +1,14 @@
 # Silverkalibrering — STOPP 1
 
-**Status: inventering och talförslag; STOPP före produktion.** Gren `codex/silverkalibrering`, eget worktree `/home/tk/wt/codex-silverkalibrering`, bas `acf5c96f`. Inga server-, SQL-, webb-, Keryx- eller Codex-produktionsändringar. Claude beslutar om förslagen och ger separat implementationstillstånd.
+**Status: STOPP 2 klar för Claudes granskning, inte mergad/pushad/deployad.** Gren `codex/silverkalibrering`, eget worktree `/home/tk/wt/codex-silverkalibrering`, från `acf5c96f`. Produktion `03deb596` + importkomplettering `cef1e461`, migration177. Slutbevis: [checkpoint-2-verification.json](checkpoint-2-verification.json).
+
+Dagsverkena, gruvankarna, startsaldot730/1278, Rise-skyddet, kolonipungen/caps, nya silverrecept och fyra ytor är implementerade. Full Go på tom PG16/mig177, vet och608JS gröna. **14 fysiska källmutationer**: namngivet rött → byteåterställt → färsk gemensam grön. Populerad migration176→177→down/up bevarar balances/history. **Två rena verkliga Firefox/Keryx-körningar** på cef1e46/mig177; bilder1280/390 utan brief i [live](live/) och [live-repeat](live-repeat/). Claude granskar kärnan/muterar själv; BILD-dom kvar före integration.
+
+Första grundningen provas via vanlig register/join/found **utan SQL före grundningen** (730/cap1460 i båda native världarna). För kult- och layoutprovet används därefter en uttrycklig **egen PRE-ACTION-fixtur**: tempel3, kharis90, relevanta stocks1000. Ingen SQL under handlingarna, inga HTTP/payload-overrides. Det bevisar klientflödet, inte naturlig tempelbyggnad/gruvekonomi. Kust1278 och spenderad/överstor/refugee-pung är separata riktiga DB-grundningsprov.
+
+## STOPP 1 — historisk baslinje och härledning
+
+Följande inventering/tabeller togs på acf5c96f, överlämnades i26f41bd2 och granskades före START23:08. Förslagsstatus i §6 är historik; godkända och implementerade regler står i STOPP2 nedan samt vaultnotens normativa beslut.
 
 **Slutsats:** standardproduktion ger 1 dagsverke/enhet för de flesta råvaror, fältsten 2 och brons **11 inklusive 9 koppar + 1 tenn + gjutaren**. Silvrets beslutade kulleankare ger 1. Dev-kartans fullbemannade silvergruvor ger efter kalibreringen **20 silver/tick på nivå 1**, **36,470588 på nivå 3**. 20 nya, olika 64×64-kartor ger medel **27,875 / 50,830882**; de kan bära motsvarande **27,875 / 50,830882 spjutkohorter i bruttosold** totalt, inte per Wanax. Gruvplatserna är bara 20 på varje mätt karta. Inga ankartal räknas om.
 
@@ -207,3 +215,44 @@ Känslighetsprov muterar **analysens indata**, inte produktion: grain-standardta
 Avgränsningar: sample20 är en redovisad deterministic sample, ingen garanti för alla möjliga seeds; teoretisk output för4limestone har inte observerats. Dev är1 aktiv stadsägare, inte ett typiskt fördelat10-/50-spelarparti. Maxutvinning antar full bemanning/nåbarhet/mat; soldtabellen antar inga andra sänkor och alternativ homogent arméval. Parkerad purple har ingen kodhärledbar produktion. Balansvaulten har gamla priser/rater/kostnader och skall inte användas som livekatalog; uppdatering av dess relevanta mekanik hör till implementationen. Audit-/AI-fynden är rapporterade för triage, inte extra kodscope.
 
 Metodisk lärdom: läs effektiva DB-tabeller efter hela migrationskedjan; håll brutto/netto åtskilda; deduplicera effektiva mapseeds efter reseeding.
+
+## STOPP 2-kontrakt (Claude START 23:08)
+
+Godkänd implementation: labor_value med gemensamma gud-/kultläsare, nytt indexmått utan gammal smoothing, nya eventfält; startsaldo vid första grundning max(hostsaldo,730/1278), Rise60/återgrundning utan kran, cap1460/2556, koloni capmax(60,2×pung,stock); offer3/2/3/3silver och inget silvergolv. Keryx+web Workdays/unit, Codex goods/rites/kharis, vault balans+silver. Grundningen skall fylla upp även efter redan betald vandringssold. Scope utesluter mapgen-geografi/spjutransoner/audit/AI-reparation. Bevis: färsk baslinje, namngivet kharisflödesprov, verkliga start/koloni/offer/indexprov, fysisk mutation per start/arbetsvärde/golv, full färsk Go/vet/JS, verklig Firefox1280/390 och Keryx. STOPP2 hash före Claude-integration/BILD-dom.
+
+## STOPP 2 — resultat och bevis
+
+### Slutlig implementation
+
+- Migration177 lägger `goods.labor_value` (cult/purple NULL), deprecated base_value orört; silver r0=1/1,7 respektive2,5/1,7 under oförändrad byggnadsformel. Positiva gruvrater re-ankras vid gamla rate innan omläggningen; inga mängder skalas ned. Befintliga caps skrivs aldrig under settled stock.
+- Värdeindexv2 ligger i **separat** `divine_labor_valuations`, så den gamla tabellen och alla äldre events finns kvar. Startup och world creation initialiserar v2 atomiskt under transaktionslås före requests. Komplett v2 återinitialiseras inte vid restart; regular tick smoothar endast v2 mot v2. Ett namngivet SQL-prov kräver2→1,898 (0,34 smoothing) med explicit float8-bindning.
+- Kharis faktiska maintenance och ProjectDailyNet använder samma `religion.LoadLaborValues` som katalogreferens. `TestSilverCalibrationKharisFlowLeavesStalePriceClamp` visar gamla prisclampens +0,6→nytt0 nettokharis vid kontrollerad1,5-knapphet, och **verkligt persistat** maintenance överensstämmer med projektionen. Stående underhållsrecept/övriga kharisregler oförändrade.
+- Första grundning, även direkta callers: amount=max(carried,730/1278), cap=max(1460/2556,amount). Silver överförs/initialiseras **en gång**; det adderas inte igen vid hostens upplösning. `founder_phase.is_refugee` skrivs av Rise/seedHost och backfillas från prior-city witness. Den eller ett tidigare-stad-vittne förhindrar extra endowment för återgrundning. Rise-pungen60 och newcomer-hostens vandringsförråd480 är oförändrade; första grundningen fyller upp även efter spenderad sold.
+- Koloni flyttar befintlig pung, skriver capmax(60,2×pung,stock) och tömmer enhetens purse i samma TX. Båda DB-seed/cap-felen returneras som TX-fel, ingen tidigare best-effort halvt genomförd grundning.
+- Vision3/Green2/Thread3/Passage3silver, Walls utan silver. Silvergolvet bort. Receptdebit och fruset Offering bevisas för alla fem, både svar och tyst. Default-offrets chansmodifierare förblir0; arbetsvärde beräknas även för standardreceptets event, inte bara kompositioner.
+- Nya RiteCast-fält `offering_work`, `offering_work_baseline`, `offering_value_unit=worker_ticks`, `valuation_version=2`; gamla `offering_worth`/`offering_baseline` får inte nya enheter i persistent event. KharisOffering tillför enhets/versionfält och behåller dimensionlösa/outcomefält. `events.Store.LoadStream` läser två verkligt äldre RiteCast/KharisOffering-payloads oförändrade efter v2-init och ny Offer. API:s kompatibla presentation får också explicita nya enhetsfält.
+- Keryx goods + webb Economy→Goods visar Workdays/unit, NULL som —, och kort hjälptext skiljer arbetsreferens från handelspris. Codex goods/rites/kharis/silver uppdaterade. Vault `temenos_balans_spakar.md` + `megaron_silverkalibrering_20261012.md` uppdaterade med godkända regler (gren, ännu inte live). Audit-/AI-fynd egna VERIFIERING-rader; deras kod, mapgen och soldtabell orörda.
+
+### Verifiering
+
+| Bevis | Resultat / artifact |
+|---|---|
+| Färsk oförändrad baslinje, mig176 | [baseline-go.log](baseline-go.log) |
+| Full färsk Go, mig177 | [full-go-final.log](full-go-final.log); full svit exit0, world92,101s |
+| Vet / hela JS | [vet-final.log](vet-final.log), [full-js.log](full-js.log),608/608 |
+|14 fysiska produktionsmutationer | [mutations/results.json](mutations/results.json), namngivna röda loggar och `restored-fresh-green.log` |
+| Populerad migration och down/up | [migration-verification.json](migration-verification.json), [migration-proof-final.log](migration-proof-final.log) |
+| Riktig first founding / saldo innan fixtur | `live{,-repeat}/natural-first-founding.json`, både730/1460 utan SQL före grundning |
+| Native två rena klientkörningar | `live{,-repeat}/verification.json`, healthcef1e46/mig177, tom server/web-diff, inga JSfel/overrides; riktig Thread/Passage Offer200→pending/wait12 |
+| BILD för Claude/Timothy | `desktop-goods.png`, `mobile-goods.png`, `desktop.png`, `mobile-prayers.png`, plus desktop pending/departure i båda katalogerna; granskat1:1 av byggaren, formell BILD-dom kvar |
+| Keryx | `live{,-repeat}/keryx-goods.txt`, `keryx-before.txt`, `keryx-after.txt` |
+
+Grindar: **kod grön**, **semantisk grön för mätt scope**, **användarflöde grönt med tydligt separerad PRE-ACTION-kultfixtur**, **BILD överlämnad och väntar dom**, **drift inte utförd**. Detta ersätter STOPP1:s väntande grindstatus, inte dess baslinje.
+
+### Fynd och ärlig avgränsning
+
+En första mutationsomgång blev inte ett godkänt bevis: ett nytillagt default-Offer-eventprov fångade att gamla vägen lämnade worth0. Det rättades genom att räkna arbetsvärdet också för standardrecept, utan att byta dess chansmodifierare. Efter en grön baseline omkördes alla12 dåvarande mutationer rent, därefter två till för råarbetsvärde/återinförd prisreader, totalt14. Initiala `mutations-initial-unproven/` är tydligt gamla, ingen green-claim.
+
+Första full-build stoppades av saknade math/religion-importer, rättat i cef1e461; ny fullGo/vet/runtime helt rena. Migrationriggens temporära PG-start behövde vänta på externt lyssnande port; första avbrutna rigg arkiverad. Klientriggen rättades för CSS-uppercase och för att stänga Economy innan Kult (annars täckte Kult en gammal briefknapp); det är riggfynd, ingen produktionsändring. Arkiverade initial-loggar/bilder räknas inte som slutbevis. De två slutliga native-körningarna är båda rena.
+
+Ingen naturlig temple/mine/bronze/elite-progression provas av denna fixtur. Ingen server på dev ändrad, ingen live-DB-skrivning efter STOPP1 READ ONLY-snapshot, ingen merge/push/deploy. Stormsampling, antal fyndigheter, krigar-sold, audit-luckor och guvernörsbuggen lämnas till deras egna beslut/slices. **HASH + STOPP2 till Claude.**

@@ -1,0 +1,6 @@
+--- FAIL: TestSilverCalibrationKharisFlowLeavesStalePriceClamp (0.03s)
+    labor_flow_test.go:38: actual maintenance factor=1 want1.5, stale price denominator must be gone
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.031s
+FAIL
+» färsk DB på migration 177 · commit 26f41bd2+ändringar

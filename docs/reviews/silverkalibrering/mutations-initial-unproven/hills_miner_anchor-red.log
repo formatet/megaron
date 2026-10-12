@@ -1,0 +1,8 @@
+--- FAIL: TestSilverCalibrationMineAnchorsAndMaxLevel (0.00s)
+    silver_calibration_test.go:27: hills L1 full mine=10 want5
+    silver_calibration_test.go:27: hills L2 full mine=14.11764705882353 want7.0588235294117645
+    silver_calibration_test.go:27: hills L3 full mine=18.235294117647058 want9.117647058823529
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.006s
+FAIL
+» färsk DB på migration 177 · commit 26f41bd2+ändringar

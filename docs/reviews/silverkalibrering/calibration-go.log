@@ -1,0 +1,9 @@
+» färsk DB på migration 177 · commit 26f41bd2+ändringar
+--- FAIL: TestSilverCalibrationLaborIndexNeverSmoothsHistoricalPrices (0.01s)
+    labor_index_test.go:85: v2 smoothing=2 want1.898
+FAIL
+FAIL	formatet/megaron/server/internal/religion	0.016s
+ok  	formatet/megaron/server/internal/kharis	0.032s
+ok  	formatet/megaron/server/internal/combat	0.151s
+ok  	formatet/megaron/server/api/handlers	1.004s
+FAIL

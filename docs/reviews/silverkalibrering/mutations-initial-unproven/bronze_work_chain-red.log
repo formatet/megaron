@@ -1,0 +1,7 @@
+--- FAIL: TestSilverCalibrationLaborIndexNeverSmoothsHistoricalPrices (0.01s)
+    labor_index_test.go:51: bronze labor_value=12 want11
+    labor_index_test.go:54: bronze v2=20.4 want18.7; historical price cannot seed smoothing
+FAIL
+FAIL	formatet/megaron/server/internal/religion	0.016s
+FAIL
+» färsk DB på migration 177 · commit 26f41bd2+ändringar

@@ -559,3 +559,12 @@ refugee protection, colony caps, labour references, both miner anchors, altar fl
 cult denominator and index smoothing. Each case requires a named failing test on
 fresh PG16/migration177, restores source bytes, then reruns the shared calibration
 cases green. Evidence: `docs/reviews/silverkalibrering/mutations/`.
+
+`python3 tools/silver_calibration_migration.py` exercises populated migration176→177,
+down/up, preserving existing silver balances, prices, index history and old event
+payloads. `python3 tools/silver_calibration_live.py` builds the current commit and
+runs native Firefox1280/390 + Keryx on private PG16/Redis: regular register/join/found
+and its true starting balance, then an explicit pre-action temple/stock fixture
+for Workdays/unit and real prayer Offers. No SQL during actions or payload overrides.
+`SILVER_PROOF_OUT=live-repeat` selects a second evidence folder; all own resources
+are removed on completion. Proofs: `docs/reviews/silverkalibrering/`.

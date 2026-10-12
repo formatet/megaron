@@ -1,0 +1,182 @@
+{
+  "verified_at": "2026-10-12T23:37:45.978747+02:00",
+  "production_commit": "cef1e461",
+  "implementation_commit": "03deb596",
+  "baseline_commit": "acf5c96f",
+  "migration": 177,
+  "dirty": false,
+  "full_fresh_go": true,
+  "vet": true,
+  "js_pass": 608,
+  "production_working_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "physical_source_mutations": [
+    {
+      "mutation": "inland_endowment",
+      "named_red": "TestSilverCalibrationFirstFoundingEndowment",
+      "source_byte_restored": true,
+      "restored_fresh_green": true
+    },
+    {
+      "mutation": "coastal_endowment",
+      "named_red": "TestSilverCalibrationFirstFoundingEndowment",
+      "source_byte_restored": true,
+      "restored_fresh_green": true
+    },
+    {
+      "mutation": "founding_double_credit",
+      "named_red": "TestSilverCalibrationFirstFoundingEndowment",
+      "source_byte_restored": true,
+      "restored_fresh_green": true
+    },
+    {
+      "mutation": "refugee_no_extra_mint",
+      "named_red": "TestSilverCalibrationRefugeeFoundingNeverMints",
+      "source_byte_restored": true,
+      "restored_fresh_green": true
+    },
+    {
+      "mutation": "colony_cap",
+      "named_red": "TestFoundColony_DoesNotMintSilver",
+      "source_byte_restored": true,
+      "restored_fresh_green": true
+    },
+    {
+      "mutation": "bronze_work_chain",
+      "named_red": "TestSilverCalibrationLaborIndexNeverSmoothsHistoricalPrices",
+      "source_byte_restored": true,
+      "restored_fresh_green": true
+    },
+    {
+      "mutation": "stone_work_reference",
+      "named_red": "TestSilverCalibrationLaborIndexNeverSmoothsHistoricalPrices",
+      "source_byte_restored": true,
+      "restored_fresh_green": true
+    },
+    {
+      "mutation": "hills_miner_anchor",
+      "named_red": "TestSilverCalibrationMineAnchorsAndMaxLevel",
+      "source_byte_restored": true,
+      "restored_fresh_green": true
+    },
+    {
+      "mutation": "limestone_miner_anchor",
+      "named_red": "TestSilverCalibrationMineAnchorsAndMaxLevel",
+      "source_byte_restored": true,
+      "restored_fresh_green": true
+    },
+    {
+      "mutation": "silver_no_floor",
+      "named_red": "TestSilverCalibrationOfferWorkAndLegacyPayloadRead",
+      "source_byte_restored": true,
+      "restored_fresh_green": true
+    },
+    {
+      "mutation": "kharis_shared_reference",
+      "named_red": "TestSilverCalibrationKharisFlowLeavesStalePriceClamp",
+      "source_byte_restored": true,
+      "restored_fresh_green": true
+    },
+    {
+      "mutation": "v2_smoothing_float",
+      "named_red": "TestSilverCalibrationLaborIndexNeverSmoothsHistoricalPrices",
+      "source_byte_restored": true,
+      "restored_fresh_green": true
+    },
+    {
+      "mutation": "raw_work_reference",
+      "named_red": "TestSilverCalibrationLaborIndexNeverSmoothsHistoricalPrices",
+      "source_byte_restored": true,
+      "restored_fresh_green": true
+    },
+    {
+      "mutation": "legacy_price_reader",
+      "named_red": "TestSilverCalibrationLaborIndexNeverSmoothsHistoricalPrices",
+      "source_byte_restored": true,
+      "restored_fresh_green": true
+    }
+  ],
+  "populated_migration": {
+    "before_settled_balances": [
+      [
+        "00000000-0000-0000-0000-000000000005",
+        104.608
+      ],
+      [
+        "00000000-0000-0000-0000-000000000006",
+        5000
+      ]
+    ],
+    "after_amount_rate_cap": [
+      [
+        "00000000-0000-0000-0000-000000000005",
+        104.608,
+        1,
+        1460
+      ],
+      [
+        "00000000-0000-0000-0000-000000000006",
+        5000,
+        0,
+        10000
+      ]
+    ],
+    "legacy_events_unchanged": true,
+    "legacy_prices_unchanged": true,
+    "legacy_index_not_copied": true,
+    "refugee_backfill": true,
+    "down_up_conserves_silver": true,
+    "migration": 177,
+    "dirty": false
+  },
+  "native_runs": [
+    {
+      "health": {
+        "commit": "cef1e46",
+        "migration": 177,
+        "status": "ok"
+      },
+      "initial_bank": 730,
+      "initial_cap": 1460,
+      "regular_register_join_founding_before_fixture": true,
+      "fixture": "Own city temple level3, grain/timber/fish/silver1000, realm kharis90/rate0 before actions; not natural temple build",
+      "no_SQL_during_actions": true,
+      "payload_overrides": false,
+      "browser_errors": [
+        [],
+        []
+      ],
+      "real_Offer200_count": 2,
+      "successful_departure_prayers": [
+        "minoan_asterion_thread",
+        "minoan_stillness_passage"
+      ]
+    },
+    {
+      "health": {
+        "commit": "cef1e46",
+        "migration": 177,
+        "status": "ok"
+      },
+      "initial_bank": 730,
+      "initial_cap": 1460,
+      "regular_register_join_founding_before_fixture": true,
+      "fixture": "Own city temple level3, grain/timber/fish/silver1000, realm kharis90/rate0 before actions; not natural temple build",
+      "no_SQL_during_actions": true,
+      "payload_overrides": false,
+      "browser_errors": [
+        [],
+        []
+      ],
+      "real_Offer200_count": 2,
+      "successful_departure_prayers": [
+        "minoan_asterion_thread",
+        "minoan_stillness_passage"
+      ]
+    }
+  ],
+  "not_proven": [
+    "natural temple construction",
+    "natural mine/bronze/elite economic progression"
+  ],
+  "merge_push_deploy_performed": false
+}

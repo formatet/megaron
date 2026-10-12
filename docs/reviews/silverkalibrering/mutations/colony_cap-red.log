@@ -1,0 +1,11 @@
+2026/10/12 23:24:55 INFO colony founded (discrete unit) settlement=65e39ecc-e6e2-45a1-a6ff-295631287249 name=Newhaven-8dee7ab0 province=5189af48-447c-419c-aa5a-21ad1834b935 owner=d9da74e1-4d7f-48cf-852b-afeeab6a2214 founding_unit=9c5cec97-c9ea-43a8-a9f9-1ed6f871efa6 population=50 q=10 r=10
+--- FAIL: TestFoundColony_DoesNotMintSilver (0.03s)
+    colonist_purse_test.go:130: colony cap=700 want 2*purse=1400
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.035s
+--- FAIL: TestSilverCalibrationColonyCapNeverClipsStock (0.00s)
+    silver_calibration_test.go:36: purse0 stock0 cap30 want60
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.002s
+FAIL
+» färsk DB på migration 177 · commit 26f41bd2+ändringar

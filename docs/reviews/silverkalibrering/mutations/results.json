@@ -1,0 +1,86 @@
+[
+  {
+    "mutation": "inland_endowment",
+    "named_red": "TestSilverCalibrationFirstFoundingEndowment",
+    "source_byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "coastal_endowment",
+    "named_red": "TestSilverCalibrationFirstFoundingEndowment",
+    "source_byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "founding_double_credit",
+    "named_red": "TestSilverCalibrationFirstFoundingEndowment",
+    "source_byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "refugee_no_extra_mint",
+    "named_red": "TestSilverCalibrationRefugeeFoundingNeverMints",
+    "source_byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "colony_cap",
+    "named_red": "TestFoundColony_DoesNotMintSilver",
+    "source_byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "bronze_work_chain",
+    "named_red": "TestSilverCalibrationLaborIndexNeverSmoothsHistoricalPrices",
+    "source_byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "stone_work_reference",
+    "named_red": "TestSilverCalibrationLaborIndexNeverSmoothsHistoricalPrices",
+    "source_byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "hills_miner_anchor",
+    "named_red": "TestSilverCalibrationMineAnchorsAndMaxLevel",
+    "source_byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "limestone_miner_anchor",
+    "named_red": "TestSilverCalibrationMineAnchorsAndMaxLevel",
+    "source_byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "silver_no_floor",
+    "named_red": "TestSilverCalibrationOfferWorkAndLegacyPayloadRead",
+    "source_byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "kharis_shared_reference",
+    "named_red": "TestSilverCalibrationKharisFlowLeavesStalePriceClamp",
+    "source_byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "v2_smoothing_float",
+    "named_red": "TestSilverCalibrationLaborIndexNeverSmoothsHistoricalPrices",
+    "source_byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "raw_work_reference",
+    "named_red": "TestSilverCalibrationLaborIndexNeverSmoothsHistoricalPrices",
+    "source_byte_restored": true,
+    "restored_fresh_green": true
+  },
+  {
+    "mutation": "legacy_price_reader",
+    "named_red": "TestSilverCalibrationLaborIndexNeverSmoothsHistoricalPrices",
+    "source_byte_restored": true,
+    "restored_fresh_green": true
+  }
+]

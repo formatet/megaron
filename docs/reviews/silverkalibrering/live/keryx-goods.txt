@@ -1,0 +1,22 @@
+Labor pool: 1000 workers  ·  Idle: 700 workers
+
+Good            Stock    Rate/t     Lvl     Workers    Marg/g  Workdays/unit
+──────────────────────────────────────────────────────────────────────────
+cedar             0.0       0.0       —           —         —           1.0
+stone             0.0       0.0       —           0    1.0000           2.0
+timber         1000.0       0.0       —           0    1.0000           1.0
+silver         1000.0       0.0       —           —         —           1.0
+oil               0.0       0.0       —           0    1.0000           1.0
+purple            0.0       0.0       —           —         —             —
+wine              0.0       0.0       —           0    1.0000           1.0
+cult              0.0       0.0       —           —         —             —
+fish           1000.0       0.0       —           —         —           1.0
+grain          1000.0       0.0       —         300    1.7000           1.0
+livestock        10.0       0.0       —           0    1.0000           1.0
+bronze            0.0       0.0       —           —         —          11.0
+copper            0.0       0.0       —           0    1.0000           1.0
+horses            0.0       0.0       —           —         —           1.0
+pottery           0.0       0.0       —           —         —           1.0
+tin               0.0       0.0       —           —         —           1.0
+
+Workdays/unit: reference labour on standard ground, including recipe inputs; gods weigh scarcity separately. Trade prices are agreed by Wanaxes.

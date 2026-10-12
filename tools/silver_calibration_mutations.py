@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Physical source/migration mutations, named DB-test failures and byte restore."""
 from pathlib import Path
-import json, os, socket, subprocess
+import json, os, socket, subprocess, sys
 ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'docs/reviews/silverkalibrering/mutations';OUT.mkdir(parents=True,exist_ok=True)
 cases=[
+ ('raw_work_reference','server/db/migrations/177_labor_values_silver.up.sql','ELSE 1 END;','ELSE 2 END;',['./internal/religion'],'TestSilverCalibrationLaborIndex','TestSilverCalibrationLaborIndexNeverSmoothsHistoricalPrices'),
+ ('legacy_price_reader','server/internal/religion/index.go','        g.labor_value,','        g.base_value,',['./internal/religion'],'TestSilverCalibrationLaborIndex','TestSilverCalibrationLaborIndexNeverSmoothsHistoricalPrices'),
  ('inland_endowment','server/internal/economy/genesis_silver.go','MetropolisSilverInland  = 730.0','MetropolisSilverInland  = 729.0',['./api/handlers'],'TestSilverCalibrationFirstFoundingEndowment','TestSilverCalibrationFirstFoundingEndowment'),
  ('coastal_endowment','server/internal/economy/genesis_silver.go','MetropolisSilverCoastal = 1278.0','MetropolisSilverCoastal = 1277.0',['./api/handlers'],'TestSilverCalibrationFirstFoundingEndowment','TestSilverCalibrationFirstFoundingEndowment'),
  ('founding_double_credit','server/api/handlers/found_metropolis.go','map[string]float64{"grain": grainLeft}','map[string]float64{"grain": grainLeft, "silver": silverLeft}',['./api/handlers'],'TestSilverCalibrationFirstFoundingEndowment','TestSilverCalibrationFirstFoundingEndowment'),
@@ -21,6 +23,10 @@ cases=[
 def fresh(args):
  with socket.socket() as sock:sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
  return subprocess.run([str(ROOT/'tools/gotest.sh'),*args],cwd=ROOT,env={**os.environ,'GOTEST_PORT':str(port)},capture_output=True,text=True)
+selected=set(sys.argv[1:])
+if selected:
+ assert selected <= {c[0] for c in cases}, selected
+ cases=[c for c in cases if c[0] in selected]
 results=[]
 for name,path,needle,replacement,packages,pattern,expected in cases:
  p=ROOT/path;original=p.read_bytes();assert original.decode().count(needle)==1,(name,'nonunique source anchor')
@@ -35,5 +41,8 @@ for name,path,needle,replacement,packages,pattern,expected in cases:
 r=fresh(['./internal/economy','./internal/religion','./internal/kharis','./internal/combat','./api/handlers','-run','TestSilverCalibration|TestAlphaOfferDebits|TestFoundColony'])
 (OUT/'restored-fresh-green.log').write_text(r.stdout+r.stderr);assert r.returncode==0,(r.stdout,r.stderr)
 for case in results:case['restored_fresh_green']=True
-(OUT/'results.json').write_text(json.dumps(results,indent=2)+'\n')
+result_file=OUT/'results.json'
+if selected and result_file.exists():
+ prior=json.loads(result_file.read_text());results=[r for r in prior if r['mutation'] not in selected]+results
+result_file.write_text(json.dumps(results,indent=2)+'\n')
 print('ALL RESTORED; FRESH GREEN',flush=True)

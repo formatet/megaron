@@ -5,7 +5,7 @@ No SQL writes during actions, HTTP overrides or shared acceptance runtime.
 """
 import hashlib, json, os, pathlib, secrets, socket, subprocess, tempfile, time, urllib.request
 ROOT=pathlib.Path(__file__).resolve().parents[1]
-OUT=ROOT/'docs/reviews/silverkalibrering/live'
+OUT=ROOT/'docs/reviews/silverkalibrering'/os.environ.get('SILVER_PROOF_OUT','live')
 OUT.mkdir(parents=True,exist_ok=True)
 commit=subprocess.check_output(['git','-C',str(ROOT),'rev-parse','--short=7','HEAD'],text=True).strip()
 source_diff_hash=hashlib.sha256(subprocess.check_output(['git','-C',str(ROOT),'diff','HEAD','--','server','web'])).hexdigest()
@@ -102,19 +102,21 @@ try:
    page=context.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
    page.goto(base+'/world/'+world+'/map',wait_until='networkidle')
    if page.locator('#dc-dismiss-all').is_visible():page.locator('#dc-dismiss-all').click()
-   for brief in page.locator('.lb-dismiss').all():
+   for brief in page.locator('.drawer.open .lb-dismiss').all():
     if brief.is_visible():brief.click()
    page.evaluate("openDrawer('economy')")
    page.wait_for_function("document.getElementById('ectab-goods')?.textContent.includes('Workdays/unit')")
+   for brief in page.locator('#drawer-economy .lb-dismiss').all():
+    if brief.is_visible():brief.click()
    goods_text=page.locator('#ectab-goods').inner_text()
    assert 'reference labour' in goods_text and 'Wanaxes agree trade prices' in goods_text,goods_text
-   assert 'Silver · 1 workdays/unit' in goods_text,goods_text
+   assert 'silver · 1 workdays/unit' in goods_text.lower(),goods_text
    page.evaluate("async()=>await Promise.all([...document.querySelectorAll('.drawer.open')].flatMap(d=>d.getAnimations()).map(a=>a.finished.catch(()=>{})))")
    page.screenshot(path=str(OUT/(label+'-goods.png')))
    (OUT/(label+'-goods.txt')).write_text(goods_text+'\n')
-   page.evaluate("openDrawer('kult')")
+   page.evaluate("closeDrawer('economy');openDrawer('kult')")
    page.wait_for_function("document.getElementById('kult-body')?.textContent.includes('Mistress of the Walls')")
-   for brief in page.locator('.lb-dismiss').all():
+   for brief in page.locator('.drawer.open .lb-dismiss').all():
     if brief.is_visible():brief.click()
    page.evaluate("async()=>await Promise.all([...document.querySelectorAll('.drawer.open')].flatMap(d=>d.getAnimations()).map(a=>a.finished.catch(()=>{})))")
    text=page.locator('#kult-body').inner_text()

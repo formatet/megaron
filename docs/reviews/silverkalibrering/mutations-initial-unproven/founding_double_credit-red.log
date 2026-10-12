@@ -1,0 +1,15 @@
+--- FAIL: TestSilverCalibrationFirstFoundingEndowment (0.20s)
+    --- FAIL: TestSilverCalibrationFirstFoundingEndowment/inland_spent_purse (0.04s)
+        silver_calibration_test.go:54: first founding silver 737/cap1460; want 730/1460; carried7 must be included once
+    --- FAIL: TestSilverCalibrationFirstFoundingEndowment/coast_spent_purse (0.04s)
+        silver_calibration_test.go:54: first founding silver 1285/cap2556; want 1278/2556; carried7 must be included once
+    --- FAIL: TestSilverCalibrationFirstFoundingEndowment/inland_full_purse (0.04s)
+        silver_calibration_test.go:54: first founding silver 1210/cap1460; want 730/1460; carried480 must be included once
+    --- FAIL: TestSilverCalibrationFirstFoundingEndowment/coast_full_purse (0.04s)
+        silver_calibration_test.go:54: first founding silver 1758/cap2556; want 1278/2556; carried480 must be included once
+    --- FAIL: TestSilverCalibrationFirstFoundingEndowment/existing_wealth_is_not_destroyed (0.04s)
+        silver_calibration_test.go:54: first founding silver 10000/cap5000; want 5000/5000; carried5000 must be included once
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.198s
+FAIL
+» färsk DB på migration 177 · commit 26f41bd2+ändringar

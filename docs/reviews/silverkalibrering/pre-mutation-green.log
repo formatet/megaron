@@ -1,0 +1,21 @@
+» färsk DB på migration 177 · commit 26f41bd2+ändringar
+ok  	formatet/megaron/server/internal/economy	0.007s
+ok  	formatet/megaron/server/internal/religion	0.016s
+ok  	formatet/megaron/server/internal/kharis	0.038s
+ok  	formatet/megaron/server/internal/combat	0.150s
+2026/10/12 23:22:28 INFO player registered id=7824eeed-28fe-4f67-a352-6e4cc0661513 username=alpha-7fe3315f-14e7-4ba1-8993-7e63455844e1
+2026/10/12 23:22:29 INFO player registered id=ef0e0122-60af-4b86-abbd-711ecf9bcedd username=alpha-0258be79-e5d9-4634-8183-645df8612c74
+2026/10/12 23:22:29 INFO player registered id=4678c73a-bc02-4841-bd56-dda008b55150 username=alpha-fa1486f0-461b-4e06-87ae-ca3a991667c0
+2026/10/12 23:22:29 INFO player registered id=1701d21a-c91b-40c5-a867-606639fe584a username=alpha-dbf9c792-4797-4f09-ae15-b2534768034e
+2026/10/12 23:22:29 INFO player registered id=c25abc47-360c-400f-b56a-0d949f2c5e87 username=alpha-ff32132f-76d1-479d-acf6-d52d5dc310ee
+2026/10/12 23:22:29 INFO player registered id=4ad83189-3b48-4096-bdf5-e510e3322ad4 username=alpha-cd2ca713-fd24-48ae-9dd9-8cae400668e0
+2026/10/12 23:22:29 INFO player registered id=bd358cfc-507a-44fa-b944-9b4e08d5f4cf username=alpha-2a724fa5-e8ad-42a9-9813-742eb02c9fd8
+2026/10/12 23:22:29 INFO player registered id=4cc016c9-3ea1-4792-a35e-711fd349f83e username=alpha-2f78a28f-2a40-4c16-82d2-02c24d5827d1
+2026/10/12 23:22:29 INFO player registered id=5100255c-873f-4a32-9cf1-e6ac25484d65 username=alpha-2d04f8ce-075f-47b7-8406-ea3de477a736
+2026/10/12 23:22:29 INFO player registered id=7bd6a7ae-e490-4afa-bcf8-d64f99952086 username=alpha-10f6bb5e-8bc5-43a0-bea8-df206ba0e0e4
+2026/10/12 23:22:29 INFO player registered id=fd0cc962-3078-431a-ba4f-745bc733c06a username=alpha-55934860-1ed4-4b76-a06c-652ae584c2ef
+--- FAIL: TestSilverCalibrationOfferWorkAndLegacyPayloadRead (0.08s)
+    silver_calibration_test.go:161: offer work=24.67197403043714 want19.439980023413185 from grain/silver labor values
+FAIL
+FAIL	formatet/megaron/server/api/handlers	1.118s
+FAIL
