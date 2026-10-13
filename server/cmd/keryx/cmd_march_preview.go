@@ -75,5 +75,5 @@ func marchSilverLine(f marchSilverForecast) string {
 	rate := func(value float64) string {
 		return strconv.FormatFloat(math.Round(value*10000)/10000, 'f', -1, 64)
 	}
-	return fmt.Sprintf("Sold: %s → %s silver/day in the field · %s", rate(*f.UpkeepSilverHome), rate(*f.UpkeepSilverField), runway)
+	return fmt.Sprintf("Sold: %s → %s silver per day in the field · %s", rate(*f.UpkeepSilverHome), rate(*f.UpkeepSilverField), runway)
 }

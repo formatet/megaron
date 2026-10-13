@@ -49,8 +49,11 @@ try:
   api(wp+'/join','POST',{},token)
   # Find a real coastal newcomer with its real support galley, without fixtures.
   for attempt in range(20):
-   starter=api(wp+'/units',token=token)['units']
-   if any(u['type']=='galley' for u in starter):break
+   host=api(wp+'/founding/status',token=token)
+   tiles=api(wp+'/map',token=token)
+   if isinstance(tiles,dict):tiles=tiles['tiles']
+   start=next(t for t in tiles if t['q']==host['q'] and t['r']==host['r'])
+   if start.get('coastal'):break
    token=api('/api/v1/auth/register','POST',{'username':'Coast-'+secrets.token_hex(4),'password':secrets.token_urlsafe(30)})['access_token']
    api(wp+'/join','POST',{},token)
   else:raise AssertionError('no natural coastal starter in 20 joins')
@@ -81,7 +84,7 @@ try:
   assert abs(expected['upkeep_silver_home']-.45)<1e-9 and expected['upkeep_silver_field']==1.5,expected
   assert expected['silver_runway_ticks']==1278/1.5,expected
   cli=run(str(tmp/'keryx'),'unit','march','--unit',ship['id'],'--q',str(q),'--r',str(r),'--intent','explore','--preview',env=cli_env)
-  assert 'Sold: 0.45 → 1.5 silver/day in the field · treasury lasts 852 days' in cli,cli
+  assert 'Sold: 0.45 → 1.5 silver per day in the field · treasury lasts 852 days' in cli,cli
   (OUT/'keryx-preview.txt').write_text(cli+'\n')
   before_preview=api(wp+'/units',token=token)
   before_goods=api(wp+'/provinces/'+province+'/goods',token=token)
@@ -101,7 +104,7 @@ try:
    row=page.locator('#mctx-eta .march-sold');row.wait_for()
    page.wait_for_function("document.querySelector('#mctx-eta .march-sold')?.textContent.includes('0.45 → 1.5')")
    assert page.locator('#mctx-eta .march-sold').count()==1
-   text=row.inner_text();assert text=='Sold: 0.45 → 1.5 silver/day in the field · treasury lasts 852 days',text
+   text=row.inner_text();assert text=='Sold: 0.45 → 1.5 silver per day in the field · treasury lasts 852 days',text
    row.scroll_into_view_if_needed();rect=row.bounding_box()
    assert rect and rect['x']>=0 and rect['x']+rect['width']<=width+1,rect
    assert row.evaluate('(el)=>el.scrollWidth<=el.clientWidth+1')

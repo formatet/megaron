@@ -23,7 +23,7 @@ export function marchSilverLine(data) {
     : Number.isFinite(data.silver_runway_ticks) ? (data.silver_payer_count > 1 ? 'shortest treasury lasts ' : 'treasury lasts ') + fmtDays(data.silver_runway_ticks)
     : 'treasury duration unknown';
   return 'Sold: ' + rate(data.upkeep_silver_home) + ' → ' + rate(data.upkeep_silver_field)
-    + ' silver/day in the field · ' + runway;
+    + ' silver per day in the field · ' + runway;
 }
 
 function marchArrivalHTML(data) {
