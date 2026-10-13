@@ -1,0 +1,28 @@
+{"time":"2026-10-13T09:01:55.387324388+02:00","level":"INFO","msg":"migrations applied"}
+{"time":"2026-10-13T09:01:55.406587871+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"511a03f0-d2f5-4ccb-a3f8-ab4baf58c380","seed":1791874915389784572,"width":64,"height":64,"err":"invalid map: landmass 8 (85 tiles) has 0 rivers (want 1-2)"}
+{"time":"2026-10-13T09:01:56.634856457+02:00","level":"INFO","msg":"world created","name":"Spear proof","id":"511a03f0-d2f5-4ccb-a3f8-ab4baf58c380","seed":1791874915389784573}
+{"time":"2026-10-13T09:01:56.641396944+02:00","level":"INFO","msg":"world ready","id":"511a03f0-d2f5-4ccb-a3f8-ab4baf58c380"}
+{"time":"2026-10-13T09:01:56.641625579+02:00","level":"INFO","msg":"chronicle opened","world":"Spear proof","dir":"/tmp/audit-native-ta6nml6_/chronicles"}
+{"time":"2026-10-13T09:01:56.643148911+02:00","level":"INFO","msg":"build","commit":"0bbe6339"}
+{"time":"2026-10-13T09:01:56.643173592+02:00","level":"INFO","msg":"tick worker started","tick_seconds":2}
+{"time":"2026-10-13T09:01:56.643154194+02:00","level":"INFO","msg":"scheduled event worker started","poll":2000000000}
+{"time":"2026-10-13T09:01:56.643326367+02:00","level":"INFO","msg":"keryx server starting","addr":":60429"}
+{"time":"2026-10-13T09:01:56.649650236+02:00","level":"INFO","msg":"daily ticks seeded","worlds":1}
+2026/10/13 09:01:56 [tki9/Dj5Pox3jRM-000001] "GET http://127.0.0.1:60429/healthz HTTP/1.1" from 127.0.0.1:40684 - 200 52B in 3.12542ms
+2026/10/13 09:01:56 [tki9/Dj5Pox3jRM-000002] "GET http://127.0.0.1:60429/api/v1/worlds HTTP/1.1" from 127.0.0.1:40690 - 200 163B in 2.018215ms
+{"time":"2026-10-13T09:01:57.025185403+02:00","level":"INFO","msg":"player registered","id":"6318f495-f411-4857-a677-d4ddb410971f","username":"Spear-1ea9df6f"}
+2026/10/13 09:01:57 [tki9/Dj5Pox3jRM-000003] "POST http://127.0.0.1:60429/api/v1/auth/register HTTP/1.1" from 127.0.0.1:40700 - 201 388B in 46.174102ms
+{"time":"2026-10-13T09:01:57.041423262+02:00","level":"INFO","msg":"world started","world":"511a03f0-d2f5-4ccb-a3f8-ab4baf58c380","wanaxes":1}
+2026/10/13 09:01:57 [tki9/Dj5Pox3jRM-000004] "POST http://127.0.0.1:60429/api/v1/worlds/511a03f0-d2f5-4ccb-a3f8-ab4baf58c380/join HTTP/1.1" from 127.0.0.1:40710 - 201 304B in 15.134886ms
+2026/10/13 09:01:57 [tki9/Dj5Pox3jRM-000005] "GET http://127.0.0.1:60429/api/v1/worlds/511a03f0-d2f5-4ccb-a3f8-ab4baf58c380/founding/status HTTP/1.1" from 127.0.0.1:40718 - 200 242B in 900.204µs
+2026/10/13 09:01:57 [tki9/Dj5Pox3jRM-000006] "GET http://127.0.0.1:60429/api/v1/worlds/511a03f0-d2f5-4ccb-a3f8-ab4baf58c380/units HTTP/1.1" from 127.0.0.1:40724 - 200 995B in 3.271237ms
+2026/10/13 09:01:57 [tki9/Dj5Pox3jRM-000007] "GET http://127.0.0.1:60429/api/v1/worlds/511a03f0-d2f5-4ccb-a3f8-ab4baf58c380/units HTTP/1.1" from 127.0.0.1:40726 - 200 397B in 1.588718ms
+{"time":"2026-10-13T09:02:00.648436665+02:00","level":"INFO","msg":"world tick advanced","world":"511a03f0-d2f5-4ccb-a3f8-ab4baf58c380","tick":1}
+{"time":"2026-10-13T09:02:02.648770288+02:00","level":"INFO","msg":"world tick advanced","world":"511a03f0-d2f5-4ccb-a3f8-ab4baf58c380","tick":2}
+2026/10/13 09:02:03 [tki9/Dj5Pox3jRM-000008] "POST http://127.0.0.1:60429/api/v1/worlds/511a03f0-d2f5-4ccb-a3f8-ab4baf58c380/founding/settle HTTP/1.1" from 127.0.0.1:50262 - 201 438B in 87.020486ms
+{"time":"2026-10-13T09:02:04.647952168+02:00","level":"INFO","msg":"world tick advanced","world":"511a03f0-d2f5-4ccb-a3f8-ab4baf58c380","tick":3}
+{"time":"2026-10-13T09:02:06.648782871+02:00","level":"INFO","msg":"world tick advanced","world":"511a03f0-d2f5-4ccb-a3f8-ab4baf58c380","tick":4}
+2026/10/13 09:02:07 [tki9/Dj5Pox3jRM-000009] "GET http://127.0.0.1:60429/api/v1/worlds/511a03f0-d2f5-4ccb-a3f8-ab4baf58c380 HTTP/1.1" from 127.0.0.1:50264 - 200 331B in 678.539µs
+{"time":"2026-10-13T09:02:07.016986466+02:00","level":"INFO","msg":"tick worker stopped"}
+{"time":"2026-10-13T09:02:07.016993631+02:00","level":"INFO","msg":"shutting down"}
+{"time":"2026-10-13T09:02:07.016987221+02:00","level":"INFO","msg":"scheduled event worker stopped"}
