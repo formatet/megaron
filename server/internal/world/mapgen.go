@@ -418,26 +418,15 @@ const (
 	copperSourceFloor   = 4 // plan §A literal: "max(4, players/6)"
 	copperSourceDivisor = 6
 
-	// Silver is the WIDESPREAD-but-thin metal. Its target is not a quantity
-	// but a share of the world's cities: megaron_plan_dagsverkesskalan.md §5
-	// asks for "cirka 25-40 % av spelbara städer har lokal silvertillgång".
-	// A settlement's catchment is 19 hexes and settlements sit >=5 hexes
-	// apart (join.go's clustering guard), so one silver SOURCE serves at most
-	// one city — the share of cities with local silver can therefore never
-	// exceed sources/players. players/10 capped it at 10 % on a 100-player
-	// map before it ever met a settler. players/3 is that share expressed
-	// directly (megaron_silvergeografin.md, 2026-08-27).
-	//
-	// Quantity is held down at the other end instead: a silver source is ONE
-	// hex, never a district. At 100 players that is ~33 single-hex workings
-	// against copper's ~16 sources x 2-4 hexes — silver stays the thinnest
-	// metal per site (a trickle a city cannot live off) while being the most
-	// widely distributed. Copper remains the generous BULK metal, tin the
-	// capped chokepoint; the hierarchy is unchanged, only its axis is named.
-	silverClusterMin    = 1
-	silverClusterMax    = 1
-	silverSourceFloor   = 4 // 4 sources against the 10-player floor = 40 %
-	silverSourceDivisor = 3
+	// Timothy 2026-10-13: target ten single-hex silver sources on 64x64,
+	// scaled directly with map area. Placement can exhaust its candidates;
+	// this is neither an exact-count guarantee nor a promise near any spawn.
+	// The existing small-map floor, cluster size and spacing stay unchanged.
+	silverClusterMin          = 1
+	silverClusterMax          = 1
+	silverSourceFloor         = 4
+	silverSourcesAtReference  = 10
+	silverSourceReferenceArea = 64 * 64
 
 	// silverSourceSpacing keeps two silver sources out of the SAME city's
 	// catchment: at 2*mineableRadius the two are still reachable from one
@@ -494,8 +483,8 @@ func copperSourceTarget(players int) int {
 	return v
 }
 
-func silverSourceTarget(players int) int {
-	v := players / silverSourceDivisor
+func silverSourceTarget(width, height int) int {
+	v := int(math.Round(float64(width) * float64(height) * silverSourcesAtReference / silverSourceReferenceArea))
 	if v < silverSourceFloor {
 		v = silverSourceFloor
 	}
@@ -1689,7 +1678,7 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		}
 	}
 	placeDepositClusters(tiles, silverCandFree, landmap, rng,
-		silverSourceTarget(players), silverClusterMin, silverClusterMax, silverSourceSpacing, width, height,
+		silverSourceTarget(width, height), silverClusterMin, silverClusterMax, silverSourceSpacing, width, height,
 		func(t *MapTile) { t.SilverDeposit = true })
 
 	// Cedar is no longer assigned here — it is now the forest_cedar terrain
