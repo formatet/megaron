@@ -1,0 +1,27 @@
+» färsk DB på migration 179 · commit e5694f8c+ändringar
+=== RUN   TestSilverCalibrationKharisFlowLeavesStalePriceClamp
+--- PASS: TestSilverCalibrationKharisFlowLeavesStalePriceClamp (0.03s)
+=== RUN   TestEarlyTempleOfferingLocalGiftAndProjection
+=== RUN   TestEarlyTempleOfferingLocalGiftAndProjection/grain
+    temple_offering_test.go:82: ERROR: null value in column "province_id" of relation "settlements" violates not-null constraint (SQLSTATE 23502)
+=== RUN   TestEarlyTempleOfferingLocalGiftAndProjection/fish
+    temple_offering_test.go:82: ERROR: null value in column "province_id" of relation "settlements" violates not-null constraint (SQLSTATE 23502)
+=== RUN   TestEarlyTempleOfferingLocalGiftAndProjection/timber
+    temple_offering_test.go:82: ERROR: null value in column "province_id" of relation "settlements" violates not-null constraint (SQLSTATE 23502)
+=== RUN   TestEarlyTempleOfferingLocalGiftAndProjection/silver
+    temple_offering_test.go:82: ERROR: null value in column "province_id" of relation "settlements" violates not-null constraint (SQLSTATE 23502)
+--- FAIL: TestEarlyTempleOfferingLocalGiftAndProjection (0.14s)
+    --- FAIL: TestEarlyTempleOfferingLocalGiftAndProjection/grain (0.04s)
+    --- FAIL: TestEarlyTempleOfferingLocalGiftAndProjection/fish (0.03s)
+    --- FAIL: TestEarlyTempleOfferingLocalGiftAndProjection/timber (0.03s)
+    --- FAIL: TestEarlyTempleOfferingLocalGiftAndProjection/silver (0.04s)
+=== RUN   TestEarlyTempleOfferingMixedGiftAtomic
+--- PASS: TestEarlyTempleOfferingMixedGiftAtomic (0.03s)
+=== RUN   TestEarlyTempleOfferingScarcityAndDeterministicSubstitutes
+--- PASS: TestEarlyTempleOfferingScarcityAndDeterministicSubstitutes (0.00s)
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.207s
+testing: warning: no tests to run
+PASS
+ok  	formatet/megaron/server/api/handlers	0.004s [no tests to run]
+FAIL

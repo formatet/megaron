@@ -1,0 +1,13 @@
+» färsk DB på migration 179 · commit e5694f8c+ändringar
+=== RUN   TestEarlyTempleOfferingLocalGiftAndProjection
+=== RUN   TestEarlyTempleOfferingLocalGiftAndProjection/grain
+=== RUN   TestEarlyTempleOfferingLocalGiftAndProjection/fish
+=== RUN   TestEarlyTempleOfferingLocalGiftAndProjection/timber
+=== RUN   TestEarlyTempleOfferingLocalGiftAndProjection/silver
+--- PASS: TestEarlyTempleOfferingLocalGiftAndProjection (0.17s)
+    --- PASS: TestEarlyTempleOfferingLocalGiftAndProjection/grain (0.04s)
+    --- PASS: TestEarlyTempleOfferingLocalGiftAndProjection/fish (0.04s)
+    --- PASS: TestEarlyTempleOfferingLocalGiftAndProjection/timber (0.04s)
+    --- PASS: TestEarlyTempleOfferingLocalGiftAndProjection/silver (0.05s)
+PASS
+ok  	formatet/megaron/server/internal/kharis	0.170s

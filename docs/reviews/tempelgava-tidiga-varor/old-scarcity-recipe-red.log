@@ -1,0 +1,7 @@
+» färsk DB på migration 179 · commit e5694f8c+ändringar
+=== RUN   TestEarlyTempleOfferingScarcityAndDeterministicSubstitutes
+    temple_offering_test.go:157: early scarcity 1
+--- FAIL: TestEarlyTempleOfferingScarcityAndDeterministicSubstitutes (0.00s)
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.002s
+FAIL

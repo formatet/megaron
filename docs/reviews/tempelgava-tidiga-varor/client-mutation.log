@@ -1,0 +1,17 @@
+reference amount hardcoded to 0.25 — red exit 1
+not ok 12 - temple rows render the server reference and mixed next gift without repricing
+# pass 14
+# fail 1
+restored-green exit 0
+# tests 34
+# pass 34
+# fail 0
+planned map replaced with reference — red exit 1
+not ok 12 - temple rows render the server reference and mixed next gift without repricing
+not ok 13 - quarter-grain reference and smaller silver debit remain visible
+# pass 13
+# fail 2
+restored-green exit 0
+# tests 34
+# pass 34
+# fail 0

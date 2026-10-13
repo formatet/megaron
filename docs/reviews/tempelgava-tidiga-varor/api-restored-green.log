@@ -1,0 +1,11 @@
+» färsk DB på migration 179 · commit e5694f8c+ändringar
+=== RUN   TestEarlyTempleStatusPlanAndOwnerPrivacy
+2026/10/13 11:45:55 INFO player registered id=e8300cfe-951e-46f9-b5a7-1291ee33cd65 username=temple-owner-5f86e919-1ada-46c0-bd31-0ecbf2aa10f9
+2026/10/13 11:45:55 INFO player registered id=e2b81e4f-b259-465d-9b87-f15273b027d3 username=temple-viewer-72a9b4ba-19f0-48b5-b978-657c7fd8578c
+=== RUN   TestEarlyTempleStatusPlanAndOwnerPrivacy/owner
+=== RUN   TestEarlyTempleStatusPlanAndOwnerPrivacy/other_Wanax
+--- PASS: TestEarlyTempleStatusPlanAndOwnerPrivacy (0.12s)
+    --- PASS: TestEarlyTempleStatusPlanAndOwnerPrivacy/owner (0.01s)
+    --- PASS: TestEarlyTempleStatusPlanAndOwnerPrivacy/other_Wanax (0.01s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.123s

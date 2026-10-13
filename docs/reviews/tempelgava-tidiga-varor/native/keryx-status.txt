@@ -1,0 +1,44 @@
+Wanax Italaios · day 31 of the world
+
+Phaistos [minoan]  Pop: 1.1k  Labor: 1.1k  Walls: 0/3  Loyalty: 4  Settlements: 1/5
+Population 1088 — growing: food net +4.3 per day
+  Loyalty 1–4 (1=lowest; revolt also requires a hostile garrison majority + a triggering event)
+  Recent loyalty events:
+    +2  well_fed             well fed (grain stock at or above the comfortable-buffer reference); varied diet (2+ food goods stocked) (11:49 Oct 13)
+    +2  well_fed             well fed (grain stock at or above the comfortable-buffer reference); varied diet (2+ food goods stocked) (11:49 Oct 13)
+    +2  well_fed             well fed (grain stock at or above the comfortable-buffer reference); varied diet (2+ food goods stocked) (11:49 Oct 13)
+    +2  well_fed             well fed (grain stock at or above the comfortable-buffer reference); varied diet (2+ food goods stocked) (11:49 Oct 13)
+    +2  well_fed             well fed (grain stock at or above the comfortable-buffer reference); varied diet (2+ food goods stocked) (11:49 Oct 13)
+  Raised by: kharis ≥ favor threshold, fed/varied diet (daily welfare), gifts ≥50 silver-equivalent (`keryx transfer`), won/defended battles.
+  Lowered by: starvation, too many colonies (overextension), neglect (>2 days without a gift), lost battles, a borrowed army kept too long.
+
+No trade contacts yet — trade needs a foreign settlement within your vision. Run `keryx cities` to see known/rumoured neighbours (march outward or colonise to reach one), then `keryx message --to <name>` or `keryx trade-offer` once one is visible.
+
+Sitos granary: 325 stored (325 grain) / cap 326 · coverage 160.3 days (granary fills above 30, drains below 10) · storing away a tenth of the surplus
+
+Last day 31: 3 goods produced, 1 consumed, stored away 2 food  ·  keryx ticklog for details
+
+Resources
+  (rate = net: production − consumption, per day)
+  Silver      730  —
+  Grain       872  prod 9.7 − consum 5.4 = net +4.3 per day  (1 citizens needed for food · 3 placed — 2 could move; see 'keryx city')
+  Net      net +3.3 grain per day, +0.0 silver per day (after the army's upkeep)
+  Timber       21  +1.0 per day
+  Stone        38  +2.0 per day
+  ⚠ Grain       872  +9.7 per day  — known sinks absorb at most 401 within 60 days; 3 citizens produces with no receiver (`keryx place`)
+  ⚠ Unmined deposit in the catchment: copper, silver — build a mine here to extract it
+  Kharis        1  (Wrathful) · cap 50 · net -0.6 per day (temple − decay)
+  → the cap 50 is set by your level-1 temple, but your kharis is falling toward the floor — raise cult labor (if the temple has room) or build a higher temple.
+  Temple in Phaistos: reference 0.25 grain per day — alternatives: 0.08346 fish or 0.1789 timber or 0.2453 silver — stock: 872 grain, 0 fish, 21.32 timber, 730 silver — next gift: 0.25 grain  ✓
+  → feed the temples with local grain, fish, timber or silver or cast a rite — see `keryx rite --list`.
+
+Army (garrison in Phaistos)
+  Spearmen    200
+      55f71b30-8b7e-42be-a8a7-d570a8cba175  100
+      d3ac25e2-ffb5-45d2-bc3d-4f40cd30f0b4  100
+  Upkeep     1.0 grain, 0.0 silver per day  (everything the city pays — including field units)
+  Field units and other cities are shown in `keryx unit list`.
+
+Buildings
+  farm         L1
+  temple       L1

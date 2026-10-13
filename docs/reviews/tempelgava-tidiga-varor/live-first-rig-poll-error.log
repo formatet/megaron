@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-tempelgava-tidiga-varor/docs/reviews/tempelgava-tidiga-varor/live.py", line 99, in <module>
+    event=sql("SELECT row_to_json(e) FROM (SELECT id,payload FROM events WHERE world_id='"+world+"' AND stream_id='"+settlement+"' AND event_type='KharisOffering' AND id>"+str(eid)+" ORDER BY id DESC LIMIT 1) e")
+  File "/home/tk/wt/codex-tempelgava-tidiga-varor/docs/reviews/tempelgava-tidiga-varor/live.py", line 52, in sql
+    return json.loads(data.strip())
+           ~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/json/__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/usr/lib/python3.14/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/json/decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)

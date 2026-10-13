@@ -2,7 +2,7 @@
 
 ## Sammanfattning
 
-Status: analys klar; inget produktionsrecept ändrat. Gren `codex/tempelgava-tidiga-varor`, bas `91a63709`.
+Status: analys godkänd 2026-10-13; implementation och verifiering pågår. Analysbaslinjen nedan beskriver oförändrad master. Gren `codex/tempelgava-tidiga-varor`, bas `91a63709`.
 Read-only dev-provenance från processen: `commit=91a6370`, migration `179`, status `ok`.
 Värld `f7c90afa-4653-46a6-b14c-473a268efa3e`, forming, tick 150, 64×64.
 
@@ -130,3 +130,48 @@ ssh root@10.0.1.92 'runuser -u postgres -- psql -d poleia -X -qAt -v ON_ERROR_ST
 `snapshot.json` är rådata; `measurement.json` innehåller varje kandidats koordinater
 och bästa lokala per-gubbe-rater; `independent-sql.json` är oberoende räkningsbevis.
 Ingen full Go/JS-svit eller produktionsmutation påstås för denna rena analysfas.
+
+
+## Implementation — verifiering pågår
+
+Timothy 2026-10-13 ”fortsätt köra - kör merge osv själv, claude uträknad idag”
+godkänner fortsatt arbete efter receptförslaget samt egen integration/deploy.
+Nya gåvoplanen prioriterar korn, fisk, timmer, sist silver; flera varor kan kombineras.
+Status visar faktisk plan och lager bara för ägaren, så ny silverinformation inte
+läcker andra Wanaxers kassor. Lokala avdrag i en transaktion återställs vid fel.
+
+Första nya testfixturen saknade obligatorisk province_id för en fjärrstad; rättad
+utan produktionsändring, därefter färska green fyra varor/prognos/tick/retry/rollback.
+Ett API-test startades av misstag samtidigt med fysisk mutation av receptet och
+såg det avsiktligt röda receptet; resultatet sparas som förorenat, inte regression.
+API-provet körs om på återställd kod och separat färsk DB.
+
+
+### Slutliga funktionsprov
+
+Produktion `2937f01c`. Färsk full Go på migration179 grön (world92,126s),
+vet grön, hela webbsviten620 test gröna utan skip. Två fysiska servermutationer
+(gammalt olja/vin-recept, gammal scarcityreferens) gav namngivet rött och vardera
+byteidentiskt återställd kod + separat färsk grön. Två webbmutationer
+(hårdkodad referens, plan ersatt av referens) röda och återställda till34/34 gröna.
+HTTP-ownerprov visar faktisk silverersättningsplan och tom tempellista för annan
+Wanax; ingen ny läcka av rikets silverlager.
+
+Första full-JS-kommandot kördes i server/ och hittade inte web/; korrigerat till
+worktree-roten utan kodändring. Första naturliga riggen hann bygga ett riktigt
+tempel men JSON-pollaren försökte läsa en tom eventrad före första tickutfallet;
+riggen rättad att vänta, första försöket bevarat separat.
+
+Naturlig omkörning: normal registrering/join/grundning, faktiska gubbar producerar
+timmer+sten, bygg-API betalar templets katalogkostnad och faktisk worker fullbordar
+bygget. Ingen SQL-fixtur, inget resurstillskott eller HTTP-override. Tempel utan
+olja/vin visar referens0,25 och faktiskt nästa kornoffer, worker ger positiv
+kharisvinst (brutto, netto beror på kult/förfall). Keryx och Firefox1280/390
+visar samma plan. Bilder granskade1:1: namn/mängder/alternativ/stock/nästagåva
+läsbara och ingen horisontell klippning. Andra fullständiga naturliga körningen
+på ny PG/Redis redovisas i native-repeat/.
+
+Bevis körs med `python3 docs/reviews/tempelgava-tidiga-varor/mutate.py` och
+`python3 docs/reviews/tempelgava-tidiga-varor/live.py`;
+`TEMPLE_NATIVE_OUT=native-repeat` väljer ny beviskatalog. Livebevarandet läses
+med `live_preserve.py before`/`after`; endast BEGIN READ ONLY.

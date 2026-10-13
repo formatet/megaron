@@ -1,0 +1,18 @@
+» färsk DB på migration 179 · commit e5694f8c+ändringar
+=== RUN   TestEarlyTempleOfferingLocalGiftAndProjection
+=== RUN   TestEarlyTempleOfferingLocalGiftAndProjection/grain
+    temple_offering_test.go:47: plan: [{SettlementID:13b77306-3651-4640-ae95-ea10cd92107a Name:Growthville Required:map[grain:0.25] Alternatives:map[fish:0.25 silver:0.25 timber:0.25] Stock:map[fish:0 grain:0.25 silver:0 timber:0] Offering:map[] Fed:false}]
+=== RUN   TestEarlyTempleOfferingLocalGiftAndProjection/fish
+    temple_offering_test.go:47: plan: [{SettlementID:2ed178f2-bfd2-4e85-80f2-f3aa1ac32cf9 Name:Growthville Required:map[grain:0.25] Alternatives:map[fish:0.25 silver:0.25 timber:0.25] Stock:map[fish:0.25 grain:0 silver:0 timber:0] Offering:map[] Fed:false}]
+=== RUN   TestEarlyTempleOfferingLocalGiftAndProjection/timber
+    temple_offering_test.go:47: plan: [{SettlementID:5f859258-09f7-41f9-afe5-247d7b3f9784 Name:Growthville Required:map[grain:0.25] Alternatives:map[fish:0.25 silver:0.25 timber:0.25] Stock:map[fish:0 grain:0 silver:0 timber:0.25] Offering:map[] Fed:false}]
+=== RUN   TestEarlyTempleOfferingLocalGiftAndProjection/silver
+    temple_offering_test.go:47: plan: [{SettlementID:b2fb12f0-50bd-4493-a890-e2d66822f8cb Name:Growthville Required:map[grain:0.25] Alternatives:map[fish:0.25 silver:0.25 timber:0.25] Stock:map[fish:0 grain:0 silver:0.25 timber:0] Offering:map[] Fed:false}]
+--- FAIL: TestEarlyTempleOfferingLocalGiftAndProjection (0.13s)
+    --- FAIL: TestEarlyTempleOfferingLocalGiftAndProjection/grain (0.03s)
+    --- FAIL: TestEarlyTempleOfferingLocalGiftAndProjection/fish (0.03s)
+    --- FAIL: TestEarlyTempleOfferingLocalGiftAndProjection/timber (0.03s)
+    --- FAIL: TestEarlyTempleOfferingLocalGiftAndProjection/silver (0.03s)
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.132s
+FAIL
