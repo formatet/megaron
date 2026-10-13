@@ -107,8 +107,8 @@ func TestUpkeepHandle_EmbarkedCohortIsBilledFieldRation(t *testing.T) {
 
 	// spearman size 100, embarked = field ration: grain 0.5 base ×2 = 1.0/day
 	// (100 → 1.0, mig 136, UpkeepSpecs grain ÷100 — see upkeep.go's comment).
-	// Silver never doubles with status: 1/day (SLICE B halved table, untouched).
-	wantGrain, wantSilver := 10000.0-1.0, 10000.0-1
+	// Ordinary foot soldiers draw no silver, also while embarked.
+	wantGrain, wantSilver := 10000.0-1.0, 10000.0
 	if math.Abs(grain-wantGrain) > 1e-9 {
 		t.Errorf("settlement grain after upkeep tick = %v, want %v (10000 − 100 field-ration grain for the embarked cohort)", grain, wantGrain)
 	}
@@ -127,8 +127,8 @@ func TestUnitUpkeep_EmbarkedDoublesGrainLikeMarching(t *testing.T) {
 	if up.Grain != 1.0 {
 		t.Errorf(`UnitUpkeep("spearman","land",100,"embarked").Grain = %v, want 1.0 (field ration, same as marching/positioned)`, up.Grain)
 	}
-	if up.Silver != 1 {
-		t.Errorf(`UnitUpkeep("spearman","land",100,"embarked").Silver = %v, want 1 (status never changes silver)`, up.Silver)
+	if up.Silver != 0 {
+		t.Errorf(`UnitUpkeep("spearman","land",100,"embarked").Silver = %v, want 0 (ordinary foot soldiers draw no silver)`, up.Silver)
 	}
 	// Naval never doubles regardless of status, including embarked (the ship
 	// itself, not its cargo — included for completeness of the status contract).

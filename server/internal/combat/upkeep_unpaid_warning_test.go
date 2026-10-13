@@ -86,7 +86,7 @@ func TestUpkeepUnpaidWarning_HandleFlow_AllPeriodsUntilDesertion(t *testing.T) {
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status,
 		                    settlement_id, support_settlement_id, unpaid_periods)
-		 VALUES ($1, $2, 'spearman', 'land', 100, 0, 'garrison', $3, $3, 0)
+		 VALUES ($1, $2, 'elite_infantry', 'land', 50, 0, 'garrison', $3, $3, 0)
 		 RETURNING id`,
 		f.worldID, f.owner, f.townID,
 	).Scan(&unitID); err != nil {
@@ -197,7 +197,7 @@ func TestUpkeepUnpaidWarning_HandleFlow_AllPeriodsUntilDesertion(t *testing.T) {
 	}
 
 	// ── AK3: the desertion period — fires exactly as before ─────────────────
-	sizeBefore := 100
+	sizeBefore := 50
 	runOneDay(f.tick + (upkeepDesertionTicks - 1))
 	if got := unpaidPeriods(); got != upkeepDesertionTicks {
 		t.Fatalf("AK3: unpaid_periods after the desertion period = %d, want %d", got, upkeepDesertionTicks)

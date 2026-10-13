@@ -134,16 +134,16 @@ func TestSettlementUpkeepDrain_PayerAndSoldCirculation(t *testing.T) {
 	if math.Abs(gross.Grain-2.1) > eps {
 		t.Errorf("Mykene gross grain = %v, want 2.1 (0.5 garrison + 1.6 marching chariot)", gross.Grain)
 	}
-	if math.Abs(gross.Silver-4) > eps {
-		t.Errorf("Mykene gross silver = %v, want 4 (1 garrison + 3 marching chariot)", gross.Silver)
+	if math.Abs(gross.Silver-3) > eps {
+		t.Errorf("Mykene gross silver = %v, want3 (spear0 + marching chariot3)", gross.Silver)
 	}
 	// Only the unit standing in the town that pays it circulates: 0.7 × 1.
 	// The marching chariot's 3 does not — that is the whole point of Del C.
-	if math.Abs(circulated-0.7) > eps {
-		t.Errorf("Mykene circulated silver = %v, want 0.7 (0.7 × 1 from the home garrison only)", circulated)
+	if math.Abs(circulated) > eps {
+		t.Errorf("Mykene circulated silver = %v, want0 (home spear has no salary)", circulated)
 	}
-	if net := gross.Silver - circulated; math.Abs(net-3.3) > eps {
-		t.Errorf("Mykene net silver drain = %v, want 3.3", net)
+	if net := gross.Silver - circulated; math.Abs(net-3) > eps {
+		t.Errorf("Mykene net silver drain = %v, want3", net)
 	}
 
 	// The colony pays only for its own garrison, and all of it comes back.
@@ -151,11 +151,11 @@ func TestSettlementUpkeepDrain_PayerAndSoldCirculation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("settlementUpkeepDrain(tiryns): %v", err)
 	}
-	if math.Abs(grossT.Silver-1) > eps {
-		t.Errorf("Tiryns gross silver = %v, want 1 (its own garrison only)", grossT.Silver)
+	if math.Abs(grossT.Silver) > eps {
+		t.Errorf("Tiryns gross silver = %v, want0 (ordinary garrison only)", grossT.Silver)
 	}
-	if math.Abs(circulatedT-0.7) > eps {
-		t.Errorf("Tiryns circulated silver = %v, want 0.7", circulatedT)
+	if math.Abs(circulatedT) > eps {
+		t.Errorf("Tiryns circulated silver = %v, want0", circulatedT)
 	}
 
 	// share = 0 must be bit-identical to the pre-Del-C world: nothing circulates.

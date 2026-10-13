@@ -46,23 +46,19 @@ func worldSilver(t *testing.T, pool *pgxpool.Pool, ctx context.Context, worldID 
 	return liquid + carried
 }
 
-// TestColonistPurse_IsTheMensOwnPay: the colonists carry their own sold for
-// ColonistPurseDays and nothing more (Timothy 2026-10-10). The old purse was a
-// 1 600-person city's genesis seed — ~3 600 silver for 100 spearmen — and it
-// emptied the capital that sent them. Pinned against UnitUpkeep so a change to
-// the pay table moves the purse with it, and against a literal so the purse
-// cannot silently grow back to a city's treasury.
-func TestColonistPurse_IsTheMensOwnPay(t *testing.T) {
-	got := colonistPurse("spearman", 100)
-	want := UnitUpkeep("spearman", "land", 100, "garrison").Silver * ColonistPurseDays
-	if math.Abs(got-want) > 1e-9 {
-		t.Errorf("purse = %v, want %v (the men's pay for %d days)", got, want, ColonistPurseDays)
-	}
-	if got != 30 {
-		t.Errorf("100 spearmen carry %v silver, want 30 (1 silver/day × 30 days)", got)
-	}
-	if half := colonistPurse("spearman", 50); half != got/2 {
-		t.Errorf("50 spearmen carry %v, want half of 100's (%v) — pay scales with the men", half, got/2)
+// Fixed reserves retain every legal colonist type's previous amount, scaled
+// with cohort size, even though ordinary spearmen no longer draw salary.
+func TestColonistPurse_FixedReservesDoNotFollowUpkeep(t *testing.T) {
+	for _, tc := range []struct {
+		typ  string
+		want float64
+	}{{"spearman", 30}, {"elite_infantry", 60}, {"war_chariot", 90}} {
+		if got := colonistPurse(tc.typ, 100); got != tc.want {
+			t.Errorf("%s reserve=%v, want %v", tc.typ, got, tc.want)
+		}
+		if got := colonistPurse(tc.typ, 50); got != tc.want/2 {
+			t.Errorf("partial %s reserve=%v, want %v", tc.typ, got, tc.want/2)
+		}
 	}
 }
 

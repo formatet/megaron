@@ -95,7 +95,7 @@ func TestSilverCalibrationRefugeeFoundingNeverMints(t *testing.T) {
 		}
 		defer tx.Rollback(ctx)
 		store := events.NewStore(pool)
-		if _, err := seedHost(ctx, tx, store, wid, pid, 0, 0, hostSpec{population: 400, spearmen: 1, rationTicks: 60, refugee: true}); err != nil {
+		if _, err := seedHost(ctx, tx, store, wid, pid, 0, 0, hostSpec{population: 400, spearmen: 1, silver: 60, refugee: true}); err != nil {
 			t.Fatal(err)
 		}
 		var initial float64

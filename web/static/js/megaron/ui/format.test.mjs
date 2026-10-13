@@ -607,9 +607,9 @@ test('HexTaken omits the building clause when none stood there and singularises'
 // The colonist purse at dispatch — same three cases keryx prints.
 test('purseLine: full purse, short purse, empty purse, no purse', () => {
   assert.equal(purseLine({ carried_silver: 120, purse_shortfall: 0 }),
-    "Carries 120 silver from home — the men's pay for 30 days, drawn from the city's coffers now.");
+    "Carries 120 silver from home — the colony purse, drawn from the city's coffers now.");
   assert.equal(purseLine({ carried_silver: 90, purse_shortfall: 30 }),
-    "Carries 90 silver from home — 30 silver short of the men's 30 days' pay. The colony will be founded poor.");
+    "Carries 90 silver from home — 30 silver short of the colony purse. The colony will be founded poor.");
   assert.match(purseLine({ carried_silver: 0, purse_shortfall: 120 }), /^⚠ Carries no silver/);
   assert.equal(purseLine({ status: 'order_dispatched' }), '');
   assert.equal(purseLine(undefined), '');

@@ -17,10 +17,10 @@ import (
 // Wanax chooses: rise again as a small host of refugees on another landmass, or
 // leave this world. The account is kept either way.
 const (
-	risenHostMinGubbar   = 4  // 400 people
-	risenHostMaxGubbar   = 8  // 800 people
-	risenHostSpearmen    = 1  // one cohort, where a newcomer has two
-	risenHostRationTicks = 60 // ticks of sold — "very limited silver"; a newcomer carries 240
+	risenHostMinGubbar      = 4    // 400 people
+	risenHostMaxGubbar      = 8    // 800 people
+	risenHostSpearmen       = 1    // one cohort, where a newcomer has two
+	risenHostStartingSilver = 60.0 // fixed reserve; never derived from spearman pay
 )
 
 // riseIntn draws the risen host's size; a test may pin it.
@@ -88,10 +88,10 @@ func (h *JoinHandler) Rise(w http.ResponseWriter, r *http.Request) {
 	}
 
 	spec := hostSpec{
-		population:  100 * (risenHostMinGubbar + riseIntn(risenHostMaxGubbar-risenHostMinGubbar+1)),
-		spearmen:    risenHostSpearmen,
-		rationTicks: risenHostRationTicks,
-		refugee:     true,
+		population: 100 * (risenHostMinGubbar + riseIntn(risenHostMaxGubbar-risenHostMinGubbar+1)),
+		spearmen:   risenHostSpearmen,
+		silver:     risenHostStartingSilver,
+		refugee:    true,
 	}
 
 	tx, err := h.pool.Begin(r.Context())

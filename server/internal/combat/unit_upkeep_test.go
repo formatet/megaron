@@ -21,8 +21,8 @@ func TestUnitUpkeep(t *testing.T) {
 		// Grain ÷100 (mig 136, UpkeepSpecs' own calibration — not grain's ÷43.2,
 		// see upkeep.go's comment): 50→0.50, 70.5→0.705, 30→0.30, 4→0.04, 6→0.06.
 		// Silver is untouched (currency, divisor 1).
-		{"land spearman full size", "spearman", "land", 100, 0.50, 1},
-		{"land spearman 141 scales up", "spearman", "land", 141, 0.705, 1.41},
+		{"land spearman full size", "spearman", "land", 100, 0.50, 0},
+		{"land spearman 141 scales up", "spearman", "land", 141, 0.705, 0},
 		{"land elite half size", "elite_infantry", "land", 50, 0.30, 1},
 		{"naval galley flat at size 1", "galley", "naval", 1, 0.04, 1.5},
 		{"naval galley flat even if size>1", "galley", "naval", 5, 0.04, 1.5},

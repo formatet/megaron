@@ -1245,18 +1245,27 @@ func colonizeDispatchPreflight(ctx context.Context, pool *pgxpool.Pool, clk cloc
 	return nil
 }
 
-// ColonistPurseDays is how many days of their own pay the colonists carry out
-// of the mother city (Timothy 2026-10-10: "30 dagars sold").
-const ColonistPurseDays = 30
+// Fixed reserves per full land cohort (Timothy 2026-10-13). They retain the
+// former 30-tick pay amounts, independent of future upkeep changes.
+const (
+	ColonistSpearmanSilver = 30.0
+	ColonistEliteSilver    = 60.0
+	ColonistChariotSilver  = 90.0
+)
 
-// colonistPurse is what a colonising expedition takes with it: the men's own
-// pay (sold, UnitUpkeep's silver) for ColonistPurseDays. Until 2026-10-10 it
-// was the genesis seed of a 1 500 + column city — ~3 600 silver for 100
-// spearmen, i.e. years of their pay — and it emptied the capital that sent
-// them (AI playtest 2026-10-10). A colony costs no silver until it supports
-// units of its own; more silver is a deliberate transfer.
+// colonistPurse moves existing city money. Partial cohorts retain the same
+// proportional purse; insufficient funds are clamped by the dispatch path.
 func colonistPurse(unitType string, unitSize int) float64 {
-	return UnitUpkeep(unitType, string(unit.CategoryOf(unit.Type(unitType))), unitSize, "garrison").Silver * ColonistPurseDays
+	var full float64
+	switch unit.Type(unitType) {
+	case unit.TypeSpearman:
+		full = ColonistSpearmanSilver
+	case unit.TypeEliteInfantry:
+		full = ColonistEliteSilver
+	case unit.TypeWarChariot:
+		full = ColonistChariotSilver
+	}
+	return full * float64(unitSize) / 100
 }
 
 // nearestOwnedSettlement finds the player's active settlement closest to

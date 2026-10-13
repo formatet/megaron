@@ -102,8 +102,8 @@ func TestArmyUpkeep_SumsGarrisonViaUnitUpkeep(t *testing.T) {
 	if math.Abs(total.Grain-0.745) > eps {
 		t.Errorf("total grain = %v, want 0.745 (0.705 spearman + 0.04 galley; forming excluded)", total.Grain)
 	}
-	if math.Abs(total.Silver-2.91) > eps {
-		t.Errorf("total silver = %v, want 2.91 (1.41 spearman + 1.5 galley)", total.Silver)
+	if math.Abs(total.Silver-1.5) > eps {
+		t.Errorf("total silver = %v, want1.5 (spearman0 + galley1.5)", total.Silver)
 	}
 	if math.Abs(perType["spearman"].Grain-0.705) > eps {
 		t.Errorf("spearman grain = %v, want 0.705", perType["spearman"].Grain)

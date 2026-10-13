@@ -254,8 +254,8 @@ func TestEscortAdoption_HordeEatsNothingBeforeFounding(t *testing.T) {
 	if grainAmount <= 0 {
 		t.Errorf("founder_phase.grain_amount = %v, want > 0 — the carried dowry must survive", grainAmount)
 	}
-	if silverRate >= 0 {
-		t.Errorf("founder_phase.silver_rate = %v, want negative — sold is still owed to men who serve", silverRate)
+	if silverRate != 0 {
+		t.Errorf("founder_phase.silver_rate = %v, want0 — ordinary escorts live on subsistence", silverRate)
 	}
 
 	// Let time pass (stepping the world tick, the same lever the acceptance

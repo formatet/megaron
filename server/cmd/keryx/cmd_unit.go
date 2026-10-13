@@ -244,6 +244,9 @@ func unitListCmd() *cobra.Command {
 				}
 				fmt.Printf("%-36s  %-46s  %-8s  %-10s  %-9s  %s\n",
 					u.ID, name, formatSize(c, u), u.Status, stanceStr(u.Stance), locationStr(c, u, homes))
+				if upkeep := unitUpkeepLine(u); upkeep != "" {
+					fmt.Println("  " + upkeep)
+				}
 				if u.Expedition != nil {
 					fmt.Println("  " + expeditionMissionText(u.Expedition))
 				}
@@ -253,24 +256,42 @@ func unitListCmd() *cobra.Command {
 	}
 }
 
+// unitUpkeepLine uses authoritative roster rates, including explicit zero silver.
+func unitUpkeepLine(u unitRow) string {
+	if u.UpkeepContext == "none" || u.UpkeepGrainPerTick == nil || u.UpkeepSilverPerTick == nil {
+		return ""
+	}
+	label := "Upkeep"
+	switch u.UpkeepContext {
+	case "inactive":
+		label = "Upkeep when active"
+	case "subsistence":
+		label = "Upkeep after settling"
+	}
+	return fmt.Sprintf("%s: %g grain, %g silver per day", label, *u.UpkeepGrainPerTick, *u.UpkeepSilverPerTick)
+}
+
 type unitRow struct {
-	ID              string     `json:"id"`
-	Type            string     `json:"type"`
-	Category        string     `json:"category"`
-	Size            int        `json:"size"`
-	Crew            int        `json:"crew"`
-	Hull            int        `json:"hull"`
-	ProvisionDays   int        `json:"provision_days"`
-	Status          string     `json:"status"`
-	Name            *string    `json:"name"`
-	DisplayName     string     `json:"display_name"`
-	BuildCompleteAt *time.Time `json:"build_complete_at"`
-	Stance          *string    `json:"stance"`
-	SettlementID    *string    `json:"settlement_id"`
-	Q               *int       `json:"q"`
-	R               *int       `json:"r"`
-	TargetQ         *int       `json:"target_q"`
-	TargetR         *int       `json:"target_r"`
+	UpkeepContext       string     `json:"upkeep_context"`
+	UpkeepGrainPerTick  *float64   `json:"upkeep_grain_per_tick"`
+	UpkeepSilverPerTick *float64   `json:"upkeep_silver_per_tick"`
+	ID                  string     `json:"id"`
+	Type                string     `json:"type"`
+	Category            string     `json:"category"`
+	Size                int        `json:"size"`
+	Crew                int        `json:"crew"`
+	Hull                int        `json:"hull"`
+	ProvisionDays       int        `json:"provision_days"`
+	Status              string     `json:"status"`
+	Name                *string    `json:"name"`
+	DisplayName         string     `json:"display_name"`
+	BuildCompleteAt     *time.Time `json:"build_complete_at"`
+	Stance              *string    `json:"stance"`
+	SettlementID        *string    `json:"settlement_id"`
+	Q                   *int       `json:"q"`
+	R                   *int       `json:"r"`
+	TargetQ             *int       `json:"target_q"`
+	TargetR             *int       `json:"target_r"`
 	// CurrentQ/CurrentR (movement 2a, R8, megaron_plan_rorelse_sparad_vag.md):
 	// a marching unit's live position, read server-side through its saved
 	// route — never a client-side guess. nil when no gällande route exists
@@ -815,11 +836,11 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 				short, _ := resp["purse_shortfall"].(float64)
 				switch {
 				case short > 0 && carried > 0:
-					fmt.Printf("  Carries %.0f silver from home — %.0f short of the men's 30 days' pay. The colony will be founded poor.\n", carried, short)
+					fmt.Printf("  Carries %.0f silver from home — %.0f short of the colony purse. The colony will be founded poor.\n", carried, short)
 				case short > 0:
-					fmt.Printf("  ⚠ Carries NO silver — the mother city had nothing to send. The colony is founded at 0 and cannot pay its troops.\n")
+					fmt.Printf("  ⚠ Carries NO silver — the mother city had nothing to send. The colony is founded at 0 and needs silver before it can pay professionals.\n")
 				case carried > 0:
-					fmt.Printf("  Carries %.0f silver from home — the men's pay for 30 days, drawn from the mother city's coffers now.\n", carried)
+					fmt.Printf("  Carries %.0f silver from home — the colony purse, drawn from the mother city's coffers now.\n", carried)
 				}
 			}
 			return nil

@@ -16,7 +16,6 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/combat"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/kharis"
@@ -144,10 +143,10 @@ func TestRise_RefugeeHostOnAnotherLandmass_AndLeave(t *testing.T) {
 	if population != 800 {
 		t.Errorf("risen host population = %d, want 800 (8 gubbar at the largest roll)", population)
 	}
-	perTick := combat.UnitUpkeep(string(unit.TypeSpearman), string(unit.CategoryLand), nomadicHostSpearmenSize, "positioned")
-	if want := perTick.Silver * risenHostRationTicks; silver != want {
-		t.Errorf("risen host silver = %v, want %v (one cohort's sold for %d ticks)", silver, want, risenHostRationTicks)
+	if silver != 60 {
+		t.Errorf("risen host silver = %v, want fixed reserve 60", silver)
 	}
+
 	var spearmen int
 	if err := pool.QueryRow(ctx,
 		`SELECT count(*) FROM units WHERE world_id = $1 AND owner_id = $2 AND type = $3`,

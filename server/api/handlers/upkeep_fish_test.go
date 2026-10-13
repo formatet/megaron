@@ -119,8 +119,8 @@ func TestUpkeep_AK4_EmptyGrainLargeFish_StillAttrits_FishUntouched(t *testing.T)
 	// Silver upkeep should still be paid normally (plenty in the till) —
 	// confirms the grain-only attrition didn't also break the silver leg.
 	silverAfter := settledGoodAmount(t, pool, settlementID, "silver")
-	if silverAfter >= silverBefore {
-		t.Errorf("AK4 sanity: silver upkeep should still be debited normally, went %v -> %v", silverBefore, silverAfter)
+	if silverAfter != silverBefore {
+		t.Errorf("ration-only spear should preserve silver during grain shortage, went %v -> %v", silverBefore, silverAfter)
 	}
 }
 

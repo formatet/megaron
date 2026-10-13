@@ -50,8 +50,8 @@ test('Q actual Host: only site assessment is primary and all existing detail sta
  assert.match(element('ip-found-summary').innerHTML,/Feeds itself:<\/span><span> no</,'negative net must not promise self-sufficiency');
  assert.match(element('ip-found-summary').innerHTML,/Timber:<\/span><span> yes</,'positive timber potential gives Timber yes');
  assert.match(element('ip-found-summary').innerHTML,/Stone:<\/span><span> no</,'zero stone gives Stone no');
- assert.doesNotMatch(primary,/Food lasts|Escort pay|people|Spearmen|Produces|Deposits|Full forecast/,'only summary belongs before Details');
- for(const text of ['people','Food lasts','Escort pay lasts','Spearmen','Messengers free','Produces','Deposits'])assert.ok(details.includes(text),text+' detail must remain');
+ assert.doesNotMatch(primary,/Food lasts|Silver reserve|people|Spearmen|Produces|Deposits|Full forecast/,'only summary belongs before Details');
+ for(const text of ['people','Food lasts','Silver reserve lasts','Spearmen','Messengers free','Produces','Deposits'])assert.ok(details.includes(text),text+' detail must remain');
  assert.deepEqual(renderedForecast,forecast,'same full forecast renderer gets same payload');
  assert.equal(element('ip-deposits-row').style.display,'none');assert.equal(element('ip-produces-row').style.display,'none','Host hides primary Produces row');
  assert.match(element('ip-foot').innerHTML,/Found the metropolis here/);

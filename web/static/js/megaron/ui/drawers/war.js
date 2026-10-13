@@ -497,6 +497,16 @@ export function renderUnitCard(u) {
     progress = bar(u.size) + dim(fmtNum(u.size) + ' of 100 · reinforcing from home-city growth');
   }
 
+  // The server owns current strength and field ration rates. Zero silver is
+  // a value, not a missing field; never derive soldier pay in the client.
+  const upkeepLabel = u.upkeep_context === 'inactive' ? 'Upkeep when active'
+    : u.upkeep_context === 'subsistence' ? 'Upkeep after settling' : 'Upkeep';
+  const upkeep = u.upkeep_context !== 'none' && Number.isFinite(u.upkeep_grain_per_tick) && Number.isFinite(u.upkeep_silver_per_tick)
+    ? '<div class="unit-upkeep" style="font-size:.65rem;color:var(--text-dim)">' + upkeepLabel + ': '
+      + u.upkeep_grain_per_tick.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' grain, '
+      + u.upkeep_silver_per_tick.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' silver per day</div>'
+    : '';
+
   // Pending order (Fas 5): a Runner is en route to this unit — the order
   // executes only on delivery; surface the courier ETA on the card.
   const runner = (State.messengerData || []).find(m => m.own && m.kind === 'order' && m.order_unit_id === u.id);
@@ -671,6 +681,7 @@ export function renderUnitCard(u) {
     + '<span style="font-size:.68rem;color:var(--text-dim);margin-left:auto">' + esc(unitStatusLabel(u)) + '</span>'
     + '</div>'
     + progress
+    + upkeep
     + (loc ? '<div style="font-size:.65rem;color:var(--text-dim)">' + loc + '</div>' : '')
     + (u.expedition ? '<div style="font-size:.72rem;color:var(--text-dim)">' + esc(expeditionMissionText(u.expedition)) + '</div>' : '')
     + pendingOrder
