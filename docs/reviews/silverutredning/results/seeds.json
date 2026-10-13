@@ -1,0 +1,912 @@
+{
+  "4": [
+    {
+      "requested_seed": 1009,
+      "effective_seed": 1011,
+      "hexes": 4,
+      "hills": 3,
+      "limestone": 1,
+      "l1_five_slots": 27.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 2018,
+      "effective_seed": 2018,
+      "hexes": 4,
+      "hills": 3,
+      "limestone": 1,
+      "l1_five_slots": 27.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 3027,
+      "effective_seed": 3029,
+      "hexes": 4,
+      "hills": 1,
+      "limestone": 3,
+      "l1_five_slots": 42.5,
+      "hosts": 49
+    },
+    {
+      "requested_seed": 4036,
+      "effective_seed": 4036,
+      "hexes": 4,
+      "hills": 4,
+      "limestone": 0,
+      "l1_five_slots": 20.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 5045,
+      "effective_seed": 5046,
+      "hexes": 4,
+      "hills": 4,
+      "limestone": 0,
+      "l1_five_slots": 20.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 6054,
+      "effective_seed": 6055,
+      "hexes": 4,
+      "hills": 2,
+      "limestone": 2,
+      "l1_five_slots": 35.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 7063,
+      "effective_seed": 7065,
+      "hexes": 4,
+      "hills": 3,
+      "limestone": 1,
+      "l1_five_slots": 27.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 8072,
+      "effective_seed": 8073,
+      "hexes": 4,
+      "hills": 4,
+      "limestone": 0,
+      "l1_five_slots": 20.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 9081,
+      "effective_seed": 9084,
+      "hexes": 4,
+      "hills": 2,
+      "limestone": 2,
+      "l1_five_slots": 35.0,
+      "hosts": 49
+    },
+    {
+      "requested_seed": 10090,
+      "effective_seed": 10092,
+      "hexes": 4,
+      "hills": 3,
+      "limestone": 1,
+      "l1_five_slots": 27.5,
+      "hosts": 49
+    },
+    {
+      "requested_seed": 11099,
+      "effective_seed": 11101,
+      "hexes": 4,
+      "hills": 3,
+      "limestone": 1,
+      "l1_five_slots": 27.5,
+      "hosts": 48
+    },
+    {
+      "requested_seed": 12108,
+      "effective_seed": 12109,
+      "hexes": 4,
+      "hills": 4,
+      "limestone": 0,
+      "l1_five_slots": 20.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 13117,
+      "effective_seed": 13118,
+      "hexes": 4,
+      "hills": 3,
+      "limestone": 1,
+      "l1_five_slots": 27.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 14126,
+      "effective_seed": 14126,
+      "hexes": 4,
+      "hills": 3,
+      "limestone": 1,
+      "l1_five_slots": 27.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 15135,
+      "effective_seed": 15135,
+      "hexes": 4,
+      "hills": 4,
+      "limestone": 0,
+      "l1_five_slots": 20.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 16144,
+      "effective_seed": 16144,
+      "hexes": 4,
+      "hills": 3,
+      "limestone": 1,
+      "l1_five_slots": 27.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 17153,
+      "effective_seed": 17153,
+      "hexes": 4,
+      "hills": 3,
+      "limestone": 1,
+      "l1_five_slots": 27.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 18162,
+      "effective_seed": 18170,
+      "hexes": 4,
+      "hills": 2,
+      "limestone": 2,
+      "l1_five_slots": 35.0,
+      "hosts": 47
+    },
+    {
+      "requested_seed": 19171,
+      "effective_seed": 19172,
+      "hexes": 4,
+      "hills": 2,
+      "limestone": 2,
+      "l1_five_slots": 35.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 20180,
+      "effective_seed": 20182,
+      "hexes": 4,
+      "hills": 3,
+      "limestone": 1,
+      "l1_five_slots": 27.5,
+      "hosts": 50
+    }
+  ],
+  "5": [
+    {
+      "requested_seed": 1009,
+      "effective_seed": 1011,
+      "hexes": 5,
+      "hills": 4,
+      "limestone": 1,
+      "l1_five_slots": 32.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 2018,
+      "effective_seed": 2018,
+      "hexes": 5,
+      "hills": 3,
+      "limestone": 2,
+      "l1_five_slots": 40.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 3027,
+      "effective_seed": 3029,
+      "hexes": 5,
+      "hills": 2,
+      "limestone": 3,
+      "l1_five_slots": 47.5,
+      "hosts": 49
+    },
+    {
+      "requested_seed": 4036,
+      "effective_seed": 4036,
+      "hexes": 5,
+      "hills": 5,
+      "limestone": 0,
+      "l1_five_slots": 25.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 5045,
+      "effective_seed": 5046,
+      "hexes": 5,
+      "hills": 5,
+      "limestone": 0,
+      "l1_five_slots": 25.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 6054,
+      "effective_seed": 6055,
+      "hexes": 5,
+      "hills": 3,
+      "limestone": 2,
+      "l1_five_slots": 40.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 7063,
+      "effective_seed": 7065,
+      "hexes": 5,
+      "hills": 4,
+      "limestone": 1,
+      "l1_five_slots": 32.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 8072,
+      "effective_seed": 8073,
+      "hexes": 5,
+      "hills": 5,
+      "limestone": 0,
+      "l1_five_slots": 25.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 9081,
+      "effective_seed": 9084,
+      "hexes": 5,
+      "hills": 3,
+      "limestone": 2,
+      "l1_five_slots": 40.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 10090,
+      "effective_seed": 10092,
+      "hexes": 5,
+      "hills": 4,
+      "limestone": 1,
+      "l1_five_slots": 32.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 11099,
+      "effective_seed": 11101,
+      "hexes": 5,
+      "hills": 4,
+      "limestone": 1,
+      "l1_five_slots": 32.5,
+      "hosts": 47
+    },
+    {
+      "requested_seed": 12108,
+      "effective_seed": 12109,
+      "hexes": 5,
+      "hills": 5,
+      "limestone": 0,
+      "l1_five_slots": 25.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 13117,
+      "effective_seed": 13118,
+      "hexes": 5,
+      "hills": 4,
+      "limestone": 1,
+      "l1_five_slots": 32.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 14126,
+      "effective_seed": 14126,
+      "hexes": 5,
+      "hills": 4,
+      "limestone": 1,
+      "l1_five_slots": 32.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 15135,
+      "effective_seed": 15135,
+      "hexes": 5,
+      "hills": 5,
+      "limestone": 0,
+      "l1_five_slots": 25.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 16144,
+      "effective_seed": 16144,
+      "hexes": 5,
+      "hills": 3,
+      "limestone": 2,
+      "l1_five_slots": 40.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 17153,
+      "effective_seed": 17153,
+      "hexes": 5,
+      "hills": 4,
+      "limestone": 1,
+      "l1_five_slots": 32.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 18162,
+      "effective_seed": 18170,
+      "hexes": 5,
+      "hills": 3,
+      "limestone": 2,
+      "l1_five_slots": 40.0,
+      "hosts": 48
+    },
+    {
+      "requested_seed": 19171,
+      "effective_seed": 19172,
+      "hexes": 5,
+      "hills": 3,
+      "limestone": 2,
+      "l1_five_slots": 40.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 20180,
+      "effective_seed": 20182,
+      "hexes": 5,
+      "hills": 4,
+      "limestone": 1,
+      "l1_five_slots": 32.5,
+      "hosts": 50
+    }
+  ],
+  "10": [
+    {
+      "requested_seed": 1009,
+      "effective_seed": 1011,
+      "hexes": 10,
+      "hills": 8,
+      "limestone": 2,
+      "l1_five_slots": 65.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 2018,
+      "effective_seed": 2018,
+      "hexes": 10,
+      "hills": 8,
+      "limestone": 2,
+      "l1_five_slots": 65.0,
+      "hosts": 49
+    },
+    {
+      "requested_seed": 3027,
+      "effective_seed": 3029,
+      "hexes": 10,
+      "hills": 7,
+      "limestone": 3,
+      "l1_five_slots": 72.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 4036,
+      "effective_seed": 4036,
+      "hexes": 10,
+      "hills": 8,
+      "limestone": 2,
+      "l1_five_slots": 65.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 5045,
+      "effective_seed": 5046,
+      "hexes": 10,
+      "hills": 9,
+      "limestone": 1,
+      "l1_five_slots": 57.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 6054,
+      "effective_seed": 6055,
+      "hexes": 10,
+      "hills": 7,
+      "limestone": 3,
+      "l1_five_slots": 72.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 7063,
+      "effective_seed": 7065,
+      "hexes": 10,
+      "hills": 8,
+      "limestone": 2,
+      "l1_five_slots": 65.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 8072,
+      "effective_seed": 8073,
+      "hexes": 10,
+      "hills": 9,
+      "limestone": 1,
+      "l1_five_slots": 57.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 9081,
+      "effective_seed": 9084,
+      "hexes": 10,
+      "hills": 7,
+      "limestone": 3,
+      "l1_five_slots": 72.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 10090,
+      "effective_seed": 10092,
+      "hexes": 10,
+      "hills": 7,
+      "limestone": 3,
+      "l1_five_slots": 72.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 11099,
+      "effective_seed": 11101,
+      "hexes": 10,
+      "hills": 7,
+      "limestone": 3,
+      "l1_five_slots": 72.5,
+      "hosts": 47
+    },
+    {
+      "requested_seed": 12108,
+      "effective_seed": 12109,
+      "hexes": 10,
+      "hills": 10,
+      "limestone": 0,
+      "l1_five_slots": 50.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 13117,
+      "effective_seed": 13118,
+      "hexes": 10,
+      "hills": 8,
+      "limestone": 2,
+      "l1_five_slots": 65.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 14126,
+      "effective_seed": 14126,
+      "hexes": 10,
+      "hills": 7,
+      "limestone": 3,
+      "l1_five_slots": 72.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 15135,
+      "effective_seed": 15135,
+      "hexes": 10,
+      "hills": 10,
+      "limestone": 0,
+      "l1_five_slots": 50.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 16144,
+      "effective_seed": 16144,
+      "hexes": 10,
+      "hills": 8,
+      "limestone": 2,
+      "l1_five_slots": 65.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 17153,
+      "effective_seed": 17153,
+      "hexes": 10,
+      "hills": 8,
+      "limestone": 2,
+      "l1_five_slots": 65.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 18162,
+      "effective_seed": 18170,
+      "hexes": 10,
+      "hills": 7,
+      "limestone": 3,
+      "l1_five_slots": 72.5,
+      "hosts": 49
+    },
+    {
+      "requested_seed": 19171,
+      "effective_seed": 19172,
+      "hexes": 10,
+      "hills": 7,
+      "limestone": 3,
+      "l1_five_slots": 72.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 20180,
+      "effective_seed": 20182,
+      "hexes": 10,
+      "hills": 7,
+      "limestone": 3,
+      "l1_five_slots": 72.5,
+      "hosts": 50
+    }
+  ],
+  "20": [
+    {
+      "requested_seed": 1009,
+      "effective_seed": 1011,
+      "hexes": 17,
+      "hills": 15,
+      "limestone": 2,
+      "l1_five_slots": 100.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 2018,
+      "effective_seed": 2018,
+      "hexes": 14,
+      "hills": 11,
+      "limestone": 3,
+      "l1_five_slots": 92.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 3027,
+      "effective_seed": 3029,
+      "hexes": 15,
+      "hills": 10,
+      "limestone": 5,
+      "l1_five_slots": 112.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 4036,
+      "effective_seed": 4036,
+      "hexes": 14,
+      "hills": 11,
+      "limestone": 3,
+      "l1_five_slots": 92.5,
+      "hosts": 49
+    },
+    {
+      "requested_seed": 5045,
+      "effective_seed": 5046,
+      "hexes": 19,
+      "hills": 16,
+      "limestone": 3,
+      "l1_five_slots": 117.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 6054,
+      "effective_seed": 6055,
+      "hexes": 16,
+      "hills": 11,
+      "limestone": 5,
+      "l1_five_slots": 117.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 7063,
+      "effective_seed": 7065,
+      "hexes": 11,
+      "hills": 9,
+      "limestone": 2,
+      "l1_five_slots": 70.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 8072,
+      "effective_seed": 8073,
+      "hexes": 18,
+      "hills": 16,
+      "limestone": 2,
+      "l1_five_slots": 105.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 9081,
+      "effective_seed": 9084,
+      "hexes": 17,
+      "hills": 12,
+      "limestone": 5,
+      "l1_five_slots": 122.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 10090,
+      "effective_seed": 10092,
+      "hexes": 17,
+      "hills": 14,
+      "limestone": 3,
+      "l1_five_slots": 107.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 11099,
+      "effective_seed": 11101,
+      "hexes": 15,
+      "hills": 10,
+      "limestone": 5,
+      "l1_five_slots": 112.5,
+      "hosts": 43
+    },
+    {
+      "requested_seed": 12108,
+      "effective_seed": 12109,
+      "hexes": 15,
+      "hills": 13,
+      "limestone": 2,
+      "l1_five_slots": 90.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 13117,
+      "effective_seed": 13118,
+      "hexes": 16,
+      "hills": 13,
+      "limestone": 3,
+      "l1_five_slots": 102.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 14126,
+      "effective_seed": 14126,
+      "hexes": 12,
+      "hills": 9,
+      "limestone": 3,
+      "l1_five_slots": 82.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 15135,
+      "effective_seed": 15135,
+      "hexes": 15,
+      "hills": 13,
+      "limestone": 2,
+      "l1_five_slots": 90.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 16144,
+      "effective_seed": 16144,
+      "hexes": 14,
+      "hills": 11,
+      "limestone": 3,
+      "l1_five_slots": 92.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 17153,
+      "effective_seed": 17153,
+      "hexes": 15,
+      "hills": 11,
+      "limestone": 4,
+      "l1_five_slots": 105.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 18162,
+      "effective_seed": 18170,
+      "hexes": 16,
+      "hills": 12,
+      "limestone": 4,
+      "l1_five_slots": 110.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 19171,
+      "effective_seed": 19172,
+      "hexes": 19,
+      "hills": 13,
+      "limestone": 6,
+      "l1_five_slots": 140.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 20180,
+      "effective_seed": 20182,
+      "hexes": 16,
+      "hills": 12,
+      "limestone": 4,
+      "l1_five_slots": 110.0,
+      "hosts": 50
+    }
+  ],
+  "40": [
+    {
+      "requested_seed": 1009,
+      "effective_seed": 1011,
+      "hexes": 17,
+      "hills": 15,
+      "limestone": 2,
+      "l1_five_slots": 100.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 2018,
+      "effective_seed": 2018,
+      "hexes": 14,
+      "hills": 11,
+      "limestone": 3,
+      "l1_five_slots": 92.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 3027,
+      "effective_seed": 3029,
+      "hexes": 15,
+      "hills": 10,
+      "limestone": 5,
+      "l1_five_slots": 112.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 4036,
+      "effective_seed": 4036,
+      "hexes": 14,
+      "hills": 11,
+      "limestone": 3,
+      "l1_five_slots": 92.5,
+      "hosts": 49
+    },
+    {
+      "requested_seed": 5045,
+      "effective_seed": 5046,
+      "hexes": 19,
+      "hills": 16,
+      "limestone": 3,
+      "l1_five_slots": 117.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 6054,
+      "effective_seed": 6055,
+      "hexes": 16,
+      "hills": 11,
+      "limestone": 5,
+      "l1_five_slots": 117.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 7063,
+      "effective_seed": 7065,
+      "hexes": 11,
+      "hills": 9,
+      "limestone": 2,
+      "l1_five_slots": 70.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 8072,
+      "effective_seed": 8073,
+      "hexes": 18,
+      "hills": 16,
+      "limestone": 2,
+      "l1_five_slots": 105.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 9081,
+      "effective_seed": 9084,
+      "hexes": 17,
+      "hills": 12,
+      "limestone": 5,
+      "l1_five_slots": 122.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 10090,
+      "effective_seed": 10092,
+      "hexes": 17,
+      "hills": 14,
+      "limestone": 3,
+      "l1_five_slots": 107.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 11099,
+      "effective_seed": 11101,
+      "hexes": 15,
+      "hills": 10,
+      "limestone": 5,
+      "l1_five_slots": 112.5,
+      "hosts": 43
+    },
+    {
+      "requested_seed": 12108,
+      "effective_seed": 12109,
+      "hexes": 15,
+      "hills": 13,
+      "limestone": 2,
+      "l1_five_slots": 90.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 13117,
+      "effective_seed": 13118,
+      "hexes": 16,
+      "hills": 13,
+      "limestone": 3,
+      "l1_five_slots": 102.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 14126,
+      "effective_seed": 14126,
+      "hexes": 12,
+      "hills": 9,
+      "limestone": 3,
+      "l1_five_slots": 82.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 15135,
+      "effective_seed": 15135,
+      "hexes": 15,
+      "hills": 13,
+      "limestone": 2,
+      "l1_five_slots": 90.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 16144,
+      "effective_seed": 16144,
+      "hexes": 14,
+      "hills": 11,
+      "limestone": 3,
+      "l1_five_slots": 92.5,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 17153,
+      "effective_seed": 17153,
+      "hexes": 15,
+      "hills": 11,
+      "limestone": 4,
+      "l1_five_slots": 105.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 18162,
+      "effective_seed": 18170,
+      "hexes": 16,
+      "hills": 12,
+      "limestone": 4,
+      "l1_five_slots": 110.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 19171,
+      "effective_seed": 19172,
+      "hexes": 19,
+      "hills": 13,
+      "limestone": 6,
+      "l1_five_slots": 140.0,
+      "hosts": 50
+    },
+    {
+      "requested_seed": 20180,
+      "effective_seed": 20182,
+      "hexes": 16,
+      "hills": 12,
+      "limestone": 4,
+      "l1_five_slots": 110.0,
+      "hosts": 50
+    }
+  ]
+}

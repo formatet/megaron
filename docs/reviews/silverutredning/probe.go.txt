@@ -1,0 +1,78 @@
+// Analysis only: compiled in a temporary copy of the real world package.
+package main
+
+import (
+ "context"
+ "crypto/sha256"
+ "encoding/json"
+ "fmt"
+ "log/slog"
+ "os"
+ "formatet/megaron/server/internal/world"
+ "github.com/google/uuid"
+ "github.com/jackc/pgx/v5"
+)
+
+func must(err error) { if err != nil { panic(err) } }
+func abs(a int) int { if a < 0 { return -a }; return a }
+func dist(a,b world.MapTile) int { return (abs(a.Q-b.Q)+abs(a.R-b.R)+abs(a.Q+a.R-b.Q-b.R))/2 }
+func buildable(t world.Terrain) bool { switch t {case "coastal_sea","deep_sea","river","river_ford","mountain_limestone","mountain_red","semi_desert":return false};return true }
+
+func main() {
+ ctx:=context.Background()
+ slog.SetDefault(slog.New(slog.NewTextHandler(os.Stderr,nil)))
+ db,err:=pgx.Connect(ctx,os.Getenv("STUDY_DATABASE_URL")); must(err); defer db.Close(ctx)
+ sql,err:=os.ReadFile(os.Args[1]); must(err)
+ _,err=db.Exec(ctx,`CREATE TEMP TABLE map_tiles(world_id uuid,q int,r int,terrain text,copper_deposit bool,tin_deposit bool,silver_deposit bool,cedar_deposit bool,coastal bool,landmass_id int,PRIMARY KEY(world_id,q,r));
+ CREATE TEMP TABLE provinces(id uuid,world_id uuid,map_q int,map_r int);
+ CREATE TEMP TABLE units(id uuid,world_id uuid,q int,r int);
+ CREATE TEMP TABLE founder_phase(host_unit_id uuid,active bool);
+ CREATE TEMP TABLE production_rules(good_key text,terrain_type text,building_type text);
+ INSERT INTO production_rules VALUES ('timber','forest_olive_grove',NULL);`);must(err)
+ enc:=json.NewEncoder(os.Stdout)
+ for i:=int64(1);i<=20;i++ {
+  seed:=1009*i
+  tiles,eff:=world.GenerateMap(uuid.Nil,seed,64,64)
+  land:=world.LandComponents(tiles)
+  viable:=map[int]bool{}
+  for _,t:=range tiles {if t.Terrain=="forest_olive_grove" {viable[land[[2]int{t.Q,t.R}]]=true}}
+  silver:=[]world.MapTile{}; counts:=map[string]int{}; hash:=sha256.New()
+  for _,t:=range tiles {
+   if t.SilverDeposit {silver=append(silver,t);counts[string(t.Terrain)]++}
+   fmt.Fprintf(hash,"%d/%d/%s/%t/%t/%t;",t.Q,t.R,t.Terrain,t.CopperDeposit,t.TinDeposit,t.CedarDeposit)
+  }
+  if len(silver)==0 {panic("no silver")}
+  nearest:=func(t world.MapTile)(int,*int) {
+   n:=10000; same:=10000
+   for _,s:=range silver {d:=dist(t,s);if d<n {n=d};if land[[2]int{t.Q,t.R}]==land[[2]int{s.Q,s.R}] && d<same {same=d}}
+   if same==10000 {return n,nil};return n,&same
+  }
+  // Every statically eligible starttile, before occupancy. No sample of villages.
+  candidates:=[]interface{}{}
+  for _,t:=range tiles {if buildable(t.Terrain) && viable[land[[2]int{t.Q,t.R}]] {n,s:=nearest(t);candidates=append(candidates,[]interface{}{t.Q,t.R,n,s,land[[2]int{t.Q,t.R}]})}}
+  _,err=db.Exec(ctx,"TRUNCATE map_tiles,provinces,units,founder_phase");must(err)
+  rows:=[][]interface{}{}
+  for _,t:=range tiles {var lm interface{};if id,ok:=land[[2]int{t.Q,t.R}];ok {lm=id};rows=append(rows,[]interface{}{uuid.Nil,t.Q,t.R,string(t.Terrain),t.CopperDeposit,t.TinDeposit,t.SilverDeposit,t.CedarDeposit,t.Coastal,lm})}
+  _,err=db.CopyFrom(ctx,pgx.Identifier{"map_tiles"},[]string{"world_id","q","r","terrain","copper_deposit","tin_deposit","silver_deposit","cedar_deposit","coastal","landmass_id"},pgx.CopyFromRows(rows));must(err)
+  _,err=db.Exec(ctx,"ANALYZE map_tiles");must(err)
+  // Stable PG RNG seed. RANDOM() is PostgreSQL's real tie-break, not a Go imitation.
+  _,err=db.Exec(ctx,"SELECT setseed($1)",float64(i)/21);must(err)
+  hosts:=[]interface{}{}
+  bypos:=map[[2]int]world.MapTile{};for _,t:=range tiles {bypos[[2]int{t.Q,t.R}]=t}
+  for j:=0;j<50;j++ {
+   var q,r int;var terrain string;var c,ti,s,ce,co bool
+   err=db.QueryRow(ctx,string(sql),uuid.Nil,32,2,nil).Scan(&q,&r,&terrain,&c,&ti,&s,&ce,&co)
+   if err==pgx.ErrNoRows {break};must(err)
+   t:=bypos[[2]int{q,r}];n,ns:=nearest(t)
+   for _,h:=range hosts {a:=h.([]interface{});if dist(t,world.MapTile{Q:a[0].(int),R:a[1].(int)})<=4 {panic("spacing violation")}}
+   hosts=append(hosts,[]interface{}{q,r,n,ns,land[[2]int{q,r}]})
+   // Deterministic IDs, one actual active host per selected point; no cities.
+   id:=uuid.NewSHA1(uuid.Nil,[]byte(fmt.Sprintf("%d/%d",i,j)))
+   _,err=db.Exec(ctx,"INSERT INTO units VALUES($1,$2,$3,$4)",id,uuid.Nil,q,r);must(err)
+   _,err=db.Exec(ctx,"INSERT INTO founder_phase VALUES($1,true)",id);must(err)
+  }
+  deposits:=[]interface{}{};for _,s:=range silver {deposits=append(deposits,[]interface{}{s.Q,s.R,string(s.Terrain),land[[2]int{s.Q,s.R}]})}
+  must(enc.Encode(map[string]interface{}{"requested_seed":seed,"effective_seed":eff,"non_silver_map_sha256":fmt.Sprintf("%x",hash.Sum(nil)),"silver_hexes":counts,"deposits":deposits,"candidates":candidates,"hosts":hosts}))
+  fmt.Fprintf(os.Stderr,"seed %d -> %d: %d silver, %d starttiles, %d hosts\n",seed,eff,len(silver),len(candidates),len(hosts))
+ }
+}

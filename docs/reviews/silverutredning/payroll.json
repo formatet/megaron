@@ -1,0 +1,109 @@
+{
+  "specs": {
+    "spearman": {
+      "grain": 0.5,
+      "silver": 1.0
+    },
+    "elite_infantry": {
+      "grain": 0.6,
+      "silver": 2.0
+    },
+    "war_chariot": {
+      "grain": 0.8,
+      "silver": 3.0
+    },
+    "galley": {
+      "grain": 0.04,
+      "silver": 1.5
+    },
+    "war_galley": {
+      "grain": 0.06,
+      "silver": 2.5
+    },
+    "merchantman": {
+      "grain": 0.03,
+      "silver": 1.0
+    }
+  },
+  "live_nominal_payroll": {
+    "gross_before": 2.0,
+    "gross_after": 0.0,
+    "net_before_default_share": 2.0,
+    "net_after_default_share": 0.0,
+    "spearman_pct": 100.0
+  },
+  "live_saved_founder_rates": [
+    {
+      "world_id": "f7c90afa-4653-46a6-b14c-473a268efa3e",
+      "hosts": 1,
+      "silver_rate": -2,
+      "silver_amount": 480
+    }
+  ],
+  "scenarios": {
+    "inland_start": {
+      "composition": {
+        "spearman": 2
+      },
+      "gross_before": 2.0,
+      "gross_after": 0.0,
+      "reduction_pct": 100.0,
+      "own_payer_net_before": 0.6,
+      "own_payer_net_after": 0.0,
+      "grain_garrison": 1.0
+    },
+    "coastal_start": {
+      "composition": {
+        "spearman": 2,
+        "galley": 1
+      },
+      "gross_before": 3.5,
+      "gross_after": 1.5,
+      "reduction_pct": 57.142857142857146,
+      "own_payer_net_before": 1.05,
+      "own_payer_net_after": 0.44999999999999996,
+      "grain_garrison": 1.04
+    },
+    "inland_plus_elite": {
+      "composition": {
+        "spearman": 2,
+        "elite_infantry": 1
+      },
+      "gross_before": 4.0,
+      "gross_after": 2.0,
+      "reduction_pct": 50.0,
+      "own_payer_net_before": 1.2,
+      "own_payer_net_after": 0.6,
+      "grain_garrison": 1.6
+    },
+    "ten_spears_elite_chariot": {
+      "composition": {
+        "spearman": 10,
+        "elite_infantry": 1,
+        "war_chariot": 1
+      },
+      "gross_before": 15.0,
+      "gross_after": 5.0,
+      "reduction_pct": 66.66666666666667,
+      "own_payer_net_before": 4.5,
+      "own_payer_net_after": 1.5,
+      "grain_garrison": 6.4
+    },
+    "two_spears_each_professional_type": {
+      "composition": {
+        "spearman": 2,
+        "elite_infantry": 1,
+        "war_chariot": 1,
+        "galley": 1,
+        "war_galley": 1,
+        "merchantman": 1
+      },
+      "gross_before": 12.0,
+      "gross_after": 10.0,
+      "reduction_pct": 16.666666666666668,
+      "own_payer_net_before": 3.5999999999999996,
+      "own_payer_net_after": 3.0,
+      "grain_garrison": 2.53
+    }
+  }
+}
