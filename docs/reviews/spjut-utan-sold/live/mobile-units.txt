@@ -1,0 +1,19 @@
+ARMY
+RECRUIT
+MOVEMENTS
+WHEN TO RETREAT
+Save
+RECALL ALL
+UNITS
+1st Spearmen of Phaistos
+in the city
+Upkeep: 0.5 grain, 0 silver per day
+Phaistos
+March
+Set
+2nd Spearmen of Phaistos
+in the city
+Upkeep: 0.5 grain, 0 silver per day
+Phaistos
+March
+Set

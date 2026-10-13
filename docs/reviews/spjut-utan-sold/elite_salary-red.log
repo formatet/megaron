@@ -1,0 +1,6 @@
+--- FAIL: TestSpearmanFieldRationAndElitePayRemain (0.02s)
+    spearman_subsistence_test.go:61: elite pay leaves=10, want8 (10-2)
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.024s
+FAIL
+» färsk DB på migration 178 · commit 532608d9+ändringar

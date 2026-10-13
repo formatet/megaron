@@ -1,0 +1,59 @@
+{
+  "after": [
+    [
+      "00000000-0000-0000-0000-000000000001",
+      1197,
+      -1,
+      474,
+      0,
+      100,
+      true
+    ],
+    [
+      "00000000-0000-0000-0000-000000000002",
+      1200,
+      0,
+      57,
+      0,
+      20,
+      true
+    ],
+    [
+      "00000000-0000-0000-0000-000000000003",
+      1200,
+      0,
+      480,
+      -2,
+      97,
+      false
+    ]
+  ],
+  "units": [
+    [
+      "elite_infantry",
+      100,
+      "garrison",
+      71,
+      60
+    ],
+    [
+      "spearman",
+      100,
+      "garrison",
+      0,
+      30
+    ]
+  ],
+  "historic_payloads": [
+    {
+      "reason": "silver_shortage",
+      "unit_type": "spearman",
+      "silver_unpaid": 1
+    },
+    {
+      "kharis": 3,
+      "offering_value": 100
+    }
+  ],
+  "down_up_same": true
+}

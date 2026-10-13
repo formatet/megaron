@@ -1,0 +1,7 @@
+ID                                    Name                                            Size      Status      Stance     Location / ETA
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+7bc27f70-ebcd-47e0-9052-f3e138ca67fe  Nomadic Host of Daigwotas                       a people on the move  positioned  —          hex (6,52)
+ecf0b2a5-4b1a-431b-8dbc-61c134774127  1st Spearmen of Daigwotas                       100 men   positioned  —          hex (6,52)
+  Upkeep after settling: 1 grain, 0 silver per day
+8f6a636b-51f5-4e89-9e8b-9de7ceddd6a6  2nd Spearmen of Daigwotas                       100 men   positioned  —          hex (6,52)
+  Upkeep after settling: 1 grain, 0 silver per day

@@ -1,0 +1,6 @@
+ID                                    Name                                            Size      Status      Stance     Location / ETA
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+ecf0b2a5-4b1a-431b-8dbc-61c134774127  1st Spearmen of Phaistos                        100 men   garrison    —          settlement 8055a485…
+  Upkeep: 0.5 grain, 0 silver per day
+8f6a636b-51f5-4e89-9e8b-9de7ceddd6a6  2nd Spearmen of Phaistos                        100 men   garrison    —          settlement 8055a485…
+  Upkeep: 0.5 grain, 0 silver per day

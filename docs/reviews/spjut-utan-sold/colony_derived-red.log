@@ -1,0 +1,7 @@
+--- FAIL: TestColonistPurse_FixedReservesDoNotFollowUpkeep (0.00s)
+    colonist_purse_test.go:57: spearman reserve=0, want 30
+    colonist_purse_test.go:60: partial spearman reserve=0, want 15
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.002s
+FAIL
+» färsk DB på migration 178 · commit 532608d9+ändringar

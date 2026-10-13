@@ -1,0 +1,11 @@
+2026/10/13 07:23:31 INFO player registered id=3a727e43-4ffc-4ee3-83ce-c0765183b20a username=rise-8e4e7882-4f03-4db6-8043-6b6299f2b426
+2026/10/13 07:23:31 INFO player registered id=fd49c11f-cf80-4bef-8432-16dc2a6fb6b5 username=rise-zero-f6425e5d-6163-44f6-aec1-5bdc2d4fe82c
+2026/10/13 07:23:31 INFO player registered id=6037948e-4eb5-4647-a97a-68749247ca92 username=rise-lazy-7ffe5fb2-fb27-448f-9909-cc5125afcf2d
+2026/10/13 07:23:31 INFO player registered id=8b96e74d-e1d7-479f-8476-8d17edce4cd0 username=never-joined-a61f9893-59e5-46a8-8d66-d1b9b83237da
+2026/10/13 07:23:31 INFO player registered id=53c9ae2a-8195-47d9-9b88-ea731e8f19e3 username=leave-6b02832f-d92f-4f86-9c3e-8593ac6f01f0
+--- FAIL: TestRise_RefugeeHostOnAnotherLandmass_AndLeave (0.28s)
+    rise_test.go:147: risen host silver = 0, want fixed reserve 60
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.287s
+FAIL
+» färsk DB på migration 178 · commit 532608d9+ändringar

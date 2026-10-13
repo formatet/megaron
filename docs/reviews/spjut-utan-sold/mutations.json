@@ -1,0 +1,40 @@
+{
+  "mutations": [
+    {
+      "mutation": "spear_salary",
+      "test": "^TestSpearmanZeroSilverStillEatsAndNeverDeserts$",
+      "red": true,
+      "byte_restored": true,
+      "sha256": "5b4bea5a21a5e853a0202e9e3d479639c9158f54ff50c3fd02ee57af8350b656"
+    },
+    {
+      "mutation": "elite_salary",
+      "test": "^TestSpearmanFieldRationAndElitePayRemain$",
+      "red": true,
+      "byte_restored": true,
+      "sha256": "5b4bea5a21a5e853a0202e9e3d479639c9158f54ff50c3fd02ee57af8350b656"
+    },
+    {
+      "mutation": "colony_derived",
+      "test": "^TestColonistPurse_FixedReservesDoNotFollowUpkeep$",
+      "red": true,
+      "byte_restored": true,
+      "sha256": "174ec846d1feaa1a9fc920acae397435ab8232cb637c09a119c18b79325aca2c"
+    },
+    {
+      "mutation": "rise_derived",
+      "test": "^TestRise_RefugeeHostOnAnotherLandmass_AndLeave$",
+      "red": true,
+      "byte_restored": true,
+      "sha256": "f5a80e533d7ef9c16d0b3b1e689eaf19bcb5eb9a37fa78bcccacbcbb7ea3b05d"
+    },
+    {
+      "mutation": "newcomer_derived",
+      "test": "^TestSeedNomadicHost_SilverAmountIs480$",
+      "red": true,
+      "byte_restored": true,
+      "sha256": "adeea3321c9df2c312af9b546a47cf69727a2126cd4ae91bd18bea71ae09b0f7"
+    }
+  ],
+  "restored_fresh_green": true
+}

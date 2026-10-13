@@ -1,0 +1,1185 @@
+» färsk DB på migration 178 · commit 532608d9+ändringar
+2026/10/13 07:15:29 INFO field combat: battle initiated/joined unit=bd8271ab-050b-4cda-ab70-2035a0d7daf3 q=1 r=0 defenders=1
+2026/10/13 07:15:29 INFO field combat: battle initiated/joined unit=4ae2b648-c665-409e-a50a-afcfe4d16b58 q=1 r=0 defenders=1
+2026/10/13 07:15:29 INFO field combat: battle initiated/joined unit=240efe67-43c4-4302-be8c-bee4338779ae q=1 r=0 defenders=1
+2026/10/13 07:15:29 INFO field combat: battle initiated/joined unit=f67d8742-2464-4536-a26f-ed56344c3670 q=1 r=0 defenders=1
+2026/10/13 07:15:29 INFO field combat: battle initiated/joined unit=091e38c7-de43-4814-a2bf-5c6419988090 q=1 r=0 defenders=1
+2026/10/13 07:15:29 INFO field combat: battle initiated/joined unit=f8e3fa39-8b9d-4b47-86a9-c5124369151b q=1 r=0 defenders=1
+2026/10/13 07:15:29 INFO field combat: battle initiated/joined unit=08375af2-e0c3-4be4-aa85-7e6c426ba51b q=1 r=0 defenders=1
+2026/10/13 07:15:29 INFO field combat: battle initiated/joined unit=0d839e60-b92d-4cce-98f4-5382a76e2ed7 q=1 r=0 defenders=1
+2026/10/13 07:15:29 INFO settlement combat: battle initiated/joined unit=bb641f66-d888-4c78-9d40-88d08d243edc settlement=35768573-03fc-4aac-9a97-1fd910ef6c4f q=1 r=0 defenders=1
+2026/10/13 07:15:29 INFO settlement combat: battle initiated/joined unit=15bf00f5-d06b-450d-be31-a811b0b664c5 settlement=67d1dd1b-7b04-4b1c-8337-41b6f742b5ea q=1 r=0 defenders=1
+2026/10/13 07:15:29 INFO settlement combat: battle initiated/joined unit=b29d1d23-95a4-4d81-bd56-5411ef1ccafa settlement=f555dd2a-4725-4050-a7d7-c45a40b21c5d q=1 r=0 defenders=1
+2026/10/13 07:15:29 INFO settlement combat: battle initiated/joined unit=089d8927-1450-469d-aca0-565203850efc settlement=08bc3a66-8849-46ef-b48d-b34ccefcf537 q=1 r=0 defenders=1
+2026/10/13 07:15:29 INFO settlement combat: battle initiated/joined unit=d42c2685-f62b-4dcf-a582-ee5ea2773035 settlement=3fd99e04-51fe-4b16-950b-9297a3145baa q=1 r=0 defenders=1
+2026/10/13 07:15:29 INFO build complete settlement=270ecdda-62c5-45d3-b1be-b3d861f28815 building=barracks
+2026/10/13 07:15:29 INFO build complete settlement=bd3c193f-aee7-4bc3-99bb-9deffe853e0b building=stonequarry
+2026/10/13 07:15:29 INFO build complete settlement=f9733f8f-2386-4d40-8e89-22bef03343cf building=mine
+2026/10/13 07:15:29 INFO wanax defeated — last settlement lost player=00a43f87-9e0a-4f89-8552-f6f6a33ed626 world=03c3e59e-21b6-4dca-852f-e8f669e15628 last_settlement=217a431b-5eee-4f14-8125-0e6eb2730b90
+2026/10/13 07:15:29 INFO city collapsed settlement=217a431b-5eee-4f14-8125-0e6eb2730b90 owner=00a43f87-9e0a-4f89-8552-f6f6a33ed626 warband=c66690c5-cbff-46ec-be9f-ec3f6f454902 q=20 r=20 cause=starvation last_city=true
+2026/10/13 07:15:29 INFO wanax defeated — last settlement lost player=e78116bd-26c0-4a9e-aeca-ae9d7893e006 world=3d4812c5-dcfa-4f47-8df6-8c1ae949fbb5 last_settlement=75abdb92-0245-4367-8be0-7d6b2f846a5e
+2026/10/13 07:15:29 INFO city collapsed settlement=75abdb92-0245-4367-8be0-7d6b2f846a5e owner=e78116bd-26c0-4a9e-aeca-ae9d7893e006 warband=c1ebb952-369b-4d93-86f8-7ccd4c1d0a76 q=30 r=30 cause=starvation last_city=true
+2026/10/13 07:15:29 INFO wanax defeated — last settlement lost player=e78116bd-26c0-4a9e-aeca-ae9d7893e006 world=3d4812c5-dcfa-4f47-8df6-8c1ae949fbb5 last_settlement=f407e1f1-0486-4c44-b50e-cd92798a1b9c
+2026/10/13 07:15:29 INFO city collapsed settlement=f407e1f1-0486-4c44-b50e-cd92798a1b9c owner=e78116bd-26c0-4a9e-aeca-ae9d7893e006 warband=9709caac-f973-4b01-a3f3-296189c718d6 q=34 r=30 cause=starvation last_city=true
+2026/10/13 07:15:29 INFO wanax defeated — last settlement lost player=e78116bd-26c0-4a9e-aeca-ae9d7893e006 world=3d4812c5-dcfa-4f47-8df6-8c1ae949fbb5 last_settlement=13d0ba17-d895-4169-aeb4-2272c98bd256
+2026/10/13 07:15:29 INFO city collapsed settlement=13d0ba17-d895-4169-aeb4-2272c98bd256 owner=e78116bd-26c0-4a9e-aeca-ae9d7893e006 warband=ee576c8d-6eba-4db5-8f29-8e70a604f489 q=38 r=30 cause=starvation last_city=true
+2026/10/13 07:15:29 INFO colony founded (discrete unit) settlement=ab567e4d-2813-468d-b7f4-48d0f8f9459d name=Newhaven-1a3b9aea province=9609dc70-f41e-4e8e-89be-0c2a3228ff24 owner=337f81a9-0e47-41f3-aae0-84b73abe617a founding_unit=9dd7fb02-bd18-4043-a5ae-eadb1b381c9a population=50 q=10 r=10
+2026/10/13 07:15:29 INFO colony founded (discrete unit) settlement=8e5ddd81-b857-4181-ab5c-8cf6b2f7ae11 name=Newhaven-e3a46683 province=3e2ebd1b-1623-4f8e-aee8-9c2d8e9d96bc owner=955a109f-b520-43f3-9738-a19453f9354e founding_unit=03b3b70f-0274-462e-9d15-508f9ca3cf54 population=50 q=10 r=10
+2026/10/13 07:15:29 INFO unit arrived (garrison) unit=3521d969-d8f1-45a8-a8b0-ff32762d37e9 q=0 r=0 status=garrison
+2026/10/13 07:15:29 INFO colony founded (discrete unit) settlement=6032adc8-6ce9-4fe9-985e-3b232a1e4e99 name=Newhaven-cb73a04d province=ae1a5f30-a35a-4536-958d-e5e00ec3bc1f owner=f931c958-b359-4d5a-a66f-349f692761d8 founding_unit=152a0e9d-ee70-476f-879e-7344eb8b4ade population=50 q=10 r=10
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=21157dda-9bcd-4d4f-8c07-6dd6721a8eae err="storm 21157dda-9bcd-4d4f-8c07-6dd6721a8eae: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=6a5e47bd-daba-41d5-aefb-64987263bbd0 err="storm 6a5e47bd-daba-41d5-aefb-64987263bbd0: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=a3ec6ab5-59df-472a-9926-8bf0cd3711bf err="storm a3ec6ab5-59df-472a-9926-8bf0cd3711bf: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=dd39cb4e-7fb3-40b4-8443-94f893bfe676 err="storm dd39cb4e-7fb3-40b4-8443-94f893bfe676: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=edf4263f-64d4-4f2b-a2b6-6a4b71ded9af err="storm edf4263f-64d4-4f2b-a2b6-6a4b71ded9af: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=21157dda-9bcd-4d4f-8c07-6dd6721a8eae err="storm 21157dda-9bcd-4d4f-8c07-6dd6721a8eae: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=6a5e47bd-daba-41d5-aefb-64987263bbd0 err="storm 6a5e47bd-daba-41d5-aefb-64987263bbd0: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=a3ec6ab5-59df-472a-9926-8bf0cd3711bf err="storm a3ec6ab5-59df-472a-9926-8bf0cd3711bf: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=dd39cb4e-7fb3-40b4-8443-94f893bfe676 err="storm dd39cb4e-7fb3-40b4-8443-94f893bfe676: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=edf4263f-64d4-4f2b-a2b6-6a4b71ded9af err="storm edf4263f-64d4-4f2b-a2b6-6a4b71ded9af: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=21157dda-9bcd-4d4f-8c07-6dd6721a8eae err="storm 21157dda-9bcd-4d4f-8c07-6dd6721a8eae: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=6a5e47bd-daba-41d5-aefb-64987263bbd0 err="storm 6a5e47bd-daba-41d5-aefb-64987263bbd0: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=a3ec6ab5-59df-472a-9926-8bf0cd3711bf err="storm a3ec6ab5-59df-472a-9926-8bf0cd3711bf: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=dd39cb4e-7fb3-40b4-8443-94f893bfe676 err="storm dd39cb4e-7fb3-40b4-8443-94f893bfe676: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=edf4263f-64d4-4f2b-a2b6-6a4b71ded9af err="storm edf4263f-64d4-4f2b-a2b6-6a4b71ded9af: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=21157dda-9bcd-4d4f-8c07-6dd6721a8eae err="storm 21157dda-9bcd-4d4f-8c07-6dd6721a8eae: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=6a5e47bd-daba-41d5-aefb-64987263bbd0 err="storm 6a5e47bd-daba-41d5-aefb-64987263bbd0: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=a3ec6ab5-59df-472a-9926-8bf0cd3711bf err="storm a3ec6ab5-59df-472a-9926-8bf0cd3711bf: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=dd39cb4e-7fb3-40b4-8443-94f893bfe676 err="storm dd39cb4e-7fb3-40b4-8443-94f893bfe676: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=edf4263f-64d4-4f2b-a2b6-6a4b71ded9af err="storm edf4263f-64d4-4f2b-a2b6-6a4b71ded9af: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=21157dda-9bcd-4d4f-8c07-6dd6721a8eae err="storm 21157dda-9bcd-4d4f-8c07-6dd6721a8eae: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=6a5e47bd-daba-41d5-aefb-64987263bbd0 err="storm 6a5e47bd-daba-41d5-aefb-64987263bbd0: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=a3ec6ab5-59df-472a-9926-8bf0cd3711bf err="storm a3ec6ab5-59df-472a-9926-8bf0cd3711bf: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=dd39cb4e-7fb3-40b4-8443-94f893bfe676 err="storm dd39cb4e-7fb3-40b4-8443-94f893bfe676: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=edf4263f-64d4-4f2b-a2b6-6a4b71ded9af err="storm edf4263f-64d4-4f2b-a2b6-6a4b71ded9af: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=21157dda-9bcd-4d4f-8c07-6dd6721a8eae err="storm 21157dda-9bcd-4d4f-8c07-6dd6721a8eae: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=6a5e47bd-daba-41d5-aefb-64987263bbd0 err="storm 6a5e47bd-daba-41d5-aefb-64987263bbd0: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=a3ec6ab5-59df-472a-9926-8bf0cd3711bf err="storm a3ec6ab5-59df-472a-9926-8bf0cd3711bf: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=dd39cb4e-7fb3-40b4-8443-94f893bfe676 err="storm dd39cb4e-7fb3-40b4-8443-94f893bfe676: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=edf4263f-64d4-4f2b-a2b6-6a4b71ded9af err="storm edf4263f-64d4-4f2b-a2b6-6a4b71ded9af: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=21157dda-9bcd-4d4f-8c07-6dd6721a8eae err="storm 21157dda-9bcd-4d4f-8c07-6dd6721a8eae: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=6a5e47bd-daba-41d5-aefb-64987263bbd0 err="storm 6a5e47bd-daba-41d5-aefb-64987263bbd0: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=a3ec6ab5-59df-472a-9926-8bf0cd3711bf err="storm a3ec6ab5-59df-472a-9926-8bf0cd3711bf: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=dd39cb4e-7fb3-40b4-8443-94f893bfe676 err="storm dd39cb4e-7fb3-40b4-8443-94f893bfe676: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=edf4263f-64d4-4f2b-a2b6-6a4b71ded9af err="storm edf4263f-64d4-4f2b-a2b6-6a4b71ded9af: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=21157dda-9bcd-4d4f-8c07-6dd6721a8eae err="storm 21157dda-9bcd-4d4f-8c07-6dd6721a8eae: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=6a5e47bd-daba-41d5-aefb-64987263bbd0 err="storm 6a5e47bd-daba-41d5-aefb-64987263bbd0: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=a3ec6ab5-59df-472a-9926-8bf0cd3711bf err="storm a3ec6ab5-59df-472a-9926-8bf0cd3711bf: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=dd39cb4e-7fb3-40b4-8443-94f893bfe676 err="storm dd39cb4e-7fb3-40b4-8443-94f893bfe676: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=edf4263f-64d4-4f2b-a2b6-6a4b71ded9af err="storm edf4263f-64d4-4f2b-a2b6-6a4b71ded9af: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=0632d3bf-bf9d-4d1d-a251-5d6ded061d1c err="storm 0632d3bf-bf9d-4d1d-a251-5d6ded061d1c: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=57f0522e-35d3-4cdd-a9ae-a7992e76748c err="storm 57f0522e-35d3-4cdd-a9ae-a7992e76748c: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=65ade0f2-3761-4d06-87d7-c80eaad76674 err="storm 65ade0f2-3761-4d06-87d7-c80eaad76674: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=7d98c9b7-fc72-4f63-b3d3-bfcfab8cc815 err="storm 7d98c9b7-fc72-4f63-b3d3-bfcfab8cc815: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=e5a6c1a5-1dc9-45df-8c19-4c60678a5802 err="storm e5a6c1a5-1dc9-45df-8c19-4c60678a5802: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=0632d3bf-bf9d-4d1d-a251-5d6ded061d1c err="storm 0632d3bf-bf9d-4d1d-a251-5d6ded061d1c: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=57f0522e-35d3-4cdd-a9ae-a7992e76748c err="storm 57f0522e-35d3-4cdd-a9ae-a7992e76748c: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=65ade0f2-3761-4d06-87d7-c80eaad76674 err="storm 65ade0f2-3761-4d06-87d7-c80eaad76674: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=7d98c9b7-fc72-4f63-b3d3-bfcfab8cc815 err="storm 7d98c9b7-fc72-4f63-b3d3-bfcfab8cc815: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=e5a6c1a5-1dc9-45df-8c19-4c60678a5802 err="storm e5a6c1a5-1dc9-45df-8c19-4c60678a5802: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=0632d3bf-bf9d-4d1d-a251-5d6ded061d1c err="storm 0632d3bf-bf9d-4d1d-a251-5d6ded061d1c: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=57f0522e-35d3-4cdd-a9ae-a7992e76748c err="storm 57f0522e-35d3-4cdd-a9ae-a7992e76748c: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=65ade0f2-3761-4d06-87d7-c80eaad76674 err="storm 65ade0f2-3761-4d06-87d7-c80eaad76674: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=7d98c9b7-fc72-4f63-b3d3-bfcfab8cc815 err="storm 7d98c9b7-fc72-4f63-b3d3-bfcfab8cc815: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=e5a6c1a5-1dc9-45df-8c19-4c60678a5802 err="storm e5a6c1a5-1dc9-45df-8c19-4c60678a5802: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=0632d3bf-bf9d-4d1d-a251-5d6ded061d1c err="storm 0632d3bf-bf9d-4d1d-a251-5d6ded061d1c: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=57f0522e-35d3-4cdd-a9ae-a7992e76748c err="storm 57f0522e-35d3-4cdd-a9ae-a7992e76748c: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=65ade0f2-3761-4d06-87d7-c80eaad76674 err="storm 65ade0f2-3761-4d06-87d7-c80eaad76674: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=7d98c9b7-fc72-4f63-b3d3-bfcfab8cc815 err="storm 7d98c9b7-fc72-4f63-b3d3-bfcfab8cc815: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=e5a6c1a5-1dc9-45df-8c19-4c60678a5802 err="storm e5a6c1a5-1dc9-45df-8c19-4c60678a5802: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=0632d3bf-bf9d-4d1d-a251-5d6ded061d1c err="storm 0632d3bf-bf9d-4d1d-a251-5d6ded061d1c: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=57f0522e-35d3-4cdd-a9ae-a7992e76748c err="storm 57f0522e-35d3-4cdd-a9ae-a7992e76748c: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=65ade0f2-3761-4d06-87d7-c80eaad76674 err="storm 65ade0f2-3761-4d06-87d7-c80eaad76674: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=7d98c9b7-fc72-4f63-b3d3-bfcfab8cc815 err="storm 7d98c9b7-fc72-4f63-b3d3-bfcfab8cc815: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=e5a6c1a5-1dc9-45df-8c19-4c60678a5802 err="storm e5a6c1a5-1dc9-45df-8c19-4c60678a5802: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=0632d3bf-bf9d-4d1d-a251-5d6ded061d1c err="storm 0632d3bf-bf9d-4d1d-a251-5d6ded061d1c: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=57f0522e-35d3-4cdd-a9ae-a7992e76748c err="storm 57f0522e-35d3-4cdd-a9ae-a7992e76748c: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=65ade0f2-3761-4d06-87d7-c80eaad76674 err="storm 65ade0f2-3761-4d06-87d7-c80eaad76674: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=7d98c9b7-fc72-4f63-b3d3-bfcfab8cc815 err="storm 7d98c9b7-fc72-4f63-b3d3-bfcfab8cc815: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=e5a6c1a5-1dc9-45df-8c19-4c60678a5802 err="storm e5a6c1a5-1dc9-45df-8c19-4c60678a5802: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=0632d3bf-bf9d-4d1d-a251-5d6ded061d1c err="storm 0632d3bf-bf9d-4d1d-a251-5d6ded061d1c: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=57f0522e-35d3-4cdd-a9ae-a7992e76748c err="storm 57f0522e-35d3-4cdd-a9ae-a7992e76748c: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=65ade0f2-3761-4d06-87d7-c80eaad76674 err="storm 65ade0f2-3761-4d06-87d7-c80eaad76674: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=7d98c9b7-fc72-4f63-b3d3-bfcfab8cc815 err="storm 7d98c9b7-fc72-4f63-b3d3-bfcfab8cc815: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=e5a6c1a5-1dc9-45df-8c19-4c60678a5802 err="storm e5a6c1a5-1dc9-45df-8c19-4c60678a5802: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=0632d3bf-bf9d-4d1d-a251-5d6ded061d1c err="storm 0632d3bf-bf9d-4d1d-a251-5d6ded061d1c: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=57f0522e-35d3-4cdd-a9ae-a7992e76748c err="storm 57f0522e-35d3-4cdd-a9ae-a7992e76748c: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=65ade0f2-3761-4d06-87d7-c80eaad76674 err="storm 65ade0f2-3761-4d06-87d7-c80eaad76674: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=7d98c9b7-fc72-4f63-b3d3-bfcfab8cc815 err="storm 7d98c9b7-fc72-4f63-b3d3-bfcfab8cc815: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=e5a6c1a5-1dc9-45df-8c19-4c60678a5802 err="storm e5a6c1a5-1dc9-45df-8c19-4c60678a5802: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=3942c082-230f-4262-9408-e1f8dd831d16 err="storm 3942c082-230f-4262-9408-e1f8dd831d16: track has 1 hexes, want 3"
+2026/10/13 07:15:29 WARN sea storm: unreadable track, storm skipped storm=c7471341-64cf-46b7-aa1e-4bd7d7db5298 err="storm c7471341-64cf-46b7-aa1e-4bd7d7db5298: track has 1 hexes, want 3"
+--- FAIL: TestUpkeepHandle_EmbarkedCohortIsBilledFieldRation (0.02s)
+    embarked_upkeep_test.go:116: settlement silver after upkeep tick = 10000, want 9999 (10000 − 1 silver for the embarked cohort)
+--- FAIL: TestUnitUpkeep_EmbarkedDoublesGrainLikeMarching (0.00s)
+    embarked_upkeep_test.go:131: UnitUpkeep("spearman","land",100,"embarked").Silver = 0, want 1 (status never changes silver)
+2026/10/13 07:15:30 INFO expedition turning for home unit=2a29f246-f5b2-463a-84a2-118200c968a7 reason=half_time q=4 r=0 arrive_tick=8
+2026/10/13 07:15:30 INFO expedition home unit=2a29f246-f5b2-463a-84a2-118200c968a7 ticks_out=8 hexes_seen=39 finds=0
+2026/10/13 07:15:30 INFO unit returned home from explore unit=2a29f246-f5b2-463a-84a2-118200c968a7 settlement=658da9de-81c8-4701-b3a6-182a404ae587
+2026/10/13 07:15:30 INFO expedition turning for home unit=552e1ca5-1eea-413e-8cfe-e9e29cb4941a reason=half_time q=4 r=0 arrive_tick=9
+2026/10/13 07:15:30 INFO expedition home unit=552e1ca5-1eea-413e-8cfe-e9e29cb4941a ticks_out=9 hexes_seen=39 finds=1
+2026/10/13 07:15:30 INFO unit returned home from explore unit=552e1ca5-1eea-413e-8cfe-e9e29cb4941a settlement=e4c38f11-df9f-4686-bf6f-1fb3259d8ff5
+2026/10/13 07:15:30 INFO expedition turning for home unit=eb51fa1e-0912-4f73-ba83-5f68b2164443 reason=half_time q=4 r=0 arrive_tick=8
+2026/10/13 07:15:30 INFO expedition home unit=eb51fa1e-0912-4f73-ba83-5f68b2164443 ticks_out=9 hexes_seen=39 finds=1
+2026/10/13 07:15:30 INFO unit returned home from explore unit=eb51fa1e-0912-4f73-ba83-5f68b2164443 settlement=97264ae6-7a1c-4d1a-824a-e9b45bd865a1
+2026/10/13 07:15:30 INFO expedition turning for home unit=7b39c04e-91c5-4cf3-bad4-51ead8f5f897 reason=half_time q=4 r=0 arrive_tick=9
+2026/10/13 07:15:30 INFO expedition home unit=7b39c04e-91c5-4cf3-bad4-51ead8f5f897 ticks_out=9 hexes_seen=39 finds=1
+2026/10/13 07:15:30 INFO unit returned home from explore unit=7b39c04e-91c5-4cf3-bad4-51ead8f5f897 settlement=b4855d93-977b-4441-9e1d-3e6a335450f5
+2026/10/13 07:15:30 INFO recall/redirect order reached unit, new course set unit=0adb1eb9-b505-4ecd-b5f4-98a79a6b879e mode=redirect from_q=1 from_r=0 to_q=4 to_r=0 arrives_at=2026-10-13T10:15:30.533+02:00
+2026/10/13 07:15:30 INFO scout report filed unit=0adb1eb9-b505-4ecd-b5f4-98a79a6b879e q=4 r=0 terrain=plains copper=false tin=false silver=false cedar=false
+2026/10/13 07:15:30 INFO field unit turning for home unit=0adb1eb9-b505-4ecd-b5f4-98a79a6b879e from_q=4 from_r=0 home_q=0 home_r=0
+2026/10/13 07:15:30 INFO unit returned home from explore unit=0adb1eb9-b505-4ecd-b5f4-98a79a6b879e settlement=0a8f0374-2d09-45be-80f5-97306311040d
+2026/10/13 07:15:30 INFO expedition turning for home unit=39f31fc5-e4eb-4273-affd-fc74ade648b5 reason=half_time q=5 r=0 arrive_tick=11
+2026/10/13 07:15:30 INFO expedition home unit=39f31fc5-e4eb-4273-affd-fc74ade648b5 ticks_out=11 hexes_seen=8 finds=0
+2026/10/13 07:15:30 INFO unit returned home from explore unit=39f31fc5-e4eb-4273-affd-fc74ade648b5 settlement=05d5fcb2-5da0-419b-9dd8-12417f2560ec
+2026/10/13 07:15:30 INFO expedition turning for home unit=5ad4f25d-8b1e-48d8-8b52-5af8dc7ad837 reason=half_time q=10 r=0 arrive_tick=10
+2026/10/13 07:15:30 INFO expedition home unit=5ad4f25d-8b1e-48d8-8b52-5af8dc7ad837 ticks_out=10 hexes_seen=15 finds=0
+2026/10/13 07:15:30 INFO unit returned home from explore unit=5ad4f25d-8b1e-48d8-8b52-5af8dc7ad837 settlement=8ac62e3c-660f-4505-bf42-10b9bed29fc5
+2026/10/13 07:15:31 INFO expedition turning for home unit=cd301921-1d78-44e7-872c-81c5424e38ed reason=half_time q=4 r=0 arrive_tick=8
+2026/10/13 07:15:31 INFO expedition turning for home unit=6c1e2129-142b-4931-a0ea-8710570f8ce5 reason=half_time q=-4 r=0 arrive_tick=8
+2026/10/13 07:15:31 INFO expedition home unit=6c1e2129-142b-4931-a0ea-8710570f8ce5 ticks_out=8 hexes_seen=39 finds=0
+2026/10/13 07:15:31 INFO unit returned home from explore unit=6c1e2129-142b-4931-a0ea-8710570f8ce5 settlement=5fdb07fe-2084-46ea-857a-b4e7b9d29fd9
+2026/10/13 07:15:31 INFO expedition turning for home unit=0f6cb155-0860-4c90-a824-654c6575a730 reason=half_time q=4 r=0 arrive_tick=8
+2026/10/13 07:15:31 INFO expedition home unit=0f6cb155-0860-4c90-a824-654c6575a730 ticks_out=8 hexes_seen=39 finds=0
+2026/10/13 07:15:31 INFO unit returned home from explore unit=0f6cb155-0860-4c90-a824-654c6575a730 settlement=c201daec-0d57-4736-979e-e0f53b08b497
+2026/10/13 07:15:31 INFO expedition turning for home unit=623233f3-7d04-4c10-aa76-814ddc762d51 reason=half_time q=4 r=0 arrive_tick=8
+2026/10/13 07:15:31 INFO expedition turning for home unit=6d9b2b6c-9116-498d-9505-7ac1c19f5d4f reason=area_known q=6 r=0 arrive_tick=14
+2026/10/13 07:15:31 INFO expedition home unit=6d9b2b6c-9116-498d-9505-7ac1c19f5d4f ticks_out=14 hexes_seen=9 finds=1
+2026/10/13 07:15:31 INFO unit returned home from explore unit=6d9b2b6c-9116-498d-9505-7ac1c19f5d4f settlement=da11ff1b-87a7-49ef-8030-7b502e6ec273
+2026/10/13 07:15:31 INFO scout report filed unit=cfa6bf88-514c-4184-b401-e9d669e8e3f3 q=4 r=0 terrain=plains copper=false tin=false silver=false cedar=false
+2026/10/13 07:15:31 INFO field unit turning for home unit=cfa6bf88-514c-4184-b401-e9d669e8e3f3 from_q=4 from_r=0 home_q=0 home_r=0
+2026/10/13 07:15:31 INFO unit returned home from explore unit=cfa6bf88-514c-4184-b401-e9d669e8e3f3 settlement=3679e38c-7139-41a8-ba77-e8822e390ef4
+2026/10/13 07:15:31 INFO settlement combat: battle initiated/joined unit=21ca1886-8678-4002-bad5-dd8bd5092e7e settlement=f964989c-6c77-4925-9e62-2b934cb82cc4 q=1 r=0 defenders=1
+2026/10/13 07:15:31 INFO settlement combat: battle initiated/joined unit=8c2811d0-96a2-488b-9d41-417fabbf6fd6 settlement=f213e0a5-a3e8-49f9-944b-952147e5bc16 q=1 r=0 defenders=1
+2026/10/13 07:15:31 INFO settlement combat: battle initiated/joined unit=826c4120-a062-4f83-8c1a-9a3116bc5123 settlement=a74362a0-3f40-4d4b-99e8-e461f6af8a63 q=1 r=0 defenders=1
+2026/10/13 07:15:31 INFO settlement combat: battle initiated/joined unit=f1db40ab-631a-41e2-ac1c-d7123e48a632 settlement=a7e44ad8-8ea1-49b3-947c-c63f729a80ca q=1 r=0 defenders=1
+2026/10/13 07:15:31 INFO settlement combat: battle initiated/joined unit=e6c28516-8b21-4c89-a9ad-98f2e773afcd settlement=40c51a52-b605-4528-a316-2c47e0143b5c q=1 r=0 defenders=1
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=19 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=14 r=14 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=16 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=28 r=22 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=28 r=34 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=17 units=4
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=18 r=19 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=11 r=6 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=16 r=20 units=3
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=11 r=14 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=17 r=29 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=27 r=17 units=3
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=29 r=26 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=19 r=10 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=25 r=29 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=24 r=15 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=24 r=17 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=11 r=26 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=26 r=11 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=32 r=25 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=22 r=16 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=30 r=22 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=20 r=11 units=3
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=17 r=18 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=20 r=15 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=15 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=10 r=19 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=21 r=14 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=17 r=24 units=4
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=23 r=28 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=13 r=15 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=24 r=11 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=25 r=28 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=12 r=24 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=17 r=20 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=11 r=31 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=26 r=21 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=10 r=25 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=20 units=3
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=21 r=24 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=8 r=22 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=17 r=26 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=33 r=17 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=19 r=3 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=17 r=33 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=16 r=10 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=30 r=10 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=25 r=13 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=16 r=21 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=25 r=8 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=22 r=13 units=3
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=10 r=34 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=25 r=11 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=27 r=26 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=9 r=19 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=25 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=20 r=16 units=3
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=24 r=36 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=24 r=24 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=14 r=17 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=10 r=15 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=18 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=23 r=21 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=26 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=22 r=25 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=14 r=27 units=3
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=21 r=19 units=3
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=18 r=8 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=18 r=18 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=24 r=30 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=11 r=25 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=21 r=25 units=3
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=23 r=18 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=28 r=15 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=10 r=8 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=14 r=15 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=6 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=25 r=22 units=3
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=30 r=20 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=29 r=10 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=21 r=15 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=14 units=3
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=27 r=23 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=17 r=17 units=3
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=29 r=21 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=26 r=17 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=21 r=20 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=23 r=9 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=4 r=32 units=2
+2026/10/13 07:15:31 INFO march encounter: crossing armies collided — battle initiated/joined q=1 r=0 units=2
+2026/10/13 07:15:32 INFO march encounter: crossing armies collided — battle initiated/joined q=1 r=0 units=2
+2026/10/13 07:15:32 ERROR march route: could not read step costs unit=0bcc2f6a-2e21-405c-8f3e-571bc9b9fc32 err="timeout: context already done: context canceled"
+2026/10/13 07:15:32 ERROR march route: could not read current day unit=a4062bc7-69d1-4b75-b6e0-d41d48245a3c err="timeout: context already done: context canceled"
+2026/10/13 07:15:32 INFO expedition turning for home unit=5db96cef-9338-4899-ac5d-5a1a8c8be819 reason=area_known q=2 r=0 arrive_tick=3
+2026/10/13 07:15:32 INFO recall/redirect order reached unit, new course set unit=f37bec55-11a6-4255-91ae-051056480976 mode=redirect from_q=0 from_r=1 to_q=2 to_r=1 arrives_at=2026-10-13T09:15:32.144+02:00
+2026/10/13 07:15:32 INFO recall/redirect order reached unit, new course set unit=73b9c2f8-cc5a-4dd8-a1c0-5c76daf52b27 mode=recall from_q=1 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-13T09:27:32.161+02:00
+2026/10/13 07:15:32 INFO land mission: cargo landed, ship turning for home ship=057951a3-2b97-4e54-96b2-c0cb8d634999 cargo=61aa5918-fc93-4bac-bc01-f44a2058d17f q=10 r=0
+2026/10/13 07:15:32 INFO field unit turning for home unit=057951a3-2b97-4e54-96b2-c0cb8d634999 from_q=9 from_r=0 home_q=1 home_r=0
+2026/10/13 07:15:32 INFO unit returned home from explore unit=057951a3-2b97-4e54-96b2-c0cb8d634999 settlement=d433214a-9014-4cf9-a009-33954dcad6cf
+2026/10/13 07:15:32 INFO colony founded (discrete unit) settlement=d701e9d2-90f4-43d6-a541-402af1890008 name=Newbeach province=a062475f-3bec-4ab1-8c1e-774a9f4947fe owner=88eaaaa5-959f-4b56-97cf-40545b41c3fb founding_unit=a53ccd4e-fd8f-4ff1-be30-e0969675356d population=100 q=10 r=0
+2026/10/13 07:15:32 INFO field unit turning for home unit=4cca9421-87af-4db3-957d-f44215ff520f from_q=9 from_r=0 home_q=1 home_r=0
+2026/10/13 07:15:32 INFO colony founded (discrete unit) settlement=4f04b2e1-cf7d-4a8b-9008-47bed9e83665 name=Pursebeach province=84639992-e42f-475a-b371-bc0a160836be owner=d4c928da-d6c2-4b7c-bd17-31512a6e2b20 founding_unit=c9816651-f6d4-48fb-ba92-098da183eb8b population=100 q=10 r=0
+2026/10/13 07:15:32 INFO field unit turning for home unit=301fb2a0-9188-4431-a083-84d89c7804e0 from_q=9 from_r=0 home_q=1 home_r=0
+2026/10/13 07:15:32 INFO passage: ship waiting for runner's return unit=d812958f-b7b5-4edf-b688-9d67645f4834 messenger=b1118104-f310-4cd7-b5e6-d7a6566b28cd
+2026/10/13 07:15:32 INFO passage: nothing left to wait for, ship turning for home unit=80e32e2f-cfae-43bc-aef6-1d29cb151538 messenger=a7e10b13-82ca-4ae1-bfbf-052822925229
+2026/10/13 07:15:32 INFO field unit turning for home unit=80e32e2f-cfae-43bc-aef6-1d29cb151538 from_q=5 from_r=0 home_q=1 home_r=0
+2026/10/13 07:15:32 INFO passage: nothing left to wait for, ship turning for home unit=13bcd82a-911c-40b5-a93a-cc29f6573851 messenger=4c59f7c7-b161-463c-8eb0-21088babc5da
+2026/10/13 07:15:32 INFO field unit turning for home unit=13bcd82a-911c-40b5-a93a-cc29f6573851 from_q=5 from_r=0 home_q=1 home_r=0
+2026/10/13 07:15:32 INFO passage: ship waiting for runner's return unit=938ea2bf-b40b-4a6f-94a2-34517bde4986 messenger=3711b23e-de9a-4720-9721-95738a090a83
+2026/10/13 07:15:32 INFO field unit turning for home unit=938ea2bf-b40b-4a6f-94a2-34517bde4986 from_q=5 from_r=0 home_q=1 home_r=0
+2026/10/13 07:15:33 INFO unit arrived (garrison) unit=706e3766-de4b-4968-a658-0a3ba97f4817 q=1 r=0 status=garrison
+2026/10/13 07:15:33 WARN march ship to nearest own port: home settlement has no adjacent sea hex, using its land hex unit=38923c0f-2f31-4e34-8f31-6e0cb0bbb9ac settlement=223923bb-a716-4b4b-b1ea-4c8f49f3927c
+2026/10/13 07:15:33 INFO ship returned home intent=captured_return unit=38923c0f-2f31-4e34-8f31-6e0cb0bbb9ac settlement=223923bb-a716-4b4b-b1ea-4c8f49f3927c
+2026/10/13 07:15:33 WARN march ship to nearest own port: home settlement has no adjacent sea hex, using its land hex unit=cec3672d-9d7e-43f6-b8bd-c1667f550709 settlement=55a9fa7c-a1fa-4e1f-afbd-955106343eab
+2026/10/13 07:15:33 INFO settlement combat: battle initiated/joined unit=2de2d65e-4caa-4f5e-9234-3f695377862c settlement=7190301d-d365-4305-b5ee-9c4b17dd776f q=1 r=0 defenders=1
+2026/10/13 07:15:33 INFO settlement combat: battle initiated/joined unit=3a4b0b2e-252b-4466-9dc6-3f8cdd8db5cb settlement=20f518b1-442d-4a55-82f5-285a10823808 q=1 r=0 defenders=1
+2026/10/13 07:15:33 INFO occupation matured — annex offered settlement=a25c5ce1-6507-40bb-9bc3-5993839b3211 occupant=a026d789-aacb-42c8-ac03-52500555e2ca
+2026/10/13 07:15:33 INFO wanax defeated — last settlement lost player=af2fa1a2-1ddd-4765-aee1-eb63646a44ab world=dddc9bc1-5b05-415a-955c-dfde4fe5f704 last_settlement=49392eea-2583-4811-85f8-07622e15be2c
+2026/10/13 07:15:33 INFO wanax defeated — last settlement lost player=21ef1b57-322f-4dc4-99ff-a34ff9e66cce world=09c2513e-1f8d-435e-b537-03bc4c4833b9 last_settlement=84ea88f1-429a-4fb3-abbf-90e17cecfbb8
+2026/10/13 07:15:33 INFO recall/redirect order reached unit, new course set unit=0c433c15-b971-40e7-afec-9883a58b0657 mode=recall from_q=3 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-12T05:00:00.000Z
+2026/10/13 07:15:33 INFO recall/redirect order reached unit, new course set unit=0a234f54-f3de-44f1-aa05-4e55436d275a mode=redirect from_q=3 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-12T05:00:00.000Z
+2026/10/13 07:15:33 INFO scheduled event worker started poll=10ms
+2026/10/13 07:15:33 ERROR mark event done failed id=291 err="context canceled"
+2026/10/13 07:15:33 ERROR event worker batch failed err="claim events: context canceled"
+2026/10/13 07:15:33 INFO scheduled event worker stopped
+2026/10/13 07:15:33 WARN place reach before arrival failed; continuing movement world=a8575fa9-ef7e-4356-a3ef-dcea5c61e687 error="context canceled"
+2026/10/13 07:15:33 WARN place reach skips invalid unit route world=19e71b12-3e30-4b77-9c96-c4215257380e unit=24cb2a42-9533-47de-8fcf-c68a228c4691
+2026/10/13 07:15:34 INFO recall/redirect order reached unit, new course set unit=b014da05-2174-4911-981e-45a9483f8a18 mode=recall from_q=4 from_r=1 to_q=0 to_r=0 arrives_at=2026-10-13T12:15:34.277+02:00
+2026/10/13 07:15:34 INFO expedition home unit=b014da05-2174-4911-981e-45a9483f8a18 ticks_out=9 hexes_seen=39 finds=0
+2026/10/13 07:15:34 INFO unit returned home from explore unit=b014da05-2174-4911-981e-45a9483f8a18 settlement=8822eda6-1075-4c69-9625-13a36e0df904
+2026/10/13 07:15:34 INFO recall/redirect order reached unit, new course set unit=4ead6fb7-8c87-4c0d-bc39-b498d9762056 mode=recall from_q=5 from_r=0 to_q=1 to_r=0 arrives_at=2026-10-13T08:15:34.436+02:00
+2026/10/13 07:15:34 INFO expedition home unit=4ead6fb7-8c87-4c0d-bc39-b498d9762056 ticks_out=2 hexes_seen=80 finds=0
+2026/10/13 07:15:34 INFO unit returned home from explore unit=4ead6fb7-8c87-4c0d-bc39-b498d9762056 settlement=a98b47ed-de02-49ad-b541-e34d6c4e1f35
+2026/10/13 07:15:34 INFO recall/redirect order reached unit, new course set unit=ce4c04d6-ee10-4efe-9ae3-2526366ded77 mode=recall from_q=1 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-13T08:15:34.578+02:00
+2026/10/13 07:15:34 INFO unit arrived (garrison) unit=ce4c04d6-ee10-4efe-9ae3-2526366ded77 q=0 r=0 status=garrison
+2026/10/13 07:15:34 INFO recall/redirect order reached unit, new course set unit=01b33050-10c2-4012-b01a-a7848ba339ae mode=redirect from_q=4 from_r=1 to_q=4 to_r=0 arrives_at=2026-10-13T08:15:34.682+02:00
+2026/10/13 07:15:34 INFO scout report filed unit=01b33050-10c2-4012-b01a-a7848ba339ae q=4 r=0 terrain=plains copper=false tin=false silver=false cedar=false
+2026/10/13 07:15:34 INFO field unit turning for home unit=01b33050-10c2-4012-b01a-a7848ba339ae from_q=4 from_r=0 home_q=0 home_r=0
+2026/10/13 07:15:34 INFO unit returned home from explore unit=01b33050-10c2-4012-b01a-a7848ba339ae settlement=d3aa86ec-f1ca-4c04-8e9a-9dcf9ff2f96e
+2026/10/13 07:15:34 INFO recall/redirect order reached unit, new course set unit=b4e3d3c6-8c8b-4efa-ab06-c8d8fee990a6 mode=recall from_q=4 from_r=1 to_q=-1 to_r=0 arrives_at=2026-10-13T13:15:34.815+02:00
+2026/10/13 07:15:34 INFO expedition home unit=b4e3d3c6-8c8b-4efa-ab06-c8d8fee990a6 ticks_out=10 hexes_seen=39 finds=1
+2026/10/13 07:15:34 INFO unit returned home from explore unit=b4e3d3c6-8c8b-4efa-ab06-c8d8fee990a6 settlement=2e030591-46a9-4a56-b818-1d4466d2f549
+2026/10/13 07:15:35 INFO recall/redirect order reached unit, new course set unit=9ad411c3-2481-49aa-aa8b-a34e7c75012b mode=recall from_q=4 from_r=1 to_q=0 to_r=0 arrives_at=2026-10-13T12:15:35.055+02:00
+2026/10/13 07:15:35 INFO expedition home unit=9ad411c3-2481-49aa-aa8b-a34e7c75012b ticks_out=9 hexes_seen=39 finds=1
+2026/10/13 07:15:35 INFO unit returned home from explore unit=9ad411c3-2481-49aa-aa8b-a34e7c75012b settlement=1f35e798-3034-4b2d-9bc8-bc0e4b13dbac
+2026/10/13 07:15:35 INFO field combat: battle initiated/joined unit=db65dd51-f3a8-40b1-b699-2a10264a59a2 q=1 r=0 defenders=1
+2026/10/13 07:15:35 INFO field combat: battle initiated/joined unit=993cadb6-0184-4f35-ae62-9f53c901c387 q=1 r=0 defenders=1
+2026/10/13 07:15:35 INFO field combat: battle initiated/joined unit=2492cf8c-8d22-40f6-9661-5d8d9e2a6fec q=1 r=0 defenders=1
+2026/10/13 07:15:35 INFO field combat: battle initiated/joined unit=842aca74-a463-46c1-b9f5-9286b6325b15 q=1 r=0 defenders=1
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=1f43f8e3-0a4e-465f-abf9-621501488ea8 err="storm 1f43f8e3-0a4e-465f-abf9-621501488ea8: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=230b62ba-d603-44be-8b3b-f1393a7fe384 err="storm 230b62ba-d603-44be-8b3b-f1393a7fe384: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=2b1eea7e-761d-47ad-a869-958a6f741d2d err="storm 2b1eea7e-761d-47ad-a869-958a6f741d2d: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=c751af13-63e9-49f7-aec0-e2e3415f8b60 err="storm c751af13-63e9-49f7-aec0-e2e3415f8b60: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=dcded6e1-80d9-4999-be1a-cbfea6a13845 err="storm dcded6e1-80d9-4999-be1a-cbfea6a13845: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=1f43f8e3-0a4e-465f-abf9-621501488ea8 err="storm 1f43f8e3-0a4e-465f-abf9-621501488ea8: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=230b62ba-d603-44be-8b3b-f1393a7fe384 err="storm 230b62ba-d603-44be-8b3b-f1393a7fe384: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=2b1eea7e-761d-47ad-a869-958a6f741d2d err="storm 2b1eea7e-761d-47ad-a869-958a6f741d2d: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=c751af13-63e9-49f7-aec0-e2e3415f8b60 err="storm c751af13-63e9-49f7-aec0-e2e3415f8b60: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=dcded6e1-80d9-4999-be1a-cbfea6a13845 err="storm dcded6e1-80d9-4999-be1a-cbfea6a13845: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=1f43f8e3-0a4e-465f-abf9-621501488ea8 err="storm 1f43f8e3-0a4e-465f-abf9-621501488ea8: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=230b62ba-d603-44be-8b3b-f1393a7fe384 err="storm 230b62ba-d603-44be-8b3b-f1393a7fe384: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=2b1eea7e-761d-47ad-a869-958a6f741d2d err="storm 2b1eea7e-761d-47ad-a869-958a6f741d2d: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=c751af13-63e9-49f7-aec0-e2e3415f8b60 err="storm c751af13-63e9-49f7-aec0-e2e3415f8b60: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=dcded6e1-80d9-4999-be1a-cbfea6a13845 err="storm dcded6e1-80d9-4999-be1a-cbfea6a13845: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=1f43f8e3-0a4e-465f-abf9-621501488ea8 err="storm 1f43f8e3-0a4e-465f-abf9-621501488ea8: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=230b62ba-d603-44be-8b3b-f1393a7fe384 err="storm 230b62ba-d603-44be-8b3b-f1393a7fe384: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=2b1eea7e-761d-47ad-a869-958a6f741d2d err="storm 2b1eea7e-761d-47ad-a869-958a6f741d2d: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=c751af13-63e9-49f7-aec0-e2e3415f8b60 err="storm c751af13-63e9-49f7-aec0-e2e3415f8b60: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=dcded6e1-80d9-4999-be1a-cbfea6a13845 err="storm dcded6e1-80d9-4999-be1a-cbfea6a13845: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=1f43f8e3-0a4e-465f-abf9-621501488ea8 err="storm 1f43f8e3-0a4e-465f-abf9-621501488ea8: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=230b62ba-d603-44be-8b3b-f1393a7fe384 err="storm 230b62ba-d603-44be-8b3b-f1393a7fe384: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=2b1eea7e-761d-47ad-a869-958a6f741d2d err="storm 2b1eea7e-761d-47ad-a869-958a6f741d2d: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=c751af13-63e9-49f7-aec0-e2e3415f8b60 err="storm c751af13-63e9-49f7-aec0-e2e3415f8b60: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=dcded6e1-80d9-4999-be1a-cbfea6a13845 err="storm dcded6e1-80d9-4999-be1a-cbfea6a13845: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=1f43f8e3-0a4e-465f-abf9-621501488ea8 err="storm 1f43f8e3-0a4e-465f-abf9-621501488ea8: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=230b62ba-d603-44be-8b3b-f1393a7fe384 err="storm 230b62ba-d603-44be-8b3b-f1393a7fe384: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=2b1eea7e-761d-47ad-a869-958a6f741d2d err="storm 2b1eea7e-761d-47ad-a869-958a6f741d2d: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=c751af13-63e9-49f7-aec0-e2e3415f8b60 err="storm c751af13-63e9-49f7-aec0-e2e3415f8b60: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=dcded6e1-80d9-4999-be1a-cbfea6a13845 err="storm dcded6e1-80d9-4999-be1a-cbfea6a13845: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=1f43f8e3-0a4e-465f-abf9-621501488ea8 err="storm 1f43f8e3-0a4e-465f-abf9-621501488ea8: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=230b62ba-d603-44be-8b3b-f1393a7fe384 err="storm 230b62ba-d603-44be-8b3b-f1393a7fe384: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=2b1eea7e-761d-47ad-a869-958a6f741d2d err="storm 2b1eea7e-761d-47ad-a869-958a6f741d2d: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=c751af13-63e9-49f7-aec0-e2e3415f8b60 err="storm c751af13-63e9-49f7-aec0-e2e3415f8b60: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=dcded6e1-80d9-4999-be1a-cbfea6a13845 err="storm dcded6e1-80d9-4999-be1a-cbfea6a13845: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=1f43f8e3-0a4e-465f-abf9-621501488ea8 err="storm 1f43f8e3-0a4e-465f-abf9-621501488ea8: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=230b62ba-d603-44be-8b3b-f1393a7fe384 err="storm 230b62ba-d603-44be-8b3b-f1393a7fe384: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=2b1eea7e-761d-47ad-a869-958a6f741d2d err="storm 2b1eea7e-761d-47ad-a869-958a6f741d2d: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=c751af13-63e9-49f7-aec0-e2e3415f8b60 err="storm c751af13-63e9-49f7-aec0-e2e3415f8b60: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=dcded6e1-80d9-4999-be1a-cbfea6a13845 err="storm dcded6e1-80d9-4999-be1a-cbfea6a13845: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=1f43f8e3-0a4e-465f-abf9-621501488ea8 err="storm 1f43f8e3-0a4e-465f-abf9-621501488ea8: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=230b62ba-d603-44be-8b3b-f1393a7fe384 err="storm 230b62ba-d603-44be-8b3b-f1393a7fe384: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=2b1eea7e-761d-47ad-a869-958a6f741d2d err="storm 2b1eea7e-761d-47ad-a869-958a6f741d2d: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=c751af13-63e9-49f7-aec0-e2e3415f8b60 err="storm c751af13-63e9-49f7-aec0-e2e3415f8b60: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=dcded6e1-80d9-4999-be1a-cbfea6a13845 err="storm dcded6e1-80d9-4999-be1a-cbfea6a13845: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=46e152d0-3ec9-4e76-8468-d0cfbcaa7bb4 err="storm 46e152d0-3ec9-4e76-8468-d0cfbcaa7bb4: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=52bfb891-bbd7-4174-945f-0a244d89ed77 err="storm 52bfb891-bbd7-4174-945f-0a244d89ed77: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=c5783f5c-45cc-45e7-b0a5-2cd78f955f6f err="storm c5783f5c-45cc-45e7-b0a5-2cd78f955f6f: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=d694d803-9c04-4ddd-b6d2-378535ebc0a5 err="storm d694d803-9c04-4ddd-b6d2-378535ebc0a5: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=f62c8895-2574-49a2-b862-f54370d84984 err="storm f62c8895-2574-49a2-b862-f54370d84984: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=46e152d0-3ec9-4e76-8468-d0cfbcaa7bb4 err="storm 46e152d0-3ec9-4e76-8468-d0cfbcaa7bb4: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=52bfb891-bbd7-4174-945f-0a244d89ed77 err="storm 52bfb891-bbd7-4174-945f-0a244d89ed77: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=c5783f5c-45cc-45e7-b0a5-2cd78f955f6f err="storm c5783f5c-45cc-45e7-b0a5-2cd78f955f6f: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=d694d803-9c04-4ddd-b6d2-378535ebc0a5 err="storm d694d803-9c04-4ddd-b6d2-378535ebc0a5: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=f62c8895-2574-49a2-b862-f54370d84984 err="storm f62c8895-2574-49a2-b862-f54370d84984: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=46e152d0-3ec9-4e76-8468-d0cfbcaa7bb4 err="storm 46e152d0-3ec9-4e76-8468-d0cfbcaa7bb4: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=52bfb891-bbd7-4174-945f-0a244d89ed77 err="storm 52bfb891-bbd7-4174-945f-0a244d89ed77: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=c5783f5c-45cc-45e7-b0a5-2cd78f955f6f err="storm c5783f5c-45cc-45e7-b0a5-2cd78f955f6f: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=d694d803-9c04-4ddd-b6d2-378535ebc0a5 err="storm d694d803-9c04-4ddd-b6d2-378535ebc0a5: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=f62c8895-2574-49a2-b862-f54370d84984 err="storm f62c8895-2574-49a2-b862-f54370d84984: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=46e152d0-3ec9-4e76-8468-d0cfbcaa7bb4 err="storm 46e152d0-3ec9-4e76-8468-d0cfbcaa7bb4: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=52bfb891-bbd7-4174-945f-0a244d89ed77 err="storm 52bfb891-bbd7-4174-945f-0a244d89ed77: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=c5783f5c-45cc-45e7-b0a5-2cd78f955f6f err="storm c5783f5c-45cc-45e7-b0a5-2cd78f955f6f: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=d694d803-9c04-4ddd-b6d2-378535ebc0a5 err="storm d694d803-9c04-4ddd-b6d2-378535ebc0a5: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=f62c8895-2574-49a2-b862-f54370d84984 err="storm f62c8895-2574-49a2-b862-f54370d84984: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=46e152d0-3ec9-4e76-8468-d0cfbcaa7bb4 err="storm 46e152d0-3ec9-4e76-8468-d0cfbcaa7bb4: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=52bfb891-bbd7-4174-945f-0a244d89ed77 err="storm 52bfb891-bbd7-4174-945f-0a244d89ed77: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=c5783f5c-45cc-45e7-b0a5-2cd78f955f6f err="storm c5783f5c-45cc-45e7-b0a5-2cd78f955f6f: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=d694d803-9c04-4ddd-b6d2-378535ebc0a5 err="storm d694d803-9c04-4ddd-b6d2-378535ebc0a5: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=f62c8895-2574-49a2-b862-f54370d84984 err="storm f62c8895-2574-49a2-b862-f54370d84984: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=46e152d0-3ec9-4e76-8468-d0cfbcaa7bb4 err="storm 46e152d0-3ec9-4e76-8468-d0cfbcaa7bb4: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=52bfb891-bbd7-4174-945f-0a244d89ed77 err="storm 52bfb891-bbd7-4174-945f-0a244d89ed77: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=c5783f5c-45cc-45e7-b0a5-2cd78f955f6f err="storm c5783f5c-45cc-45e7-b0a5-2cd78f955f6f: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=d694d803-9c04-4ddd-b6d2-378535ebc0a5 err="storm d694d803-9c04-4ddd-b6d2-378535ebc0a5: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=f62c8895-2574-49a2-b862-f54370d84984 err="storm f62c8895-2574-49a2-b862-f54370d84984: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=46e152d0-3ec9-4e76-8468-d0cfbcaa7bb4 err="storm 46e152d0-3ec9-4e76-8468-d0cfbcaa7bb4: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=52bfb891-bbd7-4174-945f-0a244d89ed77 err="storm 52bfb891-bbd7-4174-945f-0a244d89ed77: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=c5783f5c-45cc-45e7-b0a5-2cd78f955f6f err="storm c5783f5c-45cc-45e7-b0a5-2cd78f955f6f: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=d694d803-9c04-4ddd-b6d2-378535ebc0a5 err="storm d694d803-9c04-4ddd-b6d2-378535ebc0a5: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=f62c8895-2574-49a2-b862-f54370d84984 err="storm f62c8895-2574-49a2-b862-f54370d84984: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=46e152d0-3ec9-4e76-8468-d0cfbcaa7bb4 err="storm 46e152d0-3ec9-4e76-8468-d0cfbcaa7bb4: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=52bfb891-bbd7-4174-945f-0a244d89ed77 err="storm 52bfb891-bbd7-4174-945f-0a244d89ed77: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=c5783f5c-45cc-45e7-b0a5-2cd78f955f6f err="storm c5783f5c-45cc-45e7-b0a5-2cd78f955f6f: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=d694d803-9c04-4ddd-b6d2-378535ebc0a5 err="storm d694d803-9c04-4ddd-b6d2-378535ebc0a5: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=f62c8895-2574-49a2-b862-f54370d84984 err="storm f62c8895-2574-49a2-b862-f54370d84984: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=3053f557-a2fc-409e-9853-53b442d80aac err="storm 3053f557-a2fc-409e-9853-53b442d80aac: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=4ec414d4-d924-4796-b34d-df3589a30316 err="storm 4ec414d4-d924-4796-b34d-df3589a30316: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=566347ad-e8c7-4f48-88b4-0cfd25741dcd err="storm 566347ad-e8c7-4f48-88b4-0cfd25741dcd: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=8d698265-6927-470a-abe7-70c0b8fc7d52 err="storm 8d698265-6927-470a-abe7-70c0b8fc7d52: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=ee0cc493-014c-4749-b031-8914a79756e3 err="storm ee0cc493-014c-4749-b031-8914a79756e3: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=3053f557-a2fc-409e-9853-53b442d80aac err="storm 3053f557-a2fc-409e-9853-53b442d80aac: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=4ec414d4-d924-4796-b34d-df3589a30316 err="storm 4ec414d4-d924-4796-b34d-df3589a30316: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=566347ad-e8c7-4f48-88b4-0cfd25741dcd err="storm 566347ad-e8c7-4f48-88b4-0cfd25741dcd: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=8d698265-6927-470a-abe7-70c0b8fc7d52 err="storm 8d698265-6927-470a-abe7-70c0b8fc7d52: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=ee0cc493-014c-4749-b031-8914a79756e3 err="storm ee0cc493-014c-4749-b031-8914a79756e3: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=3053f557-a2fc-409e-9853-53b442d80aac err="storm 3053f557-a2fc-409e-9853-53b442d80aac: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=4ec414d4-d924-4796-b34d-df3589a30316 err="storm 4ec414d4-d924-4796-b34d-df3589a30316: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=566347ad-e8c7-4f48-88b4-0cfd25741dcd err="storm 566347ad-e8c7-4f48-88b4-0cfd25741dcd: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=8d698265-6927-470a-abe7-70c0b8fc7d52 err="storm 8d698265-6927-470a-abe7-70c0b8fc7d52: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=ee0cc493-014c-4749-b031-8914a79756e3 err="storm ee0cc493-014c-4749-b031-8914a79756e3: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=3053f557-a2fc-409e-9853-53b442d80aac err="storm 3053f557-a2fc-409e-9853-53b442d80aac: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=4ec414d4-d924-4796-b34d-df3589a30316 err="storm 4ec414d4-d924-4796-b34d-df3589a30316: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=566347ad-e8c7-4f48-88b4-0cfd25741dcd err="storm 566347ad-e8c7-4f48-88b4-0cfd25741dcd: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=8d698265-6927-470a-abe7-70c0b8fc7d52 err="storm 8d698265-6927-470a-abe7-70c0b8fc7d52: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=ee0cc493-014c-4749-b031-8914a79756e3 err="storm ee0cc493-014c-4749-b031-8914a79756e3: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=3053f557-a2fc-409e-9853-53b442d80aac err="storm 3053f557-a2fc-409e-9853-53b442d80aac: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=4ec414d4-d924-4796-b34d-df3589a30316 err="storm 4ec414d4-d924-4796-b34d-df3589a30316: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=566347ad-e8c7-4f48-88b4-0cfd25741dcd err="storm 566347ad-e8c7-4f48-88b4-0cfd25741dcd: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=8d698265-6927-470a-abe7-70c0b8fc7d52 err="storm 8d698265-6927-470a-abe7-70c0b8fc7d52: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=ee0cc493-014c-4749-b031-8914a79756e3 err="storm ee0cc493-014c-4749-b031-8914a79756e3: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=3053f557-a2fc-409e-9853-53b442d80aac err="storm 3053f557-a2fc-409e-9853-53b442d80aac: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=4ec414d4-d924-4796-b34d-df3589a30316 err="storm 4ec414d4-d924-4796-b34d-df3589a30316: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=566347ad-e8c7-4f48-88b4-0cfd25741dcd err="storm 566347ad-e8c7-4f48-88b4-0cfd25741dcd: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=8d698265-6927-470a-abe7-70c0b8fc7d52 err="storm 8d698265-6927-470a-abe7-70c0b8fc7d52: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=ee0cc493-014c-4749-b031-8914a79756e3 err="storm ee0cc493-014c-4749-b031-8914a79756e3: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=3053f557-a2fc-409e-9853-53b442d80aac err="storm 3053f557-a2fc-409e-9853-53b442d80aac: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=4ec414d4-d924-4796-b34d-df3589a30316 err="storm 4ec414d4-d924-4796-b34d-df3589a30316: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=566347ad-e8c7-4f48-88b4-0cfd25741dcd err="storm 566347ad-e8c7-4f48-88b4-0cfd25741dcd: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=8d698265-6927-470a-abe7-70c0b8fc7d52 err="storm 8d698265-6927-470a-abe7-70c0b8fc7d52: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=ee0cc493-014c-4749-b031-8914a79756e3 err="storm ee0cc493-014c-4749-b031-8914a79756e3: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=3053f557-a2fc-409e-9853-53b442d80aac err="storm 3053f557-a2fc-409e-9853-53b442d80aac: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=4ec414d4-d924-4796-b34d-df3589a30316 err="storm 4ec414d4-d924-4796-b34d-df3589a30316: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=566347ad-e8c7-4f48-88b4-0cfd25741dcd err="storm 566347ad-e8c7-4f48-88b4-0cfd25741dcd: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=8d698265-6927-470a-abe7-70c0b8fc7d52 err="storm 8d698265-6927-470a-abe7-70c0b8fc7d52: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=ee0cc493-014c-4749-b031-8914a79756e3 err="storm ee0cc493-014c-4749-b031-8914a79756e3: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=270a7ecd-55d4-4512-96e0-94ccde67e6f6 err="storm 270a7ecd-55d4-4512-96e0-94ccde67e6f6: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=44d25001-1aae-4ffe-99f6-aec38bd63031 err="storm 44d25001-1aae-4ffe-99f6-aec38bd63031: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=8adbd36b-343b-4c96-b125-e7f08c0011f6 err="storm 8adbd36b-343b-4c96-b125-e7f08c0011f6: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=270a7ecd-55d4-4512-96e0-94ccde67e6f6 err="storm 270a7ecd-55d4-4512-96e0-94ccde67e6f6: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=44d25001-1aae-4ffe-99f6-aec38bd63031 err="storm 44d25001-1aae-4ffe-99f6-aec38bd63031: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=8adbd36b-343b-4c96-b125-e7f08c0011f6 err="storm 8adbd36b-343b-4c96-b125-e7f08c0011f6: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=270a7ecd-55d4-4512-96e0-94ccde67e6f6 err="storm 270a7ecd-55d4-4512-96e0-94ccde67e6f6: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=44d25001-1aae-4ffe-99f6-aec38bd63031 err="storm 44d25001-1aae-4ffe-99f6-aec38bd63031: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=8adbd36b-343b-4c96-b125-e7f08c0011f6 err="storm 8adbd36b-343b-4c96-b125-e7f08c0011f6: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=270a7ecd-55d4-4512-96e0-94ccde67e6f6 err="storm 270a7ecd-55d4-4512-96e0-94ccde67e6f6: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=44d25001-1aae-4ffe-99f6-aec38bd63031 err="storm 44d25001-1aae-4ffe-99f6-aec38bd63031: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=8adbd36b-343b-4c96-b125-e7f08c0011f6 err="storm 8adbd36b-343b-4c96-b125-e7f08c0011f6: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=270a7ecd-55d4-4512-96e0-94ccde67e6f6 err="storm 270a7ecd-55d4-4512-96e0-94ccde67e6f6: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=44d25001-1aae-4ffe-99f6-aec38bd63031 err="storm 44d25001-1aae-4ffe-99f6-aec38bd63031: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=8adbd36b-343b-4c96-b125-e7f08c0011f6 err="storm 8adbd36b-343b-4c96-b125-e7f08c0011f6: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=1cfb0059-7275-44fd-9ec1-3689b2eafc01 err="storm 1cfb0059-7275-44fd-9ec1-3689b2eafc01: track has 1 hexes, want 3"
+2026/10/13 07:15:35 WARN sea storm: unreadable track, storm skipped storm=521bdcc8-4a21-4752-98b2-67845aa7ec0f err="storm 521bdcc8-4a21-4752-98b2-67845aa7ec0f: track has 1 hexes, want 3"
+2026/10/13 07:15:36 INFO field combat: battle initiated/joined unit=ed03f43e-603d-413f-92b5-83e4fa0c625d q=1 r=0 defenders=6
+2026/10/13 07:15:36 INFO field combat: battle initiated/joined unit=3fe3533a-25fa-4e1d-9ea2-90bd00d93a77 q=1 r=0 defenders=6
+2026/10/13 07:15:36 INFO field combat: battle initiated/joined unit=746d5b10-66a3-4540-8b5c-660b2fbc2b23 q=1 r=0 defenders=6
+2026/10/13 07:15:36 INFO field combat: battle initiated/joined unit=e018a7b2-91f1-4b7e-9161-c61ca619bd20 q=1 r=0 defenders=6
+2026/10/13 07:15:36 WARN march ship to nearest own port: home settlement has no adjacent sea hex, using its land hex unit=83bdb489-54f1-4aac-9002-5b17b76502a1 settlement=9dd58273-1cfc-40b3-9ea9-44b0a5e0b3f0
+2026/10/13 07:15:36 WARN march ship to nearest own port: home settlement has no adjacent sea hex, using its land hex unit=7deefc8b-dfb0-4370-bb44-5ae50dd7411c settlement=9dd58273-1cfc-40b3-9ea9-44b0a5e0b3f0
+2026/10/13 07:15:36 WARN march ship to nearest own port: home settlement has no adjacent sea hex, using its land hex unit=714f1cf6-f8f2-4fdd-9e26-71d1a9cb6f09 settlement=9dd58273-1cfc-40b3-9ea9-44b0a5e0b3f0
+2026/10/13 07:15:36 INFO ship swept from sea, turning for home unit=72532963-8ae8-480f-b8a7-722ee9f4c3b5 from_q=2 from_r=0 home_q=1 home_r=0
+2026/10/13 07:15:36 INFO sweep ships at sea on deploy: complete candidates=1 sent_home=1
+2026/10/13 07:15:36 INFO sweep ships at sea: owner has no settlement, leaving ship in place (stranded exception) unit=c98ee7ee-d1ac-4cd7-af27-79234c6eec28
+2026/10/13 07:15:36 INFO sweep ships at sea on deploy: complete candidates=1 sent_home=0
+2026/10/13 07:15:36 INFO siege capitulation settlement=60bd2644-8823-4d3d-8b8e-4901108b5193 occupant=132ae554-d6f3-4d84-953f-511726637e02
+--- FAIL: TestUpkeepSilverBookkeeping (0.03s)
+    silver_audit_test.go:161: Argyros UpkeepSettled = {paid:0 unpaid:0 grain:0.5 gross:0 circ:0 destroyed:0 unpaidSilver:0 circulatedTo:{}}, want {paid:1 unpaid:0 grain:0.5 gross:1 circ:0 destroyed:1 unpaidSilver:0 circulatedTo:{}}
+    silver_audit_test.go:193: audit1 stocks = liquid 19997.00 fund 0.00 escrow 250.00, want 19996/0/250
+2026/10/13 07:15:36 INFO standing order paused order=e96d87ec-e7d4-4de8-bc7f-4caac18a5c24 reason="no free galley or merchantman in Byblos and no passable land route — build a ship or wait for one to return"
+2026/10/13 07:15:36 INFO field combat: battle initiated/joined unit=cae08ab4-f086-4661-a5ba-c4077cbeeaaa q=1 r=0 defenders=1
+2026/10/13 07:15:36 INFO field combat: battle initiated/joined unit=f7eb7297-ada0-4ca5-8c3b-abdcbc541e83 q=1 r=0 defenders=1
+2026/10/13 07:15:36 INFO field combat: battle initiated/joined unit=dfe820e4-92d6-4df8-bc00-bca6b8595158 q=1 r=0 defenders=1
+2026/10/13 07:15:36 INFO standing order paused order=e513dbc1-e922-423f-ab6b-851fa29302fd reason="the source has nothing to spare for this route without dipping into its own reserve"
+2026/10/13 07:15:36 INFO standing order paused order=e234be67-c94d-40f9-a510-5385fe908271 reason="no spare workforce at the crewing settlement"
+2026/10/13 07:15:36 INFO standing order paused order=a07a194c-c630-4487-9d05-e0dee8fbe441 reason="no passable caravan route between these settlements"
+2026/10/13 07:15:36 INFO colony founded (discrete unit) settlement=68ef3b6f-5ab2-4987-8815-8fdd534ccbf7 name=Newhaven-c83c8025 province=58fec05e-7cb6-4c1f-b6dc-f3d4b638e13a owner=4c781305-2547-430e-8143-afb054eb0a68 founding_unit=ce2abcb5-fb07-428d-89ba-8019aca3b01b population=50 q=10 r=10
+2026/10/13 07:15:36 INFO metropolis succession — new capital promoted player=faed02c8-2e9b-4662-a6c3-a69abcad863f world=9a39e23a-75ed-43d5-b7be-f8f241b1b91f new_capital=d24384f8-c570-4902-8eb4-02d910b923d5 fallen=d867196f-3172-47f4-8dc4-e53844597c51
+2026/10/13 07:15:36 INFO wanax defeated — last settlement lost player=faed02c8-2e9b-4662-a6c3-a69abcad863f world=9a39e23a-75ed-43d5-b7be-f8f241b1b91f last_settlement=d24384f8-c570-4902-8eb4-02d910b923d5
+2026/10/13 07:15:36 INFO training complete settlement=ec7950d1-82be-4296-a002-ac75b9bb6583 unit=spearman count=10
+2026/10/13 07:15:36 INFO training complete settlement=ec7950d1-82be-4296-a002-ac75b9bb6583 unit=spearman count=10
+2026/10/13 07:15:36 WARN recompute production after training settlement=87a64ffb-6c4f-43e7-889a-e91f222a113a err="recompute: upsert good grain: ERROR: null value in column \"calc_tick\" of relation \"settlement_goods\" violates not-null constraint (SQLSTATE 23502)"
+2026/10/13 07:15:36 ERROR record TrainComplete event err="insert event: ERROR: null value in column \"world_tick\" of relation \"events\" violates not-null constraint (SQLSTATE 23502)"
+2026/10/13 07:15:36 INFO training complete settlement=87a64ffb-6c4f-43e7-889a-e91f222a113a unit=spearman count=10
+2026/10/13 07:15:37 INFO amphibious assault: battle initiated/joined ship=1f30159e-084b-45e5-8559-bea2abcd1527 cargo=d7623f4a-450d-492a-8eb1-dd99a6c7926e settlement=0cd33ac2-aa26-4fe8-a8dd-b22efea7283e defenders=1
+2026/10/13 07:15:37 INFO field unit turning for home unit=1f30159e-084b-45e5-8559-bea2abcd1527 from_q=2 from_r=0 home_q=1 home_r=0
+2026/10/13 07:15:37 INFO colonize blocked at arrival: catchment overlap owner=caab4c28-15a0-4232-a53d-c51d29cd7398 conflict_settlement=d8519023-ca79-4107-9f87-83342928b3fe q=10 r=5
+2026/10/13 07:15:37 INFO unit arrived (garrison) unit=ff275cd9-61c5-415e-a314-dcb25b078bfb q=10 r=5 status=positioned
+2026/10/13 07:15:37 INFO colony founded (discrete unit) settlement=53400088-f8d5-482c-8084-6e72c0385250 name=Newhaven province=80180aaf-51d2-4862-87f0-173cbd2e71e0 owner=ac97beb9-2ec2-4a99-ac1c-e2a2501019b8 founding_unit=c5d6d67f-cb87-4fcc-9650-3f83f61c360e population=50 q=10 r=10
+2026/10/13 07:15:37 INFO scout report filed unit=3d690c9c-7203-4740-a0d9-31faefb87ae4 q=3 r=0 terrain=coastal_sea copper=false tin=false silver=false cedar=false
+2026/10/13 07:15:37 INFO field unit turning for home unit=3d690c9c-7203-4740-a0d9-31faefb87ae4 from_q=3 from_r=0 home_q=1 home_r=0
+2026/10/13 07:15:37 INFO unit returned home from explore unit=3d690c9c-7203-4740-a0d9-31faefb87ae4 settlement=bf773583-0497-4617-8829-2727e872cf20
+2026/10/13 07:15:37 INFO scout report filed unit=ad1bcb40-eba8-471c-b9b6-e7a0d7b64ff6 q=3 r=0 terrain=coastal_sea copper=false tin=false silver=false cedar=false
+2026/10/13 07:15:37 INFO field unit turning for home unit=ad1bcb40-eba8-471c-b9b6-e7a0d7b64ff6 from_q=3 from_r=0 home_q=1 home_r=0
+2026/10/13 07:15:37 INFO field combat: battle initiated/joined unit=3c7a9ac8-75af-4689-b11b-6bfee93d83cc q=1 r=0 defenders=2
+2026/10/13 07:15:37 INFO field combat: battle initiated/joined unit=a9f71f69-696c-4bbf-91e9-15bdf22485b5 q=1 r=0 defenders=1
+2026/10/13 07:15:37 INFO unit arrived (garrison) unit=61338115-abee-4986-88eb-9887e8d35f46 q=2 r=0 status=garrison
+2026/10/13 07:15:37 INFO colony founded (discrete unit) settlement=4305cc81-e6ee-42af-bcd6-5f83fc5e5893 name=Herdhaven province=1c9af213-1371-4807-952e-338d64928ccd owner=ba44c12c-6da2-42a1-917b-124967952ca6 founding_unit=97771fe3-878f-4a9f-bc17-6659f828b632 population=50 q=10 r=10
+2026/10/13 07:15:37 INFO unit arrived (garrison) unit=7b362583-92ac-494f-b748-7e87775559e6 q=10 r=10 status=positioned
+2026/10/13 07:15:37 INFO scout report filed unit=9af9bfe2-5584-4bad-a334-b6e8c8357e50 q=3 r=0 terrain=coastal_sea copper=true tin=false silver=false cedar=false
+2026/10/13 07:15:37 INFO field unit turning for home unit=9af9bfe2-5584-4bad-a334-b6e8c8357e50 from_q=3 from_r=0 home_q=1 home_r=0
+2026/10/13 07:15:37 INFO naval unit posted on sentry patrol unit=ecce7ade-00ae-4bb0-a9cf-e96f3e77a1a6 q=3 r=0 return_tick=24
+2026/10/13 07:15:37 INFO field unit turning for home unit=ecce7ade-00ae-4bb0-a9cf-e96f3e77a1a6 from_q=3 from_r=0 home_q=1 home_r=0
+2026/10/13 07:15:37 INFO unit returned home from explore unit=ecce7ade-00ae-4bb0-a9cf-e96f3e77a1a6 settlement=225a0eb8-448b-466a-b709-0f499d45521c
+2026/10/13 07:15:37 INFO settlement combat: battle initiated/joined unit=24f971ed-3d18-4903-a59f-a0ad19441006 settlement=5e39d535-1a59-4025-afd8-05176f4bee28 q=1 r=0 defenders=2
+2026/10/13 07:15:37 INFO unit intercepted — battle initiated/joined unit=13850037-f4c1-48e0-a5e2-e78e170a285f sentry=6d1e1dfc-5086-4699-8697-2b254a9ce7cf q=1 r=0
+2026/10/13 07:15:37 INFO unit intercept scan: sentry alerted (no combat) unit=f29738c9-e455-4000-80e8-711c8e462683 sentry=68d1e95a-c315-4ec0-b235-9267160f538d q=1 r=0
+2026/10/13 07:15:37 INFO unit intercept scan: sentry alerted (no combat) unit=a1750e89-c8ed-4ef8-a126-69a654175bc8 sentry=304fcc02-3b1e-444e-a5ed-9265079194e0 q=1 r=0
+2026/10/13 07:15:37 INFO unit intercepted — battle initiated/joined unit=c6c73a52-ce06-44a2-a0e6-2a314d88bd74 sentry=476a7740-d8aa-497c-91b8-d3e2cc76db70 q=1 r=0
+--- FAIL: TestUnitUpkeep_Status (0.00s)
+    --- FAIL: TestUnitUpkeep_Status/garrison_spearman_full_size (0.00s)
+        unit_upkeep_field_test.go:49: Silver = 0, want 1
+    --- FAIL: TestUnitUpkeep_Status/marching_spearman_full_size_—_silver_unchanged (0.00s)
+        unit_upkeep_field_test.go:49: Silver = 0, want 1
+    --- FAIL: TestUnitUpkeep_Status/positioned_spearman_half_size (0.00s)
+        unit_upkeep_field_test.go:49: Silver = 0, want 0.5
+2026/10/13 07:15:37 INFO upkeep: grain attrition unit=04f9a404-ff52-499c-bea0-9aa08d3c5f6e lost=2 disbanded=false
+2026/10/13 07:15:37 INFO upkeep: grain attrition unit=2c3ea1ca-96fb-4389-8c30-038afe15d031 lost=2 disbanded=false
+2026/10/13 07:15:37 INFO upkeep: grain attrition unit=2c3ea1ca-96fb-4389-8c30-038afe15d031 lost=2 disbanded=false
+2026/10/13 07:15:37 INFO upkeep: grain attrition unit=2c3ea1ca-96fb-4389-8c30-038afe15d031 lost=2 disbanded=false
+2026/10/13 07:15:37 INFO upkeep: grain attrition unit=2c3ea1ca-96fb-4389-8c30-038afe15d031 lost=2 disbanded=false
+2026/10/13 07:15:37 INFO upkeep: grain attrition unit=2c3ea1ca-96fb-4389-8c30-038afe15d031 lost=2 disbanded=false
+2026/10/13 07:15:37 INFO upkeep: grain attrition unit=2c3ea1ca-96fb-4389-8c30-038afe15d031 lost=2 disbanded=false
+2026/10/13 07:15:37 INFO upkeep: grain attrition unit=2c3ea1ca-96fb-4389-8c30-038afe15d031 lost=2 disbanded=false
+2026/10/13 07:15:37 INFO upkeep: grain attrition unit=2c3ea1ca-96fb-4389-8c30-038afe15d031 lost=2 disbanded=false
+2026/10/13 07:15:37 INFO upkeep: grain attrition unit=2c3ea1ca-96fb-4389-8c30-038afe15d031 lost=2 disbanded=false
+2026/10/13 07:15:37 INFO upkeep: grain attrition unit=2c3ea1ca-96fb-4389-8c30-038afe15d031 lost=2 disbanded=true
+2026/10/13 07:15:37 INFO upkeep: grain attrition unit=c6f6282a-a0de-4bab-ad77-736cd23ba0ac lost=10 disbanded=false
+2026/10/13 07:15:37 INFO upkeep: grain attrition unit=d718bcc2-638d-48c9-9dfa-8e2d9389ee05 lost=2 disbanded=false
+2026/10/13 07:15:37 INFO upkeep: grain attrition unit=b48e438f-993d-4691-9b59-0eca02a54536 lost=2 disbanded=true
+2026/10/13 07:15:37 INFO upkeep: grain attrition unit=f7a19453-5386-4840-bd4d-932c4c61353e lost=2 disbanded=true
+2026/10/13 07:15:37 INFO upkeep: grain attrition unit=18d224be-b247-45e3-b3be-95d1de392379 lost=2 disbanded=true
+2026/10/13 07:15:37 INFO upkeep: grain attrition unit=9b9af427-aa22-4319-b5af-a38fb207e97e lost=2 disbanded=true
+2026/10/13 07:15:37 INFO upkeep: grain attrition unit=dacf5e13-d2c9-42d3-8619-85115bdcdec5 lost=2 disbanded=true
+2026/10/13 07:15:37 INFO upkeep: grain attrition unit=1e78ea53-2423-4030-a113-7f3456799748 lost=2 disbanded=true
+2026/10/13 07:15:37 INFO upkeep: grain attrition unit=5f1fac8b-92f9-41a4-bd39-2ae0f00e40d4 lost=2 disbanded=true
+2026/10/13 07:15:37 INFO upkeep: grain attrition unit=b6418154-53d1-433b-af48-e52bd6aa25a7 lost=2 disbanded=true
+2026/10/13 07:15:37 INFO upkeep: grain attrition unit=f4f616cf-a935-4063-ad02-9c61094dc036 lost=2 disbanded=true
+2026/10/13 07:15:37 INFO upkeep: grain attrition unit=197fa917-d8ad-4af4-b823-db39ad2e3b25 lost=2 disbanded=true
+2026/10/13 07:15:37 INFO upkeep: silver desertion unit=01e02b8a-18bc-4ae8-94f0-8920ee645205 lost=1 disbanded=true
+2026/10/13 07:15:37 INFO upkeep: silver desertion unit=d0ca2d7e-44e7-4c6b-ad9e-cb56914896f1 lost=1 disbanded=true
+2026/10/13 07:15:37 INFO upkeep: silver desertion unit=f5c58039-286a-4282-96e7-f777bce9f7ed lost=1 disbanded=true
+2026/10/13 07:15:37 INFO upkeep: silver desertion unit=2808da79-984e-4412-8e04-dcf1d4ab7b71 lost=1 disbanded=true
+2026/10/13 07:15:37 INFO upkeep: silver desertion unit=4f194b79-355e-4e5b-ad60-a10a30edfede lost=1 disbanded=true
+2026/10/13 07:15:37 INFO upkeep: silver desertion unit=e53d6ad3-20d4-40f6-b8e8-283b9873309e lost=1 disbanded=true
+2026/10/13 07:15:37 INFO upkeep: silver desertion unit=412caea2-6cdc-48a2-b85c-09181ef46549 lost=1 disbanded=true
+2026/10/13 07:15:37 INFO upkeep: silver desertion unit=3985b02d-1411-4603-aeea-76709280790b lost=1 disbanded=true
+2026/10/13 07:15:38 INFO upkeep: silver desertion unit=11136099-c505-4e34-bf4b-7c98c4de2075 lost=1 disbanded=true
+2026/10/13 07:15:38 INFO upkeep: silver desertion unit=c80b1228-6542-4220-8439-8dba884e8f11 lost=1 disbanded=true
+--- FAIL: TestUpkeepSoldCirculation (0.04s)
+    upkeep_circulation_test.go:189: garrison town silver = 1000.0000, want 999.7 (net (1−share)·N)
+    upkeep_circulation_test.go:192: garrison UpkeepSettled = {paid:0 unpaid:0 gross:0 circ:0 destroyed:0 unpaidSilver:0 circulatedTo:{}}, want {paid1 gross1 circ0.7 destr0.3}
+    upkeep_circulation_test.go:200: garrison circulated_to[6cd18c6e-2404-4a36-b221-434fd0d4bbbb] = 0.0000 (err can't scan into dest[0]: cannot scan NULL into *float64), want 0.7
+    upkeep_circulation_test.go:215: poor town UpkeepSettled = {paid:0 unpaid:0 gross:0 circ:0 destroyed:0 unpaidSilver:0 circulatedTo:{}}, want {unpaid1 paid0 gross0 unpaidSilver1}
+    upkeep_circulation_test.go:222: metropolis-A silver = 1000.0000, want 999 (full sink — unit not standing in its payer)
+    upkeep_circulation_test.go:228: away-garrison UpkeepSettled = {paid:0 unpaid:0 gross:0 circ:0 destroyed:0 unpaidSilver:0 circulatedTo:{}}, want {paid1 gross1 circ0 destr1 circulatedTo {}}
+--- FAIL: TestUpkeepSoldShareZeroIdentity (0.02s)
+    upkeep_circulation_test.go:311: share=0 silver = 1000.0000, want 999 (whole upkeep destroyed)
+    upkeep_circulation_test.go:314: share=0 circ/destroyed = 0.0000/0.0000, want 0/1
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=fdf21304-cad8-40b6-8ad4-05d959f1f6f4 lost=5 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: silver desertion unit=2e2b942a-6fa1-4079-8132-a2040e8bf65a lost=1 disbanded=true
+--- FAIL: TestUpkeepHandler_ReplayIsIdempotent (0.02s)
+    upkeep_idempotent_test.go:111: capital silver after first run = 10, want 9 (10 seeded - 1 upkeep) — fixture does not exercise the handler
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=b2b821c9-baf4-4eb9-8cb5-02d28fe1fb96 lost=2 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=b2b821c9-baf4-4eb9-8cb5-02d28fe1fb96 lost=2 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=b2b821c9-baf4-4eb9-8cb5-02d28fe1fb96 lost=2 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=b2b821c9-baf4-4eb9-8cb5-02d28fe1fb96 lost=2 disbanded=false
+2026/10/13 07:15:38 INFO field unit turning for home (starving) unit=b2b821c9-baf4-4eb9-8cb5-02d28fe1fb96 from_q=3 from_r=0 home_q=1 home_r=0 crew_after=10
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=b2b821c9-baf4-4eb9-8cb5-02d28fe1fb96 lost=2 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=9f0a7ecb-8cc9-412e-9e4c-0e9f2202d2a2 lost=2 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=9f0a7ecb-8cc9-412e-9e4c-0e9f2202d2a2 lost=2 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=9f0a7ecb-8cc9-412e-9e4c-0e9f2202d2a2 lost=2 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=9f0a7ecb-8cc9-412e-9e4c-0e9f2202d2a2 lost=2 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=9f0a7ecb-8cc9-412e-9e4c-0e9f2202d2a2 lost=2 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=937be8ef-57eb-49d6-8a52-bf50af48f4fa lost=2 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=937be8ef-57eb-49d6-8a52-bf50af48f4fa lost=2 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=937be8ef-57eb-49d6-8a52-bf50af48f4fa lost=2 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=937be8ef-57eb-49d6-8a52-bf50af48f4fa lost=2 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=937be8ef-57eb-49d6-8a52-bf50af48f4fa lost=2 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=abf861b0-8d16-4c01-bcde-4e6105515baa lost=2 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=abf861b0-8d16-4c01-bcde-4e6105515baa lost=2 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=abf861b0-8d16-4c01-bcde-4e6105515baa lost=2 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=abf861b0-8d16-4c01-bcde-4e6105515baa lost=2 disbanded=false
+2026/10/13 07:15:38 INFO field unit turning for home (starving) unit=abf861b0-8d16-4c01-bcde-4e6105515baa from_q=3 from_r=0 home_q=1 home_r=0 crew_after=10
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=abf861b0-8d16-4c01-bcde-4e6105515baa lost=2 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=71c56384-6fdc-4412-82ed-8a7244e3fcb4 lost=10 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=71c56384-6fdc-4412-82ed-8a7244e3fcb4 lost=9 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=71c56384-6fdc-4412-82ed-8a7244e3fcb4 lost=9 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=71c56384-6fdc-4412-82ed-8a7244e3fcb4 lost=8 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=71c56384-6fdc-4412-82ed-8a7244e3fcb4 lost=7 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=71c56384-6fdc-4412-82ed-8a7244e3fcb4 lost=6 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=71c56384-6fdc-4412-82ed-8a7244e3fcb4 lost=6 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=71c56384-6fdc-4412-82ed-8a7244e3fcb4 lost=5 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=71c56384-6fdc-4412-82ed-8a7244e3fcb4 lost=4 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=46d49303-67a0-460f-9516-4f583b410387 lost=2 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=46d49303-67a0-460f-9516-4f583b410387 lost=2 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=46d49303-67a0-460f-9516-4f583b410387 lost=2 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=65bd51a3-f88d-4fe9-be9b-f239beb4ba28 lost=2 disbanded=false
+2026/10/13 07:15:38 INFO upkeep: grain attrition unit=cb80b817-6164-4280-88fa-e05c33407405 lost=10 disbanded=false
+--- FAIL: TestUpkeepUnpaidWarning_HandleFlow_AllPeriodsUntilDesertion (0.02s)
+    upkeep_unpaid_warning_test.go:135: AK1: unpaid_periods after period 1 = 0, want 1
+FAIL
+FAIL	formatet/megaron/server/internal/combat	9.513s
+2026/10/13 07:15:40 INFO player registered id=02b56313-2c50-4bd0-a52d-c9ef900814cd username=armyview-d4dfeafc-b470-4da8-bd1c-ef136321cd1c
+2026/10/13 07:15:40 INFO player registered id=6f27203f-f856-474e-addd-849904ff60e7 username=upkeepview-8efd4b0b-676d-4af1-881a-133ce207dfcc
+--- FAIL: TestArmyUpkeep_SumsGarrisonViaUnitUpkeep (0.06s)
+    army_upkeep_test.go:106: total silver = 1.5, want 2.91 (1.41 spearman + 1.5 galley)
+2026/10/13 07:15:40 INFO player registered id=d99c0a83-9024-486a-b2e5-9c0ff9f24218 username=login-a1821a8c-1aae-45c2-8b14-5401d181aa51
+2026/10/13 07:15:40 INFO player registered id=1ef27971-6c09-427c-8550-5cd511d251e7 username=login-3b837b5a-0bd4-4fe5-bcc4-9541351edbeb
+2026/10/13 07:15:40 INFO player registered id=880fbf51-67a1-4484-813e-bea94030d3b8 username=buildhex-b425a92a-e7ea-472e-b017-194cd6e28d64
+2026/10/13 07:15:40 INFO player registered id=4e7f7db8-2262-435d-9696-4ac51f4b2d13 username=trader-c2ad0fba-aa9a-42ab-a47f-f8c877eca544
+2026/10/13 07:15:40 INFO player registered id=de8b1207-6300-4a29-aad5-26746779c487 username=trader-cda3178c-d7e6-489c-a05d-62997d1612b9
+2026/10/13 07:15:41 INFO player registered id=3bcf1541-4301-4d07-8203-aad4c77ca159 username=sailor-93d77e8b-d38a-4e29-b7f6-8f394cc08109
+2026/10/13 07:15:41 INFO player registered id=0b55b7f3-b121-44f9-b764-9fe04a1d8f52 username=initiator-8e82bd4a-4fd5-44e4-aa31-2e067fef0efc
+2026/10/13 07:15:41 INFO player registered id=b235fe0a-f870-4049-8da1-79f86c6f43e7 username=counterparty-3b5a7d10-cc64-410e-8d88-ae69f324f003
+2026/10/13 07:15:41 INFO player registered id=cb7cb788-3210-4f81-8256-51ea80eb01e8 username=initiator-cb4ad030-1045-4ac2-b1f2-aacc43a93216
+2026/10/13 07:15:41 INFO player registered id=1f0ec47a-869c-4231-a062-5112f64684f8 username=counterparty-21cb074d-c739-419c-85e0-7b7faf7cf87f
+2026/10/13 07:15:41 INFO player registered id=34102f6e-f534-4ba6-8e68-a7cb0029ef36 username=initiator-380dfe6d-b6b5-492f-b039-4e50880fcdc5
+2026/10/13 07:15:41 INFO player registered id=034f6159-bfaa-44b6-8e3e-4f8c3076444d username=counterparty-aa2508ef-e84b-415a-bf3e-f2be98eb97e6
+2026/10/13 07:15:41 INFO player registered id=1bdffeca-b5d4-4128-80a4-fb19d39912e3 username=initiator-9895c79f-85d2-4fa9-959c-4c838a6712fb
+2026/10/13 07:15:41 INFO player registered id=c2a8bb30-ed78-41ec-85f6-614351dcf911 username=counterparty-9cfefe7c-f9b7-4b37-b59b-cfa877c14a63
+2026/10/13 07:15:41 INFO player registered id=522f465f-5a4a-4d34-aab5-5b3df8039131 username=trader-d492d04b-011e-4310-9a82-08a720bfc542
+2026/10/13 07:15:41 INFO player registered id=59400c97-cdb8-4711-b9f5-c375d7e136d4 username=eye-ecf12cc9-ac7b-458d-a98f-0733033fe509
+2026/10/13 07:15:41 INFO player registered id=043bd20f-77d8-41a7-acda-8bf9d7bba8bb username=ret-46443c99-2c7d-4df7-926d-c3525063635e
+2026/10/13 07:15:41 INFO player registered id=6946e047-3a14-4348-81b9-6412435ec4fb username=dst-bda908ab-caa4-4c30-99ea-cab914151a8c
+2026/10/13 07:15:42 INFO player registered id=9cac99d6-bf45-4305-bf03-87479774742f username=culture-nopref-37b3eba3-1522-436c-abdf-97b2bb7e9cb3
+2026/10/13 07:15:42 INFO player registered id=2878bf00-5b25-4c49-b23e-4b86171fc48d username=culture-hatti-a2868b09-35da-4e7f-a59d-c8c3582e51b6
+2026/10/13 07:15:42 INFO player registered id=82c6d9aa-8a95-4a82-a0aa-436a61e8bee9 username=culture-found-df084b62-1144-4056-b52b-757b55237513
+2026/10/13 07:15:42 INFO player registered id=003b4785-fd6f-4a30-b57c-584c20411179 username=disband-3af08f14-730b-4988-a7b8-ffbf4a636a25
+2026/10/13 07:15:42 INFO player registered id=c4e99f5d-ccfd-4284-9872-7c397ebb869b username=disband-539f1cff-974c-454b-8a2e-65b2b027bf29
+2026/10/13 07:15:42 INFO player registered id=86e403f5-2be0-4cae-9352-44933a8b5323 username=disband-c8156a6d-a704-4d69-973c-e044bba95710
+--- FAIL: TestEscortAdoption_HordeEatsNothingBeforeFounding (0.02s)
+    escort_adoption_test.go:258: founder_phase.silver_rate = 0, want negative — sold is still owed to men who serve
+2026/10/13 07:15:43 INFO player registered id=bf4029bc-40f8-45b3-b51d-9328cee4b662 username=escort-names-ca134a20-f19c-40f4-adfd-91a611cefbcb
+2026/10/13 07:15:43 INFO player registered id=d06fed3b-0f3d-4dab-a8f6-7e80805dd94d username=wanax-a-ec9dbd33-bf9f-4c45-9200-96e8dbacb787
+2026/10/13 07:15:43 INFO player registered id=a25af187-e5fe-490b-be44-343ed2af59b4 username=wanax-b-6581716e-7d04-4e1e-9326-8f5ccce3e5c3
+2026/10/13 07:15:43 INFO player registered id=f2c28631-7cef-4b98-80ee-e2d530a4f0c6 username=wanax-a-940acfa5-ff0d-4c28-b184-4f476f60cc9b
+2026/10/13 07:15:43 INFO player registered id=bda96698-771a-4be8-a657-ef6e74153103 username=wanax-b-78df7b1b-39a0-470f-af00-e77d007033fc
+2026/10/13 07:15:43 INFO player registered id=4ccba9c2-7de4-4c6f-ab75-52457df2050c username=wanax-a-e9001e65-0719-43e6-83d1-d9ed0fb68397
+2026/10/13 07:15:43 INFO player registered id=15d6ab30-0eb8-47d3-9018-89754d0ef098 username=wanax-b-bea477e7-c900-49f9-9d12-4afdceccb9e4
+2026/10/13 07:15:43 INFO player registered id=0b6156b1-b4b6-474a-8212-8086c3b1bb7d username=wanax-a-09f404e1-7678-427d-add0-5009fded3064
+2026/10/13 07:15:43 INFO player registered id=2fecde07-e5df-48bd-8e81-9f20539239fb username=wanax-b-e5f1c913-83a7-4778-84d1-cf15b9410841
+2026/10/13 07:15:43 INFO player registered id=9555ac09-2ac8-4729-98d4-7c2097c2b423 username=wanax-a-d5d4f66b-efc6-4a75-9a17-fb3236913d90
+2026/10/13 07:15:43 INFO player registered id=cdfed5e0-e933-4bfe-9e82-3fcc7d1b56f9 username=wanax-b-51719bc7-c4ca-4f0f-96fa-e237fc5d8ab9
+2026/10/13 07:15:43 INFO player registered id=9acca3b6-3bd6-41b8-ba3d-383315ca773d username=wanax-a-5c4a5c22-0671-4e26-b44c-42bfa4becd18
+2026/10/13 07:15:43 INFO player registered id=12908729-5dfd-45b6-8e0c-b719c3f1277e username=wanax-b-c4fb21c5-0ff9-4fe1-af15-349b1b5f7916
+2026/10/13 07:15:43 INFO player registered id=453a5c63-adcd-492c-833b-7a76348eda4a username=wanax-a-83d6e897-9565-4c48-b456-b930fedcb8ac
+2026/10/13 07:15:43 INFO player registered id=0abc74ac-5fe4-43e7-931e-250943c9403d username=wanax-b-fc953efd-e30a-4e92-9f7c-61f51f20f262
+2026/10/13 07:15:44 INFO player registered id=107731a6-3e52-4d56-975a-45eb5aa69f23 username=wanax-a-027c735e-fc0f-4104-b4b4-d72769c0f118
+2026/10/13 07:15:44 INFO player registered id=2ecf3f6d-f383-4360-b0c3-438847647238 username=wanax-b-544cd167-167f-4969-90de-289473d3fed2
+2026/10/13 07:15:44 INFO player registered id=05fdec6d-15a4-4c52-a227-3a95f44b9bf7 username=wanax-a-798a777c-cf42-4035-a512-cb98019cb921
+2026/10/13 07:15:44 INFO player registered id=4bd83491-bc6f-4b79-a842-c7ed5a40857e username=wanax-b-5fd794db-c96c-41e8-8fc2-e2cb7e8efbb8
+2026/10/13 07:15:44 INFO player registered id=b64f74ef-b62f-4366-b035-838ba27df0ed username=wanax-a-c54d0352-d2ba-414c-ae96-cb61e1995043
+2026/10/13 07:15:44 INFO player registered id=8729238e-11fd-4f85-9def-6b6d5bde02ca username=wanax-b-883ab282-c376-4ca9-92e7-9bffefd6563d
+2026/10/13 07:15:44 INFO player registered id=30b7e3ca-192d-4290-974c-1b9b94a34950 username=wanax-a-8378fa9c-f862-402d-9fa6-6d01007bcc79
+2026/10/13 07:15:44 INFO player registered id=ebec0069-9e9c-4aaf-9806-c278d9bef2e6 username=wanax-b-34ab59e3-a5f7-455c-91e8-44f5d35433fd
+2026/10/13 07:15:44 INFO player registered id=13d11593-5ae5-489f-bd23-aa4b050d42d5 username=wanax-a-438ab537-6d73-4f34-be8a-01bc3c95dda0
+2026/10/13 07:15:44 INFO player registered id=58e30344-d8ed-4904-a3c1-95e2ecccee6f username=wanax-b-f9d2ec34-829f-439f-a312-7a5207fe8ea8
+2026/10/13 07:15:44 INFO player registered id=72e9538b-331f-47f4-88e9-097d0d5f11fb username=wanax-a-cc00124a-ebfa-4061-99a4-530749fe453d
+2026/10/13 07:15:44 INFO player registered id=76ac6e0a-8c89-46b3-9e09-f7546f678669 username=wanax-b-9b9767de-f07b-432c-ad20-cdd06c59cbda
+2026/10/13 07:15:44 INFO player registered id=f3c5f35b-399d-4e61-975c-14af6e864823 username=wanax-a-0dd3602b-c943-4603-9f44-126bdad387bd
+2026/10/13 07:15:44 INFO player registered id=1834a7bc-3a52-45e1-b69c-eee5d0eff5d0 username=wanax-b-1902e8cb-3a2c-42c2-9c91-fe723496ffb2
+2026/10/13 07:15:44 INFO player registered id=439e6ab3-f6cd-4a91-ac39-234a01ac674b username=wanax-a-ba162f96-92c7-4369-b2d7-a4385a819316
+2026/10/13 07:15:44 INFO player registered id=ff91f6c7-3efd-4143-a967-9a6056aca8c4 username=wanax-b-984eff3a-5078-4156-b731-46838f5e5e64
+2026/10/13 07:15:44 INFO player registered id=7a861478-fda4-4b12-8c4e-c711e959d253 username=wanax-a-149a7665-b6fd-44bf-ba66-ba3668c49ecf
+2026/10/13 07:15:45 INFO player registered id=b7a12ca3-202f-4872-b1ce-41f6e9c4079d username=wanax-b-d387b5d9-2e34-47ae-8201-b0e5ad5c1869
+2026/10/13 07:15:45 INFO starvation damage applied settlement=536b1017-1995-469d-bd51-6e3913abeab4
+2026/10/13 07:15:45 INFO starvation damage applied settlement=536b1017-1995-469d-bd51-6e3913abeab4
+2026/10/13 07:15:45 INFO starvation damage applied settlement=536b1017-1995-469d-bd51-6e3913abeab4
+2026/10/13 07:15:45 INFO starvation damage applied settlement=536b1017-1995-469d-bd51-6e3913abeab4
+2026/10/13 07:15:45 INFO starvation damage applied settlement=536b1017-1995-469d-bd51-6e3913abeab4
+2026/10/13 07:15:45 INFO starvation damage applied settlement=536b1017-1995-469d-bd51-6e3913abeab4
+2026/10/13 07:15:45 INFO starvation damage applied settlement=536b1017-1995-469d-bd51-6e3913abeab4
+2026/10/13 07:15:45 INFO starvation damage applied settlement=536b1017-1995-469d-bd51-6e3913abeab4
+2026/10/13 07:15:45 INFO starvation damage applied settlement=536b1017-1995-469d-bd51-6e3913abeab4
+2026/10/13 07:15:45 INFO starvation damage applied settlement=536b1017-1995-469d-bd51-6e3913abeab4
+2026/10/13 07:15:45 INFO starvation damage applied settlement=536b1017-1995-469d-bd51-6e3913abeab4
+2026/10/13 07:15:45 INFO starvation damage applied settlement=536b1017-1995-469d-bd51-6e3913abeab4
+2026/10/13 07:15:45 INFO starvation damage applied settlement=536b1017-1995-469d-bd51-6e3913abeab4
+2026/10/13 07:15:45 INFO starvation damage applied settlement=536b1017-1995-469d-bd51-6e3913abeab4
+2026/10/13 07:15:45 INFO starvation damage applied settlement=536b1017-1995-469d-bd51-6e3913abeab4
+2026/10/13 07:15:45 INFO starvation damage applied settlement=536b1017-1995-469d-bd51-6e3913abeab4
+2026/10/13 07:15:45 INFO starvation damage applied settlement=536b1017-1995-469d-bd51-6e3913abeab4
+2026/10/13 07:15:45 INFO starvation damage applied settlement=536b1017-1995-469d-bd51-6e3913abeab4
+2026/10/13 07:15:45 INFO starvation damage applied settlement=536b1017-1995-469d-bd51-6e3913abeab4
+2026/10/13 07:15:45 INFO starvation damage applied settlement=536b1017-1995-469d-bd51-6e3913abeab4
+2026/10/13 07:15:45 INFO player registered id=8187378b-b52e-4713-ae17-80c7ca0d152b username=fu-cargo-viewer-cedb47da-edcb-4a67-91a1-9dc16ac7f65e
+2026/10/13 07:15:45 INFO player registered id=722d550c-697e-448c-8afe-c9f68adc9a1c username=fu-nocargo-viewer-1698e0e8-266f-4d10-a844-fc85af316338
+2026/10/13 07:15:45 INFO player registered id=f3fdc955-90cb-491b-8f40-df89ce286a90 username=fu-viewer-3ac2206b-f247-4d54-bf9f-ee6689db1881
+2026/10/13 07:15:45 INFO player registered id=cd87e1e2-9085-4c41-9b22-cd1a4770c4c7 username=fu-rememberer-6e6b7727-39a3-43ad-ac2c-0af28b6c533e
+2026/10/13 07:15:45 INFO player registered id=dbc0b6d8-b40a-4a75-974c-2222b50972f2 username=fu-march-viewer-e4956114-99f6-482a-9d81-5cec84146a95
+2026/10/13 07:15:45 INFO player registered id=da8d3564-03e1-422f-8847-cdb0254ababb username=fu-leak-viewer-d260208c-e8c0-4e62-827f-b62e1f1859f3
+2026/10/13 07:15:45 INFO player registered id=48c8e59a-4e0b-4aad-86dc-d5be0c92870d username=fu-garrison-viewer-0bfea711-65bf-46ad-8887-a0d9d07c925d
+2026/10/13 07:15:46 INFO player registered id=7c6e8649-c27c-451c-b17a-065016ee6089 username=placement-c3f52bee-fedf-4f19-9928-5ce872a5947a
+2026/10/13 07:15:46 INFO player registered id=ab93b2b6-93d8-461f-acde-c05877a2814f username=rite-harvest-08378d21-c1d4-45f7-b912-73ac4a0d5c73
+2026/10/13 07:15:46 INFO player registered id=276126ac-1054-4ba3-bcb5-5b3213ddf8e2 username=hexown-a-bd0ebbdc-2611-496d-aae4-2a6823d848fb
+2026/10/13 07:15:46 INFO player registered id=e86241f7-389a-40c5-9960-bbc7885b57bf username=hexown-b-e33a4cb9-ee2b-4364-b236-1408fa00161f
+2026/10/13 07:15:46 INFO player registered id=889cdc71-61ae-4035-bb8c-1a56d0650e06 username=hexown-a-11e68d30-c032-4243-9d3d-6b20d674e9a8
+2026/10/13 07:15:46 INFO player registered id=45191997-1136-4b7c-9f4a-01faa3c75626 username=hexown-b-532079fe-5fb4-4d38-93de-8fb253f7cb69
+2026/10/13 07:15:46 INFO player registered id=6e073e79-fa72-49ae-8ff7-fc5763d14ace username=hexown-a-fab58788-30f3-48a2-9b6d-d4b628aeb507
+2026/10/13 07:15:46 INFO player registered id=e0cea953-94a1-4594-92fe-e5ca338f62f1 username=hexown-b-ceb63725-422d-4d18-b897-ccd3af4d6d69
+2026/10/13 07:15:46 INFO player registered id=0f173438-ea6b-4c64-a74a-1f28a5fffae2 username=hexown-a-1f2eeaef-f928-43c7-983c-f539c82bc86d
+2026/10/13 07:15:46 INFO player registered id=79263b95-06fa-42b1-80c8-aea40a7384ff username=hexown-b-b1509fde-ac09-4a1c-a623-d5b429dd3e6d
+2026/10/13 07:15:46 INFO player registered id=d8c95ef5-7bdc-456a-a990-df37668204af username=hexown-a-4c515a5a-9769-4faf-bb0d-a1b1886b2a58
+2026/10/13 07:15:46 INFO player registered id=fc2232ab-3ecd-4894-a3df-30609c96ad0c username=hexown-b-1ca7ebc6-d9be-48f1-924e-8b0b88e970b1
+2026/10/13 07:15:46 INFO player registered id=2efa33c4-6604-4007-9c24-0b0587b45ac7 username=hexown-a-a938bcb8-41e9-41a6-aa1e-4c17e1372bc8
+2026/10/13 07:15:47 INFO player registered id=d831a56d-fb25-4e58-acb0-a886d3be8b82 username=hexown-b-9fcac085-6a89-4ed0-9bba-6414e44e7f20
+2026/10/13 07:15:47 INFO player registered id=e0a301a0-b60e-44b6-b5d7-924ad64644c9 username=hexown-a-7178e858-0e88-4d63-9488-a3e50b468f8b
+2026/10/13 07:15:47 INFO player registered id=36701a8e-acca-4a27-8b51-5d20a2e2ec7b username=hexown-b-b93622d7-c72c-444e-9320-718467de74b4
+2026/10/13 07:15:47 INFO player registered id=94977f52-1d8a-45cb-b08d-947a408849f9 username=hexown-a-c9960a5a-b3f3-4004-8e54-49cab8a7a9b8
+2026/10/13 07:15:47 INFO player registered id=a9425572-1d02-4726-8a67-5662e892f6ba username=hexown-b-e125c248-1a65-4569-9c51-e20034bba28a
+2026/10/13 07:15:47 INFO player registered id=d689de9a-0fa8-482e-a857-26cae9619c45 username=hexown-a-4e57384d-b6b3-4616-837f-00147bea6df3
+2026/10/13 07:15:47 INFO player registered id=379ace68-7338-4283-a0a9-c0ca19723a83 username=hexown-b-009b4243-9599-45ac-b4c3-2d0abb4de329
+2026/10/13 07:15:47 INFO player registered id=c34dd289-595a-472b-b1cb-fa9086fed421 username=hexown-a-8df3883f-41b9-46a8-89af-0b011b57633e
+2026/10/13 07:15:47 INFO player registered id=40f22e37-ea75-43c9-a713-81c02e206cf0 username=hexown-b-e45e26e7-3fd5-45a1-ba96-0c2fdbefc782
+2026/10/13 07:15:47 INFO player registered id=3ef1759b-4fec-47d5-971c-a7700c36b2fe username=hexown-a-fd423800-ed2a-409c-972d-c2b39dbcc45e
+2026/10/13 07:15:47 INFO player registered id=b0db72a7-88ec-4cb0-9402-9815d364957c username=hexown-b-73a89baf-69f1-4652-be9a-dfacc498eb68
+2026/10/13 07:15:47 INFO player registered id=fb8bd1d6-2a20-401d-945c-b13975f69bcd username=hexown-a-a51d1b91-a382-4314-ae0a-f8a61e4a011a
+2026/10/13 07:15:47 INFO player registered id=4882559f-eeb9-40a3-96aa-e3b2b190f608 username=hexown-b-35c6d10c-4ffe-439a-bd3b-7a2254b2379a
+2026/10/13 07:15:48 INFO player registered id=a348603a-407c-45a9-a0c4-d96ef7f5fe77 username=hexown-a-e612ee67-bf60-4253-b7f3-c984b45a9160
+2026/10/13 07:15:48 INFO player registered id=34a04154-6dcb-4385-9cca-4069bb30efa0 username=hexown-b-e287cbc3-1417-4467-83a4-f3b78c0a3ae7
+2026/10/13 07:15:48 INFO player registered id=b3200fec-667c-47ab-9346-044228486414 username=hexown-a-e1a4af2a-81c5-4523-aeff-608aa1f6403e
+2026/10/13 07:15:48 INFO player registered id=33c9ff4c-5c96-4503-b972-d3a3c85ac879 username=hexown-b-0ef3c601-5f77-47d6-b40c-f7691a5dd62b
+2026/10/13 07:15:48 INFO player registered id=1522b447-0fec-4ee1-bd54-ba73409b1870 username=hexown-a-4f1d631f-16e1-449d-ac9b-a687bec1a41e
+2026/10/13 07:15:48 INFO player registered id=b294525c-4155-4903-9a18-20331c673998 username=hexown-b-638b2af3-57de-4196-9289-58817b25f36a
+2026/10/13 07:15:48 INFO player registered id=bd668cde-3a60-4cba-82dc-b019cec48302 username=hexown-a-6b4e05d3-362c-4810-9f07-d9b41e3789d1
+2026/10/13 07:15:48 INFO player registered id=d802d3f8-aeb4-45d2-becf-82e66b325080 username=hexown-b-46aa5da4-fa7f-4655-a4ab-19a5cfa80bc6
+2026/10/13 07:15:48 INFO player registered id=f1e582b1-20d2-4d32-92db-d063cc276f02 username=hexown-a-fa8c0cec-7243-4d8e-8fdc-2afff0b04bab
+2026/10/13 07:15:48 INFO player registered id=5d59624d-0633-4595-8d59-6c46a40118f1 username=hexown-b-db943070-7824-4541-95d0-71849f52c7f1
+2026/10/13 07:15:49 INFO player registered id=44d5d1cf-a636-4407-b38f-85035409eb14 username=hexown-a-7c8c01c6-4018-4e97-bcc9-ee5b6b8e3c3b
+2026/10/13 07:15:49 INFO player registered id=2b3e9dbc-88c1-47f5-b3eb-7838dd52cfa4 username=hexown-b-01c22b94-a559-4140-b569-6c335f470de0
+2026/10/13 07:15:49 INFO player registered id=950b020e-afad-42a8-8c29-1a3343a31596 username=hexown-a-57ed2517-343a-4d02-998b-b83a515957c8
+2026/10/13 07:15:49 INFO player registered id=87b09f50-bf74-4fc6-acec-c4cac2195b3c username=hexown-b-bb85c6bd-f70a-4f43-ac3b-03a2b7c2ba9a
+2026/10/13 07:15:49 INFO player registered id=1e0d6dc6-ca06-47f1-a4d8-1e8d32a7103c username=hexown-a-e8a10031-a56a-47a8-829c-de9146249773
+2026/10/13 07:15:49 INFO player registered id=6e8a994f-1d63-4bd9-b90a-949bb67ffbf7 username=hexown-b-3a145d94-3046-4637-9803-e4b577187a4f
+2026/10/13 07:15:49 INFO player registered id=c1d4afdf-9999-4a7c-97a9-4201b5433b46 username=hexown-a-318aa30b-cb93-4409-9551-bc826cec4d79
+2026/10/13 07:15:49 INFO player registered id=2fa5b948-8d52-49d0-8ba7-3a6f79cd6077 username=hexown-b-b387e40d-9d80-48c8-a305-be3930a35e19
+2026/10/13 07:15:49 INFO player registered id=6b9a410d-2c84-47af-b33d-d3972055516e username=hexown-a-e9a24957-eecd-46e9-8028-bffff3655594
+2026/10/13 07:15:49 INFO player registered id=5fe4b1f2-bd20-467e-a654-2a71b60a635e username=hexown-b-792c3e5e-4954-431e-b623-a0b1e08c52f5
+2026/10/13 07:15:49 INFO player registered id=51780b2e-ce83-4ec4-9149-3526d2c1c4fd username=host-floor-80468d8d-fae4-4628-9b75-a5f43524eda0-89702cdd-8e7f-4582-b349-5ff533da8096
+2026/10/13 07:15:49 INFO player registered id=49f5ea6a-9744-4a90-b1d7-8d53332bd14c username=founder-phase-host-6b6d4043-2b81-40ec-9eba-55faf3c60bb4
+2026/10/13 07:15:50 INFO player registered id=59b22f48-cd36-454f-a9d0-1e084ff83ac9 username=second-joiner-1e7d1bcb-75c9-4a5f-b5a0-e1f50c5603ff
+2026/10/13 07:15:50 INFO player registered id=f5f6df52-aa5d-47c3-b3db-d938f819b972 username=landmass-balance-1-527e510a-35d4-4382-8712-e7b77599f2c7
+2026/10/13 07:15:50 INFO player registered id=0ee16fc2-4b9e-4a0e-83fa-116039f536c5 username=landmass-balance-2-e164056f-ebc3-4437-adc9-f1ac06ee0166
+2026/10/13 07:15:50 INFO player registered id=787d9e46-2237-4234-8247-9fd112fa78fe username=metal-bias-1-0ba88af9-89d8-46ef-b313-e3218f0b04f8
+2026/10/13 07:15:50 INFO player registered id=277b1222-385e-482c-9e1d-533b7dc5d87e username=metal-bias-2-8a93542b-3791-4b27-b6f2-508a7def4483
+2026/10/13 07:15:50 INFO player registered id=39022520-9363-4a23-89cf-f6734d92b965 username=metal-bias-3-2401f727-8fdf-48df-b56c-ac45ac8f883d
+2026/10/13 07:15:50 INFO player registered id=5213a596-f732-452e-bfd8-9d3490337cb8 username=viable-landmass-7d71cf79-9a88-4211-9569-348dd3146dc7
+2026/10/13 07:15:50 INFO player registered id=e2fdd36a-b4ef-4d2b-885e-95847842eea6 username=viable-landmass-65f85324-9e95-4a1d-bc7f-ed21e386b86b
+2026/10/13 07:15:50 INFO player registered id=f7d3beae-8b7a-4d12-86f7-c5dba6964c4b username=viable-landmass-27b3b840-5418-40fc-9fd8-ba010c22b164
+2026/10/13 07:15:50 INFO player registered id=c8f0d623-4baa-46de-8a5b-9990c9860eff username=wanax-a-62ffc86b-f2d0-4719-b09e-4eb78cb608a9
+2026/10/13 07:15:50 INFO player registered id=8286af3e-1098-4901-9416-4972f41a6d1d username=wanax-b-ed982e0b-7752-42d7-8348-383009afe1fb
+2026/10/13 07:15:50 INFO player registered id=b9fb2e50-4a32-4df1-b37e-b6669b38ca35 username=wanax-a-b5fe146f-0b3f-41a7-8d2b-3bfdbe23906f
+2026/10/13 07:15:50 INFO player registered id=8691516b-ff9d-451d-b4be-bd07e49303db username=wanax-b-9745c7a9-0472-4acb-bc13-7714d3ab436d
+2026/10/13 07:15:50 INFO player registered id=e8c98b60-dbed-47bb-bde9-653163d29b04 username=wanax-a-b1ba156f-6086-412e-be61-b0c10b2796b9
+2026/10/13 07:15:50 INFO player registered id=1a5229c2-4c45-4fa5-9edd-0b4dc5b0b2b6 username=wanax-b-61fd81f4-adb5-429b-961d-34223dfaeeec
+2026/10/13 07:15:50 INFO player registered id=067f4f6d-7f08-4ea2-896f-f03fcea9d850 username=wanax-a-bce29465-1e77-43c1-b6c5-6bf69319edf4
+2026/10/13 07:15:51 INFO player registered id=45b409b4-4298-42f8-ae80-81a29481446e username=wanax-b-a888a628-6c22-4187-a1f6-e414e0f9e74f
+2026/10/13 07:15:51 INFO player registered id=8dbf2abf-a34a-4eb9-893f-aa0a670410fa username=wanax-a-d82f9e86-5823-4487-88b6-a2c3305f420e
+2026/10/13 07:15:51 INFO player registered id=b0535cc2-8a43-4bee-ad9a-6f3089f24437 username=wanax-b-45e2ed2f-727d-4296-84f7-ab84b9eba171
+2026/10/13 07:15:51 INFO player registered id=6b3b35cf-69a1-4549-aa06-da2f9ec939ad username=wanax-a-51bee856-e4d6-4226-aae3-1041c33b1b12
+2026/10/13 07:15:51 INFO player registered id=45dae6fc-8477-41c5-8e64-f9aa5fc37bd9 username=wanax-b-5b54f0eb-e1cf-4fff-a283-f3cca201024e
+2026/10/13 07:15:51 INFO player registered id=5d10492d-8030-4cdf-b3a2-a15d3118bbea username=wanax-a-3fd6f38a-c368-4ad6-a7e1-ab91e26513d8
+2026/10/13 07:15:51 INFO player registered id=1f454ff2-1221-4def-b381-42fb2640c6b8 username=wanax-b-696cf990-d247-4fdc-a94e-490b3f160276
+2026/10/13 07:15:51 INFO player registered id=be5187a4-6e0d-465f-a1dd-12cd2ebe9f67 username=wanax-a-d0dd65d2-131d-4165-8c85-a530824614d3
+2026/10/13 07:15:51 INFO player registered id=c6bd40a5-772d-44c3-a89f-e95fe3b76247 username=wanax-b-a206d8c7-b42a-4478-ae45-e5734b5d91f3
+2026/10/13 07:15:51 INFO player registered id=9ac28cbb-2a43-4aa9-94d0-ede5507a867f username=wanax-a-03194e8c-2132-4c6f-a1f9-e1400a0d8d15
+2026/10/13 07:15:51 INFO player registered id=f93496bc-df4f-4633-95c8-86403ad89cfa username=wanax-b-1db49c84-f96d-475e-a2ab-fc7103be6699
+2026/10/13 07:15:51 INFO player registered id=c865528b-7eac-4850-9bcf-d8ed887c6382 username=marches-viewer-395fc061-157f-422c-bb73-9874e40f902a
+2026/10/13 07:15:51 INFO player registered id=1814453d-d284-470a-99e5-7d1fa847ccc9 username=marches-own-viewer-5cff6a0d-3c01-4bfa-b4b6-0c9d1793e47b
+2026/10/13 07:15:51 INFO player registered id=80a9e006-1cd5-46a7-aed0-e6aed6f95f6b username=msg-viewer-cb8ddffd-8733-4b25-882f-563475dfed6f
+2026/10/13 07:15:51 INFO player registered id=4a124c30-2a45-492b-bbe1-a75bf92b9a5b username=msg-viewer-361f9462-4431-43fc-9001-c51b0fc2e441
+2026/10/13 07:15:52 INFO player registered id=91884028-7e22-4626-970f-3d35c8ce1d59 username=placement-cf405785-ebbf-4385-bc71-928128b5cf05
+2026/10/13 07:15:52 INFO player registered id=6f779b70-282b-4eaf-9c6b-583958982b08 username=wants-viewer-7b507696-5733-446a-bd08-2931b3d8ac24
+2026/10/13 07:15:52 INFO player registered id=f238deaa-8b80-4f26-a09d-d32628243cb8 username=initiator-6965dc43-575d-4faf-b9f0-0ff76770c3b2
+2026/10/13 07:15:52 INFO player registered id=975e3f1a-ff91-4242-b117-912e08ecf453 username=counterparty-9e4f2930-ea8a-47fc-8d3d-56ffcb08cda5
+2026/10/13 07:15:52 INFO player registered id=81f87c11-3d35-4690-b2fc-fe6dc9e41a0a username=initiator-0f469660-7ccd-4487-a56e-cd003f32b0db
+2026/10/13 07:15:52 INFO player registered id=bd313db6-9dff-44e1-8d71-60da5b77cb65 username=counterparty-118b4bcd-8a7e-425c-8b9b-88cb193a3c04
+2026/10/13 07:15:52 INFO player registered id=b25a89fb-c175-4b0a-83b4-7393be8d0ceb username=initiator-888cde84-3636-4b27-9048-23a6483f3054
+2026/10/13 07:15:52 INFO player registered id=f1cf1c58-6940-4387-8deb-f6644b910b9b username=counterparty-fee4f7d2-f3b5-40cf-ae82-53aaf3736543
+2026/10/13 07:15:52 INFO passage: messenger boarded messenger=aa3d6cf6-063d-4f57-adb8-cae7f4cfd509 carrier=Emporos arrives_at=2026-10-13T09:15:52.478+02:00
+2026/10/13 07:15:52 INFO passage: ship waiting for runner's return unit=08cc2b54-552c-4841-94aa-8e70fe7001c8 messenger=aa3d6cf6-063d-4f57-adb8-cae7f4cfd509
+2026/10/13 07:15:52 INFO messenger delivered id=aa3d6cf6-063d-4f57-adb8-cae7f4cfd509 destination=8cc8533c-1b44-49ab-bff9-026f89a0e4c5
+2026/10/13 07:15:52 INFO player registered id=62be2fea-7d9c-4d38-855c-7669b35282fd username=initiator-1a9af770-1565-4cde-8a2e-32b95d6bcf86
+2026/10/13 07:15:52 INFO player registered id=745c487b-c691-4ac5-a5ce-222505aefce5 username=counterparty-52794cf2-f985-4868-b43a-a21198b91a70
+2026/10/13 07:15:52 INFO passage: messenger boarded messenger=ec186504-cec9-49ca-8c96-680541b00fc2 carrier=Emporos arrives_at=2026-10-13T09:15:52.653+02:00
+2026/10/13 07:15:52 INFO passage: ship waiting for runner's return unit=95d2c9b1-91b4-42b6-b279-242e1b0d29d5 messenger=ec186504-cec9-49ca-8c96-680541b00fc2
+2026/10/13 07:15:52 INFO messenger arrival: premature or stale passage generation — no-op id=ec186504-cec9-49ca-8c96-680541b00fc2 passage_status=0x52823c459c0 event_generation=1 current_generation=2
+2026/10/13 07:15:52 INFO messenger delivered id=ec186504-cec9-49ca-8c96-680541b00fc2 destination=e74009b3-11d2-4ede-b64b-922dbc336273
+2026/10/13 07:15:52 INFO player registered id=955d0279-2f52-42ad-98ff-1744ac0ab8cb username=leg-viewer-644fc581-89ed-44ba-a767-775f400a9f89
+2026/10/13 07:15:52 INFO player registered id=fa029f9c-407f-4d56-8c0f-8cf95d050c88 username=trader-329a739d-229c-4956-b42c-2616140127c8
+2026/10/13 07:15:52 INFO player registered id=a42cc9a6-945a-4d1a-b3d5-ada68e78b6ad username=insolvent-43a2b9e3-e8e4-45f7-825c-b6afac0e4c22
+2026/10/13 07:15:53 INFO player registered id=543e4799-4ca3-4acb-ac1f-485a6bcc8d2d username=origin-sender-9798f2f8-23e9-4804-9bb7-d84c72cb015a
+2026/10/13 07:15:53 INFO player registered id=e61c3a2c-8e9f-4278-9e0f-015526cb651c username=origin-recipient-da93cec6-4019-45a3-b8ea-0cc7f64b7463
+2026/10/13 07:15:53 INFO player registered id=a36829e7-3608-47fa-8b0c-b9426b41058e username=host-sender-29fe2bdc-6b64-43cc-9a43-162593e1a6d0
+2026/10/13 07:15:53 INFO player registered id=9703723c-cfa7-495c-8348-fca7f4e9c933 username=host-recipient-5f4cb0b2-0e7c-48c6-aaf6-09a099323b9e
+2026/10/13 07:15:53 INFO player registered id=e1516ddf-451f-4228-a498-6d7c01fc44a3 username=initiator-fd5817ca-0fbc-4244-ac4c-0c3862ad1911
+2026/10/13 07:15:53 INFO player registered id=3f91cecb-6ec1-4b2b-914c-91b1dcbf453a username=counterparty-8451f245-f1cf-4322-aa12-f00978151c02
+2026/10/13 07:15:53 INFO passage: messenger boarded messenger=1bdeb2f0-6ae8-4106-a33d-3e9d467425ba carrier=Emporos arrives_at=2026-10-13T09:15:53.281+02:00
+2026/10/13 07:15:53 INFO passage: ship waiting for runner's return unit=3ccc6b57-58dc-4e26-8e06-146aefb6b879 messenger=1bdeb2f0-6ae8-4106-a33d-3e9d467425ba
+2026/10/13 07:15:53 INFO messenger delivered id=1bdeb2f0-6ae8-4106-a33d-3e9d467425ba destination=ad34ff46-cfeb-4588-8d02-b0870555cb33
+2026/10/13 07:15:53 INFO field unit turning for home unit=3ccc6b57-58dc-4e26-8e06-146aefb6b879 from_q=4 from_r=0 home_q=1 home_r=0
+2026/10/13 07:15:53 INFO passage: passage_wait ship released unit=3ccc6b57-58dc-4e26-8e06-146aefb6b879
+2026/10/13 07:15:53 INFO passage: messenger boarded messenger=1bdeb2f0-6ae8-4106-a33d-3e9d467425ba carrier=Emporos arrives_at=2026-10-13T09:15:53.281+02:00
+2026/10/13 07:15:53 INFO unit returned home from explore unit=3ccc6b57-58dc-4e26-8e06-146aefb6b879 settlement=d687fe4c-4187-42c8-a1bd-ce57e5c2dcdb
+2026/10/13 07:15:53 INFO messenger returned home id=1bdeb2f0-6ae8-4106-a33d-3e9d467425ba
+2026/10/13 07:15:53 INFO player registered id=cdb2da8f-ffb5-421b-b309-3c80a8ab6b3b username=initiator-741d3b21-4b5e-47a7-86d2-85d653758a60
+2026/10/13 07:15:53 INFO player registered id=69525ce4-1d97-4688-9d43-abf6316d85d2 username=counterparty-3441de8e-299c-4ab2-beed-f84d26dbac3e
+2026/10/13 07:15:53 INFO passage: messenger boarded messenger=b8bf6bf5-eb47-499c-bc44-43c35b2d78e1 carrier=Galley arrives_at=2026-10-13T10:15:53.450+02:00
+2026/10/13 07:15:53 INFO passage: ship waiting for runner's return unit=a2e8d26c-3cb2-45d6-ad6a-2fba068cdf57 messenger=b8bf6bf5-eb47-499c-bc44-43c35b2d78e1
+2026/10/13 07:15:53 INFO messenger delivered id=b8bf6bf5-eb47-499c-bc44-43c35b2d78e1 destination=c52e97e7-e4c5-4e91-9a1f-5dc384b743c3
+2026/10/13 07:15:53 INFO messenger stay ended — walking home unanswered id=b8bf6bf5-eb47-499c-bc44-43c35b2d78e1 returns_at=2026-10-13T07:15:53.450+02:00 passage_awaiting=true
+2026/10/13 07:15:53 INFO field unit turning for home unit=a2e8d26c-3cb2-45d6-ad6a-2fba068cdf57 from_q=4 from_r=0 home_q=1 home_r=0
+2026/10/13 07:15:53 INFO passage: passage_wait ship released unit=a2e8d26c-3cb2-45d6-ad6a-2fba068cdf57
+2026/10/13 07:15:53 INFO passage: messenger boarded messenger=b8bf6bf5-eb47-499c-bc44-43c35b2d78e1 carrier=Galley arrives_at=2026-10-13T10:15:53.450+02:00
+2026/10/13 07:15:53 INFO unit returned home from explore unit=a2e8d26c-3cb2-45d6-ad6a-2fba068cdf57 settlement=6fe839ad-c754-45d8-9b5c-b5661cc62df6
+2026/10/13 07:15:53 INFO messenger returned home id=b8bf6bf5-eb47-499c-bc44-43c35b2d78e1
+2026/10/13 07:15:53 INFO player registered id=457584ac-381b-4f4a-a0bb-e076cdb5303c username=initiator-838942dd-7126-4b2d-b9de-934526b9f04c
+2026/10/13 07:15:53 INFO player registered id=6eadd617-7785-42bf-ab26-3b9ed2687670 username=counterparty-bb40141f-7622-4138-843b-4c3cf4068146
+2026/10/13 07:15:53 INFO passage: messenger boarded messenger=20f85ea5-9bcf-410d-9233-ec3d23fb72bf carrier=Galley arrives_at=2026-10-13T10:15:53.617+02:00
+2026/10/13 07:15:53 INFO passage: nothing left to wait for, ship turning for home unit=8770506d-4e8d-4a31-a689-1d7c7b9aafed messenger=20f85ea5-9bcf-410d-9233-ec3d23fb72bf
+2026/10/13 07:15:53 INFO field unit turning for home unit=8770506d-4e8d-4a31-a689-1d7c7b9aafed from_q=4 from_r=0 home_q=1 home_r=0
+2026/10/13 07:15:53 INFO order delivered — stance applied unit=9c2eb056-4998-4904-ac3e-d3ea509c0313 stance=fortify
+2026/10/13 07:15:53 INFO unit returned home from explore unit=8770506d-4e8d-4a31-a689-1d7c7b9aafed settlement=65c428fe-307a-4e69-8f21-0831b5586c14
+2026/10/13 07:15:53 INFO player registered id=e3d55e53-8fe5-437c-b990-944d134e43a8 username=initiator-1da65e90-cf73-4cf6-9585-a5b7016015bc
+2026/10/13 07:15:53 INFO player registered id=74fb4e0d-85ba-4c74-b600-7f2676a2ae13 username=counterparty-f9855e0d-5c51-40a7-b556-2a7043c2259b
+2026/10/13 07:15:53 INFO passage: ship waiting for runner's return unit=bdc89427-cb1a-4cdb-9e61-34b8c79eb556 messenger=a6a5b8bb-12f3-4e5a-9cbe-b9f5389e39ce
+2026/10/13 07:15:53 INFO field unit turning for home unit=bdc89427-cb1a-4cdb-9e61-34b8c79eb556 from_q=4 from_r=0 home_q=1 home_r=0
+2026/10/13 07:15:53 INFO passage: passage_wait ship released unit=bdc89427-cb1a-4cdb-9e61-34b8c79eb556
+2026/10/13 07:15:53 INFO passage: messenger boarded messenger=a6a5b8bb-12f3-4e5a-9cbe-b9f5389e39ce carrier=Emporos arrives_at=2026-10-13T09:15:53.763+02:00
+2026/10/13 07:15:53 INFO unit returned home from explore unit=bdc89427-cb1a-4cdb-9e61-34b8c79eb556 settlement=dd7a3314-5aec-4587-bda1-53d418434f39
+2026/10/13 07:15:53 INFO messenger returned home id=a6a5b8bb-12f3-4e5a-9cbe-b9f5389e39ce
+2026/10/13 07:15:53 INFO player registered id=b70238f7-ef97-40b2-afc5-fc804539a583 username=initiator-9ef8863b-68c9-424c-9f5a-2d3a6c02f9c6
+2026/10/13 07:15:53 INFO player registered id=35eb6907-35e5-4cd3-8ae5-bd908b65decf username=counterparty-209a337a-3e69-4159-99bc-96abbe43dc9d
+2026/10/13 07:15:53 INFO passage: messenger boarded messenger=da71ba76-9fd0-43b1-9fa5-37381ea28610 carrier=Galley arrives_at=2026-10-13T11:15:53.914+02:00
+2026/10/13 07:15:53 INFO player registered id=44d12af6-e171-4055-9c2e-f2cca875496f username=initiator-afe92748-e58a-41f8-9121-ff949bbddc88
+2026/10/13 07:15:54 INFO player registered id=58037910-aacb-4554-82c1-a63f1b5a3969 username=counterparty-95e4015a-5f56-4be0-ad4e-1cb10fefb8d7
+2026/10/13 07:15:54 INFO player registered id=19773ec4-42ca-4323-90b1-9daa34070f67 username=initiator-1ea7e812-516f-490d-8147-647f4a460467
+2026/10/13 07:15:54 INFO player registered id=efa19634-a2c7-4f33-9867-a228584de6ef username=counterparty-53c980bf-0964-4f45-9ec1-3649b1ecac18
+2026/10/13 07:15:54 INFO passage: messenger boarded messenger=1f146abd-e7dd-4883-b52d-e9e9f65a2a47 carrier=Emporos arrives_at=2026-10-13T09:15:54.153+02:00
+2026/10/13 07:15:54 INFO passage: ship waiting for runner's return unit=b160ef22-985c-42e0-bf84-dab2a16a8fde messenger=1f146abd-e7dd-4883-b52d-e9e9f65a2a47
+2026/10/13 07:15:54 INFO messenger delivered id=1f146abd-e7dd-4883-b52d-e9e9f65a2a47 destination=e81a8c76-b03f-407c-8fd9-f7a014d70bd7
+2026/10/13 07:15:54 INFO player registered id=8d781b90-413e-456d-b9ec-38e3248677c5 username=initiator-69ea2ec5-1229-4d11-a756-0d56ca499302
+2026/10/13 07:15:54 INFO player registered id=cd839b1d-d6ed-4ce9-bca3-80c9c2282520 username=counterparty-969b0a9a-4742-4642-9cae-30a06554f5ba
+2026/10/13 07:15:54 INFO player registered id=5a195746-e63e-4c85-be46-2a0cd22d7706 username=leg-viewer-b2c94be9-736c-4412-97ce-cacf70b548b8
+2026/10/13 07:15:54 INFO player registered id=426b1793-7d06-401a-b4b8-6d1bf99bc0ae username=leg-viewer-0c91499a-0712-497c-a9eb-b83619f4fb90
+2026/10/13 07:15:54 INFO player registered id=f3b2fa76-b0cb-454f-a8fd-d7b850d34151 username=leg-viewer-074064d2-1386-44b5-b30b-d1bcc26916ff
+2026/10/13 07:15:54 INFO player registered id=f4e1e392-0672-4f21-bd0b-502fcfc40c5d username=leg-viewer-a4e1894a-49f3-4ef3-a9a2-0468af00e92c
+2026/10/13 07:15:54 INFO player registered id=c8a3a00c-e565-4cac-836a-2b334127fb91 username=leg-viewer-79842ff8-4e9c-4fb6-a765-737a1d69a99d
+2026/10/13 07:15:54 INFO player registered id=9f7fc8db-9bf1-4646-9a21-403e758920ea username=leg-viewer-e510e9fc-47a5-4280-995e-8556e048ce23
+2026/10/13 07:15:54 INFO player registered id=73e4b3fe-91c8-415d-a2e0-7d6b14a34a21 username=passage-viewer-06d3b0fb-ad88-40b2-b9b1-ec241f7c1a98
+2026/10/13 07:15:54 INFO player registered id=94e35027-3a9a-4e34-9024-5c29c39caf2b username=passage-viewer-655f4826-ab7b-44aa-ad5f-0573aac59cd1
+2026/10/13 07:15:55 INFO player registered id=c69fd545-516a-43f1-a3d4-656f1920a295 username=initiator-11b81b7c-77d6-45e0-b2df-aa37f8e2948c
+2026/10/13 07:15:55 INFO player registered id=87633014-f374-496e-98b9-d6f618ea804e username=counterparty-c4afc504-14c0-4019-81a2-4c2770630c04
+2026/10/13 07:15:55 INFO player registered id=734a2eb0-ce65-4bcf-8feb-001530296dde username=initiator-92bf0166-c2bf-4ee7-9141-a77265fa4dd7
+2026/10/13 07:15:55 INFO player registered id=41c7f1f6-bdf0-48a8-944e-b3754d7c3561 username=counterparty-6a560e30-9179-4165-8e94-f3769df49e44
+2026/10/13 07:15:55 INFO player registered id=95e98d70-0558-4042-ae79-0f154543aad7 username=reply-sender-074aed87-a0b6-4a2c-9613-385d988f7095
+2026/10/13 07:15:55 INFO player registered id=ee447a2c-bb90-452f-b76c-31370eb1ac3f username=reply-receiver-2f26b715-cea0-4950-b053-1c624e7ec4d2
+2026/10/13 07:15:55 INFO player registered id=284273ea-ac5f-4031-adb5-79501a5d2126 username=reply-sender-bd5b6ed1-a4ac-41a1-ba89-ecbcbebec245
+2026/10/13 07:15:55 INFO player registered id=39278caa-09ef-4c2a-a838-939df70f6e39 username=reply-receiver-ea6919c8-82fb-4222-89dc-74b18d2115f8
+2026/10/13 07:15:55 INFO player registered id=cbb10e17-31a1-4560-a282-a9a42885ee6d username=initiator-15e1f2b4-2949-42ac-8c21-7c1cd2d87b75
+2026/10/13 07:15:55 INFO player registered id=a4dfc0ba-af77-4b03-ba2f-348dfc9ee1ad username=counterparty-06968b02-96f3-473b-837a-2bb9f9fe5244
+2026/10/13 07:15:55 INFO player registered id=46fdeb2b-31b6-4022-8df6-ff503b2acdc5 username=initiator-0bba95c7-9dfe-4adb-9f13-f2403bdd0999
+2026/10/13 07:15:55 INFO player registered id=a0b87d9b-98e0-46e3-84cf-a24da41d4ba6 username=counterparty-b2a6dd6a-ccf9-4583-b04e-0ea6f3c83232
+2026/10/13 07:15:55 INFO player registered id=24322f8b-660a-49b8-9da8-27ca601256a7 username=initiator-cec5ed1f-869b-48a7-a387-4b5fa44af11e
+2026/10/13 07:15:55 INFO player registered id=1d49f7d2-cac4-418f-8bae-f3e0548f6623 username=counterparty-58e1e28a-1e45-46dd-a4d9-f1a219c8ddc8
+2026/10/13 07:15:55 INFO player registered id=1e8e5a19-4ad2-49fe-b5bb-b06804020cf9 username=initiator-61c0fc6e-ac03-4e71-b360-40b2380de020
+2026/10/13 07:15:55 INFO player registered id=ae690cf3-1757-40bf-9564-5a08de0760f3 username=counterparty-f56e9418-c8a7-4979-be78-15214dcf7a25
+2026/10/13 07:15:55 INFO player registered id=20cc36d3-7fb0-4987-8699-e95f4ed99eda username=initiator-4524cfcc-1c2e-40f9-9856-fd27c5e5930e
+2026/10/13 07:15:56 INFO player registered id=aa3f120a-a571-4480-9a9b-2814fa8e4bfc username=counterparty-93edbe7b-ddc2-4072-ae90-e0dd531e1c84
+2026/10/13 07:15:56 INFO player registered id=bf039d2e-f6ec-46a5-a46d-12ed976382fa username=initiator-4aed5cb8-02c0-4b11-aecc-6eac261a3166
+2026/10/13 07:15:56 INFO player registered id=3b65e78a-72d7-44ea-8888-fb87e2c14e93 username=counterparty-34d22f5d-6dac-46bf-ae05-a32edbdc6bdf
+2026/10/13 07:15:56 INFO player registered id=cf303b2f-4fcd-44da-99a3-0686460a5609 username=goodval-caller-81fcf9a0-2175-4d69-b3d8-b2438dada224
+2026/10/13 07:15:56 INFO player registered id=92a693d3-cbdd-4b29-9ed4-cbce205c80f2 username=goodval-counter-7cba9e84-71d0-492a-b572-c1e0ead873b3
+2026/10/13 07:15:56 INFO player registered id=f73a753e-d883-4d86-a147-c58adfd3a2bb username=goodval-caller-643afef1-f2e4-4176-bc99-3349d79b61c8
+2026/10/13 07:15:56 INFO player registered id=552d0c37-5458-4451-b254-f2a307701424 username=goodval-counter-09a5c26d-c12f-4c14-8fbc-98e57346ce1f
+2026/10/13 07:15:56 INFO player registered id=4630b548-eb82-4c43-8249-de730754d1e5 username=goodval-caller-8eeb5742-72fc-4de2-bda5-eb85dcf4c1a7
+2026/10/13 07:15:56 INFO player registered id=4646eb62-f2d9-4596-9705-d1f5f353473e username=goodval-counter-b13cab56-3a7e-433a-abd6-58cd3d952f83
+2026/10/13 07:15:56 INFO player registered id=ea354f56-a739-4d6c-bc0a-7ce93cbd281d username=goodval-caller-1e4c1848-e6af-4df7-b330-f0382de28089
+2026/10/13 07:15:56 INFO player registered id=5d7540f6-7025-49be-813c-818ebffb0343 username=goodval-counter-22602464-117f-4ab3-ad18-9ee01aa849c1
+2026/10/13 07:15:56 INFO player registered id=61d72ba0-954b-42bd-8ce9-3044d970faa0 username=goodval-caller-1a029d74-a6db-4b44-8482-785daca9b82a
+2026/10/13 07:15:56 INFO player registered id=b9b3397a-f622-49e1-a26e-a29e2ce136ca username=goodval-counter-88e213ea-4945-40e7-ae52-fc46d7d56e11
+2026/10/13 07:15:56 INFO player registered id=dd4defac-9bab-4f8c-a089-31a34d1c8d5c username=notif-6db3363f-4005-44b0-a59b-3badc61419d3
+2026/10/13 07:15:56 INFO player registered id=f198b7e4-8652-4307-b782-679a58fe7d2f username=notif-b2861471-7826-48e4-975b-fcde38a8b857
+2026/10/13 07:15:56 INFO player registered id=e3caff24-6043-46de-a849-7e8936b4c8e6 username=notif-bc1dcf6d-49b5-40fe-8139-e0873a68ef6f
+2026/10/13 07:15:56 INFO player registered id=0221e479-d025-452b-be85-b30f1a0fc970 username=notif-other-316d3cae-4b26-4bae-9697-9a5357d7e7ea
+2026/10/13 07:15:57 INFO player registered id=65601245-31ff-4d67-b91f-0680f619ea9f username=oracle-map-c8bca406-2683-4566-8433-3ca4d0033c24
+2026/10/13 07:15:57 INFO player registered id=cf3d80e6-859d-4494-a136-d88d2abe45d0 username=oracle-map-430d1719-fe4b-4cba-8dd6-a89c69e1b3aa
+2026/10/13 07:15:57 INFO player registered id=6994a25b-acf5-449b-a78d-a0d68a9ca5d6 username=oracle-map-ffa0c3ed-480d-47e1-84f5-ea75f1453efe
+2026/10/13 07:15:57 INFO player registered id=49a6b7ee-3c85-4256-b260-33ffeeb8fc96 username=oracle-map-1892748e-6d8d-41ff-a31e-0752671f39d2
+2026/10/13 07:15:57 INFO player registered id=94f2802c-b986-483f-82f4-6690f15e9d9e username=hostorigin-1a6b2ec3-2174-4656-9a1b-94944bb6345c
+2026/10/13 07:15:57 INFO player registered id=95074553-7bd7-4cba-83c3-44ea1dbcbf45 username=place-viewer-b7ff52ee-0301-4644-abb1-6159665aa687
+2026/10/13 07:15:57 INFO player registered id=8c67ccf5-5632-416b-8a19-9a3b0bff4331 username=place-other-02435497-8279-4dcf-9abe-4d43bed55d4f
+2026/10/13 07:15:57 INFO player registered id=b00f48b8-08c8-449b-8a7e-020527c2e088 username=place-viewer-7c1a1b5a-867a-41e7-835d-acef692b27d2
+2026/10/13 07:15:57 INFO player registered id=6cd5dcfa-aa4e-45be-a816-3865948b4db2 username=place-other-550bb76a-b9c1-434e-af39-fd0714864fb0
+2026/10/13 07:15:57 INFO player registered id=0b3af472-658c-40fa-add9-0f3fe46e6c38 username=place-viewer-ac99a829-a06d-4a6c-810c-b2ec2b418ab5
+2026/10/13 07:15:57 INFO player registered id=ab0b6c83-92a0-4587-8d9b-78ce3867fa47 username=place-other-2b36f884-0a2d-4703-85b2-362bd98e3ed7
+2026/10/13 07:15:57 INFO player registered id=d13288bb-bb8d-405d-b4c4-f28263cd729c username=place-viewer-95467f06-ceb8-4f45-81d1-b6f611d4cb4f
+2026/10/13 07:15:57 INFO player registered id=5913ed9f-58c2-45f4-ae08-9a7b843124ef username=place-other-11451553-15d8-4b19-9265-82f1ae14c1ec
+2026/10/13 07:15:57 INFO player registered id=d17f5f42-4cfe-4b23-bb4f-29dd01cd8ddf username=buildhex-66053faa-71b6-43d7-939c-de487951a3a4
+2026/10/13 07:15:57 INFO player registered id=99fb6e8d-1202-4e19-a218-150a198f1c2a username=buildhex-4fda7a71-d58e-4084-a363-289adab4d181
+2026/10/13 07:15:58 INFO player registered id=a40cc990-c473-4efe-b95c-0018dc8685c8 username=buildhex-cdf85efd-6abe-40cd-957a-fec21f0b3210
+2026/10/13 07:15:58 INFO player registered id=eae9fc71-7d56-4152-b5b7-b51385f3ed63 username=buildhex-1d27ece8-483e-4e27-b5a0-67ec0f7e9485
+2026/10/13 07:15:58 INFO player registered id=007238db-2580-4f78-9f44-955658085ddb username=buildhex-a2b7c4ba-7e1c-4dd5-95b8-5d74652bc81b
+2026/10/13 07:15:58 INFO player registered id=e54836d2-8225-4eb0-9d98-75bc7a9dcbee username=buildhex-d6bacf42-b750-40c7-9710-7e7f1f3c25c1
+2026/10/13 07:15:58 INFO player registered id=7cedfb70-2d41-49b2-9b26-ba126dbea2d4 username=trader-0d90cc56-3e0f-41ba-a379-90304fa2e1f3
+2026/10/13 07:15:58 INFO player registered id=aa9f2948-d678-41db-91d4-a200ce057274 username=trader-da3dd4d4-10e1-43d5-bb7b-44526e4dd31d
+2026/10/13 07:15:58 INFO player registered id=4f7a2b23-c33e-43be-baea-6820f6452b87 username=trader-4cc11d33-cf4e-423f-89a7-82219108eff4
+2026/10/13 07:15:58 INFO player registered id=79896767-f47d-41e4-8304-d7cc87e2a91a username=trader-c4f86a6b-6e23-4390-8ebc-18dcd5d1b62c
+2026/10/13 07:15:58 INFO player registered id=9498ea12-3f7d-4004-aa4e-4df993dbe166 username=trader-e4142bf9-beef-42e8-97ed-4100da5f1bb7
+2026/10/13 07:15:58 INFO player registered id=7eabdc5a-efb5-45c4-8562-9d20a806a326 username=trader-4bde5cec-762a-469e-b0bc-04a4e15233e9
+2026/10/13 07:15:58 INFO player registered id=cb81c00a-f2e5-436b-99cb-23ec0019612c username=trader-324065e0-8dda-4233-a75e-909ef4760b72
+2026/10/13 07:15:58 INFO player registered id=9764e9a6-1d97-4264-8d09-447996a47bff username=trader-c0fbf3dd-4aa2-4029-87fe-ea1ad33a8179
+2026/10/13 07:15:58 INFO player registered id=5f1f9cbe-0ca2-48f8-bdc9-3d5c0bdbfa62 username=trader-0f002cb3-466c-4c11-bdaa-ed4ba914d5fe
+2026/10/13 07:15:58 INFO player registered id=41bf6438-4e48-42e0-a3a2-ddab830ecc47 username=trader-60217424-6b3d-4238-bcb0-735dcb786669
+2026/10/13 07:15:59 INFO player registered id=d620005d-2a2e-4c83-9130-0e9736098b1f username=trader-e6cde3a5-2c6e-4394-996b-620510740c9d
+2026/10/13 07:15:59 INFO player registered id=24069b54-59a0-4232-89ea-ab87833dd9e1 username=trader-51fa8be6-78f5-4169-887d-f78013ff815a
+2026/10/13 07:15:59 INFO player registered id=a4ce3400-2d53-4e0f-9bdc-e4e2698bd41b username=trader-8e4340ff-46f3-4b13-a85e-541a93f842cb
+2026/10/13 07:15:59 INFO player registered id=813724df-abc3-4d8a-981a-455c12fddb70 username=trader-1f3422bd-d0ae-45e8-b506-389b72b9494a
+2026/10/13 07:15:59 INFO player registered id=b57d750e-a7d8-4c81-bb19-cd5f08754d6f username=trader-651484b1-093a-43b8-b9e1-180fd348b7f1
+2026/10/13 07:15:59 INFO player registered id=fd1a8a8b-e5f8-4e3c-be03-d8c35c683bc8 username=history-43544f9d-6266-4ba7-b8fa-389f0d37f7e5
+2026/10/13 07:15:59 INFO player registered id=a4a54042-ab99-4727-a929-c13a764808da username=outsider-dd811e6d-e02d-45ff-a4db-e309b8dc2185
+2026/10/13 07:15:59 INFO player registered id=7478dad9-ed75-45ad-9088-4a22bf248697 username=trader-3c802cb5-472a-4ed2-840f-c7b844bd11f5
+2026/10/13 07:15:59 INFO player registered id=88756dc9-76e1-450b-910c-6657f573263d username=trader-9bdbdccf-eb88-4b36-b972-f230c9683784
+2026/10/13 07:15:59 INFO player registered id=0b021b59-949a-40ef-b70d-f5469374d9b8 username=trader-db1ffd31-8b99-4290-bc42-091c35260c67
+2026/10/13 07:15:59 INFO caravan intercepted transport=f6bf09db-9c40-4619-8b68-b3d043901217 by=f9d8baf3-3e6f-4069-9808-5ade0c222450 sentry=def456a5-4e5c-4e18-958c-33334b7ba7a8 q=2 r=0 ship_outcome=limped
+2026/10/13 07:15:59 INFO player registered id=4a9a34a8-2ad9-40c3-8d98-cdb7e8ae4c97 username=placement-5cd05db1-9fdd-4d3a-a8d0-41b84594fd4d
+2026/10/13 07:15:59 INFO player registered id=8522914a-7eb3-4c12-9793-61015e8d6062 username=placement-7483f64f-a72c-45fc-a594-dd9988041de8
+2026/10/13 07:15:59 INFO player registered id=1571b5f2-503d-4cc9-9e37-1a04a55b7739 username=placement-0ddbe502-711d-4862-92cb-4d7b3209b033
+2026/10/13 07:15:59 INFO player registered id=8b9afc93-064c-4e7b-8c05-43f332b9f9ca username=placement-ff96c708-43d4-4538-b3ad-3a8924068fa3
+2026/10/13 07:16:00 INFO player registered id=7cfec558-0ebe-4178-bc52-0574c01ce918 username=placement-afeea133-2b25-4515-bd88-67d049cfdf6b
+2026/10/13 07:16:00 INFO player registered id=dda1336b-6404-4a4a-9c36-d99ea7ad2636 username=minegate-1b13a134-02fd-4945-9da8-6367dd38c669
+2026/10/13 07:16:00 INFO player registered id=984e92a6-707f-47b6-86fc-2373fcb0bcf5 username=minegate-5f50aa93-488a-4dbb-a1af-200ecdb25fcc
+2026/10/13 07:16:00 INFO player registered id=4b2d6bb3-8e97-4aa8-8865-5489952b8712 username=minegate-43860c12-8361-406d-9c03-7623d34a1b9d
+2026/10/13 07:16:00 INFO player registered id=c5983591-4c92-477e-b32d-5777fe16a001 username=minegate-030332b0-7e9c-4c07-844c-2907c462c3c1
+2026/10/13 07:16:00 INFO player registered id=ed28e906-b9c3-4f14-92fe-043f532eb952 username=trader-b2718c72-6207-4917-adda-da4a419f300a
+2026/10/13 07:16:00 INFO player registered id=8ae44f61-4ae6-4d33-b4cf-1bc505e453a7 username=trader-414ae0e7-74e4-4455-a71a-41883f5b93cc
+2026/10/13 07:16:00 INFO player registered id=fe6574c5-61d2-48a3-9538-15594589cd90 username=trader-aa6f95ca-b36f-459e-bfe4-1cae89b47a64
+2026/10/13 07:16:00 INFO player registered id=8fafb6e7-39a5-4bc0-b2d5-49f045865c4a username=trader-4507fd88-5d8a-460a-afdb-e511e5e579af
+2026/10/13 07:16:00 INFO player registered id=286082b8-86fd-471d-8899-c431b0f2d5bb username=trader-b977b37b-6aaa-49d3-97ea-9fdb94379757
+2026/10/13 07:16:00 INFO trade delivery destination=6165b580-c60c-4210-b03e-652d55239699 good=silver qty=50
+2026/10/13 07:16:00 INFO player registered id=1cdb155c-261a-40d5-ac28-83d6757d29d3 username=trader-e1faa4de-af42-421f-b044-3d7cd6e844b9
+2026/10/13 07:16:00 INFO player registered id=86e665c5-15b5-4553-a0d5-aae6c1a10c03 username=sailor-01c40880-bf43-46bd-86dd-4459ffc19f58
+2026/10/13 07:16:00 INFO player registered id=ef1a760d-435d-47f8-a1e6-273d5d98decd username=sailor-cc302201-12f5-4330-b393-fd245cb082d3
+2026/10/13 07:16:00 INFO player registered id=658690f9-822a-487f-a64e-93e615d7bb7a username=sailor-0b74deec-6f46-486b-9f90-d5c9a7a22efd
+2026/10/13 07:16:01 INFO player registered id=35891c34-f0bf-44ff-8be0-67cd940af2ce username=sailor-182591de-3644-43c1-befa-5e47b4c56f9e
+2026/10/13 07:16:01 INFO player registered id=a8735753-c4e0-4041-a24b-7412b4f87f89 username=sailor-fe37c192-117b-4f5c-91da-fa4f0f9fb4b4
+2026/10/13 07:16:01 INFO player registered id=6a552119-907e-4060-89ef-192dcedef32f username=sailor-2b482fab-712e-4d8d-9ac5-13e20b47dc12
+2026/10/13 07:16:01 INFO player registered id=ef97e2c9-4e1b-4fc2-a716-1193822b3d56 username=sailor-6edf8382-5616-48f9-b897-97ef7f614560
+2026/10/13 07:16:01 INFO player registered id=6638815b-8362-4334-902f-ef0d8f88e45d username=sailor-b55e4cc3-45bc-40d8-a5f1-2ef2aff73326
+2026/10/13 07:16:01 INFO trade delivery destination=835f94ba-c071-4c4e-afbc-5ce033c503df good=grain qty=10
+2026/10/13 07:16:01 INFO player registered id=7c653a3f-15e6-4831-be52-01fb0eb55131 username=sailor-c0a8f107-7f6d-42ad-ba08-c759524aca28
+2026/10/13 07:16:01 INFO player registered id=58ab5436-4e1d-4eab-821d-0274976a8051 username=burn-viewer-a4fb46d2-4b6d-4f78-bb8e-6048e762347c
+2026/10/13 07:16:01 INFO player registered id=e70db724-3d76-4278-bcb9-c7b4d8e81ba8 username=provfow-5490012a-ac93-4647-a7e5-422cb2df1eb0
+2026/10/13 07:16:01 INFO player registered id=66117913-c80e-408d-8c8f-e251fdfbdcb7 username=provsub-d92ce107-7628-456c-86ef-82c731807897
+2026/10/13 07:16:01 INFO player registered id=03779428-6750-4c7c-8885-ee88673f6650 username=shipwright-71984dc1-1417-436d-9974-607e777e7644
+2026/10/13 07:16:01 INFO player registered id=18edf517-39f0-4f64-b443-ae7f1efbd035 username=shipwright-b30e87c1-6f6c-4042-9644-e6a1b2b35c53
+2026/10/13 07:16:01 INFO player registered id=c4e0bfbb-54d8-424e-a14c-0ff0966f6d78 username=shipwright-ef1fa873-afa5-48b3-a13a-74b2c789ea34
+2026/10/13 07:16:01 INFO player registered id=aed36e48-96d2-415c-b046-8dc232461f0e username=shipwright-f3a09302-954c-446b-9d40-561ad5a0baa2
+2026/10/13 07:16:02 INFO player registered id=cd831638-0eff-4c42-8143-8ce982583abd username=shipwright-81493cae-11e1-411e-b797-91ab2bb65e05
+2026/10/13 07:16:02 INFO player registered id=8d33083c-b5f5-467d-9f53-5bc5cdef409a username=shipwright-f609ff1a-67c6-43d3-aad2-a62ebe4810f3
+2026/10/13 07:16:02 INFO player registered id=3a3f25fe-2f74-44f4-9b86-d22a2b642112 username=shipwright-97455413-2b2d-421b-b09b-8d37e1803b8f
+2026/10/13 07:16:02 INFO player registered id=6cd48cbb-2202-4354-82c1-1743179b9e06 username=shipwright-b507b4a4-6a5e-480c-873b-f84bac5fb9ed
+2026/10/13 07:16:02 INFO player registered id=c2868c65-c11f-4b82-8608-cf93d888baf7 username=shipwright-61b3507a-f95f-47ca-a00e-79957bd5d18b
+2026/10/13 07:16:02 INFO player registered id=57f5d0a6-e508-41b9-a827-0712b9f0fdd2 username=shipwright-cfca145f-ea14-40bd-bf28-3ab08f5e3c5c
+2026/10/13 07:16:02 INFO player registered id=34cfd61b-72f0-40b6-9541-ba4f08a6e220 username=shipwright-5f3f8c29-65af-4c31-b9ef-9647f6e86776
+2026/10/13 07:16:02 INFO training complete settlement=6a4702a9-c060-43a3-ab98-4339e5aa8004 unit=galley count=1
+2026/10/13 07:16:02 INFO training complete settlement=6a4702a9-c060-43a3-ab98-4339e5aa8004 unit=galley count=1
+2026/10/13 07:16:02 INFO player registered id=f480cf32-0a4a-4c60-aeb5-068461fc8706 username=shipwright-97527bac-0e91-41e8-9765-053d743d99cd
+2026/10/13 07:16:02 INFO player registered id=1487fa55-13c5-47cd-a0c2-9a0fc82c1d94 username=shipwright-0f084a0c-e9b9-4dbb-9c53-1898c3251013
+2026/10/13 07:16:02 INFO training complete settlement=39bed8ab-14a1-4aff-a5ca-87de3976cd40 unit=spearman count=100
+2026/10/13 07:16:02 INFO player registered id=743dd00f-8322-49c2-814d-cf780c21e434 username=shipwright-e98865c5-a042-4a75-af29-d5751734ea2c
+2026/10/13 07:16:02 INFO player registered id=fa159ef9-54b3-4bcf-bf81-ef359e695cd8 username=shipwright-2cf4205b-8426-4bef-806f-94cf219ef6ef
+2026/10/13 07:16:02 INFO player registered id=332b1558-e123-466d-8e02-f21efc1e9306 username=shipwright-3083dfcd-4f2c-4dee-a3e9-ab460e5f56a2
+2026/10/13 07:16:02 INFO player registered id=7039d97e-38d6-43f9-bfac-e95534fcb9a9 username=shipyardgate-7d08be44-9237-4c0f-b228-f3feead2739f
+2026/10/13 07:16:02 INFO player registered id=7e0c3023-f2f0-42a1-b93e-1695b72c56d2 username=refusal-a-3dcd9936-259c-459b-8d13-7d8ba81d5d15
+2026/10/13 07:16:03 INFO player registered id=a62342d2-d5e2-4cf7-8b4d-3fc4aef94643 username=shipwright-ea56e3be-38d3-472b-8b37-1f75f1b4bce1
+2026/10/13 07:16:03 INFO player registered id=03f42edb-a742-4e2b-8503-08d527afe4a9 username=shipwright-b34afaf7-49b0-4e5b-bd71-9170ac24906e
+2026/10/13 07:16:03 INFO player registered id=b38de72c-1b8c-44fd-89e2-155eed9d2102 username=shipwright-11cf34ae-984a-4b5a-a373-596ea8b05801
+2026/10/13 07:16:03 INFO player registered id=e87230e6-194c-4c26-b693-c3c03d64235f username=shipwright-5d5ccdfe-0bff-47bc-973f-accc15914535
+2026/10/13 07:16:03 INFO player registered id=74185e45-47be-491a-9b71-f8b014811a98 username=shipwright-a48c13c4-1795-4b91-9f43-1477da75b26d
+2026/10/13 07:16:03 INFO player registered id=da80e619-ac7d-4192-aa80-fd848218915c username=alpha-bf597914-36d9-43ba-b2e7-48d283447590
+2026/10/13 07:16:03 INFO player registered id=35b694f4-66a2-4f4c-8a72-ec644e3cbfa6 username=alpha-2da53c02-f853-49c6-85af-24ad07ca82a0
+2026/10/13 07:16:03 INFO player registered id=8ec0ec5b-0271-4f68-add0-01291a14f853 username=alpha-b531a1ee-df45-4fb7-ab3e-2381ca43fbf8
+2026/10/13 07:16:03 INFO player registered id=82641d9a-a01a-4320-8ad9-5e4b2170b390 username=alpha-1a2f1cf1-fe24-49c4-b8fb-dff0ae46b2f1
+2026/10/13 07:16:03 INFO player registered id=844b651e-2c69-4c23-b523-21920e43f243 username=alpha-3905291f-68fe-49f4-852b-01f81c6c140a
+2026/10/13 07:16:03 INFO player registered id=f9dfbc32-22a6-4048-a96e-dff42df8140d username=alpha-0322c1c4-da8a-41dd-8103-a0219fd5bcd3
+2026/10/13 07:16:03 INFO player registered id=64c5f569-e518-418f-b35b-2ccb535cc8a4 username=alpha-0073a0fe-cd3c-404a-bf3e-8330f80a2de9
+2026/10/13 07:16:03 INFO player registered id=10f3f39d-0f41-44ca-978b-649e700508fb username=alpha-7205e758-0446-41dd-9608-714a6c534237
+2026/10/13 07:16:03 INFO player registered id=c6fe048e-733e-4569-be5a-d16a1d13e1d2 username=alpha-6e0bbb9c-f041-4fbe-849a-74921cc674c6
+2026/10/13 07:16:04 INFO player registered id=4042f7c9-c8d7-4bc5-a335-6e945c5530ed username=alpha-0c5f2bee-8f71-4b37-b3e9-c4d096524e3e
+2026/10/13 07:16:04 INFO player registered id=b16a52df-e8ab-4f4e-9df2-89e405349dab username=thread-sender-02db18e5-66a0-43f0-8d43-1cb1f07ab76a
+2026/10/13 07:16:04 INFO player registered id=d29b60c9-22f5-4d8a-8000-32db6b18f78e username=thread-recipient-07f9493f-7b4b-475a-aba4-407413288d0c
+2026/10/13 07:16:04 INFO player registered id=cc949629-fd90-4bdb-80db-92788130e5a4 username=alpha-6d0d3914-f963-46a2-b666-4f7e6b3a898e
+2026/10/13 07:16:04 INFO player registered id=267eaead-f646-4835-8a31-e591202813a3 username=alpha-d04e5a9e-b620-4c9f-86cc-979125edb4ac
+2026/10/13 07:16:04 INFO player registered id=d7584afe-0fbc-4c52-b5ca-db1832c44f2d username=alpha-1e4a3606-34ba-4c67-92e8-c76baa031d89
+2026/10/13 07:16:04 INFO player registered id=19a2e69e-1e05-4265-abf6-3c16adb0a12c username=alpha-a0c68d36-830f-42ce-bc9c-2d3e745583b9
+2026/10/13 07:16:04 INFO player registered id=1df46658-b77b-4f97-8040-f01b0dce69ee username=alpha-3e6d88bb-b3d2-4074-bc29-f87880a277ea
+2026/10/13 07:16:04 INFO player registered id=8c84453c-c852-4564-b090-f771e9b876bb username=alpha-c6289229-142f-4faa-b7ba-acf8562bbaf3
+2026/10/13 07:16:04 INFO player registered id=be7d0be7-59e5-4185-8d88-e95b18a9fe2d username=alpha-719d10fd-8fc4-43bf-ad8d-975825e9cdd2
+2026/10/13 07:16:04 INFO player registered id=40356dc1-b3b5-4613-81c9-3b59fa7a43c5 username=alpha-b05cbaf3-271b-4f4c-a68c-c4c091061398
+2026/10/13 07:16:04 INFO player registered id=da6b6637-5c26-4418-aaf0-29b155f3d5cf username=alpha-e73b0171-1c26-432f-8e2f-e811fac3ce44
+2026/10/13 07:16:04 INFO player registered id=243dbc30-4aca-4c08-90da-3d44e55bfee2 username=alpha-adf79161-61e9-4de5-a884-0217742a79b6
+2026/10/13 07:16:04 INFO player registered id=acb0b356-14a6-4c66-96b7-5a1ad5d9f9ac username=alpha-17230093-124f-45e8-a04f-a8a70dcfe623
+2026/10/13 07:16:05 INFO player registered id=e9aad69e-54aa-45c3-a96b-cb7f544f7f7b username=reports-context-aa2d6139-996c-4fc7-ab43-1da65ae67ec0
+2026/10/13 07:16:05 INFO player registered id=9fb1dbc6-be2d-4ab3-ae26-4013aef3fd46 username=reports-log-9c651ed9-f0f3-4048-92c5-b889cdca814d
+2026/10/13 07:16:05 INFO player registered id=e06b7ed4-6949-4197-81ac-e3db42388d7a username=rise-9f4ec3ce-8a33-4ce1-8226-baa1fe4fa804
+2026/10/13 07:16:05 INFO player registered id=62807879-b5aa-496b-8f6b-563b008a0438 username=rise-zero-13e08cfa-e056-4623-93d8-86bbc942c05f
+2026/10/13 07:16:05 INFO player registered id=ecfed487-a415-4054-9857-17f24db0f4aa username=rise-lazy-330e47e3-3acd-403a-b0a5-ca0571e44029
+2026/10/13 07:16:05 INFO player registered id=8960fc38-5a20-4204-8fce-0fbe052d533e username=never-joined-91b7a83f-8c89-45df-b489-ef59841f3c71
+2026/10/13 07:16:05 INFO player registered id=f7d0833f-e738-4c47-98eb-372532032594 username=leave-a8cec676-1199-410f-9125-d801529ad896
+2026/10/13 07:16:05 INFO player registered id=242a0d04-2273-4c07-b8ce-ed91710fe620 username=rite-harvest-06fdbc54-4cab-4edb-bbac-90ad4548201f
+2026/10/13 07:16:05 INFO player registered id=e14fee4d-ff23-4ba0-a47e-92e84ea2f206 username=river-names-viewer-f705a8a7-2c5e-41bd-a64d-ec222273e65f
+2026/10/13 07:16:05 INFO player registered id=203987f6-05f7-431d-9993-f996ed9e1811 username=rural-a-9c50c74f-5c81-4be9-829a-85b1ab2b0f2d
+2026/10/13 07:16:05 INFO player registered id=dd848746-e14d-499c-9585-97cfc50a65a8 username=rural-a-6c2934fa-afd3-4f25-b788-3d86e69dade0
+2026/10/13 07:16:05 INFO player registered id=9c06d3fe-6895-42e1-ac47-86db04ee0a0d username=rural-a-1f1bce3a-f387-4d93-b6e2-f123bd9a0fb7
+2026/10/13 07:16:05 INFO player registered id=69e3e8cc-593c-47da-b29f-260b5234e09d username=rural-a-8ed7532d-4276-4fb9-a155-a2d057078de0
+2026/10/13 07:16:05 INFO player registered id=02b1bf1c-0b56-4198-897a-c5c478fa4234 username=rural-a-d295ab1d-5a59-415d-9791-1e9d1d1eed2a
+2026/10/13 07:16:05 INFO player registered id=f7215826-cfef-4cbd-81b1-d766275ca7dc username=rural-a-60d3e6f3-3f8c-4278-a048-3b4c13624d58
+2026/10/13 07:16:05 INFO player registered id=b133fc2d-466f-409f-81ec-25b906b2292c username=sightline-viewer-3d6eb1b2-4d01-4a98-ab65-a9d70bdd61a7
+2026/10/13 07:16:06 INFO player registered id=8313a9ef-d6e3-4a79-a6dc-e3ee9a748e87 username=sightline-viewer-d9b9d2dd-5499-423c-b578-fa19514fdbaf
+2026/10/13 07:16:06 INFO player registered id=f664fed2-2d4f-4128-9361-d109dadf5f53 username=wanax-a-34b40ad1-ed2c-467f-a4bb-89df62763ad8
+2026/10/13 07:16:06 INFO player registered id=4c6bab77-200f-4478-8f1e-3415b9c9cf98 username=wanax-b-ca0a16f2-61c4-4a70-83f2-9d158b17f252
+2026/10/13 07:16:06 INFO player registered id=5029c11f-a57b-4eac-9213-26ee6789d53c username=wanax-parity-08364a62-8422-4884-a489-3f55354111c8
+2026/10/13 07:16:06 INFO player registered id=509ca29c-e023-4287-8de6-a2caeee8aae0 username=placement-efd88bd0-071c-4afc-9af5-60718a874dc3
+2026/10/13 07:16:06 INFO player registered id=350aac3b-e9de-4ca8-bbc8-2efbd991bb3b username=placement-5c8068f7-c23c-4e47-9764-cdc8102530dd
+2026/10/13 07:16:06 INFO player registered id=fe0781d3-cd47-4fed-866a-e0fb42592235 username=placement-5311caa8-f98d-484a-9c48-91ae0aa3ed8b
+2026/10/13 07:16:06 INFO player registered id=b91be1a0-4566-4129-a356-dd8baa4c326e username=placement-59faa253-c599-4f0b-a8d2-9038b7a990a5
+2026/10/13 07:16:06 INFO player registered id=ab9444f0-1df4-4e62-b6bb-ad2a283ec1f1 username=placement-75a91616-785d-4112-ac6c-c6dc1321f246
+2026/10/13 07:16:06 INFO player registered id=5c8fbbe8-9d39-4f8f-84b2-4ac48bfb70d8 username=placement-011dd947-2e9f-48bc-bfcb-193c9db5f5b7
+2026/10/13 07:16:06 INFO player registered id=803fc15b-b09a-4bdd-88bc-20a8ac9d54f7 username=placement-bafc7fd2-0624-4e41-98a9-ddad07cc3726
+2026/10/13 07:16:06 INFO player registered id=200056e5-3ea7-4a28-8589-2baf6350909a username=placement-401ceeba-6cb8-44fe-904e-12dac5799831
+2026/10/13 07:16:07 INFO player registered id=0c6a4ef8-3772-4522-b6cf-c22b901ea1f1 username=placement-30c01eab-c53f-49eb-aeee-5147d9d39d02
+2026/10/13 07:16:07 INFO player registered id=da703725-8666-4500-9ef5-d9fd66b39fd8 username=wanax-1ea27b90-952c-48f5-8c37-93c00acfc4e8
+2026/10/13 07:16:07 INFO player registered id=e64eb2d5-4efb-4392-99a5-a84c0f6ec0eb username=wanax-ra-4f2bde05-d93f-4b8c-9424-a0bd3d7d1062
+2026/10/13 07:16:07 INFO player registered id=6283ac69-c737-40c1-89fa-472468292a79 username=wanax-rb-7b578d1c-c461-4686-a083-01dd27da5f80
+2026/10/13 07:16:07 INFO player registered id=abfc3dce-85e2-489a-8d91-33e6668518f2 username=wanax-rp-c5b19295-f6dd-4e92-9d34-ee25abab9b83
+2026/10/13 07:16:07 INFO player registered id=73dfca03-10f0-4dfe-8d50-56e2395a6732 username=placement-7d2d4b17-a5ea-456b-8ca0-86dce2e21bfd
+2026/10/13 07:16:07 INFO player registered id=577343aa-71fe-43ba-85d3-bbc8c0af4acf username=placement-8a64a80b-b3b8-4f8a-81b5-c41e4892d751
+2026/10/13 07:16:07 INFO siege capitulation settlement=2f390c18-119b-4383-8537-cd142b235a8a occupant=ada8587b-03be-4a24-9d2b-db3884d3188c
+2026/10/13 07:16:08 INFO player registered id=64e48d7e-eebd-40bd-ba9c-394dd6e18f06 username=alpha-71a4710d-cfb4-4a3a-9c26-bc7af94f13c2
+2026/10/13 07:16:08 INFO player registered id=a0c6569c-4b21-4b9d-8adb-7c47e766d532 username=so-owner-71991e2f-3d66-4e5d-b704-10b9f3f7eacd
+2026/10/13 07:16:08 INFO player registered id=cacb96d9-607f-4146-b551-bab621ee39a3 username=so-other-552cf2b2-83d7-4c9f-b70a-edf7f5187025
+2026/10/13 07:16:08 INFO player registered id=ffb1a2a0-d0de-45db-804d-4829c7a32221 username=so-owner-8cdec4f1-4ef7-4325-a3af-1195e35791d1
+2026/10/13 07:16:08 INFO player registered id=4d10f139-ef7b-4ca6-9fa0-c02a28c8c8aa username=so-other-28b85606-1fc6-428c-a0e5-bc3641ae4ebe
+2026/10/13 07:16:09 INFO player registered id=fa908a9f-7b11-4ff6-9102-35f5b683fe55 username=so-owner-02020528-d8b9-4010-9c62-00b958814f18
+2026/10/13 07:16:09 INFO player registered id=d866f717-3fa9-4b04-a3a0-4ff5016dd7f2 username=so-other-70e50a5a-9a78-455d-a56e-123abf18b549
+2026/10/13 07:16:09 INFO player registered id=b38443ac-4bb5-4aaa-ad0c-77a1220862cf username=so-owner-c6275b9e-c573-4b7f-8a0c-4e653d7ba8d3
+2026/10/13 07:16:09 INFO player registered id=89e90260-2e1a-49f3-ac48-8daa65a7d26d username=so-other-996ae6fa-3cb9-4b37-a1ca-d43c932dc0e5
+2026/10/13 07:16:09 INFO player registered id=31f87f73-273e-4f82-8c28-ce848a9e6337 username=so-owner-1f6d1467-bb46-4fd8-99e8-a0024657009c
+2026/10/13 07:16:09 INFO player registered id=5780fa39-a7bf-4290-b116-3d54d8f20ece username=so-other-04c9efa1-50c5-4e9d-b4cc-9c0b6f7af28c
+2026/10/13 07:16:09 INFO player registered id=330a76a4-9fdb-4ef3-827b-1bbee1bd46d7 username=so-owner-dfc18025-7fc2-41a8-8967-a794a7f09e5e
+2026/10/13 07:16:09 INFO player registered id=dedde1d3-7405-48b9-9cd1-78998d84c8e1 username=so-other-895e42b2-db01-481c-8755-d590b0779206
+2026/10/13 07:16:09 INFO player registered id=ac5ff0d3-63a9-4dfe-9889-b00e16aa7ba4 username=storm-viewer-d4577f3a-a826-4ab3-8179-abb4618c65ef
+2026/10/13 07:16:09 INFO player registered id=c7447fda-6acc-4893-8a72-1f330f1993b5 username=storm-other-9953d60e-9f13-4586-98fd-293e61125f59
+2026/10/13 07:16:09 INFO player registered id=698e7e8a-b9f8-4814-a40e-bade351ad4fb username=storm-viewer-6814ae4b-023e-4d05-bc2a-324342fdb19c
+2026/10/13 07:16:09 INFO player registered id=bd5babe5-7b4d-47be-9838-deb2eab8f781 username=storm-other-01c36834-467b-4d01-96f4-413ed27a062d
+2026/10/13 07:16:09 INFO player registered id=2e15690f-b688-49d3-a483-746b8ed4dff5 username=storm-viewer-eaa51812-c61d-43fa-bb86-1a937faf219d
+2026/10/13 07:16:09 INFO player registered id=0431f9cd-679d-46c2-9bcb-78be2d867c26 username=storm-other-15f2d234-7a70-415d-9462-ce44a6f86bd8
+2026/10/13 07:16:09 INFO player registered id=a89b7519-3e78-416b-a85f-7b097592e4b8 username=storm-viewer-4a56b615-4e01-405c-b6f0-e46c0eb9bf57
+2026/10/13 07:16:09 INFO player registered id=d4a8bbc9-a860-4fb9-9bb1-a8d883f53c28 username=storm-other-0c1c20a0-a57f-4c73-9be2-fa735375bd3f
+2026/10/13 07:16:10 INFO player registered id=a2b16cd4-09ad-4530-ad4a-2c68315030c0 username=storm-viewer-0ee81458-0f10-4445-b927-58aba026de5c
+2026/10/13 07:16:10 INFO player registered id=7bb7267f-7efb-404b-9fc7-ccff95f4f488 username=storm-viewer-105406d5-77d8-4408-a5c2-a12745a2d74a
+2026/10/13 07:16:10 INFO player registered id=0c3305d6-7679-45ff-b61d-bd327cdfd1ed username=storm-viewer-8b230493-2427-4c36-86db-ecec765af434
+2026/10/13 07:16:10 INFO player registered id=617ffe2d-4130-463f-8542-a568252d2414 username=loader-bde3bef7-8970-4bc4-bbe3-66cce7e941ef
+2026/10/13 07:16:10 INFO player registered id=27b8b02a-e4e3-4776-81bd-225854f10397 username=settler-d8a3d683-46e6-4402-b02f-a04e8831d446
+2026/10/13 07:16:10 INFO order delivered — march started unit=d4dc76d7-efb1-493a-8e36-29bfe946bf5f target_q=5 target_r=-1 arrival_tick=1
+2026/10/13 07:16:10 INFO player registered id=e30a4096-a58e-4ed2-83a0-ccba18482ab2 username=fow-0c2dec6e-fddd-445c-b16c-5490df9a164d
+2026/10/13 07:16:10 INFO player registered id=2336283b-c595-4f56-a1e4-0840e23cc474 username=fow-redir-a8880ccc-a137-451f-935b-75d1d09e73df
+2026/10/13 07:16:10 INFO player registered id=4114df13-98b8-411d-8a4a-c1ded47e617b username=ticker-6aace89f-fe60-4731-ae3d-ada69395850c
+2026/10/13 07:16:10 INFO player registered id=4ebb5ee4-56ec-42e8-8426-1c14dced4cc2 username=other-df2ca840-6e4f-47d1-8250-db7d4d845a33
+2026/10/13 07:16:10 INFO player registered id=de0cf251-b14f-4b83-9b5f-5257d9e40da3 username=initiator-3bf5b7cd-aef7-4b84-89fe-498253d679ca
+2026/10/13 07:16:10 INFO player registered id=f44d14cb-9142-4879-8d1d-4a9d2ba188d1 username=counterparty-08de1ff6-0e52-4a4e-b951-685c623e1d9d
+2026/10/13 07:16:10 INFO pickup: unit boarded fetching ship ship=7d2e3425-0084-403b-a48f-724594aec361 unit=af6b7e20-d0e3-4dbc-b645-6465614efa6b
+2026/10/13 07:16:10 INFO field unit turning for home unit=7d2e3425-0084-403b-a48f-724594aec361 from_q=4 from_r=0 home_q=1 home_r=0
+2026/10/13 07:16:10 INFO pickup: ship returned home with fetched unit unit=7d2e3425-0084-403b-a48f-724594aec361 settlement=bf0edbd4-4eab-4bf9-82b7-cb8f1e599e17 cargo=af6b7e20-d0e3-4dbc-b645-6465614efa6b
+2026/10/13 07:16:10 INFO player registered id=14ca55bc-190a-4f67-a8f8-6ec31722c833 username=initiator-937e90d6-c08f-49e8-bb62-ed9731954be6
+2026/10/13 07:16:10 INFO player registered id=331b1d75-f136-47f0-8f3e-8b6edf36b027 username=counterparty-8b54ab23-1abc-4aab-97f4-a005b737e589
+2026/10/13 07:16:10 INFO passage: messenger boarded messenger=36ee31c9-36d4-423c-961c-22f46ce1ba77 carrier=Emporos arrives_at=2026-10-13T09:16:10.954+02:00
+2026/10/13 07:16:10 INFO pickup: ship waiting off shore for fetched unit unit=ce9f3044-4d38-4c91-a0f7-6559004519d0 pickup_unit=32aae82f-e961-4e6a-9cc8-7fe99dd17249 until_tick=4
+2026/10/13 07:16:10 INFO order delivered — march started unit=32aae82f-e961-4e6a-9cc8-7fe99dd17249 target_q=5 target_r=0 arrival_tick=4
+2026/10/13 07:16:11 INFO pickup: unit boarded fetching ship ship=ce9f3044-4d38-4c91-a0f7-6559004519d0 unit=32aae82f-e961-4e6a-9cc8-7fe99dd17249
+2026/10/13 07:16:11 INFO field unit turning for home unit=ce9f3044-4d38-4c91-a0f7-6559004519d0 from_q=4 from_r=0 home_q=1 home_r=0
+2026/10/13 07:16:11 INFO unit arrived (garrison) unit=32aae82f-e961-4e6a-9cc8-7fe99dd17249 q=5 r=0 status=positioned
+2026/10/13 07:16:11 INFO pickup: ship returned home with fetched unit unit=ce9f3044-4d38-4c91-a0f7-6559004519d0 settlement=77b7cdf3-917e-4b2b-9be5-1e9a42fca18a cargo=32aae82f-e961-4e6a-9cc8-7fe99dd17249
+2026/10/13 07:16:11 INFO player registered id=281dfa59-c287-4f96-ad24-cd97c2b3c6d5 username=initiator-631a72d3-3e45-497f-859c-319af527586e
+2026/10/13 07:16:11 INFO player registered id=64879d37-f558-4fde-b94a-52f1bdf1882a username=counterparty-25644623-8284-40b6-a3b4-1e9300fcd8cd
+2026/10/13 07:16:11 INFO passage: messenger boarded messenger=8e93e255-b6af-45e9-af8c-405a69963cae carrier=Emporos arrives_at=2026-10-13T09:16:11.113+02:00
+2026/10/13 07:16:11 INFO order delivered — march started unit=1336381e-4c1c-43a0-858b-9f6852efd0c4 target_q=5 target_r=0 arrival_tick=4
+2026/10/13 07:16:11 INFO unit arrived (garrison) unit=1336381e-4c1c-43a0-858b-9f6852efd0c4 q=5 r=0 status=positioned
+2026/10/13 07:16:11 INFO pickup: unit boarded fetching ship ship=4007fec5-6836-425a-aba2-cb5fece32f35 unit=1336381e-4c1c-43a0-858b-9f6852efd0c4
+2026/10/13 07:16:11 INFO field unit turning for home unit=4007fec5-6836-425a-aba2-cb5fece32f35 from_q=4 from_r=0 home_q=1 home_r=0
+2026/10/13 07:16:11 INFO pickup: ship returned home with fetched unit unit=4007fec5-6836-425a-aba2-cb5fece32f35 settlement=f0b1a70e-8707-49e5-a66d-11b08c5c9415 cargo=1336381e-4c1c-43a0-858b-9f6852efd0c4
+2026/10/13 07:16:11 INFO player registered id=89437dd3-cfd4-4419-8c16-2f8c7aed0b85 username=initiator-1d6dedc3-60d5-46cf-a5b2-64f97e9c6213
+2026/10/13 07:16:11 INFO player registered id=47ecd46e-194e-4faf-826b-d6301377f3ec username=counterparty-c2029ced-51d4-464f-be3f-aacf8cf0810a
+2026/10/13 07:16:11 INFO passage: messenger boarded messenger=bc0639b1-acc3-4226-8f9b-c406fb04e70b carrier=Emporos arrives_at=2026-10-13T09:16:11.265+02:00
+2026/10/13 07:16:11 INFO pickup: ship waiting off shore for fetched unit unit=bf2b5b6d-281e-418c-8ef7-999b6c64a561 pickup_unit=71d32da3-e5f5-40f7-8d3f-bcaebf64dfd8 until_tick=4
+2026/10/13 07:16:11 INFO field unit turning for home unit=bf2b5b6d-281e-418c-8ef7-999b6c64a561 from_q=4 from_r=0 home_q=1 home_r=0
+2026/10/13 07:16:11 INFO unit returned home from explore unit=bf2b5b6d-281e-418c-8ef7-999b6c64a561 settlement=25689cb6-e8f1-4244-bc55-54678a63af2e
+2026/10/13 07:16:11 INFO player registered id=7116c8e5-3281-4b80-ba0c-9c199f9ba914 username=initiator-f87ab95d-cc98-4f42-a3ad-440e98c2a179
+2026/10/13 07:16:11 INFO player registered id=0a3eb1da-e14c-44bb-af72-24062988fedd username=counterparty-c540fb51-e3da-4dc4-b756-2e8168d595f4
+2026/10/13 07:16:11 INFO player registered id=110ed1b4-b1ef-486f-8e4d-f1680736a444 username=initiator-d32f30ee-602e-47d4-b9ce-0a889d1284ae
+2026/10/13 07:16:11 INFO player registered id=ea074b87-123c-4725-b5b7-df6d002bbc85 username=counterparty-51c4c29f-be75-47ed-ac9d-aef30695df2e
+2026/10/13 07:16:11 INFO passage: messenger boarded messenger=c994d5d9-37db-4cea-8773-617c120e0f8b carrier=Emporos arrives_at=2026-10-13T09:16:11.555+02:00
+2026/10/13 07:16:11 INFO pickup: ship waiting off shore for fetched unit unit=3f28d37b-ce19-48e5-beaa-f047d1dfde9c pickup_unit=703839f2-4be2-49ae-9b49-649ec9cc3143 until_tick=4
+2026/10/13 07:16:11 INFO player registered id=841ac398-3fd2-4189-bee8-5d343f26520e username=initiator-a19944bb-3201-45a7-a92c-1553908ad292
+2026/10/13 07:16:11 INFO player registered id=5d2b478f-a213-4637-9cd2-fb0c33d4ec2b username=counterparty-08d09627-fd84-413e-b724-88655b644228
+2026/10/13 07:16:11 INFO passage: messenger boarded messenger=f6769079-0970-4b97-a369-82029b3b2eee carrier=Emporos arrives_at=2026-10-13T09:16:11.693+02:00
+2026/10/13 07:16:11 INFO pickup: ship waiting off shore for fetched unit unit=fe2aa2a3-8b9f-4631-9fb9-f9cb3c3ce525 pickup_unit=fe6fcb75-b08d-40eb-9604-e3c6e507ee27 until_tick=4
+2026/10/13 07:16:11 INFO field unit turning for home unit=fe2aa2a3-8b9f-4631-9fb9-f9cb3c3ce525 from_q=4 from_r=0 home_q=1 home_r=0
+2026/10/13 07:16:11 INFO player registered id=98ea4f67-0387-4b85-b644-f28ebee06153 username=initiator-feddd5e3-2acf-4e0f-8aab-541a0f083fa9
+2026/10/13 07:16:11 INFO player registered id=cfe9949b-e158-4f22-b3b2-b241122e87f0 username=counterparty-d9c5980f-0a34-4912-96ac-5f4a571c0bce
+2026/10/13 07:16:11 INFO passage: messenger boarded messenger=3ef3a065-0f74-4cc7-85e1-2179c441eed9 carrier=Emporos arrives_at=2026-10-13T09:16:11.838+02:00
+2026/10/13 07:16:11 INFO pickup: ship waiting off shore for fetched unit unit=b8cb8af6-2c68-4877-88f2-eda8f044eb9c pickup_unit=6d42a5a6-837a-4dac-8459-2781310fe143 until_tick=4
+2026/10/13 07:16:11 INFO player registered id=47b80782-ad8c-4144-a97e-57d2c456c69d username=initiator-42def8eb-ae1b-415d-9c56-f653acf41be9
+2026/10/13 07:16:11 INFO player registered id=7d7be574-46ed-44df-8867-61c80ef139be username=counterparty-1a2589ad-a6ec-44fc-a228-21122f8e32f1
+2026/10/13 07:16:12 INFO passage: messenger boarded messenger=29eccf1e-4109-4da0-8cae-bc1a30093a35 carrier=Emporos arrives_at=2026-10-13T09:16:11.976+02:00
+2026/10/13 07:16:12 INFO pickup: ship waiting off shore for fetched unit unit=69c9283b-8157-4d72-a0bd-616a9879c34f pickup_unit=555d88ad-b4f1-4dd3-a904-df770359d49f until_tick=4
+2026/10/13 07:16:12 INFO player registered id=2f2bd022-ef06-4b13-87f4-bb6d7e520725 username=recall-courier-e506bc91-19ce-46a9-b41e-0b2c52c53cef
+2026/10/13 07:16:12 INFO recall/redirect order reached unit, new course set unit=347a46b7-d9c4-4bed-bfe8-aebe5995842e mode=recall from_q=1 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-13T08:16:12.104+02:00
+2026/10/13 07:16:12 INFO order delivered — unit turned onto new course unit=347a46b7-d9c4-4bed-bfe8-aebe5995842e verb=recall arrives_at=2026-10-13T08:16:12.104+02:00
+2026/10/13 07:16:12 INFO player registered id=7ce94526-1b8f-4d63-b32d-bdeb31dd3d52 username=recall-courier-6ee9004f-42e4-41f1-976a-37e46e361124
+2026/10/13 07:16:12 INFO recall/redirect order reached unit, new course set unit=ed40a3c2-a07c-46f9-b502-e299b8007bfd mode=redirect from_q=1 from_r=0 to_q=2 to_r=1 arrives_at=2026-10-13T09:16:12.194+02:00
+2026/10/13 07:16:12 INFO order delivered — unit turned onto new course unit=ed40a3c2-a07c-46f9-b502-e299b8007bfd verb=redirect arrives_at=2026-10-13T09:16:12.194+02:00
+2026/10/13 07:16:12 INFO player registered id=72a3224b-0b7b-47fe-ae48-1fef7f34207c username=intercept-a9092ebb-44ee-4468-b81f-14e5bc73e9fe
+2026/10/13 07:16:12 INFO recall/redirect order reached unit, new course set unit=41ca98f5-bfe2-4d3b-ba0a-233e2e722a1f mode=recall from_q=6 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-13T13:16:12.291+02:00
+2026/10/13 07:16:12 INFO order delivered — unit turned onto new course unit=41ca98f5-bfe2-4d3b-ba0a-233e2e722a1f verb=recall arrives_at=2026-10-13T13:16:12.291+02:00
+2026/10/13 07:16:12 INFO player registered id=a385bd0c-8b63-4666-b4e7-5e3cc543d04c username=intercept-6f1d24a0-76ee-48c9-a082-e95596a3a5b3
+2026/10/13 07:16:12 INFO player registered id=d1165429-e6f7-49af-b9e4-b0605bc3f16f username=landmass-recall-906a2745-285b-44ec-83b8-2bc47bde5a46
+2026/10/13 07:16:12 INFO player registered id=bfeb60e0-d32a-4684-9877-f1c8d7f3cc27 username=nomadhost-recall-d6a454d3-8172-41ef-a492-dba8660d9da6
+2026/10/13 07:16:12 INFO player registered id=d3654775-0b60-4146-b845-882731cdadfb username=nomadhost-recall-c3971a9c-5030-4048-90b4-0fbb32cc691a
+2026/10/13 07:16:12 INFO player registered id=6e53fae5-a7a1-4cd8-9d24-a25fef3ec093 username=nomadhost-recall-e06c4bb7-1d2f-4b17-8a82-192bcc4770a2
+2026/10/13 07:16:12 INFO player registered id=637c16b4-572a-4275-b7e4-0f94b05d363f username=nomadhost-recall-d5ce9314-f1dc-4439-87fc-fe0674a419a7
+2026/10/13 07:16:12 INFO recall/redirect order reached unit, new course set unit=907a93ce-1818-439b-827c-64b91b95df8a mode=redirect from_q=3 from_r=0 to_q=3 to_r=1 arrives_at=2026-10-13T09:16:12.690+02:00
+2026/10/13 07:16:12 INFO player registered id=059d2e4a-3416-4351-8445-ea512bebcaa6 username=nomadhost-recall-25e9792e-86a2-4f14-bb3c-25c0e8b8ca40
+2026/10/13 07:16:12 INFO player registered id=ac92423c-19c5-457b-bf21-c158f34b7c8d username=ford-recall-precheck-28193d93-216a-4a41-be82-12e1ea7bd3b3
+2026/10/13 07:16:12 INFO player registered id=dad597e1-8740-485a-8a43-b7da861dd7b3 username=ford-unit-json-57bbd81f-2354-4a01-88b1-02582b30354b
+2026/10/13 07:16:12 INFO player registered id=a64a0bbd-4466-46b8-89c6-bc96b54d5b1b username=shiprepair-7760af59-7dc1-4fc0-bd57-a64e97600c37
+2026/10/13 07:16:12 INFO ship repair complete unit=224dbd99-b7a5-4fdb-aa3c-9706dd67966f type=galley settlement=8f61d9c4-3162-4e2b-9be9-781d7b965303
+2026/10/13 07:16:12 INFO ship repair complete: unit not in repairing status, skipping (already completed?) unit=224dbd99-b7a5-4fdb-aa3c-9706dd67966f
+2026/10/13 07:16:13 INFO player registered id=4441344e-bcb3-453d-b0d1-9bec6875d8e5 username=shiprepair-f7234c2e-cc42-415c-8677-9ab13581aee5
+2026/10/13 07:16:13 INFO player registered id=989f309a-6b74-4e6d-97fa-ce1520f192e5 username=shiprepair-cd00aa72-01fe-4824-a487-5bb097af91b3
+2026/10/13 07:16:13 INFO player registered id=1a218e95-1758-426d-a738-cf9991fde529 username=no-research-b4bd8dc5-64a1-4405-93be-102c21e7da7b
+2026/10/13 07:16:13 INFO player registered id=8be59955-ea1a-4a8a-bcb8-94578a553f04 username=sea-order-tester-a29429a8-db61-42b8-839f-bcca3c14923f
+2026/10/13 07:16:13 INFO player registered id=e5689c89-0e78-4a1d-bc30-252eb2f448ec username=castaway-f6eba250-d40a-44b3-8525-3bf7253ebdd1
+2026/10/13 07:16:13 INFO player registered id=fd0b6366-184f-4bce-aa5b-ce7a976593c2 username=stance-4fa7731a-2256-4760-91fc-a87c991407f5
+2026/10/13 07:16:13 INFO order delivered — stance applied unit=7a8f8ced-1b37-43f9-b652-19894a97c5c1 stance=fortify
+2026/10/13 07:16:13 INFO player registered id=960f85da-b52e-414f-9f0c-c5167c35f4d0 username=recall-courier-55a5dcfb-a4cd-4aa9-b7bf-3345e91fef06
+2026/10/13 07:16:13 INFO player registered id=de745991-7462-4db0-8b07-c15994e844d9 username=recall-courier-fd999dd8-9380-459d-b055-b9c30d9f69d5
+2026/10/13 07:16:13 INFO order delivered — stance applied after pursuit unit=32fadd8c-2305-4c89-a651-0a94e43256a9 stance=sentry
+2026/10/13 07:16:13 INFO order messenger already processed or superseded by a later passage — idempotent replay skipped messenger=b5a0d927-6ce3-4110-b62c-ae36c74a63de
+2026/10/13 07:16:13 INFO unit arrived (garrison) unit=32fadd8c-2305-4c89-a651-0a94e43256a9 q=4 r=0 status=positioned
+2026/10/13 07:16:13 INFO player registered id=a6faceba-fd00-49ed-92f6-fb85b38a4c1e username=recall-courier-fb011646-1471-4a4b-820f-791e89e06122
+2026/10/13 07:16:13 INFO order delivered — stance applied after pursuit unit=b2c991ad-8484-4f31-af2f-4bcba5896ab2 stance=fortify
+2026/10/13 07:16:13 INFO player registered id=478754f1-a597-4be8-99d4-9883f48b8509 username=recall-courier-dd68cf1f-0359-4353-83d9-08e80c0fdc31
+2026/10/13 07:16:13 INFO player registered id=e81d1cd9-5dc4-46c1-8cd9-258c13ecfbdd username=intercept-4d2297ff-3c07-472b-b908-4d2012ca275d
+2026/10/13 07:16:13 INFO player registered id=93f1aaf7-1fa1-4fcc-b5d6-5dd5753944ff username=recall-courier-d04bdaef-3e39-4b70-aeea-9c0eefb03804
+2026/10/13 07:16:13 INFO player registered id=cd5adf40-c48b-4545-8920-d3f65fcf796d username=standing-orders-3a98383f-9ef5-4073-bc92-3230e18b70d6
+2026/10/13 07:16:13 INFO order delivered but no longer executable unit=048d81b8-1e6c-4b9f-8b8b-85453015b7fd verb=standing_orders reason="unit is not in an active battle"
+2026/10/13 07:16:13 INFO order delivered — standing orders applied unit=048d81b8-1e6c-4b9f-8b8b-85453015b7fd battle=7d571a79-c523-47db-b1a4-b103c1022056 hold_to_last_man=true
+2026/10/13 07:16:13 INFO order delivered — standing orders applied unit=048d81b8-1e6c-4b9f-8b8b-85453015b7fd battle=7d571a79-c523-47db-b1a4-b103c1022056 hold_to_last_man=false
+2026/10/13 07:16:13 INFO order delivered — standing orders applied unit=048d81b8-1e6c-4b9f-8b8b-85453015b7fd battle=7d571a79-c523-47db-b1a4-b103c1022056 hold_to_last_man=false
+2026/10/13 07:16:13 INFO order delivered — standing orders applied unit=048d81b8-1e6c-4b9f-8b8b-85453015b7fd battle=7d571a79-c523-47db-b1a4-b103c1022056 hold_to_last_man=true
+2026/10/13 07:16:13 INFO player registered id=ae6f85e5-dfa8-4a4d-af21-28f413c8c334 username=ticker-1e4d2f97-d35f-468e-a01c-8a3ee87a7a35
+2026/10/13 07:16:14 INFO player registered id=63137711-a5f3-4614-93d4-8bb2ed3181b5 username=reader-8d9c1e8c-1b29-4f56-b971-2f192b24ef59
+2026/10/13 07:16:14 INFO player registered id=d4a0f34f-057d-42d7-8eab-86993398f215 username=shore-lander-92c6b935-77dd-4cec-ad63-7162274afd32
+2026/10/13 07:16:14 INFO player registered id=08f356f6-f2e9-4fc0-963e-7c06bc64a2f7 username=purse-home-3a334ea5-e5be-41aa-a774-428f59e0611e
+2026/10/13 07:16:14 INFO player registered id=56c3ca50-31c9-44c9-874d-ef4087dca742 username=upkeepdrain-879843ec-523c-4d61-adae-1df4be79d9e8
+--- FAIL: TestSettlementUpkeepDrain_PayerAndSoldCirculation (0.06s)
+    upkeep_drain_test.go:138: Mykene gross silver = 3, want 4 (1 garrison + 3 marching chariot)
+    upkeep_drain_test.go:143: Mykene circulated silver = 0, want 0.7 (0.7 × 1 from the home garrison only)
+    upkeep_drain_test.go:146: Mykene net silver drain = 3, want 3.3
+    upkeep_drain_test.go:155: Tiryns gross silver = 0, want 1 (its own garrison only)
+    upkeep_drain_test.go:158: Tiryns circulated silver = 0, want 0.7
+2026/10/13 07:16:14 INFO upkeep: grain attrition unit=ffdf5b32-ef28-4769-a976-1f8449a5aca7 lost=10 disbanded=false
+--- FAIL: TestUpkeep_AK4_EmptyGrainLargeFish_StillAttrits_FishUntouched (0.02s)
+    upkeep_fish_test.go:123: AK4 sanity: silver upkeep should still be debited normally, went 100000 -> 100000
+2026/10/13 07:16:14 INFO player registered id=01e7b1e3-d768-46bf-a2f6-b0d5fcffda3e username=wanax-solo-f46d800c-15d4-48b5-96df-7dd7d8ab91ae
+2026/10/13 07:16:14 INFO player registered id=83bf96cd-fb92-4ebf-b94e-7d86f3361608 username=wanax-a-8f78bb12-3a8c-4341-b9e9-607d2ff22921
+2026/10/13 07:16:14 INFO player registered id=7f1f4ec4-bdfe-43de-b0bf-d25ff5a89621 username=wanax-b-a4a749cc-2ced-4698-b84a-9ba6e61990b5
+2026/10/13 07:16:14 INFO player registered id=ca54fffe-f04c-4fe2-97a3-27f0b27d120a username=fu-viewer-wanax-67a46b48-bc5e-4411-89a3-33e3a4024874
+2026/10/13 07:16:14 WARN mapgen: invalid map, reseeding world=73a58ebb-5152-4203-8c53-afe6120d6a95 seed=0 width=40 height=30 err="invalid map: forest fraction = 0.312 (want 0.22..0.30)"
+2026/10/13 07:16:14 WARN mapgen: invalid map, reseeding world=73a58ebb-5152-4203-8c53-afe6120d6a95 seed=1 width=40 height=30 err="invalid map: forest fraction = 0.351 (want 0.22..0.30); largest landmass = 17.8% of map area (want <= 15%)"
+2026/10/13 07:16:14 WARN mapgen: invalid map, reseeding world=73a58ebb-5152-4203-8c53-afe6120d6a95 seed=2 width=40 height=30 err="invalid map: productive tin = 1 (want >= 2); forest fraction = 0.301 (want 0.22..0.30)"
+2026/10/13 07:16:14 INFO player registered id=e2d8bb2e-9823-44b3-92ad-1aca367f9047 username=profile-a-0e5e81e9-9f26-4403-9abb-be4aa37326cc
+2026/10/13 07:16:14 INFO player registered id=f219b031-17a6-40d3-a523-3fc4598d3ecb username=profile-b-1f4187bc-fc5f-4942-91bf-f3e45e959b4a
+2026/10/13 07:16:14 INFO player registered id=a2311c68-1d8a-46b5-bcda-890cfce4ebcf username=gate-a-3f4e0123-f90d-405b-a664-ab11855f0aa7
+2026/10/13 07:16:14 INFO player registered id=c61e7b29-9f15-4824-81ff-c8944e25f7bb username=gate-b-a587e365-6be8-4949-9afc-5f07aa74ecc1
+2026/10/13 07:16:14 INFO world started world=b3a0829f-5f5b-4453-a296-8c46369c7fa8 wanaxes=2
+FAIL
+FAIL	formatet/megaron/server/api/handlers	34.449s
+FAIL
