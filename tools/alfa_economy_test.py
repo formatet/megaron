@@ -43,6 +43,12 @@ class SilverAuditReaderTests(unittest.TestCase):
         self.assertIn('väntande handelsretur', text)
         self.assertIn('19→20', text)
         self.assertIn('12.00', text)
+        self.assertIn('audit_prev_total', text)
+        self.assertIn('228.00', text)
+        self.assertIn('net_delta', text)
+        self.assertIn('Övrigt netto = net_delta − mined_since_last: 0.00 silver', text)
+        self.assertIn('kranar minus sänkor', text)
+        self.assertIn('inte automatiskt ett bokföringsfel', text)
         self.assertIn('2.00', text)
         self.assertIn('median_silver', text)
         self.assertIn('zero_share', text)
@@ -50,6 +56,10 @@ class SilverAuditReaderTests(unittest.TestCase):
         self.assertIn(p['wanax_distribution']['population'], text)
         self.assertNotIn('liquid_total', text)
         self.assertNotIn('240.00', text, 'unowned subset must not inflate world total')
+        p['audit_prev_total'], p['net_delta'] = 225, 5
+        changed = E.render_silver_audits([dict(payload=p)], [])
+        self.assertIn('225.00', changed)
+        self.assertIn('Övrigt netto = net_delta − mined_since_last: 3.00 silver', changed)
 
     def test_v2_query_never_reads_v1(self):
         calls = []

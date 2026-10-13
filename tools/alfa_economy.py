@@ -76,13 +76,16 @@ def render_silver_audits(v2, v1):
         interval = "%s→%s" % (previous, p["audit_tick"]) if previous is not None else "öppningsrevision (egen baslinje)"
         rows.append([p["audit_tick"], p["mining_epoch"], f(p["total_silver"], 2),
                      *[f(p[key], 2) for key, _ in SILVER_BUCKETS], f(p["unowned_silver"], 2),
-                     interval, f(p["mined_since_last"], 2), f(p["mining_credited_total"], 2)])
+                     interval, f(p["mined_since_last"], 2), f(p["mining_credited_total"], 2),
+                     f(p["audit_prev_total"], 2), f(p["net_delta"], 2)])
     latest = v2[0]["payload"]
     d = latest["wanax_distribution"]
     lines = ["## Komplett silverrevision (SilverAuditV2)",
              alfa_db.md_table(["tick", "mining_epoch", "total_silver", *[label for _, label in SILVER_BUCKETS],
-                               "därav ägarlöst", "V2-intervall", "realiserat utvunnet sedan föregående", "utvinning krediterad totalt"], rows),
+                               "därav ägarlöst", "V2-intervall", "realiserat utvunnet sedan föregående", "utvinning krediterad totalt", "audit_prev_total", "net_delta"], rows),
              "Utvinning är faktiskt krediterat silver, inte produktionstakt × tick. Ägarlöst silver ingår i stockkomponenterna; det läggs inte till igen.",
+             "Övrigt netto = net_delta − mined_since_last: %s silver (tick %s). Detta är kranar minus sänkor utöver gruvutvinningen, inte automatiskt ett bokföringsfel."
+             % (f(latest["net_delta"] - latest["mined_since_last"], 2), latest["audit_tick"]),
              "### Fördelning per Wanax — revision tick %s" % latest["audit_tick"],
              alfa_db.md_table(["population", "count", "total_silver", "median_silver", "max_silver", "zero_count", "zero_share"],
                               [[d["population"], d["count"], f(d["total_silver"], 2), f(d["median_silver"], 2),

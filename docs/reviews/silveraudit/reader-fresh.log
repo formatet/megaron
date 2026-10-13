@@ -1,0 +1,16 @@
+» färsk DB på migration 179 · commit 16e7579e+ändringar
+=== RUN   TestSilverAuditV2AllBucketsAndDeferredHandoff
+2026/10/13 08:52:12 INFO trade delivery destination=845bb40d-6f36-4d01-81a9-7a592d75c066 good=grain qty=5
+--- PASS: TestSilverAuditV2AllBucketsAndDeferredHandoff (0.04s)
+=== RUN   TestSilverMiningCreditRollbackAndRateChange
+--- PASS: TestSilverMiningCreditRollbackAndRateChange (0.02s)
+=== RUN   TestSilverAuditV2AppendFailureCanRetry
+--- PASS: TestSilverAuditV2AppendFailureCanRetry (0.03s)
+=== RUN   TestSilverAuditV2Conservation
+2026/10/13 08:52:13 INFO trade delivery destination=1f867af8-1d65-4edd-8697-2158a4fb33b2 good=silver qty=50
+2026/10/13 08:52:13 INFO colony founded (discrete unit) settlement=433f1641-1de2-4952-a830-899ed5c65c62 name=Newhaven-e5fe44ca province=d412cca2-7e21-41f1-9059-a7d419766e6d owner=8f2d01b1-cb99-4638-b75f-7899e2f49ee1 founding_unit=1ed43d2a-6a2e-46e0-9f3f-30493318b45c population=50 q=10 r=10
+    silver_audit_v2_test.go:292: AUDIT_V2_JSON={"audit_tick":3,"previous_audit_tick":null,"city_silver":735,"buy_escrow_silver":0,"sell_escrow_silver":0,"founder_silver":0,"carried_silver":0,"transport_silver":0,"deferred_trade_silver":0,"unowned_silver":0,"total_silver":735,"mining_credited_total":0,"mining_epoch":"f8ba3dc9-bf95-4462-99ce-8795e72068ae","mined_since_last":0,"audit_prev_total":735,"net_delta":0,"wanax_distribution":{"population":"world records and asset owners, including AI and dispossessed Wanax","count":2,"total_silver":735,"median_silver":367.5,"max_silver":735,"zero_count":1,"zero_share":0.5},"wanax_totals":[{"owner_id":"269e5a39-9239-40f1-86dc-81c0c5d31fad","total_silver":0},{"owner_id":"8f2d01b1-cb99-4638-b75f-7899e2f49ee1","total_silver":735}]}
+--- PASS: TestSilverAuditV2Conservation (0.09s)
+PASS
+ok  	formatet/megaron/server/internal/combat	0.174s
+» containern står kvar: megaron-gotest-4188913  (postgres://postgres:pw@localhost:56919/megaron_test?sslmode=disable)

@@ -1,0 +1,7 @@
+» färsk DB på migration 179 · commit c7b9abad+ändringar
+2026/10/13 08:44:05 INFO trade delivery destination=f4eb9faa-c9d2-4cd0-866b-8d691cb8bb4f good=silver qty=50
+--- FAIL: TestSilverAuditV2Conservation (0.06s)
+    silver_audit_v2_test.go:235: got 720.000000000, want 735.000000000
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.066s
+FAIL
