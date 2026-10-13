@@ -1,0 +1,156 @@
+{
+  "health": {
+    "commit": "4083c54e",
+    "migration": 179,
+    "status": "ok"
+  },
+  "trials": [
+    {
+      "attempt": 0,
+      "founded": {
+        "coastal": false,
+        "grain_carried": 1200,
+        "grain_total": 1208,
+        "poseidon_gift": null,
+        "province_id": "d720757e-e8d0-4849-9cab-c5de38d1e7e5",
+        "settlement_id": "bc59031a-437e-4efa-90f8-03a14030861a",
+        "silver_carried": 480,
+        "silver_total": 730,
+        "tile": {
+          "WorldID": "00000000-0000-0000-0000-000000000000",
+          "Q": 2,
+          "R": 62,
+          "Terrain": "",
+          "Coastal": false,
+          "Fertility": 0,
+          "Mineral": 0,
+          "CopperDeposit": false,
+          "TinDeposit": false,
+          "SilverDeposit": false,
+          "CedarDeposit": false
+        }
+      },
+      "timber_options": 1,
+      "stone_options": 17
+    }
+  ],
+  "natural_resources": {
+    "cedar": 0,
+    "stone": 24.999999999999996,
+    "timber": 23.609410528490272,
+    "silver": 730,
+    "oil": 0,
+    "purple": 0,
+    "wine": 0,
+    "cult": 0,
+    "fish": 0,
+    "grain": 931.3369230651884,
+    "livestock": 10,
+    "bronze": 0,
+    "copper": 0,
+    "horses": 0,
+    "pottery": 0,
+    "tin": 0
+  },
+  "catalogue_temple": {
+    "type": "temple",
+    "costs": {
+      "stone": 24,
+      "timber": 8
+    },
+    "duration_game_days": 16,
+    "purpose": "Enables rites, produces cult, and unlocks oracle prayers",
+    "max_level": 3,
+    "upgrade_costs": {
+      "2": {
+        "cedar": 4,
+        "stone": 48,
+        "timber": 16
+      },
+      "3": {
+        "cedar": 8,
+        "stone": 96,
+        "timber": 32
+      }
+    }
+  },
+  "build_response": {
+    "complete_at": "2026-10-13T14:08:22.323085149+02:00",
+    "queue_id": "9c569f69-5d1f-4b6d-9e89-a3028d8ed4ce"
+  },
+  "status_offer": {
+    "settlement_id": "bc59031a-437e-4efa-90f8-03a14030861a",
+    "name": "Phaistos",
+    "required_goods": {
+      "grain": 0.25
+    },
+    "alternatives": {
+      "fish": 0.08334866642086693,
+      "silver": 0.24301980537873932,
+      "timber": 0.18341161567789105
+    },
+    "stock": {
+      "fish": 0,
+      "grain": 962.4200866206794,
+      "silver": 730,
+      "timber": 29.556016244100423
+    },
+    "offering": {
+      "grain": 0.25
+    },
+    "fed": true
+  },
+  "worker_event": {
+    "id": 179,
+    "payload": {
+      "kharis_gain": 2.1001575012180047,
+      "temples_fed": 1,
+      "devotion_sum": 0.15,
+      "temples_total": 1,
+      "offer_fraction": 1,
+      "scarcity_factor": 1.000075000580002,
+      "gain_before_offer": 2.1,
+      "valuation_version": 2,
+      "offering_value_unit": "worker_ticks"
+    }
+  },
+  "projected_net": 0.300238638209098,
+  "relation_at_first_prayer": 5.270461860334179,
+  "actual_prayer": {
+    "kharis_spent": 4,
+    "message": "The gods are silent. Your offering was received, but they do not answer.",
+    "mood": "Suspicious",
+    "offer_multiplier": 1,
+    "offering_expected": 10.356109019896577,
+    "offering_value_unit": "worker_ticks",
+    "offering_verdict": "worthy \u2014 meets what this god expects",
+    "offering_work": 10.356109019896577,
+    "offering_worth": 10.356109019896577,
+    "prayer": "minoan_potnia_vision_v2",
+    "success": false,
+    "valuation_version": 2
+  },
+  "captures": [
+    {
+      "mode": "desktop",
+      "text": "DIVINE FAVOUR\nMood\nWrathful\nPassive\n+0.0 kharis per day\nNet\n+0.3 kharis per day\nCULT LEVEL\nLevel\nWrathful\nTEMPLE OFFERINGS\nPhaistos:\nreference 0.25 grain per day\nAlternatives: 0.08333 fish or 0.1917 timber or 0.2409 silver\nStock: 1061 grain, 0 fish, 53.13 timber, 727 silver\nNext gift: 0.25 grain \u2713\nPRAYERS\nPotnia's Vision (Potnia, \u22655 kharis)\nMarks an unseen ore deposit and the unknown ground within two hexes as memory; no live activity.\ntraditional offering: 10 grain + 3 silver\nnot affordable\nMistress of the Walls (Potnia, \u22655 kharis)\nYour own garrison defending this city fights a quarter stronger for 6 days.\ntraditional offering: 8 grain + 4 timber\nnot affordable\nGreen Shoots (Velchanos, \u226530 kharis)\nGrain, livestock, oil and wine yield a quarter more for 25 days; fish is unchanged.\ntraditional offering: 15 grain + 2 silver\nnot affordable\nThe Thread Shows a Path (Asterion, \u22655 kharis)\nYour next land caravan or Runner from this city travels faster; the caravan is harder to intercept.\ntraditional offering: 3 silver + 4 timber\nnot affordable\nFavourable Passage (The Sea Daimons of Stillness, \u22655 kharis)\nThe next ship leaving this port sails faster and takes no storm damage on its outward leg.\ntraditional offering: 6 fish + 3 silver\nnot affordable\n\nUnavailable: rite ?",
+      "errors": [],
+      "offering_rect": {
+        "width": 391,
+        "scroll": 391
+      }
+    },
+    {
+      "mode": "mobile",
+      "text": "DIVINE FAVOUR\nMood\nWrathful\nPassive\n+0.0 kharis per day\nNet\n+0.3 kharis per day\nCULT LEVEL\nLevel\nWrathful\nTEMPLE OFFERINGS\nPhaistos:\nreference 0.25 grain per day\nAlternatives: 0.08333 fish or 0.1917 timber or 0.2409 silver\nStock: 1081 grain, 0 fish, 55.13 timber, 727 silver\nNext gift: 0.25 grain \u2713\nPRAYERS\nPotnia's Vision (Potnia, \u22655 kharis)\nMarks an unseen ore deposit and the unknown ground within two hexes as memory; no live activity.\ntraditional offering: 10 grain + 3 silver\nnot affordable\nMistress of the Walls (Potnia, \u22655 kharis)\nYour own garrison defending this city fights a quarter stronger for 6 days.\ntraditional offering: 8 grain + 4 timber\nnot affordable\nGreen Shoots (Velchanos, \u226530 kharis)\nGrain, livestock, oil and wine yield a quarter more for 25 days; fish is unchanged.\ntraditional offering: 15 grain + 2 silver\nnot affordable\nThe Thread Shows a Path (Asterion, \u22655 kharis)\nYour next land caravan or Runner from this city travels faster; the caravan is harder to intercept.\ntraditional offering: 3 silver + 4 timber\nnot affordable\nFavourable Passage (The Sea Daimons of Stillness, \u22655 kharis)\nThe next ship leaving this port sails faster and takes no storm damage on its outward leg.\ntraditional offering: 6 fish + 3 silver\nnot affordable\n\nUnavailable: rite ?",
+      "errors": [],
+      "offering_rect": {
+        "width": 363,
+        "scroll": 363
+      }
+    }
+  ],
+  "sql_writes": false,
+  "payload_overrides": false,
+  "production_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

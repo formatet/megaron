@@ -1,0 +1,413 @@
+» färsk DB på migration 179 · commit 7053ac2d+ändringar
+=== RUN   TestApplyDecay_ReplayIsIdempotent
+    applydecay_idempotent_test.go:44: after 25 warm-up days: pop=5541 grain=92.64
+    applydecay_idempotent_test.go:57: before: pop=5541 grain=125.49
+    applydecay_idempotent_test.go:64: after first run:  pop=5564 grain=124.23
+    applydecay_idempotent_test.go:93: after replay:     pop=5564 grain=124.23
+--- PASS: TestApplyDecay_ReplayIsIdempotent (0.24s)
+=== RUN   TestApplyDecay_DistinctEventsBothApply
+--- PASS: TestApplyDecay_DistinctEventsBothApply (0.05s)
+=== RUN   TestApplyDecay_GoodsDecayReplayIsIdempotent
+--- PASS: TestApplyDecay_GoodsDecayReplayIsIdempotent (0.05s)
+=== RUN   TestComputeDailyDecay_BaseCaseNoColonies
+--- PASS: TestComputeDailyDecay_BaseCaseNoColonies (0.00s)
+=== RUN   TestComputeDailyDecay_FreeColoniesDoNotIncreaseDecay
+--- PASS: TestComputeDailyDecay_FreeColoniesDoNotIncreaseDecay (0.00s)
+=== RUN   TestComputeDailyDecay_ScalesAboveFreeColonies
+--- PASS: TestComputeDailyDecay_ScalesAboveFreeColonies (0.00s)
+=== RUN   TestComputeDailyDecay_MonotonicNonDecreasing
+--- PASS: TestComputeDailyDecay_MonotonicNonDecreasing (0.00s)
+=== RUN   TestComputeDailyDecay_TempleInColonyZeroesItsContribution
+--- PASS: TestComputeDailyDecay_TempleInColonyZeroesItsContribution (0.00s)
+=== RUN   TestDecayBas_TendedModestClimbsGrandClimbsFaster
+--- PASS: TestDecayBas_TendedModestClimbsGrandClimbsFaster (0.00s)
+=== RUN   TestClampKharis_FloorAndCap
+--- PASS: TestClampKharis_FloorAndCap (0.00s)
+=== RUN   TestClampKharis_NeverExactlyZero
+--- PASS: TestClampKharis_NeverExactlyZero (0.00s)
+=== RUN   TestDevotionCalibration_ModestClimbsGrandClimbsFaster
+--- PASS: TestDevotionCalibration_ModestClimbsGrandClimbsFaster (0.00s)
+=== RUN   TestTempleDevotionCapacity_ScalesWithLevelAndFloorsAtOne
+--- PASS: TestTempleDevotionCapacity_ScalesWithLevelAndFloorsAtOne (0.00s)
+=== RUN   TestDevotionCalibration_UnfedTempleEarnsNothing
+--- PASS: TestDevotionCalibration_UnfedTempleEarnsNothing (0.00s)
+=== RUN   TestTempleScarcity_BoundedAndNeverPunishing
+--- PASS: TestTempleScarcity_BoundedAndNeverPunishing (0.00s)
+=== RUN   TestDevotionCalibration_TemplelessColoniesStillBite
+--- PASS: TestDevotionCalibration_TemplelessColoniesStillBite (0.00s)
+=== RUN   TestApplyDivinePunishment_EventAndNotificationCarryRealAmount
+2026/10/13 13:55:36 INFO divine punishment applied settlement=a4e7c48e-f607-475b-ad48-f97abe27f862 type=chariot_loss amount=10
+2026/10/13 13:55:36 INFO divine punishment applied settlement=a4e7c48e-f607-475b-ad48-f97abe27f862 type=ship_loss amount=1
+2026/10/13 13:55:36 INFO divine punishment applied settlement=a4e7c48e-f607-475b-ad48-f97abe27f862 type=ship_loss amount=1
+2026/10/13 13:55:36 INFO divine punishment applied settlement=a4e7c48e-f607-475b-ad48-f97abe27f862 type=ship_loss amount=1
+2026/10/13 13:55:36 INFO divine punishment applied settlement=a4e7c48e-f607-475b-ad48-f97abe27f862 type=ship_loss amount=1
+2026/10/13 13:55:36 INFO divine punishment applied settlement=a4e7c48e-f607-475b-ad48-f97abe27f862 type=chariot_loss amount=10
+2026/10/13 13:55:36 INFO divine punishment applied settlement=a4e7c48e-f607-475b-ad48-f97abe27f862 type=ship_loss amount=1
+2026/10/13 13:55:36 INFO divine punishment applied settlement=a4e7c48e-f607-475b-ad48-f97abe27f862 type=garrison_plague amount=10
+2026/10/13 13:55:36 INFO divine punishment applied settlement=a4e7c48e-f607-475b-ad48-f97abe27f862 type=chariot_loss amount=10
+2026/10/13 13:55:36 INFO divine punishment applied settlement=a4e7c48e-f607-475b-ad48-f97abe27f862 type=garrison_plague amount=10
+2026/10/13 13:55:36 INFO divine punishment applied settlement=a4e7c48e-f607-475b-ad48-f97abe27f862 type=harvest_failure amount=200
+2026/10/13 13:55:36 INFO divine punishment applied settlement=a4e7c48e-f607-475b-ad48-f97abe27f862 type=garrison_plague amount=10
+2026/10/13 13:55:36 INFO divine punishment applied settlement=a4e7c48e-f607-475b-ad48-f97abe27f862 type=chariot_loss amount=10
+2026/10/13 13:55:36 INFO divine punishment applied settlement=a4e7c48e-f607-475b-ad48-f97abe27f862 type=garrison_plague amount=10
+2026/10/13 13:55:36 INFO divine punishment applied settlement=a4e7c48e-f607-475b-ad48-f97abe27f862 type=ship_loss amount=1
+2026/10/13 13:55:36 INFO divine punishment applied settlement=a4e7c48e-f607-475b-ad48-f97abe27f862 type=harvest_failure amount=200
+--- PASS: TestApplyDivinePunishment_EventAndNotificationCarryRealAmount (0.08s)
+=== RUN   TestApplyDivineBlessing_EventAndNotificationCarryRealAmount
+2026/10/13 13:55:36 INFO divine blessing applied settlement=c510bf17-e7e1-4f25-b596-c83314046082 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=c510bf17-e7e1-4f25-b596-c83314046082 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=c510bf17-e7e1-4f25-b596-c83314046082 type=divine_recruits amount=10
+2026/10/13 13:55:36 INFO divine blessing applied settlement=c510bf17-e7e1-4f25-b596-c83314046082 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=c510bf17-e7e1-4f25-b596-c83314046082 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=c510bf17-e7e1-4f25-b596-c83314046082 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=c510bf17-e7e1-4f25-b596-c83314046082 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=c510bf17-e7e1-4f25-b596-c83314046082 type=divine_recruits amount=10
+2026/10/13 13:55:36 INFO divine blessing applied settlement=c510bf17-e7e1-4f25-b596-c83314046082 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=c510bf17-e7e1-4f25-b596-c83314046082 type=divine_recruits amount=10
+2026/10/13 13:55:36 INFO divine blessing applied settlement=c510bf17-e7e1-4f25-b596-c83314046082 type=divine_recruits amount=10
+2026/10/13 13:55:36 INFO divine blessing applied settlement=c510bf17-e7e1-4f25-b596-c83314046082 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=c510bf17-e7e1-4f25-b596-c83314046082 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=c510bf17-e7e1-4f25-b596-c83314046082 type=divine_recruits amount=10
+2026/10/13 13:55:36 INFO divine blessing applied settlement=c510bf17-e7e1-4f25-b596-c83314046082 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=c510bf17-e7e1-4f25-b596-c83314046082 type=bountiful_harvest amount=25
+--- PASS: TestApplyDivineBlessing_EventAndNotificationCarryRealAmount (0.10s)
+=== RUN   TestApplyDivineBlessing_NeverConjuresAShip
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=divine_recruits amount=10
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=divine_recruits amount=10
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=divine_recruits amount=10
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=divine_recruits amount=10
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=divine_recruits amount=10
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=divine_recruits amount=10
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=divine_recruits amount=10
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=divine_recruits amount=10
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=divine_recruits amount=10
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=divine_recruits amount=10
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=bountiful_harvest amount=25
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=divine_recruits amount=10
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=divine_recruits amount=10
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=divine_recruits amount=10
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=divine_recruits amount=10
+2026/10/13 13:55:36 INFO divine blessing applied settlement=a2219a28-4883-4a18-86f6-3579f5429123 type=bountiful_harvest amount=25
+--- PASS: TestApplyDivineBlessing_NeverConjuresAShip (0.16s)
+=== RUN   TestApplyDivinePunishment_EventAndNotificationCarrySettlementName
+2026/10/13 13:55:36 INFO divine punishment applied settlement=e95a88f4-8f7a-4beb-a817-b609de9c9f25 type=chariot_loss amount=10
+--- PASS: TestApplyDivinePunishment_EventAndNotificationCarrySettlementName (0.02s)
+=== RUN   TestApplyDivineBlessing_EventAndNotificationCarrySettlementName
+2026/10/13 13:55:36 INFO divine blessing applied settlement=09ab293d-02de-48b0-82fc-2b7604230754 type=bountiful_harvest amount=25
+--- PASS: TestApplyDivineBlessing_EventAndNotificationCarrySettlementName (0.03s)
+=== RUN   TestShouldRollPunishment_FoundingGrace
+--- PASS: TestShouldRollPunishment_FoundingGrace (0.00s)
+=== RUN   TestTempleCeiling_LevelZeroSitsBelowThePunishThreshold
+--- PASS: TestTempleCeiling_LevelZeroSitsBelowThePunishThreshold (0.00s)
+=== RUN   TestApplyDecay_Growth_MinimalCitySelfSufficient
+    grain_growth_test.go:253: day 0: pop=1500 grain=0.00
+    grain_growth_test.go:261: day 1: pop=1507 grain=1.48
+    grain_growth_test.go:261: day 2: pop=1514 grain=3.04
+    grain_growth_test.go:261: day 3: pop=1521 grain=4.66
+    grain_growth_test.go:261: day 4: pop=1528 grain=6.35
+    grain_growth_test.go:261: day 5: pop=1535 grain=8.10
+    grain_growth_test.go:261: day 6: pop=1542 grain=9.92
+    grain_growth_test.go:261: day 7: pop=1549 grain=11.81
+    grain_growth_test.go:261: day 8: pop=1556 grain=13.75
+    grain_growth_test.go:261: day 9: pop=1563 grain=15.77
+    grain_growth_test.go:261: day 10: pop=1570 grain=17.84
+    grain_growth_test.go:261: day 11: pop=1577 grain=19.98
+    grain_growth_test.go:261: day 12: pop=1584 grain=22.18
+    grain_growth_test.go:261: day 13: pop=1592 grain=24.44
+    grain_growth_test.go:261: day 14: pop=1600 grain=26.78
+    grain_growth_test.go:261: day 15: pop=1608 grain=29.18
+    grain_growth_test.go:261: day 16: pop=1616 grain=31.66
+    grain_growth_test.go:261: day 17: pop=1624 grain=34.20
+    grain_growth_test.go:261: day 18: pop=1632 grain=36.82
+    grain_growth_test.go:261: day 19: pop=1640 grain=39.51
+    grain_growth_test.go:261: day 20: pop=1648 grain=42.26
+    grain_growth_test.go:261: day 21: pop=1656 grain=45.08
+    grain_growth_test.go:261: day 22: pop=1664 grain=47.97
+    grain_growth_test.go:261: day 23: pop=1672 grain=50.92
+    grain_growth_test.go:261: day 24: pop=1680 grain=53.94
+    grain_growth_test.go:261: day 25: pop=1688 grain=57.02
+    grain_growth_test.go:261: day 26: pop=1696 grain=60.17
+    grain_growth_test.go:261: day 27: pop=1704 grain=63.38
+    grain_growth_test.go:261: day 28: pop=1712 grain=66.66
+    grain_growth_test.go:261: day 29: pop=1720 grain=69.99
+    grain_growth_test.go:261: day 30: pop=1728 grain=73.39
+    grain_growth_test.go:261: day 31: pop=1736 grain=76.85
+    grain_growth_test.go:261: day 32: pop=1744 grain=80.37
+    grain_growth_test.go:261: day 33: pop=1752 grain=83.95
+    grain_growth_test.go:261: day 34: pop=1760 grain=87.59
+    grain_growth_test.go:261: day 35: pop=1768 grain=91.29
+    grain_growth_test.go:261: day 36: pop=1776 grain=95.05
+    grain_growth_test.go:261: day 37: pop=1784 grain=98.86
+    grain_growth_test.go:261: day 38: pop=1792 grain=102.73
+    grain_growth_test.go:261: day 39: pop=1800 grain=106.66
+    grain_growth_test.go:261: day 40: pop=1808 grain=110.64
+    grain_growth_test.go:274: minimum grain observed over 40 days: 1.4850
+--- PASS: TestApplyDecay_Growth_MinimalCitySelfSufficient (0.32s)
+=== RUN   TestApplyDecay_Growth_OverCapPopulationStarves
+    grain_growth_test.go:300: day 1: pop=4975 grain=0.00
+    grain_growth_test.go:300: day 2: pop=4950 grain=0.00
+    grain_growth_test.go:300: day 3: pop=4925 grain=0.00
+    grain_growth_test.go:300: day 4: pop=4900 grain=0.00
+    grain_growth_test.go:300: day 5: pop=4876 grain=0.00
+--- PASS: TestApplyDecay_Growth_OverCapPopulationStarves (0.08s)
+=== RUN   TestApplyDecay_Growth_MatchesGoMirror
+    grain_growth_test.go:400: day 1: pop=1507 grain=1.48 net=1.50 (want pop=1507 grain=1.48)
+    grain_growth_test.go:400: day 2: pop=1514 grain=3.04 net=1.58 (want pop=1514 grain=3.04)
+    grain_growth_test.go:400: day 3: pop=1521 grain=4.66 net=1.67 (want pop=1521 grain=4.66)
+    grain_growth_test.go:400: day 4: pop=1528 grain=6.35 net=1.75 (want pop=1528 grain=6.35)
+    grain_growth_test.go:400: day 5: pop=1535 grain=8.10 net=1.84 (want pop=1535 grain=8.10)
+    grain_growth_test.go:400: day 6: pop=1542 grain=9.92 net=1.92 (want pop=1542 grain=9.92)
+    grain_growth_test.go:400: day 7: pop=1549 grain=11.81 net=2.00 (want pop=1549 grain=11.81)
+    grain_growth_test.go:400: day 8: pop=1556 grain=13.75 net=2.09 (want pop=1556 grain=13.75)
+    grain_growth_test.go:400: day 9: pop=1563 grain=15.77 net=2.17 (want pop=1563 grain=15.77)
+    grain_growth_test.go:400: day 10: pop=1570 grain=17.84 net=2.26 (want pop=1570 grain=17.84)
+    grain_growth_test.go:400: day 11: pop=1577 grain=19.98 net=2.34 (want pop=1577 grain=19.98)
+    grain_growth_test.go:400: day 12: pop=1584 grain=22.18 net=2.42 (want pop=1584 grain=22.18)
+    grain_growth_test.go:400: day 13: pop=1592 grain=24.44 net=2.51 (want pop=1592 grain=24.44)
+    grain_growth_test.go:400: day 14: pop=1600 grain=26.78 net=2.60 (want pop=1600 grain=26.78)
+    grain_growth_test.go:400: day 15: pop=1608 grain=29.18 net=2.70 (want pop=1608 grain=29.18)
+    grain_growth_test.go:400: day 16: pop=1616 grain=31.66 net=2.80 (want pop=1616 grain=31.66)
+    grain_growth_test.go:400: day 17: pop=1624 grain=34.20 net=2.89 (want pop=1624 grain=34.20)
+    grain_growth_test.go:400: day 18: pop=1632 grain=36.82 net=2.99 (want pop=1632 grain=36.82)
+    grain_growth_test.go:400: day 19: pop=1640 grain=39.51 net=3.08 (want pop=1640 grain=39.51)
+    grain_growth_test.go:400: day 20: pop=1648 grain=42.26 net=3.18 (want pop=1648 grain=42.26)
+    grain_growth_test.go:400: day 21: pop=1656 grain=45.08 net=3.28 (want pop=1656 grain=45.08)
+    grain_growth_test.go:400: day 22: pop=1664 grain=47.97 net=3.37 (want pop=1664 grain=47.97)
+    grain_growth_test.go:400: day 23: pop=1672 grain=50.92 net=3.47 (want pop=1672 grain=50.92)
+    grain_growth_test.go:400: day 24: pop=1680 grain=53.94 net=3.56 (want pop=1680 grain=53.94)
+    grain_growth_test.go:400: day 25: pop=1688 grain=57.02 net=3.66 (want pop=1688 grain=57.02)
+    grain_growth_test.go:400: day 26: pop=1696 grain=60.17 net=3.76 (want pop=1696 grain=60.17)
+    grain_growth_test.go:400: day 27: pop=1704 grain=63.38 net=3.85 (want pop=1704 grain=63.38)
+    grain_growth_test.go:400: day 28: pop=1712 grain=66.66 net=3.95 (want pop=1712 grain=66.66)
+    grain_growth_test.go:400: day 29: pop=1720 grain=69.99 net=4.04 (want pop=1720 grain=69.99)
+    grain_growth_test.go:400: day 30: pop=1728 grain=73.39 net=4.14 (want pop=1728 grain=73.39)
+    grain_growth_test.go:422: saw a day with no growth (food net ≤ 0): false
+--- PASS: TestApplyDecay_Growth_MatchesGoMirror (0.26s)
+=== RUN   TestApplyDecay_Growth_GeographyDifferentiates
+    grain_growth_test.go:451: after 15 days — poor: pop=4638 grain=0.00 | rich: pop=4896 grain=0.53
+--- PASS: TestApplyDecay_Growth_GeographyDifferentiates (0.30s)
+=== RUN   TestApplyDecay_StarvationCanTakeACityBelowTheCollapseLine
+--- PASS: TestApplyDecay_StarvationCanTakeACityBelowTheCollapseLine (0.03s)
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/grain_deficit
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/grain_balanced
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/grain_surplus
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/fish_deficit
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/fish_balanced
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/fish_surplus
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/mixed_deficit
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/mixed_balanced
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/mixed_surplus
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/livestock_is_emergency_food
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/wine_adds_variety_only
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/oil_adds_variety_only
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/stocked_food_without_production
+--- PASS: TestApplyDecay_GrowthGateMatchesFoodNet (0.48s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/grain_deficit (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/grain_balanced (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/grain_surplus (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/fish_deficit (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/fish_balanced (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/fish_surplus (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/mixed_deficit (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/mixed_balanced (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/mixed_surplus (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/livestock_is_emergency_food (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/wine_adds_variety_only (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/oil_adds_variety_only (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/stocked_food_without_production (0.04s)
+=== RUN   TestApplyDecay_HungerShrinksMatchesGrowthState
+--- PASS: TestApplyDecay_HungerShrinksMatchesGrowthState (0.03s)
+=== RUN   TestApplyDecay_GrowthLeavesTheStoresToFill
+    growth_overflow_test.go:29: day 2: pop=1514 grain=3.04
+    growth_overflow_test.go:29: day 3: pop=1521 grain=4.66
+    growth_overflow_test.go:29: day 4: pop=1528 grain=6.35
+    growth_overflow_test.go:29: day 5: pop=1535 grain=8.10
+    growth_overflow_test.go:29: day 6: pop=1542 grain=9.92
+    growth_overflow_test.go:29: day 7: pop=1549 grain=11.81
+    growth_overflow_test.go:29: day 8: pop=1556 grain=13.75
+    growth_overflow_test.go:29: day 9: pop=1563 grain=15.77
+    growth_overflow_test.go:29: day 10: pop=1570 grain=17.84
+    growth_overflow_test.go:29: day 11: pop=1577 grain=19.98
+    growth_overflow_test.go:29: day 12: pop=1584 grain=22.18
+    growth_overflow_test.go:29: day 13: pop=1592 grain=24.44
+    growth_overflow_test.go:29: day 14: pop=1600 grain=26.78
+    growth_overflow_test.go:29: day 15: pop=1608 grain=29.18
+    growth_overflow_test.go:29: day 16: pop=1616 grain=31.66
+    growth_overflow_test.go:29: day 17: pop=1624 grain=34.20
+    growth_overflow_test.go:29: day 18: pop=1632 grain=36.82
+    growth_overflow_test.go:29: day 19: pop=1640 grain=39.51
+    growth_overflow_test.go:29: day 20: pop=1648 grain=42.26
+--- PASS: TestApplyDecay_GrowthLeavesTheStoresToFill (0.18s)
+=== RUN   TestApplyDecay_FedWithoutSurplusHolds
+    growth_overflow_test.go:66: day 1: pop=5000 grain=989989.21
+    growth_overflow_test.go:66: day 2: pop=5000 grain=980078.53
+    growth_overflow_test.go:66: day 3: pop=5000 grain=970266.95
+--- PASS: TestApplyDecay_FedWithoutSurplusHolds (0.06s)
+=== RUN   TestApplyDecay_PopulationCrossingNewHundredPlacesOneGubbe
+--- PASS: TestApplyDecay_PopulationCrossingNewHundredPlacesOneGubbe (0.04s)
+=== RUN   TestL1TempleClimbsToFirstPrayerAndCaps
+=== RUN   TestL1TempleClimbsToFirstPrayerAndCaps/1
+    l1_climb_test.go:79: L1 net+0.300 first prayer tick14 cap50 reached tick164; actual180ticks
+=== RUN   TestL1TempleClimbsToFirstPrayerAndCaps/2
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=divine_recruits amount=2
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=divine_recruits amount=2
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=divine_recruits amount=2
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=bountiful_harvest amount=25
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=divine_recruits amount=2
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=divine_recruits amount=2
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=divine_recruits amount=2
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=divine_recruits amount=2
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=bountiful_harvest amount=25
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=bountiful_harvest amount=25
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=divine_recruits amount=2
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=bountiful_harvest amount=25
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=divine_recruits amount=3
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=bountiful_harvest amount=25
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=bountiful_harvest amount=25
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=divine_recruits amount=3
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=divine_recruits amount=4
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=divine_recruits amount=5
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=divine_recruits amount=6
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=divine_recruits amount=7
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=bountiful_harvest amount=25
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=bountiful_harvest amount=25
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=divine_recruits amount=8
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=divine_recruits amount=10
+2026/10/13 13:55:39 INFO divine blessing applied settlement=15eaa6d8-eef5-4f85-a44a-ae6e8c958203 type=divine_recruits amount=12
+    l1_climb_test.go:79: L2 net+2.400 first prayer tick2 cap75 reached tick31; actual180ticks
+=== RUN   TestL1TempleClimbsToFirstPrayerAndCaps/3
+2026/10/13 13:55:39 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=bountiful_harvest amount=25
+2026/10/13 13:55:39 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=divine_recruits amount=2
+2026/10/13 13:55:39 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=divine_recruits amount=2
+2026/10/13 13:55:39 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=divine_recruits amount=2
+2026/10/13 13:55:39 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=divine_recruits amount=2
+2026/10/13 13:55:39 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=bountiful_harvest amount=25
+2026/10/13 13:55:39 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=divine_recruits amount=2
+2026/10/13 13:55:39 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=divine_recruits amount=2
+2026/10/13 13:55:39 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=divine_recruits amount=2
+2026/10/13 13:55:39 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=divine_recruits amount=2
+2026/10/13 13:55:39 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=bountiful_harvest amount=25
+2026/10/13 13:55:39 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=bountiful_harvest amount=25
+2026/10/13 13:55:40 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=bountiful_harvest amount=25
+2026/10/13 13:55:40 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=divine_recruits amount=3
+2026/10/13 13:55:40 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=divine_recruits amount=3
+2026/10/13 13:55:40 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=bountiful_harvest amount=25
+2026/10/13 13:55:40 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=divine_recruits amount=4
+2026/10/13 13:55:40 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=divine_recruits amount=5
+2026/10/13 13:55:40 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=divine_recruits amount=6
+2026/10/13 13:55:40 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=divine_recruits amount=7
+2026/10/13 13:55:40 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=divine_recruits amount=8
+2026/10/13 13:55:40 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=divine_recruits amount=10
+2026/10/13 13:55:40 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=bountiful_harvest amount=25
+2026/10/13 13:55:40 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=bountiful_harvest amount=25
+2026/10/13 13:55:40 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=divine_recruits amount=12
+2026/10/13 13:55:40 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=divine_recruits amount=14
+2026/10/13 13:55:40 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=divine_recruits amount=12
+2026/10/13 13:55:40 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=divine_recruits amount=0
+2026/10/13 13:55:40 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=bountiful_harvest amount=25
+2026/10/13 13:55:40 INFO divine blessing applied settlement=12396bc1-e6c3-45f2-b8a6-af5e92e5eab7 type=bountiful_harvest amount=25
+    l1_climb_test.go:79: L3 net+4.500 first prayer tick1 cap100 reached tick23; actual180ticks
+--- PASS: TestL1TempleClimbsToFirstPrayerAndCaps (1.89s)
+    --- PASS: TestL1TempleClimbsToFirstPrayerAndCaps/1 (0.58s)
+    --- PASS: TestL1TempleClimbsToFirstPrayerAndCaps/2 (0.65s)
+    --- PASS: TestL1TempleClimbsToFirstPrayerAndCaps/3 (0.65s)
+=== RUN   TestSilverCalibrationKharisFlowLeavesStalePriceClamp
+--- PASS: TestSilverCalibrationKharisFlowLeavesStalePriceClamp (0.03s)
+=== RUN   TestDeriveMood_MatchesLowestPrayerTier
+--- PASS: TestDeriveMood_MatchesLowestPrayerTier (0.00s)
+=== RUN   TestDeriveMood_0_100_Thresholds
+--- PASS: TestDeriveMood_0_100_Thresholds (0.00s)
+=== RUN   TestComputeOfferFraction_FullOfferGivesFullFraction
+--- PASS: TestComputeOfferFraction_FullOfferGivesFullFraction (0.00s)
+=== RUN   TestComputeOfferFraction_NoOfferGivesZero
+--- PASS: TestComputeOfferFraction_NoOfferGivesZero (0.00s)
+=== RUN   TestComputeOfferFraction_PartialOfferScalesLinearly
+--- PASS: TestComputeOfferFraction_PartialOfferScalesLinearly (0.00s)
+=== RUN   TestComputeOfferFraction_NoTemplesIsZeroNotNaN
+--- PASS: TestComputeOfferFraction_NoTemplesIsZeroNotNaN (0.00s)
+=== RUN   TestGainScaling_NetDriftDownWithoutOffer
+--- PASS: TestGainScaling_NetDriftDownWithoutOffer (0.00s)
+=== RUN   TestGainScaling_FullOfferPreservesCultGain
+--- PASS: TestGainScaling_FullOfferPreservesCultGain (0.00s)
+=== RUN   TestApplyReinforcement_TrickleCappedAndPopulationNeverShrinks
+--- PASS: TestApplyReinforcement_TrickleCappedAndPopulationNeverShrinks (0.07s)
+=== RUN   TestApplyReinforcement_StopsAndClearsFlagAtFullStrength
+--- PASS: TestApplyReinforcement_StopsAndClearsFlagAtFullStrength (0.05s)
+=== RUN   TestApplyReinforcement_ResourceShortfallThrottlesRefill
+--- PASS: TestApplyReinforcement_ResourceShortfallThrottlesRefill (0.06s)
+=== RUN   TestApplyReinforcement_LeavingOriginGarrisonStopsRefillAndHoldsSize
+--- PASS: TestApplyReinforcement_LeavingOriginGarrisonStopsRefillAndHoldsSize (0.05s)
+=== RUN   TestApplyReinforcement_IdempotentUnderEventReplay
+--- PASS: TestApplyReinforcement_IdempotentUnderEventReplay (0.03s)
+=== RUN   TestApplySiegeStarvationClock_IncrementsWhileBesiegedAndStarving
+--- PASS: TestApplySiegeStarvationClock_IncrementsWhileBesiegedAndStarving (0.03s)
+=== RUN   TestApplySiegeStarvationClock_ResetsWhenFoodCovered
+--- PASS: TestApplySiegeStarvationClock_ResetsWhenFoodCovered (0.02s)
+=== RUN   TestApplySiegeStarvationClock_ResetsWhenBlockadeLifted
+--- PASS: TestApplySiegeStarvationClock_ResetsWhenBlockadeLifted (0.02s)
+=== RUN   TestApplySiegeStarvationClock_CapitulatesAtThreshold
+--- PASS: TestApplySiegeStarvationClock_CapitulatesAtThreshold (0.02s)
+=== RUN   TestApplySiegeStarvationClock_NeverIncrementsWhenNotBesieged
+--- PASS: TestApplySiegeStarvationClock_NeverIncrementsWhenNotBesieged (0.02s)
+=== RUN   TestApplyStarvation_LeavesGarrisonSizeToUpkeep
+2026/10/13 13:55:40 INFO starvation damage applied settlement=0798deb5-09b1-4756-b48d-275306079a9b
+--- PASS: TestApplyStarvation_LeavesGarrisonSizeToUpkeep (0.02s)
+=== RUN   TestApplyStarvation_DoesNotDisbandSmallGarrison
+2026/10/13 13:55:40 INFO starvation damage applied settlement=13d594b4-7e07-44c0-8db8-ec9d7ae52c53
+--- PASS: TestApplyStarvation_DoesNotDisbandSmallGarrison (0.02s)
+=== RUN   TestApplyStarvation_StillEmitsStarvationDamage
+2026/10/13 13:55:40 INFO starvation damage applied settlement=663c5f6c-9dd8-4157-a284-317357ffa94f
+--- PASS: TestApplyStarvation_StillEmitsStarvationDamage (0.02s)
+=== RUN   TestApplyStarvationWarning_RedWhenGrainWillEmptyWithinATick
+--- PASS: TestApplyStarvationWarning_RedWhenGrainWillEmptyWithinATick (0.02s)
+=== RUN   TestApplyStarvationWarning_YellowWhenTrendIsFarOff
+--- PASS: TestApplyStarvationWarning_YellowWhenTrendIsFarOff (0.02s)
+=== RUN   TestApplyStarvationWarning_SilentFromWarningWhenGrainAlreadyEmpty
+--- PASS: TestApplyStarvationWarning_SilentFromWarningWhenGrainAlreadyEmpty (0.01s)
+=== RUN   TestApplySubsistenceCritical_FiresWhenGrainEmpty
+--- PASS: TestApplySubsistenceCritical_FiresWhenGrainEmpty (0.02s)
+=== RUN   TestApplyStarvationWarning_SilentWhenGrainGrowing
+--- PASS: TestApplyStarvationWarning_SilentWhenGrainGrowing (0.01s)
+=== RUN   TestEmitSubsistenceWarning_DedupesUnreadSameTier
+--- PASS: TestEmitSubsistenceWarning_DedupesUnreadSameTier (0.02s)
+=== RUN   TestTempleCeiling_Level1StaysBelowBless
+--- PASS: TestTempleCeiling_Level1StaysBelowBless (0.00s)
+=== RUN   TestTempleCeiling_HigherTemplesReachFurther
+--- PASS: TestTempleCeiling_HigherTemplesReachFurther (0.00s)
+=== RUN   TestEffectiveKharisCap_TakesTheLower
+--- PASS: TestEffectiveKharisCap_TakesTheLower (0.00s)
+=== RUN   TestClampKharis_RespectsTheTempleCeiling
+--- PASS: TestClampKharis_RespectsTheTempleCeiling (0.00s)
+=== RUN   TestTempleCeiling_NoTempleStillHasAFloor
+--- PASS: TestTempleCeiling_NoTempleStillHasAFloor (0.00s)
+=== RUN   TestEarlyTempleOfferingLocalGiftAndProjection
+=== RUN   TestEarlyTempleOfferingLocalGiftAndProjection/grain
+=== RUN   TestEarlyTempleOfferingLocalGiftAndProjection/fish
+=== RUN   TestEarlyTempleOfferingLocalGiftAndProjection/timber
+=== RUN   TestEarlyTempleOfferingLocalGiftAndProjection/silver
+--- PASS: TestEarlyTempleOfferingLocalGiftAndProjection (0.16s)
+    --- PASS: TestEarlyTempleOfferingLocalGiftAndProjection/grain (0.04s)
+    --- PASS: TestEarlyTempleOfferingLocalGiftAndProjection/fish (0.04s)
+    --- PASS: TestEarlyTempleOfferingLocalGiftAndProjection/timber (0.04s)
+    --- PASS: TestEarlyTempleOfferingLocalGiftAndProjection/silver (0.04s)
+=== RUN   TestEarlyTempleOfferingMixedGiftAtomic
+--- PASS: TestEarlyTempleOfferingMixedGiftAtomic (0.03s)
+=== RUN   TestEarlyTempleOfferingScarcityAndDeterministicSubstitutes
+--- PASS: TestEarlyTempleOfferingScarcityAndDeterministicSubstitutes (0.00s)
+PASS
+ok  	formatet/megaron/server/internal/kharis	5.150s

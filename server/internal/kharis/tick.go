@@ -73,24 +73,11 @@ func shouldRollPunishment(kharis float64, ticksSinceFounding int) bool {
 	return kharis < punishThreshold
 }
 
-// kharisPerTempleDay is what one FULLY DEVOTED temple earns its Wanax per day
-// at tier 1 (mig 094, "kult är ingen vara"). The old model summed a `cult` STOCK
-// to derive a RATE — a fake good with weight 0 that nobody could trade, eat or
-// carry, and whose zero weight divided by zero in the sack loot query (3670805).
-// The tick now reads temple state directly: presence × devotion × whether it was
-// fed.
-//
-// Calibrated against decayBas (1.0/day) and against what a temple can actually
-// EMPLOY (templeDevotionCapacity): a level-1 temple staffed to its capacity and
-// fed climbs slowly (0.15 × 8.0 = 1.2 vs 1.0 decay = +0.2/day), an unfed or
-// unstaffed one fades, and a larger temple — which can employ more of the city —
-// climbs proportionally faster. "Skött tempel ≈ långsam klättring, försummelse =
-// fade." Strawman — temenos_balans_spakar.md §9.
-//
-// Raised 1.2 → 8.0 (Timothy 2026-07-23): at 1.2 even a temple staffed to the
-// full level-1 capacity earned 0.18/day against 1.0 decay, so EVERY Wanax faded
-// no matter what they did — a fade nobody could escape is not a choice.
-const kharisPerTempleDay = 8.0
+// kharisPerTempleDay converts staffed, fed cult to gain each tick.
+// Timothy2026-10-13: a tended first temple must climb without an upgrade.
+// At ordinary scarcity L1 gains0.15*14=2.1 before unchanged decay1.8:
+// net+0.3. L2/L3 remain faster and retain their separate ceilings.
+const kharisPerTempleDay = 14.0
 
 // templeDevotionCapacity is how much of a city's population a temple of this
 // level can put to work at the altar, as a share (Timothy 2026-07-23: the
@@ -120,31 +107,11 @@ const TempleDevotionPerLevel = 0.15
 // the new colonies pays for it; a temple (presence of the building alone
 // suffices) in a colony zeroes that colony's contribution.
 //
-// NET-NEUTRAL recalibration (Timothy 2026-07-11, A#4 kharis-rot): decayBas was
-// 4.0, which made a maintained temple net NEGATIVE (~−1.8/day vs the passive
-// geographic kharis_rate ~0.6/day + cult-gain), so kharis bled to the floor and
-// bless (≥60) was unreachable — and on a sped-up world (TICK_SECONDS) a restart's
-// tick catch-up replayed dozens of those net-negative days in one burst, flooring
-// every Wanax to 1. Intent now: PASSIVE (bare geographic kharis_rate, no active
-// offering) ≈ neutral / slow fade — "the relationship is tended actively"; an
-// OFFERING-fed temple is the only way UP (rites SPEND standing, they don't add
-// kharis). decayBas ≈ the typical passive rate achieves that shape regardless of
-// the exact cult-gain (design target ~0.8/day, live-observed ~2.2 — the climb
-// RATE is uncertain and must be re-measured at the next soak, but the SIGN is
-// right either way). Tunbar. temenos_balans_spakar.md §9 · temenos_kharis.md.
-// decayBas raised 1.0 → 1.8 (Timothy 2026-07-24, "för hög och enkel"): at 1.0 a
-// bare L1 temple staffed only to the 0.15 devotion FLOOR still netted +0.70/day
-// (soak-measured: gain 1.70 − decay 1.00), so EVERY Wanax climbed to their ceiling
-// over a long soak with zero active effort — auto-substitution feeds every temple
-// and an L1 temple can employ only the floor, so nobody could climb faster or
-// slower than anyone else. At 1.8 the floor-staffed L1 temple nets ≈ −0.1/day (a
-// slow fade), and only a temple large enough to employ MORE devotion than the floor
-// (level ≥ 2, which also raises the ceiling) climbs — restoring the documented
-// intent "passiv ≈ neutral/fade, aktivt skött (större tempel) = enda vägen upp"
-// without touching feedTempleBySubstitution (so the wine-lockout stays fixed).
-// Tunbar — temenos_balans_spakar.md §9.
+// Base decay remains1.8 after Timothy2026-10-13's L1 climb decision.
+// The change is in kharisPerTempleDay, so neglect and imperial burden keep
+// their previous rates while a staffed, fed first temple can now climb.
 const (
-	decayBas          = 1.8 // base daily decay: floor-staffed L1 nets ~neutral/slow-fade; L2+ climbs
+	decayBas          = 1.8 // base tick decay; fed L1 now climbs via cult yield, not lower decay
 	decayPerKoloni    = 1.0 // extra daily decay per templeless colony beyond decayFreeColonies
 	decayFreeColonies = 4   // this many templeless colonies cost nothing extra
 )

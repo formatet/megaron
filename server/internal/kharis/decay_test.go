@@ -63,25 +63,18 @@ func TestComputeDailyDecay_TempleInColonyZeroesItsContribution(t *testing.T) {
 	}
 }
 
-// TestDecayBas_ModestHoldsGrandClimbs guards the 2026-07-24 recalibration (Timothy,
-// "för hög och enkel"): decayBas must sit in [floorGain, l2Gain) — high enough that a
-// floor-staffed level-1 temple (the case EVERY existing city is in, ordinary scarcity
-// 1.0) does NOT climb on its own, low enough that a level-2 temple still can. Below
-// floorGain and the old "everyone drifts to the ceiling for free" bug returns; at or
-// above l2Gain and nothing is worth building. Derived from the constants, not a magic
-// band, so a tuner who moves kharisPerTempleDay sees the window move with it. The band
-// is for ORDINARY times (scarcity 1.0); a severe shortage can still lift even an L1
-// temple, which is intended — feeding a scarce good is a real gift.
-func TestDecayBas_ModestHoldsGrandClimbs(t *testing.T) {
-	floorGain := TempleDevotionPerLevel * kharisPerTempleDay      // L1 staffed to floor, scarcity 1.0
-	l2Gain := templeDevotionCapacity(2) * kharisPerTempleDay      // L2 staffed to capacity, scarcity 1.0
-	if decayBas < floorGain {
-		t.Errorf("decayBas = %v too low: a floor-staffed L1 temple (gain %v) would still climb for free — the 'modest temple holds, does not climb' intent is broken",
-			decayBas, floorGain)
+// Base decay is unchanged; feeding a staffed L1 now exceeds it weakly.
+func TestDecayBas_TendedModestClimbsGrandClimbsFaster(t *testing.T) {
+	floorGain := TempleDevotionPerLevel * kharisPerTempleDay
+	l2Gain := templeDevotionCapacity(2) * kharisPerTempleDay
+	if decayBas != 1.8 {
+		t.Errorf("base decay changed to%g", decayBas)
 	}
-	if decayBas >= l2Gain {
-		t.Errorf("decayBas = %v too high: even a level-2 temple (gain %v) cannot climb — nothing is worth building",
-			decayBas, l2Gain)
+	if floorGain <= decayBas || floorGain-decayBas > .5 {
+		t.Errorf("ordinary L1 net%g", floorGain-decayBas)
+	}
+	if l2Gain <= floorGain {
+		t.Errorf("L2gain%g not above L1%g", l2Gain, floorGain)
 	}
 }
 

@@ -19,7 +19,9 @@ Three things must be true, every day:
 2. **People serve in it** — devotion. See [[temples]].
 3. **The temple is fed** — a daily reference gift of 0.25 grain, with local fish, timber or silver as substitutes of equal divine value. See [[temples]] for the selection order and planned gift.
 
-**Your best temple sets your ceiling.** A small temple keeps you out of trouble; it can never earn you a blessing. If you want the gods on your side, build them something grand.
+A fully staffed, fed level-1 temple lets your standing grow slowly from the floor toward early [[rites|prayers]]. Larger temples can employ more devotion and raise kharis faster when staffed and fed.
+
+**Your best temple sets your ceiling.** A level-1 temple can never earn you a blessing. To reach blessings, you need a higher-level temple.
 
 Kharis decays every day regardless — and faster for each colony without a temple, beyond a handful. Expansion has a religious price ([[colonies]]).
 
