@@ -431,49 +431,15 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		// Kult-block (PLAN B §3, megaron_kult_legibilitet_plan.md): per temple-city,
-		// today's offer requirement vs current oil/wine stock — a read-only mirror of
-		// kharis.applyTempleOffering's own query (same gate, same numbers), so "will
-		// my kharis climb today" is answerable from `status` without waiting for the
-		// daily tick to run. Scoped by owner (not requesting player) to match the
-		// kharis/cooldown convention above — spectators see the owner's temples.
-		type templeOfferRow struct {
-			SettlementID uuid.UUID `json:"settlement_id"`
-			Name         string    `json:"name"`
-			Oil          float64   `json:"oil"`
-			Wine         float64   `json:"wine"`
-			OilNeeded    float64   `json:"oil_needed"`
-			WineNeeded   float64   `json:"wine_needed"`
-			Fed          bool      `json:"fed"`
-		}
-		var templeOffers []templeOfferRow
-		if sett.OwnerID != nil {
-			if trows, terr := h.pool.Query(r.Context(),
-				`SELECT s.id, s.name,
-				    COALESCE((SELECT settled(sg.amount, sg.rate, sg.calc_tick)
-				              FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'oil'), 0) AS oil,
-				    COALESCE((SELECT settled(sg.amount, sg.rate, sg.calc_tick)
-				              FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'wine'), 0) AS wine
-				 FROM settlements s
-				 WHERE s.owner_id = $1 AND s.world_id = $2 AND s.state NOT IN ('sunk', 'collapsed')
-				   AND EXISTS (SELECT 1 FROM buildings b WHERE b.settlement_id = s.id AND b.building_type = 'temple')
-				 ORDER BY s.name`,
-				*sett.OwnerID, worldID,
-			); terr == nil {
-				for trows.Next() {
-					var t templeOfferRow
-					if trows.Scan(&t.SettlementID, &t.Name, &t.Oil, &t.Wine) == nil {
-						t.OilNeeded = kharis.OfferOilPerTemple
-						t.WineNeeded = kharis.OfferWinePerTemple
-						t.Fed = t.Oil >= kharis.OfferOilPerTemple && t.Wine >= kharis.OfferWinePerTemple
-						templeOffers = append(templeOffers, t)
-					}
-				}
-				trows.Close()
+		// Status displays the same local early-gift plan as the kharis tick.
+		templeOffers := []kharis.TempleOffer{}
+		if viewerID, authenticated := auth.PlayerIDFromContext(r.Context()); authenticated && sett.OwnerID != nil && *sett.OwnerID == viewerID {
+			offers, err := kharis.LoadTempleOffers(r.Context(), h.pool, *sett.OwnerID, worldID)
+			if err != nil {
+				writeError(w, http.StatusInternalServerError, "could not load temple offerings")
+				return
 			}
-		}
-		if templeOffers == nil {
-			templeOffers = []templeOfferRow{}
+			templeOffers = offers
 		}
 
 		// Temple presence — required by the rite handler for any prayer.

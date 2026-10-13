@@ -2,7 +2,6 @@ package kharis
 
 import (
 	"context"
-	"sort"
 
 	"formatet/megaron/server/internal/religion"
 	"github.com/google/uuid"
@@ -12,7 +11,7 @@ import (
 // ProjectDailyNet computes, read-only, the kharis a Wanax would net on the NEXT
 // maintained day: devotionSum × kharisPerTempleDay × offerFraction × scarcity −
 // dailyDecay — the exact formula processMaintenance applies, with the exact same
-// feeding rule (traditional oil+wine OR substitution to the same divine worth).
+// feeding rule (early grain reference or local substitutions to the same divine worth).
 // It exists so `status` can answer "will my kharis rise or fall" honestly: the
 // bare geographic kharis_rate a Wanax sees ("passiv +0.1/dygn") excludes decay
 // and temple maintenance entirely, so a fading L1 Wanax read a rising number
@@ -93,7 +92,7 @@ func scarcityFromValues(values, baseValues map[string]float64, err error) float6
 	if err != nil || len(values) == 0 {
 		return 1.0
 	}
-	offering := map[string]float64{"oil": OfferOilPerTemple, "wine": OfferWinePerTemple}
+	offering := templeOfferingRecipe()
 	var divine, base float64
 	for good, amount := range offering {
 		divine += amount * values[good]
@@ -105,88 +104,17 @@ func scarcityFromValues(values, baseValues map[string]float64, err error) float6
 	return clampTempleScarcity(divine / base)
 }
 
-// projectFedTemples counts how many of the Wanax's temple cities COULD be fed
-// today — traditional oil+wine, or substitution to the same divine worth — WITHOUT
-// deducting anything. Mirrors applyTempleOffering + feedTempleBySubstitution.
+// projectFedTemples uses the same local gift plan as maintenance and status.
 func projectFedTemples(ctx context.Context, pool *pgxpool.Pool, playerID, worldID uuid.UUID, values map[string]float64) int {
-	rows, err := pool.Query(ctx,
-		`SELECT s.id,
-		    COALESCE((SELECT settled(sg.amount, sg.rate, sg.calc_tick)
-		              FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'oil'), 0) AS oil,
-		    COALESCE((SELECT settled(sg.amount, sg.rate, sg.calc_tick)
-		              FROM settlement_goods sg WHERE sg.settlement_id = s.id AND sg.good_key = 'wine'), 0) AS wine
-		 FROM settlements s
-		 WHERE s.owner_id = $1 AND s.world_id = $2 AND s.state NOT IN ('sunk', 'collapsed')
-		   AND EXISTS (SELECT 1 FROM buildings b WHERE b.settlement_id = s.id AND b.building_type = 'temple')`,
-		playerID, worldID,
-	)
+	offers, err := loadTempleOffers(ctx, pool, playerID, worldID, values)
 	if err != nil {
 		return 0
 	}
-	type temple struct {
-		id        uuid.UUID
-		oil, wine float64
-	}
-	var temples []temple
-	for rows.Next() {
-		var t temple
-		if rows.Scan(&t.id, &t.oil, &t.wine) == nil {
-			temples = append(temples, t)
-		}
-	}
-	rows.Close()
-
-	// Traditional worth the altar is due today (values may be empty on a fresh
-	// world — then substitution can't be priced, so only the oil+wine path counts).
-	due := OfferOilPerTemple*values["oil"] + OfferWinePerTemple*values["wine"]
-
 	fed := 0
-	for _, t := range temples {
-		if t.oil >= OfferOilPerTemple && t.wine >= OfferWinePerTemple {
-			fed++
-			continue
-		}
-		if due > 0 && canSubstituteFeed(ctx, pool, t.id, values, due) {
+	for _, o := range offers {
+		if o.Fed {
 			fed++
 		}
 	}
 	return fed
-}
-
-// canSubstituteFeed reports whether a city holds goods worth `due` in the gods'
-// reckoning — the read-only half of feedTempleBySubstitution (no UPDATE).
-func canSubstituteFeed(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID, values map[string]float64, due float64) bool {
-	rows, err := pool.Query(ctx,
-		`SELECT sg.good_key, GREATEST(0, settled(sg.amount, sg.rate, sg.calc_tick))
-		 FROM settlement_goods sg
-		 WHERE sg.settlement_id = $1 AND sg.good_key <> 'silver'
-		   AND GREATEST(0, settled(sg.amount, sg.rate, sg.calc_tick)) > 0`,
-		settlementID)
-	if err != nil {
-		return false
-	}
-	type stock struct {
-		amount, value float64
-	}
-	var available []stock
-	for rows.Next() {
-		var key string
-		var amount float64
-		if rows.Scan(&key, &amount) == nil {
-			if v := values[key]; v > 0 {
-				available = append(available, stock{amount: amount, value: v})
-			}
-		}
-	}
-	rows.Close()
-	// Dearest-first, exactly as the real feeder plans the gift.
-	sort.Slice(available, func(i, j int) bool { return available[i].value > available[j].value })
-	paid := 0.0
-	for _, st := range available {
-		if paid >= due {
-			break
-		}
-		paid += st.amount * st.value
-	}
-	return paid >= due
 }

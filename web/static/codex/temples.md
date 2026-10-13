@@ -6,11 +6,13 @@ A **Temple** ([[buildings]]) is how you keep the gods' favour ([[kharis]]). It n
 
 A temple can only employ so much of the city — **15% per temple level** — and the row tells you when you are at the limit. <!-- src: server/internal/kharis/tick.go TempleDevotionPerLevel -->
 
-## Offerings — oil and wine
+## Offerings — local early goods
 
-Each temple needs a small daily offering of **oil and wine**. **Kult → Temple offerings** shows each temple's need against your stock, with a ✓ or ✗. Let it run dry and the day's gain in kharis shrinks towards nothing.
+Each temple's daily reference gift is **0.25 grain**, taken only from its own city's stock. Fish, timber and silver can replace grain at the same divine value; a gift may combine goods. The amount of a substitute can change with the world's divine values. <!-- src: server/internal/kharis/temple_offering.go TempleOfferingGrain -->
 
-That is why a **Winery** and an **Olive Press** are religious infrastructure, not luxuries — and why wine and oil are good [[trade]] goods.
+The temple uses **grain first, then fish, then timber, and silver last**. Silver is never required. Oil and wine are not used for this standing gift; [[rites|prayers]] keep their own offerings.
+
+**Kult → Temple offerings** and `keryx status` show the reference, equivalent alternatives, local stock and planned next gift, with a ✓ or ✗. If the city cannot fund the whole gift, nothing is taken and that temple earns no offering gain for the day. Devotion and the daily decay still determine your net kharis change.
 
 ## Level
 

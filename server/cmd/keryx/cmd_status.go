@@ -104,14 +104,78 @@ const livestockFoodValue = 166.67
 // of it already present in the /provinces payload `status` already parses,
 // so gathering it costs no extra server round trip.
 type sinkContext struct {
-	population        float64
-	buildingLevels    map[string]int // building_type → current level; absent/0 = not built
-	hexSites          *hexBuildSites // nil = placement-options unreadable → hex-bound types fall back to buildingLevels
-	wallLevel         int            // 0-3
-	armyUpkeepGrain   float64        // this settlement's own current per-tick draw
-	armyUpkeepSilver  float64
-	templeOilPerTick  float64 // sum of temple_offers[].oil_needed for this settlement
-	templeWinePerTick float64 // sum of temple_offers[].wine_needed
+	population            float64
+	buildingLevels        map[string]int // building_type → current level; absent/0 = not built
+	hexSites              *hexBuildSites // nil = placement-options unreadable → hex-bound types fall back to buildingLevels
+	wallLevel             int            // 0-3
+	armyUpkeepGrain       float64        // this settlement's own current per-tick draw
+	armyUpkeepSilver      float64
+	templeOfferingPerTick map[string]float64 // planned local debits from temple_offers[].offering
+}
+
+// localTempleOffering counts only this city's planned gift. The status payload
+// includes realm-wide temple rows; another city's goods are not a local sink.
+func localTempleOffering(sett map[string]any) map[string]float64 {
+	take := map[string]float64{}
+	id, _ := sett["id"].(string)
+	temples, _ := sett["temple_offers"].([]any)
+	for _, item := range temples {
+		row, _ := item.(map[string]any)
+		cityID, _ := row["settlement_id"].(string)
+		if id == "" || cityID != id {
+			continue
+		}
+		goods, _ := row["offering"].(map[string]any)
+		for good, value := range goods {
+			if amount, ok := value.(float64); ok && amount > 0 {
+				take[good] += amount
+			}
+		}
+	}
+	return take
+}
+
+func templeGoodsText(raw any, separator string) string {
+	goods, _ := raw.(map[string]any)
+	keys := make([]string, 0, len(goods))
+	for key := range goods {
+		keys = append(keys, key)
+	}
+	order := map[string]int{"grain": 0, "fish": 1, "timber": 2, "silver": 3}
+	sort.Slice(keys, func(i, j int) bool {
+		a, aOK := order[keys[i]]
+		b, bOK := order[keys[j]]
+		if aOK != bOK {
+			return aOK
+		}
+		if aOK && a != b {
+			return a < b
+		}
+		return keys[i] < keys[j]
+	})
+	parts := []string{}
+	for _, good := range keys {
+		amount, ok := goods[good].(float64)
+		if ok {
+			parts = append(parts, fmt.Sprintf("%.4g %s", amount, good))
+		}
+	}
+	if len(parts) == 0 {
+		return "—"
+	}
+	return strings.Join(parts, separator)
+}
+
+func templeOfferingLine(row map[string]any) string {
+	name, _ := row["name"].(string)
+	fed, _ := row["fed"].(bool)
+	mark, next := "✗", "unfunded (nothing taken)"
+	if fed {
+		mark, next = "✓", templeGoodsText(row["offering"], " + ")
+	}
+	return fmt.Sprintf("  Temple in %s: reference %s per day — alternatives: %s — stock: %s — next gift: %s  %s",
+		name, templeGoodsText(row["required_goods"], " + "), templeGoodsText(row["alternatives"], " or "),
+		templeGoodsText(row["stock"], ", "), next, mark)
 }
 
 // remainingBuildingCosts sums the material (+ silver) cost of every building
@@ -216,13 +280,10 @@ func hexBuildSitesFrom(resp *placementOptionsResp) *hexBuildSites {
 //   - Upkeep: this settlement's OWN current army_upkeep grain/silver draw
 //     (server-computed — the same figures `status`'s own Army/Upkeep line
 //     shows), × productionHorizonTicks.
-//   - Tempel: the "kharis oil/wine" finding kept from the first pass, now
-//     sized instead of boolean — oil/wine temple maintenance
-//     (kharis.OfferOilPerTemple/OfferWinePerTemple, internal/kharis/tick.go)
-//     is a real, deterministic per-tick draw. Read off temple_offers' own
-//     oil_needed/wine_needed (already served to `status`) rather than
-//     importing kharis, which would pull ai/economy/events/hexgrid/
-//     religion/unit into a CLI binary for two floats.
+//   - Tempel: the server's planned local offering, × productionHorizonTicks.
+//     Each city's own temple_offers[].offering specifies the actual goods,
+//     including mixed substitutions at the world's divine values. An unfunded
+//     gift has no planned debit. No client-side recipe or valuation is needed.
 //   - Mat: economy.FoodConsumptionSplit's fallback chain (grain → fish →
 //     livestock, internal/economy/recompute.go:417-446) shares ONE demand
 //     pool — the population's food need over the horizon
@@ -248,8 +309,9 @@ func sinkCapacities(ctx sinkContext) map[string]float64 {
 	cap["grain"] += ctx.armyUpkeepGrain * productionHorizonTicks
 	cap["silver"] += ctx.armyUpkeepSilver * productionHorizonTicks
 
-	cap["oil"] += ctx.templeOilPerTick * productionHorizonTicks
-	cap["wine"] += ctx.templeWinePerTick * productionHorizonTicks
+	for good, amount := range ctx.templeOfferingPerTick {
+		cap[good] += amount * productionHorizonTicks
+	}
 
 	foodDemand := ctx.population * grainConsumptionPerCitizenPerTick * productionHorizonTicks
 	cap["grain"] += foodDemand
@@ -832,29 +894,19 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 					armyUpkeepGrain, _ = up["grain"].(float64)
 					armyUpkeepSilver, _ = up["silver"].(float64)
 				}
-				templeOil, templeWine := 0.0, 0.0
-				if temples, ok := sett["temple_offers"].([]any); ok {
-					for _, it := range temples {
-						m, _ := it.(map[string]any)
-						oilN, _ := m["oil_needed"].(float64)
-						wineN, _ := m["wine_needed"].(float64)
-						templeOil += oilN
-						templeWine += wineN
-					}
-				}
+				templeOffering := localTempleOffering(sett)
 				var hexSites *hexBuildSites
 				if po, err := fetchPlacementOptions(c, cfg.WorldID, prov); err == nil {
 					hexSites = hexBuildSitesFrom(po)
 				}
 				capacities := sinkCapacities(sinkContext{
-					population:        pop,
-					buildingLevels:    buildingLevels,
-					hexSites:          hexSites,
-					wallLevel:         int(walls),
-					armyUpkeepGrain:   armyUpkeepGrain,
-					armyUpkeepSilver:  armyUpkeepSilver,
-					templeOilPerTick:  templeOil,
-					templeWinePerTick: templeWine,
+					population:            pop,
+					buildingLevels:        buildingLevels,
+					hexSites:              hexSites,
+					wallLevel:             int(walls),
+					armyUpkeepGrain:       armyUpkeepGrain,
+					armyUpkeepSilver:      armyUpkeepSilver,
+					templeOfferingPerTick: templeOffering,
 				})
 				openSinks := openEndedSinkGoods(c)
 				capacityFor := func(k string) float64 {
@@ -942,7 +994,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				fmt.Print(line)
 			}
 
-			// Kult: per tempel-stad, dagens offer-krav vs oil/vin-lager — svarar
+			// Kult: each temple city's reference, stock and planned local gift — answers
 			// direkt på "kommer min kharis klättra idag" utan att vänta på tick.
 			if idle, _ := sett["kharis_devotion_idle"].(bool); idle {
 				fmt.Println("  → your temple can employ MORE devotion than you've allocated — raise cult labor (`keryx allocate --cult <%>`) to fill it and let kharis climb.")
@@ -954,22 +1006,12 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				anyUnfed := false
 				for _, it := range temples {
 					m, _ := it.(map[string]any)
-					name, _ := m["name"].(string)
-					oil, _ := m["oil"].(float64)
-					wine, _ := m["wine"].(float64)
-					oilNeeded, _ := m["oil_needed"].(float64)
-					wineNeeded, _ := m["wine_needed"].(float64)
 					fed, _ := m["fed"].(bool)
-					mark := "✓"
-					if !fed {
-						mark = "✗"
-						anyUnfed = true
-					}
-					fmt.Printf("  Temple in %s: needs %.0f oil + %.0f wine per day — stock: oil %s, wine %s  %s\n",
-						name, oilNeeded, wineNeeded, resource(oil), resource(wine), mark)
+					anyUnfed = anyUnfed || !fed
+					fmt.Println(templeOfferingLine(m))
 				}
 				if mood == "Suspicious" || mood == "Wrathful" || anyUnfed {
-					fmt.Println("  → feed the temples (build up oil/wine) or cast a rite — see `keryx rite --list`.")
+					fmt.Println("  → feed the temples with local grain, fish, timber or silver or cast a rite — see `keryx rite --list`.")
 				}
 			}
 			fmt.Println()

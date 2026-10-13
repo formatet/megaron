@@ -138,13 +138,16 @@ func TestSinkCapacities(t *testing.T) {
 		}
 	})
 
-	t.Run("temple maintenance adds to oil/wine over the horizon", func(t *testing.T) {
-		got := sinkCapacities(sinkContext{buildingLevels: allBuildingsMaxed(), wallLevel: 3, templeOilPerTick: 2, templeWinePerTick: 1})
-		if want := 2.0 * productionHorizonTicks; got["oil"] != want {
-			t.Errorf("sinkCapacities()[oil] = %v, want %v (kharis oil/wine finding, sized)", got["oil"], want)
+	t.Run("temple maintenance sizes the actual mixed gift over the horizon", func(t *testing.T) {
+		got := sinkCapacities(sinkContext{buildingLevels: allBuildingsMaxed(), wallLevel: 3,
+			templeOfferingPerTick: map[string]float64{"grain": .1, "fish": .05, "timber": .2, "silver": .03}})
+		for good, rate := range map[string]float64{"grain": .1, "fish": .05, "timber": .2, "silver": .03} {
+			if want := rate * productionHorizonTicks; got[good] != want {
+				t.Errorf("%s capacity = %v, want %v", good, got[good], want)
+			}
 		}
-		if want := 1.0 * productionHorizonTicks; got["wine"] != want {
-			t.Errorf("sinkCapacities()[wine] = %v, want %v", got["wine"], want)
+		if got["oil"] != 0 || got["wine"] != 0 {
+			t.Errorf("standing gift created oil/wine demand: %v", got)
 		}
 	})
 
