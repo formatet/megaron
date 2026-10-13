@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-kharis-l1-klattra/docs/reviews/kharis-l1-klattra/mutate.py", line 26, in <module>
+    assert result.returncode == 0, result.stdout
+           ^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: docker: Error response from daemon: failed to set up container networking: driver failed programming external connectivity on endpoint megaron-gotest-331818 (6476e63c322e07c1c5dfccd2bd74c69952061243fc687de21d4991e3d758fbf0): Bind for 0.0.0.0:56379 failed: port is already allocated
+
+Run 'docker run --help' for more information
+

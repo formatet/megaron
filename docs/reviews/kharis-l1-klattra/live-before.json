@@ -1,0 +1,29 @@
+{
+  "health": {
+    "commit": "7053ac2",
+    "migration": 179,
+    "status": "ok"
+  },
+  "snapshot": {
+    "migration": {
+      "version": 179,
+      "dirty": false
+    },
+    "world": {
+      "id": "f7c90afa-4653-46a6-b14c-473a268efa3e",
+      "tick": 150,
+      "last_tick_at": "2026-09-10T10:33:07.840929+00:00"
+    },
+    "cutoff": 2224946,
+    "old_event_hash": "0aed811979e59b9501e602346a8941c4",
+    "founders": [
+      {
+        "id": "c0bc2864-6aca-4ffb-ae3e-b6c69ffc9633",
+        "silver_amount": 480,
+        "silver_rate": 0,
+        "calc_tick": 150
+      }
+    ],
+    "latest_v2": null
+  }
+}

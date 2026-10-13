@@ -1,0 +1,51 @@
+{"time":"2026-10-13T14:05:20.350815913+02:00","level":"INFO","msg":"migrations applied"}
+{"time":"2026-10-13T14:05:20.370196624+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"2afb1152-9cdd-4a8a-a942-a58e415754ab","seed":1791893120354054716,"width":64,"height":64,"err":"invalid map: largest landmass = 15.1% of map area (want <= 15%)"}
+{"time":"2026-10-13T14:05:20.388823252+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"2afb1152-9cdd-4a8a-a942-a58e415754ab","seed":1791893120354054717,"width":64,"height":64,"err":"invalid map: productive tin = 1 (want >= 2)"}
+{"time":"2026-10-13T14:05:21.652694386+02:00","level":"INFO","msg":"world created","name":"L1 climb proof","id":"2afb1152-9cdd-4a8a-a942-a58e415754ab","seed":1791893120354054718}
+{"time":"2026-10-13T14:05:21.659523202+02:00","level":"INFO","msg":"world ready","id":"2afb1152-9cdd-4a8a-a942-a58e415754ab"}
+{"time":"2026-10-13T14:05:21.65973178+02:00","level":"INFO","msg":"chronicle opened","world":"L1 climb proof","dir":"/tmp/temple-native-rev_vjmo/chronicles"}
+{"time":"2026-10-13T14:05:21.661282623+02:00","level":"INFO","msg":"scheduled event worker started","poll":1000000000}
+{"time":"2026-10-13T14:05:21.661329032+02:00","level":"INFO","msg":"tick worker started","tick_seconds":1}
+{"time":"2026-10-13T14:05:21.661572175+02:00","level":"INFO","msg":"build","commit":"4083c54e"}
+{"time":"2026-10-13T14:05:21.661750131+02:00","level":"INFO","msg":"keryx server starting","addr":":57597"}
+{"time":"2026-10-13T14:05:21.6678859+02:00","level":"INFO","msg":"daily ticks seeded","worlds":1}
+2026/10/13 14:05:21 [tki9/o8OGFwtFGf-000001] "GET http://127.0.0.1:57597/healthz HTTP/1.1" from 127.0.0.1:33504 - 200 52B in 3.009454ms
+2026/10/13 14:05:21 [tki9/o8OGFwtFGf-000002] "GET http://127.0.0.1:57597/api/v1/worlds HTTP/1.1" from 127.0.0.1:33508 - 200 166B in 1.623116ms
+{"time":"2026-10-13T14:05:22.003578747+02:00","level":"INFO","msg":"player registered","id":"269cca4f-4278-4d50-a146-8c5271f99af1","username":"Temple-0585f9bc"}
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000003] "POST http://127.0.0.1:57597/api/v1/auth/register HTTP/1.1" from 127.0.0.1:33522 - 201 390B in 45.546458ms
+{"time":"2026-10-13T14:05:22.019935699+02:00","level":"INFO","msg":"world started","world":"2afb1152-9cdd-4a8a-a942-a58e415754ab","wanaxes":1}
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000004] "POST http://127.0.0.1:57597/api/v1/worlds/2afb1152-9cdd-4a8a-a942-a58e415754ab/join HTTP/1.1" from 127.0.0.1:33534 - 201 304B in 15.303268ms
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000005] "POST http://127.0.0.1:57597/api/v1/worlds/2afb1152-9cdd-4a8a-a942-a58e415754ab/founding/settle HTTP/1.1" from 127.0.0.1:33538 - 201 472B in 102.046018ms
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000006] "GET http://127.0.0.1:57597/api/v1/worlds/2afb1152-9cdd-4a8a-a942-a58e415754ab/provinces HTTP/1.1" from 127.0.0.1:33546 - 200 287B in 5.243065ms
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000007] "GET http://127.0.0.1:57597/api/v1/worlds/2afb1152-9cdd-4a8a-a942-a58e415754ab/provinces/b28a7b7d-5c0e-4ad2-a3ab-1814e6323b19/placement-options HTTP/1.1" from 127.0.0.1:33548 - 200 6950B in 34.441669ms
+{"time":"2026-10-13T14:05:22.207099225+02:00","level":"INFO","msg":"player registered","id":"117f3abe-f8ef-4d0f-a9ed-9f0744e0a0a4","username":"Temple-a19cec6f"}
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000008] "POST http://127.0.0.1:57597/api/v1/auth/register HTTP/1.1" from 127.0.0.1:33558 - 201 390B in 43.928723ms
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000009] "POST http://127.0.0.1:57597/api/v1/worlds/2afb1152-9cdd-4a8a-a942-a58e415754ab/join HTTP/1.1" from 127.0.0.1:33566 - 201 303B in 10.126718ms
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000010] "POST http://127.0.0.1:57597/api/v1/worlds/2afb1152-9cdd-4a8a-a942-a58e415754ab/founding/settle HTTP/1.1" from 127.0.0.1:33568 - 409 97B in 1.288508ms
+{"time":"2026-10-13T14:05:22.262830756+02:00","level":"INFO","msg":"player registered","id":"1c9ff712-b9b7-451f-a20d-3c528bd877bd","username":"Temple-bbae912c"}
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000011] "POST http://127.0.0.1:57597/api/v1/auth/register HTTP/1.1" from 127.0.0.1:33574 - 201 390B in 43.302694ms
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000012] "POST http://127.0.0.1:57597/api/v1/worlds/2afb1152-9cdd-4a8a-a942-a58e415754ab/join HTTP/1.1" from 127.0.0.1:33584 - 201 304B in 9.477355ms
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000013] "POST http://127.0.0.1:57597/api/v1/worlds/2afb1152-9cdd-4a8a-a942-a58e415754ab/founding/settle HTTP/1.1" from 127.0.0.1:33592 - 409 97B in 944.105µs
+{"time":"2026-10-13T14:05:22.31814916+02:00","level":"INFO","msg":"player registered","id":"1f3ad4e3-dba8-45e2-bb86-c5955d8204d9","username":"Temple-92e341d9"}
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000014] "POST http://127.0.0.1:57597/api/v1/auth/register HTTP/1.1" from 127.0.0.1:33598 - 201 390B in 43.956655ms
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000015] "POST http://127.0.0.1:57597/api/v1/worlds/2afb1152-9cdd-4a8a-a942-a58e415754ab/join HTTP/1.1" from 127.0.0.1:33612 - 201 304B in 9.51597ms
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000016] "POST http://127.0.0.1:57597/api/v1/worlds/2afb1152-9cdd-4a8a-a942-a58e415754ab/founding/settle HTTP/1.1" from 127.0.0.1:33614 - 409 97B in 895.106µs
+{"time":"2026-10-13T14:05:22.372981702+02:00","level":"INFO","msg":"player registered","id":"d1e66441-7356-4bcf-9161-e1687fee1038","username":"Temple-ec67a30a"}
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000017] "POST http://127.0.0.1:57597/api/v1/auth/register HTTP/1.1" from 127.0.0.1:33624 - 201 390B in 43.314369ms
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000018] "POST http://127.0.0.1:57597/api/v1/worlds/2afb1152-9cdd-4a8a-a942-a58e415754ab/join HTTP/1.1" from 127.0.0.1:33632 - 201 303B in 9.726658ms
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000019] "POST http://127.0.0.1:57597/api/v1/worlds/2afb1152-9cdd-4a8a-a942-a58e415754ab/founding/settle HTTP/1.1" from 127.0.0.1:33648 - 409 97B in 921.552µs
+{"time":"2026-10-13T14:05:22.428155001+02:00","level":"INFO","msg":"player registered","id":"7f96e8f6-a3d0-44eb-88ad-06ad34aede9a","username":"Temple-7da53832"}
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000020] "POST http://127.0.0.1:57597/api/v1/auth/register HTTP/1.1" from 127.0.0.1:33658 - 201 390B in 43.635621ms
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000021] "POST http://127.0.0.1:57597/api/v1/worlds/2afb1152-9cdd-4a8a-a942-a58e415754ab/join HTTP/1.1" from 127.0.0.1:33664 - 201 304B in 9.785044ms
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000022] "POST http://127.0.0.1:57597/api/v1/worlds/2afb1152-9cdd-4a8a-a942-a58e415754ab/founding/settle HTTP/1.1" from 127.0.0.1:33668 - 409 97B in 1.071114ms
+{"time":"2026-10-13T14:05:22.483381398+02:00","level":"INFO","msg":"player registered","id":"aec6ae15-e5e4-4953-8ad2-92a6e11a1851","username":"Temple-198703e7"}
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000023] "POST http://127.0.0.1:57597/api/v1/auth/register HTTP/1.1" from 127.0.0.1:33674 - 201 390B in 43.391165ms
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000024] "POST http://127.0.0.1:57597/api/v1/worlds/2afb1152-9cdd-4a8a-a942-a58e415754ab/join HTTP/1.1" from 127.0.0.1:33682 - 201 303B in 9.051879ms
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000025] "POST http://127.0.0.1:57597/api/v1/worlds/2afb1152-9cdd-4a8a-a942-a58e415754ab/founding/settle HTTP/1.1" from 127.0.0.1:33698 - 409 97B in 735.956µs
+{"time":"2026-10-13T14:05:22.537705125+02:00","level":"INFO","msg":"player registered","id":"571c24c5-ffc6-42fd-b314-15a2a618aca2","username":"Temple-b81b5bcf"}
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000026] "POST http://127.0.0.1:57597/api/v1/auth/register HTTP/1.1" from 127.0.0.1:33700 - 201 390B in 43.458188ms
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000027] "POST http://127.0.0.1:57597/api/v1/worlds/2afb1152-9cdd-4a8a-a942-a58e415754ab/join HTTP/1.1" from 127.0.0.1:33708 - 201 304B in 8.936687ms
+2026/10/13 14:05:22 [tki9/o8OGFwtFGf-000028] "POST http://127.0.0.1:57597/api/v1/worlds/2afb1152-9cdd-4a8a-a942-a58e415754ab/founding/settle HTTP/1.1" from 127.0.0.1:33716 - 409 97B in 656.417µs
+{"time":"2026-10-13T14:05:22.549264547+02:00","level":"INFO","msg":"scheduled event worker stopped"}
+{"time":"2026-10-13T14:05:22.549273421+02:00","level":"INFO","msg":"tick worker stopped"}
+{"time":"2026-10-13T14:05:22.549274654+02:00","level":"INFO","msg":"shutting down"}

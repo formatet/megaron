@@ -1,0 +1,71 @@
+» färsk DB på migration 179 · commit 7053ac2d+ändringar
+=== RUN   TestL1TempleClimbsToFirstPrayerAndCaps
+=== RUN   TestL1TempleClimbsToFirstPrayerAndCaps/1
+    l1_climb_test.go:79: L1 net+0.300 first prayer tick14 cap50 reached tick164; actual180ticks
+=== RUN   TestL1TempleClimbsToFirstPrayerAndCaps/2
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=bountiful_harvest amount=25
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=bountiful_harvest amount=25
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=bountiful_harvest amount=25
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=divine_recruits amount=2
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=bountiful_harvest amount=25
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=bountiful_harvest amount=25
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=bountiful_harvest amount=25
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=bountiful_harvest amount=25
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=bountiful_harvest amount=25
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=divine_recruits amount=2
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=divine_recruits amount=2
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=divine_recruits amount=2
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=divine_recruits amount=2
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=bountiful_harvest amount=25
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=divine_recruits amount=2
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=divine_recruits amount=2
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=bountiful_harvest amount=25
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=divine_recruits amount=2
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=bountiful_harvest amount=25
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=divine_recruits amount=3
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=bountiful_harvest amount=25
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=divine_recruits amount=3
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=bountiful_harvest amount=25
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=bountiful_harvest amount=25
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=bountiful_harvest amount=25
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=bountiful_harvest amount=25
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=bountiful_harvest amount=25
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=bountiful_harvest amount=25
+2026/10/13 13:59:40 INFO divine blessing applied settlement=1d6a340e-1061-49d9-bec3-916df69db713 type=divine_recruits amount=4
+    l1_climb_test.go:79: L2 net+2.400 first prayer tick2 cap75 reached tick31; actual180ticks
+=== RUN   TestL1TempleClimbsToFirstPrayerAndCaps/3
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=divine_recruits amount=2
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=bountiful_harvest amount=25
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=divine_recruits amount=2
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=divine_recruits amount=2
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=bountiful_harvest amount=25
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=bountiful_harvest amount=25
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=bountiful_harvest amount=25
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=bountiful_harvest amount=25
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=bountiful_harvest amount=25
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=divine_recruits amount=2
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=bountiful_harvest amount=25
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=bountiful_harvest amount=25
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=bountiful_harvest amount=25
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=bountiful_harvest amount=25
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=bountiful_harvest amount=25
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=divine_recruits amount=2
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=divine_recruits amount=2
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=divine_recruits amount=2
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=bountiful_harvest amount=25
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=divine_recruits amount=2
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=bountiful_harvest amount=25
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=divine_recruits amount=3
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=bountiful_harvest amount=25
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=bountiful_harvest amount=25
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=divine_recruits amount=3
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=divine_recruits amount=4
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=bountiful_harvest amount=25
+2026/10/13 13:59:41 INFO divine blessing applied settlement=0a5994c7-07e1-4010-8725-b212d66d63f3 type=bountiful_harvest amount=25
+    l1_climb_test.go:79: L3 net+4.500 first prayer tick1 cap100 reached tick23; actual180ticks
+--- PASS: TestL1TempleClimbsToFirstPrayerAndCaps (2.09s)
+    --- PASS: TestL1TempleClimbsToFirstPrayerAndCaps/1 (0.64s)
+    --- PASS: TestL1TempleClimbsToFirstPrayerAndCaps/2 (0.74s)
+    --- PASS: TestL1TempleClimbsToFirstPrayerAndCaps/3 (0.71s)
+PASS
+ok  	formatet/megaron/server/internal/kharis	2.093s

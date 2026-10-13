@@ -1,0 +1,27 @@
+{"time":"2026-10-13T14:03:11.878620925+02:00","level":"INFO","msg":"migrations applied"}
+{"time":"2026-10-13T14:03:11.898875368+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"4402db18-f972-4791-b532-db81bf6a618f","seed":1791892991880955545,"width":64,"height":64,"err":"invalid map: productive tin = 1 (want >= 2); landmass 9 (98 tiles) has 0 rivers (want 1-2)"}
+{"time":"2026-10-13T14:03:11.916358465+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"4402db18-f972-4791-b532-db81bf6a618f","seed":1791892991880955546,"width":64,"height":64,"err":"invalid map: landmass 2 (79 tiles) has 0 rivers (want 1-2)"}
+{"time":"2026-10-13T14:03:13.186869961+02:00","level":"INFO","msg":"world created","name":"L1 climb proof","id":"4402db18-f972-4791-b532-db81bf6a618f","seed":1791892991880955547}
+{"time":"2026-10-13T14:03:13.193649464+02:00","level":"INFO","msg":"world ready","id":"4402db18-f972-4791-b532-db81bf6a618f"}
+{"time":"2026-10-13T14:03:13.193877085+02:00","level":"INFO","msg":"chronicle opened","world":"L1 climb proof","dir":"/tmp/temple-native-muos2opq/chronicles"}
+{"time":"2026-10-13T14:03:13.195461073+02:00","level":"INFO","msg":"scheduled event worker started","poll":1000000000}
+{"time":"2026-10-13T14:03:13.195481986+02:00","level":"INFO","msg":"tick worker started","tick_seconds":1}
+{"time":"2026-10-13T14:03:13.195501107+02:00","level":"INFO","msg":"build","commit":"4083c54e"}
+{"time":"2026-10-13T14:03:13.195692698+02:00","level":"INFO","msg":"keryx server starting","addr":":54603"}
+{"time":"2026-10-13T14:03:13.203893964+02:00","level":"INFO","msg":"daily ticks seeded","worlds":1}
+2026/10/13 14:03:13 [tki9/x99ZPPnmt4-000001] "GET http://127.0.0.1:54603/healthz HTTP/1.1" from 127.0.0.1:51810 - 200 52B in 824.511µs
+2026/10/13 14:03:13 [tki9/x99ZPPnmt4-000002] "GET http://127.0.0.1:54603/api/v1/worlds HTTP/1.1" from 127.0.0.1:51812 - 200 166B in 951.075µs
+{"time":"2026-10-13T14:03:13.485934476+02:00","level":"INFO","msg":"player registered","id":"6b2860eb-0983-4c49-8def-b41864e1faeb","username":"Temple-d558aa72"}
+2026/10/13 14:03:13 [tki9/x99ZPPnmt4-000003] "POST http://127.0.0.1:54603/api/v1/auth/register HTTP/1.1" from 127.0.0.1:51816 - 201 390B in 45.806869ms
+{"time":"2026-10-13T14:03:13.504649605+02:00","level":"INFO","msg":"world started","world":"4402db18-f972-4791-b532-db81bf6a618f","wanaxes":1}
+2026/10/13 14:03:13 [tki9/x99ZPPnmt4-000004] "POST http://127.0.0.1:54603/api/v1/worlds/4402db18-f972-4791-b532-db81bf6a618f/join HTTP/1.1" from 127.0.0.1:51830 - 201 304B in 17.582831ms
+2026/10/13 14:03:13 [tki9/x99ZPPnmt4-000005] "POST http://127.0.0.1:54603/api/v1/worlds/4402db18-f972-4791-b532-db81bf6a618f/founding/settle HTTP/1.1" from 127.0.0.1:51832 - 201 472B in 105.134539ms
+2026/10/13 14:03:13 [tki9/x99ZPPnmt4-000006] "GET http://127.0.0.1:54603/api/v1/worlds/4402db18-f972-4791-b532-db81bf6a618f/provinces HTTP/1.1" from 127.0.0.1:51842 - 200 287B in 5.917224ms
+2026/10/13 14:03:13 [tki9/x99ZPPnmt4-000007] "GET http://127.0.0.1:54603/api/v1/worlds/4402db18-f972-4791-b532-db81bf6a618f/provinces/7ba2d58b-f2a9-4721-bf98-5d51760f77a0/placement-options HTTP/1.1" from 127.0.0.1:51854 - 200 6583B in 37.325594ms
+{"time":"2026-10-13T14:03:13.699828374+02:00","level":"INFO","msg":"player registered","id":"e119b736-ed48-4dac-bebb-e615680943ac","username":"Temple-caa847da"}
+2026/10/13 14:03:13 [tki9/x99ZPPnmt4-000008] "POST http://127.0.0.1:54603/api/v1/auth/register HTTP/1.1" from 127.0.0.1:51864 - 201 390B in 45.24545ms
+2026/10/13 14:03:13 [tki9/x99ZPPnmt4-000009] "POST http://127.0.0.1:54603/api/v1/worlds/4402db18-f972-4791-b532-db81bf6a618f/join HTTP/1.1" from 127.0.0.1:51868 - 201 303B in 9.686581ms
+2026/10/13 14:03:13 [tki9/x99ZPPnmt4-000010] "POST http://127.0.0.1:54603/api/v1/worlds/4402db18-f972-4791-b532-db81bf6a618f/founding/settle HTTP/1.1" from 127.0.0.1:51884 - 409 97B in 1.282394ms
+{"time":"2026-10-13T14:03:13.713136945+02:00","level":"INFO","msg":"tick worker stopped"}
+{"time":"2026-10-13T14:03:13.71316264+02:00","level":"INFO","msg":"shutting down"}
+{"time":"2026-10-13T14:03:13.713174942+02:00","level":"INFO","msg":"scheduled event worker stopped"}
