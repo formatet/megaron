@@ -1,0 +1,112 @@
+{
+  "health": {
+    "commit": "0bbe6339",
+    "migration": 179,
+    "status": "ok"
+  },
+  "migration": {
+    "version": 179,
+    "dirty": false
+  },
+  "production_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "natural_register_join_founding": true,
+  "sql_fixtures_or_writes": false,
+  "opening": {
+    "id": 7,
+    "payload": {
+      "net_delta": 0,
+      "audit_tick": 2,
+      "city_silver": 0,
+      "mining_epoch": "1532a345-7987-4ef6-8cfb-780b96775b62",
+      "total_silver": 480,
+      "wanax_totals": [
+        {
+          "owner_id": "6318f495-f411-4857-a677-d4ddb410971f",
+          "total_silver": 480
+        }
+      ],
+      "carried_silver": 0,
+      "founder_silver": 480,
+      "unowned_silver": 0,
+      "audit_prev_total": 480,
+      "mined_since_last": 0,
+      "transport_silver": 0,
+      "buy_escrow_silver": 0,
+      "sell_escrow_silver": 0,
+      "wanax_distribution": {
+        "count": 1,
+        "max_silver": 480,
+        "population": "world records and asset owners, including AI and dispossessed Wanax",
+        "zero_count": 0,
+        "zero_share": 0,
+        "total_silver": 480,
+        "median_silver": 480
+      },
+      "previous_audit_tick": null,
+      "deferred_trade_silver": 0,
+      "mining_credited_total": 0
+    }
+  },
+  "first_founding": {
+    "coastal": false,
+    "grain_carried": 1200,
+    "grain_total": 1208,
+    "poseidon_gift": null,
+    "province_id": "192a7a67-21bc-42aa-84e9-ab827ca2dcfe",
+    "settlement_id": "d3f46a8f-ec72-4e20-a535-8d26d20d9b53",
+    "silver_carried": 480,
+    "silver_total": 730,
+    "tile": {
+      "WorldID": "00000000-0000-0000-0000-000000000000",
+      "Q": 11,
+      "R": 27,
+      "Terrain": "",
+      "Coastal": false,
+      "Fertility": 0,
+      "Mineral": 0,
+      "CopperDeposit": false,
+      "TinDeposit": false,
+      "SilverDeposit": false,
+      "CedarDeposit": false
+    }
+  },
+  "after": {
+    "id": 13,
+    "payload": {
+      "net_delta": 250,
+      "audit_tick": 4,
+      "city_silver": 730,
+      "mining_epoch": "1532a345-7987-4ef6-8cfb-780b96775b62",
+      "total_silver": 730,
+      "wanax_totals": [
+        {
+          "owner_id": "6318f495-f411-4857-a677-d4ddb410971f",
+          "total_silver": 730
+        }
+      ],
+      "carried_silver": 0,
+      "founder_silver": 0,
+      "unowned_silver": 0,
+      "audit_prev_total": 480,
+      "mined_since_last": 0,
+      "transport_silver": 0,
+      "buy_escrow_silver": 0,
+      "sell_escrow_silver": 0,
+      "wanax_distribution": {
+        "count": 1,
+        "max_silver": 730,
+        "population": "world records and asset owners, including AI and dispossessed Wanax",
+        "zero_count": 0,
+        "zero_share": 0,
+        "total_silver": 730,
+        "median_silver": 730
+      },
+      "previous_audit_tick": 2,
+      "deferred_trade_silver": 0,
+      "mining_credited_total": 0
+    }
+  },
+  "upkeep_destroyed": 0,
+  "expected_total": 730,
+  "world_state": "active"
+}

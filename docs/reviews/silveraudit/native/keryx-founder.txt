@@ -1,0 +1,7 @@
+ID                                    Name                                            Size      Status      Stance     Location / ETA
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+4244d45a-e5d0-4920-aaeb-cb06d5d4fbfb  Nomadic Host of Philonetas                      a people on the move  positioned  —          hex (11,27)
+7f8fdac2-95d8-42ca-9df1-987a1593e2ec  1st Spearmen of Philonetas                      100 men   positioned  —          hex (11,27)
+  Upkeep after settling: 1 grain, 0 silver per day
+5d285535-feed-44fb-9586-5b81f6793808  2nd Spearmen of Philonetas                      100 men   positioned  —          hex (11,27)
+  Upkeep after settling: 1 grain, 0 silver per day

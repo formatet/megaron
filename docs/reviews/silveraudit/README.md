@@ -45,6 +45,12 @@ Repro: `python3 docs/reviews/silveraudit/mutate.py`,
 `go -C server vet ./...`. live_proof.py tar strikt read-only före/efter-
 provenance, gamla eventpayloadhashar och founderstock vid integration.
 Ingen BILD eller nytt spelarverb: denna slice är intern mätning och analysverktyg.
+`native_proof.py` kör dessutom en färsk riktig Temenos-process med PG/Redis,
+normal registrering/join/grundning och verklig tick-worker (egen tick2).
+Native healthz 0bbe6339/mig179: V2 stock480 i aktiv founder → stock730 efter
+förstagrundningen; en Wanax, mined0, inga SQL-fixturer/writes eller HTTP-overrides.
+Resultat/provenance i native/verification.json och native-proof.log.
+
 
 ## Kända avgränsningar
 
@@ -63,4 +69,11 @@ Riggens första psql-prov fann att lokal klient saknas; reader_proof använder
 nu den egna PG-containerns klient. Ett test frågade först efter processed i
 stället för processed_at; själva handoff-invarianten var redan grön. Inga skips
 eller påstådda rena baselinefel döljer dessa riggfynd. Ingen kanonblockerare.
-Integration/deploy verifieras separat.
+Första integration LIVE54cca2b9/mig179, dirtyf. Air-process 143480 start08:58:18;
+rollens restart gjord först efter verifierad färdig migration, ny process143646
+start08:59:56. Read-only live_proof efter deploy visar identisk hash för alla
+befintliga eventpayloads och samma kvarvarande founder480/rate0/calc150.
+Dev-världen är forming och står på tick150, med UpkeepTick151 väntande; därför
+finns ingen LIVE V2 ännu. Första naturliga V2 när världen börjar ticka är en
+VERIFIERING-rad, inte ett skäl att ändra världens startvillkor eller forcera tick.
+Slutlig dokumentationsintegration och healthz rapporteras i agentöverlämningen.
