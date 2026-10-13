@@ -1,0 +1,26 @@
+package main
+
+import (
+ "crypto/sha256"
+ "encoding/json"
+ "fmt"
+ "os"
+ "formatet/megaron/server/internal/world"
+ "github.com/google/uuid"
+)
+
+func main() {
+ enc := json.NewEncoder(os.Stdout)
+ for i:=int64(1);i<=20;i++ {
+  requested:=1009*i
+  tiles,effective:=world.GenerateMap(uuid.Nil,requested,64,64)
+  hash:=sha256.New(); geo:=json.NewEncoder(hash)
+  silver:=map[string]int{}; points:=[][2]int{}
+  for _,t:=range tiles {
+   if t.SilverDeposit {silver[string(t.Terrain)]++;points=append(points,[2]int{t.Q,t.R})}
+   t.SilverDeposit=false
+   if err:=geo.Encode(t);err!=nil {panic(err)}
+  }
+  if err:=enc.Encode(map[string]interface{}{"requested_seed":requested,"effective_seed":effective,"silver_hexes":silver,"silver_points":points,"all_non_silver_fields_sha256":fmt.Sprintf("%x",hash.Sum(nil))});err!=nil {panic(err)}
+ }
+}

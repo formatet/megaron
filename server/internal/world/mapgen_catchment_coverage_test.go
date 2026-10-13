@@ -30,9 +30,9 @@ import (
 // lokal silvertillgång ... och det finns minst två geografiskt skilda vägar
 // till silver". Baseline before the fix (2026-08-27): 14-17 % at 230x230.
 
-// minSilverSiteShare is the floor of §5's 25-40 % band. Sources are placed at
-// silverSourceTarget = players/3, so a healthy map lands around a third; the
-// gate fires when placement wastes sources rather than when the target is off.
+// minSilverSiteShare retains the potential-site floor from §5's 25-40 % band.
+// The source target now scales from ten on 64x64 (Timothy 2026-10-13).
+// This measures potential mining sites, never guaranteed silver near a spawn.
 const minSilverSiteShare = 0.25
 
 // foodTerrain lists the terrains that carry a grain or fish production rule
@@ -257,7 +257,7 @@ func TestReport_CatchmentDepositCoverage(t *testing.T) {
 		w, h := sz[0], sz[1]
 		players := playersFor(w, h)
 		fmt.Printf("\n=== %dx%d  players=%d  källmål: Cu=%d Ag=%d Sn=%d ===\n",
-			w, h, players, copperSourceTarget(players), silverSourceTarget(players), tinSourceTarget(players))
+			w, h, players, copperSourceTarget(players), silverSourceTarget(w, h), tinSourceTarget(players))
 		fmt.Printf("%-12s %8s | %-26s | %-26s | %-26s\n",
 			"eff seed", "platser", "Ag hexar/källor/land/städer", "Cu hexar/källor/land/städer", "Sn hexar/källor/land/städer")
 		distinctSeeds(t, w, h, 4, func(seed int64, tiles []MapTile) {

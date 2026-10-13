@@ -1,0 +1,73 @@
+2026/10/13 06:57:40 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=1009 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/13 06:57:40 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=1010 width=64 height=64 err="invalid map: forest fraction = 0.304 (want 0.22..0.30)"
+2026/10/13 06:57:40 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=3027 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/13 06:57:40 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=3028 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/13 06:57:40 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=5045 width=64 height=64 err="invalid map: landmass 3 (86 tiles) has 0 rivers (want 1-2)"
+2026/10/13 06:57:40 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=6054 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/13 06:57:40 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=7063 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/13 06:57:40 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=7064 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/13 06:57:40 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=8072 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/13 06:57:40 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=9081 width=64 height=64 err="invalid map: landmass 2 (83 tiles) has 0 rivers (want 1-2)"
+2026/10/13 06:57:40 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=9082 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/13 06:57:40 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=9083 width=64 height=64 err="invalid map: landmass 3 (82 tiles) has 0 rivers (want 1-2)"
+2026/10/13 06:57:40 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=10090 width=64 height=64 err="invalid map: forest fraction = 0.309 (want 0.22..0.30)"
+2026/10/13 06:57:40 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=10091 width=64 height=64 err="invalid map: landmass 3 (97 tiles) has 0 rivers (want 1-2); landmass 12 (223 tiles) has 0 rivers (want 1-2); landmass 10 (89 tiles) has 0 rivers (want 1-2)"
+2026/10/13 06:57:40 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=11099 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/13 06:57:40 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=11100 width=64 height=64 err="invalid map: productive copper = 1 (want >= 2); productive tin = 1 (want >= 2); no buildable west tile (q <= maxQ/2) has copper in its 6-hex catchment"
+2026/10/13 06:57:40 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=12108 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/13 06:57:40 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=13117 width=64 height=64 err="invalid map: river_ford hex (56,6) has 3 river-family neighbours (want exactly 2)"
+2026/10/13 06:57:41 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=18162 width=64 height=64 err="invalid map: landmass 0 (129 tiles) has 0 rivers (want 1-2)"
+2026/10/13 06:57:41 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=18163 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/13 06:57:41 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=18164 width=64 height=64 err="invalid map: landmass 11 (124 tiles) has 0 rivers (want 1-2)"
+2026/10/13 06:57:41 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=18165 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2); landmass 8 (70 tiles) has 0 rivers (want 1-2)"
+2026/10/13 06:57:41 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=18166 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/13 06:57:41 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=18167 width=64 height=64 err="invalid map: landmass 1 (71 tiles) has 0 rivers (want 1-2)"
+2026/10/13 06:57:41 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=18168 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/13 06:57:41 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=18169 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2); forest fraction = 0.325 (want 0.22..0.30); landmass 2 (176 tiles) has 0 rivers (want 1-2)"
+2026/10/13 06:57:41 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=19171 width=64 height=64 err="invalid map: landmass 4 (338 tiles) has 0 rivers (want 1-2); landmass 5 (73 tiles) has 0 rivers (want 1-2)"
+2026/10/13 06:57:41 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=20180 width=64 height=64 err="invalid map: productive tin = 0 (want >= 2); no buildable east tile (q > maxQ/2) has tin in its 6-hex catchment"
+2026/10/13 06:57:41 WARN mapgen: invalid map, reseeding world=00000000-0000-0000-0000-000000000000 seed=20181 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+--- FAIL: TestGenerateMapTenSilverSourcesOn64x64 (0.99s)
+    --- FAIL: TestGenerateMapTenSilverSourcesOn64x64/seed_1009 (0.05s)
+        mapgen_silver_ten_test.go:50: effective seed 1011: 4 silver hexes, want 10
+    --- FAIL: TestGenerateMapTenSilverSourcesOn64x64/seed_2018 (0.03s)
+        mapgen_silver_ten_test.go:50: effective seed 2018: 4 silver hexes, want 10
+    --- FAIL: TestGenerateMapTenSilverSourcesOn64x64/seed_3027 (0.05s)
+        mapgen_silver_ten_test.go:50: effective seed 3029: 4 silver hexes, want 10
+    --- FAIL: TestGenerateMapTenSilverSourcesOn64x64/seed_4036 (0.02s)
+        mapgen_silver_ten_test.go:50: effective seed 4036: 4 silver hexes, want 10
+    --- FAIL: TestGenerateMapTenSilverSourcesOn64x64/seed_5045 (0.04s)
+        mapgen_silver_ten_test.go:50: effective seed 5046: 4 silver hexes, want 10
+    --- FAIL: TestGenerateMapTenSilverSourcesOn64x64/seed_6054 (0.04s)
+        mapgen_silver_ten_test.go:50: effective seed 6055: 4 silver hexes, want 10
+    --- FAIL: TestGenerateMapTenSilverSourcesOn64x64/seed_7063 (0.05s)
+        mapgen_silver_ten_test.go:50: effective seed 7065: 4 silver hexes, want 10
+    --- FAIL: TestGenerateMapTenSilverSourcesOn64x64/seed_8072 (0.04s)
+        mapgen_silver_ten_test.go:50: effective seed 8073: 4 silver hexes, want 10
+    --- FAIL: TestGenerateMapTenSilverSourcesOn64x64/seed_9081 (0.07s)
+        mapgen_silver_ten_test.go:50: effective seed 9084: 4 silver hexes, want 10
+    --- FAIL: TestGenerateMapTenSilverSourcesOn64x64/seed_10090 (0.06s)
+        mapgen_silver_ten_test.go:50: effective seed 10092: 4 silver hexes, want 10
+    --- FAIL: TestGenerateMapTenSilverSourcesOn64x64/seed_11099 (0.06s)
+        mapgen_silver_ten_test.go:50: effective seed 11101: 4 silver hexes, want 10
+    --- FAIL: TestGenerateMapTenSilverSourcesOn64x64/seed_12108 (0.04s)
+        mapgen_silver_ten_test.go:50: effective seed 12109: 4 silver hexes, want 10
+    --- FAIL: TestGenerateMapTenSilverSourcesOn64x64/seed_13117 (0.05s)
+        mapgen_silver_ten_test.go:50: effective seed 13118: 4 silver hexes, want 10
+    --- FAIL: TestGenerateMapTenSilverSourcesOn64x64/seed_14126 (0.05s)
+        mapgen_silver_ten_test.go:50: effective seed 14126: 4 silver hexes, want 10
+    --- FAIL: TestGenerateMapTenSilverSourcesOn64x64/seed_15135 (0.03s)
+        mapgen_silver_ten_test.go:50: effective seed 15135: 4 silver hexes, want 10
+    --- FAIL: TestGenerateMapTenSilverSourcesOn64x64/seed_16144 (0.02s)
+        mapgen_silver_ten_test.go:50: effective seed 16144: 4 silver hexes, want 10
+    --- FAIL: TestGenerateMapTenSilverSourcesOn64x64/seed_17153 (0.02s)
+        mapgen_silver_ten_test.go:50: effective seed 17153: 4 silver hexes, want 10
+    --- FAIL: TestGenerateMapTenSilverSourcesOn64x64/seed_18162 (0.18s)
+        mapgen_silver_ten_test.go:50: effective seed 18170: 4 silver hexes, want 10
+    --- FAIL: TestGenerateMapTenSilverSourcesOn64x64/seed_19171 (0.04s)
+        mapgen_silver_ten_test.go:50: effective seed 19172: 4 silver hexes, want 10
+    --- FAIL: TestGenerateMapTenSilverSourcesOn64x64/seed_20180 (0.06s)
+        mapgen_silver_ten_test.go:50: effective seed 20182: 4 silver hexes, want 10
+FAIL
+FAIL	formatet/megaron/server/internal/world	0.997s
+FAIL
