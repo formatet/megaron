@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 // autostart) — same problem documented in cargo.test.mjs/economy.test.mjs.
 // Stub the one global it touches, then dynamically import.
 globalThis.document ??= { addEventListener() {} };
-const { cultLevelLabel, prayerStatusHTML } = await import('./kult.js');
+const { cultLevelLabel, prayerStatusHTML, templeOfferingsHTML } = await import('./kult.js');
 
 // The server never runs a five-tier cult-level model (forsummad/enkel/vardig/
 // praktfull/overdadig) — internal/kharis/tick.go's deriveMood "replaces
@@ -65,4 +65,41 @@ test('Alpha B: consumed departure gift waits for the god before another Offer', 
   const html = prayerStatusHTML({ id: 'minoan_asterion_thread', departure_pending: false, affordable: false, cooldown_remaining_game_days: 7 });
   assert.match(html, /on cooldown.*7 days/);
   assert.doesNotMatch(html, /Offer|awaiting next departure|not affordable/);
+});
+
+
+const templeFixture = {
+  name: 'Phaistos', required_goods: { grain: 0.375 },
+  alternatives: { silver: 0.5, timber: 0.125, fish: 0.75 },
+  stock: { grain: 0.1, fish: 0.55, timber: 0, silver: 3 },
+  offering: { fish: 0.55, grain: 0.1 }, fed: true,
+};
+
+test('temple rows render the server reference and mixed next gift without repricing', () => {
+  const html = templeOfferingsHTML([templeFixture]);
+  assert.match(html, /Phaistos: <\/span> <span/);
+  assert.match(html, /reference 0\.375 grain per day/);
+  assert.match(html, /Alternatives: 0\.75 fish or 0\.125 timber or 0\.5 silver/);
+  assert.match(html, /Stock: 0\.1 grain, 0\.55 fish, 0 timber, 3 silver/);
+  assert.match(html, /Next gift: 0\.1 grain \+ 0\.55 fish/);
+  assert.match(html, /✓/);
+  assert.doesNotMatch(html, /oil|wine/);
+});
+
+test('quarter-grain reference and smaller silver debit remain visible', () => {
+  const html = templeOfferingsHTML([{ ...templeFixture, required_goods: { grain: .25 }, offering: { silver: .0125 } }]);
+  assert.match(html, /reference 0\.25 grain/);
+  assert.match(html, /Next gift: 0\.0125 silver/);
+});
+
+test('unfunded temple shows all-or-nothing outcome and escapes the city name', () => {
+  const html = templeOfferingsHTML([{ ...templeFixture, name: '<Knossos>', fed: false, offering: {} }]);
+  assert.match(html, /&lt;Knossos&gt;/);
+  assert.match(html, /Next gift: unfunded \(nothing taken\)/);
+  assert.match(html, /✗/);
+  assert.doesNotMatch(html, /✓/);
+});
+
+test('realm without temples explains the missing gain', () => {
+  assert.match(templeOfferingsHTML([]), /No temples — kharis will not climb/);
 });

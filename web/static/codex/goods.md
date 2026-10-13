@@ -7,7 +7,7 @@ Everything your cities make, eat and trade is a **good**. The **Economy (⚖)** 
 | **Cedar** | Found only where there is a deposit, but a cedar forest yields far more wood than an olive grove. Levels your best buildings; builds war galleys. **Cedar stands in for timber:** whatever a cost needs in timber and you lack, your cedar covers one for one. |
 | **Copper, tin** | The two halves of bronze — never found together ([[bronze]]). |
 | **Bronze** | Elite infantry, war chariots, war galleys, the best walls. |
-| **Wine, oil** | The temple's daily offering ([[temples]]), food variety, good trade goods. |
+| **Wine, oil** | Offerings for [[rites|prayers]], food variety, good trade goods. |
 | **Silver** | The currency, and the only thing that pays soldiers ([[silver]]). |
 
 ## The four tabs

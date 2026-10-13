@@ -61,22 +61,9 @@ export async function loadKultDrawer() {
       '<div class="stat-row"><span class="sr-label">Level</span>' +
       '<span class="sr-val">' + cultLevelLabel(cultLevel) + '</span></div></div>';
 
-    // Temple offerings — read-only mirror of the daily offer gate (keryx
-    // `status` parity): answers "will my kharis climb this tick" per temple city.
-    // Fed status is ✓/✗ against the oil/wine requirement — never a percent.
+    // The server plans the entire local gift; render its plan without repricing.
     if (pd && Array.isArray(pd.temple_offers)) {
-      html += '<div class="dsec"><div class="dsec-title">Temple offerings</div>';
-      if (!pd.temple_offers.length) {
-        html += '<p class="empty-state">No temples — kharis will not climb without a temple and offerings.</p>';
-      } else {
-        pd.temple_offers.forEach(t => {
-          const mark = t.fed ? '<span style="color:var(--safe)">✓</span>' : '<span style="color:var(--accent)">✗</span>';
-          html += '<div class="stat-row" style="align-items:flex-start"><span class="sr-label">' + esc(t.name || '') + '</span>' +
-            '<span class="sr-val">needs ' + (t.oil_needed || 0).toFixed(0) + ' oil + ' + (t.wine_needed || 0).toFixed(0) +
-            ' wine per day — has oil ' + Math.floor(t.oil || 0) + ', wine ' + Math.floor(t.wine || 0) + ' ' + mark + '</span></div>';
-        });
-      }
-      html += '</div>';
+      html += templeOfferingsHTML(pd.temple_offers);
     }
 
     // Prayer catalog
@@ -106,6 +93,32 @@ export async function loadKultDrawer() {
     if (seq !== kultLoadSeq) return;
     el.innerHTML = '<p class="empty-state" style="padding:1rem">Could not load.</p>';
   }
+}
+
+const TEMPLE_GOOD_ORDER = ['grain', 'fish', 'timber', 'silver'];
+function templeGoodsText(goods, separator) {
+  const entries = Object.entries(goods || {}).sort(([a], [b]) => {
+    const ai = TEMPLE_GOOD_ORDER.indexOf(a), bi = TEMPLE_GOOD_ORDER.indexOf(b);
+    return (ai < 0 ? 4 : ai) - (bi < 0 ? 4 : bi) || a.localeCompare(b);
+  });
+  return entries.map(([good, amount]) => esc(String(Number(amount.toPrecision(4)))) + ' ' + esc(good)).join(separator) || '—';
+}
+
+export function templeOfferingsHTML(offers) {
+  let html = '<div class="dsec"><div class="dsec-title">Temple offerings</div>';
+  if (!offers.length) {
+    return html + '<p class="empty-state">No temples — kharis will not climb without a temple and offerings.</p></div>';
+  }
+  for (const t of offers) {
+    const mark = t.fed ? '<span style="color:var(--safe)">✓</span>' : '<span style="color:var(--accent)">✗</span>';
+    const next = t.fed ? templeGoodsText(t.offering, ' + ') : 'unfunded (nothing taken)';
+    html += '<div class="stat-row" style="align-items:flex-start;flex-wrap:wrap"><span class="sr-label">' + esc(t.name || '') + ': </span> ' +
+      '<span class="sr-val">reference ' + templeGoodsText(t.required_goods, ' + ') + ' per day<br>' +
+      'Alternatives: ' + templeGoodsText(t.alternatives, ' or ') + '<br>' +
+      'Stock: ' + templeGoodsText(t.stock, ', ') + '<br>' +
+      'Next gift: ' + next + ' ' + mark + '</span></div>';
+  }
+  return html + '</div>';
 }
 
 // sd.cult_level is NOT a five-tier cult-level progression — the server never

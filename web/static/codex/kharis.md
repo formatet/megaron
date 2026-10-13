@@ -17,7 +17,7 @@ Three things must be true, every day:
 
 1. **You have a temple.** Without one, kharis decays.
 2. **People serve in it** — devotion. See [[temples]].
-3. **The temple is fed** — a small daily offering of oil and wine.
+3. **The temple is fed** — a daily reference gift of 0.25 grain, with local fish, timber or silver as substitutes of equal divine value. See [[temples]] for the selection order and planned gift.
 
 **Your best temple sets your ceiling.** A small temple keeps you out of trouble; it can never earn you a blessing. If you want the gods on your side, build them something grand.
 

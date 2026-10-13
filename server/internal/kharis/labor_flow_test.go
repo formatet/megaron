@@ -9,8 +9,8 @@ import (
 	"testing"
 )
 
-// Named change proof: old price-scale oil/wine divided by the stale 4/5 map
-// clipped ordinary offerings at 2x. Both read projection and actual maintenance
+// Named change proof: the old price-scale grain value clips the early
+// standing reference offering at 2x. Both read projection and actual maintenance
 // now use the catalogue work reference, so measured plenty/shortage is respected.
 func TestSilverCalibrationKharisFlowLeavesStalePriceClamp(t *testing.T) {
 	pool, wid, sid := newGrowthFixture(t, [6]string{"plains", "plains", "plains", "plains", "plains", "plains"}, 1000)
@@ -23,7 +23,7 @@ func TestSilverCalibrationKharisFlowLeavesStalePriceClamp(t *testing.T) {
  VALUES($1,$2,$3,20,0,current_world_tick())`, pid, wid, sid); err != nil {
 		t.Fatal(err)
 	}
-	for _, g := range []string{"oil", "wine"} {
+	for _, g := range []string{"grain"} {
 		if _, err := pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick)
   VALUES($1,$2,100,0,1000,current_world_tick()) ON CONFLICT(settlement_id,good_key) DO UPDATE SET amount=100,rate=0`, sid, g); err != nil {
 			t.Fatal(err)
@@ -46,7 +46,7 @@ func TestSilverCalibrationKharisFlowLeavesStalePriceClamp(t *testing.T) {
 		t.Fatalf("projection %g devotion%g has%v want%g", net, dev, has, want)
 	}
 	// Simulate the old valuation scale's stale denominator to display the change.
-	oldFactor := scarcityFromValues(map[string]float64{"oil": 86.4, "wine": 72}, map[string]float64{"oil": 4, "wine": 5}, nil)
+	oldFactor := scarcityFromValues(map[string]float64{"grain": 129.6}, map[string]float64{"grain": 1}, nil)
 	oldNet := .15*8*oldFactor - 1.8
 	if oldFactor != 2 || math.Abs(oldNet-.6) > 1e-8 || math.Abs(net) > 1e-8 {
 		t.Fatalf("flow before%g after%g, want +0.6 ->0", oldNet, net)
@@ -80,14 +80,14 @@ func TestSilverCalibrationKharisFlowLeavesStalePriceClamp(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer tx.Rollback(ctx)
-	if _, err := tx.Exec(ctx, `UPDATE goods SET labor_value=2 WHERE key IN('oil','wine')`); err != nil {
+	if _, err := tx.Exec(ctx, `UPDATE goods SET labor_value=2 WHERE key='grain'`); err != nil {
 		t.Fatal(err)
 	}
 	refs, err := religion.LoadLaborValues(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := scarcityFromValues(map[string]float64{"oil": 1.5, "wine": 1.5}, refs, nil); got != 1 {
+	if got := scarcityFromValues(map[string]float64{"grain": 1.5}, refs, nil); got != 1 {
 		t.Fatalf("catalogue reference not used: %g", got)
 	}
 }
