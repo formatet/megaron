@@ -577,3 +577,11 @@ V1 presenteras bara som historisk stadsstock. Revisions- och migrationsprov:
 kör reader-proven; sätt `ALFA_AUDIT_JSON` och `ALFA_TEST_DSN` för proven mot
 verklig serverpayload respektive read-only DB. `docs/reviews/silveraudit/mutate.py`
 kör fysisk carried-/utvinningsmutation på separata färska databaser.
+
+### Stormscan varje hex
+
+`bash tools/stormscan_simulation.sh` mäter gammal heltickscan mot verklig
+gemensam hexinträdes-scan på samma500 väderfrön och10 000 färder/fall. Ingen
+skada/täthet/rutt ändras mellan armarna. Bevis/avgränsningar:
+`docs/reviews/stormscan-varje-hex/README.md`. `mutate.py` där dödar tick-only
+och upprepad-samma-storm med varsin färsk DB.

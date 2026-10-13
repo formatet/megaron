@@ -6,6 +6,8 @@ package combat
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
+	"github.com/google/uuid"
 	"math/rand"
 	"os"
 	"testing"
@@ -14,6 +16,8 @@ import (
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/unit"
 )
+
+var stormScanMode = flag.String("storm-scan-mode", "entered", "entered or legacy integer-tick scan")
 
 var ro1StormOutput = flag.String("ro1-storm-output", "", "write paired RÖ1 storm analysis")
 
@@ -68,12 +72,13 @@ func TestRO1StormSimulation(t *testing.T) {
 				used[c] = true
 			}
 		}
-		occupied := make([]map[[2]int]bool, maxTick+1)
+		occupied := stormOccupancy{}
 		for tick := 0; tick <= maxTick; tick++ {
-			occupied[tick] = map[[2]int]bool{}
+			occupied[tick] = map[[2]int]uuid.UUID{}
 			for i, s := range shapes {
+				stormID := uuid.NewSHA1(uuid.Nil, []byte(fmt.Sprintf("%d:%d", seed, i)))
 				for _, c := range s {
-					occupied[tick][[2]int{c.Q, c.R}] = true
+					occupied[tick][[2]int{c.Q, c.R}] = stormID
 				}
 				if tick < maxTick {
 					shapes[i], headings[i], _ = StepStorm(s, headings[i], isSea, dice)
@@ -141,17 +146,24 @@ func TestRO1StormSimulation(t *testing.T) {
 							idx = j
 						}
 					}
-					return occupied[tick][route.Hexes[idx]]
+					return occupied[tick][route.Hexes[idx]] != uuid.Nil
 				}
 				hull := HullMax
-				for tick := start + 1; tick <= route.EndTick; tick++ {
-					if hit(tick) && !hit(tick-1) {
-						hull -= StormDamage
+				if *stormScanMode == "legacy" {
+					for tick := start + 1; tick <= route.EndTick; tick++ {
+						if hit(tick) && !hit(tick-1) {
+							hull -= StormDamage
+						}
+						if hull <= 0 {
+							break
+						}
 					}
-					if hull <= 0 {
-						break
-					}
+				} else if *stormScanMode == "entered" {
+					hull -= len(stormEncounters(route, enter, g, occupied, start, route.EndTick)) * StormDamage
+				} else {
+					t.Fatalf("unknown scan mode %q", *stormScanMode)
 				}
+
 				result.Duration = route.EndTick - start
 				result.Journeys++
 				if hull <= 0 {
