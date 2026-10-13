@@ -1,0 +1,6 @@
+» färsk DB på migration 178 · commit eb6d57c1+ändringar
+--- FAIL: TestMarchSilverForecastMatchesActualTick (0.02s)
+    unit_march_silver_test.go:91: got 28.94736842105263, want 21.153846154
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.022s
+FAIL

@@ -1,0 +1,153 @@
+{
+  "health": {
+    "commit": "4354c387",
+    "migration": 178,
+    "status": "ok"
+  },
+  "production_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "natural_register_join_founding": true,
+  "sql_fixtures_or_writes": false,
+  "request_overrides": false,
+  "first_founding": {
+    "coastal": true,
+    "grain_carried": 1200,
+    "grain_total": 1208,
+    "poseidon_gift": "8574d659-9bd5-4da7-829b-851cfb5e6dbe",
+    "province_id": "c560cb44-5172-4035-9e99-7472e7e7691e",
+    "settlement_id": "9b81ebb8-9c46-4138-9f36-bbbee5907c6a",
+    "silver_carried": 480,
+    "silver_total": 1278,
+    "tile": {
+      "WorldID": "00000000-0000-0000-0000-000000000000",
+      "Q": 48,
+      "R": 55,
+      "Terrain": "",
+      "Coastal": false,
+      "Fertility": 0,
+      "Mineral": 0,
+      "CopperDeposit": false,
+      "TinDeposit": false,
+      "SilverDeposit": false,
+      "CedarDeposit": false
+    }
+  },
+  "first_silver": {
+    "key": "silver",
+    "name": "Silver",
+    "tier": "precious",
+    "category": "precious",
+    "amount": 1278,
+    "rate_per_tick": 0,
+    "cap": 2556,
+    "labor_value": 1,
+    "citizens": 0,
+    "percent": 0,
+    "marginal_yield": 0,
+    "producible": false,
+    "labor_pool": 1000,
+    "idle_citizens": 500,
+    "labor_capacity_percent": 0,
+    "employed_citizens": 0,
+    "unserved_citizens": 0,
+    "workplace_level": 0,
+    "workplace_slots": 0,
+    "hex_slots": 0
+  },
+  "units": [
+    {
+      "id": "918208d6-fdb4-4537-ae82-bbadd1b26058",
+      "type": "spearman",
+      "category": "land",
+      "size": 100,
+      "upkeep_grain_per_tick": 0.5,
+      "upkeep_silver_per_tick": 0,
+      "upkeep_context": "active",
+      "status": "garrison",
+      "deployable": true,
+      "display_name": "1st Spearmen of Phaistos",
+      "ordinal": 1,
+      "support_settlement_id": "9b81ebb8-9c46-4138-9f36-bbbee5907c6a",
+      "support_settlement_name": "Phaistos",
+      "settlement_id": "9b81ebb8-9c46-4138-9f36-bbbee5907c6a",
+      "in_battle": false
+    },
+    {
+      "id": "9d79767c-968c-4881-8d9a-cb7965f21cba",
+      "type": "spearman",
+      "category": "land",
+      "size": 100,
+      "upkeep_grain_per_tick": 0.5,
+      "upkeep_silver_per_tick": 0,
+      "upkeep_context": "active",
+      "status": "garrison",
+      "deployable": true,
+      "display_name": "2nd Spearmen of Phaistos",
+      "ordinal": 2,
+      "support_settlement_id": "9b81ebb8-9c46-4138-9f36-bbbee5907c6a",
+      "support_settlement_name": "Phaistos",
+      "settlement_id": "9b81ebb8-9c46-4138-9f36-bbbee5907c6a",
+      "in_battle": false
+    },
+    {
+      "id": "8574d659-9bd5-4da7-829b-851cfb5e6dbe",
+      "type": "galley",
+      "category": "naval",
+      "size": 1,
+      "crew": 20,
+      "upkeep_grain_per_tick": 0.04,
+      "upkeep_silver_per_tick": 1.5,
+      "upkeep_context": "active",
+      "hull": 5,
+      "status": "garrison",
+      "deployable": true,
+      "name": "Foam Crown",
+      "display_name": "Foam Crown, Galley of Phaistos",
+      "ordinal": 1,
+      "support_settlement_id": "9b81ebb8-9c46-4138-9f36-bbbee5907c6a",
+      "support_settlement_name": "Phaistos",
+      "settlement_id": "9b81ebb8-9c46-4138-9f36-bbbee5907c6a",
+      "in_battle": false
+    }
+  ],
+  "preview": {
+    "available": false,
+    "reason": "unknown_terrain",
+    "silver_payer_count": 1,
+    "silver_runway_ticks": 852,
+    "upkeep_silver_field": 1.5,
+    "upkeep_silver_home": 0.4500000000000002
+  },
+  "captures": [
+    {
+      "mode": "desktop",
+      "viewport": [
+        1280,
+        900
+      ],
+      "text": "Sold: 0.45 \u2192 1.5 silver per day in the field \u00b7 treasury lasts 852 days",
+      "rect": {
+        "x": 28.200000762939453,
+        "y": 555.5333251953125,
+        "width": 185.60000228881836,
+        "height": 41.5999755859375
+      },
+      "page_errors": []
+    },
+    {
+      "mode": "mobile",
+      "viewport": [
+        390,
+        844
+      ],
+      "text": "Sold: 0.45 \u2192 1.5 silver per day in the field \u00b7 treasury lasts 852 days",
+      "rect": {
+        "x": 28.200000762939453,
+        "y": 555.5333251953125,
+        "width": 185.60000228881836,
+        "height": 41.5999755859375
+      },
+      "page_errors": []
+    }
+  ],
+  "read_only_units_and_goods": true
+}
