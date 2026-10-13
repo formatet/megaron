@@ -20,8 +20,8 @@ func TestUnitUpkeep_SilverHalved(t *testing.T) {
 		status     string
 		wantSilver float64
 	}{
-		{"spearman garrison", "spearman", "land", 100, "garrison", 1},
-		{"spearman marching — status never changes silver", "spearman", "land", 100, "marching", 1},
+		{"spearman garrison", "spearman", "land", 100, "garrison", 0},
+		{"spearman marching — status never changes silver", "spearman", "land", 100, "marching", 0},
 		{"elite_infantry garrison", "elite_infantry", "land", 100, "garrison", 2},
 		{"war_chariot garrison", "war_chariot", "land", 100, "garrison", 3},
 		{"galley garrison", "galley", "naval", 1, "garrison", 1.5},
@@ -44,7 +44,7 @@ func TestUnitUpkeep_SilverHalved(t *testing.T) {
 // via the table above.
 func TestUnitUpkeep_SpearmanSilverStatusIndependent(t *testing.T) {
 	got := UnitUpkeep("spearman", "land", 100, "marching").Silver
-	if got != 1 {
-		t.Errorf(`UnitUpkeep("spearman","land",100,"marching").Silver = %v, want 1`, got)
+	if got != 0 {
+		t.Errorf(`UnitUpkeep("spearman","land",100,"marching").Silver = %v, want 0`, got)
 	}
 }

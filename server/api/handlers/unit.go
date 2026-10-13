@@ -2070,8 +2070,20 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 		nowMilli = anchor.MilliAt(h.clk.Now())
 		hasAnchor = true
 	}
+	var founderActive bool
+	if err := h.pool.QueryRow(r.Context(), `SELECT EXISTS(SELECT 1 FROM founder_phase WHERE world_id=$1 AND owner_id=$2 AND active)`, worldID, playerID).Scan(&founderActive); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not load upkeep context")
+		return
+	}
 	summaries := unitSummaries(units, currentTick, h.clk,
 		settlementNames(r.Context(), h.pool, worldID, playerID), wanax, nowMilli, hasAnchor)
+	if founderActive {
+		for i := range summaries {
+			if summaries[i].UpkeepContext != "none" {
+				summaries[i].UpkeepContext = "subsistence"
+			}
+		}
+	}
 	attachUnitPaths(r.Context(), h.pool, worldID, units, summaries)
 	attachBattleFlags(r.Context(), h.pool, worldID, playerID, summaries)
 	attachFreightingNotes(r.Context(), h.pool, worldID, playerID, summaries)
@@ -2164,6 +2176,11 @@ type unitSummary struct {
 	Category string    `json:"category"`
 	Size     int       `json:"size"`
 	Crew     int       `json:"crew,omitempty"`
+	// Nominal ration and gross pay from the same source as the tick. Zero is
+	// explicit; context distinguishes subsistence/inactive units from billing.
+	UpkeepGrainPerTick  float64 `json:"upkeep_grain_per_tick"`
+	UpkeepSilverPerTick float64 `json:"upkeep_silver_per_tick"`
+	UpkeepContext       string  `json:"upkeep_context"`
 	// Hull is the graded damage track (megaron_plan_skeppsreparation.md §B2,
 	// 5=untouched/0=sunk) — omitted for land units (always the DB default 5,
 	// meaningless for them; see unit.Unit.Hull's own doc comment).
@@ -2758,11 +2775,23 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 				}
 			}
 		}
+		upkeep := combat.UnitUpkeep(string(u.Type), string(u.Category), u.Size, string(u.Status))
+		upkeepContext := "inactive"
+		switch string(u.Status) {
+		case "garrison", "marching", "positioned", "embarked", "repairing", "freighting":
+			upkeepContext = "active"
+		}
+		if u.Type == unit.TypeNomadicHost {
+			upkeepContext = "none" // civilian marker dissolves at founding
+		}
 		out = append(out, unitSummary{
 			ID:                    u.ID,
 			Type:                  string(u.Type),
 			Category:              string(u.Category),
 			Size:                  u.Size,
+			UpkeepGrainPerTick:    upkeep.Grain,
+			UpkeepSilverPerTick:   upkeep.Silver,
+			UpkeepContext:         upkeepContext,
 			Crew:                  u.Crew,
 			Hull:                  hull,
 			ProvisionDays:         provisionDays,

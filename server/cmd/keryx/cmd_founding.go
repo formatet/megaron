@@ -93,7 +93,7 @@ func printFoundingStatus(fp *foundingStatusResp) error {
 	// ifylld i stället för tom.
 	fmt.Printf("  %d people · cannot fight · sight 2 hexes (4 by water or on mountains) · position %s\n", fp.Population, pos)
 	fmt.Printf("  %s\n", foundingStoreLine("Grain (escort's ration)", fp.Grain, fp.TickSeconds))
-	fmt.Printf("  %s\n", foundingStoreLine("Silver (escort's pay)", fp.Silver, fp.TickSeconds))
+	fmt.Printf("  %s\n", foundingStoreLine("Silver reserve", fp.Silver, fp.TickSeconds))
 	kohort := "cohorts"
 	if fp.SpearmenInField == 1 {
 		kohort = "cohort"

@@ -5,7 +5,7 @@ Find it (the map centres on you) and **left-click the hex it stands on**. The in
 ## What the Host is
 
 - **A thousand people**, and they are the city you will found — its starting population, not soldiers. <!-- src: api/handlers/nomadic_host.go nomadicHostPopulation -->
-- **Two cohorts of spearmen escort you.** They are ordinary soldiers, except that their pay comes from the store you carry until you settle.
+- **Two cohorts of spearmen escort you.** They live on grain and draw no silver pay, just like settled spearmen.
 - **The Host itself eats nothing.** A people on the move carries its own bread. The grain in the store is a dowry that goes into your granary the day you found.
 - **The Host cannot fight.** The escort can.
 - **It sees two hexes** (further across open water or towards mountains) — exactly the ground a settlement would work. Wherever the Host stands, it can see the whole [[catchment]] it would get by stopping there.
@@ -18,6 +18,6 @@ Unlike everything else you will ever command, **the Host obeys instantly**: you 
 
 ## The clock in the store
 
-The panel shows **Food lasts** and **Escort pay lasts**, in days. Food lasts indefinitely while the Host eats nothing; the silver pays the escort. When the escort's pay runs out, it begins to desert ([[upkeep]]). You have long enough to be picky about where you settle, not long enough to wander aimlessly.
+The panel shows **Food lasts** and **Silver reserve lasts**, in days. The Host itself eats nothing, and its spearman escort draws no silver. The newcomer carries **480 silver**; this reserve goes into the treasury when you settle. Choose your site for its food, resources and position, rather than an escort pay deadline.
 
 When you have found your place: [[founding]].

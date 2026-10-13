@@ -164,7 +164,7 @@ func TestUpkeep_ShipAtSeaBilledToSupportSettlement_NotCapital(t *testing.T) {
 // till huvudstaden — enheten går genom unpaid_periods och applyAttrition, samma
 // maskineri som all annan uteblivning. Det finns alltså ingen väg att rädda ett
 // förband vars stad fallit, och det är avsiktligt (§3.1 punkt 1 och 3).
-func TestUpkeep_FallenSupportSettlement_UnitDesertsInsteadOfBillingCapital(t *testing.T) {
+func TestUpkeep_FallenSupportSettlement_UnitStarvesInsteadOfBillingCapital(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	f := newSupportFixture(t, pool, "support-fallen")

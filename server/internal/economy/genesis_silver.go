@@ -2,8 +2,8 @@ package economy
 
 import "math"
 
-// Starting silver is tied to the first host's actual payroll, never population
-// or a good's historical price. Returning hosts only move their remaining purse.
+// Fixed starting reserves (Timothy 2026-10-13), independent of current payroll,
+// population or prices. Returning hosts only move their remaining purse.
 const (
 	MetropolisSilverInland  = 730.0
 	MetropolisSilverCoastal = 1278.0

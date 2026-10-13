@@ -58,12 +58,10 @@ type UpkeepSpec struct {
 // ingen innebörd för en besättning på det sättet landenheternas har för en
 // soldat. UnitUpkeep dubblar därför aldrig navalt grain, oavsett status.
 //
-// Silverkolumnen halverad (SLICE B, Timothy 2026-08-05): AG3 = lägre
-// silverupkeep, formen "halvera hela tabellen". Grain rörs inte — slice A
-// satte det. nomadicHostRationTicks (api/handlers/nomadic_host.go) dubblades
-// i SAMMA slice, annars hade halveringen tyst halverat startsilvret också
-// och grinden (480 ska räcka märkbart längre än 48 speldygn) hade landat på
-// exakt samma 48 som innan.
+// Ordinary spearmen live on grain, not silver (Timothy 2026-10-13).
+// Professional troops and vessels keep their existing silver pay. Starting
+// reserves and colonist purses are fixed independently of this table.
+//
 // Grain-kolumnen ÷100 (megaron_plan_dagsverkesskalan, mig 136, 2026-08-27) —
 // SAMMA faktor som GrainConsumptionPerCitizenPerTick (0,5 → 0,005), inte
 // grain-varans divisor 43,2. Skälet är en likhet som måste överleva
@@ -75,7 +73,7 @@ type UpkeepSpec struct {
 // Silver rörs INTE — det är en valuta och skalas inte i mig 136 (se
 // migrationens huvudkommentar: kollapsmekaniken är en egen systemfråga).
 var UpkeepSpecs = map[string]UpkeepSpec{
-	"spearman":       {Grain: 0.50, Silver: 1},
+	"spearman":       {Grain: 0.50, Silver: 0},
 	"elite_infantry": {Grain: 0.60, Silver: 2},
 	"war_chariot":    {Grain: 0.80, Silver: 3},
 	"galley":         {Grain: 0.04, Silver: 1.5},
@@ -94,7 +92,7 @@ var UpkeepSpecs = map[string]UpkeepSpec{
 // (UpkeepSpecs' land grain figures are calibrated to that anchor — see
 // economy/recompute.go:359, pop×0.5/day). In the field — status "marching" or
 // "positioned" — he eats double: mobilising costs, and standing out costs more
-// than standing home. Silver (sold) never changes with status — the pay is the
+// than standing home. Silver (where paid) never changes with status — the pay is the
 // same wherever the man stands. Naval upkeep is per hull, not per person, and
 // is untouched by status entirely (see UpkeepSpecs' comment).
 func UnitUpkeep(unitType, category string, size int, status string) UpkeepSpec {
@@ -490,6 +488,13 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 
 		// ── Silver upkeep ────────────────────────────────────────────────────
 		if silverNeed <= 0 {
+			// A ration-only unit has no unpaid salary. Clear old live warnings
+			// even for units entering this state after the migration.
+			if u.unpaidPeriods > 0 {
+				if _, err := h.pool.Exec(ctx, `UPDATE units SET unpaid_periods=0 WHERE id=$1`, u.id); err != nil {
+					slog.Error("upkeep: reset ration-only unpaid periods failed", "unit", u.id, "err", err)
+				}
+			}
 			continue
 		}
 

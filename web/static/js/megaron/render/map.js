@@ -3623,7 +3623,7 @@ async function openHostPanel(h, tile) {
        <div>Produces: ${esc(producesText(tile))}</div>
        <div>${fmtNum(fp.population || 0)} people · cannot fight · sight 2 hexes (4 by water or on mountains)</div>
        <div>${hostStoreLine('Food', fp.grain)}</div>
-       <div>${hostStoreLine('Escort pay', fp.silver)}</div>
+       <div>${hostStoreLine('Silver reserve', fp.silver)}</div>
        <div>${fmtNum(fp.spearmen_in_field || 0)} Spearmen ${fp.spearmen_in_field === 1 ? 'cohort' : 'cohorts'} in the field</div>
        <div>Messengers free to send</div>
      </div>

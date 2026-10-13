@@ -1,0 +1,7 @@
+ID                                    Name                                            Size      Status      Stance     Location / ETA
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+48463701-4768-4529-a53d-ab0f50a9a2c6  Nomadic Host of Gwasileus                       a people on the move  positioned  —          hex (56,12)
+525244c6-0995-45d9-b8c1-4c9606f34664  1st Spearmen of Gwasileus                       100 men   positioned  —          hex (56,12)
+  Upkeep after settling: 1 grain, 0 silver per day
+3d3a936f-df25-452f-9e18-e04926a69db0  2nd Spearmen of Gwasileus                       100 men   positioned  —          hex (56,12)
+  Upkeep after settling: 1 grain, 0 silver per day

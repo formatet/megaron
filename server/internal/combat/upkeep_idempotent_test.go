@@ -47,12 +47,8 @@ func TestUpkeepHandler_ReplayIsIdempotent(t *testing.T) {
 	ctx := context.Background()
 	f := newSupportFixture(t, pool, "upkeep-idem")
 
-	// Capital: plenty of grain, and EXACTLY 10x the silver a single garrisoned
-	// full-size spearman needs (UnitUpkeep: grain 0.5 [50→0.5, mig 136,
-	// UpkeepSpecs grain ÷100], silver 1 at size 100, status garrison — no field
-	// multiplier). 10, not 1, so a double deduction is observable as a real
-	// balance change rather than being masked by the affordability gate
-	// rejecting an overdraft.
+	// A damaged 50-man elite cohort costs .3 grain and1 silver. A funded
+	// capital and unpaid town exercise both salary legs of a replay.
 	seedGoods(t, pool, f.capitalID, f.tick, 100000, 10)
 	// Town: plenty of grain but ZERO silver — this unit's silver upkeep is
 	// guaranteed to go unpaid, exercising the recordUnpaid/unpaid_periods path.
@@ -62,7 +58,7 @@ func TestUpkeepHandler_ReplayIsIdempotent(t *testing.T) {
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status,
 		                    q, r, settlement_id, support_settlement_id, unpaid_periods)
-		 VALUES ($1, $2, 'spearman', 'land', 100, 0, 'garrison', 0, 0, $3, $3, 0)
+		 VALUES ($1, $2, 'elite_infantry', 'land', 50, 0, 'garrison', 0, 0, $3, $3, 0)
 		 RETURNING id`,
 		f.worldID, f.owner, f.capitalID,
 	).Scan(&paidUnitID); err != nil {
@@ -71,7 +67,7 @@ func TestUpkeepHandler_ReplayIsIdempotent(t *testing.T) {
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO units (world_id, owner_id, type, category, size, crew, status,
 		                    q, r, settlement_id, support_settlement_id, unpaid_periods)
-		 VALUES ($1, $2, 'spearman', 'land', 100, 0, 'garrison', 4, 0, $3, $3, 0)
+		 VALUES ($1, $2, 'elite_infantry', 'land', 50, 0, 'garrison', 4, 0, $3, $3, 0)
 		 RETURNING id`,
 		f.worldID, f.owner, f.townID,
 	).Scan(&unpaidUnitID); err != nil {
@@ -104,8 +100,8 @@ func TestUpkeepHandler_ReplayIsIdempotent(t *testing.T) {
 
 	// Sanity: the first run must have done its full, legitimate work, or this
 	// test would trivially pass even with a broken (or absent) guard.
-	if grainAfterFirst != 100000-0.5 {
-		t.Fatalf("capital grain after first run = %v, want %v — fixture does not exercise the handler", grainAfterFirst, 100000-0.5)
+	if grainAfterFirst != 100000-0.3 {
+		t.Fatalf("capital grain after first run = %v, want %v — fixture does not exercise the handler", grainAfterFirst, 100000-0.3)
 	}
 	if silverAfterFirst != 9 {
 		t.Fatalf("capital silver after first run = %v, want 9 (10 seeded - 1 upkeep) — fixture does not exercise the handler", silverAfterFirst)

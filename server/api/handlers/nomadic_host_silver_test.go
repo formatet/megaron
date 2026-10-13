@@ -1,21 +1,7 @@
 package handlers
 
-// SLICE B (silverupkeep halveras, Timothy 2026-08-05): halving the upkeep
-// table's silver column, on its own, halves the founder phase's opening
-// silver too — silverAmount is derived from -silverRate*nomadicHostRationTicks,
-// and silverRate follows the table (perTick.Silver). That would quietly halve
-// startsilvret 480→240 the moment the table changed, which is why
-// nomadicHostRationTicks must double in the SAME slice.
-//
-// Reconciled with tick=day canon (merge 2026-08-06): mig 109 made UpkeepSpecs
-// per TICK (a tick is a day) — there is no ticks-per-day divisor any more, so
-// silverRate is the full per-tick drain, not table/24. Master had already
-// retuned the ration base 2880→120 for that; halving the silver column then
-// doubles it 120→240. Net at the merge: silverRate=-2, ration=240 ticks,
-// silverAmount=480 — the calibrated opening, held unconditionally.
-//
-// DB integration test (real Postgres, gated by DATABASE_URL), same rig as
-// escort_adoption_test.go / nomadic_host_dowry_test.go.
+// Starting reserves remain fixed when ordinary foot soldiers stop drawing
+// silver (Timothy 2026-10-13). This exercises the real founder INSERT.
 
 import (
 	"context"
@@ -52,32 +38,24 @@ func TestSeedNomadicHost_SilverAmountIs480(t *testing.T) {
 
 	const eps = 1e-9
 	if math.Abs(silverAmount-480) > eps {
-		t.Errorf("founder_phase.silver_amount = %v, want 480 — halving UpkeepSpecs' silver column "+
-			"without doubling nomadicHostRationTicks would have halved this to 240 and made the "+
-			"halving pointless", silverAmount)
+		t.Errorf("founder reserve=%v, want fixed480 independent of salary", silverAmount)
 	}
-	// silverRate = -(spearmen × spearman silver upkeep per tick) = -(2×1). Under
-	// tick=day canon UpkeepSpecs is per tick — no ticks-per-day divisor (mig 109).
-	wantRate := -float64(2 * 1)
+	// Foot soldiers have no salary drain; the reserve survives indefinitely.
+	wantRate := 0.0
 	if math.Abs(silverRate-wantRate) > eps {
-		t.Errorf("founder_phase.silver_rate = %v, want %v (-(2 spearmen × 1 silver/tick), per-tick, no ÷24)", silverRate, wantRate)
+		t.Errorf("founder_phase.silver_rate = %v, want %v (no salary drain)", silverRate, wantRate)
 	}
 }
 
-// TestSilverTrapGrind directly codes the grind Timothy set for this slice
-// (plan §SLICE B): 480 starting silver, two spearmen cohorts plus two
-// galleys, should now last 96 ticks — double the pre-slice runway. This is
-// the regression threshold: if either the silver table or
-// nomadicHostRationTicks drifts again without the other, this test is the
-// tripwire.
-func TestSilverTrapGrind(t *testing.T) {
+// The unchanged reserve now supports only the professional fleet's pay.
+func TestNomadicReserveSupportsProfessionalFleet(t *testing.T) {
 	const startSilver = 480.0
 	spearmanSilver := combat.UpkeepSpecs["spearman"].Silver
 	galleySilver := combat.UpkeepSpecs["galley"].Silver
 
 	perTickDrain := 2*spearmanSilver + 2*galleySilver
 	ticks := startSilver / perTickDrain
-	if math.Abs(ticks-96) > 1e-9 {
-		t.Errorf("480 silver / (2 spearmen + 2 galleys) = %v ticks, want 96 (double the pre-slice-B runway)", ticks)
+	if math.Abs(ticks-160) > 1e-9 {
+		t.Errorf("480 silver / (2 spearmen + 2 galleys) = %v ticks, want 160 (only the two galleys draw silver)", ticks)
 	}
 }

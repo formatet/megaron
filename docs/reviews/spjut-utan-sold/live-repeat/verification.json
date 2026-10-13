@@ -1,0 +1,213 @@
+{
+  "health": {
+    "commit": "b2fd9f11",
+    "migration": 178,
+    "status": "ok"
+  },
+  "production_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "natural_register_join_founding": true,
+  "sql_fixtures_or_writes": false,
+  "request_overrides": false,
+  "founder": {
+    "active": true,
+    "current_tick": 0,
+    "grain": {
+      "amount": 1200,
+      "rate_per_tick": 0
+    },
+    "host_unit_id": "48463701-4768-4529-a53d-ab0f50a9a2c6",
+    "population": 1000,
+    "q": 56,
+    "r": 12,
+    "silver": {
+      "amount": 480,
+      "rate_per_tick": 0
+    },
+    "spearmen_in_field": 2,
+    "tick_seconds": 3600
+  },
+  "founder_units": [
+    {
+      "id": "48463701-4768-4529-a53d-ab0f50a9a2c6",
+      "type": "nomadic_host",
+      "category": "land",
+      "size": 1,
+      "upkeep_grain_per_tick": 0,
+      "upkeep_silver_per_tick": 0,
+      "upkeep_context": "none",
+      "status": "positioned",
+      "deployable": true,
+      "display_name": "Nomadic Host of Gwasileus",
+      "q": 56,
+      "r": 12,
+      "in_battle": false
+    },
+    {
+      "id": "525244c6-0995-45d9-b8c1-4c9606f34664",
+      "type": "spearman",
+      "category": "land",
+      "size": 100,
+      "upkeep_grain_per_tick": 1,
+      "upkeep_silver_per_tick": 0,
+      "upkeep_context": "subsistence",
+      "status": "positioned",
+      "deployable": true,
+      "display_name": "1st Spearmen of Gwasileus",
+      "ordinal": 1,
+      "q": 56,
+      "r": 12,
+      "in_battle": false
+    },
+    {
+      "id": "3d3a936f-df25-452f-9e18-e04926a69db0",
+      "type": "spearman",
+      "category": "land",
+      "size": 100,
+      "upkeep_grain_per_tick": 1,
+      "upkeep_silver_per_tick": 0,
+      "upkeep_context": "subsistence",
+      "status": "positioned",
+      "deployable": true,
+      "display_name": "2nd Spearmen of Gwasileus",
+      "ordinal": 2,
+      "q": 56,
+      "r": 12,
+      "in_battle": false
+    }
+  ],
+  "first_founding": {
+    "coastal": false,
+    "grain_carried": 1200,
+    "grain_total": 1208,
+    "poseidon_gift": null,
+    "province_id": "4de4357d-576f-45ea-81a0-bec7a0044d80",
+    "settlement_id": "4f0a3aef-9d4f-4617-9afe-ca845dc33952",
+    "silver_carried": 480,
+    "silver_total": 730,
+    "tile": {
+      "WorldID": "00000000-0000-0000-0000-000000000000",
+      "Q": 56,
+      "R": 12,
+      "Terrain": "",
+      "Coastal": false,
+      "Fertility": 0,
+      "Mineral": 0,
+      "CopperDeposit": false,
+      "TinDeposit": false,
+      "SilverDeposit": false,
+      "CedarDeposit": false
+    }
+  },
+  "first_silver": {
+    "key": "silver",
+    "name": "Silver",
+    "tier": "precious",
+    "category": "precious",
+    "amount": 730,
+    "rate_per_tick": 0,
+    "cap": 1460,
+    "labor_value": 1,
+    "citizens": 0,
+    "percent": 0,
+    "marginal_yield": 0,
+    "producible": false,
+    "labor_pool": 1000,
+    "idle_citizens": 400,
+    "labor_capacity_percent": 0.1,
+    "employed_citizens": 0,
+    "unserved_citizens": 0,
+    "workplace_level": 0,
+    "workplace_slots": 0,
+    "hex_slots": 1
+  },
+  "units": [
+    {
+      "id": "525244c6-0995-45d9-b8c1-4c9606f34664",
+      "type": "spearman",
+      "category": "land",
+      "size": 100,
+      "upkeep_grain_per_tick": 0.5,
+      "upkeep_silver_per_tick": 0,
+      "upkeep_context": "active",
+      "status": "garrison",
+      "deployable": true,
+      "display_name": "1st Spearmen of Phaistos",
+      "ordinal": 1,
+      "support_settlement_id": "4f0a3aef-9d4f-4617-9afe-ca845dc33952",
+      "support_settlement_name": "Phaistos",
+      "settlement_id": "4f0a3aef-9d4f-4617-9afe-ca845dc33952",
+      "in_battle": false
+    },
+    {
+      "id": "3d3a936f-df25-452f-9e18-e04926a69db0",
+      "type": "spearman",
+      "category": "land",
+      "size": 100,
+      "upkeep_grain_per_tick": 0.5,
+      "upkeep_silver_per_tick": 0,
+      "upkeep_context": "active",
+      "status": "garrison",
+      "deployable": true,
+      "display_name": "2nd Spearmen of Phaistos",
+      "ordinal": 2,
+      "support_settlement_id": "4f0a3aef-9d4f-4617-9afe-ca845dc33952",
+      "support_settlement_name": "Phaistos",
+      "settlement_id": "4f0a3aef-9d4f-4617-9afe-ca845dc33952",
+      "in_battle": false
+    }
+  ],
+  "captures": [
+    {
+      "mode": "desktop",
+      "viewport": [
+        1280,
+        900
+      ],
+      "texts": [
+        "Upkeep: 0.5 grain, 0 silver per day",
+        "Upkeep: 0.5 grain, 0 silver per day"
+      ],
+      "rects": [
+        {
+          "x": 879,
+          "y": 330.3166809082031,
+          "width": 384,
+          "height": 17.683319091796875
+        },
+        {
+          "x": 879,
+          "y": 425.70001220703125,
+          "width": 384,
+          "height": 17.683319091796875
+        }
+      ],
+      "page_errors": []
+    },
+    {
+      "mode": "mobile",
+      "viewport": [
+        390,
+        844
+      ],
+      "texts": [
+        "Upkeep: 0.5 grain, 0 silver per day",
+        "Upkeep: 0.5 grain, 0 silver per day"
+      ],
+      "rects": [
+        {
+          "x": 17,
+          "y": 330.3166809082031,
+          "width": 356,
+          "height": 17.683319091796875
+        },
+        {
+          "x": 17,
+          "y": 425.70001220703125,
+          "width": 356,
+          "height": 17.683319091796875
+        }
+      ],
+      "page_errors": []
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+2026/10/13 07:23:20 INFO upkeep: silver desertion unit=d7ae03b8-a4f9-4686-930f-274a5d2e003c lost=10 disbanded=false
+2026/10/13 07:23:20 INFO upkeep: silver desertion unit=d7ae03b8-a4f9-4686-930f-274a5d2e003c lost=10 disbanded=false
+2026/10/13 07:23:20 INFO upkeep: silver desertion unit=d7ae03b8-a4f9-4686-930f-274a5d2e003c lost=10 disbanded=false
+2026/10/13 07:23:20 INFO upkeep: silver desertion unit=d7ae03b8-a4f9-4686-930f-274a5d2e003c lost=10 disbanded=false
+2026/10/13 07:23:20 INFO upkeep: silver desertion unit=d7ae03b8-a4f9-4686-930f-274a5d2e003c lost=10 disbanded=false
+2026/10/13 07:23:20 INFO upkeep: silver desertion unit=d7ae03b8-a4f9-4686-930f-274a5d2e003c lost=10 disbanded=false
+2026/10/13 07:23:20 INFO upkeep: silver desertion unit=d7ae03b8-a4f9-4686-930f-274a5d2e003c lost=10 disbanded=false
+2026/10/13 07:23:20 INFO upkeep: silver desertion unit=d7ae03b8-a4f9-4686-930f-274a5d2e003c lost=10 disbanded=false
+2026/10/13 07:23:20 INFO upkeep: silver desertion unit=d7ae03b8-a4f9-4686-930f-274a5d2e003c lost=10 disbanded=false
+2026/10/13 07:23:20 INFO upkeep: silver desertion unit=d7ae03b8-a4f9-4686-930f-274a5d2e003c lost=10 disbanded=true
+--- FAIL: TestSpearmanZeroSilverStillEatsAndNeverDeserts (0.16s)
+    spearman_subsistence_test.go:34: ration-only spearman size/unpaid=0/81, want100/0
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.164s
+FAIL
+» färsk DB på migration 178 · commit 532608d9+ändringar

@@ -1,0 +1,6 @@
+RED -> BYTE RESTORED spear_salary
+RED -> BYTE RESTORED elite_salary
+RED -> BYTE RESTORED colony_derived
+RED -> BYTE RESTORED rise_derived
+RED -> BYTE RESTORED newcomer_derived
+FRESH GREEN all named tests

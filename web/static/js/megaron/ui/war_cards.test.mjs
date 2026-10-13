@@ -85,3 +85,29 @@ test('P: ships off the coast take no March while a city remains, but keep the R6
  assert.doesNotMatch(marching,/NaN|Invalid Date| arrives /);
  assert.match(marching,/id="uorder-u"/,'inline order receipt must remain on the card');
  });
+
+test('B: Army card shows server rations and explicit zero spearman silver without guessing',()=>{
+ for(const [extra,want] of [
+  [{upkeep_context:'active',upkeep_grain_per_tick:0.5,upkeep_silver_per_tick:0},'0.5 grain, 0 silver per day'],
+  [{status:'marching',upkeep_grain_per_tick:1,upkeep_silver_per_tick:0},'1 grain, 0 silver per day'],
+  [{type:'elite_infantry',upkeep_grain_per_tick:0.6,upkeep_silver_per_tick:2},'0.6 grain, 2 silver per day'],
+  [{category:'naval',type:'galley',upkeep_grain_per_tick:0.04,upkeep_silver_per_tick:1.5},'0.04 grain, 1.5 silver per day'],
+ ]) {
+  const html=renderUnitCard(unit(extra));
+  assert.ok(html.includes('Upkeep: '+want));
+  assert.match(html,/class="unit-upkeep"/);
+ }
+ assert.doesNotMatch(renderUnitCard(unit()),/unit-upkeep/,'missing authoritative rates must not become guessed zero');
+});
+
+
+test('B: upkeep billing context comes from server, not guessed from unit status',()=>{
+ assert.match(renderUnitCard(unit({status:'garrison',upkeep_context:'inactive',upkeep_grain_per_tick:0.2,upkeep_silver_per_tick:0})), /Upkeep when active: 0.2 grain, 0 silver per day/);
+ assert.match(renderUnitCard(unit({status:'garrison',upkeep_context:'subsistence',upkeep_grain_per_tick:1,upkeep_silver_per_tick:0})), /Upkeep after settling: 1 grain, 0 silver per day/);
+ assert.match(renderUnitCard(unit({status:'forming',upkeep_context:'active',upkeep_grain_per_tick:0.5,upkeep_silver_per_tick:0})), />Upkeep: 0.5 grain, 0 silver per day/);
+});
+
+
+test('B: civilian Nomadic Host has no upkeep row when the server says none',()=>{
+ assert.doesNotMatch(renderUnitCard(unit({type:'nomadic_host',upkeep_context:'none',upkeep_grain_per_tick:0,upkeep_silver_per_tick:0})), /unit-upkeep|Upkeep:/);
+});
