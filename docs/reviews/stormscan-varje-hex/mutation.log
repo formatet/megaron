@@ -1,0 +1,2 @@
+PASS tick-only: named RED -> identical bytes -> fresh GREEN
+PASS same-storm-repeated: named RED -> identical bytes -> fresh GREEN

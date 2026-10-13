@@ -9,7 +9,7 @@ package combat
 // One recurring scan per world (ScheduledSeaStormScan, first in the day —
 // events.tickPrioritySea) first walks the storms to the scan's tick, then reads each
 // voyage's SAVED route (units.march_route / transports.journey — never a re-search) and
-// checks the hex the ship holds at every tick since its last check against the stored
+// checks every sea hex entered during each tick and the hex held as storms drift, against the stored
 // track. sea_storm_progress.last_tick (mig 168) is the per-voyage high-water mark, written
 // in the same TX as the hull outcome: a retried or duplicated scan never hits a tick
 // twice, and a scan that ran late checks every tick it missed. Outcomes are stored as
@@ -278,53 +278,26 @@ func (h *SeaStormScanHandler) sail(ctx context.Context, worldID uuid.UUID, dueTi
 		return tx.Commit(ctx)
 	}
 
-	// holds returns the sea hex the ship is on at tick t, if it is under way then.
-	holds := func(t int) ([2]int, bool) {
-		if t > v.arriveTick || int64(t)*1000 < enter[0] {
-			return [2]int{}, false
-		}
-		i := 0
-		for j := range enter {
-			if enter[j] <= int64(t)*1000 {
-				i = j
-			}
-		}
-		hx := v.route.Hexes[i]
-		return hx, isSeaTerrain(graph[hx])
-	}
-	inStorm := func(t int) ([2]int, bool) {
-		hx, ok := holds(t)
-		return hx, ok && occupied.at(t, hx)
-	}
-
 	var protected bool
 	if err := tx.QueryRow(ctx, `SELECT COALESCE(stillness_depart_tick=$2 AND stillness_arrive_tick=$3 AND stillness_owner_id=$4 AND owner_id=$4,false) FROM units WHERE id=$1`, v.shipID, v.departTick, v.arriveTick, v.owner).Scan(&protected); err != nil {
 		return err
 	}
 	var storms []SeaStormPayload
-	for t := last + 1; t <= dueTick; t++ {
-		hx, hit := inStorm(t)
-		if !hit || protected {
-			continue
-		}
-		// One storm is one blow: a ship that was already in a storm hex the tick
-		// before is still inside the same encounter (Timothy 2026-10-10).
-		if _, still := inStorm(t - 1); still {
-			continue
-		}
-		stormID := occupied[t][hx]
-		before := hull
-		hull -= StormDamage
-		if hull < 0 {
-			hull = 0
-		}
-		storms = append(storms, SeaStormPayload{
-			WorldID: worldID, ShipID: v.shipID, OwnerID: v.owner, ShipType: v.shipType,
-			Q: hx[0], R: hx[1], Tick: t, HullBefore: before, Hull: hull, HullMax: hullMax, Damage: before - hull, StormID: stormID,
-			Foundered: hull <= 0, Errand: v.errand, TransportID: v.transportID,
-		})
-		if hull <= 0 {
-			break
+	if !protected {
+		for _, encounter := range stormEncounters(v.route, enter, graph, occupied, last, dueTick) {
+			before := hull
+			hull -= StormDamage
+			if hull < 0 {
+				hull = 0
+			}
+			storms = append(storms, SeaStormPayload{
+				WorldID: worldID, ShipID: v.shipID, OwnerID: v.owner, ShipType: v.shipType,
+				Q: encounter.hex[0], R: encounter.hex[1], Tick: encounter.tick, HullBefore: before, Hull: hull, HullMax: hullMax,
+				Damage: before - hull, StormID: encounter.id, Foundered: hull <= 0, Errand: v.errand, TransportID: v.transportID,
+			})
+			if hull <= 0 {
+				break
+			}
 		}
 	}
 	last = dueTick

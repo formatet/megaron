@@ -1,0 +1,45 @@
+» färsk DB på migration 179 · commit cfba184b+ändringar
+=== RUN   TestSeaStorm_OneBlowPerStormThenFounders
+--- PASS: TestSeaStorm_OneBlowPerStormThenFounders (0.11s)
+=== RUN   TestSeaStorm_LingeringInOneStormIsOneBlow
+--- PASS: TestSeaStorm_LingeringInOneStormIsOneBlow (0.06s)
+=== RUN   TestSeaStorm_CalmSeaLeavesShipWhole
+--- PASS: TestSeaStorm_CalmSeaLeavesShipWhole (0.04s)
+=== RUN   TestSeaStorm_NeighbouringHexDoesNotHit
+--- PASS: TestSeaStorm_NeighbouringHexDoesNotHit (0.06s)
+=== RUN   TestSeaStorm_SameRiskForEveryErrandAndOwner
+--- PASS: TestSeaStorm_SameRiskForEveryErrandAndOwner (0.11s)
+=== RUN   TestSeaStorm_FirstToMeetClaimsTheNameOnce
+--- PASS: TestSeaStorm_FirstToMeetClaimsTheNameOnce (0.08s)
+=== RUN   TestSeaStorm_ShipSunkInFirstBlowStillClaimsAndRemembers
+--- PASS: TestSeaStorm_ShipSunkInFirstBlowStillClaimsAndRemembers (0.05s)
+=== RUN   TestSeaStormWeather_OneStormPerThirtySixSeaHexesAndNoDoubleStep
+--- PASS: TestSeaStormWeather_OneStormPerThirtySixSeaHexesAndNoDoubleStep (0.15s)
+=== RUN   TestSeaStormWeather_LateScanEqualsDailyScans
+--- PASS: TestSeaStormWeather_LateScanEqualsDailyScans (0.11s)
+=== RUN   TestStormEnteredHexesActualScan
+=== RUN   TestStormEnteredHexesActualScan/intermediate_storm
+=== RUN   TestStormEnteredHexesActualScan/same_storm_adjacent_hexes
+=== RUN   TestStormEnteredHexesActualScan/different_storms_same_tick
+=== RUN   TestStormEnteredHexesActualScan/Stillness
+--- PASS: TestStormEnteredHexesActualScan (0.23s)
+    --- PASS: TestStormEnteredHexesActualScan/intermediate_storm (0.05s)
+    --- PASS: TestStormEnteredHexesActualScan/same_storm_adjacent_hexes (0.05s)
+    --- PASS: TestStormEnteredHexesActualScan/different_storms_same_tick (0.07s)
+    --- PASS: TestStormEnteredHexesActualScan/Stillness (0.07s)
+=== RUN   TestStormEnteredHexesAllTransportKinds
+=== RUN   TestStormEnteredHexesAllTransportKinds/trade
+=== RUN   TestStormEnteredHexesAllTransportKinds/transfer
+=== RUN   TestStormEnteredHexesAllTransportKinds/gift
+=== RUN   TestStormEnteredHexesAllTransportKinds/trade_return
+--- PASS: TestStormEnteredHexesAllTransportKinds (0.20s)
+    --- PASS: TestStormEnteredHexesAllTransportKinds/trade (0.05s)
+    --- PASS: TestStormEnteredHexesAllTransportKinds/transfer (0.05s)
+    --- PASS: TestStormEnteredHexesAllTransportKinds/gift (0.05s)
+    --- PASS: TestStormEnteredHexesAllTransportKinds/trade_return (0.05s)
+=== RUN   TestStormEnteredHexesContinuityAndSlowShip
+--- PASS: TestStormEnteredHexesContinuityAndSlowShip (0.00s)
+=== RUN   TestStormEnteredHexesFractionalBoundariesAndLandArrival
+--- PASS: TestStormEnteredHexesFractionalBoundariesAndLandArrival (0.00s)
+PASS
+ok  	formatet/megaron/server/internal/combat	1.196s

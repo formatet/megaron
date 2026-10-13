@@ -26,21 +26,48 @@ func (d *stormDice) next() uint64 {
 func (d *stormDice) Float64() float64 { return float64(d.next()>>11) / float64(1<<53) }
 func (d *stormDice) Intn(n int) int   { return int(d.next() % uint64(n)) }
 
-// stormsOverHexes stores one storm hex at each given q on the lane (r=0) for ticks 0..20,
-// so a test can leave calm gaps between storms: a gap is what makes two blows of one voyage.
+// stormsOverHexes gives each contiguous lane group one real storm ID and
+// three connected track slots. Groups longer than three drift along the lane;
+// they are not five unrelated storms accidentally treated as one encounter.
 func stormsOverHexes(t *testing.T, pool *pgxpool.Pool, worldID uuid.UUID, qs ...int) {
 	t.Helper()
 	ctx := context.Background()
-	for _, q := range qs {
+	for i := 0; i < len(qs); {
+		first := i
+		for i+1 < len(qs) && qs[i+1] == qs[i]+1 {
+			i++
+		}
+		end := i
 		var id uuid.UUID
-		if err := pool.QueryRow(ctx, `INSERT INTO sea_storms (world_id, heading, created_tick) VALUES ($1, 0, 0) RETURNING id`, worldID).Scan(&id); err != nil {
+		if err := pool.QueryRow(ctx, `INSERT INTO sea_storms(world_id,heading,created_tick) VALUES($1,0,0) RETURNING id`, worldID).Scan(&id); err != nil {
 			t.Fatal(err)
 		}
 		for tick := 0; tick <= 20; tick++ {
-			if _, err := pool.Exec(ctx, `INSERT INTO sea_storm_track (storm_id, tick, slot, q, r) VALUES ($1, $2, 0, $3, 0)`, id, tick, q); err != nil {
-				t.Fatal(err)
+			var coords [][2]int
+			if end-first+1 > 3 {
+				start := tick + 1
+				if start < qs[first] {
+					start = qs[first]
+				}
+				if start > qs[end]-2 {
+					start = qs[end] - 2
+				}
+				coords = [][2]int{{start, 0}, {start + 1, 0}, {start + 2, 0}}
+			} else {
+				for _, q := range qs[first : end+1] {
+					coords = append(coords, [2]int{q, 0})
+				}
+				for len(coords) < 3 {
+					coords = append(coords, [2]int{qs[first] + len(coords) - (end - first + 1), 1})
+				}
+			}
+			for slot, c := range coords {
+				if _, err := pool.Exec(ctx, `INSERT INTO sea_storm_track(storm_id,tick,slot,q,r) VALUES($1,$2,$3,$4,$5)`, id, tick, slot, c[0], c[1]); err != nil {
+					t.Fatal(err)
+				}
 			}
 		}
+		i++
 	}
 }
 
