@@ -1,0 +1,29 @@
+=== RUN   TestPassiveGovernorTickPreservesStockWithoutAction
+=== RUN   TestPassiveGovernorTickPreservesStockWithoutAction/ai-low
+    governor_stock_test.go:81: pass 1 changed stock/loyalty/events without an action:
+        before {"stock": {"id": "1349adff-9476-4312-a25f-c4c9884bba79", "cap": 1000, "rate": 0, "amount": 100, "good_key": "silver", "calc_tick": 40, "settlement_id": "ba35dba8-35c9-4095-b345-688777b640ef"}, "events": 0, "points": 37, "loyalty": 2, "loyalty_events": 0}
+        after  {"stock": {"id": "1349adff-9476-4312-a25f-c4c9884bba79", "cap": 1000, "rate": 0, "amount": 90, "good_key": "silver", "calc_tick": 50, "settlement_id": "ba35dba8-35c9-4095-b345-688777b640ef"}, "events": 0, "points": 37, "loyalty": 2, "loyalty_events": 0}
+=== RUN   TestPassiveGovernorTickPreservesStockWithoutAction/ai-lowest-lazy
+    governor_stock_test.go:81: pass 1 changed stock/loyalty/events without an action:
+        before {"stock": {"id": "89720179-91cf-4c06-9b91-f715b66ce1d7", "cap": 1000, "rate": 1, "amount": 10, "good_key": "silver", "calc_tick": 40, "settlement_id": "5fca7288-d43f-496b-963a-142a3e546387"}, "events": 0, "points": 37, "loyalty": 1, "loyalty_events": 0}
+        after  {"stock": {"id": "89720179-91cf-4c06-9b91-f715b66ce1d7", "cap": 1000, "rate": 1, "amount": 10, "good_key": "silver", "calc_tick": 50, "settlement_id": "5fca7288-d43f-496b-963a-142a3e546387"}, "events": 0, "points": 37, "loyalty": 1, "loyalty_events": 0}
+=== RUN   TestPassiveGovernorTickPreservesStockWithoutAction/ai-threshold
+    governor_stock_test.go:81: pass 1 changed stock/loyalty/events without an action:
+        before {"stock": {"id": "9a4ba154-2ae5-49ad-9c0f-9fa8a52c3a8e", "cap": 1000, "rate": 0, "amount": 20, "good_key": "silver", "calc_tick": 40, "settlement_id": "459c67f2-2be2-48ad-806e-3799f639052a"}, "events": 0, "points": 37, "loyalty": 2, "loyalty_events": 0}
+        after  {"stock": {"id": "9a4ba154-2ae5-49ad-9c0f-9fa8a52c3a8e", "cap": 1000, "rate": 0, "amount": 10, "good_key": "silver", "calc_tick": 50, "settlement_id": "459c67f2-2be2-48ad-806e-3799f639052a"}, "events": 0, "points": 37, "loyalty": 2, "loyalty_events": 0}
+=== RUN   TestPassiveGovernorTickPreservesStockWithoutAction/ai-poor
+=== RUN   TestPassiveGovernorTickPreservesStockWithoutAction/ai-loyal
+=== RUN   TestPassiveGovernorTickPreservesStockWithoutAction/human-low
+=== RUN   TestPassiveGovernorTickPreservesStockWithoutAction/ai-no-stock
+--- FAIL: TestPassiveGovernorTickPreservesStockWithoutAction (0.03s)
+    --- FAIL: TestPassiveGovernorTickPreservesStockWithoutAction/ai-low (0.01s)
+    --- FAIL: TestPassiveGovernorTickPreservesStockWithoutAction/ai-lowest-lazy (0.00s)
+    --- FAIL: TestPassiveGovernorTickPreservesStockWithoutAction/ai-threshold (0.00s)
+    --- PASS: TestPassiveGovernorTickPreservesStockWithoutAction/ai-poor (0.00s)
+    --- PASS: TestPassiveGovernorTickPreservesStockWithoutAction/ai-loyal (0.00s)
+    --- PASS: TestPassiveGovernorTickPreservesStockWithoutAction/human-low (0.00s)
+    --- PASS: TestPassiveGovernorTickPreservesStockWithoutAction/ai-no-stock (0.00s)
+FAIL
+FAIL	formatet/megaron/server/internal/ai	0.029s
+FAIL
+» färsk DB på migration 179 · commit a7b8c858

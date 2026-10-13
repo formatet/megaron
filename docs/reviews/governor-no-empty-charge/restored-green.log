@@ -1,0 +1,19 @@
+=== RUN   TestPassiveGovernorTickPreservesStockWithoutAction
+=== RUN   TestPassiveGovernorTickPreservesStockWithoutAction/ai-low
+=== RUN   TestPassiveGovernorTickPreservesStockWithoutAction/ai-lowest-lazy
+=== RUN   TestPassiveGovernorTickPreservesStockWithoutAction/ai-threshold
+=== RUN   TestPassiveGovernorTickPreservesStockWithoutAction/ai-poor
+=== RUN   TestPassiveGovernorTickPreservesStockWithoutAction/ai-loyal
+=== RUN   TestPassiveGovernorTickPreservesStockWithoutAction/human-low
+=== RUN   TestPassiveGovernorTickPreservesStockWithoutAction/ai-no-stock
+--- PASS: TestPassiveGovernorTickPreservesStockWithoutAction (0.02s)
+    --- PASS: TestPassiveGovernorTickPreservesStockWithoutAction/ai-low (0.01s)
+    --- PASS: TestPassiveGovernorTickPreservesStockWithoutAction/ai-lowest-lazy (0.00s)
+    --- PASS: TestPassiveGovernorTickPreservesStockWithoutAction/ai-threshold (0.00s)
+    --- PASS: TestPassiveGovernorTickPreservesStockWithoutAction/ai-poor (0.00s)
+    --- PASS: TestPassiveGovernorTickPreservesStockWithoutAction/ai-loyal (0.00s)
+    --- PASS: TestPassiveGovernorTickPreservesStockWithoutAction/human-low (0.00s)
+    --- PASS: TestPassiveGovernorTickPreservesStockWithoutAction/ai-no-stock (0.00s)
+PASS
+ok  	formatet/megaron/server/internal/ai	0.025s
+» färsk DB på migration 179 · commit a7b8c858+ändringar

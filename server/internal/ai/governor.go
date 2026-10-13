@@ -4,15 +4,14 @@ package ai
 import (
 	"context"
 	"fmt"
-	"log/slog"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // PassiveGovernorTick runs the daily logic for AI-governed settlements.
-// A passive governor keeps the settlement stable — pays maintenance, does nothing
-// aggressive. Future: intermediate governors may recruit or manage loyalty.
+// Upkeep and loyalty are handled by their respective scheduled handlers. This
+// hook must not spend silver without an implemented action and its outcome.
 func PassiveGovernorTick(ctx context.Context, pool *pgxpool.Pool, settlementID, worldID uuid.UUID) error {
 	// Verify settlement is AI-governed.
 	var governorIsAI bool
@@ -25,39 +24,6 @@ func PassiveGovernorTick(ctx context.Context, pool *pgxpool.Pool, settlementID, 
 	}
 	if !governorIsAI {
 		return nil
-	}
-
-	// Passive governor: ensure loyalty doesn't fall below 2 by consuming a small
-	// silver reserve as a care action. If silver > 20, register a minimal gift event.
-	var silver float64
-	if err = pool.QueryRow(ctx,
-		`SELECT COALESCE(settled(amount, rate, calc_tick), 0)
-		 FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'`,
-		settlementID,
-	).Scan(&silver); err != nil {
-		silver = 0
-	}
-
-	var loyalty int
-	if err = pool.QueryRow(ctx,
-		`SELECT loyalty FROM settlements WHERE id = $1`,
-		settlementID,
-	).Scan(&loyalty); err != nil {
-		return fmt.Errorf("load settlement resources: %w", err)
-	}
-
-	if silver >= 20 && loyalty <= 2 {
-		_, err = pool.Exec(ctx,
-			`UPDATE settlement_goods
-			   SET amount  = settled(amount, rate, calc_tick) - 10,
-			       calc_tick = current_world_tick()
-			 WHERE settlement_id = $1 AND good_key = 'silver'
-			   AND settled(amount, rate, calc_tick) >= 10`,
-			settlementID,
-		)
-		if err != nil {
-			slog.Warn("passive governor silver deduction failed", "settlement", settlementID)
-		}
 	}
 
 	return nil
