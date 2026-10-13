@@ -1,0 +1,722 @@
+{
+  "4hex-5slots": {
+    "target_hexes": 4,
+    "slots_per_hex": 5,
+    "mean_hexes": 4,
+    "hex_min": 4,
+    "hex_max": 4,
+    "workers_mean": 20,
+    "l1_mean": 27.875,
+    "l1_min": 20.0,
+    "l1_max": 42.5,
+    "l3_mean": 50.830882352941174,
+    "l3_min": 36.470588235294116,
+    "l3_max": 77.5,
+    "per_wanax": {
+      "10": {
+        "l1": 2.7875,
+        "l3": 5.083088235294118,
+        "gross_spears_l1": 2.7875,
+        "net_spears_l1": 9.291666666666668,
+        "gross_spears_l3": 5.083088235294118,
+        "net_spears_l3": 16.943627450980394
+      },
+      "50": {
+        "l1": 0.5575,
+        "l3": 1.0166176470588235,
+        "gross_spears_l1": 0.5575,
+        "net_spears_l1": 1.8583333333333334,
+        "gross_spears_l3": 1.0166176470588235,
+        "net_spears_l3": 3.3887254901960784
+      }
+    },
+    "gross_cohorts": {
+      "l1": 27.875,
+      "l3": 50.830882352941174
+    },
+    "garrison_net_cohorts": {
+      "l1": 92.91666666666667,
+      "l3": 169.43627450980392
+    },
+    "same_effective_seed_and_geography_as_baseline": 20,
+    "static_candidates": {
+      "n": 17278,
+      "median": 11.0,
+      "max": 52,
+      "within4_pct": 16.50654010880889,
+      "within8_pct": 38.40143535131381,
+      "same_landmass_pct": 74.41254774858201,
+      "same_landmass_within8_pct": 38.193077902535016
+    },
+    "hosts": {
+      "10": {
+        "n": 200,
+        "median": 15.0,
+        "max": 46,
+        "within4_pct": 31.5,
+        "within8_pct": 38.5,
+        "same_landmass_pct": 44.5,
+        "same_landmass_within8_pct": 38.0
+      },
+      "50": {
+        "n": 992,
+        "median": 12.0,
+        "max": 50,
+        "within4_pct": 13.10483870967742,
+        "within8_pct": 35.483870967741936,
+        "same_landmass_pct": 69.85887096774194,
+        "same_landmass_within8_pct": 35.181451612903224
+      }
+    },
+    "hosts_per_map_min": 47,
+    "hosts_per_map_max": 50
+  },
+  "4hex-10slots": {
+    "target_hexes": 4,
+    "slots_per_hex": 10,
+    "mean_hexes": 4,
+    "hex_min": 4,
+    "hex_max": 4,
+    "workers_mean": 40,
+    "l1_mean": 55.75,
+    "l1_min": 40.0,
+    "l1_max": 85.0,
+    "l3_mean": 101.66176470588235,
+    "l3_min": 72.94117647058823,
+    "l3_max": 155.0,
+    "per_wanax": {
+      "10": {
+        "l1": 5.575,
+        "l3": 10.166176470588235,
+        "gross_spears_l1": 5.575,
+        "net_spears_l1": 18.583333333333336,
+        "gross_spears_l3": 10.166176470588235,
+        "net_spears_l3": 33.88725490196079
+      },
+      "50": {
+        "l1": 1.115,
+        "l3": 2.033235294117647,
+        "gross_spears_l1": 1.115,
+        "net_spears_l1": 3.716666666666667,
+        "gross_spears_l3": 2.033235294117647,
+        "net_spears_l3": 6.777450980392157
+      }
+    },
+    "gross_cohorts": {
+      "l1": 55.75,
+      "l3": 101.66176470588235
+    },
+    "garrison_net_cohorts": {
+      "l1": 185.83333333333334,
+      "l3": 338.87254901960785
+    },
+    "same_effective_seed_and_geography_as_baseline": 20,
+    "static_candidates": {
+      "n": 17278,
+      "median": 11.0,
+      "max": 52,
+      "within4_pct": 16.50654010880889,
+      "within8_pct": 38.40143535131381,
+      "same_landmass_pct": 74.41254774858201,
+      "same_landmass_within8_pct": 38.193077902535016
+    },
+    "hosts": {
+      "10": {
+        "n": 200,
+        "median": 15.0,
+        "max": 46,
+        "within4_pct": 31.5,
+        "within8_pct": 38.5,
+        "same_landmass_pct": 44.5,
+        "same_landmass_within8_pct": 38.0
+      },
+      "50": {
+        "n": 992,
+        "median": 12.0,
+        "max": 50,
+        "within4_pct": 13.10483870967742,
+        "within8_pct": 35.483870967741936,
+        "same_landmass_pct": 69.85887096774194,
+        "same_landmass_within8_pct": 35.181451612903224
+      }
+    },
+    "hosts_per_map_min": 47,
+    "hosts_per_map_max": 50
+  },
+  "5hex-5slots": {
+    "target_hexes": 5,
+    "slots_per_hex": 5,
+    "mean_hexes": 5,
+    "hex_min": 5,
+    "hex_max": 5,
+    "workers_mean": 25,
+    "l1_mean": 33.625,
+    "l1_min": 25.0,
+    "l1_max": 47.5,
+    "l3_mean": 61.31617647058823,
+    "l3_min": 45.588235294117645,
+    "l3_max": 86.61764705882354,
+    "per_wanax": {
+      "10": {
+        "l1": 3.3625,
+        "l3": 6.131617647058823,
+        "gross_spears_l1": 3.3625,
+        "net_spears_l1": 11.208333333333334,
+        "gross_spears_l3": 6.131617647058823,
+        "net_spears_l3": 20.438725490196077
+      },
+      "50": {
+        "l1": 0.6725,
+        "l3": 1.2263235294117647,
+        "gross_spears_l1": 0.6725,
+        "net_spears_l1": 2.2416666666666667,
+        "gross_spears_l3": 1.2263235294117647,
+        "net_spears_l3": 4.087745098039216
+      }
+    },
+    "gross_cohorts": {
+      "l1": 33.625,
+      "l3": 61.31617647058823
+    },
+    "garrison_net_cohorts": {
+      "l1": 112.08333333333334,
+      "l3": 204.38725490196077
+    },
+    "same_effective_seed_and_geography_as_baseline": 20,
+    "static_candidates": {
+      "n": 17278,
+      "median": 10.0,
+      "max": 52,
+      "within4_pct": 20.43060539414284,
+      "within8_pct": 44.50167843500405,
+      "same_landmass_pct": 78.8980206042366,
+      "same_landmass_within8_pct": 44.223868503298995
+    },
+    "hosts": {
+      "10": {
+        "n": 200,
+        "median": 12.0,
+        "max": 46,
+        "within4_pct": 37.5,
+        "within8_pct": 44.5,
+        "same_landmass_pct": 49.5,
+        "same_landmass_within8_pct": 43.5
+      },
+      "50": {
+        "n": 994,
+        "median": 11.0,
+        "max": 51,
+        "within4_pct": 15.593561368209256,
+        "within8_pct": 39.93963782696177,
+        "same_landmass_pct": 73.8430583501006,
+        "same_landmass_within8_pct": 39.53722334004024
+      }
+    },
+    "hosts_per_map_min": 47,
+    "hosts_per_map_max": 50
+  },
+  "5hex-10slots": {
+    "target_hexes": 5,
+    "slots_per_hex": 10,
+    "mean_hexes": 5,
+    "hex_min": 5,
+    "hex_max": 5,
+    "workers_mean": 50,
+    "l1_mean": 67.25,
+    "l1_min": 50.0,
+    "l1_max": 95.0,
+    "l3_mean": 122.63235294117646,
+    "l3_min": 91.17647058823529,
+    "l3_max": 173.23529411764707,
+    "per_wanax": {
+      "10": {
+        "l1": 6.725,
+        "l3": 12.263235294117646,
+        "gross_spears_l1": 6.725,
+        "net_spears_l1": 22.416666666666668,
+        "gross_spears_l3": 12.263235294117646,
+        "net_spears_l3": 40.877450980392155
+      },
+      "50": {
+        "l1": 1.345,
+        "l3": 2.4526470588235294,
+        "gross_spears_l1": 1.345,
+        "net_spears_l1": 4.483333333333333,
+        "gross_spears_l3": 2.4526470588235294,
+        "net_spears_l3": 8.175490196078432
+      }
+    },
+    "gross_cohorts": {
+      "l1": 67.25,
+      "l3": 122.63235294117646
+    },
+    "garrison_net_cohorts": {
+      "l1": 224.16666666666669,
+      "l3": 408.77450980392155
+    },
+    "same_effective_seed_and_geography_as_baseline": 20,
+    "static_candidates": {
+      "n": 17278,
+      "median": 10.0,
+      "max": 52,
+      "within4_pct": 20.43060539414284,
+      "within8_pct": 44.50167843500405,
+      "same_landmass_pct": 78.8980206042366,
+      "same_landmass_within8_pct": 44.223868503298995
+    },
+    "hosts": {
+      "10": {
+        "n": 200,
+        "median": 12.0,
+        "max": 46,
+        "within4_pct": 37.5,
+        "within8_pct": 44.5,
+        "same_landmass_pct": 49.5,
+        "same_landmass_within8_pct": 43.5
+      },
+      "50": {
+        "n": 994,
+        "median": 11.0,
+        "max": 51,
+        "within4_pct": 15.593561368209256,
+        "within8_pct": 39.93963782696177,
+        "same_landmass_pct": 73.8430583501006,
+        "same_landmass_within8_pct": 39.53722334004024
+      }
+    },
+    "hosts_per_map_min": 47,
+    "hosts_per_map_max": 50
+  },
+  "10hex-5slots": {
+    "target_hexes": 10,
+    "slots_per_hex": 5,
+    "mean_hexes": 10,
+    "hex_min": 10,
+    "hex_max": 10,
+    "workers_mean": 50,
+    "l1_mean": 66.125,
+    "l1_min": 50.0,
+    "l1_max": 72.5,
+    "l3_mean": 120.58088235294117,
+    "l3_min": 91.17647058823529,
+    "l3_max": 132.2058823529412,
+    "per_wanax": {
+      "10": {
+        "l1": 6.6125,
+        "l3": 12.058088235294118,
+        "gross_spears_l1": 6.6125,
+        "net_spears_l1": 22.041666666666668,
+        "gross_spears_l3": 12.058088235294118,
+        "net_spears_l3": 40.193627450980394
+      },
+      "50": {
+        "l1": 1.3225,
+        "l3": 2.4116176470588235,
+        "gross_spears_l1": 1.3225,
+        "net_spears_l1": 4.408333333333333,
+        "gross_spears_l3": 2.4116176470588235,
+        "net_spears_l3": 8.038725490196079
+      }
+    },
+    "gross_cohorts": {
+      "l1": 66.125,
+      "l3": 120.58088235294117
+    },
+    "garrison_net_cohorts": {
+      "l1": 220.41666666666669,
+      "l3": 401.9362745098039
+    },
+    "same_effective_seed_and_geography_as_baseline": 20,
+    "static_candidates": {
+      "n": 17278,
+      "median": 6.0,
+      "max": 48,
+      "within4_pct": 37.89211714318787,
+      "within8_pct": 66.10140062507234,
+      "same_landmass_pct": 87.81108924644056,
+      "same_landmass_within8_pct": 65.8004398657252
+    },
+    "hosts": {
+      "10": {
+        "n": 200,
+        "median": 5.0,
+        "max": 40,
+        "within4_pct": 49.5,
+        "within8_pct": 54.0,
+        "same_landmass_pct": 56.0,
+        "same_landmass_within8_pct": 52.5
+      },
+      "50": {
+        "n": 995,
+        "median": 7,
+        "max": 48,
+        "within4_pct": 30.753768844221106,
+        "within8_pct": 60.20100502512563,
+        "same_landmass_pct": 81.70854271356784,
+        "same_landmass_within8_pct": 59.39698492462311
+      }
+    },
+    "hosts_per_map_min": 47,
+    "hosts_per_map_max": 50
+  },
+  "10hex-10slots": {
+    "target_hexes": 10,
+    "slots_per_hex": 10,
+    "mean_hexes": 10,
+    "hex_min": 10,
+    "hex_max": 10,
+    "workers_mean": 100,
+    "l1_mean": 132.25,
+    "l1_min": 100.0,
+    "l1_max": 145.0,
+    "l3_mean": 241.16176470588235,
+    "l3_min": 182.35294117647058,
+    "l3_max": 264.4117647058824,
+    "per_wanax": {
+      "10": {
+        "l1": 13.225,
+        "l3": 24.116176470588236,
+        "gross_spears_l1": 13.225,
+        "net_spears_l1": 44.083333333333336,
+        "gross_spears_l3": 24.116176470588236,
+        "net_spears_l3": 80.38725490196079
+      },
+      "50": {
+        "l1": 2.645,
+        "l3": 4.823235294117647,
+        "gross_spears_l1": 2.645,
+        "net_spears_l1": 8.816666666666666,
+        "gross_spears_l3": 4.823235294117647,
+        "net_spears_l3": 16.077450980392157
+      }
+    },
+    "gross_cohorts": {
+      "l1": 132.25,
+      "l3": 241.16176470588235
+    },
+    "garrison_net_cohorts": {
+      "l1": 440.83333333333337,
+      "l3": 803.8725490196078
+    },
+    "same_effective_seed_and_geography_as_baseline": 20,
+    "static_candidates": {
+      "n": 17278,
+      "median": 6.0,
+      "max": 48,
+      "within4_pct": 37.89211714318787,
+      "within8_pct": 66.10140062507234,
+      "same_landmass_pct": 87.81108924644056,
+      "same_landmass_within8_pct": 65.8004398657252
+    },
+    "hosts": {
+      "10": {
+        "n": 200,
+        "median": 5.0,
+        "max": 40,
+        "within4_pct": 49.5,
+        "within8_pct": 54.0,
+        "same_landmass_pct": 56.0,
+        "same_landmass_within8_pct": 52.5
+      },
+      "50": {
+        "n": 995,
+        "median": 7,
+        "max": 48,
+        "within4_pct": 30.753768844221106,
+        "within8_pct": 60.20100502512563,
+        "same_landmass_pct": 81.70854271356784,
+        "same_landmass_within8_pct": 59.39698492462311
+      }
+    },
+    "hosts_per_map_min": 47,
+    "hosts_per_map_max": 50
+  },
+  "20hex-5slots": {
+    "target_hexes": 20,
+    "slots_per_hex": 5,
+    "mean_hexes": 15.55,
+    "hex_min": 11,
+    "hex_max": 19,
+    "workers_mean": 77.75,
+    "l1_mean": 103.625,
+    "l1_min": 70.0,
+    "l1_max": 140.0,
+    "l3_mean": 188.96323529411765,
+    "l3_min": 127.6470588235294,
+    "l3_max": 255.2941176470588,
+    "per_wanax": {
+      "10": {
+        "l1": 10.3625,
+        "l3": 18.896323529411767,
+        "gross_spears_l1": 10.3625,
+        "net_spears_l1": 34.54166666666667,
+        "gross_spears_l3": 18.896323529411767,
+        "net_spears_l3": 62.98774509803923
+      },
+      "50": {
+        "l1": 2.0725,
+        "l3": 3.779264705882353,
+        "gross_spears_l1": 2.0725,
+        "net_spears_l1": 6.908333333333333,
+        "gross_spears_l3": 3.779264705882353,
+        "net_spears_l3": 12.597549019607843
+      }
+    },
+    "gross_cohorts": {
+      "l1": 103.625,
+      "l3": 188.96323529411765
+    },
+    "garrison_net_cohorts": {
+      "l1": 345.4166666666667,
+      "l3": 629.8774509803922
+    },
+    "same_effective_seed_and_geography_as_baseline": 20,
+    "static_candidates": {
+      "n": 17278,
+      "median": 4.0,
+      "max": 45,
+      "within4_pct": 53.65783076744994,
+      "within8_pct": 79.81247829609909,
+      "same_landmass_pct": 87.81108924644056,
+      "same_landmass_within8_pct": 79.33788632943627
+    },
+    "hosts": {
+      "10": {
+        "n": 200,
+        "median": 2.0,
+        "max": 36,
+        "within4_pct": 54.5,
+        "within8_pct": 56.5,
+        "same_landmass_pct": 55.5,
+        "same_landmass_within8_pct": 54.5
+      },
+      "50": {
+        "n": 992,
+        "median": 5.0,
+        "max": 43,
+        "within4_pct": 44.65725806451613,
+        "within8_pct": 72.98387096774194,
+        "same_landmass_pct": 81.95564516129032,
+        "same_landmass_within8_pct": 72.07661290322581
+      }
+    },
+    "hosts_per_map_min": 43,
+    "hosts_per_map_max": 50
+  },
+  "20hex-10slots": {
+    "target_hexes": 20,
+    "slots_per_hex": 10,
+    "mean_hexes": 15.55,
+    "hex_min": 11,
+    "hex_max": 19,
+    "workers_mean": 155.5,
+    "l1_mean": 207.25,
+    "l1_min": 140.0,
+    "l1_max": 280.0,
+    "l3_mean": 377.9264705882353,
+    "l3_min": 255.2941176470588,
+    "l3_max": 510.5882352941176,
+    "per_wanax": {
+      "10": {
+        "l1": 20.725,
+        "l3": 37.79264705882353,
+        "gross_spears_l1": 20.725,
+        "net_spears_l1": 69.08333333333334,
+        "gross_spears_l3": 37.79264705882353,
+        "net_spears_l3": 125.97549019607845
+      },
+      "50": {
+        "l1": 4.145,
+        "l3": 7.558529411764706,
+        "gross_spears_l1": 4.145,
+        "net_spears_l1": 13.816666666666666,
+        "gross_spears_l3": 7.558529411764706,
+        "net_spears_l3": 25.195098039215686
+      }
+    },
+    "gross_cohorts": {
+      "l1": 207.25,
+      "l3": 377.9264705882353
+    },
+    "garrison_net_cohorts": {
+      "l1": 690.8333333333334,
+      "l3": 1259.7549019607843
+    },
+    "same_effective_seed_and_geography_as_baseline": 20,
+    "static_candidates": {
+      "n": 17278,
+      "median": 4.0,
+      "max": 45,
+      "within4_pct": 53.65783076744994,
+      "within8_pct": 79.81247829609909,
+      "same_landmass_pct": 87.81108924644056,
+      "same_landmass_within8_pct": 79.33788632943627
+    },
+    "hosts": {
+      "10": {
+        "n": 200,
+        "median": 2.0,
+        "max": 36,
+        "within4_pct": 54.5,
+        "within8_pct": 56.5,
+        "same_landmass_pct": 55.5,
+        "same_landmass_within8_pct": 54.5
+      },
+      "50": {
+        "n": 992,
+        "median": 5.0,
+        "max": 43,
+        "within4_pct": 44.65725806451613,
+        "within8_pct": 72.98387096774194,
+        "same_landmass_pct": 81.95564516129032,
+        "same_landmass_within8_pct": 72.07661290322581
+      }
+    },
+    "hosts_per_map_min": 43,
+    "hosts_per_map_max": 50
+  },
+  "40hex-5slots": {
+    "target_hexes": 40,
+    "slots_per_hex": 5,
+    "mean_hexes": 15.55,
+    "hex_min": 11,
+    "hex_max": 19,
+    "workers_mean": 77.75,
+    "l1_mean": 103.625,
+    "l1_min": 70.0,
+    "l1_max": 140.0,
+    "l3_mean": 188.96323529411765,
+    "l3_min": 127.6470588235294,
+    "l3_max": 255.2941176470588,
+    "per_wanax": {
+      "10": {
+        "l1": 10.3625,
+        "l3": 18.896323529411767,
+        "gross_spears_l1": 10.3625,
+        "net_spears_l1": 34.54166666666667,
+        "gross_spears_l3": 18.896323529411767,
+        "net_spears_l3": 62.98774509803923
+      },
+      "50": {
+        "l1": 2.0725,
+        "l3": 3.779264705882353,
+        "gross_spears_l1": 2.0725,
+        "net_spears_l1": 6.908333333333333,
+        "gross_spears_l3": 3.779264705882353,
+        "net_spears_l3": 12.597549019607843
+      }
+    },
+    "gross_cohorts": {
+      "l1": 103.625,
+      "l3": 188.96323529411765
+    },
+    "garrison_net_cohorts": {
+      "l1": 345.4166666666667,
+      "l3": 629.8774509803922
+    },
+    "same_effective_seed_and_geography_as_baseline": 20,
+    "static_candidates": {
+      "n": 17278,
+      "median": 4.0,
+      "max": 45,
+      "within4_pct": 53.65783076744994,
+      "within8_pct": 79.81247829609909,
+      "same_landmass_pct": 87.81108924644056,
+      "same_landmass_within8_pct": 79.33788632943627
+    },
+    "hosts": {
+      "10": {
+        "n": 200,
+        "median": 2.0,
+        "max": 36,
+        "within4_pct": 54.5,
+        "within8_pct": 56.5,
+        "same_landmass_pct": 55.5,
+        "same_landmass_within8_pct": 54.5
+      },
+      "50": {
+        "n": 992,
+        "median": 5.0,
+        "max": 43,
+        "within4_pct": 44.65725806451613,
+        "within8_pct": 72.98387096774194,
+        "same_landmass_pct": 81.95564516129032,
+        "same_landmass_within8_pct": 72.07661290322581
+      }
+    },
+    "hosts_per_map_min": 43,
+    "hosts_per_map_max": 50
+  },
+  "40hex-10slots": {
+    "target_hexes": 40,
+    "slots_per_hex": 10,
+    "mean_hexes": 15.55,
+    "hex_min": 11,
+    "hex_max": 19,
+    "workers_mean": 155.5,
+    "l1_mean": 207.25,
+    "l1_min": 140.0,
+    "l1_max": 280.0,
+    "l3_mean": 377.9264705882353,
+    "l3_min": 255.2941176470588,
+    "l3_max": 510.5882352941176,
+    "per_wanax": {
+      "10": {
+        "l1": 20.725,
+        "l3": 37.79264705882353,
+        "gross_spears_l1": 20.725,
+        "net_spears_l1": 69.08333333333334,
+        "gross_spears_l3": 37.79264705882353,
+        "net_spears_l3": 125.97549019607845
+      },
+      "50": {
+        "l1": 4.145,
+        "l3": 7.558529411764706,
+        "gross_spears_l1": 4.145,
+        "net_spears_l1": 13.816666666666666,
+        "gross_spears_l3": 7.558529411764706,
+        "net_spears_l3": 25.195098039215686
+      }
+    },
+    "gross_cohorts": {
+      "l1": 207.25,
+      "l3": 377.9264705882353
+    },
+    "garrison_net_cohorts": {
+      "l1": 690.8333333333334,
+      "l3": 1259.7549019607843
+    },
+    "same_effective_seed_and_geography_as_baseline": 20,
+    "static_candidates": {
+      "n": 17278,
+      "median": 4.0,
+      "max": 45,
+      "within4_pct": 53.65783076744994,
+      "within8_pct": 79.81247829609909,
+      "same_landmass_pct": 87.81108924644056,
+      "same_landmass_within8_pct": 79.33788632943627
+    },
+    "hosts": {
+      "10": {
+        "n": 200,
+        "median": 2.0,
+        "max": 36,
+        "within4_pct": 54.5,
+        "within8_pct": 56.5,
+        "same_landmass_pct": 55.5,
+        "same_landmass_within8_pct": 54.5
+      },
+      "50": {
+        "n": 992,
+        "median": 5.0,
+        "max": 43,
+        "within4_pct": 44.65725806451613,
+        "within8_pct": 72.98387096774194,
+        "same_landmass_pct": 81.95564516129032,
+        "same_landmass_within8_pct": 72.07661290322581
+      }
+    },
+    "hosts_per_map_min": 43,
+    "hosts_per_map_max": 50
+  }
+}

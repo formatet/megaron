@@ -1,0 +1,13 @@
+server/internal/combat/standing_orders.go:48:// hull ration (UpkeepSpecs["merchantman"]) instead of a gubbe — see
+server/internal/combat/standing_orders.go:97:	return UpkeepSpecs[string(unit.TypeMerchantman)].Grain
+server/api/handlers/nomadic_host.go:171:	perTick := combat.UnitUpkeep(string(unit.TypeSpearman), string(unit.CategoryLand), nomadicHostSpearmenSize, "positioned")
+server/internal/combat/march_start.go:1259:	return UnitUpkeep(unitType, string(unit.CategoryOf(unit.Type(unitType))), unitSize, "garrison").Silver * ColonistPurseDays
+server/internal/combat/upkeep.go:100:func UnitUpkeep(unitType, category string, size int, status string) UpkeepSpec {
+server/internal/combat/upkeep.go:101:	spec, ok := UpkeepSpecs[unitType]
+server/internal/combat/upkeep.go:134:	ration := UnitUpkeep(shipType, "naval", shipSize, "positioned").Grain
+server/internal/combat/upkeep.go:136:		ration += UnitUpkeep(cargoType, "land", cargoSize, "embarked").Grain
+server/internal/combat/upkeep.go:385:		up := UnitUpkeep(u.unitType, u.category, u.size, u.status)
+server/api/handlers/province.go:393:			newUnitUp := combat.UnitUpkeep(unitType, cat, fullSize, "garrison")
+server/api/handlers/province.go:1027:		up := combat.UnitUpkeep(unitType, category, size, status)
+server/api/handlers/province.go:1085:		up := combat.UnitUpkeep(unitType, category, size, status)
+server/api/handlers/province.go:2683:		newUnitUp := combat.UnitUpkeep(req.UnitType, string(cat), fullSize, "garrison")

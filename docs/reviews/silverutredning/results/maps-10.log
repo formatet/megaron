@@ -1,0 +1,49 @@
+time=2026-10-13T02:51:43.006+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=1009 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+time=2026-10-13T02:51:43.022+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=1010 width=64 height=64 err="invalid map: forest fraction = 0.304 (want 0.22..0.30)"
+seed 1009 -> 1011: 10 silver, 881 starttiles, 50 hosts
+seed 2018 -> 2018: 10 silver, 847 starttiles, 49 hosts
+time=2026-10-13T02:51:43.467+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=3027 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+time=2026-10-13T02:51:43.482+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=3028 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+seed 3027 -> 3029: 10 silver, 848 starttiles, 50 hosts
+seed 4036 -> 4036: 10 silver, 852 starttiles, 50 hosts
+time=2026-10-13T02:51:43.929+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=5045 width=64 height=64 err="invalid map: landmass 3 (86 tiles) has 0 rivers (want 1-2)"
+seed 5045 -> 5046: 10 silver, 893 starttiles, 50 hosts
+time=2026-10-13T02:51:44.174+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=6054 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+seed 6054 -> 6055: 10 silver, 893 starttiles, 50 hosts
+time=2026-10-13T02:51:44.397+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=7063 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+time=2026-10-13T02:51:44.412+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=7064 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+seed 7063 -> 7065: 10 silver, 857 starttiles, 50 hosts
+time=2026-10-13T02:51:44.650+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=8072 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+seed 8072 -> 8073: 10 silver, 850 starttiles, 50 hosts
+time=2026-10-13T02:51:44.870+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=9081 width=64 height=64 err="invalid map: landmass 2 (83 tiles) has 0 rivers (want 1-2)"
+time=2026-10-13T02:51:44.885+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=9082 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+time=2026-10-13T02:51:44.900+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=9083 width=64 height=64 err="invalid map: landmass 3 (82 tiles) has 0 rivers (want 1-2)"
+seed 9081 -> 9084: 10 silver, 873 starttiles, 50 hosts
+time=2026-10-13T02:51:45.120+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=10090 width=64 height=64 err="invalid map: forest fraction = 0.309 (want 0.22..0.30)"
+time=2026-10-13T02:51:45.140+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=10091 width=64 height=64 err="invalid map: landmass 12 (223 tiles) has 0 rivers (want 1-2); landmass 10 (89 tiles) has 0 rivers (want 1-2); landmass 3 (97 tiles) has 0 rivers (want 1-2)"
+seed 10090 -> 10092: 10 silver, 821 starttiles, 50 hosts
+time=2026-10-13T02:51:45.375+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=11099 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+time=2026-10-13T02:51:45.391+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=11100 width=64 height=64 err="invalid map: productive copper = 1 (want >= 2); productive tin = 1 (want >= 2); no buildable west tile (q <= maxQ/2) has copper in its 6-hex catchment"
+seed 11099 -> 11101: 10 silver, 876 starttiles, 47 hosts
+time=2026-10-13T02:51:45.601+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=12108 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+seed 12108 -> 12109: 10 silver, 877 starttiles, 50 hosts
+time=2026-10-13T02:51:45.829+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=13117 width=64 height=64 err="invalid map: river_ford hex (56,6) has 3 river-family neighbours (want exactly 2)"
+seed 13117 -> 13118: 10 silver, 907 starttiles, 50 hosts
+seed 14126 -> 14126: 10 silver, 837 starttiles, 50 hosts
+seed 15135 -> 15135: 10 silver, 891 starttiles, 50 hosts
+seed 16144 -> 16144: 10 silver, 836 starttiles, 50 hosts
+seed 17153 -> 17153: 10 silver, 873 starttiles, 50 hosts
+time=2026-10-13T02:51:46.848+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=18162 width=64 height=64 err="invalid map: landmass 0 (129 tiles) has 0 rivers (want 1-2)"
+time=2026-10-13T02:51:46.863+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=18163 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+time=2026-10-13T02:51:46.887+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=18164 width=64 height=64 err="invalid map: landmass 11 (124 tiles) has 0 rivers (want 1-2)"
+time=2026-10-13T02:51:46.914+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=18165 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2); landmass 8 (70 tiles) has 0 rivers (want 1-2)"
+time=2026-10-13T02:51:46.933+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=18166 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+time=2026-10-13T02:51:46.960+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=18167 width=64 height=64 err="invalid map: landmass 1 (71 tiles) has 0 rivers (want 1-2)"
+time=2026-10-13T02:51:46.977+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=18168 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+time=2026-10-13T02:51:46.993+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=18169 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2); forest fraction = 0.325 (want 0.22..0.30); landmass 2 (176 tiles) has 0 rivers (want 1-2)"
+seed 18162 -> 18170: 10 silver, 845 starttiles, 49 hosts
+time=2026-10-13T02:51:47.196+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=19171 width=64 height=64 err="invalid map: landmass 4 (338 tiles) has 0 rivers (want 1-2); landmass 5 (73 tiles) has 0 rivers (want 1-2)"
+seed 19171 -> 19172: 10 silver, 875 starttiles, 50 hosts
+time=2026-10-13T02:51:47.424+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=20180 width=64 height=64 err="invalid map: productive tin = 0 (want >= 2); no buildable east tile (q > maxQ/2) has tin in its 6-hex catchment"
+time=2026-10-13T02:51:47.440+02:00 level=WARN msg="mapgen: invalid map, reseeding" world=00000000-0000-0000-0000-000000000000 seed=20181 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+seed 20180 -> 20182: 10 silver, 846 starttiles, 50 hosts

@@ -1,0 +1,10 @@
+BEGIN
+{"kind" : "migration", "data" : {"version":177,"dirty":false}}
+{"kind" : "timber_terrains", "data" : ["forest_olive_grove"]}
+{"kind" : "units", "data" : {"world_id":"f7c90afa-4653-46a6-b14c-473a268efa3e","type":"nomadic_host","category":"land","status":"positioned","size":1,"own_payer":false,"active_founder":true,"valid_payer":false,"unpaid_periods":0,"units":1}}
+{"kind" : "units", "data" : {"world_id":"f7c90afa-4653-46a6-b14c-473a268efa3e","type":"spearman","category":"land","status":"positioned","size":100,"own_payer":false,"active_founder":true,"valid_payer":false,"unpaid_periods":0,"units":2}}
+{"kind" : "world", "data" : {"id":"f7c90afa-4653-46a6-b14c-473a268efa3e","map_width":64,"map_height":64,"map_seed":1788982388878976733,"current_tick":150,"status":"active"}}
+{"kind" : "wanaxes", "data" : {"world_id":"f7c90afa-4653-46a6-b14c-473a268efa3e","count":1}}
+{"kind" : "founders", "data" : {"world_id":"f7c90afa-4653-46a6-b14c-473a268efa3e","hosts":1,"silver_rate":-2,"silver_amount":480}}
+{"kind" : "silver_tiles", "data" : {"world_id":"f7c90afa-4653-46a6-b14c-473a268efa3e","terrain":"hills","count":4}}
+COMMIT

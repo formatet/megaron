@@ -1,0 +1,11 @@
+server/cmd/keryx/cmd_recruit.go:163:				UpkeepWarning string `json:"upkeep_warning"`
+server/cmd/keryx/cmd_recruit.go:219:	// upkeep_grain_per_tick/upkeep_silver_per_tick + sustainable (P6, soak
+server/cmd/keryx/cmd_recruit.go:244:				netSilver, _ = sett["net_silver_per_tick_after_upkeep"].(float64)
+server/cmd/keryx/cmd_recruit.go:263:						us, _ := m["upkeep_silver_per_tick"].(float64)
+server/cmd/keryx/cmd_recruit.go:264:						usNet, netOK := m["upkeep_silver_net_per_tick"].(float64)
+server/cmd/keryx/cmd_status.go:216://   - Upkeep: this settlement's OWN current army_upkeep grain/silver draw
+server/cmd/keryx/cmd_status.go:504:grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_upkeep.`,
+server/cmd/keryx/cmd_status.go:776:					netS, _ := sett["net_silver_per_tick_after_upkeep"].(float64)
+server/cmd/keryx/cmd_status.go:831:				if up, ok := sett["army_upkeep"].(map[string]any); ok {
+server/cmd/keryx/cmd_status.go:1007:				if up, ok := sett["army_upkeep"].(map[string]any); ok {
+server/cmd/keryx/cmd_status.go:1021:						if circ, ok := sett["army_upkeep_circulated_silver"].(float64); ok && circ > 0 {

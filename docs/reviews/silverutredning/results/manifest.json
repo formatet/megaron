@@ -1,0 +1,40 @@
+{
+  "source_commit": "97712edeaf70a30267ffed62d4dae744180015c9",
+  "mapgen_sha256": "68fbcb91eef76655fbb8e0b3d294cfe27d14dc9a48074feab22c56b8982ff4b6",
+  "spawn_sql_sha256": "a5518f3ff0cf2a35a6c9f6adbbf4b286ee3f0467fe916bd0993f5f92ff48066a",
+  "requested_seeds": [
+    1009,
+    2018,
+    3027,
+    4036,
+    5045,
+    6054,
+    7063,
+    8072,
+    9081,
+    10090,
+    11099,
+    12108,
+    13117,
+    14126,
+    15135,
+    16144,
+    17153,
+    18162,
+    19171,
+    20180
+  ],
+  "width": 64,
+  "height": 64,
+  "method": "actual SQL, sequential active hosts, no moving/founding; seeded PostgreSQL RANDOM",
+  "timber_terrains": [
+    "forest_olive_grove"
+  ],
+  "variants": [
+    4,
+    5,
+    10,
+    20,
+    40
+  ]
+}

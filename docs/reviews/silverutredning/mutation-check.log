@@ -1,0 +1,21 @@
+RED: source mutation in isolated summarize.py (L3 factor -> 1), rejected by worker-rate anchor L3
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-silverutredning/docs/reviews/silverutredning/verify.py", line 26, in <module>
+    assert math.isclose(summary[f'{target}hex-{slots}slots'][f'l{level}_mean'],expected[level]), 'worker-rate anchor L'+str(level)
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: worker-rate anchor L3
+
+RED: nearest-distance input mutation (+1), rejected by nearest-silver geometry
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-silverutredning/docs/reviews/silverutredning/verify.py", line 14, in <module>
+    assert point[2]==min(distance(point,s) for s in m['deposits']), 'nearest-silver geometry'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: nearest-silver geometry
+
+GREEN: originals untouched; fresh independent verification and byte-identical second isolated run
+PASS independent axial distances for every starttile/host, same-landmass, spacing, actual rate anchors, STOPP1 baseline and saturation
+PASS isolated replay maps-4.jsonl e70958a678b907b1bd34e83d0513c740934aef070977080daa5da46737d4f3c3
+PASS isolated replay maps-5.jsonl 9557235369216253b32ab853123033e70a3768914337232f7eae293688b4044f
+PASS isolated replay maps-10.jsonl bc05079663318dd49b76ddc4aa1f7ad44bf473cc4d5e0e3cf335059019414c10
+PASS isolated replay maps-20.jsonl c152319dcfc5957a1af1a95e6bbaf913d0ed4a3f0f6de636a34238509cd4b135
+PASS isolated replay maps-40.jsonl c152319dcfc5957a1af1a95e6bbaf913d0ed4a3f0f6de636a34238509cd4b135
