@@ -41,15 +41,15 @@ func TestSilverCalibrationKharisFlowLeavesStalePriceClamp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := .15*8*1.5 - 1.8
+	want := .15*kharisPerTempleDay*1.5 - decayBas
 	if !has || dev != .15 || math.Abs(net-want) > 1e-8 {
 		t.Fatalf("projection %g devotion%g has%v want%g", net, dev, has, want)
 	}
 	// Simulate the old valuation scale's stale denominator to display the change.
 	oldFactor := scarcityFromValues(map[string]float64{"grain": 129.6}, map[string]float64{"grain": 1}, nil)
-	oldNet := .15*8*oldFactor - 1.8
-	if oldFactor != 2 || math.Abs(oldNet-.6) > 1e-8 || math.Abs(net) > 1e-8 {
-		t.Fatalf("flow before%g after%g, want +0.6 ->0", oldNet, net)
+	oldNet := .15*kharisPerTempleDay*oldFactor - decayBas
+	if oldFactor != 2 || oldNet <= net {
+		t.Fatalf("old price clamp %g should overstate catalogue-based net%g", oldNet, net)
 	}
 	// Charge the actual maintenance path and compare the persisted relationship.
 	before := 20.0

@@ -14,18 +14,13 @@ func dayNet(devotionSum float64, offerFraction, scarcity float64, templelessColo
 	return gain - computeDailyDecay(templelessColonies)
 }
 
-func TestDevotionCalibration_GrandTempleClimbsModestHolds(t *testing.T) {
+func TestDevotionCalibration_ModestClimbsGrandClimbsFaster(t *testing.T) {
 	l1 := templeDevotionCapacity(1)
 
-	// A level-1 temple staffed to what it can EMPLOY, fed, in ORDINARY times
-	// (scarcity 1.0): must NOT climb on its own (Timothy 2026-07-24, "för hög och
-	// enkel"). Every existing city is in exactly this case; if the modest temple
-	// climbed for free, everyone would drift to their ceiling with zero effort —
-	// the bug this recalibration removes. A modest temple holds your standing at
-	// best; climbing toward the gods requires a GRANDER temple.
-	net := dayNet(l1, 1.0, 1.0, 0)
-	if net > 0 {
-		t.Errorf("a floor-staffed level-1 temple must NOT climb for free, got %+.2f/day", net)
+	// Timothy2026-10-13: ordinary fully staffed and fed L1 must climb weakly.
+	net := dayNet(l1, 1, 1, 0)
+	if net <= 0 || net > .5 {
+		t.Errorf("tended L1 net%+.3f want(0,.5]", net)
 	}
 
 	// Unfed, however well staffed: fades harder still.
@@ -33,7 +28,7 @@ func TestDevotionCalibration_GrandTempleClimbsModestHolds(t *testing.T) {
 		t.Errorf("an unfed temple must lose more ground than a fed one, got %+.2f/day vs fed %+.2f/day", unfed, net)
 	}
 
-	// A larger temple employs more of the city and is the only way UP: it must
+	// A larger temple employs more of the city and climbs faster: it must
 	// climb outright in ordinary times — the whole reason to raise one.
 	l2 := dayNet(templeDevotionCapacity(2), 1.0, 1.0, 0)
 	if l2 <= 0 {

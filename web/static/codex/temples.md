@@ -16,4 +16,6 @@ The temple uses **grain first, then fish, then timber, and silver last**. Silver
 
 ## Level
 
-**Your best temple sets your kharis ceiling.** A level-1 temple can keep you safe but can never bring a blessing. Levelling a temple further needs cedar.
+With full devotion and its daily gift, your first level-1 temple lets kharis grow slowly toward early [[rites|prayers]]. Higher-level temples can employ more devotion and make it grow faster when staffed and fed.
+
+**Your best temple sets your kharis ceiling.** A level-1 temple can never bring a blessing; a higher-level temple raises the ceiling. Levelling a temple further needs cedar.

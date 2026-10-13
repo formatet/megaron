@@ -50,8 +50,8 @@ func TestEarlyTempleOfferingLocalGiftAndProjection(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if math.Abs(net-.6) > 1e-8 {
-				t.Fatalf("fed staffed L2 net=%g want .6", net)
+			if math.Abs(net-(.3*kharisPerTempleDay-decayBas)) > 1e-8 {
+				t.Fatalf("fed staffed L2 net=%g want shared yield minus decay", net)
 			}
 			h := newTestTickHandler(pool)
 			eid := atomic.AddInt64(&advanceOneDayEventID, 1)
@@ -72,7 +72,7 @@ func TestEarlyTempleOfferingLocalGiftAndProjection(t *testing.T) {
 			if err := pool.QueryRow(ctx, `SELECT (payload->>'kharis_gain')::float8 FROM events WHERE world_id=$1 AND event_type='KharisOffering' ORDER BY id DESC LIMIT 1`, wid).Scan(&gain); err != nil {
 				t.Fatal(err)
 			}
-			if math.Abs(after-(20+net)) > 1e-8 || amount != 0 || gain != 2.4 {
+			if math.Abs(after-(20+net)) > 1e-8 || amount != 0 || math.Abs(gain-.3*kharisPerTempleDay) > 1e-8 {
 				t.Fatalf("actual after%g amount%g gain%g", after, amount, gain)
 			}
 			// A richer remote city of the same Wanax is never charged for this temple.
