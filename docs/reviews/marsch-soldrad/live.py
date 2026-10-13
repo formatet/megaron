@@ -108,6 +108,8 @@ try:
    row.scroll_into_view_if_needed();rect=row.bounding_box()
    assert rect and rect['x']>=0 and rect['x']+rect['width']<=width+1,rect
    assert row.evaluate('(el)=>el.scrollWidth<=el.clientWidth+1')
+   assert row.evaluate('(el)=>getComputedStyle(el).color')=='rgb(28, 28, 28)'
+   assert float(row.evaluate('(el)=>getComputedStyle(el).fontSize').removesuffix('px'))>=13
    assert page.locator('#mctx-send').is_visible()
    page.screenshot(path=str(OUT/(mode+'.png')))
    (OUT/(mode+'-preview.txt')).write_text(page.locator('#march-ctx').inner_text()+'\n')

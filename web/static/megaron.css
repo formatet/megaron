@@ -68,6 +68,9 @@ html, body {
   min-height: 100vh;
 }
 
+/* Payroll must remain legible inside the arrival forecast's muted container. */
+.march-sold { color: var(--text); font-size: var(--fs-xs); }
+
 /* Subtle hex-grid background texture via SVG data URI */
 body::before {
   content: '';
