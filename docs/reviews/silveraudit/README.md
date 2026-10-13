@@ -51,7 +51,7 @@ Ingen BILD eller nytt spelarverb: denna slice är intern mätning och analysverk
 V2 mäter tillgängligt silver; förlorade stads-/unit-/transportkopior räknas inte.
 Aktiva neutrala stadsvaror ingår och redovisas som ägarlösa. All världens
 registrerade Wanax och tillgångsägare räknas i fördelningen, inklusive AI och
-ägarlösa/dispossessed Wanax med0; global ägarlös stock läggs inte i medianen.
+stadslösa/dispossessed Wanax med0; global ägarlös stock läggs inte i medianen.
 Övrigt netto är kranar minus sänkor, inte ett påstående om fel. AI-guvernörens
 redan kända tysta10-avdrag finns kvar som separat VERIFIERING, ingen beteende-
 ändring i denna slice. Realiseringsinstrumenteringen förutsätter den befintliga
@@ -64,4 +64,3 @@ nu den egna PG-containerns klient. Ett test frågade först efter processed i
 stället för processed_at; själva handoff-invarianten var redan grön. Inga skips
 eller påstådda rena baselinefel döljer dessa riggfynd. Ingen kanonblockerare.
 Integration/deploy verifieras separat.
-
