@@ -568,3 +568,12 @@ and its true starting balance, then an explicit pre-action temple/stock fixture
 for Workdays/unit and real prayer Offers. No SQL during actions or payload overrides.
 `SILVER_PROOF_OUT=live-repeat` selects a second evidence folder; all own resources
 are removed on completion. Proofs: `docs/reviews/silverkalibrering/`.
+
+### SilverAuditV2
+
+`alfa_economy.py` visar separata V2-stockkomponenter och Wanax-fördelning;
+V1 presenteras bara som historisk stadsstock. Revisions- och migrationsprov:
+`docs/reviews/silveraudit/README.md`. `python3 tools/alfa_economy_test.py`
+kör reader-proven; sätt `ALFA_AUDIT_JSON` och `ALFA_TEST_DSN` för proven mot
+verklig serverpayload respektive read-only DB. `docs/reviews/silveraudit/mutate.py`
+kör fysisk carried-/utvinningsmutation på separata färska databaser.
