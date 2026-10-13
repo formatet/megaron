@@ -1,0 +1,172 @@
+{
+  "independent_weather_seeds": 500,
+  "paired_lanes_per_world": 20,
+  "sea_hexes": 3200,
+  "storms_per_world": 32,
+  "initial_hull": 5,
+  "storm_damage": 2,
+  "results": [
+    {
+      "terrain": "coastal_sea",
+      "mode": "galley",
+      "steps": 10,
+      "duration_ticks": 3,
+      "journeys": 10000,
+      "foundered": 18,
+      "percent": 0.18
+    },
+    {
+      "terrain": "coastal_sea",
+      "mode": "galley",
+      "steps": 20,
+      "duration_ticks": 7,
+      "journeys": 10000,
+      "foundered": 162,
+      "percent": 1.62
+    },
+    {
+      "terrain": "coastal_sea",
+      "mode": "galley",
+      "steps": 40,
+      "duration_ticks": 13,
+      "journeys": 10000,
+      "foundered": 767,
+      "percent": 7.67
+    },
+    {
+      "terrain": "coastal_sea",
+      "mode": "war_galley",
+      "steps": 10,
+      "duration_ticks": 2,
+      "journeys": 10000,
+      "foundered": 16,
+      "percent": 0.16
+    },
+    {
+      "terrain": "coastal_sea",
+      "mode": "war_galley",
+      "steps": 20,
+      "duration_ticks": 4,
+      "journeys": 10000,
+      "foundered": 111,
+      "percent": 1.11
+    },
+    {
+      "terrain": "coastal_sea",
+      "mode": "war_galley",
+      "steps": 40,
+      "duration_ticks": 8,
+      "journeys": 10000,
+      "foundered": 670,
+      "percent": 6.7
+    },
+    {
+      "terrain": "coastal_sea",
+      "mode": "cargo",
+      "steps": 10,
+      "duration_ticks": 5,
+      "journeys": 10000,
+      "foundered": 32,
+      "percent": 0.32
+    },
+    {
+      "terrain": "coastal_sea",
+      "mode": "cargo",
+      "steps": 20,
+      "duration_ticks": 10,
+      "journeys": 10000,
+      "foundered": 172,
+      "percent": 1.72
+    },
+    {
+      "terrain": "coastal_sea",
+      "mode": "cargo",
+      "steps": 40,
+      "duration_ticks": 20,
+      "journeys": 10000,
+      "foundered": 887,
+      "percent": 8.87
+    },
+    {
+      "terrain": "deep_sea",
+      "mode": "galley",
+      "steps": 10,
+      "duration_ticks": 2,
+      "journeys": 10000,
+      "foundered": 16,
+      "percent": 0.16
+    },
+    {
+      "terrain": "deep_sea",
+      "mode": "galley",
+      "steps": 20,
+      "duration_ticks": 4,
+      "journeys": 10000,
+      "foundered": 111,
+      "percent": 1.11
+    },
+    {
+      "terrain": "deep_sea",
+      "mode": "galley",
+      "steps": 40,
+      "duration_ticks": 8,
+      "journeys": 10000,
+      "foundered": 670,
+      "percent": 6.7
+    },
+    {
+      "terrain": "deep_sea",
+      "mode": "war_galley",
+      "steps": 10,
+      "duration_ticks": 1,
+      "journeys": 10000,
+      "foundered": 11,
+      "percent": 0.11
+    },
+    {
+      "terrain": "deep_sea",
+      "mode": "war_galley",
+      "steps": 20,
+      "duration_ticks": 2,
+      "journeys": 10000,
+      "foundered": 85,
+      "percent": 0.85
+    },
+    {
+      "terrain": "deep_sea",
+      "mode": "war_galley",
+      "steps": 40,
+      "duration_ticks": 5,
+      "journeys": 10000,
+      "foundered": 630,
+      "percent": 6.3
+    },
+    {
+      "terrain": "deep_sea",
+      "mode": "cargo",
+      "steps": 10,
+      "duration_ticks": 3,
+      "journeys": 10000,
+      "foundered": 18,
+      "percent": 0.18
+    },
+    {
+      "terrain": "deep_sea",
+      "mode": "cargo",
+      "steps": 20,
+      "duration_ticks": 6,
+      "journeys": 10000,
+      "foundered": 140,
+      "percent": 1.4
+    },
+    {
+      "terrain": "deep_sea",
+      "mode": "cargo",
+      "steps": 40,
+      "duration_ticks": 12,
+      "journeys": 10000,
+      "foundered": 730,
+      "percent": 7.3
+    }
+  ]
+}

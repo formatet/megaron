@@ -1,0 +1,16 @@
+» färsk DB på migration 179 · commit cfba184b+ändringar
+=== RUN   TestStormEnteredHexesActualScan
+=== RUN   TestStormEnteredHexesActualScan/intermediate_storm
+    storm_encounters_test.go:46: hull5 want3 after real entered-hex scan+retry
+=== RUN   TestStormEnteredHexesActualScan/same_storm_adjacent_hexes
+=== RUN   TestStormEnteredHexesActualScan/different_storms_same_tick
+    storm_encounters_test.go:46: hull3 want1 after real entered-hex scan+retry
+=== RUN   TestStormEnteredHexesActualScan/Stillness
+--- FAIL: TestStormEnteredHexesActualScan (0.22s)
+    --- FAIL: TestStormEnteredHexesActualScan/intermediate_storm (0.05s)
+    --- PASS: TestStormEnteredHexesActualScan/same_storm_adjacent_hexes (0.05s)
+    --- FAIL: TestStormEnteredHexesActualScan/different_storms_same_tick (0.07s)
+    --- PASS: TestStormEnteredHexesActualScan/Stillness (0.06s)
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.226s
+FAIL

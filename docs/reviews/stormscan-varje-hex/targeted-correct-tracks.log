@@ -1,0 +1,6 @@
+» färsk DB på migration 179 · commit cfba184b+ändringar
+--- FAIL: TestSeaStorm_LingeringInOneStormIsOneBlow (0.06s)
+    sea_storm_test.go:252: status=disbanded hull=0, want marching/3 (five ticks in one storm, one blow)
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.740s
+FAIL
