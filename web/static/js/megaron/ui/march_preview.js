@@ -5,7 +5,6 @@ import { arrivalHTML } from './time.js';
 // Forecasts are read-only. Keep each unit separate: crew and cargo can make
 // two ships in the same selection travel at different speeds.
 export async function loadMarchPreview(worldID, pick, order, read) {
-  if (pick.mode === 'redirect') return { available: false, reason: 'redirect' };
   const query = new URLSearchParams();
   for (const [key, value] of Object.entries(order)) {
     if (value !== undefined && value !== '') query.set(key, String(value));
@@ -16,7 +15,18 @@ export async function loadMarchPreview(worldID, pick, order, read) {
   return data;
 }
 
-export function marchPreviewHTML(data) {
+export function marchSilverLine(data) {
+  if (!Number.isFinite(data.upkeep_silver_home) || !Number.isFinite(data.upkeep_silver_field)
+      || !Object.hasOwn(data, 'silver_runway_ticks')) return '';
+  const rate = value => value.toLocaleString('en-US', {maximumFractionDigits: 4});
+  const runway = data.silver_runway_ticks === null ? 'no silver drain'
+    : Number.isFinite(data.silver_runway_ticks) ? (data.silver_payer_count > 1 ? 'shortest treasury lasts ' : 'treasury lasts ') + fmtDays(data.silver_runway_ticks)
+    : 'treasury duration unknown';
+  return 'Sold: ' + rate(data.upkeep_silver_home) + ' → ' + rate(data.upkeep_silver_field)
+    + ' silver/day in the field · ' + runway;
+}
+
+function marchArrivalHTML(data) {
   if (data.available && Number.isInteger(data.arrival_tick)) {
     return 'Estimated arrival: ' + arrivalHTML(data.arrives_at_utc, data.arrival_tick)
       + ' · ' + esc(fmtDays(data.duration_ticks)) + ' travelling';
@@ -26,6 +36,11 @@ export function marchPreviewHTML(data) {
   }
   if (data.reason === 'unknown_terrain') return 'Arrival not yet known — unexplored terrain.';
   return 'Arrival forecast unavailable.';
+}
+
+export function marchPreviewHTML(data) {
+  const sold = marchSilverLine(data);
+  return marchArrivalHTML(data) + (sold ? '<div class="march-sold">' + esc(sold) + '</div>' : '');
 }
 
 // Invalidate immediately on every edit, close or send, including while the
@@ -41,13 +56,18 @@ export function createMarchPreview(render, read, delay = 180) {
       if (!picks.length) { render(''); return; }
       render('Estimating arrival…');
       timer = setTimeout(async () => {
-        const rows = await Promise.all(picks.map(async pick => {
-          let line;
-          try { line = marchPreviewHTML(await loadMarchPreview(worldID, pick, order, read)); }
-          catch (error) { line = 'Forecast unavailable: ' + esc(error.message); }
-          return '<div>' + esc(pick.name) + ': ' + line + '</div>';
+        const selectedOrder = {...order, unit_ids: picks.map(pick => pick.id).join(',')};
+        const forecasts = await Promise.all(picks.map(async pick => {
+          try {
+            const data = await loadMarchPreview(worldID, pick, selectedOrder, read);
+            return {html: '<div>' + esc(pick.name) + ': ' + marchArrivalHTML(data) + '</div>', data};
+          } catch (error) {
+            return {html: '<div>' + esc(pick.name) + ': Forecast unavailable: ' + esc(error.message) + '</div>'};
+          }
         }));
-        if (current === generation) render(rows.join(''));
+        const finance = forecasts.find(forecast => forecast.data && marchSilverLine(forecast.data));
+        const sold = finance ? '<div class="march-sold">' + esc(marchSilverLine(finance.data)) + '</div>' : '';
+        if (current === generation) render(forecasts.map(forecast => forecast.html).join('') + sold);
       }, delay);
     },
   };

@@ -55,6 +55,15 @@ func (h *UnitHandler) MarchPreview(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusForbidden, "not your unit in this world")
 		return
 	}
+	finance, err := h.marchSilverForecast(ctx, worldID, playerID, unitID, query.Get("unit_ids"))
+	if err != nil {
+		if err.Error() == "invalid selected unit ID" || err.Error() == "not your selected unit in this world" {
+			writeError(w, http.StatusBadRequest, err.Error())
+		} else {
+			writeError(w, http.StatusInternalServerError, "silver forecast failed")
+		}
+		return
+	}
 	order := combat.MarchOrder{WorldID: worldID, PlayerID: playerID, UnitID: unitID,
 		TargetQ: q, TargetR: rr, Intent: query.Get("intent"), Stance: query.Get("stance"),
 		Name: query.Get("name"), Mode: query.Get("mode"), CargoIntent: query.Get("cargo_intent")}
@@ -88,11 +97,15 @@ func (h *UnitHandler) MarchPreview(w http.ResponseWriter, r *http.Request) {
 	// An area expedition selects an unseen first leg, even if the chosen
 	// centre is known. Its travel time could disclose hidden geography.
 	if order.Intent == "explore" {
-		writeMarchPreviewUnavailable(w, "unknown_terrain")
+		writeMarchPreviewUnavailable(w, "unknown_terrain", finance)
 		return
 	}
 	if !known {
 		writeError(w, http.StatusUnprocessableEntity, "none of your men have ever seen that target — send a scout first")
+		return
+	}
+	if u.Status == unit.StatusMarching {
+		writeMarchPreviewUnavailable(w, "redirect", finance)
 		return
 	}
 	if u.Status == unit.StatusPositioned && u.SettlementID == nil && u.Q != nil && u.R != nil {
@@ -107,7 +120,7 @@ func (h *UnitHandler) MarchPreview(w http.ResponseWriter, r *http.Request) {
 		// A Runner can require passage on a real ship; its delivery cannot in
 		// general be predicted from distance. Never present immediate departure.
 		if origin.dist > 0 {
-			writeMarchPreviewUnavailable(w, "courier_required")
+			writeMarchPreviewUnavailable(w, "courier_required", finance)
 			return
 		}
 	}
@@ -122,10 +135,17 @@ func (h *UnitHandler) MarchPreview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(map[string]any{"available": true, "arrival_tick": result.ArrivalTick, "duration_ticks": result.DurationTicks, "arrives_at_utc": result.ArrivesAt.UTC(), "expedition": expeditionJSON(result.Expedition)})
+	finance["available"] = true
+	finance["arrival_tick"] = result.ArrivalTick
+	finance["duration_ticks"] = result.DurationTicks
+	finance["arrives_at_utc"] = result.ArrivesAt.UTC()
+	finance["expedition"] = expeditionJSON(result.Expedition)
+	_ = json.NewEncoder(w).Encode(finance)
 }
 
-func writeMarchPreviewUnavailable(w http.ResponseWriter, reason string) {
+func writeMarchPreviewUnavailable(w http.ResponseWriter, reason string, finance map[string]any) {
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(map[string]any{"available": false, "reason": reason})
+	finance["available"] = false
+	finance["reason"] = reason
+	_ = json.NewEncoder(w).Encode(finance)
 }

@@ -146,12 +146,22 @@ func TestMarchPreview_ReadOnlyAndTiming(t *testing.T) {
 		ArrivalTick   int       `json:"arrival_tick"`
 		DurationTicks int       `json:"duration_ticks"`
 		Arrives       time.Time `json:"arrives_at_utc"`
+		SilverHome    float64   `json:"upkeep_silver_home"`
+		SilverField   float64   `json:"upkeep_silver_field"`
+		SilverRunway  *float64  `json:"silver_runway_ticks"`
 	}
 	if err := json.Unmarshal(rec.Body.Bytes(), &preview); err != nil {
 		t.Fatal(err)
 	}
 	if !preview.Available {
 		t.Fatal("preview unavailable")
+	}
+	if preview.SilverHome != 0 || preview.SilverField != 0 || preview.SilverRunway != nil || !strings.Contains(rec.Body.String(), `"silver_runway_ticks":null`) {
+		t.Fatalf("free spear HTTP forecast: %s", rec.Body.String())
+	}
+	badSelection := request(base + "/march-preview?target_q=1&target_r=0&unit_ids=" + uuid.NewString())
+	if badSelection.Code != 400 || strings.Contains(badSelection.Body.String(), "upkeep_silver") {
+		t.Fatalf("foreign selection: %s", badSelection.Body.String())
 	}
 	// Ownership is checked before terrain or ETA can be disclosed.
 	otherToken, _, err := authSvc.Register(ctx, "other-"+uuid.New().String(), "x")
@@ -187,6 +197,9 @@ func TestMarchPreview_ReadOnlyAndTiming(t *testing.T) {
 		}
 		if tc.reason != "" && (!strings.Contains(rec.Body.String(), tc.reason) || strings.Contains(rec.Body.String(), "arrival_tick")) {
 			t.Fatalf("hidden preview: %s", rec.Body.String())
+		}
+		if tc.reason != "" && !strings.Contains(rec.Body.String(), `"upkeep_silver_field":0`) {
+			t.Fatalf("unavailable arrival lost payroll: %s", rec.Body.String())
 		}
 	}
 	// Positioned units receive a physical Runner, not an instant march ETA.

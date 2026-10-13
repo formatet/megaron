@@ -13,7 +13,7 @@ import (
 func TestMarchPreviewNeverDispatches(t *testing.T) {
 	for _, alias := range []bool{false, true} {
 		for _, asJSON := range []bool{false, true} {
-			for _, reason := range []string{"", "courier_required", "unknown_terrain"} {
+			for _, reason := range []string{"", "courier_required", "redirect", "unknown_terrain"} {
 				t.Run(strings.Join([]string{map[bool]string{false: "unit", true: "alias"}[alias], map[bool]string{false: "text", true: "json"}[asJSON], reason}, "/"), func(t *testing.T) {
 					calls := 0
 					srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -29,7 +29,7 @@ func TestMarchPreviewNeverDispatches(t *testing.T) {
 						if r.Header.Get("Authorization") != "Bearer token" {
 							t.Error("missing bearer")
 						}
-						_ = json.NewEncoder(w).Encode(map[string]any{"available": reason == "", "reason": reason, "arrival_tick": 42, "duration_ticks": 3, "arrives_at_utc": "2026-10-06T15:00:00Z"})
+						_ = json.NewEncoder(w).Encode(map[string]any{"available": reason == "", "reason": reason, "arrival_tick": 42, "duration_ticks": 3, "arrives_at_utc": "2026-10-06T15:00:00Z", "upkeep_silver_home": 0.6, "upkeep_silver_field": 2, "silver_runway_ticks": 25})
 					}))
 					defer srv.Close()
 					oldCfg, oldJSON := cfg, jsonMode
@@ -63,8 +63,8 @@ func TestMarchPreviewNeverDispatches(t *testing.T) {
 							t.Fatalf("wrong forecast: %s", out)
 						}
 					} else {
-						want := map[string]string{"": "day 42 (journey: 3 days)", "courier_required": "Runner must deliver", "unknown_terrain": "unknown terrain"}[reason]
-						if !strings.Contains(out, want) || !strings.Contains(out, "No order sent") {
+						want := map[string]string{"": "day 42 (journey: 3 days)", "courier_required": "Runner must deliver", "redirect": "Runner must deliver", "unknown_terrain": "unknown terrain"}[reason]
+						if !strings.Contains(out, want) || !strings.Contains(out, "No order sent") || !strings.Contains(out, "Sold: 0.6 → 2 silver/day in the field · treasury lasts 25 days") {
 							t.Fatalf("wrong forecast %q", out)
 						}
 					}
@@ -93,5 +93,33 @@ func TestMarchPreviewErrorNeverDispatches(t *testing.T) {
 	_, err := captureStdout(t, cmd.Execute)
 	if err == nil || !strings.Contains(err.Error(), "unit cannot march") || calls != 1 {
 		t.Fatalf("calls=%d err=%v", calls, err)
+	}
+}
+
+func TestMarchSilverForecastZeroAndPaidRunway(t *testing.T) {
+	for _, tt := range []struct{ payload, want string }{
+		{`{"upkeep_silver_home":0,"upkeep_silver_field":0,"silver_runway_ticks":null}`, "Sold: 0 → 0 silver/day in the field · no silver drain"},
+		{`{"upkeep_silver_home":0.6,"upkeep_silver_field":2,"silver_runway_ticks":25}`, "Sold: 0.6 → 2 silver/day in the field · treasury lasts 25 days"},
+		{`{"upkeep_silver_home":0.6,"upkeep_silver_field":2,"silver_runway_ticks":0}`, "Sold: 0.6 → 2 silver/day in the field · treasury lasts 0 days"},
+		{`{"upkeep_silver_home":1.2,"upkeep_silver_field":4,"silver_runway_ticks":12.5,"silver_payer_count":2}`, "Sold: 1.2 → 4 silver/day in the field · shortest treasury lasts 12.5 days"},
+		{`{}`, ""},
+	} {
+		var f marchSilverForecast
+		if err := json.Unmarshal([]byte(tt.payload), &f); err != nil {
+			t.Fatal(err)
+		}
+		if got := marchSilverLine(f); got != tt.want {
+			t.Errorf("got %q, want %q", got, tt.want)
+		}
+	}
+}
+
+func TestMarchSilverForecastRoundsCirculationArithmetic(t *testing.T) {
+	gross, share := 2.0, 0.7
+	net := gross - gross*share
+	runway := 25.0
+	got := marchSilverLine(marchSilverForecast{UpkeepSilverHome: &net, UpkeepSilverField: &gross, SilverRunwayTicks: &runway})
+	if want := "Sold: 0.6 → 2 silver/day in the field · treasury lasts 25 days"; got != want {
+		t.Fatalf("got %q, want %q", got, want)
 	}
 }
