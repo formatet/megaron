@@ -1,0 +1,3 @@
+Arrival unavailable: the route crosses unknown terrain.
+Sold: 0.45 → 1.5 silver per day in the field · treasury lasts 852 days
+No order sent. Run again without --preview to send it.

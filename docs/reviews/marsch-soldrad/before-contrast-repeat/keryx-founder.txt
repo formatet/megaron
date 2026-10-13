@@ -1,0 +1,7 @@
+ID                                    Name                                            Size      Status      Stance     Location / ETA
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+0ddbdf0d-d335-4667-8f50-9fbd052f1839  Nomadic Host of Aigiwalos                       a people on the move  positioned  —          hex (49,45)
+c6316c96-d12a-4bed-8203-ed7de7133634  1st Spearmen of Aigiwalos                       100 men   positioned  —          hex (49,45)
+  Upkeep after settling: 1 grain, 0 silver per day
+4fb0742c-40e0-49c0-aa1d-5dce347ab53f  2nd Spearmen of Aigiwalos                       100 men   positioned  —          hex (49,45)
+  Upkeep after settling: 1 grain, 0 silver per day

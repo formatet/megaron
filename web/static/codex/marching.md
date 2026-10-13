@@ -6,7 +6,7 @@ You can also left-click a hex and use **March here →** — or **Send galleys �
 
 Choose how many units to send and the menu estimates each unit’s arrival **before you send the order**. **War → Army → March** selects that unit; click a destination on the map to open the same menu. Ships with different crews or cargo may arrive at different times. The estimate uses the current route and speed; conditions can change before arrival.
 
-If a messenger must first deliver the order, or the destination is unexplored, the forecast says why arrival is not yet known. Redirects also wait for a messenger; their current course continues until delivery. No forecast sends an order.
+If a messenger must first deliver the order, or the destination is unexplored, the forecast says why arrival is not yet known. Redirects also wait for a messenger; their current course continues until delivery. The **Sold** line shows the selected units’ silver drain at home and in the field, and how long their paying city’s treasury lasts after departure; with several paying cities, it shows the shortest treasury duration; spearmen show **0 → 0**. No forecast sends an order.
 
 In Keryx, use `march --unit <id> --target q,r --preview` (or `unit march` with the same flags). Add `--json` for the server forecast. Omit `--preview` when you are ready to send.
 

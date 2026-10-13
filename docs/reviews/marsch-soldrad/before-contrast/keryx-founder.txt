@@ -1,0 +1,7 @@
+ID                                    Name                                            Size      Status      Stance     Location / ETA
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+f78691ae-6f74-49e3-a529-8b8ac6b87bf2  Nomadic Host of Philona                         a people on the move  positioned  —          hex (11,84)
+16aaee4e-d892-43bb-b102-e81d6f9f17c4  1st Spearmen of Philona                         100 men   positioned  —          hex (11,84)
+  Upkeep after settling: 1 grain, 0 silver per day
+3d377729-bc8d-4aef-aa46-4353915652d2  2nd Spearmen of Philona                         100 men   positioned  —          hex (11,84)
+  Upkeep after settling: 1 grain, 0 silver per day

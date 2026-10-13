@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { loadMarchPreview, marchPreviewHTML, createMarchPreview } from './march_preview.js';
+import { loadMarchPreview, marchPreviewHTML, marchSilverLine, createMarchPreview } from './march_preview.js';
 const pause = () => new Promise(resolve => setTimeout(resolve, 15));
 
 test('forecast reads the exact order with GET, including landing and stance', async () => {
@@ -21,7 +21,13 @@ test('forecast reads the exact order with GET, including landing and stance', as
 });
 
 test('redirect and courier never masquerade as immediate arrival', async () => {
-  const value = await loadMarchPreview('w', { id: 'u', mode: 'redirect' }, {}, () => { throw Error('must not request march'); });
+  let requests = 0;
+  const value = await loadMarchPreview('w', { id: 'u', mode: 'redirect' }, {}, async (...args) => {
+    requests++; assert.equal(args.length, 1, 'redirect preview remains read-only GET');
+    return {ok:true,json:async()=>({available:false,reason:'redirect',upkeep_silver_home:2,upkeep_silver_field:2,silver_runway_ticks:10})};
+  });
+  assert.equal(requests,1);
+  assert.match(marchPreviewHTML(value), /Sold: 2 → 2 silver/);
   for (const reason of [value.reason, 'courier_required']) {
     assert.match(marchPreviewHTML({ available: false, reason }), /messenger must deliver/);
     assert.doesNotMatch(marchPreviewHTML({ available: false, reason }), /Estimated arrival/);
@@ -63,4 +69,69 @@ test('changing destination discards old response even during debounce; close can
   assert.equal(output.at(-1), 'Estimating arrival…');
   controller.update('w', [], {});
   assert.equal(output.at(-1), '');
+});
+
+
+test('sold uses authoritative rates, includes explicit zero and avoids infinite runway',()=>{
+ assert.equal(marchSilverLine({upkeep_silver_home:0,upkeep_silver_field:0,silver_runway_ticks:null}), 'Sold: 0 → 0 silver per day in the field · no silver drain');
+ assert.equal(marchSilverLine({upkeep_silver_home:0.6,upkeep_silver_field:2,silver_runway_ticks:25}), 'Sold: 0.6 → 2 silver per day in the field · treasury lasts 25 days');
+ assert.equal(marchSilverLine({upkeep_silver_home:0.6,upkeep_silver_field:2,silver_runway_ticks:0}), 'Sold: 0.6 → 2 silver per day in the field · treasury lasts 0 days');
+ assert.equal(marchSilverLine({upkeep_silver_home:0.45,upkeep_silver_field:1.5,silver_runway_ticks:1}), 'Sold: 0.45 → 1.5 silver per day in the field · treasury lasts 1 day');
+ assert.equal(marchSilverLine({available:true}), '');
+});
+
+test('sold remains visible when courier or unexplored terrain prevents arrival estimate',()=>{
+ for(const reason of ['courier_required','unknown_terrain']) {
+  const html=marchPreviewHTML({available:false,reason,upkeep_silver_home:0.6,upkeep_silver_field:2,silver_runway_ticks:25});
+  assert.match(html,/class="march-sold"/);
+  assert.match(html,/Sold: 0.6 → 2 silver per day in the field · treasury lasts 25 days/);
+  assert.doesNotMatch(html,/Estimated arrival|Infinity|NaN/);
+ }
+ assert.doesNotMatch(marchPreviewHTML({available:false,reason:'unknown_terrain'}), /march-sold/);
+});
+
+test('plural selection sends all IDs to every GET and shows one combined sold line after arrivals',async()=>{
+ const urls=[]; const output=[];
+ const controller=createMarchPreview(html=>output.push(html), async url=>{
+  urls.push(new URL(url,'https://test.invalid'));
+  return {ok:true,json:async()=>({available:false,reason:'courier_required',upkeep_silver_home:1.2,upkeep_silver_field:4,silver_runway_ticks:12.5,silver_payer_count:2})};
+ },0);
+ controller.update('w',[{id:'a',name:'Alpha'},{id:'b',name:'Beta'}],{target_q:3});
+ await pause();
+ assert.equal(urls.length,2);
+ for(const url of urls) assert.equal(url.searchParams.get('unit_ids'),'a,b');
+ const html=output.at(-1);
+ assert.equal((html.match(/class="march-sold"/g)||[]).length,1);
+ assert.match(html,/Sold: 1.2 → 4 silver per day in the field · shortest treasury lasts 12.5 days/);
+ assert.ok(html.indexOf('Beta:') < html.indexOf('Sold:'));
+ assert.equal((html.match(/messenger must deliver/g)||[]).length,2);
+});
+
+test('one zero-drain batch row is rendered when all treasuries have no silver drain',async()=>{
+ const output=[];
+ const controller=createMarchPreview(html=>output.push(html),async()=>({ok:true,json:async()=>({available:false,reason:'unknown_terrain',upkeep_silver_home:0,upkeep_silver_field:0,silver_runway_ticks:null,silver_payer_count:2})}),0);
+ controller.update('w',[{id:'a',name:'Alpha'},{id:'b',name:'Beta'}],{target_q:3});
+ await pause();
+ const html=output.at(-1);
+ assert.equal((html.match(/class="march-sold"/g)||[]).length,1);
+ assert.match(html,/Sold: 0 → 0 silver per day in the field · no silver drain/);
+ assert.doesNotMatch(html,/NaN|Infinity|shortest treasury lasts/);
+});
+
+
+test('redirect-only selection keeps messenger arrival warning and one authoritative sold row',async()=>{
+ const output=[]; const urls=[];
+ const controller=createMarchPreview(html=>output.push(html),async url=>{
+  urls.push(new URL(url,'https://test.invalid'));
+  return {ok:true,json:async()=>({available:false,reason:'redirect',upkeep_silver_home:4,upkeep_silver_field:4,silver_runway_ticks:10,silver_payer_count:1})};
+ },0);
+ controller.update('w',[{id:'a',name:'Alpha',mode:'redirect'},{id:'b',name:'Beta',mode:'redirect'}],{target_q:3});
+ await pause();
+ assert.equal(urls.length,2);
+ for(const url of urls) assert.equal(url.searchParams.get('unit_ids'),'a,b');
+ const html=output.at(-1);
+ assert.equal((html.match(/class="march-sold"/g)||[]).length,1);
+ assert.equal((html.match(/messenger must deliver/g)||[]).length,2);
+ assert.match(html,/Sold: 4 → 4 silver per day in the field · treasury lasts 10 days/);
+ assert.doesNotMatch(html,/Estimated arrival/);
 });

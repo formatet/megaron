@@ -1,0 +1,7 @@
+ID                                    Name                                            Size      Status      Stance     Location / ETA
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+694c0a04-f730-4ecd-9d51-8719a18f8635  Nomadic Host of Dikonaros                       a people on the move  positioned  —          hex (48,55)
+918208d6-fdb4-4537-ae82-bbadd1b26058  1st Spearmen of Dikonaros                       100 men   positioned  —          hex (48,55)
+  Upkeep after settling: 1 grain, 0 silver per day
+9d79767c-968c-4881-8d9a-cb7965f21cba  2nd Spearmen of Dikonaros                       100 men   positioned  —          hex (48,55)
+  Upkeep after settling: 1 grain, 0 silver per day

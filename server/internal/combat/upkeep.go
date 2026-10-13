@@ -38,6 +38,15 @@ func UpkeepSoldShare() float64 {
 	return s
 }
 
+// SoldCirculation is the credit spent back into the actual paying town.
+// Forecasts and tick deductions share this rule; liquidity still needs gross pay.
+func SoldCirculation(gross float64, atPayer bool, share float64) float64 {
+	if atPayer {
+		return gross * share
+	}
+	return 0
+}
+
 // UpkeepSpec — grain + silver per upkeep-period för en full-size enhet.
 type UpkeepSpec struct {
 	Grain  float64
@@ -528,10 +537,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		// credit = share·N ≤ N, eff − N + credit ≤ eff ≤ cap, so the outer LEAST
 		// never clips — the credit is always applied in full (no spill), which is
 		// why silver_circulated below is exactly `credit`.
-		var credit float64
-		if u.settlementID != nil && *u.settlementID == sid {
-			credit = h.soldShare * silverNeed
-		}
+		credit := SoldCirculation(silverNeed, u.settlementID != nil && *u.settlementID == sid, h.soldShare)
 
 		tag, err := h.pool.Exec(ctx,
 			`UPDATE settlement_goods

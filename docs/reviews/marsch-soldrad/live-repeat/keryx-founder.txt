@@ -1,0 +1,7 @@
+ID                                    Name                                            Size      Status      Stance     Location / ETA
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+dcb0acb4-aa0f-45e3-bdd6-66214ce2bb89  Nomadic Host of Aukewas                         a people on the move  positioned  —          hex (8,59)
+90e91dcd-21b3-4a70-82f2-fdfd3e861a58  1st Spearmen of Aukewas                         100 men   positioned  —          hex (8,59)
+  Upkeep after settling: 1 grain, 0 silver per day
+b1c9ad88-81c3-4575-a0bc-e8084b29e9ac  2nd Spearmen of Aukewas                         100 men   positioned  —          hex (8,59)
+  Upkeep after settling: 1 grain, 0 silver per day
