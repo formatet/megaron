@@ -1,0 +1,37 @@
+{
+  "audit_tick": 3,
+  "previous_audit_tick": null,
+  "city_silver": 735,
+  "buy_escrow_silver": 0,
+  "sell_escrow_silver": 0,
+  "founder_silver": 0,
+  "carried_silver": 0,
+  "transport_silver": 0,
+  "deferred_trade_silver": 0,
+  "unowned_silver": 0,
+  "total_silver": 735,
+  "mining_credited_total": 0,
+  "mining_epoch": "f8ba3dc9-bf95-4462-99ce-8795e72068ae",
+  "mined_since_last": 0,
+  "audit_prev_total": 735,
+  "net_delta": 0,
+  "wanax_distribution": {
+    "population": "world records and asset owners, including AI and dispossessed Wanax",
+    "count": 2,
+    "total_silver": 735,
+    "median_silver": 367.5,
+    "max_silver": 735,
+    "zero_count": 1,
+    "zero_share": 0.5
+  },
+  "wanax_totals": [
+    {
+      "owner_id": "269e5a39-9239-40f1-86dc-81c0c5d31fad",
+      "total_silver": 0
+    },
+    {
+      "owner_id": "8f2d01b1-cb99-4638-b75f-7899e2f49ee1",
+      "total_silver": 735
+    }
+  ]
+}

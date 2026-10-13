@@ -16,12 +16,13 @@ PER STAD
  garnison          units där settlement_id = staden: antal män (units.size) med status garrison
  garnisonens förbrukning  senaste 'UpkeepSettled' (stream_id = stad): grain_total, silver_gross per tick.
 PER WANAX
- silver totalt, byggnader (buildings), köade byggen (build_queue), enheter (units; antal / män),
+ silver i städer, byggnader (buildings), köade byggen (build_queue), enheter (units; antal / män),
  tid till första bygget = första BuildComplete-event (world_tick) minus player_world_records.founded_tick.
 EJ MÄTBART I DB
- befolkningskurva och silver över tid per Wanax: bara nuläge lagras (settlements.population,
- settlement_goods). Kurvan byggs av de dagliga körningarna (megaron_alfadata_YYYY-MM-DD.md).
- Världens samlade silver över tid finns dock: events 'SilverAudit' (payload.liquid_total) — visas sist.
+ befolkningskurva: settlements.population lagrar bara nuläge; historik byggs av
+ de dagliga körningarna (megaron_alfadata_YYYY-MM-DD.md).
+ Världens kompletta silver och fördelning finns i SilverAuditV2 — visas sist.
+ Historiska SilverAudit (V1) visar bara den gamla liquid_total-serien, aldrig V2:s total.
 """
 import argparse
 import os
@@ -36,6 +37,61 @@ FOOD_PER_CITIZEN = 0.005
 def f(x, nd=1):
     return "" if x is None else ("%.*f" % (nd, x))
 
+
+
+SILVER_BUCKETS = [
+    ("city_silver", "städer"), ("buy_escrow_silver", "BUY-escrow"),
+    ("sell_escrow_silver", "SELL-escrow"), ("founder_silver", "Host-kassor"),
+    ("carried_silver", "enheternas pungar"), ("transport_silver", "transportlast"),
+    ("deferred_trade_silver", "väntande handelsretur"),
+]
+
+
+def load_silver_audits(query):
+    """Separate version-specific reads. Never splice V1 into the V2 baseline."""
+    v2 = query("""SELECT id, world_tick, payload FROM events WHERE world_id = '{W}'
+                  AND event_type = 'SilverAuditV2' ORDER BY id DESC LIMIT 3""")
+    if v2:
+        return v2, []
+    v1 = query("""SELECT id, world_tick, payload FROM events WHERE world_id = '{W}'
+                  AND event_type = 'SilverAudit' ORDER BY id DESC LIMIT 3""")
+    return [], v1
+
+
+def render_silver_audits(v2, v1):
+    """Print server totals and components, not a new interpretation of V1."""
+    if not v2:
+        lines = ["## Silverrevision — inga SilverAuditV2-event än"]
+        if v1:
+            lines.append("Historisk V1: liquid_total (endast gammal likvid stock, inte komplett världstotal): " +
+                         "; ".join("tick %s: %s" % (a["world_tick"], f(a["payload"]["liquid_total"], 2)) for a in v1))
+            lines.append("V1 och V2 jämförs inte över versionsgränsen; V1:s värden omtolkas inte.")
+        else:
+            lines.append("Ej mätbart: inga audit-event.")
+        return "\n\n".join(lines)
+    rows = []
+    for audit in v2:
+        p = audit["payload"]
+        previous = p["previous_audit_tick"]
+        interval = "%s→%s" % (previous, p["audit_tick"]) if previous is not None else "öppningsrevision (egen baslinje)"
+        rows.append([p["audit_tick"], p["mining_epoch"], f(p["total_silver"], 2),
+                     *[f(p[key], 2) for key, _ in SILVER_BUCKETS], f(p["unowned_silver"], 2),
+                     interval, f(p["mined_since_last"], 2), f(p["mining_credited_total"], 2),
+                     f(p["audit_prev_total"], 2), f(p["net_delta"], 2)])
+    latest = v2[0]["payload"]
+    d = latest["wanax_distribution"]
+    lines = ["## Komplett silverrevision (SilverAuditV2)",
+             alfa_db.md_table(["tick", "mining_epoch", "total_silver", *[label for _, label in SILVER_BUCKETS],
+                               "därav ägarlöst", "V2-intervall", "realiserat utvunnet sedan föregående", "utvinning krediterad totalt", "audit_prev_total", "net_delta"], rows),
+             "Utvinning är faktiskt krediterat silver, inte produktionstakt × tick. Ägarlöst silver ingår i stockkomponenterna; det läggs inte till igen.",
+             "Övrigt netto = net_delta − mined_since_last: %s silver (tick %s). Detta är kranar minus sänkor utöver gruvutvinningen, inte automatiskt ett bokföringsfel."
+             % (f(latest["net_delta"] - latest["mined_since_last"], 2), latest["audit_tick"]),
+             "### Fördelning per Wanax — revision tick %s" % latest["audit_tick"],
+             alfa_db.md_table(["population", "count", "total_silver", "median_silver", "max_silver", "zero_count", "zero_share"],
+                              [[d["population"], d["count"], f(d["total_silver"], 2), f(d["median_silver"], 2),
+                                f(d["max_silver"], 2), d["zero_count"], f(d["zero_share"], 4)]]),
+             "zero_share är en andel (0–1). Fördelningens population anges av servern; människors stadsstock ovan är en annan avgränsning."]
+    return "\n\n".join(lines)
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
@@ -105,8 +161,7 @@ def main(argv=None):
         wrows.append([w["username"], w["cities"], f(w["silver"], 0), w["buildings"], w["queued"],
                       "%s / %s män" % (w["units"], w["men"]), tt])
 
-    audit = q("""SELECT world_tick, payload->>'liquid_total' AS liquid FROM events WHERE world_id = '{W}'
-                 AND event_type = 'SilverAudit' ORDER BY world_tick DESC LIMIT 3""")
+    audits, historical_audits = load_silver_audits(q)
 
     print("# Alfa-ekonomi — värld %s (%s), tick %s\n" % (world["name"], W[:8], T))
     print("## Per stad (människors städer)\n")
@@ -114,11 +169,10 @@ def main(argv=None):
                             "täckning (dagar)", "silver", "garnison (män)", "garnisonens förbrukning/tick"], rows) if rows
           else "_inga städer_")
     print("\n## Per Wanax\n")
-    print(alfa_db.md_table(["Wanax", "städer", "silver totalt", "byggnader", "köade byggen", "enheter", "tid till första bygget (tick)"], wrows)
+    print(alfa_db.md_table(["Wanax", "städer", "silver i städer", "byggnader", "köade byggen", "enheter", "tid till första bygget (tick)"], wrows)
           if wrows else "_inga Wanaxer_")
-    print("\nVärldens samlade silver (SilverAudit, senaste): " +
-          ("; ".join("tick %s: %s" % (a["world_tick"], f(float(a["liquid"]), 0)) for a in audit) if audit else "ej mätbart (inga audit-event)"))
-    print("\nEj mätbart i DB: befolkningskurva och silver över tid per Wanax (bara nuläge lagras) — jämför de dagliga körningarna. "
+    print("\n" + render_silver_audits(audits, historical_audits))
+    print("\nEj mätbart i DB: befolkningskurva före de dagliga körningarna. Per-Wanax-silver i städer ovan är nuläge; V2-fördelningen är revisionens snapshot. "
           "Matnetto = rå produktion minus invånare × %s (spegel av economy.FoodNet)." % FOOD_PER_CITIZEN)
 
 

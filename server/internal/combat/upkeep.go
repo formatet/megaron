@@ -601,6 +601,9 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 	} else if auditClaim.RowsAffected() > 0 {
 		h.emitSilverAudit(ctx, e.WorldID)
 	}
+	if err := h.emitSilverAuditV2(ctx, e); err != nil {
+		return fmt.Errorf("silver audit v2: %w", err)
+	}
 
 	// 4. Re-enqueue for the next macro-tick cycle.
 	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledUpkeepTick,

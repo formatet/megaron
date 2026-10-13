@@ -1,0 +1,1 @@
+PASS fresh PG179 clean; actual V2 JSON + read-only DB; seven reader tests, no skips; complete economy report
