@@ -1,0 +1,13 @@
+{
+  "baseline_commit": "97712ede",
+  "tested_production_diff_sha256": "1baa1f1baecb080adbf11fe0990513ee960bd3e62ceaa71653038c7ca091fb9b",
+  "seeds": 20,
+  "distinct_effective_seeds": 20,
+  "matching_effective_seeds": 20,
+  "matching_all_non_silver_map_fields": 20,
+  "baseline_silver_hexes_each": 4,
+  "candidate_silver_hexes_each": 10,
+  "baseline_l1_mean": 27.875,
+  "candidate_l1_mean": 66.125,
+  "candidate_l3_mean": 120.58088235294117
+}
