@@ -1,0 +1,84 @@
+package world
+
+import (
+	"crypto/sha256"
+	"encoding/json"
+	"fmt"
+	"os"
+	"testing"
+)
+
+func TestTinAdditionalBudgetScalesWithArea(t *testing.T) {
+	for _, tc := range []struct{ w, h, want int }{{32, 32, 1}, {56, 40, 1}, {64, 64, 2}, {128, 128, 8}, {230, 230, 26}} {
+		if got := tinAdditionalSourceTarget(tc.w, tc.h); got != tc.want {
+			t.Fatalf("%dx%d additional source budget=%d want%d", tc.w, tc.h, got, tc.want)
+		}
+	}
+}
+
+// Recorded unmodified 2be784c2 maps, with exact candidate counts measured in
+// isolated source copies BEFORE implementation. This checks geography rather
+// than comparing two calls through the same new helper.
+func TestGenerateMap_TinIncreasePreservesGeography(t *testing.T) {
+	raw, err := os.ReadFile("testdata/tin-increase-2be784c2.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var cases []struct {
+		Size      int      `json:"size"`
+		Requested int64    `json:"requested_seed"`
+		Effective int64    `json:"effective_seed"`
+		Hash      string   `json:"non_tin_sha256"`
+		OldTin    [][3]int `json:"tin"`
+		Hexes     int      `json:"expected_tin_hexes"`
+		Sources   int      `json:"expected_tin_sources"`
+	}
+	if err := json.Unmarshal(raw, &cases); err != nil {
+		t.Fatal(err)
+	}
+	if len(cases) != 40 {
+		t.Fatalf("golden maps=%d want40", len(cases))
+	}
+	for _, tc := range cases {
+		t.Run(fmt.Sprintf("%d/seed%d", tc.Size, tc.Requested), func(t *testing.T) {
+			tiles, eff := GenerateMap(stubID{}, tc.Requested, tc.Size, tc.Size)
+			if eff != tc.Effective {
+				t.Fatalf("effective seed%d want%d", eff, tc.Effective)
+			}
+			if err := validateMap(tiles, tc.Size, tc.Size); err != nil {
+				t.Fatal(err)
+			}
+			h := sha256.New()
+			enc := json.NewEncoder(h)
+			tin := map[[2]int]bool{}
+			hexes := 0
+			for _, tile := range tiles {
+				if tile.TinDeposit {
+					tin[[2]int{tile.Q, tile.R}] = true
+					hexes++
+					if tile.Terrain != TerrainMountainLimestone {
+						t.Fatal("tin on wrong terrain")
+					}
+				}
+				tile.TinDeposit = false
+				if err := enc.Encode(tile); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if hash := fmt.Sprintf("%x", h.Sum(nil)); hash != tc.Hash {
+				t.Fatal("a non-tin field changed from recorded master")
+			}
+			for _, old := range tc.OldTin {
+				if !tin[[2]int{old[0], old[1]}] {
+					t.Fatal("an old tin deposit was moved/removed")
+				}
+			}
+			if hexes != tc.Hexes {
+				t.Fatalf("tin hexes=%d want measured%d", hexes, tc.Hexes)
+			}
+			if sources := depositSourceCount(tiles, func(t MapTile) bool { return t.TinDeposit }); sources != tc.Sources {
+				t.Fatalf("tin sources=%d want measured%d", sources, tc.Sources)
+			}
+		})
+	}
+}

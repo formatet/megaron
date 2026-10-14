@@ -437,17 +437,17 @@ const (
 	// allowed to be one big neighbourhood.
 	silverSourceSpacing = 2*mineableRadius + 1
 
-	// Tin is the opposite of copper: capped, not scaled. tinSourceCap is a
-	// DESIGN INVARIANT (Timothy 2026-07-16, plan §A) — tin must get SCARCER
-	// relative to player count as the map grows ("scarcity ska bli MER
-	// kännbar med 100 spelare, inte mindre"), so the source-cluster count
-	// never exceeds 4 no matter how big the map or how many players it's
-	// sized for.
-	tinClusterMin    = 1
-	tinClusterMax    = 3
-	tinSourceFloor   = 2  // matches the pre-P4 minProductiveTin floor
-	tinSourceDivisor = 25 // gentle ramp: floor holds until ~50 players, caps at 100
-	tinSourceCap     = 4
+	// Timothy 2026-10-12/13 supersedes the old fixed four-source design:
+	// add a small, area-scaled tin budget to NEW maps while preserving their
+	// geography and every non-tin field. The legacy pass below is frozen for
+	// RNG compatibility with copper/silver and remote-isle terrain changes.
+	tinClusterMin              = 1
+	tinClusterMax              = 3
+	legacyTinSourceFloor       = 2
+	legacyTinSourceDivisor     = 25
+	legacyTinSourceCap         = 4
+	tinSourcesAddedAtReference = 2
+	tinSourceReferenceArea     = 64 * 64
 
 	// landmassAreaDivisor / straitSqrtDivisor calibrate validateMap's scaled
 	// floors (below) against the P1 Earthsea blend's empirically observed
@@ -491,17 +491,63 @@ func silverSourceTarget(width, height int) int {
 	return v
 }
 
-// tinSourceTarget is capped at tinSourceCap regardless of players — see the
-// const block's DESIGN INVARIANT comment.
-func tinSourceTarget(players int) int {
-	v := players / tinSourceDivisor
-	if v < tinSourceFloor {
-		v = tinSourceFloor
+// legacyTinSourceTarget preserves the original RNG consumption and silver
+// candidate set. It is a compatibility pass, not the current tin budget.
+func legacyTinSourceTarget(players int) int {
+	v := players / legacyTinSourceDivisor
+	if v < legacyTinSourceFloor {
+		v = legacyTinSourceFloor
 	}
-	if v > tinSourceCap {
-		v = tinSourceCap
+	if v > legacyTinSourceCap {
+		v = legacyTinSourceCap
 	}
 	return v
+}
+
+// tinSourceTarget is the nominal ordinary source budget; the retained
+// remote-isle pass can add a source, and candidate exhaustion/adjacency can
+// leave fewer distinct connected clusters. This is not a coverage promise.
+func tinSourceTarget(width, height int) int {
+	return legacyTinSourceTarget(playersFor(width, height)) + tinAdditionalSourceTarget(width, height)
+}
+func tinSourceCap(width, height int) int {
+	return legacyTinSourceCap + tinAdditionalSourceTarget(width, height)
+}
+func tinAdditionalSourceTarget(width, height int) int {
+	return max(1, int(math.Round(float64(width*height)*tinSourcesAddedAtReference/tinSourceReferenceArea)))
+}
+
+// Finish the unchanged map first. Extra tin uses the same terrain, hemisphere,
+// mineability, landmass separation and cluster engine without advancing the
+// original RNG or taking a silver deposit away.
+func addTinSources(tiles []MapTile, seed int64, width, height int) {
+	grid := make(map[cell]Terrain, len(tiles))
+	land := landComponents(tiles)
+	landmap := make(map[cell]int, len(land))
+	copperComps := map[int]bool{}
+	for _, t := range tiles {
+		c := cell{t.Q, t.R}
+		grid[c] = t.Terrain
+		landmap[c] = land[[2]int{t.Q, t.R}]
+		if t.CopperDeposit {
+			copperComps[landmap[c]] = true
+		}
+	}
+	_, chanE := seaChannels(width)
+	var cand []int
+	for i, t := range tiles {
+		c := cell{t.Q, t.R}
+		if t.Q <= chanE || t.Terrain != TerrainMountainLimestone || t.TinDeposit || t.SilverDeposit || t.CopperDeposit || copperComps[landmap[c]] || !hasBuildableNeighbour(grid, c, width, height) {
+			continue
+		}
+		tiles[i].TinDeposit = true
+		distance := tinCopperSeaDistance(tiles)
+		tiles[i].TinDeposit = false
+		if distance >= minTinCopperSeaDist {
+			cand = append(cand, i)
+		}
+	}
+	placeDepositClusters(tiles, cand, landmap, rand.New(rand.NewSource(seed^0x54494e)), tinAdditionalSourceTarget(width, height), tinClusterMin, tinClusterMax, 0, width, height, func(t *MapTile) { t.TinDeposit = true })
 }
 
 // GenerateMap procedurally generates a hex grid for a world using a seeded RNG.
@@ -557,6 +603,7 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 				"world", worldID.String(), "seed", eff, "width", width, "height", height, "err", err)
 			continue
 		}
+		addTinSources(tiles, eff, width, height)
 		return tiles, eff
 	}
 	// A broken map must never host a world — fail loud rather than serve a
@@ -576,9 +623,9 @@ const maxMapAttempts = 100
 // minProductiveCopper, minLandmasses and minStraits are FUNCTIONS below, not
 // consts (P4, plan §C "skalad validateMap") — a 230×230 world should demand a
 // bigger archipelago, more straits and more copper than a 56×40 one.
-// minProductiveTin and minCedar stay flat consts on purpose: tin must get
-// SCARCER relative to player count as the map grows (plan §P4-A), and cedar
-// is already count-based independent of map size (plan §A, untouched by P4).
+// minProductiveTin is a flat validity floor, separate from the area-scaled
+// tin placement budget (Timothy 2026-10-12/13). minCedar is already count-based
+// independent of map size (plan §A, untouched by this change).
 //
 // minCedar (S2, megaron_cederskogen_plan.md step 6): cedar is no longer
 // scattered single hexes, it is CONTIGUOUS STANDS (cedarStandCountMin stands
@@ -1665,7 +1712,7 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		copperSourceTarget(players), copperClusterMin, copperClusterMax, 0, width, height,
 		func(t *MapTile) { t.CopperDeposit = true })
 	placeDepositClusters(tiles, tinCand, landmap, rng,
-		tinSourceTarget(players), tinClusterMin, tinClusterMax, 0, width, height,
+		legacyTinSourceTarget(players), tinClusterMin, tinClusterMax, 0, width, height,
 		func(t *MapTile) { t.TinDeposit = true })
 
 	// Silver candidates exclude anything copper/tin already claimed just
@@ -1781,13 +1828,10 @@ func generateMapOnce(worldID interface{ String() string }, seed int64, width, he
 		set(&tiles[target])
 	}
 	forceMetal(copperIsle, mainland, TerrainHills, func(t *MapTile) { t.CopperDeposit = true })
-	// Tin only: skip forcing a remote isle productive when the tinSourceCap
-	// (plan §A DESIGN INVARIANT, see the P4 const block) is already met —
-	// forceMetal picks the isle's first land tile regardless of adjacency to
-	// an existing tin cluster, so an unconditional call here could mint a
-	// 5th distinct source component on some seeds. Copper has no such cap
-	// (see forceMetal call above), so it stays unconditional.
-	if depositSourceCount(tiles, func(t MapTile) bool { return t.TinDeposit }) < tinSourceCap {
+	// Keep the original remote-isle cap in this compatibility pass: changing
+	// forceMetal here could convert terrain or erase silver. The new tin
+	// budget is added only after this unchanged map passes validateMap.
+	if depositSourceCount(tiles, func(t MapTile) bool { return t.TinDeposit }) < legacyTinSourceCap {
 		forceMetal(tinIsle, anatolia, TerrainMountainLimestone, func(t *MapTile) { t.TinDeposit = true })
 	}
 
@@ -1984,7 +2028,7 @@ func placeDepositClusters(tiles []MapTile, cand []int, landmap map[cell]int, rng
 
 // depositSourceCount counts connected components among tiles for which has
 // returns true — the "how many separate source clusters" reading both the
-// tinSourceCap guard (generateMapOnce step 10) and the P4 JSON contract
+// legacyTinSourceCap guard (generateMapOnce step 10) and the P4 JSON contract
 // (copper_sources/tin_sources/silver_sources, debugpng.go) need. Adjacency
 // is the same 6-axial rule as landComponents, but over the deposit flag
 // instead of the land/sea terrain split. Iteration order over the resulting
@@ -3823,8 +3867,7 @@ const mineableRadius = 2
 // catchment — it is placed but permanently unmineable, independent of how
 // many tin tiles exist in total. Empirically (230×230, seeds 0-29) up to 4 of
 // a map's 4-11 tin tiles landed this way — a placement-candidate bug,
-// orthogonal to and NOT a relaxation of the tinSourceCap scarcity design
-// invariant (Timothy 2026-07-16, plan §A): filtering candidates here doesn't
+// independent of the source budget: filtering candidates here doesn't
 // change how many clusters get placed, only which candidate tiles are
 // eligible to receive one.
 //

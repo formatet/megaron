@@ -257,7 +257,7 @@ func TestReport_CatchmentDepositCoverage(t *testing.T) {
 		w, h := sz[0], sz[1]
 		players := playersFor(w, h)
 		fmt.Printf("\n=== %dx%d  players=%d  källmål: Cu=%d Ag=%d Sn=%d ===\n",
-			w, h, players, copperSourceTarget(players), silverSourceTarget(w, h), tinSourceTarget(players))
+			w, h, players, copperSourceTarget(players), silverSourceTarget(w, h), tinSourceTarget(w, h))
 		fmt.Printf("%-12s %8s | %-26s | %-26s | %-26s\n",
 			"eff seed", "platser", "Ag hexar/källor/land/städer", "Cu hexar/källor/land/städer", "Sn hexar/källor/land/städer")
 		distinctSeeds(t, w, h, 4, func(seed int64, tiles []MapTile) {

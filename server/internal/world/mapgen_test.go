@@ -663,7 +663,7 @@ func TestGenerateMap_IsArchipelago(t *testing.T) {
 
 // TestGenerateMap_TinCapAndSpread is the P4 regression for the deposit-
 // clustering rewrite (plan §P4-A/D): tin_sources (connected components of
-// tin-deposit tiles) must never exceed the design-invariant tinSourceCap on
+// tin-deposit tiles) must never exceed the area-scaled tinSourceCap on
 // any map size — the pre-P4 per-hex-% roll let tin explode to 48 hexes on
 // one seed and monopolise a single cluster on another (plan §P4 empirics).
 //
@@ -683,9 +683,9 @@ func TestGenerateMap_TinCapAndSpread(t *testing.T) {
 			tiles, eff := GenerateMap(stubID{}, seed, w, h)
 
 			sources := depositSourceCount(tiles, func(t MapTile) bool { return t.TinDeposit })
-			if sources > tinSourceCap {
+			if sources > tinSourceCap(w, h) {
 				t.Fatalf("%dx%d seed %d (eff %d): tin_sources = %d, want <= %d",
-					w, h, seed, eff, sources, tinSourceCap)
+					w, h, seed, eff, sources, tinSourceCap(w, h))
 			}
 			if sources < 2 {
 				continue // spread is only meaningful once >=2 sources exist
@@ -733,8 +733,7 @@ func TestGenerateMap_TinCapAndSpread(t *testing.T) {
 // terrain (see spawnBuildable, debugpng.go). A tin (or mountain-sourced
 // silver) tile whose 6 neighbours are ALL non-buildable (more mountain, or
 // sea) can never fall inside any settlement's 7-hex catchment: it is placed
-// but permanently unmineable, independent of the tinSourceCap scarcity
-// design invariant (Timothy 2026-07-16) — this is a placement bug, not a
+// but permanently unmineable, independent of the tin source budget — this is a placement bug, not a
 // relaxation of that invariant. Before the fix (step 7's candidate
 // pre-filter + step 10's buildable-preferring forceMetal target + step 11's
 // final sweep), 230×230 seeds 0-29 placed on average ~25% of tin tiles with
