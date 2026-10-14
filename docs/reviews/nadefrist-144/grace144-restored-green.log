@@ -1,0 +1,11 @@
+» färsk DB på migration 179 · commit cff64ade+ändringar
+=== RUN   TestShouldRollPunishment_Grace144
+--- PASS: TestShouldRollPunishment_Grace144 (0.00s)
+PASS
+ok  	formatet/megaron/server/internal/kharis	0.002s
+=== RUN   TestOpeningDispatchJoinConcurrentRetryRiseAndPrivacy
+2026/10/14 20:44:21 INFO player registered id=67a76a20-7633-4dcf-b01c-c2cbfdf72e2e username=opening-1371e876-4220-4512-af35-62ffbe1d68c9-6600c7b3-e65e-43d1-8d85-83a3020a38eb
+2026/10/14 20:44:21 INFO player registered id=29914d52-21fd-41be-80b7-cccc8ffaded3 username=opening-other-4d35d0c9-81a3-4086-a188-9dadd81a7f70-822297ef-c128-4c0b-87a2-aca4d239d7bb
+--- PASS: TestOpeningDispatchJoinConcurrentRetryRiseAndPrivacy (0.13s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.139s

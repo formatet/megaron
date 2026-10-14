@@ -1,0 +1,88 @@
+web/static/wireframe_sprint1.html:999:      <div style="font-size:0.68rem;color:var(--text-dim);margin-top:0.2rem;">Gudarna ser nådigt på Tiryns. Sjunker 5 %/dag utan offer.</div>
+tools/alfa_funnel.py:5:SPELDYGNET (tick) då steget nåddes; tomt = aldrig. `N~` = uppskattat (se nedan).
+tools/agora_acceptance/PROOF-20261005.md:43:Första riktiga kollisionsförsöket nådde korrekt suffix/ready/notis men Element-webbservern hade stannat. Första failure är bevarat i `/tmp/megaron-agora-proof/collision-first-failure.log`; webbtjänsten återstartades och omprovet är grönt. Inga produktionsändringar gjordes för att få provet grönt. En tidigare standardcache-approval löstes med GOCACHE i/tmp. Sandbox-PID2 användes aldrig för signalering; säker hoststyrning hittar endast vår privata process.
+server/db/migrations/095_colony_cap_retrofit.up.sql:6:-- Sveipet nådde huvudstäderna (create_metropolis.go) men missade EN seed-site:
+server/db/migrations/132_wanax_founded_tick.up.sql:1:-- Migration 132: nådefrist för nygrundade Wanaxer (megaron_todo.md §NU,
+server/db/migrations/132_wanax_founded_tick.up.sql:4:-- Varför en egen kolumn: nådefristen mäts i TICK, aldrig i väggklocka
+server/db/migrations/132_wanax_founded_tick.up.sql:10:-- tusentals tick, så current_world_tick() - 0 passerar fristen med marginal
+web/static/js/megaron/ui/dispatch_window.test.mjs:118:  const paragraphs = ['Time: 7 minutes.', 'Plains: 3 days.', 'Host: 987 grain.', 'Collapse below 321.', 'Grace: 43 days.', 'Orders travel.', 'Bronze needs others.', '<script>not markup</script> & Report'];
+server/cmd/keryx/cmd_notifications_divine_test.go:120:func TestDivinePunishmentLine_MissingNameDegradesGracefully(t *testing.T) {
+server/cmd/keryx/cmd_unit.go:1695:// från grundningens straffnådefrist. Strawman: kalibrera mot en soak, inte mot smak.
+server/internal/loyalty/welfare.go:57:// uses for its (48-tick) grace window (see decayGraceSeconds), applied here
+server/internal/loyalty/decay.go:28:// loyaltyDecayGraceTicks is how many ticks a colony may go without a
+server/internal/loyalty/decay.go:41:const loyaltyDecayGraceTicks = 48
+server/internal/loyalty/decay.go:43:// decayGraceSeconds converts the grace window to real SECONDS at the current
+server/internal/loyalty/decay.go:44:// tick cadence: graceTicks × seconds/tick. Uses tick.TickSeconds, NOT
+server/internal/loyalty/decay.go:50:func decayGraceSeconds() int {
+server/internal/loyalty/decay.go:51:	return loyaltyDecayGraceTicks * tick.TickSeconds
+server/internal/loyalty/decay.go:56:// loyaltyDecayGraceTicks ticks loses 1 loyalty point (minimum 1).
+server/internal/loyalty/decay.go:82:		e.WorldID, decayGraceSeconds(),
+server/internal/loyalty/decay_grace_test.go:3:// Regression test for the loyalty-decay grace window (Fynd 2026-07-08, sub-minute
+server/internal/loyalty/decay_grace_test.go:12:// leaving decay effectively disabled again. The window is now graceTicks ×
+server/internal/loyalty/decay_grace_test.go:31:// TestDecayGraceSeconds_DefaultCadence pins the historical (correct-by-
+server/internal/loyalty/decay_grace_test.go:32:// coincidence) case: at the default 60 min/tick (3600 s) the grace window must
+server/internal/loyalty/decay_grace_test.go:34:func TestDecayGraceSeconds_DefaultCadence(t *testing.T) {
+server/internal/loyalty/decay_grace_test.go:36:	want := loyaltyDecayGraceTicks * 3600 // 48 × 3600 = 172800 (48 h)
+server/internal/loyalty/decay_grace_test.go:37:	if got := decayGraceSeconds(); got != want {
+server/internal/loyalty/decay_grace_test.go:38:		t.Errorf("decayGraceSeconds() at default cadence = %d, want %d (== 48 h)", got, want)
+server/internal/loyalty/decay_grace_test.go:42:// TestDecayGraceSeconds_SubMinuteCadence is the load-bearing case: on the CT 126
+server/internal/loyalty/decay_grace_test.go:46:func TestDecayGraceSeconds_SubMinuteCadence(t *testing.T) {
+server/internal/loyalty/decay_grace_test.go:48:	want := loyaltyDecayGraceTicks * 6 // 48 × 6 = 288 s = 4.8 min
+server/internal/loyalty/decay_grace_test.go:49:	if got := decayGraceSeconds(); got != want {
+server/internal/loyalty/decay_grace_test.go:50:		t.Errorf("decayGraceSeconds() at TICK_SECONDS=6 = %d, want %d (== 2 game-days)", got, want)
+server/internal/loyalty/decay_grace_test.go:52:	if got := decayGraceSeconds(); got >= 48*60 {
+server/internal/loyalty/decay_grace_test.go:53:		t.Errorf("decayGraceSeconds() = %d s still ≥ the floored-minute 48-minute window", got)
+server/internal/loyalty/decay_grace_test.go:57:// TestDecayGraceSeconds_ScalesWithCadence checks Timothy's normal 2 min/tick
+server/internal/loyalty/decay_grace_test.go:59:func TestDecayGraceSeconds_ScalesWithCadence(t *testing.T) {
+server/internal/loyalty/decay_grace_test.go:61:	want := loyaltyDecayGraceTicks * 120 // 48 × 120 = 5760 s = 96 min
+server/internal/loyalty/decay_grace_test.go:62:	if got := decayGraceSeconds(); got != want {
+server/internal/loyalty/decay_grace_test.go:63:		t.Errorf("decayGraceSeconds() at 120 s/tick = %d, want %d", got, want)
+server/internal/loyalty/decay_idempotent_test.go:32:// gift/governor_visit/victory_nearby in the grace window" query holds
+server/internal/unit/naming_test.go:113:				t.Errorf("DisplayName(%q) = %q — pensionerat namn nådde spelaren", typ, label)
+server/internal/tick/worker.go:63:// minute is fine or even desired: loyalty grace-window/threshold maths
+server/api/handlers/opening_dispatch.go:51:		fmt.Sprintf("The gods. You are safe from punishment for %d days after founding. A temple takes %d days to build. Build, staff and feed one in time; neglect afterward risks punishment.", kharis.FoundingGraceTicks(), province.BuildingSpecs[province.BuildingTemple].DurationTicks),
+server/internal/messenger/passage.go:69:	// (strawman-acceptable) grace rather than an exact instant.
+server/api/handlers/opening_dispatch_test.go:146:		for _, want := range []string{tc.label, "3 Wanaxes", fmt.Sprintf("%g grain", float64(nomadicHostDowryGrain)), fmt.Sprintf("%g silver", nomadicHostStartingSilver), fmt.Sprintf("for %d days after founding", kharis.FoundingGraceTicks()), fmt.Sprintf("temple takes %d days", province.BuildingSpecs[province.BuildingTemple].DurationTicks), fmt.Sprintf("below %d people", economy.CollapseBelowPopulation), fmt.Sprintf("olive woodland in %g", province.TerrainMoveTicks("forest_olive_grove")), "reserves do not drain"} {
+server/api/handlers/opening_dispatch_test.go:155:	t.Logf("actual grace source %d, temple duration%d", kharis.FoundingGraceTicks(), province.BuildingSpecs[province.BuildingTemple].DurationTicks)
+server/internal/kharis/tick.go:34:// foundingGraceTicks shields a newly founded Wanax from punishment rolls.
+server/internal/kharis/tick.go:36:// is missed; grace allows time to understand and establish the temple path.
+server/internal/kharis/tick.go:41:const foundingGraceTicks = 144
+server/internal/kharis/tick.go:43:// FoundingGraceTicks exposes the active rule for the opening dispatch.
+server/internal/kharis/tick.go:44:func FoundingGraceTicks() int { return foundingGraceTicks }
+server/internal/kharis/tick.go:46:// shouldRollPunishment avgör om missed-grenen ska rulla för gudastraff alls.
+server/internal/kharis/tick.go:50:// läses som "inom fristen", eftersom den säkra riktningen vid trasig data är att
+server/internal/kharis/tick.go:52:func shouldRollPunishment(kharis float64, ticksSinceFounding int) bool {
+server/internal/kharis/tick.go:53:	if ticksSinceFounding < foundingGraceTicks {
+server/internal/kharis/tick.go:177:	// nådefristen — se foundingGraceTicks.
+server/internal/kharis/tick.go:519:		inGrace := w.ticksSinceFounding < foundingGraceTicks
+server/internal/kharis/tick.go:525:				// Utfall, inte avsikt (CLAUDE.md §Events): raden säger att fristen
+server/internal/kharis/tick.go:528:				"founding_grace":       inGrace,
+server/internal/kharis/tick.go:532:		if shouldRollPunishment(newKharis, w.ticksSinceFounding) && rand.Float64() < punishProbability {
+server/internal/kharis/founding_grace_test.go:5:// Nådefristen (Timothy 2026-08-25, alternativ A). Straffet är ett tärningskast,
+server/internal/kharis/founding_grace_test.go:7:// shouldRollPunishment och inte processMaintenance.
+server/internal/kharis/founding_grace_test.go:8:func TestShouldRollPunishment_FoundingGrace(t *testing.T) {
+server/internal/kharis/founding_grace_test.go:20:		// Fristens sista dygn skyddar fortfarande, även när hon hunnit tyna hela
+server/internal/kharis/founding_grace_test.go:21:		// vägen till golvet. Decay stängs inte av av fristen — bara straffet.
+server/internal/kharis/founding_grace_test.go:22:		{"sista dygnet i fristen skyddar även på golvet", kharisFloor, foundingGraceTicks - 1, false},
+server/internal/kharis/founding_grace_test.go:25:		{"fristen slutar precis vid gränsen", kharisFloor, foundingGraceTicks, true},
+server/internal/kharis/founding_grace_test.go:27:		// Fristen är inte en generell amnesti: över tröskeln rullas ingenting
+server/internal/kharis/founding_grace_test.go:28:		// ändå, och det ska gälla oförändrat efter att fristen gått ut.
+server/internal/kharis/founding_grace_test.go:29:		{"på tröskeln rullas inget, fristen ovidkommande", punishThreshold, foundingGraceTicks, false},
+server/internal/kharis/founding_grace_test.go:30:		{"strax under tröskeln rullas det", punishThreshold - 0.01, foundingGraceTicks, true},
+server/internal/kharis/founding_grace_test.go:36:		{"tempellös långt efter fristen är straffbar igen", TempleKharisCeiling(0), 1000, true},
+server/internal/kharis/founding_grace_test.go:40:		{"negativt tick läses som inom fristen", kharisFloor, -5, false},
+server/internal/kharis/founding_grace_test.go:44:		if got := shouldRollPunishment(c.kharis, c.ticksSinceFounding); got != c.want {
+server/internal/kharis/founding_grace_test.go:45:			t.Errorf("%s: shouldRollPunishment(%.2f, %d) = %v, vill ha %v",
+server/internal/kharis/founding_grace_test.go:53:// straffet omöjligt att spela sig ur utan att bygga ett tempel, och nådefristen är
+server/internal/kharis/founding_grace_test.go:55:// fristen ändrats och den bör omprövas, inte behållas av slentrian.
+server/internal/kharis/founding_grace_test.go:58:		t.Fatalf("premissen för nådefristen är borta: tempellöst tak %.0f når nu "+
+server/internal/kharis/founding_grace_test.go:59:			"straffgränsen %.0f — ompröva foundingGraceTicks i stället för att "+
+server/internal/kharis/founding_grace_test.go:66:func TestShouldRollPunishment_Grace144(t *testing.T) {
+server/internal/kharis/founding_grace_test.go:75:		if got := shouldRollPunishment(tc.kharis, tc.age); got != tc.want {
+server/internal/kharis/founding_grace_test.go:79:	if FoundingGraceTicks() != 144 {
+server/internal/kharis/founding_grace_test.go:80:		t.Errorf("published grace=%d want144", FoundingGraceTicks())
+server/api/handlers/create_metropolis_founded_tick_test.go:11:// Nådefristens substrat (mig 132): founded_tick måste stämplas på den väg en
+server/api/handlers/create_metropolis_founded_tick_test.go:17:// kolumnen kvar på sin DEFAULT 0 för varenda spelare, nådefristen hade aldrig
+server/api/handlers/create_metropolis_founded_tick_test.go:80:		Name:       "Nadefristen-" + uuid.New().String(),
+server/api/handlers/create_metropolis_founded_tick_test.go:107:			"DO UPDATE-grenen, så nådefristen gäller ingen som gått via join.go",
+server/api/handlers/create_metropolis.go:189:		// riktig spelare, och nådefristen hade aldrig gällt någon.

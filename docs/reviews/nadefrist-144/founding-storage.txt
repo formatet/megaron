@@ -1,0 +1,13 @@
+server/api/handlers/nomadic_host.go:148:	// who founded once keeps that row forever (active=false, founded_tick set).
+server/api/handlers/nomadic_host.go:157:	// host, full rations, founded_tick cleared — rather than leaving a half-spent
+server/api/handlers/nomadic_host.go:172:		   founded_tick  = NULL,
+server/api/handlers/found_metropolis.go:299:	// 7. The host dissolves, permanently. active=false + founded_tick is the design's
+server/api/handlers/found_metropolis.go:307:		`UPDATE founder_phase SET active = false, founded_tick = current_world_tick(), host_unit_id = NULL
+server/db/migrations/166_settlement_founder.down.sql:2:ALTER TABLE settlements DROP COLUMN founded_tick, DROP COLUMN founder_id;
+server/db/migrations/166_settlement_founder.up.sql:4:-- nothing remembered the founder. founded_tick is game time (ticks), so the
+server/db/migrations/166_settlement_founder.up.sql:8:    ADD COLUMN founded_tick INT DEFAULT current_world_tick();
+server/db/migrations/166_settlement_founder.up.sql:21:    founded_tick = COALESCE((SELECT min(e.world_tick) FROM events e WHERE e.stream_id = s.id), 0);
+server/db/migrations/132_wanax_founded_tick.down.sql:1:ALTER TABLE player_world_records DROP COLUMN founded_tick;
+server/db/migrations/132_wanax_founded_tick.up.sql:13:    ADD COLUMN founded_tick INTEGER NOT NULL DEFAULT 0;
+server/db/migrations/086_founder_phase.up.sql:45:    -- active=false + founded_tick set == the design's one-shot flag: a player can
+server/db/migrations/086_founder_phase.up.sql:49:    founded_tick  INT,
