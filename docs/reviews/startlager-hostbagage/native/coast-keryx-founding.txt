@@ -1,0 +1,10 @@
+Founding (13,26) — metropolis of 1000 people — catchment forecast (18/19 hexes known, 1 unknown):
+  Coastal: a city here can build a harbour and ships.
+  Grain: production ~0 per day − consumption ~0 per day = net +0.0 per day
+  Starting stock 1200 grain — marginal (net +0.0 per day). A farm gives net ~+5.1 per day.
+  Other: copper-deposit ✓, copper ~1 per day, fish ~13 per day, livestock ~3 per day, oil ~9 per day, stone ~4 per day, timber ~2 per day, wine ~5 per day
+  Gift: Poseidon's galley — a coastal founding is owed one galley, crewed and ready — a gift, not drawn from your people
+⚒ Metropolis founded at (13,26)! The host is dissolved — the people have a home.
+  Carried in by the host: 1200 grain, 480 silver. The city now holds 1200 grain, 480 silver (founding adds no extra grain or silver).
+  Poseidon's gift: a galley lies in the harbor.
+  Run: keryx status

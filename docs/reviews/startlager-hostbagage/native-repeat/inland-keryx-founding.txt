@@ -1,0 +1,9 @@
+Founding (36,23) — metropolis of 1000 people — catchment forecast (19/19 hexes known, 0 unknown):
+  Inland: a city here can never build a harbour or ships — to reach the sea you will need a coastal colony.
+  Grain: production ~6 per day − consumption ~5 per day = net +0.6 per day
+  Starting stock 1200 grain — the city is self-sufficient.
+  Other: silver-deposit ✓, livestock ~2 per day, oil ~18 per day, stone ~14 per day, timber ~6 per day, wine ~12 per day
+  Gift: Demeter's farm — an inland site whose catchment bears grain, so the city is founded with a farm already standing
+⚒ Metropolis founded at (36,23)! The host is dissolved — the people have a home.
+  Carried in by the host: 1200 grain, 480 silver. The city now holds 1200 grain, 480 silver (founding adds no extra grain or silver).
+  Run: keryx status

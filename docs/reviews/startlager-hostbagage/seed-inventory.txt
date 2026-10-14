@@ -1,0 +1,16 @@
+web/static/js/megaron/render/map.js:548:    const trees = 1 + rndInt(q, r, 730 + c, 2);
+tools/silver_calibration_mutations.py:10: ('inland_endowment','server/internal/economy/genesis_silver.go','amount = math.Max(0, carried)','amount = math.Max(730, carried)',['./api/handlers'],'TestSilverCalibrationFirstFoundingCarriedOnly','TestSilverCalibrationFirstFoundingCarriedOnly'),
+tools/silver_calibration_mutations.py:11: ('coastal_endowment','server/internal/economy/genesis_silver.go','amount = math.Max(0, carried)','amount = math.Max(1278, carried)',['./api/handlers'],'TestSilverCalibrationFirstFoundingCarriedOnly','TestSilverCalibrationFirstFoundingCarriedOnly'),
+server/api/handlers/create_metropolis_livestock_test.go:44:// and shares economy.ColonyGrainSeed.
+server/api/handlers/world.go:624:	seed := float64(economy.ColonyGrainSeed)
+server/api/handlers/create_metropolis.go:124:		            WHEN 'grain'     THEN 0
+server/api/handlers/create_metropolis.go:146:	liquidSeed, liquidCap := economy.MetropolisSilver(p.CarriedSilver)
+server/internal/economy/catchment_preview.go:31:	// ColonyGrainSeed is zero: founding adds no grain from nothing
+server/internal/economy/catchment_preview.go:33:	ColonyGrainSeed = 0
+server/internal/economy/genesis_silver.go:5:// MetropolisSilver moves only the Host's remaining purse into its new city
+server/internal/economy/genesis_silver.go:9:func MetropolisSilver(carried float64) (amount, cap float64) {
+server/internal/combat/unit_arrival.go:1961:		        -- ingen sten eller extra grain (Timothy 2026-10-14). ColonyGrainSeed=0
+server/internal/combat/unit_arrival.go:1967:		            WHEN 'grain'     THEN $2::numeric
+server/internal/combat/unit_arrival.go:1986:		colonyID, economy.ColonyGrainSeed, economy.FoundingHerdLivestock, province.DefaultGoodStorageCap,
+server/internal/capabilities/capabilities_test.go:241:		f.exec(t, `UPDATE settlement_goods SET amount = CASE good_key WHEN 'grain' THEN $2::double precision ELSE $3::double precision END WHERE settlement_id = $1`, f.settlementID, stock.grain, stock.silver)
+server/internal/combat/silver_audit_v2_test.go:105:	amount, cap := economy.MetropolisSilver(480)

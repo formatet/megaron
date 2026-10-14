@@ -1,0 +1,20 @@
+» färsk DB på migration 179 · commit 6935e404+ändringar
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly/inland_spent_purse
+    silver_calibration_test.go:54: founding creates extra stock: grain carried/total=17.25/17.25 want17.25, silver total=730 want7
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly/coast_spent_purse
+    silver_calibration_test.go:54: founding creates extra stock: grain carried/total=17.25/17.25 want17.25, silver total=730 want7
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly/inland_full_purse
+    silver_calibration_test.go:54: founding creates extra stock: grain carried/total=1200/1200 want1200, silver total=730 want480
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly/coast_full_purse
+    silver_calibration_test.go:54: founding creates extra stock: grain carried/total=1200/1200 want1200, silver total=730 want480
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly/existing_wealth_is_not_destroyed
+--- FAIL: TestSilverCalibrationFirstFoundingCarriedOnly (0.19s)
+    --- FAIL: TestSilverCalibrationFirstFoundingCarriedOnly/inland_spent_purse (0.04s)
+    --- FAIL: TestSilverCalibrationFirstFoundingCarriedOnly/coast_spent_purse (0.04s)
+    --- FAIL: TestSilverCalibrationFirstFoundingCarriedOnly/inland_full_purse (0.04s)
+    --- FAIL: TestSilverCalibrationFirstFoundingCarriedOnly/coast_full_purse (0.04s)
+    --- PASS: TestSilverCalibrationFirstFoundingCarriedOnly/existing_wealth_is_not_destroyed (0.04s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.194s
+FAIL

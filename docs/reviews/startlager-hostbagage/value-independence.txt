@@ -1,0 +1,12 @@
+server/internal/religion/index.go:64:		        g.labor_value,
+server/internal/religion/index.go:72:		 WHERE g.labor_value IS NOT NULL AND g.status = 'active'
+server/internal/religion/index.go:73:		 GROUP BY g.key, g.labor_value`,
+server/internal/religion/index.go:144:// LoadDivineValues reads a world's divine price list as good_key→value.
+server/internal/religion/index.go:145:func LoadDivineValues(ctx context.Context, db Execer, worldID uuid.UUID) (map[string]float64, error) {
+server/internal/religion/index.go:168:// LoadLaborValues is the shared reference used by the index and both cult consumers.
+server/internal/religion/index.go:169:func LoadLaborValues(ctx context.Context, db Execer) (map[string]float64, error) {
+server/internal/religion/index.go:170:	rows, err := db.Query(ctx, `SELECT key,labor_value FROM goods WHERE labor_value IS NOT NULL AND status='active'`)
+server/internal/religion/index.go:203:	rows, err := tx.Query(ctx, `SELECT EXISTS(SELECT 1 FROM goods g WHERE g.labor_value IS NOT NULL
+server/internal/kharis/tick.go:378:	values, err := religion.LoadDivineValues(ctx, h.pool, worldID)
+server/internal/kharis/tick.go:1757:	values, err := religion.LoadDivineValues(ctx, h.pool, worldID)
+server/internal/kharis/tick.go:1761:	baseValues, err := religion.LoadLaborValues(ctx, h.pool)

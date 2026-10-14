@@ -1,0 +1,15 @@
+» färsk DB på migration 179 · commit 6935e404
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly/inland_spent_purse
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly/coast_spent_purse
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly/inland_full_purse
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly/coast_full_purse
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly/existing_wealth_is_not_destroyed
+--- PASS: TestSilverCalibrationFirstFoundingCarriedOnly (0.20s)
+    --- PASS: TestSilverCalibrationFirstFoundingCarriedOnly/inland_spent_purse (0.04s)
+    --- PASS: TestSilverCalibrationFirstFoundingCarriedOnly/coast_spent_purse (0.04s)
+    --- PASS: TestSilverCalibrationFirstFoundingCarriedOnly/inland_full_purse (0.04s)
+    --- PASS: TestSilverCalibrationFirstFoundingCarriedOnly/coast_full_purse (0.04s)
+    --- PASS: TestSilverCalibrationFirstFoundingCarriedOnly/existing_wealth_is_not_destroyed (0.04s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.200s

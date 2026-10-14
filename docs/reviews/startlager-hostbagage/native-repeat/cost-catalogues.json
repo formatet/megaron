@@ -1,0 +1,381 @@
+{
+  "buildings": [
+    {
+      "type": "barracks",
+      "costs": {
+        "stone": 16,
+        "timber": 8
+      },
+      "duration_game_days": 10,
+      "purpose": "Enables recruiting spearmen and war chariots",
+      "max_level": 1
+    },
+    {
+      "type": "farm",
+      "costs": {
+        "stone": 4,
+        "timber": 6
+      },
+      "duration_game_days": 4,
+      "requires_terrain": [
+        "hills",
+        "plains",
+        "river_delta",
+        "river_valley"
+      ],
+      "purpose": "Stands on a grain hex and works its field",
+      "max_level": 3,
+      "upgrade_costs": {
+        "2": {
+          "stone": 8,
+          "timber": 12
+        },
+        "3": {
+          "stone": 16,
+          "timber": 24
+        }
+      },
+      "hex_bound": true
+    },
+    {
+      "type": "foundry",
+      "costs": {
+        "stone": 20,
+        "timber": 8
+      },
+      "duration_game_days": 16,
+      "purpose": "Smelts copper and tin into bronze",
+      "max_level": 1
+    },
+    {
+      "type": "harbour",
+      "costs": {
+        "stone": 12,
+        "timber": 16
+      },
+      "duration_game_days": 12,
+      "requires_coastal": true,
+      "requires_terrain": [
+        "coastal_sea"
+      ],
+      "purpose": "Works the settlement's coastal waters and enables sea trade",
+      "max_level": 3,
+      "upgrade_costs": {
+        "2": {
+          "cedar": 4,
+          "stone": 24,
+          "timber": 32
+        },
+        "3": {
+          "cedar": 8,
+          "stone": 48,
+          "timber": 64
+        }
+      }
+    },
+    {
+      "type": "lumbermill",
+      "costs": {
+        "stone": 4,
+        "timber": 8
+      },
+      "duration_game_days": 6,
+      "requires_terrain": [
+        "forest_cedar",
+        "forest_olive_grove"
+      ],
+      "purpose": "Stands on a forest hex and works its stands",
+      "max_level": 3,
+      "upgrade_costs": {
+        "2": {
+          "stone": 8,
+          "timber": 16
+        },
+        "3": {
+          "stone": 16,
+          "timber": 32
+        }
+      },
+      "hex_bound": true
+    },
+    {
+      "type": "market",
+      "costs": {
+        "stone": 8,
+        "timber": 10
+      },
+      "duration_game_days": 8,
+      "purpose": "Enables trade offers and updates market price snapshots",
+      "max_level": 3,
+      "upgrade_costs": {
+        "2": {
+          "stone": 16,
+          "timber": 20
+        },
+        "3": {
+          "stone": 32,
+          "timber": 40
+        }
+      }
+    },
+    {
+      "type": "mine",
+      "costs": {
+        "stone": 16,
+        "timber": 6
+      },
+      "duration_game_days": 10,
+      "requires_deposits": [
+        "copper",
+        "silver",
+        "tin"
+      ],
+      "purpose": "Stands on an ore deposit and extracts what the hex holds",
+      "max_level": 3,
+      "upgrade_costs": {
+        "2": {
+          "stone": 32,
+          "timber": 12
+        },
+        "3": {
+          "stone": 64,
+          "timber": 24
+        }
+      },
+      "hex_bound": true
+    },
+    {
+      "type": "olive_press",
+      "costs": {
+        "stone": 8,
+        "timber": 8
+      },
+      "duration_game_days": 8,
+      "requires_terrain": [
+        "forest_olive_grove",
+        "hills",
+        "plains"
+      ],
+      "purpose": "Refines a press-worker's oil from the settlement's groves",
+      "max_level": 3,
+      "upgrade_costs": {
+        "2": {
+          "stone": 16,
+          "timber": 16
+        },
+        "3": {
+          "stone": 32,
+          "timber": 32
+        }
+      }
+    },
+    {
+      "type": "shipyard",
+      "costs": {
+        "stone": 12,
+        "timber": 24
+      },
+      "duration_game_days": 12,
+      "requires_coastal": true,
+      "purpose": "Builds and repairs ships",
+      "max_level": 3,
+      "upgrade_costs": {
+        "2": {
+          "cedar": 4,
+          "stone": 24,
+          "timber": 48
+        },
+        "3": {
+          "cedar": 8,
+          "stone": 48,
+          "timber": 96
+        }
+      }
+    },
+    {
+      "type": "stable",
+      "costs": {
+        "stone": 8,
+        "timber": 12
+      },
+      "duration_game_days": 8,
+      "purpose": "Enables war chariots",
+      "max_level": 3,
+      "upgrade_costs": {
+        "2": {
+          "stone": 16,
+          "timber": 24
+        },
+        "3": {
+          "stone": 32,
+          "timber": 48
+        }
+      }
+    },
+    {
+      "type": "stonequarry",
+      "costs": {
+        "stone": 8,
+        "timber": 6
+      },
+      "duration_game_days": 6,
+      "requires_terrain": [
+        "forest_cedar",
+        "forest_olive_grove",
+        "hills",
+        "mountain_limestone",
+        "mountain_red",
+        "plains",
+        "river_delta",
+        "river_valley",
+        "scrub_maquis",
+        "semi_desert"
+      ],
+      "purpose": "Stands on a land hex; its crew quarry the stone there \u2014 far more on hills and limestone",
+      "max_level": 3,
+      "upgrade_costs": {
+        "2": {
+          "stone": 16,
+          "timber": 12
+        },
+        "3": {
+          "stone": 32,
+          "timber": 24
+        }
+      },
+      "hex_bound": true
+    },
+    {
+      "type": "temple",
+      "costs": {
+        "stone": 24,
+        "timber": 8
+      },
+      "duration_game_days": 16,
+      "purpose": "Enables rites, produces cult, and unlocks oracle prayers",
+      "max_level": 3,
+      "upgrade_costs": {
+        "2": {
+          "cedar": 4,
+          "stone": 48,
+          "timber": 16
+        },
+        "3": {
+          "cedar": 8,
+          "stone": 96,
+          "timber": 32
+        }
+      }
+    },
+    {
+      "type": "wall",
+      "costs": {
+        "stone": 4,
+        "timber": 12
+      },
+      "duration_game_days": 6,
+      "purpose": "Adds a wall tier (Palisade \u2192 Stone Wall \u2192 Bronze Wall) for combat defence",
+      "max_level": 1
+    },
+    {
+      "type": "winery",
+      "costs": {
+        "stone": 8,
+        "timber": 8
+      },
+      "duration_game_days": 8,
+      "requires_terrain": [
+        "hills",
+        "plains",
+        "river_valley",
+        "scrub_maquis"
+      ],
+      "purpose": "Refines a vintner's wine from the settlement's vines",
+      "max_level": 3,
+      "upgrade_costs": {
+        "2": {
+          "stone": 16,
+          "timber": 16
+        },
+        "3": {
+          "stone": 32,
+          "timber": 32
+        }
+      }
+    }
+  ],
+  "units": [
+    {
+      "type": "elite_infantry",
+      "costs": {
+        "bronze": 16,
+        "grain": 24,
+        "silver": 40
+      },
+      "batch_men": 100,
+      "pop_cost": 10,
+      "duration_game_days": 4,
+      "requires_barracks": true,
+      "requires_foundry": true
+    },
+    {
+      "type": "galley",
+      "costs": {
+        "silver": 6,
+        "timber": 30
+      },
+      "batch_men": 20,
+      "pop_cost": 10,
+      "duration_game_days": 3,
+      "requires_shipyard": true
+    },
+    {
+      "type": "merchantman",
+      "costs": {
+        "silver": 2,
+        "timber": 16
+      },
+      "batch_men": 10,
+      "pop_cost": 8,
+      "duration_game_days": 4,
+      "requires_shipyard": true
+    },
+    {
+      "type": "spearman",
+      "costs": {
+        "grain": 12,
+        "silver": 20
+      },
+      "batch_men": 100,
+      "pop_cost": 5,
+      "duration_game_days": 1,
+      "requires_barracks": true
+    },
+    {
+      "type": "war_chariot",
+      "costs": {
+        "bronze": 20,
+        "cedar": 8,
+        "grain": 40,
+        "silver": 50,
+        "timber": 8
+      },
+      "batch_men": 100,
+      "pop_cost": 8,
+      "duration_game_days": 3,
+      "requires_stable": true
+    },
+    {
+      "type": "war_galley",
+      "costs": {
+        "cedar": 100,
+        "silver": 30
+      },
+      "batch_men": 50,
+      "pop_cost": 12,
+      "duration_game_days": 5,
+      "requires_shipyard": true,
+      "requires_foundry": true
+    }
+  ]
+}
