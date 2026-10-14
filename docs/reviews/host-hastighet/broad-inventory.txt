@@ -1,0 +1,35 @@
+server/internal/unit/model.go:38:	TypeNomadicHost Type = "nomadic_host"
+server/internal/unit/naming_test.go:108:		"galley", "war_galley", "merchantman", "nomadic_host"} {
+server/internal/unit/lookup_test.go:140:		 VALUES ($1, $2, 'nomadic_host', 'land', 100, 'garrison') RETURNING id`,
+server/internal/unit/nomadic_host_test.go:72:		t.Fatalf("DisplayName(nomadic_host) = %q, want %q", got, "Nomadic Host")
+server/internal/combat/battle_wall_test.go:241:// halves of storm's effect (beslut 7): halved wall absorption AND increased
+server/internal/combat/battle_wall_test.go:276:		t.Errorf("storm defender losses = %d, want strictly more than non-storm defender losses = %d (halved wall lets more hits through)",
+server/internal/combat/standing_orders_naval_test.go:188:	// grain weighs 2.0/unit (goods.weight), so at most 100 of the 200 needed
+server/internal/combat/unit_arrival.go:36://   - storm:   arriving unit with storm stance halves the wall-level bonus of the target.
+server/internal/combat/ship_repair_test.go:26:		// war_galley: Costs{cedar:2.0} per crew, CrewFor=50 → 100 ceder full build
+server/internal/combat/unit_arrival_disbanded_host_test.go:73:		 VALUES ($1,$2,'nomadic_host','land',1,0,'disbanded',NULL,NULL, 1,22, now(), now())
+server/internal/combat/silver_audit_test.go:170:	// A: 10000 − 1 = 9999; B: 10000 − 3 = 9997 → liquid 19996 (SLICE B halved
+server/internal/combat/place_reach_test.go:101:	f.mover(t, "nomadic_host", f.owner, reachRoute(0, 6, 0, 6))
+server/internal/combat/place_reach_test.go:177:	f.mover(t, "nomadic_host", f.owner, reachRoute(4, 5, 1, 2))
+server/internal/combat/place_reach_test.go:257:	f.mover(t, "nomadic_host", f.owner, reachRoute(0, 6, 0, 6))
+server/internal/combat/place_reach_test.go:325:			f.mover(t, "nomadic_host", f.owner, reachRoute(0, 5, 0, 5))
+server/internal/combat/place_reach_test.go:355:	id := f.mover(t, "nomadic_host", f.owner, reachRoute(0, 6, 0, 6))
+server/internal/combat/food_ordering_test.go:36:	// for the population — NOT enough for both in full. 2.0 = 0.5 (army) + 1.5
+server/internal/combat/food_ordering_test.go:40:	const seededGrain = 2.0
+server/internal/combat/march_start.go:143:const crewSpeedMax = 2.0
+server/internal/combat/upkeep.go:184:	upkeepFieldGrainFactor = 2.0 // korn i fält (marching/positioned/embarked) mot garnison
+server/internal/combat/upkeep.go:202:	// startvärde, inte ett mätt: legibelt i världen ("halva besättningen är
+server/internal/combat/upkeep.go:296:	// cohort twice (temenos_nomadic_host_bygg.md B3). The exclusion lifts by
+server/internal/combat/upkeep_circulation_test.go:125:	// — insufficient under the old table but NOT under the halved one, since the
+server/internal/combat/upkeep_circulation_test.go:126:	// gate is >=; 0, not 1, is the seed that stays insufficient after halving.)
+server/internal/combat/upkeep_circulation_test.go:311:	if math.Abs(silver-999) > 1e-6 { // 1000 − full N=1 (SLICE B: spearman silver halved), no credit
+server/internal/combat/embarked_upkeep_test.go:4:// halveringen): a land unit embarked on a ship (status 'embarked') is a
+server/internal/combat/unit_upkeep_silver_test.go:3:// SLICE B (silverupkeep halveras, Timothy 2026-08-05): AG3 = lägre
+server/internal/combat/unit_upkeep_silver_test.go:4:// silverupkeep, formen "halvera hela tabellen". Grain is untouched — slice A
+server/internal/combat/unit_upkeep_silver_test.go:5:// set it. These cases pin the halved silver column, and confirm status never
+server/internal/combat/battle.go:127:	// storm halves N (stormWallAbsorbDivisor) but raises the storming
+server/internal/combat/battle.go:598:		// halved wall budget above — applied to the defender's hits against
+server/internal/combat/crew_speed_factor_test.go:5:// toward crewSpeedMax (2.0) as the benches empty, continuous, no threshold
+server/internal/combat/crew_speed_factor_test.go:27:		{unit.TypeWarGalley, 0, 2.0},  // empty benches: crewSpeedMax
+server/internal/combat/crew_speed_factor_test.go:28:		{unit.TypeWarGalley, -5, 2.0}, // negative clamps to 0 crew, not a panic
+server/internal/combat/crew_speed_factor_test.go:36:		// "En halvbemannad galär (10/20) tar 1,5× tiden; en med en enda man

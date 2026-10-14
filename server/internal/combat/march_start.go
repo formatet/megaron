@@ -165,7 +165,7 @@ func CrewSpeedFactor(t unit.Type, crew int) float64 {
 }
 
 // TravelFactor is the complete multiplier applied to a path's raw tick cost:
-// hull speed by ship type, the host's halved march hours, the crew's
+// hull speed by ship type, the host's relative travel time, the crew's
 // manning level, and the laden penalty. ONE home for all five legs (dispatch,
 // arrival, recall, redirect, damaged return) — they diverged once already
 // (unit_arrival.go's missing mirror, see its doc comment) — so a future term
@@ -728,8 +728,8 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		moveTicks = pathCost
 	}
 	// Ship types vary in speed (Timothy 2026-07-09): war galley fastest,
-	// merchantman slowest, galley between. The nomadic host is the slowest
-	// thing on the map: half a spearman's speed. A shorthanded crew rows
+	// merchantman slowest, galley between. The nomadic host moves at 90%
+	// of a spearman's speed. A shorthanded crew rows
 	// slower still (Slice B). Loaded ships move 1.5× slower. All four live
 	// in TravelFactor — the one home for every leg.
 	moveTicks *= TravelFactor(u.Type, u.Crew, u.CargoUnitID != nil)

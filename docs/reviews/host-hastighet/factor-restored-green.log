@@ -1,0 +1,25 @@
+» färsk DB på migration 179 · commit cff64ade+ändringar
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/plains
+2026/10/14 20:36:07 INFO player registered id=aa215599-c02b-4519-aa1c-1b34d7825ee2 username=nomadhost-recall-2884a4c5-c9f8-4224-826f-e4113d18f5ec
+    unit_host_speed_test.go:129: plains: preview=dispatch=stored 2 ticks; old host arrival 8 and row unchanged
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/forest_cedar
+2026/10/14 20:36:07 INFO player registered id=0fcf548f-ac43-408a-96e7-649a3c6519ed username=nomadhost-recall-85778792-896d-41aa-aeea-a0cdfb3f226e
+    unit_host_speed_test.go:129: forest_cedar: preview=dispatch=stored 4 ticks; old host arrival 8 and row unchanged
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/forest_olive_grove
+2026/10/14 20:36:07 INFO player registered id=921e489f-4698-46c8-8a07-e9d15e00db66 username=nomadhost-recall-27fd9043-8312-499d-9855-c7addff3157a
+    unit_host_speed_test.go:129: forest_olive_grove: preview=dispatch=stored 3 ticks; old host arrival 8 and row unchanged
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/hills
+2026/10/14 20:36:07 INFO player registered id=e8233ccf-0351-4f18-b0bb-ce2a7775293b username=nomadhost-recall-d9f74cb3-e605-4ca3-9338-ad7e2551f4e3
+    unit_host_speed_test.go:129: hills: preview=dispatch=stored 4 ticks; old host arrival 8 and row unchanged
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/semi_desert
+2026/10/14 20:36:07 INFO player registered id=a4ba105f-3947-4ddf-8097-24b97301f476 username=nomadhost-recall-a9eb9f97-673e-4660-b537-5bc78b6472ee
+    unit_host_speed_test.go:129: semi_desert: preview=dispatch=stored 7 ticks; old host arrival 8 and row unchanged
+--- PASS: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch (0.45s)
+    --- PASS: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/plains (0.09s)
+    --- PASS: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/forest_cedar (0.09s)
+    --- PASS: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/forest_olive_grove (0.09s)
+    --- PASS: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/hills (0.09s)
+    --- PASS: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/semi_desert (0.09s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.457s

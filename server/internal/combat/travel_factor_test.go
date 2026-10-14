@@ -5,7 +5,7 @@ package combat
 // recall, redirect, damaged return) into one function. This test is the
 // behaviour-neutrality proof: it checks TravelFactor's output against the
 // LITERAL products of the known constants (0.6 war galley, 1.4 merchantman,
-// 2.0 nomadic host, ×1.5 laden) — never against NavalSpeedFactor/
+// 1/0.9 nomadic host, ×1.5 laden) — never against NavalSpeedFactor/
 // MarchHoursFactorFor themselves, so a bug that crept into both the
 // production code and this test at once would still be caught.
 //
@@ -24,9 +24,9 @@ import (
 
 func TestTravelFactor_MatchesLiteralProducts(t *testing.T) {
 	cases := []struct {
-		utype       unit.Type
-		notLaden    float64
-		laden       float64
+		utype    unit.Type
+		notLaden float64
+		laden    float64
 	}{
 		// Land units and the plain "galley" type: NavalSpeedFactor's default
 		// case (1.0) × MarchHoursFactorFor's default case (1.0).
@@ -38,8 +38,8 @@ func TestTravelFactor_MatchesLiteralProducts(t *testing.T) {
 		{unit.TypeWarGalley, 0.6, 0.9},
 		// Merchantman: NavalSpeedFactor 1.4 × MarchHoursFactorFor 1.0.
 		{unit.TypeMerchantman, 1.4, 2.1},
-		// Nomadic host: NavalSpeedFactor 1.0 (default) × MarchHoursFactorFor 2.0.
-		{unit.TypeNomadicHost, 2.0, 3.0},
+		// Nomadic host: NavalSpeedFactor 1.0 (default) × MarchHoursFactorFor 1/0.9.
+		{unit.TypeNomadicHost, 1.0 / 0.9, 1.5 / 0.9},
 	}
 
 	const epsilon = 1e-9

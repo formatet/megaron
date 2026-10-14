@@ -1,0 +1,45 @@
+» färsk DB på migration 179 · commit cff64ade+ändringar
+=== RUN   TestNomadicHost_CannotFight
+--- PASS: TestNomadicHost_CannotFight (0.00s)
+=== RUN   TestNomadicHost_AloneMayFoundMetropolis
+--- PASS: TestNomadicHost_AloneMayFoundMetropolis (0.00s)
+=== RUN   TestNomadicHost_MovesAtNinetyPercentSpeed
+--- PASS: TestNomadicHost_MovesAtNinetyPercentSpeed (0.00s)
+=== RUN   TestNomadicHost_IsALandUnit
+--- PASS: TestNomadicHost_IsALandUnit (0.00s)
+=== RUN   TestNomadicHost_CannotEmbark
+--- PASS: TestNomadicHost_CannotEmbark (0.00s)
+=== RUN   TestNomadicHost_HasCanonicalDisplayName
+--- PASS: TestNomadicHost_HasCanonicalDisplayName (0.00s)
+PASS
+ok  	formatet/megaron/server/internal/unit	0.002s
+=== RUN   TestHostSpeed_TerrainRouteRounding
+--- PASS: TestHostSpeed_TerrainRouteRounding (0.05s)
+=== RUN   TestTravelFactor_MatchesLiteralProducts
+--- PASS: TestTravelFactor_MatchesLiteralProducts (0.00s)
+PASS
+ok  	formatet/megaron/server/internal/combat	0.049s
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/plains
+2026/10/14 20:35:37 INFO player registered id=19a85d6d-48e6-4732-9cdc-6fbdd0376f24 username=nomadhost-recall-f582401f-f73d-48ee-8672-012ede4e4fcb
+    unit_host_speed_test.go:129: plains: preview=dispatch=stored 2 ticks; old host arrival 8 and row unchanged
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/forest_cedar
+2026/10/14 20:35:37 INFO player registered id=55565867-daee-4f7a-8f49-d0f1f9c60f29 username=nomadhost-recall-7f913bc9-fdbf-4797-b3a9-e25d0c5acb3e
+    unit_host_speed_test.go:129: forest_cedar: preview=dispatch=stored 4 ticks; old host arrival 8 and row unchanged
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/forest_olive_grove
+2026/10/14 20:35:37 INFO player registered id=3cf7e604-1b2b-4c2d-aad6-2f591ae4ad9d username=nomadhost-recall-c239be7f-71cd-4fde-8e3d-254234981963
+    unit_host_speed_test.go:129: forest_olive_grove: preview=dispatch=stored 3 ticks; old host arrival 8 and row unchanged
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/hills
+2026/10/14 20:35:37 INFO player registered id=d107a0d2-5983-4d46-8e10-1452d7652e4e username=nomadhost-recall-878f38af-c418-417a-8e25-4c7fff029a6b
+    unit_host_speed_test.go:129: hills: preview=dispatch=stored 4 ticks; old host arrival 8 and row unchanged
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/semi_desert
+2026/10/14 20:35:37 INFO player registered id=2bee4a0a-6d17-4adb-b527-9779cdd00012 username=nomadhost-recall-aee2bcf7-7bc9-4e6f-84cb-6411b1711ad2
+    unit_host_speed_test.go:129: semi_desert: preview=dispatch=stored 7 ticks; old host arrival 8 and row unchanged
+--- PASS: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch (0.46s)
+    --- PASS: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/plains (0.09s)
+    --- PASS: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/forest_cedar (0.09s)
+    --- PASS: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/forest_olive_grove (0.09s)
+    --- PASS: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/hills (0.09s)
+    --- PASS: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/semi_desert (0.09s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.460s

@@ -15,7 +15,7 @@ func TestRO1UnitSpeedFactors(t *testing.T) {
 		want          int
 	}{
 		{"foot plains", "plains", unit.TypeSpearman, 4, false, 4},
-		{"host plains", "plains", unit.TypeNomadicHost, 4, false, 8},
+		{"host plains", "plains", unit.TypeNomadicHost, 4, false, 4},
 		{"foot hills", "hills", unit.TypeSpearman, 4, false, 8},
 		{"foot desert", "semi_desert", unit.TypeSpearman, 4, false, 12},
 		{"galley coast", "coastal_sea", unit.TypeGalley, 15, false, 5},

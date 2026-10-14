@@ -1,0 +1,383 @@
+» färsk DB på migration 179 · commit bfb32fb1
+ok  	formatet/megaron/server/api/handlers	34.376s
+?   	formatet/megaron/server/cmd/create-world	[no test files]
+ok  	formatet/megaron/server/cmd/erase-player	0.034s
+ok  	formatet/megaron/server/cmd/keryx	0.293s
+?   	formatet/megaron/server/cmd/mapgen-debug	[no test files]
+?   	formatet/megaron/server/cmd/recompute-all	[no test files]
+ok  	formatet/megaron/server/cmd/server	1.008s
+ok  	formatet/megaron/server/internal/agora	0.036s
+ok  	formatet/megaron/server/internal/ai	0.024s
+ok  	formatet/megaron/server/internal/auth	0.719s
+ok  	formatet/megaron/server/internal/capabilities	0.526s
+?   	formatet/megaron/server/internal/carrier	[no test files]
+?   	formatet/megaron/server/internal/chronicle	[no test files]
+?   	formatet/megaron/server/internal/clock	[no test files]
+2026/10/14 20:37:06 INFO field combat: battle initiated/joined unit=27205646-9cfd-4eef-8b84-b8bda505804f q=1 r=0 defenders=1
+2026/10/14 20:37:06 INFO field combat: battle initiated/joined unit=d40fa9a3-d8cb-44d9-9b67-f4d9643cd97b q=1 r=0 defenders=1
+2026/10/14 20:37:06 INFO field combat: battle initiated/joined unit=9795fb84-aa1b-4dc7-8155-06c83be3fdc1 q=1 r=0 defenders=1
+2026/10/14 20:37:06 INFO field combat: battle initiated/joined unit=0f7a0da3-8d66-483f-baf9-2dff596db967 q=1 r=0 defenders=1
+2026/10/14 20:37:06 INFO field combat: battle initiated/joined unit=284b94e9-2e8c-4bff-970a-07fd6100b7b4 q=1 r=0 defenders=1
+2026/10/14 20:37:06 INFO field combat: battle initiated/joined unit=d714330b-43b7-41f1-b0c4-f73f8f7fa382 q=1 r=0 defenders=1
+2026/10/14 20:37:06 INFO field combat: battle initiated/joined unit=4c9a3eae-428c-46e0-9625-2f4aae77d0c9 q=1 r=0 defenders=1
+2026/10/14 20:37:06 INFO field combat: battle initiated/joined unit=670ff159-3890-40bc-a0c2-853a01532cc5 q=1 r=0 defenders=1
+2026/10/14 20:37:06 INFO settlement combat: battle initiated/joined unit=e3727956-0b1f-467f-934c-c46d3e5d1996 settlement=0ee65f15-7262-47ac-89d3-31fbe7a34515 q=1 r=0 defenders=1
+2026/10/14 20:37:06 INFO settlement combat: battle initiated/joined unit=9efb4a83-5c8e-4820-9aa5-a0b27e55de60 settlement=138fc6df-fc67-4292-8dd9-e9ce75b6ac67 q=1 r=0 defenders=1
+2026/10/14 20:37:06 INFO settlement combat: battle initiated/joined unit=1bb0eaf8-6e10-4ce6-be87-b31843d345c1 settlement=b3d4d2db-26de-4444-95f7-4f6b5bcb9b08 q=1 r=0 defenders=1
+2026/10/14 20:37:07 INFO settlement combat: battle initiated/joined unit=34ee5eaf-a876-4fe8-9870-6c75874fc697 settlement=ae6fd460-d925-4c80-9a83-edd05ccc794b q=1 r=0 defenders=1
+2026/10/14 20:37:07 INFO settlement combat: battle initiated/joined unit=55c83b8b-1855-4be3-85b1-d0ff54bcd78c settlement=f20a4314-8925-432d-8e90-b533f653abc2 q=1 r=0 defenders=1
+2026/10/14 20:37:07 INFO build complete settlement=f9a36c17-f28c-443b-bb9c-d553ebeaad76 building=barracks
+2026/10/14 20:37:07 INFO build complete settlement=8e0707e3-327f-4325-90cb-c03e0073ee6a building=stonequarry
+2026/10/14 20:37:07 INFO build complete settlement=8000fc26-f910-4dee-94c4-76b18b315235 building=mine
+2026/10/14 20:37:07 INFO wanax defeated — last settlement lost player=8296f895-ac8e-4dfb-867a-6b37135d210a world=b5f1bc35-6a0c-4774-8b63-70b37109d491 last_settlement=4623eb61-573d-4f71-acb9-34fed8035a5b
+2026/10/14 20:37:07 INFO city collapsed settlement=4623eb61-573d-4f71-acb9-34fed8035a5b owner=8296f895-ac8e-4dfb-867a-6b37135d210a warband=5fc158b7-e3f8-4bac-8cc5-a0c96e749578 q=20 r=20 cause=starvation last_city=true
+2026/10/14 20:37:07 INFO wanax defeated — last settlement lost player=965c9a3d-387d-49ac-af33-02017e8b3d10 world=5661ac5a-3d35-43ad-bb50-c1ab57d1eb3f last_settlement=d9955343-7ebc-4f32-ba05-e25b90ec36cb
+2026/10/14 20:37:07 INFO city collapsed settlement=d9955343-7ebc-4f32-ba05-e25b90ec36cb owner=965c9a3d-387d-49ac-af33-02017e8b3d10 warband=f8baad4b-e42d-44f3-b9bc-2b1317950818 q=30 r=30 cause=starvation last_city=true
+2026/10/14 20:37:07 INFO wanax defeated — last settlement lost player=965c9a3d-387d-49ac-af33-02017e8b3d10 world=5661ac5a-3d35-43ad-bb50-c1ab57d1eb3f last_settlement=9007eb79-46dc-4dad-b401-04ba7b948ccc
+2026/10/14 20:37:07 INFO city collapsed settlement=9007eb79-46dc-4dad-b401-04ba7b948ccc owner=965c9a3d-387d-49ac-af33-02017e8b3d10 warband=57fddf21-682e-4505-815e-3fc43ff76d41 q=34 r=30 cause=starvation last_city=true
+2026/10/14 20:37:07 INFO wanax defeated — last settlement lost player=965c9a3d-387d-49ac-af33-02017e8b3d10 world=5661ac5a-3d35-43ad-bb50-c1ab57d1eb3f last_settlement=04331f59-1e75-4ff0-8bf7-0e019fa9f234
+2026/10/14 20:37:07 INFO city collapsed settlement=04331f59-1e75-4ff0-8bf7-0e019fa9f234 owner=965c9a3d-387d-49ac-af33-02017e8b3d10 warband=0cea6e20-829f-498f-9adc-67e6c1f22f0e q=38 r=30 cause=starvation last_city=true
+2026/10/14 20:37:07 INFO colony founded (discrete unit) settlement=0e87a80e-0280-4c22-9a9c-e46a985ae537 name=Newhaven-37db6df6 province=01c19354-00bd-4794-be0c-1d2645916ad3 owner=cb2962fa-7a91-4a26-b044-1e582e2e7947 founding_unit=d696a83e-1d80-4c80-811a-df6c0221d91c population=50 q=10 r=10
+2026/10/14 20:37:07 INFO colony founded (discrete unit) settlement=de1a35f3-06c7-4f65-8b54-212e0a7ea308 name=Newhaven-8db349a9 province=6394a6da-8b0f-4d78-b3da-f80d36965a9f owner=843b5593-077a-4e4d-b80b-fa494d180fc4 founding_unit=9cda17d8-be29-4bd4-97e7-f5c6feebd343 population=50 q=10 r=10
+2026/10/14 20:37:07 INFO unit arrived (garrison) unit=1dc38618-2a0d-478f-9024-3b5cd69a7701 q=0 r=0 status=garrison
+2026/10/14 20:37:07 INFO colony founded (discrete unit) settlement=45767d6b-caec-4f50-bfc8-a6f1678df390 name=Newhaven-1526edb5 province=ac87e643-b63e-4bed-940b-9d6cd358d25a owner=756f96b5-0795-4e17-a99f-9bf948b8fd6b founding_unit=24299156-ea6d-4468-b034-a7d6610f5870 population=50 q=10 r=10
+2026/10/14 20:37:07 INFO expedition turning for home unit=4be21dc2-eb9f-4ff1-9862-aeb9572f27a2 reason=half_time q=4 r=0 arrive_tick=8
+2026/10/14 20:37:07 INFO expedition home unit=4be21dc2-eb9f-4ff1-9862-aeb9572f27a2 ticks_out=8 hexes_seen=39 finds=0
+2026/10/14 20:37:07 INFO unit returned home from explore unit=4be21dc2-eb9f-4ff1-9862-aeb9572f27a2 settlement=b33fee88-df0d-4e1b-bd0f-788d7baf84cb
+2026/10/14 20:37:07 INFO expedition turning for home unit=80e1dc3d-2b2c-4b3d-8b1c-9b1932ac001b reason=half_time q=4 r=0 arrive_tick=9
+2026/10/14 20:37:07 INFO expedition home unit=80e1dc3d-2b2c-4b3d-8b1c-9b1932ac001b ticks_out=9 hexes_seen=39 finds=1
+2026/10/14 20:37:07 INFO unit returned home from explore unit=80e1dc3d-2b2c-4b3d-8b1c-9b1932ac001b settlement=31bcf30f-884c-4d53-8582-b60bc9c7c2d7
+2026/10/14 20:37:07 INFO expedition turning for home unit=fa7277e0-fa63-4577-8edc-3f40f63e303a reason=half_time q=4 r=0 arrive_tick=8
+2026/10/14 20:37:07 INFO expedition home unit=fa7277e0-fa63-4577-8edc-3f40f63e303a ticks_out=9 hexes_seen=39 finds=1
+2026/10/14 20:37:07 INFO unit returned home from explore unit=fa7277e0-fa63-4577-8edc-3f40f63e303a settlement=e8c100f6-211b-4aab-8cff-2bfa7c1ad403
+2026/10/14 20:37:08 INFO expedition turning for home unit=9b6cd092-6945-40a7-ab79-1e2ec84814f5 reason=half_time q=4 r=0 arrive_tick=9
+2026/10/14 20:37:08 INFO expedition home unit=9b6cd092-6945-40a7-ab79-1e2ec84814f5 ticks_out=9 hexes_seen=39 finds=1
+2026/10/14 20:37:08 INFO unit returned home from explore unit=9b6cd092-6945-40a7-ab79-1e2ec84814f5 settlement=e5454396-ac34-4988-b7c8-05a8f66d2308
+2026/10/14 20:37:08 INFO recall/redirect order reached unit, new course set unit=c63c9c9a-2f03-4b94-aa28-42e29a819f59 mode=redirect from_q=1 from_r=0 to_q=4 to_r=0 arrives_at=2026-10-14T23:37:08.178+02:00
+2026/10/14 20:37:08 INFO scout report filed unit=c63c9c9a-2f03-4b94-aa28-42e29a819f59 q=4 r=0 terrain=plains copper=false tin=false silver=false cedar=false
+2026/10/14 20:37:08 INFO field unit turning for home unit=c63c9c9a-2f03-4b94-aa28-42e29a819f59 from_q=4 from_r=0 home_q=0 home_r=0
+2026/10/14 20:37:08 INFO unit returned home from explore unit=c63c9c9a-2f03-4b94-aa28-42e29a819f59 settlement=e7b4cad5-c617-4138-9599-d172faba5528
+2026/10/14 20:37:08 INFO expedition turning for home unit=49397c18-8e6f-494a-adb1-e0087a49b641 reason=half_time q=5 r=0 arrive_tick=11
+2026/10/14 20:37:08 INFO expedition home unit=49397c18-8e6f-494a-adb1-e0087a49b641 ticks_out=11 hexes_seen=8 finds=0
+2026/10/14 20:37:08 INFO unit returned home from explore unit=49397c18-8e6f-494a-adb1-e0087a49b641 settlement=8b721a60-b30e-49c9-a4df-2886060492f2
+2026/10/14 20:37:08 INFO expedition turning for home unit=8870d94b-b2c8-41b7-bf3f-c52d7f6be5bc reason=half_time q=10 r=0 arrive_tick=10
+2026/10/14 20:37:08 INFO expedition home unit=8870d94b-b2c8-41b7-bf3f-c52d7f6be5bc ticks_out=10 hexes_seen=15 finds=0
+2026/10/14 20:37:08 INFO unit returned home from explore unit=8870d94b-b2c8-41b7-bf3f-c52d7f6be5bc settlement=9ee555ea-e164-48ab-be0b-662992e431fa
+2026/10/14 20:37:08 INFO expedition turning for home unit=b31c2571-7afe-446d-9ffc-87a0bd52d91f reason=half_time q=4 r=0 arrive_tick=8
+2026/10/14 20:37:08 INFO expedition turning for home unit=6c15563b-24e9-41a7-a859-26acbc1aca74 reason=half_time q=-4 r=0 arrive_tick=8
+2026/10/14 20:37:08 INFO expedition home unit=6c15563b-24e9-41a7-a859-26acbc1aca74 ticks_out=8 hexes_seen=39 finds=0
+2026/10/14 20:37:08 INFO unit returned home from explore unit=6c15563b-24e9-41a7-a859-26acbc1aca74 settlement=2f37aeca-f4cf-4467-bed3-34ed8511906e
+2026/10/14 20:37:08 INFO expedition turning for home unit=4eabdc2c-0b89-4175-b26e-04416b2df77a reason=half_time q=4 r=0 arrive_tick=8
+2026/10/14 20:37:08 INFO expedition home unit=4eabdc2c-0b89-4175-b26e-04416b2df77a ticks_out=8 hexes_seen=39 finds=0
+2026/10/14 20:37:08 INFO unit returned home from explore unit=4eabdc2c-0b89-4175-b26e-04416b2df77a settlement=703475f1-f9f6-433c-9c8d-8984f33950fa
+2026/10/14 20:37:08 INFO expedition turning for home unit=5fb3c96b-23f4-4799-871f-61c781adc0da reason=half_time q=4 r=0 arrive_tick=8
+2026/10/14 20:37:08 INFO expedition turning for home unit=7c753275-5789-4289-b2a7-81dce53db27f reason=area_known q=6 r=0 arrive_tick=14
+2026/10/14 20:37:09 INFO expedition home unit=7c753275-5789-4289-b2a7-81dce53db27f ticks_out=14 hexes_seen=9 finds=1
+2026/10/14 20:37:09 INFO unit returned home from explore unit=7c753275-5789-4289-b2a7-81dce53db27f settlement=6a39f97c-ff09-4efe-95a3-7d5b686a5739
+2026/10/14 20:37:09 INFO scout report filed unit=2faff94f-e139-42b0-bebc-03615fa3b9d8 q=4 r=0 terrain=plains copper=false tin=false silver=false cedar=false
+2026/10/14 20:37:09 INFO field unit turning for home unit=2faff94f-e139-42b0-bebc-03615fa3b9d8 from_q=4 from_r=0 home_q=0 home_r=0
+2026/10/14 20:37:09 INFO unit returned home from explore unit=2faff94f-e139-42b0-bebc-03615fa3b9d8 settlement=37dc4bc1-9bd4-4f10-b8c3-a799f1a2dab4
+2026/10/14 20:37:09 INFO settlement combat: battle initiated/joined unit=ae8d9055-d2c7-471e-bb8f-a009ea38fb44 settlement=d3ee41db-6b82-4f3a-8e6f-267b197e86e8 q=1 r=0 defenders=1
+2026/10/14 20:37:09 INFO settlement combat: battle initiated/joined unit=5ee986bf-e76a-4b65-8f30-a2446eb7a624 settlement=87ea1c2e-3df6-4719-b7fa-d0ce6a357d2b q=1 r=0 defenders=1
+2026/10/14 20:37:09 INFO settlement combat: battle initiated/joined unit=13b233b8-964d-4f20-9594-fba21cbac5a5 settlement=ebbbd9c9-bd4a-4944-8b65-001f30588db5 q=1 r=0 defenders=1
+2026/10/14 20:37:09 INFO settlement combat: battle initiated/joined unit=819490c0-f26a-4258-a54c-79d8eeff09a0 settlement=ab743820-015e-4d56-b397-6984baa573a1 q=1 r=0 defenders=1
+2026/10/14 20:37:09 INFO settlement combat: battle initiated/joined unit=0f5f9506-2226-44c2-96c1-a0d78c3016bc settlement=c11d31df-d8b4-4c2b-b911-65ecf1a54b72 q=1 r=0 defenders=1
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=24 r=30 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=17 r=26 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=19 r=10 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=24 r=36 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=11 r=6 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=30 r=10 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=10 r=34 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=19 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=17 r=18 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=21 r=19 units=3
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=23 r=21 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=13 r=15 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=14 units=3
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=10 r=8 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=10 r=25 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=25 r=29 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=11 r=14 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=11 r=31 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=29 r=21 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=21 r=15 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=17 units=4
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=17 r=20 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=11 r=25 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=18 r=19 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=22 r=16 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=16 r=10 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=20 r=11 units=3
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=25 r=8 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=26 r=21 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=18 r=18 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=25 r=11 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=23 r=28 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=17 r=24 units=4
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=8 r=22 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=14 r=14 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=17 r=29 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=17 r=33 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=24 r=15 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=21 r=14 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=19 r=3 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=28 r=15 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=22 r=13 units=3
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=16 r=21 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=14 r=27 units=3
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=25 r=22 units=3
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=29 r=26 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=32 r=25 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=30 r=22 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=11 r=26 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=24 r=17 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=23 r=18 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=25 r=28 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=26 r=17 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=27 r=26 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=20 units=3
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=29 r=10 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=15 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=30 r=20 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=9 r=19 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=4 r=32 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=18 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=10 r=19 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=20 r=15 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=27 r=17 units=3
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=14 r=17 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=33 r=17 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=16 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=28 r=34 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=27 r=23 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=10 r=15 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=16 r=20 units=3
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=25 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=24 r=24 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=14 r=15 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=12 r=24 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=26 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=18 r=8 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=17 r=17 units=3
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=21 r=25 units=3
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=25 r=13 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=20 r=16 units=3
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=28 r=22 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=23 r=9 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=22 r=25 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=26 r=11 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=24 r=11 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=21 r=24 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=15 r=6 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=21 r=20 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=1 r=0 units=2
+2026/10/14 20:37:09 INFO march encounter: crossing armies collided — battle initiated/joined q=1 r=0 units=2
+2026/10/14 20:37:09 ERROR march route: could not read step costs unit=39d4cace-72e7-4c09-9b40-c658cd622bb7 err="timeout: context already done: context canceled"
+2026/10/14 20:37:09 ERROR march route: could not read current day unit=5be73547-ccab-44e7-98a9-fdc4c9273e62 err="timeout: context already done: context canceled"
+2026/10/14 20:37:09 INFO expedition turning for home unit=2e1148a4-802d-4579-a2ff-79172a25aeb3 reason=area_known q=2 r=0 arrive_tick=3
+2026/10/14 20:37:09 INFO recall/redirect order reached unit, new course set unit=6360d34d-fabf-4ac8-bcdd-bd25a9067159 mode=redirect from_q=0 from_r=1 to_q=2 to_r=1 arrives_at=2026-10-14T22:37:09.806+02:00
+2026/10/14 20:37:09 INFO recall/redirect order reached unit, new course set unit=ad141a0c-e203-48ed-bc42-4174eaa09e5d mode=recall from_q=1 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-14T22:49:09.823+02:00
+2026/10/14 20:37:10 INFO land mission: cargo landed, ship turning for home ship=59386d02-2426-4118-aadc-d3aa1663a909 cargo=19e57df8-59a8-40f0-a261-cddb732f8013 q=10 r=0
+2026/10/14 20:37:10 INFO field unit turning for home unit=59386d02-2426-4118-aadc-d3aa1663a909 from_q=9 from_r=0 home_q=1 home_r=0
+2026/10/14 20:37:10 INFO unit returned home from explore unit=59386d02-2426-4118-aadc-d3aa1663a909 settlement=6e4de39b-f215-4c27-8bd4-d53be55f52c5
+2026/10/14 20:37:10 INFO colony founded (discrete unit) settlement=01c3c7d7-3b39-45b1-92e7-f797f6084498 name=Newbeach province=bcceaa69-7adf-40dd-a28e-49878251eec9 owner=b5597b30-03c3-4d63-9c75-bb9f20606667 founding_unit=2f1154cb-3405-4ac8-979b-09ca97e6b8b7 population=100 q=10 r=0
+2026/10/14 20:37:10 INFO field unit turning for home unit=712445fe-64d8-4e88-be03-9ef4b497b7f9 from_q=9 from_r=0 home_q=1 home_r=0
+2026/10/14 20:37:10 INFO colony founded (discrete unit) settlement=1feffac0-6453-45aa-8e83-9afb7db5bd99 name=Pursebeach province=6e905b78-48fb-49a7-9490-7ccc56e502e4 owner=506f24a7-3123-4877-8140-9caa0f4f5cd7 founding_unit=2ec9c1bd-8ed3-4f0b-8af1-f3caa0017d6b population=100 q=10 r=0
+2026/10/14 20:37:10 INFO field unit turning for home unit=f45ebd7f-795f-4d4f-80d8-1db047d2392d from_q=9 from_r=0 home_q=1 home_r=0
+2026/10/14 20:37:10 INFO passage: ship waiting for runner's return unit=a8c7ae1a-73ff-4493-ab3d-49eedbcad3ee messenger=d7be8e82-032f-42b7-8a47-22aab939f6ff
+2026/10/14 20:37:10 INFO passage: nothing left to wait for, ship turning for home unit=e1c49aca-0e7b-4212-9a3f-430a46edef41 messenger=c10a5b00-024c-4e9d-8c86-9f996e1213c3
+2026/10/14 20:37:10 INFO field unit turning for home unit=e1c49aca-0e7b-4212-9a3f-430a46edef41 from_q=5 from_r=0 home_q=1 home_r=0
+2026/10/14 20:37:10 INFO passage: nothing left to wait for, ship turning for home unit=4fc6fd66-3af5-4f28-81b4-1233ed92270b messenger=ba8941b3-9883-4314-8b64-64c956d7af3a
+2026/10/14 20:37:10 INFO field unit turning for home unit=4fc6fd66-3af5-4f28-81b4-1233ed92270b from_q=5 from_r=0 home_q=1 home_r=0
+2026/10/14 20:37:10 INFO passage: ship waiting for runner's return unit=21aaf0fa-f7b4-48d6-894f-4d3b0578b00e messenger=3e463d2d-9e83-4943-934e-74a9212a2b0d
+2026/10/14 20:37:10 INFO field unit turning for home unit=21aaf0fa-f7b4-48d6-894f-4d3b0578b00e from_q=5 from_r=0 home_q=1 home_r=0
+2026/10/14 20:37:10 INFO unit arrived (garrison) unit=1564e1b2-2bbe-4750-bdfe-375ad84bf56f q=1 r=0 status=garrison
+--- FAIL: TestRO1UnitSpeedFactors (0.00s)
+    --- FAIL: TestRO1UnitSpeedFactors/host_plains (0.00s)
+        movement_ro1_test.go:31: RÖ1 host plains duration=4 want=8
+2026/10/14 20:37:10 WARN march ship to nearest own port: home settlement has no adjacent sea hex, using its land hex unit=235a7d73-c02a-48b7-835a-adeb269358ba settlement=bf25fd5f-7d63-4f2c-a236-249e2cdb576b
+2026/10/14 20:37:10 INFO ship returned home intent=captured_return unit=235a7d73-c02a-48b7-835a-adeb269358ba settlement=bf25fd5f-7d63-4f2c-a236-249e2cdb576b
+2026/10/14 20:37:10 WARN march ship to nearest own port: home settlement has no adjacent sea hex, using its land hex unit=9e0d148a-9d61-46f4-b870-7d7c78dc2e52 settlement=fbab38f4-d834-4985-8064-2b638e85abcd
+2026/10/14 20:37:10 INFO settlement combat: battle initiated/joined unit=84fc2d32-7216-4333-a07d-aaf0cd98618d settlement=3c6085fc-f628-48a5-a213-a97df2580140 q=1 r=0 defenders=1
+2026/10/14 20:37:10 INFO settlement combat: battle initiated/joined unit=32785918-df42-4ac2-92b5-2dcbc8ed2805 settlement=a7f89740-bc87-466a-b9eb-67b982c89654 q=1 r=0 defenders=1
+2026/10/14 20:37:10 INFO occupation matured — annex offered settlement=d6fdb57e-c248-473f-8a56-3d487a30a582 occupant=b574e5f6-f7ec-4fce-bdd0-a83eac44970f
+2026/10/14 20:37:10 INFO wanax defeated — last settlement lost player=3035e24e-01b1-4f6d-bf82-aaeffddd1a7d world=b7de529c-0321-4e38-b900-ae6b1800b358 last_settlement=78feaf32-f941-4bba-a82f-80d3b1538977
+2026/10/14 20:37:10 INFO wanax defeated — last settlement lost player=68c8d42f-01bf-4106-88fb-e3adf7119a14 world=61534147-d070-4e09-9ad9-50629247afda last_settlement=b464460c-4557-4fb0-b897-58d845a20cd6
+2026/10/14 20:37:11 INFO recall/redirect order reached unit, new course set unit=0e86b47c-1470-48fb-96b2-c0dd28d8d65c mode=recall from_q=3 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-12T05:00:00.000Z
+2026/10/14 20:37:11 INFO recall/redirect order reached unit, new course set unit=9f39c44c-ed08-474b-b221-919c09cc8f33 mode=redirect from_q=3 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-12T05:00:00.000Z
+2026/10/14 20:37:11 INFO scheduled event worker started poll=10ms
+2026/10/14 20:37:11 ERROR mark event done failed id=665 err="context canceled"
+2026/10/14 20:37:11 ERROR event worker batch failed err="claim events: context canceled"
+2026/10/14 20:37:11 INFO scheduled event worker stopped
+2026/10/14 20:37:11 WARN place reach before arrival failed; continuing movement world=1d3fd227-f03a-492d-9205-de5bfd1a7d3c error="context canceled"
+2026/10/14 20:37:11 WARN place reach skips invalid unit route world=97c19ade-f457-44ce-8a55-f358a48541cf unit=6534cb5f-9be0-4678-8c23-5fb17e384862
+2026/10/14 20:37:11 INFO recall/redirect order reached unit, new course set unit=0422e49a-dba0-4cd1-8539-8c897431ee5a mode=recall from_q=4 from_r=1 to_q=0 to_r=0 arrives_at=2026-10-15T01:37:11.541+02:00
+2026/10/14 20:37:11 INFO expedition home unit=0422e49a-dba0-4cd1-8539-8c897431ee5a ticks_out=9 hexes_seen=39 finds=0
+2026/10/14 20:37:11 INFO unit returned home from explore unit=0422e49a-dba0-4cd1-8539-8c897431ee5a settlement=4397f674-994f-4080-a8d4-b12990472374
+2026/10/14 20:37:11 INFO recall/redirect order reached unit, new course set unit=9afcf910-73e4-446b-8f54-3ffdf2ae1afb mode=recall from_q=5 from_r=0 to_q=1 to_r=0 arrives_at=2026-10-14T21:37:11.683+02:00
+2026/10/14 20:37:11 INFO expedition home unit=9afcf910-73e4-446b-8f54-3ffdf2ae1afb ticks_out=2 hexes_seen=80 finds=0
+2026/10/14 20:37:11 INFO unit returned home from explore unit=9afcf910-73e4-446b-8f54-3ffdf2ae1afb settlement=8c7ef7e9-7e05-41df-9490-6ae3870582d4
+2026/10/14 20:37:11 INFO recall/redirect order reached unit, new course set unit=599b7804-7796-4a40-8948-4ce8dcb4fbf5 mode=recall from_q=1 from_r=0 to_q=0 to_r=0 arrives_at=2026-10-14T21:37:11.810+02:00
+2026/10/14 20:37:11 INFO unit arrived (garrison) unit=599b7804-7796-4a40-8948-4ce8dcb4fbf5 q=0 r=0 status=garrison
+2026/10/14 20:37:11 INFO recall/redirect order reached unit, new course set unit=b9d31326-2795-463b-914a-de0337ecf342 mode=redirect from_q=4 from_r=1 to_q=4 to_r=0 arrives_at=2026-10-14T21:37:11.903+02:00
+2026/10/14 20:37:11 INFO scout report filed unit=b9d31326-2795-463b-914a-de0337ecf342 q=4 r=0 terrain=plains copper=false tin=false silver=false cedar=false
+2026/10/14 20:37:11 INFO field unit turning for home unit=b9d31326-2795-463b-914a-de0337ecf342 from_q=4 from_r=0 home_q=0 home_r=0
+2026/10/14 20:37:11 INFO unit returned home from explore unit=b9d31326-2795-463b-914a-de0337ecf342 settlement=6d33676e-78ea-42b2-a843-591bbd2a4ce9
+2026/10/14 20:37:12 INFO recall/redirect order reached unit, new course set unit=bba26b07-9a49-498e-8f5e-a13163c75500 mode=recall from_q=4 from_r=1 to_q=-1 to_r=0 arrives_at=2026-10-15T02:37:12.020+02:00
+2026/10/14 20:37:12 INFO expedition home unit=bba26b07-9a49-498e-8f5e-a13163c75500 ticks_out=10 hexes_seen=39 finds=1
+2026/10/14 20:37:12 INFO unit returned home from explore unit=bba26b07-9a49-498e-8f5e-a13163c75500 settlement=4d7476d6-8659-4d7d-86ec-bc5ce1554252
+2026/10/14 20:37:12 INFO recall/redirect order reached unit, new course set unit=27eccea7-77b5-4ab8-96b5-a9d1e6ccde51 mode=recall from_q=4 from_r=1 to_q=0 to_r=0 arrives_at=2026-10-15T01:37:12.230+02:00
+2026/10/14 20:37:12 INFO expedition home unit=27eccea7-77b5-4ab8-96b5-a9d1e6ccde51 ticks_out=9 hexes_seen=39 finds=1
+2026/10/14 20:37:12 INFO unit returned home from explore unit=27eccea7-77b5-4ab8-96b5-a9d1e6ccde51 settlement=76f6751d-1694-4808-b1fb-2086f8ad87a1
+2026/10/14 20:37:12 INFO field combat: battle initiated/joined unit=c52663b4-d770-485d-b942-bcda0830f59b q=1 r=0 defenders=1
+2026/10/14 20:37:12 INFO field combat: battle initiated/joined unit=a50e7db8-c5fc-44a9-986a-b528b86bc85b q=1 r=0 defenders=1
+2026/10/14 20:37:12 INFO field combat: battle initiated/joined unit=26d7752e-ab9a-4c06-b803-019803d7d6a1 q=1 r=0 defenders=1
+2026/10/14 20:37:12 INFO field combat: battle initiated/joined unit=1fad2657-2a24-4b59-9308-3e77374c1a49 q=1 r=0 defenders=1
+2026/10/14 20:37:13 INFO field combat: battle initiated/joined unit=413d76b3-e551-4df1-8040-40fdd4815175 q=1 r=0 defenders=6
+2026/10/14 20:37:13 INFO field combat: battle initiated/joined unit=5f6d92df-8840-4151-a666-3be66433c3ff q=1 r=0 defenders=6
+2026/10/14 20:37:13 INFO field combat: battle initiated/joined unit=a767645c-2d19-4a6e-9429-b2b930d09585 q=1 r=0 defenders=6
+2026/10/14 20:37:13 INFO field combat: battle initiated/joined unit=d33922b9-7fb2-45cc-8e19-8100eedbe06b q=1 r=0 defenders=6
+2026/10/14 20:37:13 WARN march ship to nearest own port: home settlement has no adjacent sea hex, using its land hex unit=b0c22fea-a580-44e8-bc05-cbe638aad256 settlement=f36b6807-07b3-4cf2-b38b-f26d8bfcc8ae
+2026/10/14 20:37:13 WARN march ship to nearest own port: home settlement has no adjacent sea hex, using its land hex unit=5b22f76c-151c-4cdb-8408-e1cf3ca0a33a settlement=f36b6807-07b3-4cf2-b38b-f26d8bfcc8ae
+2026/10/14 20:37:13 WARN march ship to nearest own port: home settlement has no adjacent sea hex, using its land hex unit=9393d6ea-60b6-48d1-9cb9-25049ca2fad3 settlement=f36b6807-07b3-4cf2-b38b-f26d8bfcc8ae
+2026/10/14 20:37:13 INFO ship swept from sea, turning for home unit=8299e68b-92fa-4542-bafd-179c47c266fc from_q=2 from_r=0 home_q=1 home_r=0
+2026/10/14 20:37:13 INFO sweep ships at sea on deploy: complete candidates=1 sent_home=1
+2026/10/14 20:37:13 INFO sweep ships at sea: owner has no settlement, leaving ship in place (stranded exception) unit=e3c88b52-251f-4723-a00b-7ee9db6c427e
+2026/10/14 20:37:13 INFO sweep ships at sea on deploy: complete candidates=1 sent_home=0
+2026/10/14 20:37:13 INFO siege capitulation settlement=5d7a4570-289d-4244-aeb7-7c0da34f023e occupant=e312af25-9887-453f-9936-7ff85c828ce1
+2026/10/14 20:37:13 INFO trade delivery destination=00adf654-e449-41f2-89b2-9fdc66a6ed75 good=grain qty=5
+2026/10/14 20:37:13 INFO trade delivery destination=1ff2c33d-f789-47ec-b2dd-b81a80e283b2 good=silver qty=50
+2026/10/14 20:37:13 INFO colony founded (discrete unit) settlement=71bae33d-3308-4dba-8db9-1fbdf8deb2db name=Newhaven-facf4330 province=f7bf1d22-6ae6-4871-be44-6c360f0b2072 owner=d76c0b9d-ce72-4d81-b856-9cad87f6db48 founding_unit=8fd040f8-e8e9-427d-81dd-06e1515125b6 population=50 q=10 r=10
+2026/10/14 20:37:14 INFO standing order paused order=3c1d9caf-5658-4692-a17d-45c486066172 reason="no free galley or merchantman in Byblos and no passable land route — build a ship or wait for one to return"
+2026/10/14 20:37:14 INFO field combat: battle initiated/joined unit=7eac0963-93e2-48e4-9bdc-1d7e9d76fb46 q=1 r=0 defenders=1
+2026/10/14 20:37:14 INFO field combat: battle initiated/joined unit=bbb5dadc-26d1-434d-98fc-2935d3fb2e09 q=1 r=0 defenders=1
+2026/10/14 20:37:14 INFO field combat: battle initiated/joined unit=280750ac-3bc9-4b39-be5f-577108279642 q=1 r=0 defenders=1
+2026/10/14 20:37:14 INFO standing order paused order=3cd53f1d-ba15-4ec3-8aa0-4aa92d543e31 reason="the source has nothing to spare for this route without dipping into its own reserve"
+2026/10/14 20:37:14 INFO standing order paused order=1b9842ff-de30-4785-830a-ce92689b4e18 reason="no spare workforce at the crewing settlement"
+2026/10/14 20:37:14 INFO standing order paused order=41e7be4c-1eba-43ad-8a24-716c0940bce0 reason="no passable caravan route between these settlements"
+2026/10/14 20:37:14 INFO colony founded (discrete unit) settlement=06f17d97-9dfc-4601-bf5c-a52eb14454de name=Newhaven-ea9c8577 province=2a25ec68-e55f-4806-afdd-63fce37e3224 owner=b599217e-6a5f-40c2-825c-8779275e20fd founding_unit=94705d8e-7344-4655-8f74-b98dc2e9f523 population=50 q=10 r=10
+2026/10/14 20:37:15 INFO metropolis succession — new capital promoted player=ccf6eac9-3101-4f11-bc04-9713005143f4 world=b5fa3fa5-2f6b-4a72-805d-cf8743ea49f5 new_capital=0daedf9d-76c9-4e20-b405-0852ff57c257 fallen=edb15613-5d12-46e2-b16e-a89c107b0b04
+2026/10/14 20:37:15 INFO wanax defeated — last settlement lost player=ccf6eac9-3101-4f11-bc04-9713005143f4 world=b5fa3fa5-2f6b-4a72-805d-cf8743ea49f5 last_settlement=0daedf9d-76c9-4e20-b405-0852ff57c257
+2026/10/14 20:37:15 INFO training complete settlement=7e346994-6f9c-4cc1-97af-51919a24124a unit=spearman count=10
+2026/10/14 20:37:15 INFO training complete settlement=7e346994-6f9c-4cc1-97af-51919a24124a unit=spearman count=10
+2026/10/14 20:37:15 WARN recompute production after training settlement=a660ca4e-fd09-44d8-badf-d60a272c9db2 err="recompute: upsert good grain: ERROR: null value in column \"calc_tick\" of relation \"settlement_goods\" violates not-null constraint (SQLSTATE 23502)"
+2026/10/14 20:37:15 ERROR record TrainComplete event err="insert event: ERROR: null value in column \"world_tick\" of relation \"events\" violates not-null constraint (SQLSTATE 23502)"
+2026/10/14 20:37:15 INFO training complete settlement=a660ca4e-fd09-44d8-badf-d60a272c9db2 unit=spearman count=10
+2026/10/14 20:37:15 INFO amphibious assault: battle initiated/joined ship=35932048-57ac-4458-92f5-6563c050950b cargo=143f28f0-5e05-4ff4-a996-d94957ca0973 settlement=8abe5312-5c75-400a-9ac8-0e424b31432b defenders=1
+2026/10/14 20:37:15 INFO field unit turning for home unit=35932048-57ac-4458-92f5-6563c050950b from_q=2 from_r=0 home_q=1 home_r=0
+2026/10/14 20:37:15 INFO colonize blocked at arrival: catchment overlap owner=f0304386-10d6-4851-8c34-b9ff63957650 conflict_settlement=c35f33bb-4e65-48f7-8f94-458e1a6d3a65 q=10 r=5
+2026/10/14 20:37:15 INFO unit arrived (garrison) unit=97220e16-1820-4a10-8e3c-4e0412dc1a89 q=10 r=5 status=positioned
+2026/10/14 20:37:15 INFO colony founded (discrete unit) settlement=2782f296-d141-460c-bcdf-06c12a0b08ec name=Newhaven province=1a97b90e-d4df-44b9-a0df-50b5c9a69d1f owner=677d1e5d-291d-4130-b8d9-1477b3ec2e5d founding_unit=50d3a0b5-cf7c-4e2b-94ac-b965f384db82 population=50 q=10 r=10
+2026/10/14 20:37:15 INFO scout report filed unit=7f445cf9-4e31-4438-9272-db207a6f444f q=3 r=0 terrain=coastal_sea copper=false tin=false silver=false cedar=false
+2026/10/14 20:37:15 INFO field unit turning for home unit=7f445cf9-4e31-4438-9272-db207a6f444f from_q=3 from_r=0 home_q=1 home_r=0
+2026/10/14 20:37:15 INFO unit returned home from explore unit=7f445cf9-4e31-4438-9272-db207a6f444f settlement=51272101-8ecc-4e7a-ae02-ae2e11e0d65e
+2026/10/14 20:37:15 INFO scout report filed unit=23d707df-9e41-4079-86c3-cc21724dce0a q=3 r=0 terrain=coastal_sea copper=false tin=false silver=false cedar=false
+2026/10/14 20:37:15 INFO field unit turning for home unit=23d707df-9e41-4079-86c3-cc21724dce0a from_q=3 from_r=0 home_q=1 home_r=0
+2026/10/14 20:37:15 INFO field combat: battle initiated/joined unit=1b3d10e3-df2a-4b8a-a0ab-8df3cb55de8e q=1 r=0 defenders=2
+2026/10/14 20:37:15 INFO field combat: battle initiated/joined unit=cc070d22-d1c9-463f-89f6-c67ac9c26cff q=1 r=0 defenders=1
+2026/10/14 20:37:15 INFO unit arrived (garrison) unit=70f6cf08-e397-40e1-94f7-0ce0130b7875 q=2 r=0 status=garrison
+2026/10/14 20:37:15 INFO colony founded (discrete unit) settlement=ddf59cbe-adac-4afc-b234-73efbdb1871e name=Herdhaven province=9cc62c7b-ebbc-4f8e-ac1e-aad1939b8aca owner=6b23e594-f0ba-4996-ab24-e10474bc9f54 founding_unit=c69d9fb7-3f50-4a23-95e3-20f09ceeca7a population=50 q=10 r=10
+2026/10/14 20:37:15 INFO unit arrived (garrison) unit=5cb5ae21-a219-4b0f-9f44-9d3a50187674 q=10 r=10 status=positioned
+2026/10/14 20:37:15 INFO scout report filed unit=00a2f908-ac40-41ed-afbc-9cf7d409af14 q=3 r=0 terrain=coastal_sea copper=true tin=false silver=false cedar=false
+2026/10/14 20:37:15 INFO field unit turning for home unit=00a2f908-ac40-41ed-afbc-9cf7d409af14 from_q=3 from_r=0 home_q=1 home_r=0
+2026/10/14 20:37:15 INFO naval unit posted on sentry patrol unit=e09b3e05-79d6-4ee7-9a6b-0df78aea1311 q=3 r=0 return_tick=24
+2026/10/14 20:37:15 INFO field unit turning for home unit=e09b3e05-79d6-4ee7-9a6b-0df78aea1311 from_q=3 from_r=0 home_q=1 home_r=0
+2026/10/14 20:37:15 INFO unit returned home from explore unit=e09b3e05-79d6-4ee7-9a6b-0df78aea1311 settlement=85a67f78-3a04-453e-a2c3-557e191b5415
+2026/10/14 20:37:15 INFO settlement combat: battle initiated/joined unit=09b7bafe-0ee9-45e4-b096-bba4a1d4425a settlement=ffc93e86-c257-4acc-aebd-4a52b860d48a q=1 r=0 defenders=2
+2026/10/14 20:37:15 INFO unit intercepted — battle initiated/joined unit=62dc1fee-ce53-44af-9b40-636249dc2d92 sentry=9aa7cede-4ea8-4d85-887c-dea558ca25c7 q=1 r=0
+2026/10/14 20:37:15 INFO unit intercept scan: sentry alerted (no combat) unit=71b33ebc-ad8c-43d4-9173-f30b8c609312 sentry=826dc876-6288-4280-ac09-42328fe8567b q=1 r=0
+2026/10/14 20:37:16 INFO unit intercept scan: sentry alerted (no combat) unit=b1d7740a-7e94-42e9-8e00-3bdbd9a3116f sentry=8760883c-bfae-4443-9320-32bb4b552ae5 q=1 r=0
+2026/10/14 20:37:16 INFO unit intercepted — battle initiated/joined unit=76f1b3cb-b281-41cb-a574-8e23fbb97b30 sentry=af15d0d2-d484-4081-9de3-c6f0796b081c q=1 r=0
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=4a783e63-87fa-49b4-b64a-6de6b2933213 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=cc8d3846-06a3-4a66-9ca3-79720652e140 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=cc8d3846-06a3-4a66-9ca3-79720652e140 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=cc8d3846-06a3-4a66-9ca3-79720652e140 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=cc8d3846-06a3-4a66-9ca3-79720652e140 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=cc8d3846-06a3-4a66-9ca3-79720652e140 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=cc8d3846-06a3-4a66-9ca3-79720652e140 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=cc8d3846-06a3-4a66-9ca3-79720652e140 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=cc8d3846-06a3-4a66-9ca3-79720652e140 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=cc8d3846-06a3-4a66-9ca3-79720652e140 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=cc8d3846-06a3-4a66-9ca3-79720652e140 lost=2 disbanded=true
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=80811ea5-4738-4c06-b248-bfa890a13c26 lost=10 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=d40162af-bdd4-4c2b-aa2c-79388c7a415b lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=23446e08-eab6-4a10-b757-ca3b0be8d2af lost=2 disbanded=true
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=1ba6d69e-88c1-47a5-86d7-1ef022c815a0 lost=2 disbanded=true
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=950a5eac-76ed-4810-9272-6824bbae1ffb lost=2 disbanded=true
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=1dd20539-85d4-428f-a506-e1fc849a1051 lost=2 disbanded=true
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=7017bcef-2dff-4d0f-ad3a-259e3b815a6e lost=2 disbanded=true
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=55c4425a-3365-40c7-a5ef-ff16a36fcca0 lost=2 disbanded=true
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=7c477a56-c7b6-4af2-a431-5dccc2633187 lost=2 disbanded=true
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=60b20560-265e-418f-b6fc-617d0068c0a3 lost=2 disbanded=true
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=1c29c75f-a273-4399-adbb-9e4a313c7ab0 lost=2 disbanded=true
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=0562f97e-ba38-4707-ae70-909e5aeeb666 lost=2 disbanded=true
+2026/10/14 20:37:16 INFO upkeep: silver desertion unit=ffa8f8d9-bff6-4ffb-a6b8-b180bbdd88e4 lost=1 disbanded=true
+2026/10/14 20:37:16 INFO upkeep: silver desertion unit=5d250acb-0972-41bd-b1cc-49d781730891 lost=1 disbanded=true
+2026/10/14 20:37:16 INFO upkeep: silver desertion unit=77e76c0b-84b5-49f8-93e9-9c05e071005f lost=1 disbanded=true
+2026/10/14 20:37:16 INFO upkeep: silver desertion unit=90daea29-3771-454a-9f2a-1438d75722ab lost=1 disbanded=true
+2026/10/14 20:37:16 INFO upkeep: silver desertion unit=1bd3e539-bda6-4fb5-a40d-302547e2e8a6 lost=1 disbanded=true
+2026/10/14 20:37:16 INFO upkeep: silver desertion unit=10e87b17-3f55-4c39-854b-6515616263db lost=1 disbanded=true
+2026/10/14 20:37:16 INFO upkeep: silver desertion unit=02fa738b-f6d9-4c72-83cb-781abfc4e78a lost=1 disbanded=true
+2026/10/14 20:37:16 INFO upkeep: silver desertion unit=ab34ba5c-0842-420e-a41d-66288d1ba972 lost=1 disbanded=true
+2026/10/14 20:37:16 INFO upkeep: silver desertion unit=731772e6-619c-48fe-aa72-d487319d0b8e lost=1 disbanded=true
+2026/10/14 20:37:16 INFO upkeep: silver desertion unit=e9385d26-fe59-4b88-ae47-f53895b43de8 lost=1 disbanded=true
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=eca659c0-5fc8-4f34-9106-d15b6d4f6ccc lost=5 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: silver desertion unit=ebaff53a-0580-4b39-a55b-e42fc815cc68 lost=1 disbanded=true
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=be15ed1e-a418-4aed-af94-824a0756a573 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=be15ed1e-a418-4aed-af94-824a0756a573 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=be15ed1e-a418-4aed-af94-824a0756a573 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=be15ed1e-a418-4aed-af94-824a0756a573 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO field unit turning for home (starving) unit=be15ed1e-a418-4aed-af94-824a0756a573 from_q=3 from_r=0 home_q=1 home_r=0 crew_after=10
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=be15ed1e-a418-4aed-af94-824a0756a573 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=93f6aac1-e868-4550-a0b5-9c5f501e8f64 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=93f6aac1-e868-4550-a0b5-9c5f501e8f64 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=93f6aac1-e868-4550-a0b5-9c5f501e8f64 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=93f6aac1-e868-4550-a0b5-9c5f501e8f64 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=93f6aac1-e868-4550-a0b5-9c5f501e8f64 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=8d1bbb85-27dc-4218-b68f-0d935d9ce648 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=8d1bbb85-27dc-4218-b68f-0d935d9ce648 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=8d1bbb85-27dc-4218-b68f-0d935d9ce648 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=8d1bbb85-27dc-4218-b68f-0d935d9ce648 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=8d1bbb85-27dc-4218-b68f-0d935d9ce648 lost=2 disbanded=false
+2026/10/14 20:37:16 INFO upkeep: grain attrition unit=92ab7a0e-df64-4ce4-8d03-8f9bb88991dd lost=2 disbanded=false
+2026/10/14 20:37:17 INFO upkeep: grain attrition unit=92ab7a0e-df64-4ce4-8d03-8f9bb88991dd lost=2 disbanded=false
+2026/10/14 20:37:17 INFO upkeep: grain attrition unit=92ab7a0e-df64-4ce4-8d03-8f9bb88991dd lost=2 disbanded=false
+2026/10/14 20:37:17 INFO upkeep: grain attrition unit=92ab7a0e-df64-4ce4-8d03-8f9bb88991dd lost=2 disbanded=false
+2026/10/14 20:37:17 INFO field unit turning for home (starving) unit=92ab7a0e-df64-4ce4-8d03-8f9bb88991dd from_q=3 from_r=0 home_q=1 home_r=0 crew_after=10
+2026/10/14 20:37:17 INFO upkeep: grain attrition unit=92ab7a0e-df64-4ce4-8d03-8f9bb88991dd lost=2 disbanded=false
+2026/10/14 20:37:17 INFO upkeep: grain attrition unit=79463f76-dc02-40ce-9311-5781c31561a5 lost=10 disbanded=false
+2026/10/14 20:37:17 INFO upkeep: grain attrition unit=79463f76-dc02-40ce-9311-5781c31561a5 lost=9 disbanded=false
+2026/10/14 20:37:17 INFO upkeep: grain attrition unit=79463f76-dc02-40ce-9311-5781c31561a5 lost=9 disbanded=false
+2026/10/14 20:37:17 INFO upkeep: grain attrition unit=79463f76-dc02-40ce-9311-5781c31561a5 lost=8 disbanded=false
+2026/10/14 20:37:17 INFO upkeep: grain attrition unit=79463f76-dc02-40ce-9311-5781c31561a5 lost=7 disbanded=false
+2026/10/14 20:37:17 INFO upkeep: grain attrition unit=79463f76-dc02-40ce-9311-5781c31561a5 lost=6 disbanded=false
+2026/10/14 20:37:17 INFO upkeep: grain attrition unit=79463f76-dc02-40ce-9311-5781c31561a5 lost=6 disbanded=false
+2026/10/14 20:37:17 INFO upkeep: grain attrition unit=79463f76-dc02-40ce-9311-5781c31561a5 lost=5 disbanded=false
+2026/10/14 20:37:17 INFO upkeep: grain attrition unit=79463f76-dc02-40ce-9311-5781c31561a5 lost=4 disbanded=false
+2026/10/14 20:37:17 INFO upkeep: grain attrition unit=13d31dbf-f60b-4d13-b223-619b1aa42845 lost=2 disbanded=false
+2026/10/14 20:37:17 INFO upkeep: grain attrition unit=13d31dbf-f60b-4d13-b223-619b1aa42845 lost=2 disbanded=false
+2026/10/14 20:37:17 INFO upkeep: grain attrition unit=13d31dbf-f60b-4d13-b223-619b1aa42845 lost=2 disbanded=false
+2026/10/14 20:37:17 INFO upkeep: grain attrition unit=708a0681-a08a-442f-a98c-6e02a4a3a537 lost=2 disbanded=false
+2026/10/14 20:37:17 INFO upkeep: grain attrition unit=93ea5a84-a599-43b9-91f1-200df9715429 lost=10 disbanded=false
+2026/10/14 20:37:17 INFO upkeep: silver desertion unit=02c3327f-2bd3-4f41-84f0-f79637eafc72 lost=10 disbanded=false
+FAIL
+FAIL	formatet/megaron/server/internal/combat	11.079s
+ok  	formatet/megaron/server/internal/economy	4.854s
+ok  	formatet/megaron/server/internal/events	0.066s
+ok  	formatet/megaron/server/internal/gossip	0.227s
+ok  	formatet/megaron/server/internal/hexgrid	0.001s
+ok  	formatet/megaron/server/internal/kharis	5.493s
+ok  	formatet/megaron/server/internal/loyalty	0.113s
+ok  	formatet/megaron/server/internal/messenger	2.084s
+ok  	formatet/megaron/server/internal/movement	0.003s
+ok  	formatet/megaron/server/internal/notify	1.094s
+ok  	formatet/megaron/server/internal/province	0.251s
+ok  	formatet/megaron/server/internal/religion	0.040s
+ok  	formatet/megaron/server/internal/settlement	0.001s
+ok  	formatet/megaron/server/internal/tick	0.157s
+ok  	formatet/megaron/server/internal/transport	0.812s
+ok  	formatet/megaron/server/internal/unit	0.021s
+?   	formatet/megaron/server/internal/unit/shipnames	[no test files]
+ok  	formatet/megaron/server/internal/world	137.586s
+FAIL
