@@ -1,0 +1,6 @@
+» färsk DB på migration 179 · commit a3ba0d39
+=== RUN   TestOpeningDispatchFactsFromActiveRules
+    opening_dispatch_test.go:152: actual grace source 60, temple duration16
+--- PASS: TestOpeningDispatchFactsFromActiveRules (0.00s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.002s

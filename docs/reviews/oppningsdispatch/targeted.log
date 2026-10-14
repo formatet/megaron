@@ -1,0 +1,13 @@
+» färsk DB på migration 179 · commit a7b8c858+ändringar
+=== RUN   TestOpeningDispatchJoinConcurrentRetryRiseAndPrivacy
+2026/10/13 14:22:01 INFO player registered id=4eaae900-0eaa-4320-a19c-e5940c3e36c4 username=opening-2ca93687-5221-4d11-b47d-97f1162e5a2a-f70584c5-9bd9-4c60-96f5-7ffb675add7a
+2026/10/13 14:22:01 INFO player registered id=2fed549b-fb6c-4d29-9e80-c37b05d87571 username=opening-other-c74f706a-2d19-4bb2-a42d-41a02c415ae6-3aff9ec6-0309-43cc-b782-de8eecfa60e6
+--- PASS: TestOpeningDispatchJoinConcurrentRetryRiseAndPrivacy (0.13s)
+=== RUN   TestOpeningDispatchFactsFromActiveRules
+    opening_dispatch_test.go:152: actual grace source 60, temple duration16
+--- PASS: TestOpeningDispatchFactsFromActiveRules (0.00s)
+=== RUN   TestOpeningDispatchArchiveFailureRollsBackHost
+2026/10/13 14:22:01 INFO player registered id=e1a09775-2d03-483a-8eb3-896840f2b3e0 username=opening-rollback-b283e8b9-245b-4d64-922a-6a1ff6e0a4bf-cee7d0b4-32c4-48e0-85bc-3c2f7d09719b
+--- PASS: TestOpeningDispatchArchiveFailureRollsBackHost (0.08s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.220s

@@ -1,0 +1,138 @@
+TAP version 13
+# Subtest: AK1: a direct q/r on the payload wins outright, no lookup needed
+ok 1 - AK1: a direct q/r on the payload wins outright, no lookup needed
+  ---
+  duration_ms: 1.088162
+  type: 'test'
+  ...
+# Subtest: AK2: settlement_id resolves via State.provinceData
+ok 2 - AK2: settlement_id resolves via State.provinceData
+  ---
+  duration_ms: 0.150255
+  type: 'test'
+  ...
+# Subtest: AK3: dest_id/destination_id (transport/trade kinds) resolve the same way settlement_id does
+ok 3 - AK3: dest_id/destination_id (transport/trade kinds) resolve the same way settlement_id does
+  ---
+  duration_ms: 0.090635
+  type: 'test'
+  ...
+# Subtest: AK4: OfferAccepted/Declined/Expired go to the COUNTERPARTY city, not the recipient's own (Timothy 2026-09-04, megaron_plan_dispatches.md §3)
+ok 4 - AK4: OfferAccepted/Declined/Expired go to the COUNTERPARTY city, not the recipient's own (Timothy 2026-09-04, megaron_plan_dispatches.md §3)
+  ---
+  duration_ms: 0.141529
+  type: 'test'
+  ...
+# Subtest: AK5: OfferAccepted falls back to settlement_id if counterparty_id is somehow absent
+ok 5 - AK5: OfferAccepted falls back to settlement_id if counterparty_id is somehow absent
+  ---
+  duration_ms: 0.093392
+  type: 'test'
+  ...
+# Subtest: AK6: a non-offer kind never picks up counterparty_id even if present
+ok 6 - AK6: a non-offer kind never picks up counterparty_id even if present
+  ---
+  duration_ms: 0.136286
+  type: 'test'
+  ...
+# Subtest: AK7: an unresolvable settlement_id falls through to a unit_id lookup
+ok 7 - AK7: an unresolvable settlement_id falls through to a unit_id lookup
+  ---
+  duration_ms: 0.097968
+  type: 'test'
+  ...
+# Subtest: AK8: a foreign unit (not own) is still found via State.foreignUnitData
+ok 8 - AK8: a foreign unit (not own) is still found via State.foreignUnitData
+  ---
+  duration_ms: 0.084036
+  type: 'test'
+  ...
+# Subtest: AK9: no destination anywhere returns null (the disabled-button case)
+ok 9 - AK9: no destination anywhere returns null (the disabled-button case)
+  ---
+  duration_ms: 0.219204
+  type: 'test'
+  ...
+# Subtest: OC1: CityOccupied as attacker offers sack/burn from the payload's own choices, never annex (too early)
+ok 10 - OC1: CityOccupied as attacker offers sack/burn from the payload's own choices, never annex (too early)
+  ---
+  duration_ms: 0.299514
+  type: 'test'
+  ...
+# Subtest: OC2: CityOccupied as defender offers nothing — it is not this Wanax's choice to make
+ok 11 - OC2: CityOccupied as defender offers nothing — it is not this Wanax's choice to make
+  ---
+  duration_ms: 0.112046
+  type: 'test'
+  ...
+# Subtest: OC3: CityAnnexReady offers all three — sack/burn remain available once annex unlocks
+ok 12 - OC3: CityAnnexReady offers all three — sack/burn remain available once annex unlocks
+  ---
+  duration_ms: 0.062905
+  type: 'test'
+  ...
+# Subtest: OC4: an unrelated dispatch kind offers nothing
+ok 13 - OC4: an unrelated dispatch kind offers nothing
+  ---
+  duration_ms: 0.073441
+  type: 'test'
+  ...
+# Subtest: OC5: a missing/malformed choices list on CityOccupied degrades to no buttons rather than throwing
+ok 14 - OC5: a missing/malformed choices list on CityOccupied degrades to no buttons rather than throwing
+  ---
+  duration_ms: 0.078953
+  type: 'test'
+  ...
+# Subtest: OC6: buildOccupationOrderBody sends exactly {action} — sack loots everything by default, no goods picker
+ok 15 - OC6: buildOccupationOrderBody sends exactly {action} — sack loots everything by default, no goods picker
+  ---
+  duration_ms: 0.120981
+  type: 'test'
+  ...
+# Subtest: PS1: PassageStalled resolves "take me there" via the port q/r the server sends
+ok 16 - PS1: PassageStalled resolves "take me there" via the port q/r the server sends
+  ---
+  duration_ms: 0.092215
+  type: 'test'
+  ...
+# Subtest: opening dispatch preserves all archived paragraphs and escapes text
+not ok 17 - opening dispatch preserves all archived paragraphs and escapes text
+  ---
+  duration_ms: 0.643611
+  type: 'test'
+  location: '/home/tk/wt/codex-oppningsdispatch/web/static/js/megaron/ui/dispatch_window.test.mjs:117:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    7 !== 8
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 8
+  actual: 7
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-oppningsdispatch/web/static/js/megaron/ui/dispatch_window.test.mjs:120:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: opening dispatch destination resolves the current own Host from its id
+ok 18 - opening dispatch destination resolves the current own Host from its id
+  ---
+  duration_ms: 0.08366
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 17
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 56.280605

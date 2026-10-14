@@ -1,0 +1,9 @@
+» färsk DB på migration 179 · commit a3ba0d39+ändringar
+=== RUN   TestOpeningDispatchJoinConcurrentRetryRiseAndPrivacy
+2026/10/14 17:45:46 INFO player registered id=ad9d5d44-1cc8-4ef8-97b3-168ae5639acf username=opening-947df053-8ab5-4d2f-b8fb-3025a094cc39-fd456233-6e77-4a57-836f-faba6d268301
+2026/10/14 17:45:46 INFO player registered id=ea6cd3cb-9000-4607-a166-c4678285cea1 username=opening-other-00e8d96e-f923-4749-9626-c9cfbd37e6a2-6c847df2-fd32-45e1-8ed3-dbe855a02226
+    opening_dispatch_test.go:60: join500 {"error":"could not record opening dispatch"}
+--- FAIL: TestOpeningDispatchJoinConcurrentRetryRiseAndPrivacy (0.13s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.128s
+FAIL

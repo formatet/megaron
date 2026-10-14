@@ -1,0 +1,7 @@
+» färsk DB på migration 179 · commit a3ba0d39
+=== RUN   TestOpeningDispatchJoinConcurrentRetryRiseAndPrivacy
+2026/10/14 17:45:49 INFO player registered id=e3447fe7-91b8-4f3d-9581-da5f6d25c3c6 username=opening-2e70a8b3-a682-4b72-8efa-326c643ddb7c-6428da84-68dc-4714-9b8f-b0607bebd3ee
+2026/10/14 17:45:49 INFO player registered id=3f277abb-d7c7-47ed-aabd-856632cc66d7 username=opening-other-43552d79-1db0-4976-9a84-0184d814c689-7258269e-94b3-4da5-a2ea-32bbf0c3d9c8
+--- PASS: TestOpeningDispatchJoinConcurrentRetryRiseAndPrivacy (0.13s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.135s

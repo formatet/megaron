@@ -1,0 +1,4 @@
+PASS missing-archive: named RED -> identical bytes -> fresh GREEN
+PASS hardcoded-grace: named RED -> identical bytes -> fresh GREEN
+PASS web-missing-paragraph: named RED -> identical bytes -> fresh GREEN
+PASS keryx-missing-paragraph: named RED -> identical bytes -> fresh GREEN
