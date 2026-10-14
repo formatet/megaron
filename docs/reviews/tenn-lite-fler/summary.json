@@ -1,0 +1,128 @@
+[
+  {
+    "variant": "baseline",
+    "size": 64,
+    "hexes_mean": 4.45,
+    "sources_mean": 2.6,
+    "increase_pct": 0.0,
+    "effective_seeds_unchanged": 20,
+    "non_tin_fields_unchanged": 20
+  },
+  {
+    "variant": "baseline",
+    "size": 128,
+    "hexes_mean": 4.15,
+    "sources_mean": 2.8,
+    "increase_pct": 0.0,
+    "effective_seeds_unchanged": 20,
+    "non_tin_fields_unchanged": 20
+  },
+  {
+    "variant": "floor3-cap6",
+    "size": 64,
+    "hexes_mean": 6.2,
+    "sources_mean": 2.95,
+    "increase_pct": 39.32584269662922,
+    "effective_seeds_unchanged": 20,
+    "non_tin_fields_unchanged": 2
+  },
+  {
+    "variant": "floor3-cap6",
+    "size": 128,
+    "hexes_mean": 6.15,
+    "sources_mean": 3.5,
+    "increase_pct": 48.19277108433735,
+    "effective_seeds_unchanged": 20,
+    "non_tin_fields_unchanged": 2
+  },
+  {
+    "variant": "floor4-cap8",
+    "size": 64,
+    "hexes_mean": 7.55,
+    "sources_mean": 3.3,
+    "increase_pct": 69.6629213483146,
+    "effective_seeds_unchanged": 20,
+    "non_tin_fields_unchanged": 1
+  },
+  {
+    "variant": "floor4-cap8",
+    "size": 128,
+    "hexes_mean": 7.7,
+    "sources_mean": 4.05,
+    "increase_pct": 85.54216867469879,
+    "effective_seeds_unchanged": 20,
+    "non_tin_fields_unchanged": 1
+  },
+  {
+    "variant": "area3",
+    "size": 64,
+    "hexes_mean": 6.0,
+    "sources_mean": 2.75,
+    "increase_pct": 34.8314606741573,
+    "effective_seeds_unchanged": 20,
+    "non_tin_fields_unchanged": 2
+  },
+  {
+    "variant": "area3",
+    "size": 128,
+    "hexes_mean": 18.6,
+    "sources_mean": 5.8,
+    "increase_pct": 348.1927710843373,
+    "effective_seeds_unchanged": 20,
+    "non_tin_fields_unchanged": 1
+  },
+  {
+    "variant": "post1",
+    "size": 64,
+    "hexes_mean": 5.95,
+    "sources_mean": 2.85,
+    "increase_pct": 33.70786516853932,
+    "effective_seeds_unchanged": 20,
+    "non_tin_fields_unchanged": 20
+  },
+  {
+    "variant": "post1",
+    "size": 128,
+    "hexes_mean": 10.7,
+    "sources_mean": 4.9,
+    "increase_pct": 157.83132530120477,
+    "effective_seeds_unchanged": 20,
+    "non_tin_fields_unchanged": 20
+  },
+  {
+    "variant": "post2",
+    "size": 64,
+    "hexes_mean": 7.4,
+    "sources_mean": 3.1,
+    "increase_pct": 66.29213483146069,
+    "effective_seeds_unchanged": 20,
+    "non_tin_fields_unchanged": 20
+  },
+  {
+    "variant": "post2",
+    "size": 128,
+    "hexes_mean": 15.95,
+    "sources_mean": 5.85,
+    "increase_pct": 284.3373493975903,
+    "effective_seeds_unchanged": 20,
+    "non_tin_fields_unchanged": 20
+  },
+  {
+    "variant": "post3",
+    "size": 64,
+    "hexes_mean": 8.6,
+    "sources_mean": 3.25,
+    "increase_pct": 93.25842696629212,
+    "effective_seeds_unchanged": 20,
+    "non_tin_fields_unchanged": 20
+  },
+  {
+    "variant": "post3",
+    "size": 128,
+    "hexes_mean": 20.55,
+    "sources_mean": 6.1,
+    "increase_pct": 395.18072289156623,
+    "effective_seeds_unchanged": 20,
+    "non_tin_fields_unchanged": 20
+  }
+]

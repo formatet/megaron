@@ -1,0 +1,10 @@
+{
+  "baseline": "2be784c2",
+  "map_count": 40,
+  "effective_seeds_preserved": 40,
+  "all_non_tin_fields_preserved": 40,
+  "old_tin_preserved": 40,
+  "actual_validateMap_passed": 40,
+  "production_equals_selected_measurement": 40,
+  "production_diff_sha256": "e3446f0d792ca438c1587fd81d6825734012b4d711ffceff7df081d2d977c160"
+}
