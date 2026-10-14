@@ -1,0 +1,82 @@
+{
+  "health": {
+    "commit": "8a3a2769",
+    "migration": 179,
+    "status": "ok"
+  },
+  "source_health": {
+    "commit": "94101f6",
+    "migration": 174,
+    "status": "ok"
+  },
+  "snapshot_sha256": "ecff23eb53bdf4e5fd7eb87c97f7a48ef7a623867b5d840a2ac77bcaf077e285",
+  "source_read_only": true,
+  "http_payload_overrides": false,
+  "captures": [
+    {
+      "mode": "desktop",
+      "status": 200,
+      "metrics": {
+        "viewport": 1280,
+        "width": 1280
+      },
+      "text": "Alpha test\n\nMegaron\n\nMegaron is a slow strategy game set in a mythic Bronze Age eastern Mediterranean. You play a Wanax, a ruler, and build up settlements: feed them, put people to work, trade, raise and keep armies, explore, and deal with the gods and with other rulers.\n\nThe world keeps running while you are logged out. Production, travel and messages take time. You give orders, leave, and come back later to see what happened.\n\nWhat kind of game we want this to be\n\nA social game. The other rulers are real people, and most of what matters happens between you: who you trade with, who you trust, who you warn, who you march against. Because everything travels by messenger, those conversations are slow. A letter is something you write with some care, and an answer is something you wait for.\n\nA different world to step into. A small Bronze Age realm where you have a place and something to work towards, with friends: a slow grind with a glorious purpose.\n\nAn alternative to advertising-driven social media. Something to return to in a pause in the day, to think about and make plans for, instead of another feed built to keep you scrolling. There are no ads, and the game does not need your attention every minute.\n\nA world small enough to know. When the game is finished, each world will hold at most 100 rulers, few enough that names come to mean something. The alpha is smaller than that.\n\nBeyond that, we want situations to come out of what players decide and how the game's systems meet: trade, shortages, relationships. Some things you will only understand by trying them.\n\nEverything travels by messenger\n\nNothing in Megaron is instant. An order to your own army is carried by a runner and takes effect when the runner gets there. A message to another ruler arrives when the messenger does, and the answer comes back the same way. Messengers are sacred and cannot be stopped. What you know about the world is what your own people have seen or been told.\n\nNo tech tree\n\nThere is no tech tree, and none is planned. Better units exist: elite infantry and chariots need bronze, war galleys need cedar. What limits them is what you can get hold of, not research. The game is more about who you talk to and what you can trade for than about which units you have.\n\nThis is an early alpha\n\nMuch is unfinished. Balance is uneven, parts of the interface are unclear, and some things are broken. You don't need to understand everything at once. The rules and a reference are in the Codex, behind the ? in the top right corner.\n\nWhere we are, and what comes next\nNow: one alpha world, with the Minoans as the only people. Settlements, work, building, trade, armies, ships and messengers all work, but no one has yet played the whole game at full pace. That is what the alpha is for.\nNext: testing and tuning, which never really ends. After that, trade routes that grow out of steady traffic between cities.\nFuture expansions: the oikos, where rulers join one house with a shared council, armies and plans. New peoples, one at a time and each playing differently: Canaanites, Hittites, Achaeans, Egyptians, Thracians. A phone app. Last of all, the collapse: the Sea Peoples, and a new era.\nWho makes it\n\nMegaron is a one-person project by Tim, who cannot program. The code is written with AI: Tim decides what the game should be and judges the result, and AI models write and test the code. \"We\" on this page means Tim and those tools.\n\nScreenshots\n\nFrom a separate test world.\n\nThe land around a new city, Akropolis. Black is unexplored.\nThe city panel: what is built and what to build next.\nProduction: people placed on the hexes around the city, and the grain balance.\nA message to another city with a trade offer attached, before it is sent.\nWhat we want to hear\n\nConcrete examples help most.\n\nWhat was easy or hard to understand?\nWhat were you trying to do, what did you expect, and what happened?\nWhat was interesting? What was frustrating, boring or unclear?\nDid you want to log in again later?\nBugs or strange results.\n\nUse the Report button at the bottom right in the game, or keryx report if you play from the command line. Tell us too when the Codex is unclear, missing something, or doesn't match the game.\n\nCommunity chat, outside the game\n\nFor questions, bug talk and news about the alpha there is a chat on Matrix, a separate service we run ourselves. It is out of game: what is said there does not reach the world, and messengers in the game are not connected to it. You don't need it to play, and anything important about the game is announced inside the game.\n\nYour chat account is created when you own your first city. Open your Account window by clicking your Wanax name, then use Get chat password under Community chat. Each request replaces the previous chat password and shows the new one once. Use your chat ID and password at agora.formatet.se, or in a Matrix app with the displayed homeserver. Then ask us to invite you to #megaron-ooc.\n\nChat rules and privacy\nBe decent. No harassment, no hate, nothing illegal.\nTalk about the game, not other players' real lives.\nDon't post your real name, address, school, health or other private details. Your chat account uses your Wanax name, so other members can see which ruler you play.\nReport a message with the menu next to it in your Matrix app, or write to a moderator. Moderators can read what is reported.\n\nThe chat runs on our own hardware in Sweden and is not connected to any other Matrix server. The room is not encrypted, so don't treat it as private. Messages stay until they are deleted. There is no self-service account deletion in the game. To delete your account, write to the admin in the chat; the admin erases the game account, and its chat account is closed with it. Your Wanax name stays in other players' letters and chronicles.\n\nLog in to Megaron",
+      "words": 1043,
+      "images": [
+        {
+          "src": "/static/alfatest/karta.png",
+          "width": 580,
+          "height": 600
+        },
+        {
+          "src": "/static/alfatest/stad.png",
+          "width": 960,
+          "height": 686
+        },
+        {
+          "src": "/static/alfatest/produktion.png",
+          "width": 960,
+          "height": 932
+        },
+        {
+          "src": "/static/alfatest/handel.png",
+          "width": 960,
+          "height": 566
+        }
+      ]
+    },
+    {
+      "mode": "mobile",
+      "status": 200,
+      "metrics": {
+        "viewport": 390,
+        "width": 390
+      },
+      "text": "Alpha test\n\nMegaron\n\nMegaron is a slow strategy game set in a mythic Bronze Age eastern Mediterranean. You play a Wanax, a ruler, and build up settlements: feed them, put people to work, trade, raise and keep armies, explore, and deal with the gods and with other rulers.\n\nThe world keeps running while you are logged out. Production, travel and messages take time. You give orders, leave, and come back later to see what happened.\n\nWhat kind of game we want this to be\n\nA social game. The other rulers are real people, and most of what matters happens between you: who you trade with, who you trust, who you warn, who you march against. Because everything travels by messenger, those conversations are slow. A letter is something you write with some care, and an answer is something you wait for.\n\nA different world to step into. A small Bronze Age realm where you have a place and something to work towards, with friends: a slow grind with a glorious purpose.\n\nAn alternative to advertising-driven social media. Something to return to in a pause in the day, to think about and make plans for, instead of another feed built to keep you scrolling. There are no ads, and the game does not need your attention every minute.\n\nA world small enough to know. When the game is finished, each world will hold at most 100 rulers, few enough that names come to mean something. The alpha is smaller than that.\n\nBeyond that, we want situations to come out of what players decide and how the game's systems meet: trade, shortages, relationships. Some things you will only understand by trying them.\n\nEverything travels by messenger\n\nNothing in Megaron is instant. An order to your own army is carried by a runner and takes effect when the runner gets there. A message to another ruler arrives when the messenger does, and the answer comes back the same way. Messengers are sacred and cannot be stopped. What you know about the world is what your own people have seen or been told.\n\nNo tech tree\n\nThere is no tech tree, and none is planned. Better units exist: elite infantry and chariots need bronze, war galleys need cedar. What limits them is what you can get hold of, not research. The game is more about who you talk to and what you can trade for than about which units you have.\n\nThis is an early alpha\n\nMuch is unfinished. Balance is uneven, parts of the interface are unclear, and some things are broken. You don't need to understand everything at once. The rules and a reference are in the Codex, behind the ? in the top right corner.\n\nWhere we are, and what comes next\nNow: one alpha world, with the Minoans as the only people. Settlements, work, building, trade, armies, ships and messengers all work, but no one has yet played the whole game at full pace. That is what the alpha is for.\nNext: testing and tuning, which never really ends. After that, trade routes that grow out of steady traffic between cities.\nFuture expansions: the oikos, where rulers join one house with a shared council, armies and plans. New peoples, one at a time and each playing differently: Canaanites, Hittites, Achaeans, Egyptians, Thracians. A phone app. Last of all, the collapse: the Sea Peoples, and a new era.\nWho makes it\n\nMegaron is a one-person project by Tim, who cannot program. The code is written with AI: Tim decides what the game should be and judges the result, and AI models write and test the code. \"We\" on this page means Tim and those tools.\n\nScreenshots\n\nFrom a separate test world.\n\nThe land around a new city, Akropolis. Black is unexplored.\nThe city panel: what is built and what to build next.\nProduction: people placed on the hexes around the city, and the grain balance.\nA message to another city with a trade offer attached, before it is sent.\nWhat we want to hear\n\nConcrete examples help most.\n\nWhat was easy or hard to understand?\nWhat were you trying to do, what did you expect, and what happened?\nWhat was interesting? What was frustrating, boring or unclear?\nDid you want to log in again later?\nBugs or strange results.\n\nUse the Report button at the bottom right in the game, or keryx report if you play from the command line. Tell us too when the Codex is unclear, missing something, or doesn't match the game.\n\nCommunity chat, outside the game\n\nFor questions, bug talk and news about the alpha there is a chat on Matrix, a separate service we run ourselves. It is out of game: what is said there does not reach the world, and messengers in the game are not connected to it. You don't need it to play, and anything important about the game is announced inside the game.\n\nYour chat account is created when you own your first city. Open your Account window by clicking your Wanax name, then use Get chat password under Community chat. Each request replaces the previous chat password and shows the new one once. Use your chat ID and password at agora.formatet.se, or in a Matrix app with the displayed homeserver. Then ask us to invite you to #megaron-ooc.\n\nChat rules and privacy\nBe decent. No harassment, no hate, nothing illegal.\nTalk about the game, not other players' real lives.\nDon't post your real name, address, school, health or other private details. Your chat account uses your Wanax name, so other members can see which ruler you play.\nReport a message with the menu next to it in your Matrix app, or write to a moderator. Moderators can read what is reported.\n\nThe chat runs on our own hardware in Sweden and is not connected to any other Matrix server. The room is not encrypted, so don't treat it as private. Messages stay until they are deleted. There is no self-service account deletion in the game. To delete your account, write to the admin in the chat; the admin erases the game account, and its chat account is closed with it. Your Wanax name stays in other players' letters and chronicles.\n\nLog in to Megaron",
+      "words": 1043,
+      "images": [
+        {
+          "src": "/static/alfatest/karta.png",
+          "width": 580,
+          "height": 600
+        },
+        {
+          "src": "/static/alfatest/stad.png",
+          "width": 960,
+          "height": 686
+        },
+        {
+          "src": "/static/alfatest/produktion.png",
+          "width": 960,
+          "height": 932
+        },
+        {
+          "src": "/static/alfatest/handel.png",
+          "width": 960,
+          "height": 566
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

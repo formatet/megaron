@@ -2002,12 +2002,13 @@ h4.cx-h { font-size: var(--fs-base); }
 /* Public alpha-test page (/alfatestinfo). Scoped; light and plain like formatet.se. */
 .alpha-info { background: var(--bg-panel); color: var(--text); font-family: var(--font); font-size: var(--fs-base); line-height: 1.65; }
 .alpha-main { max-width: 680px; margin: 0 auto; padding: 4rem 1.5rem 3rem; }
-.alpha-info h1, .alpha-info h2, .alpha-label, .alpha-note, .alpha-info figcaption, .alpha-footer { font-family: "Helvetica Neue", Arial, sans-serif; }
+.alpha-info h1, .alpha-info h2, .alpha-info h3, .alpha-label, .alpha-note, .alpha-info figcaption, .alpha-footer { font-family: "Helvetica Neue", Arial, sans-serif; }
 .alpha-header { margin-bottom: 2.5rem; }
 .alpha-label { margin: 0 0 .25rem; font-size: var(--fs-sm); color: var(--text-dim); letter-spacing: .04em; }
 .alpha-info h1 { margin: 0; font-size: var(--fs-xl); font-weight: 500; color: var(--text); }
 .alpha-info section { margin: 0 0 2.5rem; }
 .alpha-info h2 { margin: 0 0 .75rem; font-size: var(--fs-md); font-weight: 500; color: var(--text); padding-top: 1rem; border-top: 1px solid var(--text-dim); }
+.alpha-info h3 { margin: 1rem 0 .75rem; font-size: var(--fs-base); font-weight: 500; color: var(--text); }
 .alpha-info p { margin: 0 0 1rem; }
 .alpha-info ul { margin: 0 0 1rem; padding-left: 1.2rem; }
 .alpha-info li { margin: .3rem 0; }

@@ -115,11 +115,48 @@ test('codex: lowercase agora_ready is mapped and community rules match alpha pol
   assert.ok(clientKinds().includes('agora_ready'));
   assert.equal(articleForKind('agora_ready', index), 'community-chat');
   const alpha = readFileSync(join(here, '../../../../templates/alfatestinfo.html'), 'utf8');
-  const policy = alpha.slice(alpha.indexOf('<h2>Chat rules and privacy</h2>'));
+  // The public invitation is Swedish; the in-game Codex is English.
+  // Preserve all four established obligations across that translation.
+  const policy = alpha.slice(alpha.indexOf('<h3>Chattregler och integritet</h3>'));
   const lines = [...policy.matchAll(/<li>(.*?)<\/li>/g)].map(m => m[1]);
-  const privacy = /<p class="alpha-note">(.*?)<\/p>/.exec(policy)[1];
+  const translations = [
+  [
+    "Be decent. No harassment, no hate, nothing illegal.",
+    "Var schyst. Inga trakasserier, inget hat, inget olagligt."
+  ],
+  [
+    "Talk about the game, not other players' real lives.",
+    "Prata om spelet, inte om andra spelares privatliv."
+  ],
+  [
+    "Don't post your real name, address, school, health or other private details. Your chat account uses your Wanax name, so other members can see which ruler you play.",
+    "Dela inte ditt riktiga namn, adress, skola, hälsa eller andra privata uppgifter. Chattkontot använder ditt Wanax-namn, så andra kan se vilken härskare du spelar."
+  ],
+  [
+    "Report a message with the menu next to it in your Matrix app, or write to a moderator. Moderators can read what is reported.",
+    "Rapportera meddelanden via menyn i Matrix eller till en moderator. Moderatorer kan läsa det som rapporteras."
+  ]
+];
   assert.equal(lines.length, 4);
-  for (const line of [...lines, privacy]) assert.ok(bodies['community-chat'].includes(line), `Community chat policy drift: ${line}`);
+  translations.forEach(([english, swedish], i) => {
+    assert.ok(bodies['community-chat'].includes(english), `Codex policy drift: ${english}`);
+    assert.equal(lines[i], swedish, `Swedish alpha policy drift: ${swedish}`);
+  });
+  const privacy = /<p class="alpha-note">(.*?)<\/p>/.exec(policy)[1];
+  const privacyClaims = [
+    ['own hardware in Sweden', 'vår hårdvara i Sverige'],
+    ['not connected to any other Matrix server', 'utan koppling till andra Matrix-servrar'],
+    ['not encrypted', 'inte krypterat'],
+    ['Messages stay until they are deleted', 'meddelanden ligger kvar tills de raderas'],
+    ['no self-service account deletion', 'Konton kan inte raderas av dig själv'],
+    ['write to the admin in the chat', 'skriv till administratören i chatten'],
+    ['its chat account is closed with it', 'chattkontot stängt'],
+    ["Your Wanax name stays in other players' letters and chronicles", 'Ditt Wanax-namn står kvar i andras brev och krönikor'],
+  ];
+  for (const [english, swedish] of privacyClaims) {
+    assert.ok(bodies['community-chat'].includes(english), `Codex privacy drift: ${english}`);
+    assert.ok(privacy.includes(swedish), `Swedish alpha privacy drift: ${swedish}`);
+  }
   assert.ok(!alpha.includes('register with the code'));
 });
 
