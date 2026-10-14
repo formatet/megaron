@@ -60,6 +60,9 @@ const (
 // den tempellösas ärliga konsekvens enligt takets egen kommentar.
 const foundingGraceTicks = 60
 
+// FoundingGraceTicks exposes the active rule for the opening dispatch.
+func FoundingGraceTicks() int { return foundingGraceTicks }
+
 // shouldRollPunishment avgör om missed-grenen ska rulla för gudastraff alls.
 // Ren funktion med flit: utfallet beror på ett tärningskast, så själva BESLUTET
 // måste gå att bevisa utan att slå tärningen (samma grepp som armyUpkeepWarning

@@ -1,0 +1,637 @@
+{"time":"2026-10-14T17:43:35.311534023+02:00","level":"INFO","msg":"migrations applied"}
+{"time":"2026-10-14T17:43:35.330508836+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","seed":1791992615313672366,"width":64,"height":64,"err":"invalid map: productive tin = 1 (want >= 2)"}
+{"time":"2026-10-14T17:43:36.791747668+02:00","level":"INFO","msg":"world created","name":"Opening dispatch proof","id":"095e786a-d9de-4dd0-9205-2b90e789ee1a","seed":1791992615313672367}
+{"time":"2026-10-14T17:43:36.799192429+02:00","level":"INFO","msg":"world ready","id":"095e786a-d9de-4dd0-9205-2b90e789ee1a"}
+{"time":"2026-10-14T17:43:36.799407605+02:00","level":"INFO","msg":"chronicle opened","world":"Opening dispatch proof","dir":"/tmp/opening-native-onpehom1/chronicles"}
+{"time":"2026-10-14T17:43:36.800995122+02:00","level":"INFO","msg":"scheduled event worker started","poll":1000000000}
+{"time":"2026-10-14T17:43:36.800999721+02:00","level":"INFO","msg":"tick worker started","tick_seconds":1}
+{"time":"2026-10-14T17:43:36.801014636+02:00","level":"INFO","msg":"build","commit":"a3ba0d39"}
+{"time":"2026-10-14T17:43:36.801202101+02:00","level":"INFO","msg":"keryx server starting","addr":":38985"}
+{"time":"2026-10-14T17:43:36.810118821+02:00","level":"INFO","msg":"daily ticks seeded","worlds":1}
+2026/10/14 17:43:36 [tki9/ARQAIRoAQu-000001] "GET http://127.0.0.1:38985/healthz HTTP/1.1" from 127.0.0.1:58882 - 200 52B in 399.905µs
+2026/10/14 17:43:36 [tki9/ARQAIRoAQu-000002] "GET http://127.0.0.1:38985/api/v1/worlds HTTP/1.1" from 127.0.0.1:58890 - 200 174B in 612.754µs
+{"time":"2026-10-14T17:43:36.894105215+02:00","level":"INFO","msg":"player registered","id":"1307a7a3-8dcc-4f49-a26b-54d6a5eb18eb","username":"Temple-ac1c2a3e"}
+2026/10/14 17:43:36 [tki9/ARQAIRoAQu-000003] "POST http://127.0.0.1:38985/api/v1/auth/register HTTP/1.1" from 127.0.0.1:58896 - 201 390B in 47.27836ms
+2026/10/14 17:43:36 [tki9/ARQAIRoAQu-000004] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/join HTTP/1.1" from 127.0.0.1:58910 - 201 303B in 18.312833ms
+2026/10/14 17:43:36 [tki9/ARQAIRoAQu-000005] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?kind=OpeningDispatch HTTP/1.1" from 127.0.0.1:58926 - 200 1233B in 369.896µs
+2026/10/14 17:43:36 [tki9/ARQAIRoAQu-000006] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/join HTTP/1.1" from 127.0.0.1:58940 - 200 72B in 340.786µs
+2026/10/14 17:43:36 [tki9/ARQAIRoAQu-000007] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?kind=OpeningDispatch HTTP/1.1" from 127.0.0.1:58944 - 200 1233B in 161.822µs
+{"time":"2026-10-14T17:43:36.961509398+02:00","level":"INFO","msg":"player registered","id":"8db732d8-7df8-43a9-8508-793bf8114528","username":"Other-b4df099a"}
+2026/10/14 17:43:36 [tki9/ARQAIRoAQu-000008] "POST http://127.0.0.1:38985/api/v1/auth/register HTTP/1.1" from 127.0.0.1:58948 - 201 388B in 46.286197ms
+2026/10/14 17:43:36 [tki9/ARQAIRoAQu-000009] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?kind=OpeningDispatch HTTP/1.1" from 127.0.0.1:58960 - 200 32B in 239.217µs
+2026/10/14 17:43:36 [tki9/ARQAIRoAQu-000010] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?exclude=SitosIntervention%2CSitosFundLow HTTP/1.1" from 127.0.0.1:58962 - 200 806B in 438.025µs
+2026/10/14 17:43:36 [tki9/ARQAIRoAQu-000011] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?kind=SitosIntervention HTTP/1.1" from 127.0.0.1:58962 - 200 57B in 557.745µs
+2026/10/14 17:43:36 [tki9/ARQAIRoAQu-000012] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?kind=SitosFundLow HTTP/1.1" from 127.0.0.1:58962 - 200 57B in 173.526µs
+2026/10/14 17:43:37 [tki9/ARQAIRoAQu-000013] "GET http://127.0.0.1:38985/world/095e786a-d9de-4dd0-9205-2b90e789ee1a/map HTTP/1.1" from 127.0.0.1:58972 - 200 6827B in 2.451292ms
+2026/10/14 17:43:37 [tki9/ARQAIRoAQu-000014] "GET http://127.0.0.1:38985/static/megaron.css HTTP/1.1" from 127.0.0.1:58972 - 200 19651B in 838.238µs
+2026/10/14 17:43:37 [tki9/ARQAIRoAQu-000015] "GET http://127.0.0.1:38985/static/js/megaron/main.js HTTP/1.1" from 127.0.0.1:58972 - 200 5465B in 239.894µs
+2026/10/14 17:43:37 [tki9/ARQAIRoAQu-000016] "GET http://127.0.0.1:38985/static/js/megaron/config.js HTTP/1.1" from 127.0.0.1:58972 - 200 2094B in 164.336µs
+2026/10/14 17:43:37 [tki9/ARQAIRoAQu-000017] "GET http://127.0.0.1:38985/static/js/megaron/state.js HTTP/1.1" from 127.0.0.1:58972 - 200 2765B in 738.323µs
+2026/10/14 17:43:37 [tki9/ARQAIRoAQu-000018] "GET http://127.0.0.1:38985/static/js/megaron/clock.js HTTP/1.1" from 127.0.0.1:58984 - 200 948B in 231.479µs
+2026/10/14 17:43:37 [tki9/ARQAIRoAQu-000019] "GET http://127.0.0.1:38985/static/js/megaron/world_time.js HTTP/1.1" from 127.0.0.1:58972 - 200 560B in 69.518µs
+2026/10/14 17:43:37 [tki9/ARQAIRoAQu-000020] "GET http://127.0.0.1:38985/static/js/megaron/telemetry.js HTTP/1.1" from 127.0.0.1:58972 - 200 350B in 50.671µs
+2026/10/14 17:43:37 [tki9/ARQAIRoAQu-000021] "GET http://127.0.0.1:38985/static/js/megaron/ws.js HTTP/1.1" from 127.0.0.1:58972 - 200 4950B in 213.682µs
+2026/10/14 17:43:37 [tki9/ARQAIRoAQu-000025] "GET http://127.0.0.1:38985/static/js/megaron/ui/placename.js HTTP/1.1" from 127.0.0.1:58972 - 200 1374B in 145.833µs
+2026/10/14 17:43:37 [tki9/ARQAIRoAQu-000024] "GET http://127.0.0.1:38985/static/js/megaron/ui/stormname.js HTTP/1.1" from 127.0.0.1:59000 - 200 1103B in 213.292µs
+2026/10/14 17:43:37 [tki9/ARQAIRoAQu-000023] "GET http://127.0.0.1:38985/static/js/megaron/render/city.js HTTP/1.1" from 127.0.0.1:58998 - 200 7012B in 911.415µs
+2026/10/14 17:43:37 [tki9/ARQAIRoAQu-000022] "GET http://127.0.0.1:38985/static/js/megaron/render/map.js HTTP/1.1" from 127.0.0.1:58984 - 200 71700B in 2.567569ms
+2026/10/14 17:43:37 [tki9/ARQAIRoAQu-000028] "GET http://127.0.0.1:38985/static/js/megaron/ui/search.js HTTP/1.1" from 127.0.0.1:59000 - 200 2485B in 326.761µs
+2026/10/14 17:43:37 [tki9/ARQAIRoAQu-000027] "GET http://127.0.0.1:38985/static/js/megaron/ui/chips.js HTTP/1.1" from 127.0.0.1:58998 - 200 3775B in 483.979µs
+2026/10/14 17:43:37 [tki9/ARQAIRoAQu-000026] "GET http://127.0.0.1:38985/static/js/megaron/ui/misc.js HTTP/1.1" from 127.0.0.1:58972 - 200 10735B in 653.582µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000032] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/kult.js HTTP/1.1" from 127.0.0.1:59014 - 200 3539B in 341.267µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000029] "GET http://127.0.0.1:38985/static/js/megaron/ui/marchctx.js HTTP/1.1" from 127.0.0.1:58984 - 200 12071B in 585.603µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000030] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/city.js HTTP/1.1" from 127.0.0.1:58972 - 200 14304B in 734.419µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000033] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/economy.js HTTP/1.1" from 127.0.0.1:59000 - 200 10497B in 625.109µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000031] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/war.js HTTP/1.1" from 127.0.0.1:58998 - 200 16573B in 991.757µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000036] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/report.js HTTP/1.1" from 127.0.0.1:59014 - 200 1919B in 238.936µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000035] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/notif.js HTTP/1.1" from 127.0.0.1:58984 - 200 3647B in 271.553µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000034] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/diplomacy.js HTTP/1.1" from 127.0.0.1:59028 - 200 10175B in 639.959µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000037] "GET http://127.0.0.1:38985/static/js/megaron/ui/diagnostics.js HTTP/1.1" from 127.0.0.1:58984 - 200 2127B in 283.498µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000038] "GET http://127.0.0.1:38985/static/js/megaron/ui/sfx.js HTTP/1.1" from 127.0.0.1:58972 - 200 3919B in 604.057µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000039] "GET http://127.0.0.1:38985/static/js/megaron/ui/dispatch_window.js HTTP/1.1" from 127.0.0.1:58984 - 200 5664B in 295.811µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000040] "GET http://127.0.0.1:38985/static/js/megaron/ui/account_window.js HTTP/1.1" from 127.0.0.1:58972 - 200 3134B in 141.595µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000041] "GET http://127.0.0.1:38985/static/js/megaron/ui/codex.js HTTP/1.1" from 127.0.0.1:58984 - 200 4586B in 171.33µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000042] "GET http://127.0.0.1:38985/static/js/megaron/api.js HTTP/1.1" from 127.0.0.1:58984 - 200 1829B in 137.248µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000043] "GET http://127.0.0.1:38985/static/js/megaron/ui/format.js HTTP/1.1" from 127.0.0.1:58972 - 200 17356B in 626.873µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000044] "GET http://127.0.0.1:38985/static/js/megaron/ui/search_messages.js HTTP/1.1" from 127.0.0.1:58984 - 200 1096B in 96.905µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000045] "GET http://127.0.0.1:38985/static/js/megaron/ui/time.js HTTP/1.1" from 127.0.0.1:58984 - 200 1550B in 133.673µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000046] "GET http://127.0.0.1:38985/static/js/megaron/ui/movements.js HTTP/1.1" from 127.0.0.1:58984 - 200 1543B in 148.186µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000047] "GET http://127.0.0.1:38985/static/js/megaron/render/pixelgrid.js HTTP/1.1" from 127.0.0.1:58984 - 200 7885B in 257.312µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000048] "GET http://127.0.0.1:38985/static/js/megaron/render/citybuildings.js HTTP/1.1" from 127.0.0.1:58972 - 200 5334B in 282.727µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000050] "GET http://127.0.0.1:38985/static/js/megaron/ui/fmt_num.js HTTP/1.1" from 127.0.0.1:58972 - 200 475B in 77.322µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000049] "GET http://127.0.0.1:38985/static/js/megaron/ui/inline_result.js HTTP/1.1" from 127.0.0.1:58984 - 200 691B in 120.156µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000053] "GET http://127.0.0.1:38985/static/js/megaron/ui/stance.js HTTP/1.1" from 127.0.0.1:59028 - 200 831B in 92.089µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000051] "GET http://127.0.0.1:38985/static/js/megaron/ui/actornames.js HTTP/1.1" from 127.0.0.1:59000 - 200 1402B in 168.885µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000052] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/kult_kharis.js HTTP/1.1" from 127.0.0.1:58998 - 200 1019B in 171.455µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000054] "GET http://127.0.0.1:38985/static/js/megaron/ui/expedition.js HTTP/1.1" from 127.0.0.1:59014 - 200 702B in 76.5µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000055] "GET http://127.0.0.1:38985/static/js/megaron/ui/march_preview.js HTTP/1.1" from 127.0.0.1:58984 - 200 1515B in 162.552µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000056] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/gossip.js HTTP/1.1" from 127.0.0.1:58984 - 200 771B in 110.46µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000058] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/sitos_view.js HTTP/1.1" from 127.0.0.1:59000 - 200 1430B in 190.82µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000059] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/city_production.js HTTP/1.1" from 127.0.0.1:58998 - 200 2105B in 349.732µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000057] "GET http://127.0.0.1:38985/static/js/megaron/ui/citygrid.js HTTP/1.1" from 127.0.0.1:58972 - 200 8150B in 486.693µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000062] "GET http://127.0.0.1:38985/static/js/megaron/render/sight.js HTTP/1.1" from 127.0.0.1:58998 - 200 1334B in 102.266µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000060] "GET http://127.0.0.1:38985/static/js/megaron/render/routes.js HTTP/1.1" from 127.0.0.1:58984 - 200 2296B in 187.754µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000063] "GET http://127.0.0.1:38985/static/js/megaron/render/memory.js HTTP/1.1" from 127.0.0.1:59000 - 200 1000B in 112.852µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000061] "GET http://127.0.0.1:38985/static/js/megaron/render/actorsprites.js HTTP/1.1" from 127.0.0.1:58972 - 200 5852B in 286.922µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000064] "GET http://127.0.0.1:38985/static/js/megaron/render/doomfire.js HTTP/1.1" from 127.0.0.1:58984 - 200 1876B in 99.012µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000065] "GET http://127.0.0.1:38985/static/js/megaron/render/citysprites.js HTTP/1.1" from 127.0.0.1:58972 - 200 8747B in 288.226µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000067] "GET http://127.0.0.1:38985/static/js/megaron/render/camera.js HTTP/1.1" from 127.0.0.1:58972 - 200 1542B in 204.517µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000068] "GET http://127.0.0.1:38985/static/js/megaron/render/map_input.js HTTP/1.1" from 127.0.0.1:58998 - 200 1475B in 167.582µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000066] "GET http://127.0.0.1:38985/static/js/megaron/render/cityicons.js HTTP/1.1" from 127.0.0.1:58984 - 200 3923B in 352.35µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000069] "GET http://127.0.0.1:38985/static/js/megaron/ui/hover.js HTTP/1.1" from 127.0.0.1:58984 - 200 1734B in 122.42µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000070] "GET http://127.0.0.1:38985/static/js/megaron/render/storms.js HTTP/1.1" from 127.0.0.1:58972 - 200 2169B in 117.242µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000071] "GET http://127.0.0.1:38985/static/js/megaron/render/place_names.js HTTP/1.1" from 127.0.0.1:58984 - 200 1741B in 128.802µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000073] "GET http://127.0.0.1:38985/static/js/megaron/render/chunk_worker.js HTTP/1.1" from 127.0.0.1:58998 - 200 794B in 71.646µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000072] "GET http://127.0.0.1:38985/static/js/megaron/render/markraster.js HTTP/1.1" from 127.0.0.1:58972 - 200 34271B in 1.162438ms
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000074] "GET http://127.0.0.1:38985/static/js/megaron/ui/retreat.js HTTP/1.1" from 127.0.0.1:58984 - 200 1047B in 103.397µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000076] "GET http://127.0.0.1:38985/static/js/megaron/ui/recall_all.js HTTP/1.1" from 127.0.0.1:58972 - 200 751B in 70.256µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000075] "GET http://127.0.0.1:38985/static/js/megaron/ui/runner_status.js HTTP/1.1" from 127.0.0.1:58984 - 200 1529B in 136.184µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000077] "GET http://127.0.0.1:38985/static/js/megaron/ui/account_profile.js HTTP/1.1" from 127.0.0.1:58984 - 200 340B in 79.777µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000078] "GET http://127.0.0.1:38985/static/js/megaron/ui/gifts.js HTTP/1.1" from 127.0.0.1:58972 - 200 529B in 83.515µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000079] "GET http://127.0.0.1:38985/static/js/megaron/verb_telemetry.js HTTP/1.1" from 127.0.0.1:58984 - 200 2876B in 190.74µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000080] "GET http://127.0.0.1:38985/static/js/megaron/ui/fmt_clock.js HTTP/1.1" from 127.0.0.1:58984 - 200 384B in 60.649µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000081] "GET http://127.0.0.1:38985/static/js/megaron/render/river_names.js HTTP/1.1" from 127.0.0.1:58984 - 200 255B in 82.895µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000082] "GET http://127.0.0.1:38985/api/v1/auth/me HTTP/1.1" from 127.0.0.1:58984 - 200 187B in 706.409µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000083] "GET http://127.0.0.1:38985/favicon.ico HTTP/1.1" from 127.0.0.1:58984 - 404 44B in 29.186µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000084] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a HTTP/1.1" from 127.0.0.1:58984 - 200 229B in 607.787µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000085] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces HTTP/1.1" from 127.0.0.1:58972 - 200 28B in 11.509284ms
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000086] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/founding/status HTTP/1.1" from 127.0.0.1:58984 - 200 188B in 1.468555ms
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000087] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/messengers/inbox HTTP/1.1" from 127.0.0.1:58984 - 200 28B in 1.863024ms
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000088] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces HTTP/1.1" from 127.0.0.1:58984 - 200 28B in 6.598619ms
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000095] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/rural-projections HTTP/1.1" from 127.0.0.1:58984 - 200 28B in 1.450013ms
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000090] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/marches HTTP/1.1" from 127.0.0.1:58998 - 200 28B in 13.549167ms
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000093] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/units HTTP/1.1" from 127.0.0.1:59014 - 200 395B in 14.393817ms
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000097] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/settlements/placement-roster HTTP/1.1" from 127.0.0.1:58998 - 200 28B in 2.66097ms
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000096] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/foreign-units HTTP/1.1" from 127.0.0.1:58984 - 200 28B in 8.19818ms
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000100] "GET http://127.0.0.1:38985/static/codex/index.json HTTP/1.1" from 127.0.0.1:58984 - 200 2273B in 253.213µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000099] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?unread=true&dispatchable=true HTTP/1.1" from 127.0.0.1:58998 - 200 806B in 1.972115ms
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000091] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/messengers HTTP/1.1" from 127.0.0.1:59000 - 200 28B in 21.13132ms
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000092] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/trades HTTP/1.1" from 127.0.0.1:59028 - 200 28B in 22.177034ms
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000089] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/map HTTP/1.1" from 127.0.0.1:58972 - 200 12393B in 28.287505ms
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000098] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/storms HTTP/1.1" from 127.0.0.1:59014 - 200 48B in 11.570106ms
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000101] "GET http://127.0.0.1:38985/static/js/megaron/render/markraster_worker.js HTTP/1.1" from 127.0.0.1:58984 - 200 620B in 184.161µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000102] "GET http://127.0.0.1:38985/static/js/megaron/render/markraster.js HTTP/1.1" from 127.0.0.1:58984 - 304 0B in 42.947µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000103] "GET http://127.0.0.1:38985/api/v1/notification-preferences HTTP/1.1" from 127.0.0.1:58984 - 200 44B in 515.184µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000104] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications/33d9ad96-428f-41ce-b936-e90dbf1c4a5a/read HTTP/1.1" from 127.0.0.1:58972 - 409 130B in 2.267795ms
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000105] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?exclude=SitosIntervention%2CSitosFundLow HTTP/1.1" from 127.0.0.1:58984 - 200 806B in 900.303µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000106] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/gossip HTTP/1.1" from 127.0.0.1:58984 - 200 28B in 774.004µs
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000107] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications/read-all HTTP/1.1" from 127.0.0.1:58984 - 204 0B in 1.234867ms
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000108] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?kind=SitosIntervention HTTP/1.1" from 127.0.0.1:58972 - 200 57B in 1.430954ms
+2026/10/14 17:43:38 [tki9/ARQAIRoAQu-000109] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?kind=SitosFundLow HTTP/1.1" from 127.0.0.1:58984 - 200 57B in 626.293µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000110] "GET http://127.0.0.1:38985/api/v1/notification-preferences HTTP/1.1" from 127.0.0.1:58984 - 200 44B in 533.266µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000094] "GET http://127.0.0.1:38985/ws/095e786a-d9de-4dd0-9205-2b90e789ee1a HTTP/1.1" from 127.0.0.1:59042 - 000 0B in 1.084207981s
+{"time":"2026-10-14T17:43:39.240830045+02:00","level":"INFO","msg":"player registered","id":"6d834e4d-5659-4d88-891a-84749f06832d","username":"Opening-eb61b675"}
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000111] "POST http://127.0.0.1:38985/api/v1/auth/register HTTP/1.1" from 127.0.0.1:44584 - 201 391B in 47.138448ms
+{"time":"2026-10-14T17:43:39.257449629+02:00","level":"INFO","msg":"world started","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","wanaxes":2}
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000112] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/join HTTP/1.1" from 127.0.0.1:44594 - 201 304B in 15.61256ms
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000113] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?kind=OpeningDispatch HTTP/1.1" from 127.0.0.1:44598 - 200 1233B in 225.28µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000114] "GET http://127.0.0.1:38985/world/095e786a-d9de-4dd0-9205-2b90e789ee1a/map HTTP/1.1" from 127.0.0.1:44606 - 200 6827B in 1.140334ms
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000116] "GET http://127.0.0.1:38985/static/js/megaron/main.js HTTP/1.1" from 127.0.0.1:44614 - 200 5465B in 280.881µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000115] "GET http://127.0.0.1:38985/static/megaron.css HTTP/1.1" from 127.0.0.1:44606 - 200 19651B in 745.268µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000117] "GET http://127.0.0.1:38985/static/js/megaron/config.js HTTP/1.1" from 127.0.0.1:44606 - 200 2094B in 144.865µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000118] "GET http://127.0.0.1:38985/static/js/megaron/state.js HTTP/1.1" from 127.0.0.1:44606 - 200 2765B in 135.608µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000120] "GET http://127.0.0.1:38985/static/js/megaron/world_time.js HTTP/1.1" from 127.0.0.1:44614 - 200 560B in 92.238µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000119] "GET http://127.0.0.1:38985/static/js/megaron/clock.js HTTP/1.1" from 127.0.0.1:44606 - 200 948B in 135.324µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000121] "GET http://127.0.0.1:38985/static/js/megaron/telemetry.js HTTP/1.1" from 127.0.0.1:44606 - 200 350B in 46.974µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000124] "GET http://127.0.0.1:38985/static/js/megaron/ui/stormname.js HTTP/1.1" from 127.0.0.1:44606 - 200 1103B in 107.635µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000126] "GET http://127.0.0.1:38985/static/js/megaron/ui/placename.js HTTP/1.1" from 127.0.0.1:44654 - 200 1374B in 142.82µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000122] "GET http://127.0.0.1:38985/static/js/megaron/ws.js HTTP/1.1" from 127.0.0.1:44614 - 200 4950B in 404.735µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000125] "GET http://127.0.0.1:38985/static/js/megaron/render/city.js HTTP/1.1" from 127.0.0.1:44624 - 200 7012B in 500.189µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000128] "GET http://127.0.0.1:38985/static/js/megaron/ui/chips.js HTTP/1.1" from 127.0.0.1:44606 - 200 3775B in 278.774µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000129] "GET http://127.0.0.1:38985/static/js/megaron/ui/search.js HTTP/1.1" from 127.0.0.1:44614 - 200 2485B in 249.645µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000127] "GET http://127.0.0.1:38985/static/js/megaron/ui/misc.js HTTP/1.1" from 127.0.0.1:44642 - 200 10735B in 814.847µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000130] "GET http://127.0.0.1:38985/static/js/megaron/ui/marchctx.js HTTP/1.1" from 127.0.0.1:44654 - 200 12071B in 545.136µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000134] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/kult.js HTTP/1.1" from 127.0.0.1:44642 - 200 3539B in 232.837µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000131] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/city.js HTTP/1.1" from 127.0.0.1:44624 - 200 14304B in 658.289µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000132] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/war.js HTTP/1.1" from 127.0.0.1:44606 - 200 16573B in 632.41µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000133] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/economy.js HTTP/1.1" from 127.0.0.1:44614 - 200 10497B in 615.405µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000138] "GET http://127.0.0.1:38985/static/js/megaron/ui/diagnostics.js HTTP/1.1" from 127.0.0.1:44624 - 200 2127B in 168.738µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000136] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/notif.js HTTP/1.1" from 127.0.0.1:44642 - 200 3647B in 438.386µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000135] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/diplomacy.js HTTP/1.1" from 127.0.0.1:44654 - 200 10175B in 464.595µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000137] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/report.js HTTP/1.1" from 127.0.0.1:44606 - 200 1919B in 416.102µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000139] "GET http://127.0.0.1:38985/static/js/megaron/ui/sfx.js HTTP/1.1" from 127.0.0.1:44614 - 200 3919B in 383.089µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000140] "GET http://127.0.0.1:38985/static/js/megaron/ui/dispatch_window.js HTTP/1.1" from 127.0.0.1:44624 - 200 5664B in 623.247µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000141] "GET http://127.0.0.1:38985/static/js/megaron/ui/account_window.js HTTP/1.1" from 127.0.0.1:44606 - 200 3134B in 470.2µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000142] "GET http://127.0.0.1:38985/static/js/megaron/ui/codex.js HTTP/1.1" from 127.0.0.1:44654 - 200 4586B in 532.688µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000123] "GET http://127.0.0.1:38985/static/js/megaron/render/map.js HTTP/1.1" from 127.0.0.1:44634 - 200 71700B in 4.02259ms
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000143] "GET http://127.0.0.1:38985/static/js/megaron/api.js HTTP/1.1" from 127.0.0.1:44634 - 200 1829B in 170.699µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000147] "GET http://127.0.0.1:38985/static/js/megaron/ui/search_messages.js HTTP/1.1" from 127.0.0.1:44642 - 200 1096B in 133.283µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000148] "GET http://127.0.0.1:38985/static/js/megaron/ui/time.js HTTP/1.1" from 127.0.0.1:44614 - 200 1550B in 200.635µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000146] "GET http://127.0.0.1:38985/static/js/megaron/render/citybuildings.js HTTP/1.1" from 127.0.0.1:44654 - 200 5334B in 267.124µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000149] "GET http://127.0.0.1:38985/static/js/megaron/ui/movements.js HTTP/1.1" from 127.0.0.1:44634 - 200 1543B in 105.918µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000145] "GET http://127.0.0.1:38985/static/js/megaron/render/pixelgrid.js HTTP/1.1" from 127.0.0.1:44624 - 200 7885B in 556.666µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000150] "GET http://127.0.0.1:38985/static/js/megaron/ui/inline_result.js HTTP/1.1" from 127.0.0.1:44634 - 200 691B in 62.311µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000144] "GET http://127.0.0.1:38985/static/js/megaron/ui/format.js HTTP/1.1" from 127.0.0.1:44606 - 200 17356B in 888.053µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000151] "GET http://127.0.0.1:38985/static/js/megaron/ui/fmt_num.js HTTP/1.1" from 127.0.0.1:44634 - 200 475B in 44.118µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000152] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/kult_kharis.js HTTP/1.1" from 127.0.0.1:44606 - 200 1019B in 114.391µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000153] "GET http://127.0.0.1:38985/static/js/megaron/ui/stance.js HTTP/1.1" from 127.0.0.1:44654 - 200 831B in 68.078µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000155] "GET http://127.0.0.1:38985/static/js/megaron/ui/expedition.js HTTP/1.1" from 127.0.0.1:44634 - 200 702B in 76.475µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000154] "GET http://127.0.0.1:38985/static/js/megaron/ui/actornames.js HTTP/1.1" from 127.0.0.1:44624 - 200 1402B in 115.029µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000156] "GET http://127.0.0.1:38985/static/js/megaron/ui/march_preview.js HTTP/1.1" from 127.0.0.1:44642 - 200 1515B in 145.289µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000157] "GET http://127.0.0.1:38985/static/js/megaron/ui/citygrid.js HTTP/1.1" from 127.0.0.1:44614 - 200 8150B in 239.248µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000158] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/city_production.js HTTP/1.1" from 127.0.0.1:44606 - 200 2105B in 186.621µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000159] "GET http://127.0.0.1:38985/static/js/megaron/ui/retreat.js HTTP/1.1" from 127.0.0.1:44634 - 200 1047B in 161.709µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000160] "GET http://127.0.0.1:38985/static/js/megaron/ui/runner_status.js HTTP/1.1" from 127.0.0.1:44606 - 200 1529B in 153.606µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000162] "GET http://127.0.0.1:38985/static/js/megaron/ui/recall_all.js HTTP/1.1" from 127.0.0.1:44624 - 200 751B in 102.799µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000161] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/sitos_view.js HTTP/1.1" from 127.0.0.1:44654 - 200 1430B in 143.834µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000163] "GET http://127.0.0.1:38985/static/js/megaron/ui/gifts.js HTTP/1.1" from 127.0.0.1:44642 - 200 529B in 72.623µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000164] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/gossip.js HTTP/1.1" from 127.0.0.1:44614 - 200 771B in 133.986µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000165] "GET http://127.0.0.1:38985/static/js/megaron/ui/account_profile.js HTTP/1.1" from 127.0.0.1:44634 - 200 340B in 68.127µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000166] "GET http://127.0.0.1:38985/static/js/megaron/render/routes.js HTTP/1.1" from 127.0.0.1:44606 - 200 2296B in 172.919µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000168] "GET http://127.0.0.1:38985/static/js/megaron/render/sight.js HTTP/1.1" from 127.0.0.1:44624 - 200 1334B in 114.272µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000169] "GET http://127.0.0.1:38985/static/js/megaron/render/memory.js HTTP/1.1" from 127.0.0.1:44654 - 200 1000B in 83.877µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000167] "GET http://127.0.0.1:38985/static/js/megaron/render/actorsprites.js HTTP/1.1" from 127.0.0.1:44614 - 200 5852B in 237.039µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000170] "GET http://127.0.0.1:38985/static/js/megaron/render/doomfire.js HTTP/1.1" from 127.0.0.1:44634 - 200 1876B in 86.165µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000172] "GET http://127.0.0.1:38985/static/js/megaron/render/cityicons.js HTTP/1.1" from 127.0.0.1:44606 - 200 3923B in 162.536µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000173] "GET http://127.0.0.1:38985/static/js/megaron/render/camera.js HTTP/1.1" from 127.0.0.1:44614 - 200 1542B in 83.731µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000171] "GET http://127.0.0.1:38985/static/js/megaron/render/citysprites.js HTTP/1.1" from 127.0.0.1:44642 - 200 8747B in 486.345µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000174] "GET http://127.0.0.1:38985/static/js/megaron/render/map_input.js HTTP/1.1" from 127.0.0.1:44634 - 200 1475B in 131.194µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000175] "GET http://127.0.0.1:38985/static/js/megaron/ui/hover.js HTTP/1.1" from 127.0.0.1:44606 - 200 1734B in 185.667µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000176] "GET http://127.0.0.1:38985/static/js/megaron/render/place_names.js HTTP/1.1" from 127.0.0.1:44654 - 200 1741B in 157.818µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000179] "GET http://127.0.0.1:38985/static/js/megaron/render/chunk_worker.js HTTP/1.1" from 127.0.0.1:44614 - 200 794B in 110.34µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000178] "GET http://127.0.0.1:38985/static/js/megaron/render/storms.js HTTP/1.1" from 127.0.0.1:44624 - 200 2169B in 299.828µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000177] "GET http://127.0.0.1:38985/static/js/megaron/render/markraster.js HTTP/1.1" from 127.0.0.1:44642 - 200 34271B in 1.219772ms
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000180] "GET http://127.0.0.1:38985/static/js/megaron/verb_telemetry.js HTTP/1.1" from 127.0.0.1:44634 - 200 2876B in 226.254µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000181] "GET http://127.0.0.1:38985/static/js/megaron/ui/fmt_clock.js HTTP/1.1" from 127.0.0.1:44642 - 200 384B in 83.325µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000182] "GET http://127.0.0.1:38985/static/js/megaron/render/river_names.js HTTP/1.1" from 127.0.0.1:44634 - 200 255B in 75.733µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000183] "GET http://127.0.0.1:38985/api/v1/auth/me HTTP/1.1" from 127.0.0.1:44634 - 200 187B in 422.449µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000184] "GET http://127.0.0.1:38985/favicon.ico HTTP/1.1" from 127.0.0.1:44634 - 404 44B in 18.125µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000185] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a HTTP/1.1" from 127.0.0.1:44634 - 200 234B in 475.801µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000186] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces HTTP/1.1" from 127.0.0.1:44642 - 200 28B in 6.85362ms
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000187] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/founding/status HTTP/1.1" from 127.0.0.1:44634 - 200 190B in 1.683438ms
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000188] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/messengers/inbox HTTP/1.1" from 127.0.0.1:44634 - 200 28B in 1.977889ms
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000191] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/marches HTTP/1.1" from 127.0.0.1:44606 - 200 28B in 2.906172ms
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000189] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces HTTP/1.1" from 127.0.0.1:44634 - 200 28B in 5.82337ms
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000195] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/rural-projections HTTP/1.1" from 127.0.0.1:44606 - 200 28B in 1.26642ms
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000197] "GET http://127.0.0.1:38985/static/codex/index.json HTTP/1.1" from 127.0.0.1:44606 - 200 2273B in 308.356µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000194] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/units HTTP/1.1" from 127.0.0.1:44634 - 200 395B in 4.666066ms
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000199] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/settlements/placement-roster HTTP/1.1" from 127.0.0.1:44606 - 200 28B in 2.068531ms
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000192] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/messengers HTTP/1.1" from 127.0.0.1:44624 - 200 28B in 9.1593ms
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000201] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?unread=true&dispatchable=true HTTP/1.1" from 127.0.0.1:44606 - 200 820B in 1.527045ms
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000196] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/foreign-units HTTP/1.1" from 127.0.0.1:44614 - 200 28B in 8.718019ms
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000200] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/storms HTTP/1.1" from 127.0.0.1:44634 - 200 48B in 6.22705ms
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000193] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/trades HTTP/1.1" from 127.0.0.1:44654 - 200 28B in 12.777545ms
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000190] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/map HTTP/1.1" from 127.0.0.1:44642 - 200 12626B in 18.6502ms
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000202] "GET http://127.0.0.1:38985/static/js/megaron/render/markraster_worker.js HTTP/1.1" from 127.0.0.1:44634 - 200 620B in 117.257µs
+2026/10/14 17:43:39 [tki9/ARQAIRoAQu-000203] "GET http://127.0.0.1:38985/static/js/megaron/render/markraster.js HTTP/1.1" from 127.0.0.1:44634 - 304 0B in 42.596µs
+2026/10/14 17:43:40 [tki9/ARQAIRoAQu-000204] "GET http://127.0.0.1:38985/api/v1/notification-preferences HTTP/1.1" from 127.0.0.1:44634 - 200 44B in 293.807µs
+2026/10/14 17:43:40 [tki9/ARQAIRoAQu-000205] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications/a96c9ced-3bff-4cdb-b199-d44bdb30991f/read HTTP/1.1" from 127.0.0.1:44642 - 204 0B in 1.674183ms
+2026/10/14 17:43:40 [tki9/ARQAIRoAQu-000206] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?exclude=SitosIntervention%2CSitosFundLow HTTP/1.1" from 127.0.0.1:44634 - 200 829B in 697.269µs
+2026/10/14 17:43:40 [tki9/ARQAIRoAQu-000207] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/gossip HTTP/1.1" from 127.0.0.1:44634 - 200 28B in 722.037µs
+2026/10/14 17:43:40 [tki9/ARQAIRoAQu-000208] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications/read-all HTTP/1.1" from 127.0.0.1:44634 - 204 0B in 500.51µs
+2026/10/14 17:43:40 [tki9/ARQAIRoAQu-000209] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?kind=SitosIntervention HTTP/1.1" from 127.0.0.1:44642 - 200 57B in 354.045µs
+2026/10/14 17:43:40 [tki9/ARQAIRoAQu-000210] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?kind=SitosFundLow HTTP/1.1" from 127.0.0.1:44634 - 200 57B in 315.425µs
+2026/10/14 17:43:40 [tki9/ARQAIRoAQu-000211] "GET http://127.0.0.1:38985/api/v1/notification-preferences HTTP/1.1" from 127.0.0.1:44634 - 200 44B in 710.784µs
+2026/10/14 17:43:40 [tki9/ARQAIRoAQu-000198] "GET http://127.0.0.1:38985/ws/095e786a-d9de-4dd0-9205-2b90e789ee1a HTTP/1.1" from 127.0.0.1:44668 - 000 0B in 1.024907338s
+{"time":"2026-10-14T17:43:40.560600909+02:00","level":"INFO","msg":"player registered","id":"9e2916ec-b813-4499-92d8-cc62d32b52fe","username":"Return-df78df86"}
+2026/10/14 17:43:40 [tki9/ARQAIRoAQu-000212] "POST http://127.0.0.1:38985/api/v1/auth/register HTTP/1.1" from 127.0.0.1:44680 - 201 390B in 46.764284ms
+2026/10/14 17:43:40 [tki9/ARQAIRoAQu-000213] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/join HTTP/1.1" from 127.0.0.1:44690 - 201 303B in 14.453528ms
+2026/10/14 17:43:40 [tki9/ARQAIRoAQu-000214] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/founding/settle HTTP/1.1" from 127.0.0.1:44704 - 201 437B in 84.116181ms
+2026/10/14 17:43:40 [tki9/ARQAIRoAQu-000215] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces HTTP/1.1" from 127.0.0.1:44714 - 200 296B in 5.560754ms
+2026/10/14 17:43:40 [tki9/ARQAIRoAQu-000216] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/placement-options HTTP/1.1" from 127.0.0.1:44722 - 200 11212B in 36.717196ms
+2026/10/14 17:43:40 [tki9/ARQAIRoAQu-000217] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/placement-options HTTP/1.1" from 127.0.0.1:44724 - 200 11212B in 34.043465ms
+2026/10/14 17:43:40 [tki9/ARQAIRoAQu-000218] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/placements HTTP/1.1" from 127.0.0.1:44740 - 201 20B in 47.650554ms
+{"time":"2026-10-14T17:43:40.803810649+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":1}
+2026/10/14 17:43:40 [tki9/ARQAIRoAQu-000219] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/placement-options HTTP/1.1" from 127.0.0.1:44742 - 200 11234B in 41.230059ms
+2026/10/14 17:43:40 [tki9/ARQAIRoAQu-000220] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/placements HTTP/1.1" from 127.0.0.1:44756 - 201 20B in 46.344513ms
+2026/10/14 17:43:40 [tki9/ARQAIRoAQu-000221] "GET http://127.0.0.1:38985/api/v1/buildings HTTP/1.1" from 127.0.0.1:44768 - 200 3635B in 351.908µs
+2026/10/14 17:43:40 [tki9/ARQAIRoAQu-000222] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:44782 - 200 5852B in 45.365523ms
+2026/10/14 17:43:41 [tki9/ARQAIRoAQu-000223] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:44794 - 200 5852B in 42.974917ms
+2026/10/14 17:43:42 [tki9/ARQAIRoAQu-000224] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:44810 - 200 5978B in 41.492108ms
+2026/10/14 17:43:42 [tki9/ARQAIRoAQu-000225] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:44826 - 200 5978B in 43.935079ms
+{"time":"2026-10-14T17:43:42.808716288+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":2}
+{"time":"2026-10-14T17:43:42.809912225+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":3}
+2026/10/14 17:43:43 [tki9/ARQAIRoAQu-000226] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:44828 - 200 6004B in 43.444631ms
+2026/10/14 17:43:43 [tki9/ARQAIRoAQu-000227] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:44836 - 200 6004B in 44.032925ms
+2026/10/14 17:43:44 [tki9/ARQAIRoAQu-000228] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:44850 - 200 5999B in 42.523316ms
+2026/10/14 17:43:44 [tki9/ARQAIRoAQu-000229] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:44852 - 200 5999B in 42.8198ms
+{"time":"2026-10-14T17:43:44.802924697+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":4}
+{"time":"2026-10-14T17:43:44.804011785+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":5}
+2026/10/14 17:43:45 [tki9/ARQAIRoAQu-000230] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:44856 - 200 6017B in 43.894659ms
+2026/10/14 17:43:45 [tki9/ARQAIRoAQu-000231] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:44858 - 200 6017B in 45.29521ms
+2026/10/14 17:43:46 [tki9/ARQAIRoAQu-000232] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:44874 - 200 6006B in 42.519729ms
+{"time":"2026-10-14T17:43:46.8068081+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":6}
+{"time":"2026-10-14T17:43:46.80806084+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":7}
+2026/10/14 17:43:46 [tki9/ARQAIRoAQu-000233] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:44880 - 200 6005B in 48.679851ms
+2026/10/14 17:43:47 [tki9/ARQAIRoAQu-000234] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:44882 - 200 6005B in 42.822138ms
+2026/10/14 17:43:47 [tki9/ARQAIRoAQu-000235] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:44896 - 200 6011B in 41.414547ms
+2026/10/14 17:43:48 [tki9/ARQAIRoAQu-000236] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:44908 - 200 6011B in 41.157253ms
+{"time":"2026-10-14T17:43:48.803048334+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":8}
+{"time":"2026-10-14T17:43:48.804122321+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":9}
+2026/10/14 17:43:49 [tki9/ARQAIRoAQu-000237] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:34362 - 200 6011B in 42.864155ms
+2026/10/14 17:43:49 [tki9/ARQAIRoAQu-000238] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:34374 - 200 6011B in 42.938098ms
+2026/10/14 17:43:50 [tki9/ARQAIRoAQu-000239] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:34384 - 200 6006B in 41.585958ms
+2026/10/14 17:43:50 [tki9/ARQAIRoAQu-000240] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:34388 - 200 6006B in 42.904678ms
+{"time":"2026-10-14T17:43:50.803224387+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":10}
+{"time":"2026-10-14T17:43:50.80425477+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":11}
+2026/10/14 17:43:51 [tki9/ARQAIRoAQu-000241] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:34400 - 200 6007B in 43.057412ms
+2026/10/14 17:43:51 [tki9/ARQAIRoAQu-000242] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:34406 - 200 6007B in 42.658417ms
+2026/10/14 17:43:52 [tki9/ARQAIRoAQu-000243] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:34412 - 200 5997B in 42.294687ms
+{"time":"2026-10-14T17:43:52.803261743+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":12}
+{"time":"2026-10-14T17:43:52.804163106+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":13}
+2026/10/14 17:43:52 [tki9/ARQAIRoAQu-000244] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:34422 - 200 5998B in 43.843904ms
+2026/10/14 17:43:53 [tki9/ARQAIRoAQu-000245] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:34438 - 200 5998B in 50.584443ms
+2026/10/14 17:43:53 [tki9/ARQAIRoAQu-000246] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:34446 - 200 6014B in 43.476438ms
+2026/10/14 17:43:54 [tki9/ARQAIRoAQu-000247] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:34452 - 200 6014B in 44.496611ms
+{"time":"2026-10-14T17:43:54.803321789+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":14}
+{"time":"2026-10-14T17:43:54.804631566+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":15}
+2026/10/14 17:43:55 [tki9/ARQAIRoAQu-000248] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:34460 - 200 6014B in 41.710286ms
+2026/10/14 17:43:55 [tki9/ARQAIRoAQu-000249] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:34468 - 200 6014B in 41.318175ms
+2026/10/14 17:43:56 [tki9/ARQAIRoAQu-000250] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:34484 - 200 6018B in 43.530681ms
+2026/10/14 17:43:56 [tki9/ARQAIRoAQu-000251] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:34492 - 200 6018B in 43.781849ms
+{"time":"2026-10-14T17:43:56.803269789+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":16}
+{"time":"2026-10-14T17:43:56.804157402+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":17}
+2026/10/14 17:43:57 [tki9/ARQAIRoAQu-000252] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:34506 - 200 6020B in 42.34847ms
+2026/10/14 17:43:57 [tki9/ARQAIRoAQu-000253] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:34522 - 200 6020B in 41.995367ms
+2026/10/14 17:43:58 [tki9/ARQAIRoAQu-000254] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:34526 - 200 6018B in 41.343955ms
+{"time":"2026-10-14T17:43:58.802864517+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":18}
+{"time":"2026-10-14T17:43:58.803787237+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":19}
+2026/10/14 17:43:58 [tki9/ARQAIRoAQu-000255] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/goods HTTP/1.1" from 127.0.0.1:34542 - 200 6018B in 41.855879ms
+2026/10/14 17:43:58 [tki9/ARQAIRoAQu-000256] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/build HTTP/1.1" from 127.0.0.1:34550 - 201 104B in 4.290684ms
+2026/10/14 17:43:58 [tki9/ARQAIRoAQu-000257] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:34552 - 422 116B in 1.573758ms
+2026/10/14 17:43:59 [tki9/ARQAIRoAQu-000258] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:32942 - 422 116B in 2.546247ms
+2026/10/14 17:43:59 [tki9/ARQAIRoAQu-000259] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:32956 - 422 116B in 1.899688ms
+2026/10/14 17:44:00 [tki9/ARQAIRoAQu-000260] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:32972 - 422 116B in 2.22109ms
+{"time":"2026-10-14T17:44:00.804270479+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":20}
+{"time":"2026-10-14T17:44:00.805304103+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":21}
+2026/10/14 17:44:01 [tki9/ARQAIRoAQu-000261] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:32984 - 422 116B in 2.982519ms
+2026/10/14 17:44:01 [tki9/ARQAIRoAQu-000262] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:32994 - 422 116B in 2.934273ms
+2026/10/14 17:44:02 [tki9/ARQAIRoAQu-000263] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:33004 - 422 116B in 2.039593ms
+2026/10/14 17:44:02 [tki9/ARQAIRoAQu-000264] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:33006 - 422 116B in 1.978459ms
+{"time":"2026-10-14T17:44:02.803347455+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":22}
+{"time":"2026-10-14T17:44:02.804216339+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":23}
+2026/10/14 17:44:03 [tki9/ARQAIRoAQu-000265] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:33010 - 422 116B in 2.017968ms
+2026/10/14 17:44:03 [tki9/ARQAIRoAQu-000266] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:33026 - 422 116B in 2.35609ms
+2026/10/14 17:44:04 [tki9/ARQAIRoAQu-000267] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:33034 - 422 116B in 2.682852ms
+2026/10/14 17:44:04 [tki9/ARQAIRoAQu-000268] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:33042 - 422 116B in 2.113165ms
+{"time":"2026-10-14T17:44:04.803285524+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":24}
+{"time":"2026-10-14T17:44:04.804733328+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":25}
+2026/10/14 17:44:05 [tki9/ARQAIRoAQu-000269] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:33044 - 422 116B in 1.757421ms
+2026/10/14 17:44:05 [tki9/ARQAIRoAQu-000270] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:33046 - 422 116B in 2.005634ms
+2026/10/14 17:44:06 [tki9/ARQAIRoAQu-000271] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:33048 - 422 116B in 1.897209ms
+{"time":"2026-10-14T17:44:06.803463259+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":26}
+{"time":"2026-10-14T17:44:06.804619856+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":27}
+2026/10/14 17:44:06 [tki9/ARQAIRoAQu-000272] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:33050 - 422 116B in 1.353594ms
+2026/10/14 17:44:07 [tki9/ARQAIRoAQu-000273] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:33064 - 422 116B in 1.859851ms
+2026/10/14 17:44:08 [tki9/ARQAIRoAQu-000274] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:33078 - 422 116B in 1.746551ms
+2026/10/14 17:44:08 [tki9/ARQAIRoAQu-000275] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:33086 - 422 116B in 1.83886ms
+{"time":"2026-10-14T17:44:08.803437431+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":28}
+{"time":"2026-10-14T17:44:08.804683376+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":29}
+2026/10/14 17:44:09 [tki9/ARQAIRoAQu-000276] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:37004 - 422 116B in 1.90782ms
+2026/10/14 17:44:09 [tki9/ARQAIRoAQu-000277] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:37006 - 422 116B in 2.129566ms
+{"time":"2026-10-14T17:44:09.872583122+02:00","level":"INFO","msg":"build complete","settlement":"5663d655-5d7a-484c-860d-d3d169ba1936","building":"barracks"}
+2026/10/14 17:44:10 [tki9/ARQAIRoAQu-000278] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:37022 - 201 318B in 5.369356ms
+2026/10/14 17:44:10 [tki9/ARQAIRoAQu-000279] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:37026 - 201 317B in 4.508113ms
+{"time":"2026-10-14T17:44:10.803066432+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":30}
+{"time":"2026-10-14T17:44:10.804162105+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":31}
+2026/10/14 17:44:11 [tki9/ARQAIRoAQu-000280] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:37040 - 201 317B in 6.431317ms
+2026/10/14 17:44:11 [tki9/ARQAIRoAQu-000281] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:37052 - 201 317B in 4.333361ms
+{"time":"2026-10-14T17:44:11.833114348+02:00","level":"INFO","msg":"training complete","settlement":"5663d655-5d7a-484c-860d-d3d169ba1936","unit":"spearman","count":100}
+{"time":"2026-10-14T17:44:11.83905789+02:00","level":"INFO","msg":"training complete","settlement":"5663d655-5d7a-484c-860d-d3d169ba1936","unit":"spearman","count":100}
+2026/10/14 17:44:12 [tki9/ARQAIRoAQu-000282] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:37056 - 201 317B in 5.023857ms
+{"time":"2026-10-14T17:44:12.803511174+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":32}
+{"time":"2026-10-14T17:44:12.804442724+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":33}
+2026/10/14 17:44:12 [tki9/ARQAIRoAQu-000283] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:37072 - 201 317B in 4.231808ms
+2026/10/14 17:44:13 [tki9/ARQAIRoAQu-000284] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:37076 - 201 317B in 4.173905ms
+{"time":"2026-10-14T17:44:13.83119717+02:00","level":"INFO","msg":"training complete","settlement":"5663d655-5d7a-484c-860d-d3d169ba1936","unit":"spearman","count":100}
+{"time":"2026-10-14T17:44:13.836766539+02:00","level":"INFO","msg":"training complete","settlement":"5663d655-5d7a-484c-860d-d3d169ba1936","unit":"spearman","count":100}
+{"time":"2026-10-14T17:44:13.842472032+02:00","level":"INFO","msg":"training complete","settlement":"5663d655-5d7a-484c-860d-d3d169ba1936","unit":"spearman","count":100}
+2026/10/14 17:44:13 [tki9/ARQAIRoAQu-000285] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:37084 - 201 317B in 3.704636ms
+2026/10/14 17:44:14 [tki9/ARQAIRoAQu-000286] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:37092 - 201 317B in 4.663755ms
+{"time":"2026-10-14T17:44:14.803400545+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":34}
+{"time":"2026-10-14T17:44:14.804604179+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":35}
+2026/10/14 17:44:15 [tki9/ARQAIRoAQu-000287] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:37104 - 201 316B in 4.404515ms
+2026/10/14 17:44:15 [tki9/ARQAIRoAQu-000288] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:37108 - 422 82B in 2.561448ms
+{"time":"2026-10-14T17:44:15.829817381+02:00","level":"INFO","msg":"training complete","settlement":"5663d655-5d7a-484c-860d-d3d169ba1936","unit":"spearman","count":100}
+{"time":"2026-10-14T17:44:15.835615895+02:00","level":"INFO","msg":"training complete","settlement":"5663d655-5d7a-484c-860d-d3d169ba1936","unit":"spearman","count":100}
+{"time":"2026-10-14T17:44:15.841126827+02:00","level":"INFO","msg":"training complete","settlement":"5663d655-5d7a-484c-860d-d3d169ba1936","unit":"spearman","count":100}
+{"time":"2026-10-14T17:44:15.846891252+02:00","level":"INFO","msg":"training complete","settlement":"5663d655-5d7a-484c-860d-d3d169ba1936","unit":"spearman","count":100}
+2026/10/14 17:44:16 [tki9/ARQAIRoAQu-000289] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:37116 - 422 82B in 2.267944ms
+2026/10/14 17:44:16 [tki9/ARQAIRoAQu-000290] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:37128 - 422 82B in 2.980911ms
+{"time":"2026-10-14T17:44:16.802893298+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":36}
+{"time":"2026-10-14T17:44:16.803971386+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":37}
+2026/10/14 17:44:17 [tki9/ARQAIRoAQu-000291] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:37130 - 422 82B in 4.468728ms
+2026/10/14 17:44:17 [tki9/ARQAIRoAQu-000292] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:37144 - 422 82B in 4.807231ms
+{"time":"2026-10-14T17:44:17.8293675+02:00","level":"INFO","msg":"training complete","settlement":"5663d655-5d7a-484c-860d-d3d169ba1936","unit":"spearman","count":100}
+2026/10/14 17:44:18 [tki9/ARQAIRoAQu-000293] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:37146 - 422 82B in 1.811226ms
+2026/10/14 17:44:18 [tki9/ARQAIRoAQu-000294] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:37162 - 422 82B in 5.074248ms
+{"time":"2026-10-14T17:44:18.802739969+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":38}
+{"time":"2026-10-14T17:44:18.803670612+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":39}
+2026/10/14 17:44:19 [tki9/ARQAIRoAQu-000295] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:51138 - 422 82B in 3.748877ms
+2026/10/14 17:44:19 [tki9/ARQAIRoAQu-000296] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:51140 - 422 82B in 1.436309ms
+2026/10/14 17:44:20 [tki9/ARQAIRoAQu-000297] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:51154 - 422 82B in 2.037197ms
+{"time":"2026-10-14T17:44:20.803687399+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":40}
+{"time":"2026-10-14T17:44:20.804711134+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":41}
+2026/10/14 17:44:20 [tki9/ARQAIRoAQu-000298] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:51162 - 422 82B in 3.566486ms
+2026/10/14 17:44:21 [tki9/ARQAIRoAQu-000299] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:51174 - 422 82B in 2.617924ms
+2026/10/14 17:44:22 [tki9/ARQAIRoAQu-000300] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:51184 - 422 82B in 2.238652ms
+2026/10/14 17:44:22 [tki9/ARQAIRoAQu-000301] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:51196 - 422 82B in 2.451163ms
+{"time":"2026-10-14T17:44:22.807130889+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":42}
+{"time":"2026-10-14T17:44:22.808154009+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":43}
+2026/10/14 17:44:23 [tki9/ARQAIRoAQu-000302] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:51198 - 422 82B in 2.361731ms
+2026/10/14 17:44:23 [tki9/ARQAIRoAQu-000303] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:51212 - 422 82B in 2.247496ms
+2026/10/14 17:44:24 [tki9/ARQAIRoAQu-000304] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:51222 - 422 82B in 2.074751ms
+2026/10/14 17:44:24 [tki9/ARQAIRoAQu-000305] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:51228 - 422 82B in 1.738018ms
+{"time":"2026-10-14T17:44:24.802959909+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":44}
+{"time":"2026-10-14T17:44:24.804071021+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":45}
+2026/10/14 17:44:25 [tki9/ARQAIRoAQu-000306] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:51238 - 422 82B in 3.571216ms
+2026/10/14 17:44:25 [tki9/ARQAIRoAQu-000307] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:51248 - 422 82B in 4.447865ms
+2026/10/14 17:44:26 [tki9/ARQAIRoAQu-000308] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:51260 - 422 82B in 4.496463ms
+{"time":"2026-10-14T17:44:26.803643019+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":46}
+{"time":"2026-10-14T17:44:26.804772282+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":47}
+2026/10/14 17:44:26 [tki9/ARQAIRoAQu-000309] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:51274 - 422 82B in 2.754069ms
+2026/10/14 17:44:27 [tki9/ARQAIRoAQu-000310] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:51286 - 422 82B in 3.955114ms
+2026/10/14 17:44:27 [tki9/ARQAIRoAQu-000311] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:51302 - 422 82B in 3.748351ms
+2026/10/14 17:44:28 [tki9/ARQAIRoAQu-000312] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:51308 - 422 82B in 2.628047ms
+{"time":"2026-10-14T17:44:28.803085633+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":48}
+{"time":"2026-10-14T17:44:28.803984734+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":49}
+2026/10/14 17:44:29 [tki9/ARQAIRoAQu-000313] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:58974 - 422 82B in 2.028428ms
+2026/10/14 17:44:29 [tki9/ARQAIRoAQu-000314] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:58986 - 422 82B in 2.253824ms
+2026/10/14 17:44:30 [tki9/ARQAIRoAQu-000315] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:58992 - 422 82B in 2.408175ms
+2026/10/14 17:44:30 [tki9/ARQAIRoAQu-000316] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:59004 - 422 82B in 4.225042ms
+{"time":"2026-10-14T17:44:30.803273137+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":50}
+{"time":"2026-10-14T17:44:30.804597989+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":51}
+2026/10/14 17:44:31 [tki9/ARQAIRoAQu-000317] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:59020 - 422 82B in 2.667545ms
+2026/10/14 17:44:31 [tki9/ARQAIRoAQu-000318] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:59024 - 422 82B in 5.178003ms
+2026/10/14 17:44:32 [tki9/ARQAIRoAQu-000319] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:59036 - 422 82B in 3.429306ms
+2026/10/14 17:44:32 [tki9/ARQAIRoAQu-000320] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:59038 - 422 82B in 1.896101ms
+{"time":"2026-10-14T17:44:32.803113692+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":52}
+{"time":"2026-10-14T17:44:32.803985986+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":53}
+2026/10/14 17:44:33 [tki9/ARQAIRoAQu-000321] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:59052 - 422 82B in 1.86114ms
+2026/10/14 17:44:33 [tki9/ARQAIRoAQu-000322] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:59068 - 422 82B in 1.858753ms
+2026/10/14 17:44:34 [tki9/ARQAIRoAQu-000323] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:59084 - 422 82B in 8.495467ms
+{"time":"2026-10-14T17:44:34.808380856+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":54}
+{"time":"2026-10-14T17:44:34.80944493+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":55}
+2026/10/14 17:44:34 [tki9/ARQAIRoAQu-000324] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:59100 - 422 82B in 5.760733ms
+2026/10/14 17:44:35 [tki9/ARQAIRoAQu-000325] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:59104 - 422 82B in 5.040078ms
+2026/10/14 17:44:36 [tki9/ARQAIRoAQu-000326] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:59120 - 422 82B in 2.423528ms
+2026/10/14 17:44:36 [tki9/ARQAIRoAQu-000327] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:59132 - 422 82B in 2.888347ms
+{"time":"2026-10-14T17:44:36.803505227+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":56}
+{"time":"2026-10-14T17:44:36.804514444+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":57}
+2026/10/14 17:44:37 [tki9/ARQAIRoAQu-000328] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:59144 - 422 82B in 2.586272ms
+2026/10/14 17:44:37 [tki9/ARQAIRoAQu-000329] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:59160 - 422 82B in 5.692699ms
+2026/10/14 17:44:38 [tki9/ARQAIRoAQu-000330] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:59172 - 422 83B in 1.747066ms
+2026/10/14 17:44:38 [tki9/ARQAIRoAQu-000331] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:59176 - 422 83B in 3.99391ms
+{"time":"2026-10-14T17:44:38.803312778+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":58}
+{"time":"2026-10-14T17:44:38.80437277+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":59}
+2026/10/14 17:44:39 [tki9/ARQAIRoAQu-000332] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:41598 - 422 83B in 5.620862ms
+2026/10/14 17:44:39 [tki9/ARQAIRoAQu-000333] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:41606 - 422 83B in 2.363113ms
+2026/10/14 17:44:40 [tki9/ARQAIRoAQu-000334] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:41622 - 201 603B in 7.643807ms
+{"time":"2026-10-14T17:44:40.80644466+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":60}
+{"time":"2026-10-14T17:44:40.811881975+02:00","level":"INFO","msg":"wanax defeated — last settlement lost","player":"9e2916ec-b813-4499-92d8-cc62d32b52fe","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","last_settlement":"5663d655-5d7a-484c-860d-d3d169ba1936"}
+{"time":"2026-10-14T17:44:40.81345673+02:00","level":"INFO","msg":"city collapsed","settlement":"5663d655-5d7a-484c-860d-d3d169ba1936","owner":"9e2916ec-b813-4499-92d8-cc62d32b52fe","warband":"bbe8f671-1636-43ae-a951-9de09a002970","q":3,"r":54,"cause":"overmobilisation","last_city":true}
+2026/10/14 17:44:40 [tki9/ARQAIRoAQu-000335] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces/acd8413f-2766-4a14-9d11-40839f405b53/recruit HTTP/1.1" from 127.0.0.1:41630 - 403 30B in 1.544453ms
+2026/10/14 17:44:40 [tki9/ARQAIRoAQu-000336] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/rise HTTP/1.1" from 127.0.0.1:41644 - 201 284B in 8.20928ms
+2026/10/14 17:44:40 [tki9/ARQAIRoAQu-000337] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/rise HTTP/1.1" from 127.0.0.1:41650 - 200 72B in 326.77µs
+2026/10/14 17:44:40 [tki9/ARQAIRoAQu-000338] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?kind=OpeningDispatch HTTP/1.1" from 127.0.0.1:41652 - 200 2434B in 225.09µs
+2026/10/14 17:44:40 [tki9/ARQAIRoAQu-000339] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?exclude=SitosIntervention%2CSitosFundLow HTTP/1.1" from 127.0.0.1:41658 - 200 2002B in 880.928µs
+2026/10/14 17:44:40 [tki9/ARQAIRoAQu-000340] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?kind=SitosIntervention HTTP/1.1" from 127.0.0.1:41658 - 200 57B in 243.752µs
+2026/10/14 17:44:40 [tki9/ARQAIRoAQu-000341] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?kind=SitosFundLow HTTP/1.1" from 127.0.0.1:41658 - 200 57B in 160.599µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000342] "GET http://127.0.0.1:38985/world/095e786a-d9de-4dd0-9205-2b90e789ee1a/map HTTP/1.1" from 127.0.0.1:41668 - 200 6827B in 1.128884ms
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000343] "GET http://127.0.0.1:38985/static/megaron.css HTTP/1.1" from 127.0.0.1:41668 - 200 19651B in 820.986µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000344] "GET http://127.0.0.1:38985/static/js/megaron/main.js HTTP/1.1" from 127.0.0.1:41668 - 200 5465B in 976.314µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000345] "GET http://127.0.0.1:38985/static/js/megaron/config.js HTTP/1.1" from 127.0.0.1:41668 - 200 2094B in 171.122µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000346] "GET http://127.0.0.1:38985/static/js/megaron/state.js HTTP/1.1" from 127.0.0.1:41668 - 200 2765B in 217.298µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000347] "GET http://127.0.0.1:38985/static/js/megaron/clock.js HTTP/1.1" from 127.0.0.1:41668 - 200 948B in 66.265µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000348] "GET http://127.0.0.1:38985/static/js/megaron/world_time.js HTTP/1.1" from 127.0.0.1:41668 - 200 560B in 98.355µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000349] "GET http://127.0.0.1:38985/static/js/megaron/telemetry.js HTTP/1.1" from 127.0.0.1:41668 - 200 350B in 48.868µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000350] "GET http://127.0.0.1:38985/static/js/megaron/ws.js HTTP/1.1" from 127.0.0.1:41668 - 200 4950B in 217.31µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000352] "GET http://127.0.0.1:38985/static/js/megaron/render/city.js HTTP/1.1" from 127.0.0.1:41684 - 200 7012B in 279.037µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000353] "GET http://127.0.0.1:38985/static/js/megaron/ui/stormname.js HTTP/1.1" from 127.0.0.1:41684 - 200 1103B in 78.74µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000354] "GET http://127.0.0.1:38985/static/js/megaron/ui/placename.js HTTP/1.1" from 127.0.0.1:41684 - 200 1374B in 293.563µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000355] "GET http://127.0.0.1:38985/static/js/megaron/ui/misc.js HTTP/1.1" from 127.0.0.1:41690 - 200 10735B in 402.027µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000356] "GET http://127.0.0.1:38985/static/js/megaron/ui/chips.js HTTP/1.1" from 127.0.0.1:41690 - 200 3775B in 148.533µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000351] "GET http://127.0.0.1:38985/static/js/megaron/render/map.js HTTP/1.1" from 127.0.0.1:41668 - 200 71700B in 2.406365ms
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000357] "GET http://127.0.0.1:38985/static/js/megaron/ui/search.js HTTP/1.1" from 127.0.0.1:41668 - 200 2485B in 114.443µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000358] "GET http://127.0.0.1:38985/static/js/megaron/ui/marchctx.js HTTP/1.1" from 127.0.0.1:41668 - 200 12071B in 694.939µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000359] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/city.js HTTP/1.1" from 127.0.0.1:41690 - 200 14304B in 445.162µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000360] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/war.js HTTP/1.1" from 127.0.0.1:41668 - 200 16573B in 566.184µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000362] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/kult.js HTTP/1.1" from 127.0.0.1:41668 - 200 3539B in 145.72µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000361] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/economy.js HTTP/1.1" from 127.0.0.1:41690 - 200 10497B in 556.698µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000364] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/notif.js HTTP/1.1" from 127.0.0.1:41690 - 200 3647B in 150.139µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000363] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/diplomacy.js HTTP/1.1" from 127.0.0.1:41668 - 200 10175B in 483.114µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000365] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/report.js HTTP/1.1" from 127.0.0.1:41668 - 200 1919B in 87.491µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000366] "GET http://127.0.0.1:38985/static/js/megaron/ui/diagnostics.js HTTP/1.1" from 127.0.0.1:41668 - 200 2127B in 143.981µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000367] "GET http://127.0.0.1:38985/static/js/megaron/ui/sfx.js HTTP/1.1" from 127.0.0.1:41668 - 200 3919B in 166.348µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000368] "GET http://127.0.0.1:38985/static/js/megaron/ui/dispatch_window.js HTTP/1.1" from 127.0.0.1:41668 - 200 5664B in 273.87µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000369] "GET http://127.0.0.1:38985/static/js/megaron/ui/account_window.js HTTP/1.1" from 127.0.0.1:41668 - 200 3134B in 219.073µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000370] "GET http://127.0.0.1:38985/static/js/megaron/ui/codex.js HTTP/1.1" from 127.0.0.1:41690 - 200 4586B in 255.336µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000371] "GET http://127.0.0.1:38985/static/js/megaron/api.js HTTP/1.1" from 127.0.0.1:41668 - 200 1829B in 145.206µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000372] "GET http://127.0.0.1:38985/static/js/megaron/ui/format.js HTTP/1.1" from 127.0.0.1:41668 - 200 17356B in 557.625µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000373] "GET http://127.0.0.1:38985/static/js/megaron/render/pixelgrid.js HTTP/1.1" from 127.0.0.1:41690 - 200 7885B in 307.427µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000374] "GET http://127.0.0.1:38985/static/js/megaron/render/citybuildings.js HTTP/1.1" from 127.0.0.1:41668 - 200 5334B in 191.837µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000375] "GET http://127.0.0.1:38985/static/js/megaron/ui/search_messages.js HTTP/1.1" from 127.0.0.1:41668 - 200 1096B in 64.02µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000376] "GET http://127.0.0.1:38985/static/js/megaron/ui/time.js HTTP/1.1" from 127.0.0.1:41668 - 200 1550B in 107.711µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000377] "GET http://127.0.0.1:38985/static/js/megaron/ui/movements.js HTTP/1.1" from 127.0.0.1:41668 - 200 1543B in 131.776µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000378] "GET http://127.0.0.1:38985/static/js/megaron/ui/inline_result.js HTTP/1.1" from 127.0.0.1:41668 - 200 691B in 57.305µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000379] "GET http://127.0.0.1:38985/static/js/megaron/ui/fmt_num.js HTTP/1.1" from 127.0.0.1:41668 - 200 475B in 44.432µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000380] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/kult_kharis.js HTTP/1.1" from 127.0.0.1:41668 - 200 1019B in 79.811µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000381] "GET http://127.0.0.1:38985/static/js/megaron/ui/actornames.js HTTP/1.1" from 127.0.0.1:41668 - 200 1402B in 79.389µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000382] "GET http://127.0.0.1:38985/static/js/megaron/ui/citygrid.js HTTP/1.1" from 127.0.0.1:41668 - 200 8150B in 266.52µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000383] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/city_production.js HTTP/1.1" from 127.0.0.1:41690 - 200 2105B in 128.061µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000384] "GET http://127.0.0.1:38985/static/js/megaron/ui/stance.js HTTP/1.1" from 127.0.0.1:41668 - 200 831B in 56.117µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000385] "GET http://127.0.0.1:38985/static/js/megaron/ui/expedition.js HTTP/1.1" from 127.0.0.1:41668 - 200 702B in 50.238µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000386] "GET http://127.0.0.1:38985/static/js/megaron/ui/march_preview.js HTTP/1.1" from 127.0.0.1:41668 - 200 1515B in 76.809µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000387] "GET http://127.0.0.1:38985/static/js/megaron/ui/retreat.js HTTP/1.1" from 127.0.0.1:41668 - 200 1047B in 81.476µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000388] "GET http://127.0.0.1:38985/static/js/megaron/ui/runner_status.js HTTP/1.1" from 127.0.0.1:41668 - 200 1529B in 96.737µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000389] "GET http://127.0.0.1:38985/static/js/megaron/ui/recall_all.js HTTP/1.1" from 127.0.0.1:41668 - 200 751B in 58.144µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000390] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/sitos_view.js HTTP/1.1" from 127.0.0.1:41668 - 200 1430B in 98.398µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000391] "GET http://127.0.0.1:38985/static/js/megaron/render/routes.js HTTP/1.1" from 127.0.0.1:41668 - 200 2296B in 119.674µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000392] "GET http://127.0.0.1:38985/static/js/megaron/render/actorsprites.js HTTP/1.1" from 127.0.0.1:41668 - 200 5852B in 188.631µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000393] "GET http://127.0.0.1:38985/static/js/megaron/render/sight.js HTTP/1.1" from 127.0.0.1:41668 - 200 1334B in 75.668µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000394] "GET http://127.0.0.1:38985/static/js/megaron/render/memory.js HTTP/1.1" from 127.0.0.1:41668 - 200 1000B in 51.809µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000395] "GET http://127.0.0.1:38985/static/js/megaron/render/doomfire.js HTTP/1.1" from 127.0.0.1:41668 - 200 1876B in 69.402µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000396] "GET http://127.0.0.1:38985/static/js/megaron/render/citysprites.js HTTP/1.1" from 127.0.0.1:41668 - 200 8747B in 294.446µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000397] "GET http://127.0.0.1:38985/static/js/megaron/render/cityicons.js HTTP/1.1" from 127.0.0.1:41690 - 200 3923B in 205.597µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000398] "GET http://127.0.0.1:38985/static/js/megaron/render/camera.js HTTP/1.1" from 127.0.0.1:41668 - 200 1542B in 211.155µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000399] "GET http://127.0.0.1:38985/static/js/megaron/render/map_input.js HTTP/1.1" from 127.0.0.1:41690 - 200 1475B in 146.147µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000400] "GET http://127.0.0.1:38985/static/js/megaron/ui/hover.js HTTP/1.1" from 127.0.0.1:41668 - 200 1734B in 131.183µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000401] "GET http://127.0.0.1:38985/static/js/megaron/render/storms.js HTTP/1.1" from 127.0.0.1:41668 - 200 2169B in 232.234µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000402] "GET http://127.0.0.1:38985/static/js/megaron/render/place_names.js HTTP/1.1" from 127.0.0.1:41668 - 200 1741B in 149.913µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000404] "GET http://127.0.0.1:38985/static/js/megaron/render/chunk_worker.js HTTP/1.1" from 127.0.0.1:41690 - 200 794B in 82.187µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000403] "GET http://127.0.0.1:38985/static/js/megaron/render/markraster.js HTTP/1.1" from 127.0.0.1:41668 - 200 34271B in 1.485402ms
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000405] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/gossip.js HTTP/1.1" from 127.0.0.1:41668 - 200 771B in 165.978µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000406] "GET http://127.0.0.1:38985/static/js/megaron/ui/gifts.js HTTP/1.1" from 127.0.0.1:41668 - 200 529B in 88.853µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000407] "GET http://127.0.0.1:38985/static/js/megaron/ui/account_profile.js HTTP/1.1" from 127.0.0.1:41668 - 200 340B in 70.145µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000408] "GET http://127.0.0.1:38985/static/js/megaron/verb_telemetry.js HTTP/1.1" from 127.0.0.1:41668 - 200 2876B in 216.199µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000409] "GET http://127.0.0.1:38985/static/js/megaron/ui/fmt_clock.js HTTP/1.1" from 127.0.0.1:41668 - 200 384B in 93.539µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000410] "GET http://127.0.0.1:38985/static/js/megaron/render/river_names.js HTTP/1.1" from 127.0.0.1:41668 - 200 255B in 71.678µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000411] "GET http://127.0.0.1:38985/api/v1/auth/me HTTP/1.1" from 127.0.0.1:41668 - 200 185B in 506.812µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000412] "GET http://127.0.0.1:38985/favicon.ico HTTP/1.1" from 127.0.0.1:41668 - 404 44B in 20.5µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000413] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a HTTP/1.1" from 127.0.0.1:41690 - 200 240B in 500.682µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000414] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces HTTP/1.1" from 127.0.0.1:41668 - 200 219B in 9.275138ms
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000415] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/founding/status HTTP/1.1" from 127.0.0.1:41668 - 200 189B in 1.395226ms
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000416] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/messengers/inbox HTTP/1.1" from 127.0.0.1:41668 - 200 28B in 1.075943ms
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000419] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/marches HTTP/1.1" from 127.0.0.1:41684 - 200 28B in 3.147304ms
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000423] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/rural-projections HTTP/1.1" from 127.0.0.1:41684 - 200 28B in 1.363186ms
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000418] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces HTTP/1.1" from 127.0.0.1:41668 - 200 219B in 8.235356ms
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000422] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/units HTTP/1.1" from 127.0.0.1:41722 - 200 542B in 5.997344ms
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000425] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/settlements/placement-roster HTTP/1.1" from 127.0.0.1:41668 - 200 28B in 1.897808ms
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000421] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/trades HTTP/1.1" from 127.0.0.1:41714 - 200 28B in 10.294546ms
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000420] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/messengers HTTP/1.1" from 127.0.0.1:41706 - 200 28B in 12.833599ms
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000429] "GET http://127.0.0.1:38985/static/codex/index.json HTTP/1.1" from 127.0.0.1:41714 - 200 2273B in 583.98µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000424] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/foreign-units HTTP/1.1" from 127.0.0.1:41684 - 200 28B in 9.111619ms
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000428] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?unread=true&dispatchable=true HTTP/1.1" from 127.0.0.1:41722 - 200 2002B in 2.358488ms
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000417] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/map HTTP/1.1" from 127.0.0.1:41690 - 200 13547B in 18.594986ms
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000427] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/storms HTTP/1.1" from 127.0.0.1:41668 - 200 49B in 9.265614ms
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000430] "GET http://127.0.0.1:38985/static/js/megaron/render/markraster_worker.js HTTP/1.1" from 127.0.0.1:41668 - 200 620B in 109.538µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000431] "GET http://127.0.0.1:38985/static/js/megaron/render/markraster.js HTTP/1.1" from 127.0.0.1:41668 - 304 0B in 39.616µs
+{"time":"2026-10-14T17:44:41.840824271+02:00","level":"WARN","msg":"notify: no recipient, dropped (never broadcast)","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","kind":"TrainComplete"}
+{"time":"2026-10-14T17:44:41.840849874+02:00","level":"INFO","msg":"training complete","settlement":"5663d655-5d7a-484c-860d-d3d169ba1936","unit":"spearman","count":100}
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000432] "GET http://127.0.0.1:38985/api/v1/notification-preferences HTTP/1.1" from 127.0.0.1:41668 - 200 44B in 423.681µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000433] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications/fbc24d70-1455-4fa5-9192-e49567f455ac/read HTTP/1.1" from 127.0.0.1:41668 - 204 0B in 1.009889ms
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000434] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?exclude=SitosIntervention%2CSitosFundLow HTTP/1.1" from 127.0.0.1:41668 - 200 2014B in 752.861µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000435] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/gossip HTTP/1.1" from 127.0.0.1:41668 - 200 28B in 997.126µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000436] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications/read-all HTTP/1.1" from 127.0.0.1:41668 - 204 0B in 1.10528ms
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000437] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?kind=SitosIntervention HTTP/1.1" from 127.0.0.1:41668 - 200 57B in 498.396µs
+2026/10/14 17:44:41 [tki9/ARQAIRoAQu-000438] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?kind=SitosFundLow HTTP/1.1" from 127.0.0.1:41668 - 200 57B in 643.533µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000439] "GET http://127.0.0.1:38985/api/v1/notification-preferences HTTP/1.1" from 127.0.0.1:41668 - 200 44B in 487.899µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000426] "GET http://127.0.0.1:38985/ws/095e786a-d9de-4dd0-9205-2b90e789ee1a HTTP/1.1" from 127.0.0.1:41726 - 000 0B in 1.125059906s
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000440] "GET http://127.0.0.1:38985/world/095e786a-d9de-4dd0-9205-2b90e789ee1a/map HTTP/1.1" from 127.0.0.1:41728 - 200 6827B in 1.369287ms
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000441] "GET http://127.0.0.1:38985/static/megaron.css HTTP/1.1" from 127.0.0.1:41728 - 200 19651B in 1.131286ms
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000442] "GET http://127.0.0.1:38985/static/js/megaron/main.js HTTP/1.1" from 127.0.0.1:41728 - 200 5465B in 282.07µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000443] "GET http://127.0.0.1:38985/static/js/megaron/config.js HTTP/1.1" from 127.0.0.1:41728 - 200 2094B in 153.311µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000444] "GET http://127.0.0.1:38985/static/js/megaron/state.js HTTP/1.1" from 127.0.0.1:41728 - 200 2765B in 151.353µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000445] "GET http://127.0.0.1:38985/static/js/megaron/clock.js HTTP/1.1" from 127.0.0.1:41728 - 200 948B in 115.016µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000446] "GET http://127.0.0.1:38985/static/js/megaron/world_time.js HTTP/1.1" from 127.0.0.1:41728 - 200 560B in 56.085µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000447] "GET http://127.0.0.1:38985/static/js/megaron/telemetry.js HTTP/1.1" from 127.0.0.1:41728 - 200 350B in 65.501µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000448] "GET http://127.0.0.1:38985/static/js/megaron/ws.js HTTP/1.1" from 127.0.0.1:41728 - 200 4950B in 373.163µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000449] "GET http://127.0.0.1:38985/static/js/megaron/render/map.js HTTP/1.1" from 127.0.0.1:41740 - 200 71700B in 2.272034ms
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000450] "GET http://127.0.0.1:38985/static/js/megaron/render/city.js HTTP/1.1" from 127.0.0.1:41740 - 200 7012B in 398.986µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000451] "GET http://127.0.0.1:38985/static/js/megaron/ui/stormname.js HTTP/1.1" from 127.0.0.1:41740 - 200 1103B in 117.146µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000452] "GET http://127.0.0.1:38985/static/js/megaron/ui/placename.js HTTP/1.1" from 127.0.0.1:41740 - 200 1374B in 130.209µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000453] "GET http://127.0.0.1:38985/static/js/megaron/ui/misc.js HTTP/1.1" from 127.0.0.1:41740 - 200 10735B in 363.19µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000454] "GET http://127.0.0.1:38985/static/js/megaron/ui/chips.js HTTP/1.1" from 127.0.0.1:41740 - 200 3775B in 293.126µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000455] "GET http://127.0.0.1:38985/static/js/megaron/ui/search.js HTTP/1.1" from 127.0.0.1:41728 - 200 2485B in 144.725µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000456] "GET http://127.0.0.1:38985/static/js/megaron/ui/marchctx.js HTTP/1.1" from 127.0.0.1:41740 - 200 12071B in 621.342µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000457] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/city.js HTTP/1.1" from 127.0.0.1:41728 - 200 14304B in 1.214345ms
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000458] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/war.js HTTP/1.1" from 127.0.0.1:41740 - 200 16573B in 616.766µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000459] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/economy.js HTTP/1.1" from 127.0.0.1:41728 - 200 10497B in 392.49µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000460] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/kult.js HTTP/1.1" from 127.0.0.1:41740 - 200 3539B in 267.648µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000461] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/diplomacy.js HTTP/1.1" from 127.0.0.1:41740 - 200 10175B in 379.956µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000462] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/notif.js HTTP/1.1" from 127.0.0.1:41728 - 200 3647B in 275.84µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000463] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/report.js HTTP/1.1" from 127.0.0.1:41740 - 200 1919B in 95.974µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000464] "GET http://127.0.0.1:38985/static/js/megaron/ui/diagnostics.js HTTP/1.1" from 127.0.0.1:41740 - 200 2127B in 150.834µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000465] "GET http://127.0.0.1:38985/static/js/megaron/ui/sfx.js HTTP/1.1" from 127.0.0.1:41740 - 200 3919B in 143.694µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000466] "GET http://127.0.0.1:38985/static/js/megaron/ui/dispatch_window.js HTTP/1.1" from 127.0.0.1:41740 - 200 5664B in 267.031µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000467] "GET http://127.0.0.1:38985/static/js/megaron/ui/account_window.js HTTP/1.1" from 127.0.0.1:41728 - 200 3134B in 142.552µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000468] "GET http://127.0.0.1:38985/static/js/megaron/ui/codex.js HTTP/1.1" from 127.0.0.1:41740 - 200 4586B in 274.863µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000469] "GET http://127.0.0.1:38985/static/js/megaron/api.js HTTP/1.1" from 127.0.0.1:41740 - 200 1829B in 246.433µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000470] "GET http://127.0.0.1:38985/static/js/megaron/ui/format.js HTTP/1.1" from 127.0.0.1:41728 - 200 17356B in 609.448µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000471] "GET http://127.0.0.1:38985/static/js/megaron/render/pixelgrid.js HTTP/1.1" from 127.0.0.1:41740 - 200 7885B in 305.502µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000472] "GET http://127.0.0.1:38985/static/js/megaron/render/citybuildings.js HTTP/1.1" from 127.0.0.1:41740 - 200 5334B in 308.573µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000473] "GET http://127.0.0.1:38985/static/js/megaron/ui/search_messages.js HTTP/1.1" from 127.0.0.1:41740 - 200 1096B in 64.966µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000474] "GET http://127.0.0.1:38985/static/js/megaron/ui/time.js HTTP/1.1" from 127.0.0.1:41740 - 200 1550B in 80.655µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000475] "GET http://127.0.0.1:38985/static/js/megaron/ui/movements.js HTTP/1.1" from 127.0.0.1:41740 - 200 1543B in 81.825µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000476] "GET http://127.0.0.1:38985/static/js/megaron/ui/actornames.js HTTP/1.1" from 127.0.0.1:41740 - 200 1402B in 100.189µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000477] "GET http://127.0.0.1:38985/static/js/megaron/ui/fmt_num.js HTTP/1.1" from 127.0.0.1:41740 - 200 475B in 74.769µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000478] "GET http://127.0.0.1:38985/static/js/megaron/ui/stance.js HTTP/1.1" from 127.0.0.1:41740 - 200 831B in 75.427µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000479] "GET http://127.0.0.1:38985/static/js/megaron/ui/expedition.js HTTP/1.1" from 127.0.0.1:41740 - 200 702B in 56.373µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000480] "GET http://127.0.0.1:38985/static/js/megaron/ui/march_preview.js HTTP/1.1" from 127.0.0.1:41740 - 200 1515B in 96.448µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000481] "GET http://127.0.0.1:38985/static/js/megaron/ui/inline_result.js HTTP/1.1" from 127.0.0.1:41740 - 200 691B in 54.479µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000482] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/kult_kharis.js HTTP/1.1" from 127.0.0.1:41740 - 200 1019B in 65.528µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000483] "GET http://127.0.0.1:38985/static/js/megaron/ui/citygrid.js HTTP/1.1" from 127.0.0.1:41740 - 200 8150B in 289.38µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000484] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/city_production.js HTTP/1.1" from 127.0.0.1:41728 - 200 2105B in 125.695µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000485] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/sitos_view.js HTTP/1.1" from 127.0.0.1:41740 - 200 1430B in 84.342µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000486] "GET http://127.0.0.1:38985/static/js/megaron/ui/retreat.js HTTP/1.1" from 127.0.0.1:41740 - 200 1047B in 69.326µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000487] "GET http://127.0.0.1:38985/static/js/megaron/ui/runner_status.js HTTP/1.1" from 127.0.0.1:41740 - 200 1529B in 79.807µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000488] "GET http://127.0.0.1:38985/static/js/megaron/ui/recall_all.js HTTP/1.1" from 127.0.0.1:41740 - 200 751B in 75.225µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000489] "GET http://127.0.0.1:38985/static/js/megaron/render/routes.js HTTP/1.1" from 127.0.0.1:41740 - 200 2296B in 146.462µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000490] "GET http://127.0.0.1:38985/static/js/megaron/render/actorsprites.js HTTP/1.1" from 127.0.0.1:41740 - 200 5852B in 265.506µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000491] "GET http://127.0.0.1:38985/static/js/megaron/render/sight.js HTTP/1.1" from 127.0.0.1:41728 - 200 1334B in 102.86µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000492] "GET http://127.0.0.1:38985/static/js/megaron/render/memory.js HTTP/1.1" from 127.0.0.1:41740 - 200 1000B in 76.879µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000493] "GET http://127.0.0.1:38985/static/js/megaron/render/doomfire.js HTTP/1.1" from 127.0.0.1:41740 - 200 1876B in 120.828µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000494] "GET http://127.0.0.1:38985/static/js/megaron/render/citysprites.js HTTP/1.1" from 127.0.0.1:41740 - 200 8747B in 297.542µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000495] "GET http://127.0.0.1:38985/static/js/megaron/render/cityicons.js HTTP/1.1" from 127.0.0.1:41740 - 200 3923B in 149.401µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000496] "GET http://127.0.0.1:38985/static/js/megaron/render/camera.js HTTP/1.1" from 127.0.0.1:41740 - 200 1542B in 74.667µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000497] "GET http://127.0.0.1:38985/static/js/megaron/render/map_input.js HTTP/1.1" from 127.0.0.1:41740 - 200 1475B in 86.609µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000498] "GET http://127.0.0.1:38985/static/js/megaron/ui/hover.js HTTP/1.1" from 127.0.0.1:41740 - 200 1734B in 82.569µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000499] "GET http://127.0.0.1:38985/static/js/megaron/render/storms.js HTTP/1.1" from 127.0.0.1:41740 - 200 2169B in 100.757µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000500] "GET http://127.0.0.1:38985/static/js/megaron/render/place_names.js HTTP/1.1" from 127.0.0.1:41740 - 200 1741B in 94.441µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000502] "GET http://127.0.0.1:38985/static/js/megaron/render/chunk_worker.js HTTP/1.1" from 127.0.0.1:41728 - 200 794B in 75.423µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000501] "GET http://127.0.0.1:38985/static/js/megaron/render/markraster.js HTTP/1.1" from 127.0.0.1:41740 - 200 34271B in 1.04698ms
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000503] "GET http://127.0.0.1:38985/static/js/megaron/ui/gifts.js HTTP/1.1" from 127.0.0.1:41740 - 200 529B in 78.708µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000504] "GET http://127.0.0.1:38985/static/js/megaron/ui/drawers/gossip.js HTTP/1.1" from 127.0.0.1:41740 - 200 771B in 68.362µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000505] "GET http://127.0.0.1:38985/static/js/megaron/ui/account_profile.js HTTP/1.1" from 127.0.0.1:41740 - 200 340B in 46.89µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000506] "GET http://127.0.0.1:38985/static/js/megaron/verb_telemetry.js HTTP/1.1" from 127.0.0.1:41740 - 200 2876B in 197.318µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000507] "GET http://127.0.0.1:38985/static/js/megaron/ui/fmt_clock.js HTTP/1.1" from 127.0.0.1:41740 - 200 384B in 61.667µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000508] "GET http://127.0.0.1:38985/static/js/megaron/render/river_names.js HTTP/1.1" from 127.0.0.1:41740 - 200 255B in 79.769µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000509] "GET http://127.0.0.1:38985/api/v1/auth/me HTTP/1.1" from 127.0.0.1:41740 - 200 185B in 520.108µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000510] "GET http://127.0.0.1:38985/favicon.ico HTTP/1.1" from 127.0.0.1:41740 - 404 44B in 30.21µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000511] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a HTTP/1.1" from 127.0.0.1:41728 - 200 240B in 716.121µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000512] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces HTTP/1.1" from 127.0.0.1:41734 - 200 229B in 5.339492ms
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000513] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/founding/status HTTP/1.1" from 127.0.0.1:41740 - 200 189B in 997.397µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000514] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/messengers/inbox HTTP/1.1" from 127.0.0.1:41740 - 200 28B in 921.555µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000517] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/marches HTTP/1.1" from 127.0.0.1:41734 - 200 28B in 3.5238ms
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000521] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/rural-projections HTTP/1.1" from 127.0.0.1:41734 - 200 28B in 817.439µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000518] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/messengers HTTP/1.1" from 127.0.0.1:41756 - 200 28B in 6.172143ms
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000523] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/settlements/placement-roster HTTP/1.1" from 127.0.0.1:41756 - 200 28B in 1.231024ms
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000520] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/units HTTP/1.1" from 127.0.0.1:41780 - 200 498B in 5.064847ms
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000516] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/provinces HTTP/1.1" from 127.0.0.1:41728 - 200 229B in 9.367894ms
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000525] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?unread=true&dispatchable=true HTTP/1.1" from 127.0.0.1:41780 - 200 57B in 2.129142ms
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000515] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/map HTTP/1.1" from 127.0.0.1:41740 - 200 13547B in 11.70851ms
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000519] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/trades HTTP/1.1" from 127.0.0.1:41764 - 200 28B in 10.209762ms
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000526] "GET http://127.0.0.1:38985/static/codex/index.json HTTP/1.1" from 127.0.0.1:41740 - 200 2273B in 300.804µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000522] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/foreign-units HTTP/1.1" from 127.0.0.1:41734 - 200 28B in 7.555419ms
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000524] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/storms HTTP/1.1" from 127.0.0.1:41756 - 200 49B in 5.243512ms
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000528] "GET http://127.0.0.1:38985/static/js/megaron/render/markraster_worker.js HTTP/1.1" from 127.0.0.1:41740 - 200 620B in 100.934µs
+2026/10/14 17:44:42 [tki9/ARQAIRoAQu-000529] "GET http://127.0.0.1:38985/static/js/megaron/render/markraster.js HTTP/1.1" from 127.0.0.1:41740 - 304 0B in 52.17µs
+{"time":"2026-10-14T17:44:42.803575059+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":61}
+{"time":"2026-10-14T17:44:42.804564941+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":62}
+{"time":"2026-10-14T17:44:42.805440904+02:00","level":"INFO","msg":"world tick advanced","world":"095e786a-d9de-4dd0-9205-2b90e789ee1a","tick":63}
+2026/10/14 17:44:43 [tki9/ARQAIRoAQu-000530] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?exclude=SitosIntervention%2CSitosFundLow HTTP/1.1" from 127.0.0.1:41740 - 200 2021B in 792.706µs
+2026/10/14 17:44:43 [tki9/ARQAIRoAQu-000531] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/gossip HTTP/1.1" from 127.0.0.1:41740 - 200 28B in 825.066µs
+2026/10/14 17:44:43 [tki9/ARQAIRoAQu-000532] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications/read-all HTTP/1.1" from 127.0.0.1:41740 - 204 0B in 526.899µs
+2026/10/14 17:44:43 [tki9/ARQAIRoAQu-000533] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?kind=SitosIntervention HTTP/1.1" from 127.0.0.1:41740 - 200 57B in 379.812µs
+2026/10/14 17:44:43 [tki9/ARQAIRoAQu-000534] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?kind=SitosFundLow HTTP/1.1" from 127.0.0.1:41740 - 200 57B in 510.003µs
+2026/10/14 17:44:43 [tki9/ARQAIRoAQu-000535] "GET http://127.0.0.1:38985/api/v1/notification-preferences HTTP/1.1" from 127.0.0.1:41740 - 200 44B in 439.295µs
+2026/10/14 17:44:43 [tki9/ARQAIRoAQu-000536] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?exclude=SitosIntervention%2CSitosFundLow HTTP/1.1" from 127.0.0.1:41740 - 200 2021B in 1.070123ms
+2026/10/14 17:44:43 [tki9/ARQAIRoAQu-000537] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/gossip HTTP/1.1" from 127.0.0.1:41740 - 200 28B in 377.998µs
+2026/10/14 17:44:43 [tki9/ARQAIRoAQu-000538] "POST http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications/read-all HTTP/1.1" from 127.0.0.1:41740 - 204 0B in 420.946µs
+2026/10/14 17:44:43 [tki9/ARQAIRoAQu-000539] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?kind=SitosIntervention HTTP/1.1" from 127.0.0.1:41740 - 200 57B in 293.643µs
+2026/10/14 17:44:43 [tki9/ARQAIRoAQu-000540] "GET http://127.0.0.1:38985/api/v1/worlds/095e786a-d9de-4dd0-9205-2b90e789ee1a/notifications?kind=SitosFundLow HTTP/1.1" from 127.0.0.1:41740 - 200 57B in 261.591µs
+2026/10/14 17:44:43 [tki9/ARQAIRoAQu-000541] "GET http://127.0.0.1:38985/api/v1/notification-preferences HTTP/1.1" from 127.0.0.1:41740 - 200 44B in 449.759µs
+2026/10/14 17:44:43 [tki9/ARQAIRoAQu-000527] "GET http://127.0.0.1:38985/ws/095e786a-d9de-4dd0-9205-2b90e789ee1a HTTP/1.1" from 127.0.0.1:41784 - 000 0B in 1.072707175s
+{"time":"2026-10-14T17:44:43.902294674+02:00","level":"INFO","msg":"scheduled event worker stopped"}
+{"time":"2026-10-14T17:44:43.902308588+02:00","level":"INFO","msg":"shutting down"}
+{"time":"2026-10-14T17:44:43.902300361+02:00","level":"INFO","msg":"tick worker stopped"}

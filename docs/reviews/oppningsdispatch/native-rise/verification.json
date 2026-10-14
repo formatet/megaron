@@ -1,0 +1,471 @@
+{
+  "health": {
+    "commit": "a3ba0d39",
+    "migration": 179,
+    "status": "ok"
+  },
+  "natural_rise": {
+    "trials": [
+      {
+        "attempt": 0,
+        "founded": {
+          "coastal": false,
+          "grain_carried": 1200,
+          "grain_total": 1208,
+          "poseidon_gift": null,
+          "province_id": "acd8413f-2766-4a14-9d11-40839f405b53",
+          "settlement_id": "5663d655-5d7a-484c-860d-d3d169ba1936",
+          "silver_carried": 480,
+          "silver_total": 730,
+          "tile": {
+            "WorldID": "00000000-0000-0000-0000-000000000000",
+            "Q": 3,
+            "R": 54,
+            "Terrain": "",
+            "Coastal": false,
+            "Fertility": 0,
+            "Mineral": 0,
+            "CopperDeposit": false,
+            "TinDeposit": false,
+            "SilverDeposit": false,
+            "CedarDeposit": false
+          }
+        },
+        "options": {
+          "timber": 2,
+          "stone": 18
+        }
+      }
+    ],
+    "actions": [
+      {
+        "gubbe_ordinal": 4
+      },
+      {
+        "gubbe_ordinal": 5
+      },
+      {
+        "complete_at": "2026-10-14T17:44:08.875109886+02:00",
+        "queue_id": "74bd9023-037d-4659-8197-b732da382ff2"
+      }
+    ],
+    "recruited": [
+      {
+        "complete_at": "2026-10-14T17:44:11.162670143+02:00",
+        "count": 1,
+        "forming_size": 100,
+        "men": 100,
+        "names": null,
+        "pop_drawn": 100,
+        "population_after": 982,
+        "population_before": 1082,
+        "training_started": true,
+        "unit_id": "749bf024-1d60-48b5-a343-2c5d7b28d9c9",
+        "unit_ids": [
+          "749bf024-1d60-48b5-a343-2c5d7b28d9c9"
+        ],
+        "unit_type": "spearman"
+      },
+      {
+        "complete_at": "2026-10-14T17:44:11.702889249+02:00",
+        "count": 1,
+        "forming_size": 100,
+        "men": 100,
+        "names": null,
+        "pop_drawn": 100,
+        "population_after": 882,
+        "population_before": 982,
+        "training_started": true,
+        "unit_id": "7684f83b-06b0-4dc5-a9a1-e2a477bd988a",
+        "unit_ids": [
+          "7684f83b-06b0-4dc5-a9a1-e2a477bd988a"
+        ],
+        "unit_type": "spearman"
+      },
+      {
+        "complete_at": "2026-10-14T17:44:12.242825445+02:00",
+        "count": 1,
+        "forming_size": 100,
+        "men": 100,
+        "names": null,
+        "pop_drawn": 100,
+        "population_after": 782,
+        "population_before": 882,
+        "training_started": true,
+        "unit_id": "e863d345-536e-4895-b13e-1d88f5a6cce4",
+        "unit_ids": [
+          "e863d345-536e-4895-b13e-1d88f5a6cce4"
+        ],
+        "unit_type": "spearman"
+      },
+      {
+        "complete_at": "2026-10-14T17:44:12.782686461+02:00",
+        "count": 1,
+        "forming_size": 100,
+        "men": 100,
+        "names": null,
+        "pop_drawn": 100,
+        "population_after": 682,
+        "population_before": 782,
+        "training_started": true,
+        "unit_id": "48eddaab-ba52-4e93-ad81-044cb5225a62",
+        "unit_ids": [
+          "48eddaab-ba52-4e93-ad81-044cb5225a62"
+        ],
+        "unit_type": "spearman"
+      },
+      {
+        "complete_at": "2026-10-14T17:44:13.323895922+02:00",
+        "count": 1,
+        "forming_size": 100,
+        "men": 100,
+        "names": null,
+        "pop_drawn": 100,
+        "population_after": 586,
+        "population_before": 686,
+        "training_started": true,
+        "unit_id": "5f67f6df-c9bb-4283-8a29-871493c4ff32",
+        "unit_ids": [
+          "5f67f6df-c9bb-4283-8a29-871493c4ff32"
+        ],
+        "unit_type": "spearman"
+      },
+      {
+        "complete_at": "2026-10-14T17:44:13.862542061+02:00",
+        "count": 1,
+        "forming_size": 100,
+        "men": 100,
+        "names": null,
+        "pop_drawn": 100,
+        "population_after": 486,
+        "population_before": 586,
+        "training_started": true,
+        "unit_id": "cd5df961-e94f-475c-bff3-827e2479ca5c",
+        "unit_ids": [
+          "cd5df961-e94f-475c-bff3-827e2479ca5c"
+        ],
+        "unit_type": "spearman"
+      },
+      {
+        "complete_at": "2026-10-14T17:44:14.400577228+02:00",
+        "count": 1,
+        "forming_size": 100,
+        "men": 100,
+        "names": null,
+        "pop_drawn": 100,
+        "population_after": 386,
+        "population_before": 486,
+        "training_started": true,
+        "unit_id": "b1d8855f-509a-4995-acbe-d100bda2647c",
+        "unit_ids": [
+          "b1d8855f-509a-4995-acbe-d100bda2647c"
+        ],
+        "unit_type": "spearman"
+      },
+      {
+        "complete_at": "2026-10-14T17:44:14.942396553+02:00",
+        "count": 1,
+        "forming_size": 100,
+        "men": 100,
+        "names": null,
+        "pop_drawn": 100,
+        "population_after": 288,
+        "population_before": 388,
+        "training_started": true,
+        "unit_id": "8cf93203-d040-4eef-b380-7ba43280d6f0",
+        "unit_ids": [
+          "8cf93203-d040-4eef-b380-7ba43280d6f0"
+        ],
+        "unit_type": "spearman"
+      },
+      {
+        "complete_at": "2026-10-14T17:44:15.481473718+02:00",
+        "count": 1,
+        "forming_size": 100,
+        "men": 100,
+        "names": null,
+        "pop_drawn": 100,
+        "population_after": 188,
+        "population_before": 288,
+        "training_started": true,
+        "unit_id": "2f3dd829-51e9-45ef-96f1-10b4afee18a7",
+        "unit_ids": [
+          "2f3dd829-51e9-45ef-96f1-10b4afee18a7"
+        ],
+        "unit_type": "spearman"
+      },
+      {
+        "complete_at": "2026-10-14T17:44:16.020671641+02:00",
+        "count": 1,
+        "forming_size": 100,
+        "men": 100,
+        "names": null,
+        "pop_drawn": 100,
+        "population_after": 88,
+        "population_before": 188,
+        "training_started": true,
+        "unit_id": "64cfc2b6-cc32-44fd-8d00-dc2cf020cfbe",
+        "unit_ids": [
+          "64cfc2b6-cc32-44fd-8d00-dc2cf020cfbe"
+        ],
+        "unit_type": "spearman"
+      },
+      {
+        "complete_at": "2026-10-14T17:44:41.332385254+02:00",
+        "count": 1,
+        "forming_size": 100,
+        "men": 100,
+        "names": null,
+        "pop_drawn": 100,
+        "population_after": 1,
+        "population_before": 101,
+        "training_started": true,
+        "unit_id": "ed1b333b-01f7-465b-8fa7-f65c52cd5cf3",
+        "unit_ids": [
+          "ed1b333b-01f7-465b-8fa7-f65c52cd5cf3"
+        ],
+        "unit_type": "spearman",
+        "upkeep_warning": "warning: once this unit garrisons it needs 0.5 grain + 0.0 silver per day upkeep \u2014 this settlement's current net after its existing army's upkeep is -3.7 grain per day, +0.0 silver per day; it may starve/desert without more production or fewer units (`keryx status`)"
+      }
+    ],
+    "phase": {
+      "status": "dispossessed",
+      "population": 1,
+      "state": "collapsed"
+    },
+    "risen": {
+      "host_unit_id": "6974b718-3c59-40ed-a0da-9571f80eb9b4",
+      "population": 700,
+      "tile": {
+        "WorldID": "00000000-0000-0000-0000-000000000000",
+        "Q": 50,
+        "R": 25,
+        "Terrain": "",
+        "Coastal": false,
+        "Fertility": 0,
+        "Mineral": 0,
+        "CopperDeposit": false,
+        "TinDeposit": false,
+        "SilverDeposit": false,
+        "CedarDeposit": false
+      }
+    },
+    "retry": {
+      "existing": true,
+      "host_unit_id": "6974b718-3c59-40ed-a0da-9571f80eb9b4"
+    },
+    "notifications": [
+      {
+        "id": "fbc24d70-1455-4fa5-9192-e49567f455ac",
+        "kind": "OpeningDispatch",
+        "level": 4,
+        "body": {
+          "title": "Begin again",
+          "host_id": "6974b718-3c59-40ed-a0da-9571f80eb9b4",
+          "returning": true,
+          "paragraphs": [
+            "Time. A day passes every 1 second. Days begin after 2 Wanaxes join.",
+            "An army crosses a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.",
+            "Your survivors gather into a new Host, with 1200 grain and 60 silver. Your standing with the gods is kept. You live on subsistence until founding; find a new home.",
+            "Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.",
+            "The gods. You are safe from punishment for 60 days after founding. A temple takes 16 days to build. Build, staff and feed one in time; neglect afterward risks punishment.",
+            "Orders travel. A Runner must reach a unit in the field before it follows your new order.",
+            "Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.",
+            "Rules: ? (Codex). Problems: Report. Community chat: Account."
+          ]
+        },
+        "created_at": "2026-10-14T17:44:40.914989+02:00",
+        "read_at": null
+      },
+      {
+        "id": "b451bcbe-50ec-4197-97e4-7c37b8ebaf37",
+        "kind": "OpeningDispatch",
+        "level": 4,
+        "body": {
+          "title": "Your people await you",
+          "host_id": "e75ba998-184b-4cbc-9d7b-13a040b8456f",
+          "returning": false,
+          "paragraphs": [
+            "Time. A day passes every 1 second. Days begin after 2 Wanaxes join.",
+            "An army crosses a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.",
+            "Your Host carries 1200 grain and 480 silver. It lives on subsistence until founding; these reserves do not drain. Find your place \u2014 founding is final.",
+            "Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.",
+            "The gods. You are safe from punishment for 60 days after founding. A temple takes 16 days to build. Build, staff and feed one in time; neglect afterward risks punishment.",
+            "Orders travel. A Runner must reach a unit in the field before it follows your new order.",
+            "Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.",
+            "Rules: ? (Codex). Problems: Report. Community chat: Account."
+          ]
+        },
+        "created_at": "2026-10-14T17:43:40.57017+02:00",
+        "read_at": null
+      }
+    ]
+  },
+  "notification": {
+    "id": "a96c9ced-3bff-4cdb-b199-d44bdb30991f",
+    "kind": "OpeningDispatch",
+    "level": 4,
+    "body": {
+      "title": "Your people await you",
+      "host_id": "fa389b34-5e6a-4f28-9c5f-b8cbe036b663",
+      "returning": false,
+      "paragraphs": [
+        "Time. A day passes every 1 second. Days begin after 2 Wanaxes join.",
+        "An army crosses a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.",
+        "Your Host carries 1200 grain and 480 silver. It lives on subsistence until founding; these reserves do not drain. Find your place \u2014 founding is final.",
+        "Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.",
+        "The gods. You are safe from punishment for 60 days after founding. A temple takes 16 days to build. Build, staff and feed one in time; neglect afterward risks punishment.",
+        "Orders travel. A Runner must reach a unit in the field before it follows your new order.",
+        "Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.",
+        "Rules: ? (Codex). Problems: Report. Community chat: Account."
+      ]
+    },
+    "created_at": "2026-10-14T17:43:39.250905+02:00",
+    "read_at": null
+  },
+  "repeat_join": {
+    "existing": true,
+    "host_unit_id": "353fd5f4-3bbc-465d-82a1-d87edee573bb"
+  },
+  "captures": [
+    {
+      "mode": "desktop",
+      "notification": {
+        "id": "33d9ad96-428f-41ce-b936-e90dbf1c4a5a",
+        "kind": "OpeningDispatch",
+        "level": 4,
+        "body": {
+          "title": "Your people await you",
+          "host_id": "353fd5f4-3bbc-465d-82a1-d87edee573bb",
+          "returning": false,
+          "paragraphs": [
+            "Time. A day passes every 1 second. Days begin after 2 Wanaxes join.",
+            "An army crosses a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.",
+            "Your Host carries 1200 grain and 480 silver. It lives on subsistence until founding; these reserves do not drain. Find your place \u2014 founding is final.",
+            "Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.",
+            "The gods. You are safe from punishment for 60 days after founding. A temple takes 16 days to build. Build, staff and feed one in time; neglect afterward risks punishment.",
+            "Orders travel. A Runner must reach a unit in the field before it follows your new order.",
+            "Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.",
+            "Rules: ? (Codex). Problems: Report. Community chat: Account."
+          ]
+        },
+        "created_at": "2026-10-14T17:43:36.906093+02:00",
+        "read_at": null
+      },
+      "text": "\ud83d\udcdc\nYour people await you\n\nTime. A day passes every 1 second. Days begin after 2 Wanaxes join.\n\nAn army crosses a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.\n\nYour Host carries 1200 grain and 480 silver. It lives on subsistence until founding; these reserves do not drain. Find your place \u2014 founding is final.\n\nFood first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.\n\nThe gods. You are safe from punishment for 60 days after founding. A temple takes 16 days to build. Build, staff and feed one in time; neglect afterward risks punishment.\n\nOrders travel. A Runner must reach a unit in the field before it follows your new order.\n\nBronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.\n\nRules: ? (Codex). Problems: Report. Community chat: Account.\n\ntoday 17:43\n\u2316 Take me there\n? Read about this\nStop these as dispatches (still kept in Notifications)",
+      "archive_text": "\ud83d\udcdc\nYour people await you\n\nTime. A day passes every 1 second. Days begin after 2 Wanaxes join.\n\nAn army crosses a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.\n\nYour Host carries 1200 grain and 480 silver. It lives on subsistence until founding; these reserves do not drain. Find your place \u2014 founding is final.\n\nFood first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.\n\nThe gods. You are safe from punishment for 60 days after founding. A temple takes 16 days to build. Build, staff and feed one in time; neglect afterward risks punishment.\n\nOrders travel. A Runner must reach a unit in the field before it follows your new order.\n\nBronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.\n\nRules: ? (Codex). Problems: Report. Community chat: Account.\n\ntoday 17:43\n\u2316 Take me there\n? Read about this\nStop these as dispatches (still kept in Notifications)",
+      "errors": [],
+      "rect": {
+        "width": 416,
+        "scrollWidth": 416,
+        "height": 617,
+        "scrollHeight": 617
+      }
+    },
+    {
+      "mode": "mobile",
+      "notification": {
+        "id": "a96c9ced-3bff-4cdb-b199-d44bdb30991f",
+        "kind": "OpeningDispatch",
+        "level": 4,
+        "body": {
+          "title": "Your people await you",
+          "host_id": "fa389b34-5e6a-4f28-9c5f-b8cbe036b663",
+          "returning": false,
+          "paragraphs": [
+            "Time. A day passes every 1 second. Days begin after 2 Wanaxes join.",
+            "An army crosses a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.",
+            "Your Host carries 1200 grain and 480 silver. It lives on subsistence until founding; these reserves do not drain. Find your place \u2014 founding is final.",
+            "Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.",
+            "The gods. You are safe from punishment for 60 days after founding. A temple takes 16 days to build. Build, staff and feed one in time; neglect afterward risks punishment.",
+            "Orders travel. A Runner must reach a unit in the field before it follows your new order.",
+            "Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.",
+            "Rules: ? (Codex). Problems: Report. Community chat: Account."
+          ]
+        },
+        "created_at": "2026-10-14T17:43:39.250905+02:00",
+        "read_at": null
+      },
+      "text": "\ud83d\udcdc\nYour people await you\n\nTime. A day passes every 1 second. Days begin after 2 Wanaxes join.\n\nAn army crosses a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.\n\nYour Host carries 1200 grain and 480 silver. It lives on subsistence until founding; these reserves do not drain. Find your place \u2014 founding is final.\n\nFood first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.\n\nThe gods. You are safe from punishment for 60 days after founding. A temple takes 16 days to build. Build, staff and feed one in time; neglect afterward risks punishment.\n\nOrders travel. A Runner must reach a unit in the field before it follows your new order.\n\nBronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.\n\nRules: ? (Codex). Problems: Report. Community chat: Account.\n\ntoday 17:43\n\u2316 Take me there\n? Read about this\nStop these as dispatches (still kept in Notifications)",
+      "archive_text": "\ud83d\udcdc\nYour people await you\n\nTime. A day passes every 1 second. Days begin after 2 Wanaxes join.\n\nAn army crosses a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.\n\nYour Host carries 1200 grain and 480 silver. It lives on subsistence until founding; these reserves do not drain. Find your place \u2014 founding is final.\n\nFood first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.\n\nThe gods. You are safe from punishment for 60 days after founding. A temple takes 16 days to build. Build, staff and feed one in time; neglect afterward risks punishment.\n\nOrders travel. A Runner must reach a unit in the field before it follows your new order.\n\nBronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.\n\nRules: ? (Codex). Problems: Report. Community chat: Account.\n\ntoday 17:43\n\u2316 Take me there\n? Read about this\nStop these as dispatches (still kept in Notifications)",
+      "errors": [],
+      "rect": {
+        "width": 386,
+        "scrollWidth": 386,
+        "height": 639,
+        "scrollHeight": 639
+      }
+    },
+    {
+      "mode": "returning-desktop",
+      "notification": {
+        "id": "fbc24d70-1455-4fa5-9192-e49567f455ac",
+        "kind": "OpeningDispatch",
+        "level": 4,
+        "body": {
+          "title": "Begin again",
+          "host_id": "6974b718-3c59-40ed-a0da-9571f80eb9b4",
+          "returning": true,
+          "paragraphs": [
+            "Time. A day passes every 1 second. Days begin after 2 Wanaxes join.",
+            "An army crosses a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.",
+            "Your survivors gather into a new Host, with 1200 grain and 60 silver. Your standing with the gods is kept. You live on subsistence until founding; find a new home.",
+            "Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.",
+            "The gods. You are safe from punishment for 60 days after founding. A temple takes 16 days to build. Build, staff and feed one in time; neglect afterward risks punishment.",
+            "Orders travel. A Runner must reach a unit in the field before it follows your new order.",
+            "Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.",
+            "Rules: ? (Codex). Problems: Report. Community chat: Account."
+          ]
+        },
+        "created_at": "2026-10-14T17:44:40.914989+02:00",
+        "read_at": null
+      },
+      "text": "\ud83d\udcdc\nBegin again\n\nTime. A day passes every 1 second. Days begin after 2 Wanaxes join.\n\nAn army crosses a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.\n\nYour survivors gather into a new Host, with 1200 grain and 60 silver. Your standing with the gods is kept. You live on subsistence until founding; find a new home.\n\nFood first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.\n\nThe gods. You are safe from punishment for 60 days after founding. A temple takes 16 days to build. Build, staff and feed one in time; neglect afterward risks punishment.\n\nOrders travel. A Runner must reach a unit in the field before it follows your new order.\n\nBronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.\n\nRules: ? (Codex). Problems: Report. Community chat: Account.\n\ntoday 17:44\n\u2316 Take me there\n? Read about this\nStop these as dispatches (still kept in Notifications)",
+      "archive_text": "\ud83d\udcdc\nBegin again\n\nTime. A day passes every 1 second. Days begin after 2 Wanaxes join.\n\nAn army crosses a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.\n\nYour survivors gather into a new Host, with 1200 grain and 60 silver. Your standing with the gods is kept. You live on subsistence until founding; find a new home.\n\nFood first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.\n\nThe gods. You are safe from punishment for 60 days after founding. A temple takes 16 days to build. Build, staff and feed one in time; neglect afterward risks punishment.\n\nOrders travel. A Runner must reach a unit in the field before it follows your new order.\n\nBronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.\n\nRules: ? (Codex). Problems: Report. Community chat: Account.\n\ntoday 17:44\n\u2316 Take me there\n? Read about this\nStop these as dispatches (still kept in Notifications)",
+      "errors": [],
+      "rect": {
+        "width": 416,
+        "scrollWidth": 416,
+        "height": 617,
+        "scrollHeight": 617
+      }
+    },
+    {
+      "mode": "returning-mobile",
+      "notification": {
+        "id": "fbc24d70-1455-4fa5-9192-e49567f455ac",
+        "kind": "OpeningDispatch",
+        "level": 4,
+        "body": {
+          "title": "Begin again",
+          "host_id": "6974b718-3c59-40ed-a0da-9571f80eb9b4",
+          "returning": true,
+          "paragraphs": [
+            "Time. A day passes every 1 second. Days begin after 2 Wanaxes join.",
+            "An army crosses a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.",
+            "Your survivors gather into a new Host, with 1200 grain and 60 silver. Your standing with the gods is kept. You live on subsistence until founding; find a new home.",
+            "Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.",
+            "The gods. You are safe from punishment for 60 days after founding. A temple takes 16 days to build. Build, staff and feed one in time; neglect afterward risks punishment.",
+            "Orders travel. A Runner must reach a unit in the field before it follows your new order.",
+            "Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.",
+            "Rules: ? (Codex). Problems: Report. Community chat: Account."
+          ]
+        },
+        "created_at": "2026-10-14T17:44:40.914989+02:00",
+        "read_at": null
+      },
+      "text": "\ud83d\udcdc\nBegin again\n\nTime. A day passes every 1 second. Days begin after 2 Wanaxes join.\n\nAn army crosses a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.\n\nYour survivors gather into a new Host, with 1200 grain and 60 silver. Your standing with the gods is kept. You live on subsistence until founding; find a new home.\n\nFood first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.\n\nThe gods. You are safe from punishment for 60 days after founding. A temple takes 16 days to build. Build, staff and feed one in time; neglect afterward risks punishment.\n\nOrders travel. A Runner must reach a unit in the field before it follows your new order.\n\nBronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.\n\nRules: ? (Codex). Problems: Report. Community chat: Account.\n\ntoday 17:44\n\u2316 Take me there\n? Read about this\nStop these as dispatches (still kept in Notifications)",
+      "archive_text": "\ud83d\udcdc\nBegin again\n\nTime. A day passes every 1 second. Days begin after 2 Wanaxes join.\n\nAn army crosses a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.\n\nYour survivors gather into a new Host, with 1200 grain and 60 silver. Your standing with the gods is kept. You live on subsistence until founding; find a new home.\n\nFood first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.\n\nThe gods. You are safe from punishment for 60 days after founding. A temple takes 16 days to build. Build, staff and feed one in time; neglect afterward risks punishment.\n\nOrders travel. A Runner must reach a unit in the field before it follows your new order.\n\nBronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.\n\nRules: ? (Codex). Problems: Report. Community chat: Account.\n\ntoday 17:44\n\u2316 Take me there\n? Read about this\nStop these as dispatches (still kept in Notifications)",
+      "errors": [],
+      "rect": {
+        "width": 386,
+        "scrollWidth": 386,
+        "height": 639,
+        "scrollHeight": 639
+      }
+    }
+  ],
+  "sql_writes": false,
+  "payload_overrides": false,
+  "production_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

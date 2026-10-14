@@ -2,6 +2,14 @@ You are a **Wanax**: a Bronze Age ruler of a people on the eastern shores of a g
 
 This Codex is the world's book of knowledge. Every article links onward — follow what you are curious about, or open it from the **?** on any drawer or notification to read about exactly what is in front of you.
 
+## Your opening dispatch
+
+Joining a world brings a private **Your people await you** dispatch. Rising again after losing your realm brings **Begin again** for your new Host. Open it from the dispatch strip or the **Notifications** drawer; the archive keeps the same text for you to revisit.
+
+It explains the world's day length, movement, your Host's reserves, food, the gods, travelling orders and the path to bronze. Its amounts come from the rules when that Host begins. Your Host lives on subsistence before founding, so its reserves do not drain while you search for a home. When you begin again, your standing with the gods is kept.
+
+The dispatch is a record of that beginning; use this Codex and the current city and army views as your situation changes.
+
 ## Three rules that explain almost everything
 
 **Days belong to the world.** The world advances one day at a time, and every duration the game shows you counts in days. See [[time]].

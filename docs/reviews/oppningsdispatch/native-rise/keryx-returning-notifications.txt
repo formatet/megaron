@@ -1,0 +1,48 @@
+15 notification(s), 15 unread
+────────────────────────────────────────────────────────────
+*[Wed Oct 14 17:44]  OpeningDispatch
+      Begin again
+      Time. A day passes every 1 second. Days begin after 2 Wanaxes join.
+      An army crosses a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.
+      Your survivors gather into a new Host, with 1200 grain and 60 silver. Your standing with the gods is kept. You live on subsistence until founding; find a new home.
+      Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.
+      The gods. You are safe from punishment for 60 days after founding. A temple takes 16 days to build. Build, staff and feed one in time; neglect afterward risks punishment.
+      Orders travel. A Runner must reach a unit in the field before it follows your new order.
+      Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.
+      Rules: ? (Codex). Problems: Report. Community chat: Account.
+*[Wed Oct 14 17:44]  CityCollapsed
+      Opening-24381ef4 has collapsed — that was your last settlement
+*[Wed Oct 14 17:44]  TrainComplete
+      Training complete: 100 spearman
+*[Wed Oct 14 17:44]  TrainComplete
+      Training complete: 100 spearman
+*[Wed Oct 14 17:44]  TrainComplete
+      Training complete: 100 spearman
+*[Wed Oct 14 17:44]  TrainComplete
+      Training complete: 100 spearman
+*[Wed Oct 14 17:44]  TrainComplete
+      Training complete: 100 spearman
+*[Wed Oct 14 17:44]  TrainComplete
+      Training complete: 100 spearman
+*[Wed Oct 14 17:44]  TrainComplete
+      Training complete: 100 spearman
+*[Wed Oct 14 17:44]  TrainComplete
+      Training complete: 100 spearman
+*[Wed Oct 14 17:44]  TrainComplete
+      Training complete: 100 spearman
+*[Wed Oct 14 17:44]  TrainComplete
+      Training complete: 100 spearman
+*[Wed Oct 14 17:44]  BuildComplete
+      The city completed barracks
+*[Wed Oct 14 17:43]  MetropolisFounded
+      Your metropolis is founded: Opening-24381ef4 — 19/19 catchment hexes known
+*[Wed Oct 14 17:43]  OpeningDispatch
+      Your people await you
+      Time. A day passes every 1 second. Days begin after 2 Wanaxes join.
+      An army crosses a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.
+      Your Host carries 1200 grain and 480 silver. It lives on subsistence until founding; these reserves do not drain. Find your place — founding is final.
+      Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.
+      The gods. You are safe from punishment for 60 days after founding. A temple takes 16 days to build. Build, staff and feed one in time; neglect afterward risks punishment.
+      Orders travel. A Runner must reach a unit in the field before it follows your new order.
+      Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.
+      Rules: ? (Codex). Problems: Report. Community chat: Account.

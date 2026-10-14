@@ -117,11 +117,19 @@ func (h *JoinHandler) Rise(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "could not gather the survivors")
 		return
 	}
+	opening, err := h.persistOpeningDispatch(r.Context(), tx, worldID, playerID, hostID, spec)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not record returning dispatch")
+		return
+	}
 	if err := tx.Commit(r.Context()); err != nil {
 		writeError(w, http.StatusInternalServerError, "commit failed")
 		return
 	}
 
+	if h.hub != nil {
+		h.hub.DeliverPersisted(r.Context(), worldID, playerID, opening)
+	}
 	writeJSON(w, http.StatusCreated, map[string]any{
 		"host_unit_id": hostID,
 		"tile":         world.MapTile{Q: q, R: r2},

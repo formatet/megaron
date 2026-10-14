@@ -5,7 +5,7 @@ globalThis.document = {addEventListener(){},getElementById:()=>noopEl,createElem
 globalThis.window = {addEventListener(){},matchMedia:()=>({matches:false,addEventListener(){}})};
 globalThis.localStorage = {getItem:()=>null,setItem(){}};
 const { notifDateHeader, hiddenNotifLabel } = await import('./notif.js');
-import { notifText } from '../format.js';
+import { notifText, notifIcon } from '../format.js';
 import { lockedActionsHTML, LAWAGETAS_BRIEFS, drawerHelpHTML, dismissBrief, briefDismissed } from '../misc.js';
 test('K: calendar and forming state survive without world speed',()=>{
  const cal={day:3,month:2,monthName:'Antherion',year:1};
@@ -36,4 +36,12 @@ test('calendar BILD alternatives keep the date with or without month ordinal',()
  const cal={day:1,month:1,monthName:'Pithoi',year:1};
  assert.match(notifDateHeader(cal,{WORLD_STATE:'active'},true), /Day 1 of Pithoi \(1\), Year 1/);
  assert.match(notifDateHeader(cal,{WORLD_STATE:'active'},false), /Day 1 of Pithoi, Year 1/);
+});
+
+
+test('opening dispatch summary uses its archived title for new and returning Hosts', () => {
+  assert.equal(notifText('OpeningDispatch', { title: 'Your people await you', paragraphs: ['Private archived rules'] }), 'Your people await you');
+  assert.equal(notifText('OpeningDispatch', { title: 'Begin again', returning: true }), 'Begin again');
+  assert.equal(notifText('OpeningDispatch', { title: '<Wanax> & people' }), '&lt;Wanax&gt; &amp; people');
+  assert.equal(notifIcon('OpeningDispatch'), '📜');
 });

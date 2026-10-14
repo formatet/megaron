@@ -17,6 +17,7 @@ import (
 	"formatet/megaron/server/internal/world"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -175,6 +176,27 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	}
 	defer tx.Rollback(r.Context())
 
+	// Serialize first join for this realm/owner, then recheck under the lock.
+	// This keeps the Host and its opening archive row exactly once on double-click.
+	if _, err := tx.Exec(r.Context(), `SELECT pg_advisory_xact_lock(hashtextextended($1,0))`, "join:"+worldID.String()+":"+playerID.String()); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not lock joining")
+		return
+	}
+	if err := tx.QueryRow(r.Context(), `SELECT province_id FROM settlements WHERE world_id=$1 AND owner_id=$2`, worldID, playerID).Scan(&existingProvID); err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{"province_id": existingProvID, "existing": true})
+		return
+	} else if err != pgx.ErrNoRows {
+		writeError(w, http.StatusInternalServerError, "could not recheck settlement")
+		return
+	}
+	if err := tx.QueryRow(r.Context(), `SELECT host_unit_id FROM founder_phase WHERE world_id=$1 AND owner_id=$2 AND active`, worldID, playerID).Scan(&existingHostID); err == nil {
+		writeJSON(w, http.StatusOK, map[string]any{"host_unit_id": existingHostID, "existing": true})
+		return
+	} else if err != pgx.ErrNoRows {
+		writeError(w, http.StatusInternalServerError, "could not recheck Host")
+		return
+	}
+
 	// A new player arrives as a Nomadic Host: a people on the move with four
 	// months of rations, looking for somewhere to become a city. No settlement and
 	// no province are created here — those are born at founding, on a hex the
@@ -184,6 +206,12 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		slog.Error("join: could not seed nomadic host", "err", err, "player", playerID, "world", worldID)
 		writeError(w, http.StatusInternalServerError, "could not create nomadic host")
+		return
+	}
+
+	opening, err := h.persistOpeningDispatch(r.Context(), tx, worldID, playerID, hostID, newcomerHost)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not record opening dispatch")
 		return
 	}
 
@@ -247,6 +275,9 @@ func (h *JoinHandler) Join(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if h.hub != nil {
+		h.hub.DeliverPersisted(r.Context(), worldID, playerID, opening)
+	}
 	writeJSON(w, http.StatusCreated, map[string]any{
 		"host_unit_id": hostID,
 		"tile":         world.MapTile{Q: q, R: r2},

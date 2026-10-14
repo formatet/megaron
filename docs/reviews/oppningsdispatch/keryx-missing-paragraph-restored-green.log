@@ -1,0 +1,5 @@
+» färsk DB på migration 179 · commit a3ba0d39
+=== RUN   TestOpeningDispatchSummaryAndArchiveWatchDetails
+--- PASS: TestOpeningDispatchSummaryAndArchiveWatchDetails (0.00s)
+PASS
+ok  	formatet/megaron/server/cmd/keryx	0.002s

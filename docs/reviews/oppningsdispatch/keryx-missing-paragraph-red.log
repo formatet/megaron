@@ -1,0 +1,8 @@
+» färsk DB på migration 179 · commit a3ba0d39+ändringar
+=== RUN   TestOpeningDispatchSummaryAndArchiveWatchDetails
+    cmd_notifications_opening_test.go:37: "Rules: ? (Codex). Problems: Report." must appear once in "      Your people await you\n      Time. A day passes every 7 minutes.\n      An army crosses a plains hex in 3 days.\n      Your Host carries 987 grain and 654 silver.\n      Food first. Below 321 people it falls.\n      The gods. You are safe for 43 days.\n      Orders travel with a Runner.\n      Bronze needs copper and tin.\n"
+    cmd_notifications_opening_test.go:37: "Rules: ? (Codex). Problems: Report." must appear once in "      Begin again\n      Time. A day passes every 7 minutes.\n      An army crosses a plains hex in 3 days.\n      Your Host carries 987 grain and 654 silver.\n      Food first. Below 321 people it falls.\n      The gods. You are safe for 43 days.\n      Orders travel with a Runner.\n      Bronze needs copper and tin.\n"
+--- FAIL: TestOpeningDispatchSummaryAndArchiveWatchDetails (0.00s)
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL
