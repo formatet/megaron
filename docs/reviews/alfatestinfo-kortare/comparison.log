@@ -1,19 +1,19 @@
 {
   "before_words": 1043,
-  "after_words": 526,
-  "reduction_pct": 49.56855225311602,
+  "after_words": 525,
+  "reduction_pct": 49.66442953020134,
   "before_process": {
     "commit": "8a3a2769",
     "migration": 179,
     "status": "ok"
   },
   "after_process": {
-    "commit": "f53a8e11",
+    "commit": "d401372a",
     "migration": 179,
     "status": "ok"
   },
   "repeat_process": {
-    "commit": "f53a8e11",
+    "commit": "d401372a",
     "migration": 179,
     "status": "ok"
   },
@@ -22,7 +22,7 @@
   "assets": {
     "karta": "0ac21e770a3fb81ec457146c83ec34065a821a16fee612076f8636e2e3069caf",
     "stad": "348bb1f1d40071bc67d2bd3ff953878d19266e51e1720d2e2459f95f79124dfc",
-    "produktion": "6172aef242c287968f1aa52da105a777cbb1461aa23eaa77a9b8338ab63e9728",
+    "produktion": "0ac3d18f3243448d5455a5720c49f97c4762a7a508b180d6c83f5a6493136b2a",
     "handel": "6bdf93371fc883eee2d5fac47114524fd184376be517c99ee0a03587bfdc948e"
   }
 }

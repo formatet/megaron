@@ -1,7 +1,7 @@
-» färsk DB på migration 179 · commit 8a3a2769+ändringar
+» färsk DB på migration 179 · commit d401372a+ändringar
 === RUN   TestAlfatestInfoPublic
     alfatestinfo_test.go:37: rendered invitation is missing "src=\"/static/alfatest/produktion.png\""
 --- FAIL: TestAlfatestInfoPublic (0.00s)
 FAIL
-FAIL	formatet/megaron/server/cmd/server	0.003s
+FAIL	formatet/megaron/server/cmd/server	0.002s
 FAIL
