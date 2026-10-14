@@ -31,34 +31,14 @@ const (
 	blessProbability  = 0.15 // 15% chance of divine blessing per maintained day above threshold
 )
 
-// foundingGraceTicks — hur många dygn en nygrundad Wanax går fri från
-// straffrullningen (Timothy 2026-08-25, alternativ A).
-//
-// Problemet det löser är inte en kalibrering utan en INVERSION: TempleKharisCeiling(0)
-// är 25 och punishThreshold är 30, alltså kan en tempellös Wanax inte nå över
-// straffgränsen ens i sitt bästa möjliga tillstånd. Ovanpå det sitter rullningen
-// uteslutande på missed-grenen (processMaintenance nedan), och `maintained` är
-// definierad som "håller minst ett stående tempel" — så utan tempel är hon på den
-// grenen varje dygn per definition. Mätt i acceptansvärlden: Wanax1 förlorade 68 man
-// till pest på sjutton tick av 200 startande, utan att ha gjort något fel.
-// temple_ceiling_test.go hävdar redan invarianten för nivå 1 ("must still keep a
-// Wanax clear of divine punishment"); motsvarande assertion för nivå 0 skrevs aldrig,
-// och nivå 0 bryter den med fem poäng.
-//
-// Talet var 24, kalibrerat mot inloggningskadensen (ett verkligt dygn vid
-// 60 min/tick) — asynkronitetsgrinden, som Timothy tonade ned 2026-09-27.
-// Höjt 24 → 60 (Timothy 2026-10-10, "kanske ska ta längre tid?") efter
-// AI-spelningen samma dag: kharis föll från 25 till golvet på ~14 dygn, och från
-// dygn 24 rullade gudarna straff 30 % per dygn innan spelaren ens förstått att
-// templet behövdes. Den mekaniska minimivägen är fortfarande ~5 dygn (templet
-// kostar 60 timmer + 60 sten ur startlagret och tar 4 tick); 60 dygn — två
-// månader — är tiden att FÖRSTÅ att det behövs, inte att bygga det.
-//
-// ⚠️ Fristen stänger inte brunnen, den ger tid att ta sig ur den. En Wanax som
-// SENARE förlorar sitt tempel faller tillbaka i samma inversion utan frist — se
-// megaron_todo.md §NU. Decay rörs inte: hon tynar fortfarande mot golvet, vilket är
-// den tempellösas ärliga konsekvens enligt takets egen kommentar.
-const foundingGraceTicks = 60
+// foundingGraceTicks shields a newly founded Wanax from punishment rolls.
+// Without a temple, the ceiling remains below punishThreshold and maintenance
+// is missed; grace allows time to understand and establish the temple path.
+// Timothy 2026-10-14 raised 60 -> 144 ticks for a more generous opening at
+// the alpha's 2x cadence. Decay, punishment threshold and probability stay
+// unchanged. Age is current_world_tick() - founded_tick, so existing founders
+// gain the longer window without rewriting their founding record.
+const foundingGraceTicks = 144
 
 // FoundingGraceTicks exposes the active rule for the opening dispatch.
 func FoundingGraceTicks() int { return foundingGraceTicks }
@@ -193,7 +173,7 @@ type wanaxSnap struct {
 	templeCities       int
 	maxTempleLevel     int // grandest temple's level — sets the kharis ceiling
 	templelessColonies int // FAS 2: non-capital settlements with no temple building
-	// ticksSinceFounding är dygn sedan metropolen restes (mig 132). Styr
+	// ticksSinceFounding är ticks sedan metropolen restes (mig 132). Styr
 	// nådefristen — se foundingGraceTicks.
 	ticksSinceFounding int
 }

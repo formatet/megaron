@@ -1,0 +1,63 @@
+web/static/codex/colonies.md:9:**They carry a colony purse.** The fixed purse comes from the city they leave: **30 silver for spearmen, 60 for elite infantry, 90 for chariots**. It becomes the colony's starting silver, independently of daily pay. A colony's spearmen draw no daily silver; professionals and ships still need pay ([[upkeep]]). Send more with a [[transfers|transfer]] when it needs it. Sent from a city with too little, they take what there is, and the order tells you how much short they are. A purse that never reaches a new colony comes back to whichever of your cities the men walk into. <!-- src: server/internal/combat/march_start.go colonistPurse -->
+server/api/handlers/opening_dispatch_test.go:125:			if n.Title != "Begin again" || n.HostID == opening[0].HostID || !strings.Contains(strings.Join(n.Paragraphs, " "), "60 silver") {
+server/api/handlers/opening_dispatch_test.go:142:	}{{1, "1 second"}, {60, "1 minute"}, {1800, "30 minutes"}, {3600, "1 hour"}} {
+web/static/js/megaron/ui/retreat.test.mjs:46:  assert.doesNotMatch(html, /<select|60%|value="0.4"/);
+web/static/js/megaron/ui/format.test.mjs:106:    own_unit: { type: 'spearman', size_before: 1000, size_after: 940, pop_lost: 60 },
+web/static/js/megaron/ui/format.test.mjs:112:    "Victory at PolisCm4 — your spearman (1000→940, −60 dead) vs Wanax3's spearman (10→0). The field was taken.",
+web/static/js/megaron/ui/stormname.js:17:        + `<input id="storm-name-${esc(st.id)}" maxlength="30" style="width:60%"> `
+server/cmd/keryx/cmd_disband_test.go:163:				"pop_restored": 60.0,
+server/cmd/keryx/cmd_disband_test.go:166:			want: "Disbanded 2 Galley · +60 population (now 1060)",
+web/static/js/megaron/ui/citygrid.js:34:    const angle = Math.PI / 180 * (60 * i);
+web/static/codex/last-city.md:9:- **60 silver**, a fixed reserve; the spearman escort draws no silver pay. Bread for the road is the same as a newcomer carries.
+server/cmd/keryx/cmd_status.go:55:// foundry 80, temple 60 (internal/province/building.go) — yet nothing in the
+server/cmd/keryx/cmd_status.go:65:	return "⚠ Timber production ~0 — timber gates harbour (140)/barracks (80)/foundry (80)/temple (60). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`)."
+server/cmd/keryx/cmd_status.go:77:// plausibly use, a longer view. 60 echoes economy.SitosConfig's own
+server/cmd/keryx/cmd_status.go:79:// already treats 60 game days as "how much surplus is worth planning
+server/cmd/keryx/cmd_status.go:85:const productionHorizonTicks = 60
+server/cmd/keryx/cmd_status.go:491:// while producing a large surplus, and at 60 min/tick that state lasts real
+server/cmd/keryx/cmd_status.go:719:				// large surplus, and at 60 min/tick that state lasts real days —
+web/static/js/megaron/ui/drawers/report.test.mjs:41:  State.marchCtxDest = { q: 5, r: 60, terrain: 'coastal_sea', isSea: true };
+web/static/js/megaron/ui/drawers/report.test.mjs:44:  assert.deepEqual(ctx.march_ctx_dest, { q: 5, r: 60 });
+web/static/codex/marching.md:56:needs 60% of the Galley's time; an Emporos needs 140%. A short crew or a carried
+server/api/handlers/opening_dispatch.go:30:	} else if seconds%60 == 0 {
+server/api/handlers/opening_dispatch.go:31:		value, unit = value/60, "minute"
+web/static/js/megaron/ui/chips_hydrate.test.mjs:92:  serve([notif('SiegeStarted', 1, 'ny'), notif('FoodShortfall', 60, 'gammal')]);
+server/cmd/keryx/cmd_actions.go:143:	fmt.Println(strings.Repeat("─", 60))
+server/cmd/keryx/cmd_actions.go:232:	fmt.Println(strings.Repeat("─", 60))
+server/cmd/keryx/cmd_actions.go:261:	fmt.Println(strings.Repeat("─", 60))
+server/cmd/keryx/cmd_status_test.go:343:			{ID: "bbbbbbbb-0000-0000-0000-000000000000", Size: 60},
+server/cmd/keryx/cmd_status_test.go:349:		if !strings.Contains(got[0], "bbbbbbbb-0000-0000-0000-000000000000") || !strings.Contains(got[0], "60") {
+server/cmd/keryx/cmd_status_test.go:350:			t.Errorf("first line = %q, want the 60-strong cohort's full ID and size first", got[0])
+server/cmd/keryx/cmd_status_test.go:401:				{"id":"a1","type":"spearman","status":"garrison","size":60,"settlement_id":"` + settlementID + `"},
+web/static/js/megaron/ui/placename.js:18:    + `<input id="place-name-${esc(key)}" aria-label="Place name" maxlength="30" style="width:60%"> `
+server/cmd/keryx/cmd_goods.go:333:		Example: `  keryx gift --silver 60 --dest Korinth
+server/internal/kharis/tick.go:30:	blessThreshold    = 60.0 // kharis above this may attract divine favour (was 200/2000)
+server/internal/kharis/tick.go:37:// Timothy 2026-10-14 raised 60 -> 144 ticks for a more generous opening at
+server/internal/kharis/tick.go:320:// Level 1 deliberately lands BELOW blessThreshold (60): a Wanax with only a
+server/internal/kharis/tick.go:328:// 60 permanently rather than giving them something to climb toward.
+server/internal/kharis/tick.go:549:// MoodSuspicious (60/30/5) — the single canonical threshold table, shared with
+server/internal/kharis/tick.go:674:		         -- by FoodTick (priority 55, runs before this at 60).
+web/static/js/megaron/ui/drawers/city_production.test.mjs:4:const pd=(extra={})=>({population:1000,grain_prod_rate:4.5,grain_consum_rate:3.2,sitos:{coverage_ticks:4.2,low_ticks:10,high_ticks:30,granary_total:100,granary_cap:600,granary_per_good:{grain:60,fish:40},food_net_per_tick:-2},...extra});
+web/static/js/megaron/ui/drawers/city_production.test.mjs:15: assert.match(foodDetailsHTML(pd()),/60 grain, 40 fish/);assert.match(foodDetailsHTML(pd()),/Stores above 30 days · releases below 10 days/,'same thresholds retained');
+server/internal/kharis/grain_growth_test.go:185:// real KharisTick handler runs (Tillväxt, priority 60) — the real tick order
+server/internal/kharis/mood_test.go:27:// the new 0-100 scale (60/30/5, religion.MoodFavorable/MoodIndifferent/
+server/internal/kharis/mood_test.go:37:		{60, "overdadig"},  // boundary, inclusive
+server/cmd/keryx/notification_kinds_test.go:292:	raw := json.RawMessage(`{"name":"Bronze Guard","from":"Nestor","to":"Agamemnon","owner":"Nestor","type":"divine_recruits","unit_type":"spearman","building_type":"farm","good_key":"grain","quantity":12,"amount":12,"count":3,"q":6,"r":7,"target_q":8,"target_r":9,"net_per_tick":-2,"ticks_left":12,"grain_net_per_tick":3,"grain_amount":100,"grain_ticks":12,"tier":"yellow","message":"Come home","reason":"grain_shortage","outcome":"attacker_wins","role":"defender","opponent_name":"Nestor","own_unit":{"type":"spearman","size_before":100,"size_after":70},"enemy_unit":{"type":"spearman","size_before":100,"size_after":80},"goods":[{"good_key":"grain","quantity":12}],"ticks_out":12,"hexes_seen":4,"foreign_owner":"Nestor","foreign_type":"spearman","port_name":"Tiryns","crew_after":60}`)
+server/internal/kharis/founding_grace_test.go:72:		{1, 60, false}, {1, 143, false}, {29.99, 143, false}, {1, 144, true},
+server/internal/kharis/founding_grace_test.go:73:		{29.99, 144, true}, {30, 144, false}, {60, 144, false}, {1, -1, false},
+web/static/js/megaron/ui/drawers/diplomacy.js:429:          + '<div><div style="font-size:.68rem;color:var(--text-dim)">Offer silver</div><input id="' + cid + '-silver" type="number" min="1" step="1" placeholder="60"></div>'
+web/static/js/megaron/render/map_input.test.mjs:22:  r.fire('pointerdown',100,100,1,type);r.fire('pointermove',140,160,1,type);r.fire('pointerup',140,160,1,type);assert.deepEqual(r.of('pan'),[['pan',40,60]]);assert.equal(r.of('tap').length,1);r.tick();assert.equal(r.of('orders').length,0);
+web/static/js/megaron/render/citybuildings.js:271:  const probe = { w: 400, h: 60, px: new Array(400 * 60).fill('.') };
+web/static/js/megaron/render/citybuildings.js:276:  for (let y = 0; y < 60; y++)
+web/static/js/megaron/render/citybuildings.js:280:  for (let y = cutoff; y < 60; y++)
+web/static/js/megaron/render/markraster.js:488:    ['#A38C54', 0.60],
+web/static/js/megaron/render/markraster.js:1120:        else if (n < 0.60) continue;   // bastonen är det dominerande bandet
+web/static/js/megaron/render/markraster.js:1536:  // save/clip/restore per tile — sixty-odd a frame in a relief-heavy view — and
+web/static/js/megaron/render/storms.js:21:// Neighbour across edge i of a flat-top hex whose corner i sits at angle i·60°
+web/static/js/megaron/ui/misc.js:103:const CUE_THROTTLE_MS = 10 * 60 * 1000; // a returning player must not get the
+web/static/js/megaron/render/storms.test.mjs:8:test('edge i of a hex faces the neighbour EDGE_NEIGHBOUR[i], at angle i·60°+30°', () => {
+web/static/js/megaron/render/storms.test.mjs:12:    assert.ok(Math.abs(angle - ((i * 60 + 30) % 360)) < 1e-9, `edge ${i}: neighbour at ${angle}°`);
+web/static/js/megaron/render/doomfire.test.mjs:9:  for (let i = 0; i < 60; i++) stepFire(f);
+web/static/js/megaron/render/map.js:827:// varför: övergångsbredden mättar. 7/0,60, 9/0,85 och 12/0,95 gav alla 31 px
+web/static/js/megaron/render/map.js:836:const BLEND_PEAK = 0.60;   // tätheten VID kanten; aldrig 1, eller blir zonen en rand
+web/static/js/megaron/render/map.js:1506:  for (let k = 0; k < 48; k++) grain[k] = rnd(q, r, 2800 + i * 60 + k);

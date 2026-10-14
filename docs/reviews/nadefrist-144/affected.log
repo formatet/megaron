@@ -1,0 +1,19 @@
+» färsk DB på migration 179 · commit cff64ade+ändringar
+=== RUN   TestShouldRollPunishment_FoundingGrace
+--- PASS: TestShouldRollPunishment_FoundingGrace (0.00s)
+=== RUN   TestShouldRollPunishment_Grace144
+--- PASS: TestShouldRollPunishment_Grace144 (0.00s)
+PASS
+ok  	formatet/megaron/server/internal/kharis	0.002s
+=== RUN   TestOpeningDispatchJoinConcurrentRetryRiseAndPrivacy
+2026/10/14 20:43:42 INFO player registered id=5e3b936f-05b7-45f9-a4b8-96b97ac0d266 username=opening-7b8c4827-88bc-4891-b739-dc6bf369006c-c86276bf-e40a-4056-9ece-e557a92aedf6
+2026/10/14 20:43:42 INFO player registered id=39cb0780-3a8d-4a2a-b61e-b94b0c9fe4a9 username=opening-other-5e351a7e-34f5-4a99-8730-5f5c2d55f0b0-6325c1e3-8784-4b61-a0b0-cb97ef6120ec
+--- PASS: TestOpeningDispatchJoinConcurrentRetryRiseAndPrivacy (0.13s)
+=== RUN   TestOpeningDispatchFactsFromActiveRules
+    opening_dispatch_test.go:155: actual grace source 144, temple duration16
+--- PASS: TestOpeningDispatchFactsFromActiveRules (0.00s)
+=== RUN   TestOpeningDispatchArchiveFailureRollsBackHost
+2026/10/14 20:43:42 INFO player registered id=1d1a832f-7341-4550-bf45-c016ef10b8e1 username=opening-rollback-e2a32043-4b6e-48ff-9739-e8a948ccb583-07eae967-4be2-4109-a917-5b012cd0519c
+--- PASS: TestOpeningDispatchArchiveFailureRollsBackHost (0.08s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.223s

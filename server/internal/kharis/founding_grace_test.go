@@ -60,3 +60,26 @@ func TestTempleCeiling_LevelZeroSitsBelowThePunishThreshold(t *testing.T) {
 			"lappa det här testet", TempleKharisCeiling(0), punishThreshold)
 	}
 }
+
+// Literal approved boundary: do not derive these ticks from the constant,
+// or reverting that constant would silently move the test's expectations.
+func TestShouldRollPunishment_Grace144(t *testing.T) {
+	for _, tc := range []struct {
+		kharis float64
+		age    int
+		want   bool
+	}{
+		{1, 60, false}, {1, 143, false}, {29.99, 143, false}, {1, 144, true},
+		{29.99, 144, true}, {30, 144, false}, {60, 144, false}, {1, -1, false},
+	} {
+		if got := shouldRollPunishment(tc.kharis, tc.age); got != tc.want {
+			t.Errorf("kharis=%g age=%d: roll=%v want=%v", tc.kharis, tc.age, got, tc.want)
+		}
+	}
+	if FoundingGraceTicks() != 144 {
+		t.Errorf("published grace=%d want144", FoundingGraceTicks())
+	}
+	if punishThreshold != 30 || punishProbability != 0.30 {
+		t.Fatal("punishment threshold or probability changed")
+	}
+}

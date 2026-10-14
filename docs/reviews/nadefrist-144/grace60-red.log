@@ -1,0 +1,17 @@
+» färsk DB på migration 179 · commit cff64ade+ändringar
+=== RUN   TestShouldRollPunishment_Grace144
+    founding_grace_test.go:76: kharis=1 age=60: roll=true want=false
+    founding_grace_test.go:76: kharis=1 age=143: roll=true want=false
+    founding_grace_test.go:76: kharis=29.99 age=143: roll=true want=false
+    founding_grace_test.go:80: published grace=60 want144
+--- FAIL: TestShouldRollPunishment_Grace144 (0.00s)
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.002s
+=== RUN   TestOpeningDispatchJoinConcurrentRetryRiseAndPrivacy
+2026/10/14 20:44:18 INFO player registered id=3cb32da2-9ec2-496c-ae97-5c21c64a1ea5 username=opening-bb23ae25-97dd-4cae-873a-619250c4aee1-a6e6bc65-3794-464a-baba-bf00b7e020c7
+2026/10/14 20:44:18 INFO player registered id=0175edce-8e43-4bde-aeb4-80687a999daa username=opening-other-827b658a-411e-4d50-b145-b9811fd4852e-7c89daba-c4db-472d-8038-053eee5c679d
+    opening_dispatch_test.go:90: archived join dispatch must promise 144 days: [{Title:Your people await you Paragraphs:[Time. A day passes every 1 hour. Days begin after 4 Wanaxes join. An army crosses a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day. Your Host carries 1200 grain and 480 silver. It lives on subsistence until founding; these reserves do not drain. Find your place — founding is final. Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls. The gods. You are safe from punishment for 60 days after founding. A temple takes 16 days to build. Build, staff and feed one in time; neglect afterward risks punishment. Orders travel. A Runner must reach a unit in the field before it follows your new order. Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together. Rules: ? (Codex). Problems: Report. Community chat: Account.] Returning:false HostID:d33c87a9-3ddf-43e8-a3ce-beb8bee34777}]
+--- FAIL: TestOpeningDispatchJoinConcurrentRetryRiseAndPrivacy (0.13s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.132s
+FAIL
