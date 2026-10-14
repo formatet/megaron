@@ -130,7 +130,7 @@ test('codex: lowercase agora_ready is mapped and community rules match alpha pol
   ],
   [
     "Don't post your real name, address, school, health or other private details. Your chat account uses your Wanax name, so other members can see which ruler you play.",
-    "Dela inte namn, adress, skola, hälsa eller andra privata uppgifter. Chattkontot använder ditt Wanax-namn, så andra kan se vilken härskare du spelar."
+    "Dela inte ditt riktiga namn, adress, skola, hälsa eller andra privata uppgifter. Chattkontot använder ditt Wanax-namn, så andra kan se vilken härskare du spelar."
   ],
   [
     "Report a message with the menu next to it in your Matrix app, or write to a moderator. Moderators can read what is reported.",
@@ -150,7 +150,7 @@ test('codex: lowercase agora_ready is mapped and community rules match alpha pol
     ['Messages stay until they are deleted', 'meddelanden ligger kvar tills de raderas'],
     ['no self-service account deletion', 'Konton kan inte raderas av dig själv'],
     ['write to the admin in the chat', 'skriv till administratören i chatten'],
-    ['its chat account is closed with it', 'spel- och chattkontot borttagna'],
+    ['its chat account is closed with it', 'chattkontot stängt'],
     ["Your Wanax name stays in other players' letters and chronicles", 'Ditt Wanax-namn står kvar i andras brev och krönikor'],
   ];
   for (const [english, swedish] of privacyClaims) {
