@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 // see the file's own header comment on why centreOn is reached via
 // window.centreOn instead of a direct ui/search.js import), so this file
 // needs no globalThis stubbing before import, unlike its DOM-heavy siblings.
-import { resolveDestination, occupationChoicesFor, buildOccupationOrderBody } from './dispatch_window.js';
+import { resolveDestination, occupationChoicesFor, buildOccupationOrderBody, openingDispatchHTML } from './dispatch_window.js';
 import { State } from '../state.js';
 
 test('AK1: a direct q/r on the payload wins outright, no lookup needed', () => {
@@ -111,4 +111,22 @@ test('PS1: PassageStalled resolves "take me there" via the port q/r the server s
     resolveDestination('PassageStalled', { q: 4, r: 2, port_q: 4, port_r: 2, messenger_id: 'm1' }),
     { q: 4, r: 2 },
   );
+});
+
+
+test('opening dispatch preserves all archived paragraphs and escapes text', () => {
+  const paragraphs = ['Time: 7 minutes.', 'Plains: 3 days.', 'Host: 987 grain.', 'Collapse below 321.', 'Grace: 43 days.', 'Orders travel.', 'Bronze needs others.', '<script>not markup</script> & Report'];
+  const html = openingDispatchHTML({ paragraphs, returning: true, host_id: 'hidden-host-id' });
+  assert.equal((html.match(/<p class="dw-text">/g) || []).length, 8);
+  for (const text of paragraphs.slice(0, 7)) assert.ok(html.includes(text), text);
+  assert.match(html, /&lt;script&gt;not markup&lt;\/script&gt; &amp; Report/);
+  assert.doesNotMatch(html, /<script>|hidden-host-id|"paragraphs"/);
+  assert.equal(openingDispatchHTML({}), '');
+});
+
+test('opening dispatch destination resolves the current own Host from its id', () => {
+  State.unitsData = [{ id: 'opening-host', q: 17, r: 23 }];
+  State.foreignUnitData = [];
+  assert.deepEqual(resolveDestination('OpeningDispatch', { host_id: 'opening-host' }), { q: 17, r: 23 });
+  assert.equal(resolveDestination('OpeningDispatch', { host_id: 'old-host' }), null);
 });

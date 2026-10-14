@@ -11,6 +11,7 @@ import (
 // current producers and the Codex client's archive kinds are checked together.
 func printNotificationSummary(c *Client, n notificationItem) {
 	var b struct {
+		Title             string             `json:"title"`
 		ArrivesAt         string             `json:"arrives_at"`
 		SilverArrivesAt   string             `json:"silver_arrives_at"`
 		GoodsArrivesAt    string             `json:"goods_arrives_at"`
@@ -81,6 +82,8 @@ func printNotificationSummary(c *Client, n notificationItem) {
 	reason := notificationWords(b.Reason)
 	var line string
 	switch n.Kind {
+	case "OpeningDispatch":
+		line = firstNotificationText(b.Title, "Opening dispatch")
 	case "BuildComplete":
 		line = fmt.Sprintf("%s completed %s", city, notificationWords(b.BuildingType))
 		if b.Level > 0 {

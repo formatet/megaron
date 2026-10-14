@@ -50,7 +50,7 @@ export function resolveDestination(kind, payload) {
     const prov = (State.provinceData || []).find(p => p.id === settlementID || p.settlement_id === settlementID);
     if (prov) return { q: prov.q, r: prov.r };
   }
-  const unitID = payload.unit_id || payload.ship_id;
+  const unitID = payload.unit_id || payload.ship_id || (kind === 'OpeningDispatch' ? payload.host_id : null);
   if (unitID) {
     const u = (State.unitsData || []).find(u => u.id === unitID)
       || (State.foreignUnitData || []).find(u => u.id === unitID);
@@ -256,6 +256,12 @@ function wireOccupationBlock(choices, settlementID) {
   });
 }
 
+// Live dispatch and archive both render the immutable server paragraphs here.
+export function openingDispatchHTML(payload) {
+  const paragraphs = Array.isArray(payload.paragraphs) ? payload.paragraphs : [];
+  return paragraphs.filter(p => typeof p === 'string').map(p => `<p class="dw-text">${esc(p)}</p>`).join('');
+}
+
 export function openDispatchWindow(kind, payload, timeLabel) {
   payload = payload || {};
   const overlay = document.getElementById('dispatch-window-overlay');
@@ -278,6 +284,7 @@ export function openDispatchWindow(kind, payload, timeLabel) {
       <span class="dw-icon">${notifIcon(kind)}</span>
       <span class="dw-text">${notifText(kind, payload)}</span>
     </div>
+    ${kind === 'OpeningDispatch' ? openingDispatchHTML(payload) : ''}
     ${kind === 'MessengerLostAtSea' ? `<pre class="dw-envelope">${esc(messengerEnvelopeText(payload))}</pre>` : ''}
     ${grainLine ? `<div class="dw-grain">${grainLine}</div>` : ''}
     ${timeLabel ? `<div class="dw-time">${timeLabel}</div>` : ''}

@@ -103,6 +103,16 @@ func printNotificationRow(c *Client, n notificationItem) {
 // All other details are pure formatting of the archived notification body.
 func printNotificationDetail(c *Client, n notificationItem) {
 	printNotificationSummary(c, n)
+	if n.Kind == "OpeningDispatch" {
+		var body struct {
+			Paragraphs []string `json:"paragraphs"`
+		}
+		if json.Unmarshal(n.Body, &body) == nil {
+			for _, paragraph := range body.Paragraphs {
+				fmt.Println("      " + paragraph)
+			}
+		}
+	}
 	if n.Kind == "PlaceFirstReached" {
 		var body struct {
 			UnitName string `json:"unit_name"`

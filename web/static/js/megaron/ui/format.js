@@ -159,6 +159,7 @@ export function notifDomain(kind) {
 
 export function notifIcon(kind) {
   const icons = {
+    OpeningDispatch: '📜',
     agora_ready: '✉',
     BuildComplete:      '🏛',
     GoodsCrafted:       '🔨',
@@ -295,6 +296,7 @@ function payloadSummary(body) {
 
 export function notifText(kind, body) {
   switch (kind) {
+    case 'OpeningDispatch': return esc(body.title || 'Opening dispatch');
     case 'agora_ready': return `Community chat account ready: ${body.user_id || 'your Wanax account'} — open Account to get your chat password.`;
     case 'BuildComplete':      return `Build complete: ${body.building_type || ''}`;
     case 'GoodsCrafted': {

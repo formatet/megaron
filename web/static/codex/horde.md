@@ -16,8 +16,8 @@ Find it (the map centres on you) and **left-click the hex it stands on**. The in
 
 Unlike everything else you will ever command, **the Host obeys instantly**: you are walking with it. See [[runners]] for what comes after.
 
-## The clock in the store
+## Reserves for founding
 
-The panel shows **Food lasts** and **Silver reserve lasts**, in days. The Host itself eats nothing, and its spearman escort draws no silver. The newcomer carries **480 silver**; this reserve goes into the treasury when you settle. Choose your site for its food, resources and position, rather than an escort pay deadline.
+Before founding, the Host lives on subsistence and its reserves do not drain. Its grain and silver go into your city when you settle. Your [[welcome|opening dispatch]] records what your Host carries. Choose your site for its food, resources and position.
 
 When you have found your place: [[founding]].
