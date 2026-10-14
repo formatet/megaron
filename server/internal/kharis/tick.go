@@ -38,6 +38,8 @@ const (
 // the alpha's 2x cadence. Decay, punishment threshold and probability stay
 // unchanged. Age is current_world_tick() - founded_tick, so existing founders
 // gain the longer window without rewriting their founding record.
+// The grace does not close the well: a Wanax who LATER loses her temple falls back
+// into the same inversion without any grace.
 const foundingGraceTicks = 144
 
 // FoundingGraceTicks exposes the active rule for the opening dispatch.
