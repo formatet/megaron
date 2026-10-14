@@ -28,19 +28,17 @@ func TestNomadicHost_AloneMayFoundMetropolis(t *testing.T) {
 }
 
 // Vision lives in province.LiveRadius (tested there); this covers movement only.
-func TestNomadicHost_MovesAtHalfSpeed(t *testing.T) {
-	// Guards the direction of the multiplier: it scales HOURS, so the host's
-	// number must be ABOVE the baseline. A value below 1.0 would silently make the
-	// slowest thing in the game the fastest.
+func TestNomadicHost_MovesAtNinetyPercentSpeed(t *testing.T) {
+	// Independent literal speed contract, without using the tunable constant.
 	host, base := MarchHoursFactorFor(TypeNomadicHost), MarchHoursFactorFor(TypeSpearman)
-	if host != 2.0 {
-		t.Fatalf("host march-hours factor = %v, want 2.0 (double a spearman's hours = half its speed)", host)
+	if host != 1.0/0.9 {
+		t.Fatalf("host march-hours factor = %v, want 1/0.9 (90%% of a spearman's speed)", host)
 	}
 	if base != 1.0 {
 		t.Fatalf("spearman march-hours factor = %v, want the baseline 1.0", base)
 	}
 	if host <= base {
-		t.Fatalf("host factor %v must EXCEED the baseline %v — it scales hours, not speed", host, base)
+		t.Fatalf("host factor %v must EXCEED the baseline %v — it scales tick cost, not speed", host, base)
 	}
 }
 

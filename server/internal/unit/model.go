@@ -113,17 +113,18 @@ func CommandedInPerson(t Type) bool {
 	return t == TypeNomadicHost
 }
 
+// hostSpeedOfSpearman is the Host's speed relative to the land baseline
+// (Timothy 2026-10-14). Convert speed to time by taking its reciprocal.
+const hostSpeedOfSpearman = 0.9
+
 // MarchHoursFactorFor returns the multiplier to apply to
-// province.TerrainMoveTicks for this unit type.
-//
-// It scales HOURS, not speed — a larger number is a SLOWER unit. Naming it for
-// speed invites the opposite reading and would make the host twice as fast as an
-// army instead of half: the ladder the design fixes is host = ½ spearman's speed
-// = double a spearman's hours. Spearmen are the baseline an army marches at
-// (messengers already halve it themselves, see TerrainMoveTicks' own comment).
+// province.TerrainMoveTicks for this unit type. The legacy name scales tick
+// cost, not speed: a larger number means a slower unit. The Host moves at
+// 90% of a spearman's speed, taking 1/0.9 times its unrounded travel ticks.
+// Messengers apply their own factor to the terrain cost.
 func MarchHoursFactorFor(t Type) float64 {
 	if t == TypeNomadicHost {
-		return 2.0
+		return 1 / hostSpeedOfSpearman
 	}
 	return 1.0
 }
