@@ -1,0 +1,82 @@
+{
+  "health": {
+    "commit": "f53a8e11",
+    "migration": 179,
+    "status": "ok"
+  },
+  "source_health": {
+    "commit": "94101f6",
+    "migration": 174,
+    "status": "ok"
+  },
+  "snapshot_sha256": "07fd073b5fa93df5ad44c1f8188a133e3d48ef090d7858aa215eac1792b8c6fd",
+  "source_read_only": true,
+  "http_payload_overrides": false,
+  "captures": [
+    {
+      "mode": "desktop",
+      "status": 200,
+      "metrics": {
+        "viewport": 1280,
+        "width": 1280
+      },
+      "text": "Alfatest\n\nMegaron\n\nMegaron \u00e4r ett l\u00e5ngsamt strategispel i en mytiskt inspirerad brons\u00e5lder kring \u00f6stra Medelhavet. Du \u00e4r en Wanax, h\u00e4rskare \u00f6ver ett folk: du grundar och f\u00f6rs\u00f6rjer st\u00e4der, s\u00e4tter m\u00e4nniskor i arbete, handlar, utforskar och m\u00f6ter andra h\u00e4rskare och gudar.\n\nV\u00e4rlden forts\u00e4tter n\u00e4r du loggar ut. Du ger order och \u00e5terv\u00e4nder senare f\u00f6r att se vad som h\u00e4nt. Det \u00e4r ett spel att t\u00e4nka p\u00e5 mellan bes\u00f6ken, d\u00e4r planer och relationer f\u00e5r ta tid.\n\nEn v\u00e4rld att \u00e5terv\u00e4nda till\n\nVi vill bygga en liten, levande och of\u00f6ruts\u00e4gbar v\u00e4rld d\u00e4r namn betyder n\u00e5got. Andra h\u00e4rskare \u00e4r m\u00e4nniskor att handla med, lita p\u00e5 eller hamna i konflikt med. Resurser, relationer och spelarnas beslut ska skapa ber\u00e4ttelser som ingen skrivit i f\u00f6rv\u00e4g.\n\nEn plats att kliva in i och g\u00f6ra planer f\u00f6r, tillsammans med andra. Inga annonser eller fl\u00f6den som vill h\u00e5lla dig kvar varje minut. Ibland beh\u00f6ver du pr\u00f6va dig fram.\n\nMegaron \u00e4r ett enpersonsprojekt av Tim. Tim best\u00e4mmer vad spelet ska vara; AI-verktyg skriver och testar koden. \u201dVi\u201d betyder Tim och de verktygen.\n\nDet h\u00e4r \u00e4r en tidig alfa\n\nMycket \u00e4r of\u00e4rdigt. Balansen \u00e4r oj\u00e4mn, gr\u00e4nssnittet kan vara otydligt och saker kan g\u00e5 fel. Testet ska visa var du fastnar, vad du blir nyfiken p\u00e5 och om du vill \u00e5terv\u00e4nda.\n\nDu beh\u00f6ver inte f\u00f6rst\u00e5 allt direkt. N\u00e4r du g\u00e5r med f\u00e5r du en kort \u00f6ppningsdispatch. Reglerna finns i Codex, bakom ? i spelet. S\u00e4g g\u00e4rna till n\u00e4r hj\u00e4lpen inte r\u00e4cker.\n\nBilder fr\u00e5n spelet\n\nVerkliga vyer fr\u00e5n en separat testv\u00e4rld.\n\nV\u00e4rldskartan: det dina m\u00e4nniskor k\u00e4nner till.\nByggnader: planera stadens n\u00e4sta bygge.\nProduktion: m\u00e4nniskor, arbetsplatser och f\u00f6rs\u00f6rjning.\nDiplomati: ett brev fr\u00e5n Knossos.\nVad vill vi h\u00f6ra?\n\nBer\u00e4tta om konkreta situationer:\n\nVad var l\u00e4tt eller sv\u00e5rt att f\u00f6rst\u00e5?\nVad f\u00f6rs\u00f6kte du g\u00f6ra, vad f\u00f6rv\u00e4ntade du dig och vad h\u00e4nde?\nVad var intressant, frustrerande, tr\u00e5kigt eller otydligt? Fick du lust att logga in igen?\n\nAnv\u00e4nd Report l\u00e4ngst ned till h\u00f6ger i spelet, eller keryx report fr\u00e5n kommandoraden. Rapportera ocks\u00e5 konstiga resultat och s\u00e5dant som saknas, \u00e4r oklart eller inte st\u00e4mmer i Codex.\n\nGemenskap utanf\u00f6r spelet\n\nVi har en frivillig chatt p\u00e5 Matrix f\u00f6r fr\u00e5gor, fel och alfanyheter. Den p\u00e5verkar inte spelv\u00e4rlden; viktiga spelmeddelanden finns ocks\u00e5 i spelet. Efter din f\u00f6rsta stad f\u00e5r du ett chattkonto. \u00d6ppna Account \u2192 Community chat f\u00f6r inloggning till agora.formatet.se. Codex f\u00f6rklarar hur du g\u00f6r.\n\nChattregler och integritet\nVar schyst. Inga trakasserier, inget hat, inget olagligt.\nPrata om spelet, inte om andra spelares privatliv.\nDela inte ditt riktiga namn, adress, skola, h\u00e4lsa eller andra privata uppgifter. Chattkontot anv\u00e4nder ditt Wanax-namn, s\u00e5 andra kan se vilken h\u00e4rskare du spelar.\nRapportera meddelanden via menyn i Matrix eller till en moderator. Moderatorer kan l\u00e4sa det som rapporteras.\n\nChatten k\u00f6rs p\u00e5 v\u00e5r h\u00e5rdvara i Sverige utan koppling till andra Matrix-servrar. Rummet \u00e4r inte krypterat, s\u00e5 behandla det inte som privat; meddelanden ligger kvar tills de raderas. Konton kan inte raderas av dig sj\u00e4lv: skriv till administrat\u00f6ren i chatten f\u00f6r att f\u00e5 spelkontot raderat och chattkontot st\u00e4ngt. Ditt Wanax-namn st\u00e5r kvar i andras brev och kr\u00f6nikor.\n\nProva, f\u00f6lj din nyfikenhet och ber\u00e4tta vad du uppt\u00e4cker. Dina observationer hj\u00e4lper oss att f\u00f6rst\u00e5 vilket spel Megaron h\u00e5ller p\u00e5 att bli.\n\nLogga in i Megaron",
+      "words": 526,
+      "images": [
+        {
+          "src": "/static/alfatest/karta.png",
+          "width": 1440,
+          "height": 1000
+        },
+        {
+          "src": "/static/alfatest/stad.png",
+          "width": 1440,
+          "height": 1000
+        },
+        {
+          "src": "/static/alfatest/produktion.png",
+          "width": 1440,
+          "height": 1000
+        },
+        {
+          "src": "/static/alfatest/handel.png",
+          "width": 1440,
+          "height": 1000
+        }
+      ]
+    },
+    {
+      "mode": "mobile",
+      "status": 200,
+      "metrics": {
+        "viewport": 390,
+        "width": 390
+      },
+      "text": "Alfatest\n\nMegaron\n\nMegaron \u00e4r ett l\u00e5ngsamt strategispel i en mytiskt inspirerad brons\u00e5lder kring \u00f6stra Medelhavet. Du \u00e4r en Wanax, h\u00e4rskare \u00f6ver ett folk: du grundar och f\u00f6rs\u00f6rjer st\u00e4der, s\u00e4tter m\u00e4nniskor i arbete, handlar, utforskar och m\u00f6ter andra h\u00e4rskare och gudar.\n\nV\u00e4rlden forts\u00e4tter n\u00e4r du loggar ut. Du ger order och \u00e5terv\u00e4nder senare f\u00f6r att se vad som h\u00e4nt. Det \u00e4r ett spel att t\u00e4nka p\u00e5 mellan bes\u00f6ken, d\u00e4r planer och relationer f\u00e5r ta tid.\n\nEn v\u00e4rld att \u00e5terv\u00e4nda till\n\nVi vill bygga en liten, levande och of\u00f6ruts\u00e4gbar v\u00e4rld d\u00e4r namn betyder n\u00e5got. Andra h\u00e4rskare \u00e4r m\u00e4nniskor att handla med, lita p\u00e5 eller hamna i konflikt med. Resurser, relationer och spelarnas beslut ska skapa ber\u00e4ttelser som ingen skrivit i f\u00f6rv\u00e4g.\n\nEn plats att kliva in i och g\u00f6ra planer f\u00f6r, tillsammans med andra. Inga annonser eller fl\u00f6den som vill h\u00e5lla dig kvar varje minut. Ibland beh\u00f6ver du pr\u00f6va dig fram.\n\nMegaron \u00e4r ett enpersonsprojekt av Tim. Tim best\u00e4mmer vad spelet ska vara; AI-verktyg skriver och testar koden. \u201dVi\u201d betyder Tim och de verktygen.\n\nDet h\u00e4r \u00e4r en tidig alfa\n\nMycket \u00e4r of\u00e4rdigt. Balansen \u00e4r oj\u00e4mn, gr\u00e4nssnittet kan vara otydligt och saker kan g\u00e5 fel. Testet ska visa var du fastnar, vad du blir nyfiken p\u00e5 och om du vill \u00e5terv\u00e4nda.\n\nDu beh\u00f6ver inte f\u00f6rst\u00e5 allt direkt. N\u00e4r du g\u00e5r med f\u00e5r du en kort \u00f6ppningsdispatch. Reglerna finns i Codex, bakom ? i spelet. S\u00e4g g\u00e4rna till n\u00e4r hj\u00e4lpen inte r\u00e4cker.\n\nBilder fr\u00e5n spelet\n\nVerkliga vyer fr\u00e5n en separat testv\u00e4rld.\n\nV\u00e4rldskartan: det dina m\u00e4nniskor k\u00e4nner till.\nByggnader: planera stadens n\u00e4sta bygge.\nProduktion: m\u00e4nniskor, arbetsplatser och f\u00f6rs\u00f6rjning.\nDiplomati: ett brev fr\u00e5n Knossos.\nVad vill vi h\u00f6ra?\n\nBer\u00e4tta om konkreta situationer:\n\nVad var l\u00e4tt eller sv\u00e5rt att f\u00f6rst\u00e5?\nVad f\u00f6rs\u00f6kte du g\u00f6ra, vad f\u00f6rv\u00e4ntade du dig och vad h\u00e4nde?\nVad var intressant, frustrerande, tr\u00e5kigt eller otydligt? Fick du lust att logga in igen?\n\nAnv\u00e4nd Report l\u00e4ngst ned till h\u00f6ger i spelet, eller keryx report fr\u00e5n kommandoraden. Rapportera ocks\u00e5 konstiga resultat och s\u00e5dant som saknas, \u00e4r oklart eller inte st\u00e4mmer i Codex.\n\nGemenskap utanf\u00f6r spelet\n\nVi har en frivillig chatt p\u00e5 Matrix f\u00f6r fr\u00e5gor, fel och alfanyheter. Den p\u00e5verkar inte spelv\u00e4rlden; viktiga spelmeddelanden finns ocks\u00e5 i spelet. Efter din f\u00f6rsta stad f\u00e5r du ett chattkonto. \u00d6ppna Account \u2192 Community chat f\u00f6r inloggning till agora.formatet.se. Codex f\u00f6rklarar hur du g\u00f6r.\n\nChattregler och integritet\nVar schyst. Inga trakasserier, inget hat, inget olagligt.\nPrata om spelet, inte om andra spelares privatliv.\nDela inte ditt riktiga namn, adress, skola, h\u00e4lsa eller andra privata uppgifter. Chattkontot anv\u00e4nder ditt Wanax-namn, s\u00e5 andra kan se vilken h\u00e4rskare du spelar.\nRapportera meddelanden via menyn i Matrix eller till en moderator. Moderatorer kan l\u00e4sa det som rapporteras.\n\nChatten k\u00f6rs p\u00e5 v\u00e5r h\u00e5rdvara i Sverige utan koppling till andra Matrix-servrar. Rummet \u00e4r inte krypterat, s\u00e5 behandla det inte som privat; meddelanden ligger kvar tills de raderas. Konton kan inte raderas av dig sj\u00e4lv: skriv till administrat\u00f6ren i chatten f\u00f6r att f\u00e5 spelkontot raderat och chattkontot st\u00e4ngt. Ditt Wanax-namn st\u00e5r kvar i andras brev och kr\u00f6nikor.\n\nProva, f\u00f6lj din nyfikenhet och ber\u00e4tta vad du uppt\u00e4cker. Dina observationer hj\u00e4lper oss att f\u00f6rst\u00e5 vilket spel Megaron h\u00e5ller p\u00e5 att bli.\n\nLogga in i Megaron",
+      "words": 526,
+      "images": [
+        {
+          "src": "/static/alfatest/karta.png",
+          "width": 1440,
+          "height": 1000
+        },
+        {
+          "src": "/static/alfatest/stad.png",
+          "width": 1440,
+          "height": 1000
+        },
+        {
+          "src": "/static/alfatest/produktion.png",
+          "width": 1440,
+          "height": 1000
+        },
+        {
+          "src": "/static/alfatest/handel.png",
+          "width": 1440,
+          "height": 1000
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

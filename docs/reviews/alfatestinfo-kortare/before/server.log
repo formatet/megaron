@@ -1,0 +1,26 @@
+{"time":"2026-10-14T19:39:31.251842528+02:00","level":"INFO","msg":"migrations applied"}
+{"time":"2026-10-14T19:39:31.260555696+02:00","level":"INFO","msg":"world ready","id":"2e335492-c9f8-4100-b8e7-5fee38158745"}
+{"time":"2026-10-14T19:39:31.260780301+02:00","level":"INFO","msg":"chronicle opened","world":"Offer 2e335492","dir":"/tmp/alpha-proof-_luem8sl/chronicles"}
+{"time":"2026-10-14T19:39:31.262057278+02:00","level":"INFO","msg":"scheduled event worker started","poll":10000000000}
+{"time":"2026-10-14T19:39:31.26205784+02:00","level":"INFO","msg":"tick worker started","tick_seconds":86400}
+{"time":"2026-10-14T19:39:31.262119746+02:00","level":"INFO","msg":"build","commit":"8a3a2769"}
+{"time":"2026-10-14T19:39:31.262362372+02:00","level":"INFO","msg":"keryx server starting","addr":":60553"}
+{"time":"2026-10-14T19:39:31.267089159+02:00","level":"INFO","msg":"daily ticks seeded","worlds":3}
+2026/10/14 19:39:31 [tki9/2giOpJgH8r-000001] "GET http://127.0.0.1:60553/healthz HTTP/1.1" from 127.0.0.1:44354 - 200 52B in 2.95651ms
+2026/10/14 19:39:32 [tki9/2giOpJgH8r-000002] "GET http://127.0.0.1:60553/alfatestinfo HTTP/1.1" from 127.0.0.1:44366 - 200 3430B in 887.551µs
+2026/10/14 19:39:32 [tki9/2giOpJgH8r-000003] "GET http://127.0.0.1:60553/static/megaron.css HTTP/1.1" from 127.0.0.1:44366 - 200 19651B in 1.850736ms
+2026/10/14 19:39:32 [tki9/2giOpJgH8r-000004] "GET http://127.0.0.1:60553/favicon.ico HTTP/1.1" from 127.0.0.1:44366 - 404 44B in 726.393µs
+2026/10/14 19:39:33 [tki9/2giOpJgH8r-000005] "GET http://127.0.0.1:60553/static/alfatest/karta.png HTTP/1.1" from 127.0.0.1:44366 - 200 57152B in 105.19µs
+2026/10/14 19:39:33 [tki9/2giOpJgH8r-000006] "GET http://127.0.0.1:60553/static/alfatest/stad.png HTTP/1.1" from 127.0.0.1:44366 - 200 97842B in 104.68µs
+2026/10/14 19:39:33 [tki9/2giOpJgH8r-000007] "GET http://127.0.0.1:60553/static/alfatest/produktion.png HTTP/1.1" from 127.0.0.1:44366 - 200 156451B in 106.364µs
+2026/10/14 19:39:33 [tki9/2giOpJgH8r-000008] "GET http://127.0.0.1:60553/static/alfatest/handel.png HTTP/1.1" from 127.0.0.1:44366 - 200 99152B in 111.209µs
+2026/10/14 19:39:33 [tki9/2giOpJgH8r-000009] "GET http://127.0.0.1:60553/alfatestinfo HTTP/1.1" from 127.0.0.1:44378 - 200 3430B in 490.117µs
+2026/10/14 19:39:33 [tki9/2giOpJgH8r-000010] "GET http://127.0.0.1:60553/static/megaron.css HTTP/1.1" from 127.0.0.1:44378 - 200 19651B in 998.351µs
+2026/10/14 19:39:33 [tki9/2giOpJgH8r-000011] "GET http://127.0.0.1:60553/favicon.ico HTTP/1.1" from 127.0.0.1:44378 - 404 44B in 63.261µs
+2026/10/14 19:39:34 [tki9/2giOpJgH8r-000012] "GET http://127.0.0.1:60553/static/alfatest/karta.png HTTP/1.1" from 127.0.0.1:44378 - 200 57152B in 111.897µs
+2026/10/14 19:39:34 [tki9/2giOpJgH8r-000013] "GET http://127.0.0.1:60553/static/alfatest/stad.png HTTP/1.1" from 127.0.0.1:44378 - 200 97842B in 169.914µs
+2026/10/14 19:39:34 [tki9/2giOpJgH8r-000014] "GET http://127.0.0.1:60553/static/alfatest/produktion.png HTTP/1.1" from 127.0.0.1:44378 - 200 156451B in 146.654µs
+2026/10/14 19:39:34 [tki9/2giOpJgH8r-000015] "GET http://127.0.0.1:60553/static/alfatest/handel.png HTTP/1.1" from 127.0.0.1:44378 - 200 99152B in 110.312µs
+{"time":"2026-10-14T19:39:34.840671946+02:00","level":"INFO","msg":"scheduled event worker stopped"}
+{"time":"2026-10-14T19:39:34.840676452+02:00","level":"INFO","msg":"shutting down"}
+{"time":"2026-10-14T19:39:34.840679341+02:00","level":"INFO","msg":"tick worker stopped"}

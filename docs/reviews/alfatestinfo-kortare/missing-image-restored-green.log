@@ -1,0 +1,5 @@
+» färsk DB på migration 179 · commit 8a3a2769+ändringar
+=== RUN   TestAlfatestInfoPublic
+--- PASS: TestAlfatestInfoPublic (0.00s)
+PASS
+ok  	formatet/megaron/server/cmd/server	0.004s

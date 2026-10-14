@@ -1,0 +1,58 @@
+{
+  "world": "1588ebaf-fd9a-4bc4-bd22-a23c6c8f2850",
+  "correspondence_count": 1,
+  "selection": [
+    {
+      "world": "2e335492-c9f8-4100-b8e7-5fee38158745",
+      "correspondence": 0,
+      "own_cities": 1
+    },
+    {
+      "world": "1588ebaf-fd9a-4bc4-bd22-a23c6c8f2850",
+      "correspondence": 1,
+      "own_cities": 2
+    },
+    {
+      "world": "3b5fb9cd-8c06-4685-88df-b162c9acff99",
+      "correspondence": 0,
+      "own_cities": 1
+    }
+  ],
+  "own_cities": [
+    {
+      "id": "68100828-5883-4c2e-b71c-31c8e283e0f1",
+      "settlement_id": "7380ddb7-70a7-48ab-82f7-24068fcc2b0b",
+      "name": "Knossos",
+      "culture": "achaean",
+      "q": 7,
+      "r": 11,
+      "state": "active",
+      "walls": 0,
+      "size_tier": 1,
+      "owner": "Lykoros",
+      "own": true,
+      "is_capital": false,
+      "allied": false,
+      "visible": true
+    },
+    {
+      "id": "6af6c568-b7c6-43ee-ba37-560bf318ac11",
+      "settlement_id": "c70b3c09-1403-4ae5-9465-084f2dfbf6b6",
+      "name": "Mycenae",
+      "culture": "achaean",
+      "q": 5,
+      "r": 7,
+      "state": "active",
+      "walls": 0,
+      "size_tier": 1,
+      "owner": "Lykoros",
+      "own": true,
+      "is_capital": true,
+      "allied": false,
+      "visible": true
+    }
+  ],
+  "buildings": "\u2039\nCITY \u2014 MYCENAE \u2605\n\u203a\n?\n\u2715\nPRODUCTION\nBUILDINGS\nGARRISON\n\nNo buildings yet.\n\nCONSTRUCT\n+ BUILD",
+  "production": "\u2039\nCITY \u2014 MYCENAE \u2605\n\u203a\n?\n\u2715\nPRODUCTION\nBUILDINGS\nGARRISON\nPOPULATION\n\nPopulation 1,000 \u2014 not growing: food net -5.0 per day (needs more than 0)\n\nPeople\n1,000\nFree to work\n0\nLivestock\n0\nSLAUGHTER \u2192 10 PEOPLE\nCATCHMENT & WORKPLACES\nCitizens: 0 of 10 placed\n10 free\nCity#85 goods#125 goods#165 goods#45 goods#95 goods#135 goods#175 goods#15 goods#55 goods#145 goods#25 goods#65 goods#105 goods#155 goods#35 goods#75 goods#115 goods#181 good\n\nClick a catchment hex, or the city hex for buildings.\n\nFOOD\n\nFood lasts 0 days.\n\nMORE",
+  "diplomacy": "DIPLOMACY\n?\n\u2715\nCORRESPONDENCE\nKNOWN\nKnossos\n12 Oct 06:59 \u25bc\n\"BILD route proof\"\n\nUnavailable: reply ?"
+}
