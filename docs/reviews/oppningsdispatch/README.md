@@ -5,7 +5,8 @@
 Nya och återvändande Wanaxer får en personlig, beständig introduktion när deras nya Host skapas.
 Samma arkiverade text visas i Keryx, webbens dispatchfönster och Notifications; Codex `welcome`
 förklarar notisen. Produktionscommit `a3ba0d39`, rebased från `a7b8c858` till master `a60995d0`.
-Ingen migration. Deploykvitto tillfogas efter verifierad integration.
+Ingen migration. **LIVE `b2d31496`**, healthz `{commit:b2d3149,migration:179,status:ok}`.
+Server PID 155119 startade 2026-10-14 17:50:23. Efterdeploykvittona läggs i en separat docscommit.
 
 Kedjegrind: **blockerar** den nya spelarens orientering. **TEXT** prövas av en främling i playtest;
 begriplighet är inte bevisad av utföraren. Mobilens en-skärm-krav är däremot uppmätt och kontrollerat vid 1:1.
@@ -68,7 +69,7 @@ READ ONLY-observation av den riktiga kollapsen. Inga produktionsändringar behö
 | Semantisk | Subsistensreserver dräneras inte; återkomst behåller gudaställningen; Runner gäller order till fältenheter; arkivet behåller startögonblickets fakta. Ingen FOW-/notisläcka eller gammal eventtolkning. |
 | Användare | Naturlig join och naturlig kollaps/Rise på egen riktig server/PG/Redis, båda klienterna; inga SQL-skrivningar eller HTTP/payload-overrides. |
 | TEXT | Kvar i playtest: förstår främlingen tid, mat, tempel och bronsvägar? Vault §B bokför frågan. |
-| Drift | Väntar på verifierad integration/deploy; separat live-before/after-kvitto. |
+| Drift | LIVE `b2d31496`; ny process/healthz, mig179 dirty=false, granskade webb/Codex-bytes levererade. READ ONLY före/efter: alla tidigare eventpayloads identiska; befintlig Host silver480/rate0/calc150 bevarad. Air byggde om utan restart. Installerad Keryx `~/go/bin/poleia` byggd från verifierad källa. |
 
 ## Reproduktion
 
@@ -95,3 +96,11 @@ Full användarväg till Rise kan bevisas via övermobilisering utan att tillverk
 Ingen backfill till äldre liv. Gamla öppningsnotiser uppdateras inte när regler senare ändras.
 Full introduktion visas i arkiv och `watch`; Keryx behåller sitt etablerade kind-namn i arkivrubrik.
 En-skärm-provet gäller 1280×900 och 390×844. Begriplighet kräver främlingsplaytest.
+
+## Deploykvitto
+
+`deploy-health.json`, `deploy-process.log`, `deploy-assets.json` och `live-before.json`/`live-after.json`
+visar provenance och bevarande. Den första hälsopollningen hann löpa ut medan air fortfarande byggde;
+den gamla processen svarade då. Ingen restart eller DB-ändring gjordes. Slutkvitto togs först när
+den nya processen svarade med `b2d3149`/179. Den väntande världen står kvar på tick150 och skapades
+inte om; inga nya konton eller öppningsnotiser tillverkades på den delade världen.
