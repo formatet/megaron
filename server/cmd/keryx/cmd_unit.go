@@ -917,8 +917,8 @@ func fetchColonizePreview(c *Client, worldID string, q, r int) (*colonizePreview
 // grain as stock) instead of a colony — temenos_nomadic_host_fas4_plan.md 4.3.
 // starter_farm=1 tells the endpoint a metropolis founding seeds a starter farm
 // (createMetropolis), unlike a plain colony — see founding-forecast-fix-plan.
-func fetchColonizePreviewParams(c *Client, worldID string, q, r, pop, seed int) (*colonizePreview, error) {
-	return fetchPreviewPath(c, fmt.Sprintf("/api/v1/worlds/%s/colonize-preview?q=%d&r=%d&pop=%d&seed=%d&starter_farm=1",
+func fetchColonizePreviewParams(c *Client, worldID string, q, r, pop int, seed float64) (*colonizePreview, error) {
+	return fetchPreviewPath(c, fmt.Sprintf("/api/v1/worlds/%s/colonize-preview?q=%d&r=%d&pop=%d&seed=%g&starter_farm=1",
 		worldID, q, r, pop, seed))
 }
 

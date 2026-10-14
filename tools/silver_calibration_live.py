@@ -45,7 +45,7 @@ try:
     if proc.poll() is not None:raise RuntimeError('server exited')
     time.sleep(.5)
   else:raise RuntimeError('server timeout')
-  assert health['commit']==commit and health['migration']==177,health
+  assert health['commit']==commit and health['migration']==179,health
   ws=api('/api/v1/worlds');world=(ws if isinstance(ws,list) else ws['worlds'])[0]['id'];wp='/api/v1/worlds/'+world
   username='Alpha-B-'+secrets.token_hex(4)
   token=api('/api/v1/auth/register','POST',{'username':username,'password':secrets.token_urlsafe(30)})['access_token']
@@ -57,7 +57,7 @@ try:
   initial_detail=api(wp+'/provinces/'+province,token=token)
   initial_goods=api(wp+'/provinces/'+province+'/goods',token=token)
   initial_silver=next(g for g in initial_goods if g['key']=='silver')
-  expected_bank=1278 if founded.get('coastal') else 730
+  expected_bank=founded['silver_carried']
   assert initial_silver['amount']==expected_bank,(founded,initial_silver)
   assert initial_silver['cap']==2*expected_bank,initial_silver
   assert initial_silver['labor_value']==1,initial_silver

@@ -62,7 +62,7 @@ type foundedMetropolis struct {
 	GalleyID      *uuid.UUID // Poseidon's gift; nil inland
 	GrainCarried  float64    // store moved into the city
 	SilverCarried float64
-	GrainTotal    float64 // what the city holds right after founding (genesis seed + carried)
+	GrainTotal    float64 // what the city holds right after founding (carried only)
 	SilverTotal   float64
 }
 
@@ -278,9 +278,9 @@ func foundMetropolisFromNomadicHost(
 	}
 
 	// 6. Silver was initialized once by createMetropolis, including the carried
-	// balance and any first-founding top-up. Only grain is added here.
+	// balance with no top-up. Only the carried grain is added here.
 	// Pour the remaining rations into the city's stores. ADD rather than set:
-	// createMetropolis already seeded opening amounts, and the host's grain is
+	// createMetropolis initialized zero grain, and the host's grain is
 	// carried in on top of them.
 	for good, amount := range map[string]float64{"grain": grainLeft} {
 		if amount <= 0 {

@@ -3495,7 +3495,7 @@ function openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits) {
   if (!isSea && State.founderPhase) {
     const fp = State.founderPhase;
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/colonize-preview?q=${h.q}&r=${h.r}`
-        + `&pop=${fp.population}&seed=${Math.max(0, Math.round(fp.grain?.amount || 0))}`)
+        + `&pop=${fp.population}&seed=${Math.max(0, fp.grain?.amount || 0)}`)
       .then(r => r.ok ? r.json() : null)
       .then(p => {
         const el = document.getElementById('ip-found-preview');
@@ -3652,7 +3652,7 @@ async function openHostPanel(h, tile) {
     && document.getElementById('ip-found-preview') === previewEl;
   summaryEl.innerHTML = hostForecastSummaryHTML(null);
   fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/colonize-preview?q=${h.q}&r=${h.r}`
-      + `&pop=${fp.population}&seed=${Math.max(0, Math.round(fp.grain?.amount || 0))}&starter_farm=1`)
+      + `&pop=${fp.population}&seed=${Math.max(0, fp.grain?.amount || 0)}&starter_farm=1`)
     .then(r => r.ok ? r.json() : null)
     .then(p => {
       if (!stillThisHost()) return;

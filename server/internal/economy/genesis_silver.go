@@ -2,23 +2,13 @@ package economy
 
 import "math"
 
-// Fixed starting reserves (Timothy 2026-10-13), independent of current payroll,
-// population or prices. Returning hosts only move their remaining purse.
-const (
-	MetropolisSilverInland  = 730.0
-	MetropolisSilverCoastal = 1278.0
-)
-
-func MetropolisSilver(coastal bool, carried float64, refugee bool) (amount, cap float64) {
-	endowment := MetropolisSilverInland
-	if coastal {
-		endowment = MetropolisSilverCoastal
-	}
+// MetropolisSilver moves only the Host's remaining purse into its new city
+// (Timothy 2026-10-14). No top-up for inland, coastal or returning founders.
+// The same purse-based ceiling as colonies keeps room for growth and never
+// clips what was actually carried: max(60, 2*carried, amount).
+func MetropolisSilver(carried float64) (amount, cap float64) {
 	amount = math.Max(0, carried)
-	if !refugee {
-		amount = math.Max(amount, endowment)
-	}
-	return amount, math.Max(2*endowment, amount)
+	return amount, ColonySilverCap(amount, amount)
 }
 
 // ColonySilverCap never clips a carried purse or a pre-existing settled stock.

@@ -202,7 +202,7 @@ settling. To found somewhere else: march the host there first
 				// The forecast for the hex the host STANDS on — settle founds here,
 				// nowhere else. Same endpoint + params as the web Host panel: the
 				// metropolis's population and the host's carried grain as stock.
-				seed := int(fp.Grain.Amount)
+				seed := fp.Grain.Amount
 				if seed < 0 {
 					seed = 0
 				}
@@ -282,9 +282,9 @@ settling. To found somewhere else: march the host there first
 }
 
 // foundingStoresLine says what the host carried in AND what the city holds now
-// (the city also gets an opening seed of its own, so the two differ).
+// Founding adds no extra grain or silver; the live receipt reports both.
 func foundingStoresLine(grainCarried, silverCarried, grainTotal, silverTotal float64) string {
-	return fmt.Sprintf("  Carried in by the host: %.0f grain, %.0f silver. The city now holds %.0f grain, %.0f silver (your host's stores plus the city's own opening stores).",
+	return fmt.Sprintf("  Carried in by the host: %.0f grain, %.0f silver. The city now holds %.0f grain, %.0f silver (founding adds no extra grain or silver).",
 		grainCarried, silverCarried, grainTotal, silverTotal)
 }
 

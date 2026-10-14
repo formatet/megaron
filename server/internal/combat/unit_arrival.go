@@ -1958,7 +1958,8 @@ func (h *UnitArrivalHandler) foundColony(
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
 		 SELECT $1, g.key,
 		        -- Startlagret (megaron_plan_byggkostnader steg 3): inget timmer och
-		        -- ingen sten. Grain kommer från economy.ColonyGrainSeed och MÅSTE
+		        -- ingen sten eller extra grain (Timothy 2026-10-14). ColonyGrainSeed=0
+		        -- är fröet, inte buren last; parametern MÅSTE
 		        -- castas till numeric, inte int — ::int trunkerade decimaler tyst.
 		        -- En kopia finns i api/handlers/create_metropolis.go.
 		        -- Livestock är ett antal djur, inte en matmängd, och skalas inte.
@@ -1978,7 +1979,7 @@ func (h *UnitArrivalHandler) foundColony(
 		                 -- at 200, so a colony on a forest hex pegged its cedar store
 		                 -- within eight ticks and burned the rest of its production
 		                 -- forever. Capitals never had this. Silver's real cap is set
-		                 -- by the Sitos liquid-silver seed below, same as for capitals.
+		                 -- from the carried silver purse below, same as for capitals.
 		        current_world_tick()
 		 FROM goods g
 		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,

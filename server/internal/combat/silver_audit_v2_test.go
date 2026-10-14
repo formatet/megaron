@@ -96,13 +96,13 @@ func TestSilverAuditV2Conservation(t *testing.T) {
 	if p.PreviousAuditTick != nil {
 		t.Fatal("V1 baseline used for V2")
 	}
-	// First newcomer purse, followed by its fixed metropolis endowment.
+	// First newcomer purse, moved once into its metropolis without minting.
 	exec(`INSERT INTO founder_phase(world_id,owner_id,population,grain_amount,grain_rate,silver_amount,silver_rate) VALUES($1,$2,1000,1200,-1,480,0)`, world, owner)
 	p = audit()
 	near(p.TotalSilver, 480)
 	near(p.FounderSilver, 480)
 	near(p.NetDelta, 480)
-	amount, cap := economy.MetropolisSilver(false, 480, false)
+	amount, cap := economy.MetropolisSilver(480)
 	tx, err := pool.Begin(ctx)
 	if err != nil {
 		t.Fatal(err)
@@ -117,19 +117,19 @@ func TestSilverAuditV2Conservation(t *testing.T) {
 		t.Fatal(err)
 	}
 	p = audit()
-	near(p.TotalSilver, 730)
-	near(p.NetDelta, 250)
+	near(p.TotalSilver, 480)
+	near(p.NetDelta, 0)
 	near(p.FounderSilver, 0)
 	// Cap, partial fill and changing rates: full warehouses don't mine 10/tick.
-	exec(`UPDATE settlement_goods SET rate=10,cap=735 WHERE settlement_id=$1 AND good_key='silver'`, mother)
+	exec(`UPDATE settlement_goods SET rate=10,cap=485 WHERE settlement_id=$1 AND good_key='silver'`, mother)
 	exec(`UPDATE worlds SET current_tick=1 WHERE id=$1`, world)
 	p = audit()
-	near(p.TotalSilver, 735)
+	near(p.TotalSilver, 485)
 	near(p.MinedSinceLast, 5)
 	near(p.NetDelta, 5)
 	exec(`UPDATE worlds SET current_tick=2 WHERE id=$1`, world)
 	p = audit()
-	near(p.TotalSilver, 735)
+	near(p.TotalSilver, 485)
 	near(p.MinedSinceLast, 0)
 	exec(`UPDATE settlement_goods SET rate=0 WHERE settlement_id=$1 AND good_key='silver'`, mother)
 	// Actual field payroll destroys 2 silver, paid from a fed city.
@@ -139,14 +139,14 @@ func TestSilverAuditV2Conservation(t *testing.T) {
 		t.Fatal(err)
 	}
 	p = read()
-	near(p.TotalSilver, 733)
+	near(p.TotalSilver, 483)
 	near(p.NetDelta, -2)
 	near(p.MinedSinceLast, 0)
 	exec(`UPDATE units SET type='spearman',size=50,status='forming' WHERE id=$1`, colonist)
 	exec(`UPDATE settlement_goods SET rate=10 WHERE settlement_id=$1 AND good_key='silver'`, mother)
 	exec(`UPDATE worlds SET current_tick=3 WHERE id=$1`, world)
 	p = audit()
-	near(p.TotalSilver, 735)
+	near(p.TotalSilver, 485)
 	near(p.MinedSinceLast, 2)
 	exec(`UPDATE settlement_goods SET rate=0 WHERE settlement_id=$1 AND good_key='silver'`, mother)
 	// Trade reserve → physical first leg → delivered, with no minting.
@@ -165,7 +165,7 @@ func TestSilverAuditV2Conservation(t *testing.T) {
 		t.Fatal(err)
 	}
 	p = audit()
-	near(p.TotalSilver, 735)
+	near(p.TotalSilver, 485)
 	near(p.BuyEscrowSilver, 50)
 	near(p.NetDelta, 0)
 	dispatch := func(kind string, qty float64, escrow bool) uuid.UUID {
@@ -195,7 +195,7 @@ func TestSilverAuditV2Conservation(t *testing.T) {
 	}
 	leg := dispatch("trade", 50, true)
 	p = audit()
-	near(p.TotalSilver, 735)
+	near(p.TotalSilver, 485)
 	near(p.TransportSilver, 50)
 	near(p.BuyEscrowSilver, 0)
 	payload, _ := json.Marshal(map[string]any{"destination_id": mother, "transport_id": leg, "good_key": "silver", "quantity": 50})
@@ -203,19 +203,19 @@ func TestSilverAuditV2Conservation(t *testing.T) {
 		t.Fatal(err)
 	}
 	p = audit()
-	near(p.TotalSilver, 735)
+	near(p.TotalSilver, 485)
 	near(p.TransportSilver, 0)
 	near(p.NetDelta, 0)
 	leg = dispatch("transfer", 25, false)
 	p = audit()
-	near(p.TotalSilver, 735)
+	near(p.TotalSilver, 485)
 	near(p.TransportSilver, 25)
 	payload, _ = json.Marshal(map[string]any{"transport_id": leg})
 	if err := transport.NewArrivalHandler(pool, nil, store).Handle(ctx, events.ScheduledEvent{ID: nextID(), WorldID: world, Payload: payload}); err != nil {
 		t.Fatal(err)
 	}
 	p = audit()
-	near(p.TotalSilver, 735)
+	near(p.TotalSilver, 485)
 	near(p.TransportSilver, 0)
 	// The unit's money remains real when carried; colony creation moves it.
 	tx, err = pool.Begin(ctx)
@@ -232,17 +232,17 @@ func TestSilverAuditV2Conservation(t *testing.T) {
 		t.Fatal(err)
 	}
 	p = audit()
-	near(p.TotalSilver, 735)
+	near(p.TotalSilver, 485)
 	near(p.CarriedSilver, 15)
 	near(p.NetDelta, 0)
 	runColonizeArrival(t, pool, ctx, world, colonist)
 	p = audit()
-	near(p.TotalSilver, 735)
+	near(p.TotalSilver, 485)
 	near(p.CarriedSilver, 0)
 	near(p.NetDelta, 0)
-	near(p.WanaxDistribution.TotalSilver, 735)
-	near(p.WanaxDistribution.MedianSilver, 367.5)
-	near(p.WanaxDistribution.MaxSilver, 735)
+	near(p.WanaxDistribution.TotalSilver, 485)
+	near(p.WanaxDistribution.MedianSilver, 242.5)
+	near(p.WanaxDistribution.MaxSilver, 485)
 	near(p.WanaxDistribution.ZeroShare, .5)
 	if p.WanaxDistribution.Count != 2 || p.WanaxDistribution.ZeroCount != 1 {
 		t.Fatal(p.WanaxDistribution)
@@ -282,7 +282,7 @@ func TestSilverAuditV2Conservation(t *testing.T) {
 		t.Fatal(err)
 	}
 	reset := audit()
-	near(reset.TotalSilver, 735)
+	near(reset.TotalSilver, 485)
 	near(reset.MinedSinceLast, 0)
 	near(reset.NetDelta, 0)
 	if reset.MiningEpoch == p.MiningEpoch || reset.PreviousAuditTick != nil {

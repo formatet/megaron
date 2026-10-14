@@ -107,6 +107,15 @@ func TestFoundColony_DoesNotMintSilver(t *testing.T) {
 		t.Errorf("world silver %v → %v: founding must MOVE silver, never create it", before, after)
 	}
 
+	var grain float64
+	if err := pool.QueryRow(ctx, `SELECT sg.amount FROM settlement_goods sg JOIN settlements s ON s.id=sg.settlement_id
+     WHERE s.world_id=$1 AND s.id<>$2 AND sg.good_key='grain'`, worldID, motherID).Scan(&grain); err != nil {
+		t.Fatal(err)
+	}
+	if grain != 0 {
+		t.Fatalf("colony grain=%g want0: founding must not add a grain seed", grain)
+	}
+
 	// The colony holds exactly the purse, and nothing is left on the unit.
 	var colonySilver, stillCarried float64
 	if err := pool.QueryRow(ctx,
