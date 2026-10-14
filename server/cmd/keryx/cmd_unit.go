@@ -1691,6 +1691,6 @@ func unitPickupCmd() *cobra.Command {
 
 // provisionsLowDays är när matmätaren börjar varna. Tre speldygn är valt som
 // det kortaste fönster där en Wanax som loggar in en gång om dygnet fortfarande
-// hinner ge en order och få den utförd — samma resonemang som nådefristen på 24
-// tick, en tredjedel av skalan. Strawman: kalibrera mot en soak, inte mot smak.
+// hinner ge en order och få den utförd. Detta matvarningsfönster är separat
+// från grundningens straffnådefrist. Strawman: kalibrera mot en soak, inte mot smak.
 const provisionsLowDays = 3

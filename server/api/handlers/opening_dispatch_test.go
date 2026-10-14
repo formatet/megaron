@@ -86,6 +86,9 @@ func TestOpeningDispatchJoinConcurrentRetryRiseAndPrivacy(t *testing.T) {
 		return out
 	}
 	opening := read(token)
+	if len(opening) != 1 || !strings.Contains(strings.Join(opening[0].Paragraphs, " "), "for 144 days after founding") {
+		t.Fatalf("archived join dispatch must promise 144 days: %+v", opening)
+	}
 	if len(opening) != 1 || opening[0].Returning || len(opening[0].Paragraphs) != 8 {
 		t.Fatalf("join notice %+v", opening)
 	}
