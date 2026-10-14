@@ -28,10 +28,9 @@ const (
 	// (foundColony, population = unit size — Timothy 2026-10-10; it was 1 500 +
 	// the column until then), so callers that know the unit pass ?pop=.
 	ColonyForecastPopulation = 100
-	// ColonyGrainSeed is the starting grain stockpile a colony is seeded with.
-	// 8 (megaron_plan_byggkostnader steg 3, Timothy 2026-10-01) — samma som
-	// huvudstadens startlager i create_metropolis.go.
-	ColonyGrainSeed = 8
+	// ColonyGrainSeed is zero: founding adds no grain from nothing
+	// (Timothy 2026-10-14). Colonies receive food through production or transfer.
+	ColonyGrainSeed = 0
 )
 
 // MaxUnitSize is the hard ceiling on a single unit's headcount. Recruitment has

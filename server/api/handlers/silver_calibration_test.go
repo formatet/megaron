@@ -11,17 +11,17 @@ import (
 	"testing"
 )
 
-func TestSilverCalibrationFirstFoundingEndowment(t *testing.T) {
+func TestSilverCalibrationFirstFoundingCarriedOnly(t *testing.T) {
 	for _, tc := range []struct {
 		name               string
 		coastal            bool
 		carried, want, cap float64
 	}{
-		{"inland_spent_purse", false, 7, 730, 1460},
-		{"coast_spent_purse", true, 7, 1278, 2556},
-		{"inland_full_purse", false, 480, 730, 1460},
-		{"coast_full_purse", true, 480, 1278, 2556},
-		{"existing_wealth_is_not_destroyed", false, 5000, 5000, 5000},
+		{"inland_spent_purse", false, 7, 7, 60},
+		{"coast_spent_purse", true, 7, 7, 60},
+		{"inland_full_purse", false, 480, 480, 960},
+		{"coast_full_purse", true, 480, 480, 960},
+		{"existing_wealth_is_not_destroyed", false, 5000, 5000, 10000},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			pool := escortTestPool(t)
@@ -39,12 +39,19 @@ func TestSilverCalibrationFirstFoundingEndowment(t *testing.T) {
 			if _, err := seedNomadicHost(ctx, tx, store, wid, pid, 0, 0); err != nil {
 				t.Fatal(err)
 			}
-			if _, err := tx.Exec(ctx, `UPDATE founder_phase SET silver_amount=$3,silver_rate=0 WHERE world_id=$1 AND owner_id=$2`, wid, pid, tc.carried); err != nil {
+			grain := 17.25
+			if tc.carried == 480 {
+				grain = 1200
+			}
+			if _, err := tx.Exec(ctx, `UPDATE founder_phase SET silver_amount=$3,silver_rate=0,grain_amount=$4,grain_rate=0 WHERE world_id=$1 AND owner_id=$2`, wid, pid, tc.carried, grain); err != nil {
 				t.Fatal(err)
 			}
 			found, err := foundMetropolisFromNomadicHost(ctx, tx, store, economy.LoadSitosConfig(), wid, pid, "Silver-first", "minoan")
 			if err != nil {
 				t.Fatal(err)
+			}
+			if found.GrainCarried != grain || found.GrainTotal != grain || found.SilverTotal != tc.carried {
+				t.Fatalf("founding creates extra stock: grain carried/total=%g/%g want%g, silver total=%g want%g", found.GrainCarried, found.GrainTotal, grain, found.SilverTotal, tc.carried)
 			}
 			var amount, cap float64
 			if err := tx.QueryRow(ctx, `SELECT settled(amount,rate,calc_tick),cap FROM settlement_goods WHERE settlement_id=$1 AND good_key='silver'`, found.SettlementID).Scan(&amount, &cap); err != nil {
@@ -71,10 +78,7 @@ func TestSilverCalibrationDirectMetropolisPopulationIndependent(t *testing.T) {
 		if err := pool.QueryRow(context.Background(), `SELECT amount,cap FROM settlement_goods WHERE settlement_id=$1 AND good_key='silver'`, sid).Scan(&amount, &cap); err != nil {
 			t.Fatal(err)
 		}
-		want, wcap := 730.0, 1460.0
-		if coastal {
-			want, wcap = 1278, 2556
-		}
+		want, wcap := 0.0, 60.0
 		if amount != want || cap != wcap {
 			t.Fatalf("direct caller with pop4000 gave %g/%g want %g/%g", amount, cap, want, wcap)
 		}
@@ -106,12 +110,15 @@ func TestSilverCalibrationRefugeeFoundingNeverMints(t *testing.T) {
 		if initial != 60 || !refugee {
 			t.Fatalf("Rise purse=%g refugee=%v", initial, refugee)
 		}
-		if _, err := tx.Exec(ctx, `UPDATE founder_phase SET silver_amount=17,silver_rate=0 WHERE world_id=$1 AND owner_id=$2`, wid, pid); err != nil {
+		if _, err := tx.Exec(ctx, `UPDATE founder_phase SET silver_amount=17,silver_rate=0,grain_amount=93.5,grain_rate=0 WHERE world_id=$1 AND owner_id=$2`, wid, pid); err != nil {
 			t.Fatal(err)
 		}
 		found, err := foundMetropolisFromNomadicHost(ctx, tx, store, economy.LoadSitosConfig(), wid, pid, "Silver-refugee", "minoan")
 		if err != nil {
 			t.Fatal(err)
+		}
+		if found.GrainTotal != 93.5 || found.GrainCarried != 93.5 {
+			t.Fatalf("refugee grain carry/total=%g/%g want93.5", found.GrainCarried, found.GrainTotal)
 		}
 		var amount float64
 		if err := tx.QueryRow(ctx, `SELECT amount FROM settlement_goods WHERE settlement_id=$1 AND good_key='silver'`, found.SettlementID).Scan(&amount); err != nil {

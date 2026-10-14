@@ -9,4 +9,4 @@ Professionals draw pay every day. A Wanax who runs dry risks their desertion —
 
 Silver is kept with your other goods — the **Economy → Goods** tab shows your balance ([[goods]]).
 
-Your first founding fills the treasury to at least **730 silver inland**, or **1,278 on the coast**, including what your Host still carries. This fixed reserve pays for recruitment, professional forces, trade and offerings; spearmen do not draw daily silver. A Host rising after losing every city carries only its remaining refugee purse; founding again adds no new endowment. A colony carries existing silver from its mother city, rather than receiving new currency.
+Founding moves only the silver your Host still carries into the city: a new Host begins with **480 silver**, inland or coastal. Founding adds no extra silver. A Host rising after losing every city carries its remaining refugee purse. A colony carries existing silver from its mother city, rather than receiving new currency.

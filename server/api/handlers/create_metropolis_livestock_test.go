@@ -64,8 +64,8 @@ func TestFounding_Metropolis_StartsWithoutTimberOrStone(t *testing.T) {
 	if stock["timber"] != 0 || stock["stone"] != 0 {
 		t.Errorf("founding stock timber=%v stone=%v, want 0 and 0", stock["timber"], stock["stone"])
 	}
-	if stock["grain"] != 8 {
-		t.Errorf("founding grain = %v, want 8", stock["grain"])
+	if stock["grain"] != 0 {
+		t.Errorf("founding grain = %v, want 0 (no extra seed)", stock["grain"])
 	}
 	for bt, spec := range province.BuildingSpecs {
 		afford := true

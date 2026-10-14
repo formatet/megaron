@@ -86,7 +86,7 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 	}
 
 	// Create the settlement (capital).
-	// Silver now lives in settlement_goods (seeded below from the founding endowment).
+	// Silver now lives in settlement_goods (initialized below from the carried purse).
 	err = tx.QueryRow(ctx,
 		`INSERT INTO settlements
 		 (world_id, province_id, name, culture_id, owner_id, founder_id, control_type, is_capital, loyalty, loyalty_points, population)
@@ -98,11 +98,8 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 		return out, &metropolisError{"could not create settlement", err}
 	}
 
-	// No Sitos seed. The fund's genesis silver is gone with migration 106 — the
-	// granary holds food, not silver, and it starts empty: a city has no reserve
-	// before its first surplus. The capital's own starting silver still comes
-	// from the endowment below, which is one of the two sanctioned faucets
-	// (B3: starting silver and mines).
+	// No Sitos seed: the granary starts empty. The city's silver is moved
+	// from the Host's carried purse below; founding creates no extra currency.
 
 	// Link province back to its controlling settlement.
 	if _, err = tx.Exec(ctx,
@@ -118,13 +115,13 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 	if _, err = tx.Exec(ctx,
 		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
 		 SELECT $1, g.key,
-		        -- Startlagret (megaron_plan_byggkostnader steg 3): 8 spannmål, inget
+		        -- Startlager: inget extra spannmål (Timothy 2026-10-14), inget
 		        -- timmer och ingen sten — catchmenten ska behöva skog och kulle.
 		        -- En kopia finns i combat/unit_arrival.go foundColony.
 		        -- Livestock kommer från economy.FoundingHerdLivestock, som är
 		        -- ett ANTAL DJUR och inte en matmängd — den skalas därför inte.
 		        CASE g.key
-		            WHEN 'grain'     THEN 8
+		            WHEN 'grain'     THEN 0
 		            WHEN 'timber'    THEN 0
 		            WHEN 'stone'     THEN 0
 		            WHEN 'livestock' THEN $2::numeric
@@ -135,7 +132,7 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 		                 -- the old per-good caps predated the 2026-07-05 cap
 		                 -- loosening and pinned never-produced/never-crafted goods
 		                 -- at a low binding value (silver's real cap is set by the
-		                 -- endowment below)
+		                 -- carried purse below)
 		        current_world_tick()
 		 FROM goods g
 		 ON CONFLICT (settlement_id, good_key) DO NOTHING`,
@@ -144,16 +141,9 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 		return out, &metropolisError{"could not seed goods", err}
 	}
 
-	// A prior-city witness or refugee host forbids a second endowment, including
-	// direct internal callers that did not come through the host HTTP surface.
-	var refugee bool
-	if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM founder_phase
-	 WHERE world_id=$1 AND owner_id=$2 AND active AND is_refugee)
-	 OR EXISTS(SELECT 1 FROM player_world_records WHERE world_id=$1
-	 AND player_id=$2 AND last_settlement_id IS NOT NULL)`, p.WorldID, p.PlayerID).Scan(&refugee); err != nil {
-		return out, &metropolisError{"could not read founding endowment eligibility", err}
-	}
-	liquidSeed, liquidCap := economy.MetropolisSilver(p.Coastal, p.CarriedSilver, refugee)
+	// Every founding moves only what the Host carries; no eligibility branch
+	// can mint a second endowment for direct or returning callers.
+	liquidSeed, liquidCap := economy.MetropolisSilver(p.CarriedSilver)
 	if _, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=$1,
 	 cap=GREATEST($2, GREATEST(0,settled(amount,rate,calc_tick))), calc_tick=current_world_tick()
 	 WHERE settlement_id=$3 AND good_key='silver'`, liquidSeed, liquidCap, out.SettlementID); err != nil {
