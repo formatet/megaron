@@ -1,0 +1,8 @@
+web/static/js/megaron/ui/marchctx.js:607:  // arrival_tick + derived arrives_at_utc (K4). Same destination for every
+web/static/js/megaron/ui/marchctx.js:629:        arrivalHTML(first.data.arrives_at_utc || first.data.arrives_at, first.data.arrival_tick);
+server/cmd/keryx/cmd_march_preview.go:28:		ArrivalTick   int64  `json:"arrival_tick"`
+server/cmd/keryx/cmd_march_preview.go:29:		DurationTicks int64  `json:"duration_ticks"`
+web/static/js/megaron/ui/march_preview.js:12:  const response = await read(`/api/v1/worlds/${worldID}/units/${pick.id}/march-preview?${query}`);
+web/static/js/megaron/ui/march_preview.js:30:  if (data.available && Number.isInteger(data.arrival_tick)) {
+web/static/js/megaron/ui/march_preview.js:31:    return 'Estimated arrival: ' + arrivalHTML(data.arrives_at_utc, data.arrival_tick)
+web/static/js/megaron/ui/march_preview.js:32:      + ' · ' + esc(fmtDays(data.duration_ticks)) + ' travelling';

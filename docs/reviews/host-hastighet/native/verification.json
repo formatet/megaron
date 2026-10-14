@@ -1,0 +1,137 @@
+{
+  "health": {
+    "commit": "bfb32fb1",
+    "migration": 179,
+    "status": "ok"
+  },
+  "production_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "natural_register_join": true,
+  "sql_fixtures_or_writes": false,
+  "request_overrides": false,
+  "target": {
+    "q": 10,
+    "r": 52,
+    "terrain": "hills",
+    "visible": true,
+    "tier": "live",
+    "fertility": 0.7978365123194597,
+    "mineral": 0.49304593058190715
+  },
+  "preview": {
+    "arrival_tick": 2,
+    "arrives_at_utc": "2026-10-14T20:37:20.115109386Z",
+    "available": true,
+    "duration_ticks": 2,
+    "expedition": null,
+    "silver_payer_count": 0,
+    "silver_runway_ticks": null,
+    "upkeep_silver_field": 0,
+    "upkeep_silver_home": 0
+  },
+  "receipt": {
+    "arrival_tick": 2,
+    "arrives_at": "2026-10-14T22:37:23.582435383+02:00",
+    "arrives_at_utc": "2026-10-14T20:37:23.582435383Z",
+    "departs_at": "2026-10-14T20:37:23.582435383+02:00",
+    "duration_ticks": 2,
+    "expedition": null,
+    "origin_q": 11,
+    "origin_r": 51,
+    "target_q": 10,
+    "target_r": 52,
+    "unit_id": "eb61d7ee-e800-4b43-8aa8-74d04057d1cc"
+  },
+  "stored": {
+    "depart_tick": 0,
+    "arrive_tick": 2,
+    "march_route": {
+      "costs": [
+        2000
+      ],
+      "hexes": [
+        [
+          11,
+          51
+        ],
+        [
+          10,
+          52
+        ]
+      ],
+      "end_tick": 2,
+      "start_tick": 0
+    }
+  },
+  "listed_host": {
+    "id": "eb61d7ee-e800-4b43-8aa8-74d04057d1cc",
+    "type": "nomadic_host",
+    "category": "land",
+    "size": 1,
+    "upkeep_grain_per_tick": 0,
+    "upkeep_silver_per_tick": 0,
+    "upkeep_context": "none",
+    "status": "marching",
+    "deployable": true,
+    "display_name": "Nomadic Host of Komawes",
+    "q": 11,
+    "r": 51,
+    "target_q": 10,
+    "target_r": 52,
+    "departs_at": "2026-10-14T20:37:23.582435+02:00",
+    "arrives_at": "2026-10-14T22:37:23.582435+02:00",
+    "arrival_tick": 2,
+    "duration_ticks": 2,
+    "arrives_at_utc": "2026-10-14T20:37:23.626661914Z",
+    "path": [
+      [
+        11,
+        51
+      ],
+      [
+        10,
+        52
+      ]
+    ],
+    "step_costs": [
+      2000
+    ],
+    "departure_tick": 0,
+    "current_q": 10,
+    "current_r": 52,
+    "in_battle": false
+  },
+  "captures": [
+    {
+      "mode": "desktop",
+      "viewport": [
+        1280,
+        900
+      ],
+      "text": "Nomadic Host of Komawes: Estimated arrival: \u2248 today 22:37 \u00b7 2 days travelling\nSold: 0 \u2192 0 silver per day in the field \u00b7 no silver drain",
+      "rect": {
+        "x": 18,
+        "y": 450.6499938964844,
+        "width": 206,
+        "height": 113.89999389648438
+      },
+      "page_errors": []
+    },
+    {
+      "mode": "mobile",
+      "viewport": [
+        390,
+        844
+      ],
+      "text": "Nomadic Host of Komawes: Estimated arrival: \u2248 today 22:37 \u00b7 2 days travelling\nSold: 0 \u2192 0 silver per day in the field \u00b7 no silver drain",
+      "rect": {
+        "x": 18,
+        "y": 450.6499938964844,
+        "width": 206,
+        "height": 113.89999389648438
+      },
+      "page_errors": []
+    }
+  ],
+  "read_only_preview_units": true,
+  "stored_march_unchanged_on_read": true
+}

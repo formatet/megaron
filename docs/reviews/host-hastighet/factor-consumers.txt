@@ -1,0 +1,19 @@
+server/internal/unit/model.go:120:// MarchHoursFactorFor returns the multiplier to apply to
+server/internal/unit/model.go:125:func MarchHoursFactorFor(t Type) float64 {
+server/internal/unit/nomadic_host_test.go:33:	host, base := MarchHoursFactorFor(TypeNomadicHost), MarchHoursFactorFor(TypeSpearman)
+server/internal/combat/march_start.go:174:func TravelFactor(t unit.Type, crew int, laden bool) float64 {
+server/internal/combat/march_start.go:175:	f := NavalSpeedFactor(t) * unit.MarchHoursFactorFor(t) * CrewSpeedFactor(t, crew)
+server/internal/combat/march_start.go:735:	moveTicks *= TravelFactor(u.Type, u.Crew, u.CargoUnitID != nil)
+server/internal/combat/expedition.go:74:	return max(1, int(math.Round(moveTicks*TravelFactor(t, crew, laden))))
+server/internal/combat/ship_hull.go:336:	moveTicks *= TravelFactor(unit.Type(utype), crew, cargoUnitID != nil)
+server/api/handlers/unit.go:1068:	marchHours *= combat.TravelFactor(unitType, unitCrew, false)
+server/internal/combat/travel_factor_test.go:9:// MarchHoursFactorFor themselves, so a bug that crept into both the
+server/internal/combat/travel_factor_test.go:32:		// case (1.0) × MarchHoursFactorFor's default case (1.0).
+server/internal/combat/travel_factor_test.go:37:		// War galley: NavalSpeedFactor 0.6 × MarchHoursFactorFor 1.0.
+server/internal/combat/travel_factor_test.go:39:		// Merchantman: NavalSpeedFactor 1.4 × MarchHoursFactorFor 1.0.
+server/internal/combat/travel_factor_test.go:41:		// Nomadic host: NavalSpeedFactor 1.0 (default) × MarchHoursFactorFor 1/0.9.
+server/internal/combat/travel_factor_test.go:48:		if got := TravelFactor(c.utype, fullCrew, false); math.Abs(got-c.notLaden) > epsilon {
+server/internal/combat/travel_factor_test.go:49:			t.Errorf("TravelFactor(%s, crew=%d (full), laden=false) = %v, want %v", c.utype, fullCrew, got, c.notLaden)
+server/internal/combat/travel_factor_test.go:51:		if got := TravelFactor(c.utype, fullCrew, true); math.Abs(got-c.laden) > epsilon {
+server/internal/combat/travel_factor_test.go:52:			t.Errorf("TravelFactor(%s, crew=%d (full), laden=true) = %v, want %v", c.utype, fullCrew, got, c.laden)
+server/internal/combat/recall_redirect.go:164:	moveTicks *= TravelFactor(unit.Type(utype), crew, cargoUnitID != nil)

@@ -1,0 +1,3 @@
+Estimated arrival: day 2 (journey: 2 days), if dispatched now. Conditions may change.
+Sold: 0 → 0 silver per day in the field · no silver drain
+No order sent. Run again without --preview to send it.

@@ -1,0 +1,21 @@
+server/internal/unit/naming_test.go:108:		"galley", "war_galley", "merchantman", "nomadic_host"} {
+server/internal/unit/lookup_test.go:140:		 VALUES ($1, $2, 'nomadic_host', 'land', 100, 'garrison') RETURNING id`,
+server/internal/unit/nomadic_host_test.go:9:	if CombatCapable(TypeNomadicHost) {
+server/internal/unit/nomadic_host_test.go:20:	if !CanFoundMetropolis(TypeNomadicHost) {
+server/internal/unit/nomadic_host_test.go:33:	host, base := MarchHoursFactorFor(TypeNomadicHost), MarchHoursFactorFor(TypeSpearman)
+server/internal/unit/nomadic_host_test.go:49:	if got := CategoryOf(TypeNomadicHost); got != CategoryLand {
+server/internal/unit/nomadic_host_test.go:52:	if got := CrewFor(TypeNomadicHost); got != 0 {
+server/internal/unit/nomadic_host_test.go:60:	if CanEmbark(TypeNomadicHost) {
+server/internal/unit/nomadic_host_test.go:71:	if got := DisplayName(string(TypeNomadicHost)); got != "Nomadic Host" {
+server/internal/unit/nomadic_host_test.go:72:		t.Fatalf("DisplayName(nomadic_host) = %q, want %q", got, "Nomadic Host")
+server/internal/combat/place_reach_test.go:101:	f.mover(t, "nomadic_host", f.owner, reachRoute(0, 6, 0, 6))
+server/internal/combat/place_reach_test.go:177:	f.mover(t, "nomadic_host", f.owner, reachRoute(4, 5, 1, 2))
+server/internal/combat/place_reach_test.go:257:	f.mover(t, "nomadic_host", f.owner, reachRoute(0, 6, 0, 6))
+server/internal/combat/place_reach_test.go:325:			f.mover(t, "nomadic_host", f.owner, reachRoute(0, 5, 0, 5))
+server/internal/combat/place_reach_test.go:355:	id := f.mover(t, "nomadic_host", f.owner, reachRoute(0, 6, 0, 6))
+server/internal/combat/movement_ro1_test.go:18:		{"host plains", "plains", unit.TypeNomadicHost, 4, false, 8},
+server/internal/combat/host_speed_test.go:42:		for _, ty := range []unit.Type{unit.TypeNomadicHost, unit.TypeSpearman} {
+server/internal/combat/host_speed_test.go:53:				if ty == unit.TypeNomadicHost {
+server/internal/combat/unit_arrival_disbanded_host_test.go:73:		 VALUES ($1,$2,'nomadic_host','land',1,0,'disbanded',NULL,NULL, 1,22, now(), now())
+server/internal/combat/crew_speed_factor_test.go:48:		{unit.TypeNomadicHost, 0, 1.0},
+server/internal/combat/travel_factor_test.go:42:		{unit.TypeNomadicHost, 1.0 / 0.9, 1.5 / 0.9},

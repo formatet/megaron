@@ -1,0 +1,15 @@
+/home/tk/Dokument/myltavault/megaron_valtabell_arkiv_20261004.md:388:`TerrainMoveHours(terrain)`, och `MarchHoursFactorFor` särbehandlar bara `nomadic_host`. Utfallet:
+/home/tk/Dokument/myltavault/megaron_plan_spawn_landmassa.md:53:  hemisfärsbalansen (`west_count`/`east_count` CTE, jämför antal provinser+hosts på var sida `halfQ`).
+/home/tk/Dokument/myltavault/temenos_plan_graveyard/temenos_nomadic_host_fas4_plan.md:18:| **Fas 2** — fart (`MarchHoursFactorFor`), syn (`EyeNomadicHost` bas 1), `size<100`-grinden riven | ✅ klar, DB-verifierad (host 12 tick vs spearman 6 på samma sträcka) |
+/home/tk/Dokument/myltavault/temenos_nomadic_host_bygg.md:119:- FOV = 1 via `FOVFor("nomadic_host")`; hastighet via `SpeedFactorFor` (host =
+/home/tk/Dokument/myltavault/temenos_nomadic_host_plan.md:1:> **Gällande fart (Timothy 2026-10-14):** Hosten går med **0,9 × spjutmannens hastighet**. Tidsfaktorn är exakt **1/0,9**, centralt i `unit.MarchHoursFactorFor`; samma avrundning som andra marscher. Redan lagrade marschers ankomsttick och väg ändras inte. Den äldre halva farten och rörelseexemplen nedan är ersatta; övrig historik är inte omtolkad. Bevis: kodrepots `docs/reviews/host-hastighet/README.md` (gren, väntar Claude-integration).
+/home/tk/Dokument/myltavault/temenos_nomadic_host_plan.md:28:> Därför heter helpern `unit.MarchHoursFactorFor` och returnerar **2.0** för hostet (dubbla timmar = halva farten).
+/home/tk/Dokument/myltavault/temenos_nomadic_host_plan.md:41:| Fart       | Host: 0,9 × Spearmen-farten; Spearmen: halva budbärarfarten                |
+/home/tk/Dokument/myltavault/temenos_terrain.md:146:- **Hostfart 0,9 × spjutfart** (Timothy 2026-10-14): tidsfaktor exakt `1 / hostSpeedOfSpearman`, konstant 0,9. Nya marscher och förhandsvisningar; gamla lagrade tider/vägar bevaras. [[temenos_nomadic_host_plan]].
+/home/tk/Dokument/myltavault/megaron_plan_skeppsfart_besattning.md:84:moveTicks *= unit.MarchHoursFactorFor(unit.Type(utype))
+/home/tk/Dokument/myltavault/megaron_plan_skeppsfart_besattning.md:105:| **Non-scope** | Talen (0,6/1,4/1,5), `MarchHoursFactorFor`, hull, crew. |
+/home/tk/Dokument/myltavault/megaron_plan_skeppsfart_besattning.md:113:// hull speed by ship type, the host's halved march hours, and the laden penalty.
+/home/tk/Dokument/myltavault/megaron_plan_skeppsfart_besattning.md:117:	f := NavalSpeedFactor(t) * unit.MarchHoursFactorFor(t)
+/home/tk/Dokument/myltavault/megaron_todo_arkiv_20260727.md:433:- [ ] **Founder/host-scouting:** `--intent explore` kräver garrison → founder-fasen grundar halvblint.
+/home/tk/Dokument/myltavault/megaron_todo_arkiv_20260727.md:525:      `MarchHoursFactorFor`, frakt-1.5×) → galär/handelsman fick annan hemresetid än utresa för samma sträcka.
+/home/tk/Dokument/myltavault/megaron_spelmanual.md:144:The horde moves at 90% of Spearmen's speed and reveals the map as it goes. Unlike everything

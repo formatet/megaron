@@ -1,0 +1,26 @@
+» färsk DB på migration 179 · commit cff64ade+ändringar
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/plains
+2026/10/14 20:36:03 INFO player registered id=ca11650d-88b1-45f9-b91a-b0b5328676d4 username=nomadhost-recall-4517123c-fdde-4d46-8efa-30b58f2f4716
+    unit_host_speed_test.go:84: preview {Arrival:9 Duration:4 UTC:2026-10-14T22:36:03.728635784Z} want duration=2 arrival=7
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/forest_cedar
+2026/10/14 20:36:03 INFO player registered id=6071d7a4-c1f1-43a1-96fe-72a088f3baf4 username=nomadhost-recall-879e98c5-dfb7-4a49-b6c9-9e81b9453cd1
+    unit_host_speed_test.go:84: preview {Arrival:13 Duration:8 UTC:2026-10-15T02:36:03.808197631Z} want duration=4 arrival=9
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/forest_olive_grove
+2026/10/14 20:36:03 INFO player registered id=16aae860-f736-44a6-8e75-f14b388ccda5 username=nomadhost-recall-ab504a41-1a9d-4535-b58e-eef23fb67165
+    unit_host_speed_test.go:84: preview {Arrival:11 Duration:6 UTC:2026-10-15T00:36:03.88615505Z} want duration=3 arrival=8
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/hills
+2026/10/14 20:36:03 INFO player registered id=8d3e443b-f68c-4008-a02f-af3e55b86ac8 username=nomadhost-recall-9989fdc4-1261-4067-a0de-3ba004f112a7
+    unit_host_speed_test.go:84: preview {Arrival:13 Duration:8 UTC:2026-10-15T02:36:03.963683049Z} want duration=4 arrival=9
+=== RUN   TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/semi_desert
+2026/10/14 20:36:04 INFO player registered id=15222081-bc79-412c-b821-09e684608b7b username=nomadhost-recall-dd343efe-31ce-426b-b8cf-cb0d60016fc0
+    unit_host_speed_test.go:84: preview {Arrival:17 Duration:12 UTC:2026-10-15T06:36:04.042191631Z} want duration=7 arrival=12
+--- FAIL: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch (0.39s)
+    --- FAIL: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/plains (0.08s)
+    --- FAIL: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/forest_cedar (0.08s)
+    --- FAIL: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/forest_olive_grove (0.08s)
+    --- FAIL: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/hills (0.08s)
+    --- FAIL: TestHostSpeed_HTTPPreviewDispatchAndStoredMarch/semi_desert (0.08s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.395s
+FAIL

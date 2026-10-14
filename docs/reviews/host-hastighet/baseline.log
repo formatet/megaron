@@ -1,0 +1,5 @@
+» färsk DB på migration 179 · commit cff64ade
+ok  	formatet/megaron/server/internal/unit	0.002s
+ok  	formatet/megaron/server/internal/combat	0.003s
+ok  	formatet/megaron/server/api/handlers	0.140s
+ok  	formatet/megaron/server/cmd/keryx	0.008s

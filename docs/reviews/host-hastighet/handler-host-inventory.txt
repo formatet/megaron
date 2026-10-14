@@ -1,0 +1,20 @@
+server/api/handlers/unit_recall_no_route_test.go:21:			f, router := setupNomadicHostRecallWorld(t)
+server/api/handlers/unit_recall_no_route_test.go:66:	f, router := setupNomadicHostRecallWorld(t)
+server/api/handlers/unit_upkeep_roster_test.go:25:		{"nomadic_host", "positioned", 1, 0, 0, "none"},
+server/api/handlers/unit.go:2059:	// Wanaxens namn behövs för Nomadic Host — den hör till en PERSON, inte till
+server/api/handlers/unit.go:2711:		case u.Type == unit.TypeNomadicHost:
+server/api/handlers/unit.go:2712:			nm = unit.HostName(wanax)
+server/api/handlers/unit.go:2784:		if u.Type == unit.TypeNomadicHost {
+server/api/handlers/unit_recall_nomadic_host_test.go:36:type nomadicHostRecallFixture struct {
+server/api/handlers/unit_recall_nomadic_host_test.go:45:// setupNomadicHostRecallWorld builds a world with NO settlements — the only
+server/api/handlers/unit_recall_nomadic_host_test.go:50:func setupNomadicHostRecallWorld(t *testing.T) (nomadicHostRecallFixture, *chi.Mux) {
+server/api/handlers/unit_recall_nomadic_host_test.go:61:	var f nomadicHostRecallFixture
+server/api/handlers/unit_recall_nomadic_host_test.go:108:		 VALUES ($1, $2, 'nomadic_host', 'land', 1, 'marching', 0, 0, 4, 0, $3, $4) RETURNING id`,
+server/api/handlers/unit_recall_nomadic_host_test.go:138:func TestRecall_NomadicHostAppliesWithoutRunner(t *testing.T) {
+server/api/handlers/unit_recall_nomadic_host_test.go:141:	f, router := setupNomadicHostRecallWorld(t)
+server/api/handlers/unit_recall_nomadic_host_test.go:151:		t.Fatalf("Recall(nomadic_host, redirect) = %d %q, want 200 (applied directly, no Runner) — "+
+server/api/handlers/unit_recall_nomadic_host_test.go:197:func TestRecall_FieldUnitStillNeedsRunner_SameSetupAsHost(t *testing.T) {
+server/api/handlers/unit_recall_nomadic_host_test.go:198:	f, router := setupNomadicHostRecallWorld(t)
+server/api/handlers/unit_host_speed_test.go:20:func TestHostSpeed_HTTPPreviewDispatchAndStoredMarch(t *testing.T) {
+server/api/handlers/unit_host_speed_test.go:30:			f, _ := setupNomadicHostRecallWorld(t)
+server/api/handlers/unit_host_speed_test.go:43:			if _, err := pool.Exec(ctx, `UPDATE units SET type='nomadic_host',depart_tick=0,arrive_tick=8,march_route=$2 WHERE id=$1`, f.spearmanID, route); err != nil {
