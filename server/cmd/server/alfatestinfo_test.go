@@ -6,8 +6,10 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"image/png"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -30,11 +32,26 @@ func TestAlfatestInfoPublic(t *testing.T) {
 	if got := response.Header().Get("Content-Type"); got != "text/html; charset=utf-8" {
 		t.Fatalf("Content-Type=%q", got)
 	}
-	for _, text := range []string{`<html lang="en">`, "This is an early alpha", "Report", "keryx report", `href="/"`, `src="/static/alfatest/karta.png"`} {
+	for _, text := range []string{`<html lang="sv">`, "Det här är en tidig alfa", "Report", "keryx report", `href="/"`, `src="/static/alfatest/karta.png"`, `src="/static/alfatest/stad.png"`, `src="/static/alfatest/produktion.png"`, `src="/static/alfatest/handel.png"`} {
 		if !strings.Contains(response.Body.String(), text) {
 			t.Errorf("rendered invitation is missing %q", text)
 		}
 	}
+	for _, name := range []string{"karta", "stad", "produktion", "handel"} {
+		file, err := os.Open(filepath.Join(root, "web", "static", "alfatest", name+".png"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		config, err := png.DecodeConfig(file)
+		file.Close()
+		if err != nil {
+			t.Fatalf("%s image: %v", name, err)
+		}
+		if config.Width != 1440 || config.Height != 1000 {
+			t.Errorf("%s screenshot %dx%d want1440x1000", name, config.Width, config.Height)
+		}
+	}
+
 }
 
 // The DB-free HTTP test executes the real registrar; this guards its main wiring.
