@@ -1,0 +1,126 @@
+» färsk DB på migration 179 · commit 2be784c2+ändringar
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/64/seed1009
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=1009 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=1010 width=64 height=64 err="invalid map: forest fraction = 0.304 (want 0.22..0.30)"
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/64/seed2018
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/64/seed3027
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=3027 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=3028 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/64/seed4036
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/64/seed5045
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=5045 width=64 height=64 err="invalid map: landmass 3 (86 tiles) has 0 rivers (want 1-2)"
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/64/seed6054
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=6054 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/64/seed7063
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=7063 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=7064 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/64/seed8072
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=8072 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/64/seed9081
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=9081 width=64 height=64 err="invalid map: landmass 2 (83 tiles) has 0 rivers (want 1-2)"
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=9082 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=9083 width=64 height=64 err="invalid map: landmass 3 (82 tiles) has 0 rivers (want 1-2)"
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/64/seed10090
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=10090 width=64 height=64 err="invalid map: forest fraction = 0.309 (want 0.22..0.30)"
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=10091 width=64 height=64 err="invalid map: landmass 12 (223 tiles) has 0 rivers (want 1-2); landmass 10 (89 tiles) has 0 rivers (want 1-2); landmass 3 (97 tiles) has 0 rivers (want 1-2)"
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/64/seed11099
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=11099 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=11100 width=64 height=64 err="invalid map: productive copper = 1 (want >= 2); productive tin = 1 (want >= 2); no buildable west tile (q <= maxQ/2) has copper in its 6-hex catchment"
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/64/seed12108
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=12108 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/64/seed13117
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=13117 width=64 height=64 err="invalid map: river_ford hex (56,6) has 3 river-family neighbours (want exactly 2)"
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/64/seed14126
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/64/seed15135
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/64/seed16144
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/64/seed17153
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/64/seed18162
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=18162 width=64 height=64 err="invalid map: landmass 0 (129 tiles) has 0 rivers (want 1-2)"
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=18163 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=18164 width=64 height=64 err="invalid map: landmass 11 (124 tiles) has 0 rivers (want 1-2)"
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=18165 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2); landmass 8 (70 tiles) has 0 rivers (want 1-2)"
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=18166 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=18167 width=64 height=64 err="invalid map: landmass 1 (71 tiles) has 0 rivers (want 1-2)"
+2026/10/14 19:28:57 WARN mapgen: invalid map, reseeding world=test-world seed=18168 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/14 19:28:58 WARN mapgen: invalid map, reseeding world=test-world seed=18169 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2); forest fraction = 0.325 (want 0.22..0.30); landmass 2 (176 tiles) has 0 rivers (want 1-2)"
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/64/seed19171
+2026/10/14 19:28:58 WARN mapgen: invalid map, reseeding world=test-world seed=19171 width=64 height=64 err="invalid map: landmass 4 (338 tiles) has 0 rivers (want 1-2); landmass 5 (73 tiles) has 0 rivers (want 1-2)"
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/64/seed20180
+2026/10/14 19:28:58 WARN mapgen: invalid map, reseeding world=test-world seed=20180 width=64 height=64 err="invalid map: productive tin = 0 (want >= 2); no buildable east tile (q > maxQ/2) has tin in its 6-hex catchment"
+2026/10/14 19:28:58 WARN mapgen: invalid map, reseeding world=test-world seed=20181 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/128/seed1009
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/128/seed2018
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/128/seed3027
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/128/seed4036
+2026/10/14 19:28:59 WARN mapgen: invalid map, reseeding world=test-world seed=4036 width=128 height=128 err="invalid map: river_ford hex (13,69) has 3 river-family neighbours (want exactly 2)"
+2026/10/14 19:28:59 WARN mapgen: invalid map, reseeding world=test-world seed=4037 width=128 height=128 err="invalid map: productive copper = 1 (want >= 3)"
+2026/10/14 19:28:59 WARN mapgen: invalid map, reseeding world=test-world seed=4038 width=128 height=128 err="invalid map: productive tin = 1 (want >= 2); landmass 19 (72 tiles) has 0 rivers (want 1-2)"
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/128/seed5045
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/128/seed6054
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/128/seed7063
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/128/seed8072
+2026/10/14 19:29:00 WARN mapgen: invalid map, reseeding world=test-world seed=8072 width=128 height=128 err="invalid map: forest fraction = 0.306 (want 0.22..0.30)"
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/128/seed9081
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/128/seed10090
+2026/10/14 19:29:00 WARN mapgen: invalid map, reseeding world=test-world seed=10090 width=128 height=128 err="invalid map: landmass 25 (91 tiles) has 0 rivers (want 1-2); landmass 11 (305 tiles) has 0 rivers (want 1-2)"
+2026/10/14 19:29:00 WARN mapgen: invalid map, reseeding world=test-world seed=10091 width=128 height=128 err="invalid map: landmass 8 (351 tiles) has 0 rivers (want 1-2)"
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/128/seed11099
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/128/seed12108
+2026/10/14 19:29:01 WARN mapgen: invalid map, reseeding world=test-world seed=12108 width=128 height=128 err="invalid map: productive tin = 1 (want >= 2); river_ford hex (31,77) has 3 river-family neighbours (want exactly 2); landmass 19 (90 tiles) has 0 rivers (want 1-2)"
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/128/seed13117
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/128/seed14126
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/128/seed15135
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/128/seed16144
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/128/seed17153
+2026/10/14 19:29:03 WARN mapgen: invalid map, reseeding world=test-world seed=17153 width=128 height=128 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/14 19:29:04 WARN mapgen: invalid map, reseeding world=test-world seed=17154 width=128 height=128 err="invalid map: landmass 3 (803 tiles) has 0 rivers (want 1-2)"
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/128/seed18162
+2026/10/14 19:29:04 WARN mapgen: invalid map, reseeding world=test-world seed=18162 width=128 height=128 err="invalid map: river_ford hex (66,118) has 3 river-family neighbours (want exactly 2); landmass 5 (87 tiles) has 0 rivers (want 1-2)"
+2026/10/14 19:29:04 WARN mapgen: invalid map, reseeding world=test-world seed=18163 width=128 height=128 err="invalid map: landmass 54 (75 tiles) has 0 rivers (want 1-2); landmass 20 (71 tiles) has 0 rivers (want 1-2)"
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/128/seed19171
+=== RUN   TestGenerateMap_TinIncreasePreservesGeography/128/seed20180
+2026/10/14 19:29:05 WARN mapgen: invalid map, reseeding world=test-world seed=20180 width=128 height=128 err="invalid map: landmass 3 (91 tiles) has 0 rivers (want 1-2); landmass 8 (216 tiles) has 0 rivers (want 1-2)"
+--- PASS: TestGenerateMap_TinIncreasePreservesGeography (8.21s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/64/seed1009 (0.06s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/64/seed2018 (0.02s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/64/seed3027 (0.06s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/64/seed4036 (0.02s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/64/seed5045 (0.07s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/64/seed6054 (0.04s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/64/seed7063 (0.06s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/64/seed8072 (0.05s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/64/seed9081 (0.07s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/64/seed10090 (0.06s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/64/seed11099 (0.06s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/64/seed12108 (0.05s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/64/seed13117 (0.04s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/64/seed14126 (0.04s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/64/seed15135 (0.04s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/64/seed16144 (0.03s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/64/seed17153 (0.03s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/64/seed18162 (0.22s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/64/seed19171 (0.11s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/64/seed20180 (0.07s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/128/seed1009 (0.21s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/128/seed2018 (0.30s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/128/seed3027 (0.24s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/128/seed4036 (0.48s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/128/seed5045 (0.23s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/128/seed6054 (0.16s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/128/seed7063 (0.18s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/128/seed8072 (0.27s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/128/seed9081 (0.49s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/128/seed10090 (0.85s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/128/seed11099 (0.14s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/128/seed12108 (0.33s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/128/seed13117 (0.44s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/128/seed14126 (0.21s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/128/seed15135 (0.59s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/128/seed16144 (0.45s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/128/seed17153 (0.35s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/128/seed18162 (0.34s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/128/seed19171 (0.52s)
+    --- PASS: TestGenerateMap_TinIncreasePreservesGeography/128/seed20180 (0.24s)
+PASS
+ok  	formatet/megaron/server/internal/world	8.210s

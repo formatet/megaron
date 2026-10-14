@@ -1,0 +1,19 @@
+package world
+import("math";"math/rand")
+const tinSourcesAddedAtReference = 1
+func tinAdditionalSourceTarget(width,height int) int{return max(1,int(math.Round(float64(width*height)*tinSourcesAddedAtReference/(64*64))))}
+// Finish the unchanged map first. Extra tin uses the same terrain, hemisphere,
+// mineability, landmass separation and cluster engine without advancing the
+// original RNG or taking a silver deposit away.
+func addTinSources(tiles []MapTile,seed int64,width,height int){
+ grid:=make(map[cell]Terrain,len(tiles));land:=landComponents(tiles);landmap:=make(map[cell]int,len(land));copperComps:=map[int]bool{}
+ for _,t:=range tiles{c:=cell{t.Q,t.R};grid[c]=t.Terrain;landmap[c]=land[[2]int{t.Q,t.R}];if t.CopperDeposit{copperComps[landmap[c]]=true}}
+ _,chanE:=seaChannels(width);var cand []int
+ for i,t:=range tiles{
+  c:=cell{t.Q,t.R}
+  if t.Q<=chanE||t.Terrain!=TerrainMountainLimestone||t.TinDeposit||t.SilverDeposit||t.CopperDeposit||copperComps[landmap[c]]||!hasBuildableNeighbour(grid,c,width,height){continue}
+  tiles[i].TinDeposit=true;distance:=tinCopperSeaDistance(tiles);tiles[i].TinDeposit=false
+  if distance>=minTinCopperSeaDist{cand=append(cand,i)}
+ }
+ placeDepositClusters(tiles,cand,landmap,rand.New(rand.NewSource(seed^0x54494e)),tinAdditionalSourceTarget(width,height),tinClusterMin,tinClusterMax,0,width,height,func(t *MapTile){t.TinDeposit=true})
+}
