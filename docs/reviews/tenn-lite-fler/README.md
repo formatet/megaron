@@ -66,7 +66,7 @@ annan terräng eller ta bort silver i remote-isle-steget; det är inte längre d
 | Semantik | Gamla och nya världar åtskilda; inga gamla kartor skrivs om. Samma bronsgeografi, ingen närhetsgaranti. |
 | Funktion/användare | Verklig GenerateMap över40 kartor, samma generator som world.NewWorld; detta är inte ett spelat bronsscenario. |
 | Visuell | Ingen renderingsändring, ingen BILD-grind. |
-| Drift | Före-snapshot av alla befintliga map_tiles + historiska events + Hostsilver sparad READ ONLY; efterkvitto tillfogas. |
+| Drift | LIVE `2b7339ab`, healthz2b7339a/mig179/statusok; ny server PID155837 start2026-10-14 19:34:39, DB179 dirty=false. READ ONLY före/efter: ALLA befintliga map_tiles-rader, historiska eventpayloads och Hostsilver480/rate0/calc150 identiska. Ingen restart eller reseed. |
 
 ## Reproduktion
 
@@ -86,3 +86,10 @@ skrivs av analysskripten. Sammanfattning i `summary.json`, per-seed-resultat i `
 +66,3% är minsta **prövade hela klusterförsöksbudget** som når minst ungefär+50%; inte en exakt50%-garanti
 på varje seed. På128² ökar snitthex+284,3% från den gamla plana nivån. Befintlig tenngeografi på dev
 är orörd; ingen täckningsgaranti och inget bevis om att främlingar klarar bronskedjan.
+
+## Deploy
+
+Kärndiff `5090c172`, fördeploy-branch `7bf50829`, produktionsmerge LIVE `2b7339ab`.
+Före/efter-provenance och bevarande i `live-before.json`/`live-after.json`, process i `deploy-process.log`,
+ny processhealth i `deploy-health.json`. Efterdeploykvitto committas separat och mergas också; ingen ny
+produktion eller rebuild behövs för kvittot.
