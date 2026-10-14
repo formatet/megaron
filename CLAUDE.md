@@ -34,11 +34,13 @@ read from code or vault on demand. A `≥3` beside the word "invariant" makes an
 - **Codex may be working in this repo at the same time** — rules in `AGENTS.md`. If `.agents/codex-thread`
   exists, arm a Monitor at session start: `tail -n0 -F .agents/chat.log | grep --line-buffered "codex→claude"`
   (re-arm on expiry), read the log's tail, and message Codex with `tools/agent-say.sh codex "…"`.
-  **Roles (Timothy 2026-10-04):** Claude leads — gives Codex work orders (one branch per slice), reviews the
-  core diff itself, runs its own mutation check, merges, pushes, deploys, keeps todo/vault, and takes BILD/TEXT
-  gates to Timothy. Codex builds, tests and proposes architecture. Use Codex fully for implementation instead of
-  doing it inline, but Codex's quota runs out: if Codex is paused, Claude builds itself or waits. Timothy has
-  delegated approval of the owner map (`megaron_arkitekturprogram` steps 3/5) to Claude; canon still goes to him.
+  **Roles (Timothy 2026-10-04, reaffirmed 2026-10-14):** Claude leads — gives Codex work orders (one branch per slice),
+  reviews the core diff itself, runs its own mutation check, merges, pushes, deploys, keeps todo/vault, and takes
+  BILD/TEXT gates to Timothy. Codex builds, tests and proposes architecture, and hands over hash + STOP.
+  Use Codex fully for implementation instead of doing it inline. If Codex's quota runs out, Claude builds itself or
+  waits. (Codex self-integration was a temporary arrangement 2026-10-13 07:10 → 2026-10-14 while Claude's compute was
+  low; it applies only where Timothy says so.) Timothy has delegated approval of the owner map
+  (`megaron_arkitekturprogram` steps 3/5) to Claude; canon still goes to him.
 - Vault rights: read/write `~/Dokument/myltavault` freely without asking.
 - **Loose design dumps** are an inbox, not a home: triage every point into a todo line, a vault update or a
   reasoned rejection — then delete the dump.
@@ -150,9 +152,7 @@ navigation through `auth.WebMiddleware`; all API calls use Bearer.) Wired in
   **ticks**, the only fixed time the server knows. **"Days" only on player surfaces** (web, keryx output, Codex),
   where 1 tick reads as 1 day. Never convert ticks to hours.
 - **Silver is a good in `settlement_goods`** (mig 057) — **no `silver_*`/`gold_*` columns on
-  settlements, no exceptions.** *(This line named `sitos_fund_silver` as a sole exception until
-  2026-08-22. That column was DROPPED by mig 106 line 59 when the Sitos fund became a granary —
-  verified absent from the live DB. Silver never passes through the granary; it holds grain+fish.)*
+  settlements, no exceptions.**
   Prefer **silver** over "gold" for the currency everywhere; "gold" is reserved for a future luxury good.
 - **Army:** bare names — `infantry`, `chariot`, `ship`, `elite_infantry`. The army lives in `units`; the old
   integer columns on `settlements` were dropped by mig 078 (any SQL still naming them is a bug — see
@@ -203,16 +203,11 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
   (`api/handlers/settlement_placement.go`). Plan: `megaron_plan_fysisk_gubbemodell.md` (vault) §P4;
   design `Temenos_varutaxonomi_sol.md` §1.1, §8. **P1–P6 are ALL built and deployed** — including
   **P5, the web placement surface** (`web/static/js/megaron/ui/citygrid.js`, commit `c8197f0`,
-  imported by `ui/drawers/city.js`; keryx `place`/`staff`). *(This line said "P5 not built" until
-  2026-08-22 — it had been stale since 2026-08-08.)* **`LaborAlloc` (`PUT …/labor`) is NOT dead code
+  imported by `ui/drawers/city.js`; keryx `place`/`staff`). **`LaborAlloc` (`PUT …/labor`) is NOT dead code
   and must not be deleted** — it was NARROWED to cult only (`megaron_plan_riv_procentallokeringen.md`),
   and cult devotion is `settlement_labor`'s permanent home, read live by `kharis/tick.go`. The web
-  side is one `.labor-input` with `data-good="cult"`. *(This line called the endpoint and its drawer
-  "inert no-ops" whose removal was "the open work" until 2026-09-04 — measured false against the code
-  and a live acceptance world. An agent trusting it would have ripped out a working temple control.)*
-  *(August's hex-cap/Form-A/Form-B formulas are historical; do not recreate their grain
-  exception or level-cap staircase. September's building rule is the current hex contract.
-  The city's refining workplace formula was deliberately left outside that change.)*
+  side is one `.labor-input` with `data-good="cult"`. Trust the code, not older notes about it.
+  August's hex-cap/Form-A/Form-B formulas are historical — the current hex contract is `megaron_plan_byggnadsregeln.md`.
 - **Cost ↔ upkeep** — upkeep = grain+silver ∝ build cost. Strategic metals belong in build gates, recruit
   and attrition, **never flat upkeep** (bronze upkeep = desertion spiral).
 - **Trade & messenger layer — four distinct things, keep them apart:** (1) **message** = free text
