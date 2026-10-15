@@ -260,7 +260,7 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 	if path, _, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
 		province.MapPosition{Q: u.q, R: u.r},
 		province.MapPosition{Q: destQ, R: destR},
-		u.category,
+		u.moveCategory(),
 	); pathErr != nil {
 		slog.Warn("pathfind error during arrival FOW sweep", "unit", unitID, "err", pathErr)
 	} else if pathOK {
@@ -1383,7 +1383,7 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 	path, pathTicks, pathOK, pathErr := province.FindPath(ctx, tx, worldID,
 		province.MapPosition{Q: fromQ, R: fromR},
 		province.MapPosition{Q: homeQ, R: homeR},
-		u.category,
+		u.moveCategory(),
 	)
 	var moveTicks float64
 	if pathErr == nil && pathOK {
@@ -1405,7 +1405,7 @@ func (h *UnitArrivalHandler) dispatchReturnHome(
 		if fromTerrain == "" {
 			fromTerrain = "plains"
 		}
-		moveTicks = province.TerrainMoveTicksFor(fromTerrain, u.category) * float64(dist)
+		moveTicks = province.TerrainMoveTicksFor(fromTerrain, u.moveCategory()) * float64(dist)
 	}
 	returnIntent := "explore_return"
 	// R6 (megaron_plan_hamta_hem.md): a pickup ship sailing home WITH its
@@ -1530,7 +1530,7 @@ func (h *UnitArrivalHandler) dispatchLeg(
 	// was cleared to nil above).
 	var marchRoute []byte
 	if len(path) >= 2 {
-		if stepHours, shErr := province.StepHoursDB(ctx, tx, worldID, path, u.category); shErr == nil {
+		if stepHours, shErr := province.StepHoursDB(ctx, tx, worldID, path, u.moveCategory()); shErr == nil {
 			if route, ok := BuildRoute(path, stepHours, currentTick, currentTick+travelTicks); ok {
 				if raw, mErr := json.Marshal(route); mErr == nil {
 					marchRoute = raw
@@ -2328,6 +2328,12 @@ func (h *UnitArrivalHandler) resolveAmphibiousAssault(
 }
 
 // ── Internal types ─────────────────────────────────────────────────────────────
+
+// moveCategory is the category this unit's movement is priced in (a war chariot
+// has its own terrain table, V3); u.category stays land/naval for every other check.
+func (u unitRow) moveCategory() string {
+	return unit.MoveCategoryOfRow(u.category, u.utype)
+}
 
 type unitRow struct {
 	id               uuid.UUID

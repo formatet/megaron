@@ -57,6 +57,25 @@ func CategoryOf(t Type) Category {
 	}
 }
 
+// MoveCategory is the category a unit's movement is PRICED in (A*, step costs,
+// road factors): CategoryOf(t), except a war chariot, which has its own terrain
+// table (megaron_plan_vagar.md V3). Equals province.CategoryWarChariot.
+func MoveCategory(t Type) string {
+	if t == TypeWarChariot {
+		return "war_chariot"
+	}
+	return string(CategoryOf(t))
+}
+
+// MoveCategoryOfRow is MoveCategory for a caller that holds a units row's
+// stored category string and type string: only a land unit can be a chariot.
+func MoveCategoryOfRow(category, utype string) string {
+	if category == string(CategoryLand) {
+		return MoveCategory(Type(utype))
+	}
+	return category
+}
+
 // CrewFor returns the baseline crew size (men drawn from population) for naval
 // unit types. Returns 0 for land units.
 func CrewFor(t Type) int {

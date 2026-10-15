@@ -83,7 +83,7 @@ func expeditionReturnDestination(ctx context.Context, tx province.Queryer, u uni
 			}
 			home.q, home.r = sq, sr
 		}
-		path, cost, ok := g.FindPath(province.MapPosition{Q: q, R: r}, province.MapPosition{Q: home.q, R: home.r}, u.category, roads)
+		path, cost, ok := g.FindPath(province.MapPosition{Q: q, R: r}, province.MapPosition{Q: home.q, R: home.r}, u.moveCategory(), roads)
 		if ok || (q == home.q && r == home.r) {
 			home.path, home.cost = path, cost
 			return &home, nil

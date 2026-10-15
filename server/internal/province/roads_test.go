@@ -204,7 +204,7 @@ func TestAStarStaysOptimalWithRoads(t *testing.T) {
 				}
 			}
 		}
-		for _, cat := range []string{"land", CategoryCourier, CategoryCourierLand, CategoryCaravan} {
+		for _, cat := range []string{"land", CategoryCourier, CategoryCourierLand, CategoryCaravan, CategoryWarChariot} {
 			for i := 0; i < 12; i++ {
 				o := MapPosition{Q: rng.Intn(W), R: rng.Intn(W)}
 				tg := MapPosition{Q: rng.Intn(W), R: rng.Intn(W)}
@@ -233,7 +233,7 @@ func TestNoRoadsIsIdenticalToTerrainPricing(t *testing.T) {
 			tiles[[2]int{q, r}] = terrains[rng.Intn(len(terrains))]
 		}
 	}
-	for _, cat := range []string{"land", "naval", CategoryCourier, CategoryCourierLand, CategoryCaravan} {
+	for _, cat := range []string{"land", "naval", CategoryCourier, CategoryCourierLand, CategoryCaravan, CategoryWarChariot} {
 		for i := 0; i < 60; i++ {
 			o := MapPosition{Q: rng.Intn(W), R: rng.Intn(W)}
 			tg := MapPosition{Q: rng.Intn(W), R: rng.Intn(W)}

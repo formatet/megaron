@@ -23,6 +23,7 @@ var roadFactors = map[string]float64{
 	CategoryCourier:     0.70,
 	CategoryCourierLand: 0.70,
 	CategoryCaravan:     0.60,
+	CategoryWarChariot:  0.60,
 }
 
 // RoadFactor is the category's multiplier on an entered road edge (1 = none).

@@ -174,7 +174,7 @@ func (h *WorldHandler) ForeignUnits(w http.ResponseWriter, r *http.Request) {
 		var march *province.ApparentMarch
 		var pathSteps int
 		if fu.Status == "marching" && targetQ != nil && targetR != nil && departsAt != nil && arrivesAt != nil {
-			p, _, ok := g.FindPath(pos, province.MapPosition{Q: *targetQ, R: *targetR}, fu.Category, roads)
+			p, _, ok := g.FindPath(pos, province.MapPosition{Q: *targetQ, R: *targetR}, unit.MoveCategoryOfRow(fu.Category, fu.Type), roads)
 			if ok && len(p) > 0 {
 				pos = province.InterpolateAlongPath(now, *departsAt, *arrivesAt, p)
 				if m, ok := province.ReadMarch(p, *departsAt, *arrivesAt, now); ok {

@@ -335,6 +335,9 @@ func minPassableCost(category string, roads RoadSet) float64 {
 }
 
 func minTerrainCost(category string) float64 {
+	if category == CategoryWarChariot {
+		return chariotTerrainTicks("plains")
+	}
 	if category == "naval" {
 		return TerrainMoveTicks("deep_sea")
 	}

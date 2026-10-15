@@ -602,7 +602,7 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 
 	origin := province.MapPosition{Q: *u.Q, R: *u.R}
 	target := province.MapPosition{Q: *u.TargetQ, R: *u.TargetR}
-	category := string(unit.CategoryOf(u.Type))
+	category := unit.MoveCategory(u.Type)
 
 	var newTargetQ, newTargetR int
 	if mode == "redirect" {
@@ -1061,7 +1061,7 @@ func estimateTicksToShore(ctx context.Context, pool *pgxpool.Pool, worldID uuid.
 	if cErr != nil || !courierOK {
 		return 0, false
 	}
-	_, marchHours, marchOK, mErr := province.FindPath(ctx, pool, worldID, unitPos, shore, string(unit.CategoryOf(unitType)))
+	_, marchHours, marchOK, mErr := province.FindPath(ctx, pool, worldID, unitPos, shore, unit.MoveCategory(unitType))
 	if mErr != nil || !marchOK {
 		return 0, false
 	}
@@ -2161,7 +2161,7 @@ func attachUnitPaths(ctx context.Context, db province.Queryer, worldID uuid.UUID
 		if s.Status != "marching" || s.Q == nil || s.R == nil || s.TargetQ == nil || s.TargetR == nil || s.Path != nil {
 			continue
 		}
-		cat := "land"
+		cat := unit.MoveCategoryOfRow(s.Category, s.Type)
 		if s.Category == "naval" {
 			cat = "naval"
 		}
