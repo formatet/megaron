@@ -64,4 +64,5 @@ time, including at sea; cargo weight does not change their speed.
 
 These are base costs before rounding the whole journey to at least one day.
 The route and its costs are fixed at departure. A journey already underway keeps
-its recorded costs and arrival day when the movement rules change.
+its recorded costs and arrival day when the movement rules change. A finished
+[[roads|road]] shortens the hex it leads into for everyone who walks it.

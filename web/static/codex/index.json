@@ -40,7 +40,8 @@
     {"id": "storms",       "title": "Storms",                       "category": "The wider world", "related": ["sea", "sight", "keryx"]},
 
     {"id": "units",        "title": "Soldiers and ships",           "category": "War", "drawer": "war", "kinds": ["TrainComplete"], "related": ["marching", "upkeep", "battle"]},
-    {"id": "marching",     "title": "Marching",                     "category": "War", "kinds": ["UnitArrived", "ArmyArrival", "MarchStalled"], "related": ["runners", "stances", "sight"]},
+    {"id": "marching",     "title": "Marching",                     "category": "War", "kinds": ["UnitArrived", "ArmyArrival", "MarchStalled"], "related": ["runners", "stances", "sight", "roads"]},
+    {"id": "roads",        "title": "Roads",                        "category": "War", "kinds": ["RoadEdgeBuilt"], "related": ["marching", "transfers", "runners"]},
     {"id": "stances",      "title": "Stances and watches",          "category": "War", "kinds": ["SentryAlerted"], "related": ["sieges", "defence", "battle"]},
     {"id": "defence",      "title": "Seeing them coming",           "category": "War", "kinds": ["ForeignMarchSighted", "ForeignMarchSightedV2"], "related": ["runners", "stances", "sight"]},
     {"id": "battle",       "title": "Battle",                       "category": "War", "kinds": ["BattleWon", "BattleLost", "SettlementDefended"], "related": ["units", "loyalty", "stances"]},

@@ -17,6 +17,7 @@ import { chooseMarchTarget } from '../marchctx.js';
 import { fmtNum, fmtDays, fmtDay } from '../fmt_num.js';
 import { orderRunnerHTML } from '../runner_status.js';
 import { recallAll, recallAllControlsHTML, recallAllResultHTML } from '../recall_all.js';
+import { roadPanelHTML, roadOrderBody, parseHex } from '../roadorder.js';
 let recallAllResult = '';
 let recallAllBusy = false;
 
@@ -425,6 +426,17 @@ export function unitStatusLabel(u) {
   })[u.status] || 'awaiting news';
 }
 
+// roadFromHex: the hex an army would build a road from — where it stands in the
+// field, or its city's hex when garrisoned. null when the client cannot tell.
+function roadFromHex(u) {
+  if (u.status === 'positioned' && u.q != null && u.r != null) return { q: u.q, r: u.r };
+  if (u.status === 'garrison' && u.settlement_id) {
+    const p = (State.provinceData || []).find(x => x.settlement_id === u.settlement_id);
+    if (p) return { q: p.q, r: p.r };
+  }
+  return null;
+}
+
 export function renderUnitCard(u) {
   const lbl = esc(actorName(u));
   const isNaval = u.category === 'naval';
@@ -637,6 +649,18 @@ export function renderUnitCard(u) {
       + '</div>';
   }
 
+  // Build road (megaron_plan_vagar.md V2): a land army standing in the field or
+  // in a city may be ordered to build ONE road edge. The server judges terrain,
+  // stone and route; the panel only lists neighbours the map shows can carry a road.
+  let roadRow = '';
+  if (!isNaval && u.type !== 'nomadic_host' && (isPositioned || isGarrison)) {
+    const roadFrom = roadFromHex(u);
+    if (roadFrom) {
+      actions += '<button onclick="unitRoadToggle(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Build road</button> ';
+      roadRow = roadPanelHTML(u.id, roadFrom, State.tileData, State.roadEdges || []);
+    }
+  }
+
   // Repair button (megaron_plan_skeppsreparation.md Slice C): naval garrison
   // with hull < 5. The server rejects it if the settlement has no shipyard
   // or the yard is full — this button only knows the ship is damaged and
@@ -686,7 +710,7 @@ export function renderUnitCard(u) {
     + (u.expedition ? '<div style="font-size:.72rem;color:var(--text-dim)">' + esc(expeditionMissionText(u.expedition)) + '</div>' : '')
     + pendingOrder
     + (actions ? '<div style="margin-top:.2rem;display:flex;gap:.2rem;flex-wrap:wrap;align-items:center">' + actions + '</div>' : '')
-    + redirectRow + pickupRow + orderStatus
+    + redirectRow + pickupRow + roadRow + orderStatus
     + '</div>';
 }
 
@@ -1003,6 +1027,41 @@ export async function unitPickup(unitID) {
   } else if (resEl) {
     resEl.style.color = 'var(--accent)';
     resEl.textContent = formatApiError(data, 'Fetch by ship failed');
+  }
+}
+
+// unitRoadToggle shows/hides the Build road panel — same toggle shape as unitPickupToggle.
+export function unitRoadToggle(unitID) {
+  const row = document.getElementById('uroad-' + unitID);
+  if (row) row.style.display = row.style.display === 'none' ? 'block' : 'none';
+}
+
+// unitBuildRoad sends the Build Road order. 202: the stone is on its way and a
+// Runner carries the order (or, for an army in the ordering city, it is heard at
+// once). The Umami event comes from fetchAuth's verb catalogue, not from here.
+export async function unitBuildRoad(unitID) {
+  const row = document.getElementById('uroad-' + unitID);
+  const sel = document.getElementById('uroad-to-' + unitID);
+  const resEl = document.getElementById('uroad-res-' + unitID);
+  const body = roadOrderBody(row ? parseHex(row.dataset.from) : null, sel ? sel.value : '');
+  if (!body) { if (resEl) resEl.textContent = 'Choose the hex the road reaches.'; return; }
+  if (resEl) resEl.textContent = '';
+  const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units/${unitID}/build-road`, {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    if (resEl) {
+      resEl.style.color = 'var(--safe)';
+      resEl.textContent = data.status === 'order_dispatched'
+        ? 'Road ordered — ' + fmtNum(data.stone) + ' stone is on its way; the Runner reaches the army ' + fmtArrival(data.courier_arrives_at, data.courier_due_tick) + '.'
+        : 'Road ordered — ' + fmtNum(data.stone) + ' stone is on its way to the army.';
+    }
+    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/road-sites`).then(r => r.ok && r.json().then(d => { State.roadSites = d.sites || []; State.dirty = true; }));
+    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
+  } else if (resEl) {
+    resEl.style.color = 'var(--accent)';
+    resEl.textContent = formatApiError(data, 'Build road failed');
   }
 }
 

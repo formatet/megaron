@@ -591,9 +591,7 @@ func (h *UnitArrivalHandler) arriveGarrison(
 	// A road site waiting for this army to reach its "from" hex learns it is here
 	// (megaron_plan_vagar.md V2); the site handler starts the build once the stone
 	// caravan is here too.
-	if arrTick, tErr := currentWorldTick(ctx, tx); tErr != nil {
-		return fmt.Errorf("arriveGarrison: read tick for road site: %w", tErr)
-	} else if rErr := markRoadArmyArrived(ctx, tx, h.scheduler, worldID, u.id, destQ, destR, arrTick); rErr != nil {
+	if rErr := markRoadArmyArrived(ctx, tx, h.scheduler, worldID, u.id, destQ, destR); rErr != nil {
 		return fmt.Errorf("arriveGarrison: flag road site: %w", rErr)
 	}
 

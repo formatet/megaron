@@ -149,11 +149,13 @@ func unitHexState(ctx context.Context, db province.Queryer, unitID uuid.UUID) (s
 	return status, pos, false, nil
 }
 
-func currentWorldTick(ctx context.Context, db interface {
+// worldTick reads the world's own tick by id — current_world_tick() is NULL
+// unless the world is the one active world, which an order must not depend on.
+func worldTick(ctx context.Context, db interface {
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
-}) (int, error) {
+}, worldID uuid.UUID) (int, error) {
 	var t int
-	err := db.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&t)
+	err := db.QueryRow(ctx, `SELECT current_tick FROM worlds WHERE id = $1`, worldID).Scan(&t)
 	return t, err
 }
 
@@ -241,7 +243,7 @@ func PlaceRoadSite(ctx context.Context, tx pgx.Tx, sched *events.Scheduler, clk 
 
 	if scanErr := tx.QueryRow(ctx,
 		`INSERT INTO road_sites (world_id, owner_id, unit_id, from_q, from_r, to_q, to_r, stone, home_settlement_id, created_tick)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9, current_world_tick()) RETURNING id`,
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9, (SELECT current_tick FROM worlds WHERE id = $1)) RETURNING id`,
 		o.WorldID, o.PlayerID, o.UnitID, o.FromQ, o.FromR, o.ToQ, o.ToR, stone, homeSettlementID,
 	).Scan(&siteID); scanErr != nil {
 		return uuid.Nil, 0, fmt.Errorf("insert road site: %w", scanErr)
@@ -306,8 +308,8 @@ func ExecuteBuildRoad(ctx context.Context, pool *pgxpool.Pool, sched *events.Sch
 		if _, err := tx.Exec(ctx, `UPDATE road_sites SET army_arrived = true WHERE id = $1`, o.SiteID); err != nil {
 			return err
 		}
-		var tick int
-		if err := tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&tick); err != nil {
+		tick, err := worldTick(ctx, tx, o.WorldID)
+		if err != nil {
 			return err
 		}
 		if err := enqueueRoadSite(ctx, tx, sched, o.WorldID, o.SiteID, "check", tick); err != nil {
@@ -339,7 +341,7 @@ func RoadSitesCancelFor(ctx context.Context, tx pgx.Tx, unitID uuid.UUID, keep *
 
 // markRoadArmyArrived is called when an army comes to rest at (q,r): any road
 // site waiting for it there learns the army is present.
-func markRoadArmyArrived(ctx context.Context, tx pgx.Tx, sched *events.Scheduler, worldID, unitID uuid.UUID, q, r, tick int) error {
+func markRoadArmyArrived(ctx context.Context, tx pgx.Tx, sched *events.Scheduler, worldID, unitID uuid.UUID, q, r int) error {
 	rows, err := tx.Query(ctx,
 		`UPDATE road_sites SET army_arrived = true
 		  WHERE unit_id = $1 AND state = 'waiting' AND army_arrived = false AND from_q = $2 AND from_r = $3
@@ -358,6 +360,13 @@ func markRoadArmyArrived(ctx context.Context, tx pgx.Tx, sched *events.Scheduler
 	}
 	rows.Close()
 	if err := rows.Err(); err != nil {
+		return err
+	}
+	if len(ids) == 0 {
+		return nil // the common case: no road waits for this army here
+	}
+	tick, err := worldTick(ctx, tx, worldID)
+	if err != nil {
 		return err
 	}
 	for _, id := range ids {
@@ -477,8 +486,8 @@ func (h *RoadSiteHandler) check(ctx context.Context, e events.ScheduledEvent, si
 	if err := tx.QueryRow(ctx, `SELECT terrain FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`, e.WorldID, s.to.Q, s.to.R).Scan(&toTerrain); err != nil {
 		return fmt.Errorf("road site: target terrain: %w", err)
 	}
-	var tick int
-	if err := tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&tick); err != nil {
+	tick, err := worldTick(ctx, tx, e.WorldID)
+	if err != nil {
 		return err
 	}
 	due := tick + province.RoadBuildTicks(toTerrain, size)
@@ -523,8 +532,8 @@ func (h *RoadSiteHandler) build(ctx context.Context, e events.ScheduledEvent, si
 		}
 		return nil
 	}
-	var tick int
-	if err := tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&tick); err != nil {
+	tick, err := worldTick(ctx, tx, e.WorldID)
+	if err != nil {
 		return err
 	}
 	k := province.RoadKey(s.from, s.to)
@@ -538,7 +547,7 @@ func (h *RoadSiteHandler) build(ctx context.Context, e events.ScheduledEvent, si
 		return err
 	}
 	ev, err := h.store.AppendTx(ctx, tx, siteID, StreamRoad, EventRoadEdgeBuilt, map[string]any{
-		"from_q": s.from.Q, "from_r": s.from.R, "to_q": s.to.Q, "to_r": s.to.R, "tick": tick, "built_by": s.owner,
+		"from_q": s.from.Q, "from_r": s.from.R, "to_q": s.to.Q, "to_r": s.to.R, "built_tick": tick, "built_by": s.owner,
 	}, e.WorldID, nil)
 	if err != nil {
 		return err

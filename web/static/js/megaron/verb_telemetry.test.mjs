@@ -21,7 +21,7 @@ const coverage = {
   'abandon': ['abandon'], 'rite': ['rite'], 'gift': ['gift'], 'password': ['password'],
   'agora password': ['agora password'], 'occupation-order': ['occupation-order'],
   'return-army': [], // The vault explicitly excludes gated kingdom verbs.
-  'march': ['march'], 'recall / redirect': ['recall', 'redirect'], 'stance': ['stance'],
+  'march': ['march'], 'recall / redirect': ['recall', 'redirect'], 'build-road': ['build-road'], 'stance': ['stance'],
   'retreat-order': ['retreat-order'], 'retreat-default': ['retreat-default'],
   'reinforce': ['reinforce'], 'repair': ['repair'], 'load / unload': ['load', 'unload'],
   'join': ['join'], 'rise / leave': ['rise', 'leave'], 'founding settle': ['founding settle'], 'message / reply': ['message', 'reply'],

@@ -393,6 +393,75 @@ func TestRoad_Refusals_LeaveNoTrace(t *testing.T) {
 	}
 }
 
+// Someone else's army is "not found" — never a way to learn it exists.
+func TestRoad_ForeignArmyRefused(t *testing.T) {
+	f := newRoadFixture(t, 100)
+	var stranger uuid.UUID
+	if err := f.pool.QueryRow(context.Background(),
+		`INSERT INTO players (username, password_hash) VALUES ($1, 'x') RETURNING id`, "road-stranger-"+uuid.New().String()).Scan(&stranger); err != nil {
+		t.Fatal(err)
+	}
+	o := f.order(1, 1, 2, 1)
+	o.PlayerID = stranger
+	_, err := f.place(t, o)
+	var rej *OrderReject
+	if !errors.As(err, &rej) || rej.Status != 404 {
+		t.Fatalf("err = %v, want a 404 OrderReject", err)
+	}
+	if f.stone(t) != 100 {
+		t.Fatal("a refused order must not touch the stone")
+	}
+}
+
+// Command is never instant: an army that merely STANDS at the from hex has not
+// heard the order. The stone arriving does not start the build; the Runner's
+// delivery does.
+func TestRoad_ArmyStandingThereButOrderNotYetHeard_Waits(t *testing.T) {
+	f := newRoadFixture(t, 100)
+	ctx := context.Background()
+	if _, err := f.pool.Exec(ctx, `UPDATE units SET q = 1, r = 1 WHERE id = $1`, f.army); err != nil {
+		t.Fatal(err)
+	}
+	o := f.order(1, 1, 2, 1)
+	site, err := f.place(t, o)
+	if err != nil {
+		t.Fatal(err)
+	}
+	o.SiteID = site
+	f.fire(t, events.ScheduledTransportArrival, events.ScheduledRoadSite)
+	if f.siteState(t, site) != "waiting" || f.edges(t) != 0 {
+		t.Fatalf("stone is there, army physically too, but the order is not heard: state=%s edges=%d, want waiting/0", f.siteState(t, site), f.edges(t))
+	}
+	if err := ExecuteBuildRoad(ctx, f.pool, f.sched, f.store, f.clk, o); err != nil {
+		t.Fatal(err)
+	}
+	f.fire(t, events.ScheduledRoadSite)
+	if f.siteState(t, site) != "done" {
+		t.Fatalf("after the Runner: state=%s, want done", f.siteState(t, site))
+	}
+}
+
+// Recalling the army (it is marching to its road) abandons the road.
+func TestRoad_RecallCancelsSite(t *testing.T) {
+	f := newRoadFixture(t, 100)
+	ctx := context.Background()
+	o := f.order(1, 1, 2, 1)
+	site, err := f.place(t, o)
+	if err != nil {
+		t.Fatal(err)
+	}
+	o.SiteID = site
+	if err := ExecuteBuildRoad(ctx, f.pool, f.sched, f.store, f.clk, o); err != nil { // marches (0,1) -> (1,1)
+		t.Fatal(err)
+	}
+	if _, err := ExecuteRecall(ctx, f.pool, f.sched, f.store, f.clk, RecallOrder{WorldID: f.world, UnitID: f.army, Mode: "recall"}); err != nil {
+		t.Fatalf("ExecuteRecall: %v", err)
+	}
+	if f.siteState(t, site) != "cancelled" {
+		t.Fatalf("recall must cancel the road site, state=%s", f.siteState(t, site))
+	}
+}
+
 // A caravan that never arrives (intercepted) means no road, the stone is gone,
 // and the site stays visible as waiting (the failure mode must not be silent).
 func TestRoad_InterceptedCaravan_NoRoad_SiteStaysWaiting(t *testing.T) {

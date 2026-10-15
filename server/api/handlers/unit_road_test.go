@@ -105,6 +105,7 @@ func newRoadAPI(t *testing.T, stone float64) *roadAPI {
 	a.r.Post("/worlds/{worldID}/units/{unitID}/build-road", uh.BuildRoad)
 	a.r.Get("/worlds/{worldID}/road-sites", uh.RoadSites)
 	a.r.Get("/worlds/{worldID}/roads", uh.Roads)
+	a.r.Get("/worlds/{worldID}/trades", NewWorldHandler(pool, authSvc, a.clk).MapTrades)
 	return a
 }
 

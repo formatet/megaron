@@ -41,6 +41,8 @@ export const State = {
   tradeData: [],
   unitsData: [],  // per-unit armies/fleets (units table) — drawn on the canvas
   foreignUnitData: [], // GET /foreign-units — non-owned units currently in live vision
+  roadEdges: [],       // GET /roads — finished road edges the player has seen (FOW-gated by the server)
+  roadSites: [],       // GET /road-sites — the player's own unfinished roads
   stormData: [],       // GET /storms — live storms in sight + remembered ones (ghosts)
   ruralData: [],  // rural building projections on own catchment hexes (Fas A2)
   workedHexes: [], // own catchment hexes with >=1 placed gubbe: [{q,r}] (report 54f2b747)
