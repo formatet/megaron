@@ -36,3 +36,7 @@ Validering: grannskap · vägbar terräng · finns redan · utanför kartan · s
 8. Migration 180+181 deployas inte av `air` (V5: `systemctl restart poleia`). `~/go/bin/poleia` (keryx) inte ombyggd — grenen är inte deployad, bygg om efter merge.
 9. `current_world_tick()` är NULL när världen inte är den aktiva; vägkoden läser därför `worlds.current_tick` på id (upptäckt när `TestArriveGarrison_NotifiesOwner` föll i första varvet).
 10. Orelaterat, ej rört: `gofmt -l` listar `api/handlers/{god,storms,web}.go`, `cmd/erase-player/main.go`, `internal/province/hex.go`, `internal/unit/events.go` (redan ofmt:ade på master).
+
+## BILD (Claude 2026-10-15, Firefox, acceptansriggen @a3fdd49, mig 181)
+
+`bild/karta-1.png` (hela ön) och `bild/karta-2.png` (inzoomad). Fixtur: fem färdiga kanter (4,66)→(8,66)→(8,67)→(9,67) skrivna direkt i `road_edges`, en väntande `road_sites`-rad (9,67)→(10,67). **Heldraget streck = färdig väg, prickat = ofärdig.** Det är en fixtur, inte ett spelflöde — verbet självt provas i testerna. Väntar Timothys dom.
