@@ -1155,7 +1155,7 @@ func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
 	// same endpoint-OR leak, and the same FindPath+interpolatedEyePos fix, that
 	// foreign_units.go already carries. Load it once; a nil graph (DB error) falls
 	// the gate back to the pre-fix endpoint check rather than blanking the map.
-	g, gerr := province.LoadTileGraph(r.Context(), h.pool, worldID)
+	g, roads, gerr := province.LoadWorldGraph(r.Context(), h.pool, worldID)
 
 	var markers []marchMarker
 	for rows.Next() {
@@ -1190,7 +1190,7 @@ func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
 			if markers[i].IsNaval {
 				cat = "naval"
 			}
-			markers[i].Path = marchPathWaypoints(g, markers[i].OriginQ, markers[i].OriginR, markers[i].TargetQ, markers[i].TargetR, cat)
+			markers[i].Path = marchPathWaypoints(g, roads, markers[i].OriginQ, markers[i].OriginR, markers[i].TargetQ, markers[i].TargetR, cat)
 		}
 	}
 	writeJSON(w, http.StatusOK, markers)
@@ -1199,8 +1199,8 @@ func (h *WorldHandler) Marches(w http.ResponseWriter, r *http.Request) {
 // marchPathWaypoints returns the A* route as [[q,r],...] (origin+target included)
 // for a unit of the given category over a pre-loaded tile graph. Returns nil when
 // no route exists or the path is trivial, so the client falls back to a straight line.
-func marchPathWaypoints(g province.TileGraph, oq, or, tq, tr int, category string) [][2]int {
-	path, _, ok := g.FindPath(province.MapPosition{Q: oq, R: or}, province.MapPosition{Q: tq, R: tr}, category)
+func marchPathWaypoints(g province.TileGraph, roads province.RoadSet, oq, or, tq, tr int, category string) [][2]int {
+	path, _, ok := g.FindPath(province.MapPosition{Q: oq, R: or}, province.MapPosition{Q: tq, R: tr}, category, roads)
 	if !ok || len(path) < 2 {
 		return nil
 	}
@@ -1217,9 +1217,9 @@ func marchPathWaypoints(g province.TileGraph, oq, or, tq, tr int, category strin
 // streamed in full while its body crossed fog). One FindPath + interpolatedEyePos,
 // then AnyEyeSees the single current hex, exactly as foreign_units.go does. Fails
 // closed when the route or the current tile is unknown.
-func seesInterpolatedActor(g province.TileGraph, eyes []province.Eye, from, to province.MapPosition, category string, departsAt, arrivesAt, now time.Time) bool {
+func seesInterpolatedActor(g province.TileGraph, roads province.RoadSet, eyes []province.Eye, from, to province.MapPosition, category string, departsAt, arrivesAt, now time.Time) bool {
 	pos := from
-	if p, _, ok := g.FindPath(from, to, category); ok && len(p) > 0 {
+	if p, _, ok := g.FindPath(from, to, category, roads); ok && len(p) > 0 {
 		pos = interpolatedEyePos(now, departsAt, arrivesAt, p)
 	}
 	terrain, ok := g[[2]int{pos.Q, pos.R}]
@@ -1246,7 +1246,7 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 	if authenticated {
 		eyes = loadLiveEyes(r.Context(), h.pool, worldID, playerID, now)
 	}
-	g, gerr := province.LoadTileGraph(r.Context(), h.pool, worldID)
+	g, roads, gerr := province.LoadWorldGraph(r.Context(), h.pool, worldID)
 	anchor, anchorErr := tick.LoadAnchor(r.Context(), h.pool, worldID)
 
 	// Physical caravans in motion (movement-motor transport layer). Every in-transit
@@ -1393,7 +1393,7 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 		if savedPos == nil && gerr == nil {
 			from := province.MapPosition{Q: m.OriginQ, R: m.OriginR}
 			to := province.MapPosition{Q: m.DestQ, R: m.DestR}
-			if path, _, ok := g.FindPath(from, to, category); ok {
+			if path, _, ok := g.FindPath(from, to, province.TradePricingCategory(category), roads); ok {
 				if read, ok := province.ReadMarch(path, m.DepartsAt, m.ArrivesAt, now); ok {
 					m.CurrentQ, m.CurrentR = &read.Pos.Q, &read.Pos.R
 					m.Heading = read.Heading
@@ -1417,7 +1417,7 @@ func (h *WorldHandler) MapTrades(w http.ResponseWriter, r *http.Request) {
 					terrain, exists := g[[2]int{savedPos.Q, savedPos.R}]
 					seen = exists && province.AnyEyeSees(eyes, *savedPos, terrain)
 				} else {
-					seen = seesInterpolatedActor(g, eyes, from, to, category, m.DepartsAt, m.ArrivesAt, now)
+					seen = seesInterpolatedActor(g, roads, eyes, from, to, province.TradePricingCategory(category), m.DepartsAt, m.ArrivesAt, now)
 				}
 			} else {
 				// The saved-route gate requires current terrain; DB failure closes it.
@@ -1471,7 +1471,7 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 	// shown only where its courier actually is right now, never streamed whole
 	// through fog because an endpoint is seen. Loaded once; a nil graph (DB error)
 	// falls the gate back to the pre-fix endpoint check.
-	g, gerr := province.LoadTileGraph(r.Context(), h.pool, worldID)
+	g, roads, gerr := province.LoadWorldGraph(r.Context(), h.pool, worldID)
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT m.id, m.sender_id, COALESCE(spl.wanax_name, spl.username, ''), m.kind, m.order_payload->>'unit_id',
@@ -1728,7 +1728,7 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 			to := province.MapPosition{Q: m.DestQ, R: m.DestR}
 			var seen bool
 			if gerr == nil {
-				seen = seesInterpolatedActor(g, eyes, from, to, province.CategoryCourier, legStart, legEnd, now)
+				seen = seesInterpolatedActor(g, roads, eyes, from, to, province.CategoryCourier, legStart, legEnd, now)
 			} else {
 				seen = province.AnyEyeSees(eyes, from, originTerrain) || province.AnyEyeSees(eyes, to, destTerrain)
 			}
@@ -1763,7 +1763,7 @@ func (h *WorldHandler) MapMessengers(w http.ResponseWriter, r *http.Request) {
 				m.Heading = route.Heading
 			}
 		} else if gerr == nil {
-			if path, _, ok := g.FindPath(from, to, province.CategoryCourier); ok {
+			if path, _, ok := g.FindPath(from, to, province.CategoryCourier, roads); ok {
 				if read, ok := province.ReadMarch(path, startAt, endAt, now); ok {
 					m.CurrentQ, m.CurrentR = &read.Pos.Q, &read.Pos.R
 					m.Heading = read.Heading

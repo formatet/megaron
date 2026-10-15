@@ -19,15 +19,15 @@ type Queryer interface {
 // worldID into memory once, then delegates to the pure findPath logic.
 //
 // path includes both origin (first element) and target (last element).
-// cost is the sum of TerrainMoveTicks for each tile entered (path[1:]).
+// cost is the sum of EdgeCost (terrain cost, road-scaled) for each tile entered (path[1:]).
 // ok is false when the origin or target tile is absent or impassable, or when no
 // traversable route exists. err is non-nil only for DB or scan failures.
 func FindPath(ctx context.Context, db Queryer, worldID uuid.UUID, origin, target MapPosition, category string) (path []MapPosition, cost float64, ok bool, err error) {
-	g, err := LoadTileGraph(ctx, db, worldID)
+	g, roads, err := LoadWorldGraph(ctx, db, worldID)
 	if err != nil {
 		return nil, 0, false, err
 	}
-	path, cost, ok = g.FindPath(origin, target, category)
+	path, cost, ok = g.FindPath(origin, target, category, roads)
 	return path, cost, ok, nil
 }
 
@@ -63,23 +63,27 @@ func LoadTileGraph(ctx context.Context, db Queryer, worldID uuid.UUID) (TileGrap
 // FindPath runs A* over an already-loaded graph (no DB access). Semantics match
 // the package-level FindPath: path includes origin (first) and target (last);
 // ok is false when origin/target is absent/impassable or no route exists.
-func (g TileGraph) FindPath(origin, target MapPosition, category string) (path []MapPosition, cost float64, ok bool) {
-	return findPath(g, origin, target, category)
+//
+// roads is the world's finished road edges (nil = none, identical to a world
+// without roads). Pass nil only where roads genuinely do not apply (naval).
+func (g TileGraph) FindPath(origin, target MapPosition, category string, roads RoadSet) (path []MapPosition, cost float64, ok bool) {
+	return findPathRoads(g, origin, target, category, roads)
 }
 
 // StepHours returns the cost of entering each hex of an ALREADY-FOUND path
-// (path[1:]), using the same moveHoursFor A* itself uses. It does not search
+// (path[1:]), using the same EdgeCost A* itself uses. It does not search
 // a path — it only prices one a caller already has (movement slice 2a, R2:
 // "en redan funnen väg"). len(result) == len(path)-1, matching path[1:].
 // A path shorter than two hexes (nothing to enter) returns nil.
-func (g TileGraph) StepHours(path []MapPosition, category string) []float64 {
+func (g TileGraph) StepHours(path []MapPosition, category string, roads RoadSet) []float64 {
 	if len(path) < 2 {
 		return nil
 	}
 	out := make([]float64, len(path)-1)
 	for i := 1; i < len(path); i++ {
+		from := g[[2]int{path[i-1].Q, path[i-1].R}]
 		terrain := g[[2]int{path[i].Q, path[i].R}]
-		out[i-1] = moveHoursFor(terrain, category)
+		out[i-1] = EdgeCost(path[i-1], path[i], from, terrain, category, roads)
 	}
 	return out
 }
@@ -90,11 +94,11 @@ func (g TileGraph) StepHours(path []MapPosition, category string) []float64 {
 // second DB query, but not a second path SEARCH, which is the thing R1/R5
 // forbid re-doing at read time (movement slice 2a).
 func StepHoursDB(ctx context.Context, db Queryer, worldID uuid.UUID, path []MapPosition, category string) ([]float64, error) {
-	g, err := LoadTileGraph(ctx, db, worldID)
+	g, roads, err := LoadWorldGraph(ctx, db, worldID)
 	if err != nil {
 		return nil, err
 	}
-	return g.StepHours(path, category), nil
+	return g.StepHours(path, category, roads), nil
 }
 
 // axialDirs lists the 6 axial hex neighbours, sourced from hexgrid (the
@@ -319,7 +323,23 @@ func NearestSettlementNeighbor(ctx context.Context, db Queryer, worldID uuid.UUI
 
 // minPassableCost is the admissible A* lower bound per entered hex.
 // RÖ1: deep sea is cheapest for ships, plains for land, half plains for runners.
-func minPassableCost(category string) float64 {
+// When roads exist the bound is lowered to the category's flat road time (F1): a
+// road step is cheaper than any roadless step, so an unscaled bound would
+// overestimate and A* would silently return non-optimal routes.
+func minPassableCost(category string, roads RoadSet) float64 {
+	c := minTerrainCost(category)
+	if len(roads) != 0 {
+		if rt, ok := RoadTicks(category); ok && rt < c {
+			c = rt
+		}
+	}
+	return c
+}
+
+func minTerrainCost(category string) float64 {
+	if category == CategoryWarChariot {
+		return chariotTerrainTicks("plains")
+	}
 	if category == "naval" {
 		return TerrainMoveTicks("deep_sea")
 	}
@@ -334,6 +354,11 @@ func minPassableCost(category string) float64 {
 // or ok=false if the route is absent or unreachable.
 // Exported via FindPath; also callable directly in tests.
 func findPath(tiles map[[2]int]string, origin, target MapPosition, category string) (path []MapPosition, cost float64, ok bool) {
+	return findPathRoads(tiles, origin, target, category, nil)
+}
+
+// findPathRoads is findPath over a world that may have road edges.
+func findPathRoads(tiles map[[2]int]string, origin, target MapPosition, category string, roads RoadSet) (path []MapPosition, cost float64, ok bool) {
 	// Validate that both endpoints exist and are passable.
 	originTerrain, hasOrigin := tiles[[2]int{origin.Q, origin.R}]
 	targetTerrain, hasTarget := tiles[[2]int{target.Q, target.R}]
@@ -348,7 +373,7 @@ func findPath(tiles map[[2]int]string, origin, target MapPosition, category stri
 
 	// Admissible heuristic multiplier: the true cost of any passable hex is never
 	// below this floor, so HexDistance × minCost never overestimates (R2 fix).
-	minCost := minPassableCost(category)
+	minCost := minPassableCost(category, roads)
 
 	// A* state: gScore[node] = best known cost from origin to node.
 	gScore := map[MapPosition]float64{origin: 0}
@@ -393,7 +418,7 @@ func findPath(tiles map[[2]int]string, origin, target MapPosition, category stri
 			if !exists || !isPassable(nterrain, category) {
 				continue
 			}
-			ng := gScore[pos] + moveHoursFor(nterrain, category) // cost to ENTER npos
+			ng := gScore[pos] + EdgeCost(pos, npos, tiles[[2]int{pos.Q, pos.R}], nterrain, category, roads) // cost to ENTER npos
 			prev_g, seen := gScore[npos]
 			if !seen || ng < prev_g-1e-9 {
 				gScore[npos] = ng

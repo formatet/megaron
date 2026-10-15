@@ -38,7 +38,7 @@ type OrderDeliveryPayload struct {
 	PlayerID    uuid.UUID           `json:"player_id"`
 	UnitID      uuid.UUID           `json:"unit_id"`
 	MessengerID uuid.UUID           `json:"messenger_id"`
-	Verb        string              `json:"verb"` // "march" | "stance" | "stance_pursuit" | "recall" | "redirect" | "occupy_action" | "standing_orders"
+	Verb        string              `json:"verb"` // "march" | "stance" | "stance_pursuit" | "recall" | "redirect" | "occupy_action" | "standing_orders" | "build_road"
 	March       *combat.MarchOrder  `json:"march,omitempty"`
 	Stance      *combat.StanceOrder `json:"stance,omitempty"`
 	Recall      *combat.RecallOrder `json:"recall,omitempty"`
@@ -51,6 +51,10 @@ type OrderDeliveryPayload struct {
 	// hex the same way as any other order (command is never instant, even for
 	// an army already standing there).
 	Occupy *combat.OccupyActionOrder `json:"occupy,omitempty"`
+	// BuildRoad carries the Build Road order (megaron_plan_vagar.md V2): the army
+	// marches to the road's "from" hex and builds one edge once the stone caravan
+	// sent when the order was given is there too.
+	BuildRoad *combat.BuildRoadOrder `json:"build_road,omitempty"`
 	// PassageGeneration (megaron_plan_budet_liftar.md R4) is the messenger's
 	// passage_generation at the moment this event was scheduled — additive
 	// metadata, not a reinterpretation of the event: zero (its Go zero value)
@@ -142,6 +146,22 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 		}
 		slog.Info("order delivered — march started",
 			"unit", p.UnitID, "target_q", res.TargetQ, "target_r", res.TargetR, "arrival_tick", res.ArrivalTick)
+		return nil
+	case "build_road":
+		if p.BuildRoad == nil {
+			return fmt.Errorf("order delivery %s: build_road verb without build_road payload", p.MessengerID)
+		}
+		if err := combat.ExecuteBuildRoad(ctx, h.pool, h.scheduler, h.eventStore, h.clk, *p.BuildRoad); err != nil {
+			var rej *combat.OrderReject
+			if errors.As(err, &rej) {
+				h.notifyOrderFailed(ctx, p, rej.Reason)
+				return nil
+			}
+			slog.Error("order delivery: build road execution failed after claim — order dropped",
+				"messenger", p.MessengerID, "unit", p.UnitID, "err", err)
+			return nil
+		}
+		slog.Info("order delivered — road building ordered", "unit", p.UnitID, "site", p.BuildRoad.SiteID)
 		return nil
 	case "stance":
 		if p.Stance == nil {

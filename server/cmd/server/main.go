@@ -171,6 +171,8 @@ func main() {
 	worker.Register(events.ScheduledColonyPenaltyTick, colonyH.Handle)
 	worker.Register(events.ScheduledBorrowedArmyTick, borrowedH.Handle)
 	worker.Register(events.ScheduledOrderDelivery, orderDeliveryH.Handle)
+	roadSiteH := combat.NewRoadSiteHandler(pool, scheduler, eventStore, hub)
+	worker.Register(events.ScheduledRoadSite, roadSiteH.Handle)
 	// P3 soak fix (2026-07-19): notify the owner if a march order's courier
 	// delivery keeps failing until dead-lettered, instead of it silently
 	// vanishing after the dispatch's 202 promised it was en route.
@@ -397,6 +399,7 @@ func main() {
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/colonize-preview", wh.ColonizePreview)
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/provinces", wh.Provinces)
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/marches", wh.Marches)
+		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/roads", uh.Roads)
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/messengers", wh.MapMessengers)
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/trades", wh.MapTrades)
 		r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/foreign-units", wh.ForeignUnits)
@@ -483,6 +486,8 @@ func main() {
 			r.Post("/worlds/{worldID}/units/{unitID}/march", uh.March)
 			r.Get("/worlds/{worldID}/units/{unitID}/march-preview", uh.MarchPreview)
 			r.Post("/worlds/{worldID}/units/{unitID}/recall", uh.Recall)
+			r.Post("/worlds/{worldID}/units/{unitID}/build-road", uh.BuildRoad)
+			r.Get("/worlds/{worldID}/road-sites", uh.RoadSites)
 			r.Post("/worlds/{worldID}/units/{unitID}/stance", uh.SetStance)
 			r.Post("/worlds/{worldID}/units/{unitID}/standing-orders", uh.SetStandingOrders)
 			// Realm-wide retreat default (War → "When to retreat"): seeds every

@@ -66,7 +66,7 @@ function coalesce(key, fn, ms = 2000) {
 const DATA_KINDS = new Set([
   'ArmyArrival','BuildComplete','GoodsCrafted','TrainComplete','MessengerArrival',
   'GiftDelivered','GiftLost','TradeCaravanArrival','UnitAttrition','UnitDeserted','UnitArrived','UnitExploreReturned',
-  'UnitReturnedStarving','ExpeditionTurnedHome','ExpeditionReport',
+  'RoadEdgeBuilt','UnitReturnedStarving','ExpeditionTurnedHome','ExpeditionReport',
 ]);
 
 // fullResync refetches exactly what a fresh page load would — provinces, units,
@@ -175,6 +175,13 @@ export function initWS() {
         // it — waiting for the next 30-second poll spends that time for nothing.
         coalesce('foreignUnits', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/foreign-units`)
           .then(r => r.ok && r.json().then(d => { State.foreignUnitData = d; State.dirty = true; })));
+      }
+      if (msg.kind === 'RoadEdgeBuilt') {
+        // A road edge now exists: re-read the (FOW-gated) edges and the unfinished-road list.
+        coalesce('roads', () => {
+          fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/roads`).then(r => r.ok && r.json().then(d => { State.roadEdges = d.edges || []; State.dirty = true; }));
+          fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/road-sites`).then(r => r.ok && r.json().then(d => { State.roadSites = d.sites || []; State.dirty = true; }));
+        });
       }
       if (msg.kind === 'PlaceFirstReached') {
         // This can happen mid-route, before UnitArrived. Expose the new naming

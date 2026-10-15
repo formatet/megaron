@@ -381,6 +381,16 @@ func (h *UnitHandler) resolveOrderOrigin(w http.ResponseWriter, ctx context.Cont
 // sendOrderCourier inserts the kind='order' runner and schedules its
 // ScheduledOrderDelivery, answering 202 order_dispatched with the courier ETA.
 func (h *UnitHandler) sendOrderCourier(w http.ResponseWriter, ctx context.Context, payload messenger.OrderDeliveryPayload, msgText string, origin orderOrigin, unitPos province.MapPosition, extra map[string]any) {
+	h.sendOrderCourierTx(w, ctx, payload, msgText, origin, unitPos, extra, nil)
+}
+
+// sendOrderCourierTx is sendOrderCourier with an optional hook that runs INSIDE
+// the dispatch transaction, before the Runner row is written — the Build Road
+// order uses it so the stone, the road site and the stone caravan are created
+// atomically with the Runner (megaron_plan_vagar.md V2). The hook may edit the
+// payload (the road site id) and the response extras; a *combat.OrderReject
+// from it answers with that status and rolls everything back.
+func (h *UnitHandler) sendOrderCourierTx(w http.ResponseWriter, ctx context.Context, payload messenger.OrderDeliveryPayload, msgText string, origin orderOrigin, unitPos province.MapPosition, extra map[string]any, inTx func(tx pgx.Tx, payload *messenger.OrderDeliveryPayload) error) {
 	now := h.clk.Now()
 	var currentTick int
 	_ = h.pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
@@ -419,6 +429,18 @@ func (h *UnitHandler) sendOrderCourier(w http.ResponseWriter, ctx context.Contex
 		if passage != nil {
 			passageSinceTick = dueTick
 			passageSinceTickArg = &passageSinceTick
+		}
+	}
+
+	if inTx != nil {
+		if err := inTx(tx, &payload); err != nil {
+			var rej *combat.OrderReject
+			if errors.As(err, &rej) {
+				writeError(w, rej.Status, rej.Reason)
+				return
+			}
+			writeError(w, http.StatusInternalServerError, "could not prepare the order")
+			return
 		}
 	}
 
@@ -602,7 +624,7 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 
 	origin := province.MapPosition{Q: *u.Q, R: *u.R}
 	target := province.MapPosition{Q: *u.TargetQ, R: *u.TargetR}
-	category := string(unit.CategoryOf(u.Type))
+	category := unit.MoveCategory(u.Type)
 
 	var newTargetQ, newTargetR int
 	if mode == "redirect" {
@@ -1061,7 +1083,7 @@ func estimateTicksToShore(ctx context.Context, pool *pgxpool.Pool, worldID uuid.
 	if cErr != nil || !courierOK {
 		return 0, false
 	}
-	_, marchHours, marchOK, mErr := province.FindPath(ctx, pool, worldID, unitPos, shore, string(unit.CategoryOf(unitType)))
+	_, marchHours, marchOK, mErr := province.FindPath(ctx, pool, worldID, unitPos, shore, unit.MoveCategory(unitType))
 	if mErr != nil || !marchOK {
 		return 0, false
 	}
@@ -2152,7 +2174,7 @@ func attachUnitPaths(ctx context.Context, db province.Queryer, worldID uuid.UUID
 	if !needsSearch {
 		return
 	}
-	g, err := province.LoadTileGraph(ctx, db, worldID)
+	g, roads, err := province.LoadWorldGraph(ctx, db, worldID)
 	if err != nil {
 		return
 	}
@@ -2161,11 +2183,11 @@ func attachUnitPaths(ctx context.Context, db province.Queryer, worldID uuid.UUID
 		if s.Status != "marching" || s.Q == nil || s.R == nil || s.TargetQ == nil || s.TargetR == nil || s.Path != nil {
 			continue
 		}
-		cat := "land"
+		cat := unit.MoveCategoryOfRow(s.Category, s.Type)
 		if s.Category == "naval" {
 			cat = "naval"
 		}
-		s.Path = marchPathWaypoints(g, *s.Q, *s.R, *s.TargetQ, *s.TargetR, cat)
+		s.Path = marchPathWaypoints(g, roads, *s.Q, *s.R, *s.TargetQ, *s.TargetR, cat)
 	}
 }
 

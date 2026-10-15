@@ -23,6 +23,7 @@ export const VERB_EVENTS = [
   {"verb": "march", "method": "POST", "route": "/api/v1/worlds/:world/units/:unit/march", "event": "march_sent"},
   {"verb": "recall", "method": "POST", "route": "/api/v1/worlds/:world/units/:unit/recall", "event": "recall_sent"},
   {"verb": "redirect", "method": "POST", "route": "/api/v1/worlds/:world/units/:unit/recall", "event": "redirect_sent"},
+  {"verb": "build-road", "method": "POST", "route": "/api/v1/worlds/:world/units/:unit/build-road", "event": "road_ordered"},
   {"verb": "stance", "method": "POST", "route": "/api/v1/worlds/:world/units/:unit/stance", "event": "stance_sent"},
   {"verb": "retreat-order", "method": "POST", "route": "/api/v1/worlds/:world/units/:unit/standing-orders", "event": "retreat_order_sent"},
   {"verb": "retreat-default", "method": "PUT", "route": "/api/v1/worlds/:world/retreat-default", "event": "retreat_default_changed"},

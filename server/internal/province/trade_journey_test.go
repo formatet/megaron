@@ -8,7 +8,7 @@ import (
 
 func TestTradeJourneyTerrainAndRounding(t *testing.T) {
 	g := TileGraph{{0, 0}: "plains", {1, 0}: "river_ford", {2, 0}: "plains"}
-	j, err := g.PlanTradeJourney(MapPosition{}, MapPosition{Q: 2}, "land")
+	j, err := g.PlanTradeJourney(MapPosition{}, MapPosition{Q: 2}, "land", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -17,7 +17,7 @@ func TestTradeJourneyTerrainAndRounding(t *testing.T) {
 	}
 	// 1.5*(2.5+1)=5.25 rounds ONCE to5; reversing enters a different start.
 	g[[2]int{0, 0}] = "river_ford"
-	reverse, err := g.PlanTradeJourney(MapPosition{Q: 2}, MapPosition{}, "land")
+	reverse, err := g.PlanTradeJourney(MapPosition{Q: 2}, MapPosition{}, "land", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,10 +28,10 @@ func TestTradeJourneyTerrainAndRounding(t *testing.T) {
 
 func TestTradeJourneyRejectsDisconnectedAndUsesWater(t *testing.T) {
 	g := TileGraph{{0, 0}: "plains", {1, 0}: "coastal_sea", {2, 0}: "coastal_sea", {3, 0}: "plains"}
-	if _, err := g.PlanTradeJourney(MapPosition{}, MapPosition{Q: 3}, "land"); !errors.Is(err, ErrNoTradePath) {
+	if _, err := g.PlanTradeJourney(MapPosition{}, MapPosition{Q: 3}, "land", nil); !errors.Is(err, ErrNoTradePath) {
 		t.Fatalf("land result %v", err)
 	}
-	j, err := g.PlanTradeJourney(MapPosition{}, MapPosition{Q: 3}, "naval")
+	j, err := g.PlanTradeJourney(MapPosition{}, MapPosition{Q: 3}, "naval", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,7 +47,7 @@ func TestTradeJourneyRejectsDisconnectedAndUsesWater(t *testing.T) {
 
 func TestTradeJourneyMinimumAndInvalidSavedCosts(t *testing.T) {
 	g := TileGraph{{0, 0}: "plains"}
-	j, err := g.PlanTradeJourney(MapPosition{}, MapPosition{}, "land")
+	j, err := g.PlanTradeJourney(MapPosition{}, MapPosition{}, "land", nil)
 	if err != nil || j.TravelTicks != 1 || j.Validate() != nil {
 		t.Fatalf("zero distance: %+v %v", j, err)
 	}

@@ -243,11 +243,11 @@ func TestStepHours_SumMatchesFindPathCost(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			g := TileGraph(c.tiles)
-			path, wantCost, ok := g.FindPath(c.origin, c.target, c.category)
+			path, wantCost, ok := g.FindPath(c.origin, c.target, c.category, nil)
 			if !ok {
 				t.Fatalf("FindPath did not find a route")
 			}
-			steps := g.StepHours(path, c.category)
+			steps := g.StepHours(path, c.category, nil)
 			if len(steps) != len(path)-1 {
 				t.Fatalf("StepHours returned %d steps, want %d (len(path)-1)", len(steps), len(path)-1)
 			}
@@ -266,10 +266,10 @@ func TestStepHours_SumMatchesFindPathCost(t *testing.T) {
 // enter) returns nil, not a search or an error.
 func TestStepHours_TooShortPath(t *testing.T) {
 	g := TileGraph{{0, 0}: "plains"}
-	if got := g.StepHours([]MapPosition{{Q: 0, R: 0}}, "land"); got != nil {
+	if got := g.StepHours([]MapPosition{{Q: 0, R: 0}}, "land", nil); got != nil {
 		t.Errorf("StepHours(single-hex path) = %v, want nil", got)
 	}
-	if got := g.StepHours(nil, "land"); got != nil {
+	if got := g.StepHours(nil, "land", nil); got != nil {
 		t.Errorf("StepHours(nil path) = %v, want nil", got)
 	}
 }

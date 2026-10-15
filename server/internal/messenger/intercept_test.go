@@ -67,7 +67,7 @@ func TestInterceptAlongPath_FindsCatchableHexPastNaiveSnapshot(t *testing.T) {
 	// Sanity-check the fixture's own premise: the naive snapshot really is
 	// undeliverable, so this test would be vacuous if it weren't.
 	snapshot := province.MapPosition{Q: 6, R: 0}
-	_, naiveDur, naiveOK := CourierTravelOnGraph(g, courierOrigin, snapshot)
+	_, naiveDur, naiveOK := CourierTravelOnGraph(g, nil, courierOrigin, snapshot)
 	if !naiveOK {
 		t.Fatal("test fixture broken: no route to the naive snapshot at all (grid is all plains)")
 	}
@@ -77,7 +77,7 @@ func TestInterceptAlongPath_FindsCatchableHexPastNaiveSnapshot(t *testing.T) {
 			"(otherwise this scenario doesn't reproduce the bug)", naiveDur, remaining)
 	}
 
-	target, ok := InterceptAlongPath(g, courierOrigin, path, departsAt, arrivesAt, now)
+	target, ok := InterceptAlongPath(g, nil, courierOrigin, path, departsAt, arrivesAt, now)
 	if !ok {
 		t.Fatalf("InterceptAlongPath = ok=false, want an intercept at (8,0)")
 	}
@@ -103,7 +103,7 @@ func TestInterceptAlongPath_NoInterceptPossible_ReportsFalse(t *testing.T) {
 	arrivesAt := departsAt.Add(6 * time.Hour)
 	courierOrigin := province.MapPosition{Q: 6, R: 5}
 
-	if target, ok := InterceptAlongPath(g, courierOrigin, path, departsAt, arrivesAt, now); ok {
+	if target, ok := InterceptAlongPath(g, nil, courierOrigin, path, departsAt, arrivesAt, now); ok {
 		t.Fatalf("InterceptAlongPath = %+v, ok=true — want ok=false: courierOrigin (6,5) is too far "+
 			"from every remaining hex for any courier to catch this unit before it arrives", target)
 	}
@@ -123,7 +123,7 @@ func TestInterceptAlongPath_AlreadyArrived_ReportsFalse(t *testing.T) {
 	arrivesAt := departsAt.Add(6 * time.Hour) // arrived 1h ago
 	now := departsAt.Add(6*time.Hour + time.Hour)
 
-	if target, ok := InterceptAlongPath(g, province.MapPosition{Q: 0, R: 3}, path, departsAt, arrivesAt, now); ok {
+	if target, ok := InterceptAlongPath(g, nil, province.MapPosition{Q: 0, R: 3}, path, departsAt, arrivesAt, now); ok {
 		t.Fatalf("InterceptAlongPath = %+v, ok=true — want ok=false: the unit already arrived", target)
 	}
 }

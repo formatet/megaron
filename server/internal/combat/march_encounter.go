@@ -219,7 +219,7 @@ func (h *MarchEncounterHandler) loadCandidates(ctx context.Context, worldID uuid
 		return nil, nil
 	}
 
-	g, err := province.LoadTileGraph(ctx, h.pool, worldID)
+	g, roads, err := province.LoadWorldGraph(ctx, h.pool, worldID)
 	if err != nil {
 		return nil, fmt.Errorf("march encounter: load tile graph: %w", err)
 	}
@@ -227,7 +227,7 @@ func (h *MarchEncounterHandler) loadCandidates(ctx context.Context, worldID uuid
 	out := make([]crossingUnit, 0, len(raw))
 	for _, m := range raw {
 		pos := province.MapPosition{Q: m.originQ, R: m.originR}
-		path, _, ok := g.FindPath(pos, province.MapPosition{Q: m.targetQ, R: m.targetR}, m.category)
+		path, _, ok := g.FindPath(pos, province.MapPosition{Q: m.targetQ, R: m.targetR}, unit.MoveCategoryOfRow(m.category, m.utype), roads)
 		if !ok || len(path) == 0 {
 			// No traversable route this sweep (split by sea/river). Same
 			// accepted gap as unit_intercept_scan.go: no straight-line

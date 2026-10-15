@@ -123,7 +123,7 @@ export function notifDomain(kind) {
     // War — units, battles, sieges, orders in the field, who holds what.
     ArmyArrival: 'war', BattleWon: 'war', BattleLost: 'war', TrainComplete: 'war',
     ForeignMarchSighted: 'war', ForeignMarchSightedV2: 'war', SentryAlerted: 'war', ScoutReport: 'war',
-    UnitArrived: 'war', UnitExploreReturned: 'war', UnitReturnedStarving: 'war', ShipSweptFromSea: 'war',
+    UnitArrived: 'war', RoadEdgeBuilt: 'war', UnitExploreReturned: 'war', UnitReturnedStarving: 'war', ShipSweptFromSea: 'war',
     ExpeditionTurnedHome: 'war', ExpeditionReport: 'war',
     PickupWaiting: 'war', UnitFetched: 'war', PickupTimedOut: 'war',
     UnitAttrition: 'war', UnitDeserted: 'war', UnitLostAtSea: 'war',
@@ -260,6 +260,7 @@ const ORDER_VERB_LABELS = {
   redirect: 'redirect',
   standing_orders: 'standing orders',
   occupy_action: 'occupation',
+  build_road: 'road',
 };
 
 const PAYLOAD_SUMMARY_MAX_KEYS = 6;
@@ -680,6 +681,8 @@ export function notifText(kind, body) {
     // MarchStalled's reason is server-crafted (unit_arrival.go NotifyDeadLetter)
     // and already names the subject there — nothing to enrich client-side.
     case 'MarchStalled':    return body.reason || 'A march could not be processed';
+    case 'RoadEdgeBuilt':
+      return `Road finished between (${body.q}, ${body.r}) and (${body.target_q}, ${body.target_r}) — everyone may use it`;
     case 'UnitArrived': {
       const subject = body.name || body.type || 'A unit';
       const stance = body.stance ? `, standing ${body.stance}` : '';

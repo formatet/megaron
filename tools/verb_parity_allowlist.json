@@ -519,6 +519,31 @@
         "marching.md"
       ]
     },
+    "/api/v1/worlds/{id}/units/{id}/build-road": {
+      "terms": [
+        "build road",
+        "build-road"
+      ],
+      "articles": [
+        "roads.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/road-sites": {
+      "terms": [
+        "keryx roads"
+      ],
+      "articles": [
+        "roads.md"
+      ]
+    },
+    "/api/v1/worlds/{id}/roads": {
+      "terms": [
+        "Seeing roads"
+      ],
+      "articles": [
+        "roads.md"
+      ]
+    },
     "/api/v1/worlds/{id}/units/{id}/stance": {
       "terms": [
         "stance"

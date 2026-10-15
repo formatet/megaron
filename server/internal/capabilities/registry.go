@@ -24,6 +24,7 @@ var checkers = []func(checkContext) Verb{
 	canMarch,
 	canPost,
 	canRecall,
+	canBuildRoad,
 	canRedirect,
 	canStance,
 	canLoad,

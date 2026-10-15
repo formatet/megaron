@@ -121,7 +121,7 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 	}
 	if !posOK {
 		var ipErr error
-		currentPos, posOK, ipErr = province.InterpolatePosition(ctx, tx, o.WorldID, origin, target, category, *departsAt, *arrivesAt, now)
+		currentPos, posOK, ipErr = province.InterpolatePosition(ctx, tx, o.WorldID, origin, target, unit.MoveCategory(unit.Type(utype)), *departsAt, *arrivesAt, now)
 		if ipErr != nil {
 			return nil, fmt.Errorf("interpolate unit position: %w", ipErr)
 		}
@@ -133,7 +133,7 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 	newTarget := origin // Ordinary recall returns to the departure hex.
 	expeditionRecall := o.Mode == "recall" && marchIntent != nil && (*marchIntent == "explore" || *marchIntent == "explore_return")
 	if expeditionRecall {
-		home, err := expeditionReturnDestination(ctx, tx, unitRow{ownerID: ownerID, category: category, homeSettlementID: homeSettlementID}, currentPos.Q, currentPos.R, o.WorldID)
+		home, err := expeditionReturnDestination(ctx, tx, unitRow{ownerID: ownerID, utype: utype, category: category, homeSettlementID: homeSettlementID}, currentPos.Q, currentPos.R, o.WorldID)
 		if err != nil {
 			return nil, fmt.Errorf("resolve recalled expedition home: %w", err)
 		}
@@ -149,7 +149,7 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 
 	// Delivery rechecks the real route; a dispatch precheck is not authority
 	// to move across a route that no longer exists when the order arrives.
-	path, pathTicks, pathOK, pathErr := province.FindPath(ctx, tx, o.WorldID, currentPos, newTarget, category)
+	path, pathTicks, pathOK, pathErr := province.FindPath(ctx, tx, o.WorldID, currentPos, newTarget, unit.MoveCategory(unit.Type(utype)))
 	if pathErr != nil {
 		return nil, fmt.Errorf("resolve recall/redirect route: %w", pathErr)
 	}
@@ -183,7 +183,7 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 	// read time. A trivial path needs no stored movement route.
 	var newMarchRoute []byte
 	if len(path) >= 2 {
-		if stepHours, shErr := province.StepHoursDB(ctx, tx, o.WorldID, path, category); shErr == nil {
+		if stepHours, shErr := province.StepHoursDB(ctx, tx, o.WorldID, path, unit.MoveCategory(unit.Type(utype))); shErr == nil {
 			if route, ok := BuildRoute(path, stepHours, currentTick, currentTick+travelTicks); ok {
 				if raw, mErr := json.Marshal(route); mErr == nil {
 					newMarchRoute = raw
@@ -242,6 +242,10 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 		}
 	} else if _, err := tx.Exec(ctx, `DELETE FROM unit_expeditions WHERE unit_id = $1`, o.UnitID); err != nil {
 		return nil, fmt.Errorf("close expedition: %w", err)
+	}
+	// A recalled/redirected army abandons its road (B3: stone not refunded).
+	if err := RoadSitesCancelFor(ctx, tx, o.UnitID, nil); err != nil {
+		return nil, fmt.Errorf("close road site: %w", err)
 	}
 
 	newArriveTick := currentTick + travelTicks

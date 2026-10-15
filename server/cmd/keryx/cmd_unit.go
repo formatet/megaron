@@ -26,6 +26,7 @@ func unitCmd() *cobra.Command {
 		unitPatrolCmd(),
 		unitPostCmd(),
 		unitRecallCmd(),
+		unitBuildRoadCmd(),
 		unitRedirectCmd(),
 		unitStanceCmd(),
 		unitReinforceCmd(),

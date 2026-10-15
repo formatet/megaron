@@ -22,6 +22,7 @@ import { bindMapInput } from './map_input.js';
 import { confirmInline, showInlineResult } from '../ui/inline_result.js';
 import { unitHoverLines } from '../ui/hover.js';
 import { drawStorm, STORM_FRAMES } from './storms.js';
+import { roadSegments, plannedSegments, drawRoads } from './roads.js';
 import { stormPanelHTML } from '../ui/stormname.js';
 import { placePanelHTML } from '../ui/placename.js';
 import { incomingTargetKeys } from '../ui/movements.js';
@@ -2733,6 +2734,12 @@ export function render() {
       }
     }
   }
+  // 2b. Built road edges (GET /roads, megaron_plan_vagar.md V2) — structure level:
+  // under cities, units and the fog tint. The server only sends edges whose two
+  // hexes the player has seen or remembers (F5), so nothing here reveals more.
+  if ((State.roadEdges && State.roadEdges.length) || (State.roadSites && State.roadSites.length)) {
+    drawRoads(ctx, roadSegments(State.roadEdges, hexPx), plannedSegments(State.roadSites, hexPx));
+  }
   pass('roads');
 
   // 2.5 Catchment zone — subtle gold tint on the 19 catchment tiles of own
@@ -3109,7 +3116,7 @@ function drawJourneyOverlays(ctx){const livePixel=(x,y)=>{const [q,r]=markHexAt(
 
 // ── Data loading ──────────────────────────────────────────────────────────
 export async function loadMap() {
-  const [tilesRes, provRes, marchRes, msgRes, tradeRes, unitsRes, ruralRes, foreignUnitsRes, rosterRes, stormsRes] = await Promise.all([
+  const [tilesRes, provRes, marchRes, msgRes, tradeRes, unitsRes, ruralRes, foreignUnitsRes, rosterRes, stormsRes, roadsRes, roadSitesRes] = await Promise.all([
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/map`),
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces`),
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/marches`),
@@ -3120,6 +3127,8 @@ export async function loadMap() {
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/foreign-units`),
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/settlements/placement-roster`),
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/storms`),
+    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/roads`),
+    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/road-sites`),
   ]);
 
   if (tilesRes.ok) {
@@ -3154,6 +3163,12 @@ export async function loadMap() {
   }
   if (stormsRes.ok) {
     State.stormData = (await stormsRes.json()).storms || [];
+  }
+  if (roadsRes.ok) {
+    State.roadEdges = (await roadsRes.json()).edges || [];
+  }
+  if (roadSitesRes.ok) {
+    State.roadSites = (await roadSitesRes.json()).sites || [];
   }
   window.MusicPlayer.update();
 }
@@ -3982,6 +3997,8 @@ export function initMap() {
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/foreign-units`).then(r => r.ok && r.json().then(d => { State.foreignUnitData = d; State.dirty = true; }));
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/settlements/placement-roster`).then(r => r.ok && r.json().then(d => { State.workedHexes = workedHexesFromRoster(d); State.dirty = true; }));
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/storms`).then(r => r.ok && r.json().then(d => { State.stormData = d.storms || []; State.dirty = true; }));
+    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/roads`).then(r => r.ok && r.json().then(d => { State.roadEdges = d.edges || []; State.dirty = true; }));
+    fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/road-sites`).then(r => r.ok && r.json().then(d => { State.roadSites = d.sites || []; State.dirty = true; }));
   }, 30000);
 
   // While any own unit is marching, refresh units + fog fast so the fog visibly

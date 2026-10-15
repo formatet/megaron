@@ -130,6 +130,8 @@ func main() {
 		reinforceAliasCmd(),
 		recallAliasCmd(),
 		redirectAliasCmd(),
+		buildRoadAliasCmd(),
+		roadsCmd(),
 		foundingCmd(),
 		wantsCmd(),
 		riteCmd(),

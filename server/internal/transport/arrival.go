@@ -13,6 +13,10 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// KindRoadStone is the transports.kind of a road's stone caravan: it goes from
+// a city to a hex (dest_id NULL) and ends at the road site, not in a store.
+const KindRoadStone = "road_stone"
+
 // ArrivalHandler credits a transport's manifest to its destination settlement when
 // the caravan/ship arrives. It is the physical-mover successor to LogisticsArrivalHandler.
 //
@@ -81,6 +85,47 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 	}
 	if status != "in_transit" {
 		return nil // intercepted, lost, or already delivered
+	}
+
+	// A road's stone caravan (megaron_plan_vagar.md V2) carries stone to a HEX
+	// (dest_id is NULL), not to a city: arriving deposits nothing anywhere. It
+	// flags its road site and asks the site handler (combat, upward via event —
+	// G1) whether the army is there too.
+	if kind == KindRoadStone {
+		if _, err := tx.Exec(ctx,
+			`UPDATE transports SET status = 'delivered', updated_at = now() WHERE id = $1`, p.TransportID,
+		); err != nil {
+			return fmt.Errorf("mark stone caravan delivered: %w", err)
+		}
+		rows, err := tx.Query(ctx,
+			`UPDATE road_sites SET stone_arrived = true
+			  WHERE stone_transport_id = $1 AND state IN ('waiting', 'building')
+			  RETURNING id`, p.TransportID)
+		if err != nil {
+			return fmt.Errorf("flag road site stone: %w", err)
+		}
+		var sites []uuid.UUID
+		for rows.Next() {
+			var id uuid.UUID
+			if err := rows.Scan(&id); err != nil {
+				rows.Close()
+				return err
+			}
+			sites = append(sites, id)
+		}
+		rows.Close()
+		if err := rows.Err(); err != nil {
+			return err
+		}
+		// The Scheduler is a thin pool wrapper; EnqueueTickTx never reads its clock.
+		sched := events.NewScheduler(h.pool, nil)
+		for _, id := range sites {
+			if err := sched.EnqueueTickTx(ctx, tx, e.WorldID, events.ScheduledRoadSite,
+				map[string]any{"site_id": id, "phase": "check"}, e.DueTick); err != nil {
+				return fmt.Errorf("enqueue road site check: %w", err)
+			}
+		}
+		return tx.Commit(ctx)
 	}
 
 	// R3/R5 (megaron_plan_sjohandel_kraver_skepp.md): "ship_return" (the empty

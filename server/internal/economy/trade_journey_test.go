@@ -34,7 +34,7 @@ func TestDeliverySavedReturnAtomicAndFrozen(t *testing.T) {
 					g[[2]int{q, 1}] = "coastal_sea"
 				}
 			}
-			journey, err := g.PlanTradeJourney(province.MapPosition{Q: 5}, province.MapPosition{}, category)
+			journey, err := g.PlanTradeJourney(province.MapPosition{Q: 5}, province.MapPosition{}, category, nil)
 			if err != nil {
 				t.Fatal(err)
 			}

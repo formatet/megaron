@@ -9,6 +9,7 @@ import (
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -174,7 +175,7 @@ func (h *MarchSightingHandler) loadMarches(ctx context.Context, worldID uuid.UUI
 		return nil, nil
 	}
 
-	g, err := province.LoadTileGraph(ctx, h.pool, worldID)
+	g, roads, err := province.LoadWorldGraph(ctx, h.pool, worldID)
 	if err != nil {
 		return nil, fmt.Errorf("march sighting: load tile graph: %w", err)
 	}
@@ -185,7 +186,7 @@ func (h *MarchSightingHandler) loadMarches(ctx context.Context, worldID uuid.UUI
 		var march province.ApparentMarch
 		var hasHeading bool
 		var pathSteps int
-		if path, _, ok := g.FindPath(pos, province.MapPosition{Q: m.targetQ, R: m.targetR}, m.category); ok && len(path) > 0 {
+		if path, _, ok := g.FindPath(pos, province.MapPosition{Q: m.targetQ, R: m.targetR}, unit.MoveCategoryOfRow(m.category, m.unitType), roads); ok && len(path) > 0 {
 			pos = province.InterpolateAlongPath(now, m.departsAt, m.arrivesAt, path)
 			march, hasHeading = province.ReadMarch(path, m.departsAt, m.arrivesAt, now)
 			pathSteps = len(path) - 1

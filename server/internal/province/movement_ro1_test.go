@@ -53,7 +53,7 @@ func TestRO1CaravanFactorAndFrozenJourney(t *testing.T) {
 		for q := 0; q <= 4; q++ {
 			g[[2]int{q, 0}] = terrain
 		}
-		j, err := g.PlanTradeJourney(MapPosition{}, MapPosition{Q: 4}, category)
+		j, err := g.PlanTradeJourney(MapPosition{}, MapPosition{Q: 4}, category, nil)
 		if err != nil || j.TravelTicks != want {
 			t.Fatalf("caravan %s duration = %d, want %d (1.5×); err %v", category, j.TravelTicks, want, err)
 		}

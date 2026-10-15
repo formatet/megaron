@@ -48,7 +48,11 @@ In Keryx: `unit march --unit <id> --target q,r --intent explore --ticks N`. Omit
 
 For foot soldiers, each plain, river valley or delta takes **1 day**; olive groves
 and maquis **1.5 days**; hills and cedar forest **2 days**; semi-desert **3 days**.
-A ford takes **2.5 days** on foot. Mountains cannot be crossed. The Nomadic Host
+A ford takes **2.5 days** on foot. Mountains cannot be crossed.
+War chariots are fast on the flat and slow everywhere else: **0.67 days** on a
+plain, river valley or delta, **2 days** in olive groves and maquis, and
+**3 days** in hills, cedar forest and semi-desert. A ford takes them 2.5 days
+too. The Nomadic Host
 needs twice the foot soldiers' time. A Runner takes half the foot time on land.
 
 A fully crewed Galley sails **3 coastal hexes per day** or **5 deep-sea hexes per
@@ -60,4 +64,5 @@ time, including at sea; cargo weight does not change their speed.
 
 These are base costs before rounding the whole journey to at least one day.
 The route and its costs are fixed at departure. A journey already underway keeps
-its recorded costs and arrival day when the movement rules change.
+its recorded costs and arrival day when the movement rules change. A finished
+[[roads|road]] shortens the hex it leads into for everyone who walks it.

@@ -53,6 +53,7 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -141,7 +142,7 @@ func (h *UnitInterceptScanHandler) Handle(ctx context.Context, e events.Schedule
 	for _, m := range fleet {
 		origin := province.MapPosition{Q: m.q, R: m.r}
 		dest := province.MapPosition{Q: m.targetQ, R: m.targetR}
-		pos, ok, posErr := province.InterpolatePosition(ctx, h.pool, e.WorldID, origin, dest, m.category, m.departsAt, m.arrivesAt, now)
+		pos, ok, posErr := province.InterpolatePosition(ctx, h.pool, e.WorldID, origin, dest, unit.MoveCategoryOfRow(m.category, m.utype), m.departsAt, m.arrivesAt, now)
 		if posErr != nil {
 			continue // DB error is not the same as "no route" — never guess a position off the back of one
 		}

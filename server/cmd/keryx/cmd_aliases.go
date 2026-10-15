@@ -65,6 +65,14 @@ func redirectAliasCmd() *cobra.Command {
 	return c
 }
 
+// buildRoadAliasCmd is `build-road` — an alias for `unit build-road`, for the
+// same guessability reason as the other military verbs above.
+func buildRoadAliasCmd() *cobra.Command {
+	c := unitBuildRoadCmd()
+	c.Short = "Order an army to build one road edge (alias for `unit build-road`)"
+	return c
+}
+
 // placementsAliasCmd is `placements` — an alias for `city`. The verbs that
 // actually change placements are named `place`/`staff`, so an agent that
 // wants to SEE them reasonably guesses the plural noun rather than either

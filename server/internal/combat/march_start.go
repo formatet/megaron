@@ -66,6 +66,11 @@ type MarchOrder struct {
 	// resolveOutboundDisembark finds one for passage.
 	PickupUnitID    *uuid.UUID
 	PickupWaitTicks int
+	// KeepRoadSite is the one road site this march does NOT cancel: the
+	// build_road order marches its army to the road's "from" hex and must not
+	// cancel its own site (megaron_plan_vagar.md V2). Every other new order to an
+	// army cancels its active road sites (the stone is not refunded, B3).
+	KeepRoadSite *uuid.UUID
 	// ExpeditionTicks is how long an explore order may last
 	// (megaron_plan_upptackarexpeditionen.md): TargetQ/TargetR names the
 	// AREA, and the unit turns for home by half this length. 0 = the default.
@@ -503,16 +508,16 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		if lengthErr != nil {
 			return nil, lengthErr
 		}
-		g, gErr := province.LoadTileGraph(ctx, pool, o.WorldID)
+		g, roads, gErr := province.LoadWorldGraph(ctx, pool, o.WorldID)
 		if gErr != nil {
 			return nil, reject(http.StatusInternalServerError, "could not load the map")
 		}
 		if _, onMap := g[[2]int{targetQ, targetR}]; !onMap {
 			return nil, reject(http.StatusNotFound, "target hex not found")
 		}
-		leg, lErr := nextExpeditionLeg(ctx, pool, g, o.WorldID, o.PlayerID,
+		leg, lErr := nextExpeditionLeg(ctx, pool, g, roads, o.WorldID, o.PlayerID,
 			province.MapPosition{Q: targetQ, R: targetR}, province.MapPosition{Q: originQ, R: originR},
-			string(unit.CategoryOf(u.Type)))
+			unit.MoveCategory(u.Type))
 		if lErr != nil {
 			return nil, reject(http.StatusInternalServerError, "could not plan the expedition")
 		}
@@ -695,7 +700,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	// the only route crosses water) and routes around mountains correctly.
 	// Skipped for colonize-in-place: origin == target, so there is no route to
 	// find and no distance to travel — the colony settles on the next tick.
-	category := string(unit.CategoryOf(u.Type))
+	category := unit.MoveCategory(u.Type)
 	var moveTicks float64
 	var path []province.MapPosition
 	if !colonizeInPlace {
@@ -781,7 +786,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		}
 		// Entered-terrain costs and tick rounding are asymmetric: reserve the
 		// actual route home, rather than assuming it costs the outbound leg.
-		home, homeErr := expeditionReturnDestination(ctx, departureDB, unitRow{ownerID: o.PlayerID, category: string(unit.CategoryOf(u.Type)), homeSettlementID: exploreHomeID}, targetQ, targetR, o.WorldID)
+		home, homeErr := expeditionReturnDestination(ctx, departureDB, unitRow{ownerID: o.PlayerID, utype: string(u.Type), category: string(unit.CategoryOf(u.Type)), homeSettlementID: exploreHomeID}, targetQ, targetR, o.WorldID)
 		if homeErr != nil {
 			return nil, reject(http.StatusInternalServerError, "could not resolve the expedition's return route")
 		}
@@ -1114,6 +1119,9 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	// Every new order ends any previous expedition, even if arrival ticks match.
 	if _, err := tx.Exec(ctx, `DELETE FROM unit_expeditions WHERE unit_id = $1`, o.UnitID); err != nil {
 		return nil, reject(http.StatusInternalServerError, "could not close the previous expedition")
+	}
+	if err := RoadSitesCancelFor(ctx, tx, o.UnitID, o.KeepRoadSite); err != nil {
+		return nil, reject(http.StatusInternalServerError, "could not close the army's road site")
 	}
 	if expeditionPlan != nil {
 		if _, err := tx.Exec(ctx,
