@@ -381,6 +381,16 @@ func (h *UnitHandler) resolveOrderOrigin(w http.ResponseWriter, ctx context.Cont
 // sendOrderCourier inserts the kind='order' runner and schedules its
 // ScheduledOrderDelivery, answering 202 order_dispatched with the courier ETA.
 func (h *UnitHandler) sendOrderCourier(w http.ResponseWriter, ctx context.Context, payload messenger.OrderDeliveryPayload, msgText string, origin orderOrigin, unitPos province.MapPosition, extra map[string]any) {
+	h.sendOrderCourierTx(w, ctx, payload, msgText, origin, unitPos, extra, nil)
+}
+
+// sendOrderCourierTx is sendOrderCourier with an optional hook that runs INSIDE
+// the dispatch transaction, before the Runner row is written — the Build Road
+// order uses it so the stone, the road site and the stone caravan are created
+// atomically with the Runner (megaron_plan_vagar.md V2). The hook may edit the
+// payload (the road site id) and the response extras; a *combat.OrderReject
+// from it answers with that status and rolls everything back.
+func (h *UnitHandler) sendOrderCourierTx(w http.ResponseWriter, ctx context.Context, payload messenger.OrderDeliveryPayload, msgText string, origin orderOrigin, unitPos province.MapPosition, extra map[string]any, inTx func(tx pgx.Tx, payload *messenger.OrderDeliveryPayload) error) {
 	now := h.clk.Now()
 	var currentTick int
 	_ = h.pool.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick)
@@ -419,6 +429,18 @@ func (h *UnitHandler) sendOrderCourier(w http.ResponseWriter, ctx context.Contex
 		if passage != nil {
 			passageSinceTick = dueTick
 			passageSinceTickArg = &passageSinceTick
+		}
+	}
+
+	if inTx != nil {
+		if err := inTx(tx, &payload); err != nil {
+			var rej *combat.OrderReject
+			if errors.As(err, &rej) {
+				writeError(w, rej.Status, rej.Reason)
+				return
+			}
+			writeError(w, http.StatusInternalServerError, "could not prepare the order")
+			return
 		}
 	}
 

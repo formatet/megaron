@@ -66,6 +66,11 @@ type MarchOrder struct {
 	// resolveOutboundDisembark finds one for passage.
 	PickupUnitID    *uuid.UUID
 	PickupWaitTicks int
+	// KeepRoadSite is the one road site this march does NOT cancel: the
+	// build_road order marches its army to the road's "from" hex and must not
+	// cancel its own site (megaron_plan_vagar.md V2). Every other new order to an
+	// army cancels its active road sites (the stone is not refunded, B3).
+	KeepRoadSite *uuid.UUID
 	// ExpeditionTicks is how long an explore order may last
 	// (megaron_plan_upptackarexpeditionen.md): TargetQ/TargetR names the
 	// AREA, and the unit turns for home by half this length. 0 = the default.
@@ -1114,6 +1119,9 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	// Every new order ends any previous expedition, even if arrival ticks match.
 	if _, err := tx.Exec(ctx, `DELETE FROM unit_expeditions WHERE unit_id = $1`, o.UnitID); err != nil {
 		return nil, reject(http.StatusInternalServerError, "could not close the previous expedition")
+	}
+	if err := RoadSitesCancelFor(ctx, tx, o.UnitID, o.KeepRoadSite); err != nil {
+		return nil, reject(http.StatusInternalServerError, "could not close the army's road site")
 	}
 	if expeditionPlan != nil {
 		if _, err := tx.Exec(ctx,

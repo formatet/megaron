@@ -88,6 +88,7 @@ var tickPriorities = map[ScheduledEventType]int{
 	ScheduledGiftDelivery:     tickPriorityArrival,
 	ScheduledTradeReturn:      tickPriorityArrival,
 	ScheduledBuildComplete:    tickPriorityArrival,
+	ScheduledRoadSite:         tickPriorityArrival,
 	ScheduledTrainComplete:    tickPriorityArrival,
 	// Reparationen är en färdigtimer av exakt TrainCompletes form (Slice C
 	// bygger på train.go:89-100) — den flippar 'repairing'→'garrison' i stället

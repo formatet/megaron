@@ -204,6 +204,10 @@ const (
 	// before the arrival lands it.
 	ScheduledSeaStormScan   ScheduledEventType = "SeaStormScan"
 	ScheduledPlaceReachScan ScheduledEventType = "PlaceReachScan"
+	// ScheduledRoadSite drives a road site (megaron_plan_vagar.md V2): payload
+	// {site_id, phase}. phase "check" asks whether stone AND army are both there
+	// and, if so, starts the build; phase "build" finishes the edge.
+	ScheduledRoadSite ScheduledEventType = "RoadSite"
 )
 
 // ScheduledEvent is a pending game event stored durably in PostgreSQL.

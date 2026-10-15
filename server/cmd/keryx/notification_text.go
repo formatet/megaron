@@ -165,11 +165,13 @@ func printNotificationSummary(c *Client, n notificationItem) {
 			verb = "redirected"
 		}
 		line = fmt.Sprintf("%s %s — new course to (%d, %d)", subject, verb, b.TargetQ, b.TargetR)
+	case "RoadEdgeBuilt":
+		line = fmt.Sprintf("Road finished between (%d, %d) and (%d, %d) — everyone may use it", b.Q, b.R, b.TargetQ, b.TargetR)
 	case "MarchStalled":
 		line = firstNotificationText(reason, "A march could not be processed")
 	case "OrderFailed":
 		line = "Order failed"
-		verbs := map[string]string{"march": "march", "stance": "stance", "stance_pursuit": "pursuit", "recall": "recall", "redirect": "redirect", "standing_orders": "standing orders", "occupy_action": "occupation"}
+		verbs := map[string]string{"march": "march", "stance": "stance", "stance_pursuit": "pursuit", "recall": "recall", "redirect": "redirect", "standing_orders": "standing orders", "occupy_action": "occupation", "build_road": "road"}
 		if v := verbs[b.Verb]; v != "" {
 			line += " (" + v + ")"
 		}

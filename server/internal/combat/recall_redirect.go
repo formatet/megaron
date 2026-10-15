@@ -243,6 +243,10 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 	} else if _, err := tx.Exec(ctx, `DELETE FROM unit_expeditions WHERE unit_id = $1`, o.UnitID); err != nil {
 		return nil, fmt.Errorf("close expedition: %w", err)
 	}
+	// A recalled/redirected army abandons its road (B3: stone not refunded).
+	if err := RoadSitesCancelFor(ctx, tx, o.UnitID, nil); err != nil {
+		return nil, fmt.Errorf("close road site: %w", err)
+	}
 
 	newArriveTick := currentTick + travelTicks
 	arrPayload := unit.ScheduledUnitArrivalPayload{UnitID: o.UnitID, WorldID: o.WorldID, ArriveTick: &newArriveTick}

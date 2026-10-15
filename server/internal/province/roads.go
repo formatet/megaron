@@ -2,6 +2,7 @@ package province
 
 import (
 	"context"
+	"math"
 
 	"github.com/google/uuid"
 )
@@ -123,4 +124,26 @@ func EdgeCost(from, to MapPosition, fromTerrain, toTerrain, category string, roa
 		cost *= RoadFactor(category)
 	}
 	return cost
+}
+
+// RoadStoneCost is the stone one road edge into toTerrain costs (plan §2, B2):
+// a stone wall (WallLevelSpecs[2]) is worth three plains edges, so one edge is
+// a third of its stone, times the target hex's terrain cost. Read from the wall
+// table so it follows the wall if the wall changes — no separate literal.
+func RoadStoneCost(toTerrain string) float64 {
+	return WallLevelSpecs[2].Costs["stone"] / 3 * TerrainMoveTicks(toTerrain)
+}
+
+// RoadBuildTicks is how long an army of armySize needs for one edge into
+// toTerrain: ceil(100 × terrain cost / size), at least 1 tick (plan §2: ~100
+// men build a plains edge in 1 tick and a hill edge in 2).
+func RoadBuildTicks(toTerrain string, armySize int) int {
+	if armySize < 1 {
+		armySize = 1
+	}
+	t := int(math.Ceil(100*TerrainMoveTicks(toTerrain)/float64(armySize) - 1e-9))
+	if t < 1 {
+		t = 1
+	}
+	return t
 }

@@ -108,6 +108,12 @@ func insertRow(ctx context.Context, tx pgx.Tx, p DispatchParams) (uuid.UUID, err
 			return uuid.Nil, err
 		}
 	}
+	// A destination that is a HEX, not a city (kind "road_stone"), has no
+	// dest_id: store NULL, never the zero UUID (FK to settlements).
+	var destID any = p.DestID
+	if p.DestID == uuid.Nil {
+		destID = nil
+	}
 	var id uuid.UUID
 	if err := tx.QueryRow(ctx,
 		`INSERT INTO transports
@@ -116,7 +122,7 @@ func insertRow(ctx context.Context, tx pgx.Tx, p DispatchParams) (uuid.UUID, err
 		    standing_order_id, ship_unit_id, journey, departed_tick)
 		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
 		 RETURNING id`,
-		p.WorldID, p.OwnerID, p.Kind, p.OriginID, p.DestID, p.Category,
+		p.WorldID, p.OwnerID, p.Kind, p.OriginID, destID, p.Category,
 		p.OriginQ, p.OriginR, p.DestQ, p.DestR, p.DepartsAt, p.ArrivesAt, p.DueTick, p.Interceptable,
 		p.StandingOrderID, p.ShipUnitID, raw, p.DepartedTick,
 	).Scan(&id); err != nil {

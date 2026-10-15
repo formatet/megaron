@@ -73,6 +73,34 @@ func canRecall(cc checkContext) Verb {
 		})
 }
 
+// canBuildRoad (megaron_plan_vagar.md V2): needs a land unit to build and the
+// stone for at least one plains edge in THIS city (the order draws it from the
+// nearest city to the army; rougher ground costs more).
+func canBuildRoad(cc checkContext) Verb {
+	n := cc.deployableLandUnits()
+	var stone float64
+	if cc.hasSettlement() {
+		_ = cc.pool.QueryRow(cc.ctx,
+			`SELECT COALESCE((SELECT GREATEST(0, settled(amount, rate, calc_tick))
+			                    FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'stone'), 0)`,
+			cc.settlementID).Scan(&stone)
+	}
+	need := province.RoadStoneCost("plains")
+	return verb("build-road", CategoryMilitary,
+		"Order an army to build one road edge between two neighbouring hexes. The stone leaves the "+
+			"nearest city when the order is given and travels as a caravan; building begins when the "+
+			"stone and the army are both at the first hex. Roads speed every traveller and anyone may "+
+			"use them; they never cross water or mountains and end at a river ford.",
+		[]Requirement{
+			req("a land unit to build", n > 0,
+				fmt.Sprintf("%d deployable land unit(s) here", n),
+				"recruit a land unit first"),
+			req(fmt.Sprintf("%g stone in this city (a plains edge)", need), stone >= need,
+				fmt.Sprintf("%.0f stone here", stone),
+				"produce stone first (a quarry) — rougher ground costs more"),
+		})
+}
+
 func canRedirect(cc checkContext) Verb {
 	n := cc.marchingUnits()
 	ok := n > 0
