@@ -1,0 +1,8 @@
+» färsk DB på migration 179 · commit 6935e404+ändringar
+=== RUN   TestFoundColony_DoesNotMintSilver
+2026/10/14 20:56:36 INFO colony founded (discrete unit) settlement=19721eb2-c9d4-4ade-bad9-2a63febe257b name=Newhaven-64cbe7a9 province=043bbdfe-0732-4731-85f2-85b8ba2e3b67 owner=f9bd98e5-ec9f-4415-8cd4-61c861f76537 founding_unit=842b089a-8bcc-4df7-bbaa-935514c7af37 population=50 q=10 r=10
+    colonist_purse_test.go:116: colony grain=8 want0: founding must not add a grain seed
+--- FAIL: TestFoundColony_DoesNotMintSilver (0.03s)
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.035s
+FAIL

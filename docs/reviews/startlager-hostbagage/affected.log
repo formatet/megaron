@@ -1,0 +1,76 @@
+» färsk DB på migration 179 · commit 3c1addc1+ändringar
+=== RUN   TestFounding_Metropolis_SeedsStartingHerd
+--- PASS: TestFounding_Metropolis_SeedsStartingHerd (0.02s)
+=== RUN   TestFounding_Metropolis_StartsWithoutTimberOrStone
+--- PASS: TestFounding_Metropolis_StartsWithoutTimberOrStone (0.03s)
+=== RUN   TestFoundingGrainForecast_MatchesRealFounding
+=== RUN   TestFoundingGrainForecast_MatchesRealFounding/slatt
+    founding_forecast_parity_test.go:119: slatt: forecast_prod=20.1000 forecast_net=0.1000 actual_rate=20.1000 diff=0.0000 tol=0.5000
+=== RUN   TestFoundingGrainForecast_MatchesRealFounding/floddal_delta
+    founding_forecast_parity_test.go:119: floddal_delta: forecast_prod=23.1667 forecast_net=3.1667 actual_rate=23.1667 diff=0.0000 tol=0.5000
+=== RUN   TestFoundingGrainForecast_MatchesRealFounding/kust_lite_aker
+    founding_forecast_parity_test.go:119: kust_lite_aker: forecast_prod=0.5000 forecast_net=-17.5000 actual_rate=0.5000 diff=0.0000 tol=0.5000
+--- PASS: TestFoundingGrainForecast_MatchesRealFounding (0.08s)
+    --- PASS: TestFoundingGrainForecast_MatchesRealFounding/slatt (0.03s)
+    --- PASS: TestFoundingGrainForecast_MatchesRealFounding/floddal_delta (0.03s)
+    --- PASS: TestFoundingGrainForecast_MatchesRealFounding/kust_lite_aker (0.03s)
+=== RUN   TestSeedNomadicHost_DowryGrainIsPinnedAt1200
+--- PASS: TestSeedNomadicHost_DowryGrainIsPinnedAt1200 (0.02s)
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly/inland_spent_purse
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly/coast_spent_purse
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly/inland_full_purse
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly/coast_full_purse
+=== RUN   TestSilverCalibrationFirstFoundingCarriedOnly/existing_wealth_is_not_destroyed
+--- PASS: TestSilverCalibrationFirstFoundingCarriedOnly (0.19s)
+    --- PASS: TestSilverCalibrationFirstFoundingCarriedOnly/inland_spent_purse (0.04s)
+    --- PASS: TestSilverCalibrationFirstFoundingCarriedOnly/coast_spent_purse (0.04s)
+    --- PASS: TestSilverCalibrationFirstFoundingCarriedOnly/inland_full_purse (0.04s)
+    --- PASS: TestSilverCalibrationFirstFoundingCarriedOnly/coast_full_purse (0.04s)
+    --- PASS: TestSilverCalibrationFirstFoundingCarriedOnly/existing_wealth_is_not_destroyed (0.04s)
+=== RUN   TestSilverCalibrationDirectMetropolisPopulationIndependent
+--- PASS: TestSilverCalibrationDirectMetropolisPopulationIndependent (0.05s)
+=== RUN   TestSilverCalibrationRefugeeFoundingNeverMints
+--- PASS: TestSilverCalibrationRefugeeFoundingNeverMints (0.07s)
+=== RUN   TestSilverCalibrationOfferWorkAndLegacyPayloadRead
+2026/10/14 20:53:43 INFO player registered id=8061c49f-d7ec-4e4a-9bb5-1646e95f669c username=alpha-245bf791-238e-4d61-8f38-f69fdbc8d415
+--- PASS: TestSilverCalibrationOfferWorkAndLegacyPayloadRead (0.08s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.551s
+=== RUN   TestFoundColony_DoesNotMintSilver
+2026/10/14 20:53:45 INFO colony founded (discrete unit) settlement=b4952d70-8cbb-4b9c-8e7e-52447e3a671f name=Newhaven-e1e8c339 province=e95b5327-c73d-4cda-9293-3313a558dc66 owner=f2dbb2cf-1640-4373-97f5-efed2a996461 founding_unit=790dfb02-26f4-48f5-80e4-ceeadef608e8 population=50 q=10 r=10
+--- PASS: TestFoundColony_DoesNotMintSilver (0.03s)
+=== RUN   TestFoundColony_EmptyPurseFoundsAPoorColony
+2026/10/14 20:53:45 INFO colony founded (discrete unit) settlement=f6af7ddd-1d19-442d-a350-371547f36d80 name=Newhaven-e934a90e province=8bc89fd8-7720-4d3f-8ef7-11440d6e7783 owner=8a6ff14a-fb6d-4308-9d9d-d2ca090d42f2 founding_unit=c9d520e8-6405-41f5-a41e-4a4890a2ca4d population=50 q=10 r=10
+--- PASS: TestFoundColony_EmptyPurseFoundsAPoorColony (0.03s)
+=== RUN   TestFoundColony_RecordsFounder
+2026/10/14 20:53:45 INFO colony founded (discrete unit) settlement=5e5a3320-87f7-4892-89c4-bf979f1b9d65 name=Newhaven-781213f5 province=2d8f9428-874c-4e72-b7be-f38466a83d4e owner=a8ccb409-8ac0-4d4e-bbae-3f7c435c4f50 founding_unit=6a5c227b-7c5d-4fc8-9bac-a4c7b6f00b8e population=50 q=10 r=10
+--- PASS: TestFoundColony_RecordsFounder (0.03s)
+=== RUN   TestSilverAuditV2AllBucketsAndDeferredHandoff
+2026/10/14 20:53:45 INFO trade delivery destination=31be44f4-d681-4305-9333-ebc02d5fa7c4 good=grain qty=5
+--- PASS: TestSilverAuditV2AllBucketsAndDeferredHandoff (0.03s)
+=== RUN   TestSilverAuditV2AppendFailureCanRetry
+--- PASS: TestSilverAuditV2AppendFailureCanRetry (0.02s)
+=== RUN   TestSilverAuditV2Conservation
+2026/10/14 20:53:45 INFO trade delivery destination=78daf04b-12a3-4f67-b56b-ae49ecee721f good=silver qty=50
+2026/10/14 20:53:45 INFO colony founded (discrete unit) settlement=579c6c40-94e4-4824-9cdf-eb4156264302 name=Newhaven-c4e10091 province=802522eb-5eeb-4fe3-ab28-86a2ab712fed owner=c668481c-9c29-4f2f-b3a6-87978fe8921e founding_unit=06b67f07-b263-469f-98dd-595f854801e7 population=50 q=10 r=10
+    silver_audit_v2_test.go:292: AUDIT_V2_JSON={"audit_tick":3,"previous_audit_tick":null,"city_silver":485,"buy_escrow_silver":0,"sell_escrow_silver":0,"founder_silver":0,"carried_silver":0,"transport_silver":0,"deferred_trade_silver":0,"unowned_silver":0,"total_silver":485,"mining_credited_total":0,"mining_epoch":"5b05512a-e44c-4ee9-9b17-4cf1532181d3","mined_since_last":0,"audit_prev_total":485,"net_delta":0,"wanax_distribution":{"population":"world records and asset owners, including AI and dispossessed Wanax","count":2,"total_silver":485,"median_silver":242.5,"max_silver":485,"zero_count":1,"zero_share":0.5},"wanax_totals":[{"owner_id":"1d5305f8-76fa-48df-991d-54f71454b558","total_silver":0},{"owner_id":"c668481c-9c29-4f2f-b3a6-87978fe8921e","total_silver":485}]}
+--- PASS: TestSilverAuditV2Conservation (0.09s)
+=== RUN   TestFoundColony_UnitDisbandsIntoPopulace
+2026/10/14 20:53:45 INFO colony founded (discrete unit) settlement=81be6b1a-80ee-484d-ab00-eca721cb617d name=Newhaven province=37273125-217a-49ac-b4f8-2e19b9f2168d owner=30c641cf-0df2-41e1-b024-bb077c6d9de8 founding_unit=42ee5ca6-29f3-47e9-a002-43657be8dcbb population=50 q=10 r=10
+--- PASS: TestFoundColony_UnitDisbandsIntoPopulace (0.03s)
+=== RUN   TestFoundColony_SeedsStartingHerd
+2026/10/14 20:53:45 INFO colony founded (discrete unit) settlement=7eb8c380-8e52-42eb-8132-da2adb6caa15 name=Herdhaven province=4ea7a4d7-d01e-43ff-a3bf-97a237ebb788 owner=473405f6-30af-49bd-a74f-47e856c92d37 founding_unit=e4655d38-6800-4da0-a612-281383a8940c population=50 q=10 r=10
+--- PASS: TestFoundColony_SeedsStartingHerd (0.03s)
+PASS
+ok  	formatet/megaron/server/internal/combat	0.301s
+=== RUN   TestSilverCalibrationMineAnchorsAndMaxLevel
+--- PASS: TestSilverCalibrationMineAnchorsAndMaxLevel (0.00s)
+=== RUN   TestSilverCalibrationColonyCapNeverClipsStock
+--- PASS: TestSilverCalibrationColonyCapNeverClipsStock (0.00s)
+PASS
+ok  	formatet/megaron/server/internal/economy	0.008s
+=== RUN   TestFoundingPreviewKeepsFractionalCarriedGrain
+--- PASS: TestFoundingPreviewKeepsFractionalCarriedGrain (0.00s)
+PASS
+ok  	formatet/megaron/server/cmd/keryx	0.005s

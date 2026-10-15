@@ -1,0 +1,6 @@
+» färsk DB på migration 179 · commit 6935e404
+=== RUN   TestFoundColony_DoesNotMintSilver
+2026/10/14 20:56:39 INFO colony founded (discrete unit) settlement=b46aa46e-8e1d-4059-a83f-226409b94bc2 name=Newhaven-1b499e70 province=41d2b7fa-2b8a-40f1-80f6-d511f03d1cde owner=28d67307-274a-4fee-888c-3d9d3683a2cc founding_unit=c95610a5-ccee-4413-9bd1-aa22f4acacd5 population=50 q=10 r=10
+--- PASS: TestFoundColony_DoesNotMintSilver (0.03s)
+PASS
+ok  	formatet/megaron/server/internal/combat	0.035s

@@ -1,0 +1,2053 @@
+{
+  "health": {
+    "commit": "6935e404",
+    "migration": 179,
+    "status": "ok"
+  },
+  "production_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "natural_register_join_cli_founding": true,
+  "trials": [
+    {
+      "kind": "inland",
+      "terrain": "forest_olive_grove"
+    },
+    {
+      "kind": "inland",
+      "terrain": "hills"
+    },
+    {
+      "kind": "inland",
+      "terrain": "scrub_maquis"
+    },
+    {
+      "kind": "coast",
+      "terrain": "forest_olive_grove"
+    }
+  ],
+  "foundings": [
+    {
+      "kind": "inland",
+      "founder_before": {
+        "active": true,
+        "current_tick": 0,
+        "grain": {
+          "amount": 1200,
+          "rate_per_tick": 0
+        },
+        "host_unit_id": "3773bc0d-c9e1-4065-be49-fe09b1669643",
+        "population": 1000,
+        "q": 47,
+        "r": 39,
+        "silver": {
+          "amount": 480,
+          "rate_per_tick": 0
+        },
+        "spearmen_in_field": 2,
+        "tick_seconds": 3600
+      },
+      "forecast": {
+        "catchment": [
+          {
+            "q": 45,
+            "r": 39,
+            "known": true,
+            "terrain": "forest_olive_grove",
+            "coastal": true
+          },
+          {
+            "q": 45,
+            "r": 40,
+            "known": true,
+            "terrain": "plains",
+            "coastal": true
+          },
+          {
+            "q": 45,
+            "r": 41,
+            "known": true,
+            "terrain": "coastal_sea"
+          },
+          {
+            "q": 46,
+            "r": 38,
+            "known": true,
+            "terrain": "forest_olive_grove"
+          },
+          {
+            "q": 46,
+            "r": 39,
+            "known": true,
+            "terrain": "hills"
+          },
+          {
+            "q": 46,
+            "r": 40,
+            "known": true,
+            "terrain": "mountain_limestone",
+            "coastal": true
+          },
+          {
+            "q": 46,
+            "r": 41,
+            "known": true,
+            "terrain": "forest_olive_grove",
+            "coastal": true
+          },
+          {
+            "q": 47,
+            "r": 37,
+            "known": true,
+            "terrain": "forest_olive_grove"
+          },
+          {
+            "q": 47,
+            "r": 38,
+            "known": true,
+            "terrain": "plains"
+          },
+          {
+            "q": 47,
+            "r": 39,
+            "known": true,
+            "terrain": "forest_olive_grove"
+          },
+          {
+            "q": 47,
+            "r": 40,
+            "known": true,
+            "terrain": "mountain_limestone"
+          },
+          {
+            "q": 47,
+            "r": 41,
+            "known": true,
+            "terrain": "mountain_limestone",
+            "coastal": true
+          },
+          {
+            "q": 48,
+            "r": 37,
+            "known": true,
+            "terrain": "forest_olive_grove"
+          },
+          {
+            "q": 48,
+            "r": 38,
+            "known": true,
+            "terrain": "forest_olive_grove"
+          },
+          {
+            "q": 48,
+            "r": 39,
+            "known": true,
+            "terrain": "mountain_limestone",
+            "coastal": true
+          },
+          {
+            "q": 48,
+            "r": 40,
+            "known": true,
+            "terrain": "mountain_limestone",
+            "coastal": true,
+            "tin_deposit": true
+          },
+          {
+            "q": 49,
+            "r": 37,
+            "known": true,
+            "terrain": "hills",
+            "silver_deposit": true
+          },
+          {
+            "q": 49,
+            "r": 38,
+            "known": true,
+            "terrain": "mountain_limestone",
+            "coastal": true
+          },
+          {
+            "q": 49,
+            "r": 39,
+            "known": true,
+            "terrain": "coastal_sea"
+          }
+        ],
+        "founding_gifts": [
+          {
+            "detail": "a coastal founding is owed one galley, crewed and ready \u2014 a gift, not drawn from your people",
+            "key": "poseidon_galley",
+            "label": "Poseidon's galley"
+          }
+        ],
+        "goods": {
+          "fish": 4,
+          "grain": 8.666666666666666,
+          "livestock": 2,
+          "oil": 16.666666666666664,
+          "stone": 32,
+          "timber": 6,
+          "tin": 0.9999999999999999,
+          "wine": 5.999999999999999
+        },
+        "grain": {
+          "base_per_tick": 1.5,
+          "est_net_per_tick": 0,
+          "seed": 1200,
+          "ticks_until_empty": null,
+          "with_farm_per_tick": 5.6
+        },
+        "harbour_note": "Coastal: a city here can build a harbour and ships.",
+        "unknown_hexes": 0
+      },
+      "default_colony_forecast": {
+        "catchment": [
+          {
+            "q": 45,
+            "r": 39,
+            "known": true,
+            "terrain": "forest_olive_grove",
+            "coastal": true
+          },
+          {
+            "q": 45,
+            "r": 40,
+            "known": true,
+            "terrain": "plains",
+            "coastal": true
+          },
+          {
+            "q": 45,
+            "r": 41,
+            "known": true,
+            "terrain": "coastal_sea"
+          },
+          {
+            "q": 46,
+            "r": 38,
+            "known": true,
+            "terrain": "forest_olive_grove"
+          },
+          {
+            "q": 46,
+            "r": 39,
+            "known": true,
+            "terrain": "hills"
+          },
+          {
+            "q": 46,
+            "r": 40,
+            "known": true,
+            "terrain": "mountain_limestone",
+            "coastal": true
+          },
+          {
+            "q": 46,
+            "r": 41,
+            "known": true,
+            "terrain": "forest_olive_grove",
+            "coastal": true
+          },
+          {
+            "q": 47,
+            "r": 37,
+            "known": true,
+            "terrain": "forest_olive_grove"
+          },
+          {
+            "q": 47,
+            "r": 38,
+            "known": true,
+            "terrain": "plains"
+          },
+          {
+            "q": 47,
+            "r": 39,
+            "known": true,
+            "terrain": "forest_olive_grove"
+          },
+          {
+            "q": 47,
+            "r": 40,
+            "known": true,
+            "terrain": "mountain_limestone"
+          },
+          {
+            "q": 47,
+            "r": 41,
+            "known": true,
+            "terrain": "mountain_limestone",
+            "coastal": true
+          },
+          {
+            "q": 48,
+            "r": 37,
+            "known": true,
+            "terrain": "forest_olive_grove"
+          },
+          {
+            "q": 48,
+            "r": 38,
+            "known": true,
+            "terrain": "forest_olive_grove"
+          },
+          {
+            "q": 48,
+            "r": 39,
+            "known": true,
+            "terrain": "mountain_limestone",
+            "coastal": true
+          },
+          {
+            "q": 48,
+            "r": 40,
+            "known": true,
+            "terrain": "mountain_limestone",
+            "coastal": true,
+            "tin_deposit": true
+          },
+          {
+            "q": 49,
+            "r": 37,
+            "known": true,
+            "terrain": "hills",
+            "silver_deposit": true
+          },
+          {
+            "q": 49,
+            "r": 38,
+            "known": true,
+            "terrain": "mountain_limestone",
+            "coastal": true
+          },
+          {
+            "q": 49,
+            "r": 39,
+            "known": true,
+            "terrain": "coastal_sea"
+          }
+        ],
+        "goods": {
+          "fish": 4,
+          "grain": 8.666666666666666,
+          "livestock": 2,
+          "oil": 16.666666666666664,
+          "stone": 32,
+          "timber": 6,
+          "tin": 0.9999999999999999,
+          "wine": 5.999999999999999
+        },
+        "grain": {
+          "base_per_tick": 0.5,
+          "est_net_per_tick": 0,
+          "seed": 0,
+          "ticks_until_empty": null,
+          "with_farm_per_tick": 2.1999999999999997
+        },
+        "harbour_note": "Coastal: a city here can build a harbour and ships.",
+        "unknown_hexes": 0
+      },
+      "goods": [
+        {
+          "key": "cedar",
+          "name": "Cedar",
+          "tier": "commodity",
+          "category": "bulk",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": 1,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 0,
+          "producible": false,
+          "labor_pool": 1000,
+          "idle_citizens": 700,
+          "labor_capacity_percent": 0,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 0
+        },
+        {
+          "key": "stone",
+          "name": "Stone",
+          "tier": "commodity",
+          "category": "bulk",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": 2,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 1.9999999999999998,
+          "producible": true,
+          "labor_pool": 1000,
+          "idle_citizens": 700,
+          "labor_capacity_percent": 2.4,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 24
+        },
+        {
+          "key": "timber",
+          "name": "Timber",
+          "tier": "commodity",
+          "category": "bulk",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": 1,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 1,
+          "producible": true,
+          "labor_pool": 1000,
+          "idle_citizens": 700,
+          "labor_capacity_percent": 0.6,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 6
+        },
+        {
+          "key": "silver",
+          "name": "Silver",
+          "tier": "precious",
+          "category": "precious",
+          "amount": 480,
+          "rate_per_tick": 0,
+          "cap": 960,
+          "labor_value": 1,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 0,
+          "producible": false,
+          "labor_pool": 1000,
+          "idle_citizens": 700,
+          "labor_capacity_percent": 0.1,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 1
+        },
+        {
+          "key": "oil",
+          "name": "Oil",
+          "tier": "commodity",
+          "category": "prestige",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": 1,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 1,
+          "producible": true,
+          "labor_pool": 1000,
+          "idle_citizens": 700,
+          "labor_capacity_percent": 25,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 0
+        },
+        {
+          "key": "purple",
+          "name": "Purple",
+          "tier": "commodity",
+          "category": "prestige",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": null,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 0,
+          "producible": false,
+          "labor_pool": 1000,
+          "idle_citizens": 700,
+          "labor_capacity_percent": 0,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 0
+        },
+        {
+          "key": "wine",
+          "name": "Wine",
+          "tier": "commodity",
+          "category": "prestige",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": 1,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 0.9999999999999999,
+          "producible": true,
+          "labor_pool": 1000,
+          "idle_citizens": 700,
+          "labor_capacity_percent": 25,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 0
+        },
+        {
+          "key": "cult",
+          "name": "Cult",
+          "tier": "manufactured",
+          "category": "sacred",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": null,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 0,
+          "producible": false,
+          "labor_pool": 1000,
+          "idle_citizens": 700,
+          "labor_capacity_percent": 0,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 0
+        },
+        {
+          "key": "fish",
+          "name": "Fish",
+          "tier": "commodity",
+          "category": "staple",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": 1,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 1,
+          "producible": true,
+          "labor_pool": 1000,
+          "idle_citizens": 700,
+          "labor_capacity_percent": 0.4,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 4
+        },
+        {
+          "key": "grain",
+          "name": "Grain",
+          "tier": "commodity",
+          "category": "staple",
+          "amount": 1200,
+          "rate_per_tick": 5.6,
+          "cap": 1000000,
+          "labor_value": 1,
+          "citizens": 300,
+          "percent": 30,
+          "marginal_yield": 1.6999999999999997,
+          "producible": true,
+          "labor_pool": 1000,
+          "idle_citizens": 700,
+          "labor_capacity_percent": 100,
+          "employed_citizens": 300,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 14
+        },
+        {
+          "key": "livestock",
+          "name": "Livestock",
+          "tier": "commodity",
+          "category": "staple",
+          "amount": 10,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": 1,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 1,
+          "producible": true,
+          "labor_pool": 1000,
+          "idle_citizens": 700,
+          "labor_capacity_percent": 0.2,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 2
+        },
+        {
+          "key": "bronze",
+          "name": "Bronze",
+          "tier": "manufactured",
+          "category": "strategic",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": 11,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 0,
+          "producible": false,
+          "labor_pool": 1000,
+          "idle_citizens": 700,
+          "labor_capacity_percent": 0,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 0
+        },
+        {
+          "key": "copper",
+          "name": "Copper",
+          "tier": "commodity",
+          "category": "strategic",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": 1,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 0,
+          "producible": false,
+          "labor_pool": 1000,
+          "idle_citizens": 700,
+          "labor_capacity_percent": 0,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 0
+        },
+        {
+          "key": "horses",
+          "name": "Horses",
+          "tier": "commodity",
+          "category": "strategic",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": 1,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 0,
+          "producible": false,
+          "labor_pool": 1000,
+          "idle_citizens": 700,
+          "labor_capacity_percent": 0,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 0
+        },
+        {
+          "key": "pottery",
+          "name": "Pottery",
+          "tier": "commodity",
+          "category": "strategic",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": 1,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 0,
+          "producible": false,
+          "labor_pool": 1000,
+          "idle_citizens": 700,
+          "labor_capacity_percent": 0,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 0
+        },
+        {
+          "key": "tin",
+          "name": "Tin",
+          "tier": "commodity",
+          "category": "strategic",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": 1,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 0.9999999999999999,
+          "producible": true,
+          "labor_pool": 1000,
+          "idle_citizens": 700,
+          "labor_capacity_percent": 0.1,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 1
+        }
+      ]
+    },
+    {
+      "kind": "coast",
+      "founder_before": {
+        "active": true,
+        "current_tick": 0,
+        "grain": {
+          "amount": 1200,
+          "rate_per_tick": 0
+        },
+        "host_unit_id": "fef35a92-2887-4168-b9b0-1d6efb42f141",
+        "population": 1000,
+        "q": 13,
+        "r": 26,
+        "silver": {
+          "amount": 480,
+          "rate_per_tick": 0
+        },
+        "spearmen_in_field": 2,
+        "tick_seconds": 3600
+      },
+      "forecast": {
+        "catchment": [
+          {
+            "q": 11,
+            "r": 26,
+            "known": true,
+            "terrain": "plains",
+            "coastal": true
+          },
+          {
+            "q": 11,
+            "r": 27,
+            "known": true,
+            "terrain": "plains",
+            "coastal": true
+          },
+          {
+            "q": 11,
+            "r": 28,
+            "known": true,
+            "terrain": "coastal_sea"
+          },
+          {
+            "q": 12,
+            "r": 25,
+            "known": true,
+            "terrain": "hills",
+            "copper_deposit": true
+          },
+          {
+            "q": 12,
+            "r": 26,
+            "known": true,
+            "terrain": "forest_olive_grove",
+            "coastal": true
+          },
+          {
+            "q": 12,
+            "r": 27,
+            "known": true,
+            "terrain": "coastal_sea"
+          },
+          {
+            "q": 12,
+            "r": 28,
+            "known": true,
+            "terrain": "deep_sea"
+          },
+          {
+            "q": 13,
+            "r": 24,
+            "known": false
+          },
+          {
+            "q": 13,
+            "r": 25,
+            "known": true,
+            "terrain": "forest_olive_grove",
+            "coastal": true
+          },
+          {
+            "q": 13,
+            "r": 26,
+            "known": true,
+            "terrain": "forest_olive_grove",
+            "coastal": true
+          },
+          {
+            "q": 13,
+            "r": 27,
+            "known": true,
+            "terrain": "coastal_sea"
+          },
+          {
+            "q": 13,
+            "r": 28,
+            "known": true,
+            "terrain": "deep_sea"
+          },
+          {
+            "q": 14,
+            "r": 24,
+            "known": true,
+            "terrain": "plains",
+            "coastal": true
+          },
+          {
+            "q": 14,
+            "r": 25,
+            "known": true,
+            "terrain": "coastal_sea"
+          },
+          {
+            "q": 14,
+            "r": 26,
+            "known": true,
+            "terrain": "coastal_sea"
+          },
+          {
+            "q": 14,
+            "r": 27,
+            "known": true,
+            "terrain": "deep_sea"
+          },
+          {
+            "q": 15,
+            "r": 24,
+            "known": true,
+            "terrain": "coastal_sea"
+          },
+          {
+            "q": 15,
+            "r": 25,
+            "known": true,
+            "terrain": "deep_sea"
+          },
+          {
+            "q": 15,
+            "r": 26,
+            "known": true,
+            "terrain": "deep_sea"
+          }
+        ],
+        "founding_gifts": [
+          {
+            "detail": "a coastal founding is owed one galley, crewed and ready \u2014 a gift, not drawn from your people",
+            "key": "poseidon_galley",
+            "label": "Poseidon's galley"
+          }
+        ],
+        "goods": {
+          "copper": 0.9999999999999999,
+          "fish": 12.83333333333333,
+          "grain": 12.333333333333332,
+          "livestock": 3,
+          "oil": 9,
+          "stone": 4.5,
+          "timber": 2,
+          "wine": 4.999999999999999
+        },
+        "grain": {
+          "base_per_tick": 0.5,
+          "est_net_per_tick": 0,
+          "seed": 1200,
+          "ticks_until_empty": null,
+          "with_farm_per_tick": 5.6
+        },
+        "harbour_note": "Coastal: a city here can build a harbour and ships.",
+        "unknown_hexes": 1
+      },
+      "default_colony_forecast": {
+        "catchment": [
+          {
+            "q": 11,
+            "r": 26,
+            "known": true,
+            "terrain": "plains",
+            "coastal": true
+          },
+          {
+            "q": 11,
+            "r": 27,
+            "known": true,
+            "terrain": "plains",
+            "coastal": true
+          },
+          {
+            "q": 11,
+            "r": 28,
+            "known": true,
+            "terrain": "coastal_sea"
+          },
+          {
+            "q": 12,
+            "r": 25,
+            "known": true,
+            "terrain": "hills",
+            "copper_deposit": true
+          },
+          {
+            "q": 12,
+            "r": 26,
+            "known": true,
+            "terrain": "forest_olive_grove",
+            "coastal": true
+          },
+          {
+            "q": 12,
+            "r": 27,
+            "known": true,
+            "terrain": "coastal_sea"
+          },
+          {
+            "q": 12,
+            "r": 28,
+            "known": true,
+            "terrain": "deep_sea"
+          },
+          {
+            "q": 13,
+            "r": 24,
+            "known": false
+          },
+          {
+            "q": 13,
+            "r": 25,
+            "known": true,
+            "terrain": "forest_olive_grove",
+            "coastal": true
+          },
+          {
+            "q": 13,
+            "r": 26,
+            "known": true,
+            "terrain": "forest_olive_grove",
+            "coastal": true
+          },
+          {
+            "q": 13,
+            "r": 27,
+            "known": true,
+            "terrain": "coastal_sea"
+          },
+          {
+            "q": 13,
+            "r": 28,
+            "known": true,
+            "terrain": "deep_sea"
+          },
+          {
+            "q": 14,
+            "r": 24,
+            "known": true,
+            "terrain": "plains",
+            "coastal": true
+          },
+          {
+            "q": 14,
+            "r": 25,
+            "known": true,
+            "terrain": "coastal_sea"
+          },
+          {
+            "q": 14,
+            "r": 26,
+            "known": true,
+            "terrain": "coastal_sea"
+          },
+          {
+            "q": 14,
+            "r": 27,
+            "known": true,
+            "terrain": "deep_sea"
+          },
+          {
+            "q": 15,
+            "r": 24,
+            "known": true,
+            "terrain": "coastal_sea"
+          },
+          {
+            "q": 15,
+            "r": 25,
+            "known": true,
+            "terrain": "deep_sea"
+          },
+          {
+            "q": 15,
+            "r": 26,
+            "known": true,
+            "terrain": "deep_sea"
+          }
+        ],
+        "goods": {
+          "copper": 0.9999999999999999,
+          "fish": 12.83333333333333,
+          "grain": 12.333333333333332,
+          "livestock": 3,
+          "oil": 9,
+          "stone": 4.5,
+          "timber": 2,
+          "wine": 4.999999999999999
+        },
+        "grain": {
+          "base_per_tick": 0.5,
+          "est_net_per_tick": 0,
+          "seed": 0,
+          "ticks_until_empty": null,
+          "with_farm_per_tick": 2.1999999999999997
+        },
+        "harbour_note": "Coastal: a city here can build a harbour and ships.",
+        "unknown_hexes": 1
+      },
+      "goods": [
+        {
+          "key": "cedar",
+          "name": "Cedar",
+          "tier": "commodity",
+          "category": "bulk",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": 1,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 0,
+          "producible": false,
+          "labor_pool": 1000,
+          "idle_citizens": 500,
+          "labor_capacity_percent": 0,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 0
+        },
+        {
+          "key": "stone",
+          "name": "Stone",
+          "tier": "commodity",
+          "category": "bulk",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": 2,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 0.9999999999999999,
+          "producible": true,
+          "labor_pool": 1000,
+          "idle_citizens": 500,
+          "labor_capacity_percent": 0.7000000000000001,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 7
+        },
+        {
+          "key": "timber",
+          "name": "Timber",
+          "tier": "commodity",
+          "category": "bulk",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": 1,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 1,
+          "producible": true,
+          "labor_pool": 1000,
+          "idle_citizens": 500,
+          "labor_capacity_percent": 0.2,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 2
+        },
+        {
+          "key": "silver",
+          "name": "Silver",
+          "tier": "precious",
+          "category": "precious",
+          "amount": 480,
+          "rate_per_tick": 0,
+          "cap": 960,
+          "labor_value": 1,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 0,
+          "producible": false,
+          "labor_pool": 1000,
+          "idle_citizens": 500,
+          "labor_capacity_percent": 0,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 0
+        },
+        {
+          "key": "oil",
+          "name": "Oil",
+          "tier": "commodity",
+          "category": "prestige",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": 1,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 1,
+          "producible": true,
+          "labor_pool": 1000,
+          "idle_citizens": 500,
+          "labor_capacity_percent": 25,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 0
+        },
+        {
+          "key": "purple",
+          "name": "Purple",
+          "tier": "commodity",
+          "category": "prestige",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": null,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 0,
+          "producible": false,
+          "labor_pool": 1000,
+          "idle_citizens": 500,
+          "labor_capacity_percent": 0,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 0
+        },
+        {
+          "key": "wine",
+          "name": "Wine",
+          "tier": "commodity",
+          "category": "prestige",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": 1,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 0.9999999999999999,
+          "producible": true,
+          "labor_pool": 1000,
+          "idle_citizens": 500,
+          "labor_capacity_percent": 25,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 0
+        },
+        {
+          "key": "cult",
+          "name": "Cult",
+          "tier": "manufactured",
+          "category": "sacred",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": null,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 0,
+          "producible": false,
+          "labor_pool": 1000,
+          "idle_citizens": 500,
+          "labor_capacity_percent": 0,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 0
+        },
+        {
+          "key": "fish",
+          "name": "Fish",
+          "tier": "commodity",
+          "category": "staple",
+          "amount": 0,
+          "rate_per_tick": 5,
+          "cap": 1000000,
+          "labor_value": 1,
+          "citizens": 500,
+          "percent": 50,
+          "marginal_yield": 1,
+          "producible": true,
+          "labor_pool": 1000,
+          "idle_citizens": 500,
+          "labor_capacity_percent": 1.7000000000000002,
+          "employed_citizens": 500,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 17
+        },
+        {
+          "key": "grain",
+          "name": "Grain",
+          "tier": "commodity",
+          "category": "staple",
+          "amount": 1200,
+          "rate_per_tick": 0.5,
+          "cap": 1000000,
+          "labor_value": 1,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 0.9999999999999999,
+          "producible": true,
+          "labor_pool": 1000,
+          "idle_citizens": 500,
+          "labor_capacity_percent": 100,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 13
+        },
+        {
+          "key": "livestock",
+          "name": "Livestock",
+          "tier": "commodity",
+          "category": "staple",
+          "amount": 10,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": 1,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 1,
+          "producible": true,
+          "labor_pool": 1000,
+          "idle_citizens": 500,
+          "labor_capacity_percent": 0.3,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 3
+        },
+        {
+          "key": "bronze",
+          "name": "Bronze",
+          "tier": "manufactured",
+          "category": "strategic",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": 11,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 0,
+          "producible": false,
+          "labor_pool": 1000,
+          "idle_citizens": 500,
+          "labor_capacity_percent": 0,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 0
+        },
+        {
+          "key": "copper",
+          "name": "Copper",
+          "tier": "commodity",
+          "category": "strategic",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": 1,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 0.9999999999999999,
+          "producible": true,
+          "labor_pool": 1000,
+          "idle_citizens": 500,
+          "labor_capacity_percent": 0.1,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 1
+        },
+        {
+          "key": "horses",
+          "name": "Horses",
+          "tier": "commodity",
+          "category": "strategic",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": 1,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 0,
+          "producible": false,
+          "labor_pool": 1000,
+          "idle_citizens": 500,
+          "labor_capacity_percent": 0,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 0
+        },
+        {
+          "key": "pottery",
+          "name": "Pottery",
+          "tier": "commodity",
+          "category": "strategic",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": 1,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 0,
+          "producible": false,
+          "labor_pool": 1000,
+          "idle_citizens": 500,
+          "labor_capacity_percent": 0,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 0
+        },
+        {
+          "key": "tin",
+          "name": "Tin",
+          "tier": "commodity",
+          "category": "strategic",
+          "amount": 0,
+          "rate_per_tick": 0,
+          "cap": 1000000,
+          "labor_value": 1,
+          "citizens": 0,
+          "percent": 0,
+          "marginal_yield": 0,
+          "producible": false,
+          "labor_pool": 1000,
+          "idle_citizens": 500,
+          "labor_capacity_percent": 0,
+          "employed_citizens": 0,
+          "unserved_citizens": 0,
+          "workplace_level": 0,
+          "workplace_slots": 0,
+          "hex_slots": 0
+        }
+      ]
+    }
+  ],
+  "captures": [
+    {
+      "kind": "inland",
+      "mode": "desktop",
+      "phase": "before",
+      "preview_response": {
+        "url": "http://127.0.0.1:36891/api/v1/worlds/79b40daf-72e5-45c8-a1dc-a6fb7046f397/colonize-preview?q=47&r=39&pop=1000&seed=1200&starter_farm=1",
+        "body": {
+          "catchment": [
+            {
+              "q": 45,
+              "r": 39,
+              "known": true,
+              "terrain": "forest_olive_grove",
+              "coastal": true
+            },
+            {
+              "q": 45,
+              "r": 40,
+              "known": true,
+              "terrain": "plains",
+              "coastal": true
+            },
+            {
+              "q": 45,
+              "r": 41,
+              "known": true,
+              "terrain": "coastal_sea"
+            },
+            {
+              "q": 46,
+              "r": 38,
+              "known": true,
+              "terrain": "forest_olive_grove"
+            },
+            {
+              "q": 46,
+              "r": 39,
+              "known": true,
+              "terrain": "hills"
+            },
+            {
+              "q": 46,
+              "r": 40,
+              "known": true,
+              "terrain": "mountain_limestone",
+              "coastal": true
+            },
+            {
+              "q": 46,
+              "r": 41,
+              "known": true,
+              "terrain": "forest_olive_grove",
+              "coastal": true
+            },
+            {
+              "q": 47,
+              "r": 37,
+              "known": true,
+              "terrain": "forest_olive_grove"
+            },
+            {
+              "q": 47,
+              "r": 38,
+              "known": true,
+              "terrain": "plains"
+            },
+            {
+              "q": 47,
+              "r": 39,
+              "known": true,
+              "terrain": "forest_olive_grove"
+            },
+            {
+              "q": 47,
+              "r": 40,
+              "known": true,
+              "terrain": "mountain_limestone"
+            },
+            {
+              "q": 47,
+              "r": 41,
+              "known": true,
+              "terrain": "mountain_limestone",
+              "coastal": true
+            },
+            {
+              "q": 48,
+              "r": 37,
+              "known": true,
+              "terrain": "forest_olive_grove"
+            },
+            {
+              "q": 48,
+              "r": 38,
+              "known": true,
+              "terrain": "forest_olive_grove"
+            },
+            {
+              "q": 48,
+              "r": 39,
+              "known": true,
+              "terrain": "mountain_limestone",
+              "coastal": true
+            },
+            {
+              "q": 48,
+              "r": 40,
+              "known": true,
+              "terrain": "mountain_limestone",
+              "coastal": true,
+              "tin_deposit": true
+            },
+            {
+              "q": 49,
+              "r": 37,
+              "known": true,
+              "terrain": "hills",
+              "silver_deposit": true
+            },
+            {
+              "q": 49,
+              "r": 38,
+              "known": true,
+              "terrain": "mountain_limestone",
+              "coastal": true
+            },
+            {
+              "q": 49,
+              "r": 39,
+              "known": true,
+              "terrain": "coastal_sea"
+            }
+          ],
+          "founding_gifts": [
+            {
+              "detail": "a coastal founding is owed one galley, crewed and ready \u2014 a gift, not drawn from your people",
+              "key": "poseidon_galley",
+              "label": "Poseidon's galley"
+            }
+          ],
+          "goods": {
+            "fish": 4,
+            "grain": 8.666666666666666,
+            "livestock": 2,
+            "oil": 16.666666666666664,
+            "stone": 32,
+            "timber": 6,
+            "tin": 0.9999999999999999,
+            "wine": 5.999999999999999
+          },
+          "grain": {
+            "base_per_tick": 1.5,
+            "est_net_per_tick": 0,
+            "seed": 1200,
+            "ticks_until_empty": null,
+            "with_farm_per_tick": 5.6
+          },
+          "harbour_note": "Coastal: a city here can build a harbour and ships.",
+          "unknown_hexes": 0
+        }
+      },
+      "host_text": "FEEDS ITSELF:\nyes\nTIMBER:\nyes\nSTONE:\nyes\nSHIPS:\nyes\nDETAILS\nDeposits: \u2014\nProduces: oil, timber\n1,000 people \u00b7 cannot fight \u00b7 sight 2 hexes (4 by water or on mountains)\nFood lasts indefinitely\nSilver reserve lasts indefinitely\n2 Spearmen cohorts in the field\nMessengers free to send\nCatchment forecast \u2014 19 of 19 hexes known\nCoastal: a city here can build a harbour and ships.\nGrain: produces about 2 and eats about 2 per day = net +0 per day\nSeed 1,200 grain \u2014 the colony feeds itself.\nAlso: tin-deposit \u2713, silver-deposit \u2713, fish about 4 per day, livestock about 2 per day, oil about 17 per day, stone about 32 per day, timber about 6 per day, tin about 1 per day, wine about 6 per day\n\ud83c\udf81 Poseidon's galley \u2014 a coastal founding is owed one galley, crewed and ready \u2014 a gift, not drawn from your people\nForest olive grove (center)\nPlains\nCoastal sea\nForest olive grove\nHills\nMountain limestone\nForest olive grove\nForest olive grove\nPlains\nForest olive grove\nMountain limestone\nMountain limestone\nForest olive grove\nForest olive grove\nMountain limestone\nMountain limestone \u00b7 tin\nHills \u00b7 silver\nMountain limestone\nCoastal sea",
+      "errors": []
+    },
+    {
+      "kind": "inland",
+      "mode": "mobile",
+      "phase": "before",
+      "preview_response": {
+        "url": "http://127.0.0.1:36891/api/v1/worlds/79b40daf-72e5-45c8-a1dc-a6fb7046f397/colonize-preview?q=47&r=39&pop=1000&seed=1200&starter_farm=1",
+        "body": {
+          "catchment": [
+            {
+              "q": 45,
+              "r": 39,
+              "known": true,
+              "terrain": "forest_olive_grove",
+              "coastal": true
+            },
+            {
+              "q": 45,
+              "r": 40,
+              "known": true,
+              "terrain": "plains",
+              "coastal": true
+            },
+            {
+              "q": 45,
+              "r": 41,
+              "known": true,
+              "terrain": "coastal_sea"
+            },
+            {
+              "q": 46,
+              "r": 38,
+              "known": true,
+              "terrain": "forest_olive_grove"
+            },
+            {
+              "q": 46,
+              "r": 39,
+              "known": true,
+              "terrain": "hills"
+            },
+            {
+              "q": 46,
+              "r": 40,
+              "known": true,
+              "terrain": "mountain_limestone",
+              "coastal": true
+            },
+            {
+              "q": 46,
+              "r": 41,
+              "known": true,
+              "terrain": "forest_olive_grove",
+              "coastal": true
+            },
+            {
+              "q": 47,
+              "r": 37,
+              "known": true,
+              "terrain": "forest_olive_grove"
+            },
+            {
+              "q": 47,
+              "r": 38,
+              "known": true,
+              "terrain": "plains"
+            },
+            {
+              "q": 47,
+              "r": 39,
+              "known": true,
+              "terrain": "forest_olive_grove"
+            },
+            {
+              "q": 47,
+              "r": 40,
+              "known": true,
+              "terrain": "mountain_limestone"
+            },
+            {
+              "q": 47,
+              "r": 41,
+              "known": true,
+              "terrain": "mountain_limestone",
+              "coastal": true
+            },
+            {
+              "q": 48,
+              "r": 37,
+              "known": true,
+              "terrain": "forest_olive_grove"
+            },
+            {
+              "q": 48,
+              "r": 38,
+              "known": true,
+              "terrain": "forest_olive_grove"
+            },
+            {
+              "q": 48,
+              "r": 39,
+              "known": true,
+              "terrain": "mountain_limestone",
+              "coastal": true
+            },
+            {
+              "q": 48,
+              "r": 40,
+              "known": true,
+              "terrain": "mountain_limestone",
+              "coastal": true,
+              "tin_deposit": true
+            },
+            {
+              "q": 49,
+              "r": 37,
+              "known": true,
+              "terrain": "hills",
+              "silver_deposit": true
+            },
+            {
+              "q": 49,
+              "r": 38,
+              "known": true,
+              "terrain": "mountain_limestone",
+              "coastal": true
+            },
+            {
+              "q": 49,
+              "r": 39,
+              "known": true,
+              "terrain": "coastal_sea"
+            }
+          ],
+          "founding_gifts": [
+            {
+              "detail": "a coastal founding is owed one galley, crewed and ready \u2014 a gift, not drawn from your people",
+              "key": "poseidon_galley",
+              "label": "Poseidon's galley"
+            }
+          ],
+          "goods": {
+            "fish": 4,
+            "grain": 8.666666666666666,
+            "livestock": 2,
+            "oil": 16.666666666666664,
+            "stone": 32,
+            "timber": 6,
+            "tin": 0.9999999999999999,
+            "wine": 5.999999999999999
+          },
+          "grain": {
+            "base_per_tick": 1.5,
+            "est_net_per_tick": 0,
+            "seed": 1200,
+            "ticks_until_empty": null,
+            "with_farm_per_tick": 5.6
+          },
+          "harbour_note": "Coastal: a city here can build a harbour and ships.",
+          "unknown_hexes": 0
+        }
+      },
+      "host_text": "FEEDS ITSELF:\nyes\nTIMBER:\nyes\nSTONE:\nyes\nSHIPS:\nyes\nDETAILS\nDeposits: \u2014\nProduces: oil, timber\n1,000 people \u00b7 cannot fight \u00b7 sight 2 hexes (4 by water or on mountains)\nFood lasts indefinitely\nSilver reserve lasts indefinitely\n2 Spearmen cohorts in the field\nMessengers free to send\nCatchment forecast \u2014 19 of 19 hexes known\nCoastal: a city here can build a harbour and ships.\nGrain: produces about 2 and eats about 2 per day = net +0 per day\nSeed 1,200 grain \u2014 the colony feeds itself.\nAlso: tin-deposit \u2713, silver-deposit \u2713, fish about 4 per day, livestock about 2 per day, oil about 17 per day, stone about 32 per day, timber about 6 per day, tin about 1 per day, wine about 6 per day\n\ud83c\udf81 Poseidon's galley \u2014 a coastal founding is owed one galley, crewed and ready \u2014 a gift, not drawn from your people\nForest olive grove (center)\nPlains\nCoastal sea\nForest olive grove\nHills\nMountain limestone\nForest olive grove\nForest olive grove\nPlains\nForest olive grove\nMountain limestone\nMountain limestone\nForest olive grove\nForest olive grove\nMountain limestone\nMountain limestone \u00b7 tin\nHills \u00b7 silver\nMountain limestone\nCoastal sea",
+      "errors": []
+    },
+    {
+      "kind": "inland",
+      "mode": "desktop",
+      "phase": "after",
+      "text": "ECONOMY\n?\n\u2715\n\u229b LAWAGETAS\nThe palace scribes track every ingot and measure of grain, Wanax. Move goods between your own cities, or send goods and silver as a gift to a ruler you have contacted. A gift asks nothing in return; its caravan can be seized on the road. Watch the Wants ledger \u2014 it names what your trading partners hunger for, and where your surplus might fetch a premium. ?\n\u2715\nGOODS\nTRANSFER\nAUTOMATION\nWANTS\nSETTLEMENTS\nSettlement\tPop\tGrain\tFood lasts\tStatus \u25b2\nStock-inland \u2605\t1,000\t+0.6 per day\t240 days\tsurplus\n\nWorkdays/unit: reference labour on standard ground, including ingredients. Gods weigh scarcity separately; Wanaxes agree trade prices.\n\nSTOCK-INLAND \u2605\nSILVER \u00b7 1 WORKDAYS/UNIT\n480\nGood\tAmount\tRate\tWorkdays/unit\nStone\t0\t\t2\nTimber\t0\t\t1\nOil\t0\t\t1\nWine\t0\t\t1\nFish\t0\t\t1\nGrain\t1,200\t+5.6 per day\t1\nLivestock\t10\t\t1\nTin\t0\t\t1\n\nUnavailable: trade offer, trade accept, trade decline, trade cancel, transfer, gift ?",
+      "errors": []
+    },
+    {
+      "kind": "inland",
+      "mode": "mobile",
+      "phase": "after",
+      "text": "ECONOMY\n?\n\u2715\n\u229b LAWAGETAS\nThe palace scribes track every ingot and measure of grain, Wanax. Move goods between your own cities, or send goods and silver as a gift to a ruler you have contacted. A gift asks nothing in return; its caravan can be seized on the road. Watch the Wants ledger \u2014 it names what your trading partners hunger for, and where your surplus might fetch a premium. ?\n\u2715\nGOODS\nTRANSFER\nAUTOMATION\nWANTS\nSETTLEMENTS\nSettlement\tPop\tGrain\tFood lasts\tStatus \u25b2\nStock-inland \u2605\t1,000\t+0.6 per day\t240 days\tsurplus\n\nWorkdays/unit: reference labour on standard ground, including ingredients. Gods weigh scarcity separately; Wanaxes agree trade prices.\n\nSTOCK-INLAND \u2605\nSILVER \u00b7 1 WORKDAYS/UNIT\n480\nGood\tAmount\tRate\tWorkdays/unit\nStone\t0\t\t2\nTimber\t0\t\t1\nOil\t0\t\t1\nWine\t0\t\t1\nFish\t0\t\t1\nGrain\t1,200\t+5.6 per day\t1\nLivestock\t10\t\t1\nTin\t0\t\t1\n\nUnavailable: trade offer, trade accept, trade decline, trade cancel, transfer, gift ?",
+      "errors": []
+    },
+    {
+      "kind": "coast",
+      "mode": "desktop",
+      "phase": "before",
+      "preview_response": {
+        "url": "http://127.0.0.1:36891/api/v1/worlds/79b40daf-72e5-45c8-a1dc-a6fb7046f397/colonize-preview?q=13&r=26&pop=1000&seed=1200&starter_farm=1",
+        "body": {
+          "catchment": [
+            {
+              "q": 11,
+              "r": 26,
+              "known": true,
+              "terrain": "plains",
+              "coastal": true
+            },
+            {
+              "q": 11,
+              "r": 27,
+              "known": true,
+              "terrain": "plains",
+              "coastal": true
+            },
+            {
+              "q": 11,
+              "r": 28,
+              "known": true,
+              "terrain": "coastal_sea"
+            },
+            {
+              "q": 12,
+              "r": 25,
+              "known": true,
+              "terrain": "hills",
+              "copper_deposit": true
+            },
+            {
+              "q": 12,
+              "r": 26,
+              "known": true,
+              "terrain": "forest_olive_grove",
+              "coastal": true
+            },
+            {
+              "q": 12,
+              "r": 27,
+              "known": true,
+              "terrain": "coastal_sea"
+            },
+            {
+              "q": 12,
+              "r": 28,
+              "known": true,
+              "terrain": "deep_sea"
+            },
+            {
+              "q": 13,
+              "r": 24,
+              "known": false
+            },
+            {
+              "q": 13,
+              "r": 25,
+              "known": true,
+              "terrain": "forest_olive_grove",
+              "coastal": true
+            },
+            {
+              "q": 13,
+              "r": 26,
+              "known": true,
+              "terrain": "forest_olive_grove",
+              "coastal": true
+            },
+            {
+              "q": 13,
+              "r": 27,
+              "known": true,
+              "terrain": "coastal_sea"
+            },
+            {
+              "q": 13,
+              "r": 28,
+              "known": true,
+              "terrain": "deep_sea"
+            },
+            {
+              "q": 14,
+              "r": 24,
+              "known": true,
+              "terrain": "plains",
+              "coastal": true
+            },
+            {
+              "q": 14,
+              "r": 25,
+              "known": true,
+              "terrain": "coastal_sea"
+            },
+            {
+              "q": 14,
+              "r": 26,
+              "known": true,
+              "terrain": "coastal_sea"
+            },
+            {
+              "q": 14,
+              "r": 27,
+              "known": true,
+              "terrain": "deep_sea"
+            },
+            {
+              "q": 15,
+              "r": 24,
+              "known": true,
+              "terrain": "coastal_sea"
+            },
+            {
+              "q": 15,
+              "r": 25,
+              "known": true,
+              "terrain": "deep_sea"
+            },
+            {
+              "q": 15,
+              "r": 26,
+              "known": true,
+              "terrain": "deep_sea"
+            }
+          ],
+          "founding_gifts": [
+            {
+              "detail": "a coastal founding is owed one galley, crewed and ready \u2014 a gift, not drawn from your people",
+              "key": "poseidon_galley",
+              "label": "Poseidon's galley"
+            }
+          ],
+          "goods": {
+            "copper": 0.9999999999999999,
+            "fish": 12.83333333333333,
+            "grain": 12.333333333333332,
+            "livestock": 3,
+            "oil": 9,
+            "stone": 4.5,
+            "timber": 2,
+            "wine": 4.999999999999999
+          },
+          "grain": {
+            "base_per_tick": 0.5,
+            "est_net_per_tick": 0,
+            "seed": 1200,
+            "ticks_until_empty": null,
+            "with_farm_per_tick": 5.6
+          },
+          "harbour_note": "Coastal: a city here can build a harbour and ships.",
+          "unknown_hexes": 1
+        }
+      },
+      "host_text": "FEEDS ITSELF:\nyes\nTIMBER:\nyes\nSTONE:\nyes\nSHIPS:\nyes\nDETAILS\nDeposits: \u2014\nProduces: oil, timber, fish\n1,000 people \u00b7 cannot fight \u00b7 sight 2 hexes (4 by water or on mountains)\nFood lasts indefinitely\nSilver reserve lasts indefinitely\n2 Spearmen cohorts in the field\nMessengers free to send\nCatchment forecast \u2014 18 of 19 hexes known\nCoastal: a city here can build a harbour and ships.\nGrain: produces about 1 and eats about 1 per day = net +0 per day\nSeed 1,200 grain \u2014 the colony feeds itself.\nAlso: copper-deposit \u2713, copper about 1 per day, fish about 13 per day, livestock about 3 per day, oil about 9 per day, stone about 5 per day, timber about 2 per day, wine about 5 per day\n\ud83c\udf81 Poseidon's galley \u2014 a coastal founding is owed one galley, crewed and ready \u2014 a gift, not drawn from your people\nPlains (center)\nPlains\nCoastal sea\nHills \u00b7 copper\nForest olive grove\nCoastal sea\nDeep sea\n? unexplored\nForest olive grove\nForest olive grove\nCoastal sea\nDeep sea\nPlains\nCoastal sea\nCoastal sea\nDeep sea\nCoastal sea\nDeep sea\nDeep sea",
+      "errors": []
+    },
+    {
+      "kind": "coast",
+      "mode": "mobile",
+      "phase": "before",
+      "preview_response": {
+        "url": "http://127.0.0.1:36891/api/v1/worlds/79b40daf-72e5-45c8-a1dc-a6fb7046f397/colonize-preview?q=13&r=26&pop=1000&seed=1200&starter_farm=1",
+        "body": {
+          "catchment": [
+            {
+              "q": 11,
+              "r": 26,
+              "known": true,
+              "terrain": "plains",
+              "coastal": true
+            },
+            {
+              "q": 11,
+              "r": 27,
+              "known": true,
+              "terrain": "plains",
+              "coastal": true
+            },
+            {
+              "q": 11,
+              "r": 28,
+              "known": true,
+              "terrain": "coastal_sea"
+            },
+            {
+              "q": 12,
+              "r": 25,
+              "known": true,
+              "terrain": "hills",
+              "copper_deposit": true
+            },
+            {
+              "q": 12,
+              "r": 26,
+              "known": true,
+              "terrain": "forest_olive_grove",
+              "coastal": true
+            },
+            {
+              "q": 12,
+              "r": 27,
+              "known": true,
+              "terrain": "coastal_sea"
+            },
+            {
+              "q": 12,
+              "r": 28,
+              "known": true,
+              "terrain": "deep_sea"
+            },
+            {
+              "q": 13,
+              "r": 24,
+              "known": false
+            },
+            {
+              "q": 13,
+              "r": 25,
+              "known": true,
+              "terrain": "forest_olive_grove",
+              "coastal": true
+            },
+            {
+              "q": 13,
+              "r": 26,
+              "known": true,
+              "terrain": "forest_olive_grove",
+              "coastal": true
+            },
+            {
+              "q": 13,
+              "r": 27,
+              "known": true,
+              "terrain": "coastal_sea"
+            },
+            {
+              "q": 13,
+              "r": 28,
+              "known": true,
+              "terrain": "deep_sea"
+            },
+            {
+              "q": 14,
+              "r": 24,
+              "known": true,
+              "terrain": "plains",
+              "coastal": true
+            },
+            {
+              "q": 14,
+              "r": 25,
+              "known": true,
+              "terrain": "coastal_sea"
+            },
+            {
+              "q": 14,
+              "r": 26,
+              "known": true,
+              "terrain": "coastal_sea"
+            },
+            {
+              "q": 14,
+              "r": 27,
+              "known": true,
+              "terrain": "deep_sea"
+            },
+            {
+              "q": 15,
+              "r": 24,
+              "known": true,
+              "terrain": "coastal_sea"
+            },
+            {
+              "q": 15,
+              "r": 25,
+              "known": true,
+              "terrain": "deep_sea"
+            },
+            {
+              "q": 15,
+              "r": 26,
+              "known": true,
+              "terrain": "deep_sea"
+            }
+          ],
+          "founding_gifts": [
+            {
+              "detail": "a coastal founding is owed one galley, crewed and ready \u2014 a gift, not drawn from your people",
+              "key": "poseidon_galley",
+              "label": "Poseidon's galley"
+            }
+          ],
+          "goods": {
+            "copper": 0.9999999999999999,
+            "fish": 12.83333333333333,
+            "grain": 12.333333333333332,
+            "livestock": 3,
+            "oil": 9,
+            "stone": 4.5,
+            "timber": 2,
+            "wine": 4.999999999999999
+          },
+          "grain": {
+            "base_per_tick": 0.5,
+            "est_net_per_tick": 0,
+            "seed": 1200,
+            "ticks_until_empty": null,
+            "with_farm_per_tick": 5.6
+          },
+          "harbour_note": "Coastal: a city here can build a harbour and ships.",
+          "unknown_hexes": 1
+        }
+      },
+      "host_text": "FEEDS ITSELF:\nyes\nTIMBER:\nyes\nSTONE:\nyes\nSHIPS:\nyes\nDETAILS\nDeposits: \u2014\nProduces: oil, timber, fish\n1,000 people \u00b7 cannot fight \u00b7 sight 2 hexes (4 by water or on mountains)\nFood lasts indefinitely\nSilver reserve lasts indefinitely\n2 Spearmen cohorts in the field\nMessengers free to send\nCatchment forecast \u2014 18 of 19 hexes known\nCoastal: a city here can build a harbour and ships.\nGrain: produces about 1 and eats about 1 per day = net +0 per day\nSeed 1,200 grain \u2014 the colony feeds itself.\nAlso: copper-deposit \u2713, copper about 1 per day, fish about 13 per day, livestock about 3 per day, oil about 9 per day, stone about 5 per day, timber about 2 per day, wine about 5 per day\n\ud83c\udf81 Poseidon's galley \u2014 a coastal founding is owed one galley, crewed and ready \u2014 a gift, not drawn from your people\nPlains (center)\nPlains\nCoastal sea\nHills \u00b7 copper\nForest olive grove\nCoastal sea\nDeep sea\n? unexplored\nForest olive grove\nForest olive grove\nCoastal sea\nDeep sea\nPlains\nCoastal sea\nCoastal sea\nDeep sea\nCoastal sea\nDeep sea\nDeep sea",
+      "errors": []
+    },
+    {
+      "kind": "coast",
+      "mode": "desktop",
+      "phase": "after",
+      "text": "ECONOMY\n?\n\u2715\n\u229b LAWAGETAS\nThe palace scribes track every ingot and measure of grain, Wanax. Move goods between your own cities, or send goods and silver as a gift to a ruler you have contacted. A gift asks nothing in return; its caravan can be seized on the road. Watch the Wants ledger \u2014 it names what your trading partners hunger for, and where your surplus might fetch a premium. ?\n\u2715\nGOODS\nTRANSFER\nAUTOMATION\nWANTS\nSETTLEMENTS\nSettlement\tPop\tGrain\tFood lasts\tStatus \u25b2\nStock-coast \u2605\t1,000\t-4.5 per day\t240 days\tsurplus\n\nWorkdays/unit: reference labour on standard ground, including ingredients. Gods weigh scarcity separately; Wanaxes agree trade prices.\n\nSTOCK-COAST \u2605\nSILVER \u00b7 1 WORKDAYS/UNIT\n480\nGood\tAmount\tRate\tWorkdays/unit\nStone\t0\t\t2\nTimber\t0\t\t1\nOil\t0\t\t1\nWine\t0\t\t1\nFish\t0\t+5 per day\t1\nGrain\t1,200\t+0.5 per day\t1\nLivestock\t10\t\t1\nCopper\t0\t\t1\n\nUnavailable: trade offer, trade accept, trade decline, trade cancel, transfer, gift ?",
+      "errors": []
+    },
+    {
+      "kind": "coast",
+      "mode": "mobile",
+      "phase": "after",
+      "text": "ECONOMY\n?\n\u2715\n\u229b LAWAGETAS\nThe palace scribes track every ingot and measure of grain, Wanax. Move goods between your own cities, or send goods and silver as a gift to a ruler you have contacted. A gift asks nothing in return; its caravan can be seized on the road. Watch the Wants ledger \u2014 it names what your trading partners hunger for, and where your surplus might fetch a premium. ?\n\u2715\nGOODS\nTRANSFER\nAUTOMATION\nWANTS\nSETTLEMENTS\nSettlement\tPop\tGrain\tFood lasts\tStatus \u25b2\nStock-coast \u2605\t1,000\t-4.5 per day\t240 days\tsurplus\n\nWorkdays/unit: reference labour on standard ground, including ingredients. Gods weigh scarcity separately; Wanaxes agree trade prices.\n\nSTOCK-COAST \u2605\nSILVER \u00b7 1 WORKDAYS/UNIT\n480\nGood\tAmount\tRate\tWorkdays/unit\nStone\t0\t\t2\nTimber\t0\t\t1\nOil\t0\t\t1\nWine\t0\t\t1\nFish\t0\t+5 per day\t1\nGrain\t1,200\t+0.5 per day\t1\nLivestock\t10\t\t1\nCopper\t0\t\t1\n\nUnavailable: trade offer, trade accept, trade decline, trade cancel, transfer, gift ?",
+      "errors": []
+    }
+  ],
+  "sql_fixtures_or_writes": false,
+  "request_overrides": false
+}

@@ -1,0 +1,16 @@
+/home/tk/Dokument/myltavault/megaron_plan_tysta_forluster.md:83:konsumtion (`province.go:941` säger det rakt ut). En stad som producerar 2 768 grain brutto och
+/home/tk/Dokument/myltavault/megaron_religion_sammanstallning_20261012.md:135:[Omitted long matching line]
+/home/tk/Dokument/myltavault/megaron_plan_byggkostnader.md:182:4 gubbar ger +2,8 grain/tick (4 × 0,7), alltså 10 dagsverken / 2,8 ≈ **3,6 tick**, under SOL:s mål. Fylls
+/home/tk/Dokument/myltavault/megaron_valtabell_arkiv_20261004.md:129:**noll** vadställen. Följden om A: spelets bördigaste mark (`river_delta`, 4,8 korn/tick bas, 12 med
+/home/tk/Dokument/myltavault/megaron_balansrapport_sol_20260730.md:554:| `sell:tin` — köparen vill ha men vi håller 0 (buffert 200) | 1 730 |
+/home/tk/Dokument/myltavault/megaron_research_order_over_havet_svar.md:611:40. ['Subterfuge' Is a Great Game if You Like Lying to Your ...](https://www.vice.com/en/article/subterfuge-shows-us-that-some-games-should-never-be-played-with-friends-730/) - This game unlocks some of the worst aspects of the human mind.
+/home/tk/Dokument/myltavault/megaron_todo.md:41:[Omitted long matching line]
+/home/tk/Dokument/myltavault/megaron_spelarrapport_c4384909.md:100:| `sell:tin` — köparen vill ha men vi håller 0 (buffert 200) | 1 730 |
+/home/tk/Dokument/myltavault/megaron_ekonomi_underlag_kostnader.md:265:| war_chariot | 0,4 grain · 0,05 timber · 0,05 cedar · 0,2 brons · 0,5 silver | 8 | 3 | 0,8 grain · 3 silver | 70 (20 brons) |
+/home/tk/Dokument/myltavault/megaron_ur_tomma_intet.md:20:3. **Kolonins frölager** (`unit_arrival.go` ~1957): 8 korn + 10 boskap per koloni. Litet, men upprepas.
+/home/tk/Dokument/myltavault/megaron_ekonomi_perplexity_20261013.md:22:[Omitted long matching line]
+/home/tk/Dokument/myltavault/megaron_silverkalibrering_20261012.md:3:description: "Gudarnas gemensamma mått är dagsverken, inget varupris. Första grundning 730 inland/1278 kust; gruvan kulle1/kalkberg2,5 på nivå1; återgrundning utan extra kran."
+/home/tk/Dokument/myltavault/megaron_silverkalibrering_20261012.md:35:[Omitted long matching line]
+/home/tk/Dokument/myltavault/temenos_balans_spakar.md:208:Nyvärd480 och Rise60 är fasta silverreserver/rate0; metropol730/1278 och cap1460/2556 består.
+/home/tk/Dokument/myltavault/temenos_balans_spakar.md:439:[Omitted long matching line]
+/home/tk/Dokument/myltavault/megaron_plan_deltat_grenar.md:36:| Deltats bördighet | **Behålls som den är.** `river_delta` = 4,8 korn/tick bas, 12 med farm — högst i spelet | mig 062 (*"honey trap: enormous grain + coastal exposure"*), bekräftat av Timothy 2026-08-03 |

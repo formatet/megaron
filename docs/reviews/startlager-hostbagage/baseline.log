@@ -1,0 +1,42 @@
+» färsk DB på migration 179 · commit 3c1addc1
+=== RUN   TestSeedNomadicHost_DowryGrainIsPinnedAt1200
+--- PASS: TestSeedNomadicHost_DowryGrainIsPinnedAt1200 (0.02s)
+=== RUN   TestSilverCalibrationFirstFoundingEndowment
+=== RUN   TestSilverCalibrationFirstFoundingEndowment/inland_spent_purse
+=== RUN   TestSilverCalibrationFirstFoundingEndowment/coast_spent_purse
+=== RUN   TestSilverCalibrationFirstFoundingEndowment/inland_full_purse
+=== RUN   TestSilverCalibrationFirstFoundingEndowment/coast_full_purse
+=== RUN   TestSilverCalibrationFirstFoundingEndowment/existing_wealth_is_not_destroyed
+--- PASS: TestSilverCalibrationFirstFoundingEndowment (0.19s)
+    --- PASS: TestSilverCalibrationFirstFoundingEndowment/inland_spent_purse (0.04s)
+    --- PASS: TestSilverCalibrationFirstFoundingEndowment/coast_spent_purse (0.04s)
+    --- PASS: TestSilverCalibrationFirstFoundingEndowment/inland_full_purse (0.04s)
+    --- PASS: TestSilverCalibrationFirstFoundingEndowment/coast_full_purse (0.04s)
+    --- PASS: TestSilverCalibrationFirstFoundingEndowment/existing_wealth_is_not_destroyed (0.04s)
+=== RUN   TestSilverCalibrationDirectMetropolisPopulationIndependent
+--- PASS: TestSilverCalibrationDirectMetropolisPopulationIndependent (0.05s)
+=== RUN   TestSilverCalibrationRefugeeFoundingNeverMints
+--- PASS: TestSilverCalibrationRefugeeFoundingNeverMints (0.08s)
+=== RUN   TestSilverCalibrationOfferWorkAndLegacyPayloadRead
+2026/10/14 20:50:35 INFO player registered id=9468ada0-7aa1-4320-8a88-9daa1609e951 username=alpha-ff3a9ee3-53fe-4075-b4ab-a9d815b5645e
+--- PASS: TestSilverCalibrationOfferWorkAndLegacyPayloadRead (0.08s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.425s
+=== RUN   TestSilverAuditV2AllBucketsAndDeferredHandoff
+2026/10/14 20:50:36 INFO trade delivery destination=5aaa9f92-3684-4dc3-b2ed-73e6c3065a8a good=grain qty=5
+--- PASS: TestSilverAuditV2AllBucketsAndDeferredHandoff (0.04s)
+=== RUN   TestSilverAuditV2AppendFailureCanRetry
+--- PASS: TestSilverAuditV2AppendFailureCanRetry (0.02s)
+=== RUN   TestSilverAuditV2Conservation
+2026/10/14 20:50:36 INFO trade delivery destination=9e0e8035-2a0e-4db6-a4de-1d59f3193e45 good=silver qty=50
+2026/10/14 20:50:36 INFO colony founded (discrete unit) settlement=a585c05c-f0b9-4b17-8003-2ba055f5f011 name=Newhaven-c92b1873 province=74060300-bb48-46df-afe1-fe79186e2779 owner=973b923a-63cd-4125-b86b-d2ce9c25571f founding_unit=0633e615-59bf-40ad-9cce-1ef8a303fa56 population=50 q=10 r=10
+    silver_audit_v2_test.go:292: AUDIT_V2_JSON={"audit_tick":3,"previous_audit_tick":null,"city_silver":735,"buy_escrow_silver":0,"sell_escrow_silver":0,"founder_silver":0,"carried_silver":0,"transport_silver":0,"deferred_trade_silver":0,"unowned_silver":0,"total_silver":735,"mining_credited_total":0,"mining_epoch":"ceaa0178-33e2-4965-9edc-c25edfb806cb","mined_since_last":0,"audit_prev_total":735,"net_delta":0,"wanax_distribution":{"population":"world records and asset owners, including AI and dispossessed Wanax","count":2,"total_silver":735,"median_silver":367.5,"max_silver":735,"zero_count":1,"zero_share":0.5},"wanax_totals":[{"owner_id":"91ccbec3-6023-4653-bcb1-e948b3841c33","total_silver":0},{"owner_id":"973b923a-63cd-4125-b86b-d2ce9c25571f","total_silver":735}]}
+--- PASS: TestSilverAuditV2Conservation (0.10s)
+PASS
+ok  	formatet/megaron/server/internal/combat	0.161s
+=== RUN   TestSilverCalibrationMineAnchorsAndMaxLevel
+--- PASS: TestSilverCalibrationMineAnchorsAndMaxLevel (0.00s)
+=== RUN   TestSilverCalibrationColonyCapNeverClipsStock
+--- PASS: TestSilverCalibrationColonyCapNeverClipsStock (0.00s)
+PASS
+ok  	formatet/megaron/server/internal/economy	0.007s
