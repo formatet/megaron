@@ -39,12 +39,13 @@ func TestCodexRoadsArticleMatchesCode(t *testing.T) {
 		{"Caravans", CategoryCaravan}, {"War chariots", CategoryWarChariot},
 	}
 	for _, f := range factors {
-		want := fmt.Sprintf("| %s | %.0f%%", f.label, RoadFactor(f.category)*100)
+		rt, _ := RoadTicks(f.category)
+		want := fmt.Sprintf("| %s | %g day", f.label, rt)
 		if !strings.Contains(md, want) {
-			t.Errorf("roads.md lacks %q (code applies factor %g)", want, RoadFactor(f.category))
+			t.Errorf("roads.md lacks %q (code applies %g ticks per hex)", want, rt)
 		}
 	}
-	if RoadFactor(CategoryCourier) != RoadFactor(CategoryCourierLand) {
+	if roadTicks[CategoryCourier] != roadTicks[CategoryCourierLand] {
 		t.Error("runners share one article row but have different factors")
 	}
 }

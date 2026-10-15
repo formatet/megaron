@@ -55,12 +55,15 @@ func TestEdgeCostFactorsPerCategory(t *testing.T) {
 		terrain  string
 		want     float64
 	}{
-		{"land", "plains", 1 * 0.75},
-		{"land", "hills", 2 * 0.75},
-		{CategoryCourier, "plains", 0.5 * 0.70},
-		{CategoryCourierLand, "scrub_maquis", 0.75 * 0.70},
-		{CategoryCaravan, "plains", 1 * 0.60},
-		{CategoryCaravan, "semi_desert", 3 * 0.60},
+		{"land", "plains", 0.75},
+		{"land", "hills", 0.75},
+		{"land", "semi_desert", 0.75},
+		{CategoryCourier, "plains", 0.35},
+		{CategoryCourierLand, "scrub_maquis", 0.35},
+		{CategoryCaravan, "plains", 0.60},
+		{CategoryCaravan, "semi_desert", 0.60},
+		{CategoryWarChariot, "plains", 0.40},
+		{CategoryWarChariot, "forest_cedar", 0.40},
 	}
 	for _, c := range cases {
 		if got := EdgeCost(a, b, "plains", c.terrain, c.category, rs); !near(got, c.want) {
@@ -100,7 +103,7 @@ func TestEdgeCostIgnoresNonRoadableEndpoints(t *testing.T) {
 	}
 	// Och alla åtta vägbara terränger tar emot väg.
 	for _, ok := range []string{"plains", "river_valley", "river_delta", "forest_olive_grove", "scrub_maquis", "hills", "forest_cedar", "semi_desert"} {
-		if got := EdgeCost(a, b, ok, ok, "land", rs); !near(got, moveHoursFor(ok, "land")*0.75) {
+		if got := EdgeCost(a, b, ok, ok, "land", rs); !near(got, 0.75) {
 			t.Errorf("%s must be roadable, got %v", ok, got)
 		}
 	}
@@ -112,7 +115,7 @@ func TestEdgeCostIgnoresNonRoadableEndpoints(t *testing.T) {
 //	omväg:   (0,0) ─ (1,-1) macchia ─ (2,-1) macchia ─ (3,-1) macchia ─ (3,0) = 1,5·3+1 = 5,5
 //
 // Utan väg vinner den direkta; med väg på omvägens fyra kanter kostar den
-// 0,75·5,5 = 4,125 och vinner.
+// 4 kanter × 0,75 = 3 och vinner.
 func TestRoadDetourIsChosen(t *testing.T) {
 	tiles := map[[2]int]string{
 		{0, 0}: "plains", {1, 0}: "hills", {2, 0}: "hills", {3, 0}: "plains",
@@ -130,8 +133,8 @@ func TestRoadDetourIsChosen(t *testing.T) {
 		[2]MapPosition{{Q: 3, R: -1}, {Q: 3, R: 0}},
 	)
 	path, cost, ok = findPathRoads(tiles, o, tg, "land", rs)
-	if !ok || len(path) != 5 || !near(cost, 4.125) {
-		t.Fatalf("with roads: path=%v cost=%v ok=%v, want the 5-hex road detour at 4.125", path, cost, ok)
+	if !ok || len(path) != 5 || !near(cost, 3) {
+		t.Fatalf("with roads: path=%v cost=%v ok=%v, want the 5-hex road detour at 3", path, cost, ok)
 	}
 	// StepHours prissätter samma väg med samma kostnadsfunktion.
 	var sum float64
@@ -141,10 +144,10 @@ func TestRoadDetourIsChosen(t *testing.T) {
 	if !near(sum, cost) {
 		t.Errorf("StepHours sum %v != A* cost %v", sum, cost)
 	}
-	// En lika dyr väg åt bud: ×0,70 på halva terrängkostnaden.
+	// Samma väg åt bud: 4 kanter × 0,35.
 	_, ccost, cok := findPathRoads(tiles, o, tg, CategoryCourier, rs)
-	if !cok || !near(ccost, 5.5/2*0.70) {
-		t.Errorf("courier on road detour: cost %v ok=%v, want %v", ccost, cok, 5.5/2*0.70)
+	if !cok || !near(ccost, 4*0.35) {
+		t.Errorf("courier on road detour: cost %v ok=%v, want %v", ccost, cok, 4*0.35)
 	}
 }
 
@@ -271,7 +274,7 @@ func TestPlanTradeJourneyUsesCaravanRoadFactor(t *testing.T) {
 	}
 	for i, c := range j.StepCosts {
 		if c != 600 {
-			t.Errorf("step %d = %d milli, want 600 (plains 1 × caravan 0.60)", i, c)
+			t.Errorf("step %d = %d milli, want 600 (caravan on a road: 0.60 flat)", i, c)
 		}
 	}
 	plain, _ := g.PlanTradeJourney(MapPosition{}, MapPosition{Q: 2}, "land", nil)
@@ -356,5 +359,17 @@ func TestRoadEdgesTableAndLoad(t *testing.T) {
 	j2, err := PlanTradeJourney(ctx, pool, world, MapPosition{Q: 1, R: 0}, MapPosition{Q: 1, R: 1}, "land")
 	if err != nil || j2.StepCosts[0] != 600 {
 		t.Fatalf("next journey must see the new edge: %+v err=%v", j2, err)
+	}
+}
+
+// En väg är aldrig långsammare än terrängen den lagts på (Timothy 2026-10-15:
+// samma fart på all terräng) — annars vore en väg ett straff.
+func TestRoadIsNeverSlowerThanTerrain(t *testing.T) {
+	for cat, rt := range roadTicks {
+		for _, terr := range []string{"plains", "river_valley", "river_delta", "forest_olive_grove", "scrub_maquis", "hills", "forest_cedar", "semi_desert"} {
+			if base := moveHoursFor(terr, cat); rt >= base {
+				t.Errorf("%s on a %s road takes %v, not faster than the bare %v", cat, terr, rt, base)
+			}
+		}
 	}
 }

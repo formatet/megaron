@@ -46,15 +46,15 @@ func TestChariotMountainsStayClosed(t *testing.T) {
 	}
 }
 
-// Fast on the flat, with the road on top: 0.67 × 0.60.
+// On a road the chariot takes a flat 0.4 per hex on every terrain (Timothy 2026-10-15).
 func TestChariotRoadOnTopOfOwnTable(t *testing.T) {
 	a, b := MapPosition{}, MapPosition{Q: 1}
 	rs := roadsOf([2]MapPosition{a, b})
-	if got := EdgeCost(a, b, "plains", "plains", CategoryWarChariot, rs); !near(got, 0.67*0.60) {
-		t.Errorf("chariot on road = %v, want %v", got, 0.67*0.60)
+	if got := EdgeCost(a, b, "plains", "plains", CategoryWarChariot, rs); !near(got, 0.4) {
+		t.Errorf("chariot on road = %v, want 0.4", got)
 	}
-	if got := EdgeCost(a, b, "hills", "hills", CategoryWarChariot, rs); !near(got, 3*0.60) {
-		t.Errorf("chariot on hill road = %v, want %v", got, 3*0.60)
+	if got := EdgeCost(a, b, "hills", "hills", CategoryWarChariot, rs); !near(got, 0.4) {
+		t.Errorf("chariot on hill road = %v, want 0.4", got)
 	}
 	if got := EdgeCost(a, b, "plains", "river_ford", CategoryWarChariot, rs); !near(got, 2.5) {
 		t.Errorf("road never reaches a ford, got %v", got)

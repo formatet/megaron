@@ -9,7 +9,7 @@ import (
 
 // Roads (megaron_plan_vagar.md V1). A road is an EDGE between two neighbouring
 // hexes, built by an army, free for everyone to use. It scales the cost of
-// ENTERING the edge's target hex by a per-category factor. There are no
+// ENTERING the edge's target hex to one flat per-category time, whatever the terrain. There are no
 // bridges: the road ends at a ford and fords are waded as before.
 
 // CategoryCaravan is the price class of a land trade caravan. It behaves like
@@ -17,22 +17,25 @@ import (
 // factor. It is an internal pricing class; TradeJourney.Category stays "land".
 const CategoryCaravan = "caravan"
 
-// roadFactors is the ONE table of road speed-ups per category (plan §2). A
+// roadTicks is the ONE table of road speeds (plan §2, Timothy 2026-10-15): a
+// road edge costs the same per entered hex on EVERY roadable terrain — the road
+// is the great leveller — and the chariot is fastest on it. Ticks per hex; a
 // category absent here (naval, anything unknown) gets no effect: roads are land.
-var roadFactors = map[string]float64{
+// Foot 0.75 is what plains cost with the old ×0.75; the runner is half that
+// again; the chariot is its own plains time (0.67) × 0.6.
+var roadTicks = map[string]float64{
 	"land":              0.75,
-	CategoryCourier:     0.70,
-	CategoryCourierLand: 0.70,
+	CategoryCourier:     0.35,
+	CategoryCourierLand: 0.35,
 	CategoryCaravan:     0.60,
-	CategoryWarChariot:  0.60,
+	CategoryWarChariot:  0.40,
 }
 
-// RoadFactor is the category's multiplier on an entered road edge (1 = none).
-func RoadFactor(category string) float64 {
-	if f, ok := roadFactors[category]; ok {
-		return f
-	}
-	return 1
+// RoadTicks is the category's cost per hex entered over a road edge, and
+// whether it has one at all.
+func RoadTicks(category string) (float64, bool) {
+	t, ok := roadTicks[category]
+	return t, ok
 }
 
 // roadableTerrain is the terrain a road edge may touch at BOTH ends (plan §2).
@@ -114,14 +117,18 @@ func LoadWorldGraph(ctx context.Context, db Queryer, worldID uuid.UUID) (TileGra
 }
 
 // EdgeCost is the cost in ticks of stepping from -> to (entering `to`): the
-// category's terrain cost for the target hex, times the category's road
-// factor when a finished road edge joins the two hexes and both ends are
-// roadable terrain. It is the ONE place movement is priced (F2): A*,
-// StepHours and every frozen route go through it.
+// category's terrain cost for the target hex, or — when a finished road edge
+// joins the two hexes, both ends are roadable terrain and the category uses
+// roads — the category's flat road time instead. TestRoadIsNeverSlowerThanTerrain
+// pins that every road time beats every roadable terrain for its category.
+// It is the ONE place movement is priced (F2): A*, StepHours and every frozen
+// route go through it.
 func EdgeCost(from, to MapPosition, fromTerrain, toTerrain, category string, roads RoadSet) float64 {
 	cost := moveHoursFor(toTerrain, category)
 	if len(roads) != 0 && roadableTerrain(fromTerrain) && roadableTerrain(toTerrain) && roads.Has(from, to) {
-		cost *= RoadFactor(category)
+		if rt, ok := RoadTicks(category); ok {
+			cost = rt
+		}
 	}
 	return cost
 }

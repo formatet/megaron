@@ -3,15 +3,17 @@ A **road** is a worn way between two neighbouring hexes, built by an army out of
 
 ## What a road does
 
-A road makes the hex you **enter** over it quicker:
+On a road, every hex you **enter** takes the same time **whatever the ground** — a hill or desert hex costs no more than a plain. Time per hex over a road edge:
 
-| Traveller | Time over a road edge |
+| Traveller | Time per hex on a road |
 |---|---|
-| Foot soldiers | 75% |
-| Runners and messengers | 70% |
-| Caravans | 60% |
-| War chariots | 60% (of their own, faster time on flat ground) |
+| Foot soldiers | 0.75 day |
+| Runners and messengers | 0.35 day |
+| Caravans | 0.6 day |
+| War chariots | 0.4 day |
 | Ships | no effect |
+
+(Off the road a foot soldier needs 1 day on plains, 2 on hills and 3 in semi-desert, so a road helps most where the ground is hardest.)
 
 Roads join **land** hexes: plains, river valley, river delta, olive groves, maquis, hills, cedar forest and semi-desert. They never cross water or mountains, and there are **no bridges** — a road ends at a river ford and the ford is waded as before.
 

@@ -323,13 +323,15 @@ func NearestSettlementNeighbor(ctx context.Context, db Queryer, worldID uuid.UUI
 
 // minPassableCost is the admissible A* lower bound per entered hex.
 // RÖ1: deep sea is cheapest for ships, plains for land, half plains for runners.
-// When roads exist the bound is scaled by the category's road factor (F1): a
+// When roads exist the bound is lowered to the category's flat road time (F1): a
 // road step is cheaper than any roadless step, so an unscaled bound would
 // overestimate and A* would silently return non-optimal routes.
 func minPassableCost(category string, roads RoadSet) float64 {
 	c := minTerrainCost(category)
 	if len(roads) != 0 {
-		c *= RoadFactor(category)
+		if rt, ok := RoadTicks(category); ok && rt < c {
+			c = rt
+		}
 	}
 	return c
 }
