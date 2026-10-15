@@ -28,6 +28,33 @@ export function linePixels(ax, ay, bx, by) {
   return out;
 }
 
+// windingPixels is linePixels bent into a crooked track: three waypoints at 1/4,
+// 1/2 and 3/4 of the edge are pushed sideways by a fixed amount drawn from the
+// edge itself, so a road looks trodden rather than ruled. The ends stay on the
+// hex centres, so neighbouring edges still join, and the same edge always bends
+// the same way from either side (the hash reads the endpoints in sorted order).
+export function windingPixels(ax, ay, bx, by) {
+  let [x0, y0, x1, y1] = [ax, ay, bx, by];
+  if (x0 > x1 || (x0 === x1 && y0 > y1)) [x0, y0, x1, y1] = [x1, y1, x0, y0];
+  const len = Math.hypot(x1 - x0, y1 - y0);
+  if (len < 4) return linePixels(ax, ay, bx, by);
+  const nx = -(y1 - y0) / len, ny = (x1 - x0) / len;
+  let h = (Math.round(x0) * 73856093) ^ (Math.round(y0) * 19349663) ^ (Math.round(x1) * 83492791) ^ (Math.round(y1) * 2654435761);
+  const rnd = () => { h = Math.imul(h ^ (h >>> 15), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); h ^= h >>> 16; return ((h >>> 0) / 4294967296) * 2 - 1; };
+  const pts = [[x0, y0]];
+  for (const t of [0.25, 0.5, 0.75]) {
+    const off = rnd() * len * 0.16;
+    pts.push([x0 + (x1 - x0) * t + nx * off, y0 + (y1 - y0) * t + ny * off]);
+  }
+  pts.push([x1, y1]);
+  const out = [];
+  for (let i = 1; i < pts.length; i++) {
+    const seg = linePixels(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1]);
+    for (const p of i === 1 ? seg : seg.slice(1)) out.push(p);
+  }
+  return ax === x0 && ay === y0 ? out : out.reverse();
+}
+
 // roadSegments turns the server's edges into pixel segments. hexPx(q, r) is the
 // renderer's hex-centre function. An edge needs both ends; anything malformed is dropped.
 export function roadSegments(edges, hexPx) {
@@ -53,7 +80,7 @@ export function plannedSegments(sites, hexPx) {
 export function drawRoads(ctx, segments, planned = []) {
   ctx.save();
   const dust = [];
-  for (const [a, b] of segments) for (const p of linePixels(a.x, a.y, b.x, b.y)) dust.push(p);
+  for (const [a, b] of segments) for (const p of windingPixels(a.x, a.y, b.x, b.y)) dust.push(p);
   ctx.fillStyle = ROAD_SHADOW;
   for (const [x, y] of dust) ctx.fillRect(x, y + 1, 1, 1);
   ctx.fillStyle = ROAD_DUST;
@@ -61,7 +88,7 @@ export function drawRoads(ctx, segments, planned = []) {
   // Unfinished: every other pixel pair, no shadow.
   ctx.fillStyle = ROAD_PLANNED;
   for (const [a, b] of planned) {
-    linePixels(a.x, a.y, b.x, b.y).forEach(([x, y], i) => { if (i % 4 < 2) ctx.fillRect(x, y, 1, 1); });
+    windingPixels(a.x, a.y, b.x, b.y).forEach(([x, y], i) => { if (i % 4 < 2) ctx.fillRect(x, y, 1, 1); });
   }
   ctx.restore();
 }
