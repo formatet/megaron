@@ -1295,7 +1295,8 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	}
 	eventPayload["god_id"] = spec.GodID
 	eventPayload["cast_tick"] = nowTick
-	if _, err = h.eventStore.AppendTx(r.Context(), tx, settlementID, events.StreamReligion, "RiteCast", eventPayload, worldID, nil); err != nil {
+	riteEvent, err := h.eventStore.AppendTx(r.Context(), tx, settlementID, events.StreamReligion, "RiteCast", eventPayload, worldID, nil)
+	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not record prayer outcome")
 		return
 	}
@@ -1303,6 +1304,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "commit failed")
 		return
 	}
+	h.eventStore.RecordCommitted(r.Context(), riteEvent)
 
 	resp := map[string]any{
 		"success":          success,
