@@ -16,7 +16,7 @@ In **Details**, below the grain line, look for **deposits**: copper, tin, silver
 
 ## Where you cannot found
 
-Not on sea, mountain, river or semi-desert, and **your catchment may not overlap another settlement's**. The game refuses and tells you how far to move.
+Not on sea, mountain, river or semi-desert, and **not within two hexes of another settlement** — city centres stand at least **three** hexes apart. Closer than that, the game refuses and tells you how far to move. At three or more your [[catchment]] may share ground with a neighbour's; who works a shared hex is told in [[catchment]].
 
 ## Settling
 
