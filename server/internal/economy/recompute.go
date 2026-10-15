@@ -393,7 +393,8 @@ const LivestockSlaughterPopGain = 10
 // "kalibreras, inte lås"; 10 is the range's midpoint and matches §13.4's own
 // worked example (ten animals ≈ half the founding grain reserve). A ratt, not
 // a lock, like the other founding/slaughter constants above — tune freely.
-const FoundingHerdLivestock = 10
+// Timothy 2026-10-15: "hosten ska ge djur! låt den ge fler, kanske 50".
+const FoundingHerdLivestock = 50
 
 // FoodConsumptionSplit applies the population's food fallback chain to a
 // settlement's raw (pre-consumption) grain/fish production and its livestock
