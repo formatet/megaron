@@ -115,47 +115,47 @@ test('codex: lowercase agora_ready is mapped and community rules match alpha pol
   assert.ok(clientKinds().includes('agora_ready'));
   assert.equal(articleForKind('agora_ready', index), 'community-chat');
   const alpha = readFileSync(join(here, '../../../../templates/alfatestinfo.html'), 'utf8');
-  // The public invitation is Swedish; the in-game Codex is English.
-  // Preserve all four established obligations across that translation.
-  const policy = alpha.slice(alpha.indexOf('<h3>Chattregler och integritet</h3>'));
+  // The public invitation and the in-game Codex are both English (af631212)
+  // but worded independently; preserve all four obligations in both.
+  const policy = alpha.slice(alpha.indexOf('<h3>Chat rules and privacy</h3>'));
   const lines = [...policy.matchAll(/<li>(.*?)<\/li>/g)].map(m => m[1]);
   const translations = [
   [
     "Be decent. No harassment, no hate, nothing illegal.",
-    "Var schyst. Inga trakasserier, inget hat, inget olagligt."
+    "Be decent. No harassment, no hate, nothing illegal."
   ],
   [
     "Talk about the game, not other players' real lives.",
-    "Prata om spelet, inte om andra spelares privatliv."
+    "Talk about the game, not about other players' private lives."
   ],
   [
     "Don't post your real name, address, school, health or other private details. Your chat account uses your Wanax name, so other members can see which ruler you play.",
-    "Dela inte ditt riktiga namn, adress, skola, hälsa eller andra privata uppgifter. Chattkontot använder ditt Wanax-namn, så andra kan se vilken härskare du spelar."
+    "Don't share your real name, address, school, health or other private details. The chat account uses your Wanax name, so others can see which ruler you play."
   ],
   [
     "Report a message with the menu next to it in your Matrix app, or write to a moderator. Moderators can read what is reported.",
-    "Rapportera meddelanden via menyn i Matrix eller till en moderator. Moderatorer kan läsa det som rapporteras."
+    "Report messages through the menu in Matrix or to a moderator. Moderators can read what is reported."
   ]
 ];
   assert.equal(lines.length, 4);
-  translations.forEach(([english, swedish], i) => {
+  translations.forEach(([english, invitation], i) => {
     assert.ok(bodies['community-chat'].includes(english), `Codex policy drift: ${english}`);
-    assert.equal(lines[i], swedish, `Swedish alpha policy drift: ${swedish}`);
+    assert.equal(lines[i], invitation, `Alpha invitation policy drift: ${invitation}`);
   });
   const privacy = /<p class="alpha-note">(.*?)<\/p>/.exec(policy)[1];
   const privacyClaims = [
-    ['own hardware in Sweden', 'vår hårdvara i Sverige'],
-    ['not connected to any other Matrix server', 'utan koppling till andra Matrix-servrar'],
-    ['not encrypted', 'inte krypterat'],
-    ['Messages stay until they are deleted', 'meddelanden ligger kvar tills de raderas'],
-    ['no self-service account deletion', 'Konton kan inte raderas av dig själv'],
-    ['write to the admin in the chat', 'skriv till administratören i chatten'],
-    ['its chat account is closed with it', 'chattkontot stängt'],
-    ["Your Wanax name stays in other players' letters and chronicles", 'Ditt Wanax-namn står kvar i andras brev och krönikor'],
+    ['own hardware in Sweden', 'own hardware in Sweden'],
+    ['not connected to any other Matrix server', 'no connection to other Matrix servers'],
+    ['not encrypted', 'not encrypted'],
+    ['Messages stay until they are deleted', 'messages stay until they are deleted'],
+    ['no self-service account deletion', 'You cannot delete your account yourself'],
+    ['write to the admin in the chat', 'write to the administrator in the chat'],
+    ['its chat account is closed with it', 'chat account closed'],
+    ["Your Wanax name stays in other players' letters and chronicles", "Your Wanax name remains in other players' letters and chronicles"],
   ];
-  for (const [english, swedish] of privacyClaims) {
+  for (const [english, invitation] of privacyClaims) {
     assert.ok(bodies['community-chat'].includes(english), `Codex privacy drift: ${english}`);
-    assert.ok(privacy.includes(swedish), `Swedish alpha privacy drift: ${swedish}`);
+    assert.ok(privacy.includes(invitation), `Alpha invitation privacy drift: ${invitation}`);
   }
   assert.ok(!alpha.includes('register with the code'));
 });
