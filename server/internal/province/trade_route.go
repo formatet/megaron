@@ -10,12 +10,12 @@ import (
 // coastal or have harbours. Otherwise it requires a real land route. Ship
 // availability belongs to the caller; a shipless caller must plan land again.
 func ResolveTradeRoute(ctx context.Context, db Queryer, worldID uuid.UUID, originCoastal, destCoastal bool, origin, dest MapPosition) (category string, dist int, err error) {
-	g, err := LoadTileGraph(ctx, db, worldID)
+	g, roads, err := LoadWorldGraph(ctx, db, worldID)
 	if err != nil {
 		return "", 0, err
 	}
 	if originCoastal && destCoastal {
-		j, err := g.PlanTradeJourney(origin, dest, "naval")
+		j, err := g.PlanTradeJourney(origin, dest, "naval", roads)
 		if err == nil {
 			return j.Category, j.Distance, nil
 		}
@@ -23,7 +23,7 @@ func ResolveTradeRoute(ctx context.Context, db Queryer, worldID uuid.UUID, origi
 			return "", 0, err
 		}
 	}
-	j, err := g.PlanTradeJourney(origin, dest, "land")
+	j, err := g.PlanTradeJourney(origin, dest, "land", roads)
 	if err != nil {
 		return "", 0, err
 	}

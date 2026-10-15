@@ -503,14 +503,14 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		if lengthErr != nil {
 			return nil, lengthErr
 		}
-		g, gErr := province.LoadTileGraph(ctx, pool, o.WorldID)
+		g, roads, gErr := province.LoadWorldGraph(ctx, pool, o.WorldID)
 		if gErr != nil {
 			return nil, reject(http.StatusInternalServerError, "could not load the map")
 		}
 		if _, onMap := g[[2]int{targetQ, targetR}]; !onMap {
 			return nil, reject(http.StatusNotFound, "target hex not found")
 		}
-		leg, lErr := nextExpeditionLeg(ctx, pool, g, o.WorldID, o.PlayerID,
+		leg, lErr := nextExpeditionLeg(ctx, pool, g, roads, o.WorldID, o.PlayerID,
 			province.MapPosition{Q: targetQ, R: targetR}, province.MapPosition{Q: originQ, R: originR},
 			string(unit.CategoryOf(u.Type)))
 		if lErr != nil {

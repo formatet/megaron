@@ -90,7 +90,7 @@ type expeditionLeg struct {
 // and then (q,r) — deterministic, and read only from the store
 // (player_scouted_tiles), never from what the player last looked at.
 func nextExpeditionLeg(
-	ctx context.Context, db province.Queryer, g province.TileGraph,
+	ctx context.Context, db province.Queryer, g province.TileGraph, roads province.RoadSet,
 	worldID, playerID uuid.UUID, centre, from province.MapPosition, category string,
 ) (expeditionLeg, error) {
 	disk := hexgrid.Disk(hexgrid.Coord{Q: centre.Q, R: centre.R}, ExpeditionAreaRadius)
@@ -145,7 +145,7 @@ func nextExpeditionLeg(
 		if i >= expeditionPathTries {
 			break
 		}
-		if path, cost, ok := g.FindPath(from, c, category); ok {
+		if path, cost, ok := g.FindPath(from, c, category, roads); ok {
 			leg.Target, leg.Path, leg.Cost, leg.Found = c, path, cost, true
 			return leg, nil
 		}
@@ -204,7 +204,7 @@ func (h *UnitArrivalHandler) expeditionArrived(
 	ctx context.Context, tx pgx.Tx,
 	u unitRow, destQ, destR int, worldID uuid.UUID, e expeditionRow,
 ) error {
-	g, err := province.LoadTileGraph(ctx, tx, worldID)
+	g, roads, err := province.LoadWorldGraph(ctx, tx, worldID)
 	if err != nil {
 		return fmt.Errorf("expedition: load map: %w", err)
 	}
@@ -213,7 +213,7 @@ func (h *UnitArrivalHandler) expeditionArrived(
 	// What the eye saw on the way, hex by hex (invariant 2: the next target
 	// must not depend on whether the player read the map mid-march).
 	walked := []province.MapPosition{here}
-	if path, _, ok := g.FindPath(province.MapPosition{Q: u.q, R: u.r}, here, u.category); ok {
+	if path, _, ok := g.FindPath(province.MapPosition{Q: u.q, R: u.r}, here, u.category, roads); ok {
 		walked = path
 	}
 	eyeKind := province.EyeLandUnit
@@ -258,7 +258,7 @@ func (h *UnitArrivalHandler) expeditionArrived(
 		return fmt.Errorf("expedition: read tick: %w", err)
 	}
 
-	leg, err := nextExpeditionLeg(ctx, tx, g, worldID, u.ownerID,
+	leg, err := nextExpeditionLeg(ctx, tx, g, roads, worldID, u.ownerID,
 		province.MapPosition{Q: e.AreaQ, R: e.AreaR}, here, u.category)
 	if err != nil {
 		return fmt.Errorf("expedition: choose next leg: %w", err)
@@ -275,7 +275,7 @@ func (h *UnitArrivalHandler) expeditionArrived(
 	}
 
 	if reason == "" {
-		_, returnCost, reachable := g.FindPath(leg.Target, province.MapPosition{Q: home.q, R: home.r}, u.category)
+		_, returnCost, reachable := g.FindPath(leg.Target, province.MapPosition{Q: home.q, R: home.r}, u.category, roads)
 		if !reachable {
 			reason = ExpeditionTurnNoPath
 		} else if currentTick+legTravelTicks(unit.Type(u.utype), u.crew, u.cargoUnitID != nil, leg.Cost)+legTravelTicks(unit.Type(u.utype), u.crew, u.cargoUnitID != nil, returnCost) > e.StartTick+e.LengthTicks {

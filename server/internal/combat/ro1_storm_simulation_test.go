@@ -97,10 +97,10 @@ func TestRO1StormSimulation(t *testing.T) {
 					path = append(path, p)
 					g[[2]int{p.Q, p.R}] = result.Terrain
 				}
-				costs := g.StepHours(path, "naval")
+				costs := g.StepHours(path, "naval", nil)
 				var route StoredRoute
 				if result.Mode == "cargo" {
-					j, err := g.PlanTradeJourney(path[0], path[len(path)-1], "naval")
+					j, err := g.PlanTradeJourney(path[0], path[len(path)-1], "naval", nil)
 					if err != nil {
 						t.Fatal(err)
 					}

@@ -51,7 +51,7 @@ type expeditionHomeDestination struct {
 // Prefer the original home while owned and reachable, otherwise nearest reachable
 // own active settlement. Lock ownership through the arrival transaction.
 func expeditionReturnDestination(ctx context.Context, tx province.Queryer, u unitRow, q, r int, world uuid.UUID) (*expeditionHomeDestination, error) {
-	g, err := province.LoadTileGraph(ctx, tx, world)
+	g, roads, err := province.LoadWorldGraph(ctx, tx, world)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func expeditionReturnDestination(ctx context.Context, tx province.Queryer, u uni
 			}
 			home.q, home.r = sq, sr
 		}
-		path, cost, ok := g.FindPath(province.MapPosition{Q: q, R: r}, province.MapPosition{Q: home.q, R: home.r}, u.category)
+		path, cost, ok := g.FindPath(province.MapPosition{Q: q, R: r}, province.MapPosition{Q: home.q, R: home.r}, u.category, roads)
 		if ok || (q == home.q && r == home.r) {
 			home.path, home.cost = path, cost
 			return &home, nil

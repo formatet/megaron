@@ -308,7 +308,7 @@ func resolveOutboundDisembark(ctx context.Context, pool *pgxpool.Pool, worldID, 
 		return 0, 0, fmt.Errorf("load ship's own port: %w", err)
 	}
 
-	graph, err := province.LoadTileGraph(ctx, pool, worldID)
+	graph, roads, err := province.LoadWorldGraph(ctx, pool, worldID)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -331,12 +331,12 @@ func resolveOutboundDisembark(ctx context.Context, pool *pgxpool.Pool, worldID, 
 				continue // not itself a coastal hex
 			}
 			_, landCost, landOK := graph.FindPath(
-				province.MapPosition{Q: c.Q, R: c.R}, province.MapPosition{Q: targetQ, R: targetR}, province.CategoryCourierLand)
+				province.MapPosition{Q: c.Q, R: c.R}, province.MapPosition{Q: targetQ, R: targetR}, province.CategoryCourierLand, roads)
 			if !landOK {
 				continue
 			}
 			_, _, navalOK := graph.FindPath(
-				province.MapPosition{Q: shipSeaQ, R: shipSeaR}, province.MapPosition{Q: candSeaQ, R: candSeaR}, "naval")
+				province.MapPosition{Q: shipSeaQ, R: shipSeaR}, province.MapPosition{Q: candSeaQ, R: candSeaR}, "naval", nil)
 			if !navalOK {
 				continue
 			}

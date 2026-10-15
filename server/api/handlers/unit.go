@@ -2152,7 +2152,7 @@ func attachUnitPaths(ctx context.Context, db province.Queryer, worldID uuid.UUID
 	if !needsSearch {
 		return
 	}
-	g, err := province.LoadTileGraph(ctx, db, worldID)
+	g, roads, err := province.LoadWorldGraph(ctx, db, worldID)
 	if err != nil {
 		return
 	}
@@ -2165,7 +2165,7 @@ func attachUnitPaths(ctx context.Context, db province.Queryer, worldID uuid.UUID
 		if s.Category == "naval" {
 			cat = "naval"
 		}
-		s.Path = marchPathWaypoints(g, *s.Q, *s.R, *s.TargetQ, *s.TargetR, cat)
+		s.Path = marchPathWaypoints(g, roads, *s.Q, *s.R, *s.TargetQ, *s.TargetR, cat)
 	}
 }
 

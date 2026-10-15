@@ -103,11 +103,11 @@ func wantRouteFor(t *testing.T, pool *pgxpool.Pool, worldID uuid.UUID, origin, t
 	if err != nil {
 		t.Fatalf("LoadTileGraph: %v", err)
 	}
-	path, _, ok := g.FindPath(origin, target, category)
+	path, _, ok := g.FindPath(origin, target, category, nil)
 	if !ok {
 		t.Fatalf("oracle FindPath found no route %v -> %v", origin, target)
 	}
-	steps := g.StepHours(path, category)
+	steps := g.StepHours(path, category, nil)
 	route, ok := BuildRoute(path, steps, departTick, arriveTick)
 	if !ok {
 		t.Fatalf("oracle BuildRoute rejected path %v", path)

@@ -32,15 +32,15 @@ type TradeJourney struct {
 // Naval endpoints can be water positions or settlements whose dock is the first
 // adjacent navigable hex in the same deterministic order as NearestSeaNeighbor.
 func PlanTradeJourney(ctx context.Context, db Queryer, worldID uuid.UUID, origin, dest MapPosition, category string) (TradeJourney, error) {
-	g, err := LoadTileGraph(ctx, db, worldID)
+	g, roads, err := LoadWorldGraph(ctx, db, worldID)
 	if err != nil {
 		return TradeJourney{}, err
 	}
-	return g.PlanTradeJourney(origin, dest, category)
+	return g.PlanTradeJourney(origin, dest, category, roads)
 }
 
 // PlanTradeJourney is the pure planner on an already loaded terrain snapshot.
-func (g TileGraph) PlanTradeJourney(origin, dest MapPosition, category string) (TradeJourney, error) {
+func (g TileGraph) PlanTradeJourney(origin, dest MapPosition, category string, roads RoadSet) (TradeJourney, error) {
 	if category != "land" && category != "naval" {
 		return TradeJourney{}, fmt.Errorf("invalid trade category %q", category)
 	}
@@ -55,13 +55,16 @@ func (g TileGraph) PlanTradeJourney(origin, dest MapPosition, category string) (
 			return TradeJourney{}, ErrNoTradePath
 		}
 	}
-	path, _, ok := g.FindPath(origin, dest, category)
+	// A land caravan is priced in its own road class (CategoryCaravan, plan §2);
+	// the journey's stored Category stays "land".
+	priceCat := TradePricingCategory(category)
+	path, _, ok := g.FindPath(origin, dest, priceCat, roads)
 	if !ok {
 		return TradeJourney{}, ErrNoTradePath
 	}
 	costs := make([]int64, 0, len(path)-1)
 	var total int64
-	for _, cost := range g.StepHours(path, category) {
+	for _, cost := range g.StepHours(path, priceCat, roads) {
 		milli := int64(math.Round(cost * 1000))
 		if milli <= 0 {
 			return TradeJourney{}, fmt.Errorf("invalid terrain cost")

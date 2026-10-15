@@ -33,7 +33,7 @@ func TestCourierTravelOnGraph_NoLongerShortcutsOverSea(t *testing.T) {
 		{0, 0}: "plains", {1, 0}: "coastal_sea", {2, 0}: "coastal_sea", {3, 0}: "plains",
 		{0, 1}: "plains", {1, 1}: "plains", {2, 1}: "plains", {3, 1}: "plains",
 	}
-	ticks, _, ok := CourierTravelOnGraph(g, province.MapPosition{Q: 0, R: 0}, province.MapPosition{Q: 3, R: 0})
+	ticks, _, ok := CourierTravelOnGraph(g, nil, province.MapPosition{Q: 0, R: 0}, province.MapPosition{Q: 3, R: 0})
 	if !ok {
 		t.Fatal("expected a land-only route to still exist, around the strait")
 	}
@@ -55,7 +55,7 @@ func TestCourierTravelOnGraph_UnreachableIsNeverARaklinje(t *testing.T) {
 	g := province.TileGraph{
 		{0, 0}: "plains", {1, 0}: "coastal_sea", {2, 0}: "plains",
 	}
-	ticks, dur, ok := CourierTravelOnGraph(g, province.MapPosition{Q: 0, R: 0}, province.MapPosition{Q: 2, R: 0})
+	ticks, dur, ok := CourierTravelOnGraph(g, nil, province.MapPosition{Q: 0, R: 0}, province.MapPosition{Q: 2, R: 0})
 	if ok {
 		t.Fatalf("CourierTravelOnGraph = ok=true (ticks=%d, dur=%v), want ok=false — no land route exists around the sea in this fixture",
 			ticks, dur)

@@ -53,11 +53,11 @@ func MessengerTravelTicks(dist int) int {
 // diplomatic, recall/redirect and order runners alike (trade CARAVANS keep
 // their own terrain-based journey planner).
 func CourierTravel(ctx context.Context, db province.Queryer, worldID uuid.UUID, from, to province.MapPosition) (ticks int, dur time.Duration, ok bool, err error) {
-	g, err := province.LoadTileGraph(ctx, db, worldID)
+	g, roads, err := province.LoadWorldGraph(ctx, db, worldID)
 	if err != nil {
 		return 0, 0, false, err
 	}
-	ticks, dur, ok = CourierTravelOnGraph(g, from, to)
+	ticks, dur, ok = CourierTravelOnGraph(g, roads, from, to)
 	return ticks, dur, ok, nil
 }
 
@@ -67,8 +67,8 @@ func CourierTravel(ctx context.Context, db province.Queryer, worldID uuid.UUID, 
 // one request; loading the graph once instead of once per candidate is the
 // difference between one DB round-trip and dozens. ok=false — see
 // CourierTravel's own doc comment; no raklinjefallback here either.
-func CourierTravelOnGraph(g province.TileGraph, from, to province.MapPosition) (ticks int, dur time.Duration, ok bool) {
-	_, hours, pathOK := g.FindPath(from, to, province.CategoryCourier)
+func CourierTravelOnGraph(g province.TileGraph, roads province.RoadSet, from, to province.MapPosition) (ticks int, dur time.Duration, ok bool) {
+	_, hours, pathOK := g.FindPath(from, to, province.CategoryCourier, roads)
 	if !pathOK {
 		return 0, 0, false
 	}
@@ -102,7 +102,7 @@ func CourierTravelOnGraph(g province.TileGraph, from, to province.MapPosition) (
 // failure; queuing a courier anyway would only reproduce the silent miss this
 // function exists to prevent.
 func InterceptAlongPath(
-	g province.TileGraph, courierOrigin province.MapPosition, path []province.MapPosition,
+	g province.TileGraph, roads province.RoadSet, courierOrigin province.MapPosition, path []province.MapPosition,
 	departsAt, arrivesAt, now time.Time,
 ) (target province.MapPosition, ok bool) {
 	n := len(path)
@@ -121,7 +121,7 @@ func InterceptAlongPath(
 		frac := float64(i) / float64(n-1)
 		return departsAt.Add(time.Duration(frac * float64(total)))
 	}
-	return interceptScan(g, courierOrigin, path, unitTimeAt, now)
+	return interceptScan(g, roads, courierOrigin, path, unitTimeAt, now)
 }
 
 // InterceptAlongPathRoute is InterceptAlongPath for a marching unit with a
@@ -135,13 +135,13 @@ func InterceptAlongPath(
 // time per candidate hex, ties let through, no raklinje guess over open sea —
 // is untouched, via the shared interceptScan.
 func InterceptAlongPathRoute(
-	g province.TileGraph, courierOrigin province.MapPosition, path []province.MapPosition,
+	g province.TileGraph, roads province.RoadSet, courierOrigin province.MapPosition, path []province.MapPosition,
 	enterAt []time.Time, now time.Time,
 ) (target province.MapPosition, ok bool) {
 	if len(path) < 2 || len(enterAt) != len(path) {
 		return province.MapPosition{}, false
 	}
-	return interceptScan(g, courierOrigin, path, func(i int) time.Time { return enterAt[i] }, now)
+	return interceptScan(g, roads, courierOrigin, path, func(i int) time.Time { return enterAt[i] }, now)
 }
 
 // interceptScan is InterceptAlongPath/InterceptAlongPathRoute's shared scan:
@@ -150,7 +150,7 @@ func InterceptAlongPathRoute(
 // already passed and any hex the courier can only reach by crossing open sea
 // on its own (CourierTravelOnGraph's ok=false).
 func interceptScan(
-	g province.TileGraph, courierOrigin province.MapPosition, path []province.MapPosition,
+	g province.TileGraph, roads province.RoadSet, courierOrigin province.MapPosition, path []province.MapPosition,
 	unitTimeAt func(i int) time.Time, now time.Time,
 ) (target province.MapPosition, ok bool) {
 	for i := 0; i < len(path); i++ {
@@ -176,7 +176,7 @@ func interceptScan(
 		// Stance-pursuit's own aim (combat's stanceToMarchingUnit) already
 		// targets the unit's destination and takes the real passage route
 		// when a land intercept misses, exactly as before this slice.
-		_, courierDur, courierOK := CourierTravelOnGraph(g, courierOrigin, path[i])
+		_, courierDur, courierOK := CourierTravelOnGraph(g, roads, courierOrigin, path[i])
 		if !courierOK {
 			continue
 		}
@@ -205,11 +205,11 @@ func InterceptCourierTarget(
 	if !pathOK {
 		return province.MapPosition{}, false, nil
 	}
-	g, err := province.LoadTileGraph(ctx, db, worldID)
+	g, roads, err := province.LoadWorldGraph(ctx, db, worldID)
 	if err != nil {
 		return province.MapPosition{}, false, err
 	}
-	t, ok := InterceptAlongPath(g, courierOrigin, path, departsAt, arrivesAt, now)
+	t, ok := InterceptAlongPath(g, roads, courierOrigin, path, departsAt, arrivesAt, now)
 	return t, ok, nil
 }
 
@@ -235,10 +235,10 @@ func InterceptCourierTargetRoute(
 	for i, m := range enterMilli {
 		enterAt[i] = anchor.WallAt(m)
 	}
-	g, err := province.LoadTileGraph(ctx, db, worldID)
+	g, roads, err := province.LoadWorldGraph(ctx, db, worldID)
 	if err != nil {
 		return province.MapPosition{}, false, err
 	}
-	t, ok := InterceptAlongPathRoute(g, courierOrigin, path, enterAt, now)
+	t, ok := InterceptAlongPathRoute(g, roads, courierOrigin, path, enterAt, now)
 	return t, ok, nil
 }
