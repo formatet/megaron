@@ -32,7 +32,7 @@ func TestAlfatestInfoPublic(t *testing.T) {
 	if got := response.Header().Get("Content-Type"); got != "text/html; charset=utf-8" {
 		t.Fatalf("Content-Type=%q", got)
 	}
-	for _, text := range []string{`<html lang="sv">`, "Det här är en tidig alfa", "Report", "keryx report", `href="/"`, `src="/static/alfatest/karta.png"`, `src="/static/alfatest/stad.png"`, `src="/static/alfatest/produktion.png"`, `src="/static/alfatest/handel.png"`} {
+	for _, text := range []string{`<html lang="en">`, "This is an early alpha", "Report", "keryx report", `href="/"`, `src="/static/alfatest/karta.png"`, `src="/static/alfatest/stad.png"`, `src="/static/alfatest/produktion.png"`, `src="/static/alfatest/handel.png"`} {
 		if !strings.Contains(response.Body.String(), text) {
 			t.Errorf("rendered invitation is missing %q", text)
 		}
