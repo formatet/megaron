@@ -19,8 +19,8 @@ func TestL1TempleClimbsToFirstPrayerAndCaps(t *testing.T) {
 			if err := pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id=$1`, sid).Scan(&pid); err != nil {
 				t.Fatal(err)
 			}
-			if _, err := pool.Exec(ctx, `INSERT INTO player_world_records(player_id,world_id,settlement_id,kharis_amount,kharis_rate,kharis_calc_tick)
-			 VALUES($1,$2,$3,$4,0,current_world_tick())`, pid, wid, sid, Floor); err != nil {
+			if _, err := pool.Exec(ctx, `INSERT INTO player_world_records(player_id,world_id,settlement_id,kharis_amount,kharis_rate,kharis_calc_tick,founded_tick)
+			 VALUES($1,$2,$3,$4,0,current_world_tick(),current_world_tick()-144)`, pid, wid, sid, Floor); err != nil {
 				t.Fatal(err)
 			}
 			if _, err := pool.Exec(ctx, `UPDATE buildings SET level=$2 WHERE settlement_id=$1 AND building_type='temple'`, sid, level); err != nil {
@@ -50,7 +50,7 @@ func TestL1TempleClimbsToFirstPrayerAndCaps(t *testing.T) {
 				if _, err := pool.Exec(ctx, `UPDATE worlds SET current_tick=$2 WHERE id=$1`, wid, tick); err != nil {
 					t.Fatal(err)
 				}
-				w := wanaxSnap{playerID: pid, settlementID: sid, kharis: amount, kharisCap: cap, devotionSum: dev, templeCities: 1, maxTempleLevel: level}
+				w := wanaxSnap{ticksSinceFounding: foundingGraceTicks, playerID: pid, settlementID: sid, kharis: amount, kharisCap: cap, devotionSum: dev, templeCities: 1, maxTempleLevel: level}
 				if err := h.processMaintenance(ctx, w, wid, atomic.AddInt64(&advanceOneDayEventID, 1)); err != nil {
 					t.Fatal(err)
 				}

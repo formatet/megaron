@@ -31,13 +31,17 @@ const (
 	blessProbability  = 0.15 // 15% chance of divine blessing per maintained day above threshold
 )
 
-// foundingGraceTicks shields a newly founded Wanax from punishment rolls.
-// Without a temple, the ceiling remains below punishThreshold and maintenance
-// is missed; grace allows time to understand and establish the temple path.
+// foundingGraceTicks shields a newly founded Wanax's kharis: inside the window
+// it does not decay and no punishment is rolled. Without a temple, the ceiling
+// remains below punishThreshold and maintenance is missed; grace allows time to
+// understand and establish the temple path.
 // Timothy 2026-10-14 raised 60 -> 144 ticks for a more generous opening at
-// the alpha's 2x cadence. Decay, punishment threshold and probability stay
-// unchanged. Age is current_world_tick() - founded_tick, so existing founders
-// gain the longer window without rewriting their founding record.
+// the alpha's 2x cadence. Timothy 2026-10-16 moved the grace from the
+// punishment alone to kharis itself: the keryx playtest (A1) saw the starting
+// 25 decay to the floor by tick 20, before the first temple (16 ticks) could
+// stand, which left the oracle at ~10 %. Punishment threshold and probability
+// stay unchanged. Age is current_world_tick() - founded_tick, so existing
+// founders gain the window without rewriting their founding record.
 // The grace does not close the well: a Wanax who LATER loses her temple falls back
 // into the same inversion without any grace.
 const foundingGraceTicks = 144
@@ -51,8 +55,23 @@ func FoundingGraceTicks() int { return foundingGraceTicks }
 // i cmd/keryx). Ett negativt ticksSinceFounding — bakåtfylld rad, skev klocka —
 // läses som "inom fristen", eftersom den säkra riktningen vid trasig data är att
 // låta bli att straffa.
+// inFoundingGrace is the one test both the tick and ProjectDailyNet use. A
+// negative age reads as inside the window, for the same reason as above.
+func inFoundingGrace(ticksSinceFounding int) bool {
+	return ticksSinceFounding < foundingGraceTicks
+}
+
+// decayAfterGrace is the daily decay a Wanax actually suffers: none inside the
+// founding grace, computeDailyDecay after it.
+func decayAfterGrace(templelessColonies, ticksSinceFounding int) float64 {
+	if inFoundingGrace(ticksSinceFounding) {
+		return 0
+	}
+	return computeDailyDecay(templelessColonies)
+}
+
 func shouldRollPunishment(kharis float64, ticksSinceFounding int) bool {
-	if ticksSinceFounding < foundingGraceTicks {
+	if inFoundingGrace(ticksSinceFounding) {
 		return false
 	}
 	return kharis < punishThreshold
@@ -475,7 +494,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 			worldID, nil)
 	}
 
-	dailyDecay := computeDailyDecay(w.templelessColonies)
+	dailyDecay := decayAfterGrace(w.templelessColonies, w.ticksSinceFounding)
 	newKharis := clampKharis(w.kharis+gain-dailyDecay, w.kharisCap)
 
 	// 1. Write the netted kharis value.
@@ -518,7 +537,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 	} else {
 		// No temple production this day — dailyDecay above is the only kharis
 		// change (gain=0). Punish roll only fires on this (missed) branch.
-		inGrace := w.ticksSinceFounding < foundingGraceTicks
+		inGrace := inFoundingGrace(w.ticksSinceFounding)
 		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisMissedMaintenance",
 			map[string]any{
 				"reason":              "no_cult_production",

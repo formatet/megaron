@@ -19,8 +19,8 @@ func TestSilverCalibrationKharisFlowLeavesStalePriceClamp(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT owner_id FROM settlements WHERE id=$1`, sid).Scan(&pid); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := pool.Exec(ctx, `INSERT INTO player_world_records(player_id,world_id,settlement_id,kharis_amount,kharis_rate,kharis_calc_tick)
- VALUES($1,$2,$3,20,0,current_world_tick())`, pid, wid, sid); err != nil {
+	if _, err := pool.Exec(ctx, `INSERT INTO player_world_records(player_id,world_id,settlement_id,kharis_amount,kharis_rate,kharis_calc_tick,founded_tick)
+ VALUES($1,$2,$3,20,0,current_world_tick(),current_world_tick()-144)`, pid, wid, sid); err != nil {
 		t.Fatal(err)
 	}
 	for _, g := range []string{"grain"} {
@@ -54,8 +54,8 @@ func TestSilverCalibrationKharisFlowLeavesStalePriceClamp(t *testing.T) {
 	// Charge the actual maintenance path and compare the persisted relationship.
 	before := 20.0
 	eid := atomic.AddInt64(&advanceOneDayEventID, 1)
-	if err := h.processMaintenance(ctx, wanaxSnap{playerID: pid, settlementID: sid, kharis: before,
-		kharisCap: 100, devotionSum: .15, templeCities: 1, maxTempleLevel: 1, ticksSinceFounding: 0}, wid, eid); err != nil {
+	if err := h.processMaintenance(ctx, wanaxSnap{ticksSinceFounding: foundingGraceTicks, playerID: pid, settlementID: sid, kharis: before,
+		kharisCap: 100, devotionSum: .15, templeCities: 1, maxTempleLevel: 1}, wid, eid); err != nil {
 		t.Fatal(err)
 	}
 	var after float64

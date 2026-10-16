@@ -21,7 +21,7 @@ import (
 // hasTemples is false when the Wanax holds no standing temple: then the day is
 // "missed", gain is 0, and the net is just −dailyDecay.
 func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID uuid.UUID) (net float64, hasTemples bool, devotionSum, devotionCapacity float64, err error) {
-	var templeCities, templelessColonies int
+	var templeCities, templelessColonies, ticksSinceFounding int
 	err = pool.QueryRow(ctx,
 		`SELECT
 		    COALESCE((
@@ -60,14 +60,21 @@ func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID 
 		              SELECT 1 FROM buildings b
 		              WHERE b.settlement_id = s3.id AND b.building_type = 'temple'
 		          )
-		    ), 0)`,
-		playerID, worldID, TempleDevotionPerLevel,
-	).Scan(&devotionSum, &devotionCapacity, &templeCities, &templelessColonies)
+		    ), 0),
+		    -- Same age the tick reads (tick.go): no record means no founding to
+		    -- shield, so fall outside the grace.
+		    COALESCE((
+		        SELECT current_world_tick() - pwr.founded_tick
+		        FROM player_world_records pwr
+		        WHERE pwr.player_id = $1 AND pwr.world_id = $2
+		    ), $4::int)`,
+		playerID, worldID, TempleDevotionPerLevel, foundingGraceTicks,
+	).Scan(&devotionSum, &devotionCapacity, &templeCities, &templelessColonies, &ticksSinceFounding)
 	if err != nil {
 		return 0, false, 0, 0, err
 	}
 
-	dailyDecay := computeDailyDecay(templelessColonies)
+	dailyDecay := decayAfterGrace(templelessColonies, ticksSinceFounding)
 	if templeCities == 0 {
 		// Missed day: no gain, decay is the whole story.
 		return -dailyDecay, false, devotionSum, devotionCapacity, nil
