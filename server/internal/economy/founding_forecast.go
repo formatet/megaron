@@ -55,12 +55,24 @@ import (
 // livestockSettledThisTick guard forces livestockStock=0 for that very FIRST
 // recompute too (recompute.go) — verified against the code 2026-08-26, this
 // is not a stale simplification, it matches the real first-tick behaviour.
-func FoundingGrainNetPerTick(ctx context.Context, tx Tx, worldID uuid.UUID, center hexgrid.Coord, hasFarm bool, reachable map[hexgrid.Coord]bool, pop int) (prodPerTick, netPerTick float64, err error) {
+type FoundingFoodForecast struct {
+	GrainProduction, FishProduction, Consumption, GrainNet, FoodNet float64
+}
+
+// FoundingGrainNetPerTick preserves the grain-only forecast for existing callers.
+func FoundingGrainNetPerTick(ctx context.Context, tx Tx, worldID uuid.UUID, center hexgrid.Coord, hasFarm bool, reachable map[hexgrid.Coord]bool, pop int) (float64, float64, error) {
+	f, err := FoundingFoodForecastAt(ctx, tx, worldID, center, hasFarm, reachable, pop)
+	return f.GrainProduction, f.GrainNet, err
+}
+
+// FoundingFoodForecastAt exposes the SAME placement forecast and population demand
+// separately: grain net alone cannot reveal how much food fish supplies.
+func FoundingFoodForecastAt(ctx context.Context, tx Tx, worldID uuid.UUID, center hexgrid.Coord, hasFarm bool, reachable map[hexgrid.Coord]bool, pop int) (FoundingFoodForecast, error) {
 	bs := BuildingSet{}
 	if hasFarm {
 		farmHex, ok, chooseErr := ChooseFarmHex(ctx, tx, worldID, center, reachable)
 		if chooseErr != nil {
-			return 0, 0, fmt.Errorf("founding grain net per tick: %w", chooseErr)
+			return FoundingFoodForecast{}, fmt.Errorf("founding grain net per tick: %w", chooseErr)
 		}
 		if ok {
 			bs = BuildingSet{Hex: map[hexgrid.Coord]map[string]int{farmHex: {"farm": 1}}}
@@ -68,7 +80,7 @@ func FoundingGrainNetPerTick(ctx context.Context, tx Tx, worldID uuid.UUID, cent
 	}
 	hexOptions, err := LoadHexProductionOptionsAt(ctx, tx, worldID, center, bs, reachable)
 	if err != nil {
-		return 0, 0, fmt.Errorf("founding grain net per tick: %w", err)
+		return FoundingFoodForecast{}, fmt.Errorf("founding grain net per tick: %w", err)
 	}
 	slots := rankSlotsFromOptions(hexOptions, center)
 
@@ -95,5 +107,20 @@ func FoundingGrainNetPerTick(ctx context.Context, tx Tx, worldID uuid.UUID, cent
 	}
 
 	grainNet, _, _ := FoodConsumptionSplit(demand, grainProd, fishProd, 0)
-	return grainProd, grainNet, nil
+	return FoundingFoodForecast{GrainProduction: grainProd, FishProduction: fishProd, Consumption: demand, GrainNet: grainNet, FoodNet: grainProd + fishProd - demand}, nil
+}
+
+// FoundingGrainWelfareWarning describes the existing loyalty welfare rule. It
+// deliberately does not change it: that rule checks grain, even if fish feeds people.
+func FoundingGrainWelfareWarning(stock, production float64, population int) string {
+	if GrainWelfareStarving(stock, production, population) {
+		return "Loyalty can fall while grain stores are empty or grain production falls short of population demand, even when fish covers meals. Build up grain production and stores."
+	}
+	return ""
+}
+
+// GrainWelfareStarving is the existing grain-only loyalty discriminator.
+func GrainWelfareStarving(stock, production float64, population int) bool {
+	_, net := GrainBalance(production, population)
+	return stock <= 0 || net < 0
 }

@@ -22,7 +22,7 @@ func TestExpeditionTexts(t *testing.T) {
 	if got != want {
 		t.Errorf("report:\n got %q\nwant %q", got, want)
 	}
-	if got := expeditionReportText(expeditionBody{AreaQ: 1, AreaR: 1}); got[len(got)-len("nothing of value"):] != "nothing of value" {
-		t.Errorf("empty report = %q, want it to end in \"nothing of value\"", got)
+	if got := expeditionReportText(expeditionBody{AreaQ: 1, AreaR: 1}); got[len(got)-len("no ore deposits, cedar or foreign cities recorded"):] != "no ore deposits, cedar or foreign cities recorded" {
+		t.Errorf("empty report = %q, want it to end in \"no ore deposits, cedar or foreign cities recorded\"", got)
 	}
 }

@@ -467,6 +467,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			Effect              string             `json:"effect"`
 			MinKharis           float64            `json:"min_kharis"`
 			Offering            map[string]float64 `json:"offering"`
+			UnavailableReason   string             `json:"unavailable_reason,omitempty"`
 			Affordable          bool               `json:"affordable"`
 			Default             bool               `json:"is_default"`
 			DeparturePending    bool               `json:"departure_pending,omitempty"`
@@ -561,11 +562,19 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			if departurePending {
 				activeRemainingDays = 0
 			}
+			reason := ""
+			if !hasTemple {
+				reason = "no temple"
+			} else if kharisNow < spec.MinKharis {
+				reason = "insufficient kharis"
+			} else if !afford {
+				reason = "insufficient offering or a waiting time applies"
+			}
 			prayers = append(prayers, prayerRow{DeparturePending: departurePending,
 				ID: spec.ID, Name: spec.Name, God: spec.God, EffectType: spec.EffectType,
 				Default: spec.ID == religion.DefaultBattleFrenzyFor(string(sett.CultureID)), ActiveRemainingDays: activeRemainingDays,
 				Effect:    spec.Description,
-				MinKharis: spec.MinKharis, Offering: spec.Offering, Affordable: afford,
+				MinKharis: spec.MinKharis, Offering: spec.Offering, Affordable: afford, UnavailableReason: reason,
 				CooldownRemainingDays: cooldownRemainingDays,
 				Favours:               religion.FavoursFor(spec),
 				OfferingBaseline:      religion.TraditionalBaseline(spec, divineValues),

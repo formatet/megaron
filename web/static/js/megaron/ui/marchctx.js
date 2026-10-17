@@ -162,24 +162,25 @@ export function renderColonizePreviewHTML(p) {
   // hourly tick rate to a daily one and is the same class of stale scaling
   // as cmd_goods.go's Rate/d bug.
   const prodTick = g.base_per_tick || 0;
-  const netTick  = g.est_net_per_tick || 0;
-  const consTick = prodTick - netTick;
+  const netTick = g.food_net_per_tick ?? g.est_net_per_tick ?? 0;
+  const consTick = g.consumption_per_tick ?? (prodTick - netTick);
 
   let html = `<div style="color:var(--text-dim)">Catchment forecast — ${fmtNum(known)} of ${fmtNum(total)} hexes known</div>`;
   if (p.harbour_note) html += `<div>${esc(p.harbour_note)}</div>`;
-  html += `<div>Grain: produces about ${fmtNum(Math.round(prodTick))} and eats about ${fmtNum(Math.round(consTick))} per day = ` +
-    `<b style="color:${netTick < 0 ? 'var(--accent)' : 'var(--safe)'}">net ${netTick >= 0 ? '+' : ''}${fmtNum(Math.round(netTick))} per day</b></div>`;
+  html += `<div>Food: grain ${prodTick.toFixed(1)} + fish ${(g.fish_per_tick || 0).toFixed(1)} − consumption ${consTick.toFixed(1)} per day = ` +
+    `<b style="color:${netTick < 0 ? 'var(--accent)' : 'var(--safe)'}">net ${netTick >= 0 ? '+' : ''}${netTick.toFixed(1)} per day</b></div>`;
   if (netTick < 0) {
     const reach = g.ticks_until_empty != null ? ` → lasts about ${fmtDays(Math.round(g.ticks_until_empty))}` : '';
-    const farmNetTick = (g.with_farm_per_tick || 0) - consTick;
+    const farmNetTick = g.with_farm_food_net_per_tick ?? ((g.with_farm_per_tick || 0) - consTick);
     const farmNote = (g.with_farm_per_tick || 0) <= (g.base_per_tick || 0)
       ? ' (no farmland in known catchment — a farm will not help here)' : '';
     html += `<div>Seed ${fmtNum(Math.round(g.seed || 0))} grain${reach}. With farm: net ${farmNetTick >= 0 ? '+' : ''}${fmtNum(Math.round(farmNetTick))} per day${farmNote}</div>`;
     html += `<div style="color:var(--text-dim)">A colony does not feed itself — build a farm if the land bears it, or send grain by internal transfer.</div>`;
   } else {
-    html += `<div>Seed ${fmtNum(Math.round(g.seed || 0))} grain — the colony feeds itself.</div>`;
+    html += `<div>Seed ${fmtNum(Math.round(g.seed || 0))} grain — production covers food demand.</div>`;
   }
 
+  if (g.loyalty_warning) html += `<div>${esc(g.loyalty_warning)}</div>`;
   const dep = {};
   (p.catchment || []).forEach(ce => {
     if (!ce.known) return;

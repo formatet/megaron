@@ -623,7 +623,7 @@ test('agora_ready directs to Account and ignores unexpected secret fields', () =
 });
 
 // Upptäckarexpeditionen: the turn names its reason; the homecoming report
-// groups deposits by kind, names foreign cities, and says "nothing of value"
+// groups deposits by kind, names foreign cities, and says "no ore deposits, cedar or foreign cities recorded"
 // rather than going blank.
 test('notifText: ExpeditionTurnedHome says why it turned', () => {
   const t = notifText('ExpeditionTurnedHome', { name: 'Spearmen I', area_q: 9, area_r: 0, reason: 'half_time', arrive_tick: 11 });
@@ -644,7 +644,7 @@ test('notifText: ExpeditionReport groups finds and names cities', () => {
 
 test('notifText: ExpeditionReport with no finds is a report, not a blank', () => {
   const t = notifText('ExpeditionReport', { area_q: 1, area_r: 1, ticks_out: 4, furthest: 3, hexes_seen: 12, finds: [] });
-  assert.match(t, /: nothing of value$/);
+  assert.match(t, /: no ore deposits, cedar or foreign cities recorded$/);
 });
 
 // Slice T: storm notices. ship_foundered.json is a payload the server really
@@ -674,4 +674,9 @@ test('storm notices: a named storm is called by name; the first to meet an unnam
   assert.equal(notifText('ShipStormDamaged', { ...hit, first_to_meet: true }),
     'Your Galley was battered by a storm at (6,0) — hull 3/5. You were the first to meet this storm — click it on the map to name it.');
   assert.match(notifText('ShipFoundered', { ...foundered, first_to_meet: true }), /lost with her: 40 silver\. You were the first to meet this storm/);
+});
+
+test('playtest: internal delivery has a neutral delivery name and UUID founding gift remains readable', () => {
+  assert.equal(notifText('TradeDelivery', {quantity: 20, good_key: 'grain'}), 'Delivery arrived: 20 grain');
+  assert.match(notifText('MetropolisFounded', {name: 'Knossos', poseidon_gift: 'de291886-44cb-4f4e-8b52-6d488f8fd053'}), /Knossos.*Poseidon grants a galley/);
 });

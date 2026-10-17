@@ -64,7 +64,7 @@ func TestMarchPreviewNeverDispatches(t *testing.T) {
 						}
 					} else {
 						want := map[string]string{"": "day 42 (journey: 3 days)", "courier_required": "Runner must deliver", "redirect": "Runner must deliver", "unknown_terrain": "unknown terrain"}[reason]
-						if !strings.Contains(out, want) || !strings.Contains(out, "No order sent") || !strings.Contains(out, "Sold: 0.6 → 2 silver per day in the field · treasury lasts 25 days") {
+						if !strings.Contains(out, want) || !strings.Contains(out, "No order sent") || !strings.Contains(out, "Pay: 0.6 → 2 silver per day in the field · treasury lasts 25 days") {
 							t.Fatalf("wrong forecast %q", out)
 						}
 					}
@@ -98,10 +98,10 @@ func TestMarchPreviewErrorNeverDispatches(t *testing.T) {
 
 func TestMarchSilverForecastZeroAndPaidRunway(t *testing.T) {
 	for _, tt := range []struct{ payload, want string }{
-		{`{"upkeep_silver_home":0,"upkeep_silver_field":0,"silver_runway_ticks":null}`, "Sold: 0 → 0 silver per day in the field · no silver drain"},
-		{`{"upkeep_silver_home":0.6,"upkeep_silver_field":2,"silver_runway_ticks":25}`, "Sold: 0.6 → 2 silver per day in the field · treasury lasts 25 days"},
-		{`{"upkeep_silver_home":0.6,"upkeep_silver_field":2,"silver_runway_ticks":0}`, "Sold: 0.6 → 2 silver per day in the field · treasury lasts 0 days"},
-		{`{"upkeep_silver_home":1.2,"upkeep_silver_field":4,"silver_runway_ticks":12.5,"silver_payer_count":2}`, "Sold: 1.2 → 4 silver per day in the field · shortest treasury lasts 12.5 days"},
+		{`{"upkeep_silver_home":0,"upkeep_silver_field":0,"silver_runway_ticks":null}`, "Pay: 0 → 0 silver per day in the field · no silver drain"},
+		{`{"upkeep_silver_home":0.6,"upkeep_silver_field":2,"silver_runway_ticks":25}`, "Pay: 0.6 → 2 silver per day in the field · treasury lasts 25 days"},
+		{`{"upkeep_silver_home":0.6,"upkeep_silver_field":2,"silver_runway_ticks":0}`, "Pay: 0.6 → 2 silver per day in the field · treasury lasts 0 days"},
+		{`{"upkeep_silver_home":1.2,"upkeep_silver_field":4,"silver_runway_ticks":12.5,"silver_payer_count":2}`, "Pay: 1.2 → 4 silver per day in the field · shortest treasury lasts 12.5 days"},
 		{`{}`, ""},
 	} {
 		var f marchSilverForecast
@@ -119,7 +119,7 @@ func TestMarchSilverForecastRoundsCirculationArithmetic(t *testing.T) {
 	net := gross - gross*share
 	runway := 25.0
 	got := marchSilverLine(marchSilverForecast{UpkeepSilverHome: &net, UpkeepSilverField: &gross, SilverRunwayTicks: &runway})
-	if want := "Sold: 0.6 → 2 silver per day in the field · treasury lasts 25 days"; got != want {
+	if want := "Pay: 0.6 → 2 silver per day in the field · treasury lasts 25 days"; got != want {
 		t.Fatalf("got %q, want %q", got, want)
 	}
 }

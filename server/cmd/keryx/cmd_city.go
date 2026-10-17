@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// cityCmd handles `keryx city [stad]` — the read-only view of a settlement's
+// cityCmd handles `keryx city [city]` — the read-only view of a settlement's
 // gubbe placement: 18 catchment hexes (ordinal, terrain, per-good occupancy
 // and marginal yield) plus building workplaces plus the idle pool. P0-UI
 // answer 7's keryx surface for P5 (megaron_plan_fysisk_gubbemodell.md): the
@@ -14,7 +14,7 @@ import (
 // — the same numbers `place`/`staff` take.
 func cityCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "city [stad]",
+		Use:   "city [city]",
 		Short: "Show a settlement's catchment hexes, building slots and idle pool (default: your capital)",
 		Long: `Every catchment hex and building workplace, with its own occupancy and the
 yield the NEXT citizen placed there would add ("next"). Grain has no cap — any

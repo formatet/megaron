@@ -51,8 +51,7 @@ func unusedCatchmentDeposits(catchmentDeposits []any, buildings []any) []string 
 }
 
 // timberBottleneckWarning flags the classic early wall (sondrunda 2026-07-24
-// runda 2): timber gates almost all early building — harbour 140, barracks 80,
-// foundry 80, temple 60 (internal/province/building.go) — yet nothing in the
+// runda 2): timber gates almost all early building (internal/province/building.go) — yet nothing in the
 // interface named it as the critical early resource. Two probes founded the
 // same day: Polydamas never allocated labor to timber → 0 production → fully
 // blocked from expansion until trade rescued it; Antenor put 25% on timber →
@@ -62,7 +61,11 @@ func timberBottleneckWarning(rate float64) string {
 	if rate > 0.01 {
 		return ""
 	}
-	return "⚠ Timber production ~0 — timber gates harbour (140)/barracks (80)/foundry (80)/temple (60). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`)."
+	var costs []string
+	for _, kind := range []province.BuildingType{province.BuildingHarbour, province.BuildingBarracks, province.BuildingFoundry, province.BuildingTemple} {
+		costs = append(costs, fmt.Sprintf("%s (%g)", kind, province.BuildingSpecs[kind].Costs["timber"]))
+	}
+	return "⚠ Timber production ~0 — timber gates " + strings.Join(costs, "/") + ". Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`)."
 }
 
 // productionHorizonTicks is how far ahead a Wanax is expected to plan

@@ -57,3 +57,21 @@ No merge, push or deployment by Codex. Claude owns review and integration.
 
 Final results: full fresh Go green (world 139.395s), vet clean, 633/633 JS green with no skips.
 Production sources and tests are byte-identical to core `9247f382`; later commits contain evidence only.
+
+## B1–B10 + C contract (in progress)
+Problem: the stranger's playtest encounters misleading forecasts, obsolete costs and unreadable notifications.
+Player truth: forecasts, threshold displays and notification text must describe the model actually used.
+Invariant: no new mechanics, no FOW leak, no changed interpretation of persistent event types.
+Scope: authoritative forecast fields, CLI/web formatters, current notification metadata, Codex and regression tests.
+Acceptance: consumption at 1000 population is 5; costs follow catalogue; threshold/current values and refusal reasons agree;
+founding and internal-delivery notices remain readable; help/errors point to CLI commands.
+Stop: truly new expedition discoveries require historical knowledge tracking — report rather than build it.
+Proof: regression tests and physical mutants per logic family; fresh Go, vet and all JS.
+
+B/C checkpoint: PAUSED for Claude's urgent 1b river-march order (2026-10-17). Not ready for integration.
+CLI tests and 635 JS passed before the latest test additions; the new forecast HTTP test first
+failed on a missing Authorization header in the fixture, now corrected but not rerun at checkpoint.
+Remaining: final inventory, physical mutants, fresh full Go/vet/JS and actual CLI verification.
+B4 two-city API test passed with the same realm14.7; source already uses the realm pool.
+B8 genuinely new discoveries need pre-expedition knowledge history, absent from unit_expedition_seen;
+only the absolute wording is softened here. No mechanics or persistent event semantics changed.

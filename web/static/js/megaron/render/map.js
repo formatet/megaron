@@ -3586,7 +3586,7 @@ function hostStoreLine(label, s) {
 
 // Summarize the same existing forecast. Do not round before deciding yes/no.
 function hostForecastSummaryHTML(p) {
-  const net = p?.grain?.est_net_per_tick;
+  const net = p?.grain?.food_net_per_tick ?? p?.grain?.est_net_per_tick;
   const feeds = typeof net === 'number' && Number.isFinite(net) ? (net >= 0 ? 'yes' : 'no') : 'unknown';
   const potential = good => {
     if (!p?.goods || typeof p.goods !== 'object') return 'unknown';
