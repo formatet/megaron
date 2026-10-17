@@ -1,0 +1,98 @@
+Keryx — Megaron's Bronze Age grand strategy CLI.
+Environment: POLEIA_CONFIG selects a config file; POLEIA_SERVER and POLEIA_TOKEN override connection settings.
+
+Usage:
+  keryx [command]
+
+Available Commands:
+  abandon                  Abandon one of your colonies, freeing its hex and a settlement slot
+  actions                  Show what you can do right now — and what's missing for what you can't (--province for a colony)
+  agora                    Show your community chat account (outside the game)
+  allocate                 Set temple devotion (cult %, defaults to capital; --province for a colony)
+  army                     List your units (alias for `unit list`)
+  brief                    One line per settlement you own: idle citizens, if any
+  build                    Start construction of a building (--list for options, --queue to see what's queued; defaults to capital)
+  build-road               Order an army to build one road edge (alias for `unit build-road`)
+  call-back                Call a runner stuck waiting for passage back home, undelivered
+  cancel-build             Cancel a queued building and refund costs
+  cargo                    Show goods in transit to or from you (internal transfers and trade deliveries)
+  cities                   List known and rumour-known settlements — city-centric (see `diplomacy` for the ruler-centric view)
+  city                     Show a settlement's catchment hexes, building slots and idle pool (default: your capital)
+  completion               Generate the autocompletion script for the specified shell
+  diplomacy                List known and rumour-known Wanaxes (ruler-centric view of `cities`)
+  disband                  Disband units — their men return to civilian life
+  dispatches               Show or change which notification kinds reach you as dispatches
+  founding                 The Nomadic Host: your people before the metropolis (status, settle)
+  gift                     Send silver/grain from your capital to one of your own colonies (boosts loyalty at 50+ silver-equivalent)
+  god                      God-mode view — full world map and all settlements without FOW (admin only)
+  goods                    Show goods inventory and base values (defaults to capital; --province for a colony)
+  gossip                   Show recent rumours and events
+  help                     Help about any command
+  idle                     Show how many citizens are idle (unplaced) in a settlement (default: your capital)
+  inbox                    Show messenger inbox
+  join                     Join the active world as a Nomadic Host — the first step before founding a city
+  kingdom-borrow-army      Borrow units from a kingdom member's settlement (disabled — post-MVP)
+  kingdom-council          List a kingdom's council (disabled — post-MVP)
+  kingdom-election         Show the active election for a kingdom (disabled — post-MVP)
+  kingdom-election-call    Call an election for basileus (disabled — post-MVP)
+  kingdom-found            Found a new kingdom (disabled — post-MVP)
+  kingdom-invitations      List pending kingdom invitations (disabled — post-MVP)
+  kingdom-invite           Invite a Wanax to your kingdom (disabled — post-MVP)
+  kingdom-join             Join a kingdom you've been invited to (disabled — post-MVP)
+  kingdom-treasury-deposit Send silver to the kingdom treasury (disabled — post-MVP)
+  kingdom-vote             Cast your vote in an open basileus election (disabled — post-MVP)
+  kingdoms                 List kingdoms (disabled — post-MVP)
+  leave                    After your last city fell: leave this world (your account remains)
+  login                    Authenticate and save credentials
+  map                      Show nearby visible land hexes — colony candidates and ore deposits (sorted by distance)
+  march                    Order a unit to march to a hex (alias for `unit march`)
+  me                       Show your own realm in the selected world
+  message                  Send a free-text message to another Wanax (no goods)
+  messenger                Send a messenger to another settlement
+  notifications            Show your notification feed (arrivals, completions, trade events, ...)
+  occupation               Manage a city you currently hold under occupation
+  outbox                   List sent messengers and their pending trade offers
+  passage                  Arrange for a ship to carry a runner across the sea
+  password                 Change your password (asks for the current one first)
+  place                    Place or remove citizens on catchment hex <ordinal> doing <roll> (good)
+  placements               Show a settlement's catchment hexes, building slots and idle pool (alias for `city`)
+  places                   Known rivers, mountain massifs, deserts and cedar forests
+  recall                   Recall a marching unit, or all marching units (alias for `unit recall`)
+  recruit                  Recruit a 100-man land cohort, or build a ship (--list to see all recruitable units)
+  redirect                 Redirect a marching unit to a new hex (alias for `unit redirect`)
+  reinforce                Refill a thinned land cohort (alias for `unit reinforce`)
+  reply                    Reply to an inbox message
+  report                   Send a bug/design/confused report
+  reports                  List player reports for this world (admin only)
+  retreat-default          Show or set when your armies retreat by default (realm-wide)
+  rise                     After your last city fell: gather the survivors as a new host on another shore
+  rite                     Perform a cultural prayer at your settlement (requires temple + offering)
+  roads                    Your unfinished roads, and (--edges) the finished road edges you know of
+  roster                   List every placed gubbe across all your settlements, with idle pools
+  route                    Create a standing order — a caravan that keeps a destination's stock topped up on its own
+  route-delete             Delete a standing order (an in-flight caravan still completes, as an ordinary transfer)
+  route-pause              Pause a standing order (an in-flight caravan still completes)
+  route-resume             Resume a paused standing order
+  routes                   List your standing orders
+  settlements              List visible settlements (use names with trade/messenger)
+  sightings                List every foreign unit and garrisoned city currently in your live vision
+  slaughter                Slaughter one livestock for +10 population right now
+  staff                    Place or remove n citizens from a building workplace (default: show current staffing)
+  status                   Show your province status (defaults to your capital; --province inspects a colony)
+  storms                   Storms at sea you can see, and where you last saw the others
+  ticklog                  Daily journal for a city: prod/cons, trade, Sitos, builds (newest first)
+  trade-accept             Accept a trade offer from inbox
+  trade-cancel             Cancel an outgoing pending trade offer and reclaim escrowed silver
+  trade-decline            Decline a trade offer from inbox
+  trade-offer              Send a trade offer (bilateral consent, FOW-gated) to another Wanax
+  transfer                 Send physical goods to your own city or a contacted foreign city as a gift, with nothing requested in return
+  unit                     Manage discrete military units
+  wants                    Show goods in shortage (wants) and surplus (exports) at known settlements
+  watch                    Listen for live push notifications over WebSocket (a wakeup call, not a ledger)
+  worlds                   List available worlds
+
+Flags:
+  -h, --help   help for keryx
+  -j, --json   output as JSON (for scripts and MCP)
+
+Use "keryx [command] --help" for more information about a command.

@@ -1,0 +1,75 @@
+--- FAIL: TestExpeditionTexts (0.00s)
+    cmd_expedition_test.go:26: empty report = "The expedition is home after 0 days, 0 hexes out at the furthest — saw 0 hexes around (1, 1): no ore deposits, cedar or foreign cities recorded", want it to end in "nothing of value"
+--- FAIL: TestMarchPreviewNeverDispatches (0.01s)
+    --- FAIL: TestMarchPreviewNeverDispatches/unit/text/ (0.00s)
+        cmd_march_preview_test.go:68: wrong forecast "Estimated arrival: day 42 (journey: 3 days), if dispatched now. Conditions may change.\nPay: 0.6 → 2 silver per day in the field · treasury lasts 25 days\nNo order sent. Run again without --preview to send it.\n"
+    --- FAIL: TestMarchPreviewNeverDispatches/unit/text/courier_required (0.00s)
+        cmd_march_preview_test.go:68: wrong forecast "Arrival unavailable: a Runner must deliver this order before the march begins.\nPay: 0.6 → 2 silver per day in the field · treasury lasts 25 days\nNo order sent. Run again without --preview to send it.\n"
+    --- FAIL: TestMarchPreviewNeverDispatches/unit/text/redirect (0.00s)
+        cmd_march_preview_test.go:68: wrong forecast "Arrival unavailable: a Runner must deliver this order before the march begins.\nPay: 0.6 → 2 silver per day in the field · treasury lasts 25 days\nNo order sent. Run again without --preview to send it.\n"
+    --- FAIL: TestMarchPreviewNeverDispatches/unit/text/unknown_terrain (0.00s)
+        cmd_march_preview_test.go:68: wrong forecast "Arrival unavailable: the route crosses unknown terrain.\nPay: 0.6 → 2 silver per day in the field · treasury lasts 25 days\nNo order sent. Run again without --preview to send it.\n"
+    --- FAIL: TestMarchPreviewNeverDispatches/alias/text/ (0.00s)
+        cmd_march_preview_test.go:68: wrong forecast "Estimated arrival: day 42 (journey: 3 days), if dispatched now. Conditions may change.\nPay: 0.6 → 2 silver per day in the field · treasury lasts 25 days\nNo order sent. Run again without --preview to send it.\n"
+    --- FAIL: TestMarchPreviewNeverDispatches/alias/text/courier_required (0.00s)
+        cmd_march_preview_test.go:68: wrong forecast "Arrival unavailable: a Runner must deliver this order before the march begins.\nPay: 0.6 → 2 silver per day in the field · treasury lasts 25 days\nNo order sent. Run again without --preview to send it.\n"
+    --- FAIL: TestMarchPreviewNeverDispatches/alias/text/redirect (0.00s)
+        cmd_march_preview_test.go:68: wrong forecast "Arrival unavailable: a Runner must deliver this order before the march begins.\nPay: 0.6 → 2 silver per day in the field · treasury lasts 25 days\nNo order sent. Run again without --preview to send it.\n"
+    --- FAIL: TestMarchPreviewNeverDispatches/alias/text/unknown_terrain (0.00s)
+        cmd_march_preview_test.go:68: wrong forecast "Arrival unavailable: the route crosses unknown terrain.\nPay: 0.6 → 2 silver per day in the field · treasury lasts 25 days\nNo order sent. Run again without --preview to send it.\n"
+Error: unit cannot march (HTTP 409)
+Usage:
+  march [flags]
+
+Examples:
+  keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
+  keryx unit march --unit <id> --q 5 --r -3 --stance fortify
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos
+  # Colonize the hex the unit already stands on (no coords needed):
+  keryx unit march --unit <id> --intent colonize --name Thapsos
+  # Any march reveals fog along its route toward a frontier coordinate:
+  keryx unit march --unit <id> --q 12 --r -8
+  # Explore an area for 12 days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
+  # Land troops from a laden ship in port, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
+  # Attack an enemy settlement and annex it instead of the sack default:
+  keryx unit march --unit <id> --q 5 --r -3 --mode annex
+
+Flags:
+      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)
+  -h, --help            help for march
+      --intent string   arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (explores the surrounding area, turns home by half the chosen duration; unit must be garrisoned at a settlement) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)
+      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)
+      --name string     colony name (with --intent colonize, or --intent land --colonize)
+      --preview         estimate arrival without sending an order
+      --q int           target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --r int           target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --stance string   stance on arrival: fortify|storm|sentry
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --ticks int       explore duration in days (omit for server default)
+      --unit string     unit UUID (required)
+      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)
+
+--- FAIL: TestRenderCatchmentForecast_ThreeStates (0.00s)
+    --- FAIL: TestRenderCatchmentForecast_ThreeStates/starving (0.00s)
+        cmd_unit_forecast_test.go:72: net=-5.0 cons=20.0: output missing "starves"
+            output:
+            Test — catchment forecast (0/0 hexes known, 0 unknown):
+              Food: grain ~15.0 + fish ~0.0 per day − consumption ~20.0 per day = net -5.0 per day
+              Starting stock 600 grain — production falls short; food runs out when the stock is spent. With a farm: net ~-5.0 per day (no farmable terrain in known catchment — a farm won't help here)
+    --- FAIL: TestRenderCatchmentForecast_ThreeStates/self-sufficient (0.00s)
+        cmd_unit_forecast_test.go:72: net=900.0 cons=50.0: output missing "self-sufficient"
+            output:
+            Test — catchment forecast (0/0 hexes known, 0 unknown):
+              Food: grain ~950.0 + fish ~0.0 per day − consumption ~50.0 per day = net +900 per day
+              Starting stock 600 grain — production covers food demand.
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.013s
+ok  	formatet/megaron/server/api/handlers	0.010s
+ok  	formatet/megaron/server/internal/economy	(cached) [no tests to run]
+ok  	formatet/megaron/server/internal/combat	0.007s
+FAIL

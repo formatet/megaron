@@ -878,11 +878,16 @@ type colonizePreview struct {
 	} `json:"catchment"`
 	Goods map[string]float64 `json:"goods"`
 	Grain struct {
-		BasePerTick     float64  `json:"base_per_tick"`
-		EstNetPerTick   float64  `json:"est_net_per_tick"`
-		Seed            float64  `json:"seed"`
-		TicksUntilEmpty *float64 `json:"ticks_until_empty"`
-		WithFarmPerTick float64  `json:"with_farm_per_tick"`
+		ConsumptionPerTick *float64 `json:"consumption_per_tick"`
+		FishPerTick        float64  `json:"fish_per_tick"`
+		FoodNetPerTick     *float64 `json:"food_net_per_tick"`
+		FarmFoodNetPerTick *float64 `json:"with_farm_food_net_per_tick"`
+		LoyaltyWarning     string   `json:"loyalty_warning"`
+		BasePerTick        float64  `json:"base_per_tick"`
+		EstNetPerTick      float64  `json:"est_net_per_tick"`
+		Seed               float64  `json:"seed"`
+		TicksUntilEmpty    *float64 `json:"ticks_until_empty"`
+		WithFarmPerTick    float64  `json:"with_farm_per_tick"`
 	} `json:"grain"`
 	UnknownHexes    int    `json:"unknown_hexes"`
 	IsolatedWarning string `json:"isolated_warning,omitempty"`
@@ -973,12 +978,20 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 	prodPerTick := p.Grain.BasePerTick
 	netPerTick := p.Grain.EstNetPerTick
 	consPerTick := prodPerTick - netPerTick
-	fmt.Printf("  Grain: production ~%.0f per day − consumption ~%.0f per day = net %s per day\n",
-		prodPerTick, consPerTick, formatNetPerTick(netPerTick))
+	if p.Grain.ConsumptionPerTick != nil {
+		consPerTick = *p.Grain.ConsumptionPerTick
+	}
+	if p.Grain.FoodNetPerTick != nil {
+		netPerTick = *p.Grain.FoodNetPerTick
+	}
+	fmt.Printf("  Food: grain ~%.1f + fish ~%.1f per day − consumption ~%.1f per day = net %s per day\n", prodPerTick, p.Grain.FishPerTick, consPerTick, formatNetPerTick(netPerTick))
 
 	// Tre lägen, inte två (megaron_plan_grundningsprognosen.md §4): ett netto på
 	// t.ex. +0,4/tick är en stad en missad hex från svält, inte "självförsörjande".
 	farmNetPerTick := p.Grain.WithFarmPerTick - consPerTick
+	if p.Grain.FarmFoodNetPerTick != nil {
+		farmNetPerTick = *p.Grain.FarmFoodNetPerTick
+	}
 	farmNote := ""
 	if p.Grain.WithFarmPerTick <= p.Grain.BasePerTick {
 		farmNote = " (no farmable terrain in known catchment — a farm won't help here)"
@@ -991,15 +1004,18 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 		if p.Grain.TicksUntilEmpty != nil {
 			reach = fmt.Sprintf(" → lasts ~%s", formatDays(*p.Grain.TicksUntilEmpty, "%.0f"))
 		}
-		fmt.Printf("  Starting stock %.0f grain%s — the city starves. With a farm: net ~%s per day%s\n",
+		fmt.Printf("  Starting stock %.0f grain%s — production falls short; food runs out when the stock is spent. With a farm: net ~%s per day%s\n",
 			p.Grain.Seed, reach, formatNetPerTick(farmNetPerTick), farmNote)
 	case netPerTick < marginalCeiling:
 		fmt.Printf("  Starting stock %.0f grain — marginal (net %s per day). A farm gives net ~%s per day.%s\n",
 			p.Grain.Seed, formatNetPerTick(netPerTick), formatNetPerTick(farmNetPerTick), farmNote)
 	default:
-		fmt.Printf("  Starting stock %.0f grain — the city is self-sufficient.\n", p.Grain.Seed)
+		fmt.Printf("  Starting stock %.0f grain — production covers food demand.\n", p.Grain.Seed)
 	}
 
+	if p.Grain.LoyaltyWarning != "" {
+		fmt.Printf("  %s\n", p.Grain.LoyaltyWarning)
+	}
 	// "Övrigt": deposits present in the known catchment + any building-free
 	// non-grain production. Sorted for stable output.
 	var extras []string

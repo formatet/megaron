@@ -60,7 +60,7 @@ func printNotificationSummary(c *Client, n notificationItem) {
 		GranaryEmpty bool               `json:"granary_empty"`
 		KnownHexes   *int               `json:"known_hexes"`
 		UnknownHexes int                `json:"unknown_hexes"`
-		PoseidonGift bool               `json:"poseidon_gift"`
+		PoseidonGift json.RawMessage    `json:"poseidon_gift"`
 		Tier         string             `json:"tier"`
 		NetPerTick   *float64           `json:"net_per_tick"`
 		NetPerDay    float64            `json:"net_per_day"`
@@ -108,7 +108,7 @@ func printNotificationSummary(c *Client, n notificationItem) {
 		if b.KnownHexes != nil {
 			line += fmt.Sprintf(" — %d/%d catchment hexes known", *b.KnownHexes, *b.KnownHexes+b.UnknownHexes)
 		}
-		if b.PoseidonGift {
+		if len(b.PoseidonGift) > 0 && string(b.PoseidonGift) != "false" && string(b.PoseidonGift) != "null" {
 			line += " — Poseidon grants a galley"
 		}
 	case "OutpostEstablished":
@@ -120,7 +120,14 @@ func printNotificationSummary(c *Client, n notificationItem) {
 		if n.Kind == "TradeReturn" {
 			verb = "returned"
 		}
-		line = fmt.Sprintf("Trade %s: %s %s", verb, notificationAmount(b.Quantity), b.GoodKey)
+		prefix := "Delivery"
+		if n.Kind == "TradeDelivery" {
+			verb = "arrived"
+		}
+		if n.Kind == "TradeReturn" {
+			prefix = "Trade"
+		}
+		line = fmt.Sprintf("%s %s: %s %s", prefix, verb, notificationAmount(b.Quantity), b.GoodKey)
 	case "TradeLost":
 		line = "Your caravan was lost"
 		if reason != "" {

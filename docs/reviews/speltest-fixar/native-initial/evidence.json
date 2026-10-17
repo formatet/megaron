@@ -1,0 +1,127 @@
+{
+  "health": {
+    "commit": "4fd3ae7627fe013e0d99f1de9daeaceb4204acc9",
+    "migration": 181,
+    "status": "ok"
+  },
+  "attempts": [
+    {
+      "coastal": null,
+      "visible_rivers": 2
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 1
+    }
+  ],
+  "target": {
+    "place_kind": "river",
+    "place_id": "3,38",
+    "q": 3,
+    "r": 38,
+    "terrain": "river",
+    "visible": true,
+    "tier": "live",
+    "fertility": 0.9594891809412776,
+    "mineral": 0.4743852334709764
+  },
+  "ship_id": "93572125-1edc-4dcc-8e67-28884e2e9db6",
+  "groups": [
+    {
+      "type": "galley",
+      "category": "naval",
+      "loc": "Potamos",
+      "mode": "march",
+      "ids": [
+        "93572125-1edc-4dcc-8e67-28884e2e9db6"
+      ],
+      "names": [
+        "Oracle Wave, Galley of Potamos"
+      ]
+    }
+  ],
+  "preview": {
+    "available": false,
+    "reason": "unknown_terrain",
+    "silver_payer_count": 1,
+    "silver_runway_ticks": 320,
+    "upkeep_silver_field": 1.5,
+    "upkeep_silver_home": 0.4500000000000002
+  },
+  "sent": {
+    "target_q": 3,
+    "target_r": 38,
+    "intent": "explore",
+    "ticks": 10
+  },
+  "http_status": 202,
+  "answer": {
+    "arrival_tick": 3,
+    "arrives_at": "2026-10-17T11:41:32.564091952+02:00",
+    "arrives_at_utc": "2026-10-17T09:41:32.564091952Z",
+    "carried_silver": 0,
+    "departs_at": "2026-10-17T11:41:28.564091952+02:00",
+    "duration_ticks": 2,
+    "expedition": {
+      "area_q": 3,
+      "area_r": 38,
+      "home_by_tick": 11,
+      "length_ticks": 10,
+      "turn_tick": 6
+    },
+    "origin_q": 2,
+    "origin_r": 38,
+    "purse_shortfall": 0,
+    "target_q": 3,
+    "target_r": 35,
+    "unit_id": "93572125-1edc-4dcc-8e67-28884e2e9db6"
+  },
+  "movement": [
+    {
+      "status": "marching",
+      "q": 2,
+      "r": 38
+    }
+  ],
+  "page_errors": []
+}

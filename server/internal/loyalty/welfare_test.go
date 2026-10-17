@@ -96,3 +96,15 @@ func TestWelfareWindowSeconds_MatchesTickSubstrate(t *testing.T) {
 		t.Errorf("welfareWindowSeconds() at TICK_SECONDS=6 = %d, want %d (1 tick == 1 game-day)", got, want)
 	}
 }
+
+func TestPlaytestFoundingWarning_MatchesGrainWelfare(t *testing.T) {
+	if FoundingGrainWelfareWarning(0, 10, 1000) == "" {
+		t.Fatal("empty-grain reserve must warn despite positive production")
+	}
+	if FoundingGrainWelfareWarning(10, 0.5, 1000) == "" {
+		t.Fatal("grain deficit must warn even with fish")
+	}
+	if FoundingGrainWelfareWarning(10, 5, 1000) != "" {
+		t.Fatal("nonempty sufficient grain must not warn")
+	}
+}

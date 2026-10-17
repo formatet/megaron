@@ -222,7 +222,7 @@ test('H: landing preserves cargo-colonize/name and omits naval stance; explore a
  test('H: colony forecast keeps production and food duration in day words', () => {
   const html = menu.renderColonizePreviewHTML({catchment:[{known:true,terrain:'plains'}],grain:{base_per_tick:3,est_net_per_tick:-2,ticks_until_empty:4,seed:8,with_farm_per_tick:7},goods:{fish:2}});
   assert.match(html, /lasts about 4 days/);
-  assert.match(html, /produces about 3 and eats about 5 per day/);
+  assert.match(html, /grain 3\.0 \+ fish 0\.0 − consumption 5\.0 per day/);
   assert.match(html, /fish about 2 per day/);
   assert.doesNotMatch(html, /\/day|\d+ ticks/);
 });
@@ -283,4 +283,11 @@ test('ford send uses the same per-unit mission as preview, retaining target and 
     globalThis.fetch=originalFetch;document.getElementById=originalGet;
     Object.assign(State,{marchCtxDest:before.dest,marchCtxGroups:before.groups,marchCtxUnits:before.units,marchCtxUnitID:before.id,WORLD_ID:before.world});
   }
+});
+
+test('playtest: coastal forecast uses full food demand and shows loyalty reserve warning', () => {
+  const html = menu.renderColonizePreviewHTML({grain: {base_per_tick: 0.5, fish_per_tick: 5, est_net_per_tick: 0, consumption_per_tick: 5, food_net_per_tick: 0.5, seed: 0, loyalty_warning: 'No grain reserve: loyalty can fall'}});
+  assert.match(html, /grain 0\.5 \+ fish 5\.0 − consumption 5\.0/);
+  assert.match(html, /net \+0\.5/);
+  assert.match(html, /No grain reserve: loyalty can fall/);
 });

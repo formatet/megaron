@@ -140,7 +140,7 @@ func printNotificationDetail(c *Client, n notificationItem) {
 	if n.Kind == "agora_ready" {
 		fmt.Println("    Community chat account ready — run keryx agora to view it, then keryx agora password to explicitly set and show a new chat password.")
 	}
-	if n.Kind == "ColonyFounded" {
+	if n.Kind == "ColonyFounded" || n.Kind == "MetropolisFounded" {
 		printColonyFoundedGrainLine(n)
 	}
 	if n.Kind == "ScoutReport" {
@@ -790,6 +790,7 @@ func printStarvingReturnLine(c *Client, n notificationItem) {
 func printColonyFoundedGrainLine(n notificationItem) {
 	var body struct {
 		Name            string   `json:"name"`
+		LoyaltyWarning  string   `json:"loyalty_warning"`
 		GrainAmount     *float64 `json:"grain_amount"`
 		GrainNetPerTick *float64 `json:"grain_net_per_tick"`
 		GrainTicks      *float64 `json:"grain_ticks"`
@@ -818,7 +819,12 @@ func printColonyFoundedGrainLine(n notificationItem) {
 		fmt.Printf("      %s doesn't feed itself (~%.0f grain per day short)%s. Build a farm if the catchment supports it, otherwise send grain: keryx transfer --good grain --qty <n> --dest %s\n",
 			name, -perTick, ticks, name)
 	} else {
-		fmt.Printf("      %s is self-sufficient (net ~%+.0f grain per day).\n", name, perTick)
+		fmt.Printf("      %s production covers grain consumption (net ~%+.1f grain per day).\n", name, perTick)
+	}
+	if body.LoyaltyWarning != "" {
+		fmt.Printf("      %s\n", body.LoyaltyWarning)
+	} else if body.GrainAmount != nil && *body.GrainAmount <= 0 {
+		fmt.Println("      No grain reserve yet — loyalty can fall while the grain store is empty.")
 	}
 }
 

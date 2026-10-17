@@ -249,3 +249,21 @@ func TestPlaceStartingWorkforce_ColonyOfOneHundredGrows(t *testing.T) {
 		t.Errorf("forecast net %.3f, want > 0 — the colony must be able to grow", forecastNet)
 	}
 }
+
+func TestPlaytestForecast_FullDemandAtCoast(t *testing.T) {
+	pool := testPool(t)
+	wid, center, _ := foundingForecastFixture(t, 1000, "coastal_sea")
+	f, err := FoundingFoodForecastAt(context.Background(), pool, wid, center, false, nil, 1000)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if f.Consumption != 5 {
+		t.Fatalf("1000 citizens consume %g, want5", f.Consumption)
+	}
+	if f.FishProduction <= 0 {
+		t.Fatalf("coastal forecast lacks fish: %+v", f)
+	}
+	if math.Abs(f.FoodNet-(f.GrainProduction+f.FishProduction-5)) > 1e-9 {
+		t.Fatalf("food balance: %+v", f)
+	}
+}

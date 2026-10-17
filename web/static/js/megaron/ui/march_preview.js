@@ -22,7 +22,7 @@ export function marchSilverLine(data) {
   const runway = data.silver_runway_ticks === null ? 'no silver drain'
     : Number.isFinite(data.silver_runway_ticks) ? (data.silver_payer_count > 1 ? 'shortest treasury lasts ' : 'treasury lasts ') + fmtDays(data.silver_runway_ticks)
     : 'treasury duration unknown';
-  return 'Sold: ' + rate(data.upkeep_silver_home) + ' → ' + rate(data.upkeep_silver_field)
+  return 'Pay: ' + rate(data.upkeep_silver_home) + ' → ' + rate(data.upkeep_silver_field)
     + ' silver per day in the field · ' + runway;
 }
 

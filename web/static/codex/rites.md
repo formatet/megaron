@@ -10,9 +10,7 @@ For the Minoan prayers, a successful answer starts a waiting time for that god a
 
 ## The prayers
 
-- **The oracle** — names one ore deposit you have never seen — copper, tin or silver, anywhere in the world, chosen by the gods — and lifts the fog from it and the land around it. Whether you can *reach* it is another matter ([[bronze]], [[sea]]).
-- **The harvest blessing** — for 25 days your grain, livestock, oil and wine yield a quarter more. Fish is not the fields' to give.
-- **Battle frenzy** — strengthens a garrison for a while ([[battle]]).
+The current Minoan prayers are **Potnia's Vision**, **Mistress of the Walls**, **Green Shoots**, **The Thread Shows a Path** and **Favourable Passage**, described below. `keryx rite --list` or **Kult → Prayers** shows the prayers your culture can offer and why one is unavailable. Current kharis is shown with a decimal; eligibility uses the exact pool value.
 
 The answer or a refusal appears in the Kult drawer after you offer; it stays beside the prayers.
 

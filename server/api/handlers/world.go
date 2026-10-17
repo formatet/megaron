@@ -13,6 +13,7 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/hexgrid"
+	"formatet/megaron/server/internal/loyalty"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/settlement"
@@ -507,7 +508,8 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 	// excluded from the goods-potential call below — it is not a production
 	// tile (economy.RecomputeProduction's Ring, not Disk; see catchment.go).
 	center := hexgrid.Coord{Q: q, R: rr}
-	catchmentCoords := hexgrid.Disk(center, hexgrid.CatchmentRadius)
+	// The public list promises centre first; Disk is coordinate-sorted.
+	catchmentCoords := append([]hexgrid.Coord{center}, hexgrid.Ring(center, hexgrid.CatchmentRadius)...)
 	catchment := make([][2]int, len(catchmentCoords))
 	for i, c := range catchmentCoords {
 		catchment[i] = [2]int{c.Q, c.R}
@@ -652,17 +654,18 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 	// actually seed (starterFarm), once assuming a farm regardless — the
 	// with-farm call answers "would a farm help here" for the colony hint
 	// ("bygg en farm") without inventing a second formula for it.
-	basePerTick, estNetPerTick, err := economy.FoundingGrainNetPerTick(
+	foodForecast, err := economy.FoundingFoodForecastAt(
 		ctx, h.pool, worldID, center, starterFarm && !coastalCentre, reachable, forecastPop)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not compute founding grain forecast")
 		return
 	}
+	basePerTick, estNetPerTick := foodForecast.GrainProduction, foodForecast.GrainNet
 	// with_farm_per_tick reports with-farm PRODUCTION (not net) — the client
 	// derives consumption itself as base_per_tick − est_net_per_tick, so this
 	// must stay on the same "production" footing for the colony hint ("bygg
 	// en farm") to read coherently.
-	withFarmProdPerTick, _, err := economy.FoundingGrainNetPerTick(
+	farmForecast, err := economy.FoundingFoodForecastAt(
 		ctx, h.pool, worldID, center, true, reachable, forecastPop)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not compute founding grain forecast")
@@ -742,11 +745,16 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 		"catchment": view,
 		"goods":     goods,
 		"grain": map[string]any{
-			"base_per_tick":      basePerTick,
-			"est_net_per_tick":   estNetPerTick,
-			"seed":               seed,
-			"ticks_until_empty":  daysUntilEmpty,
-			"with_farm_per_tick": withFarmProdPerTick,
+			"base_per_tick":               basePerTick,
+			"est_net_per_tick":            estNetPerTick,
+			"seed":                        seed,
+			"ticks_until_empty":           daysUntilEmpty,
+			"with_farm_per_tick":          farmForecast.GrainProduction,
+			"consumption_per_tick":        foodForecast.Consumption,
+			"fish_per_tick":               foodForecast.FishProduction,
+			"food_net_per_tick":           foodForecast.FoodNet,
+			"with_farm_food_net_per_tick": farmForecast.FoodNet,
+			"loyalty_warning":             loyalty.FoundingGrainWelfareWarning(seed, basePerTick, forecastPop),
 		},
 		"unknown_hexes": unknown,
 	}

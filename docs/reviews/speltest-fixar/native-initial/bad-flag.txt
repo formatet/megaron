@@ -1,0 +1,2 @@
+Error: unknown flag: --unknown-proof-flag
+See keryx --help

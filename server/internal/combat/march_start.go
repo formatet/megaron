@@ -237,7 +237,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		// right-click and War → Army's Redirect button.
 		if u.Status == unit.StatusMarching {
 			return nil, reject(http.StatusUnprocessableEntity,
-				"unit is already marching and cannot start a new march; redirect it to a new destination instead (right-click the map, or keryx redirect)")
+				"unit is already marching and cannot start a new march; redirect it to a new destination: keryx unit redirect --unit <id> --target <q>,<r>")
 		}
 		return nil, reject(http.StatusUnprocessableEntity,
 			"unit cannot march: status is '%s' (must be 'garrison' or 'positioned')", string(u.Status))

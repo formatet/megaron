@@ -53,7 +53,7 @@ func expeditionSubject(b expeditionBody) string {
 func expeditionTurnedText(b expeditionBody) string {
 	why := map[string]string{
 		"half_time":  "half its time is spent",
-		"area_known": "nothing there is left unseen",
+		"area_known": "no further unseen ground was found in its search area",
 		"no_path":    "the rest of it cannot be reached",
 	}[b.Reason]
 	if why == "" {
@@ -92,7 +92,7 @@ func expeditionReportText(b expeditionBody) string {
 	if len(cities) > 0 {
 		parts = append(parts, "cities: "+strings.Join(cities, ", "))
 	}
-	found := "nothing of value"
+	found := "no ore deposits, cedar or foreign cities recorded"
 	if len(parts) > 0 {
 		found = strings.Join(parts, "; ")
 	}

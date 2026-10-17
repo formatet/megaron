@@ -158,8 +158,7 @@ func (h *WelfareHandler) applyWelfare(ctx context.Context, w welfareRow, worldID
 	// c3c289e5 2026-07-11: healthy capitals netto +300…+2300, starving −6…−15)
 	// instead of silently comparing a now-gross rate against 0.
 	kharisGood := w.kharis >= kharisBlessThresholdRef
-	_, grainNet := economy.GrainBalance(w.grainRate, w.population)
-	starving := w.grainStock <= 0 || grainNet < 0
+	starving := grainWelfareStarving(w.grainStock, w.grainRate, w.population)
 	fed := !starving
 	varied := w.foodVariety >= varietyThreshold
 
@@ -227,12 +226,27 @@ func classifyWelfare(kharisGood, fed, starving, varied bool) (eventType string, 
 		factors = append(factors, "well favoured (kharis at or above bless threshold)")
 	}
 	if fed {
-		factors = append(factors, "well fed (grain stock at or above the comfortable-buffer reference)")
+		factors = append(factors, "well fed (grain store is nonempty and grain production covers consumption)")
 	} else if starving {
-		factors = append(factors, "starving (grain stock below the comfortable-buffer reference)")
+		factors = append(factors, "starving (grain store is empty or grain production does not cover consumption)")
 	}
 	if varied {
 		factors = append(factors, "varied diet (2+ food goods stocked)")
 	}
 	return eventType, factors
+}
+
+// FoundingGrainWelfareWarning describes the existing loyalty welfare rule. It
+// deliberately does not change it: that rule checks grain, even if fish feeds people.
+func FoundingGrainWelfareWarning(stock, production float64, population int) string {
+	if grainWelfareStarving(stock, production, population) {
+		return "Loyalty can fall while grain stores are empty or grain production falls short of population demand, even when fish covers meals. Build up grain production and stores."
+	}
+	return ""
+}
+
+// grainWelfareStarving is the existing grain-only loyalty discriminator.
+func grainWelfareStarving(stock, production float64, population int) bool {
+	_, net := economy.GrainBalance(production, population)
+	return stock <= 0 || net < 0
 }

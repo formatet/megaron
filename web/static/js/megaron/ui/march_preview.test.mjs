@@ -27,7 +27,7 @@ test('redirect and courier never masquerade as immediate arrival', async () => {
     return {ok:true,json:async()=>({available:false,reason:'redirect',upkeep_silver_home:2,upkeep_silver_field:2,silver_runway_ticks:10})};
   });
   assert.equal(requests,1);
-  assert.match(marchPreviewHTML(value), /Sold: 2 → 2 silver/);
+  assert.match(marchPreviewHTML(value), /Pay: 2 → 2 silver/);
   for (const reason of [value.reason, 'courier_required']) {
     assert.match(marchPreviewHTML({ available: false, reason }), /messenger must deliver/);
     assert.doesNotMatch(marchPreviewHTML({ available: false, reason }), /Estimated arrival/);
@@ -73,10 +73,10 @@ test('changing destination discards old response even during debounce; close can
 
 
 test('sold uses authoritative rates, includes explicit zero and avoids infinite runway',()=>{
- assert.equal(marchSilverLine({upkeep_silver_home:0,upkeep_silver_field:0,silver_runway_ticks:null}), 'Sold: 0 → 0 silver per day in the field · no silver drain');
- assert.equal(marchSilverLine({upkeep_silver_home:0.6,upkeep_silver_field:2,silver_runway_ticks:25}), 'Sold: 0.6 → 2 silver per day in the field · treasury lasts 25 days');
- assert.equal(marchSilverLine({upkeep_silver_home:0.6,upkeep_silver_field:2,silver_runway_ticks:0}), 'Sold: 0.6 → 2 silver per day in the field · treasury lasts 0 days');
- assert.equal(marchSilverLine({upkeep_silver_home:0.45,upkeep_silver_field:1.5,silver_runway_ticks:1}), 'Sold: 0.45 → 1.5 silver per day in the field · treasury lasts 1 day');
+ assert.equal(marchSilverLine({upkeep_silver_home:0,upkeep_silver_field:0,silver_runway_ticks:null}), 'Pay: 0 → 0 silver per day in the field · no silver drain');
+ assert.equal(marchSilverLine({upkeep_silver_home:0.6,upkeep_silver_field:2,silver_runway_ticks:25}), 'Pay: 0.6 → 2 silver per day in the field · treasury lasts 25 days');
+ assert.equal(marchSilverLine({upkeep_silver_home:0.6,upkeep_silver_field:2,silver_runway_ticks:0}), 'Pay: 0.6 → 2 silver per day in the field · treasury lasts 0 days');
+ assert.equal(marchSilverLine({upkeep_silver_home:0.45,upkeep_silver_field:1.5,silver_runway_ticks:1}), 'Pay: 0.45 → 1.5 silver per day in the field · treasury lasts 1 day');
  assert.equal(marchSilverLine({available:true}), '');
 });
 
@@ -84,7 +84,7 @@ test('sold remains visible when courier or unexplored terrain prevents arrival e
  for(const reason of ['courier_required','unknown_terrain']) {
   const html=marchPreviewHTML({available:false,reason,upkeep_silver_home:0.6,upkeep_silver_field:2,silver_runway_ticks:25});
   assert.match(html,/class="march-sold"/);
-  assert.match(html,/Sold: 0.6 → 2 silver per day in the field · treasury lasts 25 days/);
+  assert.match(html,/Pay: 0.6 → 2 silver per day in the field · treasury lasts 25 days/);
   assert.doesNotMatch(html,/Estimated arrival|Infinity|NaN/);
  }
  assert.doesNotMatch(marchPreviewHTML({available:false,reason:'unknown_terrain'}), /march-sold/);
@@ -102,8 +102,8 @@ test('plural selection sends all IDs to every GET and shows one combined sold li
  for(const url of urls) assert.equal(url.searchParams.get('unit_ids'),'a,b');
  const html=output.at(-1);
  assert.equal((html.match(/class="march-sold"/g)||[]).length,1);
- assert.match(html,/Sold: 1.2 → 4 silver per day in the field · shortest treasury lasts 12.5 days/);
- assert.ok(html.indexOf('Beta:') < html.indexOf('Sold:'));
+ assert.match(html,/Pay: 1.2 → 4 silver per day in the field · shortest treasury lasts 12.5 days/);
+ assert.ok(html.indexOf('Beta:') < html.indexOf('Pay:'));
  assert.equal((html.match(/messenger must deliver/g)||[]).length,2);
 });
 
@@ -114,7 +114,7 @@ test('one zero-drain batch row is rendered when all treasuries have no silver dr
  await pause();
  const html=output.at(-1);
  assert.equal((html.match(/class="march-sold"/g)||[]).length,1);
- assert.match(html,/Sold: 0 → 0 silver per day in the field · no silver drain/);
+ assert.match(html,/Pay: 0 → 0 silver per day in the field · no silver drain/);
  assert.doesNotMatch(html,/NaN|Infinity|shortest treasury lasts/);
 });
 
@@ -132,7 +132,7 @@ test('redirect-only selection keeps messenger arrival warning and one authoritat
  const html=output.at(-1);
  assert.equal((html.match(/class="march-sold"/g)||[]).length,1);
  assert.equal((html.match(/messenger must deliver/g)||[]).length,2);
- assert.match(html,/Sold: 4 → 4 silver per day in the field · treasury lasts 10 days/);
+ assert.match(html,/Pay: 4 → 4 silver per day in the field · treasury lasts 10 days/);
  assert.doesNotMatch(html,/Estimated arrival/);
 });
 

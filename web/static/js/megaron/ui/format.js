@@ -239,7 +239,7 @@ export function expeditionReportText(body) {
   }
   const parts = Object.entries(byKind).map(([k, at]) => `${k} at ${at.join(', ')}`);
   if (cities.length) parts.push(`cities: ${cities.join(', ')}`);
-  const found = parts.length ? parts.join('; ') : 'nothing of value';
+  const found = parts.length ? parts.join('; ') : 'no ore deposits, cedar or foreign cities recorded';
   return `${subject} is home after ${fmtDays(body.ticks_out ?? '?')}, ${body.furthest ?? '?'} hexes out at the furthest — ` +
          `saw ${body.hexes_seen ?? 0} hexes around (${body.area_q}, ${body.area_r}): ${found}`;
 }
@@ -330,7 +330,7 @@ export function notifText(kind, body) {
     }
     case 'OutpostEstablished': return 'Outpost established';
     case 'OutpostCaptured':    return 'Enemy outpost captured';
-    case 'TradeDelivery':      return `Trade delivered: ${Math.floor(body.quantity || 0)} ${body.good_key || ''}`;
+    case 'TradeDelivery':      return `Delivery arrived: ${Math.floor(body.quantity || 0)} ${body.good_key || ''}`;
     case 'GiftDelivered':
     case 'GiftLost': return giftText(kind, body);
     case 'TradeLost':          return `Caravan lost to ${body.reason || 'misfortune'}`;
@@ -505,14 +505,14 @@ export function notifText(kind, body) {
     }
     case 'ScoutReport': {
       // Payload per UnitScoutReportPayload: q/r/terrain + four deposit bools.
-      // The common case is "nothing of value" — that must read as a clean
+      // The common case is "no ore deposits, cedar or foreign cities recorded" — that must read as a clean
       // report, not a blank/empty one (temenos_todo.md's own example line).
       const deposits = [];
       if (body.copper_deposit) deposits.push('copper');
       if (body.tin_deposit)    deposits.push('tin');
       if (body.silver_deposit) deposits.push('silver');
       if (body.cedar_deposit)  deposits.push('cedar');
-      const found = deposits.length ? deposits.join(', ') : 'nothing of value';
+      const found = deposits.length ? deposits.join(', ') : 'no ore deposits, cedar or foreign cities recorded';
       return `Explored (${body.q}, ${body.r}) — ${body.terrain || 'unknown terrain'}, ${found}`;
     }
     case 'BattleWon':
@@ -702,7 +702,7 @@ export function notifText(kind, body) {
       // text must say why — a turn the Wanax did not order needs its reason.
       const why = {
         half_time: 'half its time is spent',
-        area_known: 'nothing there is left unseen',
+        area_known: 'no further unseen ground was found in its search area',
         no_path: 'the rest of it cannot be reached',
       }[body.reason] || 'its search is over';
       const subject = body.name || 'The expedition';
@@ -881,7 +881,8 @@ export function colonyFoundedGrainLine(body) {
     const ticks = ticksLeft != null ? ` — grain lasts ~${fmtDays(Math.round(ticksLeft))}` : '';
     return `${name} does not feed itself (~${Math.round(-perTick)} grain per day deficit)${ticks}. Build a farm if the land bears it, or send grain by internal transfer.`;
   }
-  return `${name} feeds itself (net ~+${Math.round(perTick)} grain per day).`;
+  const warning = body.loyalty_warning || (body.grain_amount != null && body.grain_amount <= 0 ? "No grain reserve yet — loyalty can fall while the grain store is empty." : "");
+  return `${name} produces enough grain (net ~+${perTick.toFixed(1)} per day). ${warning}`.trim();
 }
 
 // The loss dispatch owns a frozen sealed envelope; never fetch the mutable

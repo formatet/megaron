@@ -1,0 +1,9 @@
+2026/10/17 11:44:00 INFO player registered id=2beb1966-2a12-4637-ac91-6b311e0404bf username=realm-bd27b112-6005-4c5c-9d5b-a2d57f373858
+--- FAIL: TestPlaytestKharis_SameRealmPoolInTwoCities (0.08s)
+    speltest_text_test.go:64: unready reason "", want no temple
+2026/10/17 11:44:00 INFO player registered id=dd817d3c-febf-4bee-99ff-7c1fd5b9e25e username=buildhex-b52032d4-2362-4392-9082-ee3f65b81489
+2026/10/17 11:44:00 INFO player registered id=390fe342-49fa-43b9-92f2-fc65e5457182 username=buildhex-b533b4ac-3eb0-49fb-9ad0-219f68ad55a2
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.237s
+FAIL
+» färsk DB på migration 181 · commit 4fd3ae76+ändringar

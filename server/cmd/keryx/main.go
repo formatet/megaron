@@ -32,10 +32,13 @@ import (
 
 var cfg *Config
 
-func main() {
+func newRootCommand() *cobra.Command {
 	root := &cobra.Command{
-		Use:   "keryx",
-		Short: "Keryx — Megaron's Bronze Age grand strategy CLI",
+		Use:           "keryx",
+		Short:         "Keryx — Megaron's Bronze Age grand strategy CLI",
+		Long:          "Keryx — Megaron's Bronze Age grand strategy CLI.\nEnvironment: POLEIA_CONFIG selects a config file; POLEIA_SERVER and POLEIA_TOKEN override connection settings.",
+		SilenceUsage:  true,
+		SilenceErrors: true,
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			if cmd.Name() == "login" {
 				return nil
@@ -144,7 +147,16 @@ func main() {
 		watchCmd(),
 	)
 
-	if err := root.Execute(); err != nil {
+	return root
+}
+func main() {
+	root := newRootCommand()
+	command, err := root.ExecuteC()
+	if err != nil {
+		if command == nil {
+			command = root
+		}
+		fmt.Fprintf(os.Stderr, "Error: %v\nSee %s --help\n", err, command.CommandPath())
 		os.Exit(1)
 	}
 }

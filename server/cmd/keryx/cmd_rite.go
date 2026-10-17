@@ -28,6 +28,7 @@ type riteAvailablePrayer struct {
 	Offering              map[string]float64 `json:"offering"`
 	Favours               map[string]float64 `json:"favours"`
 	OfferingBaseline      float64            `json:"offering_baseline"`
+	UnavailableReason     string             `json:"unavailable_reason"`
 	Affordable            bool               `json:"affordable"`
 	CooldownRemainingDays int                `json:"cooldown_remaining_game_days"`
 }
@@ -115,7 +116,7 @@ func riteCmd() *cobra.Command {
 				}
 				// Gynnsamhet is read via the gods' mood, never a computed percentage
 				// (Timothy 2026-07-11 hard invariant — "gudarna är inte maskiner").
-				fmt.Printf("The gods are %s (kharis %.0f).\n\n", p.Settlement.KharisMood, p.Settlement.Kharis)
+				fmt.Printf("The gods are %s (kharis %s).\n\n", p.Settlement.KharisMood, prayerKharisReading(p.Settlement.Kharis))
 				fmt.Printf("%-28s  %-20s  %-8s  %-22s  %-45s  %-12s  %s\n",
 					"Prayer ID", "Name", "MinKhar", "Offering", "Effect", "Ready", "Cooldown")
 				for _, pr := range p.Settlement.AvailablePrayers {
@@ -444,7 +445,15 @@ func prayerReadiness(pr riteAvailablePrayer) (string, string) {
 		return "cooldown", gameDaysRemaining(pr.CooldownRemainingDays)
 	}
 	if !pr.Affordable {
-		return "no", "—"
+		if pr.UnavailableReason != "" {
+			return "no: " + pr.UnavailableReason, "—"
+		}
+		return "no: check temple, kharis and offering", "—"
 	}
 	return "yes", "—"
+}
+
+// Floor the displayed precision so a value below a threshold never rounds up to it.
+func prayerKharisReading(value float64) string {
+	return fmt.Sprintf("%.1f", math.Floor(value*10)/10)
 }

@@ -1,6 +1,6 @@
 # Speltest fixes
 
-## A2 contract (complete, awaiting Claude integration)
+## A2 contract (complete; integrated by Claude)
 Problem: stored stone 23.999999999999996 refuses a 24-stone building.
 Player truth: a rounding residue must not prevent paying a displayed exact cost.
 Invariant: real shortages refuse atomically; accepted deductions never leave negative stock.
@@ -22,7 +22,7 @@ the existing lock/check-all/debit-all transaction and cedar substitution.
 |---|---|
 | A2 | Fixed: HTTP temple build accepts raw stored stone `23.999999999999996`, inserts one queue row, leaves exactly zero. Literal 16-cost residue also tested. Shortages of `1e-5` and `0.1` still refuse without debiting; surplus pays exact cost. |
 | A1 | Claude owns the existing kharis change; untouched. |
-| B1–B10 + C | Next, separate branch per order. |
+| B1–B10 + C | See the separate text slice below. |
 
 Evidence uses PostgreSQL 16, fresh empty DBs migrated to `181|f`, and real authenticated HTTP handlers.
 `a2-original-baseline.log` runs the new HTTP regression against **original e62569f8 production sources**
@@ -57,3 +57,50 @@ No merge, push or deployment by Codex. Claude owns review and integration.
 
 Final results: full fresh Go green (world 139.395s), vet clean, 633/633 JS green with no skips.
 Production sources and tests are byte-identical to core `9247f382`; later commits contain evidence only.
+
+## B1–B10 + C — text slice
+
+Problem: a stranger sees contradictory food forecasts, obsolete costs, hidden refusal reasons and blank/misnamed notices.
+Contract: repair the authoritative inputs and their CLI/web/Codex wording; preserve mechanics, FOW and persistent event meanings.
+Scope: existing placement forecast, catalogue, shared welfare predicate and player formatters.
+Gate: blocks legible progress through geography → scarcity → bronze → elite.
+No scope: A1, slaughter, exact hidden expedition-leg timing, new historical discovery tracking.
+
+| Finding | Result / reason |
+|---|---|
+| B1 | Forecast exposes full population consumption, grain/fish production and total food net from the SAME starting-placement calculation. Both clients read explicit fields; deficits say the stock lasts before hunger. Centre-first list order is repaired: Disk was coordinate-sorted, so view[0] could mistake a coastal founding for an inland farm gift. Centre + Ring preserves all19 hexes/FOW and restores the promised wire ordering. |
+| B2 | Warn truthfully about existing grain-based welfare, even if fish covers meals. Prediction and the actual welfare handler use the SAME unchanged predicate owned by loyalty: empty grain store OR grain production below demand. Claude explicitly approved this choice. No new welfare model. |
+| B3 | Timber warning reads BuildingSpecs; test changes the live catalogue and checks the warning follows. Native status shows16/8/8/8. |
+| B4 | Already correct in current source. A real PG/HTTP test with capital and colony reads the SAME realm14.7 from player_world_records. Both CLI and web consume that province field. No imaginary per-city fix. |
+| B5 | rite --list floors the shown precision to one decimal, so4.99 says4.9, not5.0. Server still compares exact pool values. |
+| B6 | net in garrison; stock runway clauses identify grain vs silver. Source scan also fixed city [stad] → city [city] and both march-preview surfaces say Pay. Remaining accented words are comments, actual names or imported language/context data. |
+| B7 | The prayers introduction now names the five actual Minoan prayers and points to the authoritative list. |
+| B8 | Wording narrowed to the expedition's search area and recorded resources/cities. Truly NEW discoveries remain UNBUILT per order: unit_expedition_seen records seen coordinates, not pre-expedition knowledge. Selecting newly learned terrain requires historical knowledge tracking/new payload semantics; this is reported to Claude, not fabricated from today's FOW. |
+| B9 | UUID poseidon_gift caused JSON decoding into bool to discard the entire CLI summary. Reader now accepts archived bool or UUID payloads. Real native founding notice is readable; web's existing truthy reader is regression-tested on UUID too. |
+| B10 | TradeDelivery is displayed neutrally as Delivery arrived on CLI/web; a transfer is no longer called a trade. Persistent event kind unchanged; bilateral deliveries remain correctly described as deliveries. |
+| C | Help names POLEIA_CONFIG; actual CLI errors print just error + command help pointer; redirect message gives the CLI command; server supplies no-temple/kharis/offering reason; Ready includes it; Pay replaces Sold on both preview clients. |
+
+Source ownership remains unchanged: economy owns food math, loyalty owns its welfare discriminator,
+province owns costs and kharis reads the realm pool. No new G1 edges, migration or mechanic.
+API additions are additive; old archived notification payloads remain readable.
+The public catchment list is now centre-first as its existing clients/comments already promise.
+
+Verification recipes: proof_b.py (ten physical mutants, separate fresh DB for each DB arm,
+explicit available GOTEST_PORT, exact byte restoration); native_b.py (own random-port PG/Redis/server,
+normal registration/join/founding and actual CLI/browser requests, no SQL writes or payload overrides).
+The recorded port collision was an infrastructure failure and was never counted as mutant RED.
+The initial native run exposed the centre-order bug despite its other checks passing;
+its artifacts are retained as a diagnosed baseline, not substituted for the corrected native final run.
+
+Final full Go, vet, JS and native re-run are recorded alongside this report; final results below.
+TEXT is for subsequent stranger playtest, not a new visual layout/BILD approval gate.
+Claude owns review/merge/deploy. The later slice3 ETA/timber and olive visual work are separate.
+
+Final B/C results: fresh full Go181 GREEN (world138.878s), vet clean, 638/638 JS with zero skips.
+Ten physical mutants are named RED followed by byte-identical restoration and GREEN.
+Final native process: health255620db/181, actual founder forecast5.0 consumption + correct Coastal/Poseidon
+gift, zero-stock welfare warning, status catalogue16/8/8/8, no-temple readiness, UUID founding notice,
+help/error output, integrated river UI POST202 followed by physical marching, zero browser errors.
+`native-final/` is the corrected run; `native-initial/` documents the diagnosed centre-order baseline.
+Final sources/tests are identical to255620db; this closing change contains evidence only.
+A2 was integrated by Claude asb2e13145; river core asf5261fb4, docs1139c835.

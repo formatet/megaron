@@ -1,0 +1,147 @@
+{
+  "catchment": [
+    {
+      "q": -1,
+      "r": 39,
+      "known": false
+    },
+    {
+      "q": -1,
+      "r": 40,
+      "known": false
+    },
+    {
+      "q": -1,
+      "r": 41,
+      "known": false
+    },
+    {
+      "q": 0,
+      "r": 38,
+      "known": true,
+      "terrain": "coastal_sea"
+    },
+    {
+      "q": 0,
+      "r": 39,
+      "known": true,
+      "terrain": "plains",
+      "coastal": true
+    },
+    {
+      "q": 0,
+      "r": 40,
+      "known": true,
+      "terrain": "plains"
+    },
+    {
+      "q": 0,
+      "r": 41,
+      "known": true,
+      "terrain": "forest_olive_grove",
+      "coastal": true
+    },
+    {
+      "q": 1,
+      "r": 37,
+      "known": true,
+      "terrain": "plains",
+      "coastal": true
+    },
+    {
+      "q": 1,
+      "r": 38,
+      "known": true,
+      "terrain": "river_valley",
+      "coastal": true
+    },
+    {
+      "q": 1,
+      "r": 39,
+      "known": true,
+      "terrain": "river_valley",
+      "coastal": true
+    },
+    {
+      "q": 1,
+      "r": 40,
+      "known": true,
+      "terrain": "forest_olive_grove"
+    },
+    {
+      "q": 1,
+      "r": 41,
+      "known": true,
+      "terrain": "plains",
+      "coastal": true
+    },
+    {
+      "q": 2,
+      "r": 37,
+      "known": true,
+      "terrain": "river_valley",
+      "coastal": true
+    },
+    {
+      "q": 2,
+      "r": 38,
+      "known": true,
+      "terrain": "coastal_sea"
+    },
+    {
+      "q": 2,
+      "r": 39,
+      "known": true,
+      "terrain": "river_valley",
+      "coastal": true
+    },
+    {
+      "q": 2,
+      "r": 40,
+      "known": true,
+      "terrain": "forest_olive_grove"
+    },
+    {
+      "q": 3,
+      "r": 37,
+      "known": true,
+      "terrain": "river_valley",
+      "coastal": true
+    },
+    {
+      "q": 3,
+      "r": 38,
+      "known": true,
+      "terrain": "river"
+    },
+    {
+      "q": 3,
+      "r": 39,
+      "known": true,
+      "terrain": "river_delta",
+      "coastal": true
+    }
+  ],
+  "goods": {
+    "fish": 4.5,
+    "grain": 37.33333333333333,
+    "livestock": 4,
+    "oil": 11.333333333333332,
+    "stone": 6,
+    "timber": 3,
+    "wine": 7.999999999999999
+  },
+  "grain": {
+    "base_per_tick": 5.833333333333332,
+    "consumption_per_tick": 5,
+    "est_net_per_tick": 0.8333333333333321,
+    "fish_per_tick": 0,
+    "food_net_per_tick": 0.8333333333333321,
+    "loyalty_warning": "Loyalty can fall while grain stores are empty or grain production falls short of population demand, even when fish covers meals. Build up grain production and stores.",
+    "seed": 0,
+    "ticks_until_empty": null,
+    "with_farm_food_net_per_tick": 0.03333333333333233,
+    "with_farm_per_tick": 5.033333333333332
+  },
+  "unknown_hexes": 3
+}

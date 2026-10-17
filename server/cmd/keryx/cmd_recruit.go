@@ -335,7 +335,7 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 				// keeps the ⚠ below (which is judged on the net) readable — without
 				// it the warning and the cost beside it look like they disagree.
 				if info.upkeepSilvNet != info.upkeepSilv {
-					upkeepStr += fmt.Sprintf(" (%.1f netto i garnison)", info.upkeepSilvNet)
+					upkeepStr += fmt.Sprintf(" (%.1f net in garrison)", info.upkeepSilvNet)
 				}
 				if !info.sustainable {
 					upkeepStr += "  ⚠ " + unsustainableReason(
@@ -375,22 +375,22 @@ func unsustainableReason(netGrain, netSilver, unitGrain, unitSilver, grainStock,
 	// read as an outright block to two playtesters sitting on huge buffers (soak
 	// 2026-07-24). The ✗ stays (upkeep IS negative), but name how long the buffer
 	// covers it so "not sustainable long-term" isn't mistaken for "cannot recruit".
-	runway := func(stock, shortPerTick float64) string {
+	runway := func(good string, stock, shortPerTick float64) string {
 		if shortPerTick >= 0 || stock <= 0 {
 			return ""
 		}
-		return fmt.Sprintf(" — current stock %s covers ~%s at that rate", trimFloat(stock), formatDays(stock/-shortPerTick, "%.0f"))
+		return fmt.Sprintf(" — %s stock %s covers ~%s at that rate", good, trimFloat(stock), formatDays(stock/-shortPerTick, "%.0f"))
 	}
 	switch {
 	case grainShort < 0 && silverShort < 0:
 		return fmt.Sprintf("upkeep exceeds this city: needs %.1f more grain per day and %.1f more silver per day%s%s",
-			-grainShort, -silverShort, runway(grainStock, grainShort), runway(silverStock, silverShort))
+			-grainShort, -silverShort, runway("grain", grainStock, grainShort), runway("silver", silverStock, silverShort))
 	case silverShort < 0:
 		return fmt.Sprintf("silver upkeep: net is %+.1f silver per day, needs %.1f more per day%s",
-			netSilver, -silverShort, runway(silverStock, silverShort))
+			netSilver, -silverShort, runway("silver", silverStock, silverShort))
 	case grainShort < 0:
 		return fmt.Sprintf("grain upkeep: net is %+.1f grain per day, needs %.1f more per day%s",
-			netGrain, -grainShort, runway(grainStock, grainShort))
+			netGrain, -grainShort, runway("grain", grainStock, grainShort))
 	default:
 		// sustainable was false but neither margin is negative — the server saw a
 		// state this client's numbers no longer reflect. Say so rather than invent.
