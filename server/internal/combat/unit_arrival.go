@@ -2105,7 +2105,7 @@ func (h *UnitArrivalHandler) foundColony(
 			"r":                  destR,
 			"grain_amount":       grainAmount,
 			"grain_net_per_tick": grainNet,
-			"loyalty_warning":    economy.FoundingGrainWelfareWarning(grainAmount, grainRate, population),
+			"loyalty_warning":    loyalty.FoundingGrainWelfareWarning(grainAmount, grainRate, population),
 		}
 		// grain_ticks: how long the seed lasts at the current deficit; null
 		// (omitted) when the colony is self-sustaining (net ≥ 0). This payload is

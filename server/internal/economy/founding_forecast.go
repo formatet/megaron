@@ -109,18 +109,3 @@ func FoundingFoodForecastAt(ctx context.Context, tx Tx, worldID uuid.UUID, cente
 	grainNet, _, _ := FoodConsumptionSplit(demand, grainProd, fishProd, 0)
 	return FoundingFoodForecast{GrainProduction: grainProd, FishProduction: fishProd, Consumption: demand, GrainNet: grainNet, FoodNet: grainProd + fishProd - demand}, nil
 }
-
-// FoundingGrainWelfareWarning describes the existing loyalty welfare rule. It
-// deliberately does not change it: that rule checks grain, even if fish feeds people.
-func FoundingGrainWelfareWarning(stock, production float64, population int) string {
-	if GrainWelfareStarving(stock, production, population) {
-		return "Loyalty can fall while grain stores are empty or grain production falls short of population demand, even when fish covers meals. Build up grain production and stores."
-	}
-	return ""
-}
-
-// GrainWelfareStarving is the existing grain-only loyalty discriminator.
-func GrainWelfareStarving(stock, production float64, population int) bool {
-	_, net := GrainBalance(production, population)
-	return stock <= 0 || net < 0
-}

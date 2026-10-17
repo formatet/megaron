@@ -266,13 +266,4 @@ func TestPlaytestForecast_FullDemandAtCoast(t *testing.T) {
 	if math.Abs(f.FoodNet-(f.GrainProduction+f.FishProduction-5)) > 1e-9 {
 		t.Fatalf("food balance: %+v", f)
 	}
-	if FoundingGrainWelfareWarning(0, 10, 1000) == "" {
-		t.Fatal("empty-grain reserve must warn despite positive production")
-	}
-	if FoundingGrainWelfareWarning(10, 0.5, 1000) == "" {
-		t.Fatal("grain deficit must warn even with fish")
-	}
-	if FoundingGrainWelfareWarning(10, 5, 1000) != "" {
-		t.Fatal("nonempty sufficient grain must not warn")
-	}
 }
