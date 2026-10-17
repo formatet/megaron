@@ -115,7 +115,7 @@ func canRecruit(cc checkContext) Verb {
 				// (api/handlers coverTimberWithCedar — keep the two in step).
 				have += math.Max(0, cc.goodAmount("cedar")-spec.Costs["cedar"]*float64(men))
 			}
-			if have < need {
+			if !province.GoodsAffordable(have, need) {
 				afford = false
 				break
 			}

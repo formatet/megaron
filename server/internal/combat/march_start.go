@@ -956,7 +956,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			).Scan(&have); err != nil {
 				return nil, reject(http.StatusInternalServerError, "could not read the home port's granary")
 			}
-			if have < provisions {
+			if !province.GoodsAffordable(have, provisions) {
 				// Båda talen med flit: en ärlig brist säger hur stor den är, så
 				// spelaren vet om hon ska vänta en dag eller bygga en åker.
 				return nil, reject(http.StatusUnprocessableEntity, "not enough grain to provision the voyage — the home port holds %.0f, "+

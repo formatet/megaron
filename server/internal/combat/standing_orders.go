@@ -795,14 +795,7 @@ func deductGood(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, good str
 	if qty <= 0 {
 		return nil
 	}
-	tag, err := tx.Exec(ctx,
-		`UPDATE settlement_goods SET
-		     amount    = settled(amount, rate, calc_tick) - $1,
-		     calc_tick = current_world_tick()
-		 WHERE settlement_id = $2 AND good_key = $3
-		   AND settled(amount, rate, calc_tick) >= $1`,
-		qty, settlementID, good,
-	)
+	tag, err := province.DeductGood(ctx, tx, settlementID, good, qty)
 	if err != nil {
 		return err
 	}
