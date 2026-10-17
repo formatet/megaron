@@ -4,5 +4,5 @@
           Starting stock 0 grain — production covers food demand.
           No grain reserve: loyalty can fall
 FAIL
-FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
 FAIL

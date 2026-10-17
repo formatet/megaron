@@ -1,0 +1,144 @@
+{
+  "catchment": [
+    {
+      "q": 21,
+      "r": 31,
+      "known": true,
+      "terrain": "river_delta",
+      "coastal": true
+    },
+    {
+      "q": 19,
+      "r": 31,
+      "known": true,
+      "terrain": "deep_sea"
+    },
+    {
+      "q": 19,
+      "r": 32,
+      "known": true,
+      "terrain": "deep_sea"
+    },
+    {
+      "q": 19,
+      "r": 33,
+      "known": true,
+      "terrain": "deep_sea"
+    },
+    {
+      "q": 20,
+      "r": 30,
+      "known": true,
+      "terrain": "coastal_sea"
+    },
+    {
+      "q": 20,
+      "r": 31,
+      "known": true,
+      "terrain": "coastal_sea"
+    },
+    {
+      "q": 20,
+      "r": 32,
+      "known": true,
+      "terrain": "coastal_sea"
+    },
+    {
+      "q": 20,
+      "r": 33,
+      "known": true,
+      "terrain": "deep_sea"
+    },
+    {
+      "q": 21,
+      "r": 29,
+      "known": true,
+      "terrain": "coastal_sea"
+    },
+    {
+      "q": 21,
+      "r": 30,
+      "known": true,
+      "terrain": "river"
+    },
+    {
+      "q": 21,
+      "r": 32,
+      "known": true,
+      "terrain": "coastal_sea"
+    },
+    {
+      "q": 21,
+      "r": 33,
+      "known": true,
+      "terrain": "coastal_sea"
+    },
+    {
+      "q": 22,
+      "r": 29,
+      "known": true,
+      "terrain": "river_delta",
+      "coastal": true
+    },
+    {
+      "q": 22,
+      "r": 30,
+      "known": true,
+      "terrain": "mountain_red",
+      "coastal": true
+    },
+    {
+      "q": 22,
+      "r": 31,
+      "known": true,
+      "terrain": "mountain_red",
+      "coastal": true
+    },
+    {
+      "q": 22,
+      "r": 32,
+      "known": true,
+      "terrain": "scrub_maquis",
+      "coastal": true
+    },
+    {
+      "q": 23,
+      "r": 29,
+      "known": true,
+      "terrain": "river_valley"
+    },
+    {
+      "q": 23,
+      "r": 30,
+      "known": true,
+      "terrain": "mountain_red"
+    },
+    {
+      "q": 23,
+      "r": 31,
+      "known": true,
+      "terrain": "mountain_red"
+    }
+  ],
+  "goods": {
+    "fish": 13.166666666666664,
+    "grain": 11.333333333333332,
+    "stone": 3.5,
+    "wine": 1.6666666666666665
+  },
+  "grain": {
+    "base_per_tick": 5.833333333333332,
+    "consumption_per_tick": 5,
+    "est_net_per_tick": 0.8333333333333321,
+    "fish_per_tick": 0,
+    "food_net_per_tick": 0.8333333333333321,
+    "loyalty_warning": "Loyalty can fall while grain stores are empty or grain production falls short of population demand, even when fish covers meals. Build up grain production and stores.",
+    "seed": 0,
+    "ticks_until_empty": null,
+    "with_farm_food_net_per_tick": 0.03333333333333233,
+    "with_farm_per_tick": 5.033333333333332
+  },
+  "harbour_note": "Coastal: a city here can build a harbour and ships.",
+  "isolated_warning": "isolated start: no hills and no copper/tin/silver deposit in this catchment, and no other settlement within 10 hexes \u2014 bronze, cult expansion, and trade may be a permanent dead end here. Founding is still your choice; this is a heads-up, not a block.",
+  "unknown_hexes": 0
+}

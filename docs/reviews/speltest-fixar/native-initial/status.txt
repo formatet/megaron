@@ -1,0 +1,34 @@
+Wanax Turios · day 0 of the world
+
+Potamos [minoan]  Pop: 1.0k  Labor: 1.0k  Walls: 0/3  Loyalty: 3  Settlements: 1/5  [coastal — can build harbour → ships]
+Population 1000 — growing: food net +0.8 per day
+  Loyalty 1–4 (1=lowest; revolt also requires a hostile garrison majority + a triggering event)
+  No loyalty events yet.
+  Raised by: kharis ≥ favor threshold, fed/varied diet (daily welfare), gifts ≥50 silver-equivalent (`keryx transfer`), won/defended battles.
+  Lowered by: starvation, too many colonies (overextension), neglect (>2 days without a gift), lost battles, a borrowed army kept too long.
+
+No trade contacts yet — trade needs a foreign settlement within your vision. Run `keryx cities` to see known/rumoured neighbours (march outward or colonise to reach one), then `keryx message --to <name>` or `keryx trade-offer` once one is visible.
+
+Sitos granary: 0 stored / cap 300 · coverage 240.0 days (granary fills above 30, drains below 10) · storing away a tenth of the surplus
+
+Last day 0: 1 goods produced, 1 consumed, Sitos granary was idle  ·  keryx ticklog for details
+
+Resources
+  (rate = net: production − consumption, per day)
+  Silver      480  —
+  Grain      1.2k  prod 5.8 − consum 5.0 = net +0.8 per day  (2 citizens needed for food · 2 placed)
+  Net      net -0.2 grain per day, -0.5 silver per day (after the army's upkeep)
+  ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).
+  ⚠ Grain      1.2k  +5.8 per day  — known sinks absorb at most 362 within 60 days; 2 citizens produces with no receiver (`keryx place`)
+  Kharis       25  (Suspicious) · cap 25 · passive +0.0 per day
+  Temples: none — kharis doesn't climb without a temple + offerings.
+  → feed the temples with local grain, fish, timber or silver or cast a rite — see `keryx rite --list`.
+
+Army (garrison in Potamos)
+  Spearmen    200
+      59761d7c-fc0d-49e6-a92f-802422ff0187  100
+      a27d4817-63d3-43f6-976d-05011124e821  100
+  Galley        1
+  Upkeep     1.0 grain, 1.5 silver per day  (everything the city pays — including field units)
+             1.0 silver per day back into the city (garrison's pay)
+  Field units and other cities are shown in `keryx unit list`.

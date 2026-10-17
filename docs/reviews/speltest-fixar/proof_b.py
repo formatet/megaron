@@ -7,6 +7,7 @@ CLI=['go','-C','server','test','-count=1','./cmd/keryx','-run','TestPlaytest']
 DB=['tools/gotest.sh','./api/handlers','-run','TestPlaytest']
 JS=['node','--test','web/static/js/megaron/ui/marchctx.test.mjs']
 cases=[
+ ('centre','server/api/handlers/world.go', [('append([]hexgrid.Coord{center}, hexgrid.Ring(center, hexgrid.CatchmentRadius)...)','hexgrid.Disk(center, hexgrid.CatchmentRadius)')],DB,'TestPlaytestColonizePreview_CentreFirstAndCoastalGift'),
  ('consumption','server/api/handlers/world.go', [('foodForecast.Consumption,','0,')],DB,'TestPlaytestColonizePreview_FullConsumption'),
  ('reason','server/api/handlers/province.go',[('UnavailableReason: reason,','UnavailableReason: reason[:0],')],DB,'TestPlaytestKharis_SameRealmPoolInTwoCities'),
  ('catalogue','server/cmd/keryx/cmd_status.go',[('province.BuildingSpecs[kind].Costs["timber"]','0.0')],CLI,'TestPlaytestTimberWarning_FollowsCatalogue'),

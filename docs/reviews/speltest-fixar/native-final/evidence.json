@@ -1,0 +1,175 @@
+{
+  "health": {
+    "commit": "255620dbb0f5c00163b01da6461e5bd94c8414bf",
+    "migration": 181,
+    "status": "ok"
+  },
+  "attempts": [
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 3
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 1
+    }
+  ],
+  "target": {
+    "place_kind": "river",
+    "place_id": "21,30",
+    "q": 21,
+    "r": 30,
+    "terrain": "river",
+    "visible": true,
+    "tier": "live",
+    "fertility": 0.33232738478640766,
+    "mineral": 0.6463466354924025
+  },
+  "ship_id": "4d5f6487-c690-490e-b486-b86518f57203",
+  "groups": [
+    {
+      "type": "galley",
+      "category": "naval",
+      "loc": "Potamos",
+      "mode": "march",
+      "ids": [
+        "4d5f6487-c690-490e-b486-b86518f57203"
+      ],
+      "names": [
+        "Kharis-Bearer, Galley of Potamos"
+      ]
+    }
+  ],
+  "preview": {
+    "available": false,
+    "reason": "unknown_terrain",
+    "silver_payer_count": 1,
+    "silver_runway_ticks": 320,
+    "upkeep_silver_field": 1.5,
+    "upkeep_silver_home": 0.4500000000000002
+  },
+  "sent": {
+    "target_q": 21,
+    "target_r": 30,
+    "intent": "explore",
+    "ticks": 10
+  },
+  "http_status": 202,
+  "answer": {
+    "arrival_tick": 2,
+    "arrives_at": "2026-10-17T11:44:41.289215174+02:00",
+    "arrives_at_utc": "2026-10-17T09:44:41.289215174Z",
+    "carried_silver": 0,
+    "departs_at": "2026-10-17T11:44:39.289215174+02:00",
+    "duration_ticks": 1,
+    "expedition": {
+      "area_q": 21,
+      "area_r": 30,
+      "home_by_tick": 11,
+      "length_ticks": 10,
+      "turn_tick": 6
+    },
+    "origin_q": 20,
+    "origin_r": 31,
+    "purse_shortfall": 0,
+    "target_q": 20,
+    "target_r": 28,
+    "unit_id": "4d5f6487-c690-490e-b486-b86518f57203"
+  },
+  "movement": [
+    {
+      "status": "marching",
+      "q": 20,
+      "r": 31
+    }
+  ],
+  "page_errors": []
+}

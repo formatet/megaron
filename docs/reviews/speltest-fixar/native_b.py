@@ -57,6 +57,9 @@ try:
  assert 'consumption ~5.0' in text and 'the city starves' not in text,text
  zero_forecast=api(wp+f"/colonize-preview?q={spawn['Q']}&r={spawn['R']}&pop=1000&seed=0",token)
  assert zero_forecast['grain']['consumption_per_tick']==5 and zero_forecast['grain']['loyalty_warning'],zero_forecast
+ assert zero_forecast['catchment'][0]['q']==spawn['Q'] and zero_forecast['catchment'][0]['r']==spawn['R'],zero_forecast
+ assert zero_forecast['harbour_note'].startswith('Coastal:'),zero_forecast
+ assert 'Poseidon' in text and 'Demeter' not in text,text
  (OUT/'zero-stock-forecast.json').write_text(json.dumps(zero_forecast,indent=2))
  founded=api(wp+'/founding/settle',token,{'name':'Potamos'})
  for _ in range(60):
