@@ -7,3 +7,5 @@ It matters concretely in [[battle]]: loyal troops commit more of their men each 
 Loyalty is mostly a question for [[colonies]], far from the capital and newly won.
 
 A [[transfers|gift]] from your capital is the direct lever: 50 or more silver-equivalent earns +1.
+
+A fed population supports loyalty. Fish counts as food, and stored food can cover a production deficit. Hunger harms loyalty only when the population’s daily meals are not fully met, using the same feeding outcome as [[growth]].

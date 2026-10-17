@@ -871,7 +871,16 @@ export function notifText(kind, body) {
 // server keeps writing it alongside grain_ticks so old persisted
 // notifications stay readable; prefer grain_ticks and fall back to grain_days.
 export function colonyFoundedGrainLine(body) {
-  if (!body || body.grain_net_per_tick == null) return '';
+  if (!body) return '';
+  if (body.food_net_per_tick != null) {
+    const name = body.name || 'The colony';
+    const net = body.food_net_per_tick;
+    const line = net >= 0
+      ? `${name} food production covers consumption (net +${net.toFixed(1)} per day).`
+      : `${name} food production falls short by ${(-net).toFixed(1)} per day. Stored food feeds people until it runs out.`;
+    return `${line} ${body.loyalty_warning || ''}`.trim();
+  }
+  if (body.grain_net_per_tick == null) return '';
   const name = body.name || 'The colony';
   // grain_net_per_tick IS the per-tick rate now (tick == day, mig 109) — do
   // not scale it, that was the ×24 error found alongside cmd_goods.go's.
@@ -881,7 +890,7 @@ export function colonyFoundedGrainLine(body) {
     const ticks = ticksLeft != null ? ` — grain lasts ~${fmtDays(Math.round(ticksLeft))}` : '';
     return `${name} does not feed itself (~${Math.round(-perTick)} grain per day deficit)${ticks}. Build a farm if the land bears it, or send grain by internal transfer.`;
   }
-  const warning = body.loyalty_warning || (body.grain_amount != null && body.grain_amount <= 0 ? "No grain reserve yet — loyalty can fall while the grain store is empty." : "");
+  const warning = body.loyalty_warning || '';
   return `${name} produces enough grain (net ~+${perTick.toFixed(1)} per day). ${warning}`.trim();
 }
 

@@ -286,10 +286,10 @@ test('ford send uses the same per-unit mission as preview, retaining target and 
 });
 
 test('playtest: coastal forecast uses full food demand and shows loyalty reserve warning', () => {
-  const html = menu.renderColonizePreviewHTML({grain: {base_per_tick: 0.5, fish_per_tick: 5, est_net_per_tick: 0, consumption_per_tick: 5, food_net_per_tick: 0.5, seed: 0, loyalty_warning: 'No grain reserve: loyalty can fall'}});
+  const html = menu.renderColonizePreviewHTML({grain: {base_per_tick: 0.5, fish_per_tick: 5, est_net_per_tick: 0, consumption_per_tick: 5, food_net_per_tick: 0.5, seed: 0, loyalty_warning: 'Food reserves are running down: improve food production'}});
   assert.match(html, /grain 0\.5 \+ fish 5\.0 − consumption 5\.0/);
   assert.match(html, /net \+0\.5/);
-  assert.match(html, /No grain reserve: loyalty can fall/);
+  assert.match(html, /Food reserves are running down: improve food production/);
 });
 
 test('founding carries the authoritative wood warning without inventing a local rule', () => {
@@ -301,4 +301,9 @@ test('founding carries the authoritative wood warning without inventing a local 
 test('Host summary exposes the wood warning before the closed Details section', async () => {
  const {hostForecastSummaryHTML}=await import('../render/map.js');
  assert.match(hostForecastSummaryHTML({timber_warning:'No timber within reach',goods:{}}),/No timber within reach/);
+});
+
+test('fish-fed founding forecast does not invent an empty-grain loyalty warning', () => {
+ const html=menu.renderColonizePreviewHTML({grain:{base_per_tick:0,fish_per_tick:5,consumption_per_tick:5,food_net_per_tick:0,est_net_per_tick:0,seed:0,loyalty_warning:''}});
+ assert.match(html,/fish 5.0/);assert.doesNotMatch(html,/loyalty can fall|No grain reserve/);
 });

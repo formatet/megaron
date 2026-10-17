@@ -754,7 +754,7 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 			"fish_per_tick":               foodForecast.FishProduction,
 			"food_net_per_tick":           foodForecast.FoodNet,
 			"with_farm_food_net_per_tick": farmForecast.FoodNet,
-			"loyalty_warning":             loyalty.FoundingGrainWelfareWarning(seed, basePerTick, forecastPop),
+			"loyalty_warning":             loyalty.FoundingFoodWelfareWarning(foodForecast.GrainProduction+foodForecast.FishProduction, forecastPop),
 		},
 		"unknown_hexes":  unknown,
 		"timber_warning": foundingTimberWarning(goods, unknown),
