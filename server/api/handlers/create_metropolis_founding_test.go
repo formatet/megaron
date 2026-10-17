@@ -47,6 +47,10 @@ func foundMetropolisFixture(t *testing.T, terrains [7]string) (*pgxpool.Pool, uu
 // hex's coastal flag set as the caller says (the real caller reads it from
 // map_tiles.coastal).
 func foundMetropolisFixtureCoastal(t *testing.T, terrains [7]string, coastal bool) (*pgxpool.Pool, uuid.UUID) {
+	return foundMetropolisFixturePopulation(t, terrains, coastal, 4000)
+}
+
+func foundMetropolisFixturePopulation(t *testing.T, terrains [7]string, coastal bool, population int) (*pgxpool.Pool, uuid.UUID) {
 	t.Helper()
 	pool := foundingTestPool(t)
 	ctx := context.Background()
@@ -96,7 +100,7 @@ func foundMetropolisFixtureCoastal(t *testing.T, terrains [7]string, coastal boo
 		Coastal:    coastal,
 		Name:       "Foundington-" + uuid.New().String(),
 		Culture:    "achaean",
-		Population: 4000,
+		Population: population,
 	})
 	if err != nil {
 		t.Fatalf("createMetropolis: %v", err)
@@ -222,5 +226,23 @@ func TestFounding_RecordsFounder(t *testing.T) {
 		`SELECT founder_id IS NOT NULL AND founder_id = owner_id FROM settlements WHERE id = $1`, sid,
 	).Scan(&same); err != nil || !same {
 		t.Errorf("metropolis founder_id = owner_id: %v (err %v), want true", same, err)
+	}
+}
+
+// The real founding writer, not just a hypothetical farm, must clear the
+// inland-food budget on ordinary hills and still grant exactly the L1 farm.
+func TestCreateMetropolis_InlandFoodSevenOfTen(t *testing.T) {
+	pool, sid := foundMetropolisFixturePopulation(t, [7]string{"hills", "hills", "hills", "hills", "hills", "hills", "hills"}, false, 1000)
+	var workers, level int
+	var grain float64
+	err := pool.QueryRow(context.Background(), `SELECT
+ (SELECT count(*) FROM settlement_placement WHERE settlement_id=$1 AND good_key IN ('grain','fish')),
+ (SELECT level FROM buildings WHERE settlement_id=$1 AND building_type='farm'),
+ (SELECT rate FROM settlement_goods WHERE settlement_id=$1 AND good_key='grain')`, sid).Scan(&workers, &level, &grain)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if workers > 7 || economy.FoodNet(grain, 1000) < 0 || level != 1 {
+		t.Fatalf("actual founding: workers=%d farmL%d grain=%f; want <=7, L1, >=5 grain", workers, level, grain)
 	}
 }
