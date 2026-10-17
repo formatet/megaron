@@ -8,7 +8,8 @@ import (
 )
 
 func worldsCmd() *cobra.Command {
-	return &cobra.Command{
+	var selected string
+	cmd := &cobra.Command{
 		Use:   "worlds",
 		Short: "List available worlds",
 		Args:  noPositionalArgs(), // no flags at all — nothing to guess
@@ -17,6 +18,28 @@ func worldsCmd() *cobra.Command {
 			data, err := c.get("/api/v1/worlds")
 			if err != nil {
 				return err
+			}
+			if selected != "" {
+				var worlds []map[string]any
+				if err := json.Unmarshal(data, &worlds); err != nil {
+					return err
+				}
+				found := false
+				for _, w := range worlds {
+					if w["id"] == selected {
+						found = true
+					}
+				}
+				if !found {
+					return fmt.Errorf("world %s is not in keryx worlds", selected)
+				}
+				cfg.WorldID = selected
+				cfg.ProvinceID = autoDetectProvince(c, selected)
+				if err := saveConfig(cfg); err != nil {
+					return err
+				}
+				fmt.Fprintf(cmd.OutOrStdout(), "Selected world %s\n", selected)
+				return nil
 			}
 			if jsonMode {
 				printRawJSON(data)
@@ -40,4 +63,6 @@ func worldsCmd() *cobra.Command {
 			return nil
 		},
 	}
+	cmd.Flags().StringVar(&selected, "select", "", "select a world by its id and save it")
+	return cmd
 }

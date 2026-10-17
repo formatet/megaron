@@ -223,7 +223,7 @@ func classifyWelfare(kharisGood, fed, starving, varied bool) (eventType string, 
 // starvation outcome. Actual welfare reads FoodTick's food_unmet_amount.
 // FoodNet and NetFoodGoods are the same projection used by growth and surfaces.
 func FoundingFoodWelfareWarning(foodRate float64, population int) string {
-	if economy.FoodNet(foodRate, population) < 0 {
+	if economy.FoodNet(foodRate, population) < -economy.ForecastBalanceEpsilon {
 		return "Food production falls short of population demand. Stored food feeds people until it runs out; loyalty can fall if meals are not fully covered. Improve food production or send food."
 	}
 	return ""

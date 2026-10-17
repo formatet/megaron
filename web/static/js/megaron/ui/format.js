@@ -96,7 +96,8 @@ export function formatApiError(data, fallback) {
     const parts = data.missing.map(m => {
       const need = Math.round(Number(m.need) || 0);
       const have = Math.round(Number(m.have) || 0);
-      return `${m.good || 'goods'} ${need} needed, ${have} in store`;
+      const wait = m.rate_per_tick > 0 ? ` — ≈${fmtDays(Math.ceil((Number(m.need)-Number(m.have))/m.rate_per_tick))} at current production (before other use)` : '';
+      return `${m.good || 'goods'} ${need} needed, ${have} in store${wait}`;
     });
     return 'Not enough: ' + parts.join('; ') + '.';
   }

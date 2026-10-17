@@ -36,10 +36,11 @@ func writeGoodsError(w http.ResponseWriter, e *insufficientGoodsError) {
 		Good string  `json:"good"`
 		Need float64 `json:"need"`
 		Have float64 `json:"have"`
+		Rate float64 `json:"rate_per_tick,omitempty"`
 	}
 	missing := make([]missingEntry, len(e.Short))
 	for i, s := range e.Short {
-		missing[i] = missingEntry{Good: s.Good, Need: s.Need, Have: s.Have}
+		missing[i] = missingEntry{Good: s.Good, Need: s.Need, Have: s.Have, Rate: s.Rate}
 	}
 	writeJSON(w, http.StatusUnprocessableEntity, map[string]any{
 		"error":   "insufficient_goods",
@@ -52,6 +53,7 @@ type goodShortfall struct {
 	Good string  `json:"good"`
 	Need float64 `json:"need"`
 	Have float64 `json:"have"`
+	Rate float64 `json:"rate_per_tick,omitempty"`
 }
 
 // insufficientGoodsError lists every good that fell short, so the API can tell
@@ -163,13 +165,13 @@ func coverTimberWithCedar(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID
 		return costs, 0, nil
 	}
 	stock := func(good string) (float64, error) {
-		var have float64
+		var have, rate float64
 		err := tx.QueryRow(ctx,
-			`SELECT settled(amount, rate, calc_tick)
+			`SELECT settled(amount, rate, calc_tick), rate
 			   FROM settlement_goods
 			  WHERE settlement_id = $1 AND good_key = $2
 			  FOR UPDATE`,
-			settlementID, good).Scan(&have)
+			settlementID, good).Scan(&have, &rate)
 		if err == pgx.ErrNoRows {
 			return 0, nil
 		}
@@ -218,14 +220,14 @@ func deductGoods(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, costs m
 		if qty <= 0 {
 			continue
 		}
-		var have float64
+		var have, rate float64
 		err := tx.QueryRow(ctx,
-			`SELECT settled(amount, rate, calc_tick)
+			`SELECT settled(amount, rate, calc_tick), rate
 			   FROM settlement_goods
 			  WHERE settlement_id = $1 AND good_key = $2
 			  FOR UPDATE`,
 			settlementID, key,
-		).Scan(&have)
+		).Scan(&have, &rate)
 		if err == pgx.ErrNoRows {
 			have = 0 // settlement has never held this good
 		} else if err != nil {
@@ -235,7 +237,7 @@ func deductGoods(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, costs m
 			if key == "timber" {
 				have += cedarSpare // cedar would have covered it: show the pot, not half of it
 			}
-			short = append(short, goodShortfall{Good: key, Need: qty, Have: have})
+			short = append(short, goodShortfall{Good: key, Need: qty, Have: have, Rate: rate})
 		}
 	}
 	if len(short) > 0 {

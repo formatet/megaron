@@ -138,12 +138,13 @@ func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.R
 	}
 
 	type sitosRow struct {
-		CoverageTicks  float64 `json:"coverage_ticks"`
-		LowTicks       float64 `json:"low_ticks"`
-		HighTicks      float64 `json:"high_ticks"`
-		GranaryTotal   float64 `json:"granary_total"`
-		FoodNetPerTick float64 `json:"food_net_per_tick"`
-		GrowthState    string  `json:"growth_state"`
+		CoverageTicks  float64            `json:"coverage_ticks"`
+		LowTicks       float64            `json:"low_ticks"`
+		HighTicks      float64            `json:"high_ticks"`
+		GranaryTotal   float64            `json:"granary_total"`
+		GranaryPerGood map[string]float64 `json:"granary_per_good"`
+		FoodNetPerTick float64            `json:"food_net_per_tick"`
+		GrowthState    string             `json:"growth_state"`
 	}
 	type item struct {
 		ID                 uuid.UUID `json:"id"`
@@ -187,6 +188,7 @@ func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.R
 				LowTicks:       fs.LowTicks,
 				HighTicks:      fs.HighTicks,
 				GranaryTotal:   fs.GranaryTotal,
+				GranaryPerGood: fs.GranaryPerGood,
 				FoodNetPerTick: fs.FoodNetPerTick,
 				GrowthState:    fs.GrowthState,
 			},

@@ -290,5 +290,5 @@ func foundingStoresLine(grainCarried, silverCarried, grainTotal, silverTotal flo
 
 // errNeedYes is the refusal for a non-interactive run: it names the command to re-run.
 func errNeedYes(cmdline, what string) error {
-	return fmt.Errorf("non-interactive run: re-run with --yes to confirm %s (%s ... --yes)", what, cmdline)
+	return fmt.Errorf("Nothing sent — add --yes to confirm %s (%s ... --yes)", what, cmdline)
 }

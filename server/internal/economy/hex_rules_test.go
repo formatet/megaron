@@ -80,10 +80,10 @@ func TestRuleTable_LevelOneNumbersAndLevelMultipliers(t *testing.T) {
 
 func TestEffectText_Formats(t *testing.T) {
 	farm := []HexBuildEffect{{Good: "grain", PlacesWithout: 4, RateWithout: 1.0, PlacesWith: 8, RateByLevel: [3]float64{1.7, 2.4, 3.1}}}
-	if got, want := BuildEffectText(farm), "grain production ×1.7 · space for 4 more workers"; got != want {
+	if got, want := BuildEffectText(farm), "this hex's grain output ×1.7 · space for 4 more workers"; got != want {
 		t.Errorf("BuildEffectText = %q, want %q", got, want)
 	}
-	if got, want := UpgradeEffectText(farm, 1), "grain production ×1.7 → ×2.4"; got != want {
+	if got, want := UpgradeEffectText(farm, 1), "this hex's grain output ×1.7 → ×2.4"; got != want {
 		t.Errorf("UpgradeEffectText L1 = %q, want %q", got, want)
 	}
 	if got := UpgradeEffectText(farm, 3); got != "" {
@@ -94,7 +94,7 @@ func TestEffectText_Formats(t *testing.T) {
 		t.Errorf("silver BuildEffectText = %q, want %q", got, want)
 	}
 	two := append(append([]HexBuildEffect{}, farm...), silver...)
-	if got, want := BuildEffectText(two), "grain production ×1.7 · space for 4 more workers; silver can be mined · space for 5 workers"; got != want {
+	if got, want := BuildEffectText(two), "this hex's grain output ×1.7 · space for 4 more workers; silver can be mined · space for 5 workers"; got != want {
 		t.Errorf("joined BuildEffectText = %q, want %q", got, want)
 	}
 }
@@ -111,7 +111,7 @@ func TestEffectParity_EffectTextMatchesRecompute(t *testing.T) {
 	if err != nil {
 		t.Fatalf("HexBuildEffects: %v", err)
 	}
-	if got, want := BuildEffectText(fx), "grain production ×1.7 · space for 4 more workers"; got != want {
+	if got, want := BuildEffectText(fx), "this hex's grain output ×1.7 · space for 4 more workers"; got != want {
 		t.Fatalf("effect = %q, want %q", got, want)
 	}
 

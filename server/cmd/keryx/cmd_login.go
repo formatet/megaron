@@ -131,17 +131,23 @@ func autoDetectWorld(c *Client) ([]map[string]any, string, error) {
 	if err := json.Unmarshal(data, &worlds); err != nil || len(worlds) == 0 {
 		return nil, "", fmt.Errorf("no worlds")
 	}
+	candidates := []string{}
 	for _, w := range worlds {
 		if w["state"] == "active" {
 			if id, ok := w["id"].(string); ok {
-				return worlds, id, nil
+				candidates = append(candidates, id)
 			}
 		}
 	}
-	if id, ok := worlds[0]["id"].(string); ok {
-		return worlds, id, nil
+	if len(candidates) == 1 {
+		return worlds, candidates[0], nil
 	}
-	return nil, "", fmt.Errorf("no world id")
+	if len(candidates) == 0 && len(worlds) == 1 {
+		if id, ok := worlds[0]["id"].(string); ok {
+			return worlds, id, nil
+		}
+	}
+	return worlds, "", fmt.Errorf("choose a world: keryx worlds --select <world-id>")
 }
 
 func autoDetectProvince(c *Client, worldID string) string {

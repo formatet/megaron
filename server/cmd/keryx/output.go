@@ -43,6 +43,9 @@ func rate(v float64) string {
 	if v == 0 {
 		return "—"
 	}
+	if math.Abs(v) < 0.05 {
+		return "about even"
+	}
 	// %+.1f supplies its own sign (was "+%.1f", which mangled negative rates
 	// into "+-5.3/tick" — DEL C grain-netto-märkning surfaced this).
 	return fmt.Sprintf("%+.1f per day", v)

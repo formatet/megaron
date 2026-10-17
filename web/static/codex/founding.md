@@ -34,3 +34,5 @@ Next: [[city]].
 The forecast lists grain and fish production separately from the population's full food consumption. A production deficit uses up carried grain before hunger begins. Fish counts as food. Loyalty falls for hunger only when daily meals are not fully covered, after stored grain, fish and emergency livestock have been used. A production deficit warns of future hunger once reserves run out; it does not by itself mean the population is starving.
 
 If the known catchment has no timber or cedar to cover timber costs, the forecast warns before you found. Unknown ground may still hold wood; scout it or plan deliveries. A fully known catchment without wood needs imports for building.
+
+Place citizens on olive woodland or cedar forest for timber and on stone-bearing ground for stone; idle citizens produce nothing. The forecast says when Demeter’s farm is already included; another farm is not an extra founding gift.

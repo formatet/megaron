@@ -79,7 +79,7 @@ export function settlementFoodRow(s, pd) {
     name: s.name,
     isCapital: !!s.is_capital,
     population: pd.population || 0,
-    grainRate: netTick,
+    grainRate: net,
     coverage: cov,
     severity: cannotFeed ? 'empty-shrinking' : severity,
     label: cannotFeed ? 'cannot feed itself' : (FOOD_LABEL[severity] || severity),
@@ -123,7 +123,7 @@ export function renderSettlementsOverviewHTML(rows, sortKey, sortDir) {
     <tr style="color:var(--text-dim);font-size:.7rem">
       ${th('name', 'Settlement')}
       ${th('population', 'Pop', 'right')}
-      ${th('grainRate', 'Grain', 'right')}
+      ${th('grainRate', 'Food net', 'right')}
       ${th('coverage', 'Food lasts', 'right')}
       ${th('brist', 'Status')}
     </tr>
@@ -235,6 +235,7 @@ async function loadEconomyGoods(mySettlements) {
       if (!r.ok) continue;
       const goods = await r.json();
       const silver = goods.find(g => g.key === 'silver');
+      const granary = overviewByID.get(s.settlement_id)?.sitos?.granary_per_good || {};
       const others = goods.filter(g => g.key !== 'silver' && (g.amount > 0 || g.producible));
       html += `<div class="dsec-title" style="margin-top:.8rem">${s.name}${s.is_capital?' ★':''}</div>`;
       if (silver) {
@@ -248,7 +249,7 @@ async function loadEconomyGoods(mySettlements) {
       }
       if (others.length) {
         html += `<table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td>Amount</td><td>Rate</td></tr>${others.map(g =>
-          `<tr><td>${g.name||g.key}</td><td>${fmtNum(Math.floor(g.amount||0))}</td>${goodsRateCell(g)}</tr>`
+          `<tr><td>${g.name||g.key}</td><td>${fmtNum(Math.floor(g.amount||0))}${granary[g.key]>0 ? ` · ${fmtNum(Math.floor(granary[g.key]))} in Sitos` : ''}</td>${goodsRateCell(g)}</tr>`
         ).join('')}</table>`;
       }
     }
