@@ -564,7 +564,7 @@ rate and cap live NESTED under settlement.resources, not at the settlement
 top level:
 
   settlement.resources.<good>.amount   current stock (e.g. .grain.amount, .silver.amount)
-  settlement.resources.<good>.rate     net per day (production − consumption)
+  settlement.resources.<good>.rate     stored production rate per day; meals and army upkeep are separate
   settlement.resources.<good>.cap      storage cap
 
 There is no top-level settlement.grain / settlement.silver / settlement.storage_cap
@@ -784,7 +784,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			// print when present so a colony's tin/copper output is visible here, not
 			// only via `goods`.
 			fmt.Println("Resources")
-			fmt.Println("  (rate = net: production − consumption, per day)")
+			fmt.Println("  (per day; food and army balances are itemized below)")
 			if res, ok := sett["resources"].(map[string]any); ok {
 				printRes := func(label, key string, always bool) {
 					rd, ok := res[key].(map[string]any)

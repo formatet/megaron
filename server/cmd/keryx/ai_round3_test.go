@@ -182,6 +182,11 @@ func TestAIRound3_ForeignWorkersAreNotRemovalTargets(t *testing.T) {
 	if got := occupiedGoodHint(opts, "fish"); strings.Contains(got, "#1") {
 		t.Fatal(got)
 	}
+	opts.Hexes[0].HeldBy = ""
+	opts.Hexes[0].Goods[0].Placed = 1
+	if got := occupiedGoodHint(opts, "fish"); !strings.Contains(got, "(1 citizen)") {
+		t.Fatal(got)
+	}
 	out := runCityCmd(t, `{"total_gubbar":10,"hexes":[{"hex_ordinal":1,"held_by":"Tylissos","goods":[{"good_key":"fish","placed":5}]}]}`, `{"settlement":{"food_gubbar_required":2,"food_gubbar_placed":5,"food_self_sufficient":true}}`)
 	if strings.Count(out, "★") != 1 {
 		t.Fatal("foreign workers marked as removable: " + out)

@@ -209,7 +209,11 @@ func occupiedGoodHint(opts *placementOptionsResp, good string) string {
 		}
 		for _, g := range h.Goods {
 			if g.GoodKey == good && g.Placed > 0 {
-				rows = append(rows, fmt.Sprintf("#%d %s (%d citizens)", h.HexOrdinal, good, g.Placed))
+				label := "citizens"
+				if g.Placed == 1 {
+					label = "citizen"
+				}
+				rows = append(rows, fmt.Sprintf("#%d %s (%d %s)", h.HexOrdinal, good, g.Placed, label))
 			}
 		}
 	}

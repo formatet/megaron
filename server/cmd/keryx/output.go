@@ -105,7 +105,7 @@ var keryxTZ = func() *time.Location {
 func gameETA(c *Client, t time.Time) string {
 	tickSeconds, ok := c.TickSeconds()
 	if !ok {
-		return "arrival time unavailable (world day length not reported)"
+		return "arrival time unavailable"
 	}
 	days := time.Until(t).Seconds() / tickSeconds
 	if days <= 0 {
