@@ -1,0 +1,5 @@
+--- FAIL: TestAIRound_NearZeroForecast (0.00s)
+    ai_round_text_test.go:10: -0.0
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

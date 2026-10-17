@@ -1,0 +1,14 @@
+2026/10/17 16:47:54 INFO player registered id=ca249dc6-19db-4a2d-a2d8-684d1d9f0647 username=buildhex-25c678b6-27c4-41da-b5c3-0f1ec2652b9b
+2026/10/17 16:47:54 INFO player registered id=d297aa8f-ad7c-451b-9009-aef8b96601cb username=buildhex-28b53ee1-5aae-469d-af6e-f27b99cc25a1
+2026/10/17 16:47:54 INFO player registered id=d6a88972-e1bc-4f28-b008-b0e5b220e713 username=opening-26a9d480-80b8-4bf8-a85a-5820383930df-cf5420a4-d5d7-46e5-98a1-b4a5bf8c6514
+2026/10/17 16:47:54 INFO player registered id=cee7c773-9207-43b8-8a4b-86356fcfc21d username=opening-other-4afe457d-cdce-4b1d-b0da-d731449ba65c-5f91e98f-f4b0-435a-b4b6-4f934ef6bf89
+2026/10/17 16:47:54 INFO player registered id=23880e78-d525-4a67-a2bf-90d7e2eca349 username=opening-rollback-e3176410-8338-4ac4-b50d-97882a6363b3-a57f9b26-061e-4158-b280-78016adeafa8
+2026/10/17 16:47:54 INFO player registered id=323fe767-eb1f-45cd-abe4-eddbe2b99149 username=wanax-parity-cbab5a73-846f-49f6-b641-b25764179bb3
+2026/10/17 16:47:54 INFO player registered id=d90a045f-d231-4907-9af7-78da02ebef45 username=ticker-df800907-63ca-40e7-95d3-fd584064b56c
+2026/10/17 16:47:54 INFO player registered id=701b99a1-67e4-48c7-bf22-91e6a459f496 username=other-cb90148f-7f2c-4ca0-a5c7-9b67b3c5633c
+--- FAIL: TestMarchPreview_ReadOnlyAndTiming (0.12s)
+    unit_march_preview_test.go:197: ?target_q=40&target_r=0&intent=explore: 200 {"available":false,"planned_expedition_ticks":10,"planned_home_by_tick_if_departing_now":15,"reason":"unknown_terrain","silver_payer_count":0,"silver_runway_ticks":null,"upkeep_silver_field":0,"upkeep_silver_home":0}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.567s
+FAIL
+» färsk DB på migration 181 · commit a1c8724e+ändringar

@@ -1,0 +1,14 @@
+2026/10/17 16:47:44 INFO player registered id=1dc99ef7-8e6a-41b5-b291-afae2d2a9de1 username=buildhex-9c6299fe-fc30-4519-b17f-5950cfff1394
+2026/10/17 16:47:44 INFO player registered id=e9e602fb-42e8-47fa-925c-e582727f1180 username=buildhex-161bcadc-79b7-4ff7-a8dd-2bc58fa259ec
+2026/10/17 16:47:44 INFO player registered id=5ee372a3-14a1-4123-b902-c3b6220bad62 username=opening-c719a6ea-fa2a-47ff-987a-17c2c62bfc8b-9729c32e-096a-45a0-a5a7-ecb41347bd1b
+2026/10/17 16:47:44 INFO player registered id=13ab8b4e-6b46-4d74-afd2-668b230fdaa1 username=opening-other-20b73583-dad0-4edb-afa6-09764695fc3f-15577b68-8521-4824-9344-2adae1fac2c9
+--- FAIL: TestOpeningDispatchJoinConcurrentRetryRiseAndPrivacy (0.13s)
+    opening_dispatch_test.go:109: active-world join still waits: [{Title:Your people await you Paragraphs:[Time. A day passes every 1 hour. Days begin after 4 Wanaxes join. Foot soldiers cross a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. War chariots cross plains in 0.67 day but need 2 in olive woodland and 3 in hills, cedar forest or desert. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day. Your Host carries 1200 grain and 480 silver. It lives on subsistence until founding; these reserves do not drain. Find your place — founding is final. Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls. The gods. Your Kharis holds for 144 days after founding, and no punishment falls. A temple takes 16 days to build. Build, staff and feed one in time; after that, neglect lets Kharis fade and risks punishment. Place citizens on olive woodland or cedar forest for timber, and on stone-bearing ground for stone; idle citizens produce nothing. Orders travel. A Runner must reach a unit in the field before it follows your new order. Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together. Rules: ? (Codex). Problems: Report. Community chat: Account.] Returning:false HostID:08530583-f5ab-4d65-8a72-8d593161fee0}]
+2026/10/17 16:47:44 INFO player registered id=42656d22-21de-4b12-b977-5b0d3f106431 username=opening-rollback-99148bd6-097c-4770-8c7e-7737a7792720-2f553286-e617-4166-98d7-fb2d85cd7ad6
+2026/10/17 16:47:44 INFO player registered id=cff714ba-baec-40dd-95b3-a7f0525dcb17 username=wanax-parity-615737d4-843f-4ae0-8e46-e4482375aba4
+2026/10/17 16:47:44 INFO player registered id=5c98b76c-1996-4e0a-8f2e-e096ec81ac13 username=ticker-6c055c56-637c-4cdb-9703-ba5d64244489
+2026/10/17 16:47:44 INFO player registered id=7637b9b0-2ef4-44bd-9af0-1bedf2e9760b username=other-76629d03-8761-4d69-9043-97d70be32e8b
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.578s
+FAIL
+» färsk DB på migration 181 · commit a1c8724e+ändringar

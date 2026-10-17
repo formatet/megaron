@@ -1,0 +1,50 @@
+Selected world one
+Error: a Nomadic Host founds its metropolis with keryx founding settle --name <name> (add --yes to confirm)
+Usage:
+  unit march [flags]
+
+Examples:
+  keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
+  keryx unit march --unit <id> --q 5 --r -3 --stance fortify
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos
+  # Colonize the hex the unit already stands on (no coords needed):
+  keryx unit march --unit <id> --intent colonize --name Thapsos
+  # Any march reveals fog along its route toward a frontier coordinate:
+  keryx unit march --unit <id> --q 12 --r -8
+  # Explore an area for 12 days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
+  # Land troops from a laden ship in port, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
+  # Attack an enemy settlement and annex it instead of the sack default:
+  keryx unit march --unit <id> --q 5 --r -3 --mode annex
+
+Flags:
+      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)
+  -h, --help            help for march
+      --intent string   arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (explores the surrounding area, turns home by half the chosen duration; unit must be garrisoned at a settlement) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)
+      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)
+      --name string     colony name (with --intent colonize, or --intent land --colonize)
+      --preview         estimate arrival without sending an order
+      --q int           target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --r int           target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --stance string   stance on arrival: fortify|storm|sentry
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --ticks int       explore duration in days (omit for server default)
+      --unit string     unit UUID (required)
+      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)
+
+--- FAIL: TestAIRound_ColonizeConfirmationAndHost (0.00s)
+    --- FAIL: TestAIRound_ColonizeConfirmationAndHost/false (0.00s)
+        ai_round_text_test.go:139: Colonize (5,0) — catchment forecast (0/0 hexes known, 0 unknown):
+              Food: grain ~5.0 + fish ~0.0 per day − consumption ~5.0 per day = net about even per day
+              Starting stock 0 grain — marginal (net about even per day). A farm gives net ~-5.0 per day.
+            NOTE: the unit is consumed — the colonists become the colony's population and the unit is disbanded. It cannot be ordered again.
+            A colony does not feed itself automatically — build a farm if the terrain supports it, otherwise arrange grain via an internal transfer (keryx transfer --good grain --qty <n> --dest <colony>).
+            Unit aaaaaaaa colonizing (5,0)
+             <nil>
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.012s
+FAIL

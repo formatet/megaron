@@ -1,0 +1,14 @@
+2026/10/17 16:48:03 INFO player registered id=2e9725c0-71e8-4b7e-9ea5-097461e3198a username=buildhex-0ef2f871-887c-41de-a590-8d5e6924e61c
+--- FAIL: TestAIRound_ShortfallCarriesCurrentRate (0.07s)
+    ai_round_test.go:30: map[error:insufficient_goods missing:[map[good:stone have:22 need:24]]]
+2026/10/17 16:48:03 INFO player registered id=2a88bbf9-24e8-45db-96cd-ef4a36937e71 username=buildhex-7be1f398-a72e-4712-93f2-29fa4801f7d9
+2026/10/17 16:48:03 INFO player registered id=d89b6fb5-18d5-40bd-a074-5a081d6bded7 username=opening-58691698-76d1-4593-a38a-4758b707b8ac-e5442d55-8cf1-4d96-9b70-046293cf9f5f
+2026/10/17 16:48:03 INFO player registered id=639cf034-c52b-454f-a92a-851d246cbc06 username=opening-other-fb233d8c-3589-4753-8fac-b959defdc336-96d0b41f-807a-485b-be33-b27bdc2a0060
+2026/10/17 16:48:03 INFO player registered id=49d1da44-371c-488e-8a39-640d5488a84a username=opening-rollback-ec1a8f7b-c637-459f-a949-50fe6e2b11cf-23e3d28e-3c60-416b-9190-242675b91c20
+2026/10/17 16:48:03 INFO player registered id=cd98da4d-ae82-4be2-8017-436d6516241a username=wanax-parity-fbb396a3-2b65-449c-a90d-6455caf779a4
+2026/10/17 16:48:04 INFO player registered id=41b328b0-170e-4a44-b741-1bdfcd45f70f username=ticker-714beed0-f5a4-4940-b992-b72edfc4f85a
+2026/10/17 16:48:04 INFO player registered id=96787c7d-203c-4655-8088-ae4f88a0b19a username=other-3588d507-195f-4267-bc95-f97a936401e5
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.586s
+FAIL
+» färsk DB på migration 181 · commit a1c8724e+ändringar

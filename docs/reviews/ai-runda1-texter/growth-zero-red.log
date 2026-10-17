@@ -1,0 +1,90 @@
+TAP version 13
+# Subtest: J: only three primary sections, all secondary abilities remain under closed More
+ok 1 - J: only three primary sections, all secondary abilities remain under closed More
+  ---
+  duration_ms: 0.823086
+  type: 'test'
+  ...
+# Subtest: J: food days come from authoritative mixed-food coverage, not grain net or reserve
+ok 2 - J: food days come from authoritative mixed-food coverage, not grain net or reserve
+  ---
+  duration_ms: 9.663589
+  type: 'test'
+  ...
+# Subtest: J: growing low stocks never say starving; food-worker warning survives
+ok 3 - J: growing low stocks never say starving; food-worker warning survives
+  ---
+  duration_ms: 0.738448
+  type: 'test'
+  ...
+# Subtest: J: missing/invalid coverage is honestly unavailable, never zero or NaN days
+ok 4 - J: missing/invalid coverage is honestly unavailable, never zero or NaN days
+  ---
+  duration_ms: 0.158808
+  type: 'test'
+  ...
+# Subtest: J: population and slaughter capability keep input-free player words and eligibility
+ok 5 - J: population and slaughter capability keep input-free player words and eligibility
+  ---
+  duration_ms: 0.609838
+  type: 'test'
+  ...
+# Subtest: growth line: one sentence per state, from the server growth_state
+ok 6 - growth line: one sentence per state, from the server growth_state
+  ---
+  duration_ms: 0.557785
+  type: 'test'
+  ...
+# Subtest: blessed harvest: food section shows authoritative bonus and goods, hides at end tick
+ok 7 - blessed harvest: food section shows authoritative bonus and goods, hides at end tick
+  ---
+  duration_ms: 0.507329
+  type: 'test'
+  ...
+# Subtest: owned city centre offers the authoritative place naming form inside Catchment, other tiles never do
+ok 8 - owned city centre offers the authoritative place naming form inside Catchment, other tiles never do
+  ---
+  duration_ms: 1.073256
+  type: 'test'
+  ...
+# Subtest: owned-city naming success refreshes authoritative map and rerenders City despite cleared selectedHex
+ok 9 - owned-city naming success refreshes authoritative map and rerenders City despite cleared selectedHex
+  ---
+  duration_ms: 14.320668
+  type: 'test'
+  ...
+# Subtest: growth food balance does not print a signed rounded zero
+not ok 10 - growth food balance does not print a signed rounded zero
+  ---
+  duration_ms: 0.726169
+  type: 'test'
+  location: '/home/tk/wt/codex-ai-runda1-texter/web/static/js/megaron/ui/drawers/city_production.test.mjs:89:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /food net about even/. Input:
+    
+    `<p class="growth-line">Population 1,000 — not growing: food net -0.0 per day (needs more than 0)</p><div class="stat-row"><span class="sr-label">People</span><span class="sr-val">1,000</span></div><div class="stat-row"><span class="sr-label">Free to work</span><span class="sr-val">0</span></div><div class="stat-row"><span class="sr-label">Livestock</span><span class="sr-val">0</span></div><button class="btn-small" onclick="slaughterLivestock('p')" disabled title="Trade one animal for 10 people, right now">Slaughter → 10 people</button><div id="city-slaughter-result" class="action-result"></div>`
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: `<p class="growth-line">Population 1,000 — not growing: food net -0.0 per day (needs more than 0)</p><div class="stat-row"><span class="sr-label">People</span><span class="sr-val">1,000</span></div><div class="stat-row"><span class="sr-label">Free to work</span><span class="sr-val">0</span></div><div class="stat-row"><span class="sr-label">Livestock</span><span class="sr-val">0</span></div><button class="btn-small" onclick="slaughterLivestock('p')" disabled title="Trade one animal for 10 people, right now">Slaughter → 10 people</button><div id="city-slaughter-result" class="action-result"></div>`
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-ai-runda1-texter/web/static/js/megaron/ui/drawers/city_production.test.mjs:91:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 9
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 76.466569

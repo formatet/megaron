@@ -1,0 +1,60 @@
+Selected world one
+Error: a Nomadic Host founds its metropolis with keryx founding settle --name <name> (add --yes to confirm)
+Usage:
+  unit march [flags]
+
+Examples:
+  keryx unit march --unit <id> --q 5 --r -3
+  keryx unit march --unit <id> --target 5,-3
+  keryx unit march --unit <id> --q 5 --r -3 --stance fortify
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos
+  # Colonize the hex the unit already stands on (no coords needed):
+  keryx unit march --unit <id> --intent colonize --name Thapsos
+  # Any march reveals fog along its route toward a frontier coordinate:
+  keryx unit march --unit <id> --q 12 --r -8
+  # Explore an area for 12 days, then automatically return home
+  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12
+  # Land troops from a laden ship in port, then sail home on its own:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land
+  # ...and found a colony there with no further order:
+  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos
+  # Attack an enemy settlement and annex it instead of the sack default:
+  keryx unit march --unit <id> --q 5 --r -3 --mode annex
+
+Flags:
+      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)
+  -h, --help            help for march
+      --intent string   arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (explores the surrounding area, turns home by half the chosen duration; unit must be garrisoned at a settlement) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)
+      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)
+      --name string     colony name (with --intent colonize, or --intent land --colonize)
+      --preview         estimate arrival without sending an order
+      --q int           target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --r int           target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)
+      --stance string   stance on arrival: fortify|storm|sentry
+      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)
+      --ticks int       explore duration in days (omit for server default)
+      --unit string     unit UUID (required)
+      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)
+
+--- FAIL: TestAIRound_StatusUsesFoodAndShowsGranary (0.00s)
+    --- FAIL: TestAIRound_StatusUsesFoodAndShowsGranary/-2.5 (0.00s)
+        ai_round_text_test.go:184: Coast []  Pop: 1.0k  Labor: 1.0k  Walls: 0/3  Loyalty: 0
+              Loyalty 1–4 (1=lowest; revolt also requires a hostile garrison majority + a triggering event)
+              Raised by: kharis ≥ favor threshold, fed/varied diet (daily welfare), gifts ≥50 silver-equivalent (`keryx transfer`), won/defended battles.
+              Lowered by: starvation, too many colonies (overextension), neglect (>2 days without a gift), lost battles, a borrowed army kept too long.
+            
+            Sitos granary: 0 stored (307 grain) / cap 0 · coverage 0.0 days (granary fills above 0, drains below 0) · resting — neither storing nor releasing
+            
+            Resources
+              (rate = net: production − consumption, per day)
+              Food     grain 0.5 + fish 5.0 − consumption 5.0 = net -2.5 per day
+              Grain     10.0k  production 0.5 per day · 307 grain in Sitos
+              Fish         10  +5.0 per day
+              Timber        1  +1.0 per day
+              ⚠ Grain     10.0k  production +0.5 per day  — known sinks absorb at most 300 within 60 days; 2 citizens produces with no receiver (`keryx place`)
+              Kharis        0  () · passive +0.0 per day
+            
+            
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.011s
+FAIL

@@ -1,0 +1,12 @@
+Wanax Widowoios · day 0 of the world
+
+Nomadic Host — your people on the move
+  1000 people · cannot fight · sight 2 hexes (4 by water or on mountains) · position (10,32)
+  Grain (escort's ration): 1200 — lasts indefinitely
+  Silver reserve: 480 — lasts indefinitely
+  2 Spearmen-cohorts in the field · messengers free to send
+
+Next steps:
+  keryx unit march --unit 08d379ad-fe49-4520-9d94-7bff3e8c192f --q <q> --r <r>   # travel
+  keryx founding settle                       # found the metropolis where the host stands
+  keryx message --from-host --to <city> --text "..."

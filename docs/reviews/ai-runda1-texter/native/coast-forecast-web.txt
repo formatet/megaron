@@ -1,0 +1,34 @@
+DETAILS
+Deposits: —
+Produces: grain, horses, wine, fish
+1,000 people · cannot fight · sight 2 hexes (4 by water or on mountains)
+Food lasts indefinitely
+Silver reserve lasts indefinitely
+2 Spearmen cohorts in the field
+Messengers free to send
+Catchment forecast — 19 of 19 hexes known
+No timber within reach — every building needs timber. Plan wood deliveries before building.
+Coastal: a city here can build a harbour and ships.
+Food: grain 0.5 + fish 5.0 − consumption 5.0 per day = net +0.5 per day
+Seed 1,200 grain — production covers food demand.
+Also: copper-deposit ✓, copper about 1 per day, fish about 18 per day, livestock about 8 per day, oil about 12 per day, stone about 6 per day, wine about 10 per day
+🎁 Poseidon's galley — a coastal founding is owed one galley, crewed and ready — a gift, not drawn from your people
+Plains (center)
+Coastal sea
+Coastal sea
+Coastal sea
+Coastal sea
+Coastal sea
+Plains
+Plains
+Coastal sea
+Plains
+Plains
+Plains
+Coastal sea
+Plains
+Plains
+Hills · copper
+Coastal sea
+Coastal sea
+Plains

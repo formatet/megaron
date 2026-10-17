@@ -1,0 +1,16 @@
+dust-runway named RED -> exact bytes -> fresh GREEN 80f927fde92cdb4902f7779ec66dfc6d05273258a2d6aabc37444ee805c2932d
+farm-fact named RED -> exact bytes -> fresh GREEN 0389d5bd678231493cadd6deed222b87d415f778c4489cc8213e347dfac059b8
+farm-cli named RED -> exact bytes -> fresh GREEN 1502b6bb81ddf07d14d8c5b3e11682ffe6f4ce4b695eabe6efeffc996314583e
+food-status named RED -> exact bytes -> fresh GREEN 7371f8e6e5612be75845446ba445e18e77ec7d4ac4da3179b889e983c792b8db
+active-dispatch named RED -> exact bytes -> fresh GREEN d76045f52de5f88089640e3a4f9d14b01980a53ddb2043038d6c4e3c7c33ea34
+world-select named RED -> exact bytes -> fresh GREEN aa86d1a5d2e4e3693f1838a1e13902d82be7532aca79c3ee7d401facc5f160b1
+city-coordinate named RED -> exact bytes -> fresh GREEN a5a5bb1456ff271e95b1db4c48cd9f1a099ae170e9cb6319edfa6271ae13534c
+budget-preview named RED -> exact bytes -> fresh GREEN c1eb33ec2c07617f0821839e81a6c1ed8dd46a095ec82d7d2ac6fbeb7c4bc110
+no-confirm named RED -> exact bytes -> fresh GREEN 1502b6bb81ddf07d14d8c5b3e11682ffe6f4ce4b695eabe6efeffc996314583e
+rate-wire named RED -> exact bytes -> fresh GREEN 450e3b8d984d8bb32ac5a9396a91a4c974f35b7c288e48dd329945ad61daae9a
+rate-cli named RED -> exact bytes -> fresh GREEN 977e9a4c5ea4a45d963e3f2a1f943da3d1320a39350ce885d50c0819bd04ddbf
+sitos-wire named RED -> exact bytes -> fresh GREEN 4a95bd3d60ebff4540b28845e99c5b369700195d59aa19d06fb090b9b325a20e
+host-colonize named RED -> exact bytes -> fresh GREEN 1502b6bb81ddf07d14d8c5b3e11682ffe6f4ce4b695eabe6efeffc996314583e
+explore-area named RED -> exact bytes -> fresh GREEN 1502b6bb81ddf07d14d8c5b3e11682ffe6f4ce4b695eabe6efeffc996314583e
+web-farm named RED -> exact bytes -> fresh GREEN 83cd68feb0a07d40e2afd1c39142b42e0c10c9f618556cada8735874f49f9887
+web-wait named RED -> exact bytes -> fresh GREEN 66ca329e22a7347ce771e7c9ce22673b29f170b4e0132e8ae0a48d56085cf390

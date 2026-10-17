@@ -1,0 +1,5 @@
+--- FAIL: TestFoodRunwayTicks_NoDustInfinity (0.00s)
+    founding_forecast_test.go:274: net=-1e-12 runway=1.2e+15
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.001s
+FAIL

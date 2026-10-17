@@ -1,0 +1,13 @@
+Selected world one
+--- FAIL: TestAIRound_ColonizeConfirmationAndHost (0.00s)
+    --- FAIL: TestAIRound_ColonizeConfirmationAndHost/true (0.00s)
+        ai_round_text_test.go:136: Colonize (5,0) — catchment forecast (0/0 hexes known, 0 unknown):
+              Food: grain ~5.0 + fish ~0.0 per day − consumption ~5.0 per day = net about even per day
+              Starting stock 0 grain — marginal (net about even per day). A farm gives net ~-5.0 per day.
+            NOTE: the unit is consumed — the colonists become the colony's population and the unit is disbanded. It cannot be ordered again.
+            A colony does not feed itself automatically — build a farm if the terrain supports it, otherwise arrange grain via an internal transfer (keryx transfer --good grain --qty <n> --dest <colony>).
+            Nothing sent — add --yes to found.
+             <nil>
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.011s
+FAIL
