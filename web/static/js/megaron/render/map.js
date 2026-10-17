@@ -3380,9 +3380,9 @@ function setCityFieldsVisible(visible) {
 // province marker at (h.q,h.r), or null for an empty/sea/mountain/fog hex.
 // known mirrors the server's FOW tier ('fog' terrain means this Wanax has
 // never seen it — same knowledge the march FOW rule in march_start.go checks).
-function destFromHex(h, tile, target) {
+export function destFromHex(h, tile, target) {
   const known = tile.terrain !== 'fog';
-  const isSea = tile.terrain === 'coastal_sea' || tile.terrain === 'deep_sea';
+  const isSea = isWaterTerrain(tile.terrain);
   if (target) {
     return { q: h.q, r: h.r, terrain: tile.terrain, isSea, known,
              name: target.name, isSettlement: true, allied: target.own ? true : !!target.allied };
@@ -3462,7 +3462,7 @@ function workersHereHTML(h) {
 // absence of affordances; sea gets galleys; empty land gets march + colonize.
 function openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits) {
   document.getElementById('ip-name').textContent =
-    isSea ? `Sea (${h.q},${h.r})` : `${namedPlaceTerrain(tile, isMountain ? 'Mountains' : terrainLabel(tile.terrain))} (${h.q},${h.r})`;
+    isSeaTerrain(tile.terrain) ? `Sea (${h.q},${h.r})` : `${namedPlaceTerrain(tile, isMountain ? 'Mountains' : terrainLabel(tile.terrain))} (${h.q},${h.r})`;
   setCityFieldsVisible(false);
   fillTerrainFields(tile);
 
@@ -3765,7 +3765,7 @@ function openHexPanel(h) {
   if (rural) { openRuralPanel(h, tile, rural, units, foreignUnits); return; }
 
   const isMountain = tile.terrain === 'mountain_limestone' || tile.terrain === 'mountain_red';
-  const isSea = tile.terrain === 'coastal_sea' || tile.terrain === 'deep_sea';
+  const isSea = isWaterTerrain(tile.terrain);
   openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits);
 }
 

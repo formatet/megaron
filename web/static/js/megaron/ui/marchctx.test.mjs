@@ -233,3 +233,54 @@ test('forecast shows the server harbour note and nothing when absent', () => {
   assert.match(inland, /can never build a harbour or ships/);
   assert.doesNotMatch(menu.renderColonizePreviewHTML(base), /harbour/);
 });
+
+test('river march: real map destination offers naval only, ford offers both categories', async () => {
+  const { destFromHex } = await import('../render/map.js');
+  const units = [ready('land'), ready('ship', { category: 'naval' }), ready('sailing', { category: 'naval', status: 'marching' })];
+  for (const terrain of ['river', 'coastal_sea', 'deep_sea']) {
+    const dest = destFromHex({q:6,r:67}, {terrain}, null);
+    assert.equal(dest.isSea, true, terrain);
+    assert.deepEqual(menu.marchEligibleUnits(units, dest).map(u => u.id), ['ship'], terrain);
+  }
+  const ford = destFromHex({q:6,r:67}, {terrain:'river_ford'}, null);
+  assert.equal(ford.isSea, false);
+  assert.deepEqual(menu.marchEligibleUnits(units, ford).map(u => u.id), ['land', 'ship']);
+  assert.deepEqual(menu.marchUnitOptions(ford, 'land', {stance:'sentry'}), {stance:'sentry'});
+  assert.deepEqual(menu.marchUnitOptions(ford, 'naval', {intent:'colonize',name:'Nostos',stance:'sentry'}), {intent:'explore'});
+  const plain = destFromHex({q:6,r:67}, {terrain:'plains'}, null);
+  assert.deepEqual(menu.marchEligibleUnits(units, plain).map(u => u.id), ['land']);
+});
+
+test('ford send uses the same per-unit mission as preview, retaining target and expedition duration', async () => {
+  const { State } = await import('../state.js');
+  const originalFetch = globalThis.fetch;
+  const originalGet = document.getElementById;
+  const before = { dest:State.marchCtxDest, groups:State.marchCtxGroups, units:State.marchCtxUnits, id:State.marchCtxUnitID, world:State.WORLD_ID };
+  const controls = new Map();
+  const control = id => { if (!controls.has(id)) controls.set(id, {value:'',checked:false,style:{display:'block'},classList:{toggle(){}},disabled:false}); return controls.get(id); };
+  const calls = [];
+  try {
+    document.getElementById = control;
+    control('mg-0').value='1'; control('mg-1').value='1';
+    Object.assign(control('mctx-ticks'), {value:'12',min:'2',max:'96',disabled:false});
+    control('mctx-stance').value='sentry';
+    State.WORLD_ID='ford-proof';State.marchCtxUnitID=null;
+    State.marchCtxDest={q:6,r:67,terrain:'river_ford',known:true,isSea:false};
+    State.marchCtxGroups=[{ids:['land'],mode:'march',category:'land'},{ids:['ship'],mode:'march',category:'naval'}];
+    State.marchCtxUnits=[ready('land'),ready('ship',{category:'naval'})];
+    globalThis.fetch=async (url, opts = {}) => {
+      if (opts.method === 'POST') calls.push({url,body:JSON.parse(opts.body)});
+      // Refuse after observing the submitted bodies: no world refresh or audio.
+      return {ok:false,status:422,headers:{get:()=>null},json:async()=>({error:'proof refusal'})};
+    };
+    await menu.sendMarch();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    assert.equal(calls.length,2);
+    assert.deepEqual(calls[0].body,{target_q:6,target_r:67,stance:'sentry'});
+    assert.deepEqual(calls[1].body,{target_q:6,target_r:67,intent:'explore',ticks:12});
+  } finally {
+    menu.closeMarchCtx();
+    globalThis.fetch=originalFetch;document.getElementById=originalGet;
+    Object.assign(State,{marchCtxDest:before.dest,marchCtxGroups:before.groups,marchCtxUnits:before.units,marchCtxUnitID:before.id,WORLD_ID:before.world});
+  }
+});

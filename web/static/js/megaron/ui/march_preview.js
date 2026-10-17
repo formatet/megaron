@@ -56,10 +56,10 @@ export function createMarchPreview(render, read, delay = 180) {
       if (!picks.length) { render(''); return; }
       render('Estimating arrival…');
       timer = setTimeout(async () => {
-        const selectedOrder = {...order, unit_ids: picks.map(pick => pick.id).join(',')};
+        const selectedIDs = picks.map(pick => pick.id).join(',');
         const forecasts = await Promise.all(picks.map(async pick => {
           try {
-            const data = await loadMarchPreview(worldID, pick, selectedOrder, read);
+            const data = await loadMarchPreview(worldID, pick, {...order, ...(pick.order || {}), unit_ids: selectedIDs}, read);
             return {html: '<div>' + esc(pick.name) + ': ' + marchArrivalHTML(data) + '</div>', data};
           } catch (error) {
             return {html: '<div>' + esc(pick.name) + ': Forecast unavailable: ' + esc(error.message) + '</div>'};

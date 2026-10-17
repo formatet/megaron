@@ -36,7 +36,7 @@ function updateMarchPreview() {
   const picks = [];
   State.marchCtxGroups.forEach((g, i) => {
     const n = Math.max(0, Math.min(parseInt(document.getElementById('mg-' + i)?.value, 10) || 0, g.ids.length));
-    for (let k = 0; k < n; k++) picks.push({ id: g.ids[k], mode: g.mode, name: g.names[k] });
+    for (let k = 0; k < n; k++) picks.push({ id: g.ids[k], mode: g.mode, category: g.category, name: g.names[k] });
   });
   const colonize = document.getElementById('mctx-colonize-chk')?.checked
     && document.getElementById('mctx-colonize-row').style.display !== 'none';
@@ -45,9 +45,10 @@ function updateMarchPreview() {
   const options = marchIntentOptions(State.marchCtxDest, { landing: landingSelected(), colonize, explore,
     name: colonize ? document.getElementById('mctx-colony-name')?.value.trim() : '',
     stance: document.getElementById('mctx-stance').value });
+  picks.forEach(p => { p.order = marchUnitOptions(State.marchCtxDest, p.category, options); });
   const intent = options.intent || '';
   const duration = document.getElementById('mctx-expedition');
-  const exploring = intent === 'explore' && (!picks.length || picks.some(p => p.mode !== 'redirect'));
+  const exploring = (!picks.length ? intent === 'explore' : picks.some(p => p.order.intent === 'explore' && p.mode !== 'redirect'));
   duration.style.display = exploring ? 'block' : 'none';
   let ticks;
   try { if (exploring) ticks = expeditionTicks(document.getElementById('mctx-ticks')); }
@@ -58,7 +59,7 @@ function updateMarchPreview() {
     : '';
   marchPreview.update(State.WORLD_ID, picks, {
     target_q: State.marchCtxDest.q, target_r: State.marchCtxDest.r,
-    ...options, ticks,
+    ticks,
   });
 }
 marchCtx.addEventListener('input', updateMarchPreview);
@@ -303,8 +304,19 @@ export function marchDefaultQuantity(group, index) {
 
 export function marchEligibleUnits(units, dest, unitID = null) {
   return units.filter(u => (!unitID || u.id === unitID) && marchCtxOrderMode(u) !== null
-    && (dest.known === false || (u.category === 'naval') === dest.isSea
+    && (dest.known === false || (u.category === 'naval') === dest.isSea || (dest.terrain === 'river_ford' && u.category === 'naval')
       || (unitID && !dest.isSea && u.category === 'naval' && u.status === 'garrison' && u.cargo_unit_id)));
+}
+
+// A ford admits both categories. Ships still need a naval mission, while land
+// orders retain their existing intent. This same per-unit order feeds preview/send.
+export function marchUnitOptions(dest, category, order) {
+  if (dest.terrain !== 'river_ford' || category !== 'naval') return { ...order };
+  const naval = { ...order, intent: 'explore' };
+  delete naval.stance;
+  delete naval.name;
+  delete naval.cargo_intent;
+  return naval;
 }
 
 export function marchIntentOptions(dest, { landing = false, colonize = false, explore = false, name = '', stance = '' } = {}) {
@@ -319,7 +331,7 @@ export function marchIntentOptions(dest, { landing = false, colonize = false, ex
 
 function landingSelected() {
   const dest = State.marchCtxDest;
-  return !!(dest && dest.known !== false && !dest.isSea && State.marchCtxUnitID
+  return !!(dest && dest.known !== false && !dest.isSea && dest.terrain !== 'river_ford' && State.marchCtxUnitID
     && State.marchCtxUnits.some(u => u.id === State.marchCtxUnitID && u.category === 'naval' && u.cargo_unit_id));
 }
 
@@ -437,7 +449,7 @@ export function groupMarchUnits(units, provinceData) {
     const prov = (provinceData || []).find(p => p.settlement_id === u.settlement_id || p.id === u.settlement_id);
     const loc  = prov ? prov.name : (u.q != null ? '(' + u.q + ',' + u.r + ')' : '');
     const key  = mode + '|' + u.type + '|' + loc;
-    if (!byKey.has(key)) byKey.set(key, { type: u.type, loc, mode, ids: [], names: [] });
+    if (!byKey.has(key)) byKey.set(key, { type: u.type, category: u.category, loc, mode, ids: [], names: [] });
     const g = byKey.get(key);
     g.ids.push(u.id);
     // display_name is server-formatted ("1st Spearmen of Knossos") and always
@@ -517,7 +529,7 @@ export async function sendMarch() {
     const el = document.getElementById('mg-' + i);
     let n = el ? parseInt(el.value, 10) || 0 : 0;
     n = Math.max(0, Math.min(n, g.ids.length));
-    for (let k = 0; k < n; k++) picks.push({ id: g.ids[k], mode: g.mode });
+    for (let k = 0; k < n; k++) picks.push({ id: g.ids[k], mode: g.mode, category: g.category });
   });
   if (!picks.length) {
     document.getElementById('mctx-err').textContent = 'Choose how many units to send.';
@@ -535,9 +547,10 @@ export async function sendMarch() {
   const exploreWanted = !!(exploreChk && exploreChk.checked
     && exploreRow && exploreRow.style.display !== 'none');
   const options = marchIntentOptions(State.marchCtxDest, { landing: landingSelected(), colonize, explore: exploreWanted, name: colonyName, stance });
+  picks.forEach(p => { p.order = marchUnitOptions(State.marchCtxDest, p.category, options); });
   const intent = options.intent || '';
   let ticks;
-  try { if (intent === 'explore' && picks.some(p => p.mode !== 'redirect')) ticks = expeditionTicks(document.getElementById('mctx-ticks')); }
+  try { if (picks.some(p => p.order.intent === 'explore' && p.mode !== 'redirect')) ticks = expeditionTicks(document.getElementById('mctx-ticks')); }
   catch (error) { document.getElementById('mctx-err').textContent = error.message; return; }
 
   marchPreview.cancel();
@@ -568,8 +581,8 @@ export async function sendMarch() {
       });
     }
     const body = { target_q: State.marchCtxDest.q, target_r: State.marchCtxDest.r };
-    Object.assign(body, options);
-    if (intent === 'explore' && ticks !== undefined) body.ticks = ticks;
+    Object.assign(body, p.order);
+    if (p.order.intent === 'explore' && ticks !== undefined) body.ticks = ticks;
     return fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units/${p.id}/march`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
     }).then(async res => {

@@ -135,3 +135,20 @@ test('redirect-only selection keeps messenger arrival warning and one authoritat
  assert.match(html,/Sold: 4 → 4 silver per day in the field · treasury lasts 10 days/);
  assert.doesNotMatch(html,/Estimated arrival/);
 });
+
+test('ford preview preserves separate land and naval mission options', async () => {
+  const urls = [];
+  const preview = createMarchPreview(() => {}, async path => {
+    urls.push(new URL(path, 'https://test.invalid'));
+    return {ok:true,json:async()=>({available:false})};
+  }, 0);
+  preview.update('w', [{id:'land',name:'Land',order:{stance:'sentry'}}, {id:'ship',name:'Ship',order:{intent:'explore'}}], {target_q:6,target_r:67,ticks:12});
+  await pause();
+  assert.equal(urls.length, 2);
+  for (const url of urls) { assert.equal(url.searchParams.get('target_q'), '6'); assert.equal(url.searchParams.get('target_r'), '67'); }
+  assert.equal(urls[0].searchParams.get('stance'), 'sentry');
+  assert.equal(urls[0].searchParams.has('intent'), false);
+  assert.equal(urls[1].searchParams.get('intent'), 'explore');
+  assert.equal(urls[1].searchParams.get('ticks'), '12');
+  assert.equal(urls[1].searchParams.has('stance'), false);
+});
