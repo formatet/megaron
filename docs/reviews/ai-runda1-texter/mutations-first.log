@@ -1,0 +1,11 @@
+dust-runway named RED -> exact bytes -> fresh GREEN 80f927fde92cdb4902f7779ec66dfc6d05273258a2d6aabc37444ee805c2932d
+farm-fact named RED -> exact bytes -> fresh GREEN 0389d5bd678231493cadd6deed222b87d415f778c4489cc8213e347dfac059b8
+farm-cli named RED -> exact bytes -> fresh GREEN 1502b6bb81ddf07d14d8c5b3e11682ffe6f4ce4b695eabe6efeffc996314583e
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-ai-runda1-texter/docs/reviews/ai-runda1-texter/mutations.py", line 36, in <module>
+    try:p.write_text(source.replace(old,new));run('red',False)
+                                              ~~~^^^^^^^^^^^^^
+  File "/home/tk/wt/codex-ai-runda1-texter/docs/reviews/ai-runda1-texter/mutations.py", line 35, in run
+    else:assert r.returncode and named in log and ('--- FAIL:' in log or 'not ok' in log),(name,log[-2200:])
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('food-status', 'FAIL\tformatet/megaron/server/cmd/keryx [build failed]\nFAIL\n# formatet/megaron/server/cmd/keryx [formatet/megaron/server/cmd/keryx.test]\ncmd/keryx/cmd_status.go:828:11: declared and not used: full\n')

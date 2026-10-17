@@ -529,6 +529,9 @@ func locationStr(c *Client, u unitRow, homes map[string]settlementPos) string {
 		// mistaken for a stranded unit.
 		if u.MarchIntent != nil && *u.MarchIntent == "explore" {
 			loc = "exploring (auto-returns home) — "
+			if u.Expedition != nil && !u.Expedition.Homeward {
+				return fmt.Sprintf("exploring toward unseen ground near (%d,%d) — auto-returns home", u.Expedition.AreaQ, u.Expedition.AreaR)
+			}
 		}
 		if u.MarchIntent != nil && *u.MarchIntent == "explore_return" {
 			loc = "returning home from explore — "
@@ -701,6 +704,23 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 				return uerr
 			}
 			unitID = resolvedUnitID
+			if intent == "colonize" {
+				data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/units", cfg.WorldID))
+				if err != nil {
+					return err
+				}
+				var units struct {
+					Units []unitRow `json:"units"`
+				}
+				if err := json.Unmarshal(data, &units); err != nil {
+					return err
+				}
+				for _, u := range units.Units {
+					if u.ID == unitID && u.Type == "nomadic_host" {
+						return fmt.Errorf("a Nomadic Host founds its metropolis with keryx founding settle --name <name> (add --yes to confirm)")
+					}
+				}
+			}
 			resolvedQ, resolvedR, given, terr := resolveTargetHex(cmd, target, targetQ, targetR)
 			if terr != nil {
 				return terr
@@ -751,13 +771,20 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 			// is dispatched, then confirm. Skipped in --json mode (machine caller).
 			// --yes or a non-interactive stdin (the agent harness) prints the forecast
 			// but does not block on the y/N — same pattern as `keryx rite`.
+			if intent == "colonize" && jsonMode && !yes {
+				return errNeedYes("keryx unit march", "founding a colony")
+			}
 			if intent == "colonize" && !jsonMode {
 				preview, perr := fetchColonizePreview(c, cfg.WorldID, targetQ, targetR)
 				if perr != nil {
 					// Never block colonization on a forecast failure — warn and proceed.
-					fmt.Printf("(could not fetch catchment forecast: %v)\n", perr)
+					return fmt.Errorf("Nothing sent — could not fetch catchment forecast: %w", perr)
 				} else {
 					renderColonizePreview(preview, targetQ, targetR)
+					if !yes && !stdinIsTerminal() {
+						fmt.Println("Nothing sent — add --yes to found.")
+						return nil
+					}
 					if !yes && stdinIsTerminal() {
 						ok, aerr := askYesNo("Found the colony?")
 						if aerr != nil {
@@ -878,16 +905,18 @@ type colonizePreview struct {
 	} `json:"catchment"`
 	Goods map[string]float64 `json:"goods"`
 	Grain struct {
-		ConsumptionPerTick *float64 `json:"consumption_per_tick"`
-		FishPerTick        float64  `json:"fish_per_tick"`
-		FoodNetPerTick     *float64 `json:"food_net_per_tick"`
-		FarmFoodNetPerTick *float64 `json:"with_farm_food_net_per_tick"`
-		LoyaltyWarning     string   `json:"loyalty_warning"`
-		BasePerTick        float64  `json:"base_per_tick"`
-		EstNetPerTick      float64  `json:"est_net_per_tick"`
-		Seed               float64  `json:"seed"`
-		TicksUntilEmpty    *float64 `json:"ticks_until_empty"`
-		WithFarmPerTick    float64  `json:"with_farm_per_tick"`
+		ConsumptionPerTick  *float64 `json:"consumption_per_tick"`
+		FishPerTick         float64  `json:"fish_per_tick"`
+		FoodNetPerTick      *float64 `json:"food_net_per_tick"`
+		FarmFoodNetPerTick  *float64 `json:"with_farm_food_net_per_tick"`
+		LoyaltyWarning      string   `json:"loyalty_warning"`
+		FarmPossible        *bool    `json:"farm_possible"`
+		StarterFarmIncluded bool     `json:"starter_farm_included"`
+		BasePerTick         float64  `json:"base_per_tick"`
+		EstNetPerTick       float64  `json:"est_net_per_tick"`
+		Seed                float64  `json:"seed"`
+		TicksUntilEmpty     *float64 `json:"ticks_until_empty"`
+		WithFarmPerTick     float64  `json:"with_farm_per_tick"`
 	} `json:"grain"`
 	TimberWarning   string `json:"timber_warning"`
 	UnknownHexes    int    `json:"unknown_hexes"`
@@ -997,15 +1026,17 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 		farmNetPerTick = *p.Grain.FarmFoodNetPerTick
 	}
 	farmNote := ""
-	if p.Grain.WithFarmPerTick <= p.Grain.BasePerTick {
+	if p.Grain.FarmPossible != nil && !*p.Grain.FarmPossible {
 		farmNote = " (no farmable terrain in known catchment — a farm won't help here)"
+	} else if p.Grain.StarterFarmIncluded {
+		farmNote = " (Demeter's farm is already included in this forecast)"
 	}
 	marginalCeiling := consPerTick * 0.10
 
 	switch {
-	case netPerTick < 0:
+	case netPerTick < -1e-9:
 		reach := ""
-		if p.Grain.TicksUntilEmpty != nil {
+		if p.Grain.TicksUntilEmpty != nil && netPerTick < -1e-9 {
 			reach = fmt.Sprintf(" → lasts ~%s", formatDays(*p.Grain.TicksUntilEmpty, "%.0f"))
 		}
 		fmt.Printf("  Starting stock %.0f grain%s — production falls short; food runs out when the stock is spent. With a farm: net ~%s per day%s\n",
@@ -1085,6 +1116,9 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 // tenths both matter more than they do at three-digit scale, so show one
 // decimal there; above it, round to the nearest whole tick as before.
 func formatNetPerTick(v float64) string {
+	if math.Abs(v) < 0.05 {
+		return "about even"
+	}
 	if math.Abs(v) < 10 {
 		return fmt.Sprintf("%+.1f", v)
 	}

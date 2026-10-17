@@ -50,8 +50,15 @@ func newRootCommand() *cobra.Command {
 				os.Exit(2)
 			}
 			if cfg.WorldID == "" && commandNeedsWorld(cmd) {
-				fmt.Fprintln(os.Stderr, "No active world — run: keryx worlds")
-				os.Exit(2)
+				_, id, err := autoDetectWorld(newClient(cfg))
+				if err != nil || id == "" {
+					return fmt.Errorf("no world selected — run keryx worlds, then keryx worlds --select <world-id>")
+				}
+				cfg.WorldID = id
+				cfg.ProvinceID = autoDetectProvince(newClient(cfg), id)
+				if err := saveConfig(cfg); err != nil {
+					return fmt.Errorf("save selected world: %w", err)
+				}
 			}
 			return nil
 		},

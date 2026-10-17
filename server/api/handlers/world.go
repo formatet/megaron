@@ -672,14 +672,7 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var daysUntilEmpty *float64
-	if estNetPerTick < 0 {
-		tickDrain := -estNetPerTick
-		if tickDrain > 0 {
-			d := seed / tickDrain
-			daysUntilEmpty = &d
-		}
-	}
+	daysUntilEmpty := economy.FoodRunwayTicks(seed, foodForecast.FoodNet)
 
 	// P8 (soak 2026-07-18): a plains-only, no-neighbour founding site is a
 	// structural dead end for bronze (copper+tin), cult-chain expansion, and
@@ -748,6 +741,8 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 			"base_per_tick":               basePerTick,
 			"est_net_per_tick":            estNetPerTick,
 			"seed":                        seed,
+			"farm_possible":               farmGift,
+			"starter_farm_included":       starterFarm && !coastalCentre && farmGift,
 			"ticks_until_empty":           daysUntilEmpty,
 			"with_farm_per_tick":          farmForecast.GrainProduction,
 			"consumption_per_tick":        foodForecast.Consumption,

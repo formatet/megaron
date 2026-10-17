@@ -1,0 +1,14 @@
+2026/10/17 16:48:12 INFO player registered id=69568d07-c37c-47d6-98db-89abfc6c95f3 username=buildhex-4beffe27-17e5-4149-b4c1-adc3317f03d9
+2026/10/17 16:48:13 INFO player registered id=57bf820b-862d-4068-9f3c-8f412b2c9552 username=buildhex-0ad9ee88-7d5e-4ffe-bb83-226d3eea2bfe
+2026/10/17 16:48:13 INFO player registered id=bc6c1632-103d-4946-b5d8-db9192a01a21 username=opening-e8e8be68-7b57-49f7-a4d8-31d3092679e2-9ecf9cba-ddbc-4009-90eb-58cdeaad2628
+2026/10/17 16:48:13 INFO player registered id=085f0cb9-62cb-4d5e-b428-7c2e1a3762e5 username=opening-other-e7169d30-22e3-45c3-a60c-a184afbb8b8e-ce8b49e7-2061-43e4-8f86-7db646311d65
+2026/10/17 16:48:13 INFO player registered id=c7e666ce-a973-4a2d-a04d-bfd9a438a089 username=opening-rollback-ae95e44e-10a5-4c30-8f8a-8dc3e1de7e3a-b10dea39-18ff-4837-a7b0-9d0b38721efa
+2026/10/17 16:48:13 INFO player registered id=dee7fedd-d174-4c67-9227-46389e20ba58 username=wanax-parity-01d0df1b-56fe-436f-9bed-81e79b1e55cd
+--- FAIL: TestSettlementsOverviewParity_MatchesProvinceGet (0.07s)
+    settlement_overview_test.go:292: grain in Sitos missing from overview: [{"id":"7782a495-f613-4eb3-a14b-b3b7c5f20dbb","name":"Parityton","is_capital":true,"population":800,"grain_prod_rate":12.5,"grain_consum_rate":4,"food_self_sufficient":false,"sitos":{"coverage_ticks":150,"low_ticks":3,"high_ticks":10,"granary_total":307,"granary_per_good":null,"food_net_per_tick":10.5,"growth_state":"growing"}}]
+2026/10/17 16:48:13 INFO player registered id=ec8987b8-034b-4921-aba6-358381f9eec6 username=ticker-e441a378-1c69-40a2-bb29-72c5b91541fe
+2026/10/17 16:48:13 INFO player registered id=921384c6-982d-43c2-9a61-3f7d6f5f475b username=other-48939588-eae4-493e-95c8-efe0cbe2d638
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.581s
+FAIL
+» färsk DB på migration 181 · commit a1c8724e+ändringar

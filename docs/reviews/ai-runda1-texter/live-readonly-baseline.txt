@@ -1,0 +1,17 @@
+Sat Oct 17 16:47:40 CEST 2026
+{"commit":"81fe09d","migration":181,"status":"ok"}
+   name   | population | map_q | map_r | building_type | level | hex_q | hex_r 
+----------+------------+-------+-------+---------------+-------+-------+-------
+ Phaistos |       1042 |    27 |    37 |               |       |       |      
+ Tylissos |       1000 |    58 |    53 | farm          |     1 |    58 |    54
+(2 rows)
+
+   name   | good_key |      amount       |       rate        
+----------+----------+-------------------+-------------------
+ Phaistos | grain    | 807.8162025035517 | 4.319999999999999
+ Phaistos | fish     | 19.17429025429397 |                 3
+ Tylissos | grain    | 824.3047554266218 | 4.333333333333332
+ Tylissos | fish     |                 0 |                 0
+(4 rows)
+
+could not change directory to "/root": Permission denied

@@ -94,7 +94,7 @@ func BuildEffectText(effects []HexBuildEffect) string {
 			parts = append(parts, fmt.Sprintf("%s can be mined · space for %d workers", e.Good, e.PlacesWith))
 			continue
 		}
-		parts = append(parts, fmt.Sprintf("%s production %s · space for %d more workers", e.Good, levelMult(1), e.PlacesWith-e.PlacesWithout))
+		parts = append(parts, fmt.Sprintf("this hex's %s output %s · space for %d more workers", e.Good, levelMult(1), e.PlacesWith-e.PlacesWithout))
 	}
 	return strings.Join(parts, "; ")
 }
@@ -107,7 +107,7 @@ func UpgradeEffectText(effects []HexBuildEffect, currentLevel int) string {
 	}
 	parts := make([]string, 0, len(effects))
 	for _, e := range effects {
-		parts = append(parts, fmt.Sprintf("%s production %s → %s", e.Good, levelMult(currentLevel), levelMult(currentLevel+1)))
+		parts = append(parts, fmt.Sprintf("this hex's %s output %s → %s", e.Good, levelMult(currentLevel), levelMult(currentLevel+1)))
 	}
 	return strings.Join(parts, "; ")
 }

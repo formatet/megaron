@@ -103,12 +103,12 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 				}
 				bldSuffix += heldHexNote(h)
 				if len(h.Goods) == 0 {
-					fmt.Printf("  #%-3d %-14s (no producible good)%s\n", h.HexOrdinal, namedRiverTerrain(h.Terrain, h.RiverName), bldSuffix)
+					fmt.Printf("  #%-3d (%d,%d) %-14s (no producible good)%s\n", h.HexOrdinal, h.HexQ, h.HexR, namedRiverTerrain(h.Terrain, h.RiverName), bldSuffix)
 					continue
 				}
 				for i, g := range h.Goods {
 					if i == 0 {
-						fmt.Printf("  #%-3d %-14s %s%s%s\n", h.HexOrdinal, namedRiverTerrain(h.Terrain, h.RiverName), goodCell(g), foodMarker(g), bldSuffix)
+						fmt.Printf("  #%-3d (%d,%d) %-14s %s%s%s\n", h.HexOrdinal, h.HexQ, h.HexR, namedRiverTerrain(h.Terrain, h.RiverName), goodCell(g), foodMarker(g), bldSuffix)
 					} else {
 						fmt.Printf("  %-4s %-14s %s%s\n", "", "", goodCell(g), foodMarker(g))
 					}

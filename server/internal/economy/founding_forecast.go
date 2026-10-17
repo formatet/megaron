@@ -109,3 +109,15 @@ func FoundingFoodForecastAt(ctx context.Context, tx Tx, worldID uuid.UUID, cente
 	grainNet, _, _ := FoodConsumptionSplit(demand, grainProd, fishProd, 0)
 	return FoundingFoodForecast{GrainProduction: grainProd, FishProduction: fishProd, Consumption: demand, GrainNet: grainNet, FoodNet: FoodNet(grainProd+fishProd, pop)}, nil
 }
+
+// ForecastBalanceEpsilon only suppresses floating-point dust in projections;
+// it does not change FoodTick debits or the growth gate.
+const ForecastBalanceEpsilon = 1e-9
+
+func FoodRunwayTicks(stock, net float64) *float64 {
+	if net >= -ForecastBalanceEpsilon {
+		return nil
+	}
+	ticks := stock / -net
+	return &ticks
+}

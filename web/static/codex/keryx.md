@@ -32,3 +32,5 @@ keryx occupation order ...   # sack, burn or annex an occupied city
 Orders given through Keryx obey the same rules as in the browser: they travel by [[runners|Runner]] and take days ([[time]]).
 
 `POLEIA_CONFIG` selects a separate configuration file. `POLEIA_SERVER` and `POLEIA_TOKEN` override connection settings. Command failures show the error and a pointer to `keryx <command> --help`. March previews call the soldiers' silver cost **Pay**.
+
+With exactly one active world, commands select and save it automatically. To choose explicitly, run `keryx worlds` and then `keryx worlds --select <world-id>`. City rows show both the placement number and `(q,r)`; use those coordinates with `build --hex q,r`.

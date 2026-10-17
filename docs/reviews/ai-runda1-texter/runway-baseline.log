@@ -1,0 +1,20 @@
+» färsk DB på migration 181 · commit 6bf288d9+ändringar
+2026/10/17 16:57:51 INFO player registered id=e890f80c-5d76-42a0-894e-d4242472f170 username=runway-e13e9ac2-344e-41c9-a0ba-96edd2e8ff0f-1a0f38e7-e87e-4ccf-9f2c-b23520d3aa0d
+2026/10/17 16:57:51 INFO player registered id=aeefd919-690d-4b81-8a40-903e3237b637 username=runway-f5896072-f412-40da-b62f-dcbf20cb6fa4-14e74dfc-cfa1-4b85-a407-5d4d14758073
+--- FAIL: TestFoundingNotificationRunway_Metropolis (0.20s)
+    --- FAIL: TestFoundingNotificationRunway_Metropolis/dust (0.10s)
+        founding_notification_runway_test.go:66: full food net absent/wrong: {"q": 0, "r": 0, "name": "Runwaytown", "coastal": false, "grain_days": 1351079888211148800, "grain_ticks": 1351079888211148800, "known_hexes": 1, "province_id": "071d18b0-662b-42b1-bdad-ff8ab4e71b7c", "grain_amount": 1200, "grain_carried": 1200, "settlement_id": "d96f178a-8b1b-4a7a-9f26-43c0593cb8be", "unknown_hexes": 18, "silver_carried": 480, "grain_net_per_tick": -0.0000000000000008881784197001252}
+    --- FAIL: TestFoundingNotificationRunway_Metropolis/fish (0.10s)
+        founding_notification_runway_test.go:66: full food net absent/wrong: {"q": 0, "r": 0, "name": "Runwaytown", "coastal": false, "grain_days": 240, "grain_ticks": 240, "known_hexes": 1, "province_id": "1c20fa6c-0493-4f4c-8bbe-f6d642b35102", "grain_amount": 1200, "grain_carried": 1200, "settlement_id": "f8a62807-0b18-4d69-805f-8bc96c5238e3", "unknown_hexes": 18, "silver_carried": 480, "grain_net_per_tick": -5}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.207s
+2026/10/17 16:57:52 INFO colony founded (discrete unit) settlement=ce4bc703-1387-4b7e-a084-d72acc5c156c name=Newhaven province=bcc9ce9d-8566-4c38-999f-9dc0eece864b owner=3c820b5e-a178-4aa4-ad51-379104bdfcf6 founding_unit=d50ab19d-96dd-44f7-89f3-a338a2207b9d population=1000 q=10 r=10
+2026/10/17 16:57:52 INFO colony founded (discrete unit) settlement=121595a5-6ea4-4dc7-8e2f-4612067cca9f name=Newhaven province=11de8703-6f33-428c-801a-4eaad659dca6 owner=1b3ecedc-6853-4f24-abd4-6aa8b8047bc7 founding_unit=6048db0b-831a-46ce-898c-f734b7312815 population=1000 q=10 r=10
+--- FAIL: TestFoundingNotificationRunway_Colony (0.06s)
+    --- FAIL: TestFoundingNotificationRunway_Colony/dust (0.03s)
+        founding_notification_runway_test.go:151: dust/fish wrote false runway: map[food_net_per_tick:-8.881784197001252e-16 grain_amount:0 grain_days:0 grain_net_per_tick:-8.881784197001252e-16 grain_ticks:0 loyalty_warning: name:Newhaven province_id:bcc9ce9d-8566-4c38-999f-9dc0eece864b q:10 r:10 settlement_id:ce4bc703-1387-4b7e-a084-d72acc5c156c]
+    --- FAIL: TestFoundingNotificationRunway_Colony/fish (0.03s)
+        founding_notification_runway_test.go:151: dust/fish wrote false runway: map[food_net_per_tick:0 grain_amount:0 grain_days:0 grain_net_per_tick:-5 grain_ticks:0 loyalty_warning: name:Newhaven province_id:11de8703-6f33-428c-801a-4eaad659dca6 q:10 r:10 settlement_id:121595a5-6ea4-4dc7-8e2f-4612067cca9f]
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.064s
+FAIL

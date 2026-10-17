@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/url"
 	"strings"
 	"time"
@@ -809,6 +810,9 @@ func printColonyFoundedGrainLine(n notificationItem) {
 	}
 	if body.FoodNetPerTick != nil {
 		net := *body.FoodNetPerTick
+		if math.Abs(net) < 1e-9 {
+			net = 0
+		}
 		if net >= 0 {
 			fmt.Printf("      %s food production covers consumption (net %+.1f per day).\n", name, net)
 		} else {
@@ -824,12 +828,15 @@ func printColonyFoundedGrainLine(n notificationItem) {
 		grainTicks = body.GrainDays
 	}
 	perTick := *body.GrainNetPerTick
+	if math.Abs(perTick) < 1e-9 {
+		perTick = 0
+	}
 	if perTick < 0 {
 		ticks := ""
 		if grainTicks != nil {
 			ticks = fmt.Sprintf(" — grain lasts ~%s", formatDays(*grainTicks, "%.0f"))
 		}
-		fmt.Printf("      %s doesn't feed itself (~%.0f grain per day short)%s. Build a farm if the catchment supports it, otherwise send grain: keryx transfer --good grain --qty <n> --dest %s\n",
+		fmt.Printf("      %s grain production falls short by %.1f per day%s. Build a farm if the catchment supports it, otherwise send grain: keryx transfer --good grain --qty <n> --dest %s\n",
 			name, -perTick, ticks, name)
 	} else {
 		fmt.Printf("      %s production covers grain consumption (net ~%+.1f grain per day).\n", name, perTick)

@@ -97,6 +97,17 @@ func (h *UnitHandler) MarchPreview(w http.ResponseWriter, r *http.Request) {
 	// An area expedition selects an unseen first leg, even if the chosen
 	// centre is known. Its travel time could disclose hidden geography.
 	if order.Intent == "explore" {
+		// Validate through the order's read-only domain entry point, including
+		// the round-trip budget, then deliberately discard hidden route details.
+		if _, err := combat.PreviewMarch(ctx, h.pool, h.clk, order, targetKnown); err != nil {
+			var rej *combat.OrderReject
+			if errors.As(err, &rej) {
+				writeError(w, rej.Status, rej.Reason)
+			} else {
+				writeError(w, http.StatusInternalServerError, "march preview failed")
+			}
+			return
+		}
 		finance["planned_expedition_ticks"] = order.ExpeditionTicks
 		// Only a time-budget statement: no hidden first-leg distance or terrain.
 		// Garrison departure is hypothetical; a physical order may arrive later.

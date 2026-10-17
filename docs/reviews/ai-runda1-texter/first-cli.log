@@ -1,0 +1,5 @@
+# formatet/megaron/server/cmd/keryx [formatet/megaron/server/cmd/keryx.test]
+cmd/keryx/cmd_unit.go:713:14: undefined: unitInfo
+FAIL	formatet/megaron/server/cmd/keryx [build failed]
+ok  	formatet/megaron/server/internal/economy	0.003s [no tests to run]
+FAIL

@@ -1,0 +1,160 @@
+{
+  "catchment": [
+    {
+      "q": 10,
+      "r": 60,
+      "known": true,
+      "terrain": "plains",
+      "coastal": true
+    },
+    {
+      "q": 8,
+      "r": 60,
+      "known": true,
+      "terrain": "coastal_sea"
+    },
+    {
+      "q": 8,
+      "r": 61,
+      "known": true,
+      "terrain": "plains",
+      "coastal": true
+    },
+    {
+      "q": 8,
+      "r": 62,
+      "known": true,
+      "terrain": "plains",
+      "coastal": true
+    },
+    {
+      "q": 9,
+      "r": 59,
+      "known": true,
+      "terrain": "deep_sea"
+    },
+    {
+      "q": 9,
+      "r": 60,
+      "known": true,
+      "terrain": "coastal_sea"
+    },
+    {
+      "q": 9,
+      "r": 61,
+      "known": true,
+      "terrain": "plains",
+      "coastal": true
+    },
+    {
+      "q": 9,
+      "r": 62,
+      "known": true,
+      "terrain": "hills",
+      "copper_deposit": true
+    },
+    {
+      "q": 10,
+      "r": 58,
+      "known": true,
+      "terrain": "deep_sea"
+    },
+    {
+      "q": 10,
+      "r": 59,
+      "known": true,
+      "terrain": "coastal_sea"
+    },
+    {
+      "q": 10,
+      "r": 61,
+      "known": true,
+      "terrain": "hills",
+      "copper_deposit": true
+    },
+    {
+      "q": 10,
+      "r": 62,
+      "known": false
+    },
+    {
+      "q": 11,
+      "r": 58,
+      "known": true,
+      "terrain": "deep_sea"
+    },
+    {
+      "q": 11,
+      "r": 59,
+      "known": true,
+      "terrain": "coastal_sea"
+    },
+    {
+      "q": 11,
+      "r": 60,
+      "known": true,
+      "terrain": "plains",
+      "coastal": true
+    },
+    {
+      "q": 11,
+      "r": 61,
+      "known": true,
+      "terrain": "hills",
+      "silver_deposit": true
+    },
+    {
+      "q": 12,
+      "r": 58,
+      "known": true,
+      "terrain": "coastal_sea"
+    },
+    {
+      "q": 12,
+      "r": 59,
+      "known": true,
+      "terrain": "plains",
+      "coastal": true
+    },
+    {
+      "q": 12,
+      "r": 60,
+      "known": true,
+      "terrain": "forest_olive_grove"
+    }
+  ],
+  "founding_gifts": [
+    {
+      "detail": "a coastal founding is owed one galley, crewed and ready \u2014 a gift, not drawn from your people",
+      "key": "poseidon_galley",
+      "label": "Poseidon's galley"
+    }
+  ],
+  "goods": {
+    "copper": 1.9999999999999998,
+    "fish": 10.499999999999998,
+    "grain": 20.999999999999993,
+    "livestock": 5,
+    "oil": 11.666666666666664,
+    "stone": 9,
+    "timber": 1,
+    "wine": 10.999999999999998
+  },
+  "grain": {
+    "base_per_tick": 0.5,
+    "consumption_per_tick": 5,
+    "est_net_per_tick": 0,
+    "farm_possible": true,
+    "fish_per_tick": 5,
+    "food_net_per_tick": 0.5,
+    "loyalty_warning": "",
+    "seed": 1200,
+    "starter_farm_included": false,
+    "ticks_until_empty": null,
+    "with_farm_food_net_per_tick": 0.5999999999999996,
+    "with_farm_per_tick": 5.6
+  },
+  "harbour_note": "Coastal: a city here can build a harbour and ships.",
+  "timber_warning": "",
+  "unknown_hexes": 1
+}

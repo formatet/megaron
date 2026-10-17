@@ -85,3 +85,8 @@ test('owned-city naming success refreshes authoritative map and rerenders City d
  assert.match(cityHTML,/<strong>Alpheios<\/strong>/,'named place remains visible beside own-city catchment');
  assert.doesNotMatch(cityHTML,/namePlace\(|place-name-/,'spent naming right disappears from actual City template');
 });
+
+test('growth food balance does not print a signed rounded zero',()=>{
+ const html=populationHTML(pd({sitos:{growth_state:'holding',food_net_per_tick:-1e-12}}),0,0,'p');
+ assert.match(html,/food net about even/);assert.doesNotMatch(html,/-0.0/);
+});

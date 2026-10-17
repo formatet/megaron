@@ -162,20 +162,21 @@ export function renderColonizePreviewHTML(p) {
   // hourly tick rate to a daily one and is the same class of stale scaling
   // as cmd_goods.go's Rate/d bug.
   const prodTick = g.base_per_tick || 0;
-  const netTick = g.food_net_per_tick ?? g.est_net_per_tick ?? 0;
+  const rawNet = g.food_net_per_tick ?? g.est_net_per_tick ?? 0;
+  const netTick = Math.abs(rawNet)<1e-9 ? 0 : rawNet;
+  const netLabel = n => Math.abs(n)<0.05 ? "about even" : `${n>=0?"+":""}${n.toFixed(1)}`;
   const consTick = g.consumption_per_tick ?? (prodTick - netTick);
 
   let html = `<div style="color:var(--text-dim)">Catchment forecast — ${fmtNum(known)} of ${fmtNum(total)} hexes known</div>`;
   if (p.timber_warning) html += `<div>${esc(p.timber_warning)}</div>`;
   if (p.harbour_note) html += `<div>${esc(p.harbour_note)}</div>`;
   html += `<div>Food: grain ${prodTick.toFixed(1)} + fish ${(g.fish_per_tick || 0).toFixed(1)} − consumption ${consTick.toFixed(1)} per day = ` +
-    `<b style="color:${netTick < 0 ? 'var(--accent)' : 'var(--safe)'}">net ${netTick >= 0 ? '+' : ''}${netTick.toFixed(1)} per day</b></div>`;
+    `<b style="color:${netTick < 0 ? 'var(--accent)' : 'var(--safe)'}">net ${netLabel(netTick)} per day</b></div>`;
   if (netTick < 0) {
     const reach = g.ticks_until_empty != null ? ` → lasts about ${fmtDays(Math.round(g.ticks_until_empty))}` : '';
     const farmNetTick = g.with_farm_food_net_per_tick ?? ((g.with_farm_per_tick || 0) - consTick);
-    const farmNote = (g.with_farm_per_tick || 0) <= (g.base_per_tick || 0)
-      ? ' (no farmland in known catchment — a farm will not help here)' : '';
-    html += `<div>Seed ${fmtNum(Math.round(g.seed || 0))} grain${reach}. With farm: net ${farmNetTick >= 0 ? '+' : ''}${fmtNum(Math.round(farmNetTick))} per day${farmNote}</div>`;
+    const farmNote = g.starter_farm_included ? " (Demeter's farm is already included in this forecast)" : g.farm_possible === false ? ' (no farmland in known catchment — a farm will not help here)' : '';
+    html += `<div>Seed ${fmtNum(Math.round(g.seed || 0))} grain${reach}. With farm: net ${netLabel(farmNetTick)} per day${farmNote}</div>`;
     html += `<div style="color:var(--text-dim)">A colony does not feed itself — build a farm if the land bears it, or send grain by internal transfer.</div>`;
   } else {
     html += `<div>Seed ${fmtNum(Math.round(g.seed || 0))} grain — production covers food demand.</div>`;

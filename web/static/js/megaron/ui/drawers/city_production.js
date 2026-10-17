@@ -32,7 +32,7 @@ export function growthLineText(pd) {
   if (!s || !s.growth_state) return '';
   const pop = n(pd.population);
   const net = Number(s.food_net_per_tick) || 0;
-  const signed = (net >= 0 ? '+' : '-') + Math.abs(net).toFixed(1);
+  const signed = net !== 0 && Math.abs(net)<0.05 ? 'about even' : (net >= 0 ? '+' : '-') + Math.abs(net).toFixed(1);
   if (s.growth_state === 'growing') return `Population ${pop} — growing: food net ${signed} per day`;
   if (s.growth_state === 'holding') return `Population ${pop} — not growing: food net ${signed} per day (needs more than 0)`;
   if (s.growth_state === 'shrinking') return `Population ${pop} — shrinking: hunger`;

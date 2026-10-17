@@ -693,3 +693,16 @@ test('fish-fed colony uses additive full food balance rather than legacy grain d
  assert.match(colonyFoundedGrainLine({grain_net_per_tick:2,grain_amount:0}),/grain/);
  assert.doesNotMatch(colonyFoundedGrainLine({grain_net_per_tick:2,grain_amount:0}),/loyalty can fall/);
 });
+
+test('AI shortage gives time only for positive authoritative production', () => {
+ assert.match(formatApiError({error:'insufficient_goods',missing:[{good:'stone',need:4,have:2,rate_per_tick:2}]}),/≈1 day at current production/);
+ assert.doesNotMatch(formatApiError({error:'insufficient_goods',missing:[{good:'stone',need:4,have:2,rate_per_tick:0}]}),/production/);
+});
+
+test('founding notifications use food net and suppress persisted dust runways', async()=>{
+ const {colonyFoundedGrainLine}=await import('./format.js');
+ for(const body of [{grain_net_per_tick:-5,food_net_per_tick:0,grain_ticks:240},{grain_net_per_tick:-1e-15,food_net_per_tick:-1e-15},{grain_net_per_tick:-1e-15,grain_ticks:675539944105574400}]){
+ const text=colonyFoundedGrainLine(body);assert.doesNotMatch(text,/675539944105574400|falls short|-0.0|does not feed itself/);
+ }
+ assert.match(colonyFoundedGrainLine({grain_net_per_tick:-5,food_net_per_tick:-0.3}),/falls short by 0.3/);
+});

@@ -227,6 +227,7 @@ func apiError(body []byte, status int) error {
 			Good string  `json:"good"`
 			Need float64 `json:"need"`
 			Have float64 `json:"have"`
+			Rate float64 `json:"rate_per_tick"`
 		} `json:"missing"`
 	}
 	if err := json.Unmarshal(body, &e); err == nil && e.Error != "" {
@@ -238,6 +239,9 @@ func apiError(body []byte, status int) error {
 				// pair itself and must not reintroduce the rounding lie the
 				// server side just removed (cli-sanning §D's bug class).
 				parts[i] = fmt.Sprintf("%s (%s)", m.Good, shortfall(m.Need, m.Have))
+				if m.Rate > 0 {
+					parts[i] += fmt.Sprintf(" — ≈%s at current production (before other use)", formatDays(math.Ceil((m.Need-m.Have)/m.Rate), "%.0f"))
+				}
 			}
 			return fmt.Errorf("%s: %s (HTTP %d)", e.Error, strings.Join(parts, ", "), status)
 		}

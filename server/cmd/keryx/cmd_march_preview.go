@@ -35,7 +35,7 @@ func showMarchPreview(c *Client, path string, order map[string]any) error {
 		return err
 	}
 	if forecast.Available {
-		fmt.Printf("Estimated arrival: %s (journey: %s), if dispatched now. Conditions may change.\n", formatDay(forecast.ArrivalTick, "%d"), formatDays(forecast.DurationTicks, "%d"))
+		fmt.Printf("Arrives in %s (world day %d), if dispatched now. Conditions may change.\n", formatDays(forecast.DurationTicks, "%d"), forecast.ArrivalTick)
 	} else {
 		switch forecast.Reason {
 		case "courier_required", "redirect":

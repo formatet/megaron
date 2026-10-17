@@ -96,7 +96,8 @@ export function formatApiError(data, fallback) {
     const parts = data.missing.map(m => {
       const need = Math.round(Number(m.need) || 0);
       const have = Math.round(Number(m.have) || 0);
-      return `${m.good || 'goods'} ${need} needed, ${have} in store`;
+      const wait = m.rate_per_tick > 0 ? ` — ≈${fmtDays(Math.ceil((Number(m.need)-Number(m.have))/m.rate_per_tick))} at current production (before other use)` : '';
+      return `${m.good || 'goods'} ${need} needed, ${have} in store${wait}`;
     });
     return 'Not enough: ' + parts.join('; ') + '.';
   }
@@ -874,7 +875,7 @@ export function colonyFoundedGrainLine(body) {
   if (!body) return '';
   if (body.food_net_per_tick != null) {
     const name = body.name || 'The colony';
-    const net = body.food_net_per_tick;
+    const net = Math.abs(body.food_net_per_tick)<1e-9 ? 0 : body.food_net_per_tick;
     const line = net >= 0
       ? `${name} food production covers consumption (net +${net.toFixed(1)} per day).`
       : `${name} food production falls short by ${(-net).toFixed(1)} per day. Stored food feeds people until it runs out.`;
@@ -884,11 +885,11 @@ export function colonyFoundedGrainLine(body) {
   const name = body.name || 'The colony';
   // grain_net_per_tick IS the per-tick rate now (tick == day, mig 109) — do
   // not scale it, that was the ×24 error found alongside cmd_goods.go's.
-  const perTick = body.grain_net_per_tick;
+  const perTick = Math.abs(body.grain_net_per_tick)<1e-9 ? 0 : body.grain_net_per_tick;
   const ticksLeft = body.grain_ticks ?? body.grain_days;
   if (perTick < 0) {
     const ticks = ticksLeft != null ? ` — grain lasts ~${fmtDays(Math.round(ticksLeft))}` : '';
-    return `${name} does not feed itself (~${Math.round(-perTick)} grain per day deficit)${ticks}. Build a farm if the land bears it, or send grain by internal transfer.`;
+    return `${name} grain production falls short by ${(-perTick).toFixed(1)} per day${ticks}. Build a farm if the land bears it, or send grain by internal transfer.`;
   }
   const warning = body.loyalty_warning || '';
   return `${name} produces enough grain (net ~+${perTick.toFixed(1)} per day). ${warning}`.trim();

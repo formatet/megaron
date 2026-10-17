@@ -210,6 +210,10 @@ func TestSettlementsOverviewParity_MatchesProvinceGet(t *testing.T) {
 	ownerID, token := settlementsOverviewRegisterPlayer(t, authSvc, ctx, "wanax-parity-"+uuid.New().String())
 	settlementID := settlementsOverviewSeedSettlement(t, pool, ctx, worldID, ownerID, "Parityton", true, 0, 0)
 
+	if _, err := pool.Exec(ctx, `INSERT INTO settlement_granary(settlement_id,good_key,amount) VALUES($1,'grain',307)`, settlementID); err != nil {
+		t.Fatal(err)
+	}
+
 	sitosCfg := economy.SitosConfig{
 		SubsistenceGoods: []string{"grain", "fish"},
 		LowDays:          3,
@@ -269,6 +273,25 @@ func TestSettlementsOverviewParity_MatchesProvinceGet(t *testing.T) {
 	if ovRec.Code != http.StatusOK {
 		t.Fatalf("SettlementsOverview = %d: %s", ovRec.Code, ovRec.Body.String())
 	}
+	var stores []struct {
+		ID    uuid.UUID
+		Sitos struct {
+			Grain map[string]float64 `json:"granary_per_good"`
+		}
+	}
+	if err := json.Unmarshal(ovRec.Body.Bytes(), &stores); err != nil {
+		t.Fatal(err)
+	}
+	foundStore := false
+	for _, row := range stores {
+		if row.ID == settlementID && row.Sitos.Grain["grain"] == 307 {
+			foundStore = true
+		}
+	}
+	if !foundStore {
+		t.Fatalf("grain in Sitos missing from overview: %s", ovRec.Body.String())
+	}
+
 	var ovResult []struct {
 		ID                 uuid.UUID `json:"id"`
 		Population         int       `json:"population"`

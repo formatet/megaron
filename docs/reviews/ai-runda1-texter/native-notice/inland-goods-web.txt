@@ -1,0 +1,20 @@
+SETTLEMENTS
+Settlement	Pop	Food net	Food lasts	Status ▲
+inland-proof ★	1,005	+0.9 per day	217.7 days	surplus
+
+Wanaxes agree trade prices. Kult shows how the gods weigh offerings.
+
+INLAND-PROOF ★
+SILVER
+480
+Good	Amount	Rate
+Stone	0	
+Timber	0	
+Oil	0	
+Wine	0	
+Fish	0	
+Grain	1,093 · 106 in Sitos	+5.9 per day
+Livestock	50	
+Tin	0	
+
+Unavailable: trade offer, trade accept, trade decline, trade cancel, transfer, gift ?

@@ -36,19 +36,24 @@ func openingDayLength(seconds int) string {
 	return fmt.Sprintf("%g %s", value, unit)
 }
 
-func (h *JoinHandler) openingDispatch(hostID uuid.UUID, spec hostSpec) openingDispatchBody {
+func (h *JoinHandler) openingDispatch(hostID uuid.UUID, spec hostSpec, forming bool) openingDispatchBody {
 	body := openingDispatchBody{Title: "Your people await you", Returning: spec.refugee, HostID: hostID}
 	host := fmt.Sprintf("Your Host carries %g grain and %g silver. It lives on subsistence until founding; these reserves do not drain. Find your place — founding is final.", float64(nomadicHostDowryGrain), spec.silver)
 	if spec.refugee {
 		body.Title = "Begin again"
 		host = fmt.Sprintf("Your survivors gather into a new Host, with %g grain and %g silver. Your standing with the gods is kept. You live on subsistence until founding; find a new home.", float64(nomadicHostDowryGrain), spec.silver)
 	}
+	timeLine := fmt.Sprintf("Time. A day passes every %s.", openingDayLength(tick.TickSeconds))
+	if forming {
+		timeLine += fmt.Sprintf(" Days begin after %d Wanaxes join.", h.startWanaxes)
+	}
 	body.Paragraphs = []string{
-		fmt.Sprintf("Time. A day passes every %s. Days begin after %d Wanaxes join.", openingDayLength(tick.TickSeconds), h.startWanaxes),
+		timeLine,
 		fmt.Sprintf("Foot soldiers cross a plains hex in %g day, olive woodland in %g, hills or cedar forest in %g, desert in %g. War chariots cross plains in %g day but need %g in olive woodland and %g in hills, cedar forest or desert. A full-crewed galley crosses %g coastal or %g open-sea hexes a day.", province.TerrainMoveTicks("plains"), province.TerrainMoveTicks("forest_olive_grove"), province.TerrainMoveTicks("hills"), province.TerrainMoveTicks("semi_desert"), province.TerrainMoveTicksFor("plains", province.CategoryWarChariot), province.TerrainMoveTicksFor("forest_olive_grove", province.CategoryWarChariot), province.TerrainMoveTicksFor("hills", province.CategoryWarChariot), 1/province.TerrainMoveTicksFor("coastal_sea", "naval"), 1/province.TerrainMoveTicksFor("deep_sea", "naval")),
 		host,
 		fmt.Sprintf("Food first. A city must feed itself. Starvation makes it shrink; below %d people it falls.", economy.CollapseBelowPopulation),
 		fmt.Sprintf("The gods. Your Kharis holds for %d days after founding, and no punishment falls. A temple takes %d days to build. Build, staff and feed one in time; after that, neglect lets Kharis fade and risks punishment.", kharis.FoundingGraceTicks(), province.BuildingSpecs[province.BuildingTemple].DurationTicks),
+		"Place citizens on olive woodland or cedar forest for timber, and on stone-bearing ground for stone; idle citizens produce nothing.",
 		"Orders travel. A Runner must reach a unit in the field before it follows your new order.",
 		"Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.",
 		"Rules: ? (Codex). Problems: Report. Community chat: Account.",
@@ -59,7 +64,11 @@ func (h *JoinHandler) openingDispatch(hostID uuid.UUID, spec hostSpec) openingDi
 // persistOpeningDispatch is in the same transaction as the new Host life.
 // The normal persisted-message path pushes only after that transaction commits.
 func (h *JoinHandler) persistOpeningDispatch(ctx context.Context, tx pgx.Tx, worldID, playerID, hostID uuid.UUID, spec hostSpec) (notify.Msg, error) {
-	body := h.openingDispatch(hostID, spec)
+	var state string
+	if err := tx.QueryRow(ctx, `SELECT state FROM worlds WHERE id=$1`, worldID).Scan(&state); err != nil {
+		return notify.Msg{}, err
+	}
+	body := h.openingDispatch(hostID, spec, state == "forming")
 	raw, err := json.Marshal(body)
 	if err != nil {
 		return notify.Msg{}, err

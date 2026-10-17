@@ -203,3 +203,8 @@ test('loadEconomyDrawer: with no owned settlements, renders the empty-state mess
   assert.deepEqual(calls, ['economy-body']);
   delete globalThis.document;
 });
+
+test('settlement food column follows full fish-inclusive authoritative net',()=>{
+ const row=settlementFoodRow({id:'p',name:'Coast'},{population:1000,grain_prod_rate:0.5,grain_consum_rate:5,sitos:{food_net_per_tick:0.5}});
+ assert.equal(row.grainRate,0.5);
+});

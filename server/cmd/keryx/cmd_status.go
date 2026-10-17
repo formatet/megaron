@@ -371,7 +371,7 @@ func surplusWithoutSinkWarning(label string, amount, rateVal, capacity float64, 
 	if gubbar == 1 {
 		who = "1 citizen"
 	}
-	return fmt.Sprintf("⚠ %-8s %6s  %s  — known sinks absorb at most %s within %s; %s produces with no receiver (`keryx place`)", label, resource(amount), rate(rateVal), resource(capacity), formatDays(productionHorizonTicks, "%d"), who)
+	return fmt.Sprintf("⚠ %-8s %6s  production %s  — known sinks absorb at most %s within %s; %s produces with no receiver (`keryx place`)", label, resource(amount), rate(rateVal), resource(capacity), formatDays(productionHorizonTicks, "%d"), who)
 }
 
 // capitalize upper-cases a good_key's first letter for display ("stone" →
@@ -513,11 +513,15 @@ func sitosGranaryState(coverage, low, high, total, net float64) string {
 // own inputs); "" when the server did not report a state. The web drawer
 // (city_production.js growthLineText) says the same words.
 func growthLine(pop float64, state string, net float64) string {
+	display := fmt.Sprintf("%+.1f", net)
+	if math.Abs(net) < 0.05 && net != 0 {
+		display = "about even"
+	}
 	switch state {
 	case "growing":
-		return fmt.Sprintf("Population %.0f — growing: food net %+.1f per day", pop, net)
+		return fmt.Sprintf("Population %.0f — growing: food net %s per day", pop, display)
 	case "holding":
-		return fmt.Sprintf("Population %.0f — not growing: food net %+.1f per day (needs more than 0)", pop, net)
+		return fmt.Sprintf("Population %.0f — not growing: food net %s per day (needs more than 0)", pop, display)
 	case "shrinking":
 		return fmt.Sprintf("Population %.0f — shrinking: hunger", pop)
 	}
@@ -816,8 +820,25 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						prodTick := gProdRate
 						consumTick := gConsumRate
 						netTick := prodTick - consumTick
-						line := fmt.Sprintf("  %-8s %6s  prod %.1f − consum %.1f = net %+.1f per day",
-							"Grain", resource(gAmt), prodTick, consumTick, netTick)
+						fish := 0.0
+						if row, ok := res["fish"].(map[string]any); ok {
+							fish, _ = row["rate"].(float64)
+						}
+						if sitos, ok := sett["sitos"].(map[string]any); ok {
+							if full, ok := sitos["food_net_per_tick"].(float64); ok {
+								netTick = full
+							}
+						}
+						fmt.Printf("  Food     grain %.1f + fish %.1f − consumption %.1f = net %s per day\n", prodTick, fish, consumTick, formatNetPerTick(netTick))
+						line := fmt.Sprintf("  %-8s %6s  production %.1f per day",
+							"Grain", resource(gAmt), prodTick)
+						if sitos, ok := sett["sitos"].(map[string]any); ok {
+							if stores, ok := sitos["granary_per_good"].(map[string]any); ok {
+								if stored, _ := stores["grain"].(float64); stored > 0 {
+									line += fmt.Sprintf(" · %s grain in Sitos", resource(stored))
+								}
+							}
+						}
 						// food_gubbar_required/placed/self_sufficient (P4-arvet,
 						// megaron_plan_p4_arvet_i_province.md §2) replace the old
 						// weight-based break-even hint: how many gubbar the catchment's
@@ -926,6 +947,13 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				sort.Strings(surplusGoods)
 				var candidates []string
 				for _, k := range surplusGoods {
+					if k == "grain" || k == "fish" {
+						if sitos, ok := sett["sitos"].(map[string]any); ok {
+							if foodNet, ok := sitos["food_net_per_tick"].(float64); ok && foodNet <= 0 {
+								continue
+							}
+						}
+					}
 					rd, ok := res[k].(map[string]any)
 					if !ok {
 						continue

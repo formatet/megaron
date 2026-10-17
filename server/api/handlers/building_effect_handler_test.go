@@ -82,7 +82,7 @@ func TestPlacementOptions_EffectAndUpgradeEffect(t *testing.T) {
 	for _, v := range out.Valid["farm"] {
 		if v.Q == 1 && v.R == 0 {
 			found = true
-			if want := "grain production ×1.7 · space for 4 more workers"; v.Effect != want {
+			if want := "this hex's grain output ×1.7 · space for 4 more workers"; v.Effect != want {
 				t.Errorf("farm effect on plains (1,0) = %q, want %q", v.Effect, want)
 			}
 		}
@@ -132,10 +132,10 @@ func TestPlacementOptions_EffectAndUpgradeEffect(t *testing.T) {
 		t.Fatalf("hex (1,0) not in placement options")
 		return ""
 	}
-	if got, want := upgradeAt(1), "grain production ×1.7 → ×2.4"; got != want {
+	if got, want := upgradeAt(1), "this hex's grain output ×1.7 → ×2.4"; got != want {
 		t.Errorf("L1 upgrade_effect = %q, want %q", got, want)
 	}
-	if got, want := upgradeAt(2), "grain production ×2.4 → ×3.1"; got != want {
+	if got, want := upgradeAt(2), "this hex's grain output ×2.4 → ×3.1"; got != want {
 		t.Errorf("L2 upgrade_effect = %q, want %q", got, want)
 	}
 	if got := upgradeAt(3); got != "" {

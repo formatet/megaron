@@ -1,0 +1,51 @@
+{
+  "health": {
+    "commit": "5ce6c85173b5daebff1d1449ae726b24f1194b9c",
+    "migration": 181,
+    "status": "ok"
+  },
+  "attempts": [
+    {
+      "kind": "inland",
+      "q": 48,
+      "r": 7,
+      "grain": 5.6,
+      "fish": 0,
+      "net": 0.5999999999999996
+    },
+    {
+      "kind": "coast",
+      "q": 10,
+      "r": 60,
+      "grain": 0.5,
+      "fish": 5,
+      "net": 0.5
+    }
+  ],
+  "observed": {
+    "inland": {
+      "site": {
+        "q": 48,
+        "r": 7
+      },
+      "province_id": "467791b1-27ce-461d-96b2-a42516c2af40",
+      "food_net": 0.876666666666666,
+      "granary": {
+        "grain": 106.12
+      }
+    },
+    "coast": {
+      "site": {
+        "q": 10,
+        "r": 60
+      },
+      "province_id": "981ccec3-83f1-41f6-a72b-4f276937eca0",
+      "food_net": 0.8299999999999992,
+      "granary": {
+        "fish": 0.8761354252683733,
+        "grain": 105.22386457473164
+      }
+    }
+  },
+  "page_errors": []
+}

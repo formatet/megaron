@@ -307,3 +307,11 @@ test('fish-fed founding forecast does not invent an empty-grain loyalty warning'
  const html=menu.renderColonizePreviewHTML({grain:{base_per_tick:0,fish_per_tick:5,consumption_per_tick:5,food_net_per_tick:0,est_net_per_tick:0,seed:0,loyalty_warning:''}});
  assert.match(html,/fish 5.0/);assert.doesNotMatch(html,/loyalty can fall|No grain reserve/);
 });
+
+
+test('AI forecast avoids dust horizons and identifies the farm already included', () => {
+ const html=menu.renderColonizePreviewHTML({grain:{base_per_tick:5,food_net_per_tick:-1e-12,consumption_per_tick:5,ticks_until_empty:1e18,seed:1200}});
+ assert.doesNotMatch(html,/-0.0|1000000000000000000|lasts about/);assert.match(html,/about even/);
+ const farm=menu.renderColonizePreviewHTML({grain:{base_per_tick:4.67,food_net_per_tick:-0.33,consumption_per_tick:5,with_farm_per_tick:4.67,with_farm_food_net_per_tick:-0.33,farm_possible:true,starter_farm_included:true}});
+ assert.match(farm,/already included/);assert.doesNotMatch(farm,/no farmland/);assert.match(farm,/-0.3/);
+});

@@ -70,7 +70,7 @@ func TestMarchPreview_ReadOnlyAndTiming(t *testing.T) {
 	// field units — temenos_orderlopare_plan.md Fas 2) and the HTTP response
 	// carries the K4 tick contract this test guards. One-hex march over plains
 	// (0.75 h) still rounds to the 1-tick floor the assertions expect.
-	for q := 0; q <= 1; q++ {
+	for q := 0; q <= 10; q++ {
 		if _, err := pool.Exec(ctx,
 			`INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, 0, 'plains')`,
 			worldID, q,
@@ -184,7 +184,8 @@ func TestMarchPreview_ReadOnlyAndTiming(t *testing.T) {
 		reason string
 	}{
 		{"?target_q=40&target_r=0", 422, ""},
-		{"?target_q=40&target_r=0&intent=explore", 200, "unknown_terrain"},
+		{"?target_q=40&target_r=0&intent=explore", 422, ""},
+		{"?target_q=10&target_r=0&intent=explore&ticks=6", 422, ""},
 		{"?target_q=bad&target_r=0", 400, ""},
 		{"?target_q=1&target_r=0&intent=explore&ticks=12", 200, "unknown_terrain"},
 		{"?target_q=1&target_r=0&intent=explore&ticks=3", 400, ""},
@@ -221,6 +222,15 @@ func TestMarchPreview_ReadOnlyAndTiming(t *testing.T) {
 		if tc.reason != "" && !strings.Contains(rec.Body.String(), `"upkeep_silver_field":0`) {
 			t.Fatalf("unavailable arrival lost payroll: %s", rec.Body.String())
 		}
+	}
+	// A preview must reject the same too-short expedition as dispatch, with no writes.
+	budgetPreview := request(base + "/march-preview?target_q=10&target_r=0&intent=explore&ticks=6")
+	shortReq := httptest.NewRequest(http.MethodPost, base+"/march", strings.NewReader(`{"target_q":10,"target_r":0,"intent":"explore","ticks":6}`))
+	shortReq.Header.Set("Authorization", "Bearer "+accessToken)
+	shortRec := httptest.NewRecorder()
+	r.ServeHTTP(shortRec, shortReq)
+	if budgetPreview.Code != 422 || shortRec.Code != 422 || budgetPreview.Body.String() != shortRec.Body.String() || snapshot() != before {
+		t.Fatalf("budget preview/dispatch mismatch: %d %s / %d %s", budgetPreview.Code, budgetPreview.Body.String(), shortRec.Code, shortRec.Body.String())
 	}
 	// Positioned units receive a physical Runner, not an instant march ETA.
 	if _, err := pool.Exec(ctx, `UPDATE units SET status='positioned',settlement_id=NULL,q=1,r=0 WHERE id=$1`, unitID); err != nil {

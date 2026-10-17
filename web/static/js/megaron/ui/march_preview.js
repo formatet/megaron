@@ -38,8 +38,7 @@ function marchArrivalHTML(data) {
 }
 function marchFirstArrivalHTML(data) {
   if (data.available && Number.isInteger(data.arrival_tick)) {
-    return 'Estimated arrival: ' + arrivalHTML(data.arrives_at_utc, data.arrival_tick)
-      + ' · ' + esc(fmtDays(data.duration_ticks)) + ' travelling';
+    return 'Arrives in ' + esc(fmtDays(data.duration_ticks)) + ' (world day ' + esc(String(data.arrival_tick)) + '), if dispatched now.';
   }
   if (data.reason === 'courier_required' || data.reason === 'redirect') {
     return 'Arrival not yet known — a messenger must deliver the order first.';

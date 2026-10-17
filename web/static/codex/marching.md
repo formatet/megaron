@@ -68,3 +68,5 @@ its recorded costs and arrival day when the movement rules change. A finished
 [[roads|road]] shortens the hex it leads into for everyone who walks it.
 
 An expedition preview shows its planned length. For a unit in garrison it can also show the planned homecoming **if it departed immediately**. The order may still need physical delivery. The first destination inside the search area remains unknown; no hidden route or arrival time is revealed.
+
+A march preview applies the same expedition budget checks as the order. It leaves unseen first-leg routes undisclosed. A Host founds with `founding settle`, not a colony march. Without confirmation, nothing is sent.

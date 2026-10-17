@@ -89,11 +89,24 @@ func TestOpeningDispatchJoinConcurrentRetryRiseAndPrivacy(t *testing.T) {
 	if len(opening) != 1 || !strings.Contains(strings.Join(opening[0].Paragraphs, " "), "for 144 days after founding") {
 		t.Fatalf("archived join dispatch must promise 144 days: %+v", opening)
 	}
-	if len(opening) != 1 || opening[0].Returning || len(opening[0].Paragraphs) != 8 {
+	if len(opening) != 1 || opening[0].Returning || len(opening[0].Paragraphs) != 9 {
 		t.Fatalf("join notice %+v", opening)
 	}
 	if len(read(otherToken)) != 0 {
 		t.Fatal("another Wanax received opening dispatch")
+	}
+	if _, err := pool.Exec(ctx, `INSERT INTO map_tiles(world_id,q,r,terrain) VALUES($1,20,20,'plains')`, wid); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `UPDATE worlds SET state='active' WHERE id=$1`, wid); err != nil {
+		t.Fatal(err)
+	}
+	if rec := request("POST", "/join", otherToken); rec.Code != 201 {
+		t.Fatal(rec.Body.String())
+	}
+	active := read(otherToken)
+	if len(active) != 1 || strings.Contains(strings.Join(active[0].Paragraphs, " "), "Days begin after") {
+		t.Fatalf("active-world join still waits: %+v", active)
 	}
 	if rec := request("POST", "/join", token); rec.Code != 200 {
 		t.Fatalf("retry%d", rec.Code)
@@ -141,14 +154,14 @@ func TestOpeningDispatchFactsFromActiveRules(t *testing.T) {
 		label   string
 	}{{1, "1 second"}, {60, "1 minute"}, {1800, "30 minutes"}, {3600, "1 hour"}} {
 		tick.TickSeconds = tc.seconds
-		body := h.openingDispatch(uuid.New(), newcomerHost)
+		body := h.openingDispatch(uuid.New(), newcomerHost, true)
 		text := strings.Join(body.Paragraphs, "\n")
 		for _, want := range []string{tc.label, "3 Wanaxes", fmt.Sprintf("%g grain", float64(nomadicHostDowryGrain)), fmt.Sprintf("%g silver", nomadicHostStartingSilver), fmt.Sprintf("for %d days after founding", kharis.FoundingGraceTicks()), fmt.Sprintf("temple takes %d days", province.BuildingSpecs[province.BuildingTemple].DurationTicks), fmt.Sprintf("below %d people", economy.CollapseBelowPopulation), fmt.Sprintf("olive woodland in %g", province.TerrainMoveTicks("forest_olive_grove")), "reserves do not drain"} {
 			if !strings.Contains(text, want) {
 				t.Fatalf("opening missing%q: %s", want, text)
 			}
 		}
-		if strings.Contains(text, "tick") || strings.Contains(text, "pay for") || len(strings.Fields(text)) > 220 {
+		if strings.Contains(text, "tick") || strings.Contains(text, "pay for") || len(strings.Fields(text)) > 250 {
 			t.Fatalf("wrong/too long opening %s", text)
 		}
 	}
@@ -193,5 +206,14 @@ func TestOpeningDispatchArchiveFailureRollsBackHost(t *testing.T) {
 	}
 	if rec := post(); rec.Code != 201 {
 		t.Fatalf("restored archive retry%d %s", rec.Code, rec.Body.String())
+	}
+}
+
+func TestOpeningDispatch_ActiveWorldDoesNotWaitForJoiners(t *testing.T) {
+	h := &JoinHandler{startWanaxes: 4}
+	body := h.openingDispatch(uuid.New(), newcomerHost, false)
+	text := strings.Join(body.Paragraphs, " ")
+	if strings.Contains(text, "Days begin after") || !strings.Contains(text, "Place citizens") || !strings.Contains(text, "stone") {
+		t.Fatal(text)
 	}
 }
