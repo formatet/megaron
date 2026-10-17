@@ -246,7 +246,7 @@ func TestFoodGubbarLine(t *testing.T) {
 		{
 			name: "soak finding: 7 required, 70 placed — names the 63 that could move",
 			req:  7, placed: 70, selfSufficient: true,
-			want: "  (7 citizens needed for food · 70 placed — 63 could move; see 'keryx city')",
+			want: "  (7 citizens needed for food · 70 placed — 63 could move after rearranging for people’s food; see 'keryx city')",
 		},
 		{
 			name: "exactly staffed — no surplus text",

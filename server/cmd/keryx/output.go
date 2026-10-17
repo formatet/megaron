@@ -103,17 +103,16 @@ var keryxTZ = func() *time.Location {
 // gameETA renders world days alongside the wall-clock instant. A wait with
 // any time remaining rounds up. Missing world cadence falls back to clock/date.
 func gameETA(c *Client, t time.Time) string {
-	wall := wallClock(t)
 	tickSeconds, ok := c.TickSeconds()
 	if !ok {
-		return countdown(t)
+		return "arrival time unavailable (world day length not reported)"
 	}
 	days := time.Until(t).Seconds() / tickSeconds
 	if days <= 0 {
-		return fmt.Sprintf("any moment (%s)", wall)
+		return "any moment"
 	}
 	whole := int(math.Ceil(days))
-	return fmt.Sprintf("in %s (%s)", formatDays(whole, "%d"), wall)
+	return fmt.Sprintf("in %s", formatDays(whole, "%d"))
 }
 
 // arrivalETA parses a server RFC3339 arrival timestamp and renders it via
@@ -123,7 +122,7 @@ func gameETA(c *Client, t time.Time) string {
 func arrivalETA(c *Client, iso string) string {
 	t, err := time.Parse(time.RFC3339, iso)
 	if err != nil {
-		return iso
+		return "arrival time unavailable"
 	}
 	return gameETA(c, t)
 }

@@ -788,6 +788,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			// against. Grain has no equivalent: soldiers eat their rations.
 			"army_upkeep_circulated_silver":    circulatedSilver,
 			"net_grain_per_tick_after_upkeep":  netGrainPerDay,
+			"food_net_per_tick_after_upkeep":   foodNetAfterArmy(foodNetPerDay, armyUp.Grain),
 			"net_silver_per_tick_after_upkeep": netSilverPerDay,
 			"build_queue":                      buildQueue,
 			"build_queue_max":                  maxParallelBuilds,
@@ -4280,3 +4281,7 @@ func harvestBlessingStatus(until *int, currentTick int) any {
 		"goods":           economy.HarvestBlessedGoods(),
 	}
 }
+
+// Population food balance is also the growth gate; army drain is a separate
+// projection, never a change to FoodTick or growth. Shared by both read APIs.
+func foodNetAfterArmy(foodNet, grainUpkeep float64) float64 { return foodNet - grainUpkeep }

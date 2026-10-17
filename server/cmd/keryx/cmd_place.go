@@ -18,11 +18,11 @@ import (
 func placeCmd() *cobra.Command {
 	var provinceID string
 	cmd := &cobra.Command{
-		Use:   "place <roll> <ordinal> [+n|-n]",
+		Use:   "place [city] <good> <ordinal> [+n|-n]",
 		Short: "Place or remove citizens on catchment hex <ordinal> doing <roll> (good)",
 		Long: `<roll> is a good key (grain, timber, fish, ...) and <ordinal> is the hex
 number (1..18) from ` + "`keryx city`" + `. Rejected if the hex has no such production
-option, is already full for that good (grain is never full), or hasn't been
+option, is already full for that good, or hasn't been
 scouted yet.
 
 Omit the delta to place a single citizen (default +1, unchanged from before).
@@ -35,8 +35,19 @@ and immediate. To move a citizen from a hex into a building:
   keryx place --province <prov-id> livestock 5
   keryx place grain 5 +2
   keryx place grain 5 -1`,
-		Args: cobra.RangeArgs(2, 3),
+		Args: func(cmd *cobra.Command, args []string) error {
+			_, rest := placeCityArgs(args)
+			return cobra.RangeArgs(2, 3)(cmd, rest)
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			city, rest := placeCityArgs(args)
+			args = rest
+			if city != "" {
+				if provinceID != "" {
+					return fmt.Errorf("choose a city either positionally or with --province")
+				}
+				provinceID = city
+			}
 			roll := args[0]
 			ordinal, err := strconv.Atoi(args[1])
 			if err != nil || ordinal < 1 {
@@ -200,6 +211,9 @@ func unplaceMany(c *Client, path, worldID, prov string, ordinal int, roll string
 		if removed == want {
 			if want < requested {
 				fmt.Printf("Removed %d citizen(s) — only %d were placed there.\n", removed, want)
+				if want == 0 {
+					fmt.Println(occupiedGoodHint(opts, roll))
+				}
 			} else {
 				fmt.Printf("Removed %d citizen(s) from hex #%d.\n", removed, ordinal)
 			}
@@ -250,4 +264,16 @@ func printHexGoodRow(opts *placementOptionsResp, ordinal int, roll string) {
 			}
 		}
 	}
+}
+
+// City names precede the good; a numeric second token is the legacy hex ordinal.
+func placeCityArgs(args []string) (string, []string) {
+	if len(args) >= 3 {
+		if _, err := strconv.Atoi(args[1]); err != nil {
+			if _, err := strconv.Atoi(args[2]); err == nil {
+				return args[0], args[1:]
+			}
+		}
+	}
+	return "", args
 }

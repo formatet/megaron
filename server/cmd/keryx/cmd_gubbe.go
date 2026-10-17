@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 )
 
 // Shared types and helpers for the gubbe-placement command family (P5:
@@ -62,7 +63,7 @@ func heldHexNote(h placementHex) string {
 	if h.HeldBy == "" {
 		return ""
 	}
-	note := "  held by " + h.HeldBy
+	note := "  held by " + h.HeldBy + " — already worked by another city"
 	if h.Takeable {
 		note += fmt.Sprintf("  TAKEABLE — place a worker to take it (%d workers go home", h.HeldWorkers)
 		if h.HeldBuilding != nil {
@@ -196,4 +197,24 @@ func goodCell(g placementGood) string {
 		return fmt.Sprintf("%-10s %d/%d FULL", g.GoodKey, g.Placed, *g.Cap)
 	}
 	return fmt.Sprintf("%-10s %d/%-3d  (next %s)", g.GoodKey, g.Placed, *g.Cap, rate(g.MarginalYield))
+}
+
+const citizenScaleNote = "1 citizen = 100 people"
+
+func occupiedGoodHint(opts *placementOptionsResp, good string) string {
+	var rows []string
+	for _, h := range opts.Hexes {
+		if h.HeldBy != "" {
+			continue
+		}
+		for _, g := range h.Goods {
+			if g.GoodKey == good && g.Placed > 0 {
+				rows = append(rows, fmt.Sprintf("#%d %s (%d citizens)", h.HexOrdinal, good, g.Placed))
+			}
+		}
+	}
+	if len(rows) == 0 {
+		return "No citizens placed on " + good + " in this city's known catchment; see keryx city."
+	}
+	return "Currently working " + good + ": " + strings.Join(rows, ", ") + "; use those hex numbers to remove citizens."
 }

@@ -27,8 +27,8 @@ func TestArrivalETA_KnownTickSeconds_RendersGameDaysFirst(t *testing.T) {
 	if strings.Contains(got, iso) {
 		t.Fatalf("arrivalETA(%q) = %q leaked the raw RFC3339 string", iso, got)
 	}
-	if !strings.Contains(got, "(") {
-		t.Errorf("arrivalETA(%q) = %q, want a parenthetical wall-clock support", iso, got)
+	if strings.Contains(got, "(") {
+		t.Errorf("arrivalETA(%q) = %q, must not append clock time", iso, got)
 	}
 }
 
@@ -40,10 +40,10 @@ func TestArrivalETA_UnknownTickSeconds_DegradesToWallClockCountdown(t *testing.T
 	c := &Client{tickSecondsFetched: true} // fetched, but no usable cadence
 	iso := time.Now().Add(3 * time.Hour).UTC().Format(time.RFC3339)
 	got := arrivalETA(c, iso)
-	if !strings.HasPrefix(got, "≈ ") {
+	if !strings.Contains(got, "unavailable") {
 		t.Fatalf("arrivalETA(%q) = %q, want clock/date when tick cadence is unknown", iso, got)
 	}
-	if !strings.Contains(got, ":") {
+	if strings.Contains(got, ":") {
 		t.Fatalf("arrivalETA(%q) = %q, want clock/date for a future ETA", iso, got)
 	}
 	if strings.Contains(got, iso) {
@@ -56,7 +56,7 @@ func TestArrivalETA_UnparseableFallsBackToRaw(t *testing.T) {
 	// behaviour (show the raw value) rather than dropping the ETA entirely.
 	c := &Client{tickSeconds: 21600, tickSecondsFetched: true}
 	for _, raw := range []string{"not-a-timestamp", ""} {
-		if got := arrivalETA(c, raw); got != raw {
+		if got := arrivalETA(c, raw); got != "arrival time unavailable" {
 			t.Errorf("arrivalETA(%q) = %q, want the raw string back on parse failure", raw, got)
 		}
 	}
@@ -70,7 +70,7 @@ func TestGameETA_RoundsDaysUp(t *testing.T) {
 	got := gameETA(c, time.Now().Add(2*time.Hour))
 	// Singular at exactly one: "in 1 days" is the plural bug this test
 	// would otherwise have pinned into place.
-	if !strings.Contains(got, "in 1 day (") {
+	if !strings.Contains(got, "in 1 day") {
 		t.Errorf("gameETA(2h out, 6h/day) = %q, want \"in 1 day (…)\" (rounded up, singular)", got)
 	}
 }
@@ -80,7 +80,7 @@ func TestGameETA_RoundsDaysUp(t *testing.T) {
 func TestGameETA_PluralAboveOne(t *testing.T) {
 	c := &Client{tickSeconds: 21600, tickSecondsFetched: true} // 6h/day
 	got := gameETA(c, time.Now().Add(13*time.Hour))
-	if !strings.Contains(got, "in 3 days (") {
+	if !strings.Contains(got, "in 3 days") {
 		t.Errorf("gameETA(13h out, 6h/day) = %q, want \"in 3 days (…)\"", got)
 	}
 }

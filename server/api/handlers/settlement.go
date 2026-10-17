@@ -147,14 +147,16 @@ func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.R
 		GrowthState    string             `json:"growth_state"`
 	}
 	type item struct {
-		ID                 uuid.UUID `json:"id"`
-		Name               string    `json:"name"`
-		IsCapital          bool      `json:"is_capital"`
-		Population         int       `json:"population"`
-		GrainProdRate      float64   `json:"grain_prod_rate"`
-		GrainConsumRate    float64   `json:"grain_consum_rate"`
-		FoodSelfSufficient bool      `json:"food_self_sufficient"`
-		Sitos              sitosRow  `json:"sitos"`
+		ID                 uuid.UUID    `json:"id"`
+		Name               string       `json:"name"`
+		IsCapital          bool         `json:"is_capital"`
+		Population         int          `json:"population"`
+		GrainProdRate      float64      `json:"grain_prod_rate"`
+		GrainConsumRate    float64      `json:"grain_consum_rate"`
+		FoodSelfSufficient bool         `json:"food_self_sufficient"`
+		ArmyUpkeep         upkeepAmount `json:"army_upkeep"`
+		FoodNetAfterUpkeep float64      `json:"food_net_per_tick_after_upkeep"`
+		Sitos              sitosRow     `json:"sitos"`
 	}
 
 	type settRow struct {
@@ -175,6 +177,11 @@ func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.R
 	result := make([]item, 0, len(settRows))
 	for _, s := range settRows {
 		fs := settlementFoodSummary(r.Context(), h.pool, s.id, s.population, h.sitosCfg)
+		up, _, err := settlementUpkeepDrain(r.Context(), h.pool, s.id, combat.UpkeepSoldShare())
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, "could not compute army upkeep")
+			return
+		}
 		result = append(result, item{
 			ID:                 s.id,
 			Name:               s.name,
@@ -183,6 +190,8 @@ func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.R
 			GrainProdRate:      fs.GrainProdRate,
 			GrainConsumRate:    fs.GrainConsumRate,
 			FoodSelfSufficient: fs.FoodSelfSufficient,
+			ArmyUpkeep:         up,
+			FoodNetAfterUpkeep: foodNetAfterArmy(fs.FoodNetPerTick, up.Grain),
 			Sitos: sitosRow{
 				CoverageTicks:  fs.CoverageTicks,
 				LowTicks:       fs.LowTicks,

@@ -270,7 +270,7 @@ export async function loadCityDrawer() {
       const livestockGood = goods.find(g => g.key === 'livestock');
       const livestock = livestockGood ? livestockGood.amount : 0;
       document.getElementById('city-pop-sec').innerHTML = populationHTML(pd, idle, livestock, capital.id);
-      document.getElementById('city-people-details').innerHTML = `<div class="stat-row"><span class="sr-label">In service</span><span class="sr-val">${fmtNum(armyPop)}</span></div><div class="stat-row"><span class="sr-label">Workers</span><span class="sr-val">${fmtNum(lp)}</span></div>`;
+      document.getElementById('city-people-details').innerHTML = `<div class="stat-row"><span class="sr-label">In service</span><span class="sr-val">${fmtNum(armyPop)}</span></div><div class="stat-row"><span class="sr-label">Citizens (1 = 100 people)</span><span class="sr-val">${fmtNum(Math.floor(lp/100))}</span></div>`;
     } else {
       document.getElementById('city-pop-sec').innerHTML = '<p class="empty-state">—</p>';
     }

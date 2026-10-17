@@ -365,7 +365,7 @@ export async function renderGubbeGrid(containerEl, provinceID, centerQ, centerR,
       if (!hex) return;
       detail.innerHTML = `
         <div class="dsec-title">#${hex.hex_ordinal} — ${terrainLabel(hex.terrain)}</div>
-        ${hex.held_by ? `<p class="gubbe-held-note">Held by ${esc(hex.held_by)}${hex.takeable ? '' : ' — stand a unit there in fortify or sentry to take it'}</p>` : ''}
+        ${hex.held_by ? `<p class="gubbe-held-note">Held by ${esc(hex.held_by)} — already worked by another city${hex.takeable ? '' : ' — stand a unit there in fortify or sentry to take it'}</p>` : ''}
         ${(hex.goods || []).length
           ? hex.goods.map(good => goodRowHTML({ target_kind: 'hex', hex_ordinal: hex.hex_ordinal }, good, takeLabel(hex))).join('')
           : '<p class="empty-state">No producible good on this hex.</p>'}`;

@@ -240,7 +240,7 @@ func apiError(body []byte, status int) error {
 				// server side just removed (cli-sanning §D's bug class).
 				parts[i] = fmt.Sprintf("%s (%s)", m.Good, shortfall(m.Need, m.Have))
 				if m.Rate > 0 {
-					parts[i] += fmt.Sprintf(" — ≈%s at current production (before other use)", formatDays(math.Ceil((m.Need-m.Have)/m.Rate), "%.0f"))
+					parts[i] += fmt.Sprintf(" — ≈%s at current production (if nothing else uses it)", formatDays(math.Ceil((m.Need-m.Have)/m.Rate), "%.0f"))
 				}
 			}
 			return fmt.Errorf("%s: %s (HTTP %d)", e.Error, strings.Join(parts, ", "), status)
