@@ -71,7 +71,7 @@ export function foodDetailsHTML(pd) {
   const army = pd?.food_net_per_tick_after_upkeep == null ? '' : row('Army food', `eats ${n(pd.army_upkeep?.grain || 0)} grain per day → food net ${n(pd.food_net_per_tick_after_upkeep)} after army`);
   if (!s) return grain || '<p class="empty-state">Food reserve not reported.</p>';
   const perGood = Object.entries(s.granary_per_good || {}).filter(([,v])=>v>0).map(([k,v])=>`${n(v)} ${k}`).join(', ');
-  const note = pd.food_gubbar_required == null ? '' : row('Food citizens', `${n(pd.food_gubbar_required)} needed on best food slots for people · ${n(pd.food_gubbar_placed || 0)} placed (1 citizen = 100 people)`);
+  const note = pd.food_gubbar_required == null ? '' : row('Food citizens', `${n(pd.food_gubbar_required)} needed · ${n(pd.food_gubbar_placed || 0)} placed`) + '<p class="empty-state">1 citizen = 100 people. Estimate uses the best food slots for people; the army needs grain separately.</p>';
   return grain + army + note + row('City stocks', `${fmtDays(s.coverage_ticks)}`) +
     row('Reserve', `${n(s.granary_total || 0)} of ${n(s.granary_cap || 0)} food${perGood ? ' · '+perGood : ''}`) +
     row('Reserve rules', `Stores above ${fmtDays(s.high_ticks)} · releases below ${fmtDays(s.low_ticks)}`) +
