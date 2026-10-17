@@ -1,0 +1,9 @@
+Founding (5,28) — metropolis of 1000 people — catchment forecast (19/19 hexes known, 0 unknown):
+  No timber within reach — every building needs timber. Plan wood deliveries before building.
+  Inland: a city here can never build a harbour or ships — to reach the sea you will need a coastal colony.
+  Food: grain ~6.2 + fish ~0.0 per day − consumption ~5.0 per day = net +1.2 per day
+  Starting stock 1200 grain — production covers food demand.
+  Other: copper-deposit ✓, copper ~3 per day, livestock ~4 per day, oil ~9 per day, stone ~15 per day, wine ~18 per day
+  Gift: Demeter's farm — an inland site whose catchment bears grain, so the city is founded with a farm already standing
+Error: Nothing sent — add --yes to confirm the irreversible founding (keryx founding settle ... --yes)
+See keryx founding settle --help

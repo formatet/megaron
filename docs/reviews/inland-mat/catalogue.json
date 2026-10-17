@@ -1,0 +1,29 @@
+{
+  "before_migration": 181,
+  "after_migration": 182,
+  "changed_rows": [
+    [
+      {
+        "id": 33,
+        "terrain_type": "hills",
+        "building_type": null,
+        "good_key": "grain",
+        "rate_per_tick": 0.33333333333333326,
+        "requires_deposit": null,
+        "requires_coastal": false
+      },
+      {
+        "id": 33,
+        "terrain_type": "hills",
+        "building_type": null,
+        "good_key": "grain",
+        "rate_per_tick": 0.5,
+        "requires_deposit": null,
+        "requires_coastal": false
+      }
+    ]
+  ],
+  "all_other_rules_identical": true,
+  "all_goods_including_labor_value_identical": true,
+  "rollback_green": true
+}

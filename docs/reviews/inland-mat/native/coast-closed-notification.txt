@@ -1,0 +1,16 @@
+2 notification(s), 2 unread
+────────────────────────────────────────────────────────────
+*[Sat Oct 17 17:14]  MetropolisFounded
+      Your metropolis is founded: coast-proof — 19/19 catchment hexes known — Poseidon grants a galley
+      coast-proof food production covers consumption (net +0.5 per day).
+*[Sat Oct 17 17:14]  OpeningDispatch
+      Your people await you
+      Time. A day passes every 2 seconds.
+      Foot soldiers cross a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. War chariots cross plains in 0.67 day but need 2 in olive woodland and 3 in hills, cedar forest or desert. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.
+      Your Host carries 1200 grain and 480 silver. It lives on subsistence until founding; these reserves do not drain. Find your place — founding is final.
+      Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.
+      The gods. Your Kharis holds for 144 days after founding, and no punishment falls. A temple takes 16 days to build. Build, staff and feed one in time; after that, neglect lets Kharis fade and risks punishment.
+      Place citizens on olive woodland or cedar forest for timber, and on stone-bearing ground for stone; idle citizens produce nothing.
+      Orders travel. A Runner must reach a unit in the field before it follows your new order.
+      Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.
+      Rules: ? (Codex). Problems: Report. Community chat: Account.
