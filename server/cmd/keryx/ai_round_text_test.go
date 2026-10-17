@@ -161,6 +161,8 @@ func TestAIRound_StatusUsesFoodAndShowsGranary(t *testing.T) {
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.URL.Path == "/api/v1/worlds/world/provinces/city" {
 					fmt.Fprintf(w, `{"settlement":{"name":"Coast","population":1000,"labor_pool":1000,"grain_prod_rate":0.5,"grain_consum_rate":5,"resources":{"grain":{"amount":10000,"rate":0.5},"fish":{"amount":10,"rate":5},"timber":{"amount":1,"rate":1}},"sitos":{"food_net_per_tick":%g,"granary_per_good":{"grain":307}}}}`, net)
+				} else if strings.HasSuffix(r.URL.Path, "/placements") {
+					fmt.Fprint(w, `{"placements":[{"good_key":"grain"},{"good_key":"grain"}]}`)
 				} else {
 					fmt.Fprint(w, `[]`)
 				}
@@ -178,7 +180,7 @@ func TestAIRound_StatusUsesFoodAndShowsGranary(t *testing.T) {
 			if !strings.Contains(out, "grain 0.5 + fish 5.0") || !strings.Contains(out, "net "+formatNetPerTick(net)) || !strings.Contains(out, "307 grain in Sitos") {
 				t.Fatal(out)
 			}
-			if net < 0 && strings.Contains(out, "Grain    10000  production") {
+			if net < 0 && strings.Contains(out, "produces with no receiver") {
 				t.Fatal(out)
 			}
 		})
