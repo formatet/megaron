@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-olivlund-tydligare/docs/reviews/olivlund/proof.py", line 51, in <module>
+    if scene[0]=='olive-maquis':assert changed>0,'no visible change'
+                                       ^^^^^^^^^
+AssertionError: no visible change
