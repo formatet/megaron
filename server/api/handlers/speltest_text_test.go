@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -91,5 +92,43 @@ func TestPlaytestColonizePreview_FullConsumption(t *testing.T) {
 	}
 	if body.Grain.Consumption != 5 || body.Grain.Warning == "" {
 		t.Fatalf("forecast lacks full consumption or empty-stock warning: %s", rec.Body.String())
+	}
+}
+
+func TestPlaytestColonizePreview_CentreFirstAndCoastalGift(t *testing.T) {
+	f := buildHexFixture(t)
+	if _, err := f.pool.Exec(context.Background(), `UPDATE map_tiles SET coastal=true WHERE world_id=$1 AND q=0 AND r=0`, f.worldID); err != nil {
+		t.Fatal(err)
+	}
+	wh := NewWorldHandler(f.pool, nil, clock.NewTestClock(time.Now()))
+	f.router.Get("/worlds/{worldID}/colonize-preview", wh.ColonizePreview)
+	req := httptest.NewRequest(http.MethodGet, "/worlds/"+f.worldID.String()+"/colonize-preview?q=0&r=0&pop=1000&starter_farm=1", nil)
+	req.Header.Set("Authorization", "Bearer "+f.accessToken)
+	rec := httptest.NewRecorder()
+	f.router.ServeHTTP(rec, req)
+	if rec.Code != 200 {
+		t.Fatalf("HTTP %d: %s", rec.Code, rec.Body.String())
+	}
+	var body struct {
+		Catchment []struct {
+			Q int `json:"q"`
+			R int `json:"r"`
+		} `json:"catchment"`
+		Harbour string `json:"harbour_note"`
+		Gifts   []struct {
+			Key string `json:"key"`
+		} `json:"founding_gifts"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	if len(body.Catchment) != 19 || body.Catchment[0].Q != 0 || body.Catchment[0].R != 0 {
+		t.Fatalf("centre not first: %s", rec.Body.String())
+	}
+	if !strings.HasPrefix(body.Harbour, "Coastal:") {
+		t.Fatalf("wrong centre's coast: %s", rec.Body.String())
+	}
+	if len(body.Gifts) != 1 || body.Gifts[0].Key != "poseidon_galley" {
+		t.Fatalf("wrong founding gift: %s", rec.Body.String())
 	}
 }

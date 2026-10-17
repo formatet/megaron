@@ -508,7 +508,8 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 	// excluded from the goods-potential call below — it is not a production
 	// tile (economy.RecomputeProduction's Ring, not Disk; see catchment.go).
 	center := hexgrid.Coord{Q: q, R: rr}
-	catchmentCoords := hexgrid.Disk(center, hexgrid.CatchmentRadius)
+	// The public list promises centre first; Disk is coordinate-sorted.
+	catchmentCoords := append([]hexgrid.Coord{center}, hexgrid.Ring(center, hexgrid.CatchmentRadius)...)
 	catchment := make([][2]int, len(catchmentCoords))
 	for i, c := range catchmentCoords {
 		catchment[i] = [2]int{c.Q, c.R}
