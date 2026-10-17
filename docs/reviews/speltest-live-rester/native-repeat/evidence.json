@@ -1,0 +1,145 @@
+{
+  "health": {
+    "commit": "230b81b7e74023de353723a72d0dd4b5c2ea16c7",
+    "migration": 181,
+    "status": "ok"
+  },
+  "attempts": [
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 3
+    }
+  ],
+  "target": {
+    "place_kind": "river",
+    "place_id": "46,20",
+    "q": 48,
+    "r": 20,
+    "terrain": "river",
+    "visible": true,
+    "tier": "live",
+    "fertility": 0.9577418040899046,
+    "mineral": 0.6319252769538944
+  },
+  "ship_id": "cbafa6d2-6060-4238-baed-5dc76860932f",
+  "groups": [
+    {
+      "type": "galley",
+      "category": "naval",
+      "loc": "Potamos",
+      "mode": "march",
+      "ids": [
+        "cbafa6d2-6060-4238-baed-5dc76860932f"
+      ],
+      "names": [
+        "Sea Hymn, Galley of Potamos"
+      ]
+    }
+  ],
+  "preview": {
+    "available": false,
+    "planned_expedition_ticks": 10,
+    "planned_home_by_tick_if_departing_now": 11,
+    "reason": "unknown_terrain",
+    "silver_payer_count": 1,
+    "silver_runway_ticks": 320,
+    "upkeep_silver_field": 1.5,
+    "upkeep_silver_home": 0.4500000000000002
+  },
+  "sent": {
+    "target_q": 48,
+    "target_r": 20,
+    "intent": "explore",
+    "ticks": 10
+  },
+  "http_status": 202,
+  "answer": {
+    "arrival_tick": 3,
+    "arrives_at": "2026-10-17T12:01:08.648789954+02:00",
+    "arrives_at_utc": "2026-10-17T10:01:08.648789954Z",
+    "carried_silver": 0,
+    "departs_at": "2026-10-17T12:01:06.648789954+02:00",
+    "duration_ticks": 1,
+    "expedition": {
+      "area_q": 48,
+      "area_r": 20,
+      "home_by_tick": 12,
+      "length_ticks": 10,
+      "turn_tick": 7
+    },
+    "origin_q": 50,
+    "origin_r": 21,
+    "purse_shortfall": 0,
+    "target_q": 53,
+    "target_r": 18,
+    "unit_id": "cbafa6d2-6060-4238-baed-5dc76860932f"
+  },
+  "movement": [
+    {
+      "status": "marching",
+      "q": 50,
+      "r": 21
+    }
+  ],
+  "page_errors": []
+}

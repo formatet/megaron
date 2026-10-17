@@ -1,0 +1,9 @@
+Founding (7,27) — metropolis of 1000 people — catchment forecast (19/19 hexes known, 0 unknown):
+  No timber within reach — every building needs timber. Plan wood deliveries before building.
+  Coastal: a city here can build a harbour and ships.
+  Food: grain ~5.5 + fish ~0.0 per day − consumption ~5.0 per day = net +0.5 per day
+  Starting stock 1200 grain — production covers food demand.
+  Other: copper-deposit ✓, silver-deposit ✓, copper ~4 per day, fish ~4 per day, livestock ~2 per day, oil ~10 per day, stone ~18 per day, wine ~21 per day
+  Gift: Poseidon's galley — a coastal founding is owed one galley, crewed and ready — a gift, not drawn from your people
+Error: non-interactive run: re-run with --yes to confirm the irreversible founding (keryx founding settle ... --yes)
+See keryx founding settle --help
