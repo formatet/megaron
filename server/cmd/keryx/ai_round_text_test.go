@@ -184,3 +184,18 @@ func TestAIRound_StatusUsesFoodAndShowsGranary(t *testing.T) {
 		})
 	}
 }
+
+func TestAIRound_CityCoordinatesAndExploreArea(t *testing.T) {
+	out := runCityCmd(t, `{"population":1000,"hexes":[{"hex_ordinal":2,"hex_q":57,"hex_r":54,"terrain":"plains","goods":[]}]}`, `{"settlement":{}}`)
+	if !strings.Contains(out, "(57,54)") || !strings.Contains(out, "#2") {
+		t.Fatal(out)
+	}
+	intent := "explore"
+	q, r := 27, 36
+	tq, tr := 26, 33
+	u := unitRow{Status: "marching", MarchIntent: &intent, Q: &q, R: &r, TargetQ: &tq, TargetR: &tr, Expedition: &expeditionMission{AreaQ: 31, AreaR: 33}}
+	loc := locationStr(nil, u, nil)
+	if !strings.Contains(loc, "unseen ground near (31,33)") || strings.Contains(loc, "(26,33)") {
+		t.Fatal(loc)
+	}
+}
