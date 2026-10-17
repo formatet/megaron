@@ -456,27 +456,33 @@ const FOREST_FLOOR = '#A6AA68';
 // deliberately asymmetric and lumpy: a real olive crown is knotted, never an
 // oval, and symmetry is most of what made these look like storybook trees.
 const TREE_LARGE = [
-  '.EE.EE.',
-  'ELMMMDE',
-  'ELMMMDE',
-  'ELMSMDE',
-  '.KMMDK.',
-  '..ETE..',
-  '..ETE..',
+  '...LLL.LL....',
+  '..LLLMMMMEE..',
+  '.LLLMMMMMDDE.',
+  'LLLMMMMMDDDDE',
+  'LMMMMMDMDDDDE',
+  '.EMMMDDMMDDE.',
+  '..EMMMTMMDE..',
+  '....ETTE.....',
+  '.....TT......',
+  '....T..T.....',
 ];
 const TREE_MID = [
-  '.EEE.',
-  'ELMDE',
-  'ELMDE',
-  '.KMK.',
-  '..T..',
-  '..T..',
+  '..LL.LL..',
+  '.LLLMMDE.',
+  'LLLMMDDDE',
+  'LMMMMDDDE',
+  '.EMMTMDE.',
+  '...TT....',
+  '..T..T...',
 ];
 const TREE_SMALL = [
-  '.EE..',
-  'ELMDE',
-  '.KMD.',
-  '..T..',
+  '..LL...',
+  '.LLMME.',
+  'LLMMDDE',
+  '.EMMDE.',
+  '...T...',
+  '..T.T..',
 ];
 const TREE_PALETTE = { K: '#1E2610', E: '#263013', S: '#283315', D: '#33401B', M: '#465428', L: '#5E6E38', T: '#4A3D28' };
 

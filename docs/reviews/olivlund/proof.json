@@ -1,0 +1,4009 @@
+{
+  "baseline_commit": "2bf95ac7",
+  "baseline_source_sha256": "1c87198068f64f54d4c83ff72e8994d80d507aedd84a605dea2513d605ad3af2",
+  "current_source_sha256": "5280cfc13808a6034cb60147835dd323e49a71a4fafa0eee6ca47d6692a3aaf1",
+  "renderer_only": true,
+  "scenes": {
+    "olive-maquis": {
+      "fixture": "olive_maquis",
+      "zoom": 1.0,
+      "grayscale": false,
+      "canvas_css": [
+        900,
+        780
+      ],
+      "device_scale_factor": 1,
+      "tiles": [
+        {
+          "terrain": "plains",
+          "sx": 186,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 252,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 318,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 516,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 648,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 714,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 186,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 252,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 318,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 648,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 714,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 186,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 252,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 318,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 648,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 714,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 186,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 252,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 318,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 648,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 714,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 186,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 252,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 318,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 648,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 714,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 186,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 252,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 318,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 648,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 714,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 186,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 252,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 318,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 648,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 714,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 186,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 252,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 318,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 450,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 648,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 714,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 186,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 252,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 318,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 384,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 450,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 582,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 648,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 714,
+          "sy": 696,
+          "rin": 38.1051177665153
+        }
+      ],
+      "changed_pixels": 49314,
+      "repeat_changed_pixels": 0
+    },
+    "olive-maquis-min": {
+      "fixture": "olive_maquis",
+      "zoom": 0.3,
+      "grayscale": false,
+      "canvas_css": [
+        900,
+        780
+      ],
+      "device_scale_factor": 1,
+      "tiles": [
+        {
+          "terrain": "plains",
+          "sx": 370.8,
+          "sy": 298.8,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "plains",
+          "sx": 390.6,
+          "sy": 310.2,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 410.40000000000003,
+          "sy": 298.8,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 430.2,
+          "sy": 310.2,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 298.8,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 469.8,
+          "sy": 310.2,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 489.6,
+          "sy": 298.8,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 509.4,
+          "sy": 310.2,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 529.2,
+          "sy": 298.8,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "plains",
+          "sx": 370.8,
+          "sy": 321.6,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 390.6,
+          "sy": 333,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 410.40000000000003,
+          "sy": 321.6,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 430.2,
+          "sy": 333,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 321.6,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 469.8,
+          "sy": 333,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 489.6,
+          "sy": 321.6,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "hills",
+          "sx": 509.4,
+          "sy": 333,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "hills",
+          "sx": 529.2,
+          "sy": 321.6,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "plains",
+          "sx": 370.8,
+          "sy": 344.40000000000003,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 390.6,
+          "sy": 355.8,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 410.40000000000003,
+          "sy": 344.40000000000003,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 430.2,
+          "sy": 355.8,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 344.40000000000003,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 469.8,
+          "sy": 355.8,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 489.6,
+          "sy": 344.40000000000003,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 509.4,
+          "sy": 355.8,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "hills",
+          "sx": 529.2,
+          "sy": 344.40000000000003,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 370.8,
+          "sy": 367.2,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 390.6,
+          "sy": 378.6,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 410.40000000000003,
+          "sy": 367.2,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 430.2,
+          "sy": 378.6,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 367.2,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 469.8,
+          "sy": 378.6,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 489.6,
+          "sy": 367.2,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 509.4,
+          "sy": 378.6,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "hills",
+          "sx": 529.2,
+          "sy": 367.2,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 370.8,
+          "sy": 390,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 390.6,
+          "sy": 401.4,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 410.40000000000003,
+          "sy": 390,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 430.2,
+          "sy": 401.4,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 390,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 469.8,
+          "sy": 401.4,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 489.6,
+          "sy": 390,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 509.4,
+          "sy": 401.4,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "plains",
+          "sx": 529.2,
+          "sy": 390,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 370.8,
+          "sy": 413.4,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 390.6,
+          "sy": 424.8,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 410.40000000000003,
+          "sy": 413.4,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 430.2,
+          "sy": 424.8,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 413.4,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 469.8,
+          "sy": 424.8,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 489.6,
+          "sy": 413.4,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 509.4,
+          "sy": 424.8,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "plains",
+          "sx": 529.2,
+          "sy": 413.4,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "plains",
+          "sx": 370.8,
+          "sy": 436.20000000000005,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 390.6,
+          "sy": 447.6,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 410.40000000000003,
+          "sy": 436.20000000000005,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 430.2,
+          "sy": 447.6,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 436.20000000000005,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 469.8,
+          "sy": 447.6,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 489.6,
+          "sy": 436.20000000000005,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "fog",
+          "sx": 509.4,
+          "sy": 447.6,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "fog",
+          "sx": 529.2,
+          "sy": 436.20000000000005,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "plains",
+          "sx": 370.8,
+          "sy": 459,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "plains",
+          "sx": 390.6,
+          "sy": 470.4,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 410.40000000000003,
+          "sy": 459,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 430.2,
+          "sy": 470.4,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 450,
+          "sy": 459,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 469.8,
+          "sy": 470.4,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 489.6,
+          "sy": 459,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "fog",
+          "sx": 509.4,
+          "sy": 470.4,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "fog",
+          "sx": 529.2,
+          "sy": 459,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "plains",
+          "sx": 370.8,
+          "sy": 481.8,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "plains",
+          "sx": 390.6,
+          "sy": 493.20000000000005,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "plains",
+          "sx": 410.40000000000003,
+          "sy": 481.8,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 430.2,
+          "sy": 493.20000000000005,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 450,
+          "sy": 481.8,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 469.8,
+          "sy": 493.20000000000005,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "fog",
+          "sx": 489.6,
+          "sy": 481.8,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "fog",
+          "sx": 509.4,
+          "sy": 493.20000000000005,
+          "rin": 11.43153532995459
+        },
+        {
+          "terrain": "fog",
+          "sx": 529.2,
+          "sy": 481.8,
+          "rin": 11.43153532995459
+        }
+      ],
+      "changed_pixels": 4465,
+      "repeat_changed_pixels": 0
+    },
+    "olive-maquis-close": {
+      "fixture": "olive_maquis",
+      "zoom": 1.6,
+      "grayscale": false,
+      "canvas_css": [
+        900,
+        780
+      ],
+      "device_scale_factor": 1,
+      "tiles": [
+        {
+          "terrain": "plains",
+          "sx": 27.599999999999966,
+          "sy": -96.40000000000003,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "plains",
+          "sx": 133.2,
+          "sy": -35.60000000000003,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 238.79999999999998,
+          "sy": -96.40000000000003,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 344.4,
+          "sy": -35.60000000000003,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": -96.40000000000003,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 555.5999999999999,
+          "sy": -35.60000000000003,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 661.2,
+          "sy": -96.40000000000003,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 766.8,
+          "sy": -35.60000000000003,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 872.4000000000001,
+          "sy": -96.40000000000003,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "plains",
+          "sx": 27.599999999999966,
+          "sy": 25.199999999999974,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 133.2,
+          "sy": 85.99999999999997,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 238.79999999999998,
+          "sy": 25.199999999999974,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 344.4,
+          "sy": 85.99999999999997,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 25.199999999999974,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 555.5999999999999,
+          "sy": 85.99999999999997,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 661.2,
+          "sy": 25.199999999999974,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "hills",
+          "sx": 766.8,
+          "sy": 85.99999999999997,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "hills",
+          "sx": 872.4000000000001,
+          "sy": 25.199999999999974,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "plains",
+          "sx": 27.599999999999966,
+          "sy": 146.79999999999998,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 133.2,
+          "sy": 207.59999999999997,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 238.79999999999998,
+          "sy": 146.79999999999998,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 344.4,
+          "sy": 207.59999999999997,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 146.79999999999998,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 555.5999999999999,
+          "sy": 207.59999999999997,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 661.2,
+          "sy": 146.79999999999998,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 766.8,
+          "sy": 207.59999999999997,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "hills",
+          "sx": 872.4000000000001,
+          "sy": 146.79999999999998,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 27.599999999999966,
+          "sy": 268.4,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 133.2,
+          "sy": 329.2,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 238.79999999999998,
+          "sy": 268.4,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 344.4,
+          "sy": 329.2,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 268.4,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 555.5999999999999,
+          "sy": 329.2,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 661.2,
+          "sy": 268.4,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 766.8,
+          "sy": 329.2,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "hills",
+          "sx": 872.4000000000001,
+          "sy": 268.4,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 27.599999999999966,
+          "sy": 390,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 133.2,
+          "sy": 450.8,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 238.79999999999998,
+          "sy": 390,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 344.4,
+          "sy": 450.8,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 390,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 555.5999999999999,
+          "sy": 450.8,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 661.2,
+          "sy": 390,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 766.8,
+          "sy": 450.8,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "plains",
+          "sx": 872.4000000000001,
+          "sy": 390,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 27.599999999999966,
+          "sy": 514.8,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 133.2,
+          "sy": 575.5999999999999,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 238.79999999999998,
+          "sy": 514.8,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 344.4,
+          "sy": 575.5999999999999,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 514.8,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 555.5999999999999,
+          "sy": 575.5999999999999,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 661.2,
+          "sy": 514.8,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 766.8,
+          "sy": 575.5999999999999,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "plains",
+          "sx": 872.4000000000001,
+          "sy": 514.8,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "plains",
+          "sx": 27.599999999999966,
+          "sy": 636.4000000000001,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 133.2,
+          "sy": 697.2,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 238.79999999999998,
+          "sy": 636.4000000000001,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 344.4,
+          "sy": 697.2,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 636.4000000000001,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 555.5999999999999,
+          "sy": 697.2,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 661.2,
+          "sy": 636.4000000000001,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "fog",
+          "sx": 766.8,
+          "sy": 697.2,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "fog",
+          "sx": 872.4000000000001,
+          "sy": 636.4000000000001,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "plains",
+          "sx": 27.599999999999966,
+          "sy": 758,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "plains",
+          "sx": 133.2,
+          "sy": 818.8,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 238.79999999999998,
+          "sy": 758,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 344.4,
+          "sy": 818.8,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 450,
+          "sy": 758,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 555.5999999999999,
+          "sy": 818.8,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 661.2,
+          "sy": 758,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "fog",
+          "sx": 766.8,
+          "sy": 818.8,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "fog",
+          "sx": 872.4000000000001,
+          "sy": 758,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "plains",
+          "sx": 27.599999999999966,
+          "sy": 879.5999999999999,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "plains",
+          "sx": 133.2,
+          "sy": 940.3999999999999,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "plains",
+          "sx": 238.79999999999998,
+          "sy": 879.5999999999999,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 344.4,
+          "sy": 940.3999999999999,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 450,
+          "sy": 879.5999999999999,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 555.5999999999999,
+          "sy": 940.3999999999999,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "fog",
+          "sx": 661.2,
+          "sy": 879.5999999999999,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "fog",
+          "sx": 766.8,
+          "sy": 940.3999999999999,
+          "rin": 60.96818842642448
+        },
+        {
+          "terrain": "fog",
+          "sx": 872.4000000000001,
+          "sy": 879.5999999999999,
+          "rin": 60.96818842642448
+        }
+      ],
+      "changed_pixels": 100344,
+      "repeat_changed_pixels": 0
+    },
+    "olive-maquis-gray": {
+      "fixture": "olive_maquis",
+      "zoom": 1.0,
+      "grayscale": true,
+      "canvas_css": [
+        900,
+        780
+      ],
+      "device_scale_factor": 1,
+      "tiles": [
+        {
+          "terrain": "plains",
+          "sx": 186,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 252,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 318,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 516,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 648,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 714,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 186,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 252,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 318,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 648,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 714,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 186,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 252,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 318,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 648,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 714,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 186,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 252,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 318,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 648,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 714,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 186,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 252,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 318,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 648,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 714,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 186,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 252,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 318,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 648,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 714,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 186,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 252,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 318,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 648,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 714,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 186,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 252,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 318,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 450,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 648,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 714,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 186,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 252,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 318,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 384,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 450,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 582,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 648,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 714,
+          "sy": 696,
+          "rin": 38.1051177665153
+        }
+      ],
+      "changed_pixels": 49285,
+      "repeat_changed_pixels": 0
+    },
+    "forest": {
+      "fixture": "forest",
+      "zoom": 1.0,
+      "grayscale": false,
+      "canvas_css": [
+        900,
+        780
+      ],
+      "device_scale_factor": 1,
+      "tiles": [
+        {
+          "terrain": "deep_sea",
+          "sx": 186,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 252,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 318,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 384,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 450,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 516,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 582,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 648,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 714,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 186,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 252,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 318,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 384,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 516,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 582,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 648,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "mountain_limestone",
+          "sx": 714,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 186,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 252,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 318,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 516,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 582,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 648,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 714,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 186,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 252,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 318,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 516,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 582,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 648,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 714,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 186,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 252,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 318,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 516,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 582,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 648,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 714,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 186,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 252,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 318,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 516,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 582,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 648,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 714,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 186,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 252,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 318,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 516,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 582,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 648,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 714,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 186,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 252,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 318,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 384,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 450,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 516,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 582,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 648,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 714,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 186,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 252,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 318,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 384,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 450,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 516,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 582,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 648,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 714,
+          "sy": 696,
+          "rin": 38.1051177665153
+        }
+      ],
+      "changed_pixels": 41757,
+      "repeat_changed_pixels": 0
+    },
+    "cedar": {
+      "fixture": "cedar",
+      "zoom": 1.0,
+      "grayscale": false,
+      "canvas_css": [
+        900,
+        780
+      ],
+      "device_scale_factor": 1,
+      "tiles": [
+        {
+          "terrain": "deep_sea",
+          "sx": 186,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 252,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 318,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 516,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 582,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 648,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 714,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 186,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 252,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 318,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 450,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 516,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 582,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 648,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 714,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 186,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 252,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 318,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 384,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 450,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 516,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 582,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 648,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 714,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 186,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 252,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 318,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 384,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 450,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 516,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 582,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 648,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 714,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 186,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 252,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 318,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 384,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 450,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 516,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 582,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 648,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 714,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 186,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 252,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 318,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 384,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 450,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 516,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 582,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 648,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 714,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 186,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 252,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 318,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 384,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 450,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 516,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 582,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 648,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 714,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 186,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 252,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 318,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 384,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 450,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 516,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 582,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 648,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 714,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 186,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 252,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 318,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 384,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 450,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 516,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_cedar",
+          "sx": 582,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 648,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 714,
+          "sy": 696,
+          "rin": 38.1051177665153
+        }
+      ],
+      "changed_pixels": 13056,
+      "repeat_changed_pixels": 0
+    },
+    "plains": {
+      "fixture": "plains",
+      "zoom": 1.0,
+      "grayscale": false,
+      "canvas_css": [
+        900,
+        780
+      ],
+      "device_scale_factor": 1,
+      "tiles": [
+        {
+          "terrain": "deep_sea",
+          "sx": 186,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 252,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 318,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 384,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 450,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 516,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 582,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 648,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 714,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 186,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 252,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 318,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 384,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 450,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 516,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 582,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 648,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "mountain_limestone",
+          "sx": 714,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 186,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 252,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 318,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 384,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 450,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 516,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 582,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 648,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 714,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 186,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 252,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 318,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 384,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 450,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 516,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 582,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 648,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 714,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 186,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 252,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 318,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 384,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 450,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 516,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "forest_olive_grove",
+          "sx": 582,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 648,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 714,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 186,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 252,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 318,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 384,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 450,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 516,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 582,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "semi_desert",
+          "sx": 648,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 714,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 186,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 252,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 318,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 384,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 450,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 516,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 582,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "semi_desert",
+          "sx": 648,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 714,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 186,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 252,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 318,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 384,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 450,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 516,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 582,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 648,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 714,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 186,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 252,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "deep_sea",
+          "sx": 318,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "coastal_sea",
+          "sx": 384,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 450,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 516,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 582,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 648,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 714,
+          "sy": 696,
+          "rin": 38.1051177665153
+        }
+      ],
+      "changed_pixels": 3098,
+      "repeat_changed_pixels": 0
+    },
+    "no-olive": {
+      "fixture": "no_olive",
+      "zoom": 1.0,
+      "grayscale": false,
+      "canvas_css": [
+        900,
+        780
+      ],
+      "device_scale_factor": 1,
+      "tiles": [
+        {
+          "terrain": "plains",
+          "sx": 186,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 252,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 318,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 384,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 450,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 648,
+          "sy": 124,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 714,
+          "sy": 86,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 186,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 252,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 318,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 384,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 450,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 648,
+          "sy": 200,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 714,
+          "sy": 162,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 186,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 252,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 318,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 384,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 450,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 648,
+          "sy": 276,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 714,
+          "sy": 238,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 186,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 252,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 318,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 384,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 450,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 648,
+          "sy": 352,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "hills",
+          "sx": 714,
+          "sy": 314,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 186,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 252,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 318,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 384,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 450,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 648,
+          "sy": 428,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 714,
+          "sy": 390,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 186,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 252,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 318,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 384,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 450,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 648,
+          "sy": 506,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 714,
+          "sy": 468,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 186,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 252,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 318,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 384,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 450,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 648,
+          "sy": 582,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 714,
+          "sy": 544,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 186,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 252,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 318,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 384,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 450,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 582,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 648,
+          "sy": 658,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 714,
+          "sy": 620,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 186,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 252,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "plains",
+          "sx": 318,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 384,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 450,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "scrub_maquis",
+          "sx": 516,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 582,
+          "sy": 696,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 648,
+          "sy": 734,
+          "rin": 38.1051177665153
+        },
+        {
+          "terrain": "fog",
+          "sx": 714,
+          "sy": 696,
+          "rin": 38.1051177665153
+        }
+      ],
+      "changed_pixels": 0,
+      "repeat_changed_pixels": 0
+    }
+  },
+  "firefox": "146.0.1"
+}

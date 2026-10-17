@@ -60,6 +60,18 @@ import { render, canvas, SCALE, hexPx } from '/static/js/megaron/render/map.js';
 // Övriga terränger finns kvar som grannar, för det är i mötet en ändring
 // läcker: mot kust, mot kulle, mot fog, under stad, väg, fyndighet och enhet.
 const FIXTURES = {
+  // Direct recognition test: mature olive trees beside low maquis, with actors.
+  olive_maquis: [
+    'ppFFFFsss', 'pFFFFsshh', 'pFFFFsssh',
+    'FFFFFsssh', 'FFFFFsssp', 'FFFFFsssp',
+    'pFFFFss..', 'ppFFsss..', 'pppsss...',
+  ],
+  // Identical topology without olives: a containment control for crown changes.
+  no_olive: [
+    'ppsssssss', 'psssssshh', 'psssssssh',
+    'ssssssssh', 'ssssssssp', 'ssssssssp',
+    'pssssss..', 'ppsssss..', 'pppsss...',
+  ],
   // Skogen dominerar. Slätten är remsan i väster.
   forest: [
     '~~cppFFhh',
@@ -268,6 +280,8 @@ State.provinceData = [
 // Ruralprojektion: byggnaden på en catchment-hex (Fas A2-ytan), av den sort
 // terrängen under arbete faktiskt bär — såg i lunden, gård på slätten.
 const RURAL = {
+  olive_maquis: [[3, 3, 'lumbermill']],
+  no_olive: [],
   forest: [[4, 3, 'lumbermill']],
   plains: [[4, 3, 'farm'], [6, 3, 'lumbermill']],
   relief: [[3, 3, 'mine']],
@@ -281,6 +295,8 @@ State.ruralData = (RURAL[FIXTURE] || []).map(
 // skalfrågan. Ett träd som är större än en armé läser som diorama, inte som
 // terräng, och det går bara att bedöma med enheten i samma bild som marken.
 const UNITS = {
+  olive_maquis: [[3, 6], [5, 2], [6, 5]],
+  no_olive: [[3, 6], [5, 2], [6, 5]],
   forest: [[3, 6], [5, 2], [6, 5]],
   plains: [[3, 6], [6, 2], [7, 4]],
   // En aktör på VARDERA höjdterrängen: kalksten, röd bergrygg, kulle.

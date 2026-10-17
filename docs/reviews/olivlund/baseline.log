@@ -1,0 +1,82 @@
+{
+  "olive-maquis": {
+    "fixture": "olive_maquis",
+    "zoom": 1.0,
+    "grayscale": false,
+    "canvas_css": [
+      900,
+      780
+    ],
+    "device_scale_factor": 1
+  },
+  "olive-maquis-min": {
+    "fixture": "olive_maquis",
+    "zoom": 0.3,
+    "grayscale": false,
+    "canvas_css": [
+      900,
+      780
+    ],
+    "device_scale_factor": 1
+  },
+  "olive-maquis-close": {
+    "fixture": "olive_maquis",
+    "zoom": 1.6,
+    "grayscale": false,
+    "canvas_css": [
+      900,
+      780
+    ],
+    "device_scale_factor": 1
+  },
+  "olive-maquis-gray": {
+    "fixture": "olive_maquis",
+    "zoom": 1.0,
+    "grayscale": true,
+    "canvas_css": [
+      900,
+      780
+    ],
+    "device_scale_factor": 1
+  },
+  "forest": {
+    "fixture": "forest",
+    "zoom": 1.0,
+    "grayscale": false,
+    "canvas_css": [
+      900,
+      780
+    ],
+    "device_scale_factor": 1
+  },
+  "cedar": {
+    "fixture": "cedar",
+    "zoom": 1.0,
+    "grayscale": false,
+    "canvas_css": [
+      900,
+      780
+    ],
+    "device_scale_factor": 1
+  },
+  "plains": {
+    "fixture": "plains",
+    "zoom": 1.0,
+    "grayscale": false,
+    "canvas_css": [
+      900,
+      780
+    ],
+    "device_scale_factor": 1
+  },
+  "no-olive": {
+    "fixture": "no_olive",
+    "zoom": 1.0,
+    "grayscale": false,
+    "canvas_css": [
+      900,
+      780
+    ],
+    "device_scale_factor": 1
+  }
+}
