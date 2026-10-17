@@ -1,0 +1,5 @@
+--- FAIL: TestPlaytestTimberWarning_FollowsCatalogue (0.00s)
+    speltest_text_test.go:34: ⚠ Timber production ~0 — timber gates harbour (0)/barracks (0)/foundry (0)/temple (0). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

@@ -1,0 +1,8 @@
+--- FAIL: TestPlaytestForecast_FullFoodDemandAndReserve (0.00s)
+    speltest_text_test.go:20: missing "consumption ~5.0": Coast — catchment forecast (0/0 hexes known, 0 unknown):
+          Food: grain ~0.5 + fish ~5.0 per day − consumption ~0.0 per day = net +0.5 per day
+          Starting stock 0 grain — production covers food demand.
+          No grain reserve: loyalty can fall
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

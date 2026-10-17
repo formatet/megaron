@@ -1,11 +1,4 @@
-» färsk DB på migration 181 · commit 751912ff+ändringar
-2026/10/17 11:29:37 INFO player registered id=a69f4c3f-f448-41bc-8cbd-7e2acfdc2825 username=realm-81d3ba75-f08d-4ec5-a1e3-fcddc1b16211
-2026/10/17 11:29:37 INFO player registered id=dd74666e-2c32-4915-bcb3-267264dc44cc username=buildhex-964da43e-52a2-4dca-8981-215b1e7c844b
---- FAIL: TestPlaytestColonizePreview_FullConsumption (0.07s)
-    speltest_text_test.go:80: HTTP 401: {"error":"Your session has expired — reload the page to log in again."}
-FAIL
-FAIL	formatet/megaron/server/api/handlers	0.229s
-ok  	formatet/megaron/server/internal/economy	0.024s
-ok  	formatet/megaron/server/internal/loyalty	0.002s [no tests to run]
-ok  	formatet/megaron/server/cmd/keryx	0.005s
-FAIL
+» färsk DB på migration 181 · commit 6a7f7d35+ändringar
+ok  	formatet/megaron/server/api/handlers	0.235s
+ok  	formatet/megaron/server/internal/economy	0.023s
+ok  	formatet/megaron/server/cmd/keryx	0.004s

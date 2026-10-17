@@ -1,0 +1,5 @@
+--- FAIL: TestPlaytestFoundingWarning_MatchesGrainWelfare (0.00s)
+    welfare_test.go:102: empty-grain reserve must warn despite positive production
+FAIL
+FAIL	formatet/megaron/server/internal/loyalty	0.002s
+FAIL

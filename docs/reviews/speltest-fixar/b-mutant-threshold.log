@@ -1,0 +1,5 @@
+--- FAIL: TestPlaytestKharisReading_DoesNotRoundUp (0.00s)
+    speltest_text_test.go:84: 4.99 displayed as 5.0
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL
