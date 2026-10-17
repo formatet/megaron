@@ -1,0 +1,23 @@
+=== RUN   TestInlandFoodBalance_SevenOfTen
+=== RUN   TestInlandFoodBalance_SevenOfTen/hills
+    inland_food_balance_test.go:150: hills needs 10 food workers, net 0.000000000000; want <=7 and >=0
+=== RUN   TestInlandFoodBalance_SevenOfTen/plains
+    inland_food_balance_test.go:155: plains {Tick:0 Population:1000 FoodWorkers:3 Grain:5.6 Fish:0 FoodNet:0.5999999999999996 GrainStock:1200 Sitos:0 Timber:0 Stone:0 Unmet:0}
+=== RUN   TestInlandFoodBalance_SevenOfTen/coast
+    inland_food_balance_test.go:155: coast {Tick:0 Population:1000 FoodWorkers:5 Grain:0.5 Fish:5 FoodNet:0.5 GrainStock:1200 Sitos:0 Timber:0 Stone:0 Unmet:0}
+=== RUN   TestInlandFoodBalance_SevenOfTen/amnissos
+    inland_food_balance_test.go:155: amnissos {Tick:0 Population:1000 FoodWorkers:3 Grain:5.5 Fish:0 FoodNet:0.5 GrainStock:1200 Sitos:0 Timber:0 Stone:0 Unmet:0}
+--- FAIL: TestInlandFoodBalance_SevenOfTen (0.17s)
+    --- FAIL: TestInlandFoodBalance_SevenOfTen/hills (0.05s)
+    --- PASS: TestInlandFoodBalance_SevenOfTen/plains (0.04s)
+    --- PASS: TestInlandFoodBalance_SevenOfTen/coast (0.04s)
+    --- PASS: TestInlandFoodBalance_SevenOfTen/amnissos (0.04s)
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.169s
+=== RUN   TestCreateMetropolis_InlandFoodSevenOfTen
+    create_metropolis_founding_test.go:246: actual founding: workers=10 farmL1 grain=5.000000; want <=7, L1, >=5 grain
+--- FAIL: TestCreateMetropolis_InlandFoodSevenOfTen (0.03s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.033s
+FAIL
+» färsk DB på migration 182 · commit 8f3d778e+ändringar

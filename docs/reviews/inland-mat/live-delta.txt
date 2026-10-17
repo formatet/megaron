@@ -1,0 +1,1 @@
+hills-bearing owned settlements|4|negative deltas|0|positive deltas|4|total added grain rate|2.71666666666666666672100000000000000000000

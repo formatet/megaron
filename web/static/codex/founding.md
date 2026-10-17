@@ -36,3 +36,5 @@ The forecast lists grain and fish production separately from the population's fu
 If the known catchment has no timber or cedar to cover timber costs, the forecast warns before you found. Unknown ground may still hold wood; scout it or plan deliveries. A fully known catchment without wood needs imports for building.
 
 Place citizens on olive woodland or cedar forest for timber and on stone-bearing ground for stone; idle citizens produce nothing. The forecast says when Demeter’s farm is already included; another farm is not an extra founding gift.
+
+On grain-bearing hills, a Farm at level 1 makes 0.85 grain per worker per day, with room for five workers. Plain hills give 0.5 per worker. With another grain-bearing hill in reach, six food workers can feed a new city of 1,000 people; leave the rest for timber and stone. Check the forecast for your actual site.
