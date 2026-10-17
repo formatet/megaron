@@ -1,0 +1,4 @@
+=== RUN   TestAIRound3_EmptyUnplacePointsToOccupiedGood
+--- PASS: TestAIRound3_EmptyUnplacePointsToOccupiedGood (0.00s)
+PASS
+ok  	formatet/megaron/server/cmd/keryx	0.002s

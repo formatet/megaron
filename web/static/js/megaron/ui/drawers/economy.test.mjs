@@ -208,3 +208,12 @@ test('settlement food column follows full fish-inclusive authoritative net',()=>
  const row=settlementFoodRow({id:'p',name:'Coast'},{population:1000,grain_prod_rate:0.5,grain_consum_rate:5,sitos:{food_net_per_tick:0.5}});
  assert.equal(row.grainRate,0.5);
 });
+
+test('AIRound3: overview sorts and displays food after army, keeps people-only fallback',()=>{
+ const city={id:'s',name:'Scheria'};
+ const data={population:1000,food_net_per_tick_after_upkeep:-1.5,sitos:{food_net_per_tick:0.5,coverage_ticks:1,low_ticks:3,high_ticks:10,granary_total:0}};
+ assert.equal(settlementFoodRow(city,data).grainRate,-1.5);
+ const html=renderSettlementsOverviewHTML([settlementFoodRow(city,data)]);
+ assert.match(html,/Food after army/);assert.match(html,/-1.5 per day/);
+ delete data.food_net_per_tick_after_upkeep;assert.equal(settlementFoodRow(city,data).grainRate,0.5);
+});

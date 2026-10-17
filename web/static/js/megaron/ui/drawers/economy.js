@@ -67,7 +67,7 @@ export function settlementFoodRow(s, pd) {
   const low   = sitos.low_ticks         || 0;
   const high  = sitos.high_ticks        || 0;
   const total = sitos.granary_total     || 0;
-  const net   = sitos.food_net_per_tick != null ? sitos.food_net_per_tick : netTick;
+  const net   = pd.food_net_per_tick_after_upkeep ?? sitos.food_net_per_tick ?? netTick;
   // food_self_sufficient===false means the catchment cannot feed the
   // population even with every citizen on food — worse than any coverage
   // number can say (it will never recover on its own), so it overrides the
@@ -123,7 +123,7 @@ export function renderSettlementsOverviewHTML(rows, sortKey, sortDir) {
     <tr style="color:var(--text-dim);font-size:.7rem">
       ${th('name', 'Settlement')}
       ${th('population', 'Pop', 'right')}
-      ${th('grainRate', 'Food net', 'right')}
+      ${th('grainRate', 'Food after army', 'right')}
       ${th('coverage', 'Food lasts', 'right')}
       ${th('brist', 'Status')}
     </tr>

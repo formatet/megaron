@@ -1,0 +1,9 @@
+=== RUN   TestAIRound3_YesDoesNotAsk
+    ai_round3_test.go:144: <nil> postedfalse Founding (0,0) — metropolis of 1000 people — catchment forecast (0/0 hexes known, 0 unknown):
+          Food: grain ~5.0 + fish ~0.0 per day − consumption ~5.0 per day = net about even per day
+          Starting stock 0 grain — marginal (net about even per day). A farm gives net ~-5.0 per day.
+        Found the metropolis here? The host dissolves — forever. [y/N]: Aborted — the host travels on.
+--- FAIL: TestAIRound3_YesDoesNotAsk (0.00s)
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

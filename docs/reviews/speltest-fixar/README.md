@@ -104,3 +104,23 @@ help/error output, integrated river UI POST202 followed by physical marching, ze
 `native-final/` is the corrected run; `native-initial/` documents the diagnosed centre-order baseline.
 Final sources/tests are identical to255620db; this closing change contains evidence only.
 A2 was integrated by Claude asb2e13145; river core asf5261fb4, docs1139c835.
+
+## Slice 7 — AI-runda 3
+
+Branch `codex/ai-runda3-texter`; [fullt bevispaket](../ai-runda3-texter/README.md).
+
+| Fynd | Utfall |
+|---|---|
+| 1. Två matnetton/Net net | Fixat: population före armén och fullfood efter verklig army-grain, separat silver, samma API/webb/CLI-underlag. |
+| 2. Matgubbetal/★/grammatik | Gemensamt food-required/placed-råd, konkurrerande matantal bort; egna★ redan rätt, främmande★ spärrad; singular/plural rätt. |
+| 3. Gubbeskala | 1citizen=100people uttryckligt,200workers→2citizens, JSON:s personskala bevarad. |
+| 4. --yes frågar | Ej reproducerbart på aktuell kod; verklig CLI-grundning frågar inte, regression + fysisk mutation skyddar befintligt beteende. |
+| 5. before other use | Fixat: if nothing else uses it. |
+| 6. Provinceformer | Flagga och positionsargument i city/placements/status/build/place, befintlig resolver/FOW. |
+| 7. Tom borttagning | Visar var stadens egna gubbar producerar varan; inga påhittade DELETE eller främmande arbetare. |
+| 8. Hållen hex | already worked by another city i CLI/webb/Codex. |
+| 9. Tid | Rese-ETA/förrådstid i dagar; okänd tid explicit unavailable, expeditionshemkomst i världsdag behålls. |
+
+FullfreshGo182 (alla sista Go-bytes, world143.227s), vet,651JS/0skip,17 fysiska namedRED→exakta bytes→GREEN;
+naturlig register/join/grundning/placering/CLI/Firefox1280+390 på healthf657a1ab/182, inga pageerrors.
+Ingen migration eller ändring av utfodring/tillväxt/upkeep. Claude granskar och integrerar; även CLI-binären måste byggas om.

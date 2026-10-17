@@ -38,7 +38,7 @@ func buildCmd() *cobra.Command {
 	var queue bool
 
 	cmd := &cobra.Command{
-		Use:   "build",
+		Use:   "build [city]",
 		Short: "Start construction of a building (--list for options, --queue to see what's queued; defaults to capital)",
 		Example: `  keryx build --list
   keryx build --type farm --hex 3,-1          # farm/mine/lumbermill/stonequarry are hex-bound: pick a catchment hex
@@ -46,9 +46,15 @@ func buildCmd() *cobra.Command {
   keryx build --type mine --hex 5,2 --province <province-id>   # build in a colony
   keryx build --type winery           # produces nothing unless a hills/plains/scrub_maquis tile is in catchment
   keryx build --queue                 # see what's already queued, with cancel-build IDs`,
-		Args: rejectPositionalArgs("type"),
-		RunE: func(cmd *cobra.Command, _ []string) error {
+		Args: cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
 			c := newClient(cfg)
+			if len(args) > 0 {
+				if provinceID != "" {
+					return fmt.Errorf("choose a city either positionally or with --province")
+				}
+				provinceID = args[0]
+			}
 
 			// --queue: show this settlement's build queue (with queue IDs for
 			// cancel-build) and exit. Added because `build` used to only say

@@ -1,0 +1,14 @@
+=== RUN   TestAIRound3_GoodsCitizenScale
+    ai_round3_test.go:121: 1 citizen = 100 people
+        Labor pool: 10 citizens  ·  Idle: 3 citizens
+
+        Good            Stock   Per day     Lvl    Citizens    Marg/g
+        ──────────────────────────────────────────────────────────────────────────
+        fish              0.0       2.0       —         200    0.0000
+
+        Wanaxes agree trade prices. The temple shows how the gods weigh offerings: keryx rite --list.
+
+--- FAIL: TestAIRound3_GoodsCitizenScale (0.00s)
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

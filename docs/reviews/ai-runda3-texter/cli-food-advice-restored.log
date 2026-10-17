@@ -1,0 +1,4 @@
+=== RUN   TestAIRound3_StatusArmyAndSingleFoodAdvice
+--- PASS: TestAIRound3_StatusArmyAndSingleFoodAdvice (0.00s)
+PASS
+ok  	formatet/megaron/server/cmd/keryx	0.003s

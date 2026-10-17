@@ -1,0 +1,4 @@
+=== RUN   TestAIRound3_ETAOnlyGameDays
+--- PASS: TestAIRound3_ETAOnlyGameDays (0.00s)
+PASS
+ok  	formatet/megaron/server/cmd/keryx	0.002s

@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -65,8 +64,7 @@ func foundingStoreLine(label string, s foundingStore, tickSeconds float64) strin
 		return fmt.Sprintf("%s: %.0f — lasts indefinitely", label, s.Amount)
 	}
 	ticksLeft := float64(*s.TicksLeft)
-	at := time.Now().Add(time.Duration(ticksLeft * tickSeconds * float64(time.Second)))
-	return fmt.Sprintf("%s: %.0f left — %s (%s)", label, s.Amount, formatDays(ticksLeft, "%.0f"), wallClock(at))
+	return fmt.Sprintf("%s: %.0f left — %s", label, s.Amount, formatDays(ticksLeft, "%.0f"))
 }
 
 // printFoundingStatus renders the wandering host's status block — shared by

@@ -34,7 +34,7 @@ func TestFoundingSettleHelpMatchesJSONBehavior(t *testing.T) {
 func TestFoundingStoreDaysAndWallClock(t *testing.T) {
 	for _, days := range []int{1, 3, 1000} {
 		got := foundingStoreLine("Food", foundingStore{Amount: 50, TicksLeft: &days}, 86400)
-		if !strings.Contains(got, formatDays(float64(days), "%.0f")) || !strings.Contains(got, "≈ ") || !strings.Contains(got, ":") {
+		if !strings.Contains(got, formatDays(float64(days), "%.0f")) || strings.Contains(got, "≈ ") || strings.Contains(got, ":") && strings.Count(got, ":") > 1 {
 			t.Fatalf("world duration and clock/date: %q", got)
 		}
 		if strings.Contains(got, "real time") || strings.Contains(got, "tick") {

@@ -81,7 +81,7 @@ func buildRoadAliasCmd() *cobra.Command {
 // carries over unchanged.
 func placementsAliasCmd() *cobra.Command {
 	c := cityCmd()
-	c.Use = "placements [stad]"
+	c.Use = "placements [city]"
 	c.Short = "Show a settlement's catchment hexes, building slots and idle pool (alias for `city`)"
 	return c
 }

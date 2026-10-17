@@ -1,0 +1,13 @@
+=== RUN   TestAIRound3_ForeignWorkersAreNotRemovalTargets
+    ai_round3_test.go:187: foreign workers marked as removable: 1 citizen = 100 people
+        Citizens: 10/10 placed, 0 idle
+
+        Food: 2 needed, 5 placed — 3 could move after rearranging for people’s food (occupied food rows marked ★ below); see `keryx place <good> <ordinal> -n`
+
+        Catchment:
+          #1   (0,0)                fish       —          (5 placed, next —)  ★ food surplus  held by Tylissos — already worked by another city
+
+--- FAIL: TestAIRound3_ForeignWorkersAreNotRemovalTargets (0.00s)
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

@@ -16,7 +16,7 @@ Each row has **+1**, **Fill** and **−1**. *Fill* keeps adding until the hex is
 
 ## The one number that matters
 
-The *next citizen would add* figure is all you need for a good decision. A citizen placed past a hex's limit produces nothing, which is why the row says **full** instead of letting you find out slowly. Grain is the exception: a grain hex is limited by your Farm's level, not by the hex alone.
+The *next citizen would add* figure is all you need for a good decision. A citizen placed past a hex's limit produces nothing, which is why the row says **full** instead of letting you find out slowly. Every good has a limit on that hex; a relevant building adds four places and raises each worker's output.
 
 ## New people place themselves
 
@@ -27,3 +27,5 @@ Idle citizens are wasted citizens. So are citizens producing something nobody us
 On the map, a small marker shows the hexes where your people are at work.
 
 Fish feeds your people just as grain does. A city living on stored food is still fed. Hunger affects [[loyalty]] only when the daily meal remains short after the [[food|feeding chain]] has been exhausted.
+
+One placeable **citizen represents 100 people**. Population counts people; City and Goods count these citizens. The food-workers estimate assumes the best grain and fish slots for the population. Moving workers may require rearranging the remaining food placements; the army needs its own grain as shown in the food balance.

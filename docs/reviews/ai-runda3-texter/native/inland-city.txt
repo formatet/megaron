@@ -1,0 +1,28 @@
+1 citizen = 100 people
+Citizens: 3/10 placed, 7 idle
+
+Food: 3 needed, 3 placed
+
+Catchment:
+  #8   (55,37) plains         oil        0/2    (next +0.7 per day)  [farm L1 @ (55,37) plains]
+                      wine       0/2    (next +0.5 per day)
+                      stone      0/1    (next +0.5 per day)
+                      grain      3/8    (next +1.7 per day)
+                      livestock  0/1    (next +1.0 per day)
+  #9   (55,38) plains         livestock  0/1    (next +1.0 per day)
+                      oil        0/2    (next +0.7 per day)
+                      wine       0/2    (next +0.5 per day)
+                      stone      0/1    (next +0.5 per day)
+                      grain      0/4    (next +1.0 per day)
+  #4   (54,38) hills          oil        0/2    (next +0.5 per day)
+                      wine       0/2    (next +1.0 per day)
+                      stone      0/2    (next +1.0 per day)
+                      grain      0/1    (next +0.5 per day)
+  #5   (54,39) hills          oil        0/2    (next +0.5 per day)
+                      wine       0/2    (next +1.0 per day)
+                      stone      0/2    (next +1.0 per day)
+                      grain      0/1    (next +0.5 per day)
+  #1   (53,39) mountain_limestone stone      0/2    (next +2.0 per day)
+                      tin        0/1    (next +1.0 per day)
+  #2   (53,40) mountain_limestone stone      0/2    (next +2.0 per day)
+                      tin        0/1    (next +1.0 per day)

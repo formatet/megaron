@@ -274,11 +274,11 @@ func TestHeldHexNote(t *testing.T) {
 	if got := heldHexNote(placementHex{}); got != "" {
 		t.Errorf("unheld hex got %q", got)
 	}
-	if got := heldHexNote(placementHex{HeldBy: "Petras"}); got != "  held by Petras" {
+	if got := heldHexNote(placementHex{HeldBy: "Petras"}); got != "  held by Petras — already worked by another city" {
 		t.Errorf("held got %q", got)
 	}
 	got := heldHexNote(placementHex{HeldBy: "Petras", Takeable: true, HeldWorkers: 3, HeldBuilding: &placementHexBuilding{Type: "farm", Level: 2}})
-	want := "  held by Petras  TAKEABLE — place a worker to take it (3 workers go home, its farm becomes yours)"
+	want := "  held by Petras — already worked by another city  TAKEABLE — place a worker to take it (3 workers go home, its farm becomes yours)"
 	if got != want {
 		t.Errorf("got %q, want %q", got, want)
 	}

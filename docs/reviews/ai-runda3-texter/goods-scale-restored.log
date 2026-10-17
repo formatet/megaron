@@ -1,0 +1,4 @@
+=== RUN   TestAIRound3_GoodsCitizenScale
+--- PASS: TestAIRound3_GoodsCitizenScale (0.00s)
+PASS
+ok  	formatet/megaron/server/cmd/keryx	0.002s

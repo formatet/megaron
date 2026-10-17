@@ -1,0 +1,24 @@
+=== RUN   TestAIRound3_ProvinceForms
+=== RUN   TestAIRound3_ProvinceForms/city/flagfalse
+=== RUN   TestAIRound3_ProvinceForms/city/flagtrue
+=== RUN   TestAIRound3_ProvinceForms/placements/flagfalse
+=== RUN   TestAIRound3_ProvinceForms/placements/flagtrue
+=== RUN   TestAIRound3_ProvinceForms/status/flagfalse
+=== RUN   TestAIRound3_ProvinceForms/status/flagtrue
+=== RUN   TestAIRound3_ProvinceForms/build/flagfalse
+=== RUN   TestAIRound3_ProvinceForms/build/flagtrue
+=== RUN   TestAIRound3_ProvinceForms/place/flagfalse
+=== RUN   TestAIRound3_ProvinceForms/place/flagtrue
+--- PASS: TestAIRound3_ProvinceForms (0.00s)
+    --- PASS: TestAIRound3_ProvinceForms/city/flagfalse (0.00s)
+    --- PASS: TestAIRound3_ProvinceForms/city/flagtrue (0.00s)
+    --- PASS: TestAIRound3_ProvinceForms/placements/flagfalse (0.00s)
+    --- PASS: TestAIRound3_ProvinceForms/placements/flagtrue (0.00s)
+    --- PASS: TestAIRound3_ProvinceForms/status/flagfalse (0.00s)
+    --- PASS: TestAIRound3_ProvinceForms/status/flagtrue (0.00s)
+    --- PASS: TestAIRound3_ProvinceForms/build/flagfalse (0.00s)
+    --- PASS: TestAIRound3_ProvinceForms/build/flagtrue (0.00s)
+    --- PASS: TestAIRound3_ProvinceForms/place/flagfalse (0.00s)
+    --- PASS: TestAIRound3_ProvinceForms/place/flagtrue (0.00s)
+PASS
+ok  	formatet/megaron/server/cmd/keryx	0.005s

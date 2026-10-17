@@ -54,10 +54,11 @@ func goodsCmd() *cobra.Command {
 				if ic, ok2 := goods[0]["idle_citizens"].(float64); ok2 {
 					idle = ic
 				}
-				fmt.Printf("Labor pool: %d workers  ·  Idle: %d workers\n\n", int(lp), int(idle))
+				fmt.Println(citizenScaleNote)
+				fmt.Printf("Labor pool: %d citizens  ·  Idle: %d citizens\n\n", int(lp)/100, int(idle)/100)
 			}
 			fmt.Printf("%-10s  %9s  %8s  %6s  %10s  %8s\n",
-				"Good", "Stock", "Per day", "Lvl", "Workers", "Marg/g")
+				"Good", "Stock", "Per day", "Lvl", "Citizens", "Marg/g")
 			fmt.Println("──────────────────────────────────────────────────────────────────────────")
 			for _, g := range goods {
 				key, _ := g["key"].(string)
@@ -79,9 +80,9 @@ func goodsCmd() *cobra.Command {
 				// overflow was completely silent — a playtester could allocate 100 % of
 				// the city to fish behind a level-1 harbour and see no difference from a
 				// saturated one (Deiphobos, 2026-07-23).
-				workersStr := fmt.Sprintf("%d", int(employed))
+				workersStr := fmt.Sprintf("%d", int(employed)/100)
 				if unserved >= 1 {
-					workersStr = fmt.Sprintf("%d+%d!", int(employed), int(unserved))
+					workersStr = fmt.Sprintf("%d+%d!", int(employed)/100, int(unserved)/100)
 					sawUnserved = true
 				}
 				lvlStr := "—"

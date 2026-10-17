@@ -1,0 +1,6 @@
+=== RUN   TestAIRound3_ETAOnlyGameDays
+    ai_round3_test.go:172: in 2 days (≈ Sat Oct 17 19:01)
+--- FAIL: TestAIRound3_ETAOnlyGameDays (0.00s)
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

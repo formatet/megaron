@@ -1,0 +1,2 @@
+Error: a Nomadic Host founds its metropolis with keryx founding settle --name <name> (add --yes to confirm)
+See keryx unit march --help

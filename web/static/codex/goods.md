@@ -22,3 +22,5 @@ Everything your cities make, eat and trade is a **good**. The **Economy (⚖)** 
 The gods weigh goods differently: bronze can count for far more than grain. **Kult**, at the temple, and `keryx rite --list` show their current reckoning before each god's preferences. What the world can spare and what the god favours both matter ([[rites]]). Wanaxes agree their own trade prices.
 
 Production per day is output before meals and other uses. Food net combines grain and fish minus population demand. Food held in the Sitos granary is shown separately from the city’s available store. Shortfall waiting estimates assume current production continues, before other use.
+
+Food for people combines grain and fish minus the population’s meal. **Food after army** subtracts the grain paid by this city to its supported troops as well. The army eats grain first, not fish; its silver pay is shown separately. Population growth still uses the population-only food balance.

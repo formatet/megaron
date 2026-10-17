@@ -367,11 +367,11 @@ func surplusWithoutSinkWarning(label string, amount, rateVal, capacity float64, 
 	if rateVal <= 0 || gubbar <= 0 || amount <= capacity {
 		return ""
 	}
-	who := fmt.Sprintf("%d citizens", gubbar)
+	who := fmt.Sprintf("%d citizens produce", gubbar)
 	if gubbar == 1 {
-		who = "1 citizen"
+		who = "1 citizen produces"
 	}
-	return fmt.Sprintf("⚠ %-8s %6s  production %s  — known sinks absorb at most %s within %s; %s produces with no receiver (`keryx place`)", label, resource(amount), rate(rateVal), resource(capacity), formatDays(productionHorizonTicks, "%d"), who)
+	return fmt.Sprintf("⚠ %-8s %6s  production %s  — known sinks absorb at most %s within %s; %s with no receiver (`keryx place`)", label, resource(amount), rate(rateVal), resource(capacity), formatDays(productionHorizonTicks, "%d"), who)
 }
 
 // capitalize upper-cases a good_key's first letter for display ("stone" →
@@ -437,8 +437,8 @@ func foodGubbarLine(req, placed int, selfSufficient bool) string {
 	if !selfSufficient {
 		return fmt.Sprintf("  ⚠ the catchment doesn't feed the population even with all %d citizens", req)
 	}
-	if surplus := placed - req; surplus > 0 {
-		return fmt.Sprintf("  (%d citizens needed for food · %d placed — %d could move; see 'keryx city')", req, placed, surplus)
+	if surplus := foodSurplus(&foodStatus{Required: req, Placed: placed, SelfSufficient: selfSufficient}); surplus > 0 {
+		return fmt.Sprintf("  (%d citizens needed for food · %d placed — %d could move after rearranging for people’s food; see 'keryx city')", req, placed, surplus)
 	}
 	return fmt.Sprintf("  (%d citizens needed for food · %d placed)", req, placed)
 }
@@ -549,7 +549,7 @@ func multiCityHint(name string, settlementsUsed float64) string {
 func statusCmd() *cobra.Command {
 	var provinceID string
 	cmd := &cobra.Command{
-		Use:   "status",
+		Use:   "status [city]",
 		Short: "Show your province status (defaults to your capital; --province inspects a colony)",
 		// --json documentation (megaron_plan_cli_sanning §B): reproduced against
 		// the live acceptance world 2026-08-24, the raw payload always HAD
@@ -564,7 +564,7 @@ rate and cap live NESTED under settlement.resources, not at the settlement
 top level:
 
   settlement.resources.<good>.amount   current stock (e.g. .grain.amount, .silver.amount)
-  settlement.resources.<good>.rate     net per day (production − consumption)
+  settlement.resources.<good>.rate     stored production rate per day; meals and army upkeep are separate
   settlement.resources.<good>.cap      storage cap
 
 There is no top-level settlement.grain / settlement.silver / settlement.storage_cap
@@ -574,9 +574,15 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 		Example: `  keryx status
   keryx status --province <province-id>   # inspect a colony
   keryx status --json | jq '.settlement.resources.silver.amount'`,
-		Args: rejectPositionalArgs("province"),
-		RunE: func(cmd *cobra.Command, _ []string) error {
+		Args: cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
 			c := newClient(cfg)
+			if len(args) > 0 {
+				if provinceID != "" {
+					return fmt.Errorf("choose a city either positionally or with --province")
+				}
+				provinceID = args[0]
+			}
 			// Player report 4eb54d52 ("no surface addresses me by name"): the very
 			// top of status, ahead of the founder/settlement branch below, so it
 			// shows for a nomadic host too. Suppressed in --json mode, which emits
@@ -650,8 +656,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				settlementsNote = fmt.Sprintf("  Settlements: %.0f/%.0f", used, max)
 				settlementsUsed = used
 			}
-			fmt.Printf("%s [%s]  Pop: %s  Labor: %s  Walls: %.0f/3  Loyalty: %.0f%s%s\n",
-				name, culture, resource(pop), resource(labor), walls, loyalty, settlementsNote, coastalNote)
+			fmt.Println(citizenScaleNote)
+			fmt.Printf("%s [%s]  Pop: %s people  Labor: %s citizens  Walls: %.0f/3  Loyalty: %.0f%s%s\n",
+				name, culture, resource(pop), resource(math.Floor(labor/100)), walls, loyalty, settlementsNote, coastalNote)
 			if sitos, ok := sett["sitos"].(map[string]any); ok {
 				gs, _ := sitos["growth_state"].(string)
 				net, _ := sitos["food_net_per_tick"].(float64)
@@ -777,7 +784,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			// print when present so a colony's tin/copper output is visible here, not
 			// only via `goods`.
 			fmt.Println("Resources")
-			fmt.Println("  (rate = net: production − consumption, per day)")
+			fmt.Println("  (per day; food and army balances are itemized below)")
 			if res, ok := sett["resources"].(map[string]any); ok {
 				printRes := func(label, key string, always bool) {
 					rd, ok := res[key].(map[string]any)
@@ -829,7 +836,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 								netTick = full
 							}
 						}
-						fmt.Printf("  Food     grain %.1f + fish %.1f − consumption %.1f = net %s per day\n", prodTick, fish, consumTick, formatNetPerTick(netTick))
+						fmt.Printf("  Food     grain %.1f + fish %.1f − people eat %.1f = net %s per day (before army)\n", prodTick, fish, consumTick, formatNetPerTick(netTick))
 						line := fmt.Sprintf("  %-8s %6s  production %.1f per day",
 							"Grain", resource(gAmt), prodTick)
 						if sitos, ok := sett["sitos"].(map[string]any); ok {
@@ -858,7 +865,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				// instant it garrisoned in a city whose grain netto looked healthy. This
 				// line is the number to check BEFORE `recruit`/building another ship —
 				// `recruit --list` shows the same math per unit type.
-				if netG, ok := sett["net_grain_per_tick_after_upkeep"].(float64); ok {
+				if _, ok := sett["net_grain_per_tick_after_upkeep"].(float64); ok {
 					netS, _ := sett["net_silver_per_tick_after_upkeep"].(float64)
 					grainStock := 0.0
 					if rd, ok := res["grain"].(map[string]any); ok {
@@ -868,9 +875,16 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 					if rd, ok := res["silver"].(map[string]any); ok {
 						silverStock, _ = rd["amount"].(float64)
 					}
-					warn := armyUpkeepWarning(netG, netS, grainStock, silverStock)
-					fmt.Printf("  %-8s net %+.1f grain per day, %+.1f silver per day (after the army's upkeep)%s\n",
-						"Net", netG, netS, warn)
+					up, _ := sett["army_upkeep"].(map[string]any)
+					armyGrain, _ := up["grain"].(float64)
+					grainProduced, _ := sett["grain_prod_rate"].(float64)
+					// Army eats grain first; fish feeds people, never substitutes for army grain.
+					warn := armyUpkeepWarning(grainProduced-armyGrain, netS, grainStock, silverStock)
+					fmt.Println(armyFoodLine(sett))
+					fmt.Printf("  Silver   net %+.1f per day after army pay\n", netS)
+					if warn != "" {
+						fmt.Println(warn)
+					}
 				}
 
 				// Fish (fisk-föder-befolkningen, 2026-07-31): a coastal/river
@@ -947,13 +961,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				sort.Strings(surplusGoods)
 				var candidates []string
 				for _, k := range surplusGoods {
-					if k == "grain" || k == "fish" {
-						if sitos, ok := sett["sitos"].(map[string]any); ok {
-							if foodNet, ok := sitos["food_net_per_tick"].(float64); ok && foodNet <= 0 {
-								continue
-							}
-						}
-					}
+					if isFoodGood(k) {
+						continue
+					} // Food placement advice has one source: foodGubbarLine.
 					rd, ok := res[k].(map[string]any)
 					if !ok {
 						continue
@@ -1408,4 +1418,19 @@ func cohortLines(cohorts []unitRow) []string {
 		lines = append(lines, line)
 	}
 	return lines
+}
+
+func armyFoodLine(sett map[string]any) string {
+	up, _ := sett["army_upkeep"].(map[string]any)
+	grain, _ := up["grain"].(float64)
+	net, ok := sett["food_net_per_tick_after_upkeep"].(float64)
+	if !ok {
+		sitos, _ := sett["sitos"].(map[string]any)
+		before, known := sitos["food_net_per_tick"].(float64)
+		if !known {
+			return "  Army food balance not reported"
+		}
+		net = before - grain
+	}
+	return fmt.Sprintf("  Army     eats %.1f grain per day → food net %s per day after army", grain, formatNetPerTick(net))
 }

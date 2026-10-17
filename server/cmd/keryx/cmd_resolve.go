@@ -142,3 +142,18 @@ func resolveUnitID(c *Client, worldID, idOrPrefix string) (string, error) {
 		return "", fmt.Errorf("%q matches %d of your units — be more specific:\n%s", idOrPrefix, len(matches), strings.Join(lines, "\n"))
 	}
 }
+
+// selectedProvince preserves capital defaults and accepts the same city selector
+// by flag or positional argument. Reject conflicting selectors explicitly.
+func selectedProvince(c *Client, flag string, args []string) (string, error) {
+	if len(args) > 0 {
+		if flag != "" {
+			return "", fmt.Errorf("choose a city either positionally or with --province")
+		}
+		flag = args[0]
+	}
+	if flag == "" {
+		return cfg.ProvinceID, nil
+	}
+	return resolveProvince(c, cfg.WorldID, flag)
+}

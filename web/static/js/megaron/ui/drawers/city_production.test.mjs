@@ -90,3 +90,11 @@ test('growth food balance does not print a signed rounded zero',()=>{
  const html=populationHTML(pd({sitos:{growth_state:'holding',food_net_per_tick:-1e-12}}),0,0,'p');
  assert.match(html,/food net about even/);assert.doesNotMatch(html,/-0.0/);
 });
+
+test('AIRound3: population food and army food use different explicit balances',()=>{
+ const data=pd({grain_prod_rate:0.5,grain_consum_rate:5,resources:{fish:{rate:5}},army_upkeep:{grain:2},food_net_per_tick_after_upkeep:-1.5,sitos:{coverage_ticks:10,food_net_per_tick:0.5}});
+ const html=foodDetailsHTML(data);
+ assert.match(html,/grain 0.5 \+ fish 5 − people eat 5 = 0.5 net before army/);
+ assert.match(html,/eats 2 grain per day → food net -1.5 after army/);
+ assert.doesNotMatch(foodSummaryHTML(data),/stocks growing/);
+});

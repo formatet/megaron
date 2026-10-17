@@ -13,12 +13,13 @@ import (
 // address space is hex-ordinal 1..18 (server-resolved, hexgrid.RingOrdinal)
 // — the same numbers `place`/`staff` take.
 func cityCmd() *cobra.Command {
+	var provinceID string
 	cmd := &cobra.Command{
 		Use:   "city [city]",
 		Short: "Show a settlement's catchment hexes, building slots and idle pool (default: your capital)",
 		Long: `Every catchment hex and building workplace, with its own occupancy and the
-yield the NEXT citizen placed there would add ("next"). Grain has no cap — any
-number of citizens can farm the same hex. A hex or building can support more
+yield the NEXT citizen placed there would add ("next"). Each good has its own
+limit on that hex. A hex or building can support more
 than one good; each is its own row.
 
 Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
@@ -28,13 +29,9 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c := newClient(cfg)
-			prov := cfg.ProvinceID
-			if len(args) == 1 {
-				resolved, err := resolveProvince(c, cfg.WorldID, args[0])
-				if err != nil {
-					return err
-				}
-				prov = resolved
+			prov, err := selectedProvince(c, provinceID, args)
+			if err != nil {
+				return err
 			}
 			if err := errNoCityYet(prov); err != nil {
 				return err
@@ -56,6 +53,7 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 			fs, _ := fetchFoodStatus(c, cfg.WorldID, prov)
 			surplus := foodSurplus(fs)
 
+			fmt.Println(citizenScaleNote)
 			fmt.Printf("Citizens: %d/%d placed, %d idle\n\n", opts.TotalGubbar-opts.PoolSize, opts.TotalGubbar, opts.PoolSize)
 
 			if fs != nil {
@@ -63,7 +61,7 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 					fmt.Println(fs.HarvestBlessing)
 				}
 				if surplus > 0 {
-					fmt.Printf("Food: %d needed, %d placed — %d could move (marked %s below); see `keryx place <good> <ordinal> -n`\n\n",
+					fmt.Printf("Food: %d needed, %d placed — %d could move after rearranging for people’s food (occupied food rows marked %s below); see `keryx place <good> <ordinal> -n`\n\n",
 						fs.Required, fs.Placed, surplus, foodSurplusMarker)
 				} else {
 					fmt.Printf("Food: %d needed, %d placed\n\n", fs.Required, fs.Placed)
@@ -76,8 +74,8 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 			// several hexes it sits on. It marks every occupied food row, not a
 			// chosen subset — the specific citizen to move is the Wanax's call,
 			// not this command's (no auto-release, no recommendation).
-			foodMarker := func(g placementGood) string {
-				if surplus > 0 && g.Placed > 0 && isFoodGood(g.GoodKey) {
+			foodMarker := func(g placementGood, held bool) string {
+				if !held && surplus > 0 && g.Placed > 0 && isFoodGood(g.GoodKey) {
 					return "  " + foodSurplusMarker + " food surplus"
 				}
 				return ""
@@ -108,9 +106,9 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 				}
 				for i, g := range h.Goods {
 					if i == 0 {
-						fmt.Printf("  #%-3d (%d,%d) %-14s %s%s%s\n", h.HexOrdinal, h.HexQ, h.HexR, namedRiverTerrain(h.Terrain, h.RiverName), goodCell(g), foodMarker(g), bldSuffix)
+						fmt.Printf("  #%-3d (%d,%d) %-14s %s%s%s\n", h.HexOrdinal, h.HexQ, h.HexR, namedRiverTerrain(h.Terrain, h.RiverName), goodCell(g), foodMarker(g, h.HeldBy != ""), bldSuffix)
 					} else {
-						fmt.Printf("  %-4s %-14s %s%s\n", "", "", goodCell(g), foodMarker(g))
+						fmt.Printf("  %-4s %-14s %s%s\n", "", "", goodCell(g), foodMarker(g, h.HeldBy != ""))
 					}
 				}
 			}
@@ -120,9 +118,9 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 				for _, b := range opts.Buildings {
 					for i, g := range b.Goods {
 						if i == 0 {
-							fmt.Printf("  %-14s L%-2d %s%s\n", b.BuildingType, b.Level, goodCell(g), foodMarker(g))
+							fmt.Printf("  %-14s L%-2d %s%s\n", b.BuildingType, b.Level, goodCell(g), foodMarker(g, false))
 						} else {
-							fmt.Printf("  %-14s %-3s %s%s\n", "", "", goodCell(g), foodMarker(g))
+							fmt.Printf("  %-14s %-3s %s%s\n", "", "", goodCell(g), foodMarker(g, false))
 						}
 					}
 				}
@@ -130,6 +128,7 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 			return nil
 		},
 	}
+	cmd.Flags().StringVar(&provinceID, "province", "", "city name or province ID (default: capital)")
 	return cmd
 }
 

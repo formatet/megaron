@@ -1,0 +1,4 @@
+=== RUN   TestAIRound3_ArmyGrainIsPaidBeforePeople
+--- PASS: TestAIRound3_ArmyGrainIsPaidBeforePeople (0.00s)
+PASS
+ok  	formatet/megaron/server/cmd/keryx	0.003s

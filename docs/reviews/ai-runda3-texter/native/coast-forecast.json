@@ -1,0 +1,151 @@
+{
+  "catchment": [
+    {
+      "q": 55,
+      "r": 19,
+      "known": true,
+      "terrain": "scrub_maquis",
+      "coastal": true
+    },
+    {
+      "q": 53,
+      "r": 19,
+      "known": true,
+      "terrain": "mountain_limestone"
+    },
+    {
+      "q": 53,
+      "r": 20,
+      "known": true,
+      "terrain": "mountain_limestone",
+      "coastal": true,
+      "silver_deposit": true
+    },
+    {
+      "q": 53,
+      "r": 21,
+      "known": true,
+      "terrain": "coastal_sea"
+    },
+    {
+      "q": 54,
+      "r": 18,
+      "known": true,
+      "terrain": "mountain_limestone",
+      "tin_deposit": true
+    },
+    {
+      "q": 54,
+      "r": 19,
+      "known": true,
+      "terrain": "mountain_limestone",
+      "coastal": true
+    },
+    {
+      "q": 54,
+      "r": 20,
+      "known": true,
+      "terrain": "coastal_sea"
+    },
+    {
+      "q": 54,
+      "r": 21,
+      "known": true,
+      "terrain": "river"
+    },
+    {
+      "q": 55,
+      "r": 17,
+      "known": true,
+      "terrain": "plains",
+      "coastal": true
+    },
+    {
+      "q": 55,
+      "r": 18,
+      "known": true,
+      "terrain": "hills"
+    },
+    {
+      "q": 55,
+      "r": 20,
+      "known": true,
+      "terrain": "river_valley",
+      "coastal": true
+    },
+    {
+      "q": 55,
+      "r": 21,
+      "known": true,
+      "terrain": "river"
+    },
+    {
+      "q": 56,
+      "r": 17,
+      "known": false
+    },
+    {
+      "q": 56,
+      "r": 18,
+      "known": false
+    },
+    {
+      "q": 56,
+      "r": 19,
+      "known": false
+    },
+    {
+      "q": 56,
+      "r": 20,
+      "known": false
+    },
+    {
+      "q": 57,
+      "r": 17,
+      "known": false
+    },
+    {
+      "q": 57,
+      "r": 18,
+      "known": false
+    },
+    {
+      "q": 57,
+      "r": 19,
+      "known": false
+    }
+  ],
+  "founding_gifts": [
+    {
+      "detail": "a coastal founding is owed one galley, crewed and ready \u2014 a gift, not drawn from your people",
+      "key": "poseidon_galley",
+      "label": "Poseidon's galley"
+    }
+  ],
+  "goods": {
+    "fish": 5,
+    "grain": 7.833333333333333,
+    "livestock": 1,
+    "oil": 2.333333333333333,
+    "stone": 19,
+    "tin": 0.9999999999999999,
+    "wine": 3.9999999999999996
+  },
+  "grain": {
+    "base_per_tick": 3.833333333333333,
+    "consumption_per_tick": 5,
+    "est_net_per_tick": 0,
+    "farm_possible": true,
+    "fish_per_tick": 2,
+    "food_net_per_tick": 0.833333333333333,
+    "loyalty_warning": "",
+    "seed": 1200,
+    "starter_farm_included": false,
+    "ticks_until_empty": null,
+    "with_farm_food_net_per_tick": 1.166666666666666,
+    "with_farm_per_tick": 6.166666666666666
+  },
+  "harbour_note": "Coastal: a city here can build a harbour and ships.",
+  "timber_warning": "No timber on known ground \u2014 scout the remaining catchment or plan wood deliveries before building.",
+  "unknown_hexes": 7
+}

@@ -1,0 +1,26 @@
+=== RUN   TestAIRound3_StatusArmyAndSingleFoodAdvice
+    ai_round3_test.go:47: 1 citizen = 100 people
+        Scheria []  Pop: 1.0k people  Labor: 10 citizens  Walls: 0/3  Loyalty: 0
+          Loyalty 1–4 (1=lowest; revolt also requires a hostile garrison majority + a triggering event)
+          Raised by: kharis ≥ favor threshold, fed/varied diet (daily welfare), gifts ≥50 silver-equivalent (`keryx transfer`), won/defended battles.
+          Lowered by: starvation, too many colonies (overextension), neglect (>2 days without a gift), lost battles, a borrowed army kept too long.
+
+        Sitos granary: 0 stored / cap 0 · coverage 0.0 days (granary fills above 0, drains below 0) · resting — neither storing nor releasing
+
+        Resources
+          (rate = net: production − consumption, per day)
+          Food     grain 0.5 + fish 5.0 − people eat 5.0 = net +0.5 per day (before army)
+          Grain     10.0k  production 0.5 per day  (2 citizens needed for food · 5 placed — 3 could move after rearranging for people’s food; see 'keryx city')
+          Army     eats 2.0 grain per day → food net -1.5 per day after army
+          Silver   net +0.0 per day after army pay
+          Fish      10.0k  +5.0 per day
+          ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).
+          ⚠ Fish      10.0k  production +5.0 per day  — known sinks absorb at most 300 within 60 days; 3 citizens produce with no receiver (`keryx place`)
+          ⚠ Grain     10.0k  production +0.5 per day  — known sinks absorb at most 420 within 60 days; 2 citizens produce with no receiver (`keryx place`)
+          Kharis        0  () · passive +0.0 per day
+
+
+--- FAIL: TestAIRound3_StatusArmyAndSingleFoodAdvice (0.00s)
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL

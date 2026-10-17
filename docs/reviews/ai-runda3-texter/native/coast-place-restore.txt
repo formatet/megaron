@@ -1,0 +1,3 @@
+Placed 1 citizen(s) on hex #10 doing grain.
+  #10  river_valley   grain      2/2 FULL
+  6 idle citizens left.

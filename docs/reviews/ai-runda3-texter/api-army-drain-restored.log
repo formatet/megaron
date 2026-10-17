@@ -1,0 +1,6 @@
+=== RUN   TestAIRound3_FoodAfterArmyAPIParity
+2026/10/17 17:31:17 INFO player registered id=0b4689f4-265e-4abb-a574-0611bd598ea7 username=round3-c0e2a762-da0c-4a67-948b-4eabbd906673
+--- PASS: TestAIRound3_FoodAfterArmyAPIParity (0.07s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.077s
+» färsk DB på migration 182 · commit 229c291e+ändringar
