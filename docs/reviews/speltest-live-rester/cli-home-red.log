@@ -1,0 +1,7 @@
+--- FAIL: TestLiveRemainder_ConditionalExpeditionAndTimber (0.00s)
+    live_remainder_test.go:29: missing "with immediate departure, home by day 17": Arrival unavailable: the route crosses unknown terrain.
+        Planned expedition: 12 days. First-leg arrival remains unknown.
+        No order sent. Run again without --preview to send it.
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL

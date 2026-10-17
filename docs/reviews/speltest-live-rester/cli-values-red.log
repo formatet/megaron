@@ -1,0 +1,9 @@
+--- FAIL: TestLiveRemainder_DivineValuesAtAltar (0.00s)
+    live_remainder_test.go:43: Offering values — per unit, before each god's preferences; not trade prices:
+          bronze       1
+          grain        1
+        
+        
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL
