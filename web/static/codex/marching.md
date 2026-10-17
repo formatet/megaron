@@ -66,3 +66,5 @@ These are base costs before rounding the whole journey to at least one day.
 The route and its costs are fixed at departure. A journey already underway keeps
 its recorded costs and arrival day when the movement rules change. A finished
 [[roads|road]] shortens the hex it leads into for everyone who walks it.
+
+An expedition preview shows its planned length. For a unit in garrison it can also show the planned homecoming **if it departed immediately**. The order may still need physical delivery. The first destination inside the search area remains unknown; no hidden route or arrival time is revealed.

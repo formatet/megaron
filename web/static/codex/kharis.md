@@ -31,4 +31,4 @@ An ongoing **blessed harvest** appears beside Food in the city drawer and in
 `keryx status` and `keryx city`, with its yield bonus, affected goods and days left.
 The row disappears when the blessing ends; fish receives no harvest bonus.
 
-The gods reckon the temple's offering against the same workday reference as [[rites|prayers]], including the labour behind each good. World scarcity can raise what devotion earns; it is measured against that reference rather than a buying price. The ordinary daily offering and your choice of devotion remain separate from a prayer's one-time gift.
+The temple shows how much each good counts with the gods, before a particular god's preferences. What the world can spare can raise what devotion earns; this is the gods' reckoning, not a buying price. The ordinary daily offering and your choice of devotion remain separate from a prayer's one-time gift.

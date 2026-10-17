@@ -198,6 +198,26 @@ func TestMarchPreview_ReadOnlyAndTiming(t *testing.T) {
 		if tc.reason != "" && (!strings.Contains(rec.Body.String(), tc.reason) || strings.Contains(rec.Body.String(), "arrival_tick")) {
 			t.Fatalf("hidden preview: %s", rec.Body.String())
 		}
+		if tc.reason == "unknown_terrain" {
+			var plan struct {
+				Length    int  `json:"planned_expedition_ticks"`
+				Home      int  `json:"planned_home_by_tick_if_departing_now"`
+				Available bool `json:"available"`
+			}
+			if err := json.Unmarshal(rec.Body.Bytes(), &plan); err != nil {
+				t.Fatal(err)
+			}
+			want := 10
+			if strings.Contains(tc.query, "ticks=12") {
+				want = 12
+			}
+			if plan.Length != want || plan.Home != 5+want || plan.Available {
+				t.Fatalf("planned budget lost or hidden ETA leaked: %s", rec.Body.String())
+			}
+			if snapshot() != before {
+				t.Fatal("expedition plan mutated state")
+			}
+		}
 		if tc.reason != "" && !strings.Contains(rec.Body.String(), `"upkeep_silver_field":0`) {
 			t.Fatalf("unavailable arrival lost payroll: %s", rec.Body.String())
 		}

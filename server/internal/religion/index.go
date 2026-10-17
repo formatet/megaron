@@ -161,7 +161,7 @@ func LoadDivineValues(ctx context.Context, db Execer, worldID uuid.UUID) (map[st
 	return values, rows.Err()
 }
 
-// LaborValueUnit labels the measure in event payloads; player surfaces say workdays.
+// LaborValueUnit labels the internal measure in persistent event payloads; the temple presents offering values.
 const LaborValueUnit = "worker_ticks"
 const LaborValuationVersion = 2
 

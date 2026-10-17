@@ -3585,7 +3585,7 @@ function hostStoreLine(label, s) {
 }
 
 // Summarize the same existing forecast. Do not round before deciding yes/no.
-function hostForecastSummaryHTML(p) {
+export function hostForecastSummaryHTML(p) {
   const net = p?.grain?.food_net_per_tick ?? p?.grain?.est_net_per_tick;
   const feeds = typeof net === 'number' && Number.isFinite(net) ? (net >= 0 ? 'yes' : 'no') : 'unknown';
   const potential = good => {
@@ -3599,7 +3599,8 @@ function hostForecastSummaryHTML(p) {
   return `<div class="inspect-row"><span class="ir-label">Feeds itself:</span><span> ${feeds}</span></div>`
     + `<div class="inspect-row"><span class="ir-label">Timber:</span><span> ${potential('timber')}</span></div>`
     + `<div class="inspect-row"><span class="ir-label">Stone:</span><span> ${potential('stone')}</span></div>`
-    + `<div class="inspect-row"><span class="ir-label">Ships:</span><span> ${ships}</span></div>`;
+    + `<div class="inspect-row"><span class="ir-label">Ships:</span><span> ${ships}</span></div>`
+    + (p?.timber_warning ? `<div class="dim">${esc(p.timber_warning)}</div>` : '');
 }
 
 async function openHostPanel(h, tile) {

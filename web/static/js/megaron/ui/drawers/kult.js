@@ -6,6 +6,7 @@ import { fmtEta } from '../time.js';
 import { fmtDays } from '../fmt_num.js';
 import { serverNow } from '../../clock.js';
 import { renderLockedActions } from '../misc.js';
+import { divineValuesHTML } from './kult_values.js';
 import { kharisNetView } from './kult_kharis.js';
 
 // ── Kult drawer ───────────────────────────────────────────────────────────
@@ -65,6 +66,8 @@ export async function loadKultDrawer() {
     if (pd && Array.isArray(pd.temple_offers)) {
       html += templeOfferingsHTML(pd.temple_offers);
     }
+
+    html += divineValuesHTML(pd?.divine_values);
 
     // Prayer catalog
     html += '<div class="dsec"><div class="dsec-title">Prayers</div>';

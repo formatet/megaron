@@ -152,3 +152,11 @@ test('ford preview preserves separate land and naval mission options', async () 
   assert.equal(urls[1].searchParams.get('ticks'), '12');
   assert.equal(urls[1].searchParams.has('stance'), false);
 });
+
+test('expedition plan is a known budget, conditional on departure, not a hidden first-leg ETA', () => {
+  const html = marchPreviewHTML({available:false,reason:'unknown_terrain',planned_expedition_ticks:12,planned_home_by_tick_if_departing_now:17});
+  assert.match(html,/Planned expedition: 12 days/);
+  assert.match(html,/with immediate departure, home by day 17/);
+  assert.match(html,/First-leg arrival remains unknown/);
+  assert.doesNotMatch(html,/Estimated arrival:/);
+});

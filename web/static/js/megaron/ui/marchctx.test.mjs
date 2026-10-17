@@ -291,3 +291,14 @@ test('playtest: coastal forecast uses full food demand and shows loyalty reserve
   assert.match(html, /net \+0\.5/);
   assert.match(html, /No grain reserve: loyalty can fall/);
 });
+
+test('founding carries the authoritative wood warning without inventing a local rule', () => {
+ const html=menu.renderColonizePreviewHTML({timber_warning:'No timber on known ground — scout the rest',grain:{base_per_tick:5,consumption_per_tick:5,food_net_per_tick:0}});
+ assert.match(html,/No timber on known ground — scout the rest/);
+});
+
+
+test('Host summary exposes the wood warning before the closed Details section', async () => {
+ const {hostForecastSummaryHTML}=await import('../render/map.js');
+ assert.match(hostForecastSummaryHTML({timber_warning:'No timber within reach',goods:{}}),/No timber within reach/);
+});

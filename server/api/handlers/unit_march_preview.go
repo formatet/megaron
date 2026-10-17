@@ -97,6 +97,17 @@ func (h *UnitHandler) MarchPreview(w http.ResponseWriter, r *http.Request) {
 	// An area expedition selects an unseen first leg, even if the chosen
 	// centre is known. Its travel time could disclose hidden geography.
 	if order.Intent == "explore" {
+		finance["planned_expedition_ticks"] = order.ExpeditionTicks
+		// Only a time-budget statement: no hidden first-leg distance or terrain.
+		// Garrison departure is hypothetical; a physical order may arrive later.
+		if u.Status == unit.StatusGarrison {
+			var currentTick int
+			if err := h.pool.QueryRow(ctx, `SELECT current_tick FROM worlds WHERE id=$1`, worldID).Scan(&currentTick); err != nil {
+				writeError(w, http.StatusInternalServerError, "could not read expedition day")
+				return
+			}
+			finance["planned_home_by_tick_if_departing_now"] = currentTick + order.ExpeditionTicks
+		}
 		writeMarchPreviewUnavailable(w, "unknown_terrain", finance)
 		return
 	}

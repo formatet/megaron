@@ -32,6 +32,9 @@ func TestPlaytestKharis_SameRealmPoolInTwoCities(t *testing.T) {
 	if _, err := pool.Exec(ctx, `INSERT INTO player_world_records (player_id,world_id,kharis_amount,kharis_rate,kharis_calc_tick) VALUES ($1,$2,14.7,0,1000)`, owner, wid); err != nil {
 		t.Fatal(err)
 	}
+	if _, err := pool.Exec(ctx, `INSERT INTO divine_labor_valuations(world_id,good_key,rarity_spread,rarity_volume,divine_value,calc_tick) VALUES($1,'bronze',1,1,37.5,1000),($1,'grain',1,1,2.5,1000)`, wid); err != nil {
+		t.Fatal(err)
+	}
 	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), economy.SitosConfig{}, nil, nil)
 	r := chi.NewRouter()
 	r.Get("/worlds/{worldID}/provinces/{provinceID}", ph.Get)
@@ -47,14 +50,18 @@ func TestPlaytestKharis_SameRealmPoolInTwoCities(t *testing.T) {
 		}
 		var body struct {
 			Settlement struct {
-				Kharis  float64 `json:"kharis"`
-				Prayers []struct {
+				DivineValues map[string]float64 `json:"divine_values"`
+				Kharis       float64            `json:"kharis"`
+				Prayers      []struct {
 					Reason string `json:"unavailable_reason"`
 				} `json:"available_prayers"`
 			} `json:"settlement"`
 		}
 		if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
 			t.Fatal(err)
+		}
+		if body.Settlement.DivineValues["bronze"] != 37.5 || body.Settlement.DivineValues["grain"] != 2.5 {
+			t.Fatalf("not the live divine values: %s", rec.Body.String())
 		}
 		if len(body.Settlement.Prayers) == 0 {
 			t.Fatal("expected culture prayers")
@@ -83,12 +90,22 @@ func TestPlaytestColonizePreview_FullConsumption(t *testing.T) {
 	}
 	var body struct {
 		Grain struct {
-			Consumption float64 `json:"consumption_per_tick"`
-			Warning     string  `json:"loyalty_warning"`
+			Consumption   float64 `json:"consumption_per_tick"`
+			Warning       string  `json:"loyalty_warning"`
+			TimberWarning string  `json:"timber_warning"`
 		} `json:"grain"`
 	}
 	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
 		t.Fatal(err)
+	}
+	var wood struct {
+		Warning string `json:"timber_warning"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &wood); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasPrefix(wood.Warning, "No timber on known ground") {
+		t.Fatalf("wood warning not wired: %s", rec.Body.String())
 	}
 	if body.Grain.Consumption != 5 || body.Grain.Warning == "" {
 		t.Fatalf("forecast lacks full consumption or empty-stock warning: %s", rec.Body.String())

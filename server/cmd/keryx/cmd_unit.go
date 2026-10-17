@@ -889,6 +889,7 @@ type colonizePreview struct {
 		TicksUntilEmpty    *float64 `json:"ticks_until_empty"`
 		WithFarmPerTick    float64  `json:"with_farm_per_tick"`
 	} `json:"grain"`
+	TimberWarning   string `json:"timber_warning"`
 	UnknownHexes    int    `json:"unknown_hexes"`
 	IsolatedWarning string `json:"isolated_warning,omitempty"`
 	HarbourNote     string `json:"harbour_note,omitempty"`
@@ -971,6 +972,9 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 		fmt.Printf("  ⛔ BLOCKED: %s\n", p.CatchmentConflict.Message)
 	}
 
+	if p.TimberWarning != "" {
+		fmt.Printf("  %s\n", p.TimberWarning)
+	}
 	if p.HarbourNote != "" {
 		fmt.Printf("  %s\n", p.HarbourNote)
 	}

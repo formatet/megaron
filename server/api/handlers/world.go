@@ -756,7 +756,8 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 			"with_farm_food_net_per_tick": farmForecast.FoodNet,
 			"loyalty_warning":             loyalty.FoundingGrainWelfareWarning(seed, basePerTick, forecastPop),
 		},
-		"unknown_hexes": unknown,
+		"unknown_hexes":  unknown,
+		"timber_warning": foundingTimberWarning(goods, unknown),
 	}
 	// The founding gifts a metropolis is owed HERE. Both conditions are already
 	// computed above, and both are geography-gated — Demeter grants a farm only
@@ -2187,4 +2188,15 @@ func (h *WorldHandler) Diplomacy(w http.ResponseWriter, r *http.Request) {
 		result = append(result, *d)
 	}
 	writeJSON(w, http.StatusOK, result)
+}
+
+// Cedar pays timber costs too; fog cannot prove that the whole catchment lacks wood.
+func foundingTimberWarning(goods map[string]float64, unknown int) string {
+	if goods["timber"] > 0 || goods["cedar"] > 0 {
+		return ""
+	}
+	if unknown > 0 {
+		return "No timber on known ground — scout the remaining catchment or plan wood deliveries before building."
+	}
+	return "No timber within reach — every building needs timber. Plan wood deliveries before building."
 }
