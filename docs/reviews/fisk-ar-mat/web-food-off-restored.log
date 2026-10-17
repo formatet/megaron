@@ -1,0 +1,412 @@
+TAP version 13
+# Subtest: fmtSilver: whole amounts render as plain integers
+ok 1 - fmtSilver: whole amounts render as plain integers
+  ---
+  duration_ms: 0.789301
+  type: 'test'
+  ...
+# Subtest: fmtSilver: fractional amounts keep one decimal
+ok 2 - fmtSilver: fractional amounts keep one decimal
+  ---
+  duration_ms: 0.117202
+  type: 'test'
+  ...
+# Subtest: fmtSilver: a value that rounds to a whole number drops the decimal
+ok 3 - fmtSilver: a value that rounds to a whole number drops the decimal
+  ---
+  duration_ms: 0.065486
+  type: 'test'
+  ...
+# Subtest: fmtSilver: missing/invalid input is treated as zero, never NaN
+ok 4 - fmtSilver: missing/invalid input is treated as zero, never NaN
+  ---
+  duration_ms: 0.063211
+  type: 'test'
+  ...
+# Subtest: unknown kind with payload: line contains the kind and every payload value
+ok 5 - unknown kind with payload: line contains the kind and every payload value
+  ---
+  duration_ms: 0.796468
+  type: 'test'
+  ...
+# Subtest: unknown kind with empty payload: exactly the kind, nothing more
+ok 6 - unknown kind with empty payload: exactly the kind, nothing more
+  ---
+  duration_ms: 0.078226
+  type: 'test'
+  ...
+# Subtest: unknown kind with undefined payload: does not throw, gives the kind
+ok 7 - unknown kind with undefined payload: does not throw, gives the kind
+  ---
+  duration_ms: 0.109115
+  type: 'test'
+  ...
+# Subtest: unknown kind: stable key order regardless of insertion order
+ok 8 - unknown kind: stable key order regardless of insertion order
+  ---
+  duration_ms: 0.083275
+  type: 'test'
+  ...
+# Subtest: unknown kind: payload with more keys than the cap is truncated with an ellipsis
+ok 9 - unknown kind: payload with more keys than the cap is truncated with an ellipsis
+  ---
+  duration_ms: 0.255154
+  type: 'test'
+  ...
+# Subtest: known kinds are unaffected by the default-arm change
+ok 10 - known kinds are unaffected by the default-arm change
+  ---
+  duration_ms: 0.250958
+  type: 'test'
+  ...
+# Subtest: FieldBattleWon with the real acceptance-world payload
+ok 11 - FieldBattleWon with the real acceptance-world payload
+  ---
+  duration_ms: 0.108283
+  type: 'test'
+  ...
+# Subtest: BattleLost renders opponent name and both sides losses, no place
+ok 12 - BattleLost renders opponent name and both sides losses, no place
+  ---
+  duration_ms: 0.277558
+  type: 'test'
+  ...
+# Subtest: BattleWon uses place name when the server resolved a settlement
+ok 13 - BattleWon uses place name when the server resolved a settlement
+  ---
+  duration_ms: 0.085374
+  type: 'test'
+  ...
+# Subtest: mutual_wipe trailer reads as neither side holding
+ok 14 - mutual_wipe trailer reads as neither side holding
+  ---
+  duration_ms: 0.085583
+  type: 'test'
+  ...
+# Subtest: ShipDamaged: sunk reads as a loss, not a hull number
+ok 15 - ShipDamaged: sunk reads as a loss, not a hull number
+  ---
+  duration_ms: 0.055297
+  type: 'test'
+  ...
+# Subtest: ShipDamaged: routed survivor is limping home for repair
+ok 16 - ShipDamaged: routed survivor is limping home for repair
+  ---
+  duration_ms: 0.048173
+  type: 'test'
+  ...
+# Subtest: ShipDamaged: winning side keeps its orders
+ok 17 - ShipDamaged: winning side keeps its orders
+  ---
+  duration_ms: 0.045677
+  type: 'test'
+  ...
+# Subtest: A7: the sixteen previously-uncased kinds get real text, not the default arm
+ok 18 - A7: the sixteen previously-uncased kinds get real text, not the default arm
+  ---
+  duration_ms: 8.621934
+  type: 'test'
+  ...
+# Subtest: DivinePunishment names the settlement and the right unit per type
+ok 19 - DivinePunishment names the settlement and the right unit per type
+  ---
+  duration_ms: 0.084586
+  type: 'test'
+  ...
+# Subtest: DivinePunishment without a name (older persisted notification) omits the place clause, not an empty one
+ok 20 - DivinePunishment without a name (older persisted notification) omits the place clause, not an empty one
+  ---
+  duration_ms: 0.10142
+  type: 'test'
+  ...
+# Subtest: DivinePunishment unknown type falls to the raw-payload default, invents nothing
+ok 21 - DivinePunishment unknown type falls to the raw-payload default, invents nothing
+  ---
+  duration_ms: 0.076096
+  type: 'test'
+  ...
+# Subtest: DivineBlessing names the settlement and the right unit per type
+ok 22 - DivineBlessing names the settlement and the right unit per type
+  ---
+  duration_ms: 0.069634
+  type: 'test'
+  ...
+# Subtest: DivineBlessing unknown type falls to the raw-payload default, invents nothing
+ok 23 - DivineBlessing unknown type falls to the raw-payload default, invents nothing
+  ---
+  duration_ms: 0.076111
+  type: 'test'
+  ...
+# Subtest: FoodShortfall names the settlement and the unmet ration
+ok 24 - FoodShortfall names the settlement and the unmet ration
+  ---
+  duration_ms: 0.051922
+  type: 'test'
+  ...
+# Subtest: FoodShortfall without a name falls back to a generic settlement label
+ok 25 - FoodShortfall without a name falls back to a generic settlement label
+  ---
+  duration_ms: 0.049496
+  type: 'test'
+  ...
+# Subtest: HexBlockaded names the settlement, the worker count, and the hex
+ok 26 - HexBlockaded names the settlement, the worker count, and the hex
+  ---
+  duration_ms: 0.080603
+  type: 'test'
+  ...
+# Subtest: HexBlockaded uses singular phrasing for exactly one worker
+ok 27 - HexBlockaded uses singular phrasing for exactly one worker
+  ---
+  duration_ms: 0.0477
+  type: 'test'
+  ...
+# Subtest: HexUnblockaded names the settlement, the worker count, and the hex
+ok 28 - HexUnblockaded names the settlement, the worker count, and the hex
+  ---
+  duration_ms: 0.046824
+  type: 'test'
+  ...
+# Subtest: SiegeStarted names the settlement and the besieger
+ok 29 - SiegeStarted names the settlement and the besieger
+  ---
+  duration_ms: 0.048677
+  type: 'test'
+  ...
+# Subtest: SiegeStarted falls back to "an enemy" when besieger_name is missing
+ok 30 - SiegeStarted falls back to "an enemy" when besieger_name is missing
+  ---
+  duration_ms: 0.04894
+  type: 'test'
+  ...
+# Subtest: SiegeLifted names the settlement
+ok 31 - SiegeLifted names the settlement
+  ---
+  duration_ms: 0.045156
+  type: 'test'
+  ...
+# Subtest: UnitExploreReturned names the returning unit instead of a bare category
+ok 32 - UnitExploreReturned names the returning unit instead of a bare category
+  ---
+  duration_ms: 0.048912
+  type: 'test'
+  ...
+# Subtest: UnitArrived names the unit over the type
+ok 33 - UnitArrived names the unit over the type
+  ---
+  duration_ms: 0.05604
+  type: 'test'
+  ...
+# Subtest: UnitReturnedStarving names the ship possessively
+ok 34 - UnitReturnedStarving names the ship possessively
+  ---
+  duration_ms: 0.055735
+  type: 'test'
+  ...
+# Subtest: UnitAttrition and UnitDeserted name the unit
+ok 35 - UnitAttrition and UnitDeserted name the unit
+  ---
+  duration_ms: 0.10985
+  type: 'test'
+  ...
+# Subtest: UpkeepUnpaid names the unit
+ok 36 - UpkeepUnpaid names the unit
+  ---
+  duration_ms: 0.057529
+  type: 'test'
+  ...
+# Subtest: UnitLostAtSea names the unit
+ok 37 - UnitLostAtSea names the unit
+  ---
+  duration_ms: 0.050499
+  type: 'test'
+  ...
+# Subtest: UnitRecalled and UnitRedirected name the unit
+ok 38 - UnitRecalled and UnitRedirected name the unit
+  ---
+  duration_ms: 0.056746
+  type: 'test'
+  ...
+# Subtest: OrderFailed prefixes the named unit when present
+ok 39 - OrderFailed prefixes the named unit when present
+  ---
+  duration_ms: 0.049748
+  type: 'test'
+  ...
+# Subtest: caravan seizure notices name the cargo when the payload carries it
+ok 40 - caravan seizure notices name the cargo when the payload carries it
+  ---
+  duration_ms: 0.094197
+  type: 'test'
+  ...
+# Subtest: naval seizure notices tell the truth about each ship outcome, never claiming cargo nobody got
+ok 41 - naval seizure notices tell the truth about each ship outcome, never claiming cargo nobody got
+  ---
+  duration_ms: 0.089458
+  type: 'test'
+  ...
+# Subtest: ShipCaptured/ShipLost/ShipStranded read correctly
+ok 42 - ShipCaptured/ShipLost/ShipStranded read correctly
+  ---
+  duration_ms: 0.08318
+  type: 'test'
+  ...
+# Subtest: ForeignMarchSightedV2 says which way — never where — and an arrival only if bound for you
+ok 43 - ForeignMarchSightedV2 says which way — never where — and an arrival only if bound for you
+  ---
+  duration_ms: 0.145
+  type: 'test'
+  ...
+# Subtest: OrderFailed never shows the raw server verb key
+ok 44 - OrderFailed never shows the raw server verb key
+  ---
+  duration_ms: 0.062843
+  type: 'test'
+  ...
+# Subtest: ShipDamaged and ShipRepaired name the ship over the bare type
+ok 45 - ShipDamaged and ShipRepaired name the ship over the bare type
+  ---
+  duration_ms: 0.064582
+  type: 'test'
+  ...
+# Subtest: insufficient_goods with one missing good names it with need and have
+ok 46 - insufficient_goods with one missing good names it with need and have
+  ---
+  duration_ms: 0.116913
+  type: 'test'
+  ...
+# Subtest: insufficient_goods with several missing goods lists every one
+ok 47 - insufficient_goods with several missing goods lists every one
+  ---
+  duration_ms: 0.057617
+  type: 'test'
+  ...
+# Subtest: insufficient_goods rounds fractional need/have so a lazy-eval float never reaches the eye
+ok 48 - insufficient_goods rounds fractional need/have so a lazy-eval float never reaches the eye
+  ---
+  duration_ms: 0.05859
+  type: 'test'
+  ...
+# Subtest: insufficient_goods with an empty missing array falls back to data.error
+ok 49 - insufficient_goods with an empty missing array falls back to data.error
+  ---
+  duration_ms: 0.048802
+  type: 'test'
+  ...
+# Subtest: a different error code is passed through untouched
+ok 50 - a different error code is passed through untouched
+  ---
+  duration_ms: 0.048143
+  type: 'test'
+  ...
+# Subtest: an empty response body (fetchAuth catch-guard) falls back to the fallback string
+ok 51 - an empty response body (fetchAuth catch-guard) falls back to the fallback string
+  ---
+  duration_ms: 0.051323
+  type: 'test'
+  ...
+# Subtest: MessengerArrival names the sender and the city it reached
+ok 52 - MessengerArrival names the sender and the city it reached
+  ---
+  duration_ms: 0.062586
+  type: 'test'
+  ...
+# Subtest: MessengerArrival with an offer states the bargain, both directions
+ok 53 - MessengerArrival with an offer states the bargain, both directions
+  ---
+  duration_ms: 0.073899
+  type: 'test'
+  ...
+# Subtest: MessengerReturned says whether an answer came back
+ok 54 - MessengerReturned says whether an answer came back
+  ---
+  duration_ms: 0.059794
+  type: 'test'
+  ...
+# Subtest: HexTaken names taker, hex, loser, idle workers and the building
+ok 55 - HexTaken names taker, hex, loser, idle workers and the building
+  ---
+  duration_ms: 0.056047
+  type: 'test'
+  ...
+# Subtest: HexTaken omits the building clause when none stood there and singularises
+ok 56 - HexTaken omits the building clause when none stood there and singularises
+  ---
+  duration_ms: 0.053989
+  type: 'test'
+  ...
+# Subtest: purseLine: full purse, short purse, empty purse, no purse
+ok 57 - purseLine: full purse, short purse, empty purse, no purse
+  ---
+  duration_ms: 0.105059
+  type: 'test'
+  ...
+# Subtest: agora_ready directs to Account and ignores unexpected secret fields
+ok 58 - agora_ready directs to Account and ignores unexpected secret fields
+  ---
+  duration_ms: 0.094206
+  type: 'test'
+  ...
+# Subtest: notifText: ExpeditionTurnedHome says why it turned
+ok 59 - notifText: ExpeditionTurnedHome says why it turned
+  ---
+  duration_ms: 0.116736
+  type: 'test'
+  ...
+# Subtest: notifText: ExpeditionReport groups finds and names cities
+ok 60 - notifText: ExpeditionReport groups finds and names cities
+  ---
+  duration_ms: 0.191759
+  type: 'test'
+  ...
+# Subtest: notifText: ExpeditionReport with no finds is a report, not a blank
+ok 61 - notifText: ExpeditionReport with no finds is a report, not a blank
+  ---
+  duration_ms: 0.13759
+  type: 'test'
+  ...
+# Subtest: ShipFoundered: names the ship, the hex and the cargo lost with her
+ok 62 - ShipFoundered: names the ship, the hex and the cargo lost with her
+  ---
+  duration_ms: 0.100817
+  type: 'test'
+  ...
+# Subtest: ShipFoundered: drowned troops are named
+ok 63 - ShipFoundered: drowned troops are named
+  ---
+  duration_ms: 0.068637
+  type: 'test'
+  ...
+# Subtest: ShipStormDamaged: reads as hull left, not as a loss
+ok 64 - ShipStormDamaged: reads as hull left, not as a loss
+  ---
+  duration_ms: 0.058246
+  type: 'test'
+  ...
+# Subtest: storm notices: a named storm is called by name; the first to meet an unnamed one is told they may name it
+ok 65 - storm notices: a named storm is called by name; the first to meet an unnamed one is told they may name it
+  ---
+  duration_ms: 0.107961
+  type: 'test'
+  ...
+# Subtest: playtest: internal delivery has a neutral delivery name and UUID founding gift remains readable
+ok 66 - playtest: internal delivery has a neutral delivery name and UUID founding gift remains readable
+  ---
+  duration_ms: 0.087113
+  type: 'test'
+  ...
+# Subtest: fish-fed colony uses additive full food balance rather than legacy grain deficit
+ok 67 - fish-fed colony uses additive full food balance rather than legacy grain deficit
+  ---
+  duration_ms: 0.249228
+  type: 'test'
+  ...
+1..67
+# tests 67
+# suites 0
+# pass 67
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 76.26015

@@ -1,0 +1,6 @@
+--- FAIL: TestColonyFounded_FishFoodBalance (0.00s)
+    fish_food_test.go:16:       Amnissos doesn't feed itself (~5 grain per day short). Build a farm if the catchment supports it, otherwise send grain: keryx transfer --good grain --qty <n> --dest Amnissos
+        
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

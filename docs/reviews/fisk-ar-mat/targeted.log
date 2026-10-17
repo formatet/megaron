@@ -1,0 +1,10 @@
+» färsk DB på migration 181 · commit 2bf95ac7+ändringar
+2026/10/17 14:05:11 INFO player registered id=a9e6862a-7ca5-4285-9466-912e106b9ddd username=buildhex-5d7f9dc1-3735-42a6-be1b-17496a123bd0
+--- FAIL: TestColonizePreview_FishFoodWarning (0.07s)
+    fish_food_test.go:49: fish-fed zero-grain forecast falsely warns: {"catchment":[{"q":0,"r":0,"known":true,"terrain":"plains"},{"q":-2,"r":0,"known":false},{"q":-2,"r":1,"known":false},{"q":-2,"r":2,"known":false},{"q":-1,"r":-1,"known":false},{"q":-1,"r":0,"known":false},{"q":-1,"r":1,"known":false},{"q":-1,"r":2,"known":false},{"q":0,"r":-2,"known":false},{"q":0,"r":-1,"known":false},{"q":0,"r":1,"known":true,"terrain":"coastal_sea"},{"q":0,"r":2,"known":false},{"q":1,"r":-2,"known":false},{"q":1,"r":-1,"known":false},{"q":1,"r":0,"known":true,"terrain":"coastal_sea"},{"q":1,"r":1,"known":false},{"q":2,"r":-2,"known":false},{"q":2,"r":-1,"known":false},{"q":2,"r":0,"known":false}],"catchment_conflict":{"blocked":true,"message":"this ground is already farmed by Georgopolis — its catchment overlaps the one you would found here; move at least 3 hex(es) farther away","min_move_hexes":3,"settlement_name":"Georgopolis"},"goods":{"fish":4},"grain":{"base_per_tick":0.5,"consumption_per_tick":5,"est_net_per_tick":-0.5,"fish_per_tick":4,"food_net_per_tick":-0.5,"loyalty_warning":"Food production falls short of population demand. Stored food feeds people until it runs out; loyalty can fall if meals are not fully covered. Improve food production or send food.","seed":0,"ticks_until_empty":0,"with_farm_food_net_per_tick":-0.5,"with_farm_per_tick":0.5},"harbour_note":"Inland: a city here can never build a harbour or ships — to reach the sea you will need a coastal colony.","timber_warning":"No timber on known ground — scout the remaining catchment or plan wood deliveries before building.","unknown_hexes":16}
+2026/10/17 14:05:11 INFO player registered id=3529c869-0c45-4afa-8591-76e52f6d3998 username=buildhex-db0670a9-43ff-46cd-b54f-71605549f2f9
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.159s
+ok  	formatet/megaron/server/cmd/keryx	0.006s
+ok  	formatet/megaron/server/internal/loyalty	0.126s
+FAIL

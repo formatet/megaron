@@ -1,0 +1,7 @@
+fish-out named RED -> identical bytes -> fresh GREEN c048cb6d18c79920c855e62a95c5fe049e705f1f168a8f77332f02861bcfb06c
+ignore-unmet named RED -> identical bytes -> fresh GREEN f57663f19ac2e3a3e7ccc7a7e1d79502ecbc663f05346dc35a7536b32e1de55b
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-fisk-ar-mat/docs/reviews/fisk-ar-mat/mutations.py", line 18, in <module>
+    p=ROOT/relative;original=p.read_bytes();source=original.decode();assert source.count(old)==1,(name,source.count(old))
+                                                                            ^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('preview-fish-out', 0)

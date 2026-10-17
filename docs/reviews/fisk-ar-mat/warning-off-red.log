@@ -1,0 +1,7 @@
+--- FAIL: TestFoundingFoodWelfareWarning_MatchesFoodNet (0.00s)
+    welfare_test.go:106: rate=0 warning=""
+FAIL
+FAIL	formatet/megaron/server/internal/loyalty	0.136s
+ok  	formatet/megaron/server/api/handlers	0.082s
+FAIL
+» färsk DB på migration 181 · commit 2bf95ac7+ändringar

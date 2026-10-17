@@ -1,0 +1,10 @@
+--- FAIL: TestWelfareFoodTick_FishAndReserves (0.12s)
+    --- FAIL: TestWelfareFoodTick_FishAndReserves/fish_covers_consumption (0.02s)
+        welfare_food_test.go:99: FoodTick unmet=5 expected starving=false
+    --- FAIL: TestWelfareFoodTick_FishAndReserves/fish_reserve_covers_production_deficit (0.02s)
+        welfare_food_test.go:99: FoodTick unmet=5 expected starving=false
+FAIL
+FAIL	formatet/megaron/server/internal/loyalty	0.119s
+ok  	formatet/megaron/server/api/handlers	0.082s
+FAIL
+» färsk DB på migration 181 · commit 2bf95ac7+ändringar
