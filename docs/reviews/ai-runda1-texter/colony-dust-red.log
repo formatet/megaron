@@ -1,0 +1,10 @@
+2026/10/17 17:00:18 INFO colony founded (discrete unit) settlement=05fdc246-9fd6-43ef-85d6-c866872bae42 name=Newhaven province=f64bbb28-2572-40f0-b6bd-33ca5b3a3117 owner=2e8b8971-fa91-4132-bfa2-3d8b5d9640bb founding_unit=e0df4d23-dc63-4472-8e7d-68c3e57789f4 population=1000 q=10 r=10
+2026/10/17 17:00:18 INFO colony founded (discrete unit) settlement=43fe25c6-e7c1-497d-9209-2130552ccb14 name=Newhaven province=330e540b-ee5a-426e-b104-39019df4d106 owner=9ece67b9-6f6c-4e94-898a-d19c225c2075 founding_unit=6ee22185-0c82-422f-825f-eca5063e596d population=1000 q=10 r=10
+2026/10/17 17:00:18 INFO colony founded (discrete unit) settlement=d50b20ce-0a4f-4a40-92e3-567facd1b7ed name=Newhaven province=982f486a-2395-4ad0-8db8-410a245bfbbf owner=ac2aca22-907e-43df-b33a-e61c611391ed founding_unit=3eb7cb58-98e8-4bcf-97eb-2502ab093f7c population=1000 q=10 r=10
+--- FAIL: TestFoundingNotificationRunway_Colony (0.09s)
+    --- FAIL: TestFoundingNotificationRunway_Colony/dust (0.03s)
+        founding_notification_runway_test.go:159: dust/fish wrote false runway: map[food_net_per_tick:-8.881784197001252e-16 grain_amount:0 grain_days:0 grain_net_per_tick:-8.881784197001252e-16 grain_ticks:0 loyalty_warning: name:Newhaven province_id:f64bbb28-2572-40f0-b6bd-33ca5b3a3117 q:10 r:10 settlement_id:05fdc246-9fd6-43ef-85d6-c866872bae42]
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.094s
+FAIL
+» färsk DB på migration 181 · commit 6bf288d9+ändringar

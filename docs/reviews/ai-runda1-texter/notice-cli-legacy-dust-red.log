@@ -1,0 +1,6 @@
+--- FAIL: TestFoundingNotificationRunway_ClientUsesFoodNet (0.00s)
+    fish_food_test.go:42:       Legacy grain production falls short by 0.0 per day — grain lasts ~675539944105574400 days. Build a farm if the catchment supports it, otherwise send grain: keryx transfer --good grain --qty <n> --dest Legacy
+        
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

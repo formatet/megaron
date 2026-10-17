@@ -1,0 +1,10 @@
+2026/10/17 17:00:11 INFO player registered id=c12a9e3f-0a65-4f18-814c-93bd3aa535c3 username=runway-f2de134a-0072-4a77-95bc-ee61df89e24b-9fe1ae95-c5b3-4521-ab1a-76dccaf656e5
+2026/10/17 17:00:11 INFO player registered id=d0ab89b7-d6c1-4bd9-927a-5cde7a5b765b username=runway-2112f678-3c08-41d6-90c3-b6a295b0f68e-ba0b17fb-a714-4c07-af03-a8094dee40b7
+2026/10/17 17:00:12 INFO player registered id=8f53901b-d00b-4341-b497-a16110fbd8f8 username=runway-129ffd8f-e6d2-4f6b-b70a-094148ffe8fa-33c6e625-58ec-4473-81bb-9fad54f8da4b
+--- FAIL: TestFoundingNotificationRunway_Metropolis (0.31s)
+    --- FAIL: TestFoundingNotificationRunway_Metropolis/fish (0.10s)
+        founding_notification_runway_test.go:77: dust/fish wrote false runway: map[coastal:false food_net_per_tick:0 grain_amount:1200 grain_carried:1200 grain_days:240 grain_net_per_tick:-5 grain_ticks:240 known_hexes:1 loyalty_warning: name:Runwaytown province_id:6b1c91c5-6a3c-4571-813d-5b417d7ea778 q:0 r:0 settlement_id:61c33360-eb75-4eff-be31-5e3e4f12f0d9 silver_carried:480 unknown_hexes:18]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.309s
+FAIL
+» färsk DB på migration 181 · commit 6bf288d9+ändringar

@@ -1,0 +1,6 @@
+--- FAIL: TestFoundingNotificationRunway_ClientUsesFoodNet (0.00s)
+    fish_food_test.go:42:       Dustcity food production falls short by 0.0 per day. Stored food feeds people until it runs out.
+        
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

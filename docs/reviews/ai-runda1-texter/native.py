@@ -78,6 +78,13 @@ try:
    (OUT/(kind+'-forecast-web.txt')).write_text(screen);page.screenshot(path=str(OUT/(kind+'-forecast-firefox.png')))
    page.set_viewport_size({'width':390,'height':844});page.screenshot(path=str(OUT/(kind+'-forecast-mobile.png')));browser.close()
   result,foundedtext=cli('founded','founding','settle','--name',kind+'-proof','--yes');assert result.returncode==0,foundedtext
+  closed=api(wp+'/notifications',token)
+  payload=next(n['body'] for n in closed['notifications'] if n['kind']=='MetropolisFounded')
+  assert 'food_net_per_tick' in payload,payload
+  if payload['food_net_per_tick']>=-1e-9:assert 'grain_ticks' not in payload and 'grain_days' not in payload,payload
+  (OUT/(kind+'-founded-notice.json')).write_text(json.dumps(payload,indent=2))
+  _,notice=cli('closed-notification','notifications')
+  assert 'food production covers consumption' in notice and '675539944105574400' not in notice,notice
   saved=json.loads(config.read_text());province=api(wp+'/provinces/'+saved['province_id'],token)['settlement']
   if kind=='inland':assert any(b.get('type')=='farm' for b in province['buildings']),province['buildings']
   _,city=cli('city','city');assert '#' in city and '(' in city,city

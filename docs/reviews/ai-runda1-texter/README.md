@@ -47,3 +47,19 @@ The rig proves reachable forecast/config/founding/Sitos surfaces; short-expediti
 648 JavaScript tests passed, zero skips. Vet clean. Full fresh Go suite PASSED on migration181/source497c16f8 (world146.063s, `go-final.log`). The following cd1e8c85 commit only strengthens CLI/JS tests: the entire CLI package and JS suite were rerun GREEN after it; production Go bytes are unchanged. GPT player configs remain absent at the checked commit boundaries, so no GPT accounts were created or started.
 
 Final status: FUNCTION checks GREEN, native repeat GREEN, no merge/push/deploy by Codex. Claude owns review and TEXT follow-up in playtest. World-selection parity added as pending review in megaron_verblista; own todo review row updated.
+
+
+## Review follow-up contract — founding notification runway
+
+Claude found that MetropolisFounded and ColonyFounded still divided by grain-only net outside the shared projection owner. Both must use economy.FoodRunwayTicks(stock, fullFoodNet), omit runway for floating-point dust and fish-covered meals, and carry additive full food balance for current CLI/web readers. Actual writer regression fixtures cover both notification paths; precise -1e-15 helper case and per-writer physical mutations; fresh full Go/vet/JS plus native notification reading. Existing persisted payloads remain readable. Same branch, new hash + STOPP.
+
+
+Follow-up implementation: `5ce6c851`. Both writers call `economy.FoodRunwayTicks(grainAmount, foodNet)`; metropolis now carries additive `food_net_per_tick` and the same food warning as the colony. Existing grain balance and persisted alias names are retained; existing stored events are not rewritten. Current clients prefer full food net, and old grain-only payloads are described as grain production rather than a claim about all meals. Both current and legacy client paths suppress dust before rendering a runway.
+
+`runway-baseline.log` proves the actual writers failed before the fix. The authenticated Settle test reads persisted MetropolisFounded from PostgreSQL; the real foundColony test records its broadcaster payload. Each covers (a) rate5−1e-15 against demand5 (binary net−8.881784197001252e−16), (b) grain0+fish5 against demand5, and (c) true deficit4−5. Dust/fish omit both grain_ticks and grain_days; genuine deficit retains stock/food-drain. Test-only PostgreSQL production triggers force those numerical boundary inputs, scoped to the fixture world and dropped in cleanup. They are deliberately integration fixtures, not natural gameplay proof. FoodRunwayTicks also has the precise standalone −1e-15 input.
+
+Eight additional physical mutations (`runway-mutations.py`, `runway-mutations.log`) restore raw division or grain-only balance in each writer, and disable current/legacy dust guards in each client. All yield named RED → identical bytes → fresh GREEN. All649 JS tests pass without skips; vet-runway.log is clean. Full fresh Go suite PASSED on migration181/source5ce6c851 (`go-runway.log`; ok   formatet/megaron/server/internal/world 149.789s).
+
+Natural third rig (`native-notice/`): runtime **5ce6c85173b5daebff1d1449ae726b24f1194b9c / migration181**. Normal inland and coastal founder flows plus persisted-notification API read and actual `keryx notifications`. Coastal MetropolisFounded has grain_net−4.5 but food_net+0.5, no grain_ticks/grain_days; CLI says food production covers consumption, net+0.5. Raw `coast-founded-notice.json` and `coast-closed-notification.txt` preserve it. No SQL writes or payload overrides in this native rig; zero browser errors. No naturally occurring −1e-15 outcome is claimed.
+
+Review follow-up final status: all required checks GREEN; source5ce6c851; both writer mutations and both native persisted notification/API+CLI checks complete. New handover hash + STOPP, Claude integrates.

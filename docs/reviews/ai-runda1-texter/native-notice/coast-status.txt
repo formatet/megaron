@@ -1,0 +1,37 @@
+Wanax Amphimedes · day 6 of the world
+
+coast-proof [minoan]  Pop: 1.0k  Labor: 1.0k  Walls: 0/3  Loyalty: 3  Settlements: 1/5  [coastal — can build harbour → ships]
+Population 1006 — growing: food net +0.8 per day
+  Loyalty 1–4 (1=lowest; revolt also requires a hostile garrison majority + a triggering event)
+  Recent loyalty events:
+    +2  well_fed             well fed (population food needs were met); varied diet (2+ food goods stocked) (17:01 Oct 17)
+  Raised by: kharis ≥ favor threshold, fed/varied diet (daily welfare), gifts ≥50 silver-equivalent (`keryx transfer`), won/defended battles.
+  Lowered by: starvation, too many colonies (overextension), neglect (>2 days without a gift), lost battles, a borrowed army kept too long.
+
+No trade contacts yet — trade needs a foreign settlement within your vision. Run `keryx cities` to see known/rumoured neighbours (march outward or colonise to reach one), then `keryx message --to <name>` or `keryx trade-offer` once one is visible.
+
+Sitos granary: 106 stored (1 fish, 105 grain) / cap 302 · coverage 216.3 days (granary fills above 30, drains below 10) · storing away a tenth of the surplus
+
+Last day 6: 2 goods produced, 1 consumed, stored away 106 food  ·  keryx ticklog for details
+
+Resources
+  (rate = net: production − consumption, per day)
+  Silver      480  —
+  Food     grain 0.9 + fish 5.0 − consumption 5.0 = net +0.8 per day
+  Grain      1.1k  production 0.9 per day · 105 grain in Sitos  (5 citizens needed for food · 5 placed)
+  Net      net -5.2 grain per day, -0.5 silver per day (after the army's upkeep)
+  Fish          9  +5.0 per day
+  ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).
+  ⚠ Unmined deposit in the catchment: copper, silver — build a mine here to extract it
+  Kharis       25  (Suspicious) · cap 25 · passive +0.0 per day
+  Temples: none — kharis doesn't climb without a temple + offerings.
+  → feed the temples with local grain, fish, timber or silver or cast a rite — see `keryx rite --list`.
+
+Army (garrison in coast-proof)
+  Spearmen    200
+      50bfe889-e663-4a05-9714-20351cf57e8c  100
+      b0112304-d34d-482b-9548-6c192cad7337  100
+  Galley        1
+  Upkeep     1.0 grain, 1.5 silver per day  (everything the city pays — including field units)
+             1.0 silver per day back into the city (garrison's pay)
+  Field units and other cities are shown in `keryx unit list`.

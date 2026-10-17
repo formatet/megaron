@@ -1,0 +1,8 @@
+metropolis-dust named RED -> exact bytes -> fresh GREEN 6ed73d262fb1f89d8b5c5d234b0a2f51ee3cd41fb4e935ea17980f921ac474c8
+metropolis-grain-only named RED -> exact bytes -> fresh GREEN 6ed73d262fb1f89d8b5c5d234b0a2f51ee3cd41fb4e935ea17980f921ac474c8
+colony-dust named RED -> exact bytes -> fresh GREEN a7c79add62085e58e0484e5dba63bc9dfe6474149c137c7a0391ebacdd4dab26
+colony-grain-only named RED -> exact bytes -> fresh GREEN a7c79add62085e58e0484e5dba63bc9dfe6474149c137c7a0391ebacdd4dab26
+notice-cli-dust named RED -> exact bytes -> fresh GREEN bf649ff6ec5e328604c585fbfbedfc3533d181aa9dfe4511351dae75b33fc523
+notice-cli-legacy-dust named RED -> exact bytes -> fresh GREEN bf649ff6ec5e328604c585fbfbedfc3533d181aa9dfe4511351dae75b33fc523
+notice-web-dust named RED -> exact bytes -> fresh GREEN 68f3ec0a6a1d55fc192f464691b7ccd03c6fdbfe495bea3858e2a9da8d85dcf2
+notice-web-legacy-dust named RED -> exact bytes -> fresh GREEN 68f3ec0a6a1d55fc192f464691b7ccd03c6fdbfe495bea3858e2a9da8d85dcf2
