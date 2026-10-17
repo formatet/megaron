@@ -14,6 +14,7 @@ import (
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/hexgrid"
+	"formatet/megaron/server/internal/loyalty"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
@@ -474,6 +475,9 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 		founded.SettlementID,
 	).Scan(&grainAmount, &grainRate, &openingPopulation)
 	_, grainNet := economy.GrainBalance(grainRate, openingPopulation)
+	var foodRate float64
+	_ = tx.QueryRow(r.Context(), `SELECT COALESCE(SUM(rate),0) FROM settlement_goods WHERE settlement_id=$1 AND good_key=ANY($2)`, founded.SettlementID, economy.NetFoodGoods).Scan(&foodRate)
+	foodNet := economy.FoodNet(foodRate, openingPopulation)
 
 	if err := tx.Commit(r.Context()); err != nil {
 		writeError(w, http.StatusInternalServerError, "commit failed")
@@ -494,6 +498,8 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 			"coastal":            founded.Coastal,
 			"grain_amount":       grainAmount,
 			"grain_net_per_tick": grainNet,
+			"food_net_per_tick":  foodNet,
+			"loyalty_warning":    loyalty.FoundingFoodWelfareWarning(foodRate, openingPopulation),
 			"grain_carried":      founded.GrainCarried,
 			"silver_carried":     founded.SilverCarried,
 			"known_hexes":        known,
@@ -502,18 +508,13 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 		if founded.GalleyID != nil {
 			payload["poseidon_gift"] = *founded.GalleyID
 		}
-		// grain_ticks: how long the stock lasts at the current deficit; omitted
-		// when the metropolis is self-sustaining (net ≥ 0). This payload is
-		// persisted (NotifyPlayer writes to `notifications`), so grain_days is
-		// kept alongside it with the same value — old rows already carry
-		// grain_days and readers fall back to it. Don't remove grain_days.
-		if grainNet < 0 {
-			if tickDrain := -grainNet; tickDrain > 0 {
-				ticksLeft := grainAmount / tickDrain
-				payload["grain_ticks"] = ticksLeft
-				payload["grain_days"] = ticksLeft
-			}
+		// Retain persisted field names, but project the complete meal balance
+		// through the same dust-safe runway owner as the founding forecast.
+		if ticksLeft := economy.FoodRunwayTicks(grainAmount, foodNet); ticksLeft != nil {
+			payload["grain_ticks"] = *ticksLeft
+			payload["grain_days"] = *ticksLeft
 		}
+
 		_ = h.hub.NotifyPlayer(r.Context(), worldID, playerID, "MetropolisFounded", 2, payload)
 	}
 

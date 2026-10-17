@@ -2111,18 +2111,13 @@ func (h *UnitArrivalHandler) foundColony(
 			"food_net_per_tick":  foodNet,
 			"loyalty_warning":    loyalty.FoundingFoodWelfareWarning(foodRate, population),
 		}
-		// grain_ticks: how long the seed lasts at the current deficit; null
-		// (omitted) when the colony is self-sustaining (net ≥ 0). This payload is
-		// persisted (NotifyPlayer writes to `notifications`), so grain_days is
-		// kept alongside it with the same value — old rows already carry
-		// grain_days and readers fall back to it. Don't remove grain_days.
-		if grainNet < 0 {
-			if tickDrain := -grainNet; tickDrain > 0 {
-				ticksLeft := grainAmount / tickDrain
-				payload["grain_ticks"] = ticksLeft
-				payload["grain_days"] = ticksLeft
-			}
+		// Both founding notices share the forecast's complete food balance
+		// and numerical-dust rule. Old persisted aliases remain readable.
+		if ticksLeft := economy.FoodRunwayTicks(grainAmount, foodNet); ticksLeft != nil {
+			payload["grain_ticks"] = *ticksLeft
+			payload["grain_days"] = *ticksLeft
 		}
+
 		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "ColonyFounded", 3, payload)
 	}
 

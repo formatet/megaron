@@ -269,7 +269,7 @@ func TestPlaytestForecast_FullDemandAtCoast(t *testing.T) {
 }
 
 func TestFoodRunwayTicks_NoDustInfinity(t *testing.T) {
-	for _, net := range []float64{0, 1e-12, -1e-12, 0.5} {
+	for _, net := range []float64{0, 1e-12, -1e-12, -1e-15, 0.5} {
 		if got := FoodRunwayTicks(1200, net); got != nil {
 			t.Fatalf("net=%g runway=%g", net, *got)
 		}
