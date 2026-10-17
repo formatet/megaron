@@ -1,0 +1,6 @@
+» färsk DB på migration 182 · commit 229c291e+ändringar
+=== RUN   TestAIRound3_FoodAfterArmyAPIParity
+2026/10/17 17:28:26 INFO player registered id=0579aaf8-d7ed-4cef-a912-6f496d06a7b6 username=round3-021e0b4e-e583-4544-b8b1-e8fdb7ac571a
+--- PASS: TestAIRound3_FoodAfterArmyAPIParity (0.07s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.075s

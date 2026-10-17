@@ -1,0 +1,4 @@
+=== RUN   TestAIRound3_ForeignWorkersAreNotRemovalTargets
+--- PASS: TestAIRound3_ForeignWorkersAreNotRemovalTargets (0.00s)
+PASS
+ok  	formatet/megaron/server/cmd/keryx	0.002s

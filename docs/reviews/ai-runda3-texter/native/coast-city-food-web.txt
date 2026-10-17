@@ -1,0 +1,17 @@
+Food for people
+grain 4 + fish 2 − people eat 5 = 1 net before army
+Army food
+eats 1 grain per day → food net 0 after army
+Food citizens
+4 needed · 4 placed
+
+1 citizen = 100 people. Estimate uses the best food slots for people; the army needs grain separately.
+
+City stocks
+218.6 days
+Reserve
+106.8 of 301.8 food · 0.5 fish, 106.2 grain
+Reserve rules
+Stores above 30 days · releases below 10 days
+State
+storing away a tenth of the surplus

@@ -1,0 +1,6 @@
+=== RUN   TestAIRound3_ETAOnlyGameDays
+    ai_round3_test.go:176: insufficient_goods:  (need 4, have 0, 4 short) — ≈2 days at current production (before other use) (HTTP 422)
+--- FAIL: TestAIRound3_ETAOnlyGameDays (0.00s)
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

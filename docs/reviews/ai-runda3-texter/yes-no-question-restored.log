@@ -1,0 +1,4 @@
+=== RUN   TestAIRound3_YesDoesNotAsk
+--- PASS: TestAIRound3_YesDoesNotAsk (0.00s)
+PASS
+ok  	formatet/megaron/server/cmd/keryx	0.002s

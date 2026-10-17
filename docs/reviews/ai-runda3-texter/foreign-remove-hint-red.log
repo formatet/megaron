@@ -1,0 +1,6 @@
+=== RUN   TestAIRound3_ForeignWorkersAreNotRemovalTargets
+    ai_round3_test.go:183: Currently working fish: #1 fish (5 citizens); use those hex numbers to remove citizens.
+--- FAIL: TestAIRound3_ForeignWorkersAreNotRemovalTargets (0.00s)
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

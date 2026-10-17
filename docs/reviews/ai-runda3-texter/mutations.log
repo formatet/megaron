@@ -1,0 +1,22 @@
+api-army-drain named assertion RED -> exact bytes -> GREEN c374564afa654280cafe4e1e0aade35005ca836bdf3563b450d3d01d06d2f277
+cli-army-net named assertion RED -> exact bytes -> GREEN 45292fac649e3fb8ff4998c35c5209e0f15499a2c0d346fe567d6c6237408bf5
+cli-food-advice named assertion RED -> exact bytes -> GREEN 45292fac649e3fb8ff4998c35c5209e0f15499a2c0d346fe567d6c6237408bf5
+city-flag named assertion RED -> exact bytes -> GREEN 2c80396e39ec7bd6ba62aa7c1b49124c7334c46bcf4f2b206ebf38201581847c
+status-positional named assertion RED -> exact bytes -> GREEN 45292fac649e3fb8ff4998c35c5209e0f15499a2c0d346fe567d6c6237408bf5
+build-positional named assertion RED -> exact bytes -> GREEN 6177bde174e49d5ed7fdc7d3b0df0bf2d20cede841d650c24223fdf079311960
+place-positional named assertion RED -> exact bytes -> GREEN 3072ad7b1205045a515ec1a4ef26265187b3102979e13a58cf28c8ae6f75342a
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-ai-runda3-texter/docs/reviews/ai-runda3-texter/mutations.py", line 27, in <module>
+    p=ROOT/relative;original=p.read_bytes();source=original.decode();assert source.count(old)==1,(name,source.count(old))
+                                                                            ^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('goods-scale', 2)
+goods-scale named assertion RED -> exact bytes -> GREEN b811ba22fbed1a0f3e82524ae7aace2e8a271a8c060c340dc9d945d23d816d0a
+empty-remove-hint named assertion RED -> exact bytes -> GREEN 3072ad7b1205045a515ec1a4ef26265187b3102979e13a58cf28c8ae6f75342a
+foreign-remove-hint named assertion RED -> exact bytes -> GREEN d3ca6699fa2020453ce729778147ac8571e509cf581c45df3fb5f443085b35f8
+eta-clock named assertion RED -> exact bytes -> GREEN 88821c3392924c0304542e73a310bc735536f4a93247a6b276786f16402e4d16
+wait-copy named assertion RED -> exact bytes -> GREEN cc20718f72bca0be0b958ed31f4087379cc6b2293259957b55f7a0f4090eb98a
+web-city-army named assertion RED -> exact bytes -> GREEN 875a16199c6065fa49c710a5397e339e87d94fffbe9d4b9dfffb3239f1b9acb5
+web-overview-army named assertion RED -> exact bytes -> GREEN f1dc91716c881d0451fde4859589568eefc74f784cbced04ac504c1fd85d97e4
+yes-no-question named assertion RED -> exact bytes -> GREEN 46b6001b60602a52529fcaf5ad611927eb67dd32102569c5725ebbd7658cc4ad
+foreign-stars named assertion RED -> exact bytes -> GREEN 2c80396e39ec7bd6ba62aa7c1b49124c7334c46bcf4f2b206ebf38201581847c
+army-priority named assertion RED -> exact bytes -> GREEN 45292fac649e3fb8ff4998c35c5209e0f15499a2c0d346fe567d6c6237408bf5
