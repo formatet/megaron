@@ -1,0 +1,33 @@
+» färsk DB på migration 181 · commit e62569f8+ändringar
+ok  	formatet/megaron/server/api/handlers	36.980s
+?   	formatet/megaron/server/cmd/create-world	[no test files]
+ok  	formatet/megaron/server/cmd/erase-player	0.036s
+ok  	formatet/megaron/server/cmd/keryx	0.293s
+?   	formatet/megaron/server/cmd/mapgen-debug	[no test files]
+?   	formatet/megaron/server/cmd/recompute-all	[no test files]
+ok  	formatet/megaron/server/cmd/server	1.035s
+ok  	formatet/megaron/server/internal/agora	0.036s
+ok  	formatet/megaron/server/internal/ai	0.025s
+ok  	formatet/megaron/server/internal/auth	0.728s
+ok  	formatet/megaron/server/internal/capabilities	0.574s
+?   	formatet/megaron/server/internal/carrier	[no test files]
+?   	formatet/megaron/server/internal/chronicle	[no test files]
+?   	formatet/megaron/server/internal/clock	[no test files]
+ok  	formatet/megaron/server/internal/combat	11.137s
+ok  	formatet/megaron/server/internal/economy	4.582s
+ok  	formatet/megaron/server/internal/events	0.063s
+ok  	formatet/megaron/server/internal/gossip	0.239s
+ok  	formatet/megaron/server/internal/hexgrid	0.001s
+ok  	formatet/megaron/server/internal/kharis	5.652s
+ok  	formatet/megaron/server/internal/loyalty	0.115s
+ok  	formatet/megaron/server/internal/messenger	2.233s
+ok  	formatet/megaron/server/internal/movement	0.003s
+ok  	formatet/megaron/server/internal/notify	1.107s
+ok  	formatet/megaron/server/internal/province	0.375s
+ok  	formatet/megaron/server/internal/religion	0.040s
+ok  	formatet/megaron/server/internal/settlement	0.002s
+ok  	formatet/megaron/server/internal/tick	0.164s
+ok  	formatet/megaron/server/internal/transport	0.883s
+ok  	formatet/megaron/server/internal/unit	0.021s
+?   	formatet/megaron/server/internal/unit/shipnames	[no test files]
+ok  	formatet/megaron/server/internal/world	139.395s
