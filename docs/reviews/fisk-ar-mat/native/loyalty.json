@@ -1,0 +1,9 @@
+[
+  {
+    "id": 1,
+    "event_type": "well_fed",
+    "loyalty_delta": 2,
+    "reason": "well fed (population food needs were met); varied diet (2+ food goods stocked)",
+    "created_at": "2026-10-17T16:31:27.772441+02:00"
+  }
+]

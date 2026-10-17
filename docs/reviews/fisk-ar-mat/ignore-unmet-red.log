@@ -1,0 +1,10 @@
+--- FAIL: TestWelfareFoodTick_FishAndReserves (0.13s)
+    --- FAIL: TestWelfareFoodTick_FishAndReserves/grain_and_fish_insufficient (0.02s)
+        welfare_food_test.go:115: FoodTick unmet=2 but welfare=well_fed (well fed (population food needs were met)), want starving
+    --- FAIL: TestWelfareFoodTick_FishAndReserves/no_food (0.02s)
+        welfare_food_test.go:115: FoodTick unmet=5 but welfare=well_fed (well fed (population food needs were met)), want starving
+FAIL
+FAIL	formatet/megaron/server/internal/loyalty	0.131s
+ok  	formatet/megaron/server/api/handlers	0.081s
+FAIL
+» färsk DB på migration 181 · commit 2bf95ac7+ändringar

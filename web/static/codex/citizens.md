@@ -25,3 +25,5 @@ Your first citizens are placed on the best food land when you [[founding|found]]
 Idle citizens are wasted citizens. So are citizens producing something nobody uses — see [[surplus]].
 
 On the map, a small marker shows the hexes where your people are at work.
+
+Fish feeds your people just as grain does. A city living on stored food is still fed. Hunger affects [[loyalty]] only when the daily meal remains short after the [[food|feeding chain]] has been exhausted.

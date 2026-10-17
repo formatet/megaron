@@ -680,3 +680,16 @@ test('playtest: internal delivery has a neutral delivery name and UUID founding 
   assert.equal(notifText('TradeDelivery', {quantity: 20, good_key: 'grain'}), 'Delivery arrived: 20 grain');
   assert.match(notifText('MetropolisFounded', {name: 'Knossos', poseidon_gift: 'de291886-44cb-4f4e-8b52-6d488f8fd053'}), /Knossos.*Poseidon grants a galley/);
 });
+
+
+test('fish-fed colony uses additive full food balance rather than legacy grain deficit', async () => {
+ const {colonyFoundedGrainLine}=await import('./format.js');
+ const fed=colonyFoundedGrainLine({name:'Amnissos',grain_amount:0,grain_net_per_tick:-5,food_net_per_tick:0,loyalty_warning:''});
+ assert.match(fed,/food production covers consumption/);
+ assert.doesNotMatch(fed,/loyalty can fall|does not feed|grain store/);
+ const deficit=colonyFoundedGrainLine({name:'Coast',food_net_per_tick:-2,loyalty_warning:'Meals may become short'});
+ assert.match(deficit,/falls short by 2.0/);assert.match(deficit,/Stored food feeds/);assert.match(deficit,/Meals may become short/);
+ // Old persisted payloads remain readable, without inventing a new empty-grain penalty.
+ assert.match(colonyFoundedGrainLine({grain_net_per_tick:2,grain_amount:0}),/grain/);
+ assert.doesNotMatch(colonyFoundedGrainLine({grain_net_per_tick:2,grain_amount:0}),/loyalty can fall/);
+});

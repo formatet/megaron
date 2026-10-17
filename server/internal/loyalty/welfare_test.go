@@ -97,14 +97,13 @@ func TestWelfareWindowSeconds_MatchesTickSubstrate(t *testing.T) {
 	}
 }
 
-func TestPlaytestFoundingWarning_MatchesGrainWelfare(t *testing.T) {
-	if FoundingGrainWelfareWarning(0, 10, 1000) == "" {
-		t.Fatal("empty-grain reserve must warn despite positive production")
-	}
-	if FoundingGrainWelfareWarning(10, 0.5, 1000) == "" {
-		t.Fatal("grain deficit must warn even with fish")
-	}
-	if FoundingGrainWelfareWarning(10, 5, 1000) != "" {
-		t.Fatal("nonempty sufficient grain must not warn")
+func TestFoundingFoodWelfareWarning_MatchesFoodNet(t *testing.T) {
+	for _, tc := range []struct {
+		rate float64
+		warn bool
+	}{{0, true}, {4.9, true}, {5, false}, {5.5, false}} {
+		if got := FoundingFoodWelfareWarning(tc.rate, 1000); (got != "") != tc.warn {
+			t.Fatalf("rate=%v warning=%q", tc.rate, got)
+		}
 	}
 }

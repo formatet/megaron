@@ -791,6 +791,7 @@ func printColonyFoundedGrainLine(n notificationItem) {
 	var body struct {
 		Name            string   `json:"name"`
 		LoyaltyWarning  string   `json:"loyalty_warning"`
+		FoodNetPerTick  *float64 `json:"food_net_per_tick"`
 		GrainAmount     *float64 `json:"grain_amount"`
 		GrainNetPerTick *float64 `json:"grain_net_per_tick"`
 		GrainTicks      *float64 `json:"grain_ticks"`
@@ -799,12 +800,24 @@ func printColonyFoundedGrainLine(n notificationItem) {
 		// Fall back to it only when grain_ticks is absent.
 		GrainDays *float64 `json:"grain_days"`
 	}
-	if err := json.Unmarshal(n.Body, &body); err != nil || body.GrainNetPerTick == nil {
+	if err := json.Unmarshal(n.Body, &body); err != nil || (body.GrainNetPerTick == nil && body.FoodNetPerTick == nil) {
 		return
 	}
 	name := body.Name
 	if name == "" {
 		name = "The colony"
+	}
+	if body.FoodNetPerTick != nil {
+		net := *body.FoodNetPerTick
+		if net >= 0 {
+			fmt.Printf("      %s food production covers consumption (net %+.1f per day).\n", name, net)
+		} else {
+			fmt.Printf("      %s food production falls short by %.1f per day. Stored food feeds people until it runs out.\n", name, -net)
+		}
+		if body.LoyaltyWarning != "" {
+			fmt.Printf("      %s\n", body.LoyaltyWarning)
+		}
+		return
 	}
 	grainTicks := body.GrainTicks
 	if grainTicks == nil {
@@ -823,8 +836,6 @@ func printColonyFoundedGrainLine(n notificationItem) {
 	}
 	if body.LoyaltyWarning != "" {
 		fmt.Printf("      %s\n", body.LoyaltyWarning)
-	} else if body.GrainAmount != nil && *body.GrainAmount <= 0 {
-		fmt.Println("      No grain reserve yet — loyalty can fall while the grain store is empty.")
 	}
 }
 

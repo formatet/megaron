@@ -1,0 +1,61 @@
+{
+  "health": {
+    "commit": "c963a05543f0bb8b0a7bf7aa7211167d6747f8b2",
+    "migration": 181,
+    "status": "ok"
+  },
+  "attempts": [
+    {
+      "grain": 5.6,
+      "fish": 0,
+      "net": 0.5999999999999996
+    },
+    {
+      "grain": 6.166666666666666,
+      "fish": 0,
+      "net": 1.166666666666666
+    },
+    {
+      "grain": 0.5,
+      "fish": 5,
+      "net": 0.5
+    }
+  ],
+  "spawn": {
+    "WorldID": "00000000-0000-0000-0000-000000000000",
+    "Q": 43,
+    "R": 37,
+    "Terrain": "",
+    "Coastal": false,
+    "Fertility": 0,
+    "Mineral": 0,
+    "CopperDeposit": false,
+    "TinDeposit": false,
+    "SilverDeposit": false,
+    "CedarDeposit": false
+  },
+  "founded": {
+    "coastal": true,
+    "grain_carried": 1200,
+    "grain_total": 1200,
+    "poseidon_gift": "b4406348-e0b5-4be5-bc62-ef15f4460082",
+    "province_id": "42aaae50-3c92-4d85-a089-d195f91867b9",
+    "settlement_id": "124a6024-e652-4bdc-be43-06bbe18d23e1",
+    "silver_carried": 480,
+    "silver_total": 480,
+    "tile": {
+      "WorldID": "00000000-0000-0000-0000-000000000000",
+      "Q": 43,
+      "R": 37,
+      "Terrain": "",
+      "Coastal": false,
+      "Fertility": 0,
+      "Mineral": 0,
+      "CopperDeposit": false,
+      "TinDeposit": false,
+      "SilverDeposit": false,
+      "CedarDeposit": false
+    }
+  },
+  "page_errors": []
+}

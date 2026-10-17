@@ -79,9 +79,7 @@ func NewWelfareHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *event
 type welfareRow struct {
 	settlementID uuid.UUID
 	kharis       float64
-	grainStock   float64
-	grainRate    float64
-	population   int
+	foodUnmet    float64
 	foodVariety  int
 }
 
@@ -91,12 +89,7 @@ func (h *WelfareHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 		`SELECT
 		    s.id,
 		    COALESCE(settled(pwr.kharis_amount, pwr.kharis_rate, pwr.kharis_calc_tick), 0) AS kharis,
-		    COALESCE((SELECT settled(sg.amount, sg.rate, sg.calc_tick)
-		              FROM settlement_goods sg
-		              WHERE sg.settlement_id = s.id AND sg.good_key = 'grain'), 0) AS grain_stock,
-		    COALESCE((SELECT sg.rate FROM settlement_goods sg
-		              WHERE sg.settlement_id = s.id AND sg.good_key = 'grain'), 0) AS grain_rate,
-		    s.population,
+		    s.food_unmet_amount,
 		    (SELECT COUNT(*) FROM settlement_goods sg
 		     WHERE sg.settlement_id = s.id
 		       AND sg.good_key = ANY($2)
@@ -122,7 +115,7 @@ func (h *WelfareHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 	var due []welfareRow
 	for rows.Next() {
 		var w welfareRow
-		if err := rows.Scan(&w.settlementID, &w.kharis, &w.grainStock, &w.grainRate, &w.population, &w.foodVariety); err == nil {
+		if err := rows.Scan(&w.settlementID, &w.kharis, &w.foodUnmet, &w.foodVariety); err == nil {
 			due = append(due, w)
 		}
 	}
@@ -143,22 +136,12 @@ func (h *WelfareHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 }
 
 func (h *WelfareHandler) applyWelfare(ctx context.Context, w welfareRow, worldID uuid.UUID) error {
-	// "Mätt vs svält" = kan staden föda sig? Grain flödar genom varje tick
-	// (grain-cap-pegging borttagen) så en självförsörjande stad håller bara
-	// ~1 ticks buffert — DÄRFÖR duger inte en fast dygns-ankrad stock-tröskel;
-	// den kallade friska huvudstäder "svält". Rätt diskriminator är
-	// grain-NETTOT: netto ≥ 0 (självförsörjande/överskott) = mätt; netto < 0
-	// eller tomt lager (redan i underskott) = svält.
-	//
-	// Utfodringsordningen D6 (megaron_plan_utfodringsordningen.md, 2026-08-26):
-	// w.grainRate is RAW production since D1 (RecomputeProduction no longer
-	// nets it against consumption) — economy.GrainBalance is the single shared
-	// place that turns a gross rate + population back into netto, so this stays
-	// the same discriminator it always was (verified against raw data,
-	// c3c289e5 2026-07-11: healthy capitals netto +300…+2300, starving −6…−15)
-	// instead of silently comparing a now-gross rate against 0.
+	// FoodTick (priority55) owns the actual meal outcome; welfare runs at70.
+	// Like growth, read that outcome instead of re-judging stocks after the
+	// meal (which may have used the last grain or fish) or penalising a
+	// production deficit while reserves still feed the population.
 	kharisGood := w.kharis >= kharisBlessThresholdRef
-	starving := grainWelfareStarving(w.grainStock, w.grainRate, w.population)
+	starving := w.foodUnmet > 0
 	fed := !starving
 	varied := w.foodVariety >= varietyThreshold
 
@@ -226,9 +209,9 @@ func classifyWelfare(kharisGood, fed, starving, varied bool) (eventType string, 
 		factors = append(factors, "well favoured (kharis at or above bless threshold)")
 	}
 	if fed {
-		factors = append(factors, "well fed (grain store is nonempty and grain production covers consumption)")
+		factors = append(factors, "well fed (population food needs were met)")
 	} else if starving {
-		factors = append(factors, "starving (grain store is empty or grain production does not cover consumption)")
+		factors = append(factors, "starving (population food needs were not fully met)")
 	}
 	if varied {
 		factors = append(factors, "varied diet (2+ food goods stocked)")
@@ -236,17 +219,12 @@ func classifyWelfare(kharisGood, fed, starving, varied bool) (eventType string, 
 	return eventType, factors
 }
 
-// FoundingGrainWelfareWarning describes the existing loyalty welfare rule. It
-// deliberately does not change it: that rule checks grain, even if fish feeds people.
-func FoundingGrainWelfareWarning(stock, production float64, population int) string {
-	if grainWelfareStarving(stock, production, population) {
-		return "Loyalty can fall while grain stores are empty or grain production falls short of population demand, even when fish covers meals. Build up grain production and stores."
+// FoundingFoodWelfareWarning projects future food pressure, not an actual
+// starvation outcome. Actual welfare reads FoodTick's food_unmet_amount.
+// FoodNet and NetFoodGoods are the same projection used by growth and surfaces.
+func FoundingFoodWelfareWarning(foodRate float64, population int) string {
+	if economy.FoodNet(foodRate, population) < 0 {
+		return "Food production falls short of population demand. Stored food feeds people until it runs out; loyalty can fall if meals are not fully covered. Improve food production or send food."
 	}
 	return ""
-}
-
-// grainWelfareStarving is the existing grain-only loyalty discriminator.
-func grainWelfareStarving(stock, production float64, population int) bool {
-	_, net := economy.GrainBalance(production, population)
-	return stock <= 0 || net < 0
 }

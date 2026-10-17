@@ -11,11 +11,11 @@ import (
 
 func TestPlaytestForecast_FullFoodDemandAndReserve(t *testing.T) {
 	var p colonizePreview
-	if err := json.Unmarshal([]byte(`{"grain":{"base_per_tick":0.5,"fish_per_tick":5,"est_net_per_tick":0,"consumption_per_tick":5,"food_net_per_tick":0.5,"seed":0,"loyalty_warning":"No grain reserve: loyalty can fall"}}`), &p); err != nil {
+	if err := json.Unmarshal([]byte(`{"grain":{"base_per_tick":0.5,"fish_per_tick":5,"est_net_per_tick":0,"consumption_per_tick":5,"food_net_per_tick":0.5,"seed":0,"loyalty_warning":"Food reserves are running down: improve food production"}}`), &p); err != nil {
 		t.Fatal(err)
 	}
 	out := captureForecastOutput(t, "Coast", &p)
-	for _, part := range []string{"grain ~0.5 + fish ~5.0", "consumption ~5.0", "net +0.5", "No grain reserve: loyalty can fall"} {
+	for _, part := range []string{"grain ~0.5 + fish ~5.0", "consumption ~5.0", "net +0.5", "Food reserves are running down: improve food production"} {
 		if !strings.Contains(out, part) {
 			t.Errorf("missing %q: %s", part, out)
 		}

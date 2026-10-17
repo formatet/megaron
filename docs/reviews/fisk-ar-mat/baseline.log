@@ -1,0 +1,17 @@
+» färsk DB på migration 181 · commit 2bf95ac7
+--- FAIL: TestWelfareFoodTick_FishAndReserves (0.12s)
+    --- FAIL: TestWelfareFoodTick_FishAndReserves/fish_covers_consumption (0.02s)
+        welfare_food_test.go:87: FoodTick unmet=0 but welfare=starving (starving (grain store is empty or grain production does not cover consumption)), want well_fed
+    --- FAIL: TestWelfareFoodTick_FishAndReserves/grain_and_fish_insufficient (0.02s)
+        welfare_food_test.go:88: starving (grain store is empty or grain production does not cover consumption)
+    --- FAIL: TestWelfareFoodTick_FishAndReserves/grain_reserve_covers_production_deficit (0.02s)
+        welfare_food_test.go:87: FoodTick unmet=0 but welfare=starving (starving (grain store is empty or grain production does not cover consumption)), want well_fed
+    --- FAIL: TestWelfareFoodTick_FishAndReserves/fish_reserve_covers_production_deficit (0.02s)
+        welfare_food_test.go:87: FoodTick unmet=0 but welfare=starving (starving (grain store is empty or grain production does not cover consumption)), want well_fed
+    --- FAIL: TestWelfareFoodTick_FishAndReserves/livestock_fallback_follows_FoodTick (0.02s)
+        welfare_food_test.go:87: FoodTick unmet=0 but welfare=starving (starving (grain store is empty or grain production does not cover consumption)), want well_fed
+    --- FAIL: TestWelfareFoodTick_FishAndReserves/no_food (0.02s)
+        welfare_food_test.go:88: starving (grain store is empty or grain production does not cover consumption)
+FAIL
+FAIL	formatet/megaron/server/internal/loyalty	0.117s
+FAIL

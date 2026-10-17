@@ -2096,6 +2096,9 @@ func (h *UnitArrivalHandler) foundColony(
 			colonyID,
 		).Scan(&grainAmount, &grainRate)
 		_, grainNet := economy.GrainBalance(grainRate, population)
+		var foodRate float64
+		_ = tx.QueryRow(ctx, `SELECT COALESCE(SUM(rate),0) FROM settlement_goods WHERE settlement_id=$1 AND good_key=ANY($2)`, colonyID, economy.NetFoodGoods).Scan(&foodRate)
+		foodNet := economy.FoodNet(foodRate, population)
 
 		payload := map[string]any{
 			"settlement_id":      colonyID,
@@ -2105,7 +2108,8 @@ func (h *UnitArrivalHandler) foundColony(
 			"r":                  destR,
 			"grain_amount":       grainAmount,
 			"grain_net_per_tick": grainNet,
-			"loyalty_warning":    loyalty.FoundingGrainWelfareWarning(grainAmount, grainRate, population),
+			"food_net_per_tick":  foodNet,
+			"loyalty_warning":    loyalty.FoundingFoodWelfareWarning(foodRate, population),
 		}
 		// grain_ticks: how long the seed lasts at the current deficit; null
 		// (omitted) when the colony is self-sustaining (net ≥ 0). This payload is

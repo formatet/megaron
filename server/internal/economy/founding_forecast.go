@@ -107,5 +107,5 @@ func FoundingFoodForecastAt(ctx context.Context, tx Tx, worldID uuid.UUID, cente
 	}
 
 	grainNet, _, _ := FoodConsumptionSplit(demand, grainProd, fishProd, 0)
-	return FoundingFoodForecast{GrainProduction: grainProd, FishProduction: fishProd, Consumption: demand, GrainNet: grainNet, FoodNet: grainProd + fishProd - demand}, nil
+	return FoundingFoodForecast{GrainProduction: grainProd, FishProduction: fishProd, Consumption: demand, GrainNet: grainNet, FoodNet: FoodNet(grainProd+fishProd, pop)}, nil
 }
