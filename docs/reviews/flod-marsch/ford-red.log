@@ -1,0 +1,267 @@
+TAP version 13
+# Subtest: forecast reads the exact order with GET, including landing and stance
+ok 1 - forecast reads the exact order with GET, including landing and stance
+  ---
+  duration_ms: 0.896448
+  type: 'test'
+  ...
+# Subtest: redirect and courier never masquerade as immediate arrival
+ok 2 - redirect and courier never masquerade as immediate arrival
+  ---
+  duration_ms: 9.168541
+  type: 'test'
+  ...
+# Subtest: each selected unit keeps its own arrival; names and API errors are escaped
+ok 3 - each selected unit keeps its own arrival; names and API errors are escaped
+  ---
+  duration_ms: 16.250186
+  type: 'test'
+  ...
+# Subtest: changing destination discards old response even during debounce; close cancels
+ok 4 - changing destination discards old response even during debounce; close cancels
+  ---
+  duration_ms: 45.231735
+  type: 'test'
+  ...
+# Subtest: sold uses authoritative rates, includes explicit zero and avoids infinite runway
+ok 5 - sold uses authoritative rates, includes explicit zero and avoids infinite runway
+  ---
+  duration_ms: 0.570322
+  type: 'test'
+  ...
+# Subtest: sold remains visible when courier or unexplored terrain prevents arrival estimate
+ok 6 - sold remains visible when courier or unexplored terrain prevents arrival estimate
+  ---
+  duration_ms: 0.368332
+  type: 'test'
+  ...
+# Subtest: plural selection sends all IDs to every GET and shows one combined sold line after arrivals
+ok 7 - plural selection sends all IDs to every GET and shows one combined sold line after arrivals
+  ---
+  duration_ms: 15.188735
+  type: 'test'
+  ...
+# Subtest: one zero-drain batch row is rendered when all treasuries have no silver drain
+ok 8 - one zero-drain batch row is rendered when all treasuries have no silver drain
+  ---
+  duration_ms: 15.619631
+  type: 'test'
+  ...
+# Subtest: redirect-only selection keeps messenger arrival warning and one authoritative sold row
+ok 9 - redirect-only selection keeps messenger arrival warning and one authoritative sold row
+  ---
+  duration_ms: 17.006996
+  type: 'test'
+  ...
+# Subtest: ford preview preserves separate land and naval mission options
+ok 10 - ford preview preserves separate land and naval mission options
+  ---
+  duration_ms: 15.82262
+  type: 'test'
+  ...
+# Subtest: AK1: a group of one wears its own name, not the bare type
+ok 11 - AK1: a group of one wears its own name, not the bare type
+  ---
+  duration_ms: 1.001065
+  type: 'test'
+  ...
+# Subtest: AK2: the field unit keeps its (q,r) tag — the name says who supports it, the tag says where it stands
+ok 12 - AK2: the field unit keeps its (q,r) tag — the name says who supports it, the tag says where it stands
+  ---
+  duration_ms: 0.150189
+  type: 'test'
+  ...
+# Subtest: AK3: a garrisoned unit does not say its town twice
+ok 13 - AK3: a garrisoned unit does not say its town twice
+  ---
+  duration_ms: 0.765206
+  type: 'test'
+  ...
+# Subtest: AK4: a group of several keeps the type label and lists its members in send order
+ok 14 - AK4: a group of several keeps the type label and lists its members in send order
+  ---
+  duration_ms: 0.532537
+  type: 'test'
+  ...
+# Subtest: AK5: a lone unit gets no member list — the label already names it
+ok 15 - AK5: a lone unit gets no member list — the label already names it
+  ---
+  duration_ms: 0.111442
+  type: 'test'
+  ...
+# Subtest: AK6: units at different places stay different groups
+ok 16 - AK6: units at different places stay different groups
+  ---
+  duration_ms: 0.083592
+  type: 'test'
+  ...
+# Subtest: AK7: a missing display_name falls back to the type label, never a blank row
+ok 17 - AK7: a missing display_name falls back to the type label, never a blank row
+  ---
+  duration_ms: 0.190355
+  type: 'test'
+  ...
+# Subtest: AK8: a hostile unit name is escaped, not injected
+ok 18 - AK8: a hostile unit name is escaped, not injected
+  ---
+  duration_ms: 0.101691
+  type: 'test'
+  ...
+# Subtest: MI1: sea target is always explore, regardless of the checkbox
+ok 19 - MI1: sea target is always explore, regardless of the checkbox
+  ---
+  duration_ms: 0.222013
+  type: 'test'
+  ...
+# Subtest: MI2: an unseen (fog) land target is always explore — the only intent the server FOW rule allows there
+ok 20 - MI2: an unseen (fog) land target is always explore — the only intent the server FOW rule allows there
+  ---
+  duration_ms: 0.239501
+  type: 'test'
+  ...
+# Subtest: MI3: a known land target is a plain march by default
+ok 21 - MI3: a known land target is a plain march by default
+  ---
+  duration_ms: 0.097461
+  type: 'test'
+  ...
+# Subtest: MI4: a known land target explores when the player opts in
+ok 22 - MI4: a known land target explores when the player opts in
+  ---
+  duration_ms: 0.05416
+  type: 'test'
+  ...
+# Subtest: MI5: exploreRowVisible offers the checkbox on land, never on sea or a settlement
+ok 23 - MI5: exploreRowVisible offers the checkbox on land, never on sea or a settlement
+  ---
+  duration_ms: 0.058663
+  type: 'test'
+  ...
+# Subtest: AK9: a garrisoned/positioned unit is eligible to march
+ok 24 - AK9: a garrisoned/positioned unit is eligible to march
+  ---
+  duration_ms: 0.048662
+  type: 'test'
+  ...
+# Subtest: AK10: a marching unit is eligible too — but for redirect, not a fresh march
+ok 25 - AK10: a marching unit is eligible too — but for redirect, not a fresh march
+  ---
+  duration_ms: 0.042512
+  type: 'test'
+  ...
+# Subtest: R3 (megaron_plan_skeppsuppdrag_landsatt.md): a marching SHIP is not eligible for redirect — it takes no orders at sea
+ok 26 - R3 (megaron_plan_skeppsuppdrag_landsatt.md): a marching SHIP is not eligible for redirect — it takes no orders at sea
+  ---
+  duration_ms: 0.044702
+  type: 'test'
+  ...
+# Subtest: AK11: a fortified unit stays ineligible (server blocks fresh march on it)
+ok 27 - AK11: a fortified unit stays ineligible (server blocks fresh march on it)
+  ---
+  duration_ms: 0.042681
+  type: 'test'
+  ...
+# Subtest: AK12: a still-forming/training unit stays ineligible even while nominally marching-shaped
+ok 28 - AK12: a still-forming/training unit stays ineligible even while nominally marching-shaped
+  ---
+  duration_ms: 0.043988
+  type: 'test'
+  ...
+# Subtest: AK13: a unit embarked/disbanded/other status is ineligible
+ok 29 - AK13: a unit embarked/disbanded/other status is ineligible
+  ---
+  duration_ms: 0.04222
+  type: 'test'
+  ...
+# Subtest: AK14: marching and garrisoned units of the same type+hex stay in SEPARATE groups — a redirect send must never merge with a fresh-march send
+ok 30 - AK14: marching and garrisoned units of the same type+hex stay in SEPARATE groups — a redirect send must never merge with a fresh-march send
+  ---
+  duration_ms: 0.094579
+  type: 'test'
+  ...
+# Subtest: AK15: a redirect group is marked in its label — the player must see this send goes to a Runner
+ok 31 - AK15: a redirect group is marked in its label — the player must see this send goes to a Runner
+  ---
+  duration_ms: 0.064567
+  type: 'test'
+  ...
+# Subtest: H: defaults send all available units in the chosen first group, other groups stay unselected
+ok 32 - H: defaults send all available units in the chosen first group, other groups stay unselected
+  ---
+  duration_ms: 0.071773
+  type: 'test'
+  ...
+# Subtest: H: War target selection lists only the selected unit; normal map menu keeps all eligible units
+ok 33 - H: War target selection lists only the selected unit; normal map menu keeps all eligible units
+  ---
+  duration_ms: 0.161373
+  type: 'test'
+  ...
+# Subtest: H: a loaded ship can land on known land, while empty and marching ships cannot
+ok 34 - H: a loaded ship can land on known land, while empty and marching ships cannot
+  ---
+  duration_ms: 0.218572
+  type: 'test'
+  ...
+# Subtest: H: landing preserves cargo-colonize/name and omits naval stance; explore and plain land retain options
+ok 35 - H: landing preserves cargo-colonize/name and omits naval stance; explore and plain land retain options
+  ---
+  duration_ms: 0.169102
+  type: 'test'
+  ...
+# Subtest: H: colony forecast keeps production and food duration in day words
+ok 36 - H: colony forecast keeps production and food duration in day words
+  ---
+  duration_ms: 9.808972
+  type: 'test'
+  ...
+# Subtest: forecast shows the server harbour note and nothing when absent
+ok 37 - forecast shows the server harbour note and nothing when absent
+  ---
+  duration_ms: 0.352757
+  type: 'test'
+  ...
+# Subtest: river march: real map destination offers naval only, ford offers both categories
+not ok 38 - river march: real map destination offers naval only, ford offers both categories
+  ---
+  duration_ms: 1.191819
+  type: 'test'
+  location: '/home/tk/wt/codex-flod-marsch/web/static/js/megaron/ui/marchctx.test.mjs:237:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      [
+        'land',
+    -   'ship'
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'land'
+    1: 'ship'
+  actual:
+    0: 'land'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-flod-marsch/web/static/js/megaron/ui/marchctx.test.mjs:247:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: ford send uses the same per-unit mission as preview, retaining target and expedition duration
+ok 39 - ford send uses the same per-unit mission as preview, retaining target and expedition duration
+  ---
+  duration_ms: 9.152678
+  type: 'test'
+  ...
+1..39
+# tests 39
+# suites 0
+# pass 38
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 184.871683

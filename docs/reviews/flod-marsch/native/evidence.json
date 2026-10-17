@@ -1,0 +1,120 @@
+{
+  "health": {
+    "commit": "8bed8d5ae1bd0c8b51221cfc0ed3543c29ca8dbd",
+    "migration": 181,
+    "status": "ok"
+  },
+  "attempts": [
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 3
+    }
+  ],
+  "target": {
+    "place_kind": "river",
+    "place_id": "1,52",
+    "q": 1,
+    "r": 52,
+    "terrain": "river",
+    "visible": true,
+    "tier": "live",
+    "fertility": 0.5600234159572739,
+    "mineral": 0.7581665394420886
+  },
+  "ship_id": "80bcad0d-a81d-4b27-b4ef-1e26964bf769",
+  "groups": [
+    {
+      "type": "galley",
+      "category": "naval",
+      "loc": "Potamos",
+      "mode": "march",
+      "ids": [
+        "80bcad0d-a81d-4b27-b4ef-1e26964bf769"
+      ],
+      "names": [
+        "Asterion's Brow, Galley of Potamos"
+      ]
+    }
+  ],
+  "preview": {
+    "available": false,
+    "reason": "unknown_terrain",
+    "silver_payer_count": 1,
+    "silver_runway_ticks": 320,
+    "upkeep_silver_field": 1.5,
+    "upkeep_silver_home": 0.4500000000000002
+  },
+  "sent": {
+    "target_q": 1,
+    "target_r": 52,
+    "intent": "explore",
+    "ticks": 10
+  },
+  "http_status": 202,
+  "answer": {
+    "arrival_tick": 1,
+    "arrives_at": "2026-10-17T11:36:29.643176152+02:00",
+    "arrives_at_utc": "2026-10-17T09:36:29.643176152Z",
+    "carried_silver": 0,
+    "departs_at": "2026-10-17T11:36:27.643176152+02:00",
+    "duration_ticks": 1,
+    "expedition": {
+      "area_q": 1,
+      "area_r": 52,
+      "home_by_tick": 10,
+      "length_ticks": 10,
+      "turn_tick": 5
+    },
+    "origin_q": 2,
+    "origin_r": 51,
+    "purse_shortfall": 0,
+    "target_q": 2,
+    "target_r": 54,
+    "unit_id": "80bcad0d-a81d-4b27-b4ef-1e26964bf769"
+  },
+  "page_errors": []
+}

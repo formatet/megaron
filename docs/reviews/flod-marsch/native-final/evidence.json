@@ -1,0 +1,111 @@
+{
+  "health": {
+    "commit": "8bed8d5ae1bd0c8b51221cfc0ed3543c29ca8dbd",
+    "migration": 181,
+    "status": "ok"
+  },
+  "attempts": [
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": null,
+      "visible_rivers": 0
+    },
+    {
+      "coastal": true,
+      "visible_rivers": 1
+    }
+  ],
+  "target": {
+    "place_kind": "river",
+    "place_id": "22,19",
+    "q": 22,
+    "r": 19,
+    "terrain": "river",
+    "visible": true,
+    "tier": "live",
+    "fertility": 0.8077264714801784,
+    "mineral": 0.5857331415457336
+  },
+  "ship_id": "25fae7f3-df69-444a-8bdc-47278d678645",
+  "groups": [
+    {
+      "type": "galley",
+      "category": "naval",
+      "loc": "Potamos",
+      "mode": "march",
+      "ids": [
+        "25fae7f3-df69-444a-8bdc-47278d678645"
+      ],
+      "names": [
+        "Bronze Night, Galley of Potamos"
+      ]
+    }
+  ],
+  "preview": {
+    "available": false,
+    "reason": "unknown_terrain",
+    "silver_payer_count": 1,
+    "silver_runway_ticks": 320,
+    "upkeep_silver_field": 1.5,
+    "upkeep_silver_home": 0.4500000000000002
+  },
+  "sent": {
+    "target_q": 22,
+    "target_r": 19,
+    "intent": "explore",
+    "ticks": 10
+  },
+  "http_status": 202,
+  "answer": {
+    "arrival_tick": 2,
+    "arrives_at": "2026-10-17T11:37:11.259806059+02:00",
+    "arrives_at_utc": "2026-10-17T09:37:11.259806059Z",
+    "carried_silver": 0,
+    "departs_at": "2026-10-17T11:37:07.259806059+02:00",
+    "duration_ticks": 2,
+    "expedition": {
+      "area_q": 22,
+      "area_r": 19,
+      "home_by_tick": 10,
+      "length_ticks": 10,
+      "turn_tick": 5
+    },
+    "origin_q": 23,
+    "origin_r": 18,
+    "purse_shortfall": 0,
+    "target_q": 22,
+    "target_r": 21,
+    "unit_id": "25fae7f3-df69-444a-8bdc-47278d678645"
+  },
+  "movement": [
+    {
+      "status": "marching",
+      "q": 23,
+      "r": 18
+    }
+  ],
+  "page_errors": []
+}

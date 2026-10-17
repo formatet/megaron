@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-flod-marsch/docs/reviews/flod-marsch/live.py", line 62, in <module>
+    else:raise AssertionError({'no_reachable_river':rivers})
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'no_reachable_river': [{'place_kind': 'river', 'place_id': '41,23', 'q': 41, 'r': 23, 'terrain': 'river', 'visible': True, 'tier': 'live', 'fertility': 0.6211883263081994, 'mineral': 0.35244194901058523}]}
