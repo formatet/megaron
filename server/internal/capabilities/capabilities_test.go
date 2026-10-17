@@ -572,3 +572,20 @@ func TestCanRecruit_CedarCoversTimberForGalley(t *testing.T) {
 		t.Fatal("29.99 cedar must not afford a 30-timber galley")
 	}
 }
+
+func TestTradeOfferAffordable_FloatingPointCost(t *testing.T) {
+	pool := testPool(t)
+	f := newFixture(t, pool)
+	for _, good := range []string{"copper", "silver"} {
+		f.exec(t, `INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick) VALUES ($1,$2,$3,0,1000,0)`, f.settlementID, good, 23.999999999999996)
+	}
+	cc := f.cc(fakeClock(time.Now()))
+	for _, kind := range []string{"buy", "sell"} {
+		if ok, _ := TradeOfferAffordable(cc, kind, "copper", 24, 24); !ok {
+			t.Errorf("%s: exact-cost residue refused", kind)
+		}
+		if ok, _ := TradeOfferAffordable(cc, kind, "copper", 24.001, 24.001); ok {
+			t.Errorf("%s: real shortage accepted", kind)
+		}
+	}
+}

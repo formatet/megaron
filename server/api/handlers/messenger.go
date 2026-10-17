@@ -476,14 +476,7 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 				   FROM settlement_goods WHERE settlement_id=$1 AND good_key=$2`,
 				originID, req.TradeOffer.OfferGood,
 			).Scan(&sellerAmt)
-			tag, err := tx.Exec(r.Context(),
-				`UPDATE settlement_goods
-				    SET amount    = settled(amount, rate, calc_tick) - $1,
-				        calc_tick = current_world_tick()
-				  WHERE settlement_id=$2 AND good_key=$3
-				    AND settled(amount, rate, calc_tick) >= $1`,
-				req.TradeOffer.OfferQty, originID, req.TradeOffer.OfferGood,
-			)
+			tag, err := province.DeductGood(r.Context(), tx, originID, req.TradeOffer.OfferGood, req.TradeOffer.OfferQty)
 			if err != nil || tag.RowsAffected() == 0 {
 				writeError(w, http.StatusUnprocessableEntity,
 					insufficientTradeMsg("seller", req.TradeOffer.OfferGood, req.TradeOffer.OfferQty, sellerAmt))
@@ -497,14 +490,7 @@ func (h *MessengerHandler) Send(w http.ResponseWriter, r *http.Request) {
 				   FROM settlement_goods WHERE settlement_id=$1 AND good_key='silver'`,
 				originID,
 			).Scan(&buyerSilver)
-			tag, err := tx.Exec(r.Context(),
-				`UPDATE settlement_goods
-				    SET amount    = settled(amount, rate, calc_tick) - $1,
-				        calc_tick = current_world_tick()
-				  WHERE settlement_id=$2 AND good_key='silver'
-				    AND settled(amount, rate, calc_tick) >= $1`,
-				req.TradeOffer.OfferSilver, originID,
-			)
+			tag, err := province.DeductGood(r.Context(), tx, originID, "silver", req.TradeOffer.OfferSilver)
 			if err != nil || tag.RowsAffected() == 0 {
 				writeError(w, http.StatusUnprocessableEntity,
 					insufficientTradeMsg("buyer", "silver", req.TradeOffer.OfferSilver, buyerSilver))
@@ -1235,14 +1221,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 	if kind == "sell" {
 		// Sell offer: origin=seller (escrowed goods at send), destination=buyer (acceptor).
 		// Step 1: deduct want_silver from buyer (destination). Goods already escrowed at send — do NOT deduct again.
-		tag, err := tx.Exec(r.Context(),
-			`UPDATE settlement_goods SET
-			     amount    = settled(amount, rate, calc_tick) - $1,
-			     calc_tick = current_world_tick()
-			 WHERE settlement_id=$2 AND good_key='silver'
-			   AND settled(amount, rate, calc_tick) >= $1`,
-			wantSilver, destID,
-		)
+		tag, err := province.DeductGood(r.Context(), tx, destID, "silver", wantSilver)
 		if err != nil || tag.RowsAffected() == 0 {
 			// Same hint text as capabilities' trade-accept solvency
 			// requirement (temenos_capabilities.md Fas 3 anti-drift) —
@@ -1371,14 +1350,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 	} else {
 		// Buy offer: origin=buyer (escrowed silver at send), destination=seller (acceptor).
 		// Step 1: deduct want_qty goods from seller (destination). Silver already escrowed at send.
-		tag, err := tx.Exec(r.Context(),
-			`UPDATE settlement_goods SET
-			     amount    = settled(amount, rate, calc_tick) - $1,
-			     calc_tick = current_world_tick()
-			 WHERE settlement_id=$2 AND good_key=$3
-			   AND settled(amount, rate, calc_tick) >= $1`,
-			wantQty, destID, wantGood,
-		)
+		tag, err := province.DeductGood(r.Context(), tx, destID, wantGood, wantQty)
 		if err != nil || tag.RowsAffected() == 0 {
 			// Same hint text as capabilities' trade-accept solvency
 			// requirement (temenos_capabilities.md Fas 3 anti-drift) —

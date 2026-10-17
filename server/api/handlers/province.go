@@ -290,10 +290,10 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				atMax = true
 				next = 1
 			}
-			afford := !atMax && silverStock >= spec.CostSilver
+			afford := !atMax && province.GoodsAffordable(silverStock, spec.CostSilver)
 			if afford {
 				for goodKey, needed := range spec.Costs {
-					if goodsStock[goodKey] < needed {
+					if !province.GoodsAffordable(goodsStock[goodKey], needed) {
 						afford = false
 						break
 					}
@@ -379,7 +379,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			}
 			if afford {
 				for goodKey, needed := range spec.Costs {
-					if goodsStock[goodKey] < needed {
+					if !province.GoodsAffordable(goodsStock[goodKey], needed) {
 						afford = false
 						break
 					}
@@ -510,7 +510,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			afford := hasTemple && kharisNow >= spec.MinKharis
 			if afford {
 				for g, need := range spec.Offering {
-					if goodsStock[g] < need {
+					if !province.GoodsAffordable(goodsStock[g], need) {
 						afford = false
 						break
 					}
@@ -1377,14 +1377,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 
 	// Deduct silver if required.
 	if spec.CostSilver > 0 {
-		tag, err2 := tx.Exec(r.Context(),
-			`UPDATE settlement_goods
-			   SET amount  = settled(amount, rate, calc_tick) - $1,
-			       calc_tick = current_world_tick()
-			 WHERE settlement_id = $2 AND good_key = 'silver'
-			   AND settled(amount, rate, calc_tick) >= $1`,
-			spec.CostSilver, settlementID,
-		)
+		tag, err2 := province.DeductGood(r.Context(), tx, settlementID, "silver", spec.CostSilver)
 		if err2 != nil || tag.RowsAffected() == 0 {
 			// Name the shortfall (need/have) like writeGoodsError does for goods —
 			// a bare "insufficient silver" left a silver-poor Wanax guessing.
@@ -3403,14 +3396,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	arrivesAt := h.clk.Now().Add(tick.RealUntil(tradeTravelTicks, 0))
 
 	// Deduct from origin — silver is now a normal good in settlement_goods.
-	deductTag, err := tx.Exec(r.Context(),
-		`UPDATE settlement_goods SET
-		     amount = settled(amount, rate, calc_tick) - $1,
-		     calc_tick = current_world_tick()
-		 WHERE settlement_id = $2 AND good_key = $3
-		   AND settled(amount, rate, calc_tick) >= $1`,
-		req.Quantity, originID, req.GoodKey,
-	)
+	deductTag, err := province.DeductGood(r.Context(), tx, originID, req.GoodKey, req.Quantity)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not deduct goods")
 		return

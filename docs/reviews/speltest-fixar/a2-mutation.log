@@ -1,0 +1,14 @@
+» färsk DB på migration 181 · commit e62569f8+ändringar
+2026/10/17 11:17:03 INFO player registered id=60bc30b4-3624-41ac-b691-8a66d12e7c75 username=buildhex-b8b73fb3-4a28-40a6-8ef9-12fcdcd7341b
+--- FAIL: TestBuildTemple_FloatingPointExactCost (0.07s)
+    goods_cost_test.go:24: build temple at stored 23.999999999999996: HTTP 422: map[error:insufficient_goods missing:[map[good:stone have:23.999999999999996 need:24]]]
+2026/10/17 11:17:03 INFO player registered id=b241627d-4e3e-4315-a3a7-95d502b1fff0 username=buildhex-b465d404-f99c-4dd5-abca-d14e6d79017c
+--- FAIL: TestGoodsPayment_ResidueAndRealShortage (0.07s)
+    --- FAIL: TestGoodsPayment_ResidueAndRealShortage/stone_residue (0.00s)
+        goods_cost_test.go:70: multi paid=false want true
+    --- FAIL: TestGoodsPayment_ResidueAndRealShortage/mine_residue (0.00s)
+        goods_cost_test.go:70: multi paid=false want true
+    goods_cost_test.go:89: capability comparison must accept residue
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.145s
+FAIL

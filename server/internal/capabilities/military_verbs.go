@@ -95,7 +95,7 @@ func canBuildRoad(cc checkContext) Verb {
 			req("a land unit to build", n > 0,
 				fmt.Sprintf("%d deployable land unit(s) here", n),
 				"recruit a land unit first"),
-			req(fmt.Sprintf("%g stone in this city (a plains edge)", need), stone >= need,
+			req(fmt.Sprintf("%g stone in this city (a plains edge)", need), province.GoodsAffordable(stone, need),
 				fmt.Sprintf("%.0f stone here", stone),
 				"produce stone first (a quarry) — rougher ground costs more"),
 		})

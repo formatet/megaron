@@ -2,6 +2,7 @@ package capabilities
 
 import (
 	"fmt"
+
 	"formatet/megaron/server/internal/province"
 )
 
@@ -135,10 +136,10 @@ func (cc checkContext) pendingOfferAffordable() (ok bool, detail string) {
 func TradeOfferAffordable(cc checkContext, kind, wantGood string, wantQty, wantSilver float64) (ok bool, have float64) {
 	if kind == "sell" {
 		have = cc.goodAmount("silver")
-		return have >= wantSilver, have
+		return province.GoodsAffordable(have, wantSilver), have
 	}
 	have = cc.goodAmount(wantGood)
-	return have >= wantQty, have
+	return province.GoodsAffordable(have, wantQty), have
 }
 
 func canTradeDecline(cc checkContext) Verb {

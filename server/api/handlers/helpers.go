@@ -231,7 +231,7 @@ func deductGoods(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, costs m
 		} else if err != nil {
 			return err
 		}
-		if have < qty {
+		if !province.GoodsAffordable(have, qty) {
 			if key == "timber" {
 				have += cedarSpare // cedar would have covered it: show the pot, not half of it
 			}
@@ -250,7 +250,7 @@ func deductGoods(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, costs m
 		}
 		if _, err := tx.Exec(ctx,
 			`UPDATE settlement_goods SET
-			     amount  = settled(amount, rate, calc_tick) - $1,
+			     amount  = GREATEST(0, settled(amount, rate, calc_tick) - $1),
 			     calc_tick = current_world_tick()
 			 WHERE settlement_id = $2 AND good_key = $3`,
 			qty, settlementID, key,

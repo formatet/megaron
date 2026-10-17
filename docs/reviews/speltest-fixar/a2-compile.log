@@ -1,0 +1,4 @@
+ok  	formatet/megaron/server/internal/province	0.002s
+ok  	formatet/megaron/server/internal/capabilities	0.002s [no tests to run]
+ok  	formatet/megaron/server/internal/combat	0.003s [no tests to run]
+ok  	formatet/megaron/server/api/handlers	0.003s [no tests to run]

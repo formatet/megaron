@@ -584,14 +584,7 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 
 	// Deduct silver from source settlement good row.
 	if req.Silver > 0 {
-		tag, err2 := tx.Exec(r.Context(),
-			`UPDATE settlement_goods
-			   SET amount  = settled(amount, rate, calc_tick) - $1,
-			       calc_tick = current_world_tick()
-			 WHERE settlement_id = $2 AND good_key = 'silver'
-			   AND settled(amount, rate, calc_tick) >= $1`,
-			req.Silver, sourceID,
-		)
+		tag, err2 := province.DeductGood(r.Context(), tx, sourceID, "silver", req.Silver)
 		if err2 != nil || tag.RowsAffected() == 0 {
 			writeError(w, http.StatusUnprocessableEntity, "insufficient silver")
 			return
@@ -600,14 +593,7 @@ func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
 
 	// Deduct grain from source settlement_goods.
 	if req.Grain > 0 {
-		tag, err2 := tx.Exec(r.Context(),
-			`UPDATE settlement_goods SET
-			   amount  = settled(amount, rate, calc_tick) - $1,
-			   calc_tick = current_world_tick()
-			 WHERE settlement_id = $2 AND good_key = 'grain'
-			   AND settled(amount, rate, calc_tick) >= $1`,
-			req.Grain, sourceID,
-		)
+		tag, err2 := province.DeductGood(r.Context(), tx, sourceID, "grain", req.Grain)
 		if err2 != nil || tag.RowsAffected() == 0 {
 			writeError(w, http.StatusUnprocessableEntity, "insufficient grain")
 			return
@@ -1179,9 +1165,9 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		var have float64
 		if scanErr := tx.QueryRow(r.Context(),
 			`SELECT GREATEST(0, settled(amount, rate, calc_tick))
-			 FROM settlement_goods WHERE settlement_id = $1 AND good_key = $2`,
+			 FROM settlement_goods WHERE settlement_id = $1 AND good_key = $2 FOR UPDATE`,
 			settlementID, good,
-		).Scan(&have); scanErr != nil || have < need {
+		).Scan(&have); scanErr != nil || !province.GoodsAffordable(have, need) {
 			writeError(w, http.StatusBadRequest,
 				fmt.Sprintf("insufficient offering for %q: need %.1f %s (have %.1f)",
 					prayerID, need, good, have))

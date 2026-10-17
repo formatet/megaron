@@ -1,0 +1,7 @@
+» färsk DB på migration 181 · commit e62569f8
+2026/10/17 11:20:54 INFO player registered id=b69f78ca-785e-45ab-8c39-9fc37f3c4591 username=buildhex-238428d1-453f-4dce-82b6-8d6873414eb4
+--- FAIL: TestBuildTemple_FloatingPointExactCost (0.07s)
+    goods_cost_regression_test.go:23: build temple at stored 23.999999999999996: HTTP 422: map[error:insufficient_goods missing:[map[good:stone have:23.999999999999996 need:24]]]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.074s
+FAIL

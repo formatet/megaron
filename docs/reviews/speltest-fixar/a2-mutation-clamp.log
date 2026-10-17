@@ -1,0 +1,15 @@
+» färsk DB på migration 181 · commit e62569f8+ändringar
+2026/10/17 11:20:12 INFO player registered id=43f1e68d-fc19-4321-8bdc-3364f37d783d username=buildhex-71c51bf9-5a9c-4e63-8aa4-ea4d7667b94b
+--- FAIL: TestBuildTemple_FloatingPointExactCost (0.08s)
+    goods_cost_test.go:27: remaining stone = -3.5527136788005009e-15, want zero
+2026/10/17 11:20:12 INFO player registered id=d536e820-3e73-42e2-816b-0f797f6f9683 username=buildhex-1e8dc26b-1d4a-41e5-ab1f-5bcd8b0af31f
+--- FAIL: TestGoodsPayment_ResidueAndRealShortage (0.08s)
+    --- FAIL: TestGoodsPayment_ResidueAndRealShortage/stone_residue (0.00s)
+        goods_cost_test.go:84: multi stock -3.5527136788005009e-15 want 0
+        goods_cost_test.go:84: atomic stock -3.5527136788005009e-15 want 0
+    --- FAIL: TestGoodsPayment_ResidueAndRealShortage/mine_residue (0.00s)
+        goods_cost_test.go:84: multi stock -1.7763568394002505e-15 want 0
+        goods_cost_test.go:84: atomic stock -1.7763568394002505e-15 want 0
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.158s
+FAIL
