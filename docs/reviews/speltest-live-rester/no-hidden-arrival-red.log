@@ -1,0 +1,11 @@
+2026/10/17 11:57:11 INFO player registered id=9b0f6a9f-1008-4538-80cb-d596664cf2ba username=realm-5427872e-9e7b-42be-9993-0b76dc2e5fbe
+2026/10/17 11:57:11 INFO player registered id=a090a438-a6b9-41cb-8eb2-757d87038678 username=buildhex-b5860666-9f3d-4ecf-aad7-145816a2e714
+2026/10/17 11:57:12 INFO player registered id=da7cfb5b-9983-4d9c-87de-385ebfbd46cd username=buildhex-67d4cf38-d848-499f-86dd-491747ecb09a
+2026/10/17 11:57:12 INFO player registered id=248b822d-3447-43db-bb19-74602e1e82af username=ticker-9e21b0b8-23b2-4235-a085-41123caa6535
+2026/10/17 11:57:12 INFO player registered id=4cf68ff0-0c6b-4ba2-b647-2926f40d86a1 username=other-378da209-dbfb-4cca-9ec9-f76e1ab4675a
+--- FAIL: TestMarchPreview_ReadOnlyAndTiming (0.12s)
+    unit_march_preview_test.go:199: hidden preview: {"arrival_tick":123,"available":false,"planned_expedition_ticks":10,"planned_home_by_tick_if_departing_now":15,"reason":"unknown_terrain","silver_payer_count":0,"silver_runway_ticks":null,"upkeep_silver_field":0,"upkeep_silver_home":0}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.350s
+FAIL
+» färsk DB på migration 181 · commit d549ccc5+ändringar

@@ -1,0 +1,10 @@
+--- FAIL: TestLiveRemainder_GoodsDoesNotPresentTechnicalValuation (0.00s)
+    live_remainder_test.go:68: Good            Stock    Rate/t     Lvl     Workers  Workdays/unit
+        ──────────────────────────────────────────────────────────────────────────
+        grain             5.0       1.0       —           0    0.0000
+        
+        Wanaxes agree trade prices. The temple shows how the gods weigh offerings: keryx rite --list.
+        
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL

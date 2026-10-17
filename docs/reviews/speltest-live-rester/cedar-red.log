@@ -1,0 +1,11 @@
+--- FAIL: TestFoundingTimberWarning_WoodFogAndCedar (0.00s)
+    founding_timber_warning_test.go:22: No timber within reach — every building needs timber. Plan wood deliveries before building.
+2026/10/17 11:57:19 INFO player registered id=1a9ce480-80cc-41b9-b0f4-bd83325ad5d2 username=realm-b847c5e2-a329-4621-81db-2b955a8ecf20
+2026/10/17 11:57:19 INFO player registered id=7b428e04-bef3-4870-b697-52608e5ddf0f username=buildhex-31695752-03bd-4562-908e-4ae05b26b9e1
+2026/10/17 11:57:19 INFO player registered id=44b24951-7218-4eb8-8024-92be7d917a1e username=buildhex-51becf1b-3d68-49ea-91f7-c97341e05727
+2026/10/17 11:57:19 INFO player registered id=bdfcde94-13f4-409c-be1f-e1555e3bf509 username=ticker-7b05f843-c8bf-4a16-b649-483643555c23
+2026/10/17 11:57:19 INFO player registered id=b59c8343-bcbe-4719-b4c1-7e0f23d85f2b username=other-4a72a93d-52d2-48b0-be2f-0c73db1871a4
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.373s
+FAIL
+» färsk DB på migration 181 · commit d549ccc5+ändringar

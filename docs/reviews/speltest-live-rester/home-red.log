@@ -1,0 +1,11 @@
+2026/10/17 11:57:04 INFO player registered id=af2fe73c-0160-46e4-b3ae-ded25d1d4c78 username=realm-979dad87-bb6b-44eb-b035-8db414d80dac
+2026/10/17 11:57:04 INFO player registered id=3349bea7-01d8-47b3-bdbc-bc949f94bcf7 username=buildhex-30f0d291-a86b-40d9-97dc-72119f511ed2
+2026/10/17 11:57:04 INFO player registered id=07f03f7e-58fe-43cc-afd1-09daa6bcb9f7 username=buildhex-b3cd8148-539f-43c0-89a5-c8d9c740f33c
+2026/10/17 11:57:04 INFO player registered id=cccb0aa2-0690-4270-9ebe-0823710b7dfc username=ticker-2c01df55-c63d-43ce-b320-7c650252a5c7
+2026/10/17 11:57:04 INFO player registered id=c0f5c9ac-6df2-49a8-b169-89edf5b6548b username=other-03d7a8c0-e3bd-4bc9-ad66-ed497abbc359
+--- FAIL: TestMarchPreview_ReadOnlyAndTiming (0.12s)
+    unit_march_preview_test.go:215: planned budget lost or hidden ETA leaked: {"available":false,"planned_expedition_ticks":10,"planned_home_by_tick_if_departing_now":5,"reason":"unknown_terrain","silver_payer_count":0,"silver_runway_ticks":null,"upkeep_silver_field":0,"upkeep_silver_home":0}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.351s
+FAIL
+» färsk DB på migration 181 · commit d549ccc5+ändringar

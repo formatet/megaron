@@ -1,0 +1,12 @@
+budget named RED -> identical bytes -> GREEN ecafb9d3182e4b52e8c285588bac4fa6e2c558df8c11aa6af320404e935369cf
+home named RED -> identical bytes -> GREEN ecafb9d3182e4b52e8c285588bac4fa6e2c558df8c11aa6af320404e935369cf
+no-hidden-arrival named RED -> identical bytes -> GREEN ecafb9d3182e4b52e8c285588bac4fa6e2c558df8c11aa6af320404e935369cf
+cedar named RED -> identical bytes -> GREEN 7fab246c1ddd173b428f34740275462743110f38ec10f8cf551cbb3f9bbfb873
+fog named RED -> identical bytes -> GREEN 7fab246c1ddd173b428f34740275462743110f38ec10f8cf551cbb3f9bbfb873
+timber-wire named RED -> identical bytes -> GREEN 7fab246c1ddd173b428f34740275462743110f38ec10f8cf551cbb3f9bbfb873
+values-wire named RED -> identical bytes -> GREEN 29e9ac58e76f5853278dc55b581684fcb58663b712837cb0465ab4b8b01201ba
+goods-word named RED -> identical bytes -> GREEN 005882dd770c62f39d4a580f8838ce54ef58e497042c0eeef0fe7d646a1c93cf
+cli-values named RED -> identical bytes -> GREEN d7e025510a12fe63430fbc606cf7fc29797b457e895579276408b486ee925023
+cli-home named RED -> identical bytes -> GREEN 317434fbe189692355a6c13bb93ee1628935517412974a595441bbadab8ef21f
+web-values named RED -> identical bytes -> GREEN 4be465cd009a7604c25cabf43501cb30b0b65bd23ca58aea0524b3c68ca5f9bb
+host-warning named RED -> identical bytes -> GREEN 1c87198068f64f54d4c83ff72e8994d80d507aedd84a605dea2513d605ad3af2

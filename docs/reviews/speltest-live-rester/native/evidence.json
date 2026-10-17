@@ -1,0 +1,85 @@
+{
+  "health": {
+    "commit": "230b81b7e74023de353723a72d0dd4b5c2ea16c7",
+    "migration": 181,
+    "status": "ok"
+  },
+  "attempts": [
+    {
+      "coastal": true,
+      "visible_rivers": 1
+    }
+  ],
+  "target": {
+    "place_kind": "river",
+    "place_id": "6,29",
+    "q": 6,
+    "r": 29,
+    "terrain": "river",
+    "visible": true,
+    "tier": "live",
+    "fertility": 0.5123699064059353,
+    "mineral": 0.613599811837572
+  },
+  "ship_id": "5362057a-0e2f-4ecb-a80c-72be4ebc5b34",
+  "groups": [
+    {
+      "type": "galley",
+      "category": "naval",
+      "loc": "Potamos",
+      "mode": "march",
+      "ids": [
+        "5362057a-0e2f-4ecb-a80c-72be4ebc5b34"
+      ],
+      "names": [
+        "Bull of the Deep, Galley of Potamos"
+      ]
+    }
+  ],
+  "preview": {
+    "available": false,
+    "planned_expedition_ticks": 10,
+    "planned_home_by_tick_if_departing_now": 11,
+    "reason": "unknown_terrain",
+    "silver_payer_count": 1,
+    "silver_runway_ticks": 320,
+    "upkeep_silver_field": 1.5,
+    "upkeep_silver_home": 0.4500000000000002
+  },
+  "sent": {
+    "target_q": 6,
+    "target_r": 29,
+    "intent": "explore",
+    "ticks": 10
+  },
+  "http_status": 202,
+  "answer": {
+    "arrival_tick": 4,
+    "arrives_at": "2026-10-17T11:58:46.876894394+02:00",
+    "arrives_at_utc": "2026-10-17T09:58:46.876894394Z",
+    "carried_silver": 0,
+    "departs_at": "2026-10-17T11:58:42.876894394+02:00",
+    "duration_ticks": 2,
+    "expedition": {
+      "area_q": 6,
+      "area_r": 29,
+      "home_by_tick": 12,
+      "length_ticks": 10,
+      "turn_tick": 7
+    },
+    "origin_q": 6,
+    "origin_r": 27,
+    "purse_shortfall": 0,
+    "target_q": 8,
+    "target_r": 30,
+    "unit_id": "5362057a-0e2f-4ecb-a80c-72be4ebc5b34"
+  },
+  "movement": [
+    {
+      "status": "marching",
+      "q": 6,
+      "r": 27
+    }
+  ],
+  "page_errors": []
+}

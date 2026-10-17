@@ -1,0 +1,11 @@
+2026/10/17 11:56:56 INFO player registered id=fe615fc3-5757-4139-9b7e-94d9dad2e287 username=realm-93dbbe34-8fae-4bc1-85dc-5830b574328a
+2026/10/17 11:56:56 INFO player registered id=cd49a25c-b289-4e8f-9ad2-80f6816ea698 username=buildhex-fc5157d9-1211-4cdc-beb2-f86eb2200cfb
+2026/10/17 11:56:56 INFO player registered id=135644d6-2832-41f6-9325-fe412b78c83e username=buildhex-abcbb2d8-df5b-4073-b1b0-6091f0f39406
+2026/10/17 11:56:56 INFO player registered id=e812f10f-5ee1-404c-8b55-4b42f45fe4d6 username=ticker-6d04e047-defe-467c-8f6b-158bd77fea93
+2026/10/17 11:56:56 INFO player registered id=3e7fd92f-b045-4377-afd1-20888415045d username=other-35cb6749-7d7f-467e-8a3b-39553464bea7
+--- FAIL: TestMarchPreview_ReadOnlyAndTiming (0.12s)
+    unit_march_preview_test.go:215: planned budget lost or hidden ETA leaked: {"available":false,"planned_expedition_ticks":0,"planned_home_by_tick_if_departing_now":15,"reason":"unknown_terrain","silver_payer_count":0,"silver_runway_ticks":null,"upkeep_silver_field":0,"upkeep_silver_home":0}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.347s
+FAIL
+» färsk DB på migration 181 · commit d549ccc5+ändringar

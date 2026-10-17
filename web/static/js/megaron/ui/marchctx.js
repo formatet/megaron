@@ -166,6 +166,7 @@ export function renderColonizePreviewHTML(p) {
   const consTick = g.consumption_per_tick ?? (prodTick - netTick);
 
   let html = `<div style="color:var(--text-dim)">Catchment forecast — ${fmtNum(known)} of ${fmtNum(total)} hexes known</div>`;
+  if (p.timber_warning) html += `<div>${esc(p.timber_warning)}</div>`;
   if (p.harbour_note) html += `<div>${esc(p.harbour_note)}</div>`;
   html += `<div>Food: grain ${prodTick.toFixed(1)} + fish ${(g.fish_per_tick || 0).toFixed(1)} − consumption ${consTick.toFixed(1)} per day = ` +
     `<b style="color:${netTick < 0 ? 'var(--accent)' : 'var(--safe)'}">net ${netTick >= 0 ? '+' : ''}${netTick.toFixed(1)} per day</b></div>`;

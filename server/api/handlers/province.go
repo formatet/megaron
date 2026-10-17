@@ -796,6 +796,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"can_afford":                       buildAfford,
 			"can_recruit":                      recruitAfford,
 			"available_prayers":                prayers,
+			"divine_values":                    divineValues,
 			// Devotion: the share of the city serving the temple. Mig 094 made cult
 			// a labor weight that produces nothing, which removed it from the goods
 			// list — and with it the only place a Wanax could see or tend it. A

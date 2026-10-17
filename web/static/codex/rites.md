@@ -33,8 +33,8 @@ A departure gift stays in the city where you offered until an eligible journey p
 
 In Keryx, `rite --list` shows your prayers, their effects, offerings, active days, pending departure gifts and waiting time. `rite --prayer <id>` chooses one. Omitting the ID uses the prayer marked as the culture's default — Mistress of the Walls for Minoans.
 
-## Work at the altar
+## What an offering means
 
-The gods reckon offerings in **workdays**: the labour to produce each good on standard ground, including its ingredients. Grain and silver each represent one workday; bronze represents eleven, including nine copper, one tin and the smelter's work. World scarcity and the god's tastes lift this reference value. Silver receives no extra minimum value.
+Bronze can weigh far more with the gods than grain. The temple shows their current reckoning: how much each good counts before a particular god's preferences. What the world can spare and what the god favours both change an offering's meaning. **Kult** and `keryx rite --list` show these values beside your prayers.
 
-These are offering references. Trade prices are agreed between Wanaxes. You may compose an offering in Keryx with `rite --offer good=amount,...`; the web's Offer button brings the traditional recipe.
+These are offering values. Wanaxes agree their own trade prices. You may compose an offering in Keryx with `rite --offer good=amount,...`; the web's Offer button brings the traditional recipe.

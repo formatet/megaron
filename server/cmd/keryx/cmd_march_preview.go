@@ -23,10 +23,12 @@ func showMarchPreview(c *Client, path string, order map[string]any) error {
 		return nil
 	}
 	var forecast struct {
-		Available     bool   `json:"available"`
-		Reason        string `json:"reason"`
-		ArrivalTick   int64  `json:"arrival_tick"`
-		DurationTicks int64  `json:"duration_ticks"`
+		PlannedExpeditionTicks *int   `json:"planned_expedition_ticks"`
+		PlannedHomeByTick      *int   `json:"planned_home_by_tick_if_departing_now"`
+		Available              bool   `json:"available"`
+		Reason                 string `json:"reason"`
+		ArrivalTick            int64  `json:"arrival_tick"`
+		DurationTicks          int64  `json:"duration_ticks"`
 		marchSilverForecast
 	}
 	if err := json.Unmarshal(data, &forecast); err != nil {
@@ -43,6 +45,13 @@ func showMarchPreview(c *Client, path string, order map[string]any) error {
 		default:
 			fmt.Println("Arrival estimate unavailable.")
 		}
+	}
+	if forecast.PlannedExpeditionTicks != nil {
+		fmt.Printf("Planned expedition: %s", formatDays(*forecast.PlannedExpeditionTicks, "%d"))
+		if forecast.PlannedHomeByTick != nil {
+			fmt.Printf(" — with immediate departure, home by %s", formatDay(*forecast.PlannedHomeByTick, "%d"))
+		}
+		fmt.Println(". First-leg arrival remains unknown.")
 	}
 	if line := marchSilverLine(forecast.marchSilverForecast); line != "" {
 		fmt.Println(line)

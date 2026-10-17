@@ -1,0 +1,4 @@
+Arrival unavailable: the route crosses unknown terrain.
+Planned expedition: 10 days — with immediate departure, home by day 11. First-leg arrival remains unknown.
+Pay: 0.45 → 1.5 silver per day in the field · treasury lasts 320 days
+No order sent. Run again without --preview to send it.

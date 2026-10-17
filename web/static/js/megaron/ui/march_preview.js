@@ -1,5 +1,5 @@
 import { esc, formatApiError } from './format.js';
-import { fmtNum, fmtDays } from './fmt_num.js';
+import { fmtNum, fmtDays, fmtDay } from './fmt_num.js';
 import { arrivalHTML } from './time.js';
 
 // Forecasts are read-only. Keep each unit separate: crew and cargo can make
@@ -26,7 +26,17 @@ export function marchSilverLine(data) {
     + ' silver per day in the field · ' + runway;
 }
 
+export function marchExpeditionPlanLine(data) {
+ if (!Number.isInteger(data.planned_expedition_ticks)) return '';
+ const home = Number.isInteger(data.planned_home_by_tick_if_departing_now)
+  ? ` — with immediate departure, home by ${fmtDay(data.planned_home_by_tick_if_departing_now)}` : '';
+ return `Planned expedition: ${fmtDays(data.planned_expedition_ticks)}${home}. First-leg arrival remains unknown.`;
+}
 function marchArrivalHTML(data) {
+ const plan = marchExpeditionPlanLine(data);
+ return marchFirstArrivalHTML(data) + (plan ? '<div>' + esc(plan) + '</div>' : '');
+}
+function marchFirstArrivalHTML(data) {
   if (data.available && Number.isInteger(data.arrival_tick)) {
     return 'Estimated arrival: ' + arrivalHTML(data.arrives_at_utc, data.arrival_tick)
       + ' · ' + esc(fmtDays(data.duration_ticks)) + ' travelling';

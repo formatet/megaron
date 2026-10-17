@@ -36,6 +36,7 @@ type riteAvailablePrayer struct {
 // riteProvinceStatus is the slice of the province status response this file needs.
 type riteProvinceStatus struct {
 	Settlement struct {
+		DivineValues     map[string]float64    `json:"divine_values"`
 		Kharis           float64               `json:"kharis"`
 		KharisMood       string                `json:"kharis_mood"`
 		RiteKharisCost   float64               `json:"rite_kharis_cost"`
@@ -117,6 +118,7 @@ func riteCmd() *cobra.Command {
 				// Gynnsamhet is read via the gods' mood, never a computed percentage
 				// (Timothy 2026-07-11 hard invariant — "gudarna är inte maskiner").
 				fmt.Printf("The gods are %s (kharis %s).\n\n", p.Settlement.KharisMood, prayerKharisReading(p.Settlement.Kharis))
+				printDivineValues(p.Settlement.DivineValues)
 				fmt.Printf("%-28s  %-20s  %-8s  %-22s  %-45s  %-12s  %s\n",
 					"Prayer ID", "Name", "MinKhar", "Offering", "Effect", "Ready", "Cooldown")
 				for _, pr := range p.Settlement.AvailablePrayers {
@@ -456,4 +458,20 @@ func prayerReadiness(pr riteAvailablePrayer) (string, string) {
 // Floor the displayed precision so a value below a threshold never rounds up to it.
 func prayerKharisReading(value float64) string {
 	return fmt.Sprintf("%.1f", math.Floor(value*10)/10)
+}
+
+func printDivineValues(values map[string]float64) {
+	fmt.Println("Offering values — per unit, before each god's preferences; not trade prices:")
+	keys := make([]string, 0, len(values))
+	for key := range values {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	if len(keys) == 0 {
+		fmt.Println("  Current offering values unavailable.")
+	}
+	for _, key := range keys {
+		fmt.Printf("  %-12s %.4g\n", key, values[key])
+	}
+	fmt.Println()
 }
