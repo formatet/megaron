@@ -30,6 +30,7 @@ type notificationRow struct {
 	BodyJSON  json.RawMessage `json:"body"`
 	CreatedAt time.Time       `json:"created_at"`
 	ReadAt    *time.Time      `json:"read_at"`
+	WorldTick *int            `json:"world_tick"`
 }
 
 // List returns recent notifications for the authenticated player in this world.
@@ -63,7 +64,7 @@ func (h *NotificationsHandler) List(w http.ResponseWriter, r *http.Request) {
 	excludeKinds := splitKinds(r.URL.Query().Get("exclude"))
 
 	query := `
-		SELECT id, kind, level, body_json, created_at, read_at
+		SELECT id, kind, level, body_json, created_at, read_at, world_tick
 		FROM notifications
 		WHERE world_id = $1 AND player_id = $2`
 	args := []any{worldID, playerID}
@@ -96,7 +97,7 @@ func (h *NotificationsHandler) List(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var n notificationRow
 		var bodyRaw []byte
-		if err := rows.Scan(&n.ID, &n.Kind, &n.Level, &bodyRaw, &n.CreatedAt, &n.ReadAt); err != nil {
+		if err := rows.Scan(&n.ID, &n.Kind, &n.Level, &bodyRaw, &n.CreatedAt, &n.ReadAt, &n.WorldTick); err != nil {
 			continue
 		}
 		if len(bodyRaw) > 0 {

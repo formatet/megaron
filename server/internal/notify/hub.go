@@ -51,11 +51,12 @@ var heartbeatFrame, _ = json.Marshal(Msg{Kind: "Heartbeat"})
 // already could. Both are omitempty: a Broadcast was never archived and has
 // neither, and an older client ignores the extra fields.
 type Msg struct {
-	Kind    string `json:"kind"` // e.g. "ArmyArrival", "BuildComplete"
-	WorldID string `json:"world_id"`
-	Payload any    `json:"payload"`
-	ID      string `json:"id,omitempty"`    // notifications.id this was archived as
-	Level   int    `json:"level,omitempty"` // 1 critical … 4 routine, as archived
+	Kind      string `json:"kind"` // e.g. "ArmyArrival", "BuildComplete"
+	WorldID   string `json:"world_id"`
+	Payload   any    `json:"payload"`
+	ID        string `json:"id,omitempty"` // notifications.id this was archived as
+	WorldTick *int   `json:"world_tick"`
+	Level     int    `json:"level,omitempty"` // 1 critical … 4 routine, as archived
 }
 
 type client struct {
@@ -113,14 +114,15 @@ func (h *Hub) NotifyPlayer(ctx context.Context, worldID, playerID uuid.UUID, kin
 		return nil
 	}
 	var notifID string
+	var worldTick *int
 	if h.pool != nil {
 		bodyJSON, err := json.Marshal(payload)
 		if err == nil {
 			if dbErr := h.pool.QueryRow(ctx,
 				`INSERT INTO notifications (world_id, player_id, kind, level, body_json)
-				 VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+				 VALUES ($1, $2, $3, $4, $5) RETURNING id, world_tick`,
 				worldID, playerID, kind, level, bodyJSON,
-			).Scan(&notifID); dbErr != nil {
+			).Scan(&notifID, &worldTick); dbErr != nil {
 				slog.Error("persist notification", "kind", kind, "err", dbErr)
 			}
 		}
@@ -131,7 +133,7 @@ func (h *Hub) NotifyPlayer(ctx context.Context, worldID, playerID uuid.UUID, kin
 	if h.isDispatchMuted(ctx, playerID, kind) {
 		return nil
 	}
-	h.sendTo(worldID, playerID, Msg{Kind: kind, Payload: payload, ID: notifID, Level: level})
+	h.sendTo(worldID, playerID, Msg{Kind: kind, Payload: payload, ID: notifID, Level: level, WorldTick: worldTick})
 	return nil
 }
 
@@ -141,6 +143,13 @@ func (h *Hub) NotifyPlayer(ctx context.Context, worldID, playerID uuid.UUID, kin
 func (h *Hub) DeliverPersisted(ctx context.Context, worldID, playerID uuid.UUID, msg Msg) {
 	if playerID == uuid.Nil || msg.ID == "" || h.isDispatchMuted(ctx, playerID, msg.Kind) {
 		return
+	}
+	if h.pool != nil && msg.WorldTick == nil {
+		// Read the committed archive identity, never the world's current tick:
+		// delivery may be retried after the simulation has advanced.
+		if err := h.pool.QueryRow(ctx, `SELECT world_tick FROM notifications WHERE id=$1 AND world_id=$2 AND player_id=$3`, msg.ID, worldID, playerID).Scan(&msg.WorldTick); err != nil {
+			slog.Error("read committed notification tick", "kind", msg.Kind, "err", err)
+		}
 	}
 	h.sendTo(worldID, playerID, msg)
 }

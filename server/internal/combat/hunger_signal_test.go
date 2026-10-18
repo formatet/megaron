@@ -21,6 +21,10 @@ func TestStarvationSignal_ActualLossEvenLastGarrison(t *testing.T) {
 			f := newSupportFixture(t, pool, "actual-loss")
 			seedGoods(t, pool, f.capitalID, f.tick, 0, 10000)
 			seedGoods(t, pool, f.townID, f.tick, 10000, 10000)
+			// Plenty of civilian food cannot feed the army's grain requirement.
+			if _, err := pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,calc_tick) VALUES($1,'fish',10000,1000,$2) ON CONFLICT(settlement_id,good_key) DO UPDATE SET amount=10000,rate=1000,calc_tick=$2`, f.capitalID, f.tick); err != nil {
+				t.Fatal(err)
+			}
 			var fedUnit uuid.UUID
 			if err := pool.QueryRow(ctx, `INSERT INTO units(world_id,owner_id,settlement_id,support_settlement_id,home_settlement_id,type,category,size,status) VALUES($1,$2,$3,$3,$3,'spearman','land',100,'garrison') RETURNING id`, f.worldID, f.owner, f.townID).Scan(&fedUnit); err != nil {
 				t.Fatal(err)
@@ -73,6 +77,38 @@ func TestStarvationSignal_ActualLossEvenLastGarrison(t *testing.T) {
 			}
 			if fedSize != 100 || fedLosses != 0 || fedAudits != 0 {
 				t.Fatalf("fed city B must remain separate from hungry A: size%d losses%d StarvationDamage%d", fedSize, fedLosses, fedAudits)
+			}
+			kharisH := kharis.NewTickHandler(pool, sched, store, nil)
+			if err := kharisH.Handle(ctx, events.ScheduledEvent{ID: 13009902, WorldID: f.worldID, DueTick: f.tick}); err != nil {
+				t.Fatal(err)
+			}
+			var starts, wrongCity, day int
+			if err := pool.QueryRow(ctx, `SELECT count(*) FILTER(WHERE body_json->>'settlement_id'=$2 AND kind='GarrisonStarvationStarted'),count(*) FILTER(WHERE body_json->>'settlement_id'=$3),min(world_tick) FROM notifications WHERE world_id=$1`, f.worldID, f.capitalID.String(), f.townID.String()).Scan(&starts, &wrongCity, &day); err != nil {
+				t.Fatal(err)
+			}
+			if starts != 1 || wrongCity != 0 || day != f.tick {
+				t.Fatalf("actual upkeep→kharis notices start%d wrongcity%d day%d", starts, wrongCity, day)
+			}
+			if _, err := pool.Exec(ctx, `UPDATE worlds SET current_tick=$2 WHERE id=$1`, f.worldID, f.tick+1); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := pool.Exec(ctx, `UPDATE settlement_goods SET amount=10000,rate=0,calc_tick=$2 WHERE settlement_id=$1 AND good_key IN ('grain','silver')`, f.capitalID, f.tick+1); err != nil {
+				t.Fatal(err)
+			}
+			if err := NewUpkeepHandler(pool, sched, store, nil, nil).Handle(ctx, events.ScheduledEvent{ID: 13009903, WorldID: f.worldID, DueTick: f.tick + 1}); err != nil {
+				t.Fatal(err)
+			}
+			for retry := 0; retry < 2; retry++ {
+				if err := kharisH.Handle(ctx, events.ScheduledEvent{ID: 13009904, WorldID: f.worldID, DueTick: f.tick + 1}); err != nil {
+					t.Fatal(err)
+				}
+			}
+			var ends int
+			if err := pool.QueryRow(ctx, `SELECT count(*) FROM notifications WHERE world_id=$1 AND kind='GarrisonStarvationEnded' AND body_json->>'settlement_id'=$2 AND world_tick=$3`, f.worldID, f.capitalID.String(), f.tick+1).Scan(&ends); err != nil {
+				t.Fatal(err)
+			}
+			if ends != 1 {
+				t.Fatalf("actual recovered upkeep→kharis recovery notices%d want1", ends)
 			}
 		})
 	}

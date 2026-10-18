@@ -1,0 +1,3 @@
+ [Day #0]  MetropolisFounded
+      Your metropolis is founded: Proofpolis — 19/19 catchment hexes known — Poseidon grants a galley
+      Proofpolis food production covers consumption (net +0.5 per day).

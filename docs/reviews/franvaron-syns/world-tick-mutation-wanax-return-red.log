@@ -1,0 +1,6 @@
+» färsk DB på migration 187 · commit f3c90d72+ändringar
+--- FAIL: TestTickNoticeFailureKeepsWorldRunning (0.03s)
+    tick_notice_failure_test.go:49: one owner's observation must not abort world tick: kharis maintenance player 00000000-0000-0000-0000-000000001401: persist transition notice: ERROR: new row for relation "notifications" violates check constraint "test_notice_owner_failure" (SQLSTATE 23514)
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.031s
+FAIL

@@ -264,5 +264,14 @@
     "counts": {
       "tick": 1
     }
+  },
+  "server/internal/notify/hub.go": {
+    "reason": "Internal diagnostics/logging; not player prose.",
+    "literals": [
+      "read committed notification tick"
+    ],
+    "counts": {
+      "read committed notification tick": 1
+    }
   }
 }

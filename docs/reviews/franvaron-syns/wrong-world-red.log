@@ -1,0 +1,7 @@
+2026/10/18 17:41:22 INFO player registered id=27edd852-5957-4d52-b612-d8b4f489484b username=notif-d2a3bbea-b3ba-4ee9-8b89-b53a14cffbed
+--- FAIL: TestNotificationDayBelongsToRecordedWorldAndNeverDrifts (0.07s)
+    notification_day_test.go:28: notification must retain originating world day7 after world advances: map[notifications:[map[body:map[] created_at:2026-10-18T17:41:22.089858+02:00 id:81dbfa40-4be8-43a9-98f8-3c4e9534df9e kind:BuildComplete level:3 read_at:<nil> world_tick:<nil>]] unread:1]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.068s
+FAIL
+» färsk DB på migration 187 · commit 3edcfb43+ändringar

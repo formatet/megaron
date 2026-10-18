@@ -206,7 +206,8 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		    ), 0) AS city_count
 		 FROM player_world_records pwr
 		 JOIN settlements s ON s.owner_id = pwr.player_id AND s.world_id = pwr.world_id AND s.is_capital = true
-		 WHERE pwr.world_id = $1`,
+		 WHERE pwr.world_id = $1
+         ORDER BY pwr.player_id`,
 		e.WorldID, TempleDevotionPerLevel,
 	)
 	if err != nil {
@@ -232,7 +233,9 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 
 	for _, w := range snaps {
 		if err := h.processMaintenance(ctx, w, e.WorldID, e.ID); err != nil {
-			slog.Error("kharis maintenance failed", "player", w.playerID, "err", err)
+			// Observation is an auxiliary projection: retain its atomic baseline
+			// for the next tick, while continuing maintenance for other Wanaxes.
+			slog.Error("kharis maintenance failed", "player", w.playerID, "world", e.WorldID, "err", err)
 		}
 	}
 
@@ -255,7 +258,10 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 
 	h.applyDecay(ctx, e.WorldID, e.ID)
 	h.applyStarvationWarning(ctx, e.WorldID)
-	h.applyStarvation(ctx, e.WorldID)
+	if err := h.applyStarvation(ctx, e.WorldID); err != nil {
+		// A notification outage must never stop the world's recurring tick.
+		slog.Error("garrison starvation observation failed", "world", e.WorldID, "err", err)
+	}
 	h.applySubsistenceCritical(ctx, e.WorldID)
 	h.accumulatePrestige(ctx, e.WorldID)
 
@@ -365,6 +371,9 @@ func (h *TickHandler) applyTempleOffering(ctx context.Context, playerID, worldID
 }
 
 func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, worldID uuid.UUID, eventID int64) error {
+	if err := h.rememberInitialBand(ctx, w, worldID); err != nil {
+		return err
+	}
 	// Fas 2.2 exactly-once claim, scoped per (event_id, player_id) — migration 098.
 	// Handle fans ONE ScheduledKharisTick across every Wanax and this function
 	// commits each one separately (offering charge, kharis UPDATE, events), while
@@ -384,7 +393,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		return fmt.Errorf("claim kharis tick: %w", err)
 	}
 	if claim.RowsAffected() == 0 {
-		return nil // this event already applied to this Wanax
+		return h.observeKharisBand(ctx, w, worldID) // maintenance already applied; retry durable observation
 	}
 
 	// A day is "maintained" when the Wanax holds at least one standing temple;
@@ -498,7 +507,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		 WHERE player_id = $2 AND world_id = $3`,
 		derived, w.playerID, worldID,
 	)
-	return nil
+	return h.observeKharisBand(ctx, w, worldID)
 }
 
 // deriveMood maps the 0–100 kharis level to a mood label (replaces player-set
@@ -1274,61 +1283,6 @@ func (h *TickHandler) emitSubsistenceWarning(ctx context.Context, worldID, owner
 		"pop_loss":     popLoss,
 	}
 	_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, subsistenceKind, level, payload)
-}
-
-// applyStarvation records actual garrison grain-shortage outcomes from upkeep.
-// A zero city grain balance after civilian meals does not prove army hunger.
-func (h *TickHandler) applyStarvation(ctx context.Context, worldID uuid.UUID) {
-	// Upkeep runs first (priority 50, this handler 60). Read its recorded
-	// location, not live units: even the last garrison's death must be visible.
-	rows, err := h.pool.Query(ctx,
-		`SELECT s.id, s.owner_id, s.name FROM settlements s
-		 WHERE s.world_id = $1 AND s.owner_id IS NOT NULL AND s.state != 'sunk'
-		   AND EXISTS (SELECT 1 FROM events e
-		               WHERE e.world_id=s.world_id AND e.event_type='UnitAttrition'
-		                 AND e.payload->>'garrison_settlement_id'=s.id::text
-		                 AND e.payload->>'reason'='grain_shortage'
-		                 AND e.world_tick=current_world_tick())`,
-		worldID,
-	)
-	if err != nil {
-		slog.Error("starvation tick failed", "world", worldID, "err", err)
-		return
-	}
-	type starving struct {
-		id, owner uuid.UUID
-		name      string
-	}
-	var list []starving
-	for rows.Next() {
-		var s starving
-		if err := rows.Scan(&s.id, &s.owner, &s.name); err == nil {
-			list = append(list, s)
-		}
-	}
-	rows.Close()
-
-	for _, s := range list {
-		// Grain attrition lives in ONE place: combat/upkeep.go applyAttrition. This
-		// handler used to attrit here too (−5%, min 1) while upkeep took its flat −10
-		// the same day, in the same poll batch, against the same unit — combined
-		// ~14–15%/day, some 50% more than upkeep alone, hitting small garrisons hardest.
-		// Two mechanics written 19 days apart (70199f3 / 203af2c) that were never
-		// cross-checked; nothing anywhere documented the sum as intended. Removed here
-		// rather than in upkeep because upkeep owns the complete lifecycle (disband,
-		// cargo cascade, UnitAttrition event, owner notification) — this copy had only
-		// the size decrement and disbanded silently. Decision: Timothy, 2026-07-25.
-		// starvation_attrition_test.go guards the single-source-of-truth.
-		// StarvationDamage stays: it is the audit/flavour signal, and the owner-facing
-		// warning is applySubsistenceCritical via the notify hub.
-		_, _ = h.store.Append(ctx, s.id, events.StreamProvince, "StarvationDamage",
-			map[string]any{"reason": "no_food"}, worldID, nil)
-		// Owner notice is now the critical SubsistenceWarning (applySubsistenceCritical,
-		// via the notify hub) — the old gossip_events line here was the "wrong channel
-		// for your own city's status" the Sparta-forensiken flagged (buried in a LIMIT-30
-		// minor feed), so it is retired.
-		slog.Info("starvation damage applied", "settlement", s.id)
-	}
 }
 
 // applyDivinePunishment randomly selects and applies one divine punishment.

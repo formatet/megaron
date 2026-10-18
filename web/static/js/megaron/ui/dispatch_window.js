@@ -1,3 +1,4 @@
+import { notificationDay } from './notification_state.js';
 import { State } from '../state.js';
 import { openAccountWindow } from './account_window.js';
 import { fetchAuth } from '../api.js';
@@ -287,7 +288,7 @@ export function openDispatchWindow(kind, payload, timeLabel) {
     ${kind === 'OpeningDispatch' ? openingDispatchHTML(payload) : ''}
     ${kind === 'MessengerLostAtSea' ? `<pre class="dw-envelope">${esc(messengerEnvelopeText(payload))}</pre>` : ''}
     ${grainLine ? `<div class="dw-grain">${grainLine}</div>` : ''}
-    ${timeLabel ? `<div class="dw-time">${timeLabel}</div>` : ''}
+    <div class="dw-time">${esc(timeLabel || notificationDay({payload}))}</div>
     ${showOcc ? occupationBlockHTML(occChoices) : ''}
     ${showPassageStalled ? passageStalledBlockHTML(payload) : ''}
     <button class="dw-goto-btn" id="dw-goto-btn" ${dest ? '' : 'disabled title="No known location for this dispatch"'}>⌖ Take me there</button>

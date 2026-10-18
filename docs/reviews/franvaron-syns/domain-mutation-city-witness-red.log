@@ -1,0 +1,6 @@
+» färsk DB på migration 187 · commit 3edcfb43+ändringar
+--- FAIL: TestGarrisonTransitionOwnerAndCityIsolation (0.03s)
+    transition_notices_test.go:121: city-specific transitions starts1 calm1
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.034s
+FAIL

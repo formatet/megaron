@@ -1,0 +1,4 @@
+── day 0 ──
+  Prod:  fish +5.00 per day, grain +0.50 per day
+  Cons:  grain +5.00 per day
+  Events: —

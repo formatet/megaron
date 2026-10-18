@@ -57,3 +57,14 @@ test('O: one list, newest first, rumours kept as their own marked rows', () => {
   const html = renderRumourRowHTML({ text: '<x>', source_region: 'Delta', category: 'war', hops: 2, generated_at: rumours[0].generated_at });
   assert.match(html, /Rumour/); assert.match(html, /🗣/); assert.match(html, /2 hops away/); assert.doesNotMatch(html, /<x>/);
 });
+
+
+test('urgent hunger survives final mixed-feed sorting; recovery removes the priority', () => {
+ const hungry={kind:'GarrisonStarvationStarted',world_tick:4,created_at:'2026-10-18T04:00:00Z',body:{settlement_id:'a'}};
+ const ordinary={kind:'BuildComplete',world_tick:8,created_at:'2026-10-18T08:00:00Z'};
+ const critical={kind:'SubsistenceWarning',world_tick:3,created_at:'2026-10-18T03:00:00Z',body:{tier:'critical'}};
+ const rumours=[{text:'new',generated_at:'2026-10-18T09:00:00Z'}];
+ assert.deepEqual(mergeFeed([ordinary,hungry,critical],rumours).map(r=>r.n?.kind||'rumour'),['GarrisonStarvationStarted','SubsistenceWarning','rumour','BuildComplete']);
+ const recovery={kind:'GarrisonStarvationEnded',world_tick:5,created_at:'2026-10-18T05:00:00Z',body:{settlement_id:'a'}};
+ assert.deepEqual(mergeFeed([ordinary,recovery,hungry],rumours).map(r=>r.n?.kind||'rumour'),['rumour','BuildComplete','GarrisonStarvationEnded','GarrisonStarvationStarted']);
+});

@@ -616,6 +616,13 @@ func (h *UpkeepHandler) notifyUnitLoss(ctx context.Context, u upkeepUnitRow, wor
 	if h.hub == nil {
 		return
 	}
+	// City-level starvation transitions own ongoing land-garrison warnings.
+	// Destruction remains a separate consequence, as do field and naval losses.
+	if !disbanded && kind == "UnitAttrition" && reason == "grain_shortage" &&
+		u.status == "garrison" && u.settlementID != nil && u.category == "land" {
+		return
+	}
+
 	level := 3
 	if disbanded {
 		level = 2
@@ -865,7 +872,7 @@ func (h *UpkeepHandler) applyAttrition(ctx context.Context, u upkeepUnitRow, _ f
 	}
 	// Record the pre-loss garrison location: the last unit may now be disbanded
 	// or removed. Consumers must not reconstruct that outcome from live units.
-	if u.status == "garrison" && u.settlementID != nil && (u.unitType == "spearman" || u.unitType == "war_chariot") {
+	if u.status == "garrison" && u.settlementID != nil && u.category == "land" {
 		payload["garrison_settlement_id"] = *u.settlementID
 	}
 	_, _ = h.store.Append(ctx, u.id, events.StreamCombat, "UnitAttrition", payload, worldID, nil)

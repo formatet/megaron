@@ -1,7 +1,8 @@
+import { notificationDay, urgentNotifications } from '../notification_state.js';
 import { State } from '../../state.js';
 import { fetchAuth } from '../../api.js';
 import { updateNotifBadge } from '../chips.js';
-import { fmtAgo, notifText, notifIcon, colonyFoundedGrainLine } from '../format.js';
+import { notifText, notifIcon, colonyFoundedGrainLine } from '../format.js';
 import { currentCalendarDate, monthLabel } from '../misc.js';
 import { fmtNum } from '../fmt_num.js';
 import { openDispatchWindow } from '../dispatch_window.js';
@@ -12,7 +13,7 @@ import { renderRumourRowHTML } from './gossip.js';
 // historical Sitos kinds (no longer emitted) so real events stay visible, with a "+N —
 // click to view" drill-down per hidden kind. SubsistenceWarning is never
 // collapsed; its critical tier floats to the very top of the feed.
-const NOISY_NOTIF_KINDS = ['SitosIntervention', 'SitosFundLow'];
+const NOISY_NOTIF_KINDS = ['SitosGranaryRelease', 'SitosIntervention', 'SitosFundLow'];
 
 // Exact date, top of the drawer — the celestial widget only shows the month
 // name now (Timothy 2026-08-06); this is where the precise day/month/year
@@ -36,22 +37,23 @@ export function notifDateHeader(cal = currentCalendarDate(), state = State, show
 
 // Historical only: labels for archived food-reserve reports.
 export function hiddenNotifLabel(kind, count) {
-  const label = kind === 'SitosIntervention' ? 'food support reports' : 'food reserve warnings';
+  const label = kind === 'SitosIntervention' ? 'food support reports' : kind === 'SitosGranaryRelease' ? 'food reserve releases' : 'food reserve warnings';
   return `${fmtNum(count)} ${label} — show reports`;
 }
 
 // One list, newest first: what happened to you and what you have only heard.
 // A rumour is NOT an event — it is blurred and may be old — so it keeps its own
-// marked row ("Rumour"), never the plain event look. Critical subsistence
-// warnings still float above everything (the caller sorts them first).
+// marked row ("Rumour"), never the plain event look. The final sort gives
+// active hunger and critical subsistence priority over newer routine news.
 export function mergeFeed(notifs, rumours) {
   const stamp = x => { const t = new Date(x).getTime(); return Number.isFinite(t) ? t : 0; };
+  const urgent = urgentNotifications(notifs);
   const rows = [
     ...notifs.map((n, i) => ({ type: 'notif', idx: i, n, t: stamp(n.created_at) })),
     ...(rumours || []).map(g => ({ type: 'rumour', g, t: stamp(g.generated_at) })),
   ];
   // Stable: events keep the server's order among equal timestamps.
-  return rows.map((r, order) => ({ ...r, order })).sort((a, b) => (b.t - a.t) || (a.order - b.order));
+  return rows.map((r, order) => ({ ...r, order })).sort((a, b) => (Number(urgent.has(b.n)) - Number(urgent.has(a.n))) || (b.t - a.t) || (a.order - b.order));
 }
 
 export function notifShowKind(kind) { loadNotifDrawer(kind || null); }
@@ -92,15 +94,14 @@ export async function loadNotifDrawer(kindFilter) {
       fetchAuth(`${base}/read-all`, { method: 'POST' });
     }
 
-    // Critical SubsistenceWarnings first — a starving city must never scroll
-    // past. Stable within each partition (server orders created_at DESC).
+    // Keep API indices stable for dispatch clicks; mergeFeed applies urgency
+    // after combining notifications with rumours.
     const notifs = (data.notifications || []).slice();
     const tierOf = n => {
       if (n.kind !== 'SubsistenceWarning') return '';
       const b = typeof n.body === 'string' ? JSON.parse(n.body) : (n.body || {});
       return b.tier || '';
     };
-    notifs.sort((a, b) => (tierOf(b) === 'critical' ? 1 : 0) - (tierOf(a) === 'critical' ? 1 : 0));
 
     let html = '';
     if (kindFilter) {
@@ -110,7 +111,7 @@ export async function loadNotifDrawer(kindFilter) {
     html += mergeFeed(notifs, rumours).map(row => {
       if (row.type === 'rumour') return renderRumourRowHTML(row.g);
       const n = row.n, i = row.idx;
-      const ago = fmtAgo(n.created_at);
+      const ago = notificationDay(n);
       const body_obj = typeof n.body === 'string' ? JSON.parse(n.body) : (n.body || {});
       const text = notifText(n.kind, body_obj);
       const lvlClass = n.level <= 2 ? 'nl-urgent' : n.level === 3 ? 'nl-info' : 'nl-routine';
@@ -158,7 +159,7 @@ export async function loadNotifDrawer(kindFilter) {
         const n = notifs[Number(el.dataset.idx)];
         if (!n) return;
         const body_obj = typeof n.body === 'string' ? JSON.parse(n.body) : (n.body || {});
-        openDispatchWindow(n.kind, body_obj, fmtAgo(n.created_at));
+        openDispatchWindow(n.kind, body_obj, notificationDay(n));
       });
     });
   } catch (_) {
