@@ -505,10 +505,6 @@ body:has(.auth-page) main {
 .stat-chip strong { color:var(--accent); }
 .deposit-chip { color:var(--safe); border-color:var(--safe); }
 .msg-chip { color:var(--gold); border-color:var(--gold); text-decoration:none; cursor:pointer; }
-.loyalty-1 { color:var(--accent); border-color:var(--accent); }
-.loyalty-2 { color:var(--text-dim); }
-.loyalty-3 { color:var(--safe); border-color:var(--safe); }
-.loyalty-4 { color:var(--gold); border-color:var(--gold); }
 
 /* Settlement switcher (shown when player owns multiple settlements) */
 .sett-switcher { display:flex; gap:.3rem; flex-wrap:wrap; }

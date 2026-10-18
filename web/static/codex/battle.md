@@ -4,10 +4,10 @@
 
 A battle is not one roll. It runs over several days, and it always resolves the same way from the moment it begins. What decides it:
 
-- **How many of your men actually fight.** Only part of each side engages each round — set mostly by [[loyalty]], nudged up by the gods' favour ([[kharis]]) and by the **fortify** stance ([[stances]]). Loyal troops commit; wavering ones hold back.
+- **How many of your men actually fight.** 90% of each side engages each round. This participation is fixed for every city.
 - **What kind of men they are.** An ordinary soldier strikes once; elite infantry three times as hard; war chariots five. This is what [[bronze]] buys.
 - **Walls**, if a city is involved. A wall absorbs a fixed amount of damage each day — a shield, not a sword. **storm** halves it, at a price.
-- **When they break.** A side that has lost enough routs and withdraws with its survivors. Annihilation is the exception. You choose how much is "enough" for your whole realm under **War → Army → When to retreat** — **Hold to the last man** or **Retreat when it goes badly** (the default, determined by the troops' loyalty) — and can override it for one unit in the battle it is fighting; see [[stances]].
+- **When they break.** A side that has lost enough routs and withdraws with its survivors. Annihilation is the exception. You choose how much is "enough" for your whole realm under **War → Army → When to retreat** — **Hold to the last man** or **Retreat when it goes badly** (the default, retreating when 20% of starting strength remains) — and can override it for one unit in the battle it is fighting; see [[stances]].
 
 ## After the battle
 

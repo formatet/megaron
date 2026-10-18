@@ -35,7 +35,7 @@ import {
 } from './ui/marchctx.js';
 import {
   loadCityDrawer, cycleCityView, saveLaborAlloc, startBuild,
-  loadTicklog, cancelBuild, slaughterLivestock, sendGift,
+  loadTicklog, cancelBuild, slaughterLivestock,
   onCityBuildTypeChange,
 } from './ui/drawers/city.js';
 import {
@@ -212,7 +212,6 @@ Object.assign(window, {
   resumeStandingOrder,
   saveLaborAlloc,
   saveRetreatDefault,
-  sendGift,
   sendMarch,
   sendMessengerFromInspect,
   nameStorm,

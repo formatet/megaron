@@ -1,7 +1,7 @@
 import { showInlineResult } from '../inline_result.js';
 import { State, activeCitySettlement } from '../../state.js';
 import { fetchAuth } from '../../api.js';
-import { arrivalHTML, fmtClock } from '../time.js';
+import { arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
 import { esc, formatApiError } from '../format.js';
 import { unitTypeLabel } from '../actornames.js';
@@ -21,91 +21,6 @@ export function cycleCityView(dir) {
   State.cityViewID = mine[idx].id;
   State.dirty = true; // the map's catchment tint follows the shown city
   loadCityDrawer();
-}
-
-// ── Loyalty log ────────────────────────────────────────────────────────────
-// Pure string builder (same pattern as economy.js's goodsRateCell) so it can
-// be unit-tested without a DOM. entries: [{loyalty_delta, reason, created_at}],
-// server already orders them newest-first (settlement.go LoyaltyLog, LIMIT 50).
-export function loyaltyLogRowsHTML(entries) {
-  if (!entries.length) return '<p class="empty-state">No loyalty changes yet.</p>';
-  return `<table class="goods-mini">
-    <tr style="color:var(--text-dim);font-size:.7rem"><td>Δ</td><td>Reason</td><td>When</td></tr>
-    ${entries.map(e => {
-      const delta = e.loyalty_delta || 0;
-      const sign  = delta > 0 ? '+' : '';
-      const color = delta > 0 ? 'var(--safe)' : (delta < 0 ? 'var(--accent)' : 'var(--text-dim)');
-      return `<tr>
-        <td style="color:${color};font-weight:bold">${sign}${fmtNum(delta)}</td>
-        <td>${esc(e.reason || '')}</td>
-        <td style="color:var(--text-dim);font-size:.7rem;white-space:nowrap">${esc(fmtClock(new Date(e.created_at).getTime()))}</td>
-      </tr>`;
-    }).join('')}
-  </table>`;
-}
-
-// ── Gift ─────────────────────────────────────────────────────────────────
-// keryx has had `gift` (cmd_goods.go) since before this slice; the web had
-// zero fetchAuth call sites for it (megaron_verblista.md). Distinct from
-// Economy → Transfer (economy.js): gift always sources from the Wanax's OWN
-// CAPITAL (never a chosen province — no "From" picker), can combine silver
-// AND grain in one send, and its point is a loyalty gesture, not logistics —
-// settlement.go's Gift handler grants +1 loyalty at a 50+ silver-equivalent
-// (silver + grain×0.5), applied at SEND; the goods themselves arrive later as
-// a separate, physical (interceptable) caravan. That send/arrival split is
-// why this lives next to the Loyalty log it feeds, not in Economy, which only
-// ever links to a single settlement's City drawer rather than acting on one
-// directly (economy.js's openCitySettlement comment). Pure string builder,
-// same pattern as loyaltyLogRowsHTML above — testable without a DOM.
-export function giftFormHTML(settlementID) {
-  const inputStyle = 'width:100%;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .3rem';
-  return `
-    <div style="display:flex;flex-direction:column;gap:.35rem;font-size:.78rem">
-      <label>Silver <input type="number" id="city-gift-silver" min="0" style="${inputStyle}"></label>
-      <label>Grain <input type="number" id="city-gift-grain" min="0" style="${inputStyle}"></label>
-      <button class="btn-primary btn-small" onclick="sendGift('${settlementID}')">Send gift →</button>
-      <div id="city-gift-result" class="action-result"></div>
-      <p style="color:var(--text-dim);font-size:.68rem;margin:0">Fifty or more in silver value (grain counts as half) grants one loyalty. Physical caravan — can be intercepted en route.</p>
-    </div>`;
-}
-
-export async function sendGift(settlementID) {
-  const silver = parseFloat(document.getElementById('city-gift-silver')?.value || '0');
-  const grain = parseFloat(document.getElementById('city-gift-grain')?.value || '0');
-  const resultEl = document.getElementById('city-gift-result');
-  if (!resultEl) return;
-  if (silver <= 0 && grain <= 0) {
-    resultEl.style.color = 'var(--accent)';
-    resultEl.textContent = 'Silver or grain required.';
-    return;
-  }
-  resultEl.textContent = '';
-  const r = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/settlements/${settlementID}/gift`, {
-    method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ silver, grain }),
-  });
-  const d = await r.json().catch(() => ({}));
-  if (r.ok) {
-    resultEl.style.color = 'var(--safe)';
-    resultEl.textContent = d.loyalty_delta > 0 ? `Gift sent — loyalty +${fmtNum(d.loyalty_delta)}.` : 'Gift sent.';
-    const silverInp = document.getElementById('city-gift-silver');
-    const grainInp = document.getElementById('city-gift-grain');
-    if (silverInp) silverInp.value = '';
-    if (grainInp) grainInp.value = '';
-    // Loyalty is granted at SEND, not on the caravan's later arrival
-    // (settlement.go Gift handler comment) — the log already has the new
-    // entry, so refresh it now rather than making the Wanax reopen the drawer.
-    const loyaltySec = document.getElementById('city-loyalty-sec');
-    if (loyaltySec) {
-      try {
-        const logResp = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/settlements/${settlementID}/loyalty-log`);
-        if (logResp.ok) loyaltySec.innerHTML = loyaltyLogRowsHTML(await logResp.json());
-      } catch (_) { /* keep the current log on fetch failure */ }
-    }
-  } else {
-    resultEl.style.color = 'var(--accent)';
-    resultEl.textContent = formatApiError(d, 'Gift failed.');
-  }
 }
 
 export async function saveLaborAlloc(provinceID) {
@@ -286,39 +201,6 @@ export async function loadCityDrawer() {
         ${(prodRows||consRows) ? `<table class="goods-mini" style="margin-top:.3rem">${prodRows}${consRows}</table>` : ''}`;
     } else {
       document.getElementById('city-lasttick-sec').innerHTML = '<p class="empty-state">—</p>';
-    }
-
-    // ── Lojalitetslogg ──────────────────────────────────────────────────────
-    // `pd.id` is the SETTLEMENT id (province ≠ settlement, CLAUDE.md) — the
-    // loyalty-log endpoint is settlement-scoped, unlike the /provinces/{id}
-    // calls above, so `capital.id` (a province id) would be the wrong id here.
-    // Ownership-checked server-side (403 if not your city); loadCityDrawer
-    // only ever shows the Wanax's own settlements, so a 403 here would mean
-    // something else went stale — fail quietly, no raw response logged.
-    const loyaltySec = document.getElementById('city-loyalty-sec');
-    if (loyaltySec) {
-      if (pd) {
-        try {
-          const logResp = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/settlements/${pd.id}/loyalty-log`);
-          loyaltySec.innerHTML = logResp.ok
-            ? loyaltyLogRowsHTML(await logResp.json())
-            : '<p class="empty-state">Could not load.</p>';
-        } catch (_) {
-          loyaltySec.innerHTML = '<p class="empty-state">Could not load.</p>';
-        }
-      } else {
-        loyaltySec.innerHTML = '<p class="empty-state">—</p>';
-      }
-    }
-
-    // ── Gift ──────────────────────────────────────────────────────────────
-    // Only rendered (dsec above) for a colony, not the capital itself — gift
-    // always sources from the Wanax's capital (settlement.go Gift handler
-    // resolves it server-side, `is_capital = true`), so gifting the capital to
-    // itself is meaningless and this section names no source, only the amount.
-    const giftSec = document.getElementById('city-gift-sec');
-    if (giftSec) {
-      giftSec.innerHTML = pd ? giftFormHTML(pd.id) : '<p class="empty-state">—</p>';
     }
 
     const lp = pd ? (pd.labor_pool || 0) : 0;
@@ -597,7 +479,7 @@ function fmtBuildCost(entry) {
 
 // Construct dropdown <option> list, built from the building catalogue instead
 // of a hardcoded list. Pure string builder — no DOM/fetch — testable the same
-// way loyaltyLogRowsHTML above is. `catalogue` is the array from
+// as other pure HTML builders. `catalogue` is the array from
 // getBuildingCatalogue(), already sorted alphabetically by type (server does
 // the sort). Display name comes from the existing _BLD_LBL map (unchanged).
 export function buildingOptionsHTML(catalogue) {

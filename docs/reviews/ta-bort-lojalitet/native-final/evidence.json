@@ -1,0 +1,32 @@
+{
+  "commit": "19da729d5c1abda23a59f1862891d9f634927e95",
+  "dirty": false,
+  "dirty_scope": "tracked server/web/tools versus HEAD",
+  "health": {
+    "commit": "19da729d5c1abda23a59f1862891d9f634927e95",
+    "migration": 185,
+    "status": "ok"
+  },
+  "retreat_default": {
+    "retreat_at_loss": null,
+    "hold_to_last_man": false,
+    "when_losing": true
+  },
+  "screens": {
+    "1280": {
+      "city": "MORE\nPEOPLE AT WORK\nIn service\n1,000\nCitizens (1 = 100 people)\n10\nDEVOTION\n\nDevotion (cult): needs a temple here \u2014 build one first.\n\nFOOD DETAILS\nFood for people\ngrain 6.2 + fish 0 \u2212 people eat 5 = 1.2 net before army\nArmy food\neats 1 grain per day \u2192 food net 0.2 after army\nFood citizens\n2 needed \u00b7 2 placed\n\n1 citizen = 100 people. Estimate uses the best food slots for people; the army needs grain separately.\n\nAutomatic food: 0.50 grain + 0.00 fish per day without placed citizens (nearby ground 0.50 grain; 0 people outside whole citizens: 0.00 grain + 0.00 fish, a fraction of the best food worker).\n\nCity stocks\n240 days at current consumption \u00b7 grain + fish\nLAST DAY\nDay\n#0\ngrain\t+6.2\ngrain\t\u22125\nDAILY HISTORY SHOW RECENT DAYS",
+      "retreat_options": [
+        "Retreat when it goes badly",
+        "Hold to the last man"
+      ]
+    },
+    "390": {
+      "city": "MORE\nPEOPLE AT WORK\nIn service\n1,000\nCitizens (1 = 100 people)\n10\nDEVOTION\n\nDevotion (cult): needs a temple here \u2014 build one first.\n\nFOOD DETAILS\nFood for people\ngrain 6.2 + fish 0 \u2212 people eat 5 = 1.2 net before army\nArmy food\neats 1 grain per day \u2192 food net 0.2 after army\nFood citizens\n2 needed \u00b7 2 placed\n\n1 citizen = 100 people. Estimate uses the best food slots for people; the army needs grain separately.\n\nAutomatic food: 0.50 grain + 0.00 fish per day without placed citizens (nearby ground 0.50 grain; 0 people outside whole citizens: 0.00 grain + 0.00 fish, a fraction of the best food worker).\n\nCity stocks\n240 days at current consumption \u00b7 grain + fish\nLAST DAY\nDay\n#0\ngrain\t+6.2\ngrain\t\u22125\nDAILY HISTORY SHOW RECENT DAYS",
+      "retreat_options": [
+        "Retreat when it goes badly",
+        "Hold to the last man"
+      ]
+    }
+  },
+  "page_errors": []
+}

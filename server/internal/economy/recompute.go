@@ -308,8 +308,7 @@ func GrainConsumptionPerTick(pop int) float64 {
 // every read-only surface to go through instead of recomputing
 // laborPool × GrainConsumptionPerCitizenPerTick itself. api/handlers/province.go
 // used to do that multiplication twice (the food breakdown and the
-// ticklog reconstruction), and internal/loyalty/welfare.go re-derived netto
-// from what used to be an already-netted rate — both now go through here.
+// ticklog reconstruction); both now go through here.
 //
 // Since D1, settlement_goods.rate for grain is raw, un-netted production: the
 // population's food is debited once a day from the STOCK by FoodTick, not

@@ -10,7 +10,7 @@ import (
 )
 
 // PassiveGovernorTick runs the daily logic for AI-governed settlements.
-// Upkeep and loyalty are handled by their respective scheduled handlers. This
+// Upkeep is handled by its scheduled handler. This
 // hook must not spend silver without an implemented action and its outcome.
 func PassiveGovernorTick(ctx context.Context, pool *pgxpool.Pool, settlementID, worldID uuid.UUID) error {
 	// Verify settlement is AI-governed.

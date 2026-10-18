@@ -1,7 +1,7 @@
 package combat
 
 // Realm-wide retreat default (mig 145, retreat_default.go): it starts as
-// "by loyalty" (today's behaviour), can be set and read back, refuses
+// "when losing" (today's behaviour), can be set and read back, refuses
 // nonsense, is copied onto every participant row a Wanax's unit gets when it
 // enters a battle (start AND join), and the mid-battle per-unit override
 // still edits that copy without touching the default.
@@ -43,7 +43,7 @@ func participantOrders(t *testing.T, pool *pgxpool.Pool, unitID uuid.UUID) stand
 
 func f64(v float64) *float64 { return &v }
 
-func TestRetreatDefault_FreshWanaxIsByLoyalty(t *testing.T) {
+func TestRetreatDefault_FreshWanaxIsWhenLosing(t *testing.T) {
 	pool := testPool(t)
 	f := newBattleFixture(t, pool)
 	joinWorld(t, pool, f.worldID, f.defender)
@@ -52,8 +52,8 @@ func TestRetreatDefault_FreshWanaxIsByLoyalty(t *testing.T) {
 	if err != nil {
 		t.Fatalf("LoadRetreatDefault: %v", err)
 	}
-	if !d.ByLoyalty() {
-		t.Errorf("fresh default = %+v, want by loyalty (no threshold, no hold)", d)
+	if !d.WhenLosing() {
+		t.Errorf("fresh default = %+v, want when losing (no threshold, no hold)", d)
 	}
 }
 
@@ -67,7 +67,7 @@ func TestRetreatDefault_SetThenLoadAndValidation(t *testing.T) {
 		t.Fatal("retreat_at_loss guard missing in realm setter")
 	}
 	d, err := LoadRetreatDefault(ctx, pool, f.worldID, f.defender)
-	if err != nil || !d.ByLoyalty() {
+	if err != nil || !d.WhenLosing() {
 		t.Fatalf("rejected legacy request changed realm mode: %+v %v", d, err)
 	}
 
@@ -79,12 +79,12 @@ func TestRetreatDefault_SetThenLoadAndValidation(t *testing.T) {
 		t.Fatalf("after set hold: %+v, want hold only (the old threshold must not linger)", d)
 	}
 
-	if _, err := SetRetreatDefault(ctx, pool, f.worldID, f.defender, RetreatDefaultOrder{ByLoyalty: true}); err != nil {
-		t.Fatalf("set by loyalty: %v", err)
+	if _, err := SetRetreatDefault(ctx, pool, f.worldID, f.defender, RetreatDefaultOrder{WhenLosing: true}); err != nil {
+		t.Fatalf("set when losing: %v", err)
 	}
 	d, _ = LoadRetreatDefault(ctx, pool, f.worldID, f.defender)
-	if !d.ByLoyalty() {
-		t.Fatalf("after reset: %+v, want by loyalty", d)
+	if !d.WhenLosing() {
+		t.Fatalf("after reset: %+v, want when losing", d)
 	}
 
 	bad := []struct {
@@ -106,8 +106,8 @@ func TestRetreatDefault_SetThenLoadAndValidation(t *testing.T) {
 	}
 	// A refused write must leave the stored value alone.
 	d, _ = LoadRetreatDefault(ctx, pool, f.worldID, f.defender)
-	if !d.ByLoyalty() {
-		t.Errorf("after refused writes: %+v, want still by loyalty", d)
+	if !d.WhenLosing() {
+		t.Errorf("after refused writes: %+v, want still when losing", d)
 	}
 
 	// Not joined: no guessed default, a 404.
@@ -128,7 +128,7 @@ func TestRetreatDefault_SeedsParticipantsOnStartAndJoin(t *testing.T) {
 	joinWorld(t, pool, f.worldID, f.attacker)
 	joinWorld(t, pool, f.worldID, f.defender)
 
-	if _, err := SetRetreatDefault(ctx, pool, f.worldID, f.attacker, RetreatDefaultOrder{ByLoyalty: true}); err != nil {
+	if _, err := SetRetreatDefault(ctx, pool, f.worldID, f.attacker, RetreatDefaultOrder{WhenLosing: true}); err != nil {
 		t.Fatalf("set attacker default: %v", err)
 	}
 	if _, err := SetRetreatDefault(ctx, pool, f.worldID, f.defender, RetreatDefaultOrder{HoldToLastMan: true}); err != nil {
@@ -142,7 +142,7 @@ func TestRetreatDefault_SeedsParticipantsOnStartAndJoin(t *testing.T) {
 	_ = loadBattleID(t, pool, f.worldID, 1, 0)
 
 	if so := participantOrders(t, pool, attackerUnitID); so.RetreatAtLoss != nil || so.HoldToLastMan {
-		t.Errorf("attacker seeded with %+v, want by loyalty", so)
+		t.Errorf("attacker seeded with %+v, want when losing", so)
 	}
 	if so := participantOrders(t, pool, defenderUnitID); !so.HoldToLastMan || so.RetreatAtLoss != nil {
 		t.Errorf("defender seeded with %+v, want hold_to_last_man", so)
@@ -153,11 +153,11 @@ func TestRetreatDefault_SeedsParticipantsOnStartAndJoin(t *testing.T) {
 	joinerID := mkFieldAttacker(t, pool, f, 40)
 	runFieldArrival(t, pool, h, f.worldID, joinerID)
 	if so := participantOrders(t, pool, joinerID); so.RetreatAtLoss != nil || so.HoldToLastMan {
-		t.Errorf("joiner seeded with %+v, want by loyalty", so)
+		t.Errorf("joiner seeded with %+v, want when losing", so)
 	}
 }
 
-func TestRetreatDefault_OwnerWithoutRecordGetsByLoyalty(t *testing.T) {
+func TestRetreatDefault_OwnerWithoutRecordGetsWhenLosing(t *testing.T) {
 	pool := testPool(t)
 	f := newBattleFixture(t, pool) // fixture players never join: no player_world_records row
 
@@ -168,7 +168,7 @@ func TestRetreatDefault_OwnerWithoutRecordGetsByLoyalty(t *testing.T) {
 
 	for _, id := range []uuid.UUID{attackerUnitID, defenderUnitID} {
 		if so := participantOrders(t, pool, id); so.RetreatAtLoss != nil || so.HoldToLastMan {
-			t.Errorf("unit %s seeded with %+v, want empty (by loyalty)", id, so)
+			t.Errorf("unit %s seeded with %+v, want empty (when losing)", id, so)
 		}
 	}
 }
@@ -189,12 +189,12 @@ func TestRetreatDefault_MidBattleOverrideEditsTheCopyOnly(t *testing.T) {
 
 	if _, err := SetStandingOrders(ctx, pool, h.eventStore, StandingOrdersOrder{
 		WorldID: f.worldID, PlayerID: f.defender, UnitID: defenderUnitID,
-		ByLoyalty: true,
+		WhenLosing: true,
 	}); err != nil {
 		t.Fatalf("SetStandingOrders: %v", err)
 	}
 	if so := participantOrders(t, pool, defenderUnitID); so.HoldToLastMan || so.RetreatAtLoss != nil {
-		t.Errorf("after override: %+v, want by loyalty", so)
+		t.Errorf("after override: %+v, want when losing", so)
 	}
 	d, _ := LoadRetreatDefault(ctx, pool, f.worldID, f.defender)
 	if !d.HoldToLastMan {

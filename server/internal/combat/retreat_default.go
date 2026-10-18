@@ -13,7 +13,7 @@ package combat
 // applies at once (no Runner) — command is still never instant, because it
 // only reaches men who enter a battle after the change.
 //
-// Two player modes: by loyalty ('{}') or hold to the last man. The engine
+// Two player modes: when losing ('{}') or hold to the last man. The engine
 // still understands legacy fixed thresholds, but players cannot set them.
 
 import (
@@ -25,21 +25,21 @@ import (
 )
 
 // RetreatDefault is one Wanax's realm-wide retreat default. RetreatAtLoss nil
-// and HoldToLastMan false together mean "by loyalty".
+// and HoldToLastMan false together mean "when losing".
 type RetreatDefault struct {
 	RetreatAtLoss *float64
 	HoldToLastMan bool
 }
 
-// ByLoyalty reports whether the default is the loyalty-derived threshold.
-func (d RetreatDefault) ByLoyalty() bool { return d.RetreatAtLoss == nil && !d.HoldToLastMan }
+// WhenLosing reports whether the default is the fixed threshold.
+func (d RetreatDefault) WhenLosing() bool { return d.RetreatAtLoss == nil && !d.HoldToLastMan }
 
 // RetreatDefaultOrder is a request to change the default. Exactly one of the
 // two modes must be selected.
 type RetreatDefaultOrder struct {
 	RetreatAtLoss *float64
 	HoldToLastMan bool
-	ByLoyalty     bool
+	WhenLosing    bool
 }
 
 // LoadRetreatDefault reads one Wanax's default in one world. A Wanax who has
@@ -59,7 +59,7 @@ func LoadRetreatDefault(ctx context.Context, pool *pgxpool.Pool, worldID, player
 // SetRetreatDefault validates and stores a new default. Any *OrderReject
 // return carries the HTTP status + reason for the handler to answer with.
 func SetRetreatDefault(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uuid.UUID, o RetreatDefaultOrder) (RetreatDefault, error) {
-	if rej := ValidateRetreatMode(o.RetreatAtLoss, o.HoldToLastMan, o.ByLoyalty); rej != nil {
+	if rej := ValidateRetreatMode(o.RetreatAtLoss, o.HoldToLastMan, o.WhenLosing); rej != nil {
 		return RetreatDefault{}, rej
 	}
 
@@ -84,8 +84,8 @@ func SetRetreatDefault(ctx context.Context, pool *pgxpool.Pool, worldID, playerI
 
 // seedStandingOrdersSQL is the standing_orders value a new battle_participants
 // row is born with (startBattle and joinBattle, battle.go — both bind $3 =
-// owner id and $7 = world id): the owner's realm-wide default, or '{}' (by
-// loyalty) when the owner has no record in this world — an NPC side, or a
+// owner id and $7 = world id): the owner's realm-wide default, or '{}' (when
+// losing) when the owner has no record in this world — an NPC side, or a
 // unit whose Wanax never joined. Seeding on JOIN as well as on start is
 // deliberate: a reinforcement entering a fight under way is entering a battle
 // too, and silently ignoring the default for it would be a difference the

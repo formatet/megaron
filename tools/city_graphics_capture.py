@@ -18,7 +18,7 @@ for i,(dq,dr) in enumerate(offs,1):
  placed=3 if (dq,dr)==(1,0) else 0
  hexes.append(dict(hex_ordinal=i,hex_q=cq+dq,hex_r=cr+dr,terrain=t['terrain'],goods=[dict(good_key=good,cap=6,placed=placed,placed_ordinals=list(range(placed)),rate_per_tick=placed*2.,marginal_yield=2.)]))
 blds=[dict(type='farm',level=1,hex_q=10,hex_r=32),dict(type='farm',level=2,hex_q=10,hex_r=31),dict(type='market',level=1),dict(type='barracks',level=1),dict(type='harbour',level=1)]
-sett=dict(id=city['settlement_id'],population=1000,labor_pool=10,walls=1,buildings=blds,build_queue=[],training_units=[],army={},loyalty=4)
+sett=dict(id=city['settlement_id'],population=1000,labor_pool=10,walls=1,buildings=blds,build_queue=[],training_units=[],army={})
 opts=dict(hexes=hexes,buildings=[],total_gubbar=10,pool_size=7)
 units=[]
 # Real geography, synthesized positioned actors: separated within the same land region.
@@ -76,7 +76,6 @@ with sync_playwright() as p:
   url=route.request.url
   if url.endswith('/placement-options'):data=opts
   elif url.endswith('/goods'):data=[dict(key='grain',amount=200,rate_per_tick=6,idle_citizens=7)]
-  elif url.endswith('/loyalty-log'):data=[]
   elif '/provinces/' in url:data={'settlement':sett}
   else:data=[]
   route.fulfill(status=200,content_type='application/json',body=json.dumps(data))

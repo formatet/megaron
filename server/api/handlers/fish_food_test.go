@@ -31,15 +31,14 @@ func TestColonizePreview_FishFoodWarning(t *testing.T) {
 	}
 	var raw struct {
 		Grain struct {
-			Fish    float64 `json:"fish_per_tick"`
-			Net     float64 `json:"food_net_per_tick"`
-			Warning string  `json:"loyalty_warning"`
+			Fish float64 `json:"fish_per_tick"`
+			Net  float64 `json:"food_net_per_tick"`
 		}
 	}
 	if err := json.Unmarshal(rec.Body.Bytes(), &raw); err != nil {
 		t.Fatal(err)
 	}
-	if raw.Grain.Fish < 5 || raw.Grain.Net < 0 || raw.Grain.Warning != "" {
+	if raw.Grain.Fish < 5 || raw.Grain.Net < 0 {
 		t.Fatalf("fish-fed zero-grain-stock forecast falsely warns: %s", rec.Body.String())
 	}
 }

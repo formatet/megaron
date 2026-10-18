@@ -1,0 +1,2 @@
+Retreat default: Hold to the last man
+Applies to units entering a battle from now on; battles under way keep what they had.

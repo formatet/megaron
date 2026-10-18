@@ -18,7 +18,6 @@ export const VERB_EVENTS = [
   {"verb": "gift/tribute", "method": "POST", "route": "/api/v1/worlds/:world/provinces/:province/trade", "event": "gift_sent"},
   {"verb": "abandon", "method": "POST", "route": "/api/v1/worlds/:world/settlements/:settlement/abandon", "event": "settlement_abandoned"},
   {"verb": "rite", "method": "POST", "route": "/api/v1/worlds/:world/settlements/:settlement/rite", "event": "rite_performed"},
-  {"verb": "gift", "method": "POST", "route": "/api/v1/worlds/:world/settlements/:settlement/gift", "event": "loyalty_gift_sent"},
   {"verb": "occupation-order", "method": "POST", "route": "/api/v1/worlds/:world/settlements/:settlement/occupation-order", "event": "occupation_order_sent"},
   {"verb": "march", "method": "POST", "route": "/api/v1/worlds/:world/units/:unit/march", "event": "march_sent"},
   {"verb": "recall", "method": "POST", "route": "/api/v1/worlds/:world/units/:unit/recall", "event": "recall_sent"},

@@ -110,7 +110,6 @@ func newRootCommand() *cobra.Command {
 		routeResumeCmd(),
 		routeDeleteCmd(),
 		cargoCmd(),
-		giftCmd(),
 		inboxCmd(),
 		outboxCmd(),
 		replyCmd(),

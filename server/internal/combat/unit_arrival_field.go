@@ -9,7 +9,7 @@ package combat
 // (2026-09-02) since nothing ever wrote them. The soak report's "Eastern
 // Outpost" was in fact this: an enemy unit parked on open ground). This file
 // adds the missing combat resolution for that case, mirroring resolveCombat's
-// strength/fortune/loyalty math (in unit_arrival.go) but without a wall bonus
+// strength and fortune math (in unit_arrival.go) but without a wall bonus
 // (nothing to besiege) or a settlement to capture — a win destroys the
 // defending field units outright, a loss routs/destroys the attacker exactly
 // like resolveCombat's applyDefenderWins path.

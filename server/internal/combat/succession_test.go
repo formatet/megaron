@@ -2,7 +2,7 @@ package combat
 
 // Metropolis-succession and game-over (Timothy 2026-07-10). Exercises the shared
 // handleOwnerCityLoss directly: losing a capital while a colony remains promotes
-// the highest-loyalty survivor (no dispossession); losing the last city ends the
+// the most populous survivor (no dispossession); losing the last city ends the
 // game (dispossessed + last_settlement_id anchored for the epitaph). Skips when
 // DATABASE_URL is unset, like the other DB integration tests.
 
@@ -49,24 +49,28 @@ func TestSuccession_PromoteThenGameOver(t *testing.T) {
 		}
 		return id
 	}
-	mkSettlement := func(prov uuid.UUID, name string, capital bool, loyalty, pop int) uuid.UUID {
-		var id uuid.UUID
+	// idFirstByte pins where the id sorts, so the id tie-break can never pick
+	// the right city by accident.
+	mkSettlement := func(prov uuid.UUID, name string, capital bool, pop int, idFirstByte byte) uuid.UUID {
+		id := uuid.New()
+		id[0] = idFirstByte
 		if err := pool.QueryRow(ctx,
 			`INSERT INTO settlements
-			   (world_id, province_id, name, culture_id, owner_id, is_capital, state, population, loyalty)
-			 VALUES ($1, $2, $3, 'akhaier', $4, $5, 'active', $6, $7) RETURNING id`,
-			worldID, prov, name, playerID, capital, pop, loyalty,
+			   (id, world_id, province_id, name, culture_id, owner_id, is_capital, state, population)
+			 VALUES ($7, $1, $2, $3, 'akhaier', $4, $5, 'active', $6) RETURNING id`,
+			worldID, prov, name, playerID, capital, pop, id,
 		).Scan(&id); err != nil {
 			t.Fatalf("create settlement %s: %v", name, err)
 		}
 		return id
 	}
 
-	// Capital (low loyalty) plus two colonies — the higher-loyalty colony should win
-	// the succession even though the other has more people.
-	capital := mkSettlement(mkProvince(0, 0), "Tiryns", true, 2, 5000)
-	richColony := mkSettlement(mkProvince(3, 0), "Nafplio", false, 3, 3000)
-	loyalColony := mkSettlement(mkProvince(6, 0), "Asine", false, 4, 800)
+	// Capital plus two colonies — the larger colony should win
+	// the succession because it has more people, although the smaller one
+	// has the lower id.
+	capital := mkSettlement(mkProvince(0, 0), "Tiryns", true, 5000, 0x80)
+	richColony := mkSettlement(mkProvince(3, 0), "Nafplio", false, 800, 0x00)
+	largeColony := mkSettlement(mkProvince(6, 0), "Asine", false, 3000, 0xff)
 
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO player_world_records (player_id, world_id, settlement_id, status)
@@ -76,7 +80,7 @@ func TestSuccession_PromoteThenGameOver(t *testing.T) {
 		t.Fatalf("create player_world_records: %v", err)
 	}
 
-	// ── 1. Capital falls, colonies remain → promote the loyal colony, no game over ──
+	// ── 1. Capital falls, colonies remain → promote the larger colony, no game over ──
 	tx, err := pool.Begin(ctx)
 	if err != nil {
 		t.Fatalf("begin tx1: %v", err)
@@ -98,14 +102,14 @@ func TestSuccession_PromoteThenGameOver(t *testing.T) {
 		t.Errorf("gameOver = true after capital fell with colonies remaining; want false")
 	}
 
-	var loyalIsCapital, richIsCapital bool
-	_ = pool.QueryRow(ctx, `SELECT is_capital FROM settlements WHERE id=$1`, loyalColony).Scan(&loyalIsCapital)
+	var largeIsCapital, richIsCapital bool
+	_ = pool.QueryRow(ctx, `SELECT is_capital FROM settlements WHERE id=$1`, largeColony).Scan(&largeIsCapital)
 	_ = pool.QueryRow(ctx, `SELECT is_capital FROM settlements WHERE id=$1`, richColony).Scan(&richIsCapital)
-	if !loyalIsCapital {
-		t.Errorf("highest-loyalty colony (Asine) was not promoted to capital")
+	if !largeIsCapital {
+		t.Errorf("most populous colony (Asine) was not promoted to capital")
 	}
 	if richIsCapital {
-		t.Errorf("lower-loyalty colony (Nafplio) was wrongly promoted to capital")
+		t.Errorf("smaller colony (Nafplio) was wrongly promoted to capital")
 	}
 
 	var status string
@@ -119,7 +123,7 @@ func TestSuccession_PromoteThenGameOver(t *testing.T) {
 	if status != "active" {
 		t.Errorf("status = %q after promotion; want active", status)
 	}
-	if recSettlement == nil || *recSettlement != loyalColony {
+	if recSettlement == nil || *recSettlement != largeColony {
 		t.Errorf("records.settlement_id not repointed to the promoted colony")
 	}
 
@@ -139,8 +143,8 @@ func TestSuccession_PromoteThenGameOver(t *testing.T) {
 
 	// Now the promoted capital is the last city — its fall is game over.
 	tx3, _ := pool.Begin(ctx)
-	_, _ = tx3.Exec(ctx, `UPDATE settlements SET owner_id=NULL, state='collapsed' WHERE id=$1`, loyalColony)
-	over3, err := handleOwnerCityLoss(ctx, tx3, playerID, worldID, loyalColony)
+	_, _ = tx3.Exec(ctx, `UPDATE settlements SET owner_id=NULL, state='collapsed' WHERE id=$1`, largeColony)
+	over3, err := handleOwnerCityLoss(ctx, tx3, playerID, worldID, largeColony)
 	if err != nil {
 		_ = tx3.Rollback(ctx)
 		t.Fatalf("handleOwnerCityLoss (last city): %v", err)
@@ -161,7 +165,7 @@ func TestSuccession_PromoteThenGameOver(t *testing.T) {
 	if finalStatus != "dispossessed" {
 		t.Errorf("status = %q after last city fell; want dispossessed", finalStatus)
 	}
-	if lastSettlement == nil || *lastSettlement != loyalColony {
+	if lastSettlement == nil || *lastSettlement != largeColony {
 		t.Errorf("last_settlement_id not anchored to the fallen last city")
 	}
 }

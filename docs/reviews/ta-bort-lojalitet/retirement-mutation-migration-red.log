@@ -1,0 +1,6 @@
+» färsk DB på migration 185 · commit df98d5ed+ändringar
+--- FAIL: TestRemoveLoyaltyMigrationPreservesOtherStateAndAudit (0.02s)
+    loyalty_retirement_test.go:132: wrong retirement: done0 failed4 food1
+FAIL
+FAIL	formatet/megaron/server/internal/events	0.024s
+FAIL

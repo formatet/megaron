@@ -1,0 +1,8 @@
+» färsk DB på migration 185 · commit df98d5ed+ändringar
+2026/10/18 17:23:45 INFO upkeep: silver desertion unit=c686ecb3-4dba-4b60-b2ff-0e68613cc17b lost=20 disbanded=false
+2026/10/18 17:23:45 INFO upkeep: silver desertion unit=3a77309b-8633-409b-8e6f-d94f1964e997 lost=20 disbanded=false
+--- FAIL: TestUnpaidUpkeepHasFixedDesertionStep (0.04s)
+    fixed_combat_test.go:137: units with fixed baseline desertion=0 want2
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.043s
+FAIL

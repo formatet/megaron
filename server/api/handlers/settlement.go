@@ -18,11 +18,9 @@ import (
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/hexgrid"
-	"formatet/megaron/server/internal/loyalty"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/tick"
-	"formatet/megaron/server/internal/transport"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -58,7 +56,7 @@ func (h *SettlementHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT id, province_id, name, culture_id, control_type, loyalty, loyalty_trend,
+		`SELECT id, province_id, name, culture_id, control_type,
 		        wall_level, is_capital, state, population, updated_at
 		 FROM settlements
 		 WHERE world_id = $1 AND owner_id = $2
@@ -72,24 +70,22 @@ func (h *SettlementHandler) List(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type item struct {
-		ID           uuid.UUID `json:"id"`
-		ProvinceID   uuid.UUID `json:"province_id"`
-		Name         string    `json:"name"`
-		Culture      string    `json:"culture"`
-		ControlType  string    `json:"control_type"`
-		Loyalty      int       `json:"loyalty"`
-		LoyaltyTrend string    `json:"loyalty_trend"`
-		WallLevel    int       `json:"wall_level"`
-		IsCapital    bool      `json:"is_capital"`
-		State        string    `json:"state"`
-		Population   int       `json:"population"`
-		UpdatedAt    time.Time `json:"updated_at"`
+		ID          uuid.UUID `json:"id"`
+		ProvinceID  uuid.UUID `json:"province_id"`
+		Name        string    `json:"name"`
+		Culture     string    `json:"culture"`
+		ControlType string    `json:"control_type"`
+		WallLevel   int       `json:"wall_level"`
+		IsCapital   bool      `json:"is_capital"`
+		State       string    `json:"state"`
+		Population  int       `json:"population"`
+		UpdatedAt   time.Time `json:"updated_at"`
 	}
 	var result []item
 	for rows.Next() {
 		var s item
 		if err := rows.Scan(&s.ID, &s.ProvinceID, &s.Name, &s.Culture, &s.ControlType,
-			&s.Loyalty, &s.LoyaltyTrend, &s.WallLevel, &s.IsCapital, &s.State,
+			&s.WallLevel, &s.IsCapital, &s.State,
 			&s.Population, &s.UpdatedAt); err == nil {
 			result = append(result, s)
 		}
@@ -472,8 +468,6 @@ func (h *SettlementHandler) Get(w http.ResponseWriter, r *http.Request) {
 		"name":                sett.Name,
 		"culture":             sett.CultureID,
 		"control_type":        sett.ControlType,
-		"loyalty":             sett.Loyalty,
-		"loyalty_trend":       sett.LoyaltyTrend,
 		"wall_level":          sett.WallLevel,
 		"is_capital":          sett.IsCapital,
 		"state":               sett.State,
@@ -497,233 +491,10 @@ func (h *SettlementHandler) Get(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, resp)
 }
 
-// Gift handles POST /worlds/:worldID/settlements/:settlementID/gift.
-// The caller sends gold and food from their capital to a target colony to boost loyalty.
+// Gift is a tombstone for the retired own-colony loyalty gesture.
+// Logistics uses province trade/transfer; foreign gifts use the same physical transport.
 func (h *SettlementHandler) Gift(w http.ResponseWriter, r *http.Request) {
-	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "invalid world ID")
-		return
-	}
-	targetID, err := uuid.Parse(chi.URLParam(r, "settlementID"))
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "invalid settlement ID")
-		return
-	}
-	playerID, ok := auth.PlayerIDFromContext(r.Context())
-	if !ok {
-		writeError(w, http.StatusUnauthorized, "not authenticated")
-		return
-	}
-
-	var req struct {
-		Silver float64 `json:"silver"`
-		Grain  float64 `json:"grain"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid JSON")
-		return
-	}
-	if req.Silver < 0 || req.Grain < 0 || (req.Silver == 0 && req.Grain == 0) {
-		writeError(w, http.StatusBadRequest, "gift must include silver or grain")
-		return
-	}
-
-	// Verify target is owned by caller.
-	var targetOwner *uuid.UUID
-	err = h.pool.QueryRow(r.Context(),
-		`SELECT owner_id FROM settlements WHERE id = $1 AND world_id = $2`,
-		targetID, worldID,
-	).Scan(&targetOwner)
-	if err != nil || targetOwner == nil || *targetOwner != playerID {
-		writeError(w, http.StatusForbidden, "not your settlement")
-		return
-	}
-
-	// Find caller's capital.
-	var sourceID uuid.UUID
-	err = h.pool.QueryRow(r.Context(),
-		`SELECT id FROM settlements
-		 WHERE world_id = $1 AND owner_id = $2 AND is_capital = true`,
-		worldID, playerID,
-	).Scan(&sourceID)
-	if err != nil {
-		writeError(w, http.StatusForbidden, "no capital to send gift from")
-		return
-	}
-
-	// Caravan travel time: source capital → target settlement (both your own — internal supply line).
-	var sQ, sR, tQ, tR int
-	if err := h.pool.QueryRow(r.Context(),
-		`SELECT p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id WHERE s.id = $1`,
-		sourceID).Scan(&sQ, &sR); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not load gift origin")
-		return
-	}
-	if err := h.pool.QueryRow(r.Context(),
-		`SELECT p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id WHERE s.id = $1`,
-		targetID).Scan(&tQ, &tR); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not load gift destination")
-		return
-	}
-	tx, err := h.pool.Begin(r.Context())
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "transaction error")
-		return
-	}
-	defer tx.Rollback(r.Context())
-	if !lockOwnedTradeSettlements(r.Context(), tx, worldID, playerID, sourceID, targetID) {
-		writeError(w, http.StatusForbidden, "settlement ownership changed")
-		return
-	}
-	journey, err := province.PlanTradeJourney(r.Context(), tx, worldID, province.MapPosition{Q: sQ, R: sR}, province.MapPosition{Q: tQ, R: tR}, "land")
-	if err != nil {
-		writeTradeJourneyError(w, err)
-		return
-	}
-	var giftCurrentTick int
-	if err := tx.QueryRow(r.Context(), `SELECT current_world_tick()`).Scan(&giftCurrentTick); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not read current day")
-		return
-	}
-	giftDueTick := giftCurrentTick + journey.TravelTicks
-	arrivesAt := h.clk.Now().Add(tick.RealUntil(journey.TravelTicks, 0))
-
-	// Deduct silver from source settlement good row.
-	if req.Silver > 0 {
-		tag, err2 := province.DeductGood(r.Context(), tx, sourceID, "silver", req.Silver)
-		if err2 != nil || tag.RowsAffected() == 0 {
-			writeError(w, http.StatusUnprocessableEntity, "insufficient silver")
-			return
-		}
-	}
-
-	// Deduct grain from source settlement_goods.
-	if req.Grain > 0 {
-		tag, err2 := province.DeductGood(r.Context(), tx, sourceID, "grain", req.Grain)
-		if err2 != nil || tag.RowsAffected() == 0 {
-			writeError(w, http.StatusUnprocessableEntity, "insufficient grain")
-			return
-		}
-	}
-
-	// Dispatch the gift as a PHYSICAL caravan — a mover on the map (province route,
-	// lazy-interpolated position), credited to the target on ARRIVAL, not instantly.
-	// Internal supply line: exempt from the random trade-loss roll (interception is a
-	// separate, deliberate mechanic — Del 3-fas-4).
-	transportID, err2 := transport.Dispatch(r.Context(), tx, h.scheduler, transport.DispatchParams{
-		WorldID:      worldID,
-		OwnerID:      playerID,
-		Kind:         "transfer",
-		OriginID:     sourceID,
-		DestID:       targetID,
-		Category:     "land",
-		OriginQ:      sQ,
-		OriginR:      sR,
-		DestQ:        tQ,
-		DestR:        tR,
-		DepartsAt:    h.clk.Now(),
-		ArrivesAt:    arrivesAt,
-		DueTick:      giftDueTick,
-		DepartedTick: giftCurrentTick, Journey: &journey,
-		Manifest:      transport.Manifest{"silver": req.Silver, "grain": req.Grain},
-		Interceptable: true,
-	})
-	if err2 != nil {
-		writeError(w, http.StatusInternalServerError, "could not dispatch gift caravan")
-		return
-	}
-
-	// Apply loyalty event — significant gift (50+ silver equivalent) gives +1 loyalty.
-	// Applied at send (the gesture is committed); goods themselves arrive after travel.
-	loyaltyDelta := 0
-	if req.Silver+req.Grain*0.5 >= 50 {
-		loyaltyDelta = 1
-	}
-
-	if err := loyalty.AppendLoyaltyEventTx(r.Context(), tx, h.eventStore,
-		targetID, worldID, "gift", loyaltyDelta,
-		"wanax_gift",
-	); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not record gift")
-		return
-	}
-
-	if err := tx.Commit(r.Context()); err != nil {
-		writeError(w, http.StatusInternalServerError, "commit failed")
-		return
-	}
-
-	writeJSON(w, http.StatusOK, map[string]any{
-		"loyalty_delta": loyaltyDelta,
-		"silver_sent":   req.Silver,
-		"grain_sent":    req.Grain,
-		"transport_id":  transportID, "departure_tick": giftCurrentTick, "arrival_tick": giftDueTick, "travel_ticks": journey.TravelTicks,
-		"arrives_at": arrivesAt,
-	})
-}
-
-// LoyaltyLog handles GET /worlds/:worldID/settlements/:settlementID/loyalty-log.
-func (h *SettlementHandler) LoyaltyLog(w http.ResponseWriter, r *http.Request) {
-	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "invalid world ID")
-		return
-	}
-	settlementID, err := uuid.Parse(chi.URLParam(r, "settlementID"))
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "invalid settlement ID")
-		return
-	}
-	playerID, ok := auth.PlayerIDFromContext(r.Context())
-	if !ok {
-		writeError(w, http.StatusUnauthorized, "not authenticated")
-		return
-	}
-
-	// Verify ownership.
-	var ownerID *uuid.UUID
-	err = h.pool.QueryRow(r.Context(),
-		`SELECT owner_id FROM settlements WHERE id = $1 AND world_id = $2`,
-		settlementID, worldID,
-	).Scan(&ownerID)
-	if err != nil || ownerID == nil || *ownerID != playerID {
-		writeError(w, http.StatusForbidden, "not your settlement")
-		return
-	}
-
-	rows, err := h.pool.Query(r.Context(),
-		`SELECT id, event_type, loyalty_delta, reason, created_at
-		 FROM loyalty_events
-		 WHERE settlement_id = $1
-		 ORDER BY created_at DESC
-		 LIMIT 50`,
-		settlementID,
-	)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not load loyalty log")
-		return
-	}
-	defer rows.Close()
-
-	type entry struct {
-		ID           int64     `json:"id"`
-		EventType    string    `json:"event_type"`
-		LoyaltyDelta int       `json:"loyalty_delta"`
-		Reason       string    `json:"reason"`
-		CreatedAt    time.Time `json:"created_at"`
-	}
-	var log []entry
-	for rows.Next() {
-		var e entry
-		if err := rows.Scan(&e.ID, &e.EventType, &e.LoyaltyDelta, &e.Reason, &e.CreatedAt); err == nil {
-			log = append(log, e)
-		}
-	}
-	if log == nil {
-		log = []entry{}
-	}
-	writeJSON(w, http.StatusOK, log)
+	writeError(w, http.StatusGone, "Gifts to your own colonies have been removed; use a transfer to move goods between your cities.")
 }
 
 // ReturnArmy handles POST /worlds/:worldID/settlements/:settlementID/return-army.

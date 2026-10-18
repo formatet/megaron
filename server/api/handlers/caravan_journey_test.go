@@ -25,7 +25,7 @@ func caravanState(t *testing.T, pool *pgxpool.Pool, world uuid.UUID) string {
  'goods',(SELECT jsonb_agg(to_jsonb(g) ORDER BY g.settlement_id,g.good_key) FROM settlement_goods g JOIN settlements s ON s.id=g.settlement_id WHERE s.world_id=$1),
  'ships',(SELECT jsonb_agg(to_jsonb(u) ORDER BY id) FROM units u WHERE world_id=$1),
  'offers',(SELECT jsonb_agg(to_jsonb(m) ORDER BY id) FROM messengers m WHERE world_id=$1),
- 'loyalty',(SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM settlements s WHERE world_id=$1),
+ 'settlements',(SELECT jsonb_agg(to_jsonb(s) ORDER BY id) FROM settlements s WHERE world_id=$1),
  'transports',(SELECT count(*) FROM transports WHERE world_id=$1),
  'routes',(SELECT count(*) FROM trade_routes WHERE world_id=$1),
  'jobs',(SELECT count(*) FROM scheduled_events WHERE world_id=$1),
@@ -263,19 +263,16 @@ func TestCaravanAccept_ConcurrentBuyAndSellCommitOnceWithAsymmetricETA(t *testin
 	}
 }
 
-func TestCaravanGift_NoRouteHasNoSideEffects(t *testing.T) {
+func TestOwnColonyGift_RemovedWithoutSideEffects(t *testing.T) {
 	f := setupTradeInternalFixture(t)
 	h := NewSettlementHandler(f.pool, events.NewStore(f.pool), f.scheduler, f.clk)
 	f.router.Post("/worlds/{worldID}/settlements/{settlementID}/gift", h.Gift)
-	if _, err := f.pool.Exec(context.Background(), `DELETE FROM map_tiles WHERE world_id=$1 AND q=1`, f.worldID); err != nil {
-		t.Fatal(err)
-	}
 	before := caravanState(t, f.pool, f.worldID)
 	code, resp := f.post(t, "/worlds/"+f.worldID.String()+"/settlements/"+f.destID.String()+"/gift", map[string]any{"silver": 100})
-	if code != 422 {
+	if code != 410 {
 		t.Fatalf("gift status%d: %v", code, resp)
 	}
 	if after := caravanState(t, f.pool, f.worldID); after != before {
-		t.Fatal("refused gift changed goods, loyalty or jobs")
+		t.Fatal("refused gift changed goods, settlements or jobs")
 	}
 }

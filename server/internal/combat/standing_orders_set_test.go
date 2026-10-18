@@ -92,13 +92,13 @@ func TestSetStandingOrders_ReplacesModeClearsLegacyThreshold(t *testing.T) {
 		t.Fatal(err)
 	}
 	res, err := SetStandingOrders(context.Background(), pool, h.eventStore, StandingOrdersOrder{
-		WorldID: f.worldID, PlayerID: f.defender, UnitID: defenderUnitID, ByLoyalty: true,
+		WorldID: f.worldID, PlayerID: f.defender, UnitID: defenderUnitID, WhenLosing: true,
 	})
 	if err != nil {
 		t.Fatalf("second SetStandingOrders: %v", err)
 	}
 	if res.HoldToLastMan {
-		t.Error("loyalty replacement retained legacy hold")
+		t.Error("when_losing replacement retained legacy hold")
 	}
 	if res.RetreatAtLoss != nil {
 		t.Errorf("RetreatAtLoss = %v, want nil", res.RetreatAtLoss)
@@ -130,7 +130,7 @@ func TestSetStandingOrders_RejectsUnitNotInActiveBattle(t *testing.T) {
 	}
 
 	_, err := SetStandingOrders(context.Background(), pool, events.NewStore(pool), StandingOrdersOrder{
-		WorldID: f.worldID, PlayerID: f.defender, UnitID: idleUnitID, ByLoyalty: true,
+		WorldID: f.worldID, PlayerID: f.defender, UnitID: idleUnitID, WhenLosing: true,
 	})
 	if err == nil {
 		t.Fatal("SetStandingOrders on a unit with no active battle: want error, got nil")
@@ -155,7 +155,7 @@ func TestSetStandingOrders_RejectsWrongOwner(t *testing.T) {
 	runFieldArrival(t, pool, h, f.worldID, attackerUnitID)
 
 	_, err := SetStandingOrders(context.Background(), pool, h.eventStore, StandingOrdersOrder{
-		WorldID: f.worldID, PlayerID: f.attacker, UnitID: defenderUnitID, ByLoyalty: true,
+		WorldID: f.worldID, PlayerID: f.attacker, UnitID: defenderUnitID, WhenLosing: true,
 	})
 	if err == nil {
 		t.Fatal("SetStandingOrders on someone else's unit: want error, got nil")

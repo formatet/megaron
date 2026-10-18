@@ -321,8 +321,6 @@ func categorize(eventType string) string {
 		return "kingdom"
 	case strings.HasPrefix(eventType, "Messenger"):
 		return "messenger"
-	case strings.HasPrefix(eventType, "Loyalty"):
-		return "loyalty"
 	case strings.HasPrefix(eventType, "Starvation"):
 		return "starvation"
 	case strings.HasPrefix(eventType, "Gossip"):
@@ -376,10 +374,6 @@ func renderSummary(e events.SinkEvent, actor, subject string) string {
 		return fmt.Sprintf("A messenger arrived in %s", s)
 	case "MessengerReturned":
 		return fmt.Sprintf("A messenger returned to %s", s)
-	case "LoyaltyDecay":
-		return fmt.Sprintf("Loyalty in %s is eroding", s)
-	case "LoyaltyChanged":
-		return fmt.Sprintf("Loyalty in %s changed to %v", s, p["new_level"])
 	// ── discrete-unit model (C1–C8): unit stream carries a unit_id, not a settlement,
 	// so render from payload coords rather than the (unknown) settlement subject. ──
 	case "UnitMarchOrdered":

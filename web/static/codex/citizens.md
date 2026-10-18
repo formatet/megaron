@@ -26,7 +26,7 @@ Idle citizens are wasted citizens. So are citizens producing something nobody us
 
 On the map, a small marker shows the hexes where your people are at work.
 
-Fish feeds your people just as grain does. A city living on stored food is still fed. Hunger affects [[loyalty]] only when the daily meal remains short after the [[food|feeding chain]] has been exhausted.
+Fish feeds your people just as grain does. A city living on stored food is still fed. Hunger begins only when the daily meal remains short after the [[food|feeding chain]] has been exhausted; see [[growth]].
 
 One placeable **citizen represents 100 people**. Population counts people; City and Goods count these citizens. The food-workers estimate assumes the best grain and fish slots for the population. Moving workers may require rearranging the remaining food placements; the army needs its own grain as shown in the food balance.
 

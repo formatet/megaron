@@ -1,0 +1,32 @@
+tools/speldygn_snapshot.py:157:    "KharisOffering", "KharisMissedMaintenance", "LoyaltyChanged",
+server/db/migrations/104_world_cascade.proof.sh:19:#         player_scouted_tiles, scheduled_events. (loyalty_events råkar
+server/db/migrations/104_world_cascade.proof.sh:89:INSERT INTO loyalty_events (settlement_id, world_id, event_type, loyalty_delta, reason)
+server/db/migrations/104_world_cascade.proof.sh:113:UNION ALL SELECT 'loyalty_events', count(*) FROM loyalty_events WHERE world_id = '${world}'
+server/db/migrations/104_world_cascade.proof.sh:182:-- loyalty_events.settlement_id is NOT NULL + FK(settlements) ON DELETE CASCADE,
+server/db/migrations/104_world_cascade.proof.sh:195:UNION ALL SELECT 'loyalty_events', count(*) FROM loyalty_events WHERE world_id = '${WORLD_GHOST}'
+server/db/migrations/104_world_cascade.proof.sh:205:UNION ALL SELECT 'loyalty_events', count(*) FROM loyalty_events WHERE world_id = '${WORLD_GHOST}'
+server/cmd/server/main.go:163:	worker.Register(events.ScheduledLoyaltyDecayTick, events.RetiredLoyaltyTick)
+server/cmd/server/main.go:164:	worker.Register(events.ScheduledLoyaltyWelfareTick, events.RetiredLoyaltyTick)
+server/cmd/server/main.go:165:	worker.Register(events.ScheduledColonyPenaltyTick, events.RetiredLoyaltyTick)
+server/cmd/server/main.go:166:	worker.Register(events.ScheduledBorrowedArmyTick, events.RetiredLoyaltyTick)
+web/static/js/megaron/ui/format.js:884:    return `${line} ${body.loyalty_warning || ''}`.trim();
+web/static/js/megaron/ui/format.js:896:  const warning = body.loyalty_warning || '';
+server/internal/events/retired_tick.go:10:// RetiredLoyaltyTick accepts each of the four frozen loyalty queue identifiers.
+server/internal/events/retired_tick.go:13:func RetiredLoyaltyTick(context.Context, ScheduledEvent) error { return nil }
+server/internal/events/scheduler.go:52:	// Frozen legacy loyalty decay identifier, retired in migration 185.
+server/internal/events/scheduler.go:53:	ScheduledLoyaltyDecayTick ScheduledEventType = "LoyaltyDecayTick"
+server/internal/events/scheduler.go:54:	// Frozen legacy loyalty identifiers, retired in migration 185.
+server/internal/events/scheduler.go:55:	ScheduledLoyaltyWelfareTick ScheduledEventType = "LoyaltyWelfareTick"
+server/internal/events/priority.go:127:	ScheduledLoyaltyDecayTick:   tickPriorityConsequence,
+server/internal/events/priority.go:128:	ScheduledLoyaltyWelfareTick: tickPriorityConsequence,
+server/cmd/keryx/cmd_notifications.go:794:		LoyaltyWarning  string   `json:"loyalty_warning"`
+server/cmd/keryx/cmd_notifications.go:821:		if body.LoyaltyWarning != "" {
+server/cmd/keryx/cmd_notifications.go:822:			fmt.Printf("      %s\n", body.LoyaltyWarning)
+server/cmd/keryx/cmd_notifications.go:844:	if body.LoyaltyWarning != "" {
+server/cmd/keryx/cmd_notifications.go:845:		fmt.Printf("      %s\n", body.LoyaltyWarning)
+server/internal/combat/standing_orders_set.go:44:		LegacyByLoyalty      bool `json:"ByLoyalty"`
+server/internal/combat/standing_orders_set.go:45:		LegacyByLoyaltySnake bool `json:"by_loyalty"`
+server/internal/combat/standing_orders_set.go:51:	o.WhenLosing = o.WhenLosing || wire.LegacyByLoyalty || wire.LegacyByLoyaltySnake
+server/internal/combat/standing_orders_set.go:111:		`UPDATE battle_participants SET standing_orders = (standing_orders - 'retreat_at_loss' - 'hold_to_last_man' - 'by_loyalty') || $3::jsonb WHERE battle_id = $1 AND unit_id = $2`,
+server/internal/combat/retreat_default.go:73:		`UPDATE player_world_records SET retreat_default = (retreat_default - 'retreat_at_loss' - 'hold_to_last_man' - 'by_loyalty') || $3::jsonb WHERE world_id = $1 AND player_id = $2`,
+server/api/handlers/settlement.go:494:// Gift is a tombstone for the retired own-colony loyalty gesture.

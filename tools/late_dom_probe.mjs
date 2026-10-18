@@ -4,7 +4,7 @@ export async function run(name) {
  document.body.innerHTML='<div id="map-root"><canvas id="hex-canvas"></canvas></div><div id="city-body"></div><div id="war-body"></div><div id="economy-body"></div><div id="diplomacy-body"></div><div id="march-ctx"></div><div id="grid"></div><div id="kult-body"></div><div id="search-overlay"><input id="search-input"><div id="search-results"></div></div>';
  const {State}=await import('/web/static/js/megaron/state.js');
  Object.assign(State,{WORLD_ID:'W',MY_SETTLEMENT_ID:'S',provinceData:[{id:'P',settlement_id:'S',name:'Nostos',own:true,is_capital:true,q:0,r:0},{id:'P2',settlement_id:'S2',name:'Kyme',own:true,q:2,r:0},{id:'P3',settlement_id:'contact',name:'Troy',own:false}],tileData:[]});
- const pd={id:'S',population:500,labor_pool:100,army:{Spearman:100},buildings:[{type:'shipyard',level:1}],resources:{},can_recruit:[{unit:'galley',can_recruit:true}],loyalty:100,available_prayers:[{id:"prayer",name:"Prayer",god:"Zeus",min_kharis:0,affordable:true,favours:{grain:2}}]};
+ const pd={id:'S',population:500,labor_pool:100,army:{Spearman:100},buildings:[{type:'shipyard',level:1}],resources:{},can_recruit:[{unit:'galley',can_recruit:true}],available_prayers:[{id:"prayer",name:"Prayer",god:"Zeus",min_kharis:0,affordable:true,favours:{grain:2}}]};
  const placement={total_gubbar:100,pool_size:100,buildings:[],hexes:[1,2].map(n=>({hex_ordinal:n,hex_q:n,hex_r:0,terrain:'grassland',goods:[{good_key:'grain',placed:0,cap:4,marginal_yield:1,rate_per_tick:0}]})),valid_hexes_for_building:{farm:[{q:1,r:0},{q:2,r:0}],mine:[{q:3,r:0}]}};
  const posts=[];let hook=null;const timers=[];
  const realTimeout=window.setTimeout;window.setTimeout=(fn,ms,...args)=>ms===1200?(timers.push(fn),0):realTimeout(fn,ms,...args);

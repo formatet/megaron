@@ -41,13 +41,13 @@ with tempfile.TemporaryDirectory(prefix='retreat-cli-') as tmp:
     page.locator('#war-retreat-default').wait_for()
     page.evaluate("async()=>await Promise.all([...document.querySelectorAll('.drawer.open')].flatMap(d=>d.getAnimations()).map(a=>a.finished.catch(()=>{})))")
     page.wait_for_function("(()=>{const r=document.getElementById('war-retreat-default')?.getBoundingClientRect();return r && r.x>=0 && r.right<=innerWidth;})()")
-    choices=['loyalty','hold'] if args.mode=='after' else ['baseline']
+    choices=['when_losing','hold'] if args.mode=='after' else ['baseline']
     for choice in choices:
      if args.mode=='after':
       page.locator('#war-retreat-default').select_option(choice)
       page.locator('button[onclick="saveRetreatDefault()"]').click()
       page.wait_for_function("document.getElementById('war-retreat-default-res')?.textContent.startsWith('Saved')")
-      value=api(path,token);assert value['by_loyalty']==(choice=='loyalty') and value['hold_to_last_man']==(choice=='hold') and value['retreat_at_loss'] is None,value
+      value=api(path,token);assert value['when_losing']==(choice=='when_losing') and value['hold_to_last_man']==(choice=='hold') and value['retreat_at_loss'] is None,value
      else:value=api(path,token)
      options=page.locator('#war-retreat-default option').all_text_contents()
      if args.mode=='after':assert options==['Retreat when it goes badly','Hold to the last man'],options
@@ -58,7 +58,7 @@ with tempfile.TemporaryDirectory(prefix='retreat-cli-') as tmp:
    browser.close()
   if args.mode=='after':
    log=[]
-   for flags in [['--hold-to-last-man'],['--by-loyalty'],[],['--retreat-at-loss','0.5']]:
+   for flags in [['--hold-to-last-man'],['--when-losing'],[],['--retreat-at-loss','0.5']]:
     result=cli(flags);log.append('$ keryx retreat-default '+' '.join(flags)+'\n'+result.stdout)
     assert (result.returncode!=0)==('--retreat-at-loss' in flags),(flags,result.stdout)
    (folder/'keryx.txt').write_text('\n'.join(log))
@@ -68,7 +68,7 @@ with tempfile.TemporaryDirectory(prefix='retreat-cli-') as tmp:
     assert e.code==400;evidence=json.load(e);facts['retired_request']={'status':e.code,'body':evidence}
  finally:
   if args.mode=='after':
-   body={'hold_to_last_man':True} if initial['hold_to_last_man'] else {'by_loyalty':True}
+   body={'hold_to_last_man':True} if initial['hold_to_last_man'] else {'when_losing':True}
    req=urllib.request.Request(BASE+'/api/v1/'+path,method='PUT',data=json.dumps(body).encode(),headers={'Content-Type':'application/json','Authorization':'Bearer '+token})
    with urllib.request.urlopen(req) as r:facts['restored']=json.load(r)
 assert all(not x['errors'] for x in facts['captures']),facts

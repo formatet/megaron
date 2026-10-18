@@ -69,7 +69,7 @@ army AS (
            count(*) FILTER (WHERE reinforcing) AS refilling
     FROM units WHERE category = 'land' AND settlement_id IS NOT NULL GROUP BY 1
 )
-SELECT w.current_tick, pl.username, s.name, s.population, s.loyalty,
+SELECT w.current_tick, pl.username, s.name, s.population,
        COALESCE((SELECT round(amt::numeric,1) FROM goods g WHERE g.settlement_id=s.id AND g.good_key='silver'),0),
        COALESCE((SELECT round(amt::numeric,1) FROM goods g WHERE g.settlement_id=s.id AND g.good_key='grain'),0),
        COALESCE((SELECT round(rate::numeric,3) FROM goods g WHERE g.settlement_id=s.id AND g.good_key='grain'),0),
@@ -100,7 +100,7 @@ ORDER BY pl.username, s.name;
 """
 
 SETTLEMENT_HEADER = [
-    "wall", "tick", "player", "settlement", "population", "loyalty",
+    "wall", "tick", "player", "settlement", "population",
     "silver", "grain", "grain_rate", "fish", "bronze", "goods_at_cap",
     "gubbar_placed", "buildings",
     "cohorts", "men", "max_unpaid_periods", "refilling",

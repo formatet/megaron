@@ -14,7 +14,7 @@ package combat
 //      remove them from kingdom_members if they remain in one.
 //   5. Dispossess: owner_id = NULL, control_type = 'occupied', kingdom_id = NULL,
 //      state = 'collapsed' on the settlement row.
-//   6. Succession: promote the highest-loyalty survivor to capital, or — if this
+//   6. Succession: promote the most populous survivor to capital, or — if this
 //      was the player's last city — mark them dispossessed for the epitaph.
 //   7. Emit CityCollapsed event.
 //
@@ -290,7 +290,7 @@ func collapseSettlement(
 	// ── 6. Succession / game-over ──────────────────────────────────────────────
 	// owner_id was cleared in step 5, so the fallen city no longer counts as the
 	// player's. handleOwnerCityLoss decides between metropolis succession (promote
-	// the highest-loyalty survivor) and game-over (last city → dispossessed, with
+	// the most populous survivor) and game-over (last city → dispossessed, with
 	// last_settlement_id anchored for the epitaph crawl).
 	isLastCity := false
 	if effectiveOwnerID != uuid.Nil {

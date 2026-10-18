@@ -33,11 +33,11 @@ func NewRetreatDefaultHandler(pool *pgxpool.Pool) *RetreatDefaultHandler {
 type retreatDefaultOut struct {
 	RetreatAtLoss *float64 `json:"retreat_at_loss"`
 	HoldToLastMan bool     `json:"hold_to_last_man"`
-	ByLoyalty     bool     `json:"by_loyalty"`
+	WhenLosing    bool     `json:"when_losing"`
 }
 
 func toRetreatDefaultOut(d combat.RetreatDefault) retreatDefaultOut {
-	return retreatDefaultOut{RetreatAtLoss: d.RetreatAtLoss, HoldToLastMan: d.HoldToLastMan, ByLoyalty: d.ByLoyalty()}
+	return retreatDefaultOut{RetreatAtLoss: d.RetreatAtLoss, HoldToLastMan: d.HoldToLastMan, WhenLosing: d.WhenLosing()}
 }
 
 func writeOrderErr(w http.ResponseWriter, err error, fallback string) {
@@ -70,7 +70,7 @@ func (h *RetreatDefaultHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 // Put handles PUT /worlds/{worldID}/retreat-default.
-// Body: exactly one of {"hold_to_last_man": true} or {"by_loyalty": true}.
+// Body: exactly one of {"hold_to_last_man": true} or {"when_losing": true}.
 func (h *RetreatDefaultHandler) Put(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -85,7 +85,7 @@ func (h *RetreatDefaultHandler) Put(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		RetreatAtLoss json.RawMessage `json:"retreat_at_loss"`
 		HoldToLastMan bool            `json:"hold_to_last_man"`
-		ByLoyalty     bool            `json:"by_loyalty"`
+		WhenLosing    bool            `json:"when_losing"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
@@ -97,7 +97,7 @@ func (h *RetreatDefaultHandler) Put(w http.ResponseWriter, r *http.Request) {
 	}
 
 	d, err := combat.SetRetreatDefault(r.Context(), h.pool, worldID, playerID, combat.RetreatDefaultOrder{
-		HoldToLastMan: req.HoldToLastMan, ByLoyalty: req.ByLoyalty,
+		HoldToLastMan: req.HoldToLastMan, WhenLosing: req.WhenLosing,
 	})
 	if err != nil {
 		writeOrderErr(w, err, "could not save retreat default")

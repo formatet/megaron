@@ -1,7 +1,7 @@
 package events
 
 // G2 tick-dedup (megaron_plan_tickdedup.md): the self-rescheduling handlers
-// (colony.go, kharis/tick.go, loyalty/decay.go, upkeep, …) call
+// (kharis/tick.go, upkeep, …) call
 // EnqueueTickRecurring as the LAST line of their handler body. If
 // events.Worker retries a handler — which it does on timeout/error, up to
 // DeadLetterAttempts times — that line runs twice and two rows land in

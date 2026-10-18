@@ -103,7 +103,7 @@ func TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBatt
 	r.Use(auth.Middleware(authSvc))
 	r.Post("/worlds/{worldID}/units/{unitID}/standing-orders", uh.SetStandingOrders)
 
-	for _, bad := range []string{`{"retreat_at_loss":0.5,"hold_to_last_man":true}`, `{"retreat_at_loss":null,"by_loyalty":true}`} {
+	for _, bad := range []string{`{"retreat_at_loss":0.5,"hold_to_last_man":true}`, `{"retreat_at_loss":null,"when_losing":true}`} {
 		req := httptest.NewRequest(http.MethodPost, "/worlds/"+worldID.String()+"/units/"+unitID.String()+"/standing-orders", strings.NewReader(bad))
 		req.Header.Set("Authorization", "Bearer "+accessToken)
 		rec := httptest.NewRecorder()
@@ -119,7 +119,7 @@ func TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBatt
 			t.Fatal("forbidden retreat percentage dispatched a courier")
 		}
 	}
-	body, _ := json.Marshal(map[string]any{"by_loyalty": true})
+	body, _ := json.Marshal(map[string]any{"when_losing": true})
 	req := httptest.NewRequest(http.MethodPost,
 		"/worlds/"+worldID.String()+"/units/"+unitID.String()+"/standing-orders", bytes.NewReader(body))
 	req.Header.Set("Authorization", "Bearer "+accessToken)
@@ -288,7 +288,7 @@ func TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBatt
 					t.Fatalf("legacy held retreat courier lost hold on arrival: %s", orders)
 				}
 			} else if string(orders) != "{}" {
-				t.Fatalf("legacy retreat courier did not translate to loyalty on arrival (%s): %s", legacyMode, orders)
+				t.Fatalf("legacy retreat courier did not translate to fixed retreat on arrival (%s): %s", legacyMode, orders)
 			}
 			if !bytes.Equal(letterBefore, letterAfter) || !bytes.Equal(queueBefore, queueAfter) {
 				t.Fatal("legacy retreat letter or pending queue payload changed in transit")

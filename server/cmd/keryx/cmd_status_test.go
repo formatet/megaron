@@ -487,7 +487,7 @@ func TestPrintWanaxGreeting_AddressesPlayerByName(t *testing.T) {
 
 // TestPrintWanaxGreeting_SilentOnFailure: best-effort, must never print a
 // broken/error line when /auth/me is unreachable — same convention as
-// printLoyaltyLog/printNoTradeContactsHint.
+// printNoTradeContactsHint.
 func TestPrintWanaxGreeting_SilentOnFailure(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)

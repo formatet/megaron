@@ -89,7 +89,7 @@ func TestUpkeepCarrierFate_HarbourAndSea(t *testing.T) {
 							t.Fatal("fixture must disband crewless ship")
 						}
 					} else {
-						h.recordUnpaid(ctx, u, f.worldID, 0, uuid.Nil, 1)
+						h.recordUnpaid(ctx, u, f.worldID, uuid.Nil, 1)
 					}
 					var dead bool
 					if err := pool.QueryRow(ctx, `SELECT status='disbanded' FROM units WHERE id=$1`, ship).Scan(&dead); err != nil || !dead {

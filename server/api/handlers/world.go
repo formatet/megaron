@@ -13,7 +13,6 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/hexgrid"
-	"formatet/megaron/server/internal/loyalty"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/religion"
 	"formatet/megaron/server/internal/settlement"
@@ -749,7 +748,6 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 			"fish_per_tick":               foodForecast.FishProduction,
 			"food_net_per_tick":           foodForecast.FoodNet,
 			"with_farm_food_net_per_tick": farmForecast.FoodNet,
-			"loyalty_warning":             loyalty.FoundingFoodWelfareWarning(foodForecast.GrainProduction+foodForecast.FishProduction, forecastPop),
 		},
 		"unknown_hexes":  unknown,
 		"timber_warning": foundingTimberWarning(goods, unknown),

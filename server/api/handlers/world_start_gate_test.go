@@ -138,20 +138,20 @@ func TestRequireStartedWorld_NoOrdersUntilThresholdJoins(t *testing.T) {
 		t.Fatalf("POST report while forming = %d %q, want 2xx", rec.Code, rec.Body.String())
 	}
 	// Exempt write: the realm-wide retreat default is a doctrine, not an order.
-	// Fresh = by loyalty; PUT sets it; GET reads it back; nonsense is refused.
+	// Fresh = when losing; PUT sets it; GET reads it back; nonsense is refused.
 	rdPath := base + "/retreat-default"
 	if rec := gateDo(t, r, http.MethodGet, rdPath, tokA, ""); rec.Code != http.StatusOK ||
-		!strings.Contains(rec.Body.String(), `"by_loyalty":true`) {
-		t.Fatalf("GET retreat-default fresh = %d %q, want 200 by_loyalty", rec.Code, rec.Body.String())
+		!strings.Contains(rec.Body.String(), `"when_losing":true`) {
+		t.Fatalf("GET retreat-default fresh = %d %q, want 200 when_losing", rec.Code, rec.Body.String())
 	}
 	if rec := gateDo(t, r, http.MethodPut, rdPath, tokA, `{"hold_to_last_man":true}`); rec.Code != http.StatusOK {
 		t.Fatalf("PUT retreat-default while forming = %d %q, want 200", rec.Code, rec.Body.String())
 	}
 	if rec := gateDo(t, r, http.MethodGet, rdPath, tokA, ""); !strings.Contains(rec.Body.String(), `"hold_to_last_man":true`) ||
-		!strings.Contains(rec.Body.String(), `"by_loyalty":false`) {
+		!strings.Contains(rec.Body.String(), `"when_losing":false`) {
 		t.Fatalf("GET retreat-default after PUT = %q, want hold", rec.Body.String())
 	}
-	for _, bad := range []string{`{"retreat_at_loss":0.5,"hold_to_last_man":true}`, `{"retreat_at_loss":null,"by_loyalty":true}`} {
+	for _, bad := range []string{`{"retreat_at_loss":0.5,"hold_to_last_man":true}`, `{"retreat_at_loss":null,"when_losing":true}`} {
 		if rec := gateDo(t, r, http.MethodPut, rdPath, tokA, bad); rec.Code != http.StatusBadRequest || !strings.Contains(rec.Body.String(), "retreat_at_loss") {
 			t.Fatalf("realm retreat_at_loss request accepted: %d %s", rec.Code, rec.Body.String())
 		}

@@ -8,7 +8,7 @@ package combat
 //
 // G1 placement: this lives in `combat`, not `transport` or `unit` — it calls
 // resolveCombat's sibling math (unitStrength, rollFortune,
-// ResolveStrengthsWithRout, routFractionForLoyalty, supplyingSettlement, all
+// ResolveStrengthsWithRout, the old rout and supply helpers, all
 // already package-private in this package) and combat is the one package
 // downstream of both transport and unit allowed to depend on both plus
 // province (CLAUDE.md G1). transport/unit must never import combat, so this

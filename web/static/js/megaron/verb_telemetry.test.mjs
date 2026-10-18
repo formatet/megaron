@@ -18,7 +18,8 @@ const coverage = {
   'place / staff': ['place', 'staff', 'unplace'],
   'place → ta hex (gren av `place`)': ['place'], 'labor (cult)': ['labor'],
   'slaughter': ['slaughter'], 'disband': ['disband'], 'transfer': ['transfer', 'gift/tribute'],
-  'abandon': ['abandon'], 'rite': ['rite'], 'gift': ['gift'], 'password': ['password'],
+  'abandon': ['abandon'], 'rite': ['rite'], 'gift': [], // Own-colony gifts were removed in slice 20.
+  'password': ['password'],
   'agora password': ['agora password'], 'occupation-order': ['occupation-order'],
   'return-army': [], // The vault explicitly excludes gated kingdom verbs.
   'march': ['march'], 'recall / redirect': ['recall', 'redirect'], 'build-road': ['build-road'], 'stance': ['stance'],

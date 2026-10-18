@@ -1868,7 +1868,7 @@ func (h *UnitHandler) Reinforce(w http.ResponseWriter, r *http.Request) {
 // SetStandingOrders handles POST /worlds/{worldID}/units/{unitID}/standing-orders
 //
 // KR3 §5: change a unit's mid-battle rout threshold. Body:
-// {"hold_to_last_man": true} or {"by_loyalty": true} — replaces the mode.
+// {"hold_to_last_man": true} or {"when_losing": true} — replaces the mode.
 //
 // The unit must currently be a participant in an active battle —
 // standing_orders lives on battle_participants (migration 114), not on the
@@ -1899,7 +1899,7 @@ func (h *UnitHandler) SetStandingOrders(w http.ResponseWriter, r *http.Request) 
 	var req struct {
 		RetreatAtLoss json.RawMessage `json:"retreat_at_loss,omitempty"`
 		HoldToLastMan *bool           `json:"hold_to_last_man,omitempty"`
-		ByLoyalty     bool            `json:"by_loyalty"`
+		WhenLosing    bool            `json:"when_losing"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid JSON")
@@ -1911,7 +1911,7 @@ func (h *UnitHandler) SetStandingOrders(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	hold := req.HoldToLastMan != nil && *req.HoldToLastMan
-	if rej := combat.ValidateRetreatMode(nil, hold, req.ByLoyalty); rej != nil {
+	if rej := combat.ValidateRetreatMode(nil, hold, req.WhenLosing); rej != nil {
 		writeError(w, rej.Status, rej.Reason)
 		return
 	}
@@ -1919,7 +1919,7 @@ func (h *UnitHandler) SetStandingOrders(w http.ResponseWriter, r *http.Request) 
 	ctx := r.Context()
 	order := combat.StandingOrdersOrder{
 		WorldID: worldID, PlayerID: playerID, UnitID: unitID,
-		HoldToLastMan: req.HoldToLastMan, ByLoyalty: req.ByLoyalty,
+		HoldToLastMan: req.HoldToLastMan, WhenLosing: req.WhenLosing,
 	}
 
 	// Same distance-0-vs-courier split as SetStance: a field unit (no
@@ -1968,7 +1968,7 @@ func (h *UnitHandler) SetStandingOrders(w http.ResponseWriter, r *http.Request) 
 		"battle_id":        res.BattleID,
 		"retreat_at_loss":  res.RetreatAtLoss,
 		"hold_to_last_man": res.HoldToLastMan,
-		"by_loyalty":       !res.HoldToLastMan,
+		"when_losing":      !res.HoldToLastMan,
 	})
 }
 

@@ -24,7 +24,7 @@
 #      analysskript, aldrig ändras, ser ut precis som ett världs-id — den fällan gav
 #      en falsk mätning 2026-09-04).
 #   6. Bekräftar (bästa-försök, varnar men avbryter inte) att scheduled_events har
-#      fått KharisTick/UpkeepTick/LoyaltyDecayTick för den nya världen —
+#      fått KharisTick/UpkeepTick/FoodTick för den nya världen —
 #      seedDailyTicks körs asynkront vid boot (main.go: "go seedDailyTicks(...)"),
 #      så den kan hinna efter world-ready-loggen.
 #
@@ -242,7 +242,7 @@ ERR
   fi
 fi
 
-step "Steg 6: bekräfta dagstakterna (KharisTick/UpkeepTick/LoyaltyDecayTick) — bästa-försök"
+step "Steg 6: bekräfta dagstakterna (KharisTick/UpkeepTick/FoodTick) — bästa-försök"
 if [ "$DRY_RUN" -eq 1 ]; then
   say "  [dry-run] pollar: SELECT DISTINCT event_type FROM scheduled_events WHERE world_id = '$NEW_WORLD_ID';"
   say "  [dry-run] (seedDailyTicks körs asynkront vid boot — kan hinna efter world-ready-loggen)"
@@ -253,8 +253,8 @@ else
     have="$(remote_sql "SELECT DISTINCT event_type FROM scheduled_events WHERE world_id = '$NEW_WORLD_ID';" || true)"
     if printf '%s' "$have" | grep -q "KharisTick" \
       && printf '%s' "$have" | grep -q "UpkeepTick" \
-      && printf '%s' "$have" | grep -q "LoyaltyDecayTick"; then
-      say "  ✓ KharisTick/UpkeepTick/LoyaltyDecayTick finns för $NEW_WORLD_ID"
+      && printf '%s' "$have" | grep -q "FoodTick"; then
+      say "  ✓ KharisTick/UpkeepTick/FoodTick finns för $NEW_WORLD_ID"
       have="ok"
       break
     fi

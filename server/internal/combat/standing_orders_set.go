@@ -14,6 +14,7 @@ package combat
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 
 	"formatet/megaron/server/internal/events"
@@ -23,7 +24,7 @@ import (
 )
 
 // StandingOrdersOrder is one retreat-order command against one unit's active
-// battle participation. Hold or ByLoyalty replaces the entire retreat mode;
+// battle participation. Hold or WhenLosing replaces the entire retreat mode;
 // RetreatAtLoss remains only to reject legacy callers explicitly.
 type StandingOrdersOrder struct {
 	WorldID       uuid.UUID
@@ -31,7 +32,24 @@ type StandingOrdersOrder struct {
 	UnitID        uuid.UUID
 	RetreatAtLoss *float64
 	HoldToLastMan *bool
-	ByLoyalty     bool
+	WhenLosing    bool `json:"when_losing,omitempty"`
+}
+
+// UnmarshalJSON keeps sealed orders written before the mode rename readable.
+// Legacy aliases are consumed on read and never emitted in new orders.
+func (o *StandingOrdersOrder) UnmarshalJSON(data []byte) error {
+	type canonical StandingOrdersOrder
+	var wire struct {
+		canonical
+		LegacyByLoyalty      bool `json:"ByLoyalty"`
+		LegacyByLoyaltySnake bool `json:"by_loyalty"`
+	}
+	if err := json.Unmarshal(data, &wire); err != nil {
+		return err
+	}
+	*o = StandingOrdersOrder(wire.canonical)
+	o.WhenLosing = o.WhenLosing || wire.LegacyByLoyalty || wire.LegacyByLoyaltySnake
+	return nil
 }
 
 // StandingOrdersApplied describes the applied order (the handler's 200 body fields).
@@ -47,7 +65,7 @@ type StandingOrdersApplied struct {
 // exactly as the SetStandingOrders handler answered.
 func SetStandingOrders(ctx context.Context, pool *pgxpool.Pool, eventStore *events.Store, o StandingOrdersOrder) (*StandingOrdersApplied, error) {
 	hold := o.HoldToLastMan != nil && *o.HoldToLastMan
-	if rej := ValidateRetreatMode(o.RetreatAtLoss, hold, o.ByLoyalty); rej != nil {
+	if rej := ValidateRetreatMode(o.RetreatAtLoss, hold, o.WhenLosing); rej != nil {
 		return nil, rej
 	}
 

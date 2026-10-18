@@ -7,7 +7,6 @@ import (
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/kharis"
-	"formatet/megaron/server/internal/loyalty"
 	"formatet/megaron/server/internal/religion"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -90,10 +89,10 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, p metropolisParams) (creat
 	// Silver now lives in settlement_goods (initialized below from the carried purse).
 	err = tx.QueryRow(ctx,
 		`INSERT INTO settlements
-		 (world_id, province_id, name, culture_id, owner_id, founder_id, control_type, is_capital, loyalty, loyalty_points, population)
-		 VALUES ($1,$2,$3,$4,$5,$5,'capital',true,3,$6,$7)
+		 (world_id, province_id, name, culture_id, owner_id, founder_id, control_type, is_capital, population)
+		 VALUES ($1,$2,$3,$4,$5,$5,'capital',true,$6)
 		 RETURNING id`,
-		p.WorldID, out.ProvinceID, p.Name, p.Culture, p.PlayerID, loyalty.LoyaltyStartCapital, p.Population,
+		p.WorldID, out.ProvinceID, p.Name, p.Culture, p.PlayerID, p.Population,
 	).Scan(&out.SettlementID)
 	if err != nil {
 		return out, &metropolisError{"could not create settlement", err}

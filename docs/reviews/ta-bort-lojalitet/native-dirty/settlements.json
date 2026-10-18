@@ -1,0 +1,14 @@
+[
+  {
+    "id": "9015a8fe-dcd0-4cfa-99bc-cf6942ccd7d9",
+    "province_id": "166ea182-0c7c-43d7-8e37-64d77b575d2f",
+    "name": "Proofpolis",
+    "culture": "minoan",
+    "control_type": "capital",
+    "wall_level": 0,
+    "is_capital": true,
+    "state": "active",
+    "population": 1000,
+    "updated_at": "2026-10-18T17:22:48.113879+02:00"
+  }
+]

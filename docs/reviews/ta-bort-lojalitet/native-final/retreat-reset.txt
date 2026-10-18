@@ -1,0 +1,2 @@
+Retreat default: Retreat when it goes badly
+Applies to units entering a battle from now on; battles under way keep what they had.

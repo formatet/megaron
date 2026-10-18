@@ -1,25 +1,25 @@
 // Shared realm and current-battle retreat choices. The server owns the
-// loyalty-derived threshold; players choose a mode, never a percentage.
+// fixed loss threshold; players choose a mode, never a percentage.
 import { esc } from './format.js';
 
-export const BY_LOYALTY_LABEL = 'Retreat when it goes badly';
+export const WHEN_LOSING_LABEL = 'Retreat when it goes badly';
 export const RETREAT_PRESETS = [
-  { value: 'loyalty', label: BY_LOYALTY_LABEL },
+  { value: 'when_losing', label: WHEN_LOSING_LABEL },
   { value: 'hold', label: 'Hold to the last man' },
 ];
 
 export function retreatBody(value) {
   if (value === 'hold') return { hold_to_last_man: true };
-  if (value === 'loyalty') return { by_loyalty: true };
+  if (value === 'when_losing') return { when_losing: true };
   return null;
 }
 
 export function retreatDefaultValue(d) {
   if (!d) return null;
   // A stale pre-migration response must not invent a percentage option or
-  // claim that a fixed threshold is the loyalty setting.
+  // claim that a fixed threshold is the default setting.
   if (d.retreat_at_loss != null) return null;
-  return d.hold_to_last_man ? 'hold' : 'loyalty';
+  return d.hold_to_last_man ? 'hold' : 'when_losing';
 }
 
 export function retreatDefaultLabel(d) {

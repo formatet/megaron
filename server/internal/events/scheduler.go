@@ -14,10 +14,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// MacroTickInterval is how often the macro handlers (upkeep, loyalty decay,
-// welfare, colony penalty, borrowed army, kharis) fire, in ticks. A tick is a
-// day in the world, and day-scale consequences (starvation, desertion,
-// loyalty drift) land once per day — so this is 1.
+// MacroTickInterval is how often recurring upkeep, food and kharis handlers
+// fire, in ticks. Consequences land once per tick.
 //
 // It replaces TicksPerDay, which was deleted 2026-08-06 (Timothy): that
 // constant conflated two different questions — "how often do macro
@@ -47,13 +45,13 @@ const MacroTickInterval = 1
 type ScheduledEventType string
 
 const (
-	ScheduledBuildComplete    ScheduledEventType = "BuildComplete"
-	ScheduledTrainComplete    ScheduledEventType = "TrainComplete"
-	ScheduledCollapseCheck    ScheduledEventType = "CollapseCheck"
-	ScheduledDivineRoll       ScheduledEventType = "DivineRoll"
+	ScheduledBuildComplete ScheduledEventType = "BuildComplete"
+	ScheduledTrainComplete ScheduledEventType = "TrainComplete"
+	ScheduledCollapseCheck ScheduledEventType = "CollapseCheck"
+	ScheduledDivineRoll    ScheduledEventType = "DivineRoll"
+	// Frozen legacy loyalty decay identifier, retired in migration 185.
 	ScheduledLoyaltyDecayTick ScheduledEventType = "LoyaltyDecayTick"
-	// L1 — daily loyalty welfare signals (kharis favour, feeding, starvation,
-	// diet variety), internal/loyalty/welfare.go.
+	// Frozen legacy loyalty identifiers, retired in migration 185.
 	ScheduledLoyaltyWelfareTick ScheduledEventType = "LoyaltyWelfareTick"
 	ScheduledColonyPenaltyTick  ScheduledEventType = "ColonyPenaltyTick"
 	ScheduledBorrowedArmyTick   ScheduledEventType = "BorrowedArmyTick"
