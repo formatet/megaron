@@ -21,10 +21,3 @@ You get an urgent notification the first day it happens, and starving cities alw
 The [[sitos|Sitos granary]] is your buffer against a bad stretch. A city under [[sieges|siege]] starves because its fields are cut off, not because it produces too little.
 
 Growth is covered in [[growth]].
-
-Your army eats **grain, never fish**. Units already supplied by a city use that city's
-grain first, then grain in its own Sitos if needed, even when abundant fish keeps
-the city's food coverage high. The army line in city details/status shows that
-reserve separately; it does not change the production balance. If neither grain
-store can cover a unit's meal, it can still suffer hunger. Ships at sea and their
-passengers must eat the provisions physically aboard their ship, not a distant Sitos.

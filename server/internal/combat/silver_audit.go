@@ -22,7 +22,6 @@ type upkeepAgg struct {
 	unitsPaid        int
 	unitsUnpaid      int
 	grainTotal       float64
-	grainFromSitos   float64
 	silverGross      float64 // silver actually debited for upkeep
 	silverCirculated float64 // credited back to a garrison town (Del C; 0 until then)
 	silverDestroyed  float64 // left the world entirely
@@ -41,7 +40,6 @@ type UpkeepSettledPayload struct {
 	UnitsPaid        int                   `json:"units_paid"`
 	UnitsUnpaid      int                   `json:"units_unpaid"`
 	GrainTotal       float64               `json:"grain_total"`
-	GrainFromSitos   float64               `json:"grain_from_sitos,omitempty"`
 	SilverGross      float64               `json:"silver_gross"`
 	SilverCirculated float64               `json:"silver_circulated"`
 	SilverDestroyed  float64               `json:"silver_destroyed"`
@@ -88,7 +86,6 @@ func (h *UpkeepHandler) emitUpkeepSettled(ctx context.Context, worldID uuid.UUID
 				UnitsPaid:        a.unitsPaid,
 				UnitsUnpaid:      a.unitsUnpaid,
 				GrainTotal:       a.grainTotal,
-				GrainFromSitos:   a.grainFromSitos,
 				SilverGross:      a.silverGross,
 				SilverCirculated: a.silverCirculated,
 				SilverDestroyed:  a.silverDestroyed,

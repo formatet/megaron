@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestSitosArmy_NoFalseStarvationAfterPaidUpkeep(t *testing.T) {
+func TestStarvationSignal_NoFalseAuditAfterPaidUpkeep(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	wid, sid, uid := starvationGarrisonFixture(t, 100)
@@ -36,7 +36,7 @@ func TestSitosArmy_NoFalseStarvationAfterPaidUpkeep(t *testing.T) {
 
 // Run on both old and new code: false StarvationDamage only appended an audit
 // event (and a chronicle line in prod), never changed these game projections.
-func TestSitosArmy_AuditHasNoStateEffects(t *testing.T) {
+func TestStarvationSignal_AuditHasNoStateEffects(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	wid, sid, _ := starvationGarrisonFixture(t, 100)

@@ -8,7 +8,6 @@ import (
 	"os"
 	"strconv"
 
-	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
@@ -472,15 +471,22 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 				// No paying settlement — treat as grain shortage.
 				disbanded = h.applyAttrition(ctx, u, grainNeed, e.WorldID, sid)
 			} else {
-				paid, fromSitos, err := economy.DebitArmyGrain(ctx, h.pool, sid, grainNeed)
+				tag, err := h.pool.Exec(ctx,
+					`UPDATE settlement_goods
+					 SET amount  = settled(amount, rate, calc_tick) - $1,
+					     calc_tick = current_world_tick()
+					 WHERE settlement_id = $2
+					   AND good_key = 'grain'
+					   AND settled(amount, rate, calc_tick) >= $1`,
+					grainNeed, sid,
+				)
 				if err != nil {
 					slog.Error("upkeep: grain deduction failed", "unit", u.id, "err", err)
-				} else if !paid {
+				} else if tag.RowsAffected() == 0 {
 					// Grain shortage — attrition.
 					disbanded = h.applyAttrition(ctx, u, grainNeed, e.WorldID, sid)
 				} else {
 					agg(sid).grainTotal += grainNeed
-					agg(sid).grainFromSitos += fromSitos
 				}
 			}
 		}
