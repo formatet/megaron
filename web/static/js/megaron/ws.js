@@ -64,6 +64,7 @@ function coalesce(key, fn, ms = 2000) {
 // WS event kinds that mutate units/province/march/trade/messenger state — an open
 // drawer showing that data should rebuild after them.
 const DATA_KINDS = new Set([
+  'GarrisonStarvationStarted','GarrisonStarvationEnded','KharisBandChanged',
   'ArmyArrival','BuildComplete','GoodsCrafted','TrainComplete','MessengerArrival',
   'GiftDelivered','GiftLost','TradeCaravanArrival','UnitAttrition','UnitDeserted','UnitArrived','UnitExploreReturned',
   'RoadEdgeBuilt','UnitReturnedStarving','ExpeditionTurnedHome','ExpeditionReport',
@@ -134,7 +135,7 @@ export function initWS() {
       // today; they are left standing because their refetch is still the right
       // thing to do the day one appears, and they no longer cost a chip branch.
       if (msg.id) {
-        window.addDispatch({ kind: msg.kind, payload: msg.payload || {}, id: msg.id, level: msg.level, time: 'now' });
+        window.addDispatch({ kind: msg.kind, payload: msg.payload || {}, id: msg.id, level: msg.level, world_tick: msg.world_tick });
         // Live pushes only — the archive rebuild at login goes through
         // initNotifications and stays silent (ui/sfx.js playForKind).
         playForKind(msg.kind);

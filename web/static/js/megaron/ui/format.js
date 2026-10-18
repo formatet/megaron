@@ -129,7 +129,7 @@ export function notifDomain(kind) {
     PickupWaiting: 'war', UnitFetched: 'war', PickupTimedOut: 'war',
     UnitAttrition: 'war', UnitDeserted: 'war', UnitLostAtSea: 'war',
     UnitRecalled: 'war', UnitRedirected: 'war', MarchStalled: 'war', OrderFailed: 'war',
-    UpkeepUnpaid: 'war', ShipDamaged: 'war', ShipRepaired: 'war',
+    GarrisonStarvationStarted: 'war', GarrisonStarvationEnded: 'war', UpkeepUnpaid: 'war', ShipDamaged: 'war', ShipRepaired: 'war',
     PlaceFirstReached: 'war',
     ShipStormDamaged: 'war', ShipFoundered: 'war',
     ShipCaptured: 'war', ShipLost: 'war', ShipStranded: 'war',
@@ -154,7 +154,7 @@ export function notifDomain(kind) {
     // Diplomacy — the messenger channel.
     MessengerLostAtSea: 'diplomacy', MessengerRescuedAtSea: 'diplomacy', MessengerArrival: 'diplomacy', MessengerReturned: 'diplomacy', PassageStalled: 'diplomacy',
     // Kult — the gods answering.
-    DivinePunishment: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
+    KharisBandChanged: 'kult', DivinePunishment: 'kult', DivineBlessing: 'kult', KharisEvent: 'kult',
   };
   return domains[kind] || 'system';
 }
@@ -187,6 +187,7 @@ export function notifIcon(kind) {
     ForeignMarchSighted: '🛡',
     ForeignMarchSightedV2: '🛡',
     SubsistenceWarning: '🌾',
+    GarrisonStarvationStarted: '🌾', GarrisonStarvationEnded: '🌾', KharisBandChanged: '🏛',
     OfferAccepted:      '🤝',
     OfferDeclined:      '🚫',
     OfferExpired:       '⏳',
@@ -299,6 +300,10 @@ function payloadSummary(body) {
 
 export function notifText(kind, body) {
   switch (kind) {
+    case 'GarrisonStarvationStarted': return `${esc(body.name || 'Your city')}: the garrison is losing men to hunger. Soldiers need grain even when the city has a food surplus. Place citizens on grain or transfer grain here.`;
+    case 'GarrisonStarvationEnded': return `${esc(body.name || 'Your city')}: the garrison is no longer losing men to hunger.`;
+    case 'KharisBandChanged': return `Kharis: ${esc(body.from_band || '?')} → ${esc(body.to_band || '?')} (${fmtNum(body.kharis || 0)}). Check Kult for decay and temple support; staff and feed your temples.`;
+
     case 'OpeningDispatch': return esc(body.title || 'Opening dispatch');
     case 'agora_ready': return `Community chat account ready: ${body.user_id || 'your Wanax account'} — open Account to get your chat password.`;
     case 'BuildComplete':      return `Build complete: ${body.building_type || ''}`;

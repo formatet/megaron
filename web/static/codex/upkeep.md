@@ -6,9 +6,11 @@ Foot soldiers live on **grain**. Professionals also need **silver pay** every da
 
 ## Bread — grain
 
-Soldiers eat like the rest of your people ([[food]]). A full spearman cohort uses **0.5 grain per day in garrison**, or **1 grain in the field**. A unit in garrison eats from its city. **A unit in the field eats double**, and there is nothing to forage — so a long march, a siege line or a posted watch is a real cost ([[stances]]). <!-- src: server/internal/combat/upkeep.go upkeepFieldGrainFactor -->
+Soldiers need grain; fish feeding your people ([[food]]) does not feed the garrison. A full spearman cohort uses **0.5 grain per day in garrison**, or **1 grain in the field**. A unit in garrison eats from its city. **A unit in the field eats double**, and there is nothing to forage — so a long march, a siege line or a posted watch is a real cost ([[stances]]). <!-- src: server/internal/combat/upkeep.go upkeepFieldGrainFactor -->
 
 A unit that runs out of food **starves**: it loses men each day, and can starve to nothing. A ship whose crew runs short turns for home by itself, and says so.
+
+The Notifications archive marks when a city’s garrison starts losing men to hunger and when it stops. A recovery means that loss has stopped; it does not promise food for every soldier who may arrive later. Place citizens on grain or send grain by [[transfers|transfer]].
 
 ## Before you settle
 

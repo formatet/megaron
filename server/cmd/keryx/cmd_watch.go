@@ -18,9 +18,10 @@ import (
 // depends on the wire JSON shape, matching the convention every other
 // cmd_*.go file follows (see actionVerb in cmd_actions.go).
 type wsMsg struct {
-	Kind    string          `json:"kind"`
-	WorldID string          `json:"world_id"`
-	Payload json.RawMessage `json:"payload"`
+	Kind      string          `json:"kind"`
+	WorldTick *int            `json:"world_tick"`
+	WorldID   string          `json:"world_id"`
+	Payload   json.RawMessage `json:"payload"`
 }
 
 // wsURL derives the WebSocket URL for worldID from the configured server
@@ -129,21 +130,20 @@ func watchCatchup(c *Client, worldID string, kinds map[string]bool) error {
 
 // printWatchMessage renders one live push message. --json prints the
 // server's Msg verbatim, one line, no reinterpretation (§3 point 5). The
-// human view mirrors notifications' row format but with a wall-clock
-// receipt time in place of created_at/read-state, which a push message
-// doesn't carry — then shares printNotificationDetail for the actionable
+// human view mirrors notifications' recorded game-day label, then shares
+// printNotificationDetail for the actionable
 // follow-up line, so the same event reads identically in the feed and live.
 func printWatchMessage(c *Client, m wsMsg) {
 	if jsonMode {
 		printJSONLine(m)
 		return
 	}
-	n := notificationItem{Kind: m.Kind, Body: m.Payload}
+	n := notificationItem{Kind: m.Kind, Body: m.Payload, WorldTick: m.WorldTick}
 	kind := m.Kind
 	if tier := subsistenceTier(n); tier != "" {
 		kind = m.Kind + " [" + subsistenceTierLabel(tier) + "]"
 	}
-	fmt.Printf(" [%s]  %s\n", time.Now().Format("15:04:05"), kind)
+	fmt.Printf(" [%s]  %s\n", notificationDay(n), kind)
 	printNotificationDetail(c, n)
 }
 

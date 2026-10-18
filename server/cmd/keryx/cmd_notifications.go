@@ -17,7 +17,7 @@ import (
 // kind (e.g. SubsistenceWarning) is never silently swallowed just because
 // it happens to fire often. Historical only: Sitos kinds remain grouped when
 // reading archives; these mechanics no longer run.
-var noisyNotificationKinds = []string{"SitosIntervention", "SitosFundLow"}
+var noisyNotificationKinds = []string{"SitosGranaryRelease", "SitosIntervention", "SitosFundLow"}
 
 // subsistenceWarningKind is the own-city grain-subsistence warning (DEL D,
 // megaron_ekonomi_legibilitet_plan.md). It is deliberately NOT in
@@ -56,6 +56,7 @@ func subsistenceTierLabel(tier string) string {
 
 type notificationItem struct {
 	ID        string          `json:"id"`
+	WorldTick *int            `json:"world_tick"`
 	Kind      string          `json:"kind"`
 	Level     int             `json:"level"`
 	Body      json.RawMessage `json:"body"`
@@ -72,14 +73,6 @@ func isNoisyNotificationKind(kind string) bool {
 	return false
 }
 
-func notificationAge(createdAt string) string {
-	t, err := time.Parse(time.RFC3339, createdAt)
-	if err != nil {
-		return ""
-	}
-	return clockTime(t)
-}
-
 func printNotificationRow(c *Client, n notificationItem) {
 	marker := " "
 	if n.ReadAt == nil {
@@ -89,7 +82,7 @@ func printNotificationRow(c *Client, n notificationItem) {
 	if tier := subsistenceTier(n); tier != "" {
 		kind = n.Kind + " [" + subsistenceTierLabel(tier) + "]"
 	}
-	fmt.Printf("%s[%s]  %s\n", marker, notificationAge(n.CreatedAt), kind)
+	fmt.Printf("%s[%s]  %s\n", marker, notificationDay(n), kind)
 	printNotificationDetail(c, n)
 }
 
@@ -952,22 +945,23 @@ func notificationsCmd() *cobra.Command {
 			fmt.Printf("%d notification(s), %d unread\n", len(resp.Notifications), resp.Unread)
 			fmt.Println("────────────────────────────────────────────────────────────")
 
-			// Critical SubsistenceWarnings float to the very top (DEL D,
-			// Sparta-forensiken): a starving capital must never scroll past.
-			for _, n := range resp.Notifications {
-				if n.Kind == subsistenceWarningKind && subsistenceTier(n) == "critical" {
+			// Critical food warnings and active garrison hunger come first.
+			// A later recovery removes the old start from this priority group.
+			urgent := urgentNotificationIndices(resp.Notifications)
+			for i, n := range resp.Notifications {
+				if urgent[i] {
 					printNotificationRow(c, n)
 				}
 			}
 
 			// Non-noisy notifications shown in full, at the top, unabridged.
 			grouped := map[string][]notificationItem{}
-			for _, n := range resp.Notifications {
+			for i, n := range resp.Notifications {
 				if isNoisyNotificationKind(n.Kind) {
 					grouped[n.Kind] = append(grouped[n.Kind], n)
 					continue
 				}
-				if n.Kind == subsistenceWarningKind && subsistenceTier(n) == "critical" {
+				if urgent[i] {
 					continue // already printed at the very top
 				}
 				printNotificationRow(c, n)
@@ -989,7 +983,7 @@ func notificationsCmd() *cobra.Command {
 						break
 					}
 				}
-				fmt.Printf("%s[%s]  %s  ×%d (latest)\n", marker, notificationAge(latest.CreatedAt), kind, len(occ))
+				fmt.Printf("%s[%s]  %s  ×%d (latest)\n", marker, notificationDay(latest), kind, len(occ))
 				printNotificationDetail(c, latest)
 			}
 

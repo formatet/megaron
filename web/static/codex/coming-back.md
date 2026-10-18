@@ -2,7 +2,7 @@ While you were away, the world kept moving. Here is how to catch up.
 
 ## Open the Notifications archive (☍)
 
-It is a permanent record of everything that happened to you — there is deliberately no "clear all". Urgent events (a starving city, an army sighted) are marked, and starving cities are always shown first.
+It is a permanent record of everything that happened to you — there is deliberately no "clear all". Urgent events are marked. Critical food warnings and a garrison’s latest hunger warning appear first. When that city’s recovery arrives, its old hunger warning returns to its place in history. Each notification shows its recorded **Day #**, or **Day unknown** for older reports whose day was not recorded.
 
 Click any row to open it in the **Dispatch window**. The same window opens from a dispatch chip in the top bar. It gives you:
 
@@ -14,11 +14,11 @@ Click any row to open it in the **Dispatch window**. The same window opens from 
 ## What to act on first
 
 1. **Food** — a [[food|shortfall]] kills people every day it lasts.
-2. **Pay and bread** — [[upkeep]] warnings mean soldiers are about to desert or starve.
+2. **Pay and bread** — [[upkeep]] warnings mean soldiers need silver or grain. A garrison can starve even when people have a food surplus: soldiers need grain. Place citizens on grain or send a [[transfers|transfer]]. A notice marks when garrison hunger starts and when it ends.
 3. **Foreign marches** — someone is coming, and you know roughly when. See [[defence]].
 4. **Sieges and occupation** — a clock is running on a city. See [[sieges]] and [[occupation]].
 
-Check **Kult** for [[kharis|Kharis]] and its daily decay breakdown. It fades from the start; every active city counts toward the cost. Below 30 without a standing temple, punishment can fall. Staff and feed temples, then check the projected net.
+A [[kharis|Kharis]] notice marks each change between Favorable, Indifferent, Suspicious and Wrathful. Check **Kult** for Kharis and its daily decay breakdown. It fades from the start; every active city counts toward the cost. Below 30 without a standing temple, punishment can fall. Staff and feed temples, then check the projected net.
 
 Then look at **City → Production** for idle [[citizens]], and **Economy → Wants** for trade.
 
@@ -26,4 +26,4 @@ Then look at **City → Production** for idle [[citizens]], and **Economy → Wa
 
 Set up [[routes|standing orders]] for food and materials, keep [[food|food]] in the city’s stores, and post a [[stances|watch]] where enemies would come from.
 
-Historical food support reports and food reserve warnings are grouped at the end of Notifications. Choose **show reports** to read them; **All notifications** returns to the archive. Rumours you have heard are mixed into the same list, each marked **Rumour**.
+Historical food reserve releases, food support reports and food reserve warnings are grouped at the end of Notifications. Choose **show reports** to read them; **All notifications** returns to the archive. Rumours you have heard are mixed into the same list, each marked **Rumour**.

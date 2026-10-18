@@ -10,6 +10,27 @@ import (
 // The archive also contains retired kinds. Keep their summaries readable;
 // current producers and the Codex client's archive kinds are checked together.
 func printNotificationSummary(c *Client, n notificationItem) {
+	if n.Kind == "GarrisonStarvationStarted" || n.Kind == "GarrisonStarvationEnded" || n.Kind == "KharisBandChanged" {
+		var b struct {
+			Name     string  `json:"name"`
+			FromBand string  `json:"from_band"`
+			ToBand   string  `json:"to_band"`
+			Kharis   float64 `json:"kharis"`
+		}
+		if json.Unmarshal(n.Body, &b) != nil {
+			return
+		}
+		switch n.Kind {
+		case "GarrisonStarvationStarted":
+			fmt.Printf("      %s: the garrison is losing men to hunger. Soldiers need grain even when the city has a food surplus. Place citizens on grain (`keryx place`) or transfer grain here (`keryx transfer`).\n", b.Name)
+		case "GarrisonStarvationEnded":
+			fmt.Printf("      %s: the garrison is no longer losing men to hunger.\n", b.Name)
+		case "KharisBandChanged":
+			fmt.Printf("      Kharis: %s → %s (%.1f). Check `keryx status` for decay and temple support; staff and feed your temples.\n", b.FromBand, b.ToBand, b.Kharis)
+		}
+		return
+	}
+
 	var b struct {
 		Title             string             `json:"title"`
 		ArrivesAt         string             `json:"arrives_at"`

@@ -46,9 +46,9 @@
     {"id": "battle",       "title": "Battle",                       "category": "War", "kinds": ["BattleWon", "BattleLost", "SettlementDefended"], "related": ["units", "stances"]},
     {"id": "sieges",       "title": "Sieges and blockades",         "category": "War", "kinds": ["SiegeStarted", "SiegeLifted", "HexBlockaded", "HexUnblockaded", "HexTaken"], "related": ["occupation", "stances", "catchment"]},
     {"id": "occupation",   "title": "Occupation and captured cities", "category": "War", "kinds": ["CityOccupied", "CityAnnexReady", "OccupationDefended", "SettlementCaptured", "SettlementSacked", "SettlementLooted", "SettlementBurned", "OutpostCaptured"], "related": ["sieges", "battle", "rough-edges"]},
-    {"id": "upkeep",       "title": "Upkeep: pay and bread",        "category": "War", "kinds": ["UpkeepUnpaid", "UnitDeserted", "UnitAttrition", "UnitReturnedStarving"], "related": ["silver", "food", "units"]},
+    {"id": "upkeep",       "title": "Upkeep: pay and bread",        "category": "War", "kinds": ["GarrisonStarvationStarted", "GarrisonStarvationEnded", "UpkeepUnpaid", "UnitDeserted", "UnitAttrition", "UnitReturnedStarving"], "related": ["silver", "food", "units"]},
 
-    {"id": "kharis",       "title": "Kharis",                       "category": "The gods", "drawer": "kult", "kinds": ["DivineBlessing", "DivinePunishment"], "related": ["temples", "rites"]},
+    {"id": "kharis",       "title": "Kharis",                       "category": "The gods", "drawer": "kult", "kinds": ["KharisBandChanged", "DivineBlessing", "DivinePunishment"], "related": ["temples", "rites"]},
     {"id": "temples",      "title": "Temples and devotion",         "category": "The gods", "related": ["kharis", "buildings"]},
     {"id": "rites",        "title": "Rites and prayers",            "category": "The gods", "related": ["kharis", "bronze"]},
 

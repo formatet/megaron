@@ -1,7 +1,8 @@
+import { notificationDay } from './notification_state.js';
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
 import { openDispatchWindow } from './dispatch_window.js';
-import { notifText, notifIcon, notifDomain, fmtAgo, colonyFoundedGrainLine } from './format.js';
+import { notifText, notifIcon, notifDomain, colonyFoundedGrainLine } from './format.js';
 
 // ── Persistent notifications (bell badge) ──────────────────────────────────
 // unreadCount mirrors the badge so dismissing a chip can decrement it without
@@ -50,7 +51,7 @@ export async function initNotifications() {
     // answering (an incoming march has travel time left; last night's does not).
     (data.notifications || []).slice(0, HYDRATE_MAX).reverse().forEach(n => {
       const body = typeof n.body === 'string' ? JSON.parse(n.body) : (n.body || {});
-      addDispatch({ kind: n.kind, payload: body, id: n.id, level: n.level, time: fmtAgo(n.created_at) });
+      addDispatch({ kind: n.kind, payload: body, id: n.id, level: n.level, world_tick: n.world_tick });
     });
   } catch (_) {}
 }
@@ -149,7 +150,7 @@ export function addDispatch(n) {
   if (!strip) return;
   const kind    = n.kind;
   const payload = n.payload || {};
-  const time    = n.time || 'now';
+  const time    = notificationDay(n);
   // ColonyFounded's founding grain balance is the one line that must ride ON
   // the chip: a colony that cannot feed itself is a decision waiting, and the
   // one-line text alone would not say so.
