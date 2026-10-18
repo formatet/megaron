@@ -14,7 +14,7 @@ const vault = existsSync(vaultPath) ? readFileSync(vaultPath, 'utf8') : snapshot
 // implementation under test. A new vault row or missing branch must fail.
 const coverage = {
   'name_place': ['name_place'],
-  'build': ['build'], 'cancel-build': ['cancel-build'], 'recruit': ['recruit'],
+  'build': ['build'], 'cancel-build': ['cancel-build'], 'demolish': ['demolish'], 'recruit': ['recruit'],
   'place / staff': ['place', 'staff', 'unplace'],
   'place → ta hex (gren av `place`)': ['place'], 'labor (cult)': ['labor'],
   'slaughter': ['slaughter'], 'disband': ['disband'], 'transfer': ['transfer', 'gift/tribute'],

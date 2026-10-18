@@ -421,6 +421,7 @@ func main() {
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/actions", ph.Actions)
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/army", ph.GetArmy)
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/buildings", ph.Buildings)
+			r.Delete("/worlds/{worldID}/provinces/{provinceID}/buildings/{buildingID}", ph.DemolishBuilding)
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/goods", ph.Goods)
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/ticklog", ph.Ticklog)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/build", ph.Build)

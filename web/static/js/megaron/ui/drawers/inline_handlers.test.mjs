@@ -7,7 +7,7 @@ class El {
  querySelectorAll(){return [];}setAttribute(){}addEventListener(k,fn){this.events[k]=fn;}
  set innerHTML(value){this.html=value;this.children=[];}get innerHTML(){return this.html || '';}
 }
-const els=new Map(['city-bld-sec','kult-body','dip-trade-m','dip-passage-m','war-abandon-res'].map(k=>[k,new El()]));
+const els=new Map(['city-bld-sec','kult-body','dip-trade-m','dip-passage-m','war-abandon-res','city-demolish-res'].map(k=>[k,new El()]));
 const noopEl=new Proxy({}, {get:(_t,k)=>k==='style'?{}:()=>noopEl,set:()=>true});
 globalThis.ResizeObserver ??= class { observe() {} };
 globalThis.document={getElementById:k=>k==='net-status'?null:els.get(k)||noopEl,querySelector:()=>null,querySelectorAll:()=>[],createElement:()=>new El(),addEventListener(){}};
@@ -15,7 +15,7 @@ globalThis.window={addEventListener(){},matchMedia:()=>({matches:false,addEventL
 globalThis.localStorage={getItem:()=>null,setItem(){}};
 globalThis.alert=globalThis.confirm=()=>assert.fail('browser dialog must never be called');
 const {State}=await import('../../state.js');
-const {cancelBuild}=await import('./city.js');
+const {cancelBuild,demolishBuilding}=await import('./city.js');
 const {okRite}=await import('./kult.js');
 const {dipCancel,dipArrangePassage,dipCallBack}=await import('./diplomacy.js');
 const {warAbandon}=await import('./war.js');
@@ -42,4 +42,16 @@ test('K: real abandon handler cannot POST before inline confirmation; refusal re
  calls.length=0;globalThis.fetch=async(url,opts={})=>{calls.push([url,opts]);return new Response(JSON.stringify({error:'Cannot abandon capital'}),{status:422});};
  await warAbandon('s','Nostos');assert.equal(calls.length,0,'no pre-confirmation POST');
  const host=els.get('war-abandon-res');await host.children[1].events.click();assert.equal(calls.length,1);assert.equal(calls[0][1].method,'POST');assert.equal(host.children.at(-1).textContent,'Cannot abandon capital');
+});
+
+test('demolish needs the inline confirm, then shows the server refusal beside the buildings',async()=>{
+ globalThis.fetch=async(url,opts={})=>{calls.push([url,opts]);return new Response(JSON.stringify({error:'Server refused <literally>'}),{status:403});};
+ calls.length=0;demolishBuilding('p','b1','Farm @ (1,0)');
+ const host=els.get('city-demolish-res');
+ assert.match(host.children[0].textContent,/Demolish Farm @ \(1,0\)\?/);
+ assert.equal(calls.length,0,'opening the prompt must not send anything');
+ const [,yes,no]=host.children;assert.equal(yes.textContent,'Demolish');assert.equal(no.textContent,'Keep it');
+ await yes.events.click();
+ assert.equal(calls.length,1);assert.equal(calls[0][1].method,'DELETE');assert.match(calls[0][0],/\/provinces\/p\/buildings\/b1$/);
+ assert.equal(els.get('city-bld-sec').children.at(-1).textContent,'Server refused <literally>');
 });
