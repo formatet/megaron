@@ -1,0 +1,9 @@
+=== RUN   TestPlacementTakeBusyHolderReturnsConflict
+2026/10/18 07:01:28 INFO player registered id=bae9387d-a930-4f1d-91ab-f976c146b34f username=hexown-a-9b7cd8fb-039f-49b3-91ad-716bc3a8c7a1
+2026/10/18 07:01:28 INFO player registered id=a94008ce-4aee-4519-8d4d-fb0847ffbfdb username=hexown-b-9f5a1dd0-3e3c-4c84-837f-ed5d49866581
+    placement_concurrency_test.go:192: take waited for holder while holding taker — lock cycle possible
+--- FAIL: TestPlacementTakeBusyHolderReturnsConflict (2.15s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	2.155s
+FAIL
+» färsk DB på migration 183 · commit e38acc13+ändringar

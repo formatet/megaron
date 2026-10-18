@@ -1,0 +1,8 @@
+=== RUN   TestPlacementSlaughterLocksSettlementBeforeGoods
+2026/10/18 07:08:20 INFO player registered id=fd15b806-1b44-4d12-b293-f9c2e193f791 username=placement-488f4ca1-238e-4113-94bb-95bef9628b39
+    placement_concurrency_test.go:280: slaughter locked goods before settlement: ERROR: could not obtain lock on row in relation "settlement_goods" (SQLSTATE 55P03)
+--- FAIL: TestPlacementSlaughterLocksSettlementBeforeGoods (0.08s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.085s
+FAIL
+» färsk DB på migration 183 · commit 0eb9201e+ändringar

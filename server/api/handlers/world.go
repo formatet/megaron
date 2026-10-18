@@ -1034,8 +1034,8 @@ func loadVisibleOrigins(ctx context.Context, pool *pgxpool.Pool, worldID, player
 // internal/combat's march-sighting scan can reuse the exact same visibility gate
 // without importing api/handlers, which G1 forbids). See province.LoadLiveEyes for
 // the full doc comment — behavior is unchanged, this just keeps every existing
-// call site in this package working against *pgxpool.Pool.
-func loadLiveEyes(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uuid.UUID, now time.Time) []province.Eye {
+// call site working against pools or the caller's existing transaction.
+func loadLiveEyes(ctx context.Context, pool province.Queryer, worldID, playerID uuid.UUID, now time.Time) []province.Eye {
 	return province.LoadLiveEyes(ctx, pool, worldID, playerID, now)
 }
 
@@ -1051,7 +1051,7 @@ func interpolatedEyePos(now, departsAt, arrivesAt time.Time, path []province.Map
 // provinces scouted by explore marches, and cities reached by messenger contact.
 // These stay visible (terrain + last-seen deposits/city, dimmed, frozen) after the
 // live eye that revealed them moves on — but carry no live activity.
-func loadRememberedTiles(ctx context.Context, pool *pgxpool.Pool, worldID, playerID uuid.UUID) map[[2]int]bool {
+func loadRememberedTiles(ctx context.Context, pool province.Queryer, worldID, playerID uuid.UUID) map[[2]int]bool {
 	rows, err := pool.Query(ctx,
 		`SELECT q, r FROM player_scouted_tiles WHERE world_id = $1 AND player_id = $2
 		 UNION

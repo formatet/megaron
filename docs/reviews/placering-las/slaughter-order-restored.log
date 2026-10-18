@@ -1,0 +1,6 @@
+=== RUN   TestPlacementSlaughterLocksSettlementBeforeGoods
+2026/10/18 07:08:25 INFO player registered id=b0d26a8d-f0ba-46b0-8153-1d76cea648c2 username=placement-93732d82-9eb3-4d08-9641-0640d640fdec
+--- PASS: TestPlacementSlaughterLocksSettlementBeforeGoods (0.08s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.085s
+» färsk DB på migration 183 · commit 0eb9201e+ändringar

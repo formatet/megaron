@@ -1,0 +1,16 @@
+{
+  "q": 53,
+  "r": 7,
+  "name": "inland-proof",
+  "coastal": false,
+  "known_hexes": 19,
+  "province_id": "7a4006be-7bed-42af-bb70-5a2c37c185f7",
+  "grain_amount": 1200,
+  "grain_carried": 1200,
+  "settlement_id": "2435859a-be53-4090-934b-b607f65bab36",
+  "unknown_hexes": 0,
+  "silver_carried": 480,
+  "loyalty_warning": "",
+  "food_net_per_tick": 1.166666666666666,
+  "grain_net_per_tick": 1.166666666666666
+}

@@ -1,0 +1,10 @@
+post-lock named assertion RED -> exact bytes -> GREEN d486589c54144219ff01145bc5fe38d4580a3a03977ad13465d454ff862c636a
+delete-lock named assertion RED -> exact bytes -> GREEN d486589c54144219ff01145bc5fe38d4580a3a03977ad13465d454ff862c636a
+growth-lock named assertion RED -> exact bytes -> GREEN 5f57e56b5b79c3031fce599ab396c58ed34a1916942dfa1a615c5e7c148cf86f
+growth-ordinal named assertion RED -> exact bytes -> GREEN dd4f3990de56fd6dd74b56f67353ea83431ff6acf40148093a624b2892b67b8d
+growth-pool named assertion RED -> exact bytes -> GREEN dd4f3990de56fd6dd74b56f67353ea83431ff6acf40148093a624b2892b67b8d
+take-no-wait named assertion RED -> exact bytes -> GREEN d486589c54144219ff01145bc5fe38d4580a3a03977ad13465d454ff862c636a
+terrain-pool named assertion RED -> exact bytes -> GREEN 2a19c8c30b5b950c9740e772eb5b9220bd890b94b73e463baba2a1902581f5c3
+eyes-pool named assertion RED -> exact bytes -> GREEN 2a19c8c30b5b950c9740e772eb5b9220bd890b94b73e463baba2a1902581f5c3
+memory-pool named assertion RED -> exact bytes -> GREEN 2a19c8c30b5b950c9740e772eb5b9220bd890b94b73e463baba2a1902581f5c3
+slaughter-order named assertion RED -> exact bytes -> GREEN 81010897ba3fd443c38b67d8e0d9eb441fc8674935212f1e1e23cd6760e705e6

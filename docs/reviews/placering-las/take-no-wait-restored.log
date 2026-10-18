@@ -1,0 +1,7 @@
+=== RUN   TestPlacementTakeBusyHolderReturnsConflict
+2026/10/18 07:01:33 INFO player registered id=d5290101-70a1-433b-99d1-b74d60cd9266 username=hexown-a-c049cf2c-6228-4001-abc1-a5dfe8c2a2de
+2026/10/18 07:01:33 INFO player registered id=8bd70812-17bc-4bbd-96c8-ee409dd2cfb9 username=hexown-b-eeb90559-2858-4fe0-9bfb-ac3e09639f7f
+--- PASS: TestPlacementTakeBusyHolderReturnsConflict (0.17s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.173s
+» färsk DB på migration 183 · commit e38acc13+ändringar

@@ -1,0 +1,7 @@
+=== RUN   TestPlacementGrowthConcurrentRespectsCapacity
+    placement_concurrency_test.go:78: concurrent growth exceeded real hex cap: max8 count8
+--- FAIL: TestPlacementGrowthConcurrentRespectsCapacity (0.05s)
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.050s
+FAIL
+» färsk DB på migration 183 · commit e38acc13+ändringar

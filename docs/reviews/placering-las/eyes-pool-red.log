@@ -1,0 +1,8 @@
+=== RUN   TestPlacementSingleConnectionCannotStarve
+2026/10/18 07:04:52 INFO player registered id=f9c599b4-33b2-4b2a-9b9d-e2549c358c06 username=placement-a03ea531-fbdb-4cce-a80a-6f522682e249
+    placement_concurrency_test.go:236: single-connection placements starved: map[403:1 500:7]
+--- FAIL: TestPlacementSingleConnectionCannotStarve (5.07s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	5.076s
+FAIL
+» färsk DB på migration 183 · commit ea5ecb6f+ändringar

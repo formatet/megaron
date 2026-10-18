@@ -1,0 +1,6 @@
+=== RUN   TestPlacementDELETEWaitsBeforeLockingPlacement
+2026/10/18 07:01:07 INFO player registered id=827b650b-aff3-459f-94c5-2510e3cb7ce0 username=placement-fe1df23f-9d53-4ebe-b597-e6d52e522dde
+--- PASS: TestPlacementDELETEWaitsBeforeLockingPlacement (0.10s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.099s
+» färsk DB på migration 183 · commit e38acc13+ändringar

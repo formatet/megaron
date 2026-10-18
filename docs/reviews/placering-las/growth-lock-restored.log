@@ -1,0 +1,5 @@
+=== RUN   TestPlacementGrowthConcurrentRespectsCapacity
+--- PASS: TestPlacementGrowthConcurrentRespectsCapacity (0.08s)
+PASS
+ok  	formatet/megaron/server/internal/economy	0.081s
+» färsk DB på migration 183 · commit e38acc13+ändringar

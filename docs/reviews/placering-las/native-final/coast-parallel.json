@@ -1,0 +1,102 @@
+{
+  "post": [
+    [
+      201,
+      {
+        "gubbe_ordinal": 6
+      }
+    ],
+    [
+      409,
+      {
+        "error": "this hex is fully staffed for that good"
+      }
+    ],
+    [
+      409,
+      {
+        "error": "this hex is fully staffed for that good"
+      }
+    ],
+    [
+      409,
+      {
+        "error": "this hex is fully staffed for that good"
+      }
+    ],
+    [
+      409,
+      {
+        "error": "this hex is fully staffed for that good"
+      }
+    ],
+    [
+      409,
+      {
+        "error": "this hex is fully staffed for that good"
+      }
+    ],
+    [
+      409,
+      {
+        "error": "this hex is fully staffed for that good"
+      }
+    ],
+    [
+      409,
+      {
+        "error": "this hex is fully staffed for that good"
+      }
+    ]
+  ],
+  "delete": [
+    [
+      200,
+      {
+        "unplaced": 6
+      }
+    ],
+    [
+      404,
+      {
+        "error": "that citizen isn't placed"
+      }
+    ],
+    [
+      404,
+      {
+        "error": "that citizen isn't placed"
+      }
+    ],
+    [
+      404,
+      {
+        "error": "that citizen isn't placed"
+      }
+    ],
+    [
+      404,
+      {
+        "error": "that citizen isn't placed"
+      }
+    ],
+    [
+      404,
+      {
+        "error": "that citizen isn't placed"
+      }
+    ],
+    [
+      404,
+      {
+        "error": "that citizen isn't placed"
+      }
+    ],
+    [
+      404,
+      {
+        "error": "that citizen isn't placed"
+      }
+    ]
+  ]
+}

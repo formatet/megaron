@@ -1,0 +1,5 @@
+=== RUN   TestPlacementGrowthRejectsStaleOrdinalAndFullPool
+--- PASS: TestPlacementGrowthRejectsStaleOrdinalAndFullPool (0.03s)
+PASS
+ok  	formatet/megaron/server/internal/economy	0.030s
+» färsk DB på migration 183 · commit e38acc13+ändringar

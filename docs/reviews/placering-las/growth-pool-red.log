@@ -1,0 +1,7 @@
+=== RUN   TestPlacementGrowthRejectsStaleOrdinalAndFullPool
+    placement_concurrency_test.go:98: already full population pool: true <nil>
+--- FAIL: TestPlacementGrowthRejectsStaleOrdinalAndFullPool (0.03s)
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.028s
+FAIL
+» färsk DB på migration 183 · commit e38acc13+ändringar

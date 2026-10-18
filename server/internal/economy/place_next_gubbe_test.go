@@ -17,7 +17,7 @@ func TestPlaceNextGubbeOnBestFoodHex_PicksHighestYieldThenFallsToPool(t *testing
 	// A settlement with ONE coastal_sea hex (fish, cap 2 without harbour) and
 	// the rest mountain_limestone (no food at all) — a tightly bounded
 	// scenario so "falls to pool once full" is reachable in one test.
-	settlementID := recomputeWaterFixture(t, 100, 500, /*grainTiles*/ 0, /*fishTiles*/ 1)
+	settlementID := recomputeWaterFixture(t, 100, 500 /*grainTiles*/, 0 /*fishTiles*/, 1)
 
 	placed, err := PlaceNextGubbeOnBestFoodHex(ctx, pool, settlementID, 1)
 	if err != nil {
@@ -68,7 +68,7 @@ func TestPlaceNextGubbeOnBestFoodHex_GrainNeverBlocksOnCapacity(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 
-	settlementID := seedFullRingFixture(t, 100, 500, "plains")
+	settlementID := seedFullRingFixture(t, 100, 1000, "plains")
 	for ordinal := 1; ordinal <= 10; ordinal++ {
 		placed, err := PlaceNextGubbeOnBestFoodHex(ctx, pool, settlementID, ordinal)
 		if err != nil {
