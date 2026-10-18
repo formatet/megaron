@@ -239,7 +239,7 @@ const (
 type Stance string
 
 const (
-	StanceFortify Stance = "fortify" // defensive bonus, cannot move
+	StanceFortify Stance = "fortify" // holds ground, cannot move
 	StanceStorm   Stance = "storm"   // besieging adjacent settlement
 	StanceSentry  Stance = "sentry"  // patrols sentry_q/r, intercepts enemies within 3 hex
 )

@@ -31,7 +31,7 @@ import (
 // projection inserts. Re-running the handler is therefore safe.
 //
 // C5 stance effects (implemented):
-//   - fortify: defending garrison units in fortify stance get ×1.5 strength.
+//   - fortify: holds ground; combat participation stays fixed.
 //   - storm:   arriving unit with storm stance halves the wall-level bonus of the target.
 //
 // TODO C5-sentry: sentry interception is NOT yet active.

@@ -1,6 +1,6 @@
 A **stance** tells a unit how to behave where it stands. Set it in the order menu when you march, or later from **War → Army** with the stance selector and **Set** — which, for a unit in the field, is an order carried by [[runners|Runner]].
 
-- **fortify** — dig in. Better defence, and more of your men engage when attacked. The unit cannot move until the stance is cleared.
+- **fortify** — dig in and hold this ground. The unit cannot move until the stance is cleared. Battle participation stays at 90%.
 - **storm** — assault posture against an adjacent city. Halves what its wall absorbs, at the cost of much heavier losses of your own.
 - **sentry** — watch this ground. The unit spots marches passing nearby and **intercepts** enemy caravans within reach. You are alerted when it catches something.
 
