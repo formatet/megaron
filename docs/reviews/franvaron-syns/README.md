@@ -17,7 +17,7 @@ Baseline master3edcfb43 / migration185; 144-day status tip already removed by19 
 
 ## Resultat
 
-Production `93c5a34e` on `codex/franvaron-syns`. No merge/push/deploy or live changes for slice validation.
+Production `93c5a34e` + reviewfix `764dd2be` on `codex/franvaron-syns`. No merge/push/deploy or live changes for slice validation.
 
 | Gate | Evidence |
 |---|---|
@@ -28,10 +28,20 @@ Production `93c5a34e` on `codex/franvaron-syns`. No merge/push/deploy or live ch
 | Kharis | Canonical boundaries60/30/5 in both directions, external between-tick changes, initial maintenance crossing and rollback/retry tested. A band-change notice names both old and new band. Rule/start40/cap40/no-grace/punishment unchanged. |
 | Existing loss channel | Daily UnitAttrition audit retained; non-destroyed land garrison routine notices replaced by transition owner. All land types incl elite carry additive pre-loss location witness. Destruction, field/naval notices unchanged and tested. |
 | Day | Migration187 captures exact world-specific tick for new archive rows; explicit transition tick retained. API/live WS/delayed WS day agree; day0 remains known. Only explicit original body.world_tick backfills history, unknown remainsNULL, payload/id/walltime unchanged. |
-| Mutation | Eight physical namedRED→byte-exactrestore→fresh187GREEN: transition suppression, wrong-city witness, band boundary; wrong-world day, delayedWS current-day substitution, invented legacy days; elite witness exclusion, daily routine restoration. Repro: `domain-mutations.py`, `day-mutations.py`, `combat-mutations.py`; logs beside scripts. |
+| Mutation | Original eight physical namedRED→byte-exactrestore→fresh187GREEN: transition suppression, wrong-city witness, band boundary; wrong-world day, delayedWS current-day substitution, invented legacy days; elite witness exclusion, daily routine restoration. Repro: `domain-mutations.py`, `day-mutations.py`, `combat-mutations.py`; logs beside scripts. |
 | Four surfaces | Three new kinds mapped to upkeep/kharis Codex, actionable CLI/web text, all archive/chip/dispatch/watch rows show Day# or Dayunknown. Latest active city hunger floats above chronology; recovery unpins old start, restarting repins. Historical Sitos releases grouped with drill-down; archives remain readable. |
-| Verification | Full `tools/gotest.sh` fresh187 GREEN(world145.890s); vet GREEN;646JS/0fail; four Day guards GREEN. `full-go.log`, `vet.log`, `js.log`, `day-guard.log`. |
+| Verification | Full `tools/gotest.sh` fresh187 GREEN(world145.890s) before reviewfix; after reviewfix whole fresh kharis10.328s+combat11.452s and vet GREEN, fixed-id failure fixture also passes twice;646JS/0fail (UI unchanged by reviewfix); four Day guards GREEN. `full-go.log`, `vet.log`, `js.log`, `day-guard.log`. |
 | Native | `native/evidence.json`: process health commit93c5a34e/migration187/statusok, productiondirty=false; natural register→CLIlogin/join/found/watch/feed gives Day#0. Actual Firefox1280/390, zero pageerrors, reviewed1:1. New-kind rendering uses **separately labeled synthetic replay**, not a claim of natural hunger/band transitions; those use real PG handlers above. |
+
+## Claude review17:51 — notification errors must not stop the world
+
+`764dd2be` restores log+continue per Wanax and logs a failed garrison observation, so observation errors cannot prevent recurring KharisTick scheduling. Atomic per-Wanax transition state remains available for the next scheduled observation.
+
+`TestTickNoticeFailureKeepsWorldRunning`: pinned A-low/B-high ids, B inserted first; A's notification CHECK fails, B still loses exactly0.1 kharis and gets its notice, next tick is queued. Remove failure: next tick maintains both again, A's original band crossing arrives at day11, B has no duplicate. Garrison-notice failure separately still queues next tick. NamedRED on previoushandoff, **two more physical return mutations** namedRED→byte-exactrestore→fresh187GREEN (`world-tick-*` logs/repro). **Total10 physical mutation cases.**
+
+Garrison observation keeps its existing world transaction: on a notification fault that observation batch rolls back, is logged, and is retried on a later scheduled tick; it cannot stop gameplay or future world ticks. Splitting garrison observation into city transactions is not claimed.
+
+Validation after reviewfix: `reviewfix-domain-combat.log`, `reviewfix-repeat.log`, `reviewfix-vet.log`. Final ordinary CLI/watch/Firefox process proof: `native-reviewfix/evidence.json`, commit764dd2be/migration187/dirtyfalse. Earlier full suite and646JS remain applicable except for the small error-isolation control flow covered by these fresh targeted checks. No gameplay rule changed.
 
 ## Kända avgränsningar / integration
 

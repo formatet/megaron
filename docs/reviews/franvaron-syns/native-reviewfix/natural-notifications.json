@@ -1,0 +1,52 @@
+{
+  "notifications": [
+    {
+      "id": "9109d85e-3d31-46d4-8c37-47a14255d405",
+      "kind": "MetropolisFounded",
+      "level": 2,
+      "body": {
+        "q": 10,
+        "r": 55,
+        "name": "Proofpolis",
+        "coastal": false,
+        "known_hexes": 19,
+        "province_id": "8ac6334d-dd7a-4c6d-8b4d-e78df7b0f38d",
+        "grain_amount": 1200,
+        "grain_carried": 1200,
+        "settlement_id": "632302aa-be20-4e3f-a01e-29b34fb01017",
+        "unknown_hexes": 0,
+        "silver_carried": 480,
+        "food_net_per_tick": 1.166666666666666,
+        "grain_net_per_tick": 1.166666666666666
+      },
+      "created_at": "2026-10-18T17:58:09.177564+02:00",
+      "read_at": null,
+      "world_tick": 0
+    },
+    {
+      "id": "85c7d160-3bd4-43f5-92e8-5ccd53bc2fb2",
+      "kind": "OpeningDispatch",
+      "level": 4,
+      "body": {
+        "title": "Your people await you",
+        "host_id": "4b2a910e-ef4f-4325-a4e4-c56b81a17073",
+        "returning": false,
+        "paragraphs": [
+          "Time. A day passes every 1 minute. Days begin after 1 Wanaxes join.",
+          "Foot soldiers cross a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. War chariots cross plains in 0.67 day but need 2 in olive woodland and 3 in hills, cedar forest or desert. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.",
+          "Your Host carries 1200 grain and 480 silver. It lives on subsistence until founding; these reserves do not drain. Find your place \u2014 founding is final.",
+          "Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.",
+          "The gods. A new Wanax starts at 40 Kharis. It fades slowly from the start; each additional city increases the daily cost, even with a temple. A temple takes 16 days to build: staff and feed it to earn favour. Low standing risks punishment.",
+          "Place citizens on olive woodland or cedar forest for timber, and on stone-bearing ground for stone; idle citizens produce nothing.",
+          "Orders travel. A Runner must reach a unit in the field before it follows your new order.",
+          "Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.",
+          "Rules: ? (Codex). Problems: Report. Community chat: Account."
+        ]
+      },
+      "created_at": "2026-10-18T17:58:08.362936+02:00",
+      "read_at": null,
+      "world_tick": 0
+    }
+  ],
+  "unread": 2
+}

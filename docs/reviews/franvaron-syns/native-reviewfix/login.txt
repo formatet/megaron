@@ -1,0 +1,3 @@
+Logged in to http://127.0.0.1:43159
+Active world:   0208c688-fb57-4b26-9e13-ffbbe00284fc
+Your province:

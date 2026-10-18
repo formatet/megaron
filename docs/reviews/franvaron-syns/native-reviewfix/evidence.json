@@ -1,0 +1,34 @@
+{
+  "commit": "764dd2be7a89ecac5e432ed0e7f858092aeb1ab6",
+  "dirty": false,
+  "dirty_scope": "tracked server/web/tools versus HEAD",
+  "health": {
+    "commit": "764dd2be7a89ecac5e432ed0e7f858092aeb1ab6",
+    "migration": 187,
+    "status": "ok"
+  },
+  "proof_scope": "Natural register/login/join/found/CLI/archive dates; explicitly synthetic new-kind renderer replay. Backend transitions verified separately in PostgreSQL.",
+  "screens": {
+    "1280": {
+      "synthetic_archive_rows": [
+        "\n        \ud83c\udf3e\n        Hungry City: the garrison is losing men to hunger. Soldiers need grain even when the city has a food surplus. Place citizens on grain or transfer grain here.\n        Day #5\n        \n      ",
+        "\n        \ud83c\udfdb\n        Build complete: farm\n        Day unknown\n        \n      ",
+        "\n        \ud83c\udfdb\n        Kharis: Indifferent \u2192 Wrathful (3). Check Kult for decay and temple support; staff and feed your temples.\n        Day #8\n        \n      ",
+        "\n        \ud83c\udf3e\n        Recovered City: the garrison is no longer losing men to hunger.\n        Day #7\n        \n      ",
+        "\n        \ud83c\udf3e\n        Recovered City: the garrison is losing men to hunger. Soldiers need grain even when the city has a food surplus. Place citizens on grain or transfer grain here.\n        Day #6\n        \n      "
+      ],
+      "synthetic_dispatch": "\ud83c\udf3e\nHungry City: the garrison is losing men to hunger. Soldiers need grain even when the city has a food surplus. Place citizens on grain or transfer grain here.\nDay #5\n\u2316 Take me there\n? Read about this\nStop these as dispatches (still kept in Notifications)"
+    },
+    "390": {
+      "synthetic_archive_rows": [
+        "\n        \ud83c\udf3e\n        Hungry City: the garrison is losing men to hunger. Soldiers need grain even when the city has a food surplus. Place citizens on grain or transfer grain here.\n        Day #5\n        \n      ",
+        "\n        \ud83c\udfdb\n        Build complete: farm\n        Day unknown\n        \n      ",
+        "\n        \ud83c\udfdb\n        Kharis: Indifferent \u2192 Wrathful (3). Check Kult for decay and temple support; staff and feed your temples.\n        Day #8\n        \n      ",
+        "\n        \ud83c\udf3e\n        Recovered City: the garrison is no longer losing men to hunger.\n        Day #7\n        \n      ",
+        "\n        \ud83c\udf3e\n        Recovered City: the garrison is losing men to hunger. Soldiers need grain even when the city has a food surplus. Place citizens on grain or transfer grain here.\n        Day #6\n        \n      "
+      ],
+      "synthetic_dispatch": "\ud83c\udf3e\nHungry City: the garrison is losing men to hunger. Soldiers need grain even when the city has a food surplus. Place citizens on grain or transfer grain here.\nDay #5\n\u2316 Take me there\n? Read about this\nStop these as dispatches (still kept in Notifications)"
+    }
+  },
+  "page_errors": []
+}

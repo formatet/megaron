@@ -1,0 +1,7 @@
+» färsk DB på migration 187 · commit f3c90d72+ändringar
+2026/10/18 17:56:26 ERROR kharis maintenance failed player=00000000-0000-0000-0000-000000001401 world=b817e4bd-5666-4d38-81fc-517bb9cf2188 err="persist transition notice: ERROR: new row for relation \"notifications\" violates check constraint \"test_notice_owner_failure\" (SQLSTATE 23514)"
+--- FAIL: TestTickNoticeFailureKeepsWorldRunning (0.10s)
+    tick_notice_failure_test.go:103: garrison observation must not abort world tick: persist transition notice: ERROR: new row for relation "notifications" violates check constraint "test_notice_garrison_failure" (SQLSTATE 23514)
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.106s
+FAIL
