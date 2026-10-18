@@ -1,0 +1,7 @@
+=== RUN   TestStarvationSignal_AuditHasNoStateEffects
+2026/10/18 12:27:33 INFO starvation damage applied settlement=65fd0817-7297-4b9e-ab84-cd58adaf3525
+    hunger_signal_test.go:64: StarvationDamage1; full settlement/realm(goods/kharis)/units/loyalty projection hashes identical 585d9cbd0b15de0082be5e8f9d210ea9
+--- PASS: TestStarvationSignal_AuditHasNoStateEffects (0.03s)
+PASS
+ok  	formatet/megaron/server/internal/kharis	0.031s
+» färsk DB på migration 183 · commit cf626c78+ändringar

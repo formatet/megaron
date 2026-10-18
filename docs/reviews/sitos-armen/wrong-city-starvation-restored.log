@@ -1,0 +1,13 @@
+=== RUN   TestStarvationSignal_ActualLossEvenLastGarrison
+=== RUN   TestStarvationSignal_ActualLossEvenLastGarrison/100
+2026/10/18 12:32:26 INFO upkeep: grain attrition unit=adef77b3-f213-4a97-ba7f-77e978aaf5e8 lost=10 disbanded=false
+2026/10/18 12:32:26 INFO starvation damage applied settlement=d2c7d3ce-dbf7-4429-9302-a33d453cb68f
+=== RUN   TestStarvationSignal_ActualLossEvenLastGarrison/1
+2026/10/18 12:32:26 INFO upkeep: grain attrition unit=50b1ecb4-6074-4e09-9d5f-4f65ae1c6dfc lost=1 disbanded=true
+2026/10/18 12:32:26 INFO starvation damage applied settlement=88bccc82-11bf-44a5-9693-04db68316b17
+--- PASS: TestStarvationSignal_ActualLossEvenLastGarrison (0.10s)
+    --- PASS: TestStarvationSignal_ActualLossEvenLastGarrison/100 (0.05s)
+    --- PASS: TestStarvationSignal_ActualLossEvenLastGarrison/1 (0.05s)
+PASS
+ok  	formatet/megaron/server/internal/combat	0.104s
+» färsk DB på migration 183 · commit 88797ee0+ändringar

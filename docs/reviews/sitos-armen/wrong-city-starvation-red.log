@@ -1,0 +1,18 @@
+=== RUN   TestStarvationSignal_ActualLossEvenLastGarrison
+=== RUN   TestStarvationSignal_ActualLossEvenLastGarrison/100
+2026/10/18 12:32:24 INFO upkeep: grain attrition unit=4bd64bac-9823-46ba-8158-7526f15999c8 lost=10 disbanded=false
+2026/10/18 12:32:24 INFO starvation damage applied settlement=01c1ae76-7c26-44f2-9428-8249fb95c2da
+2026/10/18 12:32:24 INFO starvation damage applied settlement=0e974dda-90c4-477c-861a-2e24ed0c621f
+    hunger_signal_test.go:75: fed city B must remain separate from hungry A: size100 losses0 StarvationDamage1
+=== RUN   TestStarvationSignal_ActualLossEvenLastGarrison/1
+2026/10/18 12:32:24 INFO upkeep: grain attrition unit=96e8b173-7661-4534-a49a-a41a4790e7e4 lost=1 disbanded=true
+2026/10/18 12:32:24 INFO starvation damage applied settlement=d137e7d9-a7cd-4d37-b337-e80d40a775e5
+2026/10/18 12:32:24 INFO starvation damage applied settlement=71f5413e-d3ab-473e-af9a-42cb734ed725
+    hunger_signal_test.go:75: fed city B must remain separate from hungry A: size100 losses0 StarvationDamage1
+--- FAIL: TestStarvationSignal_ActualLossEvenLastGarrison (0.10s)
+    --- FAIL: TestStarvationSignal_ActualLossEvenLastGarrison/100 (0.05s)
+    --- FAIL: TestStarvationSignal_ActualLossEvenLastGarrison/1 (0.05s)
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.100s
+FAIL
+» färsk DB på migration 183 · commit 88797ee0+ändringar

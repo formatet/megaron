@@ -1,0 +1,5 @@
+Scheria pop 1174 tick 397 granary {'grain': 326.63811759692317, 'fish': 23.761882403076797}
+Phaistos pop 2972 tick 397 granary {'grain': 441.69931438460316, 'fish': 445.4006856153969}
+Tylissos pop 1172 tick 397 granary {'grain': 218.29985382473944}
+Phaistos {'SitosGranaryStored': 98, 'UpkeepSettled': 98, 'StarvationDamage': 74}
+Scheria {'UnitAttrition': 28, 'UpkeepSettled': 98, 'SitosGranaryStored': 11, 'StarvationDamage': 1}

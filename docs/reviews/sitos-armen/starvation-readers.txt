@@ -1,0 +1,5 @@
+server/internal/chronicle/chronicle.go:373:	case "StarvationDamage":
+server/internal/kharis/tick.go:1386:		// StarvationDamage stays: it is the audit/flavour signal, and the owner-facing
+server/internal/kharis/tick.go:1388:		_, _ = h.store.Append(ctx, s.id, events.StreamProvince, "StarvationDamage",
+
+Migration inventory: rg StarvationDamage server/db/migrations returned no matches.

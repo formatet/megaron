@@ -1,0 +1,6 @@
+{
+  "commit": "51e805a",
+  "migration": 183,
+  "status": "ok",
+  "note": "read-only live health alongside dump measurement; no live state changes by parent"
+}
