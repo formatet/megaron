@@ -863,15 +863,15 @@ func (h *UpkeepHandler) applyAttrition(ctx context.Context, u upkeepUnitRow, _ f
 		h.cascadeCargoDisband(ctx, worldID, u.id, u.cargoUnitID, u.q, u.r, "grain_shortage")
 	}
 
-	_, _ = h.store.Append(ctx, u.id, events.StreamCombat, "UnitAttrition",
-		map[string]any{
-			"unit_id":   u.id,
-			"lost":      lost,
-			"disbanded": disbanded,
-			"reason":    "grain_shortage",
-		},
-		worldID, nil,
-	)
+	payload := map[string]any{
+		"unit_id": u.id, "lost": lost, "disbanded": disbanded, "reason": "grain_shortage",
+	}
+	// Record the pre-loss garrison location: the last unit may now be disbanded
+	// or removed. Consumers must not reconstruct that outcome from live units.
+	if u.status == "garrison" && u.settlementID != nil && (u.unitType == "spearman" || u.unitType == "war_chariot") {
+		payload["garrison_settlement_id"] = *u.settlementID
+	}
+	_, _ = h.store.Append(ctx, u.id, events.StreamCombat, "UnitAttrition", payload, worldID, nil)
 	slog.Info("upkeep: grain attrition", "unit", u.id, "lost", lost, "disbanded", disbanded)
 	h.notifyUnitLoss(ctx, u, worldID, sid, "UnitAttrition", "grain_shortage", lost, disbanded)
 	return disbanded

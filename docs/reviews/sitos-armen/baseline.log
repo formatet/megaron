@@ -1,0 +1,8 @@
+=== RUN   TestStarvationSignal_NoFalseAuditAfterPaidUpkeep
+2026/10/18 12:27:30 INFO starvation damage applied settlement=a2dc1b3b-0f3d-401a-a5ca-3bbb70ecabe5
+    hunger_signal_test.go:33: false StarvationDamage1: grain reserve exists and no army loss occurred
+--- FAIL: TestStarvationSignal_NoFalseAuditAfterPaidUpkeep (0.03s)
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.029s
+FAIL
+» färsk DB på migration 183 · commit cf626c78+ändringar

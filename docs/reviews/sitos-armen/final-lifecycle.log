@@ -1,0 +1,41 @@
+» färsk DB på migration 183 · commit 88797ee0+ändringar
+=== RUN   TestStarvationSignal_ActualLossEvenLastGarrison
+=== RUN   TestStarvationSignal_ActualLossEvenLastGarrison/100
+2026/10/18 12:31:55 INFO upkeep: grain attrition unit=dbb902f2-a6d8-4542-8cdb-74c164c107cd lost=10 disbanded=false
+2026/10/18 12:31:55 INFO starvation damage applied settlement=bd03d863-6eef-40d7-bfae-ea1be3b4b1a9
+=== RUN   TestStarvationSignal_ActualLossEvenLastGarrison/1
+2026/10/18 12:31:55 INFO upkeep: grain attrition unit=dab783e9-282e-4808-a346-87d32211d40e lost=1 disbanded=true
+2026/10/18 12:31:55 INFO starvation damage applied settlement=64ebb411-5813-4a1a-ad6a-91ce7e223d6c
+--- PASS: TestStarvationSignal_ActualLossEvenLastGarrison (0.10s)
+    --- PASS: TestStarvationSignal_ActualLossEvenLastGarrison/100 (0.05s)
+    --- PASS: TestStarvationSignal_ActualLossEvenLastGarrison/1 (0.05s)
+PASS
+ok  	formatet/megaron/server/internal/combat	0.107s
+=== RUN   TestStarvationSignal_NoFalseAuditAfterPaidUpkeep
+--- PASS: TestStarvationSignal_NoFalseAuditAfterPaidUpkeep (0.02s)
+=== RUN   TestStarvationSignal_AuditHasNoStateEffects
+    hunger_signal_test.go:64: StarvationDamage0; full settlement/realm(goods/kharis)/units/loyalty projection hashes identical 849ed4bda610a05f6bad2cb1d0b3c9f6
+--- PASS: TestStarvationSignal_AuditHasNoStateEffects (0.02s)
+=== RUN   TestApplyStarvation_LeavesGarrisonSizeToUpkeep
+--- PASS: TestApplyStarvation_LeavesGarrisonSizeToUpkeep (0.02s)
+=== RUN   TestApplyStarvation_DoesNotDisbandSmallGarrison
+--- PASS: TestApplyStarvation_DoesNotDisbandSmallGarrison (0.02s)
+=== RUN   TestApplyStarvation_StillEmitsStarvationDamage
+2026/10/18 12:31:56 INFO starvation damage applied settlement=4f80dbc8-16cf-4eeb-bc80-efe50f606895
+--- PASS: TestApplyStarvation_StillEmitsStarvationDamage (0.02s)
+=== RUN   TestApplyStarvationWarning_RedWhenGrainWillEmptyWithinATick
+--- PASS: TestApplyStarvationWarning_RedWhenGrainWillEmptyWithinATick (0.02s)
+=== RUN   TestApplyStarvationWarning_YellowWhenTrendIsFarOff
+--- PASS: TestApplyStarvationWarning_YellowWhenTrendIsFarOff (0.02s)
+=== RUN   TestApplyStarvationWarning_SilentFromWarningWhenGrainAlreadyEmpty
+--- PASS: TestApplyStarvationWarning_SilentFromWarningWhenGrainAlreadyEmpty (0.01s)
+=== RUN   TestApplyStarvationWarning_SilentWhenGrainGrowing
+--- PASS: TestApplyStarvationWarning_SilentWhenGrainGrowing (0.01s)
+PASS
+ok  	formatet/megaron/server/internal/kharis	0.172s
+=== RUN   TestProcessBatch_DispatchesInTickPriorityOrder
+--- PASS: TestProcessBatch_DispatchesInTickPriorityOrder (0.01s)
+=== RUN   TestProcessBatch_ClaimsHighestPriorityAcrossBatchBoundary
+--- PASS: TestProcessBatch_ClaimsHighestPriorityAcrossBatchBoundary (0.02s)
+PASS
+ok  	formatet/megaron/server/internal/events	0.035s

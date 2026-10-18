@@ -1,0 +1,4 @@
+stale-starvation named RED -> exact bytes -> fresh GREEN d745f5d31bf8e904355f6d81c140243709becb1f873bcb96cbbef4a68e6e2be9
+loss-location-missing named RED -> exact bytes -> fresh GREEN 1316d5c01cdfe6ba1cf55e3d756b5aa098e02e160aaaf74f974c48f0b72229fd
+last-garrison-silent named RED -> exact bytes -> fresh GREEN d745f5d31bf8e904355f6d81c140243709becb1f873bcb96cbbef4a68e6e2be9
+wrong-city-starvation named RED -> exact bytes -> fresh GREEN d745f5d31bf8e904355f6d81c140243709becb1f873bcb96cbbef4a68e6e2be9

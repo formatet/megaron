@@ -1,0 +1,14 @@
+=== RUN   TestStarvationSignal_ActualLossEvenLastGarrison
+=== RUN   TestStarvationSignal_ActualLossEvenLastGarrison/100
+2026/10/18 12:27:46 INFO upkeep: grain attrition unit=390cfe00-7006-40d3-9802-185bd4d1414a lost=10 disbanded=false
+    hunger_signal_test.go:37: can't scan into dest[0]: cannot scan NULL into *string
+=== RUN   TestStarvationSignal_ActualLossEvenLastGarrison/1
+2026/10/18 12:27:46 INFO upkeep: grain attrition unit=84dab8b5-62f6-4656-8d18-155ca0fee98f lost=1 disbanded=true
+    hunger_signal_test.go:37: can't scan into dest[0]: cannot scan NULL into *string
+--- FAIL: TestStarvationSignal_ActualLossEvenLastGarrison (0.05s)
+    --- FAIL: TestStarvationSignal_ActualLossEvenLastGarrison/100 (0.03s)
+    --- FAIL: TestStarvationSignal_ActualLossEvenLastGarrison/1 (0.03s)
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.056s
+FAIL
+» färsk DB på migration 183 · commit cf626c78+ändringar

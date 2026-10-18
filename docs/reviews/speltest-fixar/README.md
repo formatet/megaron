@@ -183,3 +183,16 @@ Claude granskar/integrerar och kör recompute-all efter deploy; ingen liveomräk
 [Bevispaket](../eyes-tx/README.md), koda6f12654: fullfreshGo183/vet/654JS, tre fysiska
 mutationer och naturlig marsch→placering/CLI/Firefox. Inga ändrade FOW-/spelarregler,
 migration eller omräkning. Claude granskar/integrerar, hash + STOPP.
+
+
+## Slice 13 — sann svältsignal
+
+| Fynd | Utfall |
+|---|---|
+| 62 Phaistos-svältauditer | Falska audit-/krönikeposter utan påvisad pop/lojalitet/kharis-mutation; Scheria hade däremot18 faktiska förlorade män. |
+| Svältsignal från nollsaldo eller levande förband | Kräver dagens faktiska grain_shortage-utfall med additivt pre-loss-garnisonsläge; signal även när sista garnisonen är upplöst. |
+
+[Bevispaket](../sitos-armen/README.md): privat läsande snapshot, fysisk masterRED,
+fyra fysiska mutationer, faktisk upkeep→kharis samma tick med två städer, färsk Go183/vet/654JS.
+Timothys senaste beslut: Sitos tas bort i separat13b före14. Ingen reservdebit/ny Sitos-text i13.
+Claude granskar/integrerar; hash+STOPP. Därefter13b→14→15→16 efter respektive START.
