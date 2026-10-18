@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-eyes-tx/docs/reviews/eyes-tx/native.py", line 109, in <module>
+    else:raise AssertionError(march_attempts)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: [{'target': [39, 7], 'returncode': 1, 'text': 'Error: target hex not found (HTTP 404)\nSee keryx unit march --help\n'}, {'target': [43, 3], 'returncode': 1, 'text': 'Error: target hex not found (HTTP 404)\nSee keryx unit march --help\n'}, {'target': [45, 9], 'returncode': 1, 'text': 'Error: everything within 5 hexes of (45,9) is already known to you — explore an area with unseen ground in it (HTTP 422)\nSee keryx unit march --help\n'}]

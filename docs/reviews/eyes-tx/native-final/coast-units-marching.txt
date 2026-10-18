@@ -1,0 +1,112 @@
+{
+  "expedition_rules": {
+    "area_radius": 5,
+    "default_ticks": 10,
+    "max_ticks": 30,
+    "min_ticks": 4
+  },
+  "units": [
+    {
+      "category": "land",
+      "deployable": true,
+      "display_name": "2nd Spearmen of coast-proof",
+      "id": "35868485-709d-46d8-a652-a5557a469eba",
+      "in_battle": false,
+      "ordinal": 2,
+      "settlement_id": "68491922-5755-453e-983c-94a35cd14dcf",
+      "size": 100,
+      "status": "garrison",
+      "support_settlement_id": "68491922-5755-453e-983c-94a35cd14dcf",
+      "support_settlement_name": "coast-proof",
+      "type": "spearman",
+      "upkeep_context": "active",
+      "upkeep_grain_per_tick": 0.5,
+      "upkeep_silver_per_tick": 0
+    },
+    {
+      "arrival_tick": 11,
+      "arrives_at": "2026-10-18T07:40:52.63333+02:00",
+      "arrives_at_utc": "2026-10-18T05:40:52.640735082Z",
+      "category": "land",
+      "current_q": 2,
+      "current_r": 52,
+      "departs_at": "2026-10-18T07:40:40.63333+02:00",
+      "departure_tick": 5,
+      "deployable": true,
+      "display_name": "1st Spearmen of coast-proof",
+      "duration_ticks": 6,
+      "expedition": {
+        "area_q": 0,
+        "area_r": 54,
+        "home_by_tick": 35,
+        "homeward": false,
+        "length_ticks": 30,
+        "turn_tick": 20
+      },
+      "id": "d52e4069-39a0-4399-932d-87a4513640a5",
+      "in_battle": false,
+      "march_intent": "explore",
+      "ordinal": 1,
+      "path": [
+        [
+          2,
+          51
+        ],
+        [
+          2,
+          52
+        ],
+        [
+          1,
+          53
+        ],
+        [
+          1,
+          54
+        ],
+        [
+          0,
+          55
+        ]
+      ],
+      "q": 2,
+      "r": 51,
+      "size": 100,
+      "status": "marching",
+      "step_costs": [
+        1000,
+        2000,
+        2000,
+        1000
+      ],
+      "support_settlement_id": "68491922-5755-453e-983c-94a35cd14dcf",
+      "support_settlement_name": "coast-proof",
+      "target_q": 0,
+      "target_r": 55,
+      "type": "spearman",
+      "upkeep_context": "active",
+      "upkeep_grain_per_tick": 1,
+      "upkeep_silver_per_tick": 0
+    },
+    {
+      "category": "naval",
+      "crew": 20,
+      "deployable": true,
+      "display_name": "Salt and Myrrh, Galley of coast-proof",
+      "hull": 5,
+      "id": "c195876b-878b-4d14-8576-3ee9baf79837",
+      "in_battle": false,
+      "name": "Salt and Myrrh",
+      "ordinal": 1,
+      "settlement_id": "68491922-5755-453e-983c-94a35cd14dcf",
+      "size": 1,
+      "status": "garrison",
+      "support_settlement_id": "68491922-5755-453e-983c-94a35cd14dcf",
+      "support_settlement_name": "coast-proof",
+      "type": "galley",
+      "upkeep_context": "active",
+      "upkeep_grain_per_tick": 0.04,
+      "upkeep_silver_per_tick": 1.5
+    }
+  ]
+}

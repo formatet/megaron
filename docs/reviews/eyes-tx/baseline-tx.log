@@ -1,0 +1,22 @@
+» färsk DB på migration 183 · commit ed4e8804
+=== RUN   TestPlacementLiveEyesTransaction
+=== RUN   TestPlacementLiveEyesTransaction/marching-unit
+2026/10/18 07:36:53 INFO player registered id=a99c86ea-60f6-44fb-aed6-f301865fae59 username=placement-2d7b5321-cbfb-479f-b42e-6646a856474c
+    eyes_tx_test.go:71: interpolated eye missing at {Q:6 R:0}: [{Pos:{Q:0 R:0} Kind:settlement seaHorizon:map[]} {Pos:{Q:4 R:0} Kind:land-unit seaHorizon:map[]}]
+=== RUN   TestPlacementLiveEyesTransaction/outbound
+2026/10/18 07:36:53 INFO player registered id=b8b209c7-7dc8-47ba-9673-277a5aa43015 username=placement-f25e86b0-7764-49a4-af86-afc1e3bef246
+    eyes_tx_test.go:71: interpolated eye missing at {Q:4 R:0}: [{Pos:{Q:0 R:0} Kind:settlement seaHorizon:map[]} {Pos:{Q:0 R:0} Kind:land-unit seaHorizon:map[]}]
+=== RUN   TestPlacementLiveEyesTransaction/returning
+2026/10/18 07:36:53 INFO player registered id=e333c92c-8775-4cea-80eb-cf4ccc25e538 username=placement-9d1dfdce-e9b9-4d68-a032-86ec7e3cff6d
+    eyes_tx_test.go:71: interpolated eye missing at {Q:4 R:0}: [{Pos:{Q:0 R:0} Kind:settlement seaHorizon:map[]} {Pos:{Q:8 R:0} Kind:land-unit seaHorizon:map[]}]
+=== RUN   TestPlacementLiveEyesTransaction/combined
+2026/10/18 07:36:53 INFO player registered id=adfb342b-7b06-4788-8b27-493b71e7099b username=placement-7fffe8ec-bb63-4801-b965-30cb3618da56
+    eyes_tx_test.go:90: one-connection pool starved: context deadline exceeded
+--- FAIL: TestPlacementLiveEyesTransaction (3.36s)
+    --- FAIL: TestPlacementLiveEyesTransaction/marching-unit (0.09s)
+    --- FAIL: TestPlacementLiveEyesTransaction/outbound (0.09s)
+    --- FAIL: TestPlacementLiveEyesTransaction/returning (0.09s)
+    --- FAIL: TestPlacementLiveEyesTransaction/combined (3.09s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	3.361s
+FAIL

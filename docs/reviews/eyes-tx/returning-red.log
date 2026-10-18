@@ -1,0 +1,22 @@
+=== RUN   TestPlacementLiveEyesTransaction
+=== RUN   TestPlacementLiveEyesTransaction/marching-unit
+2026/10/18 07:38:24 INFO player registered id=dc0db3c7-6f8f-4aa5-b706-b81b69c61d0a username=placement-e0468d6a-10dc-4a1b-baad-1c8eafde95a3
+    eyes_tx_test.go:98: marching-unit placement201, pool/TX same eyes and TX healthy
+=== RUN   TestPlacementLiveEyesTransaction/outbound
+2026/10/18 07:38:24 INFO player registered id=f84f84e5-ecf1-472f-822d-994e3ef9fdaa username=placement-c15831e0-41d5-4819-8896-ed3772dd799e
+    eyes_tx_test.go:98: outbound placement201, pool/TX same eyes and TX healthy
+=== RUN   TestPlacementLiveEyesTransaction/returning
+2026/10/18 07:38:24 INFO player registered id=9038a0f5-da63-457e-bf9d-8835d75f59db username=placement-49bc05c6-43f1-4c54-baaf-3d32eaddfc21
+    eyes_tx_test.go:74: interpolated eyes differ: gotmap[{8 0}:1] wantmap[{4 0}:1]
+=== RUN   TestPlacementLiveEyesTransaction/combined
+2026/10/18 07:38:24 INFO player registered id=92d4b4dd-e938-4e15-9513-13fd7bdb5bd3 username=placement-02ee9d80-0552-49e9-8380-af2c7ca36028
+    eyes_tx_test.go:46: place with combined must succeed on one TX, got HTTP500: map[error:could not lock hex]
+--- FAIL: TestPlacementLiveEyesTransaction (0.37s)
+    --- PASS: TestPlacementLiveEyesTransaction/marching-unit (0.10s)
+    --- PASS: TestPlacementLiveEyesTransaction/outbound (0.10s)
+    --- FAIL: TestPlacementLiveEyesTransaction/returning (0.09s)
+    --- FAIL: TestPlacementLiveEyesTransaction/combined (0.08s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.370s
+FAIL
+» färsk DB på migration 183 · commit ed4e8804+ändringar

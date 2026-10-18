@@ -1,0 +1,28 @@
+» färsk DB på migration 183 · commit ed4e8804+ändringar
+=== RUN   TestPlacementLiveEyesTransaction
+=== RUN   TestPlacementLiveEyesTransaction/marching-unit
+2026/10/18 07:37:20 INFO player registered id=3c98747b-9719-4166-969d-4a78d02cbf55 username=placement-03886e52-efa2-4c2c-a908-7d0db02b44ec
+    eyes_tx_test.go:95: marching-unit placement201, pool/TX same eyes and TX healthy
+=== RUN   TestPlacementLiveEyesTransaction/outbound
+2026/10/18 07:37:20 INFO player registered id=a25bcfb5-c978-47f6-ae61-c48d2105802f username=placement-765f31bf-e78b-4f3f-bc86-7cf92d1270dc
+    eyes_tx_test.go:95: outbound placement201, pool/TX same eyes and TX healthy
+=== RUN   TestPlacementLiveEyesTransaction/returning
+2026/10/18 07:37:20 INFO player registered id=ac603e48-1265-4577-8d65-1bc43f4059ec username=placement-16c025cc-99a8-455a-842a-58087ad3a337
+    eyes_tx_test.go:95: returning placement201, pool/TX same eyes and TX healthy
+=== RUN   TestPlacementLiveEyesTransaction/combined
+2026/10/18 07:37:21 INFO player registered id=a4d57c6b-2e1a-4c2b-8e2b-c6c2dcf4a7b9 username=placement-c1a97204-3a43-4d83-8718-142f92b264be
+    eyes_tx_test.go:95: combined placement201, pool/TX same eyes and TX healthy
+--- PASS: TestPlacementLiveEyesTransaction (0.40s)
+    --- PASS: TestPlacementLiveEyesTransaction/marching-unit (0.10s)
+    --- PASS: TestPlacementLiveEyesTransaction/outbound (0.10s)
+    --- PASS: TestPlacementLiveEyesTransaction/returning (0.10s)
+    --- PASS: TestPlacementLiveEyesTransaction/combined (0.10s)
+=== RUN   TestPlacementConcurrentPOSTsSerialize
+2026/10/18 07:37:21 INFO player registered id=c983ac32-a3db-47ec-adda-b42ff5715162 username=placement-1a72be91-fccb-41ea-b4d6-6e44bd28e774
+    placement_concurrency_test.go:84: parallel HTTP statuses=map[201:1 409:7], placed=1
+--- PASS: TestPlacementConcurrentPOSTsSerialize (0.10s)
+=== RUN   TestPlacementSingleConnectionCannotStarve
+2026/10/18 07:37:21 INFO player registered id=bd4f4e97-a246-4921-8b37-e62c25dbf8ff username=placement-07a99891-dad9-4b71-b926-ee9be48457ce
+--- PASS: TestPlacementSingleConnectionCannotStarve (0.11s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.619s

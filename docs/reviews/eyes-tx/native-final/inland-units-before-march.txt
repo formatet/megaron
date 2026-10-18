@@ -1,0 +1,44 @@
+{
+  "expedition_rules": {
+    "area_radius": 5,
+    "default_ticks": 10,
+    "max_ticks": 30,
+    "min_ticks": 4
+  },
+  "units": [
+    {
+      "category": "land",
+      "deployable": true,
+      "display_name": "1st Spearmen of inland-proof",
+      "id": "20acb6ae-a84d-45ad-b3b1-caaf0c4929ef",
+      "in_battle": false,
+      "ordinal": 1,
+      "settlement_id": "b312d0fe-986e-4548-87fb-ab28fdf43d25",
+      "size": 100,
+      "status": "garrison",
+      "support_settlement_id": "b312d0fe-986e-4548-87fb-ab28fdf43d25",
+      "support_settlement_name": "inland-proof",
+      "type": "spearman",
+      "upkeep_context": "active",
+      "upkeep_grain_per_tick": 0.5,
+      "upkeep_silver_per_tick": 0
+    },
+    {
+      "category": "land",
+      "deployable": true,
+      "display_name": "2nd Spearmen of inland-proof",
+      "id": "39cde242-72fd-47c7-afc8-70056f2f9b56",
+      "in_battle": false,
+      "ordinal": 2,
+      "settlement_id": "b312d0fe-986e-4548-87fb-ab28fdf43d25",
+      "size": 100,
+      "status": "garrison",
+      "support_settlement_id": "b312d0fe-986e-4548-87fb-ab28fdf43d25",
+      "support_settlement_name": "inland-proof",
+      "type": "spearman",
+      "upkeep_context": "active",
+      "upkeep_grain_per_tick": 0.5,
+      "upkeep_silver_per_tick": 0
+    }
+  ]
+}

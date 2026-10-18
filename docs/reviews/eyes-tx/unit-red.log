@@ -1,0 +1,22 @@
+=== RUN   TestPlacementLiveEyesTransaction
+=== RUN   TestPlacementLiveEyesTransaction/marching-unit
+2026/10/18 07:38:03 INFO player registered id=2f444006-36e1-4431-b2b8-2d3b7f09d647 username=placement-93cb08a1-b91d-4537-b4f1-b6046fafec6b
+    eyes_tx_test.go:74: interpolated eyes differ: gotmap[{4 0}:1] wantmap[{6 0}:1]
+=== RUN   TestPlacementLiveEyesTransaction/outbound
+2026/10/18 07:38:03 INFO player registered id=9d3d699d-34b4-4c70-8b0d-d206fc09f32e username=placement-ec20af1b-4a32-4b0a-9a48-1f9bb8d8465f
+    eyes_tx_test.go:98: outbound placement201, pool/TX same eyes and TX healthy
+=== RUN   TestPlacementLiveEyesTransaction/returning
+2026/10/18 07:38:03 INFO player registered id=22b262cd-57b1-470b-98ec-1bebf09faef1 username=placement-fe04ec0a-7af1-4a03-b071-850859703985
+    eyes_tx_test.go:98: returning placement201, pool/TX same eyes and TX healthy
+=== RUN   TestPlacementLiveEyesTransaction/combined
+2026/10/18 07:38:03 INFO player registered id=079d668b-38af-4d1c-adb0-aad8d4e46dd6 username=placement-31c3920e-1a37-4620-92f6-8ff2d1386698
+    eyes_tx_test.go:74: interpolated eyes differ: gotmap[{4 0}:3] wantmap[{4 0}:2 {6 0}:1]
+--- FAIL: TestPlacementLiveEyesTransaction (0.38s)
+    --- FAIL: TestPlacementLiveEyesTransaction/marching-unit (0.09s)
+    --- PASS: TestPlacementLiveEyesTransaction/outbound (0.10s)
+    --- PASS: TestPlacementLiveEyesTransaction/returning (0.10s)
+    --- FAIL: TestPlacementLiveEyesTransaction/combined (0.09s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.381s
+FAIL
+» färsk DB på migration 183 · commit ed4e8804+ändringar

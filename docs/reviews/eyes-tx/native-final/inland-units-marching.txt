@@ -1,0 +1,92 @@
+{
+  "expedition_rules": {
+    "area_radius": 5,
+    "default_ticks": 10,
+    "max_ticks": 30,
+    "min_ticks": 4
+  },
+  "units": [
+    {
+      "category": "land",
+      "deployable": true,
+      "display_name": "2nd Spearmen of inland-proof",
+      "id": "39cde242-72fd-47c7-afc8-70056f2f9b56",
+      "in_battle": false,
+      "ordinal": 2,
+      "settlement_id": "b312d0fe-986e-4548-87fb-ab28fdf43d25",
+      "size": 100,
+      "status": "garrison",
+      "support_settlement_id": "b312d0fe-986e-4548-87fb-ab28fdf43d25",
+      "support_settlement_name": "inland-proof",
+      "type": "spearman",
+      "upkeep_context": "active",
+      "upkeep_grain_per_tick": 0.5,
+      "upkeep_silver_per_tick": 0
+    },
+    {
+      "arrival_tick": 6,
+      "arrives_at": "2026-10-18T07:40:43.675404+02:00",
+      "arrives_at_utc": "2026-10-18T05:40:43.683433463Z",
+      "category": "land",
+      "current_q": 50,
+      "current_r": 11,
+      "departs_at": "2026-10-18T07:40:31.675404+02:00",
+      "departure_tick": 0,
+      "deployable": true,
+      "display_name": "1st Spearmen of inland-proof",
+      "duration_ticks": 6,
+      "expedition": {
+        "area_q": 49,
+        "area_r": 10,
+        "home_by_tick": 30,
+        "homeward": false,
+        "length_ticks": 30,
+        "turn_tick": 15
+      },
+      "id": "20acb6ae-a84d-45ad-b3b1-caaf0c4929ef",
+      "in_battle": false,
+      "march_intent": "explore",
+      "ordinal": 1,
+      "path": [
+        [
+          51,
+          11
+        ],
+        [
+          50,
+          11
+        ],
+        [
+          50,
+          10
+        ],
+        [
+          50,
+          9
+        ],
+        [
+          49,
+          9
+        ]
+      ],
+      "q": 51,
+      "r": 11,
+      "size": 100,
+      "status": "marching",
+      "step_costs": [
+        2000,
+        1000,
+        1500,
+        1000
+      ],
+      "support_settlement_id": "b312d0fe-986e-4548-87fb-ab28fdf43d25",
+      "support_settlement_name": "inland-proof",
+      "target_q": 49,
+      "target_r": 9,
+      "type": "spearman",
+      "upkeep_context": "active",
+      "upkeep_grain_per_tick": 1,
+      "upkeep_silver_per_tick": 0
+    }
+  ]
+}

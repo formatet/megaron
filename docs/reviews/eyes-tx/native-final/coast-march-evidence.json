@@ -1,0 +1,13 @@
+{
+  "attempts": [
+    {
+      "target": [
+        0,
+        54
+      ],
+      "returncode": 0,
+      "text": "Unit d52e4069 exploring (0,54) \u2014 arrives in 6 days \u2014 Expedition around (0,54), 30 days; turns home by day 20; home by day 35\n"
+    }
+  ],
+  "marching_before_placements": true
+}

@@ -172,3 +172,14 @@ Claude mergade/deployade slice11 som a2738fa1; slice9 följer på den basen.
 [Bevispaket](../restfolk/README.md), kod42f7010e: 60tick före/efter Scheria/hills/kust,
 nio fysiska mutationer, naturlig CLI/Firefox och rollback-dryrun på privat livekopia (7städer,6ändrade).
 Claude granskar/integrerar och kör recompute-all efter deploy; ingen liveomräkning av Codex.
+
+## Slice 12 — live eyes på TX
+
+| Fynd | Utfall |
+|---|---|
+| FindPath inuti units/bud-readers | Samla och stäng alla tre läsningar före interpolation; samma pool/TX-ögon, ingen extra anslutning. |
+| Aretes could-not-lock-hex500 | Exakt500 inte återgivet: liten HTTP-fixtur och färsk privat livekopia gav201 redan på master. Säker masterRED: tappad TX-interpolation i tre loopar och MaxConns1-poolsvält; fysisk loopmutation fångar varje väg. |
+
+[Bevispaket](../eyes-tx/README.md), koda6f12654: fullfreshGo183/vet/654JS, tre fysiska
+mutationer och naturlig marsch→placering/CLI/Firefox. Inga ändrade FOW-/spelarregler,
+migration eller omräkning. Claude granskar/integrerar, hash + STOPP.
