@@ -110,7 +110,6 @@ func setupPlacementFixture(t *testing.T, catchmentTerrains map[[2]int]string) *p
 	r.Get("/worlds/{worldID}/provinces/{provinceID}/placements", ph.Placements)
 	r.Post("/worlds/{worldID}/provinces/{provinceID}/placements", ph.PlaceGubbe)
 	r.Delete("/worlds/{worldID}/provinces/{provinceID}/placements/{ordinal}", ph.UnplaceGubbe)
-	r.Post("/worlds/{worldID}/provinces/{provinceID}/slaughter-livestock", ph.SlaughterLivestock)
 	r.Put("/worlds/{worldID}/provinces/{provinceID}/labor", ph.LaborAlloc)
 	r.Get("/worlds/{worldID}/provinces/{provinceID}/goods", ph.Goods)
 
@@ -480,5 +479,16 @@ func TestPlaceGubbe_FarmL2HexCapsAtEight(t *testing.T) {
 	}
 	if placed != 8 || lastCode != http.StatusConflict {
 		t.Fatalf("placed %d grain gubbar on a farm-L2 hex, last status %d; want exactly 8 then 409", placed, lastCode)
+	}
+}
+
+// Manual slaughter (+10 population) was removed 2026-10-15: the route must not
+// exist. The fixture router mounts every placement route, so a 404/405 here
+// means nothing serves slaughter-livestock.
+func TestSlaughterLivestockRouteIsGone(t *testing.T) {
+	f := setupPlacementFixture(t, map[[2]int]string{{1, 0}: "plains"})
+	code, _ := f.do(t, http.MethodPost, f.slaughterPath(), nil)
+	if code != http.StatusNotFound && code != http.StatusMethodNotAllowed {
+		t.Fatalf("POST slaughter-livestock = %d, want 404/405", code)
 	}
 }

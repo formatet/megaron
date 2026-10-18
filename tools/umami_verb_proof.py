@@ -14,7 +14,7 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 HISTORICAL = {'build_started', 'recruit_started', 'march_sent', 'messenger_sent',
-              'trade_offer', 'rite_performed', 'settle', 'livestock_slaughtered'}
+              'trade_offer', 'rite_performed', 'settle'}
 UA = 'Mozilla/5.0 (X11; Linux x86_64; rv:143.0) Gecko/20100101 Firefox/143.0'
 
 

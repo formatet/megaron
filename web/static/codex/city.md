@@ -6,7 +6,7 @@ The drawer has three tabs: **Production**, **Buildings** and **Garrison**. If yo
 
 Three sections show the essentials:
 
-- **Population** — people, those free to work, and livestock. **Slaughter** trades one animal for ten people at once.
+- **Population** — people, those free to work, and livestock.
 - **Catchment & workplaces** — the placement grid, where you put people to work. See [[citizens]].
 - **Food** — how many days the city's current grain and fish stocks last at current consumption, whether stocks are growing, and whether the fields can feed everyone. See [[food]].
 

@@ -151,11 +151,11 @@ func TestPrunePlacementsToPopulation_IdempotentWhenWithinCap(t *testing.T) {
 
 // TestPlaceNextGubbeOnBestFoodHex_OrdinalAlreadyTakenFallsToPoolWithoutError
 // covers §Kända fällor #1 (megaron_plan_placeringsbeskarning.md): growth's
-// oldGubbar+1..newGubbar loop (kharis/tick.go, settlement_placement.go
-// SlaughterLivestock) can hand PlaceNextGubbeOnBestFoodHex an ordinal a
+// oldGubbar+1..newGubbar loop (kharis/tick.go,
+// applyDecay growth) can hand PlaceNextGubbeOnBestFoodHex an ordinal a
 // prune left occupied on a surviving row. That must degrade to "falls to
 // the pool", the same as "every food slot full" — never a hard error that
-// would abort the whole tick loop or 500 a player's slaughter request.
+// would abort the whole tick loop or fail a growth tick.
 func TestPlaceNextGubbeOnBestFoodHex_OrdinalAlreadyTakenFallsToPoolWithoutError(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()

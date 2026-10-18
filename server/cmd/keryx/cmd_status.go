@@ -94,8 +94,8 @@ const grainConsumptionPerCitizenPerTick = 0.005
 // regardless of package weight) constant of the same name
 // (internal/economy/recompute.go — Timothy 2026-08-07: "jag tycker nästan
 // att ett kreatur kan få leverera 200 mat om det dödas").
-// 200 → 166,67 (mig 136, dagsverkesskalan) — hålls i lås med sin motpart.
-const livestockFoodValue = 166.67
+// 3 korn per enhet (Timothy 2026-10-15; var 166,67 sedan mig 136) — hålls i lås med sin motpart.
+const livestockFoodValue = 3
 
 // sinkContext bundles what sinkCapacities needs about ONE settlement — all
 // of it already present in the /provinces payload `status` already parses,

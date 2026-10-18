@@ -1,4 +1,4 @@
-Your people eat every day, in a fixed order: **grain first, then fish, then livestock.** Fish covers only what grain could not; livestock is slaughtered only when both are gone. A coastal city with good fishing is fed differently from an inland one.
+Your people eat every day, in a fixed order: **grain first, then fish, then livestock.** Fish covers only what grain could not; livestock is slaughtered only when both are gone, and each animal feeds your people for as much as 3 grain. A coastal city with good fishing is fed differently from an inland one.
 
 ## When there is not enough
 

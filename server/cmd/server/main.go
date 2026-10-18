@@ -437,7 +437,6 @@ func main() {
 			r.Get("/worlds/{worldID}/provinces/{provinceID}/placements", ph.Placements)
 			r.Post("/worlds/{worldID}/provinces/{provinceID}/placements", ph.PlaceGubbe)
 			r.Delete("/worlds/{worldID}/provinces/{provinceID}/placements/{ordinal}", ph.UnplaceGubbe)
-			r.Post("/worlds/{worldID}/provinces/{provinceID}/slaughter-livestock", ph.SlaughterLivestock)
 
 			r.Post("/worlds/{worldID}/standing-orders", soh.Create)
 			r.Get("/worlds/{worldID}/standing-orders", soh.List)

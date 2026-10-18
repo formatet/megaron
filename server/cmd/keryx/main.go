@@ -128,7 +128,6 @@ func newRootCommand() *cobra.Command {
 		placementsAliasCmd(),
 		placeCmd(),
 		staffCmd(),
-		slaughterCmd(),
 		idleCmd(),
 		briefCmd(),
 		unitCmd(),

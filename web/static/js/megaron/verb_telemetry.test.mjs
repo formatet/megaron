@@ -17,7 +17,7 @@ const coverage = {
   'build': ['build'], 'cancel-build': ['cancel-build'], 'demolish': ['demolish'], 'recruit': ['recruit'],
   'place / staff': ['place', 'staff', 'unplace'],
   'place → ta hex (gren av `place`)': ['place'], 'labor (cult)': ['labor'],
-  'slaughter': ['slaughter'], 'disband': ['disband'], 'transfer': ['transfer', 'gift/tribute'],
+  'disband': ['disband'], 'transfer': ['transfer', 'gift/tribute'],
   'abandon': ['abandon'], 'rite': ['rite'], 'gift': [], // Own-colony gifts were removed in slice 20.
   'password': ['password'],
   'agora password': ['agora password'], 'occupation-order': ['occupation-order'],
@@ -99,8 +99,8 @@ for (const entry of VERB_EVENTS) {
   });
 }
 
-test('Umami preserves all eight historical verb event names', () => {
-  for (const event of ['build_started', 'recruit_started', 'march_sent', 'messenger_sent', 'trade_offer', 'rite_performed', 'settle', 'livestock_slaughtered']) {
+test('Umami preserves the seven remaining historical verb event names', () => {
+  for (const event of ['build_started', 'recruit_started', 'march_sent', 'messenger_sent', 'trade_offer', 'rite_performed', 'settle']) {
     assert.ok(VERB_EVENTS.some(entry => entry.event === event), event);
   }
 });

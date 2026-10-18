@@ -25,7 +25,7 @@ import (
 // TestFoodTick_LivestockFallback_CoversShortfallAndDoesNotStarve: a
 // settlement with a grain shortfall (0.5 in stock — the flat nearjord trickle
 // a mountain catchment would raw-produce, per D1), zero fish, and a herd of 3
-// must slaughter exactly one animal (ceil(2.0/166.67)) to cover what grain
+// must slaughter exactly one animal (ceil(2.0/3)) to cover what grain
 // doesn't — food_unmet_amount lands at 0 (does not starve) instead of
 // carrying the residual.
 func TestFoodTick_LivestockFallback_CoversShortfallAndDoesNotStarve(t *testing.T) {
@@ -34,8 +34,8 @@ func TestFoodTick_LivestockFallback_CoversShortfallAndDoesNotStarve(t *testing.T
 	// pop=500 -> demand = 500*0.005 = 2.5/tick (mig 136, GrainConsumptionPerCitizenPerTick
 	// 0.5→0.005). grainStock=0.5 (mig 136, NearjordGrainPerTick 50→0.5 — its own
 	// ÷100 calibration, not grain's ÷43.2) leaves a 2.0-unit shortfall after grain
-	// alone — well inside one animal's 166.67 grain-equivalent (mig 136,
-	// livestockFoodValue 200→166.67), so ceil(2.0/166.67)=1 closes it.
+	// alone — inside one animal's 3 grain-equivalent
+	// (livestockFoodValue, 2026-10-15), so ceil(2.0/3)=1 closes it.
 	const population = 500
 	f := newFoodFixture(t, pool, "livestock-covers", population)
 	seedFoodStock(t, pool, f /*grain*/, 0.5 /*fish*/, 0 /*livestock*/, 3)

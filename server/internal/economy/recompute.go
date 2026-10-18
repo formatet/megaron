@@ -361,28 +361,18 @@ func GrowthState(unmet, foodNet float64) string {
 	}
 }
 
-// livestockFoodValue is the food value of one slaughtered animal — Timothy
-// 2026-08-07: "jag tycker nästan att ett kreatur kan få leverera 200 mat om
-// det dödas." Explicitly a ratt, not a lock (megaron_plan_foda_konsistens.md
-// §Grind) — tune against soak data, not an invariant.
-// 200 → 166,67 (megaron_plan_dagsverkesskalan, mig 136, 2026-08-27). Talet
-// växlar en LIVESTOCK-enhet till GRAIN-enheter, så det bär BÅDA varornas
-// divisorer och kan inte bara divideras med en av dem:
-//
-//	1 ny livestock = 36 gamla livestock = 36 × 200 = 7 200 gamla grain
-//	7 200 / 43,2 = 166,67 nya grain
-//
-// Kvoten mellan ett slaktat djur och en gubbes dagsranson står därmed exakt
-// still. ⚠️ SPEGLAD i cmd/keryx/cmd_status.go — uppdatera båda.
-const livestockFoodValue = 166.67
-
-// LivestockSlaughterPopGain is the immediate population gain from a
-// player-chosen slaughter of one animal — S1c, the herd's strongest sink
-// (megaron_plan_foda_konsistens.md, Timothy 2026-08-07: "En livestock kan
-// kompensera för de sista tio popsen när en ny gubbe ska skapas, alltså BLI
-// tio nya pops. Det har en omedelbar och stark push mot befolkningstillväxt.").
-// A ratt, not a lock, like livestockFoodValue above — tune against soak data.
-const LivestockSlaughterPopGain = 10
+// livestockFoodValue is the food value of one slaughtered animal, in grain
+// per livestock unit. Used only by the AUTOMATIC emergency slaughter in
+// FoodConsumptionSplit (grain, then fish, then livestock) — there is no manual
+// slaughter any more (removed 2026-10-15, it only existed to give +population).
+// Timothy 2026-10-15: "lite mer [än 1] får det väl ändå vara" — 3 grain.
+// The old 166,67 was an artifact of mig 136 (dagsverkesskalan), which made
+// 1 livestock unit = one day's labour (= 36 old animals) and rescaled the food
+// value by x36; that made one unit feed a gubbe for 333 days and a herd of 50
+// ~8 300 grain, so no city could starve. 3 grain keeps the herd a real but
+// finite emergency reserve (50 units = 150 grain). A ratt, not a lock.
+// ⚠️ SPEGLAD i cmd/keryx/cmd_status.go — uppdatera båda.
+const livestockFoodValue = 3
 
 // FoundingHerdLivestock is the starting livestock stock a settlement founds
 // with — the Nomadic Host's carried herd (S1d, megaron_plan_foda_konsistens.md
