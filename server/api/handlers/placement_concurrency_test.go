@@ -252,3 +252,41 @@ func placementConcurrencyRouter(t *testing.T, max int32) *chi.Mux {
 	router.Post("/worlds/{worldID}/provinces/{provinceID}/placements", ph.PlaceGubbe)
 	return router
 }
+
+func TestPlacementSlaughterLocksSettlementBeforeGoods(t *testing.T) {
+	f := setupPlacementFixture(t, map[[2]int]string{{1, 0}: "plains"})
+	pool := p10TestPool(t)
+	ctx := context.Background()
+	if _, err := pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,'livestock',2,0,1000,current_world_tick()) ON CONFLICT(settlement_id,good_key) DO UPDATE SET amount=2,rate=0`, f.settlementID); err != nil {
+		t.Fatal(err)
+	}
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback(ctx)
+	if _, err = tx.Exec(ctx, `SELECT id FROM settlements WHERE id=$1 FOR UPDATE`, f.settlementID); err != nil {
+		t.Fatal(err)
+	}
+	result := make(chan int, 1)
+	go func() { code, _ := f.do(t, "POST", f.slaughterPath(), nil); result <- code }()
+	waitPlacementLock(t, pool)
+	observer, err := pool.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer observer.Rollback(ctx)
+	if _, err = observer.Exec(ctx, `SELECT settlement_id FROM settlement_goods WHERE settlement_id=$1 AND good_key='livestock' FOR UPDATE NOWAIT`, f.settlementID); err != nil {
+		t.Fatalf("slaughter locked goods before settlement: %v", err)
+	}
+	_ = observer.Rollback(ctx)
+	_ = tx.Rollback(ctx)
+	select {
+	case code := <-result:
+		if code != 200 {
+			t.Fatal(code)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("slaughter timeout")
+	}
+}

@@ -970,6 +970,20 @@ func (h *ProvinceHandler) SlaughterLivestock(w http.ResponseWriter, r *http.Requ
 	}
 	defer tx.Rollback(r.Context())
 
+	// This writer can spawn placements too: keep settlement before goods.
+	var oldPop int
+	if err := tx.QueryRow(r.Context(),
+		`SELECT population FROM settlements WHERE id = $1 AND owner_id=$2 AND world_id=$3 FOR UPDATE`,
+		settlementID, playerID, worldID,
+	).Scan(&oldPop); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			writeError(w, http.StatusForbidden, "not your settlement")
+		} else {
+			writeError(w, http.StatusInternalServerError, "could not read population")
+		}
+		return
+	}
+
 	// Whole-animal deduction: only proceeds if the settled stock is >= 1 —
 	// mirrors Gift's atomic "UPDATE ... WHERE settled(...) >= amount" idiom
 	// so the check and the deduction can't race apart.
@@ -990,14 +1004,6 @@ func (h *ProvinceHandler) SlaughterLivestock(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var oldPop int
-	if err := tx.QueryRow(r.Context(),
-		`SELECT population FROM settlements WHERE id = $1 FOR UPDATE`,
-		settlementID,
-	).Scan(&oldPop); err != nil {
-		writeError(w, http.StatusInternalServerError, "could not read population")
-		return
-	}
 	newPop := oldPop + economy.LivestockSlaughterPopGain
 	if newPop > economy.MaxGenesisPopulation {
 		newPop = economy.MaxGenesisPopulation
