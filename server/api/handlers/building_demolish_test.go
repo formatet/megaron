@@ -143,3 +143,24 @@ func TestDemolishBuilding_QueuedBuildIsCancelled(t *testing.T) {
 		t.Errorf("queue rows left = %d, want 0", n)
 	}
 }
+
+// A queued upgrade of the demolished building must go with it; otherwise it
+// would complete later and bring the building back.
+func TestDemolishBuilding_CancelsQueuedUpgrade(t *testing.T) {
+	f := buildHexFixture(t)
+	id := seedQuarryWithCrew(t, f)
+	code, resp := f.do(t, http.MethodPost, f.buildPath(), map[string]any{"building_type": "stonequarry", "hex_q": 1, "hex_r": 0})
+	if code != http.StatusCreated {
+		t.Fatalf("queue quarry upgrade = %d: %v", code, resp)
+	}
+	if n := countRows(t, f, `SELECT count(*) FROM build_queue WHERE settlement_id = $1`); n != 1 {
+		t.Fatalf("queued upgrades = %d, want 1", n)
+	}
+	code, resp = f.do(t, http.MethodDelete, demolishPath(f, id), nil)
+	if code != http.StatusOK || resp["demolished"] != true {
+		t.Fatalf("demolish = %d: %v", code, resp)
+	}
+	if n := countRows(t, f, `SELECT count(*) FROM build_queue WHERE settlement_id = $1`); n != 0 {
+		t.Errorf("queued upgrade survived the demolish: %d rows", n)
+	}
+}
