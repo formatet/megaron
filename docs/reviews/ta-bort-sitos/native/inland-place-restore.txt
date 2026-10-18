@@ -1,0 +1,3 @@
+Placed 1 citizen on hex #1 doing grain.
+  #1   plains         grain      3/8    (next +1.7 per day)
+  7 citizens left in the idle pool.

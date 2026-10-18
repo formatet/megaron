@@ -1,0 +1,8 @@
+=== RUN   TestRetiredSitosTick_CompletesWithoutReschedule
+2026/10/18 12:49:01 ERROR scheduled event handler failed type=SitosTick id=1 attempt=1 err="context canceled"
+    retired_tick_test.go:37: legacy tick must finish silently once: total1 done0 failed0
+--- FAIL: TestRetiredSitosTick_CompletesWithoutReschedule (0.01s)
+FAIL
+FAIL	formatet/megaron/server/internal/events	0.013s
+FAIL
+» färsk DB på migration 184 · commit 6fccfe37+ändringar

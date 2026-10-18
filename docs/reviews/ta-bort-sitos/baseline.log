@@ -1,0 +1,7 @@
+» färsk DB på migration 183 · commit 6fccfe37
+=== RUN   TestFoodStore_SingleInventory
+    food_store_test.go:12: separate granary still exists: food must live in settlement_goods only
+--- FAIL: TestFoodStore_SingleInventory (0.00s)
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.005s
+FAIL

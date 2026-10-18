@@ -1,0 +1,10 @@
+=== RUN   TestSettlementsOverviewParity_MatchesProvinceGet
+2026/10/18 12:50:23 INFO player registered id=45d0fd26-69b3-47a6-9bcd-71fcbc429909 username=wanax-parity-50252d26-4ec4-4775-bcaa-64522f6e2d75
+    settlement_overview_test.go:241: food_net_per_tick = 0, want 10.5 (14.5 produced − 4.0 eaten)
+    settlement_overview_test.go:301: food.coverage_ticks parity broken: overview=150.0000 province=0.0000
+    settlement_overview_test.go:304: food.food_net_per_tick parity broken: overview=10.5000 province=0.0000
+--- FAIL: TestSettlementsOverviewParity_MatchesProvinceGet (0.07s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.073s
+FAIL
+» färsk DB på migration 184 · commit 6fccfe37+ändringar

@@ -1,0 +1,6 @@
+=== RUN   TestSeedDailyTicks_NoRetiredReserve
+2026/10/18 12:50:18 INFO daily ticks seeded worlds=1
+--- PASS: TestSeedDailyTicks_NoRetiredReserve (0.01s)
+PASS
+ok  	formatet/megaron/server/cmd/server	0.015s
+» färsk DB på migration 184 · commit 6fccfe37+ändringar

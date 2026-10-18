@@ -1,0 +1,17 @@
+{
+  "q": 47,
+  "r": 11,
+  "name": "coast-proof",
+  "coastal": true,
+  "known_hexes": 19,
+  "province_id": "ad7a170e-f33f-4ccb-bab7-b70e6732cb27",
+  "grain_amount": 1200,
+  "grain_carried": 1200,
+  "poseidon_gift": "60547722-7c14-4aaa-946a-3ea08d9bee2c",
+  "settlement_id": "e6c62fa0-84a3-46e5-ad29-563c70f0dadb",
+  "unknown_hexes": 0,
+  "silver_carried": 480,
+  "loyalty_warning": "",
+  "food_net_per_tick": 0.5,
+  "grain_net_per_tick": -4.5
+}

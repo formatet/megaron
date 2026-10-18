@@ -1,0 +1,538 @@
+{
+  "dump_sha256": "a1cf2b2f8cbda1aa78dfc0c24950d7ddc3b9a0472f99485d33c429f07eac96ae",
+  "schema": "184|f",
+  "before": [
+    {
+      "id": "162caaf5-107f-4cf9-b15c-0ae9e2882f90",
+      "name": "Phaistos",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 2416.964168516633,
+      "reserve": 472.2881267117592,
+      "rate": 34,
+      "cap": 1000000,
+      "total": 2889.252295228392
+    },
+    {
+      "id": "162caaf5-107f-4cf9-b15c-0ae9e2882f90",
+      "name": "Phaistos",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 0,
+      "reserve": 441.81187328824063,
+      "rate": 11.187999999999997,
+      "cap": 1000000,
+      "total": 441.81187328824063
+    },
+    {
+      "id": "3478ac76-e8f4-4b36-8901-1ef63ddfd7e4",
+      "name": "Thalassa",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 28.207411714720358,
+      "reserve": 13.241036271529396,
+      "rate": 1.3900000000000001,
+      "cap": 1000000,
+      "total": 41.448447986249754
+    },
+    {
+      "id": "3478ac76-e8f4-4b36-8901-1ef63ddfd7e4",
+      "name": "Thalassa",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 0,
+      "reserve": 0.2565520137502512,
+      "rate": 0.5,
+      "cap": 1000000,
+      "total": 0.2565520137502512
+    },
+    {
+      "id": "7ba83c82-dc8f-4425-8b2b-8c814e122602",
+      "name": "Amnissos",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 282.80161061535966,
+      "reserve": 215.69838938464017,
+      "rate": 2,
+      "cap": 1000000,
+      "total": 498.49999999999983
+    },
+    {
+      "id": "7ba83c82-dc8f-4425-8b2b-8c814e122602",
+      "name": "Amnissos",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 174.23624780065356,
+      "reserve": 925.20161061536,
+      "rate": 35.29999999999999,
+      "cap": 1000000,
+      "total": 1099.4378584160136
+    },
+    {
+      "id": "94f0b5b5-a887-490c-a3a1-c496b98fb14b",
+      "name": "Kydonia",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 271.82441664155795,
+      "reserve": 64.34558335844214,
+      "rate": 3.39,
+      "cap": 1000000,
+      "total": 336.1700000000001
+    },
+    {
+      "id": "94f0b5b5-a887-490c-a3a1-c496b98fb14b",
+      "name": "Kydonia",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 4.131016562413653,
+      "reserve": 36.754416641557874,
+      "rate": 0.5,
+      "cap": 1000000,
+      "total": 40.88543320397153
+    },
+    {
+      "id": "a76788d5-cc6d-4b44-8a9c-0cfeb95375c0",
+      "name": "Mallia",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 0,
+      "reserve": 0,
+      "rate": 0,
+      "cap": 1000000,
+      "total": 0
+    },
+    {
+      "id": "a76788d5-cc6d-4b44-8a9c-0cfeb95375c0",
+      "name": "Mallia",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 507.4440463260122,
+      "reserve": 405,
+      "rate": 11.668999999999999,
+      "cap": 1000000,
+      "total": 912.4440463260122
+    },
+    {
+      "id": "b33f95ab-fcea-4117-8783-c1e8764b93aa",
+      "name": "Tylissos",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 0,
+      "reserve": 0,
+      "rate": 0,
+      "cap": 1000000,
+      "total": 0
+    },
+    {
+      "id": "b33f95ab-fcea-4117-8783-c1e8764b93aa",
+      "name": "Tylissos",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 52.98479999999999,
+      "reserve": 213.75555382473945,
+      "rate": 6.318,
+      "cap": 1000000,
+      "total": 266.74035382473943
+    },
+    {
+      "id": "bef65710-5006-438e-8554-a63ef30067e2",
+      "name": "Scheria",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 215.66250040583017,
+      "reserve": 34.33324306004958,
+      "rate": 4,
+      "cap": 1000000,
+      "total": 249.99574346587974
+    },
+    {
+      "id": "bef65710-5006-438e-8554-a63ef30067e2",
+      "name": "Scheria",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 0,
+      "reserve": 326.86675693995045,
+      "rate": 5.069999999999999,
+      "cap": 1000000,
+      "total": 326.86675693995045
+    },
+    {
+      "id": "c071f733-9f7f-48ad-abcb-a33a8fe88750",
+      "name": "MalliaWest",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 29.243421826028023,
+      "reserve": 16.953180501376938,
+      "rate": 1.43,
+      "cap": 1000000,
+      "total": 46.19660232740496
+    },
+    {
+      "id": "c071f733-9f7f-48ad-abcb-a33a8fe88750",
+      "name": "MalliaWest",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 0,
+      "reserve": 0.3183976725950381,
+      "rate": 0.5,
+      "cap": 1000000,
+      "total": 0.3183976725950381
+    },
+    {
+      "id": "f39669af-2c5a-441e-a440-50cf32f0e461",
+      "name": "Itanos",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 0,
+      "reserve": 0,
+      "rate": 0,
+      "cap": 1000000,
+      "total": 0
+    },
+    {
+      "id": "f39669af-2c5a-441e-a440-50cf32f0e461",
+      "name": "Itanos",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 788.1070088802975,
+      "reserve": 405,
+      "rate": 18.350666666666662,
+      "cap": 1000000,
+      "total": 1193.1070088802976
+    }
+  ],
+  "after": [
+    {
+      "id": "162caaf5-107f-4cf9-b15c-0ae9e2882f90",
+      "name": "Phaistos",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 2889.252295228392,
+      "rate": 34,
+      "cap": 1000000
+    },
+    {
+      "id": "162caaf5-107f-4cf9-b15c-0ae9e2882f90",
+      "name": "Phaistos",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 441.81187328824063,
+      "rate": 11.187999999999997,
+      "cap": 1000000
+    },
+    {
+      "id": "3478ac76-e8f4-4b36-8901-1ef63ddfd7e4",
+      "name": "Thalassa",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 41.448447986249754,
+      "rate": 1.3900000000000001,
+      "cap": 1000000
+    },
+    {
+      "id": "3478ac76-e8f4-4b36-8901-1ef63ddfd7e4",
+      "name": "Thalassa",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 0.2565520137502512,
+      "rate": 0.5,
+      "cap": 1000000
+    },
+    {
+      "id": "7ba83c82-dc8f-4425-8b2b-8c814e122602",
+      "name": "Amnissos",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 498.49999999999983,
+      "rate": 2,
+      "cap": 1000000
+    },
+    {
+      "id": "7ba83c82-dc8f-4425-8b2b-8c814e122602",
+      "name": "Amnissos",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 1099.4378584160136,
+      "rate": 35.29999999999999,
+      "cap": 1000000
+    },
+    {
+      "id": "94f0b5b5-a887-490c-a3a1-c496b98fb14b",
+      "name": "Kydonia",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 336.1700000000001,
+      "rate": 3.39,
+      "cap": 1000000
+    },
+    {
+      "id": "94f0b5b5-a887-490c-a3a1-c496b98fb14b",
+      "name": "Kydonia",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 40.88543320397153,
+      "rate": 0.5,
+      "cap": 1000000
+    },
+    {
+      "id": "a76788d5-cc6d-4b44-8a9c-0cfeb95375c0",
+      "name": "Mallia",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 0,
+      "rate": 0,
+      "cap": 1000000
+    },
+    {
+      "id": "a76788d5-cc6d-4b44-8a9c-0cfeb95375c0",
+      "name": "Mallia",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 912.4440463260122,
+      "rate": 11.668999999999999,
+      "cap": 1000000
+    },
+    {
+      "id": "b33f95ab-fcea-4117-8783-c1e8764b93aa",
+      "name": "Tylissos",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 0,
+      "rate": 0,
+      "cap": 1000000
+    },
+    {
+      "id": "b33f95ab-fcea-4117-8783-c1e8764b93aa",
+      "name": "Tylissos",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 266.74035382473943,
+      "rate": 6.318,
+      "cap": 1000000
+    },
+    {
+      "id": "bef65710-5006-438e-8554-a63ef30067e2",
+      "name": "Scheria",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 249.99574346587974,
+      "rate": 4,
+      "cap": 1000000
+    },
+    {
+      "id": "bef65710-5006-438e-8554-a63ef30067e2",
+      "name": "Scheria",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 326.86675693995045,
+      "rate": 5.069999999999999,
+      "cap": 1000000
+    },
+    {
+      "id": "c071f733-9f7f-48ad-abcb-a33a8fe88750",
+      "name": "MalliaWest",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 46.19660232740496,
+      "rate": 1.43,
+      "cap": 1000000
+    },
+    {
+      "id": "c071f733-9f7f-48ad-abcb-a33a8fe88750",
+      "name": "MalliaWest",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 0.3183976725950381,
+      "rate": 0.5,
+      "cap": 1000000
+    },
+    {
+      "id": "f39669af-2c5a-441e-a440-50cf32f0e461",
+      "name": "Itanos",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 0,
+      "rate": 0,
+      "cap": 1000000
+    },
+    {
+      "id": "f39669af-2c5a-441e-a440-50cf32f0e461",
+      "name": "Itanos",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 1193.1070088802976,
+      "rate": 18.350666666666662,
+      "cap": 1000000
+    }
+  ],
+  "after_recompute_all": [
+    {
+      "id": "162caaf5-107f-4cf9-b15c-0ae9e2882f90",
+      "name": "Phaistos",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 2889.252295228392,
+      "rate": 34,
+      "cap": 1000000
+    },
+    {
+      "id": "162caaf5-107f-4cf9-b15c-0ae9e2882f90",
+      "name": "Phaistos",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 441.81187328824063,
+      "rate": 11.187999999999997,
+      "cap": 1000000
+    },
+    {
+      "id": "3478ac76-e8f4-4b36-8901-1ef63ddfd7e4",
+      "name": "Thalassa",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 41.448447986249754,
+      "rate": 1.3900000000000001,
+      "cap": 1000000
+    },
+    {
+      "id": "3478ac76-e8f4-4b36-8901-1ef63ddfd7e4",
+      "name": "Thalassa",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 0.2565520137502512,
+      "rate": 0.5,
+      "cap": 1000000
+    },
+    {
+      "id": "7ba83c82-dc8f-4425-8b2b-8c814e122602",
+      "name": "Amnissos",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 498.49999999999983,
+      "rate": 2,
+      "cap": 1000000
+    },
+    {
+      "id": "7ba83c82-dc8f-4425-8b2b-8c814e122602",
+      "name": "Amnissos",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 1099.4378584160136,
+      "rate": 35.29999999999999,
+      "cap": 1000000
+    },
+    {
+      "id": "94f0b5b5-a887-490c-a3a1-c496b98fb14b",
+      "name": "Kydonia",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 336.1700000000001,
+      "rate": 3.39,
+      "cap": 1000000
+    },
+    {
+      "id": "94f0b5b5-a887-490c-a3a1-c496b98fb14b",
+      "name": "Kydonia",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 40.88543320397153,
+      "rate": 0.5,
+      "cap": 1000000
+    },
+    {
+      "id": "a76788d5-cc6d-4b44-8a9c-0cfeb95375c0",
+      "name": "Mallia",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 0,
+      "rate": 0,
+      "cap": 1000000
+    },
+    {
+      "id": "a76788d5-cc6d-4b44-8a9c-0cfeb95375c0",
+      "name": "Mallia",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 912.4440463260122,
+      "rate": 11.668999999999999,
+      "cap": 1000000
+    },
+    {
+      "id": "b33f95ab-fcea-4117-8783-c1e8764b93aa",
+      "name": "Tylissos",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 0,
+      "rate": 0,
+      "cap": 1000000
+    },
+    {
+      "id": "b33f95ab-fcea-4117-8783-c1e8764b93aa",
+      "name": "Tylissos",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 266.74035382473943,
+      "rate": 6.318,
+      "cap": 1000000
+    },
+    {
+      "id": "bef65710-5006-438e-8554-a63ef30067e2",
+      "name": "Scheria",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 249.99574346587974,
+      "rate": 4,
+      "cap": 1000000
+    },
+    {
+      "id": "bef65710-5006-438e-8554-a63ef30067e2",
+      "name": "Scheria",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 326.86675693995045,
+      "rate": 5.069999999999999,
+      "cap": 1000000
+    },
+    {
+      "id": "c071f733-9f7f-48ad-abcb-a33a8fe88750",
+      "name": "MalliaWest",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 46.19660232740496,
+      "rate": 1.43,
+      "cap": 1000000
+    },
+    {
+      "id": "c071f733-9f7f-48ad-abcb-a33a8fe88750",
+      "name": "MalliaWest",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 0.3183976725950381,
+      "rate": 0.5,
+      "cap": 1000000
+    },
+    {
+      "id": "f39669af-2c5a-441e-a440-50cf32f0e461",
+      "name": "Itanos",
+      "current_tick": 403,
+      "good_key": "fish",
+      "stock": 0,
+      "rate": 0,
+      "cap": 1000000
+    },
+    {
+      "id": "f39669af-2c5a-441e-a440-50cf32f0e461",
+      "name": "Itanos",
+      "current_tick": 403,
+      "good_key": "grain",
+      "stock": 1193.1070088802976,
+      "rate": 18.350666666666662,
+      "cap": 1000000
+    }
+  ],
+  "recompute_preserves_every_city_good_total": true,
+  "all_city_good_totals_conserved": true,
+  "silver_projection_unchanged": true,
+  "historic_event_count_unchanged": true,
+  "pending_retired_ticks": 0,
+  "limitations": "Private clone only. No server/tick workers running. Per-world lazy evaluation, equivalent to settled() for the active world. No live writes."
+}

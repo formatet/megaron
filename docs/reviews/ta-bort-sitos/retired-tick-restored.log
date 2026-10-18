@@ -1,0 +1,5 @@
+=== RUN   TestRetiredSitosTick_CompletesWithoutReschedule
+--- PASS: TestRetiredSitosTick_CompletesWithoutReschedule (0.01s)
+PASS
+ok  	formatet/megaron/server/internal/events	0.013s
+» färsk DB på migration 184 · commit 6fccfe37+ändringar

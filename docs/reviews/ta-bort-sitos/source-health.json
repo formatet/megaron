@@ -1,0 +1,7 @@
+{
+  "commit": "6fccfe3",
+  "migration": 183,
+  "status": "ok",
+  "checked_at": "2026-10-18 12:53:58 +0200",
+  "note": "read-only health after fresh dump acquisition; no production state changes by parent"
+}

@@ -1,0 +1,7 @@
+=== RUN   TestExecuteOccupyAction_Sack
+    occupation_test.go:370: sack: ERROR: relation "settlement_granary" does not exist (SQLSTATE 42P01)
+--- FAIL: TestExecuteOccupyAction_Sack (0.01s)
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.016s
+FAIL
+» färsk DB på migration 184 · commit 6fccfe37+ändringar

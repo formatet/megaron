@@ -1,0 +1,8 @@
+=== RUN   TestSeedDailyTicks_NoRetiredReserve
+2026/10/18 12:50:15 INFO daily ticks seeded worlds=1
+    food_store_test.go:30: wrong scheduled food work: retired1 food1
+--- FAIL: TestSeedDailyTicks_NoRetiredReserve (0.01s)
+FAIL
+FAIL	formatet/megaron/server/cmd/server	0.016s
+FAIL
+» färsk DB på migration 184 · commit 6fccfe37+ändringar

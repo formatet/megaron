@@ -1,0 +1,7 @@
+=== RUN   TestFoodStore_MigrationConservesLazyStockAndMissingGood
+    food_store_test.go:100: grain amount0.000000 cap24.000000 want24.000000 without clipping
+--- FAIL: TestFoodStore_MigrationConservesLazyStockAndMissingGood (0.02s)
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.018s
+FAIL
+» färsk DB på migration 184 · commit 6fccfe37+ändringar
