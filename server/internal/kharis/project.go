@@ -21,7 +21,7 @@ import (
 // hasTemples is false when the Wanax holds no standing temple: then the day is
 // "missed", gain is 0, and the net is just −dailyDecay.
 func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID uuid.UUID) (net float64, hasTemples bool, devotionSum, devotionCapacity float64, err error) {
-	var templeCities, templelessColonies, ticksSinceFounding int
+	var templeCities, cityCount int
 	err = pool.QueryRow(ctx,
 		`SELECT
 		    COALESCE((
@@ -55,26 +55,15 @@ func ProjectDailyNet(ctx context.Context, pool *pgxpool.Pool, playerID, worldID 
 		        SELECT COUNT(*)
 		        FROM settlements s3
 		        WHERE s3.owner_id = $1 AND s3.world_id = $2
-		          AND s3.is_capital = false AND s3.state NOT IN ('sunk', 'collapsed')
-		          AND NOT EXISTS (
-		              SELECT 1 FROM buildings b
-		              WHERE b.settlement_id = s3.id AND b.building_type = 'temple'
-		          )
-		    ), 0),
-		    -- Same age the tick reads (tick.go): no record means no founding to
-		    -- shield, so fall outside the grace.
-		    COALESCE((
-		        SELECT current_world_tick() - pwr.founded_tick
-		        FROM player_world_records pwr
-		        WHERE pwr.player_id = $1 AND pwr.world_id = $2
-		    ), $4::int)`,
-		playerID, worldID, TempleDevotionPerLevel, foundingGraceTicks,
-	).Scan(&devotionSum, &devotionCapacity, &templeCities, &templelessColonies, &ticksSinceFounding)
+		          AND s3.state NOT IN ('sunk', 'collapsed', 'razed')
+		    ), 0)`,
+		playerID, worldID, TempleDevotionPerLevel,
+	).Scan(&devotionSum, &devotionCapacity, &templeCities, &cityCount)
 	if err != nil {
 		return 0, false, 0, 0, err
 	}
 
-	dailyDecay := decayAfterGrace(templelessColonies, ticksSinceFounding)
+	dailyDecay := computeDailyDecay(cityCount)
 	if templeCities == 0 {
 		// Missed day: no gain, decay is the whole story.
 		return -dailyDecay, false, devotionSum, devotionCapacity, nil
@@ -124,4 +113,13 @@ func projectFedTemples(ctx context.Context, pool *pgxpool.Pool, playerID, worldI
 		}
 	}
 	return fed
+}
+
+// ProjectDecay exposes the same city burden used by maintenance and net projection.
+func ProjectDecay(ctx context.Context, pool *pgxpool.Pool, playerID, worldID uuid.UUID) (cityCount int, baseDecay, cityDecay float64, err error) {
+	err = pool.QueryRow(ctx, `SELECT COUNT(*) FROM settlements WHERE owner_id=$1 AND world_id=$2 AND state NOT IN ('sunk','collapsed','razed')`, playerID, worldID).Scan(&cityCount)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+	return cityCount, decayBas, computeDailyDecay(cityCount) - decayBas, nil
 }

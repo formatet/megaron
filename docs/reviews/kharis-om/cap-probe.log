@@ -1,0 +1,5 @@
+=== RUN   TestSlice19CapProbe
+ACTUAL_BASELINE cap0=25.0 proposed_start40_after_first_decay=25.0
+--- PASS: TestSlice19CapProbe (0.00s)
+PASS
+ok  	formatet/megaron/server/internal/kharis	0.002s

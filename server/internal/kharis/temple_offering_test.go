@@ -19,7 +19,7 @@ func TestEarlyTempleOfferingLocalGiftAndProjection(t *testing.T) {
 				t.Fatal(err)
 			}
 			if _, err := pool.Exec(ctx, `INSERT INTO player_world_records(player_id,world_id,settlement_id,kharis_amount,kharis_rate,kharis_calc_tick,founded_tick)
-			 VALUES($1,$2,$3,20,0,current_world_tick(),current_world_tick()-144)`, pid, wid, sid); err != nil {
+			 VALUES($1,$2,$3,20,0,current_world_tick(),current_world_tick())`, pid, wid, sid); err != nil {
 				t.Fatal(err)
 			}
 			if _, err := pool.Exec(ctx, `UPDATE buildings SET level=2 WHERE settlement_id=$1 AND building_type='temple';`, sid); err != nil {
@@ -55,7 +55,7 @@ func TestEarlyTempleOfferingLocalGiftAndProjection(t *testing.T) {
 			}
 			h := newTestTickHandler(pool)
 			eid := atomic.AddInt64(&advanceOneDayEventID, 1)
-			w := wanaxSnap{ticksSinceFounding: foundingGraceTicks, playerID: pid, settlementID: sid, kharis: 20, kharisCap: 75, devotionSum: .3, templeCities: 1, maxTempleLevel: 2}
+			w := wanaxSnap{cityCount: 1, playerID: pid, settlementID: sid, kharis: 20, kharisCap: 75, devotionSum: .3, templeCities: 1, maxTempleLevel: 2}
 			if err := h.processMaintenance(ctx, w, wid, eid); err != nil {
 				t.Fatal(err)
 			}
@@ -92,7 +92,7 @@ func TestEarlyTempleOfferingLocalGiftAndProjection(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if net != -1.8 {
+			if math.Abs(net+.2) > 1e-10 {
 				t.Fatalf("empty local temple borrowed remote goods: net%g", net)
 			}
 			fed, total := h.applyTempleOffering(ctx, pid, wid)

@@ -13,9 +13,9 @@ func TestTempleCeiling_Level1StaysBelowBless(t *testing.T) {
 		t.Errorf("a level-1 temple must not reach the bless threshold %.0f, ceiling is %.0f",
 			blessThreshold, l1)
 	}
-	if l1 <= punishThreshold {
+	if l1 <= 30 {
 		t.Errorf("a level-1 temple must still keep a Wanax clear of divine punishment (<%.0f), ceiling is %.0f",
-			punishThreshold, l1)
+			30.0, l1)
 	}
 }
 

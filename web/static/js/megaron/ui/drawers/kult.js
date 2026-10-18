@@ -7,7 +7,7 @@ import { fmtDays } from '../fmt_num.js';
 import { serverNow } from '../../clock.js';
 import { renderLockedActions } from '../misc.js';
 import { divineValuesHTML } from './kult_values.js';
-import { kharisNetView } from './kult_kharis.js';
+import { kharisNetView, kharisDecayHTML } from './kult_kharis.js';
 
 // ── Kult drawer ───────────────────────────────────────────────────────────
 // See cityLoadSeq: an older reply must not replace what a newer load rendered.
@@ -45,16 +45,10 @@ export async function loadKultDrawer() {
     let html = '<div class="dsec"><div class="dsec-title">Divine favour</div>' +
       '<div class="stat-row"><span class="sr-label">Mood</span>' +
       '<span class="sr-val" style="color:' + (MOOD_COLORS[mood] || 'inherit') + '">' + (MOOD_LABELS[mood] || mood) + '</span></div>';
-    // Kharis is DAILY-maintenance-driven — show the passive geographic rate
-    // per tick (keryx `status` parity; tick == day, mig 109).
-    if (pd && pd.kharis_per_tick != null) {
-      html += '<div class="stat-row"><span class="sr-label">Passive</span><span class="sr-val">' +
-        (pd.kharis_per_tick >= 0 ? '+' : '') + pd.kharis_per_tick.toFixed(1) + ' kharis per day</span></div>';
-    }
     // Net kharis (temple gain − decay) — the figure that answers "did raising
     // devotion actually help", never computed client-side. See kult_kharis.js.
     const { netHtml, idleHtml } = kharisNetView(pd);
-    html += netHtml + idleHtml;
+    html += netHtml + kharisDecayHTML(pd) + idleHtml;
     html += '</div>';
 
     // Cult level — derived from kharis (read-only; set by daily temple tick)

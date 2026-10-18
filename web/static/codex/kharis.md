@@ -4,12 +4,18 @@
 |---|---|
 | **Favorable** | The gods may bless you: a blessed harvest (a quarter more food for 25 days, fish excepted) or unexpected recruits. |
 | **Indifferent** | They have noticed you and do nothing. |
-| **Suspicious** | You are exposed to punishment. |
-| **Wrathful** | Chariots break, ships are lost, granaries rot, plague takes the garrison. |
+| **Suspicious** (5 to below 30) | Without a standing temple, a 3% chance of punishment each day. |
+| **Wrathful** (below 5) | The same risk, and the gods are close to silent: chariots break, ships are lost, food rots or plague takes a garrison. |
 
 Blessings and punishments arrive as notifications.
 
-Your first Host begins at the Kharis floor, even before founding. Rising again keeps your standing with the gods, with the floor as a minimum. Kharis never falls all the way to nothing. For the first 144 days after founding it does not fade at all and no punishment falls. Build a temple before they run out.
+A new Wanax starts at **40 Kharis**, before founding. Rising again keeps your standing with the gods, with the floor as a minimum. Kharis never falls all the way to nothing. It fades from the start; founding does not pause decay.
+
+## The cost of your realm
+
+Daily decay is **0.1 base + 0.1 × N × (N − 1) / 2**, where **N** counts all your active cities, including your capital, whether or not they have temples. Sunk, collapsed and razed cities do not count. Five cities cost **1.0 per day**, plus the **0.1 base**: **1.1 total**. Each additional city adds more cost than the last.
+
+**Kult → Daily decay** and `keryx status` show the base, city count, city cost and total alongside the projected net. A temple earns favour; it does not remove a city's cost. A standing temple protects you from punishment: below 30 Kharis without one, there is a 3% chance each day. A punishment chooses a random eligible city of yours with something it can take; it need not strike the capital.
 
 ## How to raise it
 
@@ -19,11 +25,11 @@ Three things must be true, every day:
 2. **People serve in it** — devotion. See [[temples]].
 3. **The temple is fed** — a daily reference gift of 0.25 grain, with local fish, timber or silver as substitutes of equal divine value. See [[temples]] for the selection order and planned gift.
 
-A fully staffed, fed level-1 temple lets your standing grow slowly from the floor toward early [[rites|prayers]]. Larger temples can employ more devotion and raise kharis faster when staffed and fed.
+In a small realm, a fully staffed, fed level-1 temple can earn more favour than the realm loses each day. Compare the projected net; a larger realm may need more temples or higher levels. Larger temples can employ more devotion and raise kharis faster when staffed and fed.
 
-**Your best temple sets your ceiling.** A level-1 temple can never earn you a blessing. To reach blessings, you need a higher-level temple.
+**Your best temple sets your ceiling:** no temple **40**, level 1 **50**, level 2 **75**, level 3 **100**. A level-1 temple can never earn you a blessing. To reach blessings, you need a higher-level temple.
 
-Kharis decays every day regardless — and faster for each colony without a temple, beyond a handful. Expansion has a religious price ([[colonies]]).
+Kharis decays every day regardless. Expansion increases that cost even when every city has a temple ([[colonies]]).
 
 To *spend* kharis on a request, see [[rites]].
 

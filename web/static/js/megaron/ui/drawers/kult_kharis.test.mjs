@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { kharisNetView } from './kult_kharis.js';
+import { kharisNetView, kharisDecayHTML } from './kult_kharis.js';
 
 test('AK1: kharis_net_known true draws a Net row, distinct from Passive, signed with one decimal', () => {
   const view = kharisNetView({ kharis_net_per_tick: 2.34, kharis_net_known: true, kharis_devotion_idle: false });
@@ -17,7 +17,7 @@ test('AK1b: a negative net is signed with a minus, not a double sign', () => {
 
 test('AK2: kharis_net_known false draws no net row at all — not even "0.0"', () => {
   const view = kharisNetView({ kharis_net_per_tick: 0, kharis_net_known: false });
-  assert.equal(view.netHtml, '', 'kharis_net_known=false means "no temples" — draw nothing');
+  assert.equal(view.netHtml, '', 'kharis_net_known=false means "projection unavailable" — draw nothing');
 });
 
 test('AK2b: kharis_net_known missing entirely (not strictly true) also draws nothing', () => {
@@ -39,4 +39,22 @@ test('AK3b: kharis_devotion_idle false (or absent) draws no warning', () => {
 test('a null/undefined payload draws nothing, crashes nothing', () => {
   assert.deepEqual(kharisNetView(null), { netHtml: '', idleHtml: '' });
   assert.deepEqual(kharisNetView(undefined), { netHtml: '', idleHtml: '' });
+});
+
+
+test('realm decay breakdown uses authoritative base, city cost and total, including templeless realms', () => {
+  const pd = {kharis_city_count: 5, kharis_base_decay: 0.1, kharis_city_decay: 1, kharis_daily_decay: 1.1,
+    kharis_net_known: true, kharis_net_per_tick: -1.1, temple_offers: []};
+  assert.match(kharisDecayHTML(pd), /0.1 base \+ 5 cities cost 1.0 per day = 1.1 total/);
+  assert.match(kharisNetView(pd).netHtml, /-1.1 kharis per day/);
+  // Deliberately unlike today's rule: display values, never recalculate the formula.
+  assert.match(kharisDecayHTML({...pd, kharis_base_decay: 0.7, kharis_city_decay: 8.6, kharis_daily_decay: 9.3}), /0.7 base \+ 5 cities cost 8.6 per day = 9.3 total/);
+  assert.match(kharisDecayHTML({...pd, kharis_city_count: 1, kharis_city_decay: 0, kharis_daily_decay: 0.1}), /1 city cost 0.0 per day/);
+});
+
+test('missing or partial realm decay never claims zero cost', () => {
+  for (const pd of [null, {}, {kharis_city_count: 5}, {kharis_city_count:5,kharis_base_decay:0.1,kharis_city_decay:1,kharis_daily_decay:NaN}]) {
+    assert.match(kharisDecayHTML(pd), /not reported/);
+    assert.doesNotMatch(kharisDecayHTML(pd), /0.0|NaN/);
+  }
 });

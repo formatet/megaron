@@ -20,7 +20,7 @@ func TestL1TempleClimbsToFirstPrayerAndCaps(t *testing.T) {
 				t.Fatal(err)
 			}
 			if _, err := pool.Exec(ctx, `INSERT INTO player_world_records(player_id,world_id,settlement_id,kharis_amount,kharis_rate,kharis_calc_tick,founded_tick)
-			 VALUES($1,$2,$3,$4,0,current_world_tick(),current_world_tick()-144)`, pid, wid, sid, Floor); err != nil {
+			 VALUES($1,$2,$3,$4,0,current_world_tick(),current_world_tick())`, pid, wid, sid, Floor); err != nil {
 				t.Fatal(err)
 			}
 			if _, err := pool.Exec(ctx, `UPDATE buildings SET level=$2 WHERE settlement_id=$1 AND building_type='temple'`, sid, level); err != nil {
@@ -40,7 +40,7 @@ func TestL1TempleClimbsToFirstPrayerAndCaps(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if net <= 0 || (level == 1 && net > .5) {
+			if net <= 0 || (level == 1 && net > 2.1) {
 				t.Fatalf("L%d ordinary net%g want weakly positive L1", level, net)
 			}
 			h := newTestTickHandler(pool)
@@ -50,7 +50,7 @@ func TestL1TempleClimbsToFirstPrayerAndCaps(t *testing.T) {
 				if _, err := pool.Exec(ctx, `UPDATE worlds SET current_tick=$2 WHERE id=$1`, wid, tick); err != nil {
 					t.Fatal(err)
 				}
-				w := wanaxSnap{ticksSinceFounding: foundingGraceTicks, playerID: pid, settlementID: sid, kharis: amount, kharisCap: cap, devotionSum: dev, templeCities: 1, maxTempleLevel: level}
+				w := wanaxSnap{cityCount: 1, playerID: pid, settlementID: sid, kharis: amount, kharisCap: cap, devotionSum: dev, templeCities: 1, maxTempleLevel: level}
 				if err := h.processMaintenance(ctx, w, wid, atomic.AddInt64(&advanceOneDayEventID, 1)); err != nil {
 					t.Fatal(err)
 				}
@@ -85,7 +85,7 @@ func TestL1TempleClimbsToFirstPrayerAndCaps(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if net != -1.8 {
+			if net != -.1 {
 				t.Fatalf("L%d unfunded net%g changed baseline decay", level, net)
 			}
 		})
