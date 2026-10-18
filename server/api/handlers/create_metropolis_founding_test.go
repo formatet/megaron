@@ -91,7 +91,7 @@ func foundMetropolisFixturePopulation(t *testing.T, terrains [7]string, coastal 
 		t.Fatalf("begin tx: %v", err)
 	}
 	defer tx.Rollback(ctx)
-	m, err := createMetropolis(ctx, tx, economy.LoadSitosConfig(), metropolisParams{
+	m, err := createMetropolis(ctx, tx, metropolisParams{
 		WorldID:    worldID,
 		PlayerID:   playerID,
 		Q:          0,

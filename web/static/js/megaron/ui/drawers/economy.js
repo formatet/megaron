@@ -4,7 +4,6 @@ import { fetchAuth } from '../../api.js';
 import { serverNow } from '../../clock.js';
 import { esc } from '../format.js';
 import { renderLockedActions } from '../misc.js';
-import { sitosGranaryState } from './sitos_view.js';
 
 // A good at its storage ceiling is a silent off-switch: everything produced
 // past the cap is discarded, so labour sitting on it earns nothing. Mirror
@@ -31,57 +30,34 @@ export function goodsRateCell(g) {
   return rate > 0 ? `<td style="color:var(--safe)">+${fmtNum(Number(rate.toFixed(1)))} per day</td>` : '<td></td>';
 }
 
-// ── Settlements overview (S1, megaron_plan_stad_vs_ekonomi.md §3) ──────────
-// Answers "vilken av mina städer?" for food — the one question this table
-// exists for (§1: "Ekonomi äger jämförelsen"). `sitosGranaryState` is the
-// exact same pure function city.js's per-settlement Tillstånd row (and
-// keryx's `status`) derive their five states from — reused here, not
-// re-derived, so this table and the city drawer can never disagree about
-// which state a settlement is in.
-const FOOD_RANK = { 'empty-shrinking': 0, 'release': 1, 'empty-growing': 2, 'rest': 3, 'store': 4 };
-const FOOD_LABEL = {
-  'empty-shrinking': 'starving',
-  'release': 'drawing down reserve',
-  'empty-growing': 'empty, refilling',
-  'rest': 'stable',
-  'store': 'surplus',
-};
+// Compare the single city food stocks and authoritative food net, including army
+// upkeep when reported. Hunger follows the server growth state, never a local
+// stock threshold: low coverage alone does not mean a city is starving.
+const FOOD_RANK = { starving: 0, declining: 1, growing: 2, stable: 3, unknown: 5 };
+const FOOD_LABEL = { starving: 'starving', declining: 'stocks falling', growing: 'stocks growing', stable: 'stable', unknown: 'no data' };
 
-// One settlement's food-survival summary. `pd` is one row from
-// GET .../settlements/overview (megaron_plan_oversiktsendpoint.md,
-// 2026-09-06 — previously one GET .../provinces/{id} per settlement): same
-// fields city.js's /provinces/{id} fetch already reads (population,
-// grain_prod_rate/grain_consum_rate, food_self_sufficient, sitos.*), backed
-// by the same economy.* functions server-side — no new server data (plan §4:
-// "Ingen ny data på servern"). `pd` may be null if the settlement is missing
-// from the overview response; that renders as an honest "no data" row rather
-// than a guess.
 export function settlementFoodRow(s, pd) {
   if (!pd) {
     return { id: s.id, name: s.name, isCapital: !!s.is_capital, population: 0,
-      grainRate: 0, coverage: 0, severity: 'rest', label: 'no data', rank: 5 };
+      grainRate: null, coverage: null, severity: 'unknown', label: 'no data', rank: 5 };
   }
-  const netTick = (pd.grain_prod_rate || 0) - (pd.grain_consum_rate || 0);
-  const sitos = pd.sitos || {};
-  const cov   = sitos.coverage_ticks    || 0;
-  const low   = sitos.low_ticks         || 0;
-  const high  = sitos.high_ticks        || 0;
-  const total = sitos.granary_total     || 0;
-  const net   = pd.food_net_per_tick_after_upkeep ?? sitos.food_net_per_tick ?? netTick;
-  // food_self_sufficient===false means the catchment cannot feed the
-  // population even with every citizen on food — worse than any coverage
-  // number can say (it will never recover on its own), so it overrides the
-  // granary state and always sorts to the very top.
+  const food = pd.food;
+  const cov = food?.coverage_ticks;
+  const net = pd.food_net_per_tick_after_upkeep ?? food?.food_net_per_tick;
+  const coverageKnown = cov != null && Number.isFinite(cov);
+  const netKnown = net != null && Number.isFinite(net);
+  const known = coverageKnown && netKnown;
   const cannotFeed = pd.food_self_sufficient === false;
-  const { severity } = sitosGranaryState(cov, low, high, total, net);
+  const severity = !known ? 'unknown' : food.growth_state === 'shrinking' ? 'starving'
+    : net < 0 ? 'declining' : net > 0 ? 'growing' : 'stable';
   return {
     id: s.id,
     name: s.name,
     isCapital: !!s.is_capital,
     population: pd.population || 0,
-    grainRate: net,
-    coverage: cov,
-    severity: cannotFeed ? 'empty-shrinking' : severity,
+    grainRate: netKnown ? net : null,
+    coverage: coverageKnown ? cov : null,
+    severity: cannotFeed ? 'starving' : severity,
     label: cannotFeed ? 'cannot feed itself' : (FOOD_LABEL[severity] || severity),
     rank: cannotFeed ? -1 : (FOOD_RANK[severity] ?? 3),
   };
@@ -133,9 +109,9 @@ export function renderSettlementsOverviewHTML(rows, sortKey, sortDir) {
       return `<tr onclick="openCitySettlement('${r.id}')" style="cursor:pointer">
         <td>${esc(r.name)}${r.isCapital ? ' ★' : ''}</td>
         <td style="text-align:right">${fmtNum(Math.floor(r.population))}</td>
-        <td style="text-align:right;color:${rateColor}">${rateSign}${fmtNum(Number(r.grainRate.toFixed(1)))} per day</td>
-        <td style="text-align:right">${fmtDays(Number(r.coverage.toFixed(1)))}</td>
-        <td><span class="sitos-state-${r.severity}">${esc(r.label)}</span></td>
+        <td style="text-align:right;color:${rateColor}">${r.grainRate == null ? 'not reported' : rateSign + fmtNum(Number(r.grainRate.toFixed(1))) + ' per day'}</td>
+        <td style="text-align:right">${r.coverage == null ? 'not reported' : fmtDays(Number(r.coverage.toFixed(1)))}</td>
+        <td><span class="food-state-${r.severity}">${esc(r.label)}</span></td>
       </tr>`;
     }).join('')}
   </table>`;
@@ -209,7 +185,7 @@ async function loadEconomyGoods(mySettlements) {
   try {
     const [goodsResults, overviewResult] = await Promise.all([
       Promise.all(mySettlements.map(s => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${s.id}/goods`))),
-      // One call for every owned settlement's food/granary fields, instead of
+      // One call for every owned settlement's food fields, instead of
       // the old N /provinces/{id} fetches (megaron_plan_oversiktsendpoint.md,
       // 2026-09-06). Same economy.* functions as /provinces/{id} under the
       // hood, so the rendered rows are unchanged.
@@ -235,7 +211,6 @@ async function loadEconomyGoods(mySettlements) {
       if (!r.ok) continue;
       const goods = await r.json();
       const silver = goods.find(g => g.key === 'silver');
-      const granary = overviewByID.get(s.settlement_id)?.sitos?.granary_per_good || {};
       const others = goods.filter(g => g.key !== 'silver' && (g.amount > 0 || g.producible));
       html += `<div class="dsec-title" style="margin-top:.8rem">${s.name}${s.is_capital?' ★':''}</div>`;
       if (silver) {
@@ -249,7 +224,7 @@ async function loadEconomyGoods(mySettlements) {
       }
       if (others.length) {
         html += `<table class="goods-mini"><tr style="color:var(--text-dim);font-size:.7rem"><td>Good</td><td>Amount</td><td>Rate</td></tr>${others.map(g =>
-          `<tr><td>${g.name||g.key}</td><td>${fmtNum(Math.floor(g.amount||0))}${granary[g.key]>0 ? ` · ${fmtNum(Math.floor(granary[g.key]))} in Sitos` : ''}</td>${goodsRateCell(g)}</tr>`
+          `<tr><td>${g.name||g.key}</td><td>${fmtNum(Math.floor(g.amount||0))}</td>${goodsRateCell(g)}</tr>`
         ).join('')}</table>`;
       }
     }

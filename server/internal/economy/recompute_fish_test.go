@@ -4,7 +4,7 @@ package economy
 // the slice contract, proved end-to-end through RecomputeProduction against a
 // real catchment (not just the pure FoodConsumptionSplit formula — see
 // food_consumption_split_test.go for that half). Gated by DATABASE_URL via
-// testPool (sitos_conservation_test.go), same as every other recompute test
+// testPool (test_pool_test.go), same as every other recompute test
 // in this package.
 
 import (
@@ -123,7 +123,7 @@ func TestRecomputeProduction_AK1_PureFishCatchment_GrainIsRawNeverNegative(t *te
 
 	const tick = 200
 	const pop = 120
-	settlementID := recomputeWaterFixture(t, tick, pop, /*grainTiles*/ 0, /*fishTiles*/ 6)
+	settlementID := recomputeWaterFixture(t, tick, pop /*grainTiles*/, 0 /*fishTiles*/, 6)
 	// P4: staff every coastal_sea hex to its P3 cap (1, no harbour) — the
 	// placement-era equivalent of "weight=1.0, capacity-clamped" pre-P4.
 	for i, hex := range recomputeWaterFixtureOffsets {
@@ -180,7 +180,7 @@ func TestRecomputeProduction_AK2_NoFishBehavesLikePreSlice(t *testing.T) {
 
 	const tick = 200
 	const pop = 500
-	settlementID := recomputeWaterFixture(t, tick, pop, /*grainTiles*/ 3, /*fishTiles*/ 0)
+	settlementID := recomputeWaterFixture(t, tick, pop /*grainTiles*/, 3 /*fishTiles*/, 0)
 	// P4: grain's yield shape is rate × placed, not rate/cap × placed like
 	// every other good (placementYield, megaron_plan_grain_cap.md) — so ONE
 	// gubbe per plains hex (well within the real per-hex cap of 4, no farm
@@ -271,7 +271,7 @@ func TestRecomputeProduction_AK3_FishAndGrainRatesAreIndependentOfDemand(t *test
 	// picked with a large pop so demand outstrips it either way (proving the
 	// rate does NOT react to that at all any more).
 	const pop = 20000
-	settlementID := recomputeWaterFixture(t, tick, pop, /*grainTiles*/ 0, /*fishTiles*/ 1)
+	settlementID := recomputeWaterFixture(t, tick, pop /*grainTiles*/, 0 /*fishTiles*/, 1)
 	// P4: staff the one coastal_sea hex to its P3 cap (1, no harbour) — fully
 	// staffed regardless of pop is the whole point (P3's population-invariant
 	// cap), so a huge pop is still fed by exactly this one hex's yield.

@@ -294,9 +294,9 @@ func (h *UnitInterceptScanHandler) intercept(
 
 	// initiateOrJoinBattle is a UnitArrivalHandler method; built inline rather
 	// than threading a shared instance through NewUnitInterceptScanHandler's
-	// constructor (and its 5 call sites) — sitosCfg/Dice are the only fields
+	// constructor (and its 5 call sites) — Dice are the only fields
 	// that differ from this zero-value build, and neither is read by
-	// initiateOrJoinBattle/startBattle/joinBattle (sitosCfg: unit_arrival.go's
+	// initiateOrJoinBattle/startBattle/joinBattle (Dice: unit_arrival.go's
 	// genesis-silver path only; Dice: nil-safe, falls back to
 	// economy.NewWallDice(), the same production default).
 	uah := &UnitArrivalHandler{pool: h.pool, eventStore: h.eventStore, scheduler: h.scheduler, hub: h.hub, clk: h.clk}

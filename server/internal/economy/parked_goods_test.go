@@ -18,7 +18,7 @@ func TestRecomputeProduction_ParkedGoodNeverProduced(t *testing.T) {
 	ctx := context.Background()
 
 	const tick = 100
-	settlementID := recomputeFixture(t, tick, /*pop*/ 100, /*grainAmount*/ 50, /*grainRate*/ 0)
+	settlementID := recomputeFixture(t, tick /*pop*/, 100 /*grainAmount*/, 50 /*grainRate*/, 0)
 
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'stable', 1)`,
@@ -28,7 +28,7 @@ func TestRecomputeProduction_ParkedGoodNeverProduced(t *testing.T) {
 	}
 
 	// A stale horses rate, as if it had been producing before it was parked.
-	seedStaleGood(t, settlementID, "horses", /*amount*/ 5, /*rate*/ 3, /*calcTick*/ tick-2)
+	seedStaleGood(t, settlementID, "horses" /*amount*/, 5 /*rate*/, 3 /*calcTick*/, tick-2)
 
 	if err := RecomputeProduction(ctx, pool, settlementID); err != nil {
 		t.Fatalf("RecomputeProduction: %v", err)
@@ -62,7 +62,7 @@ func TestCatchmentBasePotential_ExcludesParkedGood(t *testing.T) {
 	ctx := context.Background()
 
 	const tick = 100
-	settlementID := recomputeFixture(t, tick, /*pop*/ 100, /*grainAmount*/ 50, /*grainRate*/ 0)
+	settlementID := recomputeFixture(t, tick /*pop*/, 100 /*grainAmount*/, 50 /*grainRate*/, 0)
 
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'stable', 1)`,

@@ -74,7 +74,7 @@ type foundedMetropolis struct {
 // The host dissolves permanently in the act — that is the whole shape of the
 // founder phase: one irreversible choice of where to become a people with a place.
 // Everything the host still carried becomes the city's opening stock, so a player
-// who found their site early is rewarded with a fuller granary rather than having
+// who found their site early is rewarded with a fuller food store rather than having
 // the surplus evaporate.
 //
 // Grain = 0 does NOT block founding: an immobilised host may still settle where it
@@ -84,7 +84,7 @@ func foundMetropolisFromNomadicHost(
 	ctx context.Context,
 	tx pgx.Tx,
 	eventStore *events.Store,
-	sitosCfg economy.SitosConfig,
+
 	worldID, playerID uuid.UUID,
 	name, culture string,
 ) (foundedMetropolis, error) {
@@ -175,7 +175,7 @@ func foundMetropolisFromNomadicHost(
 	}
 
 	// 4. Raise the metropolis through the same path an ordinary join uses.
-	m, err := createMetropolis(ctx, tx, sitosCfg, metropolisParams{
+	m, err := createMetropolis(ctx, tx, metropolisParams{
 		WorldID:       worldID,
 		PlayerID:      playerID,
 		Q:             q,
@@ -428,7 +428,7 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	founded, err := foundMetropolisFromNomadicHost(
-		r.Context(), tx, h.eventStore, h.sitosCfg, worldID, playerID, req.Name, req.Culture,
+		r.Context(), tx, h.eventStore, worldID, playerID, req.Name, req.Culture,
 	)
 	var coErr *catchmentOverlapError
 	switch {

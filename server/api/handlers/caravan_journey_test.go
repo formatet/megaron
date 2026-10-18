@@ -11,7 +11,6 @@ import (
 	"testing"
 	"time"
 
-	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/tick"
@@ -266,7 +265,7 @@ func TestCaravanAccept_ConcurrentBuyAndSellCommitOnceWithAsymmetricETA(t *testin
 
 func TestCaravanGift_NoRouteHasNoSideEffects(t *testing.T) {
 	f := setupTradeInternalFixture(t)
-	h := NewSettlementHandler(f.pool, events.NewStore(f.pool), f.scheduler, f.clk, economy.SitosConfig{})
+	h := NewSettlementHandler(f.pool, events.NewStore(f.pool), f.scheduler, f.clk)
 	f.router.Post("/worlds/{worldID}/settlements/{settlementID}/gift", h.Gift)
 	if _, err := f.pool.Exec(context.Background(), `DELETE FROM map_tiles WHERE world_id=$1 AND q=1`, f.worldID); err != nil {
 		t.Fatal(err)

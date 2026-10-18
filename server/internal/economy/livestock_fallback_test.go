@@ -38,7 +38,7 @@ func TestFoodTick_LivestockFallback_CoversShortfallAndDoesNotStarve(t *testing.T
 	// livestockFoodValue 200→166.67), so ceil(2.0/166.67)=1 closes it.
 	const population = 500
 	f := newFoodFixture(t, pool, "livestock-covers", population)
-	seedFoodStock(t, pool, f, /*grain*/ 0.5, /*fish*/ 0, /*livestock*/ 3)
+	seedFoodStock(t, pool, f /*grain*/, 0.5 /*fish*/, 0 /*livestock*/, 3)
 
 	h := newFoodTickHandler(pool)
 	if err := h.Handle(context.Background(), events.ScheduledEvent{
@@ -67,7 +67,7 @@ func TestFoodTick_LivestockFallback_IdempotentOnReplay(t *testing.T) {
 
 	const population = 500
 	f := newFoodFixture(t, pool, "livestock-idempotent", population)
-	seedFoodStock(t, pool, f, /*grain*/ 0.5, /*fish*/ 0, /*livestock*/ 3) // 50 → 0.5 (mig 136, NearjordGrainPerTick)
+	seedFoodStock(t, pool, f /*grain*/, 0.5 /*fish*/, 0 /*livestock*/, 3) // 50 → 0.5 (mig 136, NearjordGrainPerTick)
 
 	h := newFoodTickHandler(pool)
 	evt := events.ScheduledEvent{ID: 900102, WorldID: f.worldID, DueTick: f.tick}

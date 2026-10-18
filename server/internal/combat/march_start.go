@@ -954,7 +954,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 				 FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'grain' FOR UPDATE`,
 				*u.SupportSettlementID,
 			).Scan(&have); err != nil {
-				return nil, reject(http.StatusInternalServerError, "could not read the home port's granary")
+				return nil, reject(http.StatusInternalServerError, "could not read the home port's stock")
 			}
 			if !province.GoodsAffordable(have, provisions) {
 				// Båda talen med flit: en ärlig brist säger hur stor den är, så

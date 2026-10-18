@@ -6,7 +6,7 @@ package economy
 // whose full 18-hex catchment ring is seeded with a single terrain, so two
 // ring hexes of the SAME terrain can be compared directly.
 //
-// Real Postgres, gated by DATABASE_URL (testPool, sitos_conservation_test.go).
+// Real Postgres, gated by DATABASE_URL (testPool, test_pool_test.go).
 
 import (
 	"context"

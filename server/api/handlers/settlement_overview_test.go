@@ -9,7 +9,7 @@ package handlers
 //     caller and one owned by another Wanax → only the caller's two come back
 //     (FOW/ownership, CLAUDE.md "Trade & messenger layer").
 //  2. TestSettlementsOverviewParity_MatchesProvinceGet: the overview row for a
-//     settlement carries EXACTLY the same food/granary fields as
+//     settlement carries EXACTLY the same food fields as
 //     ProvinceHandler.Get's "settlement" object for that same settlement — the
 //     slice's invariant, because both read settlementFoodSummary.
 
@@ -24,7 +24,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -124,15 +124,8 @@ func TestSettlementsOverview_OnlyOwnSettlements(t *testing.T) {
 	petrasID := settlementsOverviewSeedSettlement(t, pool, ctx, worldID, ownerAID, "Petras", true, 0, 0)
 	zakrosID := settlementsOverviewSeedSettlement(t, pool, ctx, worldID, ownerAID, "Zakros", false, 1, 0)
 	_ = settlementsOverviewSeedSettlement(t, pool, ctx, worldID, ownerBID, "RivalCity", true, 2, 0)
-
-	sitosCfg := economy.SitosConfig{
-		SubsistenceGoods: []string{"grain", "fish"},
-		LowDays:          3,
-		HighDays:         10,
-		GranaryCapDays:   14,
-	}
 	clk := clock.NewTestClock(time.Now())
-	sh := NewSettlementHandler(pool, nil, nil, clk, sitosCfg)
+	sh := NewSettlementHandler(pool, nil, nil, clk)
 
 	r := chi.NewRouter()
 	r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/settlements/overview", sh.SettlementsOverview)
@@ -153,13 +146,11 @@ func TestSettlementsOverview_OnlyOwnSettlements(t *testing.T) {
 		GrainProdRate      float64   `json:"grain_prod_rate"`
 		GrainConsumRate    float64   `json:"grain_consum_rate"`
 		FoodSelfSufficient bool      `json:"food_self_sufficient"`
-		Sitos              struct {
-			CoverageTicks  float64 `json:"coverage_ticks"`
-			LowTicks       float64 `json:"low_ticks"`
-			HighTicks      float64 `json:"high_ticks"`
-			GranaryTotal   float64 `json:"granary_total"`
+		Food               struct {
+			CoverageTicks float64 `json:"coverage_ticks"`
+
 			FoodNetPerTick float64 `json:"food_net_per_tick"`
-		} `json:"sitos"`
+		} `json:"food"`
 	}
 	if err := json.Unmarshal(rec.Body.Bytes(), &result); err != nil {
 		t.Fatalf("parse response: %v (body: %s)", err, rec.Body.String())
@@ -176,9 +167,6 @@ func TestSettlementsOverview_OnlyOwnSettlements(t *testing.T) {
 		}
 		if row.GrainProdRate != 12.5 {
 			t.Errorf("settlement %s: grain_prod_rate = %.2f, want 12.5", row.Name, row.GrainProdRate)
-		}
-		if row.Sitos.LowTicks != 3 || row.Sitos.HighTicks != 10 {
-			t.Errorf("settlement %s: sitos low/high = %.0f/%.0f, want 3/10", row.Name, row.Sitos.LowTicks, row.Sitos.HighTicks)
 		}
 	}
 	if !seen[petrasID] {
@@ -209,20 +197,9 @@ func TestSettlementsOverviewParity_MatchesProvinceGet(t *testing.T) {
 	authSvc := auth.NewService(pool, "test-secret")
 	ownerID, token := settlementsOverviewRegisterPlayer(t, authSvc, ctx, "wanax-parity-"+uuid.New().String())
 	settlementID := settlementsOverviewSeedSettlement(t, pool, ctx, worldID, ownerID, "Parityton", true, 0, 0)
-
-	if _, err := pool.Exec(ctx, `INSERT INTO settlement_granary(settlement_id,good_key,amount) VALUES($1,'grain',307)`, settlementID); err != nil {
-		t.Fatal(err)
-	}
-
-	sitosCfg := economy.SitosConfig{
-		SubsistenceGoods: []string{"grain", "fish"},
-		LowDays:          3,
-		HighDays:         10,
-		GranaryCapDays:   14,
-	}
 	clk := clock.NewTestClock(time.Now())
-	ph := NewProvinceHandler(pool, nil, clk, sitosCfg, nil, nil)
-	sh := NewSettlementHandler(pool, nil, nil, clk, sitosCfg)
+	ph := NewProvinceHandler(pool, nil, clk, nil, nil)
+	sh := NewSettlementHandler(pool, nil, nil, clk)
 
 	r := chi.NewRouter()
 	r.Get("/worlds/{worldID}/provinces/{provinceID}", ph.Get)
@@ -246,13 +223,11 @@ func TestSettlementsOverviewParity_MatchesProvinceGet(t *testing.T) {
 			GrainProdRate      float64 `json:"grain_prod_rate"`
 			GrainConsumRate    float64 `json:"grain_consum_rate"`
 			FoodSelfSufficient bool    `json:"food_self_sufficient"`
-			Sitos              struct {
-				CoverageTicks  float64 `json:"coverage_ticks"`
-				LowTicks       float64 `json:"low_ticks"`
-				HighTicks      float64 `json:"high_ticks"`
-				GranaryTotal   float64 `json:"granary_total"`
+			Food               struct {
+				CoverageTicks float64 `json:"coverage_ticks"`
+
 				FoodNetPerTick float64 `json:"food_net_per_tick"`
-			} `json:"sitos"`
+			} `json:"food"`
 		} `json:"settlement"`
 	}
 	if err := json.Unmarshal(getRec.Body.Bytes(), &getResp); err != nil {
@@ -262,7 +237,7 @@ func TestSettlementsOverviewParity_MatchesProvinceGet(t *testing.T) {
 	// the same figure growth is gated on (2026-09-26). Seeded: grain 12.5 +
 	// fish 2.0 per tick, pop 800 eating 0.005 each = 4.0. Written as literals
 	// so the test cannot agree with economy.FoodNet merely by calling it.
-	if got, want := getResp.Settlement.Sitos.FoodNetPerTick, 10.5; got < want-1e-9 || got > want+1e-9 {
+	if got, want := getResp.Settlement.Food.FoodNetPerTick, 10.5; got < want-1e-9 || got > want+1e-9 {
 		t.Errorf("food_net_per_tick = %v, want %v (14.5 produced − 4.0 eaten)", got, want)
 	}
 
@@ -273,38 +248,17 @@ func TestSettlementsOverviewParity_MatchesProvinceGet(t *testing.T) {
 	if ovRec.Code != http.StatusOK {
 		t.Fatalf("SettlementsOverview = %d: %s", ovRec.Code, ovRec.Body.String())
 	}
-	var stores []struct {
-		ID    uuid.UUID
-		Sitos struct {
-			Grain map[string]float64 `json:"granary_per_good"`
-		}
-	}
-	if err := json.Unmarshal(ovRec.Body.Bytes(), &stores); err != nil {
-		t.Fatal(err)
-	}
-	foundStore := false
-	for _, row := range stores {
-		if row.ID == settlementID && row.Sitos.Grain["grain"] == 307 {
-			foundStore = true
-		}
-	}
-	if !foundStore {
-		t.Fatalf("grain in Sitos missing from overview: %s", ovRec.Body.String())
-	}
-
 	var ovResult []struct {
 		ID                 uuid.UUID `json:"id"`
 		Population         int       `json:"population"`
 		GrainProdRate      float64   `json:"grain_prod_rate"`
 		GrainConsumRate    float64   `json:"grain_consum_rate"`
 		FoodSelfSufficient bool      `json:"food_self_sufficient"`
-		Sitos              struct {
-			CoverageTicks  float64 `json:"coverage_ticks"`
-			LowTicks       float64 `json:"low_ticks"`
-			HighTicks      float64 `json:"high_ticks"`
-			GranaryTotal   float64 `json:"granary_total"`
+		Food               struct {
+			CoverageTicks float64 `json:"coverage_ticks"`
+
 			FoodNetPerTick float64 `json:"food_net_per_tick"`
-		} `json:"sitos"`
+		} `json:"food"`
 	}
 	if err := json.Unmarshal(ovRec.Body.Bytes(), &ovResult); err != nil {
 		t.Fatalf("parse overview response: %v", err)
@@ -315,13 +269,11 @@ func TestSettlementsOverviewParity_MatchesProvinceGet(t *testing.T) {
 		GrainProdRate      float64   `json:"grain_prod_rate"`
 		GrainConsumRate    float64   `json:"grain_consum_rate"`
 		FoodSelfSufficient bool      `json:"food_self_sufficient"`
-		Sitos              struct {
-			CoverageTicks  float64 `json:"coverage_ticks"`
-			LowTicks       float64 `json:"low_ticks"`
-			HighTicks      float64 `json:"high_ticks"`
-			GranaryTotal   float64 `json:"granary_total"`
+		Food               struct {
+			CoverageTicks float64 `json:"coverage_ticks"`
+
 			FoodNetPerTick float64 `json:"food_net_per_tick"`
-		} `json:"sitos"`
+		} `json:"food"`
 	}
 	for i := range ovResult {
 		if ovResult[i].ID == settlementID {
@@ -345,19 +297,10 @@ func TestSettlementsOverviewParity_MatchesProvinceGet(t *testing.T) {
 	if ov.FoodSelfSufficient != getResp.Settlement.FoodSelfSufficient {
 		t.Errorf("food_self_sufficient parity broken: overview=%v province=%v", ov.FoodSelfSufficient, getResp.Settlement.FoodSelfSufficient)
 	}
-	if ov.Sitos.CoverageTicks != getResp.Settlement.Sitos.CoverageTicks {
-		t.Errorf("sitos.coverage_ticks parity broken: overview=%.4f province=%.4f", ov.Sitos.CoverageTicks, getResp.Settlement.Sitos.CoverageTicks)
+	if ov.Food.CoverageTicks != getResp.Settlement.Food.CoverageTicks {
+		t.Errorf("food.coverage_ticks parity broken: overview=%.4f province=%.4f", ov.Food.CoverageTicks, getResp.Settlement.Food.CoverageTicks)
 	}
-	if ov.Sitos.LowTicks != getResp.Settlement.Sitos.LowTicks {
-		t.Errorf("sitos.low_ticks parity broken: overview=%.4f province=%.4f", ov.Sitos.LowTicks, getResp.Settlement.Sitos.LowTicks)
-	}
-	if ov.Sitos.HighTicks != getResp.Settlement.Sitos.HighTicks {
-		t.Errorf("sitos.high_ticks parity broken: overview=%.4f province=%.4f", ov.Sitos.HighTicks, getResp.Settlement.Sitos.HighTicks)
-	}
-	if ov.Sitos.GranaryTotal != getResp.Settlement.Sitos.GranaryTotal {
-		t.Errorf("sitos.granary_total parity broken: overview=%.4f province=%.4f", ov.Sitos.GranaryTotal, getResp.Settlement.Sitos.GranaryTotal)
-	}
-	if ov.Sitos.FoodNetPerTick != getResp.Settlement.Sitos.FoodNetPerTick {
-		t.Errorf("sitos.food_net_per_tick parity broken: overview=%.4f province=%.4f", ov.Sitos.FoodNetPerTick, getResp.Settlement.Sitos.FoodNetPerTick)
+	if ov.Food.FoodNetPerTick != getResp.Settlement.Food.FoodNetPerTick {
+		t.Errorf("food.food_net_per_tick parity broken: overview=%.4f province=%.4f", ov.Food.FoodNetPerTick, getResp.Settlement.Food.FoodNetPerTick)
 	}
 }

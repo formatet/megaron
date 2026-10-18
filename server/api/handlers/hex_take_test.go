@@ -463,7 +463,7 @@ func TestCancelBuild_RefundsAndDeletesQueueRow(t *testing.T) {
 	ctx := context.Background()
 
 	clk := clock.NewTestClock(time.Now())
-	ph := NewProvinceHandler(pool, events.NewScheduler(pool, clk), clk, economy.SitosConfig{}, events.NewStore(pool), nil)
+	ph := NewProvinceHandler(pool, events.NewScheduler(pool, clk), clk, events.NewStore(pool), nil)
 	r := chi.NewRouter()
 	r.Use(auth.Middleware(auth.NewService(pool, "test-secret")))
 	r.Delete("/worlds/{worldID}/provinces/{provinceID}/build-queue/{queueID}", ph.CancelBuild)

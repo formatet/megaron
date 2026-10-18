@@ -12,7 +12,7 @@ import (
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/combat"
-	"formatet/megaron/server/internal/economy"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -40,9 +40,8 @@ func TestAIRound3_FoodAfterArmyAPIParity(t *testing.T) {
 		t.Fatal(err)
 	}
 	clk := clock.NewTestClock(time.Unix(0, 0))
-	cfg := economy.LoadSitosConfig()
-	ph := NewProvinceHandler(pool, nil, clk, cfg, nil, nil)
-	sh := NewSettlementHandler(pool, nil, nil, clk, cfg)
+	ph := NewProvinceHandler(pool, nil, clk, nil, nil)
+	sh := NewSettlementHandler(pool, nil, nil, clk)
 	r := chi.NewRouter()
 	r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/provinces/{provinceID}", ph.Get)
 	r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/settlements/overview", sh.SettlementsOverview)
@@ -72,7 +71,7 @@ func TestAIRound3_FoodAfterArmyAPIParity(t *testing.T) {
 		if !ok || math.Abs(net-(.5-up.Grain)) > 1e-9 {
 			t.Fatalf("food after army: want %f, got %v", .5-up.Grain, s)
 		}
-		if s["sitos"].(map[string]any)["food_net_per_tick"].(float64) != .5 {
+		if s["food"].(map[string]any)["food_net_per_tick"].(float64) != .5 {
 			t.Fatal("population/growth gate changed")
 		}
 	}

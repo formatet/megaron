@@ -13,6 +13,7 @@ test('K: calendar and forming state survive without world speed',()=>{
  assert.match(html,/Day 3 of Antherion \(2\), Year 1/);assert.match(html,/waiting for 3 more Wanaxes/);
  assert.doesNotMatch(html,/World speed|normal|per hour|×/,'world speed must be absent');assert.equal(notifDateHeader(null,{}),'');
 });
+// Historical only: archived food-support notifications.
 test('K: quiet kinds remain readable both in group and historic archive',()=>{
  for(const kind of ['SitosIntervention','SitosFundLow']){
   assert.match(hiddenNotifLabel(kind,3),/^3 food/,'group must use player words');assert.doesNotMatch(hiddenNotifLabel(kind,3),/Sitos|\+3/,'group must use player words');

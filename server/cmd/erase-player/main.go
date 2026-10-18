@@ -67,9 +67,9 @@ func main() {
 }
 
 type eraseReport struct {
-	wanax, newUsername              string
+	wanax, newUsername             string
 	cities, notifications, reports int
-	host, agora                     bool
+	host, agora                    bool
 }
 
 var errAlreadyErased = errors.New("this account is already erased")

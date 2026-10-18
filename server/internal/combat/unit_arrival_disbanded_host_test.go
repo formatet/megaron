@@ -32,7 +32,7 @@ import (
 	"time"
 
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
+
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
@@ -83,7 +83,7 @@ func TestUnitArrivalHandler_DisbandedHostWithNullPositionIsNoOp(t *testing.T) {
 	evt := events.ScheduledEvent{ID: 1, WorldID: worldID, Payload: payload}
 
 	clk := clock.NewTestClock(time.Now())
-	h := NewUnitArrivalHandler(pool, events.NewStore(pool), nil, events.NewScheduler(pool, clk), clk, economy.SitosConfig{})
+	h := NewUnitArrivalHandler(pool, events.NewStore(pool), nil, events.NewScheduler(pool, clk), clk)
 
 	// Before the fix this returned "load arriving unit: … cannot scan NULL …",
 	// which the worker counts as a failure — three of them and the player is

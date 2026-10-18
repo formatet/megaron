@@ -9,7 +9,7 @@ import { renderRumourRowHTML } from './gossip.js';
 
 // ── Notifications drawer ──────────────────────────────────────────────────
 // Mirrors keryx `notifications` (DEL B/D): the default view excludes the noisy
-// Sitos kinds (~99% of the feed) so real events stay visible, with a "+N —
+// historical Sitos kinds (no longer emitted) so real events stay visible, with a "+N —
 // click to view" drill-down per hidden kind. SubsistenceWarning is never
 // collapsed; its critical tier floats to the very top of the feed.
 const NOISY_NOTIF_KINDS = ['SitosIntervention', 'SitosFundLow'];
@@ -34,6 +34,7 @@ export function notifDateHeader(cal = currentCalendarDate(), state = State, show
 }
 
 
+// Historical only: labels for archived food-reserve reports.
 export function hiddenNotifLabel(kind, count) {
   const label = kind === 'SitosIntervention' ? 'food support reports' : 'food reserve warnings';
   return `${fmtNum(count)} ${label} — show reports`;

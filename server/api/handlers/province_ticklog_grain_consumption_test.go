@@ -5,7 +5,7 @@ package handlers
 // was actually NET (netted against the population's own consumption), so a
 // settlement with a positive net grain rate landed entirely in `production`,
 // leaving `consumption["grain"]` absent. fmtFlows then printed "Kons: —"
-// (cmd/keryx/cmd_ticklog.go) while the city's granary was actually draining
+// (cmd/keryx/cmd_ticklog.go) while the city's food store was actually draining
 // relative to gross production — `consumption` can only ever hold
 // net-negative goods, which is an underskott row, not a consumption row.
 //
@@ -25,7 +25,7 @@ import (
 	"time"
 
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -108,7 +108,7 @@ func TestTicklog_GrainConsumptionShownEvenWhenNetRateIsPositive(t *testing.T) {
 	}
 
 	clk := clock.NewTestClock(time.Now())
-	ph := NewProvinceHandler(pool, nil, clk, economy.SitosConfig{}, nil, nil)
+	ph := NewProvinceHandler(pool, nil, clk, nil, nil)
 
 	r := chi.NewRouter()
 	r.Get("/worlds/{worldID}/provinces/{provinceID}", ph.Get)

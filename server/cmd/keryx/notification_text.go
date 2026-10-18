@@ -57,7 +57,7 @@ func printNotificationSummary(c *Client, n notificationItem) {
 		PerGood      map[string]float64 `json:"per_good"`
 		FoodReleased float64            `json:"food_released"`
 		CoverageDays float64            `json:"coverage_days"`
-		GranaryEmpty bool               `json:"granary_empty"`
+		GranaryEmpty bool               `json:"granary_empty"` // Historical only: legacy food-reserve payload.
 		KnownHexes   *int               `json:"known_hexes"`
 		UnknownHexes int                `json:"unknown_hexes"`
 		PoseidonGift json.RawMessage    `json:"poseidon_gift"`
@@ -220,6 +220,7 @@ func printNotificationSummary(c *Client, n notificationItem) {
 		if goods != "" {
 			line += ": " + goods
 		}
+	// Historical only: render archived food-reserve notifications unchanged.
 	case "SitosIntervention":
 		line = "Food support was given to the city"
 	case "SitosFundLow":

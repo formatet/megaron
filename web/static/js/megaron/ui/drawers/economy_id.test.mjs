@@ -6,7 +6,7 @@ const body={innerHTML:'',querySelectorAll:()=>[]},goods={innerHTML:''};
 globalThis.document={getElementById:id=>id==='economy-body'?body:id==='ectab-goods'?goods:null};
 globalThis.localStorage={getItem:()=>null};
 const provinces=[{id:'province-a',settlement_id:'settlement-a',name:'Same name',own:true,is_capital:true},{id:'province-b',settlement_id:'settlement-b',name:'Same name',own:true}];
-const overview=[{id:'settlement-b',population:2000,grain_prod_rate:5,grain_consum_rate:10,sitos:{coverage_ticks:5,low_ticks:10,high_ticks:30,granary_total:10,food_net_per_tick:-5}},{id:'settlement-a',population:1000,grain_prod_rate:20,grain_consum_rate:5,sitos:{coverage_ticks:40,low_ticks:10,high_ticks:30,granary_total:100,food_net_per_tick:15}}];
+const overview=[{id:'settlement-b',population:2000,grain_prod_rate:5,grain_consum_rate:10,food:{coverage_ticks:5,food_net_per_tick:-5}},{id:'settlement-a',population:1000,grain_prod_rate:20,grain_consum_rate:5,food:{coverage_ticks:40,food_net_per_tick:15}}];
 async function render(rows,status=200){
  State.WORLD_ID='world';State.provinceData=provinces;
  const calls=[];globalThis.fetch=async(url)=>{

@@ -275,15 +275,14 @@ export async function loadCityDrawer() {
       document.getElementById('city-pop-sec').innerHTML = '<p class="empty-state">—</p>';
     }
 
-    document.getElementById('city-sitos-sec').innerHTML = foodSummaryHTML(pd);
-    document.getElementById('city-reserve-sec').innerHTML = foodDetailsHTML(pd);
+    document.getElementById('city-food-sec').innerHTML = foodSummaryHTML(pd);
+    document.getElementById('city-food-details-sec').innerHTML = foodDetailsHTML(pd);
     if (pd && pd.last_tick) {
       const lt = pd.last_tick;
       const prodRows = Object.entries(lt.production || {}).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--safe)">+${fmtNum(Number(v.toFixed(2)))}</td></tr>`).join('');
       const consRows = Object.entries(lt.consumption || {}).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--accent)">−${fmtNum(Number(v.toFixed(2)))}</td></tr>`).join('');
       document.getElementById('city-lasttick-sec').innerHTML = `
         <div class="stat-row"><span class="sr-label">Day</span><span class="sr-val">#${fmtNum(lt.tick)}</span></div>
-        ${(lt.sitos_food_in > 0 || lt.sitos_food_out > 0) ? `<div class="stat-row"><span class="sr-label">Food reserve</span><span class="sr-val">${lt.sitos_food_in > 0 ? `<span style="color:var(--safe)">+${fmtNum(Math.round(lt.sitos_food_in))} food from granary</span>` : ''}${(lt.sitos_food_in > 0 && lt.sitos_food_out > 0) ? ' · ' : ''}${lt.sitos_food_out > 0 ? `<span style="color:var(--text-dim)">${fmtNum(Math.round(lt.sitos_food_out))} food stored</span>` : ''}</span></div>` : ''}
         ${(prodRows||consRows) ? `<table class="goods-mini" style="margin-top:.3rem">${prodRows}${consRows}</table>` : ''}`;
     } else {
       document.getElementById('city-lasttick-sec').innerHTML = '<p class="empty-state">—</p>';

@@ -149,8 +149,7 @@ func main() {
 	messengerReturnH := messenger.NewReturnHandler(pool, eventStore, hub)
 	messengerStayEndH := messenger.NewStayEndHandler(pool, scheduler, gameClock)
 	kharisH := kharis.NewTickHandler(pool, scheduler, eventStore, hub)
-	sitosCfg := economy.LoadSitosConfig()
-	sitosH := economy.NewSitosTickHandler(pool, scheduler, eventStore, hub, sitosCfg)
+
 	foodTickH := economy.NewFoodTickHandler(pool, scheduler, eventStore, hub)
 	tradeH := economy.NewDeliveryHandler(pool, eventStore, hub, scheduler)
 	tradeReturnH := economy.NewTradeReturnHandler(pool, eventStore, hub)
@@ -160,7 +159,7 @@ func main() {
 	// (megaron_plan_ordna_passage.md 3b-3) can call it — messenger may use
 	// combat (G1), never the reverse, so the handler is built once, up front,
 	// and handed down as messenger's own PassageShipReleaser interface.
-	unitArrivalH := combat.NewUnitArrivalHandler(pool, eventStore, hub, scheduler, gameClock, sitosCfg)
+	unitArrivalH := combat.NewUnitArrivalHandler(pool, eventStore, hub, scheduler, gameClock)
 	passageScanH := messenger.NewPassageScanHandler(pool, scheduler, hub, gameClock, unitArrivalH)
 	placeReachH := combat.NewPlaceReachScanHandler(pool, scheduler, eventStore, hub)
 	worker.Register(events.ScheduledBuildComplete, buildH.Handle)
@@ -181,7 +180,7 @@ func main() {
 	worker.Register(events.ScheduledMessengerReturn, messengerReturnH.Handle)
 	worker.Register(events.ScheduledMessengerStayEnd, messengerStayEndH.Handle)
 	worker.Register(events.ScheduledKharisTick, kharisH.Handle)
-	worker.Register(events.ScheduledSitosTick, sitosH.Handle)
+	worker.Register(events.ScheduledSitosTick, events.RetiredSitosTick)
 	worker.Register(events.ScheduledTradeDelivery, placeReachH.BeforeArrival(tradeH.Handle))
 	worker.Register(events.ScheduledGiftDelivery, placeReachH.BeforeArrival(tradeH.HandleGift))
 	worker.Register(events.ScheduledTradeReturn, placeReachH.BeforeArrival(tradeReturnH.Handle))
@@ -319,13 +318,13 @@ func main() {
 	wh := handlers.NewWorldHandler(pool, authSvc, gameClock)
 	wh.SetWorldStartWanaxes(worldStartWanaxes)
 	kh := handlers.NewKingdomHandler(pool, scheduler, gameClock)
-	ph := handlers.NewProvinceHandler(pool, scheduler, gameClock, sitosCfg, eventStore, hub)
+	ph := handlers.NewProvinceHandler(pool, scheduler, gameClock, eventStore, hub)
 	soh := handlers.NewStandingOrderHandler(pool)
 	rdh := handlers.NewRetreatDefaultHandler(pool)
-	sh := handlers.NewSettlementHandler(pool, eventStore, scheduler, gameClock, sitosCfg)
+	sh := handlers.NewSettlementHandler(pool, eventStore, scheduler, gameClock)
 	mh := handlers.NewMessengerHandler(pool, scheduler, gameClock, hub)
 	pah := handlers.NewPassageHandler(pool, scheduler, eventStore, gameClock)
-	jh := handlers.NewJoinHandler(pool, eventStore, sitosCfg, gameClock, hub)
+	jh := handlers.NewJoinHandler(pool, eventStore, gameClock, hub)
 	jh.SetWorldStartWanaxes(worldStartWanaxes)
 	nh := handlers.NewNotificationsHandler(pool)
 	var agoraAPI handlers.AgoraService
@@ -571,7 +570,7 @@ func main() {
 // (api/handlers/join.go). Seeding ran at startup over active worlds only, so a
 // freshly created world was seeded never: it existed before this ran, it was
 // not active yet when it ran, and nothing re-seeds at the transition. Every
-// daily tick — upkeep, sitos, kharis, loyalty decay and welfare, colony
+// daily tick — upkeep, food, kharis, loyalty decay and welfare, colony
 // penalty, borrowed army, intercept scan — stayed dead for the world's entire
 // life until someone happened to restart the process. On the dev server `air`
 // restarts constantly and hid it; the acceptance world, which restarts for
@@ -602,7 +601,6 @@ func seedDailyTicks(ctx context.Context, pool *pgxpool.Pool, sched *events.Sched
 		events.ScheduledKharisTick,
 		events.ScheduledUpkeepTick,
 		events.ScheduledFoodTick,
-		events.ScheduledSitosTick,
 		events.ScheduledInterceptScan,
 		events.ScheduledUnitInterceptScan,
 		events.ScheduledMarchSightingScan,
@@ -916,58 +914,13 @@ func runHeartbeat(ctx context.Context, pool *pgxpool.Pool) {
 	}
 }
 
-// --- Retention: server_heartbeats, processed_sitos_ticks, scheduled_events ---
-//
-// Three tables grow without bound during ordinary play and are NOT cleaned by
-// a reseed:
-//   - server_heartbeats (mig 007): no world_id column at all. One row per 10s,
-//     forever. Measured on CT 126 2026-08-02: 529 053 rows / 56 MB, the
-//     largest table in the DB after the mig-104 orphan cleanup.
-//   - processed_sitos_ticks (mig 097): no world_id column. One row per
-//     (SitosTick event, settlement) — the idempotency claim itself (see the
-//     migration's doc comment). Measured: 556 828 rows / 54 MB, ALL from a
-//     world that no longer exists (its rows outlived it because there is no
-//     world_id to cascade on). Growth resumes, harder, as soon as the current
-//     (empty) world gets settlements — the granary tick (2026-08-03) touches
-//     every settlement every tick, same as the fund it replaced.
-//   - scheduled_events (mig 001) DOES carry a world_id FK with ON DELETE
-//     CASCADE (added in mig 104) — so it IS cleaned the moment a world ROW is
-//     deleted. But mig 104's own comment calls this table out separately:
-//     "tabellen har noll föräldralösa rader idag (bara historiskt kvarhållna
-//     behandlade rader), en annan rot som hör till en egen framtida slice" —
-//     i.e. the cascade doesn't help a world that simply keeps running: a
-//     persistent, long-lived world (the whole point of Megaron) accumulates
-//     processed/failed rows forever with zero time-based pruning. That is the
-//     root this slice actually closes for this table. Measured: 156 306 rows
-//     / 23 MB, ~26 400 rows/day, in what is currently an EMPTY world.
-//
-// Invariant (never violated, whatever the window): no row is deleted that a
-// pending or possible re-run still needs.
-//   - server_heartbeats: the single most recent row is NEVER deleted,
-//     regardless of its age — it's the only thing absorbStartupDowntime reads.
-//   - processed_sitos_ticks: a claim is only deleted once its window has
-//     passed AND NOT EXISTS a scheduled_events row for the same event_id with
-//     processed_at IS NULL — i.e. the event that produced the claim is no
-//     longer capable of being re-run. The window itself only needs to be
-//     bigger than the worker's own retry ceiling (events.Worker: 5s handler
-//     timeout, DeadLetterAttempts=3, poll interval ≤ 10s) — the NOT EXISTS
-//     check is the real safety net, the window is a wide margin on top of it.
-//   - scheduled_events: only processed_at IS NOT NULL or failed_at IS NOT NULL
-//     rows are ever candidates — a row with both NULL (pending, still
-//     claimable by events.Worker per scheduler.go's claim query) is never
-//     touched by either delete statement, at any age.
-//
-// Retention is drift, not game time — cmd/server/main.go holding a wall clock
-// here is a sanctioned exception (CLAUDE.md §Time); this does not use
-// clock.Clock and must not start to.
-
-// retentionConfig is loaded once at boot (loadRetentionConfig) and threaded
-// through runRetention — mirrors economy.LoadSitosConfig's "load once, pass
-// down" convention.
+// --- Retention: heartbeat history and completed/failed scheduled events ---
+// Pending work is never pruned. Completed and failed rows have separate windows.
+// Configuration is loaded once at startup and passed to each retention pass.
 type retentionConfig struct {
-	interval                    time.Duration
-	heartbeatWindow             time.Duration
-	sitosTickWindow             time.Duration
+	interval        time.Duration
+	heartbeatWindow time.Duration
+
 	scheduledEventsWindow       time.Duration
 	scheduledEventsFailedWindow time.Duration
 	batchSize                   int
@@ -1016,10 +969,6 @@ func getEnvPositiveInt(key string, def int) (int, error) {
 //   - HEARTBEAT_RETENTION = 168h (7 days): comfortably longer than any outage
 //     we'd actually want absorbStartupDowntime to measure — a server that has
 //     been down for a week has bigger problems than a stale downtime figure.
-//   - SITOS_TICK_RETENTION = 24h: the NOT EXISTS guard is the real safety net
-//     (see doc comment above); 24h is a wide margin over the worker's actual
-//     retry ceiling (seconds), kept long enough to be useful for debugging a
-//     recent tick without becoming a second unbounded table.
 //   - SCHEDULED_EVENTS_RETENTION = 72h: processed rows — long enough to
 //     inspect "what fired yesterday" from the DB directly, short enough that
 //     an idle world's ~26k rows/day doesn't re-accumulate past a few days.
@@ -1043,9 +992,7 @@ func loadRetentionConfig() (retentionConfig, error) {
 	if cfg.heartbeatWindow, err = getEnvDuration("HEARTBEAT_RETENTION", 168*time.Hour); err != nil {
 		return cfg, err
 	}
-	if cfg.sitosTickWindow, err = getEnvDuration("SITOS_TICK_RETENTION", 24*time.Hour); err != nil {
-		return cfg, err
-	}
+
 	if cfg.scheduledEventsWindow, err = getEnvDuration("SCHEDULED_EVENTS_RETENTION", 72*time.Hour); err != nil {
 		return cfg, err
 	}
@@ -1085,7 +1032,6 @@ func runRetention(ctx context.Context, pool *pgxpool.Pool, cfg retentionConfig) 
 // call directly without waiting on the ticker.
 func runRetentionPass(ctx context.Context, pool *pgxpool.Pool, cfg retentionConfig) {
 	pruneHeartbeats(ctx, pool, cfg)
-	pruneSitosTicks(ctx, pool, cfg)
 	pruneScheduledEvents(ctx, pool, cfg)
 }
 
@@ -1115,31 +1061,6 @@ func pruneHeartbeats(ctx context.Context, pool *pgxpool.Pool, cfg retentionConfi
 	}
 	cutoff := time.Now().Add(-cfg.heartbeatWindow)
 	pruneBatched(ctx, pool, "server_heartbeats", heartbeatDeleteSQL, cutoff, cfg.batchSize, cfg.maxBatchesPerTable)
-}
-
-// sitosTickDeleteSQL deletes a claim only once its window has passed AND the
-// scheduled_events row that produced it is no longer pending (processed_at
-// IS NULL means "still claimable" per events.Worker's claim query in
-// internal/events/scheduler.go) — see the invariant doc comment above.
-const sitosTickDeleteSQL = `
-WITH victims AS (
-    SELECT p.ctid FROM processed_sitos_ticks p
-    WHERE p.processed_at < $1
-      AND NOT EXISTS (
-          SELECT 1 FROM scheduled_events se
-          WHERE se.id = p.event_id AND se.processed_at IS NULL
-      )
-    LIMIT $2
-)
-DELETE FROM processed_sitos_ticks t USING victims v WHERE t.ctid = v.ctid
-`
-
-func pruneSitosTicks(ctx context.Context, pool *pgxpool.Pool, cfg retentionConfig) {
-	if cfg.sitosTickWindow <= 0 {
-		return
-	}
-	cutoff := time.Now().Add(-cfg.sitosTickWindow)
-	pruneBatched(ctx, pool, "processed_sitos_ticks", sitosTickDeleteSQL, cutoff, cfg.batchSize, cfg.maxBatchesPerTable)
 }
 
 // scheduledEventsProcessedDeleteSQL / scheduledEventsFailedDeleteSQL are two

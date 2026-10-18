@@ -111,21 +111,21 @@ func (h *GodHandler) View(w http.ResponseWriter, r *http.Request) {
 	defer settRows.Close()
 
 	type settlementView struct {
-		ID          string   `json:"id"`
-		Name        string   `json:"name"`
-		State       string   `json:"state"`
-		Culture     string   `json:"culture"`
-		Q           *int     `json:"q"`
-		R           *int     `json:"r"`
-		Terrain     *string  `json:"terrain"`
-		Owner       string   `json:"owner"`
-		OwnerID     *string  `json:"owner_id"`
-		Population  float64  `json:"population"`
-		WallLevel   int      `json:"wall_level"`
-		ArmyTotal   int      `json:"army_total"`
-		Kingdom     string   `json:"kingdom,omitempty"`
-		Frenzied    bool     `json:"frenzied,omitempty"`
-		Kharis      float64  `json:"kharis"`
+		ID         string  `json:"id"`
+		Name       string  `json:"name"`
+		State      string  `json:"state"`
+		Culture    string  `json:"culture"`
+		Q          *int    `json:"q"`
+		R          *int    `json:"r"`
+		Terrain    *string `json:"terrain"`
+		Owner      string  `json:"owner"`
+		OwnerID    *string `json:"owner_id"`
+		Population float64 `json:"population"`
+		WallLevel  int     `json:"wall_level"`
+		ArmyTotal  int     `json:"army_total"`
+		Kingdom    string  `json:"kingdom,omitempty"`
+		Frenzied   bool    `json:"frenzied,omitempty"`
+		Kharis     float64 `json:"kharis"`
 	}
 
 	var settlements []settlementView

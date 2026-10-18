@@ -353,6 +353,7 @@ func TestNotificationSourceDiscovery(t *testing.T) {
 }
 
 func TestNotificationHumanFeedGroupingAndJSON(t *testing.T) {
+	// Historical only: archived food-support rows still group without leaking payloads.
 	raw := `{"notifications":[{"kind":"UnitArrived","body":{"name":"Bronze Guard","q":6,"r":7}}, {"kind":"SubsistenceWarning","body":{"name":"Tiryns","tier":"critical","pop_loss":3,"net_per_tick":-2}}, {"kind":"SitosIntervention","body":{"secret":"machine-only"}}, {"kind":"SitosIntervention","body":{"secret":"machine-only"}}],"unread":4,"future_field":{"retained":true}}`
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "GET" {
@@ -415,7 +416,9 @@ func TestNotificationWordsAndArchiveSemantics(t *testing.T) {
 	}{
 		{"SubsistenceWarning", `{"name":"Tiryns","net_per_tick":-3,"net_per_day":999,"ticks_left":12,"days_left":999}`, []string{"-3 per day", "12 days"}, []string{"999", "tick"}},
 		{"SubsistenceWarning", `{"name":"Tiryns","net_per_day":-3,"days_left":12}`, []string{"-3 per day", "12 days"}, []string{"tick"}},
+		// Historical only: frozen archive payloads.
 		{"SitosGranaryRelease", `{"food_released":50,"coverage_days":12,"per_good":{"grain":30,"fish":20},"granary_empty":true}`, []string{"20 fish, 30 grain", "12.0 days", "granary now empty"}, []string{"50 grain"}},
+		// Historical only: frozen archive payloads.
 		{"SitosGranaryRelease", `{"food_released":0.3,"coverage_days":12,"per_good":{"grain":0.3}}`, []string{"0.3 grain"}, []string{"released 0 grain"}},
 		{"OfferDeclined", `{"kind":"buy","quantity":0,"silver":15}`, []string{"15 silver", "refunded immediately"}, nil},
 		{"OfferExpired", `{"kind":"sell","quantity":12,"good_key":"tin"}`, []string{"12 tin", "refunded immediately"}, nil},

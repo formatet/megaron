@@ -155,12 +155,12 @@ func TestAIRound_ShortfallProductionWait(t *testing.T) {
 	}
 }
 
-func TestAIRound_StatusUsesFoodAndShowsGranary(t *testing.T) {
-	for _, net := range []float64{0.5, -2.5} {
+func TestAIRound_StatusUsesSingleFoodStock(t *testing.T) {
+	for _, net := range []float64{0.5, 0, -2.5} {
 		t.Run(fmt.Sprint(net), func(t *testing.T) {
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.URL.Path == "/api/v1/worlds/world/provinces/city" {
-					fmt.Fprintf(w, `{"settlement":{"name":"Coast","population":1000,"labor_pool":1000,"grain_prod_rate":0.5,"grain_consum_rate":5,"resources":{"grain":{"amount":10000,"rate":0.5},"fish":{"amount":10,"rate":5},"timber":{"amount":1,"rate":1}},"sitos":{"food_net_per_tick":%g,"granary_per_good":{"grain":307}}}}`, net)
+					fmt.Fprintf(w, `{"settlement":{"name":"Coast","population":1000,"labor_pool":1000,"grain_prod_rate":0.5,"grain_consum_rate":5,"resources":{"grain":{"amount":10000,"rate":0.5},"fish":{"amount":10,"rate":5},"timber":{"amount":1,"rate":1}},"food":{"food_net_per_tick":%g,"coverage_ticks":2002,"growth_state":"holding"},"last_tick":{"tick":42,"production":{"grain":0.5,"fish":5},"consumption":{"grain":5}}}}`, net)
 				} else if strings.HasSuffix(r.URL.Path, "/placements") {
 					fmt.Fprint(w, `{"placements":[{"good_key":"grain"},{"good_key":"grain"}]}`)
 				} else {
@@ -177,7 +177,13 @@ func TestAIRound_StatusUsesFoodAndShowsGranary(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if !strings.Contains(out, "grain 0.5 + fish 5.0") || !strings.Contains(out, "net "+formatNetPerTick(net)) || !strings.Contains(out, "307 grain in Sitos") {
+			if !strings.Contains(out, "grain 0.5 + fish 5.0") || !strings.Contains(out, "net "+formatNetPerTick(net)) || !strings.Contains(out, "Food lasts 2002.0 days") {
+				t.Fatal(out)
+			}
+			if !strings.Contains(out, growthLine(1000, "holding", net)) || !strings.Contains(out, "2 goods produced, 1 consumed") {
+				t.Fatal(out)
+			}
+			if strings.Contains(out, "stored away") || strings.Contains(out, "releasing food") || strings.Contains(out, "reserve") {
 				t.Fatal(out)
 			}
 			if net < 0 && strings.Contains(out, "produces with no receiver") {

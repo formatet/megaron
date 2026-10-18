@@ -55,7 +55,7 @@ const (
 	// land-unit radius (2) — see LiveRadius. The kind is kept distinct because
 	// other surfaces identify a host by it, not because it sees differently.
 	EyeNomadicHost = "nomadic-host"
-	EyeShip       = "ship"
+	EyeShip        = "ship"
 )
 
 // Eye is a live vision source (a settlement or a positioned/marching unit) at a

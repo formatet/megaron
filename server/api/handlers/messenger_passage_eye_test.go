@@ -96,7 +96,7 @@ func TestLoadLiveEyes_AwaitingPassageSeesPortNotFarShore(t *testing.T) {
 		t.Fatalf("no land-unit eye for the waiting runner; eyes = %+v", eyes)
 	}
 	if gotEye.Pos.Q == 7 && gotEye.Pos.R == 0 {
-		t.Fatalf("runner eye sits at the far shore (7,0) — the FOW leak this slice fixes: "+
+		t.Fatalf("runner eye sits at the far shore (7,0) — the FOW leak this slice fixes: " +
 			"awaiting_passage must place the eye at its port (2,0), not the destination across the sea")
 	}
 	if gotEye.Pos.Q != 2 || gotEye.Pos.R != 0 {

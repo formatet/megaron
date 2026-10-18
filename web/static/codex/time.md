@@ -6,7 +6,7 @@ How much real time a day takes is set per world. A test world can run faster tha
 
 ## The world does not wait for you
 
-Everything keeps happening while you are away: production, eating, [[upkeep|pay]], marches, battles, the gods' moods. That is why the most useful skills in Megaron are the ones that work while you are absent — [[routes|standing orders]], a well-fed [[sitos|granary]], a [[stances|watch]] on the approaches — and why the [[coming-back|Notifications archive]] never throws anything away.
+Everything keeps happening while you are away: production, eating, [[upkeep|pay]], marches, battles, the gods' moods. That is why the most useful skills in Megaron are the ones that work while you are absent — [[routes|standing orders]], well-filled [[food|food stores]], a [[stances|watch]] on the approaches — and why the [[coming-back|Notifications archive]] never throws anything away.
 
 ## Before the world begins
 

@@ -79,4 +79,3 @@ func TestMessengerTravelDuration_ExactAtSubMinuteCadence(t *testing.T) {
 		t.Errorf("MessengerTravelDuration(%d) at TICK_SECONDS=6 = %v, want %v exact (%d ticks × 6s)", dist, got, want, wantTicks)
 	}
 }
-

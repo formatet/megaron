@@ -28,7 +28,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -139,7 +139,7 @@ func TestMarketWants_StockRateSemantics(t *testing.T) {
 	// want check fails (rate>0); surplus threshold = 20*1=20; 5 is not > 20.
 	seed("stone", 5, 1, false)
 
-	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), economy.SitosConfig{}, nil, nil)
+	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), nil, nil)
 	r := chi.NewRouter()
 	r.Use(auth.Middleware(authSvc))
 	r.Get("/worlds/{worldID}/market/wants", ph.MarketWants)

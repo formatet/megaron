@@ -26,7 +26,7 @@ func round3Client(t *testing.T, handler http.HandlerFunc) {
 func TestAIRound3_StatusArmyAndSingleFoodAdvice(t *testing.T) {
 	round3Client(t, func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "/provinces/default") {
-			fmt.Fprint(w, `{"settlement":{"name":"Scheria","population":1000,"labor_pool":1000,"grain_prod_rate":0.5,"grain_consum_rate":5,"food_gubbar_required":2,"food_gubbar_placed":5,"food_self_sufficient":true,"army_upkeep":{"grain":2,"silver":0},"net_grain_per_tick_after_upkeep":-6.5,"net_silver_per_tick_after_upkeep":0,"food_net_per_tick_after_upkeep":-1.5,"sitos":{"food_net_per_tick":0.5},"resources":{"grain":{"amount":10000,"rate":0.5},"fish":{"amount":10000,"rate":5}}}}`)
+			fmt.Fprint(w, `{"settlement":{"name":"Scheria","population":1000,"labor_pool":1000,"grain_prod_rate":0.5,"grain_consum_rate":5,"food_gubbar_required":2,"food_gubbar_placed":5,"food_self_sufficient":true,"army_upkeep":{"grain":2,"silver":0},"net_grain_per_tick_after_upkeep":-6.5,"net_silver_per_tick_after_upkeep":0,"food_net_per_tick_after_upkeep":-1.5,"food":{"food_net_per_tick":0.5},"resources":{"grain":{"amount":10000,"rate":0.5},"fish":{"amount":10000,"rate":5}}}}`)
 		} else if strings.HasSuffix(r.URL.Path, "/placements") {
 			fmt.Fprint(w, `{"placements":[{"good_key":"grain"},{"good_key":"grain"},{"good_key":"fish"},{"good_key":"fish"},{"good_key":"fish"}]}`)
 		} else {
@@ -196,7 +196,7 @@ func TestAIRound3_ForeignWorkersAreNotRemovalTargets(t *testing.T) {
 func TestAIRound3_ArmyGrainIsPaidBeforePeople(t *testing.T) {
 	round3Client(t, func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "/provinces/default") {
-			fmt.Fprint(w, `{"settlement":{"population":1000,"grain_prod_rate":1,"grain_consum_rate":5,"army_upkeep":{"grain":0.5},"net_grain_per_tick_after_upkeep":-4.5,"net_silver_per_tick_after_upkeep":0,"food_net_per_tick_after_upkeep":0.5,"sitos":{"food_net_per_tick":1},"resources":{"grain":{"amount":0,"rate":1},"fish":{"amount":100,"rate":5}}}}`)
+			fmt.Fprint(w, `{"settlement":{"population":1000,"grain_prod_rate":1,"grain_consum_rate":5,"army_upkeep":{"grain":0.5},"net_grain_per_tick_after_upkeep":-4.5,"net_silver_per_tick_after_upkeep":0,"food_net_per_tick_after_upkeep":0.5,"food":{"food_net_per_tick":1},"resources":{"grain":{"amount":0,"rate":1},"fish":{"amount":100,"rate":5}}}}`)
 		} else {
 			fmt.Fprint(w, `[]`)
 		}

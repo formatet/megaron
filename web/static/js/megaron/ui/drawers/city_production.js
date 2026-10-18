@@ -1,6 +1,5 @@
 import { esc } from '../format.js';
 import { fmtNum, fmtDays } from '../fmt_num.js';
-import { sitosStateHtml } from './sitos_view.js';
 import { State } from '../../state.js';
 import { placePanelHTML } from '../placename.js';
 const n = value => fmtNum(Math.round(Number(value) * 100) / 100);
@@ -13,11 +12,11 @@ export function productionSectionsHTML(city) {
   const placeNameForm = centre ? placePanelHTML(centre, {showName:true}) : '';
   return `<div class="dsec"><div class="dsec-title">Population</div><div id="city-pop-sec"></div></div>
     <div class="dsec"><div class="dsec-title">Catchment &amp; workplaces</div>${placeNameForm}<div id="city-prod-sec"></div></div>
-    <div class="dsec"><div class="dsec-title">Food</div><div id="city-sitos-sec"></div></div>
+    <div class="dsec"><div class="dsec-title">Food</div><div id="city-food-sec"></div></div>
     <details id="city-more" class="dsec"><summary class="dsec-title">More</summary>
       <div class="dsec-title">People at work</div><div id="city-people-details"></div>
       <div class="dsec-title">Devotion</div><div id="city-devotion-sec"></div>
-      <div class="dsec-title">Food reserve</div><div id="city-reserve-sec"></div>
+      <div class="dsec-title">Food details</div><div id="city-food-details-sec"></div>
       <div class="dsec-title">Last day</div><div id="city-lasttick-sec"></div>
       <div class="dsec-title">Loyalty log</div><div id="city-loyalty-sec"></div>
       ${!city.is_capital ? '<div class="dsec-title">Gift from capital</div><div id="city-gift-sec"></div>' : ''}
@@ -28,7 +27,7 @@ export function productionSectionsHTML(city) {
 // Same sentence as keryx `status` (growthLine in cmd_status.go). growth_state
 // and food_net_per_tick come from the server's growth gate; '' if not reported.
 export function growthLineText(pd) {
-  const s = pd?.sitos;
+  const s = pd?.food;
   if (!s || !s.growth_state) return '';
   const pop = n(pd.population);
   const net = Number(s.food_net_per_tick) || 0;
@@ -54,28 +53,27 @@ export function harvestBlessingHTML(pd) {
 }
 
 // Coverage is the city's grain+fish stock at current consumption, not a
-// depletion forecast including future production, or days bought by reserve.
+// depletion forecast including future production.
 export function foodSummaryHTML(pd) {
   const blessing = harvestBlessingHTML(pd);
-  const s = pd?.sitos;
+  const s = pd?.food;
   if (!s || s.coverage_ticks == null || !Number.isFinite(Number(s.coverage_ticks))) return blessing + '<p class="empty-state">Food stores not reported.</p>';
   const growing = Number(pd.food_net_per_tick_after_upkeep ?? s.food_net_per_tick) > 0;
   const warning = pd.food_self_sufficient === false ? ' · the fields cannot feed everyone' : '';
-  return blessing + `<p${warning ? ' class="stat-warn"' : ''} title="Current city food at today’s consumption; reserve details are under More.">Food lasts ${fmtDays(s.coverage_ticks)}${growing ? ' · stocks growing' : ''}${warning}.</p>`;
+  return blessing + `<p${warning ? ' class="stat-warn"' : ''} title="Current city grain and fish stocks at today’s consumption.">Food lasts ${fmtDays(s.coverage_ticks)}${growing ? ' · stocks growing' : ''}${warning}.</p>`;
 }
 
 export function foodDetailsHTML(pd) {
-  const s = pd?.sitos;
+  const s = pd?.food;
   const peopleNet = s?.food_net_per_tick;
   const grain = pd?.grain_prod_rate != null ? row('Food for people', `grain ${n(pd.grain_prod_rate)} + fish ${n(pd.resources?.fish?.rate || 0)} − people eat ${n(pd.grain_consum_rate || 0)}${peopleNet != null ? ` = ${n(peopleNet)} net before army` : ''}`) : '';
   const army = pd?.food_net_per_tick_after_upkeep == null ? '' : row('Army food', `eats ${n(pd.army_upkeep?.grain || 0)} grain per day → food net ${n(pd.food_net_per_tick_after_upkeep)} after army`);
-  if (!s) return grain || '<p class="empty-state">Food reserve not reported.</p>';
-  const perGood = Object.entries(s.granary_per_good || {}).filter(([,v])=>v>0).map(([k,v])=>`${n(v)} ${k}`).join(', ');
+  if (!s) return grain + army + '<p class="empty-state">Food details not reported.</p>';
   const note = pd.food_gubbar_required == null ? '' : row('Food citizens', `${n(pd.food_gubbar_required)} needed · ${n(pd.food_gubbar_placed || 0)} placed`) + '<p class="empty-state">1 citizen = 100 people. Estimate uses the best food slots for people; the army needs grain separately.</p>';
   const a = pd.automatic_food;
   const automatic = a ? `<p class="empty-state">Automatic food: ${Number(a.nearjord_grain_per_tick + a.remainder_grain_per_tick).toFixed(2)} grain + ${Number(a.remainder_fish_per_tick || 0).toFixed(2)} fish per day without placed citizens (nearby ground ${Number(a.nearjord_grain_per_tick).toFixed(2)} grain; ${a.remainder_people} people outside whole citizens: ${Number(a.remainder_grain_per_tick).toFixed(2)} grain + ${Number(a.remainder_fish_per_tick || 0).toFixed(2)} fish, a fraction of the best food worker).</p>` : '';
-  return grain + army + note + automatic + row('City stocks', `${fmtDays(s.coverage_ticks)}`) +
-    row('Reserve', `${n(s.granary_total || 0)} of ${n(s.granary_cap || 0)} food${perGood ? ' · '+perGood : ''}`) +
-    row('Reserve rules', `Stores above ${fmtDays(s.high_ticks)} · releases below ${fmtDays(s.low_ticks)}`) +
-    sitosStateHtml(s).replace('coverage is rising','food lasts longer');
+  const coverage = s.coverage_ticks != null && Number.isFinite(Number(s.coverage_ticks))
+    ? row('City stocks', `${fmtDays(s.coverage_ticks)} at current consumption · grain + fish`)
+    : '<p class="empty-state">Food stores not reported.</p>';
+  return grain + army + note + automatic + coverage;
 }

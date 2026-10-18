@@ -10,7 +10,7 @@ import (
 // The harvest blessing (Timothy 2026-10-10): the gods raise the yield of every
 // food good except fish by HarvestBlessingYieldBonus for HarvestBlessingTicks.
 // It replaced a one-shot ×1.25 on the grain STORE, which gave most to the city
-// with the fullest granary and nothing to the one that needed it.
+// with the fullest food stock and nothing to the one that needed it.
 const (
 	HarvestBlessingYieldBonus = 0.25
 	HarvestBlessingTicks      = 25

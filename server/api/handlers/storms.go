@@ -25,7 +25,7 @@ type stormView struct {
 	Heading   string         `json:"heading,omitempty"` // live only: where it is drifting
 	SeenTick  int            `json:"seen_tick"`         // live: now; remembered: when you last saw it
 	LastKnown bool           `json:"last_known,omitempty"`
-	Name      string         `json:"name,omitempty"` // empty until the first Wanax to meet it names it
+	Name      string         `json:"name,omitempty"`     // empty until the first Wanax to meet it names it
 	CanName   bool           `json:"can_name,omitempty"` // you were first to meet it and have not named it yet
 }
 

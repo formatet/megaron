@@ -29,7 +29,7 @@ func TestOpeningDispatchJoinConcurrentRetryRiseAndPrivacy(t *testing.T) {
 	svc := auth.NewService(pool, "opening-test")
 	pid, token := registerViewer(t, ctx, svc, "opening-"+uuid.NewString())
 	_, otherToken := registerViewer(t, ctx, svc, "opening-other-"+uuid.NewString())
-	h := NewJoinHandler(pool, events.NewStore(pool), economy.LoadSitosConfig(), clock.NewTestClock(time.Now()), nil)
+	h := NewJoinHandler(pool, events.NewStore(pool), clock.NewTestClock(time.Now()), nil)
 	r := chi.NewRouter()
 	r.Use(auth.Middleware(svc))
 	r.Post("/worlds/{worldID}/join", h.Join)
@@ -174,7 +174,7 @@ func TestOpeningDispatchArchiveFailureRollsBackHost(t *testing.T) {
 	wid := seedJoinableWorld(t, pool)
 	svc := auth.NewService(pool, "opening-rollback")
 	pid, token := registerViewer(t, ctx, svc, "opening-rollback-"+uuid.NewString())
-	h := NewJoinHandler(pool, events.NewStore(pool), economy.LoadSitosConfig(), clock.NewTestClock(time.Now()), nil)
+	h := NewJoinHandler(pool, events.NewStore(pool), clock.NewTestClock(time.Now()), nil)
 	r := chi.NewRouter()
 	r.With(auth.Middleware(svc)).Post("/worlds/{worldID}/join", h.Join)
 	if _, err := pool.Exec(ctx, `CREATE FUNCTION reject_opening_notice() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.kind='OpeningDispatch' THEN RAISE EXCEPTION 'reject opening'; END IF; RETURN NEW; END $$;

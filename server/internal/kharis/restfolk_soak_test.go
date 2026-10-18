@@ -5,9 +5,7 @@ import (
 	"encoding/json"
 	"sync/atomic"
 	"testing"
-	"time"
 
-	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/hexgrid"
@@ -54,10 +52,7 @@ func TestRestfolk_Soak60(t *testing.T) {
 				t.Fatal(err)
 			}
 			records := []balanceState{readBalance(t, pool, sid)}
-			clk := clock.NewTestClock(time.Unix(0, 0))
-			sched := events.NewScheduler(pool, clk)
-			store := events.NewStore(pool)
-			sitos := economy.NewSitosTickHandler(pool, sched, store, nil, economy.LoadSitosConfig())
+
 			food := newTestFoodTickHandler(pool)
 			growth := newTestTickHandler(pool)
 			for tick := 1; tick <= 60; tick++ {
@@ -66,7 +61,7 @@ func TestRestfolk_Soak60(t *testing.T) {
 				}
 				for _, h := range []interface {
 					Handle(context.Context, events.ScheduledEvent) error
-				}{sitos, food} {
+				}{food} {
 					if err := h.Handle(ctx, events.ScheduledEvent{ID: atomic.AddInt64(&advanceOneDayEventID, 1), WorldID: wid, DueTick: tick}); err != nil {
 						t.Fatal(err)
 					}

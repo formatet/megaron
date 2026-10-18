@@ -104,34 +104,34 @@ test('renderStandingOrdersHTML: a naval route names its bound ship', () => {
 
 // ── S1: settlements overview (megaron_plan_stad_vs_ekonomi.md §3) ──────────
 
-test('settlementFoodRow: a self-sufficient, well-stocked settlement reads "stable"', () => {
+test('settlementFoodRow: a self-sufficient, well-stocked settlement reads "stocks growing"', () => {
   const pd = {
     population: 800, grain_prod_rate: 10, grain_consum_rate: 8, food_self_sufficient: true,
-    sitos: { coverage_ticks: 20, low_ticks: 10, high_ticks: 30, granary_total: 500, food_net_per_tick: 2 },
+    food: { coverage_ticks: 20, food_net_per_tick: 2 },
   };
   const row = settlementFoodRow({ id: 's1', name: 'Petras', is_capital: true }, pd);
   assert.equal(row.population, 800);
   assert.equal(row.grainRate, 2);
-  assert.equal(row.severity, 'rest');
-  assert.equal(row.label, 'stable');
+  assert.equal(row.severity, 'growing');
+  assert.equal(row.label, 'stocks growing');
   assert.equal(row.isCapital, true);
 });
 
-test('settlementFoodRow: empty granary and shrinking reads "starving" and ranks worst (except cannot-feed)', () => {
+test('settlementFoodRow: server reports shrinking reads "starving" and ranks worst (except cannot-feed)', () => {
   const pd = {
     population: 300, grain_prod_rate: 1, grain_consum_rate: 6, food_self_sufficient: true,
-    sitos: { coverage_ticks: 1, low_ticks: 10, high_ticks: 30, granary_total: 0, food_net_per_tick: -5 },
+    food: { coverage_ticks: 1, food_net_per_tick: -5, growth_state: 'shrinking' },
   };
   const row = settlementFoodRow({ id: 's2', name: 'Zakros' }, pd);
-  assert.equal(row.severity, 'empty-shrinking');
+  assert.equal(row.severity, 'starving');
   assert.equal(row.label, 'starving');
   assert.equal(row.rank, 0);
 });
 
-test('settlementFoodRow: food_self_sufficient===false overrides the granary state — always the worst, even mid-store', () => {
+test('settlementFoodRow: food_self_sufficient===false overrides stock direction — always the worst, even with full stores', () => {
   const pd = {
     population: 300, grain_prod_rate: 5, grain_consum_rate: 20, food_self_sufficient: false,
-    sitos: { coverage_ticks: 40, low_ticks: 10, high_ticks: 30, granary_total: 9000, food_net_per_tick: 5 },
+    food: { coverage_ticks: 40, food_net_per_tick: 5 },
   };
   const row = settlementFoodRow({ id: 's3', name: 'Gournia' }, pd);
   assert.equal(row.label, 'cannot feed itself');
@@ -166,7 +166,7 @@ test('renderSettlementsOverviewHTML: empty rows render nothing', () => {
 });
 
 test('renderSettlementsOverviewHTML: each row links to openCitySettlement and shows name/pop/rate/status', () => {
-  const rows = [{ id: 'p1', name: 'Petras', isCapital: true, population: 800, grainRate: -2.5, coverage: 3.2, severity: 'release', label: 'drawing down reserve', rank: 1 }];
+  const rows = [{ id: 'p1', name: 'Petras', isCapital: true, population: 800, grainRate: -2.5, coverage: 3.2, severity: 'declining', label: 'stocks falling', rank: 1 }];
   const html = renderSettlementsOverviewHTML(rows, 'brist', 'asc');
   assert.match(html, /openCitySettlement\('p1'\)/);
   assert.match(html, /Petras/);
@@ -174,12 +174,12 @@ test('renderSettlementsOverviewHTML: each row links to openCitySettlement and sh
   assert.match(html, />800</);
   assert.match(html, /-2.5 per day/);
   assert.match(html, /var\(--danger\)/); // negative rate reads as danger
-  assert.match(html, /sitos-state-release/);
-  assert.match(html, /drawing down reserve/);
+  assert.match(html, /food-state-declining/);
+  assert.match(html, /stocks falling/);
 });
 
 test('renderSettlementsOverviewHTML: the active sort column shows its arrow, others do not', () => {
-  const rows = [{ id: 'p1', name: 'Petras', isCapital: false, population: 1, grainRate: 0, coverage: 0, severity: 'rest', label: 'stable', rank: 3 }];
+  const rows = [{ id: 'p1', name: 'Petras', isCapital: false, population: 1, grainRate: 0, coverage: 0, severity: 'stable', label: 'stable', rank: 3 }];
   const html = renderSettlementsOverviewHTML(rows, 'population', 'desc');
   assert.match(html, /Pop ▼/);
   assert.doesNotMatch(html, /Settlement ▼/);
@@ -205,15 +205,35 @@ test('loadEconomyDrawer: with no owned settlements, renders the empty-state mess
 });
 
 test('settlement food column follows full fish-inclusive authoritative net',()=>{
- const row=settlementFoodRow({id:'p',name:'Coast'},{population:1000,grain_prod_rate:0.5,grain_consum_rate:5,sitos:{food_net_per_tick:0.5}});
+ const row=settlementFoodRow({id:'p',name:'Coast'},{population:1000,grain_prod_rate:0.5,grain_consum_rate:5,food:{coverage_ticks:2,food_net_per_tick:0.5}});
  assert.equal(row.grainRate,0.5);
 });
 
 test('AIRound3: overview sorts and displays food after army, keeps people-only fallback',()=>{
  const city={id:'s',name:'Scheria'};
- const data={population:1000,food_net_per_tick_after_upkeep:-1.5,sitos:{food_net_per_tick:0.5,coverage_ticks:1,low_ticks:3,high_ticks:10,granary_total:0}};
+ const data={population:1000,food_net_per_tick_after_upkeep:-1.5,food:{food_net_per_tick:0.5,coverage_ticks:1}};
  assert.equal(settlementFoodRow(city,data).grainRate,-1.5);
  const html=renderSettlementsOverviewHTML([settlementFoodRow(city,data)]);
  assert.match(html,/Food after army/);assert.match(html,/-1.5 per day/);
  delete data.food_net_per_tick_after_upkeep;assert.equal(settlementFoodRow(city,data).grainRate,0.5);
+});
+
+
+test('food status separates declining stock from hunger and never invents missing balances', () => {
+  const city = {id: 'p', name: 'Coast'};
+  const data = {food: {coverage_ticks: 0, food_net_per_tick: 2, growth_state: 'growing'}};
+  assert.equal(settlementFoodRow(city, data).label, 'stocks growing');
+  data.food.food_net_per_tick = -2;
+  data.food.growth_state = 'holding';
+  assert.equal(settlementFoodRow(city, data).label, 'stocks falling');
+  data.food.food_net_per_tick = 0;
+  assert.equal(settlementFoodRow(city, data).label, 'stable');
+  data.food.growth_state = 'shrinking';
+  assert.equal(settlementFoodRow(city, data).label, 'starving');
+  for (const food of [undefined, {}, {coverage_ticks: NaN}, {coverage_ticks: 3}]) {
+    const row = settlementFoodRow(city, {food});
+    assert.equal(row.label, 'no data');
+    assert.equal(row.grainRate, null);
+    assert.match(renderSettlementsOverviewHTML([row]), /not reported/);
+  }
 });

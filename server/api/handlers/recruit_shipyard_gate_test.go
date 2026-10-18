@@ -27,7 +27,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
+
 	"formatet/megaron/server/internal/events"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -106,7 +106,7 @@ func TestRecruit_GalleyRequiresShipyardNotJustHarbour(t *testing.T) {
 	clk := clock.NewTestClock(time.Now())
 	scheduler := events.NewScheduler(pool, clk)
 	eventStore := events.NewStore(pool)
-	ph := NewProvinceHandler(pool, scheduler, clk, economy.SitosConfig{}, eventStore, nil)
+	ph := NewProvinceHandler(pool, scheduler, clk, eventStore, nil)
 
 	r := chi.NewRouter()
 	r.Use(auth.Middleware(authSvc))

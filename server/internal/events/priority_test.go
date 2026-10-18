@@ -84,14 +84,11 @@ func TestEveryScheduledTypeHasAPriority(t *testing.T) {
 // starves in a city with a healthy surplus. Both capitals lost 10 men to
 // grain_shortage at tick 1 under the old coin flip.
 func TestObligationsRunBeforeGrowth(t *testing.T) {
-	reserve := TickPriority(ScheduledSitosTick)
 	upkeep := TickPriority(ScheduledUpkeepTick)
 	food := TickPriority(ScheduledFoodTick)
 	growth := TickPriority(ScheduledKharisTick)
-
-	if !(reserve < upkeep && upkeep < growth) {
-		t.Fatalf("the day's economic order must be reserve → obligation → growth, got "+
-			"Sitos=%d Upkeep=%d Kharis=%d", reserve, upkeep, growth)
+	if upkeep >= growth {
+		t.Fatal("obligation must precede growth")
 	}
 	// Utfodringsordningen (megaron_plan_utfodringsordningen.md, 2026-08-26):
 	// the population eats AFTER the army's own upkeep (Timothy 2026-08-25 —

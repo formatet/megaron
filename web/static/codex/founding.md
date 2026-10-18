@@ -7,7 +7,7 @@ The [[horde|Host]] panel shows the terrain and four short assessments for the he
 Under **Details**, the forecast gives the grain your fields would produce against what your people would eat, and one of three verdicts:
 
 - **It feeds itself** — the fields cover the mouths with room to spare.
-- **Marginal** — positive but thin. Draft one cohort and you are eating into the granary.
+- **Marginal** — positive but thin. Draft one cohort and you are eating into the food stock.
 - **It does not feed itself** — you are told how many days your carried grain buys, and whether a Farm would fix it. If it says a farm will not help, there is no farmable ground in reach at all.
 
 The gap between *marginal* and *does not feed itself* has killed more young cities than any war. See [[food]].

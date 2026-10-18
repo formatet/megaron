@@ -19,7 +19,7 @@ import (
 	"time"
 
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
+
 	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -88,7 +88,7 @@ func newStarvationFixture(t *testing.T, pool *pgxpool.Pool, tag string) starvati
 
 // mkStarvingShip inserts a galley (crew 20, full crew per unit.CrewFor) at
 // (3,0), positioned, provisions=0 (so it starves on the very first upkeep
-// tick regardless of the town's own granary — provisionSourceFor always
+// tick regardless of the town's own food store — provisionSourceFor always
 // tries the ship's own stores first for a naval unit). homeSID is the
 // unit's home_settlement_id; pass uuid.Nil for "no home settlement".
 func mkStarvingShip(t *testing.T, pool *pgxpool.Pool, worldID, ownerID, supportSID, homeSID uuid.UUID) uuid.UUID {
@@ -116,7 +116,7 @@ func mkStarvingShip(t *testing.T, pool *pgxpool.Pool, worldID, ownerID, supportS
 // nil arrivals stub.
 func newStarvationUpkeepHandler(pool *pgxpool.Pool, hub Broadcaster) *UpkeepHandler {
 	clk := clock.NewTestClock(time.Now())
-	arrivals := NewUnitArrivalHandler(pool, events.NewStore(pool), hub, events.NewScheduler(pool, clk), clk, economy.SitosConfig{})
+	arrivals := NewUnitArrivalHandler(pool, events.NewStore(pool), hub, events.NewScheduler(pool, clk), clk)
 	return NewUpkeepHandler(pool, events.NewScheduler(pool, clk), events.NewStore(pool), hub, arrivals)
 }
 
@@ -219,7 +219,7 @@ func TestUpkeep_NavalStarvationReturn_TriggersAtHalfCrew(t *testing.T) {
 // 2. Garrison is never touched: a garrisoned ship (docked, not at sea) that
 // starves via the same grain-shortage path must never be dispatched home —
 // it is already home. Provisions=0 is irrelevant to docked status directly,
-// but zero grain in the settlement's own granary forces the fallback
+// but zero grain in the settlement's own food store forces the fallback
 // attrition branch even for a garrisoned ship (atHomePort path).
 func TestUpkeep_NavalStarvationReturn_GarrisonNotTouched(t *testing.T) {
 	pool := testPool(t)

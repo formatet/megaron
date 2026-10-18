@@ -10,9 +10,6 @@ func TestStarvationSignal_NoFalseAuditAfterPaidUpkeep(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	wid, sid, uid := starvationGarrisonFixture(t, 100)
-	if _, err := pool.Exec(ctx, `INSERT INTO settlement_granary(settlement_id,good_key,amount) VALUES($1,'grain',400)`, sid); err != nil {
-		t.Fatal(err)
-	}
 	// A previous tick's actual loss must not make today's already-fed unit hungry.
 	eventID, err := events.NewStore(pool).Append(ctx, uid, events.StreamCombat, "UnitAttrition", map[string]any{"reason": "grain_shortage", "lost": 10, "garrison_settlement_id": sid}, wid, nil)
 	if err != nil {

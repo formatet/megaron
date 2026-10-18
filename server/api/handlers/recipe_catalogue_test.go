@@ -21,14 +21,13 @@ import (
 	"time"
 
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
 )
 
 func TestRecipeCatalogue_MatchesDB(t *testing.T) {
 	pool := p10TestPool(t)
 	ctx := context.Background()
 
-	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), economy.SitosConfig{}, nil, nil)
+	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), nil, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/recipes", nil)
 	rec := httptest.NewRecorder()
@@ -146,7 +145,7 @@ func TestRecipeCatalogue_LuxuryRemoved(t *testing.T) {
 	pool := p10TestPool(t)
 	ctx := context.Background()
 
-	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), economy.SitosConfig{}, nil, nil)
+	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), nil, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/recipes", nil)
 	rec := httptest.NewRecorder()

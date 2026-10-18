@@ -127,7 +127,7 @@ func newFoodTickHandler(pool *pgxpool.Pool) *FoodTickHandler {
 		events.NewStore(pool), nil)
 }
 
-// Rött-före fall 1 (§6.1): a settlement with a fully-stocked granary and a
+// Rött-före fall 1 (§6.1): a settlement with a fully-stocked city and a
 // fish stock that alone would cover the day's demand. Before this slice,
 // FoodConsumptionSplit was fed grain's RATE (0 here, matching "grain_prod =
 // 0" in the plan) instead of its STOCK: grainShare = min(demand, 0) = 0, the

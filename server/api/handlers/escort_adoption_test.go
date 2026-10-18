@@ -24,7 +24,6 @@ import (
 	"os"
 	"testing"
 
-	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -100,7 +99,6 @@ func TestEscortAdoption_MovedCohortIsAdoptedInPlace(t *testing.T) {
 	ctx := context.Background()
 	worldID, playerID := seedEscortWorld(t, pool)
 	eventStore := events.NewStore(pool)
-	sitosCfg := economy.LoadSitosConfig()
 
 	tx, err := pool.Begin(ctx)
 	if err != nil {
@@ -143,7 +141,7 @@ func TestEscortAdoption_MovedCohortIsAdoptedInPlace(t *testing.T) {
 		t.Fatalf("move escort cohort off founding hex: %v", err)
 	}
 
-	founded, err := foundMetropolisFromNomadicHost(ctx, tx, eventStore, sitosCfg, worldID, playerID, "Iolkos-"+uuid.New().String(), "achaean")
+	founded, err := foundMetropolisFromNomadicHost(ctx, tx, eventStore, worldID, playerID, "Iolkos-"+uuid.New().String(), "achaean")
 	if err != nil {
 		t.Fatalf("foundMetropolisFromNomadicHost: %v", err)
 	}

@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
+
 	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -143,7 +143,7 @@ func TestNavalSeizureOutcome_CapturedChangesOwnerAndMarchesHome(t *testing.T) {
 	).Scan(&evID, &evPayload); err != nil {
 		t.Fatalf("no UnitArrival scheduled: %v", err)
 	}
-	arrivalH := NewUnitArrivalHandler(pool, events.NewStore(pool), nil, sched, clk, economy.SitosConfig{})
+	arrivalH := NewUnitArrivalHandler(pool, events.NewStore(pool), nil, sched, clk)
 	if err := arrivalH.Handle(ctx, events.ScheduledEvent{ID: evID, WorldID: f.worldID, Payload: evPayload}); err != nil {
 		t.Fatalf("unit arrival handle: %v", err)
 	}

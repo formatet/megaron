@@ -15,7 +15,7 @@ import (
 // metropolisParams describes the capital to raise. Population is a parameter rather
 // than a constant because the two callers disagree: an ordinary join lands 5 000
 // people (W1), while a Nomadic Host founds with the 1 000 civilians it carried
-// (temenos_nomadic_host_plan.md). Everything downstream — the Sitos seeds, grain
+// (temenos_nomadic_host_plan.md). Everything downstream — the starting goods, grain
 // consumption, labor — derives from it.
 type metropolisParams struct {
 	WorldID  uuid.UUID
@@ -59,7 +59,7 @@ func (e *metropolisError) Unwrap() error { return e.cause }
 func (e *metropolisError) UserMessage() string { return e.userMsg }
 
 // createMetropolis raises a player's capital: province, settlement, opening stores,
-// the Sitos seeds, Demeter's conditional starter farm, labor weights, and the first
+// the starting goods, Demeter's conditional starter farm, labor weights, and the first
 // production pass. It runs inside the caller's transaction and does NOT commit.
 //
 // It deliberately does NOT create starter units. Ordering is load-bearing:
@@ -71,7 +71,7 @@ func (e *metropolisError) UserMessage() string { return e.userMsg }
 //
 // Extracted from Join so the Nomadic Host's founding transaction raises its
 // capital through exactly the same path rather than a parallel copy that drifts.
-func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConfig, p metropolisParams) (createdMetropolis, error) {
+func createMetropolis(ctx context.Context, tx pgx.Tx, p metropolisParams) (createdMetropolis, error) {
 	var out createdMetropolis
 
 	// Create the province tile row — copy deposit flags from map_tiles.
@@ -98,7 +98,7 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, sitosCfg economy.SitosConf
 		return out, &metropolisError{"could not create settlement", err}
 	}
 
-	// No Sitos seed: the granary starts empty. The city's silver is moved
+	// The city's silver is moved
 	// from the Host's carried purse below; founding creates no extra currency.
 
 	// Link province back to its controlling settlement.

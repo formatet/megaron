@@ -10,7 +10,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
+
 	"formatet/megaron/server/internal/kharis"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -42,7 +42,7 @@ func TestEarlyTempleStatusPlanAndOwnerPrivacy(t *testing.T) {
 	 SELECT $1,key,0,0,1,current_world_tick() FROM goods WHERE key IN ('grain','fish','timber','silver')`, wid); err != nil {
 		t.Fatal(err)
 	}
-	h := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), economy.SitosConfig{}, nil, nil)
+	h := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), nil, nil)
 	r := chi.NewRouter()
 	r.With(auth.Middleware(svc)).Get("/worlds/{worldID}/provinces/{provinceID}", h.Get)
 	for _, tc := range []struct {

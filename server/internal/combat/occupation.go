@@ -648,7 +648,7 @@ func decrementTopProductionBuilding(ctx context.Context, tx pgx.Tx, settlementID
 }
 
 // lootSettlementGoods computes the loot manifest and deducts it from the
-// settlement's goods/granary in the same transaction. Same formula as the
+// settlement's goods in the same transaction. Same formula as the
 // old (now-dead) sackSettlement (sack.go): silver 50%, every other good
 // 0.5/weight — re-derived here rather than shared (see file header). If
 // goodsFilter is non-empty, only those good keys are looted (S4's "anfallaren
@@ -702,42 +702,6 @@ func lootSettlementGoods(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID,
 			settlementID, lr.qty, lr.good,
 		); err != nil {
 			return nil, fmt.Errorf("loot: deduct %s: %w", lr.good, err)
-		}
-	}
-
-	grows, err := tx.Query(ctx,
-		`SELECT good_key, floor(GREATEST(0, amount) * 0.5) FROM settlement_granary
-		 WHERE settlement_id = $1 AND amount > 0`, settlementID)
-	if err != nil {
-		return nil, fmt.Errorf("loot: load granary: %w", err)
-	}
-	type granaryLoot struct {
-		good string
-		qty  float64
-	}
-	var granaryLoots []granaryLoot
-	for grows.Next() {
-		var gl granaryLoot
-		if scanErr := grows.Scan(&gl.good, &gl.qty); scanErr != nil {
-			grows.Close()
-			return nil, fmt.Errorf("loot: scan granary: %w", scanErr)
-		}
-		if gl.qty > 0 && (filterAll || allowed[gl.good]) {
-			granaryLoots = append(granaryLoots, gl)
-		}
-	}
-	grows.Close()
-	if err := grows.Err(); err != nil {
-		return nil, err
-	}
-	for _, gl := range granaryLoots {
-		manifest[gl.good] += gl.qty
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlement_granary SET amount = GREATEST(0, amount - $2)
-			 WHERE settlement_id = $1 AND good_key = $3`,
-			settlementID, gl.qty, gl.good,
-		); err != nil {
-			return nil, fmt.Errorf("loot: deduct granary %s: %w", gl.good, err)
 		}
 	}
 

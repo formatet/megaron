@@ -6,7 +6,7 @@ package handlers
 // intentions"). It now shares its RETURNING-captured-delta form with the
 // tick-level applyDivineBlessing harvest_blessing branch
 // (internal/kharis/tick.go:1766-1782), and reports why nothing was gained
-// when the granary was empty or already full, instead of a text that always
+// when the city stock was empty or already full, instead of a text that always
 // claims success. Calls applyHarvestBlessing directly — it is the function
 // under test, not the rite-cast flow around it (plan §4 step 5). Real
 // Postgres, gated by DATABASE_URL (armyDisplayTestPool).
@@ -89,7 +89,7 @@ func riteHarvestFixture(t *testing.T, pool *pgxpool.Pool, grainAmount float64) (
 func callApplyHarvestBlessing(t *testing.T, pool *pgxpool.Pool, settlementID uuid.UUID) (effect map[string]any, message string) {
 	t.Helper()
 	ctx := context.Background()
-	h := NewSettlementHandler(pool, events.NewStore(pool), events.NewScheduler(pool, clock.NewTestClock(time.Now())), clock.NewTestClock(time.Now()), economy.SitosConfig{})
+	h := NewSettlementHandler(pool, events.NewStore(pool), events.NewScheduler(pool, clock.NewTestClock(time.Now())), clock.NewTestClock(time.Now()))
 	tx, err := pool.Begin(ctx)
 	if err != nil {
 		t.Fatalf("begin tx: %v", err)
@@ -121,11 +121,11 @@ func grainRate(t *testing.T, pool *pgxpool.Pool, settlementID uuid.UUID) float64
 // TestHarvestBlessing_RaisesYieldForItsSpan: the harvest blessing is a quarter
 // more yield for economy.HarvestBlessingTicks, then nothing (Timothy
 // 2026-10-10) — no longer ×1.25 on the grain store, which gave the most to the
-// fullest granary and nothing to an empty one.
+// fullest food stock and nothing to an empty one.
 func TestHarvestBlessing_RaisesYieldForItsSpan(t *testing.T) {
 	pool := armyDisplayTestPool(t)
 	ctx := context.Background()
-	worldID, settlementID := riteHarvestFixture(t, pool, 0) // an EMPTY granary is blessed too
+	worldID, settlementID := riteHarvestFixture(t, pool, 0) // an EMPTY food stock is blessed too
 	if err := economy.RecomputeProduction(ctx, pool, settlementID); err != nil {
 		t.Fatalf("baseline recompute: %v", err)
 	}

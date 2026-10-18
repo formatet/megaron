@@ -17,7 +17,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
+
 	"formatet/megaron/server/internal/events"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -253,7 +253,7 @@ func observeRecruitEvents(t *testing.T, f *recruitShipFixture) *recruitEventObse
 	sink := &recruitEventObserver{t: t, f: f}
 	clk := clock.NewTestClock(time.Now())
 	store := events.NewStore(f.pool, sink)
-	ph := NewProvinceHandler(f.pool, events.NewScheduler(f.pool, clk), clk, economy.SitosConfig{}, store, nil)
+	ph := NewProvinceHandler(f.pool, events.NewScheduler(f.pool, clk), clk, store, nil)
 	router := chi.NewRouter()
 	router.Use(auth.Middleware(auth.NewService(f.pool, "test-secret")))
 	router.Post("/worlds/{worldID}/provinces/{provinceID}/recruit", ph.Recruit)

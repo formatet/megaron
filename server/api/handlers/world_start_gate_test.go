@@ -19,7 +19,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
+
 	"formatet/megaron/server/internal/events"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -35,7 +35,7 @@ func startGateRouter(pool *pgxpool.Pool, authSvc *auth.Service) *chi.Mux {
 	clk := clock.NewTestClock(time.Now())
 	scheduler := events.NewScheduler(pool, clk)
 	store := events.NewStore(pool)
-	jh := NewJoinHandler(pool, store, economy.LoadSitosConfig(), clk, nil)
+	jh := NewJoinHandler(pool, store, clk, nil)
 	jh.SetWorldStartWanaxes(gateTestThreshold)
 	wh := NewWorldHandler(pool, authSvc, clk)
 	wh.SetWorldStartWanaxes(gateTestThreshold)

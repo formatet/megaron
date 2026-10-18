@@ -9,7 +9,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
+
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/notify"
@@ -30,17 +30,17 @@ const joinStartingPopulation = 5000
 type JoinHandler struct {
 	pool       *pgxpool.Pool
 	eventStore *events.Store
-	sitosCfg   economy.SitosConfig
-	clk        clock.Clock
-	hub        *notify.Hub // nil-guarded; carries the MetropolisFounded notice
+
+	clk clock.Clock
+	hub *notify.Hub // nil-guarded; carries the MetropolisFounded notice
 	// startWanaxes is the join count that flips a forming world to active
 	// (POLEIA_WORLD_START_WANAXES, injected via SetWorldStartWanaxes).
 	startWanaxes int
 }
 
 // NewJoinHandler creates a JoinHandler.
-func NewJoinHandler(pool *pgxpool.Pool, eventStore *events.Store, sitosCfg economy.SitosConfig, clk clock.Clock, hub *notify.Hub) *JoinHandler {
-	return &JoinHandler{pool: pool, eventStore: eventStore, sitosCfg: sitosCfg, clk: clk, hub: hub,
+func NewJoinHandler(pool *pgxpool.Pool, eventStore *events.Store, clk clock.Clock, hub *notify.Hub) *JoinHandler {
+	return &JoinHandler{pool: pool, eventStore: eventStore, clk: clk, hub: hub,
 		startWanaxes: DefaultWorldStartWanaxes}
 }
 

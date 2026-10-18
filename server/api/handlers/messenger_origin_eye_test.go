@@ -180,7 +180,7 @@ func TestLoadLiveEyes_SentMessageSeesOwnOriginNotDestination(t *testing.T) {
 		t.Fatalf("no land-unit eye for the just-sent runner; eyes = %+v", eyes)
 	}
 	if gotEye.Pos.Q == 4 && gotEye.Pos.R == 0 {
-		t.Fatalf("runner eye sits at the destination (4,0) the instant it was sent — "+
+		t.Fatalf("runner eye sits at the destination (4,0) the instant it was sent — " +
 			"the bifynd this fix closes: the outbound query must resolve the REAL origin (0,0), not hex_q/hex_r's destination")
 	}
 	if gotEye.Pos.Q != 0 || gotEye.Pos.R != 0 {
@@ -258,7 +258,7 @@ func TestLoadLiveEyes_HostSentMessageSeesHostPositionNotDestination(t *testing.T
 		t.Fatalf("no land-unit eye for the just-sent host runner; eyes = %+v", eyes)
 	}
 	if gotEye.Pos.Q == 4 && gotEye.Pos.R == 0 {
-		t.Fatalf("host runner eye sits at the destination (4,0) the instant it was sent — "+
+		t.Fatalf("host runner eye sits at the destination (4,0) the instant it was sent — " +
 			"want the host's own frozen departure point (0,0), read from origin_q/origin_r")
 	}
 	if gotEye.Pos.Q != 0 || gotEye.Pos.R != 0 {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"formatet/megaron/server/internal/economy"
 	"github.com/google/uuid"
 )
 
@@ -71,7 +70,7 @@ func TestCreateMetropolis_StampsFoundedTickOnTheJoinUpsertPath(t *testing.T) {
 		t.Fatalf("begin tx: %v", err)
 	}
 	defer tx.Rollback(ctx)
-	if _, err := createMetropolis(ctx, tx, economy.LoadSitosConfig(), metropolisParams{
+	if _, err := createMetropolis(ctx, tx, metropolisParams{
 		WorldID:    worldID,
 		PlayerID:   playerID,
 		Q:          0,

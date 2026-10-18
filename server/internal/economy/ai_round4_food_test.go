@@ -8,7 +8,7 @@ import (
 
 // Exact translated Scheria catchment sampled read-only from live: 9 plains,
 // 4 sea, 5 olive woods. No farm; the extra 42 people produce .42 fish under the
-// best-worker remainder rule. Stock/granary are deliberately irrelevant here.
+// best-worker remainder rule. Stock/food store are deliberately irrelevant here.
 func TestAIRound4_Scheria1042FoodRequirement(t *testing.T) {
 	ctx := context.Background()
 	pool := testPool(t)
@@ -68,9 +68,6 @@ func TestAIRound4_Scheria1042FoodRequirement(t *testing.T) {
 	}
 	check(0)
 	if _, err := pool.Exec(ctx, `UPDATE settlement_goods SET amount=99999 WHERE settlement_id=$1`, sid); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := pool.Exec(ctx, `INSERT INTO settlement_granary(settlement_id,good_key,amount) VALUES($1,'grain',99999)`, sid); err != nil {
 		t.Fatal(err)
 	}
 	check(0)

@@ -25,7 +25,7 @@ func TestProvinceHarvestBlessingStatus(t *testing.T) {
 	if _, err := pool.Exec(ctx, `UPDATE worlds SET current_tick=100 WHERE id=$1`, worldID); err != nil {
 		t.Fatal(err)
 	}
-	h := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), economy.SitosConfig{}, nil, nil)
+	h := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), nil, nil)
 	r := chi.NewRouter()
 	r.Get("/worlds/{worldID}/provinces/{provinceID}", h.Get)
 	for _, tc := range []struct {

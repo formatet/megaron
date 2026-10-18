@@ -15,9 +15,7 @@ import (
 // EventFoodShortfall is the outcome event fired when a settlement's daily
 // food need was NOT fully covered even after the grain→fish→livestock
 // fallback chain (FoodConsumptionSplit) — the moment a Wanax needs to hear
-// about (mirrors SitosTickHandler's own "storing is routine and silent,
-// release is rare and notified" posture). A day where the population was
-// fully fed emits nothing — the routine case stays quiet, same as Sitos.
+// about. A fully fed population stays quiet.
 const EventFoodShortfall = "FoodShortfall"
 
 // FoodShortfallPayload is the outcome of one day's food debit (events store
@@ -90,7 +88,7 @@ func (h *FoodTickHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 		}
 	}
 
-	// Reschedule next tick (cadence +1 — same daily cadence as Sitos/Upkeep/Kharis).
+	// Reschedule next tick (cadence +1, matching upkeep and kharis).
 	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledFoodTick,
 		struct{}{}, e.DueTick, events.MacroTickInterval)
 }
@@ -102,8 +100,7 @@ func (h *FoodTickHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 //
 // G2 idempotency (CLAUDE.md "Events"): claims (event_id, settlement_id) in
 // the shared processed_tick_claims table (migration 098) — same convention
-// SitosTickHandler uses (processed_sitos_ticks, a settlement-scoped sibling
-// table) and KharisTick/colony use for their own per-settlement claims. Handle
+// KharisTick/colony use for their own per-settlement claims. Handle
 // fans ONE ScheduledFoodTick event across every settlement, each committing
 // its own transaction here, so the claim must be scoped per settlement, not
 // per event: a Handle-level claim would either falsely skip settlements never
@@ -220,8 +217,7 @@ func (h *FoodTickHandler) tickSettlement(ctx context.Context, settlementID, worl
 		return fmt.Errorf("commit: %w", err)
 	}
 
-	// The routine case (unmet == 0) stays silent, same posture as Sitos's
-	// "storing" leg — only the day the population actually went hungry is
+	// The routine case (unmet == 0) stays silent; only actual hunger is
 	// worth an event and a notification.
 	if unmet > 0 {
 		var ownerID uuid.UUID
