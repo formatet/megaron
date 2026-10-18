@@ -164,12 +164,7 @@ func PlaceStartingWorkforce(ctx context.Context, tx Tx, settlementID uuid.UUID) 
 	if err != nil {
 		return 0, false, fmt.Errorf("place starting workforce: %w", err)
 	}
-	grainBasePotential := 0.0
-	for _, opt := range hexOptions {
-		grainBasePotential += opt.RatePerGood[GoodGrain] * opt.MultPerGood[GoodGrain]
-	}
-	remainderCitizens := population % 100
-	guaranteedFood := NearjordGrainPerTick + (grainBasePotential/REF_LABOR)*float64(remainderCitizens)
+	guaranteedFood := AutomaticFoodForPopulation(hexOptions, population).GrainPerTick()
 	demand := GrainConsumptionPerTick(population)
 
 	placements, sufficient := placeStartingGubbar(slots, guaranteedFood, demand, totalGubbar)
@@ -257,29 +252,25 @@ func placeGreedyOnFoodSlots(slots []foodSlot, guaranteedFood, demand float64, to
 // the "matdöd stad" acceptance test (§4.4): the caller must be told the WHOLE
 // workforce is needed (and still not enough), never left with a silent 0.
 func FoodGubbarRequired(ctx context.Context, tx Tx, settlementID uuid.UUID) (required int, achievable bool, err error) {
+	required, achievable, _, err = FoodGubbarRequiredWithAutomatic(ctx, tx, settlementID)
+	return
+}
+
+func FoodGubbarRequiredWithAutomatic(ctx context.Context, tx Tx, settlementID uuid.UUID) (required int, achievable bool, automatic AutomaticFood, err error) {
 	slots, _, hexOptions, err := rankedFoodSlotsWithOptions(ctx, tx, settlementID)
 	if err != nil {
-		return 0, false, err
+		return 0, false, AutomaticFood{}, err
 	}
 
 	var population int
 	if err := tx.QueryRow(ctx,
 		`SELECT population FROM settlements WHERE id = $1`, settlementID,
 	).Scan(&population); err != nil {
-		return 0, false, fmt.Errorf("food gubbar required: load population: %w", err)
+		return 0, false, AutomaticFood{}, fmt.Errorf("food gubbar required: load population: %w", err)
 	}
 	totalGubbar := population / 100
-	remainderCitizens := population % 100
-
-	grainBasePotential := 0.0
-	for _, opt := range hexOptions {
-		grainBasePotential += opt.RatePerGood[GoodGrain] * opt.MultPerGood[GoodGrain]
-	}
-	// ⚠️ The ONE place outside recompute.go step 4b (and FoundingGrainNetPerTick,
-	// its forecast-time twin) where REF_LABOR still governs output after P4 —
-	// the population remainder's old aggregate term, the SAME expression, not
-	// a second one.
-	guaranteedFood := NearjordGrainPerTick + (grainBasePotential/REF_LABOR)*float64(remainderCitizens)
+	automatic = AutomaticFoodForPopulation(hexOptions, population)
+	guaranteedFood := automatic.GrainPerTick()
 	demand := GrainConsumptionPerTick(population)
 
 	placements, sufficient := placeGreedyOnFoodSlots(slots, guaranteedFood, demand, totalGubbar)
@@ -288,7 +279,7 @@ func FoodGubbarRequired(ctx context.Context, tx Tx, settlementID uuid.UUID) (req
 	if !sufficient {
 		required = totalGubbar
 	}
-	return required, sufficient, nil
+	return required, sufficient, automatic, nil
 }
 
 // PlaceNextGubbeOnBestFoodHex auto-places ONE newly born gubbe (population

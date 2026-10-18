@@ -777,6 +777,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"grain_prod_rate":      grainProdRate,
 			"grain_consum_rate":    grainConsumRate,
 			"food_gubbar_required": foodGubbarRequired,
+			"automatic_food":       foodSummary.AutomaticFood,
 			"food_gubbar_placed":   foodGubbarPlaced,
 			"food_self_sufficient": foodSelfSufficient,
 			"harvest_blessing":     harvestBlessingStatus(harvestBlessingUntil, currentTick),
@@ -841,6 +842,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 // 2026-09-06) so the two surfaces read the same numbers from the same
 // functions and can never disagree.
 type FoodSummary struct {
+	AutomaticFood      economy.AutomaticFood
 	GrainProdRate      float64
 	GrainConsumRate    float64
 	FoodSelfSufficient bool
@@ -942,12 +944,13 @@ func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.
 	// foodSelfSufficient=false is not silent (arbetssätt §7): a catchment
 	// that cannot feed its population even with every gubbe placed on food
 	// (Gournia/Zakros in drift) must say so, not just drop the field.
-	foodGubbarRequired, foodSelfSufficient, foodReqErr := economy.FoodGubbarRequired(ctx, pool, settID)
+	foodGubbarRequired, foodSelfSufficient, automatic, foodReqErr := economy.FoodGubbarRequiredWithAutomatic(ctx, pool, settID)
 	if foodReqErr != nil {
 		slog.Error("food gubbar required failed", "err", foodReqErr, "settlement", settID)
 	}
 
 	return FoodSummary{
+		AutomaticFood:      automatic,
 		GrainProdRate:      grainProdRate,
 		GrainConsumRate:    grainConsumRate,
 		FoodSelfSufficient: foodSelfSufficient,
@@ -1363,7 +1366,7 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 	}
 	if queueDepth >= maxParallelBuilds {
 		writeError(w, http.StatusUnprocessableEntity,
-			fmt.Sprintf("build queue is full (max %d concurrent — finish or wait)", maxParallelBuilds))
+			fmt.Sprintf("build queue is full (fixed at %d concurrent buildings; population and buildings do not add slots — finish or cancel a build)", maxParallelBuilds))
 		return
 	}
 

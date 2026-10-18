@@ -51,7 +51,6 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 			// (e.g. founder phase) never blocks the catchment/building listing
 			// below, it just means no food line.
 			fs, _ := fetchFoodStatus(c, cfg.WorldID, prov)
-			surplus := foodSurplus(fs)
 
 			fmt.Println(citizenScaleNote)
 			fmt.Printf("Citizens: %d/%d placed, %d idle\n\n", opts.TotalGubbar-opts.PoolSize, opts.TotalGubbar, opts.PoolSize)
@@ -60,25 +59,11 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 				if fs.HarvestBlessing != "" {
 					fmt.Println(fs.HarvestBlessing)
 				}
-				if surplus > 0 {
-					fmt.Printf("Food: %d needed, %d placed — %d could move after rearranging for people’s food (occupied food rows marked %s below); see `keryx place <good> <ordinal> -n`\n\n",
-						fs.Required, fs.Placed, surplus, foodSurplusMarker)
-				} else {
-					fmt.Printf("Food: %d needed, %d placed\n\n", fs.Required, fs.Placed)
+				fmt.Printf("Food: %s needed for people on best food slots, %d placed\n", citizenCount(fs.Required), fs.Placed)
+				if fs.Automatic != "" {
+					fmt.Println(fs.Automatic)
 				}
-			}
-
-			// foodMarker flags a hex/building's grain or fish row when the city
-			// carries a food surplus overall, so the surplus named above points
-			// at concrete rows instead of leaving the Wanax to guess which of
-			// several hexes it sits on. It marks every occupied food row, not a
-			// chosen subset — the specific citizen to move is the Wanax's call,
-			// not this command's (no auto-release, no recommendation).
-			foodMarker := func(g placementGood, held bool) string {
-				if !held && surplus > 0 && g.Placed > 0 && isFoodGood(g.GoodKey) {
-					return "  " + foodSurplusMarker + " food surplus"
-				}
-				return ""
+				fmt.Println()
 			}
 
 			fmt.Println("Catchment:")
@@ -106,9 +91,9 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 				}
 				for i, g := range h.Goods {
 					if i == 0 {
-						fmt.Printf("  #%-3d (%d,%d) %-14s %s%s%s\n", h.HexOrdinal, h.HexQ, h.HexR, namedRiverTerrain(h.Terrain, h.RiverName), goodCell(g), foodMarker(g, h.HeldBy != ""), bldSuffix)
+						fmt.Printf("  #%-3d (%d,%d) %-14s %s%s%s\n", h.HexOrdinal, h.HexQ, h.HexR, namedRiverTerrain(h.Terrain, h.RiverName), goodCell(g), "", bldSuffix)
 					} else {
-						fmt.Printf("  %-4s %-14s %s%s\n", "", "", goodCell(g), foodMarker(g, h.HeldBy != ""))
+						fmt.Printf("  %-4s %-14s %s%s\n", "", "", goodCell(g), "")
 					}
 				}
 			}
@@ -118,9 +103,9 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 				for _, b := range opts.Buildings {
 					for i, g := range b.Goods {
 						if i == 0 {
-							fmt.Printf("  %-14s L%-2d %s%s\n", b.BuildingType, b.Level, goodCell(g), foodMarker(g, false))
+							fmt.Printf("  %-14s L%-2d %s%s\n", b.BuildingType, b.Level, goodCell(g), "")
 						} else {
-							fmt.Printf("  %-14s %-3s %s%s\n", "", "", goodCell(g), foodMarker(g, false))
+							fmt.Printf("  %-14s %-3s %s%s\n", "", "", goodCell(g), "")
 						}
 					}
 				}

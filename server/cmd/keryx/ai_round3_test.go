@@ -37,7 +37,7 @@ func TestAIRound3_StatusArmyAndSingleFoodAdvice(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"net +0.5 per day (before army)", "eats 2.0 grain per day → food net -1.5 per day after army", "3 could move after rearranging", "1 citizen = 100 people", "Labor: 10 citizens"} {
+	for _, want := range []string{"net +0.5 per day (before army)", "eats 2.0 grain per day → food net -1.5 per day after army", "2 citizens needed for people on best food slots", "1 citizen = 100 people", "Labor: 10 citizens"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("missing %q: %s", want, out)
 		}
@@ -147,7 +147,7 @@ func TestAIRound3_YesDoesNotAsk(t *testing.T) {
 
 func TestAIRound3_ExistingStarsAndGrammar(t *testing.T) {
 	out := runCityCmd(t, `{"total_gubbar":10,"pool_size":5,"hexes":[{"hex_ordinal":13,"terrain":"coastal_sea","goods":[{"good_key":"fish","placed":5}]}]}`, `{"settlement":{"food_gubbar_required":2,"food_gubbar_placed":5,"food_self_sufficient":true}}`)
-	if !strings.Contains(out, "3 could move") || !strings.Contains(out, "★ food surplus") {
+	if strings.Contains(out, "could move") || strings.Contains(out, "★ food surplus") {
 		t.Fatal(out)
 	}
 	for _, n := range []int{1, 2} {
@@ -188,7 +188,7 @@ func TestAIRound3_ForeignWorkersAreNotRemovalTargets(t *testing.T) {
 		t.Fatal(got)
 	}
 	out := runCityCmd(t, `{"total_gubbar":10,"hexes":[{"hex_ordinal":1,"held_by":"Tylissos","goods":[{"good_key":"fish","placed":5}]}]}`, `{"settlement":{"food_gubbar_required":2,"food_gubbar_placed":5,"food_self_sufficient":true}}`)
-	if strings.Count(out, "★") != 1 {
+	if strings.Count(out, "★") != 0 {
 		t.Fatal("foreign workers marked as removable: " + out)
 	}
 }

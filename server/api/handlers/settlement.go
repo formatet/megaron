@@ -72,18 +72,19 @@ func (h *SettlementHandler) List(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type item struct {
-		ID           uuid.UUID `json:"id"`
-		ProvinceID   uuid.UUID `json:"province_id"`
-		Name         string    `json:"name"`
-		Culture      string    `json:"culture"`
-		ControlType  string    `json:"control_type"`
-		Loyalty      int       `json:"loyalty"`
-		LoyaltyTrend string    `json:"loyalty_trend"`
-		WallLevel    int       `json:"wall_level"`
-		IsCapital    bool      `json:"is_capital"`
-		State        string    `json:"state"`
-		Population   int       `json:"population"`
-		UpdatedAt    time.Time `json:"updated_at"`
+		AutomaticFood economy.AutomaticFood `json:"automatic_food"`
+		ID            uuid.UUID             `json:"id"`
+		ProvinceID    uuid.UUID             `json:"province_id"`
+		Name          string                `json:"name"`
+		Culture       string                `json:"culture"`
+		ControlType   string                `json:"control_type"`
+		Loyalty       int                   `json:"loyalty"`
+		LoyaltyTrend  string                `json:"loyalty_trend"`
+		WallLevel     int                   `json:"wall_level"`
+		IsCapital     bool                  `json:"is_capital"`
+		State         string                `json:"state"`
+		Population    int                   `json:"population"`
+		UpdatedAt     time.Time             `json:"updated_at"`
 	}
 	var result []item
 	for rows.Next() {
@@ -147,16 +148,17 @@ func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.R
 		GrowthState    string             `json:"growth_state"`
 	}
 	type item struct {
-		ID                 uuid.UUID    `json:"id"`
-		Name               string       `json:"name"`
-		IsCapital          bool         `json:"is_capital"`
-		Population         int          `json:"population"`
-		GrainProdRate      float64      `json:"grain_prod_rate"`
-		GrainConsumRate    float64      `json:"grain_consum_rate"`
-		FoodSelfSufficient bool         `json:"food_self_sufficient"`
-		ArmyUpkeep         upkeepAmount `json:"army_upkeep"`
-		FoodNetAfterUpkeep float64      `json:"food_net_per_tick_after_upkeep"`
-		Sitos              sitosRow     `json:"sitos"`
+		AutomaticFood      economy.AutomaticFood `json:"automatic_food"`
+		ID                 uuid.UUID             `json:"id"`
+		Name               string                `json:"name"`
+		IsCapital          bool                  `json:"is_capital"`
+		Population         int                   `json:"population"`
+		GrainProdRate      float64               `json:"grain_prod_rate"`
+		GrainConsumRate    float64               `json:"grain_consum_rate"`
+		FoodSelfSufficient bool                  `json:"food_self_sufficient"`
+		ArmyUpkeep         upkeepAmount          `json:"army_upkeep"`
+		FoodNetAfterUpkeep float64               `json:"food_net_per_tick_after_upkeep"`
+		Sitos              sitosRow              `json:"sitos"`
 	}
 
 	type settRow struct {
@@ -190,6 +192,7 @@ func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.R
 			GrainProdRate:      fs.GrainProdRate,
 			GrainConsumRate:    fs.GrainConsumRate,
 			FoodSelfSufficient: fs.FoodSelfSufficient,
+			AutomaticFood:      fs.AutomaticFood,
 			ArmyUpkeep:         up,
 			FoodNetAfterUpkeep: foodNetAfterArmy(fs.FoodNetPerTick, up.Grain),
 			Sitos: sitosRow{
@@ -1697,13 +1700,14 @@ func (h *SettlementHandler) Gossip(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type item struct {
-		ID           uuid.UUID `json:"id"`
-		SourceRegion string    `json:"source_region"`
-		Category     string    `json:"category"`
-		Text         string    `json:"text"`
-		GeneratedAt  time.Time `json:"generated_at"`
-		Importance   string    `json:"importance"`
-		Hops         int       `json:"hops"`
+		AutomaticFood economy.AutomaticFood `json:"automatic_food"`
+		ID            uuid.UUID             `json:"id"`
+		SourceRegion  string                `json:"source_region"`
+		Category      string                `json:"category"`
+		Text          string                `json:"text"`
+		GeneratedAt   time.Time             `json:"generated_at"`
+		Importance    string                `json:"importance"`
+		Hops          int                   `json:"hops"`
 	}
 	var result []item
 	for rows.Next() {

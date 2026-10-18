@@ -178,10 +178,11 @@ func buildCmd() *cobra.Command {
 			body := map[string]any{"building_type": buildingType}
 			effectLine := ""
 			if hexFlag != "" {
-				q, r, perr := parseHexFlag(hexFlag)
+				q, r, _, perr := resolveHexFlag(c, cfg.WorldID, prov, hexFlag)
 				if perr != nil {
 					return perr
 				}
+				hexFlag = fmt.Sprintf("%d,%d", q, r)
 				body["hex_q"] = q
 				body["hex_r"] = r
 				// Read before the POST so a new build shows `effect` and an
@@ -215,7 +216,7 @@ func buildCmd() *cobra.Command {
 	cmd.Flags().SortFlags = false
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID to build in (default: your capital)")
 	cmd.Flags().StringVarP(&buildingType, "type", "t", "", "building type (omit to see list)")
-	cmd.Flags().StringVar(&hexFlag, "hex", "", "catchment hex \"q,r\" — required for hex-bound types (farm, mine, lumbermill, stonequarry)")
+	cmd.Flags().StringVar(&hexFlag, "hex", "", "catchment q,r or ordinal 6/#6 — required for hex-bound building types")
 	cmd.Flags().BoolVar(&list, "list", false, "show the building catalogue and exit")
 	cmd.Flags().BoolVar(&queue, "queue", false, "show this settlement's build queue (with queue IDs for cancel-build) and exit")
 	return cmd
@@ -250,7 +251,7 @@ func printBuildQueue(c *Client, worldID, provinceID string) error {
 	// concurrent" only AFTER a 3rd build was refused) is now printed up front
 	// here, every time — not just when you hit it.
 	if qmax, ok := sett["build_queue_max"].(float64); ok {
-		fmt.Printf("Queue: %d/%.0f slots used\n", len(bq), qmax)
+		fmt.Printf("Queue: %d/%.0f slots used — fixed limit; population and buildings do not add slots. Finish or cancel a build.\n", len(bq), qmax)
 	}
 	if len(bq) == 0 {
 		fmt.Println("Build queue is empty.")

@@ -709,6 +709,7 @@ async function refreshCityBuildings(provinceID) {
           blds.map(b => `<tr><td>${_BLD_LBL[b.type]||b.type}${b.hex_q != null ? ` @ (${b.hex_q},${b.hex_r})` : ''}</td><td>L${b.level}</td></tr>`).join('')
         }</table>`
       : '<p class="empty-state">No buildings yet.</p>';
+    if (pd.build_queue_max != null) h2 += `<p class="empty-state">Queue: ${bq.length}/${pd.build_queue_max} slots used — fixed limit; population and buildings do not add slots. Finish or cancel a build.</p>`;
     if (bq.length) h2 += `<div class="dsec-title" style="margin-top:.8rem">Build queue</div><table class="goods-mini">${
       // A building finishes, it doesn't arrive — say "ready" (matches the
       // Training column below and war.js's ship-build phrasing).

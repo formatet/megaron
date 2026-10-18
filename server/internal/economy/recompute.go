@@ -726,12 +726,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	// deliberately the one place REF_LABOR still governs output after P4 — it
 	// is what makes population growth feel continuous between hundreds instead
 	// of a nothing-then-a-gubbe step function.
-	grainBasePotential := 0.0
-	for _, opt := range hexOptions {
-		grainBasePotential += opt.RatePerGood[GoodGrain] * opt.MultPerGood[GoodGrain]
-	}
-	remainderCitizens := laborPool % 100
-	rawRates[GoodGrain] += (grainBasePotential / REF_LABOR) * float64(remainderCitizens)
+	rawRates[GoodGrain] += AutomaticFoodForPopulation(hexOptions, laborPool).RemainderGrain
 	producible[GoodGrain] = true
 
 	// ── 5. Settle and write new rates ─────────────────────────────────────────

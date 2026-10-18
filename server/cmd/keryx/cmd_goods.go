@@ -55,7 +55,7 @@ func goodsCmd() *cobra.Command {
 					idle = ic
 				}
 				fmt.Println(citizenScaleNote)
-				fmt.Printf("Labor pool: %d citizens  ·  Idle: %d citizens\n\n", int(lp)/100, int(idle)/100)
+				fmt.Printf("Labor pool: %s  ·  Idle: %s\n\n", citizenCount(int(lp)/100), citizenCount(int(idle)/100))
 			}
 			fmt.Printf("%-10s  %9s  %8s  %6s  %10s  %8s\n",
 				"Good", "Stock", "Per day", "Lvl", "Citizens", "Marg/g")

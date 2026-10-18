@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -20,7 +21,7 @@ func staffCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "staff <byggnad> [+n|-n]",
 		Short: "Place or remove n citizens from a building workplace (default: show current staffing)",
-		Long: `<byggnad> is a building type (e.g. stonequarry). +n places n more idle
+		Long: `<building> is a city workplace (e.g. olive_press). Hex buildings use place. +n places n more idle
 citizens there; -n returns n citizens to the idle pool. Omit the delta to just
 see current occupancy.`,
 		Example: `  keryx staff stonequarry
@@ -51,6 +52,26 @@ see current occupancy.`,
 				}
 			}
 			if building == nil {
+				for _, h := range opts.Hexes {
+					if h.Building != nil && h.Building.Type == buildingType {
+						prefix := "keryx place"
+						if prov != cfg.ProvinceID {
+							prefix += " --province " + prov
+						}
+						roles := []string{}
+						for _, g := range h.Goods {
+							if g.MarginalYield > 0 && hexBuildingGood(buildingType, g.GoodKey) {
+								roles = append(roles, fmt.Sprintf("%s %s %d", prefix, g.GoodKey, h.HexOrdinal))
+							}
+						}
+						delta := "+1"
+						if len(args) > 1 {
+							delta = args[1]
+						}
+						return fmt.Errorf("the %s is a hex building — staff it with: %s %s (hex #%d)", buildingType, strings.Join(roles, " or "), delta, h.HexOrdinal)
+					}
+				}
+
 				// temple never appears in placement-options: it has no
 				// production_rules row (economy.LoadBuildingProductionOptions
 				// only lists buildings that do). cult is the one good still
@@ -104,7 +125,7 @@ see current occupancy.`,
 				}
 				if !jsonMode {
 					if applied == delta {
-						fmt.Printf("Placed %d citizen(s) on %s.\n", applied, buildingType)
+						fmt.Printf("Placed %s on %s.\n", citizenCount(applied), buildingType)
 					} else {
 						fmt.Printf("Placed %d of %d requested (stopped: %v).\n", applied, delta, stopErr)
 					}
@@ -126,9 +147,9 @@ see current occupancy.`,
 					removed := -applied
 					if removed == want {
 						if want < -delta {
-							fmt.Printf("Removed %d citizen(s) — only %d were staffed there.\n", removed, want)
+							fmt.Printf("Removed %s — only %d were staffed there.\n", citizenCount(removed), want)
 						} else {
-							fmt.Printf("Removed %d citizen(s) from %s.\n", removed, buildingType)
+							fmt.Printf("Removed %s from %s.\n", citizenCount(removed), buildingType)
 						}
 					} else {
 						fmt.Printf("Removed %d of %d requested (stopped: %v).\n", removed, want, stopErr)
@@ -170,7 +191,7 @@ see current occupancy.`,
 			if after != nil {
 				fmt.Printf("  %s\n", goodCell(*after))
 			}
-			fmt.Printf("  %d idle citizens left.\n", opts2.PoolSize)
+			fmt.Printf("  %s left in the idle pool.\n", citizenCount(opts2.PoolSize))
 			if applied == 0 && stopErr != nil {
 				return stopErr
 			}
@@ -211,4 +232,18 @@ func fetchBuiltBuildingLevel(c *Client, worldID, provinceID, buildingType string
 		}
 	}
 	return 0, false
+}
+
+func hexBuildingGood(building, good string) bool {
+	switch building {
+	case "farm":
+		return good == "grain"
+	case "lumbermill":
+		return good == "timber" || good == "cedar"
+	case "stonequarry":
+		return good == "stone"
+	case "mine":
+		return good == "copper" || good == "tin" || good == "silver"
+	}
+	return false
 }

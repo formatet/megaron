@@ -435,12 +435,9 @@ const netUpkeepWarningRunwayTicks = 30
 // 70-7 in their head to notice a city 10x overstaffed on grain.
 func foodGubbarLine(req, placed int, selfSufficient bool) string {
 	if !selfSufficient {
-		return fmt.Sprintf("  ⚠ the catchment doesn't feed the population even with all %d citizens", req)
+		return fmt.Sprintf("  ⚠ the catchment doesn't feed the population even with all %s", citizenCount(req))
 	}
-	if surplus := foodSurplus(&foodStatus{Required: req, Placed: placed, SelfSufficient: selfSufficient}); surplus > 0 {
-		return fmt.Sprintf("  (%d citizens needed for food · %d placed — %d could move after rearranging for people’s food; see 'keryx city')", req, placed, surplus)
-	}
-	return fmt.Sprintf("  (%d citizens needed for food · %d placed)", req, placed)
+	return fmt.Sprintf("  (%s needed for people on best food slots · %d placed)", citizenCount(req), placed)
 }
 
 // armyUpkeepWarning grinds the ⚠ line under the post-upkeep Netto row on
@@ -657,8 +654,8 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				settlementsUsed = used
 			}
 			fmt.Println(citizenScaleNote)
-			fmt.Printf("%s [%s]  Pop: %s people  Labor: %s citizens  Walls: %.0f/3  Loyalty: %.0f%s%s\n",
-				name, culture, resource(pop), resource(math.Floor(labor/100)), walls, loyalty, settlementsNote, coastalNote)
+			fmt.Printf("%s [%s]  Pop: %s people  Labor: %s  Walls: %.0f/3  Loyalty: %.0f%s%s\n",
+				name, culture, resource(pop), citizenCount(int(math.Floor(labor/100))), walls, loyalty, settlementsNote, coastalNote)
 			if sitos, ok := sett["sitos"].(map[string]any); ok {
 				gs, _ := sitos["growth_state"].(string)
 				net, _ := sitos["food_net_per_tick"].(float64)
@@ -854,6 +851,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 							placed, _ := sett["food_gubbar_placed"].(float64)
 							suff, _ := sett["food_self_sufficient"].(bool)
 							line += foodGubbarLine(int(req), int(placed), suff)
+							if automatic := automaticFoodLine(sett); automatic != "" {
+								line += "\n  " + automatic
+							}
 						}
 						fmt.Println(line)
 					}
