@@ -246,17 +246,17 @@ func TestFoodGubbarLine(t *testing.T) {
 		{
 			name: "soak finding: 7 required, 70 placed — names the 63 that could move",
 			req:  7, placed: 70, selfSufficient: true,
-			want: "  (7 citizens needed for food · 70 placed — 63 could move after rearranging for people’s food; see 'keryx city')",
+			want: "  (7 citizens needed for people on best food slots · 70 placed)",
 		},
 		{
 			name: "exactly staffed — no surplus text",
 			req:  7, placed: 7, selfSufficient: true,
-			want: "  (7 citizens needed for food · 7 placed)",
+			want: "  (7 citizens needed for people on best food slots · 7 placed)",
 		},
 		{
 			name: "understaffed but still self-sufficient (e.g. fish covers the rest) — no surplus text",
 			req:  8, placed: 5, selfSufficient: true,
-			want: "  (8 citizens needed for food · 5 placed)",
+			want: "  (8 citizens needed for people on best food slots · 5 placed)",
 		},
 		{
 			name: "insufficient catchment — pre-existing shortage warning, never a surplus claim",

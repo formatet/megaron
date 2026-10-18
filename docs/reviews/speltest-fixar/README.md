@@ -124,3 +124,19 @@ Branch `codex/ai-runda3-texter`; [fullt bevispaket](../ai-runda3-texter/README.m
 FullfreshGo182 (alla sista Go-bytes, world143.227s), vet,651JS/0skip,17 fysiska namedRED→exakta bytes→GREEN;
 naturlig register/join/grundning/placering/CLI/Firefox1280+390 på healthf657a1ab/182, inga pageerrors.
 Ingen migration eller ändring av utfodring/tillväxt/upkeep. Claude granskar och integrerar; även CLI-binären måste byggas om.
+
+## Slice 8 — AI-runda 4
+
+Branch `codex/ai-runda4-texter`; [fullt bevispaket](../ai-runda4-texter/README.md).
+
+| Fynd | Utfall |
+|---|---|
+| 1. Needed1/1042 | Motorn korrekt enligt befintlig remainderregel:4.28 automatiskt+1 fisk≥5.21. Faktiska bidraget visas bredvid needed i API/webb/CLI/Codex; ingen balansändring, godkänt av Claude. |
+| 2. Could-move | Ospecificerade flyttråd och★ bort; needed/placed är fakta utan löfte om flyttbara arbetare. |
+| 3. Små netton | +0.1 var redan korrekt; regression och mutation pinnar strikt abs<0.05. |
+| 4. Antal | Singular/plural gemensamt; rekryterad råbefolkning heter people. |
+| 5. Hexstaff | Konkret place-kommando med vara/hex/delta och vald koloni. |
+| 6. Hexadresser | Build/place --hex6/#6/q,r via känd servermeny; ingen dold geometrigenväg. |
+| 7. Byggkö | Fast gräns2 förklarad i listing/avslag/Codex; slutför eller avbryt, population/byggnader ger inga fler platser. |
+
+Slutresultat finns i slice8-rapporten. Claude granskar/integrerar; ingen merge/push/deploy av Codex.

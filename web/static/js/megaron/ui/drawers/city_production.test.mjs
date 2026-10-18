@@ -98,3 +98,8 @@ test('AIRound3: population food and army food use different explicit balances',(
  assert.match(html,/eats 2 grain per day → food net -1.5 after army/);
  assert.doesNotMatch(foodSummaryHTML(data),/stocks growing/);
 });
+
+test('AIRound4: Scheria one placed citizen is explained by actual automatic grain',()=>{
+ const html=foodDetailsHTML(pd({food_gubbar_required:1,food_gubbar_placed:3,automatic_food:{nearjord_grain_per_tick:0.5,remainder_people:42,remainder_grain_per_tick:3.78}}));
+ assert.match(html,/4.28 per day without placed citizens/);assert.match(html,/nearby ground 0.50 \+ 42 people outside whole citizens 3.78/);assert.doesNotMatch(html,/could move/);
+});

@@ -243,7 +243,7 @@ func printNotificationSummary(c *Client, n notificationItem) {
 			left = *b.TicksLeft
 		}
 		if b.Tier == "critical" {
-			line = fmt.Sprintf("%s is STARVING — %d citizens lost. Grain net %.0f per day.", city, b.PopLoss, net)
+			line = fmt.Sprintf("%s is STARVING — %s lost. Grain net %.0f per day.", city, citizenCount(b.PopLoss), net)
 		} else {
 			line = fmt.Sprintf("%s: grain net %+.0f per day", city, net)
 			if left > 0 {

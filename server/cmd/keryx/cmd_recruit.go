@@ -131,7 +131,7 @@ func recruitCmd() *cobra.Command {
 				// Hål 3 (megaron_plan_tysta_forluster.md): the crew drawn from the
 				// settlement's population used to vanish — a new ship appeared,
 				// nothing said the city shrank to man it.
-				fmt.Printf("Drafted %d citizens as crew — population %d → %d.\n",
+				fmt.Printf("Drafted %d people as crew — population %d → %d.\n",
 					resp.PopDrawn, resp.PopulationBefore, resp.PopulationAfter)
 			} else {
 				var resp struct {
@@ -153,7 +153,7 @@ func recruitCmd() *cobra.Command {
 				}
 				// Hål 3 (megaron_plan_tysta_forluster.md): same population-cost
 				// visibility as the naval branch above.
-				fmt.Printf("Drafted %d citizens — population %d → %d.\n",
+				fmt.Printf("Drafted %d people — population %d → %d.\n",
 					resp.PopDrawn, resp.PopulationBefore, resp.PopulationAfter)
 			}
 			// Upkeep warning (P6, soak 2026-07-18): present on either path when the

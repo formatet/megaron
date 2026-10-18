@@ -84,19 +84,14 @@ func FoundingFoodForecastAt(ctx context.Context, tx Tx, worldID uuid.UUID, cente
 	}
 	slots := rankSlotsFromOptions(hexOptions, center)
 
-	grainBasePotential := 0.0
-	for _, opt := range hexOptions {
-		grainBasePotential += opt.RatePerGood[GoodGrain] * opt.MultPerGood[GoodGrain]
-	}
-	remainderCitizens := pop % 100
+	automatic := AutomaticFoodForPopulation(hexOptions, pop)
 	totalGubbar := pop / 100
-	remainderTerm := (grainBasePotential / REF_LABOR) * float64(remainderCitizens)
-	guaranteedFood := NearjordGrainPerTick + remainderTerm
+	guaranteedFood := automatic.GrainPerTick()
 	demand := GrainConsumptionPerTick(pop)
 
 	placements, _ := placeStartingGubbar(slots, guaranteedFood, demand, totalGubbar)
 
-	grainProd := NearjordGrainPerTick + remainderTerm
+	grainProd := automatic.GrainPerTick()
 	fishProd := 0.0
 	for _, p := range placements {
 		if p.good == GoodGrain {

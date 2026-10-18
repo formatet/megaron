@@ -419,28 +419,13 @@ func buildQueueETA(c *Client, iso string) string {
 // this is a game-day figure, not a wall-clock one.
 const netUpkeepWarningRunwayTicks = 30
 
-// foodGubbarLine renders the "(N citizens needed for food · M placed)"
-// annex on the grain row, using the same food_gubbar_required/placed/
-// self_sufficient figures `keryx city`'s hex listing is built from
-// (megaron_plan_omfordelningsmatningen.md — Timothy 2026-09-02: five of five
-// soak cities stood 5-10x overstaffed on food and the row that already
-// printed this data read as neutral information, not an actionable one).
-// Pure — unit-testable without a server.
-//
-// The reassignment itself stays entirely the Wanax's call (no auto-release,
-// no auto-placement): this only NAMES the number that could move and points
-// at the surface (`keryx city`) that shows which hexes carry it. When placed
-// exceeds required and the catchment is self-sufficient, the surplus is
-// spelled out as its own figure — a Wanax should never have to subtract
-// 70-7 in their head to notice a city 10x overstaffed on grain.
+// foodGubbarLine reports minimum food staffing and actual placements.
+// A minimum on the best slots does not identify removable workers.
 func foodGubbarLine(req, placed int, selfSufficient bool) string {
 	if !selfSufficient {
-		return fmt.Sprintf("  ⚠ the catchment doesn't feed the population even with all %d citizens", req)
+		return fmt.Sprintf("  ⚠ the catchment doesn't feed the population even with all %s", citizenCount(req))
 	}
-	if surplus := foodSurplus(&foodStatus{Required: req, Placed: placed, SelfSufficient: selfSufficient}); surplus > 0 {
-		return fmt.Sprintf("  (%d citizens needed for food · %d placed — %d could move after rearranging for people’s food; see 'keryx city')", req, placed, surplus)
-	}
-	return fmt.Sprintf("  (%d citizens needed for food · %d placed)", req, placed)
+	return fmt.Sprintf("  (%s needed for people on best food slots · %d placed)", citizenCount(req), placed)
 }
 
 // armyUpkeepWarning grinds the ⚠ line under the post-upkeep Netto row on
@@ -657,8 +642,8 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				settlementsUsed = used
 			}
 			fmt.Println(citizenScaleNote)
-			fmt.Printf("%s [%s]  Pop: %s people  Labor: %s citizens  Walls: %.0f/3  Loyalty: %.0f%s%s\n",
-				name, culture, resource(pop), resource(math.Floor(labor/100)), walls, loyalty, settlementsNote, coastalNote)
+			fmt.Printf("%s [%s]  Pop: %s people  Labor: %s  Walls: %.0f/3  Loyalty: %.0f%s%s\n",
+				name, culture, resource(pop), citizenCount(int(math.Floor(labor/100))), walls, loyalty, settlementsNote, coastalNote)
 			if sitos, ok := sett["sitos"].(map[string]any); ok {
 				gs, _ := sitos["growth_state"].(string)
 				net, _ := sitos["food_net_per_tick"].(float64)
@@ -854,6 +839,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 							placed, _ := sett["food_gubbar_placed"].(float64)
 							suff, _ := sett["food_self_sufficient"].(bool)
 							line += foodGubbarLine(int(req), int(placed), suff)
+							if automatic := automaticFoodLine(sett); automatic != "" {
+								line += "\n  " + automatic
+							}
 						}
 						fmt.Println(line)
 					}

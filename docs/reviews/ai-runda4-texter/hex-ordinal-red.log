@@ -1,0 +1,133 @@
+=== RUN   TestAIRound4_HexSelectors
+=== RUN   TestAIRound4_HexSelectors/build6
+Error: hex #6 is not in this city's known catchment; see keryx city
+Usage:
+  build [city] [flags]
+
+Examples:
+  keryx build --list
+  keryx build --type farm --hex 3,-1          # farm/mine/lumbermill/stonequarry are hex-bound: pick a catchment hex
+  keryx build --type harbour          # requires coastal (adjacent sea hex)
+  keryx build --type mine --hex 5,2 --province <province-id>   # build in a colony
+  keryx build --type winery           # produces nothing unless a hills/plains/scrub_maquis tile is in catchment
+  keryx build --queue                 # see what's already queued, with cancel-build IDs
+
+Flags:
+      --province string   province ID to build in (default: your capital)
+  -t, --type string       building type (omit to see list)
+      --hex string        catchment q,r or ordinal 6/#6 — required for hex-bound building types
+      --list              show the building catalogue and exit
+      --queue             show this settlement's build queue (with queue IDs for cancel-build) and exit
+  -h, --help              help for build
+
+    ai_round4_test.go:51: hex #6 is not in this city's known catchment; see keryx city postedfalse
+=== RUN   TestAIRound4_HexSelectors/place6
+Error: hex #6 is not in this city's known catchment; see keryx city
+Usage:
+  place [city] <good> <ordinal> [+n|-n] [flags]
+
+Examples:
+  keryx place grain 5
+  keryx place --province <prov-id> livestock 5
+  keryx place grain 5 +2
+  keryx place grain 5 -1
+
+Flags:
+  -h, --help              help for place
+      --hex string        catchment coordinate q,r or ordinal 6/#6; put flags before the good
+      --province string   province ID/name to place in (default: your capital)
+
+    ai_round4_test.go:51: hex #6 is not in this city's known catchment; see keryx city postedfalse
+=== RUN   TestAIRound4_HexSelectors/build#6
+Error: hex #6 is not in this city's known catchment; see keryx city
+Usage:
+  build [city] [flags]
+
+Examples:
+  keryx build --list
+  keryx build --type farm --hex 3,-1          # farm/mine/lumbermill/stonequarry are hex-bound: pick a catchment hex
+  keryx build --type harbour          # requires coastal (adjacent sea hex)
+  keryx build --type mine --hex 5,2 --province <province-id>   # build in a colony
+  keryx build --type winery           # produces nothing unless a hills/plains/scrub_maquis tile is in catchment
+  keryx build --queue                 # see what's already queued, with cancel-build IDs
+
+Flags:
+      --province string   province ID to build in (default: your capital)
+  -t, --type string       building type (omit to see list)
+      --hex string        catchment q,r or ordinal 6/#6 — required for hex-bound building types
+      --list              show the building catalogue and exit
+      --queue             show this settlement's build queue (with queue IDs for cancel-build) and exit
+  -h, --help              help for build
+
+    ai_round4_test.go:51: hex #6 is not in this city's known catchment; see keryx city postedfalse
+=== RUN   TestAIRound4_HexSelectors/place#6
+Error: hex #6 is not in this city's known catchment; see keryx city
+Usage:
+  place [city] <good> <ordinal> [+n|-n] [flags]
+
+Examples:
+  keryx place grain 5
+  keryx place --province <prov-id> livestock 5
+  keryx place grain 5 +2
+  keryx place grain 5 -1
+
+Flags:
+  -h, --help              help for place
+      --hex string        catchment coordinate q,r or ordinal 6/#6; put flags before the good
+      --province string   province ID/name to place in (default: your capital)
+
+    ai_round4_test.go:51: hex #6 is not in this city's known catchment; see keryx city postedfalse
+=== RUN   TestAIRound4_HexSelectors/build12,-3
+=== RUN   TestAIRound4_HexSelectors/place12,-3
+=== RUN   TestAIRound4_HexSelectors/timber/#6/+1
+=== RUN   TestAIRound4_HexSelectors/--hex/#6/timber/-1
+Error: hex #6 is not in this city's known catchment; see keryx city
+Usage:
+  place [city] <good> <ordinal> [+n|-n] [flags]
+
+Examples:
+  keryx place grain 5
+  keryx place --province <prov-id> livestock 5
+  keryx place grain 5 +2
+  keryx place grain 5 -1
+
+Flags:
+  -h, --help              help for place
+      --hex string        catchment coordinate q,r or ordinal 6/#6; put flags before the good
+      --province string   province ID/name to place in (default: your capital)
+
+    ai_round4_test.go:71: hex #6 is not in this city's known catchment; see keryx city mutationfalse
+=== RUN   TestAIRound4_HexSelectors/unseen_ordinal_is_never_invented
+Error: hex #99 is not in this city's known catchment; see keryx city
+Usage:
+  build [city] [flags]
+
+Examples:
+  keryx build --list
+  keryx build --type farm --hex 3,-1          # farm/mine/lumbermill/stonequarry are hex-bound: pick a catchment hex
+  keryx build --type harbour          # requires coastal (adjacent sea hex)
+  keryx build --type mine --hex 5,2 --province <province-id>   # build in a colony
+  keryx build --type winery           # produces nothing unless a hills/plains/scrub_maquis tile is in catchment
+  keryx build --queue                 # see what's already queued, with cancel-build IDs
+
+Flags:
+      --province string   province ID to build in (default: your capital)
+  -t, --type string       building type (omit to see list)
+      --hex string        catchment q,r or ordinal 6/#6 — required for hex-bound building types
+      --list              show the building catalogue and exit
+      --queue             show this settlement's build queue (with queue IDs for cancel-build) and exit
+  -h, --help              help for build
+
+--- FAIL: TestAIRound4_HexSelectors (0.00s)
+    --- FAIL: TestAIRound4_HexSelectors/build6 (0.00s)
+    --- FAIL: TestAIRound4_HexSelectors/place6 (0.00s)
+    --- FAIL: TestAIRound4_HexSelectors/build#6 (0.00s)
+    --- FAIL: TestAIRound4_HexSelectors/place#6 (0.00s)
+    --- PASS: TestAIRound4_HexSelectors/build12,-3 (0.00s)
+    --- PASS: TestAIRound4_HexSelectors/place12,-3 (0.00s)
+    --- PASS: TestAIRound4_HexSelectors/timber/#6/+1 (0.00s)
+    --- FAIL: TestAIRound4_HexSelectors/--hex/#6/timber/-1 (0.00s)
+    --- PASS: TestAIRound4_HexSelectors/unseen_ordinal_is_never_invented (0.00s)
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.005s
+FAIL

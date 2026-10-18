@@ -147,16 +147,17 @@ func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.R
 		GrowthState    string             `json:"growth_state"`
 	}
 	type item struct {
-		ID                 uuid.UUID    `json:"id"`
-		Name               string       `json:"name"`
-		IsCapital          bool         `json:"is_capital"`
-		Population         int          `json:"population"`
-		GrainProdRate      float64      `json:"grain_prod_rate"`
-		GrainConsumRate    float64      `json:"grain_consum_rate"`
-		FoodSelfSufficient bool         `json:"food_self_sufficient"`
-		ArmyUpkeep         upkeepAmount `json:"army_upkeep"`
-		FoodNetAfterUpkeep float64      `json:"food_net_per_tick_after_upkeep"`
-		Sitos              sitosRow     `json:"sitos"`
+		AutomaticFood      economy.AutomaticFood `json:"automatic_food"`
+		ID                 uuid.UUID             `json:"id"`
+		Name               string                `json:"name"`
+		IsCapital          bool                  `json:"is_capital"`
+		Population         int                   `json:"population"`
+		GrainProdRate      float64               `json:"grain_prod_rate"`
+		GrainConsumRate    float64               `json:"grain_consum_rate"`
+		FoodSelfSufficient bool                  `json:"food_self_sufficient"`
+		ArmyUpkeep         upkeepAmount          `json:"army_upkeep"`
+		FoodNetAfterUpkeep float64               `json:"food_net_per_tick_after_upkeep"`
+		Sitos              sitosRow              `json:"sitos"`
 	}
 
 	type settRow struct {
@@ -190,6 +191,7 @@ func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.R
 			GrainProdRate:      fs.GrainProdRate,
 			GrainConsumRate:    fs.GrainConsumRate,
 			FoodSelfSufficient: fs.FoodSelfSufficient,
+			AutomaticFood:      fs.AutomaticFood,
 			ArmyUpkeep:         up,
 			FoodNetAfterUpkeep: foodNetAfterArmy(fs.FoodNetPerTick, up.Grain),
 			Sitos: sitosRow{

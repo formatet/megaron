@@ -1,0 +1,4 @@
+=== RUN   TestAIRound4_QueueExplainsFixedSlots
+--- PASS: TestAIRound4_QueueExplainsFixedSlots (0.00s)
+PASS
+ok  	formatet/megaron/server/cmd/keryx	0.002s

@@ -1,0 +1,7 @@
+=== RUN   TestAIRound4_Scheria1042FoodRequirement
+    ai_round4_food_test.go:58: automatic food {NearjordGrain:0.5 RemainderPeople:42 RemainderGrain:0} vs actualgrain0.500000
+--- FAIL: TestAIRound4_Scheria1042FoodRequirement (0.04s)
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.045s
+FAIL
+» färsk DB på migration 182 · commit 9be3b86e+ändringar

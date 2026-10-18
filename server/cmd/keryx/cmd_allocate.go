@@ -151,7 +151,7 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 		// stored weights can sum past 100 (they are per-good fractions, and the
 		// PUT ceiling only constrains one call), which made the derived figure
 		// print a negative idle share.
-		fmt.Printf("  Idle:        %.0f%% (%d citizens)\n", 100*float64(idle)/float64(pool), idle)
+		fmt.Printf("  Idle:        %.0f%% (%s)\n", 100*float64(idle)/float64(pool), citizenCount(idle))
 	}
 	if hasCult && allocated > 100 {
 		// Not over-subscription: LaborAlloc re-applies a 0.15 cult floor to any
@@ -166,7 +166,7 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 	}
 	sort.Slice(rows, func(i, j int) bool { return rows[i].pct > rows[j].pct })
 	for _, r := range rows {
-		line := fmt.Sprintf("  %-12s %3.0f%%  (%d citizens)", r.key, r.pct, r.citizens)
+		line := fmt.Sprintf("  %-12s %3.0f%%  (%s)", r.key, r.pct, citizenCount(r.citizens))
 		if r.atCap {
 			// Same silent-waste class as the workplace-capacity marker below:
 			// the good's stock is full, so the labor sitting on it produces

@@ -1,0 +1,3 @@
+Placed 1 citizen on hex #1 doing grain.
+  #1   river_valley   grain      2/6    (next +2.8 per day)
+  8 citizens left in the idle pool.

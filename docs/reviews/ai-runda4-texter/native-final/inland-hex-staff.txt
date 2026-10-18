@@ -1,0 +1,2 @@
+Error: the farm is a hex building — staff it with: keryx place grain 1 +1 (hex #1)
+See keryx staff --help

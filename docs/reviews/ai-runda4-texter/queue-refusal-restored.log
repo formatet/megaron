@@ -1,0 +1,6 @@
+=== RUN   TestAIRound4_AutomaticFoodAPIAndFixedQueue
+2026/10/18 06:32:33 INFO player registered id=e4fca53b-7511-46d7-a3fd-c0f2d533087f username=round4-b3744376-ab5e-444e-b62d-be0f6b1c773d
+--- PASS: TestAIRound4_AutomaticFoodAPIAndFixedQueue (0.09s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.094s
+» färsk DB på migration 182 · commit 9be3b86e+ändringar

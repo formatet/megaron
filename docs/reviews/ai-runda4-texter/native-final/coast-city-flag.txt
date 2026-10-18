@@ -1,0 +1,33 @@
+1 citizen = 100 people
+Citizens: 5/10 placed, 5 idle
+
+Food: 5 citizens needed for people on best food slots, 5 placed
+Automatic grain: 0.50 per day without placed citizens (nearby ground 0.50 + 0 people outside whole citizens 0.00)
+
+Catchment:
+  #10  (43,41) mountain_limestone stone      0/2    (next +2.0 per day)
+                      tin        0/1    (next +1.0 per day)
+  #11  (43,42) mountain_limestone stone      0/2    (next +2.0 per day)
+  #13  (44,39) mountain_limestone stone      0/2    (next +2.0 per day)
+  #14  (44,40) mountain_limestone stone      0/2    (next +2.0 per day)
+  #15  (44,41) mountain_limestone stone      0/2    (next +2.0 per day)
+  #17  (45,39) mountain_limestone stone      0/2    (next +2.0 per day)
+                      tin        0/1    (next +1.0 per day)
+  #18  (45,40) mountain_limestone stone      0/2    (next +2.0 per day)
+                      tin        0/1    (next +1.0 per day)
+  #1   (41,40) coastal_sea    fish       2/2 FULL
+  #5   (42,40) coastal_sea    fish       2/2 FULL
+  #6   (42,41) coastal_sea    fish       1/2    (next +1.0 per day)
+  #7   (42,42) coastal_sea    fish       0/2    (next +1.0 per day)
+  #2   (41,41) deep_sea       fish       0/1    (next +0.2 per day)
+  #3   (41,42) deep_sea       fish       0/1    (next +0.2 per day)
+  #4   (42,39) forest_cedar   stone      0/1    (next +0.5 per day)
+                      cedar      0/3    (next +1.0 per day)
+  #8   (43,38) forest_cedar   stone      0/1    (next +0.5 per day)
+                      cedar      0/3    (next +1.0 per day)
+  #9   (43,39) forest_cedar   stone      0/1    (next +0.5 per day)
+                      cedar      0/3    (next +1.0 per day)
+  #12  (44,38) forest_cedar   stone      0/1    (next +0.5 per day)
+                      cedar      0/3    (next +1.0 per day)
+  #16  (45,38) forest_cedar   stone      0/1    (next +0.5 per day)
+                      cedar      0/3    (next +1.0 per day)

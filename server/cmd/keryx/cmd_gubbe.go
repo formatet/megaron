@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -128,6 +129,7 @@ func fetchPlacementOptions(c *Client, worldID, provinceID string) (*placementOpt
 // server code (megaron_plan_omfordelningsmatningen.md: "add zero server
 // code" was the instruction, and both fields already exist).
 type foodStatus struct {
+	Automatic       string
 	HarvestBlessing string
 	Required        int
 	Placed          int
@@ -157,27 +159,8 @@ func fetchFoodStatus(c *Client, worldID, provinceID string) (*foodStatus, error)
 	}
 	placed, _ := sett["food_gubbar_placed"].(float64)
 	suff, _ := sett["food_self_sufficient"].(bool)
-	return &foodStatus{Required: int(req), Placed: int(placed), SelfSufficient: suff, HarvestBlessing: harvestBlessingLine(sett)}, nil
+	return &foodStatus{Required: int(req), Placed: int(placed), SelfSufficient: suff, HarvestBlessing: harvestBlessingLine(sett), Automatic: automaticFoodLine(sett)}, nil
 }
-
-// foodSurplus reports how many placed food (grain/fish) citizens exceed what
-// the catchment needs, if any — 0 when self-sufficiency isn't established or
-// there is no surplus. Pure, shared by `city` and `idle` so the two surfaces
-// can never report two different surplus numbers for the same settlement.
-func foodSurplus(fs *foodStatus) int {
-	if fs == nil || !fs.SelfSufficient {
-		return 0
-	}
-	if s := fs.Placed - fs.Required; s > 0 {
-		return s
-	}
-	return 0
-}
-
-// foodSurplusMarker flags a food (grain/fish) hex or building row in `keryx
-// city` as part of a citywide food surplus (see foodSurplus) — shared so the
-// marker symbol and its explanation in the "Food:" line always match.
-const foodSurplusMarker = "★"
 
 // isFoodGood reports whether good_key is one of the two goods
 // food_gubbar_placed counts (api/handlers/province.go: grain, fish — never
@@ -221,4 +204,53 @@ func occupiedGoodHint(opts *placementOptionsResp, good string) string {
 		return "No citizens placed on " + good + " in this city's known catchment; see keryx city."
 	}
 	return "Currently working " + good + ": " + strings.Join(rows, ", ") + "; use those hex numbers to remove citizens."
+}
+
+func citizenCount(n int) string {
+	if n == 1 {
+		return "1 citizen"
+	}
+	return fmt.Sprintf("%d citizens", n)
+}
+func automaticFoodLine(sett map[string]any) string {
+	a, ok := sett["automatic_food"].(map[string]any)
+	if !ok {
+		return ""
+	}
+	base, _ := a["nearjord_grain_per_tick"].(float64)
+	people, _ := a["remainder_people"].(float64)
+	grain, _ := a["remainder_grain_per_tick"].(float64)
+	return fmt.Sprintf("Automatic grain: %.2f per day without placed citizens (nearby ground %.2f + %.0f people outside whole citizens %.2f)", base+grain, base, people, grain)
+}
+
+func hexOrdinal(s string) (int, error) {
+	n, err := strconv.Atoi(strings.TrimPrefix(strings.TrimSpace(s), "#"))
+	if err != nil || n < 1 {
+		return 0, fmt.Errorf("invalid hex ordinal %q", s)
+	}
+	return n, nil
+}
+
+// Ordinals resolve only through the server's known catchment menu; no client
+// ring geometry or unseen coordinates are invented.
+func resolveHexFlag(c *Client, world, prov, value string) (q, r, ordinal int, err error) {
+	if strings.Contains(value, ",") {
+		q, r, err = parseHexFlag(value)
+		return
+	}
+	ordinal, err = hexOrdinal(value)
+	if err != nil {
+		return
+	}
+	opts, e := fetchPlacementOptions(c, world, prov)
+	if e != nil {
+		err = e
+		return
+	}
+	for _, h := range opts.Hexes {
+		if h.HexOrdinal == ordinal {
+			return h.HexQ, h.HexR, ordinal, nil
+		}
+	}
+	return 0, 0, 0, fmt.Errorf("hex #%d is not in this city's known catchment; see keryx city", ordinal)
 }

@@ -1,0 +1,19 @@
+=== RUN   TestAIRound4_HexStaffRedirect
+Error: no built workplace "lumbermill" here (see `keryx city` for what's built)
+Usage:
+  staff <byggnad> [+n|-n] [flags]
+
+Examples:
+  keryx staff stonequarry
+  keryx staff stonequarry +2
+  keryx staff stonequarry -1 --province <prov-id>
+
+Flags:
+  -h, --help              help for staff
+      --province string   province ID/name (default: your capital)
+
+    ai_round4_test.go:103: no built workplace "lumbermill" here (see `keryx city` for what's built)
+--- FAIL: TestAIRound4_HexStaffRedirect (0.00s)
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL

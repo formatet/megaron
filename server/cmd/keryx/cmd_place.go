@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -17,6 +18,7 @@ import (
 // convention as `staff` (cmd_staff.go), its sibling for building slots.
 func placeCmd() *cobra.Command {
 	var provinceID string
+	var hexFlag string
 	cmd := &cobra.Command{
 		Use:   "place [city] <good> <ordinal> [+n|-n]",
 		Short: "Place or remove citizens on catchment hex <ordinal> doing <roll> (good)",
@@ -36,11 +38,18 @@ and immediate. To move a citizen from a hex into a building:
   keryx place grain 5 +2
   keryx place grain 5 -1`,
 		Args: func(cmd *cobra.Command, args []string) error {
+			if hexFlag != "" {
+				_, rest := placeHexArgs(args)
+				return cobra.RangeArgs(1, 2)(cmd, rest)
+			}
 			_, rest := placeCityArgs(args)
 			return cobra.RangeArgs(2, 3)(cmd, rest)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			city, rest := placeCityArgs(args)
+			if hexFlag != "" {
+				city, rest = placeHexArgs(args)
+			}
 			args = rest
 			if city != "" {
 				if provinceID != "" {
@@ -49,9 +58,15 @@ and immediate. To move a citizen from a hex into a building:
 				provinceID = city
 			}
 			roll := args[0]
-			ordinal, err := strconv.Atoi(args[1])
-			if err != nil || ordinal < 1 {
-				return fmt.Errorf("ordinal must be a positive number (1..18, see `keryx city`), got %q", args[1])
+			target := hexFlag
+			deltaText := ""
+			if hexFlag == "" {
+				target = args[1]
+				if len(args) == 3 {
+					deltaText = args[2]
+				}
+			} else if len(args) == 2 {
+				deltaText = args[1]
 			}
 
 			c := newClient(cfg)
@@ -63,15 +78,42 @@ and immediate. To move a citizen from a hex into a building:
 				}
 				prov = resolved
 			}
+			ordinal, err := hexOrdinal(target)
+			if strings.Contains(target, ",") || hexFlag != "" {
+				q, r, n, rerr := resolveHexFlag(c, cfg.WorldID, prov, target)
+				if rerr != nil {
+					return rerr
+				}
+				ordinal = n
+				err = nil
+				if ordinal == 0 {
+					opts, oerr := fetchPlacementOptions(c, cfg.WorldID, prov)
+					if oerr != nil {
+						return oerr
+					}
+					for _, h := range opts.Hexes {
+						if h.HexQ == q && h.HexR == r {
+							ordinal = h.HexOrdinal
+							break
+						}
+					}
+					if ordinal == 0 {
+						return fmt.Errorf("hex (%d,%d) is not in this city's known catchment; see keryx city", q, r)
+					}
+				}
+			}
+			if err != nil || ordinal < 1 {
+				return fmt.Errorf("ordinal must be a positive number (1..18, see keryx city), got %q", target)
+			}
 			path := fmt.Sprintf("/api/v1/worlds/%s/provinces/%s/placements", cfg.WorldID, prov)
 
-			if len(args) == 2 {
+			if deltaText == "" {
 				return placeSingle(c, path, cfg.WorldID, prov, ordinal, roll)
 			}
 
-			delta, derr := strconv.Atoi(args[2])
+			delta, derr := strconv.Atoi(deltaText)
 			if derr != nil || delta == 0 {
-				return fmt.Errorf("delta must be a non-zero signed number (e.g. +2 or -1), got %q", args[2])
+				return fmt.Errorf("delta must be a non-zero signed number (e.g. +2 or -1), got %q", deltaText)
 			}
 			if delta > 0 {
 				return placeMany(c, path, cfg.WorldID, prov, ordinal, roll, delta)
@@ -79,6 +121,7 @@ and immediate. To move a citizen from a hex into a building:
 			return unplaceMany(c, path, cfg.WorldID, prov, ordinal, roll, -delta)
 		},
 	}
+	cmd.Flags().StringVar(&hexFlag, "hex", "", "catchment coordinate q,r or ordinal 6/#6; put flags before the good")
 	cmd.Flags().StringVar(&provinceID, "province", "", "province ID/name to place in (default: your capital)")
 	// A bare "-1" delta is otherwise misparsed by pflag as an attempted
 	// shorthand flag ("unknown shorthand flag: '1' in -1"). Disabling
@@ -114,7 +157,7 @@ func placeSingle(c *Client, path, worldID, prov string, ordinal int, roll string
 	// as allocate's post-write echo, using the SAME hex row `city` would show.
 	if opts, oerr := fetchPlacementOptions(c, worldID, prov); oerr == nil {
 		printHexGoodRow(opts, ordinal, roll)
-		fmt.Printf("  %d idle citizens left.\n", opts.PoolSize)
+		fmt.Printf("  %s left in the idle pool.\n", citizenCount(opts.PoolSize))
 	}
 	return nil
 }
@@ -136,7 +179,7 @@ func placeMany(c *Client, path, worldID, prov string, ordinal int, roll string, 
 	}
 	if !jsonMode {
 		if applied == delta {
-			fmt.Printf("Placed %d citizen(s) on hex #%d doing %s.\n", applied, ordinal, roll)
+			fmt.Printf("Placed %s on hex #%d doing %s.\n", citizenCount(applied), ordinal, roll)
 		} else {
 			fmt.Printf("Placed %d of %d requested (stopped: %v).\n", applied, delta, stopErr)
 		}
@@ -163,7 +206,7 @@ func placeMany(c *Client, path, worldID, prov string, ordinal int, roll string, 
 		return nil
 	}
 	printHexGoodRow(opts, ordinal, roll)
-	fmt.Printf("  %d idle citizens left.\n", opts.PoolSize)
+	fmt.Printf("  %s left in the idle pool.\n", citizenCount(opts.PoolSize))
 	if applied == 0 && stopErr != nil {
 		return stopErr
 	}
@@ -210,12 +253,12 @@ func unplaceMany(c *Client, path, worldID, prov string, ordinal int, roll string
 	if !jsonMode {
 		if removed == want {
 			if want < requested {
-				fmt.Printf("Removed %d citizen(s) — only %d were placed there.\n", removed, want)
+				fmt.Printf("Removed %s — only %d were placed there.\n", citizenCount(removed), want)
 				if want == 0 {
 					fmt.Println(occupiedGoodHint(opts, roll))
 				}
 			} else {
-				fmt.Printf("Removed %d citizen(s) from hex #%d.\n", removed, ordinal)
+				fmt.Printf("Removed %s from hex #%d.\n", citizenCount(removed), ordinal)
 			}
 		} else {
 			fmt.Printf("Removed %d of %d requested (stopped: %v).\n", removed, want, stopErr)
@@ -243,7 +286,7 @@ func unplaceMany(c *Client, path, worldID, prov string, ordinal int, roll string
 		return nil
 	}
 	printHexGoodRow(opts2, ordinal, roll)
-	fmt.Printf("  %d idle citizens left.\n", opts2.PoolSize)
+	fmt.Printf("  %s left in the idle pool.\n", citizenCount(opts2.PoolSize))
 	if removed == 0 && stopErr != nil {
 		return stopErr
 	}
@@ -269,10 +312,22 @@ func printHexGoodRow(opts *placementOptionsResp, ordinal int, roll string) {
 // City names precede the good; a numeric second token is the legacy hex ordinal.
 func placeCityArgs(args []string) (string, []string) {
 	if len(args) >= 3 {
-		if _, err := strconv.Atoi(args[1]); err != nil {
-			if _, err := strconv.Atoi(args[2]); err == nil {
+		_, err := hexOrdinal(args[1])
+		if err != nil && !strings.Contains(args[1], ",") {
+			if _, err := hexOrdinal(args[2]); err == nil || strings.Contains(args[2], ",") {
 				return args[0], args[1:]
 			}
+		}
+	}
+	return "", args
+}
+func placeHexArgs(args []string) (string, []string) {
+	if len(args) == 3 {
+		return args[0], args[1:]
+	}
+	if len(args) == 2 {
+		if _, err := strconv.Atoi(args[1]); err != nil {
+			return args[0], args[1:]
 		}
 	}
 	return "", args

@@ -29,3 +29,5 @@ On the map, a small marker shows the hexes where your people are at work.
 Fish feeds your people just as grain does. A city living on stored food is still fed. Hunger affects [[loyalty]] only when the daily meal remains short after the [[food|feeding chain]] has been exhausted.
 
 One placeable **citizen represents 100 people**. Population counts people; City and Goods count these citizens. The food-workers estimate assumes the best grain and fish slots for the population. Moving workers may require rearranging the remaining food placements; the army needs its own grain as shown in the food balance.
+
+The people outside whole groups of 100 automatically grow grain, in addition to grain from nearby ground. City food details show these automatic contributions beside the placed citizens needed for meals. The count uses production rather than stored food or the Sitos reserve; it is an estimate for the best food slots, not a recommendation to remove particular citizens.

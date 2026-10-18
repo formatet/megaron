@@ -1,0 +1,8 @@
+=== RUN   TestAIRound4_AutomaticFoodAPIAndFixedQueue
+2026/10/18 06:31:49 INFO player registered id=8803f713-81d7-43d7-89d4-0e951a7e6822 username=round4-d6ba2d60-e0e5-46d3-9b30-ccea10889aee
+    ai_round4_test.go:78: missing actual automatic contribution: [{"automatic_food_missing":{"nearjord_grain_per_tick":0.5,"remainder_people":42,"remainder_grain_per_tick":3.7799999999999994},"id":"6b6bf5de-7bab-4b3a-8632-25228f3384a5","name":"Scheria","is_capital":true,"population":1042,"grain_prod_rate":4.279999999999999,"grain_consum_rate":5.21,"food_self_sufficient":true,"army_upkeep":{"grain":0,"silver":0},"food_net_per_tick_after_upkeep":-0.9300000000000006,"sitos":{"coverage_ticks":115.16314779270634,"low_ticks":10,"high_ticks":30,"granary_total":0,"granary_per_good":{},"food_net_per_tick":-0.9300000000000006,"growth_state":"holding"}}]
+--- FAIL: TestAIRound4_AutomaticFoodAPIAndFixedQueue (0.09s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.088s
+FAIL
+» färsk DB på migration 182 · commit 9be3b86e+ändringar
