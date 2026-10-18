@@ -14,7 +14,7 @@ func TestSitosArmy_NoFalseStarvationAfterPaidUpkeep(t *testing.T) {
 		t.Fatal(err)
 	}
 	// A previous tick's actual loss must not make today's already-fed unit hungry.
-	eventID, err := events.NewStore(pool).Append(ctx, uid, events.StreamCombat, "UnitAttrition", map[string]any{"reason": "grain_shortage", "lost": 10}, wid, nil)
+	eventID, err := events.NewStore(pool).Append(ctx, uid, events.StreamCombat, "UnitAttrition", map[string]any{"reason": "grain_shortage", "lost": 10, "garrison_settlement_id": sid}, wid, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
