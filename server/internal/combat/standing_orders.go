@@ -159,7 +159,7 @@ func (ls legState) busy() bool {
 }
 
 // StandingOrderTickHandler is the self-rescheduling per-world sweep. One
-// instance per world, same shape as economy's SitosTickHandler/
+// instance per world, same shape as economy's FoodTickHandler/
 // FoodTickHandler: fans one scheduled event out across every row, per-row
 // transaction, per-row idempotency claim (processed_tick_claims, migration
 // 098 — same shared table combat/upkeep.go already claims against).

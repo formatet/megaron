@@ -6,7 +6,7 @@ package economy
 // invariant migration 101 established for river (megaron_floden_plan.md §4),
 // now proven against river_ford through the real CatchmentBasePotential path
 // (catchment.go) rather than a hand-rolled duplicate of its SQL. Gated by
-// DATABASE_URL via testPool (sitos_conservation_test.go), same as every other
+// DATABASE_URL via testPool (test_pool_test.go), same as every other
 // DB test in this package. Run against a FRESH clone migrated to 108 — never
 // a long-lived local docker DB, which can sit migrations behind (see the
 // plan's bevisplan).

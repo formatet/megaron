@@ -18,7 +18,7 @@
 
 **Sentry** — the watch stance; also how a siege is laid. See [[stances]].
 
-**Sitos** — a city's public granary. See [[sitos]].
+**Food coverage** — how long the city's grain and fish stocks last at current consumption. See [[food]].
 
 **Standing order** — a caravan route that runs by itself. See [[routes]].
 

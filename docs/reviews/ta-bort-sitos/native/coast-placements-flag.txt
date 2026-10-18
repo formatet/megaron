@@ -1,0 +1,45 @@
+1 citizen = 100 people
+Citizens: 5/10 placed, 5 idle
+
+Food: 5 citizens needed for people on best food slots, 5 placed
+Automatic food: 0.50 grain + 0.00 fish per day without placed citizens (nearby ground 0.50 grain; 0 people outside whole citizens: 0.00 grain + 0.00 fish, a fraction of the best food worker)
+
+Catchment:
+  #9   (47,10) plains         oil        0/2    (next +0.7 per day)
+                      wine       0/2    (next +0.5 per day)
+                      stone      0/1    (next +0.5 per day)
+                      grain      0/4    (next +1.0 per day)
+                      livestock  0/1    (next +1.0 per day)
+  #15  (48,12) plains         wine       0/2    (next +0.5 per day)
+                      stone      0/1    (next +0.5 per day)
+                      grain      0/4    (next +1.0 per day)
+                      livestock  0/1    (next +1.0 per day)
+                      oil        0/2    (next +0.7 per day)
+  #4   (46,10) forest_olive_grove stone      0/1    (next +0.5 per day)
+                      oil        0/2    (next +1.0 per day)
+                      timber     0/1    (next +1.0 per day)
+  #5   (46,11) forest_olive_grove oil        0/2    (next +1.0 per day)
+                      timber     0/1    (next +1.0 per day)
+                      stone      0/1    (next +0.5 per day)
+  #6   (46,12) forest_olive_grove oil        0/2    (next +1.0 per day)
+                      timber     0/1    (next +1.0 per day)
+                      stone      0/1    (next +0.5 per day)
+  #8   (47,9) forest_olive_grove oil        0/2    (next +1.0 per day)
+                      timber     0/1    (next +1.0 per day)
+                      stone      0/1    (next +0.5 per day)
+  #1   (45,11) mountain_limestone stone      0/2    (next +2.0 per day)
+                      tin        0/1    (next +1.0 per day)
+  #2   (45,12) mountain_limestone stone      0/2    (next +2.0 per day)
+  #3   (45,13) mountain_limestone stone      0/2    (next +2.0 per day)
+  #12  (48,9) coastal_sea    fish       2/2 FULL
+  #13  (48,10) coastal_sea    fish       2/2 FULL
+  #14  (48,11) coastal_sea    fish       1/2    (next +1.0 per day)
+  #18  (49,11) coastal_sea    fish       0/2    (next +1.0 per day)
+  #16  (49,9) deep_sea       fish       0/1    (next +0.2 per day)
+  #17  (49,10) deep_sea       fish       0/1    (next +0.2 per day)
+  #7   (46,13) forest_cedar   stone      0/1    (next +0.5 per day)
+                      cedar      0/3    (next +1.0 per day)
+  #10  (47,12) forest_cedar   stone      0/1    (next +0.5 per day)
+                      cedar      0/3    (next +1.0 per day)
+  #11  (47,13) forest_cedar   stone      0/1    (next +0.5 per day)
+                      cedar      0/3    (next +1.0 per day)

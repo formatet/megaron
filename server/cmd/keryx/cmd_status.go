@@ -77,14 +77,8 @@ func timberBottleneckWarning(rate float64) string {
 // questions have different answers — a shortage inside a messenger
 // round-trip isn't yet an emergency because there's no time to react, while
 // a production surplus is judged against how much a settlement could ever
-// plausibly use, a longer view. 60 echoes economy.SitosConfig's own
-// GranaryCapDays default (internal/economy/sitos_config.go) — this codebase
-// already treats 60 game days as "how much surplus is worth planning
-// around" for food; applied here to production sinks generally. A plain
-// literal, not a reference to that config (which is env-tunable and lives
-// in a package too heavy to import into a CLI, see grainConsumptionPerCitizenPerTick
-// below) — so this and the granary's own number can drift apart on purpose,
-// never silently in lockstep.
+// plausibly use, a longer view. This production planning horizon is independent
+// of the window used for urgent upkeep warnings.
 const productionHorizonTicks = 60
 
 // grainConsumptionPerCitizenPerTick mirrors economy.GrainConsumptionPerCitizenPerTick
@@ -468,31 +462,6 @@ func armyUpkeepWarning(netG, netS, grainStock, silverStock float64) string {
 	return ""
 }
 
-// sitosGranaryState names why the granary is doing what it's doing this tick
-// (megaron_plan_sitos_utlosning.md §5) — coverage, low and high are the same
-// figures `status` already reads off the settlement payload (server-computed
-// via economy.CoverageDays/GranaryCap/cfg.LowDays/cfg.HighDays; nothing here
-// re-derives a threshold). total is the granary's current stock, net the
-// city's food_net_per_tick — needed only to tell an empty-but-filling granary
-// apart from an empty-and-draining one; coverage alone is a stock figure and
-// says nothing about direction (a newly founded city sits near zero coverage
-// while producing a large surplus, and at 60 min/tick that state lasts real
-// days). Pure — unit-testable without a server.
-func sitosGranaryState(coverage, low, high, total, net float64) string {
-	switch {
-	case coverage < low && total <= 0 && net > 0:
-		return "empty — but the stock is growing, coverage is rising"
-	case coverage < low && total <= 0:
-		return "EMPTY and the stock is shrinking — the city is unprotected"
-	case coverage < low:
-		return "releasing food to the city"
-	case coverage <= high:
-		return "resting — neither storing nor releasing"
-	default:
-		return "storing away a tenth of the surplus"
-	}
-}
-
 // growthLine says in one sentence what the population is doing and why. state
 // and net are the server's growth_state / food_net_per_tick (the tick gate's
 // own inputs); "" when the server did not report a state. The web drawer
@@ -644,9 +613,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			fmt.Println(citizenScaleNote)
 			fmt.Printf("%s [%s]  Pop: %s people  Labor: %s  Walls: %.0f/3  Loyalty: %.0f%s%s\n",
 				name, culture, resource(pop), citizenCount(int(math.Floor(labor/100))), walls, loyalty, settlementsNote, coastalNote)
-			if sitos, ok := sett["sitos"].(map[string]any); ok {
-				gs, _ := sitos["growth_state"].(string)
-				net, _ := sitos["food_net_per_tick"].(float64)
+			if food, ok := sett["food"].(map[string]any); ok {
+				gs, _ := food["growth_state"].(string)
+				net, _ := food["food_net_per_tick"].(float64)
 				if line := growthLine(pop, gs, net); line != "" {
 					fmt.Println(line)
 				}
@@ -680,56 +649,21 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				fmt.Println(line)
 			}
 
-			// Sitos-magasinet: the food the city has set aside, and the number the
-			// whole mechanic turns on — ticks of food covered. Coverage is what
-			// triggers both legs, so the reserve is printed WITH it and with the
-			// two thresholds; a reserve alone would show an answer and hide the
-			// question. Always shown, empty granary included: "0 undan" on a city
-			// at 4 ticks' coverage is exactly the state a Wanax must be able to see.
-			if sitos, ok := sett["sitos"].(map[string]any); ok {
-				total, _ := sitos["granary_total"].(float64)
-				gcap, _ := sitos["granary_cap"].(float64)
-				cov, _ := sitos["coverage_ticks"].(float64)
-				low, _ := sitos["low_ticks"].(float64)
-				high, _ := sitos["high_ticks"].(float64)
-				parts := ""
-				if pg, ok := sitos["granary_per_good"].(map[string]any); ok && len(pg) > 0 {
-					keys := make([]string, 0, len(pg))
-					for k := range pg {
-						keys = append(keys, k)
-					}
-					sort.Strings(keys)
-					for _, k := range keys {
-						v, _ := pg[k].(float64)
-						if v <= 0 {
-							continue
-						}
-						if parts != "" {
-							parts += ", "
-						}
-						parts += fmt.Sprintf("%s %s", resource(v), k)
-					}
-					if parts != "" {
-						parts = " (" + parts + ")"
-					}
+			// Coverage is the single city grain+fish stock at current consumption.
+			if food, ok := sett["food"].(map[string]any); ok {
+				if cov, known := food["coverage_ticks"].(float64); known {
+					fmt.Printf("Food lasts %s at current consumption (city grain + fish stocks)\n\n", formatDays(cov, "%.1f"))
+				} else {
+					fmt.Println("Food stores not reported.")
 				}
-				// Coverage is a STOCK figure and says nothing about direction. A
-				// newly founded city sits near zero coverage while producing a
-				// large surplus, and at 60 min/tick that state lasts real days —
-				// so "empty, no help coming" would cry famine over a city that is
-				// filling up fast. The net food rate is what tells them apart.
-				net, _ := sitos["food_net_per_tick"].(float64)
-				state := sitosGranaryState(cov, low, high, total, net)
-				fmt.Printf("Sitos granary: %s stored%s / cap %s · coverage %s (granary fills above %.0f, drains below %.0f) · %s\n\n", resource(total), parts, resource(gcap), formatDays(cov, "%.1f"), high, low, state)
+			} else {
+				fmt.Println("Food stores not reported.")
 			}
 
 			// "Last tick" summary: summarizes the journal (keryx ticklog)
 			// without replacing it.
 			if lt, ok := sett["last_tick"].(map[string]any); ok {
 				tk, _ := lt["tick"].(float64)
-				sitosInterventions, _ := lt["sitos_interventions"].(float64)
-				sitosFoodIn, _ := lt["sitos_food_in"].(float64)
-				sitosFoodOut, _ := lt["sitos_food_out"].(float64)
 				prodN := 0
 				if p, ok := lt["production"].(map[string]any); ok {
 					prodN = len(p)
@@ -738,29 +672,8 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				if c2, ok := lt["consumption"].(map[string]any); ok {
 					consN = len(c2)
 				}
-				// Sitos itemization: what MOVED, in food. There is no silver leg
-				// left to net out (mig 106), so the short form is "granary was idle"
-				// rather than a delta of zero silver — a number that would now
-				// always be 0 and tell the Wanax nothing.
-				sitosNote := "Sitos granary was idle"
-				if sitosInterventions > 0 {
-					detail := ""
-					if sitosFoodIn > 0 {
-						detail = fmt.Sprintf("city received %s food from the granary", resource(sitosFoodIn))
-					}
-					if sitosFoodOut > 0 {
-						if detail != "" {
-							detail += " / "
-						}
-						detail += fmt.Sprintf("stored away %s food", resource(sitosFoodOut))
-					}
-					if detail == "" {
-						detail = "no food moved"
-					}
-					sitosNote = detail
-				}
-				fmt.Printf("Last %s: %d goods produced, %d consumed, %s  ·  keryx ticklog for details\n\n",
-					formatDay(int(tk)), prodN, consN, sitosNote)
+				fmt.Printf("Last %s: %d goods produced, %d consumed  ·  keryx ticklog for details\n\n",
+					formatDay(int(tk)), prodN, consN)
 			}
 
 			// Resources: silver + the bronze-chain goods live in resources as
@@ -816,21 +729,15 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						if row, ok := res["fish"].(map[string]any); ok {
 							fish, _ = row["rate"].(float64)
 						}
-						if sitos, ok := sett["sitos"].(map[string]any); ok {
-							if full, ok := sitos["food_net_per_tick"].(float64); ok {
+						netTick += fish
+						if food, ok := sett["food"].(map[string]any); ok {
+							if full, ok := food["food_net_per_tick"].(float64); ok {
 								netTick = full
 							}
 						}
 						fmt.Printf("  Food     grain %.1f + fish %.1f − people eat %.1f = net %s per day (before army)\n", prodTick, fish, consumTick, formatNetPerTick(netTick))
 						line := fmt.Sprintf("  %-8s %6s  production %.1f per day",
 							"Grain", resource(gAmt), prodTick)
-						if sitos, ok := sett["sitos"].(map[string]any); ok {
-							if stores, ok := sitos["granary_per_good"].(map[string]any); ok {
-								if stored, _ := stores["grain"].(float64); stored > 0 {
-									line += fmt.Sprintf(" · %s grain in Sitos", resource(stored))
-								}
-							}
-						}
 						// food_gubbar_required/placed/self_sufficient (P4-arvet,
 						// megaron_plan_p4_arvet_i_province.md §2) replace the old
 						// weight-based break-even hint: how many gubbar the catchment's
@@ -1413,8 +1320,8 @@ func armyFoodLine(sett map[string]any) string {
 	grain, _ := up["grain"].(float64)
 	net, ok := sett["food_net_per_tick_after_upkeep"].(float64)
 	if !ok {
-		sitos, _ := sett["sitos"].(map[string]any)
-		before, known := sitos["food_net_per_tick"].(float64)
+		food, _ := sett["food"].(map[string]any)
+		before, known := food["food_net_per_tick"].(float64)
 		if !known {
 			return "  Army food balance not reported"
 		}

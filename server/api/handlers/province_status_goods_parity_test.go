@@ -19,7 +19,7 @@ import (
 	"time"
 
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -99,7 +99,7 @@ func TestStatusGoodsParity_AmountClampedToCapInBoth(t *testing.T) {
 	}
 
 	clk := clock.NewTestClock(time.Now())
-	ph := NewProvinceHandler(pool, nil, clk, economy.SitosConfig{}, nil, nil)
+	ph := NewProvinceHandler(pool, nil, clk, nil, nil)
 
 	r := chi.NewRouter()
 	r.Get("/worlds/{worldID}/provinces/{provinceID}", ph.Get)

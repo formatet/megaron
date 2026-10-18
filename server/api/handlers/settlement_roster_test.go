@@ -24,7 +24,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -115,7 +115,7 @@ func TestPlacementRoster_OnlyOwnSettlements_AndCounts(t *testing.T) {
 	rosterSeedPlacement(t, pool, ctx, rivalID, 3, "hex", "grain", intPtr(18), intPtr(0), nil)
 	rosterSeedPlacement(t, pool, ctx, rivalID, 4, "hex", "grain", intPtr(18), intPtr(0), nil)
 
-	sh := NewSettlementHandler(pool, nil, nil, clock.NewTestClock(time.Now()), economy.SitosConfig{})
+	sh := NewSettlementHandler(pool, nil, nil, clock.NewTestClock(time.Now()))
 	r := chi.NewRouter()
 	r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/settlements/placement-roster", sh.PlacementRoster)
 
@@ -178,8 +178,8 @@ func TestPlacementRosterParity_OrdinalsMatchPlacements(t *testing.T) {
 	}
 
 	clk := clock.NewTestClock(time.Now())
-	sh := NewSettlementHandler(pool, nil, nil, clk, economy.SitosConfig{})
-	ph := NewProvinceHandler(pool, nil, clk, economy.SitosConfig{}, nil, nil)
+	sh := NewSettlementHandler(pool, nil, nil, clk)
+	ph := NewProvinceHandler(pool, nil, clk, nil, nil)
 	r := chi.NewRouter()
 	r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/settlements/placement-roster", sh.PlacementRoster)
 	r.With(auth.Middleware(authSvc)).Get("/worlds/{worldID}/provinces/{provinceID}/placements", ph.Placements)

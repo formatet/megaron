@@ -21,7 +21,7 @@ import (
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/combat"
-	"formatet/megaron/server/internal/economy"
+
 	"formatet/megaron/server/internal/events"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -139,7 +139,7 @@ func setupRecruitShipFixture(t *testing.T) *recruitShipFixture {
 	clk := clock.NewTestClock(time.Now())
 	scheduler := events.NewScheduler(pool, clk)
 	eventStore := events.NewStore(pool)
-	ph := NewProvinceHandler(pool, scheduler, clk, economy.SitosConfig{}, eventStore, nil)
+	ph := NewProvinceHandler(pool, scheduler, clk, eventStore, nil)
 	uh := NewUnitHandler(pool, scheduler, eventStore, clk)
 	trainH := combat.NewTrainCompleteHandler(pool, eventStore, nil)
 

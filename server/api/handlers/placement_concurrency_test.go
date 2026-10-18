@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"net/http"
@@ -246,7 +246,7 @@ func placementConcurrencyRouter(t *testing.T, max int32) *chi.Mux {
 		t.Fatal(err)
 	}
 	t.Cleanup(pool.Close)
-	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), economy.SitosConfig{}, nil, nil)
+	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), nil, nil)
 	router := chi.NewRouter()
 	router.Use(auth.Middleware(auth.NewService(pool, "test-secret")))
 	router.Post("/worlds/{worldID}/provinces/{provinceID}/placements", ph.PlaceGubbe)

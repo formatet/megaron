@@ -32,7 +32,7 @@ func TestFoodConsumptionSplit_AK1_FishFullyCoversZeroGrain(t *testing.T) {
 // — a settlement with no fish production regresses in no way.
 func TestFoodConsumptionSplit_AK2_NoFishIsUnchanged(t *testing.T) {
 	cases := []struct {
-		name             string
+		name              string
 		demand, grainProd float64
 	}{
 		{"grain covers demand", 5.0, 12.0},
@@ -81,12 +81,12 @@ func TestFoodConsumptionSplit_TotalDrainAlwaysEqualsDemand(t *testing.T) {
 	cases := []struct {
 		demand, grainProd, fishProd float64
 	}{
-		{5, 0, 8},     // AK1: fish fully covers
-		{5, 12, 0},    // AK2: grain alone covers
-		{5, 0, 2},     // AK3: partial fish, no grain
-		{5, 2, 1},     // mixed partial coverage
-		{5, 0, 0},     // nothing produced
-		{0, 3, 3},     // no population, no demand
+		{5, 0, 8},  // AK1: fish fully covers
+		{5, 12, 0}, // AK2: grain alone covers
+		{5, 0, 2},  // AK3: partial fish, no grain
+		{5, 2, 1},  // mixed partial coverage
+		{5, 0, 0},  // nothing produced
+		{0, 3, 3},  // no population, no demand
 	}
 	for _, c := range cases {
 		grainNet, fishNet, _ := FoodConsumptionSplit(c.demand, c.grainProd, c.fishProd, 0)

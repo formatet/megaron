@@ -111,7 +111,7 @@ func buildHexFixture(t *testing.T) *mineGateFixture {
 	eventStore := events.NewStore(pool)
 	hub := notify.New()
 	hub.SetPool(pool)
-	ph := NewProvinceHandler(pool, scheduler, clk, economy.SitosConfig{}, eventStore, hub)
+	ph := NewProvinceHandler(pool, scheduler, clk, eventStore, hub)
 
 	r := chi.NewRouter()
 	r.Use(auth.Middleware(authSvc))

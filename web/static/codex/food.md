@@ -18,6 +18,6 @@ You get an urgent notification the first day it happens, and starving cities alw
 - Buy it ([[trade]]).
 - Shrink what eats: soldiers are drafted from your people and eat like them ([[upkeep]]).
 
-The [[sitos|Sitos granary]] is your buffer against a bad stretch. A city under [[sieges|siege]] starves because its fields are cut off, not because it produces too little.
+Your city has one food stock: the grain and fish in its [[goods|stores]]. **Food lasts** shows that stock at current consumption, without counting future production. **City → More → Food details** shows production, meals and army food separately. Stored food buys time during a shortfall. A city under [[sieges|siege]] starves because its fields are cut off, not because it produces too little.
 
 Growth is covered in [[growth]].

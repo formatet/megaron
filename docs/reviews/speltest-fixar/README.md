@@ -196,3 +196,11 @@ migration eller omräkning. Claude granskar/integrerar, hash + STOPP.
 fyra fysiska mutationer, faktisk upkeep→kharis samma tick med två städer, färsk Go183/vet/654JS.
 Timothys senaste beslut: Sitos tas bort i separat13b före14. Ingen reservdebit/ny Sitos-text i13.
 Claude granskar/integrerar; hash+STOPP. Därefter13b→14→15→16 efter respektive START.
+
+## Slice 13b — Sitos bort, ett matlager
+
+[Bevispaket](../ta-bort-sitos/README.md), kod6975d36c: migration184 återför reserv tillstadens goods,
+bevarat för alla18grain/fish-rader i färsk privat livekopia och efter riktig recompute-all.
+Övercap/missing-good/recompute, verklig migration→upkeep/retry, pensioneradkö och seeding testade;
+7mutationer, färskGo184/vet/647JS, vanligCLI/Firefox1280/390. Fyra ytor och operatörsverktyg uppdaterade;
+frysta historiska events/läsare kvar, ingen ny Sitos-mekanik. Claude integrerar, hash+STOPP;14 följer efter START.

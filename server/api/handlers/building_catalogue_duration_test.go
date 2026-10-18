@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
+
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/tick"
 )
@@ -32,7 +32,7 @@ func TestBuildingCatalogue_DurationInGameDaysNotMinutes(t *testing.T) {
 	ctx := context.Background()
 	_ = ctx
 
-	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), economy.SitosConfig{}, nil, nil)
+	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), nil, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/buildings", nil)
 	rec := httptest.NewRecorder()

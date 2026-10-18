@@ -334,7 +334,7 @@ func (h *MarchEncounterHandler) resolveHex(ctx context.Context, e events.Schedul
 	}
 
 	// initiateOrJoinBattle is a UnitArrivalHandler method; built inline
-	// exactly as unit_intercept_scan.go's intercept() does — sitosCfg/Dice
+	// exactly as unit_intercept_scan.go's intercept() does — Dice
 	// are the only fields that differ from this zero-value build and neither
 	// is read by initiateOrJoinBattle/startBattle/joinBattle.
 	uah := &UnitArrivalHandler{pool: h.pool, eventStore: h.eventStore, scheduler: h.scheduler, hub: h.hub, clk: h.clk}

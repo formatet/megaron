@@ -28,7 +28,7 @@ import (
 	"testing"
 
 	"formatet/megaron/server/internal/combat"
-	"formatet/megaron/server/internal/economy"
+
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/messenger"
 	"github.com/google/uuid"
@@ -51,7 +51,7 @@ func setupPassageArrangeFixture(t *testing.T) *passageArrangeFixture {
 	f := setupNavalPlayerFixture(t)
 	scheduler := events.NewScheduler(f.pool, f.clk)
 	eventStore := events.NewStore(f.pool)
-	unitArrivalH := combat.NewUnitArrivalHandler(f.pool, eventStore, nil, scheduler, f.clk, economy.SitosConfig{})
+	unitArrivalH := combat.NewUnitArrivalHandler(f.pool, eventStore, nil, scheduler, f.clk)
 
 	// Seed the self-perpetuating ScheduledPassageScan event this world would
 	// otherwise only get from main.go's seedDailyTicks at server startup.

@@ -284,7 +284,7 @@ func TestRecomputeProduction_WineOnRiverValleyOnlyCatchment(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 
-	settlementID := riverValleyCatchmentFixture(t, /*tick*/ 100, /*pop*/ 100)
+	settlementID := riverValleyCatchmentFixture(t /*tick*/, 100 /*pop*/, 100)
 	// P4: production follows PLACEMENT, not an auto-seeded weight — place a
 	// gubbe on one of the fixture's seeded river_valley neighbour hexes.
 	placeHexGubbe(t, pool, settlementID, 1, hexgrid.Coord{Q: 1, R: 0}, "wine")
@@ -322,7 +322,7 @@ func TestRecomputeProduction_WineOnPlainsOnlyCatchment(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 
-	settlementID := plainsCatchmentFixture(t, /*tick*/ 100, /*pop*/ 100)
+	settlementID := plainsCatchmentFixture(t /*tick*/, 100 /*pop*/, 100)
 	// P4: production follows PLACEMENT, not an auto-seeded weight — place a
 	// gubbe on one of the fixture's seeded plains neighbour hexes.
 	placeHexGubbe(t, pool, settlementID, 1, hexgrid.Coord{Q: 1, R: 0}, "wine")

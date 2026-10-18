@@ -1,0 +1,99 @@
+tools/snapshot.py:29:  - sitos_stored_cum och sitos_released_cum räknar enbart frysta historiska
+tools/snapshot.py:30:    SitosGranaryStored/Released-event. Inget aktivt magasin finns längre.
+tools/snapshot.py:31:  - sitos_tithe_cum är en historisk alias-kolumn för sitos_stored_cum;
+tools/snapshot.py:61:    "sitos_stored_cum",
+tools/snapshot.py:62:    "sitos_released_cum",
+tools/snapshot.py:63:    "sitos_tithe_cum",
+tools/snapshot.py:129:sitos AS (
+tools/snapshot.py:131:           COUNT(*) FILTER (WHERE event_type = 'SitosGranaryStored') AS sitos_stored_cum,
+tools/snapshot.py:132:           COUNT(*) FILTER (WHERE event_type = 'SitosGranaryReleased') AS sitos_released_cum
+tools/snapshot.py:135:      AND event_type IN ('SitosGranaryStored', 'SitosGranaryReleased')
+tools/snapshot.py:172:    COALESCE(sitos.sitos_stored_cum, 0)                  AS sitos_stored_cum,
+tools/snapshot.py:173:    COALESCE(sitos.sitos_released_cum, 0)                AS sitos_released_cum,
+tools/snapshot.py:175:    COALESCE(sitos.sitos_stored_cum, 0)                  AS sitos_tithe_cum,
+tools/snapshot.py:188:LEFT JOIN sitos ON sitos.settlement_id = s.id
+tools/snapshot.py:276:                    "sitos_stored_cum": row["sitos_stored_cum"],
+tools/snapshot.py:277:                    "sitos_released_cum": row["sitos_released_cum"],
+tools/snapshot.py:278:                    "sitos_tithe_cum": row["sitos_tithe_cum"],
+tools/README.md:272:rite400 visas inline; inga browserdialoger/fel. Historiska Sitos-grupper är
+tools/README.md:604:Historik som behålls: `snapshot.py` räknar frysta Sitos-event och behåller
+tools/text_live.py:184:            kind='SitosFundLow' if 'SitosFundLow' in url and 'exclude=' not in url else 'SitosIntervention'
+tools/text_live.py:193:        assert 'SitosIntervention' not in page.locator('#notif-body').inner_text()
+tools/alfa_economy.py:12: historiskt magasin Δ  events 'SitosGranaryStored' (stream_id = stad): payload.granary_after senaste mot det event
+tools/alfa_economy.py:115:    # Historical only: frozen Sitos events; never a source of current stock or coverage.
+tools/alfa_economy.py:116:    gr_events = q("""SELECT stream_id, world_tick, payload->>'granary_after' AS after, payload->>'coverage_days' AS cov
+tools/alfa_economy.py:117:                     FROM events WHERE world_id = '{W}' AND event_type = 'SitosGranaryStored' ORDER BY world_tick""")
+web/static/codex/index.json:19:    {"id": "food",         "title": "Food and hunger",              "category": "Your city", "kinds": ["FoodShortfall", "SubsistenceWarning", "CityCollapsed", "SitosGranaryRelease", "SitosIntervention", "SitosFundLow"], "related": ["citizens", "growth", "upkeep"]},
+web/static/js/megaron/ui/codex.test.mjs:178:  for (const kind of ['SitosGranaryRelease', 'SitosIntervention', 'SitosFundLow']) {
+web/static/js/megaron/ui/format.js:146:    SitosGranaryRelease: 'city', SitosIntervention: 'city', SitosFundLow: 'city',
+web/static/js/megaron/ui/format.js:772:    case 'SitosIntervention': return 'Food support was given to the city';
+web/static/js/megaron/ui/format.js:773:    case 'SitosFundLow': return 'The city’s food reserve needs attention';
+web/static/js/megaron/ui/format.js:774:    case 'SitosGranaryRelease': {
+web/static/js/megaron/ui/format.js:775:      const empty = body.granary_empty ? ' — granary now empty' : '';
+web/static/js/megaron/ui/format.js:776:      return `Granary released ${Math.round(body.food_released || 0)} grain (${fmtDays(body.coverage_days || 0)} of coverage)${empty}`;
+server/cmd/server/main.go:183:	worker.Register(events.ScheduledSitosTick, events.RetiredSitosTick)
+server/api/handlers/notifications_dispatch_test.go:123:	f.archive(t, "SitosGranaryRelease")
+server/api/handlers/notifications_dispatch_test.go:126:		`INSERT INTO dispatch_mutes (player_id, kind) VALUES ($1, 'SitosGranaryRelease')`,
+server/cmd/server/food_store_test.go:26:	if err := pool.QueryRow(ctx, `SELECT count(*) FILTER(WHERE event_type='SitosTick'),count(*) FILTER(WHERE event_type='FoodTick') FROM scheduled_events WHERE world_id=$1`, wid).Scan(&retired, &food); err != nil {
+web/static/js/megaron/ui/drawers/notif.js:12:// historical Sitos kinds (no longer emitted) so real events stay visible, with a "+N —
+web/static/js/megaron/ui/drawers/notif.js:15:const NOISY_NOTIF_KINDS = ['SitosIntervention', 'SitosFundLow'];
+web/static/js/megaron/ui/drawers/notif.js:39:  const label = kind === 'SitosIntervention' ? 'food support reports' : 'food reserve warnings';
+web/static/js/megaron/ui/drawers/notif_simple.test.mjs:18: for(const kind of ['SitosIntervention','SitosFundLow']){
+web/static/js/megaron/ui/drawers/notif_simple.test.mjs:19:  assert.match(hiddenNotifLabel(kind,3),/^3 food/,'group must use player words');assert.doesNotMatch(hiddenNotifLabel(kind,3),/Sitos|\+3/,'group must use player words');
+web/static/js/megaron/ui/drawers/notif_simple.test.mjs:20:  assert.doesNotMatch(notifText(kind,{}),/Sitos/,'historic row must use player words');
+server/internal/economy/food_store_test.go:16:	if err := pool.QueryRow(context.Background(), `SELECT to_regclass('public.settlement_granary') IS NOT NULL`).Scan(&exists); err != nil {
+server/internal/economy/food_store_test.go:20:		t.Fatal("separate granary still exists: food must live in settlement_goods only")
+server/internal/economy/food_store_test.go:33:	if err := events.RetiredSitosTick(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.tick}); err != nil {
+server/internal/economy/food_store_test.go:50:	if err := pool.QueryRow(ctx, `SELECT count(*) FROM events WHERE world_id=$1 AND event_type IN ('SitosGranaryStored','SitosGranaryReleased')`, f.worldID).Scan(&n); err != nil {
+server/internal/economy/food_store_test.go:71:		`CREATE TABLE settlement_granary(settlement_id uuid,good_key text,amount float8)`,
+server/internal/economy/food_store_test.go:72:		`CREATE TABLE processed_sitos_ticks(event_id bigint)`,
+server/internal/economy/food_store_test.go:81:	if _, err := tx.Exec(ctx, `INSERT INTO settlement_granary VALUES($1,'grain',11),($1,'fish',17)`, f.settlementID); err != nil {
+server/internal/economy/food_store_test.go:84:	if _, err := tx.Exec(ctx, `INSERT INTO scheduled_events(world_id,event_type,payload,due_tick,process_after) VALUES($1,'SitosTick','{}',$2,now())`, f.worldID, f.tick); err != nil {
+server/internal/economy/food_store_test.go:87:	raw, err := os.ReadFile("../../db/migrations/184_remove_sitos.up.sql")
+server/internal/economy/food_store_test.go:120:	if err := tx.QueryRow(ctx, `SELECT count(*) FROM scheduled_events WHERE world_id=$1 AND event_type='SitosTick' AND processed_at IS NULL`, f.worldID).Scan(&pending); err != nil {
+server/internal/events/retired_tick.go:5:// RetiredSitosTick accepts legacy scheduled work without touching projections,
+server/internal/events/retired_tick.go:8:func RetiredSitosTick(context.Context, ScheduledEvent) error { return nil }
+server/internal/events/scheduler.go:110:	ScheduledSitosTick ScheduledEventType = "SitosTick"
+server/internal/events/retired_tick_test.go:11:func TestRetiredSitosTick_CompletesWithoutReschedule(t *testing.T) {
+server/internal/events/retired_tick_test.go:24:	if err := sched.EnqueueTick(ctx, wid, ScheduledSitosTick, struct{}{}, 5); err != nil {
+server/internal/events/retired_tick_test.go:28:	worker.Register(ScheduledSitosTick, RetiredSitosTick)
+server/internal/events/retired_tick_test.go:33:	if err := pool.QueryRow(ctx, `SELECT count(*),count(processed_at),count(failed_at) FROM scheduled_events WHERE world_id=$1 AND event_type='SitosTick'`, wid).Scan(&total, &done, &failed); err != nil {
+server/internal/events/retired_tick_test.go:39:	if err := RetiredSitosTick(ctx, ScheduledEvent{WorldID: wid, DueTick: 5}); err != nil {
+server/internal/events/priority.go:28://	40 avvecklad    — äldre SitosTick behåller sin köprioritet men gör
+server/internal/events/priority.go:114:	ScheduledSitosTick: tickPriorityReserve,
+server/api/handlers/notifications_test.go:20:		{"single", "SitosIntervention", []string{"SitosIntervention"}},
+web/static/js/megaron/ui/format.test.mjs:215:    notifText('SitosGranaryRelease', { food_released: 450, coverage_days: 3, granary_empty: true }),
+web/static/js/megaron/ui/format.test.mjs:216:    "Granary released 450 grain (3 days of coverage) — granary now empty",
+server/api/handlers/province.go:2996:// Per-city tick-journal (temenos_sitos.md Fas 2): for each tick in
+server/api/handlers/province.go:2999:// (SitosTransaction, TradeDelivery, BuildComplete, …) stamped with that tick.
+server/cmd/keryx/notification_text.go:60:		GranaryEmpty bool               `json:"granary_empty"` // Historical only: legacy food-reserve payload.
+server/cmd/keryx/notification_text.go:224:	case "SitosIntervention":
+server/cmd/keryx/notification_text.go:226:	case "SitosFundLow":
+server/cmd/keryx/notification_text.go:228:	case "SitosGranaryRelease":
+server/cmd/keryx/notification_text.go:233:		line = fmt.Sprintf("Granary released %s (%.1f days of coverage)", released, b.CoverageDays)
+server/cmd/keryx/notification_text.go:234:		if b.GranaryEmpty {
+server/cmd/keryx/notification_text.go:235:			line += " — granary now empty"
+server/api/handlers/notifications.go:38:// useful e.g. to keep high-frequency kinds like SitosIntervention from
+server/cmd/keryx/cmd_notifications.go:18:// it happens to fire often. Historical only: Sitos kinds remain grouped when
+server/cmd/keryx/cmd_notifications.go:20:var noisyNotificationKinds = []string{"SitosIntervention", "SitosFundLow"}
+server/cmd/keryx/cmd_notifications.go:856:// historical view was ~99% SitosIntervention noise burying real events (TradeDelivery,
+server/cmd/keryx/cmd_notifications.go:977:			// SitosIntervention) collapse to one "×N" line instead of
+server/cmd/keryx/notification_kinds_test.go:357:	raw := `{"notifications":[{"kind":"UnitArrived","body":{"name":"Bronze Guard","q":6,"r":7}}, {"kind":"SubsistenceWarning","body":{"name":"Tiryns","tier":"critical","pop_loss":3,"net_per_tick":-2}}, {"kind":"SitosIntervention","body":{"secret":"machine-only"}}, {"kind":"SitosIntervention","body":{"secret":"machine-only"}}],"unread":4,"future_field":{"retained":true}}`
+server/cmd/keryx/notification_kinds_test.go:420:		{"SitosGranaryRelease", `{"food_released":50,"coverage_days":12,"per_good":{"grain":30,"fish":20},"granary_empty":true}`, []string{"20 fish, 30 grain", "12.0 days", "granary now empty"}, []string{"50 grain"}},
+server/cmd/keryx/notification_kinds_test.go:422:		{"SitosGranaryRelease", `{"food_released":0.3,"coverage_days":12,"per_good":{"grain":0.3}}`, []string{"0.3 grain"}, []string{"released 0 grain"}},
+server/cmd/keryx/cmd_ticklog.go:122:	case "SitosGranaryStored", "SitosGranaryReleased":
+server/cmd/keryx/cmd_ticklog.go:127:			GranaryAfter float64            `json:"granary_after"`
+server/cmd/keryx/cmd_ticklog.go:136:		if etype == "SitosGranaryReleased" {
+server/cmd/keryx/cmd_ticklog.go:137:			return fmt.Sprintf("Sitos: the granary gave the city %s (coverage was %s, left in the granary %.1f)", detail, formatDays(p.CoverageDays, "%.1f"), p.GranaryAfter)
+server/cmd/keryx/cmd_ticklog.go:139:		return fmt.Sprintf("Sitos: stored away %s (coverage %s, in the granary %.1f)", detail, formatDays(p.CoverageDays, "%.1f"), p.GranaryAfter)
+server/cmd/keryx/cmd_ticklog.go:140:	// SitosTransaction is the FUND's event type, frozen and no longer emitted
+server/cmd/keryx/cmd_ticklog.go:143:	case "SitosTransaction":
+server/cmd/keryx/cmd_ticklog.go:154:			return fmt.Sprintf("Sitos: tax +%.1f silver → the fund", p.SilverDelta)
+server/cmd/keryx/cmd_ticklog.go:156:			return fmt.Sprintf("Sitos: bought %.1f %s (ref %.2f), city +%.1f silver",
+server/cmd/keryx/cmd_ticklog.go:159:			return fmt.Sprintf("Sitos: sold %.1f %s (ref %.2f), city −%.1f silver",
+server/cmd/keryx/cmd_ticklog.go:162:			return "Sitos: " + p.Kind
+server/internal/combat/silver_audit_test.go:172:	// from migration 106 on: the Sitos fund is gone, the granary holds food and
+server/internal/combat/food_store_test.go:26:	for _, q := range []string{`CREATE TABLE settlement_granary(settlement_id uuid,good_key text,amount float8)`, `CREATE TABLE processed_sitos_ticks(event_id bigint)`} {
+server/internal/combat/food_store_test.go:31:	if _, err := tx.Exec(ctx, `INSERT INTO settlement_granary VALUES($1,'grain',10)`, f.capitalID); err != nil {
+server/internal/combat/food_store_test.go:34:	raw, err := os.ReadFile("../../db/migrations/184_remove_sitos.up.sql")
+server/internal/combat/silver_audit.go:126:	// The Sitos fund it counted was replaced by a granary that holds food, never

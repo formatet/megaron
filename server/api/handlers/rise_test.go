@@ -16,7 +16,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
+
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/kharis"
 	"formatet/megaron/server/internal/unit"
@@ -80,7 +80,7 @@ func TestRise_RefugeeHostOnAnotherLandmass_AndLeave(t *testing.T) {
 	}
 
 	authSvc := auth.NewService(pool, "test-secret")
-	jh := NewJoinHandler(pool, events.NewStore(pool), economy.LoadSitosConfig(), clock.NewTestClock(time.Now()), nil)
+	jh := NewJoinHandler(pool, events.NewStore(pool), clock.NewTestClock(time.Now()), nil)
 	r := chi.NewRouter()
 	r.Use(auth.Middleware(authSvc))
 	r.Post("/worlds/{worldID}/rise", jh.Rise)

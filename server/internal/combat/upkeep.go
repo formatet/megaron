@@ -18,7 +18,7 @@ import (
 // silver upkeep the soldiers spend back into their garrison town (silver-plan
 // Del C). Default 0.7; 0 = exactly the pre-Del-C behaviour (whole upkeep leaves
 // the world). Clamped to [0,1]. Read once at handler construction (main.go),
-// override via env + systemctl restart — same pattern as the Sitos tunables.
+// override via env + systemctl restart — loaded once at startup.
 //
 // Exported because the read surfaces (api/handlers) must project the same net
 // drain the tick actually takes; a second copy of the default would drift.
@@ -797,7 +797,7 @@ func provisionSourceFor(u upkeepUnitRow) *uuid.UUID {
 }
 
 // atHomePort reports whether the unit is sitting at a settlement rather than out
-// in the world — the only case where falling back to the town's granary is not
+// in the world — the only case where falling back to the town's stock is not
 // the teleporting logistics this mechanic removes.
 func atHomePort(u upkeepUnitRow) bool {
 	return u.status == "garrison" || u.status == "repairing"

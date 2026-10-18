@@ -24,10 +24,10 @@ func TestColonyPenalty(t *testing.T) {
 
 func TestRevoltConditionsMet(t *testing.T) {
 	cases := []struct {
-		loyalty    int
-		fraction   float64
-		trigger    bool
-		want       bool
+		loyalty  int
+		fraction float64
+		trigger  bool
+		want     bool
 	}{
 		{1, 0.0, true, true},
 		{1, 0.4, true, true},
@@ -54,9 +54,9 @@ func TestLoyaltyProjection(t *testing.T) {
 		{2, nil, 2},
 		{2, []int{1}, 3},
 		{2, []int{1, 1}, 4},
-		{2, []int{1, 1, 1}, 4},  // clamped at 4
+		{2, []int{1, 1, 1}, 4}, // clamped at 4
 		{2, []int{-1}, 1},
-		{2, []int{-1, -1}, 1},   // clamped at 1
+		{2, []int{-1, -1}, 1}, // clamped at 1
 		{2, []int{-1, 1}, 2},
 		{1, []int{3}, 4},
 		{4, []int{-3}, 1},

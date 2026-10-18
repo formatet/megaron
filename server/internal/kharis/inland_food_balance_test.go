@@ -6,9 +6,7 @@ import (
 	"math"
 	"sync/atomic"
 	"testing"
-	"time"
 
-	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/hexgrid"
@@ -113,10 +111,10 @@ type balanceState struct {
 	Fish        float64 `json:"fish"`
 	FoodNet     float64 `json:"food_net"`
 	GrainStock  float64 `json:"grain_stock"`
-	Sitos       float64 `json:"sitos"`
-	Timber      float64 `json:"timber"`
-	Stone       float64 `json:"stone"`
-	Unmet       float64 `json:"unmet"`
+
+	Timber float64 `json:"timber"`
+	Stone  float64 `json:"stone"`
+	Unmet  float64 `json:"unmet"`
 }
 
 func readBalance(t *testing.T, pool *pgxpool.Pool, sid uuid.UUID) balanceState {
@@ -135,9 +133,6 @@ func readBalance(t *testing.T, pool *pgxpool.Pool, sid uuid.UUID) balanceState {
 		t.Fatal(err)
 	}
 	s.FoodNet = economy.FoodNet(s.Grain+s.Fish, s.Population)
-	if err := pool.QueryRow(ctx, `SELECT COALESCE(sum(amount),0) FROM settlement_granary WHERE settlement_id=$1`, sid).Scan(&s.Sitos); err != nil {
-		t.Fatal(err)
-	}
 	return s
 }
 
@@ -158,7 +153,7 @@ func TestInlandFoodBalance_SevenOfTen(t *testing.T) {
 }
 
 // Runs without changing rates: execute on separate fresh DBs before/after the
-// migration. Fixed initial placements, then real Sitos -> FoodTick -> growth.
+// migration. Fixed initial placements, then real FoodTick -> growth.
 // No building/recruitment/trade policy is simulated; growth auto-placement is real.
 func TestInlandFoodBalance_Soak60(t *testing.T) {
 	for _, kind := range []string{"hills", "plains", "coast", "amnissos"} {
@@ -191,17 +186,11 @@ func TestInlandFoodBalance_Soak60(t *testing.T) {
 				t.Fatal(err)
 			}
 			records := []balanceState{readBalance(t, pool, sid)}
-			clk := clock.NewTestClock(time.Unix(0, 0))
-			sched := events.NewScheduler(pool, clk)
-			store := events.NewStore(pool)
-			sitos := economy.NewSitosTickHandler(pool, sched, store, nil, economy.LoadSitosConfig())
+
 			food := newTestFoodTickHandler(pool)
 			growth := newTestTickHandler(pool)
 			for tick := 1; tick <= 60; tick++ {
 				if _, err := pool.Exec(ctx, `UPDATE worlds SET current_tick=$2 WHERE id=$1`, wid, tick); err != nil {
-					t.Fatal(err)
-				}
-				if err := sitos.Handle(ctx, events.ScheduledEvent{ID: atomic.AddInt64(&advanceOneDayEventID, 1), WorldID: wid, DueTick: tick}); err != nil {
 					t.Fatal(err)
 				}
 				if err := food.Handle(ctx, events.ScheduledEvent{ID: atomic.AddInt64(&advanceOneDayEventID, 1), WorldID: wid, DueTick: tick}); err != nil {

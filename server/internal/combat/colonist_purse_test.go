@@ -19,7 +19,7 @@ import (
 	"time"
 
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
+
 	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -269,7 +269,6 @@ func runColonizeArrival(t *testing.T, pool *pgxpool.Pool, ctx context.Context, w
 		pool:       pool,
 		eventStore: events.NewStore(pool),
 		clk:        clock.NewTestClock(time.Now()),
-		sitosCfg:   economy.LoadSitosConfig(),
 	}
 	tx, err := pool.Begin(ctx)
 	if err != nil {
@@ -306,7 +305,7 @@ func TestArriveGarrison_ReturnsTheCarriedPurse(t *testing.T) {
 	}
 	h := &UnitArrivalHandler{
 		pool: pool, eventStore: events.NewStore(pool),
-		clk: clock.NewTestClock(time.Now()), sitosCfg: economy.LoadSitosConfig(),
+		clk: clock.NewTestClock(time.Now()),
 	}
 	tx, err := pool.Begin(ctx)
 	if err != nil {

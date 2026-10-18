@@ -1,0 +1,5 @@
+=== RUN   TestExecuteOccupyAction_Sack
+--- PASS: TestExecuteOccupyAction_Sack (0.03s)
+PASS
+ok  	formatet/megaron/server/internal/combat	0.037s
+» färsk DB på migration 184 · commit 6fccfe37+ändringar

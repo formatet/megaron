@@ -245,13 +245,13 @@ func TestProvincesFOW_SubsetOfMapKnowledge(t *testing.T) {
 		name string
 		q, r int
 	}{
-		{"D2", 2, 0},   // inside settlement eye (3)
-		{"D3", 0, 3},   // exactly at settlement eye edge (3)
-		{"D4", 4, 0},   // outside settlement eye, inside old flat radius 6
-		{"D5", 5, 0},   // outside settlement eye, inside old flat radius 6
-		{"D6", 0, 6},   // outside settlement eye, at old flat radius edge
+		{"D2", 2, 0},     // inside settlement eye (3)
+		{"D3", 0, 3},     // exactly at settlement eye edge (3)
+		{"D4", 4, 0},     // outside settlement eye, inside old flat radius 6
+		{"D5", 5, 0},     // outside settlement eye, inside old flat radius 6
+		{"D6", 0, 6},     // outside settlement eye, at old flat radius edge
 		{"D8unit", 0, 8}, // inside the field unit's own eye (radius 2 from (0,10))
-		{"D20", 20, 0}, // outside everything
+		{"D20", 20, 0},   // outside everything
 	}
 	for _, s := range scatter {
 		var pid uuid.UUID

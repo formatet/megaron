@@ -60,4 +60,3 @@ func LaborRates(baseRates map[string]float64, citizens map[string]float64, _ flo
 	}
 	return result
 }
-

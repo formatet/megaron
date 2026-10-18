@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
+
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
@@ -118,7 +118,7 @@ func TestBetaShipDepartureSpeedLatePrayerAndActualReturn(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer tx.Rollback(ctx)
-	h := NewUnitArrivalHandler(pool, store, nil, sched, clk, economy.SitosConfig{})
+	h := NewUnitArrivalHandler(pool, store, nil, sched, clk)
 	path := []province.MapPosition{}
 	for q := 12; q >= 1; q-- {
 		path = append(path, province.MapPosition{Q: q})

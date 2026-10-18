@@ -18,7 +18,7 @@ You get a notification when a siege begins and when it is lifted. The City drawe
 
 What helps:
 
-- a full [[sitos|granary]] — the city eats from it while the fields are cut off;
+- full [[food|city food stores]] — the city eats its grain and fish while the fields are cut off;
 - food brought in from outside by [[transfers|transfer]] — if it can get through;
 - a relief force that drives the besiegers off the hexes ([[battle]]).
 

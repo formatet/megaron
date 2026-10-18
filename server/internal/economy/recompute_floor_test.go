@@ -104,7 +104,7 @@ func TestRecomputeProduction_GrainFloorsAtZero(t *testing.T) {
 
 	const tick = 100
 	// Old row settled at rate -1000/tick over 10 ticks → settled() = 5 - 10000, deeply negative.
-	settlementID := recomputeFixture(t, tick, /*pop*/ 1000, /*grainAmount*/ 5, /*grainRate*/ -1000)
+	settlementID := recomputeFixture(t, tick /*pop*/, 1000 /*grainAmount*/, 5 /*grainRate*/, -1000)
 	if _, err := pool.Exec(ctx,
 		`UPDATE settlement_goods SET calc_tick = $1 WHERE settlement_id = $2 AND good_key = 'grain'`,
 		tick-10, settlementID,
@@ -128,7 +128,7 @@ func TestRecomputeProduction_GrainFloorsAtZero(t *testing.T) {
 func TestRecomputeProduction_HealthyStockUnaffectedByFloor(t *testing.T) {
 	const tick = 100
 	// Positive rate, small elapsed ticks → settled() = 50 + 2*5 = 60, well under cap 1000.
-	settlementID := recomputeFixture(t, tick, /*pop*/ 100, /*grainAmount*/ 50, /*grainRate*/ 2)
+	settlementID := recomputeFixture(t, tick /*pop*/, 100 /*grainAmount*/, 50 /*grainRate*/, 2)
 	pool := testPool(t)
 	ctx := context.Background()
 	if _, err := pool.Exec(ctx,

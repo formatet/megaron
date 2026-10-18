@@ -1,0 +1,77 @@
+» färsk DB på migration 184 · commit 6fccfe37+ändringar
+=== RUN   TestAIRound4_Scheria1042FoodRequirement
+    ai_round4_food_test.go:61: Scheria1042: grain=0.50 fish=5.42 demand=5.21 foodnet=0.71 required=5
+    ai_round4_food_test.go:65: Scheria1042: grain=0.50 fish=1.42 demand=5.21 foodnet=-3.29 required=5
+    ai_round4_food_test.go:69: Scheria1042: grain=0.50 fish=0.42 demand=5.21 foodnet=-4.29 required=5
+    ai_round4_food_test.go:73: Scheria1042: grain=0.50 fish=0.42 demand=5.21 foodnet=-4.29 required=5
+--- PASS: TestAIRound4_Scheria1042FoodRequirement (0.06s)
+=== RUN   TestFoodStore_SingleInventory
+--- PASS: TestFoodStore_SingleInventory (0.00s)
+=== RUN   TestFoodStore_SurplusAndRetiredTick
+--- PASS: TestFoodStore_SurplusAndRetiredTick (0.01s)
+=== RUN   TestFoodStore_MigrationConservesLazyStockAndMissingGood
+--- PASS: TestFoodStore_MigrationConservesLazyStockAndMissingGood (0.02s)
+=== RUN   TestPrunePlacementsToPopulation_S1bOrder
+--- PASS: TestPrunePlacementsToPopulation_S1bOrder (0.02s)
+=== RUN   TestPrunePlacementsToPopulation_ConvergesInOnePass
+--- PASS: TestPrunePlacementsToPopulation_ConvergesInOnePass (0.02s)
+=== RUN   TestPrunePlacementsToPopulation_IdempotentWhenWithinCap
+--- PASS: TestPrunePlacementsToPopulation_IdempotentWhenWithinCap (0.02s)
+PASS
+ok  	formatet/megaron/server/internal/economy	0.157s
+=== RUN   TestRetiredSitosTick_CompletesWithoutReschedule
+--- PASS: TestRetiredSitosTick_CompletesWithoutReschedule (0.01s)
+PASS
+ok  	formatet/megaron/server/internal/events	0.011s
+=== RUN   TestStarvationSignal_NoFalseAuditAfterPaidUpkeep
+--- PASS: TestStarvationSignal_NoFalseAuditAfterPaidUpkeep (0.02s)
+=== RUN   TestStarvationSignal_AuditHasNoStateEffects
+    hunger_signal_test.go:61: StarvationDamage0; full settlement/realm(goods/kharis)/units/loyalty projection hashes identical d9a8c8fb2400f68613217c26035ec23a
+--- PASS: TestStarvationSignal_AuditHasNoStateEffects (0.02s)
+PASS
+ok  	formatet/megaron/server/internal/kharis	0.048s
+=== RUN   TestStarvationSignal_ActualLossEvenLastGarrison
+=== RUN   TestStarvationSignal_ActualLossEvenLastGarrison/100
+2026/10/18 12:45:54 INFO upkeep: grain attrition unit=19414bc7-be20-4c1a-a511-639568880902 lost=10 disbanded=false
+2026/10/18 12:45:54 INFO starvation damage applied settlement=c811e52b-b38b-4302-82ad-db91cebc8d59
+=== RUN   TestStarvationSignal_ActualLossEvenLastGarrison/1
+2026/10/18 12:45:54 INFO upkeep: grain attrition unit=8c920f49-f1d6-440f-805d-497b3d4084b1 lost=1 disbanded=true
+2026/10/18 12:45:54 INFO starvation damage applied settlement=35bd34cd-6058-4cec-a15f-e81416f3a6b5
+--- PASS: TestStarvationSignal_ActualLossEvenLastGarrison (0.10s)
+    --- PASS: TestStarvationSignal_ActualLossEvenLastGarrison/100 (0.05s)
+    --- PASS: TestStarvationSignal_ActualLossEvenLastGarrison/1 (0.05s)
+PASS
+ok  	formatet/megaron/server/internal/combat	0.106s
+=== RUN   TestAIRound3_FoodAfterArmyAPIParity
+2026/10/18 12:45:54 INFO player registered id=02e98161-84e4-4c58-b799-3c18ad96ddd0 username=round3-886bc17e-f0f1-425a-97d7-b1888ab57f2d
+--- PASS: TestAIRound3_FoodAfterArmyAPIParity (0.07s)
+=== RUN   TestAIRound4_AutomaticFoodAPIAndFixedQueue
+2026/10/18 12:45:54 INFO player registered id=6204af24-99b4-485f-9a37-4aebc0a9abc2 username=round4-056f7aad-9e53-4fa8-acb0-10c956caa952
+--- PASS: TestAIRound4_AutomaticFoodAPIAndFixedQueue (0.08s)
+=== RUN   TestAIRound_ShortfallCarriesCurrentRate
+2026/10/18 12:45:54 INFO player registered id=40c4f6db-751e-4d88-afc9-c11696367dec username=buildhex-c77952dc-4c99-4a7c-afa2-c44fe439804f
+--- PASS: TestAIRound_ShortfallCarriesCurrentRate (0.07s)
+=== RUN   TestAIRound_ForecastReportsFarmFacts
+2026/10/18 12:45:55 INFO player registered id=e583c990-ac65-47f0-adc7-1adde5e50921 username=buildhex-8ffc7f21-6e1b-4847-b812-9b424b7820aa
+--- PASS: TestAIRound_ForecastReportsFarmFacts (0.07s)
+=== RUN   TestSettlementsOverview_OnlyOwnSettlements
+2026/10/18 12:45:55 INFO player registered id=d4f2cf2e-f3d8-4374-9f86-e3015be8da50 username=wanax-a-a415965d-e5ff-450f-9608-707738cc1644
+2026/10/18 12:45:55 INFO player registered id=985ee714-6976-4b92-8269-b5c6cd7806a3 username=wanax-b-5094dd57-df8e-4a52-a28c-abb361a0ba55
+--- PASS: TestSettlementsOverview_OnlyOwnSettlements (0.11s)
+=== RUN   TestSettlementsOverviewParity_MatchesProvinceGet
+2026/10/18 12:45:55 INFO player registered id=b4285339-5b89-4f51-848a-5644df033b2c username=wanax-parity-437ae12b-a9cf-424c-aa40-d84e81a3697a
+--- PASS: TestSettlementsOverviewParity_MatchesProvinceGet (0.07s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.479s
+=== RUN   TestSeedDailyTicks_NoRetiredReserve
+2026/10/18 12:45:55 INFO daily ticks seeded worlds=18
+--- PASS: TestSeedDailyTicks_NoRetiredReserve (0.10s)
+=== RUN   TestPruneHeartbeats_KeepsLatestRowRegardlessOfAge
+2026/10/18 12:45:55 INFO retention pass table=server_heartbeats rows_deleted=3 batches=1 elapsed=1ms
+--- PASS: TestPruneHeartbeats_KeepsLatestRowRegardlessOfAge (0.01s)
+=== RUN   TestPruneScheduledEvents_KeepsPendingRows
+2026/10/18 12:45:55 INFO retention pass table=scheduled_events(processed) rows_deleted=1 batches=1 elapsed=1ms
+2026/10/18 12:45:55 INFO retention pass table=scheduled_events(failed) rows_deleted=1 batches=1 elapsed=0s
+--- PASS: TestPruneScheduledEvents_KeepsPendingRows (0.02s)
+PASS
+ok  	formatet/megaron/server/cmd/server	0.129s

@@ -53,7 +53,7 @@ type UnitArrivalHandler struct {
 	hub                Broadcaster
 	scheduler          *events.Scheduler
 	clk                clock.Clock
-	sitosCfg           economy.SitosConfig
+
 	// Dice is the KR3 battle-seed source (megaron_plan_kr3_stridssystem.md §3):
 	// initiateOrJoinBattle draws battles.seed from it exactly once, at battle
 	// creation. Exported so tests can override for a deterministic seed —
@@ -64,8 +64,8 @@ type UnitArrivalHandler struct {
 }
 
 // NewUnitArrivalHandler creates a UnitArrivalHandler.
-func NewUnitArrivalHandler(pool *pgxpool.Pool, store *events.Store, hub Broadcaster, scheduler *events.Scheduler, clk clock.Clock, sitosCfg economy.SitosConfig) *UnitArrivalHandler {
-	return &UnitArrivalHandler{pool: pool, eventStore: store, hub: hub, scheduler: scheduler, clk: clk, sitosCfg: sitosCfg, Dice: economy.NewWallDice()}
+func NewUnitArrivalHandler(pool *pgxpool.Pool, store *events.Store, hub Broadcaster, scheduler *events.Scheduler, clk clock.Clock) *UnitArrivalHandler {
+	return &UnitArrivalHandler{pool: pool, eventStore: store, hub: hub, scheduler: scheduler, clk: clk, Dice: economy.NewWallDice()}
 }
 
 // Handle processes one ScheduledUnitArrival scheduled event.
@@ -1948,13 +1948,6 @@ func (h *UnitArrivalHandler) foundColony(
 	).Scan(&colonyID); err != nil {
 		return fmt.Errorf("foundColony: create settlement: %w", err)
 	}
-
-	// No Sitos seed. The fund this used to sow was silver minted out of nothing
-	// at every founding — pop × 10.5, so a ~2000-pop colony printed ~21 000 into
-	// a world whose entire liquid supply measured 106 678. Migration 106 replaced
-	// the fund with a granary, and the granary starts EMPTY: a new colony has no
-	// reserve because it has not had a harvest yet. It earns one by having a
-	// surplus.
 
 	// Link province back to its controlling settlement.
 	_, _ = tx.Exec(ctx, `UPDATE provinces SET controller_id=$1 WHERE id=$2`, colonyID, provinceID)

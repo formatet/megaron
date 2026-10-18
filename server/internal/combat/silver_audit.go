@@ -109,8 +109,7 @@ func (h *UpkeepHandler) emitSilverAudit(ctx context.Context, worldID uuid.UUID) 
 		return
 	}
 
-	// Active-settlement filter mirrors the Sitos tick's, so the audit and the
-	// stabilizer agree on which settlements are "in the world".
+	// Count liquid silver only in owned settlements still in the world.
 	var liquid, fund, mineRate float64
 	if err := h.pool.QueryRow(ctx,
 		`SELECT COALESCE(SUM(GREATEST(0, settled(sg.amount, sg.rate, sg.calc_tick))), 0)

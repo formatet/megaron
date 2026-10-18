@@ -519,7 +519,7 @@ func TestMarchSighting_IgnorePolicyMarchStillNotifiesBothOwnersOnCrossing(t *tes
 		t.Errorf("ownerA notifications = 0, want ≥1 — owner A's own marching unit is an eye that saw B's march at the shared hex")
 	}
 	if got := notifCount(t, pool, worldID, ownerB); got == 0 {
-		t.Errorf("ownerB (reaction_policy.foreign=ignore) notifications = 0, want ≥1 — detection must be unconditional (KR2 = B): "+
+		t.Errorf("ownerB (reaction_policy.foreign=ignore) notifications = 0, want ≥1 — detection must be unconditional (KR2 = B): " +
 			"B's own marching unit is still one of B's eyes regardless of its reaction policy")
 	}
 }

@@ -178,7 +178,7 @@ func TestSiege_LandChokepointDeniesHexBehindIt_AndProductionDrops(t *testing.T) 
 	ctx := context.Background()
 	const tick = 100
 
-	settlementID, worldID, ownerID := seedSiegeFixture(t, tick, /*pop*/ 100)
+	settlementID, worldID, ownerID := seedSiegeFixture(t, tick /*pop*/, 100)
 
 	// Corridor hex (1,0), distance 1 from center — the sole way in.
 	seedTile(t, worldID, 1, 0, "hills")
@@ -269,7 +269,7 @@ func TestSiege_EnemyGalleyAtHarbourDeniesAllSeaCatchmentAtOnce(t *testing.T) {
 	ctx := context.Background()
 	const tick = 100
 
-	settlementID, worldID, ownerID := seedSiegeFixture(t, tick, /*pop*/ 100)
+	settlementID, worldID, ownerID := seedSiegeFixture(t, tick /*pop*/, 100)
 	_ = settlementID
 
 	// Two sea ring hexes: one adjacent to the settlement (the galley sits
@@ -333,7 +333,7 @@ func TestSiege_NoEnemyNearby_SkipsGraphWalkEntirely(t *testing.T) {
 	ctx := context.Background()
 	const tick = 100
 
-	settlementID, worldID, ownerID := seedSiegeFixture(t, tick, /*pop*/ 100)
+	settlementID, worldID, ownerID := seedSiegeFixture(t, tick /*pop*/, 100)
 	_ = settlementID
 
 	center := hexgrid.Coord{Q: 0, R: 0}
@@ -362,7 +362,7 @@ func TestSiege_MerelyPositionedWithoutSentryDoesNotBesiege(t *testing.T) {
 	ctx := context.Background()
 	const tick = 100
 
-	settlementID, worldID, ownerID := seedSiegeFixture(t, tick, /*pop*/ 100)
+	settlementID, worldID, ownerID := seedSiegeFixture(t, tick /*pop*/, 100)
 	seedTile(t, worldID, 1, 0, "hills")
 	seedTile(t, worldID, 2, 0, "hills")
 	seedTile(t, worldID, 1, 1, "mountain_limestone")

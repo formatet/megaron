@@ -307,7 +307,7 @@ func GrainConsumptionPerTick(pop int) float64 {
 // shared implementation D6 (megaron_plan_utfodringsordningen.md) requires
 // every read-only surface to go through instead of recomputing
 // laborPool × GrainConsumptionPerCitizenPerTick itself. api/handlers/province.go
-// used to do that multiplication twice (the Sitos-box breakdown and the
+// used to do that multiplication twice (the food breakdown and the
 // ticklog reconstruction), and internal/loyalty/welfare.go re-derived netto
 // from what used to be an already-netted rate — both now go through here.
 //
@@ -325,8 +325,7 @@ func GrainBalance(grossRate float64, population int) (consumption, net float64) 
 // NetFoodGoods are the goods whose production counts toward a city's daily
 // food balance (FoodNet) — the two FoodTick feeds the population from every
 // day. Livestock is left out on purpose: it is the emergency slaughter at the
-// end of FoodConsumptionSplit's chain, not a daily ration. Same set as
-// SitosConfig's default SITOS_SUBSISTENCE_GOODS.
+// end of FoodConsumptionSplit's chain, not a daily ration.
 var NetFoodGoods = []string{GoodGrain, GoodFish}
 
 // FoodNet is a city's daily food balance: what its NetFoodGoods produce per

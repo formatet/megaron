@@ -43,11 +43,11 @@ func loyaltyTestPool(t *testing.T) *pgxpool.Pool {
 // colonies (colonyCount == 3 → settlement.ColonyPenalty returns -1, the
 // smallest nonzero penalty band, per internal/settlement/loyalty.go).
 type colonyFixture struct {
-	worldID   uuid.UUID
-	owner     uuid.UUID
-	capital   uuid.UUID
-	colonies  []uuid.UUID
-	tick      int
+	worldID  uuid.UUID
+	owner    uuid.UUID
+	capital  uuid.UUID
+	colonies []uuid.UUID
+	tick     int
 }
 
 func newColonyFixture(t *testing.T, pool *pgxpool.Pool, tag string) colonyFixture {

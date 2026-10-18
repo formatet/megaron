@@ -58,13 +58,13 @@ test('unknown kind: payload with more keys than the cap is truncated with an ell
 
 // No regression — strings captured from a run against unmodified master
 // (32c16fa), not read off the switch statement:
-//   BuildComplete: "Build complete: granary"
+//   BuildComplete: "Build complete: farm"
 //   ScoutReport:   "Explored (7, 40) — hills, copper"
 //   UpkeepUnpaid:  "infantry unpaid (period 2) — one more unpaid period and they desert"
 test('known kinds are unaffected by the default-arm change', () => {
   assert.equal(
-    notifText('BuildComplete', { building_type: 'granary' }),
-    'Build complete: granary',
+    notifText('BuildComplete', { building_type: 'farm' }),
+    'Build complete: farm',
   );
   assert.equal(
     notifText('ScoutReport', { q: 7, r: 40, terrain: 'hills', copper_deposit: true }),
@@ -210,6 +210,7 @@ test('A7: the sixteen previously-uncased kinds get real text, not the default ar
     notifText('UnitRedirected', { unit_id: 'x', target_q: 2, target_r: 3 }),
     'Unit redirected — new course to (2, 3)',
   );
+  // Historical only: retain the frozen archive notification rendering.
   assert.equal(
     notifText('SitosGranaryRelease', { food_released: 450, coverage_days: 3, granary_empty: true }),
     "Granary released 450 grain (3 days of coverage) — granary now empty",

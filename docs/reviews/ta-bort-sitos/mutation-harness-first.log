@@ -1,0 +1,12 @@
+return-food named RED -> exact bytes -> fresh GREEN 3e71f46747697de99f8ed66f34ae5c214c131b5ab774eb03866003d04612e7ba
+raise-ceiling named RED -> exact bytes -> fresh GREEN 3e71f46747697de99f8ed66f34ae5c214c131b5ab774eb03866003d04612e7ba
+missing-good named RED -> exact bytes -> fresh GREEN 3e71f46747697de99f8ed66f34ae5c214c131b5ab774eb03866003d04612e7ba
+retired-tick named RED -> exact bytes -> fresh GREEN c2d18650adc5e2f6a4c744dddca2d60bbc16a10838b2540529115aefb1aee3f1
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-ta-bort-sitos/docs/reviews/ta-bort-sitos/mutations.py", line 16, in <module>
+    p=ROOT/relative;original=p.read_bytes();s=original.decode();assert s.count(old)==1,(name,s.count(old))
+                                                                       ^^^^^^^^^^^^^^^
+AssertionError: ('no-reseed', 2)
+no-reseed named RED -> exact bytes -> fresh GREEN 810ee564a9ac8dfeb41ed6e6af32d9d6a409c0e83b924e4518671a9403e2db4e
+food-api named RED -> exact bytes -> fresh GREEN 73b86bfe38510462ce5024ec428bf8bf2c968f5481b504cbf773fa285fa0978d
+retired-loot-query named RED -> exact bytes -> fresh GREEN 89f25012a6e22e9184a1e0e9f4891c9789f5d4b4c07b25ede83cd0b91e2a22f4

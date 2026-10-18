@@ -67,7 +67,7 @@ All environment variables — required and optional — are documented with thei
 | `PORT`         | `8080`           | HTTP listen port                                |
 | `TICK_SECONDS` | 60 min/tick      | Tick cadence; set low (e.g. `6`) to speed up dev |
 
-Tuning knobs for the Sitos fund, map size, kingdoms and admin endpoints live in `.env.example`.
+Tuning knobs for map size, kingdoms and admin endpoints live in `.env.example`.
 
 ---
 

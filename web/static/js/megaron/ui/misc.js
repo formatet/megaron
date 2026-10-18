@@ -5,7 +5,7 @@ import { setSoundMuted } from './sfx.js';
 
 // ── Lawagetas advisory voice ──────────────────────────────────────────────
 export const LAWAGETAS_BRIEFS = {
-  city:      "Your megaron rises above all you rule, Wanax. Here your people labor — farmers, craftsmen, soldiers — each serving the palace that feeds and protects them. Assign your workers well; a foundry lets your smiths turn copper and tin into bronze. Idle hands do not fill the granary.",
+  city:      "Your megaron rises above all you rule, Wanax. Here your people labor — farmers, craftsmen, soldiers — each serving the palace that feeds and protects them. Assign your workers well; a foundry lets your smiths turn copper and tin into bronze. Idle hands do not fill the food stores.",
   war:       "Bronze arms await your command, Wanax. March the army to distant lands — to raid, reinforce, or colonize. An order to recall or redirect a marching host travels by messenger, not by will alone; it takes time to arrive. In battle, numbers count, but walls and elite agema often decide the day.",
   diplomacy: "Words travel on foot, Wanax — a messenger's legs are your reach. You may only treat with those cities whose walls your messengers have touched. The Known roll names the cities and rulers you have heard of; write to them, then make your offers — to buy or to sell.",
   economy:   "The palace scribes track every ingot and measure of grain, Wanax. Move goods between your own cities, or send goods and silver as a gift to a ruler you have contacted. A gift asks nothing in return; its caravan can be seized on the road. Watch the Wants ledger — it names what your trading partners hunger for, and where your surplus might fetch a premium.",

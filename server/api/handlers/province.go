@@ -43,17 +43,17 @@ const maxParallelBuilds = 2
 
 // ProvinceHandler handles HTTP requests for province endpoints.
 type ProvinceHandler struct {
-	pool       *pgxpool.Pool
-	scheduler  *events.Scheduler
-	clk        clock.Clock
-	sitosCfg   economy.SitosConfig
+	pool      *pgxpool.Pool
+	scheduler *events.Scheduler
+	clk       clock.Clock
+
 	eventStore *events.Store // may be nil in tests that don't exercise Recruit's naval path
 	hub        *notify.Hub   // nil-guarded; carries player-facing notifications (trade, arrivals, ...)
 }
 
 // NewProvinceHandler creates a ProvinceHandler.
-func NewProvinceHandler(pool *pgxpool.Pool, scheduler *events.Scheduler, clk clock.Clock, sitosCfg economy.SitosConfig, eventStore *events.Store, hub *notify.Hub) *ProvinceHandler {
-	return &ProvinceHandler{pool: pool, scheduler: scheduler, clk: clk, sitosCfg: sitosCfg, eventStore: eventStore, hub: hub}
+func NewProvinceHandler(pool *pgxpool.Pool, scheduler *events.Scheduler, clk clock.Clock, eventStore *events.Store, hub *notify.Hub) *ProvinceHandler {
+	return &ProvinceHandler{pool: pool, scheduler: scheduler, clk: clk, eventStore: eventStore, hub: hub}
 }
 
 // Get handles GET /worlds/:worldID/provinces/:provinceID.
@@ -610,11 +610,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			grows.Close()
 		}
 
-		// Sitos granary surface (always visible): what the city has set aside, and
-		// — the figure the whole mechanic turns on — how many days of food it is
-		// standing on right now. Coverage is what triggers both legs (B1), so
-		// showing the reserve without it would show the answer and hide the
-		// question.
+		// Current food stock and growth use the same shared summary as overview.
 		var currentTick int
 		var harvestBlessingUntil *int
 		if err := h.pool.QueryRow(r.Context(),
@@ -627,11 +623,10 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// Extracted to settlementFoodSummary (megaron_plan_oversiktsendpoint.md,
 		// 2026-09-06) so SettlementsOverview reads the exact same economy.* calls
 		// — the two surfaces can never disagree about a settlement's food state.
-		foodSummary := settlementFoodSummary(r.Context(), h.pool, sett.ID, sett.Population, h.sitosCfg)
-		granaryPerGood := foodSummary.GranaryPerGood
-		granaryTotal := foodSummary.GranaryTotal
+		foodSummary := settlementFoodSummary(r.Context(), h.pool, sett.ID, sett.Population)
+
 		coverageDays := foodSummary.CoverageTicks
-		granaryCap := foodSummary.GranaryCap
+
 		foodNetPerDay := foodSummary.FoodNetPerTick
 		grainConsumRate := foodSummary.GrainConsumRate
 		grainProdRate := foodSummary.GrainProdRate
@@ -649,7 +644,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		).Scan(&foodGubbarPlaced)
 
 		// "Senaste tick" summary (Fas 2 point 8): derive prod/cons from the same
-		// per-tick rates already in resSnap, and sum this tick's Sitos silver delta
+		// per-tick rates already in resSnap
 		// from the events log. Summarizes the journal without replacing it.
 		lastTickProd := map[string]float64{}
 		lastTickCons := map[string]float64{}
@@ -679,37 +674,6 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				lastTickCons["grain"] = grainConsumRate
 			}
 		}
-		// DEL A Sitos-delta-itemisering (megaron_ekonomi_legibilitet_plan.md):
-		// What the granary did for this settlement this tick. There is no silver
-		// leg left to report (B3) — the itemisation is food in and food out.
-		// Reads the NEW event types; the frozen SitosTransaction rows still in the
-		// log belong to the fund and are deliberately not reinterpreted here.
-		var sitosInterventions int
-		var sitosFoodIn, sitosFoodOut float64
-		if lrows, lerr := h.pool.Query(r.Context(),
-			`SELECT event_type, payload FROM events
-			 WHERE stream_id = $1 AND world_tick = $2
-			   AND event_type IN ('SitosGranaryStored', 'SitosGranaryReleased')`,
-			sett.ID, currentTick,
-		); lerr == nil {
-			for lrows.Next() {
-				var etype string
-				var pl []byte
-				if lrows.Scan(&etype, &pl) == nil {
-					var p economy.SitosGranaryPayload
-					if json.Unmarshal(pl, &p) == nil {
-						sitosInterventions++
-						if etype == economy.EventSitosGranaryReleased {
-							sitosFoodIn += p.Total
-						} else {
-							sitosFoodOut += p.Total
-						}
-					}
-				}
-			}
-			lrows.Close()
-		}
-
 		// Settlement cap: same "how many colonies do I hold vs. the per-Wanax
 		// ceiling" figure `keryx actions` derives for the colonize gate
 		// (capabilities.settlementCapRequirement / province.MaxSettlementsPerWanax),
@@ -812,23 +776,16 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				"used": settlementsOwned,
 				"max":  province.MaxSettlementsPerWanax,
 			},
-			"sitos": map[string]any{
-				"granary_total":     granaryTotal,
-				"granary_per_good":  granaryPerGood,
-				"granary_cap":       granaryCap,
+			"food": map[string]any{
+
 				"coverage_ticks":    coverageDays,
 				"food_net_per_tick": foodNetPerDay,
 				"growth_state":      foodSummary.GrowthState,
-				"low_ticks":         h.sitosCfg.LowDays,
-				"high_ticks":        h.sitosCfg.HighDays,
 			},
 			"last_tick": map[string]any{
-				"tick":                currentTick,
-				"production":          lastTickProd,
-				"consumption":         lastTickCons,
-				"sitos_interventions": sitosInterventions,
-				"sitos_food_in":       sitosFoodIn,
-				"sitos_food_out":      sitosFoodOut,
+				"tick":        currentTick,
+				"production":  lastTickProd,
+				"consumption": lastTickCons,
 			},
 		}
 	}
@@ -836,7 +793,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, resp)
 }
 
-// FoodSummary is a settlement's food/granary snapshot as the economy.*
+// FoodSummary is a settlement's single-inventory food snapshot as the economy.*
 // functions compute it — shared by ProvinceHandler.Get and
 // SettlementHandler.SettlementsOverview (megaron_plan_oversiktsendpoint.md,
 // 2026-09-06) so the two surfaces read the same numbers from the same
@@ -847,14 +804,10 @@ type FoodSummary struct {
 	GrainConsumRate    float64
 	FoodSelfSufficient bool
 	FoodGubbarRequired int
-	GranaryPerGood     map[string]float64
-	GranaryTotal       float64
-	GranaryCap         float64
-	CoverageTicks      float64
-	FoodNetPerTick     float64
-	GrowthState        string
-	LowTicks           float64
-	HighTicks          float64
+
+	CoverageTicks  float64
+	FoodNetPerTick float64
+	GrowthState    string
 }
 
 // settlementFoodSummary computes a settlement's food economy exactly as
@@ -863,7 +816,7 @@ type FoodSummary struct {
 // population is the caller's already-loaded sett.Population, passed
 // explicitly so a caller that only loaded id/name/population (the overview
 // handler) doesn't need a full settlement.Settlement.
-func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.UUID, population int, sitosCfg economy.SitosConfig) FoodSummary {
+func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.UUID, population int) FoodSummary {
 	// Part B: labor_pool = population. Soldiers are extracted from population at
 	// recruit time, so army columns are no longer a labor drain.
 	laborPool := population
@@ -871,10 +824,6 @@ func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.
 		laborPool = 0
 	}
 
-	granaryPerGood, granaryTotal, granErr := economy.GranaryTotals(ctx, pool, settID)
-	if granErr != nil {
-		slog.Error("granary read failed", "err", granErr, "settlement", settID)
-	}
 	var grainAmount, grainRate, grainCap float64
 	var grainCalcTick int
 	_ = pool.QueryRow(ctx,
@@ -887,7 +836,7 @@ func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.
 	// for the remainder, one need (economy.FoodConsumptionSplit). Counting
 	// grain alone would call a fish-fed city starving.
 	var foodStock float64
-	for _, good := range sitosCfg.SubsistenceGoods {
+	for _, good := range economy.NetFoodGoods {
 		var s float64
 		if pool.QueryRow(ctx,
 			`SELECT GREATEST(0, settled(amount, rate, calc_tick))
@@ -903,13 +852,13 @@ func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.
 		 WHERE settlement_id = $1 AND good_key = ANY($2)`,
 		settID, economy.NetFoodGoods,
 	).Scan(&foodRatePerTick)
-	coverageDays := economy.CoverageDays(foodStock, population)
-	granaryCap := economy.GranaryCap(population, sitosCfg)
+	coverageDays := economy.FoodCoverageTicks(foodStock, population)
+
 	// Coverage is a stock figure, so it says nothing about which way the city
 	// is going — and a newly founded city legitimately starts near zero
 	// coverage while producing a large surplus. Reported alone it reads as
 	// famine for the first days of every city's life (eye-check 2026-08-03:
-	// a city with +21 000 grain/day showed "0.1 days, granary empty"). The
+	// a surplus city showed only its small initial stock). The
 	// net food rate is what separates "lean and climbing" from "starving",
 	// and the surfaces need both to say either honestly.
 	//
@@ -955,14 +904,10 @@ func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.
 		GrainConsumRate:    grainConsumRate,
 		FoodSelfSufficient: foodSelfSufficient,
 		FoodGubbarRequired: foodGubbarRequired,
-		GranaryPerGood:     granaryPerGood,
-		GranaryTotal:       granaryTotal,
-		GranaryCap:         granaryCap,
-		CoverageTicks:      coverageDays,
-		FoodNetPerTick:     foodNetPerDay,
-		GrowthState:        economy.GrowthState(foodUnmet, foodNetPerDay),
-		LowTicks:           sitosCfg.LowDays,
-		HighTicks:          sitosCfg.HighDays,
+
+		CoverageTicks:  coverageDays,
+		FoodNetPerTick: foodNetPerDay,
+		GrowthState:    economy.GrowthState(foodUnmet, foodNetPerDay),
 	}
 }
 

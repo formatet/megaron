@@ -1,0 +1,156 @@
+{
+  "catchment": [
+    {
+      "q": 50,
+      "r": 32,
+      "known": true,
+      "terrain": "hills"
+    },
+    {
+      "q": 48,
+      "r": 32,
+      "known": true,
+      "terrain": "plains"
+    },
+    {
+      "q": 48,
+      "r": 33,
+      "known": true,
+      "terrain": "hills"
+    },
+    {
+      "q": 48,
+      "r": 34,
+      "known": true,
+      "terrain": "hills",
+      "coastal": true
+    },
+    {
+      "q": 49,
+      "r": 31,
+      "known": true,
+      "terrain": "scrub_maquis"
+    },
+    {
+      "q": 49,
+      "r": 32,
+      "known": true,
+      "terrain": "hills"
+    },
+    {
+      "q": 49,
+      "r": 33,
+      "known": true,
+      "terrain": "hills",
+      "coastal": true
+    },
+    {
+      "q": 49,
+      "r": 34,
+      "known": true,
+      "terrain": "coastal_sea"
+    },
+    {
+      "q": 50,
+      "r": 30,
+      "known": true,
+      "terrain": "semi_desert"
+    },
+    {
+      "q": 50,
+      "r": 31,
+      "known": true,
+      "terrain": "scrub_maquis"
+    },
+    {
+      "q": 50,
+      "r": 33,
+      "known": true,
+      "terrain": "mountain_limestone",
+      "coastal": true,
+      "tin_deposit": true
+    },
+    {
+      "q": 50,
+      "r": 34,
+      "known": true,
+      "terrain": "coastal_sea"
+    },
+    {
+      "q": 51,
+      "r": 30,
+      "known": true,
+      "terrain": "semi_desert"
+    },
+    {
+      "q": 51,
+      "r": 31,
+      "known": true,
+      "terrain": "semi_desert"
+    },
+    {
+      "q": 51,
+      "r": 32,
+      "known": true,
+      "terrain": "scrub_maquis"
+    },
+    {
+      "q": 51,
+      "r": 33,
+      "known": true,
+      "terrain": "hills",
+      "coastal": true
+    },
+    {
+      "q": 52,
+      "r": 30,
+      "known": true,
+      "terrain": "scrub_maquis"
+    },
+    {
+      "q": 52,
+      "r": 31,
+      "known": true,
+      "terrain": "semi_desert"
+    },
+    {
+      "q": 52,
+      "r": 32,
+      "known": true,
+      "terrain": "semi_desert"
+    }
+  ],
+  "founding_gifts": [
+    {
+      "detail": "an inland site whose catchment bears grain, so the city is founded with a farm already standing",
+      "key": "demeter_farm",
+      "label": "Demeter's farm"
+    }
+  ],
+  "goods": {
+    "fish": 4,
+    "grain": 6.5,
+    "livestock": 1,
+    "oil": 6.333333333333333,
+    "stone": 19,
+    "tin": 0.9999999999999999,
+    "wine": 13.666666666666663
+  },
+  "grain": {
+    "base_per_tick": 5.6,
+    "consumption_per_tick": 5,
+    "est_net_per_tick": 0.5999999999999996,
+    "farm_possible": true,
+    "fish_per_tick": 0,
+    "food_net_per_tick": 0.5999999999999996,
+    "loyalty_warning": "",
+    "seed": 1200,
+    "starter_farm_included": true,
+    "ticks_until_empty": null,
+    "with_farm_food_net_per_tick": 0.5999999999999996,
+    "with_farm_per_tick": 5.6
+  },
+  "harbour_note": "Inland: a city here can never build a harbour or ships \u2014 to reach the sea you will need a coastal colony.",
+  "timber_warning": "No timber within reach \u2014 every building needs timber. Plan wood deliveries before building.",
+  "unknown_hexes": 0
+}

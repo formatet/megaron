@@ -10,7 +10,6 @@ import (
 	"formatet/megaron/server/internal/carrier"
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/combat"
-	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/transport"
@@ -305,7 +304,7 @@ func TestCarrierFate_PendingRescueCanLandBeforeProjectionAndReportOnlyAtHome(t *
 	}
 	f.setTick(t, 502)
 	raw, _ := json.Marshal(unit.ScheduledUnitArrivalPayload{UnitID: rescuer, WorldID: f.worldID})
-	arrivals := combat.NewUnitArrivalHandler(f.pool, store, nil, sched, clk, economy.SitosConfig{})
+	arrivals := combat.NewUnitArrivalHandler(f.pool, store, nil, sched, clk)
 	if err := arrivals.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: 502, Payload: raw}); err != nil {
 		t.Fatal(err)
 	}

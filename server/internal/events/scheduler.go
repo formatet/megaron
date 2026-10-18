@@ -106,8 +106,7 @@ const (
 	ScheduledFoodTick ScheduledEventType = "FoodTick"
 	// Escrow expiry: refund buyer silver if a trade offer expires without being accepted.
 	ScheduledOfferExpiry ScheduledEventType = "OfferExpiry"
-	// Sitos-fonden: self-rescheduling stabilization pass, cadence +1 tick (every
-	// tick, not daily) — see internal/economy/sitos_tick.go.
+	// Legacy queue identifier only: retired in184, accepted as a no-op.
 	ScheduledSitosTick ScheduledEventType = "SitosTick"
 	// ScheduledOrderDelivery: an order courier reaching its unit — the carried
 	// order (march etc.) executes on delivery (temenos_orderlopare_plan.md Fas 2).

@@ -1,4 +1,4 @@
-A city grows when it has a **surplus of food** — when it produces more food each day than its people eat. Growing costs no food: the surplus stays in your stores.
+A city grows when it has a **surplus of food** — when it produces more food each day than its people eat. Growing costs no food: the surplus stays in the same city grain and fish stocks that feed your people.
 
 - **Surplus, not store.** What counts is the daily balance — grain and fish produced, minus what the people eat — shown as the food *net* on the city. A positive net grows the city; zero or below holds it steady, even with full stores.
 - **The pace is fixed.** A city with a surplus always grows at the full rate, about half a percent a day. A bigger surplus does not grow it faster, only fills your stores faster.

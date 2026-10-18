@@ -81,7 +81,7 @@ func TestGiftDestinationListMatchesLetterFOW(t *testing.T) {
 	for _, hidden := range []bool{false, true} {
 		t.Run(map[bool]string{false: "contacted", true: "hidden"}[hidden], func(t *testing.T) {
 			f := giftFixture(t, hidden)
-			ph := NewProvinceHandler(f.pool, f.scheduler, f.clk, economy.SitosConfig{}, nil, nil)
+			ph := NewProvinceHandler(f.pool, f.scheduler, f.clk, nil, nil)
 			f.router.Get("/worlds/{worldID}/provinces/{provinceID}/trade/destinations", ph.TransferDestinations)
 			request := httptest.NewRequest("GET", "/worlds/"+f.worldID.String()+"/provinces/"+f.originProvince.String()+"/trade/destinations", nil)
 			request.Header.Set("Authorization", "Bearer "+f.token)
@@ -323,7 +323,7 @@ func TestGiftHistoryPrivateUntilArrival(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ph := NewProvinceHandler(f.pool, f.scheduler, f.clk, economy.SitosConfig{}, nil, nil)
+	ph := NewProvinceHandler(f.pool, f.scheduler, f.clk, nil, nil)
 	f.router.Get("/worlds/{worldID}/gifts", ph.GiftHistory)
 	history := func(token string) []map[string]any {
 		t.Helper()

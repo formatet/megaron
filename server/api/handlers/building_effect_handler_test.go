@@ -18,12 +18,11 @@ import (
 	"time"
 
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
 )
 
 func TestBuildingCatalogue_HasNoEffectsField(t *testing.T) {
 	pool := p10TestPool(t)
-	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), economy.SitosConfig{}, nil, nil)
+	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), nil, nil)
 
 	rec := httptest.NewRecorder()
 	ph.BuildingCatalogue(rec, httptest.NewRequest(http.MethodGet, "/api/v1/buildings", nil))
@@ -73,7 +72,7 @@ func getPlacementOptionsEffects(t *testing.T, f *mineGateFixture) placementOptio
 // buildings list has no effects.
 func TestPlacementOptions_EffectAndUpgradeEffect(t *testing.T) {
 	f := buildHexFixture(t)
-	ph := NewProvinceHandler(f.pool, nil, clock.NewTestClock(time.Now()), economy.SitosConfig{}, nil, nil)
+	ph := NewProvinceHandler(f.pool, nil, clock.NewTestClock(time.Now()), nil, nil)
 	f.router.Get("/worlds/{worldID}/provinces/{provinceID}/placement-options", ph.PlacementOptions)
 	f.router.Get("/worlds/{worldID}/provinces/{provinceID}/buildings", ph.Buildings)
 

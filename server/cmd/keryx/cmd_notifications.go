@@ -15,8 +15,8 @@ import (
 // by default (both the default-view exclusion and the ×N grouping below) —
 // an explicit allowlist, not "anything repetitive", so a future high-signal
 // kind (e.g. SubsistenceWarning) is never silently swallowed just because
-// it happens to fire often. Today: only Sitos' routine noise (~99% of the
-// feed — see megaron_ekonomi_legibilitet_plan.md DEL B).
+// it happens to fire often. Historical only: Sitos kinds remain grouped when
+// reading archives; these mechanics no longer run.
 var noisyNotificationKinds = []string{"SitosIntervention", "SitosFundLow"}
 
 // subsistenceWarningKind is the own-city grain-subsistence warning (DEL D,
@@ -853,7 +853,7 @@ func printColonyFoundedGrainLine(n notificationItem) {
 // in temenos must be visible AND actionable in keryx).
 //
 // Fas 2026-07-12 (DEL B, megaron_ekonomi_legibilitet_plan.md): the default
-// view was ~99% SitosIntervention noise burying real events (TradeDelivery,
+// historical view was ~99% SitosIntervention noise burying real events (TradeDelivery,
 // UnitArrived, ...). Default now excludes noisyNotificationKinds and prints
 // a one-line pointer to them; --kind/--exclude give explicit control.
 func notificationsCmd() *cobra.Command {
@@ -864,8 +864,8 @@ func notificationsCmd() *cobra.Command {
 		Short: "Show your notification feed (arrivals, completions, trade events, ...)",
 		Example: `  keryx notifications
   keryx notifications --unread
-  keryx notifications --kind SitosIntervention
-  keryx notifications --exclude SitosIntervention
+  keryx notifications --kind UnitArrived
+  keryx notifications --exclude BuildComplete
   keryx notifications --mark-read`,
 		// --kind and --exclude are both plausible for a stray positional —
 		// no single one is the obvious guess.
@@ -973,7 +973,7 @@ func notificationsCmd() *cobra.Command {
 				printNotificationRow(c, n)
 			}
 
-			// Noisy kinds present in this response (e.g. explicit --kind
+			// Historical only: noisy archive kinds (e.g. explicit --kind
 			// SitosIntervention) collapse to one "×N" line instead of
 			// flooding the terminal.
 			for _, kind := range noisyNotificationKinds {
@@ -1004,7 +1004,7 @@ func notificationsCmd() *cobra.Command {
 	}
 	cmd.Flags().BoolVar(&unreadOnly, "unread", false, "show only unread notifications")
 	cmd.Flags().BoolVar(&markRead, "mark-read", false, "mark all notifications as read and exit")
-	cmd.Flags().StringVar(&kindFilter, "kind", "", "only show these notification kinds (comma-separated, e.g. SitosIntervention)")
+	cmd.Flags().StringVar(&kindFilter, "kind", "", "only show these notification kinds (comma-separated, e.g. UnitArrived)")
 	cmd.Flags().StringVar(&excludeFilter, "exclude", "", "hide these notification kinds (comma-separated)")
 	return cmd
 }

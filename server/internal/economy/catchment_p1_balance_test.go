@@ -95,7 +95,7 @@ func TestP1_AllEighteenRingHexesContribute(t *testing.T) {
 	ctx := context.Background()
 
 	const tick = 100
-	settlementID := seedFullRingFixture(t, tick, /*pop*/ 100, "hills")
+	settlementID := seedFullRingFixture(t, tick /*pop*/, 100, "hills")
 
 	potentials, err := CatchmentBasePotential(ctx, pool, settlementID)
 	if err != nil {
@@ -128,7 +128,7 @@ func TestP1_ProductionMultiplierVsPreP1Catchment(t *testing.T) {
 	ctx := context.Background()
 
 	const tick = 100
-	settlementID := seedFullRingFixture(t, tick, /*pop*/ 100, "plains")
+	settlementID := seedFullRingFixture(t, tick /*pop*/, 100, "plains")
 
 	potentials, err := CatchmentBasePotential(ctx, pool, settlementID)
 	if err != nil {

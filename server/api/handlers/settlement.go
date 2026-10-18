@@ -35,13 +35,13 @@ type SettlementHandler struct {
 	eventStore *events.Store
 	scheduler  *events.Scheduler
 	clk        clock.Clock
-	sitosCfg   economy.SitosConfig
-	RiteDice   economy.Dice // injectable outcome seam; nil uses the production roll
+
+	RiteDice economy.Dice // injectable outcome seam; nil uses the production roll
 }
 
 // NewSettlementHandler creates a SettlementHandler.
-func NewSettlementHandler(pool *pgxpool.Pool, store *events.Store, sched *events.Scheduler, clk clock.Clock, sitosCfg economy.SitosConfig) *SettlementHandler {
-	return &SettlementHandler{pool: pool, eventStore: store, scheduler: sched, clk: clk, sitosCfg: sitosCfg}
+func NewSettlementHandler(pool *pgxpool.Pool, store *events.Store, sched *events.Scheduler, clk clock.Clock) *SettlementHandler {
+	return &SettlementHandler{pool: pool, eventStore: store, scheduler: sched, clk: clk}
 }
 
 // List handles GET /worlds/:worldID/settlements — returns the caller's settlements.
@@ -137,14 +137,11 @@ func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	type sitosRow struct {
-		CoverageTicks  float64            `json:"coverage_ticks"`
-		LowTicks       float64            `json:"low_ticks"`
-		HighTicks      float64            `json:"high_ticks"`
-		GranaryTotal   float64            `json:"granary_total"`
-		GranaryPerGood map[string]float64 `json:"granary_per_good"`
-		FoodNetPerTick float64            `json:"food_net_per_tick"`
-		GrowthState    string             `json:"growth_state"`
+	type foodRow struct {
+		CoverageTicks float64 `json:"coverage_ticks"`
+
+		FoodNetPerTick float64 `json:"food_net_per_tick"`
+		GrowthState    string  `json:"growth_state"`
 	}
 	type item struct {
 		AutomaticFood      economy.AutomaticFood `json:"automatic_food"`
@@ -157,7 +154,7 @@ func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.R
 		FoodSelfSufficient bool                  `json:"food_self_sufficient"`
 		ArmyUpkeep         upkeepAmount          `json:"army_upkeep"`
 		FoodNetAfterUpkeep float64               `json:"food_net_per_tick_after_upkeep"`
-		Sitos              sitosRow              `json:"sitos"`
+		Food               foodRow               `json:"food"`
 	}
 
 	type settRow struct {
@@ -177,7 +174,7 @@ func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.R
 
 	result := make([]item, 0, len(settRows))
 	for _, s := range settRows {
-		fs := settlementFoodSummary(r.Context(), h.pool, s.id, s.population, h.sitosCfg)
+		fs := settlementFoodSummary(r.Context(), h.pool, s.id, s.population)
 		up, _, err := settlementUpkeepDrain(r.Context(), h.pool, s.id, combat.UpkeepSoldShare())
 		if err != nil {
 			writeError(w, http.StatusInternalServerError, "could not compute army upkeep")
@@ -194,12 +191,9 @@ func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.R
 			AutomaticFood:      fs.AutomaticFood,
 			ArmyUpkeep:         up,
 			FoodNetAfterUpkeep: foodNetAfterArmy(fs.FoodNetPerTick, up.Grain),
-			Sitos: sitosRow{
-				CoverageTicks:  fs.CoverageTicks,
-				LowTicks:       fs.LowTicks,
-				HighTicks:      fs.HighTicks,
-				GranaryTotal:   fs.GranaryTotal,
-				GranaryPerGood: fs.GranaryPerGood,
+			Food: foodRow{
+				CoverageTicks: fs.CoverageTicks,
+
 				FoodNetPerTick: fs.FoodNetPerTick,
 				GrowthState:    fs.GrowthState,
 			},
@@ -1364,7 +1358,7 @@ func (h *SettlementHandler) applyBattleFrenzy(ctx context.Context, tx pgx.Tx, se
 // applyHarvestBlessing raises the yield of every food good but fish by a
 // quarter for economy.HarvestBlessingTicks (Timothy 2026-10-10). It was a
 // one-shot ×1.25 on the grain store, which gave the most to the fullest
-// granary and nothing to an empty one. Shared with the divine favour
+// food store and nothing to an empty one. Shared with the divine favour
 // (kharis/tick.go "bountiful_harvest") through economy.ApplyHarvestBlessing.
 func (h *SettlementHandler) applyHarvestBlessing(ctx context.Context, tx pgx.Tx, settlementID uuid.UUID, spec religion.PrayerSpec) (map[string]any, string, error) {
 	untilTick, err := economy.ApplyHarvestBlessing(ctx, tx, settlementID)

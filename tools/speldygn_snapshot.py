@@ -38,7 +38,11 @@ def psql(sql):
 
 
 def append(path, header, rows):
-    new = not os.path.exists(path)
+    new = not os.path.exists(path) or os.path.getsize(path) == 0
+    if not new:
+        with open(path, newline="") as existing:
+            if next(csv.reader(existing), None) != header:
+                raise ValueError(f"CSV schema changed: {path}; use a new output directory")
     with open(path, "a", newline="") as f:
         w = csv.writer(f)
         if new:
@@ -59,7 +63,6 @@ goods AS (
            CASE WHEN sg.cap > 0 AND {LAZY} >= sg.cap * 0.99 THEN 1 ELSE 0 END AS at_cap
     FROM settlement_goods sg, w
 ),
-gran AS (SELECT settlement_id, sum(amount) AS stored FROM settlement_granary GROUP BY 1),
 army AS (
     SELECT settlement_id, count(*) AS cohorts, sum(size) AS men,
            max(unpaid_periods) AS max_unpaid,
@@ -73,7 +76,6 @@ SELECT w.current_tick, pl.username, s.name, s.population, s.loyalty,
        COALESCE((SELECT round(amt::numeric,1) FROM goods g WHERE g.settlement_id=s.id AND g.good_key='fish'),0),
        COALESCE((SELECT round(amt::numeric,1) FROM goods g WHERE g.settlement_id=s.id AND g.good_key='bronze'),0),
        COALESCE((SELECT sum(at_cap) FROM goods g WHERE g.settlement_id=s.id),0),
-       COALESCE((SELECT round(stored::numeric,1) FROM gran WHERE gran.settlement_id=s.id),0),
        COALESCE((SELECT count(*) FROM settlement_placement sp WHERE sp.settlement_id=s.id),0),
        COALESCE((SELECT count(*) FROM buildings b WHERE b.settlement_id=s.id),0),
        COALESCE((SELECT cohorts FROM army a WHERE a.settlement_id=s.id),0),
@@ -100,7 +102,7 @@ ORDER BY pl.username, s.name;
 SETTLEMENT_HEADER = [
     "wall", "tick", "player", "settlement", "population", "loyalty",
     "silver", "grain", "grain_rate", "fish", "bronze", "goods_at_cap",
-    "granary_stored", "gubbar_placed", "buildings",
+    "gubbar_placed", "buildings",
     "cohorts", "men", "max_unpaid_periods", "refilling",
     "kharis", "kharis_cap", "kharis_mood", "temple_level",
     "known_settlements", "contacted_markets",

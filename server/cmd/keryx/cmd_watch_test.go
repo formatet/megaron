@@ -182,7 +182,7 @@ func TestRunWatch_CountStopsAtN(t *testing.T) {
 }
 
 func TestRunWatch_KindFilter(t *testing.T) {
-	m1, _ := json.Marshal(wsMsg{Kind: "SitosFundLow", Payload: json.RawMessage(`{}`)})
+	m1, _ := json.Marshal(wsMsg{Kind: "BuildComplete", Payload: json.RawMessage(`{}`)})
 	m2, _ := json.Marshal(wsMsg{Kind: "ForeignMarchSighted", Payload: json.RawMessage(`{"owner":"Nestor"}`)})
 
 	srv := echoWSServer(t, [][]byte{m1, m2})

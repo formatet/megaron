@@ -25,15 +25,11 @@ Bruk
 Appenda alltid, skriv aldrig över — en dubbelkörning ger dubbla rader (går att
 deduplicera på tick i efterhand), aldrig en trasig serie.
 
-Kolumner som INTE kunde fyllas (flaggat, se slutrapporten till planeraren):
-  - silver_in_sitos: settlements.sitos_fund_silver revs i migration 106
-    ("Sitos-fonden blir ett MAGASIN") — B3 där säger uttryckligen att silver
-    ALDRIG går via granaret. Ingen ersättarkolumn finns. Utelämnad helt,
-    hellre än ett fält som alltid är tomt.
-  - sitos_tithe_cum: ingen egen händelse. B4:s "tithe of the surplus" ÄR
-    action.Kind == "store" i EvaluateGranaryAction (internal/economy/sitos.go)
-    — samma händelse som sitos_stored_cum. Kolumnen finns kvar (planen bad om
-    den) men är alltid identisk med sitos_stored_cum; se slutrapporten.
+Historiska kolumner (CSV-kontraktet behålls för befintliga mätserier):
+  - sitos_stored_cum och sitos_released_cum räknar enbart frysta historiska
+    SitosGranaryStored/Released-event. Inget aktivt magasin finns längre.
+  - sitos_tithe_cum är en historisk alias-kolumn för sitos_stored_cum;
+    det fanns ingen separat tithe-händelse. Inga aktuella flöden härleds här.
 """
 
 from __future__ import annotations
@@ -49,8 +45,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 ACC = ROOT / "tools" / "acceptance.sh"
 
-# Ordningen matchar megaron_plan_snapshotriggen.md §3, minus silver_in_sitos
-# (utelämnad, se modulens docstring och slutrapporten).
+# CSV-ordningen behålls; reservkolumnerna är endast historiska eventräknare.
 FIELDNAMES = [
     "tick",
     "wanax",
@@ -130,6 +125,7 @@ deserted AS (
       AND u.support_settlement_id IS NOT NULL
     GROUP BY u.support_settlement_id
 ),
+-- Historical only: frozen archive events, never current food stock or flows.
 sitos AS (
     SELECT stream_id AS settlement_id,
            COUNT(*) FILTER (WHERE event_type = 'SitosGranaryStored') AS sitos_stored_cum,
@@ -175,7 +171,7 @@ SELECT
     COALESCE(cap_count.goods_at_cap, 0)                  AS goods_at_cap,
     COALESCE(sitos.sitos_stored_cum, 0)                  AS sitos_stored_cum,
     COALESCE(sitos.sitos_released_cum, 0)                AS sitos_released_cum,
-    -- Ingen egen händelse — B4:s tithe ÄR "store" (se modulens docstring).
+    -- Historical only: legacy CSV alias for the same stored-event count.
     COALESCE(sitos.sitos_stored_cum, 0)                  AS sitos_tithe_cum,
     COALESCE(offers.offers_sent_cum, 0)                  AS offers_sent_cum,
     COALESCE(offers.offers_answered_cum, 0)              AS offers_answered_cum,

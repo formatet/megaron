@@ -51,8 +51,8 @@ func TestExploreOrder_ScoutReport(t *testing.T) {
 	// target hex (3,0) carries a known copper deposit, so the report can be
 	// asserted against a concrete "found something" case.
 	tiles := []struct {
-		q, r     int
-		terrain  string
+		q, r      int
+		terrain   string
 		copperDep bool
 	}{
 		{0, 0, "plains", false},

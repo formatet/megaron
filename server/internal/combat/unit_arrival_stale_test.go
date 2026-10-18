@@ -18,7 +18,7 @@ import (
 	"time"
 
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
+
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
@@ -70,7 +70,7 @@ func TestUnitArrivalHandler_SupersededArrivalIsNoOp(t *testing.T) {
 	evt := events.ScheduledEvent{ID: 1, WorldID: worldID, Payload: payload}
 
 	clk := clock.NewTestClock(time.Now())
-	h := NewUnitArrivalHandler(pool, events.NewStore(pool), nil, events.NewScheduler(pool, clk), clk, economy.SitosConfig{})
+	h := NewUnitArrivalHandler(pool, events.NewStore(pool), nil, events.NewScheduler(pool, clk), clk)
 
 	if err := h.Handle(ctx, evt); err != nil {
 		t.Fatalf("Handle on a superseded arrival: got %v, want nil", err)

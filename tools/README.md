@@ -261,7 +261,7 @@ dagshistorik och slakt genom webben. Desktop/390px inklusive matrad, More och
 Economy, health/kvitton och ingen SQL-mutation sparas. `baseline` och fjärde
 argumentet arkiverad oförändrad web-katalog gör samma handlingar före ändringen.
 `python3 tools/production_mutations.py OUT` bryter stängd More, coverage-källa
-och reservtröskel; kräver namngiven röd assertion och återställt grönt per arm.
+och befolkningens tillväxtrad från `food`; kräver namngiven röd assertion och återställt grönt per arm.
 
 ## Spelartext och inline-dialoger (K, BILD)
 
@@ -585,3 +585,24 @@ gemensam hexinträdes-scan på samma500 väderfrön och10 000 färder/fall. Inge
 skada/täthet/rutt ändras mellan armarna. Bevis/avgränsningar:
 `docs/reviews/stormscan-varje-hex/README.md`. `mutate.py` där dödar tick-only
 och upprepad-samma-storm med varsin färsk DB.
+
+
+## Matlager efter slice13b
+
+Aktiva browserriggar läser API-objektet `food` (`coverage_ticks`,
+`food_net_per_tick`, `growth_state`) och stadens `#city-food-sec`;
+utökade matdetaljer finns i `#city-food-details-sec`.
+`harvest_status_browser.py` använder aktuell UI även för sin syntetiska
+`before`-fixtur utan skördegåva; den jämför inte längre med arkiverad UI-kod.
+
+`speldygn_snapshot.py` och `lagersvangning_matning.py collect` läser bara
+stadens ordinarie varulager. Deras nya CSV-schema saknar reservkolumner;
+använd nya utdatakataloger så att nya rader inte appenderas under äldre headers.
+`lagersvangning_matning.py analyze` behåller sin uttryckligen historiska
+rekonstruktion av den äldre tillväxtformeln, inte en kontroll av dagens regler.
+
+Historik som behålls: `snapshot.py` räknar frysta Sitos-event och behåller
+motsvarande CSV-kolumner för seriekompatibilitet. `alfa_economy.py` visar
+arkiveventens lagerskillnad och täckning i tydligt historiska kolumner.
+`text_live.py` återspelar äldre notiser syntetiskt för att prova arkivläsaren.
+Ingen av dessa historikläsare styr eller skriver dagens matlager.

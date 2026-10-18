@@ -21,7 +21,7 @@ import (
 
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/combat"
-	"formatet/megaron/server/internal/economy"
+
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/messenger"
 	"formatet/megaron/server/internal/unit"
@@ -188,7 +188,7 @@ func TestStanceMarching_DeliveredWhileMarching(t *testing.T) {
 		t.Fatalf("fast-forward march: %v", err)
 	}
 	payload, _ := json.Marshal(unit.ScheduledUnitArrivalPayload{UnitID: f.unitID, WorldID: f.worldID})
-	ah := combat.NewUnitArrivalHandler(pool, events.NewStore(pool), nil, events.NewScheduler(pool, clk), clk, economy.SitosConfig{})
+	ah := combat.NewUnitArrivalHandler(pool, events.NewStore(pool), nil, events.NewScheduler(pool, clk), clk)
 	if err := ah.Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, Payload: payload}); err != nil {
 		t.Fatalf("arrival: %v", err)
 	}

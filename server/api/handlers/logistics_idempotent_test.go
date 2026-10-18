@@ -57,7 +57,9 @@ func TestLogisticsArrivalHandler_ReplayIsIdempotent(t *testing.T) {
 	).Scan(&worldID); err != nil {
 		t.Fatalf("create world: %v", err)
 	}
-	t.Cleanup(func() { _, _ = pool.Exec(context.Background(), `UPDATE worlds SET status = 'archived' WHERE id = $1`, worldID) })
+	t.Cleanup(func() {
+		_, _ = pool.Exec(context.Background(), `UPDATE worlds SET status = 'archived' WHERE id = $1`, worldID)
+	})
 
 	var ownerID uuid.UUID
 	if err := pool.QueryRow(ctx,

@@ -104,7 +104,8 @@ func TestGoodState_CurrentAtCalcAt(t *testing.T) {
 // TestTimescaleRelation_SettledFormula locks the TIME_SCALE↔production-rate contract.
 //
 // The settled() SQL function is the canonical lazy-eval path for all settlement_goods:
-//   settled(amount, rate, calc_at) = amount + epoch_seconds(now−calc_at)/60 × rate × factor
+//
+//	settled(amount, rate, calc_at) = amount + epoch_seconds(now−calc_at)/60 × rate × factor
 //
 // where factor = TIME_SCALE (written to sim_config by main.go at boot).
 //

@@ -24,7 +24,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
+
 	"formatet/megaron/server/internal/events"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -61,7 +61,7 @@ func seedJoinableWorld(t *testing.T, pool *pgxpool.Pool) uuid.UUID {
 // joinCultureRouter wires a chi router with real auth middleware over Join +
 // Settle, same pattern as foreign_units_fow_test.go's registerViewer rig.
 func joinCultureRouter(pool *pgxpool.Pool, authSvc *auth.Service, clk clock.Clock) *chi.Mux {
-	jh := NewJoinHandler(pool, events.NewStore(pool), economy.LoadSitosConfig(), clk, nil)
+	jh := NewJoinHandler(pool, events.NewStore(pool), clk, nil)
 	r := chi.NewRouter()
 	r.Use(auth.Middleware(authSvc))
 	r.Post("/worlds/{worldID}/join", jh.Join)

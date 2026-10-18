@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
+
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/notify"
 	"github.com/go-chi/chi/v5"
@@ -34,7 +34,7 @@ func TestFoundingNotificationRunway_Metropolis(t *testing.T) {
 			pid, token := registerViewer(t, ctx, svc, "runway-"+uuid.NewString())
 			hub := notify.New()
 			hub.SetPool(pool)
-			h := NewJoinHandler(pool, events.NewStore(pool), economy.LoadSitosConfig(), clock.NewTestClock(time.Now()), hub)
+			h := NewJoinHandler(pool, events.NewStore(pool), clock.NewTestClock(time.Now()), hub)
 			r := chi.NewRouter()
 			r.Use(auth.Middleware(svc))
 			r.Post("/worlds/{worldID}/join", h.Join)

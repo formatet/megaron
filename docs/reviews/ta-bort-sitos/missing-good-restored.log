@@ -1,0 +1,5 @@
+=== RUN   TestFoodStore_MigrationConservesLazyStockAndMissingGood
+--- PASS: TestFoodStore_MigrationConservesLazyStockAndMissingGood (0.02s)
+PASS
+ok  	formatet/megaron/server/internal/economy	0.019s
+» färsk DB på migration 184 · commit 6fccfe37+ändringar

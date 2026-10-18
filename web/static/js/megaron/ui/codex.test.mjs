@@ -171,3 +171,11 @@ test('codex: days name the world unit and clock/date names wall time', () => {
   assert.doesNotMatch(bodies.time + bodies.welcome + bodies['coming-back'], /game[ -]day|\bticks?\b|nine hours/i);
   assert.match(bodies['coming-back'], /While you were away, the world kept moving/);
 });
+
+
+test('historical food-reserve notifications open the current food article', () => {
+  // Historical only: these frozen kinds still exist in notification archives.
+  for (const kind of ['SitosGranaryRelease', 'SitosIntervention', 'SitosFundLow']) {
+    assert.equal(articleForKind(kind, index), 'food');
+  }
+});

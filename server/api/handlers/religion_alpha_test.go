@@ -13,7 +13,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
+
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/religion"
@@ -74,7 +74,7 @@ func newAlphaFixture(t *testing.T) alphaFixture {
 		must(err)
 	}
 	clk := clock.NewTestClock(time.Date(2026, 10, 12, 0, 0, 0, 0, time.UTC))
-	f.h = NewSettlementHandler(f.pool, events.NewStore(f.pool), events.NewScheduler(f.pool, clk), clk, economy.SitosConfig{})
+	f.h = NewSettlementHandler(f.pool, events.NewStore(f.pool), events.NewScheduler(f.pool, clk), clk)
 	f.h.RiteDice = alphaDice{0}
 	r := chi.NewRouter()
 	r.Use(auth.Middleware(svc))

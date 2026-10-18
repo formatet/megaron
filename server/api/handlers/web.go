@@ -336,6 +336,7 @@ func (h *WebHandler) EpitaphView(w http.ResponseWriter, r *http.Request) {
 //   - cities the Wanax took or burned, and those it lost without having
 //     founded them (the payloads name the Wanax);
 //   - the battles its units fought (battle_participants).
+//
 // A city from before founder_id existed falls back to the last city alone.
 func (h *WebHandler) epitaphLines(ctx context.Context, playerID, worldID uuid.UUID, lastSettlementID *uuid.UUID) []string {
 	var lines []string

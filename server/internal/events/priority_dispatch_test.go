@@ -47,7 +47,6 @@ func TestProcessBatch_DispatchesInTickPriorityOrder(t *testing.T) {
 		ScheduledMarchSightingScan,
 		ScheduledUpkeepTick,
 		ScheduledUnitArrival,
-		ScheduledSitosTick,
 	}
 	for _, et := range enqueue {
 		if err := scheduler.EnqueueTick(ctx, worldID, et, map[string]any{"probe": true}, 5); err != nil {
@@ -72,7 +71,6 @@ func TestProcessBatch_DispatchesInTickPriorityOrder(t *testing.T) {
 	want := []ScheduledEventType{
 		ScheduledUnitArrival,       // 10 — the world moves
 		ScheduledMarchSightingScan, // 20 — the eyes read the result
-		ScheduledSitosTick,         // 40 — the granary settles
 		ScheduledUpkeepTick,        // 50 — the army eats
 		ScheduledKharisTick,        // 60 — the surplus grows the city
 	}

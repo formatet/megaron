@@ -60,10 +60,10 @@ func TestRecomputeProduction_NullsStaleGoodKeepsLiveGood(t *testing.T) {
 	// pop=400 (not 100): demand (200) must exceed NearjordGrainPerTick (50, P1)
 	// for AK4 below to still hold — at pop=100 the flat home-hex trickle alone
 	// would exactly cover demand and grainRate would land on 0, not negative.
-	settlementID := recomputeFixture(t, tick, /*pop*/ 400, /*grainAmount*/ 50, /*grainRate*/ 0)
+	settlementID := recomputeFixture(t, tick /*pop*/, 400 /*grainAmount*/, 50 /*grainRate*/, 0)
 
 	// Stale cedar: settled at rate 42 for 5 ticks before this recompute call.
-	seedStaleGood(t, settlementID, "cedar", /*amount*/ 10, /*rate*/ 42, /*calcTick*/ tick-5)
+	seedStaleGood(t, settlementID, "cedar" /*amount*/, 10 /*rate*/, 42 /*calcTick*/, tick-5)
 	// P4: stone-on-mountain_limestone has no P3 hexCapacityRule entry (falls
 	// back to HexFallbackCap), so it needs an explicit placement to produce
 	// anything — place one gubbe on one of the fixture's 6 seeded hexes.
@@ -128,7 +128,7 @@ func TestRecomputeProduction_NullsAllRatesWhenSettlementHasNoProducibleGoods(t *
 	const tick = 100
 	// pop=400 (not 100): see the sibling test above — demand must exceed
 	// NearjordGrainPerTick (50, P1) for the AK4 "still negative" assertion.
-	settlementID := recomputeFixture(t, tick, /*pop*/ 400, /*grainAmount*/ 5, /*grainRate*/ 0)
+	settlementID := recomputeFixture(t, tick /*pop*/, 400 /*grainAmount*/, 5 /*grainRate*/, 0)
 
 	// Strip the catchment bare: no map_tiles at all for this world means the
 	// production_rules JOIN in RecomputeProduction returns zero rows.
@@ -142,8 +142,8 @@ func TestRecomputeProduction_NullsAllRatesWhenSettlementHasNoProducibleGoods(t *
 		t.Fatalf("strip catchment: %v", err)
 	}
 
-	seedStaleGood(t, settlementID, "cedar", /*amount*/ 10, /*rate*/ 42, /*calcTick*/ tick-3)
-	seedStaleGood(t, settlementID, "stone", /*amount*/ 4, /*rate*/ 7, /*calcTick*/ tick-2)
+	seedStaleGood(t, settlementID, "cedar" /*amount*/, 10 /*rate*/, 42 /*calcTick*/, tick-3)
+	seedStaleGood(t, settlementID, "stone" /*amount*/, 4 /*rate*/, 7 /*calcTick*/, tick-2)
 
 	if err := RecomputeProduction(ctx, pool, settlementID); err != nil {
 		t.Fatalf("RecomputeProduction: %v", err)

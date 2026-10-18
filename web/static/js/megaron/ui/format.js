@@ -142,6 +142,7 @@ export function notifDomain(kind) {
     BuildComplete: 'city', GoodsCrafted: 'city', ColonyFounded: 'city',
     MetropolisFounded: 'city', OutpostEstablished: 'city',
     FoodShortfall: 'city', SubsistenceWarning: 'city',
+    // Historical only: archived food-reserve notification icons.
     SitosGranaryRelease: 'city', SitosIntervention: 'city', SitosFundLow: 'city',
     HexBlockaded: 'city', HexUnblockaded: 'city', HexTaken: 'city',
     // Trade — goods on the move, and the offers that set them moving.
@@ -767,6 +768,7 @@ export function notifText(kind, body) {
     case 'StandingOrderPaused':
       return `Standing delivery paused — ${body.reason || 'reason unknown'}`;
     // Historic archive kinds remain readable without exposing internal names.
+    // Historical only: frozen notifications from the retired food reserve.
     case 'SitosIntervention': return 'Food support was given to the city';
     case 'SitosFundLow': return 'The city’s food reserve needs attention';
     case 'SitosGranaryRelease': {

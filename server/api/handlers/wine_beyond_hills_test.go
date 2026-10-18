@@ -101,7 +101,7 @@ func TestGoods_WineProducibleOnPlainsOnlyCatchment(t *testing.T) {
 		t.Fatalf("RecomputeProduction: %v", err)
 	}
 
-	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), economy.SitosConfig{}, nil, nil)
+	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), nil, nil)
 	r := chi.NewRouter()
 	r.Get("/worlds/{worldID}/provinces/{provinceID}/goods", ph.Goods)
 

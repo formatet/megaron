@@ -10,7 +10,7 @@ import (
 )
 
 // ticklogCmd renders the per-city tick-journal: production, consumption, discrete
-// events (Sitos, trade, builds) and a loyalty row (— until Fas 3), one block per
+// events (trade, builds and historical food-reserve events) and a loyalty row (— until Fas 3), one block per
 // tick. Newest-first by default; --asc for chronological. Alias: journal.
 func ticklogCmd() *cobra.Command {
 	var provinceID string
@@ -19,7 +19,7 @@ func ticklogCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "ticklog",
 		Aliases: []string{"journal"},
-		Short:   "Daily journal for a city: prod/cons, trade, Sitos, builds (newest first)",
+		Short:   "Daily journal for a city: prod/cons, trade, builds (newest first)",
 		Example: `  keryx ticklog --last 10
   keryx ticklog --province <province-id> --last 20 --asc`,
 		// --province and --last are both plausible for a stray positional —
@@ -118,6 +118,7 @@ func fmtFlows(m map[string]float64) string {
 // renderTickEvent gives a one-line human rendering of a journal event.
 func renderTickEvent(etype string, payload json.RawMessage) string {
 	switch etype {
+	// Historical only: frozen food-reserve events, no longer emitted.
 	case "SitosGranaryStored", "SitosGranaryReleased":
 		var p struct {
 			Total        float64            `json:"total"`

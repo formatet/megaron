@@ -18,7 +18,7 @@ func TestStarvationSignal_ActualLossEvenLastGarrison(t *testing.T) {
 		t.Run(fmt.Sprint(size), func(t *testing.T) {
 			pool := testPool(t)
 			ctx := context.Background()
-			f := newSupportFixture(t, pool, "sitos-actual-loss")
+			f := newSupportFixture(t, pool, "actual-loss")
 			seedGoods(t, pool, f.capitalID, f.tick, 0, 10000)
 			seedGoods(t, pool, f.townID, f.tick, 10000, 10000)
 			var fedUnit uuid.UUID

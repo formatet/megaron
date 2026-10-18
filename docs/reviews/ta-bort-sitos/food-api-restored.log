@@ -1,0 +1,6 @@
+=== RUN   TestSettlementsOverviewParity_MatchesProvinceGet
+2026/10/18 12:50:27 INFO player registered id=cdc28d92-80ac-42ee-9f3a-e4832aabf211 username=wanax-parity-ccd7f8e1-172e-4291-b3d3-a1dd25bc0bd3
+--- PASS: TestSettlementsOverviewParity_MatchesProvinceGet (0.07s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.072s
+» färsk DB på migration 184 · commit 6fccfe37+ändringar

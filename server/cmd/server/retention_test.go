@@ -122,104 +122,28 @@ func TestPruneHeartbeats_KeepsLatestRowRegardlessOfAge(t *testing.T) {
 	}
 }
 
-// TestPruneSitosTicks_KeepsClaimsForPendingEvents is the load-bearing
-// invariant for processed_sitos_ticks (mig 097): a claim may only be pruned
-// once its window has passed AND the scheduled_events row that produced it
-// is no longer pending — otherwise a re-run of that event double-taxes an
-// already-committed settlement (see sitos_tick.go / mig 097's doc comment).
-//
-// Falsified by: dropping the `AND NOT EXISTS (...)` clause from
-// sitosTickDeleteSQL — with it gone, this test fails because the claim tied
-// to the still-pending event gets deleted too.
-func TestPruneSitosTicks_KeepsClaimsForPendingEvents(t *testing.T) {
-	pool := retentionTestPool(t)
-	ctx := context.Background()
-	resetRetentionTables(t, pool, "processed_sitos_ticks", "scheduled_events")
-	worldID := ensureTestWorld(t, pool)
-
-	var doneEventID, pendingEventID int64
-	if err := pool.QueryRow(ctx,
-		`INSERT INTO scheduled_events (world_id, event_type, payload, process_after, processed_at)
-		 VALUES ($1, 'SitosTick', '{}'::jsonb, now() - interval '2 days', now() - interval '2 days')
-		 RETURNING id`, worldID,
-	).Scan(&doneEventID); err != nil {
-		t.Fatalf("insert done event: %v", err)
-	}
-	if err := pool.QueryRow(ctx,
-		`INSERT INTO scheduled_events (world_id, event_type, payload, process_after)
-		 VALUES ($1, 'SitosTick', '{}'::jsonb, now() - interval '2 days')
-		 RETURNING id`, worldID,
-	).Scan(&pendingEventID); err != nil {
-		t.Fatalf("insert pending event: %v", err)
-	}
-
-	oldProcessedAt := time.Now().Add(-48 * time.Hour) // older than the 1h test window
-	if _, err := pool.Exec(ctx,
-		`INSERT INTO processed_sitos_ticks (event_id, settlement_id, processed_at) VALUES ($1, $2, $3)`,
-		doneEventID, uuid.New(), oldProcessedAt,
-	); err != nil {
-		t.Fatalf("insert done claim: %v", err)
-	}
-	if _, err := pool.Exec(ctx,
-		`INSERT INTO processed_sitos_ticks (event_id, settlement_id, processed_at) VALUES ($1, $2, $3)`,
-		pendingEventID, uuid.New(), oldProcessedAt,
-	); err != nil {
-		t.Fatalf("insert pending claim: %v", err)
-	}
-
-	cfg := retentionConfig{sitosTickWindow: time.Hour, batchSize: 1000, maxBatchesPerTable: 10}
-	pruneSitosTicks(ctx, pool, cfg)
-
-	var doneExists, pendingExists bool
-	if err := pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM processed_sitos_ticks WHERE event_id=$1)`, doneEventID).Scan(&doneExists); err != nil {
-		t.Fatalf("check done claim: %v", err)
-	}
-	if err := pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM processed_sitos_ticks WHERE event_id=$1)`, pendingEventID).Scan(&pendingExists); err != nil {
-		t.Fatalf("check pending claim: %v", err)
-	}
-	if doneExists {
-		t.Errorf("claim for a DONE event should have been pruned, but still exists")
-	}
-	if !pendingExists {
-		t.Errorf("claim for a PENDING event must NEVER be pruned — its event might still be re-run and would double-tax the settlement")
-	}
-}
-
-// TestPruneScheduledEvents_KeepsPendingRows is the load-bearing invariant for
-// scheduled_events: only terminal rows (processed_at set, or failed_at set —
-// a dead-letter, never re-claimed per events.Worker's claim query) are ever
-// candidates. A row with both NULL is still claimable at any age and must
-// never be touched.
-//
-// Falsified by: changing `processed_at IS NOT NULL AND processed_at < $1` to
-// just `processed_at < $1` (or the failed_at equivalent) in the delete SQL —
-// with NULL no longer excluded, `NULL < $1` is NULL/false in SQL so this
-// particular mistake happens to be caught by SQL's own NULL semantics; the
-// real failure mode this guards is copy-pasting the wrong column check
-// between the two statements, verified directly by keeping both id-level
-// assertions below.
 func TestPruneScheduledEvents_KeepsPendingRows(t *testing.T) {
 	pool := retentionTestPool(t)
 	ctx := context.Background()
-	resetRetentionTables(t, pool, "processed_sitos_ticks", "scheduled_events")
+	resetRetentionTables(t, pool, "scheduled_events")
 	worldID := ensureTestWorld(t, pool)
 
 	var processedID, failedID, pendingID int64
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO scheduled_events (world_id, event_type, payload, process_after, processed_at)
-		 VALUES ($1, 'SitosTick', '{}'::jsonb, now() - interval '10 days', now() - interval '10 days')
+		 VALUES ($1, 'FoodTick', '{}'::jsonb, now() - interval '10 days', now() - interval '10 days')
 		 RETURNING id`, worldID).Scan(&processedID); err != nil {
 		t.Fatalf("insert processed row: %v", err)
 	}
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO scheduled_events (world_id, event_type, payload, process_after, failed_at, attempts)
-		 VALUES ($1, 'SitosTick', '{}'::jsonb, now() - interval '10 days', now() - interval '10 days', 3)
+		 VALUES ($1, 'FoodTick', '{}'::jsonb, now() - interval '10 days', now() - interval '10 days', 3)
 		 RETURNING id`, worldID).Scan(&failedID); err != nil {
 		t.Fatalf("insert failed row: %v", err)
 	}
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO scheduled_events (world_id, event_type, payload, process_after)
-		 VALUES ($1, 'SitosTick', '{}'::jsonb, now() - interval '10 days')
+		 VALUES ($1, 'FoodTick', '{}'::jsonb, now() - interval '10 days')
 		 RETURNING id`, worldID).Scan(&pendingID); err != nil {
 		t.Fatalf("insert pending row: %v", err)
 	}
@@ -257,7 +181,7 @@ func TestPruneScheduledEvents_KeepsPendingRows(t *testing.T) {
 func TestRetentionWindowZero_DisablesPruning(t *testing.T) {
 	pool := retentionTestPool(t)
 	ctx := context.Background()
-	resetRetentionTables(t, pool, "processed_sitos_ticks", "scheduled_events", "server_heartbeats")
+	resetRetentionTables(t, pool, "scheduled_events", "server_heartbeats")
 	worldID := ensureTestWorld(t, pool)
 
 	veryOld := time.Now().Add(-365 * 24 * time.Hour)
@@ -273,20 +197,14 @@ func TestRetentionWindowZero_DisablesPruning(t *testing.T) {
 	var seID int64
 	if err := pool.QueryRow(ctx,
 		`INSERT INTO scheduled_events (world_id, event_type, payload, process_after, processed_at)
-		 VALUES ($1, 'SitosTick', '{}'::jsonb, $2, $2) RETURNING id`, worldID, veryOld,
+		 VALUES ($1, 'FoodTick', '{}'::jsonb, $2, $2) RETURNING id`, worldID, veryOld,
 	).Scan(&seID); err != nil {
 		t.Fatalf("seed scheduled_events: %v", err)
 	}
-	if _, err := pool.Exec(ctx,
-		`INSERT INTO processed_sitos_ticks (event_id, settlement_id, processed_at) VALUES ($1, $2, $3)`,
-		seID, uuid.New(), veryOld,
-	); err != nil {
-		t.Fatalf("seed processed_sitos_ticks: %v", err)
-	}
 
 	cfg := retentionConfig{
-		heartbeatWindow:             0,
-		sitosTickWindow:             0,
+		heartbeatWindow: 0,
+
 		scheduledEventsWindow:       0,
 		scheduledEventsFailedWindow: 0,
 		batchSize:                   1000,
@@ -294,18 +212,16 @@ func TestRetentionWindowZero_DisablesPruning(t *testing.T) {
 	}
 	runRetentionPass(ctx, pool, cfg)
 
-	var hb, se, pst int
+	var hb, se int
 	if err := pool.QueryRow(ctx, `SELECT count(*) FROM server_heartbeats`).Scan(&hb); err != nil {
 		t.Fatalf("count heartbeats: %v", err)
 	}
 	if err := pool.QueryRow(ctx, `SELECT count(*) FROM scheduled_events`).Scan(&se); err != nil {
 		t.Fatalf("count scheduled_events: %v", err)
 	}
-	if err := pool.QueryRow(ctx, `SELECT count(*) FROM processed_sitos_ticks`).Scan(&pst); err != nil {
-		t.Fatalf("count processed_sitos_ticks: %v", err)
-	}
-	if hb != 2 || se != 1 || pst != 1 {
-		t.Fatalf("window<=0 must disable pruning entirely; got heartbeats=%d scheduled_events=%d processed_sitos_ticks=%d, want 2/1/1", hb, se, pst)
+
+	if hb != 2 || se != 1 {
+		t.Fatalf("window<=0 must disable pruning entirely; got heartbeats=%d scheduled_events=%d, want 2/1", hb, se)
 	}
 }
 

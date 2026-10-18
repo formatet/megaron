@@ -1,29 +1,29 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { productionSectionsHTML, populationHTML, foodSummaryHTML, foodDetailsHTML } from './city_production.js';
-const pd=(extra={})=>({population:1000,grain_prod_rate:4.5,grain_consum_rate:3.2,sitos:{coverage_ticks:4.2,low_ticks:10,high_ticks:30,granary_total:100,granary_cap:600,granary_per_good:{grain:60,fish:40},food_net_per_tick:-2},...extra});
+const pd=(extra={})=>({population:1000,grain_prod_rate:4.5,grain_consum_rate:3.2,food:{coverage_ticks:4.2,food_net_per_tick:-2},...extra});
 test('J: only three primary sections, all secondary abilities remain under closed More',()=>{
  const html=productionSectionsHTML({is_capital:false}),[primary,more]=html.split('<details');
  assert.equal((primary.match(/class="dsec"/g)||[]).length,3,'three primary sections');
- for(const id of ['city-pop-sec','city-prod-sec','city-sitos-sec'])assert.ok(primary.includes(id));
- for(const id of ['city-devotion-sec','city-reserve-sec','city-lasttick-sec','city-loyalty-sec','city-gift-sec','city-ticklog-sec'])assert.ok(more.includes(id),'retained '+id);
+ for(const id of ['city-pop-sec','city-prod-sec','city-food-sec'])assert.ok(primary.includes(id));
+ for(const id of ['city-devotion-sec','city-food-details-sec','city-lasttick-sec','city-loyalty-sec','city-gift-sec','city-ticklog-sec'])assert.ok(more.includes(id),'retained '+id);
  assert.match(more,/onclick="loadTicklog\(\)"/);assert.doesNotMatch(more,/\bopen\b/,'More starts closed');
  assert.doesNotMatch(productionSectionsHTML({is_capital:true}),/city-gift-sec/,'no gift to own capital');
 });
-test('J: food days come from authoritative mixed-food coverage, not grain net or reserve',()=>{
- const html=foodSummaryHTML(pd());assert.match(html,/Food lasts 4.2 days/,'authoritative food days');assert.doesNotMatch(html,/100|ticks|Coverage|Sitos/);
- assert.match(foodDetailsHTML(pd()),/60 grain, 40 fish/);assert.match(foodDetailsHTML(pd()),/Stores above 30 days · releases below 10 days/,'same thresholds retained');
- assert.match(foodDetailsHTML(pd()),/sitos-state-release/);
+test('J: food days come from authoritative mixed-food coverage, from the single city stock',()=>{
+ const html=foodSummaryHTML(pd());assert.match(html,/Food lasts 4.2 days/,'authoritative food days');assert.doesNotMatch(html,/100|ticks|Coverage/);
+ assert.match(foodDetailsHTML(pd()),/4.2 days at current consumption · grain \+ fish/);
+ assert.doesNotMatch(foodDetailsHTML(pd()),/Reserve|Stores above|releases below/);
 });
 test('J: growing low stocks never say starving; food-worker warning survives',()=>{
- const data=pd();data.sitos.coverage_ticks=0;data.sitos.granary_total=0;data.sitos.food_net_per_tick=2;
+ const data=pd();data.food.coverage_ticks=0;data.food.food_net_per_tick=2;
  assert.match(foodSummaryHTML(data),/0 days · stocks growing/);assert.doesNotMatch(foodSummaryHTML(data),/stat-warn|starv/);
- assert.match(foodDetailsHTML(data),/sitos-state-empty-growing/);
+
  data.food_self_sufficient=false;assert.match(foodSummaryHTML(data),/fields cannot feed everyone/);
- data.sitos.food_net_per_tick=-2;assert.match(foodDetailsHTML(data),/sitos-state-empty-shrinking/);
+ data.food.food_net_per_tick=-2;assert.doesNotMatch(foodSummaryHTML(data),/stocks growing/);
 });
 test('J: missing/invalid coverage is honestly unavailable, never zero or NaN days',()=>{
- for(const data of [null,{},pd({sitos:null}),pd({sitos:{}}),pd({sitos:{coverage_ticks:NaN}})])assert.match(foodSummaryHTML(data),/not reported/);
+ for(const data of [null,{},pd({food:null}),pd({food:{}}),pd({food:{coverage_ticks:NaN}})])assert.match(foodSummaryHTML(data),/not reported/);
 });
 test('J: population and slaughter capability keep input-free player words and eligibility',()=>{
  assert.match(populationHTML(pd(),700,10,'p'),/1,000/);assert.match(populationHTML(pd(),700,10,'p'),/700/);
@@ -31,7 +31,7 @@ test('J: population and slaughter capability keep input-free player words and el
  assert.match(populationHTML(pd(),0,0,'p'),/disabled/);
 });
 test('growth line: one sentence per state, from the server growth_state',()=>{
- const g=(state,net)=>populationHTML(pd({sitos:{growth_state:state,food_net_per_tick:net}}),0,0,'p');
+ const g=(state,net)=>populationHTML(pd({food:{growth_state:state,food_net_per_tick:net}}),0,0,'p');
  assert.match(g('holding',-1.67),/Population 1,000 — not growing: food net -1\.7 per day \(needs more than 0\)/);
  assert.match(g('growing',30.8),/growing: food net \+30\.8 per day/);
  assert.match(g('shrinking',-5),/shrinking: hunger/);
@@ -42,7 +42,7 @@ test('growth line: one sentence per state, from the server growth_state',()=>{
 test('blessed harvest: food section shows authoritative bonus and goods, hides at end tick',()=>{
  const blessing={until_tick:112,remaining_ticks:12,yield_bonus:0.37,goods:['grain','wine']};
  assert.match(foodSummaryHTML(pd({harvest_blessing:blessing})),/Blessed harvest: \+37% grain, wine yield · 12 days left/,'active harvest missing from food section');
- assert.doesNotMatch(foodSummaryHTML(pd({harvest_blessing:blessing})),/fish|25%|ticks/,'no invented bonus, fish or internal time');
+ assert.doesNotMatch(foodSummaryHTML(pd({harvest_blessing:blessing})),/Blessed harvest:[^<]*fish|25%|ticks/,'no invented bonus, fish or internal time');
  for(const b of [null,{...blessing,remaining_ticks:0},{...blessing,remaining_ticks:-1}])assert.doesNotMatch(foodSummaryHTML(pd({harvest_blessing:b})),/Blessed harvest/,'no row once blessing ends');
  assert.match(foodSummaryHTML(pd({harvest_blessing:{...blessing,remaining_ticks:1}})),/1 day left/);
 });
@@ -87,12 +87,12 @@ test('owned-city naming success refreshes authoritative map and rerenders City d
 });
 
 test('growth food balance does not print a signed rounded zero',()=>{
- const html=populationHTML(pd({sitos:{growth_state:'holding',food_net_per_tick:-1e-12}}),0,0,'p');
+ const html=populationHTML(pd({food:{growth_state:'holding',food_net_per_tick:-1e-12}}),0,0,'p');
  assert.match(html,/food net about even/);assert.doesNotMatch(html,/-0.0/);
 });
 
 test('AIRound3: population food and army food use different explicit balances',()=>{
- const data=pd({grain_prod_rate:0.5,grain_consum_rate:5,resources:{fish:{rate:5}},army_upkeep:{grain:2},food_net_per_tick_after_upkeep:-1.5,sitos:{coverage_ticks:10,food_net_per_tick:0.5}});
+ const data=pd({grain_prod_rate:0.5,grain_consum_rate:5,resources:{fish:{rate:5}},army_upkeep:{grain:2},food_net_per_tick_after_upkeep:-1.5,food:{coverage_ticks:10,food_net_per_tick:0.5}});
  const html=foodDetailsHTML(data);
  assert.match(html,/grain 0.5 \+ fish 5 − people eat 5 = 0.5 net before army/);
  assert.match(html,/eats 2 grain per day → food net -1.5 after army/);

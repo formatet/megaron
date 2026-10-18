@@ -44,9 +44,9 @@ type Claims struct {
 
 // Service handles authentication operations.
 type Service struct {
-	pool      *pgxpool.Pool
-	jwtSecret []byte
-	accessTTL time.Duration
+	pool       *pgxpool.Pool
+	jwtSecret  []byte
+	accessTTL  time.Duration
 	refreshTTL time.Duration
 }
 

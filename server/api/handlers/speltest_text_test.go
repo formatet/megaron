@@ -11,7 +11,7 @@ import (
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
-	"formatet/megaron/server/internal/economy"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -35,7 +35,7 @@ func TestPlaytestKharis_SameRealmPoolInTwoCities(t *testing.T) {
 	if _, err := pool.Exec(ctx, `INSERT INTO divine_labor_valuations(world_id,good_key,rarity_spread,rarity_volume,divine_value,calc_tick) VALUES($1,'bronze',1,1,37.5,1000),($1,'grain',1,1,2.5,1000)`, wid); err != nil {
 		t.Fatal(err)
 	}
-	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), economy.SitosConfig{}, nil, nil)
+	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), nil, nil)
 	r := chi.NewRouter()
 	r.Get("/worlds/{worldID}/provinces/{provinceID}", ph.Get)
 	for _, id := range ids {

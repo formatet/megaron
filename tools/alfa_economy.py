@@ -9,9 +9,9 @@ PER STAD
                    = economy.FoodNet (recompute.go; GrainConsumptionPerCitizenPerTick = 0.005, speglad här —
                    ändras konstanten i koden måste FOOD_PER_CITIZEN nedan följa). Rate är RÅ produktion.
  spannmål/fisk     settlement_goods.amount + rate*max(0, world.current_tick - calc_tick)  (= SQL settled())
- magasin (granary) settlement_granary (good_key, amount) — nuläge
- magasin Δ         events 'SitosGranaryStored' (stream_id = stad): payload.granary_after senaste mot det event
-                   som ligger närmast --window tick bakåt; coverage_days ur senaste. Ej varje tick.
+ historiskt magasin Δ  events 'SitosGranaryStored' (stream_id = stad): payload.granary_after senaste mot det event
+                   som ligger närmast --window tick bakåt; coverage_days ur senaste.
+                   Endast frysta historiska event, inte dagens lager eller täckning.
  silver            settlement_goods silver, samma lazy-formel
  garnison          units där settlement_id = staden: antal män (units.size) med status garrison
  garnisonens förbrukning  senaste 'UpkeepSettled' (stream_id = stad): grain_total, silver_gross per tick.
@@ -96,7 +96,7 @@ def render_silver_audits(v2, v1):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     alfa_db.add_args(ap)
-    ap.add_argument("--window", type=int, default=7, help="magasin Δ: antal tick bakåt (standard 7)")
+    ap.add_argument("--window", type=int, default=7, help="historiskt magasin Δ: antal tick bakåt mellan arkivevent (standard 7)")
     args = ap.parse_args(argv)
     db = alfa_db.connect(args)
     world = alfa_db.pick_world(db, args.world)
@@ -109,10 +109,10 @@ def main(argv=None):
           (SELECT g.amount + g.rate * greatest(0, {T} - g.calc_tick) FROM settlement_goods g WHERE g.settlement_id = s.id AND g.good_key = 'grain') AS grain,
           (SELECT g.amount + g.rate * greatest(0, {T} - g.calc_tick) FROM settlement_goods g WHERE g.settlement_id = s.id AND g.good_key = 'fish') AS fish,
           (SELECT g.amount + g.rate * greatest(0, {T} - g.calc_tick) FROM settlement_goods g WHERE g.settlement_id = s.id AND g.good_key = 'silver') AS silver,
-          (SELECT string_agg(good_key || ' ' || round(amount::numeric, 0), ', ' ORDER BY good_key) FROM settlement_granary gr WHERE gr.settlement_id = s.id AND gr.amount > 0) AS granary,
           (SELECT coalesce(sum(u.size), 0) FROM units u WHERE u.settlement_id = s.id AND u.status = 'garrison') AS garrison
         FROM settlements s LEFT JOIN players p ON p.id = s.owner_id
         WHERE s.world_id = '{W}' AND s.state = 'active' AND p.is_ai = false ORDER BY p.username, s.is_capital DESC, s.name""")
+    # Historical only: frozen Sitos events; never a source of current stock or coverage.
     gr_events = q("""SELECT stream_id, world_tick, payload->>'granary_after' AS after, payload->>'coverage_days' AS cov
                      FROM events WHERE world_id = '{W}' AND event_type = 'SitosGranaryStored' ORDER BY world_tick""")
     up_events = q("""SELECT DISTINCT ON (stream_id) stream_id, world_tick, payload->>'grain_total' AS grain, payload->>'silver_gross' AS silver
@@ -135,7 +135,7 @@ def main(argv=None):
             cov = f(float(last["cov"]), 0) if last["cov"] is not None else ""
         up = up_by.get(c["id"])
         rows.append([c["username"], c["name"] + (" (huvud)" if c["is_capital"] else ""), c["population"], f(net, 2),
-                     f(c["grain"], 0), f(c["fish"], 0), c["granary"] or "", delta or "ej mätbart (<2 event)", cov, f(c["silver"], 0),
+                     f(c["grain"], 0), f(c["fish"], 0), delta or "ej mätbart (<2 arkivevent)", cov, f(c["silver"], 0),
                      c["garrison"], "%s säd / %s silver (tick %s)" % (f(float(up["grain"]), 2), f(float(up["silver"]), 2), up["world_tick"]) if up else ""])
 
     wan = q("""
@@ -165,8 +165,8 @@ def main(argv=None):
 
     print("# Alfa-ekonomi — värld %s (%s), tick %s\n" % (world["name"], W[:8], T))
     print("## Per stad (människors städer)\n")
-    print(alfa_db.md_table(["Wanax", "stad", "befolkning", "matnetto/tick", "säd", "fisk", "magasin", "magasin Δ",
-                            "täckning (dagar)", "silver", "garnison (män)", "garnisonens förbrukning/tick"], rows) if rows
+    print(alfa_db.md_table(["Wanax", "stad", "befolkning", "matnetto/tick", "säd", "fisk", "historiskt magasin Δ",
+                            "historisk täckning (dagar vid event)", "silver", "garnison (män)", "garnisonens förbrukning/tick"], rows) if rows
           else "_inga städer_")
     print("\n## Per Wanax\n")
     print(alfa_db.md_table(["Wanax", "städer", "silver i städer", "byggnader", "köade byggen", "enheter", "tid till första bygget (tick)"], wrows)

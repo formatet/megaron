@@ -360,7 +360,7 @@ func expectedDayResult(prevPop int, prevAmount, prevRate float64) (newPop int, n
 		if softcap < 0 {
 			softcap = 0
 		}
-		const variety = 1.0 // no fish/oil/wine/livestock in these fixtures
+		const variety = 1.0                                                  // no fish/oil/wine/livestock in these fixtures
 		add := int(float64(prevPop)*growthRatePerTick*variety*softcap + 0.5) // ROUND
 		if add < 1 {
 			add = 1

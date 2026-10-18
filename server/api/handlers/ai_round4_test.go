@@ -44,9 +44,8 @@ func TestAIRound4_AutomaticFoodAPIAndFixedQueue(t *testing.T) {
 		t.Fatal(err)
 	}
 	clk := clock.NewTestClock(time.Unix(0, 0))
-	cfg := economy.LoadSitosConfig()
-	ph := NewProvinceHandler(pool, nil, clk, cfg, nil, nil)
-	sh := NewSettlementHandler(pool, nil, nil, clk, cfg)
+	ph := NewProvinceHandler(pool, nil, clk, nil, nil)
+	sh := NewSettlementHandler(pool, nil, nil, clk)
 	router := chi.NewRouter()
 	router.With(auth.Middleware(svc)).Get("/worlds/{worldID}/provinces/{provinceID}", ph.Get)
 	router.With(auth.Middleware(svc)).Get("/worlds/{worldID}/settlements/overview", sh.SettlementsOverview)

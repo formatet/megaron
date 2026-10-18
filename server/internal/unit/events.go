@@ -11,22 +11,22 @@ import (
 // Stream: events.StreamUnit (defined below — same package so no circular import).
 // All payloads record OUTCOMES, not intentions (e.g. actual men drawn, not a pending roll).
 const (
-	EventUnitFormed         = "UnitFormed"         // a new unit row created (forming)
-	EventUnitReinforced     = "UnitReinforced"      // men added to an existing unit (recruit top-up or the mig 126 tick trickle)
-	EventUnitDeployed       = "UnitDeployed"        // unit transitions forming → garrison
-	EventUnitMarchOrdered   = "UnitMarchOrdered"    // unit begins moving; departure logged
-	EventUnitArrived        = "UnitArrived"         // unit reached its destination
-	EventUnitCombatResolved = "UnitCombatResolved"  // combat outcome applied to this unit
-	EventUnitDisbanded      = "UnitDisbanded"       // unit dissolved; men returned to pop
-	EventShipLoaded         = "ShipLoaded"          // land unit embarked on vessel
-	EventShipUnloaded       = "ShipUnloaded"        // land unit disembarked from vessel
-	EventUnitIntercepted    = "UnitIntercepted"     // sentry triggered interception combat
-	EventCityCollapsed      = "CityCollapsed"       // settlement exhausted; warband spawned
-	EventUnitStanceChanged  = "UnitStanceChanged"   // unit stance updated (C5)
-	EventUnitMarchRecalled   = "MarchRecalled"      // recall messenger reached a marching unit; it turned home
-	EventUnitMarchRedirected = "MarchRedirected"    // redirect messenger reached a marching unit; new course set
+	EventUnitFormed          = "UnitFormed"          // a new unit row created (forming)
+	EventUnitReinforced      = "UnitReinforced"      // men added to an existing unit (recruit top-up or the mig 126 tick trickle)
+	EventUnitDeployed        = "UnitDeployed"        // unit transitions forming → garrison
+	EventUnitMarchOrdered    = "UnitMarchOrdered"    // unit begins moving; departure logged
+	EventUnitArrived         = "UnitArrived"         // unit reached its destination
+	EventUnitCombatResolved  = "UnitCombatResolved"  // combat outcome applied to this unit
+	EventUnitDisbanded       = "UnitDisbanded"       // unit dissolved; men returned to pop
+	EventShipLoaded          = "ShipLoaded"          // land unit embarked on vessel
+	EventShipUnloaded        = "ShipUnloaded"        // land unit disembarked from vessel
+	EventUnitIntercepted     = "UnitIntercepted"     // sentry triggered interception combat
+	EventCityCollapsed       = "CityCollapsed"       // settlement exhausted; warband spawned
+	EventUnitStanceChanged   = "UnitStanceChanged"   // unit stance updated (C5)
+	EventUnitMarchRecalled   = "MarchRecalled"       // recall messenger reached a marching unit; it turned home
+	EventUnitMarchRedirected = "MarchRedirected"     // redirect messenger reached a marching unit; new course set
 	EventUnitExploreReturned = "UnitExploreReturned" // explore order reached its target; unit turned for home
-	EventUnitScoutReport     = "ScoutReport"          // explore order revealed its target hex; terrain + deposits found
+	EventUnitScoutReport     = "ScoutReport"         // explore order revealed its target hex; terrain + deposits found
 	// EventUnitReturnedStarving: a positioned naval unit's crew fell to
 	// navalStarvationReturnCrewFraction (combat/upkeep.go) of its type's full
 	// crew and it turned for home on its own — a ship at sea receives no
@@ -73,8 +73,8 @@ type UnitFormedPayload struct {
 	UnitType     string    `json:"unit_type"`
 	Category     string    `json:"category"`
 	InitialSize  int       `json:"initial_size"` // men added in this batch (≤ 100)
-	Crew         int       `json:"crew"`          // for naval: men drawn from population
-	PopDrawn     int       `json:"pop_drawn"`     // population actually deducted
+	Crew         int       `json:"crew"`         // for naval: men drawn from population
+	PopDrawn     int       `json:"pop_drawn"`    // population actually deducted
 	// Name is the chosen (Wanax-given or game-suggested) ship name — the
 	// outcome of a one-time pick made in the recruit handler (Fas 2.3), never
 	// re-rolled. Naval only; omitted for land units (ship-build overhaul
@@ -91,11 +91,11 @@ type UnitFormedPayload struct {
 // origin settlement's population growth that tick, never its standing
 // population.
 type UnitReinforcedPayload struct {
-	UnitID      uuid.UUID `json:"unit_id"`
+	UnitID       uuid.UUID `json:"unit_id"`
 	SettlementID uuid.UUID `json:"settlement_id"`
-	SizeBefore  int       `json:"size_before"`
-	SizeAfter   int       `json:"size_after"`
-	PopDrawn    int       `json:"pop_drawn"`
+	SizeBefore   int       `json:"size_before"`
+	SizeAfter    int       `json:"size_after"`
+	PopDrawn     int       `json:"pop_drawn"`
 }
 
 // UnitDeployedPayload is emitted when a unit reaches size 100 and becomes deployable.
@@ -108,29 +108,29 @@ type UnitDeployedPayload struct {
 // UnitMarchOrderedPayload is emitted when a march is ordered. Stores the
 // actual scheduled departure and arrival times (not the intent).
 type UnitMarchOrderedPayload struct {
-	UnitID     uuid.UUID `json:"unit_id"`
-	OriginQ    int       `json:"origin_q"`
-	OriginR    int       `json:"origin_r"`
-	TargetQ    int       `json:"target_q"`
-	TargetR    int       `json:"target_r"`
-	Stance     string    `json:"stance"`      // fortify|storm|sentry at destination
-	DepartsAt  string    `json:"departs_at"`  // RFC3339
-	ArrivesAt  string    `json:"arrives_at"`  // RFC3339
+	UnitID    uuid.UUID `json:"unit_id"`
+	OriginQ   int       `json:"origin_q"`
+	OriginR   int       `json:"origin_r"`
+	TargetQ   int       `json:"target_q"`
+	TargetR   int       `json:"target_r"`
+	Stance    string    `json:"stance"`     // fortify|storm|sentry at destination
+	DepartsAt string    `json:"departs_at"` // RFC3339
+	ArrivesAt string    `json:"arrives_at"` // RFC3339
 }
 
 // UnitArrivedPayload is emitted when a unit completes its march.
 type UnitArrivedPayload struct {
-	UnitID  uuid.UUID `json:"unit_id"`
-	Q       int       `json:"q"`
-	R       int       `json:"r"`
-	NewStatus string  `json:"new_status"` // garrison|positioned|disbanded (colonize: colonists become citizens)
+	UnitID    uuid.UUID `json:"unit_id"`
+	Q         int       `json:"q"`
+	R         int       `json:"r"`
+	NewStatus string    `json:"new_status"` // garrison|positioned|disbanded (colonize: colonists become citizens)
 }
 
 // UnitCombatResolvedPayload records the outcome of combat for one unit.
 // Sizes are absolute values after resolution (not deltas).
 type UnitCombatResolvedPayload struct {
 	UnitID     uuid.UUID `json:"unit_id"`
-	Role       string    `json:"role"`       // attacker|defender
+	Role       string    `json:"role"` // attacker|defender
 	SizeBefore int       `json:"size_before"`
 	SizeAfter  int       `json:"size_after"` // 0 = destroyed
 	Outcome    string    `json:"outcome"`    // attacker_wins|defender_holds
@@ -139,11 +139,11 @@ type UnitCombatResolvedPayload struct {
 
 // UnitDisbandedPayload is emitted when a unit is dissolved.
 type UnitDisbandedPayload struct {
-	UnitID       uuid.UUID `json:"unit_id"`
-	SettlementID uuid.UUID `json:"settlement_id"`
-	UnitType     string    `json:"unit_type"`
-	SizeAtDisband int      `json:"size_at_disband"`
-	PopReturned  int       `json:"pop_returned"` // men returned to population
+	UnitID        uuid.UUID `json:"unit_id"`
+	SettlementID  uuid.UUID `json:"settlement_id"`
+	UnitType      string    `json:"unit_type"`
+	SizeAtDisband int       `json:"size_at_disband"`
+	PopReturned   int       `json:"pop_returned"` // men returned to population
 }
 
 // ShipLoadedPayload is emitted when a land unit embarks on a vessel.
@@ -165,11 +165,11 @@ type ShipUnloadedPayload struct {
 // UnitInterceptedPayload is emitted when a sentry unit intercepts a marching enemy.
 // Contains the actual combat outcome at the interception point.
 type UnitInterceptedPayload struct {
-	SentryUnitID    uuid.UUID `json:"sentry_unit_id"`
+	SentryUnitID      uuid.UUID `json:"sentry_unit_id"`
 	InterceptedUnitID uuid.UUID `json:"intercepted_unit_id"`
-	Q               int       `json:"q"`
-	R               int       `json:"r"`
-	Outcome         string    `json:"outcome"` // attacker_wins|defender_holds
+	Q                 int       `json:"q"`
+	R                 int       `json:"r"`
+	Outcome           string    `json:"outcome"` // attacker_wins|defender_holds
 }
 
 // ScheduledUnitArrivalPayload is the scheduled_events payload for unit arrival.
@@ -193,8 +193,8 @@ type ScheduledUnitArrivalPayload struct {
 type UnitStanceChangedPayload struct {
 	UnitID       uuid.UUID `json:"unit_id"`
 	WorldID      uuid.UUID `json:"world_id"`
-	StanceBefore string    `json:"stance_before"` // "" if none
-	StanceAfter  string    `json:"stance_after"`  // "" means stance cleared
+	StanceBefore string    `json:"stance_before"`      // "" if none
+	StanceAfter  string    `json:"stance_after"`       // "" means stance cleared
 	SentryQ      *int      `json:"sentry_q,omitempty"` // set when stance_after == "sentry"
 	SentryR      *int      `json:"sentry_r,omitempty"`
 	// ReactionForeign is the avsiktslagret foreign-relation verb now in effect
@@ -322,12 +322,12 @@ type UnitScoutReportPayload struct {
 // and it ceases to exist as a city. The last 100 inhabitants leave as a warband.
 // Cause is "starvation" (daily tick) or "overmobilisation" (recruit drain).
 type CityCollapsedPayload struct {
-	SettlementID uuid.UUID `json:"settlement_id"`
-	OwnerID      uuid.UUID `json:"owner_id"`
-	WorldID      uuid.UUID `json:"world_id"`
-	WarbandUnitID uuid.UUID `json:"warband_unit_id"` // the spawned infantry unit
-	Q            int       `json:"q"`
-	R            int       `json:"r"`
-	Cause        string    `json:"cause"`            // "starvation" | "overmobilisation"
-	LastSettlement bool    `json:"last_settlement"`  // true if this was the owner's only city
+	SettlementID   uuid.UUID `json:"settlement_id"`
+	OwnerID        uuid.UUID `json:"owner_id"`
+	WorldID        uuid.UUID `json:"world_id"`
+	WarbandUnitID  uuid.UUID `json:"warband_unit_id"` // the spawned infantry unit
+	Q              int       `json:"q"`
+	R              int       `json:"r"`
+	Cause          string    `json:"cause"`           // "starvation" | "overmobilisation"
+	LastSettlement bool      `json:"last_settlement"` // true if this was the owner's only city
 }
