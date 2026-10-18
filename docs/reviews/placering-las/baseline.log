@@ -1,0 +1,8 @@
+» färsk DB på migration 183 · commit e38acc13
+=== RUN   TestPlacementConcurrentPOSTsSerialize
+2026/10/18 06:56:42 INFO player registered id=69baaa63-5dad-4e9c-8041-97a233bcdd4e username=placement-57104b79-3b19-4d1c-9aac-1c5469175a11
+    placement_concurrency_test.go:67: one citizen must yield1x201 and7x409, never500: map[201:1 500:7]
+--- FAIL: TestPlacementConcurrentPOSTsSerialize (0.13s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.133s
+FAIL

@@ -1,0 +1,8 @@
+=== RUN   TestPlacementDELETEWaitsBeforeLockingPlacement
+2026/10/18 07:00:59 INFO player registered id=04584ceb-dfeb-4a57-afc8-2e79478e094c username=placement-c0d37769-5994-4d97-ac37-b56cac4617e2
+    placement_concurrency_test.go:131: request never reached lock barrier
+--- FAIL: TestPlacementDELETEWaitsBeforeLockingPlacement (5.10s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	5.099s
+FAIL
+» färsk DB på migration 183 · commit e38acc13+ändringar

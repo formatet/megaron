@@ -1,0 +1,3 @@
+Removed 0 citizens — only 0 were placed there.
+Currently working fish: #4 fish (2 citizens), #5 fish (2 citizens), #6 fish (1 citizen); use those hex numbers to remove citizens.
+  5 citizens left in the idle pool.

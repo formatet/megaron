@@ -1,0 +1,7 @@
+=== RUN   TestPlacementConcurrentPOSTsSerialize
+2026/10/18 07:00:54 INFO player registered id=e11b70d7-e651-4507-bca1-f9a6d50f076a username=placement-717643c6-a41c-4f73-b312-c7a346a23fd5
+    placement_concurrency_test.go:77: parallel HTTP statuses=map[201:1 409:7], placed=1
+--- PASS: TestPlacementConcurrentPOSTsSerialize (0.10s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.102s
+» färsk DB på migration 183 · commit e38acc13+ändringar

@@ -1,0 +1,150 @@
+{
+  "post": [
+    [
+      201,
+      {
+        "gubbe_ordinal": 4
+      }
+    ],
+    [
+      201,
+      {
+        "gubbe_ordinal": 3
+      }
+    ],
+    [
+      409,
+      {
+        "error": "this hex is fully staffed for that good"
+      }
+    ],
+    [
+      409,
+      {
+        "error": "this hex is fully staffed for that good"
+      }
+    ],
+    [
+      409,
+      {
+        "error": "this hex is fully staffed for that good"
+      }
+    ],
+    [
+      409,
+      {
+        "error": "this hex is fully staffed for that good"
+      }
+    ],
+    [
+      409,
+      {
+        "error": "this hex is fully staffed for that good"
+      }
+    ],
+    [
+      409,
+      {
+        "error": "this hex is fully staffed for that good"
+      }
+    ]
+  ],
+  "delete": [
+    [
+      404,
+      {
+        "error": "that citizen isn't placed"
+      }
+    ],
+    [
+      200,
+      {
+        "unplaced": 4
+      }
+    ],
+    [
+      404,
+      {
+        "error": "that citizen isn't placed"
+      }
+    ],
+    [
+      404,
+      {
+        "error": "that citizen isn't placed"
+      }
+    ],
+    [
+      404,
+      {
+        "error": "that citizen isn't placed"
+      }
+    ],
+    [
+      404,
+      {
+        "error": "that citizen isn't placed"
+      }
+    ],
+    [
+      404,
+      {
+        "error": "that citizen isn't placed"
+      }
+    ],
+    [
+      404,
+      {
+        "error": "that citizen isn't placed"
+      }
+    ],
+    [
+      404,
+      {
+        "error": "that citizen isn't placed"
+      }
+    ],
+    [
+      404,
+      {
+        "error": "that citizen isn't placed"
+      }
+    ],
+    [
+      200,
+      {
+        "unplaced": 3
+      }
+    ],
+    [
+      404,
+      {
+        "error": "that citizen isn't placed"
+      }
+    ],
+    [
+      404,
+      {
+        "error": "that citizen isn't placed"
+      }
+    ],
+    [
+      404,
+      {
+        "error": "that citizen isn't placed"
+      }
+    ],
+    [
+      404,
+      {
+        "error": "that citizen isn't placed"
+      }
+    ],
+    [
+      404,
+      {
+        "error": "that citizen isn't placed"
+      }
+    ]
+  ]
+}

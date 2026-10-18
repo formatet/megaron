@@ -150,3 +150,14 @@ Slutresultat finns i slice8-rapporten. Claude granskar/integrerar; ingen merge/p
 [Bevispaket](../agora-ai-undantag/README.md): gammal runtime namngivetRED → GREEN,
 10 fysiska mutationer, naturlig182→183 med egen Matrix26.9.1, CLI/Firefox1280+390 och mänsklig lösenordsinloggning.
 Claude granskar/integrerar; GPT-konton grundas först efter slice10 är live.
+
+## Slice 11 — placeringskapplöpningen
+
+| Fynd | Utfall |
+|---|---|
+| GPT fick500 vid parallella place | Stadslås före pool-/ordinal-/kapacitetsläsning i POST/DELETE och economy-skrivare. Population/ägare läses om. Gamla8POST gav201×1/500×7; nu201×1/409×7. Tillväxtens poolanrop har riktig TX och inga överfulla hexar. |
+| Låsordning och pool | Take använder holder-NOWAIT med atomiskt409/retry för att undvika tvåstadscykel. FOW-läsningar återanvänder TX så full pool inte låser kön; MaxConns1 provas. |
+
+[Bevispaket](../placering-las/README.md): tio fysiska mutationer, riktiga PG-barriärer och naturlig
+parallell API/CLI/Firefox på egen server. Ingen ändrad spelarregel/migration. Claude granskar/integrerar;
+restfolkets slice9 är parkerad separat tills denna är levererad.

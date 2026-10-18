@@ -1,0 +1,6 @@
+=== RUN   TestPlacementSingleConnectionCannotStarve
+2026/10/18 07:05:00 INFO player registered id=fedad6c5-e58a-4a6e-9d3b-e9c2b216f01e username=placement-1981a197-82eb-457b-8162-1037a4ed7759
+--- PASS: TestPlacementSingleConnectionCannotStarve (0.13s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.135s
+» färsk DB på migration 183 · commit ea5ecb6f+ändringar

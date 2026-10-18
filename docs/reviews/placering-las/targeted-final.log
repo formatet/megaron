@@ -1,0 +1,169 @@
+» färsk DB på migration 183 · commit e38acc13+ändringar
+=== RUN   TestPlacementOptions_EffectAndUpgradeEffect
+2026/10/18 06:58:45 INFO player registered id=50f2da3f-2ed1-4e8b-9887-db365b64fc91 username=buildhex-e3589915-a7bd-48d1-98e4-316b1c2e0b54
+--- PASS: TestPlacementOptions_EffectAndUpgradeEffect (0.12s)
+=== RUN   TestPlaceGubbe_HexOwnershipBlocksNeighborEvenWithRoomLeft
+2026/10/18 06:58:45 INFO player registered id=4fbb6226-9aa8-4f43-8a1d-2d566cb2a609 username=hexown-a-79617943-a669-444e-b5f6-fb2d883634d7
+2026/10/18 06:58:45 INFO player registered id=f50a0622-eae9-4e6b-93f6-937e98f98051 username=hexown-b-f2eb4127-e1ea-44c0-8c20-f3aa1bf5faac
+--- PASS: TestPlaceGubbe_HexOwnershipBlocksNeighborEvenWithRoomLeft (0.13s)
+=== RUN   TestPlaceGubbe_HexOwnershipBlocksNeighborAcrossDifferentGoods
+2026/10/18 06:58:45 INFO player registered id=1cb79ff4-1144-4723-884b-139e3b9585de username=hexown-a-fcafb17c-a5fc-4373-963b-fbff6d43afe3
+2026/10/18 06:58:45 INFO player registered id=43e230c4-d6a8-4733-980c-8add7caf86fc username=hexown-b-8840179b-1950-4e58-96b6-380e06232c56
+--- PASS: TestPlaceGubbe_HexOwnershipBlocksNeighborAcrossDifferentGoods (0.13s)
+=== RUN   TestPlaceGubbe_SharedHexRejectionNamesHolderOnlyWhenForeign
+2026/10/18 06:58:45 INFO player registered id=92f84012-5d7d-48bd-ac18-2f0c955e2c17 username=hexown-a-f3b94233-fbad-4a2c-8c1f-48d8ac6ece06
+2026/10/18 06:58:45 INFO player registered id=324516e5-7ab9-4d94-a6a6-6abfd116ee58 username=hexown-b-e2aff365-3758-4c22-9bc7-b3e14ffb5d6b
+--- PASS: TestPlaceGubbe_SharedHexRejectionNamesHolderOnlyWhenForeign (0.15s)
+=== RUN   TestPlaceGubbe_ConcurrentRaceForSharedHexLastSlot
+2026/10/18 06:58:45 INFO player registered id=cfb3bbf1-526f-463e-a093-271659210949 username=hexown-a-3cdf750d-49bb-416a-91ad-5e51b53f4917
+2026/10/18 06:58:45 INFO player registered id=9eaceaaa-3fcc-4ea1-86c2-bd6709554c74 username=hexown-b-904d0ec9-a8c9-4b02-a3a5-1f8bd3f32538
+--- PASS: TestPlaceGubbe_ConcurrentRaceForSharedHexLastSlot (0.14s)
+=== RUN   TestPlaceGubbe_ConcurrentRaceForHexOwnershipAcrossDifferentGoods
+2026/10/18 06:58:46 INFO player registered id=e9560195-b649-4245-8feb-20aa6d4249d8 username=hexown-a-b51e64c0-fd5c-4782-8829-1f5381272b0e
+2026/10/18 06:58:46 INFO player registered id=e98c9283-def3-4467-97bd-14f273935a23 username=hexown-b-8c97a886-510d-44da-bf93-d2470b0f6d7e
+--- PASS: TestPlaceGubbe_ConcurrentRaceForHexOwnershipAcrossDifferentGoods (0.14s)
+=== RUN   TestPlaceGubbe_TakesHeldHexWithOwnUnit
+2026/10/18 06:58:46 INFO player registered id=76e271ff-25bc-4aeb-9ad6-072524740925 username=hexown-a-6aac2f98-d048-4506-96e6-b292e7a1b1a4
+2026/10/18 06:58:46 INFO player registered id=7dbe74e6-a177-48f2-98aa-3055a68829df username=hexown-b-79816614-31b1-47a9-b710-913e6cbc1e27
+--- PASS: TestPlaceGubbe_TakesHeldHexWithOwnUnit (0.20s)
+=== RUN   TestPlaceGubbe_HeldHexWithoutOwnUnitIsRefusedWithHowToTake
+2026/10/18 06:58:46 INFO player registered id=67d124db-e91c-4975-97f9-05d1c891c01f username=hexown-a-eba1b875-02b0-4a8c-b279-5a9ff7541833
+2026/10/18 06:58:46 INFO player registered id=d546b829-faef-4bf5-b89f-deccaec89607 username=hexown-b-adbad000-95a4-4aa9-a1f6-2f661d6c91f2
+--- PASS: TestPlaceGubbe_HeldHexWithoutOwnUnitIsRefusedWithHowToTake (0.14s)
+=== RUN   TestPlaceGubbe_HolderWithOwnUnitOnHexBlocksTake
+2026/10/18 06:58:46 INFO player registered id=daf47391-2524-41fc-9dbd-cb69120be631 username=hexown-a-93f6dd4e-c4a5-4973-8a59-7dc6f63302c8
+2026/10/18 06:58:46 INFO player registered id=036c20e0-4027-4711-a350-0c22c903b38b username=hexown-b-00be96c8-648a-451a-890f-16ea6cfb1356
+--- PASS: TestPlaceGubbe_HolderWithOwnUnitOnHexBlocksTake (0.15s)
+=== RUN   TestPlaceGubbe_PresenceWithoutPositionedStanceDoesNotTake
+=== RUN   TestPlaceGubbe_PresenceWithoutPositionedStanceDoesNotTake/marching_with_sentry_stance
+2026/10/18 06:58:46 INFO player registered id=360a177a-9ca0-43af-a0b2-4f9ad11f6e66 username=hexown-a-ec4a483c-f5dd-4ec8-88a5-5e4c0bab3e9f
+2026/10/18 06:58:46 INFO player registered id=8ff8c19a-c6e7-4388-9ef9-8f12fe610ef2 username=hexown-b-e2c19dde-b518-4316-9305-254d6ba5969d
+=== RUN   TestPlaceGubbe_PresenceWithoutPositionedStanceDoesNotTake/positioned_without_stance
+2026/10/18 06:58:46 INFO player registered id=a607d5b9-4b09-4242-b047-1deec81c9674 username=hexown-a-99d93244-a48e-42b2-a9d8-a0f7cbf748ff
+2026/10/18 06:58:46 INFO player registered id=e0d1fbbf-e096-4f9d-b9e4-1d63fbff279d username=hexown-b-8e147b6b-845a-4d89-bc8e-b9588cda7a62
+=== RUN   TestPlaceGubbe_PresenceWithoutPositionedStanceDoesNotTake/positioned_in_storm
+2026/10/18 06:58:46 INFO player registered id=26f6c26e-1fdf-4b56-aa54-e67a660cd221 username=hexown-a-7d161f46-3ae4-4b38-b187-44d28162b64f
+2026/10/18 06:58:47 INFO player registered id=bc6561f0-e078-4fec-a275-4d6dc2d0dd7b username=hexown-b-c320a845-2a33-4cac-bc09-318350911b34
+--- PASS: TestPlaceGubbe_PresenceWithoutPositionedStanceDoesNotTake (0.43s)
+    --- PASS: TestPlaceGubbe_PresenceWithoutPositionedStanceDoesNotTake/marching_with_sentry_stance (0.14s)
+    --- PASS: TestPlaceGubbe_PresenceWithoutPositionedStanceDoesNotTake/positioned_without_stance (0.14s)
+    --- PASS: TestPlaceGubbe_PresenceWithoutPositionedStanceDoesNotTake/positioned_in_storm (0.14s)
+=== RUN   TestPlaceGubbe_HolderUnitWithoutHoldingStanceDoesNotDefend
+2026/10/18 06:58:47 INFO player registered id=40376694-48d5-4332-b0c9-f841d0e16b50 username=hexown-a-84bc671e-022f-4812-a35a-9f6eeaa674f0
+2026/10/18 06:58:47 INFO player registered id=c95dbb75-d34e-4ab8-a32e-c52aba5e8a4d username=hexown-b-50b4d129-b8bd-4cae-b1ce-680b7d5a9e8a
+--- PASS: TestPlaceGubbe_HolderUnitWithoutHoldingStanceDoesNotDefend (0.15s)
+=== RUN   TestPlaceGubbe_SameWanaxNeverTakesFromItself
+2026/10/18 06:58:47 INFO player registered id=5b905e25-70e2-400b-84ad-4d87e192f429 username=hexown-a-24283b4f-99fd-4963-8477-a05d6209a9fe
+2026/10/18 06:58:47 INFO player registered id=88825abf-5e1f-49dc-a365-16e9069a6980 username=hexown-b-06c1cc7b-dfe9-4074-a011-57fd4c2e4292
+--- PASS: TestPlaceGubbe_SameWanaxNeverTakesFromItself (0.15s)
+=== RUN   TestPlaceGubbe_TakeCancelsAndRefundsHoldersQueuedBuild
+2026/10/18 06:58:47 INFO player registered id=ef45552d-9a98-4b30-ba1a-b0dfcfb06a06 username=hexown-a-2982854d-39ee-461f-8b9c-85974020d304
+2026/10/18 06:58:47 INFO player registered id=57d5741c-0700-4de0-bdbf-faa7447955ff username=hexown-b-33cd8f03-81d9-4775-961a-a58a1a6e1ea1
+--- PASS: TestPlaceGubbe_TakeCancelsAndRefundsHoldersQueuedBuild (0.16s)
+=== RUN   TestPlaceGubbe_ConcurrentTakeAndHolderPlacement
+2026/10/18 06:58:47 INFO player registered id=65bcc7a6-3e62-4314-9c2a-508c4fb26360 username=hexown-a-b4a844d4-1429-4d5c-841e-77db90cc5103
+2026/10/18 06:58:47 INFO player registered id=3e9f4f65-415d-4465-a7f5-0d999d1e3ab6 username=hexown-b-67185574-4d15-4613-80ae-8a9b05bef024
+    hex_take_test.go:349: round 1: B's take = 409: map[error:the other city is busy — retry this placement]
+--- FAIL: TestPlaceGubbe_ConcurrentTakeAndHolderPlacement (0.19s)
+=== RUN   TestPlacementOptions_TakeableMatchesWriteGate
+=== RUN   TestPlacementOptions_TakeableMatchesWriteGate/own_sentry_unit
+2026/10/18 06:58:47 INFO player registered id=d9ab692d-d755-4797-b100-59fe2e084f7d username=hexown-a-a221622f-bd04-4caa-8d1f-f63523f11d43
+2026/10/18 06:58:47 INFO player registered id=69276e00-e7af-4e1c-9a8f-f59e25ea37f7 username=hexown-b-eea1818d-e2ff-47aa-8e6a-c6c2f09b7d75
+=== RUN   TestPlacementOptions_TakeableMatchesWriteGate/no_unit
+2026/10/18 06:58:47 INFO player registered id=8aff519d-134d-4c97-81bc-44f9cbc6b6b7 username=hexown-a-479a91d5-e7f0-4490-944b-02611de2f9d8
+2026/10/18 06:58:47 INFO player registered id=6dd49a83-1f0c-4896-b1cb-7863e9699f77 username=hexown-b-4c226fa5-b6fb-41ff-a198-b9a2739e95ae
+=== RUN   TestPlacementOptions_TakeableMatchesWriteGate/holder_defends
+2026/10/18 06:58:48 INFO player registered id=c12a45fb-5e5c-40eb-aa01-47af1f4320a9 username=hexown-a-111dcc5b-d501-40a6-9f6a-74a3d9843052
+2026/10/18 06:58:48 INFO player registered id=6f8fd2e4-1407-4978-b64d-32b280188e87 username=hexown-b-9a0f1109-2147-4efa-8f8e-7331cc64cefa
+=== RUN   TestPlacementOptions_TakeableMatchesWriteGate/marching_unit
+2026/10/18 06:58:48 INFO player registered id=2d5d18d7-fddb-43b4-8f8e-74901dcb6052 username=hexown-a-617e7581-2526-46b7-8c24-b6ce87c6a04e
+2026/10/18 06:58:48 INFO player registered id=88225de8-544a-491a-a35e-a235ec992dd4 username=hexown-b-e4dc3640-0ddd-452d-8fcd-09000953b832
+--- PASS: TestPlacementOptions_TakeableMatchesWriteGate (0.65s)
+    --- PASS: TestPlacementOptions_TakeableMatchesWriteGate/own_sentry_unit (0.16s)
+    --- PASS: TestPlacementOptions_TakeableMatchesWriteGate/no_unit (0.15s)
+    --- PASS: TestPlacementOptions_TakeableMatchesWriteGate/holder_defends (0.18s)
+    --- PASS: TestPlacementOptions_TakeableMatchesWriteGate/marching_unit (0.16s)
+=== RUN   TestPlaceGubbe_TakeOfMineHexMovesTheMine
+2026/10/18 06:58:48 INFO player registered id=756effa7-9340-4fea-b7b4-da1b238f0704 username=hexown-a-26cbc2e8-c75d-45dd-a27c-f2a2a83ee9a2
+2026/10/18 06:58:48 INFO player registered id=1db1521d-9020-49bf-9532-d5fa0c49e64b username=hexown-b-9402792f-bdef-41b5-b256-776ce2593664
+--- PASS: TestPlaceGubbe_TakeOfMineHexMovesTheMine (0.16s)
+=== RUN   TestPlacementOptions_HeldHexNamesHoldersBuilding
+2026/10/18 06:58:48 INFO player registered id=dc62a151-e022-4447-93c4-b8eb3a3f652d username=hexown-a-2de52693-c8cf-449e-aab2-85755048a8d4
+2026/10/18 06:58:48 INFO player registered id=e4bec08f-c86b-4ded-98d5-714b9a11ee04 username=hexown-b-e722b2ac-5fa6-4345-bcf1-892f996f0051
+--- PASS: TestPlacementOptions_HeldHexNamesHoldersBuilding (0.16s)
+=== RUN   TestPlacementConcurrentPOSTsSerialize
+2026/10/18 06:58:48 INFO player registered id=e08833ce-975a-452a-9bbc-d60199b15b6b username=placement-6cea8d0f-8688-4d6d-9a66-194405a853db
+    placement_concurrency_test.go:77: parallel HTTP statuses=map[201:1 409:7], placed=1
+--- PASS: TestPlacementConcurrentPOSTsSerialize (0.10s)
+=== RUN   TestPlacementUsesPopulationAfterSettlementLock
+2026/10/18 06:58:48 INFO player registered id=d6a05abc-9d76-4910-9317-81f8f059b45a username=placement-4e7d95af-8467-4af7-a1b5-c070ee7ca80c
+--- PASS: TestPlacementUsesPopulationAfterSettlementLock (0.09s)
+=== RUN   TestPlacementDELETEWaitsBeforeLockingPlacement
+2026/10/18 06:58:48 INFO player registered id=72f351e3-4b62-4823-9de4-87470c49b04f username=placement-5b489e35-b9da-4e1d-a7ee-c384c2661913
+--- PASS: TestPlacementDELETEWaitsBeforeLockingPlacement (0.09s)
+=== RUN   TestPlacementTakeBusyHolderReturnsConflict
+2026/10/18 06:58:49 INFO player registered id=05cbc4fb-bc2c-4025-a7ab-d78b6399984c username=hexown-a-f9f524bc-bc5d-461b-a97b-c08de92c6009
+2026/10/18 06:58:49 INFO player registered id=482fa97a-7a5c-40d1-b03d-0f760d19c727 username=hexown-b-20af5a50-059f-410c-8ee6-73db7ecc325c
+--- PASS: TestPlacementTakeBusyHolderReturnsConflict (0.16s)
+=== RUN   TestPlaceGubbe_GrainHexCappedLikeOtherGoods
+2026/10/18 06:58:49 INFO player registered id=0840ad16-879a-45bb-bce2-7657bb71656b username=placement-1f604414-4b98-4661-a389-1f1f3b90145e
+--- PASS: TestPlaceGubbe_GrainHexCappedLikeOtherGoods (0.09s)
+=== RUN   TestPlaceGubbe_GrainHexRejectsOverCapacity
+2026/10/18 06:58:49 INFO player registered id=898197b8-8e95-43f1-83b7-8a9f083a20d6 username=placement-89be7c56-f62a-413e-aa8c-6de3b864c7ab
+--- PASS: TestPlaceGubbe_GrainHexRejectsOverCapacity (0.10s)
+=== RUN   TestPlaceGubbe_FishHexRejectsOverCapacity
+2026/10/18 06:58:49 INFO player registered id=dd348cf6-9bcf-49ca-a4fb-d62e73354d74 username=placement-dee3554b-52a2-4e4f-af50-6cbd990f2c56
+--- PASS: TestPlaceGubbe_FishHexRejectsOverCapacity (0.09s)
+=== RUN   TestPlaceGubbe_RejectsWhenPoolIsEmpty
+2026/10/18 06:58:49 INFO player registered id=c77cd6f0-2a48-418e-a2c8-ead8924a9004 username=placement-034ed025-e072-4472-956a-94ac6cd16634
+--- PASS: TestPlaceGubbe_RejectsWhenPoolIsEmpty (0.07s)
+=== RUN   TestPlacementOptions_GrainCappedFishCapped
+2026/10/18 06:58:49 INFO player registered id=c7ea982c-d375-457d-8b88-3bc93a3ea8e9 username=placement-0129977e-dfa6-4b77-ba59-8cd3398bd7d0
+--- PASS: TestPlacementOptions_GrainCappedFishCapped (0.10s)
+=== RUN   TestPlaceGubbe_ByHexOrdinal
+2026/10/18 06:58:49 INFO player registered id=b11bb742-d3ce-4efb-90cf-4d69444e662e username=placement-992832bc-5669-4350-8bef-50f4418fec5e
+--- PASS: TestPlaceGubbe_ByHexOrdinal (0.09s)
+=== RUN   TestPlaceGubbe_HexOrdinalOutOfRangeRejected
+2026/10/18 06:58:49 INFO player registered id=8967c058-9fb5-4569-b5f0-35728c833c76 username=placement-80156ed9-7a19-42e6-9ee7-e05313fac97d
+--- PASS: TestPlaceGubbe_HexOrdinalOutOfRangeRejected (0.06s)
+=== RUN   TestPlaceGubbe_FarmL2HexCapsAtEight
+2026/10/18 06:58:49 INFO player registered id=ac98533a-83ff-4800-b3ea-283749c72b1c username=placement-8977a273-7846-4994-a70c-f1fd8d4eb558
+--- PASS: TestPlaceGubbe_FarmL2HexCapsAtEight (0.12s)
+=== RUN   TestPlacementRoster_OnlyOwnSettlements_AndCounts
+2026/10/18 06:58:49 INFO player registered id=c7bd2b12-7969-4652-aaec-9e818ae60a96 username=wanax-ra-7ef6843a-b9a5-4ee9-8e19-43d2415433ba
+2026/10/18 06:58:49 INFO player registered id=c702cecf-6701-42a5-8fd3-512d7ff41374 username=wanax-rb-64c45184-bb1c-40fe-ba95-84b627166303
+--- PASS: TestPlacementRoster_OnlyOwnSettlements_AndCounts (0.11s)
+=== RUN   TestPlacementRosterParity_OrdinalsMatchPlacements
+2026/10/18 06:58:50 INFO player registered id=9fcc857f-423f-4edc-b981-a35840cf3255 username=wanax-rp-c81b1f8d-1cbc-47e8-b3a6-09dbf475be3f
+--- PASS: TestPlacementRosterParity_OrdinalsMatchPlacements (0.06s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	4.692s
+=== RUN   TestPlaceStartingGubbar_FirstGubbeAlwaysOnBestFood
+--- PASS: TestPlaceStartingGubbar_FirstGubbeAlwaysOnBestFood (0.00s)
+=== RUN   TestPlaceStartingWorkforce_ColonyOfOneHundredGrows
+--- PASS: TestPlaceStartingWorkforce_ColonyOfOneHundredGrows (0.02s)
+=== RUN   TestReconcilePlacements_TrimsOverCapAndDropsBuildingPlacements
+--- PASS: TestReconcilePlacements_TrimsOverCapAndDropsBuildingPlacements (0.04s)
+=== RUN   TestPlaceNextGubbeOnBestFoodHex_PicksHighestYieldThenFallsToPool
+--- PASS: TestPlaceNextGubbeOnBestFoodHex_PicksHighestYieldThenFallsToPool (0.02s)
+=== RUN   TestPlaceNextGubbeOnBestFoodHex_GrainNeverBlocksOnCapacity
+--- PASS: TestPlaceNextGubbeOnBestFoodHex_GrainNeverBlocksOnCapacity (0.03s)
+=== RUN   TestPlacementGrowthConcurrentRespectsCapacity
+--- PASS: TestPlacementGrowthConcurrentRespectsCapacity (0.07s)
+=== RUN   TestPrunePlacementsToPopulation_S1bOrder
+--- PASS: TestPrunePlacementsToPopulation_S1bOrder (0.02s)
+=== RUN   TestPrunePlacementsToPopulation_ConvergesInOnePass
+--- PASS: TestPrunePlacementsToPopulation_ConvergesInOnePass (0.02s)
+=== RUN   TestPrunePlacementsToPopulation_IdempotentWhenWithinCap
+--- PASS: TestPrunePlacementsToPopulation_IdempotentWhenWithinCap (0.02s)
+=== RUN   TestPlaceNextGubbeOnBestFoodHex_OrdinalAlreadyTakenFallsToPoolWithoutError
+--- PASS: TestPlaceNextGubbeOnBestFoodHex_OrdinalAlreadyTakenFallsToPoolWithoutError (0.02s)
+=== RUN   TestPlacementYield_GrainPlateausAtCap
+--- PASS: TestPlacementYield_GrainPlateausAtCap (0.00s)
+=== RUN   TestPlacementYield_ZeroCapMeansZeroYield
+--- PASS: TestPlacementYield_ZeroCapMeansZeroYield (0.00s)
+=== RUN   TestPlacementYield_NonGrainDividesByCapL1AndScalesByMult
+--- PASS: TestPlacementYield_NonGrainDividesByCapL1AndScalesByMult (0.00s)
+PASS
+ok  	formatet/megaron/server/internal/economy	0.283s
+FAIL

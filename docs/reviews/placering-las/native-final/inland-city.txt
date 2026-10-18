@@ -1,0 +1,39 @@
+1 citizen = 100 people
+Citizens: 2/10 placed, 8 idle
+
+Food: 2 citizens needed for people on best food slots, 2 placed
+Automatic grain: 0.50 per day without placed citizens (nearby ground 0.50 + 0 people outside whole citizens 0.00)
+
+Catchment:
+  #8   (53,5) hills          oil        0/2    (next +0.5 per day)
+                      wine       0/2    (next +1.0 per day)
+                      stone      0/2    (next +1.0 per day)
+                      grain      0/1    (next +0.5 per day)
+  #4   (52,6) river_valley   wine       0/2    (next +0.5 per day)  [farm L1 @ (52,6) river_valley]
+                      stone      0/1    (next +0.5 per day)
+                      grain      2/6    (next +2.8 per day)
+  #5   (52,7) mountain_limestone stone      0/2    (next +2.0 per day)
+  #6   (52,8) mountain_limestone stone      0/2    (next +2.0 per day)
+  #10  (53,8) mountain_limestone stone      0/2    (next +2.0 per day)
+                      tin        0/1    (next +1.0 per day)
+  #14  (54,7) mountain_limestone stone      0/2    (next +2.0 per day)
+                      tin        0/1    (next +1.0 per day)
+  #15  (54,8) mountain_limestone tin        0/1    (next +1.0 per day)
+                      stone      0/2    (next +2.0 per day)
+  #7   (52,9) coastal_sea    fish       0/2    (next +1.0 per day)
+  #11  (53,9) coastal_sea    fish       0/2    (next +1.0 per day)
+  #1   (51,7) river          fish       0/1    (next +0.5 per day)
+  #2   (51,8) river          fish       0/1    (next +0.5 per day)
+  #3   (51,9) river          fish       0/1    (next +0.5 per day)
+  #9   (53,6) forest_cedar   stone      0/1    (next +0.5 per day)
+                      cedar      0/3    (next +1.0 per day)
+  #12  (54,5) forest_cedar   cedar      0/3    (next +1.0 per day)
+                      stone      0/1    (next +0.5 per day)
+  #13  (54,6) forest_cedar   stone      0/1    (next +0.5 per day)
+                      cedar      0/3    (next +1.0 per day)
+  #16  (55,5) forest_cedar   stone      0/1    (next +0.5 per day)
+                      cedar      0/3    (next +1.0 per day)
+  #17  (55,6) forest_cedar   stone      0/1    (next +0.5 per day)
+                      cedar      0/3    (next +1.0 per day)
+  #18  (55,7) forest_cedar   stone      0/1    (next +0.5 per day)
+                      cedar      0/3    (next +1.0 per day)

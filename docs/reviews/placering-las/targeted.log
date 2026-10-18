@@ -1,0 +1,167 @@
+» färsk DB på migration 183 · commit e38acc13+ändringar
+=== RUN   TestPlacementConcurrentPOSTsSerialize
+2026/10/18 06:57:24 INFO player registered id=9f947272-2b83-40e2-82de-8903080af113 username=placement-2a175cac-0fb4-4b0f-bdc1-8218096858ee
+    placement_concurrency_test.go:76: parallel HTTP statuses=map[201:1 409:7], placed=1
+--- PASS: TestPlacementConcurrentPOSTsSerialize (0.10s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.107s
+=== RUN   TestPlaceStartingGubbar_FirstGubbeAlwaysOnBestFood
+--- PASS: TestPlaceStartingGubbar_FirstGubbeAlwaysOnBestFood (0.00s)
+=== RUN   TestPlaceStartingWorkforce_ColonyOfOneHundredGrows
+--- PASS: TestPlaceStartingWorkforce_ColonyOfOneHundredGrows (0.02s)
+=== RUN   TestReconcilePlacements_TrimsOverCapAndDropsBuildingPlacements
+--- PASS: TestReconcilePlacements_TrimsOverCapAndDropsBuildingPlacements (0.04s)
+=== RUN   TestPlaceNextGubbeOnBestFoodHex_PicksHighestYieldThenFallsToPool
+--- PASS: TestPlaceNextGubbeOnBestFoodHex_PicksHighestYieldThenFallsToPool (0.02s)
+=== RUN   TestPlaceNextGubbeOnBestFoodHex_GrainNeverBlocksOnCapacity
+    place_next_gubbe_test.go:78: gubbe 6 fell to the pool despite an ample grain catchment (18 plains hexes × cap 4)
+--- FAIL: TestPlaceNextGubbeOnBestFoodHex_GrainNeverBlocksOnCapacity (0.03s)
+=== RUN   TestPrunePlacementsToPopulation_S1bOrder
+--- PASS: TestPrunePlacementsToPopulation_S1bOrder (0.02s)
+=== RUN   TestPrunePlacementsToPopulation_ConvergesInOnePass
+--- PASS: TestPrunePlacementsToPopulation_ConvergesInOnePass (0.02s)
+=== RUN   TestPrunePlacementsToPopulation_IdempotentWhenWithinCap
+--- PASS: TestPrunePlacementsToPopulation_IdempotentWhenWithinCap (0.02s)
+=== RUN   TestPlaceNextGubbeOnBestFoodHex_OrdinalAlreadyTakenFallsToPoolWithoutError
+--- PASS: TestPlaceNextGubbeOnBestFoodHex_OrdinalAlreadyTakenFallsToPoolWithoutError (0.02s)
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.202s
+=== RUN   TestApplyDecay_Growth_MinimalCitySelfSufficient
+    grain_growth_test.go:253: day 0: pop=1500 grain=0.00
+    grain_growth_test.go:261: day 1: pop=1507 grain=1.48
+    grain_growth_test.go:261: day 2: pop=1514 grain=3.04
+    grain_growth_test.go:261: day 3: pop=1521 grain=4.66
+    grain_growth_test.go:261: day 4: pop=1528 grain=6.35
+    grain_growth_test.go:261: day 5: pop=1535 grain=8.10
+    grain_growth_test.go:261: day 6: pop=1542 grain=9.92
+    grain_growth_test.go:261: day 7: pop=1549 grain=11.81
+    grain_growth_test.go:261: day 8: pop=1556 grain=13.75
+    grain_growth_test.go:261: day 9: pop=1563 grain=15.77
+    grain_growth_test.go:261: day 10: pop=1570 grain=17.84
+    grain_growth_test.go:261: day 11: pop=1577 grain=19.98
+    grain_growth_test.go:261: day 12: pop=1584 grain=22.18
+    grain_growth_test.go:261: day 13: pop=1592 grain=24.44
+    grain_growth_test.go:261: day 14: pop=1600 grain=26.78
+    grain_growth_test.go:261: day 15: pop=1608 grain=29.18
+    grain_growth_test.go:261: day 16: pop=1616 grain=31.66
+    grain_growth_test.go:261: day 17: pop=1624 grain=34.20
+    grain_growth_test.go:261: day 18: pop=1632 grain=36.82
+    grain_growth_test.go:261: day 19: pop=1640 grain=39.51
+    grain_growth_test.go:261: day 20: pop=1648 grain=42.26
+    grain_growth_test.go:261: day 21: pop=1656 grain=45.08
+    grain_growth_test.go:261: day 22: pop=1664 grain=47.97
+    grain_growth_test.go:261: day 23: pop=1672 grain=50.92
+    grain_growth_test.go:261: day 24: pop=1680 grain=53.94
+    grain_growth_test.go:261: day 25: pop=1688 grain=57.02
+    grain_growth_test.go:261: day 26: pop=1696 grain=60.17
+    grain_growth_test.go:261: day 27: pop=1704 grain=63.38
+    grain_growth_test.go:261: day 28: pop=1712 grain=66.66
+    grain_growth_test.go:261: day 29: pop=1720 grain=69.99
+    grain_growth_test.go:261: day 30: pop=1728 grain=73.39
+    grain_growth_test.go:261: day 31: pop=1736 grain=76.85
+    grain_growth_test.go:261: day 32: pop=1744 grain=80.37
+    grain_growth_test.go:261: day 33: pop=1752 grain=83.95
+    grain_growth_test.go:261: day 34: pop=1760 grain=87.59
+    grain_growth_test.go:261: day 35: pop=1768 grain=91.29
+    grain_growth_test.go:261: day 36: pop=1776 grain=95.05
+    grain_growth_test.go:261: day 37: pop=1784 grain=98.86
+    grain_growth_test.go:261: day 38: pop=1792 grain=102.73
+    grain_growth_test.go:261: day 39: pop=1800 grain=106.66
+    grain_growth_test.go:261: day 40: pop=1808 grain=110.64
+    grain_growth_test.go:274: minimum grain observed over 40 days: 1.4850
+--- PASS: TestApplyDecay_Growth_MinimalCitySelfSufficient (0.32s)
+=== RUN   TestApplyDecay_Growth_OverCapPopulationStarves
+    grain_growth_test.go:300: day 1: pop=4975 grain=0.00
+    grain_growth_test.go:300: day 2: pop=4950 grain=0.00
+    grain_growth_test.go:300: day 3: pop=4925 grain=0.00
+    grain_growth_test.go:300: day 4: pop=4900 grain=0.00
+    grain_growth_test.go:300: day 5: pop=4876 grain=0.00
+--- PASS: TestApplyDecay_Growth_OverCapPopulationStarves (0.08s)
+=== RUN   TestApplyDecay_Growth_MatchesGoMirror
+    grain_growth_test.go:400: day 1: pop=1507 grain=1.48 net=1.50 (want pop=1507 grain=1.48)
+    grain_growth_test.go:400: day 2: pop=1514 grain=3.04 net=1.58 (want pop=1514 grain=3.04)
+    grain_growth_test.go:400: day 3: pop=1521 grain=4.66 net=1.67 (want pop=1521 grain=4.66)
+    grain_growth_test.go:400: day 4: pop=1528 grain=6.35 net=1.75 (want pop=1528 grain=6.35)
+    grain_growth_test.go:400: day 5: pop=1535 grain=8.10 net=1.84 (want pop=1535 grain=8.10)
+    grain_growth_test.go:400: day 6: pop=1542 grain=9.92 net=1.92 (want pop=1542 grain=9.92)
+    grain_growth_test.go:400: day 7: pop=1549 grain=11.81 net=2.00 (want pop=1549 grain=11.81)
+    grain_growth_test.go:400: day 8: pop=1556 grain=13.75 net=2.09 (want pop=1556 grain=13.75)
+    grain_growth_test.go:400: day 9: pop=1563 grain=15.77 net=2.17 (want pop=1563 grain=15.77)
+    grain_growth_test.go:400: day 10: pop=1570 grain=17.84 net=2.26 (want pop=1570 grain=17.84)
+    grain_growth_test.go:400: day 11: pop=1577 grain=19.98 net=2.34 (want pop=1577 grain=19.98)
+    grain_growth_test.go:400: day 12: pop=1584 grain=22.18 net=2.42 (want pop=1584 grain=22.18)
+    grain_growth_test.go:400: day 13: pop=1592 grain=24.44 net=2.51 (want pop=1592 grain=24.44)
+    grain_growth_test.go:400: day 14: pop=1600 grain=26.78 net=2.60 (want pop=1600 grain=26.78)
+    grain_growth_test.go:400: day 15: pop=1608 grain=29.18 net=2.70 (want pop=1608 grain=29.18)
+    grain_growth_test.go:400: day 16: pop=1616 grain=31.66 net=2.80 (want pop=1616 grain=31.66)
+    grain_growth_test.go:400: day 17: pop=1624 grain=34.20 net=2.89 (want pop=1624 grain=34.20)
+    grain_growth_test.go:400: day 18: pop=1632 grain=36.82 net=2.99 (want pop=1632 grain=36.82)
+    grain_growth_test.go:400: day 19: pop=1640 grain=39.51 net=3.08 (want pop=1640 grain=39.51)
+    grain_growth_test.go:400: day 20: pop=1648 grain=42.26 net=3.18 (want pop=1648 grain=42.26)
+    grain_growth_test.go:400: day 21: pop=1656 grain=45.08 net=3.28 (want pop=1656 grain=45.08)
+    grain_growth_test.go:400: day 22: pop=1664 grain=47.97 net=3.37 (want pop=1664 grain=47.97)
+    grain_growth_test.go:400: day 23: pop=1672 grain=50.92 net=3.47 (want pop=1672 grain=50.92)
+    grain_growth_test.go:400: day 24: pop=1680 grain=53.94 net=3.56 (want pop=1680 grain=53.94)
+    grain_growth_test.go:400: day 25: pop=1688 grain=57.02 net=3.66 (want pop=1688 grain=57.02)
+    grain_growth_test.go:400: day 26: pop=1696 grain=60.17 net=3.76 (want pop=1696 grain=60.17)
+    grain_growth_test.go:400: day 27: pop=1704 grain=63.38 net=3.85 (want pop=1704 grain=63.38)
+    grain_growth_test.go:400: day 28: pop=1712 grain=66.66 net=3.95 (want pop=1712 grain=66.66)
+    grain_growth_test.go:400: day 29: pop=1720 grain=69.99 net=4.04 (want pop=1720 grain=69.99)
+    grain_growth_test.go:400: day 30: pop=1728 grain=73.39 net=4.14 (want pop=1728 grain=73.39)
+    grain_growth_test.go:422: saw a day with no growth (food net ≤ 0): false
+--- PASS: TestApplyDecay_Growth_MatchesGoMirror (0.26s)
+=== RUN   TestApplyDecay_Growth_GeographyDifferentiates
+    grain_growth_test.go:451: after 15 days — poor: pop=4638 grain=0.00 | rich: pop=4896 grain=0.53
+--- PASS: TestApplyDecay_Growth_GeographyDifferentiates (0.31s)
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/grain_deficit
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/grain_balanced
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/grain_surplus
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/fish_deficit
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/fish_balanced
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/fish_surplus
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/mixed_deficit
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/mixed_balanced
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/mixed_surplus
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/livestock_is_emergency_food
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/wine_adds_variety_only
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/oil_adds_variety_only
+=== RUN   TestApplyDecay_GrowthGateMatchesFoodNet/stocked_food_without_production
+--- PASS: TestApplyDecay_GrowthGateMatchesFoodNet (0.47s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/grain_deficit (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/grain_balanced (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/grain_surplus (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/fish_deficit (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/fish_balanced (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/fish_surplus (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/mixed_deficit (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/mixed_balanced (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/mixed_surplus (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/livestock_is_emergency_food (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/wine_adds_variety_only (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/oil_adds_variety_only (0.04s)
+    --- PASS: TestApplyDecay_GrowthGateMatchesFoodNet/stocked_food_without_production (0.04s)
+=== RUN   TestApplyDecay_GrowthLeavesTheStoresToFill
+    growth_overflow_test.go:29: day 2: pop=1514 grain=3.04
+    growth_overflow_test.go:29: day 3: pop=1521 grain=4.66
+    growth_overflow_test.go:29: day 4: pop=1528 grain=6.35
+    growth_overflow_test.go:29: day 5: pop=1535 grain=8.10
+    growth_overflow_test.go:29: day 6: pop=1542 grain=9.92
+    growth_overflow_test.go:29: day 7: pop=1549 grain=11.81
+    growth_overflow_test.go:29: day 8: pop=1556 grain=13.75
+    growth_overflow_test.go:29: day 9: pop=1563 grain=15.77
+    growth_overflow_test.go:29: day 10: pop=1570 grain=17.84
+    growth_overflow_test.go:29: day 11: pop=1577 grain=19.98
+    growth_overflow_test.go:29: day 12: pop=1584 grain=22.18
+    growth_overflow_test.go:29: day 13: pop=1592 grain=24.44
+    growth_overflow_test.go:29: day 14: pop=1600 grain=26.78
+    growth_overflow_test.go:29: day 15: pop=1608 grain=29.18
+    growth_overflow_test.go:29: day 16: pop=1616 grain=31.66
+    growth_overflow_test.go:29: day 17: pop=1624 grain=34.20
+    growth_overflow_test.go:29: day 18: pop=1632 grain=36.82
+    growth_overflow_test.go:29: day 19: pop=1640 grain=39.51
+    growth_overflow_test.go:29: day 20: pop=1648 grain=42.26
+--- PASS: TestApplyDecay_GrowthLeavesTheStoresToFill (0.18s)
+PASS
+ok  	formatet/megaron/server/internal/kharis	1.625s
+FAIL

@@ -1,0 +1,40 @@
+Wanax Katreus · day 2 of the world
+
+1 citizen = 100 people
+inland-proof [minoan]  Pop: 1.0k people  Labor: 10 citizens  Walls: 0/3  Loyalty: 3  Settlements: 1/5
+Population 1005 — growing: food net +1.3 per day
+  Loyalty 1–4 (1=lowest; revolt also requires a hostile garrison majority + a triggering event)
+  Recent loyalty events:
+    +2  well_fed             well fed (population food needs were met); varied diet (2+ food goods stocked) (07:09 Oct 18)
+  Raised by: kharis ≥ favor threshold, fed/varied diet (daily welfare), gifts ≥50 silver-equivalent (`keryx transfer`), won/defended battles.
+  Lowered by: starvation, too many colonies (overextension), neglect (>2 days without a gift), lost battles, a borrowed army kept too long.
+
+No trade contacts yet — trade needs a foreign settlement within your vision. Run `keryx cities` to see known/rumoured neighbours (march outward or colonise to reach one), then `keryx message --to <name>` or `keryx trade-offer` once one is visible.
+
+Sitos granary: 106 stored (106 grain) / cap 302 · coverage 215.6 days (granary fills above 30, drains below 10) · storing away a tenth of the surplus
+
+Last day 2: 1 goods produced, 1 consumed, stored away 106 food  ·  keryx ticklog for details
+
+Resources
+  (per day; food and army balances are itemized below)
+  Silver      480  —
+  Food     grain 6.3 + fish 0.0 − people eat 5.0 = net +1.3 per day (before army)
+  Grain      1.1k  production 6.3 per day · 106 grain in Sitos  (2 citizens needed for people on best food slots · 2 placed)
+  Automatic grain: 0.67 per day without placed citizens (nearby ground 0.50 + 5 people outside whole citizens 0.17)
+  Army     eats 1.0 grain per day → food net +0.3 per day after army
+  Silver   net +0.0 per day after army pay
+  ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).
+  ⚠ Unmined deposit in the catchment: tin, silver — build a mine here to extract it
+  Kharis       25  (Suspicious) · cap 25 · passive +0.0 per day
+  Temples: none — kharis doesn't climb without a temple + offerings.
+  → feed the temples with local grain, fish, timber or silver or cast a rite — see `keryx rite --list`.
+
+Army (garrison in inland-proof)
+  Spearmen    200
+      6589d9bc-ff90-4a40-9e7e-56343c458750  100
+      a842df91-97d1-449e-8d27-4817e92dc7d0  100
+  Upkeep     1.0 grain, 0.0 silver per day  (everything the city pays — including field units)
+  Field units and other cities are shown in `keryx unit list`.
+
+Buildings
+  farm         L1
