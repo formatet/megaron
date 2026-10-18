@@ -45,3 +45,11 @@ A building produces nothing without people in it. Staff it from the centre **Cit
 If cancelling a queued build is refused, the reason appears in the Buildings tab.
 
 The construction queue has a fixed limit, shown in `keryx build --queue`; population and building upgrades do not add slots. Finish or cancel a queued building before starting another when it is full. Hex buildings use `place`, not `staff`: for a lumbermill use `keryx place timber <hex> +2` (cedar on a cedar hex). `build --hex` accepts coordinates such as `3,-1` or the City ordinal `6`/`#6`.
+
+## Demolishing and rebuilding
+
+A finished building can be torn down so its hex or slot is free for something else. In the Buildings tab press **Demolish** beside the building and confirm; with keryx, `keryx demolish --hex 3,-1` for a hex building or `keryx demolish --type market` for a city one. Only your own city's buildings can be demolished.
+
+The place is free at once — the new building then takes its normal time to build ([[catchment]] has the one-building-per-hex rule). **Nothing is refunded**, and anyone working in the building or on the places it made is lifted off and goes idle; they are not lost, and you can place them again ([[citizens]]). A hex keeps its base places, so a demolished farm's field still holds its first workers. A silver deposit gives nothing without its mine, so everyone mining it goes idle.
+
+Something still under construction is not demolished but cancelled, with its cost refunded: the ✕ in the Build queue, or `keryx cancel-build`.

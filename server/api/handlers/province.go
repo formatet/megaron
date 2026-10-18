@@ -209,20 +209,21 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		// the field `keryx city`/`keryx status` read to show a hex-bound
 		// building's location.
 		type buildingItem struct {
-			Type  string `json:"type"`
-			Level int    `json:"level"`
-			HexQ  *int   `json:"hex_q,omitempty"`
-			HexR  *int   `json:"hex_r,omitempty"`
+			ID    uuid.UUID `json:"id"`
+			Type  string    `json:"type"`
+			Level int       `json:"level"`
+			HexQ  *int      `json:"hex_q,omitempty"`
+			HexR  *int      `json:"hex_r,omitempty"`
 		}
 		var buildings []buildingItem
 		brows, _ := h.pool.Query(r.Context(),
-			`SELECT building_type, level, hex_q, hex_r FROM buildings WHERE settlement_id = $1 ORDER BY building_type, hex_q, hex_r`,
+			`SELECT id, building_type, level, hex_q, hex_r FROM buildings WHERE settlement_id = $1 ORDER BY building_type, hex_q, hex_r`,
 			sett.ID,
 		)
 		if brows != nil {
 			for brows.Next() {
 				var bi buildingItem
-				_ = brows.Scan(&bi.Type, &bi.Level, &bi.HexQ, &bi.HexR)
+				_ = brows.Scan(&bi.ID, &bi.Type, &bi.Level, &bi.HexQ, &bi.HexR)
 				buildings = append(buildings, bi)
 			}
 			brows.Close()

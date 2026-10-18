@@ -332,6 +332,14 @@
         "buildings.md"
       ]
     },
+    "/api/v1/worlds/{id}/provinces/{id}/buildings/{id}": {
+      "terms": [
+        "demolish"
+      ],
+      "articles": [
+        "buildings.md"
+      ]
+    },
     "/api/v1/worlds/{id}/provinces/{id}/recruit": {
       "terms": [
         "Train 100",

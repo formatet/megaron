@@ -35,7 +35,7 @@ import {
 } from './ui/marchctx.js';
 import {
   loadCityDrawer, cycleCityView, saveLaborAlloc, startBuild,
-  loadTicklog, cancelBuild, slaughterLivestock,
+  loadTicklog, cancelBuild, demolishBuilding, slaughterLivestock,
   onCityBuildTypeChange,
 } from './ui/drawers/city.js';
 import {
@@ -171,6 +171,7 @@ document.addEventListener('visibilitychange', () => {
 Object.assign(window, {
   // (a) inline-handler targets
   cancelBuild,
+  demolishBuilding,
   centreOn,
   closeAccountWindow,
   closeCodex,

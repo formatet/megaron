@@ -1,4 +1,5 @@
-import { showInlineResult } from '../inline_result.js';
+import { showInlineResult, confirmInline } from '../inline_result.js';
+import { demolishLabel, demolishPrompt, demolishResultLine } from '../demolish.js';
 import { State, activeCitySettlement } from '../../state.js';
 import { fetchAuth } from '../../api.js';
 import { arrivalHTML } from '../time.js';
@@ -571,6 +572,27 @@ export async function cancelBuild(provinceID, queueID) {
   }
 }
 
+// Demolish a finished building: a deliberate second click (inline confirm, no
+// browser dialog), then DELETE .../buildings/:id. The server lifts the people
+// working there to idle, so the gubbe grid is redrawn too.
+export function demolishBuilding(provinceID, buildingID, label) {
+  const host = document.getElementById('city-demolish-res');
+  confirmInline(host, demolishPrompt(label), async () => {
+    const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}/buildings/${buildingID}`, { method: 'DELETE' });
+    if (res.ok) {
+      const d = await res.json().catch(() => ({}));
+      await refreshCityBuildings(provinceID);
+      const gridEl = document.getElementById('city-gubbe-grid');
+      const c = activeCitySettlement();
+      if (gridEl && c) renderGubbeGrid(gridEl, c.id, c.q, c.r);
+      showInlineResult('city-bld-sec', demolishResultLine(label, d.citizens_lifted));
+    } else {
+      const d = await res.json().catch(() => ({}));
+      showInlineResult('city-bld-sec', d.error || 'Could not demolish', true);
+    }
+  }, { confirmLabel: 'Demolish', cancelLabel: 'Keep it' });
+}
+
 // Re-fetch province data and update only the buildings/queue section of the city drawer.
 async function refreshCityBuildings(provinceID) {
   const bldSec = document.getElementById('city-bld-sec');
@@ -587,8 +609,10 @@ async function refreshCityBuildings(provinceID) {
     // so the hex is the only way to tell them apart in this list.
     let h2 = blds.length
       ? `<div class="dsec-title">Built</div><table class="goods-mini">${
-          blds.map(b => `<tr><td>${_BLD_LBL[b.type]||b.type}${b.hex_q != null ? ` @ (${b.hex_q},${b.hex_r})` : ''}</td><td>L${b.level}</td></tr>`).join('')
-        }</table>`
+          blds.map(b => `<tr><td>${_BLD_LBL[b.type]||b.type}${b.hex_q != null ? ` @ (${b.hex_q},${b.hex_r})` : ''}</td><td>L${b.level}</td>` +
+            (b.id ? `<td style="text-align:right"><button class="btn-small" onclick="demolishBuilding('${provinceID}','${b.id}','${esc(demolishLabel(_BLD_LBL[b.type]||b.type, b.hex_q, b.hex_r))}')" style="padding:.05rem .3rem;font-size:.68rem;cursor:pointer">Demolish</button></td>` : '') +
+            `</tr>`).join('')
+        }</table><div id="city-demolish-res"></div>`
       : '<p class="empty-state">No buildings yet.</p>';
     if (pd.build_queue_max != null) h2 += `<p class="empty-state">Queue: ${bq.length}/${pd.build_queue_max} slots used — fixed limit; population and buildings do not add slots. Finish or cancel a build.</p>`;
     if (bq.length) h2 += `<div class="dsec-title" style="margin-top:.8rem">Build queue</div><table class="goods-mini">${
