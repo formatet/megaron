@@ -38,6 +38,10 @@
     {
       "route": "POST /api/v1/worlds",
       "reason": "WorldHandler.Create now requires X-Admin-Key fail-closed (bc15f01d); administration, not a player verb"
+    },
+    {
+      "route": "POST /api/v1/worlds/{id}/settlements/{id}/gift",
+      "reason": "Retired own-colony gift: 410 tombstone directs callers to transfers; no player action or state mutation"
     }
   ],
   "codex_aliases": {
@@ -660,23 +664,6 @@
       ],
       "articles": [
         "occupation.md"
-      ]
-    },
-    "/api/v1/worlds/{id}/settlements/{id}/gift": {
-      "terms": [
-        "gift"
-      ],
-      "articles": [
-        "transfers.md",
-        "loyalty.md"
-      ]
-    },
-    "/api/v1/worlds/{id}/settlements/{id}/loyalty-log": {
-      "terms": [
-        "loyalty"
-      ],
-      "articles": [
-        "loyalty.md"
       ]
     },
     "/api/v1/worlds/{id}/settlements/{id}/rite": {
