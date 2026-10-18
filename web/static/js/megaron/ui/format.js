@@ -99,7 +99,7 @@ export function formatApiError(data, fallback) {
       const wait = m.rate_per_tick > 0 ? ` — ≈${fmtDays(Math.ceil((Number(m.need)-Number(m.have))/m.rate_per_tick))} at current production (before other use)` : '';
       return `${m.good || 'goods'} ${need} needed, ${have} in store${wait}`;
     });
-    return 'Not enough: ' + parts.join('; ') + '.';
+    return 'Not enough: ' + parts.join('; ') + '. Produce it here, or send it from another of your cities (Economy → Transfer).';
   }
   return (data && data.error) || fallback;
 }

@@ -517,7 +517,7 @@ test('ShipDamaged and ShipRepaired name the ship over the bare type', () => {
 
 test('insufficient_goods with one missing good names it with need and have', () => {
   const data = { error: 'insufficient_goods', missing: [{ good: 'timber', need: 40, have: 12 }] };
-  assert.equal(formatApiError(data, 'Build failed.'), 'Not enough: timber 40 needed, 12 in store.');
+  assert.equal(formatApiError(data, 'Build failed.'), 'Not enough: timber 40 needed, 12 in store. Produce it here, or send it from another of your cities (Economy → Transfer).');
 });
 
 test('insufficient_goods with several missing goods lists every one', () => {
@@ -530,13 +530,13 @@ test('insufficient_goods with several missing goods lists every one', () => {
   };
   assert.equal(
     formatApiError(data, 'Build failed.'),
-    'Not enough: timber 40 needed, 12 in store; copper 10 needed, 0 in store.',
+    'Not enough: timber 40 needed, 12 in store; copper 10 needed, 0 in store. Produce it here, or send it from another of your cities (Economy → Transfer).',
   );
 });
 
 test('insufficient_goods rounds fractional need/have so a lazy-eval float never reaches the eye', () => {
   const data = { error: 'insufficient_goods', missing: [{ good: 'grain', need: 39.999999, have: 4.2 }] };
-  assert.equal(formatApiError(data, 'Build failed.'), 'Not enough: grain 40 needed, 4 in store.');
+  assert.equal(formatApiError(data, 'Build failed.'), 'Not enough: grain 40 needed, 4 in store. Produce it here, or send it from another of your cities (Economy → Transfer).');
 });
 
 test('insufficient_goods with an empty missing array falls back to data.error', () => {

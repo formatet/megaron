@@ -878,7 +878,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			if cd, ok := p["catchment_deposits"].([]any); ok {
 				buildings, _ := sett["buildings"].([]any)
 				if unused := unusedCatchmentDeposits(cd, buildings); len(unused) > 0 {
-					fmt.Printf("  ⚠ Unmined deposit in the catchment: %s — build a mine here to extract it\n",
+					fmt.Printf("  ⚠ Unmined deposit in the catchment: %s — build a mine on its hex to extract it (a hex holds one building; if another stands there, the mine cannot go in)\n",
 						strings.Join(unused, ", "))
 				}
 			}
