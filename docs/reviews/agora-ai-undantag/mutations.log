@@ -1,0 +1,10 @@
+pass-exemption named assertion RED -> exact bytes -> GREEN 2983b8fed022c506342478d8a9e81cd0d6fa3347aea3d46d18c3d8eb24875f23
+direct-exemption named assertion RED -> exact bytes -> GREEN 2983b8fed022c506342478d8a9e81cd0d6fa3347aea3d46d18c3d8eb24875f23
+account-exemption named assertion RED -> exact bytes -> GREEN 2983b8fed022c506342478d8a9e81cd0d6fa3347aea3d46d18c3d8eb24875f23
+password-exemption named assertion RED -> exact bytes -> GREEN 2983b8fed022c506342478d8a9e81cd0d6fa3347aea3d46d18c3d8eb24875f23
+backfill-gpt named assertion RED -> exact bytes -> GREEN cc5d96ada15786e178754122eec9eba2ed9d354c97881da6a7a6f63ab87eb0dc
+api-forbidden named assertion RED -> exact bytes -> GREEN 1b080ac7181e5035be2e23302e5a025f4d736fdbd0855eac6e4873dd4d1fa563
+cli-exempt-state named assertion RED -> exact bytes -> GREEN ad15d9e2fe13ab00059e469ab0c5cb34261724db565aeec15419abe9c2fc5aef
+cli-exempt-password named assertion RED -> exact bytes -> GREEN ad15d9e2fe13ab00059e469ab0c5cb34261724db565aeec15419abe9c2fc5aef
+web-exempt-state named assertion RED -> exact bytes -> GREEN fed9c23f7fce8cc5f7ecdd2d7d36fc2a6ce796775b6d29a3a1b155b5cd41dbd1
+web-exempt-password named assertion RED -> exact bytes -> GREEN fed9c23f7fce8cc5f7ecdd2d7d36fc2a6ce796775b6d29a3a1b155b5cd41dbd1

@@ -1,0 +1,10 @@
+» färsk DB på migration 183 · commit 9c071100
+=== RUN   TestAgoraExemptPassSkipsReconcile
+    agora_exempt_test.go:46: exempt player reconciled: locks=1 create=1
+--- FAIL: TestAgoraExemptPassSkipsReconcile (0.04s)
+=== RUN   TestAgoraExemptDirectAndAccountLifecycle
+    agora_exempt_test.go:66: exempt account leaked ready/pending: {Enabled:true State:ready Localpart:lifecycle-f211ad4c-a4f7-470c-9f95-bf8e23339fc6 Homeserver:https://agora.test UserID:@lifecycle-f211ad4c-a4f7-470c-9f95-bf8e23339fc6:agora.test} <nil>
+--- FAIL: TestAgoraExemptDirectAndAccountLifecycle (0.03s)
+FAIL
+FAIL	formatet/megaron/server/cmd/server	0.071s
+FAIL

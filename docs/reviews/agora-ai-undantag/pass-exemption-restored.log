@@ -1,0 +1,5 @@
+=== RUN   TestAgoraExemptPassSkipsReconcile
+--- PASS: TestAgoraExemptPassSkipsReconcile (0.03s)
+PASS
+ok  	formatet/megaron/server/cmd/server	0.037s
+» färsk DB på migration 183 · commit 9c071100+ändringar

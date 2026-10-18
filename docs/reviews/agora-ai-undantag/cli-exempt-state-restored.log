@@ -1,0 +1,14 @@
+=== RUN   TestAgoraStatusNeverRequestsPassword
+=== RUN   TestAgoraStatusNeverRequestsPassword/disabled
+=== RUN   TestAgoraStatusNeverRequestsPassword/exempt
+=== RUN   TestAgoraStatusNeverRequestsPassword/pending
+=== RUN   TestAgoraStatusNeverRequestsPassword/provisioning
+=== RUN   TestAgoraStatusNeverRequestsPassword/ready
+--- PASS: TestAgoraStatusNeverRequestsPassword (0.00s)
+    --- PASS: TestAgoraStatusNeverRequestsPassword/disabled (0.00s)
+    --- PASS: TestAgoraStatusNeverRequestsPassword/exempt (0.00s)
+    --- PASS: TestAgoraStatusNeverRequestsPassword/pending (0.00s)
+    --- PASS: TestAgoraStatusNeverRequestsPassword/provisioning (0.00s)
+    --- PASS: TestAgoraStatusNeverRequestsPassword/ready (0.00s)
+PASS
+ok  	formatet/megaron/server/cmd/keryx	0.003s

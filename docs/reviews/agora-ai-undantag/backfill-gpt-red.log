@@ -1,0 +1,7 @@
+=== RUN   TestAgoraExemptMigrationBackfillAndDefault
+    agora_exempt_test.go:115: backfill gpt-arete=false wanttrue <nil>
+--- FAIL: TestAgoraExemptMigrationBackfillAndDefault (0.03s)
+FAIL
+FAIL	formatet/megaron/server/cmd/server	0.033s
+FAIL
+» färsk DB på migration 183 · commit 9c071100+ändringar

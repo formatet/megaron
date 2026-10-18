@@ -1,0 +1,7 @@
+=== RUN   TestAgoraExemptDirectAndAccountLifecycle
+    agora_exempt_test.go:74: remote touched for exempt player: create=2 secrets=4
+--- FAIL: TestAgoraExemptDirectAndAccountLifecycle (0.03s)
+FAIL
+FAIL	formatet/megaron/server/cmd/server	0.037s
+FAIL
+» färsk DB på migration 183 · commit 9c071100+ändringar

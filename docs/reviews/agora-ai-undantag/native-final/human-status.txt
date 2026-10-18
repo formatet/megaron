@@ -1,0 +1,3 @@
+Community chat: @lawodokos:agora.test
+Homeserver: http://127.0.0.1:46031
+Run 'keryx agora password' to set and display a new chat password once. This replaces the previous chat password.

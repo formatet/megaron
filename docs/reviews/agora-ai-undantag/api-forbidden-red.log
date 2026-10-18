@@ -1,0 +1,19 @@
+=== RUN   TestAgoraDisabledPendingAndUpstreamFailuresAreExplicitAndRedacted
+=== RUN   TestAgoraDisabledPendingAndUpstreamFailuresAreExplicitAndRedacted/disabled-get
+=== RUN   TestAgoraDisabledPendingAndUpstreamFailuresAreExplicitAndRedacted/disabled-password
+=== RUN   TestAgoraDisabledPendingAndUpstreamFailuresAreExplicitAndRedacted/exempt-password
+    agora_test.go:113: status=503; expected safe error and no-store
+=== RUN   TestAgoraDisabledPendingAndUpstreamFailuresAreExplicitAndRedacted/pending-password
+=== RUN   TestAgoraDisabledPendingAndUpstreamFailuresAreExplicitAndRedacted/upstream-password
+=== RUN   TestAgoraDisabledPendingAndUpstreamFailuresAreExplicitAndRedacted/upstream-get
+--- FAIL: TestAgoraDisabledPendingAndUpstreamFailuresAreExplicitAndRedacted (0.00s)
+    --- PASS: TestAgoraDisabledPendingAndUpstreamFailuresAreExplicitAndRedacted/disabled-get (0.00s)
+    --- PASS: TestAgoraDisabledPendingAndUpstreamFailuresAreExplicitAndRedacted/disabled-password (0.00s)
+    --- FAIL: TestAgoraDisabledPendingAndUpstreamFailuresAreExplicitAndRedacted/exempt-password (0.00s)
+    --- PASS: TestAgoraDisabledPendingAndUpstreamFailuresAreExplicitAndRedacted/pending-password (0.00s)
+    --- PASS: TestAgoraDisabledPendingAndUpstreamFailuresAreExplicitAndRedacted/upstream-password (0.00s)
+    --- PASS: TestAgoraDisabledPendingAndUpstreamFailuresAreExplicitAndRedacted/upstream-get (0.00s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.003s
+FAIL
+» färsk DB på migration 183 · commit 9c071100+ändringar

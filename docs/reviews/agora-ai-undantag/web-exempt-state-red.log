@@ -1,0 +1,116 @@
+TAP version 13
+# Subtest: chat disabled: no password action and no password POST
+ok 1 - chat disabled: no password action and no password POST
+  ---
+  duration_ms: 17.469566
+  type: 'test'
+  ...
+# Subtest: chat pending: no password action and no password POST
+ok 2 - chat pending: no password action and no password POST
+  ---
+  duration_ms: 0.87613
+  type: 'test'
+  ...
+# Subtest: chat provisioning: no password action and no password POST
+ok 3 - chat provisioning: no password action and no password POST
+  ---
+  duration_ms: 0.609431
+  type: 'test'
+  ...
+# Subtest: ready: only an explicit click requests a password; close erases it
+ok 4 - ready: only an explicit click requests a password; close erases it
+  ---
+  duration_ms: 1.578217
+  type: 'test'
+  ...
+# Subtest: close/reopen during password request discards the late secret
+ok 5 - close/reopen during password request discards the late secret
+  ---
+  duration_ms: 1.516035
+  type: 'test'
+  ...
+# Subtest: another request clears the first secret immediately; errors bypass diagnostics
+ok 6 - another request clears the first secret immediately; errors bypass diagnostics
+  ---
+  duration_ms: 1.764424
+  type: 'test'
+  ...
+# Subtest: sign out clears the displayed secret before navigation
+ok 7 - sign out clears the displayed secret before navigation
+  ---
+  duration_ms: 0.931762
+  type: 'test'
+  ...
+# Subtest: agora_ready dispatch opens Account rather than toggling an already open window
+ok 8 - agora_ready dispatch opens Account rather than toggling an already open window
+  ---
+  duration_ms: 2.542966
+  type: 'test'
+  ...
+# Subtest: ReadyRenderedLinkUsesConfiguredHomeserver
+ok 9 - ReadyRenderedLinkUsesConfiguredHomeserver
+  ---
+  duration_ms: 0.702174
+  type: 'test'
+  ...
+# Subtest: account loads five own-world profile rows, including a real day zero
+ok 10 - account loads five own-world profile rows, including a real day zero
+  ---
+  duration_ms: 0.790269
+  type: 'test'
+  ...
+# Subtest: late profile ignored after close
+ok 11 - late profile ignored after close
+  ---
+  duration_ms: 0.494211
+  type: 'test'
+  ...
+# Subtest: late profile ignored after world
+ok 12 - late profile ignored after world
+  ---
+  duration_ms: 0.487765
+  type: 'test'
+  ...
+# Subtest: profile error does not invent zero-valued statistics
+ok 13 - profile error does not invent zero-valued statistics
+  ---
+  duration_ms: 1.308283
+  type: 'test'
+  ...
+# Subtest: exempt account: explicit no-account text, no password button or POST
+not ok 14 - exempt account: explicit no-account text, no password button or POST
+  ---
+  duration_ms: 0.815565
+  type: 'test'
+  location: '/home/tk/wt/codex-agora-ai-undantag/web/static/js/megaron/ui/account_window.test.mjs:155:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /No community chat account is provided/. Input:
+
+    '<h3 id="acc-chat-title">Community chat</h3><p>Your chat account is created after you own your first city. If you already do, account creation is pending; check again later.</p>'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: '<h3 id="acc-chat-title">Community chat</h3><p>Your chat account is created after you own your first city. If you already do, account creation is pending; check again later.</p>'
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-agora-ai-undantag/web/static/js/megaron/ui/account_window.test.mjs:159:9)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: newly exempt password request clears the old secret and gives no retry advice
+ok 15 - newly exempt password request clears the old secret and gives no retry advice
+  ---
+  duration_ms: 1.339323
+  type: 'test'
+  ...
+1..15
+# tests 15
+# suites 0
+# pass 14
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 79.934662
