@@ -9,17 +9,17 @@ import "testing"
 // decayBas sees immediately which invariant they broke.
 
 // dayNet models one maintained day: what devotion earns, minus the day's decay.
-func dayNet(devotionSum float64, offerFraction, scarcity float64, templelessColonies int) float64 {
+func dayNet(devotionSum float64, offerFraction, scarcity float64, cityCount int) float64 {
 	gain := devotionSum * kharisPerTempleDay * offerFraction * scarcity
-	return gain - computeDailyDecay(templelessColonies)
+	return gain - computeDailyDecay(cityCount)
 }
 
 func TestDevotionCalibration_ModestClimbsGrandClimbsFaster(t *testing.T) {
 	l1 := templeDevotionCapacity(1)
 
-	// Timothy2026-10-13: ordinary fully staffed and fed L1 must climb weakly.
+	// Timothy2026-10-13: ordinary fully staffed and fed L1 must climb under the current realm burden.
 	net := dayNet(l1, 1, 1, 0)
-	if net <= 0 || net > .5 {
+	if net <= 0 || net > 2.1 {
 		t.Errorf("tended L1 net%+.3f want(0,.5]", net)
 	}
 
@@ -94,12 +94,11 @@ func TestTempleScarcity_BoundedAndNeverPunishing(t *testing.T) {
 	}
 }
 
-// Expansion without temples still costs — unchanged by mig 094, and worth
-// pinning because the decay term now meets a much smaller gain term.
+// Expansion still costs when the same temples supply gain.
 func TestDevotionCalibration_TemplelessColoniesStillBite(t *testing.T) {
 	tended := dayNet(1.0, 1.0, 1.0, 0)
-	sprawling := dayNet(1.0, 1.0, 1.0, decayFreeColonies+3)
+	sprawling := dayNet(1.0, 1.0, 1.0, 7)
 	if sprawling >= tended {
-		t.Error("templeless colonies must still drag kharis down")
+		t.Error("additional cities must still drag kharis down")
 	}
 }

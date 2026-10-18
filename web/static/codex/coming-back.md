@@ -18,6 +18,8 @@ Click any row to open it in the **Dispatch window**. The same window opens from 
 3. **Foreign marches** — someone is coming, and you know roughly when. See [[defence]].
 4. **Sieges and occupation** — a clock is running on a city. See [[sieges]] and [[occupation]].
 
+Check **Kult** for [[kharis|Kharis]] and its daily decay breakdown. It fades from the start; every active city counts toward the cost. Below 30 without a standing temple, punishment can fall. Staff and feed temples, then check the projected net.
+
 Then look at **City → Production** for idle [[citizens]], and **Economy → Wants** for trade.
 
 ## Making the next absence easier

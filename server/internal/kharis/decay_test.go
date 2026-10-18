@@ -1,83 +1,57 @@
 package kharis
 
-import "testing"
+import (
+	"math"
+	"testing"
+)
 
-// Unit tests for the FAS 2 imperie-belastning formula (Timothy 2026-07-09
-// kharis omdesign, temenos_kharis.md §"KANONISK OMDESIGN" FAS 2): dailyDecay =
-// decayBas + decayPerKoloni × colonies without their own temple beyond
-// decayFreeColonies free ones. Criteria per megaron_kharis_plan.md: "decay
-// tillämpas på underhållen dag; skalar med tempellösa kolonier > 4; tempel-i-
-// koloni nollar dess bidrag."
-
-func TestComputeDailyDecay_BaseCaseNoColonies(t *testing.T) {
-	if got := computeDailyDecay(0); got != decayBas {
-		t.Errorf("computeDailyDecay(0) = %v, want decayBas %v", got, decayBas)
-	}
-}
-
-func TestComputeDailyDecay_FreeColoniesDoNotIncreaseDecay(t *testing.T) {
-	// Up to decayFreeColonies templeless colonies cost nothing extra.
-	for n := 0; n <= decayFreeColonies; n++ {
-		if got := computeDailyDecay(n); got != decayBas {
-			t.Errorf("computeDailyDecay(%d) = %v, want base-only decayBas %v (within free allowance)", n, got, decayBas)
-		}
-	}
-}
-
-func TestComputeDailyDecay_ScalesAboveFreeColonies(t *testing.T) {
-	// One templeless colony beyond the free allowance adds exactly decayPerKoloni.
-	over1 := computeDailyDecay(decayFreeColonies + 1)
-	if want := decayBas + decayPerKoloni; over1 != want {
-		t.Errorf("computeDailyDecay(%d) = %v, want %v", decayFreeColonies+1, over1, want)
-	}
-	// Three colonies beyond the free allowance adds 3×decayPerKoloni.
-	over3 := computeDailyDecay(decayFreeColonies + 3)
-	if want := decayBas + 3*decayPerKoloni; over3 != want {
-		t.Errorf("computeDailyDecay(%d) = %v, want %v", decayFreeColonies+3, over3, want)
-	}
-}
-
-func TestComputeDailyDecay_MonotonicNonDecreasing(t *testing.T) {
-	prev := computeDailyDecay(0)
+func TestRealmDecay_EveryCityCostsMore(t *testing.T) {
+	prev := 0.0
 	for n := 1; n <= 20; n++ {
 		got := computeDailyDecay(n)
-		if got < prev {
-			t.Fatalf("computeDailyDecay not monotonic: n=%d got %v < previous %v", n, got, prev)
+		want := .1 + .1*float64(n*(n-1)/2)
+		if math.Abs(got-want) > 1e-10 {
+			t.Fatalf("N%d got%g want%g", n, got, want)
 		}
-		prev = got
+		if n > 1 {
+			delta := got - computeDailyDecay(n-1)
+			if delta <= prev {
+				t.Fatalf("N%d marginal%g <=%g", n, delta, prev)
+			}
+			prev = delta
+		}
+	}
+	if math.Abs(computeDailyDecay(5)-1.1) > 1e-10 {
+		t.Fatal("five cities must cost1 plus base.1")
 	}
 }
-
-// TestComputeDailyDecay_TempleInColonyZeroesItsContribution documents the
-// "tempel-i-koloni nollar dess bidrag" criterion at the caller level: a colony
-// WITH a temple is never counted in templelessColonies in the first place (the
-// SQL in Handle() filters on `NOT EXISTS (... building_type = 'temple')`), so
-// building a temple there strictly reduces the count passed into this function
-// — verified here by the monotonic/scaling properties above (fewer templeless
-// colonies never means MORE decay).
-func TestComputeDailyDecay_TempleInColonyZeroesItsContribution(t *testing.T) {
-	withTemplelessColony := computeDailyDecay(decayFreeColonies + 1)
-	afterBuildingTemple := computeDailyDecay(decayFreeColonies) // one fewer templeless colony
-	if afterBuildingTemple >= withTemplelessColony {
-		t.Errorf("building a temple should strictly reduce decay: before=%v after=%v", withTemplelessColony, afterBuildingTemple)
+func TestRealmKharis_OpeningAndTempleCalibration(t *testing.T) {
+	if StartingKharis != 40 || EffectiveKharisCap(100, 0) != 40 {
+		t.Fatal("start/no-temple cap must both40")
+	}
+	if got := clampKharis(40-computeDailyDecay(1), EffectiveKharisCap(100, 0)); math.Abs(got-39.9) > 1e-10 {
+		t.Fatalf("opening clipped:%g", got)
+	}
+	if net := .15*kharisPerTempleDay - computeDailyDecay(6); math.Abs(net-.5) > 1e-10 {
+		t.Fatalf("six-city L1 net%g", net)
+	}
+	for level, want := range []float64{40, 50, 75, 100} {
+		if TempleKharisCeiling(level) != want {
+			t.Fatalf("cap%d", level)
+		}
 	}
 }
-
-// Base decay is unchanged; feeding a staffed L1 now exceeds it weakly.
-func TestDecayBas_TendedModestClimbsGrandClimbsFaster(t *testing.T) {
-	floorGain := TempleDevotionPerLevel * kharisPerTempleDay
-	l2Gain := templeDevotionCapacity(2) * kharisPerTempleDay
-	if decayBas != 1.8 {
-		t.Errorf("base decay changed to%g", decayBas)
-	}
-	if floorGain <= decayBas || floorGain-decayBas > .5 {
-		t.Errorf("ordinary L1 net%g", floorGain-decayBas)
-	}
-	if l2Gain <= floorGain {
-		t.Errorf("L2gain%g not above L1%g", l2Gain, floorGain)
+func TestRealmPunishment_BandBoundaries(t *testing.T) {
+	for _, tc := range []struct {
+		k      float64
+		temple bool
+		p      float64
+	}{{1, false, .03}, {29.999, false, .03}, {30, false, 0}, {40, false, 0}, {1, true, 0}, {29.999, true, 0}} {
+		if got := PunishmentProbability(tc.k, tc.temple); got != tc.p {
+			t.Fatalf("k%g temple%v probability%g want%g", tc.k, tc.temple, got, tc.p)
+		}
 	}
 }
-
 func TestClampKharis_FloorAndCap(t *testing.T) {
 	if got := clampKharis(-50, 100); got != kharisFloor {
 		t.Errorf("clampKharis(-50, 100) = %v, want floor %v", got, kharisFloor)

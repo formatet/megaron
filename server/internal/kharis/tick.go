@@ -25,62 +25,30 @@ import (
 // thresholds below are STRAWMAN — balance is calibrated later
 // (temenos_balans_spakar.md §9). See megaron_kharis_plan.md FAS 0.
 const (
-	punishThreshold   = 30.0 // kharis below this risks divine punishment (was 100/2000)
-	punishProbability = 0.30 // 30% chance of divine punishment per missed day below threshold
-	blessThreshold    = 60.0 // kharis above this may attract divine favour (was 200/2000)
-	blessProbability  = 0.15 // 15% chance of divine blessing per maintained day above threshold
+	blessThreshold   = 60.0 // kharis above this may attract divine favour (was 200/2000)
+	blessProbability = 0.15 // 15% chance of divine blessing per maintained day above threshold
 )
 
-// foundingGraceTicks shields a newly founded Wanax's kharis: inside the window
-// it does not decay and no punishment is rolled. Without a temple, the ceiling
-// remains below punishThreshold and maintenance is missed; grace allows time to
-// understand and establish the temple path.
-// Timothy 2026-10-14 raised 60 -> 144 ticks for a more generous opening at
-// the alpha's 2x cadence. Timothy 2026-10-16 moved the grace from the
-// punishment alone to kharis itself: the keryx playtest (A1) saw the starting
-// 25 decay to the floor by tick 20, before the first temple (16 ticks) could
-// stand, which left the oracle at ~10 %. Punishment threshold and probability
-// stay unchanged. Age is current_world_tick() - founded_tick, so existing
-// founders gain the window without rewriting their founding record.
-// The grace does not close the well: a Wanax who LATER loses her temple falls back
-// into the same inversion without any grace.
-const foundingGraceTicks = 144
+// StartingKharis is the founding value and no-temple ceiling (Timothy 2026-10-18).
+// Existing Wanaxes are not lifted to this value.
+const StartingKharis = 40.0
 
-// FoundingGraceTicks exposes the active rule for the opening dispatch.
-func FoundingGraceTicks() int { return foundingGraceTicks }
-
-// shouldRollPunishment avgör om missed-grenen ska rulla för gudastraff alls.
-// Ren funktion med flit: utfallet beror på ett tärningskast, så själva BESLUTET
-// måste gå att bevisa utan att slå tärningen (samma grepp som armyUpkeepWarning
-// i cmd/keryx). Ett negativt ticksSinceFounding — bakåtfylld rad, skev klocka —
-// läses som "inom fristen", eftersom den säkra riktningen vid trasig data är att
-// låta bli att straffa.
-// inFoundingGrace is the one test both the tick and ProjectDailyNet use. A
-// negative age reads as inside the window, for the same reason as above.
-func inFoundingGrace(ticksSinceFounding int) bool {
-	return ticksSinceFounding < foundingGraceTicks
-}
-
-// decayAfterGrace is the daily decay a Wanax actually suffers: none inside the
-// founding grace, computeDailyDecay after it.
-func decayAfterGrace(templelessColonies, ticksSinceFounding int) float64 {
-	if inFoundingGrace(ticksSinceFounding) {
+// PunishmentProbability is the daily chance of divine punishment. Only a Wanax
+// with no standing temple and kharis below Indifferent is at risk. Timothy
+// 2026-10-18 lowered 30 % to 3 %: at six-minute ticks 30 % meant about two
+// dozen punishments over one night away. Whether a larger realm must also keep
+// up regular offerings is under review, so temple presence still protects.
+func PunishmentProbability(kharis float64, hasTemple bool) float64 {
+	if hasTemple || kharis >= religion.MoodIndifferent {
 		return 0
 	}
-	return computeDailyDecay(templelessColonies)
-}
-
-func shouldRollPunishment(kharis float64, ticksSinceFounding int) bool {
-	if inFoundingGrace(ticksSinceFounding) {
-		return false
-	}
-	return kharis < punishThreshold
+	return .03
 }
 
 // kharisPerTempleDay converts staffed, fed cult to gain each tick.
 // Timothy2026-10-13: a tended first temple must climb without an upgrade.
-// At ordinary scarcity L1 gains0.15*14=2.1 before unchanged decay1.8:
-// net+0.3. L2/L3 remain faster and retain their separate ceilings.
+// At ordinary scarcity L1 gains0.15*14=2.1 before realm burden.
+// L2/L3 remain faster and retain their separate ceilings.
 const kharisPerTempleDay = 14.0
 
 // templeDevotionCapacity is how much of a city's population a temple of this
@@ -104,21 +72,9 @@ func templeDevotionCapacity(level int) float64 {
 // capacity the tick enforces, rather than duplicating the number.
 const TempleDevotionPerLevel = 0.15
 
-// FAS 2 — natural depreciation + imperie-belastning (Timothy 2026-07-09 kharis
-// omdesign, temenos_kharis.md §"KANONISK OMDESIGN" FAS 2/3): dailyDecay =
-// decayBas + decayPerKoloni × colonies without their own temple beyond
-// decayFreeColonies free ones. A Wanax who expands without building temples in
-// the new colonies pays for it; a temple (presence of the building alone
-// suffices) in a colony zeroes that colony's contribution.
-//
-// Base decay remains1.8 after Timothy2026-10-13's L1 climb decision.
-// The change is in kharisPerTempleDay, so neglect and imperial burden keep
-// their previous rates while a staffed, fed first temple can now climb.
-const (
-	decayBas          = 1.8 // base tick decay; fed L1 now climbs via cult yield, not lower decay
-	decayPerKoloni    = 1.0 // extra daily decay per templeless colony beyond decayFreeColonies
-	decayFreeColonies = 4   // this many templeless colonies cost nothing extra
-)
+// Every owned active city, including the capital, adds more realm burden than
+// the previous one. A temple supplies gain; it never exempts a city from burden.
+const decayBas = 0.1
 
 // templeTierMultiplier is the FAS 4 hook point — DEFERRED, not built in this
 // branch (megaron_kharis_plan.md: "Kräver tempel-nivåer/upgrade-tiers som inte
@@ -167,16 +123,17 @@ const starvationPopLossRatePerTick = 0.005
 
 // TickHandler applies daily temple maintenance to all active settlements in a world.
 type TickHandler struct {
-	pool      *pgxpool.Pool
-	scheduler *events.Scheduler
-	store     *events.Store
-	hub       Broadcaster
+	pool        *pgxpool.Pool
+	scheduler   *events.Scheduler
+	store       *events.Store
+	hub         Broadcaster
+	randomFloat func() float64
 }
 
 // NewTickHandler creates a TickHandler. hub may be nil (tests) — every
 // NotifyPlayer call is nil-guarded, matching the other tick/upkeep handlers.
 func NewTickHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *events.Store, hub Broadcaster) *TickHandler {
-	return &TickHandler{pool: pool, scheduler: sched, store: store, hub: hub}
+	return &TickHandler{pool: pool, scheduler: sched, store: store, hub: hub, randomFloat: rand.Float64}
 }
 
 // wanaxSnap holds the per-Wanax state needed for daily temple maintenance.
@@ -190,13 +147,10 @@ type wanaxSnap struct {
 	// devotionSum is Σ over the Wanax's temple cities of that city's devotion
 	// weight (settlement_labor 'cult', 0..1) — "how many temples, and are they
 	// staffed", in one number.
-	devotionSum        float64
-	templeCities       int
-	maxTempleLevel     int // grandest temple's level — sets the kharis ceiling
-	templelessColonies int // FAS 2: non-capital settlements with no temple building
-	// ticksSinceFounding är ticks sedan metropolen restes (mig 132). Styr
-	// nådefristen — se foundingGraceTicks.
-	ticksSinceFounding int
+	devotionSum    float64
+	templeCities   int
+	maxTempleLevel int // grandest temple's level — sets the kharis ceiling
+	cityCount      int // all owned active cities, including the capital
 }
 
 // Handle processes a KharisTick scheduled event.
@@ -248,13 +202,8 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		        SELECT COUNT(*)
 		        FROM settlements s3
 		        WHERE s3.owner_id = pwr.player_id AND s3.world_id = pwr.world_id
-		          AND s3.is_capital = false AND s3.state NOT IN ('sunk', 'collapsed')
-		          AND NOT EXISTS (
-		              SELECT 1 FROM buildings b
-		              WHERE b.settlement_id = s3.id AND b.building_type = 'temple'
-		          )
-		    ), 0) AS templeless_colonies,
-		    current_world_tick() - pwr.founded_tick AS ticks_since_founding
+		          AND s3.state NOT IN ('sunk', 'collapsed', 'razed')
+		    ), 0) AS city_count
 		 FROM player_world_records pwr
 		 JOIN settlements s ON s.owner_id = pwr.player_id AND s.world_id = pwr.world_id AND s.is_capital = true
 		 WHERE pwr.world_id = $1`,
@@ -270,8 +219,7 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		var w wanaxSnap
 		if err := rows.Scan(&w.playerID, &w.settlementID,
 			&w.kharis, &w.kharisCap, &w.devotionSum, &w.templeCities,
-			&w.maxTempleLevel, &w.templelessColonies,
-			&w.ticksSinceFounding); err == nil {
+			&w.maxTempleLevel, &w.cityCount); err == nil {
 			// The grandest temple binds the ceiling from here on — processMaintenance
 			// and everything downstream sees one already-resolved cap.
 			w.kharisCap = EffectiveKharisCap(w.kharisCap, w.maxTempleLevel)
@@ -315,15 +263,13 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		struct{}{}, e.DueTick, events.MacroTickInterval)
 }
 
-// computeDailyDecay is the FAS 2 imperie-belastning formula: dailyDecay =
-// decayBas + decayPerKoloni × colonies without their own temple beyond
-// decayFreeColonies free ones. Pure function — unit-testable without a DB.
-func computeDailyDecay(templelessColonies int) float64 {
-	over := templelessColonies - decayFreeColonies
-	if over < 0 {
-		over = 0
+// computeDailyDecay returns total realm burden for the current owned city count.
+func computeDailyDecay(cityCount int) float64 {
+	if cityCount < 0 {
+		cityCount = 0
 	}
-	return decayBas + decayPerKoloni*float64(over)
+	n := float64(cityCount)
+	return decayBas + .1*n*(n-1)/2
 }
 
 // kharisCapPerTempleLevel — the grandest temple a Wanax has built sets how close
@@ -350,11 +296,11 @@ func computeDailyDecay(templelessColonies int) float64 {
 const kharisCapPerTempleLevel = 25.0
 
 // TempleKharisCeiling returns the kharis ceiling earned by a Wanax's grandest
-// temple. Level 0 (no temple) still yields a floor-ish ceiling of 25 — such a
+// temple. Level 0 (no temple) holds the founding value 40 — such a
 // Wanax decays toward kharisFloor anyway, since devotion with no altar is 0.
 func TempleKharisCeiling(maxTempleLevel int) float64 {
-	if maxTempleLevel < 0 {
-		maxTempleLevel = 0
+	if maxTempleLevel <= 0 {
+		return StartingKharis
 	}
 	return kharisCapPerTempleLevel * float64(1+maxTempleLevel)
 }
@@ -441,18 +387,8 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		return nil // this event already applied to this Wanax
 	}
 
-	// dailyDecay applies EVERY day, maintained or not (replacing the old
-	// missed-day-only 10%/day decayOnMissed, retired in FAS 2). Post net-neutral
-	// recalibration (Timothy 2026-07-11, see decayBas above) the base term is small
-	// — ≈ the passive geographic kharis_rate — so a bare passive Wanax nets ~neutral
-	// and an offering-fed temple climbs; it is no longer a hard "sjunker alltid"
-	// drain. gain (from cult production, FAS 3-scaled by material offer) is the only
-	// term that differs between the two branches below; bless/punish eligibility
-	// still follows the maintained/missed split (temenos_balans_spakar.md §9: bless
-	// only on a maintained day, punish only on a missed one).
-	// A day is "maintained" when the Wanax holds at least one standing temple —
-	// the institution, not a stockpile. Devotion and feeding then decide how much
-	// that temple is worth.
+	// A day is "maintained" when the Wanax holds at least one standing temple;
+	// that controls gain, blessings and protection from punishment.
 	maintained := w.templeCities > 0
 
 	// FAS 3 — offer-underhåll: a maintained day's cult-gain is scaled by how
@@ -494,7 +430,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 			worldID, nil)
 	}
 
-	dailyDecay := decayAfterGrace(w.templelessColonies, w.ticksSinceFounding)
+	dailyDecay := computeDailyDecay(w.cityCount)
 	newKharis := clampKharis(w.kharis+gain-dailyDecay, w.kharisCap)
 
 	// 1. Write the netted kharis value.
@@ -518,14 +454,15 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		// consume.)
 		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisMaintained",
 			map[string]any{
-				"devotion_sum":        w.devotionSum,
-				"kharis_gain":         gain,
-				"daily_decay":         dailyDecay,
-				"net":                 gain - dailyDecay,
-				"templeless_colonies": w.templelessColonies,
-				"offer_fraction":      offerFraction,
-				"temples_fed":         offerFed,
-				"temples_total":       offerTotal,
+				"devotion_sum":   w.devotionSum,
+				"kharis_gain":    gain,
+				"daily_decay":    dailyDecay,
+				"net":            gain - dailyDecay,
+				"city_count":     w.cityCount,
+				"rule_version":   "realm_cities_v1",
+				"offer_fraction": offerFraction,
+				"temples_fed":    offerFed,
+				"temples_total":  offerTotal,
 			},
 			worldID, nil)
 		if newKharis >= blessThreshold && rand.Float64() < blessProbability {
@@ -536,23 +473,22 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		}
 	} else {
 		// No temple production this day — dailyDecay above is the only kharis
-		// change (gain=0). Punish roll only fires on this (missed) branch.
-		inGrace := inFoundingGrace(w.ticksSinceFounding)
+		// change (gain=0). This event still means no temple production;
+		// it does not claim that punishment happened.
 		_, _ = h.store.Append(ctx, w.settlementID, events.StreamProvince, "KharisMissedMaintenance",
 			map[string]any{
-				"reason":              "no_cult_production",
-				"daily_decay":         dailyDecay,
-				"templeless_colonies": w.templelessColonies,
-				// Utfall, inte avsikt (CLAUDE.md §Events): raden säger att fristen
-				// höll straffet borta den här dagen, så en tyst dag går att skilja
-				// från en dag då tärningen bara föll väl.
-				"founding_grace":       inGrace,
-				"ticks_since_founding": w.ticksSinceFounding,
+				"reason":         "no_cult_production",
+				"daily_decay":    dailyDecay,
+				"city_count":     w.cityCount,
+				"rule_version":   "realm_cities_v1",
+				"founding_grace": false, // legacy outcome field: no grace under this rule
 			},
 			worldID, nil)
-		if shouldRollPunishment(newKharis, w.ticksSinceFounding) && rand.Float64() < punishProbability {
-			h.applyDivinePunishment(ctx, w.settlementID, worldID, w.playerID)
-		}
+	}
+
+	// The roll uses the post-maintenance value.
+	if probability := PunishmentProbability(newKharis, maintained); probability > 0 && h.randomFloat() < probability {
+		h.applyDivinePunishment(ctx, w.settlementID, worldID, w.playerID)
 	}
 
 	// 3. Derive mood and write back cult_level (drives prestige + display).
@@ -1420,7 +1356,7 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 			"The gods have scattered your war chariots in the night. Chariots have perished.",
 			`WITH victims AS (
 			     SELECT id, size FROM units
-			     WHERE settlement_id = $1 AND status = 'garrison' AND type = 'war_chariot'
+			     WHERE settlement_id = $1 AND world_id=$2 AND owner_id=$3 AND size>0 AND status = 'garrison' AND type = 'war_chariot'
 			 ), upd AS (
 			     UPDATE units u SET size = GREATEST(0, v.size - GREATEST(1, v.size/5)), updated_at = now()
 			     FROM victims v WHERE u.id = v.id
@@ -1433,7 +1369,7 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 			"A divine storm has claimed a vessel from your harbour.",
 			`WITH victim AS (
 			     SELECT id FROM units
-			     WHERE settlement_id = $1 AND status = 'garrison' AND type = 'galley'
+			     WHERE settlement_id = $1 AND world_id=$2 AND owner_id=$3 AND size>0 AND status = 'garrison' AND type = 'galley'
 			     ORDER BY size LIMIT 1
 			 ), upd AS (
 			     UPDATE units u SET status = 'disbanded', updated_at = now()
@@ -1448,6 +1384,7 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 			`WITH old AS (
 			     SELECT settled(amount, rate, calc_tick) AS grain_now
 			     FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'grain'
+                 AND EXISTS(SELECT 1 FROM settlements s WHERE s.id=$1 AND s.world_id=$2 AND s.owner_id=$3)
 			 ), upd AS (
 			     UPDATE settlement_goods sg SET
 			        amount    = GREATEST(0, o.grain_now * 0.5),
@@ -1463,7 +1400,7 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 			"A dark pestilence has moved through the barracks. Many hoplites have fallen.",
 			`WITH victims AS (
 			     SELECT id, size FROM units
-			     WHERE settlement_id = $1 AND status = 'garrison' AND type = 'spearman'
+			     WHERE settlement_id = $1 AND world_id=$2 AND owner_id=$3 AND size>0 AND status = 'garrison' AND type = 'spearman'
 			 ), upd AS (
 			     UPDATE units u SET size = GREATEST(0, v.size - GREATEST(1, v.size/5)), updated_at = now()
 			     FROM victims v WHERE u.id = v.id
@@ -1473,16 +1410,33 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 		},
 	}
 
+	// Choose a city first, uniformly among owned active cities with something
+	// to take. Then choose only feasible effects there. The caller's capital is
+	// merely the audit origin; it must not constrain the target.
 	var settlementName string
-	if err := h.pool.QueryRow(ctx,
-		`SELECT name FROM settlements WHERE id = $1`, settlementID,
-	).Scan(&settlementName); err != nil {
-		slog.Error("divine punishment: load settlement name", "settlement", settlementID, "err", err)
+	var eligible []int
+	err := h.pool.QueryRow(ctx, `
+ WITH candidates AS (
+  SELECT s.id, s.name, ARRAY_REMOVE(ARRAY[
+   CASE WHEN EXISTS(SELECT 1 FROM units u WHERE u.settlement_id=s.id AND u.world_id=$1 AND u.owner_id=$2 AND u.status='garrison' AND u.type='war_chariot' AND u.size>0) THEN 0 END,
+   CASE WHEN EXISTS(SELECT 1 FROM units u WHERE u.settlement_id=s.id AND u.world_id=$1 AND u.owner_id=$2 AND u.status='garrison' AND u.type='galley' AND u.size>0) THEN 1 END,
+   CASE WHEN EXISTS(SELECT 1 FROM settlement_goods sg WHERE sg.settlement_id=s.id AND sg.good_key='grain' AND settled(sg.amount,sg.rate,sg.calc_tick)>0) THEN 2 END,
+   CASE WHEN EXISTS(SELECT 1 FROM units u WHERE u.settlement_id=s.id AND u.world_id=$1 AND u.owner_id=$2 AND u.status='garrison' AND u.type='spearman' AND u.size>0) THEN 3 END
+  ],NULL) AS effects
+  FROM settlements s WHERE s.world_id=$1 AND s.owner_id=$2
+    AND s.state NOT IN ('sunk','collapsed','razed')
+ )
+ SELECT id,name,effects FROM candidates WHERE cardinality(effects)>0 ORDER BY random() LIMIT 1`, worldID, ownerID).Scan(&settlementID, &settlementName, &eligible)
+	if err == pgx.ErrNoRows {
+		return
 	}
-
-	p := punishments[rand.Intn(len(punishments))]
+	if err != nil {
+		slog.Error("divine punishment: choose target", "world", worldID, "owner", ownerID, "err", err)
+		return
+	}
+	p := punishments[eligible[rand.Intn(len(eligible))]]
 	var amount float64
-	if err := h.pool.QueryRow(ctx, p.sql, settlementID).Scan(&amount); err != nil {
+	if err := h.pool.QueryRow(ctx, p.sql, settlementID, worldID, ownerID).Scan(&amount); err != nil {
 		slog.Error("divine punishment failed", "settlement", settlementID, "type", p.name, "err", err)
 		return
 	}

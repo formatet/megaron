@@ -6,6 +6,7 @@ import (
 
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/hexgrid"
+	"formatet/megaron/server/internal/kharis"
 	"formatet/megaron/server/internal/loyalty"
 	"formatet/megaron/server/internal/religion"
 	"github.com/google/uuid"
@@ -167,16 +168,14 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, p metropolisParams) (creat
 	// calc_tick, settled(0, kharis_rate>0, 0) accrues the rate across the WHOLE world
 	// history on the first read — a founder on a tick-87k world saw kharis ~350
 	// until the first kharis tick clamped it (soak 2026-07-23, both probes). Seed the
-	// amount at the temple-less ceiling (kharis.TempleKharisCeiling(0) = 25) — the
-	// favour a Wanax with no temple yet can hold — and stamp calc_tick to now so the
-	// meter starts where it is, not inflated. Strawman start — temenos_balans_spakar.md §9.
-	const starterKharis = 25.0
+	// amount at the founding value and stamp calc_tick to now.
+	const starterKharis = kharis.StartingKharis
 	if _, err = tx.Exec(ctx,
 		// founded_tick stämplas i BÅDA grenarna med flit. Den normala vägen är
 		// join.go → hit: join skapar redan raden (status 'active', ingen
 		// settlement), så grundningen tar ALLTID DO UPDATE-grenen. Stod talet
 		// bara i VALUES vore founded_tick kvar på kolumnens DEFAULT 0 för varje
-		// riktig spelare, och nådefristen hade aldrig gällt någon.
+		// riktig spelare, och grundningstiden hade blivit fel.
 		`INSERT INTO player_world_records (player_id, world_id, settlement_id, status, kharis_rate, kharis_amount, kharis_calc_tick, founded_tick)
 		 VALUES ($1, $2, $3, 'active', $4, $5, current_world_tick(), current_world_tick())
 		 ON CONFLICT (player_id, world_id) DO UPDATE SET

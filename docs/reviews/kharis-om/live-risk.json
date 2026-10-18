@@ -1,0 +1,92 @@
+{
+  "source": "fresh read-only pg_dump; private PG16 restoration; no live writes",
+  "schema": 184,
+  "scope": "all records in active worlds; actual current kharis, no lift to40",
+  "risk_interpretation": "Bernoulli roll hazard; actual damage requires eligible goods/garrison. Current band fixed for 16-tick expectation, not forecast of changing kharis. Hosts without capital are not maintained by current handler.",
+  "counts": {
+    "Wrathful": 3,
+    "Suspicious": 1,
+    "Indifferent": 2,
+    "Favorable": 0
+  },
+  "records": [
+    {
+      "world_id": "f7c90afa-4653-46a6-b14c-473a268efa3e",
+      "wanax": "formatet",
+      "current_tick": 410,
+      "status": "active",
+      "kharis": 1,
+      "cities": 1,
+      "has_capital": true,
+      "band": "Wrathful",
+      "punishment_probability_per_tick": 0.3,
+      "expected_roll_hits_next_16_if_band_unchanged": 4.8,
+      "decay_per_tick": 0.1
+    },
+    {
+      "world_id": "f7c90afa-4653-46a6-b14c-473a268efa3e",
+      "wanax": "gpt-arete",
+      "current_tick": 410,
+      "status": "active",
+      "kharis": 25,
+      "cities": 2,
+      "has_capital": true,
+      "band": "Suspicious",
+      "punishment_probability_per_tick": 0.1,
+      "expected_roll_hits_next_16_if_band_unchanged": 1.6,
+      "decay_per_tick": 0.2
+    },
+    {
+      "world_id": "f7c90afa-4653-46a6-b14c-473a268efa3e",
+      "wanax": "gpt-idomeneus",
+      "current_tick": 410,
+      "status": "active",
+      "kharis": 50,
+      "cities": 2,
+      "has_capital": true,
+      "band": "Indifferent",
+      "punishment_probability_per_tick": 0,
+      "expected_roll_hits_next_16_if_band_unchanged": 0,
+      "decay_per_tick": 0.2
+    },
+    {
+      "world_id": "f7c90afa-4653-46a6-b14c-473a268efa3e",
+      "wanax": "luna-alkinoos",
+      "current_tick": 410,
+      "status": "active",
+      "kharis": 1,
+      "cities": 1,
+      "has_capital": true,
+      "band": "Wrathful",
+      "punishment_probability_per_tick": 0.3,
+      "expected_roll_hits_next_16_if_band_unchanged": 4.8,
+      "decay_per_tick": 0.1
+    },
+    {
+      "world_id": "f7c90afa-4653-46a6-b14c-473a268efa3e",
+      "wanax": "luna-eurymede",
+      "current_tick": 410,
+      "status": "active",
+      "kharis": 1,
+      "cities": 2,
+      "has_capital": true,
+      "band": "Wrathful",
+      "punishment_probability_per_tick": 0.3,
+      "expected_roll_hits_next_16_if_band_unchanged": 4.8,
+      "decay_per_tick": 0.2
+    },
+    {
+      "world_id": "f7c90afa-4653-46a6-b14c-473a268efa3e",
+      "wanax": "luna-pylaimenes",
+      "current_tick": 410,
+      "status": "active",
+      "kharis": 33.61353051307903,
+      "cities": 1,
+      "has_capital": true,
+      "band": "Indifferent",
+      "punishment_probability_per_tick": 0,
+      "expected_roll_hits_next_16_if_band_unchanged": 0,
+      "decay_per_tick": 0.1
+    }
+  ]
+}

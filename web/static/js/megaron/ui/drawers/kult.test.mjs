@@ -103,3 +103,31 @@ test('unfunded temple shows all-or-nothing outcome and escapes the city name', (
 test('realm without temples explains the missing gain', () => {
   assert.match(templeOfferingsHTML([]), /No temples — kharis will not climb/);
 });
+
+test('Kult controller renders the realm breakdown and templeless net from the province API', async t => {
+  const {State}=await import('../../state.js');
+  const {loadKultDrawer}=await import('./kult.js');
+  const state={WORLD_ID:State.WORLD_ID,MY_SETTLEMENT_ID:State.MY_SETTLEMENT_ID,provinceData:State.provinceData};
+  const globals={document:globalThis.document,fetch:globalThis.fetch,localStorage:globalThis.localStorage};
+  t.after(()=>{Object.assign(State,state);for(const [key,value] of Object.entries(globals))value===undefined?delete globalThis[key]:globalThis[key]=value;});
+  const body={innerHTML:''};
+  globalThis.document={getElementById:id=>id==='kult-body'?body:null,addEventListener(){}};
+  globalThis.localStorage={getItem:()=>null};
+  Object.assign(State,{WORLD_ID:'realm',MY_SETTLEMENT_ID:'capital',provinceData:[{id:'province',own:true,is_capital:true}]});
+  const calls=[];
+  const pd={kharis_city_count:5,kharis_base_decay:0.1,kharis_city_decay:1,kharis_daily_decay:1.1,
+    kharis_net_known:true,kharis_net_per_tick:-1.1,kharis_per_tick:0,temple_offers:[],available_prayers:[]};
+  globalThis.fetch=async url=>{
+    calls.push(url);
+    if(url.endsWith('/settlements/capital'))return new Response(JSON.stringify({divine_mood:'Indifferent',cult_level:'vardig'}));
+    if(url.endsWith('/provinces/province'))return new Response(JSON.stringify({settlement:pd}));
+    if(url.endsWith('/actions'))return new Response('[]');
+    assert.fail('Unexpected API request '+url);
+  };
+  await loadKultDrawer();
+  assert.match(body.innerHTML,/0.1 base \+ 5 cities cost 1.0 per day = 1.1 total/);
+  assert.match(body.innerHTML,/-1.1 kharis per day/);
+  assert.match(body.innerHTML,/No temples/);
+  assert.doesNotMatch(body.innerHTML,/Passive|144|holds for/);
+  assert.equal(calls.length,3);
+});

@@ -893,14 +893,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						strings.Join(unused, ", "))
 				}
 			}
-			// Kharis (PLAN B, megaron_kult_legibilitet_plan.md): kharis is now
-			// DAILY-maintenance-driven, not per-tick — a per-tick rate rendered
-			// "+0.0/tick" for any typical passive value (A4a-buggen). Show the mood
-			// (gynnsamhets-signal, never a computed odds — see `rite --list`) and the
-			// passive geographic rate per TICK instead.
+			// Kharis is realm-wide: show authoritative net and the city cost separately.
 			kv, _ := sett["kharis"].(float64)
 			mood, _ := sett["kharis_mood"].(string)
-			kpd, _ := sett["kharis_per_tick"].(float64)
 			kcap, _ := sett["kharis_cap"].(float64)
 			mtl, _ := sett["max_temple_level"].(float64)
 			knet, _ := sett["kharis_net_per_tick"].(float64)
@@ -908,7 +903,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			// The DAILY MAINTENANCE net (temple gain − decay) is what actually moves
 			// kharis — the passive geographic rate alone hid a fading L1 Wanax behind
 			// "passiv +0.1/tick" (sondrunda 2026-07-24). Show the net when we have it.
-			netStr := fmt.Sprintf("passive %+.1f per day", kpd)
+			netStr := "net not reported"
 			if netKnown {
 				netStr = fmt.Sprintf("net %+.1f per day (temple − decay)", knet)
 			}
@@ -916,6 +911,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				fmt.Printf("  %-8s %6s  (%s) · cap %.0f · %s\n", "Kharis", resource(kv), mood, kcap, netStr)
 			} else {
 				fmt.Printf("  %-8s %6s  (%s) · %s\n", "Kharis", resource(kv), mood, netStr)
+			}
+			if line := kharisDecayLine(sett); line != "" {
+				fmt.Println("  " + line)
 			}
 			// Legibilitet (2026-07-24): ett L1-tempel HÅLLER standing men klättrar inte
 			// förbi sitt tak — utan denna rad läser en spelare "kharis fastnat på 22" som
@@ -1328,4 +1326,21 @@ func armyFoodLine(sett map[string]any) string {
 		net = before - grain
 	}
 	return fmt.Sprintf("  Army     eats %.1f grain per day → food net %s per day after army", grain, formatNetPerTick(net))
+}
+
+// kharisDecayLine renders the server's realm projection without a client formula.
+// Missing fields are unavailable, never an invented zero cost.
+func kharisDecayLine(sett map[string]any) string {
+	count, countOK := sett["kharis_city_count"].(float64)
+	base, baseOK := sett["kharis_base_decay"].(float64)
+	cities, citiesOK := sett["kharis_city_decay"].(float64)
+	total, totalOK := sett["kharis_daily_decay"].(float64)
+	if !countOK || !baseOK || !citiesOK || !totalOK {
+		return "Kharis decay not reported"
+	}
+	cityWord := "cities"
+	if count == 1 {
+		cityWord = "city"
+	}
+	return fmt.Sprintf("Kharis decay: %.1f base + %.0f %s cost %.1f per day = %.1f total", base, count, cityWord, cities, total)
 }

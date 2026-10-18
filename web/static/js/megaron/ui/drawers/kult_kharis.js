@@ -4,16 +4,17 @@
 // here; this module only decides what HTML (if any) to draw from fields
 // that are already present in that payload.
 //
-// Invariant (CLAUDE.md contract, kharis net surfacing, 2026-07-31): the
-// client NEVER computes the kharis net itself — the number comes from the
-// server or is not shown. `kharis_net_known === false` means "this Wanax
-// has no temples" — draw no net row at all, not even "+0.0".
-//
-// Kept import-free on purpose: kult.js also imports ../misc.js, which runs
-// `document.addEventListener(...)` at module top level, so importing kult.js
-// itself crashes under node --test. This module must stay free of any import
-// that touches document/window at load time so it can be unit-tested in
-// isolation (see kult_kharis.test.mjs).
+// Net and decay are authoritative server projections, including templeless realms.
+// Missing data stays unavailable; this formatter never derives the city formula.
+
+export function kharisDecayHTML(pd) {
+  const values = ['kharis_city_count', 'kharis_base_decay', 'kharis_city_decay', 'kharis_daily_decay'];
+  if (!pd || !values.every(key => Number.isFinite(pd[key]))) return '<p class="empty-state">Kharis decay not reported.</p>';
+  const count = pd.kharis_city_count;
+  return '<div class="stat-row"><span class="sr-label">Daily decay</span><span class="sr-val">' +
+    pd.kharis_base_decay.toFixed(1) + ' base + ' + count + (count === 1 ? ' city' : ' cities') +
+    ' cost ' + pd.kharis_city_decay.toFixed(1) + ' per day = ' + pd.kharis_daily_decay.toFixed(1) + ' total</span></div>';
+}
 
 export function kharisNetView(pd) {
   const out = { netHtml: '', idleHtml: '' };

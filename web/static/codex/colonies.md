@@ -14,7 +14,7 @@ You are notified when the colony is founded, with how its food looks.
 
 There is no free starter Farm. If the ground cannot feed them, you must — by [[transfers|transfer]] or a [[routes|standing order]] — until they stand on their own. A colony on a rich mineral site with no farmland is a real strategy, but only if you have already built the grain route that keeps it alive.
 
-Each colony without a temple, beyond a handful, makes your [[kharis]] decay faster.
+Every active city, including your capital, counts toward [[kharis|Kharis decay]], even with a temple. The daily city cost is 0.1 × N × (N − 1) / 2, plus 0.1 base: five cities cost 1.0 per day plus the base. Each additional city costs more than the last. Sunk, collapsed and razed cities do not count. Check the realm breakdown in **Kult** or `keryx status` before expanding.
 
 ## Loyalty
 

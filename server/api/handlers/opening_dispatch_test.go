@@ -86,8 +86,8 @@ func TestOpeningDispatchJoinConcurrentRetryRiseAndPrivacy(t *testing.T) {
 		return out
 	}
 	opening := read(token)
-	if len(opening) != 1 || !strings.Contains(strings.Join(opening[0].Paragraphs, " "), "for 144 days after founding") {
-		t.Fatalf("archived join dispatch must promise 144 days: %+v", opening)
+	if len(opening) != 1 || !strings.Contains(strings.Join(opening[0].Paragraphs, " "), fmt.Sprintf("starts at %g Kharis", kharis.StartingKharis)) {
+		t.Fatalf("archived join dispatch must describe the current starting standing: %+v", opening)
 	}
 	if len(opening) != 1 || opening[0].Returning || len(opening[0].Paragraphs) != 9 {
 		t.Fatalf("join notice %+v", opening)
@@ -156,16 +156,16 @@ func TestOpeningDispatchFactsFromActiveRules(t *testing.T) {
 		tick.TickSeconds = tc.seconds
 		body := h.openingDispatch(uuid.New(), newcomerHost, true)
 		text := strings.Join(body.Paragraphs, "\n")
-		for _, want := range []string{tc.label, "3 Wanaxes", fmt.Sprintf("%g grain", float64(nomadicHostDowryGrain)), fmt.Sprintf("%g silver", nomadicHostStartingSilver), fmt.Sprintf("for %d days after founding", kharis.FoundingGraceTicks()), fmt.Sprintf("temple takes %d days", province.BuildingSpecs[province.BuildingTemple].DurationTicks), fmt.Sprintf("below %d people", economy.CollapseBelowPopulation), fmt.Sprintf("olive woodland in %g", province.TerrainMoveTicks("forest_olive_grove")), "reserves do not drain"} {
+		for _, want := range []string{tc.label, "3 Wanaxes", fmt.Sprintf("%g grain", float64(nomadicHostDowryGrain)), fmt.Sprintf("%g silver", nomadicHostStartingSilver), fmt.Sprintf("starts at %g Kharis", kharis.StartingKharis), fmt.Sprintf("temple takes %d days", province.BuildingSpecs[province.BuildingTemple].DurationTicks), fmt.Sprintf("below %d people", economy.CollapseBelowPopulation), fmt.Sprintf("olive woodland in %g", province.TerrainMoveTicks("forest_olive_grove")), "reserves do not drain"} {
 			if !strings.Contains(text, want) {
 				t.Fatalf("opening missing%q: %s", want, text)
 			}
 		}
-		if strings.Contains(text, "tick") || strings.Contains(text, "pay for") || len(strings.Fields(text)) > 250 {
+		if strings.Contains(text, "144") || strings.Contains(text, "grace") || strings.Contains(text, "no punishment") || strings.Contains(text, "tick") || strings.Contains(text, "pay for") || len(strings.Fields(text)) > 250 {
 			t.Fatalf("wrong/too long opening %s", text)
 		}
 	}
-	t.Logf("actual grace source %d, temple duration%d", kharis.FoundingGraceTicks(), province.BuildingSpecs[province.BuildingTemple].DurationTicks)
+	t.Logf("actual starting kharis %g, temple duration%d", kharis.StartingKharis, province.BuildingSpecs[province.BuildingTemple].DurationTicks)
 }
 
 func TestOpeningDispatchArchiveFailureRollsBackHost(t *testing.T) {
