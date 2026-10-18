@@ -43,18 +43,9 @@ import (
 // forecast (api/handlers/world.go ColonizePreview is FOW-critical); nil runs
 // the full, unfiltered catchment for trusted internal callers.
 //
-// Mirrors RecomputeProduction's three grain terms exactly (recompute.go
-// steps 3/4b/5): the placement sum, the population remainder's old aggregate
-// term (grainBasePotential/REF_LABOR × pop%100 — this is the one place
-// REF_LABOR still governs output after P4, and it is the SAME expression as
-// recompute.go's step 4b, not a second one), and NearjordGrainPerTick.
-// FoodConsumptionSplit and the fish math are unchanged from before this
-// slice. livestockStock is passed as 0: a real founding's herd
-// (FoundingHerdLivestock) is seeded in the SAME transaction as the founding,
-// so its calc_tick equals current_world_tick() and RecomputeProduction's own
-// livestockSettledThisTick guard forces livestockStock=0 for that very FIRST
-// recompute too (recompute.go) — verified against the code 2026-08-26, this
-// is not a stale simplification, it matches the real first-tick behaviour.
+// Shares automatic grain/fish with RecomputeProduction: near ground plus
+// the remainder people's fraction of the best real food worker. Placed
+// workers use the same hex yields, and consumption remains population-wide.
 type FoundingFoodForecast struct {
 	GrainProduction, FishProduction, Consumption, GrainNet, FoodNet float64
 }
@@ -86,13 +77,13 @@ func FoundingFoodForecastAt(ctx context.Context, tx Tx, worldID uuid.UUID, cente
 
 	automatic := AutomaticFoodForPopulation(hexOptions, pop)
 	totalGubbar := pop / 100
-	guaranteedFood := automatic.GrainPerTick()
+	guaranteedFood := automatic.FoodPerTick()
 	demand := GrainConsumptionPerTick(pop)
 
 	placements, _ := placeStartingGubbar(slots, guaranteedFood, demand, totalGubbar)
 
 	grainProd := automatic.GrainPerTick()
-	fishProd := 0.0
+	fishProd := automatic.RemainderFish
 	for _, p := range placements {
 		if p.good == GoodGrain {
 			grainProd += p.yield

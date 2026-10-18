@@ -7,8 +7,8 @@ import (
 )
 
 // Exact translated Scheria catchment sampled read-only from live: 9 plains,
-// 4 sea, 5 olive woods. No farm; the extra 42 people auto-farm under the
-// existing remainder rule. Stock/granary are deliberately irrelevant here.
+// 4 sea, 5 olive woods. No farm; the extra 42 people produce .42 fish under the
+// best-worker remainder rule. Stock/granary are deliberately irrelevant here.
 func TestAIRound4_Scheria1042FoodRequirement(t *testing.T) {
 	ctx := context.Background()
 	pool := testPool(t)
@@ -22,10 +22,13 @@ func TestAIRound4_Scheria1042FoodRequirement(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	for n := 1; n <= 3; n++ {
+	for n := 1; n <= 5; n++ {
 		q, r := -2, 0
-		if n == 3 {
+		if n >= 3 {
 			q, r = -1, -1
+		}
+		if n == 5 {
+			q, r = 0, -2
 		}
 		if _, err := pool.Exec(ctx, `INSERT INTO settlement_placement(settlement_id,gubbe_ordinal,target_kind,hex_q,hex_r,good_key) VALUES($1,$2,'hex',$3,$4,'fish')`, sid, n, q, r); err != nil {
 			t.Fatal(err)
@@ -41,21 +44,21 @@ func TestAIRound4_Scheria1042FoodRequirement(t *testing.T) {
 			t.Fatal(err)
 		}
 		req, ok, automatic, err := FoodGubbarRequiredWithAutomatic(ctx, pool, sid)
-		if automatic.RemainderPeople != 42 || math.Abs(automatic.RemainderGrain-3.78) > 1e-9 || automatic.NearjordGrain != 0.5 || math.Abs(automatic.GrainPerTick()-grain) > 1e-9 {
+		if automatic.RemainderPeople != 42 || math.Abs(automatic.RemainderFish-.42) > 1e-9 || automatic.NearjordGrain != 0.5 || math.Abs(automatic.GrainPerTick()-grain) > 1e-9 {
 			t.Fatalf("automatic food %+v vs actualgrain%f", automatic, grain)
 		}
-		if err != nil || !ok || req != 1 || math.Abs(grain-4.28) > 1e-9 || fish != wantFish {
+		if err != nil || !ok || req != 5 || math.Abs(grain-.5) > 1e-9 || math.Abs(fish-(wantFish+.42)) > 1e-9 {
 			t.Fatalf("grain%f fish%f req%d suff%v err%v", grain, fish, req, ok, err)
 		}
 		t.Logf("Scheria1042: grain=%.2f fish=%.2f demand=%.2f foodnet=%.2f required=%d", grain, fish, GrainConsumptionPerTick(1042), FoodNet(grain+fish, 1042), req)
-		if wantFish >= 1 && FoodNet(grain+fish, 1042) < 0 {
-			t.Fatal("one food citizen must actually feed the people")
+		if wantFish >= 5 && FoodNet(grain+fish, 1042) < 0 {
+			t.Fatal("five food citizens must actually feed the people")
 		}
-		if wantFish == 0 && FoodNet(grain+fish, 1042) >= 0 {
-			t.Fatal("zero food citizens must actually fail")
+		if wantFish < 5 && FoodNet(grain+fish, 1042) >= 0 {
+			t.Fatal("fewer than five food citizens must actually fail")
 		}
 	}
-	check(3)
+	check(5)
 	if _, err := pool.Exec(ctx, `DELETE FROM settlement_placement WHERE settlement_id=$1 AND gubbe_ordinal>1`, sid); err != nil {
 		t.Fatal(err)
 	}

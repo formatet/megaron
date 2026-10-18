@@ -105,8 +105,8 @@ func TestAIRound4_HexStaffRedirect(t *testing.T) {
 }
 
 func TestAIRound4_AutomaticFoodAndNoMoveAdvice(t *testing.T) {
-	out := runCityCmd(t, `{"total_gubbar":10,"pool_size":7,"hexes":[]}`, `{"settlement":{"food_gubbar_required":1,"food_gubbar_placed":3,"food_self_sufficient":true,"automatic_food":{"nearjord_grain_per_tick":0.5,"remainder_people":42,"remainder_grain_per_tick":3.78}}}`)
-	for _, want := range []string{"1 citizen needed", "3 placed", "Automatic grain: 4.28", "nearby ground 0.50", "42 people outside whole citizens 3.78"} {
+	out := runCityCmd(t, `{"total_gubbar":10,"pool_size":7,"hexes":[]}`, `{"settlement":{"food_gubbar_required":5,"food_gubbar_placed":5,"food_self_sufficient":true,"automatic_food":{"nearjord_grain_per_tick":0.5,"remainder_people":42,"remainder_grain_per_tick":0,"remainder_fish_per_tick":0.42}}}`)
+	for _, want := range []string{"5 citizens needed", "5 placed", "Automatic food: 0.50 grain + 0.42 fish", "nearby ground 0.50", "42 people outside whole citizens: 0.00 grain + 0.42 fish"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("missing %q in %s", want, out)
 		}

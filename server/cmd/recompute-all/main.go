@@ -2,14 +2,10 @@
 // settlement in a world (or in every world).
 //
 // WHY THIS EXISTS: production_rules is a static catalogue, but a settlement's
-// actual rates live in settlement_goods and are only rewritten when
-// RecomputeProduction runs. Nothing in the tick loop calls it — it fires on
-// events only (build, placement, founding, arrival, occupation, collapse,
-// ship repair, training; see the callers of economy.RecomputeProduction).
-//
-// A settlement where nothing happens therefore keeps its old rates forever.
-// That makes any migration that edits production_rules only HALF applied: the
-// catalogue is new, every quiet city still produces at the old figures.
+// actual rates live in settlement_goods and are rewritten by
+// RecomputeProduction. Kharis ticks and gameplay events recompute them too,
+// but an operator can apply catalogue or formula changes immediately here.
+// Dry-run executes that same path in a transaction and rolls it back.
 //
 // Found the hard way with migration 136 (dagsverkesskalan, 2026-08-27): the
 // migration rescaled existing rates correctly, but the NEW per-tick figures —
@@ -18,7 +14,8 @@
 // it. Mochlos sat at 114.82 grain/tick where the new rules say 82.40, and the
 // two food-dead cities produced 1.16 where the rules say 0.50.
 //
-// Run this after any migration that touches production_rules.
+// Run this after a production catalogue or formula change when stored rates
+// must be updated immediately.
 //
 //	go run ./cmd/recompute-all                 # every world
 //	go run ./cmd/recompute-all -world <uuid>   # one world
@@ -32,6 +29,8 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/jackc/pgx/v5"
+	"math"
 	"os"
 
 	"github.com/google/uuid"
@@ -98,67 +97,70 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Grain is the good worth reporting: it is the one every settlement has,
-	// and the one whose drift is immediately legible as "does this city feed
-	// itself". Read before and after so the operator sees the actual effect
-	// rather than trusting a success count.
-	grainRate := func(id uuid.UUID) float64 {
-		var r float64
-		_ = pool.QueryRow(ctx,
-			`SELECT rate FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'grain'`,
-			id).Scan(&r)
-		return r
-	}
-
 	var changed, failed int
 	for _, t := range targets {
-		before := grainRate(t.id)
-		if *dryRun {
-			fmt.Printf("%-16s grain rate %8.2f  (dry run, not recomputed)\n", t.name, before)
-			continue
-		}
-		tx, err := pool.Begin(ctx)
+		result, err := recomputeSettlement(ctx, pool, t.id, *dryRun)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s: begin: %v\n", t.name, err)
+			fmt.Fprintf(os.Stderr, "%s: %v\n", t.name, err)
 			failed++
 			continue
 		}
-		// byggnadsregeln (mig 155): drop placements the rule no longer allows and
-		// re-place the freed gubbar, before the rates are written.
-		if removed, replaced, err := economy.ReconcilePlacements(ctx, tx, t.id); err != nil {
-			fmt.Fprintf(os.Stderr, "%s: reconcile placements: %v\n", t.name, err)
-			_ = tx.Rollback(ctx)
-			failed++
-			continue
-		} else if removed > 0 {
-			fmt.Printf("  %s: %d placements removed, %d re-placed\n", t.name, removed, replaced)
-		}
-		if err := economy.RecomputeProduction(ctx, tx, t.id); err != nil {
-			fmt.Fprintf(os.Stderr, "%s: recompute: %v\n", t.name, err)
-			_ = tx.Rollback(ctx)
-			failed++
-			continue
-		}
-		if err := tx.Commit(ctx); err != nil {
-			fmt.Fprintf(os.Stderr, "%s: commit: %v\n", t.name, err)
-			failed++
-			continue
-		}
-		after := grainRate(t.id)
 		mark := " "
-		if diff := after - before; diff > 0.005 || diff < -0.005 {
+		if math.Abs(result.After.Grain-result.Before.Grain) > 1e-9 || math.Abs(result.After.Fish-result.Before.Fish) > 1e-9 || result.Removed > 0 || result.Replaced > 0 {
 			mark = "*"
 			changed++
 		}
-		fmt.Printf("%s %-16s grain rate %8.2f → %8.2f\n", mark, t.name, before, after)
+		fmt.Printf("%s %-16s grain %8.4f → %8.4f; fish %8.4f → %8.4f; placements removed %d, replaced %d\n", mark, t.name, result.Before.Grain, result.After.Grain, result.Before.Fish, result.After.Fish, result.Removed, result.Replaced)
 	}
-
+	action := "recomputed"
 	if *dryRun {
-		fmt.Printf("\n%d settlements would be recomputed\n", len(targets))
-		return
+		action = "previewed (all transactions rolled back)"
 	}
-	fmt.Printf("\n%d settlements recomputed, %d changed, %d failed\n", len(targets), changed, failed)
+	fmt.Printf("\n%d settlements %s, %d changed, %d failed\n", len(targets)-failed, action, changed, failed)
 	if failed > 0 {
 		os.Exit(1)
 	}
+}
+
+type foodRates struct{ Grain, Fish float64 }
+type recomputeResult struct {
+	Before, After     foodRates
+	Removed, Replaced int
+}
+
+func readFoodRates(ctx context.Context, tx pgx.Tx, id uuid.UUID) (r foodRates, err error) {
+	err = tx.QueryRow(ctx, `SELECT COALESCE(sum(rate) FILTER (WHERE good_key='grain'),0), COALESCE(sum(rate) FILTER (WHERE good_key='fish'),0) FROM settlement_goods WHERE settlement_id=$1`, id).Scan(&r.Grain, &r.Fish)
+	return
+}
+
+// Dry-run executes exactly the same reconciliation/recompute path as apply,
+// including lazy amounts, then rolls the entire city transaction back.
+func recomputeSettlement(ctx context.Context, pool *pgxpool.Pool, id uuid.UUID, dryRun bool) (r recomputeResult, err error) {
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		return r, err
+	}
+	defer tx.Rollback(ctx)
+	var lockedID uuid.UUID
+	if err = tx.QueryRow(ctx, `SELECT id FROM settlements WHERE id=$1 FOR UPDATE`, id).Scan(&lockedID); err != nil {
+		return r, err
+	}
+	if r.Before, err = readFoodRates(ctx, tx, id); err != nil {
+		return r, err
+	}
+	if r.Removed, r.Replaced, err = economy.ReconcilePlacements(ctx, tx, id); err != nil {
+		return r, err
+	}
+	if err = economy.RecomputeProduction(ctx, tx, id); err != nil {
+		return r, err
+	}
+	if r.After, err = readFoodRates(ctx, tx, id); err != nil {
+		return r, err
+	}
+	if dryRun {
+		err = tx.Rollback(ctx)
+	} else {
+		err = tx.Commit(ctx)
+	}
+	return r, err
 }

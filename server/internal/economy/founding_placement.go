@@ -46,10 +46,8 @@ func rankedFoodSlots(ctx context.Context, tx Tx, settlementID uuid.UUID) ([]food
 	return slots, center, err
 }
 
-// rankedFoodSlotsWithOptions is rankedFoodSlots' fuller sibling: the same
-// ranked food-slot list PLUS the raw hexOptions it was built from — grain's
-// base potential (the population-remainder term, see FoodGubbarRequired)
-// lives there and nowhere else. rankedFoodSlots is now a thin wrapper around
+// rankedFoodSlotsWithOptions returns the ranked slots and the same production
+// options used to calculate the invisible remainder worker's best food yield. rankedFoodSlots is now a thin wrapper around
 // this; its two existing callers (PlaceStartingWorkforce,
 // PlaceNextGubbeOnBestFoodHex) are unchanged.
 func rankedFoodSlotsWithOptions(ctx context.Context, tx Tx, settlementID uuid.UUID) ([]foodSlot, hexgrid.Coord, []HexOption, error) {
@@ -159,12 +157,12 @@ func PlaceStartingWorkforce(ctx context.Context, tx Tx, settlementID uuid.UUID) 
 	}
 
 	// Guaranteed food regardless of placement (RecomputeProduction step 4b):
-	// nearjord's flat trickle + the population remainder auto-farming grain.
+	// nearjord's grain + the population remainder's best food worker fraction.
 	hexOptions, err := LoadHexProductionOptions(ctx, tx, settlementID, nil) // founding/growth placement previews the full catchment, siege denial does not apply
 	if err != nil {
 		return 0, false, fmt.Errorf("place starting workforce: %w", err)
 	}
-	guaranteedFood := AutomaticFoodForPopulation(hexOptions, population).GrainPerTick()
+	guaranteedFood := AutomaticFoodForPopulation(hexOptions, population).FoodPerTick()
 	demand := GrainConsumptionPerTick(population)
 
 	placements, sufficient := placeStartingGubbar(slots, guaranteedFood, demand, totalGubbar)
@@ -270,7 +268,7 @@ func FoodGubbarRequiredWithAutomatic(ctx context.Context, tx Tx, settlementID uu
 	}
 	totalGubbar := population / 100
 	automatic = AutomaticFoodForPopulation(hexOptions, population)
-	guaranteedFood := automatic.GrainPerTick()
+	guaranteedFood := automatic.FoodPerTick()
 	demand := GrainConsumptionPerTick(population)
 
 	placements, sufficient := placeGreedyOnFoodSlots(slots, guaranteedFood, demand, totalGubbar)

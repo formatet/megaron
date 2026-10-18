@@ -499,11 +499,8 @@ type Tx interface {
 //     033). Its whole purpose is "some output exists even with zero placed
 //     workers of the right kind"; turning it into a placeable role would
 //     defeat that, so it stays an unconditional constant like nearjord.
-//   - The population REMAINDER (pop mod 100, Temenos_varutaxonomi_sol.md
-//     §1.1 — only whole hundreds become placeable gubbar) "arbetar alltid
-//     automatiskt i jordbruket": it contributes to GRAIN ONLY, via the OLD
-//     aggregate formula (catchment-wide basePotential/REF_LABOR × remainder
-//     headcount) scoped to just that leftover headcount — see step 5b.
+//   - The population REMAINDER (pop mod100) produces that fraction of the
+//     best eligible food worker, grain or fish, without taking a real slot.
 //
 // settlement_labor is UNTOUCHED by this function — cult labor (temple
 // devotion, good_key='cult') is a separate path (megaron_cult_ar_ingen_vara_plan.md)
@@ -716,18 +713,14 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 		}
 	}
 
-	// ── 4b. The population REMAINDER auto-farms grain ─────────────────────────
-	// Temenos_varutaxonomi_sol.md §1.1: only whole hundreds become a placeable
-	// gubbe (floor(population/100)); "den ofullständiga befolkningsresten
-	// arbetar alltid automatiskt i jordbruket" — the leftover heads (population
-	// mod 100) are NOT a placement, they use the OLD pre-P4 aggregate formula
-	// (catchment-wide basePotential/REF_LABOR), scoped to just their own
-	// headcount, and GRAIN ONLY ("jordbruket", not fish/oil/wine/…). This is
-	// deliberately the one place REF_LABOR still governs output after P4 — it
-	// is what makes population growth feel continuous between hundreds instead
-	// of a nothing-then-a-gubbe step function.
-	rawRates[GoodGrain] += AutomaticFoodForPopulation(hexOptions, laborPool).RemainderGrain
+	// ── 4b. Invisible remainder people use the same eligible hex menu ───────
+	automatic := AutomaticFoodForPopulation(hexOptions, laborPool)
+	rawRates[GoodGrain] += automatic.RemainderGrain
+	rawRates[GoodFish] += automatic.RemainderFish
 	producible[GoodGrain] = true
+	if automatic.RemainderFish > 0 {
+		producible[GoodFish] = true
+	}
 
 	// ── 5. Settle and write new rates ─────────────────────────────────────────
 	// 5a. rawRates is already fully populated (step 4/4b) — nothing left to
