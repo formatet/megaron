@@ -1,0 +1,5 @@
+» färsk DB på migration 185 · commit df98d5ed+ändringar
+ok  	formatet/megaron/server/api/handlers	41.010s
+ok  	formatet/megaron/server/internal/capabilities	0.613s
+ok  	formatet/megaron/server/cmd/server	2.930s
+ok  	formatet/megaron/server/internal/kharis	10.738s

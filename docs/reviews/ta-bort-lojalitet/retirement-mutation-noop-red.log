@@ -1,0 +1,14 @@
+» färsk DB på migration 185 · commit df98d5ed+ändringar
+2026/10/18 17:24:39 ERROR scheduled event handler failed type=LoyaltyDecayTick id=1 attempt=1 err="context canceled"
+2026/10/18 17:24:39 ERROR scheduled event handler failed type=LoyaltyWelfareTick id=2 attempt=1 err="context canceled"
+2026/10/18 17:24:39 ERROR scheduled event handler failed type=ColonyPenaltyTick id=3 attempt=1 err="context canceled"
+2026/10/18 17:24:39 ERROR scheduled event handler failed type=BorrowedArmyTick id=4 attempt=1 err="context canceled"
+2026/10/18 17:24:39 ERROR scheduled event handler failed type=LoyaltyDecayTick id=1 attempt=2 err="context canceled"
+2026/10/18 17:24:39 ERROR scheduled event handler failed type=LoyaltyWelfareTick id=2 attempt=2 err="context canceled"
+2026/10/18 17:24:39 ERROR scheduled event handler failed type=ColonyPenaltyTick id=3 attempt=2 err="context canceled"
+2026/10/18 17:24:39 ERROR scheduled event handler failed type=BorrowedArmyTick id=4 attempt=2 err="context canceled"
+--- FAIL: TestRetiredLoyaltyTicksCompleteWithoutEffects (0.01s)
+    loyalty_retirement_test.go:48: legacy work must complete once, silently: total4 done0 failed0 attempts8 emitted0
+FAIL
+FAIL	formatet/megaron/server/internal/events	0.013s
+FAIL

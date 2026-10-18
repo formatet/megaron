@@ -1,0 +1,7 @@
+» färsk DB på migration 184 · commit df98d5ed
+2026/10/18 17:21:10 INFO daily ticks seeded worlds=1
+--- FAIL: TestSeedDailyTicks_NoLoyalty (0.01s)
+    loyalty_retirement_test.go:30: loyalty must never be seeded; retain food work: retired4 food1
+FAIL
+FAIL	formatet/megaron/server/cmd/server	0.015s
+FAIL

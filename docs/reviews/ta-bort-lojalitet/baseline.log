@@ -1,0 +1,4 @@
+» färsk DB på migration 184 · commit df98d5ed
+ok  	formatet/megaron/server/internal/events	0.002s [no tests to run]
+ok  	formatet/megaron/server/internal/settlement	0.001s
+ok  	formatet/megaron/server/api/handlers	1.424s

@@ -1,0 +1,10 @@
+» färsk DB på migration 184 · commit df98d5ed+ändringar
+2026/10/18 17:20:55 INFO field combat: battle initiated/joined unit=17e4ab8f-9d58-44dc-8dd8-3a82f1e21a6c q=1 r=0 defenders=1
+2026/10/18 17:20:55 INFO field combat: battle initiated/joined unit=0a728899-a545-4f41-b34c-3956066e3786 q=1 r=0 defenders=1
+--- FAIL: TestBattleParticipationFixedAcrossCityAndKharis (0.08s)
+    fixed_combat_test.go:26: kharis=1 defender participation=0.9013333333333333, want .90
+    fixed_combat_test.go:26: kharis=1 attacker participation=0.8013333333333333, want .90
+    fixed_combat_test.go:26: kharis=100 defender participation=1, want .90
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.083s
+FAIL

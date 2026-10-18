@@ -1,0 +1,8 @@
+» färsk DB på migration 185 · commit df98d5ed+ändringar
+--- FAIL: TestFixedRoutThresholdAndHistoricalStandingOrders (0.00s)
+    fixed_combat_test.go:86: orders={} remaining=21 rout=true want false
+    fixed_combat_test.go:86: orders={"by_loyalty":true} remaining=21 rout=true want false
+    fixed_combat_test.go:86: orders={"when_losing":true} remaining=21 rout=true want false
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.002s
+FAIL

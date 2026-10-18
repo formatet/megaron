@@ -1,0 +1,7 @@
+» färsk DB på migration 184 · commit df98d5ed+ändringar
+2026/10/18 17:24:14 INFO player registered id=612aa1ee-0883-422f-8f78-1ec57a51abdb username=trader-1e466803-c50c-46e2-90bc-2fb3e93fca8b
+--- FAIL: TestOwnColonyGift_RemovedWithoutSideEffects (0.08s)
+    caravan_journey_test.go:273: gift status200: map[arrival_tick:5 arrives_at:2026-10-18T22:24:14.709361067+02:00 departure_tick:0 grain_sent:0 loyalty_delta:1 silver_sent:100 transport_id:a1054856-a877-4097-9b4a-9580558acf76 travel_ticks:5]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.079s
+FAIL

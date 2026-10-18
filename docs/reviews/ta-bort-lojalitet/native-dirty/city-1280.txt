@@ -1,0 +1,30 @@
+MORE
+PEOPLE AT WORK
+In service
+1,000
+Citizens (1 = 100 people)
+10
+DEVOTION
+
+Devotion (cult): needs a temple here — build one first.
+
+FOOD DETAILS
+Food for people
+grain 6.2 + fish 0 − people eat 5 = 1.2 net before army
+Army food
+eats 1 grain per day → food net 0.2 after army
+Food citizens
+2 needed · 2 placed
+
+1 citizen = 100 people. Estimate uses the best food slots for people; the army needs grain separately.
+
+Automatic food: 0.50 grain + 0.00 fish per day without placed citizens (nearby ground 0.50 grain; 0 people outside whole citizens: 0.00 grain + 0.00 fish, a fraction of the best food worker).
+
+City stocks
+240 days at current consumption · grain + fish
+LAST DAY
+Day
+#0
+grain	+6.2
+grain	−5
+DAILY HISTORY SHOW RECENT DAYS

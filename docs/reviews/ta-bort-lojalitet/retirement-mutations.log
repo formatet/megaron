@@ -1,0 +1,3 @@
+seed: named RED -> identical bytes restored (sha256 260cb7a7d98f99a6440d64c3219cd5e8a980a99d429825560159f912c31e1c0a) -> fresh PG GREEN
+migration: named RED -> identical bytes restored (sha256 fa413c7429561a555882f2b0e43ff7ea0fa5244c700de0131fff9a6943f9585c) -> fresh PG GREEN
+noop: named RED -> identical bytes restored (sha256 cc53c78c8a295ff58d8c8a0fee4bea84664000b62c0f81d30db7e03afe67133c) -> fresh PG GREEN

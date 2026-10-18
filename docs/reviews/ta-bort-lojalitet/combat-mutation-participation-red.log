@@ -1,0 +1,15 @@
+» färsk DB på migration 185 · commit df98d5ed+ändringar
+2026/10/18 17:23:31 INFO field combat: battle initiated/joined unit=da76ddc6-96cb-4c91-abf8-e6bdff82fbce q=1 r=0 defenders=1
+2026/10/18 17:23:31 INFO field combat: battle initiated/joined unit=8d0df1e9-4e2a-41a8-a40a-3313837c64d7 q=1 r=0 defenders=1
+--- FAIL: TestBattleParticipationFixedAcrossCityAndKharis (0.09s)
+    fixed_combat_test.go:50: first round kharis1 result={ActiveCombatants:80 DiceRolled:80 HitsCaused:7 LossesReceived:6} want90 active and dice
+    fixed_combat_test.go:50: first round kharis1 result={ActiveCombatants:80 DiceRolled:80 HitsCaused:6 LossesReceived:7} want90 active and dice
+    fixed_combat_test.go:66: kharis=1 defender participation=0.8, want .90
+    fixed_combat_test.go:66: kharis=1 attacker participation=0.8, want .90
+    fixed_combat_test.go:50: first round kharis100 result={ActiveCombatants:80 DiceRolled:80 HitsCaused:7 LossesReceived:6} want90 active and dice
+    fixed_combat_test.go:50: first round kharis100 result={ActiveCombatants:80 DiceRolled:80 HitsCaused:6 LossesReceived:7} want90 active and dice
+    fixed_combat_test.go:66: kharis=100 attacker participation=0.8, want .90
+    fixed_combat_test.go:66: kharis=100 defender participation=0.8, want .90
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.093s
+FAIL
