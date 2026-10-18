@@ -243,7 +243,11 @@ func apiError(body []byte, status int) error {
 					parts[i] += fmt.Sprintf(" — ≈%s at current production (if nothing else uses it)", formatDays(math.Ceil((m.Need-m.Have)/m.Rate), "%.0f"))
 				}
 			}
-			return fmt.Errorf("%s: %s (HTTP %d)", e.Error, strings.Join(parts, ", "), status)
+			hint := ""
+			if e.Error == "insufficient_goods" {
+				hint = " — produce it here, or send it from another of your cities with `keryx transfer`"
+			}
+			return fmt.Errorf("%s: %s%s (HTTP %d)", e.Error, strings.Join(parts, ", "), hint, status)
 		}
 		return fmt.Errorf("%s (HTTP %d)", e.Error, status)
 	}

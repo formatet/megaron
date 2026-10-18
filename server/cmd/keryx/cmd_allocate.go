@@ -145,13 +145,13 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 		rows = append(rows, row{"cult (devotion)", extras.Devotion * 100, int(extras.Devotion * float64(pool)), false})
 		hasCult = true
 	}
-	fmt.Printf("  Population:  %d\n", pool)
+	fmt.Printf("  Population:  %s (%s)\n", peopleCount(pool), citizenScaleNote)
 	if pool > 0 {
 		// Idle comes from the server's own citizen count, not 100−Σpercent: the
 		// stored weights can sum past 100 (they are per-good fractions, and the
 		// PUT ceiling only constrains one call), which made the derived figure
 		// print a negative idle share.
-		fmt.Printf("  Idle:        %.0f%% (%s)\n", 100*float64(idle)/float64(pool), citizenCount(idle))
+		fmt.Printf("  Idle:        %.0f%% (%s)\n", 100*float64(idle)/float64(pool), peopleCount(idle))
 	}
 	if hasCult && allocated > 100 {
 		// Not over-subscription: LaborAlloc re-applies a 0.15 cult floor to any
@@ -166,7 +166,7 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 	}
 	sort.Slice(rows, func(i, j int) bool { return rows[i].pct > rows[j].pct })
 	for _, r := range rows {
-		line := fmt.Sprintf("  %-12s %3.0f%%  (%s)", r.key, r.pct, citizenCount(r.citizens))
+		line := fmt.Sprintf("  %-12s %3.0f%%  (%s)", r.key, r.pct, peopleCount(r.citizens))
 		if r.atCap {
 			// Same silent-waste class as the workplace-capacity marker below:
 			// the good's stock is full, so the labor sitting on it produces
@@ -217,4 +217,10 @@ func fetchSettlementExtras(c *Client, provinceID string) settlementExtras {
 		return settlementExtras{}
 	}
 	return settlementExtras{Devotion: p.Settlement.Devotion}
+}
+
+// peopleCount labels the allocate API's labor figures, which count people
+// (labor_pool = population), not placed citizens of 100.
+func peopleCount(n int) string {
+	return fmt.Sprintf("%d people", n)
 }
