@@ -1,0 +1,40 @@
+{
+  "baseline_health": {
+    "commit": "9c071100c76fb2aeeb75f7bc2157ad9909c0fa11",
+    "migration": 182,
+    "status": "ok"
+  },
+  "health": {
+    "commit": "9d21131533a796ab845b8c7349702b7a758c3686",
+    "migration": 183,
+    "status": "ok"
+  },
+  "accounts": {
+    "ai": {
+      "status": {
+        "enabled": true,
+        "state": "exempt"
+      },
+      "password_http": 403
+    },
+    "luna": {
+      "status": {
+        "enabled": true,
+        "state": "exempt"
+      },
+      "password_http": 403
+    },
+    "human": {
+      "status": {
+        "enabled": true,
+        "state": "ready",
+        "localpart": "lawodokos",
+        "homeserver": "http://127.0.0.1:46031",
+        "user_id": "@lawodokos:agora.test"
+      },
+      "password_login": true
+    }
+  },
+  "page_errors": [],
+  "matrix_version": "26.9.1"
+}

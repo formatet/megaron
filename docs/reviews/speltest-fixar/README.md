@@ -140,3 +140,13 @@ Branch `codex/ai-runda4-texter`; [fullt bevispaket](../ai-runda4-texter/README.m
 | 7. Byggkö | Fast gräns2 förklarad i listing/avslag/Codex; slutför eller avbryt, population/byggnader ger inga fler platser. |
 
 Slutresultat finns i slice8-rapporten. Claude granskar/integrerar; ingen merge/push/deploy av Codex.
+
+## Slice 10 — AI-konton utan Agora
+
+| Fynd | Utfall |
+|---|---|
+| AI fick OOC-chattkonto | Explicit players.agora_exempt (mig183), prefixbackfill för befintliga luna-/gpt-konton. Pass och direktreconcile spärras; status säger exempt och password403. Samma inget-konto-besked på webb/CLI/Codex; människor oförändrade. Timothy avaktiverar gamla Matrix-konton separat. |
+
+[Bevispaket](../agora-ai-undantag/README.md): gammal runtime namngivetRED → GREEN,
+10 fysiska mutationer, naturlig182→183 med egen Matrix26.9.1, CLI/Firefox1280+390 och mänsklig lösenordsinloggning.
+Claude granskar/integrerar; GPT-konton grundas först efter slice10 är live.

@@ -38,8 +38,12 @@ type agoraService struct {
 
 func (s *agoraService) Account(ctx context.Context, playerID uuid.UUID) (handlers.AgoraAccount, error) {
 	var state, localpart string
-	if err := s.pool.QueryRow(ctx, `SELECT COALESCE(agora_state,''),COALESCE(agora_localpart,'') FROM players WHERE id=$1`, playerID).Scan(&state, &localpart); err != nil {
+	var exempt bool
+	if err := s.pool.QueryRow(ctx, `SELECT COALESCE(agora_state,''),COALESCE(agora_localpart,''),agora_exempt FROM players WHERE id=$1`, playerID).Scan(&state, &localpart, &exempt); err != nil {
 		return handlers.AgoraAccount{}, agora.ErrUnavailable
+	}
+	if exempt {
+		return handlers.AgoraAccount{Enabled: true, State: "exempt"}, nil
 	}
 	account := handlers.AgoraAccount{Enabled: true, State: "pending", Homeserver: s.remote.Homeserver()}
 	if state == "creating" {
@@ -96,12 +100,19 @@ func (s *agoraService) Password(ctx context.Context, playerID uuid.UUID) (handle
 		return handlers.AgoraPassword{}, err
 	}
 	defer s.unlock(conn)
-	var localpart string
-	if err := conn.QueryRow(ctx, `SELECT COALESCE(agora_localpart,'') FROM players WHERE id=$1 AND agora_state='ready'`, playerID).Scan(&localpart); err != nil {
+	var localpart, state string
+	var exempt bool
+	if err := conn.QueryRow(ctx, `SELECT COALESCE(agora_localpart,''),COALESCE(agora_state,''),agora_exempt FROM players WHERE id=$1`, playerID).Scan(&localpart, &state, &exempt); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return handlers.AgoraPassword{}, handlers.ErrAgoraPending
 		}
 		return handlers.AgoraPassword{}, agora.ErrUnavailable
+	}
+	if exempt {
+		return handlers.AgoraPassword{}, handlers.ErrAgoraExempt
+	}
+	if state != "ready" {
+		return handlers.AgoraPassword{}, handlers.ErrAgoraPending
 	}
 	password, err := agora.NewPassword()
 	if err != nil {
@@ -131,7 +142,7 @@ func (s *agoraService) run(ctx context.Context) {
 func (s *agoraService) pass(ctx context.Context) {
 	s.deactivateErased(ctx)
 	rows, err := s.pool.Query(ctx, `SELECT p.id FROM players p
-		WHERE p.agora_localpart IS NULL AND p.wanax_name IS NOT NULL AND p.erased_at IS NULL
+		WHERE NOT p.agora_exempt AND p.agora_localpart IS NULL AND p.wanax_name IS NOT NULL AND p.erased_at IS NULL
 		AND (p.agora_claim_localpart IS NOT NULL OR EXISTS(SELECT 1 FROM settlements s WHERE s.owner_id=p.id))
 		ORDER BY p.id`)
 	if err != nil {
@@ -222,12 +233,12 @@ func (s *agoraService) reconcile(ctx context.Context, playerID uuid.UUID) error 
 		}
 	}()
 	var name, claim, localpart string
-	var eligible bool
+	var eligible, exempt bool
 	if err := conn.QueryRow(ctx, `SELECT COALESCE(wanax_name,''),COALESCE(agora_claim_localpart,''),COALESCE(agora_localpart,''),
-		EXISTS(SELECT 1 FROM settlements WHERE owner_id=$1) FROM players WHERE id=$1`, playerID).Scan(&name, &claim, &localpart, &eligible); err != nil {
+		EXISTS(SELECT 1 FROM settlements WHERE owner_id=$1),agora_exempt FROM players WHERE id=$1`, playerID).Scan(&name, &claim, &localpart, &eligible, &exempt); err != nil {
 		return agora.ErrUnavailable
 	}
-	if localpart != "" {
+	if exempt || localpart != "" {
 		return nil
 	}
 	// A claim without an owned city waits: replaying CREATE and resetting the

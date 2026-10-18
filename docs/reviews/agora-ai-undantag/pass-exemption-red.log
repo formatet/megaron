@@ -1,0 +1,7 @@
+=== RUN   TestAgoraExemptPassSkipsReconcile
+    agora_exempt_test.go:47: exempt player reconciled: locks=2 create=0
+--- FAIL: TestAgoraExemptPassSkipsReconcile (0.03s)
+FAIL
+FAIL	formatet/megaron/server/cmd/server	0.038s
+FAIL
+» färsk DB på migration 183 · commit 9c071100+ändringar

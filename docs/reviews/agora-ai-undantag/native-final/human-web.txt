@@ -1,0 +1,14 @@
+Community chat
+
+Outside the game. Your Wanax name identifies you in chat.
+
+Chat ID
+@lawodokos:agora.test
+Homeserver
+http://127.0.0.1:46031
+
+Open community chat
+
+Each request sets a new chat password and replaces the previous one. Save it before closing this window.
+
+GET CHAT PASSWORD

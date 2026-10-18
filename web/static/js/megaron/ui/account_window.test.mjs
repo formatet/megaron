@@ -150,3 +150,26 @@ test('profile error does not invent zero-valued statistics', async t => {
   assert.match(h.nodes.get('acc-profile').textContent, /Not a member/);
   assert.equal(h.nodes.get('acc-profile').innerHTML, '');
 });
+
+
+test('exempt account: explicit no-account text, no password button or POST', async t => {
+ const h=harness(t,()=>response({enabled:true,state:'exempt'}));
+ openAccountWindow(); await settle();
+ assert.equal(h.nodes.get('acc-chat').hidden,false);
+ assert.match(h.nodes.get('acc-chat').innerHTML,/No community chat account is provided/);
+ assert.doesNotMatch(h.nodes.get('acc-chat').innerHTML,/pending|first city|Get chat password/);
+ assert.equal(h.nodes.has('acc-chat-get'),false);
+ assert.equal(h.requests.length,1);
+});
+
+test('newly exempt password request clears the old secret and gives no retry advice', async t=>{
+ let attempts=0;
+ const h=harness(t,url=>response(url.endsWith('/password') ? (++attempts===1 ? {password:'old-secret'} : {error:'exempt'}) : ready, attempts===2 ? 403 : 200));
+ openAccountWindow();await settle();await h.nodes.get('acc-chat-get').click();
+ assert.equal(h.nodes.get('acc-chat-password').textContent,'old-secret');
+ await h.nodes.get('acc-chat-get').click();
+ assert.equal(h.nodes.get('acc-chat-password').textContent,'');
+ assert.equal(h.nodes.get('acc-chat-password').hidden,true);
+ assert.match(h.nodes.get('acc-chat-status').textContent,/No community chat account is provided/);
+ assert.doesNotMatch(h.nodes.get('acc-chat-status').textContent,/later|password shown/);
+});

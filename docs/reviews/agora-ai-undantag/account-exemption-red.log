@@ -1,0 +1,7 @@
+=== RUN   TestAgoraExemptDirectAndAccountLifecycle
+    agora_exempt_test.go:67: exempt account leaked ready/pending: {Enabled:true State:pending Localpart: Homeserver:https://agora.test UserID:} <nil>
+--- FAIL: TestAgoraExemptDirectAndAccountLifecycle (0.03s)
+FAIL
+FAIL	formatet/megaron/server/cmd/server	0.033s
+FAIL
+» färsk DB på migration 183 · commit 9c071100+ändringar

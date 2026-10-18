@@ -1,0 +1,3 @@
+gpt-proof-6dfdb5a0|t|||1|0
+human-proof-e04260dc|f|ready|lawodokos|1|1
+luna-proof-0ec5b80f|t|||1|0

@@ -1,0 +1,26 @@
+» färsk DB på migration 183 · commit 9c071100+ändringar
+=== RUN   TestAgoraDeactivatesErasedPlayerAfterOutage
+2026/10/18 06:41:54 WARN Agora deactivation awaits reconciliation player=54de83ec-d9d4-49f6-a461-ba9c90027abd
+--- PASS: TestAgoraDeactivatesErasedPlayerAfterOutage (0.03s)
+=== RUN   TestAgoraNeverProvisionsErasedPlayer
+--- PASS: TestAgoraNeverProvisionsErasedPlayer (0.03s)
+=== RUN   TestAgoraExemptPassSkipsReconcile
+--- PASS: TestAgoraExemptPassSkipsReconcile (0.03s)
+=== RUN   TestAgoraExemptDirectAndAccountLifecycle
+--- PASS: TestAgoraExemptDirectAndAccountLifecycle (0.03s)
+=== RUN   TestAgoraReconcileRetriesOutageAndCrashWithOneAccount
+--- PASS: TestAgoraReconcileRetriesOutageAndCrashWithOneAccount (0.03s)
+=== RUN   TestAgoraReconcileConcurrentAndDeliverAfterPoolRelease
+--- PASS: TestAgoraReconcileConcurrentAndDeliverAfterPoolRelease (0.03s)
+=== RUN   TestAgoraNormalizedAndRemoteOccupiedCollisions
+--- PASS: TestAgoraNormalizedAndRemoteOccupiedCollisions (0.06s)
+=== RUN   TestAgoraReadyNotificationFailureRollsBackAndRecovers
+--- PASS: TestAgoraReadyNotificationFailureRollsBackAndRecovers (0.03s)
+=== RUN   TestAgoraEligibilityAndPlayerPassword
+--- PASS: TestAgoraEligibilityAndPlayerPassword (0.03s)
+=== RUN   TestAgoraMigrationRejectsPartialStates
+--- PASS: TestAgoraMigrationRejectsPartialStates (0.03s)
+=== RUN   TestAgoraClaimWithoutCityWaitsWithoutRemoteCommands
+--- PASS: TestAgoraClaimWithoutCityWaitsWithoutRemoteCommands (0.03s)
+PASS
+ok  	formatet/megaron/server/cmd/server	0.352s
