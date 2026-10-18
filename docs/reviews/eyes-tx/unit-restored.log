@@ -1,0 +1,21 @@
+=== RUN   TestPlacementLiveEyesTransaction
+=== RUN   TestPlacementLiveEyesTransaction/marching-unit
+2026/10/18 07:38:08 INFO player registered id=7411caa1-6ad1-4579-b53e-4ace167291ab username=placement-79defd42-9cdf-444c-8a82-279d03bbc859
+    eyes_tx_test.go:98: marching-unit placement201, pool/TX same eyes and TX healthy
+=== RUN   TestPlacementLiveEyesTransaction/outbound
+2026/10/18 07:38:08 INFO player registered id=7300b9e6-a71b-44a5-a309-f1d31f3aa613 username=placement-a76f3564-dc48-41b8-874e-7eb645243c81
+    eyes_tx_test.go:98: outbound placement201, pool/TX same eyes and TX healthy
+=== RUN   TestPlacementLiveEyesTransaction/returning
+2026/10/18 07:38:08 INFO player registered id=0ddde590-42f2-4677-b810-a9343eb8c302 username=placement-72cf26da-ebea-436e-b190-7fb93dab6e58
+    eyes_tx_test.go:98: returning placement201, pool/TX same eyes and TX healthy
+=== RUN   TestPlacementLiveEyesTransaction/combined
+2026/10/18 07:38:08 INFO player registered id=66114f0e-9193-4ce7-a73e-b80f858416cf username=placement-5fb3d171-2953-4ead-85fc-99e668aa6fa7
+    eyes_tx_test.go:98: combined placement201, pool/TX same eyes and TX healthy
+--- PASS: TestPlacementLiveEyesTransaction (0.40s)
+    --- PASS: TestPlacementLiveEyesTransaction/marching-unit (0.10s)
+    --- PASS: TestPlacementLiveEyesTransaction/outbound (0.10s)
+    --- PASS: TestPlacementLiveEyesTransaction/returning (0.10s)
+    --- PASS: TestPlacementLiveEyesTransaction/combined (0.10s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.401s
+» färsk DB på migration 183 · commit ed4e8804+ändringar

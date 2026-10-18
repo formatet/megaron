@@ -1,0 +1,12 @@
+Wanax Makhawon · day 3 of the world
+
+Nomadic Host — your people on the move
+  1000 people · cannot fight · sight 2 hexes (4 by water or on mountains) · position (2,51)
+  Grain (escort's ration): 1200 — lasts indefinitely
+  Silver reserve: 480 — lasts indefinitely
+  2 Spearmen-cohorts in the field · messengers free to send
+
+Next steps:
+  keryx unit march --unit 7a81c781-0b6b-4e78-94ff-1c7eb89357cb --q <q> --r <r>   # travel
+  keryx founding settle                       # found the metropolis where the host stands
+  keryx message --from-host --to <city> --text "..."

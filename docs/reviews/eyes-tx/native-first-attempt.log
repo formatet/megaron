@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-eyes-tx/docs/reviews/eyes-tx/native.py", line 109, in <module>
+    else:raise AssertionError(march_attempts)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: [{'target': [4, 36], 'returncode': 1, 'text': 'Error: an expedition lasts 4 to 30 days (asked for 60) (HTTP 400)\nSee keryx unit march --help\n'}, {'target': [0, 32], 'returncode': 1, 'text': 'Error: an expedition lasts 4 to 30 days (asked for 60) (HTTP 400)\nSee keryx unit march --help\n'}, {'target': [2, 38], 'returncode': 1, 'text': 'Error: an expedition lasts 4 to 30 days (asked for 60) (HTTP 400)\nSee keryx unit march --help\n'}]

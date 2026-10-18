@@ -1,0 +1,3 @@
+Removed 1 citizen from hex #7.
+  #7   river_valley   grain      1/6    (next +2.8 per day)
+  9 citizens left in the idle pool.

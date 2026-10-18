@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -515,9 +516,18 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusForbidden, "not your settlement")
 		return
 	}
+	fail := func(message string, err error) {
+		attrs := []any{"operation", "place", "stage", message, "world_id", worldID, "settlement_id", settlementID, "player_id", playerID, "err", err}
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			attrs = append(attrs, "pg_code", pgErr.Code)
+		}
+		slog.ErrorContext(r.Context(), "placement failed", attrs...)
+		writeError(w, http.StatusInternalServerError, message)
+	}
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "transaction error")
+		fail("transaction error", err)
 		return
 	}
 	defer tx.Rollback(r.Context())
@@ -528,7 +538,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, pgx.ErrNoRows) {
 			writeError(w, http.StatusForbidden, "not your settlement")
 		} else {
-			writeError(w, http.StatusInternalServerError, "could not lock settlement")
+			fail("could not lock settlement", err)
 		}
 		return
 	}
@@ -537,7 +547,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 	// Next free gubbe_ordinal: lowest 1..totalGubbar not already placed.
 	placed, err := economy.LoadPlacementCounts(r.Context(), tx, settlementID)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not load placements")
+		fail("could not load placements", err)
 		return
 	}
 	if placed.Total >= totalGubbar {
@@ -547,7 +557,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 	usedOrdinals := make(map[int]bool, placed.Total)
 	orows, err := tx.Query(r.Context(), `SELECT gubbe_ordinal FROM settlement_placement WHERE settlement_id = $1`, settlementID)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not load ordinals")
+		fail("could not load ordinals", err)
 		return
 	}
 	for orows.Next() {
@@ -636,7 +646,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 			`SELECT 1 FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3 FOR UPDATE`,
 			worldID, hex.Q, hex.R,
 		); err != nil {
-			writeError(w, http.StatusInternalServerError, "could not lock hex")
+			fail("could not lock hex", err)
 			return
 		}
 		// Delad catchment (megaron_plan_delad_catchment.md): a held hex can be
@@ -645,7 +655,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 		// that rule stands (the read surfaces call it too).
 		holds, herr := economy.LoadHexHolds(r.Context(), tx, worldID, settlementID, playerID, []hexgrid.Coord{hex})
 		if herr != nil {
-			writeError(w, http.StatusInternalServerError, "could not check hex ownership")
+			fail("could not check hex ownership", err)
 			return
 		}
 		if hold, held := holds[hex]; held {
@@ -665,7 +675,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 			// queued build cancelled and refunded → holder recomputed.
 			var takerName string
 			if err := tx.QueryRow(r.Context(), `SELECT name FROM settlements WHERE id = $1`, settlementID).Scan(&takerName); err != nil {
-				writeError(w, http.StatusInternalServerError, "could not load settlement")
+				fail("could not load settlement", err)
 				return
 			}
 			// A take writes TWO cities. Never wait for the other city while
@@ -677,7 +687,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 				if errors.As(err, &pgErr) && pgErr.Code == "55P03" {
 					writeError(w, http.StatusConflict, "the other city is busy — retry this placement")
 				} else {
-					writeError(w, http.StatusInternalServerError, "could not lock hex holder")
+					fail("could not lock hex holder", err)
 				}
 				return
 			}
@@ -687,7 +697,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 				hold.HolderID, hex.Q, hex.R,
 			)
 			if err != nil {
-				writeError(w, http.StatusInternalServerError, "could not take hex")
+				fail("could not take hex", err)
 				return
 			}
 			var movedBuilding string
@@ -697,7 +707,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 				 RETURNING building_type`,
 				settlementID, hold.HolderID, hex.Q, hex.R,
 			).Scan(&movedBuilding); err != nil && !errors.Is(err, pgx.ErrNoRows) {
-				writeError(w, http.StatusInternalServerError, "could not take hex")
+				fail("could not take hex", err)
 				return
 			}
 			qrows, err := tx.Query(r.Context(),
@@ -705,7 +715,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 				hold.HolderID, hex.Q, hex.R,
 			)
 			if err != nil {
-				writeError(w, http.StatusInternalServerError, "could not take hex")
+				fail("could not take hex", err)
 				return
 			}
 			var queued []uuid.UUID
@@ -718,12 +728,12 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 			qrows.Close()
 			for _, id := range queued {
 				if _, err := cancelQueuedBuild(r.Context(), tx, id); err != nil {
-					writeError(w, http.StatusInternalServerError, "could not cancel the queued build on the taken hex")
+					fail("could not cancel the queued build on the taken hex", err)
 					return
 				}
 			}
 			if err := economy.RecomputeProduction(r.Context(), tx, hold.HolderID); err != nil {
-				writeError(w, http.StatusInternalServerError, "recompute production failed")
+				fail("recompute production failed", err)
 				return
 			}
 			taken = &economy.HexTakenPayload{
@@ -740,7 +750,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 		// post-take state — never against the holder's building.
 		hexOptions, err := economy.LoadHexProductionOptions(r.Context(), tx, settlementID, nil) // validation menu — siege denial gates YIELD, not the placement UI
 		if err != nil {
-			writeError(w, http.StatusInternalServerError, "could not load catchment")
+			fail("could not load catchment", err)
 			return
 		}
 		var opt *economy.HexOption
@@ -768,7 +778,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 
 		globalOccupancy, err := economy.GlobalHexOccupancy(r.Context(), tx, worldID, []hexgrid.Coord{hex})
 		if err != nil {
-			writeError(w, http.StatusInternalServerError, "could not check hex capacity")
+			fail("could not check hex capacity", err)
 			return
 		}
 		if globalOccupancy[hex][req.GoodKey] >= cap {
@@ -780,7 +790,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 			 VALUES ($1, $2, 'hex', $3, $4, $5)`,
 			settlementID, gubbeOrdinal, hex.Q, hex.R, req.GoodKey,
 		); err != nil {
-			writeError(w, http.StatusInternalServerError, "could not place citizen")
+			fail("could not place citizen", err)
 			return
 		}
 
@@ -791,7 +801,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 		}
 		buildingOptions, err := economy.LoadBuildingProductionOptions(r.Context(), tx, settlementID)
 		if err != nil {
-			writeError(w, http.StatusInternalServerError, "could not load buildings")
+			fail("could not load buildings", err)
 			return
 		}
 		var opt *economy.BuildingOption
@@ -816,7 +826,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 			 VALUES ($1, $2, 'building', $3, $4)`,
 			settlementID, gubbeOrdinal, req.BuildingType, req.GoodKey,
 		); err != nil {
-			writeError(w, http.StatusInternalServerError, "could not place citizen")
+			fail("could not place citizen", err)
 			return
 		}
 
@@ -826,11 +836,11 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := economy.RecomputeProduction(r.Context(), tx, settlementID); err != nil {
-		writeError(w, http.StatusInternalServerError, "recompute production failed")
+		fail("recompute production failed", err)
 		return
 	}
 	if err := tx.Commit(r.Context()); err != nil {
-		writeError(w, http.StatusInternalServerError, "commit failed")
+		fail("commit failed", err)
 		return
 	}
 
@@ -877,9 +887,18 @@ func (h *ProvinceHandler) UnplaceGubbe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fail := func(message string, err error) {
+		attrs := []any{"operation", "unplace", "stage", message, "world_id", worldID, "settlement_id", settlementID, "player_id", playerID, "err", err}
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			attrs = append(attrs, "pg_code", pgErr.Code)
+		}
+		slog.ErrorContext(r.Context(), "placement failed", attrs...)
+		writeError(w, http.StatusInternalServerError, message)
+	}
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "transaction error")
+		fail("transaction error", err)
 		return
 	}
 	defer tx.Rollback(r.Context())
@@ -889,7 +908,7 @@ func (h *ProvinceHandler) UnplaceGubbe(w http.ResponseWriter, r *http.Request) {
 		if errors.Is(err, pgx.ErrNoRows) {
 			writeError(w, http.StatusForbidden, "not your settlement")
 		} else {
-			writeError(w, http.StatusInternalServerError, "could not lock settlement")
+			fail("could not lock settlement", err)
 		}
 		return
 	}
@@ -899,7 +918,7 @@ func (h *ProvinceHandler) UnplaceGubbe(w http.ResponseWriter, r *http.Request) {
 		settlementID, ordinal,
 	)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not unplace citizen")
+		fail("could not unplace citizen", err)
 		return
 	}
 	if tag.RowsAffected() == 0 {
@@ -908,11 +927,11 @@ func (h *ProvinceHandler) UnplaceGubbe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := economy.RecomputeProduction(r.Context(), tx, settlementID); err != nil {
-		writeError(w, http.StatusInternalServerError, "recompute production failed")
+		fail("recompute production failed", err)
 		return
 	}
 	if err := tx.Commit(r.Context()); err != nil {
-		writeError(w, http.StatusInternalServerError, "commit failed")
+		fail("commit failed", err)
 		return
 	}
 

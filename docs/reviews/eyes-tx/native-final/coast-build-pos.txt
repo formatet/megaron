@@ -1,0 +1,2 @@
+Queue: 0/2 slots used — fixed limit; population and buildings do not add slots. Finish or cancel a build.
+Build queue is empty.

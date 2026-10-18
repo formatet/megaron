@@ -1,0 +1,20 @@
+SETTLEMENTS
+Settlement	Pop	Food after army	Food lasts	Status ▲
+coast-proof ★	1,006	-1 per day	216.3 days	surplus
+
+Wanaxes agree trade prices. Kult shows how the gods weigh offerings.
+
+COAST-PROOF ★
+SILVER
+479
+Good	Amount	Rate
+Stone	0	
+Timber	0	
+Oil	0	
+Wine	0	
+Fish	9 · 0 in Sitos	+5.1 per day
+Grain	1,078 · 105 in Sitos	+0.5 per day
+Livestock	50	
+Copper	0	
+
+Unavailable: trade offer, trade accept, trade decline, trade cancel, transfer, gift ?

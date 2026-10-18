@@ -1,0 +1,22 @@
+» färsk DB på migration 183 · commit ed4e8804
+=== RUN   TestPlacementLiveEyesTransaction
+=== RUN   TestPlacementLiveEyesTransaction/marching-unit
+2026/10/18 07:35:56 INFO player registered id=c877cd6d-892d-45e1-86bb-4ebfefa35fdb username=placement-4a8e26b5-b9ee-4a94-9ff9-40291ed15273
+    eyes_tx_test.go:64: one-connection pool starved: context deadline exceeded
+=== RUN   TestPlacementLiveEyesTransaction/outbound
+2026/10/18 07:35:59 INFO player registered id=e1c07e0b-a376-4908-b795-44e42e138c20 username=placement-f734eb0c-466e-4d3a-a5f4-1d81f407bdb9
+    eyes_tx_test.go:64: one-connection pool starved: context deadline exceeded
+=== RUN   TestPlacementLiveEyesTransaction/returning
+2026/10/18 07:36:02 INFO player registered id=daac0805-2d92-4186-aeac-620b05915e8e username=placement-4407cce1-88d2-44cc-bca5-79e9849e7605
+    eyes_tx_test.go:64: one-connection pool starved: context deadline exceeded
+=== RUN   TestPlacementLiveEyesTransaction/combined
+2026/10/18 07:36:05 INFO player registered id=3f046643-6af4-4344-92d0-80abd42f200f username=placement-f76bd710-fa9c-4970-9457-5440f3f63dd0
+    eyes_tx_test.go:64: one-connection pool starved: context deadline exceeded
+--- FAIL: TestPlacementLiveEyesTransaction (12.36s)
+    --- FAIL: TestPlacementLiveEyesTransaction/marching-unit (3.09s)
+    --- FAIL: TestPlacementLiveEyesTransaction/outbound (3.09s)
+    --- FAIL: TestPlacementLiveEyesTransaction/returning (3.09s)
+    --- FAIL: TestPlacementLiveEyesTransaction/combined (3.09s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	12.361s
+FAIL
