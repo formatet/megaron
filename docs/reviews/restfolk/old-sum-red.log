@@ -1,0 +1,7 @@
+=== RUN   TestRestfolk_BestWorkerNotCatchmentSum
+    restfolk_test.go:16: 42 people must give .42 of ONE best grain worker, not nine hexes: {NearjordGrain:0.5 RemainderPeople:42 RemainderGrain:3.78 RemainderFish:0}
+--- FAIL: TestRestfolk_BestWorkerNotCatchmentSum (0.00s)
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.002s
+FAIL
+» färsk DB på migration 183 · commit a2738fa1+ändringar

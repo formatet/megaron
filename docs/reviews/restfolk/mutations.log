@@ -1,0 +1,9 @@
+old-sum named assertion RED -> exact bytes -> GREEN a4c597e8cd9bd99dcb7cc40e0285d7a03b811d82b330e0043866a722eceefe88
+no-fish named assertion RED -> exact bytes -> GREEN a4c597e8cd9bd99dcb7cc40e0285d7a03b811d82b330e0043866a722eceefe88
+no-building named assertion RED -> exact bytes -> GREEN a4c597e8cd9bd99dcb7cc40e0285d7a03b811d82b330e0043866a722eceefe88
+no-place-guard named assertion RED -> exact bytes -> GREEN a4c597e8cd9bd99dcb7cc40e0285d7a03b811d82b330e0043866a722eceefe88
+recompute-no-fish named assertion RED -> exact bytes -> GREEN 9be8dfb2a77cb1c8860f904e8e569c3161b21a8397c0bd285646e9e2f73dffe2
+start-no-fish named assertion RED -> exact bytes -> GREEN e2b72f53f5bf0857ceb25e850f37e4554329fefbe24e0421aa0ac422f5e8e511
+required-no-fish named assertion RED -> exact bytes -> GREEN e2b72f53f5bf0857ceb25e850f37e4554329fefbe24e0421aa0ac422f5e8e511
+forecast-no-fish named assertion RED -> exact bytes -> GREEN 4380406c8414b158e8d0557a9f0699f019340a610d21b69bd405286e0ede4c62
+dryrun-commits named assertion RED -> exact bytes -> GREEN 45b94b3a29a5e6d8b7bba224893d2d6ad17c70c699e3c4b9db1784ef0256a6df

@@ -1,0 +1,3 @@
+Placed 1 citizen on hex #10 doing fish.
+  #10  coastal_sea    fish       2/2 FULL
+  5 citizens left in the idle pool.

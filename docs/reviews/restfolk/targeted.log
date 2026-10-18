@@ -1,0 +1,104 @@
+» färsk DB på migration 183 · commit a2738fa1+ändringar
+=== RUN   TestAIRound4_Scheria1042FoodRequirement
+    ai_round4_food_test.go:61: Scheria1042: grain=0.50 fish=5.42 demand=5.21 foodnet=0.71 required=5
+    ai_round4_food_test.go:65: Scheria1042: grain=0.50 fish=1.42 demand=5.21 foodnet=-3.29 required=5
+    ai_round4_food_test.go:69: Scheria1042: grain=0.50 fish=0.42 demand=5.21 foodnet=-4.29 required=5
+    ai_round4_food_test.go:76: Scheria1042: grain=0.50 fish=0.42 demand=5.21 foodnet=-4.29 required=5
+--- PASS: TestAIRound4_Scheria1042FoodRequirement (0.06s)
+=== RUN   TestRestfolk_BestWorkerNotCatchmentSum
+--- PASS: TestRestfolk_BestWorkerNotCatchmentSum (0.00s)
+=== RUN   TestRestfolk_EligibleYieldAndBuildingBonus
+=== RUN   TestRestfolk_EligibleYieldAndBuildingBonus/fish_beats_grain
+=== RUN   TestRestfolk_EligibleYieldAndBuildingBonus/farm_beats_fish
+=== RUN   TestRestfolk_EligibleYieldAndBuildingBonus/no_place_no_work
+=== RUN   TestRestfolk_EligibleYieldAndBuildingBonus/no_food
+=== RUN   TestRestfolk_EligibleYieldAndBuildingBonus/grain_wins_tie
+--- PASS: TestRestfolk_EligibleYieldAndBuildingBonus (0.00s)
+    --- PASS: TestRestfolk_EligibleYieldAndBuildingBonus/fish_beats_grain (0.00s)
+    --- PASS: TestRestfolk_EligibleYieldAndBuildingBonus/farm_beats_fish (0.00s)
+    --- PASS: TestRestfolk_EligibleYieldAndBuildingBonus/no_place_no_work (0.00s)
+    --- PASS: TestRestfolk_EligibleYieldAndBuildingBonus/no_food (0.00s)
+    --- PASS: TestRestfolk_EligibleYieldAndBuildingBonus/grain_wins_tie (0.00s)
+PASS
+ok  	formatet/megaron/server/internal/economy	0.065s
+=== RUN   TestRestfolk_Soak60
+=== RUN   TestRestfolk_Soak60/scheria1042
+    restfolk_soak_test.go:83: RESTFOLK_JSON {"kind":"scheria1042","states":[{"tick":0,"population":1042,"food_workers":3,"grain":0.5,"fish":3.42,"food_net":-1.29,"grain_stock":1200,"sitos":0,"timber":0,"stone":0,"unmet":0},{"tick":10,"population":1042,"food_workers":3,"grain":0.5,"fish":3.42,"food_net":-1.29,"grain_stock":756.6211155846743,"sitos":312.6,"timber":0,"stone":0,"unmet":0},{"tick":20,"population":1042,"food_workers":3,"grain":0.5,"fish":3.42,"food_net":-1.29,"grain_stock":639.6888922637993,"sitos":312.6,"timber":0,"stone":0,"unmet":0},{"tick":30,"population":1042,"food_workers":3,"grain":0.5,"fish":3.42,"food_net":-1.29,"grain_stock":533.9374855014736,"sitos":312.6,"timber":0,"stone":0,"unmet":0},{"tick":40,"population":1042,"food_workers":3,"grain":0.5,"fish":3.42,"food_net":-1.29,"grain_stock":438.2978088186616,"sitos":312.6,"timber":0,"stone":0,"unmet":0},{"tick":50,"population":1042,"food_workers":3,"grain":0.5,"fish":3.42,"food_net":-1.29,"grain_stock":351.802999567089,"sitos":312.6,"timber":0,"stone":0,"unmet":0},{"tick":60,"population":1042,"food_workers":3,"grain":0.5,"fish":3.42,"food_net":-1.29,"grain_stock":273.5786444986611,"sitos":312.6,"timber":0,"stone":0,"unmet":0}]}
+=== RUN   TestRestfolk_Soak60/hills
+    restfolk_soak_test.go:83: RESTFOLK_JSON {"kind":"hills","states":[{"tick":0,"population":1042,"food_workers":6,"grain":5.607,"fish":0,"food_net":0.39700000000000024,"grain_stock":1200,"sitos":0,"timber":0,"stone":0,"unmet":0},{"tick":10,"population":1092,"food_workers":6,"grain":6.032,"fish":0,"food_net":0.5720000000000001,"grain_stock":790.9364381932571,"sitos":326.1,"timber":0,"stone":0,"unmet":0},{"tick":20,"population":1142,"food_workers":7,"grain":6.107,"fish":0,"food_net":0.39700000000000024,"grain_stock":704.6064253257027,"sitos":341.1,"timber":0,"stone":0,"unmet":0},{"tick":30,"population":1201,"food_workers":8,"grain":6.2585,"fish":0,"food_net":0.25349999999999984,"grain_stock":625.3788149904243,"sitos":358.50000000000006,"timber":0,"stone":0,"unmet":0},{"tick":40,"population":1261,"food_workers":8,"grain":6.7684999999999995,"fish":0,"food_net":0.4634999999999998,"grain_stock":551.8529847830282,"sitos":376.5,"timber":0,"stone":0,"unmet":0},{"tick":50,"population":1321,"food_workers":9,"grain":6.9285,"fish":0,"food_net":0.32349999999999923,"grain_stock":486.31629890388524,"sitos":394.5,"timber":0,"stone":0,"unmet":0},{"tick":60,"population":1384,"food_workers":9,"grain":7.464,"fish":0,"food_net":0.5440000000000005,"grain_stock":426.16930049892756,"sitos":413.09999999999997,"timber":0,"stone":0,"unmet":0}]}
+=== RUN   TestRestfolk_Soak60/coast
+    restfolk_soak_test.go:83: RESTFOLK_JSON {"kind":"coast","states":[{"tick":0,"population":1042,"food_workers":5,"grain":0.5,"fish":5.42,"food_net":0.71,"grain_stock":1200,"sitos":0,"timber":0,"stone":0,"unmet":0},{"tick":10,"population":1102,"food_workers":6,"grain":0.5,"fish":6.02,"food_net":1.0099999999999998,"grain_stock":741.5960492194953,"sitos":328.79999999999995,"timber":0,"stone":0,"unmet":0},{"tick":20,"population":1162,"food_workers":6,"grain":0.5,"fish":6.62,"food_net":1.3099999999999996,"grain_stock":606.8627854643129,"sitos":346.79999999999995,"timber":0,"stone":0,"unmet":0},{"tick":30,"population":1222,"food_workers":7,"grain":0.5,"fish":7.22,"food_net":1.6099999999999994,"grain_stock":483.89759664272276,"sitos":364.79999999999995,"timber":0,"stone":0,"unmet":0},{"tick":40,"population":1290,"food_workers":7,"grain":0.5,"fish":7.9,"food_net":1.9500000000000002,"grain_stock":370.4648205877864,"sitos":384.90000000000003,"timber":0,"stone":0,"unmet":0},{"tick":50,"population":1360,"food_workers":8,"grain":0.5,"fish":8.6,"food_net":2.3,"grain_stock":266.71408546391217,"sitos":405.90000000000003,"timber":0,"stone":0,"unmet":0},{"tick":60,"population":1430,"food_workers":9,"grain":0.5,"fish":9.3,"food_net":2.6500000000000004,"grain_stock":172.49354811910496,"sitos":426.90000000000003,"timber":0,"stone":0,"unmet":0}]}
+--- PASS: TestRestfolk_Soak60 (1.87s)
+    --- PASS: TestRestfolk_Soak60/scheria1042 (0.61s)
+    --- PASS: TestRestfolk_Soak60/hills (0.61s)
+    --- PASS: TestRestfolk_Soak60/coast (0.65s)
+PASS
+ok  	formatet/megaron/server/internal/kharis	1.870s
+=== RUN   TestAIRound4_AutomaticFoodAPIAndFixedQueue
+2026/10/18 07:17:05 INFO player registered id=f9711c28-1f10-44f6-bebe-211ddf33905a username=round4-8d7f66d8-7b52-4f97-af33-d1c2cbddfbca
+--- PASS: TestAIRound4_AutomaticFoodAPIAndFixedQueue (0.08s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.090s
+=== RUN   TestAIRound4_HexSelectors
+=== RUN   TestAIRound4_HexSelectors/build6
+=== RUN   TestAIRound4_HexSelectors/place6
+=== RUN   TestAIRound4_HexSelectors/build#6
+=== RUN   TestAIRound4_HexSelectors/place#6
+=== RUN   TestAIRound4_HexSelectors/build12,-3
+=== RUN   TestAIRound4_HexSelectors/place12,-3
+=== RUN   TestAIRound4_HexSelectors/timber/#6/+1
+=== RUN   TestAIRound4_HexSelectors/--hex/#6/timber/-1
+=== RUN   TestAIRound4_HexSelectors/unseen_ordinal_is_never_invented
+Error: hex #99 is not in this city's known catchment; see keryx city
+Usage:
+  build [city] [flags]
+
+Examples:
+  keryx build --list
+  keryx build --type farm --hex 3,-1          # farm/mine/lumbermill/stonequarry are hex-bound: pick a catchment hex
+  keryx build --type harbour          # requires coastal (adjacent sea hex)
+  keryx build --type mine --hex 5,2 --province <province-id>   # build in a colony
+  keryx build --type winery           # produces nothing unless a hills/plains/scrub_maquis tile is in catchment
+  keryx build --queue                 # see what's already queued, with cancel-build IDs
+
+Flags:
+      --province string   province ID to build in (default: your capital)
+  -t, --type string       building type (omit to see list)
+      --hex string        catchment q,r or ordinal 6/#6 — required for hex-bound building types
+      --list              show the building catalogue and exit
+      --queue             show this settlement's build queue (with queue IDs for cancel-build) and exit
+  -h, --help              help for build
+
+--- PASS: TestAIRound4_HexSelectors (0.00s)
+    --- PASS: TestAIRound4_HexSelectors/build6 (0.00s)
+    --- PASS: TestAIRound4_HexSelectors/place6 (0.00s)
+    --- PASS: TestAIRound4_HexSelectors/build#6 (0.00s)
+    --- PASS: TestAIRound4_HexSelectors/place#6 (0.00s)
+    --- PASS: TestAIRound4_HexSelectors/build12,-3 (0.00s)
+    --- PASS: TestAIRound4_HexSelectors/place12,-3 (0.00s)
+    --- PASS: TestAIRound4_HexSelectors/timber/#6/+1 (0.00s)
+    --- PASS: TestAIRound4_HexSelectors/--hex/#6/timber/-1 (0.00s)
+    --- PASS: TestAIRound4_HexSelectors/unseen_ordinal_is_never_invented (0.00s)
+=== RUN   TestAIRound4_HexStaffRedirect
+Error: the lumbermill is a hex building — staff it with: keryx place timber 6 +2 (hex #6)
+Usage:
+  staff <byggnad> [+n|-n] [flags]
+
+Examples:
+  keryx staff stonequarry
+  keryx staff stonequarry +2
+  keryx staff stonequarry -1 --province <prov-id>
+
+Flags:
+  -h, --help              help for staff
+      --province string   province ID/name (default: your capital)
+
+--- PASS: TestAIRound4_HexStaffRedirect (0.00s)
+=== RUN   TestAIRound4_AutomaticFoodAndNoMoveAdvice
+--- PASS: TestAIRound4_AutomaticFoodAndNoMoveAdvice (0.00s)
+=== RUN   TestAIRound4_NetThresholdAndSingular
+--- PASS: TestAIRound4_NetThresholdAndSingular (0.00s)
+=== RUN   TestAIRound4_QueueExplainsFixedSlots
+--- PASS: TestAIRound4_QueueExplainsFixedSlots (0.00s)
+PASS
+ok  	formatet/megaron/server/cmd/keryx	0.007s

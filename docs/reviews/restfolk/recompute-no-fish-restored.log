@@ -1,0 +1,11 @@
+=== RUN   TestRestfolk_ForecastStartingRequiredRecompute
+=== RUN   TestRestfolk_ForecastStartingRequiredRecompute/fish
+=== RUN   TestRestfolk_ForecastStartingRequiredRecompute/farm
+=== RUN   TestRestfolk_ForecastStartingRequiredRecompute/hills
+--- PASS: TestRestfolk_ForecastStartingRequiredRecompute (0.09s)
+    --- PASS: TestRestfolk_ForecastStartingRequiredRecompute/fish (0.04s)
+    --- PASS: TestRestfolk_ForecastStartingRequiredRecompute/farm (0.03s)
+    --- PASS: TestRestfolk_ForecastStartingRequiredRecompute/hills (0.03s)
+PASS
+ok  	formatet/megaron/server/internal/economy	0.096s
+» färsk DB på migration 183 · commit a2738fa1+ändringar

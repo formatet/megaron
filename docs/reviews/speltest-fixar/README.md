@@ -159,5 +159,16 @@ Claude granskar/integrerar; GPT-konton grundas först efter slice10 är live.
 | Låsordning och pool | Take använder holder-NOWAIT med atomiskt409/retry för att undvika tvåstadscykel. FOW-läsningar återanvänder TX så full pool inte låser kön; MaxConns1 provas. |
 
 [Bevispaket](../placering-las/README.md): tio fysiska mutationer, riktiga PG-barriärer och naturlig
-parallell API/CLI/Firefox på egen server. Ingen ändrad spelarregel/migration. Claude granskar/integrerar;
-restfolkets slice9 är parkerad separat tills denna är levererad.
+parallell API/CLI/Firefox på egen server. Ingen ändrad spelarregel/migration.
+Claude mergade/deployade slice11 som a2738fa1; slice9 följer på den basen.
+
+## Slice 9 — restfolkets bästa matgubbe
+
+| Fynd | Utfall |
+|---|---|
+| Restpersoner får hela omlandets potential | AutomaticFoodForPopulation ger r/100 av bästa tillåtna grain/fish-arbetare inklusive byggbonus, utan fysisk plats. Scheria1042 ger0,42fish, inte3,78grain; behövda matlag5. |
+| Livscykel och lagrade rater | Samma bidrag genom recompute/start/prognos/required/API/CLI/webb/Codex och verklig tillväxt; operatörsdryrun kör riktig omräkning med rollback. |
+
+[Bevispaket](../restfolk/README.md), kod42f7010e: 60tick före/efter Scheria/hills/kust,
+nio fysiska mutationer, naturlig CLI/Firefox och rollback-dryrun på privat livekopia (7städer,6ändrade).
+Claude granskar/integrerar och kör recompute-all efter deploy; ingen liveomräkning av Codex.

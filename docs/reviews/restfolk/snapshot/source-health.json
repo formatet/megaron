@@ -1,0 +1,6 @@
+{
+  "commit": "a2738fa",
+  "migration": 183,
+  "status": "ok",
+  "note": "live read-only health checked after dump; private snapshot run uses local code42f7010e"
+}
