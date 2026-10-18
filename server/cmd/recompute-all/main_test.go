@@ -19,7 +19,7 @@ func TestRecomputeDryRun_PreviewsAndRollsBack(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer pool.Close()
+	t.Cleanup(pool.Close)
 	var wid, pid, owner, sid uuid.UUID
 	must := func(err error) {
 		t.Helper()
@@ -30,6 +30,7 @@ func TestRecomputeDryRun_PreviewsAndRollsBack(t *testing.T) {
 	_, err = pool.Exec(ctx, `UPDATE worlds SET status='archived' WHERE status='active'`)
 	must(err)
 	must(pool.QueryRow(ctx, `INSERT INTO worlds(name,status,current_tick) VALUES('dryrun','active',0) RETURNING id`).Scan(&wid))
+	t.Cleanup(func() { _, _ = pool.Exec(context.Background(), `UPDATE worlds SET status='archived' WHERE id=$1`, wid) })
 	must(pool.QueryRow(ctx, `INSERT INTO players(username,password_hash) VALUES($1,'x') RETURNING id`, "dryrun-"+uuid.NewString()).Scan(&owner))
 	must(pool.QueryRow(ctx, `INSERT INTO provinces(world_id,map_q,map_r,terrain_type) VALUES($1,0,0,'plains') RETURNING id`, wid).Scan(&pid))
 	must(pool.QueryRow(ctx, `INSERT INTO settlements(world_id,province_id,name,culture_id,owner_id,control_type,is_capital,population) VALUES($1,$2,'Dryrun','achaean',$3,'capital',true,1042) RETURNING id`, wid, pid, owner).Scan(&sid))
