@@ -118,3 +118,10 @@ som höll på att stängas; beredskapskontrollen är rättad till TCP127.0.0.1 f
 Slutprovet ovan körde båda armarna färdigt. Inga databas-/serverloggar från produktion
 skrevs om för att få fram ett fel. Claude har uttryckligen godtagit överlämning med denna
 begränsning eftersom TX-paritet/interpolationsfelet är verkligt.
+
+## Parkerat bifynd
+
+Naturliga inland-provet visar Economy-tabellens `Food after army -0.2 per day` bredvid
+status `surplus` (`native-final/inland-goods-firefox.png`). Troligen olika definitioner
+(folkets mat respektive efter armén); inte diagnosticerat och ingen ändring i denna slice.
+Lämnas till Claude för texttriage, blockerar inte reader-livscykelfixen.
