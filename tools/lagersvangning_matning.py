@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 """Mätrigg för megaron_plan_lagersvangningen.md — spannmålslagrets restterm.
 
-Utredningens hypotes (stark, delvis bevisad i planen): grain-tillväxtens
+Historisk analysmodell, inte dagens tillväxtregler. collect läser dagens
+stadslager; analyze prövar den äldre hypotesen på CSV-data och får inte
+användas som kontroll av dagens befolkningstillväxt.
+
+Den äldre utredningens hypotes: grain-tillväxtens
 golvdivision (`grainPerCitizen=300` i kharis/tick.go `applyDecay`) låser varje
 throttlad stads grain-lager i [0, 300) EFTER varje daglig tick, oavsett hur
 stor produktionstakten är. Detta skript mäter det live, i acceptansvärlden,
 i stället för att bara läsa koden.
 
-Läser BARA: `worlds`, `settlements`, `settlement_goods`, `settlement_granary`,
+Läser BARA: `worlds`, `settlements`, `settlement_goods`,
 `scheduled_events`. Skriver ingenting till databasen. Ändrar ingen produktionskod
 och ingen konstant (megaron_arbetssatt.md §15, planens stoppvillkor).
 
@@ -60,7 +64,11 @@ def psql(sql):
 
 
 def append(path, header, rows):
-    new = not os.path.exists(path)
+    new = not os.path.exists(path) or os.path.getsize(path) == 0
+    if not new:
+        with open(path, newline="") as existing:
+            if next(csv.reader(existing), None) != header:
+                raise ValueError(f"CSV schema changed: {path}; use a new output directory")
     with open(path, "a", newline="") as f:
         w = csv.writer(f)
         if new:
@@ -70,7 +78,7 @@ def append(path, header, rows):
 
 # En rad per aktiv stad: pop, grain (raw amount+calc_tick+rate OCH settled),
 # fish/timber/silver settled (jämförelsevaror utan tillväxtsänka), at_cap-flagga,
-# granary-innehåll (grain+fish), och antal distinkta FoodGoods med amount>0
+# antal distinkta FoodGoods med amount>0
 # (= variety-räkningen i growth_calc, för den analytiska rekonstruktionen).
 GOODS_SQL = """
 WITH w AS (SELECT id, current_tick FROM worlds ORDER BY created_at DESC LIMIT 1)
@@ -82,10 +90,6 @@ SELECT w.current_tick, s.name, s.population,
        round(settled(sf.amount, sf.rate, sf.calc_tick)::numeric, 1) AS fish_settled,
        round(settled(st.amount, st.rate, st.calc_tick)::numeric, 1) AS timber_settled,
        round(settled(ss.amount, ss.rate, ss.calc_tick)::numeric, 1) AS silver_settled,
-       COALESCE((SELECT sum(amount) FROM settlement_granary gr
-                 WHERE gr.settlement_id = s.id AND gr.good_key = 'grain'), 0),
-       COALESCE((SELECT sum(amount) FROM settlement_granary gr
-                 WHERE gr.settlement_id = s.id AND gr.good_key = 'fish'), 0),
        (SELECT count(*) FROM settlement_goods fg
          WHERE fg.settlement_id = s.id
            AND fg.good_key = ANY(ARRAY['grain','fish','livestock','wine','oil'])
@@ -103,7 +107,7 @@ GOODS_HEADER = [
     "wall", "tick", "settlement", "population",
     "grain_amount_raw", "grain_calc_tick", "grain_rate", "grain_settled", "grain_at_cap",
     "fish_settled", "timber_settled", "silver_settled",
-    "granary_grain", "granary_fish", "food_variety_count",
+    "food_variety_count",
 ]
 
 # Konsekvenskedjans punkt 2: vilken handler kör före vilken denna due_tick?
@@ -156,6 +160,7 @@ def collect(out_dir, poll_seconds):
 
 
 def analyze(csv_dir):
+    print("HISTORISK MODELL: grainPerCitizen-rekonstruktionen beskriver inte dagens tillväxtregler.")
     import collections
     goods_path = os.path.join(csv_dir, "goods.csv")
     with open(goods_path) as f:

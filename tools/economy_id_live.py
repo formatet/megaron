@@ -112,7 +112,7 @@ try:
     stock=api(worldpath+'/provinces/'+city['id']+'/goods',token=token)
     assert city['id']!=city['settlement_id']==details['id']==founded['settlement_id']
     pd=next(p for p in overview if p['id']==city['settlement_id'])
-    assert pd['population']>0 and pd['sitos']['coverage_ticks']>0
+    assert pd['population']>0 and pd['food']['coverage_ticks']>0
     assert sum(g['amount'] for g in stock if g['key'] in ('grain','fish'))>0
     page.evaluate("window.openDrawer('economy')")
     page.wait_for_selector('#ec-settlements-overview table')

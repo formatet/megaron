@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Actual city drawer + renderer + CSS; explicit read-only Mycenae HTTP fixture.
-Baseline swaps only food module to locked base. No live-game acceptance claim.
+The before fixture omits the blessing in the current UI; it is not archived UI.
+No live-game acceptance claim.
 """
 from pathlib import Path
-import functools,http.server,json,re,threading,subprocess,hashlib
+import functools,http.server,json,re,threading,hashlib
 from playwright.sync_api import sync_playwright,expect
 ROOT=Path(__file__).resolve().parents[1];OUT=ROOT/'docs/reviews/skordegava-syns/browser';OUT.mkdir(parents=True,exist_ok=True)
 WORLD='11111111-1111-1111-1111-111111111111';PROV='22222222-2222-2222-2222-222222222222';SETT='33333333-3333-3333-3333-333333333333'
@@ -17,13 +18,12 @@ food=re.search(r'var FoodGoods = \[\]string\{([^}]+)',goods_source)[1]
 keys=dict(re.findall(r'(Good\w+)\s*=\s*"([a-z]+)"',goods_source))
 goods=[keys[g.strip()] for g in food.split(',') if g.strip()!='GoodFish']
 blessing=dict(until_tick=112,remaining_ticks=12,yield_bonus=bonus,goods=goods)
-sett=dict(id=SETT,name='Mycenae',population=1000,labor_pool=10,army={},walls=1,buildings=[],build_queue=[],can_afford=[],can_recruit=[],resources={},available_prayers=[],food_gubbar_required=7,food_gubbar_placed=7,food_self_sufficient=True,grain_prod_rate=12,grain_consum_rate=5,sitos=dict(coverage_ticks=12,low_ticks=10,high_ticks=30,granary_total=200,granary_cap=600,granary_per_good={'grain':200},food_net_per_tick=7))
+sett=dict(id=SETT,name='Mycenae',population=1000,labor_pool=10,army={},walls=1,buildings=[],build_queue=[],can_afford=[],can_recruit=[],resources={},available_prayers=[],food_gubbar_required=7,food_gubbar_placed=7,food_self_sufficient=True,grain_prod_rate=12,grain_consum_rate=5,food=dict(coverage_ticks=12,food_net_per_tick=7,growth_state='growing'))
 (OUT/'fixture.json').write_text(json.dumps(dict(world=WORLD,province=PROV,settlement=dict(sett,harvest_blessing=blessing),placement_options=dict(hexes=[],buildings=[],total_gubbar=10,pool_size=3)),indent=2)+'\n')
 class Handler(http.server.SimpleHTTPRequestHandler):
  def log_message(self,*args):pass
 server=http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Handler,directory=str(ROOT/'web')));threading.Thread(target=server.serve_forever,daemon=True).start();base=f'http://127.0.0.1:{server.server_port}'
 html=re.sub(r'<script\b[^>]*>.*?</script>','',(ROOT/'web/static/map.html').read_text(),flags=re.S)
-old=subprocess.check_output(['git','-C',str(ROOT),'show','6b8b69ea:web/static/js/megaron/ui/drawers/city_production.js'],text=True)
 results=[]
 try:
  with sync_playwright() as pw:
@@ -35,13 +35,12 @@ try:
     page.on('console',lambda m:errors.append(m.text) if m.type=='error' else None)
     page.route('https://**',lambda r:r.abort())
     page.route('**/fixture',lambda r:r.fulfill(content_type='text/html',body=html))
-    if mode=='before':page.route('**/city_production.js',lambda r:r.fulfill(content_type='text/javascript',body=old))
     def api(route):
      req=route.request;tail=req.url.split('/api/v1/worlds/'+WORLD+'/')[-1]
      if req.method!='GET':unexpected.append(tail);route.fulfill(status=500,body='{}');return
      if req.url.endswith('/api/v1/recipes') or req.url.endswith('/api/v1/buildings'):data=[]
      elif tail=='provinces/'+PROV+'/actions':data=[]
-     elif tail=='provinces/'+PROV:data={'settlement':dict(sett,harvest_blessing=None if mode=='end' else blessing)}
+     elif tail=='provinces/'+PROV:data={'settlement':dict(sett,harvest_blessing=None if mode in ['before','end'] else blessing)}
      elif tail=='provinces/'+PROV+'/goods':data=[dict(key='grain',name='Grain',amount=100,rate_per_tick=7,idle_citizens=300)]
      elif tail=='provinces/'+PROV+'/placement-options':data=dict(hexes=[],buildings=[],total_gubbar=10,pool_size=3)
      elif tail=='map':data=tiles
@@ -62,7 +61,7 @@ try:
      window.city=await import('/static/js/megaron/ui/drawers/city.js');
      document.getElementById('drawer-city').classList.add('open');await city.loadCityDrawer();
     }''',[WORLD,PROV,SETT,provinces])
-    expect(page.locator('#city-sitos-sec')).to_contain_text('Food lasts')
+    expect(page.locator('#city-food-sec')).to_contain_text('Food lasts')
     expect(page.locator('#city-drawer-title')).to_contain_text('Mycenae')
     if mode in ['active','active-repeat']:
      line=page.locator('.harvest-blessing');expect(line).to_contain_text(f'+{bonus*100:g}% '+', '.join(goods)+' yield · 12 days left');line.scroll_into_view_if_needed()
@@ -70,11 +69,11 @@ try:
      assert line.evaluate('(el)=>el.scrollWidth<=el.clientWidth'),'harvest text overflows'
      assert not re.search(r'\bticks?\b|\bfish\b',line.inner_text())
     else:assert page.locator('.harvest-blessing').count()==0,'row must be absent'
-    page.locator('#city-sitos-sec').scroll_into_view_if_needed()
+    page.locator('#city-food-sec').scroll_into_view_if_needed()
     page.wait_for_function('map.markrasterStats.pending===0 && map.markrasterStats.chunks>0')
     page.wait_for_timeout(350)
     page.screenshot(path=str(OUT/f'firefox-{width}-{mode}.png'))
-    results.append(dict(width=width,mode=mode,food=page.locator('#city-sitos-sec').inner_text(),errors=errors,unexpected=unexpected))
+    results.append(dict(width=width,mode=mode,food=page.locator('#city-food-sec').inner_text(),errors=errors,unexpected=unexpected))
     assert not errors and not unexpected,results[-1]
     page.close()
   browser.close()

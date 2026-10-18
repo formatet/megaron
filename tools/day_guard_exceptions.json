@@ -265,19 +265,6 @@
       "founding grain net per tick: %w": 2
     }
   },
-  "server/internal/economy/sitos_tick.go": {
-    "reason": "Internal diagnostics/logging; API callers send a separate player-safe error.",
-    "literals": [
-      "sitos tick: query settlements: %w",
-      "sitos tick: settlement failed",
-      "claim sitos tick: %w"
-    ],
-    "counts": {
-      "sitos tick: query settlements: %w": 1,
-      "sitos tick: settlement failed": 1,
-      "claim sitos tick: %w": 1
-    }
-  },
   "server/internal/economy/food_tick.go": {
     "reason": "Internal diagnostics/logging; API callers send a separate player-safe error.",
     "literals": [

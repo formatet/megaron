@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Physical J mutations: More visibility, authoritative coverage and reserve rules.
+"""Physical J mutations: More visibility, authoritative food coverage and population growth.
 Usage: python3 tools/production_mutations.py OUT
 """
 from pathlib import Path
@@ -9,8 +9,8 @@ OUT=Path(sys.argv[1]);OUT.mkdir(parents=True,exist_ok=True)
 source=ROOT/'web/static/js/megaron/ui/drawers/city_production.js'
 test=source.with_name('city_production.test.mjs')
 arms=[('more','<details id="city-more" class="dsec">','<details open id="city-more" class="dsec">','More starts closed'),
- ('coverage','Food lasts ${n(s.coverage_ticks)}','Food lasts ${n(s.granary_total)}','authoritative food days'),
- ('threshold','Stores above ${n(s.high_ticks)}','Stores above ${n(s.low_ticks)}','same thresholds retained')]
+ ('coverage','Food lasts ${fmtDays(s.coverage_ticks)}','Food lasts ${fmtDays(0)}','authoritative food days'),
+ ('growth',"const s = pd?.food;\n  if (!s || !s.growth_state)","const s = null;\n  if (!s || !s.growth_state)",'growth line: one sentence per state')]
 for label,needle,mutation,assertion in arms:
  original=source.read_text();assert original.count(needle)==1,label
  try:

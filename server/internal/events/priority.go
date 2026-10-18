@@ -25,11 +25,8 @@ package events
 //	                  närvarande när dagen räknas samman.
 //	20 blick        — ögonen läser läget EFTER rörelsen, aldrig före.
 //	30 strid        — stål avgör innan ekonomin bokförs.
-//	40 reserv       — magasinet först: en stad under svältgränsen ska äta ur
-//	                  sin reserv INNAN armén svälter, annars kommer räddningen
-//	                  efter desertionen. Åt andra hållet skummar magasinet bara
-//	                  över täckningströskeln, där undanläggningen är liten mot
-//	                  arméns behov.
+//	40 avvecklad    — äldre SitosTick behåller sin köprioritet men gör
+//	                  ingenting. Ingen aktiv reservpass körs efter184.
 //	50 plikt        — armén äter och får sold. En stående förpliktelse betalas
 //	                  före allt som är frivilligt.
 //	55 föda         — befolkningen äter, ur LAGRET, kanonordning grain → fisk
@@ -113,7 +110,7 @@ var tickPriorities = map[ScheduledEventType]int{
 	// same tier as the battle/occupation consequences above it.
 	ScheduledNavalSeizureOutcome: tickPriorityBattle,
 
-	// 40 — magasinet.
+	// 40 — legacy compatibility only; no active reserve pass.
 	ScheduledSitosTick: tickPriorityReserve,
 
 	// 50 — plikten.
