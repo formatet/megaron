@@ -419,20 +419,8 @@ func buildQueueETA(c *Client, iso string) string {
 // this is a game-day figure, not a wall-clock one.
 const netUpkeepWarningRunwayTicks = 30
 
-// foodGubbarLine renders the "(N citizens needed for food · M placed)"
-// annex on the grain row, using the same food_gubbar_required/placed/
-// self_sufficient figures `keryx city`'s hex listing is built from
-// (megaron_plan_omfordelningsmatningen.md — Timothy 2026-09-02: five of five
-// soak cities stood 5-10x overstaffed on food and the row that already
-// printed this data read as neutral information, not an actionable one).
-// Pure — unit-testable without a server.
-//
-// The reassignment itself stays entirely the Wanax's call (no auto-release,
-// no auto-placement): this only NAMES the number that could move and points
-// at the surface (`keryx city`) that shows which hexes carry it. When placed
-// exceeds required and the catchment is self-sufficient, the surplus is
-// spelled out as its own figure — a Wanax should never have to subtract
-// 70-7 in their head to notice a city 10x overstaffed on grain.
+// foodGubbarLine reports minimum food staffing and actual placements.
+// A minimum on the best slots does not identify removable workers.
 func foodGubbarLine(req, placed int, selfSufficient bool) string {
 	if !selfSufficient {
 		return fmt.Sprintf("  ⚠ the catchment doesn't feed the population even with all %s", citizenCount(req))

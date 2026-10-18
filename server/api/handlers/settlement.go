@@ -72,19 +72,18 @@ func (h *SettlementHandler) List(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type item struct {
-		AutomaticFood economy.AutomaticFood `json:"automatic_food"`
-		ID            uuid.UUID             `json:"id"`
-		ProvinceID    uuid.UUID             `json:"province_id"`
-		Name          string                `json:"name"`
-		Culture       string                `json:"culture"`
-		ControlType   string                `json:"control_type"`
-		Loyalty       int                   `json:"loyalty"`
-		LoyaltyTrend  string                `json:"loyalty_trend"`
-		WallLevel     int                   `json:"wall_level"`
-		IsCapital     bool                  `json:"is_capital"`
-		State         string                `json:"state"`
-		Population    int                   `json:"population"`
-		UpdatedAt     time.Time             `json:"updated_at"`
+		ID           uuid.UUID `json:"id"`
+		ProvinceID   uuid.UUID `json:"province_id"`
+		Name         string    `json:"name"`
+		Culture      string    `json:"culture"`
+		ControlType  string    `json:"control_type"`
+		Loyalty      int       `json:"loyalty"`
+		LoyaltyTrend string    `json:"loyalty_trend"`
+		WallLevel    int       `json:"wall_level"`
+		IsCapital    bool      `json:"is_capital"`
+		State        string    `json:"state"`
+		Population   int       `json:"population"`
+		UpdatedAt    time.Time `json:"updated_at"`
 	}
 	var result []item
 	for rows.Next() {
@@ -1700,14 +1699,13 @@ func (h *SettlementHandler) Gossip(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type item struct {
-		AutomaticFood economy.AutomaticFood `json:"automatic_food"`
-		ID            uuid.UUID             `json:"id"`
-		SourceRegion  string                `json:"source_region"`
-		Category      string                `json:"category"`
-		Text          string                `json:"text"`
-		GeneratedAt   time.Time             `json:"generated_at"`
-		Importance    string                `json:"importance"`
-		Hops          int                   `json:"hops"`
+		ID           uuid.UUID `json:"id"`
+		SourceRegion string    `json:"source_region"`
+		Category     string    `json:"category"`
+		Text         string    `json:"text"`
+		GeneratedAt  time.Time `json:"generated_at"`
+		Importance   string    `json:"importance"`
+		Hops         int       `json:"hops"`
 	}
 	var result []item
 	for rows.Next() {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"math"
-	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
