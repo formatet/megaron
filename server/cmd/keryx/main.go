@@ -129,7 +129,6 @@ func newRootCommand() *cobra.Command {
 		placeCmd(),
 		staffCmd(),
 		codexCmd(),
-		slaughterCmd(),
 		idleCmd(),
 		briefCmd(),
 		unitCmd(),

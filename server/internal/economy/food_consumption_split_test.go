@@ -113,7 +113,7 @@ func TestFoodConsumptionSplit_AK4_LivestockCoversTheRest(t *testing.T) {
 	demand := 5.0
 	grainProd := 0.0
 	fishProd := 0.0
-	livestockStock := 3.0 // 3 whole animals, 600 food available
+	livestockStock := 3.0 // 3 whole animals, 9 food available
 	grainNet, fishNet, livestockConsumed := FoodConsumptionSplit(demand, grainProd, fishProd, livestockStock)
 	if grainNet != 0 {
 		t.Errorf("grainNet = %v, want exactly 0 (livestock covers the shortfall, city does not starve)", grainNet)
@@ -121,8 +121,8 @@ func TestFoodConsumptionSplit_AK4_LivestockCoversTheRest(t *testing.T) {
 	if fishNet != 0 {
 		t.Errorf("fishNet = %v, want 0 (no fish production)", fishNet)
 	}
-	if livestockConsumed != 1 {
-		t.Errorf("livestockConsumed = %v, want 1 (ceil(5/200) = 1 whole animal)", livestockConsumed)
+	if livestockConsumed != 2 {
+		t.Errorf("livestockConsumed = %v, want 2 (ceil(5/3) = 2 whole animals)", livestockConsumed)
 	}
 }
 
@@ -156,7 +156,7 @@ func TestFoodConsumptionSplit_LivestockUntouchedWhenGrainSuffices(t *testing.T) 
 // make it impossible.
 func TestFoodConsumptionSplit_LivestockPartialCoverageStillStarves(t *testing.T) {
 	demand := 1000.0
-	livestockStock := 1.0 // covers only 200 of the 1000 shortfall
+	livestockStock := 1.0 // covers only 3 of the 1000 shortfall
 	grainNet, _, livestockConsumed := FoodConsumptionSplit(demand, 0, 0, livestockStock)
 	if livestockConsumed != 1 {
 		t.Errorf("livestockConsumed = %v, want 1 (the whole herd, still insufficient)", livestockConsumed)
@@ -164,5 +164,27 @@ func TestFoodConsumptionSplit_LivestockPartialCoverageStillStarves(t *testing.T)
 	wantGrainNet := -(demand - livestockFoodValue)
 	if diff := grainNet - wantGrainNet; diff > splitEps || diff < -splitEps {
 		t.Errorf("grainNet = %v, want %v (unmet demand after the herd is spent still drains grain)", grainNet, wantGrainNet)
+	}
+}
+
+// TestFoodConsumptionSplit_OneAnimalCoversExactlyThreeGrain: one livestock
+// unit is worth 3 grain (Timothy 2026-10-15; was 166.67, a mig 136 artifact).
+// A 3-grain shortfall costs one animal and leaves nothing unmet; a 3.5-grain
+// shortfall costs two.
+func TestFoodConsumptionSplit_OneAnimalCoversExactlyThreeGrain(t *testing.T) {
+	grainNet, _, consumed := FoodConsumptionSplit(3.0, 0, 0, 10)
+	if consumed != 1 {
+		t.Errorf("3 grain short: livestockConsumed = %d, want 1", consumed)
+	}
+	if grainNet > splitEps || grainNet < -splitEps {
+		t.Errorf("3 grain short: grainNet = %v, want 0 (one animal covers exactly 3 grain)", grainNet)
+	}
+	if _, _, consumed = FoodConsumptionSplit(3.5, 0, 0, 10); consumed != 2 {
+		t.Errorf("3.5 grain short: livestockConsumed = %d, want 2", consumed)
+	}
+	// One animal in stock, 4 grain short: the animal covers 3, 1 still drains grain.
+	grainNet, _, consumed = FoodConsumptionSplit(4.0, 0, 0, 1)
+	if consumed != 1 || grainNet > -1+splitEps || grainNet < -1-splitEps {
+		t.Errorf("4 short, 1 animal: consumed=%d grainNet=%v, want 1 and -1", consumed, grainNet)
 	}
 }

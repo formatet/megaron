@@ -302,7 +302,7 @@ func FoodGubbarRequiredWithAutomatic(ctx context.Context, tx Tx, settlementID uu
 // (megaron_plan_placeringsbeskarning.md) can strand a surviving placement's
 // ordinal below a settlement's current gubbar count when population later
 // regrows through it, since the raw oldGubbar+1..newGubbar loop
-// (kharis/tick.go, settlement_placement.go SlaughterLivestock) doesn't check
+// (kharis/tick.go applyDecay) doesn't check
 // which ordinals a prune left occupied. The INSERT is therefore ON CONFLICT
 // DO NOTHING on settlement_placement's UNIQUE(settlement_id, gubbe_ordinal) —
 // a collision is treated exactly like "every food slot full": placed=false,

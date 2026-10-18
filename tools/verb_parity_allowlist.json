@@ -414,15 +414,6 @@
         "city.md"
       ]
     },
-    "/api/v1/worlds/{id}/provinces/{id}/slaughter-livestock": {
-      "terms": [
-        "slaughter"
-      ],
-      "articles": [
-        "city.md",
-        "food.md"
-      ]
-    },
     "/api/v1/worlds/{id}/standing-orders": {
       "terms": [
         "standing order",

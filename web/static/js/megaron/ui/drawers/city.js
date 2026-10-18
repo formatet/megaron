@@ -296,24 +296,6 @@ export async function loadCityDrawer() {
   } catch(e) { console.error('city drawer', e); }
 }
 
-// S1c (megaron_plan_foda_konsistens.md): player-initiated livestock slaughter
-// for +10 population right now — never automatic. On success the whole
-// drawer is reloaded (population, the herd's stock, and — if the +10 crossed
-// a new full hundred — the newly auto-placed gubbe in the catchment grid all
-// change together, so a narrower refresh would risk showing stale numbers).
-export async function slaughterLivestock(provinceID) {
-  const resultEl = document.getElementById('city-slaughter-result');
-  if (resultEl) resultEl.textContent = '';
-  const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/provinces/${provinceID}/slaughter-livestock`, { method: 'POST' });
-  const d = await res.json().catch(() => ({}));
-  if (res.ok) {
-    await loadCityDrawer();
-  } else if (resultEl) {
-    resultEl.style.color = 'var(--accent)';
-    resultEl.textContent = d.error || 'Slaughter failed.';
-  }
-}
-
 // ── City build action ─────────────────────────────────────────────────────
 const _BLD_LBL = {
   farm:'Farm', barracks:'Barracks', mine:'Mine', lumbermill:'Lumbermill',

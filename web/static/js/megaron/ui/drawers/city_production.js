@@ -39,8 +39,7 @@ export function growthLineText(pd) {
 export function populationHTML(pd, idle, livestock, provinceID) {
   const g = growthLineText(pd);
   return (g ? `<p class="growth-line">${g}</p>` : '') + row('People', n(pd.population)) + row('Free to work', n(idle)) +
-    row('Livestock', n(Math.floor(livestock))) + `<button class="btn-small" onclick="slaughterLivestock('${provinceID}')" ${livestock < 1 ? 'disabled' : ''} title="Trade one animal for 10 people, right now">Slaughter → 10 people</button>` +
-    '<div id="city-slaughter-result" class="action-result"></div>';
+    row('Livestock', n(Math.floor(livestock)));
 }
 
 export function harvestBlessingHTML(pd) {

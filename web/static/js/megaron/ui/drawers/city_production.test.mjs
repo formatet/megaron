@@ -25,10 +25,10 @@ test('J: growing low stocks never say starving; food-worker warning survives',()
 test('J: missing/invalid coverage is honestly unavailable, never zero or NaN days',()=>{
  for(const data of [null,{},pd({food:null}),pd({food:{}}),pd({food:{coverage_ticks:NaN}})])assert.match(foodSummaryHTML(data),/not reported/);
 });
-test('J: population and slaughter capability keep input-free player words and eligibility',()=>{
+test('J: population keeps input-free player words; no slaughter button',()=>{
  assert.match(populationHTML(pd(),700,10,'p'),/1,000/);assert.match(populationHTML(pd(),700,10,'p'),/700/);
- assert.match(populationHTML(pd(),700,10,'p'),/onclick="slaughterLivestock\('p'\)"/);
- assert.match(populationHTML(pd(),0,0,'p'),/disabled/);
+ assert.match(populationHTML(pd(),700,10,'p'),/Livestock/);
+ assert.doesNotMatch(populationHTML(pd(),700,10,'p'),/<button|[Ss]laughter/);
 });
 test('growth line: one sentence per state, from the server growth_state',()=>{
  const g=(state,net)=>populationHTML(pd({food:{growth_state:state,food_net_per_tick:net}}),0,0,'p');

@@ -13,7 +13,6 @@ export const VERB_EVENTS = [
   {"verb": "staff", "method": "POST", "route": "/api/v1/worlds/:world/provinces/:province/placements", "event": "workplace_staffed"},
   {"verb": "unplace", "method": "DELETE", "route": "/api/v1/worlds/:world/provinces/:province/placements/:ordinal", "event": "placement_removed"},
   {"verb": "labor", "method": "PUT", "route": "/api/v1/worlds/:world/provinces/:province/labor", "event": "cult_allocated"},
-  {"verb": "slaughter", "method": "POST", "route": "/api/v1/worlds/:world/provinces/:province/slaughter-livestock", "event": "livestock_slaughtered"},
   {"verb": "disband", "method": "POST", "route": "/api/v1/worlds/:world/provinces/:province/disband", "event": "army_disbanded"},
   {"verb": "transfer", "method": "POST", "route": "/api/v1/worlds/:world/provinces/:province/trade", "event": "transfer_sent"},
   {"verb": "gift/tribute", "method": "POST", "route": "/api/v1/worlds/:world/provinces/:province/trade", "event": "gift_sent"},
