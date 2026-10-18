@@ -206,7 +206,8 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		    ), 0) AS city_count
 		 FROM player_world_records pwr
 		 JOIN settlements s ON s.owner_id = pwr.player_id AND s.world_id = pwr.world_id AND s.is_capital = true
-		 WHERE pwr.world_id = $1`,
+		 WHERE pwr.world_id = $1
+         ORDER BY pwr.player_id`,
 		e.WorldID, TempleDevotionPerLevel,
 	)
 	if err != nil {
@@ -232,7 +233,9 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 
 	for _, w := range snaps {
 		if err := h.processMaintenance(ctx, w, e.WorldID, e.ID); err != nil {
-			return fmt.Errorf("kharis maintenance player %s: %w", w.playerID, err)
+			// Observation is an auxiliary projection: retain its atomic baseline
+			// for the next tick, while continuing maintenance for other Wanaxes.
+			slog.Error("kharis maintenance failed", "player", w.playerID, "world", e.WorldID, "err", err)
 		}
 	}
 
@@ -256,7 +259,8 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	h.applyDecay(ctx, e.WorldID, e.ID)
 	h.applyStarvationWarning(ctx, e.WorldID)
 	if err := h.applyStarvation(ctx, e.WorldID); err != nil {
-		return err
+		// A notification outage must never stop the world's recurring tick.
+		slog.Error("garrison starvation observation failed", "world", e.WorldID, "err", err)
 	}
 	h.applySubsistenceCritical(ctx, e.WorldID)
 	h.accumulatePrestige(ctx, e.WorldID)
