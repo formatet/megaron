@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Read an existing PRIVATE pg_dump; independent PG/Redis restore for master
-and fix. HTTP place stone #8 as the cloned Arete with a locally signed JWT.
+and fix. Four concurrent HTTP place stone #8 requests as the cloned Arete with a locally signed JWT.
 Never connects to production or reads production credentials.
 Usage: snapshot_repro.py private.dump private-output baseline-worktree
-Public output: snapshot-repro.json only; server logs and binaries stay private.
+Public output: parallel-snapshot-repro.json only; server logs and binaries stay private.
 """
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
 import base64,hashlib,hmac,json,os,secrets,socket,subprocess,sys,time,urllib.request,urllib.error
 ROOT=Path(__file__).resolve().parents[3];dump=Path(sys.argv[1]).resolve();out=Path(sys.argv[2]).resolve();out.mkdir(parents=True,exist_ok=True);os.chmod(out,0o700)
 baseline=Path(sys.argv[3]).resolve();results=[]
@@ -54,18 +56,23 @@ for label,source in [('master',baseline),('fix',ROOT)]:
     time.sleep(.2)
   assert health['commit']==commit and health['migration']==183,health
   path=f"/api/v1/worlds/{row['world_id']}/provinces/{row['province_id']}/placements"
-  request=urllib.request.Request(base+path,data=json.dumps({'target_kind':'hex','hex_ordinal':8,'good_key':'stone'}).encode(),headers={'Content-Type':'application/json','Authorization':'Bearer '+token})
-  started=time.monotonic()
-  try:
-   with urllib.request.urlopen(request,timeout=15) as response:code=response.status;body=json.load(response)
-  except urllib.error.HTTPError as e:code=e.code;body=json.load(e)
-  elapsed=(time.monotonic()-started)*1000
-  log.flush();errors=[line for line in logpath.read_text().splitlines() if 'eyes-tx underlying hex lock error:' in line]
-  results.append({'arm':label,'health':health,'instrumentation':trace,'initial_state':row,'request':{'method':'POST','path':path,'body':{'target_kind':'hex','hex_ordinal':8,'good_key':'stone'}},'status':code,'response':body,'elapsed_ms':elapsed,'hex_lock_errors':errors})
-  print(label,code,body,'hex lock errors',errors,flush=True)
+  parallel=4
+  barrier=Barrier(parallel)
+  def place_one(_):
+   request=urllib.request.Request(base+path,data=json.dumps({'target_kind':'hex','hex_ordinal':8,'good_key':'stone'}).encode(),headers={'Content-Type':'application/json','Authorization':'Bearer '+token})
+   barrier.wait();started=time.monotonic()
+   try:
+    with urllib.request.urlopen(request,timeout=15) as response:code=response.status;body=json.load(response)
+   except urllib.error.HTTPError as e:code=e.code;body=json.load(e)
+   return {'status':code,'response':body,'elapsed_ms':(time.monotonic()-started)*1000}
+  with ThreadPoolExecutor(max_workers=parallel) as workers:responses=list(workers.map(place_one,range(parallel)))
+  log.flush();errors=[line for line in logpath.read_text().splitlines() if 'eyes-tx underlying hex lock error:' in line or 'placement failed' in line]
+  results.append({'arm':label,'health':health,'instrumentation':trace,'initial_state':row,'request':{'method':'POST','path':path,'body':{'target_kind':'hex','hex_ordinal':8,'good_key':'stone'}},'parallel_requests':parallel,'responses':responses,'hex_lock_errors':errors})
+  print(label,[r['status'] for r in responses],'hex lock errors',errors,flush=True)
+
  finally:
   if proc:proc.terminate();proc.wait(timeout=15)
   if log:log.close()
   for name in reversed(containers):subprocess.run(['docker','rm','-fv',name],capture_output=True)
-report={'dump_sha256':hashlib.sha256(dump.read_bytes()).hexdigest(),'independent_restores':True,'production_mutated':False,'local_JWT_only':True,'arms':results,'reproduced_500_to_201':results[0]['status']==500 and results[1]['status']==201}
-(out/'snapshot-repro.json').write_text(json.dumps(report,indent=2));print('reproduced_500_to_201',report['reproduced_500_to_201'],flush=True)
+report={'dump_sha256':hashlib.sha256(dump.read_bytes()).hexdigest(),'independent_restores':True,'production_mutated':False,'local_JWT_only':True,'arms':results,'reproduced_500_only_on_master':any(r['status']==500 for r in results[0]['responses']) and not any(r['status']==500 for r in results[1]['responses'])}
+(out/'parallel-snapshot-repro.json').write_text(json.dumps(report,indent=2));print('reproduced_500_only_on_master',report['reproduced_500_only_on_master'],flush=True)

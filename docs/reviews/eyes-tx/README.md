@@ -1,17 +1,19 @@
 # Slice12 — live eyes på en transaktionsanslutning
 
-Bas ed4e8804, codex/eyes-tx. Claude integrerar; hash + STOPP.
+Bas ed4e8804, codex/eyes-tx. Kod a6f12654 (drain+close) +5828cd43 (Claudes loggtillägg).
+Claude har mergat/deployat som51e805a4 (inkl5828cd43); detta är beviskvittot. Exakt prod500 återkom inte i privat snapshot, varken
+sekventiellt eller med4parallellaPOST (båda armar201×1/409×3). TX-felet är namngivetRED→GREEN.
 
 | Kontrakt | Innehåll |
 |---|---|
 | Problem | PlaceGubbe ger500 efter marsch/bud eftersom LoadLiveEyes frågar DB med en öppen resultatuppsättning på samma TX. |
 | Spelarsanning | Placering fungerar även medan egna enheter och bud är på väg; samma liveögon på pool och TX. |
 | Invariant | Alla rader samlas och stängs före nästa DB-fråga; samma interpolation, passagestatus och FOW. |
-| Scope | Tre läsloopar i province/eyes.go, Queryer-audit, riktiga PG/HTTP-regressioner och bevis. |
+| Scope | Tre läsloopar i province/eyes.go, Queryer-audit, Place/Unplace500-diagnostik (tillägg07:44), riktiga PG/HTTP-regressioner och bevis. |
 | Non-scope | Ny synlighet/radie, pathfindingregler, placeringslås, API/UI/CLI/Codex-kontrakt. |
 | Acceptans | Marscherande enhet/utgående/återvändande bud ger201; TX frisk; pool/TX samma ögon; kvarvarande poolsvältprov grönt. |
 | Stopp | Fix kräver ändrad FOW eller annan spelmekanik. |
-| Bevis | Kompilerande masterRED, tre loopmutationer namedRED→exakt återställning→GREEN, fullfreshGo/vet/JS och naturlig placering efter verklig marsch. |
+| Bevis | Kompilerande masterRED, tre loopmutationer +tre loggmutationer namedRED→exakt återställning→GREEN, fullfreshGo/vet/JS och naturlig placering efter verklig marsch. |
 
 Blockerar spelarens placering/geografi→brist-kedja. Regression från slice11.
 
@@ -86,15 +88,15 @@ känd landmark från spelarens vanliga map-svar, längst från staden. Båda fal
 
 ## Leveransbevis
 
-Kodcommit `a6f12654`, bas `ed4e8804`, migration183. Senare commits är endast bevis.
-Färsk fullGo exit0 i `full-go.log` (world147,798s), vet exit0 i `vet.log`,654JS pass/0fail/0skip i `js.log`.
+Första kodcommit `a6f12654`, loggtillägg `5828cd43`, bas `ed4e8804`, migration183. Övriga commits är bevis.
+Första fullGo exit0 i `full-go.log` (world147,798s), vet exit0 i `vet.log`,654JS pass/0fail/0skip i `js.log`. Slutbevis efter tillägget: `full-go-logging.log`/`vet-logging.log` på5828cd43.
 Naturprovets processprovenance finns i `native-final/evidence.json`; råa privata
 configar, token och serverbinärer kopieras inte till git.
 
 Begränsning: direkt reproduktion av produktionens exakta500 saknas i den lilla HTTP-fixturen;
 den verifierade regressionen är nästlade anslutningsfrågor/tappad interpolation/poolsvält.
-Claude granskar detta uttryckligt före integration. Inga livehandlingar eller GPT-rundor av
-Codex under slicen. Hash + STOPP, ingen merge/push/deploy.
+Claude granskade och integrerade med denna begränsning som51e805a4. Inga livehandlingar eller GPT-rundor av
+Codex före integrationsbeskedet; runda3 startades efter uttryckligt klartecken. Ingen merge/push/deploy av Codex.
 
 ## Färsk livekopia: exakt Arete-POST
 
@@ -125,3 +127,34 @@ Naturliga inland-provet visar Economy-tabellens `Food after army -0.2 per day` b
 status `surplus` (`native-final/inland-goods-firefox.png`). Troligen olika definitioner
 (folkets mat respektive efter armén); inte diagnosticerat och ingen ändring i denna slice.
 Lämnas till Claude för texttriage, blockerar inte reader-livscykelfixen.
+
+## Claudes tillägg07:44 — alla placeringsfel loggas
+
+25 befintliga500-grenar (20PlaceGubbe,5UnplaceGubbe) använder nu respektive handlers
+lokala fail-funktion. Varje sådan skriver `slog.ErrorContext("placement failed")` med
+operation, steg, world/settlement/player-ID och det verkliga `err`; `errors.As` ger
+även `pg_code` om felet innehåller `*pgconn.PgError`. Klientsvaret förblir samma generiska
+500-text. Inga felaktigt lyckade svar eller nya loggar för normala409/404 införs.
+Kodcommit `5828cd43` ovanpå den tidigare granskade leveransen.
+
+`TestPlacementInternalErrorLogsDatabaseCause` orsakar avsiktliga riktiga PG-fel med
+lokala fixturespecifika INSERT-/DELETE-triggers. Båda HTTP-verben måste ge500, behålla
+generiskt klientsvar och skriva ERROR med orsak, steg, rätt ID och SQLSTATEP0001.
+Det är ett observabilitetstest, inte en reproduktion av produktionens500.
+Tre nya fysiska mutationer tar bort place-orsak, unplace-orsak respektive PG-kod;
+namngiven RED→exakta bytes→färsk GREEN i `logging-mutations.log` (totalt sex mutationer).
+
+Den nya slutliga fullsviten är `full-go-logging.log`, exit0/world149,986s, vet `vet-logging.log` exit0 på5828cd43.
+Tidigare `full-go.log` gäller a6f före loggtillägget och ersätter inte slutprovet.
+JS-koden är byteoförändrad från654pass/0skip-körningen. Naturligt CLI/Firefox-prov påa6f
+verifierar den oförändrade lyckade spelvägen; det nya snapshot-provet nedan kör5828cd43.
+
+### Fyra samtidiga HTTP-placeringar på färsk livekopia
+
+[parallel-snapshot-repro.json](parallel-snapshot-repro.json) är den begärda parallella
+varianten: samma privata dump som det sekventiella provet, **ny** PG16/Redis-återställning
+för varje arm, fyra trådar släppta från samma barriär mot Aretes stone#8.
+Mastered4e8804: **201×1/409×3**, fix5828cd43: **201×1/409×3**. Ingen500 i någon arm,
+inget hexlås-err att fånga. Båda klonerna har Aretes marscherande spanare före serverstart.
+Ingen liveplacering gjord. Detta är ärligt ytterligare ett negativt försök att återge
+produktionens exakta500, inte evidens för en500→201-övergång.

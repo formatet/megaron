@@ -1,0 +1,30 @@
+» färsk DB på migration 183 · commit d971a1fc+ändringar
+=== RUN   TestPlacementLiveEyesTransaction
+=== RUN   TestPlacementLiveEyesTransaction/marching-unit
+2026/10/18 07:45:43 INFO player registered id=8c9b0cc8-aa31-4de7-835b-7208de2df43b username=placement-8cd0a3af-5442-47b0-8a98-05917f0277cb
+    eyes_tx_test.go:98: marching-unit placement201, pool/TX same eyes and TX healthy
+=== RUN   TestPlacementLiveEyesTransaction/outbound
+2026/10/18 07:45:43 INFO player registered id=5bd025bc-7eaf-45e5-9df5-ac22bd7963dd username=placement-89b9cbe9-3657-4204-b41b-2e3fe802aa16
+    eyes_tx_test.go:98: outbound placement201, pool/TX same eyes and TX healthy
+=== RUN   TestPlacementLiveEyesTransaction/returning
+2026/10/18 07:45:43 INFO player registered id=d34abdc0-eae7-415d-b6c0-4a601fa03026 username=placement-f0a5b026-c83e-43f0-aa18-af8a5c04a159
+    eyes_tx_test.go:98: returning placement201, pool/TX same eyes and TX healthy
+=== RUN   TestPlacementLiveEyesTransaction/combined
+2026/10/18 07:45:43 INFO player registered id=ec605dab-cbdc-4091-ada0-48ea8426a706 username=placement-17b254e9-8a57-4283-b2b5-cfa6443be97e
+    eyes_tx_test.go:98: combined placement201, pool/TX same eyes and TX healthy
+--- PASS: TestPlacementLiveEyesTransaction (0.40s)
+    --- PASS: TestPlacementLiveEyesTransaction/marching-unit (0.10s)
+    --- PASS: TestPlacementLiveEyesTransaction/outbound (0.10s)
+    --- PASS: TestPlacementLiveEyesTransaction/returning (0.10s)
+    --- PASS: TestPlacementLiveEyesTransaction/combined (0.10s)
+=== RUN   TestPlacementInternalErrorLogsDatabaseCause
+=== RUN   TestPlacementInternalErrorLogsDatabaseCause/place
+2026/10/18 07:45:43 INFO player registered id=5de9d598-393e-4eb6-906e-ed17c4bfc0af username=placement-068e9f77-e33d-452c-8739-8c244b1b5089
+    placement_error_log_test.go:67: place HTTP500 retains generic response; ERROR has stage, err, pg_code=P0001 and IDs
+=== RUN   TestPlacementInternalErrorLogsDatabaseCause/unplace
+    placement_error_log_test.go:67: unplace HTTP500 retains generic response; ERROR has stage, err, pg_code=P0001 and IDs
+--- PASS: TestPlacementInternalErrorLogsDatabaseCause (0.16s)
+    --- PASS: TestPlacementInternalErrorLogsDatabaseCause/place (0.08s)
+    --- PASS: TestPlacementInternalErrorLogsDatabaseCause/unplace (0.08s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.566s

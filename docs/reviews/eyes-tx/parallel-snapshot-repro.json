@@ -1,0 +1,125 @@
+{
+  "dump_sha256": "74cecce471a9c5c661080f583e319f3de64c2fd6a817fcf7ee01bb11ccc4e268",
+  "independent_restores": true,
+  "production_mutated": false,
+  "local_JWT_only": true,
+  "arms": [
+    {
+      "arm": "master",
+      "health": {
+        "commit": "ed4e88045cb0c5989ab7a0a45d03df9b80d183c7",
+        "migration": 183,
+        "status": "ok"
+      },
+      "instrumentation": " + local println(err) at hex lock",
+      "initial_state": {
+        "pid": "be156d71-a7af-4f7c-917d-d1ffd3294d04",
+        "province_id": "e44bfcad-3a39-4b06-b418-511866850f7e",
+        "world_id": "f7c90afa-4653-46a6-b14c-473a268efa3e",
+        "population": 1040,
+        "tick": 353,
+        "marching_units": 1
+      },
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/worlds/f7c90afa-4653-46a6-b14c-473a268efa3e/provinces/e44bfcad-3a39-4b06-b418-511866850f7e/placements",
+        "body": {
+          "target_kind": "hex",
+          "hex_ordinal": 8,
+          "good_key": "stone"
+        }
+      },
+      "parallel_requests": 4,
+      "responses": [
+        {
+          "status": 409,
+          "response": {
+            "error": "this hex is fully staffed for that good"
+          },
+          "elapsed_ms": 147.1688059391454
+        },
+        {
+          "status": 409,
+          "response": {
+            "error": "this hex is fully staffed for that good"
+          },
+          "elapsed_ms": 118.38413099758327
+        },
+        {
+          "status": 201,
+          "response": {
+            "gubbe_ordinal": 8
+          },
+          "elapsed_ms": 57.08093103021383
+        },
+        {
+          "status": 409,
+          "response": {
+            "error": "this hex is fully staffed for that good"
+          },
+          "elapsed_ms": 89.56317894626409
+        }
+      ],
+      "hex_lock_errors": []
+    },
+    {
+      "arm": "fix",
+      "health": {
+        "commit": "5828cd432cc00d3b8e4cc00190fae536186f2a4d",
+        "migration": 183,
+        "status": "ok"
+      },
+      "instrumentation": "",
+      "initial_state": {
+        "pid": "be156d71-a7af-4f7c-917d-d1ffd3294d04",
+        "province_id": "e44bfcad-3a39-4b06-b418-511866850f7e",
+        "world_id": "f7c90afa-4653-46a6-b14c-473a268efa3e",
+        "population": 1040,
+        "tick": 353,
+        "marching_units": 1
+      },
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/worlds/f7c90afa-4653-46a6-b14c-473a268efa3e/provinces/e44bfcad-3a39-4b06-b418-511866850f7e/placements",
+        "body": {
+          "target_kind": "hex",
+          "hex_ordinal": 8,
+          "good_key": "stone"
+        }
+      },
+      "parallel_requests": 4,
+      "responses": [
+        {
+          "status": 409,
+          "response": {
+            "error": "this hex is fully staffed for that good"
+          },
+          "elapsed_ms": 153.32377096638083
+        },
+        {
+          "status": 409,
+          "response": {
+            "error": "this hex is fully staffed for that good"
+          },
+          "elapsed_ms": 123.06852906476706
+        },
+        {
+          "status": 409,
+          "response": {
+            "error": "this hex is fully staffed for that good"
+          },
+          "elapsed_ms": 91.53287706431001
+        },
+        {
+          "status": 201,
+          "response": {
+            "gubbe_ordinal": 8
+          },
+          "elapsed_ms": 58.064599987119436
+        }
+      ],
+      "hex_lock_errors": []
+    }
+  ],
+  "reproduced_500_only_on_master": false
+}

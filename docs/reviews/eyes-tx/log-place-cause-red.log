@@ -1,0 +1,13 @@
+=== RUN   TestPlacementInternalErrorLogsDatabaseCause
+=== RUN   TestPlacementInternalErrorLogsDatabaseCause/place
+2026/10/18 07:46:22 INFO player registered id=7c40e2ea-54ab-4c64-a6ba-99dd6b1a79a5 username=placement-ddbe811a-23da-41b5-983c-921e4b9da0d1
+    placement_error_log_test.go:65: missing diagnostic fields: {"time":"2026-10-18T07:46:22.533650433+02:00","level":"ERROR","msg":"placement failed","operation":"place","stage":"could not place citizen","world_id":"c6df5cfe-213d-41f3-ad5b-6fb0646a6d8c","settlement_id":"67d4df24-f40c-4129-bf9e-0a3fce0fcbb8","player_id":"7c40e2ea-54ab-4c64-a6ba-99dd6b1a79a5","pg_code":"P0001"}
+=== RUN   TestPlacementInternalErrorLogsDatabaseCause/unplace
+    placement_error_log_test.go:67: unplace HTTP500 retains generic response; ERROR has stage, err, pg_code=P0001 and IDs
+--- FAIL: TestPlacementInternalErrorLogsDatabaseCause (0.15s)
+    --- FAIL: TestPlacementInternalErrorLogsDatabaseCause/place (0.08s)
+    --- PASS: TestPlacementInternalErrorLogsDatabaseCause/unplace (0.08s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.156s
+FAIL
+» färsk DB på migration 183 · commit d971a1fc+ändringar

@@ -1,0 +1,13 @@
+=== RUN   TestPlacementInternalErrorLogsDatabaseCause
+=== RUN   TestPlacementInternalErrorLogsDatabaseCause/place
+2026/10/18 07:46:37 INFO player registered id=c71a10df-d2ec-4eab-a55c-94d79d472564 username=placement-a7a09e4c-a05a-4415-91fd-d716b38b3815
+    placement_error_log_test.go:65: missing diagnostic fields: {"time":"2026-10-18T07:46:37.265037747+02:00","level":"ERROR","msg":"placement failed","operation":"place","stage":"could not place citizen","world_id":"91ae6c9c-9b48-4ffc-afd6-3baf5feaf169","settlement_id":"f29df8c4-1667-45c8-91eb-239c50e86234","player_id":"c71a10df-d2ec-4eab-a55c-94d79d472564","err":"ERROR: placement observability probe (SQLSTATE P0001)","pg_code":""}
+=== RUN   TestPlacementInternalErrorLogsDatabaseCause/unplace
+    placement_error_log_test.go:65: missing diagnostic fields: {"time":"2026-10-18T07:46:37.347310602+02:00","level":"ERROR","msg":"placement failed","operation":"unplace","stage":"could not unplace citizen","world_id":"81e4269b-9c1b-4b72-8da3-3209fec349af","settlement_id":"a9aee638-45bf-4e37-921f-56a21da48987","player_id":"bf797314-5f82-45a6-9a0d-3da99217af4b","err":"ERROR: placement observability probe (SQLSTATE P0001)","pg_code":""}
+--- FAIL: TestPlacementInternalErrorLogsDatabaseCause (0.16s)
+    --- FAIL: TestPlacementInternalErrorLogsDatabaseCause/place (0.08s)
+    --- FAIL: TestPlacementInternalErrorLogsDatabaseCause/unplace (0.08s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.164s
+FAIL
+» färsk DB på migration 183 · commit d971a1fc+ändringar

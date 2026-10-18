@@ -182,4 +182,9 @@ Claude granskar/integrerar och kör recompute-all efter deploy; ingen liveomräk
 
 [Bevispaket](../eyes-tx/README.md), koda6f12654: fullfreshGo183/vet/654JS, tre fysiska
 mutationer och naturlig marsch→placering/CLI/Firefox. Inga ändrade FOW-/spelarregler,
-migration eller omräkning. Claude granskar/integrerar, hash + STOPP.
+migration eller omräkning. Claude mergade/deployade51e805a4 inklusive loggtillägget nedan.
+
+Slice12 tillägg (Claude07:44): kod5828cd43 loggar alla25 befintliga Place/Unplace500-grenar
+med verkligt err/steg/ID och eventuellPG-kod; riktigPG-fault och tre ytterligare mutationer.
+Parallell privat livekopia4POST: master201×1/409×3,fix201×1/409×3, alltså ingen500-repro.
+Slutlig Go/vet efter tillägget ligger i full-go-logging/vet-logging, tidigare fullsuite är före tillägget.

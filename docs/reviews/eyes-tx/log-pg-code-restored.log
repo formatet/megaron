@@ -1,0 +1,12 @@
+=== RUN   TestPlacementInternalErrorLogsDatabaseCause
+=== RUN   TestPlacementInternalErrorLogsDatabaseCause/place
+2026/10/18 07:46:40 INFO player registered id=35c3ef23-bf61-4a02-acab-583f09363706 username=placement-cb157b2a-723c-4250-8f70-faa51f5073b8
+    placement_error_log_test.go:67: place HTTP500 retains generic response; ERROR has stage, err, pg_code=P0001 and IDs
+=== RUN   TestPlacementInternalErrorLogsDatabaseCause/unplace
+    placement_error_log_test.go:67: unplace HTTP500 retains generic response; ERROR has stage, err, pg_code=P0001 and IDs
+--- PASS: TestPlacementInternalErrorLogsDatabaseCause (0.16s)
+    --- PASS: TestPlacementInternalErrorLogsDatabaseCause/place (0.08s)
+    --- PASS: TestPlacementInternalErrorLogsDatabaseCause/unplace (0.08s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.161s
+» färsk DB på migration 183 · commit d971a1fc+ändringar
