@@ -22,7 +22,6 @@ type World struct {
 	ID             uuid.UUID
 	Name           string
 	State          State
-	Prestige       int
 	EraNumber      int
 	EraStartedAt   time.Time // kept for DB scan compatibility; not used in collapse logic
 	MaxProvinces   int
