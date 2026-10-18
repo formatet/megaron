@@ -1,16 +1,23 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/economy"
+	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 )
 
 func TestPlacementConcurrentPOSTsSerialize(t *testing.T) {
 	f := setupPlacementFixture(t, map[[2]int]string{{1, 0}: "plains"})
+	f.router = placementConcurrencyRouter(t, 16)
 	pool := p10TestPool(t)
 	ctx := context.Background()
 	if _, err := pool.Exec(ctx, `UPDATE settlements SET population=100 WHERE id=$1`, f.settlementID); err != nil {
@@ -198,4 +205,50 @@ func TestPlacementTakeBusyHolderReturnsConflict(t *testing.T) {
 	if code, body := f.place(t, f.tokenB, f.provinceB, "grain"); code != 201 {
 		t.Fatalf("retry after unlock %d %v", code, body)
 	}
+}
+
+func TestPlacementSingleConnectionCannotStarve(t *testing.T) {
+	f := setupPlacementFixture(t, map[[2]int]string{{1, 0}: "plains"})
+	router := placementConcurrencyRouter(t, 1)
+	const n = 8
+	results := make(chan int, n)
+	for i := 0; i < n; i++ {
+		go func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			req := httptest.NewRequest("POST", f.placementsPath(), bytes.NewBufferString(`{"target_kind":"hex","hex_q":1,"hex_r":0,"good_key":"grain"}`)).WithContext(ctx)
+			req.Header.Set("Authorization", "Bearer "+f.accessToken)
+			rec := httptest.NewRecorder()
+			router.ServeHTTP(rec, req)
+			results <- rec.Code
+		}()
+	}
+	codes := map[int]int{}
+	for i := 0; i < n; i++ {
+		select {
+		case code := <-results:
+			codes[code]++
+		case <-time.After(8 * time.Second):
+			t.Fatal("pool starvation")
+		}
+	}
+	if codes[201] != 4 || codes[409] != 4 {
+		t.Fatalf("single-connection placements starved: %v", codes)
+	}
+}
+
+func placementConcurrencyRouter(t *testing.T, max int32) *chi.Mux {
+	t.Helper()
+	config := p10TestPool(t).Config()
+	config.MaxConns = max
+	pool, err := pgxpool.NewWithConfig(context.Background(), config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(pool.Close)
+	ph := NewProvinceHandler(pool, nil, clock.NewTestClock(time.Now()), economy.SitosConfig{}, nil, nil)
+	router := chi.NewRouter()
+	router.Use(auth.Middleware(auth.NewService(pool, "test-secret")))
+	router.Post("/worlds/{worldID}/provinces/{provinceID}/placements", ph.PlaceGubbe)
+	return router
 }

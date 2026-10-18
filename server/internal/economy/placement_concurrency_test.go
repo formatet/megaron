@@ -3,6 +3,7 @@ package economy
 import (
 	"context"
 	"fmt"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"testing"
 	"time"
 )
@@ -11,6 +12,13 @@ func TestPlacementGrowthConcurrentRespectsCapacity(t *testing.T) {
 	ctx := context.Background()
 	pool := testPool(t)
 	sid := seedFullRingFixture(t, 100, 800, "plains")
+	config := pool.Config()
+	config.MaxConns = 16
+	pool, err := pgxpool.NewWithConfig(ctx, config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer pool.Close()
 	const key = 982736451
 	blocker, err := pool.Acquire(ctx)
 	if err != nil {

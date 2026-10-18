@@ -599,15 +599,15 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 		// FOW gate: a fog hex is never placeable (P0-UI §Tvärgående lås).
 		// economy may not import province (G1), so this check lives here.
 		var terrain string
-		if err := h.pool.QueryRow(r.Context(),
+		if err := tx.QueryRow(r.Context(),
 			`SELECT terrain FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
 			worldID, hex.Q, hex.R,
 		).Scan(&terrain); err != nil {
 			writeError(w, http.StatusBadRequest, "unknown hex")
 			return
 		}
-		eyes := loadLiveEyes(r.Context(), h.pool, worldID, playerID, h.clk.Now())
-		remembered := loadRememberedTiles(r.Context(), h.pool, worldID, playerID)
+		eyes := loadLiveEyes(r.Context(), tx, worldID, playerID, h.clk.Now())
+		remembered := loadRememberedTiles(r.Context(), tx, worldID, playerID)
 		if !knownToPlayer(eyes, remembered, province.MapPosition{Q: hex.Q, R: hex.R}, terrain) {
 			writeError(w, http.StatusForbidden, "that hex hasn't been scouted yet — fog-of-war hexes can't be staffed")
 			return
