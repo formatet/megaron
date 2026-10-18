@@ -263,7 +263,6 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		slog.Error("garrison starvation observation failed", "world", e.WorldID, "err", err)
 	}
 	h.applySubsistenceCritical(ctx, e.WorldID)
-	h.accumulatePrestige(ctx, e.WorldID)
 
 	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledKharisTick,
 		struct{}{}, e.DueTick, events.MacroTickInterval)
@@ -500,7 +499,7 @@ func (h *TickHandler) processMaintenance(ctx context.Context, w wanaxSnap, world
 		h.applyDivinePunishment(ctx, w.settlementID, worldID, w.playerID)
 	}
 
-	// 3. Derive mood and write back cult_level (drives prestige + display).
+	// 3. Derive mood and write back cult_level (drives display).
 	derived := deriveMood(newKharis)
 	_, _ = h.pool.Exec(ctx,
 		`UPDATE player_world_records SET cult_level = $1
@@ -1640,32 +1639,6 @@ func (h *TickHandler) addDivineGossip(ctx context.Context, settlementID, worldID
 		 VALUES ($1, $2, $3, $4, $5)`,
 		worldID, *ownerID, name, category, text,
 	)
-}
-
-// accumulatePrestige adds daily prestige to the world based on active cult devotion.
-// One point per active (non-Wrathful) settlement, plus a tier bonus (vardig+1,
-// overdadig+2 — strawman, rescaled for the 4-tier mood table, FAS 0).
-// Prestige feeds into the collapse risk algorithm.
-func (h *TickHandler) accumulatePrestige(ctx context.Context, worldID uuid.UUID) {
-	// Prestige is driven by cult level — now lives on player_world_records.
-	_, err := h.pool.Exec(ctx,
-		`UPDATE worlds SET prestige = prestige + (
-		    SELECT COALESCE(SUM(
-		        1 + CASE pwr.cult_level
-		            WHEN 'vardig'    THEN 1
-		            WHEN 'overdadig' THEN 2
-		            ELSE 0
-		        END
-		    ), 0)
-		    FROM player_world_records pwr
-		    WHERE pwr.world_id = $1 AND pwr.cult_level != 'vredgad'
-		)
-		WHERE id = $1`,
-		worldID,
-	)
-	if err != nil {
-		slog.Error("prestige accumulation failed", "world", worldID, "err", err)
-	}
 }
 
 // templeOfferScarcity values the standing temple reference offering (grain) at the

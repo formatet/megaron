@@ -122,7 +122,7 @@ func roman(n int) string {
 // List handles GET /worlds.
 func (h *WorldHandler) List(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT id, name, state, prestige, era_number, created_at FROM worlds ORDER BY created_at DESC`,
+		`SELECT id, name, state, era_number, created_at FROM worlds ORDER BY created_at DESC`,
 	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not list worlds")
@@ -134,14 +134,13 @@ func (h *WorldHandler) List(w http.ResponseWriter, r *http.Request) {
 		ID        uuid.UUID `json:"id"`
 		Name      string    `json:"name"`
 		State     string    `json:"state"`
-		Prestige  int       `json:"prestige"`
 		EraNumber int       `json:"era_number"`
 		CreatedAt time.Time `json:"created_at"`
 	}
 	var worlds []worldSummary
 	for rows.Next() {
 		var ws worldSummary
-		if err := rows.Scan(&ws.ID, &ws.Name, &ws.State, &ws.Prestige, &ws.EraNumber, &ws.CreatedAt); err != nil {
+		if err := rows.Scan(&ws.ID, &ws.Name, &ws.State, &ws.EraNumber, &ws.CreatedAt); err != nil {
 			writeError(w, http.StatusInternalServerError, "scan error")
 			return
 		}
@@ -267,14 +266,14 @@ func (h *WorldHandler) Get(w http.ResponseWriter, r *http.Request) {
 	var wld world.World
 	var tickAnchor *time.Time
 	err = h.pool.QueryRow(r.Context(),
-		`SELECT id, name, state, prestige, era_number, era_started_at,
+		`SELECT id, name, state, era_number, era_started_at,
 		        max_provinces, min_era_weeks, max_era_weeks,
 		        kingdom_min_size, kingdom_max_size, map_seed, map_width, map_height, created_at,
 		        current_tick,last_tick_at
 		 FROM worlds WHERE id = $1`,
 		worldID,
 	).Scan(
-		&wld.ID, &wld.Name, &wld.State, &wld.Prestige, &wld.EraNumber, &wld.EraStartedAt,
+		&wld.ID, &wld.Name, &wld.State, &wld.EraNumber, &wld.EraStartedAt,
 		&wld.MaxProvinces, &wld.MinEraWeeks, &wld.MaxEraWeeks,
 		&wld.KingdomMinSize, &wld.KingdomMaxSize, &wld.MapSeed, &wld.MapWidth, &wld.MapHeight,
 		&wld.CreatedAt, &wld.CurrentTick, &tickAnchor,
@@ -307,7 +306,6 @@ func (h *WorldHandler) Get(w http.ResponseWriter, r *http.Request) {
 		"state":          wld.State,
 		"wanaxes_joined": joined,
 		"wanaxes_needed": h.startWanaxes,
-		"prestige":       wld.Prestige,
 		"era_number":     wld.EraNumber,
 		"era_started_at": wld.EraStartedAt,
 		"created_at":     wld.CreatedAt,
