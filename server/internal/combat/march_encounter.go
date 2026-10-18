@@ -261,7 +261,7 @@ func (h *MarchEncounterHandler) resolveHex(ctx context.Context, e events.Schedul
 	defer tx.Rollback(ctx)
 
 	// Idempotency (G2, plan §4): one claim per (event_id, hex) — same
-	// processed_tick_claims table UpkeepHandler and loyalty/decay.go use,
+	// processed_tick_claims table UpkeepHandler uses,
 	// migration 098. The scope UUID is deterministic from (worldID, q, r) so
 	// the SAME hex claims the SAME slot every time this exact event is
 	// replayed; a genuinely NEW recurring tick always gets a fresh event_id

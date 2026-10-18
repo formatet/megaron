@@ -24,7 +24,6 @@ import (
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/kharis"
-	"formatet/megaron/server/internal/loyalty"
 	"formatet/megaron/server/internal/messenger"
 	"formatet/megaron/server/internal/notify"
 	"formatet/megaron/server/internal/religion"
@@ -141,10 +140,6 @@ func main() {
 	buildH := combat.NewBuildCompleteHandler(pool, eventStore, hub)
 	trainH := combat.NewTrainCompleteHandler(pool, eventStore, hub)
 	shipRepairH := combat.NewShipRepairCompleteHandler(pool, eventStore, hub)
-	decayH := loyalty.NewDecayHandler(pool, scheduler, eventStore)
-	welfareH := loyalty.NewWelfareHandler(pool, scheduler, eventStore)
-	colonyH := loyalty.NewColonyPenaltyHandler(pool, scheduler, eventStore)
-	borrowedH := loyalty.NewBorrowedArmyPenaltyHandler(pool, scheduler, eventStore, gameClock)
 	messengerArrivalH := messenger.NewArrivalHandler(pool, scheduler, eventStore, hub)
 	messengerReturnH := messenger.NewReturnHandler(pool, eventStore, hub)
 	messengerStayEndH := messenger.NewStayEndHandler(pool, scheduler, gameClock)
@@ -165,10 +160,10 @@ func main() {
 	worker.Register(events.ScheduledBuildComplete, buildH.Handle)
 	worker.Register(events.ScheduledTrainComplete, trainH.Handle)
 	worker.Register(events.ScheduledShipRepairComplete, shipRepairH.Handle)
-	worker.Register(events.ScheduledLoyaltyDecayTick, decayH.Handle)
-	worker.Register(events.ScheduledLoyaltyWelfareTick, welfareH.Handle)
-	worker.Register(events.ScheduledColonyPenaltyTick, colonyH.Handle)
-	worker.Register(events.ScheduledBorrowedArmyTick, borrowedH.Handle)
+	worker.Register(events.ScheduledLoyaltyDecayTick, events.RetiredLoyaltyTick)
+	worker.Register(events.ScheduledLoyaltyWelfareTick, events.RetiredLoyaltyTick)
+	worker.Register(events.ScheduledColonyPenaltyTick, events.RetiredLoyaltyTick)
+	worker.Register(events.ScheduledBorrowedArmyTick, events.RetiredLoyaltyTick)
 	worker.Register(events.ScheduledOrderDelivery, orderDeliveryH.Handle)
 	roadSiteH := combat.NewRoadSiteHandler(pool, scheduler, eventStore, hub)
 	worker.Register(events.ScheduledRoadSite, roadSiteH.Handle)
@@ -512,7 +507,6 @@ func main() {
 			r.Get("/worlds/{worldID}/settlements/{settlementID}", sh.Get)
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/occupation-order", uh.OccupationOrder)
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/gift", sh.Gift)
-			r.Get("/worlds/{worldID}/settlements/{settlementID}/loyalty-log", sh.LoyaltyLog)
 			registerReturnArmyRoute(r, sh.ReturnArmy)
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/rite", sh.Rite)
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/abandon", sh.Abandon)
@@ -570,8 +564,7 @@ func main() {
 // (api/handlers/join.go). Seeding ran at startup over active worlds only, so a
 // freshly created world was seeded never: it existed before this ran, it was
 // not active yet when it ran, and nothing re-seeds at the transition. Every
-// daily tick — upkeep, food, kharis, loyalty decay and welfare, colony
-// penalty, borrowed army, intercept scan — stayed dead for the world's entire
+// recurring tick — upkeep, food, kharis and intercept scan — stayed dead for the world's entire
 // life until someone happened to restart the process. On the dev server `air`
 // restarts constantly and hid it; the acceptance world, which restarts for
 // nothing, exposed it (2026-08-02). Ticking a forming world is harmless: every
@@ -594,10 +587,6 @@ func seedDailyTicks(ctx context.Context, pool *pgxpool.Pool, sched *events.Sched
 	}
 
 	tickTypes := []events.ScheduledEventType{
-		events.ScheduledLoyaltyDecayTick,
-		events.ScheduledLoyaltyWelfareTick,
-		events.ScheduledColonyPenaltyTick,
-		events.ScheduledBorrowedArmyTick,
 		events.ScheduledKharisTick,
 		events.ScheduledUpkeepTick,
 		events.ScheduledFoodTick,

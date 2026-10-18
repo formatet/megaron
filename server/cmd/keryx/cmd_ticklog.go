@@ -10,7 +10,7 @@ import (
 )
 
 // ticklogCmd renders the per-city tick-journal: production, consumption, discrete
-// events (trade, builds and historical food-reserve events) and a loyalty row (— until Fas 3), one block per
+// events (trade, builds and historical food-reserve events), one block per
 // tick. Newest-first by default; --asc for chronological. Alias: journal.
 func ticklogCmd() *cobra.Command {
 	var provinceID string
@@ -55,7 +55,6 @@ func ticklogCmd() *cobra.Command {
 					Tick        int                `json:"tick"`
 					Production  map[string]float64 `json:"production"`
 					Consumption map[string]float64 `json:"consumption"`
-					Loyalty     string             `json:"loyalty"`
 					Events      []struct {
 						Type    string          `json:"type"`
 						Payload json.RawMessage `json:"payload"`
@@ -80,11 +79,7 @@ func ticklogCmd() *cobra.Command {
 						fmt.Printf("  %s\n", renderTickEvent(e.Type, e.Payload))
 					}
 				}
-				loy := t.Loyalty
-				if loy == "" {
-					loy = "—"
-				}
-				fmt.Printf("  Loyalty: %s\n\n", loy)
+				fmt.Println()
 			}
 			return nil
 		},

@@ -28,7 +28,7 @@ From the command line there are also dedicated watch orders: a ship on **patrol*
 
 When your men break off a battle is set in two places:
 
-- **For the whole realm** — **War → Army → When to retreat**, or `keryx retreat-default` ([[keryx]]). Choose **Hold to the last man** or **Retreat when it goes badly** (the default). The latter follows the troops' [[loyalty]]: the more loyal their city, the longer they hold. Every unit carries this into a battle it enters. It applies at once, since no one has to carry it anywhere, but only to battles entered from then on — a battle already under way keeps what its units brought.
+- **For the whole realm** — **War → Army → When to retreat**, or `keryx retreat-default` ([[keryx]]). Choose **Hold to the last man** or **Retreat when it goes badly** (the default). The latter withdraws when 20% of the side’s starting strength remains. Every unit carries this into a battle it enters. It applies at once, since no one has to carry it anywhere, but only to battles entered from then on — a battle already under way keeps what its units brought.
 - **For one unit, in the battle it is fighting now** — the **this battle** selector on its card in **War → Army** (it only appears while the unit is fighting), or `keryx unit retreat-order`. Choose the same two modes. It overrides the realm setting for that battle only. On a field unit it is an order, and travels by [[runners|Runner]].
 
-In Keryx, use `--hold-to-last-man` or `--by-loyalty` with either command. Fixed loss percentages are no longer a choice.
+In Keryx, use `--hold-to-last-man` or `--when-losing` with either command. Fixed loss percentages are no longer a choice.

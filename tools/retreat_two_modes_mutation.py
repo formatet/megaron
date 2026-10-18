@@ -26,14 +26,14 @@ if '--legacy-only' not in sys.argv:
   'if len(req.RetreatAtLoss) > 0 {','if false {',
   './api/handlers/','TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBattle','retreat_at_loss was accepted before courier dispatch')
 mutation('legacy-arrival','server/internal/messenger/order_delivery.go',
- 'if order.RetreatAtLoss != nil || (!order.ByLoyalty && order.HoldToLastMan != nil && !*order.HoldToLastMan) {','if false {',
- './api/handlers/','TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBattle','legacy retreat courier did not translate to loyalty on arrival')
+ 'if order.RetreatAtLoss != nil || (!order.WhenLosing && order.HoldToLastMan != nil && !*order.HoldToLastMan) {','if false {',
+ './api/handlers/','TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBattle','legacy retreat courier did not translate to fixed retreat on arrival')
 mutation('legacy-reset-false','server/internal/messenger/order_delivery.go',
- 'if order.RetreatAtLoss != nil || (!order.ByLoyalty && order.HoldToLastMan != nil && !*order.HoldToLastMan) {','if order.RetreatAtLoss != nil {',
+ 'if order.RetreatAtLoss != nil || (!order.WhenLosing && order.HoldToLastMan != nil && !*order.HoldToLastMan) {','if order.RetreatAtLoss != nil {',
  './api/handlers/','TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBattle',
- 'legacy retreat courier did not translate to loyalty on arrival (reset_false)')
+ 'legacy retreat courier did not translate to fixed retreat on arrival (reset_false)')
 mutation('legacy-hold','server/internal/messenger/order_delivery.go',
- 'order.ByLoyalty = !hold','order.HoldToLastMan = nil\n\t\t\torder.ByLoyalty = true',
+ 'order.WhenLosing = !hold','order.HoldToLastMan = nil\n\t\t\torder.WhenLosing = true',
  './api/handlers/','TestStandingOrders_FieldUnitOrderTravelsByCourierAndAppliesOnlyToActiveBattle',
  'legacy held retreat courier lost hold on arrival')
 with (OUT/'restored-server.log').open('w') as log:

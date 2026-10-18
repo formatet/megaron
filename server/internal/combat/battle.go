@@ -24,7 +24,7 @@ package combat
 //     like SetStance for a field unit, instant for a besieged garrison.
 //     termination_reason "retreat_order" is still unused (sideRouts always
 //     labels a threshold breach "rout" regardless of whether the threshold
-//     was the loyalty default or a player override — not touched by this
+//     was the default threshold or a player override — not touched by this
 //     slice, see sideRouts' own comment) — same as "no_enemy_left".
 //   - 2026-08-07 (§8 cutover): the settlement siege (unit_arrival.go
 //     resolveCombat) and amphibious assault (unit_arrival.go
@@ -69,7 +69,6 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
-	"formatet/megaron/server/internal/loyalty"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -100,21 +99,7 @@ const (
 	// a repair job's target hull. Same value, never diverge.
 	HullMax = hullMax
 
-	participationMin = 0.40
-	participationMax = 1.00
-
-	// kharisParticipationCap/Weight: same normalisation reference (75) as
-	// rollFortune's kharis bias, capped at ±10pp (§10 strawman). Kharis here
-	// only ever HELPS: every kharis read in this file is GREATEST(0, ...) —
-	// there is no negative kharis to penalise participation with.
-	kharisParticipationCap    = 75
-	kharisParticipationWeight = 0.10
-
-	// fortifyParticipationBonus fills the formula's stance_modifier slot (§4):
-	// a defending side holding fortify stance commits more of its strength.
-	// Only checked for the defending side's participants (fortify is a
-	// garrison/positioned stance, not something an attacking march holds).
-	fortifyParticipationBonus = 0.10
+	combatParticipation = 0.90
 
 	// wallAbsorbPerLevel/stormWallAbsorbDivisor/stormAttackerLossMultiplier —
 	// §8 mur-modellen (megaron_kr3_stridsutvardering.md beslut 7, Timothy
@@ -135,14 +120,6 @@ const (
 	stormAttackerLossMultiplier = 1.5
 )
 
-// loyaltyParticipationBase is the loyalty_base term (§4 strawman 65/80/90/100%).
-var loyaltyParticipationBase = map[int]float64{
-	1: 0.65,
-	2: 0.80,
-	3: 0.90,
-	4: 1.00,
-}
-
 // battleDiceMultiplier is how many T12 each ACTIVE combatant of utype rolls
 // per round: elite 3/man, war_chariot ("vagn") 5/vagn, everyone else 1.
 func battleDiceMultiplier(utype string) int {
@@ -154,40 +131,6 @@ func battleDiceMultiplier(utype string) int {
 	default:
 		return 1
 	}
-}
-
-func loyaltyBaseForParticipation(loyaltyLevel int) float64 {
-	if v, ok := loyaltyParticipationBase[loyaltyLevel]; ok {
-		return v
-	}
-	return loyaltyParticipationBase[2]
-}
-
-func clampParticipation(p float64) float64 {
-	if p < participationMin {
-		return participationMin
-	}
-	if p > participationMax {
-		return participationMax
-	}
-	return p
-}
-
-// participation computes the §4 formula for one side:
-//
-//	participation = clamp(loyalty_base + kharis_modifier + stance_modifier, MIN, MAX)
-//
-// kharis is the side's own (never-negative) kharis balance; fortify is true
-// when at least one of the side's participants currently holds fortify stance.
-// transient_modifier (§4/§10) is a reserved future slot, always 0 here.
-func participation(loyaltyLevel int, kharis float64, fortify bool) float64 {
-	base := loyaltyBaseForParticipation(loyaltyLevel)
-	kharisMod := math.Min(kharis/kharisParticipationCap, 1.0) * kharisParticipationWeight
-	stanceMod := 0.0
-	if fortify {
-		stanceMod = fortifyParticipationBonus
-	}
-	return clampParticipation(base + kharisMod + stanceMod)
 }
 
 // ── §3 Dice-söm: reproducible per-(seed,tick,round) derivation ──────────────
@@ -239,9 +182,8 @@ type battleParticipant struct {
 	// battles row: settlement siege sets it from the marching attacker's own
 	// stance; amphibious assault sets it from the SHIP's stance (the cargo
 	// does the fighting but the ship is what a player marks "storm" on) —
-	// same source each used before this cutover. Defenders' stance is never
-	// read from here; participation's fortify check reads units.stance LIVE
-	// every battle-tick instead.
+	// same source each used before this cutover. Defenders' stance does not
+	// affect participation.
 	stance *string
 	// hull (megaron_plan_skeppsreparation.md Slice B) is only meaningful for a
 	// naval participant — loaded fresh each battle-tick in resolveTick's own
@@ -479,7 +421,7 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 		return false, err
 	}
 	rows, err := tx.Query(ctx,
-		`SELECT bp.unit_id, bp.owner_id, bp.side, bp.current_size, bp.initial_size, bp.standing_orders, u.type, u.stance, u.hull, u.cargo_unit_id,
+		`SELECT bp.unit_id, bp.owner_id, bp.side, bp.current_size, bp.initial_size, bp.standing_orders, u.type, u.hull, u.cargo_unit_id,
  COALESCE((SELECT s.garrison_defense_until_tick > $2 AND s.garrison_defense_owner_id=u.owner_id AND s.owner_id=u.owner_id
  FROM settlements s JOIN provinces sp ON sp.id=s.province_id
  WHERE s.id=u.settlement_id AND s.state='active' AND bp.side='defender' AND sp.world_id=$3 AND sp.map_q=$4 AND sp.map_r=$5),false)
@@ -495,12 +437,11 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 		p              battleParticipant
 		initialSize    int
 		standingOrders []byte
-		stance         *string
 	}
 	var loaded []row
 	for rows.Next() {
 		var rr row
-		if scanErr := rows.Scan(&rr.p.unitID, &rr.p.ownerID, &rr.p.side, &rr.p.currentSize, &rr.initialSize, &rr.standingOrders, &rr.p.utype, &rr.stance, &rr.p.hull, &rr.p.cargoUnitID, &rr.p.defenseBoost); scanErr != nil {
+		if scanErr := rows.Scan(&rr.p.unitID, &rr.p.ownerID, &rr.p.side, &rr.p.currentSize, &rr.initialSize, &rr.standingOrders, &rr.p.utype, &rr.p.hull, &rr.p.cargoUnitID, &rr.p.defenseBoost); scanErr != nil {
 			rows.Close()
 			return false, fmt.Errorf("battle tick: scan participant: %w", scanErr)
 		}
@@ -524,40 +465,8 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 		bySide[rr.p.side] = append(bySide[rr.p.side], i)
 	}
 
-	// §4: participation sampled ONCE per battle-tick, stable across all
-	// rounds. Representative owner per side = the first participant found for
-	// it (same "defenders[0]" convention unit_arrival_field.go already used
-	// for the fortune/loyalty bias).
-	participationBySide := map[string]float64{}
-	repOwnerBySide := map[string]uuid.UUID{}
-	loyaltyBySide := map[string]int{}
-	for _, side := range []string{"attacker", "defender"} {
-		idx := bySide[side]
-		if len(idx) == 0 {
-			continue
-		}
-		ownerID := participants[idx[0]].ownerID
-		repOwnerBySide[side] = ownerID
-
-		_, loyaltyLevel, _ := supplyingSettlement(ctx, tx, ownerID, nil, worldID)
-		loyaltyBySide[side] = loyaltyLevel
-
-		var kharis float64
-		_ = tx.QueryRow(ctx,
-			`SELECT GREATEST(0, settled(kharis_amount, kharis_rate, kharis_calc_tick))
-			 FROM player_world_records WHERE player_id = $1 AND world_id = $2`,
-			ownerID, worldID,
-		).Scan(&kharis)
-
-		fortify := false
-		for _, i := range idx {
-			if loaded[i].stance != nil && *loaded[i].stance == "fortify" {
-				fortify = true
-				break
-			}
-		}
-		participationBySide[side] = participation(loyaltyLevel, kharis, fortify)
-	}
+	// Every side commits the same fraction regardless of settlement, kharis or stance.
+	participationBySide := map[string]float64{"attacker": combatParticipation, "defender": combatParticipation}
 
 	// §8 mur-modellen: the wall's absorption budget is per BATTLE-TICK, not
 	// per round — it is drawn down across this tick's battleRoundsPerTick
@@ -714,25 +623,19 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 	// threshold breaks and leaves the battle WITH its survivors — the whole
 	// point of rout is that it is NOT annihilation. Only checked when neither
 	// side is already wiped (a wipe is unambiguously annihilation, not a
-	// retreat). Threshold is per-unit standing_orders (battle_participants.
-	// standing_orders, migration 114 — read via the side's representative
-	// participant, same "defenders[0]" convention this file already uses for
-	// loyalty/kharis) when set, else the loyalty-derived default this
-	// codebase has used since the one-shot resolver (resolver.go's
-	// routFractionForLoyalty) — same numbers, same bias, now checked per
-	// battle-tick instead of per one-shot resolve. hold_to_last_man disables
-	// rout for that side entirely (fight to actual annihilation).
+	// retreat). The side's representative supplies its standing order. Without
+	// an override the threshold is fixed; hold_to_last_man disables rout.
 	//
 	// Write path: SetStandingOrders (standing_orders_set.go) — a mid-battle
 	// retreat order via the HTTP handler/keryx/courier, same shape as
 	// SetStance. Only reachable while the unit is an active participant.
 	// A participant row is born with its owner's realm-wide retreat default
 	// (retreat_default.go, mig 145); '{}' — the default's own default — still
-	// falls through to the loyalty threshold exactly as before.
+	// falls through to the fixed threshold.
 	attRouted, defRouted := false, false
 	if !wiped {
-		attRouted = sideRouts(bySide["attacker"], initialSizes, sizes, standingOrders, loyaltyBySide["attacker"])
-		defRouted = sideRouts(bySide["defender"], initialSizes, sizes, standingOrders, loyaltyBySide["defender"])
+		attRouted = sideRouts(bySide["attacker"], initialSizes, sizes, standingOrders)
+		defRouted = sideRouts(bySide["defender"], initialSizes, sizes, standingOrders)
 	}
 	ended := wiped || attRouted || defRouted
 
@@ -831,41 +734,13 @@ func (h *BattleTickHandler) resolveTick(ctx context.Context, tx pgx.Tx, battleID
 					survivingAttackers = append(survivingAttackers, participants[i].unitID)
 				}
 			}
-			occupantOwnerID := repOwnerBySide["attacker"]
+			occupantOwnerID := participants[bySide["attacker"][0]].ownerID
 			if err := h.occupySettlement(ctx, tx, worldID, q, r, tickIndex, cityAtHex, occupantOwnerID, survivingAttackers); err != nil {
 				return false, fmt.Errorf("battle tick: occupy settlement: %w", err)
 			}
 		case winner == "defender" && cityAtHex.state == "occupied":
 			if err := h.resetOccupationDefense(ctx, tx, worldID, tickIndex, cityAtHex); err != nil {
 				return false, fmt.Errorf("battle tick: reset occupation defense: %w", err)
-			}
-		}
-	}
-
-	// L2 battle loyalty, once, at battle end (mirrors the old
-	// resolveFieldCombat's single applyBattleLoyalty call) — one representative
-	// settlement per side, same "won_battle/lost_battle/defended_settlement"
-	// vocabulary as the rest of L2. Keyed directly on winner (not
-	// !attackerWon, which pre-existing code used and which double-credited
-	// the defender with "defended_settlement" even when winner=="" — mutual
-	// annihilation before this slice, now also reachable via mutual rout).
-	if ownerID, ok := repOwnerBySide["attacker"]; ok {
-		if settleID, _, hasSettle := supplyingSettlement(ctx, tx, ownerID, nil, worldID); hasSettle {
-			delta, evType, reason := -1, "battle_lost", "lost_battle"
-			if winner == "attacker" {
-				delta, evType, reason = +1, "shared_victory", "won_battle"
-			}
-			if err := loyalty.AppendLoyaltyEventTx(ctx, tx, h.eventStore, settleID, worldID, evType, delta, reason); err != nil {
-				slog.Warn("battle tick: attacker battle loyalty failed", "settlement", settleID, "err", err)
-			}
-		}
-	}
-	if winner == "defender" {
-		if ownerID, ok := repOwnerBySide["defender"]; ok {
-			if settleID, _, hasSettle := supplyingSettlement(ctx, tx, ownerID, nil, worldID); hasSettle {
-				if err := loyalty.AppendLoyaltyEventTx(ctx, tx, h.eventStore, settleID, worldID, "shared_victory", +1, "defended_settlement"); err != nil {
-					slog.Warn("battle tick: defender battle loyalty failed", "settlement", settleID, "err", err)
-				}
 			}
 		}
 	}
@@ -1110,7 +985,7 @@ func loadOwnerNames(ctx context.Context, tx pgx.Tx, summaries []battleParticipan
 // standingOrders is one participant's battle_participants.standing_orders
 // (§5/§7, migration 114) parsed. Both fields are optional — an empty/missing
 // JSONB object ('{}', the column's DB default) means "no override, use the
-// loyalty-derived default and never hold to the last man".
+// fixed default and never hold to the last man".
 type standingOrdersFields struct {
 	RetreatAtLoss *float64 `json:"retreat_at_loss"`
 	HoldToLastMan bool     `json:"hold_to_last_man"`
@@ -1125,17 +1000,13 @@ func parseStandingOrders(raw []byte) standingOrdersFields {
 	return so
 }
 
-// sideRouts is the §5 rout check for one side, run once per battle-tick after
-// this tick's losses are applied (never on an already-wiped side — that's
-// annihilation, not rout, see resolveTick). The threshold is read from the
-// side's REPRESENTATIVE participant's standing order (idx[0] — same
-// "defenders[0]" convention this file already uses for loyalty/kharis in the
-// participation loop above), falling back to the loyalty-derived default
-// (resolver.go's routFractionForLoyalty) when no override is set.
+// sideRouts checks remaining strength after this tick's losses. The side's
+// representative participant (idx[0]) supplies its standing order; an absent
+// override uses the fixed remaining-strength threshold.
 // hold_to_last_man on the representative disables rout for the WHOLE side —
 // a side either has a standing order to break, or it doesn't; this is not a
 // per-unit partial-secession model.
-func sideRouts(idx []int, initialSizes, sizes []int, standingOrders [][]byte, loyaltyLevel int) bool {
+func sideRouts(idx []int, initialSizes, sizes []int, standingOrders [][]byte) bool {
 	if len(idx) == 0 {
 		return false
 	}
@@ -1143,7 +1014,7 @@ func sideRouts(idx []int, initialSizes, sizes []int, standingOrders [][]byte, lo
 	if orders.HoldToLastMan {
 		return false
 	}
-	threshold := routFractionForLoyalty(loyaltyLevel)
+	threshold := combatRoutFraction
 	if orders.RetreatAtLoss != nil {
 		threshold = *orders.RetreatAtLoss
 	}

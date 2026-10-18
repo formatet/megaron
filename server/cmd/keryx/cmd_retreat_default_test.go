@@ -22,7 +22,7 @@ func TestDescribeRetreatDefault(t *testing.T) {
 func TestRetreatCommandsOnlyTwoModes(t *testing.T) {
 	const id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
 	for _, unit := range []bool{false, true} {
-		for _, mode := range []string{"hold-to-last-man", "by-loyalty"} {
+		for _, mode := range []string{"hold-to-last-man", "when-losing"} {
 			t.Run(map[bool]string{false: "realm", true: "unit"}[unit]+"/"+mode, func(t *testing.T) {
 				calls := 0
 				srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +42,7 @@ func TestRetreatCommandsOnlyTwoModes(t *testing.T) {
 					if len(body) != 1 || body[key] != true {
 						t.Errorf("retreat command leaked percentage or wrong mode: %v", body)
 					}
-					_ = json.NewEncoder(w).Encode(map[string]any{"hold_to_last_man": mode == "hold-to-last-man", "by_loyalty": mode == "by-loyalty"})
+					_ = json.NewEncoder(w).Encode(map[string]any{"hold_to_last_man": mode == "hold-to-last-man", "when_losing": mode == "when-losing"})
 				}))
 				defer srv.Close()
 				oldCfg, oldJSON := cfg, jsonMode
@@ -78,7 +78,7 @@ func TestRetreatCommandsRejectRetiredAndAmbiguousChoicesBeforeHTTP(t *testing.T)
 	defer func() { cfg = oldCfg }()
 	cfg = &Config{Server: srv.URL, WorldID: "world"}
 	for _, makeCmd := range []func() *cobra.Command{retreatDefaultCmd, unitStandingOrdersCmd} {
-		for _, args := range [][]string{{"--retreat-at-loss", "0.5"}, {"--hold-to-last-man", "--by-loyalty"}, {"--hold-to-last-man=false"}, {"--by-loyalty=false"}} {
+		for _, args := range [][]string{{"--by-loyalty"}, {"--retreat-at-loss", "0.5"}, {"--hold-to-last-man", "--when-losing"}, {"--hold-to-last-man=false"}, {"--when-losing=false"}} {
 			cmd := makeCmd()
 			if cmd.Name() == "retreat-order" {
 				args = append(append([]string{}, args...), "--unit", "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")

@@ -636,7 +636,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 		          WHERE sg.settlement_id = s.id AND sg.good_key = ANY($6))
 		           - s.population * $2::float AS food_net,
 		         -- Variety reads economy.FoodGoods — the SAME list
-		         -- loyalty/welfare.go's diet-variety threshold reads (S2,
+		         -- diet-variety threshold reads (S2,
 		         -- megaron_plan_foda_konsistens.md: "en lista som båda läser"):
 		         -- base 1.0 + 0.1 per additional distinct food in store, capped
 		         -- at four extras.

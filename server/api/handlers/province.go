@@ -732,7 +732,6 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"population":           sett.Population,
 			"labor_pool":           laborPool,
 			"walls":                sett.WallLevel,
-			"loyalty":              sett.Loyalty,
 			"resources":            resSnap,
 			"kharis":               kharisNow,
 			"kharis_rate":          kharisRate,
@@ -3008,8 +3007,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 // [current−N+1, current] it derives production/consumption flows from the
 // settlement_goods rates (lazy, per-tick) and buckets the discrete events
 // (SitosTransaction, TradeDelivery, BuildComplete, …) stamped with that tick.
-// Newest-first by default; ?order=asc for chronological. The loyalty row is the
-// placeholder "—" until Fas 3.
+// Newest-first by default; ?order=asc for chronological.
 func (h *ProvinceHandler) Ticklog(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -3124,7 +3122,6 @@ func (h *ProvinceHandler) Ticklog(w http.ResponseWriter, r *http.Request) {
 		Production  map[string]float64 `json:"production"`
 		Consumption map[string]float64 `json:"consumption"`
 		Events      []tickEvent        `json:"events"`
-		Loyalty     string             `json:"loyalty"` // "—" until Fas 3
 	}
 	ticks := make([]tickRow, 0, last)
 	for tk := fromTick; tk <= currentTick; tk++ {
@@ -3134,7 +3131,7 @@ func (h *ProvinceHandler) Ticklog(w http.ResponseWriter, r *http.Request) {
 		}
 		ticks = append(ticks, tickRow{
 			Tick: tk, Production: production, Consumption: consumption,
-			Events: evs, Loyalty: "—",
+			Events: evs,
 		})
 	}
 	if !ascOrder {

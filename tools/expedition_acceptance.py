@@ -52,7 +52,7 @@ try:
             elif path == '/api/v1/units': data = []
             elif path.endswith('/units'): data = {'units':units,'expedition_rules':{'min_ticks':4,'max_ticks':30,'default_ticks':10,'area_radius':5}}
             elif '/provinces/' in path: data = {'settlement':{'army':{},'buildings':[]}}
-            elif path.endswith('/retreat-default'): data = {'by_loyalty':True}
+            elif path.endswith('/retreat-default'): data = {'when_losing':True}
             else: data = []
             route.fulfill(content_type='application/json', body=json.dumps(data))
         page.route('**/api/**', api)

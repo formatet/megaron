@@ -15,7 +15,7 @@ package handlers
 // internal/combat: klockan ägs av kharis.TickHandler.applySiegeStarvationClock
 // (oexporterad), ockupationsövergången av combat.SiegeCapitulationHandler
 // (samma paket kan inte importera kharis — CLAUDE.md §Package dependency
-// order, G1: combat får använda "capabilities, economy, gossip, loyalty,
+// order, G1: combat får använda "capabilities, economy, gossip,
 // province, tick, transport, unit (+clock, events)" — kharis står INTE i
 // den listan, och kharis får i sin tur inte importera combat uppåt). Det
 // enda exporterade fästet i kharis.TickHandler är Handle (den riktiga

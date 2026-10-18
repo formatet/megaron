@@ -1,5 +1,5 @@
-// Package events implements the event sourcing core for Megaron.
-// All game state changes are recorded as immutable events; projections are derived from the log.
+// Package events implements Megaron's append-only audit and notification log.
+// Resource, army, population and realm state are maintained in their own tables.
 package events
 
 import (

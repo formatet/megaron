@@ -116,8 +116,8 @@ type BattleEndedPayload struct {
 // StandingOrdersChangedPayload is emitted whenever a unit's mid-battle
 // standing order changes (§5) — either applied instantly (garrison/distance-0)
 // or on Runner delivery. Records the OUTCOME (the values now in effect), not
-// the request: RetreatAtLoss nil means "no override, use the loyalty-derived
-// default" (battle.go's routFractionForLoyalty), same meaning as an empty
+// the request: RetreatAtLoss nil means "no override, use the fixed
+// default" (the fixed combat threshold), same meaning as an empty
 // standing_orders JSONB object.
 type StandingOrdersChangedPayload struct {
 	BattleID      uuid.UUID `json:"battle_id"`

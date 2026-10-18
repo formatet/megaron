@@ -91,7 +91,6 @@ func TestPlaytestColonizePreview_FullConsumption(t *testing.T) {
 	var body struct {
 		Grain struct {
 			Consumption   float64 `json:"consumption_per_tick"`
-			Warning       string  `json:"loyalty_warning"`
 			FoodNet       float64 `json:"food_net_per_tick"`
 			TimberWarning string  `json:"timber_warning"`
 		} `json:"grain"`
@@ -108,7 +107,7 @@ func TestPlaytestColonizePreview_FullConsumption(t *testing.T) {
 	if !strings.HasPrefix(wood.Warning, "No timber on known ground") {
 		t.Fatalf("wood warning not wired: %s", rec.Body.String())
 	}
-	if body.Grain.Consumption != 5 || ((body.Grain.Warning != "") != (body.Grain.FoodNet < 0)) {
+	if body.Grain.Consumption != 5 {
 		t.Fatalf("forecast lacks full consumption or food-balance warning: %s", rec.Body.String())
 	}
 }

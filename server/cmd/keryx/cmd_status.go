@@ -596,7 +596,6 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			pop, _ := sett["population"].(float64)
 			labor, _ := sett["labor_pool"].(float64)
 			walls, _ := sett["walls"].(float64)
-			loyalty, _ := sett["loyalty"].(float64)
 			coastal, _ := p["coastal"].(bool)
 			coastalNote := ""
 			if coastal {
@@ -611,8 +610,8 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				settlementsUsed = used
 			}
 			fmt.Println(citizenScaleNote)
-			fmt.Printf("%s [%s]  Pop: %s people  Labor: %s  Walls: %.0f/3  Loyalty: %.0f%s%s\n",
-				name, culture, resource(pop), citizenCount(int(math.Floor(labor/100))), walls, loyalty, settlementsNote, coastalNote)
+			fmt.Printf("%s [%s]  Pop: %s people  Labor: %s  Walls: %.0f/3%s%s\n",
+				name, culture, resource(pop), citizenCount(int(math.Floor(labor/100))), walls, settlementsNote, coastalNote)
 			if food, ok := sett["food"].(map[string]any); ok {
 				gs, _ := food["growth_state"].(string)
 				net, _ := food["food_net_per_tick"].(float64)
@@ -626,16 +625,6 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			if hint := multiCityHint(name, settlementsUsed); hint != "" {
 				fmt.Println(hint)
 			}
-			fmt.Println("  Loyalty 1–4 (1=lowest; revolt also requires a hostile garrison majority + a triggering event)")
-			// P11 (soak 2026-07-18): loyalty had no visible raising lever — colonies
-			// sat at 1–2 with no signal why, or what to do about it. The mechanic
-			// already exists server-side (internal/loyalty: welfare.go daily
-			// kharis/feeding/diet ticks, decay.go neglect, colony.go overextension,
-			// borrowed_army.go, plus gift/battle deltas in api/handlers/settlement.go
-			// + internal/combat/unit_arrival.go) — it was just never surfaced. Pull
-			// the settlement's own loyalty-log (already-existing endpoint, never
-			// wired into keryx) so a Wanax sees WHY loyalty moved, not just the number.
-			printLoyaltyLog(c, cfg.WorldID, sett)
 			fmt.Println()
 
 			// Legibilitet (2026-07-24, playtest sondrundor 2026-07-23/24): a new
@@ -1039,7 +1028,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 					ready := ""
 					if ra, ok := m["ready_at"].(string); ok && ra != "" {
 						// arrivalETA (game-days-first), not localDone — this is an
-						// ETA, not history like the loyalty log below. English,
+						// ETA rather than history. English,
 						// matching every other ETA surface in keryx (rad K).
 						ready = " — ready " + arrivalETA(c, ra)
 					}
@@ -1061,58 +1050,6 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 	return cmd
 }
 
-// loyaltyLogEntry mirrors one row of the settlement loyalty-log endpoint
-// (api/handlers/settlement.go SettlementHandler.LoyaltyLog, wired at GET
-// .../settlements/:id/loyalty-log in cmd/server/main.go).
-type loyaltyLogEntry struct {
-	EventType    string `json:"event_type"`
-	LoyaltyDelta int    `json:"loyalty_delta"`
-	Reason       string `json:"reason"`
-	CreatedAt    string `json:"created_at"`
-}
-
-// loyaltyLegend is the static "what moves this number" explainer (P11, soak
-// 2026-07-18: "loyalty stuck at 1-2, no visible raising mechanic"). The
-// mechanic already exists server-side — daily welfare ticks for kharis/
-// feeding/diet variety (internal/loyalty/welfare.go), neglect decay
-// (decay.go), colony overextension (colony.go), borrowed-army penalties
-// (borrowed_army.go), plus instant gift (api/handlers/settlement.go Gift)
-// and battle deltas (internal/combat/unit_arrival.go applyBattleLoyalty) — it
-// was just never surfaced to a Wanax. This legend names the actual levers so
-// `status` teaches the mechanic instead of just showing a stuck number.
-const loyaltyLegend = "  Raised by: kharis ≥ favor threshold, fed/varied diet (daily welfare), " +
-	"gifts ≥50 silver-equivalent (`keryx transfer`), won/defended battles.\n" +
-	"  Lowered by: starvation, too many colonies (overextension), neglect (>2 days without a gift), " +
-	"lost battles, a borrowed army kept too long."
-
-// formatLoyaltyLog turns a settlement's loyalty-log entries into the lines
-// `status` prints under the Loyalty line — most recent first, capped at 5,
-// always followed by loyaltyLegend so the mechanic is explained even when a
-// fired event's reason string is terse. Pure — no DB, no HTTP — so this is
-// unit-testable without a live server.
-func formatLoyaltyLog(entries []loyaltyLogEntry) []string {
-	if len(entries) == 0 {
-		return []string{"  No loyalty events yet.", loyaltyLegend}
-	}
-	lines := []string{"  Recent loyalty events:"}
-	n := 5
-	if len(entries) < n {
-		n = len(entries)
-	}
-	for _, e := range entries[:n] {
-		lines = append(lines, fmt.Sprintf("    %+d  %-20s %s (%s)", e.LoyaltyDelta, e.EventType, e.Reason, localDone(e.CreatedAt)))
-	}
-	lines = append(lines, loyaltyLegend)
-	return lines
-}
-
-// printNoTradeContactsHint fetches this province's /actions capabilities and
-// prints noTradeContactsHint's message (cmd_actions.go) when this Wanax has
-// zero foreign settlements in vision yet — best-effort, mirroring
-// printLoyaltyLog: never blocks `status` if the request or parse fails.
-// wanaxMeResp is the subset of GET /auth/me's payload `status` needs — the
-// server always returns COALESCE(wanax_name, username), so wanax_name is
-// never empty for an authenticated player (megaron_plan_wanaxnamn_tilltal.md).
 type wanaxMeResp struct {
 	WanaxName string `json:"wanax_name"`
 }
@@ -1134,8 +1071,7 @@ func fetchMe(c *Client) string {
 
 // printWanaxGreeting prints the top-of-status line addressing the player by
 // their Wanax name, and today's day of the world. Best-effort: silently
-// skipped if /auth/me fails, same convention as printNoTradeContactsHint/
-// printLoyaltyLog below; the day is dropped alone if the world read fails.
+// skipped if /auth/me fails, same convention as printNoTradeContactsHint; the day is dropped alone if the world read fails.
 // The day answers "what day is it?", which an AI playtest (2026-10-10) could
 // only answer through the database.
 func printWanaxGreeting(c *Client, worldID string) {
@@ -1180,31 +1116,6 @@ func printNoTradeContactsHint(c *Client, worldID, prov string) {
 	if hint := noTradeContactsHint(verbs); hint != "" {
 		fmt.Println(hint)
 		fmt.Println()
-	}
-}
-
-// printLoyaltyLog fetches and prints this settlement's recent loyalty-changing
-// events, falling back to the static legend alone when the settlement ID is
-// missing, the request fails, or the response doesn't parse — best-effort,
-// never blocks `status`.
-func printLoyaltyLog(c *Client, worldID string, sett map[string]any) {
-	settlementID, _ := sett["id"].(string)
-	if settlementID == "" {
-		fmt.Println(loyaltyLegend)
-		return
-	}
-	data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/settlements/%s/loyalty-log", worldID, settlementID))
-	if err != nil {
-		fmt.Println(loyaltyLegend)
-		return
-	}
-	var entries []loyaltyLogEntry
-	if jerr := json.Unmarshal(data, &entries); jerr != nil {
-		fmt.Println(loyaltyLegend)
-		return
-	}
-	for _, line := range formatLoyaltyLog(entries) {
-		fmt.Println(line)
 	}
 }
 

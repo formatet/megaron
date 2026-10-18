@@ -46,7 +46,7 @@ try:
      elif tail=='map':data=tiles
      elif tail=='provinces':data=provinces
      elif tail=='units':data={'units':[]}
-     elif tail in ['marches','messengers','trades','rural-projections','foreign-units','settlements/placement-roster','storms','settlements/'+SETT+'/loyalty-log']:data=[]
+     elif tail in ['marches','messengers','trades','rural-projections','foreign-units','settlements/placement-roster','storms']:data=[]
      else:unexpected.append(tail);route.fulfill(status=500,body='{}');return
      route.fulfill(content_type='application/json',body=json.dumps(data))
     page.route('**/api/v1/**',api)

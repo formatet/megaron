@@ -18,8 +18,6 @@ export function productionSectionsHTML(city) {
       <div class="dsec-title">Devotion</div><div id="city-devotion-sec"></div>
       <div class="dsec-title">Food details</div><div id="city-food-details-sec"></div>
       <div class="dsec-title">Last day</div><div id="city-lasttick-sec"></div>
-      <div class="dsec-title">Loyalty log</div><div id="city-loyalty-sec"></div>
-      ${!city.is_capital ? '<div class="dsec-title">Gift from capital</div><div id="city-gift-sec"></div>' : ''}
       <div class="dsec-title">Daily history <button class="btn-small" onclick="loadTicklog()">Show recent days</button></div><div id="city-ticklog-sec"></div>
     </details>`;
 }

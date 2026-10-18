@@ -508,13 +508,10 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		}
 
 		if !hasSid {
-			// No paying settlement — treat as unpaid (unknown loyalty → baseline).
-			h.recordUnpaid(ctx, u, e.WorldID, defaultLoyalty, sid, silverNeed)
+			// No paying settlement — treat as unpaid.
+			h.recordUnpaid(ctx, u, e.WorldID, sid, silverNeed)
 			continue
 		}
-
-		// L2: the supplying settlement's loyalty scales desertion severity.
-		loyalty := settlementLoyalty(ctx, h.pool, sid)
 
 		// Del C — sold circulation: soldiers standing in the town that pays them
 		// spend soldShare of their pay back into it; a unit anywhere else is a full
@@ -575,7 +572,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 			a := agg(sid)
 			a.unitsUnpaid++
 			a.silverUnpaid += silverNeed
-			h.recordUnpaid(ctx, u, e.WorldID, loyalty, sid, silverNeed)
+			h.recordUnpaid(ctx, u, e.WorldID, sid, silverNeed)
 		}
 	}
 
@@ -941,17 +938,16 @@ func (h *UpkeepHandler) maybeStarvationReturn(ctx context.Context, u upkeepUnitR
 }
 
 // recordUnpaid increments unpaid_periods and applies desertion if the threshold is reached.
-// loyalty is the supplying settlement's loyalty (L2): lower loyalty ⇒ more men desert.
 // sid = the settlement that failed to pay (uuid.Nil if none), for the notification deep-link.
 // silverNeed = the silver upkeep that could not be debited this period, for the
 // forewarning payload (SLICE A) — best-effort, always available from the caller's
 // scope since it's the same amount the failed UPDATE just tried to deduct.
-func (h *UpkeepHandler) recordUnpaid(ctx context.Context, u upkeepUnitRow, worldID uuid.UUID, loyalty int, sid uuid.UUID, silverNeed float64) {
+func (h *UpkeepHandler) recordUnpaid(ctx context.Context, u upkeepUnitRow, worldID uuid.UUID, sid uuid.UUID, silverNeed float64) {
 	np := u.unpaidPeriods + 1
 
 	if np >= upkeepDesertionTicks {
-		// Desertion — severity scales with the supplying settlement's loyalty.
-		lost := desertionStepForLoyalty(loyalty)
+		// Unpaid upkeep has the same desertion severity for every unit.
+		lost := upkeepDesertionStep
 		if lost > u.size {
 			lost = u.size
 		}

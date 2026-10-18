@@ -12,7 +12,6 @@ import (
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/gossip"
-	"formatet/megaron/server/internal/loyalty"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
@@ -1869,9 +1868,9 @@ func (h *UnitArrivalHandler) HandleSentryReturn(ctx context.Context, e events.Sc
 // become citizens, not a garrison — an undefended new colony is the intended
 // cost of expansion). This is the discrete-unit equivalent of the legacy
 // ArmyComposition colonize() in arrival.go: a genuinely separate
-// settlement (own catchment, loyalty, governor, building queue) that is still
+// settlement (own catchment, governor, building queue) that is still
 // integrated into the Wanax's network (same owner, shares the per-Wanax kharis
-// pool, revolts if the capital falls, counts toward the divine expansion brake).
+// pool, counts toward the divine expansion brake).
 //
 // existingProvinceID is uuid.Nil when no provinces row exists for the hex yet
 // (the common case — provinces are sparse); then we create one from map_tiles.
@@ -1941,10 +1940,10 @@ func (h *UnitArrivalHandler) foundColony(
 	if err := tx.QueryRow(ctx,
 		`INSERT INTO settlements
 		 (world_id, province_id, name, culture_id, owner_id, founder_id, control_type, is_capital,
-		  loyalty, loyalty_points, governor_is_ai, population, founded_from)
-		 VALUES ($1,$2,$3,$4,$5,$5,'colony',false,2,$8,true,$7,$6)
+		  governor_is_ai, population, founded_from)
+		 VALUES ($1,$2,$3,$4,$5,$5,'colony',false,true,$7,$6)
 		 RETURNING id`,
-		worldID, provinceID, name, culture, u.ownerID, parentID, population, loyalty.LoyaltyStartColony,
+		worldID, provinceID, name, culture, u.ownerID, parentID, population,
 	).Scan(&colonyID); err != nil {
 		return fmt.Errorf("foundColony: create settlement: %w", err)
 	}
@@ -2102,7 +2101,6 @@ func (h *UnitArrivalHandler) foundColony(
 			"grain_amount":       grainAmount,
 			"grain_net_per_tick": grainNet,
 			"food_net_per_tick":  foodNet,
-			"loyalty_warning":    loyalty.FoundingFoodWelfareWarning(foodRate, population),
 		}
 		// Both founding notices share the forecast's complete food balance
 		// and numerical-dust rule. Old persisted aliases remain readable.

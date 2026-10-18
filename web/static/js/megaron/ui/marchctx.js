@@ -182,7 +182,6 @@ export function renderColonizePreviewHTML(p) {
     html += `<div>Seed ${fmtNum(Math.round(g.seed || 0))} grain — production covers food demand.</div>`;
   }
 
-  if (g.loyalty_warning) html += `<div>${esc(g.loyalty_warning)}</div>`;
   const dep = {};
   (p.catchment || []).forEach(ce => {
     if (!ce.known) return;

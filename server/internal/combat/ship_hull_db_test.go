@@ -14,7 +14,7 @@ package combat
 // standing_orders override (retreat_at_loss = 0.99, same technique
 // TestBattleTick_HoldToLastManDisablesRout uses for the opposite control) so
 // the fixture does not depend on empirically hunting a seed that happens to
-// cross the loyalty-derived default threshold — it routs the instant it
+// cross the fixed default threshold — it routs the instant it
 // takes ANY loss at all, which any dice stream that lands at least one hit
 // against the defender's fleet within the tick budget will trigger.
 
@@ -134,7 +134,7 @@ func TestNavalBattle_HullDrawnOnBothSides_RoutedLinksHome(t *testing.T) {
 
 	// Force the DEFENDER (only) to rout at its very first loss — deterministic
 	// regardless of exactly which round/tick lands the first hit (see file
-	// header). The attacker keeps the default loyalty-derived threshold, so
+	// header). The attacker keeps the default fixed threshold, so
 	// it does not also rout from an early loss of its own.
 	if _, err := pool.Exec(ctx,
 		`UPDATE battle_participants SET standing_orders = '{"retreat_at_loss":0.99}'::jsonb WHERE battle_id = $1 AND side = 'defender'`,

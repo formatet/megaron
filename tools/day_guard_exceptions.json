@@ -112,9 +112,7 @@
       "battle tick: end battle: %w",
       "battle tick: append BattleEnded failed",
       "battle tick: occupy settlement: %w",
-      "battle tick: reset occupation defense: %w",
-      "battle tick: attacker battle loyalty failed",
-      "battle tick: defender battle loyalty failed"
+      "battle tick: reset occupation defense: %w"
     ],
     "counts": {
       "initiate/join battle: read current tick: %w": 1,
@@ -137,9 +135,7 @@
       "battle tick: end battle: %w": 1,
       "battle tick: append BattleEnded failed": 1,
       "battle tick: occupy settlement: %w": 1,
-      "battle tick: reset occupation defense: %w": 1,
-      "battle tick: attacker battle loyalty failed": 1,
-      "battle tick: defender battle loyalty failed": 1
+      "battle tick: reset occupation defense: %w": 1
     }
   },
   "server/internal/combat/march_encounter.go": {
@@ -236,24 +232,6 @@
     "counts": {
       "plan outbound route: land ticks: %w": 1,
       "plan return route: land ticks: %w": 1
-    }
-  },
-  "server/internal/loyalty/decay.go": {
-    "reason": "Internal diagnostics/logging; API callers send a separate player-safe error.",
-    "literals": [
-      "claim decay tick: %w"
-    ],
-    "counts": {
-      "claim decay tick: %w": 1
-    }
-  },
-  "server/internal/loyalty/welfare.go": {
-    "reason": "Internal diagnostics/logging; API callers send a separate player-safe error.",
-    "literals": [
-      "query settlements for welfare tick: %w"
-    ],
-    "counts": {
-      "query settlements for welfare tick: %w": 1
     }
   },
   "server/internal/economy/founding_forecast.go": {

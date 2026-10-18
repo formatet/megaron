@@ -39,7 +39,6 @@ var checkers = []func(checkContext) Verb{
 	canTradeDecline,
 	canTradeCancel,
 	canTransfer,
-	canGift,
 	// diplomacy
 	canMessage,
 	canReply,

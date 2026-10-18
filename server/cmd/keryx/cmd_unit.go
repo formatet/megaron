@@ -909,7 +909,6 @@ type colonizePreview struct {
 		FishPerTick         float64  `json:"fish_per_tick"`
 		FoodNetPerTick      *float64 `json:"food_net_per_tick"`
 		FarmFoodNetPerTick  *float64 `json:"with_farm_food_net_per_tick"`
-		LoyaltyWarning      string   `json:"loyalty_warning"`
 		FarmPossible        *bool    `json:"farm_possible"`
 		StarterFarmIncluded bool     `json:"starter_farm_included"`
 		BasePerTick         float64  `json:"base_per_tick"`
@@ -1048,9 +1047,6 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 		fmt.Printf("  Starting stock %.0f grain — production covers food demand.\n", p.Grain.Seed)
 	}
 
-	if p.Grain.LoyaltyWarning != "" {
-		fmt.Printf("  %s\n", p.Grain.LoyaltyWarning)
-	}
 	// "Övrigt": deposits present in the known catchment + any building-free
 	// non-grain production. Sorted for stable output.
 	var extras []string
@@ -1528,7 +1524,7 @@ func stanceDispatchLine(resp map[string]any, stance, unitShort, eta string) stri
 // retreat default the unit carried in (`keryx retreat-default`, mig 145).
 func unitStandingOrdersCmd() *cobra.Command {
 	var unitID string
-	var holdToLastMan, byLoyalty bool
+	var holdToLastMan, whenLosing bool
 
 	cmd := &cobra.Command{
 		Use:   "retreat-order",
@@ -1536,14 +1532,14 @@ func unitStandingOrdersCmd() *cobra.Command {
 		Long: `Choose Hold to the last man or Retreat when it goes badly for a fighting unit.
 It overrides your realm-wide retreat default (keryx retreat-default) for this
 battle only. A unit not in a battle is refused — set the default instead.`,
-		Example: `  keryx unit retreat-order --unit <id> --by-loyalty
+		Example: `  keryx unit retreat-order --unit <id> --when-losing
   keryx unit retreat-order --unit <id> --hold-to-last-man`,
 		Args: rejectPositionalArgs("unit"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			if cmd.Flags().Changed("hold-to-last-man") == cmd.Flags().Changed("by-loyalty") {
-				return fmt.Errorf("choose exactly one of --hold-to-last-man or --by-loyalty")
+			if cmd.Flags().Changed("hold-to-last-man") == cmd.Flags().Changed("when-losing") {
+				return fmt.Errorf("choose exactly one of --hold-to-last-man or --when-losing")
 			}
-			body, modeErr := retreatModeBody(holdToLastMan, byLoyalty)
+			body, modeErr := retreatModeBody(holdToLastMan, whenLosing)
 			if modeErr != nil {
 				return modeErr
 			}
@@ -1583,7 +1579,7 @@ battle only. A unit not in a battle is refused — set the default instead.`,
 
 	cmd.Flags().StringVar(&unitID, "unit", "", "unit UUID (required)")
 	cmd.Flags().BoolVar(&holdToLastMan, "hold-to-last-man", false, "disable rout for this unit's side — fight to annihilation")
-	cmd.Flags().BoolVar(&byLoyalty, "by-loyalty", false, "Retreat when it goes badly — determined by loyalty")
+	cmd.Flags().BoolVar(&whenLosing, "when-losing", false, "Retreat when it goes badly — at the fixed loss threshold")
 	_ = cmd.MarkFlagRequired("unit")
 	return cmd
 }

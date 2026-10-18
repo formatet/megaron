@@ -20,8 +20,8 @@ import (
 //     'dispossessed' and anchor last_settlement_id to the fallen city so the
 //     epitaph crawl can render their reign. Returns gameOver = true.
 //   - ≥1 remain but none is a capital → the lost city was their metropolis;
-//     automatically promote the highest-loyalty survivor to capital (no player
-//     choice — loyalty decides, population then id break ties).
+//     automatically promote the most populous survivor to capital (no player
+//     choice — population decides, id breaks ties).
 //   - ≥1 remain and a capital still stands → a mere colony fell; nothing to do.
 //
 // This replaces the old unconditional "mark dispossessed" writes, which fired even
@@ -32,7 +32,7 @@ func handleOwnerCityLoss(ctx context.Context, tx pgx.Tx, ownerID, worldID, lostS
 		return false, nil
 	}
 
-	// "Held" = any settlement still theirs, even if besieged or revolting; only
+	// "Held" = any settlement still theirs, even if besieged; only
 	// 'collapsed' (torn down) and 'sunk' (island lost) no longer count.
 	var remaining int
 	if err := tx.QueryRow(ctx,
@@ -60,7 +60,7 @@ func handleOwnerCityLoss(ctx context.Context, tx pgx.Tx, ownerID, worldID, lostS
 	}
 
 	// The Wanax survives. Ensure a capital still stands; if not, the lost city was
-	// the metropolis → promote the highest-loyalty survivor.
+	// the metropolis → promote the most populous survivor.
 	var capitals int
 	if err := tx.QueryRow(ctx,
 		`SELECT COUNT(*) FROM settlements
@@ -74,14 +74,14 @@ func handleOwnerCityLoss(ctx context.Context, tx pgx.Tx, ownerID, worldID, lostS
 		return false, nil // a colony fell; the metropolis still stands
 	}
 
-	// Promote by loyalty (Timothy 2026-07-10). Prefer a healthy seat over a
-	// besieged/revolting one; population then id break ties deterministically.
+	// Promote by population. Prefer a healthy seat over a
+	// besieged one; id breaks equal-population ties deterministically.
 	var newCapital uuid.UUID
 	if err := tx.QueryRow(ctx,
 		`SELECT id FROM settlements
 		 WHERE owner_id = $1 AND world_id = $2
 		   AND state NOT IN ('collapsed','sunk') AND id <> $3
-		 ORDER BY (state = 'active') DESC, loyalty DESC, population DESC, id ASC
+		 ORDER BY (state = 'active') DESC, population DESC, id ASC
 		 LIMIT 1`,
 		ownerID, worldID, lostSettlementID,
 	).Scan(&newCapital); err != nil {

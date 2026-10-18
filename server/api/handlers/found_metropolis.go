@@ -14,7 +14,6 @@ import (
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/hexgrid"
-	"formatet/megaron/server/internal/loyalty"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
@@ -499,7 +498,6 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 			"grain_amount":       grainAmount,
 			"grain_net_per_tick": grainNet,
 			"food_net_per_tick":  foodNet,
-			"loyalty_warning":    loyalty.FoundingFoodWelfareWarning(foodRate, openingPopulation),
 			"grain_carried":      founded.GrainCarried,
 			"silver_carried":     founded.SilverCarried,
 			"known_hexes":        known,

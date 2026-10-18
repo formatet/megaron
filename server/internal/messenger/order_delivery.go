@@ -256,12 +256,12 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 		// threshold or explicit hold:false reset at application time only,
 		// including passage-rebuilt copies.
 		order := *p.StandingOrders
-		if order.RetreatAtLoss != nil || (!order.ByLoyalty && order.HoldToLastMan != nil && !*order.HoldToLastMan) {
+		if order.RetreatAtLoss != nil || (!order.WhenLosing && order.HoldToLastMan != nil && !*order.HoldToLastMan) {
 			// Match migration 173 and the old engine: hold wins over an
-			// ignored percentage; otherwise the removed mode becomes loyalty.
+			// ignored percentage; otherwise the removed mode becomes when_losing.
 			hold := order.HoldToLastMan != nil && *order.HoldToLastMan
 			order.RetreatAtLoss = nil
-			order.ByLoyalty = !hold
+			order.WhenLosing = !hold
 			if !hold {
 				order.HoldToLastMan = nil
 			}

@@ -2,7 +2,7 @@ package kharis
 
 // G2 idempotency regression for TickHandler.applyDecay's growth/grain-draw
 // effect (found in the idempotency sweep, sibling of migration 098's already-
-// fixed processMaintenance and loyalty.ColonyPenaltyHandler).
+// fixed processMaintenance).
 //
 // Handle fans ONE ScheduledKharisTick event across every player
 // (processMaintenance, claimed per event_id+player_id since 098) and THEN

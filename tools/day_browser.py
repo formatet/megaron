@@ -51,7 +51,7 @@ try:
       elif tail in ['provinces/'+P1+'/goods','provinces/'+P2+'/goods']:data=goods
       elif tail in ['provinces/'+P1+'/actions','provinces/'+P2+'/actions']:data=[]
       elif tail=='provinces/'+P1:data=dict(settlement=dict(population=1000,army={},buildings=[],can_recruit=[],resources={}))
-      elif tail=='retreat-default':data=dict(by_loyalty=True,hold_to_last_man=False,retreat_at_loss=0.5)
+      elif tail=='retreat-default':data=dict(when_losing=True,hold_to_last_man=False,retreat_at_loss=0.5)
       elif tail.startswith('notifications?'):data=dict(notifications=[] if 'kind=' in tail else notifications)
       elif tail=='founding/status':data=fp
       elif tail.startswith('colonize-preview?'):data=forecast

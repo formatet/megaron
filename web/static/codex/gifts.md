@@ -16,4 +16,4 @@ If the city changes hands during the journey, its **new owner receives the gift*
 
 A gift appears as a row among the letters in **Diplomacy → Threads**. The sender can see its departure; the recipient sees the outcome when delivery is resolved. It creates no trade offer and asks for nothing in return. Notifications and Keryx show the same delivery outcome.
 
-**Gift from capital** to your own colony is a separate [[transfers|loyalty gesture]].
+To send goods between your own cities, use an [[transfers|internal transfer]].

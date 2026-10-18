@@ -59,12 +59,8 @@ var TickSeconds = tickSeconds()
 // sub-minute TICK_SECONDS cadence (e.g. TICK_SECONDS=6 reads as 1 minute —
 // 10x too long). Do NOT use it for ETA/display-time derivation — use
 // RealUntil/EtaAt (eta.go), which convert exactly via TickSeconds instead.
-// TickMinutes is intentionally kept for the two use classes where a floored
-// minute is fine or even desired: loyalty grace-window/threshold maths
-// (internal/loyalty/decay.go, welfare.go — a coarse day-scale window, not a
-// display ETA) and the static catalogue DURATION fields (province.go
-// BuildingCatalogue/UnitCatalogue — "how long this type of build takes" in
-// general, not "when this instance completes").
+// TickMinutes remains for static catalogue DURATION fields (province.go
+// BuildingCatalogue/UnitCatalogue), not instance arrival timestamps.
 var TickMinutes = func() int {
 	m := tickSeconds() / 60
 	if m < 1 {

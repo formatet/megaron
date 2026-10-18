@@ -359,7 +359,7 @@ func TestBattleTick_SpansMultipleTicksForAnEvenFight(t *testing.T) {
 	// §5 rout (built after this test was first written): an evenly matched
 	// fight bleeding down over several ticks is exactly the case rout exists
 	// for — the losing side breaks and retreats with survivors once it falls
-	// to/below the loyalty-derived rout threshold, instead of fighting on to
+	// to/below the fixed rout threshold, instead of fighting on to
 	// literal zero. This fixture/seed pair is deterministic (fixed initial
 	// seed draw + battle.seed-derived per-round dice), so it reliably routs
 	// rather than annihilates — that IS the fixture this test now exercises.
@@ -375,49 +375,6 @@ func TestBattleTick_SpansMultipleTicksForAnEvenFight(t *testing.T) {
 	}
 	if eventCount != 1 {
 		t.Errorf("BattleEnded event count = %d, want 1", eventCount)
-	}
-}
-
-// ── §4: participation formula — pure, no DB ─────────────────────────────────
-
-func TestParticipation_LoyaltyBaseAndClamp(t *testing.T) {
-	cases := []struct {
-		name        string
-		loyalty     int
-		kharis      float64
-		fortify     bool
-		wantAtLeast float64
-		wantAtMost  float64
-	}{
-		{"loyalty 1, no kharis, no fortify", 1, 0, false, 0.65, 0.65},
-		{"loyalty 2 baseline", 2, 0, false, 0.80, 0.80},
-		{"loyalty 4, no kharis", 4, 0, false, 1.00, 1.00}, // already at MAX
-		{"unknown loyalty falls back to baseline (2)", 99, 0, false, 0.80, 0.80},
-		{"loyalty 4 + kharis + fortify clamps at MAX", 4, 1000, true, participationMax, participationMax},
-		{"loyalty 1 + huge kharis still ≥ MIN, ≤ loyalty1+caps", 1, 1000, false, 0.65, 0.75},
-	}
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			got := participation(c.loyalty, c.kharis, c.fortify)
-			if got < participationMin || got > participationMax {
-				t.Fatalf("participation() = %f, out of [%f,%f] bounds", got, participationMin, participationMax)
-			}
-			if got < c.wantAtLeast-1e-9 || got > c.wantAtMost+1e-9 {
-				t.Errorf("participation(loyalty=%d, kharis=%f, fortify=%v) = %f, want in [%f,%f]",
-					c.loyalty, c.kharis, c.fortify, got, c.wantAtLeast, c.wantAtMost)
-			}
-		})
-	}
-}
-
-func TestParticipation_KharisNeverPenalises(t *testing.T) {
-	// Kharis read in this file is always GREATEST(0, ...) — there is no
-	// negative kharis in this system, so participation must be monotonically
-	// non-decreasing in kharis, never a penalty.
-	base := participation(2, 0, false)
-	withKharis := participation(2, 50, false)
-	if withKharis < base {
-		t.Errorf("participation with kharis=50 (%f) < participation with kharis=0 (%f) — kharis must never penalise participation", withKharis, base)
 	}
 }
 
@@ -452,7 +409,7 @@ func TestBattleRoundSeed_DeterministicPerTriple(t *testing.T) {
 // which already established this exact pair routs the defender at ~10% strength.
 
 // TestBattleTick_RoutLeavesSurvivorsNotAnnihilation is §5's core claim: a side
-// that falls to/below the loyalty-derived rout threshold breaks and leaves the
+// that falls to/below the fixed rout threshold breaks and leaves the
 // battle WITH its remaining men, rather than fighting to literal zero. Before
 // this slice, termination_reason had exactly one possible value
 // ("annihilation" — see battle.go's original header comment), so this

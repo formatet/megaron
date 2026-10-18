@@ -43,7 +43,7 @@ func TestStarvationSignal_AuditHasNoStateEffects(t *testing.T) {
 	hash := func() string {
 		t.Helper()
 		var value string
-		if err := pool.QueryRow(ctx, `SELECT md5(jsonb_build_object('settlement',to_jsonb(s),'realm',(SELECT jsonb_agg(to_jsonb(r)) FROM player_world_records r WHERE r.world_id=s.world_id AND r.player_id=s.owner_id),'goods',(SELECT jsonb_agg(to_jsonb(g) ORDER BY good_key) FROM settlement_goods g WHERE g.settlement_id=s.id),'units',(SELECT jsonb_agg(to_jsonb(u) ORDER BY id) FROM units u WHERE u.settlement_id=s.id),'loyalty',(SELECT jsonb_agg(to_jsonb(l) ORDER BY id) FROM loyalty_events l WHERE l.settlement_id=s.id))::text) FROM settlements s WHERE s.id=$1`, sid).Scan(&value); err != nil {
+		if err := pool.QueryRow(ctx, `SELECT md5(jsonb_build_object('settlement',to_jsonb(s),'realm',(SELECT jsonb_agg(to_jsonb(r)) FROM player_world_records r WHERE r.world_id=s.world_id AND r.player_id=s.owner_id),'goods',(SELECT jsonb_agg(to_jsonb(g) ORDER BY good_key) FROM settlement_goods g WHERE g.settlement_id=s.id),'units',(SELECT jsonb_agg(to_jsonb(u) ORDER BY id) FROM units u WHERE u.settlement_id=s.id))::text) FROM settlements s WHERE s.id=$1`, sid).Scan(&value); err != nil {
 			t.Fatal(err)
 		}
 		return value
@@ -58,5 +58,5 @@ func TestStarvationSignal_AuditHasNoStateEffects(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT count(*) FROM events WHERE stream_id=$1 AND event_type='StarvationDamage'`, sid).Scan(&audits); err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("StarvationDamage%d; full settlement/realm(goods/kharis)/units/loyalty projection hashes identical %s", audits, before)
+	t.Logf("StarvationDamage%d; full settlement/realm(goods/kharis)/units projection hashes identical %s", audits, before)
 }
