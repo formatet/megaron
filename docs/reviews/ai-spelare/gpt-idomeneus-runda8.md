@@ -47,3 +47,5 @@ Faktiska kommandon i ordning (full utdata i intilliggande `-tools.json`):
 29. `unit list`
 30. `build --queue --province fea8cf52-09bd-4c9d-a714-a256f59c505d`
 31. `goods --province fea8cf52-09bd-4c9d-a714-a256f59c505d`
+
+**Integrationskvitto:** Claude byggde atomiskt om `/home/tk/go/bin/poleia` från master3edcfb4 kl17:49. Rundans kommandon före17:49 använde den gamla binären; dess gift-/lojalitetstexter beskriver alltså inte det uppdaterade CLI:t. Framtida deploy med cmd-ändring inkluderar binärbygget enligt Claude. Inga fler kommandon kördes för att testa om redan utförda spelorder.

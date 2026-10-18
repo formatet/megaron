@@ -39,3 +39,5 @@ Faktiska kommandon i ordning (full utdata i intilliggande `-tools.json`):
 21. `map --help`
 22. `map --province 15bc2000-f96f-4b57-b831-7f3e265056f7`
 23. `status`
+
+**Integrationskvitto:** Claude byggde atomiskt om `/home/tk/go/bin/poleia` från master3edcfb4 kl17:49. Rundans kommandon före17:49 använde den gamla binären; dess gift-/lojalitetstexter beskriver alltså inte det uppdaterade CLI:t. Framtida deploy med cmd-ändring inkluderar binärbygget enligt Claude. Inga fler kommandon kördes för att testa om redan utförda spelorder.
