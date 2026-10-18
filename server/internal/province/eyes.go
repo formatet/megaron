@@ -61,14 +61,31 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 		worldID, playerID,
 	)
 	if err == nil {
+		type unitEyeRow struct {
+			status, category, utype string
+			q, r                    int
+			targetQ, targetR        *int
+			departsAt, arrivesAt    *time.Time
+		}
+		var units []unitEyeRow
 		for uRows.Next() {
-			var status, category, utype string
-			var q, r int
-			var targetQ, targetR *int
-			var departsAt, arrivesAt *time.Time
-			if uRows.Scan(&status, &q, &r, &targetQ, &targetR, &category, &utype, &departsAt, &arrivesAt) != nil {
+			var row unitEyeRow
+			if uRows.Scan(&row.status, &row.q, &row.r, &row.targetQ, &row.targetR, &row.category, &row.utype, &row.departsAt, &row.arrivesAt) != nil {
 				continue
 			}
+			units = append(units, row)
+		}
+		uRows.Close()
+		// Drain before interpolation: Queryer may be a single TX connection.
+		for _, row := range units {
+			status := row.status
+			category := row.category
+			q := row.q
+			r := row.r
+			targetQ := row.targetQ
+			targetR := row.targetR
+			departsAt := row.departsAt
+			arrivesAt := row.arrivesAt
 			kind := EyeLandUnit
 			if category == "naval" {
 				kind = EyeShip
@@ -85,7 +102,6 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 			}
 			eyes = append(eyes, Eye{Pos: pos, Kind: kind})
 		}
-		uRows.Close()
 	}
 
 	// Runners — the player's own outbound messengers (orders, diplomatic
@@ -129,15 +145,33 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 		worldID, playerID,
 	)
 	if err == nil {
+		type outboundEyeRow struct {
+			oq, or_           int
+			dq, dr            *int
+			sentAt, arrivesAt time.Time
+			passageStatus     *string
+			portQ, portR      *int
+		}
+		var outbound []outboundEyeRow
 		for mRows.Next() {
-			var oq, or_ int
-			var dq, dr *int
-			var sentAt, arrivesAt time.Time
-			var passageStatus *string
-			var portQ, portR *int
-			if mRows.Scan(&oq, &or_, &dq, &dr, &sentAt, &arrivesAt, &passageStatus, &portQ, &portR) != nil {
+			var row outboundEyeRow
+			if mRows.Scan(&row.oq, &row.or_, &row.dq, &row.dr, &row.sentAt, &row.arrivesAt, &row.passageStatus, &row.portQ, &row.portR) != nil {
 				continue
 			}
+			outbound = append(outbound, row)
+		}
+		mRows.Close()
+		// Drain before interpolation: Queryer may be a single TX connection.
+		for _, row := range outbound {
+			oq := row.oq
+			or_ := row.or_
+			dq := row.dq
+			dr := row.dr
+			sentAt := row.sentAt
+			arrivesAt := row.arrivesAt
+			passageStatus := row.passageStatus
+			portQ := row.portQ
+			portR := row.portR
 			// 3b-1: a sea-lift runner's eye follows the leg it is actually on,
 			// not the flat origin→final-target courier interpolation below
 			// (which assumes an unbroken crossing and, for awaiting_passage,
@@ -175,7 +209,6 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 			}
 			eyes = append(eyes, Eye{Pos: pos, Kind: EyeLandUnit})
 		}
-		mRows.Close()
 	}
 
 	// Return leg: a replied courier runs from the delivery point (destination)
@@ -200,16 +233,35 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 		worldID, playerID,
 	)
 	if err == nil {
+		type returnEyeRow struct {
+			sq, sr               int
+			hq, hr               *int
+			departsAt, arrivesAt time.Time
+			passageStatus        *string
+			portQ, portR         *int
+			withdrawn            bool
+		}
+		var returning []returnEyeRow
 		for rRows.Next() {
-			var sq, sr int  // return start = delivery point (destination)
-			var hq, hr *int // return end = home (origin)
-			var departsAt, arrivesAt time.Time
-			var passageStatus *string
-			var portQ, portR *int
-			var withdrawn bool
-			if rRows.Scan(&sq, &sr, &hq, &hr, &departsAt, &arrivesAt, &passageStatus, &portQ, &portR, &withdrawn) != nil {
+			var row returnEyeRow
+			if rRows.Scan(&row.sq, &row.sr, &row.hq, &row.hr, &row.departsAt, &row.arrivesAt, &row.passageStatus, &row.portQ, &row.portR, &row.withdrawn) != nil {
 				continue
 			}
+			returning = append(returning, row)
+		}
+		rRows.Close()
+		// Drain before interpolation: Queryer may be a single TX connection.
+		for _, row := range returning {
+			sq := row.sq
+			sr := row.sr
+			hq := row.hq
+			hr := row.hr
+			departsAt := row.departsAt
+			arrivesAt := row.arrivesAt
+			passageStatus := row.passageStatus
+			portQ := row.portQ
+			portR := row.portR
+			withdrawn := row.withdrawn
 			// 3b-1: same leg-follows-status rule as the outbound query above.
 			if passageStatus != nil {
 				switch *passageStatus {
@@ -243,7 +295,6 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 			}
 			eyes = append(eyes, Eye{Pos: pos, Kind: EyeLandUnit})
 		}
-		rRows.Close()
 	}
 
 	loadSeaHorizons(ctx, db, worldID, eyes)
