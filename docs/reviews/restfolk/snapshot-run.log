@@ -1,0 +1,11 @@
+* Amnissos         grain  37.9500 →  32.2167; fish   2.0000 →   2.0000; placements removed 0, replaced 0
+* Phaistos         grain   6.1760 →   4.2000; fish  25.5000 →  26.1460; placements removed 0, replaced 0
+* Scheria          grain   0.6800 →   0.5000; fish   4.0000 →   4.0200; placements removed 0, replaced 0
+  Tylissos         grain   4.9000 →   4.9000; fish   0.0000 →   0.0000; placements removed 0, replaced 0
+* Itanos           grain  10.8067 →   7.6067; fish   0.0000 →   0.0000; placements removed 0, replaced 0
+* Mallia           grain   7.7400 →   5.9400; fish   0.0000 →   0.0000; placements removed 0, replaced 0
+* Kydonia          grain   2.1800 →   0.5000; fish   2.0000 →   2.4200; placements removed 0, replaced 0
+
+7 settlements previewed (all transactions rolled back), 6 changed, 0 failed
+
+private clone dry-run: all table hashes unchanged; apply deltas identical; repeat 0 changed

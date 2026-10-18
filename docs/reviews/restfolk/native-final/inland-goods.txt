@@ -1,0 +1,23 @@
+1 citizen = 100 people
+Labor pool: 10 citizens  ·  Idle: 7 citizens
+
+Good            Stock   Per day     Lvl    Citizens    Marg/g
+──────────────────────────────────────────────────────────────────────────
+cedar             0.0       0.0       —           0    1.0000
+stone             0.5       0.0       —           0    2.0000
+timber            0.0       0.0       —           —         —
+silver          480.0       0.0       —           —         —
+oil               0.0       0.0       —           0    0.6667
+purple            0.0       0.0       —           —         —
+wine              0.0       0.0       —           0    0.5000
+cult              0.0       0.0       —           —         —
+fish              0.0       0.0       —           —         —
+grain          1205.6       5.6       —           3    1.7000
+livestock        50.0       0.0       —           0    1.0000
+bronze            0.0       0.0       —           —         —
+copper            0.0       0.0       —           —         —
+horses            0.0       0.0       —           —         —
+pottery           0.0       0.0       —           —         —
+tin               0.0       0.0       —           0    1.0000
+
+Wanaxes agree trade prices. The temple shows how the gods weigh offerings: keryx rite --list.

@@ -1,0 +1,5 @@
+=== RUN   TestRestfolk_BestWorkerNotCatchmentSum
+--- PASS: TestRestfolk_BestWorkerNotCatchmentSum (0.00s)
+PASS
+ok  	formatet/megaron/server/internal/economy	0.002s
+» färsk DB på migration 183 · commit a2738fa1+ändringar

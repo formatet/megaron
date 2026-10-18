@@ -1,0 +1,13 @@
+=== RUN   TestRestfolk_ForecastStartingRequiredRecompute
+=== RUN   TestRestfolk_ForecastStartingRequiredRecompute/fish
+    restfolk_test.go:85: forecast {GrainProduction:0.5 FishProduction:5.42 Consumption:5.71 GrainNet:0 FoodNet:0.20999999999999996} actual 0.500000/6.420000 placed6 required5 achievabletrue <nil>
+=== RUN   TestRestfolk_ForecastStartingRequiredRecompute/farm
+=== RUN   TestRestfolk_ForecastStartingRequiredRecompute/hills
+--- FAIL: TestRestfolk_ForecastStartingRequiredRecompute (0.09s)
+    --- FAIL: TestRestfolk_ForecastStartingRequiredRecompute/fish (0.03s)
+    --- PASS: TestRestfolk_ForecastStartingRequiredRecompute/farm (0.03s)
+    --- PASS: TestRestfolk_ForecastStartingRequiredRecompute/hills (0.03s)
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.093s
+FAIL
+» färsk DB på migration 183 · commit a2738fa1+ändringar

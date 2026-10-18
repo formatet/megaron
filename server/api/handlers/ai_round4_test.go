@@ -74,10 +74,13 @@ func TestAIRound4_AutomaticFoodAPIAndFixedQueue(t *testing.T) {
 			s = raw.(map[string]any)["settlement"].(map[string]any)
 		}
 		a, ok := s["automatic_food"].(map[string]any)
-		if !ok || a["remainder_people"] != float64(42) || a["nearjord_grain_per_tick"] != float64(.5) || math.Abs(a["remainder_grain_per_tick"].(float64)-3.78) > 1e-9 {
+		if !ok || a["remainder_people"] != float64(42) || a["nearjord_grain_per_tick"] != float64(.5) || math.Abs(a["remainder_grain_per_tick"].(float64)-.42) > 1e-9 {
 			t.Fatalf("missing actual automatic contribution: %s", rec.Body.String())
 		}
-		if math.Abs(s["grain_prod_rate"].(float64)-4.28) > 1e-9 {
+		if a["remainder_fish_per_tick"] != float64(0) {
+			t.Fatalf("unexpected fish: %v", a)
+		}
+		if math.Abs(s["grain_prod_rate"].(float64)-.92) > 1e-9 {
 			t.Fatalf("unexpected stored production: %v", s)
 		}
 	}

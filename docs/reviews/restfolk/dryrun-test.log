@@ -1,0 +1,7 @@
+» färsk DB på migration 183 · commit a2738fa1+ändringar
+=== RUN   TestRecomputeDryRun_PreviewsAndRollsBack
+    main_test.go:59: dry-run grain 4.2800 -> 0.5000 fish 0.0000 -> 1.4200 removed1 replaced1, full snapshot unchanged
+    main_test.go:59: dry-run grain 4.2800 -> 0.5000 fish 0.0000 -> 1.4200 removed1 replaced1, full snapshot unchanged
+--- PASS: TestRecomputeDryRun_PreviewsAndRollsBack (0.03s)
+PASS
+ok  	formatet/megaron/server/cmd/recompute-all	0.035s

@@ -1,0 +1,15 @@
+=== RUN   TestRestfolk_EligibleYieldAndBuildingBonus
+=== RUN   TestRestfolk_EligibleYieldAndBuildingBonus/fish_beats_grain
+=== RUN   TestRestfolk_EligibleYieldAndBuildingBonus/farm_beats_fish
+=== RUN   TestRestfolk_EligibleYieldAndBuildingBonus/no_place_no_work
+=== RUN   TestRestfolk_EligibleYieldAndBuildingBonus/no_food
+=== RUN   TestRestfolk_EligibleYieldAndBuildingBonus/grain_wins_tie
+--- PASS: TestRestfolk_EligibleYieldAndBuildingBonus (0.00s)
+    --- PASS: TestRestfolk_EligibleYieldAndBuildingBonus/fish_beats_grain (0.00s)
+    --- PASS: TestRestfolk_EligibleYieldAndBuildingBonus/farm_beats_fish (0.00s)
+    --- PASS: TestRestfolk_EligibleYieldAndBuildingBonus/no_place_no_work (0.00s)
+    --- PASS: TestRestfolk_EligibleYieldAndBuildingBonus/no_food (0.00s)
+    --- PASS: TestRestfolk_EligibleYieldAndBuildingBonus/grain_wins_tie (0.00s)
+PASS
+ok  	formatet/megaron/server/internal/economy	0.002s
+» färsk DB på migration 183 · commit a2738fa1+ändringar
