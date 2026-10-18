@@ -1586,7 +1586,7 @@ func (h *ProvinceHandler) Buildings(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT building_type, level, built_at, hex_q, hex_r FROM buildings WHERE settlement_id = $1 ORDER BY built_at`,
+		`SELECT id, building_type, level, built_at, hex_q, hex_r FROM buildings WHERE settlement_id = $1 ORDER BY built_at`,
 		settlementID,
 	)
 	if err != nil {
@@ -1596,6 +1596,7 @@ func (h *ProvinceHandler) Buildings(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type buildingRow struct {
+		ID      uuid.UUID `json:"id"`
 		Type    string    `json:"type"`
 		Level   int       `json:"level"`
 		BuiltAt time.Time `json:"built_at"`
@@ -1609,7 +1610,7 @@ func (h *ProvinceHandler) Buildings(w http.ResponseWriter, r *http.Request) {
 	var result []buildingRow
 	for rows.Next() {
 		var b buildingRow
-		if err := rows.Scan(&b.Type, &b.Level, &b.BuiltAt, &b.HexQ, &b.HexR); err == nil {
+		if err := rows.Scan(&b.ID, &b.Type, &b.Level, &b.BuiltAt, &b.HexQ, &b.HexR); err == nil {
 			b.CurrentLevel = b.Level
 			result = append(result, b)
 		}
