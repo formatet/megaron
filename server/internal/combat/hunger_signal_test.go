@@ -20,6 +20,11 @@ func TestStarvationSignal_ActualLossEvenLastGarrison(t *testing.T) {
 			ctx := context.Background()
 			f := newSupportFixture(t, pool, "sitos-actual-loss")
 			seedGoods(t, pool, f.capitalID, f.tick, 0, 10000)
+			seedGoods(t, pool, f.townID, f.tick, 10000, 10000)
+			var fedUnit uuid.UUID
+			if err := pool.QueryRow(ctx, `INSERT INTO units(world_id,owner_id,settlement_id,support_settlement_id,home_settlement_id,type,category,size,status) VALUES($1,$2,$3,$3,$3,'spearman','land',100,'garrison') RETURNING id`, f.worldID, f.owner, f.townID).Scan(&fedUnit); err != nil {
+				t.Fatal(err)
+			}
 			var uid uuid.UUID
 			if err := pool.QueryRow(ctx, `INSERT INTO units(world_id,owner_id,settlement_id,support_settlement_id,home_settlement_id,type,category,size,status) VALUES($1,$2,$3,$3,$3,'spearman','land',$4,'garrison') RETURNING id`, f.worldID, f.owner, f.capitalID, size).Scan(&uid); err != nil {
 				t.Fatal(err)
@@ -61,6 +66,13 @@ func TestStarvationSignal_ActualLossEvenLastGarrison(t *testing.T) {
 			}
 			if n != 1 {
 				t.Fatalf("actual current-tick attrition must signal hunger, got %d", n)
+			}
+			var fedSize, fedLosses, fedAudits int
+			if err := pool.QueryRow(ctx, `SELECT size,(SELECT count(*) FROM events WHERE stream_id=$1 AND event_type='UnitAttrition'),(SELECT count(*) FROM events WHERE stream_id=$2 AND event_type='StarvationDamage' AND world_tick=current_world_tick()) FROM units WHERE id=$1`, fedUnit, f.townID).Scan(&fedSize, &fedLosses, &fedAudits); err != nil {
+				t.Fatal(err)
+			}
+			if fedSize != 100 || fedLosses != 0 || fedAudits != 0 {
+				t.Fatalf("fed city B must remain separate from hungry A: size%d losses%d StarvationDamage%d", fedSize, fedLosses, fedAudits)
 			}
 		})
 	}
