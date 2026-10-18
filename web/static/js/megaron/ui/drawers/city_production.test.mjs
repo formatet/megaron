@@ -103,3 +103,9 @@ test('AIRound4: Scheria remainder fish is separate from nearby grain',()=>{
  const html=foodDetailsHTML(pd({food_gubbar_required:5,food_gubbar_placed:5,automatic_food:{nearjord_grain_per_tick:0.5,remainder_people:42,remainder_grain_per_tick:0,remainder_fish_per_tick:0.42}}));
  assert.match(html,/0.50 grain \+ 0.42 fish per day without placed citizens/);assert.match(html,/nearby ground 0.50 grain; 42 people outside whole citizens: 0.00 grain \+ 0.42 fish/);assert.doesNotMatch(html,/could move/);
 });
+
+test('Sitos army grain is available even when fish keeps food coverage high',()=>{
+ const data=pd({army_upkeep:{grain:1},food_net_per_tick_after_upkeep:23,sitos:{granary_per_good:{grain:442,fish:400}}});
+ assert.match(foodDetailsHTML(data),/442 grain in this city's Sitos can feed the army/);
+ data.sitos.granary_per_good={fish:442};assert.doesNotMatch(foodDetailsHTML(data),/Sitos can feed the army/);
+});

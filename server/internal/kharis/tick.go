@@ -1340,8 +1340,9 @@ func (h *TickHandler) emitSubsistenceWarning(ctx context.Context, worldID, owner
 	_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, subsistenceKind, level, payload)
 }
 
-// applyStarvation punishes settlements where grain has hit zero: infantry and
-// chariots each lose 5% (minimum 1 unit) per day.
+// applyStarvation records actual garrison grain-shortage outcomes from upkeep.
+// A zero city grain balance after civilian meals does not prove army hunger.
+
 func (h *TickHandler) applyStarvation(ctx context.Context, worldID uuid.UUID) {
 	// The standing army lives in the units table (settlements.* army columns
 	// retired, SB7). Select starving settlements that have a garrison to attrit,
@@ -1353,10 +1354,10 @@ func (h *TickHandler) applyStarvation(ctx context.Context, worldID uuid.UUID) {
 		   AND EXISTS (SELECT 1 FROM units u
 		               WHERE u.settlement_id = s.id AND u.status = 'garrison'
 		                 AND u.type IN ('spearman','war_chariot') AND u.size > 0)
-		   AND COALESCE(
-		           (SELECT settled(sg.amount, sg.rate, sg.calc_tick)
-		            FROM settlement_goods sg
-		            WHERE sg.settlement_id = s.id AND sg.good_key = 'grain'), 0) <= 0`,
+           AND EXISTS (SELECT 1 FROM events e JOIN units u ON u.id=e.stream_id
+                       WHERE u.settlement_id=s.id AND e.event_type='UnitAttrition'
+                         AND e.payload->>'reason'='grain_shortage'
+                         AND e.world_tick=current_world_tick())`,
 		worldID,
 	)
 	if err != nil {

@@ -1420,5 +1420,12 @@ func armyFoodLine(sett map[string]any) string {
 		}
 		net = before - grain
 	}
-	return fmt.Sprintf("  Army     eats %.1f grain per day → food net %s per day after army", grain, formatNetPerTick(net))
+	line := fmt.Sprintf("  Army     eats %.1f grain per day → food net %s per day after army", grain, formatNetPerTick(net))
+	sitos, _ := sett["sitos"].(map[string]any)
+	reserve, _ := sitos["granary_per_good"].(map[string]any)
+	held, _ := reserve["grain"].(float64)
+	if grain > 0 && held > 0 {
+		line += fmt.Sprintf(" · %.1f grain in this city's Sitos can feed the army", held)
+	}
+	return line
 }

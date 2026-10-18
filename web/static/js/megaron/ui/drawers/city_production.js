@@ -68,7 +68,8 @@ export function foodDetailsHTML(pd) {
   const s = pd?.sitos;
   const peopleNet = s?.food_net_per_tick;
   const grain = pd?.grain_prod_rate != null ? row('Food for people', `grain ${n(pd.grain_prod_rate)} + fish ${n(pd.resources?.fish?.rate || 0)} − people eat ${n(pd.grain_consum_rate || 0)}${peopleNet != null ? ` = ${n(peopleNet)} net before army` : ''}`) : '';
-  const army = pd?.food_net_per_tick_after_upkeep == null ? '' : row('Army food', `eats ${n(pd.army_upkeep?.grain || 0)} grain per day → food net ${n(pd.food_net_per_tick_after_upkeep)} after army`);
+  const armyReserve = (pd.army_upkeep?.grain || 0) > 0 && (s?.granary_per_good?.grain || 0) > 0 ? ` · ${n(s.granary_per_good.grain)} grain in this city's Sitos can feed the army` : '';
+  const army = pd?.food_net_per_tick_after_upkeep == null ? '' : row('Army food', `eats ${n(pd.army_upkeep?.grain || 0)} grain per day → food net ${n(pd.food_net_per_tick_after_upkeep)} after army${armyReserve}`);
   if (!s) return grain || '<p class="empty-state">Food reserve not reported.</p>';
   const perGood = Object.entries(s.granary_per_good || {}).filter(([,v])=>v>0).map(([k,v])=>`${n(v)} ${k}`).join(', ');
   const note = pd.food_gubbar_required == null ? '' : row('Food citizens', `${n(pd.food_gubbar_required)} needed · ${n(pd.food_gubbar_placed || 0)} placed`) + '<p class="empty-state">1 citizen = 100 people. Estimate uses the best food slots for people; the army needs grain separately.</p>';

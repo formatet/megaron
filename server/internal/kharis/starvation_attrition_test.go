@@ -106,7 +106,11 @@ func TestApplyStarvation_StillEmitsStarvationDamage(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 
-	worldID, settlementID, _ := starvationGarrisonFixture(t, 100)
+	worldID, settlementID, unitID := starvationGarrisonFixture(t, 100)
+
+	if _, err := events.NewStore(pool).Append(ctx, unitID, events.StreamCombat, "UnitAttrition", map[string]any{"reason": "grain_shortage", "lost": 10}, worldID, nil); err != nil {
+		t.Fatal(err)
+	}
 
 	h := NewTickHandler(pool, events.NewScheduler(pool, nil), events.NewStore(pool), nil)
 	h.applyStarvation(ctx, worldID)
