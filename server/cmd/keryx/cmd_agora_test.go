@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -14,6 +15,7 @@ import (
 func TestAgoraStatusNeverRequestsPassword(t *testing.T) {
 	for _, tc := range []struct{ name, payload, text string }{
 		{"disabled", `{"enabled":false}`, "not enabled"},
+		{"exempt", `{"enabled":true,"state":"exempt"}`, "No community chat account"},
 		{"pending", `{"enabled":true,"state":"pending"}`, "first city"},
 		{"provisioning", `{"enabled":true,"state":"provisioning"}`, "being created"},
 		{"ready", `{"enabled":true,"state":"ready","user_id":"@agamemnon:agora.test","homeserver":"agora.test"}`, "@agamemnon:agora.test"},
@@ -122,5 +124,25 @@ func TestAgoraNotificationOffersExplicitPasswordCommand(t *testing.T) {
 	})
 	if !strings.Contains(output, "keryx agora password") || strings.Contains(output, "never-render-this") {
 		t.Fatalf("chat notice is not actionable or exposes a secret: %q", output)
+	}
+}
+
+func TestAgoraExemptPasswordHasNoRetryAdvice(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(403)
+		fmt.Fprint(w, `{"error":"private-upstream"}`)
+	}))
+	defer server.Close()
+	old := cfg
+	defer func() { cfg = old }()
+	cfg = &Config{Server: server.URL}
+	cmd := agoraCmd()
+	cmd.SetArgs([]string{"password"})
+	var out bytes.Buffer
+	cmd.SetOut(&out)
+	cmd.SetErr(&out)
+	err := cmd.Execute()
+	if err == nil || !strings.Contains(err.Error(), "no community chat account") || strings.Contains(err.Error()+out.String(), "private-upstream") || strings.Contains(err.Error(), "later") {
+		t.Fatalf("%v %s", err, out.String())
 	}
 }

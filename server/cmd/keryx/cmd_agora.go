@@ -34,6 +34,8 @@ func agoraCmd() *cobra.Command {
 			switch {
 			case !status.Enabled:
 				_, err = fmt.Fprintln(cmd.OutOrStdout(), "Community chat is not enabled on this server.")
+			case status.State == "exempt":
+				_, err = fmt.Fprintln(cmd.OutOrStdout(), "No community chat account is provided for this game account.")
 			case status.State == "ready":
 				_, err = fmt.Fprintf(cmd.OutOrStdout(), "Community chat: %s\nHomeserver: %s\nRun 'keryx agora password' to set and display a new chat password once. This replaces the previous chat password.\n", status.UserID, status.Homeserver)
 			case status.State == "provisioning":
@@ -53,6 +55,9 @@ func agoraCmd() *cobra.Command {
 				return fmt.Errorf("chat password request failed; try again later")
 			}
 			if status >= 400 {
+				if status == http.StatusForbidden {
+					return fmt.Errorf("no community chat account is provided for this game account")
+				}
 				if status == http.StatusConflict {
 					return fmt.Errorf("chat account is not ready; run 'keryx agora' first")
 				}

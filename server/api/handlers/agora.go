@@ -10,6 +10,8 @@ import (
 	"github.com/google/uuid"
 )
 
+var ErrAgoraExempt = errors.New("No community chat account is provided for this game account")
+
 var ErrAgoraPending = errors.New("Your chat account is not ready yet; try again later")
 
 type AgoraAccount struct {
@@ -80,6 +82,10 @@ func (h *AgoraHandler) Password(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	password, err := h.service.Password(r.Context(), playerID)
+	if errors.Is(err, ErrAgoraExempt) {
+		writeError(w, http.StatusForbidden, ErrAgoraExempt.Error())
+		return
+	}
 	if errors.Is(err, ErrAgoraPending) {
 		writeError(w, http.StatusConflict, ErrAgoraPending.Error())
 		return

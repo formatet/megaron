@@ -146,6 +146,10 @@ async function loadChatAccount(generation) {
     if (!accountIsCurrent(generation) || !account.enabled) return;
     section.hidden = false;
     const title = '<h3 id="acc-chat-title">Community chat</h3>';
+    if (account.state === 'exempt') {
+      section.innerHTML = title + '<p>No community chat account is provided for this game account.</p>';
+      return;
+    }
     if (account.state !== 'ready') {
       section.innerHTML = title + '<p>' + (account.state === 'provisioning'
         ? 'Your chat account is being created. Check again later.'
@@ -178,7 +182,7 @@ async function getChatPassword(generation) {
     const response = await requestAgoraPassword();
     if (!accountIsCurrent(generation)) return;
     if (!response.ok) {
-      status.textContent = response.status === 409 ? 'Your chat account is not ready. Close this window and check again later.' : 'Could not get a chat password. Try again later.';
+      status.textContent = response.status === 403 ? 'No community chat account is provided for this game account.' : response.status === 409 ? 'Your chat account is not ready. Close this window and check again later.' : 'Could not get a chat password. Try again later.';
       return;
     }
     const data = await response.json();

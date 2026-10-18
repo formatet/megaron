@@ -95,6 +95,7 @@ func TestAgoraDisabledPendingAndUpstreamFailuresAreExplicitAndRedacted(t *testin
 	}{
 		{"disabled-get", "/agora", nil, 200, `"enabled":false`},
 		{"disabled-password", "/agora/password", nil, 503, "Community chat is unavailable"},
+		{"exempt-password", "/agora/password", &fakeAgoraService{err: ErrAgoraExempt}, 403, "No community chat account"},
 		{"pending-password", "/agora/password", &fakeAgoraService{err: ErrAgoraPending}, 409, "not ready yet"},
 		{"upstream-password", "/agora/password", &fakeAgoraService{err: errors.New("password-canary token-canary")}, 503, "try again later"},
 		{"upstream-get", "/agora", &fakeAgoraService{err: errors.New("password-canary token-canary")}, 503, "try again later"},
