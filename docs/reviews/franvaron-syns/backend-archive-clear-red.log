@@ -1,0 +1,6 @@
+» färsk DB på migration 187 · commit 3edcfb43+ändringar
+--- FAIL: TestGarrisonTransitionOwnerAndCityIsolation (0.04s)
+    transition_notices_test.go:128: load previous garrison context: unexpected end of JSON input
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.042s
+FAIL

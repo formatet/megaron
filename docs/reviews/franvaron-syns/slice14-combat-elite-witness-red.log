@@ -1,0 +1,22 @@
+» färsk DB på migration 187 · commit 3edcfb43+ändringar
+2026/10/18 17:42:25 INFO upkeep: grain attrition unit=b9daac20-09f5-4b1a-89a0-997d35152896 lost=1 disbanded=true
+2026/10/18 17:42:25 INFO upkeep: grain attrition unit=b90f8d95-3cd0-45ec-a6ce-fe266362bbc8 lost=10 disbanded=false
+2026/10/18 17:42:25 INFO upkeep: grain attrition unit=b90f8d95-3cd0-45ec-a6ce-fe266362bbc8 lost=9 disbanded=false
+2026/10/18 17:42:25 INFO upkeep: grain attrition unit=b90f8d95-3cd0-45ec-a6ce-fe266362bbc8 lost=9 disbanded=false
+2026/10/18 17:42:25 INFO upkeep: grain attrition unit=0c7aca42-f35f-416c-8483-48706eb7d234 lost=10 disbanded=false
+2026/10/18 17:42:25 INFO upkeep: grain attrition unit=0c7aca42-f35f-416c-8483-48706eb7d234 lost=9 disbanded=false
+2026/10/18 17:42:25 INFO upkeep: grain attrition unit=0c7aca42-f35f-416c-8483-48706eb7d234 lost=9 disbanded=false
+2026/10/18 17:42:25 INFO upkeep: grain attrition unit=8c4cb90e-a9ff-4843-b389-eecfd507769b lost=10 disbanded=false
+2026/10/18 17:42:25 INFO upkeep: grain attrition unit=8c4cb90e-a9ff-4843-b389-eecfd507769b lost=9 disbanded=false
+2026/10/18 17:42:25 INFO upkeep: grain attrition unit=8c4cb90e-a9ff-4843-b389-eecfd507769b lost=9 disbanded=false
+2026/10/18 17:42:25 INFO upkeep: grain attrition unit=9e288f31-003b-4ef6-97b7-65a0243a029d lost=2 disbanded=false
+2026/10/18 17:42:25 INFO upkeep: grain attrition unit=9e288f31-003b-4ef6-97b7-65a0243a029d lost=2 disbanded=false
+2026/10/18 17:42:25 INFO upkeep: grain attrition unit=9e288f31-003b-4ef6-97b7-65a0243a029d lost=2 disbanded=false
+--- FAIL: TestGarrisonAttritionAuditAndNoticeOwnership (0.19s)
+    --- FAIL: TestGarrisonAttritionAuditAndNoticeOwnership/elite_last_unit (0.03s)
+        garrison_attrition_notice_test.go:70: pre-loss garrison witnesses=0 want1
+    --- FAIL: TestGarrisonAttritionAuditAndNoticeOwnership/elite_garrison_read_all (0.04s)
+        garrison_attrition_notice_test.go:70: pre-loss garrison witnesses=0 want3
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.196s
+FAIL

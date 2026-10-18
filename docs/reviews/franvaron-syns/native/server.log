@@ -1,0 +1,154 @@
+{"time":"2026-10-18T17:45:52.010169501+02:00","level":"INFO","msg":"migrations applied"}
+{"time":"2026-10-18T17:45:52.783104623+02:00","level":"INFO","msg":"world created","name":"Absence notice proof","id":"885980f8-5a08-4cf5-9ff2-78975a20237d","seed":1792338352012582386}
+{"time":"2026-10-18T17:45:52.790083762+02:00","level":"INFO","msg":"world ready","id":"885980f8-5a08-4cf5-9ff2-78975a20237d"}
+{"time":"2026-10-18T17:45:52.790384484+02:00","level":"INFO","msg":"chronicle opened","world":"Absence notice proof","dir":"/home/tk/wt/codex-franvaron-syns/docs/reviews/franvaron-syns/native/chronicles"}
+{"time":"2026-10-18T17:45:52.791965188+02:00","level":"INFO","msg":"scheduled event worker started","poll":10000000000}
+{"time":"2026-10-18T17:45:52.792020279+02:00","level":"INFO","msg":"tick worker started","tick_seconds":60}
+{"time":"2026-10-18T17:45:52.792099297+02:00","level":"INFO","msg":"build","commit":"93c5a34e315359dfc44759cbaff06be15aed22f3"}
+{"time":"2026-10-18T17:45:52.792414972+02:00","level":"INFO","msg":"keryx server starting","addr":":36345"}
+{"time":"2026-10-18T17:45:52.797621858+02:00","level":"INFO","msg":"daily ticks seeded","worlds":1}
+2026/10/18 17:45:52 [tki9/WIxdhtGosp-000001] "GET http://127.0.0.1:36345/healthz HTTP/1.1" from 127.0.0.1:52874 - 200 84B in 496.481µs
+{"time":"2026-10-18T17:45:52.985005488+02:00","level":"INFO","msg":"player registered","id":"e0cd3258-4c52-4668-b215-0347bf388c56","username":"surface-530f3e5adc06"}
+2026/10/18 17:45:52 [tki9/WIxdhtGosp-000002] "POST http://127.0.0.1:36345/api/v1/auth/register HTTP/1.1" from 127.0.0.1:52882 - 201 396B in 47.242383ms
+{"time":"2026-10-18T17:45:53.034073715+02:00","level":"INFO","msg":"player logged in","id":"e0cd3258-4c52-4668-b215-0347bf388c56","username":"surface-530f3e5adc06"}
+2026/10/18 17:45:53 [tki9/WIxdhtGosp-000003] "POST http://127.0.0.1:36345/api/v1/auth/login HTTP/1.1" from 127.0.0.1:52894 - 200 347B in 46.842169ms
+2026/10/18 17:45:53 [tki9/WIxdhtGosp-000004] "GET http://127.0.0.1:36345/api/v1/worlds HTTP/1.1" from 127.0.0.1:52894 - 200 196B in 341.298µs
+2026/10/18 17:45:53 [tki9/WIxdhtGosp-000005] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/provinces HTTP/1.1" from 127.0.0.1:52894 - 200 28B in 8.294282ms
+{"time":"2026-10-18T17:45:53.061672678+02:00","level":"INFO","msg":"world started","world":"885980f8-5a08-4cf5-9ff2-78975a20237d","wanaxes":1}
+2026/10/18 17:45:53 [tki9/WIxdhtGosp-000006] "POST http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/join HTTP/1.1" from 127.0.0.1:52898 - 201 211B in 16.353723ms
+2026/10/18 17:45:53 [tki9/WIxdhtGosp-000007] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/provinces HTTP/1.1" from 127.0.0.1:52898 - 200 28B in 4.411282ms
+2026/10/18 17:45:53 [tki9/WIxdhtGosp-000008] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/notifications?unread=true HTTP/1.1" from 127.0.0.1:52906 - 200 975B in 543.219µs
+2026/10/18 17:45:53 [tki9/WIxdhtGosp-000010] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/founding/status HTTP/1.1" from 127.0.0.1:52920 - 200 188B in 1.073583ms
+2026/10/18 17:45:53 [tki9/WIxdhtGosp-000011] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/colonize-preview?q=13&r=38&pop=1000&seed=1200&starter_farm=1 HTTP/1.1" from 127.0.0.1:52920 - 200 620B in 43.707048ms
+2026/10/18 17:45:53 [tki9/WIxdhtGosp-000012] "POST http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/founding/settle HTTP/1.1" from 127.0.0.1:52920 - 201 297B in 69.196037ms
+2026/10/18 17:45:53 [tki9/WIxdhtGosp-000009] "GET http://127.0.0.1:36345/ws/885980f8-5a08-4cf5-9ff2-78975a20237d HTTP/1.1" from 127.0.0.1:52914 - 000 0B in 814.418452ms
+2026/10/18 17:45:53 [tki9/WIxdhtGosp-000013] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/provinces HTTP/1.1" from 127.0.0.1:52920 - 200 235B in 4.378829ms
+2026/10/18 17:45:53 [tki9/WIxdhtGosp-000014] "GET http://127.0.0.1:36345/api/v1/auth/me HTTP/1.1" from 127.0.0.1:52932 - 200 191B in 339.788µs
+2026/10/18 17:45:53 [tki9/WIxdhtGosp-000015] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d HTTP/1.1" from 127.0.0.1:52932 - 200 234B in 364.883µs
+2026/10/18 17:45:53 [tki9/WIxdhtGosp-000016] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/provinces/039e6751-6343-423d-8b2b-2ea1e32e2d01 HTTP/1.1" from 127.0.0.1:52932 - 200 2161B in 21.648682ms
+2026/10/18 17:45:53 [tki9/WIxdhtGosp-000017] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/provinces/039e6751-6343-423d-8b2b-2ea1e32e2d01/actions HTTP/1.1" from 127.0.0.1:52932 - 200 3034B in 15.611965ms
+2026/10/18 17:45:53 [tki9/WIxdhtGosp-000018] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/provinces/039e6751-6343-423d-8b2b-2ea1e32e2d01/placement-options HTTP/1.1" from 127.0.0.1:52932 - 200 873B in 27.09626ms
+2026/10/18 17:45:53 [tki9/WIxdhtGosp-000019] "GET http://127.0.0.1:36345/api/v1/recipes HTTP/1.1" from 127.0.0.1:52932 - 200 129B in 755.836µs
+2026/10/18 17:45:53 [tki9/WIxdhtGosp-000020] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/units HTTP/1.1" from 127.0.0.1:52932 - 200 470B in 2.875495ms
+2026/10/18 17:45:53 [tki9/WIxdhtGosp-000021] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/provinces/039e6751-6343-423d-8b2b-2ea1e32e2d01/placement-options HTTP/1.1" from 127.0.0.1:52942 - 200 851B in 26.024886ms
+2026/10/18 17:45:54 [tki9/WIxdhtGosp-000022] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/provinces/039e6751-6343-423d-8b2b-2ea1e32e2d01 HTTP/1.1" from 127.0.0.1:52942 - 200 2160B in 19.048589ms
+2026/10/18 17:45:54 [tki9/WIxdhtGosp-000023] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/provinces/039e6751-6343-423d-8b2b-2ea1e32e2d01/ticklog?last=10 HTTP/1.1" from 127.0.0.1:52950 - 200 151B in 1.513183ms
+2026/10/18 17:45:54 [tki9/WIxdhtGosp-000024] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/notifications HTTP/1.1" from 127.0.0.1:52958 - 200 2090B in 314.983µs
+2026/10/18 17:45:54 [tki9/WIxdhtGosp-000025] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/notifications?exclude=SitosGranaryRelease%2CSitosIntervention%2CSitosFundLow HTTP/1.1" from 127.0.0.1:52964 - 200 1233B in 520.537µs
+2026/10/18 17:45:54 [tki9/WIxdhtGosp-000026] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/notifications?kind=SitosGranaryRelease HTTP/1.1" from 127.0.0.1:52964 - 200 57B in 218.168µs
+2026/10/18 17:45:54 [tki9/WIxdhtGosp-000027] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/notifications?kind=SitosIntervention HTTP/1.1" from 127.0.0.1:52964 - 200 57B in 126.408µs
+2026/10/18 17:45:54 [tki9/WIxdhtGosp-000028] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/notifications?kind=SitosFundLow HTTP/1.1" from 127.0.0.1:52964 - 200 57B in 125.012µs
+2026/10/18 17:45:54 [tki9/WIxdhtGosp-000029] "GET http://127.0.0.1:36345/ HTTP/1.1" from 127.0.0.1:52972 - 200 2383B in 347.477µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000030] "GET http://127.0.0.1:36345/static/megaron.css HTTP/1.1" from 127.0.0.1:52972 - 200 19533B in 2.229567ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000031] "GET http://127.0.0.1:36345/static/hero.png HTTP/1.1" from 127.0.0.1:52972 - 200 1193707B in 306.676µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000032] "GET http://127.0.0.1:36345/static/music/minoan_intro.ogg HTTP/1.1" from 127.0.0.1:52972 - 206 704198B in 288.627µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000033] "GET http://127.0.0.1:36345/favicon.ico HTTP/1.1" from 127.0.0.1:52972 - 404 44B in 22.082µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000034] "GET http://127.0.0.1:36345/play HTTP/1.1" from 127.0.0.1:52972 - 303 99B in 641.555µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000035] "GET http://127.0.0.1:36345/world/885980f8-5a08-4cf5-9ff2-78975a20237d/map HTTP/1.1" from 127.0.0.1:52972 - 200 6827B in 1.044677ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000036] "GET http://127.0.0.1:36345/static/megaron.css HTTP/1.1" from 127.0.0.1:52972 - 304 0B in 66.005µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000037] "GET http://127.0.0.1:36345/static/js/megaron/main.js HTTP/1.1" from 127.0.0.1:52972 - 200 5474B in 635.327µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000038] "GET http://127.0.0.1:36345/static/js/megaron/config.js HTTP/1.1" from 127.0.0.1:52972 - 200 2094B in 161.091µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000039] "GET http://127.0.0.1:36345/static/js/megaron/state.js HTTP/1.1" from 127.0.0.1:52972 - 200 2828B in 140.664µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000040] "GET http://127.0.0.1:36345/static/js/megaron/clock.js HTTP/1.1" from 127.0.0.1:52972 - 200 948B in 86.108µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000041] "GET http://127.0.0.1:36345/static/js/megaron/world_time.js HTTP/1.1" from 127.0.0.1:52972 - 200 560B in 90.665µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000042] "GET http://127.0.0.1:36345/static/js/megaron/telemetry.js HTTP/1.1" from 127.0.0.1:52972 - 200 350B in 43.817µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000043] "GET http://127.0.0.1:36345/static/js/megaron/ws.js HTTP/1.1" from 127.0.0.1:52972 - 200 5090B in 320.526µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000046] "GET http://127.0.0.1:36345/static/js/megaron/ui/stormname.js HTTP/1.1" from 127.0.0.1:52990 - 200 1103B in 91.441µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000045] "GET http://127.0.0.1:36345/static/js/megaron/render/city.js HTTP/1.1" from 127.0.0.1:52972 - 200 7012B in 281.816µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000047] "GET http://127.0.0.1:36345/static/js/megaron/ui/placename.js HTTP/1.1" from 127.0.0.1:52994 - 200 1374B in 207.548µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000048] "GET http://127.0.0.1:36345/static/js/megaron/ui/misc.js HTTP/1.1" from 127.0.0.1:52990 - 200 10736B in 380.7µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000049] "GET http://127.0.0.1:36345/static/js/megaron/ui/chips.js HTTP/1.1" from 127.0.0.1:52972 - 200 3777B in 453.768µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000050] "GET http://127.0.0.1:36345/static/js/megaron/ui/search.js HTTP/1.1" from 127.0.0.1:52994 - 200 2485B in 450.949µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000055] "GET http://127.0.0.1:36345/static/js/megaron/ui/drawers/kult.js HTTP/1.1" from 127.0.0.1:52994 - 200 3435B in 664.873µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000054] "GET http://127.0.0.1:36345/static/js/megaron/ui/drawers/economy.js HTTP/1.1" from 127.0.0.1:52972 - 200 9976B in 987.461µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000051] "GET http://127.0.0.1:36345/static/js/megaron/ui/marchctx.js HTTP/1.1" from 127.0.0.1:53008 - 200 12467B in 1.567197ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000052] "GET http://127.0.0.1:36345/static/js/megaron/ui/drawers/city.js HTTP/1.1" from 127.0.0.1:53022 - 200 12345B in 1.517278ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000057] "GET http://127.0.0.1:36345/static/js/megaron/ui/drawers/notif.js HTTP/1.1" from 127.0.0.1:52994 - 200 3726B in 202.281µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000053] "GET http://127.0.0.1:36345/static/js/megaron/ui/drawers/war.js HTTP/1.1" from 127.0.0.1:52990 - 200 17310B in 1.714115ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000058] "GET http://127.0.0.1:36345/static/js/megaron/ui/drawers/report.js HTTP/1.1" from 127.0.0.1:53008 - 200 1919B in 209.904µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000059] "GET http://127.0.0.1:36345/static/js/megaron/ui/diagnostics.js HTTP/1.1" from 127.0.0.1:53022 - 200 2127B in 279.65µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000044] "GET http://127.0.0.1:36345/static/js/megaron/render/map.js HTTP/1.1" from 127.0.0.1:52974 - 200 72127B in 3.186811ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000060] "GET http://127.0.0.1:36345/static/js/megaron/ui/sfx.js HTTP/1.1" from 127.0.0.1:52994 - 200 3919B in 213.242µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000062] "GET http://127.0.0.1:36345/static/js/megaron/ui/account_window.js HTTP/1.1" from 127.0.0.1:53008 - 200 3176B in 206.979µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000056] "GET http://127.0.0.1:36345/static/js/megaron/ui/drawers/diplomacy.js HTTP/1.1" from 127.0.0.1:52972 - 200 10175B in 830.141µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000063] "GET http://127.0.0.1:36345/static/js/megaron/ui/codex.js HTTP/1.1" from 127.0.0.1:52974 - 200 4586B in 177.346µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000061] "GET http://127.0.0.1:36345/static/js/megaron/ui/dispatch_window.js HTTP/1.1" from 127.0.0.1:52990 - 200 5686B in 364.986µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000064] "GET http://127.0.0.1:36345/static/js/megaron/api.js HTTP/1.1" from 127.0.0.1:52972 - 200 1829B in 197.093µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000065] "GET http://127.0.0.1:36345/static/js/megaron/ui/format.js HTTP/1.1" from 127.0.0.1:52974 - 200 18012B in 1.210126ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000068] "GET http://127.0.0.1:36345/static/js/megaron/ui/notification_state.js HTTP/1.1" from 127.0.0.1:52990 - 200 680B in 128.755µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000069] "GET http://127.0.0.1:36345/static/js/megaron/ui/search_messages.js HTTP/1.1" from 127.0.0.1:53008 - 200 1096B in 153.424µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000070] "GET http://127.0.0.1:36345/static/js/megaron/ui/time.js HTTP/1.1" from 127.0.0.1:53022 - 200 1550B in 163.827µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000071] "GET http://127.0.0.1:36345/static/js/megaron/ui/movements.js HTTP/1.1" from 127.0.0.1:52994 - 200 1543B in 170.933µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000066] "GET http://127.0.0.1:36345/static/js/megaron/render/pixelgrid.js HTTP/1.1" from 127.0.0.1:52972 - 200 7885B in 433.212µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000072] "GET http://127.0.0.1:36345/static/js/megaron/ui/actornames.js HTTP/1.1" from 127.0.0.1:52990 - 200 1402B in 151.451µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000073] "GET http://127.0.0.1:36345/static/js/megaron/ui/fmt_num.js HTTP/1.1" from 127.0.0.1:53008 - 200 475B in 58.56µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000067] "GET http://127.0.0.1:36345/static/js/megaron/render/citybuildings.js HTTP/1.1" from 127.0.0.1:52974 - 200 5334B in 491.151µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000074] "GET http://127.0.0.1:36345/static/js/megaron/ui/stance.js HTTP/1.1" from 127.0.0.1:53022 - 200 831B in 68.267µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000075] "GET http://127.0.0.1:36345/static/js/megaron/ui/expedition.js HTTP/1.1" from 127.0.0.1:52972 - 200 702B in 70.463µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000076] "GET http://127.0.0.1:36345/static/js/megaron/ui/march_preview.js HTTP/1.1" from 127.0.0.1:52994 - 200 1682B in 185.728µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000077] "GET http://127.0.0.1:36345/static/js/megaron/ui/inline_result.js HTTP/1.1" from 127.0.0.1:52974 - 200 691B in 66.889µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000079] "GET http://127.0.0.1:36345/static/js/megaron/ui/retreat.js HTTP/1.1" from 127.0.0.1:53022 - 200 1044B in 62.656µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000080] "GET http://127.0.0.1:36345/static/js/megaron/ui/drawers/city_production.js HTTP/1.1" from 127.0.0.1:53008 - 200 2225B in 135.703µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000081] "GET http://127.0.0.1:36345/static/js/megaron/ui/runner_status.js HTTP/1.1" from 127.0.0.1:52972 - 200 1529B in 135.032µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000082] "GET http://127.0.0.1:36345/static/js/megaron/ui/roadorder.js HTTP/1.1" from 127.0.0.1:52974 - 200 1732B in 80.012µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000083] "GET http://127.0.0.1:36345/static/js/megaron/ui/recall_all.js HTTP/1.1" from 127.0.0.1:52994 - 200 751B in 86.396µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000078] "GET http://127.0.0.1:36345/static/js/megaron/ui/citygrid.js HTTP/1.1" from 127.0.0.1:52990 - 200 8161B in 268.855µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000084] "GET http://127.0.0.1:36345/static/js/megaron/ui/drawers/kult_values.js HTTP/1.1" from 127.0.0.1:53022 - 200 497B in 71.737µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000085] "GET http://127.0.0.1:36345/static/js/megaron/ui/drawers/kult_kharis.js HTTP/1.1" from 127.0.0.1:53008 - 200 983B in 81.166µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000086] "GET http://127.0.0.1:36345/static/js/megaron/ui/drawers/gossip.js HTTP/1.1" from 127.0.0.1:52972 - 200 771B in 69.599µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000087] "GET http://127.0.0.1:36345/static/js/megaron/ui/gifts.js HTTP/1.1" from 127.0.0.1:52974 - 200 529B in 73.044µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000088] "GET http://127.0.0.1:36345/static/js/megaron/render/routes.js HTTP/1.1" from 127.0.0.1:52990 - 200 2296B in 111.401µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000090] "GET http://127.0.0.1:36345/static/js/megaron/render/sight.js HTTP/1.1" from 127.0.0.1:52974 - 200 1334B in 105.769µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000089] "GET http://127.0.0.1:36345/static/js/megaron/render/actorsprites.js HTTP/1.1" from 127.0.0.1:52972 - 200 5852B in 265.35µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000091] "GET http://127.0.0.1:36345/static/js/megaron/render/memory.js HTTP/1.1" from 127.0.0.1:52972 - 200 1000B in 89.846µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000092] "GET http://127.0.0.1:36345/static/js/megaron/render/doomfire.js HTTP/1.1" from 127.0.0.1:52974 - 200 1876B in 128.497µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000096] "GET http://127.0.0.1:36345/static/js/megaron/render/camera.js HTTP/1.1" from 127.0.0.1:53022 - 200 1542B in 114.101µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000095] "GET http://127.0.0.1:36345/static/js/megaron/render/map_input.js HTTP/1.1" from 127.0.0.1:52994 - 200 1475B in 130.794µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000097] "GET http://127.0.0.1:36345/static/js/megaron/ui/hover.js HTTP/1.1" from 127.0.0.1:52972 - 200 1734B in 131.071µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000093] "GET http://127.0.0.1:36345/static/js/megaron/render/cityicons.js HTTP/1.1" from 127.0.0.1:53008 - 200 3923B in 267.489µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000098] "GET http://127.0.0.1:36345/static/js/megaron/render/storms.js HTTP/1.1" from 127.0.0.1:52974 - 200 2169B in 119.268µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000094] "GET http://127.0.0.1:36345/static/js/megaron/render/citysprites.js HTTP/1.1" from 127.0.0.1:52990 - 200 8747B in 368.415µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000099] "GET http://127.0.0.1:36345/static/js/megaron/render/roads.js HTTP/1.1" from 127.0.0.1:52994 - 200 1829B in 95.967µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000100] "GET http://127.0.0.1:36345/static/js/megaron/render/place_names.js HTTP/1.1" from 127.0.0.1:53022 - 200 1741B in 117.434µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000103] "GET http://127.0.0.1:36345/static/js/megaron/ui/account_profile.js HTTP/1.1" from 127.0.0.1:52974 - 200 340B in 298.798µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000102] "GET http://127.0.0.1:36345/static/js/megaron/render/chunk_worker.js HTTP/1.1" from 127.0.0.1:53008 - 200 794B in 398.388µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000104] "GET http://127.0.0.1:36345/static/js/megaron/verb_telemetry.js HTTP/1.1" from 127.0.0.1:52990 - 200 2877B in 423.234µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000101] "GET http://127.0.0.1:36345/static/js/megaron/render/markraster.js HTTP/1.1" from 127.0.0.1:52972 - 200 34271B in 2.399549ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000105] "GET http://127.0.0.1:36345/static/js/megaron/ui/fmt_clock.js HTTP/1.1" from 127.0.0.1:52972 - 200 384B in 196.756µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000106] "GET http://127.0.0.1:36345/static/js/megaron/render/river_names.js HTTP/1.1" from 127.0.0.1:52972 - 200 255B in 78.704µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000107] "GET http://127.0.0.1:36345/api/v1/auth/me HTTP/1.1" from 127.0.0.1:52972 - 200 191B in 338.461µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000108] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d HTTP/1.1" from 127.0.0.1:52972 - 200 234B in 423.47µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000109] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/provinces HTTP/1.1" from 127.0.0.1:52974 - 200 235B in 12.363723ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000110] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/founding/status HTTP/1.1" from 127.0.0.1:52972 - 200 42B in 1.647469ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000112] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/messengers/inbox HTTP/1.1" from 127.0.0.1:52974 - 200 28B in 1.121153ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000111] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/provinces HTTP/1.1" from 127.0.0.1:52972 - 200 235B in 6.314199ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000117] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/units HTTP/1.1" from 127.0.0.1:52974 - 200 470B in 2.27705ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000119] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/rural-projections HTTP/1.1" from 127.0.0.1:52972 - 200 28B in 772.913µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000114] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/marches HTTP/1.1" from 127.0.0.1:53008 - 200 28B in 13.213358ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000120] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/foreign-units HTTP/1.1" from 127.0.0.1:52972 - 200 28B in 9.611103ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000121] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/settlements/placement-roster HTTP/1.1" from 127.0.0.1:52974 - 200 262B in 9.089058ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000123] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/roads HTTP/1.1" from 127.0.0.1:52972 - 200 38B in 1.132636ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000125] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/notifications?unread=true&dispatchable=true HTTP/1.1" from 127.0.0.1:52972 - 200 1233B in 1.810411ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000124] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/road-sites HTTP/1.1" from 127.0.0.1:52974 - 200 38B in 2.564655ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000126] "GET http://127.0.0.1:36345/static/codex/index.json HTTP/1.1" from 127.0.0.1:52972 - 200 2290B in 275.006µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000113] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/map HTTP/1.1" from 127.0.0.1:52990 - 200 8250B in 19.037754ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000115] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/messengers HTTP/1.1" from 127.0.0.1:53022 - 200 28B in 20.276624ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000116] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/trades HTTP/1.1" from 127.0.0.1:52994 - 200 28B in 20.873823ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000122] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/storms HTTP/1.1" from 127.0.0.1:53008 - 200 48B in 9.269533ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000127] "GET http://127.0.0.1:36345/static/music/minoan_templet_synth.ogg HTTP/1.1" from 127.0.0.1:52972 - 206 660154B in 297.355µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000128] "GET http://127.0.0.1:36345/static/js/megaron/render/markraster_worker.js HTTP/1.1" from 127.0.0.1:52972 - 200 620B in 106.016µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000129] "GET http://127.0.0.1:36345/static/js/megaron/render/markraster.js HTTP/1.1" from 127.0.0.1:52972 - 304 0B in 53.4µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000130] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/notifications?exclude=SitosGranaryRelease%2CSitosIntervention%2CSitosFundLow HTTP/1.1" from 127.0.0.1:52972 - 200 1233B in 877.154µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000131] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/gossip HTTP/1.1" from 127.0.0.1:52972 - 200 28B in 748.971µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000132] "POST http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/notifications/read-all HTTP/1.1" from 127.0.0.1:52972 - 204 0B in 805.184µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000133] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/notifications?kind=SitosGranaryRelease HTTP/1.1" from 127.0.0.1:52974 - 200 57B in 1.00064ms
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000134] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/notifications?kind=SitosIntervention HTTP/1.1" from 127.0.0.1:52972 - 200 57B in 257.69µs
+2026/10/18 17:45:55 [tki9/WIxdhtGosp-000135] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/notifications?kind=SitosFundLow HTTP/1.1" from 127.0.0.1:52972 - 200 57B in 301.295µs
+2026/10/18 17:45:56 [tki9/WIxdhtGosp-000136] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/gossip HTTP/1.1" from 127.0.0.1:52972 - 200 28B in 706.039µs
+2026/10/18 17:45:56 [tki9/WIxdhtGosp-000137] "GET http://127.0.0.1:36345/api/v1/notification-preferences HTTP/1.1" from 127.0.0.1:52972 - 200 44B in 582.516µs
+2026/10/18 17:45:56 [tki9/WIxdhtGosp-000138] "GET http://127.0.0.1:36345/api/v1/worlds/885980f8-5a08-4cf5-9ff2-78975a20237d/gossip HTTP/1.1" from 127.0.0.1:52972 - 200 28B in 289.3µs
+2026/10/18 17:45:56 [tki9/WIxdhtGosp-000139] "GET http://127.0.0.1:36345/api/v1/notification-preferences HTTP/1.1" from 127.0.0.1:52972 - 200 44B in 331.778µs
+2026/10/18 17:45:56 [tki9/WIxdhtGosp-000118] "GET http://127.0.0.1:36345/ws/885980f8-5a08-4cf5-9ff2-78975a20237d HTTP/1.1" from 127.0.0.1:53038 - 000 0B in 1.335991048s
+{"time":"2026-10-18T17:45:56.765786549+02:00","level":"INFO","msg":"scheduled event worker stopped"}
+{"time":"2026-10-18T17:45:56.7657891+02:00","level":"INFO","msg":"tick worker stopped"}
+{"time":"2026-10-18T17:45:56.765793831+02:00","level":"INFO","msg":"shutting down"}

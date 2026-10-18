@@ -1,0 +1,8 @@
+» färsk DB på migration 186 · commit 3edcfb43+ändringar
+--- FAIL: TestApplyStarvation_StillEmitsStarvationDamage (0.02s)
+    starvation_attrition_test.go:127: StarvationDamage events = 0, want 1
+--- FAIL: TestGarrisonTransitionNoticeLifecycle (0.02s)
+    transition_notices_test.go:34: garrison transition notices=0 want1
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.205s
+FAIL

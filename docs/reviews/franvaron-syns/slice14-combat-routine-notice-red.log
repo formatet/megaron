@@ -1,0 +1,22 @@
+» färsk DB på migration 187 · commit 3edcfb43+ändringar
+2026/10/18 17:42:31 INFO upkeep: grain attrition unit=93bad4c2-8674-4403-b6c0-e012e873ff30 lost=1 disbanded=true
+2026/10/18 17:42:31 INFO upkeep: grain attrition unit=2a04013c-bbcf-40a7-a741-a5079a7249ba lost=10 disbanded=false
+2026/10/18 17:42:31 INFO upkeep: grain attrition unit=2a04013c-bbcf-40a7-a741-a5079a7249ba lost=9 disbanded=false
+2026/10/18 17:42:31 INFO upkeep: grain attrition unit=2a04013c-bbcf-40a7-a741-a5079a7249ba lost=9 disbanded=false
+2026/10/18 17:42:31 INFO upkeep: grain attrition unit=7c46c6ff-2972-4b3a-b29e-a020411ff2ad lost=10 disbanded=false
+2026/10/18 17:42:31 INFO upkeep: grain attrition unit=7c46c6ff-2972-4b3a-b29e-a020411ff2ad lost=9 disbanded=false
+2026/10/18 17:42:31 INFO upkeep: grain attrition unit=7c46c6ff-2972-4b3a-b29e-a020411ff2ad lost=9 disbanded=false
+2026/10/18 17:42:31 INFO upkeep: grain attrition unit=7c5af763-d3e0-4aee-8a3c-7069c46e1d06 lost=10 disbanded=false
+2026/10/18 17:42:31 INFO upkeep: grain attrition unit=7c5af763-d3e0-4aee-8a3c-7069c46e1d06 lost=9 disbanded=false
+2026/10/18 17:42:31 INFO upkeep: grain attrition unit=7c5af763-d3e0-4aee-8a3c-7069c46e1d06 lost=9 disbanded=false
+2026/10/18 17:42:31 INFO upkeep: grain attrition unit=7f8b1697-c6de-4880-b4d7-ff89dd84e909 lost=2 disbanded=false
+2026/10/18 17:42:31 INFO upkeep: grain attrition unit=7f8b1697-c6de-4880-b4d7-ff89dd84e909 lost=2 disbanded=false
+2026/10/18 17:42:31 INFO upkeep: grain attrition unit=7f8b1697-c6de-4880-b4d7-ff89dd84e909 lost=2 disbanded=false
+--- FAIL: TestGarrisonAttritionAuditAndNoticeOwnership (0.21s)
+    --- FAIL: TestGarrisonAttritionAuditAndNoticeOwnership/elite_garrison_read_all (0.04s)
+        garrison_attrition_notice_test.go:97: UnitAttrition notices after read-all=3 want0
+    --- FAIL: TestGarrisonAttritionAuditAndNoticeOwnership/spearman_garrison_read_all (0.04s)
+        garrison_attrition_notice_test.go:97: UnitAttrition notices after read-all=3 want0
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.214s
+FAIL

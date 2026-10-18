@@ -1,0 +1,25 @@
+» färsk DB på migration 187 · commit 3edcfb43+ändringar
+2026/10/18 17:41:34 INFO upkeep: grain attrition unit=da4c0a1c-15c8-4b3f-9ad9-433fecbd8a53 lost=1 disbanded=true
+2026/10/18 17:41:34 INFO upkeep: grain attrition unit=c02dc4eb-f7e8-474e-bc0c-f499c09421c9 lost=10 disbanded=false
+2026/10/18 17:41:34 INFO upkeep: grain attrition unit=c02dc4eb-f7e8-474e-bc0c-f499c09421c9 lost=9 disbanded=false
+2026/10/18 17:41:34 INFO upkeep: grain attrition unit=c02dc4eb-f7e8-474e-bc0c-f499c09421c9 lost=9 disbanded=false
+2026/10/18 17:41:34 INFO upkeep: grain attrition unit=6ba974bf-cf6b-436c-8e76-5b0773890a77 lost=10 disbanded=false
+2026/10/18 17:41:34 INFO upkeep: grain attrition unit=6ba974bf-cf6b-436c-8e76-5b0773890a77 lost=9 disbanded=false
+2026/10/18 17:41:34 INFO upkeep: grain attrition unit=6ba974bf-cf6b-436c-8e76-5b0773890a77 lost=9 disbanded=false
+2026/10/18 17:41:34 INFO upkeep: grain attrition unit=39e7842d-c0dc-412a-9806-6c00e7411810 lost=10 disbanded=false
+2026/10/18 17:41:34 INFO upkeep: grain attrition unit=39e7842d-c0dc-412a-9806-6c00e7411810 lost=9 disbanded=false
+2026/10/18 17:41:34 INFO upkeep: grain attrition unit=39e7842d-c0dc-412a-9806-6c00e7411810 lost=9 disbanded=false
+2026/10/18 17:41:34 INFO upkeep: grain attrition unit=5d80072b-ff87-40d2-ba56-0bf60c05246e lost=2 disbanded=false
+2026/10/18 17:41:34 INFO upkeep: grain attrition unit=5d80072b-ff87-40d2-ba56-0bf60c05246e lost=2 disbanded=false
+2026/10/18 17:41:34 INFO upkeep: grain attrition unit=5d80072b-ff87-40d2-ba56-0bf60c05246e lost=2 disbanded=false
+--- FAIL: TestGarrisonAttritionAuditAndNoticeOwnership (0.21s)
+    --- FAIL: TestGarrisonAttritionAuditAndNoticeOwnership/elite_last_unit (0.03s)
+        garrison_attrition_notice_test.go:70: pre-loss garrison witnesses=0 want1
+    --- FAIL: TestGarrisonAttritionAuditAndNoticeOwnership/elite_garrison_read_all (0.04s)
+        garrison_attrition_notice_test.go:70: pre-loss garrison witnesses=0 want3
+        garrison_attrition_notice_test.go:97: UnitAttrition notices after read-all=3 want0
+    --- FAIL: TestGarrisonAttritionAuditAndNoticeOwnership/spearman_garrison_read_all (0.04s)
+        garrison_attrition_notice_test.go:97: UnitAttrition notices after read-all=3 want0
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.210s
+FAIL

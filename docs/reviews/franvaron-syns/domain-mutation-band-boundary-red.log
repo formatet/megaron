@@ -1,0 +1,6 @@
+» färsk DB på migration 187 · commit 3edcfb43+ändringar
+--- FAIL: TestKharisBandNoticeBoundariesAndExternalChanges (0.02s)
+    transition_notices_test.go:192: no rows in result set
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.025s
+FAIL

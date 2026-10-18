@@ -1,0 +1,11 @@
+» färsk DB på migration 187 · commit 3edcfb43+ändringar
+2026/10/18 17:44:09 INFO upkeep: grain attrition unit=440e5b8e-f4a5-4cf5-a632-4435556392af lost=10 disbanded=false
+2026/10/18 17:44:09 INFO upkeep: grain attrition unit=5e6481d8-30bf-4da5-8ecd-0e152108319d lost=1 disbanded=true
+--- FAIL: TestStarvationSignal_ActualLossEvenLastGarrison (0.14s)
+    --- FAIL: TestStarvationSignal_ActualLossEvenLastGarrison/100 (0.07s)
+        hunger_signal_test.go:95: seed goods: ERROR: duplicate key value violates unique constraint "settlement_goods_settlement_id_good_key_key" (SQLSTATE 23505)
+    --- FAIL: TestStarvationSignal_ActualLossEvenLastGarrison/1 (0.07s)
+        hunger_signal_test.go:95: seed goods: ERROR: duplicate key value violates unique constraint "settlement_goods_settlement_id_good_key_key" (SQLSTATE 23505)
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.142s
+FAIL

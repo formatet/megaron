@@ -1,0 +1,7 @@
+2026/10/18 17:41:33 INFO player registered id=f71620ca-f4c1-44a8-9cce-a8cffaec11c3 username=notif-371e613b-0d60-474f-bbba-1d1f0dd71a24
+--- FAIL: TestNotificationDayMigrationKeepsUnknownHistoryUnknown (0.07s)
+    notification_day_test.go:102: invented historical day for{}: 0
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.074s
+FAIL
+» färsk DB på migration 187 · commit 3edcfb43+ändringar

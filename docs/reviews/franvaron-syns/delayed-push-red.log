@@ -1,0 +1,6 @@
+--- FAIL: TestNotificationWorldTickSurvivesDelayedDelivery (0.03s)
+    world_tick_test.go:55: delayed delivery borrowed current tick99: {Kind:BuildComplete WorldID:c6db7690-41d2-46f4-9b33-9aed6cbd4ddb Payload:map[name:Phaistos] ID:78fc7c0e-f437-4bdf-9c25-a230b6363eda WorldTick:0x312f91e9b0b0 Level:3}
+FAIL
+FAIL	formatet/megaron/server/internal/notify	0.030s
+FAIL
+» färsk DB på migration 187 · commit 3edcfb43+ändringar

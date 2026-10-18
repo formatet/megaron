@@ -1,0 +1,6 @@
+» färsk DB på migration 187 · commit 3edcfb43+ändringar
+--- FAIL: TestGarrisonTransitionNoticeLifecycle (0.03s)
+    transition_notices_test.go:59: garrison transition notices=0 want1
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.028s
+FAIL

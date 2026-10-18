@@ -1,0 +1,8 @@
+» färsk DB på migration 185 · commit 3edcfb43
+2026/10/18 17:36:07 INFO starvation damage applied settlement=5d5ec311-fe8e-44ef-9704-dc87e97383db
+2026/10/18 17:36:07 INFO starvation damage applied settlement=5d5ec311-fe8e-44ef-9704-dc87e97383db
+--- FAIL: TestGarrisonTransitionNoticeLifecycle (0.03s)
+    transition_notices_test.go:34: garrison transition notices=0 want1
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.027s
+FAIL
