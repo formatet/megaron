@@ -49,13 +49,16 @@ func TestSuccession_PromoteThenGameOver(t *testing.T) {
 		}
 		return id
 	}
-	mkSettlement := func(prov uuid.UUID, name string, capital bool, pop int) uuid.UUID {
-		var id uuid.UUID
+	// idFirstByte pins where the id sorts, so the id tie-break can never pick
+	// the right city by accident.
+	mkSettlement := func(prov uuid.UUID, name string, capital bool, pop int, idFirstByte byte) uuid.UUID {
+		id := uuid.New()
+		id[0] = idFirstByte
 		if err := pool.QueryRow(ctx,
 			`INSERT INTO settlements
-			   (world_id, province_id, name, culture_id, owner_id, is_capital, state, population)
-			 VALUES ($1, $2, $3, 'akhaier', $4, $5, 'active', $6) RETURNING id`,
-			worldID, prov, name, playerID, capital, pop,
+			   (id, world_id, province_id, name, culture_id, owner_id, is_capital, state, population)
+			 VALUES ($7, $1, $2, $3, 'akhaier', $4, $5, 'active', $6) RETURNING id`,
+			worldID, prov, name, playerID, capital, pop, id,
 		).Scan(&id); err != nil {
 			t.Fatalf("create settlement %s: %v", name, err)
 		}
@@ -63,10 +66,11 @@ func TestSuccession_PromoteThenGameOver(t *testing.T) {
 	}
 
 	// Capital plus two colonies — the larger colony should win
-	// the succession because it has more people.
-	capital := mkSettlement(mkProvince(0, 0), "Tiryns", true, 5000)
-	richColony := mkSettlement(mkProvince(3, 0), "Nafplio", false, 800)
-	largeColony := mkSettlement(mkProvince(6, 0), "Asine", false, 3000)
+	// the succession because it has more people, although the smaller one
+	// has the lower id.
+	capital := mkSettlement(mkProvince(0, 0), "Tiryns", true, 5000, 0x80)
+	richColony := mkSettlement(mkProvince(3, 0), "Nafplio", false, 800, 0x00)
+	largeColony := mkSettlement(mkProvince(6, 0), "Asine", false, 3000, 0xff)
 
 	if _, err := pool.Exec(ctx,
 		`INSERT INTO player_world_records (player_id, world_id, settlement_id, status)
