@@ -1,0 +1,42 @@
+=== RUN   TestAIRound4_HexSelectors
+=== RUN   TestAIRound4_HexSelectors/build6
+=== RUN   TestAIRound4_HexSelectors/place6
+=== RUN   TestAIRound4_HexSelectors/build#6
+=== RUN   TestAIRound4_HexSelectors/place#6
+=== RUN   TestAIRound4_HexSelectors/build12,-3
+=== RUN   TestAIRound4_HexSelectors/place12,-3
+=== RUN   TestAIRound4_HexSelectors/timber/#6/+1
+=== RUN   TestAIRound4_HexSelectors/--hex/#6/timber/-1
+=== RUN   TestAIRound4_HexSelectors/unseen_ordinal_is_never_invented
+Error: hex #99 is not in this city's known catchment; see keryx city
+Usage:
+  build [city] [flags]
+
+Examples:
+  keryx build --list
+  keryx build --type farm --hex 3,-1          # farm/mine/lumbermill/stonequarry are hex-bound: pick a catchment hex
+  keryx build --type harbour          # requires coastal (adjacent sea hex)
+  keryx build --type mine --hex 5,2 --province <province-id>   # build in a colony
+  keryx build --type winery           # produces nothing unless a hills/plains/scrub_maquis tile is in catchment
+  keryx build --queue                 # see what's already queued, with cancel-build IDs
+
+Flags:
+      --province string   province ID to build in (default: your capital)
+  -t, --type string       building type (omit to see list)
+      --hex string        catchment q,r or ordinal 6/#6 — required for hex-bound building types
+      --list              show the building catalogue and exit
+      --queue             show this settlement's build queue (with queue IDs for cancel-build) and exit
+  -h, --help              help for build
+
+--- PASS: TestAIRound4_HexSelectors (0.00s)
+    --- PASS: TestAIRound4_HexSelectors/build6 (0.00s)
+    --- PASS: TestAIRound4_HexSelectors/place6 (0.00s)
+    --- PASS: TestAIRound4_HexSelectors/build#6 (0.00s)
+    --- PASS: TestAIRound4_HexSelectors/place#6 (0.00s)
+    --- PASS: TestAIRound4_HexSelectors/build12,-3 (0.00s)
+    --- PASS: TestAIRound4_HexSelectors/place12,-3 (0.00s)
+    --- PASS: TestAIRound4_HexSelectors/timber/#6/+1 (0.00s)
+    --- PASS: TestAIRound4_HexSelectors/--hex/#6/timber/-1 (0.00s)
+    --- PASS: TestAIRound4_HexSelectors/unseen_ordinal_is_never_invented (0.00s)
+PASS
+ok  	formatet/megaron/server/cmd/keryx	0.006s

@@ -1,0 +1,12 @@
+=== RUN   TestAIRound4_AutomaticFoodAndNoMoveAdvice
+    ai_round4_test.go:111: missing "Automatic grain: 4.28" in 1 citizen = 100 people
+        Citizens: 3/10 placed, 7 idle
+
+        Food: 1 citizen needed for people on best food slots, 3 placed
+
+        Catchment:
+          (no scouted catchment hexes yet)
+--- FAIL: TestAIRound4_AutomaticFoodAndNoMoveAdvice (0.00s)
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

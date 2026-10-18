@@ -1,0 +1,4 @@
+=== RUN   TestAIRound4_NetThresholdAndSingular
+--- PASS: TestAIRound4_NetThresholdAndSingular (0.00s)
+PASS
+ok  	formatet/megaron/server/cmd/keryx	0.002s

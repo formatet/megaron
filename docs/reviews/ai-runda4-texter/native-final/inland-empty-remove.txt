@@ -1,0 +1,4 @@
+Removed 0 citizens — only 0 were placed there.
+Currently working grain: #1 grain (2 citizens); use those hex numbers to remove citizens.
+  #8   plains         grain      0/4    (next +1.0 per day)
+  8 citizens left in the idle pool.

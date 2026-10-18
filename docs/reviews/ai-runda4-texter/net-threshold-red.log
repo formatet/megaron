@@ -1,0 +1,6 @@
+=== RUN   TestAIRound4_NetThresholdAndSingular
+    ai_round4_test.go:131: 0.0500 ->"about even", want"+0.1"
+--- FAIL: TestAIRound4_NetThresholdAndSingular (0.00s)
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

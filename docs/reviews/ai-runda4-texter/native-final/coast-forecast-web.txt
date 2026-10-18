@@ -1,0 +1,33 @@
+DETAILS
+Deposits: Cedar
+Produces: cedar, timber, fish
+1,000 people · cannot fight · sight 2 hexes (4 by water or on mountains)
+Food lasts indefinitely
+Silver reserve lasts indefinitely
+2 Spearmen cohorts in the field
+Messengers free to send
+Catchment forecast — 19 of 19 hexes known
+Coastal: a city here can build a harbour and ships.
+Food: grain 0.5 + fish 5.0 − consumption 5.0 per day = net +0.5 per day
+Seed 1,200 grain — production covers food demand.
+Also: tin-deposit ✓, silver-deposit ✓, cedar-deposit ✓, cedar about 15 per day, fish about 8 per day, stone about 30 per day, tin about 3 per day
+🎁 Poseidon's galley — a coastal founding is owed one galley, crewed and ready — a gift, not drawn from your people
+Forest cedar · cedar (center)
+Coastal sea
+Deep sea
+Deep sea
+Forest cedar · cedar
+Coastal sea
+Coastal sea
+Coastal sea
+Forest cedar · cedar
+Forest cedar · cedar
+Mountain limestone · tin
+Mountain limestone
+Forest cedar · cedar
+Mountain limestone
+Mountain limestone · silver
+Mountain limestone
+Forest cedar · cedar
+Mountain limestone · tin
+Mountain limestone · tin

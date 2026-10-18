@@ -1,0 +1,29 @@
+automatic-grain named assertion RED -> exact bytes -> GREEN 5b5287b9ecf2f42aa431d4205ef2c3df6a0219be7bac3a57ffe67c2a8b56cc46
+province-auto-wire named assertion RED -> exact bytes -> GREEN fb86159360b98b2f7ea823bfd179b65fe73aa380487cc9a56e112a1ed2b15f2d
+overview-auto-wire named assertion RED -> exact bytes -> GREEN 7388176a55ab99daa6d0f044af63229dfd3757b8fcd8966182da2adb90895558
+cli-auto-food named assertion RED -> exact bytes -> GREEN 7f3a80d5e0fb446d8f8b162ea7f96d63fc210d7bbb54691fc712254a7bb8180d
+speculative-move named assertion RED -> exact bytes -> GREEN 2fafa4c58a1e553f62d62e827b9c04dd3572c0efcc3b35a01b3d2ef070303469
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-ai-runda4-texter/docs/reviews/ai-runda4-texter/mutations.py", line 36, in <module>
+    try:p.write_text(source.replace(old,new));run('red',False)
+                                              ~~~^^^^^^^^^^^^^
+  File "/home/tk/wt/codex-ai-runda4-texter/docs/reviews/ai-runda4-texter/mutations.py", line 35, in run
+    else:assert r.returncode and named in log and ('--- FAIL:' in log or 'not ok' in log) and '[build failed]' not in log,(name,log[-3000:])
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('net-threshold', '=== RUN   TestAIRound4_NetThresholdAndSingular\n--- PASS: TestAIRound4_NetThresholdAndSingular (0.00s)\nPASS\nok  \tformatet/megaron/server/cmd/keryx\t0.002s\n')
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-ai-runda4-texter/docs/reviews/ai-runda4-texter/mutations.py", line 36, in <module>
+    try:p.write_text(source.replace(old,new));run('red',False)
+                                              ~~~^^^^^^^^^^^^^
+  File "/home/tk/wt/codex-ai-runda4-texter/docs/reviews/ai-runda4-texter/mutations.py", line 35, in run
+    else:assert r.returncode and named in log and ('--- FAIL:' in log or 'not ok' in log) and '[build failed]' not in log,(name,log[-3000:])
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('net-threshold', '=== RUN   TestAIRound4_NetThresholdAndSingular\n--- PASS: TestAIRound4_NetThresholdAndSingular (0.00s)\nPASS\nok  \tformatet/megaron/server/cmd/keryx\t0.002s\n')
+net-threshold named assertion RED -> exact bytes -> GREEN 1502b6bb81ddf07d14d8c5b3e11682ffe6f4ce4b695eabe6efeffc996314583e
+citizen-singular named assertion RED -> exact bytes -> GREEN 7f3a80d5e0fb446d8f8b162ea7f96d63fc210d7bbb54691fc712254a7bb8180d
+hex-staff named assertion RED -> exact bytes -> GREEN b2efeb18db0ca1e70186b8061d34abcce0a30cdf4d9657ee8e5cd8a4a404caaa
+hex-ordinal named assertion RED -> exact bytes -> GREEN 7f3a80d5e0fb446d8f8b162ea7f96d63fc210d7bbb54691fc712254a7bb8180d
+place-hex-flag named assertion RED -> exact bytes -> GREEN 3f5fb171630affb3af1f0d346a3b765c3c84093b32e8f837d9653740487ecd04
+queue-refusal named assertion RED -> exact bytes -> GREEN fb86159360b98b2f7ea823bfd179b65fe73aa380487cc9a56e112a1ed2b15f2d
+queue-listing named assertion RED -> exact bytes -> GREEN b06718dbbb32f981ac8fdbf83776ed1ed6f3042f5e56439cd426524068ad851c
+web-automatic-food named assertion RED -> exact bytes -> GREEN fa0d03c88ca850e6cba10406d147a861b3dd0fa76d92fd7a617893d22f59f578

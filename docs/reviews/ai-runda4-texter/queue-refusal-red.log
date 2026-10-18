@@ -1,0 +1,8 @@
+=== RUN   TestAIRound4_AutomaticFoodAPIAndFixedQueue
+2026/10/18 06:32:31 INFO player registered id=f5227090-c5dc-44ff-93cf-76c4d6b07649 username=round4-f86f72ff-ebff-4a36-b18d-ab9d9911033b
+    ai_round4_test.go:92: 422 {"error":"build queue is full (2 concurrent buildings; population and buildings do not add slots — finish or cancel a build)"}
+--- FAIL: TestAIRound4_AutomaticFoodAPIAndFixedQueue (0.09s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.090s
+FAIL
+» färsk DB på migration 182 · commit 9be3b86e+ändringar

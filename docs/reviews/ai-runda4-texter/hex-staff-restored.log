@@ -1,0 +1,17 @@
+=== RUN   TestAIRound4_HexStaffRedirect
+Error: the lumbermill is a hex building — staff it with: keryx place timber 6 +2 (hex #6)
+Usage:
+  staff <byggnad> [+n|-n] [flags]
+
+Examples:
+  keryx staff stonequarry
+  keryx staff stonequarry +2
+  keryx staff stonequarry -1 --province <prov-id>
+
+Flags:
+  -h, --help              help for staff
+      --province string   province ID/name (default: your capital)
+
+--- PASS: TestAIRound4_HexStaffRedirect (0.00s)
+PASS
+ok  	formatet/megaron/server/cmd/keryx	0.002s
