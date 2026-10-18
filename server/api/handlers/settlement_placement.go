@@ -15,6 +15,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 // parsePositiveInt parses a URL path param as a positive integer (gubbe
@@ -514,14 +515,24 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusForbidden, "not your settlement")
 		return
 	}
-	totalGubbar := population / 100
-
 	tx, err := h.pool.Begin(r.Context())
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "transaction error")
 		return
 	}
 	defer tx.Rollback(r.Context())
+
+	// Settlement first, then hex, then placements/goods. Recheck ownership and
+	// population after waiting: the pre-TX display lookup may now be stale.
+	if err := tx.QueryRow(r.Context(), `SELECT population FROM settlements WHERE id=$1 AND owner_id=$2 AND world_id=$3 FOR UPDATE`, settlementID, playerID, worldID).Scan(&population); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			writeError(w, http.StatusForbidden, "not your settlement")
+		} else {
+			writeError(w, http.StatusInternalServerError, "could not lock settlement")
+		}
+		return
+	}
+	totalGubbar := population / 100
 
 	// Next free gubbe_ordinal: lowest 1..totalGubbar not already placed.
 	placed, err := economy.LoadPlacementCounts(r.Context(), tx, settlementID)
@@ -612,7 +623,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 		// this lock and the ownership check below were a no-op in practice
 		// for every existing world. §3 lowered the minimum founding distance,
 		// so two settlements' catchments CAN now share ground — this is the
-		// live gate for that case. A settlement row lock is the ONLY thing
+		// live gate for that case. A map tile row lock is the ONLY thing
 		// that makes the
 		// check-then-insert below atomic against a concurrent PlaceGubbe from
 		// a DIFFERENT settlement targeting the SAME hex: map_tiles has a
@@ -655,6 +666,19 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 			var takerName string
 			if err := tx.QueryRow(r.Context(), `SELECT name FROM settlements WHERE id = $1`, settlementID).Scan(&takerName); err != nil {
 				writeError(w, http.StatusInternalServerError, "could not load settlement")
+				return
+			}
+			// A take writes TWO cities. Never wait for the other city while
+			// holding our own: opposite takes or the bulk growth update could
+			// otherwise form a settlement lock cycle. Roll back and let the
+			// player retry if the holder is busy; no partial take escapes.
+			if _, err := tx.Exec(r.Context(), `SELECT id FROM settlements WHERE id=$1 FOR UPDATE NOWAIT`, hold.HolderID); err != nil {
+				var pgErr *pgconn.PgError
+				if errors.As(err, &pgErr) && pgErr.Code == "55P03" {
+					writeError(w, http.StatusConflict, "the other city is busy — retry this placement")
+				} else {
+					writeError(w, http.StatusInternalServerError, "could not lock hex holder")
+				}
 				return
 			}
 			ct, err := tx.Exec(r.Context(),
@@ -859,6 +883,16 @@ func (h *ProvinceHandler) UnplaceGubbe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer tx.Rollback(r.Context())
+
+	var population int
+	if err := tx.QueryRow(r.Context(), `SELECT population FROM settlements WHERE id=$1 AND owner_id=$2 AND world_id=$3 FOR UPDATE`, settlementID, playerID, worldID).Scan(&population); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			writeError(w, http.StatusForbidden, "not your settlement")
+		} else {
+			writeError(w, http.StatusInternalServerError, "could not lock settlement")
+		}
+		return
+	}
 
 	tag, err := tx.Exec(r.Context(),
 		`DELETE FROM settlement_placement WHERE settlement_id = $1 AND gubbe_ordinal = $2`,

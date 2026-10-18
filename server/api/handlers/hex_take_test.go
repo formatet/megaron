@@ -345,6 +345,12 @@ func TestPlaceGubbe_ConcurrentTakeAndHolderPlacement(t *testing.T) {
 		go func() { defer wg.Done(); codeA, respA = f.place(t, f.tokenA, f.provinceA, "grain") }()
 		wg.Wait()
 
+		// Cross-city locking refuses a busy holder rather than waiting while
+		// keeping the taker's city locked. Once A finished, retry the whole take.
+		if codeB == http.StatusConflict && respB["error"] == "the other city is busy — retry this placement" {
+			codeB, respB = f.place(t, f.tokenB, f.provinceB, "grain")
+		}
+
 		if codeB != http.StatusCreated {
 			t.Fatalf("round %d: B's take = %d: %v", round, codeB, respB)
 		}

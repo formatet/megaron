@@ -26,6 +26,12 @@ var ruleBuildingsWithoutWorkplace = []string{"mine", "stonequarry", "lumbermill"
 //
 // Returns how many placements were removed and how many of those found a new place.
 func ReconcilePlacements(ctx context.Context, tx Tx, settlementID uuid.UUID) (removed, replaced int, err error) {
+	workTx, finish, _, err := placementWriteTx(ctx, tx, settlementID)
+	if err != nil {
+		return 0, 0, err
+	}
+	defer func() { err = finish(err) }()
+	tx = workTx
 	var freed []int
 
 	rows, err := tx.Query(ctx,

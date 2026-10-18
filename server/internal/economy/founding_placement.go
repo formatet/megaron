@@ -145,12 +145,12 @@ func rankSlotsFromOptions(hexOptions []HexOption, center hexgrid.Coord) []foodSl
 // this function placed) and inside the same transaction as founding, so a
 // failed founding never leaves orphaned placement rows.
 func PlaceStartingWorkforce(ctx context.Context, tx Tx, settlementID uuid.UUID) (placed int, sufficient bool, err error) {
-	var population int
-	if err := tx.QueryRow(ctx,
-		`SELECT population FROM settlements WHERE id = $1`, settlementID,
-	).Scan(&population); err != nil {
-		return 0, false, fmt.Errorf("place starting workforce: load population: %w", err)
+	workTx, finish, population, err := placementWriteTx(ctx, tx, settlementID)
+	if err != nil {
+		return 0, false, err
 	}
+	defer func() { err = finish(err) }()
+	tx = workTx
 	totalGubbar := population / 100
 
 	slots, _, err := rankedFoodSlots(ctx, tx, settlementID)
@@ -312,6 +312,15 @@ func FoodGubbarRequiredWithAutomatic(ctx context.Context, tx Tx, settlementID uu
 // Falls through to the pool the same way if every food slot is already at
 // capacity.
 func PlaceNextGubbeOnBestFoodHex(ctx context.Context, tx Tx, settlementID uuid.UUID, gubbeOrdinal int) (placed bool, err error) {
+	workTx, finish, population, err := placementWriteTx(ctx, tx, settlementID)
+	if err != nil {
+		return false, err
+	}
+	defer func() { err = finish(err) }()
+	tx = workTx
+	if gubbeOrdinal < 1 || gubbeOrdinal > population/100 {
+		return false, nil
+	}
 	slots, _, err := rankedFoodSlots(ctx, tx, settlementID)
 	if err != nil {
 		return false, err
@@ -322,6 +331,9 @@ func PlaceNextGubbeOnBestFoodHex(ctx context.Context, tx Tx, settlementID uuid.U
 		return false, fmt.Errorf("place next gubbe: %w", err)
 	}
 
+	if placedCounts.Total >= population/100 {
+		return false, nil
+	}
 	for _, slot := range slots {
 		occupied := placedCounts.Hex[slot.hex][slot.good]
 		if occupied >= slot.cap {
@@ -360,6 +372,12 @@ func PlaceNextGubbeOnBestFoodHex(ctx context.Context, tx Tx, settlementID uuid.U
 // devotion, KH1) — this DELETE only ever targets settlement_placement.
 // Caller must run RecomputeProduction afterwards in the same tick.
 func PrunePlacementsToPopulation(ctx context.Context, tx Tx, settlementID uuid.UUID) (pruned int, err error) {
+	workTx, finish, _, err := placementWriteTx(ctx, tx, settlementID)
+	if err != nil {
+		return 0, err
+	}
+	defer func() { err = finish(err) }()
+	tx = workTx
 	tag, err := tx.Exec(ctx,
 		`DELETE FROM settlement_placement
 		 WHERE id IN (
