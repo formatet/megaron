@@ -46,3 +46,4 @@ Final natural process provenance: `native-final/evidence.json` reads `/healthz` 
 
 Method note: first native pass correctly exercised the DOM but left War open over the mobile City screenshot. Fixed the **rig** to close the prior drawer and reran whole natural flow (`native-corrected/`), then repeated on production commits (`native/`, final `native-final/`). Initial mutation runner port collision is separately logged, followed by real named failures and greens; no collision is counted as product evidence.
 
+CLI text snapshots normalize trailing whitespace only; payloads and test results are unchanged.

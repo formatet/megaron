@@ -2,4 +2,3 @@
   Prod:  grain +6.17 per day
   Cons:  grain +5.00 per day
   Events: —
-
