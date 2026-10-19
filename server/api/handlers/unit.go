@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"math"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -2109,6 +2110,7 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 	attachPassageNotes(r.Context(), h.pool, worldID, units, summaries)
 	attachExpeditionNotes(r.Context(), h.pool, worldID, summaries)
 	attachPickupNotes(r.Context(), h.pool, worldID, playerID, units, summaries)
+	attachOrdersEnRoute(r.Context(), h.pool, worldID, playerID, summaries)
 
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]any{"units": summaries, "expedition_rules": expeditionRulesJSON()})
@@ -2188,8 +2190,74 @@ func attachUnitPaths(ctx context.Context, db province.Queryer, worldID uuid.UUID
 	}
 }
 
+// orderEnRoute is an order the player sent that its Runner has not yet
+// delivered. The player sent it and knows where it goes, so this is no FOW
+// leak. TargetQ/R only for orders that carry a destination (march, redirect,
+// build_road). There is no arrival tick: messengers stores only arrives_at.
+type orderEnRoute struct {
+	Verb      string    `json:"verb"`
+	TargetQ   *int      `json:"target_q,omitempty"`
+	TargetR   *int      `json:"target_r,omitempty"`
+	ArrivesAt time.Time `json:"arrives_at"`
+}
+
+// attachOrdersEnRoute fills OrdersEnRoute from the order Runners still on
+// their way: ONE query for all the player's units. messengers is the source
+// because it covers both a plain dispatch (ScheduledOrderDelivery exists) and
+// a sea-passage order whose delivery is only scheduled later by
+// messenger.PassageScanHandler. status='outbound' = neither delivered
+// (arrived) nor lost nor withdrawn. The sender filter keeps another Wanax's
+// runners out, whatever unit id their payload names.
+func attachOrdersEnRoute(ctx context.Context, db province.Queryer, worldID, ownerID uuid.UUID, summaries []unitSummary) {
+	if len(summaries) == 0 {
+		return
+	}
+	index := make(map[uuid.UUID]int, len(summaries))
+	for i, s := range summaries {
+		index[s.ID] = i
+	}
+	rows, err := db.Query(ctx,
+		`SELECT (order_payload->>'unit_id')::uuid, order_payload->>'verb',
+		        COALESCE(order_payload->'march'->>'TargetQ', order_payload->'recall'->>'NewTargetQ', order_payload->'build_road'->>'to_q'),
+		        COALESCE(order_payload->'march'->>'TargetR', order_payload->'recall'->>'NewTargetR', order_payload->'build_road'->>'to_r'),
+		        arrives_at
+		   FROM messengers
+		  WHERE world_id = $1 AND sender_id = $2 AND kind = 'order' AND status = 'outbound'
+		    AND order_payload->>'unit_id' IS NOT NULL
+		  ORDER BY arrives_at, id`,
+		worldID, ownerID)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var unitID uuid.UUID
+		var verb string
+		var tq, tr *string
+		var arrives time.Time
+		if rows.Scan(&unitID, &verb, &tq, &tr, &arrives) != nil {
+			continue
+		}
+		i, ok := index[unitID]
+		if !ok {
+			continue
+		}
+		o := orderEnRoute{Verb: verb, ArrivesAt: arrives}
+		if tq != nil && tr != nil {
+			q, qErr := strconv.Atoi(*tq)
+			r, rErr := strconv.Atoi(*tr)
+			if qErr == nil && rErr == nil {
+				o.TargetQ, o.TargetR = &q, &r
+			}
+		}
+		summaries[i].OrdersEnRoute = append(summaries[i].OrdersEnRoute, o)
+	}
+}
+
 // unitSummary is the JSON shape returned to clients.
 type unitSummary struct {
+	// OrdersEnRoute: orders the player sent that have not been delivered yet.
+	OrdersEnRoute []orderEnRoute `json:"orders_en_route,omitempty"`
 	ID       uuid.UUID `json:"id"`
 	Type     string    `json:"type"`
 	Category string    `json:"category"`
