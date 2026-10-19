@@ -39,12 +39,11 @@ func TestHerdUnderCapIsEmergencySlaughterWhenStarving(t *testing.T) {
 }
 
 func TestHerdStillOverCapAfterMealIsLost(t *testing.T) {
-	// Fed by grain; 60 animals, cap 50, small meal: 10 surplus, eaten share
-	// 10*1/110, the rest of the excess is lost.
+	// 60 animals, cap 50, a meal of 1 with grain in store: the surplus is eaten
+	// first (1 animal, no grain touched), the other 9 over the cap are lost.
 	meal := PlanFoodHerd(1, map[string]float64{GoodGrain: 100, GoodLivestock: 60}, true, HerdCap(0))
-	eaten := meal.Used[GoodLivestock]
-	if want := math.Floor(60 - eaten - 50); meal.Lost != want || meal.Lost < 8 {
-		t.Fatalf("lost=%g eaten=%g", meal.Lost, eaten)
+	if meal.Used[GoodLivestock] != 1 || meal.Used[GoodGrain] != 0 || meal.Lost != 9 {
+		t.Fatalf("%+v", meal)
 	}
 	// A bigger pen holds them: nothing eaten, nothing lost.
 	big := PlanFoodHerd(1, map[string]float64{GoodGrain: 100, GoodLivestock: 60}, true, HerdCap(1))

@@ -16,7 +16,7 @@ Older **FoodShortfall** messages remain in history. The world's daily food audit
 
 ## The herd and the pen
 
-Your herders breed animals, but a city can only keep so many. The **herd cap** is 50, and every level of a **Pen** ([[buildings]]) adds 100. **Status** and **City → Food** show it as *Herd 50 / 50*. Animals **above** the cap are ordinary food: they are eaten with the other four goods at the day's meal. If animals are still above the cap after the meal, the pen cannot hold them and they are **lost**. Herders therefore feed you only while someone eats what they raise: build a bigger Pen, or move herders to other work. Animals under the cap stay in the herd and are eaten only if the people would otherwise starve.
+Your herders breed animals, but a city can only keep so many. The **herd cap** is 50, and every level of a **Pen** ([[buildings]]) adds 100. **Status** and **City → Food** show it as *Herd 50 / 50*. Animals **above** the cap are eaten **first** at the day's meal — fresh meat does not keep — and the four goods share whatever hunger is left. If animals are still above the cap after the meal, the pen cannot hold them and they are **lost**. Herders therefore feed you only while someone eats what they raise: build a bigger Pen, or move herders to other work. Animals under the cap stay in the herd and are eaten only if the people would otherwise starve.
 
 ## What to do about it
 

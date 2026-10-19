@@ -55,26 +55,27 @@ func PlanFood(demand float64, available map[string]float64, emergencyHerd bool) 
 }
 
 // PlanFoodHerd is PlanFood for a settlement whose herd has a cap (order 28b).
-// Animals above herdCap are ordinary food: a fifth good in the equal pool.
+// Animals above herdCap are eaten FIRST — the pen cannot keep them, so in an
+// equal share most would be lost while grain sat in store (Claude review
+// 2026-10-19: "överskottet blir mat"). The four foods then share the rest.
 // Animals under the cap are eaten only as emergency slaughter. Whatever is
 // still above the cap after the meal is Lost.
 func PlanFoodHerd(demand float64, available map[string]float64, emergencyHerd bool, herdCap float64) FoodMeal {
 	out := FoodMeal{Used: map[string]float64{}, Unmet: math.Max(0, demand)}
 	herd := math.Max(0, available[GoodLivestock])
-	surplus := 0.0
 	if !math.IsInf(herdCap, 1) {
-		surplus = math.Max(0, herd-math.Max(0, herdCap))
+		if eat := math.Min(out.Unmet, math.Max(0, herd-math.Max(0, herdCap))); eat > 0 {
+			out.Used[GoodLivestock] = eat
+			out.Unmet -= eat
+		}
 	}
-	total := FoodAmount(available) + surplus
+	total := FoodAmount(available)
 	take := math.Min(out.Unmet, total)
 	if total > 0 && take > 0 {
 		for _, good := range FoodGoods {
 			if n := math.Max(0, available[good]) * take / total; n > 0 {
 				out.Used[good] = n
 			}
-		}
-		if surplus > 0 {
-			out.Used[GoodLivestock] += surplus * take / total
 		}
 		out.Unmet -= take
 	}
