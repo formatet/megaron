@@ -63,3 +63,50 @@ func TestStoredProvisionsMismatchRefusesWithoutSilentConversion(t *testing.T) {
 		t.Fatalf("failed draw mutated ledger %g/%v", total, goods)
 	}
 }
+
+func TestSpecialHomeReturnUnloadsSameGoodsExactlyOnce(t *testing.T) {
+	for _, intent := range []string{"explore_return", "damaged_return", "captured_return", "pickup_return"} {
+		t.Run(intent, func(t *testing.T) {
+			pool, world, owner, city := setupLandMarchWorldWithHome(t)
+			ctx := context.Background()
+			for _, good := range []string{"grain", "fish", "oil", "wine"} {
+				if _, err := pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,$2,0,0,1000,0) ON CONFLICT(settlement_id,good_key) DO UPDATE SET amount=0,rate=0,cap=1000,calc_tick=0`, city, good); err != nil {
+					t.Fatal(err)
+				}
+			}
+			var id uuid.UUID
+			if err := pool.QueryRow(ctx, `INSERT INTO units(world_id,owner_id,type,category,size,crew,status,q,r,target_q,target_r,home_settlement_id,march_intent,provisions,provision_goods) VALUES($1,$2,'galley','naval',1,20,'marching',1,0,0,0,$3,$4,10,'{"fish":10}') RETURNING id`, world, owner, city, intent).Scan(&id); err != nil {
+				t.Fatal(err)
+			}
+			h := NewUnitArrivalHandler(pool, events.NewStore(pool), nil, events.NewScheduler(pool, nil), nil)
+			for attempt := 0; attempt < 2; attempt++ {
+				tx, err := pool.Begin(ctx)
+				if err != nil {
+					t.Fatal(err)
+				}
+				err = h.resolve(ctx, tx, id, world)
+				if err != nil {
+					tx.Rollback(ctx)
+					t.Fatal(err)
+				}
+				if err := tx.Commit(ctx); err != nil {
+					t.Fatal(err)
+				}
+			}
+			var total float64
+			var status string
+			if err := pool.QueryRow(ctx, `SELECT provisions,status FROM units WHERE id=$1`, id).Scan(&total, &status); err != nil {
+				t.Fatal(err)
+			}
+			if total != 0 || status != "garrison" {
+				t.Fatalf("home total/status=%g/%s want0/garrison", total, status)
+			}
+			if got := settledAmount(t, pool, city, "fish"); got != 10 {
+				t.Fatalf("returned fish=%g want10 once", got)
+			}
+			if got := settledAmount(t, pool, city, "grain"); got != 0 {
+				t.Fatalf("fish became grain=%g", got)
+			}
+		})
+	}
+}
