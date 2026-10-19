@@ -18,6 +18,10 @@ func TestHerdOverCapIsEatenInThePool(t *testing.T) {
 	if math.Abs(meal.Used[GoodLivestock]-10) > 1e-9 || math.Abs(meal.Used[GoodGrain]-20) > 1e-9 || meal.Unmet != 0 || meal.Lost != 0 {
 		t.Fatalf("%+v", meal)
 	}
+	// Ordinary food, not emergency slaughter: eaten without the emergency flag too.
+	if plain := PlanFoodHerd(30, map[string]float64{GoodGrain: 20, GoodLivestock: 60}, false, HerdCap(0)); math.Abs(plain.Used[GoodLivestock]-10) > 1e-9 {
+		t.Fatalf("%+v", plain)
+	}
 }
 
 func TestHerdUnderCapIsNotEatenWhenFed(t *testing.T) {
@@ -81,7 +85,7 @@ func TestFoodTick_PenHoldsTheHerd(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	f := newFoodFixture(t, pool, "herd-pen", 1000)
-	seedFoodStock(t, pool, f, 1000, 0, 60)
+	seedFoodStock(t, pool, f, 1000, 0, 160)
 	if _, err := pool.Exec(ctx, `INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'pen', 1)`, f.settlementID); err != nil {
 		t.Fatal(err)
 	}
@@ -89,7 +93,7 @@ func TestFoodTick_PenHoldsTheHerd(t *testing.T) {
 	if err := newFoodTickHandler(pool).Handle(ctx, event); err != nil {
 		t.Fatal(err)
 	}
-	if got := foodStockOf(t, pool, f.settlementID, GoodLivestock); got != 60 {
-		t.Fatalf("herd after tick=%g want 60", got)
+	if got := foodStockOf(t, pool, f.settlementID, GoodLivestock); got != 150 {
+		t.Fatalf("herd after tick=%g want 150 (cap of a level-1 pen)", got)
 	}
 }
