@@ -1,0 +1,6 @@
+**/temenos
+**/keryx
+**/private-*.json
+**/chronicles/
+**/reports/
+__pycache__/

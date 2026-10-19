@@ -13,12 +13,12 @@
   --border-in: #6E2C00;   /* ASH_BROWN  — inner shadow, recessed edge */
   --text:      #1C1C1C;   /* CHARCOAL   — body text on light surfaces */
   --text-light:#F2EAD3;   /* PLASTER    — body text on dark surfaces */
-  --text-dim:  #A04000;   /* LOAM       — muted / secondary text */
+  --text-dim:  #615D56;   /* WARM_GREY  — muted / secondary text */
   --accent:    #C0392B;   /* FIRED_CLAY — primary action, headings */
   --sandstone: #F0B27A;   /* SANDSTONE  — button face (sun-lit clay) */
   --gold:      #F9E79F;   /* ORACLE_GOLD— divine glow, global headings */
   --safe:      #D4AC0D;   /* DRY_GRASS  — positive values, support */
-  --danger:    #6C3483;   /* DOOM_VIOLET— collapse, danger states */
+  --danger:    #922B21;   /* BLOOD_RED  — collapse, danger states */
   --blood:     #922B21;   /* BLOOD_RED  — combat banners */
   --sea:       #2E86C1;   /* AEGEAN     — sea, join-button */
   --deep-sea:  #1B4F72;   /* DEEP_SEA   — sea text, deep water */

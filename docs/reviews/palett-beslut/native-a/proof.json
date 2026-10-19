@@ -1,0 +1,201 @@
+{
+  "health": {
+    "commit": "584a324a56284e74f3c10fc1a18e311d54d85228",
+    "migration": 189,
+    "status": "ok"
+  },
+  "natural_register_cli_login_join_found": true,
+  "world_id": "3ecc723d-1a14-4e35-a4c7-1a5f7517aac1",
+  "province_id": "42f0de3c-1a4b-4a6f-b87d-2b2d5de30f54",
+  "firefox_errors": [],
+  "browser": "Firefox; DPR1;1280/390",
+  "sql_writes": false,
+  "request_replay": false,
+  "observations": [
+    {
+      "drawer": "city",
+      "width": 1280,
+      "variant": "before",
+      "warm_grey_text": [],
+      "overflow": false
+    },
+    {
+      "drawer": "city",
+      "width": 1280,
+      "variant": "after",
+      "warm_grey_text": [
+        "\u2039",
+        "\u203a",
+        "?",
+        "\u2715",
+        "Population",
+        "Population 1,000 \u2014 growing: food net +0.3 per day",
+        "People",
+        "Free to work"
+      ],
+      "overflow": false
+    },
+    {
+      "drawer": "city",
+      "width": 390,
+      "variant": "before",
+      "warm_grey_text": [],
+      "overflow": false
+    },
+    {
+      "drawer": "city",
+      "width": 390,
+      "variant": "after",
+      "warm_grey_text": [
+        "\u2039",
+        "\u203a",
+        "?",
+        "\u2715",
+        "Population",
+        "Population 1,000 \u2014 growing: food net +0.3 per day",
+        "People",
+        "Free to work"
+      ],
+      "overflow": false
+    },
+    {
+      "drawer": "economy",
+      "width": 1280,
+      "variant": "before",
+      "warm_grey_text": [],
+      "overflow": false
+    },
+    {
+      "drawer": "economy",
+      "width": 1280,
+      "variant": "after",
+      "warm_grey_text": [
+        "?",
+        "\u2715",
+        "Settlements",
+        "Myrsine \u2605",
+        "Silver",
+        "trade offer",
+        "trade accept",
+        "trade decline"
+      ],
+      "overflow": false
+    },
+    {
+      "drawer": "economy",
+      "width": 390,
+      "variant": "before",
+      "warm_grey_text": [],
+      "overflow": false
+    },
+    {
+      "drawer": "economy",
+      "width": 390,
+      "variant": "after",
+      "warm_grey_text": [
+        "?",
+        "\u2715",
+        "Settlements",
+        "Myrsine \u2605",
+        "Silver",
+        "trade offer",
+        "trade accept",
+        "trade decline"
+      ],
+      "overflow": false
+    },
+    {
+      "drawer": "kult",
+      "width": 1280,
+      "variant": "before",
+      "warm_grey_text": [],
+      "overflow": false
+    },
+    {
+      "drawer": "kult",
+      "width": 1280,
+      "variant": "after",
+      "warm_grey_text": [
+        "?",
+        "\u2715",
+        "Divine favour",
+        "Mood",
+        "Indifferent",
+        "Net",
+        "Daily decay",
+        "Cult level"
+      ],
+      "overflow": false
+    },
+    {
+      "drawer": "kult",
+      "width": 390,
+      "variant": "before",
+      "warm_grey_text": [],
+      "overflow": false
+    },
+    {
+      "drawer": "kult",
+      "width": 390,
+      "variant": "after",
+      "warm_grey_text": [
+        "?",
+        "\u2715",
+        "Divine favour",
+        "Mood",
+        "Indifferent",
+        "Net",
+        "Daily decay",
+        "Cult level"
+      ],
+      "overflow": false
+    },
+    {
+      "drawer": "war",
+      "width": 1280,
+      "variant": "before",
+      "warm_grey_text": [],
+      "overflow": false
+    },
+    {
+      "drawer": "war",
+      "width": 1280,
+      "variant": "after",
+      "warm_grey_text": [
+        "?",
+        "\u2715",
+        "When to retreat",
+        "Units",
+        "in the city",
+        "Upkeep: 0.5 grain, 0 silver per day",
+        "Myrsine",
+        "One road edge from (1,42). The stone leaves your nearest city now and travels as a caravan; building begins when it and the army are both at the first hex."
+      ],
+      "overflow": false
+    },
+    {
+      "drawer": "war",
+      "width": 390,
+      "variant": "before",
+      "warm_grey_text": [],
+      "overflow": false
+    },
+    {
+      "drawer": "war",
+      "width": 390,
+      "variant": "after",
+      "warm_grey_text": [
+        "?",
+        "\u2715",
+        "When to retreat",
+        "Units",
+        "in the city",
+        "Upkeep: 0.5 grain, 0 silver per day",
+        "Myrsine",
+        "One road edge from (1,42). The stone leaves your nearest city now and travels as a caravan; building begins when it and the army are both at the first hex."
+      ],
+      "overflow": false
+    }
+  ],
+  "before_method": "Same real DOM/data, old danger and text-dim restored via CSS-only override; no API interception"
+}
