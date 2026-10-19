@@ -32,3 +32,17 @@ test('semantic text tokens exist and every *-text token meets 4.5:1 on papyrus',
     assert.ok(ratio >= 4.5, `${key}: ${ratio.toFixed(4)}:1 < 4.5:1`);
   }
 });
+
+// Timothy's approved option B: a threat must not use diplomacy's purple.
+test('approved danger is blood red and diplomacy remains purple', () => {
+  assert.equal(colors.get('--danger'), colors.get('--blood'));
+  assert.equal(colors.get('--blood'), '#922B21');
+  assert.equal(colors.get('--accent-diplomacy'), '#7A4AA5');
+});
+test('approved muted text is warm grey with 4.5:1 on light text surfaces', () => {
+  assert.equal(colors.get('--text-dim'), '#67635C');
+  for (const background of ['--bg-panel', '--bg-raised', '--warm-white']) {
+    const ratio = contrast(colors.get('--text-dim'), colors.get(background));
+    assert.ok(ratio >= 4.5, `--text-dim on ${background}: ${ratio.toFixed(4)}:1 < 4.5:1`);
+  }
+});
