@@ -66,7 +66,31 @@ func rankedFoodSlotsWithOptions(ctx context.Context, tx Tx, settlementID uuid.UU
 	if err != nil {
 		return nil, center, nil, fmt.Errorf("ranked food slots: %w", err)
 	}
-	return rankSlotsFromOptions(hexOptions, center), center, hexOptions, nil
+	// A hex has one holder. Automatic placement never takes a hex another
+	// city already works (Haiku-7: Kydonia's growth gubbe landed on Tylissos'
+	// hex and each city then named the other as holder).
+	var worldID uuid.UUID
+	if err := tx.QueryRow(ctx, `SELECT world_id FROM settlements WHERE id = $1`, settlementID).Scan(&worldID); err != nil {
+		return nil, center, nil, fmt.Errorf("ranked food slots: load world: %w", err)
+	}
+	coords := make([]hexgrid.Coord, 0, len(hexOptions))
+	for _, opt := range hexOptions {
+		coords = append(coords, opt.Coord)
+	}
+	holds, err := LoadHexHolds(ctx, tx, worldID, settlementID, uuid.Nil, coords)
+	if err != nil {
+		return nil, center, nil, fmt.Errorf("ranked food slots: %w", err)
+	}
+	free := hexOptions
+	if len(holds) > 0 {
+		free = make([]HexOption, 0, len(hexOptions))
+		for _, opt := range hexOptions {
+			if _, held := holds[opt.Coord]; !held {
+				free = append(free, opt)
+			}
+		}
+	}
+	return rankSlotsFromOptions(free, center), center, hexOptions, nil
 }
 
 // rankedFoodSlotsAt is rankedFoodSlots' settlement-free sibling — the same
