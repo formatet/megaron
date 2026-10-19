@@ -99,7 +99,25 @@ func riteCmd() *cobra.Command {
 			// the province status endpoint, which exposes `available_prayers`. Works for
 			// any culture — no hardcoded akhaier_* IDs.
 			if list {
-				data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s", cfg.WorldID, cfg.ProvinceID))
+				// The same city a cast would use (--settlement, else the capital),
+				// not the login default — GPT19: a colony without a temple listed
+				// "no temple" while the cast from the capital succeeded.
+				listProvince := cfg.ProvinceID
+				provs, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces", cfg.WorldID))
+				if err != nil {
+					return err
+				}
+				var listMarkers []map[string]any
+				_ = json.Unmarshal(provs, &listMarkers)
+				if sid := riteSettlement(listMarkers, settlementID); sid != "" {
+					for _, m := range listMarkers {
+						if msid, _ := m["settlement_id"].(string); msid == sid {
+							listProvince, _ = m["id"].(string)
+							break
+						}
+					}
+				}
+				data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces/%s", cfg.WorldID, listProvince))
 				if err != nil {
 					return err
 				}
@@ -158,23 +176,7 @@ func riteCmd() *cobra.Command {
 					return err
 				}
 				_ = json.Unmarshal(provs, &markers)
-				for _, m := range markers {
-					if own, _ := m["own"].(bool); own {
-						if isCapital, _ := m["is_capital"].(bool); isCapital {
-							settlementID, _ = m["settlement_id"].(string)
-							break
-						}
-					}
-				}
-				// Fallback: any own settlement.
-				if settlementID == "" {
-					for _, m := range markers {
-						if own, _ := m["own"].(bool); own {
-							settlementID, _ = m["settlement_id"].(string)
-							break
-						}
-					}
-				}
+				settlementID = riteSettlement(markers, "")
 			}
 			if settlementID == "" {
 				return fmt.Errorf("could not find own settlement — use --settlement <id>")
@@ -474,4 +476,27 @@ func printDivineValues(values map[string]float64) {
 		fmt.Printf("  %-12s %.4g\n", key, values[key])
 	}
 	fmt.Println()
+}
+
+// riteSettlement is the city a rite uses: the one named with --settlement,
+// else the own capital, else any own settlement. --list and the cast share it.
+func riteSettlement(markers []map[string]any, given string) string {
+	if given != "" {
+		return given
+	}
+	for _, m := range markers {
+		if own, _ := m["own"].(bool); own {
+			if isCapital, _ := m["is_capital"].(bool); isCapital {
+				sid, _ := m["settlement_id"].(string)
+				return sid
+			}
+		}
+	}
+	for _, m := range markers {
+		if own, _ := m["own"].(bool); own {
+			sid, _ := m["settlement_id"].(string)
+			return sid
+		}
+	}
+	return ""
 }
