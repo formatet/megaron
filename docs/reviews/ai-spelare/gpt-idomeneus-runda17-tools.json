@@ -1,0 +1,102 @@
+[
+  {
+    "number": 1,
+    "start": "2026-10-19T15:46:29+02:00",
+    "args": [
+      "status",
+      "--province",
+      "MalliaWest"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax Dikonaros · day 674 of the world\n\n1 citizen = 100 people\nMalliaWest [minoan]  Pop: 583 people  Labor: 5 citizens  Walls: 0/3  Settlements: 2/5  [coastal — can build harbour → ships]\nPopulation 583 — growing: food net +7.5 per day\nThis is MalliaWest. You have 2 cities — `keryx settlements` lists them, `keryx status --province <id>` shows another.\n\nFood lasts 465.6 days at current consumption (city grain + fish stocks)\n\nLast day 674: 2 goods produced, 1 consumed  ·  keryx ticklog for details\n\nResources\n  (per day; food and army balances are itemized below)\n  Silver       57  —\n  Food     grain 0.5 + fish 9.9 − people eat 2.9 = net +7.5 per day (before army)\n  Grain        97  production 0.5 per day  (1 citizen needed for people on best food slots · 5 placed)\n  Automatic food: 0.50 grain + 1.41 fish per day without placed citizens (nearby ground 0.50 grain; 83 people outside whole citizens: 0.00 grain + 1.41 fish, a fraction of the best food worker)\n  Army     eats 0.0 grain per day → food net +7.5 per day after army\n  Silver   net -0.5 per day after army pay\n  Fish       1.3k  +9.9 per day\n  ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).\n  Kharis      100  (Favorable) · cap 100 · net +6.9 per day (temple − decay)\n  Kharis decay: 0.1 base + 2 cities cost 0.1 per day = 0.2 total\n  → your temple can employ MORE devotion than you've allocated — raise cult labor (`keryx allocate --cult <%>`) to fill it and let kharis climb.\n  Temple in Mallia: reference 0.25 grain per day — alternatives: 0.4202 fish or 0.2977 timber or 0.3586 silver — stock: 1303 grain, 1633 fish, 70.84 timber, 366 silver — next gift: 0.25 grain  ✓\n\nArmy (garrison in MalliaWest)\n  Galley        1\n  Upkeep     0.0 grain, 1.5 silver per day  (everything the city pays — including field units)\n             1.0 silver per day back into the city (garrison's pay)\n  Field units and other cities are shown in `keryx unit list`.\n\nBuildings\n  harbour      L1\n  shipyard     L1\n",
+    "stderr": ""
+  },
+  {
+    "number": 2,
+    "start": "2026-10-19T15:46:39+02:00",
+    "args": [
+      "unit",
+      "list",
+      "--province",
+      "MalliaWest"
+    ],
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "Error: unknown flag: --province\nSee keryx unit list --help\n"
+  },
+  {
+    "number": 3,
+    "start": "2026-10-19T15:46:41+02:00",
+    "args": [
+      "unit",
+      "list",
+      "--help"
+    ],
+    "exit_code": 0,
+    "stdout": "List your units\n\nUsage:\n  keryx unit list [flags]\n\nExamples:\n  keryx unit list\n  keryx unit list --json\n\nFlags:\n  -h, --help   help for list\n\nGlobal Flags:\n  -j, --json   output as JSON (for scripts and MCP)\n",
+    "stderr": ""
+  },
+  {
+    "number": 4,
+    "start": "2026-10-19T15:46:42+02:00",
+    "args": [
+      "unit",
+      "list",
+      "--json"
+    ],
+    "exit_code": 0,
+    "stdout": "{\n  \"expedition_rules\": {\n    \"area_radius\": 5,\n    \"default_ticks\": 10,\n    \"max_ticks\": 30,\n    \"min_ticks\": 4\n  },\n  \"units\": [\n    {\n      \"category\": \"land\",\n      \"deployable\": true,\n      \"display_name\": \"1st Spearmen of Mallia\",\n      \"id\": \"34d55211-6675-4d8a-9291-96232adc4d60\",\n      \"in_battle\": false,\n      \"ordinal\": 1,\n      \"q\": 61,\n      \"r\": 22,\n      \"settlement_id\": \"a76788d5-cc6d-4b44-8a9c-0cfeb95375c0\",\n      \"size\": 100,\n      \"status\": \"garrison\",\n      \"support_settlement_id\": \"a76788d5-cc6d-4b44-8a9c-0cfeb95375c0\",\n      \"support_settlement_name\": \"Mallia\",\n      \"type\": \"spearman\",\n      \"upkeep_context\": \"active\",\n      \"upkeep_grain_per_tick\": 0.5,\n      \"upkeep_silver_per_tick\": 0\n    },\n    {\n      \"category\": \"naval\",\n      \"crew\": 20,\n      \"deployable\": true,\n      \"display_name\": \"Palace Herald, Galley of MalliaWest\",\n      \"hull\": 5,\n      \"id\": \"dd6e8ea0-7aa7-4c26-835d-6d72bebd4547\",\n      \"in_battle\": false,\n      \"name\": \"Palace Herald\",\n      \"ordinal\": 1,\n      \"settlement_id\": \"c071f733-9f7f-48ad-abcb-a33a8fe88750\",\n      \"size\": 1,\n      \"status\": \"garrison\",\n      \"support_settlement_id\": \"c071f733-9f7f-48ad-abcb-a33a8fe88750\",\n      \"support_settlement_name\": \"MalliaWest\",\n      \"type\": \"galley\",\n      \"upkeep_context\": \"active\",\n      \"upkeep_grain_per_tick\": 0.04,\n      \"upkeep_silver_per_tick\": 1.5\n    },\n    {\n      \"category\": \"land\",\n      \"deployable\": true,\n      \"display_name\": \"3rd Spearmen of Mallia\",\n      \"id\": \"84e8e079-c784-484e-a647-4ea6d9d914b2\",\n      \"in_battle\": false,\n      \"ordinal\": 3,\n      \"settlement_id\": \"a76788d5-cc6d-4b44-8a9c-0cfeb95375c0\",\n      \"size\": 8,\n      \"status\": \"garrison\",\n      \"support_settlement_id\": \"a76788d5-cc6d-4b44-8a9c-0cfeb95375c0\",\n      \"support_settlement_name\": \"Mallia\",\n      \"type\": \"spearman\",\n      \"upkeep_context\": \"active\",\n      \"upkeep_grain_per_tick\": 0.04,\n      \"upkeep_silver_per_tick\": 0\n    }\n  ]\n}\n",
+    "stderr": ""
+  },
+  {
+    "number": 5,
+    "start": "2026-10-19T15:46:51+02:00",
+    "args": [
+      "unit",
+      "march",
+      "--unit",
+      "dd6e8ea0-7aa7-4c26-835d-6d72bebd4547",
+      "--target",
+      "9,64",
+      "--intent",
+      "explore",
+      "--ticks",
+      "30",
+      "--preview"
+    ],
+    "exit_code": 0,
+    "stdout": "Arrival unavailable: the route crosses unknown terrain.\nPlanned expedition: 30 days — with immediate departure, home by day 704. First-leg arrival remains unknown.\nPay: 0.45 → 1.5 silver per day in the field · treasury lasts 37.8 days\nNo order sent. Run again without --preview to send it.\n",
+    "stderr": ""
+  },
+  {
+    "number": 6,
+    "start": "2026-10-19T15:46:53+02:00",
+    "args": [
+      "unit",
+      "march",
+      "--unit",
+      "dd6e8ea0-7aa7-4c26-835d-6d72bebd4547",
+      "--target",
+      "9,64",
+      "--intent",
+      "explore",
+      "--ticks",
+      "30"
+    ],
+    "exit_code": 0,
+    "stdout": "Unit dd6e8ea0 exploring (9,64) — arrives in 9 days — Expedition around (9,64), 30 days; turns home by day 689; home by day 704\n",
+    "stderr": ""
+  },
+  {
+    "number": 7,
+    "start": "2026-10-19T15:46:54+02:00",
+    "args": [
+      "status",
+      "--province",
+      "MalliaWest"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax Dikonaros · day 674 of the world\n\n1 citizen = 100 people\nMalliaWest [minoan]  Pop: 583 people  Labor: 5 citizens  Walls: 0/3  Settlements: 2/5  [coastal — can build harbour → ships]\nPopulation 583 — growing: food net +7.5 per day\nThis is MalliaWest. You have 2 cities — `keryx settlements` lists them, `keryx status --province <id>` shows another.\n\nFood lasts 465.2 days at current consumption (city grain + fish stocks)\n\nLast day 674: 2 goods produced, 1 consumed  ·  keryx ticklog for details\n\nResources\n  (per day; food and army balances are itemized below)\n  Silver       57  —\n  Food     grain 0.5 + fish 9.9 − people eat 2.9 = net +7.5 per day (before army)\n  Grain        95  production 0.5 per day  (1 citizen needed for people on best food slots · 5 placed)\n  Automatic food: 0.50 grain + 1.41 fish per day without placed citizens (nearby ground 0.50 grain; 83 people outside whole citizens: 0.00 grain + 1.41 fish, a fraction of the best food worker)\n  Army     eats 0.0 grain per day → food net +7.5 per day after army\n  Silver   net -1.5 per day after army pay\n  Fish       1.3k  +9.9 per day\n  ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).\n  Kharis      100  (Favorable) · cap 100 · net +6.9 per day (temple − decay)\n  Kharis decay: 0.1 base + 2 cities cost 0.1 per day = 0.2 total\n  → your temple can employ MORE devotion than you've allocated — raise cult labor (`keryx allocate --cult <%>`) to fill it and let kharis climb.\n  Temple in Mallia: reference 0.25 grain per day — alternatives: 0.4202 fish or 0.2977 timber or 0.3586 silver — stock: 1303 grain, 1633 fish, 70.84 timber, 366 silver — next gift: 0.25 grain  ✓\n\nArmy (garrison in MalliaWest)\n  Upkeep     0.0 grain, 1.5 silver per day  (everything the city pays — including field units)\n  Field units and other cities are shown in `keryx unit list`.\n\nBuildings\n  harbour      L1\n  shipyard     L1\n",
+    "stderr": ""
+  }
+]
