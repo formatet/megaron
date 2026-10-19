@@ -141,8 +141,10 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 			}
 		}
 	}
-	if extras.Devotion > 0 {
-		rows = append(rows, row{"cult (devotion)", extras.Devotion * 100, int(extras.Devotion * float64(pool)), false})
+	// Devotion is printed apart from the work split (Haiku round 6: fish 95% +
+	// cult 15% read as 110% of the city, i.e. double counting).
+	devotion := extras.Devotion > 0
+	if devotion {
 		hasCult = true
 	}
 	fmt.Printf("  Population:  %s (%s)\n", peopleCount(pool), citizenScaleNote)
@@ -175,6 +177,10 @@ func printCurrentAllocation(c *Client, provinceID string) error {
 			line += "  — at storage ceiling, produces nothing"
 		}
 		fmt.Println(line)
+	}
+	if devotion {
+		fmt.Printf("\n  Temple devotion: %.0f%% (%s) — the same people, serving the temple\n", extras.Devotion*100, peopleCount(int(extras.Devotion*float64(pool))))
+		fmt.Println("  besides their work above; it is not taken from the split.")
 	}
 	if hasCult {
 		// Devotion is capped by what the temple can employ (15% per level), and
