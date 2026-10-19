@@ -1840,11 +1840,23 @@ function drawDepositIcons(ctx, cx, cy, tile) {
         ctx.beginPath(); ctx.moveTo(ox, oy - 3.5); ctx.lineTo(ox + 3, oy); ctx.lineTo(ox, oy + 3.5); ctx.lineTo(ox - 3, oy); ctx.closePath(); ctx.fill(); ctx.stroke();
         break;
       case 'in':
-        // Incense: a resin drop (point up, round belly) in amber. A new shape on
-        // purpose, so it is told apart from copper's disc, tin's slab, cedar's
-        // triangle and silver's diamond by silhouette, not by colour alone.
-        ctx.fillStyle = '#D8A838';
+        // Incense: a golden resin drop (point up, round belly) — a new shape, so
+        // it is told apart from copper's disc, tin's slab, cedar's triangle and
+        // silver's diamond by silhouette. BILD B4 (Timothy 2026-10-19: "gyllene,
+        // ska lysa lite — dyrt, som guld"): a highlight pixel and three pixel
+        // sparkles. Sparkles only on a live hex: they sit outside the memory
+        // pass's grey and memory carries no glint.
+        ctx.fillStyle = '#F2C230';
         ctx.beginPath(); ctx.moveTo(ox, oy - 4.5); ctx.lineTo(ox + 3, oy); ctx.arc(ox, oy + 0.5, 3, 0, Math.PI); ctx.lineTo(ox - 3, oy); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#FFF6C8';
+        ctx.fillRect(Math.round(ox - 1.5), Math.round(oy - 1), 1, 2);
+        if (tileTier(tile.q, tile.r) === 'live') {
+          ctx.fillStyle = '#FFE680';
+          for (const [dx, dy] of [[5, -5], [-5, -3], [5, 3]]) {
+            const sx = Math.round(ox + dx), sy = Math.round(oy + dy);
+            ctx.fillRect(sx, sy - 1, 1, 3); ctx.fillRect(sx - 1, sy, 3, 1);
+          }
+        }
         break;
     }
   });
