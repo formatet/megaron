@@ -134,8 +134,10 @@ func (h *TickHandler) observeKharisBand(ctx context.Context, w wanaxSnap, world 
 	return nil
 }
 
-// applyStarvation observes upkeep's actual pre-loss witness, including a final
-// garrison death. Civilian food balance and the surviving unit list are irrelevant.
+// applyStarvation owns both hunger transitions after the food pass. Garrison
+// hunger follows upkeep's pre-loss witness (including a final death); civilian
+// hunger follows food_unmet_amount, the same actual meal outcome growth reads.
+// The conditions remain independent, even in the same settlement.
 func (h *TickHandler) applyStarvation(ctx context.Context, world uuid.UUID) error {
 	tx, err := h.pool.Begin(ctx)
 	if err != nil {
@@ -146,7 +148,7 @@ func (h *TickHandler) applyStarvation(ctx context.Context, world uuid.UUID) erro
 	if err = tx.QueryRow(ctx, `SELECT current_tick FROM worlds WHERE id=$1 FOR SHARE`, world).Scan(&tick); err != nil {
 		return err
 	}
-	rows, err := tx.Query(ctx, `SELECT s.id,s.owner_id,s.name,s.province_id,p.map_q,p.map_r,EXISTS(SELECT 1 FROM events e WHERE e.world_id=$1 AND e.event_type='UnitAttrition' AND e.world_tick=$2 AND e.payload->>'garrison_settlement_id'=s.id::text AND e.payload->>'reason'='grain_shortage') FROM settlements s JOIN provinces p ON p.id=s.province_id WHERE s.world_id=$1 AND s.owner_id IS NOT NULL AND s.state NOT IN ('sunk','collapsed','razed') ORDER BY s.id FOR SHARE OF s`, world, tick)
+	rows, err := tx.Query(ctx, `SELECT s.id,s.owner_id,s.name,s.province_id,p.map_q,p.map_r,s.food_unmet_amount,EXISTS(SELECT 1 FROM events e WHERE e.world_id=$1 AND e.event_type='UnitAttrition' AND e.world_tick=$2 AND e.payload->>'garrison_settlement_id'=s.id::text AND e.payload->>'reason'='grain_shortage') FROM settlements s JOIN provinces p ON p.id=s.province_id WHERE s.world_id=$1 AND s.owner_id IS NOT NULL AND s.state NOT IN ('sunk','collapsed','razed') ORDER BY s.id FOR SHARE OF s`, world, tick)
 	if err != nil {
 		return err
 	}
@@ -155,11 +157,12 @@ func (h *TickHandler) applyStarvation(ctx context.Context, world uuid.UUID) erro
 		name                string
 		q, r                int
 		hungry              bool
+		unmet               float64
 	}
 	var cities []city
 	for rows.Next() {
 		var c city
-		if err = rows.Scan(&c.id, &c.owner, &c.name, &c.province, &c.q, &c.r, &c.hungry); err != nil {
+		if err = rows.Scan(&c.id, &c.owner, &c.name, &c.province, &c.q, &c.r, &c.unmet, &c.hungry); err != nil {
 			rows.Close()
 			return err
 		}
@@ -184,6 +187,18 @@ func (h *TickHandler) applyStarvation(ctx context.Context, world uuid.UUID) erro
 		if n != nil {
 			notices = append(notices, *n)
 		}
+		civilNext, civilKind, civilLevel := "false", "CivilianStarvationEnded", 3
+		if c.unmet > 0 {
+			civilNext, civilKind, civilLevel = "true", "CivilianStarvationStarted", 2
+		}
+		civilBody := map[string]any{"settlement_id": c.id, "settlement_name": c.name, "name": c.name, "province_id": c.province, "q": c.q, "r": c.r, "unmet": c.unmet}
+		civil, err := h.recordTransition(ctx, tx, world, c.owner, c.id, "civilian_starvation", "false", civilNext, tick, civilKind, civilLevel, civilBody)
+		if err != nil {
+			return err
+		}
+		if civil != nil {
+			notices = append(notices, *civil)
+		}
 		// Keep the established daily StarvationDamage outcome semantics. Transition
 		// notifications are separate, so neither day-by-day hunger nor retries spam.
 		if c.hungry {
@@ -203,7 +218,7 @@ func (h *TickHandler) applyStarvation(ctx context.Context, world uuid.UUID) erro
 	// Close a former owner's/inactive city's warning using only the context
 	// observed while that owner held the city. Never look up the new owner's city name,
 	// location, garrison or food when telling the former owner this scope ended.
-	closed, err := h.closeInactiveGarrisonScopes(ctx, tx, world, tick)
+	closed, err := h.closeInactiveStarvationScopes(ctx, tx, world, tick)
 	if err != nil {
 		return err
 	}
@@ -218,20 +233,21 @@ func (h *TickHandler) applyStarvation(ctx context.Context, world uuid.UUID) erro
 	return nil
 }
 
-func (h *TickHandler) closeInactiveGarrisonScopes(ctx context.Context, tx pgx.Tx, world uuid.UUID, tick int) ([]transitionNotice, error) {
-	rows, err := tx.Query(ctx, `SELECT ns.player_id,ns.scope_id,ns.context
- FROM kharis_notice_state ns WHERE ns.world_id=$1 AND ns.condition='garrison_starvation' AND ns.state='true' AND ns.observed_tick<$2 AND NOT EXISTS(SELECT 1 FROM settlements s WHERE s.world_id=ns.world_id AND s.id=ns.scope_id AND s.owner_id=ns.player_id AND s.state NOT IN ('sunk','collapsed','razed')) ORDER BY ns.player_id,ns.scope_id`, world, tick)
+func (h *TickHandler) closeInactiveStarvationScopes(ctx context.Context, tx pgx.Tx, world uuid.UUID, tick int) ([]transitionNotice, error) {
+	rows, err := tx.Query(ctx, `SELECT ns.player_id,ns.scope_id,ns.condition,ns.context
+ FROM kharis_notice_state ns WHERE ns.world_id=$1 AND ns.condition IN ('garrison_starvation','civilian_starvation') AND ns.state='true' AND ns.observed_tick<$2 AND NOT EXISTS(SELECT 1 FROM settlements s WHERE s.world_id=ns.world_id AND s.id=ns.scope_id AND s.owner_id=ns.player_id AND s.state NOT IN ('sunk','collapsed','razed')) ORDER BY ns.player_id,ns.scope_id`, world, tick)
 	if err != nil {
 		return nil, err
 	}
 	type previous struct {
 		owner, scope uuid.UUID
 		raw          []byte
+		condition    string
 	}
 	var prior []previous
 	for rows.Next() {
 		var p previous
-		if err = rows.Scan(&p.owner, &p.scope, &p.raw); err != nil {
+		if err = rows.Scan(&p.owner, &p.scope, &p.condition, &p.raw); err != nil {
 			rows.Close()
 			return nil, err
 		}
@@ -248,7 +264,11 @@ func (h *TickHandler) closeInactiveGarrisonScopes(ctx context.Context, tx pgx.Tx
 			return nil, fmt.Errorf("load previous garrison context: %w", err)
 		}
 		body["reason"] = "no_longer_owned_or_active"
-		n, err := h.recordTransition(ctx, tx, world, p.owner, p.scope, "garrison_starvation", "false", "false", tick, "GarrisonStarvationEnded", 3, body)
+		kind := "GarrisonStarvationEnded"
+		if p.condition == "civilian_starvation" {
+			kind = "CivilianStarvationEnded"
+		}
+		n, err := h.recordTransition(ctx, tx, world, p.owner, p.scope, p.condition, "false", "false", tick, kind, 3, body)
 		if err != nil {
 			return nil, err
 		}

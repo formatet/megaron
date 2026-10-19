@@ -32,3 +32,27 @@ test('latest recorded transition clears hunger urgency, restart restores it for 
   const restarted=event('GarrisonStarvationStarted',3,'a');
   assert.ok(urgentNotifications([old,recovered,restarted]).has(restarted));
 });
+
+test('civilian hunger and garrison hunger clear independently in the same city', () => {
+  const event=(kind,tick,city='a')=>({kind,world_tick:tick,body:{settlement_id:city}});
+  const civil=event('CivilianStarvationStarted',1), army=event('GarrisonStarvationStarted',2);
+  const civilEnd=event('CivilianStarvationEnded',3), armyEnd=event('GarrisonStarvationEnded',4);
+  let urgent=urgentNotifications([civil,army,civilEnd]);
+  assert.ok(urgent.has(army));assert.ok(!urgent.has(civil));
+  urgent=urgentNotifications([civil,army,armyEnd]);
+  assert.ok(urgent.has(civil));assert.ok(!urgent.has(army));
+  const restart=event('CivilianStarvationStarted',5);
+  assert.ok(urgentNotifications([civil,civilEnd,armyEnd,restart]).has(restart));
+});
+
+test('civilian hunger prose reports the actual meal, and ownership closure never promises recovery', () => {
+  const text=notifText('CivilianStarvationStarted',{name:'<Coast>',unmet:0.03});
+  assert.match(text,/&lt;Coast&gt;.*going hungry.*&lt;0.1 grain.*grain or fish.*transfer food/);
+  assert.match(notifText('CivilianStarvationEnded',{name:'Coast'}),/people were fed again/);
+  const closed=notifText('CivilianStarvationEnded',{name:'Coast',reason:'no_longer_owned_or_active'});
+  assert.match(closed,/warning closed/);assert.doesNotMatch(closed,/fed again/);
+  for(const kind of ['CivilianStarvationStarted','CivilianStarvationEnded']) {
+    assert.equal(notifDomain(kind),'city');assert.equal(notifIcon(kind),'🍽');
+  }
+  assert.match(notifText('FoodShortfall',{name:'Oldtown',unmet:4}),/Oldtown went hungry today — 4 grain unmet/);
+});

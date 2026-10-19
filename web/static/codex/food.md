@@ -8,7 +8,11 @@ If all three run out and the day's need is still unmet:
 - it shrinks until what its land yields can feed those who are left — the ground right around a city always feeds about a hundred;
 - below **50 people** — starved there, or emptied by drafting soldiers — **the settlement collapses and is gone.**
 
-You get an urgent notification the first day it happens, and starving cities always sit at the top of the archive. Starvation is slow enough to fix and fast enough to kill — act in the same session.
+You get an urgent **CivilianStarvationStarted** notification when hunger is first observed. It records the day, city and how much of that day's meal was missing, in grain. The latest start stays above ordinary history in Notifications while that city's people are hungry. You get **CivilianStarvationEnded** when a later meal feeds everyone again; the old start then returns to ordinary history. A new spell of hunger starts a new pair of notices, rather than repeating the warning every day.
+
+Civilian meals and [[upkeep|soldiers' grain]] are separate: a city's people may be fed while its garrison is hungry, or the other way round. Each warning clears independently. If a city leaves your rule or ceases to be active, its warning closes without claiming its people recovered.
+
+Older **FoodShortfall** messages remain in history. The world's daily food audit still records every shortfall; new inbox messages only mark the transitions. Check **City → Food details** for the current situation and act before the city keeps shrinking.
 
 ## What to do about it
 

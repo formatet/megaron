@@ -141,7 +141,7 @@ export function notifDomain(kind) {
     // City — what your own settlements build, grow, eat and stop producing.
     BuildComplete: 'city', GoodsCrafted: 'city', ColonyFounded: 'city',
     MetropolisFounded: 'city', OutpostEstablished: 'city',
-    FoodShortfall: 'city', SubsistenceWarning: 'city',
+    FoodShortfall: 'city', CivilianStarvationStarted: 'city', CivilianStarvationEnded: 'city', SubsistenceWarning: 'city',
     // Historical only: archived food-reserve notification icons.
     SitosGranaryRelease: 'city', SitosIntervention: 'city', SitosFundLow: 'city',
     HexBlockaded: 'city', HexUnblockaded: 'city', HexTaken: 'city',
@@ -206,6 +206,7 @@ export function notifIcon(kind) {
     ShipStranded:       '⚠',
     DivinePunishment:   '⚡',
     DivineBlessing:     '✨',
+    CivilianStarvationStarted: '🍽', CivilianStarvationEnded: '🍽',
     FoodShortfall:      '🍽',
     HexBlockaded:       '🚧',
     HexUnblockaded:     '↩',
@@ -815,6 +816,14 @@ export function notifText(kind, body) {
         default:                 return `${kind} — ${payloadSummary(body)}`;
       }
     }
+    case 'CivilianStarvationStarted': {
+      const amount = body.unmet > 0 && body.unmet < 0.1 ? '&lt;0.1' : fmtNum(body.unmet);
+      return `${esc(body.name || 'Your city')}: people are going hungry — the meal fell short by ${amount} grain. Place citizens on grain or fish, or transfer food here.`;
+    }
+    case 'CivilianStarvationEnded':
+      return body.reason === 'no_longer_owned_or_active'
+        ? `${esc(body.name || 'Your city')}: civilian hunger warning closed — this city is no longer yours or active.`
+        : `${esc(body.name || 'Your city')}: people were fed again.`;
     case 'FoodShortfall': {
       // unmet is the day's UNFULFILLED ration, not population lost (that is
       // SubsistenceWarning's pop_loss — a different mechanic, don't conflate).

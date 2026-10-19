@@ -1,7 +1,7 @@
 package economy
 
 // megaron_plan_tre_tysta_notiserna.md: FoodShortfall now carries the
-// settlement's name in both the event payload and the NotifyPlayer call —
+// settlement's name in the daily event payload —
 // without it a Wanax with several cities only learns that ONE went hungry,
 // never which. Additive field (CLAUDE.md §Events).
 
@@ -30,7 +30,7 @@ func (r *foodShortfallNotifyRecorder) NotifyPlayer(ctx context.Context, worldID,
 	return nil
 }
 
-func TestFoodTick_ShortfallEventAndNotificationCarrySettlementName(t *testing.T) {
+func TestFoodTick_ShortfallKeepsNamedAuditWithoutDailyNotification(t *testing.T) {
 	pool := testPool(t)
 	const population = 1000 // demand = 1000 * 0.005 (GrainConsumptionPerCitizenPerTick) = 5/tick
 	f := newFoodFixture(t, pool, "shortfall-name", population)
@@ -65,11 +65,7 @@ func TestFoodTick_ShortfallEventAndNotificationCarrySettlementName(t *testing.T)
 		t.Errorf("FoodShortfall event payload name = %q, want %q", p.Name, "Foodtown")
 	}
 
-	if len(rec.calls) != 1 {
-		t.Fatalf("NotifyPlayer called %d times, want 1", len(rec.calls))
-	}
-	notifiedName, _ := rec.calls[0]["name"].(string)
-	if notifiedName != "Foodtown" {
-		t.Errorf("FoodShortfall notification payload name = %q, want %q", notifiedName, "Foodtown")
+	if len(rec.calls) != 0 {
+		t.Fatalf("daily FoodShortfall must be audit-only; direct notifications=%d", len(rec.calls))
 	}
 }
