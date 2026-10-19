@@ -1,16 +1,16 @@
-Your people eat every day, in a fixed order: **grain first, then fish, then livestock.** Fish covers only what grain could not; livestock is slaughtered only when both are gone, and each animal feeds your people for as much as 3 grain. A coastal city with good fishing is fed differently from an inland one.
+Your people eat **grain, fish, oil and wine** every day. One unit of each supplies one unit of food. The meal is shared in proportion to what is available, including the day’s production: a city with 100 grain and 900 fish takes one tenth of its meal as grain and nine tenths as fish. No food good is used up first. If these four cannot feed the people, livestock remains their emergency food: each animal supplies 3 food. Armies, ships and caravans use the four food goods, not livestock.
 
 ## When there is not enough
 
-If all three run out and the day's need is still unmet:
+If the available food and emergency livestock run out and the day's need is still unmet:
 
 - the settlement **loses part of its population that day**, and keeps losing while the shortfall lasts;
 - it shrinks until what its land yields can feed those who are left — the ground right around a city always feeds about a hundred;
 - below **50 people** — starved there, or emptied by drafting soldiers — **the settlement collapses and is gone.**
 
-You get an urgent **CivilianStarvationStarted** notification when hunger is first observed. It records the day, city and how much of that day's meal was missing, in grain. The latest start stays above ordinary history in Notifications until that city's food supply has recovered steadily. You get **CivilianStarvationEnded** after a run of fully fed days; the old start then returns to ordinary history. Hunger returning during that recovery window belongs to the same warning. A new spell after recovery starts a new pair of notices, rather than repeating the warning every day.
+You get an urgent **CivilianStarvationStarted** notification when hunger is first observed. It records the day, city and how much of that day's meal was missing, in food. The latest start stays above ordinary history in Notifications until that city's food supply has recovered steadily. You get **CivilianStarvationEnded** after a run of fully fed days; the old start then returns to ordinary history. Hunger returning during that recovery window belongs to the same warning. A new spell after recovery starts a new pair of notices, rather than repeating the warning every day.
 
-Civilian meals and [[upkeep|soldiers' grain]] are separate: a city's people may be fed while its garrison is hungry, or the other way round. Each warning clears independently. If a city leaves your rule or ceases to be active, its warning closes without claiming its people recovered.
+Civilian meals and [[upkeep|soldiers’ food]] draw from the same stocks, but are served separately: a city's people may be fed while its garrison is hungry, or the other way round. Each warning clears independently. If a city leaves your rule or ceases to be active, its warning closes without claiming its people recovered.
 
 Older **FoodShortfall** messages remain in history. The world's daily food audit still records every shortfall; new inbox messages only mark the transitions. Check **City → Food details** for the current situation and act before the city keeps shrinking.
 
@@ -22,6 +22,6 @@ Older **FoodShortfall** messages remain in history. The world's daily food audit
 - Buy it ([[trade]]).
 - Shrink what eats: soldiers are drafted from your people and eat like them ([[upkeep]]).
 
-Your city has one food stock: the grain and fish in its [[goods|stores]]. **Food lasts** shows that stock at current consumption, without counting future production. **City → More → Food details** shows production, meals and army food separately. Stored food buys time during a shortfall. A city under [[sieges|siege]] starves because its fields are cut off, not because it produces too little.
+Your city has food stocks: the grain, fish, oil and wine in its [[goods|stores]]. **Food for N days** shows those stocks at current consumption, without counting future production. **City → More → Food details** shows production, the last meal by good and army food separately. Different goods actually eaten in the meal improve [[growth|population growth]]; merely storing another food does not. Stored food buys time during a shortfall. A city under [[sieges|siege]] starves because its fields are cut off, not because it produces too little.
 
 Growth is covered in [[growth]].

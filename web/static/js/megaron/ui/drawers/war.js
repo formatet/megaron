@@ -1,3 +1,4 @@
+import { foodGoodsText } from '../food.js';
 import { showInlineResult, confirmInline } from '../inline_result.js';
 import { State, ownCapital } from '../../state.js';
 import { serverNow } from '../../clock.js';
@@ -513,9 +514,11 @@ export function renderUnitCard(u) {
   // a value, not a missing field; never derive soldier pay in the client.
   const upkeepLabel = u.upkeep_context === 'inactive' ? 'Upkeep when active'
     : u.upkeep_context === 'subsistence' ? 'Upkeep after settling' : 'Upkeep';
-  const upkeep = u.upkeep_context !== 'none' && Number.isFinite(u.upkeep_grain_per_tick) && Number.isFinite(u.upkeep_silver_per_tick)
+  const foodRate = u.upkeep_food_per_tick ?? u.upkeep_grain_per_tick;
+  const foodLabel = u.upkeep_food_per_tick != null ? 'food' : 'grain';
+  const upkeep = u.upkeep_context !== 'none' && Number.isFinite(foodRate) && Number.isFinite(u.upkeep_silver_per_tick)
     ? '<div class="unit-upkeep" style="font-size:.65rem;color:var(--text-dim)">' + upkeepLabel + ': '
-      + u.upkeep_grain_per_tick.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' grain, '
+      + foodRate.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' ' + foodLabel + ', '
       + u.upkeep_silver_per_tick.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' silver per day</div>'
     : '';
 
@@ -554,10 +557,11 @@ export function renderUnitCard(u) {
   // a food badge the server never resolves would be a promise it can't keep).
   const atSea = isNaval && (isMarching || isPositioned);
   const days = u.provision_days || 0;
+  const foodDetail = foodGoodsText(u.provisions_by_good);
   const foodBadge = atSea
     ? '<span style="font-size:.6rem;margin-left:.3rem;color:' +
       (days <= 0 ? 'var(--accent-war)' : days < 3 ? 'var(--accent-war)' : 'var(--text-dim)') + '">' +
-      (days > 0 ? 'food for ' + fmtDays(days) : u.provisions_aboard ? 'food for less than a day' : 'out of food') + '</span>'
+      (days > 0 ? 'food for ' + fmtDays(days) : u.provisions_aboard ? 'food for less than a day' : 'out of food') + (foodDetail ? ' (' + foodDetail + ')' : '') + '</span>'
     : '';
 
   // Cargo badge

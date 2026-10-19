@@ -56,6 +56,7 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 			fmt.Printf("Citizens: %d/%d placed, %d idle\n\n", opts.TotalGubbar-opts.PoolSize, opts.TotalGubbar, opts.PoolSize)
 
 			if fs != nil {
+				fmt.Println(fs.Summary)
 				if fs.HarvestBlessing != "" {
 					fmt.Println(fs.HarvestBlessing)
 				}

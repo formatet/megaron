@@ -8,7 +8,7 @@ Three sections show the essentials:
 
 - **Population** — people, those free to work, and livestock.
 - **Catchment & workplaces** — the placement grid, where you put people to work. See [[citizens]].
-- **Food** — how many days the city's current grain and fish stocks last at current consumption, whether stocks are growing, and whether the fields can feed everyone. See [[food]].
+- **Food** — how many days the city’s current grain, fish, oil and wine stocks last at current consumption, whether stocks are growing, and whether the fields can feed everyone. See [[food]].
 
 Open **More** for people in service and the labour pool, **Devotion** ([[temples]]), **Food details** ([[food]]), **Last day**, and **Daily history → Show recent days**. These details and controls remain available while the main view stays short.
 

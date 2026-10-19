@@ -12,18 +12,23 @@ import (
 func printNotificationSummary(c *Client, n notificationItem) {
 	if n.Kind == "GarrisonStarvationStarted" || n.Kind == "GarrisonStarvationEnded" || n.Kind == "CivilianStarvationStarted" || n.Kind == "CivilianStarvationEnded" || n.Kind == "KharisBandChanged" {
 		var b struct {
-			Name     string   `json:"name"`
-			FromBand string   `json:"from_band"`
-			ToBand   string   `json:"to_band"`
-			Kharis   float64  `json:"kharis"`
-			Unmet    *float64 `json:"unmet"`
-			Reason   string   `json:"reason"`
+			FoodCategory bool     `json:"food_category"`
+			Name         string   `json:"name"`
+			FromBand     string   `json:"from_band"`
+			ToBand       string   `json:"to_band"`
+			Kharis       float64  `json:"kharis"`
+			Unmet        *float64 `json:"unmet"`
+			Reason       string   `json:"reason"`
 		}
 		if json.Unmarshal(n.Body, &b) != nil {
 			return
 		}
 		switch n.Kind {
 		case "GarrisonStarvationStarted":
+			if b.FoodCategory {
+				fmt.Printf("      %s: the garrison is losing men to hunger. Soldiers share the city’s grain, fish, oil and wine. Produce or transfer more food here (`keryx transfer`).\n", b.Name)
+				break
+			}
 			fmt.Printf("      %s: the garrison is losing men to hunger. Soldiers need grain even when the city has a food surplus. Place citizens on grain (`keryx place`) or transfer grain here (`keryx transfer`).\n", b.Name)
 		case "GarrisonStarvationEnded":
 			fmt.Printf("      %s: the garrison is no longer losing men to hunger.\n", b.Name)
@@ -34,6 +39,10 @@ func printNotificationSummary(c *Client, n notificationItem) {
 				if *b.Unmet > 0 && *b.Unmet < 0.1 {
 					amount = "<0.1"
 				}
+			}
+			if b.FoodCategory {
+				fmt.Printf("      %s: people are going hungry — the meal fell short by %s food. Produce grain, fish, oil or wine, or transfer food here (`keryx transfer`).\n", b.Name, amount)
+				break
 			}
 			fmt.Printf("      %s: people are going hungry — the meal fell short by %s grain. Place citizens on grain or fish (`keryx place`), or transfer food here (`keryx transfer`).\n", b.Name, amount)
 		case "CivilianStarvationEnded":
@@ -186,7 +195,11 @@ func printNotificationSummary(c *Client, n notificationItem) {
 	case "UnitAttrition":
 		line = fmt.Sprintf("%s starving — lost %d to hunger", subject, b.Lost)
 		if b.Disbanded {
-			line = subject + " starved to nothing — no grain"
+			category := "grain"
+			if b.Reason == "food_shortage" {
+				category = "food"
+			}
+			line = subject + " starved to nothing — no " + category
 		}
 	case "UnitDeserted":
 		line = fmt.Sprintf("%s deserting — %d left unpaid", subject, b.Lost)

@@ -11,7 +11,7 @@ test('J: only three primary sections, all secondary abilities remain under close
  for (const is_capital of [true, false]) assert.doesNotMatch(productionSectionsHTML({is_capital}), /city-gift-sec|city-loyalty-sec|Loyalty log|Gift from capital/);
 });
 test('J: food days come from authoritative mixed-food coverage, from the single city stock',()=>{
- const html=foodSummaryHTML(pd());assert.match(html,/Food lasts 4.2 days/,'authoritative food days');assert.doesNotMatch(html,/100|ticks|Coverage/);
+ const html=foodSummaryHTML(pd());assert.match(html,/Food for 4.2 days/,'authoritative food days');assert.doesNotMatch(html,/100|ticks|Coverage/);
  assert.match(foodDetailsHTML(pd()),/4.2 days at current consumption · grain \+ fish/);
  assert.doesNotMatch(foodDetailsHTML(pd()),/Reserve|Stores above|releases below/);
 });
@@ -102,4 +102,19 @@ test('AIRound3: population food and army food use different explicit balances',(
 test('AIRound4: Scheria remainder fish is separate from nearby grain',()=>{
  const html=foodDetailsHTML(pd({food_gubbar_required:5,food_gubbar_placed:5,automatic_food:{nearjord_grain_per_tick:0.5,remainder_people:42,remainder_grain_per_tick:0,remainder_fish_per_tick:0.42}}));
  assert.match(html,/0.50 grain \+ 0.42 fish per day without placed citizens/);assert.match(html,/nearby ground 0.50 grain; 42 people outside whole citizens: 0.00 grain \+ 0.42 fish/);assert.doesNotMatch(html,/could move/);
+});
+
+test('equal food: four stocks and actual meal use server totals, never grain-only estimates',()=>{
+ const data=pd({grain_prod_rate:999,grain_consum_rate:999,army_upkeep:{grain:999,food:2},food_net_per_tick_after_upkeep:5,
+  food:{coverage_ticks:12.5,production_per_tick:10,consumption_per_tick:3,food_net_per_tick:7,
+   goods:{grain:100,fish:900,oil:40,wine:60},consumed:{grain:0.3,fish:2.7},consumed_tick:42}});
+ assert.match(foodSummaryHTML(data),/Food for 12.5 days/);
+ assert.match(foodSummaryHTML(data),/100 grain, 900 fish, 40 oil, 60 wine/);
+ const detail=foodDetailsHTML(data);
+ assert.match(detail,/production 10 − people eat 3 = 7 net before army/);
+ assert.match(detail,/eats 2 food per day → food net 5 after army/);
+ assert.match(detail,/Last meal.*0.3 grain, 2.7 fish.*day 42/);
+ assert.doesNotMatch(detail,/999|army needs grain/);
+ data.food.consumed_tick=null;
+ assert.doesNotMatch(foodDetailsHTML(data),/Last meal/,'no meal invented before first resolution');
 });
