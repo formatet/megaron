@@ -46,7 +46,7 @@ func TestSilverCalibrationLaborIndexNeverSmoothsHistoricalPrices(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for key, want := range map[string]float64{"grain": 1, "fish": 1, "livestock": 1, "timber": 1, "cedar": 1, "copper": 1, "tin": 1, "silver": 1, "oil": 1, "wine": 1, "stone": 2, "bronze": 11} {
+	for key, want := range map[string]float64{"grain": 1, "fish": 1, "livestock": 1, "timber": 1, "cedar": 1, "copper": 1, "tin": 1, "silver": 1, "oil": 1, "wine": 1, "stone": 2, "bronze": 11, "incense": 4} {
 		if base[key] != want {
 			t.Errorf("%s labor_value=%g want%g", key, base[key], want)
 		}
@@ -54,7 +54,7 @@ func TestSilverCalibrationLaborIndexNeverSmoothsHistoricalPrices(t *testing.T) {
 			t.Errorf("%s v2=%g want%g; historical price cannot seed smoothing", key, values[key], want*1.7)
 		}
 	}
-	if len(values) != 12 {
+	if len(values) != 13 {
 		t.Fatalf("v2 values=%v: parked/non-goods must be excluded", values)
 	}
 	if got := OfferingWorth(map[string]float64{"silver": 2}, values, nil); math.Abs(got-3.4) > 1e-9 {
