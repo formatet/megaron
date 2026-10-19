@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-haiku6-keryx-argument/docs/reviews/haiku6-keryx-argument/native.py", line 66, in <module>
+    preview=cli(*args);assert 'Nothing sent' in preview and '--yes' in preview, preview
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Colonize (11,54) — catchment forecast (14/19 hexes known, 5 unknown):
+  ⛔ BLOCKED: this ground is already farmed by Myrsine — its catchment overlaps the one you would found here; move at least 1 hex(es) farther away
+  Inland: a city here can never build a harbour or ships — to reach the sea you will need a coastal colony.
+  Food: grain ~1.5 + fish ~0.0 per day − consumption ~0.5 per day = net +1.0 per day
+  Starting stock 0 grain — production covers food demand.
+  Other: copper-deposit ✓, copper ~2 per day, livestock ~2 per day, oil ~16 per day, stone ~11 per day, timber ~7 per day, wine ~10 per day
+NOTE: the unit is consumed — the colonists become the colony's population and the unit is disbanded. It cannot be ordered again.
+A colony does not feed itself automatically — build a farm if the terrain supports it, otherwise arrange grain via an internal transfer (keryx transfer --good grain --qty <n> --dest <colony>).
+Found the colony? [y/N]: Aborted — no colony founded.
+
