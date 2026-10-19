@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-svaltnotis-overgang/docs/reviews/svaltnotis-overgang/native.py", line 94, in <module>
+    await_notice('CivilianStarvationEnded')
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tk/wt/codex-svaltnotis-overgang/docs/reviews/svaltnotis-overgang/native.py", line 65, in await_notice
+    raise RuntimeError('no natural '+kind+' within '+str(budget)+'s; see server/watch log')
+RuntimeError: no natural CivilianStarvationEnded within 120s; see server/watch log

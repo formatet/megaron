@@ -1,0 +1,6 @@
+» färsk DB på migration 189 · commit e31ce04b+ändringar
+--- FAIL: TestCivilianHungerAlternatingMealsStayOnePeriod (0.27s)
+    civilian_hunger_notices_test.go:254: alternating70 audit/start/end=35/35/35 want35/1/0
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.276s
+FAIL

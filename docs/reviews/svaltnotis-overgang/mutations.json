@@ -10,14 +10,14 @@
     "mutation": "civilian-onset-suppressed",
     "test": "TestCivilianHungerSeventyTicksAuditAndTransitions",
     "source": "server/internal/kharis/transition_notices.go",
-    "sha256": "c80b31e4ecf02eeb157a6cef8166f818763f0e700dd5abb49b9bbbcd185814be",
+    "sha256": "42cb7790fd1f2cdd82134b4a3319d06f752832c7299460910506cf3bcf38c27d",
     "result": "named RED -> byte-exact restore -> fresh GREEN"
   },
   {
     "mutation": "daily-transition-restored",
     "test": "TestCivilianHungerSeventyTicksAuditAndTransitions",
     "source": "server/internal/kharis/transition_notices.go",
-    "sha256": "c80b31e4ecf02eeb157a6cef8166f818763f0e700dd5abb49b9bbbcd185814be",
+    "sha256": "42cb7790fd1f2cdd82134b4a3319d06f752832c7299460910506cf3bcf38c27d",
     "result": "named RED -> byte-exact restore -> fresh GREEN"
   },
   {
@@ -25,6 +25,13 @@
     "test": "civilian hunger and garrison hunger clear independently in the same city",
     "source": "web/static/js/megaron/ui/notification_state.js",
     "sha256": "5d54cd42b3b86e6436d27296b993f0e1c7e4aebda35ab99dc5beda22489a0cb3",
+    "result": "named RED -> byte-exact restore -> fresh GREEN"
+  },
+  {
+    "mutation": "civilian-inertia-removed",
+    "test": "TestCivilianHungerAlternatingMealsStayOnePeriod",
+    "source": "server/internal/kharis/transition_notices.go",
+    "sha256": "42cb7790fd1f2cdd82134b4a3319d06f752832c7299460910506cf3bcf38c27d",
     "result": "named RED -> byte-exact restore -> fresh GREEN"
   }
 ]

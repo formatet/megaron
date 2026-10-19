@@ -2,25 +2,25 @@ TAP version 13
 # Subtest: recorded game dates include zero, prefer envelope, and never infer historical dates
 ok 1 - recorded game dates include zero, prefer envelope, and never infer historical dates
   ---
-  duration_ms: 0.576668
+  duration_ms: 0.533665
   type: 'test'
   ...
 # Subtest: garrison hunger notices tell the player grain is needed, recovery never claims all are fed
 ok 2 - garrison hunger notices tell the player grain is needed, recovery never claims all are fed
   ---
-  duration_ms: 9.684433
+  duration_ms: 9.594119
   type: 'test'
   ...
 # Subtest: latest recorded transition clears hunger urgency, restart restores it for that city only
 ok 3 - latest recorded transition clears hunger urgency, restart restores it for that city only
   ---
-  duration_ms: 0.318885
+  duration_ms: 0.392364
   type: 'test'
   ...
 # Subtest: civilian hunger and garrison hunger clear independently in the same city
 not ok 4 - civilian hunger and garrison hunger clear independently in the same city
   ---
-  duration_ms: 3.093598
+  duration_ms: 3.681671
   type: 'test'
   location: '/home/tk/wt/codex-svaltnotis-overgang/web/static/js/megaron/ui/notification_state.test.mjs:36:1'
   failureType: 'testCodeFailure'
@@ -46,7 +46,7 @@ not ok 4 - civilian hunger and garrison hunger clear independently in the same c
 # Subtest: civilian hunger prose reports the actual meal, and ownership closure never promises recovery
 ok 5 - civilian hunger prose reports the actual meal, and ownership closure never promises recovery
   ---
-  duration_ms: 0.205751
+  duration_ms: 0.212716
   type: 'test'
   ...
 1..5
@@ -57,4 +57,4 @@ ok 5 - civilian hunger prose reports the actual meal, and ownership closure neve
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 59.390091
+# duration_ms 56.513732

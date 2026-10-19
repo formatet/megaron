@@ -1,0 +1,18 @@
+[
+  {
+    "gubbe_ordinal": 1,
+    "target_kind": "hex",
+    "hex_q": 8,
+    "hex_r": 88,
+    "hex_ordinal": 1,
+    "good_key": "grain"
+  },
+  {
+    "gubbe_ordinal": 2,
+    "target_kind": "hex",
+    "hex_q": 8,
+    "hex_r": 88,
+    "hex_ordinal": 1,
+    "good_key": "grain"
+  }
+]

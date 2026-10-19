@@ -1,5 +1,5 @@
 {
-  "production_commit": "3436b498",
+  "production_commit": "e31ce04b",
   "baseline": "09e14572",
   "baseline_go_packages": [
     "economy",
@@ -12,8 +12,31 @@
   "vet_exit": 0,
   "full_go_fresh_migration": 189,
   "extra_fresh_alternating_test_exit": 0,
-  "mutations": 4,
+  "mutations": 5,
   "natural_hunger_recovery": true,
   "unchanged_game_balance": true,
-  "new_migration": false
+  "new_migration": false,
+  "test_commit": "3f89c270",
+  "prior_handoff": "416800db",
+  "recovery_ticks": 5,
+  "alternating70": {
+    "audit": 35,
+    "start": 1,
+    "end": 0,
+    "last_hunger_tick": 69,
+    "recovery_tick": 74
+  },
+  "natural_inertia_proof": {
+    "commit": "3f89c2703b225696722f20b6dcc69bbddb522570",
+    "start_tick": 281,
+    "end_tick": 288,
+    "fed_streak": 5,
+    "real_server_restart": true,
+    "sql_writes": false,
+    "api_replay": false,
+    "firefox_widths": [
+      1280,
+      390
+    ]
+  }
 }

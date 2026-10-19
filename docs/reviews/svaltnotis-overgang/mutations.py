@@ -17,6 +17,7 @@ cases=[
  ('daily-transition-restored',owner,'if prior == next {','if false {','./internal/kharis/','TestCivilianHungerSeventyTicksAuditAndTransitions'),
  ('shared-client-hunger-key',web,"const key = (n.kind.startsWith('Civilian') ? 'civilian:' : 'garrison:') + scope;",'const key = scope;',None,'civilian hunger and garrison hunger clear independently in the same city'),
 ]
+cases.append(('civilian-inertia-removed',owner,'const civilianRecoveryTicks = 5','const civilianRecoveryTicks = 1','./internal/kharis/','TestCivilianHungerAlternatingMealsStayOnePeriod'))
 results=[]
 for name,path,before,after,package,test in cases:
  p=ROOT/path;original=p.read_bytes();assert original.count(before.encode())==1,(name,'ambiguous mutation')

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Natural hunger/recovery: ordinary register/CLI/founding/placement API, no SQL.
-The isolated test world's cadence is 1 second per tick; game rules are unchanged.
+The isolated test world's cadence is 1 second per tick until hunger, then 12 for recovery; game rules are unchanged.
 A single CLI watch waits for the two real transitions, without polling the API.
 """
 from pathlib import Path
@@ -88,6 +88,17 @@ try:
    text=page.locator('#notif-body').inner_text();assert text.index('people are going hungry')<text.index('metropolis'),text
    assert not panel.evaluate('e=>e.scrollWidth>e.clientWidth')
    observations.append(dict(phase='hungry',width=width,text=text,overflow=False))
+  # Pace recovery slower than the existing 10s worker cap. Faster tick
+  # cadences can skip macro observations; missing meals cannot prove recovery.
+  # Only wall pacing changes; no world/resource/state SQL writes.
+  proc.terminate();proc.wait(timeout=15)
+  env['TICK_SECONDS']='12'
+  proc=subprocess.Popen([str(OUT/'temenos')],cwd=ROOT/'server',env=env,stdout=log,stderr=log)
+  for _ in range(150):
+   try:
+    restart_health=api('/healthz');assert restart_health==health;break
+   except Exception:time.sleep(.25)
+  else:raise RuntimeError('recovery restart timed out')
   for row in original:
    body={k:row[k] for k in ['target_kind','hex_ordinal','building_type','good_key'] if k in row}
    api(placement_path,token,method='POST',body=body)
@@ -105,9 +116,10 @@ try:
  watch.wait(timeout=15);thread.join(timeout=5);watch_err=watch.stderr.read();(OUT/'watch.txt').write_text(''.join(lines)+watch_err);assert watch.returncode==0
  start=[n for n in recovered['notifications'] if n['kind']=='CivilianStarvationStarted'];end=[n for n in recovered['notifications'] if n['kind']=='CivilianStarvationEnded']
  assert len(start)==1 and len(end)==1 and start[0]['world_tick']<end[0]['world_tick']
+ assert end[0]['body']['fed_streak']==5,end[0]
  assert not any(n['kind']=='FoodShortfall' for n in recovered['notifications'])
  assert not errors,errors
- proof=dict(health=health,world_id=config['world_id'],province_id=pid,natural_register_cli_join_found_unplace_hunger_restore_recovery=True,sql_writes=False,api_replay=False,server_cadence_seconds=1,firefox='DPR1;1280/390',page_errors=errors,start_tick=start[0]['world_tick'],end_tick=end[0]['world_tick'],missing_grain_equivalent=start[0]['body']['unmet'],observations=observations)
+ proof=dict(health=health,world_id=config['world_id'],province_id=pid,natural_register_cli_join_found_unplace_hunger_restore_recovery=True,sql_writes=False,api_replay=False,server_cadence_seconds=dict(until_hunger=1,recovery=12),firefox='DPR1;1280/390',page_errors=errors,start_tick=start[0]['world_tick'],end_tick=end[0]['world_tick'],missing_grain_equivalent=start[0]['body']['unmet'],observations=observations)
  (OUT/'proof.json').write_text(json.dumps(proof,indent=2)+'\n');(OUT/'cli.json').write_text(json.dumps(calls,indent=2)+'\n');print(json.dumps(proof),flush=True)
 finally:
  if watch is not None and watch.poll() is None:watch.terminate();watch.wait(timeout=10)

@@ -1,4 +1,4 @@
-» färsk DB på migration 189 · commit 09e14572+ändringar
+» färsk DB på migration 189 · commit e31ce04b+ändringar
 --- FAIL: TestFoodTick_ShortfallKeepsNamedAuditWithoutDailyNotification (0.02s)
     food_shortfall_name_test.go:69: daily FoodShortfall must be audit-only; direct notifications=1
 FAIL
