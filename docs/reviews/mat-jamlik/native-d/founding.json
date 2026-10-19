@@ -1,0 +1,23 @@
+{
+  "coastal": true,
+  "grain_carried": 1200,
+  "grain_total": 1200,
+  "poseidon_gift": "acd6449a-ebf7-439f-af16-6366cf748721",
+  "province_id": "f479114f-babc-4255-ab7c-74092d5f8f6b",
+  "settlement_id": "75be2a70-7bb5-4ad4-b113-f774838ddad0",
+  "silver_carried": 480,
+  "silver_total": 480,
+  "tile": {
+    "CedarDeposit": false,
+    "Coastal": false,
+    "CopperDeposit": false,
+    "Fertility": 0,
+    "Mineral": 0,
+    "Q": 46,
+    "R": 10,
+    "SilverDeposit": false,
+    "Terrain": "",
+    "TinDeposit": false,
+    "WorldID": "00000000-0000-0000-0000-000000000000"
+  }
+}

@@ -1,0 +1,83 @@
+[
+  {
+    "id": "55a0a57f-b56a-4125-bf00-0e8c9ffd69ce",
+    "type": "spearman",
+    "category": "land",
+    "size": 100,
+    "upkeep_food_per_tick": 1,
+    "upkeep_grain_per_tick": 1,
+    "upkeep_silver_per_tick": 0,
+    "upkeep_context": "active",
+    "status": "positioned",
+    "deployable": true,
+    "display_name": "1st Spearmen of Myrsine",
+    "ordinal": 1,
+    "support_settlement_id": "13225291-2f27-4178-b70f-cdde9764fcdf",
+    "support_settlement_name": "Myrsine",
+    "q": 57,
+    "r": 44,
+    "in_battle": false,
+    "can_fetch_by_ship": true,
+    "pickup_ships": [
+      {
+        "id": "6c06fe75-e2c3-4317-86e7-211ae08ee1ad",
+        "name": "Labyrinth Gate",
+        "type": "galley",
+        "settlement_id": "13225291-2f27-4178-b70f-cdde9764fcdf",
+        "settlement_name": "Myrsine",
+        "can_carry_runner": true
+      }
+    ]
+  },
+  {
+    "id": "fe1ddba2-ee81-4e9f-9fac-0411762d6e7e",
+    "type": "spearman",
+    "category": "land",
+    "size": 100,
+    "upkeep_food_per_tick": 1,
+    "upkeep_grain_per_tick": 1,
+    "upkeep_silver_per_tick": 0,
+    "upkeep_context": "active",
+    "status": "positioned",
+    "deployable": true,
+    "display_name": "2nd Spearmen of Myrsine",
+    "ordinal": 2,
+    "support_settlement_id": "13225291-2f27-4178-b70f-cdde9764fcdf",
+    "support_settlement_name": "Myrsine",
+    "q": 57,
+    "r": 44,
+    "in_battle": false,
+    "can_fetch_by_ship": true,
+    "pickup_ships": [
+      {
+        "id": "6c06fe75-e2c3-4317-86e7-211ae08ee1ad",
+        "name": "Labyrinth Gate",
+        "type": "galley",
+        "settlement_id": "13225291-2f27-4178-b70f-cdde9764fcdf",
+        "settlement_name": "Myrsine",
+        "can_carry_runner": true
+      }
+    ]
+  },
+  {
+    "id": "6c06fe75-e2c3-4317-86e7-211ae08ee1ad",
+    "type": "galley",
+    "category": "naval",
+    "size": 1,
+    "crew": 20,
+    "upkeep_food_per_tick": 0.04,
+    "upkeep_grain_per_tick": 0.04,
+    "upkeep_silver_per_tick": 1.5,
+    "upkeep_context": "active",
+    "hull": 5,
+    "status": "garrison",
+    "deployable": true,
+    "name": "Labyrinth Gate",
+    "display_name": "Labyrinth Gate, Galley of Myrsine",
+    "ordinal": 1,
+    "support_settlement_id": "13225291-2f27-4178-b70f-cdde9764fcdf",
+    "support_settlement_name": "Myrsine",
+    "settlement_id": "13225291-2f27-4178-b70f-cdde9764fcdf",
+    "in_battle": false
+  }
+]

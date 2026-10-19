@@ -1,0 +1,6 @@
+» färsk DB på migration 190 · commit 93b90bbd+ändringar
+--- FAIL: TestEqualFoodCityUsesServerTotalsAndGoods (0.00s)
+    food_equal_test.go:17: Food for 12.5 days at current consumption (100 grain, 900 fish, 40 oil)
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.002s
+FAIL

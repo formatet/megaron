@@ -1,0 +1,346 @@
+TAP version 13
+# Subtest: codex: index ids are unique and every category is declared
+ok 1 - codex: index ids are unique and every category is declared
+  ---
+  duration_ms: 1.347862
+  type: 'test'
+  ...
+# Subtest: codex: every index entry has a file and every file has an index entry
+ok 2 - codex: every index entry has a file and every file has an index entry
+  ---
+  duration_ms: 0.712801
+  type: 'test'
+  ...
+# Subtest: codex: every [[link]] and related entry resolves to an article
+ok 3 - codex: every [[link]] and related entry resolves to an article
+  ---
+  duration_ms: 0.481984
+  type: 'test'
+  ...
+# Subtest: codex: every notification kind the client shows maps to exactly one article
+ok 4 - codex: every notification kind the client shows maps to exactly one article
+  ---
+  duration_ms: 0.602956
+  type: 'test'
+  ...
+# Subtest: codex: every drawer with a ? button has an article
+ok 5 - codex: every drawer with a ? button has an article
+  ---
+  duration_ms: 0.223789
+  type: 'test'
+  ...
+# Subtest: codex: every article is reachable — linked from another article or listed as related
+ok 6 - codex: every article is reachable — linked from another article or listed as related
+  ---
+  duration_ms: 0.641659
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: escapes HTML and renders links, known and missing
+ok 7 - renderMarkdown: escapes HTML and renders links, known and missing
+  ---
+  duration_ms: 0.581793
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: headings, lists, tables, code and comments
+ok 8 - renderMarkdown: headings, lists, tables, code and comments
+  ---
+  duration_ms: 0.448635
+  type: 'test'
+  ...
+# Subtest: backlinksTo and searchArticles
+ok 9 - backlinksTo and searchArticles
+  ---
+  duration_ms: 0.340712
+  type: 'test'
+  ...
+# Subtest: codex: lowercase agora_ready is mapped and community rules match alpha policy
+ok 10 - codex: lowercase agora_ready is mapped and community rules match alpha policy
+  ---
+  duration_ms: 0.597921
+  type: 'test'
+  ...
+# Subtest: codex search finds abandon in Colonies and call-back in Sea
+ok 11 - codex search finds abandon in Colonies and call-back in Sea
+  ---
+  duration_ms: 5.282739
+  type: 'test'
+  ...
+# Subtest: codex: days name the world unit and clock/date names wall time
+ok 12 - codex: days name the world unit and clock/date names wall time
+  ---
+  duration_ms: 0.157446
+  type: 'test'
+  ...
+# Subtest: historical food-reserve notifications open the current food article
+ok 13 - historical food-reserve notifications open the current food article
+  ---
+  duration_ms: 0.090285
+  type: 'test'
+  ...
+# Subtest: J: only three primary sections, all secondary abilities remain under closed More
+ok 14 - J: only three primary sections, all secondary abilities remain under closed More
+  ---
+  duration_ms: 0.893991
+  type: 'test'
+  ...
+# Subtest: J: food days come from authoritative mixed-food coverage, from the single city stock
+ok 15 - J: food days come from authoritative mixed-food coverage, from the single city stock
+  ---
+  duration_ms: 9.309113
+  type: 'test'
+  ...
+# Subtest: J: growing low stocks never say starving; food-worker warning survives
+ok 16 - J: growing low stocks never say starving; food-worker warning survives
+  ---
+  duration_ms: 0.269128
+  type: 'test'
+  ...
+# Subtest: J: missing/invalid coverage is honestly unavailable, never zero or NaN days
+ok 17 - J: missing/invalid coverage is honestly unavailable, never zero or NaN days
+  ---
+  duration_ms: 0.12567
+  type: 'test'
+  ...
+# Subtest: J: population keeps input-free player words; no slaughter button
+ok 18 - J: population keeps input-free player words; no slaughter button
+  ---
+  duration_ms: 0.43279
+  type: 'test'
+  ...
+# Subtest: growth line: one sentence per state, from the server growth_state
+ok 19 - growth line: one sentence per state, from the server growth_state
+  ---
+  duration_ms: 0.593299
+  type: 'test'
+  ...
+# Subtest: blessed harvest: food section shows authoritative bonus and goods, hides at end tick
+ok 20 - blessed harvest: food section shows authoritative bonus and goods, hides at end tick
+  ---
+  duration_ms: 0.519336
+  type: 'test'
+  ...
+# Subtest: owned city centre offers the authoritative place naming form inside Catchment, other tiles never do
+ok 21 - owned city centre offers the authoritative place naming form inside Catchment, other tiles never do
+  ---
+  duration_ms: 1.047835
+  type: 'test'
+  ...
+# Subtest: owned-city naming success refreshes authoritative map and rerenders City despite cleared selectedHex
+ok 22 - owned-city naming success refreshes authoritative map and rerenders City despite cleared selectedHex
+  ---
+  duration_ms: 14.471572
+  type: 'test'
+  ...
+# Subtest: growth food balance does not print a signed rounded zero
+ok 23 - growth food balance does not print a signed rounded zero
+  ---
+  duration_ms: 0.364612
+  type: 'test'
+  ...
+# Subtest: AIRound3: population food and army food use different explicit balances
+ok 24 - AIRound3: population food and army food use different explicit balances
+  ---
+  duration_ms: 0.367044
+  type: 'test'
+  ...
+# Subtest: AIRound4: Scheria remainder fish is separate from nearby grain
+ok 25 - AIRound4: Scheria remainder fish is separate from nearby grain
+  ---
+  duration_ms: 0.315165
+  type: 'test'
+  ...
+# Subtest: equal food: four stocks and actual meal use server totals, never grain-only estimates
+ok 26 - equal food: four stocks and actual meal use server totals, never grain-only estimates
+  ---
+  duration_ms: 0.99917
+  type: 'test'
+  ...
+# Subtest: forecast reads the exact order with GET, including landing and stance
+ok 27 - forecast reads the exact order with GET, including landing and stance
+  ---
+  duration_ms: 0.953622
+  type: 'test'
+  ...
+# Subtest: redirect and courier never masquerade as immediate arrival
+ok 28 - redirect and courier never masquerade as immediate arrival
+  ---
+  duration_ms: 8.844597
+  type: 'test'
+  ...
+# Subtest: each selected unit keeps its own arrival; names and API errors are escaped
+ok 29 - each selected unit keeps its own arrival; names and API errors are escaped
+  ---
+  duration_ms: 15.400028
+  type: 'test'
+  ...
+# Subtest: changing destination discards old response even during debounce; close cancels
+ok 30 - changing destination discards old response even during debounce; close cancels
+  ---
+  duration_ms: 46.759065
+  type: 'test'
+  ...
+# Subtest: sold uses authoritative rates, includes explicit zero and avoids infinite runway
+ok 31 - sold uses authoritative rates, includes explicit zero and avoids infinite runway
+  ---
+  duration_ms: 0.563482
+  type: 'test'
+  ...
+# Subtest: sold remains visible when courier or unexplored terrain prevents arrival estimate
+ok 32 - sold remains visible when courier or unexplored terrain prevents arrival estimate
+  ---
+  duration_ms: 0.363013
+  type: 'test'
+  ...
+# Subtest: plural selection sends all IDs to every GET and shows one combined sold line after arrivals
+ok 33 - plural selection sends all IDs to every GET and shows one combined sold line after arrivals
+  ---
+  duration_ms: 15.228444
+  type: 'test'
+  ...
+# Subtest: one zero-drain batch row is rendered when all treasuries have no silver drain
+ok 34 - one zero-drain batch row is rendered when all treasuries have no silver drain
+  ---
+  duration_ms: 16.418114
+  type: 'test'
+  ...
+# Subtest: redirect-only selection keeps messenger arrival warning and one authoritative sold row
+ok 35 - redirect-only selection keeps messenger arrival warning and one authoritative sold row
+  ---
+  duration_ms: 16.953608
+  type: 'test'
+  ...
+# Subtest: ford preview preserves separate land and naval mission options
+ok 36 - ford preview preserves separate land and naval mission options
+  ---
+  duration_ms: 16.067668
+  type: 'test'
+  ...
+# Subtest: expedition plan is a known budget, conditional on departure, not a hidden first-leg ETA
+ok 37 - expedition plan is a known budget, conditional on departure, not a hidden first-leg ETA
+  ---
+  duration_ms: 1.820235
+  type: 'test'
+  ...
+# Subtest: recorded game dates include zero, prefer envelope, and never infer historical dates
+ok 38 - recorded game dates include zero, prefer envelope, and never infer historical dates
+  ---
+  duration_ms: 0.687845
+  type: 'test'
+  ...
+# Subtest: garrison hunger notices tell the player grain is needed, recovery never claims all are fed
+ok 39 - garrison hunger notices tell the player grain is needed, recovery never claims all are fed
+  ---
+  duration_ms: 9.582853
+  type: 'test'
+  ...
+# Subtest: latest recorded transition clears hunger urgency, restart restores it for that city only
+ok 40 - latest recorded transition clears hunger urgency, restart restores it for that city only
+  ---
+  duration_ms: 0.81847
+  type: 'test'
+  ...
+# Subtest: civilian hunger and garrison hunger clear independently in the same city
+ok 41 - civilian hunger and garrison hunger clear independently in the same city
+  ---
+  duration_ms: 0.176933
+  type: 'test'
+  ...
+# Subtest: civilian hunger prose reports the actual meal, and ownership closure never promises recovery
+ok 42 - civilian hunger prose reports the actual meal, and ownership closure never promises recovery
+  ---
+  duration_ms: 0.214763
+  type: 'test'
+  ...
+# Subtest: equal food: new notices say food while historical grain outcomes retain meaning
+ok 43 - equal food: new notices say food while historical grain outcomes retain meaning
+  ---
+  duration_ms: 0.197038
+  type: 'test'
+  ...
+# Subtest: P: garrison shows March and eligible Reinforce; stance and battle retreat are directly available
+ok 44 - P: garrison shows March and eligible Reinforce; stance and battle retreat are directly available
+  ---
+  duration_ms: 9.816211
+  type: 'test'
+  ...
+# Subtest: P: marching land has Recall, stance and typed redirect directly available
+ok 45 - P: marching land has Recall, stance and typed redirect directly available
+  ---
+  duration_ms: 0.235112
+  type: 'test'
+  ...
+# Subtest: P: positioned units remain orderable and fetch uses server-provided ships
+ok 46 - P: positioned units remain orderable and fetch uses server-provided ships
+  ---
+  duration_ms: 0.189834
+  type: 'test'
+  ...
+# Subtest: P: naval loading unloading and repair are directly available; at sea has no recall or redirect
+ok 47 - P: naval loading unloading and repair are directly available; at sea has no recall or redirect
+  ---
+  duration_ms: 0.377636
+  type: 'test'
+  ...
+# Subtest: P: forming training embarked repairing and freight do not offer inapplicable orders
+ok 48 - P: forming training embarked repairing and freight do not offer inapplicable orders
+  ---
+  duration_ms: 0.333094
+  type: 'test'
+  ...
+# Subtest: P: every server lifecycle status has a player label; unknown status never leaks raw jargon
+ok 49 - P: every server lifecycle status has a player label; unknown status never leaks raw jargon
+  ---
+  duration_ms: 0.145512
+  type: 'test'
+  ...
+# Subtest: P: ships off the coast take no March while a city remains, but keep the R6 stranded exception
+ok 50 - P: ships off the coast take no March while a city remains, but keep the R6 stranded exception
+  ---
+  duration_ms: 0.182553
+  type: 'test'
+  ...
+# Subtest: P: numeric values and missing ETA guards survive the restoration
+ok 51 - P: numeric values and missing ETA guards survive the restoration
+  ---
+  duration_ms: 0.225383
+  type: 'test'
+  ...
+# Subtest: B: Army card shows server rations and explicit zero spearman silver without guessing
+ok 52 - B: Army card shows server rations and explicit zero spearman silver without guessing
+  ---
+  duration_ms: 0.613734
+  type: 'test'
+  ...
+# Subtest: B: upkeep billing context comes from server, not guessed from unit status
+ok 53 - B: upkeep billing context comes from server, not guessed from unit status
+  ---
+  duration_ms: 0.544767
+  type: 'test'
+  ...
+# Subtest: B: civilian Nomadic Host has no upkeep row when the server says none
+ok 54 - B: civilian Nomadic Host has no upkeep row when the server says none
+  ---
+  duration_ms: 0.142943
+  type: 'test'
+  ...
+# Subtest: Haiku 6: a ship at sea with part of a day aboard is not out of food
+ok 55 - Haiku 6: a ship at sea with part of a day aboard is not out of food
+  ---
+  duration_ms: 0.126523
+  type: 'test'
+  ...
+# Subtest: equal food: roster food alias wins and ship manifest preserves each good
+ok 56 - equal food: roster food alias wins and ship manifest preserves each good
+  ---
+  duration_ms: 0.43058
+  type: 'test'
+  ...
+1..56
+# tests 56
+# suites 0
+# pass 56
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 195.228458

@@ -1,0 +1,76 @@
+{
+  "production_commit": "93b90bbd",
+  "migration": 190,
+  "baseline": "584a324a",
+  "full_go_commit": "c01112eb",
+  "full_go_exit": 0,
+  "full_go_world_seconds": 140.201,
+  "post_return_combat_api_exit": 0,
+  "post_return_vet_exit": 0,
+  "final_js_pass": 668,
+  "final_vet_exit": 0,
+  "mutations": [
+    {
+      "mutation": "grain-first",
+      "test": "TestFoodConsumptionProportionalGrainAndFish",
+      "source": "server/internal/economy/food_basket.go",
+      "sha256": "b23504a5e382334dafcddb4b97e4b9c72c69949b9791f158721c96a55d7284a6",
+      "result": "named RED -> byte-exact restore -> fresh GREEN"
+    },
+    {
+      "mutation": "stock-variety",
+      "test": "TestGrowthVarietyReadsActualMealNotLaterStock",
+      "source": "server/internal/kharis/tick.go",
+      "sha256": "deb723113ff32126a910b46cc587cbb57c82bb301d1568135dbfdcd0fab2f406",
+      "result": "named RED -> byte-exact restore -> fresh GREEN"
+    },
+    {
+      "mutation": "fish-returned-as-grain",
+      "test": "TestFishOnlyVoyagePreviewDispatchEatAndReturnSameGood",
+      "source": "server/internal/combat/food_provisions.go",
+      "sha256": "4398e69866b4e0942d032c9736e5ccb828e5dbe61fc00c7fd71d87d7f182904a",
+      "result": "named RED -> byte-exact restore -> fresh GREEN"
+    },
+    {
+      "mutation": "special-home-unload-removed",
+      "test": "TestSpecialHomeReturnUnloadsSameGoodsExactlyOnce",
+      "source": "server/internal/combat/unit_arrival.go",
+      "sha256": "113b74d45ed111517a7f67aad9dd909a37c35c14884690f1cffb2266f6773117",
+      "result": "named RED -> byte-exact restore -> fresh GREEN"
+    },
+    {
+      "mutation": "cli-omits-wine",
+      "test": "TestEqualFoodCityUsesServerTotalsAndGoods",
+      "source": "server/cmd/keryx/food_format.go",
+      "sha256": "22cb7078c534329381e05ce153814848ae1aa61f9aeca97e42e9a437095b395e",
+      "result": "named RED -> byte-exact restore -> fresh GREEN"
+    },
+    {
+      "mutation": "web-omits-wine",
+      "test": "equal food: four stocks and actual meal use server totals, never grain-only estimates",
+      "source": "web/static/js/megaron/ui/food.js",
+      "sha256": "6df1ffe01d4a95e09c9caa55c1544f6999d3883d30e9724ac87fcfead9a716b4",
+      "result": "named RED -> byte-exact restore -> fresh GREEN"
+    }
+  ],
+  "natural_proofs": [
+    {
+      "commit": "05b9741679264831e7e6fcbeec701124e0c62c5b",
+      "migration": 190,
+      "meal_tick": 7,
+      "return_status": "garrison"
+    },
+    {
+      "commit": "93b90bbddd664f220cb35b0ec81fe7d782be3fc4",
+      "migration": 190,
+      "meal_tick": 5,
+      "return_status": "garrison"
+    },
+    {
+      "commit": "93b90bbddd664f220cb35b0ec81fe7d782be3fc4",
+      "migration": 190,
+      "meal_tick": 1,
+      "return_status": "garrison"
+    }
+  ]
+}

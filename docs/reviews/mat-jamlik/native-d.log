@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-mat-jamlik/docs/reviews/mat-jamlik/native.py", line 126, in <module>
+    assert not returned.get('provisions_aboard') and not any(returned.get('provisions_by_good',{}).values()),returned
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'id': 'acd6449a-ebf7-439f-af16-6366cf748721', 'type': 'galley', 'category': 'naval', 'size': 1, 'crew': 20, 'upkeep_food_per_tick': 0.04, 'provisions_by_good': {'fish': 0.004003369502664746, 'grain': 0.4759966304973359, 'oil': 0, 'wine': 0}, 'upkeep_grain_per_tick': 0.04, 'upkeep_silver_per_tick': 1.5, 'upkeep_context': 'active', 'hull': 5, 'provision_days': 12, 'provisions_aboard': True, 'status': 'garrison', 'deployable': True, 'name': 'Holy Foam', 'display_name': 'Holy Foam, Galley of Myrsine', 'ordinal': 1, 'support_settlement_id': '75be2a70-7bb5-4ad4-b113-f774838ddad0', 'support_settlement_name': 'Myrsine', 'settlement_id': '75be2a70-7bb5-4ad4-b113-f774838ddad0', 'q': 45, 'r': 10, 'in_battle': False}

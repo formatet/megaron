@@ -1,0 +1,23 @@
+{
+  "id": "1a8067d1-f41b-482f-be79-b6663052c13e",
+  "type": "galley",
+  "category": "naval",
+  "size": 1,
+  "crew": 20,
+  "upkeep_food_per_tick": 0.04,
+  "upkeep_grain_per_tick": 0.04,
+  "upkeep_silver_per_tick": 1.5,
+  "upkeep_context": "active",
+  "hull": 5,
+  "status": "garrison",
+  "deployable": true,
+  "name": "Holy Foam",
+  "display_name": "Holy Foam, Galley of Myrsine",
+  "ordinal": 1,
+  "support_settlement_id": "103a8471-16c0-42cf-a462-ce370ebd3f8d",
+  "support_settlement_name": "Myrsine",
+  "settlement_id": "103a8471-16c0-42cf-a462-ce370ebd3f8d",
+  "q": 12,
+  "r": 81,
+  "in_battle": false
+}

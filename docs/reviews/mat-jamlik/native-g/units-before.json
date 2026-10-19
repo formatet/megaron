@@ -1,0 +1,83 @@
+[
+  {
+    "id": "201f4390-8d22-4f39-8b2d-8b3e5db95c25",
+    "type": "spearman",
+    "category": "land",
+    "size": 100,
+    "upkeep_food_per_tick": 1,
+    "upkeep_grain_per_tick": 1,
+    "upkeep_silver_per_tick": 0,
+    "upkeep_context": "active",
+    "status": "positioned",
+    "deployable": true,
+    "display_name": "1st Spearmen of Myrsine",
+    "ordinal": 1,
+    "support_settlement_id": "1b03e28b-14b5-4926-9d85-262bf9fbda6d",
+    "support_settlement_name": "Myrsine",
+    "q": 15,
+    "r": 34,
+    "in_battle": false,
+    "can_fetch_by_ship": true,
+    "pickup_ships": [
+      {
+        "id": "aec9b24f-ef3e-4519-bd7e-ac2dffb02eae",
+        "name": "Foam Bride",
+        "type": "galley",
+        "settlement_id": "1b03e28b-14b5-4926-9d85-262bf9fbda6d",
+        "settlement_name": "Myrsine",
+        "can_carry_runner": true
+      }
+    ]
+  },
+  {
+    "id": "4cdc8104-d38c-4a00-83ab-fe01f22364b6",
+    "type": "spearman",
+    "category": "land",
+    "size": 100,
+    "upkeep_food_per_tick": 1,
+    "upkeep_grain_per_tick": 1,
+    "upkeep_silver_per_tick": 0,
+    "upkeep_context": "active",
+    "status": "positioned",
+    "deployable": true,
+    "display_name": "2nd Spearmen of Myrsine",
+    "ordinal": 2,
+    "support_settlement_id": "1b03e28b-14b5-4926-9d85-262bf9fbda6d",
+    "support_settlement_name": "Myrsine",
+    "q": 15,
+    "r": 34,
+    "in_battle": false,
+    "can_fetch_by_ship": true,
+    "pickup_ships": [
+      {
+        "id": "aec9b24f-ef3e-4519-bd7e-ac2dffb02eae",
+        "name": "Foam Bride",
+        "type": "galley",
+        "settlement_id": "1b03e28b-14b5-4926-9d85-262bf9fbda6d",
+        "settlement_name": "Myrsine",
+        "can_carry_runner": true
+      }
+    ]
+  },
+  {
+    "id": "aec9b24f-ef3e-4519-bd7e-ac2dffb02eae",
+    "type": "galley",
+    "category": "naval",
+    "size": 1,
+    "crew": 20,
+    "upkeep_food_per_tick": 0.04,
+    "upkeep_grain_per_tick": 0.04,
+    "upkeep_silver_per_tick": 1.5,
+    "upkeep_context": "active",
+    "hull": 5,
+    "status": "garrison",
+    "deployable": true,
+    "name": "Foam Bride",
+    "display_name": "Foam Bride, Galley of Myrsine",
+    "ordinal": 1,
+    "support_settlement_id": "1b03e28b-14b5-4926-9d85-262bf9fbda6d",
+    "support_settlement_name": "Myrsine",
+    "settlement_id": "1b03e28b-14b5-4926-9d85-262bf9fbda6d",
+    "in_battle": false
+  }
+]

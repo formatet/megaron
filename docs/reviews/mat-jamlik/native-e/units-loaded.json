@@ -1,0 +1,54 @@
+{
+  "id": "04cd0399-1221-47e5-a690-21958354db5c",
+  "type": "galley",
+  "category": "naval",
+  "size": 1,
+  "crew": 20,
+  "upkeep_food_per_tick": 0.04,
+  "provisions_by_good": {
+    "fish": 0.00867396725577361,
+    "grain": 1.0313260327442264,
+    "oil": 0,
+    "wine": 0
+  },
+  "upkeep_grain_per_tick": 0.04,
+  "upkeep_silver_per_tick": 1.5,
+  "upkeep_context": "active",
+  "hull": 5,
+  "provision_days": 26,
+  "provisions_aboard": true,
+  "status": "marching",
+  "deployable": true,
+  "name": "Tidal Currents",
+  "display_name": "Tidal Currents, Galley of Myrsine",
+  "ordinal": 1,
+  "support_settlement_id": "02cca2d4-9dd2-4fb8-bed9-a20093e8799a",
+  "support_settlement_name": "Myrsine",
+  "q": 47,
+  "r": 20,
+  "target_q": 46,
+  "target_r": 20,
+  "departs_at": "2026-10-19T19:02:37.6637+02:00",
+  "arrives_at": "2026-10-19T19:02:38.6637+02:00",
+  "arrival_tick": 8,
+  "duration_ticks": 1,
+  "arrives_at_utc": "2026-10-19T17:02:38.670442564Z",
+  "path": [
+    [
+      47,
+      20
+    ],
+    [
+      46,
+      20
+    ]
+  ],
+  "step_costs": [
+    333
+  ],
+  "departure_tick": 7,
+  "current_q": 46,
+  "current_r": 20,
+  "march_intent": "patrol",
+  "in_battle": false
+}

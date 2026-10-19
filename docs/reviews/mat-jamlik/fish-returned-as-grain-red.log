@@ -1,0 +1,6 @@
+» färsk DB på migration 190 · commit c01112eb+ändringar
+--- FAIL: TestFishOnlyVoyagePreviewDispatchEatAndReturnSameGood (0.03s)
+    equal_food_test.go:104: returned fish=498.72 want499
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.035s
+FAIL

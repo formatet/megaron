@@ -1,0 +1,3 @@
+docker: Error response from daemon: failed to set up container networking: driver failed programming external connectivity on endpoint megaron-gotest-2334265 (2da9a9f1567edafc47f90f0d61376c4bd996cc930fda482f522d334fdf0be328): failed to bind host port 0.0.0.0:56618/tcp: address already in use
+
+Run 'docker run --help' for more information

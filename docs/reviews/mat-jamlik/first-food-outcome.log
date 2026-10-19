@@ -1,0 +1,672 @@
+» färsk DB på migration 190 · commit 584a324a+ändringar
+--- FAIL: TestFoodTick_DrawsGrainStockBeforeFish (0.01s)
+    food_tick_test.go:163: grain stock after FoodTick = 9996.7, want 9995.0 (demand 5.0 debited from STOCK, not from a zero rate)
+    food_tick_test.go:166: fish stock after FoodTick = 4998.3, want unchanged 5000.0 — fish must stay untouched while grain alone covers demand
+2026/10/19 18:38:54 INFO trade offer expired, silver refunded messenger=1024a71b-7c3e-475f-8c4d-88fb13925fce silver=80
+2026/10/19 18:38:55 INFO trade delivery destination=7603783e-b725-421a-9a77-f0b95dad6dce good=cedar qty=40
+2026/10/19 18:38:55 INFO trade delivery destination=14e75ea3-d46c-4047-8e6c-0cf39c976b2f good=cedar qty=60
+2026/10/19 18:38:55 INFO trade delivery destination=14e75ea3-d46c-4047-8e6c-0cf39c976b2f good=cedar qty=60
+2026/10/19 18:38:55 INFO trade return delivered buyer=388a022e-66fd-4c67-8415-4968d566f580 good=cedar qty=60
+2026/10/19 18:38:55 INFO trade return delivered buyer=388a022e-66fd-4c67-8415-4968d566f580 good=cedar qty=60
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=072f6076-3edc-4eb7-8ac1-e78a3c7b01cd good=silver qty=10
+2026/10/19 18:38:56 INFO trade delivery destination=5bce0ad2-c1f1-478f-9e00-a0e3359864ac good=silver qty=100
+2026/10/19 18:38:56 INFO trade delivery destination=064c9ef6-5f39-4566-8090-7c88f7e43f22 good=silver qty=100
+2026/10/19 18:38:56 INFO trade return delivered buyer=28410ffa-9356-44bb-93e9-5abd8401bb62 good=copper qty=20
+2026/10/19 18:38:56 INFO trade delivery destination=5e03d567-1d36-4be8-ad15-99776cca124c good=silver qty=100
+2026/10/19 18:38:56 INFO trade delivery destination=9b20cad5-0961-41ea-8eec-1b79e9c44b5b good=silver qty=100
+2026/10/19 18:38:56 INFO trade return delivered buyer=0557c3f0-0ca0-451c-8028-4c91fbb1a785 good=copper qty=20
+2026/10/19 18:38:56 INFO trade delivery destination=ce053d2a-fd80-469a-94b8-e04bcc3e2a9b good=silver qty=100
+2026/10/19 18:38:56 INFO trade delivery destination=9bc6de00-4abb-46cb-bd3b-7a08758ee184 good=grain qty=30
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:56 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade delivery destination=99b7ecbc-3e30-46fe-a457-e282cf48290e good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=5bc24f37-07fb-4460-9694-3342616b0b0c good=silver qty=1
+2026/10/19 18:38:57 INFO trade return delivered buyer=64826e6c-cc35-4877-8827-e43d1f7be9d4 good=tin qty=25
+2026/10/19 18:38:57 INFO trade delivery destination=8f86f032-e6ba-42f7-96aa-34a532554df6 good=silver qty=200
+FAIL
+FAIL	formatet/megaron/server/internal/economy	4.715s
+2026/10/19 18:38:59 ERROR starvation observation failed world=67b266fb-50ac-4a5b-9366-fda1ff314356 err="persist transition notice: ERROR: new row for relation \"notifications\" violates check constraint \"civil_notice_67b266fb\" (SQLSTATE 23514)"
+2026/10/19 18:38:59 INFO divine punishment applied settlement=2d6e77db-da8d-4ff7-b181-1aacd9b3e0c0 type=ship_loss amount=1
+2026/10/19 18:38:59 INFO divine punishment applied settlement=2d6e77db-da8d-4ff7-b181-1aacd9b3e0c0 type=garrison_plague amount=10
+2026/10/19 18:38:59 INFO divine punishment applied settlement=2d6e77db-da8d-4ff7-b181-1aacd9b3e0c0 type=chariot_loss amount=10
+2026/10/19 18:38:59 INFO divine punishment applied settlement=2d6e77db-da8d-4ff7-b181-1aacd9b3e0c0 type=garrison_plague amount=10
+2026/10/19 18:38:59 INFO divine punishment applied settlement=2d6e77db-da8d-4ff7-b181-1aacd9b3e0c0 type=chariot_loss amount=10
+2026/10/19 18:38:59 INFO divine punishment applied settlement=2d6e77db-da8d-4ff7-b181-1aacd9b3e0c0 type=harvest_failure amount=200
+2026/10/19 18:38:59 INFO divine punishment applied settlement=2d6e77db-da8d-4ff7-b181-1aacd9b3e0c0 type=harvest_failure amount=200
+2026/10/19 18:38:59 INFO divine punishment applied settlement=2d6e77db-da8d-4ff7-b181-1aacd9b3e0c0 type=chariot_loss amount=10
+2026/10/19 18:38:59 INFO divine punishment applied settlement=2d6e77db-da8d-4ff7-b181-1aacd9b3e0c0 type=garrison_plague amount=10
+2026/10/19 18:38:59 INFO divine punishment applied settlement=2d6e77db-da8d-4ff7-b181-1aacd9b3e0c0 type=chariot_loss amount=10
+2026/10/19 18:38:59 INFO divine punishment applied settlement=2d6e77db-da8d-4ff7-b181-1aacd9b3e0c0 type=chariot_loss amount=10
+2026/10/19 18:38:59 INFO divine punishment applied settlement=2d6e77db-da8d-4ff7-b181-1aacd9b3e0c0 type=garrison_plague amount=10
+2026/10/19 18:38:59 INFO divine punishment applied settlement=2d6e77db-da8d-4ff7-b181-1aacd9b3e0c0 type=chariot_loss amount=10
+2026/10/19 18:38:59 INFO divine punishment applied settlement=2d6e77db-da8d-4ff7-b181-1aacd9b3e0c0 type=harvest_failure amount=200
+2026/10/19 18:38:59 INFO divine punishment applied settlement=2d6e77db-da8d-4ff7-b181-1aacd9b3e0c0 type=chariot_loss amount=10
+2026/10/19 18:38:59 INFO divine punishment applied settlement=2d6e77db-da8d-4ff7-b181-1aacd9b3e0c0 type=chariot_loss amount=10
+2026/10/19 18:38:59 INFO divine blessing applied settlement=4c5b4086-5d9c-4aa2-98ba-ecfa3d603ec3 type=divine_recruits amount=10
+2026/10/19 18:38:59 INFO divine blessing applied settlement=4c5b4086-5d9c-4aa2-98ba-ecfa3d603ec3 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=4c5b4086-5d9c-4aa2-98ba-ecfa3d603ec3 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=4c5b4086-5d9c-4aa2-98ba-ecfa3d603ec3 type=divine_recruits amount=10
+2026/10/19 18:38:59 INFO divine blessing applied settlement=4c5b4086-5d9c-4aa2-98ba-ecfa3d603ec3 type=divine_recruits amount=10
+2026/10/19 18:38:59 INFO divine blessing applied settlement=4c5b4086-5d9c-4aa2-98ba-ecfa3d603ec3 type=divine_recruits amount=10
+2026/10/19 18:38:59 INFO divine blessing applied settlement=4c5b4086-5d9c-4aa2-98ba-ecfa3d603ec3 type=divine_recruits amount=10
+2026/10/19 18:38:59 INFO divine blessing applied settlement=4c5b4086-5d9c-4aa2-98ba-ecfa3d603ec3 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=4c5b4086-5d9c-4aa2-98ba-ecfa3d603ec3 type=divine_recruits amount=10
+2026/10/19 18:38:59 INFO divine blessing applied settlement=4c5b4086-5d9c-4aa2-98ba-ecfa3d603ec3 type=divine_recruits amount=10
+2026/10/19 18:38:59 INFO divine blessing applied settlement=4c5b4086-5d9c-4aa2-98ba-ecfa3d603ec3 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=4c5b4086-5d9c-4aa2-98ba-ecfa3d603ec3 type=divine_recruits amount=10
+2026/10/19 18:38:59 INFO divine blessing applied settlement=4c5b4086-5d9c-4aa2-98ba-ecfa3d603ec3 type=divine_recruits amount=10
+2026/10/19 18:38:59 INFO divine blessing applied settlement=4c5b4086-5d9c-4aa2-98ba-ecfa3d603ec3 type=divine_recruits amount=10
+2026/10/19 18:38:59 INFO divine blessing applied settlement=4c5b4086-5d9c-4aa2-98ba-ecfa3d603ec3 type=divine_recruits amount=10
+2026/10/19 18:38:59 INFO divine blessing applied settlement=4c5b4086-5d9c-4aa2-98ba-ecfa3d603ec3 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=divine_recruits amount=10
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=divine_recruits amount=10
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=divine_recruits amount=10
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=divine_recruits amount=10
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=divine_recruits amount=10
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=divine_recruits amount=10
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=divine_recruits amount=10
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=divine_recruits amount=10
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=divine_recruits amount=10
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=divine_recruits amount=10
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine blessing applied settlement=db3181b3-d5e6-4133-8497-30f476880717 type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine punishment applied settlement=b3c76b41-f70f-4d28-8720-b7fcf5da2fbf type=garrison_plague amount=10
+2026/10/19 18:38:59 INFO divine blessing applied settlement=dd6f48d2-1bda-47af-a998-cf4b1fe05fcd type=bountiful_harvest amount=25
+2026/10/19 18:38:59 INFO divine punishment applied settlement=bf698177-467d-49dc-865e-9524cf9625ba type=ship_loss amount=1
+--- FAIL: TestApplyDecay_GrowthGateMatchesFoodNet (0.47s)
+    --- FAIL: TestApplyDecay_GrowthGateMatchesFoodNet/wine_adds_variety_only (0.03s)
+        growth_gate_foodnet_test.go:89: fixture/canonical food balance changed: net=45, want growth=false
+    --- FAIL: TestApplyDecay_GrowthGateMatchesFoodNet/oil_adds_variety_only (0.03s)
+        growth_gate_foodnet_test.go:89: fixture/canonical food balance changed: net=45, want growth=false
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=divine_recruits amount=2
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=bountiful_harvest amount=25
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=divine_recruits amount=2
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=bountiful_harvest amount=25
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=divine_recruits amount=2
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=bountiful_harvest amount=25
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=divine_recruits amount=2
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=divine_recruits amount=2
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=divine_recruits amount=2
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=divine_recruits amount=2
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=divine_recruits amount=2
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=bountiful_harvest amount=25
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=divine_recruits amount=3
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=divine_recruits amount=3
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=divine_recruits amount=4
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=divine_recruits amount=5
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=divine_recruits amount=6
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=bountiful_harvest amount=25
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=divine_recruits amount=7
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=divine_recruits amount=8
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=divine_recruits amount=10
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=bountiful_harvest amount=25
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=divine_recruits amount=12
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=bountiful_harvest amount=25
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=bountiful_harvest amount=25
+2026/10/19 18:39:05 INFO divine blessing applied settlement=b5249d69-a855-481f-a789-8034da1711f2 type=divine_recruits amount=14
+2026/10/19 18:39:05 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=divine_recruits amount=2
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=divine_recruits amount=2
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=bountiful_harvest amount=25
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=divine_recruits amount=2
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=bountiful_harvest amount=25
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=divine_recruits amount=2
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=divine_recruits amount=2
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=bountiful_harvest amount=25
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=bountiful_harvest amount=25
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=bountiful_harvest amount=25
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=divine_recruits amount=2
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=divine_recruits amount=2
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=bountiful_harvest amount=25
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=divine_recruits amount=2
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=divine_recruits amount=3
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=bountiful_harvest amount=25
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=bountiful_harvest amount=25
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=divine_recruits amount=3
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=bountiful_harvest amount=25
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=divine_recruits amount=4
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=divine_recruits amount=5
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=divine_recruits amount=6
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=divine_recruits amount=7
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=bountiful_harvest amount=25
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=divine_recruits amount=8
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=bountiful_harvest amount=25
+2026/10/19 18:39:06 INFO divine blessing applied settlement=18f47994-4625-4005-a376-e596038835a7 type=bountiful_harvest amount=25
+2026/10/19 18:39:06 INFO divine punishment applied settlement=f2260e86-604d-47a4-ac37-5eb76ad50152 type=harvest_failure amount=50
+2026/10/19 18:39:09 ERROR kharis maintenance failed player=00000000-0000-0000-0000-000000001401 world=8883c35e-ba8c-4fa4-81b1-b2d84a061703 err="persist transition notice: ERROR: new row for relation \"notifications\" violates check constraint \"test_notice_owner_failure\" (SQLSTATE 23514)"
+2026/10/19 18:39:09 ERROR starvation observation failed world=8883c35e-ba8c-4fa4-81b1-b2d84a061703 err="persist transition notice: ERROR: new row for relation \"notifications\" violates check constraint \"test_notice_garrison_failure\" (SQLSTATE 23514)"
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	11.337s
+FAIL
