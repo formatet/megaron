@@ -40,7 +40,7 @@ Inga balans-, server-, keryx- eller Codex-förändringar.
 
 | Grind | Bevis |
 |---|---|
-| Kod | Ursprungliga 650 JS-test gröna (`baseline-suite.log`); kontrakttestet namngivet rött på baslinjen (`baseline-test.log`), slutligen 652 gröna (`final-suite.log`). Ingen Go-/SQL-ändring, därför ingen Go-/DB-testsvep. |
+| Kod | Fullständig oförändrad 07e2eac4-arkivkopia: 650 JS-test gröna (`baseline-suite.log`); kontrakttestet namngivet rött på baslinjen (`baseline-test.log`), slutligen 652 gröna (`final-suite.log`). Ingen Go-/SQL-ändring, därför ingen Go-/DB-testsvep. |
 | Mutation | `python3 docs/reviews/palett-text/verify.py`: fem fysiska färgmutationer, tokennamngivet RED → byte-exakt återställning → fresh GREEN; `mutations.json`. |
 | Inneslutning | `containment.json`: CSS byte-identisk mot bas efter enbart borttagning av nya token och återbyte av textreferenser; samma för varje JS-produktionsfil. danger/diplomacy/text-dim och ikoner/yta förblir alltså identiska. |
 | Visuell | `browser.py`/`browser.json`: Firefox DPR1/390, alla 15 CSS-textselektorer; geometri, synliga kanter och fyllningar identiska före/efter. Den första kontrollen jämförde även osynliga `currentColor`-kanter med bredd 0; proben rättades till synliga kanter, ingen produktionsändring. |
@@ -77,3 +77,10 @@ dessutom vissa kanter/fyllningar. Ett globalt byte påverkar därför mer än br
 
 Dessa alternativ bor bara i review.html:s `mode=decision`, aldrig i produktions-CSS.
 Claude tar besluten och BILD till Timothy; inga vault-regler ändras här.
+
+Bevisrättelse efter handoff: första baslinjearkivet innehöll bara web/static och saknade
+server/templates som några tester läser. Dess verkliga utfall var 579/585, sex fel;
+den tidigare uppgiften att den körningen var grön var felaktig. Originalloggen bevaras som
+`baseline-partial-archive-failed.log`. Ett komplett `git archive 07e2eac4` kördes därefter
+med samma Node-kommandon: 650/650 gröna. Slutkodens 652/652 och mutationerna var redan
+verifierat gröna. Denna rättelse ändrar bara bevis och redovisning, ingen produktionsbyte.
