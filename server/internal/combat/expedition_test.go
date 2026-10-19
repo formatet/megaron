@@ -7,6 +7,7 @@ package combat
 import (
 	"context"
 	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 
@@ -351,5 +352,32 @@ func TestExpedition_DispatchRefusals(t *testing.T) {
 	}
 	if err := order(1, 0, 10); err == nil {
 		t.Error("an expedition into fully known ground was accepted")
+	}
+}
+
+// GPT14: the map's frontier pointed at sea and land spearmen were told the
+// area was "already known". Unseen water is not known ground.
+func TestExpedition_UnseenWaterIsNotAlreadyKnown(t *testing.T) {
+	f := newExpeditionFixture(t, -2, 16, nil)
+	ctx := context.Background()
+	pool := testPool(t)
+	if _, err := pool.Exec(ctx,
+		`INSERT INTO player_scouted_tiles (world_id, player_id, q, r)
+		 SELECT $1, $2, q, r FROM map_tiles WHERE world_id = $1 AND NOT (q BETWEEN 4 AND 6)`, f.worldID, f.ownerID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx,
+		`UPDATE map_tiles SET terrain = 'deep_sea' WHERE world_id = $1 AND q BETWEEN 4 AND 6`, f.worldID); err != nil {
+		t.Fatal(err)
+	}
+	_, err := StartMarch(ctx, pool, f.scheduler, f.eventStore, f.clk, MarchOrder{
+		WorldID: f.worldID, PlayerID: f.ownerID, UnitID: f.unitID,
+		TargetQ: 3, TargetR: 0, Intent: "explore", ExpeditionTicks: 10,
+	}, nil)
+	if err == nil {
+		t.Fatal("land expedition into unseen sea was accepted")
+	}
+	if strings.Contains(err.Error(), "already known") || !strings.Contains(err.Error(), "explore it with a ship") {
+		t.Fatalf("refusal = %q, want unseen water named and a ship suggested", err.Error())
 	}
 }
