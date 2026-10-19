@@ -115,6 +115,10 @@ test('equal food: four stocks and actual meal use server totals, never grain-onl
  assert.match(detail,/eats 2 food per day → food net 5 after army/);
  assert.match(detail,/Last meal.*0.3 grain, 2.7 fish.*day 42/);
  assert.doesNotMatch(detail,/999|army needs grain/);
+ data.food.goods={grain:0,fish:0.008,oil:0.0000001,wine:0.1};
+ assert.match(foodSummaryHTML(data),/0 grain, under 0.1 fish, under 0.1 oil, 0.1 wine/);
+ data.food.consumed={grain:0,fish:0.008,oil:0.0000001};
+ assert.match(foodDetailsHTML(data),/Last meal.*0 grain, under 0.1 fish, under 0.1 oil/);
  data.food.consumed_tick=null;
  assert.doesNotMatch(foodDetailsHTML(data),/Last meal/,'no meal invented before first resolution');
 });

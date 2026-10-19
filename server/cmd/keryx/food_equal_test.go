@@ -23,6 +23,11 @@ func TestEqualFoodCityUsesServerTotalsAndGoods(t *testing.T) {
 	if line := armyFoodLine(sett); !strings.Contains(line, "2.0 food") || !strings.Contains(line, "+5.0") || strings.Contains(line, "grain") {
 		t.Fatal(line)
 	}
+	food := sett["food"].(map[string]any)
+	food["goods"] = map[string]any{"grain": 0.0, "fish": 0.0000001, "oil": 0.008, "wine": 0.0001}
+	if got := cityFoodLine(sett); !strings.Contains(got, "0 grain, <0.0001 fish, 0.008 oil, 0.0001 wine") {
+		t.Fatal(got)
+	}
 	if got := cityFoodLine(map[string]any{}); got != "Food stores not reported." {
 		t.Fatal(got)
 	}
@@ -41,6 +46,10 @@ func TestEqualFoodRosterPrefersAuthoritativeFoodAndKeepsManifest(t *testing.T) {
 		if !strings.Contains(got, want) {
 			t.Fatal(got)
 		}
+	}
+	u.ProvisionsByGood = map[string]float64{"grain": 0, "fish": 0.0000001, "oil": 0.008, "wine": 0.0001}
+	if got := formatSize(nil, u); !strings.Contains(got, "0 grain, <0.0001 fish, 0.008 oil, 0.0001 wine") {
+		t.Fatal(got)
 	}
 }
 

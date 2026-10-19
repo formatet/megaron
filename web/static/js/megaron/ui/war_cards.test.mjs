@@ -126,4 +126,8 @@ test('equal food: roster food alias wins and ship manifest preserves each good',
  assert.match(html,/Upkeep: 0.5 food, 0 silver per day/);
  assert.match(html,/food for 7 days.*1 grain, 9 fish, 2 oil, 3 wine/);
  assert.doesNotMatch(html,/999/);
+ const small=renderUnitCard(unit({category:'naval',type:'galley',status:'marching',crew:40,
+  provision_days:0,provisions_aboard:true,provisions_by_good:{grain:0,fish:0.008,oil:0.0000001,wine:0.1}}));
+ assert.match(small,/food for less than a day.*0 grain, under 0.1 fish, under 0.1 oil, 0.1 wine/);
+ assert.doesNotMatch(small,/&lt;|<0.1|0 fish/,'small positives remain safe plain text, distinct from zero');
 });

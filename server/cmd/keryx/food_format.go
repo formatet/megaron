@@ -12,7 +12,11 @@ func foodGoodsText(goods map[string]any) string {
 	parts := []string{}
 	for _, good := range foodDisplayGoods {
 		if qty, ok := goods[good].(float64); ok {
-			parts = append(parts, fmt.Sprintf("%s %s", strings.TrimRight(strings.TrimRight(fmt.Sprintf("%.4f", qty), "0"), "."), good))
+			amount := strings.TrimRight(strings.TrimRight(fmt.Sprintf("%.4f", qty), "0"), ".")
+			if qty > 0 && qty < 0.0001 {
+				amount = "<0.0001"
+			}
+			parts = append(parts, fmt.Sprintf("%s %s", amount, good))
 		}
 	}
 	return strings.Join(parts, ", ")
