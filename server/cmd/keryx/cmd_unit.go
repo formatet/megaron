@@ -644,7 +644,9 @@ Terrain passability:
   river is impassable to land units — it is a wall, not a crossing. Every
   ~10 hexes of a river's length carries one river_ford instead.)
 
-A land unit must reach 100 men (garrison status) before it can march.
+A newly recruited land cohort must finish gathering men and training before
+it can march. Once ready, a cohort can still march after losing men; it does
+not need to recover to 100 first.
 A unit in fortify stance must be cleared (stance none) before marching.
 
 Exploring: an explore order may target an area in fog. The server chooses
