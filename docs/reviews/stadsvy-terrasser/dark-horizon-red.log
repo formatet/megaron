@@ -1,0 +1,84 @@
+TAP version 13
+# Subtest: terraced housing grows geometrically without figures or smoke
+not ok 1 - terraced housing grows geometrically without figures or smoke
+  ---
+  duration_ms: 13.485654
+  type: 'test'
+  location: '/home/tk/wt/codex-stadsvy-terrasser/web/static/js/megaron/render/city.test.mjs:19:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + '#896858'
+    - '#E3C6A0'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: '#E3C6A0'
+  actual: '#896858'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-stadsvy-terrasser/web/static/js/megaron/render/city.test.mjs:31:12)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: all statuses stay in separate layers and can coexist
+ok 2 - all statuses stay in separate layers and can coexist
+  ---
+  duration_ms: 8.371577
+  type: 'test'
+  ...
+# Subtest: food truth comes from growth state, not low grain or negative balance
+ok 3 - food truth comes from growth state, not low grain or negative balance
+  ---
+  duration_ms: 2.087329
+  type: 'test'
+  ...
+# Subtest: wall silhouette and gate change independently of population
+ok 4 - wall silhouette and gate change independently of population
+  ---
+  duration_ms: 4.471414
+  type: 'test'
+  ...
+# Subtest: no fabricated temple, harbour, mine or construction on an empty city
+ok 5 - no fabricated temple, harbour, mine or construction on an empty city
+  ---
+  duration_ms: 6.2042
+  type: 'test'
+  ...
+# Subtest: raster deterministic and all colours valid; order of building payload irrelevant
+ok 6 - raster deterministic and all colours valid; order of building payload irrelevant
+  ---
+  duration_ms: 5.224801
+  type: 'test'
+  ...
+# Subtest: every functional building is drawn from the actual inventory
+ok 7 - every functional building is drawn from the actual inventory
+  ---
+  duration_ms: 12.444504
+  type: 'test'
+  ...
+# Subtest: missing settlement payload never fabricates population, buildings or life
+ok 8 - missing settlement payload never fabricates population, buildings or life
+  ---
+  duration_ms: 0.401427
+  type: 'test'
+  ...
+# Subtest: siege of an unfortified city never invents a closed wall gate
+ok 9 - siege of an unfortified city never invents a closed wall gate
+  ---
+  duration_ms: 1.120637
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 8
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 103.988816

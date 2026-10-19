@@ -1,0 +1,35 @@
+{
+  "source_sha256": "813ad319caebaeff3bca7547d3605f03ba2a3ca5def52d14368119f071e0f016",
+  "mutations": [
+    {
+      "mutation": "constant-population",
+      "expected_failure": "terraced housing grows geometrically",
+      "result": "named RED -> byte-exact restore -> fresh GREEN"
+    },
+    {
+      "mutation": "missing-wall",
+      "expected_failure": "wall silhouette and gate",
+      "result": "named RED -> byte-exact restore -> fresh GREEN"
+    },
+    {
+      "mutation": "missing-hunger",
+      "expected_failure": "food truth comes from growth state",
+      "result": "named RED -> byte-exact restore -> fresh GREEN"
+    },
+    {
+      "mutation": "missing-siege",
+      "expected_failure": "all statuses stay in separate layers",
+      "result": "named RED -> byte-exact restore -> fresh GREEN"
+    },
+    {
+      "mutation": "missing-construction",
+      "expected_failure": "all statuses stay in separate layers",
+      "result": "named RED -> byte-exact restore -> fresh GREEN"
+    },
+    {
+      "mutation": "dark-horizon",
+      "expected_failure": "terraced housing grows geometrically",
+      "result": "named RED -> byte-exact restore -> fresh GREEN"
+    }
+  ]
+}

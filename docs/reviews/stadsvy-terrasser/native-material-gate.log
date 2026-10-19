@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-stadsvy-terrasser/docs/reviews/stadsvy-terrasser/native.py", line 54, in <module>
+    cli('join');cli('founding','settle','--name','Myrsine','--yes');cli('city');cli('status');cli('build','--type','temple')
+                                                                                              ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tk/wt/codex-stadsvy-terrasser/docs/reviews/stadsvy-terrasser/native.py", line 51, in cli
+    assert res.returncode==0,(args,res.stdout,res.stderr)
+           ^^^^^^^^^^^^^^^^^
+AssertionError: (('build', '--type', 'temple'), '', 'Error: insufficient_goods: stone (need 24, have 0, 24 short), timber (need 8, have 0, 8 short) — produce it here, or send it from another of your cities with `keryx transfer` (HTTP 422)\nSee keryx build --help\n')

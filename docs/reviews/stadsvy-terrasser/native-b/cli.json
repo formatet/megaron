@@ -1,0 +1,50 @@
+[
+  {
+    "args": [
+      "login",
+      "--server",
+      "http://127.0.0.1:44987",
+      "--username",
+      "timber-d63cb7dc"
+    ],
+    "exit_code": 0,
+    "stdout": "Logged in to http://127.0.0.1:44987\nActive world:   aa9d2b5f-50f4-481c-b77f-3556a7db498a\nYour province:  \n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "join"
+    ],
+    "exit_code": 0,
+    "stdout": "Joined! A Nomadic Host of 1000 people sets out at (17,27).\n  Run: keryx founding status\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "founding",
+      "settle",
+      "--name",
+      "Myrsine",
+      "--yes"
+    ],
+    "exit_code": 0,
+    "stdout": "Founding (17,27) \u2014 metropolis of 1000 people \u2014 catchment forecast (19/19 hexes known, 0 unknown):\n  Coastal: a city here can build a harbour and ships.\n  Food: grain ~0.5 + fish ~5.0 per day \u2212 consumption ~5.0 per day = net +0.5 per day\n  Starting stock 1200 grain \u2014 production covers food demand.\n  Other: copper-deposit \u2713, silver-deposit \u2713, copper ~3 per day, fish ~8 per day, livestock ~3 per day, oil ~11 per day, stone ~16 per day, timber ~3 per day, wine ~14 per day\n  Gift: Poseidon's galley \u2014 a coastal founding is owed one galley, crewed and ready \u2014 a gift, not drawn from your people\n\u2692 Metropolis founded at (17,27)! The host is dissolved \u2014 the people have a home.\n  Carried in by the host: 1200 grain, 480 silver. The city now holds 1200 grain, 480 silver (founding adds no extra grain or silver).\n  Poseidon's gift: a galley lies in the harbor.\n  Run: keryx status\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "city"
+    ],
+    "exit_code": 0,
+    "stdout": "1 citizen = 100 people\nCitizens: 5/10 placed, 5 idle\n\nFood: 5 citizens needed for people on best food slots, 5 placed\nAutomatic food: 0.50 grain + 0.00 fish per day without placed citizens (nearby ground 0.50 grain; 0 people outside whole citizens: 0.00 grain + 0.00 fish, a fraction of the best food worker)\n\nCatchment:\n  #8   (17,25) plains         oil        0/2    (next +0.7 per day)\n                      wine       0/2    (next +0.5 per day)\n                      stone      0/1    (next +0.5 per day)\n                      grain      0/4    (next +1.0 per day)\n                      livestock  0/1    (next +1.0 per day)\n  #10  (17,28) plains         oil        0/2    (next +0.7 per day)\n                      wine       0/2    (next +0.5 per day)\n                      stone      0/1    (next +0.5 per day)\n                      grain      0/4    (next +1.0 per day)\n                      livestock  0/1    (next +1.0 per day)\n  #11  (17,29) plains         stone      0/1    (next +0.5 per day)\n                      grain      0/4    (next +1.0 per day)\n                      livestock  0/1    (next +1.0 per day)\n                      oil        0/2    (next +0.7 per day)\n                      wine       0/2    (next +0.5 per day)\n  #1   (15,27) hills          copper     0/1    (next +1.0 per day)\n                      timber     0/1    (next +0.3 per day)\n                      oil        0/2    (next +0.5 per day)\n                      wine       0/2    (next +1.0 per day)\n                      stone      0/2    (next +1.0 per day)\n                      grain      0/1    (next +0.5 per day)\n  #2   (15,28) hills          oil        0/2    (next +0.5 per day)\n                      wine       0/2    (next +1.0 per day)\n                      stone      0/2    (next +1.0 per day)\n                      grain      0/1    (next +0.5 per day)\n                      timber     0/1    (next +0.3 per day)\n  #3   (15,29) hills          stone      0/2    (next +1.0 per day)\n                      grain      0/1    (next +0.5 per day)\n                      timber     0/1    (next +0.3 per day)\n                      oil        0/2    (next +0.5 per day)\n                      wine       0/2    (next +1.0 per day)\n  #5   (16,27) hills          grain      0/1    (next +0.5 per day)\n                      copper     0/1    (next +1.0 per day)\n                      timber     0/1    (next +0.3 per day)\n                      oil        0/2    (next +0.5 per day)\n                      wine       0/2    (next +1.0 per day)\n                      stone      0/2    (next +1.0 per day)\n  #6   (16,28) hills          grain      0/1    (next +0.5 per day)\n                      copper     0/1    (next +1.0 per day)\n                      timber     0/1    (next +0.3 per day)\n                      oil        0/2    (next +0.5 per day)\n                      wine       0/2    (next +1.0 per day)\n                      stone      0/2    (next +1.0 per day)\n  #9   (17,26) forest_olive_grove oil        0/2    (next +1.0 per day)\n                      timber     0/1    (next +1.0 per day)\n                      stone      0/1    (next +0.5 per day)\n  #7   (16,29) scrub_maquis   timber     0/1    (next +0.3 per day)\n                      wine       0/2    (next +0.3 per day)\n                      stone      0/1    (next +0.5 per day)\n  #4   (16,26) mountain_limestone stone      0/2    (next +2.0 per day)\n  #12  (18,25) coastal_sea    fish       2/2 FULL\n  #13  (18,26) coastal_sea    fish       2/2 FULL\n  #14  (18,27) coastal_sea    fish       1/2    (next +1.0 per day)\n  #15  (18,28) coastal_sea    fish       0/2    (next +1.0 per day)\n  #16  (19,25) deep_sea       fish       0/1    (next +0.2 per day)\n  #17  (19,26) deep_sea       fish       0/1    (next +0.2 per day)\n  #18  (19,27) deep_sea       fish       0/1    (next +0.2 per day)\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "status"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax Aigiwalos \u00b7 day 0 of the world\n\n1 citizen = 100 people\nMyrsine [minoan]  Pop: 1.0k people  Labor: 10 citizens  Walls: 0/3  Settlements: 1/5  [coastal \u2014 can build harbour \u2192 ships]\nPopulation 1000 \u2014 growing: food net +0.5 per day\n\nNo trade contacts yet \u2014 trade needs a foreign settlement within your vision. Run `keryx cities` to see known/rumoured neighbours (march outward or colonise to reach one), then `keryx message --to <name>` or `keryx trade-offer` once one is visible.\n\nFood lasts 240.0 days at current consumption (city grain + fish stocks)\n\nLast day 0: 2 goods produced, 1 consumed  \u00b7  keryx ticklog for details\n\nResources\n  (per day; food and army balances are itemized below)\n  Silver      480  \u2014\n  Food     grain 0.5 + fish 5.0 \u2212 people eat 5.0 = net +0.5 per day (before army)\n  Grain      1.2k  production 0.5 per day  (5 citizens needed for people on best food slots \u00b7 5 placed)\n  Automatic food: 0.50 grain + 0.00 fish per day without placed citizens (nearby ground 0.50 grain; 0 people outside whole citizens: 0.00 grain + 0.00 fish, a fraction of the best food worker)\n  Army     eats 1.0 grain per day \u2192 food net -0.5 per day after army\n  Silver   net -0.5 per day after army pay\n  Fish          0  +5.0 per day\n  \u26a0 Timber production ~0 \u2014 timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).\n  \u26a0 Unmined deposit in the catchment: copper, silver \u2014 build a mine on its hex to extract it (a hex holds one building; if another stands there, demolish it first with `keryx demolish`)\n  Kharis       40  (Indifferent) \u00b7 cap 40 \u00b7 net -0.1 per day (temple \u2212 decay)\n  Kharis decay: 0.1 base + 1 city cost 0.0 per day = 0.1 total\n  Temples: none \u2014 kharis doesn't climb without a temple + offerings.\n\nArmy (garrison in Myrsine)\n  Spearmen    200\n      261c73f5-1706-4f04-be35-4d32034bdfca  100\n      d2ca15c5-27b2-4ae3-8651-a7f7f625b31f  100\n  Galley        1\n  Upkeep     1.0 grain, 1.5 silver per day  (everything the city pays \u2014 including field units)\n             1.0 silver per day back into the city (garrison's pay)\n  Field units and other cities are shown in `keryx unit list`.\n",
+    "stderr": ""
+  }
+]

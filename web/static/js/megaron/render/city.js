@@ -1,61 +1,817 @@
-// ── Stadsvyn: staden inifrån ─────────────────────────────────────────────
-//
-// Kartmarkören svarar på "hur stor är den?". Den här scenen svarar på "vad ÄR
-// den?" — vilka byggnader staden faktiskt har, på vilken nivå, och vad som
-// håller på att resa sig just nu.
-//
-// Den gamla scenen hade FYRA fasta sidoslottar sorterade efter en
-// prioritetslista, plus en generisk klassisk tempelfasad i mitten. En stad med
-// sju byggnader visade fyra av dem, och att bygga något nytt syntes ofta inte
-// alls. Den hade dessutom en helt egen palett: kartan och stadsvyn såg ut att
-// komma från två olika spel.
-//
-// Nu: **varje** byggnad ritas, i sin egen akhaiska form, ur samma palett som
-// kartsiluetterna. Citadellet i fonden bär megaron och den kyklopiska muren och
-// skalas av befolkning och murnivå — en rikare lokal befolkningsskala än
-// kartans två `size_tier`-led.
-//
-// Blickpunkten är INIFRÅN staden: muren löper i fonden, bakom citadellet, och
-// gatan med verkstäderna ligger framför. En mur ritad framför hade varit
-// vackrare och hade skymt precis det scenen finns till för att visa.
+// Order 25: the street climbs toward the sanctuary, between inhabited terraces.
+// 21c supplies the geometry; 03 supplies the light mountain horizon. Population
+// changes residential mass, while functions and statuses come from the API.
+import { CITY_PALETTE, newGrid } from './pixelgrid.js';
+import { stampBuilding, buildingWidth } from './citybuildings.js';
 
-import { serverNow } from '../clock.js';
-import {
-  CITY_PALETTE, newGrid, set, row, col, rect, cube, outline, toRuns,
-} from './pixelgrid.js';
-import { stampBuilding, stampUnderConstruction, buildingWidth } from './citybuildings.js';
+const W = 160,
+  H = 96,
+  S = 2;
+export const SCENE_CANVAS = { w: W * S, h: H * S };
+const P = {
+  ink: '#1F1A14',
+  light: '#EFE4CB',
+  plaster: '#D2C3A0',
+  shade: '#A08D71',
+  roof: '#C0A473',
+  edge: '#836A44',
+  earth: '#C4A578',
+  stone: '#B5A992',
+  rock: '#6E6552',
+  red: '#B0442A',
+  blood: '#922B21',
+  wood: '#6B5334',
+  sea: '#827F8C',
+  foam: '#ABA3A5',
+  field: '#B5A062',
+  sky: '#E3C6A0',
+  far: '#B59B89',
+  mountain: '#8C8273',
+  band: '#C2A894',
+  smoke: '#938F84'
+};
 
-// Scenen ritas i LOGISKA pixlar och skalas upp med heltal — samma pixeldisciplin
-// som kartan (princip 10: aldrig arc(), aldrig halva pixlar).
-const SCENE_W = 160, SCENE_H = 76, S = 2;
-export const SCENE_CANVAS = { w: SCENE_W * S, h: SCENE_H * S };
-
-// Citadellet och två gatuled ritas bakifrån och fram. Den sammanhängande
-// gården binder ihop dem utan att lägga markband framför byggnadernas fötter.
-const CITADEL = 34;         // citadellets fot: megaron och den lägre staden
-const RAMPART = 36;         // murens krön, vid terrassens kant
-const ROW_BACK = 54;        // bortre gatuledet
-const ROW_FRONT = 70;       // främre gatuledet
-
-// Ordningen byggnaderna radas upp i. Den är INTE en prioritering (allt ritas)
-// utan en gruppering: försörjning, hantverk, makt. En stad ska läsa likadant
-// varje gång man öppnar den, annars kan man inte se vad som är nytt.
-const STREET_ORDER = [
-  'farm', 'olive_press', 'winery', 'market', 'harbour',
-  'lumbermill', 'stonequarry', 'mine', 'silver_mine', 'foundry',
-  'barracks', 'stable', 'temple',
-];
-
-let _animId = null;
-export function stopCityAnim() {
-  if (_animId !== null) { cancelAnimationFrame(_animId); _animId = null; }
+// Integer software raster, shared by the browser and the structural tests.
+// No canvas paths: polygons and Bresenham edges always land on whole pixels.
+function painter(pixels, housing) {
+  let residential = false;
+  function pixel(x, y, c) {
+    if (x >= 0 && x < W && y >= 0 && y < H) {
+      const i = y * W + x;
+      pixels[i] = P[c] || c;
+      if (housing) housing[i] = residential ? 1 : 0;
+    }
+  }
+  function rect(x1, y1, x2, y2, c) {
+    for (let y = Math.max(0, y1); y <= Math.min(H - 1, y2); y++)
+      for (let x = Math.max(0, x1); x <= Math.min(W - 1, x2); x++) pixel(x, y, c);
+  }
+  function line(points, c) {
+    for (let i = 1; i < points.length; i++) {
+      let [x, y] = points[i - 1];
+      const [xx, yy] = points[i];
+      const dx = Math.abs(xx - x),
+        dy = -Math.abs(yy - y),
+        sx = x < xx ? 1 : -1,
+        sy = y < yy ? 1 : -1;
+      let err = dx + dy;
+      for (;;) {
+        pixel(x, y, c);
+        if (x === xx && y === yy) break;
+        const e = 2 * err;
+        if (e >= dy) {
+          err += dy;
+          x += sx;
+        }
+        if (e <= dx) {
+          err += dx;
+          y += sy;
+        }
+      }
+    }
+  }
+  function poly(points, c) {
+    const ymin = Math.max(0, Math.min(...points.map((p) => p[1]))),
+      ymax = Math.min(H - 1, Math.max(...points.map((p) => p[1])));
+    for (let y = ymin; y <= ymax; y++) {
+      const xs = [];
+      for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+        const [x1, y1] = points[j],
+          [x2, y2] = points[i];
+        if ((y1 <= y && y2 > y) || (y2 <= y && y1 > y))
+          xs.push(x1 + ((y - y1) * (x2 - x1)) / (y2 - y1));
+      }
+      xs.sort((a, b) => a - b);
+      for (let i = 0; i + 1 < xs.length; i += 2)
+        rect(Math.ceil(xs[i]), y, Math.floor(xs[i + 1]), y, c);
+    }
+    line([...points, points[0]], c);
+  }
+  function box(x, y, w, h, d = 3, reverse = false, temple = false) {
+    if (reverse) {
+      poly(
+        [
+          [x, y],
+          [x + w, y],
+          [x + w - d, y - d],
+          [x - d, y - d]
+        ],
+        'roof'
+      );
+      rect(x, y + 1, x + w, y + h, 'shade');
+      poly(
+        [
+          [x - d, y - d],
+          [x, y],
+          [x, y + h],
+          [x - d, y + h - d]
+        ],
+        'plaster'
+      );
+      line(
+        [
+          [x - d, y - d],
+          [x + w - d, y - d]
+        ],
+        'light'
+      );
+    } else {
+      poly(
+        [
+          [x, y],
+          [x + w, y],
+          [x + w + d, y - d],
+          [x + d, y - d]
+        ],
+        temple ? 'light' : 'roof'
+      );
+      rect(x, y + 1, x + w, y + h, temple ? 'plaster' : 'shade');
+      poly(
+        [
+          [x + w, y],
+          [x + w + d, y - d],
+          [x + w + d, y + h - d],
+          [x + w, y + h]
+        ],
+        temple ? 'shade' : 'edge'
+      );
+      line(
+        [
+          [x, y],
+          [x + w, y]
+        ],
+        temple ? 'light' : 'earth'
+      );
+    }
+    rect(x + Math.floor(w / 2), y + h - 3, x + Math.floor(w / 2) + 1, y + h, 'ink');
+  }
+  return {
+    pixel,
+    rect,
+    line,
+    poly,
+    box,
+    mass(on) {
+      residential = on;
+    }
+  };
 }
 
-/**
- * @param sett  provinsens settlement-payload (population, walls, buildings,
- *              build_queue). Scenen läser bara serverns sanning — den hittar
- *              aldrig på en byggnad som inte finns (princip 9).
- */
+const OTHER_FUNCTIONS = [
+  'olive_press',
+  'winery',
+  'market',
+  'lumbermill',
+  'stonequarry',
+  'silver_mine',
+  'foundry',
+  'barracks',
+  'stable'
+];
+const array = () => Array(W * H).fill(null);
+
+/** Pure snapshot of exactly the payload used by the city drawer.
+ * structure excludes status/life; housing is the visible residential projection
+ * after occlusion, not a count of houses or a measure of human recognition. */
+export function buildCityScene(tile, buildings = [], buildQueue = [], sett = {}) {
+  buildings ||= [];
+  buildQueue ||= [];
+  sett ||= {};
+  const structure = Array(W * H).fill(P.sky),
+    housing = new Uint8Array(W * H);
+  const status = array(),
+    life = array(),
+    d = painter(structure, housing);
+  // A failed province read must not fabricate an inhabited small settlement.
+  if (!Number.isFinite(sett.population)) {
+    return {
+      structure,
+      housing,
+      status,
+      life,
+      terraceLevels: 0,
+      anchors: {},
+      starving: false,
+      besieged: false,
+      construction: [],
+      vents: []
+    };
+  }
+  const { rect, line, poly, box } = d;
+  const tier = sett.population >= 8000 ? 2 : sett.population >= 3000 ? 1 : 0;
+  const terraceLevels = [1, 3, 5][tier];
+  const walls = Math.max(0, Math.min(3, Number(sett.walls) || 0));
+  const starving = sett.food?.growth_state === 'shrinking',
+    besieged = sett.besieged === true;
+  const byType = new Map();
+  for (const b of buildings)
+    if (b.level > 0) byType.set(b.type, Math.max(byType.get(b.type) || 0, b.level));
+  const anchors = { gate: [80, 60, 7, 5] };
+  poly(
+    [
+      [0, 30],
+      [0, 20],
+      [13, 14],
+      [27, 18],
+      [42, 11],
+      [57, 17],
+      [78, 10],
+      [99, 19],
+      [125, 13],
+      [144, 19],
+      [160, 15],
+      [160, 52],
+      [0, 52]
+    ],
+    'far'
+  );
+  // Warm, light bands: darker 21b roof/rock substitutions are deliberately absent.
+  poly(
+    [
+      [0, 23],
+      [13, 17],
+      [27, 21],
+      [42, 14],
+      [57, 20],
+      [78, 13],
+      [99, 22],
+      [125, 16],
+      [144, 22],
+      [160, 18],
+      [160, 25],
+      [140, 26],
+      [119, 21],
+      [102, 26],
+      [80, 18],
+      [57, 25],
+      [36, 20],
+      [14, 24],
+      [0, 27]
+    ],
+    'band'
+  );
+  poly(
+    [
+      [0, 38],
+      [23, 29],
+      [47, 32],
+      [69, 24],
+      [94, 29],
+      [118, 23],
+      [145, 31],
+      [160, 27],
+      [160, 65],
+      [0, 65]
+    ],
+    'mountain'
+  );
+  poly(
+    [
+      [0, 58],
+      [28, 43],
+      [55, 36],
+      [93, 35],
+      [125, 44],
+      [160, 57],
+      [160, 96],
+      [0, 96]
+    ],
+    'earth'
+  );
+  poly(
+    [
+      [46, 96],
+      [76, 44],
+      [89, 43],
+      [118, 96]
+    ],
+    'light'
+  );
+  for (let y = 59; y < 94; y += 5) {
+    const half = Math.round((y - 42) * 0.35) + 5;
+    line(
+      [
+        [82 - half, y],
+        [82 + half, y]
+      ],
+      'shade'
+    );
+  }
+
+  function home(x, y, w, h, depth, reverse = false) {
+    poly(
+      [
+        [x + 2, y + h],
+        [x + w + depth + 4, y + h - depth],
+        [x + w + depth + 6, y + h - depth + 3],
+        [x + 5, y + h + 4]
+      ],
+      'rock'
+    );
+    d.mass(true);
+    box(x, y, w, h, depth, reverse);
+    d.mass(false);
+  }
+  // Back to front: contiguous inhabited shelves, separated from the mountain.
+  for (let row = terraceLevels - 1; row >= 0; row--) {
+    const y = 70 - row * 9,
+      outer = 17 - row * 2;
+    poly(
+      [
+        [outer, y + 13],
+        [68, y + 5],
+        [68, y + 8],
+        [outer, y + 17]
+      ],
+      'rock'
+    );
+    poly(
+      [
+        [97, y + 5],
+        [149 - Math.floor(outer / 3), y + 12],
+        [149 - Math.floor(outer / 3), y + 16],
+        [97, y + 8]
+      ],
+      'rock'
+    );
+    if (tier === 0) {
+      home(22, 66, 19, 14, 4);
+      home(122, 63, 19, 17, 4, true);
+    } else
+      for (const [x, w, dy, rev] of [
+        [10 + row * 3, 16, 3, false],
+        [36 + row * 2, 17, -1, false],
+        [108 - row, 16, 0, true],
+        [132 - row * 2, 15, 4, true]
+      ])
+        home(x, y + dy, w, row < 3 ? 10 : 8, 3, rev);
+  }
+  if (tier > 0) {
+    home(0, 79, 30, 23, 5);
+    home(132, 76, 26, 24, 5, true);
+  }
+
+  // Sanctuary only if built: a flat roof and red columns, never a generic
+  // population-generated palace or a classical pediment.
+  if (byType.has('temple')) {
+    const level = byType.get('temple'),
+      x = 72,
+      y = 43,
+      w = 22,
+      h = 12;
+    box(x, y, w, h, 5, false, true);
+    rect(x - 2, y + h + 1, x + w + 3, y + h + 2, 'stone');
+    rect(x + 2, y + 3, x + w - 2, y + 4, 'red');
+    for (const xx of [x + 4, x + w - 5]) {
+      rect(xx, y + 4, xx + 2, y + h, 'red');
+      rect(xx + 1, y + 6, xx + 2, y + h, 'wood');
+    }
+    rect(x + 8, y + 5, x + w - 8, y + h, 'ink');
+    for (let i = 0; i < Math.min(3, level); i++)
+      rect(x + 2 + i * 4, y - 3, x + 4 + i * 4, y - 1, 'light');
+    anchors.temple = [x, y, w, h];
+  }
+  // A single fortification across the ascent, with stepped level silhouettes.
+  if (walls) {
+    const foot = 65,
+      top = foot - [0, 5, 9, 14][walls];
+    rect(40, top, 125, foot, 'rock');
+    line(
+      [
+        [40, top],
+        [125, top]
+      ],
+      'stone'
+    );
+    for (let y = top + 3; y < foot; y += 3) {
+      line(
+        [
+          [40, y],
+          [125, y]
+        ],
+        'shade'
+      );
+      for (let x = 40 + (y % 2) * 4; x < 125; x += 9)
+        line(
+          [
+            [x, y],
+            [x, y + 2]
+          ],
+          'stone'
+        );
+    }
+    const gw = [0, 3, 4, 5][walls];
+    rect(80 - gw, 60, 80 + gw, 65, 'ink');
+    line(
+      [
+        [78 - gw, 65],
+        [78 - gw, 58],
+        [82 + gw, 58],
+        [82 + gw, 65]
+      ],
+      'stone'
+    );
+    if (walls >= 2) for (let x = 40; x < 125; x += 5) rect(x, top - 2, x + 2, top, 'stone');
+    if (walls === 3)
+      for (const x of [60, 103]) {
+        rect(x, top - 5, x + 7, 65, 'rock');
+        rect(x, top - 5, x + 6, top - 3, 'stone');
+        rect(x + 2, top - 1, x + 3, top + 2, 'ink');
+      }
+  }
+  line(
+    [
+      [108, 46],
+      [108, 31]
+    ],
+    'ink'
+  );
+  poly(
+    [
+      [109, 31],
+      [118, 33],
+      [115, 36],
+      [109, 36]
+    ],
+    'red'
+  );
+  rect(111, 33, 112, 34, 'light');
+
+  if (byType.has('farm')) {
+    poly(
+      [
+        [1, 68],
+        [32, 64],
+        [38, 72],
+        [6, 76]
+      ],
+      'field'
+    );
+    for (let i = 0; i < Math.min(6, byType.get('farm') + 2); i++)
+      line(
+        [
+          [5, 68 + i * 2],
+          [32, 64 + i * 2]
+        ],
+        'edge'
+      );
+    box(3, 63, 8, 5, 2);
+    anchors.farm = [1, 63, 37, 13];
+    if (tier === 0) {
+      poly(
+        [
+          [37, 55],
+          [63, 51],
+          [69, 59],
+          [42, 63]
+        ],
+        'field'
+      );
+      for (let i = 0; i < 4; i++)
+        line(
+          [
+            [41, 55 + i * 2],
+            [63, 51 + i * 2]
+          ],
+          'edge'
+        );
+    }
+  }
+  if (byType.has('mine')) {
+    poly(
+      [
+        [139, 53],
+        [142, 42],
+        [152, 39],
+        [160, 53]
+      ],
+      'stone'
+    );
+    rect(147, 45, 152, 52, 'ink');
+    line(
+      [
+        [146, 52],
+        [146, 44],
+        [153, 44],
+        [153, 52]
+      ],
+      'wood'
+    );
+    line(
+      [
+        [149, 53],
+        [157, 58]
+      ],
+      'edge'
+    );
+    anchors.mine = [139, 39, 20, 19];
+  }
+  // Sea contact comes from a real harbour/shipyard (these cannot be built inland).
+  // A harbour does not fabricate a ship in the settlement's garrison.
+  if (byType.has('harbour') || byType.has('shipyard')) {
+    poly(
+      [
+        [0, 81],
+        [21, 74],
+        [37, 81],
+        [0, 96]
+      ],
+      'sea'
+    );
+    line(
+      [
+        [0, 91],
+        [14, 91]
+      ],
+      'foam'
+    );
+    if (byType.has('harbour')) {
+      poly(
+        [
+          [0, 82],
+          [30, 82],
+          [34, 86],
+          [0, 86]
+        ],
+        'stone'
+      );
+      rect(8, 85, 12, 95, 'wood');
+      line(
+        [
+          [8, 86],
+          [8, 95]
+        ],
+        'light'
+      );
+      anchors.harbour = [0, 82, 34, 13];
+    }
+    if (byType.has('shipyard')) {
+      line(
+        [
+          [0, 79],
+          [0, 86],
+          [8, 89],
+          [16, 89]
+        ],
+        'wood'
+      );
+      line(
+        [
+          [0, 78],
+          [14, 83]
+        ],
+        'wood'
+      );
+      for (let i = 0; i < 3; i++)
+        line(
+          [
+            [5 + i * 4, 83],
+            [8 + i * 4, 87]
+          ],
+          'ink'
+        );
+      anchors.shipyard = [0, 78, 17, 12];
+    }
+  }
+  // Other functional silhouettes use the existing building family, in stable
+  // side-street slots. The landscape/camera is unchanged by payload ordering.
+  let slot = 0;
+  for (const type of OTHER_FUNCTIONS)
+    if (byType.has(type)) {
+      const level = byType.get(type),
+        width = buildingWidth(type, level);
+      const x = slot % 2 ? Math.max(100, 158 - width) : 2,
+        y = 49 + Math.floor(slot / 2) * 10;
+      const g = newGrid(W, H);
+      stampBuilding(g, type, x, y, level);
+      for (let yy = 0; yy < H; yy++)
+        for (let xx = 0; xx < W; xx++)
+          if (g.px[yy * W + xx] !== '.') d.pixel(xx, yy, CITY_PALETTE[g.px[yy * W + xx]]);
+      anchors[type] = [x, y - 16, width, 17];
+      slot++;
+    }
+
+  const construction = [];
+  const sd = painter(status);
+  for (const item of [...buildQueue].sort((a, b) => String(a.type).localeCompare(String(b.type)))) {
+    if (!item.type) continue;
+    const index = construction.length;
+    const anchor =
+      (['wall', 'bronze_wall', 'tower'].includes(item.type)
+        ? [40, 51, 85, 14]
+        : anchors[item.type]) ||
+      (item.type === 'temple'
+        ? [72, 43, 22, 12]
+        : [index % 2 ? 114 : 12, 72 + Math.floor(index / 2) * 8, 24, 13]);
+    construction.push({ type: item.type, anchor });
+    const [x, y, w, h] = anchor;
+    // Scaffold at the actual queued function, including first construction.
+    for (const xx of [x - 3, x + Math.floor(w / 2), x + w + 3])
+      sd.line(
+        [
+          [xx, y - 6],
+          [xx, y + h + 3]
+        ],
+        'wood'
+      );
+    for (const yy of [y - 4, y + 3, y + h])
+      sd.line(
+        [
+          [x - 4, yy],
+          [x + w + 4, yy]
+        ],
+        'wood'
+      );
+    sd.line(
+      [
+        [x - 3, y + h],
+        [x + w + 3, y - 4]
+      ],
+      'wood'
+    );
+    sd.rect(x + w + 5, y + h + 1, x + w + 11, y + h + 3, 'stone');
+  }
+  if (besieged) {
+    // Known siege truth, no invented enemy camp coordinates or army counts.
+    if (walls > 0) {
+      sd.rect(77, 60, 83, 65, 'wood');
+      sd.line(
+        [
+          [77, 60],
+          [83, 65]
+        ],
+        'ink'
+      );
+    }
+    for (const [x, y] of [
+      [32, 58],
+      [39, 57]
+    ]) {
+      sd.line(
+        [
+          [x, y],
+          [x, y - 7]
+        ],
+        'ink'
+      );
+      sd.poly(
+        [
+          [x - 1, y - 6],
+          [x, y - 9],
+          [x + 1, y - 6]
+        ],
+        'stone'
+      );
+    }
+  }
+  function bowl(q, x, y) {
+    q.poly(
+      [
+        [x - 5, y - 2],
+        [x + 5, y - 2],
+        [x + 3, y + 2],
+        [x - 3, y + 2]
+      ],
+      'wood'
+    );
+    q.line(
+      [
+        [x - 3, y - 1],
+        [x + 3, y - 1]
+      ],
+      'ink'
+    );
+  }
+  if (starving) {
+    sd.rect(74, 79, 76, 81, 'wood');
+    sd.line(
+      [
+        [74, 82],
+        [72, 86],
+        [76, 87]
+      ],
+      'shade'
+    );
+    sd.line(
+      [
+        [76, 87],
+        [81, 88]
+      ],
+      'rock'
+    );
+    bowl(sd, 60, 89);
+    bowl(sd, 88, 90);
+    sd.rect(4, 78, 26, 93, 'light');
+    sd.line(
+      [
+        [5, 79],
+        [25, 79]
+      ],
+      'blood'
+    );
+    bowl(sd, 16, 87);
+    sd.line(
+      [
+        [16, 82],
+        [16, 80]
+      ],
+      'blood'
+    );
+  }
+  const ld = painter(life);
+  const folk = starving
+    ? []
+    : [
+        [67, 83, 2],
+        [105, 87, 2],
+        [83, 69, 1],
+        [51, 90, 1],
+        [119, 76, 1],
+        [76, 77, 1]
+      ].slice(0, [2, 4, 6][tier]);
+  for (const [x, y, s] of folk) {
+    ld.rect(x, y - 4 * s, x + s - 1, y - 3 * s, 'wood');
+    ld.rect(x - s, y - 2 * s, x + s, y, 'red');
+    ld.line(
+      [
+        [x - s, y + 1],
+        [x - s, y + 2 * s]
+      ],
+      'ink'
+    );
+    ld.line(
+      [
+        [x + s, y + 1],
+        [x + s, y + 2 * s]
+      ],
+      'ink'
+    );
+  }
+  // Residential hearths represent inhabited housing in population bands.
+  // temple_offers.fed describes the NEXT gift, and devotion is staffing;
+  // neither proves a sacrifice occurred, so no sacrificial smoke is invented.
+  const vents = starving
+    ? []
+    : [
+        [22, 63],
+        [132, 60],
+        [40, 47]
+      ].slice(0, [1, 2, 3][tier]);
+  return {
+    structure,
+    housing,
+    status,
+    life,
+    terraceLevels,
+    anchors,
+    starving,
+    besieged,
+    construction,
+    vents
+  };
+}
+
+function paint(ctx, pixels) {
+  for (let y = 0; y < H; y++)
+    for (let x = 0; x < W;) {
+      const c = pixels[y * W + x];
+      let end = x + 1;
+      while (end < W && pixels[y * W + end] === c) end++;
+      if (c) {
+        ctx.fillStyle = c;
+        ctx.fillRect(x * S, y * S, (end - x) * S, S);
+      }
+      x = end;
+    }
+}
+
+/** Same integer painter for animation and the reproducible BILD gallery. */
+export function drawCityFrame(ctx, scene, phase = 0) {
+  paint(ctx, scene.structure);
+  paint(ctx, scene.life);
+  paint(ctx, scene.status);
+  for (const [x, y] of scene.vents) {
+    const smoke = array(),
+      d = painter(smoke);
+    d.line(
+      [
+        [x, y],
+        [x - 1, y - 3],
+        [x + 1, y - 6 - phase]
+      ],
+      'smoke'
+    );
+    paint(ctx, smoke);
+  }
+}
+
+let animId = null;
+export function stopCityAnim() {
+  if (animId !== null) {
+    cancelAnimationFrame(animId);
+    animId = null;
+  }
+}
 export function startCityAnim(canvas, tile, buildings, buildQueue, sett) {
   stopCityAnim();
   if (!canvas) return;
@@ -63,295 +819,13 @@ export function startCityAnim(canvas, tile, buildings, buildQueue, sett) {
   canvas.height = SCENE_CANVAS.h;
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
-
-  const walker = { x: 20, dir: 1, t: 0, frame: 0 };
-  const smoke = [];
-  let last = 0;
-
-  function tick(ts) {
-    const dt = last ? Math.min((ts - last) / 1000, 0.1) : 0.016;
-    last = ts;
-    walker.t += dt;
-    if (walker.t > 0.28) { walker.frame ^= 1; walker.t = 0; }
-    walker.x += walker.dir * 9 * dt;
-    if (walker.x > SCENE_W - 12 || walker.x < 8) walker.dir = -walker.dir;
-    for (let i = smoke.length - 1; i >= 0; i--) {
-      smoke[i].y -= dt * 3.5; smoke[i].age += dt;
-      if (smoke[i].age > 2.2) smoke.splice(i, 1);
-    }
-    drawScene(ctx, tile, buildings, buildQueue, sett, walker, smoke, dt);
-    _animId = requestAnimationFrame(tick);
+  const scene = buildCityScene(tile, buildings, buildQueue, sett);
+  let epoch = null;
+  drawCityFrame(ctx, scene);
+  function frame(ts) {
+    if (epoch === null) epoch = ts;
+    drawCityFrame(ctx, scene, Math.floor((ts - epoch) / 400) % 6);
+    animId = requestAnimationFrame(frame);
   }
-  _animId = requestAnimationFrame(tick);
-}
-
-// Bakgrundsmarken tas ur hexens terräng, dämpad. Staden ska sitta i sitt
-// landskap: en hamnstad och en bergsstad får inte ha samma fond.
-const GROUND_BY_TERRAIN = {
-  plains: '#7A8642', river_valley: '#657E3E', river_delta: '#87934F',
-  hills: '#A08A52', mountain_limestone: '#B8AC90', mountain_red: '#A87A5A',
-  forest_olive_grove: '#8A8E55', forest_cedar: '#4A5738',
-  scrub_maquis: '#8F975D', semi_desert: '#B89E66',
-  // Vatten kan aldrig bära en stad, men nyckeln måste finnas: `river` är sedan
-  // 2026-07-29 en terräng en provins kan ligga INTILL, och en saknad nyckel
-  // hade gett stadsvyn en tyst `undefined` som fond.
-  coastal_sea: '#7A8642', deep_sea: '#7A8642', river: '#7A8642',
-};
-
-const smokeClock = { t: 0 };
-
-function drawScene(ctx, tile, buildings, buildQueue, sett, walker, smoke, dt) {
-  const terrain = tile?.terrain || 'plains';
-  ctx.fillStyle = '#C6BC9E';                       // dis: himlen bakom citadellet
-  ctx.fillRect(0, 0, SCENE_CANVAS.w, SCENE_CANVAS.h);
-
-  const g = newGrid(SCENE_W, SCENE_H);
-  const pop = sett?.population || 0;
-  const walls = Math.max(0, Math.min(3, sett?.walls || 0));
-
-  citadel(g, pop, walls);
-  const smokeVents = street(g, buildings, buildQueue);
-  outline(g);
-  const sprite = toRuns(g);
-
-  // One continuous courtyard joins the gate and the workshops. Terrain stays
-  // at its edges; bare earth is ground, so it never receives a sprite outline.
-  const base = GROUND_BY_TERRAIN[terrain] || GROUND_BY_TERRAIN.plains;
-  ctx.fillStyle = base;
-  ctx.fillRect(0, (CITADEL + 1) * S, SCENE_CANVAS.w, SCENE_CANVAS.h);
-  for (let y = RAMPART + 4; y < SCENE_H; y += 2) {
-    const inset = Math.max(0, 18 - Math.floor((y - RAMPART) / 2));
-    const edge = inset + (Math.floor(y / 4) % 2);
-    ctx.fillStyle = CITY_PALETTE.e;
-    ctx.fillRect(edge * S, y * S, (SCENE_W - edge * 2) * S, 2 * S);
-    // The gate lies left of the hall. Its approach widens into the open
-    // courtyard rather than becoming another full-width horizontal band.
-    const approach = Math.floor((y - RAMPART) / 3);
-    ctx.fillStyle = CITY_PALETTE.E;
-    ctx.fillRect((51 + approach) * S, y * S, (11 + approach * 2) * S, 2 * S);
-  }
-
-  for (const r of sprite.runs) {
-    ctx.fillStyle = CITY_PALETTE[r.ch];
-    ctx.fillRect(r.x * S, r.y * S, r.n * S, S);
-  }
-
-  drawWalker(ctx, Math.round(walker.x), ROW_FRONT, walker.frame);
-
-  // Röken hör till härden i megaron och till gjuteriets ugn — alltså till
-  // eldar servern faktiskt har. Ingen dekorativ skorsten någonstans.
-  //
-  // Utsläppet är en TIDSACKUMULATOR, inte Math.random(). Slumpen gjorde två
-  // körningar av samma scen olika (64 px i riggen) och därmed varje pixeldiff
-  // oanvändbar — och den bröt mot princip 14: all variation i den här grafiken
-  // är deterministisk. En puff per eld var 0,9 s ser precis lika levande ut.
-  smokeClock.t += dt;
-  if (smokeClock.t >= 0.9) {
-    smokeClock.t = 0;
-    if (smoke.length < 10) smokeVents.forEach(v => smoke.push({ x: v[0], y: v[1], age: 0 }));
-  }
-  for (const p of smoke) {
-    const a = Math.max(0, (1 - p.age / 2.2) * 0.42).toFixed(2);
-    const r = 1 + Math.floor(p.age * 1.4);
-    ctx.fillStyle = `rgba(180,168,150,${a})`;
-    ctx.fillRect(Math.round(p.x - r) * S, Math.round(p.y - r) * S, r * 2 * S, r * 2 * S);
-  }
-}
-
-// ── Citadellet i fonden ──────────────────────────────────────────────────
-// Megaron, den lägre staden och den kyklopiska muren, skalade av samma
-// befolkning och murnivå. Stadsvyn har fyra lokala bildnivåer; kartan
-// visar serverns två grövre storleksled utan exakt befolkning.
-function citadel(g, pop, walls) {
-  const tier = pop >= 15000 ? 3 : pop >= 5000 ? 2 : pop >= 1000 ? 1 : 0;
-
-  // Den lägre staden: takmassa som växer med befolkningen. Den bär ingen
-  // detalj — den är kropp bakom huvudmotivet, och det är hela dess uppgift.
-  const houses = [5, 5, 7, 9][tier];
-  for (let i = 0; i < houses; i++) {
-    const side = i % 2 ? 1 : -1, step = (i >> 1) + 1;
-    const hw = 14 - step, hh = 13 - step * 2;
-    const hx = SCENE_W / 2 + side * (tier ? 16 + step * 12 : step * 13) - (hw >> 1);
-    if (hh < 5) continue;
-    cube(g, Math.round(hx), CITADEL - hh, hw, hh, { door: step < 3 });
-  }
-
-  // **Megaron föds ur STORLEK i stadsvyn.** Kartan visar ingen palatssal. En bosättning på 101
-  // invånare har ingen sal, och att rita en åt den vore att ljuga om
-  // palatskulten — den är något en plats VÄXER in i.
-  if (tier >= 1) megaronHall(g, tier);
-
-  // Muren står vid TERRASSENS KANT, mellan citadellet och gatan. Utkastet la
-  // den högst upp i himlen där den hängde som ett staket utan mark under sig.
-  // Här gör den i stället scenens arbete: den skiljer de två planen åt, och
-  // det är precis vad en citadellmur gör sett från den lägre staden.
-  if (walls > 0) rampart(g, walls);
-}
-
-// Terrassen och muren kring citadellet.
-function rampart(g, level) {
-  const h = 4 + level * 2;
-  rect(g, 0, RAMPART, SCENE_W, h, 'q');
-  row(g, 0, RAMPART, SCENE_W, 'T');
-  row(g, 0, RAMPART + h - 1, SCENE_W, 't');
-  // Kyklopiska fogar: KORTA, förskjutna segment. Utkastet drog dem genom hela
-  // murlivet och muren blev en plankstaket-palissad — regelbundna lodräta
-  // linjer från krön till fot är exakt vad kyklopiskt murverk inte har.
-  // Blocken är olika stora och fogarna hamnar aldrig ovanför varandra.
-  for (let bandY = RAMPART + 1; bandY < RAMPART + h - 1; bandY += 3) {
-    const band = bandY - RAMPART;
-    for (let x = (band * 5) % 7; x < SCENE_W; x += 5 + ((x * 3 + band) % 4))
-      col(g, x, bandY, Math.min(3, RAMPART + h - 1 - bandY), 't');
-    row(g, 0, bandY, SCENE_W, 't');                   // horisontell skiftfog
-    row(g, 0, bandY + 1, SCENE_W, 'q');
-  }
-  if (level >= 2)
-    for (let x = 2; x < SCENE_W - 2; x += 7) {        // tinnar
-      col(g, x, RAMPART - 2, 2, 'T');
-      col(g, x + 1, RAMPART - 2, 2, 'q');
-    }
-  // Lejonporten mitt i muren, med avlastningstriangeln över lintelen.
-  // Porten ligger UR centrum. Rakt under megarons egen port bildade de två
-  // mörka öppningarna en enda lodrät svart ränna genom hela scenen — två sanna
-  // detaljer som tillsammans blev en artefakt.
-  const gw = 10, gx = ((SCENE_W - gw) >> 1) - 26;
-  rect(g, gx, RAMPART + h - 9, gw, 9, 'V');
-  if (level >= 2)
-    for (let k = 0; k < 3; k++)
-      row(g, gx + 1 + k, RAMPART + h - 12 + k, gw - 2 - k * 2, 'V');
-  row(g, gx - 1, RAMPART + h - 10, gw + 2, 'T');
-  if (level >= 3)
-    for (const tx of [4, SCENE_W - 18]) {             // flanktorn
-      rect(g, tx, RAMPART - 6, 14, h + 6, 'q');
-      row(g, tx, RAMPART - 6, 14, 'T');
-      for (let x = 0; x < 14; x += 3) col(g, tx + x, RAMPART - 8, 2, 'T');
-    }
-}
-
-// Megaron. Samma tre tecken som på kartan — pelare i antis, mörk lintel,
-// rökglugg över härden — men här stora nog att faktiskt se ut som en sal.
-function megaronHall(g, tier) {
-  const mw = [0, 24, 30, 36][tier], mh = [0, 20, 24, 28][tier];
-  const mx = (SCENE_W - mw) >> 1, my = CITADEL - mh;
-  cube(g, mx, my, mw, mh, { roof: 4 });
-  row(g, mx - 3, CITADEL, mw + 6, 'T');               // terrassen salen står på
-  row(g, mx - 2, CITADEL + 1, mw + 4, 't');
-  const lw = mw >> 1, lx = mx + ((mw - lw) >> 1);
-  rect(g, lx, my - 4, lw, 3, 'R');                    // lanterninen
-  row(g, lx + lw - 2, my - 4, 2, 'r');
-  row(g, lx + 1, my - 2, lw - 2, 'V');                // rökgluggen
-  row(g, mx + 1, my + 4, mw - 2, 'O');                // målat ockraband
-  row(g, mx + 1, my + 5, mw - 2, 'o');
-  const py = my + 9;
-  rect(g, mx + 4, py, mw - 8, CITADEL - py, 'p');     // förhallen
-  row(g, mx + 3, py - 1, mw - 6, 'V');                // lintelen
-  const cols = tier >= 3 ? 4 : tier >= 2 ? 3 : 2;
-  const span = mw - 12;
-  for (let i = 0; i < cols; i++) {
-    const cxp = mx + 5 + Math.round(i * span / (cols - 1));
-    row(g, cxp, py, 3, 'O');                          // kapitälet, en px bredare
-    for (let yy = py + 1; yy < CITADEL; yy++) {
-      set(g, cxp, yy, 'O'); set(g, cxp + 1, yy, 'O'); set(g, cxp + 2, yy, 'o');
-    }
-  }
-  rect(g, mx + (mw >> 1) - 1, CITADEL - 6, 3, 6, 'V');  // porten
-}
-
-// ── Gatan ────────────────────────────────────────────────────────────────
-// Varje byggnad staden har, i fast ordning, med gluggar emellan. Kön ritas
-// sist så det som byggs står längst fram i blicken.
-function street(g, buildings, buildQueue) {
-  const vents = [];
-  const byType = new Map();
-  for (const b of buildings || []) {
-    // Murar är ingen byggnad i gatan — de är citadellets mur och ritas där.
-    if (b.type === 'wall' || b.type === 'bronze_wall' || b.type === 'tower') continue;
-    byType.set(b.type, Math.max(byType.get(b.type) || 0, b.level || 1));
-  }
-  const built = STREET_ORDER.filter(t => byType.has(t));
-
-  const queued = (buildQueue || []).map(item => ({
-    type: item.type, phase: buildPhase(item),
-    level: (byType.get(item.type) || 0) + 1,
-  })).filter(q => q.type);
-
-  const items = [
-    ...built.map(t => ({ type: t, level: byType.get(t), phase: 1 })),
-    ...queued,
-  ];
-  if (items.length === 0) return vents;
-
-  // **Två gatuled.** Från tre verksamheter får gården byggnader i båda planen.
-  // Ett enda led med tretton byggnader gav elva logiska pixlar
-  // per byggnad — då är en hamn och ett gjuteri samma suddiga klump, och
-  // "enskilda byggnader ska synas" är inte uppfyllt. Bygget som PÅGÅR hamnar
-  // alltid i det främre ledet: det är det spelaren tittar efter.
-  const twoRows = items.length >= 3;
-  const back = [], front = [];
-  items.forEach((it, i) => {
-    if (it.phase < 1) front.push(it);
-    else if (!twoRows) front.push(it);
-    else (i % 2 ? front : back).push(it);
-  });
-
-  // Bortre ledet ritas FÖRST så det främre skymmer det — samma djupsortering
-  // som kartans provinser, av samma skäl.
-  layoutRow(g, back, ROW_BACK, vents);
-  layoutRow(g, front, ROW_FRONT, vents);
-  vents.push([SCENE_W / 2 + 2, CITADEL - 30]);        // härden i megaron
-  return vents;
-}
-
-/** Radar upp ett gatuled centrerat, med gluggarna klämda när staden växer.
- *  Layouten MÄTS före den ritas: en stad med tolv byggnader ska få trängre
- *  gluggar, inte byggnader som ramlar ut ur bilden. */
-function layoutRow(g, items, base, vents) {
-  if (!items.length) return;
-  const widths = items.map(it => buildingWidth(it.type, it.level));
-  const total = widths.reduce((a, b) => a + b, 0);
-  const gap = items.length < 2 ? 0
-    : Math.max(1, Math.min(6, Math.floor((SCENE_W - 6 - total) / (items.length - 1))));
-  const split = Math.ceil(items.length / 2);
-  const leftW = widths.slice(0, split).reduce((a, b) => a + b, 0) + gap * (split - 1);
-  const rightW = widths.slice(split).reduce((a, b) => a + b, 0)
-    + gap * Math.max(0, items.length - split - 1);
-  // Keep a visible central courtyard where both wings fit. Crowded cities
-  // retain the compact layout instead of clipping buildings for a fixed gap.
-  const courtyard = items.length > 1 && Math.max(leftW, rightW) <= 69;
-  let x = courtyard ? SCENE_W / 2 - 8 - leftW
-    : Math.max(2, Math.round((SCENE_W - (total + gap * (items.length - 1))) / 2));
-  items.forEach((it, i) => {
-    if (courtyard && i === split) x = SCENE_W / 2 + 8;
-    const foot = base - (i % 2 ? 2 : 0);
-    if (it.phase >= 1) stampBuilding(g, it.type, x, foot, it.level);
-    else stampUnderConstruction(g, it.type, x, foot, it.level, it.phase);
-    if (it.type === 'foundry' && it.phase >= 1) vents.push([x + 10, foot - 13]);
-    x += widths[i] + gap;
-  });
-}
-
-/** Byggets förlopp 0–1 ur `created_at`/`complete_at`. */
-function buildPhase(item) {
-  const now = serverNow();
-  const end = new Date(item.complete_at).getTime();
-  if (!(end > 0)) return 1;
-  if (end <= now) return 1;
-  const start = item.created_at ? new Date(item.created_at).getTime() : now - 60000;
-  if (!(start < end)) return 0.5;
-  return Math.min(1, Math.max(0, (now - start) / (end - start)));
-}
-
-// ── Gångaren ─────────────────────────────────────────────────────────────
-// En enda figur på gatan, i aktörernas skala och hudton. Fler skulle göra
-// scenen till en myrstack; en gör den bebodd.
-function drawWalker(ctx, x, base, frame) {
-  const px = (cx, cy, colour, w = 1, h = 1) => {
-    ctx.fillStyle = colour;
-    ctx.fillRect(cx * S, cy * S, w * S, h * S);
-  };
-  px(x, base - 7, CITY_PALETTE.K, 3, 1);
-  px(x, base - 6, '#A87548', 3, 2);                   // aktörernas hudton
-  px(x, base - 4, CITY_PALETTE.P, 3, 3);
-  px(x + (frame ? 0 : 2), base - 1, CITY_PALETTE.K, 1, 1);
-  px(x + (frame ? 2 : 0), base - 1, CITY_PALETTE.G, 1, 1);
+  animId = requestAnimationFrame(frame);
 }

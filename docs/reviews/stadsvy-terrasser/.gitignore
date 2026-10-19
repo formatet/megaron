@@ -1,0 +1,7 @@
+scenes-raster.json
+__pycache__/
+native-*/temenos
+native-*/keryx
+native-*/private-player.json
+native-*/chronicles/
+native-*/reports/
