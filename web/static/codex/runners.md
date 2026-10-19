@@ -2,6 +2,8 @@
 
 When you tell a unit in the field to turn around, change course or change stance, you do not reach the unit — you send a **Runner**, a real person who must walk to it. The game answers with something like *"Recall order sent by Runner — reaches the unit today 22:40."* Until then the unit keeps doing what it was last told.
 
+While the Runner is still on the road, the order shows under the unit in **War → Army** (and in `keryx army`) as *Order on its way*, with the day he is expected — it disappears once he has delivered it.
+
 The one exception is your [[horde|Nomadic Host]]: you travel with it in person, so it obeys at once.
 
 ## Why this is good for you

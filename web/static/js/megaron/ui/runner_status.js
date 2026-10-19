@@ -62,3 +62,17 @@ export function orderRunnerHTML(runner, nowMs) {
   if (nowMs >= new Date(runner.arrives_at).getTime()) return line('Messenger carrying the order…');
   return line('Messenger en route — order arrives ' + arrivalHTML(runner.arrives_at) + aboardBit(runner));
 }
+
+// ordersEnRouteHTML: lines for the server's per-unit orders_en_route (orders
+// sent, Runner not yet arrived). Same wording as keryx. Covers the case where
+// the /messengers markers behind orderRunnerHTML are not loaded.
+const ORDER_TEXT = { march: 'march', redirect: 'redirect', build_road: 'build road' };
+const ORDER_FIXED = { recall: 'recall home', stance: 'stance change', stance_pursuit: 'stance change', occupy_action: 'occupation order', standing_orders: 'retreat orders' };
+export function ordersEnRouteHTML(orders) {
+  return (orders || []).map(o => {
+    const hasTarget = o.target_q != null && o.target_r != null;
+    const what = ORDER_FIXED[o.verb] || ((ORDER_TEXT[o.verb] || o.verb) + (hasTarget ? ' to (' + o.target_q + ',' + o.target_r + ')' : ''));
+    const eta = arrivalHTML(o.arrives_at, undefined, 'any moment');
+    return '<div class="order-en-route">Order on its way: ' + esc(what) + (eta ? ' — the runner reaches it ' + eta : '') + '</div>';
+  }).join('');
+}
