@@ -159,12 +159,19 @@ func autoDetectProvince(c *Client, worldID string) string {
 	if err := json.Unmarshal(data, &markers); err != nil {
 		return ""
 	}
+	// The capital is every command's documented default; any own city only if none is marked.
+	first := ""
 	for _, m := range markers {
 		if own, _ := m["own"].(bool); own {
 			if id, ok := m["id"].(string); ok {
-				return id
+				if capital, _ := m["is_capital"].(bool); capital {
+					return id
+				}
+				if first == "" {
+					first = id
+				}
 			}
 		}
 	}
-	return ""
+	return first
 }

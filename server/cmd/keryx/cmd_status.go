@@ -593,7 +593,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			coastal, _ := p["coastal"].(bool)
 			coastalNote := ""
 			if coastal {
-				coastalNote = "  [coastal — can build harbour → ships]"
+				coastalNote = "  [coastal — ships need a harbour and a shipyard]"
 			}
 			settlementsNote := ""
 			settlementsUsed := 0.0
@@ -903,7 +903,6 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			kv, _ := sett["kharis"].(float64)
 			mood, _ := sett["kharis_mood"].(string)
 			kcap, _ := sett["kharis_cap"].(float64)
-			mtl, _ := sett["max_temple_level"].(float64)
 			knet, _ := sett["kharis_net_per_tick"].(float64)
 			netKnown, _ := sett["kharis_net_known"].(bool)
 			// The DAILY MAINTENANCE net (temple gain − decay) is what actually moves
@@ -921,16 +920,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			if line := kharisDecayLine(sett); line != "" {
 				fmt.Println("  " + line)
 			}
-			// Legibilitet (2026-07-24): ett L1-tempel HÅLLER standing men klättrar inte
-			// förbi sitt tak — utan denna rad läser en spelare "kharis fastnat på 22" som
-			// en bugg (sondrunda 2026-07-24). Taket = 25×(1+nivå): L1=50, L2=75, L3=100.
-			if mtl >= 1 && kcap < 100 {
-				line := fmt.Sprintf("  → the cap %.0f is set by your level-%.0f temple; your kharis holds but doesn't climb — raise cult labor (`keryx allocate --cult`) or build a higher temple.\n", kcap, mtl)
-				if netKnown && knet > 0.05 {
-					line = fmt.Sprintf("  → your kharis is climbing toward the cap %.0f (set by your level-%.0f temple) — build a higher temple to raise the cap further.\n", kcap, mtl)
-				} else if netKnown && knet < -0.05 {
-					line = fmt.Sprintf("  → the cap %.0f is set by your level-%.0f temple, but your kharis is falling toward the floor — raise cult labor (if the temple has room) or build a higher temple.\n", kcap, mtl)
-				}
+			if line := kharisCapLine(sett); line != "" {
 				fmt.Print(line)
 			}
 
@@ -1271,4 +1261,28 @@ func kharisDecayLine(sett map[string]any) string {
 		cityWord = "city"
 	}
 	return fmt.Sprintf("Kharis decay: %.1f base + %.0f %s cost %.1f per day = %.1f total", base, count, cityWord, cities, total)
+}
+
+// kharisCapLine explains the temple cap. Legibilitet (2026-07-24): ett L1-tempel
+// HÅLLER standing men klättrar inte förbi sitt tak — utan denna rad läser en spelare
+// "kharis fastnat på 22" som en bugg (sondrunda 2026-07-24). Haiku-8: at the cap the
+// net still reads positive, so "climbing" must not be said once the cap is reached.
+func kharisCapLine(sett map[string]any) string {
+	kv, _ := sett["kharis"].(float64)
+	kcap, _ := sett["kharis_cap"].(float64)
+	mtl, _ := sett["max_temple_level"].(float64)
+	knet, _ := sett["kharis_net_per_tick"].(float64)
+	netKnown, _ := sett["kharis_net_known"].(bool)
+	if mtl < 1 || kcap >= 100 {
+		return ""
+	}
+	switch {
+	case netKnown && knet > 0.05 && kv >= kcap-0.05:
+		return fmt.Sprintf("  → your kharis is at the cap %.0f (set by your level-%.0f temple) — build a higher temple to raise the cap further.\n", kcap, mtl)
+	case netKnown && knet > 0.05:
+		return fmt.Sprintf("  → your kharis is climbing toward the cap %.0f (set by your level-%.0f temple) — build a higher temple to raise the cap further.\n", kcap, mtl)
+	case netKnown && knet < -0.05:
+		return fmt.Sprintf("  → the cap %.0f is set by your level-%.0f temple, but your kharis is falling toward the floor — raise cult labor (if the temple has room) or build a higher temple.\n", kcap, mtl)
+	}
+	return fmt.Sprintf("  → the cap %.0f is set by your level-%.0f temple; your kharis holds but doesn't climb — raise cult labor (`keryx allocate --cult`) or build a higher temple.\n", kcap, mtl)
 }
