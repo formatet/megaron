@@ -257,6 +257,12 @@ func TestCivilianHungerAlternatingMealsStayOnePeriod(t *testing.T) {
 	// tick 74 is exactly the fifth consecutive fed meal after hungry tick 69.
 	for tick := 70; tick <= 74; tick++ {
 		exec(`UPDATE worlds SET current_tick=$2 WHERE id=$1`, wid, tick)
+		if tick > 70 {
+			exec(`UPDATE settlement_goods SET amount=10,rate=0,calc_tick=$2 WHERE settlement_id=$1 AND good_key='grain'`, sid, tick)
+			if err := newTestFoodTickHandler(pool).Handle(ctx, events.ScheduledEvent{ID: int64(263000 + tick), WorldID: wid, DueTick: tick}); err != nil {
+				t.Fatal(err)
+			}
+		}
 		for attempt := 0; attempt < 3; attempt++ {
 			if err := newTestTickHandler(pool).applyStarvation(ctx, wid); err != nil {
 				t.Fatal(err)
