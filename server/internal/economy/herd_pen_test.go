@@ -14,12 +14,12 @@ import (
 func TestHerdOverCapIsEatenInThePool(t *testing.T) {
 	// 60 animals, cap 50, 20 grain, people need 30: the pool is 20 grain + 10
 	// surplus animals, all eaten.
-	meal := PlanFoodHerd(30, map[string]float64{GoodGrain: 20, GoodLivestock: 60}, true, HerdCap(0))
+	meal := PlanFoodHerd(50, map[string]float64{GoodGrain: 20, GoodLivestock: 60}, true, HerdCap(0))
 	if math.Abs(meal.Used[GoodLivestock]-10) > 1e-9 || math.Abs(meal.Used[GoodGrain]-20) > 1e-9 || meal.Unmet != 0 || meal.Lost != 0 {
 		t.Fatalf("%+v", meal)
 	}
 	// Ordinary food, not emergency slaughter: eaten without the emergency flag too.
-	if plain := PlanFoodHerd(30, map[string]float64{GoodGrain: 20, GoodLivestock: 60}, false, HerdCap(0)); math.Abs(plain.Used[GoodLivestock]-10) > 1e-9 {
+	if plain := PlanFoodHerd(50, map[string]float64{GoodGrain: 20, GoodLivestock: 60}, false, HerdCap(0)); math.Abs(plain.Used[GoodLivestock]-10) > 1e-9 {
 		t.Fatalf("%+v", plain)
 	}
 }
@@ -32,8 +32,8 @@ func TestHerdUnderCapIsNotEatenWhenFed(t *testing.T) {
 }
 
 func TestHerdUnderCapIsEmergencySlaughterWhenStarving(t *testing.T) {
-	meal := PlanFoodHerd(5, map[string]float64{GoodLivestock: 40}, true, HerdCap(0))
-	if meal.Used[GoodLivestock] != 5 || meal.Unmet != 0 {
+	meal := PlanFoodHerd(6, map[string]float64{GoodLivestock: 40}, true, HerdCap(0))
+	if meal.Used[GoodLivestock] != 2 || meal.Unmet != 0 {
 		t.Fatalf("%+v", meal)
 	}
 }
