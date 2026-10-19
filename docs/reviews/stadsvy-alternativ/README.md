@@ -69,3 +69,5 @@ Granskningsrättelse efter första handoff: kontaktarkets standardfont ersatt me
 ## Utveckling efter Timothys bildval
 
 [21b: stadsmiljö med horisont](21b/index.html) utvecklar04(gata, huvudspår) och10(takgård) med statustillstånd, datamatris, varma berg och390px-passform. De ursprungliga tolv förslagen bevaras. Kontrakt, begränsningar och bevis i [21b/README.md](21b/README.md).
+
+[21c: tydligare gatustorlek](21c/index.html) prövar tre större storleksbärare vid1000/4500/10000invånare och mur1, med horisonten kvar. 21b:s tillstånd och murnivåer bevaras.

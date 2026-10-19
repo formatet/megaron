@@ -1,0 +1,23 @@
+{
+  "source_sha256": "c551aecf0e0735c7e384f2a54141d20c5eadd38217e8918990807c09f8ea1dfa",
+  "results": [
+    {
+      "mutation": "fixed-population",
+      "result": "RED",
+      "reason": "gatuklyfta residential mass no longer grows",
+      "restore": "byte-exact source; fresh generated checks GREEN"
+    },
+    {
+      "mutation": "soft-zoom",
+      "result": "RED",
+      "reason": "nearest-neighbour raster mismatch",
+      "restore": "byte-exact source; fresh generated checks GREEN"
+    },
+    {
+      "mutation": "closed-mountain-sample",
+      "result": "RED",
+      "reason": "mountain sample closed by population",
+      "restore": "byte-exact source; fresh generated checks GREEN"
+    }
+  ]
+}

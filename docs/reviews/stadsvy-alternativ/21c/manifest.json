@@ -1,0 +1,349 @@
+{
+  "size": [
+    160,
+    96
+  ],
+  "population_bands": [
+    1000,
+    4500,
+    10000
+  ],
+  "reference": {
+    "name": "Phaistos",
+    "population": 4500,
+    "walls": 1,
+    "buildings": {
+      "temple": 1,
+      "farm": 2,
+      "harbour": 1,
+      "shipyard": 1,
+      "mine": 1
+    }
+  },
+  "scenes": [
+    {
+      "stem": "gatuklyfta-p1000",
+      "method": "gatuklyfta",
+      "population": 1000,
+      "walls": 1,
+      "features": {
+        "housing_masses": 4,
+        "terrace_levels": 1,
+        "people": 2,
+        "hearths": 1,
+        "meal_point": [
+          58,
+          89
+        ],
+        "hunger_point": [
+          74,
+          87
+        ],
+        "empty_bowls": [
+          [
+            60,
+            89
+          ],
+          [
+            88,
+            90
+          ]
+        ],
+        "shutters": []
+      },
+      "housing_pixels": 1170,
+      "horizon_sample": [
+        80,
+        4
+      ]
+    },
+    {
+      "stem": "gatuklyfta-p4500",
+      "method": "gatuklyfta",
+      "population": 4500,
+      "walls": 1,
+      "features": {
+        "housing_masses": 6,
+        "terrace_levels": 2,
+        "people": 4,
+        "hearths": 3,
+        "meal_point": [
+          58,
+          89
+        ],
+        "hunger_point": [
+          74,
+          87
+        ],
+        "empty_bowls": [
+          [
+            60,
+            89
+          ],
+          [
+            88,
+            90
+          ]
+        ],
+        "shutters": []
+      },
+      "housing_pixels": 4722,
+      "horizon_sample": [
+        80,
+        4
+      ]
+    },
+    {
+      "stem": "gatuklyfta-p10000",
+      "method": "gatuklyfta",
+      "population": 10000,
+      "walls": 1,
+      "features": {
+        "housing_masses": 18,
+        "terrace_levels": 4,
+        "people": 6,
+        "hearths": 6,
+        "meal_point": [
+          58,
+          89
+        ],
+        "hunger_point": [
+          74,
+          87
+        ],
+        "empty_bowls": [
+          [
+            60,
+            89
+          ],
+          [
+            88,
+            90
+          ]
+        ],
+        "shutters": []
+      },
+      "housing_pixels": 7579,
+      "horizon_sample": [
+        80,
+        4
+      ]
+    },
+    {
+      "stem": "terrasser-p1000",
+      "method": "terrasser",
+      "population": 1000,
+      "walls": 1,
+      "features": {
+        "housing_masses": 2,
+        "terrace_levels": 1,
+        "people": 2,
+        "hearths": 1,
+        "meal_point": [
+          58,
+          89
+        ],
+        "hunger_point": [
+          74,
+          87
+        ],
+        "empty_bowls": [
+          [
+            60,
+            89
+          ],
+          [
+            88,
+            90
+          ]
+        ],
+        "shutters": []
+      },
+      "housing_pixels": 832,
+      "horizon_sample": [
+        80,
+        4
+      ]
+    },
+    {
+      "stem": "terrasser-p4500",
+      "method": "terrasser",
+      "population": 4500,
+      "walls": 1,
+      "features": {
+        "housing_masses": 14,
+        "terrace_levels": 3,
+        "people": 4,
+        "hearths": 3,
+        "meal_point": [
+          58,
+          89
+        ],
+        "hunger_point": [
+          74,
+          87
+        ],
+        "empty_bowls": [
+          [
+            60,
+            89
+          ],
+          [
+            88,
+            90
+          ]
+        ],
+        "shutters": []
+      },
+      "housing_pixels": 2867,
+      "horizon_sample": [
+        80,
+        4
+      ]
+    },
+    {
+      "stem": "terrasser-p10000",
+      "method": "terrasser",
+      "population": 10000,
+      "walls": 1,
+      "features": {
+        "housing_masses": 22,
+        "terrace_levels": 5,
+        "people": 6,
+        "hearths": 6,
+        "meal_point": [
+          58,
+          89
+        ],
+        "hunger_point": [
+          74,
+          87
+        ],
+        "empty_bowls": [
+          [
+            60,
+            89
+          ],
+          [
+            88,
+            90
+          ]
+        ],
+        "shutters": []
+      },
+      "housing_pixels": 4232,
+      "horizon_sample": [
+        80,
+        4
+      ]
+    },
+    {
+      "stem": "bortom-templet-p1000",
+      "method": "bortom-templet",
+      "population": 1000,
+      "walls": 1,
+      "features": {
+        "housing_masses": 3,
+        "terrace_levels": 1,
+        "people": 2,
+        "hearths": 1,
+        "meal_point": [
+          58,
+          89
+        ],
+        "hunger_point": [
+          74,
+          87
+        ],
+        "empty_bowls": [
+          [
+            60,
+            89
+          ],
+          [
+            88,
+            90
+          ]
+        ],
+        "shutters": []
+      },
+      "housing_pixels": 1150,
+      "horizon_sample": [
+        80,
+        4
+      ]
+    },
+    {
+      "stem": "bortom-templet-p4500",
+      "method": "bortom-templet",
+      "population": 4500,
+      "walls": 1,
+      "features": {
+        "housing_masses": 12,
+        "terrace_levels": 2,
+        "people": 4,
+        "hearths": 3,
+        "meal_point": [
+          58,
+          89
+        ],
+        "hunger_point": [
+          74,
+          87
+        ],
+        "empty_bowls": [
+          [
+            60,
+            89
+          ],
+          [
+            88,
+            90
+          ]
+        ],
+        "shutters": []
+      },
+      "housing_pixels": 2828,
+      "horizon_sample": [
+        80,
+        4
+      ]
+    },
+    {
+      "stem": "bortom-templet-p10000",
+      "method": "bortom-templet",
+      "population": 10000,
+      "walls": 1,
+      "features": {
+        "housing_masses": 27,
+        "terrace_levels": 4,
+        "people": 6,
+        "hearths": 6,
+        "meal_point": [
+          58,
+          89
+        ],
+        "hunger_point": [
+          74,
+          87
+        ],
+        "empty_bowls": [
+          [
+            60,
+            89
+          ],
+          [
+            88,
+            90
+          ]
+        ],
+        "shutters": []
+      },
+      "housing_pixels": 4966,
+      "horizon_sample": [
+        80,
+        4
+      ]
+    }
+  ]
+}

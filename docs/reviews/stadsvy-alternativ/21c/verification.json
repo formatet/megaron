@@ -1,0 +1,23 @@
+{
+  "generated_pngs": 57,
+  "scenes": 9,
+  "exact_scaled_pairs": 18,
+  "life_composites": 9,
+  "residential_mask_counts": "nonzero binary pixels; structural residential paint only",
+  "structure_without_figures": "three distinct sizes per method",
+  "mountain_sample": "same pixel(80,11) across sizes; sanity check, not recognition proof",
+  "firefox": {
+    "browser": "146.0.1",
+    "DPR": 1,
+    "viewports": [
+      1440,
+      390
+    ],
+    "image_css": [
+      320,
+      192
+    ],
+    "horizontal_overflow": false,
+    "page_errors": []
+  }
+}
