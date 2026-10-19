@@ -2,7 +2,7 @@
 """Natural four-food surfaces and mixed provisions through a real patrol. No SQL writes."""
 from pathlib import Path
 import json,os,queue,secrets,socket,subprocess,sys,threading,time,urllib.request
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, Error as BrowserError
 from PIL import Image
 HERE=Path(__file__).resolve().parent;ROOT=HERE.parents[2]
 OUT=Path(sys.argv[1]).resolve();OUT.mkdir(parents=True,exist_ok=True)
@@ -116,7 +116,11 @@ try:
    # reject a blank transitional frame (pixel count is presence, not legibility).
    for capture_attempt in range(5):
     page.wait_for_function("()=>['grain','fish','oil','wine'].every(g=>document.getElementById('city-food-sec')?.innerText.includes(g))")
-    row_path=OUT/('food-row-'+label+'.png');page.locator('#city-food-sec').screenshot(path=str(row_path))
+    row_path=OUT/('food-row-'+label+'.png')
+    try:page.locator('#city-food-sec').screenshot(path=str(row_path),timeout=5000)
+    except BrowserError as capture_error:
+     if 'not attached to the DOM' in str(capture_error):continue
+     raise
     with Image.open(row_path) as shot:ink=sum(1 for px in shot.convert('RGB').getdata() if px[0]<190 and px[1]<150 and px[2]<150)
     if ink>40:break
    else:raise RuntimeError('food row capture remained blank')

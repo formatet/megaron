@@ -6,9 +6,9 @@ Korn, fisk, olja och vin äts proportionellt via en hjälpare av folk, armé,
 skepp och karavaner. Tillväxtvariation följer faktisk måltid med tick; gammal
 civil nödslakt/offer lämnas utanför. Proviant behåller varan under resan och
 återlämnas även efter patrull/explore/pickup/skadad/erövrad retur.
-Produktion `93b90bbd` (backend `0a92e208`, returfix `05b97416`, klient `c01112eb`).
+Produktion `d22e1287` (granskningsfix för substantiell måltidsandel), tidigare `93b90bbd` (backend `0a92e208`, returfix `05b97416`, klient `c01112eb`).
 Full fresh190 Go/vet/668JS gröna; efter returfixen hela combat/API och vet gröna.
-Sex fysiska mutationer namedRED→byte-exaktrestore→freshGREEN. Verkliga rena
+Sju fysiska mutationer namedRED→byte-exaktrestore→freshGREEN. Verkliga rena
 registreringar/CLI/hostmarscher/måltider/patruller/returer/Firefox1280+390 på
 process05b97416 och93b90bbd, migration190.0SQL-skrivningar/API-replay.
 Ingen merge/push/deploy; Claude granskar. Boskap28b/lagertak29 kvar separat.
@@ -110,3 +110,33 @@ node --experimental-default-type=module --test $(rg --files web/static/js | rg '
 python3 docs/reviews/mat-jamlik/mutations.py
 python3 docs/reviews/mat-jamlik/native.py docs/reviews/mat-jamlik/native-h
 ```
+
+## GRANSKNINGSFIX — substantiell variation
+
+Claude19:12 krävde att en vara utgör minst10 % av måltiden för variationsbonus.
+`economy.VarietyMinShare` skickas till den befintliga growth-SQL:en. Den summerar
+positiva, kända matvaror i aktuell ticks faktiska måltid och räknar bara varor
+som når andelen. Proportionell konsumtion ändras inte; smulorna mättar fortfarande.
+Codex growth/food säger ”a real share”, utan att låsa andelstalet som invariant.
+
+`TestGrowthVarietyRequiresSubstantialMealShare` går genom riktig FoodTick och
+kharis growth med identiska senare lager/rater:1vin/1000korn och99/901 ger ingen
+bonus;100/900 (exakt gräns) och300/700 ger bonus. Före fixen namngivet RED:
+smulmåltiden gav37 tillväxt mot33 för renkorn. Efterfix GREEN. Befintligt2vs4-
+och gammalmåltidsprov fortsatt grönt. Ny fysisk mutation tar bort andelsvillkoret
+så gamla `>0` åter räcker: namedRED→byte-exakt restore→fresh190GREEN.
+Även grain-first och lagerbaserad variation är omkörda mot nya källhashar.
+Ny full fresh190/vet/JS och naturligt prov redovisas i `variety-share-*`/`native-i`.
+
+NativeI avbröts vid en skärmdump när en normal tickrefresh ersatte DOM-elementet.
+Riggen återförsöker nu bara just detta explicit identifierade DOM-byte, med samma
+begränsade fem fångstförsök; andra browserfel kastas vidare. NativeJ är GREEN på
+d22e1287/migration190, verklig måltid tick5 (4.9587118grain/0.0412882fish),
+blandad proviant, garrisonretur med tom ledger och inga pageerrors/overflow.
+Matraden `native-j/food-row-mobile.png` inspekterad vid1:1. Ingen SQL/replay.
+
+Slutkontroll efter granskningsfix d22e1287: **hela färska Go190 GREEN** inklusive
+world149.461s (`variety-share-full-go.log`), vet GREEN och668JS GREEN.
+Inga källmutationer överlappade slutsviten eller nativeJ. De tre omkörda
+mutationerna och fyra oförändrade mutationerna har alla aktuell källhash.
+Manifest/verifiering kan upprepas med `python3 docs/reviews/mat-jamlik/refresh-proof.py`.

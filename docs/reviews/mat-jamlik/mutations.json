@@ -1,19 +1,5 @@
 [
   {
-    "mutation": "grain-first",
-    "test": "TestFoodConsumptionProportionalGrainAndFish",
-    "source": "server/internal/economy/food_basket.go",
-    "sha256": "b23504a5e382334dafcddb4b97e4b9c72c69949b9791f158721c96a55d7284a6",
-    "result": "named RED -> byte-exact restore -> fresh GREEN"
-  },
-  {
-    "mutation": "stock-variety",
-    "test": "TestGrowthVarietyReadsActualMealNotLaterStock",
-    "source": "server/internal/kharis/tick.go",
-    "sha256": "deb723113ff32126a910b46cc587cbb57c82bb301d1568135dbfdcd0fab2f406",
-    "result": "named RED -> byte-exact restore -> fresh GREEN"
-  },
-  {
     "mutation": "fish-returned-as-grain",
     "test": "TestFishOnlyVoyagePreviewDispatchEatAndReturnSameGood",
     "source": "server/internal/combat/food_provisions.go",
@@ -39,6 +25,27 @@
     "test": "equal food: four stocks and actual meal use server totals, never grain-only estimates",
     "source": "web/static/js/megaron/ui/food.js",
     "sha256": "6df1ffe01d4a95e09c9caa55c1544f6999d3883d30e9724ac87fcfead9a716b4",
+    "result": "named RED -> byte-exact restore -> fresh GREEN"
+  },
+  {
+    "mutation": "grain-first",
+    "test": "TestFoodConsumptionProportionalGrainAndFish",
+    "source": "server/internal/economy/food_basket.go",
+    "sha256": "37ed87c9b28a7a89a64c626e7b44ba2d77b52864a75628411f4b4322a4b9de14",
+    "result": "named RED -> byte-exact restore -> fresh GREEN"
+  },
+  {
+    "mutation": "stock-variety",
+    "test": "TestGrowthVarietyReadsActualMealNotLaterStock",
+    "source": "server/internal/kharis/tick.go",
+    "sha256": "ebc0b469f8eb67a9f2e47e1b2bad3dd8f073148b3af22d548689d641cb3339f5",
+    "result": "named RED -> byte-exact restore -> fresh GREEN"
+  },
+  {
+    "mutation": "crumbs-count-as-variety",
+    "test": "TestGrowthVarietyRequiresSubstantialMealShare",
+    "source": "server/internal/kharis/tick.go",
+    "sha256": "ebc0b469f8eb67a9f2e47e1b2bad3dd8f073148b3af22d548689d641cb3339f5",
     "result": "named RED -> byte-exact restore -> fresh GREEN"
   }
 ]

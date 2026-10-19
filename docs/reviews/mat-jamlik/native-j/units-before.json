@@ -1,0 +1,83 @@
+[
+  {
+    "id": "df08bea7-e239-4adb-a693-fc34f3d87fa0",
+    "type": "spearman",
+    "category": "land",
+    "size": 100,
+    "upkeep_food_per_tick": 1,
+    "upkeep_grain_per_tick": 1,
+    "upkeep_silver_per_tick": 0,
+    "upkeep_context": "active",
+    "status": "positioned",
+    "deployable": true,
+    "display_name": "1st Spearmen of Myrsine",
+    "ordinal": 1,
+    "support_settlement_id": "898e808c-5595-4777-bec4-00e2aed434ec",
+    "support_settlement_name": "Myrsine",
+    "q": 47,
+    "r": 19,
+    "in_battle": false,
+    "can_fetch_by_ship": true,
+    "pickup_ships": [
+      {
+        "id": "c5360eac-c5c9-4807-86c3-a114ba8d8d2d",
+        "name": "Blessing of the Coast",
+        "type": "galley",
+        "settlement_id": "898e808c-5595-4777-bec4-00e2aed434ec",
+        "settlement_name": "Myrsine",
+        "can_carry_runner": true
+      }
+    ]
+  },
+  {
+    "id": "bbd392fb-1429-4e88-b75f-46adbd44efa3",
+    "type": "spearman",
+    "category": "land",
+    "size": 100,
+    "upkeep_food_per_tick": 1,
+    "upkeep_grain_per_tick": 1,
+    "upkeep_silver_per_tick": 0,
+    "upkeep_context": "active",
+    "status": "positioned",
+    "deployable": true,
+    "display_name": "2nd Spearmen of Myrsine",
+    "ordinal": 2,
+    "support_settlement_id": "898e808c-5595-4777-bec4-00e2aed434ec",
+    "support_settlement_name": "Myrsine",
+    "q": 47,
+    "r": 19,
+    "in_battle": false,
+    "can_fetch_by_ship": true,
+    "pickup_ships": [
+      {
+        "id": "c5360eac-c5c9-4807-86c3-a114ba8d8d2d",
+        "name": "Blessing of the Coast",
+        "type": "galley",
+        "settlement_id": "898e808c-5595-4777-bec4-00e2aed434ec",
+        "settlement_name": "Myrsine",
+        "can_carry_runner": true
+      }
+    ]
+  },
+  {
+    "id": "c5360eac-c5c9-4807-86c3-a114ba8d8d2d",
+    "type": "galley",
+    "category": "naval",
+    "size": 1,
+    "crew": 20,
+    "upkeep_food_per_tick": 0.04,
+    "upkeep_grain_per_tick": 0.04,
+    "upkeep_silver_per_tick": 1.5,
+    "upkeep_context": "active",
+    "hull": 5,
+    "status": "garrison",
+    "deployable": true,
+    "name": "Blessing of the Coast",
+    "display_name": "Blessing of the Coast, Galley of Myrsine",
+    "ordinal": 1,
+    "support_settlement_id": "898e808c-5595-4777-bec4-00e2aed434ec",
+    "support_settlement_name": "Myrsine",
+    "settlement_id": "898e808c-5595-4777-bec4-00e2aed434ec",
+    "in_battle": false
+  }
+]

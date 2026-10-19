@@ -1,4 +1,4 @@
-» färsk DB på migration 190 · commit c01112eb+ändringar
+» färsk DB på migration 190 · commit 4b4f1ed4+ändringar
 --- FAIL: TestFoodConsumptionProportionalGrainAndFish (0.00s)
     equal_food_test.go:11: remaining grain/fish=90/900 want99/891
 FAIL

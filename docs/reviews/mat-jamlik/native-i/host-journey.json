@@ -1,0 +1,16 @@
+[
+  {
+    "from_q": 6,
+    "from_r": 34,
+    "target_q": 4,
+    "target_r": 34,
+    "known_coast": false
+  },
+  {
+    "from_q": 4,
+    "from_r": 34,
+    "target_q": 2,
+    "target_r": 34,
+    "known_coast": true
+  }
+]

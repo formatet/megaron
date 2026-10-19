@@ -5,7 +5,11 @@ import hashlib,json,os,re,socket,subprocess,sys
 HERE=Path(__file__).resolve().parent;ROOT=HERE.parents[2]
 cases=[
  ('grain-first','server/internal/economy/food_basket.go','if total > 0 && take > 0 {','if total > 0 && take > 0 {\n        remaining:=take', './internal/economy/','TestFoodConsumptionProportionalGrainAndFish'),
- ('stock-variety','server/internal/kharis/tick.go','jsonb_each_text(s.food_consumed)','(SELECT good_key,amount::text FROM settlement_goods WHERE settlement_id=s.id)', './internal/kharis/','TestGrowthVarietyReadsActualMealNotLaterStock'),
+ ('stock-variety','server/internal/kharis/tick.go','FROM jsonb_each_text(s.food_consumed) AS meal(good,qty)','FROM (SELECT good_key,amount::text FROM settlement_goods WHERE settlement_id=s.id) AS meal(good,qty)', './internal/kharis/','TestGrowthVarietyReadsActualMealNotLaterStock'),
+ ('crumbs-count-as-variety','server/internal/kharis/tick.go',"""AND meal.qty::numeric >= $8::numeric * (
+		                   SELECT SUM(part.qty::numeric) FROM jsonb_each_text(s.food_consumed) AS part(good,qty)
+		                   WHERE (part.good=ANY($4) OR part.good='livestock') AND part.qty::numeric>0
+		               )""",'AND $8::numeric>0','./internal/kharis/','TestGrowthVarietyRequiresSubstantialMealShare'),
  ('fish-returned-as-grain','server/internal/combat/food_provisions.go','sid, good, n)','sid, economy.GoodGrain, n)', './internal/combat/','TestFishOnlyVoyagePreviewDispatchEatAndReturnSameGood'),
  ('special-home-unload-removed','server/internal/combat/unit_arrival.go','if port != nil && u.provisions > 0 {','if false {','./internal/combat/','TestSpecialHomeReturnUnloadsSameGoodsExactlyOnce'),
  ('cli-omits-wine','server/cmd/keryx/food_format.go','"oil", "wine", "livestock"','"oil", "livestock"','./cmd/keryx/','TestEqualFoodCityUsesServerTotalsAndGoods'),
