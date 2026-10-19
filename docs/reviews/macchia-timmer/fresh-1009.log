@@ -1,0 +1,2 @@
+2026/10/19 08:27:22 WARN mapgen: invalid map, reseeding world=material-measure seed=1009 width=64 height=64 err="invalid map: productive tin = 1 (want >= 2)"
+2026/10/19 08:27:22 WARN mapgen: invalid map, reseeding world=material-measure seed=1010 width=64 height=64 err="invalid map: forest fraction = 0.304 (want 0.22..0.30)"
