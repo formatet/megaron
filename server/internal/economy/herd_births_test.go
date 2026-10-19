@@ -3,6 +3,7 @@ package economy
 import (
 	"context"
 	"math"
+	"os"
 	"testing"
 
 	"formatet/megaron/server/internal/events"
@@ -102,6 +103,42 @@ func TestFoodTick_CalvesOverTheCapAreEatenFirst(t *testing.T) {
 	var n int
 	if err := pool.QueryRow(context.Background(), `SELECT COUNT(*) FROM events WHERE stream_id=$1 AND event_type=$2`, f.settlementID, EventHerdLost).Scan(&n); err != nil || n != 0 {
 		t.Fatalf("HerdLost events=%d err=%v", n, err)
+	}
+}
+
+func TestMigration192LiftsHerders(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	f := newFoodFixture(t, pool, "mig192", 300)
+	seedFoodStock(t, pool, f, 10, 0, 20)
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback(ctx)
+	if _, err := tx.Exec(ctx, `INSERT INTO settlement_placement(settlement_id,gubbe_ordinal,target_kind,hex_q,hex_r,good_key) VALUES($1,1,'hex',1,0,'livestock'),($1,2,'hex',1,0,'grain')`, f.settlementID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := tx.Exec(ctx, `UPDATE settlement_goods SET rate=0.5 WHERE settlement_id=$1 AND good_key='livestock'`, f.settlementID); err != nil {
+		t.Fatal(err)
+	}
+	raw, err := os.ReadFile("../../db/migrations/192_no_herder.up.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i := 0; i < 2; i++ { // idempotent
+		if _, err := tx.Exec(ctx, string(raw)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var herders, others, rules, pop int
+	var rate float64
+	_ = tx.QueryRow(ctx, `SELECT COUNT(*) FILTER (WHERE good_key='livestock'), COUNT(*) FILTER (WHERE good_key='grain') FROM settlement_placement WHERE settlement_id=$1`, f.settlementID).Scan(&herders, &others)
+	_ = tx.QueryRow(ctx, `SELECT rate FROM settlement_goods WHERE settlement_id=$1 AND good_key='livestock'`, f.settlementID).Scan(&rate)
+	_ = tx.QueryRow(ctx, `SELECT COUNT(*) FROM production_rules WHERE good_key='livestock'`).Scan(&rules)
+	_ = tx.QueryRow(ctx, `SELECT population FROM settlements WHERE id=$1`, f.settlementID).Scan(&pop)
+	if herders != 0 || others != 1 || rate != 0 || rules != 0 || pop != 300 {
+		t.Fatalf("herders=%d others=%d rate=%g rules=%d pop=%d", herders, others, rate, rules, pop)
 	}
 }
 

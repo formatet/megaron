@@ -61,11 +61,18 @@ export function foodSummaryHTML(pd) {
   return blessing + `<p${warning ? ' class="stat-warn"' : ''} title="Current city food stocks at today’s consumption.">Food for ${fmtDays(s.coverage_ticks)}${growing ? ' · stocks growing' : ''}${warning}.${s.goods ? ' ' + foodGoodsText(s.goods) + '.' : ''}</p>` + herdHTML(s.herd);
 }
 
+// The next calves, from the server's herd.births_* fields: "4 calves in 3 days (4 grain)".
+function calvesText(h) {
+  const born = Number(h.births_next), inDays = Number(h.births_in);
+  if (!(born > 0) || !Number.isFinite(inDays)) return '';
+  return ` — ${fmtNum(born)} ${born === 1 ? 'calf' : 'calves'} in ${fmtNum(inDays)} ${inDays === 1 ? 'day' : 'days'} (${fmtNum(Number(h.births_grain) || 0)} grain)`;
+}
+
 // The herd and its pen: count / cap. A full pen eats, then loses, new animals.
 export function herdHTML(h) {
   if (!h || !Number.isFinite(Number(h.count)) || !Number.isFinite(Number(h.cap))) return '';
   const full = Number(h.count) >= Number(h.cap);
-  return `<p${full ? ' class="stat-warn"' : ''} title="A Pen raises the herd cap. Animals above the cap are eaten as food; any still above it after the meal are lost.">Herd ${fmtNum(h.count)} / ${fmtNum(h.cap)}${full ? ' — full: new animals are eaten, then lost' : ''}</p>`;
+  return `<p${full ? ' class="stat-warn"' : ''} title="A Pen raises the herd cap. Animals above the cap are eaten as food; any still above it after the meal are lost.">Herd ${fmtNum(h.count)} / ${fmtNum(h.cap)}${full ? ' — full: new animals are eaten, then lost' : ''}${calvesText(h)}</p>`;
 }
 
 export function foodDetailsHTML(pd) {
