@@ -1,0 +1,9 @@
+» färsk DB på migration 191 · commit 4506c09e+ändringar
+2026/10/19 19:27:20 INFO trade delivery destination=35d15f25-5925-4671-a193-26bec5ab8317 good=silver qty=150
+2026/10/19 19:27:20 INFO trade delivery destination=193f80bb-a75a-4d7e-bcee-a970a27fe1c6 good=silver qty=150
+--- FAIL: TestStorageDeliveryCapOutcomeAtomicAndRetrySafe (0.03s)
+    --- FAIL: TestStorageDeliveryCapOutcomeAtomicAndRetrySafe/< (0.02s)
+        storage_warning_test.go:72: storage outcome notices0 audit0 lost0; want1/90
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.032s
+FAIL

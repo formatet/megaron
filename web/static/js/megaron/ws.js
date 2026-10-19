@@ -64,6 +64,7 @@ function coalesce(key, fn, ms = 2000) {
 // WS event kinds that mutate units/province/march/trade/messenger state — an open
 // drawer showing that data should rebuild after them.
 const DATA_KINDS = new Set([
+  'StorageCapacityWarning','StorageOverflow',
   'GarrisonStarvationStarted','GarrisonStarvationEnded','CivilianStarvationStarted','CivilianStarvationEnded','KharisBandChanged',
   'ArmyArrival','BuildComplete','GoodsCrafted','TrainComplete','MessengerArrival',
   'GiftDelivered','GiftLost','TradeCaravanArrival','UnitAttrition','UnitDeserted','UnitArrived','UnitExploreReturned',

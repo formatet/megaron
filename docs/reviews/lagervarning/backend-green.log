@@ -1,0 +1,31 @@
+» färsk DB på migration 191 · commit 4506c09e+ändringar
+ok  	formatet/megaron/server/internal/economy	5.242s
+ok  	formatet/megaron/server/internal/kharis	12.147s
+ok  	formatet/megaron/server/internal/combat	13.010s
+ok  	formatet/megaron/server/internal/transport	0.892s
+ok  	formatet/megaron/server/api/handlers	40.597s
+2026/10/19 19:36:56 WARN Agora deactivation awaits reconciliation player=ff4b32f1-50d3-40cf-9355-59d83907f0fe
+--- FAIL: TestAgoraNeverProvisionsErasedPlayer (0.03s)
+    agora_erase_test.go:84: pass called Create 1 times for an erased player, want 0
+2026/10/19 19:36:57 [tki9/zC8n0zQLiB-000001] "GET http://example.com/api/v1/worlds/x/map HTTP/1.1" from 192.0.2.1:1234 - 200 265B in 632.885µs
+2026/10/19 19:36:57 [tki9/zC8n0zQLiB-000002] "GET http://example.com/api/v1/worlds/x/map HTTP/1.1" from 192.0.2.1:1234 - 200 66000B in 13.174µs
+2026/10/19 19:36:57 [tki9/zC8n0zQLiB-000003] "GET http://example.com/ws/abc HTTP/1.1" from 192.0.2.1:1234 - 000 0B in 6.144µs
+2026/10/19 19:36:57 [tki9/zC8n0zQLiB-000004] "GET http://example.com/static/megaron.css HTTP/1.1" from 192.0.2.1:1234 - 200 41B in 79.485µs
+2026/10/19 19:37:01 INFO daily ticks seeded worlds=911
+2026/10/19 19:37:01 INFO daily ticks seeded worlds=912
+2026/10/19 19:37:01 INFO retention pass table=server_heartbeats rows_deleted=3 batches=1 elapsed=1ms
+2026/10/19 19:37:01 INFO retention pass table=scheduled_events(processed) rows_deleted=1 batches=1 elapsed=1ms
+2026/10/19 19:37:01 INFO retention pass table=scheduled_events(failed) rows_deleted=1 batches=1 elapsed=0s
+2026/10/19 19:37:02 INFO retention pass table=server_heartbeats rows_deleted=119500 batches=24 elapsed=202ms
+2026/10/19 19:37:02 [tki9/zC8n0zQLiB-000005] "GET http://example.com/ws/world HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 4.909µs
+2026/10/19 19:37:02 [tki9/zC8n0zQLiB-000006] "GET http://example.com/ws/ HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 1.728µs
+2026/10/19 19:37:02 [tki9/zC8n0zQLiB-000007] "GET http://example.com/api/v1/worlds HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 7.082µs
+2026/10/19 19:37:02 [tki9/zC8n0zQLiB-000008] "GET http://example.com/api/ws/world HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 3.801µs
+2026/10/19 19:37:02 [tki9/zC8n0zQLiB-000009] "GET http://example.com/ws HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 4.963µs
+2026/10/19 19:37:02 [tki9/zC8n0zQLiB-000010] "GET http://example.com/ws-other HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 12.233µs
+2026/10/19 19:37:02 [tki9/zC8n0zQLiB-000011] "GET http://example.com/static/map.js HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 6.828µs
+2026/10/19 19:37:02 [tki9/zC8n0zQLiB-000012] "GET http://example.com/healthz HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 4.548µs
+2026/10/19 19:37:02 [tki9/zC8n0zQLiB-000013] "GET http://example.com/ HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 4.435µs
+FAIL
+FAIL	formatet/megaron/server/cmd/server	5.255s
+FAIL

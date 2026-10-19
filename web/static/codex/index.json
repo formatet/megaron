@@ -20,7 +20,7 @@
     {"id": "growth",       "title": "Growth",                       "category": "Your city", "related": ["food", "citizens"]},
     {"id": "buildings",    "title": "Buildings",                    "category": "Your city", "kinds": ["BuildComplete", "GoodsCrafted"], "related": ["citizens", "goods", "temples"]},
 
-    {"id": "goods",        "title": "Goods",                        "category": "Goods and trade", "drawer": "economy", "related": ["surplus", "silver", "bronze"]},
+    {"id": "goods",        "title": "Goods", "kinds": ["StorageCapacityWarning", "StorageOverflow"],                        "category": "Goods and trade", "drawer": "economy", "related": ["surplus", "silver", "bronze"]},
     {"id": "silver",       "title": "Silver",                       "category": "Goods and trade", "related": ["upkeep", "trade", "goods"]},
     {"id": "surplus",      "title": "Surplus and waste",            "category": "Goods and trade", "related": ["citizens", "goods", "trade"]},
     {"id": "gifts", "title": "Gifts and tribute", "category": "Goods and trade", "kinds": ["GiftDelivered", "GiftLost"], "related": ["transfers", "contact", "silver"]},

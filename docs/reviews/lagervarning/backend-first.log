@@ -1,0 +1,349 @@
+» färsk DB på migration 191 · commit 4506c09e+ändringar
+ok  	formatet/megaron/server/internal/economy	4.722s
+ok  	formatet/megaron/server/internal/kharis	11.386s
+ok  	formatet/megaron/server/internal/combat	11.717s
+ok  	formatet/megaron/server/internal/transport	0.827s
+2026/10/19 19:32:48 INFO player registered id=fb896c6e-e9bc-434e-b71a-bef57ea81e68 username=round3-788bf61b-e0db-4e9f-bf4d-5838e45dd737
+2026/10/19 19:32:48 INFO player registered id=52449bf3-4c6f-4ffd-ba50-bc4757f654c4 username=round4-c1f4175d-7623-4054-a5e2-385f6c86adcc
+2026/10/19 19:32:48 INFO player registered id=48d342a2-25ba-47c7-a48b-617d2d88ad17 username=buildhex-57810793-862d-4026-81fd-7a3cac83d8e9
+2026/10/19 19:32:48 INFO player registered id=3dc49a53-67e4-4e52-9d85-42324fb418c2 username=buildhex-d3331b33-7f2f-4aa1-a4ba-b96034cfe569
+2026/10/19 19:32:48 INFO player registered id=7d3d9921-dc7f-483c-a219-33d28334ed7f username=armyview-8629e2f9-92b9-452a-b936-779ab5bdbda5
+2026/10/19 19:32:48 INFO player registered id=e7fe778e-10a3-4592-a6d6-a0449a0106ce username=upkeepview-0dd10478-8771-4db9-ab17-664994ad746f
+2026/10/19 19:32:48 INFO player registered id=7c07f7fe-2907-4d0e-9499-e5ebb32115f7 username=login-96a3ae28-660d-49fe-b3f0-a93734736c76
+2026/10/19 19:32:49 INFO player registered id=e2e6b642-36e4-4315-b7dd-dee0e7383c0d username=login-b749988d-6a6c-480c-8ff1-a1a4a5c11839
+2026/10/19 19:32:49 INFO player registered id=3461b1b8-4160-4ff6-98cf-987d6c1f2c5a username=buildhex-2143e994-89eb-48f0-95ba-25f0662b3482
+2026/10/19 19:32:49 INFO player registered id=78ce68b1-5c5a-4267-be23-892383fab704 username=buildhex-4b085582-f13e-4616-a070-db0e98646b92
+2026/10/19 19:32:49 INFO player registered id=87b47aaa-601c-4a39-8e2b-739ad2ff25dd username=intruder-ae65b0d0-b359-4311-a989-03df10b7c338
+2026/10/19 19:32:49 INFO player registered id=188e2258-f212-49b4-b366-c5e2982ce9fc username=buildhex-44de821e-59e1-4505-9874-e5186f9d535e
+2026/10/19 19:32:49 INFO player registered id=7070a06b-2ecc-4023-ac6a-7ddd87fca18a username=buildhex-e30b99ea-63a1-416e-a10f-2fdc38ea6d04
+2026/10/19 19:32:49 INFO player registered id=81b0332a-3cc4-44e5-a72e-415efbf3dbd1 username=buildhex-46e4e0bf-8fb9-4c83-b906-386f7d6cc2f0
+2026/10/19 19:32:49 INFO player registered id=9c1beecb-787f-4d96-bcb0-752ee2ed3618 username=trader-97c287fa-a8f2-4d01-b501-f329c29f1d06
+2026/10/19 19:32:49 INFO player registered id=68107a76-26c6-4d82-8cf2-a7f9766a1883 username=trader-53196c5f-e9ed-488e-9554-ba52771bfa6d
+2026/10/19 19:32:49 INFO player registered id=c2c07fe2-68c9-4742-aa99-86c91f260557 username=sailor-2c324bea-9491-4ba9-a985-eeefe35a7438
+2026/10/19 19:32:49 INFO player registered id=b5fdf088-1e51-48a7-ba51-896ee15bfd15 username=initiator-93c613c1-1238-4668-aba7-5962067517ea
+2026/10/19 19:32:49 INFO player registered id=de92aedd-7bc2-47c3-b975-6e9b0e838555 username=counterparty-bdf8a743-b616-4c72-838e-0ebf291c4a3b
+2026/10/19 19:32:49 INFO player registered id=b5d05b04-273b-496c-8268-7e0b4cf6ceee username=initiator-6e651d51-18f7-4581-a4fb-4bfb3616df5d
+2026/10/19 19:32:49 INFO player registered id=a55f0cb9-3283-435a-b416-42ae35d0666c username=counterparty-03efe03e-da1d-4a60-8e64-a1da9e537456
+2026/10/19 19:32:49 INFO player registered id=8fbe9d3b-2d08-4a49-8bc6-eb97e37cbd71 username=initiator-9bf23b5f-c849-49f4-8b2a-6b427d8f0245
+2026/10/19 19:32:50 INFO player registered id=02cbd03f-01dc-4355-b274-661b450d2cfb username=counterparty-7c451ace-590b-4986-99b8-5b065cb00edf
+2026/10/19 19:32:50 INFO player registered id=c3496b1c-1eef-4b3e-9921-82bfbb5f78ab username=initiator-81a10c1c-2143-4271-a5e4-0f8986fc0ec9
+2026/10/19 19:32:50 INFO player registered id=7500989d-182d-4806-bdc4-a817be2742e8 username=counterparty-a515ca04-c1bf-4b62-8456-2a6ca8285d0d
+2026/10/19 19:32:50 INFO player registered id=93fdf9e2-3892-41ca-b3dd-cad1d97900ac username=trader-84d4ceec-be81-4270-af3b-41e8c725b5af
+2026/10/19 19:32:50 INFO player registered id=30f31cfd-dbba-4fc0-b71e-0695c2fe8f75 username=eye-f7cef21f-94e3-44f2-b679-9d694481722f
+2026/10/19 19:32:50 INFO player registered id=f0d98f7d-2096-4576-bb6e-2d28913b146b username=ret-fdd16663-106c-4d85-8300-06fd11a90497
+2026/10/19 19:32:50 INFO player registered id=58a06fee-2aa3-4467-8b7e-fae0e992ddd3 username=dst-49cb3e8d-1eb1-4ed9-9856-dd880f3239e0
+2026/10/19 19:32:50 INFO player registered id=e51a03ef-c71d-475a-bd81-f4521e52178c username=culture-nopref-5fdd45b1-ba30-4ea9-a884-edb0f81cd71f
+2026/10/19 19:32:50 INFO player registered id=c8cd4bf1-989b-484f-9855-8de1cc56b766 username=culture-hatti-ff922a88-60c5-40c9-9d99-855d3a89c807
+2026/10/19 19:32:51 INFO player registered id=63e2aa54-1176-492d-aa05-c3286f93b253 username=culture-found-81088d0c-f63c-4fb7-8e9b-f98b96ff348d
+2026/10/19 19:32:51 INFO player registered id=2c1b9561-6a7d-4f2d-9cd9-51f8b514361c username=disband-f5fa0472-2e15-4338-bc4b-5d680e3f033c
+2026/10/19 19:32:51 INFO player registered id=63b00755-3b2a-4b16-a512-a5dcc3ebbfcd username=disband-3886c75d-43b2-4ebd-b3de-098649a066e0
+2026/10/19 19:32:51 INFO player registered id=9e172022-8249-4b2b-91d4-ef8e1573bbf6 username=disband-48e21bb2-18c0-4377-b30d-4c42b052b23f
+2026/10/19 19:32:51 INFO player registered id=702b9778-be33-4c59-b603-666c6db818fb username=escort-names-55eb3474-6681-48a6-9615-f48f9c328fc0
+2026/10/19 19:32:51 INFO player registered id=c2a08707-1a3d-44e4-81b4-e950901ba95d username=placement-1a89af26-59fa-419b-9db7-6958dc30053a
+2026/10/19 19:32:51 INFO player registered id=becbb784-892d-4da4-ad5a-284075a74f38 username=placement-94a99e81-a274-4dc7-bce5-a75fbd42e993
+2026/10/19 19:32:52 INFO player registered id=ec83aeaa-436d-4c85-bc88-66ec0277444e username=placement-d6e35acf-f7d5-4fe1-a555-9f0e204bedde
+2026/10/19 19:32:52 INFO player registered id=d47d1d52-c7ec-4ef7-b048-528f848835d9 username=placement-e4d73e16-43f6-45dd-8628-cd0416e09cac
+2026/10/19 19:32:52 INFO player registered id=ff5dd5dd-623c-4606-9799-ec13b1f49bb2 username=wanax-a-5347e99a-a560-4eff-b3fe-a0fc7172c021
+2026/10/19 19:32:52 INFO player registered id=1720eef4-d020-418a-8fbd-b5baee32b538 username=wanax-b-83393c26-6d7a-4b5e-9e8d-64e9283248e4
+2026/10/19 19:32:52 INFO player registered id=4922349e-f787-44d4-8973-c7fa6db56b9a username=wanax-a-cd73ea86-456c-427b-bb39-9469f2361dc1
+2026/10/19 19:32:52 INFO player registered id=877ef0b2-4b69-475e-95ea-653e4bea23e4 username=wanax-b-350eddf3-9b29-4c4f-bc61-924c78f45059
+2026/10/19 19:32:52 INFO player registered id=e0bd9ecb-0efe-45ac-86f6-a148d181a55a username=wanax-a-7ec0d0a2-0c22-45ca-b26d-79cea6a6de46
+2026/10/19 19:32:52 INFO player registered id=fdd4d1c3-3744-4d0e-8381-4aea88085ba1 username=wanax-b-0adf23e0-a4c6-4181-9c6d-9b0efbcd162b
+2026/10/19 19:32:52 INFO player registered id=e62d7752-c793-42e5-b7bb-5abbd2d1987b username=wanax-a-dc79d946-c4e2-4436-bd5a-379208155e79
+2026/10/19 19:32:52 INFO player registered id=c4f5835b-2c8a-45ae-a9a5-dfae5bed9542 username=wanax-b-30648363-d3f0-4f54-918d-204b864308cb
+2026/10/19 19:32:52 INFO player registered id=b0d763a4-25bb-47e4-8328-f1187093e10f username=wanax-a-5e69335d-f7ec-49de-b3ac-3e776f497413
+2026/10/19 19:32:52 INFO player registered id=e9b7f07c-ea24-4226-bb2e-d3c212c7b8df username=wanax-b-b6abbe5f-4b1a-4d3a-9ba3-be919e37c82f
+2026/10/19 19:32:52 INFO player registered id=f693cad4-41d3-4683-8999-e604028a5006 username=wanax-a-327d8cba-09f2-410a-8186-e25043749c41
+2026/10/19 19:32:52 INFO player registered id=dbe79331-d4f4-4079-9761-4ae921ca4547 username=wanax-b-77c8f7c6-3feb-40e6-9742-fab1b13059ca
+2026/10/19 19:32:52 INFO player registered id=ea1e5775-e8a3-4a33-bcb0-67a6c317a205 username=wanax-a-996b8c4c-5030-4d1f-8e40-d0354f6a27ec
+2026/10/19 19:32:52 INFO player registered id=f34c93fc-4292-447e-99ff-af4e9953dd65 username=wanax-b-a1edefad-35ad-4710-a4bc-667fb84ea31b
+2026/10/19 19:32:53 INFO player registered id=f257ae42-b9d6-4ee8-b371-88a9325c39aa username=wanax-a-04c233fc-881a-43dc-87de-511f28932a40
+2026/10/19 19:32:53 INFO player registered id=7d3e966f-4dd4-4de0-b952-b6b6fc9370b9 username=wanax-b-f3e894c3-9bf9-4408-815f-7fbefbde0dd8
+2026/10/19 19:32:53 INFO player registered id=bae6d411-cde8-4506-91f8-3614f1efe0c5 username=wanax-a-aee47ea0-582a-49c5-a042-5d788034512b
+2026/10/19 19:32:53 INFO player registered id=c357317e-8928-40b5-8726-3634ea580599 username=wanax-b-27af7e8d-8dc0-49c6-b4d1-afd33c452158
+2026/10/19 19:32:53 INFO player registered id=157ee794-27bd-4a4b-8cac-5b2935b68160 username=wanax-a-edf97840-edd8-4e66-9eff-05ceff627a2d
+2026/10/19 19:32:53 INFO player registered id=e0f61d27-dfb2-4b22-b3f2-cec6cdad5bdc username=wanax-b-2a060734-d149-490a-8c48-380bf60fa83d
+2026/10/19 19:32:53 INFO player registered id=e13bb9fd-bacf-40ed-bc0a-8d10a12c1299 username=wanax-a-9637ca5c-0d5d-4d98-b028-ab61225330c1
+2026/10/19 19:32:53 INFO player registered id=1fc93dea-2d40-4597-9d69-961887bb45c3 username=wanax-b-fb87750c-e57a-4945-8f9e-353594854ace
+2026/10/19 19:32:53 INFO player registered id=220862b6-c2fc-438b-9a55-6acac5221e39 username=wanax-a-8bb284db-7c16-410b-8372-e796629b30c9
+2026/10/19 19:32:53 INFO player registered id=cd491d83-fd81-4494-9061-53594988fc31 username=wanax-b-b4eefbe1-993b-4a16-b854-8140a2c3dbad
+2026/10/19 19:32:53 INFO player registered id=75f7cf14-0462-4095-be37-bc3e80bce92e username=wanax-a-449af9ad-720f-4774-889f-2b6511109a45
+2026/10/19 19:32:53 INFO player registered id=5a3f73ae-bc23-4461-8bbd-cd005e521104 username=wanax-b-b7e528d1-61f2-478d-9b51-5a2fdddc3d51
+2026/10/19 19:32:53 INFO player registered id=3111429e-2b44-4941-bcb0-6d55aa371852 username=wanax-a-c3684c57-1fc1-4179-8972-a65b809595a4
+2026/10/19 19:32:53 INFO player registered id=0735d66c-7339-4620-9b68-3478c6a7dc84 username=wanax-b-0e53104e-fe83-49f3-8e47-9092a57604bf
+2026/10/19 19:32:53 INFO player registered id=b82bec15-bef7-45f7-9d96-132ee63a8c67 username=wanax-a-f921c960-49ec-4234-8308-a6f8f44f21f6
+2026/10/19 19:32:53 INFO player registered id=69e86d5c-5e38-4e92-89c5-f3acfb6f3ae7 username=wanax-b-ac1fa70d-6921-4034-9348-14dd126af7df
+2026/10/19 19:32:53 INFO player registered id=86544dbb-81af-45c4-b8c0-1121cd777288 username=wanax-a-986ad9db-265b-4bd6-aa16-552c725f302f
+2026/10/19 19:32:54 INFO player registered id=fa6f1de9-e91b-4a93-8c03-6834f3410256 username=wanax-b-2eff621a-13a9-4980-8214-fe47318b19cd
+2026/10/19 19:32:54 INFO player registered id=82b89177-c598-4375-9b98-a52bc695510b username=buildhex-9e08a408-7904-4b84-a039-e4d2418540f7
+2026/10/19 19:32:54 INFO player registered id=be5ebfa7-179d-44c5-be7f-ef5d28ebfcb8 username=fu-cargo-viewer-74efa77e-d293-4d72-8b2e-ca6222d42352
+2026/10/19 19:32:54 INFO player registered id=bf9bfd37-ba64-4e32-a1ad-2c895af8d9f7 username=fu-nocargo-viewer-9f1a383b-37aa-4b67-a0dd-074622cb4a62
+2026/10/19 19:32:54 INFO player registered id=7822736e-0813-40b7-8174-fbd77e0a125f username=fu-viewer-021bdaa0-41bf-430d-91c8-c0cb6d274d74
+2026/10/19 19:32:54 INFO player registered id=89d001e3-c7d7-4db3-852b-60a1aba3088f username=fu-rememberer-5bb30c8d-5f05-449a-b1f7-54d5d690b2e7
+2026/10/19 19:32:54 INFO player registered id=6941a6cd-b0a1-4578-b1fe-752fc1ef870e username=fu-march-viewer-cf81d876-bbdd-486d-a8f5-3200a50d447e
+2026/10/19 19:32:54 INFO player registered id=6e8aca94-20e2-463e-82fd-0fe2db761993 username=fu-leak-viewer-eba6d91b-d5d8-4391-8f1e-5781c349f391
+2026/10/19 19:32:55 INFO player registered id=e7bd7b91-a2cd-48e3-a7f0-77a53e846187 username=fu-garrison-viewer-dd2224a7-6ecf-4e2f-a3a1-240e1d57990d
+2026/10/19 19:32:55 INFO player registered id=1f55b1e7-0c57-40a7-8ca0-eb4a26ae005f username=runway-335e39f6-71a4-4530-9cf0-23c1f9c9e344-39939b29-6366-4d0d-96d1-f71dd899918d
+2026/10/19 19:32:55 INFO player registered id=e8bb7b75-02a4-4e0e-8092-3f1b48a6b46a username=runway-ca33175f-2e98-4338-ac71-5070965cd4c6-6541a1c4-be06-4d27-a459-76110c7a0a57
+2026/10/19 19:32:55 INFO player registered id=e11955e9-dc95-4213-b356-467cafdaef76 username=runway-dba29b23-5521-49b0-8399-09c2dd7911b6-8b665ab3-d6c0-4e64-90fb-db10c2245a88
+2026/10/19 19:32:55 INFO player registered id=8047f50f-2aa6-4338-b030-858ef0f870b3 username=buildhex-6b286ffd-ca50-40dd-bc20-922f531d52ea
+2026/10/19 19:32:55 INFO player registered id=6d6a976d-891c-4312-b82f-4f04ccb05421 username=buildhex-3dea870c-80bc-4146-9bac-a06d27341c57
+2026/10/19 19:32:55 INFO player registered id=0d4f7857-73b4-4c7b-8ad8-e95e8bf207a4 username=placement-4fd3d49d-affa-45dc-9094-f5d1aa002324
+2026/10/19 19:32:55 INFO player registered id=c8bb4849-c7e1-4eae-9deb-09340f77dc4b username=rite-harvest-98d2b8f2-c2f7-40ca-99f9-b120fac2d292
+2026/10/19 19:32:55 INFO player registered id=5f70dca1-3d17-47fb-a617-5ef2602c1e2b username=hexown-a-3edff16d-254f-4002-b656-04fe1cfbd544
+2026/10/19 19:32:55 INFO player registered id=ed6273dd-ee4e-47db-b6b9-b030dcb79b55 username=hexown-b-dbd36fa7-53f2-4ce1-8e89-be226a92c1d5
+2026/10/19 19:32:55 INFO player registered id=86988d3c-8435-4e64-bacd-7d4bbbddda64 username=hexown-a-38cace07-0bc1-4aef-83ad-f1f081978d58
+2026/10/19 19:32:56 INFO player registered id=91153878-a44f-4c4b-8672-5c2829d861ff username=hexown-b-8961df7a-30c2-4e1d-8620-c177c621e71d
+2026/10/19 19:32:56 INFO player registered id=5560df2e-2e76-4c97-a183-60ae534b3c5e username=hexown-a-1a31a76e-74f0-47e1-9ac5-6f44d7e509f4
+2026/10/19 19:32:56 INFO player registered id=1bd45f96-eadd-41d5-8829-5365c368488c username=hexown-b-b662e47e-304c-4b59-a256-b8b57a08aa2b
+2026/10/19 19:32:56 INFO player registered id=450cf45f-9130-4469-92c3-1df2fa6d678f username=hexown-a-46140cc4-1cb7-4d92-a140-5c3a242b25bb
+2026/10/19 19:32:56 INFO player registered id=e6700c6d-e66b-4ab8-b9dd-665646930361 username=hexown-b-6da3e60d-f5d6-458d-bca5-ce1f1550f0fb
+2026/10/19 19:32:56 INFO player registered id=0f1450a5-50bf-4c85-a67b-3392bda3b039 username=hexown-a-5dbb9191-8216-44ed-9068-ef6d9249bf71
+2026/10/19 19:32:56 INFO player registered id=a5f191ab-8c07-4456-a7ef-2951a4b9153e username=hexown-b-b12d0923-2941-43fb-8d84-b8eac1f441d6
+2026/10/19 19:32:56 INFO player registered id=d7808660-b015-48bd-935f-98cd92390bda username=hexown-a-08adf84b-25e6-4999-815d-879c6bf5c47f
+2026/10/19 19:32:56 INFO player registered id=10a480dd-ec42-4851-9031-c26059855927 username=hexown-b-242b8a9f-9bda-4237-9a4c-5c7a559b9f37
+2026/10/19 19:32:56 INFO player registered id=d5ebdc28-9cac-4dc7-8315-3b2f4e8d9ba3 username=hexown-a-3a8f361b-ea4c-457c-aab4-86b9f4e2209f
+2026/10/19 19:32:56 INFO player registered id=e2a388d8-055d-4c4e-801b-51ffb57cdb0c username=hexown-b-6ec3ac90-85b1-420b-8e59-8840069ffbc0
+2026/10/19 19:32:56 INFO player registered id=6e2ae4b3-4384-4d3e-a62a-d932254e54fa username=hexown-a-969636c8-51d9-42ef-826d-afc6483ae6a5
+2026/10/19 19:32:56 INFO player registered id=7bb3b6e5-e681-4e91-a5ad-af76b7d0337a username=hexown-b-c427e261-6fd6-4d22-9db1-c612a03059cc
+2026/10/19 19:32:57 INFO player registered id=0e3c9c10-9ab3-4e26-8701-e34c6abc31e9 username=hexown-a-d448fb87-d7e6-4648-bef2-c2ad1b7c8ca1
+2026/10/19 19:32:57 INFO player registered id=b730eaf1-bbaa-4cd7-90ac-416248c0b33f username=hexown-b-c9893133-c226-482a-b8c9-d15168f2d8a4
+2026/10/19 19:32:57 INFO player registered id=660e7e74-217d-47cf-af6d-010d52369895 username=hexown-a-079f1e45-0324-46b4-a578-133c58e379f1
+2026/10/19 19:32:57 INFO player registered id=e0e265e1-348d-4fce-ba3f-576476122041 username=hexown-b-13009245-89ba-41a2-9c19-dd1a40bc3947
+2026/10/19 19:32:57 INFO player registered id=aa382618-e4c3-4001-a272-6451607e06e5 username=hexown-a-b6dc84ce-3d69-4613-8769-da9c84b99595
+2026/10/19 19:32:57 INFO player registered id=a9737f6a-2079-47d8-b7e6-7fbfd544afb7 username=hexown-b-a41e0d9f-7e60-49cd-b1a1-e278ae59902b
+2026/10/19 19:32:57 INFO player registered id=3b212fdf-26e8-4730-90b9-c902b10622f5 username=hexown-a-5f39e448-8836-457e-afa9-3dea00af0896
+2026/10/19 19:32:57 INFO player registered id=80956664-deb0-45d2-ab46-d26e3cd5446f username=hexown-b-738addab-60b0-4b6c-8c93-987173f53275
+2026/10/19 19:32:57 INFO player registered id=b6d4b8ee-c530-4735-8422-1f8f405365d4 username=hexown-a-e609815a-388e-481f-93fd-6a41d673b7f1
+2026/10/19 19:32:57 INFO player registered id=4e129f8c-3893-4ea4-9a52-fcd4536e3e48 username=hexown-b-6b186ab4-6504-4f88-b67a-3b710595303e
+2026/10/19 19:32:57 INFO player registered id=ad30e98e-2761-41c0-bbe5-2af9561fddeb username=hexown-a-de52f134-8e36-420b-a729-5b601b5f2cf6
+2026/10/19 19:32:57 INFO player registered id=a2431a90-f119-4e67-85f0-ff2f4e11c619 username=hexown-b-71c29eee-37e9-4e87-a1ab-7303424c9315
+2026/10/19 19:32:57 INFO player registered id=f9eaffa5-2b95-4b95-8834-6241e94f9f30 username=hexown-a-56ce537d-972e-4522-a203-51711a06e27f
+2026/10/19 19:32:57 INFO player registered id=7d98fba0-51e9-468c-a4cd-dd7049807729 username=hexown-b-3be52498-69b3-46cb-8369-aca9b04fec9e
+2026/10/19 19:32:58 INFO player registered id=03127da3-7fca-4006-9fbc-b266d9e3aea5 username=hexown-a-78f6c50b-3986-446f-a48c-603faced40a1
+2026/10/19 19:32:58 INFO player registered id=fee63e09-ba35-4045-884d-10831b51c913 username=hexown-b-283b1b63-f703-450f-99a9-d65c93a6c73c
+2026/10/19 19:32:58 INFO player registered id=84ca7f1d-b807-4a2c-aae0-d6ac24745bdd username=hexown-a-b7ee93e8-c883-41a0-9887-fd8ac2d45858
+2026/10/19 19:32:58 INFO player registered id=c4d7e095-5538-4113-ae44-7583812d01c5 username=hexown-b-732648f9-c607-4b07-aa9b-2de42d051b0c
+2026/10/19 19:32:58 INFO player registered id=6692d933-2da6-42e4-90d5-6fc17d2a5fe8 username=hexown-a-c4ebf578-ac4d-4016-b599-7bdf3395ef8a
+2026/10/19 19:32:58 INFO player registered id=0e6a98e7-4ce3-4046-9c08-6b67dd77a320 username=hexown-b-b9e7f6f6-304d-4f4d-a8c3-6671e57e2f61
+2026/10/19 19:32:58 INFO player registered id=655c280f-1112-428a-b6f8-f917c43621af username=hexown-a-75a4cf7f-3bc4-48c9-81b6-0f09a2fc6173
+2026/10/19 19:32:58 INFO player registered id=89b3c788-7f88-4ba2-bd2d-973cacc1de96 username=hexown-b-ed170eaa-c860-4e45-8b5f-8d8306d3fc89
+2026/10/19 19:32:58 INFO player registered id=5e7d1ef9-b2b8-41d3-829e-a4ced60f3344 username=hexown-a-266739f7-39a5-4478-9bf5-8e5374f9255b
+2026/10/19 19:32:58 INFO player registered id=9799d3a9-6d83-4d34-92cb-25932e5560cc username=hexown-b-6a9a130e-863a-4412-952f-7dcf9df089a2
+2026/10/19 19:32:58 INFO player registered id=a40fafc2-0570-4f8d-9fa1-37d4747615b6 username=hexown-a-ef6ed947-a0aa-44b1-8b31-a935ae65188b
+2026/10/19 19:32:58 INFO player registered id=711453b7-ee57-48b9-81ce-ea44a6354828 username=hexown-b-27d53016-d8f6-4e78-9c32-bff6734d3623
+2026/10/19 19:32:59 INFO player registered id=2db44be1-a711-4c0e-935c-a58e95150536 username=hexown-a-2e99c042-f0bc-4667-9fc0-9f36c114d4ec
+2026/10/19 19:32:59 INFO player registered id=acd357bb-2479-4877-95f2-8b16c0273785 username=hexown-b-a1fa59a1-201f-4e62-b1b2-65d2ae3efea7
+2026/10/19 19:32:59 INFO player registered id=dfa873e8-ce4c-4515-953c-914fe3b047c0 username=host-floor-d8e590de-cd0c-4fc5-a5e2-bb3759f85a91-e0466c7d-60b4-43d7-9a03-783642c89d09
+2026/10/19 19:32:59 INFO player registered id=72c23b88-e485-4792-b66a-3e0152955fde username=founder-phase-host-3268de8b-992d-4af2-8f2d-a1d1c74b6c79
+2026/10/19 19:32:59 INFO player registered id=e22f64e9-a15e-4f96-b65c-9c15d23eeb91 username=second-joiner-3cc56078-50c2-44e3-8ad1-aaf44c7e2aaa
+2026/10/19 19:32:59 INFO player registered id=9bfa52b4-41e0-4ed6-b5f2-b5539afe04a1 username=landmass-balance-1-f8d6a082-e3ca-4f1f-83e6-db79b93404a6
+2026/10/19 19:32:59 INFO player registered id=c994e9e9-7a20-4d13-99c4-7edcd72380f9 username=landmass-balance-2-a499a776-ba64-4c72-b099-5950ab2afc11
+2026/10/19 19:32:59 INFO player registered id=f713b2af-cb5f-42ae-b547-bfae42186405 username=metal-bias-1-b9c8dce1-9de9-47f8-b702-be0c0516b558
+2026/10/19 19:32:59 INFO player registered id=eeec1169-971f-4633-ae44-998e1682b51e username=metal-bias-2-3cf2e9a8-58df-4eb8-90ef-e43f475a8178
+2026/10/19 19:32:59 INFO player registered id=94fd1208-a370-4174-9383-03440270c44f username=metal-bias-3-582abe55-d91e-4549-81c8-7aa39f6fed07
+2026/10/19 19:32:59 INFO player registered id=685f50db-9fc9-4ac7-abb0-30efddf7d092 username=viable-landmass-9b9fc7aa-a87d-4531-8e0e-15d9f224fd64
+2026/10/19 19:32:59 INFO player registered id=4132f491-6a71-454e-90d9-41d68262445f username=viable-landmass-033cbc64-eb98-4a04-a185-8c2bea72b43c
+2026/10/19 19:32:59 INFO player registered id=4245333b-601c-4ae2-8b19-7f6897d98620 username=viable-landmass-a4ea4651-5535-401c-8bdc-5ee4c7cd18b9
+2026/10/19 19:32:59 INFO player registered id=7f1240a2-0cc2-4636-bbee-99f5e213fed3 username=realm-projection-a3edbda3-407e-40a1-b6cb-f69722c2594b
+2026/10/19 19:33:00 INFO player registered id=74a0bb3a-8ea8-4b15-81a4-483a859e6547 username=placement-b7b97268-e361-48f9-aa25-c014a5a46a61
+2026/10/19 19:33:00 INFO player registered id=dcb0700c-ec12-4db3-afe0-023d0babad48 username=placement-f39b6ea2-4331-44ea-a827-ce1a1123d85f
+2026/10/19 19:33:00 INFO player registered id=243b04b7-e322-487f-83e1-86b0b30caab7 username=placement-bd6ce334-cd9d-4e5b-ab00-8f41e6a7ccec
+2026/10/19 19:33:00 INFO player registered id=9e6aede1-7ca5-4e71-9688-a9999522f4c2 username=buildhex-f1d124e7-bb77-479f-a681-887a728bec90
+2026/10/19 19:33:00 INFO player registered id=e4d377fe-a16e-4d4c-b076-636a25e85698 username=buildhex-301eaa82-6ab0-4d7f-bd02-6f3e6c9a9415
+2026/10/19 19:33:00 INFO player registered id=2245aae4-dba2-4566-92a0-cc602d987ec3 username=buildhex-9cc3f8a3-6cf3-45ca-9e8d-18ba34b5fd99
+2026/10/19 19:33:00 INFO player registered id=bac3b8b1-e37a-4530-9ced-e295cb1b1de0 username=wanax-a-be352901-2ec1-4d46-bc84-245f80c10935
+2026/10/19 19:33:00 INFO player registered id=df5078b0-2af0-4f39-950e-490b599cf2a9 username=wanax-b-af0e6be2-f6ca-4755-9788-74d7a6a2e753
+2026/10/19 19:33:00 INFO player registered id=c783e7aa-e819-4510-bda3-a28e1782d6d6 username=wanax-a-885755b3-18a9-441c-8e52-a12ba886a151
+2026/10/19 19:33:00 INFO player registered id=234e57a9-4b8e-4b45-8d07-9b78dae168a4 username=wanax-b-25c99559-19e8-4616-9742-f3ab0aec78fa
+2026/10/19 19:33:01 INFO player registered id=30e2417a-f947-4e19-890d-ee3bd221fbee username=wanax-a-aae77e01-6c16-434e-ad7c-a736d0dfe0cc
+2026/10/19 19:33:01 INFO player registered id=dd99985a-204c-4595-b1b2-bc379d024b8d username=wanax-b-7c81333b-c9b8-442b-bc95-405b77cb8cbf
+2026/10/19 19:33:01 INFO player registered id=4ea34971-4633-433a-9bfc-df86516c5e28 username=wanax-a-1ca7e542-0236-4286-b604-2a11ee7024ed
+2026/10/19 19:33:01 INFO player registered id=2ea4202e-09fc-4189-84d5-58eea3a29b9f username=wanax-b-159151c4-8e5f-453a-829c-9e1c128f819d
+2026/10/19 19:33:01 INFO player registered id=66c236bf-26a0-451c-8e7e-594ad4706fdf username=wanax-a-362c5cf6-08e0-43a5-862b-54af3f9092f4
+2026/10/19 19:33:01 INFO player registered id=fb2338b3-1d53-4f43-8a11-e5afafb34e85 username=wanax-b-05558788-70fe-4bf1-bd24-271a6cb3356e
+2026/10/19 19:33:01 INFO player registered id=0248159c-2cfd-4391-b7e9-a99c46566285 username=wanax-a-0e85ee1d-d4b8-4e6e-9811-ec5458ba2521
+2026/10/19 19:33:01 INFO player registered id=406ffd09-0695-4e66-9008-eb5f4b06727e username=wanax-b-7a55b489-6f58-425e-a5c5-a2d8579cadb2
+2026/10/19 19:33:01 INFO player registered id=c4361dfb-483e-4180-82d6-4472f76da1f1 username=wanax-a-2406cbbb-ac15-4a10-ba2e-e43741cb18ee
+2026/10/19 19:33:01 INFO player registered id=14de2642-7bf2-4556-a744-a57766e1622d username=wanax-b-5a842ba0-1392-4516-a5f0-d8a7e7d527c5
+2026/10/19 19:33:01 INFO player registered id=ad38939b-aca1-45a5-90a0-9aa14bec273c username=wanax-a-c982e625-0907-4884-ba90-4ba910c47431
+2026/10/19 19:33:01 INFO player registered id=d1d0654d-49a7-4580-96d4-8224548d0eca username=wanax-b-53764b8a-a011-43a7-a3f5-bd31b51cb2bf
+2026/10/19 19:33:01 INFO player registered id=e6cb8cee-1256-4ad0-96b3-abae8e4a2bc9 username=wanax-a-0e6d60a2-d719-44a6-bfb4-6c19b25d29ee
+2026/10/19 19:33:01 INFO player registered id=20a8fa8a-dff5-4329-8d39-6f28d4a1cc9f username=wanax-b-41e02c0b-884d-440b-bda1-0c8a1b325094
+2026/10/19 19:33:01 INFO player registered id=4fefbc69-449b-4b83-bcd6-724259eea344 username=marches-viewer-ded25b05-360e-4927-b670-a09e15914d5b
+2026/10/19 19:33:01 INFO player registered id=1f221042-d912-4a79-9225-81be1bd77997 username=marches-own-viewer-77e1fec9-70d6-4a9a-b0bf-840448a1e51a
+2026/10/19 19:33:02 INFO player registered id=e28e8d49-ef73-4b72-97b0-bd86b99a6c1f username=msg-viewer-06d78f53-92e4-4582-ad51-57503ea46367
+2026/10/19 19:33:02 INFO player registered id=f7b4ee44-aa40-4126-8c06-7620097b43eb username=msg-viewer-89232230-20b2-49d5-bf93-c4cc1fe0ede0
+2026/10/19 19:33:02 INFO player registered id=1149eb0b-eaa5-4268-9b83-c8c8824a1082 username=placement-a72707bc-bfdb-43f3-a39c-151e18685bd9
+2026/10/19 19:33:02 INFO player registered id=a3358e63-b970-4af2-a2bb-a04e29e21e78 username=wants-viewer-ec53f5da-9a8c-409d-9831-b5b24a14e929
+2026/10/19 19:33:02 INFO player registered id=fb21fee1-c373-4d21-8aa4-76003e29e0b2 username=initiator-ff777de7-e05f-4eb0-996c-e7b2e349d214
+2026/10/19 19:33:02 INFO player registered id=7c691370-8af9-4a16-8068-0f52b4a53cc4 username=counterparty-d2ca0bef-7dff-4ebc-94ad-ae34dcd89330
+2026/10/19 19:33:02 INFO player registered id=2b2c4825-2946-49ee-8779-c695c0e211f8 username=initiator-0f1a865b-d607-4e03-8029-e5ac3d677d9d
+2026/10/19 19:33:02 INFO player registered id=badede9e-bdb8-41e5-b3cb-8daccd563701 username=counterparty-9963a73d-9861-4d16-98a5-41ed15116391
+2026/10/19 19:33:02 INFO player registered id=3eaa22f0-65d1-41c4-b2f8-7dd00da73034 username=initiator-3bc780fc-8a91-4437-a31d-14f631abd214
+2026/10/19 19:33:02 INFO player registered id=79896a86-472a-4996-95b8-feb9372a1d74 username=counterparty-ff19dd7d-56de-4ffa-989a-79aa8040d77d
+2026/10/19 19:33:02 INFO passage: messenger boarded messenger=0b8dc200-45b8-4273-9301-634f3a545145 carrier=Emporos arrives_at=2026-10-19T21:33:02.614+02:00
+2026/10/19 19:33:02 INFO passage: ship waiting for runner's return unit=ef55788d-a3b7-49e9-bf3d-fe5993a426eb messenger=0b8dc200-45b8-4273-9301-634f3a545145
+2026/10/19 19:33:02 INFO messenger delivered id=0b8dc200-45b8-4273-9301-634f3a545145 destination=4b601d57-481a-4e87-a1a4-e0698f2f1070
+2026/10/19 19:33:02 INFO player registered id=b3d1b97e-2921-4c8b-9064-127ee4f9e907 username=initiator-f0eabb06-7661-40da-b0df-703d26f7cbad
+2026/10/19 19:33:02 INFO player registered id=aaf8f9ce-d138-4c54-bd61-4503a6c02418 username=counterparty-e9124ccb-394d-4e2e-a057-49f2b7557895
+2026/10/19 19:33:02 INFO passage: messenger boarded messenger=d212e287-cda5-435e-904a-29f9db6f402f carrier=Emporos arrives_at=2026-10-19T21:33:02.743+02:00
+2026/10/19 19:33:02 INFO passage: ship waiting for runner's return unit=48bfff69-e919-4124-9235-4950185b0aa6 messenger=d212e287-cda5-435e-904a-29f9db6f402f
+2026/10/19 19:33:02 INFO messenger arrival: premature or stale passage generation — no-op id=d212e287-cda5-435e-904a-29f9db6f402f passage_status=0x3780a12810c0 event_generation=1 current_generation=2
+2026/10/19 19:33:02 INFO messenger delivered id=d212e287-cda5-435e-904a-29f9db6f402f destination=40a941d3-55bd-4ad0-b680-bddf44eb5ad9
+2026/10/19 19:33:02 INFO player registered id=988e289c-6aea-46d6-9567-f5de30ddab54 username=leg-viewer-c4a51d7b-0a15-4724-81a9-d9468453499c
+2026/10/19 19:33:02 INFO player registered id=599e6ab4-d6b1-4607-8809-06f37002b1ef username=trader-02e63c0e-4dcb-4568-bb22-db964b973d44
+2026/10/19 19:33:03 INFO player registered id=e828486f-854e-4930-88ed-2cb3cb7730c7 username=insolvent-e818dbd9-694d-48bb-a7f6-ffe8cecd5f95
+2026/10/19 19:33:03 INFO player registered id=743938cd-b4cc-4115-9b1d-73f9c93ec7e2 username=origin-sender-152d608d-600b-473f-a28f-8a74efba2919
+2026/10/19 19:33:03 INFO player registered id=ae4d252a-d645-4b1b-9416-d2eccb402c40 username=origin-recipient-d5a5baa7-e879-4bd0-b4e9-267e461aaadb
+2026/10/19 19:33:03 INFO player registered id=a5f99665-5905-4c94-b1d4-62b7bbd8d82d username=host-sender-6a0f9620-0353-47a4-a8f3-46d917700e2e
+2026/10/19 19:33:03 INFO player registered id=80561b01-d58c-4fa2-80d4-e90c6ad63265 username=host-recipient-828af5c4-00c3-4308-8849-df0047f3f4c3
+2026/10/19 19:33:03 INFO player registered id=6d52d5b8-8ce4-4b62-b478-627f9820e4e2 username=initiator-71411ac4-1823-4e34-ba81-437ea62e1e87
+2026/10/19 19:33:03 INFO player registered id=8209d285-59c4-4b2b-9bf6-b756c8bd2b20 username=counterparty-b10f98e4-a869-4e47-913e-69a2923c22ef
+2026/10/19 19:33:03 INFO passage: messenger boarded messenger=ddb13a83-618a-4d4e-b152-d70ab762dbdd carrier=Emporos arrives_at=2026-10-19T21:33:03.329+02:00
+2026/10/19 19:33:03 INFO passage: ship waiting for runner's return unit=d024cd08-f64d-497a-9f7a-eee72ca22e07 messenger=ddb13a83-618a-4d4e-b152-d70ab762dbdd
+2026/10/19 19:33:03 INFO messenger delivered id=ddb13a83-618a-4d4e-b152-d70ab762dbdd destination=e27366a4-af86-4cfd-b66e-87bbf6afcd89
+2026/10/19 19:33:03 INFO field unit turning for home unit=d024cd08-f64d-497a-9f7a-eee72ca22e07 from_q=4 from_r=0 home_q=1 home_r=0
+2026/10/19 19:33:03 INFO passage: passage_wait ship released unit=d024cd08-f64d-497a-9f7a-eee72ca22e07
+2026/10/19 19:33:03 INFO passage: messenger boarded messenger=ddb13a83-618a-4d4e-b152-d70ab762dbdd carrier=Emporos arrives_at=2026-10-19T21:33:03.329+02:00
+2026/10/19 19:33:03 INFO unit returned home from explore unit=d024cd08-f64d-497a-9f7a-eee72ca22e07 settlement=cb865cb1-3076-4ac4-b5f9-138dd4a2a920
+2026/10/19 19:33:03 INFO messenger returned home id=ddb13a83-618a-4d4e-b152-d70ab762dbdd
+2026/10/19 19:33:03 INFO player registered id=61132484-7fdf-4be5-8a4e-0eeb54cb2ef4 username=initiator-33241f73-989e-45b7-b7b1-19d48ffe9cbd
+2026/10/19 19:33:03 INFO player registered id=28ac37ca-1aa1-4d25-a5fb-c89a6b389cef username=counterparty-05127f17-b1bd-4658-b113-5cb11451ffaf
+2026/10/19 19:33:03 INFO passage: messenger boarded messenger=97ad3630-bc7a-4d42-9e3f-3a6fcb62fddc carrier=Galley arrives_at=2026-10-19T22:33:03.493+02:00
+2026/10/19 19:33:03 INFO passage: ship waiting for runner's return unit=99522bba-6f24-46f4-97b1-536c1a004833 messenger=97ad3630-bc7a-4d42-9e3f-3a6fcb62fddc
+2026/10/19 19:33:03 INFO messenger delivered id=97ad3630-bc7a-4d42-9e3f-3a6fcb62fddc destination=63aab928-6a89-4346-a3d8-305786191d5a
+2026/10/19 19:33:03 INFO messenger stay ended — walking home unanswered id=97ad3630-bc7a-4d42-9e3f-3a6fcb62fddc returns_at=2026-10-19T19:33:03.493+02:00 passage_awaiting=true
+2026/10/19 19:33:03 INFO field unit turning for home unit=99522bba-6f24-46f4-97b1-536c1a004833 from_q=4 from_r=0 home_q=1 home_r=0
+2026/10/19 19:33:03 INFO passage: passage_wait ship released unit=99522bba-6f24-46f4-97b1-536c1a004833
+2026/10/19 19:33:03 INFO passage: messenger boarded messenger=97ad3630-bc7a-4d42-9e3f-3a6fcb62fddc carrier=Galley arrives_at=2026-10-19T22:33:03.493+02:00
+2026/10/19 19:33:03 INFO unit returned home from explore unit=99522bba-6f24-46f4-97b1-536c1a004833 settlement=c1201c19-6e75-4513-bef9-fcaf61b29c4c
+2026/10/19 19:33:03 INFO messenger returned home id=97ad3630-bc7a-4d42-9e3f-3a6fcb62fddc
+2026/10/19 19:33:03 INFO player registered id=556e278b-1b48-4626-b617-0447584cef8e username=initiator-8ddb1a1c-92d6-4bf3-a7e8-93517f1ebf90
+2026/10/19 19:33:03 INFO player registered id=f759c725-fb2c-4e7f-87b6-7d1e33ee1517 username=counterparty-5f03e002-ebac-4a31-b0c8-2cd4acbd7b13
+2026/10/19 19:33:03 INFO passage: messenger boarded messenger=468a1111-5868-4ddc-adf1-781278a1a91d carrier=Galley arrives_at=2026-10-19T22:33:03.664+02:00
+2026/10/19 19:33:03 INFO passage: nothing left to wait for, ship turning for home unit=619f926f-2e0c-41fb-87cb-ef0df4050e0a messenger=468a1111-5868-4ddc-adf1-781278a1a91d
+2026/10/19 19:33:03 INFO field unit turning for home unit=619f926f-2e0c-41fb-87cb-ef0df4050e0a from_q=4 from_r=0 home_q=1 home_r=0
+2026/10/19 19:33:03 INFO order delivered — stance applied unit=48b9a690-a51d-433e-9734-1067ae54d7c6 stance=fortify
+2026/10/19 19:33:03 INFO unit returned home from explore unit=619f926f-2e0c-41fb-87cb-ef0df4050e0a settlement=490ed5ca-7422-4a2f-8b0c-3785f0ebcd54
+2026/10/19 19:33:03 INFO player registered id=34662892-9c3c-4f5d-aaa0-b79df71a79bc username=initiator-f1b1f7f0-006b-4fe5-b5aa-f2abc29d0d1f
+2026/10/19 19:33:03 INFO player registered id=32f1d5d5-6ad5-4e5e-ae68-33a3c1a3c42d username=counterparty-b2f29d04-9056-4ad0-951a-630b08a31f91
+2026/10/19 19:33:03 INFO passage: ship waiting for runner's return unit=bc76d6a0-ba68-4396-b971-afbd0df0c0a7 messenger=7a0aa407-25d3-4691-a0c2-bd2247b241c8
+2026/10/19 19:33:03 INFO field unit turning for home unit=bc76d6a0-ba68-4396-b971-afbd0df0c0a7 from_q=4 from_r=0 home_q=1 home_r=0
+2026/10/19 19:33:03 INFO passage: passage_wait ship released unit=bc76d6a0-ba68-4396-b971-afbd0df0c0a7
+2026/10/19 19:33:03 INFO passage: messenger boarded messenger=7a0aa407-25d3-4691-a0c2-bd2247b241c8 carrier=Emporos arrives_at=2026-10-19T21:33:03.813+02:00
+2026/10/19 19:33:03 INFO unit returned home from explore unit=bc76d6a0-ba68-4396-b971-afbd0df0c0a7 settlement=d231950c-6a6c-42cb-98cf-710d2b96bf9a
+2026/10/19 19:33:03 INFO messenger returned home id=7a0aa407-25d3-4691-a0c2-bd2247b241c8
+2026/10/19 19:33:03 INFO player registered id=4ef07e4f-e908-482f-9d12-b988e728e484 username=initiator-17615f66-d6f8-472a-845f-86ae4d17e273
+2026/10/19 19:33:03 INFO player registered id=9e9f60c1-bd09-4c49-b598-efdb7b5a9d45 username=counterparty-3835061a-3d24-47bb-85a3-d8465a0bbba3
+2026/10/19 19:33:03 INFO passage: messenger boarded messenger=ed809aef-0c5f-4c2e-812c-35fd122519b0 carrier=Galley arrives_at=2026-10-19T23:33:03.959+02:00
+2026/10/19 19:33:04 INFO player registered id=f6fa1896-695c-4249-b5a6-95084eda94c5 username=initiator-f4990836-d2aa-4196-ab3d-232a1aa4676d
+2026/10/19 19:33:04 INFO player registered id=0ac9d6e1-f082-401a-9819-aefe868d6ebb username=counterparty-636f9f27-ba9f-43f6-812f-645944d71c69
+2026/10/19 19:33:04 INFO player registered id=5efe9a0a-79af-451f-9523-8a011d67d779 username=initiator-7d643fb5-c2f2-4aac-b0f9-843bfcabb410
+2026/10/19 19:33:04 INFO player registered id=94654e2b-0cfd-4bd6-858f-a1354387cbda username=counterparty-bd0ed15a-565e-439c-9637-a4e8dc1c2391
+2026/10/19 19:33:04 INFO passage: messenger boarded messenger=c45c948a-e152-4dfd-a224-25b5cc9a04ea carrier=Emporos arrives_at=2026-10-19T21:33:04.188+02:00
+2026/10/19 19:33:04 INFO passage: ship waiting for runner's return unit=0b25bb2b-6ba4-40d8-a58b-aca83300b48f messenger=c45c948a-e152-4dfd-a224-25b5cc9a04ea
+2026/10/19 19:33:04 INFO messenger delivered id=c45c948a-e152-4dfd-a224-25b5cc9a04ea destination=ba3d0d98-1274-4f62-861a-b712927390b6
+2026/10/19 19:33:04 INFO player registered id=70ffc9bb-06ad-47db-bb81-42a72488219b username=initiator-033d1a86-a4f8-4106-b4b4-4e38699b1772
+2026/10/19 19:33:04 INFO player registered id=0430763f-5752-4e46-bbae-04598215fd47 username=counterparty-debbdd41-5fdf-4bdb-9225-7e0d34d57830
+2026/10/19 19:33:04 INFO player registered id=eacfa037-e5df-4720-8a11-736ec070a3b3 username=leg-viewer-408fba12-06bb-4dda-a561-ea9af1252904
+2026/10/19 19:33:04 INFO player registered id=8c25b77a-6e78-4565-ae53-e502613adb0c username=leg-viewer-bef0cc67-18ee-45a4-ac6f-4d12f495f600
+2026/10/19 19:33:04 INFO player registered id=3a46dc6b-3c9c-4abb-85a5-5a9c25ba4da2 username=leg-viewer-d00ed396-de6b-4036-87d7-5f1130b606cb
+2026/10/19 19:33:04 INFO player registered id=fb7d0777-b93b-4685-94f6-22b67a9bd628 username=leg-viewer-0e9e7964-2100-4953-b793-0bbaa62f791b
+2026/10/19 19:33:04 INFO player registered id=9a0089af-340a-43c5-8385-4e5de1ee3046 username=leg-viewer-188ccebb-12f8-4eef-b051-0fbfa9970790
+2026/10/19 19:33:04 INFO player registered id=675a2dab-bf2e-4485-9461-688419390c7c username=leg-viewer-751b1068-0e7e-4304-a59a-47619a9c8a56
+2026/10/19 19:33:04 INFO player registered id=335a1966-7d52-4e67-acd5-79e22ec761fc username=passage-viewer-5b69427f-0ab2-4874-84b8-99efe36216b5
+2026/10/19 19:33:04 INFO player registered id=20f36b03-be8a-44e5-90f2-fcb634d9c44a username=passage-viewer-0817c90f-b348-4d68-80f2-650423cdbebf
+2026/10/19 19:33:05 INFO player registered id=935f5a53-6c14-4db4-b325-2d90360da13f username=initiator-d9f64e0b-589e-4734-99ec-43a2684f77f8
+2026/10/19 19:33:05 INFO player registered id=804a0818-60f2-4a8f-b789-e15b0fb0c0b3 username=counterparty-3e93b7e8-ee5d-4e76-ae6e-6d74c7646a6f
+2026/10/19 19:33:05 INFO player registered id=66e3281a-efcc-477f-bac0-7c2dcb43a4be username=initiator-23c3c9fb-ccc1-4085-aba4-aa9680e2e3fd
+2026/10/19 19:33:05 INFO player registered id=c77b2f83-3204-4f7d-8306-dcce76c9244b username=counterparty-e4e53b18-5d59-4c00-8d34-4c77ebdbea1d
+2026/10/19 19:33:05 INFO player registered id=1c7ee95c-60c1-469f-b1f4-07916f78085b username=reply-sender-51a4573f-d4ba-45a0-9bd5-5bbed91c82b2
+2026/10/19 19:33:05 INFO player registered id=3ac3c557-561a-4644-9765-d132cb9feab0 username=reply-receiver-71b80a4e-7cad-4c29-a42c-ef3d649aa9e8
+2026/10/19 19:33:05 INFO player registered id=834a3da6-a6e1-4a6f-ae36-10f948306080 username=reply-sender-adb6b211-ae06-4e2d-ae00-5b37bcfdf1bc
+2026/10/19 19:33:05 INFO player registered id=22fc5495-d117-4968-9bd3-d333ef23e7a1 username=reply-receiver-e96fb41f-fc0b-4bb1-9aa2-b1a1da6e8ec0
+2026/10/19 19:33:05 INFO player registered id=c86ab6f5-c9d7-4bcf-91b1-f35fb4d8fc9c username=initiator-a76f8e7c-7b9f-4091-ad50-7bde03872698
+2026/10/19 19:33:05 INFO player registered id=5d74881d-f79f-48c7-ac4b-035d5a1974c9 username=counterparty-50a215df-aa36-46a5-8685-9d80f9fa6843
+2026/10/19 19:33:05 INFO player registered id=a02ee0a2-0940-4482-954f-772cda564891 username=initiator-c66faec2-035d-4570-bf94-73c97e1558c0
+2026/10/19 19:33:05 INFO player registered id=6ff1a5a8-8ec5-4610-855d-0235cab707f0 username=counterparty-88505cbc-b371-43b5-833c-2bdb27ba3805
+2026/10/19 19:33:05 INFO player registered id=d183f3b1-2e53-4a63-bad5-5b20ae63ed90 username=initiator-5179db12-db65-46f3-b356-207f30ff1703
+2026/10/19 19:33:05 INFO player registered id=00da25f4-1c2d-4d9f-a7c9-cc83e347cd85 username=counterparty-8adcbf25-b25b-4769-8551-6f7b1c2ee945
+2026/10/19 19:33:05 INFO player registered id=f103b9f0-6a7b-4ded-a7ce-fdb4da24eb2c username=initiator-2ea57951-4027-4190-bbaf-6a62f6b3458a
+2026/10/19 19:33:05 INFO player registered id=2b5febc1-44e4-47a5-ab19-0fff31401087 username=counterparty-3ce62529-514d-48f0-a615-1a72c19676ab
+2026/10/19 19:33:05 INFO player registered id=65202f8a-91b1-4447-afcb-fb913e278570 username=initiator-cfaeff06-c79f-4fad-8aed-4437c6992a71
+2026/10/19 19:33:06 INFO player registered id=5b194366-1b4e-4913-8b7d-1783faef90c7 username=counterparty-69fc555a-de3c-406b-a80f-866c70867a44
+2026/10/19 19:33:06 INFO player registered id=229c8928-1f36-4e6c-a003-3a627c6aceb4 username=initiator-ec82a63c-2beb-4207-b649-b9740afb7110
+2026/10/19 19:33:06 INFO player registered id=0763c1eb-5707-4687-b38c-1b2911b60511 username=counterparty-4c2f730a-d954-4479-9629-69c7eaf8be60
+2026/10/19 19:33:06 INFO player registered id=e19803f7-a85a-459e-ad6d-a16b274c5cf4 username=goodval-caller-138cfddf-95c2-4717-ad43-b0ebfb50f278
+2026/10/19 19:33:06 INFO player registered id=8bf22a2d-40dd-4d2d-b8f5-8e91f7993db0 username=goodval-counter-bb9746c1-7fe2-491b-85ce-9518b134d4f9
+2026/10/19 19:33:06 INFO player registered id=98fd3da5-1231-431b-90b7-8d2007ceeb21 username=goodval-caller-f321d8d7-954f-47cb-9db7-7c96f10b5dd9
+2026/10/19 19:33:06 INFO player registered id=9e48fbfb-641b-4458-9739-4b203ba27e7c username=goodval-counter-6aaf3317-990a-4e4f-ad8b-272de9c8c33a
+2026/10/19 19:33:06 INFO player registered id=a2cdb519-cc8f-4ae0-8a99-8ea30a081291 username=goodval-caller-e09fa189-a840-4280-ac1f-f882fba0a6d1
+2026/10/19 19:33:06 INFO player registered id=17bb973a-6ba3-4e62-bb57-94f115885116 username=goodval-counter-2d91f98e-4e55-4d74-82ef-63a77f88b57e
+2026/10/19 19:33:06 INFO player registered id=d00aab4e-6533-4c57-9df7-251f45db6a57 username=goodval-caller-fb8893eb-01da-43a0-88cd-9c76c09be036
+2026/10/19 19:33:06 INFO player registered id=66245de5-5c64-41a4-a5ee-9dffcd8fe95e username=goodval-counter-3c3e3fc8-9840-4b85-ad5f-9186376cb9bb
+2026/10/19 19:33:06 INFO player registered id=3d36f5a5-5458-4868-9d54-4849d5844927 username=goodval-caller-5591068d-c403-4b5f-aaa9-af8fb9f1f9fb
+2026/10/19 19:33:06 INFO player registered id=70a4654a-89a3-4761-a39e-4d4d8d726f44 username=goodval-counter-51127fb8-1ef3-49a3-84c1-d725d5085515
+2026/10/19 19:33:06 INFO player registered id=e58cce88-e73b-4afd-98d8-88264d248a57 username=notif-edfa6497-3182-4bd1-af4a-a767c0e12663
+2026/10/19 19:33:06 INFO player registered id=e297b213-6e96-4d9e-9562-5717d3fb2134 username=notif-0291ec3a-0540-4598-9bc6-48499de1423a
+2026/10/19 19:33:06 INFO player registered id=ee4cbf18-cc6f-4a1c-8eb2-5f6e79ff54b9 username=notif-10817910-bb8e-4145-b32f-0fa141f4b92c
+2026/10/19 19:33:06 INFO player registered id=6cd0f869-1c9c-4fde-88dd-6c453be2d9a5 username=notif-4e8ca54b-005f-4d18-993d-7f9396373ffb
+2026/10/19 19:33:07 INFO player registered id=c0974294-c12f-44d6-a038-ccf32d49ab93 username=notif-96143a07-663e-41d7-a81e-776d8b7bbf19
+2026/10/19 19:33:07 INFO player registered id=30e08fa3-3a1d-44ae-acbf-1b4b71f34b4e username=notif-other-38631c03-1c0e-4bfe-b79b-9ded7e77e7fc
+2026/10/19 19:33:07 INFO player registered id=1f9505d6-9f30-4414-a96c-9d825dbcf305 username=opening-f2f7d3a6-9348-4211-841d-9aa48c90bb90-832744c8-0faf-403b-931c-ab7ac791b3d9
+2026/10/19 19:33:07 INFO player registered id=e724c475-61a2-47a1-a113-1002af5ebb9b username=opening-other-dbc7d4f6-17e7-43d8-81e6-a0e499a7c318-a60b2805-d9e8-4c11-bbb7-9fb164dfb58f
+2026/10/19 19:33:07 INFO player registered id=7bbcd018-fe7f-43fb-898a-d3210fcbab33 username=opening-rollback-4564dd9f-b3a9-447b-af90-da66a80a7d08-8837159d-6dac-4b1b-a2ae-050a7df51f18
+2026/10/19 19:33:07 INFO player registered id=71a7cd21-658c-408e-abe8-0ad96702de19 username=oracle-map-83010aad-ff4e-4479-8af7-b00abc7a2bbd
+2026/10/19 19:33:07 INFO player registered id=5fbc0f9a-a8b0-4246-85ec-6ac5f7e68473 username=oracle-map-4b25f7fe-d7c5-44c1-9810-fa3ce941fc25
+2026/10/19 19:33:07 INFO player registered id=a93c7301-ff4b-4471-9a55-d64b7e6b9f25 username=oracle-map-f809afcf-5ce2-4c09-98c9-96ff50ea043b
+2026/10/19 19:33:07 INFO player registered id=ca9ecbff-7ed6-44ab-9ffa-3b3c34bc0c05 username=oracle-map-afc10137-dbb2-4056-90f1-67743cd642f4
+2026/10/19 19:33:07 INFO player registered id=fc5edeac-96f5-4a6c-9c21-52b5b6b17578 username=hostorigin-a5ffe79b-2eb5-4b82-81d6-6aa531df6d0a
+2026/10/19 19:33:07 INFO player registered id=3390c94d-2a8e-41f6-b63d-6062e4bfbaba username=place-viewer-c9899681-d592-44a2-90ca-7df6b9be7c98
+2026/10/19 19:33:07 INFO player registered id=04c50c5f-6a2c-41e1-b1aa-c2446de1643c username=place-other-f8d577ea-ac15-4c3f-a3c9-33da51cd2cb8
+2026/10/19 19:33:07 INFO player registered id=1988ae32-9f90-4f9d-9dd3-39ee227462d1 username=place-viewer-4a44510b-4f97-44ab-bf6b-b43536317d4e
+2026/10/19 19:33:07 INFO player registered id=1bf51705-cc61-402a-af8f-9f60409036f1 username=place-other-4153317f-b09e-483e-976c-a413ed601ec3
+2026/10/19 19:33:07 INFO player registered id=c2f9b3fc-f913-453f-8cb6-3f22a3a7f666 username=place-viewer-739dba80-622d-4d1a-8e06-48f9b8a83f33
+2026/10/19 19:33:07 INFO player registered id=51a7e367-993e-4c4e-90cb-772cff948451 username=place-other-a95b3d1c-d819-44e5-b9b1-a0a9027c27d8
+2026/10/19 19:33:08 INFO player registered id=7a8cfdad-462a-4f05-81a6-f4c6ab772609 username=place-viewer-ce52d3ea-fef0-4633-9629-d196c68ebed6
+2026/10/19 19:33:08 INFO player registered id=7a4b5f51-ebfc-4266-8e07-ae1e1a5f2161 username=place-other-8868b4b3-6f5e-405f-963e-ca5284f8f3ed
+2026/10/19 19:33:08 INFO player registered id=b77e600a-117f-4a8c-9422-854dca75dcb9 username=placement-2d272385-bd59-40a1-9a90-7eca2a1970ff
+2026/10/19 19:33:08 INFO player registered id=36221b3c-3909-47f0-9b00-184fee91da06 username=placement-aa1b2b3e-31b4-4a2f-9f21-b9a309111cd1
+2026/10/19 19:33:08 INFO player registered id=e12a467a-6d0b-4817-b32b-44590a71c2cb username=placement-b3743f4b-7b53-4c3a-aa44-db375da9d7d5
+2026/10/19 19:33:08 INFO player registered id=52ed78a0-5602-42a1-87e7-063f7dd7c20d username=hexown-a-4edbcb34-f62c-48a9-9b12-785cedaffe1b
+2026/10/19 19:33:08 INFO player registered id=4845dcba-28bd-432f-bc23-e89cb9dc491c username=hexown-b-c199334f-5fde-409d-a0c8-e62bb3c20906
+2026/10/19 19:33:08 INFO player registered id=d4e97a03-c2b8-4174-8e02-aa8821b26808 username=placement-52974b35-14ec-42e9-813f-82c4a9545185
+2026/10/19 19:33:08 INFO player registered id=4c3243fb-6cae-4208-a3a3-0f6d20b143fa username=placement-b76e6926-a000-4ac9-83f6-d8b2d4197966
+--- FAIL: TestSilverCalibrationFirstFoundingCarriedOnly (0.19s)
+    --- FAIL: TestSilverCalibrationFirstFoundingCarriedOnly/inland_spent_purse (0.04s)
+        silver_calibration_test.go:61: first founding silver 7/cap960; want 7/60; carried7 must be included once
+    --- FAIL: TestSilverCalibrationFirstFoundingCarriedOnly/coast_spent_purse (0.04s)
+        silver_calibration_test.go:61: first founding silver 7/cap960; want 7/60; carried7 must be included once
+--- FAIL: TestSilverCalibrationDirectMetropolisPopulationIndependent (0.03s)
+    silver_calibration_test.go:83: direct caller with pop4000 gave 0/960 want 0/60
+FAIL
+FAIL	formatet/megaron/server/api/handlers	38.260s
+2026/10/19 19:33:27 WARN Agora deactivation awaits reconciliation player=daf3057f-b18b-4087-94ba-49161f25bdcc
+--- FAIL: TestAgoraNeverProvisionsErasedPlayer (0.03s)
+    agora_erase_test.go:84: pass called Create 1 times for an erased player, want 0
+2026/10/19 19:33:27 [tki9/YoxR6UxjrT-000001] "GET http://example.com/api/v1/worlds/x/map HTTP/1.1" from 192.0.2.1:1234 - 200 265B in 516.441µs
+2026/10/19 19:33:27 [tki9/YoxR6UxjrT-000002] "GET http://example.com/api/v1/worlds/x/map HTTP/1.1" from 192.0.2.1:1234 - 200 66000B in 17.303µs
+2026/10/19 19:33:27 [tki9/YoxR6UxjrT-000003] "GET http://example.com/ws/abc HTTP/1.1" from 192.0.2.1:1234 - 000 0B in 5.515µs
+2026/10/19 19:33:27 [tki9/YoxR6UxjrT-000004] "GET http://example.com/static/megaron.css HTTP/1.1" from 192.0.2.1:1234 - 200 41B in 33.856µs
+2026/10/19 19:33:31 INFO daily ticks seeded worlds=907
+2026/10/19 19:33:31 INFO daily ticks seeded worlds=908
+2026/10/19 19:33:31 INFO retention pass table=server_heartbeats rows_deleted=3 batches=1 elapsed=1ms
+2026/10/19 19:33:32 INFO retention pass table=scheduled_events(processed) rows_deleted=1 batches=1 elapsed=1ms
+2026/10/19 19:33:32 INFO retention pass table=scheduled_events(failed) rows_deleted=1 batches=1 elapsed=0s
+2026/10/19 19:33:32 INFO retention pass table=server_heartbeats rows_deleted=119500 batches=24 elapsed=181ms
+2026/10/19 19:33:32 [tki9/YoxR6UxjrT-000005] "GET http://example.com/ws/world HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 3.883µs
+2026/10/19 19:33:32 [tki9/YoxR6UxjrT-000006] "GET http://example.com/ws/ HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 1.648µs
+2026/10/19 19:33:32 [tki9/YoxR6UxjrT-000007] "GET http://example.com/api/v1/worlds HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 6.134µs
+2026/10/19 19:33:32 [tki9/YoxR6UxjrT-000008] "GET http://example.com/api/ws/world HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 3.341µs
+2026/10/19 19:33:32 [tki9/YoxR6UxjrT-000009] "GET http://example.com/ws HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 2.816µs
+2026/10/19 19:33:32 [tki9/YoxR6UxjrT-000010] "GET http://example.com/ws-other HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 9.62µs
+2026/10/19 19:33:32 [tki9/YoxR6UxjrT-000011] "GET http://example.com/static/map.js HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 5.237µs
+2026/10/19 19:33:32 [tki9/YoxR6UxjrT-000012] "GET http://example.com/healthz HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 3.203µs
+2026/10/19 19:33:32 [tki9/YoxR6UxjrT-000013] "GET http://example.com/ HTTP/1.1" from 192.0.2.1:1234 - 204 0B in 2.832µs
+FAIL
+FAIL	formatet/megaron/server/cmd/server	5.034s
+FAIL

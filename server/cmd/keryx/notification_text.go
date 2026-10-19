@@ -10,6 +10,9 @@ import (
 // The archive also contains retired kinds. Keep their summaries readable;
 // current producers and the Codex client's archive kinds are checked together.
 func printNotificationSummary(c *Client, n notificationItem) {
+	if printStorageNotification(n) {
+		return
+	}
 	if n.Kind == "GarrisonStarvationStarted" || n.Kind == "GarrisonStarvationEnded" || n.Kind == "CivilianStarvationStarted" || n.Kind == "CivilianStarvationEnded" || n.Kind == "KharisBandChanged" {
 		var b struct {
 			FoodCategory bool     `json:"food_category"`

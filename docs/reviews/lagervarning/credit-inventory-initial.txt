@@ -1,0 +1,54 @@
+server/internal/transport/arrival.go:197:			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+server/internal/transport/arrival.go:200:			     amount = LEAST(
+server/internal/transport/intercept.go:400:		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+server/internal/transport/intercept.go:404:		     amount = LEAST(
+server/api/handlers/province.go:1498:			`UPDATE settlement_goods SET
+server/api/handlers/province.go:1499:			     amount  = LEAST(settled(amount, rate, calc_tick) + $1, cap),
+server/api/handlers/unit_march_silver.go:112:		if err := h.pool.QueryRow(ctx, `SELECT COALESCE((SELECT GREATEST(0,LEAST(g.cap,g.amount+g.rate*GREATEST(0,w.current_tick-g.calc_tick))) FROM settlement_goods g WHERE g.settlement_id=$1 AND g.good_key='silver'),0) FROM worlds w WHERE w.id=$2`, payer, worldID).Scan(&stock); err != nil {
+server/api/handlers/found_metropolis.go:290:			`UPDATE settlement_goods
+server/api/handlers/kingdom.go:1106:		`UPDATE settlement_goods
+server/api/handlers/helpers.go:254:			`UPDATE settlement_goods SET
+server/api/handlers/settlement.go:962:			`UPDATE settlement_goods SET
+server/api/handlers/messenger.go:1557:			`UPDATE settlement_goods
+server/api/handlers/messenger.go:1568:			`UPDATE settlement_goods
+server/api/handlers/messenger.go:1692:			`UPDATE settlement_goods
+server/api/handlers/messenger.go:1712:			`UPDATE settlement_goods
+server/api/handlers/unit.go:1501:			   UPDATE settlement_goods
+server/api/handlers/unit.go:1502:			      SET amount = LEAST(cap, settled(amount, rate, calc_tick) + (SELECT carried_silver FROM p)),
+server/api/handlers/create_metropolis.go:116:		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+server/api/handlers/create_metropolis.go:147:	if _, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=$1,
+server/api/handlers/logistics.go:79:			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+server/api/handlers/logistics.go:82:			     amount  = LEAST(
+server/internal/economy/food_basket.go:101:			tag, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=GREATEST(0,settled(amount,rate,calc_tick)-$3),calc_tick=current_world_tick() WHERE settlement_id=$1 AND good_key=$2`, sid, good, qty)
+server/internal/economy/trade_return.go:82:		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+server/internal/economy/trade_return.go:85:		     amount = LEAST(
+server/internal/economy/recompute.go:689:			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+server/internal/economy/recompute.go:692:			     amount  = LEAST(settlement_goods.cap,
+server/internal/economy/recompute.go:775:					`UPDATE settlement_goods
+server/internal/economy/recompute.go:785:				`UPDATE settlement_goods
+server/internal/economy/recompute.go:786:				 SET amount    = LEAST(cap, settled(amount, rate, calc_tick) + $2),
+server/internal/economy/recompute.go:810:		`UPDATE settlement_goods
+server/internal/economy/recompute.go:811:		 SET amount    = LEAST(cap, GREATEST(0, settled(amount, rate, calc_tick))),
+server/internal/economy/gift.go:115:		if _, err := tx.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,$2,0,0,$3,current_world_tick()) ON CONFLICT DO NOTHING`, p.DestinationID, p.GoodKey, province.DefaultGoodStorageCap); err != nil {
+server/internal/economy/gift.go:127:		if _, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=$3,calc_tick=current_world_tick() WHERE settlement_id=$1 AND good_key=$2`, p.DestinationID, p.GoodKey, amount+out.CreditedQuantity); err != nil {
+server/internal/economy/market_snapshot.go:17:		        GREATEST(0, LEAST(sg.cap,
+server/internal/economy/trade.go:93:			`UPDATE settlement_goods
+server/internal/economy/trade.go:107:			`UPDATE settlement_goods
+server/internal/economy/trade.go:286:		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+server/internal/economy/trade.go:289:		     amount = LEAST(
+server/internal/combat/build.go:192:			`UPDATE settlements SET wall_level = LEAST(wall_level + $1, 3) WHERE id = $2`,
+server/internal/combat/road.go:232:		`UPDATE settlement_goods
+server/internal/combat/food_provisions.go:70:			tag, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=LEAST(cap,settled(amount,rate,calc_tick)+$3),calc_tick=current_world_tick() WHERE settlement_id=$1 AND good_key=$2`, sid, good, n)
+server/internal/combat/march_start.go:917:				`UPDATE settlement_goods
+server/internal/combat/occupation.go:698:			`UPDATE settlement_goods SET
+server/internal/combat/unit_arrival.go:507:			`UPDATE settlement_goods
+server/internal/combat/unit_arrival.go:508:			    SET amount = LEAST(cap, settled(amount, rate, calc_tick) + $1),
+server/internal/combat/unit_arrival.go:1940:		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
+server/internal/combat/unit_arrival.go:1981:	if _, err := tx.Exec(ctx, `UPDATE settlement_goods
+server/internal/combat/silver_audit_v2.go:76:	if _, err := tx.Exec(ctx, `UPDATE settlement_goods g
+server/internal/combat/silver_audit_v2.go:77:	 SET amount=GREATEST(0,LEAST(g.cap,g.amount+g.rate*GREATEST(0,$2-g.calc_tick))),calc_tick=$2
+server/internal/combat/silver_audit_v2.go:109:	 SELECT s.owner_id,'city'::text bucket,GREATEST(0,LEAST(g.cap,g.amount+g.rate*GREATEST(0,$2-g.calc_tick))) amount
+server/internal/combat/upkeep.go:539:		// credit = share·N ≤ N, eff − N + credit ≤ eff ≤ cap, so the outer LEAST
+server/internal/combat/upkeep.go:545:			`UPDATE settlement_goods
+server/internal/combat/upkeep.go:546:			 SET amount   = LEAST(cap, LEAST(settled(amount, rate, calc_tick), cap) - $1 + $2),
+server/internal/combat/upkeep.go:549:			   AND LEAST(settled(amount, rate, calc_tick), cap) >= $1`,
