@@ -114,8 +114,8 @@ func TestOfferMod_IncenseLiftsTheCeiling(t *testing.T) {
 
 	baseline := 100.0
 	modOf := func(offering map[string]float64) float64 {
-		return OfferModWithIncense(OfferingWorth(offering, values, favours), baseline,
-			DistinctGoods(offering), IncenseShare(offering, values, favours))
+		mod, _ := ComposedOfferMod(offering, values, favours, baseline)
+		return mod
 	}
 
 	if got := modOf(grain); got > offerModMax+1e-12 {

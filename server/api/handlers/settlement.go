@@ -926,9 +926,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	offeringBaseline := religion.TraditionalBaseline(spec, divineValues)
 	offerCap := riteOfferModFat
 	if composed {
-		incenseShare := religion.IncenseShare(offering, divineValues, favours)
-		offerCap = religion.OfferModCap(incenseShare)
-		offerMod = religion.OfferModWithIncense(offeringWorth, offeringBaseline, religion.DistinctGoods(offering), incenseShare)
+		offerMod, offerCap = religion.ComposedOfferMod(offering, divineValues, favours, offeringBaseline)
 	}
 
 	successChance := riteSuccessChance(kharisNow, offerMod)

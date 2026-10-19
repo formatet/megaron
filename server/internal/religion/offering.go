@@ -110,6 +110,15 @@ func DistinctGoods(offering map[string]float64) int {
 	return n
 }
 
+// ComposedOfferMod is what the rite handler calls for a composed offering: the
+// nudge on the odds and the ceiling that applied to it (the verdict text needs
+// the ceiling to tell "more would be wasted" truthfully).
+func ComposedOfferMod(offering, divineValues, favours map[string]float64, baseline float64) (mod, ceiling float64) {
+	share := IncenseShare(offering, divineValues, favours)
+	worth := OfferingWorth(offering, divineValues, favours)
+	return OfferModWithIncense(worth, baseline, DistinctGoods(offering), share), OfferModCap(share)
+}
+
 // OfferMod turns an offering's worth into a nudge on the success chance.
 //
 // baseline is what this god expects for this prayer, in the same divine units.

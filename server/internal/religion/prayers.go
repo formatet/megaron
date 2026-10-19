@@ -51,7 +51,7 @@ var favoursByEffect = map[string]map[string]float64{
 	EffectOracleRevealDeposits: {
 		// The seer wants what is dug and worked — like calls to like.
 		"purple": 2.0, "oil": 1.5, "silver": 1.4, "bronze": 1.3, "pottery": 1.1,
-		"grain": 0.6, "fish": 0.5, "stone": 0.4, "incense": 3.0,
+		"grain": 0.6, "fish": 0.5, "stone": 0.4, "incense": 2.1, // plan said 3.0; held under the sea-god fish weight (2.2) so fish stays the favourite
 	},
 	EffectHarvestBlessing: {
 		// The one who feeds a people wants what grows and what is poured out.
@@ -77,7 +77,7 @@ var favoursByEffect = map[string]map[string]float64{
 var (
 	potniaTheronOracleFavours = map[string]float64{
 		"purple": 2.0, "oil": 1.5, "silver": 1.4, "bronze": 1.3, "pottery": 1.1,
-		"grain": 0.6, "fish": 2.2, "stone": 0.4, "incense": 3.0,
+		"grain": 0.6, "fish": 2.2, "stone": 0.4, "incense": 2.1, // just under fish: the sea gods prize fish above everything (TestSeaGods_FavourFishAboveEverything)
 	}
 	havsdaimonernaBattleFrenzyFavours = map[string]float64{
 		"livestock": 2.0, "wine": 1.7, "horses": 1.6, "bronze": 1.5, "grain": 1.0,
