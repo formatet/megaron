@@ -101,7 +101,8 @@ const (
 	// (megaron_plan_utfodringsordningen.md D2/D3, internal/economy/food_tick.go).
 	// Supersedes the consumption that used to be folded continuously into
 	// grain's rate by RecomputeProduction.
-	ScheduledFoodTick ScheduledEventType = "FoodTick"
+	ScheduledFoodTick                ScheduledEventType = "FoodTick"
+	ScheduledStorageOverflowDelivery ScheduledEventType = "StorageOverflowDelivery"
 	// Escrow expiry: refund buyer silver if a trade offer expires without being accepted.
 	ScheduledOfferExpiry ScheduledEventType = "OfferExpiry"
 	// Legacy queue identifier only: retired in184, accepted as a no-op.

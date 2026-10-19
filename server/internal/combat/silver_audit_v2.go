@@ -74,7 +74,7 @@ func (h *UpkeepHandler) emitSilverAuditV2(ctx context.Context, e events.Schedule
 		return err
 	}
 	if _, err := tx.Exec(ctx, `UPDATE settlement_goods g
-	 SET amount=GREATEST(0,LEAST(g.cap,g.amount+g.rate*GREATEST(0,$2-g.calc_tick))),calc_tick=$2
+	 SET amount=storage_capped(g.settlement_id,g.good_key,g.amount+g.rate*GREATEST(0,$2-g.calc_tick),g.cap,'production'),calc_tick=$2
 	 FROM settlements s WHERE g.settlement_id=s.id AND s.world_id=$1
 	 AND s.state NOT IN ('sunk','collapsed') AND g.good_key='silver' AND g.rate>0 AND g.calc_tick<$2`, e.WorldID, p.AuditTick); err != nil {
 		return err

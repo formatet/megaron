@@ -77,3 +77,11 @@ export function foodDetailsHTML(pd) {
   const eaten = s.consumed_tick != null && s.consumed ? row('Last meal', `${foodGoodsText(s.consumed) || 'none'} · day ${n(s.consumed_tick)}`) : '';
   return grain + army + note + automatic + coverage + eaten;
 }
+
+// Warning and ETA come from the authenticated owner's forecast, not rates here.
+export function storageWarningsHTML(pd) {
+  if (!Array.isArray(pd?.storage)) return '';
+  return pd.storage.filter(item => item.warning === true && Number.isFinite(item.full_in_ticks) && item.full_in_ticks >= 0)
+    .map(item => row(`${esc(item.good_key)} storage`, `${fmtNum(item.amount)} / ${fmtNum(item.cap)} · full in ${fmtDays(item.full_in_ticks)}`)
+      + '<p class="empty-state">Send goods away or trade.</p>').join('');
+}

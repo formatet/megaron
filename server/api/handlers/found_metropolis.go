@@ -287,9 +287,7 @@ func foundMetropolisFromNomadicHost(
 			continue
 		}
 		if _, err := tx.Exec(ctx,
-			`UPDATE settlement_goods
-			 SET amount = settled(amount, rate, calc_tick) + $1, calc_tick = current_world_tick()
-			 WHERE settlement_id = $2 AND good_key = $3`,
+			`SELECT credit_settlement_good($2,$3,$1,'founder_stores')`,
 			amount, m.SettlementID, good,
 		); err != nil {
 			return out, fmt.Errorf("carry %s into metropolis: %w", good, err)

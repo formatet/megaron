@@ -123,11 +123,12 @@ const starvationPopLossRatePerTick = 0.005
 
 // TickHandler applies daily temple maintenance to all active settlements in a world.
 type TickHandler struct {
-	pool        *pgxpool.Pool
-	scheduler   *events.Scheduler
-	store       *events.Store
-	hub         Broadcaster
-	randomFloat func() float64
+	pool              *pgxpool.Pool
+	scheduler         *events.Scheduler
+	store             *events.Store
+	hub               Broadcaster
+	randomFloat       func() float64
+	storageForecaster StorageForecaster
 }
 
 // NewTickHandler creates a TickHandler. hub may be nil (tests) — every
@@ -263,6 +264,9 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 		slog.Error("starvation observation failed", "world", e.WorldID, "err", err)
 	}
 	h.applySubsistenceCritical(ctx, e.WorldID)
+	if err := h.observeStorage(ctx, e.WorldID); err != nil {
+		slog.Error("storage observation failed", "world", e.WorldID, "err", err)
+	}
 
 	return h.scheduler.EnqueueTickRecurring(ctx, e.WorldID, events.ScheduledKharisTick,
 		struct{}{}, e.DueTick, events.MacroTickInterval)

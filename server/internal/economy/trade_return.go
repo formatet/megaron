@@ -79,14 +79,7 @@ func (h *TradeReturnHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	// is exactly the failure class trade_delivery_stale_cap_test.go documents
 	// (cap=100 before 2026-07-24). Routed through the shared function instead.
 	if _, err = tx.Exec(ctx,
-		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
-		 VALUES ($1, $2, $3, 0, $4, current_world_tick())
-		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
-		     amount = LEAST(
-		         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick)
-		             + $3,
-		         settlement_goods.cap),
-		     calc_tick = current_world_tick()`,
+		`SELECT credit_settlement_good($1,$2,$3,'trade_return',$4)`,
 		p.DestinationID, p.GoodKey, p.Quantity, goodCap(p.GoodKey),
 	); err != nil {
 		return fmt.Errorf("credit goods to buyer: %w", err)

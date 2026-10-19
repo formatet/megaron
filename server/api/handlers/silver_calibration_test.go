@@ -17,8 +17,8 @@ func TestSilverCalibrationFirstFoundingCarriedOnly(t *testing.T) {
 		coastal            bool
 		carried, want, cap float64
 	}{
-		{"inland_spent_purse", false, 7, 7, 60},
-		{"coast_spent_purse", true, 7, 7, 60},
+		{"inland_spent_purse", false, 7, 7, 960},
+		{"coast_spent_purse", true, 7, 7, 960},
 		{"inland_full_purse", false, 480, 480, 960},
 		{"coast_full_purse", true, 480, 480, 960},
 		{"existing_wealth_is_not_destroyed", false, 5000, 5000, 10000},
@@ -78,7 +78,7 @@ func TestSilverCalibrationDirectMetropolisPopulationIndependent(t *testing.T) {
 		if err := pool.QueryRow(context.Background(), `SELECT amount,cap FROM settlement_goods WHERE settlement_id=$1 AND good_key='silver'`, sid).Scan(&amount, &cap); err != nil {
 			t.Fatal(err)
 		}
-		want, wcap := 0.0, 60.0
+		want, wcap := 0.0, 960.0
 		if amount != want || cap != wcap {
 			t.Fatalf("direct caller with pop4000 gave %g/%g want %g/%g", amount, cap, want, wcap)
 		}

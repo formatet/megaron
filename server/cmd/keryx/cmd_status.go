@@ -633,6 +633,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			}
 
 			fmt.Println(cityFoodLine(sett))
+			for _, line := range storageWarningLines(sett) {
+				fmt.Println(line)
+			}
 			fmt.Println()
 
 			// "Last tick" summary: summarizes the journal (keryx ticklog)

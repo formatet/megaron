@@ -716,3 +716,15 @@ test('DivinePunishment ship_loss names the sunk ship when the payload carries it
     'A divine storm sank Spirit of Bronze, Galley of Scheria in your harbour at Scheria — the ship is lost',
   );
 });
+
+// Order 29 (GPT20: ~90 silver lost without a word).
+test('StorageOverflow names the city, the loss and the source', () => {
+  const line = notifText('StorageOverflow', { name: 'MalliaWest', good_key: 'silver', cap: 60, lost_quantity: 90, reason: 'transfer_delivery' });
+  assert.match(line, /MalliaWest/);
+  assert.match(line, /lost 90 silver/);
+  assert.match(line, /an internal transfer/);
+});
+test('StorageCapacityWarning names the good and the days left', () => {
+  const line = notifText('StorageCapacityWarning', { name: 'MalliaWest', good_key: 'silver', cap: 960, full_in_ticks: 3 });
+  assert.match(line, /silver storage full in 3/);
+});

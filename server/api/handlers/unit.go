@@ -1498,12 +1498,9 @@ func (h *UnitHandler) Unload(w http.ResponseWriter, r *http.Request) {
 			`WITH p AS (
 			   SELECT carried_silver FROM units WHERE id = $1 AND carried_silver > 0
 			 ), credit AS (
-			   UPDATE settlement_goods
-			      SET amount = LEAST(cap, settled(amount, rate, calc_tick) + (SELECT carried_silver FROM p)),
-			          calc_tick = current_world_tick()
-			    WHERE settlement_id = $2 AND good_key = 'silver' AND EXISTS (SELECT 1 FROM p)
+			   SELECT credit_settlement_good($2,'silver',carried_silver,'returned_purse') FROM p
 			 )
-			 UPDATE units SET carried_silver = 0 WHERE id = $1 AND carried_silver > 0`,
+			 UPDATE units SET carried_silver = 0 WHERE id = $1 AND carried_silver > 0 AND (SELECT count(*) FROM credit)>0`,
 			cargoID, *destSettlementID,
 		); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not return the colonist purse")

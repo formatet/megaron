@@ -83,10 +83,12 @@ var tickPriorities = map[ScheduledEventType]int{
 	ScheduledMessengerStayEnd: tickPriorityArrival,
 	ScheduledTradeDelivery:    tickPriorityArrival,
 	ScheduledGiftDelivery:     tickPriorityArrival,
-	ScheduledTradeReturn:      tickPriorityArrival,
-	ScheduledBuildComplete:    tickPriorityArrival,
-	ScheduledRoadSite:         tickPriorityArrival,
-	ScheduledTrainComplete:    tickPriorityArrival,
+	// Written by SQL storage_capped (mig 191) with priority 50; keep the two equal.
+	ScheduledStorageOverflowDelivery: DefaultTickPriority,
+	ScheduledTradeReturn:             tickPriorityArrival,
+	ScheduledBuildComplete:           tickPriorityArrival,
+	ScheduledRoadSite:                tickPriorityArrival,
+	ScheduledTrainComplete:           tickPriorityArrival,
 	// Reparationen är en färdigtimer av exakt TrainCompletes form (Slice C
 	// bygger på train.go:89-100) — den flippar 'repairing'→'garrison' i stället
 	// för att skapa en enhet. Skeppet ska vara helt och närvarande innan dagens

@@ -504,10 +504,7 @@ func (h *UnitArrivalHandler) arriveGarrison(
 	// interceptable like everything else on the map.
 	if settlementID != nil && u.carriedSilver > 0 {
 		if _, err := tx.Exec(ctx,
-			`UPDATE settlement_goods
-			    SET amount = LEAST(cap, settled(amount, rate, calc_tick) + $1),
-			        calc_tick = current_world_tick()
-			  WHERE settlement_id = $2 AND good_key = 'silver'`,
+			`SELECT credit_settlement_good($2,'silver',$1,'returned_purse')`,
 			u.carriedSilver, *settlementID,
 		); err != nil {
 			return fmt.Errorf("unit arrive: return carried purse: %w", err)

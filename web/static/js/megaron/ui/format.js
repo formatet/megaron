@@ -139,6 +139,7 @@ export function notifDomain(kind) {
     SettlementDefended: 'war', SettlementSacked: 'war', CityCollapsed: 'war',
     OutpostCaptured: 'war',
     // City — what your own settlements build, grow, eat and stop producing.
+    StorageCapacityWarning: 'city', StorageOverflow: 'city',
     BuildComplete: 'city', GoodsCrafted: 'city', ColonyFounded: 'city',
     MetropolisFounded: 'city', OutpostEstablished: 'city',
     FoodShortfall: 'city', CivilianStarvationStarted: 'city', CivilianStarvationEnded: 'city', SubsistenceWarning: 'city',
@@ -207,6 +208,7 @@ export function notifIcon(kind) {
     DivinePunishment:   '⚡',
     DivineBlessing:     '✨',
     CivilianStarvationStarted: '🍽', CivilianStarvationEnded: '🍽',
+    StorageCapacityWarning: '📦', StorageOverflow: '📦',
     FoodShortfall:      '🍽',
     HexBlockaded:       '🚧',
     HexUnblockaded:     '↩',
@@ -299,8 +301,19 @@ function payloadSummary(body) {
   return truncated ? out + '…' : out;
 }
 
+function storageReason(reason) {
+  return ({production:'production', refining:'refining', transfer_delivery:'an internal transfer',
+    trade_delivery:'a trade delivery', trade_return:'returned trade goods', gift_delivery:'a gift delivery',
+    seized_cargo:'seized cargo', returned_provisions:'returned provisions', returned_purse:'a returned purse',
+    build_refund:'a building refund', escrow_refund:'an offer refund', founder_stores:'founding stores'})[reason] || 'incoming goods';
+}
+
 export function notifText(kind, body) {
   switch (kind) {
+    case 'StorageCapacityWarning':
+      return `${esc(body.name || 'Your city')}: ${esc(body.good_key || 'goods')} storage ${Number.isFinite(body.full_in_ticks) ? 'full in ' + fmtDays(body.full_in_ticks) : 'forecast unavailable'} (capacity ${fmtNum(body.cap)}). Send goods away or trade.`;
+    case 'StorageOverflow':
+      return `${esc(body.name || 'Your city')}: storage full — lost ${body.lost_quantity == null ? 'an unknown amount of' : fmtNum(body.lost_quantity)} ${esc(body.good_key || 'goods')} from ${storageReason(body.reason)} (capacity ${fmtNum(body.cap)}). Send goods away or trade.`;
     case 'GarrisonStarvationStarted': return body.food_category === true
       ? `${esc(body.name || 'Your city')}: the garrison is losing men to hunger. Soldiers share the city's grain, fish, oil and wine. Produce or transfer more food here.`
       : `${esc(body.name || 'Your city')}: the garrison is losing men to hunger. Soldiers need grain even when the city has a food surplus. Place citizens on grain or transfer grain here.`;

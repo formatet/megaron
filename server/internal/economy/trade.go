@@ -90,10 +90,7 @@ func (h *OfferExpiryHandler) Handle(ctx context.Context, e events.ScheduledEvent
 	//   sell → goods to seller (origin)
 	if kind == "sell" {
 		if _, err = tx.Exec(ctx,
-			`UPDATE settlement_goods
-			    SET amount    = settled(amount, rate, calc_tick) + $1,
-			        calc_tick = current_world_tick()
-			  WHERE settlement_id=$2 AND good_key=$3`,
+			`SELECT credit_settlement_good($2,$3,$1,'escrow_refund')`,
 			offerQty, originID, offerGood,
 		); err != nil {
 			return fmt.Errorf("refund goods on expiry: %w", err)
@@ -104,10 +101,7 @@ func (h *OfferExpiryHandler) Handle(ctx context.Context, e events.ScheduledEvent
 		slog.Info("trade offer expired, goods refunded", "messenger", messengerID, "good", offerGood, "qty", offerQty)
 	} else {
 		if _, err = tx.Exec(ctx,
-			`UPDATE settlement_goods
-			    SET amount    = settled(amount, rate, calc_tick) + $1,
-			        calc_tick = current_world_tick()
-			  WHERE settlement_id=$2 AND good_key='silver'`,
+			`SELECT credit_settlement_good($2,'silver',$1,'escrow_refund')`,
 			offerSilver, originID,
 		); err != nil {
 			return fmt.Errorf("refund silver on expiry: %w", err)
@@ -283,14 +277,7 @@ func (h *DeliveryHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 	// truncating a second trade delivery of a good the settlement had never held
 	// before down to 100, see trade_delivery_stale_cap_test.go).
 	if _, err = tx.Exec(ctx,
-		`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
-		 VALUES ($1, $2, $3, 0, $4, current_world_tick())
-		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
-		     amount = LEAST(
-		         settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick)
-		             + $3,
-		         settlement_goods.cap),
-		     calc_tick = current_world_tick()`,
+		`SELECT credit_settlement_good($1,$2,$3,'trade_delivery',$4)`,
 		p.DestinationID, p.GoodKey, credited, province.DefaultGoodStorageCap,
 	); err != nil {
 		return fmt.Errorf("credit goods: %w", err)

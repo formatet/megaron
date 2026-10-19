@@ -8,7 +8,7 @@ import { esc, formatApiError } from '../format.js';
 import { unitTypeLabel } from '../actornames.js';
 import { startCityAnim } from '../../render/city.js';
 import { renderGubbeGrid, terrainLabel } from '../citygrid.js';
-import { productionSectionsHTML, populationHTML, foodSummaryHTML, foodDetailsHTML } from './city_production.js';
+import { productionSectionsHTML, populationHTML, foodSummaryHTML, foodDetailsHTML, storageWarningsHTML } from './city_production.js';
 import { fmtNum } from '../fmt_num.js';
 
 // The settlement the City drawer currently shows: cycle via the drawer's
@@ -247,7 +247,7 @@ export async function loadCityDrawer() {
     }
 
     document.getElementById('city-devotion-sec').innerHTML = devotionHTML;
-    document.getElementById('city-prod-sec').innerHTML = '<div id="city-gubbe-grid"><div class="loading">Loading…</div></div>';
+    document.getElementById('city-prod-sec').innerHTML = storageWarningsHTML(pd) + '<div id="city-gubbe-grid"><div class="loading">Loading…</div></div>';
     const cultInp = document.getElementById('labor-input-cult');
     if (cultInp) cultInp.addEventListener('input', () => {
       const cit = document.querySelector('.labor-cit[data-good="cult"]');

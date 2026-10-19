@@ -689,8 +689,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
 			 VALUES ($1, $2, 0, $3, $4, current_world_tick())
 			 ON CONFLICT (settlement_id, good_key) DO UPDATE SET
-			     amount  = LEAST(settlement_goods.cap,
-			                 GREATEST(0, settled(settlement_goods.amount, settlement_goods.rate, settlement_goods.calc_tick))),
+			     amount  = storage_capped($1,$2,settled(settlement_goods.amount,settlement_goods.rate,settlement_goods.calc_tick),settlement_goods.cap,'production'),
 			     rate    = $3,
 			     calc_tick = current_world_tick()`,
 			settlementID, key, newRate, goodCap(key),
@@ -783,7 +782,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 			}
 			if _, err := tx.Exec(ctx,
 				`UPDATE settlement_goods
-				 SET amount    = LEAST(cap, settled(amount, rate, calc_tick) + $2),
+				 SET amount    = storage_capped(settlement_id,good_key,settled(amount,rate,calc_tick)+$2,cap,'refining'),
 				     calc_tick = current_world_tick()
 				 WHERE settlement_id = $1 AND good_key = 'bronze'`,
 				settlementID, bronzeProduced,
@@ -808,7 +807,7 @@ func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) err
 	touchedKeys := producibleKeys
 	if _, err := tx.Exec(ctx,
 		`UPDATE settlement_goods
-		 SET amount    = LEAST(cap, GREATEST(0, settled(amount, rate, calc_tick))),
+		 SET amount    = storage_capped(settlement_id,good_key,settled(amount,rate,calc_tick),cap,'production'),
 		     rate      = 0,
 		     calc_tick = current_world_tick()
 		 WHERE settlement_id = $1

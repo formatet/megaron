@@ -31,7 +31,7 @@ func TestSilverCalibrationMineAnchorsAndMaxLevel(t *testing.T) {
 }
 
 func TestSilverCalibrationColonyCapNeverClipsStock(t *testing.T) {
-	for _, tc := range []struct{ purse, stock, want float64 }{{0, 0, 60}, {30, 0, 60}, {90, 0, 180}, {30, 1000, 1000}, {700, 0, 1400}} {
+	for _, tc := range []struct{ purse, stock, want float64 }{{0, 0, 960}, {30, 0, 960}, {90, 0, 960}, {30, 1000, 1000}, {700, 0, 1400}} {
 		if got := ColonySilverCap(tc.purse, tc.stock); got != tc.want {
 			t.Fatalf("purse%g stock%g cap%g want%g", tc.purse, tc.stock, got, tc.want)
 		}
