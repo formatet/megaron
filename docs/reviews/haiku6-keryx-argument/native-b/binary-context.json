@@ -1,0 +1,12 @@
+{
+  "branch_commit": "f3a239ec",
+  "baseline_source_commit": "b3221f27",
+  "baseline_binary_sha256": "c5740d22dc0b39f440b3b9878f3280002de51fa49864130f58c8d21128c39193",
+  "baseline_call_indices_one_based": [
+    4,
+    6,
+    8,
+    18
+  ],
+  "annotation": "Parent identifies baseline calls from explicit native.py call order; stdout/stderr preserved verbatim"
+}

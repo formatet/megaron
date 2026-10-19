@@ -1,0 +1,22 @@
+{
+  "health": {
+    "commit": "f3a239ecc457cef08668abb9b9e1d87f5fd42638",
+    "migration": 189,
+    "status": "ok"
+  },
+  "natural_register_cli_login_join_found_colonize": true,
+  "world_id": "29b66ae6-b384-4083-8e67-d3d91a733c39",
+  "province_id": "2aff7e9d-dd1f-4e08-b2c6-8d4e05644ac6",
+  "colony_id": "16b70f70-9488-40a4-9bbb-2b53151da6d4",
+  "selected_city_setup": "Only local client province_id set to the naturally founded colony, reproducing the reported selected-colony configuration",
+  "before_error": "Error: resolve destination \"West\": no own or contacted city named \"West\"\nSee keryx transfer --help\n",
+  "after_error": "Error: resolve destination \"West\": sending city \"West\" is also the destination \u2014 choose another source with --from <city> (see keryx settlements)\nSee keryx transfer --help\n",
+  "explicit_from_succeeded": true,
+  "unconfirmed_colonize_sent_no_order": true,
+  "web_excludes_source_from_destinations": true,
+  "firefox_errors": [],
+  "sql_writes": false,
+  "request_replay": false,
+  "browser": "Firefox DPR1 1280/390",
+  "tick_seconds": 1
+}

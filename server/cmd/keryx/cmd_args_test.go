@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os/exec"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -68,4 +69,13 @@ func TestRejectPositionalArgs(t *testing.T) {
 			t.Errorf("generic form must not invent a flag suggestion, got %q", got)
 		}
 	})
+}
+
+func TestSuggestedArgumentSurvivesShellCopy(t *testing.T) {
+	for _, arg := range []string{"harbour", "a report with spaces", "don't split this $(printf BAD)", "line1\nline2", ""} {
+		out, err := exec.Command("sh", "-c", "printf '%s' "+commandArgument(arg)).Output()
+		if err != nil || string(out) != arg {
+			t.Errorf("argument %q became %q, error %v", arg, out, err)
+		}
+	}
 }

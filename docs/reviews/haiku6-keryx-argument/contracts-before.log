@@ -1,0 +1,65 @@
+=== RUN   TestHaiku6MissingArgumentsNeverSendAnOrder
+=== RUN   TestHaiku6MissingArgumentsNeverSendAnOrder/building_mistaken_for_city
+    haiku6_arguments_test.go:33: missing argument returned success
+=== RUN   TestHaiku6MissingArgumentsNeverSendAnOrder/missing_workplace
+Error: accepts between 1 and 2 arg(s), received 0
+Usage:
+  staff <byggnad> [+n|-n] [flags]
+
+Examples:
+  keryx staff stonequarry
+  keryx staff stonequarry +2
+  keryx staff stonequarry -1 --province <prov-id>
+
+Flags:
+  -h, --help              help for staff
+      --province string   province ID/name (default: your capital)
+
+    haiku6_arguments_test.go:37: error "accepts between 1 and 2 arg(s), received 0" lacks "building"
+    haiku6_arguments_test.go:37: error "accepts between 1 and 2 arg(s), received 0" lacks "keryx city"
+=== RUN   TestHaiku6MissingArgumentsNeverSendAnOrder/report_uses_explicit_text
+Error: unexpected argument "a report with spaces" — keryx takes flags, not positional arguments.
+Did you mean:  report --text a report with spaces
+Usage:
+  report [flags]
+
+Examples:
+  keryx report --text "the notification text is unreadable"
+  keryx report --kind design --text "silver upkeep feels punishing"
+  keryx report --kind confused --text "why did my army not board the ship?" --q 12 --r -4
+
+Flags:
+  -h, --help          help for report
+      --kind string   bug, design or confused (default "bug")
+      --q int         optional hex q the report is about
+      --r int         optional hex r the report is about
+      --text string   the report text
+
+--- FAIL: TestHaiku6MissingArgumentsNeverSendAnOrder (0.00s)
+    --- FAIL: TestHaiku6MissingArgumentsNeverSendAnOrder/building_mistaken_for_city (0.00s)
+    --- FAIL: TestHaiku6MissingArgumentsNeverSendAnOrder/missing_workplace (0.00s)
+    --- PASS: TestHaiku6MissingArgumentsNeverSendAnOrder/report_uses_explicit_text (0.00s)
+=== RUN   TestHaiku6ExplicitReportPostsItsExactText
+--- PASS: TestHaiku6ExplicitReportPostsItsExactText (0.00s)
+=== RUN   TestHaiku6TransferSelectedColonyAndExplicitSource
+Error: resolve destination "West": no own or contacted city named "West"
+Usage:
+  transfer [flags]
+
+Examples:
+  keryx transfer --good grain --qty 50 --dest Korinth
+  keryx transfer --from <colony> --good grain --qty 50 --dest Korinth   # pull a colony's surplus home
+
+Flags:
+  -d, --dest string       destination settlement name
+      --from string       alias for --province
+  -g, --good string       good key (e.g. grain, timber, silver)
+  -h, --help              help for transfer
+      --province string   source province/settlement (default: your capital)
+  -q, --qty float         quantity to send
+
+    haiku6_arguments_test.go:117: self destination error=resolve destination "West": no own or contacted city named "West"
+--- FAIL: TestHaiku6TransferSelectedColonyAndExplicitSource (0.00s)
+FAIL
+FAIL	formatet/megaron/server/cmd/keryx	0.003s
+FAIL

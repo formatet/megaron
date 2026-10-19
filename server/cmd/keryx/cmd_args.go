@@ -52,7 +52,7 @@ func rejectPositionalArgs(suggestFlag string) cobra.PositionalArgs {
 				word, shown, cmd.CommandPath())
 		}
 		return fmt.Errorf("unexpected %s %s — keryx takes flags, not positional arguments.\nDid you mean:  %s --%s %s",
-			word, shown, cmd.CommandPath(), suggestFlag, args[0])
+			word, shown, cmd.CommandPath(), suggestFlag, commandArgument(args[0]))
 	}
 }
 
@@ -61,4 +61,21 @@ func rejectPositionalArgs(suggestFlag string) cobra.PositionalArgs {
 // intended target — see rejectPositionalArgs' doc comment for the full why.
 func noPositionalArgs() cobra.PositionalArgs {
 	return rejectPositionalArgs("")
+}
+
+// commandArgument keeps a suggested single argument intact when pasted into a shell.
+func commandArgument(arg string) string {
+	if arg != "" {
+		safe := true
+		for _, r := range arg {
+			if !(r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9' || strings.ContainsRune("-_./:@,+=%", r)) {
+				safe = false
+				break
+			}
+		}
+		if safe {
+			return arg
+		}
+	}
+	return "'" + strings.ReplaceAll(arg, "'", "'\"'\"'") + "'"
 }

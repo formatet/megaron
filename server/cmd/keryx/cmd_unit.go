@@ -682,9 +682,9 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 		Example: `  keryx unit march --unit <id> --q 5 --r -3
   keryx unit march --unit <id> --target 5,-3
   keryx unit march --unit <id> --q 5 --r -3 --stance fortify
-  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos
+  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos --yes
   # Colonize the hex the unit already stands on (no coords needed):
-  keryx unit march --unit <id> --intent colonize --name Thapsos
+  keryx unit march --unit <id> --intent colonize --name Thapsos --yes
   # Any march reveals fog along its route toward a frontier coordinate:
   keryx unit march --unit <id> --q 12 --r -8
   # Explore an area for 12 days, then automatically return home

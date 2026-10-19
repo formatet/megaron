@@ -1,0 +1,227 @@
+[
+  {
+    "args": [
+      "login",
+      "--server",
+      "http://127.0.0.1:55023",
+      "--username",
+      "timber-b61b1bf5"
+    ],
+    "exit_code": 0,
+    "stdout": "Logged in to http://127.0.0.1:55023\nActive world:   29b66ae6-b384-4083-8e67-d3d91a733c39\nYour province:  \n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "join"
+    ],
+    "exit_code": 0,
+    "stdout": "Joined! A Nomadic Host of 1000 people sets out at (4,91).\n  Run: keryx founding status\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "founding",
+      "settle",
+      "--name",
+      "Myrsine",
+      "--yes"
+    ],
+    "exit_code": 0,
+    "stdout": "Founding (4,91) \u2014 metropolis of 1000 people \u2014 catchment forecast (18/19 hexes known, 1 unknown):\n  Inland: a city here can never build a harbour or ships \u2014 to reach the sea you will need a coastal colony.\n  Food: grain ~5.6 + fish ~0.0 per day \u2212 consumption ~5.0 per day = net +0.6 per day\n  Starting stock 1200 grain \u2014 production covers food demand.\n  Other: copper-deposit \u2713, silver-deposit \u2713, copper ~4 per day, livestock ~1 per day, oil ~12 per day, stone ~16 per day, timber ~7 per day, wine ~16 per day\n  Gift: Demeter's farm \u2014 an inland site whose catchment bears grain, so the city is founded with a farm already standing\n\u2692 Metropolis founded at (4,91)! The host is dissolved \u2014 the people have a home.\n  Carried in by the host: 1200 grain, 480 silver. The city now holds 1200 grain, 480 silver (founding adds no extra grain or silver).\n  Run: keryx status\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "report",
+      "a report with spaces"
+    ],
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "Error: unexpected argument \"a report with spaces\" \u2014 keryx takes flags, not positional arguments.\nDid you mean:  keryx report --text a report with spaces\nSee keryx report --help\n"
+  },
+  {
+    "args": [
+      "report",
+      "a report with spaces"
+    ],
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "Error: unexpected argument \"a report with spaces\" \u2014 keryx takes flags, not positional arguments.\nDid you mean:  keryx report --text 'a report with spaces'\nSee keryx report --help\n"
+  },
+  {
+    "args": [
+      "build",
+      "harbour"
+    ],
+    "exit_code": 0,
+    "stdout": "Build queue: `build --queue` shows how many slots your settlement has left.\nProducing buildings level up: build the same one again to raise its level.\nA workplace's level is how many citizens it can employ on that good \u2014 labor\nallocated beyond it is not served. Levels beyond 1 cost cedar (see Lvl below).\n\nType            Costs (L1)                    Days    Levels                  Requires                    Purpose\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nbarracks        stone\u00d716 timber\u00d78             10      1                       \u2014                           Enables recruiting spearmen and war chariots\nfarm            stone\u00d74 timber\u00d76              4       1-3                     hex-bound \u2014 pick with --hex q,r, hills/plains/river_delta/river_valley terrain  Stands on a grain hex and works its field\nfoundry         stone\u00d720 timber\u00d78             16      1                       \u2014                           Smelts copper and tin into bronze\nharbour         stone\u00d712 timber\u00d716            12      1-3 cedar L2\u00d74/L3\u00d78     coastal city (sea or river), coastal_sea terrain  Works the settlement's coastal waters and enables sea trade\nlumbermill      stone\u00d74 timber\u00d78              6       1-3                     hex-bound \u2014 pick with --hex q,r, forest_cedar/forest_olive_grove/hills/river_valley/scrub_maquis terrain  Stands on a forest hex and works its stands\nmarket          stone\u00d78 timber\u00d710             8       1-3                     \u2014                           Enables trade offers and updates market price snapshots\nmine            stone\u00d716 timber\u00d76             10      1-3                     hex-bound \u2014 pick with --hex q,r, copper deposit, silver deposit, tin deposit  Stands on an ore deposit and extracts what the hex holds\nolive_press     stone\u00d78 timber\u00d78              8       1-3                     forest_olive_grove/hills/plains terrain  Refines a press-worker's oil from the settlement's groves\nshipyard        stone\u00d712 timber\u00d724            12      1-3 cedar L2\u00d74/L3\u00d78     coastal city (sea or river)  Builds and repairs ships\nstable          stone\u00d78 timber\u00d712             8       1-3                     \u2014                           Enables war chariots\nstonequarry     stone\u00d78 timber\u00d76              6       1-3                     hex-bound \u2014 pick with --hex q,r, forest_cedar/forest_olive_grove/hills/mountain_limestone/mountain_red/plains/river_delta/river_valley/scrub_maquis/semi_desert terrain  Stands on a land hex; its crew quarry the stone there \u2014 far more on hills and limestone\ntemple          stone\u00d724 timber\u00d78             16      1-3 cedar L2\u00d74/L3\u00d78     \u2014                           Enables rites, produces cult, and unlocks oracle prayers\nwall            stone\u00d74 timber\u00d712             6       1                       \u2014                           Adds a wall tier (Palisade \u2192 Stone Wall \u2192 Bronze Wall) for combat defence\nwinery          stone\u00d78 timber\u00d78              8       1-3                     hills/plains/river_valley/scrub_maquis terrain  Refines a vintner's wine from the settlement's vines\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "build",
+      "harbour"
+    ],
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "Error: no building type given \u2014 use --type <building> (for example: keryx build --type harbour), or add --list to view the catalogue for a city\nSee keryx build --help\n"
+  },
+  {
+    "args": [
+      "staff"
+    ],
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "Error: accepts between 1 and 2 arg(s), received 0\nSee keryx staff --help\n"
+  },
+  {
+    "args": [
+      "staff"
+    ],
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "Error: building name is required: keryx staff <building> (see keryx city for workplaces, or keryx roster for all assignments)\nSee keryx staff --help\n"
+  },
+  {
+    "args": [
+      "report",
+      "--kind",
+      "confused",
+      "--text",
+      "isolated acceptance report with spaces"
+    ],
+    "exit_code": 0,
+    "stdout": "Report sent (day 0). Thank you.\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "staff",
+      "--help"
+    ],
+    "exit_code": 0,
+    "stdout": "<building> is a city workplace (e.g. olive_press). Hex buildings use place. +n places n more idle\ncitizens there; -n returns n citizens to the idle pool. The building name is required. Omit the delta to just\nsee current occupancy.\n\nUsage:\n  keryx staff <byggnad> [+n|-n] [flags]\n\nExamples:\n  keryx staff olive_press\n  keryx staff olive_press +2\n  keryx staff olive_press -1 --province <prov-id>\n\nFlags:\n  -h, --help              help for staff\n      --province string   province ID/name (default: your capital)\n\nGlobal Flags:\n  -j, --json   output as JSON (for scripts and MCP)\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "unit",
+      "march",
+      "--help"
+    ],
+    "exit_code": 0,
+    "stdout": "Order a unit to march to a target hex (q,r coordinates).\n\nUse --preview to estimate arrival without sending an order. The estimate uses\nthe current state; courier orders and unknown routes cannot promise an arrival.\n\nTerrain passability:\n  Impassable (all units):  mountain_limestone, mountain_red\n  Land units only:         plains, hills, forest_olive_grove, forest_cedar,\n                           scrub_maquis, semi_desert, river_valley, river_delta\n  Naval units only:        coastal_sea, deep_sea, river\n  Both land AND naval:     river_ford (the river's port \u2014 steep move cost for\n                           either, but the one hex where a land unit can\n                           cross and a ship can still sail through)\n  (Land units cannot enter sea or river; naval units cannot enter land.\n  river is impassable to land units \u2014 it is a wall, not a crossing. Every\n  ~10 hexes of a river's length carries one river_ford instead.)\n\nA newly recruited land cohort must finish gathering men and training before\nit can march. Once ready, a cohort can still march after losing men; it does\nnot need to recover to 100 first.\nA unit in fortify stance must be cleared (stance none) before marching.\n\nExploring: an explore order may target an area in fog. The server chooses\nunseen reachable ground there and records what the unit sees along its route.\nRun 'keryx map' to see the frontier coordinates.\n\n--intent explore explores an area around the chosen hex for --ticks days.\nIt turns home by half the duration and reports what it saw on return. It needs\na reachable city of yours to return to. A land unit in the field receives the\norder by Runner; a ship must be commanded in port. Works for land or naval\nunits. Omit --ticks for the server default; the server validates the range.\n\n--intent land puts a laden ship's cargo ashore (megaron_plan_\nskeppsuppdrag_landsatt.md R1): the ship must be a naval unit, in its own\nport, carrying a land unit (keryx unit load first). --q/--r is the chosen\nLAND hex, not a sea hex \u2014 the ship sails to the sea hex next to it,\nlands the cargo there, and always sails home on its own afterwards. Add\n--colonize to found a colony on arrival with no further order (--name to\nname it). A ship at sea takes no orders at all (march/recall/stance) \u2014\ngive every sea mission from port.\n\nOre on mountain terrain (copper, tin, silver):\n  Mountains are impassable \u2014 you cannot colonize the mountain hex itself.\n  Instead, colonize an ADJACENT passable hex: the ore deposit will fall in\n  the new colony's catchment and can be mined from there.\n  Use 'keryx map' to see which adjacent hexes are passable.\n\nConquest choice (--mode, only matters when the target is an enemy settlement):\n  sack (default) \u2014 loot goods (silver + a share of the rest, weighted by\n    portability) and raze the settlement; the loot is carried home as a\n    physical, interceptable caravan. annex \u2014 keep today's behaviour: take\n    the settlement outright (a captured capital becomes an ordinary colony).\n\nUsage:\n  keryx unit march [flags]\n\nExamples:\n  keryx unit march --unit <id> --q 5 --r -3\n  keryx unit march --unit <id> --target 5,-3\n  keryx unit march --unit <id> --q 5 --r -3 --stance fortify\n  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos --yes\n  # Colonize the hex the unit already stands on (no coords needed):\n  keryx unit march --unit <id> --intent colonize --name Thapsos --yes\n  # Any march reveals fog along its route toward a frontier coordinate:\n  keryx unit march --unit <id> --q 12 --r -8\n  # Explore an area for 12 days, then automatically return home\n  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12\n  # Land troops from a laden ship in port, then sail home on its own:\n  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land\n  # ...and found a colony there with no further order:\n  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos\n  # Attack an enemy settlement and annex it instead of the sack default:\n  keryx unit march --unit <id> --q 5 --r -3 --mode annex\n\nFlags:\n      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)\n  -h, --help            help for march\n      --intent string   arrival intent: colonize (found a new colony \u2014 use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (explores the surrounding area, turns home by half the chosen duration; unit must be garrisoned at a settlement) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)\n      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)\n      --name string     colony name (with --intent colonize, or --intent land --colonize)\n      --preview         estimate arrival without sending an order\n      --q int           target hex Q \u2014 axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)\n      --r int           target hex R \u2014 axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)\n      --stance string   stance on arrival: fortify|storm|sentry\n      --target string   target hex as q,r \u2014 alternative to --q/--r (e.g. 5,-3)\n      --ticks int       explore duration in days (omit for server default)\n      --unit string     unit UUID (required)\n      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)\n\nGlobal Flags:\n  -j, --json   output as JSON (for scripts and MCP)\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "codex",
+      "keryx"
+    ],
+    "exit_code": 0,
+    "stdout": "Keryx, the command line\n\n**Keryx** is Megaron's command-line client \u2014 the herald. It talks to the same server as the browser and can do everything a Wanax can do, including a few things the browser cannot do yet ([[rough-edges]]).\n\nYou do not need it to play. It exists for players who prefer a terminal, for automation, and for AI players.\n\n## Getting started\n\nKeryx is a single program; ask whoever runs your world for a copy. Then:\n\n```\nexport POLEIA_SERVER=https://megaron.formatet.se\nkeryx login --username <your name>\nkeryx join\nkeryx status\n```\n\n`keryx actions` is the command to reach for when you are stuck: it lists what you can do right now. `keryx --help`, and `--help` after any command, explain the rest. The rules themselves are in this Codex: `keryx codex` lists the articles and `keryx codex <id>` prints one.\n\n## A few useful commands\n\n```\nkeryx status                 # your realm at a glance\nkeryx codex bronze           # read a Codex article\nkeryx notifications          # the archive \u2014 what happened while you were away\nkeryx dispatches             # which kinds of news are pushed to you live\nkeryx map                    # the map around you\nkeryx city                   # people and placement in a city\nkeryx goods                  # stock and production\nkeryx wants                  # who needs what, among cities you have contacted\nkeryx password               # change your password\nkeryx occupation order ...   # sack, burn or annex an occupied city\n```\n\nOrders given through Keryx obey the same rules as in the browser: they travel by [[runners|Runner]] and take days ([[time]]).\n\n`POLEIA_CONFIG` selects a separate configuration file. `POLEIA_SERVER` and `POLEIA_TOKEN` override connection settings. Command failures show the error and a pointer to `keryx <command> --help`. March previews call the soldiers' silver cost **Pay**.\n\nWith exactly one active world, commands select and save it automatically. To choose explicitly, run `keryx worlds` and then `keryx worlds --select <world-id>`. City rows show both the placement number and `(q,r)`; use those coordinates with `build --hex q,r`.\n\nUse a city name or province ID either positionally or with `--province` in `city`, `placements`, `status` and `build`. For placement: `keryx place Knossos fish 13 -1` or `keryx place --province Knossos fish 13 -1`. Put flags before the good when using a negative delta. If no citizens work that good on the chosen hex, the result lists where they do work it. `founding settle --yes` skips the question. Travel estimates use days; if an arrival cannot be calculated it is reported as unavailable.\n\nHex selection accepts the ordinal shown by City, with or without `#`: `build --type lumbermill --hex 6` or `--hex '#6'`. Placement can use `place fish 6 +1`, `place fish '#6' +1`, or `place --hex 6 fish +1`; `--hex q,r` also works. Put flags before the good when giving a negative delta. `staff` is for city workplaces; hex-bound buildings are worked with `place` on their hex.\n\n\n## Argument reminders\n\nStart construction with `keryx build --type harbour`. A positional argument in `build`\nis the **city**, as in `keryx build Knossos --type harbour`; it is not the building type.\nUse `build --list` for the catalogue or `build --queue` for queued construction.\n\n`keryx staff olive_press` shows that named workplace's staffing. Add `+1` or `-1`\nto change it; the building name is required. Use `keryx city` or `keryx roster`\nto find workplaces and assignments. Hex buildings use `place`.\n\nSend a report with `keryx report --text \"what happened\"`; use `--kind confused`\nfor a question the rules did not answer. For colony founding in scripts, add\n`--yes`: `keryx unit march --unit <id> --target 5,-3 --intent colonize --name Thapsos --yes`.\nWithout confirmation, the non-interactive text command only shows the forecast;\nJSON callers receive a refusal until they add `--yes`.\n\nRelated: rough-edges  (keryx codex <id>)\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "codex",
+      "transfers"
+    ],
+    "exit_code": 0,
+    "stdout": "Transfers and caravans\n\nA **transfer** moves goods between two of your *own* settlements. No consent, no negotiation \u2014 simpler than [[trade]] with a stranger.\n\nOpen **Economy \u2192 Transfer**, choose *From*, *To*, the good and the quantity, and press **Send \u2192**. Below, **Your cargo in transit** lists everything on the road \u2014 which city it left, which city it is bound for, and the day it arrives. A notification tells you when it is delivered.\n\n## Cargo is physical\n\nA caravan is people and pack animals walking across the map. Others can see it on the road, but not what it carries \u2014 the cargo is a secret until someone takes it. **It can be intercepted and seized** \u2014 yours by others, theirs by you. A hostile unit on watch ([[stances|sentry]]) near the road will stop a caravan that passes. Only [[messengers]] are safe. When a land caravan is seized, both sides are told where, and exactly what cargo changed hands; the seized goods go to the raider's capital.\n\nAn internal transfer carries exactly the same risk as a trade or a gift: on land only raiders, at sea also [[sea|storms]]. Whose goods they are never changes the risk.\n\nTo move goods regularly without being there, use a [[routes|standing order]].\n\n## Sending it by sea\n\nWhen both ends are coastal or harboured and a sea lane connects them, a transfer sails instead of walking \u2014 **if you have a free Galley or Emporos waiting in the sending port** ([[sea]]). No free hull there, and no land road either, and the transfer is refused with the reason why; build one at a Shipyard, or wait for one to come home.\n\nThe ship is bound to the round trip: it cannot be given any other order until it has sailed back and unloaded, empty, at its own port. What it can carry is limited by the hull's own capacity \u2014 a heavier shipment than a Galley or Emporos can hold is refused, with the capacity and the weight both named, so you know to split it or send a bigger hull.\n\nA laden ship caught at sea does not always lose the same way a caravan does. One of three things happens, and you are told which:\n\n- **Captured** \u2014 the raider takes the cargo *and* the ship. It sails off under a new flag.\n- **Damaged** \u2014 half the cargo is lost overboard in the fight; the ship limps home with the rest.\n- **Sunk** \u2014 the cargo and the ship are both gone.\n\nSending to another Wanax is a [[gifts|gift or tribute]], with nothing requested in return.\n\n## Route and journey time\n\nCargo follows a real route around impassable ground. Its path and the terrain costs\nare fixed when each leg departs. Caravan time is **1.5 times the march time on that\nsame path**, rounded once to the nearest whole day, with at least one day per leg.\nThe return leg is priced separately because it enters different terrain. Cargo\nweight limits a ship's hold; it does not change journey speed.\n\nWithout a traversable road or an eligible ship on a sea lane, a shipment is refused\nbefore goods are taken. A standing route pauses and explains the obstacle. The\narrival day shown in your cargo list is the scheduled delivery; delays or\ninterception can prevent that delivery.\n\n\nIn Keryx, `transfer` sends from your **selected city**, which may be a colony.\nCheck it with `keryx status`, or choose the sending city explicitly:\n`keryx transfer --from Knossos --dest Mallia --good grain --qty 50`.\nThe sending city cannot also be the destination. A rejected self-transfer sends\nnothing; use `--from` to choose the other city you meant to send from.\n\nRelated: routes, trade  (keryx codex <id>)\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "unit",
+      "march",
+      "--unit",
+      "c62625ae-d6eb-4963-a065-867b91256b7b",
+      "--target",
+      "3,90"
+    ],
+    "exit_code": 0,
+    "stdout": "Unit c62625ae marching to (3,90) \u2014 arrives in 3 days\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "unit",
+      "march",
+      "--unit",
+      "c62625ae-d6eb-4963-a065-867b91256b7b",
+      "--target",
+      "1,91",
+      "--intent",
+      "colonize",
+      "--name",
+      "West"
+    ],
+    "exit_code": 0,
+    "stdout": "Colonize (1,91) \u2014 catchment forecast (11/19 hexes known, 8 unknown):\n  Coastal: a city here can build a harbour and ships.\n  Food: grain ~0.5 + fish ~1.0 per day \u2212 consumption ~0.5 per day = net +1.0 per day\n  Starting stock 0 grain \u2014 production covers food demand.\n  Other: fish ~2 per day, livestock ~6 per day, oil ~8 per day, stone ~4 per day, timber ~1 per day, wine ~8 per day\nNOTE: the unit is consumed \u2014 the colonists become the colony's population and the unit is disbanded. It cannot be ordered again.\nA colony does not feed itself automatically \u2014 build a farm if the terrain supports it, otherwise arrange grain via an internal transfer (keryx transfer --good grain --qty <n> --dest <colony>).\nNothing sent \u2014 add --yes to found.\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "unit",
+      "march",
+      "--unit",
+      "c62625ae-d6eb-4963-a065-867b91256b7b",
+      "--target",
+      "1,91",
+      "--intent",
+      "colonize",
+      "--name",
+      "West",
+      "--yes"
+    ],
+    "exit_code": 0,
+    "stdout": "Colonize (1,91) \u2014 catchment forecast (11/19 hexes known, 8 unknown):\n  Coastal: a city here can build a harbour and ships.\n  Food: grain ~0.5 + fish ~1.0 per day \u2212 consumption ~0.5 per day = net +1.0 per day\n  Starting stock 0 grain \u2014 production covers food demand.\n  Other: fish ~2 per day, livestock ~6 per day, oil ~8 per day, stone ~4 per day, timber ~1 per day, wine ~8 per day\nNOTE: the unit is consumed \u2014 the colonists become the colony's population and the unit is disbanded. It cannot be ordered again.\nA colony does not feed itself automatically \u2014 build a farm if the terrain supports it, otherwise arrange grain via an internal transfer (keryx transfer --good grain --qty <n> --dest <colony>).\nA Runner carries your march order to unit c62625ae \u2014 target (1,91); the runner reaches it in 1 day \u2014 the march begins on delivery.\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "transfer",
+      "--good",
+      "grain",
+      "--qty",
+      "1",
+      "--dest",
+      "West"
+    ],
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "Error: resolve destination \"West\": no own or contacted city named \"West\"\nSee keryx transfer --help\n"
+  },
+  {
+    "args": [
+      "transfer",
+      "--good",
+      "grain",
+      "--qty",
+      "1",
+      "--dest",
+      "West"
+    ],
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "Error: resolve destination \"West\": sending city \"West\" is also the destination \u2014 choose another source with --from <city> (see keryx settlements)\nSee keryx transfer --help\n"
+  },
+  {
+    "args": [
+      "transfer",
+      "--good",
+      "grain",
+      "--qty",
+      "1",
+      "--dest",
+      "West",
+      "--from",
+      "Myrsine"
+    ],
+    "exit_code": 0,
+    "stdout": "Transfer dispatched: 1 grain \u2192 West \u00b7 arrives day 13 (journey: 6 days)\n",
+    "stderr": ""
+  }
+]

@@ -179,7 +179,7 @@ func transferCmd() *cobra.Command {
 		Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
-			// Default source is the capital; --from/--province lets you pull a
+			// Default source is the selected city; --from/--province lets you pull a
 			// colony's surplus home instead, mirroring `goods`/`build --province`.
 			src := cfg.ProvinceID
 			if provinceID != "" {
@@ -229,7 +229,7 @@ func transferCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&good, "good", "g", "", "good key (e.g. grain, timber, silver)")
 	cmd.Flags().Float64VarP(&qty, "qty", "q", 0, "quantity to send")
 	cmd.Flags().StringVarP(&destName, "dest", "d", "", "destination settlement name")
-	cmd.Flags().StringVar(&provinceID, "province", "", "source province/settlement (default: your capital)")
+	cmd.Flags().StringVar(&provinceID, "province", "", "source province/settlement (default: your selected city; see status)")
 	cmd.Flags().StringVar(&provinceID, "from", "", "alias for --province")
 	_ = cmd.MarkFlagRequired("good")
 	_ = cmd.MarkFlagRequired("qty")
