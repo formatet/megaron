@@ -2861,9 +2861,6 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	// placed gubbe = 100 citizens.
 	placed, _ := economy.LoadPlacementCounts(r.Context(), h.pool, settlementID)
 	employedByGood := placedCitizensByGood(placed)
-	// Cult is the one good still staffed by settlement_labor devotion weight
-	// (temple labor, untouched by P4) — keep its live path here.
-	cultCitizens := int(math.Round(laborWeights[economy.GoodCult] * float64(laborPool)))
 
 	// marginal_yield (P4-arvet, replaces the old catchment-aggregate figure):
 	// "what does my NEXT gubbe on this good give" — the same shared formula
@@ -2897,10 +2894,11 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 	marginalPlaced := economy.PlacementCounts{Hex: globalHexOccupancyForYield, Building: placed.Building}
 	marginalYields := economy.MarginalYieldPerGood(hexOptionsForYield, buildingOptionsForYield, marginalPlaced)
 
-	// Idle = population neither placed on a good nor devoted to the temple.
-	// placed.Total counts only non-cult gubbar (cult never enters
-	// settlement_placement), so cult citizens are subtracted separately.
-	idleCitizens := laborPool - placed.Total*100 - cultCitizens
+	// Idle = population not placed on a good. Temple devotion is the same
+	// people serving the temple besides their work; it never limits how many
+	// can be placed (Haiku-7: /goods said 37 idle while city, brief and place
+	// said 54).
+	idleCitizens := laborPool - placed.Total*100
 	if idleCitizens < 0 {
 		idleCitizens = 0
 	}
