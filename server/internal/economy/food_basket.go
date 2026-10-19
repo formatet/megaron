@@ -9,6 +9,10 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+// VarietyMinShare is the minimum share of an actual meal for a commodity to
+// count toward growth variety. Proportional crumbs still feed people.
+const VarietyMinShare = 0.10
+
 // FoodMeal is an outcome in physical goods. Emergency slaughter remains a
 // whole-animal civilian fallback; other consumers use only FoodGoods (order28a).
 type FoodMeal struct {

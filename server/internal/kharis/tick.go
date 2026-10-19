@@ -603,7 +603,8 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 	//               lives off its stores) — no överflöd, no growth.
 	//   fed, food_net > 0 → + GREATEST(1, ROUND(pop × growthRatePerTick ×
 	//               variety × softcap)). variety = 1.0 + 0.1 per additional
-	//               distinct food actually eaten this tick (cap 1.4);
+	//               distinct food with at least economy.VarietyMinShare of this
+	//               tick's actual meal (cap 1.4);
 	//               softcap = max(0, 1 − pop/30000). Costs no food.
 	//
 	// food_net is economy.FoodNet written in SQL: Σ rate over
@@ -647,6 +648,10 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 		         (1.0 + 0.1 * LEAST(4,GREATEST(0, (
 		             SELECT COUNT(*) FROM jsonb_each_text(s.food_consumed) AS meal(good,qty)
 		             WHERE (meal.good=ANY($4) OR meal.good='livestock') AND meal.qty::numeric>0
+		               AND meal.qty::numeric >= $8::numeric * (
+		                   SELECT SUM(part.qty::numeric) FROM jsonb_each_text(s.food_consumed) AS part(good,qty)
+		                   WHERE (part.good=ANY($4) OR part.good='livestock') AND part.qty::numeric>0
+		               )
 		               AND s.food_consumed_tick=current_world_tick()
 		         ) - 1))) AS variety,
 		         GREATEST(0, 1.0 - s.population::float / 30000.0) AS softcap
@@ -682,7 +687,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 		 )
 		 SELECT id, old_pop, new_pop FROM pop_upd`,
 		worldID, economy.GrainConsumptionPerCitizenPerTick, starvationPopLossRatePerTick, economy.FoodGoods, eventID,
-		economy.FoodGoods, growthRatePerTick,
+		economy.FoodGoods, growthRatePerTick, economy.VarietyMinShare,
 	)
 	if err != nil {
 		slog.Error("daily decay failed", "world", worldID, "err", err)
