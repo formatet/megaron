@@ -707,3 +707,12 @@ test('founding notifications use food net and suppress persisted dust runways', 
  }
  assert.match(colonyFoundedGrainLine({grain_net_per_tick:-5,food_net_per_tick:-0.3}),/falls short by 0.3/);
 });
+
+// Haiku-7: the galley "arrived", then vanished from the unit list. A storm in
+// harbour now names the ship it sank.
+test('DivinePunishment ship_loss names the sunk ship when the payload carries it', () => {
+  assert.equal(
+    notifText('DivinePunishment', { type: 'ship_loss', amount: 1, name: 'Scheria', unit_name: 'Spirit of Bronze, Galley of Scheria' }),
+    'A divine storm sank Spirit of Bronze, Galley of Scheria in your harbour at Scheria — the ship is lost',
+  );
+});

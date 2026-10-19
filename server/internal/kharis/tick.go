@@ -1323,7 +1323,7 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 			`WITH victim AS (
 			     SELECT id FROM units
 			     WHERE settlement_id = $1 AND world_id=$2 AND owner_id=$3 AND size>0 AND status = 'garrison' AND type = 'galley'
-			     ORDER BY size LIMIT 1
+			     ORDER BY size, id LIMIT 1
 			 ), upd AS (
 			     UPDATE units u SET status = 'disbanded', updated_at = now()
 			     FROM victim v WHERE u.id = v.id
@@ -1388,6 +1388,19 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 		return
 	}
 	p := punishments[eligible[rand.Intn(len(eligible))]]
+	// The galley the storm will take, named before it is disbanded (Haiku-7: a
+	// player saw the galley arrive, then vanish, and could not tell it was lost).
+	// Same victim rule as the ship_loss SQL.
+	var unitName string
+	if p.name == "ship_loss" {
+		var victimID uuid.UUID
+		if err := h.pool.QueryRow(ctx,
+			`SELECT id FROM units
+			 WHERE settlement_id = $1 AND world_id=$2 AND owner_id=$3 AND size>0 AND status = 'garrison' AND type = 'galley'
+			 ORDER BY size, id LIMIT 1`, settlementID, worldID, ownerID).Scan(&victimID); err == nil {
+			unitName = unit.LoadDisplayName(ctx, h.pool, victimID)
+		}
+	}
 	var amount float64
 	if err := h.pool.QueryRow(ctx, p.sql, settlementID, worldID, ownerID).Scan(&amount); err != nil {
 		slog.Error("divine punishment failed", "settlement", settlementID, "type", p.name, "err", err)
@@ -1419,7 +1432,7 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 	}
 
 	_, _ = h.store.Append(ctx, settlementID, events.StreamProvince, "DivinePunishment",
-		map[string]any{"type": p.name, "amount": amount, "name": settlementName}, worldID, nil)
+		punishmentPayload(p.name, amount, settlementName, unitName), worldID, nil)
 	h.addDivineGossip(ctx, settlementID, worldID, "divine_wrath", p.text)
 	// Fel A (plan §Hål 1): NotifyPlayer was never called at all — the same
 	// nil-guarded hub already used elsewhere in this file (e.g. line ~1339's
@@ -1430,14 +1443,21 @@ func (h *TickHandler) applyDivinePunishment(ctx context.Context, settlementID, w
 	// actionable, and exactly what grind 2 forbids. New field, old ones unchanged
 	// (CLAUDE.md §Events: semantics are frozen, additive is fine).
 	if h.hub != nil && ownerID != uuid.Nil {
-		_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, "DivinePunishment", 2, map[string]any{
-			"settlement_id": settlementID,
-			"type":          p.name,
-			"amount":        amount,
-			"name":          settlementName,
-		})
+		body := punishmentPayload(p.name, amount, settlementName, unitName)
+		body["settlement_id"] = settlementID
+		_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, "DivinePunishment", 2, body)
 	}
 	slog.Info("divine punishment applied", "settlement", settlementID, "type", p.name, "amount", amount)
+}
+
+// punishmentPayload is the DivinePunishment body. unit_name (additive) names
+// the ship a ship_loss took; it is absent for every other punishment.
+func punishmentPayload(kind string, amount float64, settlementName, unitName string) map[string]any {
+	body := map[string]any{"type": kind, "amount": amount, "name": settlementName}
+	if unitName != "" {
+		body["unit_name"] = unitName
+	}
+	return body
 }
 
 // applyDivineBlessing randomly selects and applies one divine blessing for settlements

@@ -1018,9 +1018,10 @@ func notificationsCmd() *cobra.Command {
 // wrongly by a default.
 func printDivinePunishmentLine(n notificationItem) {
 	var body struct {
-		Type   string  `json:"type"`
-		Amount float64 `json:"amount"`
-		Name   string  `json:"name"`
+		Type     string  `json:"type"`
+		Amount   float64 `json:"amount"`
+		Name     string  `json:"name"`
+		UnitName string  `json:"unit_name"`
 	}
 	if err := json.Unmarshal(n.Body, &body); err != nil {
 		return
@@ -1042,7 +1043,11 @@ func printDivinePunishmentLine(n notificationItem) {
 	case "chariot_loss":
 		line = fmt.Sprintf("The gods scattered the chariots%s in the night — %.0f men lost.", where, amount)
 	case "ship_loss":
-		line = fmt.Sprintf("A god-sent storm took %.0f ships from the harbor%s.", amount, where)
+		if body.UnitName != "" {
+			line = fmt.Sprintf("A god-sent storm sank %s in the harbor%s. The ship is lost.", body.UnitName, where)
+		} else {
+			line = fmt.Sprintf("A god-sent storm took %.0f ships from the harbor%s.", amount, where)
+		}
 	case "harvest_failure":
 		line = fmt.Sprintf("The fields%s lay fallow at the gods' will — %s grain rotted.", where, resource(amount))
 	case "garrison_plague":
