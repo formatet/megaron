@@ -7,9 +7,32 @@ import (
 	"sort"
 
 	"github.com/spf13/cobra"
+
+	"formatet/megaron/server/internal/hexgrid"
 )
 
 // hexDist returns the axial hex distance between two coordinates.
+// mapCity is one of your own settlements, for the deposit hints below.
+type mapCity struct {
+	Q, R int
+	Name string
+}
+
+// depositReach says how a deposit on (q,r) can be worked. Haiku round 6: a tin
+// mountain already inside the capital's catchment still read "colonize
+// adjacent hex", while `keryx city` listed the mine as workable.
+func depositReach(q, r int, impassable bool, own []mapCity) string {
+	for _, c := range own {
+		if hexDist(c.Q, c.R, q, r) <= hexgrid.CatchmentRadius {
+			return "(in " + c.Name + "'s catchment)"
+		}
+	}
+	if impassable {
+		return "(colonize adjacent hex)"
+	}
+	return ""
+}
+
 func hexDist(q1, r1, q2, r2 int) int {
 	dq, dr := q1-q2, r1-r2
 	s := dq + dr
@@ -121,13 +144,19 @@ func mapCmd() *cobra.Command {
 			// 3. Settled provinces → occupied set.
 			provData, _ := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces", cfg.WorldID))
 			var markers []struct {
-				Q int `json:"q"`
-				R int `json:"r"`
+				Q    int    `json:"q"`
+				R    int    `json:"r"`
+				Name string `json:"name"`
+				Own  bool   `json:"own"`
 			}
 			_ = json.Unmarshal(provData, &markers)
 			occupied := map[[2]int]bool{}
+			var ownCities []mapCity
 			for _, m := range markers {
 				occupied[[2]int{m.Q, m.R}] = true
+				if m.Own {
+					ownCities = append(ownCities, mapCity{m.Q, m.R, m.Name})
+				}
 			}
 
 			// 4. Split into three tiers within radius (temenos_synlighet.md):
@@ -246,6 +275,7 @@ func mapCmd() *cobra.Command {
 				}
 				dep := ""
 				impassable := t.Terrain == "mountain_limestone" || t.Terrain == "mountain_red"
+				reach := depositReach(t.Q, t.R, impassable, ownCities)
 				for _, item := range []struct {
 					label string
 					has   bool
@@ -256,10 +286,7 @@ func mapCmd() *cobra.Command {
 					{"silver", t.SilverDeposit},
 				} {
 					if item.has {
-						dep += " +" + item.label
-						if impassable {
-							dep += "(colonize adjacent hex)"
-						}
+						dep += " +" + item.label + reach
 					}
 				}
 				fmt.Printf("  (%3d,%3d) d%-2d %-3s %-20s%s%s%s%s\n", t.Q, t.R, t.Distance, bearing, namedRiverTerrain(t.Terrain, t.RiverName), dep, coastTag, tag, dim)
