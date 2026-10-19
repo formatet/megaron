@@ -260,7 +260,7 @@ func (h *TickHandler) Handle(ctx context.Context, e events.ScheduledEvent) error
 	h.applyStarvationWarning(ctx, e.WorldID)
 	if err := h.applyStarvation(ctx, e.WorldID); err != nil {
 		// A notification outage must never stop the world's recurring tick.
-		slog.Error("garrison starvation observation failed", "world", e.WorldID, "err", err)
+		slog.Error("starvation observation failed", "world", e.WorldID, "err", err)
 	}
 	h.applySubsistenceCritical(ctx, e.WorldID)
 

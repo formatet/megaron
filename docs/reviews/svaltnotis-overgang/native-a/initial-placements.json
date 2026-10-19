@@ -1,0 +1,34 @@
+[
+  {
+    "gubbe_ordinal": 1,
+    "target_kind": "hex",
+    "hex_q": 50,
+    "hex_r": 47,
+    "hex_ordinal": 4,
+    "good_key": "grain"
+  },
+  {
+    "gubbe_ordinal": 2,
+    "target_kind": "hex",
+    "hex_q": 50,
+    "hex_r": 47,
+    "hex_ordinal": 4,
+    "good_key": "grain"
+  },
+  {
+    "gubbe_ordinal": 3,
+    "target_kind": "hex",
+    "hex_q": 49,
+    "hex_r": 49,
+    "hex_ordinal": 2,
+    "good_key": "fish"
+  },
+  {
+    "gubbe_ordinal": 4,
+    "target_kind": "hex",
+    "hex_q": 49,
+    "hex_r": 49,
+    "hex_ordinal": 2,
+    "good_key": "fish"
+  }
+]

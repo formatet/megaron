@@ -1,0 +1,4 @@
+ [Day #293]  CivilianStarvationStarted
+      Myrsine: people are going hungry — the meal fell short by 2 grain. Place citizens on grain or fish (`keryx place`), or transfer food here (`keryx transfer`).
+ [Day #297]  CivilianStarvationEnded
+      Myrsine: people were fed again.

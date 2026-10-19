@@ -1,0 +1,2 @@
+» färsk DB på migration 189 · commit e31ce04b+ändringar
+Terminated                 env -i HOME="$HOME" PATH="$PATH" GOPATH="${GOPATH:-$HOME/go}" GOCACHE="${GOCACHE:-$HOME/.cache/go-build}" DATABASE_URL="$DSN" go test -count=1 -p 1 "${args[@]}"

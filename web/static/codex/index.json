@@ -16,7 +16,7 @@
     {"id": "city",         "title": "The City drawer",              "category": "Your city", "drawer": "city", "related": ["citizens", "food", "buildings"]},
     {"id": "catchment",    "title": "Catchment",                    "category": "Your city", "related": ["citizens", "founding", "sieges"]},
     {"id": "citizens",     "title": "Citizens and placement",       "category": "Your city", "related": ["catchment", "buildings", "surplus"]},
-    {"id": "food",         "title": "Food and hunger",              "category": "Your city", "kinds": ["FoodShortfall", "SubsistenceWarning", "CityCollapsed", "SitosGranaryRelease", "SitosIntervention", "SitosFundLow"], "related": ["citizens", "growth", "upkeep"]},
+    {"id": "food",         "title": "Food and hunger",              "category": "Your city", "kinds": ["FoodShortfall", "CivilianStarvationStarted", "CivilianStarvationEnded", "SubsistenceWarning", "CityCollapsed", "SitosGranaryRelease", "SitosIntervention", "SitosFundLow"], "related": ["citizens", "growth", "upkeep"]},
     {"id": "growth",       "title": "Growth",                       "category": "Your city", "related": ["food", "citizens"]},
     {"id": "buildings",    "title": "Buildings",                    "category": "Your city", "kinds": ["BuildComplete", "GoodsCrafted"], "related": ["citizens", "goods", "temples"]},
 

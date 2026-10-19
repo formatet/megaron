@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: recorded game dates include zero, prefer envelope, and never infer historical dates
+ok 1 - recorded game dates include zero, prefer envelope, and never infer historical dates
+  ---
+  duration_ms: 0.601557
+  type: 'test'
+  ...
+# Subtest: garrison hunger notices tell the player grain is needed, recovery never claims all are fed
+ok 2 - garrison hunger notices tell the player grain is needed, recovery never claims all are fed
+  ---
+  duration_ms: 9.231153
+  type: 'test'
+  ...
+# Subtest: latest recorded transition clears hunger urgency, restart restores it for that city only
+ok 3 - latest recorded transition clears hunger urgency, restart restores it for that city only
+  ---
+  duration_ms: 0.334827
+  type: 'test'
+  ...
+# Subtest: civilian hunger and garrison hunger clear independently in the same city
+ok 4 - civilian hunger and garrison hunger clear independently in the same city
+  ---
+  duration_ms: 0.139956
+  type: 'test'
+  ...
+# Subtest: civilian hunger prose reports the actual meal, and ownership closure never promises recovery
+ok 5 - civilian hunger prose reports the actual meal, and ownership closure never promises recovery
+  ---
+  duration_ms: 0.207153
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 53.994099

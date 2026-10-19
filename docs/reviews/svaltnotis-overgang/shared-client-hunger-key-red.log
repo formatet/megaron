@@ -1,0 +1,60 @@
+TAP version 13
+# Subtest: recorded game dates include zero, prefer envelope, and never infer historical dates
+ok 1 - recorded game dates include zero, prefer envelope, and never infer historical dates
+  ---
+  duration_ms: 0.533665
+  type: 'test'
+  ...
+# Subtest: garrison hunger notices tell the player grain is needed, recovery never claims all are fed
+ok 2 - garrison hunger notices tell the player grain is needed, recovery never claims all are fed
+  ---
+  duration_ms: 9.594119
+  type: 'test'
+  ...
+# Subtest: latest recorded transition clears hunger urgency, restart restores it for that city only
+ok 3 - latest recorded transition clears hunger urgency, restart restores it for that city only
+  ---
+  duration_ms: 0.392364
+  type: 'test'
+  ...
+# Subtest: civilian hunger and garrison hunger clear independently in the same city
+not ok 4 - civilian hunger and garrison hunger clear independently in the same city
+  ---
+  duration_ms: 3.681671
+  type: 'test'
+  location: '/home/tk/wt/codex-svaltnotis-overgang/web/static/js/megaron/ui/notification_state.test.mjs:36:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok(urgent.has(army))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-svaltnotis-overgang/web/static/js/megaron/ui/notification_state.test.mjs:41:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: civilian hunger prose reports the actual meal, and ownership closure never promises recovery
+ok 5 - civilian hunger prose reports the actual meal, and ownership closure never promises recovery
+  ---
+  duration_ms: 0.212716
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 4
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 56.513732

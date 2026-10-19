@@ -1,0 +1,6 @@
+» färsk DB på migration 189 · commit e31ce04b+ändringar
+--- FAIL: TestCivilianHungerSeventyTicksAuditAndTransitions (0.42s)
+    civilian_hunger_notices_test.go:67: 70-tick outcome audit=55 start=55 end=15 old=1 delivery=140; want55/3/3/1/6
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.425s
+FAIL

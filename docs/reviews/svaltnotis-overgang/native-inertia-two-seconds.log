@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-svaltnotis-overgang/docs/reviews/svaltnotis-overgang/native.py", line 73, in <module>
+    await_notice('CivilianStarvationStarted',budget)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tk/wt/codex-svaltnotis-overgang/docs/reviews/svaltnotis-overgang/native.py", line 61, in await_notice
+    try:line=messages.get(timeout=max(.1,deadline-time.monotonic()))
+             ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/queue.py", line 210, in get
+    self.not_empty.wait(remaining)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/usr/lib/python3.14/threading.py", line 373, in wait
+    gotit = waiter.acquire(True, timeout)
+KeyboardInterrupt

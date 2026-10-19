@@ -49,7 +49,13 @@ func urgentNotificationIndices(notifs []notificationItem) map[int]bool {
 		if subsistenceTier(n) == "critical" {
 			urgent[i] = true
 		}
-		if n.Kind != "GarrisonStarvationStarted" && n.Kind != "GarrisonStarvationEnded" {
+		family := ""
+		switch n.Kind {
+		case "GarrisonStarvationStarted", "GarrisonStarvationEnded":
+			family = "garrison:"
+		case "CivilianStarvationStarted", "CivilianStarvationEnded":
+			family = "civilian:"
+		default:
 			continue
 		}
 		var b struct {
@@ -63,11 +69,15 @@ func urgentNotificationIndices(notifs []notificationItem) map[int]bool {
 		if key == "" {
 			key = b.ProvinceID
 		}
-		if key == "" || seen[key] {
+		if key == "" {
+			continue
+		}
+		key = family + key
+		if seen[key] {
 			continue
 		}
 		seen[key] = true
-		if n.Kind == "GarrisonStarvationStarted" {
+		if n.Kind == "GarrisonStarvationStarted" || n.Kind == "CivilianStarvationStarted" {
 			urgent[i] = true
 		}
 	}

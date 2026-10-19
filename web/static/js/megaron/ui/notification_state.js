@@ -23,11 +23,13 @@ export function urgentNotifications(notifs) {
   [...notifs].sort(compareNotifications).forEach(n => {
     const b = notificationBody(n);
     if (n.kind === 'SubsistenceWarning' && b.tier === 'critical') urgent.add(n);
-    if (!['GarrisonStarvationStarted', 'GarrisonStarvationEnded'].includes(n.kind)) return;
-    const key = b.settlement_id || b.province_id;
-    if (!key || seen.has(key)) return;
+    if (!['GarrisonStarvationStarted', 'GarrisonStarvationEnded', 'CivilianStarvationStarted', 'CivilianStarvationEnded'].includes(n.kind)) return;
+    const scope = b.settlement_id || b.province_id;
+    if (!scope) return;
+    const key = (n.kind.startsWith('Civilian') ? 'civilian:' : 'garrison:') + scope;
+    if (seen.has(key)) return;
     seen.add(key);
-    if (n.kind === 'GarrisonStarvationStarted') urgent.add(n);
+    if (n.kind.endsWith('Started')) urgent.add(n);
   });
   return urgent;
 }

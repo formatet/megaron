@@ -218,24 +218,17 @@ func (h *FoodTickHandler) tickSettlement(ctx context.Context, settlementID, worl
 	}
 
 	// The routine case (unmet == 0) stays silent; only actual hunger is
-	// worth an event and a notification.
+	// worth a daily audit event. Civil hunger notifications belong to the shared
+	// starvation transition observer in KharisTick, after this food pass.
 	if unmet > 0 {
-		var ownerID uuid.UUID
 		var settlementName string
-		_ = h.pool.QueryRow(ctx, `SELECT owner_id, name FROM settlements WHERE id = $1`, settlementID).Scan(&ownerID, &settlementName)
+		_ = h.pool.QueryRow(ctx, `SELECT name FROM settlements WHERE id = $1`, settlementID).Scan(&settlementName)
 
 		payload := FoodShortfallPayload{
 			Unmet: unmet, GrainUsed: grainUsed, FishUsed: fishUsed, LivestockUsed: livestockConsumed,
 			Name: settlementName,
 		}
 		_, _ = h.store.Append(ctx, settlementID, events.StreamProvince, EventFoodShortfall, payload, worldID, nil)
-		if h.hub != nil && ownerID != uuid.Nil {
-			_ = h.hub.NotifyPlayer(ctx, worldID, ownerID, EventFoodShortfall, 2, map[string]any{
-				"settlement_id": settlementID,
-				"unmet":         unmet,
-				"name":          settlementName,
-			})
-		}
 	}
 
 	return nil

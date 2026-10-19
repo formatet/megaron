@@ -1,0 +1,2 @@
+# Raw TAP/Go diagnostics are archived without editing their whitespace.
+*.log -whitespace

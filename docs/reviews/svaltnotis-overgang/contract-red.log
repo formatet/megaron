@@ -1,0 +1,10 @@
+» färsk DB på migration 189 · commit 09e14572
+--- FAIL: TestCivilianHungerSeventyTicksAuditAndTransitions (0.02s)
+    transition_notices_test.go:18: transition must never insert through live hub
+--- FAIL: TestCivilianHungerNoticeFailureRetryKeepsFoodAndWorldRunning (0.04s)
+    civilian_hunger_notices_test.go:116: next world tick count=0
+--- FAIL: TestCivilianHungerArchiveDeletionAndOwnerIsolation (0.02s)
+    civilian_hunger_notices_test.go:172: no rows in result set
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.088s
+FAIL

@@ -1,0 +1,47 @@
+{
+  "health": {
+    "commit": "3f89c2703b225696722f20b6dcc69bbddb522570",
+    "migration": 189,
+    "status": "ok"
+  },
+  "world_id": "a5e0e0cf-a45a-4ab9-ac06-3434f80966da",
+  "province_id": "4dee7da5-76b5-4ec5-a691-23e573f8aff7",
+  "natural_register_cli_join_found_unplace_hunger_restore_recovery": true,
+  "sql_writes": false,
+  "api_replay": false,
+  "server_cadence_seconds": {
+    "until_hunger": 1,
+    "recovery": 12
+  },
+  "firefox": "DPR1;1280/390",
+  "page_errors": [],
+  "start_tick": 281,
+  "end_tick": 288,
+  "missing_grain_equivalent": 1.7999999999999998,
+  "observations": [
+    {
+      "phase": "hungry",
+      "width": 1280,
+      "text": "DAY 15 OF THE MUREX (10), YEAR 1\n\ud83c\udf7d\nMyrsine: people are going hungry \u2014 the meal fell short by 1.8 grain. Place citizens on grain or fish, or transfer food here.\nDay #281\n\u26a1\nA pestilence swept the barracks at Myrsine \u2014 40 fell\nDay #251\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: A dark pestilence has moved through the barracks. Many hoplites have fallen.\ntoday 18:32\n\u26a1\nThe fields lay fallow by divine will at Myrsine \u2014 39 grain rotted\nDay #215\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: The fields lie fallow by divine will. Half your grain stores have rotted.\ntoday 18:31\n\ud83c\udfdb\nKharis: Indifferent \u2192 Suspicious (29.9). Check Kult for decay and temple support; staff and feed your temples.\nDay #211\n\ud83d\udc51\nYour metropolis is founded: Myrsine \u2014 19/19 catchment hexes known\nDay #0\n\ud83d\udcdc\nYour people await you\nDay #0",
+      "overflow": false
+    },
+    {
+      "phase": "hungry",
+      "width": 390,
+      "text": "DAY 15 OF THE MUREX (10), YEAR 1\n\ud83c\udf7d\nMyrsine: people are going hungry \u2014 the meal fell short by 1.8 grain. Place citizens on grain or fish, or transfer food here.\nDay #281\n\u26a1\nA pestilence swept the barracks at Myrsine \u2014 40 fell\nDay #251\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: A dark pestilence has moved through the barracks. Many hoplites have fallen.\ntoday 18:32\n\u26a1\nThe fields lay fallow by divine will at Myrsine \u2014 39 grain rotted\nDay #215\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: The fields lie fallow by divine will. Half your grain stores have rotted.\ntoday 18:31\n\ud83c\udfdb\nKharis: Indifferent \u2192 Suspicious (29.9). Check Kult for decay and temple support; staff and feed your temples.\nDay #211\n\ud83d\udc51\nYour metropolis is founded: Myrsine \u2014 19/19 catchment hexes known\nDay #0\n\ud83d\udcdc\nYour people await you\nDay #0",
+      "overflow": false
+    },
+    {
+      "phase": "recovered",
+      "width": 1280,
+      "text": "DAY 20 OF THE MUREX (10), YEAR 1\n\ud83c\udf7d\nMyrsine: people were fed again.\nDay #288\n\ud83c\udf7d\nMyrsine: people are going hungry \u2014 the meal fell short by 1.8 grain. Place citizens on grain or fish, or transfer food here.\nDay #281\n\u26a1\nA pestilence swept the barracks at Myrsine \u2014 40 fell\nDay #251\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: A dark pestilence has moved through the barracks. Many hoplites have fallen.\ntoday 18:32\n\u26a1\nThe fields lay fallow by divine will at Myrsine \u2014 39 grain rotted\nDay #215\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: The fields lie fallow by divine will. Half your grain stores have rotted.\ntoday 18:31\n\ud83c\udfdb\nKharis: Indifferent \u2192 Suspicious (29.9). Check Kult for decay and temple support; staff and feed your temples.\nDay #211\n\ud83d\udc51\nYour metropolis is founded: Myrsine \u2014 19/19 catchment hexes known\nDay #0\n\ud83d\udcdc\nYour people await you\nDay #0",
+      "overflow": false
+    },
+    {
+      "phase": "recovered",
+      "width": 390,
+      "text": "DAY 20 OF THE MUREX (10), YEAR 1\n\ud83c\udf7d\nMyrsine: people were fed again.\nDay #288\n\ud83c\udf7d\nMyrsine: people are going hungry \u2014 the meal fell short by 1.8 grain. Place citizens on grain or fish, or transfer food here.\nDay #281\n\u26a1\nA pestilence swept the barracks at Myrsine \u2014 40 fell\nDay #251\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: A dark pestilence has moved through the barracks. Many hoplites have fallen.\ntoday 18:32\n\u26a1\nThe fields lay fallow by divine will at Myrsine \u2014 39 grain rotted\nDay #215\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: The fields lie fallow by divine will. Half your grain stores have rotted.\ntoday 18:31\n\ud83c\udfdb\nKharis: Indifferent \u2192 Suspicious (29.9). Check Kult for decay and temple support; staff and feed your temples.\nDay #211\n\ud83d\udc51\nYour metropolis is founded: Myrsine \u2014 19/19 catchment hexes known\nDay #0\n\ud83d\udcdc\nYour people await you\nDay #0",
+      "overflow": false
+    }
+  ]
+}

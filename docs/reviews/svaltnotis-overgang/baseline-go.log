@@ -1,0 +1,4 @@
+» färsk DB på migration 189 · commit 09e14572
+ok  	formatet/megaron/server/internal/economy	4.719s
+ok  	formatet/megaron/server/internal/kharis	10.432s
+ok  	formatet/megaron/server/cmd/keryx	0.329s

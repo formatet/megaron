@@ -1,0 +1,136 @@
+{
+  "notifications": [
+    {
+      "id": "3884a9bf-ef5f-4e54-9966-dd5d1e498816",
+      "kind": "CivilianStarvationStarted",
+      "level": 2,
+      "body": {
+        "q": 51,
+        "r": 48,
+        "name": "Myrsine",
+        "unmet": 1.6399999999999997,
+        "player_id": "c144672d-d869-4c8c-97a6-00167cf2bc13",
+        "world_tick": 293,
+        "province_id": "26191f71-930f-4cca-9dac-4134b676bb12",
+        "settlement_id": "e2662be2-af8c-40ca-b63f-577d0256b75d",
+        "settlement_name": "Myrsine"
+      },
+      "created_at": "2026-10-19T18:13:32.39244+02:00",
+      "read_at": null,
+      "world_tick": 293
+    },
+    {
+      "id": "7085a3d0-5afc-41e0-bf06-566eb3528858",
+      "kind": "DivinePunishment",
+      "level": 2,
+      "body": {
+        "name": "Myrsine",
+        "type": "garrison_plague",
+        "amount": 32,
+        "settlement_id": "e2662be2-af8c-40ca-b63f-577d0256b75d"
+      },
+      "created_at": "2026-10-19T18:13:20.385986+02:00",
+      "read_at": null,
+      "world_tick": 281
+    },
+    {
+      "id": "84edc8b8-b858-44d1-8a4f-4505097cec45",
+      "kind": "DivinePunishment",
+      "level": 2,
+      "body": {
+        "name": "Myrsine",
+        "type": "garrison_plague",
+        "amount": 40,
+        "settlement_id": "e2662be2-af8c-40ca-b63f-577d0256b75d"
+      },
+      "created_at": "2026-10-19T18:13:04.392711+02:00",
+      "read_at": null,
+      "world_tick": 265
+    },
+    {
+      "id": "18788b15-0a5a-4221-a34a-9b7decbd6897",
+      "kind": "DivinePunishment",
+      "level": 2,
+      "body": {
+        "name": "Myrsine",
+        "type": "ship_loss",
+        "amount": 1,
+        "unit_name": "Labyrinth Wind, Galley of Myrsine",
+        "settlement_id": "e2662be2-af8c-40ca-b63f-577d0256b75d"
+      },
+      "created_at": "2026-10-19T18:12:40.39638+02:00",
+      "read_at": null,
+      "world_tick": 241
+    },
+    {
+      "id": "1b70249c-3d9a-4135-873c-1cda28dfa62c",
+      "kind": "KharisBandChanged",
+      "level": 2,
+      "body": {
+        "q": 51,
+        "r": 48,
+        "name": "Myrsine",
+        "kharis": 29.92750000000004,
+        "to_band": "Suspicious",
+        "from_band": "Indifferent",
+        "player_id": "c144672d-d869-4c8c-97a6-00167cf2bc13",
+        "world_tick": 211,
+        "province_id": "26191f71-930f-4cca-9dac-4134b676bb12",
+        "settlement_id": "e2662be2-af8c-40ca-b63f-577d0256b75d",
+        "settlement_name": "Myrsine"
+      },
+      "created_at": "2026-10-19T18:12:10.388986+02:00",
+      "read_at": null,
+      "world_tick": 211
+    },
+    {
+      "id": "0540553d-6af6-402d-8462-828a3e81e388",
+      "kind": "MetropolisFounded",
+      "level": 2,
+      "body": {
+        "q": 51,
+        "r": 48,
+        "name": "Myrsine",
+        "coastal": true,
+        "known_hexes": 19,
+        "province_id": "26191f71-930f-4cca-9dac-4134b676bb12",
+        "grain_amount": 1200,
+        "grain_carried": 1200,
+        "poseidon_gift": "bdabaeab-3356-4d3e-8611-6705879766c1",
+        "settlement_id": "e2662be2-af8c-40ca-b63f-577d0256b75d",
+        "unknown_hexes": 0,
+        "silver_carried": 480,
+        "food_net_per_tick": 0.833333333333333,
+        "grain_net_per_tick": -1.166666666666667
+      },
+      "created_at": "2026-10-19T18:08:37.726746+02:00",
+      "read_at": null,
+      "world_tick": 0
+    },
+    {
+      "id": "392e47b1-0477-45ca-988b-7b82a1fc535d",
+      "kind": "OpeningDispatch",
+      "level": 4,
+      "body": {
+        "title": "Your people await you",
+        "host_id": "be80f6dd-a8de-482a-8b2e-7e76a93b0d47",
+        "returning": false,
+        "paragraphs": [
+          "Time. A day passes every 1 second. Days begin after 1 Wanaxes join.",
+          "Foot soldiers cross a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. War chariots cross plains in 0.67 day but need 2 in olive woodland and 3 in hills, cedar forest or desert. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.",
+          "Your Host carries 1200 grain and 480 silver. It lives on subsistence until founding; these reserves do not drain. Find your place \u2014 founding is final.",
+          "Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.",
+          "The gods. A new Wanax starts at 40 Kharis. It fades slowly from the start; each additional city increases the daily cost, even with a temple. A temple takes 16 days to build: staff and feed it to earn favour. Low standing risks punishment.",
+          "Place citizens on olive woodland or cedar forest for timber, and on stone-bearing ground for stone; idle citizens produce nothing.",
+          "Orders travel. A Runner must reach a unit in the field before it follows your new order.",
+          "Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.",
+          "Rules: ? (Codex). Problems: Report. Community chat: Account."
+        ]
+      },
+      "created_at": "2026-10-19T18:08:37.525583+02:00",
+      "read_at": null,
+      "world_tick": 0
+    }
+  ],
+  "unread": 7
+}

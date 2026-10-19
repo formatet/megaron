@@ -10,12 +10,14 @@ import (
 // The archive also contains retired kinds. Keep their summaries readable;
 // current producers and the Codex client's archive kinds are checked together.
 func printNotificationSummary(c *Client, n notificationItem) {
-	if n.Kind == "GarrisonStarvationStarted" || n.Kind == "GarrisonStarvationEnded" || n.Kind == "KharisBandChanged" {
+	if n.Kind == "GarrisonStarvationStarted" || n.Kind == "GarrisonStarvationEnded" || n.Kind == "CivilianStarvationStarted" || n.Kind == "CivilianStarvationEnded" || n.Kind == "KharisBandChanged" {
 		var b struct {
-			Name     string  `json:"name"`
-			FromBand string  `json:"from_band"`
-			ToBand   string  `json:"to_band"`
-			Kharis   float64 `json:"kharis"`
+			Name     string   `json:"name"`
+			FromBand string   `json:"from_band"`
+			ToBand   string   `json:"to_band"`
+			Kharis   float64  `json:"kharis"`
+			Unmet    *float64 `json:"unmet"`
+			Reason   string   `json:"reason"`
 		}
 		if json.Unmarshal(n.Body, &b) != nil {
 			return
@@ -25,6 +27,21 @@ func printNotificationSummary(c *Client, n notificationItem) {
 			fmt.Printf("      %s: the garrison is losing men to hunger. Soldiers need grain even when the city has a food surplus. Place citizens on grain (`keryx place`) or transfer grain here (`keryx transfer`).\n", b.Name)
 		case "GarrisonStarvationEnded":
 			fmt.Printf("      %s: the garrison is no longer losing men to hunger.\n", b.Name)
+		case "CivilianStarvationStarted":
+			amount := "unknown"
+			if b.Unmet != nil {
+				amount = notificationAmount(*b.Unmet)
+				if *b.Unmet > 0 && *b.Unmet < 0.1 {
+					amount = "<0.1"
+				}
+			}
+			fmt.Printf("      %s: people are going hungry — the meal fell short by %s grain. Place citizens on grain or fish (`keryx place`), or transfer food here (`keryx transfer`).\n", b.Name, amount)
+		case "CivilianStarvationEnded":
+			if b.Reason == "no_longer_owned_or_active" {
+				fmt.Printf("      %s: civilian hunger warning closed — this city is no longer yours or active.\n", b.Name)
+			} else {
+				fmt.Printf("      %s: people were fed again.\n", b.Name)
+			}
 		case "KharisBandChanged":
 			fmt.Printf("      Kharis: %s → %s (%.1f). Check `keryx status` for decay and temple support; staff and feed your temples.\n", b.FromBand, b.ToBand, b.Kharis)
 		}

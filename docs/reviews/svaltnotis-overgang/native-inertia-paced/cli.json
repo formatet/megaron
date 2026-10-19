@@ -1,0 +1,67 @@
+[
+  {
+    "args": [
+      "login",
+      "--server",
+      "http://127.0.0.1:39443",
+      "--username",
+      "civil-6ce6f85c"
+    ],
+    "exit_code": 0,
+    "stdout": "Logged in to http://127.0.0.1:39443\nActive world:   a5e0e0cf-a45a-4ab9-ac06-3434f80966da\nYour province:  \n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "join"
+    ],
+    "exit_code": 0,
+    "stdout": "Joined! A Nomadic Host of 1000 people sets out at (12,55).\n  Run: keryx founding status\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "founding",
+      "settle",
+      "--name",
+      "Myrsine",
+      "--yes"
+    ],
+    "exit_code": 0,
+    "stdout": "Founding (12,55) \u2014 metropolis of 1000 people \u2014 catchment forecast (19/19 hexes known, 0 unknown):\n  Inland: a city here can never build a harbour or ships \u2014 to reach the sea you will need a coastal colony.\n  Food: grain ~5.2 + fish ~0.0 per day \u2212 consumption ~5.0 per day = net +0.2 per day\n  Starting stock 1200 grain \u2014 marginal (net +0.2 per day). A farm gives net ~+0.2 per day. (Demeter's farm is already included in this forecast)\n  Other: copper-deposit \u2713, silver-deposit \u2713, copper ~1 per day, oil ~12 per day, stone ~27 per day, timber ~6 per day, wine ~28 per day\n  Gift: Demeter's farm \u2014 an inland site whose catchment bears grain, so the city is founded with a farm already standing\n\u2692 Metropolis founded at (12,55)! The host is dissolved \u2014 the people have a home.\n  Carried in by the host: 1200 grain, 480 silver. The city now holds 1200 grain, 480 silver (founding adds no extra grain or silver).\n  Run: keryx status\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "status"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax Philonetas \u00b7 day 0 of the world\n\n1 citizen = 100 people\nMyrsine [minoan]  Pop: 1.0k people  Labor: 10 citizens  Walls: 0/3  Settlements: 1/5\nPopulation 1000 \u2014 growing: food net +0.2 per day\n\nNo trade contacts yet \u2014 trade needs a foreign settlement within your vision. Run `keryx cities` to see known/rumoured neighbours (march outward or colonise to reach one), then `keryx message --to <name>` or `keryx trade-offer` once one is visible.\n\nFood lasts 240.0 days at current consumption (city grain + fish stocks)\n\nLast day 0: 1 goods produced, 1 consumed  \u00b7  keryx ticklog for details\n\nResources\n  (per day; food and army balances are itemized below)\n  Silver      480  \u2014\n  Food     grain 5.2 + fish 0.0 \u2212 people eat 5.0 = net +0.2 per day (before army)\n  Grain      1.2k  production 5.2 per day  (6 citizens needed for people on best food slots \u00b7 6 on food)\n  Automatic food: 0.50 grain + 0.00 fish per day without placed citizens (nearby ground 0.50 grain; 0 people outside whole citizens: 0.00 grain + 0.00 fish, a fraction of the best food worker)\n  Army     eats 1.0 grain per day \u2192 food net -0.8 per day after army\n  Silver   net +0.0 per day after army pay\n  \u26a0 Timber production ~0 \u2014 timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).\n  \u26a0 Unmined deposit in the catchment: copper, silver \u2014 build a mine on its hex to extract it (a hex holds one building; if another stands there, demolish it first with `keryx demolish`)\n  Kharis       40  (Indifferent) \u00b7 cap 40 \u00b7 net -0.1 per day (temple \u2212 decay)\n  Kharis decay: 0.1 base + 1 city cost 0.0 per day = 0.1 total\n  Temples: none \u2014 kharis doesn't climb without a temple + offerings.\n\nArmy (garrison in Myrsine)\n  Spearmen    200\n      73905042-d602-4747-8f35-9573723e16bf  100\n      cca975b8-73cf-48a7-b0d5-23f2248c1efd  100\n  Upkeep     1.0 grain, 0.0 silver per day  (everything the city pays \u2014 including field units)\n  Field units and other cities are shown in `keryx unit list`.\n\nBuildings\n  farm         L1\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "notifications"
+    ],
+    "exit_code": 0,
+    "stdout": "6 notification(s), 6 unread\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n*[Day #281]  CivilianStarvationStarted\n      Myrsine: people are going hungry \u2014 the meal fell short by 2 grain. Place citizens on grain or fish (`keryx place`), or transfer food here (`keryx transfer`).\n*[Day #251]  DivinePunishment\n      A plague swept through the barracks in Myrsine \u2014 40 men fell.\n*[Day #215]  DivinePunishment\n      The fields in Myrsine lay fallow at the gods' will \u2014 39 grain rotted.\n*[Day #211]  KharisBandChanged\n      Kharis: Indifferent \u2192 Suspicious (29.9). Check `keryx status` for decay and temple support; staff and feed your temples.\n*[Day #0]  MetropolisFounded\n      Your metropolis is founded: Myrsine \u2014 19/19 catchment hexes known\n      Myrsine food production covers consumption (net +0.2 per day).\n*[Day #0]  OpeningDispatch\n      Your people await you\n      Time. A day passes every 1 second. Days begin after 1 Wanaxes join.\n      Foot soldiers cross a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. War chariots cross plains in 0.67 day but need 2 in olive woodland and 3 in hills, cedar forest or desert. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.\n      Your Host carries 1200 grain and 480 silver. It lives on subsistence until founding; these reserves do not drain. Find your place \u2014 founding is final.\n      Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.\n      The gods. A new Wanax starts at 40 Kharis. It fades slowly from the start; each additional city increases the daily cost, even with a temple. A temple takes 16 days to build: staff and feed it to earn favour. Low standing risks punishment.\n      Place citizens on olive woodland or cedar forest for timber, and on stone-bearing ground for stone; idle citizens produce nothing.\n      Orders travel. A Runner must reach a unit in the field before it follows your new order.\n      Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.\n      Rules: ? (Codex). Problems: Report. Community chat: Account.\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "notifications"
+    ],
+    "exit_code": 0,
+    "stdout": "7 notification(s), 1 unread\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n*[Day #288]  CivilianStarvationEnded\n      Myrsine: people were fed again.\n [Day #281]  CivilianStarvationStarted\n      Myrsine: people are going hungry \u2014 the meal fell short by 2 grain. Place citizens on grain or fish (`keryx place`), or transfer food here (`keryx transfer`).\n [Day #251]  DivinePunishment\n      A plague swept through the barracks in Myrsine \u2014 40 men fell.\n [Day #215]  DivinePunishment\n      The fields in Myrsine lay fallow at the gods' will \u2014 39 grain rotted.\n [Day #211]  KharisBandChanged\n      Kharis: Indifferent \u2192 Suspicious (29.9). Check `keryx status` for decay and temple support; staff and feed your temples.\n [Day #0]  MetropolisFounded\n      Your metropolis is founded: Myrsine \u2014 19/19 catchment hexes known\n      Myrsine food production covers consumption (net +0.2 per day).\n [Day #0]  OpeningDispatch\n      Your people await you\n      Time. A day passes every 1 second. Days begin after 1 Wanaxes join.\n      Foot soldiers cross a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. War chariots cross plains in 0.67 day but need 2 in olive woodland and 3 in hills, cedar forest or desert. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.\n      Your Host carries 1200 grain and 480 silver. It lives on subsistence until founding; these reserves do not drain. Find your place \u2014 founding is final.\n      Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.\n      The gods. A new Wanax starts at 40 Kharis. It fades slowly from the start; each additional city increases the daily cost, even with a temple. A temple takes 16 days to build: staff and feed it to earn favour. Low standing risks punishment.\n      Place citizens on olive woodland or cedar forest for timber, and on stone-bearing ground for stone; idle citizens produce nothing.\n      Orders travel. A Runner must reach a unit in the field before it follows your new order.\n      Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.\n      Rules: ? (Codex). Problems: Report. Community chat: Account.\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "codex",
+      "food"
+    ],
+    "exit_code": 0,
+    "stdout": "Food and hunger\n\nYour people eat every day, in a fixed order: **grain first, then fish, then livestock.** Fish covers only what grain could not; livestock is slaughtered only when both are gone, and each animal feeds your people for as much as 3 grain. A coastal city with good fishing is fed differently from an inland one.\n\n## When there is not enough\n\nIf all three run out and the day's need is still unmet:\n\n- the settlement **loses part of its population that day**, and keeps losing while the shortfall lasts;\n- it shrinks until what its land yields can feed those who are left \u2014 the ground right around a city always feeds about a hundred;\n- below **50 people** \u2014 starved there, or emptied by drafting soldiers \u2014 **the settlement collapses and is gone.**\n\nYou get an urgent **CivilianStarvationStarted** notification when hunger is first observed. It records the day, city and how much of that day's meal was missing, in grain. The latest start stays above ordinary history in Notifications until that city's food supply has recovered steadily. You get **CivilianStarvationEnded** after a run of fully fed days; the old start then returns to ordinary history. Hunger returning during that recovery window belongs to the same warning. A new spell after recovery starts a new pair of notices, rather than repeating the warning every day.\n\nCivilian meals and [[upkeep|soldiers' grain]] are separate: a city's people may be fed while its garrison is hungry, or the other way round. Each warning clears independently. If a city leaves your rule or ceases to be active, its warning closes without claiming its people recovered.\n\nOlder **FoodShortfall** messages remain in history. The world's daily food audit still records every shortfall; new inbox messages only mark the transitions. Check **City \u2192 Food details** for the current situation and act before the city keeps shrinking.\n\n## What to do about it\n\n- Put more [[citizens]] on grain or fish hexes. Check the *next citizen would add* figure.\n- Build or level a **Farm** ([[buildings]]) \u2014 it raises how many people a grain hex can hold.\n- Bring food in from another of your cities by [[transfers|transfer]] or a [[routes|standing order]].\n- Buy it ([[trade]]).\n- Shrink what eats: soldiers are drafted from your people and eat like them ([[upkeep]]).\n\nYour city has one food stock: the grain and fish in its [[goods|stores]]. **Food lasts** shows that stock at current consumption, without counting future production. **City \u2192 More \u2192 Food details** shows production, meals and army food separately. Stored food buys time during a shortfall. A city under [[sieges|siege]] starves because its fields are cut off, not because it produces too little.\n\nGrowth is covered in [[growth]].\n\nRelated: citizens, growth, upkeep  (keryx codex <id>)\n",
+    "stderr": ""
+  }
+]

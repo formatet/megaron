@@ -62,3 +62,34 @@ func TestAbsenceNoticeTextAndWatchGameDay(t *testing.T) {
 		t.Fatal("archived granary release must be quiet, hunger must stay visible")
 	}
 }
+
+func TestNotificationCivilianAndGarrisonHungerIndependent(t *testing.T) {
+	item := func(kind string, tick int) notificationItem {
+		return notificationItem{Kind: kind, WorldTick: &tick, Body: json.RawMessage(`{"settlement_id":"a"}`)}
+	}
+	civil := item("CivilianStarvationStarted", 1)
+	army := item("GarrisonStarvationStarted", 2)
+	civilEnd := item("CivilianStarvationEnded", 3)
+	armyEnd := item("GarrisonStarvationEnded", 4)
+	if u := urgentNotificationIndices([]notificationItem{civil, army, civilEnd}); len(u) != 1 || !u[1] {
+		t.Fatalf("civilian recovery cleared army: %v", u)
+	}
+	if u := urgentNotificationIndices([]notificationItem{civil, army, armyEnd}); len(u) != 1 || !u[0] {
+		t.Fatalf("army recovery cleared civilians: %v", u)
+	}
+	for _, tt := range []struct{ kind, body, want string }{
+		{"CivilianStarvationStarted", `{"name":"Tylissos","unmet":0.03}`, "the meal fell short by <0.1 grain"},
+		{"CivilianStarvationEnded", `{"name":"Tylissos"}`, "people were fed again"},
+		{"CivilianStarvationEnded", `{"name":"Tylissos","reason":"no_longer_owned_or_active"}`, "warning closed"},
+	} {
+		tick := 7
+		body := json.RawMessage(tt.body)
+		row := capturePrint(t, func() { printNotificationRow(nil, notificationItem{Kind: tt.kind, Body: body, WorldTick: &tick}) })
+		watch := capturePrint(t, func() { printWatchMessage(nil, wsMsg{Kind: tt.kind, Payload: body, WorldTick: &tick}) })
+		for _, text := range []string{row, watch} {
+			if !strings.Contains(text, "Day #7") || !strings.Contains(text, tt.want) {
+				t.Fatal(text)
+			}
+		}
+	}
+}

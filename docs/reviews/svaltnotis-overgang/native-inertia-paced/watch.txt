@@ -1,0 +1,7 @@
+ [Day #281]  CivilianStarvationStarted
+      Myrsine: people are going hungry — the meal fell short by 2 grain. Place citizens on grain or fish (`keryx place`), or transfer food here (`keryx transfer`).
+  stream dropped — catching up
+  stream reconnected
+ [Day #288]  CivilianStarvationEnded
+      Myrsine: people were fed again.
+  catch-up read failed: request failed: Get "http://127.0.0.1:39443/api/v1/worlds/a5e0e0cf-a45a-4ab9-ac06-3434f80966da/notifications?unread=true": dial tcp 127.0.0.1:39443: connect: connection refused

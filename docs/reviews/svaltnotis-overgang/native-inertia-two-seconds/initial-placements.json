@@ -1,0 +1,26 @@
+[
+  {
+    "gubbe_ordinal": 1,
+    "target_kind": "hex",
+    "hex_q": 6,
+    "hex_r": 49,
+    "hex_ordinal": 3,
+    "good_key": "grain"
+  },
+  {
+    "gubbe_ordinal": 2,
+    "target_kind": "hex",
+    "hex_q": 6,
+    "hex_r": 49,
+    "hex_ordinal": 3,
+    "good_key": "grain"
+  },
+  {
+    "gubbe_ordinal": 3,
+    "target_kind": "hex",
+    "hex_q": 6,
+    "hex_r": 49,
+    "hex_ordinal": 3,
+    "good_key": "grain"
+  }
+]

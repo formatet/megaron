@@ -1,0 +1,50 @@
+[
+  {
+    "gubbe_ordinal": 1,
+    "target_kind": "hex",
+    "hex_q": 0,
+    "hex_r": 65,
+    "hex_ordinal": 4,
+    "good_key": "grain"
+  },
+  {
+    "gubbe_ordinal": 2,
+    "target_kind": "hex",
+    "hex_q": 0,
+    "hex_r": 65,
+    "hex_ordinal": 4,
+    "good_key": "grain"
+  },
+  {
+    "gubbe_ordinal": 3,
+    "target_kind": "hex",
+    "hex_q": 0,
+    "hex_r": 65,
+    "hex_ordinal": 4,
+    "good_key": "grain"
+  },
+  {
+    "gubbe_ordinal": 4,
+    "target_kind": "hex",
+    "hex_q": 0,
+    "hex_r": 65,
+    "hex_ordinal": 4,
+    "good_key": "grain"
+  },
+  {
+    "gubbe_ordinal": 5,
+    "target_kind": "hex",
+    "hex_q": 0,
+    "hex_r": 65,
+    "hex_ordinal": 4,
+    "good_key": "grain"
+  },
+  {
+    "gubbe_ordinal": 6,
+    "target_kind": "hex",
+    "hex_q": 1,
+    "hex_r": 65,
+    "hex_ordinal": 9,
+    "good_key": "grain"
+  }
+]

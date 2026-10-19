@@ -1,0 +1,121 @@
+{
+  "notifications": [
+    {
+      "id": "490ada4f-5e4b-45bd-aa35-a3ba73302646",
+      "kind": "CivilianStarvationStarted",
+      "level": 2,
+      "body": {
+        "q": 10,
+        "r": 88,
+        "name": "Myrsine",
+        "unmet": 1.6399999999999997,
+        "player_id": "872d6258-569e-42b7-86c8-ab4dcd18eb6d",
+        "fed_streak": 0,
+        "world_tick": 295,
+        "province_id": "adc7d40a-9639-40c8-a5fd-f9d521114136",
+        "settlement_id": "899ee45d-39b4-4e47-a662-b8c87c6bc0df",
+        "settlement_name": "Myrsine"
+      },
+      "created_at": "2026-10-19T18:24:49.527288+02:00",
+      "read_at": null,
+      "world_tick": 295
+    },
+    {
+      "id": "fc871257-861e-4f4c-a69a-40392e93c0c2",
+      "kind": "DivinePunishment",
+      "level": 2,
+      "body": {
+        "name": "Myrsine",
+        "type": "garrison_plague",
+        "amount": 32,
+        "settlement_id": "899ee45d-39b4-4e47-a662-b8c87c6bc0df"
+      },
+      "created_at": "2026-10-19T18:24:25.525715+02:00",
+      "read_at": null,
+      "world_tick": 271
+    },
+    {
+      "id": "ff9e090d-0bc2-49f4-af22-330565a4f464",
+      "kind": "DivinePunishment",
+      "level": 2,
+      "body": {
+        "name": "Myrsine",
+        "type": "garrison_plague",
+        "amount": 40,
+        "settlement_id": "899ee45d-39b4-4e47-a662-b8c87c6bc0df"
+      },
+      "created_at": "2026-10-19T18:24:03.519717+02:00",
+      "read_at": null,
+      "world_tick": 249
+    },
+    {
+      "id": "8453d4b4-deec-4d9c-a6e6-a32dab956dd4",
+      "kind": "KharisBandChanged",
+      "level": 2,
+      "body": {
+        "q": 10,
+        "r": 88,
+        "name": "Myrsine",
+        "kharis": 29.92750000000004,
+        "to_band": "Suspicious",
+        "from_band": "Indifferent",
+        "player_id": "872d6258-569e-42b7-86c8-ab4dcd18eb6d",
+        "world_tick": 211,
+        "province_id": "adc7d40a-9639-40c8-a5fd-f9d521114136",
+        "settlement_id": "899ee45d-39b4-4e47-a662-b8c87c6bc0df",
+        "settlement_name": "Myrsine"
+      },
+      "created_at": "2026-10-19T18:23:25.525559+02:00",
+      "read_at": null,
+      "world_tick": 211
+    },
+    {
+      "id": "930ca48e-f05a-4d13-9c1a-a3f157de19e1",
+      "kind": "MetropolisFounded",
+      "level": 2,
+      "body": {
+        "q": 10,
+        "r": 88,
+        "name": "Myrsine",
+        "coastal": false,
+        "known_hexes": 18,
+        "province_id": "adc7d40a-9639-40c8-a5fd-f9d521114136",
+        "grain_amount": 1200,
+        "grain_carried": 1200,
+        "settlement_id": "899ee45d-39b4-4e47-a662-b8c87c6bc0df",
+        "unknown_hexes": 1,
+        "silver_carried": 480,
+        "food_net_per_tick": 1.166666666666666,
+        "grain_net_per_tick": 1.166666666666666
+      },
+      "created_at": "2026-10-19T18:19:52.792334+02:00",
+      "read_at": null,
+      "world_tick": 0
+    },
+    {
+      "id": "6724ed7a-f550-4302-a0cf-7c5603ea271e",
+      "kind": "OpeningDispatch",
+      "level": 4,
+      "body": {
+        "title": "Your people await you",
+        "host_id": "59357cae-c8fd-4bdd-8966-426a0210178c",
+        "returning": false,
+        "paragraphs": [
+          "Time. A day passes every 1 second. Days begin after 1 Wanaxes join.",
+          "Foot soldiers cross a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. War chariots cross plains in 0.67 day but need 2 in olive woodland and 3 in hills, cedar forest or desert. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.",
+          "Your Host carries 1200 grain and 480 silver. It lives on subsistence until founding; these reserves do not drain. Find your place \u2014 founding is final.",
+          "Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.",
+          "The gods. A new Wanax starts at 40 Kharis. It fades slowly from the start; each additional city increases the daily cost, even with a temple. A temple takes 16 days to build: staff and feed it to earn favour. Low standing risks punishment.",
+          "Place citizens on olive woodland or cedar forest for timber, and on stone-bearing ground for stone; idle citizens produce nothing.",
+          "Orders travel. A Runner must reach a unit in the field before it follows your new order.",
+          "Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.",
+          "Rules: ? (Codex). Problems: Report. Community chat: Account."
+        ]
+      },
+      "created_at": "2026-10-19T18:19:52.602657+02:00",
+      "read_at": null,
+      "world_tick": 0
+    }
+  ],
+  "unread": 6
+}
