@@ -1,0 +1,8 @@
+2026/10/19 08:44:32 INFO player registered id=773900ae-43dc-4b14-912b-d52f7b9057b8 username=placement-7dcaeb38-02a0-4b02-b4c0-a800b483ad98
+--- FAIL: TestSparseTimber_HTTPPlacementAndLumbermill (0.10s)
+    --- FAIL: TestSparseTimber_HTTPPlacementAndLumbermill/scrub_maquis (0.10s)
+        macchia_timber_test.go:76: scrub_maquis target offers no timber: map[goods:[map[cap:2 good_key:wine marginal_yield:0.33333333333333337 placed:0 rate_per_tick:0.33333333333333337] map[cap:1 good_key:stone marginal_yield:0.5 placed:0 rate_per_tick:0.5]] hex_ordinal:14 hex_q:1 hex_r:0 terrain:scrub_maquis]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.102s
+FAIL
+» färsk DB på migration 189 · commit 149f0eba+ändringar

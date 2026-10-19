@@ -1,0 +1,24 @@
+» färsk DB på migration 188 · commit e10735a6
+2026/10/19 08:42:08 INFO player registered id=29e6e2b9-5e00-40ef-a7f9-a3200016683c username=placement-8dafd20c-dbae-48a9-bec4-4729758c0b47
+2026/10/19 08:42:08 INFO player registered id=23ba19bc-8a17-4c5b-bf8f-eebd6013889c username=placement-09fa1574-fe1c-4441-8472-f0e53adb2062
+2026/10/19 08:42:08 INFO player registered id=1781a3b0-bd50-4193-9bde-cafce5c3a7f2 username=placement-41e241e9-ad82-432f-bc03-81b74bd29737
+--- FAIL: TestSparseTimber_HTTPPlacementAndLumbermill (0.27s)
+    --- FAIL: TestSparseTimber_HTTPPlacementAndLumbermill/scrub_maquis (0.09s)
+        macchia_timber_test.go:76: scrub_maquis target offers no timber: map[goods:[map[cap:2 good_key:wine marginal_yield:0.33333333333333337 placed:0 rate_per_tick:0.33333333333333337] map[cap:1 good_key:stone marginal_yield:0.5 placed:0 rate_per_tick:0.5]] hex_ordinal:14 hex_q:1 hex_r:0 terrain:scrub_maquis]
+    --- FAIL: TestSparseTimber_HTTPPlacementAndLumbermill/hills (0.09s)
+        macchia_timber_test.go:76: hills target offers no timber: map[goods:[map[cap:2 good_key:oil marginal_yield:0.49999999999999994 placed:0 rate_per_tick:0.49999999999999994] map[cap:2 good_key:wine marginal_yield:0.9999999999999999 placed:0 rate_per_tick:0.9999999999999999] map[cap:2 good_key:stone marginal_yield:0.9999999999999999 placed:0 rate_per_tick:0.9999999999999999] map[cap:1 good_key:grain marginal_yield:0.5 placed:0 rate_per_tick:0.5]] hex_ordinal:14 hex_q:1 hex_r:0 terrain:hills]
+    --- FAIL: TestSparseTimber_HTTPPlacementAndLumbermill/river_valley (0.09s)
+        macchia_timber_test.go:76: river_valley target offers no timber: map[goods:[map[cap:2 good_key:wine marginal_yield:0.49999999999999994 placed:0 rate_per_tick:0.49999999999999994] map[cap:1 good_key:stone marginal_yield:0.5 placed:0 rate_per_tick:0.5] map[cap:2 good_key:grain marginal_yield:1.6666666666666665 placed:0 rate_per_tick:1.6666666666666665]] hex_ordinal:14 hex_q:1 hex_r:0 terrain:river_valley]
+2026/10/19 08:42:08 INFO player registered id=1c52ec6d-816c-4938-9239-5a2213d7988b username=buildhex-ca93f721-a25f-491f-8e32-682664043fbd
+2026/10/19 08:42:09 INFO player registered id=9ba18687-2029-40d9-90f1-1bfc8893a810 username=buildhex-b02c9afe-3ed9-436e-a8c4-7f80877c75a0
+2026/10/19 08:42:09 INFO player registered id=9e32c5b9-c7a5-4bee-b57a-c375ba032cbd username=buildhex-c83e3776-0945-4633-9b5c-2427733d328e
+--- FAIL: TestSparseTimber_HTTPBuildOnNewTerrains (0.20s)
+    --- FAIL: TestSparseTimber_HTTPBuildOnNewTerrains/scrub_maquis (0.07s)
+        macchia_timber_test.go:122: build lumbermill on scrub_maquis = 422: map[error:a lumbermill at (1,0) would produce nothing — the terrain/deposit there doesn't support it], want 201
+    --- FAIL: TestSparseTimber_HTTPBuildOnNewTerrains/hills (0.07s)
+        macchia_timber_test.go:122: build lumbermill on hills = 422: map[error:a lumbermill at (1,0) would produce nothing — the terrain/deposit there doesn't support it], want 201
+    --- FAIL: TestSparseTimber_HTTPBuildOnNewTerrains/river_valley (0.07s)
+        macchia_timber_test.go:122: build lumbermill on river_valley = 422: map[error:a lumbermill at (1,0) would produce nothing — the terrain/deposit there doesn't support it], want 201
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.474s
+FAIL
