@@ -1,0 +1,112 @@
+[
+  {
+    "number": 1,
+    "start": "2026-10-19T08:55:35+02:00",
+    "args": [
+      "status"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax Wedaneus · day 606 of the world\n\n1 citizen = 100 people\nThalassa [minoan]  Pop: 384 people  Labor: 3 citizens  Walls: 0/3  Settlements: 2/5  [coastal — can build harbour → ships]\nPopulation 384 — growing: food net +2.7 per day\nThis is Thalassa. You have 2 cities — `keryx settlements` lists them, `keryx status --province <id>` shows another.\n\nFood lasts 196.9 days at current consumption (city grain + fish stocks)\n\nLast day 606: 3 goods produced, 1 consumed  ·  keryx ticklog for details\n\nResources\n  (per day; food and army balances are itemized below)\n  Silver       53  —\n  Food     grain 1.5 + fish 3.1 − people eat 1.9 = net +2.7 per day (before army)\n  Grain         2  production 1.5 per day  (0 citizens needed for people on best food slots · 2 placed)\n  Automatic food: 0.50 grain + 1.43 fish per day without placed citizens (nearby ground 0.50 grain; 84 people outside whole citizens: 0.00 grain + 1.43 fish, a fraction of the best food worker)\n  Army     eats 0.0 grain per day → food net +2.7 per day after army\n  Silver   net -0.5 per day after army pay\n  Fish        377  +3.1 per day\n  Timber       55  +1.0 per day\n  Kharis       50  (Indifferent) · cap 50 · net +3.4 per day (temple − decay)\n  Kharis decay: 0.1 base + 2 cities cost 0.1 per day = 0.2 total\n  → your kharis is climbing toward the cap 50 (set by your level-1 temple) — build a higher temple to raise the cap further.\n  Temple in Itanos: reference 0.25 grain per day — alternatives: 0.4304 fish or 0.308 timber or 0.3747 silver — stock: 2709 grain, 306 fish, 613 timber, 327 silver — next gift: 0.25 grain  ✓\n\nArmy (garrison in Thalassa)\n  Galley        1\n  Upkeep     0.0 grain, 1.5 silver per day  (everything the city pays — including field units)\n             1.0 silver per day back into the city (garrison's pay)\n  Field units and other cities are shown in `keryx unit list`.\n\nBuildings\n  harbour      L1\n  shipyard     L1\n",
+    "stderr": ""
+  },
+  {
+    "number": 2,
+    "start": "2026-10-19T08:55:37+02:00",
+    "args": [
+      "notifications"
+    ],
+    "exit_code": 0,
+    "stdout": "20 notification(s), 20 unread\n────────────────────────────────────────────────────────────\n*[Day #604]  TrainComplete\n      Training complete: 1 galley\n*[Day #466]  BuildComplete\n      The city completed shipyard\n*[Day #466]  BuildComplete\n      The city completed harbour\n*[Day #462]  TradeDelivery\n      Delivery arrived: 50 silver\n*[Day #461]  KharisBandChanged\n      Kharis: Suspicious → Indifferent (32.0). Check `keryx status` for decay and temple support; staff and feed your temples.\n*[Day unknown]  TrainComplete\n      Training complete: 100 spearman\n*[Day unknown]  BuildComplete\n      The city completed temple\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 24 timber\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 12 stone\n*[Day unknown]  BuildComplete\n      The city completed barracks\n*[Day unknown]  TransferDelivered\n      Transfer delivered to Thalassa: 50 silver\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 16 timber\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 12 stone\n*[Day unknown]  ColonyFounded\n      Colony founded: Thalassa\n      Thalassa food production covers consumption (net +1.0 per day).\n*[Day unknown]  UnitArrived\n      1st Spearmen of Itanos arrived at (35, 28) — garrison\n*[Day unknown]  ExpeditionReport\n      1st Spearmen of Itanos is home after 10 days, 4 hexes out at the furthest — saw 54 hexes around (35, 24): no ore deposits, cedar or foreign cities recorded\n*[Day unknown]  BuildComplete\n      The city completed lumbermill\n*[Day unknown]  ExpeditionTurnedHome\n      1st Spearmen of Itanos turns home from the land around (35, 24): half its time is spent — home by day 361\n*[Day unknown]  MetropolisFounded\n      Your metropolis is founded: Itanos — 19/19 catchment hexes known\n      Itanos food production covers consumption (net +0.0 per day).\n*[Day unknown]  OpeningDispatch\n      Your people await you\n      Time. A day passes every 6 minutes.\n      Foot soldiers cross a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. War chariots cross plains in 0.67 day but need 2 in olive woodland and 3 in hills, cedar forest or desert. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.\n      Your Host carries 1200 grain and 480 silver. It lives on subsistence until founding; these reserves do not drain. Find your place — founding is final.\n      Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.\n      The gods. Your Kharis holds for 144 days after founding, and no punishment falls. A temple takes 16 days to build. Build, staff and feed one in time; after that, neglect lets Kharis fade and risks punishment.\n      Place citizens on olive woodland or cedar forest for timber, and on stone-bearing ground for stone; idle citizens produce nothing.\n      Orders travel. A Runner must reach a unit in the field before it follows your new order.\n      Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.\n      Rules: ? (Codex). Problems: Report. Community chat: Account.\n",
+    "stderr": ""
+  },
+  {
+    "number": 3,
+    "start": "2026-10-19T08:55:39+02:00",
+    "args": [
+      "unit",
+      "list"
+    ],
+    "exit_code": 0,
+    "stdout": "ID                                    Name                                            Size      Status      Stance     Location / ETA\n────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────\ne02cc131-cb04-4d6a-bab2-805033431a29  1st Spearmen of Itanos                          100 men   marching    —          exploring toward unseen ground near (30,25) — auto-returns home\n  Upkeep: 1 grain, 0 silver per day\n  Expedition around (30,25), 12 days; turns home by day 607; home by day 613\n73a8301c-b9bc-4327-8903-e00a3d71cbde  3rd Spearmen of Itanos                          100 men   marching    —          exploring toward unseen ground near (31,32) — auto-returns home\n  Upkeep: 1 grain, 0 silver per day\n  Expedition around (31,32), 12 days; turns home by day 607; home by day 613\ne92fd34b-55b5-4c6e-96ac-a1bc0923fa52  Thera Gleam, Galley of Thalassa                 1 vessel (crew 20)  garrison    —          settlement 3478ac76…\n  Upkeep: 0.04 grain, 1.5 silver per day\n",
+    "stderr": ""
+  },
+  {
+    "number": 4,
+    "start": "2026-10-19T08:55:50+02:00",
+    "args": [
+      "map",
+      "--province",
+      "15bc2000-f96f-4b57-b831-7f3e265056f7",
+      "--radius",
+      "8"
+    ],
+    "exit_code": 0,
+    "stdout": "Your hex: (31,28) · radius 8 · 107 known hexes (107 live, 0 remembered; 53 sea, 1 river, 0 ford, 31 coastal land):\n\n  ( 31, 28) d0      forest_olive_grove   [coastal hex — a city founded here could build a harbour] [settled]\n  ( 32, 28) d1  SE  forest_olive_grove  \n  ( 30, 29) d1  SW  coastal_sea         [sea]\n  ( 30, 28) d1  NW  coastal_sea         [sea]\n  ( 31, 27) d1  N   forest_olive_grove   [coastal hex — a city founded here could build a harbour]\n  ( 31, 29) d1  S   plains               [coastal hex — a city founded here could build a harbour]\n  ( 32, 27) d1  NE  plains              \n  ( 32, 26) d2  NE  plains               [coastal hex — a city founded here could build a harbour]\n  ( 29, 29) d2  W   deep_sea            [sea]\n  ( 31, 26) d2  N   coastal_sea         [sea]\n  ( 30, 30) d2  SW  coastal_sea         [sea]\n  ( 30, 27) d2  NW  coastal_sea         [sea]\n  ( 31, 30) d2  S   plains               [coastal hex — a city founded here could build a harbour]\n  ( 29, 30) d2  SW  deep_sea            [sea]\n  ( 33, 26) d2  NE  forest_olive_grove  \n  ( 32, 29) d2  SE  plains              \n  ( 33, 27) d2  E   forest_olive_grove  \n  ( 33, 28) d2  SE  plains              \n  ( 29, 28) d2  NW  deep_sea            [sea]\n  ( 33, 29) d3  SE  plains              \n  ( 34, 26) d3  E   plains              \n  ( 31, 25) d3  N   coastal_sea         [sea]\n  ( 32, 30) d3  S   plains              \n  ( 28, 31) d3  SW  deep_sea            [sea]\n  ( 29, 31) d3  SW  deep_sea            [sea]\n  ( 31, 31) d3  S   plains               [coastal hex — a city founded here could build a harbour]\n  ( 28, 30) d3  W   deep_sea            [sea]\n  ( 29, 27) d3  NW  deep_sea            [sea]\n  ( 32, 25) d3  N   plains               [coastal hex — a city founded here could build a harbour]\n  ( 34, 25) d3  NE  forest_olive_grove  \n  ( 30, 26) d3  N   deep_sea            [sea]\n  ( 28, 29) d3  W   deep_sea            [sea]\n  ( 34, 27) d3  E   forest_olive_grove  \n  ( 34, 28) d3  SE  plains              \n  ( 28, 28) d3  NW  deep_sea            [sea]\n  ( 30, 31) d3  S   coastal_sea         [sea]\n  ( 33, 25) d3  NE  forest_olive_grove   [coastal hex — a city founded here could build a harbour]\n  ( 35, 25) d4  E   forest_olive_grove  \n  ( 27, 29) d4  W   deep_sea            [sea]\n  ( 35, 28) d4  SE  plains               [settled]\n  ( 30, 32) d4  S   coastal_sea         [sea]\n  ( 35, 27) d4  E   river_valley         [coastal hex — a city founded here could build a harbour]\n  ( 35, 26) d4  E   river_valley         [coastal hex — a city founded here could build a harbour]\n  ( 27, 28) d4  NW  deep_sea            [sea]\n  ( 35, 24) d4  NE  forest_olive_grove  \n  ( 29, 32) d4  SW  deep_sea            [sea]\n  ( 31, 32) d4  S   forest_olive_grove   [coastal hex — a city founded here could build a harbour]\n  ( 34, 29) d4  SE  plains              \n  ( 27, 30) d4  W   deep_sea            [sea]\n  ( 29, 26) d4  NW  deep_sea            [sea]\n  ( 27, 31) d4  W   deep_sea            [sea]\n  ( 27, 32) d4  SW  deep_sea            [sea]\n  ( 34, 24) d4  NE  plains               [coastal hex — a city founded here could build a harbour]\n  ( 33, 30) d4  SE  plains              \n  ( 28, 32) d4  SW  deep_sea            [sea]\n  ( 32, 31) d4  S   plains              \n  ( 28, 27) d4  NW  deep_sea            [sea]\n  ( 33, 24) d4  NE  coastal_sea         [sea]\n  ( 35, 23) d5  NE  plains               [coastal hex — a city founded here could build a harbour]\n  ( 32, 32) d5  S   forest_olive_grove   [coastal hex — a city founded here could build a harbour]\n  ( 36, 28) d5  SE  plains               [coastal hex — a city founded here could build a harbour]\n  ( 36, 27) d5  E   river_valley         [coastal hex — a city founded here could build a harbour]\n  ( 36, 26) d5  E   coastal_sea         [sea]\n  ( 27, 33) d5  SW  deep_sea            [sea]\n  ( 28, 33) d5  SW  deep_sea            [sea]\n  ( 33, 31) d5  SE  forest_olive_grove   [coastal hex — a city founded here could build a harbour]\n  ( 36, 25) d5  E   river_valley         [coastal hex — a city founded here could build a harbour]\n  ( 34, 23) d5  NE  coastal_sea         [sea]\n  ( 36, 24) d5  E   plains              \n  ( 36, 23) d5  NE  plains              \n  ( 35, 29) d5  SE  plains               [coastal hex — a city founded here could build a harbour]\n  ( 30, 33) d5  S   coastal_sea         [sea]\n  ( 29, 33) d5  SW  deep_sea            [sea]\n  ( 31, 33) d5  S   plains               [coastal hex — a city founded here could build a harbour]\n  ( 34, 30) d5  SE  plains               [coastal hex — a city founded here could build a harbour]\n  ( 35, 22) d6  NE  forest_olive_grove   [coastal hex — a city founded here could build a harbour]\n  ( 35, 30) d6  SE  plains               [coastal hex — a city founded here could build a harbour]\n  ( 34, 31) d6  SE  coastal_sea         [sea]\n  ( 30, 34) d6  S   coastal_sea         [sea]\n  ( 29, 34) d6  S   deep_sea            [sea]\n  ( 37, 24) d6  E   river_delta          [coastal hex — a city founded here could build a harbour]\n  ( 37, 23) d6  E   plains               [coastal hex — a city founded here could build a harbour]\n  ( 31, 34) d6  S   coastal_sea         [sea]\n  ( 37, 25) d6  E   river               [river]\n  ( 32, 33) d6  S   coastal_sea         [sea]\n  ( 37, 22) d6  NE  plains               [coastal hex — a city founded here could build a harbour]\n  ( 36, 22) d6  NE  forest_olive_grove  \n  ( 37, 26) d6  E   river_delta          [coastal hex — a city founded here could build a harbour]\n  ( 28, 34) d6  SW  deep_sea            [sea]\n  ( 33, 32) d6  S   forest_olive_grove   [coastal hex — a city founded here could build a harbour]\n  ( 27, 34) d6  SW  deep_sea            [sea]\n  ( 37, 27) d6  E   plains              \n  ( 37, 28) d6  SE  plains               [coastal hex — a city founded here could build a harbour]\n  ( 36, 29) d6  SE  coastal_sea         [sea]\n  ( 36, 30) d7  SE  coastal_sea         [sea]\n  ( 35, 31) d7  SE  coastal_sea         [sea]\n  ( 29, 35) d7  S   deep_sea            [sea]\n  ( 28, 35) d7  SW  deep_sea            [sea]\n  ( 27, 35) d7  SW  deep_sea            [sea]\n  ( 37, 29) d7  SE  coastal_sea         [sea]\n  ( 38, 25) d7  E   coastal_sea         [sea]\n  ( 38, 26) d7  E   plains               [coastal hex — a city founded here could build a harbour]\n  ( 38, 27) d7  E   plains               [coastal hex — a city founded here could build a harbour]\n  ( 38, 28) d7  SE  coastal_sea         [sea]\n  ( 29, 36) d8  S   coastal_sea         [sea]\n  ( 28, 36) d8  S   coastal_sea         [sea]\n  ( 27, 36) d8  SW  coastal_sea         [sea]\n\nFrontier — unexplored hexes bordering the known world (39, nearest first):\n  ( 31, 24) d4  N  \n  ( 32, 24) d4  N  \n  ( 30, 25) d4  N  \n  ( 27, 27) d5  NW \n  ( 26, 32) d5  W  \n  ( 26, 33) d5  SW \n  ( 33, 23) d5  NE \n  ( 26, 31) d5  W  \n  ( 28, 26) d5  NW \n  ( 29, 25) d5  NW \n  ( 26, 30) d5  W  \n  ( 26, 28) d5  NW \n  ( 26, 29) d5  W  \n  ( 26, 34) d6  SW \n  ( 34, 22) d6  NE \n  … and 24 more\n\nTo act on a hex, march a land unit there (find unit IDs with `keryx unit list`):\n  keryx unit march --unit <id> --q <Q> --r <R>\n  keryx unit march --unit <id> --q <Q> --r <R> --intent colonize --name <name>\nIntent: colonize — founds a colony when the unit arrives on an empty hex.\nNote: ore on mountain terrain is impassable — colonize an ADJACENT passable hex\n      so the deposit falls in the new colony's catchment.\nTo explore: march a unit toward a frontier hex above — the route is revealed\n      and remembered on arrival, pushing the frontier outward.\n",
+    "stderr": ""
+  },
+  {
+    "number": 5,
+    "start": "2026-10-19T08:56:01+02:00",
+    "args": [
+      "storms"
+    ],
+    "exit_code": 0,
+    "stdout": "Storm in sight, drifting SE: (31,26) (30,28) (30,27) [d2d3fa5e]\n",
+    "stderr": ""
+  },
+  {
+    "number": 6,
+    "start": "2026-10-19T08:56:13+02:00",
+    "args": [
+      "unit",
+      "march",
+      "--unit",
+      "e92fd34b-55b5-4c6e-96ac-a1bc0923fa52",
+      "--q",
+      "30",
+      "--r",
+      "34",
+      "--intent",
+      "explore",
+      "--ticks",
+      "20"
+    ],
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "Error: not enough grain to provision the voyage — the home port holds 0, the voyage needs 1 (0.0 per day for 20 days out, on station and home again) (HTTP 422)\nSee keryx unit march --help\n"
+  },
+  {
+    "number": 7,
+    "start": "2026-10-19T08:56:22+02:00",
+    "args": [
+      "goods",
+      "--province",
+      "15bc2000-f96f-4b57-b831-7f3e265056f7"
+    ],
+    "exit_code": 0,
+    "stdout": "1 citizen = 100 people\nLabor pool: 3 citizens  ·  Idle: 0 citizens\n\nGood            Stock   Per day     Lvl    Citizens    Marg/g\n──────────────────────────────────────────────────────────────────────────\ncedar             0.0       0.0       —           —         —\nstone             0.0       0.0       —           0    0.5000\ntimber           54.0       1.0       —           1    1.0000\nsilver           52.6       0.0       —           —         —\noil               0.0       0.0       —           0    1.0000\npurple            0.0       0.0       —           —         —\nwine              0.0       0.0       —           0    0.5000\ncult              0.0       0.0       —           —         —\nfish            376.1       3.2       —           1    1.7000\ngrain             0.0       1.5       —           1    1.0000\nlivestock        49.0       0.0       —           0    1.0000\nbronze            0.0       0.0       —           —         —\ncopper            0.0       0.0       —           —         —\nhorses            0.0       0.0       —           —         —\npottery           0.0       0.0       —           —         —\ntin               0.0       0.0       —           —         —\n\nWanaxes agree trade prices. The temple shows how the gods weigh offerings: keryx rite --list.\n\n! = citizens allocated beyond what the workplace can employ. They produce\n    nothing. Raise the building's level (build it again) or move the labor.\n",
+    "stderr": ""
+  },
+  {
+    "number": 8,
+    "start": "2026-10-19T08:56:30+02:00",
+    "args": [
+      "cargo"
+    ],
+    "exit_code": 0,
+    "stdout": "Good              Qty          From            To         ETA  Direction\n─────────────────────────────────────────────────────────────────────────────\ngrain             100        Itanos      Thalassa     day 609  outgoing\n\nPhysical cargo, not a promise — it can be intercepted and seized in transit.\nSame risk for every cargo, own or traded: on land only interception;\nat sea every storm the ship sails into costs 2 hull (of 5); hull 0 founders the ship.\n",
+    "stderr": ""
+  },
+  {
+    "number": 9,
+    "start": "2026-10-19T08:56:32+02:00",
+    "args": [
+      "status",
+      "--province",
+      "15bc2000-f96f-4b57-b831-7f3e265056f7"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax Wedaneus · day 606 of the world\n\n1 citizen = 100 people\nThalassa [minoan]  Pop: 386 people  Labor: 3 citizens  Walls: 0/3  Settlements: 2/5  [coastal — can build harbour → ships]\nPopulation 386 — growing: food net +2.7 per day\nThis is Thalassa. You have 2 cities — `keryx settlements` lists them, `keryx status --province <id>` shows another.\n\nFood lasts 194.9 days at current consumption (city grain + fish stocks)\n\nLast day 606: 3 goods produced, 1 consumed  ·  keryx ticklog for details\n\nResources\n  (per day; food and army balances are itemized below)\n  Silver       53  —\n  Food     grain 1.5 + fish 3.2 − people eat 1.9 = net +2.7 per day (before army)\n  Grain         0  production 1.5 per day  (0 citizens needed for people on best food slots · 2 placed)\n  Automatic food: 0.50 grain + 1.46 fish per day without placed citizens (nearby ground 0.50 grain; 86 people outside whole citizens: 0.00 grain + 1.46 fish, a fraction of the best food worker)\n  Army     eats 0.0 grain per day → food net +2.7 per day after army\n  Silver   net -0.5 per day after army pay\n  Fish        376  +3.2 per day\n  Timber       54  +1.0 per day\n  Kharis       50  (Indifferent) · cap 50 · net +3.4 per day (temple − decay)\n  Kharis decay: 0.1 base + 2 cities cost 0.1 per day = 0.2 total\n  → your kharis is climbing toward the cap 50 (set by your level-1 temple) — build a higher temple to raise the cap further.\n  Temple in Itanos: reference 0.25 grain per day — alternatives: 0.4342 fish or 0.3106 timber or 0.3779 silver — stock: 2662 grain, 306 fish, 606.9 timber, 327 silver — next gift: 0.25 grain  ✓\n\nArmy (garrison in Thalassa)\n  Galley        1\n  Upkeep     0.0 grain, 1.5 silver per day  (everything the city pays — including field units)\n             1.0 silver per day back into the city (garrison's pay)\n  Field units and other cities are shown in `keryx unit list`.\n\nBuildings\n  harbour      L1\n  shipyard     L1\n",
+    "stderr": ""
+  }
+]
