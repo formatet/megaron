@@ -1,0 +1,196 @@
+TAP version 13
+# Subtest: CG1: a refused +1 carries the server's own reason, and does NOT count as a change
+ok 1 - CG1: a refused +1 carries the server's own reason, and does NOT count as a change
+  ---
+  duration_ms: 0.893299
+  type: 'test'
+  ...
+# Subtest: CG2: each distinct server refusal surfaces as itself — not one generic line
+ok 2 - CG2: each distinct server refusal surfaces as itself — not one generic line
+  ---
+  duration_ms: 0.57338
+  type: 'test'
+  ...
+# Subtest: CG3: a successful +1 reports a change and says nothing
+ok 3 - CG3: a successful +1 reports a change and says nothing
+  ---
+  duration_ms: 0.138698
+  type: 'test'
+  ...
+# Subtest: CG4: Fill that places nothing at all explains why (the old code broke out silently)
+ok 4 - CG4: Fill that places nothing at all explains why (the old code broke out silently)
+  ---
+  duration_ms: 0.119958
+  type: 'test'
+  ...
+# Subtest: CG5: Fill that places some then hits the cap stays quiet — the pips moved, that IS the feedback
+ok 5 - CG5: Fill that places some then hits the cap stays quiet — the pips moved, that IS the feedback
+  ---
+  duration_ms: 0.177159
+  type: 'test'
+  ...
+# Subtest: CG6: Fill respects cap as its loop guard
+ok 6 - CG6: Fill respects cap as its loop guard
+  ---
+  duration_ms: 0.117089
+  type: 'test'
+  ...
+# Subtest: CG7: −1 deletes the matching ordinal and reports a change
+ok 7 - CG7: −1 deletes the matching ordinal and reports a change
+  ---
+  duration_ms: 0.315367
+  type: 'test'
+  ...
+# Subtest: CG8: −1 with no matching citizen says so and refreshes instead of doing nothing
+ok 8 - CG8: −1 with no matching citizen says so and refreshes instead of doing nothing
+  ---
+  duration_ms: 0.21895
+  type: 'test'
+  ...
+# Subtest: CG9: a failed DELETE is reported, not swallowed
+ok 9 - CG9: a failed DELETE is reported, not swallowed
+  ---
+  duration_ms: 0.263871
+  type: 'test'
+  ...
+# Subtest: CG10: an empty or non-JSON error body still produces a line, never blank silence
+ok 10 - CG10: an empty or non-JSON error body still produces a line, never blank silence
+  ---
+  duration_ms: 0.735269
+  type: 'test'
+  ...
+# Subtest: CG11: an expired session reads as the server's own sentence, not "error 401"
+ok 11 - CG11: an expired session reads as the server's own sentence, not "error 401"
+  ---
+  duration_ms: 0.134179
+  type: 'test'
+  ...
+# Subtest: CG12: the city centre and a hex are never confused for one another
+ok 12 - CG12: the city centre and a hex are never confused for one another
+  ---
+  duration_ms: 0.087646
+  type: 'test'
+  ...
+# Subtest: CG13: two different hexes get different keys — a restore must not land on the wrong one
+ok 13 - CG13: two different hexes get different keys — a restore must not land on the wrong one
+  ---
+  duration_ms: 0.073898
+  type: 'test'
+  ...
+# Subtest: CG14: the key survives a round trip through a re-rendered element with the same identity
+ok 14 - CG14: the key survives a round trip through a re-rendered element with the same identity
+  ---
+  duration_ms: 0.052981
+  type: 'test'
+  ...
+# Subtest: CG15: a missing or dataset-less element yields null, so nothing is restored rather than throwing
+ok 15 - CG15: a missing or dataset-less element yields null, so nothing is restored rather than throwing
+  ---
+  duration_ms: 0.046856
+  type: 'test'
+  ...
+# Subtest: CG11: insufficient_goods is delegated to formatApiError, the same helper every other surface uses
+ok 16 - CG11: insufficient_goods is delegated to formatApiError, the same helper every other surface uses
+  ---
+  duration_ms: 0.120611
+  type: 'test'
+  ...
+# Subtest: takeLabel says what taking does, building part only when one stands there
+ok 17 - takeLabel says what taking does, building part only when one stands there
+  ---
+  duration_ms: 8.898003
+  type: 'test'
+  ...
+# Subtest: CG16: −1 is disabled on a held hex where none of the gubbar are yours
+ok 18 - CG16: −1 is disabled on a held hex where none of the gubbar are yours
+  ---
+  duration_ms: 0.319462
+  type: 'test'
+  ...
+# Subtest: codex: index ids are unique and every category is declared
+ok 19 - codex: index ids are unique and every category is declared
+  ---
+  duration_ms: 1.283768
+  type: 'test'
+  ...
+# Subtest: codex: every index entry has a file and every file has an index entry
+ok 20 - codex: every index entry has a file and every file has an index entry
+  ---
+  duration_ms: 0.60322
+  type: 'test'
+  ...
+# Subtest: codex: every [[link]] and related entry resolves to an article
+ok 21 - codex: every [[link]] and related entry resolves to an article
+  ---
+  duration_ms: 0.450304
+  type: 'test'
+  ...
+# Subtest: codex: every notification kind the client shows maps to exactly one article
+ok 22 - codex: every notification kind the client shows maps to exactly one article
+  ---
+  duration_ms: 0.600936
+  type: 'test'
+  ...
+# Subtest: codex: every drawer with a ? button has an article
+ok 23 - codex: every drawer with a ? button has an article
+  ---
+  duration_ms: 0.224157
+  type: 'test'
+  ...
+# Subtest: codex: every article is reachable — linked from another article or listed as related
+ok 24 - codex: every article is reachable — linked from another article or listed as related
+  ---
+  duration_ms: 0.864534
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: escapes HTML and renders links, known and missing
+ok 25 - renderMarkdown: escapes HTML and renders links, known and missing
+  ---
+  duration_ms: 0.548069
+  type: 'test'
+  ...
+# Subtest: renderMarkdown: headings, lists, tables, code and comments
+ok 26 - renderMarkdown: headings, lists, tables, code and comments
+  ---
+  duration_ms: 0.447152
+  type: 'test'
+  ...
+# Subtest: backlinksTo and searchArticles
+ok 27 - backlinksTo and searchArticles
+  ---
+  duration_ms: 0.337617
+  type: 'test'
+  ...
+# Subtest: codex: lowercase agora_ready is mapped and community rules match alpha policy
+ok 28 - codex: lowercase agora_ready is mapped and community rules match alpha policy
+  ---
+  duration_ms: 0.609413
+  type: 'test'
+  ...
+# Subtest: codex search finds abandon in Colonies and call-back in Sea
+ok 29 - codex search finds abandon in Colonies and call-back in Sea
+  ---
+  duration_ms: 5.376216
+  type: 'test'
+  ...
+# Subtest: codex: days name the world unit and clock/date names wall time
+ok 30 - codex: days name the world unit and clock/date names wall time
+  ---
+  duration_ms: 0.166461
+  type: 'test'
+  ...
+# Subtest: historical food-reserve notifications open the current food article
+ok 31 - historical food-reserve notifications open the current food article
+  ---
+  duration_ms: 0.096209
+  type: 'test'
+  ...
+1..31
+# tests 31
+# suites 0
+# pass 31
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 63.663565

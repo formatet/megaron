@@ -1,0 +1,3392 @@
+{
+  "captured_at": "2026-10-19T06:26:48.993663+00:00",
+  "migration": 188,
+  "timber_rates": {
+    "forest_olive_grove": 1
+  },
+  "stone_rates": {
+    "hills": 0.9999999999999999,
+    "mountain_limestone": 1.9999999999999998,
+    "plains": 0.5,
+    "river_valley": 0.5,
+    "river_delta": 0.5,
+    "forest_olive_grove": 0.5,
+    "forest_cedar": 0.5,
+    "scrub_maquis": 0.5,
+    "semi_desert": 0.5,
+    "mountain_red": 0.5
+  },
+  "land_without_stone": [],
+  "worlds": [
+    {
+      "name": "live-f7c90afa-4653-46a6-b14c-473a268efa3e",
+      "all_terrain_eligible": {
+        "sites": 894,
+        "zero": 249,
+        "proposed_zero": 28,
+        "median": 3.0,
+        "minimum": 0,
+        "maximum": 14,
+        "histogram": {
+          "0": 249,
+          "1": 89,
+          "2": 83,
+          "3": 102,
+          "4": 83,
+          "5": 65,
+          "6": 58,
+          "7": 50,
+          "8": 39,
+          "9": 28,
+          "10": 23,
+          "11": 15,
+          "12": 7,
+          "13": 2,
+          "14": 1
+        }
+      },
+      "separated_sample": {
+        "sites": 52,
+        "zero": 18,
+        "proposed_zero": 4,
+        "median": 2.0,
+        "minimum": 0,
+        "maximum": 13,
+        "histogram": {
+          "0": 18,
+          "1": 7,
+          "2": 3,
+          "3": 5,
+          "4": 4,
+          "5": 4,
+          "6": 4,
+          "7": 3,
+          "10": 2,
+          "11": 1,
+          "13": 1
+        }
+      },
+      "sample": [
+        {
+          "q": 54,
+          "r": 22,
+          "timber_hexes": 3,
+          "proposed_timber_hexes": 3,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "forest_olive_grove": 3,
+            "plains": 10
+          }
+        },
+        {
+          "q": 55,
+          "r": 52,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 5,
+          "cedar_hexes": 0,
+          "terrain": {
+            "forest_olive_grove": 1,
+            "hills": 4,
+            "mountain_limestone": 13
+          }
+        },
+        {
+          "q": 36,
+          "r": 65,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 1,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 8,
+            "deep_sea": 4,
+            "plains": 5,
+            "scrub_maquis": 1
+          }
+        },
+        {
+          "q": 49,
+          "r": 57,
+          "timber_hexes": 10,
+          "proposed_timber_hexes": 10,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 1,
+            "forest_olive_grove": 10,
+            "plains": 7
+          }
+        },
+        {
+          "q": 5,
+          "r": 65,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 15,
+          "cedar_hexes": 0,
+          "terrain": {
+            "river_valley": 3,
+            "scrub_maquis": 12,
+            "semi_desert": 3
+          }
+        },
+        {
+          "q": 62,
+          "r": 47,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 10,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 2,
+            "hills": 3,
+            "plains": 3,
+            "scrub_maquis": 7
+          }
+        },
+        {
+          "q": 33,
+          "r": 19,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 10,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 2,
+            "plains": 6,
+            "scrub_maquis": 10
+          }
+        },
+        {
+          "q": 28,
+          "r": 38,
+          "timber_hexes": 7,
+          "proposed_timber_hexes": 10,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "deep_sea": 1,
+            "forest_olive_grove": 7,
+            "hills": 3,
+            "plains": 3
+          }
+        },
+        {
+          "q": 28,
+          "r": 20,
+          "timber_hexes": 6,
+          "proposed_timber_hexes": 9,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 7,
+            "deep_sea": 1,
+            "forest_olive_grove": 6,
+            "plains": 1,
+            "river_valley": 2,
+            "scrub_maquis": 1
+          }
+        },
+        {
+          "q": 12,
+          "r": 80,
+          "timber_hexes": 6,
+          "proposed_timber_hexes": 7,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "forest_olive_grove": 6,
+            "hills": 1,
+            "plains": 7
+          }
+        },
+        {
+          "q": 35,
+          "r": 27,
+          "timber_hexes": 3,
+          "proposed_timber_hexes": 6,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 1,
+            "forest_olive_grove": 3,
+            "plains": 9,
+            "river": 1,
+            "river_delta": 1,
+            "river_valley": 3
+          }
+        },
+        {
+          "q": 16,
+          "r": 70,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 0,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 2,
+            "plains": 11
+          }
+        },
+        {
+          "q": 37,
+          "r": 20,
+          "timber_hexes": 4,
+          "proposed_timber_hexes": 8,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "forest_olive_grove": 4,
+            "plains": 6,
+            "scrub_maquis": 4
+          }
+        },
+        {
+          "q": 56,
+          "r": 58,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 12,
+          "cedar_hexes": 5,
+          "terrain": {
+            "forest_cedar": 5,
+            "forest_olive_grove": 2,
+            "hills": 7,
+            "scrub_maquis": 3,
+            "semi_desert": 1
+          }
+        },
+        {
+          "q": 11,
+          "r": 66,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 7,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 3,
+            "plains": 1,
+            "river": 3,
+            "river_delta": 2,
+            "river_valley": 3,
+            "scrub_maquis": 4,
+            "semi_desert": 2
+          }
+        },
+        {
+          "q": 10,
+          "r": 58,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 2,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 6,
+            "forest_olive_grove": 2,
+            "plains": 4
+          }
+        },
+        {
+          "q": 56,
+          "r": 64,
+          "timber_hexes": 7,
+          "proposed_timber_hexes": 15,
+          "cedar_hexes": 0,
+          "terrain": {
+            "forest_olive_grove": 7,
+            "hills": 8,
+            "plains": 3
+          }
+        },
+        {
+          "q": 30,
+          "r": 44,
+          "timber_hexes": 3,
+          "proposed_timber_hexes": 3,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 4,
+            "forest_olive_grove": 3,
+            "plains": 6
+          }
+        },
+        {
+          "q": 49,
+          "r": 69,
+          "timber_hexes": 11,
+          "proposed_timber_hexes": 11,
+          "cedar_hexes": 0,
+          "terrain": {
+            "forest_olive_grove": 11,
+            "plains": 4
+          }
+        },
+        {
+          "q": 57,
+          "r": 36,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 1,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 8,
+            "deep_sea": 5,
+            "plains": 3,
+            "river_delta": 1,
+            "river_valley": 1
+          }
+        },
+        {
+          "q": 3,
+          "r": 71,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 7,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 3,
+            "forest_olive_grove": 1,
+            "hills": 3,
+            "plains": 8,
+            "river_valley": 2,
+            "scrub_maquis": 1
+          }
+        },
+        {
+          "q": 62,
+          "r": 34,
+          "timber_hexes": 6,
+          "proposed_timber_hexes": 10,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 1,
+            "forest_olive_grove": 6,
+            "plains": 2,
+            "river": 2,
+            "river_valley": 4
+          }
+        },
+        {
+          "q": 5,
+          "r": 56,
+          "timber_hexes": 5,
+          "proposed_timber_hexes": 5,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 5,
+            "forest_olive_grove": 5,
+            "plains": 2
+          }
+        },
+        {
+          "q": 51,
+          "r": 61,
+          "timber_hexes": 10,
+          "proposed_timber_hexes": 10,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 1,
+            "forest_olive_grove": 10,
+            "mountain_limestone": 2,
+            "plains": 5
+          }
+        },
+        {
+          "q": 50,
+          "r": 48,
+          "timber_hexes": 13,
+          "proposed_timber_hexes": 13,
+          "cedar_hexes": 0,
+          "terrain": {
+            "forest_olive_grove": 13,
+            "mountain_limestone": 3,
+            "plains": 2
+          }
+        },
+        {
+          "q": 17,
+          "r": 78,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 2,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 7,
+            "deep_sea": 5,
+            "forest_olive_grove": 2,
+            "plains": 4
+          }
+        },
+        {
+          "q": 46,
+          "r": 67,
+          "timber_hexes": 4,
+          "proposed_timber_hexes": 4,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "deep_sea": 3,
+            "forest_olive_grove": 4,
+            "plains": 7
+          }
+        },
+        {
+          "q": 48,
+          "r": 44,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 8,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "deep_sea": 1,
+            "forest_olive_grove": 1,
+            "hills": 6,
+            "plains": 5,
+            "scrub_maquis": 1
+          }
+        },
+        {
+          "q": 56,
+          "r": 17,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 1,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 8,
+            "deep_sea": 8,
+            "forest_olive_grove": 1,
+            "plains": 1
+          }
+        },
+        {
+          "q": 3,
+          "r": 62,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 5,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 3,
+            "plains": 7,
+            "scrub_maquis": 5,
+            "semi_desert": 3
+          }
+        },
+        {
+          "q": 61,
+          "r": 30,
+          "timber_hexes": 6,
+          "proposed_timber_hexes": 11,
+          "cedar_hexes": 1,
+          "terrain": {
+            "coastal_sea": 2,
+            "forest_cedar": 1,
+            "forest_olive_grove": 6,
+            "plains": 3,
+            "river": 1,
+            "river_valley": 5
+          }
+        },
+        {
+          "q": 61,
+          "r": 62,
+          "timber_hexes": 3,
+          "proposed_timber_hexes": 8,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 1,
+            "forest_olive_grove": 3,
+            "hills": 2,
+            "plains": 4,
+            "scrub_maquis": 3
+          }
+        },
+        {
+          "q": 6,
+          "r": 74,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 7,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 1,
+            "forest_olive_grove": 1,
+            "hills": 1,
+            "plains": 5,
+            "scrub_maquis": 5
+          }
+        },
+        {
+          "q": 33,
+          "r": 32,
+          "timber_hexes": 3,
+          "proposed_timber_hexes": 3,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 4,
+            "forest_olive_grove": 3,
+            "plains": 5
+          }
+        },
+        {
+          "q": 47,
+          "r": 26,
+          "timber_hexes": 4,
+          "proposed_timber_hexes": 4,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 2,
+            "forest_olive_grove": 4,
+            "plains": 6
+          }
+        },
+        {
+          "q": 61,
+          "r": 22,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 1,
+          "cedar_hexes": 3,
+          "terrain": {
+            "coastal_sea": 4,
+            "forest_cedar": 3,
+            "forest_olive_grove": 1,
+            "plains": 10
+          }
+        },
+        {
+          "q": 11,
+          "r": 72,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 14,
+          "cedar_hexes": 0,
+          "terrain": {
+            "plains": 3,
+            "scrub_maquis": 14,
+            "semi_desert": 1
+          }
+        },
+        {
+          "q": 0,
+          "r": 59,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 1,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 5,
+            "hills": 1
+          }
+        },
+        {
+          "q": 48,
+          "r": 53,
+          "timber_hexes": 5,
+          "proposed_timber_hexes": 10,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "deep_sea": 1,
+            "forest_olive_grove": 5,
+            "river": 3,
+            "river_valley": 5
+          }
+        },
+        {
+          "q": 13,
+          "r": 75,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 10,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 1,
+            "hills": 3,
+            "plains": 4,
+            "river": 3,
+            "river_valley": 7
+          }
+        },
+        {
+          "q": 25,
+          "r": 44,
+          "timber_hexes": 5,
+          "proposed_timber_hexes": 5,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "deep_sea": 3,
+            "forest_olive_grove": 5,
+            "plains": 6
+          }
+        },
+        {
+          "q": 56,
+          "r": 41,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 6,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 3,
+            "mountain_red": 1,
+            "scrub_maquis": 6,
+            "semi_desert": 3
+          }
+        },
+        {
+          "q": 57,
+          "r": 45,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 9,
+          "cedar_hexes": 0,
+          "terrain": {
+            "hills": 4,
+            "mountain_limestone": 7,
+            "plains": 2,
+            "scrub_maquis": 5
+          }
+        },
+        {
+          "q": 61,
+          "r": 55,
+          "timber_hexes": 5,
+          "proposed_timber_hexes": 13,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 3,
+            "forest_olive_grove": 5,
+            "hills": 3,
+            "plains": 1,
+            "scrub_maquis": 5,
+            "semi_desert": 1
+          }
+        },
+        {
+          "q": 59,
+          "r": 27,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 0,
+          "cedar_hexes": 3,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 3,
+            "forest_cedar": 3,
+            "plains": 7
+          }
+        },
+        {
+          "q": 52,
+          "r": 38,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 6,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 4,
+            "plains": 2,
+            "scrub_maquis": 6
+          }
+        },
+        {
+          "q": 32,
+          "r": 39,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 0,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 8,
+            "deep_sea": 1,
+            "plains": 9
+          }
+        },
+        {
+          "q": 5,
+          "r": 91,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 0,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 7,
+            "plains": 3
+          }
+        },
+        {
+          "q": 0,
+          "r": 67,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 7,
+          "cedar_hexes": 0,
+          "terrain": {
+            "forest_olive_grove": 1,
+            "scrub_maquis": 6,
+            "semi_desert": 4
+          }
+        },
+        {
+          "q": 38,
+          "r": 12,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 4,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "deep_sea": 2,
+            "scrub_maquis": 4
+          }
+        },
+        {
+          "q": 18,
+          "r": 73,
+          "timber_hexes": 7,
+          "proposed_timber_hexes": 8,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 3,
+            "forest_olive_grove": 7,
+            "hills": 1,
+            "plains": 2
+          }
+        },
+        {
+          "q": 32,
+          "r": 25,
+          "timber_hexes": 4,
+          "proposed_timber_hexes": 4,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 5,
+            "forest_olive_grove": 4,
+            "plains": 3
+          }
+        }
+      ],
+      "provenance": {
+        "id": "f7c90afa-4653-46a6-b14c-473a268efa3e",
+        "map_seed": 1788982388878976733,
+        "map_width": 64,
+        "map_height": 64,
+        "current_tick": 601
+      }
+    },
+    {
+      "name": "fresh-1009",
+      "all_terrain_eligible": {
+        "sites": 899,
+        "zero": 232,
+        "proposed_zero": 29,
+        "median": 2,
+        "minimum": 0,
+        "maximum": 17,
+        "histogram": {
+          "0": 232,
+          "1": 94,
+          "2": 125,
+          "3": 96,
+          "4": 81,
+          "5": 63,
+          "6": 50,
+          "7": 33,
+          "8": 30,
+          "9": 25,
+          "10": 27,
+          "11": 7,
+          "12": 9,
+          "13": 9,
+          "14": 7,
+          "15": 5,
+          "16": 3,
+          "17": 3
+        }
+      },
+      "separated_sample": {
+        "sites": 56,
+        "zero": 15,
+        "proposed_zero": 5,
+        "median": 2.0,
+        "minimum": 0,
+        "maximum": 10,
+        "histogram": {
+          "0": 15,
+          "1": 7,
+          "2": 9,
+          "3": 7,
+          "4": 2,
+          "5": 4,
+          "6": 3,
+          "7": 1,
+          "8": 4,
+          "9": 2,
+          "10": 2
+        }
+      },
+      "sample": [
+        {
+          "q": 54,
+          "r": 29,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 12,
+          "cedar_hexes": 0,
+          "terrain": {
+            "forest_olive_grove": 1,
+            "hills": 8,
+            "plains": 6,
+            "scrub_maquis": 3
+          }
+        },
+        {
+          "q": 58,
+          "r": 23,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 12,
+          "cedar_hexes": 0,
+          "terrain": {
+            "forest_olive_grove": 1,
+            "hills": 3,
+            "plains": 1,
+            "river": 4,
+            "river_ford": 1,
+            "river_valley": 8
+          }
+        },
+        {
+          "q": 2,
+          "r": 89,
+          "timber_hexes": 7,
+          "proposed_timber_hexes": 7,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 5,
+            "forest_olive_grove": 7,
+            "plains": 1
+          }
+        },
+        {
+          "q": 32,
+          "r": 47,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 4,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 4,
+            "plains": 4,
+            "scrub_maquis": 4,
+            "semi_desert": 1
+          }
+        },
+        {
+          "q": 16,
+          "r": 32,
+          "timber_hexes": 3,
+          "proposed_timber_hexes": 3,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 6,
+            "forest_olive_grove": 3,
+            "plains": 3
+          }
+        },
+        {
+          "q": 52,
+          "r": 41,
+          "timber_hexes": 9,
+          "proposed_timber_hexes": 9,
+          "cedar_hexes": 2,
+          "terrain": {
+            "forest_cedar": 2,
+            "forest_olive_grove": 9,
+            "plains": 7
+          }
+        },
+        {
+          "q": 8,
+          "r": 80,
+          "timber_hexes": 5,
+          "proposed_timber_hexes": 5,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 10,
+            "deep_sea": 1,
+            "forest_olive_grove": 5,
+            "plains": 2
+          }
+        },
+        {
+          "q": 52,
+          "r": 8,
+          "timber_hexes": 3,
+          "proposed_timber_hexes": 15,
+          "cedar_hexes": 0,
+          "terrain": {
+            "forest_olive_grove": 3,
+            "hills": 7,
+            "plains": 2,
+            "scrub_maquis": 5,
+            "semi_desert": 1
+          }
+        },
+        {
+          "q": 50,
+          "r": 13,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 10,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "plains": 3,
+            "scrub_maquis": 10
+          }
+        },
+        {
+          "q": 49,
+          "r": 29,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 1,
+          "cedar_hexes": 4,
+          "terrain": {
+            "coastal_sea": 2,
+            "forest_cedar": 4,
+            "forest_olive_grove": 1,
+            "plains": 11
+          }
+        },
+        {
+          "q": 8,
+          "r": 89,
+          "timber_hexes": 8,
+          "proposed_timber_hexes": 8,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 3,
+            "forest_olive_grove": 8,
+            "plains": 1
+          }
+        },
+        {
+          "q": 55,
+          "r": 36,
+          "timber_hexes": 9,
+          "proposed_timber_hexes": 10,
+          "cedar_hexes": 0,
+          "terrain": {
+            "forest_olive_grove": 9,
+            "hills": 1,
+            "plains": 8
+          }
+        },
+        {
+          "q": 55,
+          "r": 20,
+          "timber_hexes": 3,
+          "proposed_timber_hexes": 16,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 1,
+            "forest_olive_grove": 3,
+            "hills": 11,
+            "river": 1,
+            "river_valley": 2
+          }
+        },
+        {
+          "q": 0,
+          "r": 36,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 1,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "deep_sea": 3,
+            "hills": 1,
+            "plains": 3
+          }
+        },
+        {
+          "q": 30,
+          "r": 20,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 7,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "plains": 1,
+            "river": 3,
+            "river_delta": 1,
+            "river_valley": 5,
+            "scrub_maquis": 2,
+            "semi_desert": 1
+          }
+        },
+        {
+          "q": 62,
+          "r": 13,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 6,
+          "cedar_hexes": 2,
+          "terrain": {
+            "forest_cedar": 2,
+            "forest_olive_grove": 1,
+            "hills": 2,
+            "mountain_limestone": 5,
+            "mountain_red": 1,
+            "scrub_maquis": 3,
+            "semi_desert": 1
+          }
+        },
+        {
+          "q": 61,
+          "r": 7,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 6,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "mountain_red": 3,
+            "river": 3,
+            "river_valley": 2,
+            "scrub_maquis": 4,
+            "semi_desert": 1
+          }
+        },
+        {
+          "q": 30,
+          "r": 27,
+          "timber_hexes": 8,
+          "proposed_timber_hexes": 8,
+          "cedar_hexes": 0,
+          "terrain": {
+            "forest_olive_grove": 8,
+            "plains": 10
+          }
+        },
+        {
+          "q": 46,
+          "r": 37,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 2,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "deep_sea": 3,
+            "forest_olive_grove": 2,
+            "plains": 9
+          }
+        },
+        {
+          "q": 35,
+          "r": 21,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 8,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 1,
+            "forest_olive_grove": 2,
+            "plains": 9,
+            "scrub_maquis": 6
+          }
+        },
+        {
+          "q": 34,
+          "r": 50,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 10,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "forest_olive_grove": 2,
+            "hills": 3,
+            "mountain_limestone": 2,
+            "plains": 2,
+            "scrub_maquis": 5
+          }
+        },
+        {
+          "q": 3,
+          "r": 68,
+          "timber_hexes": 5,
+          "proposed_timber_hexes": 5,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 2,
+            "forest_olive_grove": 5,
+            "plains": 6
+          }
+        },
+        {
+          "q": 30,
+          "r": 37,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 8,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 1,
+            "forest_olive_grove": 2,
+            "hills": 2,
+            "plains": 3,
+            "scrub_maquis": 4
+          }
+        },
+        {
+          "q": 27,
+          "r": 71,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 4,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 3,
+            "forest_olive_grove": 2,
+            "hills": 1,
+            "plains": 11,
+            "scrub_maquis": 1
+          }
+        },
+        {
+          "q": 25,
+          "r": 24,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 2,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 4,
+            "hills": 1,
+            "plains": 7,
+            "scrub_maquis": 1
+          }
+        },
+        {
+          "q": 35,
+          "r": 34,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 0,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 7,
+            "deep_sea": 1,
+            "plains": 10
+          }
+        },
+        {
+          "q": 13,
+          "r": 82,
+          "timber_hexes": 5,
+          "proposed_timber_hexes": 5,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "deep_sea": 3,
+            "forest_olive_grove": 5,
+            "plains": 6
+          }
+        },
+        {
+          "q": 28,
+          "r": 32,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 9,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 3,
+            "forest_olive_grove": 2,
+            "hills": 7,
+            "plains": 6
+          }
+        },
+        {
+          "q": 59,
+          "r": 42,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 0,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 8,
+            "deep_sea": 8,
+            "plains": 2
+          }
+        },
+        {
+          "q": 0,
+          "r": 45,
+          "timber_hexes": 3,
+          "proposed_timber_hexes": 3,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "forest_olive_grove": 3,
+            "plains": 3
+          }
+        },
+        {
+          "q": 57,
+          "r": 4,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 12,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 1,
+            "hills": 2,
+            "plains": 1,
+            "scrub_maquis": 10,
+            "semi_desert": 3
+          }
+        },
+        {
+          "q": 25,
+          "r": 29,
+          "timber_hexes": 10,
+          "proposed_timber_hexes": 10,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "deep_sea": 3,
+            "forest_olive_grove": 10,
+            "plains": 1
+          }
+        },
+        {
+          "q": 3,
+          "r": 93,
+          "timber_hexes": 10,
+          "proposed_timber_hexes": 10,
+          "cedar_hexes": 0,
+          "terrain": {
+            "forest_olive_grove": 10
+          }
+        },
+        {
+          "q": 11,
+          "r": 65,
+          "timber_hexes": 3,
+          "proposed_timber_hexes": 3,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 9,
+            "deep_sea": 2,
+            "forest_olive_grove": 3,
+            "plains": 4
+          }
+        },
+        {
+          "q": 25,
+          "r": 37,
+          "timber_hexes": 3,
+          "proposed_timber_hexes": 9,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 3,
+            "forest_olive_grove": 3,
+            "hills": 4,
+            "river_delta": 1,
+            "river_valley": 2
+          }
+        },
+        {
+          "q": 49,
+          "r": 20,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 7,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 2,
+            "scrub_maquis": 7,
+            "semi_desert": 3
+          }
+        },
+        {
+          "q": 37,
+          "r": 75,
+          "timber_hexes": 6,
+          "proposed_timber_hexes": 6,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 8,
+            "deep_sea": 1,
+            "forest_olive_grove": 6
+          }
+        },
+        {
+          "q": 16,
+          "r": 76,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 0,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 3,
+            "plains": 9
+          }
+        },
+        {
+          "q": 38,
+          "r": 54,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 4,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 3,
+            "forest_olive_grove": 1,
+            "plains": 5,
+            "scrub_maquis": 3
+          }
+        },
+        {
+          "q": 36,
+          "r": 16,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 7,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 4,
+            "plains": 2,
+            "scrub_maquis": 7
+          }
+        },
+        {
+          "q": 51,
+          "r": 34,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 11,
+          "cedar_hexes": 0,
+          "terrain": {
+            "forest_olive_grove": 2,
+            "hills": 9,
+            "plains": 7
+          }
+        },
+        {
+          "q": 15,
+          "r": 87,
+          "timber_hexes": 3,
+          "proposed_timber_hexes": 3,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "forest_olive_grove": 3,
+            "plains": 3
+          }
+        },
+        {
+          "q": 28,
+          "r": 17,
+          "timber_hexes": 4,
+          "proposed_timber_hexes": 6,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 2,
+            "forest_olive_grove": 4,
+            "river_delta": 2,
+            "river_valley": 1,
+            "scrub_maquis": 1
+          }
+        },
+        {
+          "q": 15,
+          "r": 66,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 2,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 7,
+            "deep_sea": 7,
+            "forest_olive_grove": 2,
+            "plains": 2
+          }
+        },
+        {
+          "q": 61,
+          "r": 25,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 4,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 3,
+            "forest_olive_grove": 1,
+            "hills": 1,
+            "plains": 3,
+            "river": 1,
+            "river_delta": 2,
+            "river_valley": 2
+          }
+        },
+        {
+          "q": 36,
+          "r": 42,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 4,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 5,
+            "forest_olive_grove": 2,
+            "plains": 3,
+            "scrub_maquis": 2
+          }
+        },
+        {
+          "q": 51,
+          "r": 65,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 5,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 7,
+            "deep_sea": 6,
+            "scrub_maquis": 5
+          }
+        },
+        {
+          "q": 47,
+          "r": 25,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 0,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 12,
+            "deep_sea": 4,
+            "plains": 2
+          }
+        },
+        {
+          "q": 46,
+          "r": 44,
+          "timber_hexes": 8,
+          "proposed_timber_hexes": 8,
+          "cedar_hexes": 1,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 4,
+            "forest_cedar": 1,
+            "forest_olive_grove": 8
+          }
+        },
+        {
+          "q": 57,
+          "r": 39,
+          "timber_hexes": 5,
+          "proposed_timber_hexes": 5,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "forest_olive_grove": 5,
+            "plains": 9
+          }
+        },
+        {
+          "q": 63,
+          "r": 19,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 4,
+          "cedar_hexes": 1,
+          "terrain": {
+            "forest_cedar": 1,
+            "forest_olive_grove": 1,
+            "plains": 6,
+            "river_valley": 3
+          }
+        },
+        {
+          "q": 32,
+          "r": 65,
+          "timber_hexes": 6,
+          "proposed_timber_hexes": 6,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 5,
+            "forest_olive_grove": 6,
+            "plains": 1
+          }
+        },
+        {
+          "q": 49,
+          "r": 39,
+          "timber_hexes": 8,
+          "proposed_timber_hexes": 9,
+          "cedar_hexes": 6,
+          "terrain": {
+            "forest_cedar": 6,
+            "forest_olive_grove": 8,
+            "hills": 1,
+            "plains": 3
+          }
+        },
+        {
+          "q": 17,
+          "r": 39,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 0,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 12
+          }
+        },
+        {
+          "q": 11,
+          "r": 35,
+          "timber_hexes": 6,
+          "proposed_timber_hexes": 6,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 7,
+            "deep_sea": 3,
+            "forest_olive_grove": 6,
+            "plains": 2
+          }
+        },
+        {
+          "q": 1,
+          "r": 73,
+          "timber_hexes": 4,
+          "proposed_timber_hexes": 4,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 4,
+            "forest_olive_grove": 4,
+            "plains": 1
+          }
+        }
+      ],
+      "provenance": {
+        "requested_seed": 1009,
+        "effective_seed": 1011,
+        "width": 64,
+        "height": 64
+      }
+    },
+    {
+      "name": "fresh-2018",
+      "all_terrain_eligible": {
+        "sites": 859,
+        "zero": 238,
+        "proposed_zero": 26,
+        "median": 2,
+        "minimum": 0,
+        "maximum": 17,
+        "histogram": {
+          "0": 238,
+          "1": 111,
+          "2": 120,
+          "3": 76,
+          "4": 52,
+          "5": 41,
+          "6": 30,
+          "7": 40,
+          "8": 27,
+          "9": 27,
+          "10": 22,
+          "11": 16,
+          "12": 10,
+          "13": 17,
+          "14": 8,
+          "15": 11,
+          "16": 7,
+          "17": 6
+        }
+      },
+      "separated_sample": {
+        "sites": 58,
+        "zero": 22,
+        "proposed_zero": 6,
+        "median": 2.0,
+        "minimum": 0,
+        "maximum": 13,
+        "histogram": {
+          "0": 22,
+          "1": 6,
+          "2": 12,
+          "3": 3,
+          "4": 1,
+          "5": 3,
+          "6": 1,
+          "7": 4,
+          "8": 2,
+          "10": 1,
+          "12": 2,
+          "13": 1
+        }
+      },
+      "sample": [
+        {
+          "q": 31,
+          "r": 73,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 13,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 2,
+            "forest_olive_grove": 1,
+            "plains": 3,
+            "scrub_maquis": 12
+          }
+        },
+        {
+          "q": 46,
+          "r": 69,
+          "timber_hexes": 7,
+          "proposed_timber_hexes": 7,
+          "cedar_hexes": 2,
+          "terrain": {
+            "coastal_sea": 2,
+            "forest_cedar": 2,
+            "forest_olive_grove": 7,
+            "plains": 7
+          }
+        },
+        {
+          "q": 53,
+          "r": 14,
+          "timber_hexes": 3,
+          "proposed_timber_hexes": 10,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 1,
+            "forest_olive_grove": 3,
+            "plains": 7,
+            "scrub_maquis": 7
+          }
+        },
+        {
+          "q": 3,
+          "r": 52,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 0,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "deep_sea": 2,
+            "plains": 12
+          }
+        },
+        {
+          "q": 32,
+          "r": 78,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 4,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "plains": 3,
+            "scrub_maquis": 4
+          }
+        },
+        {
+          "q": 13,
+          "r": 27,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 1,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 7,
+            "deep_sea": 6,
+            "forest_olive_grove": 1,
+            "plains": 4
+          }
+        },
+        {
+          "q": 1,
+          "r": 38,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 2,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 3,
+            "forest_olive_grove": 2,
+            "plains": 10
+          }
+        },
+        {
+          "q": 10,
+          "r": 50,
+          "timber_hexes": 13,
+          "proposed_timber_hexes": 14,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 2,
+            "forest_olive_grove": 13,
+            "hills": 1,
+            "plains": 2
+          }
+        },
+        {
+          "q": 63,
+          "r": 56,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 3,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 1,
+            "scrub_maquis": 3,
+            "semi_desert": 7
+          }
+        },
+        {
+          "q": 6,
+          "r": 68,
+          "timber_hexes": 10,
+          "proposed_timber_hexes": 14,
+          "cedar_hexes": 0,
+          "terrain": {
+            "forest_olive_grove": 10,
+            "plains": 4,
+            "river_valley": 4
+          }
+        },
+        {
+          "q": 13,
+          "r": 53,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 9,
+          "cedar_hexes": 0,
+          "terrain": {
+            "forest_olive_grove": 1,
+            "hills": 2,
+            "mountain_limestone": 3,
+            "plains": 1,
+            "river": 4,
+            "river_delta": 1,
+            "river_valley": 6
+          }
+        },
+        {
+          "q": 16,
+          "r": 66,
+          "timber_hexes": 12,
+          "proposed_timber_hexes": 12,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 3,
+            "forest_olive_grove": 12,
+            "plains": 3
+          }
+        },
+        {
+          "q": 27,
+          "r": 80,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 9,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 2,
+            "forest_olive_grove": 2,
+            "plains": 4,
+            "scrub_maquis": 7
+          }
+        },
+        {
+          "q": 4,
+          "r": 40,
+          "timber_hexes": 5,
+          "proposed_timber_hexes": 6,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "forest_olive_grove": 5,
+            "hills": 1,
+            "plains": 7
+          }
+        },
+        {
+          "q": 6,
+          "r": 47,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 6,
+          "cedar_hexes": 0,
+          "terrain": {
+            "forest_olive_grove": 2,
+            "plains": 9,
+            "scrub_maquis": 4,
+            "semi_desert": 3
+          }
+        },
+        {
+          "q": 30,
+          "r": 45,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 7,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 2,
+            "forest_olive_grove": 2,
+            "hills": 5,
+            "plains": 9
+          }
+        },
+        {
+          "q": 1,
+          "r": 72,
+          "timber_hexes": 7,
+          "proposed_timber_hexes": 7,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 3,
+            "deep_sea": 2,
+            "forest_olive_grove": 7,
+            "plains": 3
+          }
+        },
+        {
+          "q": 15,
+          "r": 39,
+          "timber_hexes": 7,
+          "proposed_timber_hexes": 7,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 3,
+            "forest_olive_grove": 7,
+            "plains": 2
+          }
+        },
+        {
+          "q": 7,
+          "r": 61,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 11,
+          "cedar_hexes": 0,
+          "terrain": {
+            "hills": 2,
+            "river": 6,
+            "river_ford": 1,
+            "river_valley": 9
+          }
+        },
+        {
+          "q": 57,
+          "r": 51,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 1,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 3,
+            "forest_olive_grove": 1,
+            "plains": 9
+          }
+        },
+        {
+          "q": 57,
+          "r": 58,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 10,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 1,
+            "hills": 8,
+            "plains": 2,
+            "river": 3,
+            "river_delta": 2,
+            "river_valley": 2
+          }
+        },
+        {
+          "q": 46,
+          "r": 10,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 5,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "deep_sea": 1,
+            "plains": 3,
+            "river_valley": 2,
+            "scrub_maquis": 3,
+            "semi_desert": 5
+          }
+        },
+        {
+          "q": 0,
+          "r": 62,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 4,
+          "cedar_hexes": 0,
+          "terrain": {
+            "forest_olive_grove": 2,
+            "hills": 2,
+            "plains": 7
+          }
+        },
+        {
+          "q": 49,
+          "r": 64,
+          "timber_hexes": 8,
+          "proposed_timber_hexes": 10,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 2,
+            "forest_olive_grove": 8,
+            "hills": 2,
+            "plains": 6
+          }
+        },
+        {
+          "q": 11,
+          "r": 71,
+          "timber_hexes": 5,
+          "proposed_timber_hexes": 5,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 2,
+            "forest_olive_grove": 5,
+            "plains": 6
+          }
+        },
+        {
+          "q": 51,
+          "r": 68,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 10,
+          "cedar_hexes": 4,
+          "terrain": {
+            "forest_cedar": 4,
+            "hills": 2,
+            "plains": 1,
+            "scrub_maquis": 8
+          }
+        },
+        {
+          "q": 62,
+          "r": 50,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 3,
+          "cedar_hexes": 5,
+          "terrain": {
+            "coastal_sea": 2,
+            "forest_cedar": 5,
+            "forest_olive_grove": 2,
+            "plains": 5,
+            "scrub_maquis": 1
+          }
+        },
+        {
+          "q": 52,
+          "r": 7,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 12,
+          "cedar_hexes": 0,
+          "terrain": {
+            "plains": 1,
+            "river_valley": 2,
+            "scrub_maquis": 10,
+            "semi_desert": 5
+          }
+        },
+        {
+          "q": 36,
+          "r": 71,
+          "timber_hexes": 3,
+          "proposed_timber_hexes": 4,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 7,
+            "deep_sea": 4,
+            "forest_olive_grove": 3,
+            "plains": 3,
+            "scrub_maquis": 1
+          }
+        },
+        {
+          "q": 47,
+          "r": 19,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 4,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 3,
+            "forest_olive_grove": 1,
+            "hills": 2,
+            "plains": 5,
+            "scrub_maquis": 1
+          }
+        },
+        {
+          "q": 29,
+          "r": 50,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 1,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 3,
+            "plains": 8,
+            "scrub_maquis": 1
+          }
+        },
+        {
+          "q": 18,
+          "r": 43,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 2,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 7,
+            "deep_sea": 6,
+            "forest_olive_grove": 2,
+            "plains": 3
+          }
+        },
+        {
+          "q": 48,
+          "r": 53,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 0,
+          "cedar_hexes": 2,
+          "terrain": {
+            "coastal_sea": 7,
+            "deep_sea": 9,
+            "forest_cedar": 2
+          }
+        },
+        {
+          "q": 5,
+          "r": 56,
+          "timber_hexes": 7,
+          "proposed_timber_hexes": 12,
+          "cedar_hexes": 0,
+          "terrain": {
+            "forest_olive_grove": 7,
+            "hills": 4,
+            "mountain_limestone": 6,
+            "scrub_maquis": 1
+          }
+        },
+        {
+          "q": 37,
+          "r": 22,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 0,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 10,
+            "deep_sea": 6,
+            "plains": 2
+          }
+        },
+        {
+          "q": 0,
+          "r": 57,
+          "timber_hexes": 8,
+          "proposed_timber_hexes": 8,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 2,
+            "forest_olive_grove": 8,
+            "plains": 1
+          }
+        },
+        {
+          "q": 52,
+          "r": 59,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 5,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "forest_olive_grove": 2,
+            "hills": 2,
+            "plains": 6,
+            "river_delta": 1,
+            "river_valley": 1
+          }
+        },
+        {
+          "q": 37,
+          "r": 27,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 0,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 12
+          }
+        },
+        {
+          "q": 58,
+          "r": 2,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 1,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 3,
+            "deep_sea": 2,
+            "plains": 3,
+            "river_delta": 1,
+            "river_valley": 1
+          }
+        },
+        {
+          "q": 59,
+          "r": 61,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 13,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 1,
+            "hills": 1,
+            "river": 2,
+            "river_delta": 1,
+            "river_valley": 4,
+            "scrub_maquis": 8,
+            "semi_desert": 1
+          }
+        },
+        {
+          "q": 15,
+          "r": 61,
+          "timber_hexes": 6,
+          "proposed_timber_hexes": 8,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 3,
+            "forest_olive_grove": 6,
+            "hills": 2,
+            "mountain_limestone": 6,
+            "plains": 1
+          }
+        },
+        {
+          "q": 26,
+          "r": 20,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 2,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 9,
+            "deep_sea": 6,
+            "forest_olive_grove": 2,
+            "plains": 1
+          }
+        },
+        {
+          "q": 9,
+          "r": 37,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 1,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 4,
+            "plains": 7,
+            "scrub_maquis": 1
+          }
+        },
+        {
+          "q": 54,
+          "r": 63,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 6,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "hills": 3,
+            "mountain_limestone": 3,
+            "scrub_maquis": 3,
+            "semi_desert": 5
+          }
+        },
+        {
+          "q": 1,
+          "r": 45,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 4,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "hills": 3,
+            "plains": 7,
+            "scrub_maquis": 1
+          }
+        },
+        {
+          "q": 10,
+          "r": 42,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 9,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 1,
+            "plains": 6,
+            "scrub_maquis": 9,
+            "semi_desert": 2
+          }
+        },
+        {
+          "q": 17,
+          "r": 55,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 7,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "deep_sea": 3,
+            "forest_olive_grove": 2,
+            "hills": 3,
+            "mountain_limestone": 1,
+            "mountain_red": 2,
+            "plains": 1,
+            "scrub_maquis": 2
+          }
+        },
+        {
+          "q": 15,
+          "r": 48,
+          "timber_hexes": 4,
+          "proposed_timber_hexes": 5,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 8,
+            "forest_olive_grove": 4,
+            "plains": 5,
+            "river_valley": 1
+          }
+        },
+        {
+          "q": 2,
+          "r": 33,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 2,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 5,
+            "forest_olive_grove": 2,
+            "plains": 6
+          }
+        },
+        {
+          "q": 38,
+          "r": 52,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 1,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 7,
+            "deep_sea": 8,
+            "forest_olive_grove": 1,
+            "plains": 2
+          }
+        },
+        {
+          "q": 17,
+          "r": 70,
+          "timber_hexes": 3,
+          "proposed_timber_hexes": 3,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 7,
+            "deep_sea": 7,
+            "forest_olive_grove": 3,
+            "plains": 1
+          }
+        },
+        {
+          "q": 27,
+          "r": 24,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 0,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 7,
+            "deep_sea": 7,
+            "plains": 4
+          }
+        },
+        {
+          "q": 28,
+          "r": 42,
+          "timber_hexes": 5,
+          "proposed_timber_hexes": 5,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 5,
+            "forest_olive_grove": 5,
+            "plains": 2
+          }
+        },
+        {
+          "q": 47,
+          "r": 61,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 0,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 11,
+            "deep_sea": 6,
+            "mountain_limestone": 1
+          }
+        },
+        {
+          "q": 55,
+          "r": 9,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 7,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "deep_sea": 2,
+            "forest_olive_grove": 2,
+            "plains": 5,
+            "scrub_maquis": 5
+          }
+        },
+        {
+          "q": 11,
+          "r": 66,
+          "timber_hexes": 12,
+          "proposed_timber_hexes": 14,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 1,
+            "forest_olive_grove": 12,
+            "mountain_limestone": 3,
+            "river_valley": 2
+          }
+        },
+        {
+          "q": 45,
+          "r": 15,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 3,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 3,
+            "mountain_red": 2,
+            "river": 3,
+            "river_delta": 1,
+            "river_valley": 1,
+            "scrub_maquis": 2
+          }
+        },
+        {
+          "q": 56,
+          "r": 66,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 7,
+          "cedar_hexes": 0,
+          "terrain": {
+            "plains": 2,
+            "scrub_maquis": 7,
+            "semi_desert": 3
+          }
+        }
+      ],
+      "provenance": {
+        "requested_seed": 2018,
+        "effective_seed": 2018,
+        "width": 64,
+        "height": 64
+      }
+    },
+    {
+      "name": "fresh-3027",
+      "all_terrain_eligible": {
+        "sites": 877,
+        "zero": 220,
+        "proposed_zero": 23,
+        "median": 3,
+        "minimum": 0,
+        "maximum": 17,
+        "histogram": {
+          "0": 220,
+          "1": 112,
+          "2": 106,
+          "3": 77,
+          "4": 76,
+          "5": 56,
+          "6": 43,
+          "7": 50,
+          "8": 33,
+          "9": 31,
+          "10": 22,
+          "11": 12,
+          "12": 9,
+          "13": 7,
+          "14": 9,
+          "15": 3,
+          "16": 3,
+          "17": 8
+        }
+      },
+      "separated_sample": {
+        "sites": 57,
+        "zero": 20,
+        "proposed_zero": 4,
+        "median": 2,
+        "minimum": 0,
+        "maximum": 11,
+        "histogram": {
+          "0": 20,
+          "1": 8,
+          "2": 4,
+          "3": 8,
+          "4": 3,
+          "5": 4,
+          "7": 4,
+          "9": 3,
+          "10": 2,
+          "11": 1
+        }
+      },
+      "sample": [
+        {
+          "q": 57,
+          "r": 65,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 9,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "plains": 2,
+            "river_valley": 3,
+            "scrub_maquis": 6
+          }
+        },
+        {
+          "q": 8,
+          "r": 55,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 4,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 3,
+            "plains": 5,
+            "scrub_maquis": 4
+          }
+        },
+        {
+          "q": 17,
+          "r": 73,
+          "timber_hexes": 9,
+          "proposed_timber_hexes": 9,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 3,
+            "forest_olive_grove": 9,
+            "plains": 1
+          }
+        },
+        {
+          "q": 46,
+          "r": 70,
+          "timber_hexes": 5,
+          "proposed_timber_hexes": 6,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 1,
+            "forest_olive_grove": 5,
+            "plains": 4,
+            "scrub_maquis": 1
+          }
+        },
+        {
+          "q": 51,
+          "r": 17,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 4,
+          "cedar_hexes": 11,
+          "terrain": {
+            "forest_cedar": 11,
+            "scrub_maquis": 4,
+            "semi_desert": 3
+          }
+        },
+        {
+          "q": 49,
+          "r": 14,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 9,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "deep_sea": 2,
+            "forest_olive_grove": 2,
+            "plains": 3,
+            "scrub_maquis": 7
+          }
+        },
+        {
+          "q": 12,
+          "r": 41,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 6,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 1,
+            "plains": 6,
+            "scrub_maquis": 6
+          }
+        },
+        {
+          "q": 9,
+          "r": 89,
+          "timber_hexes": 11,
+          "proposed_timber_hexes": 11,
+          "cedar_hexes": 0,
+          "terrain": {
+            "forest_olive_grove": 11,
+            "plains": 4
+          }
+        },
+        {
+          "q": 56,
+          "r": 21,
+          "timber_hexes": 9,
+          "proposed_timber_hexes": 13,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 1,
+            "forest_olive_grove": 9,
+            "hills": 4,
+            "mountain_limestone": 3,
+            "plains": 1
+          }
+        },
+        {
+          "q": 53,
+          "r": 47,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 1,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 1,
+            "forest_olive_grove": 1,
+            "plains": 10
+          }
+        },
+        {
+          "q": 2,
+          "r": 89,
+          "timber_hexes": 7,
+          "proposed_timber_hexes": 10,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 1,
+            "forest_olive_grove": 7,
+            "hills": 3,
+            "mountain_limestone": 6,
+            "plains": 1
+          }
+        },
+        {
+          "q": 32,
+          "r": 53,
+          "timber_hexes": 3,
+          "proposed_timber_hexes": 3,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 3,
+            "forest_olive_grove": 3,
+            "plains": 6
+          }
+        },
+        {
+          "q": 47,
+          "r": 34,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 10,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 3,
+            "scrub_maquis": 10
+          }
+        },
+        {
+          "q": 11,
+          "r": 72,
+          "timber_hexes": 7,
+          "proposed_timber_hexes": 11,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 2,
+            "forest_olive_grove": 7,
+            "hills": 2,
+            "plains": 5,
+            "river_valley": 2
+          }
+        },
+        {
+          "q": 51,
+          "r": 36,
+          "timber_hexes": 4,
+          "proposed_timber_hexes": 7,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "deep_sea": 1,
+            "forest_olive_grove": 4,
+            "plains": 3,
+            "river": 2,
+            "river_delta": 1,
+            "river_valley": 3
+          }
+        },
+        {
+          "q": 13,
+          "r": 79,
+          "timber_hexes": 10,
+          "proposed_timber_hexes": 11,
+          "cedar_hexes": 0,
+          "terrain": {
+            "forest_olive_grove": 10,
+            "hills": 1,
+            "plains": 7
+          }
+        },
+        {
+          "q": 2,
+          "r": 82,
+          "timber_hexes": 7,
+          "proposed_timber_hexes": 11,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 1,
+            "forest_olive_grove": 7,
+            "mountain_limestone": 2,
+            "river": 4,
+            "river_valley": 4
+          }
+        },
+        {
+          "q": 17,
+          "r": 54,
+          "timber_hexes": 4,
+          "proposed_timber_hexes": 5,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 3,
+            "forest_olive_grove": 4,
+            "hills": 1,
+            "plains": 5
+          }
+        },
+        {
+          "q": 3,
+          "r": 37,
+          "timber_hexes": 5,
+          "proposed_timber_hexes": 9,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 1,
+            "forest_olive_grove": 5,
+            "plains": 8,
+            "river_valley": 4
+          }
+        },
+        {
+          "q": 52,
+          "r": 8,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 3,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "forest_olive_grove": 2,
+            "plains": 11,
+            "scrub_maquis": 1
+          }
+        },
+        {
+          "q": 4,
+          "r": 30,
+          "timber_hexes": 3,
+          "proposed_timber_hexes": 4,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 2,
+            "deep_sea": 1,
+            "forest_olive_grove": 3,
+            "plains": 8,
+            "scrub_maquis": 1
+          }
+        },
+        {
+          "q": 13,
+          "r": 29,
+          "timber_hexes": 4,
+          "proposed_timber_hexes": 4,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 4,
+            "forest_olive_grove": 4,
+            "plains": 4
+          }
+        },
+        {
+          "q": 9,
+          "r": 46,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 3,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 6,
+            "plains": 3,
+            "scrub_maquis": 3
+          }
+        },
+        {
+          "q": 52,
+          "r": 66,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 6,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 3,
+            "forest_olive_grove": 1,
+            "plains": 1,
+            "scrub_maquis": 5,
+            "semi_desert": 3
+          }
+        },
+        {
+          "q": 10,
+          "r": 36,
+          "timber_hexes": 7,
+          "proposed_timber_hexes": 7,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 7,
+            "deep_sea": 3,
+            "forest_olive_grove": 7,
+            "plains": 1
+          }
+        },
+        {
+          "q": 59,
+          "r": 10,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 10,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 1,
+            "plains": 1,
+            "scrub_maquis": 10
+          }
+        },
+        {
+          "q": 61,
+          "r": 41,
+          "timber_hexes": 9,
+          "proposed_timber_hexes": 12,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 2,
+            "forest_olive_grove": 9,
+            "plains": 4,
+            "scrub_maquis": 3
+          }
+        },
+        {
+          "q": 8,
+          "r": 77,
+          "timber_hexes": 10,
+          "proposed_timber_hexes": 11,
+          "cedar_hexes": 0,
+          "terrain": {
+            "forest_olive_grove": 10,
+            "hills": 1,
+            "mountain_limestone": 6,
+            "plains": 1
+          }
+        },
+        {
+          "q": 8,
+          "r": 84,
+          "timber_hexes": 3,
+          "proposed_timber_hexes": 14,
+          "cedar_hexes": 0,
+          "terrain": {
+            "forest_olive_grove": 3,
+            "hills": 10,
+            "plains": 4,
+            "scrub_maquis": 1
+          }
+        },
+        {
+          "q": 63,
+          "r": 62,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 4,
+          "cedar_hexes": 0,
+          "terrain": {
+            "river": 4,
+            "river_ford": 1,
+            "river_valley": 4
+          }
+        },
+        {
+          "q": 53,
+          "r": 42,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 3,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 4,
+            "forest_olive_grove": 1,
+            "plains": 2,
+            "river": 2,
+            "river_delta": 1,
+            "river_valley": 2
+          }
+        },
+        {
+          "q": 17,
+          "r": 59,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 6,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "deep_sea": 3,
+            "forest_olive_grove": 1,
+            "hills": 1,
+            "plains": 5,
+            "scrub_maquis": 4
+          }
+        },
+        {
+          "q": 16,
+          "r": 64,
+          "timber_hexes": 5,
+          "proposed_timber_hexes": 8,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 1,
+            "forest_olive_grove": 5,
+            "hills": 3,
+            "plains": 4
+          }
+        },
+        {
+          "q": 54,
+          "r": 27,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 4,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 1,
+            "hills": 1,
+            "mountain_limestone": 3,
+            "mountain_red": 3,
+            "scrub_maquis": 3,
+            "semi_desert": 7
+          }
+        },
+        {
+          "q": 55,
+          "r": 31,
+          "timber_hexes": 3,
+          "proposed_timber_hexes": 11,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "forest_olive_grove": 3,
+            "river_valley": 3,
+            "scrub_maquis": 5,
+            "semi_desert": 3
+          }
+        },
+        {
+          "q": 38,
+          "r": 46,
+          "timber_hexes": 5,
+          "proposed_timber_hexes": 5,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 6,
+            "forest_olive_grove": 5,
+            "plains": 1
+          }
+        },
+        {
+          "q": 54,
+          "r": 11,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 9,
+          "cedar_hexes": 0,
+          "terrain": {
+            "plains": 9,
+            "scrub_maquis": 9
+          }
+        },
+        {
+          "q": 7,
+          "r": 32,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 4,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 4,
+            "deep_sea": 1,
+            "forest_olive_grove": 1,
+            "plains": 5,
+            "river": 2,
+            "river_delta": 2,
+            "river_valley": 3
+          }
+        },
+        {
+          "q": 52,
+          "r": 61,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 3,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 2,
+            "forest_olive_grove": 2,
+            "plains": 4,
+            "scrub_maquis": 1,
+            "semi_desert": 4
+          }
+        },
+        {
+          "q": 16,
+          "r": 48,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 2,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 7,
+            "deep_sea": 8,
+            "plains": 1,
+            "scrub_maquis": 2
+          }
+        },
+        {
+          "q": 48,
+          "r": 25,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 3,
+          "cedar_hexes": 5,
+          "terrain": {
+            "coastal_sea": 2,
+            "forest_cedar": 5,
+            "plains": 8,
+            "river_valley": 3
+          }
+        },
+        {
+          "q": 14,
+          "r": 87,
+          "timber_hexes": 3,
+          "proposed_timber_hexes": 3,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 2,
+            "forest_olive_grove": 3,
+            "plains": 2
+          }
+        },
+        {
+          "q": 58,
+          "r": 60,
+          "timber_hexes": 2,
+          "proposed_timber_hexes": 6,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 4,
+            "forest_olive_grove": 2,
+            "hills": 2,
+            "plains": 2,
+            "scrub_maquis": 2
+          }
+        },
+        {
+          "q": 59,
+          "r": 46,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 9,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 1,
+            "scrub_maquis": 9,
+            "semi_desert": 2
+          }
+        },
+        {
+          "q": 10,
+          "r": 26,
+          "timber_hexes": 3,
+          "proposed_timber_hexes": 8,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 1,
+            "forest_olive_grove": 3,
+            "hills": 1,
+            "plains": 1,
+            "river_valley": 2,
+            "scrub_maquis": 2
+          }
+        },
+        {
+          "q": 16,
+          "r": 69,
+          "timber_hexes": 3,
+          "proposed_timber_hexes": 6,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 4,
+            "forest_olive_grove": 3,
+            "river": 1,
+            "river_delta": 1,
+            "river_valley": 3
+          }
+        },
+        {
+          "q": 63,
+          "r": 3,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 1,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 5,
+            "deep_sea": 5,
+            "scrub_maquis": 1
+          }
+        },
+        {
+          "q": 4,
+          "r": 92,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 5,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 3,
+            "deep_sea": 1,
+            "forest_olive_grove": 1,
+            "hills": 2,
+            "plains": 3,
+            "scrub_maquis": 2
+          }
+        },
+        {
+          "q": 58,
+          "r": 6,
+          "timber_hexes": 3,
+          "proposed_timber_hexes": 5,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 5,
+            "forest_olive_grove": 3,
+            "plains": 2,
+            "scrub_maquis": 2
+          }
+        },
+        {
+          "q": 56,
+          "r": 3,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 1,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 3,
+            "deep_sea": 4,
+            "plains": 2,
+            "scrub_maquis": 1
+          }
+        },
+        {
+          "q": 3,
+          "r": 56,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 0,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 9,
+            "deep_sea": 5,
+            "plains": 4
+          }
+        },
+        {
+          "q": 59,
+          "r": 23,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 6,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 6,
+            "deep_sea": 4,
+            "forest_olive_grove": 1,
+            "hills": 2,
+            "plains": 2,
+            "scrub_maquis": 3
+          }
+        },
+        {
+          "q": 0,
+          "r": 35,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 0,
+          "cedar_hexes": 0,
+          "terrain": {
+            "plains": 11
+          }
+        },
+        {
+          "q": 61,
+          "r": 26,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 0,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 8,
+            "deep_sea": 9,
+            "mountain_limestone": 1
+          }
+        },
+        {
+          "q": 15,
+          "r": 82,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 0,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 8,
+            "deep_sea": 2,
+            "plains": 8
+          }
+        },
+        {
+          "q": 24,
+          "r": 79,
+          "timber_hexes": 1,
+          "proposed_timber_hexes": 1,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 10,
+            "deep_sea": 6,
+            "forest_olive_grove": 1,
+            "plains": 1
+          }
+        },
+        {
+          "q": 10,
+          "r": 50,
+          "timber_hexes": 0,
+          "proposed_timber_hexes": 2,
+          "cedar_hexes": 0,
+          "terrain": {
+            "coastal_sea": 7,
+            "deep_sea": 7,
+            "plains": 2,
+            "scrub_maquis": 2
+          }
+        }
+      ],
+      "provenance": {
+        "requested_seed": 3027,
+        "effective_seed": 3029,
+        "width": 64,
+        "height": 64
+      }
+    }
+  ],
+  "active_cities": [
+    {
+      "name": "Phaistos",
+      "population": 8082,
+      "q": 27,
+      "r": 37,
+      "timber_hexes": 5,
+      "proposed_timber_hexes": 6,
+      "cedar_hexes": 0,
+      "terrain": {
+        "coastal_sea": 5,
+        "deep_sea": 3,
+        "forest_olive_grove": 5,
+        "hills": 1,
+        "plains": 4
+      }
+    },
+    {
+      "name": "Thalassa",
+      "population": 396,
+      "q": 31,
+      "r": 28,
+      "timber_hexes": 4,
+      "proposed_timber_hexes": 4,
+      "cedar_hexes": 0,
+      "terrain": {
+        "coastal_sea": 5,
+        "deep_sea": 3,
+        "forest_olive_grove": 4,
+        "plains": 6
+      }
+    },
+    {
+      "name": "Amnissos",
+      "population": 7405,
+      "q": 6,
+      "r": 70,
+      "timber_hexes": 0,
+      "proposed_timber_hexes": 11,
+      "cedar_hexes": 0,
+      "terrain": {
+        "hills": 4,
+        "plains": 3,
+        "river": 3,
+        "river_ford": 1,
+        "river_valley": 6,
+        "scrub_maquis": 1
+      }
+    },
+    {
+      "name": "Kydonia",
+      "population": 964,
+      "q": 61,
+      "r": 53,
+      "timber_hexes": 5,
+      "proposed_timber_hexes": 13,
+      "cedar_hexes": 0,
+      "terrain": {
+        "coastal_sea": 4,
+        "forest_olive_grove": 5,
+        "hills": 6,
+        "plains": 1,
+        "scrub_maquis": 2
+      }
+    },
+    {
+      "name": "Mallia",
+      "population": 3940,
+      "q": 61,
+      "r": 22,
+      "timber_hexes": 1,
+      "proposed_timber_hexes": 1,
+      "cedar_hexes": 3,
+      "terrain": {
+        "coastal_sea": 4,
+        "forest_cedar": 3,
+        "forest_olive_grove": 1,
+        "plains": 10
+      }
+    },
+    {
+      "name": "Tylissos",
+      "population": 1804,
+      "q": 58,
+      "r": 53,
+      "timber_hexes": 2,
+      "proposed_timber_hexes": 11,
+      "cedar_hexes": 2,
+      "terrain": {
+        "forest_cedar": 2,
+        "forest_olive_grove": 2,
+        "hills": 9,
+        "mountain_limestone": 5
+      }
+    },
+    {
+      "name": "Scheria",
+      "population": 3590,
+      "q": 53,
+      "r": 22,
+      "timber_hexes": 5,
+      "proposed_timber_hexes": 5,
+      "cedar_hexes": 0,
+      "terrain": {
+        "coastal_sea": 4,
+        "forest_olive_grove": 5,
+        "plains": 9
+      }
+    },
+    {
+      "name": "MalliaWest",
+      "population": 404,
+      "q": 58,
+      "r": 25,
+      "timber_hexes": 1,
+      "proposed_timber_hexes": 1,
+      "cedar_hexes": 3,
+      "terrain": {
+        "coastal_sea": 6,
+        "deep_sea": 5,
+        "forest_cedar": 3,
+        "forest_olive_grove": 1,
+        "plains": 3
+      }
+    },
+    {
+      "name": "Amnisos",
+      "population": 227,
+      "q": 25,
+      "r": 43,
+      "timber_hexes": 8,
+      "proposed_timber_hexes": 8,
+      "cedar_hexes": 0,
+      "terrain": {
+        "coastal_sea": 4,
+        "deep_sea": 3,
+        "forest_olive_grove": 8,
+        "plains": 3
+      }
+    },
+    {
+      "name": "Itanos",
+      "population": 3606,
+      "q": 35,
+      "r": 28,
+      "timber_hexes": 1,
+      "proposed_timber_hexes": 4,
+      "cedar_hexes": 0,
+      "terrain": {
+        "coastal_sea": 2,
+        "forest_olive_grove": 1,
+        "plains": 11,
+        "river_delta": 1,
+        "river_valley": 3
+      }
+    }
+  ],
+  "city_summary": {
+    "sites": 10,
+    "zero": 1,
+    "proposed_zero": 0,
+    "median": 3.0,
+    "minimum": 0,
+    "maximum": 8,
+    "histogram": {
+      "0": 1,
+      "1": 3,
+      "2": 1,
+      "4": 1,
+      "5": 3,
+      "8": 1
+    }
+  },
+  "geometry_checks": [
+    "18 productive hexes; own centre excluded",
+    "radius2 included; radius3 excluded",
+    "cedar distinct from timber"
+  ]
+}

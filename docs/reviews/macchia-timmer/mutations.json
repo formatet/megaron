@@ -1,0 +1,38 @@
+{
+  "source_sha256": {
+    "server/db/migrations/189_sparse_timber.up.sql": "e042b0adf986724989532a0d678dd23fedc9fdfdb6c9727aba894b0db43c5c32",
+    "server/internal/economy/hex_rules.go": "a64aadfdfa44606c78230b6b8941ef7c45907307fce3d72773f2508e6fb135ff"
+  },
+  "results": [
+    {
+      "terrain": "scrub_maquis",
+      "mutation": "rate",
+      "result": "named RED → byte-exact restore → fresh GREEN"
+    },
+    {
+      "terrain": "scrub_maquis",
+      "mutation": "rule",
+      "result": "named RED → byte-exact restore → fresh GREEN"
+    },
+    {
+      "terrain": "hills",
+      "mutation": "rate",
+      "result": "named RED → byte-exact restore → fresh GREEN"
+    },
+    {
+      "terrain": "hills",
+      "mutation": "rule",
+      "result": "named RED → byte-exact restore → fresh GREEN"
+    },
+    {
+      "terrain": "river_valley",
+      "mutation": "rate",
+      "result": "named RED → byte-exact restore → fresh GREEN"
+    },
+    {
+      "terrain": "river_valley",
+      "mutation": "rule",
+      "result": "named RED → byte-exact restore → fresh GREEN"
+    }
+  ]
+}

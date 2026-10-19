@@ -1,0 +1,8 @@
+2026/10/19 08:45:01 INFO player registered id=c734c6ca-cee2-4ac0-94d6-0baa89f0dd54 username=placement-c2df7f1b-cafd-4e10-834d-b59cd0635295
+--- FAIL: TestSparseTimber_HTTPPlacementAndLumbermill (0.10s)
+    --- FAIL: TestSparseTimber_HTTPPlacementAndLumbermill/river_valley (0.10s)
+        macchia_timber_test.go:76: river_valley target offers no timber: map[goods:[map[cap:2 good_key:wine marginal_yield:0.49999999999999994 placed:0 rate_per_tick:0.49999999999999994] map[cap:1 good_key:stone marginal_yield:0.5 placed:0 rate_per_tick:0.5] map[cap:2 good_key:grain marginal_yield:1.6666666666666665 placed:0 rate_per_tick:1.6666666666666665]] hex_ordinal:14 hex_q:1 hex_r:0 terrain:river_valley]
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.102s
+FAIL
+» färsk DB på migration 189 · commit 149f0eba+ändringar

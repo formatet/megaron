@@ -1,0 +1,8 @@
+2026/10/19 08:44:55 INFO player registered id=e82c2ecc-3887-4fec-8fc7-226ef77ccb77 username=placement-5c43f260-eed3-48e4-8095-f3991f5b95ff
+--- FAIL: TestSparseTimber_HTTPPlacementAndLumbermill (0.10s)
+    --- FAIL: TestSparseTimber_HTTPPlacementAndLumbermill/hills (0.10s)
+        macchia_timber_test.go:76: timber option = map[cap:2 good_key:timber marginal_yield:0.33 placed:0 rate_per_tick:0.33], want cap1 placed0 rate0.330
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.100s
+FAIL
+» färsk DB på migration 189 · commit 149f0eba+ändringar

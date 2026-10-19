@@ -23,7 +23,7 @@ Not on sea, mountain, river or semi-desert, and **not within two hexes of anothe
 Press **⚒ Found the metropolis here** at the bottom of the Host panel. Read the warning beside the button, then press **Found the metropolis** to confirm. **Keep travelling** closes the warning without founding. In exchange:
 
 - The Host's people become your city's population.
-- Everything carried — grain and silver — pours into the city. A new city starts with **no timber and no stone**: its [[catchment]] needs forest and hills (or a neighbour to buy from) before the first building can rise.
+- Everything carried — grain and silver — pours into the city. A new city starts with **no timber and no stone**: its [[catchment]] needs ground that produces these materials (or a neighbour to buy from) before the first building can rise.
 - Units standing on the hex become its garrison.
 - **Demeter's gift**: found inland, with farmable ground in your catchment, and a Farm appears, free.
 - **Poseidon's gift**: found on the coast and a galley is waiting in the harbour — instead of the farm. The sea feeds a harbour city; a gift is one or the other, never both.
@@ -35,6 +35,6 @@ The forecast lists grain and fish production separately from the population's fu
 
 If the known catchment has no timber or cedar to cover timber costs, the forecast warns before you found. Unknown ground may still hold wood; scout it or plan deliveries. A fully known catchment without wood needs imports for building.
 
-Place citizens on olive woodland or cedar forest for timber and on stone-bearing ground for stone; idle citizens produce nothing. The forecast says when Demeter’s farm is already included; another farm is not an extra founding gift.
+Place citizens on olive groves, maquis, hills or river valleys for timber, or on cedar forest for cedar to cover timber costs, and on stone-bearing ground for stone; idle citizens produce nothing. Maquis, hills and river valleys each have one timber place before a Lumbermill is built, yielding 0.33 timber per worker per day ([[catchment]]). The forecast says when Demeter’s farm is already included; another farm is not an extra founding gift.
 
 On grain-bearing hills, a Farm at level 1 makes 0.85 grain per worker per day, with room for five workers. Plain hills give 0.5 per worker. With another grain-bearing hill in reach, six food workers can feed a new city of 1,000 people; leave the rest for timber and stone. Check the forecast for your actual site.

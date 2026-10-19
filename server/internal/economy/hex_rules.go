@@ -54,18 +54,20 @@ func hexRules(terrain string, copperDep, tinDep, silverDep bool) []hexRule {
 	case "plains":
 		out = append(out, hexRule{GoodGrain, 4, "farm"}, hexRule{"livestock", 1, ""}, fieldStone)
 	case "hills":
-		out = append(out, hexRule{GoodGrain, 1, "farm"}, hexRule{"stone", 2, "stonequarry"})
+		out = append(out, hexRule{GoodGrain, 1, "farm"}, hexRule{"stone", 2, "stonequarry"}, hexRule{"timber", 1, "lumbermill"})
 	case "mountain_limestone":
 		out = append(out, hexRule{"stone", 2, "stonequarry"})
 	case "river_valley":
-		out = append(out, hexRule{GoodGrain, 2, "farm"}, fieldStone)
+		out = append(out, hexRule{GoodGrain, 2, "farm"}, fieldStone, hexRule{"timber", 1, "lumbermill"})
 	case "river_delta":
 		out = append(out, hexRule{GoodGrain, 3, "farm"}, fieldStone)
 	case "forest_olive_grove":
 		out = append(out, hexRule{"timber", 1, "lumbermill"}, fieldStone)
 	case "forest_cedar":
 		out = append(out, hexRule{"cedar", 3, "lumbermill"}, fieldStone)
-	case "scrub_maquis", "semi_desert", "mountain_red":
+	case "scrub_maquis":
+		out = append(out, fieldStone, hexRule{"timber", 1, "lumbermill"})
+	case "semi_desert", "mountain_red":
 		out = append(out, fieldStone)
 	case "coastal_sea":
 		out = append(out, hexRule{"fish", 2, "harbour"}) // 2 places: fisket ska kunna ge mycket mat (Timothy 2026-10-01); rate stays 1,0 — the dagsverkesskala

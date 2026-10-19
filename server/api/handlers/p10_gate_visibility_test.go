@@ -120,11 +120,19 @@ func TestBuildingCatalogue_ExposesTerrainGate(t *testing.T) {
 		}
 	}
 
-	// byggnadsregeln: lumbermill arbetar sin hex (olivskog, cederskog) och är
-	// därmed terräng-gatead likt farm; mine är bara avsatsgatead.
-	wantLumber := []string{"forest_cedar", "forest_olive_grove"}
-	if lm := byType["lumbermill"]; len(lm) != len(wantLumber) || lm[0] != wantLumber[0] || lm[1] != wantLumber[1] {
+	// The lumbermill works its own hex: forests plus sparse timber terrains.
+	// The catalogue must expose all five, while mines remain deposit-gated.
+	wantLumber := []string{"forest_cedar", "forest_olive_grove", "hills", "river_valley", "scrub_maquis"}
+	lm := byType["lumbermill"]
+	if len(lm) != len(wantLumber) {
 		t.Errorf("lumbermill requires_terrain = %v, want %v", lm, wantLumber)
+	} else {
+		for i := range wantLumber {
+			if lm[i] != wantLumber[i] {
+				t.Errorf("lumbermill requires_terrain = %v, want %v", lm, wantLumber)
+				break
+			}
+		}
 	}
 	if mine := byType["mine"]; len(mine) != 0 {
 		t.Errorf("mine requires_terrain = %v, want none (deposit-gated)", mine)

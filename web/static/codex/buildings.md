@@ -5,7 +5,7 @@ Open **City → Buildings**. The tab shows what is **built** (and its level), th
 | **Farm** | Stands on a grain hex you choose and works that field. |
 | **Harbour** | Works the settlement's coastal waters and enables sea trade ([[sea]]). Stands in the city — see below. |
 | **Shipyard** | Builds and repairs ships (needs a coastal city). |
-| **Lumbermill** | Stands on a forest hex and works its stands. |
+| **Lumbermill** | Stands on olive groves, cedar forest, maquis, hills or river valleys and raises their wood production. |
 | **Stone Quarry** | Stands on a land hex you choose and works the stone there — far more on hills and limestone. |
 | **Mine** | Stands on an ore deposit hex and extracts whatever it holds — copper, tin or silver. |
 | **Foundry** | Smelts copper and tin into bronze ([[bronze]]). The gate to elite soldiers and war galleys. |

@@ -1,0 +1,50 @@
+{
+  "health": {
+    "commit": "149f0eba72a0cda30a3764316f3f9f6eed2174eb",
+    "migration": 189,
+    "status": "ok"
+  },
+  "natural_register_cli_login_join_found": true,
+  "world_id": "9a4b4200-e63e-4403-b445-694acb1a97a1",
+  "province_id": "2a3d6ed7-4262-4013-b52d-d49312eccea5",
+  "target": {
+    "terrain": "hills",
+    "hex_ordinal": 2,
+    "hex_q": 10,
+    "hex_r": 80
+  },
+  "before": {
+    "good_key": "timber",
+    "rate_per_tick": 0.33,
+    "cap": 1,
+    "placed": 1,
+    "placed_ordinals": [
+      4
+    ],
+    "marginal_yield": 0.33
+  },
+  "after": {
+    "good_key": "timber",
+    "rate_per_tick": 0.33,
+    "cap": 1,
+    "placed": 1,
+    "placed_ordinals": [
+      4
+    ],
+    "marginal_yield": 0.33
+  },
+  "lumbermill_terrains": [
+    "forest_cedar",
+    "forest_olive_grove",
+    "hills",
+    "river_valley",
+    "scrub_maquis"
+  ],
+  "firefox_errors": [],
+  "browser": "Firefox; DPR1;1280/390",
+  "sql_writes": false,
+  "request_replay": false,
+  "assets_sha256": {
+    "js/megaron/ui/citygrid.js": "44a9ec3c38267b28232f9e85b18fdbdecaa053eb588ec86c510c84486d22fa55"
+  }
+}

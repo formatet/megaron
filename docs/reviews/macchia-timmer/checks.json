@@ -1,0 +1,11 @@
+{
+  "independent_live_sql": "10 city counts identical to Python",
+  "fresh_seeds": [
+    1009,
+    2018,
+    3027
+  ],
+  "all_three_fresh_maps_byte_identical_on_repeat": true,
+  "physical_mutation": "radius2\u21921 RED; source byte-exact restored; fresh analysis GREEN",
+  "analysis_source_sha256": "ee791b4d56a66077eb20776ba1683bd4c905021725695f80b45b133f9ca3d121"
+}
