@@ -6,6 +6,7 @@ package handlers
 // "Workers" count a lie (stone agent finding, 2026-08-24).
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -59,6 +60,12 @@ func TestGoods_EmployedReflectsPlacements(t *testing.T) {
 		map[string]any{"target_kind": "hex", "hex_q": 0, "hex_r": 1, "good_key": "fish"}); code != http.StatusCreated {
 		t.Fatalf("fish placement = %d: %v", code, resp)
 	}
+	// Temple devotion is the same people; it must not shrink idle (Haiku-7).
+	if _, err := p10TestPool(t).Exec(context.Background(),
+		`INSERT INTO settlement_labor (settlement_id, good_key, weight) VALUES ($1, 'cult', 0.2)
+		 ON CONFLICT (settlement_id, good_key) DO UPDATE SET weight = 0.2`, f.settlementID); err != nil {
+		t.Fatalf("seed devotion: %v", err)
+	}
 
 	req := httptest.NewRequest(http.MethodGet, f.goodsPath(), nil)
 	req.Header.Set("Authorization", "Bearer "+f.accessToken)
@@ -104,6 +111,6 @@ func TestGoods_EmployedReflectsPlacements(t *testing.T) {
 	}
 	// Idle = 500 pop − 300 placed = 200; it is the same value on every row.
 	if got := int(byKey["grain"]["idle_citizens"].(float64)); got != 200 {
-		t.Errorf("idle_citizens = %d, want 200 (500 pop − 300 placed)", got)
+		t.Errorf("idle_citizens = %d, want 200 (500 pop − 300 placed; 20%% devotion is the same people)", got)
 	}
 }
