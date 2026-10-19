@@ -22,7 +22,8 @@ test('offer row adds edible and favoured held goods at 0, skips the rest', () =>
 
 test('offer row shows the keryx taste line and no odds', () => {
   const html = offerRowHTML(prayer, stock);
-  assert.match(html, /Potnia favours wine ×1\.8, bronze ×1\.4 · expects an offering worth ~45/);
+  assert.match(html, /Potnia loves wine and bronze\. The traditional offering is always enough\./);
+  assert.doesNotMatch(html, /×|worth|~\d/);
   assert.match(html, /Bring the offering/);
   assert.match(html, /Cancel/);
   assert.doesNotMatch(html, /%|chance|odds/i);

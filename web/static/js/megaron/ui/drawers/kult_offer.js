@@ -17,10 +17,23 @@ export function offerFields(prayer, stock) {
   return [...goods].sort().map(g => ({ good: g, amount: recipe[g] || 0, stock: held[g] || 0 }));
 }
 
-function favouredText(favours) {
-  return Object.entries(favours || {}).filter(([, w]) => w > 1)
-    .sort(([, a], [, b]) => b - a).slice(0, 4)
-    .map(([g, w]) => g + ' ×' + w.toFixed(1)).join(', ');
+// Words, not weights (Timothy 2026-10-19: "lite väl mkt siffror"): the god's
+// two dearest goods, then up to two more that also please. Never a worth or odds.
+function andList(xs) {
+  return xs.length < 2 ? xs.join('') : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1];
+}
+
+export function favouredText(god, favours) {
+  const liked = Object.entries(favours || {}).filter(([, w]) => w > 1)
+    .sort(([, a], [, b]) => b - a).map(([g]) => g);
+  if (!liked.length) return '';
+  const name = god || 'The god';
+  let text = name + ' loves ' + andList(liked.slice(0, 2)) + '.';
+  if (liked.length > 2) {
+    const more = andList(liked.slice(2, 4));
+    text += ' ' + more[0].toUpperCase() + more.slice(1) + ' also please ' + name + '.';
+  }
+  return text + ' The traditional offering is always enough.';
 }
 
 export function offerRowHTML(prayer, stock) {
@@ -28,12 +41,7 @@ export function offerRowHTML(prayer, stock) {
     '<label class="offer-field">' + esc(f.good) +
     ' <input type="number" class="offer-input" min="0" step="1" data-good="' + esc(f.good) + '" value="' + esc(String(f.amount)) + '">' +
     ' <span class="offer-stock">/ ' + esc(String(Math.floor(f.stock))) + '</span></label>').join('');
-  const taste = favouredText(prayer.favours);
-  let note = '';
-  if (taste) {
-    note = esc(prayer.god || '') + ' favours ' + esc(taste);
-    if (prayer.offering_baseline > 0) note += ' · expects an offering worth ~' + Math.round(prayer.offering_baseline);
-  }
+  const note = esc(favouredText(prayer.god, prayer.favours));
   const id = esc(prayer.id);
   return '<div class="offer-fields">' + fields + '</div>' +
     (note ? '<p class="offer-note">' + note + '</p>' : '') +
