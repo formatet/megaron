@@ -7,6 +7,7 @@ import (
 
 	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -25,6 +26,18 @@ type HerdLostPayload struct {
 	Lost int    `json:"lost"`
 	Cap  int    `json:"cap"`
 	Name string `json:"name"`
+}
+
+// EventHerdBirths is an audit-only outcome (no notification kind): the calves
+// born this tick (order 33). Fed of them were paid for with GrainUsed grain.
+const EventHerdBirths = "HerdBirths"
+
+// HerdBirthsPayload: Born calves, Fed of them paid with grain, GrainUsed grain.
+type HerdBirthsPayload struct {
+	Born      int     `json:"born"`
+	Fed       int     `json:"fed"`
+	GrainUsed float64 `json:"grain_used"`
+	Name      string  `json:"name"`
 }
 
 // FoodShortfallPayload is the outcome of one day's food debit (events store
@@ -92,7 +105,7 @@ func (h *FoodTickHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 	}
 
 	for _, id := range ids {
-		if err := h.tickSettlement(ctx, id, e.WorldID, e.ID); err != nil {
+		if err := h.tickSettlement(ctx, id, e.WorldID, e.ID, e.DueTick); err != nil {
 			slog.Error("food tick: settlement failed", "settlement", id, "err", err)
 		}
 	}
@@ -114,7 +127,7 @@ func (h *FoodTickHandler) Handle(ctx context.Context, e events.ScheduledEvent) e
 // its own transaction here, so the claim must be scoped per settlement, not
 // per event: a Handle-level claim would either falsely skip settlements never
 // reached before a crash, or falsely mark them done before their writes commit.
-func (h *FoodTickHandler) tickSettlement(ctx context.Context, settlementID, worldID uuid.UUID, eventID int64) error {
+func (h *FoodTickHandler) tickSettlement(ctx context.Context, settlementID, worldID uuid.UUID, eventID int64, tick int) error {
 	tx, err := h.pool.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("begin tx: %w", err)
@@ -139,6 +152,13 @@ func (h *FoodTickHandler) tickSettlement(ctx context.Context, settlementID, worl
 		return fmt.Errorf("load settlement: %w", err)
 	}
 
+	// Births come BEFORE the meal, in the same transaction: calves over the pen's
+	// cap are then the first thing eaten today (order 33).
+	born, fed, err := herdBirths(ctx, tx, settlementID, tick)
+	if err != nil {
+		return fmt.Errorf("herd births: %w", err)
+	}
+
 	meal, err := TakeCivilianFood(ctx, tx, settlementID, GrainConsumptionPerTick(population))
 	if err != nil {
 		return fmt.Errorf("debit civilian meal: %w", err)
@@ -151,6 +171,13 @@ func (h *FoodTickHandler) tickSettlement(ctx context.Context, settlementID, worl
 
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("commit: %w", err)
+	}
+
+	if born > 0 {
+		var name string
+		_ = h.pool.QueryRow(ctx, `SELECT name FROM settlements WHERE id = $1`, settlementID).Scan(&name)
+		_, _ = h.store.Append(ctx, settlementID, events.StreamProvince, EventHerdBirths,
+			HerdBirthsPayload{Born: born, Fed: fed, GrainUsed: float64(fed), Name: name}, worldID, nil)
 	}
 
 	if meal.Lost > 0 {
@@ -175,4 +202,30 @@ func (h *FoodTickHandler) tickSettlement(ctx context.Context, settlementID, worl
 	}
 
 	return nil
+}
+
+// herdBirths adds this tick's calves to the herd and takes their grain, inside
+// the caller's transaction (rows locked in LoadFood's stable order). The rule
+// itself is HerdBirths.
+func herdBirths(ctx context.Context, tx pgx.Tx, sid uuid.UUID, tick int) (born, fed int, err error) {
+	if tick%HerdFedBirthEvery != 0 {
+		return 0, 0, nil
+	}
+	stock, err := LoadFood(ctx, tx, sid, true)
+	if err != nil {
+		return 0, 0, err
+	}
+	born, fed = HerdBirths(stock[GoodLivestock], stock[GoodGrain], tick)
+	if born == 0 {
+		return 0, 0, nil
+	}
+	if _, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=GREATEST(0,settled(amount,rate,calc_tick)+$3),calc_tick=current_world_tick() WHERE settlement_id=$1 AND good_key=$2`, sid, GoodLivestock, float64(born)); err != nil {
+		return 0, 0, err
+	}
+	if fed > 0 {
+		if _, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=GREATEST(0,settled(amount,rate,calc_tick)-$3),calc_tick=current_world_tick() WHERE settlement_id=$1 AND good_key=$2`, sid, GoodGrain, float64(fed)); err != nil {
+			return 0, 0, err
+		}
+	}
+	return born, fed, nil
 }

@@ -52,7 +52,7 @@ func hexRules(terrain string, copperDep, tinDep, silverDep bool) []hexRule {
 	var out []hexRule
 	switch terrain {
 	case "plains":
-		out = append(out, hexRule{GoodGrain, 4, "farm"}, hexRule{"livestock", 1, ""}, fieldStone)
+		out = append(out, hexRule{GoodGrain, 4, "farm"}, fieldStone)
 	case "hills":
 		out = append(out, hexRule{GoodGrain, 1, "farm"}, hexRule{"stone", 2, "stonequarry"}, hexRule{"timber", 1, "lumbermill"})
 	case "mountain_limestone":

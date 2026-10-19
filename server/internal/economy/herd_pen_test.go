@@ -63,11 +63,11 @@ func TestFoodTick_HerdOverCapEatenAndRestLost(t *testing.T) {
 	ctx := context.Background()
 	f := newFoodFixture(t, pool, "herd-lost", 1000) // demand 5
 	seedFoodStock(t, pool, f, 0, 0, 60)
-	event := events.ScheduledEvent{ID: 281001, WorldID: f.worldID, DueTick: f.tick}
+	event := events.ScheduledEvent{ID: 281001, WorldID: f.worldID, DueTick: f.tick + 1} // off the birth beat
 	if err := newFoodTickHandler(pool).Handle(ctx, event); err != nil {
 		t.Fatal(err)
 	}
-	// 5 eaten from the 10 over the cap, the other 5 lost: herd is exactly the cap.
+	// 2 animals (6 food) eaten for the 5 needed, the other 8 over the cap lost: herd is exactly the cap.
 	if got := foodStockOf(t, pool, f.settlementID, GoodLivestock); got != 50 {
 		t.Fatalf("herd after tick=%g want 50", got)
 	}
@@ -75,7 +75,7 @@ func TestFoodTick_HerdOverCapEatenAndRestLost(t *testing.T) {
 		t.Fatal("people went hungry")
 	}
 	var n int
-	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM events WHERE stream_id=$1 AND event_type=$2 AND (payload->>'lost')::int=5`, f.settlementID, EventHerdLost).Scan(&n); err != nil || n != 1 {
+	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM events WHERE stream_id=$1 AND event_type=$2 AND (payload->>'lost')::int=8`, f.settlementID, EventHerdLost).Scan(&n); err != nil || n != 1 {
 		t.Fatalf("HerdLost events=%d err=%v", n, err)
 	}
 }
