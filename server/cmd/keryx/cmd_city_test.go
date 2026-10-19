@@ -91,7 +91,7 @@ func TestCityCmd_FoodCounts_NoSpeculativeMoveAdvice(t *testing.T) {
 
 	out := runCityCmd(t, placementOptions, province)
 
-	if !strings.Contains(out, "7 citizens needed for people on best food slots, 70 placed") || strings.Contains(out, "could move") || strings.Contains(out, "★") {
+	if !strings.Contains(out, "7 citizens needed for people on best food slots, 70 on food") || strings.Contains(out, "could move") || strings.Contains(out, "★") {
 		t.Fatal(out)
 	}
 }
@@ -125,7 +125,7 @@ func TestCityCmd_NoSurplus_NoMarkerNoClaim(t *testing.T) {
 	if strings.Contains(out, "★") {
 		t.Errorf("correctly staffed city must not mark any row as surplus:\n%s", out)
 	}
-	if !strings.Contains(out, "7 citizens needed for people on best food slots, 7 placed") {
+	if !strings.Contains(out, "7 citizens needed for people on best food slots, 7 on food") {
 		t.Errorf("output missing the plain required/placed line:\n%s", out)
 	}
 }

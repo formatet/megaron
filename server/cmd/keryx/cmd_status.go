@@ -419,7 +419,7 @@ func foodGubbarLine(req, placed int, selfSufficient bool) string {
 	if !selfSufficient {
 		return fmt.Sprintf("  ⚠ the catchment doesn't feed the population even with all %s", citizenCount(req))
 	}
-	return fmt.Sprintf("  (%s needed for people on best food slots · %d placed)", citizenCount(req), placed)
+	return fmt.Sprintf("  (%s needed for people on best food slots · %d on food)", citizenCount(req), placed)
 }
 
 // armyUpkeepWarning grinds the ⚠ line under the post-upkeep Netto row on

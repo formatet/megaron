@@ -629,7 +629,7 @@ func unitMarchCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "march",
-		Short: "Order a unit to march to a hex",
+		Short: "Order a unit to march to a hex — or explore, colonize or land (--intent)",
 		Long: `Order a unit to march to a target hex (q,r coordinates).
 
 Use --preview to estimate arrival without sending an order. The estimate uses
