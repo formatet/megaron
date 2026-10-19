@@ -192,7 +192,7 @@ func riteCmd() *cobra.Command {
 					return err
 				}
 				if !confirmed {
-					fmt.Println("Cast cancelled.")
+					fmt.Println("Cast cancelled — nothing was offered or spent.")
 					return nil
 				}
 			}
