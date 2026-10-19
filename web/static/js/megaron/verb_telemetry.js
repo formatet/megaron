@@ -62,7 +62,7 @@ export const VERB_EVENTS = [
 const routes = VERB_EVENTS.map(entry => ({ ...entry,
   pattern: new RegExp('^' + entry.route.replace(/:[a-z]+/g, '[^/?]+') + '$'),
 }));
-const BUILDINGS = ["farm", "barracks", "mine", "lumbermill", "stonequarry", "market", "wall", "harbour", "shipyard", "foundry", "stable", "temple", "olive_press", "winery"];
+const BUILDINGS = ["farm", "barracks", "mine", "lumbermill", "stonequarry", "market", "wall", "harbour", "shipyard", "foundry", "stable", "temple", "olive_press", "winery", "pen"];
 const UNITS = ["spearman", "elite_infantry", "war_chariot", "galley", "war_galley", "merchantman", "nomadic_host"];
 const RITES = ["akhaier_oracle_deposits", "akhaier_harvest_blessing", "akhaier_battle_frenzy", "khemetiu_oracle_deposits", "khemetiu_harvest_blessing", "khemetiu_battle_frenzy", "knaani_oracle_deposits", "knaani_harvest_blessing", "knaani_battle_frenzy", "thrakes_oracle_deposits", "thrakes_harvest_blessing", "thrakes_battle_frenzy", "minoan_oracle_deposits", "minoan_harvest_blessing", "minoan_battle_frenzy", "hatti_oracle_deposits", "hatti_harvest_blessing", "hatti_battle_frenzy"];
 const GOODS = ['grain', 'fish', 'livestock', 'horses', 'timber', 'stone', 'copper', 'tin', 'bronze', 'silver', 'oil', 'wine', 'pottery', 'purple'];

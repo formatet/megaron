@@ -66,6 +66,7 @@ func NewWebHandler(pool *pgxpool.Pool, authSvc *auth.Service, templateDir string
 		"temple":      "Temple",
 		"olive_press": "Olive Press",
 		"winery":      "Winery",
+		"pen":         "Pen",
 	}
 	funcs := template.FuncMap{
 		"formatTime": func(t time.Time) string {

@@ -25,7 +25,7 @@ func TestPlanFoodFourEqualValuesAndCivilianEmergency(t *testing.T) {
 	}
 	civilian := PlanFood(5, map[string]float64{GoodLivestock: 50}, true)
 	other := PlanFood(5, map[string]float64{GoodLivestock: 50}, false)
-	if civilian.Unmet != 0 || civilian.Used[GoodLivestock] != 2 || other.Unmet != 5 {
+	if civilian.Unmet != 0 || civilian.Used[GoodLivestock] != 5 || other.Unmet != 5 {
 		t.Fatalf("civilian=%+v other=%+v", civilian, other)
 	}
 }

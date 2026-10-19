@@ -15,6 +15,13 @@ test('J: food days come from authoritative mixed-food coverage, from the single 
  assert.match(foodDetailsHTML(pd()),/4.2 days at current consumption · grain \+ fish/);
  assert.doesNotMatch(foodDetailsHTML(pd()),/Reserve|Stores above|releases below/);
 });
+test('pen: herd line shows count / cap and warns when full',()=>{
+ const open=foodSummaryHTML(pd({food:{coverage_ticks:4.2,food_net_per_tick:1,herd:{count:40,cap:50}}}));
+ assert.match(open,/Herd 40 \/ 50/);assert.doesNotMatch(open,/full/);
+ const full=foodSummaryHTML(pd({food:{coverage_ticks:4.2,food_net_per_tick:1,herd:{count:50,cap:50}}}));
+ assert.match(full,/Herd 50 \/ 50 — full: new animals are eaten, then lost/);assert.match(full,/stat-warn/);
+ assert.doesNotMatch(foodSummaryHTML(pd()),/Herd/);
+});
 test('J: growing low stocks never say starving; food-worker warning survives',()=>{
  const data=pd();data.food.coverage_ticks=0;data.food.food_net_per_tick=2;
  assert.match(foodSummaryHTML(data),/0 days · stocks growing/);assert.doesNotMatch(foodSummaryHTML(data),/stat-warn|starv/);

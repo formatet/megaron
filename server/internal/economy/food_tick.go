@@ -16,6 +16,17 @@ import (
 // about. A fully fed population stays quiet.
 const EventFoodShortfall = "FoodShortfall"
 
+// EventHerdLost is an audit-only outcome (no notification kind): animals the
+// pen could not hold were lost after the day's meal (order 28b).
+const EventHerdLost = "HerdLost"
+
+// HerdLostPayload: Lost animals written off, Cap the herd cap that applied.
+type HerdLostPayload struct {
+	Lost int    `json:"lost"`
+	Cap  int    `json:"cap"`
+	Name string `json:"name"`
+}
+
 // FoodShortfallPayload is the outcome of one day's food debit (events store
 // outcomes, not intentions — CLAUDE.md "Events"): Unmet is what was left
 // uncovered after grain, fish and livestock were all exhausted; the three
@@ -128,7 +139,7 @@ func (h *FoodTickHandler) tickSettlement(ctx context.Context, settlementID, worl
 		return fmt.Errorf("load settlement: %w", err)
 	}
 
-	meal, err := TakeFood(ctx, tx, settlementID, GrainConsumptionPerTick(population), true, false)
+	meal, err := TakeCivilianFood(ctx, tx, settlementID, GrainConsumptionPerTick(population))
 	if err != nil {
 		return fmt.Errorf("debit civilian meal: %w", err)
 	}
@@ -140,6 +151,13 @@ func (h *FoodTickHandler) tickSettlement(ctx context.Context, settlementID, worl
 
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("commit: %w", err)
+	}
+
+	if meal.Lost > 0 {
+		var name string
+		_ = h.pool.QueryRow(ctx, `SELECT name FROM settlements WHERE id = $1`, settlementID).Scan(&name)
+		_, _ = h.store.Append(ctx, settlementID, events.StreamProvince, EventHerdLost,
+			HerdLostPayload{Lost: int(meal.Lost), Cap: int(HerdCap(PenLevel(ctx, h.pool, settlementID))), Name: name}, worldID, nil)
 	}
 
 	// The routine case (unmet == 0) stays silent; only actual hunger is

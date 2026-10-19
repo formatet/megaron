@@ -54,3 +54,18 @@ func upkeepFood(up map[string]any) (float64, string) {
 	value, _ := up["grain"].(float64)
 	return value, "grain"
 }
+
+// herdLine is the pen's one line: count / cap, and what a full pen means.
+func herdLine(sett map[string]any) string {
+	food, _ := sett["food"].(map[string]any)
+	herd, _ := food["herd"].(map[string]any)
+	count, ok1 := herd["count"].(float64)
+	capacity, ok2 := herd["cap"].(float64)
+	if !ok1 || !ok2 {
+		return ""
+	}
+	if count >= capacity {
+		return fmt.Sprintf("Herd %.0f / %.0f — full: new animals are eaten, then lost. A pen raises the cap.", count, capacity)
+	}
+	return fmt.Sprintf("Herd %.0f / %.0f", count, capacity)
+}

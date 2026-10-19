@@ -13,6 +13,7 @@ Open **City → Buildings**. The tab shows what is **built** (and its level), th
 | **Stable** | Enables war chariots. |
 | **Olive Press** | Refines a press-worker's oil from the settlement's groves. Works inside the city. |
 | **Winery** | Refines a vintner's wine from the settlement's vines. Works inside the city. |
+| **Pen** | Raises the herd cap by 100 per level (50 without one). Animals above the cap are eaten, then lost ([[food]]). Works inside the city. |
 | **Market** | Enables trade offers and updates market price snapshots. |
 | **Temple** | Enables rites, produces cult, and unlocks oracle prayers. More important than it looks — see [[temples]]. |
 | **Wall** | Palisade, then stone, then bronze. Absorbs damage in [[battle]]. |
