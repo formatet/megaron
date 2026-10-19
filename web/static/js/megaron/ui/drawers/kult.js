@@ -37,7 +37,7 @@ export async function loadKultDrawer() {
     const pd = pr.ok ? (await pr.json()).settlement : null;
     const prayers = (pd && pd.available_prayers) || [];
     const MOOD_LABELS = { Favorable:'Favorable', Indifferent:'Indifferent', Suspicious:'Suspicious', Wrathful:'Wrathful' };
-    const MOOD_COLORS = { Favorable:'var(--safe)', Indifferent:'var(--text-dim)', Suspicious:'var(--border)', Wrathful:'var(--danger)' };
+    const MOOD_COLORS = { Favorable:'var(--safe-text)', Indifferent:'var(--text-dim)', Suspicious:'var(--border)', Wrathful:'var(--danger)' };
 
     const mood      = sd.divine_mood  || 'Indifferent';
     const cultLevel = sd.cult_level   || 'enkel';
@@ -167,7 +167,7 @@ export function prayerStatusHTML(p, frenzyActive = false, frenzyUntil = null) {
     return `<span class="empty-state">active — ${esc(fmtDays(p.active_remaining_game_days))} left</span>`;
   }
   if (p.effect_type === 'battle_frenzy' && frenzyActive) {
-    return `<span style="color:var(--safe);font-size:.72rem">active — expires ${fmtEta(frenzyUntil, undefined, 'expired')}</span>`;
+    return `<span style="color:var(--safe-text);font-size:.72rem">active — expires ${fmtEta(frenzyUntil, undefined, 'expired')}</span>`;
   }
   if (waitDays > 0) {
     return `<span style="color:var(--text-dim);font-size:.72rem">on cooldown — ${esc(fmtDays(waitDays))}</span>`;

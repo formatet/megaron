@@ -45,7 +45,7 @@ export function sentStatusHTML(m) {
     case 'returning':
       return dim('↩ coming home · ' + (stuck ? stuck : 'back ' + arrivalHTML(m.arrives_at, undefined, 'any moment') + aboardBit(m)));
     case 'arrived':
-      return '<span style="color:var(--safe)">↩ home</span>';
+      return '<span style="color:var(--safe-text)">↩ home</span>';
     default:
       return dim(esc(m.status || ''));
   }

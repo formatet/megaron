@@ -32,6 +32,14 @@
   --accent-oikos:      #4E7A52;
   --accent-system:     #6C6A68;
 
+  /* Text on papyrus: >= 4.5:1 against --bg-panel.
+     Keep the original semantic colours for surfaces, borders and icons. */
+  --safe-text:          #786200;
+  --accent-trade-text:  #7C5F1B;
+  --accent-city-text:   #356095;
+  --accent-oikos-text:  #436B47;
+  --accent-system-text: #646260;
+
   /* Notification chip tokens */
   --chip-bg:              rgba(20,18,16,0.88);
   --chip-border:          rgba(28,28,28,0.14);
@@ -336,7 +344,7 @@ body:has(.auth-page) main {
   text-transform: uppercase;
 }
 .state-forming    { border-color: var(--text-dim); color: var(--text-dim); }
-.state-active     { border-color: var(--safe);     color: var(--safe); }
+.state-active     { border-color: var(--safe);     color: var(--safe-text); }
 .state-collapsing { border-color: var(--danger);   color: var(--danger); }
 .state-ended      { border-color: var(--border-in);color: var(--border-in); }
 
@@ -458,7 +466,7 @@ body:has(.auth-page) main {
   margin-right: 0.3rem;
 }
 .march-attack   .intent-tag, .intent-tag.attack    { border-color: var(--danger); color: var(--danger); }
-.march-support  .intent-tag, .intent-tag.support   { border-color: var(--safe);   color: var(--safe); }
+.march-support  .intent-tag, .intent-tag.support   { border-color: var(--safe);   color: var(--safe-text); }
 .march-reinforce .intent-tag, .intent-tag.reinforce { border-color: var(--gold);   color: var(--gold); }
 .arrives { color: var(--text-dim); font-size: var(--fs-sm); margin-left: 0.5rem; }
 
@@ -503,7 +511,7 @@ body:has(.auth-page) main {
 .ph-right { display:flex; gap:.5rem; }
 .stat-chip { background:var(--bg-panel); border:1px solid var(--border); padding:.15rem .5rem; font-size:var(--fs-sm); color:var(--text); font-family:var(--mono); }
 .stat-chip strong { color:var(--accent); }
-.deposit-chip { color:var(--safe); border-color:var(--safe); }
+.deposit-chip { color:var(--safe-text); border-color:var(--safe); }
 .msg-chip { color:var(--gold); border-color:var(--gold); text-decoration:none; cursor:pointer; }
 
 /* Settlement switcher (shown when player owns multiple settlements) */
@@ -534,7 +542,7 @@ body:has(.auth-page) main {
 .unit-icon { image-rendering:pixelated; vertical-align:middle; margin-right:4px; }
 .army-dp-row { display:flex; justify-content:space-between; margin-top:.4rem; padding-top:.3rem; border-top:1px solid var(--bg-raised); font-size:var(--fs-sm); }
 .army-dp-label { color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em; }
-.army-dp-val { color:var(--safe); font-family:var(--mono); font-weight:bold; }
+.army-dp-val { color:var(--safe-text); font-family:var(--mono); font-weight:bold; }
 
 /* Recruit */
 .recruit-grid { display:flex; flex-direction:column; gap:.4rem; }
@@ -607,10 +615,10 @@ body:has(.auth-page) main {
   padding:.1rem .35rem; border:1px solid; }
 .be-intent-attack    { color:var(--blood); border-color:var(--blood); }
 .be-intent-reinforce { color:var(--sea); border-color:var(--sea); }
-.be-intent-support   { color:var(--safe); border-color:var(--safe); }
+.be-intent-support   { color:var(--safe-text); border-color:var(--safe); }
 .be-when { font-size:var(--fs-sm); color:var(--text-dim); font-family:var(--mono); }
 .be-dir     { font-family:var(--mono); font-size:var(--fs-sm); letter-spacing:.06em; padding:.1rem .3rem; }
-.be-dir-out { color:var(--safe); }
+.be-dir-out { color:var(--safe-text); }
 .be-dir-in  { color:var(--danger); }
 .battle-report { font-family:var(--mono); font-size:var(--fs-sm); white-space:pre-wrap; line-height:1.5;
   background:var(--bg); color:var(--text-light); padding:.4rem .5rem; margin:0; border:1px solid var(--border-in); }
@@ -621,10 +629,10 @@ body:has(.auth-page) main {
 .trade-route-row:last-child { border-bottom:none; }
 .tr-good { color:var(--text-dim); text-transform:uppercase; font-size:var(--fs-sm); letter-spacing:.06em; flex:1.2; }
 .tr-qty  { color:var(--text); }
-.tr-bonus { color:var(--safe); font-size:var(--fs-sm); }
+.tr-bonus { color:var(--safe-text); font-size:var(--fs-sm); }
 .tr-arrow { color:var(--text-dim); }
 .tr-dest { color:var(--text); flex:1.5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.tr-eta  { color:var(--safe); font-size:var(--fs-sm); margin-left:auto; }
+.tr-eta  { color:var(--safe-text); font-size:var(--fs-sm); margin-left:auto; }
 
 /* Foundry / craft panel */
 .recipe-line { font-size:var(--fs-sm); font-family:var(--mono); color:var(--text-dim); margin:.2rem 0; }
@@ -681,7 +689,7 @@ body:has(.auth-page) main {
 .tr-bal-label { font-size:var(--fs-sm); text-transform:uppercase; letter-spacing:.12em; color:var(--text-dim); font-family:var(--mono); }
 .tr-bal-val   { font-size:var(--fs-md); font-family:var(--mono); color:var(--gold); }
 .tr-tribute   { font-size:var(--fs-sm); color:var(--text-dim); font-family:var(--mono); }
-.tr-tribute-val { color:var(--safe); }
+.tr-tribute-val { color:var(--safe-text); }
 
 .borrowed-panel { grid-column: 2 / -1; }
 .borrow-form-panel { grid-column: 1 / 2; }
@@ -716,9 +724,9 @@ body:has(.auth-page) main {
 .mh-stat:first-child { border-left: none; padding-left: 0; }
 .mhs-label { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .12em; color: var(--text-dim); font-family: var(--mono); }
 .mhs-val   { font-size: var(--fs-md); font-family: var(--mono); color: var(--accent); line-height: 1.2; }
-.mhs-rate  { font-size: var(--fs-sm); font-family: var(--mono); color: var(--safe); }
+.mhs-rate  { font-size: var(--fs-sm); font-family: var(--mono); color: var(--safe-text); }
 
-.mood-Favorable  { color: var(--safe) !important; }
+.mood-Favorable  { color: var(--safe-text) !important; }
 .mood-Indifferent{ color: var(--gold) !important; }
 .mood-Suspicious { color: var(--border) !important; }
 .mood-Wrathful   { color: var(--danger) !important; }
@@ -1376,7 +1384,7 @@ body:has(.auth-page) main {
   border: 1px solid;
 }
 .rel-own     { color: var(--gold);    border-color: var(--gold); }
-.rel-ally    { color: var(--safe);    border-color: var(--safe); }
+.rel-ally    { color: var(--safe-text);    border-color: var(--safe); }
 .rel-enemy   { color: var(--blood);   border-color: var(--blood); }
 .rel-neutral { color: var(--text-dim); border-color: var(--text-dim); }
 .obj-cta {
@@ -1406,7 +1414,7 @@ body:has(.auth-page) main {
 .stat-row:last-child { border-bottom: none; }
 .sr-label { color: var(--text-dim); font-family: var(--mono); font-size: var(--fs-sm); }
 .sr-val   { color: var(--accent); font-family: var(--mono); font-weight: bold; }
-.sr-rate  { color: var(--safe); font-family: var(--mono); font-size: var(--fs-sm); margin-left: 0.3rem; }
+.sr-rate  { color: var(--safe-text); font-family: var(--mono); font-size: var(--fs-sm); margin-left: 0.3rem; }
 
 /* Goods mini-table */
 .goods-mini { width: 100%; font-size: var(--fs-sm); border-collapse: collapse; }
@@ -1485,7 +1493,7 @@ body:has(.auth-page) main {
 }
 .sb-label { font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-dim); font-family: var(--mono); }
 .sb-val   { font-size: var(--fs-md); font-family: var(--mono); color: var(--text); }
-.sb-rate  { font-size: var(--fs-sm); color: var(--safe); font-family: var(--mono); }
+.sb-rate  { font-size: var(--fs-sm); color: var(--safe-text); font-family: var(--mono); }
 
 /* ── Notification list items ─────────────────────────────────────────────── */
 .notif-date-header {
@@ -1699,7 +1707,7 @@ body:has(.auth-page) main {
 .stat-row-strong .sr-val   { color: var(--accent); font-size: var(--fs-sm); }
 
 /* Food stock direction and server-reported hunger in the settlement overview. */
-.food-state-growing  { color: var(--safe); }
+.food-state-growing  { color: var(--safe-text); }
 .food-state-stable, .food-state-unknown { color: var(--text-dim); }
 .food-state-declining { color: var(--accent); }
 .food-state-starving  { color: var(--danger); }

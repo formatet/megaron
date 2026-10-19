@@ -195,7 +195,7 @@ export async function loadCityDrawer() {
     document.getElementById('city-food-details-sec').innerHTML = foodDetailsHTML(pd);
     if (pd && pd.last_tick) {
       const lt = pd.last_tick;
-      const prodRows = Object.entries(lt.production || {}).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--safe)">+${fmtNum(Number(v.toFixed(2)))}</td></tr>`).join('');
+      const prodRows = Object.entries(lt.production || {}).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--safe-text)">+${fmtNum(Number(v.toFixed(2)))}</td></tr>`).join('');
       const consRows = Object.entries(lt.consumption || {}).map(([k,v]) => `<tr><td>${k}</td><td style="color:var(--accent)">−${fmtNum(Number(v.toFixed(2)))}</td></tr>`).join('');
       document.getElementById('city-lasttick-sec').innerHTML = `
         <div class="stat-row"><span class="sr-label">Day</span><span class="sr-val">#${fmtNum(lt.tick)}</span></div>
@@ -237,7 +237,7 @@ export async function loadCityDrawer() {
             style="padding:.3rem .7rem;background:var(--accent);border:none;color:#000;font-size:.8rem;cursor:pointer">
             Assign →
           </button>
-          <span id="labor-save-msg" style="font-size:.75rem;color:var(--safe)"></span>
+          <span id="labor-save-msg" style="font-size:.75rem;color:var(--safe-text)"></span>
           <span id="labor-save-err" style="font-size:.75rem;color:var(--danger)"></span>
         </div>`;
     } else {
@@ -274,9 +274,9 @@ export async function loadCityDrawer() {
             <tr style="color:var(--text-dim);font-size:.7rem"><td>Unit</td><td style="text-align:right">Count</td><td style="text-align:right">Pop</td><td style="text-align:right">DP</td></tr>
             ${present.map(k => {
               const n = army[k]||0;
-              return `<tr><td>${unitTypeLabel(k)}</td><td style="text-align:right">${n}</td><td style="text-align:right;color:var(--text-dim)">${n*POP_COSTS[k]}</td><td style="text-align:right;color:var(--safe)">${n*UNIT_DP[k]}</td></tr>`;
+              return `<tr><td>${unitTypeLabel(k)}</td><td style="text-align:right">${n}</td><td style="text-align:right;color:var(--text-dim)">${n*POP_COSTS[k]}</td><td style="text-align:right;color:var(--safe-text)">${n*UNIT_DP[k]}</td></tr>`;
             }).join('')}
-            <tr style="border-top:1px solid var(--border);font-weight:bold"><td>Total</td><td></td><td style="text-align:right;color:var(--accent)">${totalPop}</td><td style="text-align:right;color:var(--safe)">${totalDP} DP</td></tr>
+            <tr style="border-top:1px solid var(--border);font-weight:bold"><td>Total</td><td></td><td style="text-align:right;color:var(--accent)">${totalPop}</td><td style="text-align:right;color:var(--safe-text)">${totalDP} DP</td></tr>
           </table>`
         : '<p class="empty-state">No garrison. Recruit units in the War tab.</p>';
       document.getElementById('city-gar-sec').innerHTML += `
@@ -332,7 +332,7 @@ export async function startBuild() {
   );
   const d = await r.json().catch(() => ({}));
   if (r.ok) {
-    resultEl.style.color = 'var(--safe)';
+    resultEl.style.color = 'var(--safe-text)';
     resultEl.textContent = `${_BLD_LBL[btype]||btype} queued${hexLabel}.`;
     // Refresh only the buildings section — avoids resetting the active tab
     await refreshCityBuildings(capital.id);
@@ -536,7 +536,7 @@ export async function loadTicklog() {
         const prod = Object.entries(t.production||{}).map(([k,v]) => `${k} +${fmtNum(Number(v.toFixed(1)))}`).join(', ');
         const cons = Object.entries(t.consumption||{}).map(([k,v]) => `${k} -${fmtNum(Number(v.toFixed(1)))}`).join(', ');
         const evs  = (t.events||[]).map(e => e.type).join(', ');
-        return `<tr><td>#${fmtNum(t.tick)}</td><td style="color:var(--safe)">${prod}</td><td style="color:var(--accent)">${cons}</td><td style="color:var(--text-dim)">${evs}</td></tr>`;
+        return `<tr><td>#${fmtNum(t.tick)}</td><td style="color:var(--safe-text)">${prod}</td><td style="color:var(--accent)">${cons}</td><td style="color:var(--text-dim)">${evs}</td></tr>`;
       }).join('')}
     </table>`;
   } catch (_) {

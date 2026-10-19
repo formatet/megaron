@@ -32,7 +32,7 @@ test('goodsRateCell: at cap but idle (rate 0) reads plain "full", no wasted-rate
 
 test('goodsRateCell: below cap and producing keeps the green growth cell', () => {
   const html = goodsRateCell({ amount: 500, cap: 1000000, rate_per_tick: 4.5 });
-  assert.match(html, /var\(--safe\)/);
+  assert.match(html, /var\(--safe-text\)/);
   assert.match(html, /\+4.5 per day/);
   assert.doesNotMatch(html, /goods-atcap/);
 });

@@ -3805,7 +3805,7 @@ export async function sendMessengerFromInspect(destSettlementID) {
   });
   if (res.ok) {
     textEl.value = '';
-    errEl.style.color = 'var(--safe)';
+    errEl.style.color = 'var(--safe-text)';
     errEl.textContent = 'Messenger sent.';
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
   } else {
