@@ -24,7 +24,7 @@ func ticklogCmd() *cobra.Command {
   keryx ticklog --province <province-id> --last 20 --asc`,
 		// --province and --last are both plausible for a stray positional —
 		// no single one is the obvious guess.
-		Args: noPositionalArgs(),
+		Args: rejectPositionalArgs("province"),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			prov := cfg.ProvinceID
@@ -84,7 +84,7 @@ func ticklogCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&provinceID, "province", "", "province ID (default: your capital)")
+	cmd.Flags().StringVar(&provinceID, "province", "", "city name or province ID (default: your capital)")
 	cmd.Flags().IntVar(&last, "last", 10, "number of most-recent days to show")
 	cmd.Flags().BoolVar(&asc, "asc", false, "chronological order (oldest first)")
 	return cmd
