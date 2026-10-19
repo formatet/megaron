@@ -986,7 +986,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						// everything this city supports — so a Wanax with half the army
 						// in the field reads "100 spearmen, upkeep for 200" and thinks
 						// the number is broken.
-						fmt.Printf("  %-10s %.1f %s, %.1f silver per day  (everything the city pays — including field units)\n", "Upkeep", g, label, s)
+						fmt.Printf("  %-10s %s %s, %s silver per day  (everything the city pays — including field units)\n", "Upkeep", trimFloat(g), label, trimFloat(s))
 						// Del C: soldiers standing in the town that pays them spend
 						// their sold there. Shown as its own line because it is the
 						// only reason the net below is not gross — an invisible flow
@@ -1244,7 +1244,7 @@ func armyFoodLine(sett map[string]any) string {
 		}
 		net = before - grain
 	}
-	return fmt.Sprintf("  Army     eats %.1f %s per day → food net %s per day after army", grain, label, formatNetPerTick(net))
+	return fmt.Sprintf("  Army     eats %s %s per day → food net %s per day after army", trimFloat(grain), label, formatNetPerTick(net))
 }
 
 // kharisDecayLine renders the server's realm projection without a client formula.

@@ -37,7 +37,7 @@ func canTradeOffer(cc checkContext) Verb {
 	silver := cc.goodAmount("silver")
 	silverOK := silver > 0
 	return verb("trade-offer", CategoryTrade,
-		"Send a buy offer (want a good, offer silver) to a contacted Wanax — bilateral, FOW-gated.",
+		"Send a buy offer to a contacted Wanax: trade-offer --want-good <good> --want-qty <n> --offer-silver <n> — bilateral, FOW-gated.",
 		[]Requirement{
 			req("a contacted foreign settlement (FOW-visible)", foreignOK,
 				fmt.Sprintf("%d visible foreign settlement(s)", foreign),
