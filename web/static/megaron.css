@@ -1683,15 +1683,11 @@ body:has(.auth-page) main {
 /* ── Sprint 5 — City drawer ──────────────────────────────────────────────── */
 .city-scene {
   display: block;
-  width: calc(100% + 1.6rem);
-  margin: -.8rem -.8rem .4rem;
-  /* Scenen är 160×76 logiska px (render/city.js). Höjden följer proportionen
-     så den uppskalade bilden aldrig sträcks — `image-rendering: pixelated`
-     räddar inte en ojämn skalning, den gör den bara skarpt fel. */
-  aspect-ratio: 160 / 76;
-  height: auto;
+  /* 160×96 logical pixels at an exact integer ×2, also in the 390px panel. */
+  width: 320px;
+  height: 192px;
+  margin: 0 auto .4rem;
   image-rendering: pixelated;
-  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 .city-tab { /* padding comes from .drawer-body */ }
