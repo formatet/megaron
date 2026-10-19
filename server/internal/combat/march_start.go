@@ -521,6 +521,18 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		if lErr != nil {
 			return nil, reject(http.StatusInternalServerError, "could not plan the expedition")
 		}
+		if !leg.AnyUnknown && leg.UnknownImpassable {
+			// GPT14: the map's frontier pointed at sea; spearmen were told the
+			// area was "already known". It is unseen, just not theirs to walk.
+			if unit.CategoryOf(u.Type) == unit.CategoryNaval {
+				return nil, reject(http.StatusUnprocessableEntity,
+					"the unseen ground within %d hexes of (%d,%d) is land a ship cannot enter — explore it with a land unit",
+					ExpeditionAreaRadius, targetQ, targetR)
+			}
+			return nil, reject(http.StatusUnprocessableEntity,
+				"the unseen ground within %d hexes of (%d,%d) is water or mountain this unit cannot enter — explore it with a ship",
+				ExpeditionAreaRadius, targetQ, targetR)
+		}
 		if !leg.AnyUnknown {
 			return nil, reject(http.StatusUnprocessableEntity,
 				"everything within %d hexes of (%d,%d) is already known to you — explore an area with unseen ground in it",

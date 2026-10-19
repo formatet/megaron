@@ -83,6 +83,9 @@ type expeditionLeg struct {
 	// AnyUnknown is true when the area still held unseen ground the unit
 	// could stand on, even if none of it could be reached.
 	AnyUnknown bool
+	// UnknownImpassable is true when the area held unseen ground, but only
+	// ground this unit cannot enter (sea for a land unit, land for a ship).
+	UnknownImpassable bool
 }
 
 // nextExpeditionLeg picks the nearest hex in the area around centre that the
@@ -119,9 +122,14 @@ func nextExpeditionLeg(
 	}
 
 	var cands []province.MapPosition
+	unknownImpassable := false
 	for _, c := range disk {
 		terrain, onMap := g[[2]int{c.Q, c.R}]
-		if !onMap || known[[2]int{c.Q, c.R}] || !province.IsPassable(terrain, category) {
+		if !onMap || known[[2]int{c.Q, c.R}] {
+			continue
+		}
+		if !province.IsPassable(terrain, category) {
+			unknownImpassable = true
 			continue
 		}
 		if c.Q == from.Q && c.R == from.R {
@@ -140,7 +148,7 @@ func nextExpeditionLeg(
 		return cands[i].R < cands[j].R
 	})
 
-	leg := expeditionLeg{AnyUnknown: len(cands) > 0}
+	leg := expeditionLeg{AnyUnknown: len(cands) > 0, UnknownImpassable: unknownImpassable}
 	for i, c := range cands {
 		if i >= expeditionPathTries {
 			break
