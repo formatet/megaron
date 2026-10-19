@@ -1,0 +1,36 @@
+<!doctype html><html lang="sv"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="../../../web/static/megaron.css"><title>Paletttext — selectorprov och beslut</title>
+<style>
+body {background:var(--bg-panel);padding:16px;max-width:740px;min-height:0} h1,h2{color:var(--text);font-size:22px;margin:12px 0} section{margin:16px 0;padding:12px;border:1px solid var(--border)}
+p{margin:7px 0}.tokens{display:flex;gap:15px;flex-wrap:wrap}.sample-dot{background:var(--safe);display:inline-block;width:12px;height:12px}.token-safe{color:var(--safe-text)}.token-city{color:var(--accent-city-text)}.token-trade{color:var(--accent-trade-text)}.token-oikos{color:var(--accent-oikos-text)}.token-system{color:var(--accent-system-text)}
+</style>
+<script>
+const variant=new URLSearchParams(location.search).get('mode')||'after';
+if(variant==='before')document.write('<style>:root{--safe-text:var(--safe);--accent-city-text:var(--accent-city);--accent-trade-text:var(--accent-trade);--accent-oikos-text:var(--accent-oikos);--accent-system-text:var(--accent-system)}</style>');
+if(variant==='decision')document.write('<style>:root{--danger:var(--blood);--text-dim:#67635C}</style>');
+</script>
+<h1>Textpalett — <span id="mode"></span></h1>
+<p>Statiskt selectorprov med riktiga CSS-klasser. Spelscenarier finns i nativebilderna. Förslag märkta BESLUT används bara här.</p>
+<section id="selectors"><h2>Positiva värden och status</h2>
+<p><span class="state-active">Active</span> <span class="deposit-chip">Copper</span></p>
+<p class="march-support"><span class="intent-tag">support</span></p>
+<p>Army <span class="army-dp-val">145 DP</span></p>
+<p><span class="be-intent-support">support</span> <span class="be-dir-out">outgoing</span></p>
+<p><span class="tr-bonus">+12 bonus</span> <span class="tr-eta">arrives day 609</span></p>
+<p>Tribute <span class="tr-tribute-val">20 silver</span></p>
+<p><span class="mhs-rate">+3.5 per day</span> <span class="mood-Favorable">Favorable</span></p>
+<p><span class="rel-ally">Ally</span></p>
+<p>Grain <span class="sr-rate">+4.5 per day</span> <span class="sb-rate">+1.2 per day</span></p>
+<p class="food-state-growing">Food stocks growing</p>
+<p><span class="sample-dot"></span> Fyllning och kanter behåller gult; texten mörknar.</p>
+</section>
+<section><h2>Tokenprov</h2><div class="tokens"><span class="token-safe">Safe</span><span class="token-city">City</span><span class="token-trade">Trade</span><span class="token-oikos">Oikos</span><span class="token-system">System</span></div>
+<p>Trade/oikos/system är kalibreringsprov; inga nya textanvändningar tillagda i spelet.</p></section>
+<section id="decision"><h2>BESLUT — lila och sekundärtext</h2>
+<p><button class="btn-danger">Abandon settlement</button> <span class="state-collapsing">Collapsing</span></p>
+<p style="color:var(--accent-diplomacy)">Diplomacy · a messenger arrives</p>
+<p class="complete-at">Farm · ready in 4 days</p><p class="empty-state">No messages yet.</p>
+<p>Nu: danger lila + diplomacy lila, sekundärtext orangebrun. Beslutsförslag: danger blodröd, diplomacy kvar lila, sekundärtext neutral varmgrå. Ingen av dessa två ändringar finns i produktionen.</p>
+</section>
+<script>document.getElementById('mode').textContent=variant==='decision'?'BESLUTSFÖRSLAG':variant==='before'?'FÖRE':'EFTER';</script>
+</html>

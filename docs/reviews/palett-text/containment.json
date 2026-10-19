@@ -1,0 +1,15 @@
+{
+  "baseline": "07e2eac4",
+  "css_only_text_tokens": true,
+  "js_only_text_tokens": [
+    "web/static/js/megaron/render/map.js",
+    "web/static/js/megaron/ui/runner_status.js",
+    "web/static/js/megaron/ui/marchctx.js",
+    "web/static/js/megaron/ui/drawers/diplomacy.js",
+    "web/static/js/megaron/ui/drawers/war.js",
+    "web/static/js/megaron/ui/drawers/city.js",
+    "web/static/js/megaron/ui/drawers/kult.js",
+    "web/static/js/megaron/ui/drawers/economy.js"
+  ],
+  "mutations": "5 RED \u2192 exact restore \u2192 fresh GREEN"
+}
