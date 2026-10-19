@@ -2041,3 +2041,11 @@ h4.cx-h { font-size: var(--fs-base); }
 #dispatch-window-overlay .dw-text { overflow-wrap: anywhere; }
 
 .account-profile { margin-bottom: 1.25rem; }
+
+/* Offer row under a prayer (Kult drawer) */
+.offer-row { flex-basis:100%; margin-top:.4rem; }
+.offer-fields { display:flex; flex-wrap:wrap; gap:.4rem .8rem; margin-bottom:.3rem; font-size:var(--fs-sm); }
+.offer-field { display:flex; align-items:center; gap:.25rem; color:var(--text); }
+.offer-stock { color:var(--text-dim); }
+.offer-input { width:3.6rem; background:var(--warm-white); border:1px solid var(--border); padding:.15rem .25rem; font-family:var(--mono); }
+.offer-note { margin:.2rem 0 .4rem; font-size:var(--fs-sm); color:var(--text-dim); font-family:var(--mono); }

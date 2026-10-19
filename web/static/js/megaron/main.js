@@ -50,7 +50,7 @@ import {
   createStandingOrder, pauseStandingOrder, resumeStandingOrder, deleteStandingOrder,
   sortEconomySettlements, openCitySettlement,
 } from './ui/drawers/economy.js';
-import { loadKultDrawer, okRite } from './ui/drawers/kult.js';
+import { loadKultDrawer, okRite, bringOffering, cancelOffering } from './ui/drawers/kult.js';
 import {
   loadDiplomacyDrawer, dipToggleKind, dipToggleThread, dipSendInThread,
   dipCancel, dipAccept, dipDecline, dipReply, dipWrite,
@@ -202,6 +202,8 @@ Object.assign(window, {
   loadWarDrawer,
   notifShowKind,
   okRite,
+  bringOffering,
+  cancelOffering,
   onCityBuildTypeChange,
   onColonizeToggle,
   onExploreToggle,
