@@ -1,0 +1,10 @@
+=== RUN   TestMarch_ExploreCompleted64AndForming40
+2026/10/19 09:18:47 INFO player registered id=2c5f384d-3901-4437-8ee0-83d406876315 username=shipwright-e578b8df-6b4a-4b2c-8956-9c2bc1033023
+=== RUN   TestMarch_ExploreCompleted64AndForming40/completed_after_losses
+=== RUN   TestMarch_ExploreCompleted64AndForming40/unfinished_recruitment
+--- PASS: TestMarch_ExploreCompleted64AndForming40 (0.07s)
+    --- PASS: TestMarch_ExploreCompleted64AndForming40/completed_after_losses (0.01s)
+    --- PASS: TestMarch_ExploreCompleted64AndForming40/unfinished_recruitment (0.00s)
+PASS
+ok  	formatet/megaron/server/api/handlers	0.073s
+» färsk DB på migration 189 · commit 07e2eac4+ändringar

@@ -1,0 +1,13 @@
+=== RUN   TestMarch_ExploreCompleted64AndForming40
+2026/10/19 09:18:44 INFO player registered id=9d1502b2-22ae-4b03-b372-188a47d8a565 username=shipwright-5e969aea-9cb6-4767-9d1f-ebc5a7b3dafa
+=== RUN   TestMarch_ExploreCompleted64AndForming40/completed_after_losses
+    unit_march_cohort_status_test.go:40: explore(garrison, 64) = 422 {"error":"unit cannot march: status is 'garrison' (must be 'garrison' or 'positioned')"}
+        , want 202
+=== RUN   TestMarch_ExploreCompleted64AndForming40/unfinished_recruitment
+--- FAIL: TestMarch_ExploreCompleted64AndForming40 (0.06s)
+    --- FAIL: TestMarch_ExploreCompleted64AndForming40/completed_after_losses (0.00s)
+    --- PASS: TestMarch_ExploreCompleted64AndForming40/unfinished_recruitment (0.00s)
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.064s
+FAIL
+» färsk DB på migration 189 · commit 07e2eac4+ändringar
