@@ -110,22 +110,13 @@ func (h *DeliveryHandler) HandleGift(ctx context.Context, e events.ScheduledEven
 	case err == pgx.ErrNoRows || state != "active" || out.ActualRecipientID == nil:
 		out.Reason = "destination_fallen"
 	default:
-		// Materialise lazy stock under the goods row lock. Record actual delta,
-		// including a newly introduced row's cap; never report truncated cargo as delivered.
-		if _, err := tx.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,$2,0,0,$3,current_world_tick()) ON CONFLICT DO NOTHING`, p.DestinationID, p.GoodKey, province.DefaultGoodStorageCap); err != nil {
+		// Preserve the frozen gift outcome while also reporting storage loss.
+		if err := tx.QueryRow(ctx, `SELECT credit_settlement_good($1,$2,$3,'gift_delivery',$4)`, p.DestinationID, p.GoodKey, p.Quantity, province.DefaultGoodStorageCap).Scan(&out.CreditedQuantity); err != nil {
 			return err
 		}
-		var amount, cap float64
-		if err := tx.QueryRow(ctx, `SELECT settled(amount,rate,calc_tick),cap FROM settlement_goods WHERE settlement_id=$1 AND good_key=$2 FOR UPDATE`, p.DestinationID, p.GoodKey).Scan(&amount, &cap); err != nil {
-			return err
-		}
-		out.CreditedQuantity = math.Min(p.Quantity, math.Max(0, cap-amount))
 		out.LostQuantity = p.Quantity - out.CreditedQuantity
 		if out.LostQuantity > 0 {
 			out.Reason = "storage_full"
-		}
-		if _, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=$3,calc_tick=current_world_tick() WHERE settlement_id=$1 AND good_key=$2`, p.DestinationID, p.GoodKey, amount+out.CreditedQuantity); err != nil {
-			return err
 		}
 	}
 	if status == "in_transit" {

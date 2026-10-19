@@ -706,6 +706,20 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			besiegedBy = []map[string]any{}
 		}
 
+		var storage []economy.StorageForecast
+		if viewer, ok := auth.PlayerIDFromContext(r.Context()); ok && sett.OwnerID != nil && viewer == *sett.OwnerID {
+			tx, err := h.pool.Begin(r.Context())
+			if err != nil {
+				writeError(w, 500, "could not read storage forecast")
+				return
+			}
+			storage, err = (combat.StorageForecaster{}).StorageForecast(r.Context(), tx, sett.ID)
+			tx.Rollback(r.Context())
+			if err != nil {
+				writeError(w, 500, "could not read storage forecast")
+				return
+			}
+		}
 		resp["settlement"] = map[string]any{
 			"id":                   sett.ID,
 			"name":                 sett.Name,
@@ -772,6 +786,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				"used": settlementsOwned,
 				"max":  province.MaxSettlementsPerWanax,
 			},
+			"storage": storage,
 			"food": map[string]any{
 
 				"coverage_ticks":    coverageDays,
@@ -1495,10 +1510,7 @@ func cancelQueuedBuild(ctx context.Context, tx economy.Tx, queueID uuid.UUID) (s
 	// Refund costs.
 	for goodKey, qty := range spec.Costs {
 		if _, err = tx.Exec(ctx,
-			`UPDATE settlement_goods SET
-			     amount  = LEAST(settled(amount, rate, calc_tick) + $1, cap),
-			     calc_tick = current_world_tick()
-			 WHERE settlement_id = $2 AND good_key = $3`,
+			`SELECT credit_settlement_good($2,$3,$1,'build_refund')`,
 			qty, settlementID, goodKey,
 		); err != nil {
 			return "", err

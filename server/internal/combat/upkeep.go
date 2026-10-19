@@ -543,7 +543,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 
 		tag, err := h.pool.Exec(ctx,
 			`UPDATE settlement_goods
-			 SET amount   = LEAST(cap, LEAST(settled(amount, rate, calc_tick), cap) - $1 + $2),
+			 SET amount   = LEAST(cap, storage_capped(settlement_id,good_key,settled(amount,rate,calc_tick),cap,'production') - $1 + $2),
 			     calc_tick = current_world_tick()
 			 WHERE settlement_id = $3 AND good_key = 'silver'
 			   AND LEAST(settled(amount, rate, calc_tick), cap) >= $1`,

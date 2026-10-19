@@ -67,7 +67,7 @@ func returnProvisions(ctx context.Context, tx pgx.Tx, id, sid uuid.UUID) error {
 	}
 	for _, good := range economy.FoodGoods {
 		if n := goods[good]; n > 0 {
-			tag, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=LEAST(cap,settled(amount,rate,calc_tick)+$3),calc_tick=current_world_tick() WHERE settlement_id=$1 AND good_key=$2`, sid, good, n)
+			tag, err := tx.Exec(ctx, `SELECT credit_settlement_good($1,$2,$3,'returned_provisions')`, sid, good, n)
 			if err != nil {
 				return err
 			}

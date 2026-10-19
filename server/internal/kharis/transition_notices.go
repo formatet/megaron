@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/religion"
@@ -73,24 +74,30 @@ func (h *TickHandler) recordTransition(ctx context.Context, tx pgx.Tx, world, ow
 	// Reuse this owner's durable context and observation claim. Duplicate ticks
 	// cannot advance recovery; unobserved ticks cannot prove fed meals. Ownership
 	// closure bypasses recovery because it makes no claim about a meal.
-	if condition == "civilian_starvation" && body["reason"] != "no_longer_owned_or_active" {
+	if (condition == "civilian_starvation" || strings.HasPrefix(condition, "storage_cap:")) && body["reason"] != "no_longer_owned_or_active" {
+		streakKey := "fed_streak"
+		if strings.HasPrefix(condition, "storage_cap:") {
+			streakKey = "clear_streak"
+		}
 		fed := 0
 		if prior == "true" && next == "false" {
-			var previous struct {
-				FedStreak int `json:"fed_streak"`
-			}
+			var previous map[string]json.RawMessage
 			if err := json.Unmarshal(previousContext, &previous); err != nil {
 				return nil, fmt.Errorf("load civilian recovery context: %w", err)
 			}
 			if observed == tick-1 {
-				fed = previous.FedStreak
+				if raw := previous[streakKey]; raw != nil {
+					if err := json.Unmarshal(raw, &fed); err != nil {
+						return nil, err
+					}
+				}
 			}
 			fed++
 			if fed < civilianRecoveryTicks {
 				next = "true"
 			}
 		}
-		body["fed_streak"] = fed
+		body[streakKey] = fed
 	}
 	if condition == "kharis_band" {
 		body["from_band"] = prior
@@ -105,7 +112,7 @@ func (h *TickHandler) recordTransition(ctx context.Context, tx pgx.Tx, world, ow
 	if _, err := tx.Exec(ctx, `UPDATE kharis_notice_state SET state=$5,observed_tick=$6,context=$7 WHERE world_id=$1 AND player_id=$2 AND scope_id=$3 AND condition=$4`, world, owner, scope, condition, next, tick, raw); err != nil {
 		return nil, err
 	}
-	if prior == next {
+	if prior == next || kind == "" {
 		return nil, nil
 	}
 	stream := events.StreamProvince

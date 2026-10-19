@@ -1554,10 +1554,7 @@ func (h *MessengerHandler) TradeDecline(w http.ResponseWriter, r *http.Request) 
 	//   sell → goods to seller (origin)
 	if kind == "sell" {
 		if _, err = tx.Exec(r.Context(),
-			`UPDATE settlement_goods
-			    SET amount    = settled(amount, rate, calc_tick) + $1,
-			        calc_tick = current_world_tick()
-			  WHERE settlement_id=$2 AND good_key=$3`,
+			`SELECT credit_settlement_good($2,$3,$1,'escrow_refund')`,
 			offerQty, originID, offerGood,
 		); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not refund goods to seller")
@@ -1565,10 +1562,7 @@ func (h *MessengerHandler) TradeDecline(w http.ResponseWriter, r *http.Request) 
 		}
 	} else {
 		if _, err = tx.Exec(r.Context(),
-			`UPDATE settlement_goods
-			    SET amount    = settled(amount, rate, calc_tick) + $1,
-			        calc_tick = current_world_tick()
-			  WHERE settlement_id=$2 AND good_key='silver'`,
+			`SELECT credit_settlement_good($2,'silver',$1,'escrow_refund')`,
 			offerSilver, originID,
 		); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not refund silver to buyer")
@@ -1689,10 +1683,7 @@ func (h *MessengerHandler) CancelOffer(w http.ResponseWriter, r *http.Request) {
 	//   sell → goods to seller (origin)
 	if kind == "sell" {
 		if _, err = tx.Exec(r.Context(),
-			`UPDATE settlement_goods
-			    SET amount    = settled(amount, rate, calc_tick) + $1,
-			        calc_tick = current_world_tick()
-			  WHERE settlement_id=$2 AND good_key=$3`,
+			`SELECT credit_settlement_good($2,$3,$1,'escrow_refund')`,
 			offerQty, originID, offerGood,
 		); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not refund goods to seller")
@@ -1709,10 +1700,7 @@ func (h *MessengerHandler) CancelOffer(w http.ResponseWriter, r *http.Request) {
 		})
 	} else {
 		if _, err = tx.Exec(r.Context(),
-			`UPDATE settlement_goods
-			    SET amount    = settled(amount, rate, calc_tick) + $1,
-			        calc_tick = current_world_tick()
-			  WHERE settlement_id=$2 AND good_key='silver'`,
+			`SELECT credit_settlement_good($2,'silver',$1,'escrow_refund')`,
 			offerSilver, originID,
 		); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not refund silver")
