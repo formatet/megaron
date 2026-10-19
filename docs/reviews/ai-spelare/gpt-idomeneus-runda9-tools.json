@@ -1,0 +1,534 @@
+[
+  {
+    "start": "2026-10-19T08:23:49+02:00",
+    "args": [
+      "status"
+    ],
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "Error: not logged in, or your session has expired — run `keryx login` (HTTP 401)\nSee keryx status --help\n",
+    "recorded_number": 1,
+    "execution_record": 1
+  },
+  {
+    "start": "2026-10-19T08:23:51+02:00",
+    "args": [
+      "status",
+      "--help"
+    ],
+    "exit_code": 0,
+    "stdout": "--json returns the server's raw province payload unmodified. Per-good stock,\nrate and cap live NESTED under settlement.resources, not at the settlement\ntop level:\n\n  settlement.resources.<good>.amount   current stock (e.g. .grain.amount, .silver.amount)\n  settlement.resources.<good>.rate     stored production rate per day; meals and army upkeep are separate\n  settlement.resources.<good>.cap      storage cap\n\nThere is no top-level settlement.grain / settlement.silver / settlement.storage_cap\nfield — looking one up there returns nothing, not a real null from the server.\nSome derived figures DO live at the settlement top level: grain_prod_rate,\ngrain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_upkeep.\n\nUsage:\n  keryx status [city] [flags]\n\nExamples:\n  keryx status\n  keryx status --province <province-id>   # inspect a colony\n  keryx status --json | jq '.settlement.resources.silver.amount'\n\nFlags:\n      --province string   province ID to inspect (default: your capital)\n  -h, --help              help for status\n\nGlobal Flags:\n  -j, --json   output as JSON (for scripts and MCP)\n",
+    "stderr": "",
+    "recorded_number": 2,
+    "execution_record": 2
+  },
+  {
+    "start": "2026-10-19T08:25:31+02:00",
+    "args": [
+      "me"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax: Dikonaros\nFounded: Since day 345\nCities: 2\nPopulation: 4322\nKharis: 100.0\n",
+    "stderr": "",
+    "recorded_number": 3,
+    "execution_record": 3
+  },
+  {
+    "start": "2026-10-19T08:25:31+02:00",
+    "args": [
+      "cities"
+    ],
+    "exit_code": 0,
+    "stdout": "Name                   Owner            Terrain  Culture    Kingdom       Deposit  Settlement ID\n────────────────────────────────────────────────────────────────────────────────────\n★Mallia                Dikonaros        plains   minoan                   —        a76788d5-cc6d-4b44-8a9c-0cfeb95375c0\n★MalliaWest            Dikonaros        forest_cedar minoan                   —        c071f733-9f7f-48ad-abcb-a33a8fe88750\n",
+    "stderr": "",
+    "recorded_number": 3,
+    "execution_record": 4
+  },
+  {
+    "start": "2026-10-19T08:25:31+02:00",
+    "args": [
+      "status"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax Dikonaros · day 600 of the world\n\n1 citizen = 100 people\nMalliaWest [minoan]  Pop: 402 people  Labor: 4 citizens  Walls: 0/3  Settlements: 2/5  [coastal — can build harbour → ships]\nPopulation 402 — growing: food net +5.3 per day\nThis is MalliaWest. You have 2 cities — `keryx settlements` lists them, `keryx status --province <id>` shows another.\n\nFood lasts 359.1 days at current consumption (city grain + fish stocks)\n\nLast day 600: 2 goods produced, 1 consumed  ·  keryx ticklog for details\n\nResources\n  (per day; food and army balances are itemized below)\n  Silver       60  —\n  Food     grain 0.5 + fish 6.8 − people eat 2.0 = net +5.3 per day (before army)\n  Grain         0  production 0.5 per day  (1 citizen needed for people on best food slots · 4 placed)\n  Automatic food: 0.50 grain + 0.03 fish per day without placed citizens (nearby ground 0.50 grain; 2 people outside whole citizens: 0.00 grain + 0.03 fish, a fraction of the best food worker)\n  Army     eats 0.0 grain per day → food net +5.3 per day after army\n  Silver   net +0.0 per day after army pay\n  Fish        722  +6.8 per day\n  ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).\n  Kharis      100  (Favorable) · cap 100 · net +6.2 per day (temple − decay)\n  Kharis decay: 0.1 base + 2 cities cost 0.1 per day = 0.2 total\n  → your temple can employ MORE devotion than you've allocated — raise cult labor (`keryx allocate --cult <%>`) to fill it and let kharis climb.\n  Temple in Mallia: reference 0.25 grain per day — alternatives: 0.3814 fish or 0.2737 timber or 0.3327 silver — stock: 1068 grain, 1041 fish, 78.14 timber, 400 silver — next gift: 0.25 grain  ✓\n\nArmy (garrison in MalliaWest)\n  Field units and other cities are shown in `keryx unit list`.\n\nBuildings\n  harbour      L1\n  shipyard     L1\n",
+    "stderr": "",
+    "recorded_number": 3,
+    "execution_record": 5
+  },
+  {
+    "start": "2026-10-19T08:25:34+02:00",
+    "args": [
+      "settlements"
+    ],
+    "exit_code": 0,
+    "stdout": "Name                  Relation    Role       Province ID (--province)              Settlement ID\n──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────\nMalliaWest            own         colony     fea8cf52-09bd-4c9d-a714-a256f59c505d  c071f733-9f7f-48ad-abcb-a33a8fe88750\nMallia                own         capital    15dd4232-1593-4f1f-8611-003aa5f58ab7  a76788d5-cc6d-4b44-8a9c-0cfeb95375c0\n",
+    "stderr": "",
+    "recorded_number": 6,
+    "execution_record": 6
+  },
+  {
+    "start": "2026-10-19T08:25:37+02:00",
+    "args": [
+      "status",
+      "--province",
+      "15dd4232-1593-4f1f-8611-003aa5f58ab7"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax Dikonaros · day 601 of the world\n\n1 citizen = 100 people\nMallia [minoan]  Pop: 3.9k people  Labor: 39 citizens  Walls: 0/3  Settlements: 2/5\nPopulation 3920 — growing: food net +26.4 per day\nThis is Mallia. You have 2 cities — `keryx settlements` lists them, `keryx status --province <id>` shows another.\n\nBlessed harvest: +25% grain, livestock, wine, oil yield · 18 days left\nFood lasts 110.0 days at current consumption (city grain + fish stocks)\n\nLast day 601: 5 goods produced, 1 consumed  ·  keryx ticklog for details\n\nResources\n  (per day; food and army balances are itemized below)\n  Silver      400  —\n  Food     grain 38.0 + fish 8.0 − people eat 19.6 = net +26 per day (before army)\n  Grain      1.1k  production 38.0 per day  (14 citizens needed for people on best food slots · 32 placed)\n  Automatic food: 0.84 grain + 0.00 fish per day without placed citizens (nearby ground 0.50 grain; 20 people outside whole citizens: 0.34 grain + 0.00 fish, a fraction of the best food worker)\n  Army     eats 0.5 grain per day → food net +26 per day after army\n  Silver   net +0.0 per day after army pay\n  Fish       1.0k  +8.0 per day\n  Timber       79  +1.0 per day\n  Stone       509  +2.9 per day\n  ⚠ Cedar       207  production +1.0 per day  — known sinks absorb at most 24 within 60 days; 1 citizen produces with no receiver (`keryx place`)\n  Kharis      100  (Favorable) · cap 100 · net +6.2 per day (temple − decay)\n  Kharis decay: 0.1 base + 2 cities cost 0.1 per day = 0.2 total\n  → your temple can employ MORE devotion than you've allocated — raise cult labor (`keryx allocate --cult <%>`) to fill it and let kharis climb.\n  Temple in Mallia: reference 0.25 grain per day — alternatives: 0.3814 fish or 0.2737 timber or 0.3327 silver — stock: 1106 grain, 1049 fish, 79.14 timber, 400 silver — next gift: 0.25 grain  ✓\n\nArmy (garrison in Mallia)\n  Spearmen    100\n  Upkeep     0.5 grain, 0.0 silver per day  (everything the city pays — including field units)\n  Field units and other cities are shown in `keryx unit list`.\n\nBuildings\n  farm         L1\n  stonequarry  L1\n  temple       L3\n",
+    "stderr": "",
+    "recorded_number": 7,
+    "execution_record": 7
+  },
+  {
+    "start": "2026-10-19T08:25:39+02:00",
+    "args": [
+      "notifications"
+    ],
+    "exit_code": 0,
+    "stdout": "55 notification(s), 55 unread\n────────────────────────────────────────────────────────────\n*[Day #594]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #585]  DivineBlessing\n*[Day #580]  DivineBlessing\n*[Day #571]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #568]  DivineBlessing\n*[Day #550]  DivineBlessing\n*[Day #546]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #543]  DivineBlessing\n*[Day #533]  DivineBlessing\n*[Day #530]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #521]  DivineBlessing\n*[Day #520]  DivineBlessing\n*[Day #519]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #512]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #511]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #502]  BuildComplete\n      The city completed temple\n*[Day #500]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #497]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #491]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #489]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #483]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #478]  DivineBlessing\n*[Day #472]  UnitArrived\n      1st Spearmen of Mallia arrived at (61, 22) — garrison\n*[Day #472]  ExpeditionReport\n      1st Spearmen of Mallia is home after 18 days, 7 hexes out at the furthest — saw 74 hexes around (63, 27): cedar at (58, 25), (59, 24), (59, 25), (60, 25), (61, 23), (61, 24), (61, 25), (62, 25), (62, 27)\n*[Day #471]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #468]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #467]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #466]  BuildComplete\n      The city completed shipyard\n*[Day #463]  ExpeditionTurnedHome\n      1st Spearmen of Mallia turns home from the land around (63, 27): half its time is spent — home by day 472\n*[Day #462]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #462]  TradeDelivery\n      Delivery arrived: 50 silver\n*[Day unknown]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day unknown]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day unknown]  DivineBlessing\n*[Day unknown]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day unknown]  BuildComplete\n      The city completed temple\n*[Day unknown]  BuildComplete\n      The city completed harbour\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 15 cedar\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 1 cedar\n*[Day unknown]  ExpeditionReport\n      1st Spearmen of Mallia is home after 12 days, 4 hexes out at the furthest — saw 39 hexes around (63, 24): cedar at (59, 24), (59, 25), (60, 25), (61, 23), (61, 24), (61, 25), (62, 25), (62, 27), (63, 25), (63, 26)\n*[Day unknown]  UnitArrived\n      1st Spearmen of Mallia arrived at (61, 22) — garrison\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 12 stone\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 24 timber\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 16 cedar\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 12 stone\n*[Day unknown]  ExpeditionTurnedHome\n      1st Spearmen of Mallia turns home from the land around (63, 24): half its time is spent — home by day 409\n*[Day unknown]  BuildComplete\n      The city completed temple\n*[Day unknown]  UnitArrived\n      1st Spearmen of Mallia arrived at (61, 22) — garrison\n*[Day unknown]  ExpeditionReport\n      1st Spearmen of Mallia is home after 12 days, 4 hexes out at the furthest — saw 65 hexes around (62, 25): cedar at (58, 25), (59, 24), (59, 25), (60, 25), (61, 23), (61, 24), (61, 25)\n*[Day unknown]  ColonyFounded\n      Colony founded: MalliaWest\n      MalliaWest food production covers consumption (net +1.0 per day).\n*[Day unknown]  BuildComplete\n      The city completed stonequarry\n*[Day unknown]  ExpeditionTurnedHome\n      1st Spearmen of Mallia turns home from the land around (62, 25): half its time is spent — home by day 363\n*[Day unknown]  PlaceFirstReached\n      Your 1st Spearmen of Mallia is the first to reach this cedar forest — you may name it. `keryx places name forest 58,25 \"<name>\"`\n*[Day unknown]  MetropolisFounded\n      Your metropolis is founded: Mallia — 19/19 catchment hexes known\n      Mallia food production covers consumption (net +0.6 per day).\n*[Day unknown]  OpeningDispatch\n      Your people await you\n      Time. A day passes every 6 minutes.\n      Foot soldiers cross a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. War chariots cross plains in 0.67 day but need 2 in olive woodland and 3 in hills, cedar forest or desert. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.\n      Your Host carries 1200 grain and 480 silver. It lives on subsistence until founding; these reserves do not drain. Find your place — founding is final.\n      Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.\n      The gods. Your Kharis holds for 144 days after founding, and no punishment falls. A temple takes 16 days to build. Build, staff and feed one in time; after that, neglect lets Kharis fade and risks punishment.\n      Place citizens on olive woodland or cedar forest for timber, and on stone-bearing ground for stone; idle citizens produce nothing.\n      Orders travel. A Runner must reach a unit in the field before it follows your new order.\n      Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.\n      Rules: ? (Codex). Problems: Report. Community chat: Account.\n",
+    "stderr": "",
+    "recorded_number": 8,
+    "execution_record": 8
+  },
+  {
+    "start": "2026-10-19T08:25:41+02:00",
+    "args": [
+      "unit",
+      "list"
+    ],
+    "exit_code": 0,
+    "stdout": "ID                                    Name                                            Size      Status      Stance     Location / ETA\n────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────\n34d55211-6675-4d8a-9291-96232adc4d60  1st Spearmen of Mallia                          100 men   garrison    —          settlement a76788d5…\n  Upkeep: 0.5 grain, 0 silver per day\n",
+    "stderr": "",
+    "recorded_number": 9,
+    "execution_record": 9
+  },
+  {
+    "start": "2026-10-19T08:25:43+02:00",
+    "args": [
+      "map"
+    ],
+    "exit_code": 0,
+    "stdout": "Your hex: (58,25) · radius 8 · 100 known hexes (65 live, 35 remembered; 57 sea, 0 river, 0 ford, 21 coastal land):\n\n  ( 58, 25) d0      forest_cedar         +cedar [coastal hex — a city founded here could build a harbour] [settled]\n  ( 58, 26) d1  S   plains               [coastal hex — a city founded here could build a harbour]\n  ( 57, 25) d1  NW  coastal_sea         [sea]\n  ( 57, 26) d1  SW  coastal_sea         [sea]\n  ( 58, 24) d1  N   coastal_sea         [sea]\n  ( 59, 25) d1  SE  forest_cedar         +cedar\n  ( 59, 24) d1  NE  forest_cedar         +cedar [coastal hex — a city founded here could build a harbour]\n  ( 58, 27) d2  S   coastal_sea         [sea]\n  ( 57, 24) d2  NW  deep_sea            [sea]\n  ( 59, 23) d2  NE  coastal_sea         [sea]\n  ( 59, 26) d2  SE  plains               [coastal hex — a city founded here could build a harbour]\n  ( 60, 23) d2  NE  forest_olive_grove   [coastal hex — a city founded here could build a harbour]\n  ( 58, 23) d2  N   deep_sea            [sea]\n  ( 57, 27) d2  SW  coastal_sea         [sea]\n  ( 60, 24) d2  E   plains              \n  ( 56, 25) d2  NW  deep_sea            [sea]\n  ( 56, 26) d2  W   deep_sea            [sea]\n  ( 56, 27) d2  SW  deep_sea            [sea]\n  ( 60, 25) d2  SE  forest_cedar         +cedar\n  ( 57, 23) d3  N   deep_sea            [sea]\n  ( 55, 28) d3  SW  deep_sea            [sea]\n  ( 61, 25) d3  SE  forest_cedar         +cedar\n  ( 61, 24) d3  E   forest_cedar         +cedar\n  ( 61, 23) d3  E   forest_cedar         +cedar\n  ( 61, 22) d3  NE  plains               [settled]\n  ( 60, 26) d3  SE  plains              \n  ( 60, 22) d3  NE  plains               [coastal hex — a city founded here could build a harbour]\n  ( 56, 28) d3  SW  deep_sea            [sea]\n  ( 56, 24) d3  NW  deep_sea            [sea]\n  ( 59, 27) d3  S   plains               [coastal hex — a city founded here could build a harbour]\n  ( 57, 28) d3  S   deep_sea            [sea]\n  ( 55, 25) d3  NW  deep_sea            [sea]\n  ( 59, 22) d3  N   coastal_sea         [sea]\n  ( 58, 28) d3  S   coastal_sea         [sea]\n  ( 55, 26) d3  W   deep_sea            [sea]\n  ( 55, 27) d3  W   deep_sea            [sea]\n  ( 58, 22) d3  N   deep_sea            [sea]\n  ( 54, 28) d4  W   deep_sea            [sea]\n  ( 62, 22) d4  E   plains              \n  ( 62, 25) d4  SE  forest_cedar         +cedar [coastal hex — a city founded here could build a harbour] [remembered]\n  ( 58, 21) d4  N   deep_sea            [sea]\n  ( 62, 24) d4  E   plains               [coastal hex — a city founded here could build a harbour]\n  ( 62, 23) d4  E   plains              \n  ( 58, 29) d4  S   deep_sea            [sea] [remembered]\n  ( 55, 29) d4  SW  deep_sea            [sea]\n  ( 62, 21) d4  NE  plains              \n  ( 59, 21) d4  N   deep_sea            [sea]\n  ( 61, 26) d4  SE  plains               [remembered]\n  ( 57, 29) d4  S   deep_sea            [sea] [remembered]\n  ( 55, 24) d4  NW  coastal_sea         [sea]\n  ( 57, 22) d4  N   deep_sea            [sea]\n  ( 54, 29) d4  SW  deep_sea            [sea]\n  ( 56, 23) d4  NW  coastal_sea         [sea]\n  ( 59, 28) d4  S   coastal_sea         [sea] [remembered]\n  ( 61, 21) d4  NE  plains               [coastal hex — a city founded here could build a harbour]\n  ( 60, 27) d4  SE  plains               [coastal hex — a city founded here could build a harbour] [remembered]\n  ( 54, 25) d4  NW  deep_sea            [sea]\n  ( 54, 26) d4  W   deep_sea            [sea]\n  ( 60, 21) d4  NE  coastal_sea         [sea]\n  ( 56, 29) d4  SW  deep_sea            [sea]\n  ( 54, 27) d4  W   deep_sea            [sea]\n  ( 62, 26) d5  SE  plains               [remembered]\n  ( 61, 27) d5  SE  plains               [remembered]\n  ( 63, 25) d5  SE  forest_cedar         +cedar [coastal hex — a city founded here could build a harbour] [remembered]\n  ( 63, 24) d5  E   coastal_sea         [sea] [remembered]\n  ( 60, 28) d5  SE  plains               [coastal hex — a city founded here could build a harbour] [remembered]\n  ( 63, 23) d5  E   plains               [coastal hex — a city founded here could build a harbour]\n  ( 63, 22) d5  E   plains              \n  ( 63, 21) d5  E   plains              \n  ( 63, 20) d5  NE  plains               [coastal hex — a city founded here could build a harbour]\n  ( 61, 20) d5  NE  coastal_sea         [sea]\n  ( 59, 29) d5  S   coastal_sea         [sea] [remembered]\n  ( 54, 30) d5  SW  deep_sea            [sea] [remembered]\n  ( 56, 30) d5  SW  deep_sea            [sea] [remembered]\n  ( 55, 30) d5  SW  deep_sea            [sea] [remembered]\n  ( 62, 20) d5  NE  plains               [coastal hex — a city founded here could build a harbour]\n  ( 57, 30) d5  S   deep_sea            [sea] [remembered]\n  ( 58, 30) d5  S   deep_sea            [sea] [remembered]\n  ( 60, 20) d5  NE  deep_sea            [sea]\n  ( 62, 27) d6  SE  forest_cedar         +cedar [remembered]\n  ( 63, 19) d6  NE  coastal_sea         [sea]\n  ( 63, 26) d6  SE  forest_cedar         +cedar [remembered]\n  ( 56, 31) d6  S   deep_sea            [sea] [remembered]\n  ( 58, 31) d6  S   coastal_sea         [sea] [remembered]\n  ( 62, 19) d6  NE  coastal_sea         [sea]\n  ( 57, 31) d6  S   deep_sea            [sea] [remembered]\n  ( 59, 30) d6  S   coastal_sea         [sea] [remembered]\n  ( 60, 29) d6  S   plains               [coastal hex — a city founded here could build a harbour] [remembered]\n  ( 61, 28) d6  SE  forest_olive_grove   [remembered]\n  ( 61, 19) d6  NE  deep_sea            [sea]\n  ( 56, 32) d7  S   deep_sea            [sea] [remembered]\n  ( 61, 29) d7  SE  forest_olive_grove   [remembered]\n  ( 60, 30) d7  S   forest_olive_grove   [coastal hex — a city founded here could build a harbour] [remembered]\n  ( 62, 28) d7  SE  plains               [remembered]\n  ( 57, 32) d7  S   coastal_sea         [sea] [remembered]\n  ( 59, 31) d7  S   forest_olive_grove   [coastal hex — a city founded here could build a harbour] [remembered]\n  ( 56, 33) d8  S   deep_sea            [sea] [remembered]\n  ( 62, 29) d8  SE  forest_olive_grove   [remembered]\n  ( 60, 31) d8  S   river_valley         [coastal hex — a city founded here could build a harbour] [remembered]\n  ( 61, 30) d8  S   river_valley         [coastal hex — a city founded here could build a harbour] [remembered]\n\nFrontier — unexplored hexes bordering the known world (26, nearest first):\n  ( 56, 22) d5  NW \n  ( 53, 26) d5  W  \n  ( 53, 27) d5  W  \n  ( 53, 28) d5  W  \n  ( 53, 29) d5  W  \n  ( 53, 30) d5  SW \n  ( 53, 25) d5  NW \n  ( 54, 24) d5  NW \n  ( 59, 20) d5  N  \n  ( 55, 23) d5  NW \n  ( 58, 20) d5  N  \n  ( 57, 21) d5  N  \n  ( 53, 31) d6  SW \n  ( 55, 31) d6  SW \n  ( 60, 19) d6  N  \n  … and 11 more\n\nTo act on a hex, march a land unit there (find unit IDs with `keryx unit list`):\n  keryx unit march --unit <id> --q <Q> --r <R>\n  keryx unit march --unit <id> --q <Q> --r <R> --intent colonize --name <name>\nIntent: colonize — founds a colony when the unit arrives on an empty hex.\nNote: ore on mountain terrain is impassable — colonize an ADJACENT passable hex\n      so the deposit falls in the new colony's catchment.\nTo explore: march a unit toward a frontier hex above — the route is revealed\n      and remembered on arrival, pushing the frontier outward.\n",
+    "stderr": "",
+    "recorded_number": 10,
+    "execution_record": 10
+  },
+  {
+    "start": "2026-10-19T08:25:45+02:00",
+    "args": [
+      "status",
+      "--province",
+      "fea8cf52-09bd-4c9d-a714-a256f59c505d"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax Dikonaros · day 601 of the world\n\n1 citizen = 100 people\nMalliaWest [minoan]  Pop: 404 people  Labor: 4 citizens  Walls: 0/3  Settlements: 2/5  [coastal — can build harbour → ships]\nPopulation 404 — growing: food net +5.3 per day\nThis is MalliaWest. You have 2 cities — `keryx settlements` lists them, `keryx status --province <id>` shows another.\n\nFood lasts 360.0 days at current consumption (city grain + fish stocks)\n\nLast day 601: 2 goods produced, 1 consumed  ·  keryx ticklog for details\n\nResources\n  (per day; food and army balances are itemized below)\n  Silver       60  —\n  Food     grain 0.5 + fish 6.9 − people eat 2.0 = net +5.3 per day (before army)\n  Grain         0  production 0.5 per day  (1 citizen needed for people on best food slots · 4 placed)\n  Automatic food: 0.50 grain + 0.07 fish per day without placed citizens (nearby ground 0.50 grain; 4 people outside whole citizens: 0.00 grain + 0.07 fish, a fraction of the best food worker)\n  Army     eats 0.0 grain per day → food net +5.3 per day after army\n  Silver   net +0.0 per day after army pay\n  Fish        727  +6.9 per day\n  ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).\n  Kharis      100  (Favorable) · cap 100 · net +6.2 per day (temple − decay)\n  Kharis decay: 0.1 base + 2 cities cost 0.1 per day = 0.2 total\n  → your temple can employ MORE devotion than you've allocated — raise cult labor (`keryx allocate --cult <%>`) to fill it and let kharis climb.\n  Temple in Mallia: reference 0.25 grain per day — alternatives: 0.383 fish or 0.2748 timber or 0.334 silver — stock: 1075 grain, 1049 fish, 78.34 timber, 400 silver — next gift: 0.25 grain  ✓\n\nArmy (garrison in MalliaWest)\n  Field units and other cities are shown in `keryx unit list`.\n\nBuildings\n  harbour      L1\n  shipyard     L1\n",
+    "stderr": "",
+    "recorded_number": 11,
+    "execution_record": 11
+  },
+  {
+    "start": "2026-10-19T08:25:55+02:00",
+    "args": [
+      "cargo"
+    ],
+    "exit_code": 0,
+    "stdout": "No cargo of yours currently in transit.\n",
+    "stderr": "",
+    "recorded_number": 12,
+    "execution_record": 12
+  },
+  {
+    "start": "2026-10-19T08:25:56+02:00",
+    "args": [
+      "diplomacy"
+    ],
+    "exit_code": 0,
+    "stdout": "No other Wanaxes known yet — expand your vision or wait for gossip to reach you.\n",
+    "stderr": "",
+    "recorded_number": 13,
+    "execution_record": 13
+  },
+  {
+    "start": "2026-10-19T08:25:58+02:00",
+    "args": [
+      "gossip"
+    ],
+    "exit_code": 0,
+    "stdout": " [Mon Oct 19 08:25]  Mallia\n  A child laughed outside the temple during the rite. The gods find something amusing.\n\n [Mon Oct 19 07:43]  Mallia\n  The gods smile upon your fields. For a season they bear more than any hand could make them.\n\n [Mon Oct 19 06:49]  Mallia\n  The sacred flame guttered three times before catching. Patience is called for.\n\n [Mon Oct 19 06:49]  Mallia\n  Warriors answer a divine call and join your ranks. New hoplites have arrived.\n\n [Mon Oct 19 06:19]  Mallia\n  Warriors answer a divine call and join your ranks. New hoplites have arrived.\n\n [Mon Oct 19 05:25]  Mallia\n  The gods smile upon your fields. For a season they bear more than any hand could make them.\n\n [Mon Oct 19 05:07]  Mallia\n  Warriors answer a divine call and join your ranks. New hoplites have arrived.\n\n [Mon Oct 19 03:19]  Mallia\n  Warriors answer a divine call and join your ranks. New hoplites have arrived.\n\n [Mon Oct 19 02:55]  Mallia\n  The gods smile upon your fields. For a season they bear more than any hand could make them.\n\n [Mon Oct 19 02:43]  Mallia\n  Birds flew westward in tight formation. Something stirs beyond your sight.\n\n [Mon Oct 19 02:37]  Mallia\n  Warriors answer a divine call and join your ranks. New hoplites have arrived.\n\n [Mon Oct 19 01:43]  Mallia\n  A child laughed outside the temple during the rite. The gods find something amusing.\n\n [Mon Oct 19 01:37]  Mallia\n  Clouds gathered during the rite, then passed without rain. The future is contested.\n\n [Mon Oct 19 01:37]  Mallia\n  Warriors answer a divine call and join your ranks. New hoplites have arrived.\n\n [Mon Oct 19 01:19]  Mallia\n  The gods smile upon your fields. For a season they bear more than any hand could make them.\n\n [Mon Oct 19 00:55]  Mallia\n  The flame consumed the offering without hesitation. Order holds for now.\n\n [Mon Oct 19 00:49]  Mallia\n  Smoke rose straight toward heaven — a season of calm and steady winds.\n\n [Mon Oct 19 00:37]  Mallia\n  The sacred flame guttered three times before catching. Patience is called for.\n\n [Mon Oct 19 00:25]  Mallia\n  Warriors answer a divine call and join your ranks. New hoplites have arrived.\n\n [Mon Oct 19 00:19]  Mallia\n  Warriors answer a divine call and join your ranks. New hoplites have arrived.\n\n [Mon Oct 19 00:13]  Mallia\n  The gods smile upon your fields. For a season they bear more than any hand could make them.\n\n [Sun Oct 18 23:55]  Mallia\n  The birds fell silent for a long time before resuming their cries. The gods listen.\n\n [Sun Oct 18 23:31]  Mallia\n  The gods smile upon your fields. For a season they bear more than any hand could make them.\n\n [Sun Oct 18 23:25]  Mallia\n  The gods smile upon your fields. For a season they bear more than any hand could make them.\n\n [Sun Oct 18 23:07]  Mallia\n  Wind shifted against the smoke during the final prayer. Something turns.\n\n [Sun Oct 18 23:01]  Mallia\n  The offering was pale but the liver whole. The gods withhold judgement.\n\n [Sun Oct 18 22:55]  Mallia\n  Smoke rose straight toward heaven — a season of calm and steady winds.\n\n [Sun Oct 18 22:19]  Mallia\n  The gods smile upon your fields. For a season they bear more than any hand could make them.\n\n [Sun Oct 18 22:01]  Mallia\n  The gods smile upon your fields. For a season they bear more than any hand could make them.\n\n [Sun Oct 18 21:55]  Mallia\n  Two ravens circled the altar three times. The gods debate.\n\n",
+    "stderr": "",
+    "recorded_number": 14,
+    "execution_record": 14
+  },
+  {
+    "start": "2026-10-19T08:26:03+02:00",
+    "args": [
+      "unit",
+      "march",
+      "--unit",
+      "34d55211-6675-4d8a-9291-96232adc4d60",
+      "--q",
+      "56",
+      "--r",
+      "22",
+      "--intent",
+      "explore",
+      "--ticks",
+      "30",
+      "--preview"
+    ],
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "Error: none of the unseen ground within 5 hexes of (56,22) can be reached by this unit (HTTP 422)\nSee keryx unit march --help\n",
+    "recorded_number": 15,
+    "execution_record": 15
+  },
+  {
+    "start": "2026-10-19T08:26:12+02:00",
+    "args": [
+      "unit",
+      "march",
+      "--unit",
+      "34d55211-6675-4d8a-9291-96232adc4d60",
+      "--q",
+      "61",
+      "--r",
+      "31",
+      "--intent",
+      "explore",
+      "--ticks",
+      "30",
+      "--preview"
+    ],
+    "exit_code": 0,
+    "stdout": "Arrival unavailable: the route crosses unknown terrain.\nPlanned expedition: 30 days — with immediate departure, home by day 631. First-leg arrival remains unknown.\nPay: 0 → 0 silver per day in the field · no silver drain\nNo order sent. Run again without --preview to send it.\n",
+    "stderr": "",
+    "recorded_number": 16,
+    "execution_record": 16
+  },
+  {
+    "start": "2026-10-19T08:26:17+02:00",
+    "args": [
+      "rite",
+      "--list"
+    ],
+    "exit_code": 0,
+    "stdout": "The gods are Favorable (kharis 100.0).\n\nOffering values — per unit, before each god's preferences; not trade prices:\n  bronze       33\n  cedar        2.401\n  copper       3\n  fish         1\n  grain        1.532\n  livestock    1.263\n  oil          3\n  silver       1.147\n  stone        2.211\n  timber       1.394\n  tin          2.35\n  wine         3\n\nPrayer ID                     Name                  MinKhar   Offering                Effect                                         Ready         Cooldown\nminoan_potnia_vision_v2       Potnia's Vision       5         grain×10 silver×3       Marks an unseen ore deposit and the unknown ground within two hexes as memory; no live activity.  no: no temple  —\n    Potnia favours fish ×2.2, purple ×2.0, oil ×1.5, silver ×1.4  ·  expects an offering worth ~14 (--offer good=amount)\nminoan_potnia_walls           Mistress of the Walls  5         grain×8 timber×4        Your own garrison defending this city fights a quarter stronger for 6 days.  no: no temple  —\n    Potnia favours livestock ×2.0, wine ×1.7, horses ×1.6, bronze ×1.5  ·  expects an offering worth ~18 (--offer good=amount)\nminoan_velchanos_green_shoots  Green Shoots          30        grain×15 silver×2       Grain, livestock, oil and wine yield a quarter more for 25 days; fish is unchanged.  no: no temple  —\n    Velchanos favours wine ×2.0, oil ×1.6, livestock ×1.3, grain ×1.3  ·  expects an offering worth ~32 (--offer good=amount)\nminoan_asterion_thread        The Thread Shows a Path  5         silver×3 timber×4       Your next land caravan or Runner from this city travels faster; the caravan is harder to intercept.  no: no temple  —\n    Asterion\nminoan_stillness_passage      Favourable Passage    5         fish×6 silver×3         The next ship leaving this port sails faster and takes no storm damage on its outward leg.  no: no temple  —\n    The Sea Daimons of Stillness\n\nThe offering — and 4 of your kharis — is consumed even if the gods stay silent: a rite spends standing, win or lose.\n",
+    "stderr": "",
+    "recorded_number": 17,
+    "execution_record": 17
+  },
+  {
+    "start": "2026-10-19T08:26:19+02:00",
+    "args": [
+      "rite",
+      "--help"
+    ],
+    "exit_code": 0,
+    "stdout": "Perform a cultural prayer at your settlement (requires temple + offering)\n\nUsage:\n  keryx rite [flags]\n\nExamples:\n  keryx rite --list\n  keryx rite --prayer <prayer-id>\n  keryx rite --prayer <prayer-id> --settlement <settlement-uuid>\n  keryx rite --prayer <prayer-id> --offer-multiplier 2.0\n  keryx rite --prayer <prayer-id> --yes\n  keryx rite --json\n\nFlags:\n  -h, --help                     help for rite\n      --list                     list this culture's available prayers (id + affordability) and exit\n      --offer string             composed offering, e.g. --offer wine=20,oil=10 (overrides --offer-multiplier; the gods value what the world is short of)\n      --offer-multiplier float   scale the material offering (0.5-2.0; a fatter offer pleases the gods more, a stingy one less — omit for baseline 1.0)\n      --prayer string            prayer ID (run --list to see your culture's prayers; defaults to the culture's listed default prayer)\n      --settlement string        settlement UUID (defaults to your capital)\n      --target string            target province UUID (for future targeted prayers)\n      --yes                      skip the pre-cast confirmation (required for non-interactive/agent use)\n\nGlobal Flags:\n  -j, --json   output as JSON (for scripts and MCP)\n",
+    "stderr": "",
+    "recorded_number": 18,
+    "execution_record": 18
+  },
+  {
+    "start": "2026-10-19T08:26:22+02:00",
+    "args": [
+      "rite",
+      "--list",
+      "--settlement",
+      "a76788d5-cc6d-4b44-8a9c-0cfeb95375c0"
+    ],
+    "exit_code": 0,
+    "stdout": "The gods are Favorable (kharis 100.0).\n\nOffering values — per unit, before each god's preferences; not trade prices:\n  bronze       33\n  cedar        2.401\n  copper       3\n  fish         1\n  grain        1.532\n  livestock    1.263\n  oil          3\n  silver       1.147\n  stone        2.211\n  timber       1.394\n  tin          2.35\n  wine         3\n\nPrayer ID                     Name                  MinKhar   Offering                Effect                                         Ready         Cooldown\nminoan_potnia_vision_v2       Potnia's Vision       5         grain×10 silver×3       Marks an unseen ore deposit and the unknown ground within two hexes as memory; no live activity.  no: no temple  —\n    Potnia favours fish ×2.2, purple ×2.0, oil ×1.5, silver ×1.4  ·  expects an offering worth ~14 (--offer good=amount)\nminoan_potnia_walls           Mistress of the Walls  5         grain×8 timber×4        Your own garrison defending this city fights a quarter stronger for 6 days.  no: no temple  —\n    Potnia favours livestock ×2.0, wine ×1.7, horses ×1.6, bronze ×1.5  ·  expects an offering worth ~18 (--offer good=amount)\nminoan_velchanos_green_shoots  Green Shoots          30        grain×15 silver×2       Grain, livestock, oil and wine yield a quarter more for 25 days; fish is unchanged.  no: no temple  —\n    Velchanos favours wine ×2.0, oil ×1.6, grain ×1.3, livestock ×1.3  ·  expects an offering worth ~32 (--offer good=amount)\nminoan_asterion_thread        The Thread Shows a Path  5         silver×3 timber×4       Your next land caravan or Runner from this city travels faster; the caravan is harder to intercept.  no: no temple  —\n    Asterion\nminoan_stillness_passage      Favourable Passage    5         fish×6 silver×3         The next ship leaving this port sails faster and takes no storm damage on its outward leg.  no: no temple  —\n    The Sea Daimons of Stillness\n\nThe offering — and 4 of your kharis — is consumed even if the gods stay silent: a rite spends standing, win or lose.\n",
+    "stderr": "",
+    "recorded_number": 19,
+    "execution_record": 19
+  },
+  {
+    "start": "2026-10-19T08:26:26+02:00",
+    "args": [
+      "unit",
+      "march",
+      "--unit",
+      "34d55211-6675-4d8a-9291-96232adc4d60",
+      "--q",
+      "61",
+      "--r",
+      "31",
+      "--intent",
+      "explore",
+      "--ticks",
+      "30"
+    ],
+    "exit_code": 0,
+    "stdout": "Unit 34d55211 exploring (61,31) — arrives in 10 days — Expedition around (61,31), 30 days; turns home by day 616; home by day 631\n",
+    "stderr": "",
+    "recorded_number": 20,
+    "execution_record": 20
+  },
+  {
+    "start": "2026-10-19T08:26:28+02:00",
+    "args": [
+      "actions"
+    ],
+    "exit_code": 0,
+    "stdout": "What you can do — by category (keryx actions <category> for details)\n────────────────────────────────────────────────────────────\n  province    4 available · 1 locked\n  military    2 available · 9 locked\n  trade       3 available · 3 locked\n  diplomacy   2 available · 1 locked\n  kingdom     0 available · 0 locked\n  cult        0 available · 1 locked\n",
+    "stderr": "",
+    "recorded_number": 21,
+    "execution_record": 21
+  },
+  {
+    "start": "2026-10-19T08:26:30+02:00",
+    "args": [
+      "actions",
+      "military"
+    ],
+    "exit_code": 0,
+    "stdout": "military — 2 available · 9 locked\n────────────────────────────────────────────────────────────\n\nAvailable now\n  recall           Send a recall order (by messenger) to a marching unit, turning it home.\n  redirect         Send a redirect order (by messenger) to a marching unit, giving it a new destination.\n\nLocked — here's how to unlock it\n  build-road       Order an army to build one road edge between two neighbouring hexes. The stone leaves the nearest city when the order is given and travels as a caravan; building begins when the stone and the army are both at the first hex. Roads speed every traveller and anyone may use them; they never cross water or mountains and end at a river ford.\n      ✗ a land unit to build — 0 deployable land unit(s) here\n        → recruit a land unit first\n      ✗ 8 stone in this city (a plains edge) — 0 stone here\n        → produce stone first (a quarry) — rougher ground costs more\n  colonize         March a garrisoned land unit to an empty hex with intent=colonize to found a new settlement there.\n      ✗ a deployable land unit garrisoned here — 0/1 deployable\n        → recruit a land unit in this settlement, then march it with --intent colonize\n      ✓ under the settlement cap (5)\n  disband          Release units back to civilian population.\n      ✗ a unit garrisoned or forming here — 0 unit(s) here\n        → recruit a unit in this settlement first\n  land             March a laden ship with intent=land to a hex of open, unclaimed land near the coast — it sails to the sea hex next to it, puts its cargo ashore there, optionally founds a colony on arrival (cargo_intent=colonize, no further order needed), and always sails home again on its own afterwards. Give the mission from port — a ship at sea takes no further orders.\n      ✗ a laden ship garrisoned here — 0 laden ship(s) here\n        → load a land unit onto a ship here first (`unit load`)\n  load             Embark a land unit onto a ship in the same settlement.\n      ✗ an idle ship garrisoned here (no cargo) — 0 idle ship(s) here\n        → build/recruit a ship here (requires shipyard)\n      ✗ a full-strength land unit garrisoned here (>=100 men) — 0/1 deployable land unit(s) here\n        → recruit 100 men of one land type in this settlement\n  march            Order a garrisoned unit to march to a hex you have seen (live or remembered). A plain march leaves the unit standing where it arrives — that is how you gain ground you keep seeing; add stance \"sentry\" (or use `keryx unit post`) to post it as a forward watch. Intent \"explore\" is the opposite order: it may push into unseen land, but the unit turns for home the moment it arrives.\n      ✗ a garrisoned unit here — 0 deployable unit(s) here\n        → recruit or build a unit here first — only garrisoned units can march\n  post             March a land unit to a hex and hold it there as a forward watch — it stays (no patrol timer, no auto-return), extends your fog-of-war from where it stands, and intercepts enemy caravans within reach. It eats double grain in the field for as long as it holds.\n      ✗ a garrisoned land unit here — 0 deployable land unit(s) here\n        → recruit a land unit here first — a ship is posted with `unit patrol` instead, which patrols and sails home on its own\n  stance           Set or clear a unit's stance: \"fortify\" digs in and refuses to march, \"storm\" presses an assault, \"sentry\" stands watch — it spots foreign marches passing nearby and intercepts enemy caravans within reach. Note a unit does not need sentry to SEE: anything standing on the map already extends your fog-of-war. A unit already on the march can be given a stance too — a Runner has to catch up with it, and the stance bites where the unit stops.\n      ✗ a unit garrisoned or forming here — 0 unit(s) here\n        → recruit a unit in this settlement first\n  unload           Disembark the cargo unit from a ship in this settlement.\n      ✗ a ship garrisoned here carrying cargo — 0 laden ship(s) here\n        → load a land unit onto a ship here first\n",
+    "stderr": "",
+    "recorded_number": 22,
+    "execution_record": 22
+  },
+  {
+    "start": "2026-10-19T08:26:33+02:00",
+    "args": [
+      "actions",
+      "cult"
+    ],
+    "exit_code": 0,
+    "stdout": "cult — 0 available · 1 locked\n────────────────────────────────────────────────────────────\n\nAvailable now\n  (none)\n\nLocked — here's how to unlock it\n  rite             Perform a cultural prayer at your temple (kharis-gated; consumes a material offering).\n      ✗ temple built — no temple\n        → build a temple (`keryx build --type temple`)\n      ✓ kharis >= 5 (default prayer: minoan_potnia_walls)\n",
+    "stderr": "",
+    "recorded_number": 23,
+    "execution_record": 23
+  },
+  {
+    "start": "2026-10-19T08:26:38+02:00",
+    "args": [
+      "goods",
+      "--province",
+      "fea8cf52-09bd-4c9d-a714-a256f59c505d"
+    ],
+    "exit_code": 0,
+    "stdout": "1 citizen = 100 people\nLabor pool: 4 citizens  ·  Idle: 0 citizens\n\nGood            Stock   Per day     Lvl    Citizens    Marg/g\n──────────────────────────────────────────────────────────────────────────\ncedar            12.6       0.0       —           0    1.0000\nstone             0.0       0.0       —           0    0.5000\ntimber            0.0       0.0       —           0    0.0000\nsilver          60.0*       0.0       —           —         —\noil               0.0       0.0       —           0    0.6667\npurple            0.0       0.0       —           —         —\nwine              0.0       0.0       —           0    0.5000\ncult              0.0       0.0       —           —         —\nfish            727.1       6.9       —           4    1.7000\ngrain             0.0       0.5       —           0    1.0000\nlivestock        49.0       0.0       —           0    1.0000\nbronze            0.0       0.0       —           —         —\ncopper            0.0       0.0       —           —         —\nhorses            0.0       0.0       —           —         —\npottery           0.0       0.0       —           —         —\ntin               0.0       0.0       —           —         —\n\nWanaxes agree trade prices. The temple shows how the gods weigh offerings: keryx rite --list.\n\n! = citizens allocated beyond what the workplace can employ. They produce\n    nothing. Raise the building's level (build it again) or move the labor.\n\n* = at the storage ceiling. Everything produced above it is discarded — the citizens\n    working it produce nothing. At the ceiling now: silver.\n    Move that labor to a good with room, or spend the stock (build, staff a foundry/press, trade it away).\n",
+    "stderr": "",
+    "recorded_number": 24,
+    "execution_record": 24
+  },
+  {
+    "start": "2026-10-19T08:26:40+02:00",
+    "args": [
+      "build",
+      "--queue",
+      "--province",
+      "MalliaWest"
+    ],
+    "exit_code": 0,
+    "stdout": "Queue: 0/2 slots used — fixed limit; population and buildings do not add slots. Finish or cancel a build.\nBuild queue is empty.\n",
+    "stderr": "",
+    "recorded_number": 25,
+    "execution_record": 25
+  },
+  {
+    "start": "2026-10-19T08:26:42+02:00",
+    "args": [
+      "recruit",
+      "--help"
+    ],
+    "exit_code": 0,
+    "stdout": "Recruit a 100-man land cohort, or build a ship (--list to see all recruitable units)\n\nUsage:\n  keryx recruit [flags]\n\nExamples:\n  keryx recruit --list\n  keryx recruit --unit spearman\n  keryx recruit --unit war_chariot\n  keryx recruit --unit galley --name Asterion\n  keryx recruit --unit war_galley --count 3\n  keryx recruit --unit spearman --province <province-id>   # recruit in a colony\n\nFlags:\n      --province string   province to recruit in (default: your capital)\n  -u, --unit string       unit type (required unless --list)\n  -n, --men int           deprecated, no effect — land recruits always draft a full 100-man cohort now; ignored for ships (default 100)\n  -c, --count int         number of vessels to build in one call (ships only, 1–20) (default 1)\n      --name string       ship name (ships only; omit for a suggested name)\n      --list              show the recruitable-unit catalogue and exit\n  -h, --help              help for recruit\n\nGlobal Flags:\n  -j, --json   output as JSON (for scripts and MCP)\n",
+    "stderr": "",
+    "recorded_number": 26,
+    "execution_record": 26
+  },
+  {
+    "start": "2026-10-19T08:26:44+02:00",
+    "args": [
+      "recruit",
+      "--list",
+      "--province",
+      "fea8cf52-09bd-4c9d-a714-a256f59c505d"
+    ],
+    "exit_code": 0,
+    "stdout": "Type (--unit)             Batch           Cost                          Days    Pop    Requires          Afford  Upkeep per day (once garrisoned)\n──────────────────────────────────────────────────────────────────────────────────────────────────────────────\nelite_infantry (Elite Infantry)  100 men         bronze×16 grain×24 silver×40  4       10     barracks+foundry  ✗       0.6 grain, 2.0 silver (0.6 net in garrison)  ⚠ upkeep exceeds this city: needs 2.1 more grain per day and 0.6 more silver per day — silver stock 60 covers ~100 days at that rate\ngalley (Galley)           1 vessel (20 crew)  silver×6 timber×30            3       10     shipyard          ✗       0.0 grain, 1.5 silver (0.5 net in garrison)  ⚠ upkeep exceeds this city: needs 1.6 more grain per day and 0.5 more silver per day — silver stock 60 covers ~133 days at that rate\nmerchantman (Emporos)     1 vessel (10 crew)  silver×2 timber×16            4       8      shipyard          ✗       0.0 grain, 1.0 silver (0.3 net in garrison)  ⚠ upkeep exceeds this city: needs 1.6 more grain per day and 0.3 more silver per day — silver stock 60 covers ~200 days at that rate\nspearman (Spearmen)       100 men         grain×12 silver×20            1       5      barracks          ✗       0.5 grain, 0.0 silver  ⚠ grain upkeep: net is -1.5 grain per day, needs 2.0 more per day\nwar_chariot (War Chariot)  100 men         bronze×20 cedar×8 grain×40 silver×50 timber×8  3       8      stable            ✗       0.8 grain, 3.0 silver (0.9 net in garrison)  ⚠ upkeep exceeds this city: needs 2.3 more grain per day and 0.9 more silver per day — silver stock 60 covers ~67 days at that rate\nwar_galley (War Galley)   1 vessel (50 crew)  cedar×100 silver×30           5       12     shipyard+foundry  ✗       0.1 grain, 2.5 silver (0.8 net in garrison)  ⚠ upkeep exceeds this city: needs 1.6 more grain per day and 0.8 more silver per day — silver stock 60 covers ~80 days at that rate\n",
+    "stderr": "",
+    "recorded_number": 27,
+    "execution_record": 27
+  },
+  {
+    "start": "2026-10-19T08:26:51+02:00",
+    "args": [
+      "city",
+      "--province",
+      "MalliaWest"
+    ],
+    "exit_code": 0,
+    "stdout": "1 citizen = 100 people\nCitizens: 4/4 placed, 0 idle\n\nFood: 1 citizen needed for people on best food slots, 4 placed\nAutomatic food: 0.50 grain + 0.07 fish per day without placed citizens (nearby ground 0.50 grain; 4 people outside whole citizens: 0.00 grain + 0.07 fish, a fraction of the best food worker)\n\nCatchment:\n  #16  (60,23) forest_olive_grove oil        2/2 FULL  held by Mallia — already worked by another city\n                      timber     1/1 FULL\n                      stone      1/1 FULL\n  #10  (58,26) plains         oil        0/2    (next +0.7 per day)\n                      wine       0/2    (next +0.5 per day)\n                      grain      0/4    (next +1.0 per day)\n                      livestock  0/1    (next +1.0 per day)\n                      stone      0/1    (next +0.5 per day)\n  #15  (59,26) plains         grain      0/4    (next +1.0 per day)\n                      livestock  0/1    (next +1.0 per day)\n                      stone      0/1    (next +0.5 per day)\n                      oil        0/2    (next +0.7 per day)\n                      wine       0/2    (next +0.5 per day)\n  #17  (60,24) plains         wine       2/2 FULL  held by Mallia — already worked by another city\n                      grain      4/4 FULL\n                      livestock  1/1 FULL\n                      stone      1/1 FULL\n                      oil        2/2 FULL\n  #5   (57,25) coastal_sea    fish       4/6    (next +1.7 per day)\n  #6   (57,26) coastal_sea    fish       0/6    (next +1.7 per day)\n  #7   (57,27) coastal_sea    fish       0/6    (next +1.7 per day)\n  #9   (58,24) coastal_sea    fish       0/6    (next +1.7 per day)\n  #11  (58,27) coastal_sea    fish       0/6    (next +1.7 per day)\n  #12  (59,23) coastal_sea    fish       6/6 FULL  held by Mallia — already worked by another city\n  #1   (56,25) deep_sea       fish       0/1    (next +0.2 per day)\n  #2   (56,26) deep_sea       fish       0/1    (next +0.2 per day)\n  #3   (56,27) deep_sea       fish       0/1    (next +0.2 per day)\n  #4   (57,24) deep_sea       fish       0/1    (next +0.2 per day)\n  #8   (58,23) deep_sea       fish       0/1    (next +0.2 per day)\n  #13  (59,24) forest_cedar   cedar      0/3    (next +1.0 per day)\n                      stone      0/1    (next +0.5 per day)\n  #14  (59,25) forest_cedar   stone      0/1    (next +0.5 per day)\n                      cedar      0/3    (next +1.0 per day)\n  #18  (60,25) forest_cedar   cedar      0/3    (next +1.0 per day)\n                      stone      0/1    (next +0.5 per day)\n",
+    "stderr": "",
+    "recorded_number": 28,
+    "execution_record": 28
+  },
+  {
+    "start": "2026-10-19T08:27:02+02:00",
+    "args": [
+      "transfer",
+      "--help"
+    ],
+    "exit_code": 0,
+    "stdout": "Send physical goods to your own city or a contacted foreign city as a gift, with nothing requested in return\n\nUsage:\n  keryx transfer [flags]\n\nExamples:\n  keryx transfer --good grain --qty 50 --dest Korinth\n  keryx transfer --from <colony> --good grain --qty 50 --dest Korinth   # pull a colony's surplus home\n\nFlags:\n  -d, --dest string       destination settlement name\n      --from string       alias for --province\n  -g, --good string       good key (e.g. grain, timber, silver)\n  -h, --help              help for transfer\n      --province string   source province/settlement (default: your capital)\n  -q, --qty float         quantity to send\n\nGlobal Flags:\n  -j, --json   output as JSON (for scripts and MCP)\n",
+    "stderr": "",
+    "recorded_number": 29,
+    "execution_record": 29
+  },
+  {
+    "start": "2026-10-19T08:27:06+02:00",
+    "args": [
+      "transfer",
+      "--good",
+      "timber",
+      "--qty",
+      "30",
+      "--dest",
+      "MalliaWest"
+    ],
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "Error: resolve destination \"MalliaWest\": no own or contacted city named \"MalliaWest\"\nSee keryx transfer --help\n",
+    "recorded_number": 30,
+    "execution_record": 30
+  },
+  {
+    "start": "2026-10-19T08:27:10+02:00",
+    "args": [
+      "transfer",
+      "--good",
+      "timber",
+      "--qty",
+      "30",
+      "--dest",
+      "fea8cf52-09bd-4c9d-a714-a256f59c505d"
+    ],
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "Error: destination settlement not found (HTTP 404)\nSee keryx transfer --help\n",
+    "recorded_number": 31,
+    "execution_record": 31
+  },
+  {
+    "start": "2026-10-19T08:27:30+02:00",
+    "args": [
+      "transfer",
+      "--province",
+      "Mallia",
+      "--good",
+      "timber",
+      "--qty",
+      "30",
+      "--dest",
+      "MalliaWest"
+    ],
+    "exit_code": 0,
+    "stdout": "Transfer dispatched: 30 timber → MalliaWest · arrives day 609 (journey: 8 days)\n",
+    "stderr": "",
+    "recorded_number": 32,
+    "execution_record": 32
+  },
+  {
+    "start": "2026-10-19T08:27:35+02:00",
+    "args": [
+      "transfer",
+      "--province",
+      "Mallia",
+      "--good",
+      "grain",
+      "--qty",
+      "100",
+      "--dest",
+      "MalliaWest"
+    ],
+    "exit_code": 0,
+    "stdout": "Transfer dispatched: 100 grain → MalliaWest · arrives day 609 (journey: 8 days)\n",
+    "stderr": "",
+    "recorded_number": 33,
+    "execution_record": 33
+  },
+  {
+    "start": "2026-10-19T08:27:52+02:00",
+    "args": [
+      "rite",
+      "--prayer",
+      "minoan_potnia_vision_v2",
+      "--settlement",
+      "a76788d5-cc6d-4b44-8a9c-0cfeb95375c0",
+      "--yes"
+    ],
+    "exit_code": 0,
+    "stdout": "Divine mood: Favorable\nPrayer: minoan_potnia_vision_v2\nSuccess: Potnia marks a vein of copper at (9,64) and the unknown ground around it as memory — no living eyes are there.\nEffect: oracle_memory_v2\nOffering: worthy — meets what this god expects\nKharis spent: 4 (a rite draws down your standing, win or lose)\n",
+    "stderr": "",
+    "recorded_number": 34,
+    "execution_record": 34
+  },
+  {
+    "start": "2026-10-19T08:28:10+02:00",
+    "args": [
+      "build",
+      "--queue",
+      "--province",
+      "Mallia"
+    ],
+    "exit_code": 0,
+    "stdout": "Queue: 0/2 slots used — fixed limit; population and buildings do not add slots. Finish or cancel a build.\nBuild queue is empty.\n",
+    "stderr": "",
+    "recorded_number": 35,
+    "execution_record": 35
+  },
+  {
+    "start": "2026-10-19T08:28:13+02:00",
+    "args": [
+      "build",
+      "--type",
+      "barracks",
+      "--province",
+      "Mallia"
+    ],
+    "exit_code": 0,
+    "stdout": "Construction queued: barracks\n",
+    "stderr": "",
+    "recorded_number": 36,
+    "execution_record": 36
+  },
+  {
+    "start": "2026-10-19T08:28:17+02:00",
+    "args": [
+      "status",
+      "--province",
+      "15dd4232-1593-4f1f-8611-003aa5f58ab7"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax Dikonaros · day 601 of the world\n\n1 citizen = 100 people\nMallia [minoan]  Pop: 3.9k people  Labor: 39 citizens  Walls: 0/3  Settlements: 2/5\nPopulation 3940 — growing: food net +26.8 per day\nThis is Mallia. You have 2 cities — `keryx settlements` lists them, `keryx status --province <id>` shows another.\n\nBlessed harvest: +25% grain, livestock, wine, oil yield · 18 days left\nFood lasts 102.2 days at current consumption (city grain + fish stocks)\n\nLast day 601: 5 goods produced, 1 consumed  ·  keryx ticklog for details\n\nResources\n  (per day; food and army balances are itemized below)\n  Silver      397  —\n  Food     grain 38.5 + fish 8.0 − people eat 19.7 = net +27 per day (before army)\n  Grain       965  production 38.5 per day  (13 citizens needed for people on best food slots · 32 placed)\n  Automatic food: 1.18 grain + 0.00 fish per day without placed citizens (nearby ground 0.50 grain; 40 people outside whole citizens: 0.68 grain + 0.00 fish, a fraction of the best food worker)\n  Army     eats 1.0 grain per day → food net +26 per day after army\n  Silver   net +0.0 per day after army pay\n  Fish       1.0k  +8.0 per day\n  Timber       40  +1.0 per day\n  Stone       493  +2.9 per day\n  ⚠ Cedar       207  production +1.0 per day  — known sinks absorb at most 24 within 60 days; 1 citizen produces with no receiver (`keryx place`)\n  Kharis       96  (Favorable) · cap 100 · net +6.2 per day (temple − decay)\n  Kharis decay: 0.1 base + 2 cities cost 0.1 per day = 0.2 total\n  → your temple can employ MORE devotion than you've allocated — raise cult labor (`keryx allocate --cult <%>`) to fill it and let kharis climb.\n  Temple in Mallia: reference 0.25 grain per day — alternatives: 0.383 fish or 0.2748 timber or 0.334 silver — stock: 965 grain, 1049 fish, 40.34 timber, 397 silver — next gift: 0.25 grain  ✓\n\nArmy (garrison in Mallia)\n  Upkeep     1.0 grain, 0.0 silver per day  (everything the city pays — including field units)\n  Field units and other cities are shown in `keryx unit list`.\n\nBuildings\n  farm         L1\n  stonequarry  L1\n  temple       L3\n\nConstruction\n  barracks     in 10 days\n",
+    "stderr": "",
+    "recorded_number": 37,
+    "execution_record": 37
+  },
+  {
+    "start": "2026-10-19T08:28:20+02:00",
+    "args": [
+      "cargo"
+    ],
+    "exit_code": 0,
+    "stdout": "Good              Qty          From            To         ETA  Direction\n─────────────────────────────────────────────────────────────────────────────\ntimber             30        Mallia    MalliaWest     day 609  outgoing\ngrain             100        Mallia    MalliaWest     day 609  outgoing\n\nPhysical cargo, not a promise — it can be intercepted and seized in transit.\nSame risk for every cargo, own or traded: on land only interception;\nat sea every storm the ship sails into costs 2 hull (of 5); hull 0 founders the ship.\n",
+    "stderr": "",
+    "recorded_number": 38,
+    "execution_record": 38
+  },
+  {
+    "start": "2026-10-19T08:28:22+02:00",
+    "args": [
+      "unit",
+      "list"
+    ],
+    "exit_code": 0,
+    "stdout": "ID                                    Name                                            Size      Status      Stance     Location / ETA\n────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────\n34d55211-6675-4d8a-9291-96232adc4d60  1st Spearmen of Mallia                          100 men   marching    —          exploring toward unseen ground near (61,31) — auto-returns home\n  Upkeep: 1 grain, 0 silver per day\n  Expedition around (61,31), 30 days; turns home by day 616; home by day 631\n",
+    "stderr": "",
+    "recorded_number": 39,
+    "execution_record": 39
+  }
+]

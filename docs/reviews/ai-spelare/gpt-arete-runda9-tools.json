@@ -1,0 +1,427 @@
+[
+  {
+    "start": "2026-10-19T08:23:51+02:00",
+    "args": [
+      "--help"
+    ],
+    "exit_code": 0,
+    "stdout": "Keryx — Megaron's Bronze Age grand strategy CLI.\nEnvironment: POLEIA_CONFIG selects a config file; POLEIA_SERVER and POLEIA_TOKEN override connection settings.\n\nUsage:\n  keryx [command]\n\nAvailable Commands:\n  abandon                  Abandon one of your colonies, freeing its hex and a settlement slot\n  actions                  Show what you can do right now — and what's missing for what you can't (--province for a colony)\n  agora                    Show your community chat account (outside the game)\n  allocate                 Set temple devotion (cult %, defaults to capital; --province for a colony)\n  army                     List your units (alias for `unit list`)\n  brief                    One line per settlement you own: idle citizens, if any\n  build                    Start construction of a building (--list for options, --queue to see what's queued; defaults to capital)\n  build-road               Order an army to build one road edge (alias for `unit build-road`)\n  call-back                Call a runner stuck waiting for passage back home, undelivered\n  cancel-build             Cancel a queued building and refund costs\n  cargo                    Show goods in transit to or from you (internal transfers and trade deliveries)\n  cities                   List known and rumour-known settlements — city-centric (see `diplomacy` for the ruler-centric view)\n  city                     Show a settlement's catchment hexes, building slots and idle pool (default: your capital)\n  codex                    Read the Codex, the game's rules: no argument lists the articles, an id prints one\n  completion               Generate the autocompletion script for the specified shell\n  demolish                 Tear down a finished building so the hex/slot is free to rebuild (no refund; its workers become idle)\n  diplomacy                List known and rumour-known Wanaxes (ruler-centric view of `cities`)\n  disband                  Disband units — their men return to civilian life\n  dispatches               Show or change which notification kinds reach you as dispatches\n  founding                 The Nomadic Host: your people before the metropolis (status, settle)\n  god                      God-mode view — full world map and all settlements without FOW (admin only)\n  goods                    Show goods inventory and production (defaults to capital; --province for a colony)\n  gossip                   Show recent rumours and events\n  help                     Help about any command\n  idle                     Show how many citizens are idle (unplaced) in a settlement (default: your capital)\n  inbox                    Show messenger inbox\n  join                     Join the active world as a Nomadic Host — the first step before founding a city\n  kingdom-borrow-army      Borrow units from a kingdom member's settlement (disabled — post-MVP)\n  kingdom-council          List a kingdom's council (disabled — post-MVP)\n  kingdom-election         Show the active election for a kingdom (disabled — post-MVP)\n  kingdom-election-call    Call an election for basileus (disabled — post-MVP)\n  kingdom-found            Found a new kingdom (disabled — post-MVP)\n  kingdom-invitations      List pending kingdom invitations (disabled — post-MVP)\n  kingdom-invite           Invite a Wanax to your kingdom (disabled — post-MVP)\n  kingdom-join             Join a kingdom you've been invited to (disabled — post-MVP)\n  kingdom-treasury-deposit Send silver to the kingdom treasury (disabled — post-MVP)\n  kingdom-vote             Cast your vote in an open basileus election (disabled — post-MVP)\n  kingdoms                 List kingdoms (disabled — post-MVP)\n  leave                    After your last city fell: leave this world (your account remains)\n  login                    Authenticate and save credentials\n  map                      Show nearby visible land hexes — colony candidates and ore deposits (sorted by distance)\n  march                    Order a unit to march to a hex (alias for `unit march`)\n  me                       Show your own realm in the selected world\n  message                  Send a free-text message to another Wanax (no goods)\n  messenger                Send a messenger to another settlement\n  notifications            Show your notification feed (arrivals, completions, trade events, ...)\n  occupation               Manage a city you currently hold under occupation\n  outbox                   List sent messengers and their pending trade offers\n  passage                  Arrange for a ship to carry a runner across the sea\n  password                 Change your password (asks for the current one first)\n  place                    Place or remove citizens on catchment hex <ordinal> doing <roll> (good)\n  placements               Show a settlement's catchment hexes, building slots and idle pool (alias for `city`)\n  places                   Known rivers, mountain massifs, deserts and cedar forests\n  recall                   Recall a marching unit, or all marching units (alias for `unit recall`)\n  recruit                  Recruit a 100-man land cohort, or build a ship (--list to see all recruitable units)\n  redirect                 Redirect a marching unit to a new hex (alias for `unit redirect`)\n  reinforce                Refill a thinned land cohort (alias for `unit reinforce`)\n  reply                    Reply to an inbox message\n  report                   Send a bug/design/confused report\n  reports                  List player reports for this world (admin only)\n  retreat-default          Show or set when your armies retreat by default (realm-wide)\n  rise                     After your last city fell: gather the survivors as a new host on another shore\n  rite                     Perform a cultural prayer at your settlement (requires temple + offering)\n  roads                    Your unfinished roads, and (--edges) the finished road edges you know of\n  roster                   List every placed gubbe across all your settlements, with idle pools\n  route                    Create a standing order — a caravan that keeps a destination's stock topped up on its own\n  route-delete             Delete a standing order (an in-flight caravan still completes, as an ordinary transfer)\n  route-pause              Pause a standing order (an in-flight caravan still completes)\n  route-resume             Resume a paused standing order\n  routes                   List your standing orders\n  settlements              List visible settlements (use names with trade/messenger)\n  sightings                List every foreign unit and garrisoned city currently in your live vision\n  staff                    Place or remove n citizens from a building workplace (default: show current staffing)\n  status                   Show your province status (defaults to your capital; --province inspects a colony)\n  storms                   Storms at sea you can see, and where you last saw the others\n  ticklog                  Daily journal for a city: prod/cons, trade, builds (newest first)\n  trade-accept             Accept a trade offer from inbox\n  trade-cancel             Cancel an outgoing pending trade offer and reclaim escrowed silver\n  trade-decline            Decline a trade offer from inbox\n  trade-offer              Send a trade offer (bilateral consent, FOW-gated) to another Wanax\n  transfer                 Send physical goods to your own city or a contacted foreign city as a gift, with nothing requested in return\n  unit                     Manage discrete military units\n  wants                    Show goods in shortage (wants) and surplus (exports) at known settlements\n  watch                    Listen for live push notifications over WebSocket (a wakeup call, not a ledger)\n  worlds                   List available worlds\n\nFlags:\n  -h, --help   help for keryx\n  -j, --json   output as JSON (for scripts and MCP)\n\nUse \"keryx [command] --help\" for more information about a command.\n",
+    "stderr": "",
+    "recorded_number": 1,
+    "execution_record": 1
+  },
+  {
+    "start": "2026-10-19T08:23:56+02:00",
+    "args": [
+      "status"
+    ],
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "Error: not logged in, or your session has expired — run `keryx login` (HTTP 401)\nSee keryx status --help\n",
+    "recorded_number": 2,
+    "execution_record": 2
+  },
+  {
+    "start": "2026-10-19T08:24:02+02:00",
+    "args": [
+      "me"
+    ],
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "Error: not logged in, or your session has expired — run `keryx login` (HTTP 401)\nSee keryx me --help\n",
+    "recorded_number": 3,
+    "execution_record": 3
+  },
+  {
+    "start": "2026-10-19T08:25:35+02:00",
+    "args": [
+      "status"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax Wedaneus · day 601 of the world\n\n1 citizen = 100 people\nThalassa [minoan]  Pop: 394 people  Labor: 3 citizens  Walls: 0/3  Settlements: 2/5  [coastal — can build harbour → ships]\nPopulation 394 — growing: food net +3.5 per day\nThis is Thalassa. You have 2 cities — `keryx settlements` lists them, `keryx status --province <id>` shows another.\n\nFood lasts 184.3 days at current consumption (city grain + fish stocks)\n\nLast day 601: 3 goods produced, 1 consumed  ·  keryx ticklog for details\n\nResources\n  (per day; food and army balances are itemized below)\n  Silver       60  —\n  Food     grain 0.5 + fish 5.0 − people eat 2.0 = net +3.5 per day (before army)\n  Grain         0  production 0.5 per day  (0 citizens needed for people on best food slots · 2 placed)\n  Automatic food: 0.50 grain + 1.60 fish per day without placed citizens (nearby ground 0.50 grain; 94 people outside whole citizens: 0.00 grain + 1.60 fish, a fraction of the best food worker)\n  Army     eats 0.0 grain per day → food net +3.5 per day after army\n  Silver   net +0.0 per day after army pay\n  Fish        363  +5.0 per day\n  Timber       83  +1.0 per day\n  Kharis       50  (Indifferent) · cap 50 · net +3.0 per day (temple − decay)\n  Kharis decay: 0.1 base + 2 cities cost 0.1 per day = 0.2 total\n  → your kharis is climbing toward the cap 50 (set by your level-1 temple) — build a higher temple to raise the cap further.\n  Temple in Itanos: reference 0.25 grain per day — alternatives: 0.3814 fish or 0.2737 timber or 0.3327 silver — stock: 2783 grain, 286 fish, 609.5 timber, 330 silver — next gift: 0.25 grain  ✓\n\nArmy (garrison in Thalassa)\n  Field units and other cities are shown in `keryx unit list`.\n\nBuildings\n  harbour      L1\n  shipyard     L1\n",
+    "stderr": "",
+    "recorded_number": 4,
+    "execution_record": 4
+  },
+  {
+    "start": "2026-10-19T08:25:39+02:00",
+    "args": [
+      "me"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax: Wedaneus\nFounded: Since day 345\nCities: 2\nPopulation: 3981\nKharis: 50.0\n",
+    "stderr": "",
+    "recorded_number": 5,
+    "execution_record": 5
+  },
+  {
+    "start": "2026-10-19T08:25:39+02:00",
+    "args": [
+      "notifications"
+    ],
+    "exit_code": 0,
+    "stdout": "19 notification(s), 19 unread\n────────────────────────────────────────────────────────────\n*[Day #466]  BuildComplete\n      The city completed shipyard\n*[Day #466]  BuildComplete\n      The city completed harbour\n*[Day #462]  TradeDelivery\n      Delivery arrived: 50 silver\n*[Day #461]  KharisBandChanged\n      Kharis: Suspicious → Indifferent (32.0). Check `keryx status` for decay and temple support; staff and feed your temples.\n*[Day unknown]  TrainComplete\n      Training complete: 100 spearman\n*[Day unknown]  BuildComplete\n      The city completed temple\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 24 timber\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 12 stone\n*[Day unknown]  BuildComplete\n      The city completed barracks\n*[Day unknown]  TransferDelivered\n      Transfer delivered to Thalassa: 50 silver\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 16 timber\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 12 stone\n*[Day unknown]  ColonyFounded\n      Colony founded: Thalassa\n      Thalassa food production covers consumption (net +1.0 per day).\n*[Day unknown]  UnitArrived\n      1st Spearmen of Itanos arrived at (35, 28) — garrison\n*[Day unknown]  ExpeditionReport\n      1st Spearmen of Itanos is home after 10 days, 4 hexes out at the furthest — saw 54 hexes around (35, 24): no ore deposits, cedar or foreign cities recorded\n*[Day unknown]  BuildComplete\n      The city completed lumbermill\n*[Day unknown]  ExpeditionTurnedHome\n      1st Spearmen of Itanos turns home from the land around (35, 24): half its time is spent — home by day 361\n*[Day unknown]  MetropolisFounded\n      Your metropolis is founded: Itanos — 19/19 catchment hexes known\n      Itanos food production covers consumption (net +0.0 per day).\n*[Day unknown]  OpeningDispatch\n      Your people await you\n      Time. A day passes every 6 minutes.\n      Foot soldiers cross a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. War chariots cross plains in 0.67 day but need 2 in olive woodland and 3 in hills, cedar forest or desert. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.\n      Your Host carries 1200 grain and 480 silver. It lives on subsistence until founding; these reserves do not drain. Find your place — founding is final.\n      Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.\n      The gods. Your Kharis holds for 144 days after founding, and no punishment falls. A temple takes 16 days to build. Build, staff and feed one in time; after that, neglect lets Kharis fade and risks punishment.\n      Place citizens on olive woodland or cedar forest for timber, and on stone-bearing ground for stone; idle citizens produce nothing.\n      Orders travel. A Runner must reach a unit in the field before it follows your new order.\n      Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.\n      Rules: ? (Codex). Problems: Report. Community chat: Account.\n",
+    "stderr": "",
+    "recorded_number": 5,
+    "execution_record": 6
+  },
+  {
+    "start": "2026-10-19T08:25:39+02:00",
+    "args": [
+      "settlements"
+    ],
+    "exit_code": 0,
+    "stdout": "Name                  Relation    Role       Province ID (--province)              Settlement ID\n──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────\nThalassa              own         colony     15bc2000-f96f-4b57-b831-7f3e265056f7  3478ac76-e8f4-4b36-8901-1ef63ddfd7e4\nItanos                own         capital    e44bfcad-3a39-4b06-b418-511866850f7e  f39669af-2c5a-441e-a440-50cf32f0e461\n",
+    "stderr": "",
+    "recorded_number": 5,
+    "execution_record": 7
+  },
+  {
+    "start": "2026-10-19T08:25:43+02:00",
+    "args": [
+      "status",
+      "--province",
+      "e44bfcad-3a39-4b06-b418-511866850f7e"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax Wedaneus · day 601 of the world\n\n1 citizen = 100 people\nItanos [minoan]  Pop: 3.6k people  Labor: 35 citizens  Walls: 0/3  Settlements: 2/5\nPopulation 3587 — growing: food net +41.2 per day\nThis is Itanos. You have 2 cities — `keryx settlements` lists them, `keryx status --province <id>` shows another.\n\nFood lasts 171.1 days at current consumption (city grain + fish stocks)\n\nLast day 601: 4 goods produced, 1 consumed  ·  keryx ticklog for details\n\nResources\n  (per day; food and army balances are itemized below)\n  Silver      330  —\n  Food     grain 55.2 + fish 4.0 − people eat 17.9 = net +41 per day (before army)\n  Grain      2.8k  production 55.2 per day  (3 citizens needed for people on best food slots · 26 placed)\n  Automatic food: 4.44 grain + 0.00 fish per day without placed citizens (nearby ground 0.50 grain; 87 people outside whole citizens: 3.94 grain + 0.00 fish, a fraction of the best food worker)\n  Army     eats 1.0 grain per day → food net +40 per day after army\n  Silver   net +0.0 per day after army pay\n  Fish        286  +4.0 per day\n  Timber      610  +6.8 per day\n  Stone       441  +2.0 per day\n  Kharis       50  (Indifferent) · cap 50 · net +3.0 per day (temple − decay)\n  Kharis decay: 0.1 base + 2 cities cost 0.1 per day = 0.2 total\n  → your kharis is climbing toward the cap 50 (set by your level-1 temple) — build a higher temple to raise the cap further.\n  Temple in Itanos: reference 0.25 grain per day — alternatives: 0.3814 fish or 0.2737 timber or 0.3327 silver — stock: 2783 grain, 286 fish, 609.5 timber, 330 silver — next gift: 0.25 grain  ✓\n\nArmy (garrison in Itanos)\n  Spearmen    200\n      73a8301c-b9bc-4327-8903-e00a3d71cbde  100\n      e02cc131-cb04-4d6a-bab2-805033431a29  100\n  Upkeep     1.0 grain, 0.0 silver per day  (everything the city pays — including field units)\n  Field units and other cities are shown in `keryx unit list`.\n\nBuildings\n  barracks     L1\n  farm         L1\n  lumbermill   L1\n  temple       L1\n",
+    "stderr": "",
+    "recorded_number": 8,
+    "execution_record": 8
+  },
+  {
+    "start": "2026-10-19T08:25:44+02:00",
+    "args": [
+      "goods",
+      "--province",
+      "e44bfcad-3a39-4b06-b418-511866850f7e"
+    ],
+    "exit_code": 0,
+    "stdout": "1 citizen = 100 people\nLabor pool: 36 citizens  ·  Idle: 0 citizens\n\nGood            Stock   Per day     Lvl    Citizens    Marg/g\n──────────────────────────────────────────────────────────────────────────\ncedar             0.0       0.0       —           —         —\nstone           441.0       2.0       —           4    0.5000\ntimber          603.5       6.8       —           4    1.7000\nsilver          330.0       0.0       —           —         —\noil               0.0       0.0       —           0    1.0000\npurple            0.0       0.0       —           —         —\nwine              0.0       0.0       —           0    0.5000\ncult              0.0       0.0       —           —         —\nfish            286.0       4.0       —           4    0.0000\ngrain          2736.5      52.5       —          23    1.0000\nlivestock        50.0       0.0       —           0    1.0000\nbronze            0.0       0.0       —           —         —\ncopper            0.0       0.0       —           —         —\nhorses            0.0       0.0       —           —         —\npottery           0.0       0.0       —           —         —\ntin               0.0       0.0       —           —         —\n\nWanaxes agree trade prices. The temple shows how the gods weigh offerings: keryx rite --list.\n\n! = citizens allocated beyond what the workplace can employ. They produce\n    nothing. Raise the building's level (build it again) or move the labor.\n",
+    "stderr": "",
+    "recorded_number": 9,
+    "execution_record": 9
+  },
+  {
+    "start": "2026-10-19T08:25:47+02:00",
+    "args": [
+      "map",
+      "--province",
+      "e44bfcad-3a39-4b06-b418-511866850f7e"
+    ],
+    "exit_code": 0,
+    "stdout": "Your hex: (35,28) · radius 8 · 74 known hexes (74 live, 0 remembered; 34 sea, 1 river, 0 ford, 21 coastal land):\n\n  ( 35, 28) d0      plains               [settled]\n  ( 35, 29) d1  S   plains               [coastal hex — a city founded here could build a harbour]\n  ( 34, 28) d1  NW  plains              \n  ( 34, 29) d1  SW  plains              \n  ( 35, 27) d1  N   river_valley         [coastal hex — a city founded here could build a harbour]\n  ( 36, 28) d1  SE  plains               [coastal hex — a city founded here could build a harbour]\n  ( 36, 27) d1  NE  river_valley         [coastal hex — a city founded here could build a harbour]\n  ( 35, 30) d2  S   plains               [coastal hex — a city founded here could build a harbour]\n  ( 33, 28) d2  NW  plains              \n  ( 36, 26) d2  NE  coastal_sea         [sea]\n  ( 36, 29) d2  SE  coastal_sea         [sea]\n  ( 37, 26) d2  NE  river_delta          [coastal hex — a city founded here could build a harbour]\n  ( 35, 26) d2  N   river_valley         [coastal hex — a city founded here could build a harbour]\n  ( 34, 30) d2  SW  plains               [coastal hex — a city founded here could build a harbour]\n  ( 37, 27) d2  E   plains              \n  ( 37, 28) d2  SE  plains               [coastal hex — a city founded here could build a harbour]\n  ( 34, 27) d2  NW  forest_olive_grove  \n  ( 33, 30) d2  SW  plains              \n  ( 33, 29) d2  W   plains              \n  ( 32, 30) d3  W   plains              \n  ( 32, 31) d3  SW  plains              \n  ( 38, 28) d3  SE  coastal_sea         [sea]\n  ( 38, 27) d3  E   plains               [coastal hex — a city founded here could build a harbour]\n  ( 38, 26) d3  E   plains               [coastal hex — a city founded here could build a harbour]\n  ( 38, 25) d3  NE  coastal_sea         [sea]\n  ( 37, 29) d3  SE  coastal_sea         [sea]\n  ( 37, 25) d3  NE  river               [river]\n  ( 36, 30) d3  S   coastal_sea         [sea]\n  ( 36, 25) d3  N   river_valley         [coastal hex — a city founded here could build a harbour]\n  ( 35, 31) d3  S   coastal_sea         [sea]\n  ( 35, 25) d3  N   forest_olive_grove  \n  ( 34, 31) d3  S   coastal_sea         [sea]\n  ( 34, 26) d3  N   plains              \n  ( 33, 31) d3  SW  forest_olive_grove   [coastal hex — a city founded here could build a harbour]\n  ( 32, 28) d3  NW  forest_olive_grove  \n  ( 32, 29) d3  W   plains              \n  ( 33, 27) d3  NW  forest_olive_grove  \n  ( 32, 27) d4  NW  plains              \n  ( 31, 31) d4  W   plains               [coastal hex — a city founded here could build a harbour]\n  ( 33, 26) d4  NW  forest_olive_grove  \n  ( 31, 30) d4  W   plains               [coastal hex — a city founded here could build a harbour]\n  ( 31, 29) d4  W   plains               [coastal hex — a city founded here could build a harbour]\n  ( 31, 28) d4  NW  forest_olive_grove   [coastal hex — a city founded here could build a harbour] [settled]\n  ( 34, 25) d4  N   forest_olive_grove  \n  ( 30, 28) d5  NW  coastal_sea         [sea]\n  ( 31, 27) d5  NW  forest_olive_grove   [coastal hex — a city founded here could build a harbour]\n  ( 32, 26) d5  NW  plains               [coastal hex — a city founded here could build a harbour]\n  ( 33, 25) d5  NW  forest_olive_grove   [coastal hex — a city founded here could build a harbour]\n  ( 30, 31) d5  W   coastal_sea         [sea]\n  ( 30, 30) d5  W   coastal_sea         [sea]\n  ( 30, 29) d5  W   coastal_sea         [sea]\n  ( 29, 31) d6  W   deep_sea            [sea]\n  ( 29, 29) d6  W   deep_sea            [sea]\n  ( 29, 32) d6  W   deep_sea            [sea]\n  ( 30, 27) d6  NW  coastal_sea         [sea]\n  ( 31, 26) d6  NW  coastal_sea         [sea]\n  ( 29, 30) d6  W   deep_sea            [sea]\n  ( 32, 25) d6  NW  plains               [coastal hex — a city founded here could build a harbour]\n  ( 29, 28) d6  NW  deep_sea            [sea]\n  ( 28, 32) d7  W   deep_sea            [sea]\n  ( 28, 29) d7  W   deep_sea            [sea]\n  ( 28, 28) d7  NW  deep_sea            [sea]\n  ( 28, 30) d7  W   deep_sea            [sea]\n  ( 30, 26) d7  NW  deep_sea            [sea]\n  ( 28, 31) d7  W   deep_sea            [sea]\n  ( 29, 27) d7  NW  deep_sea            [sea]\n  ( 31, 25) d7  NW  coastal_sea         [sea]\n  ( 28, 27) d8  NW  deep_sea            [sea]\n  ( 27, 29) d8  NW  deep_sea            [sea]\n  ( 27, 30) d8  W   deep_sea            [sea]\n  ( 27, 31) d8  W   deep_sea            [sea]\n  ( 27, 32) d8  W   deep_sea            [sea]\n  ( 29, 26) d8  NW  deep_sea            [sea]\n  ( 27, 28) d8  NW  deep_sea            [sea]\n\nFrontier — unexplored hexes bordering the known world (26, nearest first):\n  ( 34, 32) d4  S  \n  ( 38, 24) d4  NE \n  ( 39, 28) d4  SE \n  ( 39, 27) d4  E  \n  ( 39, 26) d4  E  \n  ( 35, 24) d4  N  \n  ( 31, 32) d4  SW \n  ( 39, 24) d4  NE \n  ( 32, 32) d4  SW \n  ( 38, 29) d4  SE \n  ( 33, 32) d4  SW \n  ( 35, 32) d4  S  \n  ( 37, 24) d4  NE \n  ( 39, 25) d4  E  \n  ( 37, 30) d4  SE \n  … and 11 more\n\nTo act on a hex, march a land unit there (find unit IDs with `keryx unit list`):\n  keryx unit march --unit <id> --q <Q> --r <R>\n  keryx unit march --unit <id> --q <Q> --r <R> --intent colonize --name <name>\nIntent: colonize — founds a colony when the unit arrives on an empty hex.\nNote: ore on mountain terrain is impassable — colonize an ADJACENT passable hex\n      so the deposit falls in the new colony's catchment.\nTo explore: march a unit toward a frontier hex above — the route is revealed\n      and remembered on arrival, pushing the frontier outward.\n",
+    "stderr": "",
+    "recorded_number": 10,
+    "execution_record": 10
+  },
+  {
+    "start": "2026-10-19T08:25:52+02:00",
+    "args": [
+      "unit",
+      "list"
+    ],
+    "exit_code": 0,
+    "stdout": "ID                                    Name                                            Size      Status      Stance     Location / ETA\n────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────\ne02cc131-cb04-4d6a-bab2-805033431a29  1st Spearmen of Itanos                          100 men   garrison    —          settlement f39669af…\n  Upkeep: 0.5 grain, 0 silver per day\n73a8301c-b9bc-4327-8903-e00a3d71cbde  3rd Spearmen of Itanos                          100 men   garrison    —          settlement f39669af…\n  Upkeep: 0.5 grain, 0 silver per day\n",
+    "stderr": "",
+    "recorded_number": 11,
+    "execution_record": 11
+  },
+  {
+    "start": "2026-10-19T08:26:00+02:00",
+    "args": [
+      "unit",
+      "--help"
+    ],
+    "exit_code": 0,
+    "stdout": "Manage discrete military units\n\nUsage:\n  keryx unit [command]\n\nAvailable Commands:\n  build-road    Order an army to build one road edge between two neighbouring hexes\n  list          List your units\n  load          Embark a land unit onto a ship\n  march         Order a unit to march to a hex\n  patrol        Post a ship on patrol at a coastal-sea hex (auto-returns after its patrol)\n  pickup        Send a ship to fetch a unit standing in the field\n  post          March a land unit to a hex and hold it there as a forward watch (no auto-return)\n  recall        Recall a marching unit, or all marching units\n  redirect      Redirect a marching unit to a new hex\n  reinforce     Refill a thinned land cohort from its home city's growth\n  repair        Repair a damaged ship's hull at a shipyard\n  retreat-order Choose when a fighting unit retreats\n  stance        Set or clear a unit's stance\n  unload        Disembark the cargo unit from a ship\n\nFlags:\n  -h, --help   help for unit\n\nGlobal Flags:\n  -j, --json   output as JSON (for scripts and MCP)\n\nUse \"keryx unit [command] --help\" for more information about a command.\n",
+    "stderr": "",
+    "recorded_number": 12,
+    "execution_record": 12
+  },
+  {
+    "start": "2026-10-19T08:26:02+02:00",
+    "args": [
+      "unit",
+      "march",
+      "--help"
+    ],
+    "exit_code": 0,
+    "stdout": "Order a unit to march to a target hex (q,r coordinates).\n\nUse --preview to estimate arrival without sending an order. The estimate uses\nthe current state; courier orders and unknown routes cannot promise an arrival.\n\nTerrain passability:\n  Impassable (all units):  mountain_limestone, mountain_red\n  Land units only:         plains, hills, forest_olive_grove, forest_cedar,\n                           scrub_maquis, semi_desert, river_valley, river_delta\n  Naval units only:        coastal_sea, deep_sea, river\n  Both land AND naval:     river_ford (the river's port — steep move cost for\n                           either, but the one hex where a land unit can\n                           cross and a ship can still sail through)\n  (Land units cannot enter sea or river; naval units cannot enter land.\n  river is impassable to land units — it is a wall, not a crossing. Every\n  ~10 hexes of a river's length carries one river_ford instead.)\n\nA land unit must reach 100 men (garrison status) before it can march.\nA unit in fortify stance must be cleared (stance none) before marching.\n\nExploring: an explore order may target an area in fog. The server chooses\nunseen reachable ground there and records what the unit sees along its route.\nRun 'keryx map' to see the frontier coordinates.\n\n--intent explore explores an area around the chosen hex for --ticks days.\nIt turns home by half the duration and reports what it saw on return. It needs\na reachable city of yours to return to. A land unit in the field receives the\norder by Runner; a ship must be commanded in port. Works for land or naval\nunits. Omit --ticks for the server default; the server validates the range.\n\n--intent land puts a laden ship's cargo ashore (megaron_plan_\nskeppsuppdrag_landsatt.md R1): the ship must be a naval unit, in its own\nport, carrying a land unit (keryx unit load first). --q/--r is the chosen\nLAND hex, not a sea hex — the ship sails to the sea hex next to it,\nlands the cargo there, and always sails home on its own afterwards. Add\n--colonize to found a colony on arrival with no further order (--name to\nname it). A ship at sea takes no orders at all (march/recall/stance) —\ngive every sea mission from port.\n\nOre on mountain terrain (copper, tin, silver):\n  Mountains are impassable — you cannot colonize the mountain hex itself.\n  Instead, colonize an ADJACENT passable hex: the ore deposit will fall in\n  the new colony's catchment and can be mined from there.\n  Use 'keryx map' to see which adjacent hexes are passable.\n\nConquest choice (--mode, only matters when the target is an enemy settlement):\n  sack (default) — loot goods (silver + a share of the rest, weighted by\n    portability) and raze the settlement; the loot is carried home as a\n    physical, interceptable caravan. annex — keep today's behaviour: take\n    the settlement outright (a captured capital becomes an ordinary colony).\n\nUsage:\n  keryx unit march [flags]\n\nExamples:\n  keryx unit march --unit <id> --q 5 --r -3\n  keryx unit march --unit <id> --target 5,-3\n  keryx unit march --unit <id> --q 5 --r -3 --stance fortify\n  keryx unit march --unit <id> --q 5 --r -3 --intent colonize --name Thapsos\n  # Colonize the hex the unit already stands on (no coords needed):\n  keryx unit march --unit <id> --intent colonize --name Thapsos\n  # Any march reveals fog along its route toward a frontier coordinate:\n  keryx unit march --unit <id> --q 12 --r -8\n  # Explore an area for 12 days, then automatically return home\n  keryx unit march --unit <id> --q 12 --r -8 --intent explore --ticks 12\n  # Land troops from a laden ship in port, then sail home on its own:\n  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land\n  # ...and found a colony there with no further order:\n  keryx unit march --unit <ship-id> --q 20 --r -5 --intent land --colonize --name Thapsos\n  # Attack an enemy settlement and annex it instead of the sack default:\n  keryx unit march --unit <id> --q 5 --r -3 --mode annex\n\nFlags:\n      --colonize        with --intent land: found a colony on arrival with no further order (use --name to name it)\n  -h, --help            help for march\n      --intent string   arrival intent: colonize (found a new colony — use --name to name it; omit --q/--r to colonize the hex the unit is on) | explore (explores the surrounding area, turns home by half the chosen duration; unit must be garrisoned at a settlement) | land (a laden ship in port lands its cargo on an unclaimed land hex, then sails home on its own; add --colonize to found a colony there)\n      --mode string     conquest choice when attacking a settlement: sack (default, loot+raze) | annex (take the city)\n      --name string     colony name (with --intent colonize, or --intent land --colonize)\n      --preview         estimate arrival without sending an order\n      --q int           target hex Q — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)\n      --r int           target hex R — axial coordinate, read it off 'keryx map' (required, unless colonizing in place or using --target)\n      --stance string   stance on arrival: fortify|storm|sentry\n      --target string   target hex as q,r — alternative to --q/--r (e.g. 5,-3)\n      --ticks int       explore duration in days (omit for server default)\n      --unit string     unit UUID (required)\n      --yes             skip the colonize catchment-forecast confirmation (required for non-interactive/agent use)\n\nGlobal Flags:\n  -j, --json   output as JSON (for scripts and MCP)\n",
+    "stderr": "",
+    "recorded_number": 13,
+    "execution_record": 13
+  },
+  {
+    "start": "2026-10-19T08:26:07+02:00",
+    "args": [
+      "actions"
+    ],
+    "exit_code": 0,
+    "stdout": "What you can do — by category (keryx actions <category> for details)\n────────────────────────────────────────────────────────────\n  province    5 available · 0 locked\n  military    0 available · 11 locked\n  trade       3 available · 3 locked\n  diplomacy   2 available · 1 locked\n  kingdom     0 available · 0 locked\n  cult        0 available · 1 locked\n\nYou have a garrisoned land unit — march it out and hold it there as a forward post (`keryx unit post --unit <id> --q <q> --r <r>`): it extends your map memory from where it stands and watches for foreign marches and caravans passing nearby. It eats double rations in the field, so weigh the ground it buys against the grain it costs.\n",
+    "stderr": "",
+    "recorded_number": 14,
+    "execution_record": 14
+  },
+  {
+    "start": "2026-10-19T08:26:09+02:00",
+    "args": [
+      "actions",
+      "military"
+    ],
+    "exit_code": 0,
+    "stdout": "military — 0 available · 11 locked\n────────────────────────────────────────────────────────────\n\nAvailable now\n  (none)\n\nLocked — here's how to unlock it\n  build-road       Order an army to build one road edge between two neighbouring hexes. The stone leaves the nearest city when the order is given and travels as a caravan; building begins when the stone and the army are both at the first hex. Roads speed every traveller and anyone may use them; they never cross water or mountains and end at a river ford.\n      ✗ a land unit to build — 0 deployable land unit(s) here\n        → recruit a land unit first\n      ✗ 8 stone in this city (a plains edge) — 0 stone here\n        → produce stone first (a quarry) — rougher ground costs more\n  colonize         March a garrisoned land unit to an empty hex with intent=colonize to found a new settlement there.\n      ✗ a deployable land unit garrisoned here — 0/1 deployable\n        → recruit a land unit in this settlement, then march it with --intent colonize\n      ✓ under the settlement cap (5)\n  disband          Release units back to civilian population.\n      ✗ a unit garrisoned or forming here — 0 unit(s) here\n        → recruit a unit in this settlement first\n  land             March a laden ship with intent=land to a hex of open, unclaimed land near the coast — it sails to the sea hex next to it, puts its cargo ashore there, optionally founds a colony on arrival (cargo_intent=colonize, no further order needed), and always sails home again on its own afterwards. Give the mission from port — a ship at sea takes no further orders.\n      ✗ a laden ship garrisoned here — 0 laden ship(s) here\n        → load a land unit onto a ship here first (`unit load`)\n  load             Embark a land unit onto a ship in the same settlement.\n      ✗ an idle ship garrisoned here (no cargo) — 0 idle ship(s) here\n        → build/recruit a ship here (requires shipyard)\n      ✗ a full-strength land unit garrisoned here (>=100 men) — 0/1 deployable land unit(s) here\n        → recruit 100 men of one land type in this settlement\n  march            Order a garrisoned unit to march to a hex you have seen (live or remembered). A plain march leaves the unit standing where it arrives — that is how you gain ground you keep seeing; add stance \"sentry\" (or use `keryx unit post`) to post it as a forward watch. Intent \"explore\" is the opposite order: it may push into unseen land, but the unit turns for home the moment it arrives.\n      ✗ a garrisoned unit here — 0 deployable unit(s) here\n        → recruit or build a unit here first — only garrisoned units can march\n  post             March a land unit to a hex and hold it there as a forward watch — it stays (no patrol timer, no auto-return), extends your fog-of-war from where it stands, and intercepts enemy caravans within reach. It eats double grain in the field for as long as it holds.\n      ✗ a garrisoned land unit here — 0 deployable land unit(s) here\n        → recruit a land unit here first — a ship is posted with `unit patrol` instead, which patrols and sails home on its own\n  recall           Send a recall order (by messenger) to a marching unit, turning it home.\n      ✗ a unit currently marching — 0 unit(s) marching\n        → march a unit first — recall only applies to units already in transit\n  redirect         Send a redirect order (by messenger) to a marching unit, giving it a new destination.\n      ✗ a unit currently marching — 0 unit(s) marching\n        → march a unit first — redirect only applies to units already in transit\n  stance           Set or clear a unit's stance: \"fortify\" digs in and refuses to march, \"storm\" presses an assault, \"sentry\" stands watch — it spots foreign marches passing nearby and intercepts enemy caravans within reach. Note a unit does not need sentry to SEE: anything standing on the map already extends your fog-of-war. A unit already on the march can be given a stance too — a Runner has to catch up with it, and the stance bites where the unit stops.\n      ✗ a unit garrisoned or forming here — 0 unit(s) here\n        → recruit a unit in this settlement first\n  unload           Disembark the cargo unit from a ship in this settlement.\n      ✗ a ship garrisoned here carrying cargo — 0 laden ship(s) here\n        → load a land unit onto a ship here first\n",
+    "stderr": "",
+    "recorded_number": 15,
+    "execution_record": 15
+  },
+  {
+    "start": "2026-10-19T08:26:12+02:00",
+    "args": [
+      "actions",
+      "--province",
+      "e44bfcad-3a39-4b06-b418-511866850f7e",
+      "military"
+    ],
+    "exit_code": 0,
+    "stdout": "military — 6 available · 5 locked\n────────────────────────────────────────────────────────────\n\nAvailable now\n  build-road       Order an army to build one road edge between two neighbouring hexes. The stone leaves the nearest city when the order is given and travels as a caravan; building begins when the stone and the army are both at the first hex. Roads speed every traveller and anyone may use them; they never cross water or mountains and end at a river ford.\n  colonize         March a garrisoned land unit to an empty hex with intent=colonize to found a new settlement there.\n  disband          Release units back to civilian population.\n  march            Order a garrisoned unit to march to a hex you have seen (live or remembered). A plain march leaves the unit standing where it arrives — that is how you gain ground you keep seeing; add stance \"sentry\" (or use `keryx unit post`) to post it as a forward watch. Intent \"explore\" is the opposite order: it may push into unseen land, but the unit turns for home the moment it arrives.\n  post             March a land unit to a hex and hold it there as a forward watch — it stays (no patrol timer, no auto-return), extends your fog-of-war from where it stands, and intercepts enemy caravans within reach. It eats double grain in the field for as long as it holds.\n  stance           Set or clear a unit's stance: \"fortify\" digs in and refuses to march, \"storm\" presses an assault, \"sentry\" stands watch — it spots foreign marches passing nearby and intercepts enemy caravans within reach. Note a unit does not need sentry to SEE: anything standing on the map already extends your fog-of-war. A unit already on the march can be given a stance too — a Runner has to catch up with it, and the stance bites where the unit stops.\n\nLocked — here's how to unlock it\n  land             March a laden ship with intent=land to a hex of open, unclaimed land near the coast — it sails to the sea hex next to it, puts its cargo ashore there, optionally founds a colony on arrival (cargo_intent=colonize, no further order needed), and always sails home again on its own afterwards. Give the mission from port — a ship at sea takes no further orders.\n      ✗ a laden ship garrisoned here — 0 laden ship(s) here\n        → load a land unit onto a ship here first (`unit load`)\n  load             Embark a land unit onto a ship in the same settlement.\n      ✗ an idle ship garrisoned here (no cargo) — 0 idle ship(s) here\n        → build/recruit a ship here (requires shipyard)\n      ✓ a full-strength land unit garrisoned here (>=100 men)\n  recall           Send a recall order (by messenger) to a marching unit, turning it home.\n      ✗ a unit currently marching — 0 unit(s) marching\n        → march a unit first — recall only applies to units already in transit\n  redirect         Send a redirect order (by messenger) to a marching unit, giving it a new destination.\n      ✗ a unit currently marching — 0 unit(s) marching\n        → march a unit first — redirect only applies to units already in transit\n  unload           Disembark the cargo unit from a ship in this settlement.\n      ✗ a ship garrisoned here carrying cargo — 0 laden ship(s) here\n        → load a land unit onto a ship here first\n",
+    "stderr": "",
+    "recorded_number": 16,
+    "execution_record": 16
+  },
+  {
+    "start": "2026-10-19T08:26:14+02:00",
+    "args": [
+      "map",
+      "--help"
+    ],
+    "exit_code": 0,
+    "stdout": "Show nearby visible land hexes — colony candidates and ore deposits (sorted by distance)\n\nUsage:\n  keryx map [flags]\n\nExamples:\n  keryx map\n  keryx map --radius 12\n  keryx map --province <province-id>   # inspect a colony's surroundings\n\nFlags:\n      --province string   province to center the map on (default: your capital)\n      --radius int        max hex distance to list (default 8)\n  -h, --help              help for map\n\nGlobal Flags:\n  -j, --json   output as JSON (for scripts and MCP)\n",
+    "stderr": "",
+    "recorded_number": 17,
+    "execution_record": 17
+  },
+  {
+    "start": "2026-10-19T08:26:19+02:00",
+    "args": [
+      "map"
+    ],
+    "exit_code": 0,
+    "stdout": "Your hex: (31,28) · radius 8 · 74 known hexes (74 live, 0 remembered; 34 sea, 1 river, 0 ford, 21 coastal land):\n\n  ( 31, 28) d0      forest_olive_grove   [coastal hex — a city founded here could build a harbour] [settled]\n  ( 31, 29) d1  S   plains               [coastal hex — a city founded here could build a harbour]\n  ( 30, 28) d1  NW  coastal_sea         [sea]\n  ( 30, 29) d1  SW  coastal_sea         [sea]\n  ( 31, 27) d1  N   forest_olive_grove   [coastal hex — a city founded here could build a harbour]\n  ( 32, 28) d1  SE  forest_olive_grove  \n  ( 32, 27) d1  NE  plains              \n  ( 31, 30) d2  S   plains               [coastal hex — a city founded here could build a harbour]\n  ( 30, 27) d2  NW  coastal_sea         [sea]\n  ( 32, 26) d2  NE  plains               [coastal hex — a city founded here could build a harbour]\n  ( 32, 29) d2  SE  plains              \n  ( 33, 26) d2  NE  forest_olive_grove  \n  ( 31, 26) d2  N   coastal_sea         [sea]\n  ( 29, 28) d2  NW  deep_sea            [sea]\n  ( 29, 29) d2  W   deep_sea            [sea]\n  ( 29, 30) d2  SW  deep_sea            [sea]\n  ( 30, 30) d2  SW  coastal_sea         [sea]\n  ( 33, 27) d2  E   forest_olive_grove  \n  ( 33, 28) d2  SE  plains              \n  ( 32, 30) d3  S   plains              \n  ( 34, 26) d3  E   plains              \n  ( 34, 28) d3  SE  plains              \n  ( 29, 31) d3  SW  deep_sea            [sea]\n  ( 30, 31) d3  S   coastal_sea         [sea]\n  ( 31, 25) d3  N   coastal_sea         [sea]\n  ( 29, 27) d3  NW  deep_sea            [sea]\n  ( 34, 27) d3  E   forest_olive_grove  \n  ( 30, 26) d3  N   deep_sea            [sea]\n  ( 28, 31) d3  SW  deep_sea            [sea]\n  ( 28, 30) d3  W   deep_sea            [sea]\n  ( 31, 31) d3  S   plains               [coastal hex — a city founded here could build a harbour]\n  ( 32, 25) d3  N   plains               [coastal hex — a city founded here could build a harbour]\n  ( 28, 29) d3  W   deep_sea            [sea]\n  ( 28, 28) d3  NW  deep_sea            [sea]\n  ( 34, 25) d3  NE  forest_olive_grove  \n  ( 33, 29) d3  SE  plains              \n  ( 33, 25) d3  NE  forest_olive_grove   [coastal hex — a city founded here could build a harbour]\n  ( 35, 28) d4  SE  plains               [settled]\n  ( 35, 26) d4  E   river_valley         [coastal hex — a city founded here could build a harbour]\n  ( 27, 31) d4  W   deep_sea            [sea]\n  ( 27, 30) d4  W   deep_sea            [sea]\n  ( 27, 29) d4  W   deep_sea            [sea]\n  ( 27, 32) d4  SW  deep_sea            [sea]\n  ( 33, 30) d4  SE  plains              \n  ( 32, 31) d4  S   plains              \n  ( 28, 27) d4  NW  deep_sea            [sea]\n  ( 28, 32) d4  SW  deep_sea            [sea]\n  ( 29, 26) d4  NW  deep_sea            [sea]\n  ( 29, 32) d4  SW  deep_sea            [sea]\n  ( 34, 29) d4  SE  plains              \n  ( 27, 28) d4  NW  deep_sea            [sea]\n  ( 35, 27) d4  E   river_valley         [coastal hex — a city founded here could build a harbour]\n  ( 35, 25) d4  E   forest_olive_grove  \n  ( 35, 29) d5  SE  plains               [coastal hex — a city founded here could build a harbour]\n  ( 36, 26) d5  E   coastal_sea         [sea]\n  ( 34, 30) d5  SE  plains               [coastal hex — a city founded here could build a harbour]\n  ( 33, 31) d5  SE  forest_olive_grove   [coastal hex — a city founded here could build a harbour]\n  ( 36, 28) d5  SE  plains               [coastal hex — a city founded here could build a harbour]\n  ( 36, 27) d5  E   river_valley         [coastal hex — a city founded here could build a harbour]\n  ( 36, 25) d5  E   river_valley         [coastal hex — a city founded here could build a harbour]\n  ( 35, 30) d6  SE  plains               [coastal hex — a city founded here could build a harbour]\n  ( 37, 28) d6  SE  plains               [coastal hex — a city founded here could build a harbour]\n  ( 37, 27) d6  E   plains              \n  ( 36, 29) d6  SE  coastal_sea         [sea]\n  ( 34, 31) d6  SE  coastal_sea         [sea]\n  ( 37, 25) d6  E   river               [river]\n  ( 37, 26) d6  E   river_delta          [coastal hex — a city founded here could build a harbour]\n  ( 36, 30) d7  SE  coastal_sea         [sea]\n  ( 35, 31) d7  SE  coastal_sea         [sea]\n  ( 37, 29) d7  SE  coastal_sea         [sea]\n  ( 38, 25) d7  E   coastal_sea         [sea]\n  ( 38, 26) d7  E   plains               [coastal hex — a city founded here could build a harbour]\n  ( 38, 27) d7  E   plains               [coastal hex — a city founded here could build a harbour]\n  ( 38, 28) d7  SE  coastal_sea         [sea]\n\nFrontier — unexplored hexes bordering the known world (35, nearest first):\n  ( 30, 25) d4  N  \n  ( 35, 24) d4  NE \n  ( 34, 24) d4  NE \n  ( 33, 24) d4  NE \n  ( 32, 24) d4  N  \n  ( 31, 32) d4  S  \n  ( 31, 24) d4  N  \n  ( 30, 32) d4  S  \n  ( 28, 26) d5  NW \n  ( 26, 33) d5  SW \n  ( 29, 25) d5  NW \n  ( 29, 33) d5  SW \n  ( 26, 28) d5  NW \n  ( 27, 33) d5  SW \n  ( 27, 27) d5  NW \n  … and 20 more\n\nTo act on a hex, march a land unit there (find unit IDs with `keryx unit list`):\n  keryx unit march --unit <id> --q <Q> --r <R>\n  keryx unit march --unit <id> --q <Q> --r <R> --intent colonize --name <name>\nIntent: colonize — founds a colony when the unit arrives on an empty hex.\nNote: ore on mountain terrain is impassable — colonize an ADJACENT passable hex\n      so the deposit falls in the new colony's catchment.\nTo explore: march a unit toward a frontier hex above — the route is revealed\n      and remembered on arrival, pushing the frontier outward.\n",
+    "stderr": "",
+    "recorded_number": 18,
+    "execution_record": 18
+  },
+  {
+    "start": "2026-10-19T08:26:28+02:00",
+    "args": [
+      "recruit",
+      "--list",
+      "--province",
+      "15bc2000-f96f-4b57-b831-7f3e265056f7"
+    ],
+    "exit_code": 0,
+    "stdout": "Type (--unit)             Batch           Cost                          Days    Pop    Requires          Afford  Upkeep per day (once garrisoned)\n──────────────────────────────────────────────────────────────────────────────────────────────────────────────\nelite_infantry (Elite Infantry)  100 men         bronze×16 grain×24 silver×40  4       10     barracks+foundry  ✗       0.6 grain, 2.0 silver (0.6 net in garrison)  ⚠ upkeep exceeds this city: needs 2.1 more grain per day and 0.6 more silver per day — silver stock 60 covers ~100 days at that rate\ngalley (Galley)           1 vessel (20 crew)  silver×6 timber×30            3       10     shipyard          ✓       0.0 grain, 1.5 silver (0.5 net in garrison)  ⚠ upkeep exceeds this city: needs 1.5 more grain per day and 0.5 more silver per day — silver stock 60 covers ~133 days at that rate\nmerchantman (Emporos)     1 vessel (10 crew)  silver×2 timber×16            4       8      shipyard          ✓       0.0 grain, 1.0 silver (0.3 net in garrison)  ⚠ upkeep exceeds this city: needs 1.5 more grain per day and 0.3 more silver per day — silver stock 60 covers ~200 days at that rate\nspearman (Spearmen)       100 men         grain×12 silver×20            1       5      barracks          ✗       0.5 grain, 0.0 silver  ⚠ grain upkeep: net is -1.5 grain per day, needs 2.0 more per day\nwar_chariot (War Chariot)  100 men         bronze×20 cedar×8 grain×40 silver×50 timber×8  3       8      stable            ✗       0.8 grain, 3.0 silver (0.9 net in garrison)  ⚠ upkeep exceeds this city: needs 2.3 more grain per day and 0.9 more silver per day — silver stock 60 covers ~67 days at that rate\nwar_galley (War Galley)   1 vessel (50 crew)  cedar×100 silver×30           5       12     shipyard+foundry  ✗       0.1 grain, 2.5 silver (0.8 net in garrison)  ⚠ upkeep exceeds this city: needs 1.5 more grain per day and 0.8 more silver per day — silver stock 60 covers ~80 days at that rate\n",
+    "stderr": "",
+    "recorded_number": 19,
+    "execution_record": 19
+  },
+  {
+    "start": "2026-10-19T08:26:35+02:00",
+    "args": [
+      "transfer",
+      "--help"
+    ],
+    "exit_code": 0,
+    "stdout": "Send physical goods to your own city or a contacted foreign city as a gift, with nothing requested in return\n\nUsage:\n  keryx transfer [flags]\n\nExamples:\n  keryx transfer --good grain --qty 50 --dest Korinth\n  keryx transfer --from <colony> --good grain --qty 50 --dest Korinth   # pull a colony's surplus home\n\nFlags:\n  -d, --dest string       destination settlement name\n      --from string       alias for --province\n  -g, --good string       good key (e.g. grain, timber, silver)\n  -h, --help              help for transfer\n      --province string   source province/settlement (default: your capital)\n  -q, --qty float         quantity to send\n\nGlobal Flags:\n  -j, --json   output as JSON (for scripts and MCP)\n",
+    "stderr": "",
+    "recorded_number": 20,
+    "execution_record": 20
+  },
+  {
+    "start": "2026-10-19T08:26:39+02:00",
+    "args": [
+      "transfer",
+      "--good",
+      "grain",
+      "--qty",
+      "100",
+      "--dest",
+      "Thalassa"
+    ],
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "Error: resolve destination \"Thalassa\": no own or contacted city named \"Thalassa\"\nSee keryx transfer --help\n",
+    "recorded_number": 21,
+    "execution_record": 21
+  },
+  {
+    "start": "2026-10-19T08:26:46+02:00",
+    "args": [
+      "transfer",
+      "--province",
+      "Itanos",
+      "--good",
+      "grain",
+      "--qty",
+      "100",
+      "--dest",
+      "Thalassa"
+    ],
+    "exit_code": 0,
+    "stdout": "Transfer dispatched: 100 grain → Thalassa · arrives day 609 (journey: 8 days)\n",
+    "stderr": "",
+    "recorded_number": 22,
+    "execution_record": 22
+  },
+  {
+    "start": "2026-10-19T08:26:49+02:00",
+    "args": [
+      "recruit",
+      "--unit",
+      "galley",
+      "--province",
+      "15bc2000-f96f-4b57-b831-7f3e265056f7"
+    ],
+    "exit_code": 0,
+    "stdout": "Building 1 galley — \"Thera Gleam\"\nReady in 3 days — not deployable until then (`keryx unit list` shows the ETA).\nDrafted 20 people as crew — population 396 → 376.\nwarning: once this unit garrisons it needs 0.0 grain + 1.5 silver per day upkeep — this settlement's current net after its existing army's upkeep is -1.4 grain per day, +0.0 silver per day; it may starve/desert without more production or fewer units (`keryx status`)\n",
+    "stderr": "",
+    "recorded_number": 23,
+    "execution_record": 23
+  },
+  {
+    "start": "2026-10-19T08:26:57+02:00",
+    "args": [
+      "unit",
+      "march",
+      "--unit",
+      "e02cc131-cb04-4d6a-bab2-805033431a29",
+      "--q",
+      "30",
+      "--r",
+      "25",
+      "--intent",
+      "explore",
+      "--ticks",
+      "12"
+    ],
+    "exit_code": 0,
+    "stdout": "Unit e02cc131 exploring (30,25) — arrives in 5 days — Expedition around (30,25), 12 days; turns home by day 607; home by day 613\n",
+    "stderr": "",
+    "recorded_number": 24,
+    "execution_record": 24
+  },
+  {
+    "start": "2026-10-19T08:27:02+02:00",
+    "args": [
+      "unit",
+      "march",
+      "--unit",
+      "73a8301c-b9bc-4327-8903-e00a3d71cbde",
+      "--q",
+      "31",
+      "--r",
+      "32",
+      "--intent",
+      "explore",
+      "--ticks",
+      "12"
+    ],
+    "exit_code": 0,
+    "stdout": "Unit 73a8301c exploring (31,32) — arrives in 5 days — Expedition around (31,32), 12 days; turns home by day 607; home by day 613\n",
+    "stderr": "",
+    "recorded_number": 25,
+    "execution_record": 25
+  },
+  {
+    "start": "2026-10-19T08:27:04+02:00",
+    "args": [
+      "unit",
+      "list"
+    ],
+    "exit_code": 0,
+    "stdout": "ID                                    Name                                            Size      Status      Stance     Location / ETA\n────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────\ne02cc131-cb04-4d6a-bab2-805033431a29  1st Spearmen of Itanos                          100 men   marching    —          exploring toward unseen ground near (30,25) — auto-returns home\n  Upkeep: 1 grain, 0 silver per day\n  Expedition around (30,25), 12 days; turns home by day 607; home by day 613\n73a8301c-b9bc-4327-8903-e00a3d71cbde  3rd Spearmen of Itanos                          100 men   marching    —          exploring toward unseen ground near (31,32) — auto-returns home\n  Upkeep: 1 grain, 0 silver per day\n  Expedition around (31,32), 12 days; turns home by day 607; home by day 613\ne92fd34b-55b5-4c6e-96ac-a1bc0923fa52  Thera Gleam, Galley of Thalassa                 building (crew 20) — ready in 3 days  forming     —          settlement 3478ac76…\n  Upkeep when active: 0.04 grain, 1.5 silver per day\n",
+    "stderr": "",
+    "recorded_number": 26,
+    "execution_record": 26
+  },
+  {
+    "start": "2026-10-19T08:27:06+02:00",
+    "args": [
+      "cargo"
+    ],
+    "exit_code": 0,
+    "stdout": "Good              Qty          From            To         ETA  Direction\n─────────────────────────────────────────────────────────────────────────────\ngrain             100        Itanos      Thalassa     day 609  outgoing\n\nPhysical cargo, not a promise — it can be intercepted and seized in transit.\nSame risk for every cargo, own or traded: on land only interception;\nat sea every storm the ship sails into costs 2 hull (of 5); hull 0 founders the ship.\n",
+    "stderr": "",
+    "recorded_number": 27,
+    "execution_record": 27
+  },
+  {
+    "start": "2026-10-19T08:27:11+02:00",
+    "args": [
+      "rite",
+      "--list"
+    ],
+    "exit_code": 0,
+    "stdout": "The gods are Indifferent (kharis 50.0).\n\nOffering values — per unit, before each god's preferences; not trade prices:\n  bronze       33\n  cedar        2.401\n  copper       3\n  fish         1\n  grain        1.532\n  livestock    1.263\n  oil          3\n  silver       1.147\n  stone        2.211\n  timber       1.394\n  tin          2.35\n  wine         3\n\nPrayer ID                     Name                  MinKhar   Offering                Effect                                         Ready         Cooldown\nminoan_potnia_vision_v2       Potnia's Vision       5         grain×10 silver×3       Marks an unseen ore deposit and the unknown ground within two hexes as memory; no live activity.  no: no temple  —\n    Potnia favours fish ×2.2, purple ×2.0, oil ×1.5, silver ×1.4  ·  expects an offering worth ~14 (--offer good=amount)\nminoan_potnia_walls           Mistress of the Walls  5         grain×8 timber×4        Your own garrison defending this city fights a quarter stronger for 6 days.  no: no temple  —\n    Potnia favours livestock ×2.0, wine ×1.7, horses ×1.6, bronze ×1.5  ·  expects an offering worth ~18 (--offer good=amount)\nminoan_velchanos_green_shoots  Green Shoots          30        grain×15 silver×2       Grain, livestock, oil and wine yield a quarter more for 25 days; fish is unchanged.  no: no temple  —\n    Velchanos favours wine ×2.0, oil ×1.6, grain ×1.3, livestock ×1.3  ·  expects an offering worth ~32 (--offer good=amount)\nminoan_asterion_thread        The Thread Shows a Path  5         silver×3 timber×4       Your next land caravan or Runner from this city travels faster; the caravan is harder to intercept.  no: no temple  —\n    Asterion\nminoan_stillness_passage      Favourable Passage    5         fish×6 silver×3         The next ship leaving this port sails faster and takes no storm damage on its outward leg.  no: no temple  —\n    The Sea Daimons of Stillness\n\nThe offering — and 4 of your kharis — is consumed even if the gods stay silent: a rite spends standing, win or lose.\n",
+    "stderr": "",
+    "recorded_number": 28,
+    "execution_record": 28
+  },
+  {
+    "start": "2026-10-19T08:27:14+02:00",
+    "args": [
+      "rite",
+      "--help"
+    ],
+    "exit_code": 0,
+    "stdout": "Perform a cultural prayer at your settlement (requires temple + offering)\n\nUsage:\n  keryx rite [flags]\n\nExamples:\n  keryx rite --list\n  keryx rite --prayer <prayer-id>\n  keryx rite --prayer <prayer-id> --settlement <settlement-uuid>\n  keryx rite --prayer <prayer-id> --offer-multiplier 2.0\n  keryx rite --prayer <prayer-id> --yes\n  keryx rite --json\n\nFlags:\n  -h, --help                     help for rite\n      --list                     list this culture's available prayers (id + affordability) and exit\n      --offer string             composed offering, e.g. --offer wine=20,oil=10 (overrides --offer-multiplier; the gods value what the world is short of)\n      --offer-multiplier float   scale the material offering (0.5-2.0; a fatter offer pleases the gods more, a stingy one less — omit for baseline 1.0)\n      --prayer string            prayer ID (run --list to see your culture's prayers; defaults to the culture's listed default prayer)\n      --settlement string        settlement UUID (defaults to your capital)\n      --target string            target province UUID (for future targeted prayers)\n      --yes                      skip the pre-cast confirmation (required for non-interactive/agent use)\n\nGlobal Flags:\n  -j, --json   output as JSON (for scripts and MCP)\n",
+    "stderr": "",
+    "recorded_number": 29,
+    "execution_record": 29
+  },
+  {
+    "start": "2026-10-19T08:27:16+02:00",
+    "args": [
+      "rite",
+      "--prayer",
+      "minoan_potnia_vision_v2",
+      "--settlement",
+      "f39669af-2c5a-441e-a440-50cf32f0e461",
+      "--yes"
+    ],
+    "exit_code": 0,
+    "stdout": "Divine mood: Indifferent\nPrayer: minoan_potnia_vision_v2\nFailed: The gods are silent. Your offering was received, but they do not answer.\nOffering: worthy — meets what this god expects\nKharis spent: 4 (a rite draws down your standing, win or lose)\n",
+    "stderr": "",
+    "recorded_number": 30,
+    "execution_record": 30
+  },
+  {
+    "start": "2026-10-19T08:27:24+02:00",
+    "args": [
+      "map",
+      "--province",
+      "15bc2000-f96f-4b57-b831-7f3e265056f7",
+      "--radius",
+      "0"
+    ],
+    "exit_code": 0,
+    "stdout": "Your hex: (31,28) · radius 0 · 1 known hexes (1 live, 0 remembered; 0 sea, 0 river, 0 ford, 1 coastal land):\n\n  ( 31, 28) d0      forest_olive_grove   [coastal hex — a city founded here could build a harbour] [settled]\n\nTo act on a hex, march a land unit there (find unit IDs with `keryx unit list`):\n  keryx unit march --unit <id> --q <Q> --r <R>\n  keryx unit march --unit <id> --q <Q> --r <R> --intent colonize --name <name>\nIntent: colonize — founds a colony when the unit arrives on an empty hex.\nNote: ore on mountain terrain is impassable — colonize an ADJACENT passable hex\n      so the deposit falls in the new colony's catchment.\nTo explore: march a unit toward a frontier hex above — the route is revealed\n      and remembered on arrival, pushing the frontier outward.\n",
+    "stderr": "",
+    "recorded_number": 31,
+    "execution_record": 31
+  },
+  {
+    "start": "2026-10-19T08:27:28+02:00",
+    "args": [
+      "status",
+      "--province",
+      "15bc2000-f96f-4b57-b831-7f3e265056f7"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax Wedaneus · day 601 of the world\n\n1 citizen = 100 people\nThalassa [minoan]  Pop: 376 people  Labor: 3 citizens  Walls: 0/3  Settlements: 2/5  [coastal — can build harbour → ships]\nPopulation 376 — growing: food net +3.7 per day\nThis is Thalassa. You have 2 cities — `keryx settlements` lists them, `keryx status --province <id>` shows another.\n\nFood lasts 192.1 days at current consumption (city grain + fish stocks)\n\nLast day 601: 3 goods produced, 1 consumed  ·  keryx ticklog for details\n\nResources\n  (per day; food and army balances are itemized below)\n  Silver       54  —\n  Food     grain 0.5 + fish 5.0 − people eat 1.9 = net +3.7 per day (before army)\n  Grain         0  production 0.5 per day  (1 citizen needed for people on best food slots · 2 placed)\n  Automatic food: 0.50 grain + 1.29 fish per day without placed citizens (nearby ground 0.50 grain; 76 people outside whole citizens: 0.00 grain + 1.29 fish, a fraction of the best food worker)\n  Army     eats 0.0 grain per day → food net +3.7 per day after army\n  Silver   net +0.0 per day after army pay\n  Fish        361  +5.0 per day\n  Timber       52  +1.0 per day\n  Kharis       46  (Indifferent) · cap 50 · net +3.0 per day (temple − decay)\n  Kharis decay: 0.1 base + 2 cities cost 0.1 per day = 0.2 total\n  → your kharis is climbing toward the cap 50 (set by your level-1 temple) — build a higher temple to raise the cap further.\n  Temple in Itanos: reference 0.25 grain per day — alternatives: 0.383 fish or 0.2748 timber or 0.334 silver — stock: 2626 grain, 286 fish, 603.5 timber, 327 silver — next gift: 0.25 grain  ✓\n\nArmy (garrison in Thalassa)\n  Field units and other cities are shown in `keryx unit list`.\n\nBuildings\n  harbour      L1\n  shipyard     L1\n\nTraining\n  Galley     building — ready in 3 days\n",
+    "stderr": "",
+    "recorded_number": 32,
+    "execution_record": 32
+  }
+]
