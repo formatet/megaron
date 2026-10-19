@@ -2200,9 +2200,11 @@ type unitSummary struct {
 	Crew     int       `json:"crew,omitempty"`
 	// Nominal ration and gross pay from the same source as the tick. Zero is
 	// explicit; context distinguishes subsistence/inactive units from billing.
-	UpkeepGrainPerTick  float64 `json:"upkeep_grain_per_tick"`
-	UpkeepSilverPerTick float64 `json:"upkeep_silver_per_tick"`
-	UpkeepContext       string  `json:"upkeep_context"`
+	UpkeepFoodPerTick   float64            `json:"upkeep_food_per_tick"`
+	ProvisionsByGood    map[string]float64 `json:"provisions_by_good,omitempty"`
+	UpkeepGrainPerTick  float64            `json:"upkeep_grain_per_tick"`
+	UpkeepSilverPerTick float64            `json:"upkeep_silver_per_tick"`
+	UpkeepContext       string             `json:"upkeep_context"`
 	// Hull is the graded damage track (megaron_plan_skeppsreparation.md §B2,
 	// 5=untouched/0=sunk) — omitted for land units (always the DB default 5,
 	// meaningless for them; see unit.Unit.Hull's own doc comment).
@@ -2812,17 +2814,18 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 			upkeepContext = "none" // civilian marker dissolves at founding
 		}
 		out = append(out, unitSummary{
-			ID:                    u.ID,
-			Type:                  string(u.Type),
-			Category:              string(u.Category),
-			Size:                  u.Size,
-			UpkeepGrainPerTick:    upkeep.Grain,
-			UpkeepSilverPerTick:   upkeep.Silver,
-			UpkeepContext:         upkeepContext,
-			Crew:                  u.Crew,
-			Hull:                  hull,
-			ProvisionDays:         provisionDays,
-			ProvisionsAboard:      provisionsAboard,
+			ID:                  u.ID,
+			Type:                string(u.Type),
+			Category:            string(u.Category),
+			Size:                u.Size,
+			UpkeepGrainPerTick:  upkeep.Grain,
+			UpkeepSilverPerTick: upkeep.Silver,
+			UpkeepContext:       upkeepContext,
+			Crew:                u.Crew,
+			Hull:                hull,
+			ProvisionDays:       provisionDays,
+			ProvisionsAboard:    provisionsAboard,
+			ProvisionsByGood:    u.ProvisionGoods, UpkeepFoodPerTick: upkeep.Grain,
 			Status:                string(u.Status),
 			Deployable:            deployable,
 			MenToDeploy:           menToDeploy,

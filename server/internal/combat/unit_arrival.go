@@ -520,19 +520,8 @@ func (h *UnitArrivalHandler) arriveGarrison(
 	// short it actually was, and the safety margin would quietly become a tax on
 	// sailing at all.
 	if settlementID != nil && u.provisions > 0 {
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlement_goods
-			    SET amount = LEAST(cap, settled(amount, rate, calc_tick) + $1),
-			        calc_tick = current_world_tick()
-			  WHERE settlement_id = $2 AND good_key = 'grain'`,
-			u.provisions, *settlementID,
-		); err != nil {
-			return fmt.Errorf("unit arrive: unload provisions: %w", err)
-		}
-		if _, err := tx.Exec(ctx,
-			`UPDATE units SET provisions = 0 WHERE id = $1`, u.id,
-		); err != nil {
-			return fmt.Errorf("unit arrive: clear provisions: %w", err)
+		if err := returnProvisions(ctx, tx, u.id, *settlementID); err != nil {
+			return fmt.Errorf("unit arrive: return provisions: %w", err)
 		}
 	}
 
@@ -2089,7 +2078,7 @@ func (h *UnitArrivalHandler) foundColony(
 		).Scan(&grainAmount, &grainRate)
 		_, grainNet := economy.GrainBalance(grainRate, population)
 		var foodRate float64
-		_ = tx.QueryRow(ctx, `SELECT COALESCE(SUM(rate),0) FROM settlement_goods WHERE settlement_id=$1 AND good_key=ANY($2)`, colonyID, economy.NetFoodGoods).Scan(&foodRate)
+		_ = tx.QueryRow(ctx, `SELECT COALESCE(SUM(rate),0) FROM settlement_goods WHERE settlement_id=$1 AND good_key=ANY($2)`, colonyID, economy.FoodGoods).Scan(&foodRate)
 		foodNet := economy.FoodNet(foodRate, population)
 
 		payload := map[string]any{

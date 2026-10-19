@@ -21,8 +21,8 @@ func TestStarvationSignal_ActualLossEvenLastGarrison(t *testing.T) {
 			f := newSupportFixture(t, pool, "actual-loss")
 			seedGoods(t, pool, f.capitalID, f.tick, 0, 10000)
 			seedGoods(t, pool, f.townID, f.tick, 10000, 10000)
-			// Plenty of civilian food cannot feed the army's grain requirement.
-			if _, err := pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,calc_tick) VALUES($1,'fish',10000,1000,$2) ON CONFLICT(settlement_id,good_key) DO UPDATE SET amount=10000,rate=1000,calc_tick=$2`, f.capitalID, f.tick); err != nil {
+			// The civilian emergency herd cannot feed the army in order28a.
+			if _, err := pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,calc_tick) VALUES($1,'livestock',10000,0,$2) ON CONFLICT(settlement_id,good_key) DO UPDATE SET amount=10000,rate=1000,calc_tick=$2`, f.capitalID, f.tick); err != nil {
 				t.Fatal(err)
 			}
 			var fedUnit uuid.UUID

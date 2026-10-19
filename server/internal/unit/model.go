@@ -317,7 +317,9 @@ type Unit struct {
 	// the column too (table-wide default 5) but never reads it — every
 	// consumer gates on Category == CategoryNaval first.
 	Hull int
-	// Provisions är skeppets matlager i korn (mig 133,
+	// Provisions is the scalar food total (mig 133; per-good ledger mig190).
+	// Legacy origin: grain only (
+	ProvisionGoods map[string]float64
 	// megaron_plan_skeppsproviant.md): draget ur hemstaden vid avfärd, ätet under
 	// resan, avlastat igen vid hemkomst. 0 för landenheter — proviantering är
 	// sjö, furagering är land.
@@ -424,7 +426,7 @@ func NewStore(pool *pgxpool.Pool) *Store {
 
 const selectCols = `
 	id, world_id, owner_id,
-	type, category, size, crew, hull, provisions, cargo_unit_id,
+	type, category, size, crew, hull, provisions, provision_goods, cargo_unit_id,
 	status, stance,
 	settlement_id, support_settlement_id, ordinal,
 	q, r,
@@ -446,7 +448,7 @@ func scanUnit(row interface {
 	var reactionRaw []byte
 	if err := row.Scan(
 		&u.ID, &u.WorldID, &u.OwnerID,
-		&u.Type, &u.Category, &u.Size, &u.Crew, &u.Hull, &u.Provisions, &u.CargoUnitID,
+		&u.Type, &u.Category, &u.Size, &u.Crew, &u.Hull, &u.Provisions, &u.ProvisionGoods, &u.CargoUnitID,
 		&u.Status, &stance,
 		&u.SettlementID, &u.SupportSettlementID, &u.Ordinal,
 		&u.Q, &u.R,

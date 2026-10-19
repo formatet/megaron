@@ -174,7 +174,7 @@ func (h *TickHandler) applyStarvation(ctx context.Context, world uuid.UUID) erro
 	if err = tx.QueryRow(ctx, `SELECT current_tick FROM worlds WHERE id=$1 FOR SHARE`, world).Scan(&tick); err != nil {
 		return err
 	}
-	rows, err := tx.Query(ctx, `SELECT s.id,s.owner_id,s.name,s.province_id,p.map_q,p.map_r,s.food_unmet_amount,EXISTS(SELECT 1 FROM events e WHERE e.world_id=$1 AND e.event_type='UnitAttrition' AND e.world_tick=$2 AND e.payload->>'garrison_settlement_id'=s.id::text AND e.payload->>'reason'='grain_shortage') FROM settlements s JOIN provinces p ON p.id=s.province_id WHERE s.world_id=$1 AND s.owner_id IS NOT NULL AND s.state NOT IN ('sunk','collapsed','razed') ORDER BY s.id FOR SHARE OF s`, world, tick)
+	rows, err := tx.Query(ctx, `SELECT s.id,s.owner_id,s.name,s.province_id,p.map_q,p.map_r,s.food_unmet_amount,EXISTS(SELECT 1 FROM events e WHERE e.world_id=$1 AND e.event_type='UnitAttrition' AND e.world_tick=$2 AND e.payload->>'garrison_settlement_id'=s.id::text AND e.payload->>'reason' IN ('grain_shortage','food_shortage')) FROM settlements s JOIN provinces p ON p.id=s.province_id WHERE s.world_id=$1 AND s.owner_id IS NOT NULL AND s.state NOT IN ('sunk','collapsed','razed') ORDER BY s.id FOR SHARE OF s`, world, tick)
 	if err != nil {
 		return err
 	}
@@ -205,7 +205,7 @@ func (h *TickHandler) applyStarvation(ctx context.Context, world uuid.UUID) erro
 		if c.hungry {
 			next, kind, level = "true", "GarrisonStarvationStarted", 2
 		}
-		body := map[string]any{"settlement_id": c.id, "settlement_name": c.name, "name": c.name, "province_id": c.province, "q": c.q, "r": c.r}
+		body := map[string]any{"food_category": true, "settlement_id": c.id, "settlement_name": c.name, "name": c.name, "province_id": c.province, "q": c.q, "r": c.r}
 		n, err := h.recordTransition(ctx, tx, world, c.owner, c.id, "garrison_starvation", "false", next, tick, kind, level, body)
 		if err != nil {
 			return err
@@ -217,7 +217,7 @@ func (h *TickHandler) applyStarvation(ctx context.Context, world uuid.UUID) erro
 		if c.unmet > 0 {
 			civilNext, civilKind, civilLevel = "true", "CivilianStarvationStarted", 2
 		}
-		civilBody := map[string]any{"settlement_id": c.id, "settlement_name": c.name, "name": c.name, "province_id": c.province, "q": c.q, "r": c.r, "unmet": c.unmet}
+		civilBody := map[string]any{"food_category": true, "settlement_id": c.id, "settlement_name": c.name, "name": c.name, "province_id": c.province, "q": c.q, "r": c.r, "unmet": c.unmet}
 		civil, err := h.recordTransition(ctx, tx, world, c.owner, c.id, "civilian_starvation", "false", civilNext, tick, civilKind, civilLevel, civilBody)
 		if err != nil {
 			return err

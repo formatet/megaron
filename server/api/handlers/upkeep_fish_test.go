@@ -1,16 +1,7 @@
 package handlers
 
-// AK4 (fisk-föder-befolkningen, 2026-07-31): the army upkeep path
-// (internal/combat/upkeep.go) must never touch fish — a settlement with an
-// empty grain stock and a large fish stock must starve its garrison exactly
-// like on master, and the fish stock must be completely untouched by the
-// upkeep tick. This is guaranteed by construction (upkeep.go's grain
-// deduction is a hardcoded `good_key = 'grain'` UPDATE, never touched by this
-// slice — internal/combat is explicit non-scope), but is proved here as a
-// real DB integration test rather than left as a code-reading claim.
-//
-// DB integration test (real Postgres, gated by DATABASE_URL via the shared
-// armyDisplayTestPool helper).
+// Order28a replaces the historical grain-only army restriction: a fish-only
+// city now feeds its garrison while preserving the separate silver ledger.
 
 import (
 	"context"
@@ -25,7 +16,7 @@ import (
 	"formatet/megaron/server/internal/events"
 )
 
-func TestUpkeep_AK4_EmptyGrainLargeFish_StillAttrits_FishUntouched(t *testing.T) {
+func TestUpkeep_EmptyGrainLargeFish_FeedsGarrison(t *testing.T) {
 	pool := armyDisplayTestPool(t)
 	ctx := context.Background()
 
@@ -107,13 +98,13 @@ func TestUpkeep_AK4_EmptyGrainLargeFish_StillAttrits_FishUntouched(t *testing.T)
 	if err := pool.QueryRow(ctx, `SELECT size FROM units WHERE id = $1`, unitID).Scan(&sizeAfter); err != nil {
 		t.Fatalf("read unit size: %v", err)
 	}
-	if sizeAfter >= sizeBefore {
-		t.Errorf("AK4: garrison with empty grain must attrit exactly like on master, size stayed %d", sizeAfter)
+	if sizeAfter != sizeBefore {
+		t.Errorf("fish-fed garrison size=%d want100", sizeAfter)
 	}
 
 	fishAfter := settledGoodAmount(t, pool, settlementID, "fish")
-	if fishAfter != fishBefore {
-		t.Errorf("AK4: upkeep must NEVER touch fish, fish went %v -> %v", fishBefore, fishAfter)
+	if fishAfter != fishBefore-combat.UnitUpkeep("spearman", "land", 100, "garrison").Grain {
+		t.Errorf("upkeep fish went %v -> %v, want exactly nominal food ration", fishBefore, fishAfter)
 	}
 
 	// Silver upkeep should still be paid normally (plenty in the till) —

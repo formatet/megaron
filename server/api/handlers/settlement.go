@@ -134,7 +134,12 @@ func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.R
 	}
 
 	type foodRow struct {
-		CoverageTicks float64 `json:"coverage_ticks"`
+		ConsumedTick       *int               `json:"consumed_tick"`
+		Goods              map[string]float64 `json:"goods"`
+		Consumed           map[string]float64 `json:"consumed"`
+		ProductionPerTick  float64            `json:"production_per_tick"`
+		ConsumptionPerTick float64            `json:"consumption_per_tick"`
+		CoverageTicks      float64            `json:"coverage_ticks"`
 
 		FoodNetPerTick float64 `json:"food_net_per_tick"`
 		GrowthState    string  `json:"growth_state"`
@@ -187,7 +192,7 @@ func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.R
 			AutomaticFood:      fs.AutomaticFood,
 			ArmyUpkeep:         up,
 			FoodNetAfterUpkeep: foodNetAfterArmy(fs.FoodNetPerTick, up.Grain),
-			Food: foodRow{
+			Food: foodRow{ConsumedTick: fs.ConsumedTick, Goods: fs.Goods, Consumed: fs.Consumed, ProductionPerTick: fs.ProductionPerTick, ConsumptionPerTick: fs.ConsumptionPerTick,
 				CoverageTicks: fs.CoverageTicks,
 
 				FoodNetPerTick: fs.FoodNetPerTick,

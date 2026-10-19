@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 
+	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
@@ -446,15 +447,11 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		// lastades av vid hemkomsten, och faller därför rätt ner i stadsgrenen.
 		provisionSource := provisionSourceFor(u)
 		if grainNeed > 0 && provisionSource != nil {
-			tag, perr := h.pool.Exec(ctx,
-				`UPDATE units SET provisions = provisions - $1, updated_at = now()
-				 WHERE id = $2 AND provisions >= $1`,
-				grainNeed, *provisionSource,
-			)
+			fed, perr := h.eatProvisions(ctx, *provisionSource, grainNeed)
 			switch {
 			case perr != nil:
 				slog.Error("upkeep: provision draw failed", "unit", u.id, "err", perr)
-			case tag.RowsAffected() == 1:
+			case fed:
 				grainNeed = 0 // fed from the ship's own stores
 			case atHomePort(u):
 				// Docked with empty stores — the town feeds it, as before.
@@ -471,22 +468,30 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 				// No paying settlement — treat as grain shortage.
 				disbanded = h.applyAttrition(ctx, u, grainNeed, e.WorldID, sid)
 			} else {
-				tag, err := h.pool.Exec(ctx,
-					`UPDATE settlement_goods
-					 SET amount  = settled(amount, rate, calc_tick) - $1,
-					     calc_tick = current_world_tick()
-					 WHERE settlement_id = $2
-					   AND good_key = 'grain'
-					   AND settled(amount, rate, calc_tick) >= $1`,
-					grainNeed, sid,
-				)
+				tx, err := h.pool.Begin(ctx)
 				if err != nil {
-					slog.Error("upkeep: grain deduction failed", "unit", u.id, "err", err)
-				} else if tag.RowsAffected() == 0 {
-					// Grain shortage — attrition.
+					slog.Error("upkeep: food transaction failed", "err", err)
+					continue
+				}
+				meal, err := economy.TakeFood(ctx, tx, sid, grainNeed, false, true)
+				if err != nil {
+					tx.Rollback(ctx)
+					slog.Error("upkeep: food deduction failed", "err", err)
+				} else if meal.Unmet > 0 {
+					tx.Rollback(ctx)
 					disbanded = h.applyAttrition(ctx, u, grainNeed, e.WorldID, sid)
+				} else if err := tx.Commit(ctx); err != nil {
+					slog.Error("upkeep: food commit failed", "err", err)
 				} else {
-					agg(sid).grainTotal += grainNeed
+					a := agg(sid)
+					a.grainTotal += meal.Used[economy.GoodGrain]
+					a.foodTotal += grainNeed
+					if a.foodByGood == nil {
+						a.foodByGood = map[string]float64{}
+					}
+					for good, n := range meal.Used {
+						a.foodByGood[good] += n
+					}
 				}
 			}
 		}
@@ -618,7 +623,7 @@ func (h *UpkeepHandler) notifyUnitLoss(ctx context.Context, u upkeepUnitRow, wor
 	}
 	// City-level starvation transitions own ongoing land-garrison warnings.
 	// Destruction remains a separate consequence, as do field and naval losses.
-	if !disbanded && kind == "UnitAttrition" && reason == "grain_shortage" &&
+	if !disbanded && kind == "UnitAttrition" && (reason == "grain_shortage" || reason == "food_shortage") &&
 		u.status == "garrison" && u.settlementID != nil && u.category == "land" {
 		return
 	}
@@ -830,7 +835,7 @@ func (h *UpkeepHandler) applyAttrition(ctx context.Context, u upkeepUnitRow, _ f
 		}
 		newCrew := u.crew - lost
 		if newCrew <= 0 {
-			updateErr = h.disbandNavalCarrier(ctx, u, worldID, "grain_shortage", nil)
+			updateErr = h.disbandNavalCarrier(ctx, u, worldID, "food_shortage", nil)
 			disbanded = updateErr == nil
 		} else {
 			_, updateErr = h.pool.Exec(ctx,
@@ -864,11 +869,11 @@ func (h *UpkeepHandler) applyAttrition(ctx context.Context, u upkeepUnitRow, _ f
 		slog.Error("upkeep: attrition update failed", "unit", u.id, "err", updateErr)
 	}
 	if disbanded {
-		h.cascadeCargoDisband(ctx, worldID, u.id, u.cargoUnitID, u.q, u.r, "grain_shortage")
+		h.cascadeCargoDisband(ctx, worldID, u.id, u.cargoUnitID, u.q, u.r, "food_shortage")
 	}
 
 	payload := map[string]any{
-		"unit_id": u.id, "lost": lost, "disbanded": disbanded, "reason": "grain_shortage",
+		"unit_id": u.id, "lost": lost, "disbanded": disbanded, "reason": "food_shortage",
 	}
 	// Record the pre-loss garrison location: the last unit may now be disbanded
 	// or removed. Consumers must not reconstruct that outcome from live units.
@@ -877,7 +882,7 @@ func (h *UpkeepHandler) applyAttrition(ctx context.Context, u upkeepUnitRow, _ f
 	}
 	_, _ = h.store.Append(ctx, u.id, events.StreamCombat, "UnitAttrition", payload, worldID, nil)
 	slog.Info("upkeep: grain attrition", "unit", u.id, "lost", lost, "disbanded", disbanded)
-	h.notifyUnitLoss(ctx, u, worldID, sid, "UnitAttrition", "grain_shortage", lost, disbanded)
+	h.notifyUnitLoss(ctx, u, worldID, sid, "UnitAttrition", "food_shortage", lost, disbanded)
 	return disbanded
 }
 

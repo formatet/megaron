@@ -401,6 +401,22 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 		grainReserve += provisions
 	}
 
+	sourceFood, err := economy.LoadFood(ctx, tx, o.fromID, true)
+	if err != nil {
+		return err
+	}
+	reserved := economy.PlanFood(grainReserve, sourceFood, false).Used
+	crewFood := sourceFood
+	if o.crewID != o.fromID {
+		crewFood, err = economy.LoadFood(ctx, tx, o.crewID, true)
+		if err != nil {
+			return err
+		}
+	}
+	if economy.PlanFood(provisions, crewFood, false).Unmet > 0 {
+		return h.pauseOrder(ctx, tx, o, "not enough food at the crewing settlement to provision the caravan")
+	}
+
 	// Built in `needs` order (not shortfall's unordered map) so a capacity cap
 	// below is deterministic and keeps whatever priority the outbound-goods
 	// list already had — R4: "prioritet: behåll ordningen koden redan har."
@@ -416,10 +432,7 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 		if err != nil {
 			return err
 		}
-		reserve := 0.0
-		if n.good == economy.GoodGrain {
-			reserve = grainReserve
-		}
+		reserve := reserved[n.good]
 		spendable := available - reserve
 		if spendable <= 0 {
 			continue
@@ -471,24 +484,18 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 		}
 	}
 
-	if o.crewID != o.fromID {
-		crewGrain, err := settledStock(ctx, tx, o.crewID, economy.GoodGrain)
-		if err != nil {
-			return err
-		}
-		if crewGrain < provisions {
-			return h.pauseOrder(ctx, tx, o, "not enough grain at the crewing settlement to provision the caravan")
-		}
-	}
-
 	// All checks passed — commit the shipment.
 	for good, qty := range manifest {
 		if err := deductGood(ctx, tx, o.fromID, good, qty); err != nil {
 			return fmt.Errorf("deduct %s from source: %w", good, err)
 		}
 	}
-	if err := deductGood(ctx, tx, o.crewID, economy.GoodGrain, provisions); err != nil {
+	meal, err := economy.TakeFood(ctx, tx, o.crewID, provisions, false, true)
+	if err != nil {
 		return fmt.Errorf("deduct provisions: %w", err)
+	}
+	if meal.Unmet > 0 {
+		return fmt.Errorf("reserved caravan food changed before dispatch")
 	}
 
 	var currentTick int

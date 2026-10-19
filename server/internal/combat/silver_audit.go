@@ -22,6 +22,8 @@ type upkeepAgg struct {
 	unitsPaid        int
 	unitsUnpaid      int
 	grainTotal       float64
+	foodTotal        float64
+	foodByGood       map[string]float64
 	silverGross      float64 // silver actually debited for upkeep
 	silverCirculated float64 // credited back to a garrison town (Del C; 0 until then)
 	silverDestroyed  float64 // left the world entirely
@@ -36,6 +38,8 @@ type upkeepAgg struct {
 // for the credit leg; empty until Del C, present in the schema from the first
 // version so the later payer-variant (metropolis-as-payer) needs no schema change.
 type UpkeepSettledPayload struct {
+	FoodTotal        float64               `json:"food_total"`
+	FoodByGood       map[string]float64    `json:"food_by_good,omitempty"`
 	SettlementID     uuid.UUID             `json:"settlement_id"`
 	UnitsPaid        int                   `json:"units_paid"`
 	UnitsUnpaid      int                   `json:"units_unpaid"`
@@ -82,10 +86,11 @@ func (h *UpkeepHandler) emitUpkeepSettled(ctx context.Context, worldID uuid.UUID
 		}
 		_, _ = h.store.Append(ctx, sid, events.StreamProvince, "UpkeepSettled",
 			UpkeepSettledPayload{
-				SettlementID:     sid,
-				UnitsPaid:        a.unitsPaid,
-				UnitsUnpaid:      a.unitsUnpaid,
-				GrainTotal:       a.grainTotal,
+				SettlementID: sid,
+				UnitsPaid:    a.unitsPaid,
+				UnitsUnpaid:  a.unitsUnpaid,
+				GrainTotal:   a.grainTotal,
+				FoodTotal:    a.foodTotal, FoodByGood: a.foodByGood,
 				SilverGross:      a.silverGross,
 				SilverCirculated: a.silverCirculated,
 				SilverDestroyed:  a.silverDestroyed,

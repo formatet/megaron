@@ -2,13 +2,11 @@ package economy
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 
 	"formatet/megaron/server/internal/events"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -23,10 +21,11 @@ const EventFoodShortfall = "FoodShortfall"
 // uncovered after grain, fish and livestock were all exhausted; the three
 // *Used fields say how the covered part was actually paid, for audit.
 type FoodShortfallPayload struct {
-	Unmet         float64 `json:"unmet"`
-	GrainUsed     float64 `json:"grain_used"`
-	FishUsed      float64 `json:"fish_used"`
-	LivestockUsed int     `json:"livestock_used"`
+	Unmet         float64            `json:"unmet"`
+	GrainUsed     float64            `json:"grain_used"`
+	FishUsed      float64            `json:"fish_used"`
+	LivestockUsed int                `json:"livestock_used"`
+	FoodUsed      map[string]float64 `json:"food_used,omitempty"`
 	// Name is the settlement's name (megaron_plan_tre_tysta_notiserna.md):
 	// without it a Wanax with several cities only learns that ONE of them
 	// starved, never which. New field, old ones unchanged (CLAUDE.md §Events).
@@ -37,8 +36,7 @@ type FoodShortfallPayload struct {
 // Tillväxt/KharisTick at 60 — internal/events/priority.go,
 // megaron_tickordning.md) — the self-rescheduling per-world pass that debits
 // each settlement's population's daily food need from its STOCK, in kanon
-// fallback order grain → fish → livestock (Timothy 2026-08-07, unchanged by
-// this slice — megaron_plan_utfodringsordningen.md D3).
+// proportional four-food order, followed by unchanged civilian emergency herd.
 //
 // Before this handler existed, the population's consumption was folded
 // CONTINUOUSLY into grain's rate by RecomputeProduction, ahead of every
@@ -130,87 +128,14 @@ func (h *FoodTickHandler) tickSettlement(ctx context.Context, settlementID, worl
 		return fmt.Errorf("load settlement: %w", err)
 	}
 
-	var grainStock, fishStock, livestockStock float64
-	if err := tx.QueryRow(ctx,
-		`SELECT GREATEST(0, settled(amount, rate, calc_tick))
-		 FROM settlement_goods WHERE settlement_id = $1 AND good_key = $2`,
-		settlementID, GoodGrain,
-	).Scan(&grainStock); err != nil && !errors.Is(err, pgx.ErrNoRows) {
-		return fmt.Errorf("load grain stock: %w", err)
+	meal, err := TakeFood(ctx, tx, settlementID, GrainConsumptionPerTick(population), true, false)
+	if err != nil {
+		return fmt.Errorf("debit civilian meal: %w", err)
 	}
-	if err := tx.QueryRow(ctx,
-		`SELECT GREATEST(0, settled(amount, rate, calc_tick))
-		 FROM settlement_goods WHERE settlement_id = $1 AND good_key = $2`,
-		settlementID, GoodFish,
-	).Scan(&fishStock); err != nil && !errors.Is(err, pgx.ErrNoRows) {
-		return fmt.Errorf("load fish stock: %w", err)
-	}
-	if err := tx.QueryRow(ctx,
-		`SELECT GREATEST(0, settled(amount, rate, calc_tick))
-		 FROM settlement_goods WHERE settlement_id = $1 AND good_key = $2`,
-		settlementID, GoodLivestock,
-	).Scan(&livestockStock); err != nil && !errors.Is(err, pgx.ErrNoRows) {
-		return fmt.Errorf("load livestock stock: %w", err)
-	}
-
-	demand := GrainConsumptionPerTick(population)
-
-	// FoodConsumptionSplit called against STOCK, not rate (D1/D3): grainNet/
-	// fishNet here ARE the settlement's new stock levels after today's meal,
-	// not a rate. If demand still isn't covered once livestock is exhausted
-	// too, grainNet goes negative — the function's own "encode the shortfall"
-	// convention (recompute.go) — which is exactly the unmet this handler
-	// exists to surface, not to hide by flooring early.
-	grainNet, fishNet, livestockConsumed := FoodConsumptionSplit(demand, grainStock, fishStock, livestockStock)
-
-	unmet := 0.0
-	if grainNet < 0 {
-		unmet = -grainNet
-		grainNet = 0
-	}
-
-	grainUsed := grainStock - grainNet
-	fishUsed := fishStock - fishNet
-
-	if grainUsed > 0 {
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlement_goods
-			 SET amount    = GREATEST(0, settled(amount, rate, calc_tick) - $2),
-			     calc_tick = current_world_tick()
-			 WHERE settlement_id = $1 AND good_key = $3`,
-			settlementID, grainUsed, GoodGrain,
-		); err != nil {
-			return fmt.Errorf("debit grain: %w", err)
-		}
-	}
-	if fishUsed > 0 {
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlement_goods
-			 SET amount    = GREATEST(0, settled(amount, rate, calc_tick) - $2),
-			     calc_tick = current_world_tick()
-			 WHERE settlement_id = $1 AND good_key = $3`,
-			settlementID, fishUsed, GoodFish,
-		); err != nil {
-			return fmt.Errorf("debit fish: %w", err)
-		}
-	}
-	if livestockConsumed > 0 {
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlement_goods
-			 SET amount    = GREATEST(0, settled(amount, rate, calc_tick) - $2),
-			     calc_tick = current_world_tick()
-			 WHERE settlement_id = $1 AND good_key = $3`,
-			settlementID, float64(livestockConsumed), GoodLivestock,
-		); err != nil {
-			return fmt.Errorf("debit livestock: %w", err)
-		}
-	}
-
-	if _, err := tx.Exec(ctx,
-		`UPDATE settlements SET food_unmet_amount = $2 WHERE id = $1`,
-		settlementID, unmet,
-	); err != nil {
-		return fmt.Errorf("write food_unmet_amount: %w", err)
+	unmet := meal.Unmet
+	grainUsed, fishUsed, livestockConsumed := meal.Used[GoodGrain], meal.Used[GoodFish], int(meal.Used[GoodLivestock])
+	if _, err := tx.Exec(ctx, `UPDATE settlements SET food_unmet_amount=$2,food_consumed=$3,food_consumed_tick=current_world_tick() WHERE id=$1`, settlementID, unmet, meal.Used); err != nil {
+		return fmt.Errorf("write food outcome: %w", err)
 	}
 
 	if err := tx.Commit(ctx); err != nil {
@@ -226,7 +151,7 @@ func (h *FoodTickHandler) tickSettlement(ctx context.Context, settlementID, worl
 
 		payload := FoodShortfallPayload{
 			Unmet: unmet, GrainUsed: grainUsed, FishUsed: fishUsed, LivestockUsed: livestockConsumed,
-			Name: settlementName,
+			Name: settlementName, FoodUsed: meal.Used,
 		}
 		_, _ = h.store.Append(ctx, settlementID, events.StreamProvince, EventFoodShortfall, payload, worldID, nil)
 	}

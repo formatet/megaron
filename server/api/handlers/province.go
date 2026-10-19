@@ -651,35 +651,20 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			sett.ID, economy.GoodGrain, economy.GoodFish,
 		).Scan(&foodGubbarPlaced)
 
-		// "Senaste tick" summary (Fas 2 point 8): derive prod/cons from the same
-		// per-tick rates already in resSnap
-		// from the events log. Summarizes the journal without replacing it.
+		// Current production projection plus the real latest meal. Do not report
+		// the entire population ration as grain after the shared proportional debit.
 		lastTickProd := map[string]float64{}
 		lastTickCons := map[string]float64{}
-		for k, rd := range resSnap {
-			if k == "grain" {
-				continue // handled below — grain's consumption isn't in its rate (D1)
-			}
+		for good, rd := range resSnap {
 			if rd.Rate > 0 {
-				lastTickProd[k] = rd.Rate
+				lastTickProd[good] = rd.Rate
 			} else if rd.Rate < 0 {
-				lastTickCons[k] = -rd.Rate
+				lastTickCons[good] = -rd.Rate
 			}
 		}
-		// Grain is the one good whose rate carries no consumption term at all
-		// since D1, so the loop above would file a self-sufficient city's whole
-		// gross rate under "produced" and leave consumption empty. The keryx
-		// one-liner then reported "2 varor produceras, 0 förbrukas" for a city
-		// eating 500 grain a tick — the same lie P4 hål 2 removed from
-		// `keryx ticklog`, one surface over (found in the acceptance sweep
-		// 2026-08-24). Reuses grainProdRate/grainConsumRate derived above, so the
-		// two surfaces cannot drift apart again.
-		if _, hasGrain := resSnap["grain"]; hasGrain {
-			if grainProdRate > 0 {
-				lastTickProd["grain"] = grainProdRate
-			}
-			if grainConsumRate > 0 {
-				lastTickCons["grain"] = grainConsumRate
+		if foodSummary.ConsumedTick != nil && *foodSummary.ConsumedTick == currentTick {
+			for good, n := range foodSummary.Consumed {
+				lastTickCons[good] += n
 			}
 		}
 		// Settlement cap: same "how many colonies do I hold vs. the per-Wanax
@@ -792,6 +777,8 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				"coverage_ticks":    coverageDays,
 				"food_net_per_tick": foodNetPerDay,
 				"growth_state":      foodSummary.GrowthState,
+				"goods":             foodSummary.Goods, "consumed": foodSummary.Consumed, "consumed_tick": foodSummary.ConsumedTick,
+				"production_per_tick": foodSummary.ProductionPerTick, "consumption_per_tick": foodSummary.ConsumptionPerTick,
 			},
 			"last_tick": map[string]any{
 				"tick":        currentTick,
@@ -810,6 +797,11 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 // 2026-09-06) so the two surfaces read the same numbers from the same
 // functions and can never disagree.
 type FoodSummary struct {
+	Goods              map[string]float64
+	ConsumedTick       *int
+	Consumed           map[string]float64
+	ProductionPerTick  float64
+	ConsumptionPerTick float64
 	AutomaticFood      economy.AutomaticFood
 	GrainProdRate      float64
 	GrainConsumRate    float64
@@ -847,7 +839,8 @@ func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.
 	// for the remainder, one need (economy.FoodConsumptionSplit). Counting
 	// grain alone would call a fish-fed city starving.
 	var foodStock float64
-	for _, good := range economy.NetFoodGoods {
+	foodGoods := map[string]float64{}
+	for _, good := range economy.FoodGoods {
 		var s float64
 		if pool.QueryRow(ctx,
 			`SELECT GREATEST(0, settled(amount, rate, calc_tick))
@@ -855,13 +848,14 @@ func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.
 			settID, good,
 		).Scan(&s) == nil {
 			foodStock += s
+			foodGoods[good] = s
 		}
 	}
 	var foodRatePerTick float64
 	_ = pool.QueryRow(ctx,
 		`SELECT COALESCE(SUM(rate), 0) FROM settlement_goods
 		 WHERE settlement_id = $1 AND good_key = ANY($2)`,
-		settID, economy.NetFoodGoods,
+		settID, economy.FoodGoods,
 	).Scan(&foodRatePerTick)
 	coverageDays := economy.FoodCoverageTicks(foodStock, population)
 
@@ -881,7 +875,9 @@ func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.
 	foodNetPerDay := economy.FoodNet(foodRatePerTick, population)
 	// The growth gate's other input: did the city eat today (FoodTick).
 	var foodUnmet float64
-	_ = pool.QueryRow(ctx, `SELECT food_unmet_amount FROM settlements WHERE id = $1`, settID).Scan(&foodUnmet)
+	consumed := map[string]float64{}
+	var consumedTick *int
+	_ = pool.QueryRow(ctx, `SELECT food_unmet_amount,food_consumed,food_consumed_tick FROM settlements WHERE id = $1`, settID).Scan(&foodUnmet, &consumed, &consumedTick)
 
 	// Grain-netto-märkning (DEL C, megaron_ekonomi_legibilitet_plan.md).
 	//
@@ -910,6 +906,7 @@ func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.
 	}
 
 	return FoodSummary{
+		Goods: foodGoods, Consumed: consumed, ConsumedTick: consumedTick, ProductionPerTick: foodRatePerTick, ConsumptionPerTick: economy.GrainConsumptionPerTick(population),
 		AutomaticFood:      automatic,
 		GrainProdRate:      grainProdRate,
 		GrainConsumRate:    grainConsumRate,
@@ -926,6 +923,16 @@ func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.
 type upkeepAmount struct {
 	Grain  float64 `json:"grain"`
 	Silver float64 `json:"silver"`
+}
+
+// Grain remains the legacy wire alias for nominal ration demand. New clients
+// use food; actual commodity debits live in UpkeepSettled.food_by_good.
+func (u upkeepAmount) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Grain  float64 `json:"grain"`
+		Food   float64 `json:"food"`
+		Silver float64 `json:"silver"`
+	}{u.Grain, u.Grain, u.Silver})
 }
 
 // armyUpkeep sums the per-period upkeep of the garrison STANDING IN a settlement,
@@ -2668,10 +2675,10 @@ func settlementUpkeepCapacity(ctx context.Context, pool *pgxpool.Pool, settlemen
 	var population int
 	if err = pool.QueryRow(ctx,
 		`SELECT
-		    COALESCE((SELECT rate FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'grain'), 0),
+		    COALESCE((SELECT SUM(rate) FROM settlement_goods WHERE settlement_id = $1 AND good_key=ANY($2)),0),
 		    COALESCE((SELECT rate FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'silver'), 0),
 		    (SELECT population FROM settlements WHERE id = $1)`,
-		settlementID,
+		settlementID, economy.FoodGoods,
 	).Scan(&grainRate, &silverRate, &population); err != nil {
 		return 0, 0, err
 	}

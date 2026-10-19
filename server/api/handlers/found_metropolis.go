@@ -475,7 +475,7 @@ func (h *JoinHandler) Settle(w http.ResponseWriter, r *http.Request) {
 	).Scan(&grainAmount, &grainRate, &openingPopulation)
 	_, grainNet := economy.GrainBalance(grainRate, openingPopulation)
 	var foodRate float64
-	_ = tx.QueryRow(r.Context(), `SELECT COALESCE(SUM(rate),0) FROM settlement_goods WHERE settlement_id=$1 AND good_key=ANY($2)`, founded.SettlementID, economy.NetFoodGoods).Scan(&foodRate)
+	_ = tx.QueryRow(r.Context(), `SELECT COALESCE(SUM(rate),0) FROM settlement_goods WHERE settlement_id=$1 AND good_key=ANY($2)`, founded.SettlementID, economy.FoodGoods).Scan(&foodRate)
 	foodNet := economy.FoodNet(foodRate, openingPopulation)
 
 	if err := tx.Commit(r.Context()); err != nil {
