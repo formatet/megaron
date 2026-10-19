@@ -1,0 +1,504 @@
+{
+  "browser": "Firefox DPR1",
+  "errors": [],
+  "css_contained_to_two_tokens": true,
+  "deterministic_static_screenshots": true,
+  "observations": [
+    {
+      "scheme": "light",
+      "width": 1280,
+      "arm": "before",
+      "selectors": [
+        {
+          "text": "Abandon settlement",
+          "color": "rgb(28, 28, 28)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 154.60000610351562,
+          "width": 902,
+          "height": 46.5
+        },
+        {
+          "text": "Abandon settlement",
+          "color": "rgb(108, 52, 131)",
+          "background": "rgb(242, 234, 211)",
+          "x": 29,
+          "y": 163.10000610351562,
+          "width": 902,
+          "height": 38
+        },
+        {
+          "text": "Collapsing",
+          "color": "rgb(108, 52, 131)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 208.10000610351562,
+          "width": 902,
+          "height": 27.199996948242188
+        },
+        {
+          "text": "Diplomacy \u00b7 a messenger arrives",
+          "color": "rgb(122, 74, 165)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 242.3000030517578,
+          "width": 902,
+          "height": 27.199996948242188
+        },
+        {
+          "text": "Farm \u00b7 ready in4 days",
+          "color": "rgb(160, 64, 0)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 276.5,
+          "width": 902,
+          "height": 22.399993896484375
+        },
+        {
+          "text": "No messages yet.",
+          "color": "rgb(160, 64, 0)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 305.8999938964844,
+          "width": 902,
+          "height": 27.20001220703125
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "scheme": "light",
+      "width": 1280,
+      "arm": "after",
+      "selectors": [
+        {
+          "text": "Abandon settlement",
+          "color": "rgb(28, 28, 28)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 154.60000610351562,
+          "width": 902,
+          "height": 46.5
+        },
+        {
+          "text": "Abandon settlement",
+          "color": "rgb(146, 43, 33)",
+          "background": "rgb(242, 234, 211)",
+          "x": 29,
+          "y": 163.10000610351562,
+          "width": 902,
+          "height": 38
+        },
+        {
+          "text": "Collapsing",
+          "color": "rgb(146, 43, 33)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 208.10000610351562,
+          "width": 902,
+          "height": 27.199996948242188
+        },
+        {
+          "text": "Diplomacy \u00b7 a messenger arrives",
+          "color": "rgb(122, 74, 165)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 242.3000030517578,
+          "width": 902,
+          "height": 27.199996948242188
+        },
+        {
+          "text": "Farm \u00b7 ready in4 days",
+          "color": "rgb(97, 93, 86)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 276.5,
+          "width": 902,
+          "height": 22.399993896484375
+        },
+        {
+          "text": "No messages yet.",
+          "color": "rgb(97, 93, 86)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 305.8999938964844,
+          "width": 902,
+          "height": 27.20001220703125
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "arm": "before",
+      "selectors": [
+        {
+          "text": "Abandon settlement",
+          "color": "rgb(28, 28, 28)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 181.8000030517578,
+          "width": 332,
+          "height": 46.5
+        },
+        {
+          "text": "Abandon settlement",
+          "color": "rgb(108, 52, 131)",
+          "background": "rgb(242, 234, 211)",
+          "x": 29,
+          "y": 190.3000030517578,
+          "width": 332,
+          "height": 38
+        },
+        {
+          "text": "Collapsing",
+          "color": "rgb(108, 52, 131)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 235.3000030517578,
+          "width": 332,
+          "height": 27.199996948242188
+        },
+        {
+          "text": "Diplomacy \u00b7 a messenger arrives",
+          "color": "rgb(122, 74, 165)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 269.5,
+          "width": 332,
+          "height": 27.199996948242188
+        },
+        {
+          "text": "Farm \u00b7 ready in4 days",
+          "color": "rgb(160, 64, 0)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 303.70001220703125,
+          "width": 332,
+          "height": 22.400009155273438
+        },
+        {
+          "text": "No messages yet.",
+          "color": "rgb(160, 64, 0)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 333.1000061035156,
+          "width": 332,
+          "height": 27.199996948242188
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "scheme": "light",
+      "width": 390,
+      "arm": "after",
+      "selectors": [
+        {
+          "text": "Abandon settlement",
+          "color": "rgb(28, 28, 28)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 181.8000030517578,
+          "width": 332,
+          "height": 46.5
+        },
+        {
+          "text": "Abandon settlement",
+          "color": "rgb(146, 43, 33)",
+          "background": "rgb(242, 234, 211)",
+          "x": 29,
+          "y": 190.3000030517578,
+          "width": 332,
+          "height": 38
+        },
+        {
+          "text": "Collapsing",
+          "color": "rgb(146, 43, 33)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 235.3000030517578,
+          "width": 332,
+          "height": 27.199996948242188
+        },
+        {
+          "text": "Diplomacy \u00b7 a messenger arrives",
+          "color": "rgb(122, 74, 165)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 269.5,
+          "width": 332,
+          "height": 27.199996948242188
+        },
+        {
+          "text": "Farm \u00b7 ready in4 days",
+          "color": "rgb(97, 93, 86)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 303.70001220703125,
+          "width": 332,
+          "height": 22.400009155273438
+        },
+        {
+          "text": "No messages yet.",
+          "color": "rgb(97, 93, 86)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 333.1000061035156,
+          "width": 332,
+          "height": 27.199996948242188
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "scheme": "dark",
+      "width": 1280,
+      "arm": "before",
+      "selectors": [
+        {
+          "text": "Abandon settlement",
+          "color": "rgb(28, 28, 28)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 154.60000610351562,
+          "width": 902,
+          "height": 46.5
+        },
+        {
+          "text": "Abandon settlement",
+          "color": "rgb(108, 52, 131)",
+          "background": "rgb(242, 234, 211)",
+          "x": 29,
+          "y": 163.10000610351562,
+          "width": 902,
+          "height": 38
+        },
+        {
+          "text": "Collapsing",
+          "color": "rgb(108, 52, 131)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 208.10000610351562,
+          "width": 902,
+          "height": 27.199996948242188
+        },
+        {
+          "text": "Diplomacy \u00b7 a messenger arrives",
+          "color": "rgb(122, 74, 165)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 242.3000030517578,
+          "width": 902,
+          "height": 27.199996948242188
+        },
+        {
+          "text": "Farm \u00b7 ready in4 days",
+          "color": "rgb(160, 64, 0)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 276.5,
+          "width": 902,
+          "height": 22.399993896484375
+        },
+        {
+          "text": "No messages yet.",
+          "color": "rgb(160, 64, 0)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 305.8999938964844,
+          "width": 902,
+          "height": 27.20001220703125
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "scheme": "dark",
+      "width": 1280,
+      "arm": "after",
+      "selectors": [
+        {
+          "text": "Abandon settlement",
+          "color": "rgb(28, 28, 28)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 154.60000610351562,
+          "width": 902,
+          "height": 46.5
+        },
+        {
+          "text": "Abandon settlement",
+          "color": "rgb(146, 43, 33)",
+          "background": "rgb(242, 234, 211)",
+          "x": 29,
+          "y": 163.10000610351562,
+          "width": 902,
+          "height": 38
+        },
+        {
+          "text": "Collapsing",
+          "color": "rgb(146, 43, 33)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 208.10000610351562,
+          "width": 902,
+          "height": 27.199996948242188
+        },
+        {
+          "text": "Diplomacy \u00b7 a messenger arrives",
+          "color": "rgb(122, 74, 165)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 242.3000030517578,
+          "width": 902,
+          "height": 27.199996948242188
+        },
+        {
+          "text": "Farm \u00b7 ready in4 days",
+          "color": "rgb(97, 93, 86)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 276.5,
+          "width": 902,
+          "height": 22.399993896484375
+        },
+        {
+          "text": "No messages yet.",
+          "color": "rgb(97, 93, 86)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 305.8999938964844,
+          "width": 902,
+          "height": 27.20001220703125
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "arm": "before",
+      "selectors": [
+        {
+          "text": "Abandon settlement",
+          "color": "rgb(28, 28, 28)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 181.8000030517578,
+          "width": 332,
+          "height": 46.5
+        },
+        {
+          "text": "Abandon settlement",
+          "color": "rgb(108, 52, 131)",
+          "background": "rgb(242, 234, 211)",
+          "x": 29,
+          "y": 190.3000030517578,
+          "width": 332,
+          "height": 38
+        },
+        {
+          "text": "Collapsing",
+          "color": "rgb(108, 52, 131)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 235.3000030517578,
+          "width": 332,
+          "height": 27.199996948242188
+        },
+        {
+          "text": "Diplomacy \u00b7 a messenger arrives",
+          "color": "rgb(122, 74, 165)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 269.5,
+          "width": 332,
+          "height": 27.199996948242188
+        },
+        {
+          "text": "Farm \u00b7 ready in4 days",
+          "color": "rgb(160, 64, 0)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 303.70001220703125,
+          "width": 332,
+          "height": 22.400009155273438
+        },
+        {
+          "text": "No messages yet.",
+          "color": "rgb(160, 64, 0)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 333.1000061035156,
+          "width": 332,
+          "height": 27.199996948242188
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "scheme": "dark",
+      "width": 390,
+      "arm": "after",
+      "selectors": [
+        {
+          "text": "Abandon settlement",
+          "color": "rgb(28, 28, 28)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 181.8000030517578,
+          "width": 332,
+          "height": 46.5
+        },
+        {
+          "text": "Abandon settlement",
+          "color": "rgb(146, 43, 33)",
+          "background": "rgb(242, 234, 211)",
+          "x": 29,
+          "y": 190.3000030517578,
+          "width": 332,
+          "height": 38
+        },
+        {
+          "text": "Collapsing",
+          "color": "rgb(146, 43, 33)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 235.3000030517578,
+          "width": 332,
+          "height": 27.199996948242188
+        },
+        {
+          "text": "Diplomacy \u00b7 a messenger arrives",
+          "color": "rgb(122, 74, 165)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 269.5,
+          "width": 332,
+          "height": 27.199996948242188
+        },
+        {
+          "text": "Farm \u00b7 ready in4 days",
+          "color": "rgb(97, 93, 86)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 303.70001220703125,
+          "width": 332,
+          "height": 22.400009155273438
+        },
+        {
+          "text": "No messages yet.",
+          "color": "rgb(97, 93, 86)",
+          "background": "rgba(0, 0, 0, 0)",
+          "x": 29,
+          "y": 333.1000061035156,
+          "width": 332,
+          "height": 27.199996948242188
+        }
+      ],
+      "overflow": false
+    }
+  ]
+}

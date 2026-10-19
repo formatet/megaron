@@ -1,0 +1,16 @@
+[
+  {
+    "preference": "light",
+    "dim": "#615D56",
+    "danger": "#922B21",
+    "panel": "#F2EAD3",
+    "background": "#1C1C1C"
+  },
+  {
+    "preference": "dark",
+    "dim": "#615D56",
+    "danger": "#922B21",
+    "panel": "#F2EAD3",
+    "background": "#1C1C1C"
+  }
+]

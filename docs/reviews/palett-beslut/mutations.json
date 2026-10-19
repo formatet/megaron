@@ -1,0 +1,17 @@
+[
+  {
+    "mutation": "purple-danger",
+    "result": "named RED -> byte-exact restore -> GREEN",
+    "source_sha256": "3b8a5e6a8256c7a5b4d1280178af6b82972b1193b5e0b1d7ae40ffa348595f86"
+  },
+  {
+    "mutation": "old-dim",
+    "result": "named RED -> byte-exact restore -> GREEN",
+    "source_sha256": "3b8a5e6a8256c7a5b4d1280178af6b82972b1193b5e0b1d7ae40ffa348595f86"
+  },
+  {
+    "mutation": "too-light-dim",
+    "result": "named RED -> byte-exact restore -> GREEN",
+    "source_sha256": "3b8a5e6a8256c7a5b4d1280178af6b82972b1193b5e0b1d7ae40ffa348595f86"
+  }
+]

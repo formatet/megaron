@@ -72,13 +72,13 @@ try:
     page.wait_for_function("name=>{let e=document.getElementById(name+'-body');return e&&e.innerText.length>30&&!e.querySelector('.loading')}",arg=drawer)
     panel=page.locator('#drawer-'+drawer)
     # Put a changed real value into view before recording both color arms.
-    panel.evaluate("""e=>{let n=Array.from(e.querySelectorAll('*')).find(n=>n.children.length===0&&n.textContent.trim()&&getComputedStyle(n).color==='rgb(103, 99, 92)');if(n)n.scrollIntoView({block:'center'})}""")
+    panel.evaluate("""e=>{let n=Array.from(e.querySelectorAll('*')).find(n=>n.children.length===0&&n.textContent.trim()&&getComputedStyle(n).color==='rgb(97, 93, 86)');if(n)n.scrollIntoView({block:'center'})}""")
     for variant in ['before','after']:
      page.evaluate("() => document.getElementById('palette-baseline')?.remove()")
      if variant=='before':
       page.add_style_tag(content=':root { --danger: #6C3483; --text-dim: #A04000; }').evaluate("e=>e.id='palette-baseline'")
      panel.screenshot(path=str(OUT/(drawer+'-'+label+'-'+variant+'.png')))
-     colors=panel.evaluate("""e=>Array.from(e.querySelectorAll('*')).filter(n=>n.children.length===0&&n.textContent.trim()&&getComputedStyle(n).color==='rgb(103, 99, 92)').map(n=>n.textContent.trim()).slice(0,8)""")
+     colors=panel.evaluate("""e=>Array.from(e.querySelectorAll('*')).filter(n=>n.children.length===0&&n.textContent.trim()&&getComputedStyle(n).color==='rgb(97, 93, 86)').map(n=>n.textContent.trim()).slice(0,8)""")
      observations.append(dict(drawer=drawer,width=width,variant=variant,warm_grey_text=colors,overflow=panel.evaluate('(e)=>e.scrollWidth>e.clientWidth')))
    page.evaluate("name=>window.closeDrawer(name)",drawer)
   assert not errors,errors
@@ -89,7 +89,7 @@ try:
   for scheme in ['light','dark']:
    page.emulate_media(color_scheme=scheme)
    schemes.append(page.evaluate("""()=>{let s=getComputedStyle(document.documentElement);return {preference:matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light',dim:s.getPropertyValue('--text-dim').trim(),danger:s.getPropertyValue('--danger').trim(),panel:s.getPropertyValue('--bg-panel').trim(),background:s.getPropertyValue('--bg').trim()}}"""))
-  assert schemes[0]['dim']==schemes[1]['dim']=='#67635C',schemes
+  assert schemes[0]['dim']==schemes[1]['dim']=='#615D56',schemes
   (OUT/'color-schemes.json').write_text(json.dumps(schemes,indent=2)+'\n')
   b.close()
  proof=dict(health=health,natural_register_cli_login_join_found=True,world_id=wid,province_id=pid,firefox_errors=errors,browser='Firefox; DPR1;1280/390',sql_writes=False,request_replay=False,observations=observations,before_method='Same real DOM/data, old danger and text-dim restored via CSS-only override; no API interception')
