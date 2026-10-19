@@ -11,6 +11,9 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+// civilianRecoveryTicks is a notice debounce, not a change to meal outcomes.
+const civilianRecoveryTicks = 5
+
 // committedNoticeDelivery broadcasts an already durable row; it never inserts.
 // The optional consumer interface keeps a missing live hub from losing history.
 type committedNoticeDelivery interface {
@@ -60,11 +63,34 @@ func (h *TickHandler) recordTransition(ctx context.Context, tx pgx.Tx, world, ow
 	}
 	var prior string
 	var observed int
-	if err := tx.QueryRow(ctx, `SELECT state,observed_tick FROM kharis_notice_state WHERE world_id=$1 AND player_id=$2 AND scope_id=$3 AND condition=$4 FOR UPDATE`, world, owner, scope, condition).Scan(&prior, &observed); err != nil {
+	var previousContext []byte
+	if err := tx.QueryRow(ctx, `SELECT state,observed_tick,context FROM kharis_notice_state WHERE world_id=$1 AND player_id=$2 AND scope_id=$3 AND condition=$4 FOR UPDATE`, world, owner, scope, condition).Scan(&prior, &observed, &previousContext); err != nil {
 		return nil, err
 	}
 	if observed >= tick {
 		return nil, nil
+	}
+	// Reuse this owner's durable context and observation claim. Duplicate ticks
+	// cannot advance recovery; unobserved ticks cannot prove fed meals. Ownership
+	// closure bypasses recovery because it makes no claim about a meal.
+	if condition == "civilian_starvation" && body["reason"] != "no_longer_owned_or_active" {
+		fed := 0
+		if prior == "true" && next == "false" {
+			var previous struct {
+				FedStreak int `json:"fed_streak"`
+			}
+			if err := json.Unmarshal(previousContext, &previous); err != nil {
+				return nil, fmt.Errorf("load civilian recovery context: %w", err)
+			}
+			if observed == tick-1 {
+				fed = previous.FedStreak
+			}
+			fed++
+			if fed < civilianRecoveryTicks {
+				next = "true"
+			}
+		}
+		body["fed_streak"] = fed
 	}
 	if condition == "kharis_band" {
 		body["from_band"] = prior

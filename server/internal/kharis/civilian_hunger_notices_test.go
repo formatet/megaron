@@ -193,10 +193,10 @@ func TestCivilianFishMealRecoveryLeavesGarrisonHungry(t *testing.T) {
 		}
 	}
 	exec(`UPDATE settlements SET population=1000 WHERE id=$1`, sid)
-	for tick := 1; tick <= 2; tick++ {
+	for tick := 1; tick <= 6; tick++ {
 		exec(`UPDATE worlds SET current_tick=$2 WHERE id=$1`, wid, tick)
-		if tick == 2 {
-			exec(`INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,'fish',5,0,1000,2)`, sid)
+		if tick >= 2 {
+			exec(`INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,'fish',5,0,1000,$2) ON CONFLICT(settlement_id,good_key) DO UPDATE SET amount=5,calc_tick=$2`, sid, tick)
 		}
 		if err := newTestFoodTickHandler(pool).Handle(ctx, events.ScheduledEvent{ID: int64(262000 + tick), WorldID: wid, DueTick: tick}); err != nil {
 			t.Fatal(err)
@@ -217,9 +217,8 @@ func TestCivilianFishMealRecoveryLeavesGarrisonHungry(t *testing.T) {
 	}
 }
 
-// A fully fed meal really ends a period: alternating meals are not one long
-// period. This records the contract's inbox cost without inventing hysteresis.
-func TestCivilianHungerAlternatingMealsAreSeparatePeriods(t *testing.T) {
+// Alternating hungry/fed meals remain one period until sustained recovery.
+func TestCivilianHungerAlternatingMealsStayOnePeriod(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	wid, sid, _ := starvationWarningFixture(t, 0, 0)
@@ -251,7 +250,91 @@ func TestCivilianHungerAlternatingMealsAreSeparatePeriods(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT count(*) FILTER(WHERE kind='CivilianStarvationStarted'),count(*) FILTER(WHERE kind='CivilianStarvationEnded') FROM notifications WHERE world_id=$1`, wid).Scan(&starts, &ends); err != nil {
 		t.Fatal(err)
 	}
-	if audits != 35 || starts != 35 || ends != 35 {
-		t.Fatalf("alternating70 audit/start/end=%d/%d/%d want35/35/35", audits, starts, ends)
+	if audits != 35 || starts != 1 || ends != 0 {
+		t.Fatalf("alternating70 audit/start/end=%d/%d/%d want35/1/0", audits, starts, ends)
 	}
+	// Tick 70 was already fed. Re-observation/restart never counts it twice;
+	// tick 74 is exactly the fifth consecutive fed meal after hungry tick 69.
+	for tick := 70; tick <= 74; tick++ {
+		exec(`UPDATE worlds SET current_tick=$2 WHERE id=$1`, wid, tick)
+		for attempt := 0; attempt < 3; attempt++ {
+			if err := newTestTickHandler(pool).applyStarvation(ctx, wid); err != nil {
+				t.Fatal(err)
+			}
+		}
+		var ended int
+		if err := pool.QueryRow(ctx, `SELECT count(*) FROM notifications WHERE world_id=$1 AND kind='CivilianStarvationEnded'`, wid).Scan(&ended); err != nil {
+			t.Fatal(err)
+		}
+		want := 0
+		if tick == 74 {
+			want = 1
+		}
+		if ended != want {
+			t.Fatalf("tick %d recovery count=%d want %d", tick, ended, want)
+		}
+	}
+
+}
+
+func TestCivilianRecoveryResetsOnHungerGapAndFailedDelivery(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	wid, sid, _ := starvationWarningFixture(t, 0, 0)
+	exec := func(q string, args ...any) {
+		t.Helper()
+		if _, err := pool.Exec(ctx, q, args...); err != nil {
+			t.Fatal(err)
+		}
+	}
+	observe := func(tick int, unmet float64) error {
+		exec(`UPDATE worlds SET current_tick=$2 WHERE id=$1`, wid, tick)
+		exec(`UPDATE settlements SET food_unmet_amount=$2 WHERE id=$1`, sid, unmet)
+		return newTestTickHandler(pool).applyStarvation(ctx, wid)
+	}
+	assertCount := func(starts, ends int) {
+		t.Helper()
+		var a, b int
+		if err := pool.QueryRow(ctx, `SELECT count(*) FILTER(WHERE kind='CivilianStarvationStarted'),count(*) FILTER(WHERE kind='CivilianStarvationEnded') FROM notifications WHERE world_id=$1`, wid).Scan(&a, &b); err != nil {
+			t.Fatal(err)
+		}
+		if a != starts || b != ends {
+			t.Fatalf("start/end=%d/%d want%d/%d", a, b, starts, ends)
+		}
+	}
+	for tick := 1; tick <= 10; tick++ {
+		unmet := 0.0
+		if tick == 1 || tick == 6 {
+			unmet = 1
+		} // Four fed meals, then hunger resets recovery.
+		if err := observe(tick, unmet); err != nil {
+			t.Fatal(err)
+		}
+		assertCount(1, 0)
+	}
+	// A missed observation is not evidence of a fed meal: start counting again.
+	for tick := 12; tick <= 15; tick++ {
+		if err := observe(tick, 0); err != nil {
+			t.Fatal(err)
+		}
+		assertCount(1, 0)
+	}
+	constraint := "civil_end_" + fmt.Sprintf("%x", wid[:4])
+	exec(fmt.Sprintf(`ALTER TABLE notifications ADD CONSTRAINT %s CHECK(world_id<>'%s' OR kind<>'CivilianStarvationEnded')`, constraint, wid))
+	t.Cleanup(func() { pool.Exec(ctx, `ALTER TABLE notifications DROP CONSTRAINT IF EXISTS `+constraint) })
+	if err := observe(16, 0); err == nil {
+		t.Fatal("expected recovery persistence fault")
+	}
+	assertCount(1, 0)
+	exec(`ALTER TABLE notifications DROP CONSTRAINT ` + constraint)
+	for attempt := 0; attempt < 2; attempt++ {
+		if err := observe(16, 0); err != nil {
+			t.Fatal(err)
+		}
+	}
+	assertCount(1, 1)
+	if err := observe(17, 1); err != nil {
+		t.Fatal(err)
+	}
+	assertCount(2, 1) // Hunger after confirmed recovery starts a genuinely new period.
 }
