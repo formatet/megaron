@@ -126,18 +126,19 @@ func mapCmd() *cobra.Command {
 				return err
 			}
 			var tiles []struct {
-				Q             int    `json:"q"`
-				R             int    `json:"r"`
-				Terrain       string `json:"terrain"`
-				RiverName     string `json:"river_name,omitempty"`
-				Coastal       bool   `json:"coastal"`
-				Visible       bool   `json:"visible"`
-				Tier          string `json:"tier"`
-				Frontier      bool   `json:"frontier"`
-				CopperDeposit bool   `json:"copper_deposit"`
-				TinDeposit    bool   `json:"tin_deposit"`
-				CedarDeposit  bool   `json:"cedar_deposit"`
-				SilverDeposit bool   `json:"silver_deposit"`
+				Q              int    `json:"q"`
+				R              int    `json:"r"`
+				Terrain        string `json:"terrain"`
+				RiverName      string `json:"river_name,omitempty"`
+				Coastal        bool   `json:"coastal"`
+				Visible        bool   `json:"visible"`
+				Tier           string `json:"tier"`
+				Frontier       bool   `json:"frontier"`
+				CopperDeposit  bool   `json:"copper_deposit"`
+				TinDeposit     bool   `json:"tin_deposit"`
+				CedarDeposit   bool   `json:"cedar_deposit"`
+				SilverDeposit  bool   `json:"silver_deposit"`
+				IncenseDeposit bool   `json:"incense_deposit"`
 			}
 			_ = json.Unmarshal(mapData, &tiles)
 
@@ -164,18 +165,19 @@ func mapCmd() *cobra.Command {
 			// fog (frontier only — the edge of the known world). Sea tiles are
 			// included in live/remembered so the player can see where the coast is.
 			type cand struct {
-				Q             int    `json:"q"`
-				R             int    `json:"r"`
-				Terrain       string `json:"terrain"`
-				RiverName     string `json:"river_name,omitempty"`
-				Coastal       bool   `json:"coastal,omitempty"`
-				Distance      int    `json:"distance"`
-				Tier          string `json:"tier"`
-				Occupied      bool   `json:"occupied,omitempty"`
-				CopperDeposit bool   `json:"copper_deposit,omitempty"`
-				TinDeposit    bool   `json:"tin_deposit,omitempty"`
-				CedarDeposit  bool   `json:"cedar_deposit,omitempty"`
-				SilverDeposit bool   `json:"silver_deposit,omitempty"`
+				Q              int    `json:"q"`
+				R              int    `json:"r"`
+				Terrain        string `json:"terrain"`
+				RiverName      string `json:"river_name,omitempty"`
+				Coastal        bool   `json:"coastal,omitempty"`
+				Distance       int    `json:"distance"`
+				Tier           string `json:"tier"`
+				Occupied       bool   `json:"occupied,omitempty"`
+				CopperDeposit  bool   `json:"copper_deposit,omitempty"`
+				TinDeposit     bool   `json:"tin_deposit,omitempty"`
+				CedarDeposit   bool   `json:"cedar_deposit,omitempty"`
+				SilverDeposit  bool   `json:"silver_deposit,omitempty"`
+				IncenseDeposit bool   `json:"incense_deposit,omitempty"`
 			}
 			var out []cand
 			type frontierHex struct {
@@ -202,7 +204,7 @@ func mapCmd() *cobra.Command {
 					Q: t.Q, R: t.R, Terrain: t.Terrain, RiverName: t.RiverName, Coastal: t.Coastal, Distance: d, Tier: tier,
 					Occupied:      occupied[[2]int{t.Q, t.R}],
 					CopperDeposit: t.CopperDeposit, TinDeposit: t.TinDeposit,
-					CedarDeposit: t.CedarDeposit, SilverDeposit: t.SilverDeposit,
+					CedarDeposit: t.CedarDeposit, SilverDeposit: t.SilverDeposit, IncenseDeposit: t.IncenseDeposit,
 				})
 			}
 			sort.Slice(out, func(i, j int) bool { return out[i].Distance < out[j].Distance })
@@ -284,6 +286,7 @@ func mapCmd() *cobra.Command {
 					{"tin", t.TinDeposit},
 					{"cedar", t.CedarDeposit},
 					{"silver", t.SilverDeposit},
+					{"incense", t.IncenseDeposit},
 				} {
 					if item.has {
 						dep += " +" + item.label + reach

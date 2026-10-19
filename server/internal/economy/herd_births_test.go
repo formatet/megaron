@@ -143,7 +143,7 @@ func TestMigration192LiftsHerders(t *testing.T) {
 }
 
 func TestPlainsHasNoHerderPlace(t *testing.T) {
-	for _, r := range hexRules("plains", false, false, false) {
+	for _, r := range hexRules("plains", false, false, false, false) {
 		if r.good == "livestock" {
 			t.Fatal("plains still offers a livestock place")
 		}

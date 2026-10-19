@@ -927,14 +927,15 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 // colonizePreview mirrors the /colonize-preview endpoint's JSON (DEL A).
 type colonizePreview struct {
 	Catchment []struct {
-		Q             int    `json:"q"`
-		R             int    `json:"r"`
-		Known         bool   `json:"known"`
-		Terrain       string `json:"terrain"`
-		CopperDeposit bool   `json:"copper_deposit"`
-		TinDeposit    bool   `json:"tin_deposit"`
-		SilverDeposit bool   `json:"silver_deposit"`
-		CedarDeposit  bool   `json:"cedar_deposit"`
+		Q              int    `json:"q"`
+		R              int    `json:"r"`
+		Known          bool   `json:"known"`
+		Terrain        string `json:"terrain"`
+		CopperDeposit  bool   `json:"copper_deposit"`
+		TinDeposit     bool   `json:"tin_deposit"`
+		SilverDeposit  bool   `json:"silver_deposit"`
+		CedarDeposit   bool   `json:"cedar_deposit"`
+		IncenseDeposit bool   `json:"incense_deposit"`
 	} `json:"catchment"`
 	Goods map[string]float64 `json:"goods"`
 	Grain struct {
@@ -1100,8 +1101,11 @@ func renderCatchmentForecast(title string, p *colonizePreview) {
 		if ce.CedarDeposit {
 			dep["cedar"] = true
 		}
+		if ce.IncenseDeposit {
+			dep["incense"] = true
+		}
 	}
-	for _, d := range []string{"copper", "tin", "silver", "cedar"} {
+	for _, d := range []string{"copper", "tin", "silver", "cedar", "incense"} {
 		if dep[d] {
 			extras = append(extras, d+"-deposit ✓")
 		}

@@ -113,7 +113,7 @@ async function loadDipKnown() {
     const cityRow = c => {
       const contact = !c.own && contacts.has(c.settlement_id);
       const status = c.own ? 'Your city' : contact ? 'Can write' : c.knowledge === 'rumour' ? 'Rumour only' : 'Known';
-      const deposits = [c.copper_deposit ? 'Copper' : '', c.tin_deposit ? 'Tin' : '', c.silver_deposit ? 'Silver' : '', c.cedar_deposit ? 'Cedar' : ''].filter(Boolean).join(', ');
+      const deposits = [c.copper_deposit ? 'Copper' : '', c.tin_deposit ? 'Tin' : '', c.silver_deposit ? 'Silver' : '', c.cedar_deposit ? 'Cedar' : '', c.incense_deposit ? 'Incense' : ''].filter(Boolean).join(', ');
       const location = c.knowledge === 'known' && c.q != null && c.r != null
         ? `${fmtNum(c.q)}, ${fmtNum(c.r)}` : c.bearing ? c.bearing.replace(/^~(\d+) hexes /, (_, n) => `~${fmtNum(Number(n))} hexes `) : 'Location unknown';
       return `<div class="dsec"><div class="stat-row"><span class="sr-label">${esc(c.name)}</span><span class="sr-val">${contact ? writeButton(c.settlement_id) : ''}</span></div>

@@ -189,8 +189,9 @@ export function renderColonizePreviewHTML(p) {
     if (ce.tin_deposit)    dep.tin = true;
     if (ce.silver_deposit) dep.silver = true;
     if (ce.cedar_deposit)  dep.cedar = true;
+    if (ce.incense_deposit) dep.incense = true;
   });
-  const extras = ['copper', 'tin', 'silver', 'cedar'].filter(d => dep[d]).map(d => d + '-deposit ✓');
+  const extras = ['copper', 'tin', 'silver', 'cedar', 'incense'].filter(d => dep[d]).map(d => d + '-deposit ✓');
   Object.keys(p.goods || {}).sort().forEach(gk => {
     if (gk === 'grain') return;
     const rate = p.goods[gk] || 0;
@@ -222,6 +223,7 @@ export function renderColonizePreviewHTML(p) {
     if (ce.tin_deposit)    hexDeps.push('tin');
     if (ce.silver_deposit) hexDeps.push('silver');
     if (ce.cedar_deposit)  hexDeps.push('cedar');
+    if (ce.incense_deposit) hexDeps.push('incense');
     const depStr = hexDeps.length ? ` <span style="color:var(--text-dim)">· ${hexDeps.join(', ')}</span>` : '';
     return `<div>${catchmentTerrainLabel(ce.terrain)}${depStr}${centerTag}</div>`;
   }).join('');

@@ -24,11 +24,11 @@ func TestFieldStone_EveryLandTerrainHasRuleAndRate(t *testing.T) {
 		if math.Abs(rate-0.5) > 1e-9 {
 			t.Errorf("%s: fieldstone production_rules rate = %v, want 0.5 (mig 156)", terrain, rate)
 		}
-		places, mult := hexGoodPlaces(terrain, false, false, false, map[string]int{}, "stone")
+		places, mult := hexGoodPlaces(terrain, false, false, false, false, map[string]int{}, "stone")
 		if places != 1 || mult != 1.0 {
 			t.Errorf("%s: unbuilt stone = %d x %.1f, want 1 x 1.0", terrain, places, mult)
 		}
-		if !RuleBuildingSupportsHex("stonequarry", terrain, false, false, false) {
+		if !RuleBuildingSupportsHex("stonequarry", terrain, false, false, false, false) {
 			t.Errorf("%s: stonequarry may not stand here", terrain)
 		}
 	}

@@ -205,6 +205,7 @@ func loadHexOptionsForHexes(ctx context.Context, tx Tx, worldID uuid.UUID, ring 
 	rows, err := tx.Query(ctx,
 		`SELECT mt.q, mt.r, mt.terrain,
 		        COALESCE(mt.copper_deposit, false), COALESCE(mt.tin_deposit, false), COALESCE(mt.silver_deposit, false),
+		        COALESCE(mt.incense_deposit, false),
 		        pr.good_key, pr.rate_per_tick, pr.building_type
 		 FROM unnest($2::int[], $3::int[]) AS catchment(q, r)
 		 JOIN map_tiles mt ON mt.world_id = $1 AND mt.q = catchment.q AND mt.r = catchment.r
@@ -227,6 +228,7 @@ func loadHexOptionsForHexes(ctx context.Context, tx Tx, worldID uuid.UUID, ring 
 		          OR (pr.requires_deposit = 'copper' AND mt.copper_deposit)
 		          OR (pr.requires_deposit = 'tin'    AND mt.tin_deposit)
 		          OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit, false))
+		          OR (pr.requires_deposit = 'incense' AND COALESCE(mt.incense_deposit, false))
 		          OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit, false)))
 		 JOIN goods g ON g.key = pr.good_key AND g.status = 'active'
 		 WHERE mt.terrain NOT IN ('deep_sea','coastal_sea','river','river_ford')
@@ -238,17 +240,17 @@ func loadHexOptionsForHexes(ctx context.Context, tx Tx, worldID uuid.UUID, ring 
 	}
 	defer rows.Close()
 
-	type hexFlags struct{ copper, tin, silver bool }
+	type hexFlags struct{ copper, tin, silver, incense bool }
 	flags := make(map[hexgrid.Coord]hexFlags)
 	byCoord := make(map[hexgrid.Coord]*HexOption)
 	var order []hexgrid.Coord
 	for rows.Next() {
 		var qq, rr int
 		var terrain, goodKey string
-		var copperDep, tinDep, silverDep bool
+		var copperDep, tinDep, silverDep, incenseDep bool
 		var rate float64
 		var buildingType *string
-		if err := rows.Scan(&qq, &rr, &terrain, &copperDep, &tinDep, &silverDep, &goodKey, &rate, &buildingType); err != nil {
+		if err := rows.Scan(&qq, &rr, &terrain, &copperDep, &tinDep, &silverDep, &incenseDep, &goodKey, &rate, &buildingType); err != nil {
 			return nil, fmt.Errorf("load hex production options: scan: %w", err)
 		}
 		c := hexgrid.Coord{Q: qq, R: rr}
@@ -264,7 +266,7 @@ func loadHexOptionsForHexes(ctx context.Context, tx Tx, worldID uuid.UUID, ring 
 				PlaceCapPerGood:  make(map[string]int),
 			}
 			byCoord[c] = opt
-			flags[c] = hexFlags{copperDep, tinDep, silverDep}
+			flags[c] = hexFlags{copperDep, tinDep, silverDep, incenseDep}
 			order = append(order, c)
 		}
 		// A row naming a building only counts on THIS hex if that building is
@@ -293,7 +295,7 @@ func loadHexOptionsForHexes(ctx context.Context, tx Tx, worldID uuid.UUID, ring 
 			if _, done := opt.PlaceCapPerGood[good]; done {
 				return
 			}
-			places, mult := hexGoodPlaces(opt.Terrain, fl.copper, fl.tin, fl.silver, levels, good)
+			places, mult := hexGoodPlaces(opt.Terrain, fl.copper, fl.tin, fl.silver, fl.incense, levels, good)
 			opt.PlaceCapPerGood[good] = places
 			opt.CapPerGood[good] = places
 			opt.MultPerGood[good] = mult
@@ -552,7 +554,7 @@ func ChooseFarmHex(ctx context.Context, tx Tx, worldID uuid.UUID, center hexgrid
 		var places int
 		var mult float64
 		found := false
-		for _, rule := range hexRules(terrain, false, false, false) {
+		for _, rule := range hexRules(terrain, false, false, false, false) {
 			if rule.good == GoodGrain && rule.building == "farm" {
 				places, mult = rule.placesAndMult(1)
 				found = true
@@ -587,7 +589,7 @@ func HexSupportsBuilding(ctx context.Context, tx Tx, worldID uuid.UUID, hex hexg
 	if err != nil {
 		return false, fmt.Errorf("hex supports building: %w", err)
 	}
-	return RuleBuildingSupportsHex(buildingType, terrain, copperDep, tinDep, silverDep), nil
+	return RuleBuildingSupportsHex(buildingType, terrain, copperDep, tinDep, silverDep, false), nil // incense names no building
 }
 
 // HexOccupant is the hex-bound building standing on a hex, or queued for it.

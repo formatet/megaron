@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 	"testing"
+
+	"github.com/google/uuid"
 )
 
 func TestTinAdditionalBudgetScalesWithArea(t *testing.T) {
@@ -14,6 +16,19 @@ func TestTinAdditionalBudgetScalesWithArea(t *testing.T) {
 			t.Fatalf("%dx%d additional source budget=%d want%d", tc.w, tc.h, got, tc.want)
 		}
 	}
+}
+
+// legacyTile is MapTile as it was when testdata/tin-increase-2be784c2.json was
+// recorded: without IncenseDeposit (order 32), whose own placement is covered by
+// mapgen_incense_test.go. Hashing this shape keeps the recording valid and still
+// proves the incense pass moved no other field.
+type legacyTile struct {
+	WorldID                                                uuid.UUID
+	Q, R                                                   int
+	Terrain                                                Terrain
+	Coastal                                                bool
+	Fertility, Mineral                                     float64
+	CopperDeposit, TinDeposit, SilverDeposit, CedarDeposit bool
 }
 
 // Recorded unmodified 2be784c2 maps, with exact candidate counts measured in
@@ -61,7 +76,8 @@ func TestGenerateMap_TinIncreasePreservesGeography(t *testing.T) {
 					}
 				}
 				tile.TinDeposit = false
-				if err := enc.Encode(tile); err != nil {
+				if err := enc.Encode(legacyTile{tile.WorldID, tile.Q, tile.R, tile.Terrain, tile.Coastal, tile.Fertility, tile.Mineral,
+					tile.CopperDeposit, tile.TinDeposit, tile.SilverDeposit, tile.CedarDeposit}); err != nil {
 					t.Fatal(err)
 				}
 			}

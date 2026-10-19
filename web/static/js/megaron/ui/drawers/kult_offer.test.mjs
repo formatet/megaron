@@ -38,3 +38,16 @@ test('changed fields send exactly the positive numbers; zero fields are left out
   const e = [{ good: 'grain', value: '0' }, { good: 'silver', value: '3' }, { good: 'fish', value: '12' }, { good: 'wine', value: '' }];
   assert.deepEqual(offeringFromEntries(e, prayer.offering), { silver: 3, fish: 12 });
 });
+
+test('a city holding incense gets an incense field and the god is said to love it', () => {
+  const oracle = { id: 'x', god: 'Potnia', offering: { grain: 10 }, favours: { incense: 3.0, wine: 1.8 } };
+  const held = { grain: 5, incense: 4, wine: 0 };
+  const f = offerFields(oracle, held);
+  const inc = f.find(x => x.good === 'incense');
+  assert.ok(inc, 'incense is offered when held');
+  assert.equal(inc.amount, 0);
+  const html = offerRowHTML(oracle, held);
+  assert.match(html, /data-good="incense"/);
+  assert.match(html, /Potnia loves incense and wine\./);
+  assert.doesNotMatch(html, /worth|odds|%/i);
+});

@@ -37,7 +37,42 @@ const (
 	// tilt the decision, never dictate it.
 	varietyBonusPerGood = 0.015
 	varietyBonusMax     = 0.045
+
+	// IncenseKey is the one good the ceiling bends for (Timothy 2026-10-19:
+	// incense should give more than other offerings).
+	IncenseKey = "incense"
+
+	// incenseCapLift is how far the ceiling rises when the whole offering is
+	// incense: cap = offerModMax + incenseCapLift * (incense share of worth), so
+	// a pure incense gift tops out at +0.25 and a grain gift stays at +0.10.
+	// Generous on purpose (alpha). Only the ceiling moves: the floor, the slope
+	// and the baseline are untouched, and a gift still never buys what kharis
+	// must earn.
+	incenseCapLift = 0.15
 )
+
+// OfferModCap is the ceiling on an offering's nudge given the fraction (0..1) of
+// its worth that is incense.
+func OfferModCap(incenseShare float64) float64 {
+	if incenseShare < 0 {
+		incenseShare = 0
+	}
+	if incenseShare > 1 {
+		incenseShare = 1
+	}
+	return offerModMax + incenseCapLift*incenseShare
+}
+
+// IncenseShare is incense's fraction of the offering's total worth (0 when the
+// offering is worth nothing).
+func IncenseShare(offering map[string]float64, divineValues map[string]float64, favours map[string]float64) float64 {
+	total := OfferingWorth(offering, divineValues, favours)
+	if total <= 0 {
+		return 0
+	}
+	only := OfferingWorth(map[string]float64{IncenseKey: offering[IncenseKey]}, divineValues, favours)
+	return only / total
+}
 
 // OfferingWorth values a composed offering in divine terms.
 //
@@ -75,6 +110,15 @@ func DistinctGoods(offering map[string]float64) int {
 	return n
 }
 
+// ComposedOfferMod is what the rite handler calls for a composed offering: the
+// nudge on the odds and the ceiling that applied to it (the verdict text needs
+// the ceiling to tell "more would be wasted" truthfully).
+func ComposedOfferMod(offering, divineValues, favours map[string]float64, baseline float64) (mod, ceiling float64) {
+	share := IncenseShare(offering, divineValues, favours)
+	worth := OfferingWorth(offering, divineValues, favours)
+	return OfferModWithIncense(worth, baseline, DistinctGoods(offering), share), OfferModCap(share)
+}
+
 // OfferMod turns an offering's worth into a nudge on the success chance.
 //
 // baseline is what this god expects for this prayer, in the same divine units.
@@ -83,16 +127,23 @@ func DistinctGoods(offering map[string]float64) int {
 // offerModMin, which is the steeper direction: the gods notice stinginess more
 // keenly than generosity.
 func OfferMod(worth, baseline float64, distinctGoods int) float64 {
+	return OfferModWithIncense(worth, baseline, distinctGoods, 0)
+}
+
+// OfferModWithIncense is OfferMod with the ceiling lifted by incenseShare (see
+// OfferModCap). With share 0 it is exactly OfferMod.
+func OfferModWithIncense(worth, baseline float64, distinctGoods int, incenseShare float64) float64 {
 	if baseline <= 0 {
 		return 0
 	}
 	ratio := worth / baseline
+	ceiling := OfferModCap(incenseShare)
 
 	var mod float64
 	switch {
 	case ratio >= 1:
 		// Saturating: doubling a generous offering does not double the favour.
-		mod = offerModMax * (1 - math.Exp(-(ratio-1)/offerModSlope*0.5))
+		mod = ceiling * (1 - math.Exp(-(ratio-1)/offerModSlope*0.5))
 	default:
 		// Below baseline the floor is reached at HALF the baseline, not at an
 		// empty altar. That preserves the old scale's anchor points exactly:
@@ -115,8 +166,8 @@ func OfferMod(worth, baseline float64, distinctGoods int) float64 {
 		mod += bonus
 	}
 
-	if mod > offerModMax {
-		mod = offerModMax
+	if mod > ceiling {
+		mod = ceiling
 	}
 	if mod < offerModMin {
 		mod = offerModMin

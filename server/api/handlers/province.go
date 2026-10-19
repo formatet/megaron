@@ -100,7 +100,8 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		    CASE WHEN copper_deposit THEN 'copper' END,
 		    CASE WHEN tin_deposit    THEN 'tin'    END,
 		    CASE WHEN COALESCE(silver_deposit,false) THEN 'silver' END,
-		    CASE WHEN COALESCE(cedar_deposit, false) THEN 'cedar'  END
+		    CASE WHEN COALESCE(cedar_deposit, false) THEN 'cedar'  END,
+		    CASE WHEN COALESCE(incense_deposit, false) THEN 'incense' END
 		 FROM map_tiles mt
 		 JOIN unnest($2::int[], $3::int[]) AS catchment(q, r) ON mt.q = catchment.q AND mt.r = catchment.r
 		 WHERE mt.world_id = $1
@@ -110,9 +111,9 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 	if cdrows != nil {
 		seen := make(map[string]bool)
 		for cdrows.Next() {
-			var copper, tin, silver, cedar *string
-			_ = cdrows.Scan(&copper, &tin, &silver, &cedar)
-			for _, v := range []*string{copper, tin, silver, cedar} {
+			var copper, tin, silver, cedar, incense *string
+			_ = cdrows.Scan(&copper, &tin, &silver, &cedar, &incense)
+			for _, v := range []*string{copper, tin, silver, cedar, incense} {
 				if v != nil && !seen[*v] {
 					seen[*v] = true
 					catchmentDeposits = append(catchmentDeposits, *v)
@@ -136,6 +137,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 		"tin_deposit":        prov.TinDeposit,
 		"silver_deposit":     prov.SilverDeposit,
 		"cedar_deposit":      prov.CedarDeposit,
+		"incense_deposit":    prov.IncenseDeposit,
 		"catchment_deposits": catchmentDeposits,
 	}
 
@@ -2822,6 +2824,7 @@ func (h *ProvinceHandler) Goods(w http.ResponseWriter, r *http.Request) {
 		          OR (pr.requires_deposit = 'copper' AND mt.copper_deposit)
 		          OR (pr.requires_deposit = 'tin'    AND mt.tin_deposit)
 		          OR (pr.requires_deposit = 'silver' AND COALESCE(mt.silver_deposit,false))
+		          OR (pr.requires_deposit = 'incense' AND COALESCE(mt.incense_deposit,false))
 		          OR (pr.requires_deposit = 'cedar'  AND COALESCE(mt.cedar_deposit, false)))
 		 JOIN goods g ON g.key = pr.good_key AND g.status = 'active'
 		 WHERE s.id = $1

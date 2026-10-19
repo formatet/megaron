@@ -27,7 +27,7 @@ type HexBuildEffect struct {
 // terrain/deposits. r0 is read from production_rules: the building-free
 // terrain/deposit row(s) for the good, or (silver) the mine row.
 func HexBuildEffects(ctx context.Context, tx Tx, buildingType, terrain string, copperDep, tinDep, silverDep bool) ([]HexBuildEffect, error) {
-	rules := hexRules(terrain, copperDep, tinDep, silverDep)
+	rules := hexRules(terrain, copperDep, tinDep, silverDep, false) // incense has no building, so no build effect
 	var out []HexBuildEffect
 	for _, rule := range rules {
 		if rule.building != buildingType {

@@ -101,3 +101,42 @@ func TestOfferingShortfall_ReportsTheGap(t *testing.T) {
 		t.Errorf("a generous offering falls short of nothing, got %.2f", got)
 	}
 }
+
+// Incense lifts the ceiling (Timothy 2026-10-19): a gift that is mostly incense
+// can move the odds beyond the old +0.10, a gift of grain cannot, and with no
+// incense the formula is exactly the old one.
+func TestOfferMod_IncenseLiftsTheCeiling(t *testing.T) {
+	values := map[string]float64{"grain": 3, "incense": 11}
+	favours := map[string]float64{"incense": 3.0}
+	grain := map[string]float64{"grain": 1000}
+	incense := map[string]float64{"incense": 1000}
+	mixed := map[string]float64{"incense": 100, "grain": 3000}
+
+	baseline := 100.0
+	modOf := func(offering map[string]float64) float64 {
+		mod, _ := ComposedOfferMod(offering, values, favours, baseline)
+		return mod
+	}
+
+	if got := modOf(grain); got > offerModMax+1e-12 {
+		t.Errorf("a grain gift must stay under the old ceiling +%.2f, got %+.3f", offerModMax, got)
+	}
+	pure := modOf(incense)
+	if pure <= offerModMax {
+		t.Errorf("a pure incense gift must exceed +%.2f, got %+.3f", offerModMax, pure)
+	}
+	if pure > OfferModCap(1)+1e-12 {
+		t.Errorf("a pure incense gift must stay under its lifted ceiling %+.2f, got %+.3f", OfferModCap(1), pure)
+	}
+	if m := modOf(mixed); m >= pure {
+		t.Errorf("a mostly-grain gift with a little incense must lift less than pure incense: %+.3f vs %+.3f", m, pure)
+	}
+	// Share 0 is exactly the old function.
+	if a, b := OfferMod(500, 100, 2), OfferModWithIncense(500, 100, 2, 0); a != b {
+		t.Errorf("OfferMod must equal share 0: %v vs %v", a, b)
+	}
+	// Only the ceiling moves: the stingy floor is untouched.
+	if got := OfferModWithIncense(0, 100, 1, 1); got != offerModMin {
+		t.Errorf("incense must not soften the floor: %+.3f", got)
+	}
+}

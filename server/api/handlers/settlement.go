@@ -924,8 +924,9 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 	favours := religion.FavoursFor(spec)
 	offeringWorth := religion.OfferingWorth(offering, divineValues, favours)
 	offeringBaseline := religion.TraditionalBaseline(spec, divineValues)
+	offerCap := riteOfferModFat
 	if composed {
-		offerMod = religion.OfferMod(offeringWorth, offeringBaseline, religion.DistinctGoods(offering))
+		offerMod, offerCap = religion.ComposedOfferMod(offering, divineValues, favours, offeringBaseline)
 	}
 
 	successChance := riteSuccessChance(kharisNow, offerMod)
@@ -1098,7 +1099,7 @@ func (h *SettlementHandler) Rite(w http.ResponseWriter, r *http.Request) {
 		resp["valuation_version"] = religion.LaborValuationVersion
 		resp["offering_expected"] = offeringBaseline
 		switch {
-		case offerMod >= riteOfferModFat:
+		case offerMod >= offerCap:
 			resp["offering_verdict"] = "as generous as the gods will notice — more would be wasted"
 		case math.Abs(offeringWorth-offeringBaseline) < 1e-9:
 			resp["offering_verdict"] = "worthy — meets what this god expects"
