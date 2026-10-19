@@ -796,7 +796,9 @@ export function notifText(kind, body) {
       const amount = body.amount || 0;
       switch (body.type) {
         case 'chariot_loss':    return `The gods scattered your war chariots in the night${place} — ${amount} lost`;
-        case 'ship_loss':       return `A divine storm claimed a vessel from your harbour${place}`;
+        case 'ship_loss':       return body.unit_name
+          ? `A divine storm sank ${body.unit_name} in your harbour${place} — the ship is lost`
+          : `A divine storm claimed a vessel from your harbour${place}`;
         case 'harvest_failure': return `The fields lay fallow by divine will${place} — ${Math.round(amount)} grain rotted`;
         case 'garrison_plague': return `A pestilence swept the barracks${place} — ${amount} fell`;
         default:                return `${kind} — ${payloadSummary(body)}`;

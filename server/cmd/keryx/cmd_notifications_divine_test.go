@@ -287,3 +287,15 @@ func TestHeldHexNote(t *testing.T) {
 		t.Errorf("no-building note mentions a building: %q", got)
 	}
 }
+
+// Haiku-7: the galley "arrived", then vanished from unit list. A storm in
+// harbour now names the ship it sank.
+func TestDivinePunishmentLine_ShipLossNamesTheShip(t *testing.T) {
+	raw, _ := json.Marshal(map[string]any{"type": "ship_loss", "amount": 1, "name": "Scheria", "unit_name": "Spirit of Bronze, Galley of Scheria"})
+	out := capturePrint(t, func() {
+		printDivinePunishmentLine(notificationItem{Kind: "DivinePunishment", Level: 2, Body: raw})
+	})
+	if !strings.Contains(out, "sank Spirit of Bronze, Galley of Scheria in the harbor in Scheria. The ship is lost.") {
+		t.Errorf("line %q does not name the sunk ship", strings.TrimSpace(out))
+	}
+}
