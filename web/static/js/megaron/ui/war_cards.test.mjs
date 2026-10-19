@@ -111,3 +111,10 @@ test('B: upkeep billing context comes from server, not guessed from unit status'
 test('B: civilian Nomadic Host has no upkeep row when the server says none',()=>{
  assert.doesNotMatch(renderUnitCard(unit({type:'nomadic_host',upkeep_context:'none',upkeep_grain_per_tick:0,upkeep_silver_per_tick:0})), /unit-upkeep|Upkeep:/);
 });
+
+test('Haiku 6: a ship at sea with part of a day aboard is not out of food',()=>{
+ const ship=extra=>renderUnitCard(unit({category:'naval',type:'galley',status:'marching',provision_days:0,...extra}));
+ assert.match(ship({provisions_aboard:true}),/food for less than a day/);
+ assert.doesNotMatch(ship({provisions_aboard:true}),/out of food/);
+ assert.match(ship({}),/out of food/);
+});
