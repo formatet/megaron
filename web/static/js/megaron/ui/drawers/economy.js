@@ -27,7 +27,7 @@ export function goodsRateCell(g) {
       + 'Everything produced past the cap is discarded — move this labour or trade it away.';
     return `<td class="goods-atcap" title="${esc(title)}">full${lost}</td>`;
   }
-  return rate > 0 ? `<td style="color:var(--safe)">+${fmtNum(Number(rate.toFixed(1)))} per day</td>` : '<td></td>';
+  return rate > 0 ? `<td style="color:var(--safe-text)">+${fmtNum(Number(rate.toFixed(1)))} per day</td>` : '<td></td>';
 }
 
 // Compare the single city food stocks and authoritative food net, including army
@@ -104,7 +104,7 @@ export function renderSettlementsOverviewHTML(rows, sortKey, sortDir) {
       ${th('brist', 'Status')}
     </tr>
     ${rows.map(r => {
-      const rateColor = r.grainRate < 0 ? 'var(--danger)' : (r.grainRate > 0 ? 'var(--safe)' : 'var(--text-dim)');
+      const rateColor = r.grainRate < 0 ? 'var(--danger)' : (r.grainRate > 0 ? 'var(--safe-text)' : 'var(--text-dim)');
       const rateSign = r.grainRate > 0 ? '+' : '';
       return `<tr onclick="openCitySettlement('${r.id}')" style="cursor:pointer">
         <td>${esc(r.name)}${r.isCapital ? ' ★' : ''}</td>
@@ -387,7 +387,7 @@ export async function startTransfer() {
   const d = await r.json().catch(() => ({}));
   if (document.getElementById('ec-tr-result') !== resultEl) return;
   if (r.ok) {
-    resultEl.style.color = 'var(--safe)';
+    resultEl.style.color = 'var(--safe-text)';
     // Sjöhandel kräver skepp (megaron_plan_sjohandel_kraver_skepp.md R3): name
     // the ship on a naval transfer — it's now bound to this round trip and
     // isn't free again until it sails home empty afterward.
@@ -570,7 +570,7 @@ export async function createStandingOrder() {
   });
   const d = await r.json().catch(() => ({}));
   if (r.ok) {
-    resultEl.style.color = 'var(--safe)';
+    resultEl.style.color = 'var(--safe-text)';
     resultEl.textContent = 'Standing order created.';
     refreshStandingOrders();
   } else {
@@ -605,7 +605,7 @@ async function loadEconomyWants() {
     if (!wants.length && !surplus.length) { el.innerHTML = '<p class="empty-state" style="padding:1rem">No known market intel yet — visit settlements to learn their market.</p>'; return; }
     const rateCell = g => g.rate < 0
       ? `<span style="color:var(--danger)">▼ ${fmtNum(Number(g.rate.toFixed(1)))} per day</span>`
-      : `<span style="color:var(--safe)">▲ +${fmtNum(Number(g.rate.toFixed(1)))} per day</span>`;
+      : `<span style="color:var(--safe-text)">▲ +${fmtNum(Number(g.rate.toFixed(1)))} per day</span>`;
     let html = '';
     if (wants.length) {
       html += '<div class="dsec-title">Wants — buy here at a premium</div>' + wants.map(sw => `

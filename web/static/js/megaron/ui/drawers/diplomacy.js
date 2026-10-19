@@ -359,12 +359,12 @@ async function loadDipThreads() {
           const shipBit = m.trade_offer && m.trade_offer.ship_name
             ? ' · ⛵ by sea on ' + esc(m.trade_offer.ship_name)
             : '';
-          const statusBit = offerStatus === 'accepted' ? '<span style="color:var(--safe)">✓ accepted' + esc(tradeScheduleText(m.trade_offer)) + shipBit + '</span>'
+          const statusBit = offerStatus === 'accepted' ? '<span style="color:var(--safe-text)">✓ accepted' + esc(tradeScheduleText(m.trade_offer)) + shipBit + '</span>'
                           : offerStatus === 'declined' ? '<span style="color:var(--text-dim)">✗ declined</span>'
                           : offerStatus === 'expired'  ? '<span style="color:var(--text-dim)">⏳ expired</span>'
                           : sentStatusHTML(m);
           const replyText = m.reply_text
-            ? '<div class="dip-msg-text" style="color:var(--safe);text-align:right">' + esc(m.reply_text) + '</div>'
+            ? '<div class="dip-msg-text" style="color:var(--safe-text);text-align:right">' + esc(m.reply_text) + '</div>'
             : '';
           let cancelBtn = '';
           if (m.trade_offer && m.trade_offer.status === 'pending') {
@@ -484,7 +484,7 @@ export async function dipSendInThread(cid, destId) {
   const statusEl = document.getElementById(cid + '-status');
   const text = textEl ? textEl.value.trim() : '';
   function showStatus(msg, ok) {
-    if (statusEl) { statusEl.style.color = ok ? 'var(--safe)' : 'var(--accent)'; statusEl.textContent = msg; }
+    if (statusEl) { statusEl.style.color = ok ? 'var(--safe-text)' : 'var(--accent)'; statusEl.textContent = msg; }
   }
   if (!text)   { showStatus('write a message', false); return; }
   if (!destId) { showStatus('no destination', false); return; }
@@ -546,7 +546,7 @@ export async function dipAccept(id, btn) {
     const silverETA = Number.isInteger(data.silver_arrival_tick) ? fmtDay(data.silver_arrival_tick) : arrivalHTML(data.silver_arrives_at);
     const direction = data.kind === 'sell' ? 'incoming' : 'outgoing';
     const payment = data.kind === 'sell' ? 'silver sent' : 'silver incoming';
-    block.innerHTML = '<span style="color:var(--safe)">✓ Accepted — ' + data.quantity + ' ' + esc(data.good_key || '') + ' ' + direction + ' · goods arrive ' + goodsETA + ' · ' + data.silver_paid + ' ' + payment + ' · arrives ' + silverETA + shipBit + '</span>';
+    block.innerHTML = '<span style="color:var(--safe-text)">✓ Accepted — ' + data.quantity + ' ' + esc(data.good_key || '') + ' ' + direction + ' · goods arrive ' + goodsETA + ' · ' + data.silver_paid + ' ' + payment + ' · arrives ' + silverETA + shipBit + '</span>';
   } else {
     btn.disabled = false;
     if (block) {
@@ -579,7 +579,7 @@ export async function dipReply(id) {
   const data = await res.json().catch(() => ({}));
   const row = document.getElementById('dip-reply-row-' + id);
   if (res.ok && row) {
-    row.outerHTML = '<div style="font-size:.72rem;color:var(--safe);margin-top:.2rem">✓ Reply dispatched · returns ' + arrivalHTML(data.returns_at) + passageNote(data) + '</div>';
+    row.outerHTML = '<div style="font-size:.72rem;color:var(--safe-text);margin-top:.2rem">✓ Reply dispatched · returns ' + arrivalHTML(data.returns_at) + passageNote(data) + '</div>';
   }
 }
 
@@ -597,7 +597,7 @@ export async function dipArrangePassage(id, selId, btn) {
   const data = await res.json().catch(() => ({}));
   const block = document.getElementById('dip-passage-' + id);
   if (res.ok) {
-    if (block) block.outerHTML = '<div style="font-size:.72rem;color:var(--safe);margin-top:.3rem;text-align:right">✓ Passage arranged — arrives ' + arrivalHTML(data.arrives_at) + '</div>';
+    if (block) block.outerHTML = '<div style="font-size:.72rem;color:var(--safe-text);margin-top:.3rem;text-align:right">✓ Passage arranged — arrives ' + arrivalHTML(data.arrives_at) + '</div>';
   } else {
     btn.disabled = false;
     showInlineResult(block || btn.parentElement, formatApiError(data, 'Arrange passage failed'), true);

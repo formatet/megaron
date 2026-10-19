@@ -562,7 +562,7 @@ export function renderUnitCard(u) {
 
   // Cargo badge
   const cargoBadge = u.cargo_unit_id
-    ? '<span style="font-size:.6rem;color:var(--accent-city);margin-left:.3rem">carrying unit</span>'
+    ? '<span style="font-size:.6rem;color:var(--accent-city-text);margin-left:.3rem">carrying unit</span>'
     : '';
 
   // Action buttons
@@ -749,7 +749,7 @@ export async function unitRecall(unitID) {
   });
   const d = await res.json().catch(() => ({}));
   if (res.ok) {
-    if (statusEl) { statusEl.style.color = 'var(--safe)'; statusEl.textContent = orderSentLine(d, 'Recall'); }
+    if (statusEl) { statusEl.style.color = 'var(--safe-text)'; statusEl.textContent = orderSentLine(d, 'Recall'); }
   } else if (statusEl) {
     statusEl.style.color = 'var(--accent)';
     statusEl.textContent = d.error || 'Recall failed';
@@ -804,7 +804,7 @@ export async function unitRedirect(unitID) {
   });
   const d = await res.json().catch(() => ({}));
   if (res.ok) {
-    if (statusEl) { statusEl.style.color = 'var(--safe)'; statusEl.textContent = orderSentLine(d, 'Redirect'); }
+    if (statusEl) { statusEl.style.color = 'var(--safe-text)'; statusEl.textContent = orderSentLine(d, 'Redirect'); }
   } else if (statusEl) {
     statusEl.style.color = 'var(--accent)';
     statusEl.textContent = d.error || 'Redirect failed';
@@ -1019,7 +1019,7 @@ export async function unitPickup(unitID) {
   const data = await res.json().catch(() => ({}));
   if (res.ok) {
     if (resEl) {
-      resEl.style.color = 'var(--safe)';
+      resEl.style.color = 'var(--safe-text)';
       resEl.textContent = 'Ship sails to (' + data.shore_q + ',' + data.shore_r + ') — arrives day ' + fmtNum(data.arrival_tick) +
         (data.messenger_id ? ', a messenger rides along' : '') + '.';
     }
@@ -1052,7 +1052,7 @@ export async function unitBuildRoad(unitID) {
   const data = await res.json().catch(() => ({}));
   if (res.ok) {
     if (resEl) {
-      resEl.style.color = 'var(--safe)';
+      resEl.style.color = 'var(--safe-text)';
       resEl.textContent = data.status === 'order_dispatched'
         ? 'Road ordered — ' + fmtNum(data.stone) + ' stone is on its way; the Runner reaches the army ' + fmtArrival(data.courier_arrives_at, data.courier_due_tick) + '.'
         : 'Road ordered — ' + fmtNum(data.stone) + ' stone is on its way to the army.';

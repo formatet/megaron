@@ -171,7 +171,7 @@ export function renderColonizePreviewHTML(p) {
   if (p.timber_warning) html += `<div>${esc(p.timber_warning)}</div>`;
   if (p.harbour_note) html += `<div>${esc(p.harbour_note)}</div>`;
   html += `<div>Food: grain ${prodTick.toFixed(1)} + fish ${(g.fish_per_tick || 0).toFixed(1)} − consumption ${consTick.toFixed(1)} per day = ` +
-    `<b style="color:${netTick < 0 ? 'var(--accent)' : 'var(--safe)'}">net ${netLabel(netTick)} per day</b></div>`;
+    `<b style="color:${netTick < 0 ? 'var(--accent)' : 'var(--safe-text)'}">net ${netLabel(netTick)} per day</b></div>`;
   if (netTick < 0) {
     const reach = g.ticks_until_empty != null ? ` → lasts about ${fmtDays(Math.round(g.ticks_until_empty))}` : '';
     const farmNetTick = g.with_farm_food_net_per_tick ?? ((g.with_farm_per_tick || 0) - consTick);
