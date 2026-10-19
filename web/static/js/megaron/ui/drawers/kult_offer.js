@@ -38,7 +38,7 @@ export function offerRowHTML(prayer, stock) {
   return '<div class="offer-fields">' + fields + '</div>' +
     (note ? '<p class="offer-note">' + note + '</p>' : '') +
     '<button class="obj-cta btn-small" onclick="bringOffering(\'' + id + '\')">Bring the offering</button> ' +
-    '<button class="btn-small" onclick="cancelOffering(\'' + id + '\')">Cancel</button>';
+    '<button class="btn-small btn-secondary" onclick="cancelOffering(\'' + id + '\')">Cancel</button>';
 }
 
 // entries: [{good, value}] from the fields. Returns the offering to send, or
