@@ -67,5 +67,18 @@ func herdLine(sett map[string]any) string {
 	if count >= capacity {
 		return fmt.Sprintf("Herd %.0f / %.0f — full: new animals are eaten, then lost. A pen raises the cap.", count, capacity)
 	}
-	return fmt.Sprintf("Herd %.0f / %.0f", count, capacity)
+	line := fmt.Sprintf("Herd %.0f / %.0f", count, capacity)
+	if born, _ := herd["births_next"].(float64); born > 0 {
+		in, _ := herd["births_in"].(float64)
+		grain, _ := herd["births_grain"].(float64)
+		calves, days := "calves", "days"
+		if born == 1 {
+			calves = "calf"
+		}
+		if in == 1 {
+			days = "day"
+		}
+		line += fmt.Sprintf(" — %.0f %s in %.0f %s (%.0f grain)", born, calves, in, days, grain)
+	}
+	return line
 }

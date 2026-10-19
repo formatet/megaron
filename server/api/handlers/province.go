@@ -925,6 +925,15 @@ func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.
 	var herdNow float64
 	_ = pool.QueryRow(ctx, `SELECT GREATEST(0, settled(amount, rate, calc_tick)) FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'livestock'`, settID).Scan(&herdNow)
 	herd := map[string]int{"count": int(herdNow), "cap": int(economy.HerdCap(economy.PenLevel(ctx, pool, settID)))}
+	// The next calves (order 33): how many, how many grain they cost, on which tick.
+	var grainNow float64
+	var nowTick int
+	_ = pool.QueryRow(ctx, `SELECT COALESCE((SELECT GREATEST(0, settled(amount, rate, calc_tick)) FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'grain'), 0), COALESCE(current_world_tick(), 0)`, settID).Scan(&grainNow, &nowTick)
+	born, fed, at := economy.NextHerdBirth(herdNow, grainNow, nowTick)
+	herd["births_next"], herd["births_grain"], herd["next_birth_tick"] = born, fed, at
+	if at > 0 {
+		herd["births_in"] = at - nowTick // days, for the player surfaces
+	}
 
 	return FoodSummary{
 		Herd:  herd,

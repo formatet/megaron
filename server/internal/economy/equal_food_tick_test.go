@@ -17,7 +17,7 @@ func TestFourFoodActualMealAndRetryShareOneClaim(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	event := events.ScheduledEvent{ID: 280601, WorldID: f.worldID, DueTick: f.tick}
+	event := events.ScheduledEvent{ID: 280601, WorldID: f.worldID, DueTick: f.tick + 1} // off the birth beat
 	for i := 0; i < 3; i++ {
 		if err := newFoodTickHandler(pool).Handle(ctx, event); err != nil {
 			t.Fatal(err)

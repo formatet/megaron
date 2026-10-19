@@ -64,9 +64,9 @@ func PlanFoodHerd(demand float64, available map[string]float64, emergencyHerd bo
 	out := FoodMeal{Used: map[string]float64{}, Unmet: math.Max(0, demand)}
 	herd := math.Max(0, available[GoodLivestock])
 	if !math.IsInf(herdCap, 1) {
-		if eat := math.Min(out.Unmet, math.Max(0, herd-math.Max(0, herdCap))); eat > 0 {
+		if eat := math.Min(math.Ceil(out.Unmet/livestockFoodValue), math.Floor(math.Max(0, herd-math.Max(0, herdCap)))); eat > 0 {
 			out.Used[GoodLivestock] = eat
-			out.Unmet -= eat
+			out.Unmet = math.Max(0, out.Unmet-eat*livestockFoodValue)
 		}
 	}
 	total := FoodAmount(available)

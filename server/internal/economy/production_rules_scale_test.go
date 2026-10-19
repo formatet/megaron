@@ -102,7 +102,6 @@ func TestProductionRules_StandardTerrainYieldsOne(t *testing.T) {
 		GoodFish:      "coastal_sea",
 		GoodTimber:    "forest_olive_grove",
 		GoodCedar:     "forest_cedar",
-		GoodLivestock: "plains",
 		GoodStone:     "hills",
 	}
 

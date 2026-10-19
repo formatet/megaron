@@ -21,6 +21,10 @@ test('pen: herd line shows count / cap and warns when full',()=>{
  const full=foodSummaryHTML(pd({food:{coverage_ticks:4.2,food_net_per_tick:1,herd:{count:50,cap:50}}}));
  assert.match(full,/Herd 50 \/ 50 — full: new animals are eaten, then lost/);assert.match(full,/stat-warn/);
  assert.doesNotMatch(foodSummaryHTML(pd()),/Herd/);
+ const calves=foodSummaryHTML(pd({food:{coverage_ticks:4.2,food_net_per_tick:1,herd:{count:40,cap:50,births_next:4,births_in:3,births_grain:4}}}));
+ assert.match(calves,/Herd 40 \/ 50 — 4 calves in 3 days \(4 grain\)/);
+ const one=foodSummaryHTML(pd({food:{coverage_ticks:4.2,food_net_per_tick:1,herd:{count:10,cap:50,births_next:1,births_in:1,births_grain:0}}}));
+ assert.match(one,/1 calf in 1 day \(0 grain\)/);
 });
 test('J: growing low stocks never say starving; food-worker warning survives',()=>{
  const data=pd();data.food.coverage_ticks=0;data.food.food_net_per_tick=2;

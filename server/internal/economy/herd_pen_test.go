@@ -14,12 +14,12 @@ import (
 func TestHerdOverCapIsEatenInThePool(t *testing.T) {
 	// 60 animals, cap 50, 20 grain, people need 30: the pool is 20 grain + 10
 	// surplus animals, all eaten.
-	meal := PlanFoodHerd(30, map[string]float64{GoodGrain: 20, GoodLivestock: 60}, true, HerdCap(0))
+	meal := PlanFoodHerd(50, map[string]float64{GoodGrain: 20, GoodLivestock: 60}, true, HerdCap(0))
 	if math.Abs(meal.Used[GoodLivestock]-10) > 1e-9 || math.Abs(meal.Used[GoodGrain]-20) > 1e-9 || meal.Unmet != 0 || meal.Lost != 0 {
 		t.Fatalf("%+v", meal)
 	}
 	// Ordinary food, not emergency slaughter: eaten without the emergency flag too.
-	if plain := PlanFoodHerd(30, map[string]float64{GoodGrain: 20, GoodLivestock: 60}, false, HerdCap(0)); math.Abs(plain.Used[GoodLivestock]-10) > 1e-9 {
+	if plain := PlanFoodHerd(50, map[string]float64{GoodGrain: 20, GoodLivestock: 60}, false, HerdCap(0)); math.Abs(plain.Used[GoodLivestock]-10) > 1e-9 {
 		t.Fatalf("%+v", plain)
 	}
 }
@@ -32,8 +32,8 @@ func TestHerdUnderCapIsNotEatenWhenFed(t *testing.T) {
 }
 
 func TestHerdUnderCapIsEmergencySlaughterWhenStarving(t *testing.T) {
-	meal := PlanFoodHerd(5, map[string]float64{GoodLivestock: 40}, true, HerdCap(0))
-	if meal.Used[GoodLivestock] != 5 || meal.Unmet != 0 {
+	meal := PlanFoodHerd(6, map[string]float64{GoodLivestock: 40}, true, HerdCap(0))
+	if meal.Used[GoodLivestock] != 2 || meal.Unmet != 0 {
 		t.Fatalf("%+v", meal)
 	}
 }
@@ -63,11 +63,11 @@ func TestFoodTick_HerdOverCapEatenAndRestLost(t *testing.T) {
 	ctx := context.Background()
 	f := newFoodFixture(t, pool, "herd-lost", 1000) // demand 5
 	seedFoodStock(t, pool, f, 0, 0, 60)
-	event := events.ScheduledEvent{ID: 281001, WorldID: f.worldID, DueTick: f.tick}
+	event := events.ScheduledEvent{ID: 281001, WorldID: f.worldID, DueTick: f.tick + 1} // off the birth beat
 	if err := newFoodTickHandler(pool).Handle(ctx, event); err != nil {
 		t.Fatal(err)
 	}
-	// 5 eaten from the 10 over the cap, the other 5 lost: herd is exactly the cap.
+	// 2 animals (6 food) eaten for the 5 needed, the other 8 over the cap lost: herd is exactly the cap.
 	if got := foodStockOf(t, pool, f.settlementID, GoodLivestock); got != 50 {
 		t.Fatalf("herd after tick=%g want 50", got)
 	}
@@ -75,7 +75,7 @@ func TestFoodTick_HerdOverCapEatenAndRestLost(t *testing.T) {
 		t.Fatal("people went hungry")
 	}
 	var n int
-	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM events WHERE stream_id=$1 AND event_type=$2 AND (payload->>'lost')::int=5`, f.settlementID, EventHerdLost).Scan(&n); err != nil || n != 1 {
+	if err := pool.QueryRow(ctx, `SELECT COUNT(*) FROM events WHERE stream_id=$1 AND event_type=$2 AND (payload->>'lost')::int=8`, f.settlementID, EventHerdLost).Scan(&n); err != nil || n != 1 {
 		t.Fatalf("HerdLost events=%d err=%v", n, err)
 	}
 }
