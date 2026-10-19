@@ -308,14 +308,15 @@ type ExpeditionReportPayload struct {
 // carries the destination's actual terrain and deposit flags as read at
 // arrival, not a pointer to go look.
 type UnitScoutReportPayload struct {
-	UnitID        uuid.UUID `json:"unit_id"`
-	Q             int       `json:"q"`
-	R             int       `json:"r"`
-	Terrain       string    `json:"terrain"`
-	CopperDeposit bool      `json:"copper_deposit"`
-	TinDeposit    bool      `json:"tin_deposit"`
-	SilverDeposit bool      `json:"silver_deposit"`
-	CedarDeposit  bool      `json:"cedar_deposit"`
+	UnitID         uuid.UUID `json:"unit_id"`
+	Q              int       `json:"q"`
+	R              int       `json:"r"`
+	Terrain        string    `json:"terrain"`
+	CopperDeposit  bool      `json:"copper_deposit"`
+	TinDeposit     bool      `json:"tin_deposit"`
+	SilverDeposit  bool      `json:"silver_deposit"`
+	CedarDeposit   bool      `json:"cedar_deposit"`
+	IncenseDeposit bool      `json:"incense_deposit,omitempty"`
 }
 
 // CityCollapsedPayload is emitted when a settlement's population falls below the collapse line (economy.CollapseBelowPopulation; ≤ 100 until 2026-10-10)

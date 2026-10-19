@@ -128,18 +128,18 @@ func foundMetropolisFromNomadicHost(
 	// 2. The hex must still be free and land. The host can be standing anywhere it
 	// walked, including next to someone who settled first while it was en route.
 	var terrain string
-	var copperDep, tinDep, silverDep, cedarDep, coastal bool
+	var copperDep, tinDep, silverDep, cedarDep, incenseDep, coastal bool
 	err = tx.QueryRow(ctx,
 		`SELECT mt.terrain, mt.copper_deposit, mt.tin_deposit,
 		        COALESCE(mt.silver_deposit,false), COALESCE(mt.cedar_deposit,false),
-		        COALESCE(mt.coastal,false)
+		        COALESCE(mt.incense_deposit,false), COALESCE(mt.coastal,false)
 		 FROM map_tiles mt
 		 LEFT JOIN provinces p ON p.world_id = mt.world_id AND p.map_q = mt.q AND p.map_r = mt.r
 		 WHERE mt.world_id = $1 AND mt.q = $2 AND mt.r = $3
 		   AND p.id IS NULL
 		   AND mt.terrain NOT IN ('coastal_sea','deep_sea','river','river_ford','mountain_limestone','mountain_red','semi_desert')`,
 		worldID, q, r,
-	).Scan(&terrain, &copperDep, &tinDep, &silverDep, &cedarDep, &coastal)
+	).Scan(&terrain, &copperDep, &tinDep, &silverDep, &cedarDep, &incenseDep, &coastal)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return out, errHexNotSettlable
 	}
@@ -184,6 +184,7 @@ func foundMetropolisFromNomadicHost(
 		Tin:           tinDep,
 		Silver:        silverDep,
 		Cedar:         cedarDep,
+		Incense:       incenseDep,
 		Coastal:       coastal,
 		Name:          name,
 		Culture:       culture,

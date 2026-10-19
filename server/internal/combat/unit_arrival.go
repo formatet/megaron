@@ -1260,44 +1260,46 @@ func (h *UnitArrivalHandler) reportScoutFindings(
 	u unitRow, destQ, destR int, worldID uuid.UUID,
 ) {
 	var terrain string
-	var copperDep, tinDep, silverDep, cedarDep bool
+	var copperDep, tinDep, silverDep, cedarDep, incenseDep bool
 	if err := tx.QueryRow(ctx,
 		`SELECT terrain, copper_deposit, tin_deposit,
-		        COALESCE(silver_deposit,false), COALESCE(cedar_deposit,false)
+		        COALESCE(silver_deposit,false), COALESCE(cedar_deposit,false), COALESCE(incense_deposit,false)
 		 FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
 		worldID, destQ, destR,
-	).Scan(&terrain, &copperDep, &tinDep, &silverDep, &cedarDep); err != nil {
+	).Scan(&terrain, &copperDep, &tinDep, &silverDep, &cedarDep, &incenseDep); err != nil {
 		slog.Warn("scout report: could not load destination tile, skipping report", "unit", u.id, "q", destQ, "r", destR, "err", err)
 		return
 	}
 
 	_, _ = h.eventStore.Append(ctx, u.id, events.StreamType(unit.StreamUnit), unit.EventUnitScoutReport,
 		unit.UnitScoutReportPayload{
-			UnitID:        u.id,
-			Q:             destQ,
-			R:             destR,
-			Terrain:       terrain,
-			CopperDeposit: copperDep,
-			TinDeposit:    tinDep,
-			SilverDeposit: silverDep,
-			CedarDeposit:  cedarDep,
+			UnitID:         u.id,
+			Q:              destQ,
+			R:              destR,
+			Terrain:        terrain,
+			CopperDeposit:  copperDep,
+			TinDeposit:     tinDep,
+			SilverDeposit:  silverDep,
+			CedarDeposit:   cedarDep,
+			IncenseDeposit: incenseDep,
 		}, worldID, nil)
 
 	if h.hub != nil {
 		_ = h.hub.NotifyPlayer(ctx, worldID, u.ownerID, "ScoutReport", 4, map[string]any{
-			"unit_id":        u.id,
-			"q":              destQ,
-			"r":              destR,
-			"terrain":        terrain,
-			"copper_deposit": copperDep,
-			"tin_deposit":    tinDep,
-			"silver_deposit": silverDep,
-			"cedar_deposit":  cedarDep,
+			"unit_id":         u.id,
+			"q":               destQ,
+			"r":               destR,
+			"terrain":         terrain,
+			"copper_deposit":  copperDep,
+			"tin_deposit":     tinDep,
+			"silver_deposit":  silverDep,
+			"cedar_deposit":   cedarDep,
+			"incense_deposit": incenseDep,
 		})
 	}
 
 	slog.Info("scout report filed", "unit", u.id, "q", destQ, "r", destR, "terrain", terrain,
-		"copper", copperDep, "tin", tinDep, "silver", silverDep, "cedar", cedarDep)
+		"copper", copperDep, "tin", tinDep, "silver", silverDep, "cedar", cedarDep, "incense", incenseDep)
 }
 
 // returnReason selects which event type and notification dispatchReturnHome
@@ -1875,20 +1877,20 @@ func (h *UnitArrivalHandler) foundColony(
 	provinceID := existingProvinceID
 	if provinceID == uuid.Nil {
 		var terrain string
-		var copperDep, tinDep, silverDep, cedarDep, coastal bool
+		var copperDep, tinDep, silverDep, cedarDep, incenseDep, coastal bool
 		if err := tx.QueryRow(ctx,
 			`SELECT terrain, copper_deposit, tin_deposit,
-			        COALESCE(silver_deposit,false), COALESCE(cedar_deposit,false), COALESCE(coastal,false)
+			        COALESCE(silver_deposit,false), COALESCE(cedar_deposit,false), COALESCE(incense_deposit,false), COALESCE(coastal,false)
 			 FROM map_tiles WHERE world_id = $1 AND q = $2 AND r = $3`,
 			worldID, destQ, destR,
-		).Scan(&terrain, &copperDep, &tinDep, &silverDep, &cedarDep, &coastal); err != nil {
+		).Scan(&terrain, &copperDep, &tinDep, &silverDep, &cedarDep, &incenseDep, &coastal); err != nil {
 			return fmt.Errorf("foundColony: load map tile: %w", err)
 		}
 		if err := tx.QueryRow(ctx,
 			`INSERT INTO provinces (world_id, map_q, map_r, terrain_type, territory_state,
-			                        copper_deposit, tin_deposit, silver_deposit, cedar_deposit, coastal)
-			 VALUES ($1,$2,$3,$4,'controlled',$5,$6,$7,$8,$9) RETURNING id`,
-			worldID, destQ, destR, terrain, copperDep, tinDep, silverDep, cedarDep, coastal,
+			                        copper_deposit, tin_deposit, silver_deposit, cedar_deposit, incense_deposit, coastal)
+			 VALUES ($1,$2,$3,$4,'controlled',$5,$6,$7,$8,$9,$10) RETURNING id`,
+			worldID, destQ, destR, terrain, copperDep, tinDep, silverDep, cedarDep, incenseDep, coastal,
 		).Scan(&provinceID); err != nil {
 			return fmt.Errorf("foundColony: create province: %w", err)
 		}

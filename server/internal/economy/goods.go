@@ -23,6 +23,7 @@ const (
 	GoodSilver    = "silver"
 	GoodWine      = "wine"
 	GoodOil       = "oil"
+	GoodIncense   = "incense"
 	GoodLivestock = "livestock"
 	GoodHorses    = "horses"
 	GoodBronze    = "bronze"

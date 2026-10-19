@@ -48,7 +48,7 @@ type hexRule struct {
 var fieldStone = hexRule{"stone", 1, "stonequarry"}
 
 // hexRules returns the rule rows for a hex of this terrain and deposits.
-func hexRules(terrain string, copperDep, tinDep, silverDep bool) []hexRule {
+func hexRules(terrain string, copperDep, tinDep, silverDep, incenseDep bool) []hexRule {
 	var out []hexRule
 	switch terrain {
 	case "plains":
@@ -83,14 +83,19 @@ func hexRules(terrain string, copperDep, tinDep, silverDep bool) []hexRule {
 	if silverDep {
 		out = append(out, hexRule{"silver", 1, "mine"})
 	}
+	if incenseDep {
+		// Two places, no building (Timothy 2026-10-19): one hex, two gubbar. The
+		// production_rules row (mig 192) carries requires_deposit='incense'.
+		out = append(out, hexRule{GoodIncense, 2, ""})
+	}
 	return out
 }
 
 // RuleBuildingSupportsHex reports whether the rule table names buildingType as
 // the relevant building for some good on a hex of this terrain/deposits — the
 // "may this building stand here" gate.
-func RuleBuildingSupportsHex(buildingType, terrain string, copperDep, tinDep, silverDep bool) bool {
-	for _, r := range hexRules(terrain, copperDep, tinDep, silverDep) {
+func RuleBuildingSupportsHex(buildingType, terrain string, copperDep, tinDep, silverDep, incenseDep bool) bool {
+	for _, r := range hexRules(terrain, copperDep, tinDep, silverDep, incenseDep) {
 		if r.building == buildingType {
 			return true
 		}
@@ -110,8 +115,8 @@ func (r hexRule) placesAndMult(level int) (places int, mult float64) {
 // A good without a rule (oil, wine) gets HexFallbackCap
 // places and no multiplier. levels is the building-level map scoped to the hex
 // (BuildingSet.levelsAt).
-func hexGoodPlaces(terrain string, copperDep, tinDep, silverDep bool, levels map[string]int, good string) (places int, mult float64) {
-	for _, r := range hexRules(terrain, copperDep, tinDep, silverDep) {
+func hexGoodPlaces(terrain string, copperDep, tinDep, silverDep, incenseDep bool, levels map[string]int, good string) (places int, mult float64) {
+	for _, r := range hexRules(terrain, copperDep, tinDep, silverDep, incenseDep) {
 		if r.good == good {
 			return r.placesAndMult(levels[r.building])
 		}
@@ -149,12 +154,12 @@ var RuleBuildingTypes = []string{"farm", "mine", "lumbermill", "stonequarry", "h
 // requires_deposits.
 func RuleBuildingGate(buildingType string) (terrains, deposits []string) {
 	for _, t := range ruleTerrains {
-		if RuleBuildingSupportsHex(buildingType, t, false, false, false) {
+		if RuleBuildingSupportsHex(buildingType, t, false, false, false, false) {
 			terrains = append(terrains, t)
 		}
 	}
 	for _, d := range []string{"copper", "tin", "silver"} {
-		if RuleBuildingSupportsHex(buildingType, "", d == "copper", d == "tin", d == "silver") {
+		if RuleBuildingSupportsHex(buildingType, "", d == "copper", d == "tin", d == "silver", false) {
 			deposits = append(deposits, d)
 		}
 	}
@@ -181,7 +186,7 @@ func RuleBuildingGoods(ctx context.Context, tx Tx, settlementID uuid.UUID, build
 	}
 	qs, rs := hexgrid.QRArrays(hexes)
 	rows, err := tx.Query(ctx,
-		`SELECT mt.terrain, COALESCE(mt.copper_deposit, false), COALESCE(mt.tin_deposit, false), COALESCE(mt.silver_deposit, false)
+		`SELECT mt.terrain, COALESCE(mt.copper_deposit, false), COALESCE(mt.tin_deposit, false), COALESCE(mt.silver_deposit, false), COALESCE(mt.incense_deposit, false)
 		 FROM unnest($2::int[], $3::int[]) AS want(q, r)
 		 JOIN map_tiles mt ON mt.world_id = $1 AND mt.q = want.q AND mt.r = want.r`,
 		worldID, qs, rs)
@@ -193,11 +198,11 @@ func RuleBuildingGoods(ctx context.Context, tx Tx, settlementID uuid.UUID, build
 	var out []string
 	for rows.Next() {
 		var terrain string
-		var cu, tin, ag bool
-		if err := rows.Scan(&terrain, &cu, &tin, &ag); err != nil {
+		var cu, tin, ag, inc bool
+		if err := rows.Scan(&terrain, &cu, &tin, &ag, &inc); err != nil {
 			return nil, fmt.Errorf("rule building goods: scan: %w", err)
 		}
-		for _, rule := range hexRules(terrain, cu, tin, ag) {
+		for _, rule := range hexRules(terrain, cu, tin, ag, inc) {
 			if rule.building == buildingType && !seen[rule.good] {
 				seen[rule.good] = true
 				out = append(out, rule.good)

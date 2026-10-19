@@ -550,6 +550,115 @@ func addTinSources(tiles []MapTile, seed int64, width, height int) {
 	placeDepositClusters(tiles, cand, landmap, rand.New(rand.NewSource(seed^0x54494e)), tinAdditionalSourceTarget(width, height), tinClusterMin, tinClusterMax, 0, width, height, func(t *MapTile) { t.TinDeposit = true })
 }
 
+// Incense (rokelse, order 32, Timothy 2026-10-19): a rare religious good found on
+// marked scrub_maquis / semi_desert hexes, about ten single-hex sources on 64x64 like
+// silver, roughly five eighths in the eastern half and the rest in the west. It is a
+// post-pass with its OWN rng stream (seed^0x494e43), run after addTinSources, so every
+// other field of an existing seed's map is unchanged.
+const (
+	incenseSourceFloor         = 3
+	incenseSourcesAtReference  = 10
+	incenseSourceReferenceArea = 64 * 64
+	incenseEastNumerator       = 5 // of incenseEastDenominator, the eastern share
+	incenseEastDenominator     = 8
+	incenseSourceSpacing       = silverSourceSpacing
+)
+
+func incenseSourceTarget(width, height int) int {
+	return max(incenseSourceFloor, int(math.Round(float64(width*height)*incenseSourcesAtReference/incenseSourceReferenceArea)))
+}
+
+func incenseEastTarget(total int) int {
+	return int(math.Round(float64(total) * incenseEastNumerator / incenseEastDenominator))
+}
+
+// AddIncenseSources flags incense hexes on tiles (see the const block above) and
+// returns how many it placed. It is idempotent: a map that already has an incense
+// hex is left untouched (returns 0), so cmd/seed-incense can be run twice. The
+// result is a pure function of (tiles, seed, width, height).
+func AddIncenseSources(tiles []MapTile, seed int64, width, height int) int {
+	for _, t := range tiles {
+		if t.IncenseDeposit {
+			return 0
+		}
+	}
+	// Work on a (r, q)-sorted copy: landmass ids and the candidate shuffle depend on
+	// tile order, and a stored world (loaded ORDER BY r, q) must get the same hexes
+	// the generator picked from its own order.
+	order := make([]int, len(tiles))
+	for i := range order {
+		order[i] = i
+	}
+	sort.Slice(order, func(a, b int) bool {
+		ta, tb := tiles[order[a]], tiles[order[b]]
+		if ta.R != tb.R {
+			return ta.R < tb.R
+		}
+		return ta.Q < tb.Q
+	})
+	work := make([]MapTile, len(tiles))
+	for i, o := range order {
+		work[i] = tiles[o]
+	}
+	original := tiles
+	defer func() {
+		for i, o := range order {
+			original[o].IncenseDeposit = work[i].IncenseDeposit
+		}
+	}()
+	tiles = work
+	grid := make(map[cell]Terrain, len(tiles))
+	land := landComponents(tiles)
+	landmap := make(map[cell]int, len(land))
+	for _, t := range tiles {
+		c := cell{t.Q, t.R}
+		grid[c] = t.Terrain
+		landmap[c] = land[[2]int{t.Q, t.R}]
+	}
+	var eastCand, westCand []int
+	for i, t := range tiles {
+		if (t.Terrain != TerrainScrubMaquis && t.Terrain != TerrainSemiDesert) || t.CopperDeposit || t.TinDeposit || t.SilverDeposit {
+			continue
+		}
+		if !hasBuildableNeighbour(grid, cell{t.Q, t.R}, width, height) {
+			continue
+		}
+		if t.Q >= width/2 {
+			eastCand = append(eastCand, i)
+		} else {
+			westCand = append(westCand, i)
+		}
+	}
+	rng := rand.New(rand.NewSource(seed ^ 0x494e43))
+	total := incenseSourceTarget(width, height)
+	east := incenseEastTarget(total)
+	set := func(t *MapTile) { t.IncenseDeposit = true }
+	placeDepositClusters(tiles, eastCand, landmap, rng, east, 1, 1, incenseSourceSpacing, width, height, set)
+
+	// West sources keep the same spacing from the eastern ones across the midline.
+	var placed []cell
+	for _, t := range tiles {
+		if t.IncenseDeposit {
+			placed = append(placed, cell{t.Q, t.R})
+		}
+	}
+	var westFree []int
+	for _, idx := range westCand {
+		if farEnough(cell{tiles[idx].Q, tiles[idx].R}, placed, incenseSourceSpacing) {
+			westFree = append(westFree, idx)
+		}
+	}
+	placeDepositClusters(tiles, westFree, landmap, rng, total-east, 1, 1, incenseSourceSpacing, width, height, set)
+
+	n := 0
+	for _, t := range tiles {
+		if t.IncenseDeposit {
+			n++
+		}
+	}
+	return n
+}
+
 // GenerateMap procedurally generates a hex grid for a world using a seeded RNG.
 //
 // v4 (P1) — height-field archipelago. A two-scale fBm height field (see
@@ -604,6 +713,7 @@ func GenerateMap(worldID interface{ String() string }, seed int64, width, height
 			continue
 		}
 		addTinSources(tiles, eff, width, height)
+		AddIncenseSources(tiles, eff, width, height)
 		return tiles, eff
 	}
 	// A broken map must never host a world — fail loud rather than serve a

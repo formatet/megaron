@@ -330,7 +330,7 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT q, r, terrain, coastal, fertility, mineral, copper_deposit, tin_deposit,
-		        COALESCE(cedar_deposit,false), COALESCE(silver_deposit,false)
+		        COALESCE(cedar_deposit,false), COALESCE(silver_deposit,false), COALESCE(incense_deposit,false)
 		 FROM map_tiles WHERE world_id = $1`,
 		worldID,
 	)
@@ -348,24 +348,25 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type tileView struct {
-		RiverName     string  `json:"river_name,omitempty"`
-		PlaceName     string  `json:"place_name,omitempty"`
-		PlaceKind     string  `json:"place_kind,omitempty"`
-		PlaceID       string  `json:"place_id,omitempty"`
-		CanName       bool    `json:"can_name,omitempty"`
-		Q             int     `json:"q"`
-		R             int     `json:"r"`
-		Terrain       string  `json:"terrain"`
-		Coastal       bool    `json:"coastal,omitempty"`
-		Visible       bool    `json:"visible"`
-		Tier          string  `json:"tier"` // "live" | "remembered" | "fog"
-		Frontier      bool    `json:"frontier,omitempty"`
-		F             float64 `json:"fertility,omitempty"`
-		M             float64 `json:"mineral,omitempty"`
-		CopperDeposit bool    `json:"copper_deposit,omitempty"`
-		TinDeposit    bool    `json:"tin_deposit,omitempty"`
-		CedarDeposit  bool    `json:"cedar_deposit,omitempty"`
-		SilverDeposit bool    `json:"silver_deposit,omitempty"`
+		RiverName      string  `json:"river_name,omitempty"`
+		PlaceName      string  `json:"place_name,omitempty"`
+		PlaceKind      string  `json:"place_kind,omitempty"`
+		PlaceID        string  `json:"place_id,omitempty"`
+		CanName        bool    `json:"can_name,omitempty"`
+		Q              int     `json:"q"`
+		R              int     `json:"r"`
+		Terrain        string  `json:"terrain"`
+		Coastal        bool    `json:"coastal,omitempty"`
+		Visible        bool    `json:"visible"`
+		Tier           string  `json:"tier"` // "live" | "remembered" | "fog"
+		Frontier       bool    `json:"frontier,omitempty"`
+		F              float64 `json:"fertility,omitempty"`
+		M              float64 `json:"mineral,omitempty"`
+		CopperDeposit  bool    `json:"copper_deposit,omitempty"`
+		TinDeposit     bool    `json:"tin_deposit,omitempty"`
+		CedarDeposit   bool    `json:"cedar_deposit,omitempty"`
+		SilverDeposit  bool    `json:"silver_deposit,omitempty"`
+		IncenseDeposit bool    `json:"incense_deposit,omitempty"`
 	}
 	var fullMap []world.MapTile
 	var tiles []tileView
@@ -374,7 +375,7 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var t tileView
 		if err := rows.Scan(&t.Q, &t.R, &t.Terrain, &t.Coastal, &t.F, &t.M, &t.CopperDeposit, &t.TinDeposit,
-			&t.CedarDeposit, &t.SilverDeposit); err != nil {
+			&t.CedarDeposit, &t.SilverDeposit, &t.IncenseDeposit); err != nil {
 			continue
 		}
 		fullMap = append(fullMap, world.MapTile{Q: t.Q, R: t.R, Terrain: world.Terrain(t.Terrain)})
@@ -399,6 +400,7 @@ func (h *WorldHandler) Map(w http.ResponseWriter, r *http.Request) {
 			t.TinDeposit = false
 			t.CedarDeposit = false
 			t.SilverDeposit = false
+			t.IncenseDeposit = false
 			t.Terrain = "fog"
 		}
 		tierByPos[[2]int{t.Q, t.R}] = t.Tier
@@ -528,13 +530,13 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 		qs[i], rs[i] = int32(c[0]), int32(c[1])
 	}
 	type catTile struct {
-		terrain                          string
-		coastal, copper, tin, cedar, sil bool
+		terrain                               string
+		coastal, copper, tin, cedar, sil, inc bool
 	}
 	tiles := map[[2]int]catTile{}
 	trows, err := h.pool.Query(ctx,
 		`SELECT mt.q, mt.r, mt.terrain, mt.coastal, mt.copper_deposit, mt.tin_deposit,
-		        COALESCE(mt.cedar_deposit,false), COALESCE(mt.silver_deposit,false)
+		        COALESCE(mt.cedar_deposit,false), COALESCE(mt.silver_deposit,false), COALESCE(mt.incense_deposit,false)
 		 FROM map_tiles mt
 		 JOIN unnest($2::int[], $3::int[]) AS hx(q, r) ON hx.q = mt.q AND hx.r = mt.r
 		 WHERE mt.world_id = $1`,
@@ -547,7 +549,7 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 	for trows.Next() {
 		var tq, tr int
 		var ct catTile
-		if err := trows.Scan(&tq, &tr, &ct.terrain, &ct.coastal, &ct.copper, &ct.tin, &ct.cedar, &ct.sil); err != nil {
+		if err := trows.Scan(&tq, &tr, &ct.terrain, &ct.coastal, &ct.copper, &ct.tin, &ct.cedar, &ct.sil, &ct.inc); err != nil {
 			continue
 		}
 		tiles[[2]int{tq, tr}] = ct
@@ -555,15 +557,16 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 	trows.Close()
 
 	type catchmentEntry struct {
-		Q             int    `json:"q"`
-		R             int    `json:"r"`
-		Known         bool   `json:"known"`
-		Terrain       string `json:"terrain,omitempty"`
-		Coastal       bool   `json:"coastal,omitempty"`
-		CopperDeposit bool   `json:"copper_deposit,omitempty"`
-		TinDeposit    bool   `json:"tin_deposit,omitempty"`
-		SilverDeposit bool   `json:"silver_deposit,omitempty"`
-		CedarDeposit  bool   `json:"cedar_deposit,omitempty"`
+		Q              int    `json:"q"`
+		R              int    `json:"r"`
+		Known          bool   `json:"known"`
+		Terrain        string `json:"terrain,omitempty"`
+		Coastal        bool   `json:"coastal,omitempty"`
+		CopperDeposit  bool   `json:"copper_deposit,omitempty"`
+		TinDeposit     bool   `json:"tin_deposit,omitempty"`
+		SilverDeposit  bool   `json:"silver_deposit,omitempty"`
+		CedarDeposit   bool   `json:"cedar_deposit,omitempty"`
+		IncenseDeposit bool   `json:"incense_deposit,omitempty"`
 	}
 	view := make([]catchmentEntry, 0, len(catchment))
 	var knownHexes []hexgrid.Coord
@@ -592,6 +595,7 @@ func (h *WorldHandler) ColonizePreview(w http.ResponseWriter, r *http.Request) {
 			e.TinDeposit = ct.tin
 			e.SilverDeposit = ct.sil
 			e.CedarDeposit = ct.cedar
+			e.IncenseDeposit = ct.inc
 			// The centre hex is not a production tile (see comment above) —
 			// exclude it from the potential call even though it is shown here.
 			if key != [2]int{center.Q, center.R} {
@@ -1799,10 +1803,10 @@ func (h *WorldHandler) storeTiles(ctx context.Context, worldID uuid.UUID, tiles 
 			landmassID = &id
 		}
 		batch.Queue(
-			`INSERT INTO map_tiles (world_id, q, r, terrain, coastal, fertility, mineral, copper_deposit, tin_deposit, silver_deposit, cedar_deposit, landmass_id)
-			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+			`INSERT INTO map_tiles (world_id, q, r, terrain, coastal, fertility, mineral, copper_deposit, tin_deposit, silver_deposit, cedar_deposit, incense_deposit, landmass_id)
+			 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 			 ON CONFLICT (world_id, q, r) DO NOTHING`,
-			worldID, t.Q, t.R, string(t.Terrain), t.Coastal, t.Fertility, t.Mineral, t.CopperDeposit, t.TinDeposit, t.SilverDeposit, t.CedarDeposit, landmassID,
+			worldID, t.Q, t.R, string(t.Terrain), t.Coastal, t.Fertility, t.Mineral, t.CopperDeposit, t.TinDeposit, t.SilverDeposit, t.CedarDeposit, t.IncenseDeposit, landmassID,
 		)
 	}
 	br := h.pool.SendBatch(ctx, batch)
@@ -1843,6 +1847,7 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 		        COALESCE(prov.tin_deposit, false),
 		        COALESCE(prov.silver_deposit, false),
 		        COALESCE(prov.cedar_deposit, false),
+		        COALESCE(prov.incense_deposit, false),
 		        COALESCE(prov.map_q, 0),
 		        COALESCE(prov.map_r, 0),
 		        COALESCE(prov.id::text, ''),
@@ -1861,19 +1866,20 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	type entry struct {
-		SettlementID  string `json:"settlement_id"`
-		Name          string `json:"name"`
-		Owner         string `json:"owner"`
-		Culture       string `json:"culture"`
-		Terrain       string `json:"terrain"`
-		Kingdom       string `json:"kingdom,omitempty"`
-		Own           bool   `json:"own"`
-		CopperDeposit bool   `json:"copper_deposit,omitempty"`
-		TinDeposit    bool   `json:"tin_deposit,omitempty"`
-		SilverDeposit bool   `json:"silver_deposit,omitempty"`
-		CedarDeposit  bool   `json:"cedar_deposit,omitempty"`
-		ProvinceID    string `json:"province_id,omitempty"`
-		IsCapital     bool   `json:"is_capital,omitempty"`
+		SettlementID   string `json:"settlement_id"`
+		Name           string `json:"name"`
+		Owner          string `json:"owner"`
+		Culture        string `json:"culture"`
+		Terrain        string `json:"terrain"`
+		Kingdom        string `json:"kingdom,omitempty"`
+		Own            bool   `json:"own"`
+		CopperDeposit  bool   `json:"copper_deposit,omitempty"`
+		TinDeposit     bool   `json:"tin_deposit,omitempty"`
+		SilverDeposit  bool   `json:"silver_deposit,omitempty"`
+		CedarDeposit   bool   `json:"cedar_deposit,omitempty"`
+		IncenseDeposit bool   `json:"incense_deposit,omitempty"`
+		ProvinceID     string `json:"province_id,omitempty"`
+		IsCapital      bool   `json:"is_capital,omitempty"`
 	}
 	var result []entry
 	for rows.Next() {
@@ -1884,7 +1890,7 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 		var q, r int
 		if err := rows.Scan(&e.SettlementID, &e.Name, &e.Owner, &e.Culture, &terrain, &kingdom,
 			&ownerID,
-			&e.CopperDeposit, &e.TinDeposit, &e.SilverDeposit, &e.CedarDeposit,
+			&e.CopperDeposit, &e.TinDeposit, &e.SilverDeposit, &e.CedarDeposit, &e.IncenseDeposit,
 			&q, &r, &e.ProvinceID, &e.IsCapital); err != nil {
 			continue
 		}
@@ -1917,26 +1923,27 @@ func (h *WorldHandler) Wanaxes(w http.ResponseWriter, r *http.Request) {
 // or "rumour" (heard of via gossip — fuzzy Bearing + IndustryHint only, Q/R nil,
 // never contactable until explored into the known set).
 type cityEntry struct {
-	SettlementID  string `json:"settlement_id"`
-	Name          string `json:"name"`
-	Owner         string `json:"owner,omitempty"`
-	OwnerID       string `json:"owner_id,omitempty"`
-	Culture       string `json:"culture,omitempty"`
-	Terrain       string `json:"terrain,omitempty"`
-	Kingdom       string `json:"kingdom,omitempty"`
-	Own           bool   `json:"own,omitempty"`
-	CopperDeposit bool   `json:"copper_deposit,omitempty"`
-	TinDeposit    bool   `json:"tin_deposit,omitempty"`
-	SilverDeposit bool   `json:"silver_deposit,omitempty"`
-	CedarDeposit  bool   `json:"cedar_deposit,omitempty"`
-	ProvinceID    string `json:"province_id,omitempty"`
-	IsCapital     bool   `json:"is_capital,omitempty"`
-	Knowledge     string `json:"knowledge"` // "known" | "rumour"
-	Q             *int   `json:"q,omitempty"`
-	R             *int   `json:"r,omitempty"`
-	Bearing       string `json:"bearing,omitempty"`
-	IndustryHint  string `json:"industry_hint,omitempty"`
-	Note          string `json:"note,omitempty"`
+	SettlementID   string `json:"settlement_id"`
+	Name           string `json:"name"`
+	Owner          string `json:"owner,omitempty"`
+	OwnerID        string `json:"owner_id,omitempty"`
+	Culture        string `json:"culture,omitempty"`
+	Terrain        string `json:"terrain,omitempty"`
+	Kingdom        string `json:"kingdom,omitempty"`
+	Own            bool   `json:"own,omitempty"`
+	CopperDeposit  bool   `json:"copper_deposit,omitempty"`
+	TinDeposit     bool   `json:"tin_deposit,omitempty"`
+	SilverDeposit  bool   `json:"silver_deposit,omitempty"`
+	CedarDeposit   bool   `json:"cedar_deposit,omitempty"`
+	IncenseDeposit bool   `json:"incense_deposit,omitempty"`
+	ProvinceID     string `json:"province_id,omitempty"`
+	IsCapital      bool   `json:"is_capital,omitempty"`
+	Knowledge      string `json:"knowledge"` // "known" | "rumour"
+	Q              *int   `json:"q,omitempty"`
+	R              *int   `json:"r,omitempty"`
+	Bearing        string `json:"bearing,omitempty"`
+	IndustryHint   string `json:"industry_hint,omitempty"`
+	Note           string `json:"note,omitempty"`
 }
 
 // loadCities builds the combined known + rumour-known directory for playerID:
@@ -1961,6 +1968,7 @@ func (h *WorldHandler) loadCities(ctx context.Context, worldID, playerID uuid.UU
 		        COALESCE(prov.tin_deposit, false),
 		        COALESCE(prov.silver_deposit, false),
 		        COALESCE(prov.cedar_deposit, false),
+		        COALESCE(prov.incense_deposit, false),
 		        COALESCE(prov.map_q, 0),
 		        COALESCE(prov.map_r, 0),
 		        COALESCE(prov.id::text, ''),
@@ -1987,7 +1995,7 @@ func (h *WorldHandler) loadCities(ctx context.Context, worldID, playerID uuid.UU
 		var q, r int
 		if err := rows.Scan(&e.SettlementID, &e.Name, &e.Owner, &e.Culture, &terrain, &kingdom,
 			&ownerID,
-			&e.CopperDeposit, &e.TinDeposit, &e.SilverDeposit, &e.CedarDeposit,
+			&e.CopperDeposit, &e.TinDeposit, &e.SilverDeposit, &e.CedarDeposit, &e.IncenseDeposit,
 			&q, &r, &e.ProvinceID, &e.IsCapital); err != nil {
 			continue
 		}
@@ -2028,6 +2036,7 @@ func (h *WorldHandler) loadCities(ctx context.Context, worldID, playerID uuid.UU
 		        COALESCE(prov.tin_deposit, false),
 		        COALESCE(prov.silver_deposit, false),
 		        COALESCE(prov.cedar_deposit, false),
+		        COALESCE(prov.incense_deposit, false),
 		        prov.map_q, prov.map_r,
 		        COALESCE(ks.industry_hint, '')
 		 FROM known_settlements ks
@@ -2050,7 +2059,7 @@ func (h *WorldHandler) loadCities(ctx context.Context, worldID, playerID uuid.UU
 		var q, r *int
 		if err := rumourRows.Scan(&e.SettlementID, &e.Name, &e.Owner, &e.Culture, &terrain, &kingdom,
 			&ownerID,
-			&e.CopperDeposit, &e.TinDeposit, &e.SilverDeposit, &e.CedarDeposit,
+			&e.CopperDeposit, &e.TinDeposit, &e.SilverDeposit, &e.CedarDeposit, &e.IncenseDeposit,
 			&q, &r, &e.IndustryHint); err != nil {
 			continue
 		}

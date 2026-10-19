@@ -188,7 +188,8 @@ func LoadHexCapacity(ctx context.Context, tx Tx, settlementID uuid.UUID) (map[st
 	catchQ, catchR := hexgrid.QRArrays(hexgrid.Ring(hexgrid.Coord{Q: q, R: r}, hexgrid.CatchmentRadius))
 	rows, err := tx.Query(ctx,
 		`SELECT mt.q, mt.r, mt.terrain, COALESCE(mt.copper_deposit, false),
-		        COALESCE(mt.tin_deposit, false), COALESCE(mt.silver_deposit, false)
+		        COALESCE(mt.tin_deposit, false), COALESCE(mt.silver_deposit, false),
+		        COALESCE(mt.incense_deposit, false)
 		 FROM unnest($2::int[], $3::int[]) AS catchment(q, r)
 		 JOIN map_tiles mt ON mt.world_id = $1 AND mt.q = catchment.q AND mt.r = catchment.r`,
 		worldID, catchQ, catchR,
@@ -202,12 +203,12 @@ func LoadHexCapacity(ctx context.Context, tx Tx, settlementID uuid.UUID) (map[st
 	for rows.Next() {
 		var hq, hr int
 		var terrain string
-		var copperDep, tinDep, silverDep bool
-		if err := rows.Scan(&hq, &hr, &terrain, &copperDep, &tinDep, &silverDep); err != nil {
+		var copperDep, tinDep, silverDep, incenseDep bool
+		if err := rows.Scan(&hq, &hr, &terrain, &copperDep, &tinDep, &silverDep, &incenseDep); err != nil {
 			return nil, fmt.Errorf("load hex capacity: scan tile: %w", err)
 		}
 		levels := bs.levelsAt(hexgrid.Coord{Q: hq, R: hr})
-		for _, rule := range hexRules(terrain, copperDep, tinDep, silverDep) {
+		for _, rule := range hexRules(terrain, copperDep, tinDep, silverDep, incenseDep) {
 			places, _ := rule.placesAndMult(levels[rule.building])
 			slots[rule.good] += places
 		}

@@ -137,7 +137,7 @@ func TestWorkplaceSlots_ShipyardMatchesTaxonomy(t *testing.T) {
 // not a guessed default. (mountain_red/semi_desert got fieldstone in mig 156.)
 func TestHexCapacity_UnknownTerrainGrantsNothing(t *testing.T) {
 	for _, terrain := range []string{"nowhere", "tundra"} {
-		if rules := hexRules(terrain, false, false, false); len(rules) != 0 {
+		if rules := hexRules(terrain, false, false, false, false); len(rules) != 0 {
 			t.Errorf("%s has no rule — it must stay absent from the table, got %v", terrain, rules)
 		}
 	}

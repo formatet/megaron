@@ -29,6 +29,7 @@ type metropolisParams struct {
 	Tin     bool
 	Silver  bool
 	Cedar   bool
+	Incense bool
 	Coastal bool
 
 	Name          string
@@ -77,9 +78,9 @@ func createMetropolis(ctx context.Context, tx pgx.Tx, p metropolisParams) (creat
 	// Create the province tile row — copy deposit flags from map_tiles.
 	err := tx.QueryRow(ctx,
 		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type, territory_state,
-		                        copper_deposit, tin_deposit, silver_deposit, cedar_deposit, coastal)
-		 VALUES ($1, $2, $3, $4, 'controlled', $5, $6, $7, $8, $9) RETURNING id`,
-		p.WorldID, p.Q, p.R, p.Terrain, p.Copper, p.Tin, p.Silver, p.Cedar, p.Coastal,
+		                        copper_deposit, tin_deposit, silver_deposit, cedar_deposit, incense_deposit, coastal)
+		 VALUES ($1, $2, $3, $4, 'controlled', $5, $6, $7, $8, $9, $10) RETURNING id`,
+		p.WorldID, p.Q, p.R, p.Terrain, p.Copper, p.Tin, p.Silver, p.Cedar, p.Incense, p.Coastal,
 	).Scan(&out.ProvinceID)
 	if err != nil {
 		return out, &metropolisError{"could not create province", err}

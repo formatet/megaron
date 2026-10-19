@@ -369,7 +369,8 @@ func (h *UnitArrivalHandler) expeditionHome(
 		       ('copper', t.copper_deposit),
 		       ('tin',    t.tin_deposit),
 		       ('silver', COALESCE(t.silver_deposit, false)),
-		       ('cedar',  COALESCE(t.cedar_deposit, false))
+		       ('cedar',  COALESCE(t.cedar_deposit, false)),
+		       ('incense', COALESCE(t.incense_deposit, false))
 		   ) AS k(kind, present)
 		  WHERE s.unit_id = $1 AND k.present
 		  ORDER BY k.kind, t.q, t.r`,

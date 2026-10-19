@@ -49,7 +49,7 @@ func (h *GodHandler) View(w http.ResponseWriter, r *http.Request) {
 		`SELECT q, r, terrain, fertility, mineral,
 		        copper_deposit, tin_deposit,
 		        COALESCE(cedar_deposit,false), COALESCE(silver_deposit,false),
-		        COALESCE(coastal,false)
+		        COALESCE(incense_deposit,false), COALESCE(coastal,false)
 		 FROM map_tiles WHERE world_id = $1 ORDER BY r, q`,
 		worldID,
 	)
@@ -60,22 +60,23 @@ func (h *GodHandler) View(w http.ResponseWriter, r *http.Request) {
 	defer tileRows.Close()
 
 	type tileView struct {
-		Q             int     `json:"q"`
-		R             int     `json:"r"`
-		Terrain       string  `json:"terrain"`
-		Fertility     float64 `json:"fertility,omitempty"`
-		Mineral       float64 `json:"mineral,omitempty"`
-		CopperDeposit bool    `json:"copper_deposit,omitempty"`
-		TinDeposit    bool    `json:"tin_deposit,omitempty"`
-		CedarDeposit  bool    `json:"cedar_deposit,omitempty"`
-		SilverDeposit bool    `json:"silver_deposit,omitempty"`
-		Coastal       bool    `json:"coastal,omitempty"`
+		Q              int     `json:"q"`
+		R              int     `json:"r"`
+		Terrain        string  `json:"terrain"`
+		Fertility      float64 `json:"fertility,omitempty"`
+		Mineral        float64 `json:"mineral,omitempty"`
+		CopperDeposit  bool    `json:"copper_deposit,omitempty"`
+		TinDeposit     bool    `json:"tin_deposit,omitempty"`
+		CedarDeposit   bool    `json:"cedar_deposit,omitempty"`
+		SilverDeposit  bool    `json:"silver_deposit,omitempty"`
+		IncenseDeposit bool    `json:"incense_deposit,omitempty"`
+		Coastal        bool    `json:"coastal,omitempty"`
 	}
 	var tiles []tileView
 	for tileRows.Next() {
 		var t tileView
 		if err := tileRows.Scan(&t.Q, &t.R, &t.Terrain, &t.Fertility, &t.Mineral,
-			&t.CopperDeposit, &t.TinDeposit, &t.CedarDeposit, &t.SilverDeposit, &t.Coastal); err != nil {
+			&t.CopperDeposit, &t.TinDeposit, &t.CedarDeposit, &t.SilverDeposit, &t.IncenseDeposit, &t.Coastal); err != nil {
 			continue
 		}
 		tiles = append(tiles, t)

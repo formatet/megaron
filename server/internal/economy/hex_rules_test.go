@@ -38,18 +38,18 @@ func TestRuleTable_LevelOneNumbersAndLevelMultipliers(t *testing.T) {
 		{"stone limestone", "mountain_limestone", false, false, false, "stone", 2.0, 2, 6, 3.40, "2.0"},
 	}
 	for _, c := range cases {
-		places0, mult0 := hexGoodPlaces(c.terrain, c.cu, c.tin, c.ag, map[string]int{}, c.good)
+		places0, mult0 := hexGoodPlaces(c.terrain, c.cu, c.tin, c.ag, false, map[string]int{}, c.good)
 		if places0 != c.wantPlacesWithout || mult0 != 1.0 {
 			t.Errorf("%s unbuilt: %d x %.2f, want %d x 1.0", c.name, places0, mult0, c.wantPlacesWithout)
 		}
 		var building string
-		for _, r := range hexRules(c.terrain, c.cu, c.tin, c.ag) {
+		for _, r := range hexRules(c.terrain, c.cu, c.tin, c.ag, false) {
 			if r.good == c.good {
 				building = r.building
 			}
 		}
 		for level, wantMult := range map[int]float64{1: 1.7, 2: 2.4, 3: 3.1} {
-			places, mult := hexGoodPlaces(c.terrain, c.cu, c.tin, c.ag, map[string]int{building: level}, c.good)
+			places, mult := hexGoodPlaces(c.terrain, c.cu, c.tin, c.ag, false, map[string]int{building: level}, c.good)
 			if places != c.wantPlacesWith {
 				t.Errorf("%s L%d: places %d, want %d (same at every level)", c.name, level, places, c.wantPlacesWith)
 			}
@@ -68,12 +68,12 @@ func TestRuleTable_LevelOneNumbersAndLevelMultipliers(t *testing.T) {
 	}
 	// Silver: 1 + 4 places, and the mine row keeps today's level-1 figure
 	// (2.304 per worker x 5 places = 11.52, hills).
-	places, mult := hexGoodPlaces("hills", false, false, true, map[string]int{"mine": 1}, "silver")
+	places, mult := hexGoodPlaces("hills", false, false, true, false, map[string]int{"mine": 1}, "silver")
 	if places != 5 || math.Abs(11.52/5.0/1.7*mult-2.304) > 1e-9 {
 		t.Errorf("silver on hills with mine L1: %d places, rate %.4f, want 5 places and 2.304", places, 11.52/5.0/1.7*mult)
 	}
 	// A good without a rule keeps the flat fallback and no multiplier.
-	if p, m := hexGoodPlaces("hills", false, false, false, map[string]int{"farm": 3}, "oil"); p != HexFallbackCap || m != 1.0 {
+	if p, m := hexGoodPlaces("hills", false, false, false, false, map[string]int{"farm": 3}, "oil"); p != HexFallbackCap || m != 1.0 {
 		t.Errorf("oil on hills: %d x %.1f, want %d x 1.0", p, m, HexFallbackCap)
 	}
 }

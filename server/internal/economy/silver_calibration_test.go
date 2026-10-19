@@ -18,7 +18,7 @@ func TestSilverCalibrationMineAnchorsAndMaxLevel(t *testing.T) {
 			t.Fatal(err)
 		}
 		for level := 1; level <= 3; level++ {
-			places, mult := hexGoodPlaces(tc.terrain, false, false, true, map[string]int{"mine": level}, "silver")
+			places, mult := hexGoodPlaces(tc.terrain, false, false, true, false, map[string]int{"mine": level}, "silver")
 			if places != 5 {
 				t.Fatalf("silver places=%d want5 independent of level", places)
 			}
