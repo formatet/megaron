@@ -2258,11 +2258,11 @@ func attachOrdersEnRoute(ctx context.Context, db province.Queryer, worldID, owne
 type unitSummary struct {
 	// OrdersEnRoute: orders the player sent that have not been delivered yet.
 	OrdersEnRoute []orderEnRoute `json:"orders_en_route,omitempty"`
-	ID       uuid.UUID `json:"id"`
-	Type     string    `json:"type"`
-	Category string    `json:"category"`
-	Size     int       `json:"size"`
-	Crew     int       `json:"crew,omitempty"`
+	ID            uuid.UUID      `json:"id"`
+	Type          string         `json:"type"`
+	Category      string         `json:"category"`
+	Size          int            `json:"size"`
+	Crew          int            `json:"crew,omitempty"`
 	// Nominal ration and gross pay from the same source as the tick. Zero is
 	// explicit; context distinguishes subsistence/inactive units from billing.
 	UpkeepFoodPerTick   float64            `json:"upkeep_food_per_tick"`
