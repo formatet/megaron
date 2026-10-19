@@ -842,6 +842,24 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	}
 
 	if preview {
+		// The same provisions rule a dispatch applies, read without a lock
+		// (GPT19: a landing previewed at 17 days, then the order was refused
+		// for 35 grain the port did not hold).
+		if unit.CategoryOf(u.Type) == unit.CategoryNaval && !colonizeInPlace &&
+			u.Status == unit.StatusGarrison && u.SupportSettlementID != nil {
+			ration, need, stationTicks := voyageNeed(ctx, pool, u, o.Intent, expeditionPlan, travelTicks)
+			if need > 0 {
+				var have float64
+				_ = pool.QueryRow(ctx,
+					`SELECT GREATEST(0, settled(amount, rate, calc_tick))
+					 FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'grain'`,
+					*u.SupportSettlementID,
+				).Scan(&have)
+				if !province.GoodsAffordable(have, need) {
+					return nil, provisionsShort(have, need, ration, 2*travelTicks+stationTicks)
+				}
+			}
+		}
 		return &MarchStarted{
 			UnitID: o.UnitID, DepartsAt: now, ArrivesAt: arrivesAt,
 			ArrivalTick: currentTick + travelTicks, DurationTicks: travelTicks,
@@ -939,25 +957,9 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	var provisions float64
 	if unit.CategoryOf(u.Type) == unit.CategoryNaval && !colonizeInPlace &&
 		unit.Status(currentStatus) == unit.StatusGarrison && u.SupportSettlementID != nil {
-		var cargoType string
-		var cargoSize int
-		if u.CargoUnitID != nil {
-			// Kohorten ombord äter ur skeppets lager — därför provianteras den
-			// med. En tom last ger nollvärden och VoyageRation hoppar över den.
-			_ = tx.QueryRow(ctx,
-				`SELECT type, size FROM units WHERE id = $1`, *u.CargoUnitID,
-			).Scan(&cargoType, &cargoSize)
-		}
-		stationTicks := 0
-		if o.Intent == "patrol" {
-			stationTicks = SentryPatrolTicks
-		}
-		if expeditionPlan != nil {
-			// Provisioned for the whole length: out, on and home again.
-			stationTicks = expeditionPlan.LengthTicks - 2*travelTicks
-		}
-		ration := VoyageRation(string(u.Type), u.Size, cargoType, cargoSize)
-		provisions = VoyageProvisions(ration, travelTicks, stationTicks)
+		var ration float64
+		var stationTicks int
+		ration, provisions, stationTicks = voyageNeed(ctx, tx, u, o.Intent, expeditionPlan, travelTicks)
 
 		if provisions > 0 {
 			var have float64
@@ -971,8 +973,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			if !province.GoodsAffordable(have, provisions) {
 				// Båda talen med flit: en ärlig brist säger hur stor den är, så
 				// spelaren vet om hon ska vänta en dag eller bygga en åker.
-				return nil, reject(http.StatusUnprocessableEntity, "not enough grain to provision the voyage — the home port holds %.0f, "+
-					"the voyage needs %.0f (%.1f per day for %s out, on station and home again)", have, provisions, ration, tick.FormatDays(2*travelTicks+stationTicks))
+				return nil, provisionsShort(have, provisions, ration, 2*travelTicks+stationTicks)
 			}
 			if _, err := tx.Exec(ctx,
 				`UPDATE settlement_goods
@@ -1320,4 +1321,38 @@ func nearestOwnedSettlement(ctx context.Context, pool province.Queryer, worldID,
 		}
 	}
 	return best, found, rows.Err()
+}
+
+// voyageNeed is the grain a ship in port loads before it sails: its ration
+// (cargo included) for the voyage out, any time on station, and home again.
+// Preview and dispatch share it.
+func voyageNeed(ctx context.Context, db interface {
+	QueryRow(context.Context, string, ...any) pgx.Row
+}, u *unit.Unit, intent string, plan *ExpeditionPlan, travelTicks int) (ration, provisions float64, stationTicks int) {
+	var cargoType string
+	var cargoSize int
+	if u.CargoUnitID != nil {
+		// Kohorten ombord äter ur skeppets lager — därför provianteras den
+		// med. En tom last ger nollvärden och VoyageRation hoppar över den.
+		_ = db.QueryRow(ctx,
+			`SELECT type, size FROM units WHERE id = $1`, *u.CargoUnitID,
+		).Scan(&cargoType, &cargoSize)
+	}
+	if intent == "patrol" {
+		stationTicks = SentryPatrolTicks
+	}
+	if plan != nil {
+		// Provisioned for the whole length: out, on and home again.
+		stationTicks = plan.LengthTicks - 2*travelTicks
+	}
+	ration = VoyageRation(string(u.Type), u.Size, cargoType, cargoSize)
+	return ration, VoyageProvisions(ration, travelTicks, stationTicks), stationTicks
+}
+
+// provisionsShort is the refusal when the home port cannot provision a voyage.
+// Båda talen med flit: en ärlig brist säger hur stor den är, så spelaren vet
+// om hon ska vänta en dag eller bygga en åker.
+func provisionsShort(have, need, ration float64, days int) *OrderReject {
+	return reject(http.StatusUnprocessableEntity, "not enough grain to provision the voyage — the home port holds %.0f, "+
+		"the voyage needs %.0f (%.1f per day for %s out, on station and home again)", have, need, ration, tick.FormatDays(days))
 }
