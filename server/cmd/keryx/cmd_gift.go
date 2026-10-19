@@ -32,6 +32,25 @@ func resolveTransferDestination(c *Client, world, source, name string) (string, 
 		}
 	}
 	if found == "" {
+		// Destinations exclude the sending city. A selected colony is still a
+		// valid source: explain a self-transfer rather than pretending it is absent.
+		data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/provinces", world))
+		if err != nil {
+			return "", fmt.Errorf("could not identify the sending city: %w", err)
+		}
+		var markers []struct {
+			ID   string `json:"id"`
+			Name string `json:"name"`
+			Own  bool   `json:"own"`
+		}
+		if err := json.Unmarshal(data, &markers); err != nil {
+			return "", err
+		}
+		for _, marker := range markers {
+			if marker.Own && marker.ID == source && strings.EqualFold(marker.Name, name) {
+				return "", fmt.Errorf("sending city %q is also the destination — choose another source with --from <city> (see keryx settlements)", marker.Name)
+			}
+		}
 		return "", fmt.Errorf("no own or contacted city named %q", name)
 	}
 	return found, nil

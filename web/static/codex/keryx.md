@@ -39,3 +39,20 @@ With exactly one active world, commands select and save it automatically. To cho
 Use a city name or province ID either positionally or with `--province` in `city`, `placements`, `status` and `build`. For placement: `keryx place Knossos fish 13 -1` or `keryx place --province Knossos fish 13 -1`. Put flags before the good when using a negative delta. If no citizens work that good on the chosen hex, the result lists where they do work it. `founding settle --yes` skips the question. Travel estimates use days; if an arrival cannot be calculated it is reported as unavailable.
 
 Hex selection accepts the ordinal shown by City, with or without `#`: `build --type lumbermill --hex 6` or `--hex '#6'`. Placement can use `place fish 6 +1`, `place fish '#6' +1`, or `place --hex 6 fish +1`; `--hex q,r` also works. Put flags before the good when giving a negative delta. `staff` is for city workplaces; hex-bound buildings are worked with `place` on their hex.
+
+
+## Argument reminders
+
+Start construction with `keryx build --type harbour`. A positional argument in `build`
+is the **city**, as in `keryx build Knossos --type harbour`; it is not the building type.
+Use `build --list` for the catalogue or `build --queue` for queued construction.
+
+`keryx staff olive_press` shows that named workplace's staffing. Add `+1` or `-1`
+to change it; the building name is required. Use `keryx city` or `keryx roster`
+to find workplaces and assignments. Hex buildings use `place`.
+
+Send a report with `keryx report --text "what happened"`; use `--kind confused`
+for a question the rules did not answer. For colony founding in scripts, add
+`--yes`: `keryx unit march --unit <id> --target 5,-3 --intent colonize --name Thapsos --yes`.
+Without confirmation, the non-interactive text command only shows the forecast;
+JSON callers receive a refusal until they add `--yes`.

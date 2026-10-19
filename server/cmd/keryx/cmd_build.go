@@ -48,6 +48,9 @@ func buildCmd() *cobra.Command {
   keryx build --queue                 # see what's already queued, with cancel-build IDs`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) > 0 && buildingType == "" && !list && !queue {
+				return fmt.Errorf("no building type given — use --type <building> (for example: keryx build --type harbour), or add --list to view the catalogue for a city")
+			}
 			c := newClient(cfg)
 			if len(args) > 0 {
 				if provinceID != "" {

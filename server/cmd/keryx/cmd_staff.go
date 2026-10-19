@@ -20,14 +20,19 @@ func staffCmd() *cobra.Command {
 	var provinceID string
 	cmd := &cobra.Command{
 		Use:   "staff <byggnad> [+n|-n]",
-		Short: "Place or remove n citizens from a building workplace (default: show current staffing)",
+		Short: "Show a named building workplace, or place/remove citizens with +n/-n",
 		Long: `<building> is a city workplace (e.g. olive_press). Hex buildings use place. +n places n more idle
-citizens there; -n returns n citizens to the idle pool. Omit the delta to just
+citizens there; -n returns n citizens to the idle pool. The building name is required. Omit the delta to just
 see current occupancy.`,
-		Example: `  keryx staff stonequarry
-  keryx staff stonequarry +2
-  keryx staff stonequarry -1 --province <prov-id>`,
-		Args: cobra.RangeArgs(1, 2),
+		Example: `  keryx staff olive_press
+  keryx staff olive_press +2
+  keryx staff olive_press -1 --province <prov-id>`,
+		Args: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return fmt.Errorf("building name is required: keryx staff <building> (see keryx city for workplaces, or keryx roster for all assignments)")
+			}
+			return cobra.RangeArgs(1, 2)(cmd, args)
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			buildingType := args[0]
 			c := newClient(cfg)
