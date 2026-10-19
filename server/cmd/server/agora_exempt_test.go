@@ -43,8 +43,9 @@ func TestAgoraExemptPassSkipsReconcile(t *testing.T) {
 	s := &agoraService{pool: pool, remote: remote, room: "!exempt"}
 	s.pass(ctx)
 	s.pass(ctx)
-	if trace.locks.Load() != 0 || remote.createCalls != 0 {
-		t.Fatalf("exempt player reconciled: locks=%d create=%d", trace.locks.Load(), remote.createCalls)
+	// pass walks every player in the DB; the lock trace and assertState are this player's own.
+	if trace.locks.Load() != 0 {
+		t.Fatalf("exempt player reconciled: locks=%d", trace.locks.Load())
 	}
 	f.assertState(t, "", "", 0)
 }

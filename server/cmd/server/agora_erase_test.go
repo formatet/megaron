@@ -79,8 +79,7 @@ func TestAgoraNeverProvisionsErasedPlayer(t *testing.T) {
 	if _, err := f.pool.Exec(ctx, `UPDATE players SET erased_at = now() WHERE id = $1`, f.player); err != nil {
 		t.Fatal(err)
 	}
+	// pass walks every player in the DB, so count this player only, not r.createCalls.
 	s.pass(ctx)
-	if r.createCalls != 0 {
-		t.Fatalf("pass called Create %d times for an erased player, want 0", r.createCalls)
-	}
+	f.assertState(t, "", "", 0)
 }
