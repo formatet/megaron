@@ -216,3 +216,42 @@ func TestCivilianFishMealRecoveryLeavesGarrisonHungry(t *testing.T) {
 		t.Fatalf("fish-fed people/army recovery=%d/%d want1/0", civilEnd, armyEnd)
 	}
 }
+
+// A fully fed meal really ends a period: alternating meals are not one long
+// period. This records the contract's inbox cost without inventing hysteresis.
+func TestCivilianHungerAlternatingMealsAreSeparatePeriods(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	wid, sid, _ := starvationWarningFixture(t, 0, 0)
+	exec := func(query string, args ...any) {
+		t.Helper()
+		if _, err := pool.Exec(ctx, query, args...); err != nil {
+			t.Fatal(err)
+		}
+	}
+	exec(`UPDATE settlements SET population=1000 WHERE id=$1`, sid)
+	for tick := 1; tick <= 70; tick++ {
+		exec(`UPDATE worlds SET current_tick=$2 WHERE id=$1`, wid, tick)
+		stock := 10.0
+		if tick%2 == 1 {
+			stock = 1
+		}
+		exec(`UPDATE settlement_goods SET amount=$2,rate=0,calc_tick=$3 WHERE settlement_id=$1 AND good_key='grain'`, sid, stock, tick)
+		if err := newTestFoodTickHandler(pool).Handle(ctx, events.ScheduledEvent{ID: int64(263000 + tick), WorldID: wid, DueTick: tick}); err != nil {
+			t.Fatal(err)
+		}
+		if err := newTestTickHandler(pool).applyStarvation(ctx, wid); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var audits, starts, ends int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM events WHERE world_id=$1 AND event_type='FoodShortfall'`, wid).Scan(&audits); err != nil {
+		t.Fatal(err)
+	}
+	if err := pool.QueryRow(ctx, `SELECT count(*) FILTER(WHERE kind='CivilianStarvationStarted'),count(*) FILTER(WHERE kind='CivilianStarvationEnded') FROM notifications WHERE world_id=$1`, wid).Scan(&starts, &ends); err != nil {
+		t.Fatal(err)
+	}
+	if audits != 35 || starts != 35 || ends != 35 {
+		t.Fatalf("alternating70 audit/start/end=%d/%d/%d want35/35/35", audits, starts, ends)
+	}
+}

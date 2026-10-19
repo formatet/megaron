@@ -1,0 +1,164 @@
+{"time":"2026-10-19T18:05:30.240135266+02:00","level":"INFO","msg":"migrations applied"}
+{"time":"2026-10-19T18:05:30.260226563+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","seed":1792425930242419488,"width":64,"height":64,"err":"invalid map: landmass 18 (75 tiles) has 0 rivers (want 1-2)"}
+{"time":"2026-10-19T18:05:30.278915243+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","seed":1792425930242419489,"width":64,"height":64,"err":"invalid map: productive tin = 1 (want >= 2)"}
+{"time":"2026-10-19T18:05:31.572343087+02:00","level":"INFO","msg":"world created","name":"Civilian hunger proof","id":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","seed":1792425930242419490}
+{"time":"2026-10-19T18:05:31.579599417+02:00","level":"INFO","msg":"world ready","id":"2cd1d1b0-b904-40e0-8247-81ebfc15816a"}
+{"time":"2026-10-19T18:05:31.579951113+02:00","level":"INFO","msg":"chronicle opened","world":"Civilian hunger proof","dir":"/home/tk/wt/codex-svaltnotis-overgang/docs/reviews/svaltnotis-overgang/native-a/chronicles"}
+{"time":"2026-10-19T18:05:31.581589034+02:00","level":"INFO","msg":"build","commit":"3436b49862d3ff67205144fb61647557374de5bf"}
+{"time":"2026-10-19T18:05:31.581592757+02:00","level":"INFO","msg":"scheduled event worker started","poll":1000000000}
+{"time":"2026-10-19T18:05:31.581599676+02:00","level":"INFO","msg":"tick worker started","tick_seconds":1}
+{"time":"2026-10-19T18:05:31.581833317+02:00","level":"INFO","msg":"keryx server starting","addr":":52765"}
+{"time":"2026-10-19T18:05:31.587058679+02:00","level":"INFO","msg":"daily ticks seeded","worlds":1}
+2026/10/19 18:05:31 [tki9/viPrpGERZ1-000001] "GET http://127.0.0.1:52765/healthz HTTP/1.1" from 127.0.0.1:56424 - 200 84B in 763.359µs
+{"time":"2026-10-19T18:05:31.723133499+02:00","level":"INFO","msg":"player registered","id":"84156131-be44-4d40-8ab7-5a6a214d199b","username":"civil-14473571"}
+2026/10/19 18:05:31 [tki9/viPrpGERZ1-000002] "POST http://127.0.0.1:52765/api/v1/auth/register HTTP/1.1" from 127.0.0.1:56428 - 201 388B in 47.38302ms
+{"time":"2026-10-19T18:05:31.770937915+02:00","level":"INFO","msg":"player logged in","id":"84156131-be44-4d40-8ab7-5a6a214d199b","username":"civil-14473571"}
+2026/10/19 18:05:31 [tki9/viPrpGERZ1-000003] "POST http://127.0.0.1:52765/api/v1/auth/login HTTP/1.1" from 127.0.0.1:56440 - 200 344B in 45.985628ms
+2026/10/19 18:05:31 [tki9/viPrpGERZ1-000004] "GET http://127.0.0.1:52765/api/v1/worlds HTTP/1.1" from 127.0.0.1:56440 - 200 185B in 550.598µs
+2026/10/19 18:05:31 [tki9/viPrpGERZ1-000005] "GET http://127.0.0.1:52765/api/v1/worlds/2cd1d1b0-b904-40e0-8247-81ebfc15816a/provinces HTTP/1.1" from 127.0.0.1:56440 - 200 28B in 8.130536ms
+{"time":"2026-10-19T18:05:31.801182485+02:00","level":"INFO","msg":"world started","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","wanaxes":1}
+2026/10/19 18:05:31 [tki9/viPrpGERZ1-000006] "POST http://127.0.0.1:52765/api/v1/worlds/2cd1d1b0-b904-40e0-8247-81ebfc15816a/join HTTP/1.1" from 127.0.0.1:56456 - 201 210B in 18.723464ms
+2026/10/19 18:05:31 [tki9/viPrpGERZ1-000007] "GET http://127.0.0.1:52765/api/v1/worlds/2cd1d1b0-b904-40e0-8247-81ebfc15816a/provinces HTTP/1.1" from 127.0.0.1:56456 - 200 28B in 4.831798ms
+2026/10/19 18:05:31 [tki9/viPrpGERZ1-000008] "GET http://127.0.0.1:52765/api/v1/worlds/2cd1d1b0-b904-40e0-8247-81ebfc15816a/founding/status HTTP/1.1" from 127.0.0.1:56462 - 200 188B in 1.220933ms
+2026/10/19 18:05:31 [tki9/viPrpGERZ1-000009] "GET http://127.0.0.1:52765/api/v1/worlds/2cd1d1b0-b904-40e0-8247-81ebfc15816a/colonize-preview?q=1&r=66&pop=1000&seed=1200&starter_farm=1 HTTP/1.1" from 127.0.0.1:56462 - 200 588B in 76.001552ms
+2026/10/19 18:05:31 [tki9/viPrpGERZ1-000010] "POST http://127.0.0.1:52765/api/v1/worlds/2cd1d1b0-b904-40e0-8247-81ebfc15816a/founding/settle HTTP/1.1" from 127.0.0.1:56462 - 201 272B in 88.82786ms
+2026/10/19 18:05:31 [tki9/viPrpGERZ1-000011] "GET http://127.0.0.1:52765/api/v1/worlds/2cd1d1b0-b904-40e0-8247-81ebfc15816a/provinces HTTP/1.1" from 127.0.0.1:56462 - 200 228B in 4.732156ms
+2026/10/19 18:05:31 [tki9/viPrpGERZ1-000012] "GET http://127.0.0.1:52765/api/v1/auth/me HTTP/1.1" from 127.0.0.1:56472 - 200 184B in 456.879µs
+2026/10/19 18:05:31 [tki9/viPrpGERZ1-000013] "GET http://127.0.0.1:52765/api/v1/worlds/2cd1d1b0-b904-40e0-8247-81ebfc15816a HTTP/1.1" from 127.0.0.1:56472 - 200 228B in 355.748µs
+2026/10/19 18:05:32 [tki9/viPrpGERZ1-000014] "GET http://127.0.0.1:52765/api/v1/worlds/2cd1d1b0-b904-40e0-8247-81ebfc15816a/provinces/90e1ca16-fff7-41a6-b2c4-e6fc84d2cc32 HTTP/1.1" from 127.0.0.1:56472 - 200 2171B in 33.530917ms
+2026/10/19 18:05:32 [tki9/viPrpGERZ1-000015] "GET http://127.0.0.1:52765/api/v1/worlds/2cd1d1b0-b904-40e0-8247-81ebfc15816a/provinces/90e1ca16-fff7-41a6-b2c4-e6fc84d2cc32/actions HTTP/1.1" from 127.0.0.1:56472 - 200 3028B in 14.943573ms
+2026/10/19 18:05:32 [tki9/viPrpGERZ1-000016] "GET http://127.0.0.1:52765/api/v1/worlds/2cd1d1b0-b904-40e0-8247-81ebfc15816a/provinces/90e1ca16-fff7-41a6-b2c4-e6fc84d2cc32/placement-options HTTP/1.1" from 127.0.0.1:56472 - 200 859B in 40.627727ms
+2026/10/19 18:05:32 [tki9/viPrpGERZ1-000017] "GET http://127.0.0.1:52765/api/v1/recipes HTTP/1.1" from 127.0.0.1:56472 - 200 129B in 883.755µs
+2026/10/19 18:05:32 [tki9/viPrpGERZ1-000018] "GET http://127.0.0.1:52765/api/v1/worlds/2cd1d1b0-b904-40e0-8247-81ebfc15816a/units HTTP/1.1" from 127.0.0.1:56472 - 200 374B in 3.420079ms
+2026/10/19 18:05:32 [tki9/viPrpGERZ1-000019] "GET http://127.0.0.1:52765/api/v1/worlds/2cd1d1b0-b904-40e0-8247-81ebfc15816a/provinces/90e1ca16-fff7-41a6-b2c4-e6fc84d2cc32/placements HTTP/1.1" from 127.0.0.1:56480 - 200 625B in 642.484µs
+2026/10/19 18:05:32 [tki9/viPrpGERZ1-000021] "GET http://127.0.0.1:52765/api/v1/worlds/2cd1d1b0-b904-40e0-8247-81ebfc15816a/notifications?unread=true HTTP/1.1" from 127.0.0.1:56496 - 200 1184B in 994.49µs
+2026/10/19 18:05:32 [tki9/viPrpGERZ1-000020] "DELETE http://127.0.0.1:52765/api/v1/worlds/2cd1d1b0-b904-40e0-8247-81ebfc15816a/provinces/90e1ca16-fff7-41a6-b2c4-e6fc84d2cc32/placements/1 HTTP/1.1" from 127.0.0.1:56492 - 200 15B in 26.072359ms
+2026/10/19 18:05:32 [tki9/viPrpGERZ1-000023] "DELETE http://127.0.0.1:52765/api/v1/worlds/2cd1d1b0-b904-40e0-8247-81ebfc15816a/provinces/90e1ca16-fff7-41a6-b2c4-e6fc84d2cc32/placements/2 HTTP/1.1" from 127.0.0.1:56514 - 200 15B in 24.25058ms
+2026/10/19 18:05:32 [tki9/viPrpGERZ1-000024] "DELETE http://127.0.0.1:52765/api/v1/worlds/2cd1d1b0-b904-40e0-8247-81ebfc15816a/provinces/90e1ca16-fff7-41a6-b2c4-e6fc84d2cc32/placements/3 HTTP/1.1" from 127.0.0.1:56530 - 200 15B in 24.633535ms
+2026/10/19 18:05:32 [tki9/viPrpGERZ1-000025] "DELETE http://127.0.0.1:52765/api/v1/worlds/2cd1d1b0-b904-40e0-8247-81ebfc15816a/provinces/90e1ca16-fff7-41a6-b2c4-e6fc84d2cc32/placements/4 HTTP/1.1" from 127.0.0.1:56546 - 200 15B in 25.100012ms
+2026/10/19 18:05:32 [tki9/viPrpGERZ1-000026] "DELETE http://127.0.0.1:52765/api/v1/worlds/2cd1d1b0-b904-40e0-8247-81ebfc15816a/provinces/90e1ca16-fff7-41a6-b2c4-e6fc84d2cc32/placements/5 HTTP/1.1" from 127.0.0.1:56560 - 200 15B in 24.879748ms
+2026/10/19 18:05:32 [tki9/viPrpGERZ1-000027] "DELETE http://127.0.0.1:52765/api/v1/worlds/2cd1d1b0-b904-40e0-8247-81ebfc15816a/provinces/90e1ca16-fff7-41a6-b2c4-e6fc84d2cc32/placements/6 HTTP/1.1" from 127.0.0.1:56572 - 200 15B in 24.713482ms
+{"time":"2026-10-19T18:05:33.586473031+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":1}
+{"time":"2026-10-19T18:05:35.58582965+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":2}
+{"time":"2026-10-19T18:05:35.587010226+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":3}
+{"time":"2026-10-19T18:05:37.585904173+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":4}
+{"time":"2026-10-19T18:05:37.587098115+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":5}
+{"time":"2026-10-19T18:05:39.585953196+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":6}
+{"time":"2026-10-19T18:05:39.587082186+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":7}
+{"time":"2026-10-19T18:05:41.585134386+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":8}
+{"time":"2026-10-19T18:05:41.585978299+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":9}
+{"time":"2026-10-19T18:05:43.58522156+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":10}
+{"time":"2026-10-19T18:05:43.586349049+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":11}
+{"time":"2026-10-19T18:05:45.586223028+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":12}
+{"time":"2026-10-19T18:05:45.587115884+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":13}
+{"time":"2026-10-19T18:05:47.585263333+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":14}
+{"time":"2026-10-19T18:05:47.586641088+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":15}
+{"time":"2026-10-19T18:05:49.586126795+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":16}
+{"time":"2026-10-19T18:05:49.587175325+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":17}
+{"time":"2026-10-19T18:05:51.589097221+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":18}
+{"time":"2026-10-19T18:05:51.592028883+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":19}
+{"time":"2026-10-19T18:05:53.585074555+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":20}
+{"time":"2026-10-19T18:05:53.586059569+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":21}
+{"time":"2026-10-19T18:05:55.584963774+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":22}
+{"time":"2026-10-19T18:05:55.585882057+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":23}
+{"time":"2026-10-19T18:05:57.584972543+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":24}
+{"time":"2026-10-19T18:05:57.585872854+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":25}
+{"time":"2026-10-19T18:05:59.585397832+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":26}
+{"time":"2026-10-19T18:05:59.58645151+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":27}
+{"time":"2026-10-19T18:06:01.585106291+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":28}
+{"time":"2026-10-19T18:06:01.586118507+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":29}
+{"time":"2026-10-19T18:06:03.585053823+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":30}
+{"time":"2026-10-19T18:06:03.58591308+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":31}
+{"time":"2026-10-19T18:06:05.585930605+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":32}
+{"time":"2026-10-19T18:06:05.586967826+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":33}
+{"time":"2026-10-19T18:06:07.585052573+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":34}
+{"time":"2026-10-19T18:06:07.586106058+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":35}
+{"time":"2026-10-19T18:06:09.592598368+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":36}
+{"time":"2026-10-19T18:06:09.593636186+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":37}
+{"time":"2026-10-19T18:06:11.588359458+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":38}
+{"time":"2026-10-19T18:06:11.589587586+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":39}
+{"time":"2026-10-19T18:06:13.587989621+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":40}
+{"time":"2026-10-19T18:06:13.588985176+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":41}
+{"time":"2026-10-19T18:06:15.588347641+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":42}
+{"time":"2026-10-19T18:06:15.589413508+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":43}
+{"time":"2026-10-19T18:06:17.586267665+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":44}
+{"time":"2026-10-19T18:06:17.587099506+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":45}
+{"time":"2026-10-19T18:06:19.588724898+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":46}
+{"time":"2026-10-19T18:06:19.593312399+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":47}
+{"time":"2026-10-19T18:06:21.590004754+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":48}
+{"time":"2026-10-19T18:06:21.592774277+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":49}
+{"time":"2026-10-19T18:06:23.587324943+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":50}
+{"time":"2026-10-19T18:06:23.588369975+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":51}
+{"time":"2026-10-19T18:06:25.5882715+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":52}
+{"time":"2026-10-19T18:06:25.58916074+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":53}
+{"time":"2026-10-19T18:06:27.587137938+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":54}
+{"time":"2026-10-19T18:06:27.588148473+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":55}
+{"time":"2026-10-19T18:06:29.587930561+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":56}
+{"time":"2026-10-19T18:06:29.588950185+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":57}
+{"time":"2026-10-19T18:06:31.589574584+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":58}
+{"time":"2026-10-19T18:06:31.591925964+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":59}
+{"time":"2026-10-19T18:06:33.589091032+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":60}
+{"time":"2026-10-19T18:06:33.594137288+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":61}
+{"time":"2026-10-19T18:06:35.588123914+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":62}
+{"time":"2026-10-19T18:06:35.589110573+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":63}
+{"time":"2026-10-19T18:06:37.588780405+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":64}
+{"time":"2026-10-19T18:06:37.589878625+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":65}
+{"time":"2026-10-19T18:06:39.588985641+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":66}
+{"time":"2026-10-19T18:06:39.590145895+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":67}
+{"time":"2026-10-19T18:06:41.588319473+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":68}
+{"time":"2026-10-19T18:06:41.589385521+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":69}
+{"time":"2026-10-19T18:06:43.588278135+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":70}
+{"time":"2026-10-19T18:06:43.589406324+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":71}
+{"time":"2026-10-19T18:06:45.58829399+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":72}
+{"time":"2026-10-19T18:06:45.589650645+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":73}
+{"time":"2026-10-19T18:06:47.586102811+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":74}
+{"time":"2026-10-19T18:06:47.587209732+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":75}
+{"time":"2026-10-19T18:06:49.587582321+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":76}
+{"time":"2026-10-19T18:06:49.588653513+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":77}
+{"time":"2026-10-19T18:06:51.586668443+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":78}
+{"time":"2026-10-19T18:06:51.587811591+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":79}
+{"time":"2026-10-19T18:06:53.588522314+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":80}
+{"time":"2026-10-19T18:06:53.589694621+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":81}
+{"time":"2026-10-19T18:06:55.589232049+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":82}
+{"time":"2026-10-19T18:06:55.591629394+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":83}
+{"time":"2026-10-19T18:06:57.58552897+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":84}
+{"time":"2026-10-19T18:06:57.586348779+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":85}
+{"time":"2026-10-19T18:06:59.589546753+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":86}
+{"time":"2026-10-19T18:06:59.590637089+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":87}
+{"time":"2026-10-19T18:07:01.588244176+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":88}
+{"time":"2026-10-19T18:07:01.589131883+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":89}
+{"time":"2026-10-19T18:07:03.58508483+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":90}
+{"time":"2026-10-19T18:07:03.58598021+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":91}
+{"time":"2026-10-19T18:07:05.585934143+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":92}
+{"time":"2026-10-19T18:07:05.587068651+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":93}
+{"time":"2026-10-19T18:07:07.586170494+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":94}
+{"time":"2026-10-19T18:07:07.587347718+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":95}
+{"time":"2026-10-19T18:07:09.586474743+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":96}
+{"time":"2026-10-19T18:07:09.587584256+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":97}
+2026/10/19 18:07:10 [tki9/viPrpGERZ1-000028] "GET http://127.0.0.1:52765/api/v1/worlds/2cd1d1b0-b904-40e0-8247-81ebfc15816a/provinces/90e1ca16-fff7-41a6-b2c4-e6fc84d2cc32 HTTP/1.1" from 127.0.0.1:57656 - 200 6991B in 8.53623ms
+{"time":"2026-10-19T18:07:11.585417439+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":98}
+{"time":"2026-10-19T18:07:11.586342546+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":99}
+{"time":"2026-10-19T18:07:13.585183077+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":100}
+{"time":"2026-10-19T18:07:13.586262688+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":101}
+{"time":"2026-10-19T18:07:15.585448206+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":102}
+{"time":"2026-10-19T18:07:15.586266785+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":103}
+{"time":"2026-10-19T18:07:17.585088984+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":104}
+{"time":"2026-10-19T18:07:17.586116583+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":105}
+{"time":"2026-10-19T18:07:19.584986325+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":106}
+{"time":"2026-10-19T18:07:19.585862808+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":107}
+{"time":"2026-10-19T18:07:21.584902344+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":108}
+{"time":"2026-10-19T18:07:21.585704962+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":109}
+{"time":"2026-10-19T18:07:23.585138734+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":110}
+{"time":"2026-10-19T18:07:23.585925313+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":111}
+{"time":"2026-10-19T18:07:25.584877335+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":112}
+{"time":"2026-10-19T18:07:25.585769562+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":113}
+{"time":"2026-10-19T18:07:27.597822642+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":114}
+{"time":"2026-10-19T18:07:27.600110751+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":115}
+{"time":"2026-10-19T18:07:29.585450573+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":116}
+{"time":"2026-10-19T18:07:29.586348488+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":117}
+{"time":"2026-10-19T18:07:31.584852348+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":118}
+{"time":"2026-10-19T18:07:31.585727091+02:00","level":"INFO","msg":"world tick advanced","world":"2cd1d1b0-b904-40e0-8247-81ebfc15816a","tick":119}
+2026/10/19 18:07:32 [tki9/viPrpGERZ1-000022] "GET http://127.0.0.1:52765/ws/2cd1d1b0-b904-40e0-8247-81ebfc15816a HTTP/1.1" from 127.0.0.1:56504 - 000 0B in 2m0.149651162s
+{"time":"2026-10-19T18:07:32.235968705+02:00","level":"INFO","msg":"scheduled event worker stopped"}
+{"time":"2026-10-19T18:07:32.23597508+02:00","level":"INFO","msg":"shutting down"}
+{"time":"2026-10-19T18:07:32.235979071+02:00","level":"INFO","msg":"tick worker stopped"}

@@ -1,0 +1,44 @@
+{
+  "health": {
+    "commit": "3436b49862d3ff67205144fb61647557374de5bf",
+    "migration": 189,
+    "status": "ok"
+  },
+  "world_id": "474c9b8b-291a-4ad8-a5cf-68ba8c3b28f7",
+  "province_id": "26191f71-930f-4cca-9dac-4134b676bb12",
+  "natural_register_cli_join_found_unplace_hunger_restore_recovery": true,
+  "sql_writes": false,
+  "api_replay": false,
+  "server_cadence_seconds": 1,
+  "firefox": "DPR1;1280/390",
+  "page_errors": [],
+  "start_tick": 293,
+  "end_tick": 297,
+  "missing_grain_equivalent": 1.6399999999999997,
+  "observations": [
+    {
+      "phase": "hungry",
+      "width": 1280,
+      "text": "DAY 27 OF THE MUREX (10), YEAR 1\n\ud83c\udf7d\nMyrsine: people are going hungry \u2014 the meal fell short by 1.6 grain. Place citizens on grain or fish, or transfer food here.\nDay #293\n\u26a1\nA pestilence swept the barracks at Myrsine \u2014 24 fell\nDay #295\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: A dark pestilence has moved through the barracks. Many hoplites have fallen.\ntoday 18:13\n\u26a1\nA pestilence swept the barracks at Myrsine \u2014 32 fell\nDay #281\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: A dark pestilence has moved through the barracks. Many hoplites have fallen.\ntoday 18:13\n\u26a1\nA pestilence swept the barracks at Myrsine \u2014 40 fell\nDay #265\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: A dark pestilence has moved through the barracks. Many hoplites have fallen.\ntoday 18:13\n\u26a1\nA divine storm sank Labyrinth Wind, Galley of Myrsine in your harbour at Myrsine \u2014 the ship is lost\nDay #241\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: A divine storm has claimed a vessel from your harbour.\ntoday 18:12\n\ud83c\udfdb\nKharis: Indifferent \u2192 Suspicious (29.9). Check Kult for decay and temple support; staff and feed your temples.\nDay #211\n\ud83d\udc51\nYour metropolis is founded: Myrsine \u2014 19/19 catchment hexes known \u2014 Poseidon grants a galley\nDay #0\n\ud83d\udcdc\nYour people await you\nDay #0",
+      "overflow": false
+    },
+    {
+      "phase": "hungry",
+      "width": 390,
+      "text": "DAY 27 OF THE MUREX (10), YEAR 1\n\ud83c\udf7d\nMyrsine: people are going hungry \u2014 the meal fell short by 1.6 grain. Place citizens on grain or fish, or transfer food here.\nDay #293\n\u26a1\nA pestilence swept the barracks at Myrsine \u2014 24 fell\nDay #295\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: A dark pestilence has moved through the barracks. Many hoplites have fallen.\ntoday 18:13\n\u26a1\nA pestilence swept the barracks at Myrsine \u2014 32 fell\nDay #281\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: A dark pestilence has moved through the barracks. Many hoplites have fallen.\ntoday 18:13\n\u26a1\nA pestilence swept the barracks at Myrsine \u2014 40 fell\nDay #265\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: A dark pestilence has moved through the barracks. Many hoplites have fallen.\ntoday 18:13\n\u26a1\nA divine storm sank Labyrinth Wind, Galley of Myrsine in your harbour at Myrsine \u2014 the ship is lost\nDay #241\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: A divine storm has claimed a vessel from your harbour.\ntoday 18:12\n\ud83c\udfdb\nKharis: Indifferent \u2192 Suspicious (29.9). Check Kult for decay and temple support; staff and feed your temples.\nDay #211\n\ud83d\udc51\nYour metropolis is founded: Myrsine \u2014 19/19 catchment hexes known \u2014 Poseidon grants a galley\nDay #0\n\ud83d\udcdc\nYour people await you\nDay #0",
+      "overflow": false
+    },
+    {
+      "phase": "recovered",
+      "width": 1280,
+      "text": "DAY 28 OF THE MUREX (10), YEAR 1\n\ud83c\udf7d\nMyrsine: people were fed again.\nDay #297\n\u26a1\nA pestilence swept the barracks at Myrsine \u2014 24 fell\nDay #295\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: A dark pestilence has moved through the barracks. Many hoplites have fallen.\ntoday 18:13\n\ud83c\udf7d\nMyrsine: people are going hungry \u2014 the meal fell short by 1.6 grain. Place citizens on grain or fish, or transfer food here.\nDay #293\n\u26a1\nA pestilence swept the barracks at Myrsine \u2014 32 fell\nDay #281\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: A dark pestilence has moved through the barracks. Many hoplites have fallen.\ntoday 18:13\n\u26a1\nA pestilence swept the barracks at Myrsine \u2014 40 fell\nDay #265\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: A dark pestilence has moved through the barracks. Many hoplites have fallen.\ntoday 18:13\n\u26a1\nA divine storm sank Labyrinth Wind, Galley of Myrsine in your harbour at Myrsine \u2014 the ship is lost\nDay #241\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: A divine storm has claimed a vessel from your harbour.\ntoday 18:12\n\ud83c\udfdb\nKharis: Indifferent \u2192 Suspicious (29.9). Check Kult for decay and temple support; staff and feed your temples.\nDay #211\n\ud83d\udc51\nYour metropolis is founded: Myrsine \u2014 19/19 catchment hexes known \u2014 Poseidon grants a galley\nDay #0\n\ud83d\udcdc\nYour people await you\nDay #0",
+      "overflow": false
+    },
+    {
+      "phase": "recovered",
+      "width": 390,
+      "text": "DAY 28 OF THE MUREX (10), YEAR 1\n\ud83c\udf7d\nMyrsine: people were fed again.\nDay #297\n\u26a1\nA pestilence swept the barracks at Myrsine \u2014 24 fell\nDay #295\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: A dark pestilence has moved through the barracks. Many hoplites have fallen.\ntoday 18:13\n\ud83c\udf7d\nMyrsine: people are going hungry \u2014 the meal fell short by 1.6 grain. Place citizens on grain or fish, or transfer food here.\nDay #293\n\u26a1\nA pestilence swept the barracks at Myrsine \u2014 32 fell\nDay #281\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: A dark pestilence has moved through the barracks. Many hoplites have fallen.\ntoday 18:13\n\u26a1\nA pestilence swept the barracks at Myrsine \u2014 40 fell\nDay #265\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: A dark pestilence has moved through the barracks. Many hoplites have fallen.\ntoday 18:13\n\u26a1\nA divine storm sank Labyrinth Wind, Galley of Myrsine in your harbour at Myrsine \u2014 the ship is lost\nDay #241\n\ud83d\udde3\nRumour \u00b7 Myrsine \u00b7 divine_wrath: A divine storm has claimed a vessel from your harbour.\ntoday 18:12\n\ud83c\udfdb\nKharis: Indifferent \u2192 Suspicious (29.9). Check Kult for decay and temple support; staff and feed your temples.\nDay #211\n\ud83d\udc51\nYour metropolis is founded: Myrsine \u2014 19/19 catchment hexes known \u2014 Poseidon grants a galley\nDay #0\n\ud83d\udcdc\nYour people await you\nDay #0",
+      "overflow": false
+    }
+  ]
+}

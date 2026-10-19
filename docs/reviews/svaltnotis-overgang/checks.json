@@ -1,0 +1,19 @@
+{
+  "production_commit": "3436b498",
+  "baseline": "09e14572",
+  "baseline_go_packages": [
+    "economy",
+    "kharis",
+    "keryx"
+  ],
+  "baseline_js_pass": 652,
+  "final_js_pass": 654,
+  "full_go_exit": 0,
+  "vet_exit": 0,
+  "full_go_fresh_migration": 189,
+  "extra_fresh_alternating_test_exit": 0,
+  "mutations": 4,
+  "natural_hunger_recovery": true,
+  "unchanged_game_balance": true,
+  "new_migration": false
+}
