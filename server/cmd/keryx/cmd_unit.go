@@ -251,6 +251,9 @@ func unitListCmd() *cobra.Command {
 				if u.Expedition != nil {
 					fmt.Println("  " + expeditionMissionText(u.Expedition))
 				}
+				for _, o := range u.OrdersEnRoute {
+					fmt.Println("  " + ordersEnRouteLine(c, o))
+				}
 			}
 			return nil
 		},
@@ -342,6 +345,16 @@ type unitRow struct {
 	CanFetchByShip bool               `json:"can_fetch_by_ship"`
 	PickupShips    []pickupShipChoice `json:"pickup_ships"`
 	Expedition     *expeditionMission `json:"expedition,omitempty"`
+	// OrdersEnRoute: orders the player sent that their Runner has not yet delivered.
+	OrdersEnRoute []orderEnRoute `json:"orders_en_route,omitempty"`
+}
+
+// orderEnRoute mirrors the server's orders_en_route entry.
+type orderEnRoute struct {
+	Verb      string `json:"verb"`
+	TargetQ   *int   `json:"target_q"`
+	TargetR   *int   `json:"target_r"`
+	ArrivesAt string `json:"arrives_at"`
 }
 
 // pickupShipChoice is one ship offered as a pickup choice for a fetchable
