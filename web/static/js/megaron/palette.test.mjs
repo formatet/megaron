@@ -40,7 +40,7 @@ test('approved danger is blood red and diplomacy remains purple', () => {
   assert.equal(colors.get('--accent-diplomacy'), '#7A4AA5');
 });
 test('approved muted text is warm grey with 4.5:1 on light text surfaces', () => {
-  assert.equal(colors.get('--text-dim'), '#67635C');
+  assert.equal(colors.get('--text-dim'), '#615D56');
   for (const background of ['--bg-panel', '--bg-raised', '--warm-white']) {
     const ratio = contrast(colors.get('--text-dim'), colors.get(background));
     assert.ok(ratio >= 4.5, `--text-dim on ${background}: ${ratio.toFixed(4)}:1 < 4.5:1`);
