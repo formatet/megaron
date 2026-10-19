@@ -11,7 +11,7 @@ func TestGrowthVarietyReadsActualMealNotLaterStock(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	var gains []int
-	for i, foods := range [][]string{{economy.GoodGrain, economy.GoodFish}, economy.FoodGoods} {
+	for i, foods := range [][]string{{economy.GoodGrain, economy.GoodFish}, economy.FoodGoods, economy.FoodGoods} {
 		wid, sid, _ := starvationWarningFixture(t, 0, 0)
 		exec := func(q string, args ...any) {
 			t.Helper()
@@ -39,6 +39,9 @@ func TestGrowthVarietyReadsActualMealNotLaterStock(t *testing.T) {
 		for _, good := range economy.FoodGoods {
 			exec(`INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,$2,2500,25,100000,0) ON CONFLICT(settlement_id,good_key) DO UPDATE SET amount=2500,rate=25,cap=100000,calc_tick=0`, sid, good)
 		}
+		if i == 2 {
+			exec(`UPDATE worlds SET current_tick=1 WHERE id=$1`, wid)
+		}
 		newTestTickHandler(pool).applyDecay(ctx, wid, int64(280200+i))
 		var pop int
 		if err := pool.QueryRow(ctx, `SELECT population FROM settlements WHERE id=$1`, sid).Scan(&pop); err != nil {
@@ -46,7 +49,7 @@ func TestGrowthVarietyReadsActualMealNotLaterStock(t *testing.T) {
 		}
 		gains = append(gains, pop-10000)
 	}
-	if gains[0] <= 0 || gains[1] <= gains[0] {
+	if gains[0] <= 0 || gains[1] <= gains[0] || gains[2] >= gains[0] {
 		t.Fatalf("growth from2/4 eaten varieties=%v", gains)
 	}
 }
