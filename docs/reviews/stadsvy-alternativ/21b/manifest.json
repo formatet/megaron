@@ -1,0 +1,1771 @@
+{
+  "size": [
+    160,
+    96
+  ],
+  "game_scale": 2,
+  "reference": {
+    "name": "Phaistos",
+    "population": 4500,
+    "walls": 1,
+    "buildings": {
+      "temple": 1,
+      "farm": 2,
+      "harbour": 1,
+      "shipyard": 1,
+      "mine": 1
+    }
+  },
+  "scenes": [
+    {
+      "stem": "gata-p4500-m1-normal-huvud",
+      "camera": "gata",
+      "population": 4500,
+      "walls": 1,
+      "state": "normal",
+      "variant": "huvud",
+      "groups": [
+        "status",
+        "scale",
+        "variants"
+      ],
+      "features": {
+        "shutters": [
+          [
+            18,
+            50,
+            22,
+            61
+          ],
+          [
+            132,
+            54,
+            140,
+            78
+          ]
+        ],
+        "housing_masses": 9,
+        "people": 4,
+        "meal_point": [
+          58,
+          89
+        ],
+        "hunger_point": [
+          74,
+          87
+        ],
+        "empty_bowls": [
+          [
+            60,
+            89
+          ],
+          [
+            88,
+            90
+          ]
+        ]
+      },
+      "anchors": {
+        "temple": [
+          69,
+          36,
+          22,
+          12
+        ],
+        "gate": [
+          80,
+          57,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "gata-p4500-m1-starvation-huvud",
+      "camera": "gata",
+      "population": 4500,
+      "walls": 1,
+      "state": "starvation",
+      "variant": "huvud",
+      "groups": [
+        "status"
+      ],
+      "features": {
+        "shutters": [
+          [
+            18,
+            50,
+            22,
+            61
+          ],
+          [
+            132,
+            54,
+            140,
+            78
+          ]
+        ],
+        "housing_masses": 9,
+        "people": 4,
+        "meal_point": [
+          58,
+          89
+        ],
+        "hunger_point": [
+          74,
+          87
+        ],
+        "empty_bowls": [
+          [
+            60,
+            89
+          ],
+          [
+            88,
+            90
+          ]
+        ]
+      },
+      "anchors": {
+        "temple": [
+          69,
+          36,
+          22,
+          12
+        ],
+        "gate": [
+          80,
+          57,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "gata-p4500-m1-siege-huvud",
+      "camera": "gata",
+      "population": 4500,
+      "walls": 1,
+      "state": "siege",
+      "variant": "huvud",
+      "groups": [
+        "status"
+      ],
+      "features": {
+        "shutters": [
+          [
+            18,
+            50,
+            22,
+            61
+          ],
+          [
+            132,
+            54,
+            140,
+            78
+          ]
+        ],
+        "housing_masses": 9,
+        "people": 4,
+        "meal_point": [
+          58,
+          89
+        ],
+        "hunger_point": [
+          74,
+          87
+        ],
+        "empty_bowls": [
+          [
+            60,
+            89
+          ],
+          [
+            88,
+            90
+          ]
+        ]
+      },
+      "anchors": {
+        "temple": [
+          69,
+          36,
+          22,
+          12
+        ],
+        "gate": [
+          80,
+          57,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "gata-p4500-m1-construction-huvud",
+      "camera": "gata",
+      "population": 4500,
+      "walls": 1,
+      "state": "construction",
+      "variant": "huvud",
+      "groups": [
+        "status"
+      ],
+      "features": {
+        "shutters": [
+          [
+            18,
+            50,
+            22,
+            61
+          ],
+          [
+            132,
+            54,
+            140,
+            78
+          ]
+        ],
+        "housing_masses": 9,
+        "people": 4,
+        "meal_point": [
+          58,
+          89
+        ],
+        "hunger_point": [
+          74,
+          87
+        ],
+        "empty_bowls": [
+          [
+            60,
+            89
+          ],
+          [
+            88,
+            90
+          ]
+        ]
+      },
+      "anchors": {
+        "temple": [
+          69,
+          36,
+          22,
+          12
+        ],
+        "gate": [
+          80,
+          57,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "gata-p1000-m0-normal-huvud",
+      "camera": "gata",
+      "population": 1000,
+      "walls": 0,
+      "state": "normal",
+      "variant": "huvud",
+      "groups": [
+        "scale"
+      ],
+      "features": {
+        "shutters": [
+          [
+            18,
+            60,
+            22,
+            71
+          ],
+          [
+            132,
+            54,
+            140,
+            78
+          ]
+        ],
+        "housing_masses": 5,
+        "people": 2,
+        "meal_point": [
+          58,
+          89
+        ],
+        "hunger_point": [
+          74,
+          87
+        ],
+        "empty_bowls": [
+          [
+            60,
+            89
+          ],
+          [
+            88,
+            90
+          ]
+        ]
+      },
+      "anchors": {
+        "temple": [
+          69,
+          36,
+          22,
+          12
+        ],
+        "gate": [
+          80,
+          58,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "gata-p1000-m1-normal-huvud",
+      "camera": "gata",
+      "population": 1000,
+      "walls": 1,
+      "state": "normal",
+      "variant": "huvud",
+      "groups": [
+        "scale"
+      ],
+      "features": {
+        "shutters": [
+          [
+            18,
+            60,
+            22,
+            71
+          ],
+          [
+            132,
+            54,
+            140,
+            78
+          ]
+        ],
+        "housing_masses": 5,
+        "people": 2,
+        "meal_point": [
+          58,
+          89
+        ],
+        "hunger_point": [
+          74,
+          87
+        ],
+        "empty_bowls": [
+          [
+            60,
+            89
+          ],
+          [
+            88,
+            90
+          ]
+        ]
+      },
+      "anchors": {
+        "temple": [
+          69,
+          36,
+          22,
+          12
+        ],
+        "gate": [
+          80,
+          57,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "gata-p1000-m3-normal-huvud",
+      "camera": "gata",
+      "population": 1000,
+      "walls": 3,
+      "state": "normal",
+      "variant": "huvud",
+      "groups": [
+        "scale"
+      ],
+      "features": {
+        "shutters": [
+          [
+            18,
+            60,
+            22,
+            71
+          ],
+          [
+            132,
+            54,
+            140,
+            78
+          ]
+        ],
+        "housing_masses": 5,
+        "people": 2,
+        "meal_point": [
+          58,
+          89
+        ],
+        "hunger_point": [
+          74,
+          87
+        ],
+        "empty_bowls": [
+          [
+            60,
+            89
+          ],
+          [
+            88,
+            90
+          ]
+        ]
+      },
+      "anchors": {
+        "temple": [
+          69,
+          36,
+          22,
+          12
+        ],
+        "gate": [
+          80,
+          57,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "gata-p4500-m0-normal-huvud",
+      "camera": "gata",
+      "population": 4500,
+      "walls": 0,
+      "state": "normal",
+      "variant": "huvud",
+      "groups": [
+        "scale"
+      ],
+      "features": {
+        "shutters": [
+          [
+            18,
+            50,
+            22,
+            61
+          ],
+          [
+            132,
+            54,
+            140,
+            78
+          ]
+        ],
+        "housing_masses": 9,
+        "people": 4,
+        "meal_point": [
+          58,
+          89
+        ],
+        "hunger_point": [
+          74,
+          87
+        ],
+        "empty_bowls": [
+          [
+            60,
+            89
+          ],
+          [
+            88,
+            90
+          ]
+        ]
+      },
+      "anchors": {
+        "temple": [
+          69,
+          36,
+          22,
+          12
+        ],
+        "gate": [
+          80,
+          58,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "gata-p4500-m3-normal-huvud",
+      "camera": "gata",
+      "population": 4500,
+      "walls": 3,
+      "state": "normal",
+      "variant": "huvud",
+      "groups": [
+        "scale"
+      ],
+      "features": {
+        "shutters": [
+          [
+            18,
+            50,
+            22,
+            61
+          ],
+          [
+            132,
+            54,
+            140,
+            78
+          ]
+        ],
+        "housing_masses": 9,
+        "people": 4,
+        "meal_point": [
+          58,
+          89
+        ],
+        "hunger_point": [
+          74,
+          87
+        ],
+        "empty_bowls": [
+          [
+            60,
+            89
+          ],
+          [
+            88,
+            90
+          ]
+        ]
+      },
+      "anchors": {
+        "temple": [
+          69,
+          36,
+          22,
+          12
+        ],
+        "gate": [
+          80,
+          57,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "gata-p10000-m0-normal-huvud",
+      "camera": "gata",
+      "population": 10000,
+      "walls": 0,
+      "state": "normal",
+      "variant": "huvud",
+      "groups": [
+        "scale"
+      ],
+      "features": {
+        "shutters": [
+          [
+            18,
+            50,
+            22,
+            61
+          ],
+          [
+            132,
+            54,
+            140,
+            78
+          ]
+        ],
+        "housing_masses": 14,
+        "people": 6,
+        "meal_point": [
+          58,
+          89
+        ],
+        "hunger_point": [
+          74,
+          87
+        ],
+        "empty_bowls": [
+          [
+            60,
+            89
+          ],
+          [
+            88,
+            90
+          ]
+        ]
+      },
+      "anchors": {
+        "temple": [
+          69,
+          36,
+          22,
+          12
+        ],
+        "gate": [
+          80,
+          58,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "gata-p10000-m1-normal-huvud",
+      "camera": "gata",
+      "population": 10000,
+      "walls": 1,
+      "state": "normal",
+      "variant": "huvud",
+      "groups": [
+        "scale"
+      ],
+      "features": {
+        "shutters": [
+          [
+            18,
+            50,
+            22,
+            61
+          ],
+          [
+            132,
+            54,
+            140,
+            78
+          ]
+        ],
+        "housing_masses": 14,
+        "people": 6,
+        "meal_point": [
+          58,
+          89
+        ],
+        "hunger_point": [
+          74,
+          87
+        ],
+        "empty_bowls": [
+          [
+            60,
+            89
+          ],
+          [
+            88,
+            90
+          ]
+        ]
+      },
+      "anchors": {
+        "temple": [
+          69,
+          36,
+          22,
+          12
+        ],
+        "gate": [
+          80,
+          57,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "gata-p10000-m3-normal-huvud",
+      "camera": "gata",
+      "population": 10000,
+      "walls": 3,
+      "state": "normal",
+      "variant": "huvud",
+      "groups": [
+        "scale"
+      ],
+      "features": {
+        "shutters": [
+          [
+            18,
+            50,
+            22,
+            61
+          ],
+          [
+            132,
+            54,
+            140,
+            78
+          ]
+        ],
+        "housing_masses": 14,
+        "people": 6,
+        "meal_point": [
+          58,
+          89
+        ],
+        "hunger_point": [
+          74,
+          87
+        ],
+        "empty_bowls": [
+          [
+            60,
+            89
+          ],
+          [
+            88,
+            90
+          ]
+        ]
+      },
+      "anchors": {
+        "temple": [
+          69,
+          36,
+          22,
+          12
+        ],
+        "gate": [
+          80,
+          57,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "gata-p4500-m1-normal-djup",
+      "camera": "gata",
+      "population": 4500,
+      "walls": 1,
+      "state": "normal",
+      "variant": "djup",
+      "groups": [
+        "variants"
+      ],
+      "features": {
+        "shutters": [
+          [
+            18,
+            50,
+            22,
+            61
+          ],
+          [
+            132,
+            54,
+            140,
+            78
+          ]
+        ],
+        "housing_masses": 9,
+        "people": 4,
+        "meal_point": [
+          58,
+          89
+        ],
+        "hunger_point": [
+          74,
+          87
+        ],
+        "empty_bowls": [
+          [
+            60,
+            89
+          ],
+          [
+            88,
+            90
+          ]
+        ]
+      },
+      "anchors": {
+        "temple": [
+          77,
+          36,
+          22,
+          12
+        ],
+        "gate": [
+          88,
+          57,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "gata-p4500-m1-normal-varma-berg",
+      "camera": "gata",
+      "population": 4500,
+      "walls": 1,
+      "state": "normal",
+      "variant": "varma-berg",
+      "groups": [
+        "variants"
+      ],
+      "features": {
+        "shutters": [
+          [
+            18,
+            50,
+            22,
+            61
+          ],
+          [
+            132,
+            54,
+            140,
+            78
+          ]
+        ],
+        "housing_masses": 9,
+        "people": 4,
+        "meal_point": [
+          58,
+          89
+        ],
+        "hunger_point": [
+          74,
+          87
+        ],
+        "empty_bowls": [
+          [
+            60,
+            89
+          ],
+          [
+            88,
+            90
+          ]
+        ]
+      },
+      "anchors": {
+        "temple": [
+          69,
+          36,
+          22,
+          12
+        ],
+        "gate": [
+          80,
+          57,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "tak-p4500-m1-normal-huvud",
+      "camera": "tak",
+      "population": 4500,
+      "walls": 1,
+      "state": "normal",
+      "variant": "huvud",
+      "groups": [
+        "status",
+        "scale",
+        "variants"
+      ],
+      "features": {
+        "shutters": [
+          [
+            24,
+            75,
+            28,
+            84
+          ],
+          [
+            135,
+            73,
+            140,
+            83
+          ]
+        ],
+        "housing_masses": 11,
+        "people": 4,
+        "meal_point": [
+          78,
+          78
+        ],
+        "hunger_point": [
+          83,
+          75
+        ],
+        "empty_bowls": [
+          [
+            70,
+            80
+          ],
+          [
+            96,
+            81
+          ]
+        ],
+        "foreground_wall": [
+          5,
+          90,
+          153,
+          94
+        ]
+      },
+      "anchors": {
+        "temple": [
+          70,
+          31,
+          24,
+          13
+        ],
+        "gate": [
+          80,
+          89,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "tak-p4500-m1-starvation-huvud",
+      "camera": "tak",
+      "population": 4500,
+      "walls": 1,
+      "state": "starvation",
+      "variant": "huvud",
+      "groups": [
+        "status"
+      ],
+      "features": {
+        "shutters": [
+          [
+            24,
+            75,
+            28,
+            84
+          ],
+          [
+            135,
+            73,
+            140,
+            83
+          ]
+        ],
+        "housing_masses": 11,
+        "people": 4,
+        "meal_point": [
+          78,
+          78
+        ],
+        "hunger_point": [
+          83,
+          75
+        ],
+        "empty_bowls": [
+          [
+            70,
+            80
+          ],
+          [
+            96,
+            81
+          ]
+        ],
+        "foreground_wall": [
+          5,
+          90,
+          153,
+          94
+        ]
+      },
+      "anchors": {
+        "temple": [
+          70,
+          31,
+          24,
+          13
+        ],
+        "gate": [
+          80,
+          89,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "tak-p4500-m1-siege-huvud",
+      "camera": "tak",
+      "population": 4500,
+      "walls": 1,
+      "state": "siege",
+      "variant": "huvud",
+      "groups": [
+        "status"
+      ],
+      "features": {
+        "shutters": [
+          [
+            24,
+            75,
+            28,
+            84
+          ],
+          [
+            135,
+            73,
+            140,
+            83
+          ]
+        ],
+        "housing_masses": 11,
+        "people": 4,
+        "meal_point": [
+          78,
+          78
+        ],
+        "hunger_point": [
+          83,
+          75
+        ],
+        "empty_bowls": [
+          [
+            70,
+            80
+          ],
+          [
+            96,
+            81
+          ]
+        ],
+        "foreground_wall": [
+          5,
+          90,
+          153,
+          94
+        ]
+      },
+      "anchors": {
+        "temple": [
+          70,
+          31,
+          24,
+          13
+        ],
+        "gate": [
+          80,
+          89,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "tak-p4500-m1-construction-huvud",
+      "camera": "tak",
+      "population": 4500,
+      "walls": 1,
+      "state": "construction",
+      "variant": "huvud",
+      "groups": [
+        "status"
+      ],
+      "features": {
+        "shutters": [
+          [
+            24,
+            75,
+            28,
+            84
+          ],
+          [
+            135,
+            73,
+            140,
+            83
+          ]
+        ],
+        "housing_masses": 11,
+        "people": 4,
+        "meal_point": [
+          78,
+          78
+        ],
+        "hunger_point": [
+          83,
+          75
+        ],
+        "empty_bowls": [
+          [
+            70,
+            80
+          ],
+          [
+            96,
+            81
+          ]
+        ],
+        "foreground_wall": [
+          5,
+          90,
+          153,
+          94
+        ]
+      },
+      "anchors": {
+        "temple": [
+          70,
+          31,
+          24,
+          13
+        ],
+        "gate": [
+          80,
+          89,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "tak-p1000-m0-normal-huvud",
+      "camera": "tak",
+      "population": 1000,
+      "walls": 0,
+      "state": "normal",
+      "variant": "huvud",
+      "groups": [
+        "scale"
+      ],
+      "features": {
+        "shutters": [
+          [
+            24,
+            75,
+            28,
+            84
+          ],
+          [
+            135,
+            73,
+            140,
+            83
+          ]
+        ],
+        "housing_masses": 5,
+        "people": 2,
+        "meal_point": [
+          78,
+          78
+        ],
+        "hunger_point": [
+          83,
+          75
+        ],
+        "empty_bowls": [
+          [
+            70,
+            80
+          ],
+          [
+            96,
+            81
+          ]
+        ]
+      },
+      "anchors": {
+        "temple": [
+          70,
+          31,
+          24,
+          13
+        ],
+        "gate": [
+          80,
+          90,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "tak-p1000-m1-normal-huvud",
+      "camera": "tak",
+      "population": 1000,
+      "walls": 1,
+      "state": "normal",
+      "variant": "huvud",
+      "groups": [
+        "scale"
+      ],
+      "features": {
+        "shutters": [
+          [
+            24,
+            75,
+            28,
+            84
+          ],
+          [
+            135,
+            73,
+            140,
+            83
+          ]
+        ],
+        "housing_masses": 5,
+        "people": 2,
+        "meal_point": [
+          78,
+          78
+        ],
+        "hunger_point": [
+          83,
+          75
+        ],
+        "empty_bowls": [
+          [
+            70,
+            80
+          ],
+          [
+            96,
+            81
+          ]
+        ],
+        "foreground_wall": [
+          5,
+          90,
+          153,
+          94
+        ]
+      },
+      "anchors": {
+        "temple": [
+          70,
+          31,
+          24,
+          13
+        ],
+        "gate": [
+          80,
+          89,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "tak-p1000-m3-normal-huvud",
+      "camera": "tak",
+      "population": 1000,
+      "walls": 3,
+      "state": "normal",
+      "variant": "huvud",
+      "groups": [
+        "scale"
+      ],
+      "features": {
+        "shutters": [
+          [
+            24,
+            75,
+            28,
+            84
+          ],
+          [
+            135,
+            73,
+            140,
+            83
+          ]
+        ],
+        "housing_masses": 5,
+        "people": 2,
+        "meal_point": [
+          78,
+          78
+        ],
+        "hunger_point": [
+          83,
+          75
+        ],
+        "empty_bowls": [
+          [
+            70,
+            80
+          ],
+          [
+            96,
+            81
+          ]
+        ],
+        "foreground_wall": [
+          5,
+          81,
+          153,
+          94
+        ]
+      },
+      "anchors": {
+        "temple": [
+          70,
+          31,
+          24,
+          13
+        ],
+        "gate": [
+          80,
+          89,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "tak-p4500-m0-normal-huvud",
+      "camera": "tak",
+      "population": 4500,
+      "walls": 0,
+      "state": "normal",
+      "variant": "huvud",
+      "groups": [
+        "scale"
+      ],
+      "features": {
+        "shutters": [
+          [
+            24,
+            75,
+            28,
+            84
+          ],
+          [
+            135,
+            73,
+            140,
+            83
+          ]
+        ],
+        "housing_masses": 11,
+        "people": 4,
+        "meal_point": [
+          78,
+          78
+        ],
+        "hunger_point": [
+          83,
+          75
+        ],
+        "empty_bowls": [
+          [
+            70,
+            80
+          ],
+          [
+            96,
+            81
+          ]
+        ]
+      },
+      "anchors": {
+        "temple": [
+          70,
+          31,
+          24,
+          13
+        ],
+        "gate": [
+          80,
+          90,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "tak-p4500-m3-normal-huvud",
+      "camera": "tak",
+      "population": 4500,
+      "walls": 3,
+      "state": "normal",
+      "variant": "huvud",
+      "groups": [
+        "scale"
+      ],
+      "features": {
+        "shutters": [
+          [
+            24,
+            75,
+            28,
+            84
+          ],
+          [
+            135,
+            73,
+            140,
+            83
+          ]
+        ],
+        "housing_masses": 11,
+        "people": 4,
+        "meal_point": [
+          78,
+          78
+        ],
+        "hunger_point": [
+          83,
+          75
+        ],
+        "empty_bowls": [
+          [
+            70,
+            80
+          ],
+          [
+            96,
+            81
+          ]
+        ],
+        "foreground_wall": [
+          5,
+          81,
+          153,
+          94
+        ]
+      },
+      "anchors": {
+        "temple": [
+          70,
+          31,
+          24,
+          13
+        ],
+        "gate": [
+          80,
+          89,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "tak-p10000-m0-normal-huvud",
+      "camera": "tak",
+      "population": 10000,
+      "walls": 0,
+      "state": "normal",
+      "variant": "huvud",
+      "groups": [
+        "scale"
+      ],
+      "features": {
+        "shutters": [
+          [
+            24,
+            75,
+            28,
+            84
+          ],
+          [
+            135,
+            73,
+            140,
+            83
+          ]
+        ],
+        "housing_masses": 16,
+        "people": 6,
+        "meal_point": [
+          78,
+          78
+        ],
+        "hunger_point": [
+          83,
+          75
+        ],
+        "empty_bowls": [
+          [
+            70,
+            80
+          ],
+          [
+            96,
+            81
+          ]
+        ]
+      },
+      "anchors": {
+        "temple": [
+          70,
+          31,
+          24,
+          13
+        ],
+        "gate": [
+          80,
+          90,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "tak-p10000-m1-normal-huvud",
+      "camera": "tak",
+      "population": 10000,
+      "walls": 1,
+      "state": "normal",
+      "variant": "huvud",
+      "groups": [
+        "scale"
+      ],
+      "features": {
+        "shutters": [
+          [
+            24,
+            75,
+            28,
+            84
+          ],
+          [
+            135,
+            73,
+            140,
+            83
+          ]
+        ],
+        "housing_masses": 16,
+        "people": 6,
+        "meal_point": [
+          78,
+          78
+        ],
+        "hunger_point": [
+          83,
+          75
+        ],
+        "empty_bowls": [
+          [
+            70,
+            80
+          ],
+          [
+            96,
+            81
+          ]
+        ],
+        "foreground_wall": [
+          5,
+          90,
+          153,
+          94
+        ]
+      },
+      "anchors": {
+        "temple": [
+          70,
+          31,
+          24,
+          13
+        ],
+        "gate": [
+          80,
+          89,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "tak-p10000-m3-normal-huvud",
+      "camera": "tak",
+      "population": 10000,
+      "walls": 3,
+      "state": "normal",
+      "variant": "huvud",
+      "groups": [
+        "scale"
+      ],
+      "features": {
+        "shutters": [
+          [
+            24,
+            75,
+            28,
+            84
+          ],
+          [
+            135,
+            73,
+            140,
+            83
+          ]
+        ],
+        "housing_masses": 16,
+        "people": 6,
+        "meal_point": [
+          78,
+          78
+        ],
+        "hunger_point": [
+          83,
+          75
+        ],
+        "empty_bowls": [
+          [
+            70,
+            80
+          ],
+          [
+            96,
+            81
+          ]
+        ],
+        "foreground_wall": [
+          5,
+          81,
+          153,
+          94
+        ]
+      },
+      "anchors": {
+        "temple": [
+          70,
+          31,
+          24,
+          13
+        ],
+        "gate": [
+          80,
+          89,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "tak-p4500-m1-normal-djup",
+      "camera": "tak",
+      "population": 4500,
+      "walls": 1,
+      "state": "normal",
+      "variant": "djup",
+      "groups": [
+        "variants"
+      ],
+      "features": {
+        "shutters": [
+          [
+            24,
+            75,
+            28,
+            84
+          ],
+          [
+            135,
+            73,
+            140,
+            83
+          ]
+        ],
+        "housing_masses": 13,
+        "people": 4,
+        "meal_point": [
+          78,
+          78
+        ],
+        "hunger_point": [
+          83,
+          75
+        ],
+        "empty_bowls": [
+          [
+            70,
+            80
+          ],
+          [
+            96,
+            81
+          ]
+        ],
+        "foreground_wall": [
+          5,
+          90,
+          153,
+          94
+        ]
+      },
+      "anchors": {
+        "temple": [
+          70,
+          31,
+          24,
+          13
+        ],
+        "gate": [
+          80,
+          89,
+          5
+        ]
+      }
+    },
+    {
+      "stem": "tak-p4500-m1-normal-varma-berg",
+      "camera": "tak",
+      "population": 4500,
+      "walls": 1,
+      "state": "normal",
+      "variant": "varma-berg",
+      "groups": [
+        "variants"
+      ],
+      "features": {
+        "shutters": [
+          [
+            24,
+            75,
+            28,
+            84
+          ],
+          [
+            135,
+            73,
+            140,
+            83
+          ]
+        ],
+        "housing_masses": 11,
+        "people": 4,
+        "meal_point": [
+          78,
+          78
+        ],
+        "hunger_point": [
+          83,
+          75
+        ],
+        "empty_bowls": [
+          [
+            70,
+            80
+          ],
+          [
+            96,
+            81
+          ]
+        ],
+        "foreground_wall": [
+          5,
+          90,
+          153,
+          94
+        ]
+      },
+      "anchors": {
+        "temple": [
+          70,
+          31,
+          24,
+          13
+        ],
+        "gate": [
+          80,
+          89,
+          5
+        ]
+      }
+    }
+  ]
+}

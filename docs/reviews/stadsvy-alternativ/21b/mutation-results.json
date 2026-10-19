@@ -1,0 +1,29 @@
+{
+  "source_sha256": "996345c632fcf16a1633fa6c1fa7da9a96e9f3baee626baf2c45fcf0b4758607",
+  "results": [
+    {
+      "mutation": "nearest-neighbour",
+      "result": "RED",
+      "reason": "nearest-neighbour scaling changed pixels",
+      "restore": "byte-exact source; fresh generated checks GREEN"
+    },
+    {
+      "mutation": "population",
+      "result": "RED",
+      "reason": "gata population stopped affecting the image at wall 0",
+      "restore": "byte-exact source; fresh generated checks GREEN"
+    },
+    {
+      "mutation": "wall-level",
+      "result": "RED",
+      "reason": "gata walls stopped affecting the image at population 1000",
+      "restore": "byte-exact source; fresh generated checks GREEN"
+    },
+    {
+      "mutation": "temple-construction",
+      "result": "RED",
+      "reason": "gata status distinction lost",
+      "restore": "byte-exact source; fresh generated checks GREEN"
+    }
+  ]
+}

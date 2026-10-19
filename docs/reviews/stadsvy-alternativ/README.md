@@ -65,3 +65,7 @@ python3 -m http.server 8765 --directory /tmp/megaron-codex-stadsvy-alternativ-20
 - Baslinjebilden kör den oförändrade renderern med en syntetisk fixtur. Inga API-/DB-bevis eller påståenden om live-Phaistos ingår.
 
 Granskningsrättelse efter första handoff: kontaktarkets standardfont ersatt med explicit DejaVu Sans för å/ä/ö. Motivens PNG är byte-identiska; bara kontaktarken och deras hashvärden ändras.
+
+## Utveckling efter Timothys bildval
+
+[21b: stadsmiljö med horisont](21b/index.html) utvecklar04(gata, huvudspår) och10(takgård) med statustillstånd, datamatris, varma berg och390px-passform. De ursprungliga tolv förslagen bevaras. Kontrakt, begränsningar och bevis i [21b/README.md](21b/README.md).

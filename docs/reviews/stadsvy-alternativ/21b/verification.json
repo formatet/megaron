@@ -1,0 +1,28 @@
+{
+  "deterministic_generated_pngs": 146,
+  "scenes": 28,
+  "exact_integer_scaled_pairs": 56,
+  "exact_status_composites": 28,
+  "population_wall_matrix": "18 combinations; pixel differences prove dependency, human readability pending BILD",
+  "firefox": {
+    "browser": "146.0.1",
+    "viewport": [
+      1440,
+      390
+    ],
+    "DPR": 1,
+    "game_images": 32,
+    "game_image_css": [
+      320,
+      192
+    ],
+    "literal_panel": {
+      "outer": 390,
+      "inner": 340,
+      "scroll": 388,
+      "client": 388,
+      "image": 320
+    },
+    "page_errors": []
+  }
+}
