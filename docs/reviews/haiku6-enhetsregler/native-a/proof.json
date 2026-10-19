@@ -1,0 +1,26 @@
+{
+  "health": {
+    "commit": "d03672ab8c2536523a5e9f52389c8c2a3934de6a",
+    "migration": 189,
+    "status": "ok"
+  },
+  "natural_register_cli_login_join_found": true,
+  "world_id": "4a99d36a-a8ca-4e19-9bcb-8a0be7732cac",
+  "province_id": "3fc7dd00-0078-4585-88d7-e8abaccf9c06",
+  "firefox_errors": [],
+  "browser": "Firefox; DPR1;1280/390",
+  "sql_writes": false,
+  "request_replay": false,
+  "observations": [
+    {
+      "width": 1280,
+      "overflow": false,
+      "text": "TRAIN UNITS\nLand units train as a full 100-man cohort. Once ready, a cohort can still march after losing men. Reinforce refills it over time only in its original home city \u2014 garrison it there and use Reinforce (Army tab). Ships are built one at a time.\nSpearmen\nrequires barracks\nTrain 100\nWar Chariot\nrequires stable\nTrain 100\nGalley\nrequires shipyard\nBuild 1 Ship\nWar Galley\nrequires shipyard\nBuild 1 Ship\nEmporos\nrequires shipyard\nBuild 1 Ship\nElite Infantry\nrequires foundry\nTrain 100\n\nUnavailable: recall, build road, redirect, unload, land ?"
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "text": "TRAIN UNITS\nLand units train as a full 100-man cohort. Once ready, a cohort can still march after losing men. Reinforce refills it over time only in its original home city \u2014 garrison it there and use Reinforce (Army tab). Ships are built one at a time.\nSpearmen\nrequires barracks\nTrain 100\nWar Chariot\nrequires stable\nTrain 100\nGalley\nrequires shipyard\nBuild 1 Ship\nWar Galley\nrequires shipyard\nBuild 1 Ship\nEmporos\nrequires shipyard\nBuild 1 Ship\nElite Infantry\nrequires foundry\nTrain 100\n\nUnavailable: recall, build road, redirect, unload, land ?"
+    }
+  ]
+}

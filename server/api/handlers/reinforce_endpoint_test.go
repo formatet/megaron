@@ -19,8 +19,7 @@ import (
 // insertUnit is a minimal direct-SQL land unit seed for these eligibility
 // tests — deliberately bypassing Recruit so each case can set exactly the
 // (status, settlement_id, origin_settlement_id, size) combination it needs,
-// including combinations Recruit itself would never produce (e.g. garrisoned
-// away from origin, simulating a unit some future kingdom-loan feature moved).
+// including a completed cohort after losses or garrisoned in another own city.
 func insertUnit(t *testing.T, f *recruitShipFixture, status string, settlementID, originID *uuid.UUID, size int) uuid.UUID {
 	t.Helper()
 	ctx := context.Background()
@@ -38,7 +37,7 @@ func insertUnit(t *testing.T, f *recruitShipFixture, status string, settlementID
 
 func TestReinforce_AcceptedWhenGarrisonedAtOriginUnderFullStrength(t *testing.T) {
 	f := setupRecruitShipFixture(t)
-	unitID := insertUnit(t, f, "garrison", &f.settlementID, &f.settlementID, 62)
+	unitID := insertUnit(t, f, "garrison", &f.settlementID, &f.settlementID, 64)
 
 	rec, resp := f.post(t, "/worlds/"+f.worldID.String()+"/units/"+unitID.String()+"/reinforce", map[string]any{})
 	if rec.Code != http.StatusOK {
@@ -76,10 +75,8 @@ func TestReinforce_RejectedWhenNotGarrison(t *testing.T) {
 func TestReinforce_RejectedWhenGarrisonedAwayFromOrigin(t *testing.T) {
 	f := setupRecruitShipFixture(t)
 
-	// A second settlement (simulates a cohort garrisoned somewhere other than
-	// the city that recruited it — origin_settlement_id stays the FIRST city
-	// forever, per mig 126, so this is exactly the shape a future kingdom-loan
-	// would produce; reinforce must still refuse it today).
+	// A second city owned by the same Wanax is not the recruitment home.
+	// Moving there does not change origin_settlement_id.
 	var otherProvinceID uuid.UUID
 	if err := f.pool.QueryRow(context.Background(),
 		`INSERT INTO provinces (world_id, map_q, map_r, terrain_type, coastal) VALUES ($1, 1, 0, 'plains', false) RETURNING id`,
@@ -99,9 +96,19 @@ func TestReinforce_RejectedWhenGarrisonedAwayFromOrigin(t *testing.T) {
 	// Garrisoned at otherSettlementID, but origin is still the FIRST settlement.
 	unitID := insertUnit(t, f, "garrison", &otherSettlementID, &f.settlementID, 62)
 
-	rec, _ := f.post(t, "/worlds/"+f.worldID.String()+"/units/"+unitID.String()+"/reinforce", map[string]any{})
+	rec, resp := f.post(t, "/worlds/"+f.worldID.String()+"/units/"+unitID.String()+"/reinforce", map[string]any{})
 	if rec.Code != http.StatusUnprocessableEntity {
 		t.Fatalf("Reinforce(garrisoned away from origin) = %d %q, want 422", rec.Code, rec.Body.String())
+	}
+	if got := resp["error"]; got != "reinforce only works in the cohort's home city — march it back to its origin settlement first" {
+		t.Errorf("away-city error = %v, want the origin-city explanation", got)
+	}
+	var reinforcing bool
+	if err := f.pool.QueryRow(context.Background(), `SELECT reinforcing FROM units WHERE id=$1`, unitID).Scan(&reinforcing); err != nil {
+		t.Fatal(err)
+	}
+	if reinforcing {
+		t.Error("rejected reinforcement changed units.reinforcing")
 	}
 }
 

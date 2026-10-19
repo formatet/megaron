@@ -13,7 +13,7 @@ The **War (⚔)** drawer has three tabs: **Army**, **Recruit** and **Movements**
 | **War Galley** | Shipyard + Foundry | Costs cedar. The warship. |
 | **Emporos** | Shipyard | Trade hull. Does not fight. |
 
-Land units train as a whole hundred-man cohort (**Train 100**). Ships are built one at a time and can be named. Their cost and population draft cover the ship's crew, rather than a hundred-man cohort. Rejected recruitment consumes no people or goods. You are notified when training finishes.
+Land units train as a whole hundred-man cohort (**Train 100**). Ships are built one at a time and can be named. Their cost and population draft cover the ship's crew, rather than a hundred-man cohort. Rejected recruitment consumes no people or goods. You are notified when training finishes. A cohort still gathering men or training cannot march. Once ready, it can still march after losing men; it does not have to refill to 100 first.
 
 Every cohort is numbered by its home city: **2nd Spearmen of Knossos**. A lost regiment's number is never given out again. Before you found your first city, your [[horde]]'s two escort cohorts carry your own name instead — **1st** and **2nd Spearmen of** *you* — and become the new city's 1st and 2nd when you settle.
 
@@ -25,6 +25,6 @@ A cohort is drafted out of your city's population and stays out of it until disb
 
 ## The Army tab
 
-Every unit you own, with its state and current grain and silver upkeep per day in plain words. **March** is shown while it can move; a damaged unit in its own city can also **Reinforce**. A land unit on the march shows **Recall**. The card also shows stance and **Set**, battle retreat, **Redirect**, **Fetch by ship**, **Load** / **Unload** or **Repair**, whenever that unit can use them. See [[marching]], [[stances]] and [[sea]].
+Every unit you own, with its state and current grain and silver upkeep per day in plain words. **March** is shown while it can move; a damaged land cohort garrisoned in its **original home city** can also **Reinforce** — another city you own does not qualify. A land unit on the march shows **Recall**. The card also shows stance and **Set**, battle retreat, **Redirect**, **Fetch by ship**, **Load** / **Unload** or **Repair**, whenever that unit can use them. See [[marching]], [[stances]] and [[sea]].
 
 **Movements** lists your units on the march (**Outgoing**) and every foreign unit you can see marching on one of your settlements (**Incoming**), soonest arrival first. You only see an incoming column once one of your eyes has it in sight — the *foreign march sighted* notification fires at the same moment ([[defence]]).

@@ -222,7 +222,7 @@ export async function loadWarDrawer() {
       recHtml += '<input type="hidden" id="war-recruit-city" value="' + capital.id + '">';
     }
     recHtml += '<div class="dsec-title">Train Units</div>';
-    recHtml += '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.3rem">Land units train as a full 100-man cohort. A cohort worn down in battle regenerates over time in its home city — garrison it there and use Reinforce (Army tab). Ships are built one at a time.</div>';
+    recHtml += '<div style="font-size:.65rem;color:var(--text-dim);margin-bottom:.3rem">Land units train as a full 100-man cohort. Once ready, a cohort can still march after losing men. Reinforce refills it over time only in its original home city — garrison it there and use Reinforce (Army tab). Ships are built one at a time.</div>';
     const NAVAL_SPEC_IDS = ['ship', 'war_galley', 'merchantman'];
     for (const u of UNIT_SPECS) {
       const isNaval = NAVAL_SPEC_IDS.includes(u.id);

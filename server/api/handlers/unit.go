@@ -52,8 +52,8 @@ func NewUnitHandler(pool *pgxpool.Pool, scheduler *events.Scheduler, eventStore 
 // Moves a discrete unit from its current settlement to a target hex.
 // Validations (C3 plan):
 //   - Caller must own the unit
-//   - Unit must be in status='garrison'
-//   - Land units: size must be exactly 100 (forming units cannot march)
+//   - Unit must be in status='garrison' or 'positioned'
+//   - Forming/training units cannot march; completed land cohorts can march after losses
 //   - Naval: deployable (status='garrison')
 //   - Stance (if provided) is persisted on the unit for C5; no behaviour enforced here
 func (h *UnitHandler) March(w http.ResponseWriter, r *http.Request) {
