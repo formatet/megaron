@@ -2041,6 +2041,3 @@ h4.cx-h { font-size: var(--fs-base); }
 #dispatch-window-overlay .dw-text { overflow-wrap: anywhere; }
 
 .account-profile { margin-bottom: 1.25rem; }
-
-/* War → Army: an order the player sent that its Runner has not yet delivered. */
-.order-en-route { font-size: .65rem; color: var(--text-dim); }

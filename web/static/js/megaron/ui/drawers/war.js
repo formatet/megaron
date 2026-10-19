@@ -16,7 +16,7 @@ import { warMovements } from '../movements.js';
 import { expeditionMissionText } from '../expedition.js';
 import { chooseMarchTarget } from '../marchctx.js';
 import { fmtNum, fmtDays, fmtDay } from '../fmt_num.js';
-import { orderRunnerHTML, ordersEnRouteHTML } from '../runner_status.js';
+import { orderRunnerHTML } from '../runner_status.js';
 import { recallAll, recallAllControlsHTML, recallAllResultHTML } from '../recall_all.js';
 import { roadPanelHTML, roadOrderBody, parseHex } from '../roadorder.js';
 let recallAllResult = '';
@@ -525,9 +525,7 @@ export function renderUnitCard(u) {
   // Pending order (Fas 5): a Runner is en route to this unit — the order
   // executes only on delivery; surface the courier ETA on the card.
   const runner = (State.messengerData || []).find(m => m.own && m.kind === 'order' && m.order_unit_id === u.id);
-  // The runner marker needs /messengers loaded; the unit's own orders_en_route
-  // (from /units) is the fallback so a sent order never vanishes from the card.
-  const pendingOrder = runner ? orderRunnerHTML(runner, serverNow()) : ordersEnRouteHTML(u.orders_en_route);
+  const pendingOrder = runner ? orderRunnerHTML(runner, serverNow()) : '';
 
   // Stance badge
   const stanceBadge = u.stance
