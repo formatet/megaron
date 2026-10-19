@@ -1,0 +1,75 @@
+[
+  {
+    "number": 1,
+    "start": "2026-10-19T09:14:01+02:00",
+    "args": [
+      "status",
+      "--province",
+      "Mallia"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax Dikonaros · day 609 of the world\n\n1 citizen = 100 people\nMallia [minoan]  Pop: 4.1k people  Labor: 41 citizens  Walls: 0/3  Settlements: 2/5\nPopulation 4108 — growing: food net +27.8 per day\nThis is Mallia. You have 2 cities — `keryx settlements` lists them, `keryx status --province <id>` shows another.\n\nBlessed harvest: +25% grain, livestock, wine, oil yield · 10 days left\nFood lasts 104.3 days at current consumption (city grain + fish stocks)\n\nLast day 609: 5 goods produced, 1 consumed  ·  keryx ticklog for details\n\nResources\n  (per day; food and army balances are itemized below)\n  Silver      397  —\n  Food     grain 40.3 + fish 8.0 − people eat 20.5 = net +28 per day (before army)\n  Grain      1.0k  production 40.3 per day  (15 citizens needed for people on best food slots · 34 placed)\n  Automatic food: 0.64 grain + 0.00 fish per day without placed citizens (nearby ground 0.50 grain; 8 people outside whole citizens: 0.14 grain + 0.00 fish, a fraction of the best food worker)\n  Army     eats 1.0 grain per day → food net +27 per day after army\n  Silver   net +0.0 per day after army pay\n  Fish       1.1k  +8.0 per day\n  Timber       45  +1.0 per day\n  Stone       516  +2.9 per day\n  ⚠ Cedar       215  production +1.0 per day  — known sinks absorb at most 24 within 60 days; 1 citizen produces with no receiver (`keryx place`)\n  Kharis      100  (Favorable) · cap 100 · net +7.2 per day (temple − decay)\n  Kharis decay: 0.1 base + 2 cities cost 0.1 per day = 0.2 total\n  → your temple can employ MORE devotion than you've allocated — raise cult labor (`keryx allocate --cult <%>`) to fill it and let kharis climb.\n  Temple in Mallia: reference 0.25 grain per day — alternatives: 0.4392 fish or 0.3141 timber or 0.3819 silver — stock: 1030 grain, 1113 fish, 44.88 timber, 397 silver — next gift: 0.25 grain  ✓\n\nArmy (garrison in Mallia)\n  Upkeep     1.0 grain, 0.0 silver per day  (everything the city pays — including field units)\n  Field units and other cities are shown in `keryx unit list`.\n\nBuildings\n  farm         L1\n  stonequarry  L1\n  temple       L3\n\nConstruction\n  barracks     in 3 days\n",
+    "stderr": ""
+  },
+  {
+    "number": 2,
+    "start": "2026-10-19T09:14:03+02:00",
+    "args": [
+      "cargo"
+    ],
+    "exit_code": 0,
+    "stdout": "No cargo of yours currently in transit.\n",
+    "stderr": ""
+  },
+  {
+    "number": 3,
+    "start": "2026-10-19T09:14:04+02:00",
+    "args": [
+      "status",
+      "--province",
+      "MalliaWest"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax Dikonaros · day 609 of the world\n\n1 citizen = 100 people\nMalliaWest [minoan]  Pop: 420 people  Labor: 4 citizens  Walls: 0/3  Settlements: 2/5  [coastal — can build harbour → ships]\nPopulation 420 — growing: food net +5.5 per day\nThis is MalliaWest. You have 2 cities — `keryx settlements` lists them, `keryx status --province <id>` shows another.\n\nFood lasts 414.1 days at current consumption (city grain + fish stocks)\n\nLast day 609: 2 goods produced, 1 consumed  ·  keryx ticklog for details\n\nResources\n  (per day; food and army balances are itemized below)\n  Silver       60  —\n  Food     grain 0.5 + fish 7.1 − people eat 2.1 = net +5.5 per day (before army)\n  Grain        97  production 0.5 per day  (1 citizen needed for people on best food slots · 4 placed)\n  Automatic food: 0.50 grain + 0.34 fish per day without placed citizens (nearby ground 0.50 grain; 20 people outside whole citizens: 0.00 grain + 0.34 fish, a fraction of the best food worker)\n  Army     eats 0.0 grain per day → food net +5.5 per day after army\n  Silver   net +0.0 per day after army pay\n  Fish        772  +7.1 per day\n  Timber       30  —\n  ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).\n  Kharis      100  (Favorable) · cap 100 · net +7.2 per day (temple − decay)\n  Kharis decay: 0.1 base + 2 cities cost 0.1 per day = 0.2 total\n  → your temple can employ MORE devotion than you've allocated — raise cult labor (`keryx allocate --cult <%>`) to fill it and let kharis climb.\n  Temple in Mallia: reference 0.25 grain per day — alternatives: 0.4392 fish or 0.3141 timber or 0.3819 silver — stock: 1030 grain, 1113 fish, 44.88 timber, 397 silver — next gift: 0.25 grain  ✓\n\nArmy (garrison in MalliaWest)\n  Field units and other cities are shown in `keryx unit list`.\n\nBuildings\n  harbour      L1\n  shipyard     L1\n",
+    "stderr": ""
+  },
+  {
+    "number": 4,
+    "start": "2026-10-19T09:14:08+02:00",
+    "args": [
+      "recruit",
+      "--list",
+      "--province",
+      "MalliaWest"
+    ],
+    "exit_code": 0,
+    "stdout": "Type (--unit)             Batch           Cost                          Days    Pop    Requires          Afford  Upkeep per day (once garrisoned)\n──────────────────────────────────────────────────────────────────────────────────────────────────────────────\nelite_infantry (Elite Infantry)  100 men         bronze×16 grain×24 silver×40  4       10     barracks+foundry  ✗       0.6 grain, 2.0 silver (0.6 net in garrison)  ⚠ upkeep exceeds this city: needs 2.2 more grain per day and 0.6 more silver per day — grain stock 97.43 covers ~44 days at that rate — silver stock 60 covers ~100 days at that rate\ngalley (Galley)           1 vessel (20 crew)  silver×6 timber×30            3       10     shipyard          ✓       0.0 grain, 1.5 silver (0.5 net in garrison)  ⚠ upkeep exceeds this city: needs 1.6 more grain per day and 0.5 more silver per day — grain stock 97.43 covers ~59 days at that rate — silver stock 60 covers ~133 days at that rate\nmerchantman (Emporos)     1 vessel (10 crew)  silver×2 timber×16            4       8      shipyard          ✓       0.0 grain, 1.0 silver (0.3 net in garrison)  ⚠ upkeep exceeds this city: needs 1.6 more grain per day and 0.3 more silver per day — grain stock 97.43 covers ~60 days at that rate — silver stock 60 covers ~200 days at that rate\nspearman (Spearmen)       100 men         grain×12 silver×20            1       5      barracks          ✗       0.5 grain, 0.0 silver  ⚠ grain upkeep: net is -1.6 grain per day, needs 2.1 more per day — grain stock 97.43 covers ~46 days at that rate\nwar_chariot (War Chariot)  100 men         bronze×20 cedar×8 grain×40 silver×50 timber×8  3       8      stable            ✗       0.8 grain, 3.0 silver (0.9 net in garrison)  ⚠ upkeep exceeds this city: needs 2.4 more grain per day and 0.9 more silver per day — grain stock 97.43 covers ~41 days at that rate — silver stock 60 covers ~67 days at that rate\nwar_galley (War Galley)   1 vessel (50 crew)  cedar×100 silver×30           5       12     shipyard+foundry  ✗       0.1 grain, 2.5 silver (0.8 net in garrison)  ⚠ upkeep exceeds this city: needs 1.7 more grain per day and 0.8 more silver per day — grain stock 97.43 covers ~59 days at that rate — silver stock 60 covers ~80 days at that rate\n",
+    "stderr": ""
+  },
+  {
+    "number": 5,
+    "start": "2026-10-19T09:14:10+02:00",
+    "args": [
+      "recruit",
+      "--unit",
+      "galley",
+      "--province",
+      "MalliaWest"
+    ],
+    "exit_code": 0,
+    "stdout": "Building 1 galley — \"Palace Herald\"\nReady in 3 days — not deployable until then (`keryx unit list` shows the ETA).\nDrafted 20 people as crew — population 420 → 400.\nwarning: once this unit garrisons it needs 0.0 grain + 1.5 silver per day upkeep — this settlement's current net after its existing army's upkeep is -1.5 grain per day, +0.0 silver per day; it may starve/desert without more production or fewer units (`keryx status`)\n",
+    "stderr": ""
+  },
+  {
+    "number": 6,
+    "start": "2026-10-19T09:14:15+02:00",
+    "args": [
+      "status",
+      "--province",
+      "MalliaWest"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax Dikonaros · day 609 of the world\n\n1 citizen = 100 people\nMalliaWest [minoan]  Pop: 400 people  Labor: 4 citizens  Walls: 0/3  Settlements: 2/5  [coastal — can build harbour → ships]\nPopulation 400 — growing: food net +5.6 per day\nThis is MalliaWest. You have 2 cities — `keryx settlements` lists them, `keryx status --province <id>` shows another.\n\nFood lasts 434.8 days at current consumption (city grain + fish stocks)\n\nLast day 609: 2 goods produced, 1 consumed  ·  keryx ticklog for details\n\nResources\n  (per day; food and army balances are itemized below)\n  Silver       54  —\n  Food     grain 0.5 + fish 7.1 − people eat 2.0 = net +5.6 per day (before army)\n  Grain        97  production 0.5 per day  (1 citizen needed for people on best food slots · 4 placed)\n  Automatic food: 0.50 grain + 0.00 fish per day without placed citizens (nearby ground 0.50 grain; 0 people outside whole citizens: 0.00 grain + 0.00 fish, a fraction of the best food worker)\n  Army     eats 0.0 grain per day → food net +5.6 per day after army\n  Silver   net +0.0 per day after army pay\n  Fish        772  +7.1 per day\n  ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).\n  Kharis      100  (Favorable) · cap 100 · net +7.2 per day (temple − decay)\n  Kharis decay: 0.1 base + 2 cities cost 0.1 per day = 0.2 total\n  → your temple can employ MORE devotion than you've allocated — raise cult labor (`keryx allocate --cult <%>`) to fill it and let kharis climb.\n  Temple in Mallia: reference 0.25 grain per day — alternatives: 0.4392 fish or 0.3141 timber or 0.3819 silver — stock: 1030 grain, 1113 fish, 44.88 timber, 397 silver — next gift: 0.25 grain  ✓\n\nArmy (garrison in MalliaWest)\n  Field units and other cities are shown in `keryx unit list`.\n\nBuildings\n  harbour      L1\n  shipyard     L1\n\nTraining\n  Galley     building — ready in 3 days\n",
+    "stderr": ""
+  }
+]
