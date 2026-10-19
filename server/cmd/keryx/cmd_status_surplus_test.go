@@ -220,7 +220,7 @@ func TestSurplusWithoutSinkWarning(t *testing.T) {
 		if got == "" {
 			t.Fatal("surplusWithoutSinkWarning(zero capacity, stock 10000) = \"\", want a warning")
 		}
-		for _, want := range []string{"Purple", "3 citizens", "known sinks", "keryx place"} {
+		for _, want := range []string{"Purple", "3 citizens on purple", "known sinks", "keryx place"} {
 			if !strings.Contains(got, want) {
 				t.Errorf("surplusWithoutSinkWarning() = %q, want it to contain %q", got, want)
 			}

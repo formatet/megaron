@@ -355,11 +355,12 @@ func surplusWithoutSinkWarning(label string, amount, rateVal, capacity float64, 
 	if rateVal <= 0 || gubbar <= 0 || amount <= capacity {
 		return ""
 	}
-	who := fmt.Sprintf("%d citizens produce", gubbar)
+	// Haiku-8 read "5 citizens … with no receiver" as idle citizens; name the good they work.
+	who := fmt.Sprintf("%d citizens on %s make", gubbar, strings.ToLower(label))
 	if gubbar == 1 {
-		who = "1 citizen produces"
+		who = fmt.Sprintf("1 citizen on %s makes", strings.ToLower(label))
 	}
-	return fmt.Sprintf("⚠ %-8s %6s  production %s  — known sinks absorb at most %s within %s; %s with no receiver (`keryx place`)", label, resource(amount), rate(rateVal), resource(capacity), formatDays(productionHorizonTicks, "%d"), who)
+	return fmt.Sprintf("⚠ %-8s %6s  production %s  — %s more than known sinks absorb (at most %s within %s); move some with `keryx place` or trade the surplus", label, resource(amount), rate(rateVal), who, resource(capacity), formatDays(productionHorizonTicks, "%d"))
 }
 
 // capitalize upper-cases a good_key's first letter for display ("stone" →

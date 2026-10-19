@@ -42,7 +42,7 @@ func TestAIRound3_StatusArmyAndSingleFoodAdvice(t *testing.T) {
 			t.Fatalf("missing %q: %s", want, out)
 		}
 	}
-	for _, bad := range []string{"Net      net", "-6.5 grain", "with no receiver"} {
+	for _, bad := range []string{"Net      net", "-6.5 grain", "more than known sinks absorb"} {
 		if strings.Contains(out, bad) {
 			t.Fatal(out)
 		}
@@ -152,9 +152,9 @@ func TestAIRound3_ExistingStarsAndGrammar(t *testing.T) {
 	}
 	for _, n := range []int{1, 2} {
 		s := surplusWithoutSinkWarning("Timber", 10000, 2, 1, n)
-		want := "citizens produce"
+		want := "2 citizens on timber make"
 		if n == 1 {
-			want = "citizen produces"
+			want = "1 citizen on timber makes"
 		}
 		if !strings.Contains(s, want) {
 			t.Fatal(s)

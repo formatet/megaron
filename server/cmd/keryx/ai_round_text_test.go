@@ -186,7 +186,7 @@ func TestAIRound_StatusUsesSingleFoodStock(t *testing.T) {
 			if strings.Contains(out, "stored away") || strings.Contains(out, "releasing food") || strings.Contains(out, "reserve") {
 				t.Fatal(out)
 			}
-			if net < 0 && strings.Contains(out, "produces with no receiver") {
+			if net < 0 && strings.Contains(out, "more than known sinks absorb") {
 				t.Fatal(out)
 			}
 		})
