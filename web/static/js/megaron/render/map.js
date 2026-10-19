@@ -1781,6 +1781,7 @@ function drawDepositIcons(ctx, cx, cy, tile) {
   if (tile.tin_deposit)    types.push('sn');
   if (tile.cedar_deposit)  types.push('cd');
   if (tile.silver_deposit) types.push('ag');
+  if (tile.incense_deposit) types.push('in');
   if (!types.length) return;
   ctx.save();
   // Charcoal outline on every marker. These are game information sitting on
@@ -1837,6 +1838,13 @@ function drawDepositIcons(ctx, cx, cy, tile) {
       case 'ag':
         ctx.fillStyle = '#C0C8D8';
         ctx.beginPath(); ctx.moveTo(ox, oy - 3.5); ctx.lineTo(ox + 3, oy); ctx.lineTo(ox, oy + 3.5); ctx.lineTo(ox - 3, oy); ctx.closePath(); ctx.fill(); ctx.stroke();
+        break;
+      case 'in':
+        // Incense: a resin drop (point up, round belly) in amber. A new shape on
+        // purpose, so it is told apart from copper's disc, tin's slab, cedar's
+        // triangle and silver's diamond by silhouette, not by colour alone.
+        ctx.fillStyle = '#D8A838';
+        ctx.beginPath(); ctx.moveTo(ox, oy - 4.5); ctx.lineTo(ox + 3, oy); ctx.arc(ox, oy + 0.5, 3, 0, Math.PI); ctx.lineTo(ox - 3, oy); ctx.closePath(); ctx.fill(); ctx.stroke();
         break;
     }
   });
@@ -3254,7 +3262,8 @@ const TERRAIN_GOODS = {
   river_valley:       'grain ×3 (very fertile)',
   river_delta:        'grain ×4 (richest — exposed coast)',
   hills:              'copper (if deposit), wine, oil',
-  scrub_maquis:       'wine (marginal)',
+  scrub_maquis:       'wine (marginal), incense (if deposit)',
+  semi_desert:        'incense (if deposit)',
   mountain_limestone: 'stone, tin (if deposit)',
   mountain_red:       'stone, tin (if deposit)',
   forest_olive_grove: 'oil, timber',
@@ -3364,7 +3373,8 @@ function terrainLabel(t) {
 function fillTerrainFields(tile) {
   document.getElementById('ip-terrain').textContent = terrainLabel(tile.terrain);
   const deps = [tile.copper_deposit ? 'Copper' : null, tile.tin_deposit ? 'Tin' : null,
-                tile.silver_deposit ? 'Silver' : null, tile.cedar_deposit ? 'Cedar' : null].filter(Boolean);
+                tile.silver_deposit ? 'Silver' : null, tile.cedar_deposit ? 'Cedar' : null,
+                tile.incense_deposit ? 'Incense' : null].filter(Boolean);
   const depRow = document.getElementById('ip-deposits-row');
   if (deps.length > 0) {
     document.getElementById('ip-deposits').textContent = deps.join(' · ');
@@ -3879,7 +3889,8 @@ export function initMap() {
         tooltip.style.left = (clientX + 14) + 'px';
         tooltip.style.top  = (clientY - 22) + 'px';
         const deposits = [tile.copper_deposit ? '⚒ Copper' : null, tile.tin_deposit ? '⚒ Tin' : null,
-                          tile.silver_deposit ? '⚒ Silver' : null, tile.cedar_deposit ? '⚒ Cedar' : null].filter(Boolean).join(' · ');
+                          tile.silver_deposit ? '⚒ Silver' : null, tile.cedar_deposit ? '⚒ Cedar' : null,
+                          tile.incense_deposit ? '⚒ Incense' : null].filter(Boolean).join(' · ');
         const tl = tile.terrain.charAt(0).toUpperCase() + tile.terrain.slice(1);
         // display_name är serverformaterat ("2nd Spearmen of Knossos") — webben
         // bygger aldrig om den grammatiken (se unit.go:DisplayName). Två fall som

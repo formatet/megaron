@@ -9,6 +9,7 @@ Everything your cities make, eat and trade is a **good**. The **Economy (⚖)** 
 | **Copper, tin** | The two halves of bronze — never found together ([[bronze]]). |
 | **Bronze** | Elite infantry, war chariots, war galleys, the best walls. |
 | **Silver** | The currency, and the only thing that pays soldiers ([[silver]]). |
+| **Incense** | Rare; found only on marked dry hexes and needing no building. An offering of it pleases the gods more than any other gift ([[incense]]). |
 
 ## The four tabs
 

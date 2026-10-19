@@ -535,6 +535,7 @@ export function notifText(kind, body) {
       if (body.tin_deposit)    deposits.push('tin');
       if (body.silver_deposit) deposits.push('silver');
       if (body.cedar_deposit)  deposits.push('cedar');
+      if (body.incense_deposit) deposits.push('incense');
       const found = deposits.length ? deposits.join(', ') : 'no ore deposits, cedar or foreign cities recorded';
       return `Explored (${body.q}, ${body.r}) — ${body.terrain || 'unknown terrain'}, ${found}`;
     }

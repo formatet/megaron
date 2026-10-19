@@ -50,6 +50,18 @@ func unusedCatchmentDeposits(catchmentDeposits []any, buildings []any) []string 
 	return unused
 }
 
+// incenseInCatchmentLine tells the Wanax that incense lies in the catchment: a
+// rare good needing no building, only gubbar on its hex, that the gods prize.
+// "" when the deposit list holds none.
+func incenseInCatchmentLine(catchmentDeposits []any) string {
+	for _, d := range catchmentDeposits {
+		if ds, _ := d.(string); ds == "incense" {
+			return "Incense lies in the catchment - no building needed: place gubbar on its hex (`keryx place incense <ordinal>`, see `keryx city`). Offered at a rite it moves the odds further than any other gift."
+		}
+	}
+	return ""
+}
+
 // timberBottleneckWarning flags the classic early wall (sondrunda 2026-07-24
 // runda 2): timber gates almost all early building (internal/province/building.go) — yet nothing in the
 // interface named it as the critical early resource. Two probes founded the
@@ -901,6 +913,11 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				if unused := unusedCatchmentDeposits(cd, buildings); len(unused) > 0 {
 					fmt.Printf("  ⚠ Unmined deposit in the catchment: %s — build a mine on its hex to extract it (a hex holds one building; if another stands there, demolish it first with `keryx demolish`)\n",
 						strings.Join(unused, ", "))
+				}
+			}
+			if cd, ok := p["catchment_deposits"].([]any); ok {
+				if line := incenseInCatchmentLine(cd); line != "" {
+					fmt.Printf("  %s\n", line)
 				}
 			}
 			// Kharis is realm-wide: show authoritative net and the city cost separately.

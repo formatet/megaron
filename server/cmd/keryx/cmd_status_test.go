@@ -540,3 +540,12 @@ func TestPrintWanaxGreeting_SaysTheDay(t *testing.T) {
 		t.Errorf("status header does not say the day:\n%s", out)
 	}
 }
+
+func TestIncenseInCatchmentLine(t *testing.T) {
+	if got := incenseInCatchmentLine([]any{"copper", "incense"}); !strings.Contains(got, "Incense lies in the catchment") || !strings.Contains(got, "keryx place incense") {
+		t.Errorf("incense in the catchment must be announced, got %q", got)
+	}
+	if got := incenseInCatchmentLine([]any{"copper", "silver"}); got != "" {
+		t.Errorf("no incense, no line: %q", got)
+	}
+}

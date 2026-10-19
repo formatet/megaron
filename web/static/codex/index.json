@@ -22,6 +22,7 @@
 
     {"id": "goods",        "title": "Goods", "kinds": ["StorageCapacityWarning", "StorageOverflow"],                        "category": "Goods and trade", "drawer": "economy", "related": ["surplus", "silver", "bronze"]},
     {"id": "silver",       "title": "Silver",                       "category": "Goods and trade", "related": ["upkeep", "trade", "goods"]},
+    {"id": "incense",      "title": "Incense",                      "category": "Goods and trade", "related": ["goods", "rites", "trade"]},
     {"id": "surplus",      "title": "Surplus and waste",            "category": "Goods and trade", "related": ["citizens", "goods", "trade"]},
     {"id": "gifts", "title": "Gifts and tribute", "category": "Goods and trade", "kinds": ["GiftDelivered", "GiftLost"], "related": ["transfers", "contact", "silver"]},
     {"id": "transfers",    "title": "Transfers and caravans",       "category": "Goods and trade", "kinds": ["TransferDelivered", "CaravanRaided", "CaravanSeized"], "related": ["routes", "trade"]},
