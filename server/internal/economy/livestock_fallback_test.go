@@ -47,8 +47,8 @@ func TestFoodTick_LivestockFallback_CoversShortfallAndDoesNotStarve(t *testing.T
 		t.Fatalf("Handle: %v", err)
 	}
 
-	if got := foodStockOf(t, pool, f.settlementID, GoodLivestock); got != 2 {
-		t.Errorf("livestock amount = %v, want 2 (one whole animal slaughtered to cover the 2.0-unit shortfall left after grain)", got)
+	if got := foodStockOf(t, pool, f.settlementID, GoodLivestock); got != 1 {
+		t.Errorf("livestock amount = %v, want 1 (two animals slaughtered to cover the 2.0-unit shortfall left after grain)", got)
 	}
 	if got := foodStockOf(t, pool, f.settlementID, GoodGrain); got != 0 {
 		t.Errorf("grain stock = %v, want exactly 0 (grain alone covered only part of demand)", got)
@@ -75,14 +75,14 @@ func TestFoodTick_LivestockFallback_IdempotentOnReplay(t *testing.T) {
 	if err := h.Handle(context.Background(), evt); err != nil {
 		t.Fatalf("Handle (first run): %v", err)
 	}
-	if got := foodStockOf(t, pool, f.settlementID, GoodLivestock); got != 2 {
-		t.Fatalf("after first run: livestock = %v, want 2", got)
+	if got := foodStockOf(t, pool, f.settlementID, GoodLivestock); got != 1 {
+		t.Fatalf("after first run: livestock = %v, want 1", got)
 	}
 
 	if err := h.Handle(context.Background(), evt); err != nil {
 		t.Fatalf("Handle (replay): %v", err)
 	}
-	if got := foodStockOf(t, pool, f.settlementID, GoodLivestock); got != 2 {
-		t.Errorf("after replay: livestock = %v, want still 2 (no double slaughter)", got)
+	if got := foodStockOf(t, pool, f.settlementID, GoodLivestock); got != 1 {
+		t.Errorf("after replay: livestock = %v, want still 1 (no double slaughter)", got)
 	}
 }

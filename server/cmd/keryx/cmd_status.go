@@ -94,8 +94,8 @@ const grainConsumptionPerCitizenPerTick = 0.005
 // regardless of package weight) constant of the same name
 // (internal/economy/recompute.go — Timothy 2026-08-07: "jag tycker nästan
 // att ett kreatur kan få leverera 200 mat om det dödas").
-// 3 korn per enhet (Timothy 2026-10-15; var 166,67 sedan mig 136) — hålls i lås med sin motpart.
-const livestockFoodValue = 3
+// 1 per djur (order 28b, Timothy 2026-10-19; var 3, före det 166,67) — hålls i lås med sin motpart.
+const livestockFoodValue = 1
 
 // sinkContext bundles what sinkCapacities needs about ONE settlement — all
 // of it already present in the /provinces payload `status` already parses,
@@ -634,6 +634,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			}
 
 			fmt.Println(cityFoodLine(sett))
+			if line := herdLine(sett); line != "" {
+				fmt.Println(line)
+			}
 			for _, line := range storageWarningLines(sett) {
 				fmt.Println(line)
 			}

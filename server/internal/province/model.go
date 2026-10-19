@@ -121,6 +121,7 @@ const (
 	BuildingTemple      BuildingType = "temple"
 	BuildingOlivePress  BuildingType = "olive_press"
 	BuildingWinery      BuildingType = "winery"
+	BuildingPen         BuildingType = "pen"
 )
 
 // HexBoundBuildings is the ONE canonical list of building types placed on a

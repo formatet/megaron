@@ -33,6 +33,7 @@ var BuildingPurposes = map[BuildingType]string{
 	BuildingTemple:      "Enables rites, produces cult, and unlocks oracle prayers",
 	BuildingOlivePress:  "Refines a press-worker's oil from the settlement's groves",
 	BuildingWinery:      "Refines a vintner's wine from the settlement's vines",
+	BuildingPen:         "Holds a bigger herd; animals the pen cannot hold are eaten, then lost",
 }
 
 // The ONE harbour rule, told the same on every surface: a city may build a
@@ -90,6 +91,7 @@ var BuildingSpecs = map[BuildingType]BuildingSpec{
 	BuildingTemple:      {Costs: map[string]float64{"timber": 8, "stone": 24}, DurationTicks: 16},
 	BuildingOlivePress:  {Costs: map[string]float64{"timber": 8, "stone": 8}, DurationTicks: 8},
 	BuildingWinery:      {Costs: map[string]float64{"timber": 8, "stone": 8}, DurationTicks: 8},
+	BuildingPen:         {Costs: map[string]float64{"timber": 6, "stone": 4}, DurationTicks: 4},
 }
 
 // WallLevelSpecs ger kostnad/duration för nästa murnivå (1=Palisade, 2=Stone Wall,
@@ -138,6 +140,7 @@ var LevelledBuildings = map[BuildingType]bool{
 	BuildingStonequarry: true,
 	BuildingWinery:      true,
 	BuildingTemple:      true,
+	BuildingPen:         true,
 }
 
 // LevelCedarCost är cedar-påslaget för att bygga en arbetsplats till nivå N.

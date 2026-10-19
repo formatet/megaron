@@ -1,4 +1,4 @@
-Your people eat **grain, fish, oil and wine** every day. One unit of each supplies one unit of food. The meal is shared in proportion to what is available, including the day’s production: a city with 100 grain and 900 fish takes one tenth of its meal as grain and nine tenths as fish. No food good is used up first. If these four cannot feed the people, livestock remains their emergency food: each animal supplies 3 food. Armies, ships and caravans use the four food goods, not livestock.
+Your people eat **grain, fish, oil and wine** every day. One unit of each supplies one unit of food. The meal is shared in proportion to what is available, including the day’s production: a city with 100 grain and 900 fish takes one tenth of its meal as grain and nine tenths as fish. No food good is used up first. If these four cannot feed the people, livestock remains their emergency food: each animal supplies 1 food. Armies, ships and caravans use the four food goods, not livestock.
 
 ## When there is not enough
 
@@ -13,6 +13,10 @@ You get an urgent **CivilianStarvationStarted** notification when hunger is firs
 Civilian meals and [[upkeep|soldiers’ food]] draw from the same stocks, but are served separately: a city's people may be fed while its garrison is hungry, or the other way round. Each warning clears independently. If a city leaves your rule or ceases to be active, its warning closes without claiming its people recovered.
 
 Older **FoodShortfall** messages remain in history. The world's daily food audit still records every shortfall; new inbox messages only mark the transitions. Check **City → Food details** for the current situation and act before the city keeps shrinking.
+
+## The herd and the pen
+
+Your herders breed animals, but a city can only keep so many. The **herd cap** is 50, and every level of a **Pen** ([[buildings]]) adds 100. **Status** and **City → Food** show it as *Herd 50 / 50*. Animals **above** the cap are ordinary food: they are eaten with the other four goods at the day's meal. If animals are still above the cap after the meal, the pen cannot hold them and they are **lost**. Herders therefore feed you only while someone eats what they raise: build a bigger Pen, or move herders to other work. Animals under the cap stay in the herd and are eaten only if the people would otherwise starve.
 
 ## What to do about it
 

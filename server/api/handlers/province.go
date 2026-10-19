@@ -792,6 +792,7 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 				"coverage_ticks":    coverageDays,
 				"food_net_per_tick": foodNetPerDay,
 				"growth_state":      foodSummary.GrowthState,
+				"herd":              foodSummary.Herd,
 				"goods":             foodSummary.Goods, "consumed": foodSummary.Consumed, "consumed_tick": foodSummary.ConsumedTick,
 				"production_per_tick": foodSummary.ProductionPerTick, "consumption_per_tick": foodSummary.ConsumptionPerTick,
 			},
@@ -815,6 +816,7 @@ type FoodSummary struct {
 	Goods              map[string]float64
 	ConsumedTick       *int
 	Consumed           map[string]float64
+	Herd               map[string]int
 	ProductionPerTick  float64
 	ConsumptionPerTick float64
 	AutomaticFood      economy.AutomaticFood
@@ -920,7 +922,12 @@ func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.
 		slog.Error("food gubbar required failed", "err", foodReqErr, "settlement", settID)
 	}
 
+	var herdNow float64
+	_ = pool.QueryRow(ctx, `SELECT GREATEST(0, settled(amount, rate, calc_tick)) FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'livestock'`, settID).Scan(&herdNow)
+	herd := map[string]int{"count": int(herdNow), "cap": int(economy.HerdCap(economy.PenLevel(ctx, pool, settID)))}
+
 	return FoodSummary{
+		Herd:  herd,
 		Goods: foodGoods, Consumed: consumed, ConsumedTick: consumedTick, ProductionPerTick: foodRatePerTick, ConsumptionPerTick: economy.GrainConsumptionPerTick(population),
 		AutomaticFood:      automatic,
 		GrainProdRate:      grainProdRate,
