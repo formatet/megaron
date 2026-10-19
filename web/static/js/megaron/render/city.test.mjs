@@ -114,3 +114,9 @@ test('missing settlement payload never fabricates population, buildings or life'
   assert.equal(count(s.life), 0);
   assert.deepEqual(s.anchors, {});
 });
+
+test('siege of an unfortified city never invents a closed wall gate', () => {
+  const s = scene(4500, { walls: 0, besieged: true });
+  assert.ok(count(s.status) > 0);
+  assert.equal(s.status[62 * 160 + 80], null);
+});

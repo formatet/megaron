@@ -633,14 +633,16 @@ export function buildCityScene(tile, buildings = [], buildQueue = [], sett = {})
   }
   if (besieged) {
     // Known siege truth, no invented enemy camp coordinates or army counts.
-    sd.rect(77, 60, 83, 65, 'wood');
-    sd.line(
-      [
-        [77, 60],
-        [83, 65]
-      ],
-      'ink'
-    );
+    if (walls > 0) {
+      sd.rect(77, 60, 83, 65, 'wood');
+      sd.line(
+        [
+          [77, 60],
+          [83, 65]
+        ],
+        'ink'
+      );
+    }
     for (const [x, y] of [
       [32, 58],
       [39, 57]
