@@ -1,0 +1,19 @@
+{
+  "gpt-idomeneus": {
+    "calls": 13,
+    "exit_codes": {
+      "0": 12,
+      "1": 1
+    },
+    "last_start": "2026-10-19T19:19:49+02:00",
+    "sha256": "997e10b4af4d1877be19cc6f32daa966c7fd16fdfd70469c64c94d677d89515b"
+  },
+  "gpt-arete": {
+    "calls": 10,
+    "exit_codes": {
+      "0": 10
+    },
+    "last_start": "2026-10-19T19:18:22+02:00",
+    "sha256": "80a545b41b61394625e73331ffe8626abb9eb4b72a0943aa0cbaea9c5dab8505"
+  }
+}
