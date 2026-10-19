@@ -47,7 +47,7 @@ python3 docs/reviews/stadsvy-alternativ/verify.py
 python3 -m http.server 8765 --directory /tmp/megaron-codex-stadsvy-alternativ-20261018
 ```
 
-Öppna `http://127.0.0.1:8765/docs/reviews/stadsvy-alternativ/index.html` i Firefox vid 100 %. Generatorn kräver Pillow (använt 12.3.0); browserkontrollen kräver Python Playwright med Firefox. Efter clone/worktree på annan plats ändras bara serverkommandots katalog. Generator och verifierare hittar roten själva.
+Öppna `http://127.0.0.1:8765/docs/reviews/stadsvy-alternativ/index.html` i Firefox vid 100 %. Generatorn kräver Pillow (använt 12.3.0) och DejaVu Sans (`DejaVuSans.ttf`, för svenska rubrikglyfer; hård rastertext utan kantutjämning); browserkontrollen kräver Python Playwright med Firefox. Efter clone/worktree på annan plats ändras bara serverkommandots katalog. Generator och verifierare hittar roten själva.
 
 ## METODISK LÄRDOM
 
@@ -63,3 +63,5 @@ python3 -m http.server 8765 --directory /tmp/megaron-codex-stadsvy-alternativ-20
 - Husen är fortfarande förenklade och flera bilder använder samma byggnadsfamilj. 03 är ett kontrollerat färgprov, inte ett ytterligare kameragrepp. 12 varierar kvartersriktning mer än de tidigare kuberna.
 - Svält läses huvudsakligen genom frånvaro av liv/härdar och stängd matplats; det kan vara för svagt utan jämförelsebild. Stadens exakta storlek och vissa funktioner läses svagare i 04. Mänsklig snabbidentifiering av byggnader eller status är ännu inte testad.
 - Baslinjebilden kör den oförändrade renderern med en syntetisk fixtur. Inga API-/DB-bevis eller påståenden om live-Phaistos ingår.
+
+Granskningsrättelse efter första handoff: kontaktarkets standardfont ersatt med explicit DejaVu Sans för å/ä/ö. Motivens PNG är byte-identiska; bara kontaktarken och deras hashvärden ändras.

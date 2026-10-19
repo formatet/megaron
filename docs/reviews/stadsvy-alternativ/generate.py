@@ -4,7 +4,7 @@ Run: python3 docs/reviews/stadsvy-alternativ/generate.py
 Requires Pillow. All output stays beside this file. No game assets are imported.
 """
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageOps
+from PIL import Image, ImageDraw, ImageOps, ImageFont
 import hashlib
 import html
 import json
@@ -376,9 +376,9 @@ def main():
             if state=='normal':cards.append(card+f'<p>{html.escape(desc)}</p><a href="{stem}.png">Logisk PNG</a> · <a href="{stem}-4x.png">×4 PNG</a></figure>')
             if ident in FAVOURITES:status_cards.append(card+'</figure>')
     for name,items in [('kontaktark',thumbs),('graskala',grays)]:
-        sheet=Image.new('RGB',(2*272,((len(items)+1)//2)*150),'#EFE4CB');d=ImageDraw.Draw(sheet);d.fontmode='1'
+        sheet=Image.new('RGB',(2*272,((len(items)+1)//2)*150),'#EFE4CB');d=ImageDraw.Draw(sheet);d.fontmode='1';font=ImageFont.truetype('DejaVuSans.ttf',10)
         for i,(title,im) in enumerate(items):
-            x=(i%2)*272;y=(i//2)*150;d.text((x+8,y+5),title,fill='#1F1A14');sheet.paste(im,(x+8,y+26))
+            x=(i%2)*272;y=(i//2)*150;d.text((x+8,y+5),title,fill='#1F1A14',font=font);sheet.paste(im,(x+8,y+26))
         save_pair(sheet,name)
     (OUT/'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n')
     page='''<!doctype html><html lang="sv"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Phaistos — tolv stadsvyer</title>
