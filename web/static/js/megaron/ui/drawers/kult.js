@@ -7,6 +7,7 @@ import { fmtDays } from '../fmt_num.js';
 import { serverNow } from '../../clock.js';
 import { renderLockedActions } from '../misc.js';
 import { divineValuesHTML } from './kult_values.js';
+import { offerRowHTML, offeringFromEntries } from './kult_offer.js';
 import { kharisNetView, kharisDecayHTML } from './kult_kharis.js';
 
 // ── Kult drawer ───────────────────────────────────────────────────────────
@@ -36,6 +37,7 @@ export async function loadKultDrawer() {
     const sd = await sr.json();
     const pd = pr.ok ? (await pr.json()).settlement : null;
     const prayers = (pd && pd.available_prayers) || [];
+    prayerCatalog = prayers;
     const MOOD_LABELS = { Favorable:'Favorable', Indifferent:'Indifferent', Suspicious:'Suspicious', Wrathful:'Wrathful' };
     const MOOD_COLORS = { Favorable:'var(--safe-text)', Indifferent:'var(--text-dim)', Suspicious:'var(--border)', Wrathful:'var(--danger)' };
 
@@ -78,7 +80,7 @@ export async function loadKultDrawer() {
           <span class="sr-label">${esc(p.name)} <span style="color:var(--text-dim);font-size:.68rem">(${esc(p.god)}, ≥${p.min_kharis} kharis)</span><br>
           <span style="color:var(--text-dim);font-size:.7rem">${esc(p.effect || '')}<br>traditional offering: ${offeringStr}</span></span>
           <span class="sr-val">${statusHtml}</span>
-        </div>`;
+        </div><div class="offer-row" id="offer-row-${esc(p.id)}"></div>`;
       });
     }
     html += '</div>';
@@ -137,13 +139,38 @@ export function cultLevelLabel(cultLevel) {
   return CULT_LABELS[cultLevel] || cultLevel;
 }
 
+let prayerCatalog = [];
+
+// Offer opens the offering row under the prayer; nothing is sent yet.
 export async function okRite(prayerID) {
-  return castRite(prayerID);
+  const prayer = prayerCatalog.find(p => p.id === prayerID);
+  const host = document.getElementById('offer-row-' + prayerID);
+  if (!prayer || !host) return;
+  const stock = {};
+  try {
+    const r = await fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/provinces/' + ownCapital().id + '/goods');
+    if (r.ok) (await r.json()).forEach(g => { stock[g.key] = g.amount; });
+  } catch (_) { /* fields still show the recipe */ }
+  host.innerHTML = offerRowHTML(prayer, stock);
 }
 
-// Offer uses the prayer's traditional recipe on the server.
-async function castRite(prayerID) {
+export function cancelOffering(prayerID) {
+  const host = document.getElementById('offer-row-' + prayerID);
+  if (host) host.innerHTML = '';
+}
+
+export async function bringOffering(prayerID) {
+  const prayer = prayerCatalog.find(p => p.id === prayerID);
+  const host = document.getElementById('offer-row-' + prayerID);
+  const inputs = host ? Array.from(host.querySelectorAll('.offer-input')) : [];
+  const offering = offeringFromEntries(inputs.map(i => ({ good: i.dataset.good, value: i.value })), prayer && prayer.offering);
+  return castRite(prayerID, offering, host);
+}
+
+// No offering = the prayer's traditional recipe on the server.
+async function castRite(prayerID, offering, host) {
   const body = { prayer: prayerID || '' };
+  if (offering) body.offering = offering;
   const r = await fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/settlements/' + State.MY_SETTLEMENT_ID + '/rite', {
     method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
   });
@@ -152,7 +179,7 @@ async function castRite(prayerID) {
     await loadKultDrawer();
     showInlineResult('kult-body', d.message || (d.success ? 'The gods answered!' : 'The gods are silent.'));
   } else {
-    showInlineResult('kult-body', d.error || 'Rite failed', true);
+    showInlineResult(host || 'kult-body', d.error || 'Rite failed', true);
   }
 }
 

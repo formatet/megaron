@@ -7,7 +7,7 @@ class El {
  querySelectorAll(){return [];}setAttribute(){}addEventListener(k,fn){this.events[k]=fn;}
  set innerHTML(value){this.html=value;this.children=[];}get innerHTML(){return this.html || '';}
 }
-const els=new Map(['city-bld-sec','kult-body','dip-trade-m','dip-passage-m','war-abandon-res','city-demolish-res'].map(k=>[k,new El()]));
+const els=new Map(['city-bld-sec','kult-body','offer-row-prayer','dip-trade-m','dip-passage-m','war-abandon-res','city-demolish-res'].map(k=>[k,new El()]));
 const noopEl=new Proxy({}, {get:(_t,k)=>k==='style'?{}:()=>noopEl,set:()=>true});
 globalThis.ResizeObserver ??= class { observe() {} };
 globalThis.document={getElementById:k=>k==='net-status'?null:els.get(k)||noopEl,querySelector:()=>null,querySelectorAll:()=>[],createElement:()=>new El(),addEventListener(){}};
@@ -16,7 +16,7 @@ globalThis.localStorage={getItem:()=>null,setItem(){}};
 globalThis.alert=globalThis.confirm=()=>assert.fail('browser dialog must never be called');
 const {State}=await import('../../state.js');
 const {cancelBuild,demolishBuilding}=await import('./city.js');
-const {okRite}=await import('./kult.js');
+const {bringOffering}=await import('./kult.js');
 const {dipCancel,dipArrangePassage,dipCallBack}=await import('./diplomacy.js');
 const {warAbandon}=await import('./war.js');
 State.WORLD_ID='w';State.MY_SETTLEMENT_ID='s';State.provinceData=[{id:'p',own:true,is_capital:true}];
@@ -30,13 +30,24 @@ test('K: cancellation and passage refusals keep buttons enabled and show server 
  assert.deepEqual(calls.map(x=>x[1].method),['DELETE','POST','POST','POST']);assert.equal(calls[2][1].body,JSON.stringify({ship_id:'ship'}));
 });
 test('K: rite refusal stays in Kult; success survives drawer refresh',async()=>{
- await okRite('prayer');assert.equal(els.get('kult-body').children.at(-1).textContent,'Server refused <literally>');
+ await bringOffering('prayer');assert.equal(els.get('offer-row-prayer').children.at(-1).textContent,'Server refused <literally>');
  globalThis.fetch=async(url,opts={})=>{
   if(opts.method==='POST')return new Response(JSON.stringify({success:true,message:'The gods answered.'}),{status:200});
   if(url.endsWith('/goods')||url.endsWith('/actions'))return new Response('[]',{status:200});
   return new Response(JSON.stringify({settlement:{},divine_mood:'Indifferent'}),{status:200});
  };
- await okRite('prayer');assert.equal(els.get('kult-body').children.at(-1)?.textContent,'The gods answered.','success must survive refresh');
+ await bringOffering('prayer');assert.equal(els.get('kult-body').children.at(-1)?.textContent,'The gods answered.','success must survive refresh');
+});
+test('K: bringOffering posts the offering from the filled fields, omitting 0',async()=>{
+ els.get('offer-row-prayer').querySelectorAll=()=>[{dataset:{good:'fish'},value:'12'},{dataset:{good:'grain'},value:'0'}];
+ let body;
+ globalThis.fetch=async(url,opts={})=>{
+  if(opts.method==='POST'){body=JSON.parse(opts.body);return new Response(JSON.stringify({success:true,message:'ok'}),{status:200});}
+  if(url.endsWith('/goods')||url.endsWith('/actions'))return new Response('[]',{status:200});
+  return new Response(JSON.stringify({settlement:{},divine_mood:'Indifferent'}),{status:200});
+ };
+ await bringOffering('prayer');
+ assert.deepEqual(body,{prayer:'prayer',offering:{fish:12}});
 });
 test('K: real abandon handler cannot POST before inline confirmation; refusal remains visible',async()=>{
  calls.length=0;globalThis.fetch=async(url,opts={})=>{calls.push([url,opts]);return new Response(JSON.stringify({error:'Cannot abandon capital'}),{status:422});};
