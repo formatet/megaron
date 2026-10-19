@@ -18,4 +18,9 @@ if [ "$to" = codex ]; then
   thread="$(cat "$dir/codex-thread" 2>/dev/null || true)"
   [ -n "$thread" ] || { echo "no Codex session id in .agents/codex-thread — logged only" >&2; exit 0; }
   codex queue --thread "$thread" --message "[från Claude] $msg (svara: tools/agent-say.sh claude \"…\")" >/dev/null
+  # queue only starts a turn in a running session; an idle one gets the message with its next input (tested 2026-10-19)
+  if ! ps -u "$USER" -o args= | grep -E '(^|/)codex( |$)' | grep -qvE 'codex (app-server|queue|exec|archive)|code-mode-host'; then
+    echo "no Codex session running — queued, delivered only on its next turn" >&2
+    printf '[%s] system: KÖAT – ingen Codex-session kör, levereras först vid nästa tur\n' "$(date '+%Y-%m-%d %H:%M')" >> "$dir/chat.log"
+  fi
 fi
