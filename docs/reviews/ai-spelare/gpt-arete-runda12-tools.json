@@ -1,0 +1,53 @@
+[
+  {
+    "number": 1,
+    "start": "2026-10-19T09:05:50+02:00",
+    "args": [
+      "status"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax Wedaneus · day 607 of the world\n\n1 citizen = 100 people\nThalassa [minoan]  Pop: 388 people  Labor: 3 citizens  Walls: 0/3  Settlements: 2/5  [coastal — can build harbour → ships]\nPopulation 388 — growing: food net +2.8 per day\nThis is Thalassa. You have 2 cities — `keryx settlements` lists them, `keryx status --province <id>` shows another.\n\nFood lasts 195.2 days at current consumption (city grain + fish stocks)\n\nLast day 607: 3 goods produced, 1 consumed  ·  keryx ticklog for details\n\nResources\n  (per day; food and army balances are itemized below)\n  Silver       52  —\n  Food     grain 1.5 + fish 3.2 − people eat 1.9 = net +2.8 per day (before army)\n  Grain         0  production 1.5 per day  (0 citizens needed for people on best food slots · 2 placed)\n  Automatic food: 0.50 grain + 1.50 fish per day without placed citizens (nearby ground 0.50 grain; 88 people outside whole citizens: 0.00 grain + 1.50 fish, a fraction of the best food worker)\n  Army     eats 0.0 grain per day → food net +2.7 per day after army\n  Silver   net -0.5 per day after army pay\n  Fish        379  +3.2 per day\n  Timber       54  +1.0 per day\n  Kharis       50  (Indifferent) · cap 50 · net +3.5 per day (temple − decay)\n  Kharis decay: 0.1 base + 2 cities cost 0.1 per day = 0.2 total\n  → your kharis is climbing toward the cap 50 (set by your level-1 temple) — build a higher temple to raise the cap further.\n  Temple in Itanos: reference 0.25 grain per day — alternatives: 0.4367 fish or 0.3123 timber or 0.38 silver — stock: 2667 grain, 310 fish, 607.5 timber, 327 silver — next gift: 0.25 grain  ✓\n\nArmy (garrison in Thalassa)\n  Galley        1\n  Upkeep     0.0 grain, 1.5 silver per day  (everything the city pays — including field units)\n             1.0 silver per day back into the city (garrison's pay)\n  Field units and other cities are shown in `keryx unit list`.\n\nBuildings\n  harbour      L1\n  shipyard     L1\n",
+    "stderr": ""
+  },
+  {
+    "number": 2,
+    "start": "2026-10-19T09:05:52+02:00",
+    "args": [
+      "notifications"
+    ],
+    "exit_code": 0,
+    "stdout": "22 notification(s), 22 unread\n────────────────────────────────────────────────────────────\n*[Day #606]  ExpeditionTurnedHome\n      3rd Spearmen of Itanos turns home from the land around (31, 32): the rest of it cannot be reached — home by day 610\n*[Day #606]  ExpeditionTurnedHome\n      1st Spearmen of Itanos turns home from the land around (30, 25): half its time is spent — home by day 611\n*[Day #604]  TrainComplete\n      Training complete: 1 galley\n*[Day #466]  BuildComplete\n      The city completed shipyard\n*[Day #466]  BuildComplete\n      The city completed harbour\n*[Day #462]  TradeDelivery\n      Delivery arrived: 50 silver\n*[Day #461]  KharisBandChanged\n      Kharis: Suspicious → Indifferent (32.0). Check `keryx status` for decay and temple support; staff and feed your temples.\n*[Day unknown]  TrainComplete\n      Training complete: 100 spearman\n*[Day unknown]  BuildComplete\n      The city completed temple\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 24 timber\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 12 stone\n*[Day unknown]  BuildComplete\n      The city completed barracks\n*[Day unknown]  TransferDelivered\n      Transfer delivered to Thalassa: 50 silver\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 16 timber\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 12 stone\n*[Day unknown]  ColonyFounded\n      Colony founded: Thalassa\n      Thalassa food production covers consumption (net +1.0 per day).\n*[Day unknown]  UnitArrived\n      1st Spearmen of Itanos arrived at (35, 28) — garrison\n*[Day unknown]  ExpeditionReport\n      1st Spearmen of Itanos is home after 10 days, 4 hexes out at the furthest — saw 54 hexes around (35, 24): no ore deposits, cedar or foreign cities recorded\n*[Day unknown]  BuildComplete\n      The city completed lumbermill\n*[Day unknown]  ExpeditionTurnedHome\n      1st Spearmen of Itanos turns home from the land around (35, 24): half its time is spent — home by day 361\n*[Day unknown]  MetropolisFounded\n      Your metropolis is founded: Itanos — 19/19 catchment hexes known\n      Itanos food production covers consumption (net +0.0 per day).\n*[Day unknown]  OpeningDispatch\n      Your people await you\n      Time. A day passes every 6 minutes.\n      Foot soldiers cross a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. War chariots cross plains in 0.67 day but need 2 in olive woodland and 3 in hills, cedar forest or desert. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.\n      Your Host carries 1200 grain and 480 silver. It lives on subsistence until founding; these reserves do not drain. Find your place — founding is final.\n      Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.\n      The gods. Your Kharis holds for 144 days after founding, and no punishment falls. A temple takes 16 days to build. Build, staff and feed one in time; after that, neglect lets Kharis fade and risks punishment.\n      Place citizens on olive woodland or cedar forest for timber, and on stone-bearing ground for stone; idle citizens produce nothing.\n      Orders travel. A Runner must reach a unit in the field before it follows your new order.\n      Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.\n      Rules: ? (Codex). Problems: Report. Community chat: Account.\n",
+    "stderr": ""
+  },
+  {
+    "number": 3,
+    "start": "2026-10-19T09:05:53+02:00",
+    "args": [
+      "unit",
+      "list"
+    ],
+    "exit_code": 0,
+    "stdout": "ID                                    Name                                            Size      Status      Stance     Location / ETA\n────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────\ne02cc131-cb04-4d6a-bab2-805033431a29  1st Spearmen of Itanos                          100 men   marching    —          returning home from explore — (35,24)→(35,28), now at (35,26) ETA in 4 days\n  Upkeep: 1 grain, 0 silver per day\n  Expedition around (30,25), 12 days; returning home — half the time reached; home by day 611\n73a8301c-b9bc-4327-8903-e00a3d71cbde  3rd Spearmen of Itanos                          100 men   marching    —          returning home from explore — (31,32)→(35,28), now at (33,30) ETA in 3 days\n  Upkeep: 1 grain, 0 silver per day\n  Expedition around (31,32), 12 days; returning home — no reachable unexplored ground; home by day 610\ne92fd34b-55b5-4c6e-96ac-a1bc0923fa52  Thera Gleam, Galley of Thalassa                 1 vessel (crew 20)  garrison    —          settlement 3478ac76…\n  Upkeep: 0.04 grain, 1.5 silver per day\n",
+    "stderr": ""
+  },
+  {
+    "number": 4,
+    "start": "2026-10-19T09:05:55+02:00",
+    "args": [
+      "cargo"
+    ],
+    "exit_code": 0,
+    "stdout": "Good              Qty          From            To         ETA  Direction\n─────────────────────────────────────────────────────────────────────────────\ngrain             100        Itanos      Thalassa     day 609  outgoing\n\nPhysical cargo, not a promise — it can be intercepted and seized in transit.\nSame risk for every cargo, own or traded: on land only interception;\nat sea every storm the ship sails into costs 2 hull (of 5); hull 0 founders the ship.\n",
+    "stderr": ""
+  },
+  {
+    "number": 5,
+    "start": "2026-10-19T09:05:59+02:00",
+    "args": [
+      "status"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax Wedaneus · day 607 of the world\n\n1 citizen = 100 people\nThalassa [minoan]  Pop: 388 people  Labor: 3 citizens  Walls: 0/3  Settlements: 2/5  [coastal — can build harbour → ships]\nPopulation 388 — growing: food net +2.8 per day\nThis is Thalassa. You have 2 cities — `keryx settlements` lists them, `keryx status --province <id>` shows another.\n\nFood lasts 195.2 days at current consumption (city grain + fish stocks)\n\nLast day 607: 3 goods produced, 1 consumed  ·  keryx ticklog for details\n\nResources\n  (per day; food and army balances are itemized below)\n  Silver       52  —\n  Food     grain 1.5 + fish 3.2 − people eat 1.9 = net +2.8 per day (before army)\n  Grain         0  production 1.5 per day  (0 citizens needed for people on best food slots · 2 placed)\n  Automatic food: 0.50 grain + 1.50 fish per day without placed citizens (nearby ground 0.50 grain; 88 people outside whole citizens: 0.00 grain + 1.50 fish, a fraction of the best food worker)\n  Army     eats 0.0 grain per day → food net +2.7 per day after army\n  Silver   net -0.5 per day after army pay\n  Fish        379  +3.2 per day\n  Timber       54  +1.0 per day\n  Kharis       50  (Indifferent) · cap 50 · net +3.5 per day (temple − decay)\n  Kharis decay: 0.1 base + 2 cities cost 0.1 per day = 0.2 total\n  → your kharis is climbing toward the cap 50 (set by your level-1 temple) — build a higher temple to raise the cap further.\n  Temple in Itanos: reference 0.25 grain per day — alternatives: 0.4367 fish or 0.3123 timber or 0.38 silver — stock: 2667 grain, 310 fish, 607.5 timber, 327 silver — next gift: 0.25 grain  ✓\n\nArmy (garrison in Thalassa)\n  Galley        1\n  Upkeep     0.0 grain, 1.5 silver per day  (everything the city pays — including field units)\n             1.0 silver per day back into the city (garrison's pay)\n  Field units and other cities are shown in `keryx unit list`.\n\nBuildings\n  harbour      L1\n  shipyard     L1\n",
+    "stderr": ""
+  }
+]
