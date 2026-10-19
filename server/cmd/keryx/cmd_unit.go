@@ -283,6 +283,7 @@ type unitRow struct {
 	Crew                int        `json:"crew"`
 	Hull                int        `json:"hull"`
 	ProvisionDays       int        `json:"provision_days"`
+	ProvisionsAboard    bool       `json:"provisions_aboard"`
 	Status              string     `json:"status"`
 	Name                *string    `json:"name"`
 	DisplayName         string     `json:"display_name"`
@@ -390,6 +391,8 @@ func formatSize(c *Client, u unitRow) string {
 		switch {
 		case u.Status == "garrison":
 			// I hamn äter skeppet ur staden; ett lager ombord säger ingenting.
+		case u.ProvisionDays <= 0 && u.ProvisionsAboard:
+			food = ", food for less than a day LOW"
 		case u.ProvisionDays <= 0:
 			food = ", OUT OF FOOD"
 		case u.ProvisionDays < provisionsLowDays:

@@ -2211,8 +2211,11 @@ type unitSummary struct {
 	// lager räcker vid nuvarande ranson. Dygn, inte råa korn — världen mäts i
 	// speldygn och "14 dygn" är ett tal en spelare kan handla på. Utelämnas för
 	// landenheter, som aldrig provianteras.
-	ProvisionDays int    `json:"provision_days,omitempty"`
-	Status        string `json:"status"`
+	ProvisionDays int `json:"provision_days,omitempty"`
+	// ProvisionsAboard skiljer "mindre än ett dygn kvar" från "slut": golvet i
+	// ProvisionDaysLeft gör båda till 0 (Haiku-runda 6 läste 0 som tomt skepp).
+	ProvisionsAboard bool   `json:"provisions_aboard,omitempty"`
+	Status           string `json:"status"`
 	// Deployable is false while a land unit is still "forming": it cannot march,
 	// colonize, or otherwise leave its settlement until it reaches 100 men. JSON
 	// consumers (LLM agents, iOS) must see this in the data — the human `unit list`
@@ -2770,6 +2773,7 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 		}
 		hull := 0
 		provisionDays := 0
+		provisionsAboard := false
 		if u.Category == unit.CategoryNaval {
 			hull = u.Hull
 			// Ransonen måste räknas med lasten ombord — ett lastat skepp äter
@@ -2784,6 +2788,7 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 			}
 			provisionDays = combat.ProvisionDaysLeft(u.Provisions,
 				combat.VoyageRation(string(u.Type), u.Size, cargoType, cargoSize))
+			provisionsAboard = u.Provisions > 0
 		}
 		// movement 2a, R7: current_q/r is read through the saved route — never
 		// re-searched, never guessed. Omitted (nil) unless a gällande route
@@ -2817,6 +2822,7 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 			Crew:                  u.Crew,
 			Hull:                  hull,
 			ProvisionDays:         provisionDays,
+			ProvisionsAboard:      provisionsAboard,
 			Status:                string(u.Status),
 			Deployable:            deployable,
 			MenToDeploy:           menToDeploy,

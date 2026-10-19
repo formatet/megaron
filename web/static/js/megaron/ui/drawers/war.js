@@ -557,7 +557,7 @@ export function renderUnitCard(u) {
   const foodBadge = atSea
     ? '<span style="font-size:.6rem;margin-left:.3rem;color:' +
       (days <= 0 ? 'var(--accent-war)' : days < 3 ? 'var(--accent-war)' : 'var(--text-dim)') + '">' +
-      (days <= 0 ? 'out of food' : 'food for ' + fmtDays(days)) + '</span>'
+      (days > 0 ? 'food for ' + fmtDays(days) : u.provisions_aboard ? 'food for less than a day' : 'out of food') + '</span>'
     : '';
 
   // Cargo badge
