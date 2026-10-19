@@ -59,7 +59,7 @@ Use the hex ordinal (#) with ` + "`keryx place`" + ` and the building name with
 				if fs.HarvestBlessing != "" {
 					fmt.Println(fs.HarvestBlessing)
 				}
-				fmt.Printf("Food: %s needed for people on best food slots, %d placed\n", citizenCount(fs.Required), fs.Placed)
+				fmt.Printf("Food: %s needed for people on best food slots, %d on food\n", citizenCount(fs.Required), fs.Placed)
 				if fs.Automatic != "" {
 					fmt.Println(fs.Automatic)
 				}
