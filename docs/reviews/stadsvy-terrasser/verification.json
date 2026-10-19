@@ -1,0 +1,46 @@
+{
+  "browser": "Firefox",
+  "observations": [
+    {
+      "width": 1440,
+      "DPR": 1,
+      "canvas_css": [
+        320,
+        192
+      ],
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "DPR": 1,
+      "canvas_css": [
+        320,
+        192
+      ],
+      "overflow": false
+    }
+  ],
+  "page_errors": [],
+  "scenes": 18,
+  "structural_status_separation": true,
+  "residential_pixels": {
+    "fixture-1000-normal": 684,
+    "fixture-1000-construction": 684,
+    "fixture-1000-siege": 684,
+    "fixture-1000-starvation": 684,
+    "fixture-4500-normal": 2674,
+    "fixture-4500-construction": 2674,
+    "fixture-4500-siege": 2674,
+    "fixture-4500-starvation": 2674,
+    "fixture-10000-normal": 4012,
+    "fixture-10000-construction": 4012,
+    "fixture-10000-siege": 4012,
+    "fixture-10000-starvation": 4012,
+    "walls-0": 2911,
+    "walls-2": 2457,
+    "walls-3": 2249,
+    "dev-MalliaWest": 892,
+    "dev-Mallia": 3394,
+    "dev-Phaistos": 4249
+  }
+}

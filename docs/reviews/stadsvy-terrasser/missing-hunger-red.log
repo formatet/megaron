@@ -1,0 +1,104 @@
+TAP version 13
+# Subtest: terraced housing grows geometrically without figures or smoke
+ok 1 - terraced housing grows geometrically without figures or smoke
+  ---
+  duration_ms: 12.642862
+  type: 'test'
+  ...
+# Subtest: all statuses stay in separate layers and can coexist
+not ok 2 - all statuses stay in separate layers and can coexist
+  ---
+  duration_ms: 9.357366
+  type: 'test'
+  location: '/home/tk/wt/codex-stadsvy-terrasser/web/static/js/megaron/render/city.test.mjs:35:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok(count(hunger.status) > 0)
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-stadsvy-terrasser/web/static/js/megaron/render/city.test.mjs:42:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: food truth comes from growth state, not low grain or negative balance
+not ok 3 - food truth comes from growth state, not low grain or negative balance
+  ---
+  duration_ms: 2.334065
+  type: 'test'
+  location: '/home/tk/wt/codex-stadsvy-terrasser/web/static/js/megaron/render/city.test.mjs:52:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///home/tk/wt/codex-stadsvy-terrasser/web/static/js/megaron/render/city.test.mjs:57:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: wall silhouette and gate change independently of population
+ok 4 - wall silhouette and gate change independently of population
+  ---
+  duration_ms: 4.818835
+  type: 'test'
+  ...
+# Subtest: no fabricated temple, harbour, mine or construction on an empty city
+ok 5 - no fabricated temple, harbour, mine or construction on an empty city
+  ---
+  duration_ms: 6.162522
+  type: 'test'
+  ...
+# Subtest: raster deterministic and all colours valid; order of building payload irrelevant
+ok 6 - raster deterministic and all colours valid; order of building payload irrelevant
+  ---
+  duration_ms: 4.492495
+  type: 'test'
+  ...
+# Subtest: every functional building is drawn from the actual inventory
+ok 7 - every functional building is drawn from the actual inventory
+  ---
+  duration_ms: 12.107547
+  type: 'test'
+  ...
+# Subtest: missing settlement payload never fabricates population, buildings or life
+ok 8 - missing settlement payload never fabricates population, buildings or life
+  ---
+  duration_ms: 0.328977
+  type: 'test'
+  ...
+# Subtest: siege of an unfortified city never invents a closed wall gate
+ok 9 - siege of an unfortified city never invents a closed wall gate
+  ---
+  duration_ms: 1.033187
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 7
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 100.57995
