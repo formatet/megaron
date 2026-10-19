@@ -78,7 +78,7 @@ its own when the patrol timer runs out.`,
 			}
 			unitID = resolvedID
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/march", cfg.WorldID, unitID)
-			data, err := c.post(path, map[string]any{"q": q, "r": r, "intent": "patrol"})
+			data, err := c.post(path, map[string]any{"target_q": q, "target_r": r, "intent": "patrol"})
 			if err != nil {
 				return err
 			}
@@ -167,7 +167,7 @@ long as it stands out there. A watch is a standing expense, not a free eye.`,
 			}
 			unitID = resolvedID
 			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/march", cfg.WorldID, unitID)
-			data, err := c.post(path, map[string]any{"q": q, "r": r, "stance": "sentry"})
+			data, err := c.post(path, map[string]any{"target_q": q, "target_r": r, "stance": "sentry"})
 			if err != nil {
 				return err
 			}
