@@ -1,0 +1,125 @@
+[
+  {
+    "number": 1,
+    "start": "2026-10-19T15:00:35+02:00",
+    "args": [
+      "status",
+      "--province",
+      "MalliaWest"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax Dikonaros · day 666 of the world\n\n1 citizen = 100 people\nMalliaWest [minoan]  Pop: 559 people  Labor: 5 citizens  Walls: 0/3  Settlements: 2/5  [coastal — can build harbour → ships]\nPopulation 559 — growing: food net +7.2 per day\nThis is MalliaWest. You have 2 cities — `keryx settlements` lists them, `keryx status --province <id>` shows another.\n\nFood lasts 429.3 days at current consumption (city grain + fish stocks)\n\nLast day 666: 2 goods produced, 1 consumed  ·  keryx ticklog for details\n\nResources\n  (per day; food and army balances are itemized below)\n  Silver       29  —\n  Food     grain 0.5 + fish 9.5 − people eat 2.8 = net +7.2 per day (before army)\n  Grain         0  production 0.5 per day  (1 citizen needed for people on best food slots · 5 placed)\n  Automatic food: 0.50 grain + 1.00 fish per day without placed citizens (nearby ground 0.50 grain; 59 people outside whole citizens: 0.00 grain + 1.00 fish, a fraction of the best food worker)\n  Army     eats 0.0 grain per day → food net +7.2 per day after army\n  Silver   net -0.5 per day after army pay\n  Fish       1.2k  +9.5 per day\n  ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).\n  Kharis      100  (Favorable) · cap 100 · net +6.7 per day (temple − decay)\n  Kharis decay: 0.1 base + 2 cities cost 0.1 per day = 0.2 total\n  → your temple can employ MORE devotion than you've allocated — raise cult labor (`keryx allocate --cult <%>`) to fill it and let kharis climb.\n  Temple in Mallia: reference 0.25 grain per day — alternatives: 0.4093 fish or 0.2903 timber or 0.3498 silver — stock: 1359 grain, 1569 fish, 68.48 timber, 397 silver — next gift: 0.25 grain  ✓\n\nArmy (garrison in MalliaWest)\n  Galley        1\n  Upkeep     0.0 grain, 1.5 silver per day  (everything the city pays — including field units)\n             1.0 silver per day back into the city (garrison's pay)\n  Field units and other cities are shown in `keryx unit list`.\n\nBuildings\n  harbour      L1\n  shipyard     L1\n",
+    "stderr": ""
+  },
+  {
+    "number": 2,
+    "start": "2026-10-19T15:00:36+02:00",
+    "args": [
+      "unit",
+      "list"
+    ],
+    "exit_code": 0,
+    "stdout": "ID                                    Name                                            Size      Status      Stance     Location / ETA\n────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────\n34d55211-6675-4d8a-9291-96232adc4d60  1st Spearmen of Mallia                          100 men   garrison    —          settlement a76788d5…\n  Upkeep: 0.5 grain, 0 silver per day\ndd6e8ea0-7aa7-4c26-835d-6d72bebd4547  Palace Herald, Galley of MalliaWest             1 vessel (crew 20)  garrison    —          settlement c071f733…\n  Upkeep: 0.04 grain, 1.5 silver per day\n84e8e079-c784-484e-a647-4ea6d9d914b2  3rd Spearmen of Mallia                          8 men     garrison    —          settlement a76788d5…\n  Upkeep: 0.04 grain, 0 silver per day\n",
+    "stderr": ""
+  },
+  {
+    "number": 3,
+    "start": "2026-10-19T15:00:38+02:00",
+    "args": [
+      "notifications"
+    ],
+    "exit_code": 0,
+    "stdout": "69 notification(s), 69 unread\n────────────────────────────────────────────────────────────\n*[Day #644]  DivineBlessing\n*[Day #635]  DivineBlessing\n*[Day #627]  ExpeditionReport\n      1st Spearmen of Mallia is home after 26 days, 9 hexes out at the furthest — saw 53 hexes around (61, 31): cedar at (59, 24), (60, 25), (61, 23), (61, 24), (61, 25), (62, 25), (62, 27), (63, 25), (63, 26), (63, 27), (63, 28)\n*[Day #627]  UnitArrived\n      1st Spearmen of Mallia arrived at (61, 22) — garrison\n*[Day #620]  DivineBlessing\n      Warriors answer a divine calling in Mallia — +2 men.\n*[Day #615]  DivineBlessing\n      Warriors answer a divine calling in Mallia — +2 men.\n*[Day #615]  ExpeditionTurnedHome\n      1st Spearmen of Mallia turns home from the land around (61, 31): half its time is spent — home by day 627\n*[Day #613]  DivineBlessing\n      Warriors answer a divine calling in Mallia — +2 men.\n*[Day #612]  DivineBlessing\n      Warriors answer a divine calling in Mallia — +2 men.\n*[Day #612]  TrainComplete\n      Training complete: 1 galley\n*[Day #611]  BuildComplete\n      The city completed barracks\n*[Day #610]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #609]  TradeDelivery\n      Delivery arrived: 100 grain\n*[Day #609]  TradeDelivery\n      Delivery arrived: 30 timber\n*[Day #594]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #585]  DivineBlessing\n*[Day #580]  DivineBlessing\n*[Day #571]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #568]  DivineBlessing\n*[Day #550]  DivineBlessing\n*[Day #546]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #543]  DivineBlessing\n*[Day #533]  DivineBlessing\n*[Day #530]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #521]  DivineBlessing\n*[Day #520]  DivineBlessing\n*[Day #519]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #512]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #511]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #502]  BuildComplete\n      The city completed temple\n*[Day #500]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #497]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #491]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #489]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #483]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #478]  DivineBlessing\n*[Day #472]  ExpeditionReport\n      1st Spearmen of Mallia is home after 18 days, 7 hexes out at the furthest — saw 74 hexes around (63, 27): cedar at (58, 25), (59, 24), (59, 25), (60, 25), (61, 23), (61, 24), (61, 25), (62, 25), (62, 27)\n*[Day #472]  UnitArrived\n      1st Spearmen of Mallia arrived at (61, 22) — garrison\n*[Day #471]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #468]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #467]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #466]  BuildComplete\n      The city completed shipyard\n*[Day #463]  ExpeditionTurnedHome\n      1st Spearmen of Mallia turns home from the land around (63, 27): half its time is spent — home by day 472\n*[Day #462]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day #462]  TradeDelivery\n      Delivery arrived: 50 silver\n*[Day unknown]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day unknown]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day unknown]  DivineBlessing\n*[Day unknown]  DivineBlessing\n      The gods bless the fields in Mallia — grain, livestock, oil and wine yield a quarter more for 25 days.\n*[Day unknown]  BuildComplete\n      The city completed temple\n*[Day unknown]  BuildComplete\n      The city completed harbour\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 15 cedar\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 1 cedar\n*[Day unknown]  ExpeditionReport\n      1st Spearmen of Mallia is home after 12 days, 4 hexes out at the furthest — saw 39 hexes around (63, 24): cedar at (59, 24), (59, 25), (60, 25), (61, 23), (61, 24), (61, 25), (62, 25), (62, 27), (63, 25), (63, 26)\n*[Day unknown]  UnitArrived\n      1st Spearmen of Mallia arrived at (61, 22) — garrison\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 12 stone\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 24 timber\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 16 cedar\n*[Day unknown]  TradeDelivery\n      Delivery arrived: 12 stone\n*[Day unknown]  ExpeditionTurnedHome\n      1st Spearmen of Mallia turns home from the land around (63, 24): half its time is spent — home by day 409\n*[Day unknown]  BuildComplete\n      The city completed temple\n*[Day unknown]  UnitArrived\n      1st Spearmen of Mallia arrived at (61, 22) — garrison\n*[Day unknown]  ExpeditionReport\n      1st Spearmen of Mallia is home after 12 days, 4 hexes out at the furthest — saw 65 hexes around (62, 25): cedar at (58, 25), (59, 24), (59, 25), (60, 25), (61, 23), (61, 24), (61, 25)\n*[Day unknown]  ColonyFounded\n      Colony founded: MalliaWest\n      MalliaWest food production covers consumption (net +1.0 per day).\n*[Day unknown]  BuildComplete\n      The city completed stonequarry\n*[Day unknown]  ExpeditionTurnedHome\n      1st Spearmen of Mallia turns home from the land around (62, 25): half its time is spent — home by day 363\n*[Day unknown]  PlaceFirstReached\n      Your 1st Spearmen of Mallia is the first to reach this cedar forest — you may name it. `keryx places name forest 58,25 \"<name>\"`\n*[Day unknown]  MetropolisFounded\n      Your metropolis is founded: Mallia — 19/19 catchment hexes known\n      Mallia food production covers consumption (net +0.6 per day).\n*[Day unknown]  OpeningDispatch\n      Your people await you\n      Time. A day passes every 6 minutes.\n      Foot soldiers cross a plains hex in 1 day, olive woodland in 1.5, hills or cedar forest in 2, desert in 3. War chariots cross plains in 0.67 day but need 2 in olive woodland and 3 in hills, cedar forest or desert. A full-crewed galley crosses 3 coastal or 5 open-sea hexes a day.\n      Your Host carries 1200 grain and 480 silver. It lives on subsistence until founding; these reserves do not drain. Find your place — founding is final.\n      Food first. A city must feed itself. Starvation makes it shrink; below 50 people it falls.\n      The gods. Your Kharis holds for 144 days after founding, and no punishment falls. A temple takes 16 days to build. Build, staff and feed one in time; after that, neglect lets Kharis fade and risks punishment.\n      Place citizens on olive woodland or cedar forest for timber, and on stone-bearing ground for stone; idle citizens produce nothing.\n      Orders travel. A Runner must reach a unit in the field before it follows your new order.\n      Bronze needs others. Copper and tin lie on separate landmasses; trade, colonies or seizures can bring them together.\n      Rules: ? (Codex). Problems: Report. Community chat: Account.\n",
+    "stderr": ""
+  },
+  {
+    "number": 4,
+    "start": "2026-10-19T15:00:50+02:00",
+    "args": [
+      "cargo"
+    ],
+    "exit_code": 0,
+    "stdout": "No cargo of yours currently in transit.\n",
+    "stderr": ""
+  },
+  {
+    "number": 5,
+    "start": "2026-10-19T15:01:02+02:00",
+    "args": [
+      "transfer",
+      "--province",
+      "Mallia",
+      "--good",
+      "grain",
+      "--qty",
+      "100",
+      "--dest",
+      "MalliaWest"
+    ],
+    "exit_code": 0,
+    "stdout": "Transfer dispatched: 100 grain → MalliaWest · arrives day 674 (journey: 8 days)\n",
+    "stderr": ""
+  },
+  {
+    "number": 6,
+    "start": "2026-10-19T15:01:05+02:00",
+    "args": [
+      "unit",
+      "march",
+      "--unit",
+      "dd6e8ea0-7aa7-4c26-835d-6d72bebd4547",
+      "--q",
+      "9",
+      "--r",
+      "64",
+      "--intent",
+      "explore",
+      "--ticks",
+      "30",
+      "--preview"
+    ],
+    "exit_code": 0,
+    "stdout": "Arrival unavailable: the route crosses unknown terrain.\nPlanned expedition: 30 days — with immediate departure, home by day 696. First-leg arrival remains unknown.\nPay: 0.45 → 1.5 silver per day in the field · treasury lasts 19.5 days\nNo order sent. Run again without --preview to send it.\n",
+    "stderr": ""
+  },
+  {
+    "number": 7,
+    "start": "2026-10-19T15:01:12+02:00",
+    "args": [
+      "transfer",
+      "--province",
+      "Mallia",
+      "--good",
+      "silver",
+      "--qty",
+      "31",
+      "--dest",
+      "MalliaWest"
+    ],
+    "exit_code": 0,
+    "stdout": "Transfer dispatched: 31 silver → MalliaWest · arrives day 674 (journey: 8 days)\n",
+    "stderr": ""
+  },
+  {
+    "number": 8,
+    "start": "2026-10-19T15:01:15+02:00",
+    "args": [
+      "cargo"
+    ],
+    "exit_code": 0,
+    "stdout": "Good              Qty          From            To         ETA  Direction\n─────────────────────────────────────────────────────────────────────────────\nsilver             31        Mallia    MalliaWest     day 674  outgoing\ngrain             100        Mallia    MalliaWest     day 674  outgoing\n\nPhysical cargo, not a promise — it can be intercepted and seized in transit.\nSame risk for every cargo, own or traded: on land only interception;\nat sea every storm the ship sails into costs 2 hull (of 5); hull 0 founders the ship.\n",
+    "stderr": ""
+  },
+  {
+    "number": 9,
+    "start": "2026-10-19T15:01:18+02:00",
+    "args": [
+      "status",
+      "--province",
+      "MalliaWest"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax Dikonaros · day 666 of the world\n\n1 citizen = 100 people\nMalliaWest [minoan]  Pop: 559 people  Labor: 5 citizens  Walls: 0/3  Settlements: 2/5  [coastal — can build harbour → ships]\nPopulation 559 — growing: food net +7.2 per day\nThis is MalliaWest. You have 2 cities — `keryx settlements` lists them, `keryx status --province <id>` shows another.\n\nFood lasts 429.3 days at current consumption (city grain + fish stocks)\n\nLast day 666: 2 goods produced, 1 consumed  ·  keryx ticklog for details\n\nResources\n  (per day; food and army balances are itemized below)\n  Silver       29  —\n  Food     grain 0.5 + fish 9.5 − people eat 2.8 = net +7.2 per day (before army)\n  Grain         0  production 0.5 per day  (1 citizen needed for people on best food slots · 5 placed)\n  Automatic food: 0.50 grain + 1.00 fish per day without placed citizens (nearby ground 0.50 grain; 59 people outside whole citizens: 0.00 grain + 1.00 fish, a fraction of the best food worker)\n  Army     eats 0.0 grain per day → food net +7.2 per day after army\n  Silver   net -0.5 per day after army pay\n  Fish       1.2k  +9.5 per day\n  ⚠ Timber production ~0 — timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).\n  Kharis      100  (Favorable) · cap 100 · net +6.7 per day (temple − decay)\n  Kharis decay: 0.1 base + 2 cities cost 0.1 per day = 0.2 total\n  → your temple can employ MORE devotion than you've allocated — raise cult labor (`keryx allocate --cult <%>`) to fill it and let kharis climb.\n  Temple in Mallia: reference 0.25 grain per day — alternatives: 0.4093 fish or 0.2903 timber or 0.3498 silver — stock: 1259 grain, 1569 fish, 68.48 timber, 366 silver — next gift: 0.25 grain  ✓\n\nArmy (garrison in MalliaWest)\n  Galley        1\n  Upkeep     0.0 grain, 1.5 silver per day  (everything the city pays — including field units)\n             1.0 silver per day back into the city (garrison's pay)\n  Field units and other cities are shown in `keryx unit list`.\n\nBuildings\n  harbour      L1\n  shipyard     L1\n",
+    "stderr": ""
+  }
+]
