@@ -1,0 +1,60 @@
+{
+  "model": "GPT-6 Luna",
+  "effort": "medium",
+  "new_session_workers_from_saved_round18": true,
+  "accounts_unchanged": true,
+  "cli_wrapper_sha256": "d8394a6287888f1714ae048f7a38689693e70e4c077ec854b4aaa7ee26f952f2",
+  "no_parent_game_commands": true,
+  "players": [
+    {
+      "player": "gpt-idomeneus",
+      "commands": 17,
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "last_recorded_start": "2026-10-19T18:00:26+02:00",
+      "raw_sha256": "162b77be9b7f9a4f47b81c180332ff108420266f003969f79b1c3cfa26e8e91d"
+    },
+    {
+      "player": "gpt-arete",
+      "commands": 17,
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "last_recorded_start": "2026-10-19T18:00:22+02:00",
+      "raw_sha256": "94a15781ec65a22ce1afc1fd2fae1f97e8ed60f15bfb4cc0a25aa8cfe332f8f5"
+    }
+  ]
+}
