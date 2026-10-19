@@ -1,0 +1,88 @@
+TAP version 13
+# Subtest: J: only three primary sections, all secondary abilities remain under closed More
+ok 1 - J: only three primary sections, all secondary abilities remain under closed More
+  ---
+  duration_ms: 0.824212
+  type: 'test'
+  ...
+# Subtest: J: food days come from authoritative mixed-food coverage, from the single city stock
+ok 2 - J: food days come from authoritative mixed-food coverage, from the single city stock
+  ---
+  duration_ms: 9.067612
+  type: 'test'
+  ...
+# Subtest: J: growing low stocks never say starving; food-worker warning survives
+ok 3 - J: growing low stocks never say starving; food-worker warning survives
+  ---
+  duration_ms: 0.28364
+  type: 'test'
+  ...
+# Subtest: J: missing/invalid coverage is honestly unavailable, never zero or NaN days
+ok 4 - J: missing/invalid coverage is honestly unavailable, never zero or NaN days
+  ---
+  duration_ms: 0.128513
+  type: 'test'
+  ...
+# Subtest: J: population keeps input-free player words; no slaughter button
+ok 5 - J: population keeps input-free player words; no slaughter button
+  ---
+  duration_ms: 0.490832
+  type: 'test'
+  ...
+# Subtest: growth line: one sentence per state, from the server growth_state
+ok 6 - growth line: one sentence per state, from the server growth_state
+  ---
+  duration_ms: 0.58295
+  type: 'test'
+  ...
+# Subtest: blessed harvest: food section shows authoritative bonus and goods, hides at end tick
+ok 7 - blessed harvest: food section shows authoritative bonus and goods, hides at end tick
+  ---
+  duration_ms: 0.457978
+  type: 'test'
+  ...
+# Subtest: owned city centre offers the authoritative place naming form inside Catchment, other tiles never do
+ok 8 - owned city centre offers the authoritative place naming form inside Catchment, other tiles never do
+  ---
+  duration_ms: 0.978642
+  type: 'test'
+  ...
+# Subtest: owned-city naming success refreshes authoritative map and rerenders City despite cleared selectedHex
+ok 9 - owned-city naming success refreshes authoritative map and rerenders City despite cleared selectedHex
+  ---
+  duration_ms: 14.644835
+  type: 'test'
+  ...
+# Subtest: growth food balance does not print a signed rounded zero
+ok 10 - growth food balance does not print a signed rounded zero
+  ---
+  duration_ms: 0.337369
+  type: 'test'
+  ...
+# Subtest: AIRound3: population food and army food use different explicit balances
+ok 11 - AIRound3: population food and army food use different explicit balances
+  ---
+  duration_ms: 0.336196
+  type: 'test'
+  ...
+# Subtest: AIRound4: Scheria remainder fish is separate from nearby grain
+ok 12 - AIRound4: Scheria remainder fish is separate from nearby grain
+  ---
+  duration_ms: 0.297671
+  type: 'test'
+  ...
+# Subtest: equal food: four stocks and actual meal use server totals, never grain-only estimates
+ok 13 - equal food: four stocks and actual meal use server totals, never grain-only estimates
+  ---
+  duration_ms: 1.247367
+  type: 'test'
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 13
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 83.326772

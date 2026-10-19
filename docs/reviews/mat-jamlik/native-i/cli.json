@@ -1,0 +1,155 @@
+[
+  {
+    "args": [
+      "login",
+      "--server",
+      "http://127.0.0.1:45843",
+      "--username",
+      "food-add34fcf"
+    ],
+    "exit_code": 0,
+    "stdout": "Logged in to http://127.0.0.1:45843\nActive world:   fd462cd7-a6f4-4c11-afab-31a0e2e58c9a\nYour province:  \n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "join"
+    ],
+    "exit_code": 0,
+    "stdout": "Joined! A Nomadic Host of 1000 people sets out at (6,34).\n  Run: keryx founding status\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "unit",
+      "march",
+      "--unit",
+      "07ba6e0d-64f1-4106-ae02-2854d131207c",
+      "--q",
+      "4",
+      "--r",
+      "34",
+      "--yes"
+    ],
+    "exit_code": 0,
+    "stdout": "Unit 07ba6e0d marching to (4,34) \u2014 arrives in 4 days\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "unit",
+      "march",
+      "--unit",
+      "07ba6e0d-64f1-4106-ae02-2854d131207c",
+      "--q",
+      "2",
+      "--r",
+      "34",
+      "--yes"
+    ],
+    "exit_code": 0,
+    "stdout": "Unit 07ba6e0d marching to (2,34) \u2014 arrives in 3 days\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "--json",
+      "founding",
+      "settle",
+      "--name",
+      "Myrsine",
+      "--yes"
+    ],
+    "exit_code": 0,
+    "stdout": "{\n  \"coastal\": true,\n  \"grain_carried\": 1200,\n  \"grain_total\": 1200,\n  \"poseidon_gift\": \"a394ed16-f209-45ee-aef7-6bea28862c14\",\n  \"province_id\": \"50d58ec9-edb2-4b77-a580-44acbeec38b0\",\n  \"settlement_id\": \"83ea33a4-9a60-41a3-924a-77ef00446c10\",\n  \"silver_carried\": 480,\n  \"silver_total\": 480,\n  \"tile\": {\n    \"CedarDeposit\": false,\n    \"Coastal\": false,\n    \"CopperDeposit\": false,\n    \"Fertility\": 0,\n    \"Mineral\": 0,\n    \"Q\": 2,\n    \"R\": 34,\n    \"SilverDeposit\": false,\n    \"Terrain\": \"\",\n    \"TinDeposit\": false,\n    \"WorldID\": \"00000000-0000-0000-0000-000000000000\"\n  }\n}\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "status"
+    ],
+    "exit_code": 0,
+    "stdout": "Wanax Rhadamas \u00b7 day 11 of the world\n\n1 citizen = 100 people\nMyrsine [minoan]  Pop: 1.0k people  Labor: 10 citizens  Walls: 0/3  Settlements: 1/5  [coastal \u2014 can build harbour \u2192 ships]\nPopulation 1005 \u2014 growing: food net +0.5 per day\n\nNo trade contacts yet \u2014 trade needs a foreign settlement within your vision. Run `keryx cities` to see known/rumoured neighbours (march outward or colonise to reach one), then `keryx message --to <name>` or `keryx trade-offer` once one is visible.\n\nFood for 237.2 days at current consumption (1182.078 grain, 9.9419 fish, 0 oil, 0 wine)\n\nLast day 11: 2 goods produced, 2 consumed  \u00b7  keryx ticklog for details\n\nResources\n  (per day; food and army balances are itemized below)\n  Silver      480  \u2014\n  Food     production 5.5 \u2212 people eat 5.0 = net +0.5 per day (before army)\n  Last meal: 4.9587 grain, 0.0413 fish on day 11\n  Grain      1.2k  production 0.5 per day  (5 citizens needed for people on best food slots \u00b7 5 on food)\n  Automatic food: 0.50 grain + 0.05 fish per day without placed citizens (nearby ground 0.50 grain; 5 people outside whole citizens: 0.00 grain + 0.05 fish, a fraction of the best food worker)\n  Army     eats 2.0 food per day \u2192 food net -1.5 per day after army\n  Silver   net -0.5 per day after army pay\n  Fish         10  +5.0 per day\n  \u26a0 Timber production ~0 \u2014 timber gates harbour (16)/barracks (8)/foundry (8)/temple (8). Place workers on a timber hex: `keryx place timber <ordinal>` (see `keryx city`).\n  Kharis       40  (Indifferent) \u00b7 cap 40 \u00b7 net -0.1 per day (temple \u2212 decay)\n  Kharis decay: 0.1 base + 1 city cost 0.0 per day = 0.1 total\n  Temples: none \u2014 kharis doesn't climb without a temple + offerings.\n\nArmy (garrison in Myrsine)\n  Galley        1\n  Upkeep     2.0 food, 1.5 silver per day  (everything the city pays \u2014 including field units)\n             1.0 silver per day back into the city (garrison's pay)\n  Field units and other cities are shown in `keryx unit list`.\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "city"
+    ],
+    "exit_code": 0,
+    "stdout": "1 citizen = 100 people\nCitizens: 5/10 placed, 5 idle\n\nFood for 237.2 days at current consumption (1182.078 grain, 9.9419 fish, 0 oil, 0 wine)\nFood: 5 citizens needed for people on best food slots, 5 on food\nAutomatic food: 0.50 grain + 0.05 fish per day without placed citizens (nearby ground 0.50 grain; 5 people outside whole citizens: 0.00 grain + 0.05 fish, a fraction of the best food worker)\n\nCatchment:\n  #9   (2,33) plains         wine       0/2    (next +0.5 per day)\n                      stone      0/1    (next +0.5 per day)\n                      grain      0/4    (next +1.0 per day)\n                      livestock  0/1    (next +1.0 per day)\n                      oil        0/2    (next +0.7 per day)\n  #11  (2,36) plains         wine       0/2    (next +0.5 per day)\n                      stone      0/1    (next +0.5 per day)\n                      grain      0/4    (next +1.0 per day)\n                      livestock  0/1    (next +1.0 per day)\n                      oil        0/2    (next +0.7 per day)\n  #12  (3,32) plains         livestock  0/1    (next +1.0 per day)\n                      oil        0/2    (next +0.7 per day)\n                      wine       0/2    (next +0.5 per day)\n                      stone      0/1    (next +0.5 per day)\n                      grain      0/4    (next +1.0 per day)\n  #10  (2,35) scrub_maquis   stone      0/1    (next +0.5 per day)\n                      timber     0/1    (next +0.3 per day)\n                      wine       0/2    (next +0.3 per day)\n  #13  (3,33) scrub_maquis   wine       0/2    (next +0.3 per day)\n                      stone      0/1    (next +0.5 per day)\n                      timber     0/1    (next +0.3 per day)\n  #14  (3,34) scrub_maquis   stone      0/1    (next +0.5 per day)\n                      timber     0/1    (next +0.3 per day)\n                      wine       0/2    (next +0.3 per day)\n  #15  (3,35) scrub_maquis   wine       0/2    (next +0.3 per day)\n                      stone      0/1    (next +0.5 per day)\n                      timber     0/1    (next +0.3 per day)\n  #16  (4,32) scrub_maquis   wine       0/2    (next +0.3 per day)\n                      stone      0/1    (next +0.5 per day)\n                      timber     0/1    (next +0.3 per day)\n  #17  (4,33) scrub_maquis   wine       0/2    (next +0.3 per day)\n                      stone      0/1    (next +0.5 per day)\n                      timber     0/1    (next +0.3 per day)\n  #18  (4,34) scrub_maquis   wine       0/2    (next +0.3 per day)\n                      stone      0/1    (next +0.5 per day)\n                      timber     0/1    (next +0.3 per day)\n  #4   (1,33) coastal_sea    fish       2/2 FULL\n  #5   (1,34) coastal_sea    fish       2/2 FULL\n  #6   (1,35) coastal_sea    fish       1/2    (next +1.0 per day)\n  #7   (1,36) coastal_sea    fish       0/2    (next +1.0 per day)\n  #8   (2,32) coastal_sea    fish       0/2    (next +1.0 per day)\n  #1   (0,34) deep_sea       fish       0/1    (next +0.2 per day)\n  #2   (0,35) deep_sea       fish       0/1    (next +0.2 per day)\n  #3   (0,36) deep_sea       fish       0/1    (next +0.2 per day)\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "unit",
+      "list"
+    ],
+    "exit_code": 0,
+    "stdout": "ID                                    Name                                            Size      Status      Stance     Location / ETA\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\ne1550f70-7bdc-4939-a03f-ae18fea31ee2  1st Spearmen of Myrsine                         100 men   positioned  \u2014          hex (6,34)\n  Upkeep: 1 food, 0 silver per day\n74ed6b7b-1abb-4ef9-a4ce-f03dcc4cdc62  2nd Spearmen of Myrsine                         100 men   positioned  \u2014          hex (6,34)\n  Upkeep: 1 food, 0 silver per day\na394ed16-f209-45ee-aef7-6bea28862c14  Horns of Crete, Galley of Myrsine               1 vessel (crew 20)  garrison    \u2014          settlement 83ea33a4\u2026\n  Upkeep: 0.04 food, 1.5 silver per day\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "codex",
+      "food"
+    ],
+    "exit_code": 0,
+    "stdout": "Food and hunger\n\nYour people eat **grain, fish, oil and wine** every day. One unit of each supplies one unit of food. The meal is shared in proportion to what is available, including the day\u2019s production: a city with 100 grain and 900 fish takes one tenth of its meal as grain and nine tenths as fish. No food good is used up first. If these four cannot feed the people, livestock remains their emergency food: each animal supplies 3 food. Armies, ships and caravans use the four food goods, not livestock.\n\n## When there is not enough\n\nIf the available food and emergency livestock run out and the day's need is still unmet:\n\n- the settlement **loses part of its population that day**, and keeps losing while the shortfall lasts;\n- it shrinks until what its land yields can feed those who are left \u2014 the ground right around a city always feeds about a hundred;\n- below **50 people** \u2014 starved there, or emptied by drafting soldiers \u2014 **the settlement collapses and is gone.**\n\nYou get an urgent **CivilianStarvationStarted** notification when hunger is first observed. It records the day, city and how much of that day's meal was missing, in food. The latest start stays above ordinary history in Notifications until that city's food supply has recovered steadily. You get **CivilianStarvationEnded** after a run of fully fed days; the old start then returns to ordinary history. Hunger returning during that recovery window belongs to the same warning. A new spell after recovery starts a new pair of notices, rather than repeating the warning every day.\n\nCivilian meals and [[upkeep|soldiers\u2019 food]] draw from the same stocks, but are served separately: a city's people may be fed while its garrison is hungry, or the other way round. Each warning clears independently. If a city leaves your rule or ceases to be active, its warning closes without claiming its people recovered.\n\nOlder **FoodShortfall** messages remain in history. The world's daily food audit still records every shortfall; new inbox messages only mark the transitions. Check **City \u2192 Food details** for the current situation and act before the city keeps shrinking.\n\n## What to do about it\n\n- Put more [[citizens]] on grain or fish hexes. Check the *next citizen would add* figure.\n- Build or level a **Farm** ([[buildings]]) \u2014 it raises how many people a grain hex can hold.\n- Bring food in from another of your cities by [[transfers|transfer]] or a [[routes|standing order]].\n- Buy it ([[trade]]).\n- Shrink what eats: soldiers are drafted from your people and eat like them ([[upkeep]]).\n\nYour city has food stocks: the grain, fish, oil and wine in its [[goods|stores]]. **Food for N days** shows those stocks at current consumption, without counting future production. **City \u2192 More \u2192 Food details** shows production, the last meal by good and army food separately. Different goods forming a real share of the meal improve [[growth|population growth]]; merely storing another food does not. Stored food buys time during a shortfall. A city under [[sieges|siege]] starves because its fields are cut off, not because it produces too little.\n\nGrowth is covered in [[growth]].\n\nRelated: citizens, growth, upkeep  (keryx codex <id>)\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "codex",
+      "sea"
+    ],
+    "exit_code": 0,
+    "stdout": "The Thalassa and ships\n\nThe sea is **the Thalassa**. It carries your ships, your traders and your ambitions \u2014 and it is how you reach the half of [[bronze]] your own land does not have.\n\n## Ships\n\nEvery ship needs a **Harbour** and a **Shipyard** ([[buildings]]). There are three kinds ([[units]]):\n\n- **Galley** \u2014 transport and sight at sea. Can carry goods.\n- **War Galley** \u2014 the warship. Needs cedar and a Foundry. Never carries cargo.\n- **Emporos** \u2014 a trade hull. It does not fight, but carries more than a Galley.\n\nA [[transfers|transfer]] or [[routes|standing order]] that goes by sea needs a free Galley or Emporos waiting in the sending port \u2014 the War Galley is never chosen. No free hull there, and the shipment goes by land instead if a road exists, or is refused.\n\n## At sea\n\n- **A ship is given its whole mission in port, then sails alone.** From **War \u2192 Army**, **Load** a land unit onto a ship standing with it, then send it on a **mission**: **Land** puts the cargo ashore on open ground and sails home again on its own \u2014 select \"\u2026and found a colony\" to settle right there, no further order needed. The port pays the colonists' silver the moment the ship sails, as it would for a column on foot ([[colonies]]); if the colony cannot be founded, or you unload them at home, the silver comes back with them. **Patrol** and **Explore** return home by themselves. For **Explore**, choose an area and duration in days: the port loads provisions for the whole expedition, and the ship turns home by half the duration ([[sight]]). **Passage** is a fourth mission, empty of cargo, given to carry a [[messengers|letter]] or [[runners|order]] \u2014 see \"Arrange passage\" below.\n- **Once it sails, a ship takes no more orders.** March, Recall, Redirect, Stance, Load, Unload \u2014 none of them reach a ship that isn't standing in its own port. This is the messenger pillar taken to its edge: nothing reaches a ship at sea, not even you. Give the whole mission before it leaves; it always sails home on its own afterwards, and the drawer tells you when.\n- **Sight.** A ship reads the open sea out to four hexes but sees only one hex inland.\n- **Supplies.** A crew eats grain, fish, oil and wine, with the same proportional sharing as the city. The port loads food for the voyage from these four goods; livestock is not ship provision. The unit shows food for N days and the goods aboard. Unused provisions come home as the goods that were loaded, so fish does not turn into grain. A ship whose crew runs short of food turns for home on its own \u2014 you are told why, and a thinned crew sails slower ([[upkeep]]). At sea it eats only what was loaded aboard, never from a city's granary. The food gauge counts whole days; \"less than a day\" means the last ration is being eaten, \"out of food\" means nothing is left.\n\n## Storms\n\nThe open sea is never quite safe, but **you can see its storms** \u2014 see [[storms]]. A storm is three sea hexes of dark cloud that drift slowly across the Thalassa; a ship that crosses any of them takes the damage, even between the day's start and end, whatever the ship is doing \u2014 a fleet, a ship carrying an army, an expedition, a galley carrying a trade, a transfer or a gift. A storm can also drift onto a slow ship. Whose ship it is and why it sails never change that. Rivers and land have no storms. <!-- src: server/internal/combat/sea_storm_weather.go SeaHexesPerStorm -->\n\n- **Each storm costs the ship two points of hull** (of five), once, however many days it spends inside that storm. Three storms sink a ship that began with full hull. You are told where it struck and how much hull is left.\n- **At hull 0 the ship founders.** It goes down with everything aboard: its crew, any troops it carries, and any cargo. You are told where, and what was lost with her.\n- A battered ship keeps sailing. Bring it home and **Repair** it at a Shipyard before its next long voyage.\n\n## Damage and loss\n\nShips are damaged in [[battle]] and by storms. A damaged ship can be **Repaired** at a Shipyard (**War \u2192 Army \u2192 Repair**); you are notified when the work is done. Ships can also be lost at sea outright \u2014 and the gods, when angry, sometimes take one from the harbour ([[kharis]]).\n\nA ship caught carrying cargo (see [[transfers]]) can also be **captured outright** \u2014 it changes hands on the spot and sails to the raider's nearest port under its new flag. If your own trade route's home port is gone by the time a ship comes back \u2014 burned, occupied, abandoned \u2014 it docks at your next-nearest settlement instead; with none left anywhere, it sits **stranded** wherever it made landfall until you give it a fresh order.\n\n## Hitching a ride \u2014 how a letter or an order crosses the sea\n\nA [[messengers|letter]] or a [[runners|Runner]] carrying your order cannot swim, and it never guesses at a crossing \u2014 it needs a real ship, full stop. When its road crosses open water:\n\n- It runs to **your own nearest coastal or harboured city** and waits there \u2014 you are told which one, and why. If you have no coastal or harboured city anywhere, the message is refused outright at the moment you send it, rather than dispatched to wait forever.\n- The moment one of **your own** ships or trade routes sails from that port toward the right side of the sea, it **boards** \u2014 free, no cargo space taken \u2014 and steps off wherever that ship lands, then finishes the trip on foot.\n- A storm can [[runner-lost-at-sea|lose the runner]]. In battle a surviving enemy ship [[runner-rescued-at-sea|rescues it]]; a captured ship keeps it aboard. It leaves that actual ship in its next port and continues. A damaged ship that survives takes its runner home to the next port, without sealing or loss.\n- If no ship of yours sails that way for a while, it simply keeps waiting \u2014 nothing crosses on its own. See \"A runner stuck waiting\" below for what you can do about it.\n\nNone of this changes anything for a message or order whose road stays on dry land \u2014 a Runner on land never needs a ship, only [[marching|the roads]] it can already walk (a river still needs a ford or a boat of its own, unrelated to sea passage).\n\n## What the map shows while it crosses\n\nYour own [[messengers|letter]] or [[runners|Runner]] is drawn exactly where it really is, not sailing on its own across open water:\n\n- **Waiting** \u2014 it stands still in the port it ran to, a gold pennant marking it as yours. A small red mark on top means a **PassageStalled** dispatch has already fired for this wait.\n- **Aboard** \u2014 it rides the deck of whichever ship or trade route picked it up, moving exactly when and where that ship does. Hover it to see the carrier's name.\n- **Ashore** \u2014 once the ship lands it, it steps off and finishes the last stretch on foot, same as any Runner on land.\n- **No word** \u2014 after a rescue its location is unknown to you: no marker, carrier name or sight. It tells you about the detour only when it physically comes home. Sealed markers remain a recovery measure for older unresolved journeys.\n\n## A runner stuck waiting \u2014 your decision, not the game's\n\nWait long enough with no ship of yours sailing the right way, and you get a **PassageStalled** dispatch: the runner, the port it's standing in, where it's trying to reach, and the ships (if any) of yours already there. Nothing forces your hand \u2014 it keeps waiting exactly where it is until you act, and the dispatch only ever fires once per spell of waiting (a later known waiting spell can trigger it again; an unknown rescued runner sends no news from a foreign port). Three choices:\n\n- **Arrange passage** \u2014 the same button as above, right there in the dispatch.\n- **Call it back** \u2014 give up on this errand and bring the runner home undelivered. See the instructions below.\n- **Let it wait** \u2014 close the dispatch and do nothing. It keeps waiting, exactly as it was.\n\n## Call it back \u2014 bring the runner home undelivered\n\nIn **Diplomacy \u2192 Correspondence**, use **Call it back** on the waiting runner's row, or use the same choice in its **PassageStalled** dispatch. In Keryx, find the runner with `outbox`, then use `call-back --id <messenger-id>`.\n\nThis works only for an outbound runner waiting for a ship in **your own port**. A runner already aboard a ship, or waiting in a foreign port on its return journey, cannot be called back this way \u2014 arrange passage instead.\n\nThe runner turns around and walks home over land, delivering nothing. The confirmation tells you when it will return; it is still travelling until then. A letter comes home undelivered, and an order comes home withdrawn.\n\n## Arrange passage \u2014 send a ship for your own runner\n\nWaiting for a ship to happen to sail the right way is not your only choice. From your **outbox** (Diplomacy, or `keryx outbox`), a runner waiting for passage shows an **Arrange passage** button (or `keryx passage`) whenever one of your own ships qualifies \u2014 the choice of ship is always yours to make, but only real, eligible ships are ever offered: a Galley or Emporos (never a War Galley), standing free in port with no mission of its own.\n\n- **Sending one out:** the ship must stand in the SAME port the runner is waiting in. It sails straight for the runner's destination, boards it the moment it leaves, and puts it ashore there \u2014 no different from boarding any ship that happened to be going that way, except this one you chose yourself.\n- **Bringing one home:** a runner that has finished its errand and is waiting in a **foreign** port may be fetched instead \u2014 any of your own ports will do. The ship sails there, waits (**War \u2192 Army** shows it \"waiting at (\u2026) for the runner's return\", or `keryx unit` says the same), and carries the runner all the way home the moment it is ready to travel.\n- Either way, **the ship still finishes its own mission on its own** afterwards \u2014 it always sails home again, exactly like Land, Patrol or Explore. The runner never commands the ship; you send the ship for the runner, never the other way round. While it sails out, the drawer and `keryx unit` show it \"carrying a runner to (\u2026)\".\n- The ship's own risks are unchanged: it can still be damaged, captured or sunk, and a starved crew still turns it for home ([[upkeep]]) \u2014 none of that touches the runner, who stands safely ashore the whole time.\n\n## Fetch home \u2014 send a ship to fetch a unit\n\nA land [[units|unit]] stranded on another shore \u2014 landed there, or marched off on its own \u2014 cannot swim home. From that unit's own card (**Fetch by ship**, whenever one of your own ships qualifies), or `keryx unit pickup`, you send a ship to bring it back.\n\n- **The shore is chosen for you.** If the unit already stands on ground a ship can reach by sea, that is the shore. Otherwise the nearest open, unclaimed coastline near it is picked automatically \u2014 never a foreign city.\n- **A runner rides along if one is needed.** When the unit does not already stand on the chosen shore, a Runner boards the very same ship, steps ashore with it, and marches inland to order the unit to the shore \u2014 exactly like [[messengers|arrange passage]]'s own crossing, just carrying a march order instead of a letter. Only a Galley or Emporos can carry that runner; a War Galley may only fetch a unit that is already standing on the shore.\n- **The ship waits, but not forever.** You choose how many days it holds off the shore. If the unit reaches the shore in time, it boards at once and the ship sails home with it. If the wait runs out first, the ship sails home empty \u2014 you are told either way.\n- **Home is the end of the errand.** The moment the ship docks, the fetched unit steps off straight into that city's garrison \u2014 no separate Unload needed.\n\nNone of this reaches a ship already at sea (ships take no orders once they sail \u2014 see \"At sea\" above): a pickup is a whole mission, given from port, same as Land, Patrol or Explore.\n\n## Sailing time\n\nWith a full crew, a Galley covers **3 coastal hexes** or **5 deep-sea hexes per\nday**. Rivers allow **2 hexes per day**; a ford takes **1 day** for a ship.\nDeep water is faster, and [[storms|storms]] can still damage or sink a ship.\nSee [[marching]] for ship, crew and cargo modifiers and journey rounding.\n\nRelated: units, bronze, sight, transfers, storms  (keryx codex <id>)\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "unit",
+      "march",
+      "--unit",
+      "a394ed16-f209-45ee-aef7-6bea28862c14",
+      "--q",
+      "1",
+      "--r",
+      "33",
+      "--intent",
+      "patrol",
+      "--preview"
+    ],
+    "exit_code": 0,
+    "stdout": "Arrives in 1 day (world day 12), if dispatched now. Conditions may change.\nPay: 0.45 \u2192 1.5 silver per day in the field \u00b7 treasury lasts 319.7 days\nNo order sent. Run again without --preview to send it.\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "unit",
+      "march",
+      "--unit",
+      "a394ed16-f209-45ee-aef7-6bea28862c14",
+      "--q",
+      "1",
+      "--r",
+      "33",
+      "--intent",
+      "patrol",
+      "--yes"
+    ],
+    "exit_code": 0,
+    "stdout": "Unit a394ed16 marching to (1,33) \u2014 arrives in 1 day\n",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "unit",
+      "list"
+    ],
+    "exit_code": 0,
+    "stdout": "ID                                    Name                                            Size      Status      Stance     Location / ETA\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\ne1550f70-7bdc-4939-a03f-ae18fea31ee2  1st Spearmen of Myrsine                         100 men   positioned  \u2014          hex (6,34)\n  Upkeep: 1 food, 0 silver per day\n74ed6b7b-1abb-4ef9-a4ce-f03dcc4cdc62  2nd Spearmen of Myrsine                         100 men   positioned  \u2014          hex (6,34)\n  Upkeep: 1 food, 0 silver per day\na394ed16-f209-45ee-aef7-6bea28862c14  Horns of Crete, Galley of Myrsine               1 vessel (crew 20, food for 26 days (1.0313 grain, 0.0087 fish, 0 oil, 0 wine))  marching    \u2014          (1,34)\u2192(1,33), now at (1,33) ETA in 1 day\n  Upkeep: 0.04 food, 1.5 silver per day\n",
+    "stderr": ""
+  }
+]

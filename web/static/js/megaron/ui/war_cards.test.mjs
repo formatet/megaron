@@ -118,3 +118,16 @@ test('Haiku 6: a ship at sea with part of a day aboard is not out of food',()=>{
  assert.doesNotMatch(ship({provisions_aboard:true}),/out of food/);
  assert.match(ship({}),/out of food/);
 });
+
+test('equal food: roster food alias wins and ship manifest preserves each good',()=>{
+ const html=renderUnitCard(unit({category:'naval',type:'galley',status:'marching',crew:40,
+  upkeep_context:'active',upkeep_food_per_tick:0.5,upkeep_grain_per_tick:999,upkeep_silver_per_tick:0,
+  provision_days:7,provisions_aboard:true,provisions_by_good:{grain:1,fish:9,oil:2,wine:3}}));
+ assert.match(html,/Upkeep: 0.5 food, 0 silver per day/);
+ assert.match(html,/food for 7 days.*1 grain, 9 fish, 2 oil, 3 wine/);
+ assert.doesNotMatch(html,/999/);
+ const small=renderUnitCard(unit({category:'naval',type:'galley',status:'marching',crew:40,
+  provision_days:0,provisions_aboard:true,provisions_by_good:{grain:0,fish:0.008,oil:0.0000001,wine:0.1}}));
+ assert.match(small,/food for less than a day.*0 grain, under 0.1 fish, under 0.1 oil, 0.1 wine/);
+ assert.doesNotMatch(small,/&lt;|<0.1|0 fish/,'small positives remain safe plain text, distinct from zero');
+});

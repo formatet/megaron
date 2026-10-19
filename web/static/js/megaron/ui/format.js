@@ -301,7 +301,9 @@ function payloadSummary(body) {
 
 export function notifText(kind, body) {
   switch (kind) {
-    case 'GarrisonStarvationStarted': return `${esc(body.name || 'Your city')}: the garrison is losing men to hunger. Soldiers need grain even when the city has a food surplus. Place citizens on grain or transfer grain here.`;
+    case 'GarrisonStarvationStarted': return body.food_category === true
+      ? `${esc(body.name || 'Your city')}: the garrison is losing men to hunger. Soldiers share the city's grain, fish, oil and wine. Produce or transfer more food here.`
+      : `${esc(body.name || 'Your city')}: the garrison is losing men to hunger. Soldiers need grain even when the city has a food surplus. Place citizens on grain or transfer grain here.`;
     case 'GarrisonStarvationEnded': return `${esc(body.name || 'Your city')}: the garrison is no longer losing men to hunger.`;
     case 'KharisBandChanged': return `Kharis: ${esc(body.from_band || '?')} → ${esc(body.to_band || '?')} (${fmtNum(body.kharis || 0)}). Check Kult for decay and temple support; staff and feed your temples.`;
 
@@ -419,7 +421,7 @@ export function notifText(kind, body) {
     // unit" — falling back to unit_type/'A unit' for older bodies persisted
     // before this slice, or a unit whose row could not be resolved.
     case 'UnitAttrition':      return body.disbanded
-                                 ? `${body.name || body.unit_type || 'A unit'} starved to nothing — no grain`
+                                 ? `${body.name || body.unit_type || 'A unit'} starved to nothing — no ${body.reason === 'food_shortage' ? 'food' : 'grain'}`
                                  : `${body.name || body.unit_type || 'A unit'} starving — lost ${body.lost || 0} to hunger`;
     case 'UnitDeserted':       return body.disbanded
                                  ? `${body.name || body.unit_type || 'A unit'} deserted — unpaid, unit lost`
@@ -818,7 +820,7 @@ export function notifText(kind, body) {
     }
     case 'CivilianStarvationStarted': {
       const amount = body.unmet > 0 && body.unmet < 0.1 ? '&lt;0.1' : fmtNum(body.unmet);
-      return `${esc(body.name || 'Your city')}: people are going hungry — the meal fell short by ${amount} grain. Place citizens on grain or fish, or transfer food here.`;
+      return `${esc(body.name || 'Your city')}: people are going hungry — the meal fell short by ${amount} ${body.food_category === true ? 'food' : 'grain'}. ${body.food_category === true ? 'Produce grain, fish, oil or wine' : 'Place citizens on grain or fish'}, or transfer food here.`;
     }
     case 'CivilianStarvationEnded':
       return body.reason === 'no_longer_owned_or_active'

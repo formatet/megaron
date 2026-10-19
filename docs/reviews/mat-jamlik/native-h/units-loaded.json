@@ -1,0 +1,59 @@
+{
+  "id": "1a8067d1-f41b-482f-be79-b6663052c13e",
+  "type": "galley",
+  "category": "naval",
+  "size": 1,
+  "crew": 20,
+  "upkeep_food_per_tick": 0.04,
+  "provisions_by_good": {
+    "fish": 0.0043569516420261505,
+    "grain": 1.035643048357974,
+    "oil": 0,
+    "wine": 0
+  },
+  "upkeep_grain_per_tick": 0.04,
+  "upkeep_silver_per_tick": 1.5,
+  "upkeep_context": "active",
+  "hull": 5,
+  "provision_days": 26,
+  "provisions_aboard": true,
+  "status": "marching",
+  "deployable": true,
+  "name": "Holy Foam",
+  "display_name": "Holy Foam, Galley of Myrsine",
+  "ordinal": 1,
+  "support_settlement_id": "103a8471-16c0-42cf-a462-ce370ebd3f8d",
+  "support_settlement_name": "Myrsine",
+  "q": 12,
+  "r": 81,
+  "target_q": 11,
+  "target_r": 80,
+  "departs_at": "2026-10-19T19:08:11.929157+02:00",
+  "arrives_at": "2026-10-19T19:08:12.929157+02:00",
+  "arrival_tick": 2,
+  "duration_ticks": 1,
+  "arrives_at_utc": "2026-10-19T17:08:12.935910134Z",
+  "path": [
+    [
+      12,
+      81
+    ],
+    [
+      11,
+      81
+    ],
+    [
+      11,
+      80
+    ]
+  ],
+  "step_costs": [
+    333,
+    333
+  ],
+  "departure_tick": 1,
+  "current_q": 11,
+  "current_r": 80,
+  "march_intent": "patrol",
+  "in_battle": false
+}

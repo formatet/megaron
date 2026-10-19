@@ -15,6 +15,7 @@ package economy
 
 import (
 	"context"
+	"math"
 	"testing"
 	"time"
 
@@ -134,7 +135,7 @@ func newFoodTickHandler(pool *pgxpool.Pool) *FoodTickHandler {
 // entire need fell through to fish, and the grain stockpile never moved no
 // matter how large it was. Grönt: grain drops by exactly the day's demand;
 // fish is untouched, because grain alone covers it.
-func TestFoodTick_DrawsGrainStockBeforeFish(t *testing.T) {
+func TestFoodTick_DrawsStocksProportionally(t *testing.T) {
 	pool := testPool(t)
 	const population = 1000 // demand = 1000 * 0.5 = 500/tick (GrainConsumptionPerCitizenPerTick)
 	f := newFoodFixture(t, pool, "grain-before-fish", population)
@@ -159,11 +160,11 @@ func TestFoodTick_DrawsGrainStockBeforeFish(t *testing.T) {
 	fishAfter := foodStockOf(t, pool, f.settlementID, GoodFish)
 	unmet := foodUnmetOf(t, pool, f.settlementID)
 
-	if want := grainStock - demand; grainAfter != want {
-		t.Errorf("grain stock after FoodTick = %.1f, want %.1f (demand %.1f debited from STOCK, not from a zero rate)", grainAfter, want, demand)
+	if want := grainStock - demand*grainStock/(grainStock+fishStock); math.Abs(grainAfter-want) > 1e-9 {
+		t.Errorf("grain=%g want%g", grainAfter, want)
 	}
-	if fishAfter != fishStock {
-		t.Errorf("fish stock after FoodTick = %.1f, want unchanged %.1f — fish must stay untouched while grain alone covers demand", fishAfter, fishStock)
+	if want := fishStock - demand*fishStock/(grainStock+fishStock); math.Abs(fishAfter-want) > 1e-9 {
+		t.Errorf("fish=%g want%g", fishAfter, want)
 	}
 	if unmet != 0 {
 		t.Errorf("food_unmet_amount = %.1f, want 0 — grain stock covered the whole day's demand", unmet)

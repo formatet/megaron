@@ -14,7 +14,7 @@ Click any row to open it in the **Dispatch window**. The same window opens from 
 ## What to act on first
 
 1. **Food** — a [[food|shortfall]] kills people every day it lasts.
-2. **Pay and bread** — [[upkeep]] warnings mean soldiers need silver or grain. A garrison can starve even when people have a food surplus: soldiers need grain. Place citizens on grain or send a [[transfers|transfer]]. A notice marks when garrison hunger starts and when it ends.
+2. **Pay and bread** — [[upkeep]] warnings mean soldiers need silver or food. Soldiers share grain, fish, oil and wine with the people, but their meals are itemized separately. Produce more food or send a [[transfers|transfer]]. A notice marks when garrison hunger starts and when it ends.
 3. **Foreign marches** — someone is coming, and you know roughly when. See [[defence]].
 4. **Sieges and occupation** — a clock is running on a city. See [[sieges]] and [[occupation]].
 

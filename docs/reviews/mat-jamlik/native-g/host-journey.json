@@ -1,0 +1,9 @@
+[
+  {
+    "from_q": 15,
+    "from_r": 34,
+    "target_q": 16,
+    "target_r": 34,
+    "known_coast": true
+  }
+]

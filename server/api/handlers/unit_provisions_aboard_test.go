@@ -27,8 +27,8 @@ func TestListUnits_ProvisionsAboardSeparatesLastRationFromEmpty(t *testing.T) {
 	ship := func(provisions float64) uuid.UUID {
 		var id uuid.UUID
 		if err := f.pool.QueryRow(ctx,
-			`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, settlement_id, provisions)
-			 VALUES ($1, $2, 'galley', 'naval', 1, 10, 'garrison', $3, $4) RETURNING id`,
+			`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, settlement_id, provisions, provision_goods)
+			 VALUES ($1, $2, 'galley', 'naval', 1, 10, 'garrison', $3, $4, jsonb_build_object('grain',$4::float8)) RETURNING id`,
 			f.worldID, f.playerID, f.settlementID, provisions).Scan(&id); err != nil {
 			t.Fatalf("seed galley: %v", err)
 		}

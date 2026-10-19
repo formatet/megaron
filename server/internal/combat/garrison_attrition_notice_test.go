@@ -56,7 +56,7 @@ func TestGarrisonAttritionAuditAndNoticeOwnership(t *testing.T) {
 				}
 			}
 			var auditCount, witnessCount int
-			if err := pool.QueryRow(ctx, `SELECT count(*),count(*) FILTER(WHERE payload->>'garrison_settlement_id'=$2) FROM events WHERE stream_id=$1 AND event_type='UnitAttrition' AND payload->>'reason'='grain_shortage'`, uid, f.capitalID.String()).Scan(&auditCount, &witnessCount); err != nil {
+			if err := pool.QueryRow(ctx, `SELECT count(*),count(*) FILTER(WHERE payload->>'garrison_settlement_id'=$2) FROM events WHERE stream_id=$1 AND event_type='UnitAttrition' AND payload->>'reason'='food_shortage'`, uid, f.capitalID.String()).Scan(&auditCount, &witnessCount); err != nil {
 				t.Fatal(err)
 			}
 			if auditCount != tc.ticks {

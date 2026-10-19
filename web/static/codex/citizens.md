@@ -28,6 +28,6 @@ On the map, a small marker shows the hexes where your people are at work.
 
 Fish feeds your people just as grain does. A city living on stored food is still fed. Hunger begins only when the daily meal remains short after the [[food|feeding chain]] has been exhausted; see [[growth]].
 
-One placeable **citizen represents 100 people**. Population counts people; City and Goods count these citizens. The food-workers estimate assumes the best grain and fish slots for the population. Moving workers may require rearranging the remaining food placements; the army needs its own grain as shown in the food balance.
+One placeable **citizen represents 100 people**. Population counts people; City and Goods count these citizens. The food-workers estimate assumes the best grain and fish slots for the population. Moving workers may require rearranging the remaining food placements; the army draws from the same food stocks, as shown separately in the food balance.
 
 People outside whole groups of 100 automatically produce a fraction of the best food worker’s output: 42 people give 42 hundredths. They make grain or fish, whichever their best food hex produces most of, including its building bonus. This work is invisible and takes no place from your citizens. Nearby ground supplies its grain separately. City food details show these automatic contributions beside the placed citizens needed for meals. The count uses production rather than stored food; it is an estimate for the best food slots, not a recommendation to remove particular citizens.

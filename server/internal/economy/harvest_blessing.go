@@ -16,7 +16,7 @@ const (
 	HarvestBlessingTicks      = 25
 )
 
-// HarvestBlessedGoods are the goods the blessing raises: FoodGoods minus fish
+// HarvestBlessedGoods are the goods the blessing raises: FoodGoods minus fish, plus the established herd blessing
 // (the sea is Poseidon's, not the fields').
 func HarvestBlessedGoods() []string {
 	out := make([]string, 0, len(FoodGoods))
@@ -25,7 +25,7 @@ func HarvestBlessedGoods() []string {
 			out = append(out, g)
 		}
 	}
-	return out
+	return append(out, GoodLivestock)
 }
 
 // ApplyHarvestBlessing blesses the settlement's harvest from now for

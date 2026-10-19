@@ -31,11 +31,9 @@ const (
 	GoodCult      = "cult" // internal sacred good produced by temple labor → converted to kharis daily
 )
 
-// FoodGoods är de varor som räknas för kost-variation (Timothy 2026-07-11:
-// bred palett; matmodellen 2026-08-07, megaron_plan_foda_konsistens.md §S2):
-// grain/fish/livestock är föda, wine/oil är variationshöjare — men alla fem
-// räknas på NÄRVARO (aldrig förbrukning) i kharis/tick.go:s tillväxtbonus.
-var FoodGoods = []string{GoodGrain, GoodFish, GoodLivestock, GoodWine, GoodOil}
+// FoodGoods is the sole ordinary food category: equal food value, proportional
+// meals, production/growth and coverage. Civilian emergency herd is separate.
+var FoodGoods = []string{GoodGrain, GoodFish, GoodOil, GoodWine}
 
 // Good is the catalog entry for a tradeable good.
 type Good struct {

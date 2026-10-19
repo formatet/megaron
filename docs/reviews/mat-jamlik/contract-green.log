@@ -1,0 +1,4 @@
+» färsk DB på migration 190 · commit 584a324a+ändringar
+ok  	formatet/megaron/server/internal/economy	0.023s
+ok  	formatet/megaron/server/internal/kharis	0.068s
+ok  	formatet/megaron/server/internal/combat	0.112s

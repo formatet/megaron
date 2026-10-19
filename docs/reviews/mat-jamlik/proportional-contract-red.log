@@ -1,0 +1,6 @@
+» färsk DB på migration 189 · commit 584a324a
+--- FAIL: TestFoodConsumptionProportionalGrainAndFish (0.00s)
+    equal_food_test.go:10: remaining grain/fish=90/900 want99/891
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.002s
+FAIL

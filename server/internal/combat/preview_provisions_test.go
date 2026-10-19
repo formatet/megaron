@@ -44,7 +44,7 @@ func TestPreviewMarch_RefusesWhenThePortCannotProvision(t *testing.T) {
 	order := MarchOrder{WorldID: world, PlayerID: owner, UnitID: ship, TargetQ: 12, Intent: "patrol"}
 
 	_, dispatchErr := StartMarch(ctx, pool, events.NewScheduler(pool, clk), events.NewStore(pool), clk, order, nil)
-	if dispatchErr == nil || !strings.Contains(dispatchErr.Error(), "not enough grain to provision") {
+	if dispatchErr == nil || !strings.Contains(dispatchErr.Error(), "not enough food to provision") {
 		t.Fatalf("dispatch from an empty port = %v, want the provisions refusal", dispatchErr)
 	}
 	_, previewErr := PreviewMarch(ctx, pool, clk, order, nil)

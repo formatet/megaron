@@ -1,0 +1,23 @@
+{
+  "id": "aec9b24f-ef3e-4519-bd7e-ac2dffb02eae",
+  "type": "galley",
+  "category": "naval",
+  "size": 1,
+  "crew": 20,
+  "upkeep_food_per_tick": 0.04,
+  "upkeep_grain_per_tick": 0.04,
+  "upkeep_silver_per_tick": 1.5,
+  "upkeep_context": "active",
+  "hull": 5,
+  "status": "garrison",
+  "deployable": true,
+  "name": "Foam Bride",
+  "display_name": "Foam Bride, Galley of Myrsine",
+  "ordinal": 1,
+  "support_settlement_id": "1b03e28b-14b5-4926-9d85-262bf9fbda6d",
+  "support_settlement_name": "Myrsine",
+  "settlement_id": "1b03e28b-14b5-4926-9d85-262bf9fbda6d",
+  "q": 17,
+  "r": 34,
+  "in_battle": false
+}

@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-mat-jamlik/docs/reviews/mat-jamlik/native.py", line 51, in <module>
+    assert candidates,'no coastal site currently visible; keep this diagnostic, use another natural world'
+           ^^^^^^^^^^
+AssertionError: no coastal site currently visible; keep this diagnostic, use another natural world

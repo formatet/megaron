@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/tk/wt/codex-mat-jamlik/docs/reviews/mat-jamlik/native.py", line 93, in <module>
+    cli('unit','march','--unit',sid,'--q',str(target['q']),'--r',str(target['r']),'--intent','patrol','--preview')
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tk/wt/codex-mat-jamlik/docs/reviews/mat-jamlik/native.py", line 43, in cli
+    calls.append(dict(args=args,exit_code=r.returncode,stdout=r.stdout,stderr=r.stderr));assert r.returncode==0,(args,r.stdout,r.stderr)
+                                                                                                ^^^^^^^^^^^^^^^
+AssertionError: (('unit', 'march', '--unit', '6c06fe75-e2c3-4317-86e7-211ae08ee1ad', '--q', '57', '--r', '41', '--intent', 'patrol', '--preview'), '', 'Error: cannot march to own hex (HTTP 400)\nSee keryx unit march --help\n')

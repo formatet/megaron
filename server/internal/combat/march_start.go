@@ -24,6 +24,7 @@ import (
 
 	"formatet/megaron/server/internal/capabilities"
 	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/religion"
@@ -849,12 +850,11 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			u.Status == unit.StatusGarrison && u.SupportSettlementID != nil {
 			ration, need, stationTicks := voyageNeed(ctx, pool, u, o.Intent, expeditionPlan, travelTicks)
 			if need > 0 {
-				var have float64
-				_ = pool.QueryRow(ctx,
-					`SELECT GREATEST(0, settled(amount, rate, calc_tick))
-					 FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'grain'`,
-					*u.SupportSettlementID,
-				).Scan(&have)
+				stock, err := economy.LoadFood(ctx, pool, *u.SupportSettlementID, false)
+				if err != nil {
+					return nil, reject(http.StatusInternalServerError, "could not read the home port's food")
+				}
+				have := economy.FoodAmount(stock)
 				if !province.GoodsAffordable(have, need) {
 					return nil, provisionsShort(have, need, ration, 2*travelTicks+stationTicks)
 				}
@@ -962,32 +962,14 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		ration, provisions, stationTicks = voyageNeed(ctx, tx, u, o.Intent, expeditionPlan, travelTicks)
 
 		if provisions > 0 {
-			var have float64
-			if err := tx.QueryRow(ctx,
-				`SELECT GREATEST(0, settled(amount, rate, calc_tick))
-				 FROM settlement_goods WHERE settlement_id = $1 AND good_key = 'grain' FOR UPDATE`,
-				*u.SupportSettlementID,
-			).Scan(&have); err != nil {
-				return nil, reject(http.StatusInternalServerError, "could not read the home port's stock")
+			meal, err := economy.TakeFood(ctx, tx, *u.SupportSettlementID, provisions, false, true)
+			if err != nil {
+				return nil, reject(http.StatusInternalServerError, "could not load the home port's food")
 			}
-			if !province.GoodsAffordable(have, provisions) {
-				// Båda talen med flit: en ärlig brist säger hur stor den är, så
-				// spelaren vet om hon ska vänta en dag eller bygga en åker.
-				return nil, provisionsShort(have, provisions, ration, 2*travelTicks+stationTicks)
+			if meal.Unmet > 0 {
+				return nil, provisionsShort(provisions-meal.Unmet, provisions, ration, 2*travelTicks+stationTicks)
 			}
-			if _, err := tx.Exec(ctx,
-				`UPDATE settlement_goods
-				    SET amount = GREATEST(0, settled(amount, rate, calc_tick) - $1),
-				        calc_tick = current_world_tick()
-				  WHERE settlement_id = $2 AND good_key = 'grain'`,
-				provisions, *u.SupportSettlementID,
-			); err != nil {
-				return nil, reject(http.StatusInternalServerError, "could not load the ship's provisions")
-			}
-			if _, err := tx.Exec(ctx,
-				`UPDATE units SET provisions = provisions + $2 WHERE id = $1`,
-				o.UnitID, provisions,
-			); err != nil {
+			if err := addProvisions(ctx, tx, o.UnitID, meal.Used); err != nil {
 				return nil, reject(http.StatusInternalServerError, "could not stow the ship's provisions")
 			}
 		}
@@ -1323,7 +1305,7 @@ func nearestOwnedSettlement(ctx context.Context, pool province.Queryer, worldID,
 	return best, found, rows.Err()
 }
 
-// voyageNeed is the grain a ship in port loads before it sails: its ration
+// voyageNeed is the food a ship in port loads before it sails: its ration
 // (cargo included) for the voyage out, any time on station, and home again.
 // Preview and dispatch share it.
 func voyageNeed(ctx context.Context, db interface {
@@ -1353,6 +1335,6 @@ func voyageNeed(ctx context.Context, db interface {
 // Båda talen med flit: en ärlig brist säger hur stor den är, så spelaren vet
 // om hon ska vänta en dag eller bygga en åker.
 func provisionsShort(have, need, ration float64, days int) *OrderReject {
-	return reject(http.StatusUnprocessableEntity, "not enough grain to provision the voyage — the home port holds %.0f, "+
+	return reject(http.StatusUnprocessableEntity, "not enough food to provision the voyage — the home port holds %.0f, "+
 		"the voyage needs %.0f (%.1f per day for %s out, on station and home again)", have, need, ration, tick.FormatDays(days))
 }

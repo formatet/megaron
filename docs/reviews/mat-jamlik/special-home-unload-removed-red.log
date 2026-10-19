@@ -1,0 +1,17 @@
+» färsk DB på migration 190 · commit 05b97416+ändringar
+2026/10/19 19:03:03 INFO unit returned home from explore unit=59069dab-795c-4dd5-bdf6-df47ece35041 settlement=db6af523-0f7f-47e5-83f3-360386866cfa
+2026/10/19 19:03:03 INFO ship returned home intent=damaged_return unit=37406465-b252-4a20-8c26-f4dd7560301a settlement=2fa2e330-ff27-46fb-980b-8ba171285de5
+2026/10/19 19:03:03 INFO ship returned home intent=captured_return unit=99a93837-c84c-4ff9-8ed6-3d39beb786c3 settlement=984bf7a1-8900-4c74-8e81-81b27cd4ce87
+2026/10/19 19:03:03 INFO pickup: ship returned home empty unit=1f572452-b619-4b27-9424-101899076c8e settlement=d9edd1ec-e1b4-4ce8-a818-4b0ee0bd910e
+--- FAIL: TestSpecialHomeReturnUnloadsSameGoodsExactlyOnce (0.09s)
+    --- FAIL: TestSpecialHomeReturnUnloadsSameGoodsExactlyOnce/explore_return (0.02s)
+        food_provisions_ledger_test.go:102: home total/status=10/garrison want0/garrison
+    --- FAIL: TestSpecialHomeReturnUnloadsSameGoodsExactlyOnce/damaged_return (0.02s)
+        food_provisions_ledger_test.go:102: home total/status=10/garrison want0/garrison
+    --- FAIL: TestSpecialHomeReturnUnloadsSameGoodsExactlyOnce/captured_return (0.02s)
+        food_provisions_ledger_test.go:102: home total/status=10/garrison want0/garrison
+    --- FAIL: TestSpecialHomeReturnUnloadsSameGoodsExactlyOnce/pickup_return (0.02s)
+        food_provisions_ledger_test.go:102: home total/status=10/garrison want0/garrison
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.091s
+FAIL

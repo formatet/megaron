@@ -221,6 +221,15 @@ func (h *UnitArrivalHandler) resolve(ctx context.Context, tx pgx.Tx, unitID, wor
 			result = err
 			return
 		}
+		// Every actual home-port garrison shares this finalization, including
+		// patrol/explore, pickup and damaged/captured returns. A visit whose
+		// next leg continues keeps its food aboard instead of losing its ration.
+		if port != nil && u.provisions > 0 {
+			if err := returnProvisions(ctx, tx, u.id, *port); err != nil {
+				result = fmt.Errorf("return port provisions: %w", err)
+				return
+			}
+		}
 		if port == nil && u.marchIntent != nil && (*u.marchIntent == "passage" || *u.marchIntent == "land" || *u.marchIntent == "pickup") && u.landTargetQ != nil && u.landTargetR != nil {
 			err := tx.QueryRow(ctx, `SELECT s.id FROM settlements s JOIN provinces p ON p.id=s.province_id WHERE s.world_id=$1 AND p.map_q=$2 AND p.map_r=$3 AND s.state='active' AND (p.coastal OR EXISTS(SELECT 1 FROM buildings b WHERE b.settlement_id=s.id AND b.building_type='harbour'))`, worldID, *u.landTargetQ, *u.landTargetR).Scan(&port)
 			if err != nil && err != pgx.ErrNoRows {
@@ -507,32 +516,6 @@ func (h *UnitArrivalHandler) arriveGarrison(
 			`UPDATE units SET carried_silver = 0 WHERE id = $1`, u.id,
 		); err != nil {
 			return fmt.Errorf("unit arrive: clear carried purse: %w", err)
-		}
-	}
-
-	// A ship that reaches port unloads whatever provisions the voyage did not eat
-	// (megaron_plan_skeppsproviant.md §5). Same shape as the purse above, and for
-	// the same reason: the food was physically aboard, and it comes back.
-	//
-	// Load-bearing, not tidiness. Provisioning deliberately over-estimates the
-	// return leg (VoyageProvisions assumes it is symmetric with the outbound one),
-	// so without this every voyage would burn a full round trip's rations however
-	// short it actually was, and the safety margin would quietly become a tax on
-	// sailing at all.
-	if settlementID != nil && u.provisions > 0 {
-		if _, err := tx.Exec(ctx,
-			`UPDATE settlement_goods
-			    SET amount = LEAST(cap, settled(amount, rate, calc_tick) + $1),
-			        calc_tick = current_world_tick()
-			  WHERE settlement_id = $2 AND good_key = 'grain'`,
-			u.provisions, *settlementID,
-		); err != nil {
-			return fmt.Errorf("unit arrive: unload provisions: %w", err)
-		}
-		if _, err := tx.Exec(ctx,
-			`UPDATE units SET provisions = 0 WHERE id = $1`, u.id,
-		); err != nil {
-			return fmt.Errorf("unit arrive: clear provisions: %w", err)
 		}
 	}
 
@@ -2089,7 +2072,7 @@ func (h *UnitArrivalHandler) foundColony(
 		).Scan(&grainAmount, &grainRate)
 		_, grainNet := economy.GrainBalance(grainRate, population)
 		var foodRate float64
-		_ = tx.QueryRow(ctx, `SELECT COALESCE(SUM(rate),0) FROM settlement_goods WHERE settlement_id=$1 AND good_key=ANY($2)`, colonyID, economy.NetFoodGoods).Scan(&foodRate)
+		_ = tx.QueryRow(ctx, `SELECT COALESCE(SUM(rate),0) FROM settlement_goods WHERE settlement_id=$1 AND good_key=ANY($2)`, colonyID, economy.FoodGoods).Scan(&foodRate)
 		foodNet := economy.FoodNet(foodRate, population)
 
 		payload := map[string]any{

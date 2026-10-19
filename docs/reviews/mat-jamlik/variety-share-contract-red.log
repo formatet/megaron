@@ -1,0 +1,9 @@
+» färsk DB på migration 190 · commit 4b4f1ed4+ändringar
+--- FAIL: TestGrowthVarietyRequiresSubstantialMealShare (0.11s)
+    --- FAIL: TestGrowthVarietyRequiresSubstantialMealShare/one_wine_among_thousand_grain (0.02s)
+        eaten_variety_test.go:119: crumbs meal map[grain:49.95004995004995 wine:0.04995004995004995]: gain37 must equal plain33
+    --- FAIL: TestGrowthVarietyRequiresSubstantialMealShare/just_below_tenth (0.02s)
+        eaten_variety_test.go:119: crumbs meal map[grain:45.05 wine:4.95]: gain37 must equal plain33
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.117s
+FAIL

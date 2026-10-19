@@ -1,0 +1,14 @@
+» färsk DB på migration 190 · commit c01112eb+ändringar
+2026/10/19 19:01:23 INFO unit returned home from explore unit=dac13e24-ecb5-4686-9735-8743ebddeafa settlement=4ee0daf4-6204-4ecc-8ce0-bfac81c64a6e
+2026/10/19 19:01:23 INFO ship returned home intent=damaged_return unit=51498b3c-0a6c-48f5-b916-f6e9a1df7110 settlement=1285a605-7c5e-4973-a893-70f7cfd0041f
+2026/10/19 19:01:23 INFO ship returned home intent=captured_return unit=397fdc8b-e99c-4133-bf99-841114f070cb settlement=4f6cf794-7337-4b65-8e37-805d35b310ba
+--- FAIL: TestSpecialHomeReturnUnloadsSameGoodsExactlyOnce (0.07s)
+    --- FAIL: TestSpecialHomeReturnUnloadsSameGoodsExactlyOnce/explore_return (0.02s)
+        food_provisions_ledger_test.go:102: home total/status=10/garrison want0/garrison
+    --- FAIL: TestSpecialHomeReturnUnloadsSameGoodsExactlyOnce/damaged_return (0.02s)
+        food_provisions_ledger_test.go:102: home total/status=10/garrison want0/garrison
+    --- FAIL: TestSpecialHomeReturnUnloadsSameGoodsExactlyOnce/captured_return (0.02s)
+        food_provisions_ledger_test.go:102: home total/status=10/garrison want0/garrison
+FAIL
+FAIL	formatet/megaron/server/internal/combat	0.068s
+FAIL

@@ -123,7 +123,7 @@ its own when the patrol timer runs out.`,
 // march already sees. Sentry adds the watch: it detects passing enemies and
 // intercepts caravans within reach (combat/march_start.go:348).
 //
-// ⚠️ A watch is NOT cheap: a land unit in the field pays DOUBLE grain
+// ⚠️ A watch is NOT cheap: a land unit in the field pays DOUBLE food
 // (combat/upkeep.go upkeepFieldGrainFactor = 2.0, applied to marching/positioned/
 // embarked), and there is no foraging to offset it. That is a real strategic
 // cost, and the help text says so rather than letting the player discover it by
@@ -144,7 +144,7 @@ marches passing nearby, and intercepts enemy caravans within reach. This is how
 scouting accumulates into a front instead of a round trip: 'march --intent
 explore' explores an area for a chosen duration, then brings the unit home.
 
-Cost: a unit in the field eats DOUBLE the grain it would in garrison, for as
+Cost: a unit in the field eats DOUBLE the food it would in garrison, for as
 long as it stands out there. A watch is a standing expense, not a free eye.`,
 		Example: `  keryx unit post --unit <id> --q 8 --r -3
   keryx unit post --unit <id> --target 8,-3`,
@@ -259,7 +259,11 @@ func unitListCmd() *cobra.Command {
 
 // unitUpkeepLine uses authoritative roster rates, including explicit zero silver.
 func unitUpkeepLine(u unitRow) string {
-	if u.UpkeepContext == "none" || u.UpkeepGrainPerTick == nil || u.UpkeepSilverPerTick == nil {
+	food, category := u.UpkeepFoodPerTick, "food"
+	if food == nil {
+		food, category = u.UpkeepGrainPerTick, "grain"
+	}
+	if u.UpkeepContext == "none" || food == nil || u.UpkeepSilverPerTick == nil {
 		return ""
 	}
 	label := "Upkeep"
@@ -269,31 +273,33 @@ func unitUpkeepLine(u unitRow) string {
 	case "subsistence":
 		label = "Upkeep after settling"
 	}
-	return fmt.Sprintf("%s: %g grain, %g silver per day", label, *u.UpkeepGrainPerTick, *u.UpkeepSilverPerTick)
+	return fmt.Sprintf("%s: %g %s, %g silver per day", label, *food, category, *u.UpkeepSilverPerTick)
 }
 
 type unitRow struct {
-	UpkeepContext       string     `json:"upkeep_context"`
-	UpkeepGrainPerTick  *float64   `json:"upkeep_grain_per_tick"`
-	UpkeepSilverPerTick *float64   `json:"upkeep_silver_per_tick"`
-	ID                  string     `json:"id"`
-	Type                string     `json:"type"`
-	Category            string     `json:"category"`
-	Size                int        `json:"size"`
-	Crew                int        `json:"crew"`
-	Hull                int        `json:"hull"`
-	ProvisionDays       int        `json:"provision_days"`
-	ProvisionsAboard    bool       `json:"provisions_aboard"`
-	Status              string     `json:"status"`
-	Name                *string    `json:"name"`
-	DisplayName         string     `json:"display_name"`
-	BuildCompleteAt     *time.Time `json:"build_complete_at"`
-	Stance              *string    `json:"stance"`
-	SettlementID        *string    `json:"settlement_id"`
-	Q                   *int       `json:"q"`
-	R                   *int       `json:"r"`
-	TargetQ             *int       `json:"target_q"`
-	TargetR             *int       `json:"target_r"`
+	UpkeepContext       string             `json:"upkeep_context"`
+	UpkeepFoodPerTick   *float64           `json:"upkeep_food_per_tick"`
+	ProvisionsByGood    map[string]float64 `json:"provisions_by_good"`
+	UpkeepGrainPerTick  *float64           `json:"upkeep_grain_per_tick"`
+	UpkeepSilverPerTick *float64           `json:"upkeep_silver_per_tick"`
+	ID                  string             `json:"id"`
+	Type                string             `json:"type"`
+	Category            string             `json:"category"`
+	Size                int                `json:"size"`
+	Crew                int                `json:"crew"`
+	Hull                int                `json:"hull"`
+	ProvisionDays       int                `json:"provision_days"`
+	ProvisionsAboard    bool               `json:"provisions_aboard"`
+	Status              string             `json:"status"`
+	Name                *string            `json:"name"`
+	DisplayName         string             `json:"display_name"`
+	BuildCompleteAt     *time.Time         `json:"build_complete_at"`
+	Stance              *string            `json:"stance"`
+	SettlementID        *string            `json:"settlement_id"`
+	Q                   *int               `json:"q"`
+	R                   *int               `json:"r"`
+	TargetQ             *int               `json:"target_q"`
+	TargetR             *int               `json:"target_r"`
 	// CurrentQ/CurrentR (movement 2a, R8, megaron_plan_rorelse_sparad_vag.md):
 	// a marching unit's live position, read server-side through its saved
 	// route — never a client-side guess. nil when no gällande route exists
@@ -396,9 +402,18 @@ func formatSize(c *Client, u unitRow) string {
 		case u.ProvisionDays <= 0:
 			food = ", OUT OF FOOD"
 		case u.ProvisionDays < provisionsLowDays:
-			food = fmt.Sprintf(", food %s LOW", formatDays(u.ProvisionDays, "%d"))
+			food = fmt.Sprintf(", food for %s LOW", formatDays(u.ProvisionDays, "%d"))
 		default:
-			food = fmt.Sprintf(", food %s", formatDays(u.ProvisionDays, "%d"))
+			food = fmt.Sprintf(", food for %s", formatDays(u.ProvisionDays, "%d"))
+		}
+		if u.Status != "garrison" && u.ProvisionsByGood != nil {
+			goods := map[string]any{}
+			for good, quantity := range u.ProvisionsByGood {
+				goods[good] = quantity
+			}
+			if detail := foodGoodsText(goods); detail != "" {
+				food += " (" + detail + ")"
+			}
 		}
 		return fmt.Sprintf("1 vessel (crew %d%s%s)", u.Crew, hull, food)
 	}

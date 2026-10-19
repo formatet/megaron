@@ -1,0 +1,25 @@
+{"time":"2026-10-19T18:55:58.746660868+02:00","level":"INFO","msg":"migrations applied"}
+{"time":"2026-10-19T18:55:58.767633141+02:00","level":"WARN","msg":"mapgen: invalid map, reseeding","world":"45300226-4883-4b43-b8ba-fbddf7a6d7e9","seed":1792428958749012836,"width":64,"height":64,"err":"invalid map: forest fraction = 0.313 (want 0.22..0.30)"}
+{"time":"2026-10-19T18:56:00.062924103+02:00","level":"INFO","msg":"world created","name":"Equal food proof","id":"45300226-4883-4b43-b8ba-fbddf7a6d7e9","seed":1792428958749012837}
+{"time":"2026-10-19T18:56:00.070687298+02:00","level":"INFO","msg":"world ready","id":"45300226-4883-4b43-b8ba-fbddf7a6d7e9"}
+{"time":"2026-10-19T18:56:00.071171242+02:00","level":"INFO","msg":"chronicle opened","world":"Equal food proof","dir":"/home/tk/wt/codex-mat-jamlik/docs/reviews/mat-jamlik/native-b/chronicles"}
+{"time":"2026-10-19T18:56:00.072870573+02:00","level":"INFO","msg":"scheduled event worker started","poll":1000000000}
+{"time":"2026-10-19T18:56:00.072871467+02:00","level":"INFO","msg":"tick worker started","tick_seconds":1}
+{"time":"2026-10-19T18:56:00.072950469+02:00","level":"INFO","msg":"build","commit":"c01112eb9e4556789c650acd58c83598358e26c9"}
+{"time":"2026-10-19T18:56:00.073174289+02:00","level":"INFO","msg":"keryx server starting","addr":":34573"}
+{"time":"2026-10-19T18:56:00.080372138+02:00","level":"INFO","msg":"daily ticks seeded","worlds":1}
+2026/10/19 18:56:00 [tki9/IQJsLl1twy-000001] "GET http://127.0.0.1:34573/healthz HTTP/1.1" from 127.0.0.1:58338 - 200 84B in 663.509µs
+{"time":"2026-10-19T18:56:00.215452688+02:00","level":"INFO","msg":"player registered","id":"66e9cd31-5f35-4bb4-a5ba-fe1621e0ecbc","username":"food-96a5a291"}
+2026/10/19 18:56:00 [tki9/IQJsLl1twy-000002] "POST http://127.0.0.1:34573/api/v1/auth/register HTTP/1.1" from 127.0.0.1:58346 - 201 387B in 47.150487ms
+{"time":"2026-10-19T18:56:00.263659388+02:00","level":"INFO","msg":"player logged in","id":"66e9cd31-5f35-4bb4-a5ba-fe1621e0ecbc","username":"food-96a5a291"}
+2026/10/19 18:56:00 [tki9/IQJsLl1twy-000003] "POST http://127.0.0.1:34573/api/v1/auth/login HTTP/1.1" from 127.0.0.1:58358 - 200 303B in 46.015978ms
+2026/10/19 18:56:00 [tki9/IQJsLl1twy-000004] "GET http://127.0.0.1:34573/api/v1/worlds HTTP/1.1" from 127.0.0.1:58358 - 200 180B in 892.757µs
+2026/10/19 18:56:00 [tki9/IQJsLl1twy-000005] "GET http://127.0.0.1:34573/api/v1/worlds/45300226-4883-4b43-b8ba-fbddf7a6d7e9/provinces HTTP/1.1" from 127.0.0.1:58358 - 200 28B in 10.361837ms
+{"time":"2026-10-19T18:56:00.297860708+02:00","level":"INFO","msg":"world started","world":"45300226-4883-4b43-b8ba-fbddf7a6d7e9","wanaxes":1}
+2026/10/19 18:56:00 [tki9/IQJsLl1twy-000006] "POST http://127.0.0.1:34573/api/v1/worlds/45300226-4883-4b43-b8ba-fbddf7a6d7e9/join HTTP/1.1" from 127.0.0.1:58368 - 201 208B in 19.806439ms
+2026/10/19 18:56:00 [tki9/IQJsLl1twy-000007] "GET http://127.0.0.1:34573/api/v1/worlds/45300226-4883-4b43-b8ba-fbddf7a6d7e9/provinces HTTP/1.1" from 127.0.0.1:58368 - 200 28B in 4.850634ms
+2026/10/19 18:56:00 [tki9/IQJsLl1twy-000008] "GET http://127.0.0.1:34573/api/v1/worlds/45300226-4883-4b43-b8ba-fbddf7a6d7e9/founding/status HTTP/1.1" from 127.0.0.1:58380 - 200 241B in 1.176219ms
+2026/10/19 18:56:00 [tki9/IQJsLl1twy-000009] "GET http://127.0.0.1:34573/api/v1/worlds/45300226-4883-4b43-b8ba-fbddf7a6d7e9/map HTTP/1.1" from 127.0.0.1:58384 - 200 250347B in 16.132741ms
+{"time":"2026-10-19T18:56:00.325516077+02:00","level":"INFO","msg":"scheduled event worker stopped"}
+{"time":"2026-10-19T18:56:00.325520143+02:00","level":"INFO","msg":"shutting down"}
+{"time":"2026-10-19T18:56:00.325522474+02:00","level":"INFO","msg":"tick worker stopped"}

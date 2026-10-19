@@ -1,0 +1,6 @@
+» färsk DB på migration 190 · commit 4b4f1ed4+ändringar
+--- FAIL: TestGrowthVarietyReadsActualMealNotLaterStock (0.08s)
+    eaten_variety_test.go:53: growth from2/4 eaten varieties=[43 43 33]
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.082s
+FAIL

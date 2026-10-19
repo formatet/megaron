@@ -1,0 +1,2 @@
+{'mutation': 'cli-omits-wine', 'test': 'TestEqualFoodCityUsesServerTotalsAndGoods', 'source': 'server/cmd/keryx/food_format.go', 'sha256': '22cb7078c534329381e05ce153814848ae1aa61f9aeca97e42e9a437095b395e', 'result': 'named RED -> byte-exact restore -> fresh GREEN'}
+{'mutation': 'web-omits-wine', 'test': 'equal food: four stocks and actual meal use server totals, never grain-only estimates', 'source': 'web/static/js/megaron/ui/food.js', 'sha256': '6df1ffe01d4a95e09c9caa55c1544f6999d3883d30e9724ac87fcfead9a716b4', 'result': 'named RED -> byte-exact restore -> fresh GREEN'}

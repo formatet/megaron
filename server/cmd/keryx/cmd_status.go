@@ -274,27 +274,18 @@ func hexBuildSitesFrom(resp *placementOptionsResp) *hexBuildSites {
 //
 // Four sources, added together because they behave differently over time:
 //   - Bygge: remainingBuildingCosts above — flat, not scaled by the horizon.
-//   - Upkeep: this settlement's OWN current army_upkeep grain/silver draw
+//   - Upkeep: this settlement's OWN current army_upkeep food/silver draw
 //     (server-computed — the same figures `status`'s own Army/Upkeep line
 //     shows), × productionHorizonTicks.
 //   - Tempel: the server's planned local offering, × productionHorizonTicks.
 //     Each city's own temple_offers[].offering specifies the actual goods,
 //     including mixed substitutions at the world's divine values. An unfunded
 //     gift has no planned debit. No client-side recipe or valuation is needed.
-//   - Mat: economy.FoodConsumptionSplit's fallback chain (grain → fish →
-//     livestock, internal/economy/recompute.go:417-446) shares ONE demand
-//     pool — the population's food need over the horizon
-//     (pop × grainConsumptionPerCitizenPerTick × horizon). Each of the
-//     three is measured against that SAME total independently rather than
-//     a strict running remainder — a documented simplification: modelling
-//     the joint chain precisely would need every settlement's grain/fish/
-//     livestock STOCK threaded through this function too, for a warning
-//     heuristic that does not need that precision. No single one of the
-//     three could ever be worth more than the whole population's need, and
-//     the case this exists to catch — is the pile absurd relative to what
-//     the population could ever eat (Timothy 2026-08-23's fish question) —
-//     is answered correctly either way. Livestock is converted to
-//     animal-equivalent via livestockFoodValue.
+//   - Food: each interchangeable food good can meet the full demand pool.
+//     These are independent upper-bound sink capacities, not a forecast of
+//     the actual proportional meal. Livestock covers only civilian emergency
+//     meals, converted via livestockFoodValue. Army food adds capacity for
+//     grain, fish, oil and wine, never livestock.
 //
 // Refining recipes (internal/economy/recipe.go) are NOT sized here — a
 // recipe ingredient's real constraint is scarcity of the OTHER input, not
@@ -303,7 +294,9 @@ func hexBuildSitesFrom(resp *placementOptionsResp) *hexBuildSites {
 func sinkCapacities(ctx sinkContext) map[string]float64 {
 	cap := remainingBuildingCosts(ctx.buildingLevels, ctx.wallLevel, ctx.hexSites)
 
-	cap["grain"] += ctx.armyUpkeepGrain * productionHorizonTicks
+	for _, good := range foodDisplayGoods[:4] {
+		cap[good] += ctx.armyUpkeepGrain * productionHorizonTicks
+	}
 	cap["silver"] += ctx.armyUpkeepSilver * productionHorizonTicks
 
 	for good, amount := range ctx.templeOfferingPerTick {
@@ -311,8 +304,9 @@ func sinkCapacities(ctx sinkContext) map[string]float64 {
 	}
 
 	foodDemand := ctx.population * grainConsumptionPerCitizenPerTick * productionHorizonTicks
-	cap["grain"] += foodDemand
-	cap["fish"] += foodDemand
+	for _, good := range foodDisplayGoods[:4] {
+		cap[good] += foodDemand
+	}
 	cap["livestock"] += foodDemand / livestockFoodValue
 
 	return cap
@@ -638,16 +632,8 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				fmt.Println(line)
 			}
 
-			// Coverage is the single city grain+fish stock at current consumption.
-			if food, ok := sett["food"].(map[string]any); ok {
-				if cov, known := food["coverage_ticks"].(float64); known {
-					fmt.Printf("Food lasts %s at current consumption (city grain + fish stocks)\n\n", formatDays(cov, "%.1f"))
-				} else {
-					fmt.Println("Food stores not reported.")
-				}
-			} else {
-				fmt.Println("Food stores not reported.")
-			}
+			fmt.Println(cityFoodLine(sett))
+			fmt.Println()
 
 			// "Last tick" summary: summarizes the journal (keryx ticklog)
 			// without replacing it.
@@ -706,6 +692,18 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				// not folded into this rate — so grain_prod_rate/grain_consum_rate are
 				// the status endpoint's own economy.GrainBalance (D6) split, not a
 				// re-derivation of the mechanic here.
+				if line := peopleFoodLine(sett); line != "" {
+					fmt.Println(line)
+					food, _ := sett["food"].(map[string]any)
+					if tick, known := food["consumed_tick"].(float64); known {
+						consumed, _ := food["consumed"].(map[string]any)
+						detail := foodGoodsText(consumed)
+						if detail == "" {
+							detail = "none"
+						}
+						fmt.Printf("  Last meal: %s on day %.0f\n", detail, tick)
+					}
+				}
 				if gRd, ok := res["grain"].(map[string]any); ok {
 					gAmt, _ := gRd["amount"].(float64)
 					gProdRate, _ := sett["grain_prod_rate"].(float64)
@@ -724,7 +722,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 								netTick = full
 							}
 						}
-						fmt.Printf("  Food     grain %.1f + fish %.1f − people eat %.1f = net %s per day (before army)\n", prodTick, fish, consumTick, formatNetPerTick(netTick))
+						if peopleFoodLine(sett) == "" {
+							fmt.Printf("  Food     grain %.1f + fish %.1f − people eat %.1f = net %s per day (before army)\n", prodTick, fish, consumTick, formatNetPerTick(netTick))
+						}
 						line := fmt.Sprintf("  %-8s %6s  production %.1f per day",
 							"Grain", resource(gAmt), prodTick)
 						// food_gubbar_required/placed/self_sufficient (P4-arvet,
@@ -762,8 +762,22 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 					up, _ := sett["army_upkeep"].(map[string]any)
 					armyGrain, _ := up["grain"].(float64)
 					grainProduced, _ := sett["grain_prod_rate"].(float64)
-					// Army eats grain first; fish feeds people, never substitutes for army grain.
+					// New servers report the shared food balance and itemized stock.
 					warn := armyUpkeepWarning(grainProduced-armyGrain, netS, grainStock, silverStock)
+					if _, shared := up["food"]; shared {
+						food, _ := sett["food"].(map[string]any)
+						stocks, _ := food["goods"].(map[string]any)
+						stock := 0.0
+						for _, good := range foodDisplayGoods[:4] {
+							amount, _ := stocks[good].(float64)
+							stock += amount
+						}
+						if net, known := sett["food_net_per_tick_after_upkeep"].(float64); known {
+							warn = strings.ReplaceAll(armyUpkeepWarning(net, netS, stock, silverStock), "grain", "food")
+						} else {
+							warn = ""
+						}
+					}
 					fmt.Println(armyFoodLine(sett))
 					fmt.Printf("  Silver   net %+.1f per day after army pay\n", netS)
 					if warn != "" {
@@ -813,7 +827,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				}
 				armyUpkeepGrain, armyUpkeepSilver := 0.0, 0.0
 				if up, ok := sett["army_upkeep"].(map[string]any); ok {
-					armyUpkeepGrain, _ = up["grain"].(float64)
+					armyUpkeepGrain, _ = upkeepFood(up)
 					armyUpkeepSilver, _ = up["silver"].(float64)
 				}
 				templeOffering := localTempleOffering(sett)
@@ -970,7 +984,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 				// stands (grain shortage → attrition, silver shortage → desertion).
 				// Same figures the upkeep tick debits.
 				if up, ok := sett["army_upkeep"].(map[string]any); ok {
-					g, _ := up["grain"].(float64)
+					g, label := upkeepFood(up)
 					s, _ := up["silver"].(float64)
 					if g > 0 || s > 0 {
 						// Say what the figure covers. It sits directly under a list of
@@ -978,7 +992,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						// everything this city supports — so a Wanax with half the army
 						// in the field reads "100 spearmen, upkeep for 200" and thinks
 						// the number is broken.
-						fmt.Printf("  %-10s %.1f grain, %.1f silver per day  (everything the city pays — including field units)\n", "Upkeep", g, s)
+						fmt.Printf("  %-10s %.1f %s, %.1f silver per day  (everything the city pays — including field units)\n", "Upkeep", g, label, s)
 						// Del C: soldiers standing in the town that pays them spend
 						// their sold there. Shown as its own line because it is the
 						// only reason the net below is not gross — an invisible flow
@@ -1226,7 +1240,7 @@ func cohortLines(cohorts []unitRow) []string {
 
 func armyFoodLine(sett map[string]any) string {
 	up, _ := sett["army_upkeep"].(map[string]any)
-	grain, _ := up["grain"].(float64)
+	grain, label := upkeepFood(up)
 	net, ok := sett["food_net_per_tick_after_upkeep"].(float64)
 	if !ok {
 		food, _ := sett["food"].(map[string]any)
@@ -1236,7 +1250,7 @@ func armyFoodLine(sett map[string]any) string {
 		}
 		net = before - grain
 	}
-	return fmt.Sprintf("  Army     eats %.1f grain per day → food net %s per day after army", grain, formatNetPerTick(net))
+	return fmt.Sprintf("  Army     eats %.1f %s per day → food net %s per day after army", grain, label, formatNetPerTick(net))
 }
 
 // kharisDecayLine renders the server's realm projection without a client formula.

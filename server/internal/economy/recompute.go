@@ -321,13 +321,7 @@ func GrainBalance(grossRate float64, population int) (consumption, net float64) 
 	return consumption, grossRate - consumption
 }
 
-// NetFoodGoods are the goods whose production counts toward a city's daily
-// food balance (FoodNet) — the two FoodTick feeds the population from every
-// day. Livestock is left out on purpose: it is the emergency slaughter at the
-// end of FoodConsumptionSplit's chain, not a daily ration.
-var NetFoodGoods = []string{GoodGrain, GoodFish}
-
-// FoodNet is a city's daily food balance: what its NetFoodGoods produce per
+// FoodNet is a city's daily food balance: what its FoodGoods produce per
 // tick (foodRate, the sum of their rates) minus what its population eats per
 // tick. Positive is an ÖVERFLÖD — the one gate for population growth (Timothy
 // 2026-09-26; kharis/tick.go applyDecay writes the same formula in SQL) — and
@@ -384,74 +378,11 @@ const livestockFoodValue = 3
 // Timothy 2026-10-15: "hosten ska ge djur! låt den ge fler, kanske 50".
 const FoundingHerdLivestock = 50
 
-// FoodConsumptionSplit applies the population's food fallback chain to a
-// settlement's raw (pre-consumption) grain/fish production and its livestock
-// STOCK: the population has ONE food need, demand, covered by grain first,
-// then by fish for whatever grain does not reach, and — only once both are
-// exhausted — by slaughtering whole animals from the herd (Timothy
-// 2026-08-07, megaron_plan_foda_konsistens.md: "när det finns en brist på
-// basvaror som vete och fisk så äter befolkningen boskapen"). Livestock is a
-// discrete stock, not a rate, so livestockConsumed is a whole-animal count
-// for the caller to debit directly from settlement_goods — this function
-// itself makes no DB write.
-//
-//	grainShare = min(demand, grainProd)
-//	rest       = demand - grainShare
-//	fishShare  = min(rest, fishProd)
-//	unmet      = rest - fishShare
-//	livestockConsumed = min(floor(livestockStock), ceil(unmet / 200))  // whole animals only
-//	unmet      = max(0, unmet - livestockConsumed*200)
-//	grainNet   = grainProd - grainShare - unmet  // any shortfall still standing stays on grain
-//	fishNet    = fishProd  - fishShare
-//
-// Pure and side-effect free (no DB, no clock) on purpose.
-//
-// PROGNOSIS FUNCTION, NOT A MOTOR FUNCTION (Utfodringsordningen D1,
-// megaron_plan_utfodringsordningen.md, 2026-08-26): RecomputeProduction no
-// longer calls this — grain/fish production-based netting was the KNOWN LIMIT
-// below given a permanent home, not the missing feature it looked like.
-// FoodTick (food_tick.go) is now the sole caller that debits a REAL day
-// against STOCK (grainProd/fishProd below are STOCK there, not rate — the
-// function is agnostic to which). The one surviving production-based caller
-// is FoundingGrainNetPerTick, a pre-founding forecast with no settlement (and
-// so no stock) to draw down yet — a deliberate, documented exception, not a
-// second motor path.
-//
-// FORMER KNOWN LIMIT, NOW THE WHOLE POINT (Timothy 2026-07-31 confirmed it was
-// wrong; FoodTick is the fix): called with STOCK instead of rate, a settlement
-// with zero grain production but a full grain stock now DOES draw down that
-// stock once fish is exhausted, instead of floating a phantom net-rate that
-// never touched the stockpile. Livestock's contract is unchanged — its
-// livestockStock argument is always the settlement's actual current stock.
+// FoodConsumptionSplit retains the two-good founding forecast interface. All
+// meal arithmetic is owned by PlanFood; negative grain remainder encodes unmet.
 func FoodConsumptionSplit(demand, grainProd, fishProd, livestockStock float64) (grainNet, fishNet float64, livestockConsumed int) {
-	grainShare := demand
-	if grainProd < grainShare {
-		grainShare = grainProd
-	}
-	rest := demand - grainShare
-	fishShare := rest
-	if fishProd < fishShare {
-		fishShare = fishProd
-	}
-	unmet := rest - fishShare
-
-	if unmet > 0 && livestockStock >= 1 {
-		needed := math.Ceil(unmet / livestockFoodValue)
-		available := math.Floor(livestockStock)
-		slaughtered := needed
-		if available < slaughtered {
-			slaughtered = available
-		}
-		livestockConsumed = int(slaughtered)
-		unmet -= slaughtered * livestockFoodValue
-		if unmet < 0 {
-			unmet = 0
-		}
-	}
-
-	grainNet = grainProd - grainShare - unmet
-	fishNet = fishProd - fishShare
-	return grainNet, fishNet, livestockConsumed
+	meal := PlanFood(demand, map[string]float64{GoodGrain: grainProd, GoodFish: fishProd, GoodLivestock: livestockStock}, true)
+	return grainProd - meal.Used[GoodGrain] - meal.Unmet, fishProd - meal.Used[GoodFish], int(meal.Used[GoodLivestock])
 }
 
 // Tx is the minimal interface accepted by RecomputeProduction so it can work

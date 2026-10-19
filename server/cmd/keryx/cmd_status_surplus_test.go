@@ -116,6 +116,11 @@ func TestSinkCapacities(t *testing.T) {
 	t.Run("food demand scales with population and covers grain/fish/livestock", func(t *testing.T) {
 		got := sinkCapacities(sinkContext{population: 1000, buildingLevels: allBuildingsMaxed(), wallLevel: 3})
 		wantDemand := 1000.0 * grainConsumptionPerCitizenPerTick * productionHorizonTicks
+		for _, good := range []string{"oil", "wine"} {
+			if got[good] != wantDemand {
+				t.Fatalf("%s food capacity = %g, want %g", good, got[good], wantDemand)
+			}
+		}
 		if got["fish"] != wantDemand {
 			t.Errorf("sinkCapacities()[fish] = %v, want the population food pool %v (nothing built costs fish)", got["fish"], wantDemand)
 		}
@@ -128,8 +133,16 @@ func TestSinkCapacities(t *testing.T) {
 		}
 	})
 
-	t.Run("army upkeep adds to grain/silver over the horizon", func(t *testing.T) {
+	t.Run("army upkeep adds to every interchangeable food and silver over the horizon", func(t *testing.T) {
 		got := sinkCapacities(sinkContext{buildingLevels: allBuildingsMaxed(), wallLevel: 3, armyUpkeepGrain: 10, armyUpkeepSilver: 5})
+		for _, good := range foodDisplayGoods[:4] {
+			if want := 10.0 * productionHorizonTicks; got[good] != want {
+				t.Fatalf("%s army food capacity = %g, want %g", good, got[good], want)
+			}
+		}
+		if got["livestock"] != 0 {
+			t.Fatal("army must not consume emergency civilian livestock")
+		}
 		if want := 10.0 * productionHorizonTicks; got["grain"] != want {
 			t.Errorf("sinkCapacities()[grain] = %v, want %v (upkeep × horizon, zero population)", got["grain"], want)
 		}

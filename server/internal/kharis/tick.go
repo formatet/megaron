@@ -603,11 +603,12 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 	//               lives off its stores) — no överflöd, no growth.
 	//   fed, food_net > 0 → + GREATEST(1, ROUND(pop × growthRatePerTick ×
 	//               variety × softcap)). variety = 1.0 + 0.1 per additional
-	//               distinct economy.FoodGoods item in store (cap 1.4);
+	//               distinct food with at least economy.VarietyMinShare of this
+	//               tick's actual meal (cap 1.4);
 	//               softcap = max(0, 1 − pop/30000). Costs no food.
 	//
 	// food_net is economy.FoodNet written in SQL: Σ rate over
-	// economy.NetFoodGoods minus pop × GrainConsumptionPerCitizenPerTick. The
+	// economy.FoodGoods minus pop × GrainConsumptionPerCitizenPerTick. The
 	// surfaces' food_net_per_tick (api/handlers/province.go) reads the same
 	// function, so "+X food/day" on screen and "this city grows" agree.
 	// TestApplyDecay_GrowthGateMatchesFoodNet pins the two against each other.
@@ -643,16 +644,16 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 		         (SELECT COALESCE(SUM(sg.rate), 0) FROM settlement_goods sg
 		          WHERE sg.settlement_id = s.id AND sg.good_key = ANY($6))
 		           - s.population * $2::float AS food_net,
-		         -- Variety reads economy.FoodGoods — the SAME list
-		         -- diet-variety threshold reads (S2,
-		         -- megaron_plan_foda_konsistens.md: "en lista som båda läser"):
-		         -- base 1.0 + 0.1 per additional distinct food in store, capped
-		         -- at four extras.
-		         (1.0 + 0.1 * GREATEST(0, (
-		             SELECT COUNT(*) FROM settlement_goods sg
-		             WHERE sg.settlement_id = s.id AND sg.good_key = ANY($4)
-		               AND COALESCE(sg.amount, 0) > 0
-		         ) - 1)) AS variety,
+		         -- Actual FoodTick outcome, not stores left after the meal.
+		         (1.0 + 0.1 * LEAST(4,GREATEST(0, (
+		             SELECT COUNT(*) FROM jsonb_each_text(s.food_consumed) AS meal(good,qty)
+		             WHERE (meal.good=ANY($4) OR meal.good='livestock') AND meal.qty::numeric>0
+		               AND meal.qty::numeric >= $8::numeric * (
+		                   SELECT SUM(part.qty::numeric) FROM jsonb_each_text(s.food_consumed) AS part(good,qty)
+		                   WHERE (part.good=ANY($4) OR part.good='livestock') AND part.qty::numeric>0
+		               )
+		               AND s.food_consumed_tick=current_world_tick()
+		         ) - 1))) AS variety,
 		         GREATEST(0, 1.0 - s.population::float / 30000.0) AS softcap
 		     FROM settlements s
 		     JOIN claim c ON c.scope_id = s.id
@@ -686,7 +687,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 		 )
 		 SELECT id, old_pop, new_pop FROM pop_upd`,
 		worldID, economy.GrainConsumptionPerCitizenPerTick, starvationPopLossRatePerTick, economy.FoodGoods, eventID,
-		economy.NetFoodGoods, growthRatePerTick,
+		economy.FoodGoods, growthRatePerTick, economy.VarietyMinShare,
 	)
 	if err != nil {
 		slog.Error("daily decay failed", "world", worldID, "err", err)

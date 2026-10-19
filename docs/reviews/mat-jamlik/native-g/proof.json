@@ -1,0 +1,50 @@
+{
+  "health": {
+    "commit": "93b90bbddd664f220cb35b0ec81fe7d782be3fc4",
+    "migration": 190,
+    "status": "ok"
+  },
+  "natural_register_cli_join_found_mixed_meal_patrol_return": true,
+  "sql_writes": false,
+  "api_replay": false,
+  "meal_tick": 5,
+  "meal": {
+    "fish": 0.04128819157720893,
+    "grain": 4.958711808422791
+  },
+  "ship": "aec9b24f-ef3e-4519-bd7e-ac2dffb02eae",
+  "loaded_goods": {
+    "fish": 0.00867396725577361,
+    "grain": 1.0313260327442264,
+    "oil": 0,
+    "wine": 0
+  },
+  "return_status": "garrison",
+  "page_errors": [],
+  "observations": [
+    {
+      "drawer": "city",
+      "width": 1280,
+      "text": "Food for 234.3 days. 1,163.4 grain, 19.9 fish, 0 oil, 0 wine.",
+      "overflow": false
+    },
+    {
+      "drawer": "city",
+      "width": 390,
+      "text": "Food for 236.5 days. 1,164.4 grain, 30.1 fish, 0 oil, 0 wine.",
+      "overflow": false
+    },
+    {
+      "drawer": "war",
+      "width": 1280,
+      "text": "WAR\n?\n\u2715\n\u229b LAWAGETAS\nBronze arms await your command, Wanax. March the army to distant lands \u2014 to raid, reinforce, or colonize. An order to recall or redirect a marching host travels by messenger, not by will alone; it takes time to arrive. In battle, numbers count, but walls and elite agema often decide the day. ?\n\u2715\nARMY\nRECRUIT\nMOVEMENTS\nWHEN TO RETREAT\nSave\nRECALL ALL\nUNITS\n1st Spearmen of Myrsine\nin the field\nUpkeep: 1 food, 0 silver per day\n(15,34)\nMarch\nSet\nBuild road\n2nd Spearmen of Myrsine\nin the field\nUpkeep: 1 food, 0 silver per day\n(15,34)\nMarch\nSet\nBuild road\nFoam Bride, Galley of Myrsine\nsentry\ncrew 20\nfood for 25 days (1 grain, under 0.1 fish, 0 oil, 0 wine)\noff the coast\nUpkeep: 0.04 food, 1.5 silver per day\n(17,35)",
+      "overflow": false
+    },
+    {
+      "drawer": "war",
+      "width": 390,
+      "text": "WAR\n?\n\u2715\n\u229b LAWAGETAS\nBronze arms await your command, Wanax. March the army to distant lands \u2014 to raid, reinforce, or colonize. An order to recall or redirect a marching host travels by messenger, not by will alone; it takes time to arrive. In battle, numbers count, but walls and elite agema often decide the day. ?\n\u2715\nARMY\nRECRUIT\nMOVEMENTS\nWHEN TO RETREAT\nSave\nRECALL ALL\nUNITS\n1st Spearmen of Myrsine\nin the field\nUpkeep: 1 food, 0 silver per day\n(15,34)\nMarch\nSet\nBuild road\n2nd Spearmen of Myrsine\nin the field\nUpkeep: 1 food, 0 silver per day\n(15,34)\nMarch\nSet\nBuild road\nFoam Bride, Galley of Myrsine\nsentry\ncrew 20\nfood for 25 days (1 grain, under 0.1 fish, 0 oil, 0 wine)\noff the coast\nUpkeep: 0.04 food, 1.5 silver per day\n(17,35)",
+      "overflow": false
+    }
+  ]
+}

@@ -49,7 +49,7 @@ func TestMarchSilverForecastMatchesActualTick(t *testing.T) {
 			t.Fatal(err)
 		}
 		if cat == "naval" {
-			if _, err := pool.Exec(ctx, `UPDATE units SET provisions=100 WHERE id=$1`, id); err != nil {
+			if _, err := pool.Exec(ctx, `UPDATE units SET provisions=100,provision_goods='{"grain":100}'::jsonb WHERE id=$1`, id); err != nil {
 				t.Fatal(err)
 			}
 		}

@@ -1,0 +1,12 @@
+» färsk DB på migration 190 · commit 584a324a+ändringar
+ok  	formatet/megaron/server/internal/economy	4.756s
+ok  	formatet/megaron/server/internal/kharis	11.252s
+# formatet/megaron/server/internal/combat
+internal/combat/march_start.go:852:19: undefined: economy
+internal/combat/march_start.go:856:13: undefined: economy
+internal/combat/march_start.go:964:17: undefined: economy
+internal/combat/upkeep.go:475:18: undefined: economy
+internal/combat/upkeep.go:486:32: undefined: economy
+FAIL	formatet/megaron/server/internal/combat [build failed]
+FAIL	formatet/megaron/server/api/handlers [build failed]
+FAIL
