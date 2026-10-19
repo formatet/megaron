@@ -1,0 +1,14 @@
+{
+  "deterministic_pngs": 52,
+  "exact_nearest_neighbour_scene_pairs": 18,
+  "status_layer_composites": 8,
+  "firefox": {
+    "browser": "146.0.1",
+    "logical_images_at_exact_css_size": 20,
+    "page_errors": [],
+    "mobile_width": 390,
+    "all_4x_expand": true,
+    "grayscale_toggle": true,
+    "baseline": "synthetic fixture in unchanged production renderer; not a live city or server"
+  }
+}

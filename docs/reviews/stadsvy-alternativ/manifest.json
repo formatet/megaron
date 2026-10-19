@@ -1,0 +1,506 @@
+{
+  "fixture": {
+    "name": "Phaistos",
+    "population": 4500,
+    "walls": 1,
+    "buildings": {
+      "temple": 1,
+      "farm": 2,
+      "harbour": 1,
+      "shipyard": 1,
+      "mine": 1
+    }
+  },
+  "favourites": [
+    "01-hamnsluttning",
+    "05-diorama"
+  ],
+  "images": [
+    {
+      "id": "01-hamnsluttning",
+      "state": "normal",
+      "file": "01-hamnsluttning-normal.png",
+      "size": [
+        192,
+        112
+      ],
+      "anchors": {
+        "temple": [
+          87,
+          30,
+          24,
+          12
+        ],
+        "gate": [
+          89,
+          87,
+          7
+        ],
+        "camps": [
+          [
+            9,
+            73
+          ],
+          [
+            172,
+            71
+          ]
+        ]
+      }
+    },
+    {
+      "id": "01-hamnsluttning",
+      "state": "starvation",
+      "file": "01-hamnsluttning-starvation.png",
+      "size": [
+        192,
+        112
+      ],
+      "anchors": {
+        "temple": [
+          87,
+          30,
+          24,
+          12
+        ],
+        "gate": [
+          89,
+          87,
+          7
+        ],
+        "camps": [
+          [
+            9,
+            73
+          ],
+          [
+            172,
+            71
+          ]
+        ]
+      }
+    },
+    {
+      "id": "01-hamnsluttning",
+      "state": "siege",
+      "file": "01-hamnsluttning-siege.png",
+      "size": [
+        192,
+        112
+      ],
+      "anchors": {
+        "temple": [
+          87,
+          30,
+          24,
+          12
+        ],
+        "gate": [
+          89,
+          87,
+          7
+        ],
+        "camps": [
+          [
+            9,
+            73
+          ],
+          [
+            172,
+            71
+          ]
+        ]
+      }
+    },
+    {
+      "id": "01-hamnsluttning",
+      "state": "construction",
+      "file": "01-hamnsluttning-construction.png",
+      "size": [
+        192,
+        112
+      ],
+      "anchors": {
+        "temple": [
+          87,
+          30,
+          24,
+          12
+        ],
+        "gate": [
+          89,
+          87,
+          7
+        ],
+        "camps": [
+          [
+            9,
+            73
+          ],
+          [
+            172,
+            71
+          ]
+        ]
+      }
+    },
+    {
+      "id": "02-hojdklunga",
+      "state": "normal",
+      "file": "02-hojdklunga-normal.png",
+      "size": [
+        192,
+        112
+      ],
+      "anchors": {
+        "temple": [
+          77,
+          48,
+          22,
+          11
+        ],
+        "gate": [
+          76,
+          92,
+          7
+        ]
+      }
+    },
+    {
+      "id": "03-gryning",
+      "state": "normal",
+      "file": "03-gryning-normal.png",
+      "size": [
+        192,
+        112
+      ],
+      "anchors": {
+        "temple": [
+          87,
+          30,
+          24,
+          12
+        ],
+        "gate": [
+          89,
+          87,
+          7
+        ],
+        "camps": [
+          [
+            9,
+            73
+          ],
+          [
+            172,
+            71
+          ]
+        ]
+      }
+    },
+    {
+      "id": "04-gatuperspektiv",
+      "state": "normal",
+      "file": "04-gatuperspektiv-normal.png",
+      "size": [
+        192,
+        112
+      ],
+      "anchors": {
+        "temple": [
+          81,
+          41,
+          27,
+          16
+        ],
+        "gate": [
+          95,
+          60,
+          7
+        ]
+      }
+    },
+    {
+      "id": "05-diorama",
+      "state": "normal",
+      "file": "05-diorama-normal.png",
+      "size": [
+        192,
+        112
+      ],
+      "anchors": {
+        "temple": [
+          86,
+          31,
+          22,
+          12
+        ],
+        "gate": [
+          75,
+          81,
+          7
+        ],
+        "camps": [
+          [
+            92,
+            18
+          ],
+          [
+            32,
+            47
+          ]
+        ]
+      }
+    },
+    {
+      "id": "05-diorama",
+      "state": "starvation",
+      "file": "05-diorama-starvation.png",
+      "size": [
+        192,
+        112
+      ],
+      "anchors": {
+        "temple": [
+          86,
+          31,
+          22,
+          12
+        ],
+        "gate": [
+          75,
+          81,
+          7
+        ],
+        "camps": [
+          [
+            92,
+            18
+          ],
+          [
+            32,
+            47
+          ]
+        ]
+      }
+    },
+    {
+      "id": "05-diorama",
+      "state": "siege",
+      "file": "05-diorama-siege.png",
+      "size": [
+        192,
+        112
+      ],
+      "anchors": {
+        "temple": [
+          86,
+          31,
+          22,
+          12
+        ],
+        "gate": [
+          75,
+          81,
+          7
+        ],
+        "camps": [
+          [
+            92,
+            18
+          ],
+          [
+            32,
+            47
+          ]
+        ]
+      }
+    },
+    {
+      "id": "05-diorama",
+      "state": "construction",
+      "file": "05-diorama-construction.png",
+      "size": [
+        192,
+        112
+      ],
+      "anchors": {
+        "temple": [
+          86,
+          31,
+          22,
+          12
+        ],
+        "gate": [
+          75,
+          81,
+          7
+        ],
+        "camps": [
+          [
+            92,
+            18
+          ],
+          [
+            32,
+            47
+          ]
+        ]
+      }
+    },
+    {
+      "id": "06-panorama",
+      "state": "normal",
+      "file": "06-panorama-normal.png",
+      "size": [
+        240,
+        96
+      ],
+      "anchors": {
+        "temple": [
+          114,
+          29,
+          24,
+          12
+        ],
+        "gate": [
+          118,
+          73,
+          6
+        ]
+      }
+    },
+    {
+      "id": "07-monumental",
+      "state": "normal",
+      "file": "07-monumental-normal.png",
+      "size": [
+        192,
+        112
+      ],
+      "anchors": {
+        "temple": [
+          91,
+          29,
+          30,
+          16
+        ],
+        "gate": [
+          87,
+          87,
+          8
+        ]
+      }
+    },
+    {
+      "id": "08-fresk",
+      "state": "normal",
+      "file": "08-fresk-normal.png",
+      "size": [
+        192,
+        112
+      ],
+      "anchors": {
+        "temple": [
+          82,
+          25,
+          29,
+          16
+        ],
+        "gate": [
+          97,
+          76,
+          6
+        ]
+      }
+    },
+    {
+      "id": "09-ravin",
+      "state": "normal",
+      "file": "09-ravin-normal.png",
+      "size": [
+        192,
+        112
+      ],
+      "anchors": {
+        "temple": [
+          79,
+          24,
+          25,
+          12
+        ],
+        "gate": [
+          135,
+          81,
+          7
+        ]
+      }
+    },
+    {
+      "id": "10-takgard",
+      "state": "normal",
+      "file": "10-takgard-normal.png",
+      "size": [
+        192,
+        112
+      ],
+      "anchors": {
+        "temple": [
+          86,
+          32,
+          29,
+          15
+        ],
+        "gate": [
+          91,
+          99,
+          7
+        ]
+      }
+    },
+    {
+      "id": "11-skymningssiluett",
+      "state": "normal",
+      "file": "11-skymningssiluett-normal.png",
+      "size": [
+        224,
+        112
+      ],
+      "anchors": {
+        "temple": [
+          142,
+          36,
+          24,
+          11
+        ],
+        "gate": [
+          127,
+          89,
+          7
+        ]
+      }
+    },
+    {
+      "id": "12-takplan",
+      "state": "normal",
+      "file": "12-takplan-normal.png",
+      "size": [
+        192,
+        112
+      ],
+      "anchors": {
+        "temple": [
+          69,
+          39,
+          22,
+          10
+        ],
+        "gate": [
+          105,
+          88,
+          6
+        ]
+      }
+    }
+  ]
+}

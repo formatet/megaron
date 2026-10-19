@@ -1,0 +1,17 @@
+{
+  "source_sha256": "52ca367bb1526561a27b618107e1455579672db7d72e6c33a8598ddbcd4b3bdb",
+  "results": [
+    {
+      "mutation": "nearest-neighbour",
+      "result": "RED",
+      "reason": "nearest-neighbour scaling changed pixels",
+      "restored": "byte-exact, fresh artifact checks GREEN"
+    },
+    {
+      "mutation": "construction-status",
+      "result": "RED",
+      "reason": "01-hamnsluttning construction is visually identical to normal",
+      "restored": "byte-exact, fresh artifact checks GREEN"
+    }
+  ]
+}
