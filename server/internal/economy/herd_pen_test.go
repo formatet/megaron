@@ -85,7 +85,7 @@ func TestFoodTick_PenHoldsTheHerd(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	f := newFoodFixture(t, pool, "herd-pen", 1000)
-	seedFoodStock(t, pool, f, 1000, 0, 160)
+	seedFoodStock(t, pool, f, 0, 0, 160)
 	if _, err := pool.Exec(ctx, `INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, 'pen', 1)`, f.settlementID); err != nil {
 		t.Fatal(err)
 	}
