@@ -610,10 +610,10 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 	if err := h.pool.QueryRow(ctx,
 		`SELECT (payload->>'messenger_id')::uuid
 		 FROM scheduled_events
-		 WHERE event_type = $1 AND (payload->>'unit_id')::uuid = $2
+		 WHERE event_type = $1 AND payload->>'unit_id' = $2
 		   AND payload->>'verb' = ANY(ARRAY['recall','redirect'])
 		   AND processed_at IS NULL AND failed_at IS NULL`,
-		string(events.ScheduledOrderDelivery), unitID,
+		string(events.ScheduledOrderDelivery), unitID.String(),
 	).Scan(&pendingMessengerID); err == nil {
 		var eta time.Time
 		_ = h.pool.QueryRow(ctx, `SELECT arrives_at FROM messengers WHERE id=$1`, pendingMessengerID).Scan(&eta)

@@ -170,8 +170,8 @@ func TestRecall_FieldUnitOrderTravelsByCourier(t *testing.T) {
 	var eventType, verb string
 	if err := pool.QueryRow(ctx,
 		`SELECT event_type, payload->>'verb' FROM scheduled_events
-		 WHERE (payload->>'messenger_id')::uuid = $1 AND processed_at IS NULL AND failed_at IS NULL`,
-		resp.MessengerID,
+		 WHERE payload->>'messenger_id' = $1::text AND processed_at IS NULL AND failed_at IS NULL`,
+		resp.MessengerID.String(),
 	).Scan(&eventType, &verb); err != nil {
 		t.Fatalf("load scheduled event: %v", err)
 	}
@@ -269,8 +269,8 @@ func TestRedirect_FieldUnitOrderTravelsByCourier(t *testing.T) {
 	var eventType, verb string
 	if err := pool.QueryRow(ctx,
 		`SELECT event_type, payload->>'verb' FROM scheduled_events
-		 WHERE (payload->>'messenger_id')::uuid = $1 AND processed_at IS NULL AND failed_at IS NULL`,
-		resp.MessengerID,
+		 WHERE payload->>'messenger_id' = $1::text AND processed_at IS NULL AND failed_at IS NULL`,
+		resp.MessengerID.String(),
 	).Scan(&eventType, &verb); err != nil {
 		t.Fatalf("load scheduled event: %v", err)
 	}
