@@ -3519,7 +3519,9 @@ function openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits) {
     // the foot past the panel's bottom edge.
     footHtml += '<button id="ip-march-btn" style="' + MARCH_BTN_STYLE + '">March here →</button>';
     document.getElementById('ip-body-extra').innerHTML =
-      '<div id="ip-found-preview" style="font-size:.73rem;border-top:1px solid var(--border);padding-top:.4rem">Fetching founding forecast…</div>';
+      '<div id="ip-found-summary">Fetching founding forecast…</div>'
+      + '<details class="dsec"><summary class="dsec-title">Details</summary>'
+      + '<div id="ip-found-preview" style="font-size:.73rem"></div></details>';
   } else {
     footHtml += '<button id="ip-march-btn" style="' + MARCH_BTN_STYLE + '">March here →</button>'
              +  '<button id="ip-colonize-btn" style="' + MARCH_BTN_STYLE + '">Colonize →</button>';
@@ -3537,14 +3539,26 @@ function openTerrainPanel(h, tile, isMountain, isSea, units, foreignUnits) {
 
   if (!isSea && State.founderPhase) {
     const fp = State.founderPhase;
+    const summaryEl = document.getElementById('ip-found-summary');
+    const previewEl = document.getElementById('ip-found-preview');
+    const stillThisSite = () => State.founderPhase && State.selectedHex?.q === h.q && State.selectedHex?.r === h.r
+      && document.getElementById('ip-found-summary') === summaryEl;
     fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/colonize-preview?q=${h.q}&r=${h.r}`
         + `&pop=${fp.population}&seed=${Math.max(0, fp.grain?.amount || 0)}`)
       .then(r => r.ok ? r.json() : null)
       .then(p => {
-        const el = document.getElementById('ip-found-preview');
-        if (el && p) el.innerHTML = window.renderColonizePreviewHTML(p);
+        if (!stillThisSite()) return;
+        summaryEl.innerHTML = hostForecastSummaryHTML(p);
+        if (p) {
+          const total = (p.catchment || []).length;
+          const known = total - (p.unknown_hexes || 0);
+          summaryEl.innerHTML += `<div class="dim">Based on ${fmtNum(known)} of ${fmtNum(total)} hexes known.</div>`;
+          previewEl.innerHTML = window.renderColonizePreviewHTML(p);
+        } else previewEl.textContent = 'Founding forecast unavailable.';
       })
-      .catch(() => {});
+      .catch(() => {
+        if (stillThisSite()) summaryEl.textContent = 'Founding forecast unavailable.';
+      });
   }
 
   const colBtn = document.getElementById('ip-colonize-btn');
