@@ -245,18 +245,23 @@ let lastCtxPos = null;
 function positionMarchCtx(screenX, screenY) {
   lastCtxPos = { x: screenX, y: screenY };
   const vw = window.innerWidth, vh = window.innerHeight;
+  marchCtx.style.maxHeight = ''; // measure initial placement without a previous opening's limit
   const w = marchCtx.offsetWidth, h = marchCtx.offsetHeight;
   marchCtx.style.left = Math.min(screenX + 8, vw - w - 8) + 'px';
   // Clamp top ≥ 8 too: a menu taller than the viewport must anchor at the top
   // (max-height + overflow in .march-ctx takes it from there), never above it.
   marchCtx.style.top  = Math.max(8, Math.min(screenY + 8, vh - h - 8)) + 'px';
+  repositionMarchCtx();
 }
 
-// Re-clamp against the viewport after content loads/expands async (unit list,
-// colonize forecast) — the menu was positioned when it was still small, so a
-// late expansion pushed the send button below the screen edge.
+// Forecasts change height on every quantity edit. Keep the established top
+// and left so controls stay under the pointer; scroll additional content inside
+// the remaining viewport instead of anchoring the menu's bottom to the screen.
 function repositionMarchCtx() {
-  if (lastCtxPos && marchCtx.style.display !== 'none') positionMarchCtx(lastCtxPos.x, lastCtxPos.y);
+  if (lastCtxPos && marchCtx.style.display !== 'none') {
+    const top = parseFloat(marchCtx.style.top) || 8;
+    marchCtx.style.maxHeight = Math.max(0, window.innerHeight - top - 8) + 'px';
+  }
 }
 
 // Pure decision helpers (AK-style extraction, see marchctx.test.mjs) — kept
