@@ -37,15 +37,15 @@ test('J: missing/invalid coverage is honestly unavailable, never zero or NaN day
  for(const data of [null,{},pd({food:null}),pd({food:{}}),pd({food:{coverage_ticks:NaN}})])assert.match(foodSummaryHTML(data),/not reported/);
 });
 test('J: population keeps input-free player words; no slaughter button',()=>{
- assert.match(populationHTML(pd(),700,10,'p'),/1,000/);assert.match(populationHTML(pd(),700,10,'p'),/700/);
+ assert.match(populationHTML(pd(),700,10,'p'),/Citizens<\/span><span class="sr-val">10</);assert.match(populationHTML(pd(),700,10,'p'),/Free to work<\/span><span class="sr-val">7</);
  assert.match(populationHTML(pd(),700,10,'p'),/Livestock/);
  assert.doesNotMatch(populationHTML(pd(),700,10,'p'),/<button|[Ss]laughter/);
 });
 test('growth line: one sentence per state, from the server growth_state',()=>{
  const g=(state,net)=>populationHTML(pd({food:{growth_state:state,food_net_per_tick:net}}),0,0,'p');
- assert.match(g('holding',-1.67),/Population 1,000 — not growing: food net -1\.7 per day \(needs more than 0\)/);
- assert.match(g('growing',30.8),/growing: food net \+30\.8 per day/);
- assert.match(g('shrinking',-5),/shrinking: hunger/);
+ assert.match(g('holding',-1.67),/Not growing: food net -1\.7 per day \(needs more than 0\)/);
+ assert.match(g('growing',30.8),/Growing: food net \+30\.8 per day/);
+ assert.match(g('shrinking',-5),/Shrinking: hunger/);
  assert.match(g('growing',1),/class="growth-line"/);
  assert.doesNotMatch(populationHTML(pd(),0,0,'p'),/growth-line/,'no state reported, no line');
 });
@@ -132,4 +132,13 @@ test('equal food: four stocks and actual meal use server totals, never grain-onl
  assert.match(foodDetailsHTML(data),/Last meal.*0 grain, under 0.1 fish, under 0.1 oil/);
  data.food.consumed_tick=null;
  assert.doesNotMatch(foodDetailsHTML(data),/Last meal/,'no meal invented before first resolution');
+});
+
+test('population only offers whole citizen groups, never remainder people',()=>{
+ for(const [pop,idle,total,free] of [[1005,5,10,0],[1099,99,10,0],[1100,100,11,1],[1205,205,12,2]]){
+  const html=populationHTML(pd({population:pop,food:{growth_state:'growing',food_net_per_tick:1}}),idle,0,'p');
+  assert.match(html,new RegExp('Citizens</span><span class="sr-val">'+total+'<'));
+  assert.match(html,new RegExp('Free to work</span><span class="sr-val">'+free+'<'));
+  assert.doesNotMatch(html,/Population [0-9]|1,005|1,099|1,100|1,205/);
+ }
 });
