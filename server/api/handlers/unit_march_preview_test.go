@@ -189,7 +189,9 @@ func TestMarchPreview_ReadOnlyAndTiming(t *testing.T) {
 		{"?target_q=bad&target_r=0", 400, ""},
 		{"?target_q=1&target_r=0&intent=explore&ticks=12", 200, "unknown_terrain"},
 		{"?target_q=1&target_r=0&intent=explore&ticks=3", 400, ""},
-		{"?target_q=40&target_r=0&intent=explore&ticks=31", 400, ""},
+		{"?target_q=1&target_r=0&intent=explore&ticks=31", 200, "unknown_terrain"},
+		{"?target_q=1&target_r=0&intent=explore&ticks=365", 200, "unknown_terrain"},
+		{"?target_q=40&target_r=0&intent=explore&ticks=366", 400, ""},
 		{"?target_q=1&target_r=0&intent=explore&ticks=no", 400, ""},
 	} {
 		rec := request(base + "/march-preview" + tc.query)
@@ -211,6 +213,10 @@ func TestMarchPreview_ReadOnlyAndTiming(t *testing.T) {
 			want := 10
 			if strings.Contains(tc.query, "ticks=12") {
 				want = 12
+			} else if strings.Contains(tc.query, "ticks=31") {
+				want = 31
+			} else if strings.Contains(tc.query, "ticks=365") {
+				want = 365
 			}
 			if plan.Length != want || plan.Home != 5+want || plan.Available {
 				t.Fatalf("planned budget lost or hidden ETA leaked: %s", rec.Body.String())

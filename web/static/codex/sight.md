@@ -29,7 +29,7 @@ A foreign actor shows only a **compass arrow at its current live position**. It 
 
 ## Exploring
 
-You cannot **march** an army into land none of your people has ever seen — but you can **explore** it. Right-click a hex, seen or unseen, land or sea, and choose **Explore**: the unit sets out as an **expedition** to the land within 5 hexes of that place, for as many days as you give it (4 to 30; 10 if you do not say).
+You cannot **march** an army into land none of your people has ever seen — but you can **explore** it. Right-click a hex, seen or unseen, land or sea, and choose **Explore**: the unit sets out as an **expedition** to the land within 5 hexes of that place, for as many days as you give it (4 to 365; 10 if you do not say).
 
 - **It finds its own way.** Each time it stops, it heads for the nearest ground there that none of your people has seen. You watch it go, live, but you cannot steer it — that is the point of sending it.
 - **The order reserves time for the journey home.** It turns back no later than halfway through its days, so it is home by the end of them. It turns sooner if nothing in the area is left unseen, or if what is left cannot be reached. You are told when it turns, and why. If its home is lost during the expedition, it seeks another reachable city of yours; its mission line then shows the actual return day. Without a reachable home it stops where it is.

@@ -254,10 +254,10 @@ func TestExpedition_AreaKnownTurnsEarlyAndReportsFinds(t *testing.T) {
 	if _, err := testPool(t).Exec(context.Background(), `DELETE FROM map_tiles WHERE world_id=$1 AND r<>0`, f.worldID); err != nil {
 		t.Fatal(err)
 	}
-	f.start(t, 3, 0, 30)
+	f.start(t, 3, 0, 365)
 	legs := f.runUntilHome(t)
-	if last := legs[len(legs)-1]; last.tick > 30 {
-		t.Errorf("home at tick %d, after start+length 30", last.tick)
+	if last := legs[len(legs)-1]; last.tick > 365 {
+		t.Errorf("home at tick %d, after start+length 365", last.tick)
 	}
 
 	turned := f.eventPayloads(t, unit.EventExpeditionTurnedHome)

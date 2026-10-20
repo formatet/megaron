@@ -34,7 +34,7 @@ import (
 const (
 	ExpeditionAreaRadius   = 5
 	ExpeditionMinTicks     = 4
-	ExpeditionMaxTicks     = 30
+	ExpeditionMaxTicks     = 365
 	ExpeditionDefaultTicks = 10
 	// expeditionPathTries bounds the A* searches per leg: candidates are
 	// tried nearest first, and an unreachable one (an island, a valley behind
