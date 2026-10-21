@@ -1321,6 +1321,14 @@ body:has(.auth-page) main {
 
 .dsec { margin-bottom: 1.1rem; }
 
+/* Diplomacy → Runners: one runner per row, title / meta / the server's own explanation / actions */
+.runner-row { border-left: 2px solid var(--border); padding: 0.2rem 0 0.2rem 0.6rem; margin-bottom: 0.7rem; }
+.runner-title { font-size: var(--fs-sm); color: var(--text); }
+.runner-meta { font-family: var(--mono); font-size: var(--fs-xs); color: var(--text-dim); margin-top: 0.1rem; }
+.runner-explain { font-size: var(--fs-xs); color: var(--text-dim); margin-top: 0.3rem; line-height: 1.4; }
+.runner-actions { display: flex; gap: 0.3rem; align-items: center; margin-top: 0.35rem; flex-wrap: wrap; }
+.runner-select { flex: 1; min-width: 8rem; background: var(--warm-white); border: 1px solid var(--border); padding: 0.2rem 0.3rem; font-size: var(--fs-xs); }
+
 /* War → Army: realm-wide retreat setting + per-unit (this battle) override */
 .retreat-row { display: flex; gap: 0.3rem; align-items: center; flex-wrap: wrap; }
 .retreat-select {
