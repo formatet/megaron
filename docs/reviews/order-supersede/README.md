@@ -25,6 +25,7 @@ The branch started from an uncommitted WIP on `a7151d3d`; it was rebased onto `4
 | --- | --- | --- | --- |
 | A new dispatch must own withdrawal and replacement together. | `SupersedeUnboardedMovementTx` calls `CallBackTx` in the existing dispatch transaction. | API test verifies old Runner returning, new Runner outbound, and one scheduled physical return. | Keep. |
 | The API test detects a missing withdrawal. | Temporarily replaced the supersession call with an empty result. | Fresh migration 195: failed at `superseded=[]`; restored code passed on another fresh database. | Keep test and implementation. |
+| A different unit's waiting order must survive. | Added a second owned unit with its own waiting Runner. Replaced the unit-id predicate with `$3<>''` as a mutation. | Fresh migration 195: named domain test failed with three candidates instead of two. Restored predicate: domain and API tests green on a separate fresh database. | Keep the unit-id guard. |
 
 ## Gates
 

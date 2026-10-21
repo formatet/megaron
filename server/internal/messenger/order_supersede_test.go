@@ -18,7 +18,7 @@ func TestSupersedeUnboardedMovementReturnsOnlyOwnWaitingEnvelopes(t *testing.T) 
 	if _, err := f.pool.Exec(ctx, `UPDATE map_tiles SET terrain='plains' WHERE world_id=$1 AND q=1 AND r=0`, f.worldID); err != nil {
 		t.Fatal(err)
 	}
-	var prov, port, unitID uuid.UUID
+	var prov, port, unitID, otherUnitID uuid.UUID
 	if err := f.pool.QueryRow(ctx, `INSERT INTO provinces(world_id,map_q,map_r,terrain_type,coastal) VALUES($1,1,0,'plains',true) RETURNING id`, f.worldID).Scan(&prov); err != nil {
 		t.Fatal(err)
 	}
@@ -28,19 +28,23 @@ func TestSupersedeUnboardedMovementReturnsOnlyOwnWaitingEnvelopes(t *testing.T) 
 	if err := f.pool.QueryRow(ctx, `INSERT INTO units(world_id,owner_id,type,category,size,status,q,r) VALUES($1,$2,'spearman','land',100,'positioned',5,0) RETURNING id`, f.worldID, f.ownerID).Scan(&unitID); err != nil {
 		t.Fatal(err)
 	}
-	put := func(verb, status string) uuid.UUID {
+	if err := f.pool.QueryRow(ctx, `INSERT INTO units(world_id,owner_id,type,category,size,status,q,r) VALUES($1,$2,'spearman','land',100,'positioned',6,0) RETURNING id`, f.worldID, f.ownerID).Scan(&otherUnitID); err != nil {
+		t.Fatal(err)
+	}
+	put := func(targetUnit uuid.UUID, verb, status string) uuid.UUID {
 		t.Helper()
 		id := f.waitingMessenger(t, port, 500)
-		raw, _ := json.Marshal(OrderDeliveryPayload{WorldID: f.worldID, PlayerID: f.ownerID, UnitID: unitID, Verb: verb, March: &combat.MarchOrder{TargetQ: 37, TargetR: 21}})
+		raw, _ := json.Marshal(OrderDeliveryPayload{WorldID: f.worldID, PlayerID: f.ownerID, UnitID: targetUnit, Verb: verb, March: &combat.MarchOrder{TargetQ: 37, TargetR: 21}})
 		if _, err := f.pool.Exec(ctx, `UPDATE messengers SET kind='order',order_payload=$2,passage_status=$3 WHERE id=$1`, id, raw, status); err != nil {
 			t.Fatal(err)
 		}
 		return id
 	}
-	old1 := put("march", "awaiting_passage")
-	old2 := put("redirect", "awaiting_passage")
-	aboard := put("march", "aboard")
-	stance := put("stance", "awaiting_passage")
+	old1 := put(unitID, "march", "awaiting_passage")
+	old2 := put(unitID, "redirect", "awaiting_passage")
+	aboard := put(unitID, "march", "aboard")
+	stance := put(unitID, "stance", "awaiting_passage")
+	otherUnitOrder := put(otherUnitID, "march", "awaiting_passage")
 	clk := clock.NewTestClock(time.Now())
 	sched := events.NewScheduler(f.pool, clk)
 	// A failed replacement rolls back both callbacks and their return jobs.
@@ -85,10 +89,11 @@ func TestSupersedeUnboardedMovementReturnsOnlyOwnWaitingEnvelopes(t *testing.T) 
 	if err := tx.Commit(ctx); err != nil {
 		t.Fatal(err)
 	}
-	for _, id := range []uuid.UUID{old1, old2, aboard, stance} {
+	for _, id := range []uuid.UUID{old1, old2, aboard, stance, otherUnitOrder} {
 		var state string
 		var withdrawn bool
-		if err := f.pool.QueryRow(ctx, `SELECT status,withdrawn FROM messengers WHERE id=$1`, id).Scan(&state, &withdrawn); err != nil {
+		var passageStatus *string
+		if err := f.pool.QueryRow(ctx, `SELECT status,withdrawn,passage_status FROM messengers WHERE id=$1`, id).Scan(&state, &withdrawn, &passageStatus); err != nil {
 			t.Fatal(err)
 		}
 		want := "outbound"
@@ -100,6 +105,9 @@ func TestSupersedeUnboardedMovementReturnsOnlyOwnWaitingEnvelopes(t *testing.T) 
 		}
 		if state != want {
 			t.Fatalf("runner %s state=%s want %s", id, state, want)
+		}
+		if id == otherUnitOrder && (withdrawn || passageStatus == nil || *passageStatus != "awaiting_passage") {
+			t.Fatalf("other unit's order changed: withdrawn=%v passage=%v", withdrawn, passageStatus)
 		}
 	}
 	var jobs int
