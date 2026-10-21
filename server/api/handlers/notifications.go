@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"formatet/megaron/server/internal/auth"
+	"formatet/megaron/server/internal/messenger"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -109,6 +110,29 @@ func (h *NotificationsHandler) List(w http.ResponseWriter, r *http.Request) {
 			unread++
 		}
 		items = append(items, n)
+	}
+	// Close the outer rows before querying sender-owned sealed envelopes: a pool
+	// with one connection must not deadlock on an archived dispatch.
+	rows.Close()
+	for i := range items {
+		if items[i].Kind != "PassageStalled" {
+			continue
+		}
+		var body map[string]any
+		if json.Unmarshal(items[i].BodyJSON, &body) != nil || body["kind"] != "order" {
+			continue
+		}
+		idText, _ := body["messenger_id"].(string)
+		id, parseErr := uuid.Parse(idText)
+		if parseErr != nil {
+			continue
+		}
+		if summary := messenger.OwnOrderSummary(r.Context(), h.pool, worldID, playerID, id); summary != "" {
+			body["order_summary"] = summary
+			if raw, err := json.Marshal(body); err == nil {
+				items[i].BodyJSON = raw
+			}
+		}
 	}
 	if items == nil {
 		items = []notificationRow{}

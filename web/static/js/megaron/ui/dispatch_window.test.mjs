@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 // see the file's own header comment on why centreOn is reached via
 // window.centreOn instead of a direct ui/search.js import), so this file
 // needs no globalThis stubbing before import, unlike its DOM-heavy siblings.
-import { resolveDestination, occupationChoicesFor, buildOccupationOrderBody, openingDispatchHTML } from './dispatch_window.js';
+import { resolveDestination, passageStalledBlockHTML, occupationChoicesFor, buildOccupationOrderBody, openingDispatchHTML } from './dispatch_window.js';
 import { State } from '../state.js';
 
 test('AK1: a direct q/r on the payload wins outright, no lookup needed', () => {
@@ -129,4 +129,11 @@ test('opening dispatch destination resolves the current own Host from its id', (
   State.foreignUnitData = [];
   assert.deepEqual(resolveDestination('OpeningDispatch', { host_id: 'opening-host' }), { q: 17, r: 23 });
   assert.equal(resolveDestination('OpeningDispatch', { host_id: 'old-host' }), null);
+});
+
+test('stalled dispatch shows owned sealed order with escaped text', () => {
+ const html=passageStalledBlockHTML({messenger_id:'m',own_port:true,order_summary:'Third Spearmen: March to (37,21); mission: colonize <bad>'});
+ assert.match(html,/Sealed order: Third Spearmen: March to \(37,21\)/);
+ assert.match(html,/mission: colonize &lt;bad&gt;/);
+ assert.doesNotMatch(html,/<bad>/);
 });

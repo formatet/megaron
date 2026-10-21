@@ -28,6 +28,7 @@ import (
 type fakeRecallBroadcaster struct {
 	notified []string
 	reasons  []string
+	payloads []map[string]any
 }
 
 func (f *fakeRecallBroadcaster) BroadcastEvent(worldID uuid.UUID, kind string, payload any) {}
@@ -35,6 +36,7 @@ func (f *fakeRecallBroadcaster) BroadcastEvent(worldID uuid.UUID, kind string, p
 func (f *fakeRecallBroadcaster) NotifyPlayer(ctx context.Context, worldID, playerID uuid.UUID, kind string, level int, payload any) error {
 	f.notified = append(f.notified, kind)
 	if m, ok := payload.(map[string]any); ok {
+		f.payloads = append(f.payloads, m)
 		if reason, ok := m["reason"].(string); ok {
 			f.reasons = append(f.reasons, reason)
 		}

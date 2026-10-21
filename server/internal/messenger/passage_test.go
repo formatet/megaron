@@ -14,8 +14,11 @@ package messenger
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"formatet/megaron/server/internal/combat"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -767,5 +770,32 @@ func TestPassageScan_StalledAgainOnReturnLeg(t *testing.T) {
 	}
 	if n := stalledCount(); n != 2 {
 		t.Errorf("PassageStalled total = %d, want 2 — the return-leg wait is a new waiting spell and must be told to the player", n)
+	}
+}
+
+func TestStalledOrderPushCarriesSenderInstruction(t *testing.T) {
+	f := setupPassageFixture(t)
+	ctx := context.Background()
+	runner := f.waitingMessenger(t, f.originID, f.currentTick)
+	var u uuid.UUID
+	if err := f.pool.QueryRow(ctx, `INSERT INTO units(world_id,owner_id,type,category,size,status,q,r) VALUES($1,$2,'spearman','land',100,'positioned',7,1) RETURNING id`, f.worldID, f.ownerID).Scan(&u); err != nil {
+		t.Fatal(err)
+	}
+	raw, _ := json.Marshal(OrderDeliveryPayload{WorldID: f.worldID, PlayerID: f.ownerID, UnitID: u, Verb: "march", March: &combat.MarchOrder{TargetQ: 37, TargetR: 21, Intent: "colonize"}})
+	if _, err := f.pool.Exec(ctx, `UPDATE messengers SET kind='order',order_payload=$2,message_text='Runner — march order to (37,21).' WHERE id=$1`, runner, raw); err != nil {
+		t.Fatal(err)
+	}
+	clk := clock.NewTestClock(time.Now())
+	hub := &fakeRecallBroadcaster{}
+	h := NewPassageScanHandler(f.pool, events.NewScheduler(f.pool, clk), hub, clk, nil)
+	if err := h.notifyStalledOne(ctx, f.worldID, runner, f.currentTick+10); err != nil {
+		t.Fatal(err)
+	}
+	if len(hub.payloads) != 1 {
+		t.Fatalf("pushes=%d", len(hub.payloads))
+	}
+	summary, _ := hub.payloads[0]["order_summary"].(string)
+	if !strings.Contains(summary, "(37,21)") || !strings.Contains(summary, "colonize") {
+		t.Fatalf("order summary=%q", summary)
 	}
 }

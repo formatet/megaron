@@ -218,6 +218,7 @@ func printPassageStalledLine(n notificationItem) {
 		TargetName    string `json:"target_name"`
 		Kind          string `json:"kind"`
 		Verb          string `json:"verb"`
+		OrderSummary  string `json:"order_summary"`
 		EligibleShips []struct {
 			Name string `json:"name"`
 		} `json:"eligible_ships"`
@@ -234,6 +235,9 @@ func printPassageStalledLine(n notificationItem) {
 		verb = " (" + body.Verb + " order)"
 	}
 	fmt.Printf("      A Runner%s is still waiting in %s for a ship toward %s.\n", verb, body.PortName, target)
+	if body.OrderSummary != "" {
+		fmt.Printf("      Sealed order: %s.\n", body.OrderSummary)
+	}
 	switch len(body.EligibleShips) {
 	case 0:
 		fmt.Printf("      No eligible ship of yours is there yet — build or send one, or decide below.\n")

@@ -153,7 +153,7 @@ async function sendOccupationOrder(settlementID, action, resultEl, allBtns) {
 // game resolves on its own (the old reserve/abstract crossing is gone).
 // Same button pattern as the occupation choice above (dw-occ-btn) — "let it
 // wait" gets no button at all, since closing the dispatch already does that.
-function passageStalledBlockHTML(payload) {
+export function passageStalledBlockHTML(payload) {
   const ships = Array.isArray(payload.eligible_ships) ? payload.eligible_ships : [];
   const selId = 'dw-passage-ship-' + payload.messenger_id;
   let arrangeRow;
@@ -173,6 +173,7 @@ function passageStalledBlockHTML(payload) {
       + '</div>'
     : '';
   return '<div class="dw-occupation" id="dw-passage-stalled">'
+    + (payload.order_summary ? '<p class="dw-occ-desc">Sealed order: ' + esc(payload.order_summary) + '</p>' : '')
     + '<div class="dw-occ-label">Decide the runner\'s fate:</div>'
     + arrangeRow + callBackRow
     + '<div class="dw-occ-result" id="dw-passage-result"></div>'

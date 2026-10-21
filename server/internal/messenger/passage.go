@@ -629,6 +629,10 @@ func (h *PassageScanHandler) notifyStalledOne(ctx context.Context, worldID, mess
 		}
 	}
 
+	orderSummary := ""
+	if kind == "order" {
+		orderSummary = OwnOrderSummary(ctx, tx, worldID, senderID, messengerID)
+	}
 	ships, err := stalledEligibleShips(ctx, tx, worldID, senderID, portID, ownPort)
 	if err != nil {
 		return err
@@ -668,6 +672,9 @@ func (h *PassageScanHandler) notifyStalledOne(ctx context.Context, worldID, mess
 		}
 		if verb != "" {
 			body["verb"] = verb
+		}
+		if orderSummary != "" {
+			body["order_summary"] = orderSummary
 		}
 		if targetName != nil {
 			body["target_name"] = *targetName
