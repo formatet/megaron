@@ -52,6 +52,21 @@ test('P: naval loading unloading and repair are directly available; at sea has n
  assert.match(html,/at sea/);assert.match(html,/returns to port automatically/);
 });
 
+test('P: laid-up hull has Fit out and zero upkeep; fitting-out hull has ETA and no orders',()=>{
+ const active=renderUnitCard(unit({category:'naval',type:'galley',settlement_id:'home',cargo_unit_id:null,can_lay_up:true}));
+ assert.match(active,/>Lay up</);
+ const stored=renderUnitCard(unit({category:'naval',type:'galley',status:'laid_up',deployable:false,settlement_id:'home',crew:20,can_fit_out:true,upkeep_context:'inactive',upkeep_food_per_tick:0,upkeep_silver_per_tick:0}));
+ assert.match(stored,/>Fit out</);
+ assert.match(stored,/Laid up|crew ashore 20/);
+ assert.match(stored,/Ship upkeep while laid up: 0 food, 0 silver/);
+ assert.doesNotMatch(stored,/>March<|>Load<|>Repair<|>Lay up</);
+ const blocked=renderUnitCard(unit({category:'naval',type:'galley',status:'laid_up',deployable:false,settlement_id:'home',can_fit_out:false}));
+ assert.match(blocked,/<button disabled[^>]*>Fit out<\/button>/);
+ const preparing=renderUnitCard(unit({category:'naval',type:'galley',status:'fitting_out',deployable:false,settlement_id:'home',build_complete_at:'2026-10-22T10:00:00Z'}));
+ assert.match(preparing,/fitting out/);
+ assert.doesNotMatch(preparing,/>March<|>Fit out<|>Lay up<|>Load</);
+});
+
 test('P: forming training embarked repairing and freight do not offer inapplicable orders',()=>{
  for(const status of ['forming','training','embarked','repairing','freighting']){
   const html=renderUnitCard(unit({status,deployable:false}));

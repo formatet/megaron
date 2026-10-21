@@ -94,6 +94,7 @@ var tickPriorities = map[ScheduledEventType]int{
 	// för att skapa en enhet. Skeppet ska vara helt och närvarande innan dagens
 	// blick, strid och plikt räknar med det.
 	ScheduledShipRepairComplete: tickPriorityArrival,
+	ScheduledShipFitOutComplete: tickPriorityArrival,
 
 	// 20 — vad ögonen ser när rörelsen är gjord.
 	ScheduledInterceptScan:      tickPrioritySight,

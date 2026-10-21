@@ -226,7 +226,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		        u.status, u.q, u.r, u.home_settlement_id
 		 FROM units u
 		 WHERE u.world_id = $1
-		   AND u.status IN ('garrison', 'marching', 'positioned', 'embarked', 'repairing', 'freighting')
+		   AND u.status IN ('garrison', 'marching', 'positioned', 'embarked', 'repairing', 'freighting', 'fitting_out')
 		   AND NOT EXISTS (
 		       SELECT 1 FROM founder_phase fp
 		       WHERE fp.world_id = u.world_id
@@ -719,7 +719,7 @@ func provisionSourceFor(u upkeepUnitRow) *uuid.UUID {
 // in the world — the only case where falling back to the town's stock is not
 // the teleporting logistics this mechanic removes.
 func atHomePort(u upkeepUnitRow) bool {
-	return u.status == "garrison" || u.status == "repairing" || u.freightPort != nil
+	return u.status == "garrison" || u.status == "repairing" || u.status == "fitting_out" || u.freightPort != nil
 }
 
 // applyAttrition removes men (land) or crew (naval) from the unit due to grain

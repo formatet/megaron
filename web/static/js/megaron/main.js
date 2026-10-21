@@ -42,7 +42,7 @@ import {
 import {
   loadWarDrawer, warRecruitFromUI, warRecruitShip, warDisband, warAbandon,
   unitRecall, unitRecallAll, unitRedirect, unitRedirectToggle, unitRedirectTypedToggle, unitMarch,
-  unitStance, unitReinforce, unitLoadPrompt, unitUnload, unitRepair, unitCancelTraining,
+  unitStance, unitReinforce, unitLoadPrompt, unitUnload, unitRepair, unitLayUp, unitFitOut, unitCancelTraining,
   unitRetreatOrder, saveRetreatDefault, warFocusUnit, unitPickup, unitPickupToggle,
   unitRoadToggle, unitBuildRoad,
 } from './ui/drawers/war.js';
@@ -244,6 +244,8 @@ Object.assign(window, {
   unitRedirectToggle,
   unitRedirectTypedToggle,
   unitRepair,
+	unitLayUp,
+	unitFitOut,
   unitCancelTraining,
   unitRetreatOrder,
   unitStance,

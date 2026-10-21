@@ -23,6 +23,8 @@ A cohort is drafted out of your city's population and stays out of it until disb
 
 **Disband** returns the men to your city.
 
+An empty ship in your own active Harbour can be **Laid up** from its Army card. Its crew returns to the port's population and can work there; the hull draws no food or silver and remains in port. The card says **Laid up** and offers **Fit out**. Fitting out takes the ship's full crew from that city's current population and prepares it for **three days**. It cannot sail or be cancelled during that time, and its crew draws ordinary ship upkeep from the start. If the city is annexed, its laid-up and fitting-out ships go with the city. Disbanding a laid-up ship removes the hull without returning the same crew twice; a city's Disband command chooses laid-up hulls before crewed ships of the same type. Keryx: `unit lay-up --unit ID` and `unit fit-out --unit ID`.
+
 ## The Army tab
 
 Every unit you own, with its state and current grain and silver upkeep per day in plain words. **March** is shown while it can move; a damaged land cohort garrisoned in its **original home city** can also **Reinforce** — another city you own does not qualify. A land unit on the march shows **Recall**. The card also shows stance and **Set**, battle retreat, **Redirect**, **Fetch by ship**, **Load** / **Unload** or **Repair**, whenever that unit can use them. See [[marching]], [[stances]] and [[sea]].

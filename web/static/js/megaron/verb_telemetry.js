@@ -29,6 +29,8 @@ export const VERB_EVENTS = [
   {"verb": "retreat-default", "method": "PUT", "route": "/api/v1/worlds/:world/retreat-default", "event": "retreat_default_changed"},
   {"verb": "reinforce", "method": "POST", "route": "/api/v1/worlds/:world/units/:unit/reinforce", "event": "reinforce_sent"},
   {"verb": "repair", "method": "POST", "route": "/api/v1/worlds/:world/units/:unit/repair", "event": "repair_started"},
+	{"verb": "lay-up", "method": "POST", "route": "/api/v1/worlds/:world/units/:unit/lay-up", "event": "ship_laid_up"},
+	{"verb": "fit-out", "method": "POST", "route": "/api/v1/worlds/:world/units/:unit/fit-out", "event": "ship_fit_out_started"},
   {"verb": "load", "method": "POST", "route": "/api/v1/worlds/:world/units/:unit/load", "event": "troops_loaded"},
   {"verb": "unload", "method": "POST", "route": "/api/v1/worlds/:world/units/:unit/unload", "event": "troops_unloaded"},
   {"verb": "join", "method": "POST", "route": "/api/v1/worlds/:world/join", "event": "world_joined"},

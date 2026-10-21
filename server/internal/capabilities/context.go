@@ -128,6 +128,17 @@ func (cc checkContext) anyUnitsHere() int {
 	return n
 }
 
+func (cc checkContext) disbandableUnitsHere() int {
+	if !cc.hasSettlement() {
+		return 0
+	}
+	var n int
+	_ = cc.pool.QueryRow(cc.ctx, `SELECT count(*) FROM units
+		WHERE settlement_id=$1 AND owner_id=$2 AND status IN ('garrison','laid_up')`,
+		cc.settlementID, cc.playerID).Scan(&n)
+	return n
+}
+
 // idleNavalUnits counts garrisoned ships at this settlement with no cargo —
 // the ones `unit load` can embark a land unit onto.
 func (cc checkContext) idleNavalUnits() int {

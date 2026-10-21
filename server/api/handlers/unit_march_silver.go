@@ -77,7 +77,7 @@ func (h *UnitHandler) marchSilverForecast(ctx context.Context, worldID, ownerID,
 	unfunded := false
 	for id, u := range all {
 		switch u.status {
-		case "garrison", "marching", "positioned", "embarked", "repairing", "freighting":
+		case "garrison", "marching", "positioned", "embarked", "repairing", "freighting", "fitting_out":
 		default:
 			continue
 		}

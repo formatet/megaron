@@ -326,6 +326,47 @@ func TestExecuteOccupyAction_AnnexAfterMaturity(t *testing.T) {
 	}
 }
 
+// A stored hull follows the captured harbour. Its crew is already counted in
+// that harbour's population, so no extra population movement occurs at annex.
+func TestAnnexTransfersLaidUpAndFittingOutShipsWithPort(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	f := newSiegeFixture(t, pool, 0)
+	if _, err := pool.Exec(ctx, `UPDATE settlements SET state='occupied', occupant_id=$2, occupied_since_tick=0 WHERE id=$1`, f.defSettlement, f.attacker); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `UPDATE worlds SET current_tick=$2 WHERE id=$1`, f.worldID, occupationTicksToAnnex); err != nil {
+		t.Fatal(err)
+	}
+	for _, status := range []string{"laid_up", "fitting_out"} {
+		if _, err := pool.Exec(ctx, `INSERT INTO units (world_id,owner_id,type,category,size,crew,status,settlement_id,support_settlement_id)
+			VALUES ($1,$2,'galley','naval',1,20,$3,$4,$4)`, f.worldID, f.defender, status, f.defSettlement); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var before int
+	if err := pool.QueryRow(ctx, `SELECT population FROM settlements WHERE id=$1`, f.defSettlement).Scan(&before); err != nil {
+		t.Fatal(err)
+	}
+	clk := clock.NewTestClock(time.Now())
+	_, err := ExecuteOccupyAction(ctx, pool, events.NewScheduler(pool, clk), events.NewStore(pool), clk, nil, OccupyActionOrder{
+		WorldID: f.worldID, PlayerID: f.attacker, SettlementID: f.defSettlement, Action: "annex"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var transferred int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM units WHERE settlement_id=$1 AND category='naval' AND owner_id=$2 AND support_settlement_id=$1 AND status IN ('laid_up','fitting_out')`, f.defSettlement, f.attacker).Scan(&transferred); err != nil {
+		t.Fatal(err)
+	}
+	var after int
+	if err := pool.QueryRow(ctx, `SELECT population FROM settlements WHERE id=$1`, f.defSettlement).Scan(&after); err != nil {
+		t.Fatal(err)
+	}
+	if transferred != 2 || after != before {
+		t.Fatalf("annex ships=%d population %d→%d, want 2 and unchanged", transferred, before, after)
+	}
+}
+
 // TestExecuteOccupyAction_Sack is S4: pop -⅓, top production building -1
 // level, loot dispatched as a caravan, city STAYS with the defender (no
 // ownership change).

@@ -435,7 +435,7 @@ export function unitStatusLabel(u) {
     marching: naval ? 'at sea' : 'on the march',
     forming: naval ? 'being built' : 'gathering men',
     training: 'training', embarked: 'aboard a ship', repairing: 'being repaired',
-    freighting: 'carrying goods', disbanded: 'dismissed',
+    freighting: 'carrying goods', laid_up: 'Laid up', fitting_out: 'fitting out', disbanded: 'dismissed',
   })[u.status] || 'awaiting news';
 }
 
@@ -464,12 +464,14 @@ export function renderUnitCard(u) {
   // not drawn on the map (the transport/route is), parked at the settlement
   // it was bound from.
   const isFreighting = u.status === 'freighting';
+	const isLaidUp = u.status === 'laid_up';
+	const isFittingOut = u.status === 'fitting_out';
 
   // Location string
   let loc = '';
   if (isFreighting) {
     loc = 'Carrying goods — ' + (u.freighting_note ? esc(u.freighting_note) : 'bound to a sea route');
-  } else if (isGarrison || isForming || isTraining || isEmbarked) {
+  } else if (isGarrison || isForming || isTraining || isEmbarked || isLaidUp || isFittingOut) {
     const prov = State.provinceData.find(p => p.settlement_id === u.settlement_id || p.id === u.settlement_id);
     const place = prov ? esc(prov.name) : 'city';
     // A galley idle at its coastal settlement is docked — say it is "in harbour"
@@ -513,6 +515,8 @@ export function renderUnitCard(u) {
     progress = bar(u.size) + dim(fmtNum(u.size) + ' of 100 · ' + fmtNum(needed) + ' more men needed before training starts');
   } else if (isTraining) {
     progress = bar(100) + dim('100 men · training — ' + readyWord(u.build_complete_at));
+  } else if (isFittingOut) {
+    progress = dim('crew aboard · fitting out — ' + readyWord(u.build_complete_at));
   } else if (isGarrison && u.reinforcing) {
     // Manskaps-underhåll (megaron_plan_rekryteringsmodell.md): a decimated
     // cohort trickles back to 100 out of its home city's population growth,
@@ -524,7 +528,8 @@ export function renderUnitCard(u) {
 
   // The server owns current strength and field ration rates. Zero silver is
   // a value, not a missing field; never derive soldier pay in the client.
-  const upkeepLabel = u.upkeep_context === 'inactive' ? 'Upkeep when active'
+  const upkeepLabel = isLaidUp ? 'Ship upkeep while laid up'
+    : u.upkeep_context === 'inactive' ? 'Upkeep when active'
     : u.upkeep_context === 'subsistence' ? 'Upkeep after settling' : 'Upkeep';
   const foodRate = u.upkeep_food_per_tick ?? u.upkeep_grain_per_tick;
   const foodLabel = u.upkeep_food_per_tick != null ? 'food' : 'grain';
@@ -546,7 +551,7 @@ export function renderUnitCard(u) {
 
   // Crew badge for naval
   const crewBadge = isNaval && u.crew
-    ? '<span style="font-size:.6rem;color:var(--text-dim);margin-left:.3rem">crew ' + fmtNum(u.crew) + '</span>'
+    ? '<span style="font-size:.6rem;color:var(--text-dim);margin-left:.3rem">' + (isLaidUp ? 'crew ashore ' : 'crew ') + fmtNum(u.crew) + '</span>'
     : '';
 
   // Hull badge (megaron_plan_skeppsreparation.md §B2) — only shown while
@@ -688,6 +693,13 @@ export function renderUnitCard(u) {
   if (isNaval && isGarrison && u.hull != null && u.hull < 5) {
     actions += '<button onclick="unitRepair(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Repair</button> ';
   }
+	if (isNaval && u.can_lay_up) {
+		actions += '<button onclick="unitLayUp(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Lay up</button> ';
+	}
+	if (isNaval && isLaidUp) {
+		if (u.can_fit_out) actions += '<button onclick="unitFitOut(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">Fit out</button> ';
+		else actions += '<button disabled title="Needs enough people in your active harbour" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;opacity:.55">Fit out</button> ';
+	}
 
   // Recall/redirect: marching LAND units only. A marching ship is on a
   // mission with a built-in return leg and takes no orders at all (R3,
@@ -1105,3 +1117,15 @@ export async function unitRepair(shipID) {
     resEl.textContent = formatApiError(data, 'Repair failed');
   }
 }
+
+async function shipPortAction(shipID, verb) {
+	const resEl = document.getElementById('war-unit-res');
+	const res = await fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/units/${shipID}/${verb}`, {
+		method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}',
+	});
+	const data = await res.json().catch(() => ({}));
+	if (res.ok) await loadWarDrawer();
+	else if (resEl) { resEl.style.color = 'var(--accent)'; resEl.textContent = formatApiError(data, verb === 'lay-up' ? 'Lay up failed' : 'Fit out failed'); }
+}
+export async function unitLayUp(shipID) { return shipPortAction(shipID, 'lay-up'); }
+export async function unitFitOut(shipID) { return shipPortAction(shipID, 'fit-out'); }
