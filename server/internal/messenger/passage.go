@@ -5,8 +5,9 @@
 // makes that crossing physical: the messenger runs to its own nearest
 // coastal/harbour port (a real landward leg, no sea involved) and waits there
 // (passage_status='awaiting_passage'). It boards an eligible carrier — a real
-// naval transport or a ship mission departing that port, owned by the
-// messenger's sender — when one leaves (passage_status='aboard'), then
+// naval transport or a ship mission departing that port, owned by ANY Wanax
+// (runners are immune and board automatically, Timothy 2026-10-21,
+// temenos_diplomati.md §Runners) — when one leaves (passage_status='aboard'), then
 // disembarks at the carrier's own destination and runs the rest of the way on
 // land. A carrier lost to interception seals the messenger back to its port
 // after a short delay (R4). A messenger no real carrier picks up in time is a
@@ -735,7 +736,7 @@ func (h *PassageScanHandler) boardTransports(ctx context.Context, worldID uuid.U
 		}
 		// The PORT waiting messengers stand at is the transport's ORIGIN (where
 		// it departed from); the disembark point is its destination.
-		if err := h.boardEligible(ctx, worldID, c.owner, c.originID, province.MapPosition{Q: c.destQ, R: c.destR},
+		if err := h.boardEligible(ctx, worldID, c.originID, province.MapPosition{Q: c.destQ, R: c.destR},
 			c.dueTick, c.arrivesAt, boardedCarrier{transportID: &c.id, name: name}); err != nil {
 			slog.Error("passage scan: board transport", "transport", c.id, "err", err)
 		}
@@ -831,7 +832,7 @@ func (h *PassageScanHandler) boardShipMissionOne(ctx context.Context, worldID uu
 	if s.name != nil && *s.name != "" {
 		name = *s.name
 	}
-	return h.boardEligible(ctx, worldID, s.owner, portID, province.MapPosition{Q: landQ, R: landR},
+	return h.boardEligible(ctx, worldID, portID, province.MapPosition{Q: landQ, R: landR},
 		s.arriveTick, s.arrivesAt, boardedCarrier{unitID: &s.id, name: name})
 }
 
@@ -880,18 +881,20 @@ type boardedCarrier struct {
 	name        string
 }
 
-// boardEligible boards every messenger waiting at portID, owned by ownerID,
+// boardEligible boards every messenger waiting at portID, whoever sent it,
 // for which a land route exists onward from disembarkAt to the messenger's
-// true final target (R2's four conditions). No capacity limit (R2: "ingen
+// true final target (R2's conditions). The sender need not own the carrier
+// (Timothy 2026-10-21): a runner boards any departing ship, and the ship's
+// own order is never changed by it. No capacity limit (R2: "ingen
 // kapacitetsgräns — bud tar ingen plats").
-func (h *PassageScanHandler) boardEligible(ctx context.Context, worldID, ownerID, portID uuid.UUID, disembarkAt province.MapPosition, carrierDueTick int, carrierArrivesAt time.Time, carrier boardedCarrier) error {
+func (h *PassageScanHandler) boardEligible(ctx context.Context, worldID, portID uuid.UUID, disembarkAt province.MapPosition, carrierDueTick int, carrierArrivesAt time.Time, carrier boardedCarrier) error {
 	rows, err := h.pool.Query(ctx,
 		`SELECT id FROM messengers
-		  WHERE world_id = $1 AND sender_id = $2 AND passage_port_id = $3
+		  WHERE world_id = $1 AND passage_port_id = $2
 		    AND passage_status = 'awaiting_passage'
-		    AND passage_since_tick IS NOT NULL AND passage_since_tick <= $4
+		    AND passage_since_tick IS NOT NULL AND passage_since_tick <= $3
 		  FOR UPDATE SKIP LOCKED`,
-		worldID, ownerID, portID, carrierDueTick,
+		worldID, portID, carrierDueTick,
 	)
 	if err != nil {
 		return err
@@ -992,8 +995,9 @@ func (h *PassageScanHandler) boardOne(ctx context.Context, worldID, messengerID 
 		// this carrier is lost) earns its own PassageStalled dispatch.
 		`UPDATE messengers SET passage_status = 'aboard', carrier_transport_id = $2,
 		        carrier_unit_id = $3, carrier_name = $4, passage_stalled_notified_tick = NULL,
-		        disembark_q = $5, disembark_r = $6, boarded_at = $7, disembark_at = $8
-		  WHERE id = $1 AND passage_status = 'awaiting_passage' AND sender_id=$9`,
+		        disembark_q = $5, disembark_r = $6, boarded_at = $7, disembark_at = $8,
+		        carrier_owner_id = $9
+		  WHERE id = $1 AND passage_status = 'awaiting_passage'`,
 		messengerID, carrier.transportID, carrier.unitID, carrier.name,
 		disembarkAt.Q, disembarkAt.R, h.clk.Now(), carrierArrivesAt, owner,
 	)
@@ -1040,7 +1044,8 @@ type lostCarrierRow struct {
 //     'intercepted' — the single outcome-flip for all three of
 //     captured/limped/sunk (R5 of megaron_plan_sjohandel_kraver_skepp.md).
 //   - ship mission (skeppsuppdrag): the unit is 'disbanded' (sunk in combat)
-//     or has changed owner (captured) — the two unit-table signals available
+//     or has changed owner since boarding (captured; carrier_owner_id, mig 196 —
+//     the carrier may be a foreign Wanax's ship) — the two unit-table signals available
 //     without messenger importing combat's naval-battle internals (G1).
 func (h *PassageScanHandler) detectLostCarriers(ctx context.Context, worldID uuid.UUID, currentTick int) error {
 	transportRows, err := h.pool.Query(ctx,
@@ -1073,7 +1078,7 @@ func (h *PassageScanHandler) detectLostCarriers(ctx context.Context, worldID uui
 		`SELECT m.id, m.sender_id, u.id
 		   FROM messengers m JOIN units u ON u.id = m.carrier_unit_id
 		  WHERE m.world_id = $1 AND m.passage_status = 'aboard'
-		    AND (u.status = 'disbanded' OR u.owner_id != m.sender_id) AND m.carrier_witness_id=0 AND NOT EXISTS(SELECT 1 FROM events e WHERE e.stream_id=m.id AND e.event_type IN ('CarrierPassengerLostV1','CarrierPassengerRescuedV1','CarrierPassengerLandedV1','CarrierPassengerRedirectedV1'))
+		    AND (u.status = 'disbanded' OR u.owner_id != COALESCE(m.carrier_owner_id, m.sender_id)) AND m.carrier_witness_id=0 AND NOT EXISTS(SELECT 1 FROM events e WHERE e.stream_id=m.id AND e.event_type IN ('CarrierPassengerLostV1','CarrierPassengerRescuedV1','CarrierPassengerLandedV1','CarrierPassengerRedirectedV1'))
 		  FOR UPDATE OF m SKIP LOCKED`,
 		worldID,
 	)

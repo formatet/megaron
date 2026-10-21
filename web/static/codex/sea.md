@@ -38,9 +38,9 @@ A ship caught carrying cargo (see [[transfers]]) can also be **captured outright
 A [[messengers|letter]] or a [[runners|Runner]] carrying your order cannot swim, and it never guesses at a crossing — it needs a real ship, full stop. When its road crosses open water:
 
 - It runs to **your own nearest coastal or harboured city** and waits there — you are told which one, and why. If you have no coastal or harboured city anywhere, the message is refused outright at the moment you send it, rather than dispatched to wait forever.
-- The moment one of **your own** ships or trade routes sails from that port toward the right side of the sea, it **boards** — free, no cargo space taken — and steps off wherever that ship lands, then finishes the trip on foot.
+- The moment **any** ship or trade route — yours or another Wanax's — sails from that port toward the right side of the sea, it **boards** — free, no cargo space taken — and steps off wherever that ship lands, then finishes the trip on foot. Runners are sacred: every captain takes them aboard, even between Wanaxes at war. The runner never changes where the ship goes, and the ship's owner sees only that a runner of yours is aboard, never what it carries.
 - A storm can [[runner-lost-at-sea|lose the runner]]. In battle a surviving enemy ship [[runner-rescued-at-sea|rescues it]]; a captured ship keeps it aboard. It leaves that actual ship in its next port and continues. A damaged ship that survives takes its runner home to the next port, without sealing or loss.
-- If no ship of yours sails that way for a while, it simply keeps waiting — nothing crosses on its own. See "A runner stuck waiting" below for what you can do about it.
+- If no ship sails that way for a while, it simply keeps waiting — nothing crosses on its own. See "A runner stuck waiting" below for what you can do about it.
 
 None of this changes anything for a message or order whose road stays on dry land — a Runner on land never needs a ship, only [[marching|the roads]] it can already walk (a river still needs a ford or a boat of its own, unrelated to sea passage).
 
@@ -55,7 +55,7 @@ Your own [[messengers|letter]] or [[runners|Runner]] is drawn exactly where it r
 
 ## A runner stuck waiting — your decision, not the game's
 
-Wait long enough with no ship of yours sailing the right way, and you get a **PassageStalled** dispatch: the runner, the port it's standing in, where it's trying to reach, and the ships (if any) of yours already there. Nothing forces your hand — it keeps waiting exactly where it is until you act, and the dispatch only ever fires once per spell of waiting (a later known waiting spell can trigger it again; an unknown rescued runner sends no news from a foreign port). Three choices:
+Wait long enough with no ship sailing the right way, and you get a **PassageStalled** dispatch: the runner, the port it's standing in, where it's trying to reach, and the ships (if any) of yours already there. Nothing forces your hand — it keeps waiting exactly where it is until you act, and the dispatch only ever fires once per spell of waiting (a later known waiting spell can trigger it again; an unknown rescued runner sends no news from a foreign port). Three choices:
 
 - **Arrange passage** — the same button as above, right there in the dispatch.
 - **Call it back** — give up on this errand and bring the runner home undelivered. See the instructions below.

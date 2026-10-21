@@ -138,9 +138,9 @@ func printPassageNote(resp map[string]any) {
 	if status, _ := resp["passage_status"].(string); status == "awaiting_passage" {
 		port, _ := resp["passage_port"].(string)
 		if port != "" {
-			fmt.Printf("  waiting in %s for a ship of yours to sail that way\n", port)
+			fmt.Printf("  waiting in %s for any ship to sail that way\n", port)
 		} else {
-			fmt.Printf("  waiting for a ship of yours to sail that way\n")
+			fmt.Printf("  waiting for any ship to sail that way\n")
 		}
 	}
 }
