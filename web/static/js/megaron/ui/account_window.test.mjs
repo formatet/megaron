@@ -1,3 +1,6 @@
+import { State as timeTestState } from './../state.js';
+import { fmtTickTime as testTickTime } from './fmt_clock.js';
+timeTestState.CURRENT_TICK=0; timeTestState.TICK_SECONDS=60; timeTestState.TICK_ANCHOR_MS=Date.now();
 import test from 'node:test';
 import { State } from '../state.js';
 import assert from 'node:assert/strict';
@@ -131,7 +134,7 @@ test('account loads five own-world profile rows, including a real day zero', asy
   State.WORLD_ID = 'my-world'; openAccountWindow(); await settle();
   const html = h.nodes.get('acc-profile').innerHTML;
   assert.equal((html.match(/class="stat-row"/g) || []).length, 5);
-  assert.match(html, /Since day 0/); assert.match(html, /Nestor/);
+  assert.match(html, new RegExp('Since '+testTickTime(0))); assert.match(html, /Nestor/);
   assert.equal(h.requests.find(r => r.url.endsWith('/me')).url, '/api/v1/worlds/my-world/me');
 });
 for (const change of ['close', 'world']) {

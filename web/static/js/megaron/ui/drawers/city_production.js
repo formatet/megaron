@@ -1,3 +1,4 @@
+import { fmtTickTime } from '../fmt_clock.js';
 import { foodGoodsText } from '../food.js';
 import { esc } from '../format.js';
 import { fmtNum, fmtDays } from '../fmt_num.js';
@@ -98,7 +99,7 @@ export function foodDetailsHTML(pd) {
   const coverage = s.coverage_ticks != null && Number.isFinite(Number(s.coverage_ticks))
     ? row('City stocks', `${fmtDays(s.coverage_ticks)} at current consumption · ${s.goods ? foodGoodsText(s.goods) : 'grain + fish'}`)
     : '<p class="empty-state">Food stores not reported.</p>';
-  const eaten = s.consumed_tick != null && s.consumed ? row('Last meal', `${foodGoodsText(s.consumed) || 'none'} · day ${n(s.consumed_tick)}`) : '';
+  const eaten = s.consumed_tick != null && s.consumed ? row('Last meal', `${foodGoodsText(s.consumed) || 'none'} · ${fmtTickTime(s.consumed_tick)}`) : '';
   return grain + army + note + automatic + coverage + eaten;
 }
 

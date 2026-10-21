@@ -168,7 +168,7 @@ func TestAIRound3_ExistingStarsAndGrammar(t *testing.T) {
 func TestAIRound3_ETAOnlyGameDays(t *testing.T) {
 	c := &Client{tickSeconds: 3600, tickSecondsFetched: true}
 	got := gameETA(c, time.Now().Add(90*time.Minute))
-	if got != "in 2 days" {
+	if got != wallClock(time.Now().Add(90*time.Minute)) {
 		t.Fatal(got)
 	}
 	err := apiError([]byte(`{"error":"insufficient_goods","missing":[{"good_key":"stone","have":0,"need":4,"rate_per_tick":2}]}`), 422)

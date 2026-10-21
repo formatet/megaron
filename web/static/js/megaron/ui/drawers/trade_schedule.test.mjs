@@ -1,9 +1,12 @@
+import { State as timeTestState } from './../../state.js';
+import { fmtTickTime as testTickTime } from './../fmt_clock.js';
+timeTestState.CURRENT_TICK=0; timeTestState.TICK_SECONDS=60; timeTestState.TICK_ANCHOR_MS=Date.now();
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { tradeScheduleText } from './diplomacy.js';
 
 test('accepted trade uses separately priced server ticks without claiming delivery from wall time', () => {
-  assert.equal(tradeScheduleText({status:'accepted', goods_arrival_tick:42, silver_arrival_tick:49, goods_arrives_at:'2000-01-01T00:00:00Z'}), ' · goods scheduled day 42 · silver scheduled day 49');
+  assert.equal(tradeScheduleText({status:'accepted', goods_arrival_tick:42, silver_arrival_tick:49, goods_arrives_at:'2000-01-01T00:00:00Z'}), " · goods scheduled " + testTickTime(42) + " · silver scheduled " + testTickTime(49));
   assert.equal(tradeScheduleText({status:'pending', goods_arrival_tick:42}), '');
   assert.equal(tradeScheduleText({status:'accepted'}), '');
 });
@@ -30,8 +33,8 @@ test('actual accept action sends one authorized request and renders both authori
       };
       await dipAccept('offer', btn);
       assert.equal(calls, 1);
-      assert.match(block.innerHTML, /goods arrive day 42/);
-      assert.match(block.innerHTML, /arrives day 49/);
+      assert.match(block.innerHTML, new RegExp('goods arrive '+testTickTime(42)));
+      assert.match(block.innerHTML, new RegExp('arrives '+testTickTime(49)));
       assert.ok(block.innerHTML.includes(kind === 'sell' ? 'incoming' : 'outgoing'));
       assert.ok(block.innerHTML.includes('&lt;grain&gt;'));
     }

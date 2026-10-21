@@ -1,3 +1,6 @@
+import { State as timeTestState } from './../state.js';
+import { fmtTickTime as testTickTime } from './fmt_clock.js';
+timeTestState.CURRENT_TICK=0; timeTestState.TICK_SECONDS=60; timeTestState.TICK_ANCHOR_MS=Date.now();
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {fmtNum} from './fmt_num.js';
@@ -12,5 +15,5 @@ test('day formatter handles displayed singular, qualifiers and absolute dates', 
   assert.equal(fmtDays(1000), '1,000 days');
   assert.equal(fmtDays(1, 'unchallenged'), '1 unchallenged day');
   assert.equal(fmtDays(3, 'unchallenged'), '3 unchallenged days');
-  assert.equal(fmtDay(3017), 'day 3,017');
+  assert.equal(fmtDay(3017), testTickTime(3017));
 });

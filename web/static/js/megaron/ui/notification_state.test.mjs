@@ -1,14 +1,17 @@
+import { State as timeTestState } from './../state.js';
+import { fmtTickTime as testTickTime } from './fmt_clock.js';
+timeTestState.CURRENT_TICK=0; timeTestState.TICK_SECONDS=60; timeTestState.TICK_ANCHOR_MS=Date.now();
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { notificationDay, urgentNotifications } from './notification_state.js';
 import { notifText, notifIcon, notifDomain } from './format.js';
 
 test('recorded game dates include zero, prefer envelope, and never infer historical dates', () => {
-  assert.equal(notificationDay({world_tick:0,body:{world_tick:9}}),'Day #0');
-  assert.equal(notificationDay({world_tick:12,body:{world_tick:9}}),'Day #12');
-  assert.equal(notificationDay({world_tick:null,body:'{"world_tick":0}'}),'Day #0');
+  assert.equal(notificationDay({world_tick:0,body:{world_tick:9}}),testTickTime(0));
+  assert.equal(notificationDay({world_tick:12,body:{world_tick:9}}),testTickTime(12));
+  assert.equal(notificationDay({world_tick:null,body:'{"world_tick":0}'}),testTickTime(0));
   for (const body of [{}, {world_tick:null}, {world_tick:-1}, {world_tick:'7'}])
-    assert.equal(notificationDay({created_at:'2026-10-18T09:00:00Z',body}),'Day unknown');
+    assert.equal(notificationDay({created_at:'2026-10-18T09:00:00Z',body}),'time unavailable');
 });
 
 test('garrison hunger notices tell the player grain is needed, recovery never claims all are fed', () => {

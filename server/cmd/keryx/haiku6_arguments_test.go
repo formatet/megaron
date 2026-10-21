@@ -21,7 +21,10 @@ func TestHaiku6MissingArgumentsNeverSendAnOrder(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			calls := 0
-			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { calls++; json.NewEncoder(w).Encode([]any{}) }))
+			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				calls++
+				json.NewEncoder(w).Encode([]any{})
+			}))
 			defer srv.Close()
 			saved := cfg
 			defer func() { cfg = saved }()
@@ -47,6 +50,9 @@ func TestHaiku6MissingArgumentsNeverSendAnOrder(t *testing.T) {
 func TestHaiku6ExplicitReportPostsItsExactText(t *testing.T) {
 	posts := 0
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if testWorldTimeResponse(w, r) {
+			return
+		}
 		if r.Method != "POST" || r.URL.Path != "/api/v1/worlds/world/reports" {
 			t.Errorf("unexpected request %s %s", r.Method, r.URL.Path)
 		}
@@ -76,6 +82,9 @@ func TestHaiku6TransferSelectedColonyAndExplicitSource(t *testing.T) {
 	markers := []map[string]any{{"id": colony, "name": "West", "own": true, "settlement_id": "west-settlement"}, {"id": "capital-province", "name": "Mallia", "own": true, "is_capital": true, "settlement_id": "capital-settlement"}}
 	posts := 0
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if testWorldTimeResponse(w, r) {
+			return
+		}
 		if r.Header.Get("Authorization") != "Bearer token" {
 			t.Error("missing auth")
 		}

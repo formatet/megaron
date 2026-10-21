@@ -11,6 +11,9 @@ import (
 func TestGiftTransferResolvesContactedForeignCity(t *testing.T) {
 	calls := 0
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if testWorldTimeResponse(w, r) {
+			return
+		}
 		calls++
 		if r.Header.Get("Authorization") != "Bearer token" {
 			t.Error("missing auth")
@@ -41,7 +44,7 @@ func TestGiftTransferResolvesContactedForeignCity(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if calls != 2 || !strings.Contains(out, "Gift dispatched") || !strings.Contains(out, "arrives day 42") {
+	if calls != 2 || !strings.Contains(out, "Gift dispatched") || !strings.Contains(out, "arrives "+testTickTime(42)) {
 		t.Fatalf("calls=%d output=%s", calls, out)
 	}
 }

@@ -35,7 +35,7 @@ func showMarchPreview(c *Client, path string, order map[string]any) error {
 		return err
 	}
 	if forecast.Available {
-		fmt.Printf("Arrives in %s (world day %d), if dispatched now. Conditions may change.\n", formatDays(forecast.DurationTicks, "%d"), forecast.ArrivalTick)
+		fmt.Printf("Arrives in %s (arrives %s), if dispatched now. Conditions may change.\n", formatDays(forecast.DurationTicks, "%d"), formatWorldTime(c, forecast.ArrivalTick))
 	} else {
 		switch forecast.Reason {
 		case "courier_required", "redirect":
@@ -49,7 +49,7 @@ func showMarchPreview(c *Client, path string, order map[string]any) error {
 	if forecast.PlannedExpeditionTicks != nil {
 		fmt.Printf("Planned expedition: %s", formatDays(*forecast.PlannedExpeditionTicks, "%d"))
 		if forecast.PlannedHomeByTick != nil {
-			fmt.Printf(" — with immediate departure, home by %s", formatDay(*forecast.PlannedHomeByTick, "%d"))
+			fmt.Printf(" — with immediate departure, home by %s", formatWorldTime(c, *forecast.PlannedHomeByTick))
 		}
 		fmt.Println(". First-leg arrival remains unknown.")
 	}

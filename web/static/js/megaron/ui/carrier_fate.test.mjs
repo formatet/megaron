@@ -1,3 +1,6 @@
+import { State as timeTestState } from './../state.js';
+import { fmtTickTime as testTickTime } from './fmt_clock.js';
+timeTestState.CURRENT_TICK=0; timeTestState.TICK_SECONDS=60; timeTestState.TICK_ANCHOR_MS=Date.now();
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -12,7 +15,7 @@ test('T2: loss dispatch renders the WHOLE frozen sealed letter and endpoints', (
   assert.ok(text.includes(loss.envelope.message_text));
   assert.ok(text.includes(loss.envelope.origin.name));
   assert.ok(text.includes(loss.envelope.destination.name));
-  assert.ok(text.includes(`Sent on day ${loss.envelope.sent_tick}`));
+  assert.ok(text.includes(`Sent ${testTickTime(loss.envelope.sent_tick)}`));
   assert.ok(!text.includes(loss.envelope.sent_at));
   assert.match(notifText('MessengerLostAtSea', loss), /lost at sea in a storm/);
   assert.doesNotMatch(text, /changed AFTER loss/);
@@ -28,7 +31,7 @@ test('T2: full trade and unit order terms survive rendering, including long cont
 
 test('T2: rescue report names frozen ship and actual port after home return', () => {
   const text = notifText('MessengerRescuedAtSea', rescue);
-  assert.ok(text.includes(`Home on day ${rescue.home_tick}.`));
+  assert.ok(text.includes(`Home ${testTickTime(rescue.home_tick)}.`));
   assert.match(text, /Sacred Dolphin/);
   const port = rescue.journey.find(j => j.port).port;
   assert.ok(text.includes(port));
@@ -40,7 +43,7 @@ for (const file of ['messenger_lost_trade.json', 'messenger_lost_order.json']) {
     const body = JSON.parse(readFileSync(new URL(`./testdata/${file}`, import.meta.url)));
     const text = messengerEnvelopeText(body);
     assert.ok(text.includes(body.envelope.message_text));
-    assert.ok(text.includes(`Sent on day ${body.envelope.sent_tick}`));
+    assert.ok(text.includes(`Sent ${testTickTime(body.envelope.sent_tick)}`));
     for (const key of ['trade_offer', 'order_payload']) {
       if (body.envelope[key]) assert.ok(text.includes(JSON.stringify(body.envelope[key], null, 2)));
     }
@@ -49,9 +52,9 @@ for (const file of ['messenger_lost_trade.json', 'messenger_lost_order.json']) {
 
 test('T2: missing legacy departure day is explicit, never UTC or a guessed day', () => {
   const body = { envelope: { ...loss.envelope, sent_tick: null } };
-  assert.match(messengerEnvelopeText(body), /Sent on an unknown day/);
+  assert.match(messengerEnvelopeText(body), /Sent time unavailable/);
   assert.ok(!messengerEnvelopeText(body).includes(body.envelope.sent_at));
-  assert.match(messengerEnvelopeText({ envelope: { sent_tick: 0 } }), /Sent on day 0/);
+  assert.match(messengerEnvelopeText({ envelope: { sent_tick: 0 } }), new RegExp('Sent '+testTickTime(0)));
 });
 
 test('T2: frozen public persons come first in sealed envelope and headline', () => {
@@ -83,15 +86,15 @@ for (const [label, journey, ending] of [
 ]) {
   test(`T2: rescue sentence from frozen fields with ${label}`, () => {
     const body = { ...rescue, journey };
-    assert.equal(notifText('MessengerRescuedAtSea', body), `Home on day ${rescue.home_tick}. Your runner was rescued at sea by the Sacred Dolphin${ending}`);
+    assert.equal(notifText('MessengerRescuedAtSea', body), `Home ${testTickTime(rescue.home_tick)}. Your runner was rescued at sea by the Sacred Dolphin${ending}`);
   });
 }
 test('T2: rescue sentence escapes frozen names for HTML display', () => {
   const text = notifText('MessengerRescuedAtSea', {home_tick:0, journey:[{ship:'<Dolphin>'},{port:'<Tiryns>'}]});
-  assert.equal(text, 'Home on day 0. Your runner was rescued at sea by the &lt;Dolphin&gt; and put ashore at &lt;Tiryns&gt;.');
+  assert.equal(text, "Home " + testTickTime(0) + ". Your runner was rescued at sea by the &lt;Dolphin&gt; and put ashore at &lt;Tiryns&gt;.");
 });
 
 test('T2: multiple rescue ships and ports stay ordered without inventing a home port', () => {
   const text = notifText('MessengerRescuedAtSea', {home_tick:509, journey:[{ship:'Sacred Dolphin'},{port:'Tiryns'},{ship:'Blue Gull'},{port:'Knossos'},{port:'Mycenae'}]});
-  assert.equal(text, 'Home on day 509. Your runner was rescued at sea by the Sacred Dolphin and put ashore at Tiryns, then was rescued at sea by the Blue Gull and put ashore at Knossos, then went ashore at Mycenae.');
+  assert.equal(text, "Home " + testTickTime(509) + ". Your runner was rescued at sea by the Sacred Dolphin and put ashore at Tiryns, then was rescued at sea by the Blue Gull and put ashore at Knossos, then went ashore at Mycenae.");
 });

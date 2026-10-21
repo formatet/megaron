@@ -51,7 +51,7 @@ func rate(v float64) string {
 	return fmt.Sprintf("%+.1f per day", v)
 }
 
-// World-unit formatting is shared by every Keryx duration and absolute day.
+// Duration formatting uses days of the world.
 func formatDays(value any, precision ...string) string {
 	number := fmt.Sprint(value)
 	if len(precision) > 0 {
@@ -67,14 +67,50 @@ func formatDays(value any, precision ...string) string {
 	}
 	return number + " " + qualifier + "days"
 }
-func formatDay(value any, precision ...string) string {
-	number := fmt.Sprint(value)
-	if len(precision) > 0 {
-		number = fmt.Sprintf(precision[0], value)
+
+// formatWorldTime projects absolute ticks through this invocation's world anchor.
+// No anchor means no invented date and no fallback to an internal tick number.
+func formatWorldTime(c *Client, value any) string {
+	number, err := strconv.ParseFloat(fmt.Sprint(value), 64)
+	if err != nil || math.IsNaN(number) || math.IsInf(number, 0) || number < 0 || number != math.Trunc(number) || number >= float64(math.MaxInt) {
+		return "time unavailable"
 	}
-	return "day " + number
+	if at, ok := c.WorldTickETA(int(number)); ok {
+		return clockTime(at)
+	}
+	return "time unavailable"
 }
-func clockTime(t time.Time) string { return t.In(keryxTZ).Format("Mon Jan 2 15:04") }
+
+func firstTimeClient(clients []*Client) *Client {
+	if len(clients) > 0 {
+		return clients[0]
+	}
+	return nil
+}
+
+func clockTime(t time.Time) string { return clockTimeAt(t, time.Now()) }
+func clockTimeAt(t, now time.Time) string {
+	t, now = t.In(keryxTZ), now.In(keryxTZ)
+	date := func(v time.Time) time.Time { return time.Date(v.Year(), v.Month(), v.Day(), 12, 0, 0, 0, keryxTZ) }
+	day := date(t)
+	today := date(now)
+	if day.Equal(today) {
+		return "today " + t.Format("15:04")
+	}
+	if day.Equal(today.AddDate(0, 0, -1)) {
+		return "yesterday " + t.Format("15:04")
+	}
+	if day.Equal(today.AddDate(0, 0, 1)) {
+		return "tomorrow " + t.Format("15:04")
+	}
+	if day.After(today.AddDate(0, 0, -7)) && day.Before(today.AddDate(0, 0, 7)) {
+		return t.Format("Mon 15:04")
+	}
+	if t.Year() != now.Year() {
+		return t.Format("2 Jan 2006 15:04")
+	}
+	return t.Format("2 Jan 15:04")
+}
 func wallClock(t time.Time) string { return "≈ " + clockTime(t) }
 
 // countdown formats the time remaining until t (e.g. a pending trade offer's
@@ -100,25 +136,15 @@ var keryxTZ = func() *time.Location {
 	return time.Local
 }()
 
-// gameETA renders world days alongside the wall-clock instant. A wait with
-// any time remaining rounds up. Missing world cadence falls back to clock/date.
+// gameETA renders an absolute arrival timestamp as a local clock/date.
 func gameETA(c *Client, t time.Time) string {
-	tickSeconds, ok := c.TickSeconds()
-	if !ok {
+	if t.IsZero() {
 		return "arrival time unavailable"
 	}
-	days := time.Until(t).Seconds() / tickSeconds
-	if days <= 0 {
-		return "any moment"
-	}
-	whole := int(math.Ceil(days))
-	return fmt.Sprintf("in %s", formatDays(whole, "%d"))
+	return wallClock(t)
 }
 
-// arrivalETA parses a server RFC3339 arrival timestamp and renders it via
-// gameETA. Falls back to the raw string if it can't be parsed, so an
-// upstream format change degrades to the old behaviour rather than dropping
-// the ETA entirely.
+// arrivalETA formats an ISO fallback when no authoritative tick is available.
 func arrivalETA(c *Client, iso string) string {
 	t, err := time.Parse(time.RFC3339, iso)
 	if err != nil {
@@ -148,15 +174,16 @@ func printPassageNote(resp map[string]any) {
 // transferArrival displays the authoritative rounded journey, never a second
 // estimate from distance, weight or local wall time. Old responses retain their
 // timestamp display.
-func transferArrival(resp map[string]any) string {
+func transferArrival(resp map[string]any, clients ...*Client) string {
+	c := firstTimeClient(clients)
 	if arrival, ok := resp["arrival_tick"].(float64); ok {
 		if duration, ok := resp["travel_ticks"].(float64); ok {
-			return fmt.Sprintf("arrives %s (journey: %s)", formatDay(arrival, "%.0f"), formatDays(duration, "%.0f"))
+			return fmt.Sprintf("arrives %s (journey: %s)", formatWorldTime(c, arrival), formatDays(duration, "%.0f"))
 		}
-		return fmt.Sprintf("arrives %s", formatDay(arrival, "%.0f"))
+		return fmt.Sprintf("arrives %s", formatWorldTime(c, arrival))
 	}
 	if at, ok := resp["arrives_at"].(string); ok {
-		return "arrives " + at
+		return "arrives " + arrivalETA(c, at)
 	}
 	return "arrival pending"
 }
@@ -167,7 +194,7 @@ func tradeArrival(c *Client, resp map[string]any, good bool) string {
 		key, timestamp = "goods_arrival_tick", "goods_arrives_at"
 	}
 	if at, ok := resp[key].(float64); ok {
-		return fmt.Sprintf("%s", formatDay(at, "%.0f"))
+		return fmt.Sprintf("%s", formatWorldTime(c, at))
 	}
 	at, _ := resp[timestamp].(string)
 	return arrivalETA(c, at)

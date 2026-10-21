@@ -11,7 +11,8 @@ func meCmd() *cobra.Command {
 	return &cobra.Command{
 		Use: "me", Short: "Show your own realm in the selected world", Args: noPositionalArgs(),
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			data, err := newClient(cfg).get(fmt.Sprintf("/api/v1/worlds/%s/me", cfg.WorldID))
+			c := newClient(cfg)
+			data, err := c.get(fmt.Sprintf("/api/v1/worlds/%s/me", cfg.WorldID))
 			if err != nil {
 				return err
 			}
@@ -31,7 +32,7 @@ func meCmd() *cobra.Command {
 			}
 			founded := "Not yet founded"
 			if profile.FoundedTick != nil {
-				founded = fmt.Sprintf("Since day %d", *profile.FoundedTick)
+				founded = "Since " + formatWorldTime(c, *profile.FoundedTick)
 			}
 			fmt.Printf("Wanax: %s\nFounded: %s\nCities: %d\nPopulation: %d\nKharis: %.1f\n", profile.WanaxName, founded, profile.Cities, profile.Population, profile.Kharis)
 			return nil

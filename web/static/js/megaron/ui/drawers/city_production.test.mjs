@@ -1,3 +1,6 @@
+import { State as timeTestState } from './../../state.js';
+import { fmtTickTime as testTickTime } from './../fmt_clock.js';
+timeTestState.CURRENT_TICK=0; timeTestState.TICK_SECONDS=60; timeTestState.TICK_ANCHOR_MS=Date.now();
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { productionSectionsHTML, populationHTML, foodSummaryHTML, foodDetailsHTML } from './city_production.js';
@@ -124,7 +127,7 @@ test('equal food: four stocks and actual meal use server totals, never grain-onl
  const detail=foodDetailsHTML(data);
  assert.match(detail,/production 10 − people eat 3 = 7 net before army/);
  assert.match(detail,/eats 2 food per day → food net 5 after army/);
- assert.match(detail,/Last meal.*0.3 grain, 2.7 fish.*day 42/);
+ assert.match(detail,new RegExp('Last meal.*0.3 grain, 2.7 fish.*'+testTickTime(42)));
  assert.doesNotMatch(detail,/999|army needs grain/);
  data.food.goods={grain:0,fish:0.008,oil:0.0000001,wine:0.1};
  assert.match(foodSummaryHTML(data),/0 grain, under 0.1 fish, under 0.1 oil, 0.1 wine/);

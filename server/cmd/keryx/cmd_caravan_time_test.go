@@ -12,6 +12,9 @@ func TestTransferDisplaysServerTicksAndShip(t *testing.T) {
 	const dest = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
 	calls := 0
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if testWorldTimeResponse(w, r) {
+			return
+		}
 		calls++
 		if r.Method != "POST" || r.URL.Path != "/api/v1/worlds/world/provinces/source/trade" || r.Header.Get("Authorization") != "Bearer token" {
 			t.Errorf("unexpected request %s %s", r.Method, r.URL.Path)
@@ -29,7 +32,7 @@ func TestTransferDisplaysServerTicksAndShip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"arrives day 42 (journey: 7 days)", "Naia", "sails home empty"} {
+	for _, want := range []string{"arrives " + testTickTime(42) + " (journey: 7 days)", "Naia", "sails home empty"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("missing %q in %s", want, out)
 		}
@@ -43,6 +46,9 @@ func TestTradeAcceptShowsBothLegsFromRecipientPerspective(t *testing.T) {
 	for _, kind := range []string{"buy", "sell"} {
 		t.Run(kind, func(t *testing.T) {
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if testWorldTimeResponse(w, r) {
+					return
+				}
 				if r.Method != "POST" || !strings.HasSuffix(r.URL.Path, "/trade-accept") {
 					t.Errorf("unexpected %s", r.Method)
 				}
@@ -59,7 +65,7 @@ func TestTradeAcceptShowsBothLegsFromRecipientPerspective(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			for _, want := range []string{"goods arrive day 42", "silver arrives day 49"} {
+			for _, want := range []string{"goods arrive " + testTickTime(42), "silver arrives " + testTickTime(49)} {
 				if !strings.Contains(out, want) {
 					t.Errorf("missing %q in %s", want, out)
 				}
@@ -78,8 +84,8 @@ func TestTradeAcceptShowsBothLegsFromRecipientPerspective(t *testing.T) {
 }
 
 func TestTradeOutboxDoesNotInferDeliveryFromWallTime(t *testing.T) {
-	got := deliveryETALine(nil, map[string]any{"goods_arrival_tick": float64(42), "silver_arrival_tick": float64(49), "goods_arrives_at": "2000-01-01T00:00:00Z"})
-	if got != "  goods scheduled day 42 · silver scheduled day 49" {
+	got := deliveryETALine(testTimeClient(), map[string]any{"goods_arrival_tick": float64(42), "silver_arrival_tick": float64(49), "goods_arrives_at": "2000-01-01T00:00:00Z"})
+	if got != "  goods scheduled "+testTickTime(42)+" · silver scheduled "+testTickTime(49) {
 		t.Fatal(got)
 	}
 }
@@ -88,6 +94,9 @@ func TestTradeOutboxDoesNotInferDeliveryFromWallTime(t *testing.T) {
 // and falls back to coordinates only when the server sent no name.
 func TestCargoNamesCities(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if testWorldTimeResponse(w, r) {
+			return
+		}
 		_ = json.NewEncoder(w).Encode([]map[string]any{
 			{"good_key": "grain", "quantity": 250, "origin_q": 0, "origin_r": 0, "dest_q": 3, "dest_r": 0,
 				"arrival_tick": 42, "role": "sender", "origin_name": "Athenai", "dest_name": "Knossos"},

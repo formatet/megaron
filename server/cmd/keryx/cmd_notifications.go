@@ -83,7 +83,7 @@ func printNotificationRow(c *Client, n notificationItem) {
 	if tier := subsistenceTier(n); tier != "" {
 		kind = n.Kind + " [" + subsistenceTierLabel(tier) + "]"
 	}
-	fmt.Printf("%s[%s]  %s\n", marker, notificationDay(n), kind)
+	fmt.Printf("%s[%s]  %s\n", marker, notificationDay(n, c), kind)
 	printNotificationDetail(c, n)
 }
 
@@ -127,7 +127,7 @@ func printNotificationDetail(c *Client, n notificationItem) {
 		}
 	}
 	if n.Kind == "MessengerLostAtSea" || n.Kind == "MessengerRescuedAtSea" {
-		printMessengerFateLine(n)
+		printMessengerFateLine(n, c)
 	}
 	if n.Kind == "GiftDelivered" || n.Kind == "GiftLost" {
 		printGiftOutcome(n)
@@ -166,10 +166,10 @@ func printNotificationDetail(c *Client, n notificationItem) {
 		printSeaStormLine(n)
 	}
 	if n.Kind == "ForeignMarchSighted" {
-		printForeignMarchSightedLine(n)
+		printForeignMarchSightedLine(n, c)
 	}
 	if n.Kind == "ForeignMarchSightedV2" {
-		printForeignMarchSightedV2Line(n)
+		printForeignMarchSightedV2Line(n, c)
 	}
 	if n.Kind == "DivinePunishment" {
 		printDivinePunishmentLine(n)
@@ -362,7 +362,8 @@ func printMessengerLine(n notificationItem) {
 // The threatened-city clause is the whole point of the urgent level: "something is
 // moving out there" and "an army is walking into Pylos" are the two ends of the
 // irreversibility gradient (Timothy 2026-08-03) and must not read alike.
-func printForeignMarchSightedLine(n notificationItem) {
+func printForeignMarchSightedLine(n notificationItem, clients ...*Client) {
+	c := firstTimeClient(clients)
 	var body struct {
 		Owner         string `json:"owner"`
 		UnitType      string `json:"unit_type"`
@@ -397,7 +398,7 @@ func printForeignMarchSightedLine(n notificationItem) {
 	if body.ThreatensName != "" {
 		threat = " — YOUR CITY " + body.ThreatensName
 	}
-	fmt.Printf("      %s %s (%d%s) marching to (%d,%d)%s — lands %s\n", owner, unitType, body.Size, stance, body.TargetQ, body.TargetR, threat, formatDay(body.ArriveTick, "%d"))
+	fmt.Printf("      %s %s (%d%s) marching to (%d,%d)%s — lands %s\n", owner, unitType, body.Size, stance, body.TargetQ, body.TargetR, threat, formatWorldTime(c, body.ArriveTick))
 }
 
 // printForeignMarchSightedV2Line — the sighting since 2026-09-26 (Timothy:
@@ -405,7 +406,8 @@ func printForeignMarchSightedLine(n notificationItem) {
 // seems bound for one of your cities' lands, the line names the city and the
 // tick it would get there IF that is its goal — an estimate from its pace,
 // which a road round a mountain can prove wrong. V1 rows keep the line above.
-func printForeignMarchSightedV2Line(n notificationItem) {
+func printForeignMarchSightedV2Line(n notificationItem, clients ...*Client) {
+	c := firstTimeClient(clients)
 	var body struct {
 		Owner         string `json:"owner"`
 		UnitType      string `json:"unit_type"`
@@ -442,7 +444,7 @@ func printForeignMarchSightedV2Line(n notificationItem) {
 	if body.ThreatensName != "" {
 		line += " — toward YOUR CITY " + body.ThreatensName + "'s lands"
 		if body.EtaIfTick != nil {
-			line += fmt.Sprintf("; there by %s if that is its goal", formatDay(*body.EtaIfTick, "%d"))
+			line += fmt.Sprintf("; there by %s if that is its goal", formatWorldTime(c, *body.EtaIfTick))
 		}
 	}
 	fmt.Println(line)
@@ -1002,7 +1004,7 @@ func notificationsCmd() *cobra.Command {
 						break
 					}
 				}
-				fmt.Printf("%s[%s]  %s  ×%d (latest)\n", marker, notificationDay(latest), kind, len(occ))
+				fmt.Printf("%s[%s]  %s  ×%d (latest)\n", marker, notificationDay(latest, c), kind, len(occ))
 				printNotificationDetail(c, latest)
 			}
 

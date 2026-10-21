@@ -149,7 +149,7 @@ func reportCmd() *cobra.Command {
 				Tick int `json:"tick"`
 			}
 			_ = json.Unmarshal(data, &resp)
-			fmt.Printf("Report sent (%s). Thank you.\n", formatDay(resp.Tick, "%d"))
+			fmt.Printf("Report sent (%s). Thank you.\n", formatWorldTime(c, resp.Tick))
 			return nil
 		},
 	}
@@ -220,7 +220,7 @@ func reportsCmd() *cobra.Command {
 				if rr.View != nil && *rr.View != "" {
 					view = " [" + *rr.View + "]"
 				}
-				fmt.Printf("[%s] %-9s %-16s%s%s — %s\n", formatDay(rr.Tick, "%d"), rr.Kind, rr.Player, pos, view, rr.Body)
+				fmt.Printf("[%s] %-9s %-16s%s%s — %s\n", formatWorldTime(c, rr.Tick), rr.Kind, rr.Player, pos, view, rr.Body)
 				for _, line := range reportContextLines(rr.Context) {
 					fmt.Printf("    %s\n", line)
 				}

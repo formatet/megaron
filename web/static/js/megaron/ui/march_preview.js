@@ -38,7 +38,7 @@ function marchArrivalHTML(data) {
 }
 function marchFirstArrivalHTML(data) {
   if (data.available && Number.isInteger(data.arrival_tick)) {
-    return 'Arrives in ' + esc(fmtDays(data.duration_ticks)) + ' (world day ' + esc(String(data.arrival_tick)) + '), if dispatched now.';
+    return 'Arrives in ' + esc(fmtDays(data.duration_ticks)) + ' (arrives ' + esc(fmtDay(data.arrival_tick)) + '), if dispatched now.';
   }
   if (data.reason === 'courier_required' || data.reason === 'redirect') {
     return 'Arrival not yet known — a messenger must deliver the order first.';

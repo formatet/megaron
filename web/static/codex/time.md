@@ -2,7 +2,7 @@
 
 The world advances one **day** at a time. Wherever the game tells you how long something takes — a march, a building, a letter — it counts in days, because that is the unit your decisions are made in.
 
-How much real time a day takes is set per world. A test world can run faster than normal. The **date in the top bar** is the world's own calendar; the sun and moon beside it show the time of day. An arrival such as **day 12** belongs to this world. When a real-world estimate is shown beside it, it uses a clock time and date, such as **≈ Fri 21:30**.
+How much real time a day takes is set per world. A test world can run faster than normal. The **date in the top bar** is the world's own calendar; the sun and moon beside it show the time of day. **When something happens** uses your clock and date: **today 18:34**, **tomorrow 09:10**, or **Thu 09:00**; further away, a date is shown. **How long something lasts** stays in days of the world: **food for 12 days**, or **a 30-day expedition**. Arrival estimates follow the world's current pace; they can change when the world pauses or its pace changes.
 
 ## The world does not wait for you
 

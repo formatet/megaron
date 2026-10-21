@@ -346,7 +346,7 @@ func printNotificationSummary(c *Client, n notificationItem) {
 			at, day, leg = b.SilverArrivesAt, b.SilverArrivalTick, "silver"
 		}
 		if day != nil {
-			line += " — " + leg + " arrives " + formatDay(*day, "%.0f")
+			line += " — " + leg + " arrives " + formatWorldTime(c, *day)
 		} else if at != "" {
 			line += " — " + leg + " arrives " + arrivalETA(c, at)
 		}

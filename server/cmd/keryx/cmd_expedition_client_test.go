@@ -14,6 +14,9 @@ func TestExploreTicksOrderAndPreview(t *testing.T) {
 			t.Run(map[bool]string{true: "preview", false: "dispatch"}[preview]+map[bool]string{true: "alias", false: "unit"}[alias], func(t *testing.T) {
 				calls := 0
 				srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					if testWorldTimeResponse(w, r) {
+						return
+					}
 					calls++
 					if preview {
 						if r.Method != "GET" || !strings.HasSuffix(r.URL.Path, "/march-preview") || r.URL.Query().Get("ticks") != "12" || r.URL.Query().Get("intent") != "explore" {
@@ -50,7 +53,7 @@ func TestExploreTicksOrderAndPreview(t *testing.T) {
 				if calls != 1 {
 					t.Fatalf("calls=%d", calls)
 				}
-				if !preview && (!strings.Contains(out, "12 days") || !strings.Contains(out, "home by day 112")) {
+				if !preview && (!strings.Contains(out, "12 days") || !strings.Contains(out, "home by "+testTickTime(112))) {
 					t.Fatalf("missing mission: %s", out)
 				}
 			})
@@ -71,8 +74,8 @@ func TestExpeditionMissionLifecycleText(t *testing.T) {
 	if err := json.Unmarshal([]byte(`{"expedition":{"area_q":9,"area_r":2,"length_ticks":12,"turn_tick":8,"home_by_tick":14,"homeward":true,"turn_reason":"area_known"}}`), &u); err != nil {
 		t.Fatal(err)
 	}
-	text := expeditionMissionText(u.Expedition)
-	for _, want := range []string{"(9,2)", "12 days", "returning home", "area explored", "home by day 14"} {
+	text := expeditionMissionText(u.Expedition, testTimeClient())
+	for _, want := range []string{"(9,2)", "12 days", "returning home", "area explored", "home by " + testTickTime(14)} {
 		if !strings.Contains(text, want) {
 			t.Fatalf("missing %s: %s", want, text)
 		}

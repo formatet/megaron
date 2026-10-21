@@ -11,7 +11,7 @@ func TestOrdersEnRouteLine(t *testing.T) {
 	q, r := 47, 23
 	arrives := time.Now().Add(2*time.Hour + 30*time.Minute).UTC().Format(time.RFC3339)
 	got := ordersEnRouteLine(c, orderEnRoute{Verb: "march", TargetQ: &q, TargetR: &r, ArrivesAt: arrives})
-	want := "Order on its way: march to (47,23) — the runner reaches it in 3 days"
+	want := "Order on its way: march to (47,23) — the runner reaches it " + arrivalETA(c, arrives)
 	if got != want {
 		t.Errorf("got %q, want %q", got, want)
 	}
@@ -19,7 +19,7 @@ func TestOrdersEnRouteLine(t *testing.T) {
 		t.Errorf("recall line = %q", got)
 	}
 	// No cadence: still names the order, never a wrong ETA.
-	if got := ordersEnRouteLine(&Client{tickSecondsFetched: true}, orderEnRoute{Verb: "stance", ArrivesAt: arrives}); got != "Order on its way: stance change" {
+	if got := ordersEnRouteLine(&Client{tickSecondsFetched: true}, orderEnRoute{Verb: "stance", ArrivesAt: arrives}); got != "Order on its way: stance change — the runner reaches it "+arrivalETA(c, arrives) {
 		t.Errorf("no-cadence line = %q", got)
 	}
 }

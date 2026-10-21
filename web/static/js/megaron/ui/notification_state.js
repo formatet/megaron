@@ -1,4 +1,5 @@
-// Dates come from recorded game time, never an estimate from wall-clock time.
+import { fmtTickTime } from './fmt_clock.js';
+// Registered game time takes priority over a notification's delivery timestamp.
 export function notificationTick(n) {
   const body = typeof n.body === 'string' ? JSON.parse(n.body) : (n.body || n.payload || {});
   const tick = n.world_tick ?? body.world_tick;
@@ -6,7 +7,7 @@ export function notificationTick(n) {
 }
 export function notificationDay(n) {
   const tick = notificationTick(n);
-  return tick == null ? 'Day unknown' : `Day #${tick}`;
+  return fmtTickTime(tick);
 }
 export function notificationBody(n) {
   return typeof n.body === 'string' ? JSON.parse(n.body) : (n.body || {});

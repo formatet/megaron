@@ -14,7 +14,7 @@ func stormsCmd() *cobra.Command {
 		Use:   "storms",
 		Short: "Storms at sea you can see, and where you last saw the others",
 		Long: `A storm is three connected sea hexes that drift slowly. You see one only inside your
-sight; afterwards it is remembered where you LAST saw it (with the day), not where it is now.
+sight; afterwards it is remembered where you LAST saw it (with the time), not where it is now.
 A ship that sails into a storm takes 2 hull damage (of 5), once per storm however long it stays inside.
 The first Wanax whose ship a storm strikes may name it, once: keryx storms name <id> "<name>".`,
 		Args: noPositionalArgs(),
@@ -28,7 +28,7 @@ The first Wanax whose ship a storm strikes may name it, once: keryx storms name 
 				printRawJSON(data)
 				return nil
 			}
-			out, err := formatStorms(data)
+			out, err := formatStorms(data, c)
 			if err != nil {
 				return err
 			}
@@ -44,7 +44,8 @@ The first Wanax whose ship a storm strikes may name it, once: keryx storms name 
 
 // formatStorms renders GET /storms for a person: live storms with their heading, then the
 // remembered ones with the day they were last seen.
-func formatStorms(data []byte) (string, error) {
+func formatStorms(data []byte, clients ...*Client) (string, error) {
+	c := firstTimeClient(clients)
 	var resp struct {
 		Storms []struct {
 			ID       string `json:"id"`
@@ -97,7 +98,7 @@ func formatStorms(data []byte) (string, error) {
 		if s.Tier == "live" {
 			continue
 		}
-		fmt.Fprintf(&b, "%s last seen on day %d: %s (it has moved since) [%s]%s\n", label(i), s.SeenTick, hexes(i), shortID(s.ID), note(i))
+		fmt.Fprintf(&b, "%s last seen %s: %s (it has moved since) [%s]%s\n", label(i), formatWorldTime(c, s.SeenTick), hexes(i), shortID(s.ID), note(i))
 	}
 	return b.String(), nil
 }

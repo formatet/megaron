@@ -17,6 +17,9 @@ func TestMarchPreviewNeverDispatches(t *testing.T) {
 				t.Run(strings.Join([]string{map[bool]string{false: "unit", true: "alias"}[alias], map[bool]string{false: "text", true: "json"}[asJSON], reason}, "/"), func(t *testing.T) {
 					calls := 0
 					srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						if testWorldTimeResponse(w, r) {
+							return
+						}
 						calls++
 						if r.Method != "GET" || r.URL.Path != "/api/v1/worlds/world/units/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/march-preview" {
 							t.Errorf("unexpected request %s %s", r.Method, r.URL.Path)
@@ -63,7 +66,7 @@ func TestMarchPreviewNeverDispatches(t *testing.T) {
 							t.Fatalf("wrong forecast: %s", out)
 						}
 					} else {
-						want := map[string]string{"": "Arrives in 3 days (world day 42)", "courier_required": "Runner must deliver", "redirect": "Runner must deliver", "unknown_terrain": "unknown terrain"}[reason]
+						want := map[string]string{"": "Arrives in 3 days (arrives " + testTickTime(42) + ")", "courier_required": "Runner must deliver", "redirect": "Runner must deliver", "unknown_terrain": "unknown terrain"}[reason]
 						if !strings.Contains(out, want) || !strings.Contains(out, "No order sent") || !strings.Contains(out, "Pay: 0.6 → 2 silver per day in the field · treasury lasts 25 days") {
 							t.Fatalf("wrong forecast %q", out)
 						}
@@ -77,6 +80,9 @@ func TestMarchPreviewNeverDispatches(t *testing.T) {
 func TestMarchPreviewErrorNeverDispatches(t *testing.T) {
 	calls := 0
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if testWorldTimeResponse(w, r) {
+			return
+		}
 		calls++
 		if r.Method != "GET" {
 			t.Errorf("unexpected mutation: %s", r.Method)

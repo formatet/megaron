@@ -422,7 +422,7 @@ func TestNotificationWordsAndArchiveSemantics(t *testing.T) {
 		{"SitosGranaryRelease", `{"food_released":0.3,"coverage_days":12,"per_good":{"grain":0.3}}`, []string{"0.3 grain"}, []string{"released 0 grain"}},
 		{"OfferDeclined", `{"kind":"buy","quantity":0,"silver":15}`, []string{"15 silver", "refunded immediately"}, nil},
 		{"OfferExpired", `{"kind":"sell","quantity":12,"good_key":"tin"}`, []string{"12 tin", "refunded immediately"}, nil},
-		{"OfferAccepted", `{"kind":"sell","quantity":12,"good_key":"tin","silver":15,"silver_arrival_tick":130}`, []string{"12 tin", "15 silver", "silver arrives day 130"}, []string{"tick"}},
+		{"OfferAccepted", `{"kind":"sell","quantity":12,"good_key":"tin","silver":15,"silver_arrival_tick":130}`, []string{"12 tin", "15 silver", "silver arrives " + testTickTime(130)}, []string{"tick"}},
 		{"UnitAttrition", `{"name":"Bronze Guard","lost":7,"disbanded":true}`, []string{"Bronze Guard starved to nothing"}, nil},
 		{"UnitDeserted", `{"name":"Bronze Guard","lost":7}`, []string{"Bronze Guard", "7 left unpaid"}, nil},
 		{"CityCollapsed", `{"name":"Tiryns","last_settlement":true}`, []string{"last settlement"}, nil},
@@ -431,7 +431,9 @@ func TestNotificationWordsAndArchiveSemantics(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.kind+tc.body, func(t *testing.T) {
-			out := capturePrint(t, func() { printNotificationDetail(nil, notificationItem{Kind: tc.kind, Body: json.RawMessage(tc.body)}) })
+			out := capturePrint(t, func() {
+				printNotificationDetail(testTimeClient(), notificationItem{Kind: tc.kind, Body: json.RawMessage(tc.body)})
+			})
 			for _, s := range tc.want {
 				if !strings.Contains(out, s) {
 					t.Errorf("missing %q in %s", s, out)
@@ -450,7 +452,9 @@ func TestNotificationWordsAndArchiveSemantics(t *testing.T) {
 		{"SiegeStarted", `{"besieger_name":"Nestor","name":"Tiryns"}`, "Nestor", "Tiryns"},
 		{"BattleWon", `{"opponent_name":"Nestor","place":"Tiryns"}`, "Nestor", "Tiryns"},
 	} {
-		out := capturePrint(t, func() { printNotificationDetail(nil, notificationItem{Kind: tc.kind, Body: json.RawMessage(tc.body)}) })
+		out := capturePrint(t, func() {
+			printNotificationDetail(testTimeClient(), notificationItem{Kind: tc.kind, Body: json.RawMessage(tc.body)})
+		})
 		if strings.Index(out, tc.person) < 0 || strings.Index(out, tc.person) > strings.Index(out, tc.place) {
 			t.Errorf("%s should name person before place: %s", tc.kind, out)
 		}
