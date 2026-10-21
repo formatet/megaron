@@ -3,8 +3,8 @@ package combat
 // Stormar som syns och driver (megaron_plan_stormar.md, Timothy 2026-10-10).
 //
 // A storm is a unit of three connected sea hexes — a polyhex that crawls. Each
-// tick ONE of its hexes steps to an adjacent hex and the unit must still be
-// connected afterwards; the other two stand still. The steps are rolled here,
+// tick it takes two shape steps: ONE hex moves to an adjacent hex per step,
+// and the unit must stay connected after each step. The steps are rolled here,
 // once, and stored as the track (sea_storm_track) — ships are hit by the stored
 // track, never by a fresh die. One storm per SeaHexesPerStorm sea hexes.
 
@@ -27,6 +27,9 @@ const SeaHexesPerStorm = 100
 
 // StormHexes is how many hexes one storm covers.
 const StormHexes = 3
+
+// StormStepsPerTick doubles the former drift speed (Timothy 2026-10-20).
+const StormStepsPerTick = 2
 
 const (
 	stormTurnChance   = 0.15 // chance per tick that the heading turns one step
@@ -227,7 +230,7 @@ func writeStormTrack(ctx context.Context, tx pgx.Tx, id uuid.UUID, tick int, s S
 	return nil
 }
 
-// advanceStorms extends every storm's track to dueTick, one step per tick, in one TX
+// advanceStorms extends every storm's track to dueTick, two shape steps per tick, in one TX
 // per storm. A duplicated or late scan never writes a (storm, tick) twice.
 func advanceStorms(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, dueTick int, graph province.TileGraph, dice economy.Dice) error {
 	rows, err := tx.Query(ctx, `SELECT id, heading FROM sea_storms WHERE world_id = $1 ORDER BY id FOR UPDATE`, worldID)
@@ -265,7 +268,9 @@ func advanceStorms(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, dueTick in
 			from = dueTick - stormCatchUpMax + 1
 		}
 		for t := from; t <= dueTick; t++ {
-			shape, heading, _ = StepStorm(shape, heading, isSea, dice)
+			for step := 0; step < StormStepsPerTick; step++ {
+				shape, heading, _ = StepStorm(shape, heading, isSea, dice)
+			}
 			if err := writeStormTrack(ctx, tx, s.id, t, shape); err != nil {
 				return err
 			}

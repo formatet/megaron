@@ -170,3 +170,55 @@ func TestSeaStormWeather_LateScanEqualsDailyScans(t *testing.T) {
 }
 
 var _ province.TileGraph
+
+// Steady eastward weather makes the former speed's maximum displacement
+// measurable: one moved hex per tick can advance the centroid at most 1/3 hex.
+// Over twelve ticks, the new weather must advance beyond that old four-hex bound.
+type steadyStormDice struct{}
+
+func (steadyStormDice) Float64() float64 { return 0.9 }
+func (steadyStormDice) Intn(int) int     { return 0 }
+
+func TestSeaStormWeather_DriftExceedsOldSpeedBound(t *testing.T) {
+	pool, worldID := seaWorld(t, 20)
+	ctx := context.Background()
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback(ctx)
+	var id uuid.UUID
+	if err := tx.QueryRow(ctx, `INSERT INTO sea_storms(world_id,created_tick,heading) VALUES($1,0,0) RETURNING id`, worldID).Scan(&id); err != nil {
+		t.Fatal(err)
+	}
+	start := StormShape{{Q: 5, R: 5}, {Q: 6, R: 5}, {Q: 5, R: 6}}
+	if err := writeStormTrack(ctx, tx, id, 0, start); err != nil {
+		t.Fatal(err)
+	}
+	graph, err := province.LoadTileGraph(ctx, tx, worldID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := advanceStorms(ctx, tx, worldID, 12, graph, steadyStormDice{}); err != nil {
+		t.Fatal(err)
+	}
+	end, last, err := latestStormShape(ctx, tx, id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	x0, _ := centroid(start)
+	x1, _ := centroid(end)
+	if last != 12 || x1-x0 <= 4 {
+		t.Fatalf("12 ticks drifted %.3f hexes; must exceed old maximum 4 (last tick %d)", x1-x0, last)
+	}
+	if !end.Connected() {
+		t.Fatalf("storm split: %v", end)
+	}
+	if err := advanceStorms(ctx, tx, worldID, 12, graph, steadyStormDice{}); err != nil {
+		t.Fatal(err)
+	}
+	again, _, err := latestStormShape(ctx, tx, id)
+	if err != nil || again != end {
+		t.Fatalf("duplicate scan changed weather: %v -> %v, %v", end, again, err)
+	}
+}

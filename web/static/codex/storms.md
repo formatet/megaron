@@ -2,7 +2,7 @@ A **storm** is three connected hexes of dark cloud on the Thalassa. There is abo
 
 ## How they move
 
-Each day **one** of a storm's three hexes steps to a neighbouring sea hex, and the storm stays in one piece. So a storm crawls: slowly, and a little more each day in the direction it has been drifting, now and then turning. It never crosses land.
+Each day a storm takes **two steps**. In each step, one of its three hexes moves to a neighbouring sea hex, and the storm stays in one piece. So a storm crawls: slowly, and a little more each day in the direction it has been drifting, now and then turning. It never crosses land.
 
 ## What they do
 
