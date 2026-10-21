@@ -77,6 +77,9 @@ func TestBetaFreightStillnessFrozenOnShip(t *testing.T) {
 	pool := testPool(t)
 	f := newFixture(t, pool)
 	ctx := context.Background()
+	if _, err := pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,'fish',10,0,1000,0)`, f.sourceID); err != nil {
+		t.Fatal(err)
+	}
 	if _, err := pool.Exec(ctx, `DELETE FROM map_tiles WHERE world_id=$1`, f.worldID); err != nil {
 		t.Fatal(err)
 	}

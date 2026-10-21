@@ -29,7 +29,7 @@ var g1Allowed = map[string][]string{
 	"carrier":   {"events"},
 	"chronicle": {"events"}, "settlement": {"province"},
 	"economy":      {"carrier", "clock", "events", "gossip", "hexgrid", "province", "tick"},
-	"transport":    {"religion", "carrier", "clock", "events", "province", "movement", "tick"},
+	"transport":    {"economy", "religion", "carrier", "clock", "events", "province", "movement", "tick"},
 	"capabilities": {"clock", "province", "religion", "unit"},
 	"kharis":       {"ai", "clock", "economy", "events", "hexgrid", "religion", "unit"},
 	"combat":       {"religion", "carrier", "capabilities", "clock", "economy", "events", "gossip", "hexgrid", "movement", "province", "tick", "transport", "unit", "world"},

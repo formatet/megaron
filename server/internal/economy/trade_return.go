@@ -193,10 +193,16 @@ func releaseShipAfterTradeReturn(ctx context.Context, tx pgx.Tx, worldID, shipUn
 	if err := tx.QueryRow(ctx,
 		`SELECT state, owner_id FROM settlements WHERE id = $1`, homeID,
 	).Scan(&state, &curOwner); err == nil && state == "active" && curOwner == ownerID {
-		_, err := tx.Exec(ctx,
+		tag, err := tx.Exec(ctx,
 			`UPDATE units SET status = 'garrison', settlement_id = $2, updated_at = now()
 			 WHERE id = $1 AND status = 'freighting'`, shipUnitID, homeID)
-		return err
+		if err != nil {
+			return err
+		}
+		if tag.RowsAffected() > 0 {
+			return ReturnProvisions(ctx, tx, shipUnitID, homeID)
+		}
+		return nil
 	}
 
 	rows, err := tx.Query(ctx,
@@ -248,8 +254,14 @@ func releaseShipAfterTradeReturn(ctx context.Context, tx pgx.Tx, worldID, shipUn
 			best, bestDist = c, d
 		}
 	}
-	_, err = tx.Exec(ctx,
+	tag, err := tx.Exec(ctx,
 		`UPDATE units SET status = 'garrison', settlement_id = $2, updated_at = now()
 		 WHERE id = $1 AND status = 'freighting'`, shipUnitID, best.id)
-	return err
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() > 0 {
+		return ReturnProvisions(ctx, tx, shipUnitID, best.id)
+	}
+	return nil
 }

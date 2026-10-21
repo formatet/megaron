@@ -116,7 +116,7 @@ province(→hexgrid,movement)
   ↑
 events(→clock) · carrier(→events; owns physical passenger witnesses, never messenger state) · tick(→clock,events) · chronicle(→events) · settlement(→province)
   ↑
-economy(→carrier,clock,events,gossip,hexgrid,province,tick) · transport(→carrier,clock,events,movement,province,religion,tick) · capabilities(→clock,province,religion,unit)
+economy(→carrier,clock,events,gossip,hexgrid,province,tick) · transport(→carrier,clock,economy,events,movement,province,religion,tick) · capabilities(→clock,province,religion,unit)
   ↑
 kharis(→ai,clock,economy,events,hexgrid,religion,unit) · loyalty(→clock,economy,events,settlement,tick)
   ↑
@@ -130,8 +130,11 @@ api/handlers, cmd/server  ← may use all (the only ones that may import notify 
 The executable G1 rule owner is `server/cmd/server/architecture_test.go` (`g1Allowed`).
 The guard reads production imports through `go list`; unknown internal packages fail until classified.
 `province → hexgrid` owns shared geometry; `province → movement` consumes the saved march
-route decoder and physical tick position; upper consumers supply `tick.Anchor.MilliAt`. `economy → province` consumes catalogues and routing.
-Both are intentional downward dependencies. Subpackages are classified individually.
+route decoder and physical tick position; upper consumers supply `tick.Anchor.MilliAt`.
+`economy → province` consumes catalogues and routing. Economy owns voyage rations and
+onboard provision ledgers; transport consumes that owner, including provision return
+through bilateral-trade handlers in economy. Subpackages are classified individually.
+
 
 A package may import **downward only**. Upward communication goes via event emission.
 Consumer interfaces are defined in the **consuming** package, never in the implementing one.

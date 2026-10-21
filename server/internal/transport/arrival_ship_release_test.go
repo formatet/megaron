@@ -173,6 +173,9 @@ func TestArrival_StandingOrderLegDoesNotReleaseShipWhileOrderLives(t *testing.T)
 	if err != nil {
 		t.Fatalf("begin: %v", err)
 	}
+	if _, err := pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,'fish',10,0,1000,0)`, f.sourceID); err != nil {
+		t.Fatal(err)
+	}
 	now := time.Now()
 	// standing_orders FK requires a real row — insert a minimal one so the
 	// column actually holds a live reference, matching production shape.

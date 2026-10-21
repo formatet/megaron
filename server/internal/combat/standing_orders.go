@@ -389,11 +389,23 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 	// och skrovets platta ranson ur UpkeepSpecs").
 	ration := standingOrderRation()
 	if category == "naval" {
-		ration = standingOrderNavalRation()
+		var kind string
+		var size int
+		if err := tx.QueryRow(ctx, `SELECT type,size FROM units WHERE id=$1`, *shipID).Scan(&kind, &size); err != nil {
+			return err
+		}
+		ration = VoyageRation(kind, size, "", 0)
 	}
 	provisions := VoyageProvisions(ration, travelTicks, 0)
+	if category == "naval" {
+		provisions = VoyageProvisions(ration, travelTicks, returnJourney.TravelTicks-travelTicks)
+	}
+	provisionPort := o.crewID
+	if category == "naval" {
+		provisionPort = o.fromID
+	}
 	grainReserve := economy.GrainConsumptionPerCitizenPerTick * float64(fromPop) * float64(travelTicks+returnJourney.TravelTicks)
-	if o.crewID == o.fromID {
+	if provisionPort == o.fromID {
 		// Provisions are drawn from the SAME settlement's SAME grain stock as
 		// the manifest below — fold them into one reserve so the two draws can
 		// never overdraw it between them (see the deduction order at the
@@ -407,8 +419,8 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 	}
 	reserved := economy.PlanFood(grainReserve, sourceFood, false).Used
 	crewFood := sourceFood
-	if o.crewID != o.fromID {
-		crewFood, err = economy.LoadFood(ctx, tx, o.crewID, true)
+	if provisionPort != o.fromID {
+		crewFood, err = economy.LoadFood(ctx, tx, provisionPort, true)
 		if err != nil {
 			return err
 		}
@@ -490,12 +502,15 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 			return fmt.Errorf("deduct %s from source: %w", good, err)
 		}
 	}
-	meal, err := economy.TakeFood(ctx, tx, o.crewID, provisions, false, true)
-	if err != nil {
-		return fmt.Errorf("deduct provisions: %w", err)
-	}
-	if meal.Unmet > 0 {
-		return fmt.Errorf("reserved caravan food changed before dispatch")
+	if category == "land" {
+		meal, err := economy.TakeFood(ctx, tx, o.crewID, provisions, false, true)
+		if err != nil {
+			return fmt.Errorf("deduct provisions: %w", err)
+		}
+		if meal.Unmet > 0 {
+			return fmt.Errorf("reserved caravan food changed before dispatch")
+		}
+
 	}
 
 	var currentTick int

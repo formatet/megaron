@@ -18,6 +18,7 @@ import (
 	"strings"
 	"time"
 
+	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/movement"
 	"formatet/megaron/server/internal/province"
@@ -208,6 +209,35 @@ func prepareJourney(ctx context.Context, tx pgx.Tx, p DispatchParams) (DispatchP
 
 	if err := BlessDeparture(ctx, tx, p.WorldID, p.OwnerID, p.OriginID, p.Journey, !strings.Contains(p.Kind, "return")); err != nil {
 		return p, err
+	}
+	// Returns sail on what is already aboard: a damaged return may start at
+	// sea even though OriginID names its home. Never use that ID as food access.
+	if p.Category == "naval" && !strings.Contains(p.Kind, "return") {
+		var portOwner uuid.UUID
+		var q, r int
+		if err := tx.QueryRow(ctx, `SELECT s.owner_id,p.map_q,p.map_r FROM settlements s JOIN provinces p ON p.id=s.province_id WHERE s.id=$1 AND s.world_id=$2 AND s.state='active'`, p.OriginID, p.WorldID).Scan(&portOwner, &q, &r); err != nil {
+			return p, err
+		}
+		if portOwner != p.OwnerID || q != p.OriginQ || r != p.OriginR {
+			return p, fmt.Errorf("freight provisions require the physical departure port")
+		}
+		var kind string
+		var size int
+		if err := tx.QueryRow(ctx, `SELECT type,size FROM units WHERE id=$1`, *p.ShipUnitID).Scan(&kind, &size); err != nil {
+			return p, err
+		}
+		// Price the reverse path separately: winds/current and a departure prayer
+		// can make outbound and homeward durations differ.
+		home, err := province.PlanTradeJourney(ctx, tx, p.WorldID, dest, origin, "naval")
+		if err != nil {
+			return p, err
+		}
+		need := economy.VoyageProvisions(economy.VoyageRation(kind, size, "", 0), p.Journey.TravelTicks, home.TravelTicks-p.Journey.TravelTicks)
+		// VoyageProvisions clamps negative station time; symmetric overpacking is
+		// intentional when the actual reverse path is faster.
+		if err := economy.LoadProvisions(ctx, tx, *p.ShipUnitID, p.OriginID, need); err != nil {
+			return p, err
+		}
 	}
 	p.DueTick = p.DepartedTick + p.Journey.TravelTicks
 	p.ArrivesAt = p.DepartsAt.Add(tick.RealUntil(p.DueTick, p.DepartedTick))

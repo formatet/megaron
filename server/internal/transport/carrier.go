@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 
+	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -115,13 +116,16 @@ func BindShip(ctx context.Context, tx pgx.Tx, shipID uuid.UUID) error {
 // isn't bound (e.g. a re-run of an idempotent arrival handler) is a no-op,
 // never an error.
 func ReleaseShip(ctx context.Context, tx pgx.Tx, shipID, settlementID uuid.UUID) error {
-	_, err := tx.Exec(ctx,
+	tag, err := tx.Exec(ctx,
 		`UPDATE units SET status = 'garrison', settlement_id = $2, updated_at = now()
 		 WHERE id = $1 AND status = 'freighting'`,
 		shipID, settlementID,
 	)
 	if err != nil {
 		return fmt.Errorf("release ship: %w", err)
+	}
+	if tag.RowsAffected() > 0 {
+		return economy.ReturnProvisions(ctx, tx, shipID, settlementID)
 	}
 	return nil
 }
