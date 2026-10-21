@@ -2,6 +2,7 @@ package kharis
 
 import (
 	"context"
+	"math"
 	"os"
 	"sync/atomic"
 	"testing"
@@ -360,13 +361,9 @@ func expectedDayResult(prevPop int, prevAmount, prevRate float64) (newPop int, n
 			newPop = prevPop - 1 // at least one person per tick
 		}
 	case economy.FoodNet(prevRate, prevPop) > 0:
-		wallCap := float64(economy.PopulationCap(3)) // fixtures have the highest wall (see newGrowthFixture)
-		softcap := 1.0 - float64(prevPop)/wallCap
-		if softcap < 0 {
-			softcap = 0
-		}
-		const variety = 1.0                                                  // no fish/oil/wine/livestock in these fixtures
-		add := int(float64(prevPop)*growthRatePerTick*variety*softcap + 0.5) // ROUND
+		wallCap := float64(economy.PopulationCap(3))                                 // fixtures have the highest wall (see newGrowthFixture); no soft cap
+		const variety = 1.0                                                          // no fish/oil/wine/livestock in these fixtures
+		add := int(math.RoundToEven(float64(prevPop) * growthRatePerTick * variety)) // SQL ROUND on float8 is half-to-even (pop 1700 → 8.5 → 8)
 		if add < 1 {
 			add = 1
 		}

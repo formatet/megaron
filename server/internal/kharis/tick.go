@@ -99,12 +99,12 @@ const kharisFloor = 1.0
 const Floor = kharisFloor
 
 // growthRatePerTick is the most a fed city grows in one tick, as a fraction of
-// its population, before the food-variety multiplier and the size soft cap.
+// its population, before the food-variety multiplier (the wall sets the ceiling, no soft cap).
 //
 // Tillväxten (Timothy 2026-09-26, megaron_styrande_beslut): growth costs NO
 // food. A city grows only when it has an ÖVERFLÖD — economy.FoodNet > 0, it
 // produces more food per tick than its population eats — and then always at
-// this full rate × variety × soft cap, never scaled to the size of the
+// this full rate × variety up to the wall ceiling, never scaled to the size of the
 // surplus. The surplus itself stays in the stores. This replaces the
 // grain-priced model (grainPerCitizen 2,0 + growthGrainReserve 6,94, 2026-08-19
 // "surplus → growth, not storage"), under which growth spent every grain above
@@ -606,11 +606,11 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 	//   fed, food_net ≤ 0 → population holds. The city eats what it makes (or
 	//               lives off its stores) — no överflöd, no growth.
 	//   fed, food_net > 0 → + GREATEST(1, ROUND(pop × growthRatePerTick ×
-	//               variety × softcap)). variety = 1.0 + 0.1 per additional
+	//               variety)). variety = 1.0 + 0.1 per additional
 	//               distinct food with at least economy.VarietyMinShare of this
 	//               tick's actual meal (cap 1.4);
-	//               softcap = max(0, 1 − pop/cap), cap = economy.PopulationCap(
-	//               wall_level) — the wall is the ceiling. At or over the cap:
+	//               (no soft cap, Timothy 2026-10-21: full rate up to the ceiling, then stop),
+	//               clamped to cap − pop; cap = economy.PopulationCap(wall_level) — the wall is the ceiling. At or over the cap:
 	//               pop holds (no growth, never a loss). Costs no food.
 	//
 	// food_net is economy.FoodNet written in SQL: Σ rate over
@@ -685,7 +685,7 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 		                 -- never overshoots, and nothing else clamps pop downward.
 		                 WHEN food_net > 0 AND pop < pop_cap THEN
 		                     pop + LEAST(pop_cap - pop,
-		                                 GREATEST(1, ROUND(pop * $7::float8 * variety * GREATEST(0, 1.0 - pop::float / pop_cap))))
+		                                 GREATEST(1, ROUND(pop * $7::float8 * variety)))
 		                 ELSE pop
 		             END
 		         ) AS new_pop

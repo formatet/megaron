@@ -2,6 +2,7 @@ package kharis
 
 import (
 	"context"
+	"math"
 	"sync/atomic"
 	"testing"
 
@@ -116,5 +117,17 @@ func TestMurtak_GrowthStopsExactlyAtCap(t *testing.T) {
 	}
 	if got := decayOnce(t, pool, h, world, sid); got != 2000 {
 		t.Fatalf("at cap -> %d, want 2000", got)
+	}
+}
+
+// Hard ceiling (Timothy 2026-10-21): no soft cap. A city 100 under its cap grows at
+// the full rate (ROUND(pop*0.005)), not slowed by 1-pop/cap, and is clamped at the cap.
+func TestMurtak_FullRateRightUpToTheCap(t *testing.T) {
+	pool, world, sid := newGrowthFixture(t, wallTerrains, 100)
+	feed(t, pool, sid, 1900, 0)
+	h := newTestTickHandler(pool)
+	got := decayOnce(t, pool, h, world, sid)
+	if want := 1900 + int(math.RoundToEven(1900*growthRatePerTick)); got != want { // 1900 + 10 = 1910
+		t.Fatalf("1900 under cap 2000 -> %d, want full rate %d (a soft cap would give +1)", got, want)
 	}
 }
