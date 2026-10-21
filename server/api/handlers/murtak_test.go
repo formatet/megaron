@@ -76,6 +76,9 @@ func TestMurtak_GranaryMultipliesFoodStoreNotHerd(t *testing.T) {
 	f := buildHexFixture(t)
 	ctx := context.Background()
 	base := province.DefaultGoodStorageCap
+	if _, err := f.pool.Exec(ctx, `DELETE FROM settlement_goods WHERE settlement_id = $1 AND good_key IN ('grain','fish','wine','livestock')`, f.settlementID); err != nil {
+		t.Fatal(err)
+	}
 	seed := func(good string) {
 		if _, err := f.pool.Exec(ctx,
 			`INSERT INTO settlement_goods (settlement_id, good_key, amount, rate, cap, calc_tick)
@@ -86,26 +89,26 @@ func TestMurtak_GranaryMultipliesFoodStoreNotHerd(t *testing.T) {
 	seed("grain")
 	seed("livestock")
 	setSilo(t, f, 2)
-	if got := capOf(t, f, "grain"); got != 5*base {
-		t.Errorf("grain cap with Granary 2 = %v, want %v", got, 5*base)
+	if got := capOf(t, f, "grain"); got != province.FoodStorageCap(2) {
+		t.Errorf("grain cap with Granary 2 = %v, want %v", got, province.FoodStorageCap(2))
 	}
 	if got := capOf(t, f, "livestock"); got != base {
 		t.Errorf("livestock cap with Granary 2 = %v, want unchanged %v", got, base)
 	}
 	seed("fish") // a row born AFTER the Granary
 	seed("wine")
-	if got := capOf(t, f, "fish"); got != 5*base {
-		t.Errorf("fish row created after the Granary has cap %v, want %v", got, 5*base)
+	if got := capOf(t, f, "fish"); got != province.FoodStorageCap(2) {
+		t.Errorf("fish row created after the Granary has cap %v, want %v", got, province.FoodStorageCap(2))
 	}
 	setSilo(t, f, 3)
-	if got := capOf(t, f, "grain"); got != 10*base {
-		t.Errorf("grain cap with Granary 3 = %v, want %v", got, 10*base)
+	if got := capOf(t, f, "grain"); got != province.FoodStorageCap(3) {
+		t.Errorf("grain cap with Granary 3 = %v, want %v", got, province.FoodStorageCap(3))
 	}
 	if _, err := f.pool.Exec(ctx, `DELETE FROM buildings WHERE settlement_id = $1 AND building_type = 'silo'`, f.settlementID); err != nil {
 		t.Fatal(err)
 	}
-	if got := capOf(t, f, "grain"); got != base {
-		t.Errorf("grain cap after the Granary is gone = %v, want %v", got, base)
+	if got := capOf(t, f, "grain"); got != province.FoodStorageBase {
+		t.Errorf("grain cap after the Granary is gone = %v, want %v", got, province.FoodStorageBase)
 	}
 }
 
@@ -121,6 +124,10 @@ func TestMurtak_SiloStorageSQLMirror(t *testing.T) {
 		if float64(m) != province.SiloFoodStorageMult(lvl) {
 			t.Errorf("silo_food_mult(%d) = %d, Go says %v", lvl, m, province.SiloFoodStorageMult(lvl))
 		}
+	}
+	var b int
+	if err := f.pool.QueryRow(ctx, `SELECT food_store_base()`).Scan(&b); err != nil || float64(b) != province.FoodStorageBase {
+		t.Errorf("food_store_base() = %d (%v), Go says %v", b, err, province.FoodStorageBase)
 	}
 	food := map[string]bool{}
 	for _, g := range economy.FoodGoods {

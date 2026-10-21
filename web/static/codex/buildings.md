@@ -16,7 +16,7 @@ Open **City → Buildings**. The tab shows what is **built** (and its level), th
 | **Pen** | Raises the herd cap by 100 per level (50 without one). Animals above the cap are eaten, then lost ([[food]]). Works inside the city. |
 | **Market** | Enables trade offers and updates market price snapshots. |
 | **Temple** | Enables rites, produces cult, and unlocks oracle prayers. More important than it looks — see [[temples]]. |
-| **Granary** | Level 1 to 3 multiplies how much food the city can store — grain, fish, oil and wine, not the herd — by 2, 5 and 10. A wall of level N needs a Granary of level N. Works inside the city. |
+| **Granary** | A city stores 2 000 of each food — grain, fish, oil and wine, not the herd. Granary level 1 to 3 raises that to 4 000, 10 000 and 20 000. A wall of level N needs a Granary of level N. Works inside the city. |
 | **Wall** | Palisade, then Stone Wall, then Bronze Wall. Absorbs damage in [[battle]], and **the walls set how many people the city holds** (see below). |
 
 **The wall is the ceiling.** A city with no wall holds 2 000 people, a Palisade 5 000, a Stone Wall 10 000, a Bronze Wall 20 000. A city at its ceiling loses no one; it simply stops growing until you raise the wall. Each wall needs a Granary of the same level first — Construct shows the next wall greyed out with "needs a Granary of level 2" until you have it. See [[growth]].

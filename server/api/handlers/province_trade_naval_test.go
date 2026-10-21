@@ -483,6 +483,11 @@ func TestTrade_NavalRoundTrip(t *testing.T) {
 
 	originID, originProvince := f.settlement(t, "Byblos", 0, true, true)
 	destID, _ := f.settlement(t, "Ugarit", 5, true, false)
+	// f.settlement seeds 100000 grain — a kept surplus over the food store, which
+	// can be eaten but never refilled (mig 198). Leave the destination room.
+	if _, err := f.pool.Exec(ctx, `UPDATE settlement_goods SET amount = 1000 WHERE settlement_id = $1 AND good_key = 'grain'`, destID); err != nil {
+		t.Fatalf("make room in dest store: %v", err)
+	}
 	for q := 1; q <= 4; q++ {
 		f.mapTile(t, q, 0, "coastal_sea")
 	}
@@ -539,7 +544,7 @@ func TestTrade_NavalRoundTrip(t *testing.T) {
 		t.Fatalf("category = %q, want naval", got)
 	}
 
-	// Destination credited exactly once — f.settlement seeds 100000 grain, so
+	// Destination credited exactly once — 1000 grain left in store above, so
 	// the delivery must land it at exactly +10, never +20 (double-credit).
 	var grainAmount float64
 	if err := f.pool.QueryRow(ctx,
@@ -548,8 +553,8 @@ func TestTrade_NavalRoundTrip(t *testing.T) {
 	).Scan(&grainAmount); err != nil {
 		t.Fatalf("read dest grain: %v", err)
 	}
-	if grainAmount != 100010.0 {
-		t.Fatalf("dest grain = %v, want exactly 100010 (one delivery of 10, no double-credit)", grainAmount)
+	if grainAmount != 1010.0 {
+		t.Fatalf("dest grain = %v, want exactly 1010 (one delivery of 10, no double-credit)", grainAmount)
 	}
 
 	// Ship still bound — the round trip isn't over until the hemresa lands.
