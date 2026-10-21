@@ -210,7 +210,7 @@ async function loadDipThreads() {
   const tradeableGoods = await getTradeableGoods();
   try {
     const [inR, outR, giftR] = await Promise.all([
-      fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/messengers/inbox'),
+      fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/messengers/inbox?history=true'),
 
       fetchAuth('/api/v1/worlds/' + State.WORLD_ID + (State.MY_SETTLEMENT_ID
         ? '/settlements/' + State.MY_SETTLEMENT_ID + '/messengers'
@@ -277,8 +277,8 @@ async function loadDipThreads() {
       const thread = threads[key];
       const msgs = [...thread.messages].sort((a,b) => msgTime(a) - msgTime(b));
       const latest = msgs[msgs.length - 1] || {};
-      const hasPendingTrade = msgs.some(m => m._dir === 'in' && m.trade_offer && m.trade_offer.status === 'pending');
-      const hasUnread = msgs.some(m => m._dir === 'in' && m.status === 'delivered' && !m.read_at);
+      const hasPendingTrade = msgs.some(m => m._dir === 'in' && m.status === 'delivered' && m.trade_offer && m.trade_offer.status === 'pending');
+      const hasUnread = msgs.some(m => m._dir === 'in' && !m._gift && !m.read_at);
 
       const threadId = 'dip-thread-' + key.replace(/[^a-z0-9]/gi,'_');
       const isOpen = key === draftKey || openSet.has(threadId);
@@ -321,7 +321,7 @@ async function loadDipThreads() {
         if (m._dir === 'in') {
           const offer = m.trade_offer;
           let tradeHtml = '';
-          if (offer && offer.status === 'pending') {
+          if (offer && offer.status === 'pending' && m.status === 'delivered') {
             const countdown = m.expires_at ? '<div style="font-size:.68rem;color:var(--text-dim)">' + expiryWord(m.expires_at) + '</div>' : '';
             if (offer.kind === 'sell') {
               tradeHtml = '<div id="dip-trade-' + m.id + '" style="background:var(--warm-white);border:1px solid var(--border);padding:.3rem .5rem;margin:.3rem 0;font-size:.78rem">'
@@ -344,7 +344,7 @@ async function loadDipThreads() {
           } else if (offer) {
             tradeHtml = '<div style="font-size:.72rem;color:var(--text-dim);font-style:italic;margin:.2rem 0">Trade: ' + esc(offer.status) + esc(tradeScheduleText(offer)) + '</div>';
           }
-          const replyRow = !offer
+          const replyRow = !offer && m.status === 'delivered'
             ? '<div id="dip-reply-row-' + m.id + '" style="display:flex;gap:.3rem;margin-top:.3rem">'
               + '<input id="dip-reply-' + m.id + '" type="text" placeholder="Reply…" maxlength="1000" style="flex:1;background:var(--warm-white);border:1px solid var(--border);padding:.2rem .4rem;font-size:.75rem;font-family:var(--mono)">'
               + '<button onclick="dipReply(\'' + m.id + '\')" style="padding:.2rem .5rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer">Reply</button>'
@@ -354,6 +354,7 @@ async function loadDipThreads() {
             + '<div class="dip-bubble dip-bubble-in">'
             + '<div class="dip-bubble-meta">← ' + esc(m.from_name || 'Unknown') + ' · ' + fmtAgo(m.arrived_at) + '</div>'
             + (m.message ? '<div class="dip-msg-text">' + esc(m.message) + '</div>' : '')
+            + (m.reply_text ? '<div class="dip-msg-text">Your reply: ' + esc(m.reply_text) + '</div>' : '')
             + tradeHtml + replyRow
             + '</div></div>';
         } else {

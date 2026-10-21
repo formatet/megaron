@@ -17,7 +17,7 @@ test('actual Diplomacy drawer places gift among letters with escaped text and no
  const body={innerHTML:'',querySelectorAll:()=>[]},threads={innerHTML:'',querySelectorAll:()=>[],insertAdjacentHTML(_,html){this.innerHTML+=html;}};
  globalThis.document={getElementById:id=>id==='diplomacy-body'?body:id==='dtab-threads'?threads:null};globalThis.localStorage={getItem:()=>null};
  State.WORLD_ID='world';State.MY_PLAYER_ID='b';State.MY_SETTLEMENT_ID='dest';State.provinceData=[];
- globalThis.fetch=async url=>new Response(JSON.stringify(url.endsWith('/gifts')?[{kind:'GiftDelivered',body:b,created_at:'2026-10-08T10:00:00Z'}]:url.endsWith('/inbox')?[{id:'letter',from_name:'Kyme',from_id:'origin',message:'An ordinary letter',arrived_at:'2026-10-08T09:00:00Z'}]:[]));
+ globalThis.fetch=async url=>new Response(JSON.stringify(url.endsWith('/gifts')?[{kind:'GiftDelivered',body:b,created_at:'2026-10-08T10:00:00Z'}]:url.endsWith('/inbox?history=true')?[{id:'letter',from_name:'Kyme',from_id:'origin',message:'An ordinary letter',arrived_at:'2026-10-08T09:00:00Z'}]:[]));
  await loadDiplomacyDrawer();assert.match(threads.innerHTML,/An ordinary letter/);assert.match(threads.innerHTML,/5.125 silver received/);assert.match(threads.innerHTML,/&lt;Nostos&gt;/);assert.equal((threads.innerHTML.match(/class="dip-thread"/g)||[]).length,1);
  assert.doesNotMatch(threads.innerHTML,/dip-reply-cargo|dipAccept|dipDecline|dipCancel\('cargo'/);
 });

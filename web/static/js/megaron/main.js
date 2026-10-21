@@ -338,7 +338,7 @@ async function bootstrap() {
   }
 
   // Diplomacy badge — non-blocking.
-  get('/api/v1/worlds/' + worldID + '/messengers/inbox')
+  get('/api/v1/worlds/' + worldID + '/messengers/inbox?history=true')
     .then(updateDiplomacyBadge)
     .catch(e => console.error('bootstrap: inbox fetch failed', e));
 

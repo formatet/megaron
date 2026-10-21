@@ -9,13 +9,17 @@ import (
 )
 
 func inboxCmd() *cobra.Command {
-	return &cobra.Command{
+	var history bool
+	cmd := &cobra.Command{
 		Use:   "inbox",
 		Short: "Show messenger inbox",
 		Args:  noPositionalArgs(), // no flags at all — nothing to guess
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			c := newClient(cfg)
 			path := fmt.Sprintf("/api/v1/worlds/%s/messengers/inbox", cfg.WorldID)
+			if history {
+				path += "?history=true"
+			}
 			data, err := c.get(path)
 			if err != nil {
 				return err
@@ -55,6 +59,14 @@ func inboxCmd() *cobra.Command {
 				var when string
 				if t, err := time.Parse(time.RFC3339, arrivedStr); err == nil {
 					when = clockTime(t)
+				}
+				if m["status"] != "delivered" && history {
+					fmt.Printf("From: %s  (%s)\n  \"%s\"\n", from, when, text)
+					if reply, ok := m["reply_text"].(string); ok && reply != "" {
+						fmt.Printf("  Your reply: %s\n", reply)
+					}
+					fmt.Println()
+					continue
 				}
 				// A delivered messenger may carry a trade offer — either a buy offer
 				// (sender wants a good from you, offers silver) or a sell offer
@@ -103,4 +115,6 @@ func inboxCmd() *cobra.Command {
 			return acknowledge()
 		},
 	}
+	cmd.Flags().BoolVar(&history, "history", false, "include previously received correspondence")
+	return cmd
 }

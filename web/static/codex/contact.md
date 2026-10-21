@@ -14,3 +14,5 @@ Cities you have contacted appear in **Diplomacy → Known** and in **Economy →
 Contact reveals that city’s location, not the surrounding land or its current activity. A letter still travelling toward you reveals nothing yet.
 
 Opening a correspondence thread marks its displayed letters as read. The Diplomacy badge counts unread letters; an unanswered offer can remain pending after you have read it. `keryx inbox` marks the letters it displays as read too. Reading does not send the messenger home or accept a trade.
+
+Received letters remain in Correspondence after the runner leaves or an offer closes. Use `keryx inbox --history` to read past correspondence; plain `keryx inbox` lists current messages and pending offers.

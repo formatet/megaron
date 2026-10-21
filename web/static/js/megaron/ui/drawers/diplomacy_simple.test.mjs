@@ -83,7 +83,7 @@ test('M: Write clears a stale composer while the chosen conversation loads',()=>
   await dip.loadDiplomacyDrawer();await dip.dipWrite('contact');
   assert.match(node('dtab-threads').innerHTML,/dip-inline-compose/);
   const real=globalThis.fetch;let release;
-  globalThis.fetch=async(url,opts)=>url.endsWith('/inbox')?await new Promise(resolve=>{release=()=>resolve(new Response('[]',{status:200}));}):real(url,opts);
+  globalThis.fetch=async(url,opts)=>url.endsWith('/inbox?history=true')?await new Promise(resolve=>{release=()=>resolve(new Response('[]',{status:200}));}):real(url,opts);
   const pending=dip.dipWrite('contact');
   try {assert.doesNotMatch(node('dtab-threads').innerHTML,/dip-inline-compose/);assert.match(node('dtab-threads').innerHTML,/Loading/);}
   finally {await new Promise(resolve=>setImmediate(resolve));release();await pending;}
@@ -102,4 +102,17 @@ test('M: late unavailable-actions response preserves a typed first letter',()=>r
   release();await pending;
   assert.equal(text.value,'Keep these words while capabilities load.');
   assert.match(node('dtab-threads').innerHTML,/Unavailable:.*reply/);
+}));
+
+
+test('received history stays in the actual drawer after departure without dead reply or offer controls',()=>rig(async({node,calls})=>{
+ const real=globalThis.fetch;
+ globalThis.fetch=async(url,opts)=>url.endsWith('/inbox?history=true')?new Response(JSON.stringify([
+  {id:'old',from_name:'Kyme',from_id:'contact',status:'arrived',message:'An old received letter',reply_text:'My old answer',sent_at:'2026-10-01T09:00:00Z',arrived_at:'2026-10-01T09:01:00Z',read_at:'already'},
+  {id:'offer',from_name:'Kyme',from_id:'contact',status:'arrived',message:'The previous bargain',trade_offer:{status:'declined'},sent_at:'2026-10-01T09:00:00Z',arrived_at:'2026-10-01T09:01:00Z',read_at:'already'}
+ ])):real(url,opts);
+ await dip.loadDiplomacyDrawer();
+ const html=node('dtab-threads').innerHTML;
+ assert.match(html,/An old received letter/);assert.match(html,/My old answer/);assert.match(html,/declined/);
+ assert.doesNotMatch(html,/dip-reply-row-old|dipAccept\('offer'|dipDecline\('offer'/);
 }));

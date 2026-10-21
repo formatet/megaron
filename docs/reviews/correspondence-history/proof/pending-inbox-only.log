@@ -1,0 +1,8 @@
+» färsk DB på migration 194 · commit 834816b0+ändringar
+2026/10/21 08:13:56 INFO player registered id=e1986fac-da8c-4ce5-a44a-78f3ec8ac338 username=placement-3787938d-15f5-465f-980e-38e530033516
+2026/10/21 08:13:56 INFO player registered id=29285136-522e-41d8-b666-dcb0f6612be7 username=read-other-c45c7d35-c923-4732-b39e-8c94dbbef454
+--- FAIL: TestMessengerReadReceiptIsAuthorizedIdempotentAndDoesNotReply (0.12s)
+    messenger_read_test.go:110: returning lost received history: []
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.122s
+FAIL

@@ -1,0 +1,4 @@
+» färsk DB på migration 194 · commit 834816b0+ändringar
+ok  	formatet/megaron/server/api/handlers	39.174s
+ok  	formatet/megaron/server/cmd/keryx	0.327s
+ok  	formatet/megaron/server/cmd/server	3.931s

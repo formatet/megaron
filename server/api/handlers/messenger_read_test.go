@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
+	"formatet/megaron/server/internal/events"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"net/http"
@@ -87,4 +88,41 @@ func TestMessengerReadReceiptIsAuthorizedIdempotentAndDoesNotReply(t *testing.T)
 	if n != 0 {
 		t.Fatal("reading scheduled an order")
 	}
+	// A physically delivered letter stays readable after its bearer goes home
+	// or is lost on return; the ordinary actionable inbox still stays empty.
+	if _, err := events.NewStore(pool).Append(ctx, f.settlementID, events.StreamProvince, "MessengerArrived", map[string]any{"messenger_id": id}, f.worldID, nil); err != nil {
+		t.Fatal(err)
+	}
+	for _, status := range []string{"returning", "arrived", "lost"} {
+		if _, err := pool.Exec(ctx, `UPDATE messengers SET status=$2,reply_text='My answer',trade_offer=jsonb_set(trade_offer,'{status}','"declined"') WHERE id=$1`, id, status); err != nil {
+			t.Fatal(err)
+		}
+		got := call("GET", "/worlds/"+f.worldID.String()+"/messengers/inbox", f.accessToken)
+		if got.Body.String() != "[]\n" {
+			t.Fatalf("history entered pending inbox: %s", got.Body)
+		}
+		got = call("GET", "/worlds/"+f.worldID.String()+"/messengers/inbox?history=true", f.accessToken)
+		var history []map[string]any
+		if err := json.Unmarshal(got.Body.Bytes(), &history); err != nil {
+			t.Fatal(err)
+		}
+		if len(history) != 1 || history[0]["reply_text"] != "My answer" {
+			t.Fatalf("%s lost received history: %s", status, got.Body)
+		}
+		if got := call("POST", path, f.accessToken); got.Code != http.StatusOK {
+			t.Fatalf("archived read%d", got.Code)
+		}
+	}
+	// A forged return without a recorded delivery must not expose the letter.
+	if _, err := pool.Exec(ctx, `DELETE FROM events WHERE world_id=$1 AND event_type='MessengerArrived'`, f.worldID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `UPDATE messengers SET status='returning' WHERE id=$1`, id); err != nil {
+		t.Fatal(err)
+	}
+	got = call("GET", "/worlds/"+f.worldID.String()+"/messengers/inbox?history=true", f.accessToken)
+	if got.Body.String() != "[]\n" {
+		t.Fatalf("sealed return leaked letter: %s", got.Body)
+	}
+
 }

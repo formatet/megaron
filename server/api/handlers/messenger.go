@@ -877,7 +877,7 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT m.id, COALESCE(m.origin_id, m.origin_unit_id), COALESCE(os.name, 'Nomadic Host'), m.destination_id, ds.name,
-		        m.message_text, m.trade_offer, m.status, m.sent_at, m.arrives_at, m.expires_at, m.read_at,
+		        m.message_text, m.trade_offer, m.status, m.sent_at, m.arrives_at, m.expires_at, m.read_at, m.reply_text,
 		        -- Fas 2a: affordability is DATA, not a visibility filter. It used to be
 		        -- part of the WHERE clause, which made an insolvent pending offer's
 		        -- entire row (and therefore its id) disappear from the inbox — leaving
@@ -908,14 +908,15 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 		 JOIN settlements ds ON ds.id = m.destination_id
 		 WHERE m.world_id = $1
 		   AND ds.owner_id = $2
-		   AND m.status = 'delivered'
-		   AND (m.trade_offer IS NULL OR (
-		       -- keep only pending offers that have not expired
-		       m.trade_offer->>'status' = 'pending'
-		       AND (m.expires_at IS NULL OR m.expires_at > now())
-		   ))
-		 ORDER BY m.arrives_at DESC LIMIT 30`,
-		worldID, playerID,
+		   AND (
+          (NOT $3 AND m.status='delivered' AND (m.trade_offer IS NULL OR
+            (m.trade_offer->>'status'='pending' AND (m.expires_at IS NULL OR m.expires_at>now()))))
+          OR ($3 AND NOT m.withdrawn AND `+receivedLetterSQL+`)
+
+        )
+        ORDER BY m.sent_at DESC
+        LIMIT CASE WHEN $3 THEN NULL ELSE 30 END`,
+		worldID, playerID, r.URL.Query().Get("history") == "true",
 	)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "could not load inbox")
@@ -932,6 +933,7 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 		Message    string          `json:"message"`
 		TradeOffer json.RawMessage `json:"trade_offer,omitempty"`
 		Status     string          `json:"status"`
+		ReplyText  *string         `json:"reply_text,omitempty"`
 		SentAt     time.Time       `json:"sent_at"`
 		ArrivedAt  time.Time       `json:"arrived_at"`
 		ExpiresAt  *time.Time      `json:"expires_at,omitempty"`
@@ -943,7 +945,7 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 		var m item
 		var tradeOffer []byte
 		if err := rows.Scan(&m.ID, &m.FromID, &m.FromName, &m.ToID, &m.ToName,
-			&m.Message, &tradeOffer, &m.Status, &m.SentAt, &m.ArrivedAt, &m.ExpiresAt, &m.ReadAt, &m.Affordable); err == nil {
+			&m.Message, &tradeOffer, &m.Status, &m.SentAt, &m.ArrivedAt, &m.ExpiresAt, &m.ReadAt, &m.ReplyText, &m.Affordable); err == nil {
 			if len(tradeOffer) > 0 {
 				m.TradeOffer = json.RawMessage(tradeOffer)
 			}

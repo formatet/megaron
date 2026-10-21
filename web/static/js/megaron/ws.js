@@ -82,7 +82,7 @@ export function fullResync() {
   fetchAuth(`/api/v1/worlds/${w}/marches`).then(r => r.ok && r.json().then(d => { State.marchData = d; State.dirty = true; }));
   fetchAuth(`/api/v1/worlds/${w}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; }));
   fetchAuth(`/api/v1/worlds/${w}/trades`).then(r => r.ok && r.json().then(d => { State.tradeData = d; State.dirty = true; }));
-  fetchAuth(`/api/v1/worlds/${w}/messengers/inbox`).then(r => r.ok && r.json().then(updateDiplomacyBadge));
+  fetchAuth(`/api/v1/worlds/${w}/messengers/inbox?history=true`).then(r => r.ok && r.json().then(updateDiplomacyBadge));
   window.refreshTiles();
   fetchAuth(`/api/v1/worlds/${w}/notifications?unread=true`).then(r => r.ok && r.json().then(d => window.updateNotifBadge(d.unread || 0)));
   reloadDrawerDebounced(); // reflect the fresh data in an open drawer too
@@ -159,7 +159,7 @@ export function initWS() {
       // A returning messenger carries the reply, so the diplomacy data is stale
       // on both ends of the round trip (messenger/handler.go).
       if (msg.kind === 'MessengerArrival' || msg.kind === 'MessengerReturned') {
-        coalesce('diplomacy-badge', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers/inbox`).then(r => r.ok && r.json().then(updateDiplomacyBadge))); 
+        coalesce('diplomacy-badge', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers/inbox?history=true`).then(r => r.ok && r.json().then(updateDiplomacyBadge))); 
         coalesce('messengers', () => fetchAuth(`/api/v1/worlds/${State.WORLD_ID}/messengers`).then(r => r.ok && r.json().then(d => { State.messengerData = d; State.dirty = true; })));
       }
       if (msg.kind === 'GoodsCrafted') {
