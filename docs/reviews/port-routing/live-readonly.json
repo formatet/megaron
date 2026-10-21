@@ -1,0 +1,29 @@
+{
+  "old_distance": 10,
+  "new_distance": 4,
+  "old_travel_ticks": 4,
+  "new_travel_ticks": 2,
+  "new_path": [
+    {
+      "Q": 27,
+      "R": 17
+    },
+    {
+      "Q": 27,
+      "R": 18
+    },
+    {
+      "Q": 28,
+      "R": 18
+    },
+    {
+      "Q": 29,
+      "R": 18
+    },
+    {
+      "Q": 30,
+      "R": 17
+    }
+  ],
+  "live_mutations": 0
+}

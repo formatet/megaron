@@ -608,3 +608,5 @@ arkiveventens lagerskillnad och täckning i tydligt historiska kolumner.
 Ingen av dessa historikläsare styr eller skriver dagens matlager.
 
 `delivered_orders_mutations.py OUT` restores the old moving-unit rejection, late-Runner refusal and unescaped notice one at a time; each must fail its named regression test on a fresh DB where relevant. `single_recall_live.py OUT COMMIT [cli|web]` checks real registration, founding, physical recall/redirect and garrison arrival; migration provenance follows the current migration directory.
+
+`gift_knowledge_mutations.py OUT` verifies both obsolete gift FOW gates fail independently. `port_routing_readonly.py` reads the observed stone route and terrain using a live READ ONLY transaction, then compares the new pure planner locally; it never dispatches or alters a live journey.

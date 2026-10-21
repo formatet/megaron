@@ -15,3 +15,9 @@ Synthetic two-sided port has a long northern and a shorter southern waterway;
 minimum-cost planning selects south. Isolating the first dock still leaves a
 valid southern route. Restoring first-dock selection produces named RED.
 No diplomacy rule changes: callers still authorise endpoints before planning.
+
+Full fresh193 Go suite, province/transport/handler vet and683JS GREEN.
+`tools/port_routing_readonly.py` reads the actual stone shipment and world
+terrain in a READ ONLY transaction, then runs the pure planner locally. The
+new path goes south and is shorter; exact counts in live-readonly.json.
+No live order, shipment, unit or tile is changed by this proof.
