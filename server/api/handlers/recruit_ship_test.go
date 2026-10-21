@@ -148,6 +148,7 @@ func setupRecruitShipFixture(t *testing.T) *recruitShipFixture {
 	r.Post("/worlds/{worldID}/provinces/{provinceID}/recruit", ph.Recruit)
 	r.Get("/worlds/{worldID}/units", uh.ListUnits)
 	r.Post("/worlds/{worldID}/units/{unitID}/stance", uh.SetStance)
+	r.Post("/worlds/{worldID}/units/{unitID}/cancel-training", uh.CancelTraining)
 	r.Post("/worlds/{worldID}/units/{unitID}/reinforce", uh.Reinforce)
 
 	return &recruitShipFixture{

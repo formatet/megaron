@@ -1,0 +1,3 @@
+# Recruitment acknowledgment and cancellation
+
+Contract: one recruitment click gives immediate pending feedback, blocks duplicate in-flight clicks, and retains an acceptance receipt after drawer refresh. Unfinished units can be cancelled by exact ID; return their actual drafted people and the frozen resource reservation once, in the same TX as cancellation. Completion races cannot both refund and garrison. Scope recruitment cost snapshots/migration195, combat cancellation owner, API/Keryx/web/Codex. No alteration of existing human orders; no completed-unit silver policy. Legacy orders without recorded costs cannot manufacture a refund. BILD: new Cancel training button waits Timothy's branch screenshot approval. Function/semantic proof before merge.

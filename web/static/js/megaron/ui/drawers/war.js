@@ -1,3 +1,4 @@
+import { submitRecruitment, recruitmentPending, recruitmentReceipt, rememberRecruitmentReceipt } from '../recruitment.js';
 import { foodGoodsText } from '../food.js';
 import { showInlineResult, confirmInline } from '../inline_result.js';
 import { State, ownCapital } from '../../state.js';
@@ -235,7 +236,7 @@ export async function loadWarDrawer() {
       const catEntry = catByType[catType];
       const noBuilding = u.req !== null;
       const noResources = !noBuilding && canRec[catType] === false;
-      const disabled = noBuilding || noResources;
+      const disabled = noBuilding || noResources || recruitmentPending(State.WORLD_ID, prevRecruitCity, u.id);
       const costStr = catEntry ? fmtUnitCost(catEntry, isNaval) : 'cost data unavailable';
       const costText = noBuilding ? ('requires ' + u.req) : (noResources ? costStr + ' — insufficient' : costStr);
       const opStyle = disabled ? 'opacity:.5;' : '';
@@ -245,7 +246,7 @@ export async function loadWarDrawer() {
           + '<span style="flex:1;font-size:.8rem">' + unitTypeLabel(u.id) + '</span>'
           + '<span style="font-size:.65rem;color:var(--text-dim);text-align:right">' + costText + '</span>'
           + '<input id="wrc-name-' + u.id + '" type="text" placeholder="name (optional)" ' + (disabled ? 'disabled' : '') + ' style="width:100px;padding:.12rem .2rem;border:1px solid var(--border);background:var(--warm-white);font-family:var(--mono);font-size:.7rem">'
-          + '<button onclick="warRecruitShip(\'' + u.id + '\')" ' + (disabled ? 'disabled' : '') + ' style="padding:.2rem .45rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer;white-space:nowrap">Build 1 Ship</button>'
+          + '<button data-recruit-type="' + u.id + '" onclick="warRecruitShip(\'' + u.id + '\')" ' + (disabled ? 'disabled' : '') + ' style="padding:.2rem .45rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer;white-space:nowrap">Build 1 Ship</button>'
           + '</div>';
       } else {
         // Kohort-rekrytering: one Train call always drafts a whole 100-man
@@ -253,11 +254,11 @@ export async function loadWarDrawer() {
         recHtml += '<div style="display:flex;align-items:center;gap:.4rem;padding:.28rem 0;border-bottom:1px solid var(--border);' + opStyle + '">'
           + '<span style="flex:1;font-size:.8rem">' + unitTypeLabel(u.id) + '</span>'
           + '<span style="font-size:.65rem;color:var(--text-dim);text-align:right">' + costText + '</span>'
-          + '<button onclick="warRecruitFromUI(\'' + u.id + '\')" ' + (disabled ? 'disabled' : '') + ' style="padding:.2rem .45rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer;white-space:nowrap">Train 100</button>'
+          + '<button data-recruit-type="' + u.id + '" onclick="warRecruitFromUI(\'' + u.id + '\')" ' + (disabled ? 'disabled' : '') + ' style="padding:.2rem .45rem;border:1px solid var(--border);background:var(--sandstone);font-size:.7rem;cursor:pointer;white-space:nowrap">Train 100</button>'
           + '</div>';
       }
     }
-    recHtml += '</div><div id="war-recruit-res" style="font-size:.78rem;margin:.4rem .6rem;min-height:1rem"></div>';
+    recHtml += '</div><div id="war-recruit-res" style="font-size:.78rem;margin:.4rem .6rem;min-height:1rem">' + esc(recruitmentReceipt(State.WORLD_ID,prevRecruitCity)) + '</div>';
 
     const abandonable = mySettlements.filter(s => !s.is_capital);
     if (abandonable.length) {
@@ -324,52 +325,63 @@ export function warRecruitFromUI(unitType) {
   const sel = document.getElementById('war-recruit-city');
   const pid = sel ? sel.value : null;
   if (!pid) return;
-  warRecruit(pid, unitType);
+  return warRecruit(pid, unitType);
 }
 
-async function warRecruit(provinceID, unitType) {
-  // Kohort-rekrytering: the server always drafts a whole 100-man cohort for
-  // land units now (men is ignored server-side) — nothing left to read here.
-  const res = await fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/provinces/' + provinceID + '/recruit', {
-    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ unit_type: unitType }),
+async function warRecruit(provinceID, unitType, name = '') {
+  const world = State.WORLD_ID;
+  const status = text => {
+    if (State.WORLD_ID !== world) return;
+    const el = document.getElementById('war-recruit-res');
+    if (el) el.textContent = text;
+  };
+  const buttons = [...document.querySelectorAll('[data-recruit-type]')].filter(b => b.dataset.recruitType === unitType);
+  buttons.forEach(b => { b.disabled = true; });
+  await submitRecruitment({ world, city: provinceID, type: unitType, name, status,
+    accepted: async data => {
+      const label = unitTypeLabel(unitType);
+      const receipt = data.names?.length
+        ? 'Order received: building ' + data.names.join(', ') + ' — ' + readyWord(data.complete_at)
+        : 'Order received: ' + (data.pop_drawn || data.men || 100) + ' ' + label + ' — ' + readyWord(data.complete_at);
+      rememberRecruitmentReceipt(world, provinceID, receipt);
+      status(receipt);
+      await loadWarDrawer();
+    },
   });
-  const data = await res.json().catch(() => ({}));
-  const resEl = document.getElementById('war-recruit-res');
-  if (res.ok) {
-    // Reload war drawer to show updated training queue
-    loadWarDrawer();
-  } else if (resEl) {
-    resEl.style.color = 'var(--accent)';
-    resEl.textContent = formatApiError(data, 'failed');
-  }
+  buttons.forEach(b => { if (b.isConnected) b.disabled = false; });
 }
 
-// Ship-build overhaul: builds exactly one vessel (no men field — crew is
-// fixed per type); an empty name input means "let the game suggest one".
 export async function warRecruitShip(unitType) {
-  const sel = document.getElementById('war-recruit-city');
-  const pid = sel ? sel.value : null;
+  const pid = document.getElementById('war-recruit-city')?.value;
   if (!pid) return;
-  const nameEl = document.getElementById('wrc-name-' + unitType);
-  const name = nameEl ? nameEl.value.trim() : '';
-  const body = { unit_type: unitType };
-  if (name) body.name = name;
-  const res = await fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/provinces/' + pid + '/recruit', {
-    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body),
-  });
-  const data = await res.json().catch(() => ({}));
-  const resEl = document.getElementById('war-recruit-res');
-  if (res.ok) {
-    if (resEl) {
-      const built = (data.names && data.names[0]) ? data.names[0] : unitType;
-      resEl.style.color = 'var(--text-dim)';
-      resEl.textContent = 'Building "' + built + '" — ' + readyWord(data.complete_at);
-    }
-    loadWarDrawer();
-  } else if (resEl) {
-    resEl.style.color = 'var(--accent)';
-    resEl.textContent = formatApiError(data, 'failed');
-  }
+  const name = document.getElementById('wrc-name-' + unitType)?.value.trim() || '';
+  return warRecruit(pid, unitType, name);
+}
+
+const cancellingTraining = new Set();
+export async function unitCancelTraining(unitID) {
+  const world = State.WORLD_ID;
+  const key = world + '/' + unitID;
+  if (cancellingTraining.has(key)) return;
+  cancellingTraining.add(key);
+  const status = text => {
+    if (State.WORLD_ID !== world) return;
+    const el = document.getElementById('war-unit-res');
+    if (el) el.textContent = text;
+  };
+  status('Cancelling training…');
+  let received = false;
+  try {
+    const response = await fetchAuth(`/api/v1/worlds/${world}/units/${unitID}/cancel-training`, { method: 'POST' });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) { status(formatApiError(data, 'Could not cancel training')); return; }
+    received = true;
+    if (State.WORLD_ID !== world) return;
+    await loadWarDrawer();
+    status(data.already_cancelled ? 'Training was already cancelled.' : `Training cancelled: ${data.pop_restored} people returned and reserved resources refunded.`);
+  } catch (_) {
+    status(received ? 'Training cancelled. Refresh Army to see the updated units.' : 'Could not confirm cancellation. Refresh Army before trying again.');
+  } finally { cancellingTraining.delete(key); }
 }
 
 export async function warDisband(provinceID) {
@@ -611,6 +623,10 @@ export function renderUnitCard(u) {
     // "unit is not in an active battle", and the realm-wide setting at the
     // top of this tab is what applies.
     if (isGarrison || isPositioned) actions += unitRetreatControlHTML(u);
+  }
+
+  if (u.can_cancel_training) {
+    actions += '<button onclick="unitCancelTraining(\'' + u.id + '\')" style="padding:.15rem .35rem;border:1px solid var(--border);background:var(--bg-raised);font-size:.65rem;cursor:pointer">' + (isNaval ? 'Cancel build' : 'Cancel training') + '</button> ';
   }
 
   // Reinforce button (megaron_plan_rekryteringsmodell.md): only when the

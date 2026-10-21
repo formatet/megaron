@@ -2470,6 +2470,10 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 				writeError(w, http.StatusInternalServerError, "could not create ship")
 				return
 			}
+			if err := combat.RecordRecruitReservation(r.Context(), tx, unitID, totalCosts, totalKharis, crew, totalMen, true); err != nil {
+				writeError(w, http.StatusInternalServerError, "could not reserve ship costs")
+				return
+			}
 			unitIDs = append(unitIDs, unitID)
 			unitNames = append(unitNames, chosenName)
 			finalSize = 1
@@ -2570,6 +2574,10 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
+		if err := combat.RecordRecruitReservation(r.Context(), tx, unitID, totalCosts, totalKharis, unitSize-existingSize, totalMen, existingUnitID == nil); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not reserve training costs")
+			return
+		}
 		unitIDs = append(unitIDs, unitID)
 		finalSize = unitSize
 		trainingStarted = newSize >= 100
@@ -2609,13 +2617,18 @@ func (h *ProvinceHandler) Recruit(w http.ResponseWriter, r *http.Request) {
 					writeError(w, http.StatusInternalServerError, "could not allocate spill ordinal")
 					return
 				}
-				if _, err := tx.Exec(r.Context(),
+				var spillID uuid.UUID
+				if err := tx.QueryRow(r.Context(),
 					`INSERT INTO units (world_id, owner_id, type, category, size, crew, status,
 					                    settlement_id, support_settlement_id, ordinal, origin_settlement_id)
-					 VALUES ($1, $2, $3, $4, $5, $6, 'forming', $7, $7, $8, $7)`,
+					 VALUES ($1, $2, $3, $4, $5, $6, 'forming', $7, $7, $8, $7) RETURNING id`,
 					worldID, playerID, string(uType), string(cat), newSize-100, crew, settlementID, spillOrdinal,
-				); err != nil {
+				).Scan(&spillID); err != nil {
 					writeError(w, http.StatusInternalServerError, "could not create spill forming unit")
+					return
+				}
+				if err := combat.RecordRecruitReservation(r.Context(), tx, spillID, totalCosts, totalKharis, newSize-100, totalMen, true); err != nil {
+					writeError(w, http.StatusInternalServerError, "could not reserve spill training costs")
 					return
 				}
 			}

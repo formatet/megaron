@@ -34,6 +34,7 @@ func unitCmd() *cobra.Command {
 		unitLoadCmd(),
 		unitUnloadCmd(),
 		unitRepairCmd(),
+		unitCancelTrainingCmd(),
 		unitPickupCmd(),
 	)
 	return cmd
