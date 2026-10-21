@@ -1,6 +1,3 @@
-import { State as timeTestState } from './../state.js';
-import { fmtTickTime as testTickTime } from './fmt_clock.js';
-timeTestState.CURRENT_TICK=0; timeTestState.TICK_SECONDS=60; timeTestState.TICK_ANCHOR_MS=Date.now();
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {fmtNum} from './fmt_num.js';
@@ -9,11 +6,9 @@ test('player quantities are plain digits with at most one decimal',()=>{
 });
 import {fmtDays} from './fmt_num.js';
 test('days agree in number',()=>{assert.equal(fmtDays(1),'1 day');assert.equal(fmtDays(5),'5 days');assert.equal(fmtDays(0),'0 days');});
-import {fmtDay} from './fmt_num.js';
-test('day formatter handles displayed singular, qualifiers and absolute dates', () => {
+test('duration formatter handles displayed singular and qualifiers', () => {
   assert.equal(fmtDays(1.04), '1 day');
   assert.equal(fmtDays(1000), '1,000 days');
   assert.equal(fmtDays(1, 'unchallenged'), '1 unchallenged day');
   assert.equal(fmtDays(3, 'unchallenged'), '3 unchallenged days');
-  assert.equal(fmtDay(3017), testTickTime(3017));
 });

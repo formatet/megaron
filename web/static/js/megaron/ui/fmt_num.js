@@ -13,4 +13,3 @@ export function fmtDays(value, qualifier = '') {
   const number = fmtNum(value);
   return number + ' ' + (qualifier ? qualifier + ' ' : '') + (Number(number.replaceAll(',', '')) === 1 ? 'day' : 'days');
 }
-export { fmtTickTime as fmtDay } from './fmt_clock.js';

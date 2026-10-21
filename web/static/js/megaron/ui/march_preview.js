@@ -1,5 +1,6 @@
 import { esc, formatApiError } from './format.js';
-import { fmtNum, fmtDays, fmtDay } from './fmt_num.js';
+import { fmtNum, fmtDays } from './fmt_num.js';
+import { fmtTickTime } from './fmt_clock.js';
 import { arrivalHTML } from './time.js';
 
 // Forecasts are read-only. Keep each unit separate: crew and cargo can make
@@ -29,7 +30,7 @@ export function marchSilverLine(data) {
 export function marchExpeditionPlanLine(data) {
  if (!Number.isInteger(data.planned_expedition_ticks)) return '';
  const home = Number.isInteger(data.planned_home_by_tick_if_departing_now)
-  ? ` — with immediate departure, home by ${fmtDay(data.planned_home_by_tick_if_departing_now)}` : '';
+  ? ` — with immediate departure, home by ${fmtTickTime(data.planned_home_by_tick_if_departing_now)}` : '';
  return `Planned expedition: ${fmtDays(data.planned_expedition_ticks)}${home}. First-leg arrival remains unknown.`;
 }
 function marchArrivalHTML(data) {
@@ -38,7 +39,7 @@ function marchArrivalHTML(data) {
 }
 function marchFirstArrivalHTML(data) {
   if (data.available && Number.isInteger(data.arrival_tick)) {
-    return 'Arrives in ' + esc(fmtDays(data.duration_ticks)) + ' (arrives ' + esc(fmtDay(data.arrival_tick)) + '), if dispatched now.';
+    return 'Arrives in ' + esc(fmtDays(data.duration_ticks)) + ' (arrives ' + esc(fmtTickTime(data.arrival_tick)) + '), if dispatched now.';
   }
   if (data.reason === 'courier_required' || data.reason === 'redirect') {
     return 'Arrival not yet known — a messenger must deliver the order first.';

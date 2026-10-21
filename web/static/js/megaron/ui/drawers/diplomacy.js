@@ -6,7 +6,8 @@ import { fetchAuth } from '../../api.js';
 import { esc, fmtAgo, formatApiError, passageNote } from '../format.js';
 import { fmtEta, fmtArrival, arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
-import { fmtNum, fmtDay } from '../fmt_num.js';
+import { fmtNum } from '../fmt_num.js';
+import { fmtTickTime } from '../fmt_clock.js';
 import { sentStatusHTML } from '../runner_status.js';
 import { loadDipRunners } from './diplomacy_runners.js';
 
@@ -566,8 +567,8 @@ export async function dipAccept(id, btn) {
     // sjöhandel mellan spelare (R3): the response names the initiator's own
     // ship when the trade sails — empty when it walks.
     const shipBit = data.ship_name ? ' · ⛵ by sea on ' + esc(data.ship_name) : '';
-    const goodsETA = Number.isInteger(data.goods_arrival_tick) ? fmtDay(data.goods_arrival_tick) : arrivalHTML(data.goods_arrives_at);
-    const silverETA = Number.isInteger(data.silver_arrival_tick) ? fmtDay(data.silver_arrival_tick) : arrivalHTML(data.silver_arrives_at);
+    const goodsETA = Number.isInteger(data.goods_arrival_tick) ? fmtTickTime(data.goods_arrival_tick) : arrivalHTML(data.goods_arrives_at);
+    const silverETA = Number.isInteger(data.silver_arrival_tick) ? fmtTickTime(data.silver_arrival_tick) : arrivalHTML(data.silver_arrives_at);
     const direction = data.kind === 'sell' ? 'incoming' : 'outgoing';
     const payment = data.kind === 'sell' ? 'silver sent' : 'silver incoming';
     block.innerHTML = '<span style="color:var(--safe-text)">✓ Accepted — ' + data.quantity + ' ' + esc(data.good_key || '') + ' ' + direction + ' · goods arrive ' + goodsETA + ' · ' + data.silver_paid + ' ' + payment + ' · arrives ' + silverETA + shipBit + '</span>';
@@ -652,7 +653,7 @@ export async function dipCallBack(id, btn) {
 export function tradeScheduleText(offer) {
   if (offer?.status !== 'accepted') return '';
   const legs = [];
-  if (Number.isInteger(offer.goods_arrival_tick)) legs.push(`goods scheduled ${fmtDay(offer.goods_arrival_tick)}`);
-  if (Number.isInteger(offer.silver_arrival_tick)) legs.push(`silver scheduled ${fmtDay(offer.silver_arrival_tick)}`);
+  if (Number.isInteger(offer.goods_arrival_tick)) legs.push(`goods scheduled ${fmtTickTime(offer.goods_arrival_tick)}`);
+  if (Number.isInteger(offer.silver_arrival_tick)) legs.push(`silver scheduled ${fmtTickTime(offer.silver_arrival_tick)}`);
   return legs.length ? ' · ' + legs.join(' · ') : '';
 }

@@ -1,6 +1,6 @@
 # ORDER 5 — tidsangivelser
 
-Klart för Claudes granskning på `codex/tidsangivelser`, bas `2aed60f9`. Händelsetid visas med klockslag/datum; längder behåller dagar. Full fresh Go på mig197 (world153.367s), 702 JS, vet och två day-N-mutationer röda→gröna. Firefox-midnatt grön. Ingen integration/deploy; TEXT prövas i Haiku-spelandet.
+Klart för Claudes granskning på `codex/tidsangivelser`, rebasad bas `c6eff46c` (mig198). Händelsetid visas med klockslag/datum; längder behåller dagar. Full fresh Go på mig197 (world153.367s), 702 JS, vet och två day-N-mutationer röda→gröna. Firefox-midnatt grön. Ingen integration/deploy; TEXT prövas i Haiku-spelandet.
 
 ## Slice-kontrakt
 Problem: absoluta speldagsnummer blandas med klockslag, särskilt i expeditionskvittensen.
@@ -28,7 +28,7 @@ Befintliga ägare: webb world_time.js ankare → fmt_clock.js lokal kalender; ti
 
 
 ## Resultat och avgränsningar
-Webbens `fmt_clock.js:fmtTickTime` och Keryx `output.go:formatWorldTime` konverterar registrerade ticks med befintligt världsankare. Webbens gamla `fmtDay`-export är ett alias till samma formatterare, inte en andra ägare. Keryx skickar kommandots Client till tidigare rena presentationsfunktioner; ankaret hämtas högst en gång per Client. Absoluta ISO-fallbacks i Keryx visas också som klocka.
+Webbens `fmt_clock.js:fmtTickTime` och Keryx `output.go:formatWorldTime` konverterar registrerade ticks med befintligt världsankare. Alla webbkonsumenter importerar `fmtTickTime` direkt från `fmt_clock.js`; det gamla `fmtDay`-aliaset är borttaget. Keryx skickar kommandots Client till tidigare rena presentationsfunktioner; ankaret hämtas högst en gång per Client. Absoluta ISO-fallbacks i Keryx visas också som klocka.
 
 Notisernas `created_at` används inte som händelsetid: det kan vara leveranstid. Saknat world_tick eller ankare ger `time unavailable`. Tick noll är giltigt. Historiska ticks visas som klockslag/datum, aldrig `arrived`. Världskalendern är uttryckligen orörd efter Claudes granskning 23:06. Inga server/API-, event-, ticklängds- eller migrationsändringar; matlager/mig198 ingår inte.
 
@@ -54,4 +54,16 @@ TEXT-grinden återstår i Haiku-playtest hos Claude. Ingen merge, push eller dep
 | Användare | TEXT återstår i Haiku-playtest, Claude äger nästa steg. |
 | Drift | Ej deployad, ingen levande värld använd som prov. |
 
-Proveniens: egen worktree `/home/tk/wt/codex-tidsangivelser`, uttryckligen beställd bas `2aed60f9`; `tested-files.json` låser samtliga testade ändrade server-/webbfiler med SHA256. Fullsviten avslutades utan senare produktionsändringar. Claude mergade matlager/mig198 separat under provningen; den ingår inte i grenens bas eller bevis. Firefox kör lokala statiska ES-moduler och inga gameplay-anrop.
+Proveniens: egen worktree `/home/tk/wt/codex-tidsangivelser`, uttryckligen beställd rebasad bas `c6eff46c` (mig198); `tested-files.json` låser samtliga testade ändrade server-/webbfiler med SHA256. Fullsviten bevisar den första implementationen; granskningsfixens riktade prov redovisas nedan. Claude mergade matlager/mig198 separat under provningen; den ingår inte i grenens bas eller bevis. Firefox kör lokala statiska ES-moduler och inga gameplay-anrop.
+
+
+## Granskningsfix efter 531ea70e
+Claude godkände kärnan och begärde naturliga prepositioner samt direkt formatterarnamn. Grenen rebasades rent på exakt `c6eff46c` (inklusive mig198/runners-svar), därefter:
+- Economy-kvittensen: `Arrives on today …` → `Arrives today …`.
+- Alla `fmtDay`-konsumenter importerar `fmtTickTime` direkt från ägaren; exportaliaset är borttaget.
+- Sökning i webb, Keryx och Codex fann inga fler felaktiga `on` före de tre formatterarna. Codex hade tre kvarvarande symboliska day-N-exempel i account/runner-lost/runner-rescued, nu rättade.
+- `GOTEST_PORT=57900 tools/gotest.sh ./cmd/keryx`: ny PG16, mig198 ren, GREEN (`review-fresh198-keryx.log`). Hela JS-sviten 702/702 GREEN (`review-js-summary.log`). Ingen ny hel Go-svit enligt Claudes uttryckliga granskningsorder.
+- Firefox kör även `startTransfer` med den riktiga DOM-/API-kvittensvägen och en lokal svar-fixtur: `Arrives tomorrow 00:10 (journey: 20 days).` GREEN, inga page errors (`review-firefox.json`).
+- `tested-files-initial197.json` är den ursprungliga helsvitens manifest; `tested-files.json` låser slutliga ändrade server-/webbfiler efter granskning och rebase.
+
+TEXT i Haiku-playtest och integration ligger fortsatt hos Claude. Ingen merge, push eller deploy.

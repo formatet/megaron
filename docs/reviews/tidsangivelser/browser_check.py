@@ -31,17 +31,27 @@ try:
           const {expeditionMissionText}=await import('/web/static/js/megaron/ui/expedition.js');
           const {notificationDay}=await import('/web/static/js/megaron/ui/notification_state.js');
           const {notifText}=await import('/web/static/js/megaron/ui/format.js');
+          const {startTransfer}=await import('/web/static/js/megaron/ui/drawers/economy.js');
           Object.assign(State,{CURRENT_TICK:100,TICK_SECONDS:60,TICK_ANCHOR_MS:now});
           const expedition=expeditionMissionText({area_q:16,area_r:29,length_ticks:30,turn_tick:120,home_by_tick:135});
           const recorded=notificationDay({world_tick:0,created_at:'2020-01-01T00:00:00Z'});
           const historical=notifText('MessengerRescuedAtSea',{home_tick:0,journey:[{ship:'Dolphin'},{port:'Tiryns'}]});
           document.body.replaceChildren();
           for(const text of [expedition,recorded,historical]) {const p=document.createElement('p');p.textContent=text;document.body.append(p);}
-          return {expedition,recorded,historical,text:document.body.innerText};
+          for(const [id,value] of [['ec-tr-from','origin'],['ec-tr-to','destination'],['ec-tr-good','grain'],['ec-tr-qty','3']]) {
+            const input=document.createElement('input');input.id=id;input.value=value;document.body.append(input);
+          }
+          const receiptNode=document.createElement('div');receiptNode.id='ec-tr-result';document.body.append(receiptNode);
+          State.WORLD_ID='fixture';
+          globalThis.fetch=async()=>new Response(JSON.stringify({arrival_tick:120,travel_ticks:20}));
+          await startTransfer();
+          const receipt=receiptNode.textContent;
+          return {expedition,recorded,historical,receipt,text:document.body.innerText};
         }''')
         assert result['expedition'] == 'Expedition around (16,29), 30 days; turns home by tomorrow 00:10; home by tomorrow 00:25.', result
         assert result['recorded'] == 'today 22:10', result
         assert result['historical'] == 'Home today 22:10. Your runner was rescued at sea by the Dolphin and put ashore at Tiryns.', result
+        assert result['receipt'] == '3 grain sent — physical cargo, can be intercepted en route. Arrives tomorrow 00:10 (journey: 20 days).', result
         assert not errors, errors
         result['browser'] = 'Firefox'
         result['page_errors'] = errors

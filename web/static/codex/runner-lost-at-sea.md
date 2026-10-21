@@ -6,7 +6,7 @@ If the crew disappears from [[upkeep|hunger or desertion]], the runner steps ash
 
 You learn immediately that **your own runner was lost**. This is the one exception to news needing a physical bearer. The dispatch tells you nothing else about the battle or other people’s ships.
 
-Open the dispatch to read the whole sealed contents: the letter and any reply, the trade proposal or the order, its frozen departure day ("Sent on day N"), and its origin and destination. The record does not change when cities or orders change later.
+Open the dispatch to read the whole sealed contents: the letter and any reply, the trade proposal or the order, its recorded departure time (for example, "Sent yesterday 18:34"), and its origin and destination. The record does not change when cities or orders change later.
 
 A lost runner cannot deliver the message later. Sending again is your decision. If another ship rescues it, see [[runner-rescued-at-sea]].
 
