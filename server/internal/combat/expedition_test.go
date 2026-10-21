@@ -13,6 +13,7 @@ import (
 
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/events"
+	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 )
@@ -410,5 +411,29 @@ func TestExpedition_UnreachableChosenAreaExplainsWithoutGlobalClaim(t *testing.T
 	_, err = StartMarch(ctx, pool, f.scheduler, f.eventStore, f.clk, order, nil)
 	if err == nil || err.Error() != firstReason {
 		t.Fatalf("refusal = %v, want unchanged area-specific explanation %q", err, firstReason)
+	}
+}
+
+// A ship explores the coast first (Timothy 2026-10-21): with unseen deep sea one
+// hex away and unseen coastal water three hexes away, the next leg goes to the coast.
+func TestExpedition_ShipPrefersUnseenCoastOverNearerDeepSea(t *testing.T) {
+	g := province.TileGraph{}
+	for q := -1; q <= 6; q++ {
+		for r := -3; r <= 3; r++ {
+			g[[2]int{q, r}] = "deep_sea"
+		}
+	}
+	for r := -3; r <= 3; r++ {
+		g[[2]int{3, r}] = "coastal_sea"
+		g[[2]int{4, r}] = "plains"
+	}
+	from := province.MapPosition{Q: 0, R: 0}
+	leg, err := nextExpeditionLeg(context.Background(), testPool(t), g, nil,
+		uuid.New(), uuid.New(), from, from, "naval")
+	if err != nil || !leg.Found {
+		t.Fatalf("leg = %+v, err %v", leg, err)
+	}
+	if g[[2]int{leg.Target.Q, leg.Target.R}] != "coastal_sea" {
+		t.Fatalf("ship's next leg %v is %s, want the unseen coast", leg.Target, g[[2]int{leg.Target.Q, leg.Target.R}])
 	}
 }

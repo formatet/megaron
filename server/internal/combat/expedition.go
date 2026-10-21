@@ -137,7 +137,15 @@ func nextExpeditionLeg(
 		}
 		cands = append(cands, province.MapPosition{Q: c.Q, R: c.R})
 	}
+	// A ship explores the coast first (Timothy 2026-10-21): unseen coastal water
+	// before deep sea, so the voyage maps the shoreline. Speed is unchanged.
+	coastal := func(p province.MapPosition) bool {
+		return category == "naval" && g[[2]int{p.Q, p.R}] == "coastal_sea"
+	}
 	sort.Slice(cands, func(i, j int) bool {
+		if ci, cj := coastal(cands[i]), coastal(cands[j]); ci != cj {
+			return ci
+		}
 		di, dj := province.HexDistance(from, cands[i]), province.HexDistance(from, cands[j])
 		if di != dj {
 			return di < dj
