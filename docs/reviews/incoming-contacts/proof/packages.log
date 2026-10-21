@@ -1,0 +1,5 @@
+» färsk DB på migration 193 · commit 88c8cdc9
+ok  	formatet/megaron/server/api/handlers	41.128s
+ok  	formatet/megaron/server/internal/province	0.380s
+ok  	formatet/megaron/server/internal/combat	13.237s
+ok  	formatet/megaron/server/internal/transport	0.902s

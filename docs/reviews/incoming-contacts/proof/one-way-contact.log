@@ -1,0 +1,7 @@
+» färsk DB på migration 193 · commit f55f1291+ändringar
+2026/10/21 07:49:30 INFO player registered id=5ebd55c2-f7b7-44b6-b900-723c2888f5ed username=placement-dd972e4d-d73a-4852-a298-6e2d2662ce0c
+--- FAIL: TestIncomingContactRemembersOnlyOriginAfterPhysicalDelivery (0.08s)
+    incoming_contact_test.go:40: delivered withdrawnfalse origin known=false wanttrue
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.087s
+FAIL
