@@ -282,3 +282,24 @@ test('production scene shows four own trails and only current arrows for every n
   State.tileData=State.tileData.map(t=>({...t,tier:'remembered'}));assert.deepEqual(journeyOverlays(3000),[],'movement marks leaked onto remembered terrain');
  }finally{Object.assign(State,saved);}
 });
+
+test('naval cargo paints its carrying galley rather than a caravan', async () => {
+  const {State}=await import('../state.js');
+  const {drawTransportActor}=await import('./map.js');
+  const {drawActor}=await import('./actorsprites.js');
+  const before=State.unitsData;
+  function painted(draw) {
+    const ops=[];
+    const ctx={fillStyle:'',fillRect(...rect){ops.push([this.fillStyle,...rect]);}};
+    draw(ctx); return ops;
+  }
+  try {
+    State.unitsData=[{id:'carrier',type:'galley',status:'freighting'}];
+    const cargo=painted(ctx=>drawTransportActor(ctx,{category:'naval',ship_unit_id:'carrier'},20,30,0));
+    const ship=painted(ctx=>drawActor(ctx,'galley',20,30,'',0));
+    const caravan=painted(ctx=>drawActor(ctx,'caravan',20,30,'',0));
+    assert.deepEqual(cargo,ship,'same ship must keep its identity when carrying goods');
+    assert.notDeepEqual(cargo,caravan,'sea cargo must not show pack animals');
+    assert.deepEqual(painted(ctx=>drawTransportActor(ctx,{category:'land'},20,30,0)),caravan);
+  } finally {State.unitsData=before;}
+});

@@ -2255,8 +2255,12 @@ function drawRoad(ctx, ax, ay, bx, by) {
 }
 
 // ── Karavan — last och riktning först, ägandet sekundärt ─────────────────
-function drawCaravan(ctx, x, y, walkPhase) {
-  drawActor(ctx, 'caravan', x, y, '', walkPhase);
+export function drawTransportActor(ctx, transport, x, y, walkPhase) {
+  if (transport.category !== 'naval') return drawActor(ctx, 'caravan', x, y, '', walkPhase);
+  const ship = State.unitsData.find(u => u.id === transport.ship_unit_id)
+    || State.foreignUnitData.find(u => u.id === transport.ship_unit_id);
+  const kind = canonicalUnitType(ship?.type) || 'galley';
+  return drawActor(ctx, kind, x, y, '', walkPhase);
 }
 
 // ── Runner — order-Runners (kind='order') bär karmosin accent så de läses som
@@ -3105,11 +3109,11 @@ export function render() {
     }
   }
 
-  // 7. Animated trade caravans
+  // 7. Physical cargo: its carrying ship at sea, a caravan on land.
   for (const t of State.tradeData) {
     const pos = transportPixelNow(t);
     if (pos && (t.mine ? isTileVisible(pos.q,pos.r) : isTileLive(pos.q,pos.r))) {
-      drawCaravan(ctx, Math.round(pos.x), Math.round(pos.y), walkPhase);
+      drawTransportActor(ctx, t, Math.round(pos.x), Math.round(pos.y), walkPhase);
     }
   }
   pass('actors');
