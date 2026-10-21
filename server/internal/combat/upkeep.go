@@ -155,6 +155,7 @@ type upkeepUnitRow struct {
 	q                *int
 	r                *int
 	homeSettlementID *uuid.UUID
+	freightPort      *uuid.UUID
 }
 
 // UpkeepHandler applies grain + silver upkeep to all active units each tick.
@@ -319,6 +320,14 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 			continue // this event already charged this unit's upkeep
 		}
 
+		if u.status == "freighting" {
+			port, err := economy.FreightPort(ctx, h.pool, u.id)
+			if err != nil {
+				slog.Error("upkeep: freight port read failed", "unit", u.id, "err", err)
+				continue
+			}
+			u.freightPort = port
+		}
 		grainNeed := up.Grain
 		silverNeed := up.Silver
 
@@ -361,7 +370,11 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		}
 
 		if grainNeed > 0 {
-			if !hasSid {
+			foodSid, hasFoodSid := sid, hasSid
+			if u.freightPort != nil {
+				foodSid, hasFoodSid = *u.freightPort, true
+			}
+			if !hasFoodSid {
 				// No paying settlement — treat as grain shortage.
 				disbanded = h.applyAttrition(ctx, u, grainNeed, e.WorldID, sid)
 			} else {
@@ -370,7 +383,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 					slog.Error("upkeep: food transaction failed", "err", err)
 					continue
 				}
-				meal, err := economy.TakeFood(ctx, tx, sid, grainNeed, false, true)
+				meal, err := economy.TakeFood(ctx, tx, foodSid, grainNeed, false, true)
 				if err != nil {
 					tx.Rollback(ctx)
 					slog.Error("upkeep: food deduction failed", "err", err)
@@ -380,7 +393,7 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 				} else if err := tx.Commit(ctx); err != nil {
 					slog.Error("upkeep: food commit failed", "err", err)
 				} else {
-					a := agg(sid)
+					a := agg(foodSid)
 					a.grainTotal += meal.Used[economy.GoodGrain]
 					a.foodTotal += grainNeed
 					if a.foodByGood == nil {
@@ -706,7 +719,7 @@ func provisionSourceFor(u upkeepUnitRow) *uuid.UUID {
 // in the world — the only case where falling back to the town's stock is not
 // the teleporting logistics this mechanic removes.
 func atHomePort(u upkeepUnitRow) bool {
-	return u.status == "garrison" || u.status == "repairing"
+	return u.status == "garrison" || u.status == "repairing" || u.freightPort != nil
 }
 
 // applyAttrition removes men (land) or crew (naval) from the unit due to grain

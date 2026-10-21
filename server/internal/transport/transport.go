@@ -213,6 +213,13 @@ func prepareJourney(ctx context.Context, tx pgx.Tx, p DispatchParams) (DispatchP
 	// Returns sail on what is already aboard: a damaged return may start at
 	// sea even though OriginID names its home. Never use that ID as food access.
 	if p.Category == "naval" && !strings.Contains(p.Kind, "return") {
+		port, err := economy.FreightPort(ctx, tx, *p.ShipUnitID)
+		if err != nil {
+			return p, err
+		}
+		if port == nil || *port != p.OriginID {
+			return p, fmt.Errorf("ship is not in the departure port")
+		}
 		var portOwner uuid.UUID
 		var q, r int
 		if err := tx.QueryRow(ctx, `SELECT s.owner_id,p.map_q,p.map_r FROM settlements s JOIN provinces p ON p.id=s.province_id WHERE s.id=$1 AND s.world_id=$2 AND s.state='active'`, p.OriginID, p.WorldID).Scan(&portOwner, &q, &r); err != nil {
@@ -233,6 +240,9 @@ func prepareJourney(ctx context.Context, tx pgx.Tx, p DispatchParams) (DispatchP
 			return p, err
 		}
 		need := economy.VoyageProvisions(economy.VoyageRation(kind, size, "", 0), p.Journey.TravelTicks, home.TravelTicks-p.Journey.TravelTicks)
+		if p.StandingOrderID != nil {
+			need = economy.VoyageProvisions(economy.VoyageRation(kind, size, "", 0), p.Journey.TravelTicks, max(0, home.TravelTicks-p.Journey.TravelTicks)+events.MacroTickInterval)
+		}
 		// VoyageProvisions clamps negative station time; symmetric overpacking is
 		// intentional when the actual reverse path is faster.
 		if err := economy.LoadProvisions(ctx, tx, *p.ShipUnitID, p.OriginID, need); err != nil {

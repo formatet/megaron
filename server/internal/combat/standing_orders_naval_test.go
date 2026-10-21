@@ -18,6 +18,7 @@ import (
 	"strings"
 	"testing"
 
+	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
 	"formatet/megaron/server/internal/transport"
 	"github.com/google/uuid"
@@ -182,7 +183,7 @@ func TestStandingOrder_OutboundGoesNavalWhenBothEndsCoastal(t *testing.T) {
 	}
 	travelTicks := journey.TravelTicks
 
-	provisions := VoyageProvisions(standingOrderNavalRation(), travelTicks, 0)
+	provisions := VoyageProvisions(standingOrderNavalRation(), travelTicks, events.MacroTickInterval)
 
 	// R1/R4: a merchantman's capacity (200 weight units) caps the manifest —
 	// grain weighs 2.0/unit (goods.weight), so at most 100 of the 200 needed

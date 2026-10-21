@@ -398,7 +398,14 @@ func (h *StandingOrderTickHandler) dispatchOutboundIfNeeded(ctx context.Context,
 	}
 	provisions := VoyageProvisions(ration, travelTicks, 0)
 	if category == "naval" {
-		provisions = VoyageProvisions(ration, travelTicks, returnJourney.TravelTicks-travelTicks)
+		provisions = VoyageProvisions(ration, travelTicks, max(0, returnJourney.TravelTicks-travelTicks)+events.MacroTickInterval)
+	}
+	if category == "naval" {
+		aboard, err := economy.StoredProvisions(ctx, tx, *shipID)
+		if err != nil {
+			return err
+		}
+		provisions = math.Max(0, provisions-economy.FoodAmount(aboard))
 	}
 	provisionPort := o.crewID
 	if category == "naval" {
