@@ -92,7 +92,7 @@ Fynd under körningen: första fullsviten gick röd för mitt eget test — `pla
 
 ## Resultat
 
-- Hela Go-sviten (`GOTEST_PORT=57441 tools/gotest.sh ./...`, färsk DB): se slutrapporten (sist körd efter sista commit).
+- Hela Go-sviten (`GOTEST_PORT=57441 tools/gotest.sh ./...`, färsk DB, commit 4c203ddc): 25 paket ok, 0 FAIL.
 - JS: `node --test $(find web/static -name '*.test.mjs')` → 699 pass / 0 fail (+ `tools/day_guard.py web|keryx|codex|server` PASS).
 - Umami: fliken skickar ingen händelse — befintliga flikar gör det inte heller (`verb_telemetry.js` mäter bara skrivande verb; fliken är en läsning, och knapparna återanvänder de redan mätta verben).
 
