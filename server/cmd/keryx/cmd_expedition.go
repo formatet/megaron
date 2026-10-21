@@ -31,13 +31,19 @@ type expeditionBody struct {
 	Finds      []expeditionFind `json:"finds"`
 }
 
-func printExpeditionLine(n notificationItem) {
+func printExpeditionLine(c *Client, n notificationItem) {
 	var b expeditionBody
 	if err := json.Unmarshal(n.Body, &b); err != nil {
 		return
 	}
 	if n.Kind == "ExpeditionTurnedHome" {
-		fmt.Printf("      %s\n", expeditionTurnedText(b))
+		eta := ""
+		if b.ArriveTick != nil {
+			if at, ok := c.WorldTickETA(*b.ArriveTick); ok {
+				eta = clockTime(at)
+			}
+		}
+		fmt.Printf("      %s\n", expeditionTurnedText(b, eta))
 	} else {
 		fmt.Printf("      %s\n", expeditionReportText(b))
 	}
@@ -50,21 +56,12 @@ func expeditionSubject(b expeditionBody) string {
 	return "The expedition"
 }
 
-func expeditionTurnedText(b expeditionBody) string {
-	why := map[string]string{
-		"half_time":  "half its time is spent",
-		"area_known": "no further unseen ground was found in its search area",
-		"no_path":    "the rest of it cannot be reached",
-	}[b.Reason]
-	if why == "" {
-		why = "its search is over"
+func expeditionTurnedText(b expeditionBody, eta ...string) string {
+	home := " Return time unavailable."
+	if len(eta) > 0 && eta[0] != "" {
+		home = " Expected home around " + eta[0] + "."
 	}
-	home := ""
-	if b.ArriveTick != nil {
-		home = fmt.Sprintf(" — home by %s", formatDay(*b.ArriveTick, "%d"))
-	}
-	return fmt.Sprintf("%s turns home from the land around (%d, %d): %s%s",
-		expeditionSubject(b), b.AreaQ, b.AreaR, why, home)
+	return fmt.Sprintf("Mission complete — %s is returning home.%s", expeditionSubject(b), home)
 }
 
 func expeditionReportText(b expeditionBody) string {

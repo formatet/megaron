@@ -1,11 +1,13 @@
 // ── Shared formatting helpers ──────────────────────────────────────────────
-// Pure functions, no DOM/State deps — safe for any other module to import
+// Formatting helpers; clock/world anchor are shared lower-layer dependencies.
+// No DOM dependencies — safe for any other module to import
 // directly regardless of layer (config/state ← api/ws ← render ← ui ← main).
 // (clock.js sits on the same low layer, so importing it keeps that promise.)
 import { giftText } from './gifts.js';
 import { fmtNum, fmtDays, fmtDay } from './fmt_num.js';
 import { fmtClock } from './fmt_clock.js';
 import { serverNow } from '../clock.js';
+import { msUntilWorldTick } from '../world_time.js';
 export function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
 // passageNote (megaron_plan_budet_liftar.md): appended to any dispatch/order
@@ -721,17 +723,10 @@ export function notifText(kind, body) {
       return `${subject} returning home${eta ? ` — arrives ${eta}` : ''}`;
     }
     case 'ExpeditionTurnedHome': {
-      // Payload per expedition.go expeditionArrived (megaron_plan_
-      // upptackarexpeditionen.md): the expedition turned on its own, and the
-      // text must say why — a turn the Wanax did not order needs its reason.
-      const why = {
-        half_time: 'half its time is spent',
-        area_known: 'no further unseen ground was found in its search area',
-        no_path: 'the rest of it cannot be reached',
-      }[body.reason] || 'its search is over';
-      const subject = body.name || 'The expedition';
-      const home = body.arrive_tick != null ? ` — home by ${fmtDay(body.arrive_tick)}` : '';
-      return `${subject} turns home from the land around (${body.area_q}, ${body.area_r}): ${why}${home}`;
+      const subject = esc(body.name || 'The expedition');
+      const ms = msUntilWorldTick(body.arrive_tick);
+      const home = Number.isFinite(ms) ? ` Expected home around ${fmtClock(Date.now() + ms)}.` : ' Return time unavailable.';
+      return `Mission complete — ${subject} is returning home.${home}`;
     }
     case 'ExpeditionReport': return expeditionReportText(body);
     case 'UnitReturnedStarving': {

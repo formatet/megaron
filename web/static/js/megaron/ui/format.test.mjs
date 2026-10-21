@@ -626,9 +626,18 @@ test('agora_ready directs to Account and ignores unexpected secret fields', () =
 // Upptäckarexpeditionen: the turn names its reason; the homecoming report
 // groups deposits by kind, names foreign cities, and says "no ore deposits, cedar or foreign cities recorded"
 // rather than going blank.
-test('notifText: ExpeditionTurnedHome says why it turned', () => {
-  const t = notifText('ExpeditionTurnedHome', { name: 'Spearmen I', area_q: 9, area_r: 0, reason: 'half_time', arrive_tick: 11 });
-  assert.equal(t, 'Spearmen I turns home from the land around (9, 0): half its time is spent — home by day 11');
+test('notifText: expedition return states completion and estimates wall time', async () => {
+  const {State}=await import('../state.js');
+  const {serverNow}=await import('../clock.js');
+  const saved={CURRENT_TICK:State.CURRENT_TICK,TICK_SECONDS:State.TICK_SECONDS,TICK_ANCHOR_MS:State.TICK_ANCHOR_MS};
+  try {
+    Object.assign(State,{CURRENT_TICK:10,TICK_SECONDS:60,TICK_ANCHOR_MS:serverNow()});
+    const t=notifText('ExpeditionTurnedHome',{name:'Spearmen I',reason:'area_known',arrive_tick:11});
+    assert.match(t,/^Mission complete — Spearmen I is returning home\. Expected home around (today|tomorrow) \d{2}:\d{2}\.$/);
+    assert.doesNotMatch(t,/day 11|no further unseen/);
+    State.TICK_ANCHOR_MS=null;
+    assert.match(notifText('ExpeditionTurnedHome',{arrive_tick:11}),/Return time unavailable/);
+  } finally { Object.assign(State,saved); }
 });
 
 test('notifText: ExpeditionReport groups finds and names cities', () => {

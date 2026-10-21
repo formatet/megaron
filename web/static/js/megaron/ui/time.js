@@ -9,8 +9,7 @@
 // Layer note: imports clock.js (low) and state.js (bottom) only, so any
 // module from api/ws upward may import it.
 import { serverNow } from '../clock.js';
-import { State } from '../state.js';
-import { worldTickNow } from '../world_time.js';
+import { msUntilWorldTick } from '../world_time.js';
 import { esc } from './format.js';
 import { fmtClock } from './fmt_clock.js';
 export { fmtClock } from './fmt_clock.js';
@@ -22,10 +21,8 @@ export { fmtClock } from './fmt_clock.js';
 // refreshed (bootstrap + WS reconnect). ISO path: plain diff against server
 // time (clock.js skew-anchored).
 export function msUntil(iso, arrivalTick) {
-  if (arrivalTick != null && State.TICK_SECONDS > 0 && State.TICK_ANCHOR_MS != null) {
-    const nowTick = worldTickNow();
-    return (arrivalTick - nowTick) * State.TICK_SECONDS * 1000;
-  }
+  const tickMs = msUntilWorldTick(arrivalTick);
+  if (Number.isFinite(tickMs)) return tickMs;
   if (iso == null || iso === '') return NaN;
   return new Date(iso).getTime() - serverNow();
 }

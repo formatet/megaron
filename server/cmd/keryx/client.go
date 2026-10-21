@@ -29,6 +29,8 @@ type Client struct {
 	// of always being current.
 	tickSeconds        float64
 	tickSecondsFetched bool
+	worldTick          *int
+	tickAnchor         time.Time
 }
 
 func newClient(cfg *Config) *Client {
@@ -150,12 +152,15 @@ func (c *Client) TickSeconds() (float64, bool) {
 		return 0, false
 	}
 	var w struct {
-		TickSeconds float64 `json:"tick_seconds"`
+		TickSeconds float64   `json:"tick_seconds"`
+		CurrentTick *int      `json:"current_tick"`
+		TickAnchor  time.Time `json:"tick_anchor_at"`
 	}
 	if json.Unmarshal(data, &w) != nil || w.TickSeconds <= 0 {
 		return 0, false
 	}
 	c.tickSeconds = w.TickSeconds
+	c.worldTick, c.tickAnchor = w.CurrentTick, w.TickAnchor
 	return c.tickSeconds, true
 }
 
@@ -276,4 +281,17 @@ func shortfall(need, have float64) string {
 		needStr = strconv.FormatFloat(need, 'f', 1, 64)
 	}
 	return fmt.Sprintf("need %s, have %.*f, %.*f short", needStr, prec, have, prec, diff)
+}
+
+// WorldTickETA projects an arrival with the same freshly fetched world anchor
+// used by TickSeconds. No persisted ISO stamp survives a tempo change here.
+func (c *Client) WorldTickETA(arrival int) (time.Time, bool) {
+	if c == nil {
+		return time.Time{}, false
+	}
+	cadence, ok := c.TickSeconds()
+	if !ok || c.worldTick == nil || c.tickAnchor.IsZero() {
+		return time.Time{}, false
+	}
+	return c.tickAnchor.Add(time.Duration(float64(arrival-*c.worldTick) * cadence * float64(time.Second))), true
 }

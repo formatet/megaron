@@ -20,3 +20,9 @@ export function movementTickNow(nowMs=serverNow(),state=State){
  const tick=worldTickNow(nowMs,state);
  return tick==null?null:state.CURRENT_TICK+Math.min(.999,Math.max(0,Math.floor((tick-state.CURRENT_TICK)*1000)/1000));
 }
+
+// Remaining wall time from the authoritative world tick and cadence.
+export function msUntilWorldTick(arrivalTick,nowMs=serverNow(),state=State){
+ const current=worldTickNow(nowMs,state);
+ return Number.isFinite(arrivalTick)&&current!=null?(arrivalTick-current)*state.TICK_SECONDS*1000:NaN;
+}
