@@ -304,6 +304,25 @@ func (s *Scheduler) EnqueueTickTx(ctx context.Context, tx pgx.Tx, worldID uuid.U
 	return err
 }
 
+// EnsurePendingTickTx reuses an identical active job. The caller must hold
+// its domain object's row lock, so two writers for that payload cannot race.
+// Processed jobs may be queued again; dead-lettered jobs are never silently
+// treated as active. Ordinary EnqueueTickTx retains strict duplicate errors.
+func (s *Scheduler) EnsurePendingTickTx(ctx context.Context, tx pgx.Tx, worldID uuid.UUID, eventType ScheduledEventType, payload any, dueTick int) error {
+	raw, err := json.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("marshal scheduled payload: %w", err)
+	}
+	var queued bool
+	if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM scheduled_events WHERE world_id=$1 AND event_type=$2 AND due_tick=$3 AND payload=$4::jsonb AND processed_at IS NULL AND failed_at IS NULL)`, worldID, string(eventType), dueTick, raw).Scan(&queued); err != nil {
+		return fmt.Errorf("check pending scheduled event: %w", err)
+	}
+	if queued {
+		return nil
+	}
+	return s.EnqueueTickTx(ctx, tx, worldID, eventType, payload, dueTick)
+}
+
 // Handler processes a single scheduled event. It must propagate ctx to all DB calls.
 type Handler func(ctx context.Context, e ScheduledEvent) error
 

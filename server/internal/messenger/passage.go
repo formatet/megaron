@@ -1257,6 +1257,6 @@ func scheduleCompletion(ctx context.Context, tx pgx.Tx, sched *events.Scheduler,
 	); err != nil {
 		return fmt.Errorf("schedule completion: set offer expiry: %w", err)
 	}
-	return sched.EnqueueTickTx(ctx, tx, worldID, events.ScheduledOfferExpiry,
+	return sched.EnsurePendingTickTx(ctx, tx, worldID, events.ScheduledOfferExpiry,
 		map[string]any{"messenger_id": messengerID.String()}, dueTick+OfferExpiryTicks)
 }
