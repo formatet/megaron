@@ -43,3 +43,5 @@ Check it with `keryx status`, or choose the sending city explicitly:
 `keryx transfer --from Knossos --dest Mallia --good grain --qty 50`.
 The sending city cannot also be the destination. A rejected self-transfer sends
 nothing; use `--from` to choose the other city you meant to send from.
+
+A coastal city can load or receive through any adjacent navigable water hex. The sea route compares those approaches and chooses the fastest reachable one; it does not fix the port to an arbitrary side of the city. Journeys already at sea keep their saved route.

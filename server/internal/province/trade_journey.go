@@ -29,8 +29,8 @@ type TradeJourney struct {
 }
 
 // PlanTradeJourney uses one terrain snapshot for A* and its entering-hex costs.
-// Naval endpoints can be water positions or settlements whose dock is the first
-// adjacent navigable hex in the same deterministic order as NearestSeaNeighbor.
+// Naval endpoints can be water positions or settlements. Compare every
+// adjacent navigable approach before freezing the cheapest reachable path.
 func PlanTradeJourney(ctx context.Context, db Queryer, worldID uuid.UUID, origin, dest MapPosition, category string) (TradeJourney, error) {
 	g, roads, err := LoadWorldGraph(ctx, db, worldID)
 	if err != nil {
@@ -44,22 +44,22 @@ func (g TileGraph) PlanTradeJourney(origin, dest MapPosition, category string, r
 	if category != "land" && category != "naval" {
 		return TradeJourney{}, fmt.Errorf("invalid trade category %q", category)
 	}
+	origins, destinations := []MapPosition{origin}, []MapPosition{dest}
 	if category == "naval" {
-		var ok bool
-		origin, ok = g.tradeDock(origin)
-		if !ok {
-			return TradeJourney{}, ErrNoTradePath
-		}
-		dest, ok = g.tradeDock(dest)
-		if !ok {
-			return TradeJourney{}, ErrNoTradePath
+		origins, destinations = g.tradeDocks(origin), g.tradeDocks(dest)
+	}
+	priceCat := TradePricingCategory(category)
+	var path []MapPosition
+	bestCost := math.Inf(1)
+	for _, from := range origins {
+		for _, to := range destinations {
+			candidate, cost, ok := g.FindPath(from, to, priceCat, roads)
+			if ok && cost < bestCost {
+				path, bestCost = candidate, cost
+			}
 		}
 	}
-	// A land caravan is priced in its own road class (CategoryCaravan, plan §2);
-	// the journey's stored Category stays "land".
-	priceCat := TradePricingCategory(category)
-	path, _, ok := g.FindPath(origin, dest, priceCat, roads)
-	if !ok {
+	if path == nil {
 		return TradeJourney{}, ErrNoTradePath
 	}
 	costs := make([]int64, 0, len(path)-1)
@@ -80,17 +80,18 @@ func (g TileGraph) PlanTradeJourney(origin, dest MapPosition, category string, r
 	return TradeJourney{Category: category, Path: path, StepCosts: costs, TravelTicks: ticks, Distance: len(path) - 1}, nil
 }
 
-func (g TileGraph) tradeDock(p MapPosition) (MapPosition, bool) {
+func (g TileGraph) tradeDocks(p MapPosition) []MapPosition {
 	if terrain, exists := g[[2]int{p.Q, p.R}]; exists && isPassable(terrain, "naval") {
-		return p, true
+		return []MapPosition{p}
 	}
+	var docks []MapPosition
 	for _, d := range axialDirs {
 		next := MapPosition{Q: p.Q + d[0], R: p.R + d[1]}
 		if terrain, exists := g[[2]int{next.Q, next.R}]; exists && isPassable(terrain, "naval") {
-			return next, true
+			docks = append(docks, next)
 		}
 	}
-	return MapPosition{}, false
+	return docks
 }
 
 // Validate checks frozen data without querying terrain or finding a new route.

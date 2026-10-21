@@ -56,3 +56,29 @@ func TestTradeJourneyMinimumAndInvalidSavedCosts(t *testing.T) {
 		t.Fatal("overflow saved costs accepted")
 	}
 }
+
+func TestTradeJourneyUsesBestPortApproach(t *testing.T) {
+	for _, blockedNorth := range []bool{false, true} {
+		t.Run(map[bool]string{false: "shorter_south", true: "first_dock_isolated"}[blockedNorth], func(t *testing.T) {
+			g := TileGraph{{0, 0}: "plains", {4, 0}: "plains"}
+			for _, p := range [][2]int{{-1, 0}, {-1, -1}, {0, -2}, {1, -2}, {1, -1}, {2, -2}, {3, -2}, {4, -2}, {4, -1}, {0, 1}, {1, 1}, {2, 1}, {3, 1}} {
+				g[p] = "coastal_sea"
+			}
+			if blockedNorth {
+				delete(g, [2]int{2, -2})
+			}
+			j, err := g.PlanTradeJourney(MapPosition{}, MapPosition{Q: 4}, "naval", nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if j.Distance != 3 || j.Path[0] != (MapPosition{R: 1}) || j.Path[len(j.Path)-1] != (MapPosition{Q: 3, R: 1}) {
+				t.Fatalf("wanted short southern approach, got%+v", j)
+			}
+			for _, p := range j.Path {
+				if !IsPassable(g[[2]int{p.Q, p.R}], "naval") {
+					t.Fatalf("sailed over land:%v", p)
+				}
+			}
+		})
+	}
+}
