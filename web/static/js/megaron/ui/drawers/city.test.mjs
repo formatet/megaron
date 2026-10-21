@@ -113,3 +113,19 @@ test('HX4b: server effect strings are escaped, and a missing effect leaves no da
 test('HX5: no placement-options data yet renders no options, not an error', () => {
   assert.equal(hexBuildOptionsHTML('farm', null), '');
 });
+
+test('B1: the wall option shows the next rung, greyed with its reason until the Granary is high enough', async () => {
+  const { wallOptionHTML } = await import('./city.js');
+  const wall = { type: 'wall', wall_ladder: [
+    { level: 1, name: 'Palisade', costs: { timber: 12, stone: 4 }, requires_silo: 1, population_cap: 5000 },
+    { level: 2, name: 'Stone Wall', costs: { timber: 20, stone: 40 }, requires_silo: 2, population_cap: 10000 },
+    { level: 3, name: 'Bronze Wall', costs: { stone: 80, bronze: 20 }, requires_silo: 3, population_cap: 20000 },
+  ] };
+  const locked = wallOptionHTML(wall, { walls: 1, siloLevel: 1 });
+  assert.match(locked, /disabled/);
+  assert.match(locked, /Stone Wall — needs a Granary of level 2/);
+  const open = wallOptionHTML(wall, { walls: 1, siloLevel: 2 });
+  assert.doesNotMatch(open, /disabled/);
+  assert.match(open, /20 timber 40 stone/);
+  assert.match(wallOptionHTML(wall, { walls: 3, siloLevel: 3 }), /highest level/);
+});

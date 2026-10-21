@@ -469,6 +469,21 @@ func armyUpkeepWarning(netG, netS, grainStock, silverStock float64) string {
 	return ""
 }
 
+// wallsHoldLine says what the walls hold (the population ceiling) and which
+// Granary the next wall needs. Only the ceiling — never "room for N more". ""
+// when the server did not report population_cap. The web drawer
+// (city_production.js wallsHoldText) says the same words.
+func wallsHoldLine(popCap, walls, siloLevel float64) string {
+	if popCap <= 0 {
+		return ""
+	}
+	line := fmt.Sprintf("Walls hold %s.", resource(popCap))
+	if walls < 3 {
+		line += fmt.Sprintf(" The next wall needs a Granary of level %.0f (yours: %.0f) — `keryx build --type silo`.", walls+1, siloLevel)
+	}
+	return line
+}
+
 // growthLine says in one sentence what the population is doing and why. state
 // and net are the server's growth_state / food_net_per_tick (the tick gate's
 // own inputs); "" when the server did not report a state. The web drawer
@@ -483,6 +498,8 @@ func growthLine(pop float64, state string, net float64) string {
 		return fmt.Sprintf("Population %.0f — growing: food net %s per day", pop, display)
 	case "holding":
 		return fmt.Sprintf("Population %.0f — not growing: food net %s per day (needs more than 0)", pop, display)
+	case "capped":
+		return fmt.Sprintf("Population %.0f — not growing: the walls are full", pop)
 	case "shrinking":
 		return fmt.Sprintf("Population %.0f — shrinking: hunger", pop)
 	}
@@ -603,6 +620,8 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			pop, _ := sett["population"].(float64)
 			labor, _ := sett["labor_pool"].(float64)
 			walls, _ := sett["walls"].(float64)
+			popCap, _ := sett["population_cap"].(float64)
+			siloLevel, _ := sett["silo_level"].(float64)
 			coastal, _ := p["coastal"].(bool)
 			coastalNote := ""
 			if coastal {
@@ -619,6 +638,9 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			fmt.Println(citizenScaleNote)
 			fmt.Printf("%s [%s]  Pop: %s people  Labor: %s  Walls: %.0f/3%s%s\n",
 				name, culture, resource(pop), citizenCount(int(math.Floor(labor/100))), walls, settlementsNote, coastalNote)
+			if line := wallsHoldLine(popCap, walls, siloLevel); line != "" {
+				fmt.Println(line)
+			}
 			if food, ok := sett["food"].(map[string]any); ok {
 				gs, _ := food["growth_state"].(string)
 				net, _ := food["food_net_per_tick"].(float64)

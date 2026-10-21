@@ -76,8 +76,9 @@ func RecruitCostPerMan(unitType string) map[string]float64 {
 // the one place where a corrupt population becomes minted silver. It did:
 // a colonising unit carrying a blessing-inflated size of 2 976 790 founded
 // Phaistos with 31.2 M silver, 99.5 % of the world's supply (2026-07-23).
-// 30000 is the settlement population soft cap (see kharis/tick.go growth), so
-// this bound never binds a legitimate settlement — it only refuses absurdity.
+// 30000 is above every wall's population cap (PopulationCap, at most 20 000) and
+// above the old soft cap cities were grandfathered at, so this bound never binds
+// a legitimate settlement — it only refuses absurdity.
 const MaxGenesisPopulation = 30000
 
 // CatchmentBasePotentialAt returns the FULL-CREW production potential per good

@@ -356,7 +356,8 @@ func expectedDayResult(prevPop int, prevAmount, prevRate float64) (newPop int, n
 			newPop = prevPop - 1 // at least one person per tick
 		}
 	case economy.FoodNet(prevRate, prevPop) > 0:
-		softcap := 1.0 - float64(prevPop)/30000.0
+		wallCap := float64(economy.PopulationCap(0)) // fixtures have no wall
+		softcap := 1.0 - float64(prevPop)/wallCap
 		if softcap < 0 {
 			softcap = 0
 		}
@@ -365,15 +366,14 @@ func expectedDayResult(prevPop int, prevAmount, prevRate float64) (newPop int, n
 		if add < 1 {
 			add = 1
 		}
-		newPop = prevPop + add
+		if newPop = prevPop + add; newPop > int(wallCap) {
+			newPop = int(wallCap)
+		}
 	default:
 		newPop = prevPop
 	}
 	if newPop < 0 {
 		newPop = 0
-	}
-	if newPop > 30000 {
-		newPop = 30000
 	}
 	return newPop, newGrain
 }

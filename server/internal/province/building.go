@@ -1,5 +1,7 @@
 package province
 
+import "fmt"
+
 // BuildingSpec defines the cost and effect of constructing a building.
 // All material costs are expressed as good_key → amount and deducted from
 // settlement_goods. CostSilver is deducted from the settlement_goods silver row.
@@ -34,6 +36,7 @@ var BuildingPurposes = map[BuildingType]string{
 	BuildingOlivePress:  "Refines a press-worker's oil from the settlement's groves",
 	BuildingWinery:      "Refines a vintner's wine from the settlement's vines",
 	BuildingPen:         "Holds a bigger herd; animals the pen cannot hold are eaten, then lost",
+	BuildingSilo:        "Raises the food store (not the herd) and lets the walls grow — a wall of level N needs a Granary of level N",
 }
 
 // The ONE harbour rule, told the same on every surface: a city may build a
@@ -92,6 +95,7 @@ var BuildingSpecs = map[BuildingType]BuildingSpec{
 	BuildingOlivePress:  {Costs: map[string]float64{"timber": 8, "stone": 8}, DurationTicks: 8},
 	BuildingWinery:      {Costs: map[string]float64{"timber": 8, "stone": 8}, DurationTicks: 8},
 	BuildingPen:         {Costs: map[string]float64{"timber": 6, "stone": 4}, DurationTicks: 4},
+	BuildingSilo:        {Costs: map[string]float64{"timber": 12, "stone": 8}, DurationTicks: 8},
 }
 
 // WallLevelSpecs ger kostnad/duration för nästa murnivå (1=Palisade, 2=Stone Wall,
@@ -100,8 +104,8 @@ var BuildingSpecs = map[BuildingType]BuildingSpec{
 // sten med brons (§10).
 var WallLevelSpecs = map[int]BuildingSpec{
 	1: {Costs: map[string]float64{"timber": 12, "stone": 4}, DurationTicks: 6, WallsBonus: 1},
-	2: {Costs: map[string]float64{"timber": 4, "stone": 24}, DurationTicks: 12, WallsBonus: 1},
-	3: {Costs: map[string]float64{"stone": 48, "bronze": 8}, DurationTicks: 24, WallsBonus: 1},
+	2: {Costs: map[string]float64{"timber": 20, "stone": 40}, DurationTicks: 12, WallsBonus: 1},
+	3: {Costs: map[string]float64{"stone": 80, "bronze": 20}, DurationTicks: 24, WallsBonus: 1},
 }
 
 // WallLevelNames är tier-namnen för klient-/hjälptext.
@@ -141,6 +145,7 @@ var LevelledBuildings = map[BuildingType]bool{
 	BuildingWinery:      true,
 	BuildingTemple:      true,
 	BuildingPen:         true,
+	BuildingSilo:        true,
 }
 
 // LevelCedarCost är cedar-påslaget för att bygga en arbetsplats till nivå N.
@@ -171,7 +176,13 @@ var LevelBronzeCost = map[int]float64{
 // LevelBronzeBuildings är byggnader vars nivåtrappa kostar brons.
 var LevelBronzeBuildings = map[BuildingType]bool{
 	BuildingFoundry: true,
+	BuildingSilo:    true,
 }
+
+// levelBronzeFrom is the first level that pays LevelBronzeCost; absent = 2. The
+// Granary pays bronze only at level 3, so Stone Wall (needs Granary 2) stays
+// reachable before the bronze age.
+var levelBronzeFrom = map[BuildingType]int{BuildingSilo: 3}
 
 // LevelCedarBuildings är de byggnader vars nivåtrappa kostar ädelträ.
 //
@@ -231,11 +242,36 @@ func LevelledSpec(bt BuildingType, level int) (BuildingSpec, bool) {
 	if cedar, hasCedar := LevelCedarCost[level]; hasCedar && LevelCedarBuildings[bt] {
 		costs["cedar"] += cedar
 	}
-	if bronze, hasBronze := LevelBronzeCost[level]; hasBronze && LevelBronzeBuildings[bt] {
+	if bronze, hasBronze := LevelBronzeCost[level]; hasBronze && LevelBronzeBuildings[bt] && level >= max(2, levelBronzeFrom[bt]) {
 		costs["bronze"] += bronze
 	}
 	out := base
 	out.Costs = costs
 	out.DurationTicks = base.DurationTicks * level
 	return out, true
+}
+
+// SiloFoodStorageMult is how many times the Granary of this level multiplies the
+// store of every food except livestock (the herd has its pens). Level 0 = no
+// Granary = ×1. The SQL function silo_food_mult (mig 197) mirrors this table;
+// TestSiloMultMirror pins the two.
+func SiloFoodStorageMult(level int) float64 {
+	switch {
+	case level >= 3:
+		return 10
+	case level == 2:
+		return 5
+	case level == 1:
+		return 2
+	}
+	return 1
+}
+
+// SiloLevelForWall is the Granary level a wall of nextWallLevel needs: the wall
+// may not outgrow the stores that feed the people inside it (Timothy 2026-10-21).
+func SiloLevelForWall(nextWallLevel int) int { return nextWallLevel }
+
+// WallNeedsSiloRefusal is the 422 text, told the same on every surface.
+func WallNeedsSiloRefusal(nextWallLevel int) string {
+	return fmt.Sprintf("%s needs a Granary of level %d", WallLevelNames[nextWallLevel], SiloLevelForWall(nextWallLevel))
 }

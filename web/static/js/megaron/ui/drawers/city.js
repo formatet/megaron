@@ -301,7 +301,7 @@ const _BLD_LBL = {
   stonequarry:'Stone Quarry', market:'Market', wall:'Wall', tower:'Tower',
   harbour:'Harbour', shipyard:'Shipyard', foundry:'Foundry', stable:'Stable',
   bronze_wall:'Bronze Wall', olive_press:'Olive Press', winery:'Winery',
-  temple:'Temple', pen:'Pen',
+  temple:'Temple', pen:'Pen', silo:'Granary',
 };
 
 export async function startBuild() {
@@ -464,9 +464,24 @@ function fmtBuildCost(entry) {
 // as other pure HTML builders. `catalogue` is the array from
 // getBuildingCatalogue(), already sorted alphabetically by type (server does
 // the sort). Display name comes from the existing _BLD_LBL map (unchanged).
-export function buildingOptionsHTML(catalogue) {
+// The wall is the population ceiling, and wall N needs a Granary of level N: the
+// next rung is offered with its cost and what it holds, or shown disabled with the
+// reason ("needs a Granary of level 2"). `ctx` = { walls, siloLevel } from the
+// province response; without it (or without the server's wall_ladder) the old
+// static line stays.
+export function wallOptionHTML(entry, ctx) {
+  const next = ctx && (entry.wall_ladder || []).find(w => w.level === Number(ctx.walls) + 1);
+  if (!next) return ctx && Number(ctx.walls) >= 3 ? '<option value="wall" disabled>Wall — at the highest level</option>' : WALL_OPTION_HTML;
+  const holds = `holds ${fmtNum(next.population_cap)}`;
+  if (Number(ctx.siloLevel) < next.requires_silo) {
+    return `<option value="wall" disabled>${next.name} — needs a Granary of level ${next.requires_silo} (${holds})</option>`;
+  }
+  return `<option value="wall">${next.name} — ${fmtBuildCost({ costs: next.costs })} (${holds})</option>`;
+}
+
+export function buildingOptionsHTML(catalogue, ctx) {
   return (catalogue || []).map(entry => {
-    if (entry.type === 'wall') return WALL_OPTION_HTML;
+    if (entry.type === 'wall') return wallOptionHTML(entry, ctx);
     const label = _BLD_LBL[entry.type] || entry.type;
     const costStr = fmtBuildCost(entry);
     // Name and price only (Timothy 2026-09-30: the purpose/requires tail made
@@ -653,7 +668,7 @@ async function refreshCityBuildings(provinceID) {
     // is true (megaron_plan_byggnad_pa_hex.md §A2).
     const constructHTML = buildingCatalogue ? `
       <select id="city-build-select" class="build-select" onchange="onCityBuildTypeChange()">
-        ${buildingOptionsHTML(buildingCatalogue)}
+        ${buildingOptionsHTML(buildingCatalogue, { walls: pd.walls, siloLevel: pd.silo_level })}
       </select>
       <select id="city-build-hex" class="build-select" style="display:none;margin-top:.3rem"></select>
       <button class="btn-primary btn-small" onclick="startBuild()" style="margin-top:.5rem;width:100%">+ Build</button>`

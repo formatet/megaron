@@ -337,6 +337,9 @@ const (
 	GrowthGrowing   = "growing"
 	GrowthHolding   = "holding"
 	GrowthShrinking = "shrinking"
+	// GrowthCapped: fed and with a surplus, but the walls are full — the city
+	// holds (PopulationCap). Never a loss.
+	GrowthCapped = "capped"
 )
 
 // GrowthState names the direction applyDecay's growth SQL gives a city:
@@ -354,6 +357,16 @@ func GrowthState(unmet, foodNet float64) string {
 	default:
 		return GrowthHolding
 	}
+}
+
+// GrowthStateAtWall is GrowthState with the wall ceiling applied: a city that
+// would grow but stands at or over PopulationCap(wallLevel) is "capped".
+func GrowthStateAtWall(unmet, foodNet float64, population, wallLevel int) string {
+	state := GrowthState(unmet, foodNet)
+	if state == GrowthGrowing && population >= PopulationCap(wallLevel) {
+		return GrowthCapped
+	}
+	return state
 }
 
 // livestockFoodValue is the food value of one slaughtered animal, in grain

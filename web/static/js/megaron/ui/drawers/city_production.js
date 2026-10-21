@@ -33,14 +33,23 @@ export function growthLineText(pd, includePopulation = true) {
   const signed = net !== 0 && Math.abs(net)<0.05 ? 'about even' : (net >= 0 ? '+' : '-') + Math.abs(net).toFixed(1);
   if (s.growth_state === 'growing') return `${prefix}growing: food net ${signed} per day`;
   if (s.growth_state === 'holding') return `${prefix}not growing: food net ${signed} per day (needs more than 0)`;
+  if (s.growth_state === 'capped') return `${prefix}not growing: the walls are full`;
   if (s.growth_state === 'shrinking') return `${prefix}shrinking: hunger`;
   return '';
+}
+
+// What the walls hold — the ceiling only, never "room for N more". Same words as
+// keryx `status` (wallsHoldLine in cmd_status.go). '' if the server sent no cap.
+export function wallsHoldText(pd) {
+  const cap = Number(pd?.population_cap);
+  return cap > 0 ? `Walls hold ${fmtNum(cap)}` : '';
 }
 
 export function populationHTML(pd, idle, livestock, provinceID) {
   const growth = growthLineText(pd, false);
   const g = growth ? growth.charAt(0).toUpperCase() + growth.slice(1) : '';
-  return (g ? `<p class="growth-line">${g}</p>` : '') + row('Citizens', n(Math.floor(pd.population / 100))) + row('Free to work', n(Math.floor(idle / 100))) +
+  const walls = wallsHoldText(pd);
+  return (g ? `<p class="growth-line">${g}</p>` : '') + (walls ? row('Walls hold', walls.replace('Walls hold ', '')) : '') + row('Citizens', n(Math.floor(pd.population / 100))) + row('Free to work', n(Math.floor(idle / 100))) +
     row('Livestock', n(Math.floor(livestock)));
 }
 
