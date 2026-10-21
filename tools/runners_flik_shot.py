@@ -40,6 +40,10 @@ DATA = {
         {'id': '11111111-0000-0000-0000-000000000004', 'group': 'on_the_way', 'kind': 'letter', 'to_city': 'Knossos', 'to_wanax': 'Dunios', 'arrives_at': iso(6), 'can_call_back': False, 'can_arrange_passage': False},
         {'id': '11111111-0000-0000-0000-000000000005', 'group': 'aboard', 'kind': 'letter', 'to_city': 'Amnissos', 'to_wanax': 'Kassandra', 'ship_name': 'Sea Swallow', 'ship_wanax': 'Dunios',
          'boarded_at': iso(-2), 'lands_at': iso(9), 'arrives_at': iso(11), 'can_call_back': False, 'can_arrange_passage': False},
+        {'id': '11111111-0000-0000-0000-000000000007', 'group': 'awaiting_answer', 'kind': 'offer', 'to_city': 'Knossos', 'to_wanax': 'Dunios',
+         'waiting_since': iso(-7), 'leaves_at': iso(161), 'can_call_back': False, 'can_arrange_passage': False},
+        {'id': '11111111-0000-0000-0000-000000000008', 'group': 'awaiting_answer', 'kind': 'letter', 'to_city': 'Amnissos', 'to_wanax': 'Kassandra',
+         'waiting_since': iso(-30), 'leaves_at': iso(18), 'can_call_back': False, 'can_arrange_passage': False},
         {'id': '11111111-0000-0000-0000-000000000006', 'group': 'homebound', 'kind': 'letter', 'to_city': 'Zakros', 'arrives_at': iso(3), 'can_call_back': False, 'can_arrange_passage': False},
     ],
     'foreign': [

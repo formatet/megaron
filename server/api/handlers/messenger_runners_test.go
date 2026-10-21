@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"formatet/megaron/server/internal/tick"
 	"github.com/google/uuid"
 )
 
@@ -189,4 +190,79 @@ func TestRunners_GroupsAndIntegrity(t *testing.T) {
 	}
 	_ = foreignWait
 	_ = time.Now
+}
+
+// A delivered runner stands in the recipient's court until they answer or its
+// stay runs out: the sender sees it under awaiting_answer — who, which city,
+// since when, and when it heads home unanswered.
+func TestRunners_AwaitingAnswer(t *testing.T) {
+	f := setupNavalPlayerFixture(t)
+	ctx := context.Background()
+	mh := NewMessengerHandler(f.pool, nil, f.clk, nil)
+	f.router.Get("/worlds/{worldID}/runners", mh.Runners)
+
+	sfx := " " + uuid.NewString()[:6]
+	kassandra := "Kassandra" + sfx
+	if _, err := f.pool.Exec(ctx, `UPDATE players SET wanax_name=$2 WHERE id=$1`, f.counterpartyID, kassandra); err != nil {
+		t.Fatal(err)
+	}
+	byblos := f.settlement(t, "Byblos", 0, f.initiatorID, true)
+	ugarit := f.settlement(t, "Ugarit", 5, f.counterpartyID, true)
+	for q := 1; q <= 4; q++ {
+		f.mapTile(t, q, 0, "coastal_sea")
+	}
+	code, resp := f.post(t, f.initiatorToken, "/worlds/"+f.worldID.String()+"/settlements/"+byblos.String()+"/messengers",
+		map[string]any{"destination_id": ugarit.String(), "message": "LETTER-GOLF to Kassandra"})
+	if code != 201 {
+		t.Fatalf("send: %d %v", code, resp)
+	}
+	var id uuid.UUID
+	if err := f.pool.QueryRow(ctx, `SELECT id FROM messengers WHERE origin_id=$1 AND message_text='LETTER-GOLF to Kassandra'`, byblos).Scan(&id); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.pool.Exec(ctx, `UPDATE messengers SET status='delivered', passage_status=NULL, passage_port_id=NULL,
+	        arrives_at=now()-interval '1 hour' WHERE id=$1`, id); err != nil {
+		t.Fatal(err)
+	}
+	// A stay-end already processed (an earlier stay) must not be read.
+	if _, err := f.pool.Exec(ctx, `INSERT INTO scheduled_events (world_id, event_type, payload, process_after, due_tick, processed_at)
+	        VALUES ($1,'MessengerStayEnd',jsonb_build_object('messenger_id',$2::text),now(),60,NULL),
+	               ($1,'MessengerStayEnd',jsonb_build_object('messenger_id',$2::text),now(),1,now())`, f.worldID, id.String()); err != nil {
+		t.Fatal(err)
+	}
+
+	dun, _ := f.getRunners(t, f.initiatorToken)
+	a := runnersIn(dun.Own, "awaiting_answer")
+	if len(a) != 1 || a[0]["to_city"] != "Ugarit" || a[0]["to_wanax"] != kassandra ||
+		a[0]["waiting_since"] == nil || a[0]["arrives_at"] != nil || a[0]["can_call_back"] != false {
+		t.Fatalf("awaiting_answer group wrong: %v (own=%v)", a, dun.Own)
+	}
+	anchor, err := tick.LoadAnchor(ctx, f.pool, f.worldID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := anchor.WallAt(60 * 1000).UTC().Format(time.RFC3339)
+	if got, _ := a[0]["leaves_at"].(string); got == "" || mustParse(t, got).UTC().Format(time.RFC3339) != want {
+		t.Errorf("leaves_at = %v, want %s (tick 60)", a[0]["leaves_at"], want)
+	}
+	if len(runnersIn(dun.Own, "on_the_way")) != 0 {
+		t.Errorf("a delivered runner is not on the way: %v", dun.Own)
+	}
+
+	kass, kassBody := f.getRunners(t, f.counterpartyToken)
+	if len(kass.Foreign) != 1 || kass.Foreign[0]["waiting_for"] != "your_answer" || kass.Foreign[0]["where"] != "Ugarit" {
+		t.Errorf("Kassandra's view of the runner in her court wrong: %v", kass.Foreign)
+	}
+	if len(kass.Own) != 0 || strings.Contains(kassBody, "leaves_at") {
+		t.Errorf("Kassandra sees Dunios' runner as her own: %s", kassBody)
+	}
+}
+
+func mustParse(t *testing.T, s string) time.Time {
+	t.Helper()
+	at, err := time.Parse(time.RFC3339Nano, s)
+	if err != nil {
+		t.Fatalf("parse %q: %v", s, err)
+	}
+	return at
 }

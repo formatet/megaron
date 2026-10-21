@@ -13,8 +13,10 @@ import (
 )
 
 // runnerOwn is one of the caller's OWN runners. Group is where it is now:
-// on_the_way, waiting (for a ship), aboard, homebound or no_word. The shape is
+// on_the_way, waiting (for a ship), aboard, awaiting_answer, homebound or no_word. The shape is
 // what web and keryx both print — grouping and wording are the server's.
+// awaiting_answer: delivered, standing in the recipient's court until they
+// answer or its stay runs out (messenger.StayEndHandler).
 type runnerOwn struct {
 	ID    uuid.UUID `json:"id"`
 	Group string    `json:"group"`
@@ -28,10 +30,12 @@ type runnerOwn struct {
 	Returning bool `json:"returning,omitempty"`
 	// ArrivesAt: landfall at the target (on_the_way, aboard) or home (homebound).
 	ArrivesAt *time.Time `json:"arrives_at,omitempty"`
-	// Waiting for a ship.
+	// Waiting for a ship, or (awaiting_answer) since it was delivered.
 	PortName     *string    `json:"port_name,omitempty"`
 	WaitingSince *time.Time `json:"waiting_since,omitempty"`
 	Explanation  *string    `json:"explanation,omitempty"`
+	// LeavesAt (awaiting_answer): when it heads home if nobody answers.
+	LeavesAt *time.Time `json:"leaves_at,omitempty"`
 	// Aboard: only what the runner itself lives through — the ship, who owns
 	// it, when it went aboard and when the ship makes landfall.
 	ShipName  *string    `json:"ship_name,omitempty"`
@@ -96,7 +100,11 @@ func (h *MessengerHandler) runnersOwn(ctx context.Context, worldID, playerID uui
 		`SELECT m.id, m.kind, (m.trade_offer IS NOT NULL), m.status, m.passage_status, m.passage_port_id, pps.name, pps.owner_id,
 		        m.passage_since_tick, ds.name, COALESCE(dpl.wanax_name, dpl.username), os.name,
 		        m.arrives_at, m.carrier_name, COALESCE(cpl.wanax_name, cpl.username), m.boarded_at, m.disembark_at,
-		        `+noWordSQL+` AND m.status NOT IN ('arrived','lost')
+		        `+noWordSQL+` AND m.status NOT IN ('arrived','lost'),
+		        (SELECT min(se.due_tick) FROM scheduled_events se
+		          WHERE se.world_id = m.world_id AND se.event_type = 'MessengerStayEnd'
+		            AND se.payload->>'messenger_id' = m.id::text
+		            AND se.processed_at IS NULL AND se.failed_at IS NULL)
 		   FROM messengers m
 		   LEFT JOIN settlements ds ON ds.id = m.destination_id
 		   LEFT JOIN players dpl ON dpl.id = ds.owner_id
@@ -104,7 +112,7 @@ func (h *MessengerHandler) runnersOwn(ctx context.Context, worldID, playerID uui
 		   LEFT JOIN settlements pps ON pps.id = m.passage_port_id
 		   LEFT JOIN units cu ON cu.id = m.carrier_unit_id
 		   LEFT JOIN players cpl ON cpl.id = COALESCE(cu.owner_id, m.carrier_owner_id)
-		  WHERE m.world_id = $1 AND m.sender_id = $2 AND m.status IN ('outbound','returning')
+		  WHERE m.world_id = $1 AND m.sender_id = $2 AND m.status IN ('outbound','returning','delivered')
 		  ORDER BY m.sent_at`, worldID, playerID)
 	if err != nil {
 		return nil, err
@@ -115,6 +123,7 @@ func (h *MessengerHandler) runnersOwn(ctx context.Context, worldID, playerID uui
 		passageStatus     *string
 		portID, portOwner *uuid.UUID
 		sinceTick         *int
+		leavesTick        *int
 		originName        *string
 		trade, noWord     bool
 	}
@@ -124,7 +133,7 @@ func (h *MessengerHandler) runnersOwn(ctx context.Context, worldID, playerID uui
 		var arrives time.Time
 		if err := rows.Scan(&x.ID, &x.Kind, &x.trade, &x.status, &x.passageStatus, &x.portID, &x.PortName, &x.portOwner,
 			&x.sinceTick, &x.ToCity, &x.ToWanax, &x.originName,
-			&arrives, &x.ShipName, &x.ShipWanax, &x.BoardedAt, &x.LandsAt, &x.noWord); err != nil {
+			&arrives, &x.ShipName, &x.ShipWanax, &x.BoardedAt, &x.LandsAt, &x.noWord, &x.leavesTick); err != nil {
 			rows.Close()
 			return nil, err
 		}
@@ -137,7 +146,7 @@ func (h *MessengerHandler) runnersOwn(ctx context.Context, worldID, playerID uui
 	}
 
 	out := []runnerOwn{}
-	order := map[string]int{"waiting": 0, "on_the_way": 1, "aboard": 2, "homebound": 3, "no_word": 4}
+	order := map[string]int{"waiting": 0, "on_the_way": 1, "aboard": 2, "awaiting_answer": 3, "homebound": 4, "no_word": 5}
 	for _, x := range raws {
 		it := x.runnerOwn
 		switch {
@@ -163,6 +172,14 @@ func (h *MessengerHandler) runnersOwn(ctx context.Context, worldID, playerID uui
 		switch {
 		case x.noWord:
 			it = runnerOwn{ID: it.ID, Group: "no_word", Kind: it.Kind}
+		case x.status == "delivered":
+			// arrives_at is when it was delivered — the inbox reads it the same way.
+			it.Group, it.WaitingSince, it.ArrivesAt = "awaiting_answer", it.ArrivesAt, nil
+			it.BoardedAt, it.LandsAt, it.ShipName, it.ShipWanax = nil, nil, nil, nil
+			if x.leavesTick != nil {
+				at := anchor.WallAt(int64(*x.leavesTick) * 1000)
+				it.LeavesAt = &at
+			}
 		case ps == "awaiting_passage" && x.portID != nil && x.portOwner != nil:
 			it.Group = "waiting"
 			it.ArrivesAt, it.BoardedAt, it.LandsAt, it.ShipName, it.ShipWanax = nil, nil, nil, nil, nil
@@ -213,7 +230,7 @@ func (h *MessengerHandler) runnersOwn(ctx context.Context, worldID, playerID uui
 	}
 	// Stable group order; within a group, send order is kept.
 	sorted := make([]runnerOwn, 0, len(out))
-	for g := 0; g <= 4; g++ {
+	for g := 0; g <= 5; g++ {
 		for _, it := range out {
 			if order[it.Group] == g {
 				sorted = append(sorted, it)

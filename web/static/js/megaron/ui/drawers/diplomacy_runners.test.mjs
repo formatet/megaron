@@ -14,6 +14,7 @@ const DATA = {
       explanation: 'Waiting in Tyre.', can_call_back: false, can_arrange_passage: true, eligible_ships: [] },
     { id: 'r1', group: 'on_the_way', kind: 'order', order_summary: 'Third Spears: Set stance: hold', arrives_at: iso(2) },
     { id: 'a1', group: 'aboard', kind: 'offer', to_city: 'Ugarit', to_wanax: 'Kassandra', ship_name: 'Sea Swallow', ship_wanax: 'Kassandra', boarded_at: iso(-2), lands_at: iso(5), arrives_at: iso(6) },
+    { id: 'q1', group: 'awaiting_answer', kind: 'offer', to_city: 'Sidon', to_wanax: 'Melqart', waiting_since: iso(-5), leaves_at: iso(30) },
     { id: 'h1', group: 'homebound', kind: 'letter', to_city: 'Byblos', arrives_at: iso(1) },
   ],
   foreign: [
@@ -24,7 +25,7 @@ const DATA = {
 
 test('Runners tab: every group, server explanation, buttons only where the server allows', () => {
   const html = runnersTabHTML(DATA);
-  for (const want of ['Waiting for a ship', 'On the way', 'Aboard a ship', 'On the way home', 'Others’ runners in your cities', 'Others’ runners aboard your ships',
+  for (const want of ['Waiting for a ship', 'On the way', 'Aboard a ship', 'Waiting for an answer', 'To Wanax Melqart (Sidon)', 'if unanswered', 'On the way home', 'Others’ runners in your cities', 'Others’ runners aboard your ships',
     'no ship has sailed from there toward Ugarit', 'Third Spears: Set stance: hold', 'To Wanax Kassandra (Ugarit)', 'aboard Wanax Kassandra’s Sea Swallow',
     'Wanax Kassandra’s runner in Byblos', 'Wanax Dunios’ runner aboard Sea Swallow', 'bound for Ugarit', 'Home to Byblos']) {
     assert.ok(html.includes(want), `missing ${want}`);

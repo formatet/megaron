@@ -11,6 +11,7 @@ const runnersFixture = `{"own":[
   "eligible_ships":[{"id":"s1","name":"Dawn Gull","settlement_name":"Byblos"}]},
  {"id":"r1","group":"on_the_way","kind":"order","order_summary":"Third Spears: Set stance: hold","arrives_at":"2026-10-21T20:00:00Z"},
  {"id":"a1","group":"aboard","kind":"letter","to_city":"Ugarit","to_wanax":"Kassandra","ship_name":"Sea Swallow","ship_wanax":"Kassandra","boarded_at":"2026-10-21T10:00:00Z","lands_at":"2026-10-22T01:30:00Z","arrives_at":"2026-10-22T03:00:00Z"},
+ {"id":"q1","group":"awaiting_answer","kind":"offer","to_city":"Sidon","to_wanax":"Melqart","waiting_since":"2026-10-21T08:00:00Z","leaves_at":"2026-10-23T08:00:00Z"},
  {"id":"h1","group":"homebound","kind":"letter","to_city":"Byblos","arrives_at":"2026-10-21T22:30:00Z"}],
  "foreign":[
  {"group":"in_your_city","sender_wanax":"Kassandra","where":"Byblos","waiting_for":"a_ship"},
@@ -25,6 +26,7 @@ func TestRenderRunners(t *testing.T) {
 		"WAITING FOR A SHIP", "Byblos", "no ship has sailed", "keryx call-back --id w1", "keryx passage --id w1 --ship s1", "Dawn Gull",
 		"ON THE WAY", "Third Spears: Set stance: hold",
 		"ABOARD", "Wanax Kassandra's Sea Swallow",
+		"WAITING FOR AN ANSWER", "→ Sidon (Wanax Melqart)", "if unanswered",
 		"HOMEBOUND",
 		"IN YOUR CITIES", "Wanax Kassandra's runner in Byblos",
 		"ABOARD YOUR SHIPS", "Wanax Dunios' runner aboard Sea Swallow",
@@ -33,7 +35,7 @@ func TestRenderRunners(t *testing.T) {
 			t.Errorf("output lacks %q:\n%s", want, out)
 		}
 	}
-	if strings.Contains(out, "keryx call-back --id a1") || strings.Contains(out, "--id h1") {
+	if strings.Contains(out, "keryx call-back --id a1") || strings.Contains(out, "--id h1") || strings.Contains(out, "--id q1") {
 		t.Errorf("an action was offered for a runner the server did not allow it for:\n%s", out)
 	}
 }
