@@ -67,6 +67,7 @@ var ordersBeforeStartExempt = []string{
 	"/worlds/{worldID}/join",
 	"/worlds/{worldID}/reports",
 	"/worlds/{worldID}/notifications/read-all",
+	"/worlds/{worldID}/messengers/{messengerID}/read",
 	"/worlds/{worldID}/notifications",
 	"/worlds/{worldID}/retreat-default",
 }

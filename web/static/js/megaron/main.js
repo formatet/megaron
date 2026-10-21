@@ -1,3 +1,4 @@
+import { updateDiplomacyBadge } from './ui/diplomacy_reads.js';
 // main.js — the map client's only entry point (loaded by web/static/map.html
 // as <script type="module">). Responsibilities, in order:
 //   1. bootstrap(): fetch what the old Go-template used to inline
@@ -338,13 +339,7 @@ async function bootstrap() {
 
   // Diplomacy badge — non-blocking.
   get('/api/v1/worlds/' + worldID + '/messengers/inbox')
-    .then(inbox => {
-      const badge = document.getElementById('diplo-badge');
-      if (badge && inbox.length) {
-        badge.textContent = inbox.length;
-        badge.style.display = '';
-      }
-    })
+    .then(updateDiplomacyBadge)
     .catch(e => console.error('bootstrap: inbox fetch failed', e));
 
   return true;

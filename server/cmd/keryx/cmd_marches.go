@@ -20,13 +20,28 @@ func inboxCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			if jsonMode {
-				printRawJSON(data)
-				return nil
-			}
 			var msgs []map[string]any
 			if err := json.Unmarshal(data, &msgs); err != nil {
 				return err
+			}
+			acknowledge := func() error {
+				for _, m := range msgs {
+					if m["read_at"] != nil {
+						continue
+					}
+					id, _ := m["id"].(string)
+					if id == "" {
+						continue
+					}
+					if _, err := c.post(fmt.Sprintf("/api/v1/worlds/%s/messengers/%s/read", cfg.WorldID, id), nil); err != nil {
+						return fmt.Errorf("letter displayed but could not mark it read: %w", err)
+					}
+				}
+				return nil
+			}
+			if jsonMode {
+				printRawJSON(data)
+				return acknowledge()
 			}
 			if len(msgs) == 0 {
 				fmt.Println("Inbox empty.")
@@ -85,7 +100,7 @@ func inboxCmd() *cobra.Command {
 				}
 				fmt.Printf("From: %s  (%s)\n  \"%s\"\n    reply: keryx reply --id %s --text \"...\"\n\n", from, when, text, id)
 			}
-			return nil
+			return acknowledge()
 		},
 	}
 }

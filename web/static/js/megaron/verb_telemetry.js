@@ -38,6 +38,7 @@ export const VERB_EVENTS = [
   {"verb": "trade-offer", "method": "POST", "route": "/api/v1/worlds/:world/settlements/:settlement/messengers", "event": "trade_offer"},
   {"verb": "message", "method": "POST", "route": "/api/v1/worlds/:world/founding/messengers", "event": "messenger_sent"},
   {"verb": "trade-offer", "method": "POST", "route": "/api/v1/worlds/:world/founding/messengers", "event": "trade_offer"},
+  {"verb": "mark letter read", "method": "POST", "route": "/api/v1/worlds/:world/messengers/:messenger/read", "event": "letter_read"},
   {"verb": "reply", "method": "POST", "route": "/api/v1/worlds/:world/messengers/:messenger/reply", "event": "reply_sent"},
   {"verb": "trade-accept", "method": "POST", "route": "/api/v1/worlds/:world/messengers/:messenger/trade-accept", "event": "trade_accepted"},
   {"verb": "trade-decline", "method": "POST", "route": "/api/v1/worlds/:world/messengers/:messenger/trade-decline", "event": "trade_declined"},

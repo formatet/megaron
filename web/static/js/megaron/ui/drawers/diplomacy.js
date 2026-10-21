@@ -1,3 +1,4 @@
+import { updateDiplomacyBadge, readDiplomacyLetters } from '../diplomacy_reads.js';
 import { giftText } from '../gifts.js';
 import { showInlineResult } from '../inline_result.js';
 import { State, ownCapital } from '../../state.js';
@@ -63,6 +64,7 @@ export function goodsSelectDisabledAttr(goods) {
 
 // ── Diplomacy drawer ──────────────────────────────────────────────────────
 let draftDestination = null;
+let unreadByThread = new Map();
 
 // The exact destination set the former Compose dropdown used. The city
 // directory includes rumours too; it must never become a dispatch catalogue.
@@ -216,6 +218,8 @@ async function loadDipThreads() {
       fetchAuth('/api/v1/worlds/' + State.WORLD_ID + '/gifts'),
     ]);
     const inbox  = (inR && inR.ok)  ? await inR.json().catch(() => [])  : [];
+    if (inR && inR.ok) updateDiplomacyBadge(inbox);
+    unreadByThread = new Map();
     const sent   = (outR && outR.ok) ? await outR.json().catch(() => []) : [];
 
     // Normalise both sides into a common shape and group by counterpart name.
@@ -274,16 +278,17 @@ async function loadDipThreads() {
       const msgs = [...thread.messages].sort((a,b) => msgTime(a) - msgTime(b));
       const latest = msgs[msgs.length - 1] || {};
       const hasPendingTrade = msgs.some(m => m._dir === 'in' && m.trade_offer && m.trade_offer.status === 'pending');
-      const hasUnread = msgs.some(m => m._dir === 'in' && m.status === 'delivered');
+      const hasUnread = msgs.some(m => m._dir === 'in' && m.status === 'delivered' && !m.read_at);
 
       const threadId = 'dip-thread-' + key.replace(/[^a-z0-9]/gi,'_');
       const isOpen = key === draftKey || openSet.has(threadId);
+      unreadByThread.set(threadId, msgs.filter(m => m._dir === 'in' && !m._gift && !m.read_at).map(m => m.id));
       const safeDestId = esc(thread.settlement_id || '');
       const safeName   = esc(thread.name);
 
       let badges = '';
       if (hasPendingTrade) badges += ' <span style="color:var(--accent-trade);font-size:.65rem">⚖</span>';
-      if (hasUnread)       badges += ' <span style="color:var(--accent);font-size:.65rem">●</span>';
+      if (hasUnread)       badges += ' <span class="dip-unread" style="color:var(--accent);font-size:.65rem">●</span>';
       const latestPreview = latest.message || latest.message_text || '';
 
       // Thread wrapper: data-open attribute controls CSS visibility of body
@@ -445,6 +450,8 @@ async function loadDipThreads() {
       return html;
     }).join('');
     restoreDrafts(el, drafts);
+    for (const thread of el.querySelectorAll('.dip-thread[data-open]')) acknowledgeThread(thread);
+
     // Do not recreate an already writable textarea when capability hints arrive.
     el.insertAdjacentHTML('beforeend', await renderLockedActions('diplomacy'));
 
@@ -462,6 +469,17 @@ export function dipToggleKind(cid) {
   if (sellEl) sellEl.style.display = kind === 'sell' ? '' : 'none';
 }
 
+function acknowledgeThread(el) {
+  const ids = unreadByThread.get(el.id) || [];
+  if (!ids.length) return;
+  readDiplomacyLetters(ids).then(ok => {
+    if (ok && unreadByThread.get(el.id) === ids) {
+      unreadByThread.delete(el.id);
+      el.querySelector('.dip-unread')?.remove();
+    }
+  });
+}
+
 export function dipToggleThread(id) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -470,6 +488,7 @@ export function dipToggleThread(id) {
     el.removeAttribute('data-open');
   } else {
     el.setAttribute('data-open', '');
+    acknowledgeThread(el);
   }
   // Update chevron hint
   const hint = el.querySelector('.dip-thread-expand-hint');

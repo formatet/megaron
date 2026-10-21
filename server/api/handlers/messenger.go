@@ -877,7 +877,7 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := h.pool.Query(r.Context(),
 		`SELECT m.id, COALESCE(m.origin_id, m.origin_unit_id), COALESCE(os.name, 'Nomadic Host'), m.destination_id, ds.name,
-		        m.message_text, m.trade_offer, m.status, m.sent_at, m.arrives_at, m.expires_at,
+		        m.message_text, m.trade_offer, m.status, m.sent_at, m.arrives_at, m.expires_at, m.read_at,
 		        -- Fas 2a: affordability is DATA, not a visibility filter. It used to be
 		        -- part of the WHERE clause, which made an insolvent pending offer's
 		        -- entire row (and therefore its id) disappear from the inbox — leaving
@@ -935,6 +935,7 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 		SentAt     time.Time       `json:"sent_at"`
 		ArrivedAt  time.Time       `json:"arrived_at"`
 		ExpiresAt  *time.Time      `json:"expires_at,omitempty"`
+		ReadAt     *time.Time      `json:"read_at"`
 		Affordable *bool           `json:"affordable,omitempty"`
 	}
 	var result []item
@@ -942,7 +943,7 @@ func (h *MessengerHandler) Inbox(w http.ResponseWriter, r *http.Request) {
 		var m item
 		var tradeOffer []byte
 		if err := rows.Scan(&m.ID, &m.FromID, &m.FromName, &m.ToID, &m.ToName,
-			&m.Message, &tradeOffer, &m.Status, &m.SentAt, &m.ArrivedAt, &m.ExpiresAt, &m.Affordable); err == nil {
+			&m.Message, &tradeOffer, &m.Status, &m.SentAt, &m.ArrivedAt, &m.ExpiresAt, &m.ReadAt, &m.Affordable); err == nil {
 			if len(tradeOffer) > 0 {
 				m.TradeOffer = json.RawMessage(tradeOffer)
 			}

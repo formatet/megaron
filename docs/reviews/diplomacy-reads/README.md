@@ -1,0 +1,3 @@
+# Diplomacy unread state
+
+Contract: reading an incoming letter marks that letter read independently of the messenger's physical status and pending trade. Persist read_at on the messenger. GET inbox is read-only; only opening a visible thread (web) or displaying inbox (Keryx) acknowledges those exact IDs. Unopened threads and arrivals racing a read stay unread. Authorization: destination owner only, reached messages only, idempotent and no movement/offer mutation. Scope migration194, read endpoint+inbox field, existing badge/dot behavior, Keryx and Codex. No new visual design or acceptance/return order. FUNCTION/TEXT. Prove DB auth/idempotency, actual client network behavior, CLI, existing suite and migration.

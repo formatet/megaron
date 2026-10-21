@@ -518,6 +518,7 @@ func main() {
 			r.Post("/worlds/{worldID}/settlements/{settlementID}/messengers", mh.Send)
 			r.Get("/worlds/{worldID}/settlements/{settlementID}/messengers", mh.ListSent)
 			r.Get("/worlds/{worldID}/messengers/inbox", mh.Inbox)
+			r.Post("/worlds/{worldID}/messengers/{messengerID}/read", mh.Read)
 			r.Post("/worlds/{worldID}/messengers/{messengerID}/reply", mh.Reply)
 			r.Post("/worlds/{worldID}/messengers/{messengerID}/trade-accept", mh.TradeAccept)
 			r.Post("/worlds/{worldID}/messengers/{messengerID}/trade-decline", mh.TradeDecline)
