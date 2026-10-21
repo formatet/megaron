@@ -562,7 +562,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		}
 		if !leg.Found {
 			return nil, reject(http.StatusUnprocessableEntity,
-				"none of the unseen ground within %d hexes of (%d,%d) can be reached by this unit",
+				"no route from this unit's current position to unseen ground within %d hexes of (%d,%d) — the chosen hex marks a search area, not a guaranteed path; try another reachable area or a unit departing from elsewhere",
 				ExpeditionAreaRadius, targetQ, targetR)
 		}
 		expeditionPlan = &ExpeditionPlan{AreaQ: targetQ, AreaR: targetR, LengthTicks: length}

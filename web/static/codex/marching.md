@@ -42,6 +42,8 @@ Choose **Explore** in the map menu; the default expedition duration is ready to 
 
 The unit chooses nearby unexplored ground on its own, and turns home by half the duration. It can turn earlier if the area is already explored or nothing further is reachable. **War → Army** and `keryx unit list` show the area, duration, latest turn and home day, and why it has turned. A Runner-delivered order begins when received, so those days become known when it starts. On return, Dispatches carries the report ([[sight]]).
 
+A chosen fog hex marks the search area; it does not guarantee a land or water route. If the order says there is no route to unseen ground in that area from this unit's position, choose another area or use a unit departing from elsewhere. The refusal says nothing about terrain outside the chosen area.
+
 In Keryx: `unit march --unit <id> --target q,r --intent explore --ticks N`. Omit `--ticks` for the server's default duration; the current allowed range comes from the game. Add `--preview` to check the order without dispatching. Exploration routes cross unknown ground, so their arrival forecast stays unavailable.
 
 ## Terrain and journey time

@@ -381,3 +381,34 @@ func TestExpedition_UnseenWaterIsNotAlreadyKnown(t *testing.T) {
 		t.Fatalf("refusal = %q, want unseen water named and a ship suggested", err.Error())
 	}
 }
+
+func TestExpedition_UnreachableChosenAreaExplainsWithoutGlobalClaim(t *testing.T) {
+	f := newExpeditionFixture(t, 0, 5, nil)
+	ctx := context.Background()
+	pool := testPool(t)
+	// An impassable full-height sea wall separates the selected, unseen dry
+	// hex from this cohort. Every dry hex on its own side is already known.
+	if _, err := pool.Exec(ctx, `UPDATE map_tiles SET terrain='deep_sea' WHERE world_id=$1 AND q=2`, f.worldID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := pool.Exec(ctx, `INSERT INTO player_scouted_tiles (world_id,player_id,q,r)
+		SELECT $1,$2,q,r FROM map_tiles WHERE world_id=$1 AND q<2`, f.worldID, f.ownerID); err != nil {
+		t.Fatal(err)
+	}
+	order := MarchOrder{WorldID: f.worldID, PlayerID: f.ownerID, UnitID: f.unitID,
+		TargetQ: 3, TargetR: 0, Intent: "explore", ExpeditionTicks: 12}
+	_, err := StartMarch(ctx, pool, f.scheduler, f.eventStore, f.clk, order, nil)
+	if err == nil || !strings.Contains(err.Error(), "no route from this unit's current position") || !strings.Contains(err.Error(), "chosen hex marks a search area") {
+		t.Fatalf("refusal = %v, want chosen-area route explanation", err)
+	}
+	firstReason := err.Error()
+	// A still unseen reachable hex on this side must not change the reply:
+	// the chosen area is the only reachability question this order asked.
+	if _, err := pool.Exec(ctx, `DELETE FROM player_scouted_tiles WHERE world_id=$1 AND player_id=$2 AND q=0 AND r=-4`, f.worldID, f.ownerID); err != nil {
+		t.Fatal(err)
+	}
+	_, err = StartMarch(ctx, pool, f.scheduler, f.eventStore, f.clk, order, nil)
+	if err == nil || err.Error() != firstReason {
+		t.Fatalf("refusal = %v, want unchanged area-specific explanation %q", err, firstReason)
+	}
+}
