@@ -154,7 +154,7 @@ func TestInlandFoodBalance_SevenOfTen(t *testing.T) {
 
 // Runs without changing rates: execute on separate fresh DBs before/after the
 // migration. Fixed initial placements, then real FoodTick -> growth.
-// No building/recruitment/trade policy is simulated; growth auto-placement is real.
+// No building/recruitment/trade or new-citizen placement policy is simulated.
 func TestInlandFoodBalance_Soak60(t *testing.T) {
 	for _, kind := range []string{"hills", "plains", "coast", "amnissos"} {
 		t.Run(kind, func(t *testing.T) {

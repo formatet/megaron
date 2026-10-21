@@ -1,15 +1,13 @@
 package kharis
 
-// Verifies applyDecay's P4 growth hook (economy.PlaceNextGubbeOnBestFoodHex)
-// actually fires when population crosses a new full hundred — not just that
-// the wider grain-funded-growth suite stays green with it wired in.
+// New whole citizens await manual placement (Timothy2026-10-20).
 
 import (
 	"context"
 	"testing"
 )
 
-func TestApplyDecay_PopulationCrossingNewHundredPlacesOneGubbe(t *testing.T) {
+func TestApplyDecay_NewWholeCitizenRemainsFree(t *testing.T) {
 	// A rich catchment (all plains, 6 hexes × cap 4 = 24 grain slots) with a
 	// starting population just below a hundred boundary, so ONE day's growth
 	// is virtually certain to cross it — the tiny headcount here (1-2 gubbar)
@@ -30,7 +28,7 @@ func TestApplyDecay_PopulationCrossingNewHundredPlacesOneGubbe(t *testing.T) {
 
 	pop, _ := snapshot(t, pool, settlementID)
 	if pop < 200 {
-		t.Skipf("population did not cross the 200 boundary this tick (pop=%d) — not what this test exercises", pop)
+		t.Fatalf("population did not cross the 200 boundary this tick (pop=%d) — not what this test exercises", pop)
 	}
 
 	var after int
@@ -39,7 +37,10 @@ func TestApplyDecay_PopulationCrossingNewHundredPlacesOneGubbe(t *testing.T) {
 	).Scan(&after); err != nil {
 		t.Fatalf("count placements after: %v", err)
 	}
-	if after <= before {
-		t.Errorf("placements after crossing 198→%d = %d, want > %d (the new gubbe should have been auto-placed)", pop, after, before)
+	if after != before {
+		t.Fatalf("growth changed placements: %d -> %d; new citizen must remain free", before, after)
+	}
+	if free := pop/100 - after; free != 1 {
+		t.Fatalf("population%d and%d placements leave%d free citizens, want1", pop, after, free)
 	}
 }

@@ -22,6 +22,8 @@ import (
 	"context"
 	"testing"
 
+	"formatet/megaron/server/internal/economy"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -42,6 +44,16 @@ func TestApplyDecay_ReplayIsIdempotent(t *testing.T) {
 	}
 	warmPop, warmGrain := snapshot(t, pool, settlementID)
 	t.Logf("after %d warm-up days: pop=%d grain=%.2f", warmupDays, warmPop, warmGrain)
+	// This is an explicit player placement in the fixture, not automatic
+	// growth behaviour. Keep the replay test on a food-positive growth path.
+	for ordinal := 51; ordinal <= warmPop/100; ordinal++ {
+		if _, err := economy.PlaceNextGubbeOnBestFoodHex(ctx, pool, settlementID, ordinal); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := economy.RecomputeProduction(ctx, pool, settlementID); err != nil {
+		t.Fatal(err)
+	}
 
 	// One more game-day elapses so settled() has fresh accrual to read for the
 	// run under test — but from here on both calls share the SAME event ID,

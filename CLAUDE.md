@@ -198,8 +198,8 @@ Get the shape wrong and you write wrong code. Everything else: `megaron_moc.md`.
   `economy.LoadHexProductionOptions`/`LoadBuildingProductionOptions`. Founding
   (`create_metropolis.go`, `unit_arrival.go foundColony`) auto-places starting gubbar on best food
   hexes via `economy.PlaceStartingWorkforce` (greedy-until-self-sufficient, Timothy's algorithm);
-  population growth crossing a new hundred auto-places via `economy.PlaceNextGubbeOnBestFoodHex`
-  (kharis/tick.go `applyDecay`). HTTP surface: `POST/DELETE/GET .../placements`
+  population growth crossing a new hundred leaves that citizen free for manual placement
+  (Timothy2026-10-20; kharis/tick.go `applyDecay`). HTTP surface: `POST/DELETE/GET .../placements`
   (`api/handlers/settlement_placement.go`). Plan: `megaron_plan_fysisk_gubbemodell.md` (vault) §P4;
   design `Temenos_varutaxonomi_sol.md` §1.1, §8. **P1–P6 are ALL built and deployed** — including
   **P5, the web placement surface** (`web/static/js/megaron/ui/citygrid.js`, commit `c8197f0`,

@@ -696,12 +696,8 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 	if err != nil {
 		slog.Error("daily decay failed", "world", worldID, "err", err)
 	} else {
-		// P4 (megaron_plan_fysisk_gubbemodell.md, P0-UI answer 5): a settlement
-		// that just crossed one or more new full hundreds gets each new gubbe
-		// auto-placed on its best available food hex — the fix for "a 1-gubbe
-		// city crossing 199→200 loses its 99 invisible auto-farmers." Must run
-		// BEFORE the RecomputeProduction loop below so the placement is
-		// reflected in this same tick's rates, not next tick's.
+		// Timothy2026-10-20: new whole citizens remain free for the player
+		// to place. Still drain growth rows before reinforcement and other DB work.
 		var crossings []popCrossing
 		for growthRows.Next() {
 			var c popCrossing
@@ -712,15 +708,6 @@ func (h *TickHandler) applyDecay(ctx context.Context, worldID uuid.UUID, eventID
 			crossings = append(crossings, c)
 		}
 		growthRows.Close()
-		for _, c := range crossings {
-			oldGubbar := c.oldPop / 100
-			newGubbar := c.newPop / 100
-			for ordinal := oldGubbar + 1; ordinal <= newGubbar; ordinal++ {
-				if _, err := economy.PlaceNextGubbeOnBestFoodHex(ctx, h.pool, c.id, ordinal); err != nil {
-					slog.Warn("spawn-to-food default failed", "settlement", c.id, "gubbe", ordinal, "err", err)
-				}
-			}
-		}
 
 		// Manskaps-underhåll (megaron_plan_rekryteringsmodell.md, Timothy
 		// 2026-08-19): trickle men into any reinforcing cohort sitting in its
