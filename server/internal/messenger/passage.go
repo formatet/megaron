@@ -909,7 +909,10 @@ type boardedCarrier struct {
 // for which a land route exists onward from disembarkAt to the messenger's
 // true final target (R2's conditions). The sender need not own the carrier
 // (Timothy 2026-10-21): a runner boards any departing ship, and the ship's
-// own order is never changed by it. No capacity limit (R2: "ingen
+// own order is never changed by it. It boards only a ship that lands it
+// nearer its target than the port it stands in (Timothy 2026-10-21): with any
+// Wanax's ship eligible, "first ship with a land road onward" could carry a
+// runner further away. No capacity limit (R2: "ingen
 // kapacitetsgräns — bud tar ingen plats").
 func (h *PassageScanHandler) boardEligible(ctx context.Context, worldID, portID uuid.UUID, disembarkAt province.MapPosition, carrierDueTick int, carrierArrivesAt time.Time, carrier boardedCarrier) error {
 	rows, err := h.pool.Query(ctx,
@@ -937,11 +940,26 @@ func (h *PassageScanHandler) boardEligible(ctx context.Context, worldID, portID 
 		return err
 	}
 
+	if len(ids) == 0 {
+		return nil
+	}
+	var port province.MapPosition
+	if err := h.pool.QueryRow(ctx,
+		`SELECT p.map_q, p.map_r FROM settlements s JOIN provinces p ON p.id = s.province_id WHERE s.id = $1`,
+		portID,
+	).Scan(&port.Q, &port.R); err != nil {
+		return fmt.Errorf("load port position: %w", err)
+	}
+
 	for _, id := range ids {
 		targetQ, targetR, err := FinalTarget(ctx, h.pool, id)
 		if err != nil {
 			slog.Error("passage scan: load final target", "messenger", id, "err", err)
 			continue
+		}
+		target := province.MapPosition{Q: targetQ, R: targetR}
+		if province.HexDistance(disembarkAt, target) >= province.HexDistance(port, target) {
+			continue // this ship lands it no nearer its goal — wait for a better one
 		}
 		_, _, landOK, err := province.FindPath(ctx, h.pool, worldID, disembarkAt, province.MapPosition{Q: targetQ, R: targetR}, province.CategoryCourierLand)
 		if err != nil {
