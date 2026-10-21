@@ -498,6 +498,7 @@ func main() {
 			r.Post("/worlds/{worldID}/units/{unitID}/pickup", uh.Pickup)
 			r.Post("/worlds/{worldID}/units/{unitID}/reinforce", uh.Reinforce)
 			r.Post("/worlds/{worldID}/units/{unitID}/repair", uh.Repair)
+			r.Post("/worlds/{worldID}/units/{unitID}/cancel-training", uh.CancelTraining)
 
 			r.Get("/worlds/{worldID}/settlements", sh.List)
 			// Registered before {settlementID} so the static "overview" segment

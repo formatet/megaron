@@ -1,0 +1,25 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+globalThis.document = {getElementById:()=>null};
+globalThis.localStorage = {getItem:()=>null};
+globalThis.location = {pathname:'/play/world', search:'', origin:'http://test'};
+const {submitRecruitment,recruitmentPending,recruitmentReceipt,rememberRecruitmentReceipt}=await import('./recruitment.js');
+test('one payment per in-flight order, lock through refresh, receipt survives refresh failure',async()=>{
+ let requests=0,finishPost,finishRefresh;const messages=[];
+ globalThis.fetch=()=>{requests++;return new Promise(r=>{finishPost=()=>r(new Response('{}',{status:201}));});};
+ const opts={world:'w',city:'c',type:'spearman',status:s=>messages.push(s),accepted:()=>new Promise(r=>{rememberRecruitmentReceipt('w','c','Order received: 100 Spearmen');finishRefresh=r;})};
+ const first=submitRecruitment(opts);
+ assert.equal(recruitmentPending('w','c','spearman'),true);
+ assert.equal(await submitRecruitment(opts),false);
+ finishPost();await new Promise(r=>setImmediate(r));
+ assert.equal(await submitRecruitment(opts),false,'refresh still in progress');assert.equal(requests,1);
+ finishRefresh();assert.equal(await first,true);assert.equal(recruitmentPending('w','c','spearman'),false);
+ assert.match(recruitmentReceipt('w','c'),/100 Spearmen/);
+ globalThis.fetch=async()=>new Response('{}',{status:201});
+ assert.equal(await submitRecruitment({...opts,accepted:async()=>{throw Error('refresh failed');}}),true);
+ assert.match(messages.at(-1),/^Order received/);
+ globalThis.fetch=async()=>{throw Error('network failure');};
+ assert.equal(await submitRecruitment(opts),false);assert.match(messages.at(-1),/Check Army before trying again/);
+ globalThis.fetch=async()=>new Response('{"error":"not enough silver"}',{status:422});
+ assert.equal(await submitRecruitment(opts),false);assert.match(messages.at(-1),/silver/);
+});

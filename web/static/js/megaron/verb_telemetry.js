@@ -8,6 +8,7 @@ export const VERB_EVENTS = [
   {"verb": "build", "method": "POST", "route": "/api/v1/worlds/:world/provinces/:province/build", "event": "build_started"},
   {"verb": "cancel-build", "method": "DELETE", "route": "/api/v1/worlds/:world/provinces/:province/build-queue/:queue", "event": "build_cancelled"},
   {"verb": "demolish", "method": "DELETE", "route": "/api/v1/worlds/:world/provinces/:province/buildings/:building", "event": "building_demolished"},
+  {"verb": "cancel-training", "method": "POST", "route": "/api/v1/worlds/:world/units/:unit/cancel-training", "event": "recruit_cancelled"},
   {"verb": "recruit", "method": "POST", "route": "/api/v1/worlds/:world/provinces/:province/recruit", "event": "recruit_started"},
   {"verb": "place", "method": "POST", "route": "/api/v1/worlds/:world/provinces/:province/placements", "event": "worker_placed"},
   {"verb": "staff", "method": "POST", "route": "/api/v1/worlds/:world/provinces/:province/placements", "event": "workplace_staffed"},

@@ -2113,6 +2113,7 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 	attachExpeditionNotes(r.Context(), h.pool, worldID, summaries)
 	attachPickupNotes(r.Context(), h.pool, worldID, playerID, units, summaries)
 	attachOrdersEnRoute(r.Context(), h.pool, worldID, playerID, summaries)
+	attachRecruitCancelNotes(r.Context(), h.pool, worldID, playerID, summaries)
 
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]any{"units": summaries, "expedition_rules": expeditionRulesJSON()})
@@ -2258,6 +2259,7 @@ func attachOrdersEnRoute(ctx context.Context, db province.Queryer, worldID, owne
 
 // unitSummary is the JSON shape returned to clients.
 type unitSummary struct {
+	CanCancelTraining bool `json:"can_cancel_training"`
 	// OrdersEnRoute: orders the player sent that have not been delivered yet.
 	OrdersEnRoute []orderEnRoute `json:"orders_en_route,omitempty"`
 	ID            uuid.UUID      `json:"id"`
