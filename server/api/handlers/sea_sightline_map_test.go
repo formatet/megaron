@@ -117,6 +117,37 @@ func TestMap_SeaHorizonFollowsOpenWaterOnly(t *testing.T) {
 	}
 }
 
+// TestMap_ShipSeesTheShoreline is temenos_synlighet §Strandlinjen through the real
+// GET /map: a galley three hexes off a coast at q=31 shows the shore hex live and
+// keeps the hex behind it in fog. The live path loads land via loadSeaHorizons.
+func TestMap_ShipSeesTheShoreline(t *testing.T) {
+	tiles := map[[2]int]string{}
+	for q := 26; q <= 33; q++ {
+		for r := 28; r <= 32; r++ {
+			terrain := "deep_sea"
+			if q >= 31 {
+				terrain = "plains"
+			}
+			tiles[[2]int{q, r}] = terrain
+		}
+	}
+	tiers := mapTiersFor(t, tiles, func(ctx context.Context, pool *pgxpool.Pool, worldID, viewerID uuid.UUID) {
+		if _, err := pool.Exec(ctx,
+			`INSERT INTO units (world_id, owner_id, type, category, size, crew, status, q, r)
+			 VALUES ($1, $2, 'galley', 'naval', 1, 20, 'positioned', 28, 30)`,
+			worldID, viewerID,
+		); err != nil {
+			t.Fatalf("create galley: %v", err)
+		}
+	})
+	if tiers[[2]int{31, 30}] != "live" {
+		t.Errorf("shore (31,30) tier = %q, want \"live\" — a ship sees the coast across open water", tiers[[2]int{31, 30}])
+	}
+	if tiers[[2]int{32, 30}] == "live" {
+		t.Errorf("inland (32,30) tier = live, want not live — only the shoreline")
+	}
+}
+
 // TestMap_DisbandedUnitIsNotAnEye: most disband paths leave q/r on the row, and
 // LoadLiveEyes used to filter only 'embarked' — so a disbanded unit kept seeing.
 // A positioned unit is the control: same shape, but alive.

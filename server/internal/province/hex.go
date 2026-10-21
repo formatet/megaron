@@ -164,6 +164,28 @@ func SetSeaHorizons(eyes []Eye, terrainAt func(MapPosition) string) {
 			}
 			horizon[target] = struct{}{}
 		}
+		// A ship sees the shoreline across the water it sees (Timothy 2026-10-21,
+		// temenos_synlighet.md §Strandlinjen): every known land hex in the disk
+		// that borders a horizon sea hex. Inland stays at LiveRadius.
+		// Collected apart so a shore hex never counts as water for the hex behind it.
+		if eyes[i].Kind == EyeShip && horizon != nil {
+			var shore []MapPosition
+			for _, c := range hexgrid.Disk(hexgrid.Coord{Q: eyes[i].Pos.Q, R: eyes[i].Pos.R}, SeaHorizonRadius) {
+				target := MapPosition{Q: c.Q, R: c.R}
+				if t := terrainAt(target); t == "" || IsSea(t) {
+					continue
+				}
+				for _, n := range hexgrid.Neighbors(c) {
+					if _, ok := horizon[MapPosition{Q: n.Q, R: n.R}]; ok {
+						shore = append(shore, target)
+						break
+					}
+				}
+			}
+			for _, p := range shore {
+				horizon[p] = struct{}{}
+			}
+		}
 		eyes[i].seaHorizon = horizon
 	}
 }

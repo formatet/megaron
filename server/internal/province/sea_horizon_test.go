@@ -236,3 +236,29 @@ func TestSeaSightline_Symmetric(t *testing.T) {
 		t.Fatalf("degenerate fixture: %d of %d lines open — the test must exercise both outcomes", open, checked)
 	}
 }
+
+// TestSeaHorizon_ShipSeesTheShorelineNotTheInland is the live case from world
+// 2178e795 (Timothy 2026-10-21): a galley sailed twice along (30,25)–(30,35) a
+// few hexes offshore; every sea hex was remembered and the coast stayed black.
+// A ship three hexes out (q=28) from a shore at q=31 sees that shore hex, but
+// not the hex behind it, and a land unit's horizon gains no shoreline.
+func TestSeaHorizon_ShipSeesTheShorelineNotTheInland(t *testing.T) {
+	terrain := func(p MapPosition) string {
+		if p.Q >= 31 {
+			return "plains"
+		}
+		return "deep_sea"
+	}
+	ship := classified(terrain, Eye{Pos: MapPosition{Q: 28, R: 30}, Kind: EyeShip})
+	shore, inland := MapPosition{Q: 31, R: 30}, MapPosition{Q: 32, R: 30}
+	if !AnyEyeSees(ship, shore, "plains") {
+		t.Errorf("ship at (28,30) must see the shoreline %v across open water", shore)
+	}
+	if AnyEyeSees(ship, inland, "plains") {
+		t.Errorf("ship at (28,30) must not see inland %v behind the shore", inland)
+	}
+	walker := classified(terrain, Eye{Pos: MapPosition{Q: 28, R: 30}, Kind: EyeLandUnit})
+	if AnyEyeSees(walker, shore, "plains") {
+		t.Errorf("only a ship's horizon includes the shoreline")
+	}
+}

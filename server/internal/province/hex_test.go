@@ -49,10 +49,10 @@ func TestLiveRadius_MountainAddsTwo(t *testing.T) {
 func TestAnyEyeSees_ShipSeesFarOverSeaButNotInland(t *testing.T) {
 	ship := Eye{Pos: MapPosition{Q: 0, R: 0}, Kind: EyeShip}
 	eyes := []Eye{ship}
-	// Open water everywhere except a strip of land east of the ship.
-	land := map[MapPosition]bool{{Q: 1, R: 0}: true, {Q: 2, R: 0}: true}
+	// Open water west, a continent from q=1 east. A two-hex strip in open water
+	// would make (2,0) shoreline, which a ship sees (temenos_synlighet §Strandlinjen).
 	SetSeaHorizons(eyes, func(p MapPosition) string {
-		if land[p] {
+		if p.Q >= 1 {
 			return "plains"
 		}
 		return "deep_sea"

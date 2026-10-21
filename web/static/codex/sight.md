@@ -8,12 +8,12 @@ Every settlement, every unit standing on the map and every messenger on the road
 |---|---|
 | Settlement | 3 hexes |
 | Land unit, or the Nomadic Host | 2 hexes |
-| Ship | 1 hex of land — a ship is blind inland |
+| Ship | 1 hex of land — a ship is blind inland, but sees the shoreline across the water it sees |
 | Anyone, looking at a mountain | 2 hexes further — mountains are landmarks |
 | Anyone standing at open water | 4 hexes of sea — in a straight line across open water only |
 <!-- src: server/internal/province/hex.go LiveRadius, SeaSightline -->
 
-The open horizon belongs to whoever stands at the water, and it reaches only across open water in a straight line. A coastal city or a ship reads the sea out to four hexes, but only where nothing but sea lies between it and the hex it looks at: an island, a headland or a strip of shore in the way blocks the view beyond it. An army on the beach does not see a lake behind it over the hills, and an army two hexes inland does not see the sea at all beyond its ordinary two hexes. A river between banks is not the sea and opens no horizon.
+The open horizon belongs to whoever stands at the water, and it reaches only across open water in a straight line. A coastal city or a ship reads the sea out to four hexes, but only where nothing but sea lies between it and the hex it looks at: an island, a headland or a strip of shore in the way blocks the view beyond it. An army on the beach does not see a lake behind it over the hills, and an army two hexes inland does not see the sea at all beyond its ordinary two hexes. A river between banks is not the sea and opens no horizon. **A ship also sees the shore:** every coast hex that borders water on its horizon shows, so sailing along a coast maps the coastline — but not the land behind it. <!-- src: server/internal/province/hex.go SetSeaHorizons -->
 
 ## Memory
 

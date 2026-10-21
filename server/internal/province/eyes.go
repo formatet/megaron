@@ -312,7 +312,7 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 //
 // One batched query for the sea hexes inside the SeaHorizonRadius disk of every
 // eye (≤ 61·len(eyes) hexes, deduplicated), not a full map load — the cost must not
-// grow with map size. Only sea hexes are fetched: the sightline asks nothing else.
+// grow with map size. Land is fetched too: a ship's horizon includes the shoreline.
 func loadSeaHorizons(ctx context.Context, db Queryer, worldID uuid.UUID, eyes []Eye) {
 	if len(eyes) == 0 {
 		return
@@ -335,7 +335,7 @@ func loadSeaHorizons(ctx context.Context, db Queryer, worldID uuid.UUID, eyes []
 		`SELECT t.q, t.r, t.terrain
 		   FROM map_tiles t
 		   JOIN unnest($2::int[], $3::int[]) AS p(q, r) ON t.q = p.q AND t.r = p.r
-		  WHERE t.world_id = $1 AND t.terrain IN ('coastal_sea', 'deep_sea')`,
+		  WHERE t.world_id = $1`,
 		worldID, qs, rs,
 	)
 	if err != nil {
