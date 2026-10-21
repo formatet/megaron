@@ -278,6 +278,7 @@ func (h *UnitHandler) dispatchMarchCourier(w http.ResponseWriter, ctx context.Co
 		return
 	}
 
+	order.Delivered = true
 	h.sendOrderCourier(w, ctx, messenger.OrderDeliveryPayload{
 		WorldID: order.WorldID, PlayerID: order.PlayerID, UnitID: order.UnitID,
 		Verb: "march", March: &order,
@@ -604,25 +605,6 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Guard: an earlier recall/redirect is already in flight for this unit.
-	// Checks the order-envelope's ScheduledOrderDelivery queue (verb recall|redirect),
-	// matching dispatch through sendOrderCourier.
-	var pendingMessengerID uuid.UUID
-	if err := h.pool.QueryRow(ctx,
-		`SELECT (payload->>'messenger_id')::uuid
-		 FROM scheduled_events
-		 WHERE event_type = $1 AND payload->>'unit_id' = $2
-		   AND payload->>'verb' = ANY(ARRAY['recall','redirect'])
-		   AND processed_at IS NULL AND failed_at IS NULL`,
-		string(events.ScheduledOrderDelivery), unitID.String(),
-	).Scan(&pendingMessengerID); err == nil {
-		var eta time.Time
-		_ = h.pool.QueryRow(ctx, `SELECT arrives_at FROM messengers WHERE id=$1`, pendingMessengerID).Scan(&eta)
-		writeError(w, http.StatusConflict,
-			fmt.Sprintf("a recall/redirect order is already on its way to this unit (ETA %s)", eta.Local().Format(time.RFC3339)))
-		return
-	}
-
 	origin := province.MapPosition{Q: *u.Q, R: *u.R}
 	target := province.MapPosition{Q: *u.TargetQ, R: *u.TargetR}
 	category := unit.MoveCategory(u.Type)
@@ -795,19 +777,39 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "could not resolve runner interception")
 		return
 	}
+	catchUp := "on_the_march"
 	if !interceptOK {
-		writeError(w, http.StatusUnprocessableEntity,
-			fmt.Sprintf("no Runner can catch this unit before it completes its march (arrives %s) — wait for it to arrive, then issue a fresh order",
-				u.ArrivesAt.Local().Format(time.RFC3339)))
-		return
+		interceptPos = target
+		catchUp = "at_destination"
 	}
+	// A newly sent order remains useful after the march ends. Keep its
+	// intended return/new destination and the physical rendezvous hex.
+	arrivalTarget := origin
+	if mode == "recall" {
+		var err error
+		arrivalTarget, err = combat.RecallDestinationAtArrival(ctx, h.pool, worldID, unitID, target, origin)
+		if err != nil {
+			var rej *combat.OrderReject
+			if errors.As(err, &rej) {
+				writeError(w, rej.Status, rej.Reason)
+			} else {
+				writeError(w, 500, "could not resolve return destination")
+			}
+			return
+		}
+	}
+	if mode == "redirect" {
+		arrivalTarget = province.MapPosition{Q: newTargetQ, R: newTargetR}
+	}
+	afterArrival := &combat.MarchOrder{WorldID: worldID, PlayerID: playerID, UnitID: unitID,
+		TargetQ: arrivalTarget.Q, TargetR: arrivalTarget.R, ExpectedPosition: &interceptPos}
 
 	msgText := "Runner — recall order, return home."
 	if mode == "redirect" {
 		msgText = fmt.Sprintf("Runner — redirect order, new course to (%d,%d).", newTargetQ, newTargetR)
 	}
 
-	extra := map[string]any{"mode": mode}
+	extra := map[string]any{"mode": mode, "catch_up": catchUp}
 	if mode == "redirect" {
 		extra["target_q"] = newTargetQ
 		extra["target_r"] = newTargetR
@@ -815,7 +817,7 @@ func (h *UnitHandler) Recall(w http.ResponseWriter, r *http.Request) {
 
 	h.sendOrderCourier(w, ctx, messenger.OrderDeliveryPayload{
 		WorldID: worldID, PlayerID: playerID, UnitID: unitID,
-		Verb: mode, Recall: recallOrder,
+		Verb: mode, Recall: recallOrder, AfterArrival: afterArrival, MeetAtDestination: !interceptOK,
 	}, msgText, courierOrigin, interceptPos, extra)
 }
 

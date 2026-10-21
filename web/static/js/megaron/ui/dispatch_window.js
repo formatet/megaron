@@ -291,19 +291,20 @@ export function openDispatchWindow(kind, payload, timeLabel) {
     <div class="dw-time">${esc(timeLabel || notificationDay({payload}))}</div>
     ${showOcc ? occupationBlockHTML(occChoices) : ''}
     ${showPassageStalled ? passageStalledBlockHTML(payload) : ''}
-    <button class="dw-goto-btn" id="dw-goto-btn" ${dest ? '' : 'disabled title="No known location for this dispatch"'}>⌖ Take me there</button>
+    <button class="dw-goto-btn" id="dw-goto-btn" ${dest || (kind === 'OrderFailed' && payload.unit_id) ? '' : 'disabled title="No known location for this dispatch"'}>${kind === 'OrderFailed' && payload.unit_id ? 'Review unit' : '⌖ Take me there'}</button>
     ${showChat ? '<button class="dw-goto-btn" id="dw-account-btn">Open account — Community chat</button>' : ''}
     ${article ? '<button class="dw-goto-btn dw-codex-btn" id="dw-codex-btn">? Read about this</button>' : ''}
     <label class="dw-mute-row">
       <input type="checkbox" id="dw-mute-chk">
-      Stop these as dispatches (still kept in Notifications)
+      ${kind === 'OrderFailed' ? 'Stop all failed-order dispatches' : 'Stop these as dispatches'} (still kept in Notifications)
     </label>
   `;
   overlay.classList.add('open');
 
   document.getElementById('dw-goto-btn').addEventListener('click', () => {
-    if (dest) window.centreOn(dest.q, dest.r);
     closeDispatchWindow();
+    if (kind === 'OrderFailed' && payload.unit_id && window.warFocusUnit) window.warFocusUnit(payload.unit_id);
+    else if (dest) window.centreOn(dest.q, dest.r);
   });
 
   if (showChat) document.getElementById('dw-account-btn').addEventListener('click', () => {

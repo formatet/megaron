@@ -767,10 +767,12 @@ export function notifText(kind, body) {
       // body.verb is the server's order key (order_delivery.go switch +
       // recall.go) — never shown raw: "Order failed (stance_pursuit)" told
       // the player nothing. An unknown key drops the parenthesis entirely.
-      const prefix = body.name ? `${body.name} — ` : '';
+      const prefix = body.name ? `${esc(body.name)} — ` : '';
       const label = ORDER_VERB_LABELS[body.verb];
       const what = label ? `Order failed (${label})` : 'Order failed';
-      return body.reason ? `${prefix}${what}: ${body.reason}` : `${prefix}${what}`;
+      const target = body.target_q != null && body.target_r != null ? ` to (${esc(String(body.target_q))},${esc(String(body.target_r))})` : '';
+      const delivery = body.messenger_id ? ' when the Runner arrived' : '';
+      return body.reason ? `${prefix}${what}${target}${delivery}: ${esc(body.reason)}` : `${prefix}${what}${target}${delivery}`;
     }
     case 'UnitRecalled':
     case 'UnitRedirected': {

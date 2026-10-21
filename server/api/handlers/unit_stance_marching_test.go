@@ -231,8 +231,7 @@ func TestStanceMarching_DeliveredAfterArrival(t *testing.T) {
 
 // (4) Coexistence: a stance Runner and a redirect Runner may pursue the same
 // unit at once — the recall/redirect 409 guard is scoped to those verbs, and
-// stance orders stay latest-delivered-wins. A second recall/redirect is still
-// refused while one is in flight.
+// All physical orders stay latest-delivered-wins; more than one may be in flight.
 func TestStanceMarching_CoexistsWithRedirect(t *testing.T) {
 	f, router := setupStanceMarchingWorld(t)
 	base := "/worlds/" + f.worldID.String() + "/units/" + f.unitID.String()
@@ -242,8 +241,8 @@ func TestStanceMarching_CoexistsWithRedirect(t *testing.T) {
 	}
 	dispatchStance(t, f, router, "storm") // 202 despite the redirect in flight
 	dispatchStance(t, f, router, "none")  // and a second stance: latest-delivered-wins
-	if rec := postJSON(t, router, f.accessToken, base+"/recall", nil); rec.Code != http.StatusConflict {
-		t.Errorf("second recall while a redirect is in flight = %d, want 409 (guard must still hold)", rec.Code)
+	if rec := postJSON(t, router, f.accessToken, base+"/recall", nil); rec.Code != http.StatusAccepted {
+		t.Errorf("second recall while a redirect is in flight = %d, want 202 (several physical orders may be in flight)", rec.Code)
 	}
 }
 

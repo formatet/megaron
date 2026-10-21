@@ -24,7 +24,7 @@ Recall turns an expedition home to its city, where it rejoins the garrison and f
 
 **War → Army → Recall all**, or `keryx recall --all`, sends a separate recall order to each of your marching units.
 
-Recall and redirect need a passable route from the unit’s current position. If its position or the new route cannot be resolved, the order is refused with a reason. A Runner-delivered refusal appears in Dispatches; the unit keeps its existing course. Check the unit and choose a reachable destination.
+Recall and redirect need a passable route from the unit’s current position. If its position or the new route cannot be resolved, the order is refused with a reason. If the Runner cannot catch up during the march, it follows the unit to its destination and delivers there if the unit is still present. A Runner-delivered refusal appears in Dispatches; the unit keeps its existing course. Check the unit and choose a reachable destination.
 
 ## Where you can march
 

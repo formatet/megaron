@@ -645,7 +645,7 @@ export async function sendMarch() {
     etaEl.innerHTML = dispatched
       ? 'A messenger carries the order — reaches the unit ' +
         arrivalHTML(first.data.courier_arrives_at, first.data.courier_due_tick) +
-        (redirecting ? '; the unit holds its current course until then' : '; the march begins on delivery') +
+        (first.data.catch_up === 'at_destination' ? '; follows the unit to its destination and applies there if it is still present' : redirecting ? '; the unit holds its current course until then' : '; the march begins on delivery') +
         passageNote(first.data)
       : '✓ Marching — arrives ' +
         arrivalHTML(first.data.arrives_at_utc || first.data.arrives_at, first.data.arrival_tick);

@@ -37,15 +37,21 @@ import (
 
 // MarchOrder is one march command against one unit.
 type MarchOrder struct {
-	WorldID  uuid.UUID
-	PlayerID uuid.UUID
-	UnitID   uuid.UUID
-	TargetQ  int
-	TargetR  int
-	Stance   string // optional; fortify|storm|sentry — persisted for C5
-	Intent   string // optional; "" = plain march, "colonize"/"explore"/"patrol"/"land"/"passage"/"pickup"
-	Name     string // optional colony name (used with intent=colonize, or intent=land + CargoIntent=colonize)
-	Mode     string // optional; "" = sack (default) | "annex"
+	// Delivered allows a newly sealed land order to replace a course at physical
+	// delivery. Old sealed envelopes omit it and retain their original behavior.
+	Delivered bool
+	// ExpectedPosition constrains a late Runner to the destination it actually
+	// reached. It cannot issue an order to a unit which has since left that hex.
+	ExpectedPosition *province.MapPosition
+	WorldID          uuid.UUID
+	PlayerID         uuid.UUID
+	UnitID           uuid.UUID
+	TargetQ          int
+	TargetR          int
+	Stance           string // optional; fortify|storm|sentry — persisted for C5
+	Intent           string // optional; "" = plain march, "colonize"/"explore"/"patrol"/"land"/"passage"/"pickup"
+	Name             string // optional colony name (used with intent=colonize, or intent=land + CargoIntent=colonize)
+	Mode             string // optional; "" = sack (default) | "annex"
 	// CargoIntent is R1's (megaron_plan_skeppsuppdrag_landsatt.md) optional
 	// grounding order for the cargo a "land" mission puts ashore: "" (just
 	// land) or "colonize" (found a colony on arrival, no further order
@@ -225,9 +231,20 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 			"that unit no longer exists — it has been disbanded (a Nomadic Host becomes its metropolis once founded; a defeated or starved unit dissolves into the populace). Order your capital's garrison instead.")
 	}
 
+	// A delivered course order is interpreted against the unit's physical
+	// position now, rather than the status it had when the Runner departed.
+	redirecting := o.Delivered && u.Status == unit.StatusMarching && unit.CategoryOf(u.Type) == unit.CategoryLand
+	if redirecting {
+		pos, err := CurrentUnitPosition(ctx, pool, clk, u)
+		if err != nil {
+			return nil, err
+		}
+		u.Q, u.R, u.SettlementID = &pos.Q, &pos.R, nil
+	}
+
 	// Must be garrisoned or positioned (positioned = on map without a settlement,
 	// e.g. landed on empty hex; it must be able to march back or onward).
-	if u.Status != unit.StatusGarrison && u.Status != unit.StatusPositioned {
+	if u.Status != unit.StatusGarrison && u.Status != unit.StatusPositioned && !redirecting {
 		// A unit already marching can't start a second march — but it isn't
 		// stuck: redirect sends a courier that turns it onto a new course
 		// without waiting for it to arrive first. Name that verb instead of
@@ -238,7 +255,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		// right-click and War → Army's Redirect button.
 		if u.Status == unit.StatusMarching {
 			return nil, reject(http.StatusUnprocessableEntity,
-				"unit is already marching and cannot start a new march; redirect it to a new destination: keryx unit redirect --unit <id> --target <q>,<r>")
+				"the unit is already marching; redirect it by choosing a new destination")
 		}
 		return nil, reject(http.StatusUnprocessableEntity,
 			"unit cannot march: status is '%s' (must be 'garrison' or 'positioned')", string(u.Status))
@@ -295,6 +312,10 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		originQ, originR = *u.Q, *u.R
 	} else {
 		return nil, reject(http.StatusUnprocessableEntity, "unit has no known position; cannot determine departure hex")
+	}
+
+	if o.ExpectedPosition != nil && (originQ != o.ExpectedPosition.Q || originR != o.ExpectedPosition.R) {
+		return nil, reject(422, "the Runner reached (%d,%d), but the unit is no longer there", o.ExpectedPosition.Q, o.ExpectedPosition.R)
 	}
 
 	// Amphibious assault: a laden galley ordered against a coastal settlement it
@@ -568,7 +589,8 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		targetQ == originQ && targetR == originR
 
 	// Sanity: cannot march to own hex (colonize-in-place, above, is the exception).
-	if !colonizeInPlace && targetQ == originQ && targetR == originR {
+	deliveredNoOp := o.ExpectedPosition != nil && targetQ == originQ && targetR == originR && o.Intent == ""
+	if !colonizeInPlace && !deliveredNoOp && targetQ == originQ && targetR == originR {
 		return nil, reject(http.StatusBadRequest, "cannot march to own hex")
 	}
 
@@ -716,7 +738,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 	category := unit.MoveCategory(u.Type)
 	var moveTicks float64
 	var path []province.MapPosition
-	if !colonizeInPlace {
+	if !colonizeInPlace && !deliveredNoOp {
 		p, pathCost, pathOK, pathErr := province.FindPath(ctx, pool, o.WorldID,
 			province.MapPosition{Q: originQ, R: originR},
 			province.MapPosition{Q: targetQ, R: targetR},
@@ -773,9 +795,31 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		if err := tx.QueryRow(ctx, `SELECT status FROM units WHERE id=$1 FOR UPDATE`, o.UnitID).Scan(&currentStatus); err != nil {
 			return nil, reject(http.StatusNotFound, "unit not found in transaction")
 		}
-		if unit.Status(currentStatus) != unit.StatusGarrison && unit.Status(currentStatus) != unit.StatusPositioned {
+		if redirecting {
+			var unchanged bool
+			if err := tx.QueryRow(ctx, `SELECT depart_tick IS NOT DISTINCT FROM $2 AND arrive_tick IS NOT DISTINCT FROM $3 AND march_route IS NOT DISTINCT FROM $4::jsonb FROM units WHERE id=$1`, o.UnitID, u.DepartTick, u.ArriveTick, u.MarchRoute).Scan(&unchanged); err != nil {
+				return nil, err
+			}
+			if !unchanged {
+				return nil, reject(409, "the unit changed course before the Runner delivered this order")
+			}
+		}
+		if o.ExpectedPosition != nil {
+			var stillThere bool
+			if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM units u LEFT JOIN settlements s ON s.id=u.settlement_id LEFT JOIN provinces p ON p.id=s.province_id WHERE u.id=$1 AND u.status IN ('positioned','garrison') AND COALESCE(u.q,p.map_q)=$2 AND COALESCE(u.r,p.map_r)=$3)`, o.UnitID, o.ExpectedPosition.Q, o.ExpectedPosition.R).Scan(&stillThere); err != nil {
+				return nil, err
+			}
+			if !stillThere {
+				return nil, reject(422, "the unit has left the hex the Runner reached")
+			}
+		}
+		if unit.Status(currentStatus) != unit.StatusGarrison && unit.Status(currentStatus) != unit.StatusPositioned && !(redirecting && unit.Status(currentStatus) == unit.StatusMarching) {
 			return nil, reject(http.StatusConflict, "unit status changed; march not sent")
 		}
+	}
+	if deliveredNoOp {
+		now := clk.Now()
+		return &MarchStarted{UnitID: o.UnitID, OriginQ: originQ, OriginR: originR, TargetQ: targetQ, TargetR: targetR, DepartsAt: now, ArrivesAt: now, ArrivalTick: currentTick}, nil
 	}
 	if unit.CategoryOf(u.Type) == unit.CategoryNaval && u.SettlementID != nil {
 		if preview {
@@ -1137,7 +1181,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		WorldID:    o.WorldID,
 		ArriveTick: &arriveTick,
 	}
-	if err := scheduler.EnqueueTickTx(ctx, tx, o.WorldID, events.ScheduledUnitArrival, arrPayload, currentTick+travelTicks); err != nil {
+	if err := enqueueUnitArrivalTx(ctx, tx, scheduler, o.WorldID, arrPayload, currentTick+travelTicks); err != nil {
 		return nil, reject(http.StatusInternalServerError, "could not schedule unit arrival")
 	}
 
@@ -1337,4 +1381,30 @@ func voyageNeed(ctx context.Context, db interface {
 func provisionsShort(have, need, ration float64, days int) *OrderReject {
 	return reject(http.StatusUnprocessableEntity, "not enough food to provision the voyage — the home port holds %.0f, "+
 		"the voyage needs %.0f (%.1f per day for %s out, on station and home again)", have, need, ration, tick.FormatDays(days))
+}
+
+// CurrentUnitPosition shares the physical read used by a delivered course and
+// a late Runner: saved route/tick anchor first, legacy route only as fallback.
+func CurrentUnitPosition(ctx context.Context, pool *pgxpool.Pool, clk clock.Clock, u *unit.Unit) (province.MapPosition, error) {
+	if u.Status == unit.StatusMarching {
+		if route, ok := LoadActiveRoute(u.MarchRoute, string(u.Status), u.DepartTick, u.ArriveTick); ok {
+			if anchor, err := tick.LoadAnchor(ctx, pool, u.WorldID); err == nil {
+				return RoutePositionAt(route, anchor.MilliAt(clk.Now()))
+			}
+		}
+		if u.Q != nil && u.R != nil && u.TargetQ != nil && u.TargetR != nil && u.DepartsAt != nil && u.ArrivesAt != nil {
+			pos, ok, err := province.InterpolatePosition(ctx, pool, u.WorldID, province.MapPosition{Q: *u.Q, R: *u.R}, province.MapPosition{Q: *u.TargetQ, R: *u.TargetR}, unit.MoveCategory(u.Type), *u.DepartsAt, *u.ArrivesAt, clk.Now())
+			if err == nil && ok {
+				return pos, nil
+			}
+		}
+	} else if u.Q != nil && u.R != nil {
+		return province.MapPosition{Q: *u.Q, R: *u.R}, nil
+	} else if u.SettlementID != nil {
+		var pos province.MapPosition
+		if err := pool.QueryRow(ctx, `SELECT p.map_q,p.map_r FROM settlements s JOIN provinces p ON p.id=s.province_id WHERE s.id=$1`, *u.SettlementID).Scan(&pos.Q, &pos.R); err == nil {
+			return pos, nil
+		}
+	}
+	return province.MapPosition{}, reject(422, "the Runner could not locate this unit on its route")
 }

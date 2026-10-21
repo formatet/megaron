@@ -1,0 +1,27 @@
+{
+  "cli": {
+    "health": {
+      "commit": "deliver-orders-proof",
+      "migration": 193,
+      "status": "ok"
+    },
+    "browser_errors": [],
+    "audit_rows": "MarchRecalled|291e9071-1608-45c0-9b2d-daf1c89b63bd|1\nMarchRedirected|b0c1c85b-a9c9-4e95-a36a-3bc7fd851ecf|1",
+    "all_garrison": true
+  },
+  "web": {
+    "health": {
+      "commit": "deliver-orders-proof",
+      "migration": 193,
+      "status": "ok"
+    },
+    "browser_errors": [],
+    "audit_rows": "MarchRecalled|783bcfd3-cf82-4926-ac4d-216d8d33c100|1\nMarchRedirected|47c43897-f1d7-4d5f-b9d3-e9f215f5107c|1",
+    "all_garrison": true
+  },
+  "mutation_controls": [
+    "moving-course: named RED",
+    "late-runner: named RED",
+    "escaped-notice: named RED"
+  ]
+}

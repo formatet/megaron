@@ -34,14 +34,18 @@ import (
 
 // OrderDeliveryPayload is the ScheduledOrderDelivery payload.
 type OrderDeliveryPayload struct {
-	WorldID     uuid.UUID           `json:"world_id"`
-	PlayerID    uuid.UUID           `json:"player_id"`
-	UnitID      uuid.UUID           `json:"unit_id"`
-	MessengerID uuid.UUID           `json:"messenger_id"`
-	Verb        string              `json:"verb"` // "march" | "stance" | "stance_pursuit" | "recall" | "redirect" | "occupy_action" | "standing_orders" | "build_road"
-	March       *combat.MarchOrder  `json:"march,omitempty"`
-	Stance      *combat.StanceOrder `json:"stance,omitempty"`
-	Recall      *combat.RecallOrder `json:"recall,omitempty"`
+	MeetAtDestination bool `json:"meet_at_destination,omitempty"`
+	// AfterArrival is only attached to newly sent recall/redirect envelopes.
+	// Old queued envelopes keep their original miss-on-arrival behavior.
+	AfterArrival *combat.MarchOrder  `json:"after_arrival,omitempty"`
+	WorldID      uuid.UUID           `json:"world_id"`
+	PlayerID     uuid.UUID           `json:"player_id"`
+	UnitID       uuid.UUID           `json:"unit_id"`
+	MessengerID  uuid.UUID           `json:"messenger_id"`
+	Verb         string              `json:"verb"` // "march" | "stance" | "stance_pursuit" | "recall" | "redirect" | "occupy_action" | "standing_orders" | "build_road"
+	March        *combat.MarchOrder  `json:"march,omitempty"`
+	Stance       *combat.StanceOrder `json:"stance,omitempty"`
+	Recall       *combat.RecallOrder `json:"recall,omitempty"`
 	// StandingOrders carries the KR3 §5 mid-battle retreat order — see
 	// combat.SetStandingOrders.
 	StandingOrders *combat.StandingOrdersOrder `json:"standing_orders,omitempty"`
@@ -206,6 +210,39 @@ func (h *OrderDeliveryHandler) Handle(ctx context.Context, e events.ScheduledEve
 		if p.Recall == nil {
 			return h.failSingleRecall(ctx, p, "the Runner could not deliver a complete order; check this unit and reissue the order")
 		}
+		if p.AfterArrival != nil {
+			u, err := unit.NewStore(h.pool).Get(ctx, p.UnitID)
+			if err != nil {
+				return h.failSingleRecall(ctx, p, "the Runner could not find this unit")
+			}
+			if u.OwnerID != p.PlayerID || u.WorldID != p.WorldID {
+				return h.failSingleRecall(ctx, p, "this unit is no longer yours")
+			}
+			if p.MeetAtDestination && u.Status == unit.StatusMarching {
+				pos, err := combat.CurrentUnitPosition(ctx, h.pool, h.clk, u)
+				if err != nil || p.AfterArrival.ExpectedPosition == nil || pos != *p.AfterArrival.ExpectedPosition {
+					return h.failSingleRecall(ctx, p, "the Runner reached the destination, but the unit was no longer there")
+				}
+			}
+			if u.Status == unit.StatusPositioned || u.Status == unit.StatusGarrison {
+				res, err := combat.StartMarch(ctx, h.pool, h.scheduler, h.eventStore, h.clk, *p.AfterArrival, nil)
+				if err != nil {
+					var rej *combat.OrderReject
+					if errors.As(err, &rej) {
+						return h.failSingleRecall(ctx, p, rej.Reason)
+					}
+					return err
+				}
+				if h.hub != nil {
+					kind := "UnitRedirected"
+					if p.Verb == "recall" {
+						kind = "UnitRecalled"
+					}
+					_ = h.hub.NotifyPlayer(ctx, p.WorldID, p.PlayerID, kind, 3, map[string]any{"unit_id": p.UnitID, "name": unit.LoadDisplayName(ctx, h.pool, p.UnitID), "q": res.OriginQ, "r": res.OriginR, "target_q": res.TargetQ, "target_r": res.TargetR, "arrives_at": res.ArrivesAt})
+				}
+				return nil
+			}
+		}
 		res, err := combat.ExecuteRecall(ctx, h.pool, h.scheduler, h.eventStore, h.clk, *p.Recall)
 		if err != nil {
 			var rej *combat.OrderReject
@@ -348,6 +385,13 @@ func (h *OrderDeliveryHandler) notifyOrderFailed(ctx context.Context, p OrderDel
 		"verb":    p.Verb,
 		"reason":  reason,
 	}
+	if p.March != nil {
+		payload["target_q"], payload["target_r"] = p.March.TargetQ, p.March.TargetR
+		payload["intent"] = p.March.Intent
+	} else if p.Recall != nil && p.Recall.NewTargetQ != nil && p.Recall.NewTargetR != nil {
+		payload["target_q"], payload["target_r"] = *p.Recall.NewTargetQ, *p.Recall.NewTargetR
+	}
+	payload["messenger_id"] = p.MessengerID
 	// occupy_action targets a SETTLEMENT, not a unit — UnitID is left
 	// zero-value for this verb (see OrderDeliveryPayload.Occupy doc comment),
 	// so without this the failure notice would carry no usable location.

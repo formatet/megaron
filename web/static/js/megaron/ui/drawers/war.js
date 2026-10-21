@@ -743,6 +743,7 @@ function orderSentLine(d, verb) {
   if (d && d.status === 'order_applied') {
     return verb + ' order given in person — you ride with the host, so it takes effect at once.';
   }
+  if (d?.catch_up === 'at_destination') return verb + ' order sent by Runner — follows the unit to its destination, arriving ' + fmtArrival(d.courier_arrives_at, d.courier_due_tick) + '. Applies there if the unit is still present.';
   return verb + ' order sent by messenger — reaches the unit ' + fmtArrival(d.courier_arrives_at, d.courier_due_tick) + '.';
 }
 

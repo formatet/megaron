@@ -80,7 +80,8 @@ try:
             time.sleep(.5)
     else:
         raise RuntimeError('server timeout')
-    assert health['commit'] == EXPECTED and health['migration'] == 160, health
+    latest = max(int(p.name.split('_', 1)[0]) for p in (ROOT/'server/db/migrations').glob('*.up.sql'))
+    assert health['commit'] == EXPECTED and health['migration'] == latest and not health.get('dirty', False), health
     worlds = api('/api/v1/worlds')
     world = (worlds if isinstance(worlds, list) else worlds['worlds'])[0]['id']
     token = api('/api/v1/auth/register', 'POST', {'username': 'single-recall'+secrets.token_hex(4), 'password': secrets.token_urlsafe(32)})['access_token']
@@ -131,7 +132,7 @@ try:
             page.locator(f'button[onclick="unitRecall(\'{first}\')"]').click()
         assert response.value.status==202, response.value.text()
         receipts.append(response.value.json())
-        expect(page.locator('#uorder-'+first)).to_contain_text('sent by Runner')
+        expect(page.locator('#uorder-'+first)).to_contain_text('sent by messenger')
         page.locator(f'button[onclick="unitRedirectToggle(\'{second}\')"]').click()
         page.locator('#uredir-'+second+' a').click()
         page.locator('#uredir-q-'+second).fill(str(homeq))
@@ -140,7 +141,7 @@ try:
             page.locator(f'button[onclick="unitRedirect(\'{second}\')"]').click()
         assert response.value.status==202, response.value.text()
         receipts.append(response.value.json())
-        expect(page.locator('#uorder-'+second)).to_contain_text('sent by Runner')
+        expect(page.locator('#uorder-'+second)).to_contain_text('sent by messenger')
         assert not errors, errors
 
     assert all(x['status']=='order_dispatched' for x in receipts),receipts

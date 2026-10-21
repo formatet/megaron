@@ -1234,7 +1234,10 @@ at delivery appears in notifications with its reason.`,
 					fmt.Printf(" — Runner arrives %s", gameETA(c, t))
 				}
 			}
-			fmt.Println("; the unit turns home once it catches up.")
+			if resp["catch_up"] == "at_destination" {
+				fmt.Print("; follows the unit to its destination and applies there if it is still present")
+			}
+			fmt.Println("; the unit turns home when the order is delivered.")
 			return nil
 		},
 	}
@@ -1285,6 +1288,9 @@ with its reason.`,
 			var resp map[string]any
 			json.Unmarshal(data, &resp)
 			fmt.Printf("Redirect order sent to unit %s (new course %d,%d)", unitID[:8], newQ, newR)
+			if resp["catch_up"] == "at_destination" {
+				fmt.Print("; the Runner follows the unit to its destination and applies the order there if it is still present")
+			}
 			if courierAt, _ := resp["courier_arrives_at"].(string); courierAt != "" {
 				if t, err := time.Parse(time.RFC3339, courierAt); err == nil {
 					fmt.Printf(" — Runner arrives %s", gameETA(c, t))

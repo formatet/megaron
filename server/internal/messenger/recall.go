@@ -98,9 +98,8 @@ func CourierTravelOnGraph(g province.TileGraph, roads province.RoadSet, from, to
 // ok=false means no hex on the remaining path — including the destination
 // itself — is reachable before the unit passes it: courierOrigin is too far
 // (or the remaining march too short) for any physically-honest courier to
-// catch this unit. Callers must treat that as a genuine, visible dispatch
-// failure; queuing a courier anyway would only reproduce the silent miss this
-// function exists to prevent.
+// catch this unit. Callers may instead send the Runner to the destination and apply its
+// order after arrival if the unit is still there (Timothy 2026-10-20).
 func InterceptAlongPath(
 	g province.TileGraph, roads province.RoadSet, courierOrigin province.MapPosition, path []province.MapPosition,
 	departsAt, arrivesAt, now time.Time,

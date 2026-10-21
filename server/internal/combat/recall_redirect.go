@@ -250,18 +250,8 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 
 	newArriveTick := currentTick + travelTicks
 	arrPayload := unit.ScheduledUnitArrivalPayload{UnitID: o.UnitID, WorldID: o.WorldID, ArriveTick: &newArriveTick}
-	// The identical pending arrival already resolves the current course at
-	// this tick. Reuse it under the unit lock rather than failing queue dedup.
-	rawArrival, _ := json.Marshal(arrPayload)
-	var arrivalQueued bool
-	if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM scheduled_events WHERE world_id=$1 AND event_type=$2 AND due_tick=$3 AND payload=$4::jsonb AND processed_at IS NULL AND failed_at IS NULL)`,
-		o.WorldID, string(events.ScheduledUnitArrival), newArriveTick, rawArrival).Scan(&arrivalQueued); err != nil {
-		return nil, fmt.Errorf("check existing arrival: %w", err)
-	}
-	if !arrivalQueued {
-		if err := scheduler.EnqueueTickTx(ctx, tx, o.WorldID, events.ScheduledUnitArrival, arrPayload, newArriveTick); err != nil {
-			return nil, fmt.Errorf("schedule new arrival: %w", err)
-		}
+	if err := enqueueUnitArrivalTx(ctx, tx, scheduler, o.WorldID, arrPayload, newArriveTick); err != nil {
+		return nil, fmt.Errorf("schedule new arrival: %w", err)
 	}
 
 	if err := tx.Commit(ctx); err != nil {
@@ -294,4 +284,25 @@ func ExecuteRecall(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sc
 		NewTargetQ: newTarget.Q, NewTargetR: newTarget.R,
 		ArrivesAt: arrivesAtNew,
 	}, nil
+}
+
+// RecallDestinationAtArrival preserves an expedition's true home for a new
+// recall envelope that might be delivered after its current leg ends.
+func RecallDestinationAtArrival(ctx context.Context, db *pgxpool.Pool, worldID, unitID uuid.UUID, arrival, ordinaryOrigin province.MapPosition) (province.MapPosition, error) {
+	var u unitRow
+	var intent *string
+	if err := db.QueryRow(ctx, `SELECT owner_id,type,category,home_settlement_id,march_intent FROM units WHERE id=$1 AND world_id=$2`, unitID, worldID).Scan(&u.ownerID, &u.utype, &u.category, &u.homeSettlementID, &intent); err != nil {
+		return province.MapPosition{}, err
+	}
+	if intent == nil || (*intent != "explore" && *intent != "explore_return") {
+		return ordinaryOrigin, nil
+	}
+	home, err := expeditionReturnDestination(ctx, db, u, arrival.Q, arrival.R, worldID)
+	if err != nil {
+		return province.MapPosition{}, err
+	}
+	if home == nil {
+		return province.MapPosition{}, reject(422, "no reachable home settlement for this expedition")
+	}
+	return province.MapPosition{Q: home.q, R: home.r}, nil
 }

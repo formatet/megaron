@@ -606,3 +606,5 @@ motsvarande CSV-kolumner för seriekompatibilitet. `alfa_economy.py` visar
 arkiveventens lagerskillnad och täckning i tydligt historiska kolumner.
 `text_live.py` återspelar äldre notiser syntetiskt för att prova arkivläsaren.
 Ingen av dessa historikläsare styr eller skriver dagens matlager.
+
+`delivered_orders_mutations.py OUT` restores the old moving-unit rejection, late-Runner refusal and unescaped notice one at a time; each must fail its named regression test on a fresh DB where relevant. `single_recall_live.py OUT COMMIT [cli|web]` checks real registration, founding, physical recall/redirect and garrison arrival; migration provenance follows the current migration directory.

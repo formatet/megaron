@@ -204,17 +204,18 @@ func TestRecall_FieldUnitStillNeedsRunner_SameSetupAsHost(t *testing.T) {
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
 
-	if rec.Code != http.StatusUnprocessableEntity {
-		t.Fatalf("Recall(spearman, redirect, 5 min left) = %d %q, want 422 — the messenger pillar "+
-			"must still stand for every unit that is not the nomadic host", rec.Code, rec.Body.String())
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("late Runner must be dispatched: %d %s", rec.Code, rec.Body.String())
 	}
 	var resp struct {
-		Error string `json:"error"`
+		Status      string `json:"status"`
+		CatchUp     string `json:"catch_up"`
+		MessengerID string `json:"messenger_id"`
 	}
 	if err := json.Unmarshal(rec.Body.Bytes(), &resp); err != nil {
-		t.Fatalf("decode response: %v", err)
+		t.Fatal(err)
 	}
-	if resp.Error == "" {
-		t.Fatalf("empty error message on 422")
+	if resp.Status != "order_dispatched" || resp.CatchUp != "at_destination" || resp.MessengerID == "" {
+		t.Fatalf("missing physical courier: %s", rec.Body.String())
 	}
 }

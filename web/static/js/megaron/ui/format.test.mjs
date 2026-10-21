@@ -728,3 +728,9 @@ test('StorageCapacityWarning names the good and the days left', () => {
   const line = notifText('StorageCapacityWarning', { name: 'MalliaWest', good_key: 'silver', cap: 960, full_in_ticks: 3 });
   assert.match(line, /silver storage full in 3/);
 });
+
+test('failed order escapes text and retains destination and delivery context',()=>{
+ const html=notifText('OrderFailed',{name:'<img src=x onerror=alert(1)>',verb:'march',target_q:31,target_r:16,messenger_id:'runner',reason:'--unit <id> --target <q>,<r>'});
+ assert.doesNotMatch(html,/<img|<id>|<q>|<r>/);
+ assert.match(html,/&lt;id&gt;/);assert.match(html,/to \(31,16\) when the Runner arrived/);
+});

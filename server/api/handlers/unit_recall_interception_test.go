@@ -212,7 +212,7 @@ func TestRecall_InterceptsAheadOfStaleSnapshot(t *testing.T) {
 // destination, always more than the 1.5h left on the march — dispatch must
 // reject visibly (422) rather than queue a courier already certain to arrive
 // too late and vanish into a silent log line.
-func TestRecall_UndeliverableFromFarCapital_FailsVisibly(t *testing.T) {
+func TestRecall_LateRunnerGoesToDestination(t *testing.T) {
 	f, router := setupInterceptWorld(t, 6, 5)
 
 	req := httptest.NewRequest(http.MethodPost,
@@ -221,10 +221,21 @@ func TestRecall_UndeliverableFromFarCapital_FailsVisibly(t *testing.T) {
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
 
-	if rec.Code != http.StatusUnprocessableEntity {
-		t.Fatalf("Recall = %d %q, want 422 (no Runner from (6,5) can catch this unit before it arrives) — "+
-			"a doomed dispatch must fail now, visibly, not silently later", rec.Code, rec.Body.String())
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("late Runner must still be sent: %d %s", rec.Code, rec.Body.String())
 	}
+	var envelope messenger.OrderDeliveryPayload
+	var raw []byte
+	if err := unitLoadTestPool(t).QueryRow(context.Background(), `SELECT payload FROM scheduled_events WHERE event_type='OrderDelivery' AND payload->>'unit_id'=$1 ORDER BY id DESC LIMIT 1`, f.unitID.String()).Scan(&raw); err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(raw, &envelope); err != nil {
+		t.Fatal(err)
+	}
+	if !envelope.MeetAtDestination || envelope.AfterArrival == nil || envelope.AfterArrival.ExpectedPosition == nil || envelope.AfterArrival.ExpectedPosition.Q != 8 || envelope.AfterArrival.TargetQ != 0 {
+		t.Fatalf("missing destination/return plan: %s", raw)
+	}
+
 }
 
 // TestRecall_UnitOnAnotherLandmass_Fails422 is 3b-4's acceptance criterion 4

@@ -192,15 +192,14 @@ func TestRecall_FieldUnitOrderTravelsByCourier(t *testing.T) {
 		t.Fatalf("unit disturbed before delivery: status=%s target_q=%d (command must not be instant)", status, targetQ)
 	}
 
-	// A second recall while one is already in flight must 409 — the pending
-	// guard checks ScheduledOrderDelivery (verb recall|redirect).
+	// Several physical Runners may be in flight; the latest delivered order wins.
 	req2 := httptest.NewRequest(http.MethodPost,
 		"/worlds/"+f.worldID.String()+"/units/"+f.unitID.String()+"/recall", bytes.NewReader([]byte("{}")))
 	req2.Header.Set("Authorization", "Bearer "+f.accessToken)
 	rec2 := httptest.NewRecorder()
 	router.ServeHTTP(rec2, req2)
-	if rec2.Code != http.StatusConflict {
-		t.Fatalf("second recall while one in flight = %d %q, want 409", rec2.Code, rec2.Body.String())
+	if rec2.Code != http.StatusAccepted {
+		t.Fatalf("second recall while one in flight = %d %q, want 202", rec2.Code, rec2.Body.String())
 	}
 
 	// Deliver the courier: the unit turns for home through the shared core.
