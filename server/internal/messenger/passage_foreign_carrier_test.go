@@ -148,3 +148,36 @@ func TestCarrierFate_StormForeignMissionLosesPassengerToSenderOnly(t *testing.T)
 		t.Errorf("MessengerLostAtSea to sender=%d owner=%d, want 1 and 0 (the sealed envelope is the sender's alone)", toSender, toOwner)
 	}
 }
+
+// A runner takes a ship only if it lands nearer its goal than the port it
+// stands in (Timothy 2026-10-21). Layout: port (0,0), sea (1..4,0), target
+// city (5,0), then a land road east (6..11,0). Landing at (11,0) has a land
+// road back to the target, but is further from it (6) than the port is (5).
+func TestPassageScan_BoardsOnlyShipLandingNearer(t *testing.T) {
+	for _, c := range []struct {
+		name   string
+		landQ  int
+		boards bool
+	}{{"further away waits", 11, false}, {"nearer boards", 9, true}} {
+		t.Run(c.name, func(t *testing.T) {
+			f := setupPassageFixture(t)
+			ctx := context.Background()
+			for q := 6; q <= 11; q++ {
+				if _, err := f.pool.Exec(ctx, `INSERT INTO map_tiles (world_id, q, r, terrain) VALUES ($1, $2, 0, 'plains')`, f.worldID, q); err != nil {
+					t.Fatal(err)
+				}
+			}
+			runner := f.waitingMessenger(t, f.originID, f.currentTick+1)
+			ship := f.ship(t, f.originID, "merchantman")
+			f.departingTransportTo(t, f.originID, f.destID, c.landQ, 0, ship, f.currentTick+3)
+			if err := f.handler().Handle(ctx, events.ScheduledEvent{WorldID: f.worldID, DueTick: f.currentTick}); err != nil {
+				t.Fatal(err)
+			}
+			_, passage, _, _ := f.messengerRow(t, runner)
+			aboard := passage != nil && *passage == "aboard"
+			if aboard != c.boards {
+				t.Fatalf("landing at (%d,0): aboard=%v, want %v", c.landQ, aboard, c.boards)
+			}
+		})
+	}
+}
