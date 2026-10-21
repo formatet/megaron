@@ -164,7 +164,7 @@ export function passageStalledBlockHTML(payload) {
       + '<button class="dw-occ-btn" id="dw-passage-arrange-btn">Arrange passage</button>'
       + '</div>';
   } else {
-    arrangeRow = '<div class="dw-occ-choice"><span class="dw-occ-desc">No eligible ship of yours is in port yet — build or send one.</span></div>';
+    arrangeRow = '';
   }
   const callBackRow = payload.own_port
     ? '<div class="dw-occ-choice">'
@@ -173,6 +173,7 @@ export function passageStalledBlockHTML(payload) {
       + '</div>'
     : '';
   return '<div class="dw-occupation" id="dw-passage-stalled">'
+    + (payload.explanation ? '<p class="dw-occ-desc">' + esc(payload.explanation) + '</p>' : '')
     + (payload.order_summary ? '<p class="dw-occ-desc">Sealed order: ' + esc(payload.order_summary) + '</p>' : '')
     + '<div class="dw-occ-label">Decide the runner\'s fate:</div>'
     + arrangeRow + callBackRow

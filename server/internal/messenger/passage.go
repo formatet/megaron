@@ -254,7 +254,7 @@ func ownedCoastalPorts(ctx context.Context, db province.Queryer, worldID, ownerI
 // send time instead of a silent success — every caller (Send, SendFromHost,
 // sendOrderCourier) turns this into a 422 with an explaining sentence, never
 // dispatches a messenger that can never reach a port.
-var ErrNoPort = fmt.Errorf("no port of yours to take ship from — a runner cannot cross the sea without a ship")
+var ErrNoPort = fmt.Errorf("your runner cannot cross the sea: you hold no coastal or harboured city to take ship from. Send it from a coastal city, or build a Harbour")
 
 // ResolveDeparture is the single entry point every outbound dispatcher (Send,
 // SendFromHost, sendOrderCourier) calls in place of a bare CourierTravel, per
@@ -680,10 +680,34 @@ func (h *PassageScanHandler) notifyStalledOne(ctx context.Context, worldID, mess
 		if targetName != nil {
 			body["target_name"] = *targetName
 		}
+		body["explanation"] = stalledExplanation(portName, targetName, ownPort, len(ships))
 		_ = h.hub.NotifyPlayer(ctx, worldID, senderID, "PassageStalled", 2, body)
 	}
 	slog.Info("passage: stalled, dispatch sent", "messenger", messengerID, "port", portName, "own_port", ownPort)
 	return nil
+}
+
+// stalledExplanation is the PassageStalled text web and keryx both print:
+// what is happening, why, and what the Wanax can do — one source, the server.
+func stalledExplanation(portName string, targetName *string, ownPort bool, ownShips int) string {
+	toward := "its destination"
+	if targetName != nil && *targetName != "" {
+		toward = *targetName
+	}
+	text := fmt.Sprintf("Your runner is waiting in %s: no ship has sailed from there toward %s. "+
+		"Any ship that does — yours or another Wanax's — takes it aboard by itself.", portName, toward)
+	switch {
+	case ownShips > 0:
+		text += " You can also send one of your own ships now."
+	case ownPort:
+		text += " None of your ships is free in this port; build or send one here to carry it sooner."
+	default:
+		text += " None of your ships is free to fetch it; send one from a port of yours to carry it sooner."
+	}
+	if ownPort {
+		text += " Or call it back home, undelivered."
+	}
+	return text
 }
 
 // boardTransports is R2 for real naval transports (transports.ship_unit_id):

@@ -22,12 +22,12 @@ import (
 
 // ErrCallBackNotOwnPort is CallBack's rejection for a runner waiting in a
 // foreign port (R5: "bara för ett utgående bud i en egen hamn").
-var ErrCallBackNotOwnPort = fmt.Errorf("runner is waiting in a foreign port — call-back only works for an outbound runner in your own port")
+var ErrCallBackNotOwnPort = fmt.Errorf("your runner is waiting in another Wanax's port on its way home — only a runner still in your own port can be called back. Arrange passage to fetch it, or let it wait: any ship sailing its way takes it aboard")
 
 // ErrCallBackNotYours is CallBack's rejection when messengerID belongs to a
 // different sender — a 403, not the generic 500 an unwrapped error would
 // otherwise fall into at the HTTP layer.
-var ErrCallBackNotYours = fmt.Errorf("not your runner")
+var ErrCallBackNotYours = fmt.Errorf("that runner is not yours — only the Wanax who sent it can call it back")
 
 // CallBackResult is CallBack's outcome.
 type CallBackResult struct {

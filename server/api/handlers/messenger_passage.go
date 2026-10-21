@@ -16,6 +16,8 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
+	"time"
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/clock"
@@ -24,6 +26,7 @@ import (
 	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/messenger"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -97,11 +100,11 @@ func (h *PassageHandler) Arrange(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if senderID != playerID {
-		writeError(w, http.StatusForbidden, "not your runner")
+		writeError(w, http.StatusForbidden, "That runner is not yours — only the Wanax who sent it can arrange its passage.")
 		return
 	}
 	if passageStatus == nil || *passageStatus != "awaiting_passage" || passagePortID == nil {
-		writeError(w, http.StatusUnprocessableEntity, "this runner is not waiting for passage")
+		writeError(w, http.StatusUnprocessableEntity, runnerNotWaitingReason(passageStatus))
 		return
 	}
 
@@ -125,10 +128,13 @@ func (h *PassageHandler) Arrange(w http.ResponseWriter, r *http.Request) {
 	var shipOwnerID, shipWorldID uuid.UUID
 	var shipType, shipStatus string
 	var shipSettlementID *uuid.UUID
+	var shipName, shipPortName *string
+	var shipReadyAt, shipArrivesAt *time.Time
 	if err := h.pool.QueryRow(ctx,
-		`SELECT owner_id, world_id, type, status, settlement_id FROM units WHERE id = $1`,
+		`SELECT u.owner_id, u.world_id, u.type, u.status, u.settlement_id, u.name, s.name, u.build_complete_at, u.arrives_at
+		   FROM units u LEFT JOIN settlements s ON s.id = u.settlement_id WHERE u.id = $1`,
 		req.ShipID,
-	).Scan(&shipOwnerID, &shipWorldID, &shipType, &shipStatus, &shipSettlementID); err != nil {
+	).Scan(&shipOwnerID, &shipWorldID, &shipType, &shipStatus, &shipSettlementID, &shipName, &shipPortName, &shipReadyAt, &shipArrivesAt); err != nil {
 		writeError(w, http.StatusNotFound, "ship not found")
 		return
 	}
@@ -136,23 +142,33 @@ func (h *PassageHandler) Arrange(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusForbidden, "ship not in this world")
 		return
 	}
+	name := unit.DisplayName(shipType)
+	if shipName != nil && *shipName != "" {
+		name = *shipName
+	}
 	if shipOwnerID != playerID {
-		writeError(w, http.StatusForbidden, "not your ship")
+		writeError(w, http.StatusForbidden, fmt.Sprintf(
+			"%s belongs to another Wanax — you can only send your own ships. Your runner boards any ship that sails its way by itself.", name))
 		return
 	}
 	if shipType != string(unit.TypeGalley) && shipType != string(unit.TypeMerchantman) {
-		writeError(w, http.StatusUnprocessableEntity,
-			"a war galley cannot carry a runner — passage needs a galley or merchantman")
+		writeError(w, http.StatusUnprocessableEntity, fmt.Sprintf(
+			"%s is a war galley and carries no passengers. Send a Galley or an Emporos instead.", name))
 		return
 	}
 	if shipStatus != string(unit.StatusGarrison) || shipSettlementID == nil {
 		writeError(w, http.StatusUnprocessableEntity,
-			"the ship must be docked in its own port, free of any mission, to be sent on passage")
+			shipNotFreeReason(name, shipStatus, shipReadyAt, shipArrivesAt, h.clk.Now()))
 		return
 	}
 	if ownPort && *shipSettlementID != *passagePortID {
-		writeError(w, http.StatusUnprocessableEntity,
-			fmt.Sprintf("the ship must be docked at %s — the runner is waiting there", portName))
+		at := "another port"
+		if shipPortName != nil {
+			at = *shipPortName
+		}
+		writeError(w, http.StatusUnprocessableEntity, fmt.Sprintf(
+			"%s lies in %s, but your runner is waiting in %s. Choose a ship docked in %s, or sail %s there first.",
+			name, at, portName, portName, name))
 		return
 	}
 
@@ -219,6 +235,46 @@ func (h *PassageHandler) Arrange(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// runnerNotWaitingReason says where a runner is instead of waiting in port.
+func runnerNotWaitingReason(passageStatus *string) string {
+	switch {
+	case passageStatus != nil && *passageStatus == "aboard":
+		return "Your runner is already aboard a ship and needs no passage."
+	case passageStatus != nil && *passageStatus == "returning_sealed":
+		return "Your runner's ship was lost; the runner is safe and will be back waiting in port shortly. Arrange passage then."
+	default:
+		return "That runner is not waiting for a ship — it is on the road over land, or already arrived."
+	}
+}
+
+// shipNotFreeReason names why a ship cannot sail now and, where the server
+// knows it, how long until it can (game days: a duration, not a date).
+func shipNotFreeReason(name, status string, readyAt, arrivesAt *time.Time, now time.Time) string {
+	daysUntil := func(at *time.Time) string {
+		if at == nil {
+			return ""
+		}
+		return " — " + tick.FormatDays(max(1, tick.GameDaysLeft(at.Sub(now))))
+	}
+	switch unit.Status(status) {
+	case unit.StatusForming:
+		return fmt.Sprintf("%s is still being built%s to go. Arrange passage once it is launched.", name, daysUntil(readyAt))
+	case unit.StatusRepairing:
+		return fmt.Sprintf("%s is in the shipyard for repairs%s to go. Arrange passage once it is seaworthy.", name, daysUntil(readyAt))
+	case unit.StatusFittingOut:
+		return fmt.Sprintf("%s is taking on its crew%s to go. Arrange passage once it is fitted out.", name, daysUntil(readyAt))
+	case unit.StatusLaidUp:
+		return fmt.Sprintf("%s is laid up without a crew. Fit it out first, then arrange passage.", name)
+	case unit.StatusFreighting:
+		return fmt.Sprintf("%s is bound to a cargo voyage. Arrange passage with another ship, or wait until the trade is done.", name)
+	case unit.StatusMarching, unit.StatusPositioned:
+		return fmt.Sprintf("%s is away on another mission%s. Arrange passage with a ship in port, or once it is back.",
+			name, strings.Replace(daysUntil(arrivesAt), " — ", " — it reaches its destination in ", 1))
+	default:
+		return fmt.Sprintf("%s is not free in port. Arrange passage with a ship docked and without a mission.", name)
+	}
+}
+
 // CallBack handles POST /worlds/{worldID}/messengers/{messengerID}/call-back
 // — R5's "kalla tillbaka" (megaron_plan_ordna_passage.md, slice 3b-4): turn a
 // runner stuck 'awaiting_passage' in the caller's OWN port back home over
@@ -258,7 +314,7 @@ func (h *PassageHandler) CallBack(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !res.Started {
-		writeError(w, http.StatusUnprocessableEntity, "this runner is not currently waiting for passage")
+		writeError(w, http.StatusUnprocessableEntity, "That runner is not waiting in port — only a runner still waiting for a ship can be called back.")
 		return
 	}
 

@@ -137,3 +137,10 @@ test('stalled dispatch shows owned sealed order with escaped text', () => {
  assert.match(html,/mission: colonize &lt;bad&gt;/);
  assert.doesNotMatch(html,/<bad>/);
 });
+
+test('PassageStalled prints the server explanation, one source for web and keryx', () => {
+  const html = passageStalledBlockHTML({ messenger_id: 'm', own_port: false, eligible_ships: [],
+    explanation: "Your runner is waiting in Amnissos: no ship has sailed from there toward Kydonia. Any ship that does — yours or another Wanax's — takes it aboard by itself." });
+  assert.ok(html.includes('Amnissos') && html.includes('takes it aboard by itself'), html);
+  assert.ok(!html.includes('No eligible ship of yours'), 'the old client-side line must not contradict the explanation');
+});
