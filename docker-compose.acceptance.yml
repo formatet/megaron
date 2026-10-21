@@ -10,13 +10,11 @@
 # acceptansvärld som råkar dela DB med något annat är inte en acceptansvärld.
 # Därför: eget projektnamn (→ egna volymer), egna värdportar, och en egen
 # JWT_SECRET så tokens härifrån inte råkar duga någon annanstans.
+#
+# postgres och redis publiceras inte på värden: acceptance.sh når dem via
+# `docker compose exec`, och en publicerad port binder 0.0.0.0 förbi värdens
+# brandvägg (Redis utan lösenord öppen mot hela LAN — säkerhetsgenomgång 2026-10-21).
 services:
-  postgres:
-    ports:
-      - "55432:5432"      # egen värdport: dev-stacken äger 5432
-  redis:
-    ports:
-      - "56379:6379"
   server:
     ports:
       - "8097:8080"       # dev äger 8080, den visuella riggen 8099
