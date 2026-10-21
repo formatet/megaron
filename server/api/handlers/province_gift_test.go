@@ -9,6 +9,7 @@ import (
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/transport"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/google/uuid"
@@ -18,6 +19,10 @@ func giftFixture(t *testing.T, hidden bool) *tradeInternalFixture {
 	t.Helper()
 	f := setupTradeInternalFixture(t)
 	ctx := context.Background()
+	// A sea gift requires food in its physical departure port. Land gifts ignore it.
+	if _, err := f.pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,'fish',100,0,1000,0)`, f.originID); err != nil {
+		t.Fatal(err)
+	}
 	var recipient uuid.UUID
 	if err := f.pool.QueryRow(ctx, `INSERT INTO players(username,password_hash) VALUES($1,'x') RETURNING id`, "recipient-"+uuid.NewString()).Scan(&recipient); err != nil {
 		t.Fatal(err)
@@ -547,5 +552,49 @@ func TestGiftOldRadiusHaloDoesNotRevealOrPermitDestination(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// Food shortfall is actionable at dispatch and the entire payment rolls back.
+func TestGiftNavalShortageRefusesWithoutDebiting(t *testing.T) {
+	f := giftFixture(t, false)
+	ctx := context.Background()
+	if _, err := f.pool.Exec(ctx, `UPDATE provinces SET coastal=true WHERE world_id=$1`, f.worldID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.pool.Exec(ctx, `UPDATE map_tiles SET terrain='coastal_sea' WHERE world_id=$1 AND q IN(1,2)`, f.worldID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.pool.Exec(ctx, `UPDATE settlement_goods SET amount=0 WHERE settlement_id=$1 AND good_key='fish'`, f.originID); err != nil {
+		t.Fatal(err)
+	}
+	var ship uuid.UUID
+	if err := f.pool.QueryRow(ctx, `INSERT INTO units(world_id,owner_id,type,category,size,crew,status,settlement_id) VALUES($1,$2,'merchantman','naval',1,10,'garrison',$3) RETURNING id`, f.worldID, f.playerID, f.originID).Scan(&ship); err != nil {
+		t.Fatal(err)
+	}
+	code, body := f.post(t, "/worlds/"+f.worldID.String()+"/provinces/"+f.originProvince.String()+"/trade", map[string]any{"destination_id": f.destID, "good_key": "silver", "quantity": 50})
+	if code != 422 {
+		t.Fatalf("shortage=%d %v, want 422", code, body)
+	}
+	if msg, _ := body["error"].(string); !strings.Contains(msg, "not enough food in the departure port") {
+		t.Fatalf("missing actionable port shortage: %v", body)
+	}
+	var silver, fish, provisions float64
+	var state string
+	var movers int
+	if err := f.pool.QueryRow(ctx, `SELECT amount FROM settlement_goods WHERE settlement_id=$1 AND good_key='silver'`, f.originID).Scan(&silver); err != nil {
+		t.Fatal(err)
+	}
+	if err := f.pool.QueryRow(ctx, `SELECT amount FROM settlement_goods WHERE settlement_id=$1 AND good_key='fish'`, f.originID).Scan(&fish); err != nil {
+		t.Fatal(err)
+	}
+	if err := f.pool.QueryRow(ctx, `SELECT status,provisions FROM units WHERE id=$1`, ship).Scan(&state, &provisions); err != nil {
+		t.Fatal(err)
+	}
+	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM transports WHERE world_id=$1 AND ship_unit_id=$2`, f.worldID, ship).Scan(&movers); err != nil {
+		t.Fatal(err)
+	}
+	if silver != 100000 || fish != 0 || provisions != 0 || state != "garrison" || movers != 0 {
+		t.Fatalf("refusal mutated silver=%v fish=%v provisions=%v state=%s movers=%d", silver, fish, provisions, state, movers)
 	}
 }

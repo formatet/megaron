@@ -1,0 +1,5 @@
+# Freight ship provisions — paused-world implementation
+
+The bound Galley or Emporos now loads a round-trip ration at the actual owned departure port before each outbound cargo leg. Loading uses the existing shared ship food ledger and the same upkeep ration owner as ordinary naval marches. It debits real port food in the dispatch transaction; returns keep what is aboard and release leftovers once at the actual docking port. A freighting ship between legs eats aboard, or from the verified port where it is physically docked. Standing routes reserve the wait before the next sweep. A departure with too little food fails 422 with the port shortage and rolls back ship binding, goods payment and mover creation.
+
+Tested on fresh PostgreSQL: transport/gift/trade/standing dispatch, conservation and duplicate release, shortage rollback, physical port vs sea/lost leg, real HTTP trade/gift cases. Mutation setting loaded food to zero failed these tests and restored code passed. Full suite and live deployment remain separate gates. Existing sailing ships receive no fabricated food.

@@ -1277,7 +1277,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			ShipUnitID: shipID,
 		})
 		if tErr != nil {
-			writeError(w, http.StatusInternalServerError, "could not dispatch goods caravan")
+			writeTransportDispatchError(w, tErr, "could not dispatch goods caravan")
 			return
 		}
 		if err = h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledTradeDelivery,
@@ -1405,7 +1405,7 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			ShipUnitID: shipID,
 		})
 		if tErr != nil {
-			writeError(w, http.StatusInternalServerError, "could not dispatch silver caravan")
+			writeTransportDispatchError(w, tErr, "could not dispatch silver caravan")
 			return
 		}
 		if err = h.scheduler.EnqueueTickTx(r.Context(), tx, worldID, events.ScheduledTradeDelivery,

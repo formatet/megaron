@@ -136,3 +136,47 @@ func TestFreightProvisionsShortageRollsBackBindingAndTransport(t *testing.T) {
 		t.Fatal("failed dispatch persisted mover")
 	}
 }
+
+func TestFreightPortFollowsPhysicalLegNotHomeReference(t *testing.T) {
+	pool := testPool(t)
+	f := newNavalFixture(t, pool)
+	ctx := context.Background()
+	ship := mkShip(t, pool, f, f.sourceID, "merchantman")
+	if _, err := pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,'fish',10,0,1000,0)`, f.sourceID); err != nil {
+		t.Fatal(err)
+	}
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback(ctx)
+	if err := BindShip(ctx, tx, ship); err != nil {
+		t.Fatal(err)
+	}
+	port, err := economy.FreightPort(ctx, tx, ship)
+	if err != nil || port == nil || *port != f.sourceID {
+		t.Fatalf("bound at source port=%v err=%v", port, err)
+	}
+	_, err = CreateShadow(ctx, tx, DispatchParams{WorldID: f.worldID, OwnerID: f.owner, Kind: "trade", OriginID: f.sourceID, DestID: f.destID, Category: "naval", DestQ: 3, DepartsAt: time.Now(), ShipUnitID: &ship})
+	if err != nil {
+		t.Fatal(err)
+	}
+	port, err = economy.FreightPort(ctx, tx, ship)
+	if err != nil || port != nil {
+		t.Fatalf("at sea port=%v err=%v", port, err)
+	}
+	if _, err := tx.Exec(ctx, `UPDATE transports SET status='delivered' WHERE ship_unit_id=$1`, ship); err != nil {
+		t.Fatal(err)
+	}
+	port, err = economy.FreightPort(ctx, tx, ship)
+	if err != nil || port == nil || *port != f.destID {
+		t.Fatalf("landed port=%v err=%v", port, err)
+	}
+	if _, err := tx.Exec(ctx, `UPDATE transports SET status='lost' WHERE ship_unit_id=$1`, ship); err != nil {
+		t.Fatal(err)
+	}
+	port, err = economy.FreightPort(ctx, tx, ship)
+	if err != nil || port != nil {
+		t.Fatalf("lost leg port=%v err=%v", port, err)
+	}
+}

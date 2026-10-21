@@ -3451,7 +3451,7 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 		ShipUnitID:    shipID,
 	})
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, "could not dispatch transfer caravan")
+		writeTransportDispatchError(w, err, "could not dispatch transfer caravan")
 		return
 	}
 

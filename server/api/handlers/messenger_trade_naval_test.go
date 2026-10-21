@@ -158,6 +158,8 @@ func (f *navalPlayerFixture) settlement(t *testing.T, name string, q int, ownerI
 	).Scan(&settlementID); err != nil {
 		t.Fatalf("create settlement %s: %v", name, err)
 	}
+	// Naval trades now provision both legs from the actual departure ports.
+	f.good(t, settlementID, "fish", 100)
 	return settlementID
 }
 
