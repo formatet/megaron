@@ -36,7 +36,7 @@ var BuildingPurposes = map[BuildingType]string{
 	BuildingOlivePress:  "Refines a press-worker's oil from the settlement's groves",
 	BuildingWinery:      "Refines a vintner's wine from the settlement's vines",
 	BuildingPen:         "Holds a bigger herd; animals the pen cannot hold are eaten, then lost",
-	BuildingSilo:        "Raises the food store (not the herd) and lets the walls grow — a wall of level N needs a Granary of level N",
+	BuildingSilo:        "Stores more food (not the herd); a wall of level N needs a Granary of level N",
 }
 
 // The ONE harbour rule, told the same on every surface: a city may build a

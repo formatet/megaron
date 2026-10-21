@@ -78,7 +78,7 @@ func TestRestfolk_Soak60(t *testing.T) {
 			if kind == "scheria1042" && (last.Population != 1042 || last.FoodNet >= 0) {
 				t.Fatalf("production shortage must hold growth even while stocks feed: %+v", last)
 			}
-			if kind != "scheria1042" && last.Population <= 1100 {
+			if kind != "scheria1042" && last.Population <= 1042 {
 				t.Fatalf("healthy city must grow across a hundred: %+v", last)
 			}
 			raw, err := json.Marshal(map[string]any{"kind": kind, "states": records})

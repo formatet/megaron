@@ -89,10 +89,14 @@ func newGrowthFixture(t *testing.T, terrains [6]string, pop int) (*pgxpool.Pool,
 		}
 	}
 
+	// wall_level 3: these fixtures test growth MECHANICS (food gate, variety,
+	// reinforcement) at populations up to 5 000, which the population ceiling
+	// (economy.PopulationCap, wall-bound) would otherwise freeze. The ceiling itself
+	// is tested in wall_cap_test.go, which sets the wall explicitly.
 	var settlementID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, population)
-		 VALUES ($1, $2, 'Growthville', 'achaean', $3, 'capital', true, $4) RETURNING id`,
+		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, population, wall_level)
+		 VALUES ($1, $2, 'Growthville', 'achaean', $3, 'capital', true, $4, 3) RETURNING id`,
 		worldID, provinceID, ownerID, pop,
 	).Scan(&settlementID); err != nil {
 		t.Fatalf("create settlement: %v", err)
@@ -356,7 +360,7 @@ func expectedDayResult(prevPop int, prevAmount, prevRate float64) (newPop int, n
 			newPop = prevPop - 1 // at least one person per tick
 		}
 	case economy.FoodNet(prevRate, prevPop) > 0:
-		wallCap := float64(economy.PopulationCap(0)) // fixtures have no wall
+		wallCap := float64(economy.PopulationCap(3)) // fixtures have the highest wall (see newGrowthFixture)
 		softcap := 1.0 - float64(prevPop)/wallCap
 		if softcap < 0 {
 			softcap = 0
