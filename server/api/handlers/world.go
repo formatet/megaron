@@ -1067,14 +1067,7 @@ func loadRememberedTiles(ctx context.Context, pool province.Queryer, worldID, pl
 		 SELECT p.map_q, p.map_r
 		 FROM player_scouted_provinces sp
 		 JOIN provinces p ON p.id = sp.province_id
-		 WHERE sp.world_id = $1 AND sp.player_id = $2
-		 UNION
-		 SELECT dp.map_q, dp.map_r
-		 FROM messengers m
-		 JOIN settlements ds ON ds.id = m.destination_id
-		 JOIN provinces dp ON dp.id = ds.province_id
-		 WHERE m.world_id = $1 AND m.sender_id = $2
-		   AND m.status IN ('delivered', 'returning', 'arrived')`,
+		 WHERE sp.world_id = $1 AND sp.player_id = $2`,
 		worldID, playerID,
 	)
 	if err != nil {
@@ -1088,6 +1081,10 @@ func loadRememberedTiles(ctx context.Context, pool province.Queryer, worldID, pl
 		if err := rows.Scan(&q, &r); err == nil {
 			set[[2]int{q, r}] = true
 		}
+	}
+	rows.Close()
+	for _, p := range province.ContactedPositions(ctx, pool, worldID, playerID) {
+		set[[2]int{p.Q, p.R}] = true
 	}
 	return set
 }

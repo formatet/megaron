@@ -35,17 +35,6 @@ func VisibleOrigins(ctx context.Context, db Queryer, worldID, playerID uuid.UUID
 		     WHERE ma.world_id = $1 AND ma.resolved = false AND os.owner_id = $2
 		       AND ma.intent != 'explore'
 		     UNION ALL
-		     -- Settlements this player has contacted by messenger stay visible:
-		     -- once a messenger reaches its destination (delivered and onward),
-		     -- contact is established, so the destination remains on the map
-		     -- afterwards — this is how a Wanax discovers trade partners.
-		     SELECT dp.map_q, dp.map_r
-		     FROM messengers m
-		     JOIN settlements ds ON ds.id = m.destination_id
-		     JOIN provinces dp ON dp.id = ds.province_id
-		     WHERE m.world_id = $1 AND m.sender_id = $2
-		       AND m.status IN ('delivered', 'returning', 'arrived')
-		     UNION ALL
 		     -- Provinces scouted by explore marches remain visible after the ship returns.
 		     SELECT p.map_q, p.map_r
 		     FROM player_scouted_provinces sp
@@ -69,5 +58,31 @@ func VisibleOrigins(ctx context.Context, db Queryer, worldID, playerID uuid.UUID
 			origins = append(origins, pos)
 		}
 	}
-	return origins
+	rows.Close()
+	return append(origins, ContactedPositions(ctx, db, worldID, playerID)...)
+}
+
+// ContactedPositions is the shared exact-city contact memory. It deliberately
+// gives no live eye or halo, and never invents a settlement for a host origin.
+func ContactedPositions(ctx context.Context, db Queryer, worldID, playerID uuid.UUID) []MapPosition {
+	rows, err := db.Query(ctx, `SELECT DISTINCT p.map_q,p.map_r FROM messengers m
+ JOIN settlements s ON s.id=m.destination_id JOIN provinces p ON p.id=s.province_id
+ WHERE m.world_id=$1 AND m.sender_id=$2 AND NOT m.withdrawn AND m.status IN ('delivered','returning','arrived')
+ UNION
+ SELECT p.map_q,p.map_r FROM messengers m
+ JOIN settlements dest ON dest.id=m.destination_id
+ JOIN settlements origin ON origin.id=m.origin_id JOIN provinces p ON p.id=origin.province_id
+ WHERE m.world_id=$1 AND dest.owner_id=$2 AND NOT m.withdrawn AND m.status IN ('delivered','returning','arrived')`, worldID, playerID)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+	var positions []MapPosition
+	for rows.Next() {
+		var p MapPosition
+		if rows.Scan(&p.Q, &p.R) == nil {
+			positions = append(positions, p)
+		}
+	}
+	return positions
 }

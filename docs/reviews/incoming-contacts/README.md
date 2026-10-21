@@ -1,0 +1,3 @@
+# Received correspondence establishes city contact
+
+Contract: reaching a city by messenger establishes reciprocal knowledge of the two city endpoints. Receiving a delivered letter/offer reveals the originating city as an exact remembered tile, not its surrounding terrain or live activity. Pending, withdrawn and lost messengers reveal nothing to their intended recipient. Unit-origin messengers disclose no invented city. Reuse one contacted-city owner for dispatch eligibility and map memory. Scope province contacts + world memory adapter + regression + Codex text. No global catalogue, map layout or live order changes. FUNCTION/TEXT; supports discovery → contact → trade. Existing completed contacts are readable from persistent messenger rows without DB mutation.
