@@ -10,7 +10,7 @@ const DATA = {
     { id: 'w1', group: 'waiting', kind: 'letter', to_city: 'Ugarit', to_wanax: 'Kassandra', port_name: 'Byblos', waiting_since: iso(-3),
       explanation: 'Your runner is waiting in Byblos: no ship has sailed from there toward Ugarit.', can_call_back: true, can_arrange_passage: true,
       eligible_ships: [{ id: 's1', name: 'Dawn Gull', settlement_name: 'Byblos' }] },
-    { id: 'w2', group: 'waiting', kind: 'letter', to_city: 'Ugarit', to_wanax: 'Kassandra', port_name: 'Tyre', waiting_since: iso(-1),
+    { id: 'w2', group: 'waiting', kind: 'letter', returning: true, to_city: 'Byblos', port_name: 'Tyre', waiting_since: iso(-1),
       explanation: 'Waiting in Tyre.', can_call_back: false, can_arrange_passage: true, eligible_ships: [] },
     { id: 'r1', group: 'on_the_way', kind: 'order', order_summary: 'Third Spears: Set stance: hold', arrives_at: iso(2) },
     { id: 'a1', group: 'aboard', kind: 'offer', to_city: 'Ugarit', to_wanax: 'Kassandra', ship_name: 'Sea Swallow', ship_wanax: 'Kassandra', boarded_at: iso(-2), lands_at: iso(5), arrives_at: iso(6) },
@@ -29,6 +29,7 @@ test('Runners tab: every group, server explanation, buttons only where the serve
     'Wanax Kassandra’s runner in Byblos', 'Wanax Dunios’ runner aboard Sea Swallow', 'bound for Ugarit', 'Home to Byblos']) {
     assert.ok(html.includes(want), `missing ${want}`);
   }
+  assert.equal((html.match(/Home to Byblos/g) || []).length, 2, 'a returning runner waiting in a foreign port is also headed home');
   assert.equal((html.match(/Arrange passage/g) || []).length, 1, 'passage button only for the runner with an eligible ship');
   assert.equal((html.match(/Call back/g) || []).length, 1, 'call-back only where can_call_back');
   assert.match(html, /dipArrangePassage\('w1','dip-runner-ship-w1',this,'dip-runner-block-w1'\)/);

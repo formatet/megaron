@@ -54,7 +54,10 @@ func TestRunners_GroupsAndIntegrity(t *testing.T) {
 	mh := NewMessengerHandler(f.pool, nil, f.clk, nil)
 	f.router.Get("/worlds/{worldID}/runners", mh.Runners)
 
-	for id, name := range map[uuid.UUID]string{f.initiatorID: "Dunios", f.counterpartyID: "Kassandra"} {
+	// wanax_name is unique database-wide and the suite leaves rows behind.
+	sfx := " " + uuid.NewString()[:6]
+	dunios, kassandra := "Dunios"+sfx, "Kassandra"+sfx
+	for id, name := range map[uuid.UUID]string{f.initiatorID: dunios, f.counterpartyID: kassandra} {
 		if _, err := f.pool.Exec(ctx, `UPDATE players SET wanax_name=$2 WHERE id=$1`, id, name); err != nil {
 			t.Fatal(err)
 		}
@@ -141,8 +144,8 @@ func TestRunners_GroupsAndIntegrity(t *testing.T) {
 		t.Errorf("waiting group wrong: %v", w)
 	}
 	_ = waiting
-	if a := runnersIn(dun.Own, "aboard"); len(a) != 1 || a[0]["ship_name"] != "Sea Swallow" || a[0]["ship_wanax"] != "Kassandra" ||
-		a[0]["boarded_at"] == nil || a[0]["lands_at"] == nil || a[0]["to_wanax"] != "Kassandra" {
+	if a := runnersIn(dun.Own, "aboard"); len(a) != 1 || a[0]["ship_name"] != "Sea Swallow" || a[0]["ship_wanax"] != kassandra ||
+		a[0]["boarded_at"] == nil || a[0]["lands_at"] == nil || a[0]["to_wanax"] != kassandra {
 		t.Errorf("aboard group wrong: %v", a)
 	}
 	var orderItem map[string]any
@@ -157,16 +160,16 @@ func TestRunners_GroupsAndIntegrity(t *testing.T) {
 	if r := runnersIn(dun.Own, "on_the_way"); len(r) != 2 || r[0]["arrives_at"] == nil {
 		t.Errorf("on_the_way group wrong: %v", r)
 	}
-	if r := runnersIn(dun.Own, "homebound"); len(r) != 1 || r[0]["arrives_at"] == nil {
+	if r := runnersIn(dun.Own, "homebound"); len(r) != 1 || r[0]["arrives_at"] == nil || r[0]["returning"] != true || r[0]["to_city"] != "Byblos" {
 		t.Errorf("homebound group wrong: %v", r)
 	}
 	// Foreign, seen by Dunios: only Kassandra's runner standing in his port.
-	if len(dun.Foreign) != 1 || dun.Foreign[0]["group"] != "in_your_city" || dun.Foreign[0]["sender_wanax"] != "Kassandra" || dun.Foreign[0]["where"] != "Byblos" {
+	if len(dun.Foreign) != 1 || dun.Foreign[0]["group"] != "in_your_city" || dun.Foreign[0]["sender_wanax"] != kassandra || dun.Foreign[0]["where"] != "Byblos" {
 		t.Errorf("Dunios' foreign view wrong: %v", dun.Foreign)
 	}
 	// Foreign, seen by Kassandra: Dunios' runner aboard HER ship.
 	ab := runnersIn(kass.Foreign, "aboard_your_ship")
-	if len(kass.Foreign) != 1 || len(ab) != 1 || ab[0]["sender_wanax"] != "Dunios" || ab[0]["ship_name"] != "Sea Swallow" || ab[0]["lands_at"] == nil {
+	if len(kass.Foreign) != 1 || len(ab) != 1 || ab[0]["sender_wanax"] != dunios || ab[0]["ship_name"] != "Sea Swallow" || ab[0]["lands_at"] == nil {
 		t.Errorf("Kassandra's aboard view wrong: %v", kass.Foreign)
 	}
 

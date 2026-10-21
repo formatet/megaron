@@ -24,6 +24,8 @@ type runnerOwn struct {
 	OrderSummary *string `json:"order_summary,omitempty"`
 	ToCity       *string `json:"to_city,omitempty"`
 	ToWanax      *string `json:"to_wanax,omitempty"`
+	// Returning: on its way back home (also while it waits for a ship home).
+	Returning bool `json:"returning,omitempty"`
 	// ArrivesAt: landfall at the target (on_the_way, aboard) or home (homebound).
 	ArrivesAt *time.Time `json:"arrives_at,omitempty"`
 	// Waiting for a ship.
@@ -152,7 +154,7 @@ func (h *MessengerHandler) runnersOwn(ctx context.Context, worldID, playerID uui
 			}
 		}
 		if x.status == "returning" {
-			it.ToCity, it.ToWanax = x.originName, nil
+			it.ToCity, it.ToWanax, it.Returning = x.originName, nil, true
 		}
 		ps := ""
 		if x.passageStatus != nil {

@@ -33,7 +33,7 @@ const KIND_WORD = { letter: 'Letter', offer: 'Trade offer', order: 'Order' };
 function ownTitle(m) {
   if (m.group === 'no_word') return 'A runner of yours';
   if (m.order_summary) return esc(m.order_summary);
-  if (m.group === 'homebound') return 'Home to ' + esc(m.to_city || 'your city');
+  if (m.group === 'homebound' || m.returning) return 'Home to ' + esc(m.to_city || 'your city');
   if (!m.to_city && !m.to_wanax) return 'A runner of yours';
   return 'To ' + (m.to_wanax ? esc('Wanax ' + m.to_wanax) + ' (' + esc(m.to_city || '') + ')' : esc(m.to_city));
 }
@@ -103,7 +103,7 @@ export function runnersTabHTML(data) {
     const items = rows.filter(m => m.group === key);
     return items.length ? '<div class="dsec"><div class="dsec-title">' + title + '</div>' + items.map(render).join('') + '</div>' : '';
   }).join('');
-  return section(own, OWN_GROUPS, ownRow) + section(foreign, FOREIGN_GROUPS, foreignRow);
+  return '<div class="runner-list">' + section(own, OWN_GROUPS, ownRow) + section(foreign, FOREIGN_GROUPS, foreignRow) + '</div>';
 }
 
 export async function loadDipRunners() {
