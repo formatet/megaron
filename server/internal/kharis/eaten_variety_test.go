@@ -19,7 +19,7 @@ func TestGrowthVarietyReadsActualMealNotLaterStock(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
-		exec(`UPDATE settlements SET population=10000 WHERE id=$1`, sid)
+		exec(`UPDATE settlements SET population=10000, wall_level=3 WHERE id=$1`, sid)
 		exec(`UPDATE settlement_goods SET amount=0,rate=0 WHERE settlement_id=$1`, sid)
 		for _, good := range foods {
 			exec(`INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,$2,$3,$4,100000,0) ON CONFLICT(settlement_id,good_key) DO UPDATE SET amount=$3,rate=$4,cap=100000,calc_tick=0`, sid, good, 10000.0/float64(len(foods)), 100.0/float64(len(foods)))
@@ -80,7 +80,7 @@ func TestGrowthVarietyRequiresSubstantialMealShare(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
-			exec(`UPDATE settlements SET population=10000 WHERE id=$1`, sid)
+			exec(`UPDATE settlements SET population=10000, wall_level=3 WHERE id=$1`, sid)
 			exec(`UPDATE settlement_goods SET amount=0,rate=0,calc_tick=0 WHERE settlement_id=$1`, sid)
 			for good, amount := range map[string]float64{economy.GoodGrain: tc.grain, economy.GoodWine: tc.wine} {
 				exec(`INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,$2,$3,0,100000,0) ON CONFLICT(settlement_id,good_key) DO UPDATE SET amount=$3,rate=0,cap=100000,calc_tick=0`, sid, good, amount)

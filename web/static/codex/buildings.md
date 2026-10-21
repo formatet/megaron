@@ -16,7 +16,10 @@ Open **City → Buildings**. The tab shows what is **built** (and its level), th
 | **Pen** | Raises the herd cap by 100 per level (50 without one). Animals above the cap are eaten, then lost ([[food]]). Works inside the city. |
 | **Market** | Enables trade offers and updates market price snapshots. |
 | **Temple** | Enables rites, produces cult, and unlocks oracle prayers. More important than it looks — see [[temples]]. |
-| **Wall** | Palisade, then stone, then bronze. Absorbs damage in [[battle]]. |
+| **Granary** | Level 1 to 3 multiplies how much food the city can store — grain, fish, oil and wine, not the herd — by 2, 5 and 10. A wall of level N needs a Granary of level N. Works inside the city. |
+| **Wall** | Palisade, then Stone Wall, then Bronze Wall. Absorbs damage in [[battle]], and **the walls set how many people the city holds** (see below). |
+
+**The wall is the ceiling.** A city with no wall holds 2 000 people, a Palisade 5 000, a Stone Wall 10 000, a Bronze Wall 20 000. A city at its ceiling loses no one; it simply stops growing until you raise the wall. Each wall needs a Granary of the same level first — Construct shows the next wall greyed out with "needs a Granary of level 2" until you have it. See [[growth]].
 
 **The coast rule.** A city can build a Harbour or a Shipyard only if its own hex borders the sea or a river; an inland city never can, so to reach the sea you must found a coastal colony ([[colonies]]). The [[founding]] forecast tells you which kind of site you are looking at.
 

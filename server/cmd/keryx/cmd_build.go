@@ -96,6 +96,11 @@ func buildCmd() *cobra.Command {
 					MaxLevel         int                           `json:"max_level"`
 					UpgradeCosts     map[string]map[string]float64 `json:"upgrade_costs"`
 					HexBound         bool                          `json:"hex_bound"`
+					WallLadder       []struct {
+						Level         int `json:"level"`
+						RequiresSilo  int `json:"requires_silo"`
+						PopulationCap int `json:"population_cap"`
+					} `json:"wall_ladder"`
 				}
 				if err := json.Unmarshal(data, &catalogue); err != nil {
 					return err
@@ -140,6 +145,15 @@ func buildCmd() *cobra.Command {
 						// terrains, silently, until you tried it. Surface the
 						// requirement up front.
 						reqs = append(reqs, strings.Join(b.RequiresTerrain, "/")+" terrain")
+					}
+					if len(b.WallLadder) > 0 {
+						// The wall is the population ceiling; each level needs the same
+						// Granary level (type silo).
+						steps := make([]string, 0, len(b.WallLadder))
+						for _, w := range b.WallLadder {
+							steps = append(steps, fmt.Sprintf("L%d needs Granary %d, holds %d", w.Level, w.RequiresSilo, w.PopulationCap))
+						}
+						reqs = append(reqs, strings.Join(steps, "; "))
 					}
 					reqStr := strings.Join(reqs, ", ")
 					if reqStr == "" {

@@ -30,7 +30,7 @@ The **stone** leaves your nearest city the moment you give the order — you are
 | Hills, cedar forest | 16 |
 | Semi-desert | 24 |
 
-A stone wall costs 24 stone, as much as three plains edges. A hundred men build a plains edge in **1 day** and a hill edge in **2**; fewer men take longer. When the edge is finished you get a **RoadEdgeBuilt** notice.
+Three plains edges cost 24 stone. A hundred men build a plains edge in **1 day** and a hill edge in **2**; fewer men take longer. When the edge is finished you get a **RoadEdgeBuilt** notice.
 
 ## When it goes wrong
 

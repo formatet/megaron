@@ -88,8 +88,8 @@ func TestAIRound4_AutomaticFoodAPIAndFixedQueue(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	// A different valid city building hits the fixed queue guard before costs.
-	rec := request("POST", "/worlds/"+wid.String()+"/provinces/"+pid.String()+"/build", `{"building_type":"wall"}`)
+	// A different valid city building (not the wall: that is gated on a Granary first) hits the fixed queue guard before costs.
+	rec := request("POST", "/worlds/"+wid.String()+"/provinces/"+pid.String()+"/build", `{"building_type":"barracks"}`)
 	if rec.Code != 422 || !strings.Contains(rec.Body.String(), "fixed at 2 concurrent") || !strings.Contains(rec.Body.String(), "population and buildings do not add slots") {
 		t.Fatalf("%d %s", rec.Code, rec.Body.String())
 	}

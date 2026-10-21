@@ -2,6 +2,7 @@ package kharis
 
 import (
 	"context"
+	"math"
 	"os"
 	"sync/atomic"
 	"testing"
@@ -89,10 +90,14 @@ func newGrowthFixture(t *testing.T, terrains [6]string, pop int) (*pgxpool.Pool,
 		}
 	}
 
+	// wall_level 3: these fixtures test growth MECHANICS (food gate, variety,
+	// reinforcement) at populations up to 5 000, which the population ceiling
+	// (economy.PopulationCap, wall-bound) would otherwise freeze. The ceiling itself
+	// is tested in wall_cap_test.go, which sets the wall explicitly.
 	var settlementID uuid.UUID
 	if err := pool.QueryRow(ctx,
-		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, population)
-		 VALUES ($1, $2, 'Growthville', 'achaean', $3, 'capital', true, $4) RETURNING id`,
+		`INSERT INTO settlements (world_id, province_id, name, culture_id, owner_id, control_type, is_capital, population, wall_level)
+		 VALUES ($1, $2, 'Growthville', 'achaean', $3, 'capital', true, $4, 3) RETURNING id`,
 		worldID, provinceID, ownerID, pop,
 	).Scan(&settlementID); err != nil {
 		t.Fatalf("create settlement: %v", err)
@@ -356,24 +361,20 @@ func expectedDayResult(prevPop int, prevAmount, prevRate float64) (newPop int, n
 			newPop = prevPop - 1 // at least one person per tick
 		}
 	case economy.FoodNet(prevRate, prevPop) > 0:
-		softcap := 1.0 - float64(prevPop)/30000.0
-		if softcap < 0 {
-			softcap = 0
-		}
-		const variety = 1.0                                                  // no fish/oil/wine/livestock in these fixtures
-		add := int(float64(prevPop)*growthRatePerTick*variety*softcap + 0.5) // ROUND
+		wallCap := float64(economy.PopulationCap(3))                                 // fixtures have the highest wall (see newGrowthFixture); no soft cap
+		const variety = 1.0                                                          // no fish/oil/wine/livestock in these fixtures
+		add := int(math.RoundToEven(float64(prevPop) * growthRatePerTick * variety)) // SQL ROUND on float8 is half-to-even (pop 1700 → 8.5 → 8)
 		if add < 1 {
 			add = 1
 		}
-		newPop = prevPop + add
+		if newPop = prevPop + add; newPop > int(wallCap) {
+			newPop = int(wallCap)
+		}
 	default:
 		newPop = prevPop
 	}
 	if newPop < 0 {
 		newPop = 0
-	}
-	if newPop > 30000 {
-		newPop = 30000
 	}
 	return newPop, newGrain
 }

@@ -475,6 +475,7 @@ func (h *SettlementHandler) Get(w http.ResponseWriter, r *http.Request) {
 		"culture":             sett.CultureID,
 		"control_type":        sett.ControlType,
 		"wall_level":          sett.WallLevel,
+		"population_cap":      economy.PopulationCap(sett.WallLevel),
 		"is_capital":          sett.IsCapital,
 		"state":               sett.State,
 		"besieged":            sett.Besieged,

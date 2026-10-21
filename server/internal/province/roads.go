@@ -135,10 +135,14 @@ func EdgeCost(from, to MapPosition, fromTerrain, toTerrain, category string, roa
 
 // RoadStoneCost is the stone one road edge into toTerrain costs (plan §2, B2):
 // a stone wall (WallLevelSpecs[2]) is worth three plains edges, so one edge is
-// a third of its stone, times the target hex's terrain cost. Read from the wall
-// table so it follows the wall if the wall changes — no separate literal.
+// a third of its stone, times the target hex's terrain cost. It used to read the
+// wall table; B1 (murtak, 2026-10-21) raised the Stone Wall to 40 stone for the
+// population ceiling and that must not silently reprice every road, so the basis
+// is frozen at the 24 stone the wall cost when the road prices were set.
+const roadStoneWallBasis = 24.0
+
 func RoadStoneCost(toTerrain string) float64 {
-	return WallLevelSpecs[2].Costs["stone"] / 3 * TerrainMoveTicks(toTerrain)
+	return roadStoneWallBasis / 3 * TerrainMoveTicks(toTerrain)
 }
 
 // RoadBuildTicks is how long an army of armySize needs for one edge into

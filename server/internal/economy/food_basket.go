@@ -48,6 +48,15 @@ func PenLevel(ctx context.Context, db interface {
 	return lvl
 }
 
+// SiloLevel is the settlement's Granary (silo building) level, 0 when it has none.
+func SiloLevel(ctx context.Context, db interface {
+	QueryRow(context.Context, string, ...any) pgx.Row
+}, sid uuid.UUID) int {
+	var lvl int
+	_ = db.QueryRow(ctx, `SELECT COALESCE(MAX(level),0) FROM buildings WHERE settlement_id=$1 AND building_type='silo'`, sid).Scan(&lvl)
+	return lvl
+}
+
 // PlanFood is the one ration split. Every ordinary food has equal value and is
 // consumed in proportion to availability, so no commodity is exhausted first.
 func PlanFood(demand float64, available map[string]float64, emergencyHerd bool) FoodMeal {

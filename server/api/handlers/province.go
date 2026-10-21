@@ -734,6 +734,8 @@ func (h *ProvinceHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"population":           sett.Population,
 			"labor_pool":           laborPool,
 			"walls":                sett.WallLevel,
+			"population_cap":       economy.PopulationCap(sett.WallLevel),
+			"silo_level":           economy.SiloLevel(r.Context(), h.pool, sett.ID),
 			"resources":            resSnap,
 			"kharis":               kharisNow,
 			"kharis_rate":          kharisRate,
@@ -845,6 +847,8 @@ func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.
 	if laborPool < 0 {
 		laborPool = 0
 	}
+	var wallLevel int
+	_ = pool.QueryRow(ctx, `SELECT wall_level FROM settlements WHERE id = $1`, settID).Scan(&wallLevel)
 
 	var grainAmount, grainRate, grainCap float64
 	var grainCalcTick int
@@ -948,7 +952,7 @@ func settlementFoodSummary(ctx context.Context, pool *pgxpool.Pool, settID uuid.
 
 		CoverageTicks:  coverageDays,
 		FoodNetPerTick: foodNetPerDay,
-		GrowthState:    economy.GrowthState(foodUnmet, foodNetPerDay),
+		GrowthState:    economy.GrowthStateAtWall(foodUnmet, foodNetPerDay, population, wallLevel),
 	}
 }
 
@@ -1331,6 +1335,12 @@ func (h *ProvinceHandler) Build(w http.ResponseWriter, r *http.Request) {
 		).Scan(&wl)
 		if wl >= 3 {
 			writeError(w, http.StatusUnprocessableEntity, "walls are already at maximum (level 3)")
+			return
+		}
+		// The wall is the population ceiling, and it may not outgrow the stores:
+		// wall N needs a Granary of level N (province.SiloLevelForWall).
+		if economy.SiloLevel(r.Context(), h.pool, settlementID) < province.SiloLevelForWall(wl+1) {
+			writeError(w, http.StatusUnprocessableEntity, province.WallNeedsSiloRefusal(wl+1))
 			return
 		}
 		// Use the cost/duration for the next wall level (1–3); wl is 0–2 here.
@@ -1783,6 +1793,9 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 		// hex_r, and a settlement may build several of this type, one per hex
 		// (megaron_plan_byggnad_pa_hex.md §A).
 		HexBound bool `json:"hex_bound,omitempty"`
+		// WallLadder (wall only): what each wall level costs, which Granary level it
+		// needs, and the population the walls then hold. The wall is the ceiling.
+		WallLadder []wallStep `json:"wall_ladder,omitempty"`
 	}
 
 	// Stable ordering: sort building types alphabetically.
@@ -1816,6 +1829,9 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 		if province.NeedsWaterNeighbour(province.BuildingType(bt)) {
 			entry.RequiresCoastal = true
 		}
+		if province.BuildingType(bt) == province.BuildingWall {
+			entry.WallLadder = wallLadder()
+		}
 		if g, ok := gates[bt]; ok {
 			entry.RequiresCoastal = entry.RequiresCoastal || g.requiresCoastal
 			if len(g.requiresDeposits) > 0 {
@@ -1834,6 +1850,24 @@ func (h *ProvinceHandler) BuildingCatalogue(w http.ResponseWriter, r *http.Reque
 		result = append(result, entry)
 	}
 	writeJSON(w, http.StatusOK, result)
+}
+
+// wallStep is one rung of the wall ladder as the catalogue tells it.
+type wallStep struct {
+	Level         int                `json:"level"`
+	Name          string             `json:"name"`
+	Costs         map[string]float64 `json:"costs"`
+	RequiresSilo  int                `json:"requires_silo"`
+	PopulationCap int                `json:"population_cap"`
+}
+
+func wallLadder() []wallStep {
+	out := make([]wallStep, 0, 3)
+	for lvl := 1; lvl <= 3; lvl++ {
+		out = append(out, wallStep{Level: lvl, Name: province.WallLevelNames[lvl], Costs: province.WallLevelSpecs[lvl].Costs,
+			RequiresSilo: province.SiloLevelForWall(lvl), PopulationCap: economy.PopulationCap(lvl)})
+	}
+	return out
 }
 
 // UnitCatalogue handles GET /api/v1/units — returns the static catalogue of all
