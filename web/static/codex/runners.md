@@ -26,6 +26,12 @@ Letters to other Wanaxes travel the same way, but they are sacred and cannot be 
 
 A Runner whose road to your unit crosses open water cannot swim it — it waits in your own port for a ship — anyone's — to sail that way, the same as a letter does. See [[sea]] for how the crossing works, and what happens if the ship carrying it is lost.
 
+## The Runners tab
+
+**Diplomacy → Runners** (or `keryx runners`) shows every runner of yours that is still out, in groups: **waiting for a ship**, **on the way**, **aboard a ship**, and **on the way home**. A waiting runner says where it stands, since when, and why — and offers **Arrange passage** (one of your own free ships) or **Call back** (only when it waits in your own port). An order's runner names the order it carries. Times are the clock time something happens — "today 18:34" — never a day count.
+
+The tab also lists other Wanaxes' runners, but only where you can know they are there: standing in one of your cities or ports, or aboard one of your ships. You see whose runner it is and where — never what it carries, and never the road it came by. Runners are sacred; a ship's captain does not read the letters. See [[messengers]] and [[sea]].
+
 ## Runner speed
 
 On land a Runner needs half a foot army's terrain time ([[marching]]). At an

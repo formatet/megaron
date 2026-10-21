@@ -121,6 +121,16 @@ func TestRunners_GroupsAndIntegrity(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// 6. Kassandra's own runner rides her own ship: Dunios has no business seeing it.
+	ownShip := send(f.counterpartyToken, ugarit, byblos, "LETTER-FOXTROT to Dunios")
+	if _, err := f.pool.Exec(ctx,
+		`UPDATE messengers SET passage_status='aboard', carrier_unit_id=$2, carrier_name='Sea Swallow', carrier_owner_id=$3,
+		        boarded_at=now(), disembark_at=now()+interval '5 hours', disembark_q=0, disembark_r=0 WHERE id=$1`,
+		ownShip, kassShip, f.counterpartyID); err != nil {
+		t.Fatal(err)
+	}
+	_ = ownShip
+
 	dun, dunBody := f.getRunners(t, f.initiatorToken)
 	kass, kassBody := f.getRunners(t, f.counterpartyToken)
 
@@ -156,7 +166,7 @@ func TestRunners_GroupsAndIntegrity(t *testing.T) {
 	}
 	// Foreign, seen by Kassandra: Dunios' runner aboard HER ship.
 	ab := runnersIn(kass.Foreign, "aboard_your_ship")
-	if len(ab) != 1 || ab[0]["sender_wanax"] != "Dunios" || ab[0]["ship_name"] != "Sea Swallow" || ab[0]["lands_at"] == nil {
+	if len(kass.Foreign) != 1 || len(ab) != 1 || ab[0]["sender_wanax"] != "Dunios" || ab[0]["ship_name"] != "Sea Swallow" || ab[0]["lands_at"] == nil {
 		t.Errorf("Kassandra's aboard view wrong: %v", kass.Foreign)
 	}
 
@@ -169,7 +179,7 @@ func TestRunners_GroupsAndIntegrity(t *testing.T) {
 	if strings.Contains(kassBody, "ORDER-") || strings.Contains(kassBody, "TRADE-") || strings.Contains(kassBody, "REPLY-") {
 		t.Errorf("sealed payload leaked to ship owner: %s", kassBody)
 	}
-	for _, word := range []string{"ECHO", "ORDER-", "TRADE-", "REPLY-", "message_text", "trade_offer", "order_payload", "reply_text"} {
+	for _, word := range []string{"ECHO", "FOXTROT", "ORDER-", "TRADE-", "REPLY-", "message_text", "trade_offer", "order_payload", "reply_text"} {
 		if strings.Contains(dunBody, word) {
 			t.Errorf("%q leaked to Dunios: %s", word, dunBody)
 		}
