@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"formatet/megaron/server/internal/unit"
 	"github.com/spf13/cobra"
 )
 
@@ -370,8 +371,8 @@ func printForeignMarchSightedLine(n notificationItem) {
 			owner += "s"
 		}
 	}
-	unitType := body.UnitType
-	if unitType == "" {
+	unitType := unit.DisplayName(body.UnitType)
+	if body.UnitType == "" {
 		unitType = "force"
 	}
 	stance := ""
@@ -411,8 +412,8 @@ func printForeignMarchSightedV2Line(n notificationItem) {
 			owner += "s"
 		}
 	}
-	unitType := body.UnitType
-	if unitType == "" {
+	unitType := unit.DisplayName(body.UnitType)
+	if body.UnitType == "" {
 		unitType = "force"
 	}
 	stance := ""

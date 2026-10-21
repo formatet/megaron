@@ -3,6 +3,7 @@
 // No DOM dependencies — safe for any other module to import
 // directly regardless of layer (config/state ← api/ws ← render ← ui ← main).
 // (clock.js sits on the same low layer, so importing it keeps that promise.)
+import { unitTypeLabel } from './actornames.js';
 import { giftText } from './gifts.js';
 import { fmtNum, fmtDays, fmtDay } from './fmt_num.js';
 import { fmtClock } from './fmt_clock.js';
@@ -459,7 +460,7 @@ export function notifText(kind, body) {
       // (speldygn, never wall clock), and because the whole point is that there
       // is still travel time left to answer it.
       const owner = body.owner ? `${body.owner}'s` : 'An unknown';
-      const force = body.unit_type || 'force';
+      const force = unitTypeLabel(body.unit_type) || 'force';
       const size = body.size ? ` (${body.size})` : '';
       const lands = body.arrive_tick ? ` — lands ${fmtDay(body.arrive_tick)}` : '';
       // The threatened city is the urgent end of the irreversibility gradient
@@ -474,7 +475,7 @@ export function notifText(kind, body) {
       // where it is going. Toward your lands it names the city and when it
       // would get there IF that is its goal (combat/march_sighting.go V2).
       const owner = body.owner ? `${body.owner}'s` : 'An unknown';
-      const force = body.unit_type || 'force';
+      const force = unitTypeLabel(body.unit_type) || 'force';
       const size = body.size ? ` (${body.size})` : '';
       const heading = body.heading ? `, heading ${body.heading}` : '';
       if (body.threatens_name) {

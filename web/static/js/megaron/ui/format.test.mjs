@@ -481,12 +481,12 @@ test('ShipCaptured/ShipLost/ShipStranded read correctly', () => {
 test('ForeignMarchSightedV2 says which way — never where — and an arrival only if bound for you', () => {
   assert.equal(
     notifText('ForeignMarchSightedV2', { owner: 'Minos', unit_type: 'spearman', size: 100, q: 15, r: 0, heading: 'south-east' }),
-    "Minos's spearman (100) sighted at (15,0), heading south-east",
+    "Minos's Spearmen (100) sighted at (15,0), heading south-east",
   );
   assert.equal(
     notifText('ForeignMarchSightedV2', { owner: 'Minos', unit_type: 'spearman', size: 100, q: 15, r: 0, heading: 'south-east',
       threatens_name: 'Mycenae', eta_if_tick: 3017 }),
-    "Minos's spearman (100) is heading for Mycenae's lands — there by day 3,017 if that is its goal",
+    "Minos's Spearmen (100) is heading for Mycenae's lands — there by day 3,017 if that is its goal",
   );
 });
 
@@ -742,4 +742,15 @@ test('failed order escapes text and retains destination and delivery context',()
  const html=notifText('OrderFailed',{name:'<img src=x onerror=alert(1)>',verb:'march',target_q:31,target_r:16,messenger_id:'runner',reason:'--unit <id> --target <q>,<r>'});
  assert.doesNotMatch(html,/<img|<id>|<q>|<r>/);
  assert.match(html,/&lt;id&gt;/);assert.match(html,/to \(31,16\) when the Runner arrived/);
+});
+
+
+test('saved sighting dispatches use the canonical ship type without inventing a ship name', () => {
+ for (const kind of ['ForeignMarchSighted', 'ForeignMarchSightedV2']) {
+  const body = { owner: 'Petras', unit_type: 'merchantman', size: 1, q: 21, r: 15, target_q: 22, target_r: 15 };
+  const text = notifText(kind, body);
+  assert.match(text, /Emporos/);
+  assert.doesNotMatch(text, /merchantman|Scout/);
+  assert.equal(body.unit_type, 'merchantman', 'stored outcome remains unchanged');
+ }
 });

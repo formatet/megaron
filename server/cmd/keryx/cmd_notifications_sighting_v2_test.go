@@ -13,7 +13,7 @@ func TestPrintForeignMarchSightedV2Line(t *testing.T) {
 			`{"owner":"Minos","unit_type":"spearman","size":100,"stance":"aggressive","q":15,"r":0,` +
 				`"heading":"south-east","threatens_name":"Mycenae","eta_if_tick":3017}`)})
 	})
-	want := "Minos' spearman (100, aggressive) seen at (15,0), heading south-east — toward YOUR CITY Mycenae's lands; there by day 3017 if that is its goal"
+	want := "Minos' Spearmen (100, aggressive) seen at (15,0), heading south-east — toward YOUR CITY Mycenae's lands; there by day 3017 if that is its goal"
 	if !strings.Contains(warn, want) {
 		t.Errorf("warning line = %q\nwant it to contain %q", warn, want)
 	}
@@ -21,7 +21,23 @@ func TestPrintForeignMarchSightedV2Line(t *testing.T) {
 		printForeignMarchSightedV2Line(notificationItem{Kind: "ForeignMarchSightedV2", Body: []byte(
 			`{"owner":"Ariadne","unit_type":"galley","size":1,"q":3,"r":4,"heading":"north"}`)})
 	})
-	if !strings.Contains(pass, "Ariadne's galley (1) seen at (3,4), heading north") || strings.Contains(pass, "toward") {
+	if !strings.Contains(pass, "Ariadne's Galley (1) seen at (3,4), heading north") || strings.Contains(pass, "toward") {
 		t.Errorf("passing line = %q", pass)
+	}
+}
+
+func TestSightingUsesEmporosForStoredMerchantman(t *testing.T) {
+	for _, version := range []string{"ForeignMarchSighted", "ForeignMarchSightedV2"} {
+		line := capturePrint(t, func() {
+			n := notificationItem{Kind: version, Body: []byte(`{"owner":"Petras","unit_type":"merchantman","size":1,"q":21,"r":15}`)}
+			if version == "ForeignMarchSighted" {
+				printForeignMarchSightedLine(n)
+			} else {
+				printForeignMarchSightedV2Line(n)
+			}
+		})
+		if !strings.Contains(line, "Emporos") || strings.Contains(line, "merchantman") || strings.Contains(line, "Scout") {
+			t.Fatal(line)
+		}
 	}
 }
