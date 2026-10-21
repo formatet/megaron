@@ -16,6 +16,7 @@ import (
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -51,6 +52,22 @@ func CallBack(ctx context.Context, pool *pgxpool.Pool, sched *events.Scheduler, 
 		return CallBackResult{}, fmt.Errorf("call back: begin: %w", err)
 	}
 	defer tx.Rollback(ctx)
+	result, err := CallBackTx(ctx, tx, sched, worldID, messengerID, callerID, now, currentTick)
+	if err != nil {
+		return CallBackResult{}, err
+	}
+	if !result.Started {
+		return result, nil
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return CallBackResult{}, fmt.Errorf("call back: commit: %w", err)
+	}
+	return result, nil
+}
+
+// CallBackTx turns an unboarded Runner home inside the caller's transaction.
+// The same owner is used for an explicit call-back and an atomic replacement.
+func CallBackTx(ctx context.Context, tx pgx.Tx, sched *events.Scheduler, worldID, messengerID, callerID uuid.UUID, now time.Time, currentTick int) (CallBackResult, error) {
 
 	var senderID uuid.UUID
 	var status string
@@ -143,9 +160,6 @@ func CallBack(ctx context.Context, pool *pgxpool.Pool, sched *events.Scheduler, 
 		ReturnPayload{MessengerID: messengerID, PassageGeneration: generation}, dueTick,
 	); err != nil {
 		return CallBackResult{}, fmt.Errorf("call back: schedule return: %w", err)
-	}
-	if err := tx.Commit(ctx); err != nil {
-		return CallBackResult{}, fmt.Errorf("call back: commit: %w", err)
 	}
 	return CallBackResult{ReturnsAt: returnsAt, Started: true}, nil
 }

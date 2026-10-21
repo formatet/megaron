@@ -1,6 +1,6 @@
 import { State } from '../state.js';
 import { fetchAuth } from '../api.js';
-import { esc, formatApiError, passageNote, purseLine } from './format.js';
+import { esc, formatApiError, passageNote, supersededOrderNote, purseLine } from './format.js';
 import { unitTypeLabel } from './actornames.js';
 import { fmtNum, fmtDays } from './fmt_num.js';
 import { arrivalHTML, fmtArrival } from './time.js';
@@ -646,7 +646,7 @@ export async function sendMarch() {
       ? 'A messenger carries the order — reaches the unit ' +
         arrivalHTML(first.data.courier_arrives_at, first.data.courier_due_tick) +
         (first.data.catch_up === 'at_destination' ? '; follows the unit to its destination and applies there if it is still present' : redirecting ? '; the unit holds its current course until then' : '; the march begins on delivery') +
-        passageNote(first.data)
+        passageNote(first.data) + supersededOrderNote(first.data)
       : '✓ Marching — arrives ' +
         arrivalHTML(first.data.arrives_at_utc || first.data.arrives_at, first.data.arrival_tick);
     // The stance for a marching unit rides a second Runner that must catch up.

@@ -446,6 +446,11 @@ func (h *UnitHandler) sendOrderCourierTx(w http.ResponseWriter, ctx context.Cont
 		}
 	}
 
+	superseded, err := messenger.SupersedeUnboardedMovementTx(ctx, tx, h.scheduler, payload.WorldID, payload.PlayerID, payload.UnitID, payload.Verb, now, currentTick)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "could not replace the earlier unboarded order")
+		return
+	}
 	messengerID, err := insertOrderMessenger(ctx, tx, payload, msgText, origin,
 		unitPos.Q, unitPos.R, courierArrivesAt, passage, passageSinceTickArg)
 	if err != nil {
@@ -470,12 +475,13 @@ func (h *UnitHandler) sendOrderCourierTx(w http.ResponseWriter, ctx context.Cont
 	}
 
 	resp := map[string]any{
-		"status":             "order_dispatched",
-		"verb":               payload.Verb,
-		"unit_id":            payload.UnitID,
-		"messenger_id":       messengerID,
-		"courier_arrives_at": courierArrivesAt,
-		"courier_due_tick":   dueTick,
+		"status":                   "order_dispatched",
+		"verb":                     payload.Verb,
+		"unit_id":                  payload.UnitID,
+		"messenger_id":             messengerID,
+		"superseded_messenger_ids": superseded,
+		"courier_arrives_at":       courierArrivesAt,
+		"courier_due_tick":         dueTick,
 	}
 	if passage != nil {
 		resp["passage_status"] = "awaiting_passage"

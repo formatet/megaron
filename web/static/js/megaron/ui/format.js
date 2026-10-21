@@ -18,6 +18,11 @@ export function esc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '
 // real ship — there is no other way across (megaron_plan_ordna_passage.md
 // 3b-4: the old instant abstract-boat crossing is gone). '' for the ordinary,
 // unaffected land case (the server omits the field entirely then).
+export function supersededOrderNote(data) {
+  const n = Array.isArray(data?.superseded_messenger_ids) ? data.superseded_messenger_ids.length : 0;
+  return n ? ` · ${n} earlier unboarded ${n === 1 ? 'order' : 'orders'} withdrawn; ${n === 1 ? 'its Runner is' : 'their Runners are'} walking home` : '';
+}
+
 export function passageNote(data) {
   if (data && data.passage_status === 'awaiting_passage') {
     return data.passage_port

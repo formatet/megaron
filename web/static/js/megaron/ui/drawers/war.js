@@ -4,7 +4,7 @@ import { showInlineResult, confirmInline } from '../inline_result.js';
 import { State, ownCapital } from '../../state.js';
 import { serverNow } from '../../clock.js';
 import { fetchAuth } from '../../api.js';
-import { esc, formatApiError, passageNote, purseLine } from '../format.js';
+import { esc, formatApiError, passageNote, supersededOrderNote, purseLine } from '../format.js';
 import { fmtEta, fmtArrival, arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
 import { unitTypeLabel, actorName } from '../actornames.js';
@@ -759,8 +759,8 @@ function orderSentLine(d, verb) {
   if (d && d.status === 'order_applied') {
     return verb + ' order given in person — you ride with the host, so it takes effect at once.';
   }
-  if (d?.catch_up === 'at_destination') return verb + ' order sent by Runner — follows the unit to its destination, arriving ' + fmtArrival(d.courier_arrives_at, d.courier_due_tick) + '. Applies there if the unit is still present.';
-  return verb + ' order sent by messenger — reaches the unit ' + fmtArrival(d.courier_arrives_at, d.courier_due_tick) + '.';
+  if (d?.catch_up === 'at_destination') return verb + ' order sent by Runner — follows the unit to its destination, arriving ' + fmtArrival(d.courier_arrives_at, d.courier_due_tick) + '. Applies there if the unit is still present.' + supersededOrderNote(d);
+  return verb + ' order sent by messenger — reaches the unit ' + fmtArrival(d.courier_arrives_at, d.courier_due_tick) + '.' + supersededOrderNote(d);
 }
 
 export async function unitRecall(unitID) {

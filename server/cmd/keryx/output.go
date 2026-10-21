@@ -172,3 +172,16 @@ func tradeArrival(c *Client, resp map[string]any, good bool) string {
 	at, _ := resp[timestamp].(string)
 	return arrivalETA(c, at)
 }
+
+// printSupersededOrderNote is a dispatch receipt, not proof that the new order arrived.
+func printSupersededOrderNote(resp map[string]any) {
+	ids, ok := resp["superseded_messenger_ids"].([]any)
+	if !ok || len(ids) == 0 {
+		return
+	}
+	if len(ids) == 1 {
+		fmt.Println("  Earlier unboarded order withdrawn; its Runner is walking home.")
+		return
+	}
+	fmt.Printf("  %d earlier unboarded orders withdrawn; their Runners are walking home.\n", len(ids))
+}

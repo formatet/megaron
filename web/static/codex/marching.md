@@ -70,3 +70,5 @@ its recorded costs and arrival day when the movement rules change. A finished
 An expedition preview shows its planned length. For a unit in garrison it can also show the planned homecoming **if it departed immediately**. The order may still need physical delivery. The first destination inside the search area remains unknown; no hidden route or arrival time is revealed.
 
 A march preview applies the same expedition budget checks as the order. It leaves unseen first-leg routes undisclosed. A Host founds with `founding settle`, not a colony march. Without confirmation, nothing is sent.
+
+If you send a new movement order to the same unit while an earlier order Runner still waits unboarded in one of your ports, the earlier order is withdrawn in the same dispatch. That Runner walks home; the new order still travels physically. A Runner already aboard a ship or travelling elsewhere continues on its own course, and an independent stance order is unaffected. Your dispatch receipt says when it withdrew an earlier order.

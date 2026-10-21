@@ -854,6 +854,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 				}
 				fmt.Println(" — the march begins on delivery.")
 				printPassageNote(resp)
+				printSupersededOrderNote(resp)
 				return nil
 			}
 			arrivesAt, _ := resp["arrives_at"].(string)
@@ -1613,6 +1614,7 @@ battle only. A unit not in a battle is refused — set the default instead.`,
 				}
 				fmt.Println(" — it applies on delivery.")
 				printPassageNote(resp)
+				printSupersededOrderNote(resp)
 				return nil
 			}
 			hold, _ := resp["hold_to_last_man"].(bool)
