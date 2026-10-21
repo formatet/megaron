@@ -21,6 +21,7 @@ const OWN_GROUPS = [
   ['waiting', 'Waiting for a ship'],
   ['on_the_way', 'On the way'],
   ['aboard', 'Aboard a ship'],
+  ['awaiting_answer', 'Waiting for an answer'],
   ['homebound', 'On the way home'],
   ['no_word', 'No word'],
 ];
@@ -46,6 +47,8 @@ function ownMeta(m) {
     case 'aboard':
       return join([kind, 'aboard ' + esc(m.ship_wanax ? wanaxPoss(m.ship_wanax) + ' ' : '') + esc(m.ship_name || 'a ship'),
         m.boarded_at ? since(m.boarded_at) : '', m.lands_at ? 'landfall ' + at(m.lands_at) : '']);
+    case 'awaiting_answer':
+      return join([kind, m.waiting_since ? since(m.waiting_since) : '', m.leaves_at ? 'heads home ' + at(m.leaves_at) + ' if unanswered' : '']);
     case 'homebound':
       return join([kind, 'home ' + at(m.arrives_at)]);
     case 'no_word':

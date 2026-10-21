@@ -46,6 +46,7 @@ type runnersResp struct {
 		PortName          string  `json:"port_name"`
 		WaitingSince      *string `json:"waiting_since"`
 		Explanation       string  `json:"explanation"`
+		LeavesAt          *string `json:"leaves_at"`
 		ShipName          string  `json:"ship_name"`
 		ShipWanax         string  `json:"ship_wanax"`
 		BoardedAt         *string `json:"boarded_at"`
@@ -100,7 +101,7 @@ func renderRunners(data []byte) (string, error) {
 	var b strings.Builder
 	titles := []struct{ group, title string }{
 		{"waiting", "WAITING FOR A SHIP"}, {"on_the_way", "ON THE WAY"}, {"aboard", "ABOARD"},
-		{"homebound", "HOMEBOUND"}, {"no_word", "NO WORD"},
+		{"awaiting_answer", "WAITING FOR AN ANSWER"}, {"homebound", "HOMEBOUND"}, {"no_word", "NO WORD"},
 	}
 	for _, g := range titles {
 		first := true
@@ -139,6 +140,12 @@ func renderRunners(data []byte) (string, error) {
 			case "aboard":
 				fmt.Fprintf(&b, "  %s  aboard Wanax %s %s, since %s; the ship makes landfall %s; arrives %s\n", to,
 					possessive(m.ShipWanax), m.ShipName, runnerTime(m.BoardedAt), runnerTime(m.LandsAt), runnerTime(m.ArrivesAt))
+			case "awaiting_answer":
+				line := fmt.Sprintf("  %s  since %s", to, runnerTime(m.WaitingSince))
+				if m.LeavesAt != nil {
+					line += "; heads home " + runnerTime(m.LeavesAt) + " if unanswered"
+				}
+				b.WriteString(line + "\n")
 			case "homebound":
 				fmt.Fprintf(&b, "  %s  home %s\n", to, runnerTime(m.ArrivesAt))
 			case "no_word":
