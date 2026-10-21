@@ -149,6 +149,7 @@ const (
 	// new unit. One instance per ship currently under repair, created by
 	// api/handlers UnitHandler.Repair.
 	ScheduledShipRepairComplete ScheduledEventType = "ShipRepairComplete"
+	ScheduledShipFitOutComplete ScheduledEventType = "ShipFitOutComplete"
 	// ScheduledSiegeCapitulation fires once a besieged settlement's
 	// consecutive starvation clock reaches economy.SiegeCapitulationTicks
 	// (megaron_plan_belagring.md §S3): the city falls to its strongest

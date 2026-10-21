@@ -987,7 +987,7 @@ func armyUpkeep(ctx context.Context, pool *pgxpool.Pool, settlementID uuid.UUID)
 	perType := map[string]upkeepAmount{}
 	rows, err := pool.Query(ctx,
 		`SELECT type, category, size, status FROM units
-		 WHERE settlement_id = $1 AND status = 'garrison'`,
+		 WHERE settlement_id = $1 AND status IN ('garrison','fitting_out')`,
 		settlementID,
 	)
 	if err != nil {
@@ -1044,7 +1044,7 @@ func settlementUpkeepDrain(ctx context.Context, pool *pgxpool.Pool, settlementID
 		 FROM units u
 		 JOIN settlements s ON s.id = u.support_settlement_id AND s.owner_id = u.owner_id
 		 WHERE u.support_settlement_id = $1
-		   AND u.status IN ('garrison', 'marching', 'positioned', 'embarked')`,
+		   AND u.status IN ('garrison', 'marching', 'positioned', 'embarked', 'repairing', 'freighting', 'fitting_out')`,
 		settlementID,
 	)
 	if qerr != nil {
@@ -3785,7 +3785,7 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 	// Verify ownership.
 	var settlementID uuid.UUID
 	if err := h.pool.QueryRow(r.Context(),
-		`SELECT s.id FROM settlements s WHERE s.province_id=$1 AND s.world_id=$2 AND s.owner_id=$3`,
+		`SELECT s.id FROM settlements s WHERE s.province_id=$1 AND s.world_id=$2 AND s.owner_id=$3 AND s.state='active'`,
 		provinceID, worldID, playerID,
 	).Scan(&settlementID); err != nil {
 		writeError(w, http.StatusForbidden, "not your settlement")
@@ -3803,6 +3803,13 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer tx.Rollback(r.Context())
+	// Match Lay up / Fit out's city→unit lock order. Otherwise a concurrent
+	// disband could hold a hull while Lay up holds its port and deadlock.
+	var lockedSettlement uuid.UUID
+	if err := tx.QueryRow(r.Context(), `SELECT id FROM settlements WHERE id=$1 AND owner_id=$2 AND state='active' FOR UPDATE`, settlementID, playerID).Scan(&lockedSettlement); err != nil {
+		writeError(w, http.StatusForbidden, "not your active settlement")
+		return
+	}
 
 	wanted := []struct {
 		men int
@@ -3830,9 +3837,9 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 		// deterministic — doesn't change how many men are disbanded, only
 		// which unit loses them.
 		rows, err := tx.Query(r.Context(),
-			`SELECT id, size, COALESCE(crew, 0) FROM units
-			 WHERE settlement_id = $1 AND status = 'garrison' AND type = $2
-			 ORDER BY size ASC, id`,
+			`SELECT id, size, category, CASE WHEN status = 'laid_up' THEN 0 ELSE COALESCE(crew, 0) END FROM units
+			 WHERE settlement_id = $1 AND status IN ('garrison','laid_up') AND type = $2
+			 ORDER BY CASE WHEN status = 'laid_up' THEN 0 ELSE 1 END, size ASC, id`,
 			settlementID, want.typ,
 		)
 		if err != nil {
@@ -3842,10 +3849,12 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 		var ids []uuid.UUID
 		var sizes []int
 		var crews []int
+		var categories []string
 		for rows.Next() {
 			var id uuid.UUID
 			var size, crew int
-			if scanErr := rows.Scan(&id, &size, &crew); scanErr != nil {
+			var category string
+			if scanErr := rows.Scan(&id, &size, &category, &crew); scanErr != nil {
 				rows.Close()
 				writeError(w, http.StatusInternalServerError, "disband failed")
 				return
@@ -3853,6 +3862,7 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 			ids = append(ids, id)
 			sizes = append(sizes, size)
 			crews = append(crews, crew)
+			categories = append(categories, category)
 		}
 		rows.Close()
 
@@ -3874,7 +3884,7 @@ func (h *ProvinceHandler) Disband(w http.ResponseWriter, r *http.Request) {
 				}
 				// A naval unit's men left population as `crew`, not `size`
 				// (size is always 1 — one vessel); crew is 0 for land units.
-				if crews[i] > 0 {
+				if categories[i] == "naval" {
 					popRestored += crews[i]
 				} else {
 					popRestored += take

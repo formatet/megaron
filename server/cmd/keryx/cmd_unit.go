@@ -34,10 +34,63 @@ func unitCmd() *cobra.Command {
 		unitLoadCmd(),
 		unitUnloadCmd(),
 		unitRepairCmd(),
+		unitLayUpCmd(),
+		unitFitOutCmd(),
 		unitCancelTrainingCmd(),
 		unitPickupCmd(),
 	)
 	return cmd
+}
+
+func shipPortCmd(use, description string) *cobra.Command {
+	var unitID string
+	cmd := &cobra.Command{
+		Use:     use,
+		Short:   description,
+		Example: "  keryx unit " + use + " --unit <id>",
+		Args:    rejectPositionalArgs("unit"),
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			c := newClient(cfg)
+			resolved, err := resolveUnitID(c, cfg.WorldID, unitID)
+			if err != nil {
+				return err
+			}
+			path := fmt.Sprintf("/api/v1/worlds/%s/units/%s/%s", cfg.WorldID, resolved, use)
+			data, err := c.post(path, map[string]any{})
+			if err != nil {
+				return err
+			}
+			if jsonMode {
+				printRawJSON(data)
+				return nil
+			}
+			var result struct {
+				Status        string `json:"status"`
+				Population    int    `json:"population"`
+				ReadyTick     int    `json:"ready_tick"`
+				DurationTicks int    `json:"duration_ticks"`
+			}
+			if err := json.Unmarshal(data, &result); err != nil {
+				return err
+			}
+			if use == "lay-up" {
+				fmt.Printf("Ship laid up; port population %d. No ship upkeep.\n", result.Population)
+			} else {
+				fmt.Printf("Ship fitting out; ready in %s. Port population %d.\n", formatDays(result.DurationTicks, "%d"), result.Population)
+			}
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&unitID, "unit", "", "ship ID or unique name")
+	_ = cmd.MarkFlagRequired("unit")
+	return cmd
+}
+
+func unitLayUpCmd() *cobra.Command {
+	return shipPortCmd("lay-up", "Lay up an empty ship in your active harbour; its crew returns to the city")
+}
+func unitFitOutCmd() *cobra.Command {
+	return shipPortCmd("fit-out", "Draft a laid-up ship's crew and ready it after three days")
 }
 
 // ---- unit patrol -------------------------------------------------------------
@@ -244,8 +297,15 @@ func unitListCmd() *cobra.Command {
 				if name == "" {
 					name = unit.DisplayName(u.Type) + shipNameSuffix(u.Name)
 				}
-				fmt.Printf("%-36s  %-46s  %-8s  %-10s  %-9s  %s\n",
-					u.ID, name, formatSize(c, u), u.Status, stanceStr(u.Stance), locationStr(c, u, homes))
+				status := u.Status
+				if status == "laid_up" {
+					status = "Laid up"
+				}
+				if status == "fitting_out" {
+					status = "Fitting out"
+				}
+				fmt.Printf("%-36s  %-46s  %-8s  %-12s  %-9s  %s\n",
+					u.ID, name, formatSize(c, u), status, stanceStr(u.Stance), locationStr(c, u, homes))
 				if upkeep := unitUpkeepLine(u); upkeep != "" {
 					fmt.Println("  " + upkeep)
 				}
@@ -271,9 +331,14 @@ func unitUpkeepLine(u unitRow) string {
 		return ""
 	}
 	label := "Upkeep"
+	if u.Status == "laid_up" {
+		label = "Ship upkeep while laid up"
+	}
 	switch u.UpkeepContext {
 	case "inactive":
-		label = "Upkeep when active"
+		if u.Status != "laid_up" {
+			label = "Upkeep when active"
+		}
 	case "subsistence":
 		label = "Upkeep after settling"
 	}
@@ -397,6 +462,12 @@ func formatSize(c *Client, u unitRow) string {
 			eta = gameETA(c, *u.BuildCompleteAt)
 		}
 		return fmt.Sprintf("100/100 (training — ready %s)", eta)
+	case "fitting_out":
+		eta := "unknown"
+		if u.BuildCompleteAt != nil {
+			eta = gameETA(c, *u.BuildCompleteAt)
+		}
+		return fmt.Sprintf("1 vessel (crew %d, fitting out — ready %s)", u.Crew, eta)
 	}
 	if u.Category == "naval" {
 		hull := ""
@@ -409,7 +480,7 @@ func formatSize(c *Client, u unitRow) string {
 		// mätaren är att hon inte ska upptäcka lagret genom att förlora skeppet.
 		food := ""
 		switch {
-		case u.Status == "garrison":
+		case u.Status == "garrison" || u.Status == "laid_up" || u.Status == "fitting_out":
 			// I hamn äter skeppet ur staden; ett lager ombord säger ingenting.
 		case u.ProvisionDays <= 0 && u.ProvisionsAboard:
 			food = ", food for less than a day LOW"
@@ -420,7 +491,7 @@ func formatSize(c *Client, u unitRow) string {
 		default:
 			food = fmt.Sprintf(", food for %s", formatDays(u.ProvisionDays, "%d"))
 		}
-		if u.Status != "garrison" && u.ProvisionsByGood != nil {
+		if u.Status != "garrison" && u.Status != "laid_up" && u.Status != "fitting_out" && u.ProvisionsByGood != nil {
 			goods := map[string]any{}
 			for good, quantity := range u.ProvisionsByGood {
 				goods[good] = quantity
@@ -428,6 +499,9 @@ func formatSize(c *Client, u unitRow) string {
 			if detail := foodGoodsText(goods); detail != "" {
 				food += " (" + detail + ")"
 			}
+		}
+		if u.Status == "laid_up" {
+			return fmt.Sprintf("1 vessel (crew ashore %d%s)", u.Crew, hull)
 		}
 		return fmt.Sprintf("1 vessel (crew %d%s%s)", u.Crew, hull, food)
 	}

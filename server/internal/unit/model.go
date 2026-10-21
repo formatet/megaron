@@ -233,6 +233,8 @@ const (
 	// as normal. Land units never carry this status; war_galley never does
 	// either (it may never carry cargo — R1).
 	StatusFreighting Status = "freighting"
+	StatusLaidUp     Status = "laid_up"     // crew ashore in the port population; no upkeep
+	StatusFittingOut Status = "fitting_out" // crew aboard; ready after FitOutTicks
 )
 
 // Stance is the tactical posture of a stationary unit.
@@ -326,11 +328,10 @@ type Unit struct {
 	// time, ship-build overhaul 2026-07-09); nil for land units.
 	Name *string
 	// BuildCompleteAt is set while a naval unit is status='forming' (its
-	// TrainComplete ETA) or status='repairing' (its ShipRepairComplete ETA,
-	// megaron_plan_skeppsreparation.md Slice C — same column, same "job
-	// finishes at this time" meaning, different job); cleared (nil) once it
-	// flips back to garrison. Land units never set it — their forming
-	// progress is size-based, not time-based.
+	// TrainComplete ETA), status='repairing' (ShipRepairComplete ETA) or
+	// status='fitting_out' (ShipFitOutComplete ETA). Cleared on return to
+	// garrison. Land units also use it for timed training after gathering;
+	// their initial forming progress is size-based.
 	BuildCompleteAt *time.Time
 
 	CargoUnitID *uuid.UUID // naval: land unit being transported

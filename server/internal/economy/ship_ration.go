@@ -57,9 +57,13 @@ var UpkeepSpecs = map[string]UpkeepSpec{
 // economy/recompute.go:359, pop×0.5/day). In the field — status "marching" or
 // "positioned" — he eats double: mobilising costs, and standing out costs more
 // than standing home. Silver (where paid) never changes with status — the pay is the
-// same wherever the man stands. Naval upkeep is per hull, not per person, and
-// is untouched by status entirely (see UpkeepSpecs' comment).
+// same wherever the man stands. Naval upkeep is per hull, not per person.
+// A laid-up ship has returned its crew to civilian population and is exempt
+// from both ship rations and pay until Fit out drafts them again.
 func UnitUpkeep(unitType, category string, size int, status string) UpkeepSpec {
+	if status == "laid_up" {
+		return UpkeepSpec{}
+	}
 	spec, ok := UpkeepSpecs[unitType]
 	if !ok {
 		return UpkeepSpec{}

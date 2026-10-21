@@ -4,6 +4,8 @@ Soldiers eat **food: grain, fish, oil and wine**, shared in proportion to the st
 
 **Spearmen draw 0 silver per day**, in garrison and in the field. Elite infantry, chariots and ships still draw pay in [[silver]] every day. If you cannot pay, you are warned first; if it goes on, **men desert**, and a unit that loses everyone is gone. Recruit professionals only when you can keep paying them. A spearman cohort still costs 12 grain, 20 silver and 100 people to recruit.
 
+An empty ship **Laid up** in its own Harbour costs **0 silver and 0 ship food**. Its crew has returned to the city's population and eats as civilians. **Fit out** drafts that crew back immediately; ordinary ship food and silver upkeep resume while the ship spends three days preparing. See [[sea]].
+
 ## Food
 
 Soldiers use the same four [[food|food goods]] as the people. Livestock remains emergency food for civilians, not an army ration. A full spearman cohort uses **0.5 food per day in garrison**, or **1 food in the field**. A unit in garrison eats from its city. **A unit in the field eats double**, and there is nothing to forage — so a long march, a siege line or a posted watch is a real cost ([[stances]]). <!-- src: server/internal/combat/upkeep.go upkeepFieldGrainFactor -->

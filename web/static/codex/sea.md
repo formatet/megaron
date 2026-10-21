@@ -10,6 +10,8 @@ Every ship needs a **Harbour** and a **Shipyard** ([[buildings]]). There are thr
 
 A [[transfers|transfer]] or [[routes|standing order]] that goes by sea needs a free Galley or Emporos waiting in the sending port — the War Galley is never chosen. No free hull there, and the shipment goes by land instead if a road exists, or is refused.
 
+**Lay up** an idle, empty ship in your own active Harbour from War → Army when you do not need it. The crew joins the port's population, so the ship costs no food or silver and cannot sail, carry goods or take a passenger. **Fit out** drafts its crew again and takes three days before the ship is ready. The crew draws regular ship upkeep while fitting out. A laid-up hull follows its port if the city is annexed. See [[units]] and [[upkeep]].
+
 ## At sea
 
 - **A ship is given its whole mission in port, then sails alone.** From **War → Army**, **Load** a land unit onto a ship standing with it, then send it on a **mission**: **Land** puts the cargo ashore on open ground and sails home again on its own — select "…and found a colony" to settle right there, no further order needed. The port pays the colonists' silver the moment the ship sails, as it would for a column on foot ([[colonies]]); if the colony cannot be founded, or you unload them at home, the silver comes back with them. **Patrol** and **Explore** return home by themselves. For **Explore**, choose an area and duration in days: the port loads provisions for the whole expedition, and the ship turns home by half the duration ([[sight]]). **Passage** is a fourth mission, empty of cargo, given to carry a [[messengers|letter]] or [[runners|order]] — see "Arrange passage" below.

@@ -188,12 +188,12 @@ func canLand(cc checkContext) Verb {
 }
 
 func canDisband(cc checkContext) Verb {
-	n := cc.anyUnitsHere()
+	n := cc.disbandableUnitsHere()
 	ok := n > 0
 	return verb("disband", CategoryMilitary,
 		"Release units back to civilian population.",
 		[]Requirement{
-			req("a unit garrisoned or forming here", ok,
+			req("a unit garrisoned or laid up here", ok,
 				fmt.Sprintf("%d unit(s) here", n),
 				"recruit a unit in this settlement first"),
 		})

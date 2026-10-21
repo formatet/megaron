@@ -55,6 +55,8 @@ Mätt mot koden 2026-09-05 (`cmd/keryx/main.go` · `cmd/server/main.go`s routeta
 | retreat-default | `GET/PUT /worlds/:id/retreat-default` | `retreat-default` | ✓ | War → Army "When to retreat" (per Wanax, mig 145, sås in i varje ny strid); undantagen forming-grinden — mergad `a3e063b` |
 | reinforce | `POST /units/:id/reinforce` | `reinforce` | ✓ | |
 | repair | `POST /units/:id/repair` | `unit repair` | ✓ | |
+| lay-up | `POST /units/:id/lay-up` | `unit lay-up` | ✓ | Return crew to own active port; no ship upkeep. |
+| fit-out | `POST /units/:id/fit-out` | `unit fit-out` | ✓ | Draft crew; ready after 3 ticks. |
 | load / unload | `POST /units/:id/load`, `/unload` | `unit load`, `unload` | ✓ | sjötransport |
 | join | `POST /worlds/:id/join` | `join` | ✓ | CLI-verbet tillkom 2026-09-05 |
 | founding settle | `POST /founding/settle` | `founding settle` | ✓ | |

@@ -420,6 +420,16 @@ func executeAnnex(
 	); err != nil {
 		return fmt.Errorf("annex: transfer ownership: %w", err)
 	}
+	// A ship left without its crew is stored with the port. Its crew was
+	// already returned to this city's population, so transferring the hull
+	// neither drafts nor refunds people. A fitting-out hull follows too: its
+	// crew has already been drawn and its completion event stays valid. Also
+	// catch a fit-out job that completed while the city was occupied; the
+	// occupation's earlier garrison eviction cannot see that future status.
+	if _, err := tx.Exec(ctx, `UPDATE units SET owner_id=$2, support_settlement_id=$1, updated_at=now()
+		WHERE settlement_id=$1 AND category='naval' AND status IN ('laid_up','fitting_out','garrison')`, settlementID, newOwnerID); err != nil {
+		return fmt.Errorf("annex: transfer docked ships: %w", err)
+	}
 	if _, err := tx.Exec(ctx, `UPDATE provinces SET territory_state = 'controlled' WHERE id = $1`, provinceID); err != nil {
 		return fmt.Errorf("annex: update territory: %w", err)
 	}
@@ -504,7 +514,7 @@ func executeSack(
 		}
 		if _, err := tx.Exec(ctx,
 			`UPDATE units SET status = 'disbanded', size = 0, updated_at = now()
-			 WHERE settlement_id = $1 AND status = 'garrison'`,
+			 WHERE settlement_id = $1 AND status IN ('garrison','laid_up','fitting_out')`,
 			settlementID,
 		); err != nil {
 			return fmt.Errorf("burn: disband remaining garrison: %w", err)

@@ -2120,6 +2120,7 @@ func (h *UnitHandler) ListUnits(w http.ResponseWriter, r *http.Request) {
 	attachPickupNotes(r.Context(), h.pool, worldID, playerID, units, summaries)
 	attachOrdersEnRoute(r.Context(), h.pool, worldID, playerID, summaries)
 	attachRecruitCancelNotes(r.Context(), h.pool, worldID, playerID, summaries)
+	attachShipPortActions(r.Context(), h.pool, worldID, playerID, summaries)
 
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]any{"units": summaries, "expedition_rules": expeditionRulesJSON()})
@@ -2311,9 +2312,8 @@ type unitSummary struct {
 	Ordinal               int        `json:"ordinal,omitempty"`
 	SupportSettlementID   *uuid.UUID `json:"support_settlement_id,omitempty"`
 	SupportSettlementName string     `json:"support_settlement_name,omitempty"`
-	// BuildCompleteAt is the ETA for a still-forming naval unit; nil once
-	// garrisoned, and always nil for land units (whose "forming" is
-	// size-based, not time-based).
+	// BuildCompleteAt is the ETA for naval construction, repair or fit-out
+	// and for trained land cohorts; cleared when the timed job completes.
 	BuildCompleteAt *time.Time `json:"build_complete_at,omitempty"`
 	Stance          *string    `json:"stance,omitempty"`
 	SettlementID    *uuid.UUID `json:"settlement_id,omitempty"`
@@ -2417,6 +2417,41 @@ type unitSummary struct {
 	// that is only ever proven at POST .../pickup.
 	CanFetchByShip bool               `json:"can_fetch_by_ship,omitempty"`
 	PickupShips    []pickupShipOption `json:"pickup_ships,omitempty"`
+	CanLayUp       bool               `json:"can_lay_up"`
+	CanFitOut      bool               `json:"can_fit_out"`
+}
+
+// The Army card gets port-action eligibility from the same city, Harbour,
+// cargo, passenger and population facts as the mutating handlers. A city
+// occupied since the roster was loaded may still reject the POST.
+func attachShipPortActions(ctx context.Context, db province.Queryer, worldID, ownerID uuid.UUID, summaries []unitSummary) {
+	index := make(map[uuid.UUID]int, len(summaries))
+	for i := range summaries {
+		index[summaries[i].ID] = i
+	}
+	rows, err := db.Query(ctx, `SELECT u.id,u.status,u.crew,s.population,u.cargo_unit_id IS NULL,
+		NOT EXISTS(SELECT 1 FROM messengers m WHERE m.carrier_unit_id=u.id AND m.passage_status='aboard')
+		FROM units u JOIN settlements s ON s.id=u.settlement_id
+		WHERE u.world_id=$1 AND u.owner_id=$2 AND u.category='naval' AND s.owner_id=$2
+		AND s.state='active' AND u.status IN ('garrison','laid_up')
+		AND EXISTS(SELECT 1 FROM buildings b WHERE b.settlement_id=s.id AND b.building_type='harbour')`, worldID, ownerID)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id uuid.UUID
+		var status string
+		var crew, pop int
+		var empty, noPassenger bool
+		if rows.Scan(&id, &status, &crew, &pop, &empty, &noPassenger) != nil {
+			return
+		}
+		if i, ok := index[id]; ok {
+			summaries[i].CanLayUp = status == "garrison" && crew > 0 && empty && noPassenger
+			summaries[i].CanFitOut = status == "laid_up" && crew > 0 && pop >= crew
+		}
+	}
 }
 
 // pickupShipOption is one of the caller's own ships offered as a pickup
@@ -2827,7 +2862,7 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 		// 'freighting' (megaron_plan_sjohandel_kraver_skepp.md R2): a ship bound
 		// to a naval transport leg or standing sea route — same non-deployable
 		// gate, it belongs to the transport/route until that releases it.
-		deployable := u.Status != "forming" && u.Status != "training" && u.Status != "repairing" && u.Status != "freighting"
+		deployable := u.Status != "forming" && u.Status != "training" && u.Status != "repairing" && u.Status != "freighting" && u.Status != unit.StatusLaidUp && u.Status != unit.StatusFittingOut
 		menToDeploy := 0
 		if u.Status == "forming" && u.Category == unit.CategoryLand {
 			menToDeploy = 100 - u.Size
@@ -2882,7 +2917,7 @@ func unitSummaries(us []*unit.Unit, currentTick int, clk clock.Clock, townNames 
 		upkeep := combat.UnitUpkeep(string(u.Type), string(u.Category), u.Size, string(u.Status))
 		upkeepContext := "inactive"
 		switch string(u.Status) {
-		case "garrison", "marching", "positioned", "embarked", "repairing", "freighting":
+		case "garrison", "marching", "positioned", "embarked", "repairing", "freighting", "fitting_out":
 			upkeepContext = "active"
 		}
 		if u.Type == unit.TypeNomadicHost {
