@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"sort"
 	"time"
 )
@@ -19,11 +18,12 @@ func notificationTick(n notificationItem) *int {
 	}
 	return nil
 }
-func notificationDay(n notificationItem) string {
+func notificationDay(n notificationItem, clients ...*Client) string {
+	c := firstTimeClient(clients)
 	if tick := notificationTick(n); tick != nil && *tick >= 0 {
-		return fmt.Sprintf("Day #%d", *tick)
+		return formatWorldTime(c, *tick)
 	}
-	return "Day unknown"
+	return "time unavailable"
 }
 
 // A recovered city's historical start must not remain urgent forever.

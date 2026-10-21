@@ -8,19 +8,19 @@ import (
 
 func TestNotificationDayRecordedOnly(t *testing.T) {
 	for _, tt := range []struct{ raw, want string }{
-		{`{"world_tick":0,"body":{"world_tick":8}}`, "Day #0"},
-		{`{"world_tick":12,"body":{"world_tick":8}}`, "Day #12"},
-		{`{"world_tick":null,"body":{"world_tick":0}}`, "Day #0"},
-		{`{"created_at":"2026-10-18T08:00:00Z","body":{}}`, "Day unknown"},
+		{`{"world_tick":0,"body":{"world_tick":8}}`, testTickTime(0)},
+		{`{"world_tick":12,"body":{"world_tick":8}}`, testTickTime(12)},
+		{`{"world_tick":null,"body":{"world_tick":0}}`, testTickTime(0)},
+		{`{"created_at":"2026-10-18T08:00:00Z","body":{}}`, "time unavailable"},
 	} {
 		var n notificationItem
 		if err := json.Unmarshal([]byte(tt.raw), &n); err != nil {
 			t.Fatal(err)
 		}
-		if got := notificationDay(n); got != tt.want {
+		if got := notificationDay(n, testTimeClient()); got != tt.want {
 			t.Fatalf("%s: %s want %s", tt.raw, got, tt.want)
 		}
-		text := capturePrint(t, func() { printNotificationRow(nil, n) })
+		text := capturePrint(t, func() { printNotificationRow(testTimeClient(), n) })
 		if !strings.Contains(text, "["+tt.want+"]") {
 			t.Fatal(text)
 		}
@@ -48,13 +48,13 @@ func TestAbsenceNoticeTextAndWatchGameDay(t *testing.T) {
 		{"KharisBandChanged", `{"from_band":"Indifferent","to_band":"Wrathful","kharis":3}`, "Indifferent → Wrathful (3.0)"},
 	} {
 		body := json.RawMessage(tt.body)
-		text := capturePrint(t, func() { printNotificationSummary(nil, notificationItem{Kind: tt.kind, Body: body}) })
+		text := capturePrint(t, func() { printNotificationSummary(testTimeClient(), notificationItem{Kind: tt.kind, Body: body}) })
 		if !strings.Contains(text, tt.want) {
 			t.Fatal(text)
 		}
 		tick := 0
-		text = capturePrint(t, func() { printWatchMessage(nil, wsMsg{Kind: tt.kind, Payload: body, WorldTick: &tick}) })
-		if !strings.Contains(text, "[Day #0]") || !strings.Contains(text, tt.want) {
+		text = capturePrint(t, func() { printWatchMessage(testTimeClient(), wsMsg{Kind: tt.kind, Payload: body, WorldTick: &tick}) })
+		if !strings.Contains(text, "["+testTickTime(0)+"]") || !strings.Contains(text, tt.want) {
 			t.Fatal(text)
 		}
 	}
@@ -84,10 +84,12 @@ func TestNotificationCivilianAndGarrisonHungerIndependent(t *testing.T) {
 	} {
 		tick := 7
 		body := json.RawMessage(tt.body)
-		row := capturePrint(t, func() { printNotificationRow(nil, notificationItem{Kind: tt.kind, Body: body, WorldTick: &tick}) })
-		watch := capturePrint(t, func() { printWatchMessage(nil, wsMsg{Kind: tt.kind, Payload: body, WorldTick: &tick}) })
+		row := capturePrint(t, func() {
+			printNotificationRow(testTimeClient(), notificationItem{Kind: tt.kind, Body: body, WorldTick: &tick})
+		})
+		watch := capturePrint(t, func() { printWatchMessage(testTimeClient(), wsMsg{Kind: tt.kind, Payload: body, WorldTick: &tick}) })
 		for _, text := range []string{row, watch} {
-			if !strings.Contains(text, "Day #7") || !strings.Contains(text, tt.want) {
+			if !strings.Contains(text, testTickTime(7)) || !strings.Contains(text, tt.want) {
 				t.Fatal(text)
 			}
 		}

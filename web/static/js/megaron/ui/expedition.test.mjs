@@ -1,3 +1,6 @@
+import { State as timeTestState } from './../state.js';
+import { fmtTickTime as testTickTime } from './fmt_clock.js';
+timeTestState.CURRENT_TICK=0; timeTestState.TICK_SECONDS=60; timeTestState.TICK_ANCHOR_MS=Date.now();
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {configureExpedition,expeditionTicks,expeditionOrderText,expeditionMissionText} from './expedition.js';
@@ -13,9 +16,9 @@ test('duration follows changed server rules and refuses malformed or unavailable
 });
 test('mission shows authoritative ticks until turn, then its actual return reason',()=>{
  const e={area_q:9,area_r:2,length_ticks:12,turn_tick:108,home_by_tick:114};
- assert.match(expeditionMissionText(e),/turns home by day 108; home by day 114/);
+ assert.match(expeditionMissionText(e),new RegExp('turns home by '+testTickTime(108)+'; home by '+testTickTime(114)));
  e.homeward=true;e.turn_reason='no_path';
- assert.match(expeditionMissionText(e),/returning home — no reachable unexplored ground; home by day 114/);
+ assert.match(expeditionMissionText(e),new RegExp('returning home — no reachable unexplored ground; home by '+testTickTime(114)));
  assert.doesNotMatch(expeditionMissionText(e),/turns home/);
  assert.equal(expeditionMissionText(null),'');
 });

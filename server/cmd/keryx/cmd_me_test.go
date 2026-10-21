@@ -14,6 +14,9 @@ func TestMeOwnWorldTextAndJSON(t *testing.T) {
 			payload := map[string]any{"wanax_name": "Nestor", "founded_tick": founded, "cities": 2, "population": 320, "kharis": 4.5}
 			calls := 0
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if testWorldTimeResponse(w, r) {
+					return
+				}
 				calls++
 				if r.Method != "GET" || r.URL.Path != "/api/v1/worlds/my-world/me" || r.Header.Get("Authorization") != "Bearer own-token" {
 					t.Errorf("wrong own-world request %s %s", r.Method, r.URL.Path)
@@ -46,10 +49,10 @@ func TestMeOwnWorldTextAndJSON(t *testing.T) {
 				}
 				want := "Not yet founded"
 				if founded == 0 {
-					want = "Since day 0"
+					want = "Since " + testTickTime(0)
 				}
 				if founded == 37 {
-					want = "Since day 37"
+					want = "Since " + testTickTime(37)
 				}
 				for _, text := range []string{"Wanax: Nestor", want, "Cities: 2", "Population: 320", "Kharis: 4.5"} {
 					if !strings.Contains(out, text) {

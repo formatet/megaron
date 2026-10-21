@@ -1,9 +1,10 @@
+import { fmtTickTime } from './fmt_clock.js';
 import { esc } from './format.js';
 
 export function accountProfileHTML(profile) {
   const rows = [
     ['Wanax', profile.wanax_name],
-    ['Founded', profile.founded_tick == null ? 'Not yet founded' : `Since day ${profile.founded_tick}`],
+    ['Founded', profile.founded_tick == null ? 'Not yet founded' : `Since ${fmtTickTime(profile.founded_tick)}`],
     ['Cities', profile.cities],
     ['Population', profile.population],
     ['Kharis', Number(profile.kharis).toFixed(1)],

@@ -24,7 +24,7 @@ func TestLiveRemainder_ConditionalExpeditionAndTimber(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, part := range []string{"Planned expedition: 12 days", "with immediate departure, home by day 17", "First-leg arrival remains unknown", "No order sent"} {
+	for _, part := range []string{"Planned expedition: 12 days", "with immediate departure, home by time unavailable", "First-leg arrival remains unknown", "No order sent"} {
 		if !strings.Contains(out, part) {
 			t.Fatalf("missing %q: %s", part, out)
 		}

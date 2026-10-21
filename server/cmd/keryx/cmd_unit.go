@@ -310,7 +310,7 @@ func unitListCmd() *cobra.Command {
 					fmt.Println("  " + upkeep)
 				}
 				if u.Expedition != nil {
-					fmt.Println("  " + expeditionMissionText(u.Expedition))
+					fmt.Println("  " + expeditionMissionText(u.Expedition, c))
 				}
 				for _, o := range u.OrdersEnRoute {
 					fmt.Println("  " + ordersEnRouteLine(c, o))
@@ -608,7 +608,7 @@ func locationStr(c *Client, u unitRow, homes map[string]settlementPos) string {
 		}
 		until := ""
 		if u.WaitingUntilTick != nil {
-			until = fmt.Sprintf(" until %s", formatDay(*u.WaitingUntilTick, "%d"))
+			until = fmt.Sprintf(" until %s", formatWorldTime(c, *u.WaitingUntilTick))
 		}
 		return fmt.Sprintf("waiting off %sfor %s%s", shore, who, until)
 	}
@@ -954,7 +954,7 @@ Conquest choice (--mode, only matters when the target is an enemy settlement):
 				}
 				_ = json.Unmarshal(data, &receipt)
 				if receipt.Expedition != nil {
-					fmt.Print(" — " + expeditionMissionText(receipt.Expedition))
+					fmt.Print(" — " + expeditionMissionText(receipt.Expedition, c))
 				}
 			}
 			if intent == "land" {
@@ -1844,7 +1844,7 @@ func unitPickupCmd() *cobra.Command {
 			if err := json.Unmarshal(data, &resp); err != nil {
 				return err
 			}
-			fmt.Printf("Ship %s sails to (%d,%d), arriving %s, waiting %s there", resp.UnitID[:8], resp.ShoreQ, resp.ShoreR, formatDay(resp.ArrivalTick, "%d"), formatDays(resp.WaitTicks, "%d"))
+			fmt.Printf("Ship %s sails to (%d,%d), arriving %s, waiting %s there", resp.UnitID[:8], resp.ShoreQ, resp.ShoreR, formatWorldTime(c, resp.ArrivalTick), formatDays(resp.WaitTicks, "%d"))
 			if resp.MessengerID != nil {
 				fmt.Printf(" — a runner rides along, estimated %s to reach the unit and march it to the shore", formatDays(resp.EstimatedTicksToShore, "%d"))
 			}

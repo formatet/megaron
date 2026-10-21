@@ -1,3 +1,6 @@
+import { State as timeTestState } from './../state.js';
+import { fmtTickTime as testTickTime } from './fmt_clock.js';
+timeTestState.CURRENT_TICK=0; timeTestState.TICK_SECONDS=60; timeTestState.TICK_ANCHOR_MS=Date.now();
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { unitHoverLines } from './hover.js';
@@ -72,5 +75,5 @@ test('storms: a live one says where it drifts, a remembered one the day it was l
     storms: [{ tier: 'live', heading: 'NE' }, { tier: 'remembered', seen_tick: 3 }],
     placeName: () => '',
   });
-  assert.deepEqual(lines, ['Storm — drifting NE', 'Storm — last seen on day 3']);
+  assert.deepEqual(lines, ['Storm — drifting NE', "Storm — last seen " + testTickTime(3)]);
 });

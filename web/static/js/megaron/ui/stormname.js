@@ -1,3 +1,4 @@
+import { fmtTickTime } from './fmt_clock.js';
 // Naming a storm (megaron_plan_stormnamn.md): the first Wanax whose ship a storm strikes may
 // name it, once. GET /storms says which storms you may still name (can_name); the sea-hex
 // panel shows the name, or a small form if the right is yours.
@@ -9,7 +10,7 @@ import { esc } from './format.js';
 export function stormPanelHTML(storms) {
   if (!storms.length) return '';
   return storms.map(st => {
-    const when = st.tier === 'live' ? 'in sight' : `last seen on day ${st.seen_tick}`;
+    const when = st.tier === 'live' ? 'in sight' : `last seen ${fmtTickTime(st.seen_tick)}`;
     const title = st.name ? `Storm ${esc(st.name)}` : 'Storm';
     let html = `<div class="storm-note" style="font-size:.73rem;border-top:1px solid var(--border);padding:.4rem 0"><strong>${title}</strong> — ${when}`;
     if (st.can_name) {

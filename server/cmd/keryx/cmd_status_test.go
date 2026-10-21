@@ -526,7 +526,7 @@ func TestPrintWanaxGreeting_SaysTheDay(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		if r.URL.Path == "/api/v1/worlds/world-1" {
-			_, _ = w.Write([]byte(`{"current_tick":281}`))
+			_, _ = w.Write([]byte(`{"current_tick":0,"tick_seconds":60,"tick_anchor_at":"2026-10-21T12:00:00Z"}`))
 			return
 		}
 		_, _ = w.Write([]byte(`{"wanax_name":"Idomeneus"}`))
@@ -536,7 +536,7 @@ func TestPrintWanaxGreeting_SaysTheDay(t *testing.T) {
 	c := newClient(cfg)
 
 	out, _ := captureStdout(t, func() error { printWanaxGreeting(c, cfg.WorldID); return nil })
-	if !strings.Contains(out, "Wanax Idomeneus · day 281 of the world") {
+	if !strings.Contains(out, "Wanax Idomeneus · "+testTickTime(0)) {
 		t.Errorf("status header does not say the day:\n%s", out)
 	}
 }

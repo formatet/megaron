@@ -495,12 +495,12 @@ func deliveryETALine(c *Client, offer map[string]any) string {
 	silverAt, _ := offer["silver_arrives_at"].(string)
 	var parts []string
 	if at, ok := offer["goods_arrival_tick"].(float64); ok {
-		parts = append(parts, fmt.Sprintf("goods scheduled %s", formatDay(at, "%.0f")))
+		parts = append(parts, fmt.Sprintf("goods scheduled %s", formatWorldTime(c, at)))
 	} else if s := fmtLeg("goods", goodsAt); s != "" {
 		parts = append(parts, s)
 	}
 	if at, ok := offer["silver_arrival_tick"].(float64); ok {
-		parts = append(parts, fmt.Sprintf("silver scheduled %s", formatDay(at, "%.0f")))
+		parts = append(parts, fmt.Sprintf("silver scheduled %s", formatWorldTime(c, at)))
 	} else if s := fmtLeg("silver", silverAt); s != "" {
 		parts = append(parts, s)
 	}

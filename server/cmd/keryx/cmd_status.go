@@ -689,7 +689,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 					consN = len(c2)
 				}
 				fmt.Printf("Last %s: %d goods produced, %d consumed  ·  keryx ticklog for details\n\n",
-					formatDay(int(tk)), prodN, consN)
+					formatWorldTime(c, tk), prodN, consN)
 			}
 
 			// Resources: silver + the bronze-chain goods live in resources as
@@ -742,7 +742,7 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						if detail == "" {
 							detail = "none"
 						}
-						fmt.Printf("  Last meal: %s on day %.0f\n", detail, tick)
+						fmt.Printf("  Last meal: %s · %s\n", detail, formatWorldTime(c, tick))
 					}
 				}
 				if gRd, ok := res["grain"].(map[string]any); ok {
@@ -1119,18 +1119,14 @@ func fetchMe(c *Client) string {
 	return me.WanaxName
 }
 
-// printWanaxGreeting prints the top-of-status line addressing the player by
-// their Wanax name, and today's day of the world. Best-effort: silently
-// skipped if /auth/me fails, same convention as printNoTradeContactsHint; the day is dropped alone if the world read fails.
-// The day answers "what day is it?", which an AI playtest (2026-10-10) could
-// only answer through the database.
+// printWanaxGreeting addresses the Wanax and shows the current world anchor in clock time.
 func printWanaxGreeting(c *Client, worldID string) {
 	name := fetchMe(c)
 	if name == "" {
 		return
 	}
 	if tick, ok := fetchWorldTick(c, worldID); ok {
-		fmt.Printf("Wanax %s · %s of the world\n\n", name, formatDay(tick))
+		fmt.Printf("Wanax %s · %s\n\n", name, formatWorldTime(c, tick))
 		return
 	}
 	fmt.Printf("Wanax %s\n\n", name)

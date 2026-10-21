@@ -1,4 +1,5 @@
-import { fmtNum, fmtDays, fmtDay } from './fmt_num.js';
+import { fmtNum, fmtDays } from './fmt_num.js';
+import { fmtTickTime } from './fmt_clock.js';
 // Rules come from Temenos; client controls never maintain their own tunables.
 export function configureExpedition(input, rules) {
   if (!input) return;
@@ -20,6 +21,6 @@ export function expeditionOrderText(q, r, ticks, rules) {
 export function expeditionMissionText(e) {
   if (!e) return '';
   const reasons = {half_time:'half the time reached',area_known:'area explored',no_path:'no reachable unexplored ground',recalled:'recalled'};
-  const state = e.homeward ? 'returning home' + (e.turn_reason ? ' — ' + (reasons[e.turn_reason] || e.turn_reason) : '') : `turns home by ${fmtDay(e.turn_tick)}`;
-  return `Expedition around (${e.area_q},${e.area_r}), ${fmtDays(e.length_ticks)}; ${state}; home by ${fmtDay(e.home_by_tick)}.`;
+  const state = e.homeward ? 'returning home' + (e.turn_reason ? ' — ' + (reasons[e.turn_reason] || e.turn_reason) : '') : `turns home by ${fmtTickTime(e.turn_tick)}`;
+  return `Expedition around (${e.area_q},${e.area_r}), ${fmtDays(e.length_ticks)}; ${state}; home by ${fmtTickTime(e.home_by_tick)}.`;
 }

@@ -1,4 +1,5 @@
-import { fmtNum, fmtDays, fmtDay } from '../fmt_num.js';
+import { fmtNum, fmtDays } from '../fmt_num.js';
+import { fmtTickTime } from '../fmt_clock.js';
 import { State } from '../../state.js';
 import { fetchAuth } from '../../api.js';
 import { serverNow } from '../../clock.js';
@@ -277,7 +278,7 @@ export function formatCargoRows(trades, nowMs) {
   return trades.map(t => {
     const etaMs = new Date(t.arrives_at).getTime() - nowMs;
     let eta;
-    if (Number.isInteger(t.arrival_tick)) eta = `${fmtDay(t.arrival_tick)}`;
+    if (Number.isInteger(t.arrival_tick)) eta = `${fmtTickTime(t.arrival_tick)}`;
     else if (etaMs <= 0) eta = 'arrived';
     else if (etaMs < 3600000) eta = `${Math.floor(etaMs / 60000)}m`;
     else eta = `${Math.floor(etaMs / 3600000)}h ${Math.floor((etaMs % 3600000) / 60000)}m`;
@@ -396,7 +397,7 @@ export async function startTransfer() {
       : `${fmtNum(qty)} ${good} sent — physical cargo, can be intercepted en route.`;
     if (d.kind === 'gift') resultEl.textContent = 'Gift: ' + resultEl.textContent;
     if (Number.isInteger(d.arrival_tick)) {
-      resultEl.textContent += ` Arrives on ${fmtDay(d.arrival_tick)} (journey: ${fmtDays(d.travel_ticks)}).`;
+      resultEl.textContent += ` Arrives ${fmtTickTime(d.arrival_tick)} (journey: ${fmtDays(d.travel_ticks)}).`;
     }
     refreshCargoInTransit();
   } else {

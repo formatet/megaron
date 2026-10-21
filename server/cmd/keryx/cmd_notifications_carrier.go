@@ -5,7 +5,8 @@ import (
 	"fmt"
 )
 
-func printMessengerFateLine(n notificationItem) {
+func printMessengerFateLine(n notificationItem, clients ...*Client) {
+	c := firstTimeClient(clients)
 	var b struct {
 		Reason   string `json:"reason"`
 		HomeTick *int   `json:"home_tick"`
@@ -33,9 +34,9 @@ func printMessengerFateLine(n notificationItem) {
 		return
 	}
 	if n.Kind == "MessengerRescuedAtSea" {
-		home := "Home on an unknown day."
+		home := "Home time unavailable."
 		if b.HomeTick != nil {
-			home = fmt.Sprintf("Home on %s.", formatDay(*b.HomeTick, "%d"))
+			home = fmt.Sprintf("Home %s.", formatWorldTime(c, *b.HomeTick))
 		}
 		account, landed := "", false
 		for _, j := range b.Journey {
@@ -87,9 +88,9 @@ func printMessengerFateLine(n notificationItem) {
 			to += fmt.Sprintf(" at (%d, %d)", *d.Q, *d.R)
 		}
 	}
-	sent := "Sent on an unknown day"
+	sent := "Sent time unavailable"
 	if b.Envelope.SentTick != nil {
-		sent = fmt.Sprintf("Sent on %s", formatDay(*b.Envelope.SentTick, "%d"))
+		sent = fmt.Sprintf("Sent %s", formatWorldTime(c, *b.Envelope.SentTick))
 	}
 	reason := " with no surviving rescue ship."
 	if b.Reason == "storm" {

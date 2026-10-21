@@ -69,7 +69,7 @@ func ticklogCmd() *cobra.Command {
 				return nil
 			}
 			for _, t := range resp.Ticks {
-				fmt.Printf("── %s ──\n", formatDay(t.Tick))
+				fmt.Printf("── %s ──\n", formatWorldTime(c, t.Tick))
 				fmt.Printf("  Prod:  %s\n", fmtFlows(t.Production))
 				fmt.Printf("  Cons:  %s\n", fmtFlows(t.Consumption))
 				if len(t.Events) == 0 {

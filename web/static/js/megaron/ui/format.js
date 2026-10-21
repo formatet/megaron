@@ -5,7 +5,8 @@
 // (clock.js sits on the same low layer, so importing it keeps that promise.)
 import { unitTypeLabel } from './actornames.js';
 import { giftText } from './gifts.js';
-import { fmtNum, fmtDays, fmtDay } from './fmt_num.js';
+import { fmtNum, fmtDays } from './fmt_num.js';
+import { fmtTickTime } from './fmt_clock.js';
 import { fmtClock } from './fmt_clock.js';
 import { serverNow } from '../clock.js';
 import { msUntilWorldTick } from '../world_time.js';
@@ -407,7 +408,7 @@ export function notifText(kind, body) {
           landed = true;
         }
       }
-      const home = Number.isInteger(body.home_tick) ? `Home on ${fmtDay(body.home_tick)}.` : 'Home on an unknown day.';
+      const home = Number.isInteger(body.home_tick) ? `Home ${fmtTickTime(body.home_tick)}.` : 'Home time unavailable.';
       return home + ' ' + (account || 'Your runner brings an account of its rescue at sea') + '.';
     }
     case 'MessengerReturned': {
@@ -467,7 +468,7 @@ export function notifText(kind, body) {
       const owner = body.owner ? `${body.owner}'s` : 'An unknown';
       const force = unitTypeLabel(body.unit_type) || 'force';
       const size = body.size ? ` (${body.size})` : '';
-      const lands = body.arrive_tick ? ` — lands ${fmtDay(body.arrive_tick)}` : '';
+      const lands = body.arrive_tick != null ? ` — lands ${fmtTickTime(body.arrive_tick)}` : '';
       // The threatened city is the urgent end of the irreversibility gradient
       // and must not read like a march merely passing through.
       if (body.threatens_name) {
@@ -484,7 +485,7 @@ export function notifText(kind, body) {
       const size = body.size ? ` (${body.size})` : '';
       const heading = body.heading ? `, heading ${body.heading}` : '';
       if (body.threatens_name) {
-        const when = body.eta_if_tick != null ? ` — there by ${fmtDay(body.eta_if_tick)} if that is its goal` : '';
+        const when = body.eta_if_tick != null ? ` — there by ${fmtTickTime(body.eta_if_tick)} if that is its goal` : '';
         return `${owner} ${force}${size} is heading for ${body.threatens_name}'s lands${when}`;
       }
       return `${owner} ${force}${size} sighted at (${body.q},${body.r})${heading}`;
@@ -937,7 +938,7 @@ export function colonyFoundedGrainLine(body) {
 export function messengerEnvelopeText(body) {
   const e = body.envelope || {};
   const { from, to } = messengerEnvelopeParties(e);
-  const sent = Number.isInteger(e.sent_tick) ? `Sent on ${fmtDay(e.sent_tick)}` : 'Sent on an unknown day';
+  const sent = Number.isInteger(e.sent_tick) ? `Sent ${fmtTickTime(e.sent_tick)}` : 'Sent time unavailable';
   const lines = [sent, `From ${from} to ${to}`];
   if (e.message_text != null) lines.push(`Letter:\n${e.message_text}`);
   if (e.reply_text != null) lines.push(`Reply:\n${e.reply_text}`);

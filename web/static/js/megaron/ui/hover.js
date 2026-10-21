@@ -1,3 +1,4 @@
+import { fmtTickTime } from './fmt_clock.js';
 // ── Hover — what the map tooltip says about the units on a hex ──
 //
 // Pure: map.js works out WHERE every actor is drawn right now (the same
@@ -82,7 +83,7 @@ export function unitHoverLines({ own = [], foreign = [], caravans = [], runners 
     const title = st.name ? `Storm ${st.name}` : 'Storm';
     lines.push(st.tier === 'live'
       ? `${title}${st.heading ? ' — drifting ' + st.heading : ''}`
-      : `${title} — last seen on day ${st.seen_tick}`);
+      : `${title} — last seen ${fmtTickTime(st.seen_tick)}`);
   }
   return lines;
 }

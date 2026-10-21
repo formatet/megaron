@@ -1,3 +1,6 @@
+import { State as timeTestState } from './../state.js';
+import { fmtTickTime as testTickTime } from './fmt_clock.js';
+timeTestState.CURRENT_TICK=0; timeTestState.TICK_SECONDS=60; timeTestState.TICK_ANCHOR_MS=Date.now();
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { notifText, fmtSilver, formatApiError, purseLine } from './format.js';
@@ -486,7 +489,7 @@ test('ForeignMarchSightedV2 says which way — never where — and an arrival on
   assert.equal(
     notifText('ForeignMarchSightedV2', { owner: 'Minos', unit_type: 'spearman', size: 100, q: 15, r: 0, heading: 'south-east',
       threatens_name: 'Mycenae', eta_if_tick: 3017 }),
-    "Minos's Spearmen (100) is heading for Mycenae's lands — there by day 3,017 if that is its goal",
+    "Minos's Spearmen (100) is heading for Mycenae's lands — there by " + testTickTime(3017) + " if that is its goal",
   );
 });
 

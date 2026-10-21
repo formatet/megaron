@@ -143,7 +143,7 @@ func printWatchMessage(c *Client, m wsMsg) {
 	if tier := subsistenceTier(n); tier != "" {
 		kind = m.Kind + " [" + subsistenceTierLabel(tier) + "]"
 	}
-	fmt.Printf(" [%s]  %s\n", notificationDay(n), kind)
+	fmt.Printf(" [%s]  %s\n", notificationDay(n, c), kind)
 	printNotificationDetail(c, n)
 }
 

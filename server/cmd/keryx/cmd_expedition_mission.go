@@ -12,15 +12,16 @@ type expeditionMission struct {
 	TurnReason  *string `json:"turn_reason,omitempty"`
 }
 
-func expeditionMissionText(e *expeditionMission) string {
-	state := fmt.Sprintf("turns home by %s", formatDay(e.TurnTick, "%d"))
+func expeditionMissionText(e *expeditionMission, clients ...*Client) string {
+	c := firstTimeClient(clients)
+	state := fmt.Sprintf("turns home by %s", formatWorldTime(c, e.TurnTick))
 	if e.Homeward {
 		state = "returning home"
 		if e.TurnReason != nil {
 			state += " — " + expeditionReason(*e.TurnReason)
 		}
 	}
-	return fmt.Sprintf("Expedition around (%d,%d), %s; %s; home by %s", e.AreaQ, e.AreaR, formatDays(e.LengthTicks, "%d"), state, formatDay(e.HomeByTick, "%d"))
+	return fmt.Sprintf("Expedition around (%d,%d), %s; %s; home by %s", e.AreaQ, e.AreaR, formatDays(e.LengthTicks, "%d"), state, formatWorldTime(c, e.HomeByTick))
 }
 func expeditionReason(reason string) string {
 	switch reason {

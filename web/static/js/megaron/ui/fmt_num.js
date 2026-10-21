@@ -8,9 +8,8 @@ export function fmtNum(value) {
   return (Object.is(rounded, -0) ? 0 : rounded).toLocaleString('en-US', { maximumFractionDigits: 1 });
 }
 
-// All world durations and absolute days share these formatters.
+// Durations are days of the world; absolute instants use the shared clock formatter.
 export function fmtDays(value, qualifier = '') {
   const number = fmtNum(value);
   return number + ' ' + (qualifier ? qualifier + ' ' : '') + (Number(number.replaceAll(',', '')) === 1 ? 'day' : 'days');
 }
-export function fmtDay(value) { return 'day ' + fmtNum(value); }
