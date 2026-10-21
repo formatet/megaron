@@ -9,6 +9,7 @@ import (
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -48,7 +49,20 @@ func StartReturnLeg(ctx context.Context, pool *pgxpool.Pool, sched *events.Sched
 		return StartReturnLegResult{}, fmt.Errorf("start return leg: begin: %w", err)
 	}
 	defer tx.Rollback(ctx)
+	result, err := StartReturnLegTx(ctx, tx, sched, worldID, messengerID, now, currentTick, replyText)
+	if err != nil || !result.Started {
+		return result, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return StartReturnLegResult{}, fmt.Errorf("start return leg: commit: %w", err)
+	}
+	return result, nil
+}
 
+// StartReturnLegTx is StartReturnLeg inside the caller's transaction: a trade
+// offer that ends (accepted, declined, cancelled) sends its bearer home in the
+// same TX that ends it, instead of holding it to the offer's expiry.
+func StartReturnLegTx(ctx context.Context, tx pgx.Tx, sched *events.Scheduler, worldID, messengerID uuid.UUID, now time.Time, currentTick int, replyText *string) (StartReturnLegResult, error) {
 	var status string
 	var destID uuid.UUID
 	var originID *uuid.UUID
@@ -122,10 +136,6 @@ func StartReturnLeg(ctx context.Context, pool *pgxpool.Pool, sched *events.Sched
 			ReturnPayload{MessengerID: messengerID}, dueTick); err != nil {
 			return StartReturnLegResult{}, fmt.Errorf("start return leg: schedule return: %w", err)
 		}
-	}
-
-	if err := tx.Commit(ctx); err != nil {
-		return StartReturnLegResult{}, fmt.Errorf("start return leg: commit: %w", err)
 	}
 
 	return StartReturnLegResult{
