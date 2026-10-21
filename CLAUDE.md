@@ -154,7 +154,9 @@ navigation through `auth.WebMiddleware`; all API calls use Bearer.) Wired in
 - **Lazy-tuple suffixes:** `*_amount`, `*_rate`, `*_cap`, `*_calc_tick` — NOT `*_last_calc_at`.
 - **Time = ticks internally** (Timothy 2026-10-10): code, comments, plans, vault, todo and agent messages say
   **ticks**, the only fixed time the server knows. **"Days" only on player surfaces** (web, keryx output, Codex),
-  where 1 tick reads as 1 day. Never convert ticks to hours.
+  where 1 tick reads as 1 day — and only for **durations** ("food for 12 days"). **When something happens is
+  wall clock** ("arrives today 18:34"); **no "day N" numbers in player text** (Timothy 2026-10-21,
+  `megaron_dagsverkesskalan` §Tidsangivelser). Never convert ticks to hours.
 - **Silver is a good in `settlement_goods`** (mig 057) — **no `silver_*`/`gold_*` columns on
   settlements, no exceptions.**
   Prefer **silver** over "gold" for the currency everywhere; "gold" is reserved for a future luxury good.
