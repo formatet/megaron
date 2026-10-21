@@ -11,8 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// TransferDestinations exposes the same foreign destinations the letter gate
-// permits, plus own cities. Origin uses a province id; destinations use city ids.
+// TransferDestinations exposes the foreign destinations whose exact location is known on the map, plus own cities. Origin uses a province id; destinations use city ids.
 func (h *ProvinceHandler) TransferDestinations(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
@@ -38,8 +37,9 @@ func (h *ProvinceHandler) TransferDestinations(w http.ResponseWriter, r *http.Re
 		writeError(w, 403, "not your settlement")
 		return
 	}
-	origins := loadVisibleOrigins(r.Context(), h.pool, worldID, player)
-	rows, err := h.pool.Query(r.Context(), `SELECT s.id,s.name,s.owner_id,COALESCE(NULLIF(pl.wanax_name,''),pl.username),p.map_q,p.map_r FROM settlements s JOIN provinces p ON p.id=s.province_id JOIN players pl ON pl.id=s.owner_id WHERE s.world_id=$1 AND s.state='active' AND s.province_id<>$2 ORDER BY s.name,s.id`, worldID, origin)
+	eyes := loadLiveEyes(r.Context(), h.pool, worldID, player, h.clk.Now())
+	remembered := loadRememberedTiles(r.Context(), h.pool, worldID, player)
+	rows, err := h.pool.Query(r.Context(), `SELECT s.id,s.name,s.owner_id,COALESCE(NULLIF(pl.wanax_name,''),pl.username),p.map_q,p.map_r,p.terrain_type FROM settlements s JOIN provinces p ON p.id=s.province_id JOIN players pl ON pl.id=s.owner_id WHERE s.world_id=$1 AND s.state='active' AND s.province_id<>$2 ORDER BY s.name,s.id`, worldID, origin)
 	if err != nil {
 		writeError(w, 500, "could not load transfer destinations")
 		return
@@ -56,12 +56,13 @@ func (h *ProvinceHandler) TransferDestinations(w http.ResponseWriter, r *http.Re
 	for rows.Next() {
 		var d destination
 		var q, r int
-		if err := rows.Scan(&d.ID, &d.Name, &d.Owner, &d.OwnerName, &q, &r); err != nil {
+		var terrain string
+		if err := rows.Scan(&d.ID, &d.Name, &d.Owner, &d.OwnerName, &q, &r, &terrain); err != nil {
 			writeError(w, 500, "could not read transfer destination")
 			return
 		}
 		d.Own = d.Owner == player
-		if d.Own || province.VisibleFrom(province.MapPosition{Q: q, R: r}, origins, 6) {
+		if d.Own || knownToPlayer(eyes, remembered, province.MapPosition{Q: q, R: r}, terrain) {
 			list = append(list, d)
 		}
 	}

@@ -3260,8 +3260,8 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 	var destQ, destR int
 	var destCoastal bool
 	var destOwnerID *uuid.UUID
-	var destName, destOwnerName, destState string
-	err = h.pool.QueryRow(r.Context(), `SELECT prov.map_q,prov.map_r,COALESCE(prov.coastal,false),s.owner_id,s.name,COALESCE(NULLIF(pl.wanax_name,''),pl.username,''),s.state FROM settlements s JOIN provinces prov ON prov.id=s.province_id LEFT JOIN players pl ON pl.id=s.owner_id WHERE s.id=$1 AND s.world_id=$2`, req.DestinationID, worldID).Scan(&destQ, &destR, &destCoastal, &destOwnerID, &destName, &destOwnerName, &destState)
+	var destName, destOwnerName, destState, destTerrain string
+	err = h.pool.QueryRow(r.Context(), `SELECT prov.map_q,prov.map_r,COALESCE(prov.coastal,false),s.owner_id,s.name,COALESCE(NULLIF(pl.wanax_name,''),pl.username,''),s.state,prov.terrain_type FROM settlements s JOIN provinces prov ON prov.id=s.province_id LEFT JOIN players pl ON pl.id=s.owner_id WHERE s.id=$1 AND s.world_id=$2`, req.DestinationID, worldID).Scan(&destQ, &destR, &destCoastal, &destOwnerID, &destName, &destOwnerName, &destState, &destTerrain)
 	if err != nil {
 		writeError(w, 404, "destination settlement not found")
 		return
@@ -3276,8 +3276,8 @@ func (h *ProvinceHandler) Trade(w http.ResponseWriter, r *http.Request) {
 			writeError(w, 403, "destination settlement is not active")
 			return
 		}
-		if !province.VisibleFrom(province.MapPosition{Q: destQ, R: destR}, loadVisibleOrigins(r.Context(), h.pool, worldID, playerID), 6) {
-			writeError(w, 403, "destination is not within your scouted range — send a scout or march closer before contacting this city")
+		if !knownToPlayer(loadLiveEyes(r.Context(), h.pool, worldID, playerID, h.clk.Now()), loadRememberedTiles(r.Context(), h.pool, worldID, playerID), province.MapPosition{Q: destQ, R: destR}, destTerrain) {
+			writeError(w, 403, "this city is not known on your map — discover or contact it before sending a gift")
 			return
 		}
 	}

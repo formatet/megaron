@@ -490,3 +490,62 @@ func TestGiftLimpedRaidSeparatesReturnFromLoss(t *testing.T) {
 type limpedGiftDice struct{}
 
 func (limpedGiftDice) Float64() float64 { return .5 }
+
+func TestGiftOldRadiusHaloDoesNotRevealOrPermitDestination(t *testing.T) {
+	for _, remembered := range []bool{false, true} {
+		t.Run(map[bool]string{false: "unknown_inside_old_halo", true: "remembered_city"}[remembered], func(t *testing.T) {
+			f := giftFixture(t, false)
+			ctx := context.Background()
+			if _, err := f.pool.Exec(ctx, `UPDATE provinces SET map_q=5 WHERE id=(SELECT province_id FROM settlements WHERE id=$1)`, f.destID); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := f.pool.Exec(ctx, `INSERT INTO map_tiles(world_id,q,r,terrain) SELECT $1,q,0,'plains' FROM generate_series(4,5) q`, f.worldID); err != nil {
+				t.Fatal(err)
+			}
+			if remembered {
+				if _, err := f.pool.Exec(ctx, `INSERT INTO player_scouted_tiles(world_id,player_id,q,r) VALUES($1,$2,5,0)`, f.worldID, f.playerID); err != nil {
+					t.Fatal(err)
+				}
+			}
+			ph := NewProvinceHandler(f.pool, f.scheduler, f.clk, nil, nil)
+			f.router.Get("/worlds/{worldID}/provinces/{provinceID}/trade/destinations", ph.TransferDestinations)
+			req := httptest.NewRequest("GET", "/worlds/"+f.worldID.String()+"/provinces/"+f.originProvince.String()+"/trade/destinations", nil)
+			req.Header.Set("Authorization", "Bearer "+f.token)
+			response := httptest.NewRecorder()
+			f.router.ServeHTTP(response, req)
+			if response.Code != 200 {
+				t.Fatalf("list %d: %s", response.Code, response.Body.String())
+			}
+			var rows []struct {
+				ID uuid.UUID `json:"settlement_id"`
+			}
+			if err := json.Unmarshal(response.Body.Bytes(), &rows); err != nil {
+				t.Fatal(err)
+			}
+			if (len(rows) == 1 && rows[0].ID == f.destID) != remembered {
+				t.Fatalf("known=%v destinations=%s", remembered, response.Body.String())
+			}
+			code, body := f.post(t, "/worlds/"+f.worldID.String()+"/provinces/"+f.originProvince.String()+"/trade", map[string]any{"destination_id": f.destID, "good_key": "silver", "quantity": 50})
+			want := 403
+			if remembered {
+				want = 201
+			}
+			if code != want {
+				t.Fatalf("known=%v POST %d: %v, want%d", remembered, code, body, want)
+			}
+			if !remembered {
+				var amount float64
+				var movers int
+				if err := f.pool.QueryRow(ctx, `SELECT amount FROM settlement_goods WHERE settlement_id=$1 AND good_key='silver'`, f.originID).Scan(&amount); err != nil {
+					t.Fatal(err)
+				}
+				if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM transports WHERE world_id=$1`, f.worldID).Scan(&movers); err != nil {
+					t.Fatal(err)
+				}
+				if amount != 100000 || movers != 0 {
+					t.Fatalf("refusal debited money or dispatched: amount%v movers%d", amount, movers)
+				}
+			}
+		})
+	}
+}
