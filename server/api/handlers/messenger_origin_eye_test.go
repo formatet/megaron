@@ -169,7 +169,7 @@ func TestLoadLiveEyes_SentMessageSeesOwnOriginNotDestination(t *testing.T) {
 		t.Fatalf("response carries passage_status for a land route, want none: %v", resp)
 	}
 
-	eyes := province.LoadLiveEyes(ctx, f.pool, f.worldID, senderID, f.clk.Now())
+	eyes := loadLiveEyes(ctx, f.pool, f.worldID, senderID, f.clk.Now())
 	var gotEye *province.Eye
 	for i := range eyes {
 		if eyes[i].Kind == province.EyeLandUnit {
@@ -247,7 +247,7 @@ func TestLoadLiveEyes_HostSentMessageSeesHostPositionNotDestination(t *testing.T
 		t.Fatalf("SendFromHost status = %d, want 201 (%v)", code, resp)
 	}
 
-	eyes := province.LoadLiveEyes(ctx, f.pool, f.worldID, senderID, f.clk.Now())
+	eyes := loadLiveEyes(ctx, f.pool, f.worldID, senderID, f.clk.Now())
 	var gotEye *province.Eye
 	for i := range eyes {
 		if eyes[i].Kind == province.EyeLandUnit {

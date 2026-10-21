@@ -52,7 +52,7 @@ func TestPlacementLiveEyesTransaction(t *testing.T) {
 				t.Fatal(err)
 			}
 			defer tx.Rollback(ctx)
-			fromTX := province.LoadLiveEyes(ctx, tx, f.worldID, owner, now)
+			fromTX := loadLiveEyes(ctx, tx, f.worldID, owner, now)
 			var probe int
 			if err = tx.QueryRow(ctx, `SELECT 1`).Scan(&probe); err != nil {
 				t.Fatalf("eyes poisoned transaction: %v", err)
@@ -88,7 +88,7 @@ func TestPlacementLiveEyesTransaction(t *testing.T) {
 			defer single.Close()
 			limited, cancel := context.WithTimeout(ctx, 3*time.Second)
 			defer cancel()
-			fromPool := province.LoadLiveEyes(limited, single, f.worldID, owner, now)
+			fromPool := loadLiveEyes(limited, single, f.worldID, owner, now)
 			if err = limited.Err(); err != nil {
 				t.Fatalf("one-connection pool starved: %v", err)
 			}

@@ -1035,8 +1035,17 @@ func loadVisibleOrigins(ctx context.Context, pool *pgxpool.Pool, worldID, player
 // without importing api/handlers, which G1 forbids). See province.LoadLiveEyes for
 // the full doc comment — behavior is unchanged, this just keeps every existing
 // call site working against pools or the caller's existing transaction.
-func loadLiveEyes(ctx context.Context, pool province.Queryer, worldID, playerID uuid.UUID, now time.Time) []province.Eye {
-	return province.LoadLiveEyes(ctx, pool, worldID, playerID, now)
+type liveEyeDB interface {
+	province.Queryer
+	tick.Queryer
+}
+
+func loadLiveEyes(ctx context.Context, pool liveEyeDB, worldID, playerID uuid.UUID, now time.Time) []province.Eye {
+	anchor, err := tick.LoadAnchor(ctx, pool, worldID)
+	if err != nil {
+		return nil
+	}
+	return province.LoadLiveEyes(ctx, pool, worldID, playerID, now, anchor.MilliAt(now))
 }
 
 // interpolatedEyePos is a thin wrapper over province.InterpolateAlongPath (lifted

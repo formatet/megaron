@@ -84,7 +84,7 @@ func TestLoadLiveEyes_CalledBackSeesPortNotFarShore(t *testing.T) {
 	// START. Buggy: FindPath(destination(7,0) -> origin(0,0)) fails (sea
 	// blocks the courier, 3b-4 R3) and the code falls back to sq,sr — the
 	// destination (7,0) — verbatim. Fixed: the leg starts at the port (2,0).
-	eyes := province.LoadLiveEyes(ctx, f.pool, f.worldID, f.initiatorID, f.clk.Now())
+	eyes := loadLiveEyes(ctx, f.pool, f.worldID, f.initiatorID, f.clk.Now())
 	var gotEye *province.Eye
 	for i := range eyes {
 		if eyes[i].Kind == province.EyeLandUnit {

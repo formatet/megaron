@@ -9,6 +9,7 @@ import (
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 
@@ -89,6 +90,10 @@ type sightedMarch struct {
 // can currently see one, then re-enqueues itself.
 func (h *MarchSightingHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
 	now := h.clk.Now()
+	anchor, err := tick.LoadAnchor(ctx, h.pool, e.WorldID)
+	if err != nil {
+		return err
+	}
 
 	marches, err := h.loadMarches(ctx, e.WorldID, now)
 	if err != nil {
@@ -110,7 +115,7 @@ func (h *MarchSightingHandler) Handle(ctx context.Context, e events.ScheduledEve
 	}
 
 	for _, playerID := range receivers {
-		eyes := province.LoadLiveEyes(ctx, h.pool, e.WorldID, playerID, now)
+		eyes := province.LoadLiveEyes(ctx, h.pool, e.WorldID, playerID, now, anchor.MilliAt(now))
 		if len(eyes) == 0 {
 			continue
 		}

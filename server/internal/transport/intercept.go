@@ -221,7 +221,7 @@ func (h *InterceptScanHandler) Handle(ctx context.Context, e events.ScheduledEve
 		}
 		eyes, cached := eyesByOwner[interceptor]
 		if !cached {
-			eyes = province.LoadLiveEyes(ctx, h.pool, e.WorldID, interceptor, now)
+			eyes = province.LoadLiveEyes(ctx, h.pool, e.WorldID, interceptor, now, anchor.MilliAt(now))
 			eyesByOwner[interceptor] = eyes
 		}
 		if !province.AnyEyeSees(eyes, pos, terrain) {

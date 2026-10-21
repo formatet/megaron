@@ -85,7 +85,7 @@ func TestLoadLiveEyes_AwaitingPassageSeesPortNotFarShore(t *testing.T) {
 	}
 	tc.Advance(24 * time.Hour)
 
-	eyes := province.LoadLiveEyes(ctx, f.pool, f.worldID, f.initiatorID, f.clk.Now())
+	eyes := loadLiveEyes(ctx, f.pool, f.worldID, f.initiatorID, f.clk.Now())
 	var gotEye *province.Eye
 	for i := range eyes {
 		if eyes[i].Kind == province.EyeLandUnit {

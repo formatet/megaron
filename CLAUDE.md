@@ -112,7 +112,7 @@ Go (minimum version in `server/go.mod`) · chi · PostgreSQL 16 (pgx/v5) · Redi
 ```
 agora, ai, auth, clock, gossip, hexgrid, movement, notify, religion, unit, unit/shipnames, world  ← zero internal deps
   ↑
-province(→hexgrid)
+province(→hexgrid,movement)
   ↑
 events(→clock) · carrier(→events; owns physical passenger witnesses, never messenger state) · tick(→clock,events) · chronicle(→events) · settlement(→province)
   ↑
@@ -129,7 +129,8 @@ api/handlers, cmd/server  ← may use all (the only ones that may import notify 
 ```
 The executable G1 rule owner is `server/cmd/server/architecture_test.go` (`g1Allowed`).
 The guard reads production imports through `go list`; unknown internal packages fail until classified.
-`province → hexgrid` owns shared geometry; `economy → province` consumes catalogues and routing.
+`province → hexgrid` owns shared geometry; `province → movement` consumes the saved march
+route decoder and physical tick position; upper consumers supply `tick.Anchor.MilliAt`. `economy → province` consumes catalogues and routing.
 Both are intentional downward dependencies. Subpackages are classified individually.
 
 A package may import **downward only**. Upward communication goes via event emission.

@@ -24,7 +24,7 @@ var g1Allowed = map[string][]string{
 	"agora": {}, "ai": {}, "auth": {}, "clock": {}, "gossip": {}, "hexgrid": {},
 	"movement": {}, "notify": {}, "religion": {}, "unit": {},
 	"unit/shipnames": {}, "world": {},
-	"province": {"hexgrid"},
+	"province": {"hexgrid", "movement"},
 	"events":   {"clock"}, "tick": {"clock", "events"},
 	"carrier":   {"events"},
 	"chronicle": {"events"}, "settlement": {"province"},

@@ -10,23 +10,14 @@ package combat
 // just the old code, unchanged).
 
 import (
-	"encoding/json"
 	"math"
 
 	"formatet/megaron/server/internal/movement"
 	"formatet/megaron/server/internal/province"
-	"formatet/megaron/server/internal/unit"
 )
 
-// StoredRoute is units.march_route's JSON shape (R1). Costs[i] is the cost
-// of entering Hexes[i+1] (movement.Move's own convention), in thousandths of
-// a terrain-hour.
-type StoredRoute struct {
-	StartTick int      `json:"start_tick"`
-	EndTick   int      `json:"end_tick"`
-	Hexes     [][2]int `json:"hexes"`
-	Costs     []int64  `json:"costs"`
-}
+// StoredRoute is the shared saved physical march representation.
+type StoredRoute = movement.StoredRoute
 
 // BuildRoute turns a freshly-found path and its per-step costs (from
 // province.TileGraph.StepHours/StepHoursDB, over that SAME path — never a
@@ -57,38 +48,9 @@ func BuildRoute(path []province.MapPosition, stepHours []float64, startTick, end
 	return r, true
 }
 
-// Move converts a StoredRoute to movement's pure Move shape.
-func (r StoredRoute) Move() movement.Move {
-	hexes := make([]movement.Hex, len(r.Hexes))
-	for i, h := range r.Hexes {
-		hexes[i] = movement.Hex{Q: h[0], R: h[1]}
-	}
-	return movement.Move{StartTick: r.StartTick, EndTick: r.EndTick, Hexes: hexes, Costs: r.Costs}
-}
-
-// LoadActiveRoute parses raw (units.march_route) and reports whether it is
-// the saved route for the unit's CURRENT march (invariant 2): status must be
-// "marching" and the route's own StartTick/EndTick must equal the unit's
-// current depart_tick/arrive_tick — a route from an earlier march never
-// matches a later one, so no write site needs to null the column out when a
-// march ends. Any mismatch, nil/empty raw, unparseable JSON or a structurally
-// invalid route returns ok=false: the caller falls back to the pre-existing
-// code path, unchanged.
+// LoadActiveRoute forwards to the shared decoder used by live vision.
 func LoadActiveRoute(raw []byte, status string, departTick, arriveTick *int) (StoredRoute, bool) {
-	if status != string(unit.StatusMarching) || len(raw) == 0 || departTick == nil || arriveTick == nil {
-		return StoredRoute{}, false
-	}
-	var r StoredRoute
-	if err := json.Unmarshal(raw, &r); err != nil {
-		return StoredRoute{}, false
-	}
-	if r.StartTick != *departTick || r.EndTick != *arriveTick {
-		return StoredRoute{}, false
-	}
-	if err := r.Move().Validate(); err != nil {
-		return StoredRoute{}, false
-	}
-	return r, true
+	return movement.LoadActiveRoute(raw, status, departTick, arriveTick)
 }
 
 // RoutePositionAt is where the unit is at Milli m along its saved route.

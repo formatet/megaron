@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"formatet/megaron/server/internal/hexgrid"
+	"formatet/megaron/server/internal/movement"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -21,13 +22,10 @@ import (
 // contacts are NOT eyes — they are tier-2 memory (see loadRememberedTiles in
 // api/handlers/world.go).
 //
-// A marching unit's stored (q,r) is its ORIGIN hex — March (unit.go) never moves it,
-// only target_q/target_r/departs_at/arrives_at are set at dispatch. So a marching
-// unit's eye is placed at its interpolated position along its route (see
-// InterpolateAlongPath) instead of the stored origin, or the fog bubble would sit at
-// the harbour for the whole voyage instead of tracking the ship. now must come from
-// the caller's injected clock.Clock — never time.Now() (CLAUDE.md Time rule).
-func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, now time.Time) []Eye {
+// A marching unit uses its saved weighted tick route, shared with the marker.
+// at must be the caller's tick.Anchor.MilliAt(now); province has no clock/tick
+// dependency. Absent/stale legacy routes alone use wall-clock path interpolation.
+func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, now time.Time, at int64) []Eye {
 	var eyes []Eye
 
 	sRows, err := db.Query(ctx,
@@ -53,7 +51,7 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 	}
 
 	uRows, err := db.Query(ctx,
-		`SELECT status, q, r, target_q, target_r, category, type, departs_at, arrives_at
+		`SELECT status, q, r, target_q, target_r, category, type, departs_at, arrives_at, depart_tick, arrive_tick, march_route
 		 FROM units
 		 WHERE world_id = $1 AND owner_id = $2
 		   AND status NOT IN ('embarked', 'disbanded')
@@ -66,11 +64,13 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 			q, r                    int
 			targetQ, targetR        *int
 			departsAt, arrivesAt    *time.Time
+			departTick, arriveTick  *int
+			route                   []byte
 		}
 		var units []unitEyeRow
 		for uRows.Next() {
 			var row unitEyeRow
-			if uRows.Scan(&row.status, &row.q, &row.r, &row.targetQ, &row.targetR, &row.category, &row.utype, &row.departsAt, &row.arrivesAt) != nil {
+			if uRows.Scan(&row.status, &row.q, &row.r, &row.targetQ, &row.targetR, &row.category, &row.utype, &row.departsAt, &row.arrivesAt, &row.departTick, &row.arriveTick, &row.route) != nil {
 				continue
 			}
 			units = append(units, row)
@@ -91,7 +91,12 @@ func LoadLiveEyes(ctx context.Context, db Queryer, worldID, playerID uuid.UUID, 
 				kind = EyeShip
 			}
 			pos := MapPosition{Q: q, R: r}
-			if status == "marching" && targetQ != nil && targetR != nil && departsAt != nil && arrivesAt != nil {
+			if saved, ok := movement.LoadActiveRoute(row.route, status, row.departTick, row.arriveTick); ok {
+				physical, err := movement.PositionAt(saved.Move(), movement.Milli(at))
+				if err == nil {
+					pos = MapPosition{Q: physical.Q, R: physical.R}
+				}
+			} else if status == "marching" && targetQ != nil && targetR != nil && departsAt != nil && arrivesAt != nil {
 				path, _, ok, pathErr := FindPath(ctx, db, worldID, pos,
 					MapPosition{Q: *targetQ, R: *targetR}, category)
 				if pathErr == nil && ok && len(path) > 0 {

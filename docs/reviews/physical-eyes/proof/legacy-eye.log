@@ -1,0 +1,11 @@
+» färsk DB på migration 193 · commit f55f1291+ändringar
+2026/10/21 07:43:48 INFO player registered id=c0e603fb-be19-4b42-9279-104928bccdac username=placement-8e5a004d-dc51-4d64-a758-c903dfe442a5
+2026/10/21 07:43:48 INFO player registered id=b5984af2-918b-4b46-8613-bdf116ff1b5a username=placement-8739a2bc-8251-40c9-903e-18f0ea04443a
+--- FAIL: TestMarchEyeUsesSavedTickRouteAtMarkerPosition (0.18s)
+    --- FAIL: TestMarchEyeUsesSavedTickRouteAtMarkerPosition/land (0.09s)
+        physical_eye_test.go:73: tick10 eye{4 0} marker{4 1}
+    --- FAIL: TestMarchEyeUsesSavedTickRouteAtMarkerPosition/naval (0.09s)
+        physical_eye_test.go:73: tick10 eye{4 0} marker{4 1}
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.185s
+FAIL

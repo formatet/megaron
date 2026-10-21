@@ -53,6 +53,7 @@ import (
 	"formatet/megaron/server/internal/clock"
 	"formatet/megaron/server/internal/events"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/tick"
 	"formatet/megaron/server/internal/unit"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -104,6 +105,10 @@ type marchingUnit struct {
 // re-enqueues itself.
 func (h *UnitInterceptScanHandler) Handle(ctx context.Context, e events.ScheduledEvent) error {
 	now := h.clk.Now()
+	anchor, err := tick.LoadAnchor(ctx, h.pool, e.WorldID)
+	if err != nil {
+		return err
+	}
 
 	// Terrain + per-owner live eyes, loaded/memoised once for the whole sweep —
 	// mirrors transport/intercept.go's FOW gate exactly (same gate /foreign-units
@@ -183,7 +188,7 @@ func (h *UnitInterceptScanHandler) Handle(ctx context.Context, e events.Schedule
 		}
 		eyes, cached := eyesByOwner[interceptorID]
 		if !cached {
-			eyes = province.LoadLiveEyes(ctx, h.pool, e.WorldID, interceptorID, now)
+			eyes = province.LoadLiveEyes(ctx, h.pool, e.WorldID, interceptorID, now, anchor.MilliAt(now))
 			eyesByOwner[interceptorID] = eyes
 		}
 		if !province.AnyEyeSees(eyes, pos, terrain) {
