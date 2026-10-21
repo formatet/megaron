@@ -267,6 +267,14 @@ func SiloFoodStorageMult(level int) float64 {
 	return 1
 }
 
+// FoodStorageBase is what a city stores of each food except livestock with no
+// Granary (Timothy 2026-10-21: "sänk taket, 2000 i grundläge"). The SQL function
+// food_store_base (mig 198) mirrors it; TestMurtak_SiloStorageSQLMirror pins the two.
+const FoodStorageBase = 2000.0
+
+// FoodStorageCap is the store of one food good with a Granary of this level.
+func FoodStorageCap(siloLevel int) float64 { return FoodStorageBase * SiloFoodStorageMult(siloLevel) }
+
 // SiloLevelForWall is the Granary level a wall of nextWallLevel needs: the wall
 // may not outgrow the stores that feed the people inside it (Timothy 2026-10-21).
 func SiloLevelForWall(nextWallLevel int) int { return nextWallLevel }

@@ -6,6 +6,7 @@ import (
 	"formatet/megaron/server/internal/province"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"slices"
 	"sort"
 )
 
@@ -104,7 +105,11 @@ func (StorageForecaster) StorageForecast(ctx context.Context, tx pgx.Tx, sid uui
 	}
 	// A commodity not stored yet can still arrive and fill a default-cap row.
 	for good, rs := range receipts {
-		result = append(result, economy.ProjectStorage(good, 0, province.DefaultGoodStorageCap, 0, rs))
+		storeCap := province.DefaultGoodStorageCap
+		if slices.Contains(economy.FoodGoods, good) {
+			storeCap = province.FoodStorageCap(economy.SiloLevel(ctx, tx, sid))
+		}
+		result = append(result, economy.ProjectStorage(good, 0, storeCap, 0, rs))
 	}
 	sort.Slice(result, func(i, j int) bool { return result[i].GoodKey < result[j].GoodKey })
 	return result, nil

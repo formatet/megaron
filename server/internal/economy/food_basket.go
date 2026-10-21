@@ -120,7 +120,7 @@ type foodReader interface {
 // current tick. The mutation path locks the same rows in a stable commodity order.
 func LoadFood(ctx context.Context, db foodReader, sid uuid.UUID, lock bool) (map[string]float64, error) {
 	goods := append(append([]string{}, FoodGoods...), GoodLivestock)
-	query := `SELECT good_key,GREATEST(0,settled(amount,rate,calc_tick)) FROM settlement_goods WHERE settlement_id=$1 AND good_key=ANY($2) ORDER BY good_key`
+	query := `SELECT good_key,GREATEST(0,LEAST(cap,settled(amount,rate,calc_tick))) FROM settlement_goods WHERE settlement_id=$1 AND good_key=ANY($2) ORDER BY good_key`
 	if lock {
 		query += ` FOR UPDATE`
 	}
@@ -173,7 +173,7 @@ func takeFood(ctx context.Context, tx pgx.Tx, sid uuid.UUID, demand float64, eme
 			qty += meal.Lost
 		}
 		if qty > 0 {
-			tag, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=GREATEST(0,settled(amount,rate,calc_tick)-$3),calc_tick=current_world_tick() WHERE settlement_id=$1 AND good_key=$2`, sid, good, qty)
+			tag, err := tx.Exec(ctx, `UPDATE settlement_goods SET amount=GREATEST(0,LEAST(cap,settled(amount,rate,calc_tick))-$3),calc_tick=current_world_tick() WHERE settlement_id=$1 AND good_key=$2`, sid, good, qty)
 			if err != nil {
 				return FoodMeal{}, err
 			}
