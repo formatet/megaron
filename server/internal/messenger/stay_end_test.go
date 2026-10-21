@@ -325,3 +325,19 @@ func TestStayEnd_DoubleRunIsNoOp(t *testing.T) {
 		t.Errorf("status after the real return fires = %q, want arrived", status)
 	}
 }
+
+// An offer cancelled while its runner was still on the road is over: the
+// runner arrives with a dead offer and keeps only a plain message's stay,
+// not the offer's whole life.
+func TestEndedOfferBearer_ArrivesWithPlainStay(t *testing.T) {
+	f := setupLandFixture(t)
+	messengerID := f.outboundMessenger(t)
+	if _, err := f.pool.Exec(context.Background(),
+		`UPDATE messengers SET trade_offer='{"kind":"sell","status":"cancelled"}' WHERE id=$1`, messengerID); err != nil {
+		t.Fatal(err)
+	}
+	deliver(t, f.pool, f.arrivalHandler(), f.worldID, messengerID, f.currentTick)
+	if got := f.loadScheduledEvent(t, "MessengerStayEnd", messengerID).DueTick; got != f.currentTick+ReplyStayTicks {
+		t.Fatalf("stay-end due_tick = %d, want %d (a cancelled offer holds nobody)", got, f.currentTick+ReplyStayTicks)
+	}
+}

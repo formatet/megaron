@@ -99,7 +99,7 @@ func (h *ArrivalHandler) Handle(ctx context.Context, e events.ScheduledEvent) er
 	var passageStatus *string
 	var currentGeneration int
 	err = tx.QueryRow(ctx,
-		`SELECT status, destination_id, sender_id, trade_offer IS NOT NULL, passage_status, passage_generation
+		`SELECT status, destination_id, sender_id, COALESCE(trade_offer->>'status' = 'pending', false), passage_status, passage_generation
 		   FROM messengers WHERE id = $1 FOR UPDATE`,
 		payload.MessengerID,
 	).Scan(&status, &destinationID, &senderID, &carriesOffer, &passageStatus, &currentGeneration)

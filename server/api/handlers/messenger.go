@@ -23,6 +23,7 @@ import (
 	"formatet/megaron/server/internal/unit"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -1089,6 +1090,10 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 		messengerID, worldID, playerID,
 	).Scan(&destID, &originID, &kind, &wantGood, &wantQty, &offerSilver, &offerGood, &offerQty, &wantSilver, &offerStatus)
 	if err != nil {
+		if ended := endedOfferStatus(r.Context(), tx, messengerID, worldID, playerID); ended != "" {
+			writeError(w, http.StatusConflict, "trade offer already "+ended)
+			return
+		}
 		writeError(w, http.StatusNotFound, "trade offer not found or not available to you")
 		return
 	}
@@ -1305,6 +1310,11 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		if err = h.releaseOfferBearer(r.Context(), tx, worldID, messengerID); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not send the runner home")
+			return
+		}
+
 		if err = tx.Commit(r.Context()); err != nil {
 			writeError(w, http.StatusInternalServerError, "commit failed")
 			return
@@ -1433,6 +1443,11 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		if err = h.releaseOfferBearer(r.Context(), tx, worldID, messengerID); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not send the runner home")
+			return
+		}
+
 		if err = tx.Commit(r.Context()); err != nil {
 			writeError(w, http.StatusInternalServerError, "commit failed")
 			return
@@ -1480,6 +1495,36 @@ func (h *MessengerHandler) TradeAccept(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// endedOfferStatus is the status of an offer to playerID that has already
+// ended, or "". Its runner has gone home (releaseOfferBearer), so the
+// "standing here" lookup misses it; a second answer is a conflict, not a 404.
+func endedOfferStatus(ctx context.Context, db interface {
+	QueryRow(context.Context, string, ...any) pgx.Row
+}, messengerID, worldID, playerID uuid.UUID) string {
+	var status string
+	if err := db.QueryRow(ctx,
+		`SELECT m.trade_offer->>'status' FROM messengers m JOIN settlements ds ON ds.id = m.destination_id
+		  WHERE m.id = $1 AND m.world_id = $2 AND ds.owner_id = $3 AND m.trade_offer->>'status' <> 'pending'`,
+		messengerID, worldID, playerID,
+	).Scan(&status); err != nil {
+		return ""
+	}
+	return status
+}
+
+// releaseOfferBearer sends an ended offer's runner home in the TX that ends it
+// (accept, decline, cancel) instead of holding it to the offer's expiry. A
+// runner still on its way out is untouched: it arrives, finds the offer
+// over, and keeps only a plain message's stay.
+func (h *MessengerHandler) releaseOfferBearer(ctx context.Context, tx pgx.Tx, worldID, messengerID uuid.UUID) error {
+	var currentTick int
+	if err := tx.QueryRow(ctx, `SELECT current_world_tick()`).Scan(&currentTick); err != nil {
+		return err
+	}
+	_, err := messenger.StartReturnLegTx(ctx, tx, h.scheduler, worldID, messengerID, h.clk.Now(), currentTick, nil)
+	return err
+}
+
 // TradeDecline handles POST /worlds/:worldID/messengers/:messengerID/trade-decline.
 func (h *MessengerHandler) TradeDecline(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
@@ -1520,6 +1565,10 @@ func (h *MessengerHandler) TradeDecline(w http.ResponseWriter, r *http.Request) 
 	).Scan(&offerStatus, &originID, &destID, &originOwner, &kind, &offerSilver, &offerGood, &offerQty,
 		&wantGood, &wantQty, &wantSilver)
 	if err != nil {
+		if ended := endedOfferStatus(r.Context(), h.pool, messengerID, worldID, playerID); ended != "" {
+			writeError(w, http.StatusConflict, "trade offer already "+ended)
+			return
+		}
 		writeError(w, http.StatusNotFound, "trade offer not found")
 		return
 	}
@@ -1571,6 +1620,11 @@ func (h *MessengerHandler) TradeDecline(w http.ResponseWriter, r *http.Request) 
 			writeError(w, http.StatusInternalServerError, "could not refund silver to buyer")
 			return
 		}
+	}
+
+	if err = h.releaseOfferBearer(r.Context(), tx, worldID, messengerID); err != nil {
+		writeError(w, http.StatusInternalServerError, "could not send the runner home")
+		return
 	}
 
 	if err = tx.Commit(r.Context()); err != nil {
@@ -1692,6 +1746,10 @@ func (h *MessengerHandler) CancelOffer(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusInternalServerError, "could not refund goods to seller")
 			return
 		}
+		if err = h.releaseOfferBearer(r.Context(), tx, worldID, messengerID); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not send the runner home")
+			return
+		}
 		if err = tx.Commit(r.Context()); err != nil {
 			writeError(w, http.StatusInternalServerError, "commit failed")
 			return
@@ -1707,6 +1765,10 @@ func (h *MessengerHandler) CancelOffer(w http.ResponseWriter, r *http.Request) {
 			offerSilver, originID,
 		); err != nil {
 			writeError(w, http.StatusInternalServerError, "could not refund silver")
+			return
+		}
+		if err = h.releaseOfferBearer(r.Context(), tx, worldID, messengerID); err != nil {
+			writeError(w, http.StatusInternalServerError, "could not send the runner home")
 			return
 		}
 		if err = tx.Commit(r.Context()); err != nil {
