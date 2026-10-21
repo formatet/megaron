@@ -8,6 +8,7 @@ import { fmtEta, fmtArrival, arrivalHTML } from '../time.js';
 import { renderLockedActions } from '../misc.js';
 import { fmtNum, fmtDay } from '../fmt_num.js';
 import { sentStatusHTML } from '../runner_status.js';
+import { loadDipRunners } from './diplomacy_runners.js';
 
 // "expires <eta>" while a trade offer's window is still open, collapsing to a
 // bare "expired" once it's closed — a closed offer isn't an arrival, and
@@ -79,9 +80,11 @@ export async function loadDiplomacyDrawer() {
     <div class="drawer-tabs">
       <button class="dtab active" data-tab="threads">Correspondence</button>
       <button class="dtab" data-tab="known">Known</button>
+      <button class="dtab" data-tab="runners">Runners</button>
     </div>
     <div id="dtab-threads" class="city-tab"><div class="loading" style="font-size:.8rem">Loading…</div></div>
-    <div id="dtab-known" class="city-tab" hidden></div>`;
+    <div id="dtab-known" class="city-tab" hidden></div>
+    <div id="dtab-runners" class="city-tab" hidden></div>`;
 
   body.querySelectorAll('.dtab').forEach(tab => {
     tab.addEventListener('click', function() {
@@ -91,6 +94,7 @@ export async function loadDiplomacyDrawer() {
       const el = document.getElementById('dtab-' + this.dataset.tab);
       if (el) { el.hidden = false; el.style.display = ''; }
       if (this.dataset.tab === 'known') return loadDipKnown();
+      if (this.dataset.tab === 'runners') return loadDipRunners();
     });
   });
 
@@ -606,7 +610,7 @@ export async function dipReply(id) {
 // dipArrangePassage is 3b-3's "Arrange passage" button: POST the chosen ship
 // against the runner waiting for passage. res.ok drives the outcome — a
 // refusal shows the server's own text, never a client-guessed reason.
-export async function dipArrangePassage(id, selId, btn) {
+export async function dipArrangePassage(id, selId, btn, blockId = 'dip-passage-' + id) {
   const sel = document.getElementById(selId);
   const shipId = sel ? sel.value : '';
   if (!shipId) return;
@@ -615,7 +619,7 @@ export async function dipArrangePassage(id, selId, btn) {
     method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ ship_id: shipId }),
   });
   const data = await res.json().catch(() => ({}));
-  const block = document.getElementById('dip-passage-' + id);
+  const block = document.getElementById(blockId);
   if (res.ok) {
     if (block) block.outerHTML = '<div style="font-size:.72rem;color:var(--safe-text);margin-top:.3rem;text-align:right">✓ Passage arranged — arrives ' + arrivalHTML(data.arrives_at) + '</div>';
   } else {

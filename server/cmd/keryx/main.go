@@ -113,6 +113,7 @@ func newRootCommand() *cobra.Command {
 		cargoCmd(),
 		inboxCmd(),
 		outboxCmd(),
+		runnersCmd(),
 		replyCmd(),
 		tradeAcceptCmd(),
 		tradeDeclineCmd(),

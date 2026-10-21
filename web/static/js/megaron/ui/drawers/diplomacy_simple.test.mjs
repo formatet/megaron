@@ -21,9 +21,9 @@ async function rig(run) {
   try{await run({body,node,calls,cities,rulers});}finally{Object.assign(globalThis,saved);State.provinceData=[];State.MY_SETTLEMENT_ID=null;State.WORLD_ID=null;}
 }
 
-test('M: actual drawer offers exactly Correspondence and Known',()=>rig(async({body})=>{
+test('M: actual drawer offers exactly Correspondence, Known and Runners',()=>rig(async({body})=>{
   await dip.loadDiplomacyDrawer();
-  assert.deepEqual([...body.innerHTML.matchAll(/data-tab="([^"]+)"/g)].map(m=>m[1]),['threads','known']);
+  assert.deepEqual([...body.innerHTML.matchAll(/data-tab="([^"]+)"/g)].map(m=>m[1]),['threads','known','runners']);
   assert.doesNotMatch(body.innerHTML,/Compose|Cities|Rulers/);
 }));
 

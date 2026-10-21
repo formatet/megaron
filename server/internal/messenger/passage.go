@@ -687,6 +687,12 @@ func (h *PassageScanHandler) notifyStalledOne(ctx context.Context, worldID, mess
 	return nil
 }
 
+// StalledExplanation is stalledExplanation for the Runners read (A4): the
+// same words a PassageStalled dispatch carries, for any waiting runner.
+func StalledExplanation(portName string, targetName *string, ownPort bool, ownShips int) string {
+	return stalledExplanation(portName, targetName, ownPort, ownShips)
+}
+
 // stalledExplanation is the PassageStalled text web and keryx both print:
 // what is happening, why, and what the Wanax can do — one source, the server.
 func stalledExplanation(portName string, targetName *string, ownPort bool, ownShips int) string {
