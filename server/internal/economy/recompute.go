@@ -440,9 +440,7 @@ type Tx interface {
 //   - The population REMAINDER (pop mod100) produces that fraction of the
 //     best eligible food worker, grain or fish, without taking a real slot.
 //
-// settlement_labor is UNTOUCHED by this function — cult labor (temple
-// devotion, good_key='cult') is a separate path (megaron_cult_ar_ingen_vara_plan.md)
-// that was never part of this formula even before P4.
+// Staffing-only temple roles consume workers but produce no settlement goods.
 //
 // Must be called inside an existing transaction. Passes ctx to every DB call.
 func RecomputeProduction(ctx context.Context, tx Tx, settlementID uuid.UUID) error {

@@ -10,7 +10,7 @@ import (
 )
 
 // ProjectDailyNet computes, read-only, the kharis a Wanax would net on the NEXT
-// maintained day: devotionSum × kharisPerTempleDay × offerFraction × scarcity −
+// maintained day: temple workers × KharisPerTempleWorker × offerFraction × scarcity −
 // dailyDecay — the exact formula processMaintenance applies, with the exact same
 // feeding rule (early grain reference or local substitutions to the same divine worth).
 // It exists so `status` can answer "will my kharis rise or fall" honestly: the

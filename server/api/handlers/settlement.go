@@ -220,9 +220,7 @@ func (h *SettlementHandler) SettlementsOverview(w http.ResponseWriter, r *http.R
 // only the caller's OWN settlements, never another Wanax's gubbar. Hex
 // ordinals are computed here (hexgrid.RingOrdinal against each settlement's
 // own centre) so the numbers match `keryx city`/place exactly — no client
-// duplicates the ring math. cult is NOT here: it's temple devotion in
-// settlement_labor, set via `keryx allocate --cult`, not a placed gubbe
-// (CLAUDE.md §Labor).
+// duplicates the ring math. Temple service is an ordinary building assignment.
 func (h *SettlementHandler) PlacementRoster(w http.ResponseWriter, r *http.Request) {
 	worldID, err := uuid.Parse(chi.URLParam(r, "worldID"))
 	if err != nil {
