@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"math"
-	"os"
-	"strconv"
 
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/events"
@@ -14,39 +12,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
-
-// UpkeepSoldShare reads UPKEEP_SOLD_SHARE — the fraction of a garrisoned unit's
-// silver upkeep the soldiers spend back into their garrison town (silver-plan
-// Del C). Default 0.7; 0 = exactly the pre-Del-C behaviour (whole upkeep leaves
-// the world). Clamped to [0,1]. Read once at handler construction (main.go),
-// override via env + systemctl restart — loaded once at startup.
-//
-// Exported because the read surfaces (api/handlers) must project the same net
-// drain the tick actually takes; a second copy of the default would drift.
-func UpkeepSoldShare() float64 {
-	s := 0.7
-	if v := os.Getenv("UPKEEP_SOLD_SHARE"); v != "" {
-		if f, err := strconv.ParseFloat(v, 64); err == nil {
-			s = f
-		}
-	}
-	if s < 0 {
-		return 0
-	}
-	if s > 1 {
-		return 1
-	}
-	return s
-}
-
-// SoldCirculation is the credit spent back into the actual paying town.
-// Forecasts and tick deductions share this rule; liquidity still needs gross pay.
-func SoldCirculation(gross float64, atPayer bool, share float64) float64 {
-	if atPayer {
-		return gross * share
-	}
-	return 0
-}
 
 // Compatibility API for existing combat/read consumers. The shared provisions
 // package owns all ration rules used by both marches and physical freight.
@@ -165,7 +130,6 @@ type UpkeepHandler struct {
 	scheduler *events.Scheduler
 	store     *events.Store
 	hub       Broadcaster
-	soldShare float64 // Del C: garrison sold spent back into its town
 	// arrivals shares dispatchReturnHome with the explore auto-return and the
 	// naval sentry patrol timer (megaron_plan_svaltretur_till_sjoss.md §2) — a
 	// starving ship turns home via the exact same route/scheduling mechanics,
@@ -178,11 +142,11 @@ type UpkeepHandler struct {
 
 // NewUpkeepHandler creates an UpkeepHandler. hub may be nil (tests) — every
 // NotifyPlayer call is nil-guarded, matching the other combat handlers. The
-// sold-circulation share is read from env here; tests set h.soldShare directly.
+// Wages are resolved by economy.UnitUpkeep for both tick and read consumers.
 // arrivals may be nil (see the field doc) — main.go passes the *UnitArrivalHandler
 // it already constructs (it must be built first; main.go does this).
 func NewUpkeepHandler(pool *pgxpool.Pool, sched *events.Scheduler, store *events.Store, hub Broadcaster, arrivals *UnitArrivalHandler) *UpkeepHandler {
-	return &UpkeepHandler{pool: pool, scheduler: sched, store: store, hub: hub, soldShare: UpkeepSoldShare(), arrivals: arrivals}
+	return &UpkeepHandler{pool: pool, scheduler: sched, store: store, hub: hub, arrivals: arrivals}
 }
 
 // Handle processes a ScheduledUpkeepTick event.
@@ -209,12 +173,12 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 	// set (above) must list the same statuses, or a status stops being billed
 	// without stopping being billable.
 	// 'repairing' added for the same reason (megaron_plan_skeppsreparation.md
-	// Slice C, 2026-08-16): naval silver upkeep is per hull — leaving a ship parked
+	// Slice C, 2026-08-16): paid rowers still draw wages during repairs — leaving a ship parked
 	// in a shipyard queue out of this filter would have made permanent repair
 	// a free way to dodge silver upkeep.
 	// 'freighting' added for the same reason (megaron_plan_sjohandel_kraver_
 	// skepp.md R2): a ship bound to a naval transport/route keeps paying its
-	// own flat upkeep exactly as it would sitting in garrison.
+	// own field wages throughout the physical freight assignment.
 	rows, err := h.pool.Query(ctx,
 		`SELECT u.id, u.owner_id, u.type, u.category, u.size, u.crew, u.settlement_id,
 		        u.unpaid_periods, u.cargo_unit_id,
@@ -427,36 +391,13 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 			continue
 		}
 
-		// Del C — sold circulation: soldiers standing in the town that pays them
-		// spend soldShare of their pay back into it; a unit anywhere else is a full
-		// sink — campaigns cost for real.
-		//
-		// The discriminator is `unit stands in its own paying settlement`, NOT the
-		// original plan's "settlement_id set vs null". Migration 100 replaced the
-		// silent capital fallback with support_settlement_id as the sole payer, so
-		// settlement_id no longer separates garrison from field: since mig 100 the
-		// recruitment path sets BOTH columns, and a field unit keeps its raising
-		// town as payer while standing elsewhere. Comparing the two columns keeps
-		// payer = recipient, which is what the plan chose for the MVP.
-		// (Crediting a town the unit garrisons but which does NOT pay it would be
-		// the metropolis→colony sold flow — deliberately still deferred; the
-		// circulated_to map already carries that variant without a schema change.)
-		//
-		// The affordability gate stays on the FULL upkeep N (payroll liquidity — the
-		// war-chest), while the net debit is only (1−share)·N. Deduct + credit are a
-		// SINGLE atomic statement, never two loose Execs. Since eff ≤ cap and
-		// credit = share·N ≤ N, eff − N + credit ≤ eff ≤ cap, so the outer LEAST
-		// never clips — the credit is always applied in full (no spill), which is
-		// why silver_circulated below is exactly `credit`.
-		credit := SoldCirculation(silverNeed, u.settlementID != nil && *u.settlementID == sid, h.soldShare)
-
 		tag, err := h.pool.Exec(ctx,
 			`UPDATE settlement_goods
-			 SET amount   = LEAST(cap, storage_capped(settlement_id,good_key,settled(amount,rate,calc_tick),cap,'production') - $1 + $2),
+			 SET amount   = LEAST(cap, storage_capped(settlement_id,good_key,settled(amount,rate,calc_tick),cap,'production') - $1),
 			     calc_tick = current_world_tick()
-			 WHERE settlement_id = $3 AND good_key = 'silver'
+			 WHERE settlement_id = $2 AND good_key = 'silver'
 			   AND LEAST(settled(amount, rate, calc_tick), cap) >= $1`,
-			silverNeed, credit, sid,
+			silverNeed, sid,
 		)
 		if err != nil {
 			slog.Error("upkeep: silver deduction failed", "unit", u.id, "err", err)
@@ -464,13 +405,11 @@ func (h *UpkeepHandler) Handle(ctx context.Context, e events.ScheduledEvent) err
 		}
 
 		if tag.RowsAffected() > 0 {
-			// Paid. Gross = full upkeep N; of that, `credit` circulated back into the
-			// garrison town (→ circulated_to at emit) and (1−share)·N left the world.
+			// Paid wages all leave the world; the historical circulation fields stay zero.
 			a := agg(sid)
 			a.unitsPaid++
 			a.silverGross += silverNeed
-			a.silverCirculated += credit
-			a.silverDestroyed += silverNeed - credit
+			a.silverDestroyed += silverNeed
 			// Reset unpaid_periods if needed.
 			if u.unpaidPeriods > 0 {
 				if _, err := h.pool.Exec(ctx,

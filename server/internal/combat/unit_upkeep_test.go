@@ -2,7 +2,7 @@ package combat
 
 // UnitUpkeep is the single source of truth for per-unit upkeep scaling, shared by
 // the charging loop (Handle) and the army read surface. These cases pin the scaling
-// contract: land scales with size/100, naval food uses actual crew and silver stays per vessel, unknown = 0.
+// contract: land scales with size/100, naval food uses actual crew and silver uses actual crew, unknown = 0.
 
 import (
 	"math"
@@ -23,10 +23,10 @@ func TestUnitUpkeep(t *testing.T) {
 		// Silver is untouched (currency, divisor 1).
 		{"land spearman full size", "spearman", "land", 100, 0.50, 0},
 		{"land spearman 141 scales up", "spearman", "land", 141, 0.705, 0},
-		{"land elite half size", "elite_infantry", "land", 50, 0.30, 1},
-		{"naval galley crew ration independent of hull size at size 1", "galley", "naval", 1, 0.10, 1.5},
-		{"naval galley crew ration independent of hull size even if size>1", "galley", "naval", 5, 0.10, 1.5},
-		{"naval war_galley crew ration", "war_galley", "naval", 3, 0.25, 2.5},
+		{"land elite half size", "elite_infantry", "land", 50, 0.30, 0.375},
+		{"naval galley crew ration independent of hull size at size 1", "galley", "naval", 1, 0.10, 0.1},
+		{"naval galley crew ration independent of hull size even if size>1", "galley", "naval", 5, 0.10, 0.1},
+		{"naval war_galley crew ration", "war_galley", "naval", 3, 0.25, 0.25},
 		{"unknown type costs nothing", "slinger", "land", 100, 0, 0},
 	}
 	const eps = 1e-9

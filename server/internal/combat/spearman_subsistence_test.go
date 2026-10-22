@@ -57,7 +57,7 @@ func TestSpearmanFieldRationAndElitePayRemain(t *testing.T) {
 	if got := settledAmount(t, pool, f.capitalID, "grain"); got != 97.8 {
 		t.Fatalf("field grain=%v, want97.8 (1 spear+1.2 elite)", got)
 	}
-	if got := settledAmount(t, pool, f.capitalID, "silver"); got != 8 {
-		t.Fatalf("elite pay leaves=%v, want8 (10-2)", got)
+	if got := settledAmount(t, pool, f.capitalID, "silver"); got != 8.5 {
+		t.Fatalf("elite pay leaves=%v, want8.5 (10-1.5)", got)
 	}
 }

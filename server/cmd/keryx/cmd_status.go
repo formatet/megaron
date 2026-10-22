@@ -1029,13 +1029,6 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 						// in the field reads "100 spearmen, upkeep for 200" and thinks
 						// the number is broken.
 						fmt.Printf("  %-10s %s %s, %s silver per day  (everything the city pays — including field units)\n", "Upkeep", trimFloat(g), label, trimFloat(s))
-						// Del C: soldiers standing in the town that pays them spend
-						// their sold there. Shown as its own line because it is the
-						// only reason the net below is not gross — an invisible flow
-						// is one the Wanax can neither plan for nor exploit.
-						if circ, ok := sett["army_upkeep_circulated_silver"].(float64); ok && circ > 0 {
-							fmt.Printf("  %-10s %.1f silver per day back into the city (garrison's pay)\n", "", circ)
-						}
 					}
 				}
 				// Legibilitet (2026-07-24): namnge att detta bara är garnisonen HÄR —

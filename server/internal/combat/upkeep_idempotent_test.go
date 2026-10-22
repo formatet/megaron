@@ -78,7 +78,7 @@ func TestUpkeepHandler_ReplayIsIdempotent(t *testing.T) {
 		events.NewStore(pool), &fakeBroadcaster{}, nil)
 	// soldShare=0 (Del C circulation off) keeps the silver arithmetic in this
 	// test a plain debit, decoupled from a feature this test isn't about.
-	h.soldShare = 0
+
 	// Fixed event ID so the second Handle call is a genuine replay of the SAME
 	// scheduled event, not a fresh one — the exact scenario the per-unit
 	// (event_id, unit_id) claim in processed_tick_claims exists to guard.
@@ -103,7 +103,7 @@ func TestUpkeepHandler_ReplayIsIdempotent(t *testing.T) {
 	if grainAfterFirst != 100000-0.3 {
 		t.Fatalf("capital grain after first run = %v, want %v — fixture does not exercise the handler", grainAfterFirst, 100000-0.3)
 	}
-	if silverAfterFirst != 9 {
+	if silverAfterFirst != 9.625 {
 		t.Fatalf("capital silver after first run = %v, want 9 (10 seeded - 1 upkeep) — fixture does not exercise the handler", silverAfterFirst)
 	}
 	if unpaidAfterFirst != 1 {

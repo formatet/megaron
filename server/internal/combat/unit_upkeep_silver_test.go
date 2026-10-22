@@ -1,17 +1,14 @@
 package combat
 
-// SLICE B (silverupkeep halveras, Timothy 2026-08-05): AG3 = lägre
-// silverupkeep, formen "halvera hela tabellen". Grain is untouched — slice A
-// set it. These cases pin the halved silver column, and confirm status never
-// changes silver (a field unit's pay is the same as garrisoned — only grain
-// doubles, per slice A).
+// Current wage anchors at home. Food is verified independently by the ration
+// tests; the shared wage owner scales professionals and actual rowers.
 
 import (
 	"math"
 	"testing"
 )
 
-func TestUnitUpkeep_SilverHalved(t *testing.T) {
+func TestUnitUpkeep_HomeWages(t *testing.T) {
 	cases := []struct {
 		name       string
 		unitType   string
@@ -22,11 +19,11 @@ func TestUnitUpkeep_SilverHalved(t *testing.T) {
 	}{
 		{"spearman garrison", "spearman", "land", 100, "garrison", 0},
 		{"spearman marching — status never changes silver", "spearman", "land", 100, "marching", 0},
-		{"elite_infantry garrison", "elite_infantry", "land", 100, "garrison", 2},
-		{"war_chariot garrison", "war_chariot", "land", 100, "garrison", 3},
-		{"galley garrison", "galley", "naval", 1, "garrison", 1.5},
-		{"war_galley garrison", "war_galley", "naval", 1, "garrison", 2.5},
-		{"merchantman garrison", "merchantman", "naval", 1, "garrison", 1},
+		{"elite_infantry garrison", "elite_infantry", "land", 100, "garrison", 0.75},
+		{"war_chariot garrison", "war_chariot", "land", 100, "garrison", 1},
+		{"galley garrison", "galley", "naval", 1, "garrison", 0.1},
+		{"war_galley garrison", "war_galley", "naval", 1, "garrison", 0.25},
+		{"merchantman garrison", "merchantman", "naval", 1, "garrison", 0.05},
 	}
 	const eps = 1e-9
 	for _, tc := range cases {

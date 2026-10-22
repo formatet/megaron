@@ -224,9 +224,7 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 		canRecruit  bool
 		upkeepGrain float64
 		upkeepSilv  float64
-		// What the city actually loses per tick once the unit garrisons here:
-		// the sold share circulates back (Del C). Equal to upkeepSilv on a
-		// server without the field, and whenever UPKEEP_SOLD_SHARE is 0.
+		// Compatible server net field; current rules charge the full stated pay.
 		upkeepSilvNet float64
 		sustainable   bool
 	}
@@ -329,14 +327,7 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 				affordStr = "✗"
 			}
 			if info.upkeepGrain > 0 || info.upkeepSilv > 0 {
-				upkeepStr = fmt.Sprintf("%.1f grain, %.1f silver", info.upkeepGrain, info.upkeepSilv)
-				// Del C: the treasury must cover the full sold each tick, but the
-				// part the soldiers spend at home comes straight back. Naming both
-				// keeps the ⚠ below (which is judged on the net) readable — without
-				// it the warning and the cost beside it look like they disagree.
-				if info.upkeepSilvNet != info.upkeepSilv {
-					upkeepStr += fmt.Sprintf(" (%.1f net in garrison)", info.upkeepSilvNet)
-				}
+				upkeepStr = recruitUpkeepLine(info.upkeepGrain, info.upkeepSilv)
 				if !info.sustainable {
 					upkeepStr += "  ⚠ " + unsustainableReason(
 						netGrain, netSilver, info.upkeepGrain, info.upkeepSilvNet, grainStock, silverStock)
@@ -348,6 +339,10 @@ func printRecruitCatalogue(c *Client, worldID, provinceID string) error {
 			label, batch, costStr, u.DurationGameDays, u.PopCost, reqStr, affordStr, upkeepStr)
 	}
 	return nil
+}
+
+func recruitUpkeepLine(grain, silver float64) string {
+	return fmt.Sprintf("%.4g grain, %.4g silver", grain, silver)
 }
 
 // trimFloat formats a quantity with up to 2 decimals, trimming trailing zeros
@@ -383,13 +378,13 @@ func unsustainableReason(netGrain, netSilver, unitGrain, unitSilver, grainStock,
 	}
 	switch {
 	case grainShort < 0 && silverShort < 0:
-		return fmt.Sprintf("upkeep exceeds this city: needs %.1f more grain per day and %.1f more silver per day%s%s",
+		return fmt.Sprintf("upkeep exceeds this city: needs %.4g more grain per day and %.4g more silver per day%s%s",
 			-grainShort, -silverShort, runway("grain", grainStock, grainShort), runway("silver", silverStock, silverShort))
 	case silverShort < 0:
-		return fmt.Sprintf("silver upkeep: net is %+.1f silver per day, needs %.1f more per day%s",
+		return fmt.Sprintf("silver upkeep: net is %+.4g silver per day, needs %.4g more per day%s",
 			netSilver, -silverShort, runway("silver", silverStock, silverShort))
 	case grainShort < 0:
-		return fmt.Sprintf("grain upkeep: net is %+.1f grain per day, needs %.1f more per day%s",
+		return fmt.Sprintf("grain upkeep: net is %+.4g grain per day, needs %.4g more per day%s",
 			netGrain, -grainShort, runway("grain", grainStock, grainShort))
 	default:
 		// sustainable was false but neither margin is negative — the server saw a

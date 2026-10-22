@@ -8,7 +8,7 @@ type UpkeepSpec struct {
 	Silver float64
 }
 
-// UpkeepSpecs: land food/pay scales with size/100; naval pay is per hull.
+// UpkeepSpecs stores food only. UnitUpkeep derives pay from the shared wage owner.
 // Naval food is derived from the spearman ration and actual crew in UnitUpkeep.
 // Präst = ingen upkeep (kult kostar inget löpande).
 //
@@ -22,7 +22,7 @@ type UpkeepSpec struct {
 // with field rations while marching, positioned or freighting.
 //
 // Ordinary spearmen live on grain, not silver (Timothy 2026-10-13).
-// Professional troops and vessels keep their existing silver pay. Starting
+// Professional troops and rowers earn the shared wage below. Starting
 // reserves and colonist purses are fixed independently of this table.
 //
 // Grain-kolumnen ÷100 (megaron_plan_dagsverkesskalan, mig 136, 2026-08-27) —
@@ -36,17 +36,46 @@ type UpkeepSpec struct {
 // Silver rörs INTE — det är en valuta och skalas inte i mig 136 (se
 // migrationens huvudkommentar: kollapsmekaniken är en egen systemfråga).
 var UpkeepSpecs = map[string]UpkeepSpec{
-	"spearman":       {Grain: 0.50, Silver: 0},
-	"elite_infantry": {Grain: 0.60, Silver: 2},
-	"war_chariot":    {Grain: 0.80, Silver: 3},
-	"galley":         {Silver: 1.5},
-	"war_galley":     {Silver: 2.5},
-	"merchantman":    {Silver: 1},
+	"spearman":       {Grain: 0.50},
+	"elite_infantry": {Grain: 0.60},
+	"war_chariot":    {Grain: 0.80},
+	"galley":         {},
+	"war_galley":     {},
+	"merchantman":    {},
+}
+
+// FieldPayPerHundred is one worker's wage for a full hundred people in the
+// field. Type factors change the wage, not the food ration.
+const FieldPayPerHundred = 1.0
+
+var payFactors = map[string]float64{
+	"spearman": 0, "elite_infantry": 1.5, "war_chariot": 2,
+	"galley": 1, "war_galley": 1, "merchantman": 1,
+}
+
+// fieldUpkeep keeps food and wages on the same operational status map.
+func fieldUpkeep(category, status string) bool {
+	return status == "marching" || status == "positioned" || category == "naval" && status == "freighting" || category == "land" && status == "embarked"
+}
+
+func unitPay(unitType, category string, size, crew int, status string) float64 {
+	if status == "laid_up" {
+		return 0
+	}
+	people := max(0, size)
+	if category == "naval" {
+		people = max(0, crew)
+	}
+	pay := FieldPayPerHundred * payFactors[unitType] * float64(people) / 100
+	if !fieldUpkeep(category, status) {
+		pay *= .5
+	}
+	return pay
 }
 
 // UnitUpkeep returns the grain + silver one unit costs per upkeep-period (the
 // daily upkeep tick). Land units scale with size/100; naval food scales with
-// actual crew, while naval silver remains per vessel. Unknown types cost nothing. This is the single
+// actual crew, including naval pay. Unknown types cost nothing. This is the single
 // source of truth for the scaling — both the charging loop (Handle) and the army
 // read surface (api/handlers) call it, so shown upkeep can never drift from what
 // is actually debited.
@@ -55,8 +84,8 @@ var UpkeepSpecs = map[string]UpkeepSpec{
 // (UpkeepSpecs' land grain figures are calibrated to that anchor — see
 // economy/recompute.go:359, pop×0.5/day). In the field — status "marching" or
 // "positioned" — he eats double: mobilising costs, and standing out costs more
-// than standing home. Silver (where paid) never changes with status — the pay is the
-// same wherever the man stands. Naval food uses the same soldier ration per
+// than standing home. Silver follows the wage owner: the
+// wage is half at home and full in the field. Naval food uses the same soldier ration per
 // rower; garrison/repairing/fitting_out are home, freighting is in the field.
 // A laid-up ship has returned its crew to civilian population and is exempt
 // from both ship rations and pay until Fit out drafts them again.
@@ -70,10 +99,10 @@ func UnitUpkeep(unitType, category string, size int, status string, crew int) Up
 	}
 	if category == "naval" {
 		grain := UpkeepSpecs["spearman"].Grain * float64(max(0, crew)) / 100
-		if status == "marching" || status == "positioned" || status == "freighting" {
+		if fieldUpkeep(category, status) {
 			grain *= FieldGrainFactor
 		}
-		return UpkeepSpec{Grain: grain, Silver: spec.Silver}
+		return UpkeepSpec{Grain: grain, Silver: unitPay(unitType, category, size, crew, status)}
 	}
 	if category != "land" {
 		return spec
@@ -85,10 +114,10 @@ func UnitUpkeep(unitType, category string, size int, status string, crew int) Up
 	// positioned. It is grouped WITH them here so this stays the single trigger
 	// set for the doubling; Handle's own status filter below must list the same
 	// three-plus-embarked set or a billed status stops being billed.
-	if status == "marching" || status == "positioned" || status == "embarked" {
+	if fieldUpkeep(category, status) {
 		grain *= FieldGrainFactor
 	}
-	return UpkeepSpec{Grain: grain, Silver: spec.Silver * f}
+	return UpkeepSpec{Grain: grain, Silver: unitPay(unitType, category, size, crew, status)}
 }
 
 // VoyageRation är vad ett skepp äter per dygn till sjöss, inklusive en eventuell

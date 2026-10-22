@@ -169,3 +169,8 @@ test('expedition preview names exact first target without disclosing its ETA',()
  assert.match(html,/first to \(24,20\), then explores around it/);
  assert.match(html,/First-leg arrival remains unknown/);
 });
+
+test('pay forecast preserves authoritative half-home and full-field figures',()=>{
+ assert.match(marchSilverLine({upkeep_silver_home:0.75,upkeep_silver_field:1.5,silver_runway_ticks:12}), /0.75 → 1.5 silver per day/);
+ assert.match(marchSilverLine({upkeep_silver_home:0.1,upkeep_silver_field:0.2,silver_runway_ticks:12}), /0.1 → 0.2 silver per day/);
+});

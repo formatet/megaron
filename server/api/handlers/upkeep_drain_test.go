@@ -26,7 +26,7 @@ import (
 	"formatet/megaron/server/internal/auth"
 )
 
-func TestSettlementUpkeepDrain_PayerAndSoldCirculation(t *testing.T) {
+func TestSettlementUpkeepDrain_PayerAndWages(t *testing.T) {
 	pool := armyDisplayTestPool(t)
 	ctx := context.Background()
 
@@ -121,9 +121,8 @@ func TestSettlementUpkeepDrain_PayerAndSoldCirculation(t *testing.T) {
 	}
 
 	const eps = 1e-9
-	const share = 0.7
 
-	gross, circulated, err := settlementUpkeepDrain(ctx, pool, mykene, share)
+	gross, circulated, err := settlementUpkeepDrain(ctx, pool, mykene)
 	if err != nil {
 		t.Fatalf("settlementUpkeepDrain(mykene): %v", err)
 	}
@@ -134,7 +133,7 @@ func TestSettlementUpkeepDrain_PayerAndSoldCirculation(t *testing.T) {
 	if math.Abs(gross.Grain-2.1) > eps {
 		t.Errorf("Mykene gross grain = %v, want 2.1 (0.5 garrison + 1.6 marching chariot)", gross.Grain)
 	}
-	if math.Abs(gross.Silver-3) > eps {
+	if math.Abs(gross.Silver-2) > eps {
 		t.Errorf("Mykene gross silver = %v, want3 (spear0 + marching chariot3)", gross.Silver)
 	}
 	// Only the unit standing in the town that pays it circulates: 0.7 × 1.
@@ -142,12 +141,12 @@ func TestSettlementUpkeepDrain_PayerAndSoldCirculation(t *testing.T) {
 	if math.Abs(circulated) > eps {
 		t.Errorf("Mykene circulated silver = %v, want0 (home spear has no salary)", circulated)
 	}
-	if net := gross.Silver - circulated; math.Abs(net-3) > eps {
+	if net := gross.Silver - circulated; math.Abs(net-2) > eps {
 		t.Errorf("Mykene net silver drain = %v, want3", net)
 	}
 
 	// The colony pays only for its own garrison, and all of it comes back.
-	grossT, circulatedT, err := settlementUpkeepDrain(ctx, pool, tiryns, share)
+	grossT, circulatedT, err := settlementUpkeepDrain(ctx, pool, tiryns)
 	if err != nil {
 		t.Fatalf("settlementUpkeepDrain(tiryns): %v", err)
 	}
@@ -159,7 +158,7 @@ func TestSettlementUpkeepDrain_PayerAndSoldCirculation(t *testing.T) {
 	}
 
 	// share = 0 must be bit-identical to the pre-Del-C world: nothing circulates.
-	_, circulatedZero, err := settlementUpkeepDrain(ctx, pool, mykene, 0)
+	_, circulatedZero, err := settlementUpkeepDrain(ctx, pool, mykene)
 	if err != nil {
 		t.Fatalf("settlementUpkeepDrain(share=0): %v", err)
 	}

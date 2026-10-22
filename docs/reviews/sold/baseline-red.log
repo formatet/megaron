@@ -1,0 +1,39 @@
+--- FAIL: TestSoldierWagesUseActualMenAndHomeHalf (0.00s)
+    pay_test.go:27: elite_infantry size100 crew0 garrison pay=2 want0.75
+    pay_test.go:27: elite_infantry size100 crew0 repairing pay=2 want0.75
+    pay_test.go:27: elite_infantry size100 crew0 fitting_out pay=2 want0.75
+    pay_test.go:27: elite_infantry size100 crew0 marching pay=2 want1.5
+    pay_test.go:27: elite_infantry size100 crew0 positioned pay=2 want1.5
+    pay_test.go:27: elite_infantry size100 crew0 freighting pay=2 want1.5
+    pay_test.go:27: elite_infantry size100 crew0 embarked pay=2 want1.5
+    pay_test.go:27: war_chariot size50 crew0 garrison pay=1.5 want0.5
+    pay_test.go:27: war_chariot size50 crew0 repairing pay=1.5 want0.5
+    pay_test.go:27: war_chariot size50 crew0 fitting_out pay=1.5 want0.5
+    pay_test.go:27: war_chariot size50 crew0 marching pay=1.5 want1
+    pay_test.go:27: war_chariot size50 crew0 positioned pay=1.5 want1
+    pay_test.go:27: war_chariot size50 crew0 freighting pay=1.5 want1
+    pay_test.go:27: war_chariot size50 crew0 embarked pay=1.5 want1
+    pay_test.go:27: galley size1 crew20 garrison pay=1.5 want0.1
+    pay_test.go:27: galley size1 crew20 repairing pay=1.5 want0.1
+    pay_test.go:27: galley size1 crew20 fitting_out pay=1.5 want0.1
+    pay_test.go:27: galley size1 crew20 marching pay=1.5 want0.2
+    pay_test.go:27: galley size1 crew20 positioned pay=1.5 want0.2
+    pay_test.go:27: galley size1 crew20 freighting pay=1.5 want0.2
+    pay_test.go:27: galley size1 crew20 embarked pay=1.5 want0.2
+    pay_test.go:27: war_galley size1 crew7 garrison pay=2.5 want0.035
+    pay_test.go:27: war_galley size1 crew7 repairing pay=2.5 want0.035
+    pay_test.go:27: war_galley size1 crew7 fitting_out pay=2.5 want0.035
+    pay_test.go:27: war_galley size1 crew7 marching pay=2.5 want0.07
+    pay_test.go:27: war_galley size1 crew7 positioned pay=2.5 want0.07
+    pay_test.go:27: war_galley size1 crew7 freighting pay=2.5 want0.07
+    pay_test.go:27: war_galley size1 crew7 embarked pay=2.5 want0.07
+    pay_test.go:27: merchantman size1 crew0 garrison pay=1 want0
+    pay_test.go:27: merchantman size1 crew0 repairing pay=1 want0
+    pay_test.go:27: merchantman size1 crew0 fitting_out pay=1 want0
+    pay_test.go:27: merchantman size1 crew0 marching pay=1 want0
+    pay_test.go:27: merchantman size1 crew0 positioned pay=1 want0
+    pay_test.go:27: merchantman size1 crew0 freighting pay=1 want0
+    pay_test.go:27: merchantman size1 crew0 embarked pay=1 want0
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.002s
+FAIL
