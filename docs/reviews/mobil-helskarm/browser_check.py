@@ -64,8 +64,14 @@ try:
     page.evaluate('document.fonts.ready')
     prefix=f'firefox-{width}-'+('baseline-' if baseline else '')
     def shot(name):
+     page.wait_for_load_state('networkidle')
+     # Visibility does not mean the drawer's 180ms CSS transition has ended.
+     # Finish finite CSS animations at their real endpoint; rAF scenes are
+     # already fixed at their initial frame by this explicit fixture.
+     page.evaluate("document.getAnimations().filter(a=>Number.isFinite(a.effect.getComputedTiming().endTime)).forEach(a=>a.finish())")
      data=page.screenshot()
      digest=hashlib.sha256(Image.open(io.BytesIO(data)).tobytes()).hexdigest()
+     proof.append({'width':width,'run':run,'scene':name,'rgba_sha256':digest})
      key=(width,name)
      if run==1:pixels[key]=digest
      else:
@@ -78,7 +84,7 @@ try:
       box=page.locator(selector).bounding_box();assert box=={'x':0,'y':0,'width':390,'height':844},box
       assert page.locator('.mobile-fullscreen').count()==1
       assert page.locator('#hex-canvas').evaluate('(e)=>e.inert')
-    page.locator('#trig-city').tap();check('#drawer-city');expect(page.locator('#city-scene')).to_be_visible();shot('city')
+    page.locator('#trig-city').tap();check('#drawer-city');expect(page.locator('#city-scene')).to_be_visible();expect(page.locator('#city-body')).to_contain_text('Population');shot('city')
     if width==390 and not baseline:
      page.locator('#city-body').evaluate('(e)=>e.scrollTop=e.scrollHeight')
      box=page.locator('#drawer-city .drawer-close').bounding_box();assert box['y']>=0 and box['y']+box['height']<=844,box
@@ -102,8 +108,44 @@ try:
     page.locator('#account-window-overlay .drawer-close').tap()
     page.locator('.gt-search-btn').tap();check('#search-overlay');shot('search')
     page.locator('#search-overlay .si-esc').tap()
-    page.locator('#gt-codex-btn').tap();check('#codex-panel');shot('codex')
+    if not baseline:
+     assert not page.locator('#hex-canvas').evaluate('(e)=>e.inert')
+     assert 'mobile-panel-blocked' not in page.locator('#map-root').get_attribute('class')
+     page.evaluate('toggleSearch();toggleSearch()')
+     assert not page.locator('#hex-canvas').evaluate('(e)=>e.inert')
+    page.locator('#gt-codex-btn').tap();check('#codex-panel');expect(page.locator('#codex-search')).to_be_visible();shot('codex')
     page.locator('#codex-panel .drawer-close').tap()
+    # Exercise the actual close entry points with an empty panel registry.
+    if not baseline:
+     page.evaluate("closeDrawer('notif');closeDrawer('war')")
+     def unblocked():
+      assert not page.locator('#hex-canvas').evaluate('(e)=>e.inert')
+      assert 'mobile-panel-blocked' not in page.locator('#map-root').get_attribute('class')
+      assert page.locator('.mobile-fullscreen').count()==0
+     for close in ('toggle','escape','slash','backdrop','result'):
+      page.locator('.gt-search-btn').tap();check('#search-overlay')
+      if close=='toggle':page.evaluate('toggleSearch()')
+      elif close=='escape':page.keyboard.press('Escape')
+      elif close=='slash':
+       page.locator('#search-input').evaluate('(e)=>e.blur()');page.keyboard.press('/')
+      elif close=='backdrop':page.locator('#search-overlay').dispatch_event('click')
+      else:page.locator('#search-results .sr-item').first.tap()
+      expect(page.locator('#search-overlay')).not_to_be_visible();unblocked()
+     for close in ('escape','outside'):
+      page.evaluate("chooseMarchTarget('unit')");check('#march-ctx')
+      if close=='escape':page.keyboard.press('Escape')
+      else:page.locator('body').dispatch_event('mousedown')
+      unblocked()
+     for toggle in ("toggleDrawer('city')",'toggleCodex()','toggleAccountWindow()'):
+      page.evaluate(toggle);page.evaluate(toggle);unblocked()
+     for opener,selector in [('#gt-wanax','#account-window-overlay'),('#gt-codex-btn','#codex-panel'),('#trig-city','#drawer-city')]:
+      page.locator(opener).tap();check(selector);page.keyboard.press('Escape');unblocked()
+     # Fullscreen has no backdrop space; dispatch a real DOM backdrop click.
+     page.locator('#gt-wanax').tap();page.locator('#account-window-overlay').dispatch_event('click');unblocked()
+     page.evaluate("openDispatchWindow({kind:'UnitArrived',body:{q:4,r:0},created_at:'2026-10-22T09:00:00Z'})")
+     page.keyboard.press('Escape');unblocked()
+     page.evaluate("openDispatchWindow({kind:'UnitArrived',body:{q:4,r:0},created_at:'2026-10-22T09:00:00Z'})")
+     page.locator('#dispatch-window-overlay').dispatch_event('click');unblocked()
     assert not errors,errors
     proof.append({'width':width,'run':run,'touch':True,'page_errors':errors})
     page.close()

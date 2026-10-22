@@ -3,7 +3,7 @@ TAP version 13
 # Subtest: mobile search toggle closes through cleanup and restores map input
 ok 1 - mobile search toggle closes through cleanup and restores map input
   ---
-  duration_ms: 1.35205
+  duration_ms: 1.367044
   type: 'test'
   ...
 1..1
@@ -14,13 +14,13 @@ ok 1 - mobile search toggle closes through cleanup and restores map input
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 4064.477342
+# duration_ms 4063.996654
 mutant: close toggle without closeSearch
 TAP version 13
 # Subtest: mobile search toggle closes through cleanup and restores map input
 not ok 1 - mobile search toggle closes through cleanup and restores map input
   ---
-  duration_ms: 1.779209
+  duration_ms: 1.694327
   type: 'test'
   location: '/home/tk/wt/codex-mobil-helskarm/web/static/js/megaron/ui/search_lifecycle.test.mjs:25:1'
   failureType: 'testCodeFailure'
@@ -49,13 +49,13 @@ not ok 1 - mobile search toggle closes through cleanup and restores map input
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 4082.672355
-restored explicit cleanup
+# duration_ms 4083.227378
+exact restored final cleanup
 TAP version 13
 # Subtest: mobile search toggle closes through cleanup and restores map input
 ok 1 - mobile search toggle closes through cleanup and restores map input
   ---
-  duration_ms: 1.415698
+  duration_ms: 1.307513
   type: 'test'
   ...
 1..1
@@ -66,4 +66,4 @@ ok 1 - mobile search toggle closes through cleanup and restores map input
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 4066.492193
+# duration_ms 4077.715113
