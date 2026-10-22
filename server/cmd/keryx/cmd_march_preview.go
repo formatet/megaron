@@ -23,6 +23,8 @@ func showMarchPreview(c *Client, path string, order map[string]any) error {
 		return nil
 	}
 	var forecast struct {
+		PlannedFirstTargetQ    *int   `json:"planned_first_target_q"`
+		PlannedFirstTargetR    *int   `json:"planned_first_target_r"`
 		PlannedExpeditionTicks *int   `json:"planned_expedition_ticks"`
 		PlannedHomeByTick      *int   `json:"planned_home_by_tick_if_departing_now"`
 		Available              bool   `json:"available"`
@@ -48,6 +50,9 @@ func showMarchPreview(c *Client, path string, order map[string]any) error {
 	}
 	if forecast.PlannedExpeditionTicks != nil {
 		fmt.Printf("Planned expedition: %s", formatDays(*forecast.PlannedExpeditionTicks, "%d"))
+		if forecast.PlannedFirstTargetQ != nil && forecast.PlannedFirstTargetR != nil {
+			fmt.Printf("; first to (%d,%d), then explores around it", *forecast.PlannedFirstTargetQ, *forecast.PlannedFirstTargetR)
+		}
 		if forecast.PlannedHomeByTick != nil {
 			fmt.Printf(" — with immediate departure, home by %s", formatWorldTime(c, *forecast.PlannedHomeByTick))
 		}

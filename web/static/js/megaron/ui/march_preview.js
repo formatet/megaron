@@ -31,7 +31,9 @@ export function marchExpeditionPlanLine(data) {
  if (!Number.isInteger(data.planned_expedition_ticks)) return '';
  const home = Number.isInteger(data.planned_home_by_tick_if_departing_now)
   ? ` — with immediate departure, home by ${fmtTickTime(data.planned_home_by_tick_if_departing_now)}` : '';
- return `Planned expedition: ${fmtDays(data.planned_expedition_ticks)}${home}. First-leg arrival remains unknown.`;
+ const first = Number.isInteger(data.planned_first_target_q) && Number.isInteger(data.planned_first_target_r)
+  ? `; first to (${data.planned_first_target_q},${data.planned_first_target_r}), then explores around it` : '';
+ return `Planned expedition: ${fmtDays(data.planned_expedition_ticks)}${first}${home}. First-leg arrival remains unknown.`;
 }
 function marchArrivalHTML(data) {
  const plan = marchExpeditionPlanLine(data);

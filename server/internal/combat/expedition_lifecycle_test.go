@@ -43,7 +43,7 @@ func (f expeditionFixture) untilReturning(t *testing.T) {
 
 func TestExpeditionLifecycle_AtomicReportRetry(t *testing.T) {
 	f := newExpeditionFixture(t, -2, 16, nil)
-	f.start(t, 9, 0, 12)
+	f.start(t, 4, 0, 12)
 	f.untilReturning(t)
 	ctx := context.Background()
 	pool := testPool(t)
@@ -100,7 +100,7 @@ func TestExpeditionLifecycle_HomeLost(t *testing.T) {
 	for _, when := range []string{"outbound", "homeward", "missing_home", "no_fallback"} {
 		t.Run(when, func(t *testing.T) {
 			f := newExpeditionFixture(t, -2, 16, nil)
-			f.start(t, 9, 0, 12)
+			f.start(t, 4, 0, 12)
 			if when == "homeward" {
 				f.untilReturning(t)
 			}
@@ -158,7 +158,7 @@ func TestExpeditionLifecycle_HomeLost(t *testing.T) {
 
 func TestExpeditionLifecycle_SameTickRedirectCancels(t *testing.T) {
 	f := newExpeditionFixture(t, -2, 16, nil)
-	res := f.start(t, 9, 0, 12)
+	res := f.start(t, 4, 0, 12)
 	q, r := res.TargetQ, res.TargetR
 	if _, err := ExecuteRecall(context.Background(), testPool(t), f.scheduler, f.eventStore, f.clk, RecallOrder{WorldID: f.worldID, UnitID: f.unitID, Mode: "redirect", NewTargetQ: &q, NewTargetR: &r}); err != nil {
 		t.Fatal(err)
@@ -187,7 +187,7 @@ func TestExpeditionLifecycle_ReservesAsymmetricHomeRoute(t *testing.T) {
 	if _, err := pool.Exec(ctx, `UPDATE map_tiles SET terrain='forest_cedar' WHERE world_id=$1 AND q=0`, f.worldID); err != nil {
 		t.Fatal(err)
 	}
-	f.start(t, 10, 0, 12)
+	f.start(t, 5, 0, 12)
 	legs := f.runUntilHome(t)
 	if got := legs[len(legs)-1].tick; got > 12 {
 		t.Fatalf("asymmetric route arrived at %d, after budget 12", got)
@@ -224,7 +224,7 @@ func TestExpeditionLifecycle_ShorthandedNavalHomeBudget(t *testing.T) {
 	if _, err := pool.Exec(ctx, `INSERT INTO settlement_goods(settlement_id,good_key,amount,rate,cap,calc_tick) VALUES($1,'grain',10000,0,10000,0) ON CONFLICT(settlement_id,good_key) DO UPDATE SET amount=10000,cap=10000`, f.capitalID); err != nil {
 		t.Fatal(err)
 	}
-	f.start(t, 10, 0, 12)
+	f.start(t, 5, 0, 12)
 	legs := f.runUntilHome(t)
 	if got := legs[len(legs)-1].tick; got > 12 {
 		t.Fatalf("shorthanded ship arrived at %d, after budget 12", got)
@@ -233,7 +233,7 @@ func TestExpeditionLifecycle_ShorthandedNavalHomeBudget(t *testing.T) {
 
 func TestExpeditionLifecycle_NewMarchClearsEvenMatchingTick(t *testing.T) {
 	f := newExpeditionFixture(t, -2, 16, nil)
-	f.start(t, 9, 0, 12)
+	f.start(t, 4, 0, 12)
 	ctx := context.Background()
 	pool := testPool(t)
 	// Simulate an externally stopped leg retaining its old mission row. The next
@@ -261,7 +261,7 @@ func TestExpeditionLifecycle_NewMarchClearsEvenMatchingTick(t *testing.T) {
 
 func TestExpeditionLifecycle_AtomicTurnRetry(t *testing.T) {
 	f := newExpeditionFixture(t, 0, 16, nil)
-	f.start(t, 9, 0, 12)
+	f.start(t, 4, 0, 12)
 	ctx := context.Background()
 	pool := testPool(t)
 	// Ensure the next arrival must turn home, then fail the outcome write.
@@ -306,7 +306,7 @@ func TestExpeditionLifecycle_AtomicTurnRetry(t *testing.T) {
 
 func TestExpeditionLifecycle_HalfTimeWhileRoamingNearHome(t *testing.T) {
 	f := newExpeditionFixture(t, -7, 7, nil)
-	f.start(t, 0, 0, 12)
+	f.start(t, 1, 0, 12)
 	for _, leg := range f.runUntilHome(t) {
 		if leg.intent == "explore" && leg.tick > 6 {
 			t.Fatalf("roaming outbound leg ended at %d, after turn tick 6", leg.tick)

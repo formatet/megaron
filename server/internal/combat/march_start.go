@@ -79,8 +79,8 @@ type MarchOrder struct {
 	// army cancels its active road sites (the stone is not refunded, B3).
 	KeepRoadSite *uuid.UUID
 	// ExpeditionTicks is how long an explore order may last
-	// (megaron_plan_upptackarexpeditionen.md): TargetQ/TargetR names the
-	// AREA, and the unit turns for home by half this length. 0 = the default.
+	// (megaron_plan_upptackarexpeditionen.md): TargetQ/TargetR is the first
+	// destination and area centre. It turns home by half this length; 0 = default.
 	ExpeditionTicks int
 }
 
@@ -118,7 +118,7 @@ type MarchStarted struct {
 	PurseShortfall float64
 	// Expedition is set for an explore order: the area, its length and when
 	// the unit turns and is home at the latest. TargetQ/TargetR above is the
-	// first leg's hex, not the area.
+	// first leg's hex (also the area centre for new expeditions).
 	Expedition *ExpeditionPlan
 }
 
@@ -519,11 +519,8 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		targetQ, targetR = seaQ, seaR
 	}
 
-	// Upptäckarexpeditionen (megaron_plan_upptackarexpeditionen.md): explore
-	// names an AREA around the chosen hex. The first leg goes to the nearest
-	// hex there the Wanax has never seen — the same rule every later leg uses
-	// (expedition.go) — so the order is refused up front when the area holds
-	// nothing unseen this unit can reach.
+	// New expeditions travel to the selected hex first. Only subsequent legs
+	// choose unseen ground around it (expedition.go); saved legs are untouched.
 	var expeditionPlan *ExpeditionPlan
 	if o.Intent == "explore" {
 		length, lengthErr := NormalizeExpeditionLength(o.ExpeditionTicks)
@@ -536,6 +533,12 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		}
 		if _, onMap := g[[2]int{targetQ, targetR}]; !onMap {
 			return nil, reject(http.StatusNotFound, "target hex not found")
+		}
+		if _, _, reachable := g.FindPath(province.MapPosition{Q: originQ, R: originR},
+			province.MapPosition{Q: targetQ, R: targetR}, unit.MoveCategory(u.Type), roads); !reachable {
+			return nil, reject(http.StatusUnprocessableEntity,
+				"no route from this unit's current position to the chosen hex (%d,%d) — an expedition goes there first, then explores around it; try another reachable hex or a unit departing from elsewhere",
+				targetQ, targetR)
 		}
 		leg, lErr := nextExpeditionLeg(ctx, pool, g, roads, o.WorldID, o.PlayerID,
 			province.MapPosition{Q: targetQ, R: targetR}, province.MapPosition{Q: originQ, R: originR},
@@ -562,11 +565,10 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		}
 		if !leg.Found {
 			return nil, reject(http.StatusUnprocessableEntity,
-				"no route from this unit's current position to unseen ground within %d hexes of (%d,%d) — the chosen hex marks a search area, not a guaranteed path; try another reachable area or a unit departing from elsewhere",
+				"no route from this unit's current position to unseen ground within %d hexes of (%d,%d) — try another area with reachable unseen ground",
 				ExpeditionAreaRadius, targetQ, targetR)
 		}
 		expeditionPlan = &ExpeditionPlan{AreaQ: targetQ, AreaR: targetR, LengthTicks: length}
-		targetQ, targetR = leg.Target.Q, leg.Target.R
 	}
 
 	// Target hex must exist on this world's map.
@@ -839,7 +841,7 @@ func startMarch(ctx context.Context, pool *pgxpool.Pool, scheduler *events.Sched
 		expeditionPlan.TurnTick = ExpeditionTurnTick(currentTick, expeditionPlan.LengthTicks)
 		expeditionPlan.HomeByTick = currentTick + expeditionPlan.LengthTicks
 		if currentTick+travelTicks > expeditionPlan.TurnTick {
-			return nil, reject(http.StatusUnprocessableEntity, "the nearest unseen ground around (%d,%d) is %s away — more than half of the %s you gave, so it could not get back in time; give it at least %s", expeditionPlan.AreaQ, expeditionPlan.AreaR, tick.FormatDays(travelTicks), tick.FormatDays(expeditionPlan.LengthTicks), tick.FormatDays(2*travelTicks))
+			return nil, reject(http.StatusUnprocessableEntity, "the chosen hex (%d,%d) is %s away — more than half of the %s you gave, so it could not get back in time; give it at least %s", expeditionPlan.AreaQ, expeditionPlan.AreaR, tick.FormatDays(travelTicks), tick.FormatDays(expeditionPlan.LengthTicks), tick.FormatDays(2*travelTicks))
 		}
 		// Entered-terrain costs and tick rounding are asymmetric: reserve the
 		// actual route home, rather than assuming it costs the outbound leg.
