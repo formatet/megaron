@@ -79,13 +79,13 @@ func TestTickNoticeFailureKeepsWorldRunning(t *testing.T) {
 			}
 		}
 	}
-	check(10, 0, 1, 29.9)
+	check(10, 0, 1, 29.89)
 	exec(`ALTER TABLE notifications DROP CONSTRAINT test_notice_owner_failure`)
 	exec(`UPDATE worlds SET current_tick=11 WHERE id=$1`, wid)
 	if err := h.Handle(ctx, events.ScheduledEvent{ID: 941400002, WorldID: wid, DueTick: 11}); err != nil {
 		t.Fatal(err)
 	}
-	check(11, 1, 1, 29.8)
+	check(11, 1, 1, 29.7799)
 	// A's durable prior band survives the failed notice and describes the actual
 	// transition on the next observation; B's continuing band stays silent.
 	var from, to string
@@ -108,5 +108,5 @@ func TestTickNoticeFailureKeepsWorldRunning(t *testing.T) {
 	if err := h.Handle(ctx, events.ScheduledEvent{ID: 941400003, WorldID: wid, DueTick: 12}); err != nil {
 		t.Fatalf("garrison observation must not abort world tick: %v", err)
 	}
-	check(12, 1, 1, 29.7)
+	check(12, 1, 1, 29.6698)
 }

@@ -48,7 +48,7 @@ func TestL1TempleClimbsToFirstPrayerAndCaps(t *testing.T) {
 				if _, err := pool.Exec(ctx, `UPDATE worlds SET current_tick=$2 WHERE id=$1`, wid, tick); err != nil {
 					t.Fatal(err)
 				}
-				w := wanaxSnap{cityCount: 1, playerID: pid, settlementID: sid, kharis: amount, kharisCap: cap, devotionSum: dev, templeCities: 1, maxTempleLevel: level}
+				w := wanaxSnap{population: 1000, cityCount: 1, playerID: pid, settlementID: sid, kharis: amount, kharisCap: cap, devotionSum: dev, templeCities: 1, maxTempleLevel: level}
 				if err := h.processMaintenance(ctx, w, wid, atomic.AddInt64(&advanceOneDayEventID, 1)); err != nil {
 					t.Fatal(err)
 				}
@@ -83,7 +83,7 @@ func TestL1TempleClimbsToFirstPrayerAndCaps(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if net != -.1 {
+			if net != -.2 {
 				t.Fatalf("L%d unfunded net%g changed baseline decay", level, net)
 			}
 		})

@@ -36,7 +36,7 @@ func TestTempleProjectionCountsOnlyRealWorkers(t *testing.T) {
 	for _, n := range []int{0, 1, 2, 1, 0} {
 		staffTestTemple(t, pool, sid, n)
 		net, has, workers, capacity, err := ProjectDailyNet(ctx, pool, owner, wid)
-		want := float64(n)*KharisPerTempleWorker - computeDailyDecay(1)
+		want := float64(n)*KharisPerTempleWorker - computeDailyDecay(1, 1000)
 		if err != nil || !has || workers != float64(n) || capacity != 2 || math.Abs(net-want) > 1e-8 {
 			t.Fatalf("%d workers net%g want%g workers%g cap%g has%v err%v", n, net, want, workers, capacity, has, err)
 		}

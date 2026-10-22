@@ -14,7 +14,7 @@ import (
 // dayNet models one maintained day: what devotion earns, minus the day's decay.
 func dayNet(devotionSum float64, offerFraction, scarcity float64, cityCount int) float64 {
 	gain := devotionSum * KharisPerTempleWorker * offerFraction * scarcity
-	return gain - computeDailyDecay(cityCount)
+	return gain - computeDailyDecay(cityCount, 0)
 }
 
 func TestDevotionCalibration_ModestClimbsGrandClimbsFaster(t *testing.T) {

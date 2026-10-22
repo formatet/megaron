@@ -51,12 +51,12 @@ func TestEarlyTempleOfferingLocalGiftAndProjection(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if math.Abs(net-(4*KharisPerTempleWorker-decayBas)) > 1e-8 {
+			if math.Abs(net-(4*KharisPerTempleWorker-.2)) > 1e-8 {
 				t.Fatalf("fed staffed L2 net=%g want shared yield minus decay", net)
 			}
 			h := newTestTickHandler(pool)
 			eid := atomic.AddInt64(&advanceOneDayEventID, 1)
-			w := wanaxSnap{cityCount: 1, playerID: pid, settlementID: sid, kharis: 20, kharisCap: 75, devotionSum: 4, templeCities: 1, maxTempleLevel: 2}
+			w := wanaxSnap{population: 1000, cityCount: 1, playerID: pid, settlementID: sid, kharis: 20, kharisCap: 75, devotionSum: 4, templeCities: 1, maxTempleLevel: 2}
 			if err := h.processMaintenance(ctx, w, wid, eid); err != nil {
 				t.Fatal(err)
 			}
@@ -93,7 +93,7 @@ func TestEarlyTempleOfferingLocalGiftAndProjection(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if math.Abs(net+.2) > 1e-10 {
+			if math.Abs(net+.41) > 1e-10 {
 				t.Fatalf("empty local temple borrowed remote goods: net%g", net)
 			}
 			fed, total, _ := h.applyTempleOffering(ctx, pid, wid)

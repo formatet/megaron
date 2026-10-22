@@ -5,34 +5,26 @@ import (
 	"testing"
 )
 
-func TestRealmDecay_EveryCityCostsMore(t *testing.T) {
-	prev := 0.0
-	for n := 1; n <= 20; n++ {
-		got := computeDailyDecay(n)
-		want := .1 + .1*float64(n*(n-1)/2)
-		if math.Abs(got-want) > 1e-10 {
-			t.Fatalf("N%d got%g want%g", n, got, want)
+func TestRealmDecay_CitiesAndResidents(t *testing.T) {
+	for _, tc := range []struct {
+		cities, population int
+		want               float64
+	}{
+		{1, 0, .1}, {3, 2500, .75}, {10, 50000, 6.9}, {0, 0, .1}, {-1, -100, .1},
+	} {
+		if got := computeDailyDecay(tc.cities, tc.population); math.Abs(got-tc.want) > 1e-10 {
+			t.Errorf("%dcities/%dresidents got%g want%g", tc.cities, tc.population, got, tc.want)
 		}
-		if n > 1 {
-			delta := got - computeDailyDecay(n-1)
-			if delta <= prev {
-				t.Fatalf("N%d marginal%g <=%g", n, delta, prev)
-			}
-			prev = delta
-		}
-	}
-	if math.Abs(computeDailyDecay(5)-1.1) > 1e-10 {
-		t.Fatal("five cities must cost1 plus base.1")
 	}
 }
 func TestRealmKharis_OpeningAndTempleCalibration(t *testing.T) {
 	if StartingKharis != 40 || EffectiveKharisCap(100, 0) != 40 {
 		t.Fatal("start/no-temple cap must both40")
 	}
-	if got := clampKharis(40-computeDailyDecay(1), EffectiveKharisCap(100, 0)); math.Abs(got-39.9) > 1e-10 {
+	if got := clampKharis(40-computeDailyDecay(1, 0), EffectiveKharisCap(100, 0)); math.Abs(got-39.9) > 1e-10 {
 		t.Fatalf("opening clipped:%g", got)
 	}
-	if net := 2*KharisPerTempleWorker - computeDailyDecay(6); math.Abs(net-.5) > 1e-10 {
+	if net := 2*KharisPerTempleWorker - computeDailyDecay(6, 0); math.Abs(net-1) > 1e-10 {
 		t.Fatalf("six-city L1 net%g", net)
 	}
 	for level, want := range []float64{40, 50, 75, 100} {

@@ -53,7 +53,7 @@ func TestProvinceRealmKharisProjection(t *testing.T) {
 		if err := json.Unmarshal(rec.Body.Bytes(), &payload); err != nil {
 			t.Fatal(err)
 		}
-		count, base, burden, err := kharis.ProjectDecay(ctx, pool, pid, wid)
+		d, err := kharis.ProjectDecay(ctx, pool, pid, wid)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -61,10 +61,10 @@ func TestProvinceRealmKharisProjection(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if count != i+1 || hasTemples {
-			t.Fatalf("bad fixture count=%d temples=%v", count, hasTemples)
+		if d.CityCount != i+1 || hasTemples {
+			t.Fatalf("bad fixture count=%d temples=%v", d.CityCount, hasTemples)
 		}
-		for key, want := range map[string]float64{"kharis_city_count": float64(count), "kharis_base_decay": base, "kharis_city_decay": burden, "kharis_daily_decay": base + burden, "kharis_net_per_tick": net} {
+		for key, want := range map[string]float64{"kharis_city_count": float64(d.CityCount), "kharis_base_decay": d.Base, "kharis_city_decay": d.Cities, "kharis_daily_decay": d.Total, "kharis_net_per_tick": net, "kharis_population": float64(d.Population), "kharis_population_decay": d.Residents, "kharis_production_per_tick": net + d.Total} {
 			got, ok := payload.Settlement[key].(float64)
 			if !ok || math.Abs(got-want) > 1e-9 {
 				t.Errorf("%s=%v want %g", key, payload.Settlement[key], want)
@@ -104,6 +104,41 @@ func TestKharisPlayerRulesSourceParity(t *testing.T) {
 		}
 		if spec.refugee && (strings.Contains(text, "starts at") || !strings.Contains(text, "standing is kept")) {
 			t.Fatal(text)
+		}
+	}
+}
+
+func TestProvinceCultUpkeepDoesNotRevealForeignRealm(t *testing.T) {
+	f := newAlphaFixture(t)
+	ctx := context.Background()
+	svc := auth.NewService(f.pool, "alpha-secret")
+	token, _, err := svc.Register(ctx, "cult-visitor-"+uuid.NewString(), "pw")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var prov uuid.UUID
+	if err := f.pool.QueryRow(ctx, `SELECT province_id FROM settlements WHERE id=$1`, f.cities[0]).Scan(&prov); err != nil {
+		t.Fatal(err)
+	}
+	h := NewProvinceHandler(f.pool, nil, f.h.clk, nil, nil)
+	r := chi.NewRouter()
+	r.With(auth.Middleware(svc)).Get("/worlds/{worldID}/provinces/{provinceID}", h.Get)
+	req := httptest.NewRequest("GET", "/worlds/"+f.world.String()+"/provinces/"+prov.String(), nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	rec := httptest.NewRecorder()
+	r.ServeHTTP(rec, req)
+	if rec.Code != 200 {
+		t.Fatalf("visitor %d %s", rec.Code, rec.Body.String())
+	}
+	var body struct {
+		Settlement map[string]any `json:"settlement"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	for _, key := range []string{"kharis_population", "kharis_population_decay", "kharis_daily_decay", "kharis_net_per_tick", "kharis_production_per_tick"} {
+		if _, exists := body.Settlement[key]; exists {
+			t.Errorf("foreign realm field %s leaked", key)
 		}
 	}
 }

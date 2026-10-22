@@ -11,11 +11,15 @@ Blessings and punishments arrive as notifications.
 
 A new Wanax starts at **40 Kharis**, before founding. Rising again keeps your standing with the gods, with the floor as a minimum. Kharis never falls all the way to nothing. It fades from the start; founding does not pause decay.
 
-## The cost of your realm
+## Upkeep of the cult
 
-Daily decay is **0.1 base + 0.1 × N × (N − 1) / 2**, where **N** counts all your active cities, including your capital, whether or not they have temples. Sunk, collapsed and razed cities do not count. Five cities cost **1.0 per day**, plus the **0.1 base**: **1.1 total**. Each additional city adds more cost than the last.
+Daily upkeep is **0.1 base + 0.2 per city beyond the first + 0.1 per 1,000 residents**. It counts all your active cities, including your capital, whether or not they have temples. Sunk, collapsed and razed cities do not count. Residents are the actual population in those cities, including people short of a whole citizen; armies and crews away from the population are not counted a second time. This is the upkeep of the cult, rather than an extra penalty that accelerates as your realm grows.
 
-**Kult → Daily decay** and `keryx status` show the base, city count, city cost and total alongside the projected net. A temple earns favour; it does not remove a city's cost. A standing temple protects you from punishment: below 30 Kharis without one, there is a 3% chance each day. A punishment chooses a random eligible city of yours with something it can take; it need not strike the capital.
+For **three cities with 2,500 residents altogether**, upkeep is **0.1 + 0.4 + 0.25 = 0.75 kharis per day**. A realm without a city has the base cost only.
+
+**Kult → Upkeep of the cult** and `keryx status` show the base, cities and residents separately, alongside projected temple production and net. One more fed temple worker gives **+1.05 kharis per day before scarcity**. This describes the extra worker's yield: employing one also requires a free citizen, an available temple workplace and that temple's daily offering. A temple earns favour; it does not remove its city's cost.
+
+A standing temple protects you from punishment: below 30 Kharis without one, there is a 3% chance each day. A punishment chooses a random eligible city of yours with something it can take; it need not strike the capital.
 
 ## How to raise it
 
@@ -29,7 +33,7 @@ In a small realm, a fully staffed, fed level-1 temple can earn more favour than 
 
 **Your best temple sets your ceiling:** no temple **40**, level 1 **50**, level 2 **75**, level 3 **100**. A level-1 temple can never earn you a blessing. To reach blessings, you need a higher-level temple.
 
-Kharis decays every day regardless. Expansion increases that cost even when every city has a temple ([[colonies]]).
+Kharis decays every day regardless. Additional cities and residents increase cult upkeep even when every city has a temple ([[colonies]]).
 
 Kharis is a requirement for [[rites|prayers]], never spent. Everyday prayers answer when their requirements are met; they cost goods and waiting time.
 

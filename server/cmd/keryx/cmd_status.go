@@ -969,6 +969,14 @@ grain_consum_rate, net_grain_per_tick_after_upkeep, net_silver_per_tick_after_up
 			if line := kharisDecayLine(sett); line != "" {
 				fmt.Println("  " + line)
 			}
+			if production, ok := sett["kharis_production_per_tick"].(float64); ok {
+				if netKnown {
+					fmt.Printf("  Temple production: %.2f kharis per day\n", production)
+				}
+			}
+			if worker, ok := sett["kharis_per_temple_worker"].(float64); ok {
+				fmt.Printf("  One more fed temple worker gives +%.2f kharis per day before scarcity; requires a free citizen, a temple workplace and its daily offering.\n", worker)
+			}
 			if line := kharisCapLine(sett); line != "" {
 				fmt.Print(line)
 			}
@@ -1288,17 +1296,20 @@ func armyFoodLine(sett map[string]any) string {
 // Missing fields are unavailable, never an invented zero cost.
 func kharisDecayLine(sett map[string]any) string {
 	count, countOK := sett["kharis_city_count"].(float64)
+	population, popOK := sett["kharis_population"].(float64)
 	base, baseOK := sett["kharis_base_decay"].(float64)
 	cities, citiesOK := sett["kharis_city_decay"].(float64)
+	residents, residentsOK := sett["kharis_population_decay"].(float64)
 	total, totalOK := sett["kharis_daily_decay"].(float64)
-	if !countOK || !baseOK || !citiesOK || !totalOK {
-		return "Kharis decay not reported"
+	if !countOK || !popOK || !baseOK || !citiesOK || !residentsOK || !totalOK {
+		return "Cult upkeep not reported"
 	}
 	cityWord := "cities"
 	if count == 1 {
 		cityWord = "city"
 	}
-	return fmt.Sprintf("Kharis decay: %.1f base + %.0f %s cost %.1f per day = %.1f total", base, count, cityWord, cities, total)
+	return fmt.Sprintf("Upkeep of the cult: %.2f base + %.0f %s cost %.2f + %.0f residents cost %.2f = %.2f kharis per day", base, count, cityWord, cities, population, residents, total)
+
 }
 
 // kharisCapLine explains the temple cap. Legibilitet (2026-07-24): ett L1-tempel

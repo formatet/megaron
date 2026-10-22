@@ -18,7 +18,7 @@ Click any row to open it in the **Dispatch window**. The same window opens from 
 3. **Foreign marches** — someone is coming, and you know roughly when. See [[defence]].
 4. **Sieges and occupation** — a clock is running on a city. See [[sieges]] and [[occupation]].
 
-A [[kharis|Kharis]] notice marks each change between Favorable, Indifferent, Suspicious and Wrathful. Check **Kult** for Kharis and its daily decay breakdown. It fades from the start; every active city counts toward the cost. Below 30 without a standing temple, punishment can fall. Staff and feed temples, then check the projected net.
+A [[kharis|Kharis]] notice marks each change between Favorable, Indifferent, Suspicious and Wrathful. Check **Kult** for Kharis and the upkeep of the cult. It fades from the start; every active city and its residents count toward the cost. Below 30 without a standing temple, punishment can fall. Staff and feed temples, then check the projected net.
 
 Then look at **City → Production** for idle [[citizens]], and **Diplomacy → Correspondence** to ask a contacted Wanax about [[trade]].
 

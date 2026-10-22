@@ -43,13 +43,13 @@ test('a null/undefined payload draws nothing, crashes nothing', () => {
 
 
 test('realm decay breakdown uses authoritative base, city cost and total, including templeless realms', () => {
-  const pd = {kharis_city_count: 5, kharis_base_decay: 0.1, kharis_city_decay: 1, kharis_daily_decay: 1.1,
+  const pd = {kharis_city_count: 5, kharis_base_decay: 0.1, kharis_city_decay: 1, kharis_daily_decay: 1.1, kharis_population:2500, kharis_population_decay:.25,
     kharis_net_known: true, kharis_net_per_tick: -1.1, temple_offers: []};
-  assert.match(kharisDecayHTML(pd), /0.1 base \+ 5 cities cost 1.0 per day = 1.1 total/);
+  assert.match(kharisDecayHTML(pd), /0.10 base \+ 5 cities cost 1.00 \+ 2500 residents cost 0.25 = 1.10 kharis per day/);
   assert.match(kharisNetView(pd).netHtml, /-1.1 kharis per day/);
   // Deliberately unlike today's rule: display values, never recalculate the formula.
-  assert.match(kharisDecayHTML({...pd, kharis_base_decay: 0.7, kharis_city_decay: 8.6, kharis_daily_decay: 9.3}), /0.7 base \+ 5 cities cost 8.6 per day = 9.3 total/);
-  assert.match(kharisDecayHTML({...pd, kharis_city_count: 1, kharis_city_decay: 0, kharis_daily_decay: 0.1}), /1 city cost 0.0 per day/);
+  assert.match(kharisDecayHTML({...pd, kharis_base_decay: 0.7, kharis_city_decay: 8.6, kharis_daily_decay: 9.3}), /0.70 base \+ 5 cities cost 8.60 \+ 2500 residents cost 0.25 = 9.30 kharis per day/);
+  assert.match(kharisDecayHTML({...pd, kharis_city_count: 1, kharis_city_decay: 0, kharis_daily_decay: 0.1}), /1 city cost 0.00/);
 });
 
 test('missing or partial realm decay never claims zero cost', () => {
@@ -57,4 +57,11 @@ test('missing or partial realm decay never claims zero cost', () => {
     assert.match(kharisDecayHTML(pd), /not reported/);
     assert.doesNotMatch(kharisDecayHTML(pd), /0.0|NaN/);
   }
+});
+
+test('production and extra worker yield are server-owned; yield is conditional, not a staffing recommendation', () => {
+ const view=kharisNetView({kharis_net_known:true,kharis_net_per_tick:1.35,kharis_production_per_tick:2.1,kharis_per_temple_worker:1.05});
+ assert.match(view.netHtml,/Temple production/);assert.match(view.netHtml,/2.10 kharis per day/);
+ assert.match(view.netHtml,/worker gives \+1.05 kharis per day before scarcity/);
+ assert.match(view.netHtml,/Requires a free citizen, a temple workplace and its daily offering/);
 });
