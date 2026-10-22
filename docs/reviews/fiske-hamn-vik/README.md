@@ -4,8 +4,8 @@
 
 Kust och vik håller två fiskare; viken ger dubbelt per fiskare. Hamnens enda
 fiskeeffekt är djuphavsplatser efter nivå. Gemensam economy-ägare, migration200
-och atomisk engångsövergång före workers/HTTP. Kod `060c8354`, testfixturrättning `190f5b97`, bas `ea97b332`.
-Ingen merge/push/deploy eller liveskrivning. Slutlig fresh200Go GREEN (world157.523s),714JS/vet GREEN.
+och atomisk engångsövergång före workers/HTTP. Kod `060c8354`, testfixturrättning `190f5b97`, aktiveringsfix `af222df8`, bas `ea97b332`.
+Ingen merge/push/deploy eller liveskrivning. Full fresh200Go inklusive aktiveringsfix af222df8 GREEN (world154.066s),714JS/vet GREEN.
 
 ## Slice-kontrakt
 
@@ -35,7 +35,12 @@ låser staden, frigör överflödiga fiskare med högsta ordinaler och recompute
 Markören sätts klar först efter alla städer. Demolition och övergång använder
 SAMMA utdragna liftHexPlacementsToCapacity; ingen ny automatisk matplacering.
 Recompute settle:ar gamla lager med sparad gammal rate innan ny rate skrivs.
-Replay gör ingenting. Fel i någon recompute rullar tillbaka beskärning och markör.
+Efter Claudes review kör RecomputeProduction alltid samma fisktrim, under en
+befintlig eller egen placementWriteTx. En tidigare pausad/forming värld som
+aktiveras efter startupmarkören trimmar därför vid nästa recompute; markören
+kan inte lämna kvar överfulla fiskjobb där. current_world_tick() läser aktiva
+världens tick, så startup projicerar inte om andra världar med fel världsklocka.
+Replay av startup gör ingenting. Fel i någon recompute rullar tillbaka beskärning och markör.
 Arkiverade världar återaktiveras inte eller projiceras om av denna övergång.
 
 HTTP buildGoods behåller explicit cap0; null skulle kunna tolkas som obegränsat.
@@ -50,10 +55,12 @@ levelplatser/rate följer samma ägare; deepuppgradering visar platser1→2→4.
 | Domän och livscykel | Final-rule-tabell, hamnL0–3, option/capacity/effects/goods, verkligt placerad deep-rate1, founding/restfolk cap0 och hamnrivning i fishing_rules_test.go |
 | Övergång | TestFishingTransitionPrunesHighestAndRecomputesOnce:6→2 på kusten, ordinal1/2 kvar, gamla fish10+2settlas12, ny rate2, populationoförändrad, replayno-op. TestFishingTransitionRollsBackPruningOnRecomputeFailure:provocerad stockskrivning misslyckas, alla3jobb kvar och markerfalse |
 | HTTP | TestDeepFishingHTTPZeroCapAndHarbour cap0/409→cap1/201/rate1; TestBayFishingHTTPUsesLocalCapacity cap2/rate2 på alla hamnnivåer, inga grannfält |
+| Reviewfixens breddning | Fresh200 hela economy/API/kharis/recompute-all GREEN, review-resume-fresh.log; ny vet GREEN, review-resume-vet.log |
+| Aktivering efter global markör | TestFishingResumeRecomputesAfterGlobalTransition:paused värld med6kustjobb, annan aktiv värld sätter markören true, aktivera paused och recompute ger2jobb/ordinal1–2/rate2 |
 | Hela berörda paket | Färsk200 economy5.488s och API43.477s GREEN, final-economy-api.log |
 | Egen fysisk mutant | Separat checkout060c8354:>=4→>=5. OwnerDB ochHTTP RED på utebliven vikrate; byteexakt SHA-restore och ny fresh200 GREEN. final-mutation-*.log/txt |
 | JS / vet | 714JS GREEN; final-js.log. go vet ./... GREEN; final-vet.log |
-| Full fresh Go | GREEN efter fixturrättning, world157.523s,57900; final-full-fresh.log |
+| Full fresh Go | GREEN inklusive aktiveringsfix af222df8, world154.066s,57900; review-full-fresh.log. Föregående gröna final-full-fresh.log avser före aktiveringsfix |
 | Fyra ytor | Befintlig Keryx/webb läser servercap/rate; nya exakta fishing/harbourartiklar och rättade Buildings. client-surfaces.md |
 | BILD / TEXT | Ingen produktions-JS/CSS/markup eller ny hexpaneltext ändrad. Befintlig kapacitetsrendering fixturetestad för0/1/2/4ochrate1/2. Ingen BILD-grind utlöst; artiklar TEXT i playtest |
 
@@ -99,3 +106,12 @@ processcommit/migration/dirty, completed-markör, rates och nya tak i DB/API.
 
 Landregeln och FOW följer godkänt19:15beslut. Rå snapshot tar ingen reservation;
 spelvärlden kan ändras innan deploy. Ingen historisk fiskmängd räknas om.
+
+## Aktiveringsfixens egen fysiska mutation
+
+Separat af222df8-checkout tar bort liftHexPlacementsToCapacity från
+RecomputeProduction. TestFishingResumeRecomputesAfterGlobalTransition och
+TestFishingTransitionPrunesHighestAndRecomputesOnce ska då bli RED på kvarvarande
+överfulla jobb. Originalet återställs byteexakt (review-mutation-sha.txt) och
+färska identiska tester körs gröna. review-mutation-*.log är detta bevis, skilt
+från den tidigare vikmutanten. Ingen produktionskod ändras efter af222df8. CLAUDE.md:s gamla hamnpåstående rättas till en pekare på fiskägaren/temenos_arbete; inga nya tal dupliceras där.

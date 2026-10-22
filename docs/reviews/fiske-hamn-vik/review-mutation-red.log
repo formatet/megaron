@@ -1,0 +1,8 @@
+» färsk DB på migration 200 · commit af222df8+ändringar
+--- FAIL: TestFishingTransitionPrunesHighestAndRecomputesOnce (0.04s)
+    fishing_transition_test.go:61: kept ordinals=[1 2 3 4 5 6] want1,2
+--- FAIL: TestFishingResumeRecomputesAfterGlobalTransition (0.06s)
+    fishing_transition_test.go:141: activated world count/maxOrdinal/rate=6/6/2 want2/2/2
+FAIL
+FAIL	formatet/megaron/server/internal/economy	0.099s
+FAIL
