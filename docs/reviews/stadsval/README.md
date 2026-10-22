@@ -50,3 +50,5 @@ because a city hex can never satisfy coastal-sea patrol. Rebased on ORDER8 LIVE 
 Function/semantic: automated real-PG owner + CLI HTTP fixtures + actual Firefox controller.
 User: automated scripted orders above; human comprehension not claimed. BILD blocks Claude's merge.
 No new route, event, migration, catalogue, or movement/knowledge mechanics. No live account mutated.
+
+Final: full fresh Go suite GREEN (schema198, `GOTEST_PORT=57900`, world153.787s, core50a06375); 709/709 JS and vet GREEN. Named rumour mutants RED→exact-byte restored GREEN on both consumers. BILD sent to Claude; Timothy approval remains the integration gate.
