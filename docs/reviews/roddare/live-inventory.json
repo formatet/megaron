@@ -1,0 +1,241 @@
+[
+  {
+    "q": null,
+    "r": null,
+    "id": "400abaf3-b62a-4966-9fd8-b8a9d63b5722",
+    "crew": 20,
+    "size": 1,
+    "type": "galley",
+    "status": "garrison",
+    "target_q": null,
+    "target_r": null,
+    "world_id": "2178e795-1303-4cc3-865a-6386847d68d1",
+    "provisions": 0,
+    "arrive_tick": null,
+    "depart_tick": null,
+    "march_route": null,
+    "observed_at": "2026-10-22T15:48:14.331719+00:00",
+    "current_tick": 2819,
+    "march_intent": null,
+    "world_status": "active",
+    "cargo_unit_id": null,
+    "provision_goods": {},
+    "home_settlement_id": null
+  },
+  {
+    "q": null,
+    "r": null,
+    "id": "a3d5ee79-5c2e-47b5-89e8-bef3dc80512e",
+    "crew": 10,
+    "size": 1,
+    "type": "merchantman",
+    "status": "garrison",
+    "target_q": null,
+    "target_r": null,
+    "world_id": "2178e795-1303-4cc3-865a-6386847d68d1",
+    "provisions": 0,
+    "arrive_tick": null,
+    "depart_tick": null,
+    "march_route": null,
+    "observed_at": "2026-10-22T15:48:14.331719+00:00",
+    "current_tick": 2819,
+    "march_intent": null,
+    "world_status": "active",
+    "cargo_unit_id": null,
+    "provision_goods": {},
+    "home_settlement_id": null
+  },
+  {
+    "q": 1,
+    "r": 40,
+    "id": "c082acf0-e271-4e87-90be-673146624975",
+    "crew": 20,
+    "size": 1,
+    "type": "galley",
+    "status": "positioned",
+    "target_q": null,
+    "target_r": null,
+    "world_id": "2178e795-1303-4cc3-865a-6386847d68d1",
+    "provisions": 6.942282035696246e-18,
+    "arrive_tick": null,
+    "depart_tick": null,
+    "march_route": {
+      "costs": [
+        333,
+        333,
+        333,
+        333,
+        333,
+        333,
+        200,
+        200,
+        200,
+        200,
+        200,
+        333,
+        333,
+        333
+      ],
+      "hexes": [
+        [
+          9,
+          29
+        ],
+        [
+          8,
+          30
+        ],
+        [
+          7,
+          31
+        ],
+        [
+          6,
+          31
+        ],
+        [
+          5,
+          32
+        ],
+        [
+          4,
+          32
+        ],
+        [
+          3,
+          33
+        ],
+        [
+          2,
+          34
+        ],
+        [
+          1,
+          35
+        ],
+        [
+          0,
+          36
+        ],
+        [
+          0,
+          37
+        ],
+        [
+          0,
+          38
+        ],
+        [
+          0,
+          39
+        ],
+        [
+          1,
+          39
+        ],
+        [
+          1,
+          40
+        ]
+      ],
+      "end_tick": 2815,
+      "start_tick": 2811
+    },
+    "observed_at": "2026-10-22T15:48:14.331719+00:00",
+    "current_tick": 2819,
+    "march_intent": "passage_wait",
+    "world_status": "active",
+    "cargo_unit_id": null,
+    "provision_goods": {
+      "oil": 3.469446951953614e-18,
+      "fish": 3.469446951953614e-18,
+      "wine": 0,
+      "grain": 3.3881317890172014e-21
+    },
+    "home_settlement_id": "11872add-0825-49ce-bb2a-3f4f093c8d4d"
+  },
+  {
+    "q": 22,
+    "r": 11,
+    "id": "ec00d188-a8c0-423c-9e6c-9e4eddfe81b6",
+    "crew": 2,
+    "size": 1,
+    "type": "galley",
+    "status": "garrison",
+    "target_q": null,
+    "target_r": null,
+    "world_id": "2178e795-1303-4cc3-865a-6386847d68d1",
+    "provisions": 0,
+    "arrive_tick": null,
+    "depart_tick": null,
+    "march_route": {
+      "costs": [
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        333
+      ],
+      "hexes": [
+        [
+          27,
+          16
+        ],
+        [
+          26,
+          16
+        ],
+        [
+          25,
+          16
+        ],
+        [
+          24,
+          16
+        ],
+        [
+          24,
+          15
+        ],
+        [
+          24,
+          14
+        ],
+        [
+          23,
+          14
+        ],
+        [
+          23,
+          13
+        ],
+        [
+          23,
+          12
+        ],
+        [
+          23,
+          11
+        ],
+        [
+          22,
+          11
+        ]
+      ],
+      "end_tick": 2339,
+      "start_tick": 2335
+    },
+    "observed_at": "2026-10-22T15:48:14.331719+00:00",
+    "current_tick": 2819,
+    "march_intent": null,
+    "world_status": "active",
+    "cargo_unit_id": null,
+    "provision_goods": {},
+    "home_settlement_id": null
+  }
+]
