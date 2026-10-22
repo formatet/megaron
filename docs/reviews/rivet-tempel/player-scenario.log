@@ -1,0 +1,9 @@
+» färsk DB på migration 202 · commit 5997b796+ändringar
+=== RUN   TestTempleDemolitionPlayerScenario
+2026/10/23 01:16:30 INFO player registered id=b954628f-a453-49ec-b5e3-7bc239b75ef6 username=alpha-e39dfb6f-767e-4365-a7d0-0fd2194c08a8
+    zz_order26_player_scenario_test.go:56: scenario run1: {"run": 1, "unconfirmed_no_delete": true, "cli_actual_delete": true, "browser_actual_delete": true, "persisted_notices": 2, "above_ceiling_standing": 60, "cap": 40, "page_errors": []}
+2026/10/23 01:16:33 INFO player registered id=a4c6c275-2cb3-42cb-9e63-9f9344bb72e9 username=alpha-99f2ba95-e28d-4a42-a570-b6d5a263160f
+    zz_order26_player_scenario_test.go:56: scenario run2: {"run": 2, "unconfirmed_no_delete": true, "cli_actual_delete": true, "browser_actual_delete": true, "persisted_notices": 2, "above_ceiling_standing": 60, "cap": 40, "page_errors": []}
+--- PASS: TestTempleDemolitionPlayerScenario (5.28s)
+PASS
+ok  	formatet/megaron/server/api/handlers	5.283s

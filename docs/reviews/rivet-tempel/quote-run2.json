@@ -1,0 +1,22 @@
+[
+  {
+    "id": "30aed23e-f6c2-4259-9753-940fe3f3e01e",
+    "type": "temple",
+    "level": 1,
+    "built_at": "2026-10-23T01:16:33.454917+02:00",
+    "current_level": 1,
+    "god_id": "potnia",
+    "name": "Temple of Potnia",
+    "demolition_kharis": {
+      "god_id": "potnia",
+      "god_name": "Potnia",
+      "level": 1,
+      "penalty_per_level": 10,
+      "kharis_loss": 10,
+      "kharis_before": 70,
+      "kharis_after": 60,
+      "cap_before": 50,
+      "cap_after": 40
+    }
+  }
+]

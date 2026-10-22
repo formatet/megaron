@@ -1,0 +1,8 @@
+» färsk DB på migration 202 · commit 5997b796+ändringar
+--- FAIL: TestLoweredCeilingDriftsWithoutCliffAndForecastMatches (0.20s)
+    lowered_ceiling_test.go:47: start80 staff2 standing50 want79.8
+    lowered_ceiling_test.go:47: start80 staff0 standing50 want79.8
+    lowered_ceiling_test.go:47: start50.1 staff2 standing50 want49.9
+FAIL
+FAIL	formatet/megaron/server/internal/kharis	0.201s
+FAIL

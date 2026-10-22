@@ -1,0 +1,4 @@
+» färsk DB på migration 202 · commit c3ed0abc+ändringar
+ok  	formatet/megaron/server/internal/kharis	0.192s
+ok  	formatet/megaron/server/api/handlers	0.704s
+ok  	formatet/megaron/server/internal/combat	0.036s

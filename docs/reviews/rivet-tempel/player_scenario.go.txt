@@ -1,0 +1,61 @@
+package handlers
+
+import (
+ "context"
+"bytes"
+ "encoding/json"
+ "net/http"
+ "net/http/httptest"
+ "os"
+ "os/exec"
+ "path/filepath"
+ "testing"
+
+ "formatet/megaron/server/internal/auth"
+
+"formatet/megaron/server/internal/events"
+ "github.com/go-chi/chi/v5"
+ "github.com/google/uuid"
+)
+
+// Isolated synthetic cities; actual authentication, read/write handlers, CLI and browser.
+func TestTempleDemolitionPlayerScenario(t *testing.T) {
+ root,err:=filepath.Abs("../../..");if err!=nil {t.Fatal(err)}
+ cli:=filepath.Join(t.TempDir(),"keryx")
+ build:=exec.Command("go","build","-o",cli,"./cmd/keryx");build.Dir=filepath.Join(root,"server")
+ if out,err:=build.CombinedOutput();err!=nil {t.Fatalf("build: %v %s",err,out)}
+ for run:=1;run<=2;run++ {
+  f:=newAlphaFixture(t);relationValues(t,f);var prov uuid.UUID
+  // Two standing temples: capital L3 and colony L1. Initial standing100.
+  if _,err:=f.pool.Exec(context.Background(),`DELETE FROM buildings WHERE settlement_id=ANY($1::uuid[]) AND god_id<>'potnia'`,f.cities);err!=nil {t.Fatal(err)}
+  if _,err:=f.pool.Exec(context.Background(),`UPDATE buildings SET level=CASE WHEN settlement_id=$1 THEN 3 ELSE 1 END WHERE settlement_id=ANY($2::uuid[])`,f.cities[0],f.cities);err!=nil {t.Fatal(err)}
+  if _,err:=f.pool.Exec(context.Background(),`UPDATE player_world_records SET kharis_amount=100,settlement_id=$3 WHERE player_id=$1 AND world_id=$2`,f.player,f.world,f.cities[0]);err!=nil {t.Fatal(err)}
+  if err:=f.pool.QueryRow(context.Background(),`SELECT province_id FROM settlements WHERE id=$1`,f.cities[0]).Scan(&prov);err!=nil {t.Fatal(err)}
+  var webProv uuid.UUID
+  if err:=f.pool.QueryRow(context.Background(),`SELECT province_id FROM settlements WHERE id=$1`,f.cities[1]).Scan(&webProv);err!=nil {t.Fatal(err)}
+  r:=chi.NewRouter()
+  r.Handle("/static/*",http.StripPrefix("/static/",http.FileServer(http.Dir(filepath.Join(root,"web/static")))))
+  r.Get("/fixture",func(w http.ResponseWriter,req *http.Request){http.ServeFile(w,req,filepath.Join(root,"web/static/map.html"))})
+  ph:=NewProvinceHandler(f.pool,nil,f.h.clk,events.NewStore(f.pool),nil)
+ nh:=NewNotificationsHandler(f.pool)
+  r.NotFound(func(w http.ResponseWriter,req *http.Request){w.Header().Set("Content-Type","application/json");w.Write([]byte("[]"))})
+  r.Group(func(r chi.Router){r.Use(auth.Middleware(auth.NewService(f.pool,"alpha-secret")))
+   r.Get("/api/v1/worlds/{worldID}/provinces/{provinceID}",ph.Get)
+   r.Get("/api/v1/worlds/{worldID}/provinces/{provinceID}/buildings",ph.Buildings)
+   r.Get("/api/v1/worlds/{worldID}/provinces/{provinceID}/goods",ph.Goods)
+   r.Delete("/api/v1/worlds/{worldID}/provinces/{provinceID}/buildings/{buildingID}",ph.DemolishBuilding)
+ r.Get("/api/v1/worlds/{worldID}/notifications",nh.List)
+   r.Get("/api/v1/worlds/{worldID}/settlements/{settlementID}",f.h.Get)
+   r.Post("/api/v1/worlds/{worldID}/settlements/{settlementID}/rite",f.h.Rite)
+   r.Get("/api/v1/worlds/{worldID}/provinces",func(w http.ResponseWriter,req *http.Request){json.NewEncoder(w).Encode([]map[string]any{{"id":prov,"settlement_id":f.cities[0],"own":true,"is_capital":true,"name":"Alpha City","q":0,"r":0}})})
+   r.Get("/api/v1/worlds/{worldID}/provinces/{provinceID}/actions",func(w http.ResponseWriter,req *http.Request){w.Write([]byte("[]"))})
+  })
+  server:=httptest.NewServer(r)
+  input,_:=json.Marshal(map[string]any{"base":server.URL,"token":f.token,"world":f.world,"player":f.player,"city":f.cities[0],"province":prov,"web_province":webProv,"web_city":f.cities[1],"cli":cli,"run":run})
+  cmd:=exec.Command("python3",filepath.Join(root,"docs/reviews/rivet-tempel/player_scenario.py"));cmd.Env=os.Environ();cmd.Stdin=bytes.NewReader(input)
+  out,err:=cmd.CombinedOutput();server.Close();if err!=nil {t.Fatalf("scenario run%d: %v %s",run,err,out)};t.Logf("scenario run%d: %s",run,out)
+  var final float64
+  if err:=f.pool.QueryRow(context.Background(),`SELECT kharis_amount FROM player_world_records WHERE player_id=$1 AND world_id=$2`,f.player,f.world).Scan(&final);err!=nil {t.Fatal(err)}
+  if final!=60 {t.Fatal("expected two actual demolitions to leave60",final)}
+ }
+}

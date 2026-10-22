@@ -1,0 +1,17 @@
+» färsk DB på migration 202 · commit 2c4162a7
+2026/10/23 01:08:35 INFO player registered id=f7a819c5-af85-4a4d-a5c4-764d420ba050 username=buildhex-ae7f2b85-d5b4-4919-b773-19aab2127481
+2026/10/23 01:08:35 INFO player registered id=b8f8fc8d-ea5d-4f8f-8439-478f8879f079 username=buildhex-fdee34a3-a8b3-47e9-980c-819948948a29
+2026/10/23 01:08:35 INFO player registered id=e8943c94-d53e-4ca4-b3b8-141077305914 username=buildhex-a913e66b-d14a-49a9-ba24-aa602627c3db
+2026/10/23 01:08:35 INFO player registered id=c8cf4d97-697a-4e69-bb22-c271d6bd76f8 username=buildhex-0ff636d4-232b-481e-a7ea-7433b237b693
+--- FAIL: TestTempleDemolitionDebtFloorReplay (0.30s)
+    temple_demolition_kharis_test.go:39: L1 standing80 want70
+    temple_demolition_kharis_test.go:46: wrath notices0 want1
+    temple_demolition_kharis_test.go:39: L2 standing80 want60
+    temple_demolition_kharis_test.go:46: wrath notices0 want1
+    temple_demolition_kharis_test.go:39: L3 standing80 want50
+    temple_demolition_kharis_test.go:46: wrath notices0 want1
+    temple_demolition_kharis_test.go:39: L3 standing12 want1
+    temple_demolition_kharis_test.go:46: wrath notices0 want1
+FAIL
+FAIL	formatet/megaron/server/api/handlers	0.307s
+FAIL
