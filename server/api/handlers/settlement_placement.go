@@ -8,11 +8,13 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"formatet/megaron/server/internal/auth"
 	"formatet/megaron/server/internal/economy"
 	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/religion"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -71,8 +73,9 @@ func (h *ProvinceHandler) Placements(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.pool.Query(r.Context(),
-		`SELECT gubbe_ordinal, target_kind, hex_q, hex_r, building_type, good_key
-		 FROM settlement_placement WHERE settlement_id = $1 ORDER BY gubbe_ordinal`,
+		`SELECT p.gubbe_ordinal, p.target_kind, p.hex_q, p.hex_r, p.building_type, p.good_key, coalesce(b.god_id,'')
+		 FROM settlement_placement p LEFT JOIN buildings b ON b.id = p.building_id
+		 WHERE p.settlement_id = $1 ORDER BY p.gubbe_ordinal`,
 		settlementID,
 	)
 	if err != nil {
@@ -87,12 +90,14 @@ func (h *ProvinceHandler) Placements(w http.ResponseWriter, r *http.Request) {
 		HexOrdinal   *int    `json:"hex_ordinal,omitempty"`
 		BuildingType *string `json:"building_type,omitempty"`
 		GoodKey      string  `json:"good_key"`
+		GodID        string  `json:"god_id,omitempty"`
+		Name         string  `json:"name,omitempty"`
 	}
 	var out []placementOut
 	for rows.Next() {
 		var p placementOut
 		var hexQ, hexR *int
-		if err := rows.Scan(&p.GubbeOrdinal, &p.TargetKind, &hexQ, &hexR, &p.BuildingType, &p.GoodKey); err != nil {
+		if err := rows.Scan(&p.GubbeOrdinal, &p.TargetKind, &hexQ, &hexR, &p.BuildingType, &p.GoodKey, &p.GodID); err != nil {
 			rows.Close()
 			writeError(w, http.StatusInternalServerError, "could not read placement")
 			return
@@ -102,6 +107,9 @@ func (h *ProvinceHandler) Placements(w http.ResponseWriter, r *http.Request) {
 			if ord, found := hexgrid.RingOrdinal(center, hexgrid.CatchmentRadius, hexgrid.Coord{Q: *hexQ, R: *hexR}); found {
 				p.HexOrdinal = &ord
 			}
+		}
+		if p.GodID != "" {
+			p.Name = religion.TempleName(p.GodID)
 		}
 		out = append(out, p)
 	}
@@ -377,12 +385,20 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 		BuildingType string    `json:"building_type"`
 		Level        int       `json:"level"`
 		Goods        []goodOut `json:"goods"`
+		// A temple names its god: one per god and city (ORDER 15).
+		BuildingID *uuid.UUID `json:"building_id,omitempty"`
+		GodID      string     `json:"god_id,omitempty"`
+		Name       string     `json:"name,omitempty"`
 	}
 	buildings := make([]buildingOut, 0, len(buildingOptions))
 	for _, opt := range buildingOptions {
 		if opt.StaffingOnly {
 			cap := opt.PlaceCapPerGood[economy.GoodCult]
-			buildings = append(buildings, buildingOut{BuildingType: opt.BuildingType, Level: opt.Level, Goods: []goodOut{{GoodKey: economy.GoodCult, StaffingOnly: true, Cap: &cap, Placed: placed.Building[opt.BuildingType][economy.GoodCult], PlacedOrdinals: placedOrdinals.Building[opt.BuildingType][economy.GoodCult]}}})
+			ords := placedOrdinals.Temple[opt.BuildingID]
+			id := opt.BuildingID
+			buildings = append(buildings, buildingOut{BuildingType: opt.BuildingType, Level: opt.Level,
+				BuildingID: &id, GodID: opt.GodID, Name: religion.TempleName(opt.GodID),
+				Goods: []goodOut{{GoodKey: economy.GoodCult, StaffingOnly: true, Cap: &cap, Placed: len(ords), PlacedOrdinals: ords}}})
 			continue
 		}
 		buildings = append(buildings, buildingOut{
@@ -441,15 +457,17 @@ func (h *ProvinceHandler) PlacementOptions(w http.ResponseWriter, r *http.Reques
 type placedOrdinals struct {
 	Hex      map[hexgrid.Coord]map[string][]int
 	Building map[string]map[string][]int
+	Temple   map[uuid.UUID][]int // by temple building_id (ORDER 15)
 }
 
 func loadPlacedOrdinals(ctx context.Context, tx economy.Tx, settlementID uuid.UUID) (placedOrdinals, error) {
 	out := placedOrdinals{
 		Hex:      make(map[hexgrid.Coord]map[string][]int),
 		Building: make(map[string]map[string][]int),
+		Temple:   make(map[uuid.UUID][]int),
 	}
 	rows, err := tx.Query(ctx,
-		`SELECT gubbe_ordinal, target_kind, hex_q, hex_r, building_type, good_key
+		`SELECT gubbe_ordinal, target_kind, hex_q, hex_r, building_type, good_key, building_id
 		 FROM settlement_placement WHERE settlement_id = $1`,
 		settlementID,
 	)
@@ -462,8 +480,12 @@ func loadPlacedOrdinals(ctx context.Context, tx economy.Tx, settlementID uuid.UU
 		var kind, goodKey string
 		var hexQ, hexR *int
 		var buildingType *string
-		if err := rows.Scan(&gubbeOrdinal, &kind, &hexQ, &hexR, &buildingType, &goodKey); err != nil {
+		var buildingID *uuid.UUID
+		if err := rows.Scan(&gubbeOrdinal, &kind, &hexQ, &hexR, &buildingType, &goodKey, &buildingID); err != nil {
 			return out, err
+		}
+		if buildingID != nil {
+			out.Temple[*buildingID] = append(out.Temple[*buildingID], gubbeOrdinal)
 		}
 		switch kind {
 		case "hex":
@@ -517,6 +539,7 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 		HexOrdinal   *int   `json:"hex_ordinal"` // alternative to hex_q/hex_r — 1..18, resolved via Ring() below
 		BuildingType string `json:"building_type"`
 		GoodKey      string `json:"good_key"`
+		God          string `json:"god"` // which temple, when the city has several (ORDER 15)
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.GoodKey == "" {
 		writeError(w, http.StatusBadRequest, `invalid JSON — expected {"target_kind":"hex","hex_ordinal":5,"good_key":"grain"} (or "hex_q"/"hex_r" instead of "hex_ordinal") or {"target_kind":"building","building_type":"stonequarry","good_key":"stone"}`)
@@ -817,10 +840,34 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		var opt *economy.BuildingOption
+		var temples []*economy.BuildingOption
 		for i := range buildingOptions {
-			if buildingOptions[i].BuildingType == req.BuildingType {
-				opt = &buildingOptions[i]
-				break
+			if buildingOptions[i].BuildingType != req.BuildingType {
+				continue
+			}
+			if req.BuildingType == string(province.BuildingTemple) {
+				temples = append(temples, &buildingOptions[i])
+				if buildingOptions[i].GodID == req.God {
+					opt = &buildingOptions[i]
+				}
+				continue
+			}
+			opt = &buildingOptions[i]
+			break
+		}
+		// A temple worker serves one god. With one temple the choice is made;
+		// with several it is the Wanax's, never ours (ORDER 15).
+		if req.BuildingType == string(province.BuildingTemple) && opt == nil {
+			if req.God == "" && len(temples) == 1 {
+				opt = temples[0]
+			} else if len(temples) > 1 || req.God != "" {
+				names := make([]string, len(temples))
+				for i, t := range temples {
+					names[i] = t.GodID
+				}
+				writeError(w, http.StatusUnprocessableEntity,
+					fmt.Sprintf("choose which temple (god): %s", strings.Join(names, ", ")))
+				return
 			}
 		}
 		if opt == nil || (!opt.StaffingOnly && opt.RatePerGood[req.GoodKey] <= 0) || (opt.StaffingOnly && req.GoodKey != economy.GoodCult) {
@@ -829,14 +876,25 @@ func (h *ProvinceHandler) PlaceGubbe(w http.ResponseWriter, r *http.Request) {
 		}
 		// Form B: write-time ceiling is PlaceCapPerGood — see the hex branch above.
 		cap := opt.PlaceCapPerGood[req.GoodKey]
-		if cap <= 0 || placed.Building[req.BuildingType][req.GoodKey] >= cap {
+		already := placed.Building[req.BuildingType][req.GoodKey]
+		var templeID *uuid.UUID
+		if opt.GodID != "" {
+			templeID = &opt.BuildingID
+			if err := tx.QueryRow(r.Context(),
+				`SELECT count(*) FROM settlement_placement WHERE settlement_id = $1 AND building_id = $2`,
+				settlementID, opt.BuildingID).Scan(&already); err != nil {
+				fail("could not count temple workers", err)
+				return
+			}
+		}
+		if cap <= 0 || already >= cap {
 			writeError(w, http.StatusConflict, "this building is fully staffed for that good")
 			return
 		}
 		if _, err := tx.Exec(r.Context(),
-			`INSERT INTO settlement_placement (settlement_id, gubbe_ordinal, target_kind, building_type, good_key)
-			 VALUES ($1, $2, 'building', $3, $4)`,
-			settlementID, gubbeOrdinal, req.BuildingType, req.GoodKey,
+			`INSERT INTO settlement_placement (settlement_id, gubbe_ordinal, target_kind, building_type, good_key, building_id)
+			 VALUES ($1, $2, 'building', $3, $4, $5)`,
+			settlementID, gubbeOrdinal, req.BuildingType, req.GoodKey, templeID,
 		); err != nil {
 			fail("could not place citizen", err)
 			return

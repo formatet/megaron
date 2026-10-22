@@ -132,7 +132,7 @@ func TestFishingOwnerOptionsCapacityEffectsAndDemolition(t *testing.T) {
 	if _, err := tx.Exec(ctx, `DELETE FROM buildings WHERE settlement_id=$1 AND building_type='harbour'`, sid); err != nil {
 		t.Fatal(err)
 	}
-	lifted, err := LiftPlacementsAfterDemolish(ctx, tx, sid, "harbour", nil, nil)
+	lifted, err := LiftPlacementsAfterDemolish(ctx, tx, sid, uuid.Nil, "harbour", nil, nil)
 	if err != nil || len(lifted) != 1 || lifted[0] != 1 {
 		t.Fatalf("lifted=%v err=%v", lifted, err)
 	}

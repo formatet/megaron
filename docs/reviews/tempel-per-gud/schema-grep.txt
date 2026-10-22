@@ -1,0 +1,32 @@
+server/db/migrations/135_drop_temples_table.up.sql:3:-- The LIVE temple mechanic is `buildings` with building_type = 'temple' —
+server/db/migrations/135_drop_temples_table.up.sql:18:DROP TABLE IF EXISTS temples;
+server/db/migrations/175_religion_alpha.up.sql:6: god_id TEXT NOT NULL,
+server/db/migrations/175_religion_alpha.up.sql:8: PRIMARY KEY(world_id, player_id, god_id)
+server/db/migrations/120_settlement_placement.up.sql:20:-- 'building' (a city workplace slot, building_type set, no coordinates — the
+server/db/migrations/120_settlement_placement.up.sql:32:    building_type TEXT,
+server/db/migrations/120_settlement_placement.up.sql:37:        (target_kind = 'hex'      AND hex_q IS NOT NULL AND hex_r IS NOT NULL AND building_type IS NULL)
+server/db/migrations/120_settlement_placement.up.sql:39:        (target_kind = 'building' AND building_type IS NOT NULL AND hex_q IS NULL AND hex_r IS NULL)
+server/db/migrations/120_settlement_placement.up.sql:47:CREATE INDEX ON settlement_placement (settlement_id, building_type, good_key)
+server/db/migrations/001_initial.up.sql:146:CREATE TABLE buildings (
+server/db/migrations/001_initial.up.sql:159:    building_type   TEXT NOT NULL,
+server/db/migrations/001_initial.up.sql:200:CREATE TABLE temples (
+server/db/migrations/154_building_hex.up.sql:27:-- instances) BEFORE anything else touches building_type.
+server/db/migrations/154_building_hex.up.sql:28:UPDATE production_rules SET building_type = 'mine' WHERE building_type = 'silver_mine';
+server/db/migrations/154_building_hex.up.sql:29:UPDATE buildings SET building_type = 'mine' WHERE building_type = 'silver_mine';
+server/db/migrations/154_building_hex.up.sql:30:UPDATE build_queue SET building_type = 'mine' WHERE building_type = 'silver_mine';
+server/db/migrations/154_building_hex.up.sql:40:            PARTITION BY settlement_id, building_type
+server/db/migrations/154_building_hex.up.sql:44:        WHERE building_type = 'mine'
+server/db/migrations/154_building_hex.up.sql:55:  AND b.building_type IN ('farm', 'mine', 'lumbermill', 'stonequarry');
+server/db/migrations/154_building_hex.up.sql:62:  AND bq.building_type IN ('farm', 'mine', 'lumbermill', 'stonequarry');
+server/db/migrations/154_building_hex.up.sql:67:DELETE FROM buildings WHERE building_type IN ('farm', 'mine', 'lumbermill', 'stonequarry') AND hex_q IS NULL;
+server/db/migrations/154_building_hex.up.sql:68:DELETE FROM build_queue WHERE building_type IN ('farm', 'mine', 'lumbermill', 'stonequarry') AND hex_q IS NULL;
+server/db/migrations/154_building_hex.up.sql:71:    (building_type IN ('farm', 'mine', 'lumbermill', 'stonequarry') AND hex_q IS NOT NULL AND hex_r IS NOT NULL)
+server/db/migrations/154_building_hex.up.sql:72:    OR (building_type NOT IN ('farm', 'mine', 'lumbermill', 'stonequarry') AND hex_q IS NULL AND hex_r IS NULL)
+server/db/migrations/154_building_hex.up.sql:75:    (building_type IN ('farm', 'mine', 'lumbermill', 'stonequarry') AND hex_q IS NOT NULL AND hex_r IS NOT NULL)
+server/db/migrations/154_building_hex.up.sql:76:    OR (building_type NOT IN ('farm', 'mine', 'lumbermill', 'stonequarry') AND hex_q IS NULL AND hex_r IS NULL)
+server/db/migrations/154_building_hex.up.sql:79:-- Replace the single (settlement_id, building_type) unique index with two
+server/db/migrations/154_building_hex.up.sql:82:DROP INDEX IF EXISTS buildings_settlement_building;
+server/db/migrations/154_building_hex.up.sql:83:CREATE UNIQUE INDEX buildings_settlement_building_city
+server/db/migrations/154_building_hex.up.sql:84:    ON buildings (settlement_id, building_type) WHERE hex_q IS NULL;
+server/db/migrations/154_building_hex.up.sql:85:CREATE UNIQUE INDEX buildings_settlement_building_hex
+server/db/migrations/154_building_hex.up.sql:86:    ON buildings (settlement_id, building_type, hex_q, hex_r) WHERE hex_q IS NOT NULL;

@@ -12,6 +12,7 @@ import (
 	"formatet/megaron/server/internal/gossip"
 	"formatet/megaron/server/internal/hexgrid"
 	"formatet/megaron/server/internal/province"
+	"formatet/megaron/server/internal/religion"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -61,10 +62,11 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 
 	// Verify queue entry still exists (idempotency guard).
 	var existingID uuid.UUID
+	var godID *string // the queued temple's god (mig 202); the payload never carried it
 	err = tx.QueryRow(ctx,
-		`SELECT id FROM build_queue WHERE id = $1 AND settlement_id = $2`,
+		`SELECT id, god_id FROM build_queue WHERE id = $1 AND settlement_id = $2`,
 		p.BuildQueueID, p.SettlementID,
-	).Scan(&existingID)
+	).Scan(&existingID, &godID)
 	if err != nil {
 		return nil // Already resolved.
 	}
@@ -82,10 +84,19 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 			 DO UPDATE SET level = buildings.level + 1`,
 			p.SettlementID, p.BuildingType, *p.HexQ, *p.HexR,
 		)
+	} else if godID != nil {
+		// A temple is one per god and city (mig 202): building the same god
+		// again raises that temple; another god's temple is a new building.
+		_, err = tx.Exec(ctx,
+			`INSERT INTO buildings (settlement_id, building_type, level, god_id) VALUES ($1, $2, 1, $3)
+			 ON CONFLICT (settlement_id, god_id) WHERE building_type = 'temple'
+			 DO UPDATE SET level = buildings.level + 1`,
+			p.SettlementID, p.BuildingType, *godID,
+		)
 	} else {
 		_, err = tx.Exec(ctx,
 			`INSERT INTO buildings (settlement_id, building_type, level) VALUES ($1, $2, 1)
-			 ON CONFLICT (settlement_id, building_type) WHERE hex_q IS NULL
+			 ON CONFLICT (settlement_id, building_type) WHERE hex_q IS NULL AND building_type <> 'temple'
 			 DO UPDATE SET level = buildings.level + 1`,
 			p.SettlementID, p.BuildingType,
 		)
@@ -233,11 +244,16 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 		return fmt.Errorf("commit: %w", err)
 	}
 
-	if _, err := h.eventStore.Append(ctx, p.SettlementID, events.StreamProvince, "BuildComplete", map[string]any{
+	completed := map[string]any{
 		"building_type": p.BuildingType,
 		"hex_q":         p.HexQ,
 		"hex_r":         p.HexR,
-	}, e.WorldID, nil); err != nil {
+	}
+	if godID != nil {
+		completed["god_id"] = *godID
+		completed["name"] = religion.TempleName(*godID)
+	}
+	if _, err := h.eventStore.Append(ctx, p.SettlementID, events.StreamProvince, "BuildComplete", completed, e.WorldID, nil); err != nil {
 		slog.Error("record BuildComplete event", "err", err)
 	}
 
@@ -249,6 +265,10 @@ func (h *BuildCompleteHandler) Handle(ctx context.Context, e events.ScheduledEve
 			"building_type": p.BuildingType,
 			"hex_q":         p.HexQ,
 			"hex_r":         p.HexR,
+		}
+		if godID != nil {
+			body["god_id"] = *godID
+			body["name"] = religion.TempleName(*godID)
 		}
 		if len(unlockedGoods) > 0 {
 			// Post-P4 there is no auto-allocation: production comes from a

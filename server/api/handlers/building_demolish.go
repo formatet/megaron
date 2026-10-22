@@ -60,13 +60,14 @@ func (h *ProvinceHandler) DemolishBuilding(w http.ResponseWriter, r *http.Reques
 	var bType string
 	var level int
 	var hexQ, hexR *int
+	var godID *string
 	queued := false
 	err = h.pool.QueryRow(ctx,
-		`SELECT b.settlement_id, s.owner_id, b.building_type, b.level, b.hex_q, b.hex_r
+		`SELECT b.settlement_id, s.owner_id, b.building_type, b.level, b.hex_q, b.hex_r, b.god_id
 		 FROM buildings b JOIN settlements s ON s.id = b.settlement_id
 		 WHERE b.id = $1 AND s.world_id = $2 AND s.province_id = $3`,
 		buildingID, worldID, provinceID,
-	).Scan(&settlementID, &ownerID, &bType, &level, &hexQ, &hexR)
+	).Scan(&settlementID, &ownerID, &bType, &level, &hexQ, &hexR, &godID)
 	if errors.Is(err, pgx.ErrNoRows) {
 		err = h.pool.QueryRow(ctx,
 			`SELECT q.settlement_id, s.owner_id, q.building_type, q.hex_q, q.hex_r
@@ -134,7 +135,14 @@ func (h *ProvinceHandler) DemolishBuilding(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	// Delete first: a concurrent demolish that got here before us leaves 0 rows.
+	// Lift first: a temple's placements cascade with the building (mig 202),
+	// so they must be counted before it goes. A concurrent demolish that got
+	// here before us leaves 0 building rows below and rolls this back.
+	lifted, err := economy.LiftPlacementsAfterDemolish(ctx, tx, settlementID, buildingID, bType, hexQ, hexR)
+	if err != nil {
+		fail("could not lift citizens", err)
+		return
+	}
 	ct, err := tx.Exec(ctx, `DELETE FROM buildings WHERE id = $1`, buildingID)
 	if err != nil {
 		fail("could not demolish", err)
@@ -150,8 +158,9 @@ func (h *ProvinceHandler) DemolishBuilding(w http.ResponseWriter, r *http.Reques
 	qrows, err := tx.Query(ctx,
 		`SELECT id FROM build_queue
 		 WHERE settlement_id = $1 AND building_type = $2
-		   AND hex_q IS NOT DISTINCT FROM $3 AND hex_r IS NOT DISTINCT FROM $4`,
-		settlementID, bType, hexQ, hexR)
+		   AND hex_q IS NOT DISTINCT FROM $3 AND hex_r IS NOT DISTINCT FROM $4
+		   AND god_id IS NOT DISTINCT FROM $5`,
+		settlementID, bType, hexQ, hexR, godID)
 	if err != nil {
 		fail("could not read build queue", err)
 		return
@@ -171,11 +180,6 @@ func (h *ProvinceHandler) DemolishBuilding(w http.ResponseWriter, r *http.Reques
 		}
 	}
 
-	lifted, err := economy.LiftPlacementsAfterDemolish(ctx, tx, settlementID, bType, hexQ, hexR)
-	if err != nil {
-		fail("could not lift citizens", err)
-		return
-	}
 	if err := economy.RecomputeProduction(ctx, tx, settlementID); err != nil {
 		fail("recompute production failed", err)
 		return

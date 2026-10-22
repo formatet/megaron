@@ -109,7 +109,7 @@ func transitionTempleStaffing(ctx context.Context, tx pgx.Tx) error {
 			if used[n] {
 				continue
 			}
-			if _, err := tx.Exec(ctx, `INSERT INTO settlement_placement(settlement_id,gubbe_ordinal,target_kind,building_type,good_key) VALUES($1,$2,'building','temple','cult')`, c.id, n); err != nil {
+			if _, err := tx.Exec(ctx, `INSERT INTO settlement_placement(settlement_id,gubbe_ordinal,target_kind,building_type,good_key,building_id) VALUES($1,$2,'building','temple','cult',(SELECT id FROM buildings WHERE settlement_id=$1 AND building_type='temple' ORDER BY level DESC LIMIT 1))`, c.id, n); err != nil {
 				return err
 			}
 			staffed++
@@ -124,7 +124,7 @@ func transitionTempleStaffing(ctx context.Context, tx pgx.Tx) error {
 			if staffed >= target {
 				break
 			}
-			if _, err := tx.Exec(ctx, `UPDATE settlement_placement SET target_kind='building',building_type='temple',good_key='cult',hex_q=NULL,hex_r=NULL WHERE settlement_id=$1 AND gubbe_ordinal=$2`, c.id, job.ordinal); err != nil {
+			if _, err := tx.Exec(ctx, `UPDATE settlement_placement SET target_kind='building',building_type='temple',good_key='cult',hex_q=NULL,hex_r=NULL,building_id=(SELECT id FROM buildings WHERE settlement_id=$1 AND building_type='temple' ORDER BY level DESC LIMIT 1) WHERE settlement_id=$1 AND gubbe_ordinal=$2`, c.id, job.ordinal); err != nil {
 				return err
 			}
 			staffed++

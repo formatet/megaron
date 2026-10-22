@@ -22,14 +22,17 @@ import (
 //     silver workers all go because silver needs its mine).
 //
 // Returns the lifted ordinals, ascending. Caller runs RecomputeProduction.
-func LiftPlacementsAfterDemolish(ctx context.Context, tx Tx, settlementID uuid.UUID, buildingType string, hexQ, hexR *int) ([]int, error) {
+func LiftPlacementsAfterDemolish(ctx context.Context, tx Tx, settlementID, buildingID uuid.UUID, buildingType string, hexQ, hexR *int) ([]int, error) {
 	var lifted []int
 
+	// A temple's workers stand at that one temple (building_id, mig 202);
+	// demolishing one god's temple never lifts another god's workers.
 	rows, err := tx.Query(ctx,
 		`DELETE FROM settlement_placement
 		 WHERE settlement_id = $1 AND target_kind = 'building' AND building_type = $2
+		   AND (building_id IS NULL OR building_id = $3)
 		 RETURNING gubbe_ordinal`,
-		settlementID, buildingType)
+		settlementID, buildingType, buildingID)
 	if err != nil {
 		return nil, fmt.Errorf("lift placements: building slots: %w", err)
 	}
