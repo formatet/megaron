@@ -1,0 +1,11 @@
+5262aa6e71e67f3e6f2d5aa934154177550fcb8f
+01bcf560e79347d0b1254c37dd9b036fb880b0153a30dd5178e34f34e2d533cf  /opt/poleia/server/internal/combat/upkeep.go
+f6fc0da2b86c85756d853ec8a445eb07b5d14e63e221381aaa9fea4deb1b7680  /opt/poleia/server/internal/combat/food_provisions.go
+98af62e094d25ec9333a0d8e64aa77e176b46413c56ffd958c1cf5843f279a1c  /opt/poleia/server/internal/economy/ship_ledger.go
+0cdc8085dcd72eb2c61655bf94a54ed88ece9a2dde8190dee5dfcfd721e504c8  /opt/poleia/server/internal/economy/ship_load.go
+7c5e3e79ede2e7fbc43e2d207b6ce323d2b2fd36a44cee117d831e85d62bc632  /opt/poleia/server/internal/economy/ship_ration.go
+649d6987ce0b0e37586188ebd8fd07902ac2d9ceea3a8602662509336c239392  /opt/poleia/server/internal/economy/ship_port.go
+b26fe806ae6d08e50142832a04e8c5d4b0650dcbf41e3377054f9be06f0f22ef  /opt/poleia/server/internal/transport/transport.go
+e23ce417bcbc610c758946802114b6becf9e42a9f04a7b8deb39c12325e51fb5  /opt/poleia/server/internal/transport/carrier.go
+714bafdfe65a8f97bd43eb297c4653d868adf17c97544248f90eebf58c33dad3  /opt/poleia/server/internal/province/pathfind.go
+2aa48807b7121bd5b9d9d1c34324abd09d3f7e4d9b4487afe09e9e075010fa6b  /opt/poleia/server/internal/world/mapgen.go

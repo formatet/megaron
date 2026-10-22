@@ -1,0 +1,315 @@
+{
+  "water_components": [
+    {
+      "size": 1204,
+      "min": [
+        0,
+        19
+      ],
+      "max": [
+        39,
+        39
+      ]
+    },
+    {
+      "size": 13,
+      "min": [
+        34,
+        28
+      ],
+      "max": [
+        39,
+        31
+      ]
+    },
+    {
+      "size": 1,
+      "min": [
+        0,
+        26
+      ],
+      "max": [
+        0,
+        26
+      ]
+    }
+  ],
+  "pylos_component": [
+    {
+      "q": 34,
+      "r": 28,
+      "coastal": false,
+      "terrain": "coastal_sea",
+      "landmass_id": null
+    },
+    {
+      "q": 34,
+      "r": 29,
+      "coastal": false,
+      "terrain": "coastal_sea",
+      "landmass_id": null
+    },
+    {
+      "q": 35,
+      "r": 28,
+      "coastal": false,
+      "terrain": "coastal_sea",
+      "landmass_id": null
+    },
+    {
+      "q": 35,
+      "r": 29,
+      "coastal": false,
+      "terrain": "coastal_sea",
+      "landmass_id": null
+    },
+    {
+      "q": 36,
+      "r": 28,
+      "coastal": false,
+      "terrain": "river",
+      "landmass_id": 7
+    },
+    {
+      "q": 36,
+      "r": 29,
+      "coastal": false,
+      "terrain": "river",
+      "landmass_id": 7
+    },
+    {
+      "q": 37,
+      "r": 29,
+      "coastal": false,
+      "terrain": "river",
+      "landmass_id": 7
+    },
+    {
+      "q": 38,
+      "r": 29,
+      "coastal": false,
+      "terrain": "river",
+      "landmass_id": 7
+    },
+    {
+      "q": 38,
+      "r": 31,
+      "coastal": false,
+      "terrain": "coastal_sea",
+      "landmass_id": null
+    },
+    {
+      "q": 39,
+      "r": 28,
+      "coastal": false,
+      "terrain": "coastal_sea",
+      "landmass_id": null
+    },
+    {
+      "q": 39,
+      "r": 29,
+      "coastal": false,
+      "terrain": "coastal_sea",
+      "landmass_id": null
+    },
+    {
+      "q": 39,
+      "r": 30,
+      "coastal": false,
+      "terrain": "coastal_sea",
+      "landmass_id": null
+    },
+    {
+      "q": 39,
+      "r": 31,
+      "coastal": false,
+      "terrain": "coastal_sea",
+      "landmass_id": null
+    }
+  ],
+  "nearest_distance": 2,
+  "nearest_pairs": [
+    {
+      "from": [
+        38,
+        31
+      ],
+      "to": [
+        38,
+        33
+      ],
+      "other_component_size": 1204,
+      "intermediate": [
+        {
+          "q": 38,
+          "r": 32,
+          "coastal": true,
+          "terrain": "forest_olive_grove",
+          "landmass_id": 7
+        }
+      ]
+    },
+    {
+      "from": [
+        39,
+        31
+      ],
+      "to": [
+        38,
+        33
+      ],
+      "other_component_size": 1204,
+      "intermediate": [
+        {
+          "q": 38,
+          "r": 32,
+          "coastal": true,
+          "terrain": "forest_olive_grove",
+          "landmass_id": 7
+        },
+        {
+          "q": 39,
+          "r": 32,
+          "coastal": true,
+          "terrain": "forest_olive_grove",
+          "landmass_id": 7
+        }
+      ]
+    }
+  ],
+  "boundary_land": [
+    {
+      "q": 33,
+      "r": 28,
+      "coastal": true,
+      "terrain": "forest_olive_grove",
+      "landmass_id": 7
+    },
+    {
+      "q": 33,
+      "r": 29,
+      "coastal": true,
+      "terrain": "forest_olive_grove",
+      "landmass_id": 7
+    },
+    {
+      "q": 33,
+      "r": 30,
+      "coastal": true,
+      "terrain": "forest_olive_grove",
+      "landmass_id": 7
+    },
+    {
+      "q": 34,
+      "r": 27,
+      "coastal": true,
+      "terrain": "mountain_limestone",
+      "landmass_id": 7
+    },
+    {
+      "q": 34,
+      "r": 30,
+      "coastal": true,
+      "terrain": "forest_olive_grove",
+      "landmass_id": 7
+    },
+    {
+      "q": 35,
+      "r": 27,
+      "coastal": true,
+      "terrain": "mountain_limestone",
+      "landmass_id": 7
+    },
+    {
+      "q": 35,
+      "r": 30,
+      "coastal": true,
+      "terrain": "river_valley",
+      "landmass_id": 7
+    },
+    {
+      "q": 36,
+      "r": 27,
+      "coastal": true,
+      "terrain": "mountain_limestone",
+      "landmass_id": 7
+    },
+    {
+      "q": 36,
+      "r": 30,
+      "coastal": true,
+      "terrain": "river_valley",
+      "landmass_id": 7
+    },
+    {
+      "q": 37,
+      "r": 27,
+      "coastal": true,
+      "terrain": "mountain_red",
+      "landmass_id": 7
+    },
+    {
+      "q": 37,
+      "r": 28,
+      "coastal": true,
+      "terrain": "river_valley",
+      "landmass_id": 7
+    },
+    {
+      "q": 37,
+      "r": 30,
+      "coastal": true,
+      "terrain": "river_valley",
+      "landmass_id": 7
+    },
+    {
+      "q": 37,
+      "r": 31,
+      "coastal": true,
+      "terrain": "plains",
+      "landmass_id": 7
+    },
+    {
+      "q": 37,
+      "r": 32,
+      "coastal": true,
+      "terrain": "plains",
+      "landmass_id": 7
+    },
+    {
+      "q": 38,
+      "r": 28,
+      "coastal": true,
+      "terrain": "river_delta",
+      "landmass_id": 7
+    },
+    {
+      "q": 38,
+      "r": 30,
+      "coastal": true,
+      "terrain": "river_delta",
+      "landmass_id": 7
+    },
+    {
+      "q": 38,
+      "r": 32,
+      "coastal": true,
+      "terrain": "forest_olive_grove",
+      "landmass_id": 7
+    },
+    {
+      "q": 39,
+      "r": 27,
+      "coastal": true,
+      "terrain": "river_delta",
+      "landmass_id": 7
+    },
+    {
+      "q": 39,
+      "r": 32,
+      "coastal": true,
+      "terrain": "forest_olive_grove",
+      "landmass_id": 7
+    }
+  ]
+}

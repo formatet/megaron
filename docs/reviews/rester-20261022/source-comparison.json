@@ -1,0 +1,52 @@
+[
+  {
+    "path": "server/internal/combat/upkeep.go",
+    "sha256": "01bcf560e79347d0b1254c37dd9b036fb880b0153a30dd5178e34f34e2d533cf",
+    "matches_live_checkout_and_process_commit": true
+  },
+  {
+    "path": "server/internal/combat/food_provisions.go",
+    "sha256": "f6fc0da2b86c85756d853ec8a445eb07b5d14e63e221381aaa9fea4deb1b7680",
+    "matches_live_checkout_and_process_commit": true
+  },
+  {
+    "path": "server/internal/economy/ship_ledger.go",
+    "sha256": "98af62e094d25ec9333a0d8e64aa77e176b46413c56ffd958c1cf5843f279a1c",
+    "matches_live_checkout_and_process_commit": true
+  },
+  {
+    "path": "server/internal/economy/ship_load.go",
+    "sha256": "0cdc8085dcd72eb2c61655bf94a54ed88ece9a2dde8190dee5dfcfd721e504c8",
+    "matches_live_checkout_and_process_commit": true
+  },
+  {
+    "path": "server/internal/economy/ship_ration.go",
+    "sha256": "7c5e3e79ede2e7fbc43e2d207b6ce323d2b2fd36a44cee117d831e85d62bc632",
+    "matches_live_checkout_and_process_commit": true
+  },
+  {
+    "path": "server/internal/economy/ship_port.go",
+    "sha256": "649d6987ce0b0e37586188ebd8fd07902ac2d9ceea3a8602662509336c239392",
+    "matches_live_checkout_and_process_commit": true
+  },
+  {
+    "path": "server/internal/transport/transport.go",
+    "sha256": "b26fe806ae6d08e50142832a04e8c5d4b0650dcbf41e3377054f9be06f0f22ef",
+    "matches_live_checkout_and_process_commit": true
+  },
+  {
+    "path": "server/internal/transport/carrier.go",
+    "sha256": "e23ce417bcbc610c758946802114b6becf9e42a9f04a7b8deb39c12325e51fb5",
+    "matches_live_checkout_and_process_commit": true
+  },
+  {
+    "path": "server/internal/province/pathfind.go",
+    "sha256": "714bafdfe65a8f97bd43eb297c4653d868adf17c97544248f90eebf58c33dad3",
+    "matches_live_checkout_and_process_commit": true
+  },
+  {
+    "path": "server/internal/world/mapgen.go",
+    "sha256": "2aa48807b7121bd5b9d9d1c34324abd09d3f7e4d9b4487afe09e9e075010fa6b",
+    "matches_live_checkout_and_process_commit": true
+  }
+]
